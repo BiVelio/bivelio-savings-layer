@@ -1,0 +1,4 @@
+# The repository root is itself the SDK package (@bivelio/savings-layer).
+# Additional workspace packages live under packages/*. apps/* are prototypes.
+packages:
+  - "packages/*"

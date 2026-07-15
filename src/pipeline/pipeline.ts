@@ -132,11 +132,21 @@ export class SavingsPipeline {
     baselineInput: number,
     baselineOutput: number,
   ): Promise<SavingsResult<T>> {
-    // --- Stage 4: safe semantic cache. ---
+    // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
+    const semanticLicensed = this.entitled("semantic_cache");
     if (
       policy.allowSemanticCache &&
       toggles.semanticCache &&
-      this.deps.semanticCache
+      this.deps.semanticCache &&
+      !semanticLicensed
+    ) {
+      trace.record("semantic-cache", "degraded: feature not licensed (free tier)");
+    }
+    if (
+      policy.allowSemanticCache &&
+      toggles.semanticCache &&
+      this.deps.semanticCache &&
+      semanticLicensed
     ) {
       const hit = await this.deps.semanticCache.find(canonical);
       if (hit) {
@@ -224,11 +234,12 @@ export class SavingsPipeline {
       });
     }
 
-    // --- Stage 9: compression (only when net-positive). ---
+    // --- Stage 9: compression (managed feature — license-gated, net-positive only). ---
     if (
       (toggles.compression === true || toggles.compression === "auto") &&
       policy.allowCompression &&
-      this.config.compressor
+      this.config.compressor &&
+      this.entitled("long_context_compression")
     ) {
       const joined = messages.map((m) => m.content).join("\n");
       const before = this.tokensFor(joined, request);
@@ -483,6 +494,14 @@ export class SavingsPipeline {
       ...(request.tokenizer ? { tokenizer: request.tokenizer } : {}),
       model: request.model,
     });
+  }
+
+  /**
+   * Whether a managed feature is licensed. With no license gate configured the
+   * pipeline is ungated (self-managed / dev mode) and everything is available.
+   */
+  private entitled(feature: string): boolean {
+    return !this.config.licenseGate || this.config.licenseGate.isEntitled(feature);
   }
 
   private costModelFor(model: string): CostModel {

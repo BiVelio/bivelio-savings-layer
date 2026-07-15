@@ -243,6 +243,19 @@ export interface SavingsReport {
   traces: TraceEvent[];
 }
 
+/**
+ * Structural license gate the pipeline consults before enabling a managed
+ * feature (semantic cache, learned thresholds, long-context compression, …).
+ *
+ * It is intentionally a bare shape — the SDK never imports the license package.
+ * `@bivelio/license-client`'s `createLicenseGate()` returns a compatible object,
+ * but any implementation of this interface works. When no gate is configured the
+ * pipeline behaves as an ungated self-managed deployment (backwards compatible).
+ */
+export interface LicenseGate {
+  isEntitled(feature: string): boolean;
+}
+
 export interface TraceEvent {
   stage: string;
   outcome: string;

@@ -12,6 +12,7 @@ import type { ConstraintBackend } from "../constraints/backends.js";
 import type { Compressor } from "../compression/compression.js";
 import type { Retriever, Reranker } from "../retrieval/retrieval.js";
 import type { Provider } from "../providers/types.js";
+import type { LicenseGate } from "../contracts/types.js";
 
 /**
  * Everything the pipeline depends on. All fields except `provider` and
@@ -35,6 +36,14 @@ export interface SavingsLayerConfig {
   compressor?: Compressor;
   retriever?: Retriever;
   reranker?: Reranker;
+
+  /**
+   * Optional license gate. When present, managed features (semantic cache,
+   * long-context compression, …) are only enabled if the gate grants them —
+   * otherwise the request degrades gracefully to the free/local tier. When
+   * absent, all features are available (self-managed / development mode).
+   */
+  licenseGate?: LicenseGate;
 
   /** Per-model cost models; falls back to `defaultCostModel`. */
   costModels?: Record<string, CostModel>;

@@ -1,0 +1,29 @@
+{
+  "name": "@bivelio/license-client",
+  "version": "0.1.0",
+  "description": "Offline-verifiable license client + entitlements for BV-SALA. Proprietary — © BiVelio Inc.",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "author": "BiVelio Inc.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bivelio/protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}

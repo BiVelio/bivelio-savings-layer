@@ -51,7 +51,11 @@
   },
   "scripts": {
     "build": "tsup",
+    "build:packages": "pnpm -r --filter=./packages/* build",
+    "build:all": "pnpm run build:packages && pnpm run build",
     "typecheck": "tsc --noEmit",
+    "typecheck:packages": "pnpm -r --filter=./packages/* typecheck",
+    "typecheck:all": "pnpm run typecheck && pnpm run typecheck:packages",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
