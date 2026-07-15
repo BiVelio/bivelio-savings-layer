@@ -188,6 +188,37 @@ Timescale (analytics). IaC in `deploy/`.
 control-plane availability is about *our* billing/telemetry integrity, not the
 customer's request path.
 
+### 7.1 Incremental infra scaling — you never pre-pay for scale
+
+The €3k–12k/month figure above is the cost **at ~200k seats**, i.e. against
+~$800k/month of revenue. **You do not pay that on day one.** Infra is
+usage-proportional and revenue-proportional: you provision the next tier only
+once the current one is already paid for by existing customers. Two structural
+facts keep the early cost near zero:
+
+1. **It starts on a single small box.** At design-partner scale everything
+   (Keycloak, Postgres, the services, Qdrant, ClickHouse) co-locates in one
+   Docker-Compose stack on one Hetzner Cloud VM.
+2. **Marginal cost ≈ 0 because it's integrated into the BiVelio platform.**
+   Keycloak, Hyperswitch and Qdrant already run for the BiVelio suite. BV-SALA's
+   control-plane services are *added alongside* existing infra rather than a
+   net-new cluster — so at launch you are mostly reusing what BiVelio already
+   pays for.
+
+Free self-hosted-tier customers also cost ~nothing: they run locally and only
+hit us for lightweight license checks.
+
+| Stage | Seats (paid) | Infra shape | ~Infra cost/mo | ~Revenue/mo (@$4) | Infra as % of revenue |
+| --- | --- | --- | --- | --- | --- |
+| **0 — Design partners** | 0–100 | 1 small Cloud VM, Docker Compose, all-in-one (or reuse existing BiVelio infra) | **€10–40** | $0–400 | covered by first handful of seats |
+| **1 — Early traction** | 100–1,000 | 2–3 Cloud VMs (split DB), backups | **€50–200** | $400–4,000 | ~5% ↓ |
+| **2 — Growth** | 1k–20k | Dedicated (AX) boxes, separate Postgres/Qdrant/ClickHouse, LB, Redis | **€300–1,500** | $4k–80k | ~2–4% |
+| **3 — Scale** | 20k–200k | HA cluster, read replicas, sharded analytics | **€3k–12k** | $80k–800k | <1.5% |
+
+The rule: **the scale-cost only appears with the scale-revenue.** At every stage
+infra is a small, shrinking fraction of revenue, and the first paying customers
+already cover the box they run on.
+
 ## 8. Security, privacy, compliance
 
 - **Data minimization (headline promise):** raw prompts/completions never leave
