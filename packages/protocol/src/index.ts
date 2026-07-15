@@ -99,4 +99,57 @@ export interface LicenseValidationResponse {
   reason?: string;
 }
 
+/**
+ * Minimal structural view of the SDK's SavingsReport — just the fields metering
+ * needs. Declared here (not imported from the SDK) so protocol stays free of any
+ * dependency on the SDK, while remaining structurally compatible with it.
+ */
+export interface SavingsReportLike {
+  requestId: string;
+  model: string;
+  calls: { avoidedLlm: number; actualLlm: number };
+  tokens: {
+    baselineInput: number;
+    actualInput: number;
+    eliminatedInput: number;
+    compressedInput: number;
+    baselineOutput: number;
+    actualOutput: number;
+    providerCachedInput?: number;
+  };
+  cache: { result: string };
+  cost: { baselineEstimate: number; actual: number; netSavings: number };
+}
+
+/**
+ * Map a SavingsReport into a metering UsageRecord. Carries ONLY counts and
+ * cost — never prompts or completions — matching the data-minimization
+ * invariant of the control plane.
+ */
+export function usageRecordFromReport(
+  report: SavingsReportLike,
+  ctx: { orgId: string; seatId?: string; at: number },
+): UsageRecord {
+  return {
+    orgId: ctx.orgId,
+    ...(ctx.seatId ? { seatId: ctx.seatId } : {}),
+    requestId: report.requestId,
+    model: report.model,
+    at: ctx.at,
+    avoidedLlm: report.calls.avoidedLlm,
+    actualLlm: report.calls.actualLlm,
+    baselineInputTokens: report.tokens.baselineInput,
+    actualInputTokens: report.tokens.actualInput,
+    eliminatedInputTokens: report.tokens.eliminatedInput,
+    compressedInputTokens: report.tokens.compressedInput,
+    baselineOutputTokens: report.tokens.baselineOutput,
+    actualOutputTokens: report.tokens.actualOutput,
+    providerCachedInputTokens: report.tokens.providerCachedInput ?? 0,
+    cacheResult: report.cache.result,
+    baselineCost: report.cost.baselineEstimate,
+    actualCost: report.cost.actual,
+    netSavings: report.cost.netSavings,
+  };
+}
+
 export const PROTOCOL_VERSION = 1 as const;

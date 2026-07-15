@@ -2,3 +2,4 @@
 # Additional workspace packages live under packages/*. apps/* are prototypes.
 packages:
   - "packages/*"
+  - "services/*"
