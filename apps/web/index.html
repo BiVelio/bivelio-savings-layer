@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Verify your LLM savings with BV-SALA — paste your own data and watch real token accounting compute the savings live in your browser.">
+<meta name="robots" content="noindex">
+<title>BiVelio — Verify Your LLM Savings</title>
+<style>html{-webkit-text-size-adjust:100%}img{max-width:100%}</style>
+<style>
+  :root {
+    --bg: #F3F5F1;
+    --surface: #FFFFFF;
+    --surface-2: #ECEFE9;
+    --ink: #0F1A14;
+    --muted: #566A5E;
+    --line: #DBE2D9;
+    --accent: #0B8F63;
+    --accent-soft: rgba(11,143,99,0.12);
+    --baseline: #8A94A2;
+    --baseline-soft: rgba(138,148,162,0.16);
+    --warn: #C0553C;
+    --shadow: 0 1px 2px rgba(15,26,20,.05), 0 12px 32px -18px rgba(15,26,20,.18);
+    --radius: 14px;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0B120E;
+      --surface: #111B15;
+      --surface-2: #16221B;
+      --ink: #E9F1EB;
+      --muted: #92A69A;
+      --line: #21301F;
+      --accent: #2FD6A2;
+      --accent-soft: rgba(47,214,162,0.14);
+      --baseline: #69747F;
+      --baseline-soft: rgba(105,116,127,0.20);
+      --warn: #E77E62;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 20px 44px -22px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F3F5F1; --surface: #FFFFFF; --surface-2: #ECEFE9; --ink: #0F1A14;
+    --muted: #566A5E; --line: #DBE2D9; --accent: #0B8F63; --accent-soft: rgba(11,143,99,0.12);
+    --baseline: #8A94A2; --baseline-soft: rgba(138,148,162,0.16); --warn: #C0553C;
+    --shadow: 0 1px 2px rgba(15,26,20,.05), 0 12px 32px -18px rgba(15,26,20,.18);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B120E; --surface: #111B15; --surface-2: #16221B; --ink: #E9F1EB;
+    --muted: #92A69A; --line: #21301F; --accent: #2FD6A2; --accent-soft: rgba(47,214,162,0.14);
+    --baseline: #69747F; --baseline-soft: rgba(105,116,127,0.20); --warn: #E77E62;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 20px 44px -22px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.6;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+
+  /* ---- header ---- */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 720; letter-spacing: -.02em; font-size: 1.08rem; }
+  .brand .dot { width: 11px; height: 11px; border-radius: 3px; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .brand small { color: var(--muted); font-weight: 500; letter-spacing: .04em; font-size: .72rem; text-transform: uppercase; }
+  .nav-actions { display: flex; align-items: center; gap: 14px; }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 999px; padding: 7px 12px; font-size: .8rem; font-family: var(--sans);
+  }
+  .toggle:hover { color: var(--ink); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    padding: 11px 18px; font-weight: 640; font-size: .92rem; font-family: var(--sans);
+    text-decoration: none; transition: transform .12s ease, filter .12s ease;
+  }
+  :root[data-theme="dark"] .btn { color: #06231a; }
+  @media (prefers-color-scheme: dark) { .btn { color: #06231a; } }
+  .btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+  /* ---- hero ---- */
+  .hero { padding: 68px 0 34px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: .15em; font-size: .72rem; font-weight: 640; color: var(--accent); margin-bottom: 20px; }
+  .eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--accent); display: inline-block; }
+  h1 { font-size: clamp(2.3rem, 5.2vw, 3.7rem); line-height: 1.02; letter-spacing: -.035em; font-weight: 780; margin: 0 0 20px; text-wrap: balance; }
+  h1 .u { color: var(--accent); }
+  .lede { font-size: 1.12rem; color: var(--muted); max-width: 46ch; margin: 0 0 28px; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .hero-note { font-size: .82rem; color: var(--muted); margin-top: 16px; display: flex; align-items: center; gap: 7px; }
+  .hero-note .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 var(--accent-soft); animation: pulse 2.4s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--accent-soft);} 70%{box-shadow:0 0 0 10px transparent;} 100%{box-shadow:0 0 0 0 transparent;} }
+  @media (prefers-reduced-motion: reduce) { .hero-note .pulse { animation: none; } }
+
+  /* ---- cascade card in hero ---- */
+  .cascade { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .cascade-h { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .cascade-h .t { font-weight: 680; font-size: .95rem; }
+  .cascade-h .k { font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+  .step { display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: none; }
+  .step .n { font-family: var(--mono); font-size: .72rem; color: var(--muted); width: 20px; }
+  .step .s { flex: 1; font-size: .9rem; font-weight: 560; }
+  .step .s span { display: block; color: var(--muted); font-weight: 440; font-size: .78rem; }
+  .step .tag { font-family: var(--mono); font-size: .68rem; padding: 3px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  .step .tag.grey { background: var(--baseline-soft); color: var(--muted); }
+
+  /* ---- section ---- */
+  section { padding: 40px 0; }
+  .sec-head { max-width: 60ch; margin-bottom: 26px; }
+  .sec-head h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -.025em; margin: 8px 0 10px; font-weight: 720; text-wrap: balance; }
+  .sec-head p { color: var(--muted); margin: 0; }
+
+  /* ---- instrument (verifier) ---- */
+  .instrument { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+  .panel-h { padding: 16px 20px 14px; border-bottom: 1px solid var(--line); }
+  .panel-h .lbl { text-transform: uppercase; letter-spacing: .13em; font-size: .68rem; color: var(--accent); font-weight: 680; }
+  .panel-h h3 { margin: 6px 0 2px; font-size: 1.12rem; letter-spacing: -.02em; }
+  .panel-h p { margin: 0; color: var(--muted); font-size: .82rem; }
+  .panel-b { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+
+  .samples { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { cursor: pointer; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); border-radius: 8px; padding: 6px 10px; font-size: .76rem; font-family: var(--sans); }
+  .chip:hover { color: var(--ink); border-color: var(--accent); }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+  textarea {
+    width: 100%; min-height: 132px; resize: vertical; font-family: var(--mono); font-size: .78rem;
+    line-height: 1.5; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px 13px; tab-size: 2;
+  }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .err { color: var(--warn); font-size: .78rem; font-family: var(--mono); min-height: 1em; }
+
+  .readout { display: flex; flex-direction: column; gap: 11px; }
+  .fmt-row { display: grid; grid-template-columns: 90px 1fr 78px; align-items: center; gap: 12px; }
+  .fmt-name { font-family: var(--mono); font-size: .78rem; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .fmt-name.win { color: var(--accent); font-weight: 600; }
+  .track { height: 12px; border-radius: 6px; background: var(--baseline-soft); overflow: hidden; }
+  .fill { height: 100%; border-radius: 6px; background: var(--baseline); transition: width .5s cubic-bezier(.22,.61,.36,1); }
+  .fill.win { background: var(--accent); }
+  .fmt-tok { font-family: var(--mono); font-size: .82rem; text-align: right; font-variant-numeric: tabular-nums; }
+  .verdict { margin-top: 2px; padding: 13px 15px; border-radius: 10px; background: var(--accent-soft); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .verdict .big { font-family: var(--mono); font-size: 1.7rem; font-weight: 640; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .verdict .cap { font-size: .78rem; color: var(--muted); }
+  .verdict .cap b { color: var(--ink); font-weight: 620; }
+
+  /* ---- projector ---- */
+  .field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px 14px; }
+  .field label { font-size: .82rem; color: var(--muted); }
+  .field .val { font-family: var(--mono); font-size: .82rem; font-variant-numeric: tabular-nums; color: var(--ink); min-width: 84px; text-align: right; }
+  input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); height: 4px; }
+  input[type="number"] { font-family: var(--mono); font-size: .82rem; width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font-variant-numeric: tabular-nums; }
+  input[type="number"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+  .grid2 .cell label { display: block; font-size: .74rem; color: var(--muted); margin-bottom: 5px; }
+
+  .result { margin-top: auto; border-top: 1px dashed var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .costbars { display: flex; flex-direction: column; gap: 9px; }
+  .costbar { display: grid; grid-template-columns: 68px 1fr 96px; align-items: center; gap: 12px; }
+  .costbar .cl { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .costbar .amt { font-family: var(--mono); font-size: .84rem; text-align: right; font-variant-numeric: tabular-nums; }
+  .saved-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .saved-line .money { font-family: var(--mono); font-size: 2.2rem; font-weight: 680; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -.03em; line-height: 1; }
+  .saved-line .sub { font-size: .82rem; color: var(--muted); }
+  .roi { font-size: .82rem; color: var(--muted); }
+  .roi b { color: var(--ink); }
+
+  /* ---- ledgers ---- */
+  .ledgers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .ledger { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+  .ledger .idx { font-family: var(--mono); font-size: .7rem; color: var(--accent); }
+  .ledger h4 { margin: 8px 0 6px; font-size: .96rem; letter-spacing: -.01em; }
+  .ledger p { margin: 0; font-size: .82rem; color: var(--muted); }
+
+  /* ---- pricing / trust ---- */
+  .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: stretch; }
+  .price-card { background: var(--ink); color: var(--bg); border-radius: 18px; padding: 30px; display: flex; flex-direction: column; gap: 14px; }
+  :root[data-theme="dark"] .price-card { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  @media (prefers-color-scheme: dark) { .price-card { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); } }
+  .price-card .amt { font-family: var(--mono); font-size: 3rem; font-weight: 700; letter-spacing: -.03em; }
+  .price-card .amt small { font-size: 1rem; opacity: .7; font-weight: 500; }
+  .price-card ul { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 9px; font-size: .9rem; }
+  .price-card li { display: flex; gap: 10px; align-items: flex-start; opacity: .92; }
+  .price-card li::before { content: "→"; color: var(--accent); }
+  .trust { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 30px; box-shadow: var(--shadow); }
+  .trust h3 { margin: 0 0 8px; letter-spacing: -.02em; }
+  .trust ul { padding-left: 0; list-style: none; margin: 16px 0 0; display: flex; flex-direction: column; gap: 12px; }
+  .trust li { font-size: .88rem; color: var(--muted); padding-left: 26px; position: relative; }
+  .trust li b { color: var(--ink); font-weight: 620; }
+  .trust li::before { content: ""; position: absolute; left: 0; top: 7px; width: 12px; height: 12px; border-radius: 3px; background: var(--accent-soft); border: 1px solid var(--accent); }
+
+  /* ---- integrate (code) ---- */
+  .code { background: var(--ink); color: #d7e6dd; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font-family: var(--mono); font-size: .8rem; line-height: 1.65; box-shadow: var(--shadow); }
+  :root[data-theme="dark"] .code { background: #0a120d; border: 1px solid var(--line); }
+  @media (prefers-color-scheme: dark) { .code { background: #0a120d; border: 1px solid var(--line); } }
+  .code .c { color: #6f8f7e; }
+  .code .k { color: var(--accent); }
+  .code .s { color: #e0b878; }
+
+  footer { border-top: 1px solid var(--line); padding: 26px 0 40px; margin-top: 30px; color: var(--muted); font-size: .8rem; }
+  footer .fl { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; gap: 34px; padding-top: 44px; }
+    .instrument { grid-template-columns: 1fr; }
+    .ledgers { grid-template-columns: 1fr 1fr; }
+    .split { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .ledgers { grid-template-columns: 1fr; }
+    .bar { height: 56px; }
+    .brand small { display: none; }
+  }
+</style>
+</head>
+<!--
+  ============================================================================
+  BV-SALA PRODUCT WEB — ISOLATED PROTOTYPE
+  ----------------------------------------------------------------------------
+  This file belongs to the bivelio-savings-layer repository ONLY.
+  It is the marketing/verifier prototype for the BV-SALA product.
+
+  IT IS *NOT* the official bivelio.com corporate website. The official site
+  lives in a SEPARATE repository and MUST NEVER be edited, deployed over, or
+  replaced from here. Do not add any deployment config that targets the
+  bivelio.com production domain from this repo.
+  © 2026 BiVelio Inc. — Proprietary & confidential.
+  ============================================================================
+-->
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="brand"><span class="dot"></span> BiVelio <small>Savings Layer · BV‑SALA</small></div>
+    <div class="nav-actions">
+      <button class="toggle" id="themeToggle" aria-label="Switch theme"><span id="themeIcon">◐</span> <span id="themeLabel">Theme</span></button>
+      <a class="btn" href="#verify">Verify your savings</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <span class="eyebrow">The LLM cost layer anyone can run</span>
+      <h1>Prove the savings on <span class="u">your own data.</span></h1>
+      <p class="lede">BV‑SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Don't take our word for it — paste your data below and watch the meter move.</p>
+      <div class="hero-cta">
+        <a class="btn" href="#verify">Run the verifier</a>
+        <a class="btn ghost" href="#pricing">See pricing</a>
+      </div>
+      <div class="hero-note"><span class="pulse"></span> Runs entirely in your browser. No signup, nothing leaves this page.</div>
+    </div>
+
+    <div class="cascade" aria-label="Optimization cascade">
+      <div class="cascade-h"><span class="t">Cheapest execution wins</span><span class="k">per request</span></div>
+      <div class="step"><span class="n">01</span><span class="s">Avoid the call entirely<span>resolvers · exact &amp; semantic cache</span></span><span class="tag">0 calls</span></div>
+      <div class="step"><span class="n">02</span><span class="s">Avoid retrieval &amp; tools<span>route: none / single / multi / tool</span></span><span class="tag">fewer calls</span></div>
+      <div class="step"><span class="n">03</span><span class="s">Eliminate needless context<span>dedupe · rerank · adaptive‑k</span></span><span class="tag grey">−tokens</span></div>
+      <div class="step"><span class="n">04</span><span class="s">Compress what remains<span>JSON / TOON / CSV · net‑positive only</span></span><span class="tag grey">−tokens</span></div>
+      <div class="step"><span class="n">05</span><span class="s">Constrain the output<span>schema · minimal contract</span></span><span class="tag grey">−output</span></div>
+    </div>
+  </section>
+
+  <section id="verify">
+    <div class="sec-head">
+      <span class="eyebrow">Verify, don't trust</span>
+      <h2>Two live instruments. Real numbers, computed here.</h2>
+      <p>The left panel runs the actual format selector on data you paste. The right panel projects your monthly bill. Both use the same token accounting the SDK ships with — so what you see is what you'd get.</p>
+    </div>
+
+    <div class="instrument">
+      <!-- Panel A: format verifier -->
+      <div class="panel">
+        <div class="panel-h">
+          <div class="lbl">Ledger 3 · compressed_tokens</div>
+          <h3>Encode your payload for less</h3>
+          <p>Paste any JSON. We count tokens for compact JSON, TOON and CSV and pick the cheapest — including the instruction overhead each format needs.</p>
+        </div>
+        <div class="panel-b">
+          <div class="samples" id="samples">
+            <button class="chip" data-sample="wrapped" aria-pressed="true">Wrapped table → TOON</button>
+            <button class="chip" data-sample="flat">Flat array → CSV</button>
+            <button class="chip" data-sample="config">Small config → JSON</button>
+          </div>
+          <textarea id="payload" spellcheck="false" aria-label="Your JSON payload"></textarea>
+          <div class="err" id="payloadErr"></div>
+          <div class="readout" id="readout"></div>
+          <div class="verdict">
+            <div><div class="big" id="fmtSaved">0%</div><div class="cap">smaller than JSON · chosen: <b id="fmtChosen">—</b></div></div>
+            <div class="cap" style="text-align:right" id="fmtDelta"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel B: bill projector -->
+      <div class="panel">
+        <div class="panel-h">
+          <div class="lbl">Ledgers 1+2 · avoided &amp; eliminated</div>
+          <h3>Project your monthly bill</h3>
+          <p>Enter your real traffic. The projection compounds call‑avoidance, context reduction and output restriction — the levers multiply, they don't add.</p>
+        </div>
+        <div class="panel-b">
+          <div class="grid2">
+            <div class="cell"><label>Requests / month</label><input type="number" id="reqs" value="1000000" min="0" step="10000"></div>
+            <div class="cell"><label>Avg input tokens</label><input type="number" id="inTok" value="1200" min="0" step="50"></div>
+            <div class="cell"><label>Avg output tokens</label><input type="number" id="outTok" value="250" min="0" step="10"></div>
+            <div class="cell"><label>Input $ / 1M tokens</label><input type="number" id="inP" value="0.15" min="0" step="0.01"></div>
+            <div class="cell"><label>Output $ / 1M tokens</label><input type="number" id="outP" value="0.60" min="0" step="0.01"></div>
+            <div class="cell"><label>Team seats (@ $4)</label><input type="number" id="seats" value="20" min="1" step="1"></div>
+          </div>
+
+          <div class="field">
+            <label>Requests avoidable — cache &amp; resolvers</label><span class="val" id="avoidV">25%</span>
+            <input type="range" id="avoid" min="0" max="70" value="25">
+          </div>
+          <div class="field">
+            <label>Input context eliminated + compressed</label><span class="val" id="elimV">40%</span>
+            <input type="range" id="elim" min="0" max="80" value="40">
+          </div>
+          <div class="field">
+            <label>Output reduced by constrained decoding</label><span class="val" id="outRedV">30%</span>
+            <input type="range" id="outRed" min="0" max="70" value="30">
+          </div>
+
+          <div class="result">
+            <div class="costbars">
+              <div class="costbar"><span class="cl">Baseline</span><div class="track"><div class="fill" id="baseFill" style="width:100%"></div></div><span class="amt" id="baseAmt">$0</span></div>
+              <div class="costbar"><span class="cl">BV‑SALA</span><div class="track"><div class="fill win" id="optFill" style="width:40%"></div></div><span class="amt" id="optAmt">$0</span></div>
+            </div>
+            <div class="saved-line">
+              <div><div class="money" id="savedMo">$0</div><div class="sub">saved / month · <span id="savedPct">0%</span> lower · <span id="savedYr">$0</span>/yr</div></div>
+            </div>
+            <div class="roi" id="roi"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Honest accounting</span>
+      <h2>Four separate ledgers. Never summed into one vanity number.</h2>
+      <p>A cache hit removes a whole call. TOON re‑encodes structured data. Compression drops redundant words. A provider prefix cache makes tokens cheaper without removing them. Mixing them lies to you — so we don't.</p>
+    </div>
+    <div class="ledgers">
+      <div class="ledger"><div class="idx">01</div><h4>avoided_calls</h4><p>LLM, retrieval and tool calls that never executed at all.</p></div>
+      <div class="ledger"><div class="idx">02</div><h4>eliminated_tokens</h4><p>Information dropped because it simply wasn't needed.</p></div>
+      <div class="ledger"><div class="idx">03</div><h4>compressed_tokens</h4><p>Information kept, but encoded with fewer tokens.</p></div>
+      <div class="ledger"><div class="idx">04</div><h4>provider_cached_tokens</h4><p>Still in the prompt, but billed or processed more cheaply.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Five lines to start</span>
+      <h2>Self‑host free. Your prompts never touch our servers.</h2>
+      <p>Drop the SDK in front of your provider. Every response carries a full SavingsReport you can chart — the same numbers the dashboard reads.</p>
+    </div>
+    <pre class="code"><span class="c">// your app — the data plane. LLM traffic goes straight to your provider.</span>
+<span class="k">import</span> { createSavingsLayer } <span class="k">from</span> <span class="s">"@bivelio/savings-layer"</span>;
+
+<span class="k">const</span> layer = createSavingsLayer({ provider: yourProvider });
+
+<span class="k">const</span> { data, report } = <span class="k">await</span> layer.generate({
+  model: <span class="s">"openai/gpt-4o-mini"</span>,
+  messages,
+  response: { contractId: <span class="s">"answer:v1"</span>, schema, maxOutputTokens: <span class="s">220</span> },
+});
+
+report.cost.netSavings;   <span class="c">// → 0.59  (verified, per request)</span>
+report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for</span></pre>
+  </section>
+
+  <section id="pricing">
+    <div class="sec-head">
+      <span class="eyebrow">Priced to be a no‑brainer</span>
+      <h2>Pennies to run. Multiples to save.</h2>
+      <p>Free, capped, self‑hosted forever. Unlock the managed brain — semantic cache, learned thresholds, dashboards — per seat.</p>
+    </div>
+    <div class="split">
+      <div class="price-card">
+        <div class="amt">$4<small> / seat / month</small></div>
+        <p style="margin:0;opacity:.85">Pro · billed per active seat. Metered and value‑based plans for scale.</p>
+        <ul>
+          <li>Everything in Free, uncapped</li>
+          <li>Managed semantic cache &amp; learned thresholds</li>
+          <li>Savings dashboards &amp; team analytics</li>
+          <li>EU data residency · your prompts stay on your infra</li>
+        </ul>
+        <a class="btn" href="#verify" style="align-self:flex-start;margin-top:6px">Start free →</a>
+      </div>
+      <div class="trust">
+        <h3>Why the price can be this low</h3>
+        <ul>
+          <li><b>We move no tokens.</b> Your LLM traffic flows straight to your provider — we only see counts, never content.</li>
+          <li><b>You self‑host the heavy part.</b> The optimizer runs in your process; our servers just license, learn and report.</li>
+          <li><b>Infra scales with revenue.</b> It starts on one small box and only grows once paying customers cover the next tier.</li>
+          <li><b>The report is the meter.</b> Billing reads the same SavingsReport you verify above — no black box.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap fl">
+    <span>BV‑SALA — provider‑neutral LLM execution optimizer.</span>
+    <span>© 2026 BiVelio Inc. · Proprietary &amp; confidential. All rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- theme ---------- */
+  var root = document.documentElement;
+  var icon = document.getElementById("themeIcon");
+  var label = document.getElementById("themeLabel");
+  function apply(t) {
+    root.setAttribute("data-theme", t);
+    icon.textContent = t === "dark" ? "☾" : "☀";
+    label.textContent = t === "dark" ? "Dark" : "Light";
+  }
+  var startDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  apply(startDark ? "dark" : "light");
+  document.getElementById("themeToggle").addEventListener("click", function () {
+    apply(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- token estimator (port of the SDK heuristic) ---------- */
+  function countTokens(text) {
+    if (!text) return 0;
+    var segs = text.match(/[A-Za-z]+|\d+|\s+|[^\sA-Za-z\d]/g) || [];
+    var t = 0;
+    for (var i = 0; i < segs.length; i++) {
+      var s = segs[i], f = s[0];
+      if (/\s/.test(f)) { var nl = (s.match(/\n/g) || []).length; t += nl + Math.floor(Math.max(0, s.length - 1) / 2); }
+      else if (/[A-Za-z]/.test(f)) { t += Math.max(1, Math.ceil(s.length / 4)); }
+      else if (/\d/.test(f)) { t += Math.max(1, Math.ceil(s.length / 2)); }
+      else t += 1;
+    }
+    return Math.max(t, Math.ceil(text.length / 4));
+  }
+
+  /* ---------- format encoders (ports of the SDK) ---------- */
+  function isScalar(v){ return v===null||typeof v==="string"||typeof v==="number"||typeof v==="boolean"; }
+  function isObj(v){ return typeof v==="object"&&v!==null&&!Array.isArray(v); }
+  function uniformColumns(arr){
+    if(!arr.length) return null;
+    if(!isObj(arr[0])) return null;
+    var cols=Object.keys(arr[0]); if(!cols.length) return null;
+    var sig=cols.slice().sort().join(" ");
+    for(var i=0;i<arr.length;i++){
+      var el=arr[i]; if(!isObj(el)) return null;
+      var ks=Object.keys(el); if(ks.slice().sort().join(" ")!==sig) return null;
+      for(var j=0;j<ks.length;j++){ if(!isScalar(el[ks[j]])) return null; }
+    }
+    return cols;
+  }
+  function esc(v,d){
+    if(v===null||v===undefined) return "null";
+    if(typeof v==="number") return isFinite(v)?String(v):"null";
+    if(typeof v==="boolean") return v?"true":"false";
+    var s=String(v);
+    var q = s===""||s.indexOf(d)>=0||s.indexOf("\n")>=0||s.indexOf('"')>=0||s!==s.trim()||/^(true|false|null)$/.test(s)||/^-?\d/.test(s);
+    return q?('"'+s.replace(/"/g,'""')+'"'):s;
+  }
+  function key(k){ return /^[A-Za-z_][A-Za-z0-9_]*$/.test(k)?k:('"'+k.replace(/"/g,'""')+'"'); }
+  function encodeToon(value){ var lines=[]; node(null,value,0,lines); return lines.join("\n"); }
+  function node(k,v,depth,lines){
+    var pad="  ".repeat(depth), d=",";
+    if(Array.isArray(v)){ arr(k===null?"":key(k),v,depth,lines); return; }
+    if(isObj(v)){ if(k!==null) lines.push(pad+key(k)+":"); var cd=k===null?depth:depth+1;
+      var ks=Object.keys(v); for(var i=0;i<ks.length;i++) node(ks[i],v[ks[i]],cd,lines); return; }
+    lines.push(pad+(k===null?"":key(k))+": "+esc(v,d));
+  }
+  function arr(head,a,depth,lines){
+    var pad="  ".repeat(depth), d=",";
+    if(!a.length){ lines.push(pad+head+"[0]:"); return; }
+    if(a.every(isScalar)){ lines.push(pad+head+"["+a.length+"]: "+a.map(function(x){return esc(x,d);}).join(d)); return; }
+    var cols=uniformColumns(a);
+    if(cols){ lines.push(pad+head+"["+a.length+"]{"+cols.join(d)+"}:"); var rp="  ".repeat(depth+1);
+      for(var i=0;i<a.length;i++){ var o=a[i]; lines.push(rp+cols.map(function(c){return esc(o[c],d);}).join(d)); } return; }
+    lines.push(pad+head+"["+a.length+"]:");
+    var ip="  ".repeat(depth+1);
+    for(var j=0;j<a.length;j++){ var el=a[j];
+      if(isScalar(el)){ lines.push(ip+"- "+esc(el,d)); }
+      else { var sub=[]; node(null,el,0,sub); lines.push(ip+"- "+(sub[0]||"")); for(var m=1;m<sub.length;m++) lines.push(ip+"  "+sub[m]); }
+    }
+  }
+  function toCsv(a){
+    var cols=uniformColumns(a); if(!cols) return null;
+    function cell(v){ if(v===null||v===undefined) return ""; var s=String(v); return /[",\n]/.test(s)?('"'+s.replace(/"/g,'""')+'"'):s; }
+    var out=[cols.map(cell).join(",")];
+    for(var i=0;i<a.length;i++){ out.push(cols.map(function(c){return cell(a[i][c]);}).join(",")); }
+    return out.join("\n");
+  }
+  var TOON_INSTR = "Data is TOON: `key[N]{c1,c2}:` declares an N-row table with columns c1,c2; each following indented line is one row of delimiter-separated values. `key[N]: a,b` is an inline list. Quoted values use CSV-style escaping.";
+  var CSV_INSTR = "Data is CSV: first line is the header row; each subsequent line is one record.";
+  var MIN_ABS = 64, MIN_REL = 0.08;
+
+  function selectFormat(payload) {
+    var cands = [];
+    cands.push({ fmt: "json-compact", tokens: countTokens(JSON.stringify(payload)) });
+    cands.push({ fmt: "toon", tokens: countTokens(encodeToon(payload)) + countTokens(TOON_INSTR) });
+    if (Array.isArray(payload)) {
+      var csv = toCsv(payload);
+      if (csv !== null) cands.push({ fmt: "csv", tokens: countTokens(csv) + countTokens(CSV_INSTR) });
+    }
+    var json = cands[0];
+    var best = json, reasonWin = false;
+    for (var i = 1; i < cands.length; i++) {
+      var c = cands[i], abs = json.tokens - c.tokens, rel = json.tokens ? abs / json.tokens : 0;
+      if (abs >= MIN_ABS && rel >= MIN_REL && c.tokens < best.tokens) { best = c; reasonWin = true; }
+    }
+    return { cands: cands, chosen: best.fmt, json: json, best: best, switched: reasonWin };
+  }
+
+  /* ---------- number animation ---------- */
+  function animate(el, to, fmt) {
+    var from = parseFloat(el.getAttribute("data-v") || "0");
+    if (reduce || Math.abs(to - from) < 0.0001) { el.setAttribute("data-v", to); el.textContent = fmt(to); return; }
+    var start = null, dur = 420;
+    function frame(ts) {
+      if (start === null) start = ts;
+      var p = Math.min(1, (ts - start) / dur), e = 1 - Math.pow(1 - p, 3), v = from + (to - from) * e;
+      el.textContent = fmt(v);
+      if (p < 1) requestAnimationFrame(frame); else { el.setAttribute("data-v", to); el.textContent = fmt(to); }
+    }
+    requestAnimationFrame(frame);
+  }
+  var pct = function (v) { return (v >= 0 ? "" : "−") + Math.abs(v).toFixed(0) + "%"; };
+  function money(v) {
+    var a = Math.abs(v);
+    if (a >= 1e6) return "$" + (v / 1e6).toFixed(2).replace(/\.00$/, "") + "M";
+    if (a >= 1e3) return "$" + (v / 1e3).toFixed(1).replace(/\.0$/, "") + "k";
+    return "$" + v.toFixed(0);
+  }
+
+  /* ---------- panel A: format verifier ---------- */
+  var samples = {
+    wrapped: { users: Array.from({ length: 30 }, function (_, i) {
+      return { id: 1000 + i, name: "user_" + i, role: i % 3 === 0 ? "admin" : "member", plan: i % 2 ? "pro" : "free", active: i % 4 !== 0 };
+    }) },
+    flat: Array.from({ length: 30 }, function (_, i) {
+      return { sku: "SKU-" + (i + 1), name: "Widget " + (i + 1), price: (9.99 + i).toFixed(2), stock: (i * 7) % 100 };
+    }),
+    config: { service: "billing", region: "eu-central", retries: 3, flags: { beta: true, audit: { enabled: true, level: "info" } } }
+  };
+  var payloadEl = document.getElementById("payload");
+  var errEl = document.getElementById("payloadErr");
+  var readoutEl = document.getElementById("readout");
+  var maxTok = 1;
+
+  function renderFormat() {
+    var text = payloadEl.value;
+    var parsed;
+    try { parsed = JSON.parse(text); errEl.textContent = ""; }
+    catch (e) { errEl.textContent = "Waiting for valid JSON… " + e.message; return; }
+
+    var r = selectFormat(parsed);
+    maxTok = Math.max.apply(null, r.cands.map(function (c) { return c.tokens; }));
+    var names = { "json-compact": "JSON", "toon": "TOON", "csv": "CSV" };
+
+    readoutEl.innerHTML = "";
+    r.cands.forEach(function (c) {
+      var win = c.fmt === r.chosen && r.switched;
+      var row = document.createElement("div");
+      row.className = "fmt-row";
+      row.innerHTML =
+        '<div class="fmt-name ' + (win ? "win" : "") + '">' + names[c.fmt] + (win ? " ●" : "") + '</div>' +
+        '<div class="track"><div class="fill ' + (win ? "win" : "") + '" style="width:' + (100 * c.tokens / maxTok).toFixed(1) + '%"></div></div>' +
+        '<div class="fmt-tok">' + c.tokens.toLocaleString() + '</div>';
+      readoutEl.appendChild(row);
+    });
+
+    var abs = r.json.tokens - r.best.tokens;
+    var relPct = r.json.tokens ? (abs / r.json.tokens) * 100 : 0;
+    animate(document.getElementById("fmtSaved"), r.switched ? relPct : 0, pct);
+    document.getElementById("fmtChosen").textContent = names[r.chosen];
+    document.getElementById("fmtDelta").innerHTML = r.switched
+      ? (abs.toLocaleString() + " tokens saved<br>on every send of this payload")
+      : "JSON already wins here.<br>The selector never makes it worse.";
+  }
+
+  document.getElementById("samples").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-sample]"); if (!b) return;
+    Array.prototype.forEach.call(this.querySelectorAll(".chip"), function (c) { c.setAttribute("aria-pressed", "false"); });
+    b.setAttribute("aria-pressed", "true");
+    payloadEl.value = JSON.stringify(samples[b.getAttribute("data-sample")], null, 2);
+    renderFormat();
+  });
+  payloadEl.addEventListener("input", renderFormat);
+
+  /* ---------- panel B: bill projector ---------- */
+  var ids = ["reqs", "inTok", "outTok", "inP", "outP", "seats", "avoid", "elim", "outRed"];
+  function num(id) { return parseFloat(document.getElementById(id).value) || 0; }
+  function project() {
+    var reqs = num("reqs"), inTok = num("inTok"), outTok = num("outTok"), inP = num("inP"), outP = num("outP"), seats = num("seats");
+    var avoid = num("avoid") / 100, elim = num("elim") / 100, outRed = num("outRed") / 100;
+    document.getElementById("avoidV").textContent = num("avoid") + "%";
+    document.getElementById("elimV").textContent = num("elim") + "%";
+    document.getElementById("outRedV").textContent = num("outRed") + "%";
+
+    var baseIn = reqs * inTok, baseOut = reqs * outTok;
+    var baseline = baseIn / 1e6 * inP + baseOut / 1e6 * outP;
+    var served = reqs * (1 - avoid);
+    var optIn = served * inTok * (1 - elim), optOut = served * outTok * (1 - outRed);
+    var optimized = optIn / 1e6 * inP + optOut / 1e6 * outP;
+    var saved = baseline - optimized, relPct = baseline ? (saved / baseline) * 100 : 0;
+
+    var w = baseline > 0 ? Math.max(2, 100 * optimized / baseline) : 100;
+    document.getElementById("optFill").style.width = w.toFixed(1) + "%";
+    animate(document.getElementById("baseAmt"), baseline, money);
+    animate(document.getElementById("optAmt"), optimized, money);
+    animate(document.getElementById("savedMo"), saved, money);
+    animate(document.getElementById("savedPct"), relPct, pct);
+    animate(document.getElementById("savedYr"), saved * 12, money);
+
+    var seatCost = seats * 4;
+    var multiple = seatCost > 0 ? saved / seatCost : 0;
+    document.getElementById("roi").innerHTML = saved > 0
+      ? ("For <b>" + money(seatCost) + "/mo</b> in seats you keep <b>" + money(saved) + "/mo</b> — that's <b>" + (multiple >= 100 ? "100+" : multiple.toFixed(0)) + "×</b> back on what you spend.")
+      : "Adjust the levers to see the projection.";
+  }
+  ids.forEach(function (id) { document.getElementById(id).addEventListener("input", project); });
+
+  /* ---------- init ---------- */
+  payloadEl.value = JSON.stringify(samples.wrapped, null, 2);
+  renderFormat();
+  project();
+})();
+</script>
+</body>
+</html>

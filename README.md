@@ -140,6 +140,18 @@ pnpm example:serialization
 pnpm example:handoff
 ```
 
+## Repository boundaries (important)
+
+This repo is **deliberately separate** from the official `bivelio.com` corporate
+website, which lives in its **own repository**. The product web prototype under
+[`apps/web`](./apps/web) is the **BV-SALA product/verifier surface only** — it
+must **never** edit, overwrite, deploy over, or share DNS/pipelines with the
+official site. See [`apps/web/README.md`](./apps/web/README.md).
+
+```bash
+pnpm web:dev   # preview the product web prototype at http://localhost:4321 (local only)
+```
+
 ## Status
 
 v0.1 implements Phase 0–2 of the roadmap end-to-end (measurement/baseline,
