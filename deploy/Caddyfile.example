@@ -1,0 +1,39 @@
+# BV-SALA reverse proxy (Hetzner) — EXAMPLE / TEMPLATE
+# ============================================================================
+# Routes the PRODUCT subdomains of bivelio.com to the BV-SALA containers, with
+# automatic Let's Encrypt TLS. Copy to `Caddyfile`, set real upstreams, deploy.
+#
+# The corporate apex (bivelio.com / www.bivelio.com) is DELIBERATELY ABSENT.
+# It stays on the official corporate site's own host and repo — never proxied,
+# replaced, or served from here. Do not add the apex to this file.
+# © 2026 BiVelio Inc. — Proprietary & confidential.
+# ============================================================================
+
+# Product marketing + savings verifier (apps/web)
+savings.bivelio.com {
+	encode zstd gzip
+	reverse_proxy web:3000
+}
+
+# Customer dashboard (apps/dashboard — CP-1)
+app.bivelio.com {
+	encode zstd gzip
+	reverse_proxy dashboard:3000
+}
+
+# Identity — Keycloak (SSO / orgs)
+id.bivelio.com {
+	reverse_proxy keycloak:8080
+}
+
+# Control plane API — licensing + metering, path-routed under one host
+api.bivelio.com {
+	encode zstd gzip
+	handle_path /licensing/* {
+		reverse_proxy licensing:8081
+	}
+	handle_path /metering/* {
+		reverse_proxy metering:8082
+	}
+	respond "BV-SALA control plane" 200
+}

@@ -1,0 +1,61 @@
+# BV-SALA control plane + product web (Hetzner) — EXAMPLE / TEMPLATE
+# ============================================================================
+# A single-host starting point (Docker Compose) for the BV-SALA product surface.
+# It reuses the BiVelio platform stack (Keycloak, Postgres, Qdrant). Scale each
+# piece out as revenue grows (see docs/COMMERCIALIZATION-PLAN.md §7.1).
+#
+# This deploys the PRODUCT ONLY. The official bivelio.com corporate site is a
+# separate repo on its own host and is NOT part of this compose file.
+# © 2026 BiVelio Inc. — Proprietary & confidential.
+# ============================================================================
+services:
+  proxy:
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [web, licensing, metering, keycloak]
+
+  web: # apps/web (savings.bivelio.com)
+    build: { context: .., dockerfile: deploy/web.Dockerfile }
+    environment: { PORT: "3000" }
+
+  licensing: # services/licensing (api.bivelio.com/licensing/*)
+    build: { context: .., dockerfile: deploy/licensing.Dockerfile }
+    environment:
+      PORT: "8081"
+      ADMIN_TOKEN: ${LICENSING_ADMIN_TOKEN}
+      LICENSE_PRIVATE_KEY: ${LICENSE_PRIVATE_KEY}
+      LICENSE_PUBLIC_KEY: ${LICENSE_PUBLIC_KEY}
+
+  metering: # services/metering (api.bivelio.com/metering/*)
+    build: { context: .., dockerfile: deploy/metering.Dockerfile }
+    environment:
+      PORT: "8082"
+      INGEST_TOKEN: ${METERING_INGEST_TOKEN}
+
+  keycloak: # id.bivelio.com — shared BiVelio identity
+    image: quay.io/keycloak/keycloak:latest
+    command: start
+    environment:
+      KC_DB: postgres
+      KC_HOSTNAME: id.bivelio.com
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on: [postgres]
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [pg_data:/var/lib/postgresql/data]
+
+  qdrant: # semantic cache vectors (CP-2)
+    image: qdrant/qdrant:latest
+    volumes: [qdrant_data:/qdrant/storage]
+
+volumes:
+  caddy_data:
+  pg_data:
+  qdrant_data:

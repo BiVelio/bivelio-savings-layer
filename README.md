@@ -88,7 +88,9 @@ See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full design,
 [`docs/ROADMAP.md`](./docs/ROADMAP.md) for the phased development plan, and
 [`docs/COMMERCIALIZATION-PLAN.md`](./docs/COMMERCIALIZATION-PLAN.md) for the
 master commercialization & platform-integration plan (control-plane/data-plane
-split on Hetzner, licensing, per-seat billing via Hyperswitch, dashboards).
+split on Hetzner, licensing, per-seat billing via Hyperswitch, dashboards), and
+[`docs/DEPLOYMENT-TOPOLOGY.md`](./docs/DEPLOYMENT-TOPOLOGY.md) for how the
+product hangs off `bivelio.com` as subdomains without touching the corporate site.
 
 ## What each subsystem does
 
