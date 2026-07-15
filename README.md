@@ -84,8 +84,11 @@ Request
   → SavingsReport + traces
 ```
 
-See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full design and
-[`docs/ROADMAP.md`](./docs/ROADMAP.md) for the phased development plan.
+See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full design,
+[`docs/ROADMAP.md`](./docs/ROADMAP.md) for the phased development plan, and
+[`docs/COMMERCIALIZATION-PLAN.md`](./docs/COMMERCIALIZATION-PLAN.md) for the
+master commercialization & platform-integration plan (control-plane/data-plane
+split on Hetzner, licensing, per-seat billing via Hyperswitch, dashboards).
 
 ## What each subsystem does
 
