@@ -1,0 +1,71 @@
+{
+  "name": "@bivelio/savings-layer",
+  "version": "0.1.0",
+  "description": "BV-SALA — a provider-neutral LLM execution optimizer. A decision layer in front of any LLM provider that, for every request, picks the cheapest execution that preserves required quality. Avoid the call, avoid retrieval, eliminate context, compress, constrain — with four separate ledgers of savings. Proprietary and confidential — property of BiVelio Inc.",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "author": "BiVelio Inc.",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "homepage": "https://github.com/BiVelio/bivelio-savings-layer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BiVelio/bivelio-savings-layer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BiVelio/bivelio-savings-layer/issues"
+  },
+  "keywords": [
+    "llm",
+    "gateway",
+    "cost-optimization",
+    "prompt-compression",
+    "semantic-cache",
+    "singleflight",
+    "adaptive-rag",
+    "toon",
+    "constrained-decoding",
+    "structured-output",
+    "token-accounting",
+    "bivelio"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "example:basic": "tsx examples/basic/index.ts",
+    "example:handoff": "tsx examples/multi-agent/handoff.ts",
+    "example:serialization": "tsx examples/serialization/format-selector.ts",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@10.17.1"
+}

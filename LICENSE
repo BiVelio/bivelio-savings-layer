@@ -1,0 +1,49 @@
+BiVelio Inc. — PROPRIETARY AND CONFIDENTIAL SOFTWARE LICENSE
+
+Copyright (c) 2026 BiVelio Inc. All Rights Reserved.
+
+NOTICE: This software and all associated source code, documentation, designs,
+algorithms, and materials (collectively, the "Software") are the exclusive
+property and confidential intellectual property of BiVelio Inc. ("BiVelio").
+The Software — including but not limited to the "bivelio-savings-layer" /
+"BV-SALA" execution-optimization design, its architecture, decision cascade,
+accounting model, and any derivative concepts — constitutes valuable trade
+secrets and proprietary information of BiVelio.
+
+NO LICENSE IS GRANTED. Unless a separate written agreement signed by an
+authorized officer of BiVelio expressly states otherwise, no right or license,
+by implication, estoppel or otherwise, is granted to any person or entity.
+
+The following are STRICTLY PROHIBITED without the prior, explicit, written
+authorization of BiVelio Inc.:
+
+  1. Copying, reproducing, or storing the Software, in whole or in part, on any
+     medium or system not owned and controlled by BiVelio.
+  2. Distributing, publishing, disclosing, sublicensing, selling, renting,
+     leasing, lending, or otherwise making the Software available to any third
+     party.
+  3. Modifying, adapting, translating, or creating derivative works from the
+     Software.
+  4. Reverse engineering, decompiling, or disassembling the Software, except to
+     the limited extent such restriction is prohibited by applicable law.
+  5. Removing, altering, or obscuring any proprietary, confidentiality, or
+     copyright notice contained in the Software.
+  6. Using the Software for any purpose other than a purpose expressly
+     authorized in writing by BiVelio.
+
+Access to the Software is provided on a confidential basis. Any person granted
+access must maintain the confidentiality of the Software and use it solely for
+the internal purposes authorized by BiVelio.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+BIVELIO INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Unauthorized use, reproduction, or distribution of the Software, or any portion
+of it, may result in severe civil and criminal penalties, and will be
+prosecuted to the maximum extent possible under the law.
+
+For licensing inquiries, contact: BiVelio Inc. (legal@bivelio.com)

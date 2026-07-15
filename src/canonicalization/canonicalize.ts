@@ -1,0 +1,102 @@
+import { createHash } from "node:crypto";
+import type { ChatMessage, SavingsRequest } from "../contracts/types.js";
+
+/**
+ * Canonicalization turns a raw request into a normalized, hashable form. This
+ * is what makes the exact cache safe and the singleflight key correct: two
+ * requests that mean the same thing must canonicalize identically, and two
+ * requests that differ in any way that could change the answer must not.
+ */
+export interface CanonicalRequest {
+  model: string;
+  modelFamily: string;
+  messages: ChatMessage[];
+  /** Whitespace/case-normalized text of the user-visible turns. */
+  normalizedText: string;
+  systemPromptHash: string;
+  toolsetHash: string;
+  schemaVersion: string;
+  contractId: string | null;
+  temperature: number | null;
+  seed: number | null;
+  tenantId: string;
+  authorizationScope: string;
+  locale: string;
+  knowledgeEpoch: string;
+  freshnessBucket: string;
+  safetyPolicyVersion: string;
+  tokenizer: string | undefined;
+  original: SavingsRequest;
+}
+
+const WS = /\s+/g;
+
+export function normalizeText(text: string): string {
+  return text.trim().replace(WS, " ").toLowerCase();
+}
+
+export function sha256(input: string): string {
+  return createHash("sha256").update(input).digest("hex");
+}
+
+/** Stable JSON stringify with sorted keys so hashes are order-independent. */
+export function stableStringify(value: unknown): string {
+  return JSON.stringify(sortValue(value));
+}
+
+function sortValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortValue);
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+      out[key] = sortValue((value as Record<string, unknown>)[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
+function modelFamilyOf(model: string): string {
+  // "openai/gpt-4o-mini" -> "openai/gpt-4o", "gpt-4o-mini-2024" -> "gpt-4o".
+  const noVersion = model.replace(/[-_]?\d{4,}.*$/, "");
+  return noVersion.replace(/[-_](mini|nano|small|large|latest)$/i, "");
+}
+
+export function canonicalize(request: SavingsRequest): CanonicalRequest {
+  const ctx = request.context ?? {};
+
+  const systemMessages = request.messages
+    .filter((m) => m.role === "system")
+    .map((m) => m.content)
+    .join("\n");
+
+  const conversational = request.messages
+    .filter((m) => m.role !== "system")
+    .map((m) => `${m.role}:${normalizeText(m.content)}`)
+    .join("\n");
+
+  const tools = (request.tools ?? [])
+    .map((t) => ({ id: t.id, risk: t.risk, parameters: t.parameters ?? null }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  return {
+    model: request.model,
+    modelFamily: modelFamilyOf(request.model),
+    messages: request.messages,
+    normalizedText: conversational,
+    systemPromptHash: sha256(systemMessages),
+    toolsetHash: sha256(stableStringify(tools)),
+    schemaVersion: request.response?.version ?? request.response?.contractId ?? "none",
+    contractId: request.response?.contractId ?? null,
+    temperature: request.temperature ?? null,
+    seed: request.seed ?? null,
+    tenantId: ctx.tenantId ?? "anonymous",
+    authorizationScope: ctx.authorizationScope ?? "default",
+    locale: ctx.locale ?? "und",
+    knowledgeEpoch: ctx.knowledgeEpoch ?? "none",
+    freshnessBucket: ctx.freshnessBucket ?? "any",
+    safetyPolicyVersion: ctx.safetyPolicyVersion ?? "none",
+    tokenizer: request.tokenizer,
+    original: request,
+  };
+}
