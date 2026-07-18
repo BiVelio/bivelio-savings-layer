@@ -11,3 +11,6 @@ coverage/
 *.tsbuildinfo
 benchmarks/out/
 .claude/
+
+# Vercel CLI project link (local)
+.vercel/
