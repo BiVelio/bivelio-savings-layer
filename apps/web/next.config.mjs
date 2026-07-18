@@ -9,7 +9,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self' https://auth.bivelio.com",
+  "connect-src 'self' https://rsxebsvguppssbociwiu.supabase.co https://auth.bivelio.com",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
