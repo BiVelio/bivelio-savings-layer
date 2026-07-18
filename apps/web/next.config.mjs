@@ -31,6 +31,10 @@ const nextConfig = {
   // apps/web is a standalone project (its own lockfile); trace from here, not the
   // SDK repo root — silences the multi-lockfile warning and keeps traces tight.
   outputFileTracingRoot: import.meta.dirname,
+  // Run middleware on the Node.js runtime: @supabase/ssr pulls in supabase-js →
+  // realtime-js → ws, which the Edge runtime rejects. Node middleware bundles it
+  // cleanly (this is also the Next 16 direction).
+  experimental: { nodeMiddleware: true },
   // The marketing landing stays the exact static page (byte-identical, already
   // branded + verified): serve it at "/" without a React port.
   async rewrites() {

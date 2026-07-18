@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  runtime: "nodejs",
   matcher: [
     // Run only on app routes — skip Next internals AND the static landing assets
     // (landing.html, app.js, vendor bundle, fonts, data, images).
