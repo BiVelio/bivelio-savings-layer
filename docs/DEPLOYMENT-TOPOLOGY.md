@@ -2,6 +2,13 @@
 
 > PROPRIETARY AND CONFIDENTIAL — © 2026 BiVelio Inc. All Rights Reserved.
 
+## Launch decision (2026-07-18): Vercel-first
+
+Launch on **Vercel** (same place the corporate site lives) for least maintenance;
+**Hetzner is the scale option**, adopted later only when volume makes the €-savings
+worth the ops work. The subdomain model below is identical either way — only the
+"Host" column changes. See `docs/COMMERCIALIZATION-PLAN.md` §0.
+
 ## The core idea
 
 BV-SALA is **not** hosted *inside* the official `bivelio.com` site. It hangs off
@@ -19,20 +26,41 @@ Three things make it feel like one product, not a bolt-on:
 
 ## Domain map
 
-| URL | What | Repo | Host |
+| URL | What | Repo | Host (launch → scale) |
 | --- | --- | --- | --- |
-| `bivelio.com`, `www.bivelio.com` | Official corporate site — **UNTOUCHED** | *(separate corporate repo)* | its current host (Next.js / Vercel) |
-| `savings.bivelio.com` | BV-SALA product web + savings verifier (`apps/web`) | **this repo** | Hetzner |
-| `app.bivelio.com` | Customer dashboard (savings, keys, billing, team) | this repo (`apps/dashboard`, CP-1) | Hetzner |
-| `id.bivelio.com` | Keycloak (identity / SSO / orgs) | infra | Hetzner |
-| `api.bivelio.com` | Control plane — licensing + metering (path-routed) | this repo (`services/*`) | Hetzner |
+| `bivelio.com`, `www.bivelio.com` | Official corporate site — **UNTOUCHED** | *(separate corporate repo)* | its current host (Vercel) |
+| `savings.bivelio.com` | BV-SALA product web + savings verifier + dashboard (`apps/web`) | **this repo** | Vercel → (Hetzner at scale) |
+| `savings.bivelio.com/api/*` | Product API for the browser (dashboard actions, auth callbacks) | this repo | Vercel functions |
+| `api.savings.bivelio.com` | **Machine-to-machine control-plane API** the customer SDK calls — licensing (validate/refresh) + metering (usage ingest) | this repo (`services/*`) | Vercel functions → (Hetzner at scale) |
+
+**Do you need `api.savings.bivelio.com`?** Yes — but it's a naming/organization
+choice, not extra infrastructure. The SDK running in *customers'* infra needs a
+stable, dedicated endpoint to phone home for license validation and usage
+reporting, kept separate from the browser-facing site (its own versioning, CORS,
+rate limits). Two equivalent ways to run it on Vercel:
+
+- **Simplest to start:** keep it inside the same app under
+  `savings.bivelio.com/api/*` (one Vercel project, one deploy). Point the SDK there.
+- **Cleaner for a public API:** attach `api.savings.bivelio.com` as an extra
+  domain on the same Vercel project (or a small second project) — a tidy,
+  stable host for third-party SDK integration. Recommended once external
+  customers integrate.
+
+Either way it's the **same code and the same Vercel project family** — no new
+servers. `api.bivelio.com` (platform-wide gateway) stays available for later if
+BiVelio wants one API host across all products.
 
 Optional unified URL: the corporate site can add a **rewrite** so
 `bivelio.com/savings` transparently serves `savings.bivelio.com` — a single URL
 without merging codebases. That change lives in the corporate repo; this repo
 never touches it. Subdomains are the primary, lowest-coupling approach.
 
-## Physical picture
+## Physical picture (Hetzner / scale option)
+
+> On **Vercel (launch)** there is nothing to run here — Vercel does TLS, routing,
+> and scaling automatically. You just assign the subdomains to the Vercel
+> project(s) in the dashboard and add DNS records (below). The reverse-proxy
+> picture applies only if/when you move to Hetzner at scale.
 
 ```
                         ┌──────────────────────────────┐

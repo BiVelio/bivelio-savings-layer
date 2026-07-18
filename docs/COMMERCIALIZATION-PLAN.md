@@ -9,7 +9,8 @@
 
 | Decision | Choice |
 | --- | --- |
-| **Infra** | 100% **Hetzner self-hosted**. Control-plane, dashboards and web run on BiVelio's own Hetzner infra with the existing stack: **Keycloak** (identity), **Hyperswitch** (payments), **Qdrant** (vectors), **Postgres** (system of record). EU data residency is a selling point. |
+| **Infra (launch)** | **Vercel-first.** The product web + dashboard ship on **Vercel** at `savings.bivelio.com` (same place the corporate site already lives → least maintenance, no servers to run) with a **managed Postgres** (Neon) for BV-SALA's own data. The licensing + metering services are small HTTP endpoints that also run serverless on Vercel to start. **Hetzner is the scale option**, not the launch option: move cost-sensitive/heavy pieces there once volume makes the €-savings worth the ops work. Rationale: at small scale the money gap (~$20–40/mo Vercel vs ~€5–15/mo Hetzner) is negligible, and Vercel costs far less to *maintain*; the gap only matters at scale, by which point revenue funds ops. |
+| **Identity & billing** | Reuse BiVelio's platform where already running (**Keycloak** SSO, **Hyperswitch** payments) so it's one BiVelio account + unified billing across the suite — this is what makes it a true *extension* of bivelio.com. If those aren't yet in production, launch with managed equivalents (Clerk / Stripe) and federate later. Decided at CP-1. |
 | **Billing (launch)** | **Per-seat**, e.g. `$4/user/month`. Metered-by-volume and value-based (% of savings) are upsell/enterprise tiers later. |
 | **Free / offline** | **Free self-hosted tier with a cap.** Local-only optimizations (exact cache, resolvers, format selector) work capped and offline. Semantic cache, learned thresholds, dashboards and cross-tenant optimization require a license. **No valid license → graceful degrade, never brick the customer's production.** |
 
