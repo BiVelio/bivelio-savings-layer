@@ -292,6 +292,38 @@
     .brand small { display: none; }
   }
 </style>
+<style>
+  /* ── BiVelio brand layer (matches bivelio.com): self-hosted heading font,
+     the "BiVelio." wordmark with brand-coloured dots, and the corporate footer.
+     Palette already matches (--accent = BiVelio --primary; --success = --bv-mint). */
+  @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/space-grotesk-500.woff2") format("woff2"); }
+  @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/space-grotesk-700.woff2") format("woff2"); }
+  :root { --font-heading: "Space Grotesk", var(--sans); }
+  h1, h2, .sec-head h2, .price-card .amt { font-family: var(--font-heading); }
+
+  .brand { text-decoration: none; }
+  .brand-logo { width: 26px; height: 26px; border-radius: 7px; display: block; }
+  .bv-word { font-family: var(--font-heading); font-weight: 700; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); display: inline-flex; align-items: baseline; }
+  .bv-i { position: relative; display: inline-block; }
+  .bv-i .tit { position: absolute; left: 50%; top: .36em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
+  .bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .05em; border-radius: 50%; align-self: flex-end; margin-bottom: .1em; }
+  .bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
+  .brand-sub { color: var(--muted); font-weight: 600; letter-spacing: .06em; font-size: .6rem; text-transform: uppercase; border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
+
+  .site-footer { border-top: 1px solid var(--line); background: var(--surface-2); margin-top: 44px; }
+  .site-footer .wrap { padding-top: 44px; padding-bottom: 22px; }
+  .foot-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 30px; }
+  .foot-brand .fb-mark { display: flex; align-items: center; gap: 10px; }
+  .foot-brand p { color: var(--muted); font-size: .9rem; line-height: 1.6; max-width: 36ch; margin: 14px 0 0; }
+  .foot-col h4 { font-size: .68rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 680; margin: 2px 0 14px; }
+  .foot-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 11px; }
+  .foot-col a { color: var(--muted); text-decoration: none; font-size: .9rem; transition: color .12s ease; }
+  .foot-col a:hover { color: var(--accent); }
+  .foot-trust { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: .78rem; }
+  .foot-bar { display: flex; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap; margin-top: 14px; color: var(--muted); font-size: .8rem; }
+  @media (max-width: 820px) { .foot-top { grid-template-columns: 1fr 1fr; } .foot-brand { grid-column: 1 / -1; } }
+  @media (max-width: 520px) { .foot-top { grid-template-columns: 1fr; } }
+</style>
 </head>
 <!--
   ============================================================================
@@ -310,7 +342,11 @@
 <body>
 <header>
   <div class="wrap bar">
-    <div class="brand"><span class="dot"></span> BiVelio <small>Savings Layer · BV‑SALA</small></div>
+    <a class="brand" href="#top" aria-label="BiVelio Savings Layer — home">
+      <img class="brand-logo" src="./logo-bivelio.png" alt="BiVelio" width="26" height="26">
+      <span class="bv-word" aria-label="BiVelio">B<span class="bv-i">ı<span class="tit bv-c1"></span></span>Vel<span class="bv-i">ı<span class="tit bv-c2"></span></span>o<span class="bv-period bv-c3"></span></span>
+      <span class="brand-sub">Savings Layer</span>
+    </a>
     <div class="nav-actions">
       <button class="toggle" id="themeToggle" aria-label="Switch theme"><span id="themeIcon">◐</span> <span id="themeLabel">Theme</span></button>
       <a class="btn" href="#verify">Verify your savings</a>
@@ -500,10 +536,47 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
   </section>
 </main>
 
-<footer>
-  <div class="wrap fl">
-    <span>BV‑SALA — provider‑neutral LLM execution optimizer.</span>
-    <span>© 2026 BiVelio Inc. · Proprietary &amp; confidential. All rights reserved.</span>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="fb-mark">
+          <img class="brand-logo" src="./logo-bivelio.png" alt="BiVelio" width="30" height="30" style="width:30px;height:30px">
+          <span class="bv-word" style="font-size:1.28rem" aria-label="BiVelio">B<span class="bv-i">ı<span class="tit bv-c1"></span></span>Vel<span class="bv-i">ı<span class="tit bv-c2"></span></span>o<span class="bv-period bv-c3"></span></span>
+        </div>
+        <p>The operating system for your business. This is <b>BV‑SALA</b>, BiVelio's provider‑neutral LLM cost optimizer — verify the savings yourself before you pay.</p>
+      </div>
+      <div class="foot-col">
+        <h4>BiVelio</h4>
+        <ul>
+          <li><a href="https://bivelio.com">Home</a></li>
+          <li><a href="https://bivelio.com/es/security">Security</a></li>
+          <li><a href="https://docs.bivelio.com">Documentation</a></li>
+          <li><a href="https://status.bivelio.com">Status</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Savings Layer</h4>
+        <ul>
+          <li><a href="#verify">Verify your savings</a></li>
+          <li><a href="#measured">Measured results</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="https://bivelio.com/es/privacy">Privacy</a></li>
+          <li><a href="https://bivelio.com/es/terms">Terms</a></li>
+          <li><a href="https://bivelio.com/es/gdpr">GDPR</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-trust">Enterprise security · GDPR compliant · Scalable infrastructure</div>
+    <div class="foot-bar">
+      <span>© 2026 BiVelio Inc. All rights reserved.</span>
+      <span>From Andorra to the world 🇦🇩 · Powered by BiVelio Inc · Delaware (United States).</span>
+    </div>
   </div>
 </footer>
 
