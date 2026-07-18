@@ -45,6 +45,8 @@ import { createSavingsLayer, createMockProvider } from "@bivelio/savings-layer";
 
 const layer = createSavingsLayer({
   provider: createMockProvider(), // swap for an OpenAI-compatible / self-hosted provider
+  licenseKey: process.env.BIVELIO_LICENSE_KEY, // required — get a free 14-day trial key
+                                               // at savings.bivelio.com (dashboard)
 });
 
 const { data, text, report } = await layer.generate({
@@ -57,10 +59,15 @@ console.log(report.cache.result);  // "deterministic"
 console.log(report.calls.avoidedLlm); // 1
 ```
 
-The only hard requirement is a `provider`. A heuristic tokenizer and in-memory
-implementations of every other component are wired automatically, and each one
-is independently swappable (Redis exact cache, pgvector/Qdrant semantic cache, a
-real tokenizer, an LLMLingua sidecar, XGrammar/llguidance backends, …).
+The hard requirements are a `provider` and a valid `licenseKey` — BV-SALA is a
+paid product and refuses to run unlicensed (get a free 14-day trial key from the
+[savings.bivelio.com](https://savings.bivelio.com) dashboard; the SDK verifies it
+offline, no phone-home to answer a request). For local development, CI, and
+benchmarks, pass `devUnlicensed: true` (or set `BVSALA_DEV_OPEN=1`) to run ungated.
+A heuristic tokenizer and in-memory implementations of every other component are
+wired automatically, and each one is independently swappable (Redis exact cache,
+pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua sidecar,
+XGrammar/llguidance backends, …).
 
 ## The decision cascade
 
@@ -84,13 +91,7 @@ Request
   → SavingsReport + traces
 ```
 
-See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the full design,
-[`docs/ROADMAP.md`](./docs/ROADMAP.md) for the phased development plan, and
-[`docs/COMMERCIALIZATION-PLAN.md`](./docs/COMMERCIALIZATION-PLAN.md) for the
-master commercialization & platform-integration plan (control-plane/data-plane
-split on Hetzner, licensing, per-seat billing via Hyperswitch, dashboards), and
-[`docs/DEPLOYMENT-TOPOLOGY.md`](./docs/DEPLOYMENT-TOPOLOGY.md) for how the
-product hangs off `bivelio.com` as subdomains without touching the corporate site.
+Try it and get a license key at **[savings.bivelio.com](https://savings.bivelio.com)**.
 
 ## What each subsystem does
 

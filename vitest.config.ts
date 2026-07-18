@@ -14,6 +14,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    // The suite runs "self-managed / dev-open" so pipeline tests that call
+    // generate() without a license aren't blocked by fail-closed enforcement.
+    // The license-gate test toggles this off to assert real denial.
+    env: { BVSALA_DEV_OPEN: "1" },
     include: [
       "test/**/*.test.ts",
       "packages/**/test/**/*.test.ts",

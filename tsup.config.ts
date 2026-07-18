@@ -1,17 +1,36 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "tsup";
 
+// Public verification key baked into the SDK so it can verify license tokens
+// offline. Only the PUBLIC key is embedded (safe); the private signing key lives
+// in the control plane. Missing file → empty (callers must pass licensePublicKey).
+let PUBLIC_KEY = "";
+try {
+  PUBLIC_KEY = readFileSync(
+    fileURLToPath(new URL("./keys/license.pub.pem", import.meta.url)),
+    "utf8",
+  ).trim();
+} catch {
+  PUBLIC_KEY = "";
+}
+
+const define = { __BV_SALA_PUBLIC_KEY__: JSON.stringify(PUBLIC_KEY) };
+
 export default defineConfig([
-  // 1. The distributable package (data plane SDK).
+  // 1. The distributable package (data plane SDK). Paid/closed source: no
+  //    sourcemap in the published tarball (it would ship the full source).
   {
     entry: ["src/index.ts"],
     format: ["esm"],
     target: "es2022",
     dts: true,
-    sourcemap: true,
+    sourcemap: false,
     clean: true,
     treeshake: true,
     splitting: false,
     minify: false,
+    define,
     outDir: "dist",
   },
   // 2. Browser bundle for the product web (apps/web). Same source → the
@@ -30,6 +49,7 @@ export default defineConfig([
     treeshake: true,
     splitting: false,
     minify: true,
+    define,
     outDir: "apps/web/vendor",
   },
 ]);

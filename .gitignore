@@ -14,3 +14,7 @@ benchmarks/out/
 
 # Vercel CLI project link (local)
 .vercel/
+
+# license signing private keys — never commit
+keys/*.key.pem
+keys/*.private.pem

@@ -18,6 +18,7 @@ import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
 import type { RouteDecision } from "../router/router.js";
 import type { FormatChoice } from "../serialization/format-selector.js";
+import { LicenseError } from "../license/errors.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 
@@ -34,6 +35,7 @@ export class SavingsPipeline {
   private readonly config: SavingsLayerConfig;
   private readonly now: () => number;
   private readonly generateId: () => string;
+  private licenseWarned = false;
 
   constructor(config: SavingsLayerConfig) {
     this.config = config;
@@ -43,18 +45,66 @@ export class SavingsPipeline {
   }
 
   /**
-   * Public entry point with the fail-open reliability contract: an internal
-   * optimizer error must never take down the customer's request. On any thrown
-   * error from the optimized path we fall back to a direct provider call. If the
-   * provider itself then fails, that error is genuine and propagates.
+   * Public entry point.
+   *
+   * FAIL-CLOSED LICENSING: the first thing we do is assert a valid, active
+   * license — BV-SALA is a paid product, so an unlicensed caller is refused here.
+   * `assertLicensed()` MUST run *above* the try/catch below: the reliability
+   * fallback (`failOpenDirect`) would otherwise swallow a `LicenseError` and
+   * still serve the request for free.
+   *
+   * Then the fail-open reliability contract: an internal optimizer error must
+   * never take down the customer's request, so any error from the optimized path
+   * falls back to a direct provider call. A genuine provider error propagates.
    */
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
+    this.assertLicensed();
     try {
       return await this.generateOptimized<T>(request);
     } catch (err) {
+      if (err instanceof LicenseError) throw err;
       if (this.config.failOpen === false) throw err;
       return await this.failOpenDirect<T>(request, err);
     }
+  }
+
+  /**
+   * Ungated mode: an explicit `devUnlicensed` flag or `BVSALA_DEV_OPEN=1` in the
+   * environment. For local dev, CI, benchmarks, and the free web demo only.
+   */
+  private devOpen(): boolean {
+    if (this.config.devUnlicensed === true) return true;
+    return typeof process !== "undefined" && process.env?.BVSALA_DEV_OPEN === "1";
+  }
+
+  /**
+   * Fail-closed entry gate. Throws {@link LicenseError} unless the caller is in
+   * dev-open mode or holds an active/grace license. A legacy structural gate
+   * (no `isActive()`) is treated as a self-managed deployment for back-compat.
+   */
+  private assertLicensed(): void {
+    if (this.devOpen()) return;
+    const gate = this.config.licenseGate;
+    if (gate && typeof gate.isActive === "function") {
+      if (gate.isActive()) return;
+      const st = typeof gate.status === "function" ? gate.status() : undefined;
+      throw new LicenseError(
+        `BiVelio license is not active${st ? ` (${st})` : ""}. Renew your subscription at https://savings.bivelio.com`,
+        st,
+      );
+    }
+    if (gate) {
+      if (!this.licenseWarned) {
+        this.licenseWarned = true;
+        console.warn(
+          "[bv-sala] licenseGate has no isActive(); running self-managed. Pass { licenseKey } for enforced licensing.",
+        );
+      }
+      return;
+    }
+    throw new LicenseError(
+      "No BiVelio license configured. Pass { licenseKey } from your subscription (or { devUnlicensed: true } for local dev). Get a key at https://savings.bivelio.com",
+    );
   }
 
   private async generateOptimized<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
@@ -592,11 +642,13 @@ export class SavingsPipeline {
   }
 
   /**
-   * Whether a managed feature is licensed. With no license gate configured the
-   * pipeline is ungated (self-managed / dev mode) and everything is available.
+   * Whether a managed feature is licensed. Fail-closed: with no gate the feature
+   * is denied (the entry gate already blocks fully-unlicensed callers; this is
+   * defense in depth). Dev-open mode grants everything.
    */
   private entitled(feature: string): boolean {
-    return !this.config.licenseGate || this.config.licenseGate.isEntitled(feature);
+    if (this.devOpen()) return true;
+    return !!this.config.licenseGate && this.config.licenseGate.isEntitled(feature);
   }
 
   private costModelFor(model: string): CostModel {

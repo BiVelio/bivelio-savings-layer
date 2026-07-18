@@ -115,10 +115,16 @@ export class LicenseClient {
  */
 export function createLicenseGate(client: LicenseClient): {
   isEntitled(feature: string): boolean;
+  isActive(): boolean;
+  status(): LicenseStatus;
   entitlements(): Entitlements;
 } {
   return {
     isEntitled: (feature: string) => client.isEntitled(feature as Feature),
+    // Satisfies the SDK pipeline's fail-closed entry gate: active or in-grace
+    // licenses are allowed to run; expired/invalid/revoked are refused.
+    isActive: () => client.status() === "active" || client.status() === "grace",
+    status: () => client.status(),
     entitlements: () => client.entitlements(),
   };
 }

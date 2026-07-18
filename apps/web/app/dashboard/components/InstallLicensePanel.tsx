@@ -1,5 +1,6 @@
 import type { AbArtifact, OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
+import { TrialKeyButton } from "./TrialKeyButton";
 
 const WRAP = `import { createSavingsLayer } from "@bivelio/savings-layer";
 
@@ -48,6 +49,10 @@ export function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgConte
           <br />
           <span style={{ opacity: 0.7 }}>only the prefix is stored — the full key is shown once, at creation.</span>
         </div>
+      </div>
+
+      <div style={{ marginTop: "12px" }}>
+        <TrialKeyButton />
       </div>
 
       <div className="legend">

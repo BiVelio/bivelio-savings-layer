@@ -1,0 +1,81 @@
+"use client";
+
+import { useState } from "react";
+
+import { CopyButton } from "./CopyButton";
+
+type State = "idle" | "loading" | "done" | "error";
+
+/**
+ * Self-serve trial: mints a real 14-day license key for the signed-in user and
+ * reveals it once. Paste it into `createSavingsLayer({ licenseKey })` and the SDK
+ * unlocks — the in-product proof of the paid flow.
+ */
+export function TrialKeyButton() {
+  const [state, setState] = useState<State>("idle");
+  const [token, setToken] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [msg, setMsg] = useState("");
+
+  async function getKey() {
+    setState("loading");
+    setMsg("");
+    try {
+      const res = await fetch("/api/license/trial", { method: "POST" });
+      const json = (await res.json()) as {
+        token?: string;
+        expiresAt?: string;
+        error?: string;
+      };
+      if (!res.ok || !json.token) {
+        setState("error");
+        setMsg(json.error ?? "Could not issue a trial key.");
+        return;
+      }
+      setToken(json.token);
+      setExpiresAt(json.expiresAt ?? "");
+      setState("done");
+    } catch {
+      setState("error");
+      setMsg("Network error — please try again.");
+    }
+  }
+
+  if (state === "done") {
+    return (
+      <div className="trialkey">
+        <div className="ck-note" style={{ margin: "0 0 6px" }}>
+          your 14-day trial key{expiresAt ? ` · expires ${new Date(expiresAt).toLocaleDateString()}` : ""} — shown once, copy it now
+        </div>
+        <div className="code2">
+          <span style={{ wordBreak: "break-all" }}>{token}</span>
+          <CopyButton text={token} />
+        </div>
+        <p className="ck-note" style={{ marginTop: "6px" }}>
+          Paste it into <code>createSavingsLayer({"{ licenseKey }"})</code> to unlock the SDK.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="trialkey">
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={getKey}
+        disabled={state === "loading"}
+        style={{ padding: "10px 16px" }}
+      >
+        {state === "loading" ? "Issuing…" : "Get a 14-day trial key →"}
+      </button>
+      {state === "error" ? (
+        <p className="ck-note" style={{ color: "var(--warn)", marginTop: "6px" }}>{msg}</p>
+      ) : (
+        <p className="ck-note" style={{ marginTop: "6px" }}>
+          Free to try — no card. The key unlocks the managed features in your own app.
+        </p>
+      )}
+    </div>
+  );
+}

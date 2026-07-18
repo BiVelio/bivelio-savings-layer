@@ -238,7 +238,8 @@ import {
     await new Promise(function (r) { requestAnimationFrame(function () { r(); }); });
 
     try {
-      var layer = createSavingsLayer({ provider: new MockProvider({ cachedInputTokens: 96 }) });
+      // The public web demo is the free trial surface — run ungated.
+      var layer = createSavingsLayer({ provider: new MockProvider({ cachedInputTokens: 96 }), devUnlicensed: true });
       var workload = buildWorkload();
       var a = { baselineLlm: 0, avoidedLlm: 0, baselineInput: 0, actualInput: 0, eliminatedInput: 0, eliminatedOutput: 0, compressedInput: 0, providerCachedInput: 0, baselineOutput: 0, actualOutput: 0 };
       for (var i = 0; i < workload.length; i++) {

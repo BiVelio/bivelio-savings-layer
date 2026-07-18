@@ -38,12 +38,35 @@ export interface SavingsLayerConfig {
   reranker?: Reranker;
 
   /**
-   * Optional license gate. When present, managed features (semantic cache,
-   * long-context compression, …) are only enabled if the gate grants them —
-   * otherwise the request degrades gracefully to the free/local tier. When
-   * absent, all features are available (self-managed / development mode).
+   * Signed BiVelio license token (from your paid subscription). This is the
+   * primary way to license the SDK: `createSavingsLayer` verifies it offline
+   * against the embedded public key and builds a {@link licenseGate} from it.
+   * Without a valid, active license (and without {@link devUnlicensed}), the
+   * pipeline refuses to run — get a key at https://savings.bivelio.com.
+   */
+  licenseKey?: string;
+
+  /**
+   * Override the public key used to verify {@link licenseKey} (SPKI PEM). For
+   * self-hosting and self-testing; defaults to the build-embedded BiVelio key.
+   */
+  licensePublicKey?: string;
+
+  /**
+   * Pre-built license gate. Usually you pass {@link licenseKey} instead and let
+   * the SDK construct this. Advanced/self-managed callers can inject their own
+   * gate (e.g. `@bivelio/license-client`'s `createLicenseGate()`). When both are
+   * given, `licenseGate` wins.
    */
   licenseGate?: LicenseGate;
+
+  /**
+   * Explicit escape hatch: run **ungated** (all managed features on, no license
+   * required) for local development, CI, and benchmarks. Also honored via the
+   * `BVSALA_DEV_OPEN=1` environment variable. Never set this in production — it
+   * disables the paid licensing check entirely.
+   */
+  devUnlicensed?: boolean;
 
   /** Per-model cost models; falls back to `defaultCostModel`. */
   costModels?: Record<string, CostModel>;

@@ -1,5 +1,7 @@
 import { defaultTokenizerRegistry } from "../tokenizer/registry.js";
 import type { SavingsRequest, SavingsResult } from "../contracts/types.js";
+import { gateFromKey } from "../license/gate.js";
+import { EMBEDDED_PUBLIC_KEY } from "../license/verify.js";
 import { SavingsPipeline } from "./pipeline.js";
 import type { SavingsLayerConfig } from "./config.js";
 
@@ -31,6 +33,15 @@ export function createSavingsLayer(
     ...config,
     tokenizer: config.tokenizer ?? defaultTokenizerRegistry,
   };
+  // Ergonomic path: a raw `licenseKey` string is verified offline and turned into
+  // a gate here. An explicitly-provided `licenseGate` takes precedence.
+  if (config.licenseKey && !config.licenseGate) {
+    resolved.licenseGate = gateFromKey(
+      config.licenseKey,
+      config.licensePublicKey ?? EMBEDDED_PUBLIC_KEY,
+      config.now,
+    );
+  }
   const pipeline = new SavingsPipeline(resolved);
   return {
     pipeline,

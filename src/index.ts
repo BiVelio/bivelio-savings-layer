@@ -34,4 +34,5 @@ export * from "./constraints/index.js";
 export * from "./compression/index.js";
 export * from "./providers/index.js";
 export * from "./telemetry/index.js";
+export * from "./license/index.js";
 export * from "./pipeline/index.js";
