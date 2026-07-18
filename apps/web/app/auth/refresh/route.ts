@@ -1,0 +1,25 @@
+import { NextResponse } from "next/server";
+
+import { createClient } from "@/lib/supabase/server";
+
+/**
+ * One-shot session refresh. Server Components can't persist a refreshed auth
+ * cookie (setAll is a no-op there), so when the access token has expired the
+ * page bounces here: a Route Handler CAN write cookies, so `getUser()` refreshes
+ * the token using the long-lived refresh cookie and persists it, then sends the
+ * user back. This replaces the Supabase session-refresh middleware, which can't
+ * run on this Next 15.5 setup (Edge rejects realtime/ws; Node middleware 500s).
+ */
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const next = searchParams.get("next") ?? "/dashboard";
+  // Guard against a redirect loop: only ever bounce to internal paths.
+  const dest = next.startsWith("/") ? next : "/dashboard";
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return NextResponse.redirect(new URL(user ? dest : "/login", origin));
+}

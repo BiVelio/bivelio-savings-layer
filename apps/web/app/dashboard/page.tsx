@@ -71,7 +71,11 @@ export default async function DashboardPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // No user here can mean an EXPIRED access token that this Server Component
+  // can't refresh+persist. Bounce through /auth/refresh (a Route Handler that
+  // can write cookies) — it recovers the session via the refresh cookie, or
+  // sends genuinely-signed-out users to /login. No loop: refresh → /login is terminal.
+  if (!user) redirect("/auth/refresh?next=/dashboard");
 
   const [ctx, usage] = await Promise.all([
     getOrgContext(supabase, user.id),
