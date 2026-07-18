@@ -62,6 +62,33 @@ describe("SavingsLedger — four separate accounts", () => {
     expect(ledger.eliminatedOutput).toBe(200);
   });
 
+  it("does not credit phantom output savings on a call that actually ran", () => {
+    // Ran call: output was capped at 200 but the model still generated 50 real
+    // tokens. The layer did not shrink generation, so no output saving is honest.
+    const ledger = new SavingsLedger();
+    ledger.baselineInput = 100;
+    ledger.baselineOutput = 200; // the maxOutputTokens ceiling — NOT a measured baseline
+    ledger.actualInput = 100;
+    ledger.actualOutput = 50;
+    // avoidedLlm stays 0 → this is a ran call.
+    const cost = ledger.estimateCost({ inputPer1k: 1, outputPer1k: 10 });
+    // baseline output must equal actual output (50), not the 200 ceiling:
+    // baseline = 100@1 + 50@10 = 0.6 ; actual = 100@1 + 50@10 = 0.6 → 0% output saving.
+    expect(cost.baselineEstimate).toBeCloseTo(0.6, 6);
+    expect(cost.netSavings).toBeCloseTo(0, 6);
+  });
+
+  it("still credits the whole generation as saved on an AVOIDED call", () => {
+    const ledger = new SavingsLedger();
+    ledger.avoidCall(500, 200); // cache/resolver hit: nothing ran
+    ledger.baselineInput = 500;
+    const cost = ledger.estimateCost({ inputPer1k: 1, outputPer1k: 10 });
+    // baseline = 500@1 + 200@10 = 2.5 ; actual = 0 → 100% saved.
+    expect(cost.baselineEstimate).toBeCloseTo(2.5, 6);
+    expect(cost.actual).toBeCloseTo(0, 6);
+    expect(cost.netSavings).toBeCloseTo(1, 6);
+  });
+
   it("prices provider-cached input at the discounted rate", () => {
     const ledger = new SavingsLedger();
     ledger.baselineInput = 1000;

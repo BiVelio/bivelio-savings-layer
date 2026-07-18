@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { sha256 as hashSha256 } from "../util/hash.js";
 import type { ChatMessage, SavingsRequest } from "../contracts/types.js";
 
 /**
@@ -38,7 +38,7 @@ export function normalizeText(text: string): string {
 }
 
 export function sha256(input: string): string {
-  return createHash("sha256").update(input).digest("hex");
+  return hashSha256(input);
 }
 
 /** Stable JSON stringify with sorted keys so hashes are order-independent. */

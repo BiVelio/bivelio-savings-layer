@@ -20,6 +20,15 @@ export interface OpenAICompatibleOptions {
   headers?: Record<string, string>;
   /** Injectable fetch for testing. */
   fetchImpl?: typeof fetch;
+  /**
+   * When true (recommended for measurement), a response whose `usage` block is
+   * missing or reports zero prompt/completion tokens for a call that actually
+   * ran is treated as a HARD ERROR instead of being silently coerced to
+   * 0 tokens. This closes the single most dishonest failure mode: an absent
+   * usage payload otherwise becomes `actual cost = 0` → a fabricated 100%
+   * saving. Benchmarks that make real cost claims must set this.
+   */
+  requireUsage?: boolean;
 }
 
 export class OpenAICompatibleProvider implements Provider {
@@ -51,6 +60,20 @@ export class OpenAICompatibleProvider implements Provider {
         json_schema: { name: "bvsala_contract", schema: req.schema, strict: true },
       };
     }
+    // Transmit tools in the provider-native `tools` field so their JSON schema
+    // is metered inside the real prompt_tokens. Without this the tool-selection
+    // lever's savings can never be MEASURED (dropped-tool tokens would never
+    // have been on the wire in the first place).
+    if (req.tools && req.tools.length > 0) {
+      body["tools"] = req.tools.map((t) => ({
+        type: "function",
+        function: {
+          name: t.id,
+          ...(t.description ? { description: t.description } : {}),
+          parameters: t.parameters ?? { type: "object", properties: {} },
+        },
+      }));
+    }
 
     const response = await this.fetchImpl(
       `${this.opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
@@ -73,12 +96,25 @@ export class OpenAICompatibleProvider implements Provider {
     const json = (await response.json()) as OpenAIChatResponse;
     const text = json.choices?.[0]?.message?.content ?? "";
     const usage = json.usage ?? {};
+    const inputTokens = usage.prompt_tokens ?? 0;
+    const outputTokens = usage.completion_tokens ?? 0;
+
+    // A call that returned content but no (or zero) token accounting cannot be
+    // priced honestly. Never let that become 0 tokens → a fabricated 100%
+    // saving. Fail loud when measurement is required.
+    if (this.opts.requireUsage && inputTokens <= 0 && outputTokens <= 0) {
+      throw new Error(
+        `provider returned no usage tokens (prompt=${usage.prompt_tokens ?? "absent"}, ` +
+          `completion=${usage.completion_tokens ?? "absent"}); cannot measure cost. ` +
+          `For gateways/streaming, ensure usage reporting is enabled.`,
+      );
+    }
 
     return {
       text,
       usage: {
-        inputTokens: usage.prompt_tokens ?? 0,
-        outputTokens: usage.completion_tokens ?? 0,
+        inputTokens,
+        outputTokens,
         ...(usage.prompt_tokens_details?.cached_tokens != null
           ? { cachedInputTokens: usage.prompt_tokens_details.cached_tokens }
           : {}),

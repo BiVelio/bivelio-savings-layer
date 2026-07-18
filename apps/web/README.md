@@ -15,16 +15,31 @@ redeployed, or have its domain reassigned from here. This app deploys to its
 
 ## What this is
 
-A single, self-contained `index.html` — no framework, no build step — that runs
-the real BV-SALA token accounting in the browser (format verifier + bill
-projector). Everything runs locally in the visitor's browser; **no data leaves
-the page**.
+A framework-free `index.html` that runs the **real BV-SALA optimizer** in the
+visitor's browser — not a re-implementation. The page imports
+`vendor/bv-sala.js`, a self-contained ESM bundle compiled from the exact same
+TypeScript the SDK ships (`src/`, minified, no sourcemap). So:
+
+- **Panel A (format verifier)** runs the product's real `FormatSelector` on
+  whatever JSON you paste — same token counting, same activation thresholds.
+- **Panel B (bill projector)** can run the whole execution pipeline
+  (`createSavingsLayer`) over a representative workload and set its levers from a
+  **measured** run — real cache hits, format compression, output budgets and
+  provider-cached input — then applies **your** prices to project the bill.
+
+The LLM is mocked (no keys, no network), but every optimization decision is the
+product's real logic. Everything runs locally; **no data leaves the page**.
 
 ## Run it locally
 
 ```bash
+pnpm web:build        # compile src/ → apps/web/vendor/bv-sala.js (part of `pnpm build`)
 pnpm web:dev          # → http://localhost:4321  (zero-dependency static server)
 ```
+
+`vendor/bv-sala.js` is committed so the static deploy needs no build step. Regenerate
+it with `pnpm web:build` (or `pnpm build`) whenever `src/` changes, so the verifier
+stays byte-identical to the shipped SDK.
 
 ## Deploy to Vercel (savings.bivelio.com)
 
@@ -52,9 +67,9 @@ servers. See [`docs/DEPLOYMENT-TOPOLOGY.md`](../../docs/DEPLOYMENT-TOPOLOGY.md).
 
 ## Roadmap (CP-1)
 
-This static page is the landing. CP-1 adds, in the same `savings.bivelio.com`
-project, a Next.js surface for **user registration** and the **dashboard +
-billing**, and exposes the SDK's licensing/metering endpoints as Vercel
-functions. When it becomes Next.js it will import the real
-`@bivelio/savings-layer` package (via a browser-safe entry) so the marketing
-numbers are guaranteed identical to the product's.
+This static page is the landing, and it **already imports the real
+`@bivelio/savings-layer`** (browser-safe bundle) — so the marketing numbers are
+guaranteed identical to the product's, no Next.js required. CP-1 next adds, in
+the same `savings.bivelio.com` project, a surface for **user registration** and
+the **dashboard + billing**, and exposes the SDK's licensing/metering endpoints
+as Vercel functions.

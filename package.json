@@ -65,6 +65,8 @@
     "example:serialization": "tsx examples/serialization/format-selector.ts",
     "demo": "tsx benchmarks/run.ts",
     "ablation": "tsx benchmarks/ablation.ts",
+    "ab": "tsx benchmarks/ab-live.ts",
+    "web:build": "tsup",
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build"
   },

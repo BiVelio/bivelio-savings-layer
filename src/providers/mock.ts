@@ -30,7 +30,16 @@ export class MockProvider implements Provider {
 
   async generate(req: ProviderRequest): Promise<ProviderResponse> {
     const inputText = req.messages.map((m) => m.content).join("\n");
-    const inputTokens = heuristicEstimator.count(inputText);
+    let inputTokens = heuristicEstimator.count(inputText);
+    // Tool schemas travel in the real prompt, so a real provider bills them as
+    // input tokens. Count them here too, so mock usage faithfully tracks the
+    // tool-selection lever (fewer tools transmitted → fewer input tokens).
+    if (req.tools && req.tools.length > 0) {
+      const toolSchemaText = JSON.stringify(
+        req.tools.map((t) => ({ name: t.id, description: t.description, parameters: t.parameters ?? {} })),
+      );
+      inputTokens += heuristicEstimator.count(toolSchemaText);
+    }
 
     let text: string;
     let structuredNatively = false;

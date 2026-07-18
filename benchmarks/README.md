@@ -42,6 +42,59 @@ MOCK proves the mechanism (calls avoided, tokens compressed, quality preserved);
 LIVE proves real dollars. Both refuse to pass if any correctness check fails —
 savings without correctness do not count.
 
+> **Honesty note on `pnpm demo`/`ablation`.** These compare a **measured**
+> optimized call against a **modeled** baseline (the naive prompt is tokenized
+> locally, never sent; baseline output is the `maxOutputTokens` ceiling). That is
+> fine for a conservative mechanism demo, but it is *not* a defensible savings
+> claim. For that, use the A/B benchmark below, where **both** arms are metered by
+> the provider.
+
+## The real metric: true A/B live benchmark (`pnpm ab`) ★
+
+This is the **gold standard** and the only output that should ever back a savings
+claim. For every scenario it sends **two real requests to the same provider/model**:
+
+- **Arm A (naive)** — what a team *without* BV-SALA sends: full uncompressed JSON
+  payload on the wire, all tools transmitted, no cache, no output cap, no schema.
+- **Arm B (BV-SALA)** — the same task through the layer.
+
+**Both** arms are priced from the provider's own `usage` — so no modeled baseline
+can enter, and both are counted by the *same* tokenizer. Savings = the measured
+paired dollar delta.
+
+```bash
+pnpm ab            # MOCK: exercises the whole A/B pipeline; dollars labeled ESTIMATED (not a claim)
+
+# LIVE (real provider tokens & cost):
+BVSALA_DEMO_BASE_URL=https://ai-gateway.vercel.sh/v1 \
+BVSALA_DEMO_API_KEY=<KEY> BVSALA_DEMO_MODEL=openai/gpt-4o-mini BVSALA_DEMO_KEEP_PREFIX=1 \
+BVSALA_AB_REPS=8 \
+pnpm ab
+# Optional answer-vs-answer quality judge:
+#   BVSALA_JUDGE_BASE_URL=… BVSALA_JUDGE_API_KEY=… BVSALA_JUDGE_MODEL=…
+```
+
+**Honesty rules built into the harness** (each closes a specific audited defect):
+
+1. **Measured vs measured.** The naive baseline is *executed*, never modeled — no
+   local-tokenizer estimate, no `maxOutputTokens ?? 256` output constant.
+2. **Lower-bound headline.** We report the **95% bootstrap CI lower bound**
+   (“verified ≥ X%”), never the flattering point estimate; a Wilcoxon signed-rank
+   p-value is a secondary check. Raw paired trials export to
+   `ab-live-trials.csv` so anyone can recompute the interval.
+3. **Quality-gated.** A saving is **void** if its answer fails the gate
+   (ground-truth where known; structural; or a blind LLM judge in LIVE). A cached
+   answer must byte-match a verified miss answer.
+4. **Cache = repeat traffic.** Cache savings are shown as an amortization curve
+   with a **break-even K**, so caches honestly read ≈0% on a single cold call.
+5. **No silent zeros.** Missing provider `usage` is a hard error (`requireUsage`),
+   never a fabricated 0-token → 100% saving.
+6. **MOCK never claims dollars.** Without a real endpoint every figure is labeled
+   `ESTIMATED — not a savings claim`.
+
+Output: `benchmarks/out/ab-live.json` (per-scenario + aggregate, with CI and
+provenance) and `benchmarks/out/ab-live-trials.csv` (raw paired trials).
+
 ## Ablation: where the savings come from (`pnpm ablation`)
 
 "Baseline vs everything on" hides which lever pays for itself. `pnpm ablation`

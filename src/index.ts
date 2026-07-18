@@ -19,6 +19,7 @@
 
 export const BV_SALA_VERSION = "0.1.0";
 
+export * from "./util/index.js";
 export * from "./contracts/index.js";
 export * from "./tokenizer/index.js";
 export * from "./canonicalization/index.js";

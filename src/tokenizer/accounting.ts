@@ -66,9 +66,20 @@ export class SavingsLedger {
     actual: number;
     netSavings: number;
   } {
+    // Honesty rule (do not credit phantom output savings): a call that actually
+    // RAN still generates its answer — the layer does not shrink a ran call's
+    // output — so its honest baseline output equals the measured actual output.
+    // Output-token savings are credited ONLY on AVOIDED calls, whose whole
+    // generation was skipped. Booking (maxOutputTokens ?? 256) − actualOutput as
+    // a saving on a ran call manufactures tokens that were never generated and
+    // systematically overclaims. The true effect of output caps can only be
+    // proven by an A/B measurement (see benchmarks/ab-live.ts), never asserted
+    // per-request from a ceiling constant.
+    const ranCall = this.avoidedLlm === 0;
+    const effectiveBaselineOutput = ranCall ? this.actualOutput : this.baselineOutput;
     const baselineEstimate =
       (this.baselineInput / 1000) * model.inputPer1k +
-      (this.baselineOutput / 1000) * model.outputPer1k;
+      (effectiveBaselineOutput / 1000) * model.outputPer1k;
 
     const cachedRate = model.cachedInputPer1k ?? model.inputPer1k;
     const billedInput = Math.max(0, this.actualInput - this.providerCachedInput);

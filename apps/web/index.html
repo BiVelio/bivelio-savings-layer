@@ -192,6 +192,17 @@
   .ledger .idx { font-family: var(--mono); font-size: .7rem; color: var(--accent); }
   .ledger h4 { margin: 8px 0 6px; font-size: .96rem; letter-spacing: -.01em; }
   .ledger p { margin: 0; font-size: .82rem; color: var(--muted); }
+  .ledger .mval { margin-top: 12px; font-family: var(--mono); font-size: 1.4rem; font-weight: 640; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .ledger .mval.on { color: var(--success); }
+  .ledger .munit { font-size: .72rem; color: var(--muted); font-weight: 440; }
+
+  /* ---- real-run controls ---- */
+  .runrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .measured-tag { font-family: var(--mono); font-size: .68rem; padding: 2px 7px; border-radius: 999px; background: var(--success-soft); color: var(--success); }
+  .measured-tag.idle { background: var(--baseline-soft); color: var(--muted); }
+  .spin { width: 13px; height: 13px; border: 2px solid var(--accent-soft); border-top-color: var(--accent); border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 
   /* ---- pricing / trust ---- */
   .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: stretch; }
@@ -285,8 +296,8 @@
   <section id="verify">
     <div class="sec-head">
       <span class="eyebrow">Verify, don't trust</span>
-      <h2>Two live instruments. Real numbers, computed here.</h2>
-      <p>The left panel runs the actual format selector on data you paste. The right panel projects your monthly bill. Both use the same token accounting the SDK ships with — so what you see is what you'd get.</p>
+      <h2>Two live instruments. The real optimizer, in your browser.</h2>
+      <p>The left panel runs the actual format selector on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> your monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provider-<i>measured</i> dollars (both arms metered against a real endpoint), run the A/B benchmark — see below.</p>
     </div>
 
     <div class="instrument">
@@ -343,6 +354,12 @@
             <input type="range" id="outRed" min="0" max="70" value="30">
           </div>
 
+          <div class="runrow">
+            <button class="btn ghost" id="runReal" type="button">▶ Measure on a real workload</button>
+            <span class="measured-tag idle" id="measuredTag">levers set manually</span>
+          </div>
+          <div class="err" id="realStatus" style="color:var(--muted);min-height:1.4em"></div>
+
           <div class="result">
             <div class="costbars">
               <div class="costbar"><span class="cl">Baseline</span><div class="track"><div class="fill" id="baseFill" style="width:100%"></div></div><span class="amt" id="baseAmt">$0</span></div>
@@ -365,10 +382,10 @@
       <p>A cache hit removes a whole call. TOON re‑encodes structured data. Compression drops redundant words. A provider prefix cache makes tokens cheaper without removing them. Mixing them lies to you — so we don't.</p>
     </div>
     <div class="ledgers">
-      <div class="ledger"><div class="idx">01</div><h4>avoided_calls</h4><p>LLM, retrieval and tool calls that never executed at all.</p></div>
-      <div class="ledger"><div class="idx">02</div><h4>eliminated_tokens</h4><p>Information dropped because it simply wasn't needed.</p></div>
-      <div class="ledger"><div class="idx">03</div><h4>compressed_tokens</h4><p>Information kept, but encoded with fewer tokens.</p></div>
-      <div class="ledger"><div class="idx">04</div><h4>provider_cached_tokens</h4><p>Still in the prompt, but billed or processed more cheaply.</p></div>
+      <div class="ledger"><div class="idx">01</div><h4>avoided_calls</h4><p>LLM, retrieval and tool calls that never executed at all.</p><div class="mval" id="lg-avoided">—</div><div class="munit" id="lgu-avoided">run the optimizer to measure</div></div>
+      <div class="ledger"><div class="idx">02</div><h4>eliminated_tokens</h4><p>Information dropped because it simply wasn't needed.</p><div class="mval" id="lg-eliminated">—</div><div class="munit" id="lgu-eliminated">run the optimizer to measure</div></div>
+      <div class="ledger"><div class="idx">03</div><h4>compressed_tokens</h4><p>Information kept, but encoded with fewer tokens.</p><div class="mval" id="lg-compressed">—</div><div class="munit" id="lgu-compressed">run the optimizer to measure</div></div>
+      <div class="ledger"><div class="idx">04</div><h4>provider_cached_tokens</h4><p>Still in the prompt, but billed or processed more cheaply.</p><div class="mval" id="lg-cached">—</div><div class="munit" id="lgu-cached">run the optimizer to measure</div></div>
     </div>
   </section>
 
@@ -431,7 +448,21 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
   </div>
 </footer>
 
-<script>
+<script type="module">
+/*
+ * This page runs the REAL BV-SALA optimizer, compiled for the browser from the
+ * exact same TypeScript the SDK ships (apps/web/vendor/bv-sala.js). There is no
+ * re-implemented token math here: the format verifier and the savings meter use
+ * the product's own FormatSelector and execution pipeline, so the numbers you
+ * see are the numbers you'd get. Everything runs locally — nothing leaves the page.
+ */
+import {
+  FormatSelector,
+  defaultTokenizerRegistry,
+  createSavingsLayer,
+  MockProvider,
+} from "./vendor/bv-sala.js";
+
 (function () {
   "use strict";
 
@@ -452,94 +483,9 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
 
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------- token estimator (port of the SDK heuristic) ---------- */
-  function countTokens(text) {
-    if (!text) return 0;
-    var segs = text.match(/[A-Za-z]+|\d+|\s+|[^\sA-Za-z\d]/g) || [];
-    var t = 0;
-    for (var i = 0; i < segs.length; i++) {
-      var s = segs[i], f = s[0];
-      if (/\s/.test(f)) { var nl = (s.match(/\n/g) || []).length; t += nl + Math.floor(Math.max(0, s.length - 1) / 2); }
-      else if (/[A-Za-z]/.test(f)) { t += Math.max(1, Math.ceil(s.length / 4)); }
-      else if (/\d/.test(f)) { t += Math.max(1, Math.ceil(s.length / 2)); }
-      else t += 1;
-    }
-    return Math.max(t, Math.ceil(text.length / 4));
-  }
-
-  /* ---------- format encoders (ports of the SDK) ---------- */
-  function isScalar(v){ return v===null||typeof v==="string"||typeof v==="number"||typeof v==="boolean"; }
-  function isObj(v){ return typeof v==="object"&&v!==null&&!Array.isArray(v); }
-  function uniformColumns(arr){
-    if(!arr.length) return null;
-    if(!isObj(arr[0])) return null;
-    var cols=Object.keys(arr[0]); if(!cols.length) return null;
-    var sig=cols.slice().sort().join(" ");
-    for(var i=0;i<arr.length;i++){
-      var el=arr[i]; if(!isObj(el)) return null;
-      var ks=Object.keys(el); if(ks.slice().sort().join(" ")!==sig) return null;
-      for(var j=0;j<ks.length;j++){ if(!isScalar(el[ks[j]])) return null; }
-    }
-    return cols;
-  }
-  function esc(v,d){
-    if(v===null||v===undefined) return "null";
-    if(typeof v==="number") return isFinite(v)?String(v):"null";
-    if(typeof v==="boolean") return v?"true":"false";
-    var s=String(v);
-    var q = s===""||s.indexOf(d)>=0||s.indexOf("\n")>=0||s.indexOf('"')>=0||s!==s.trim()||/^(true|false|null)$/.test(s)||/^-?\d/.test(s);
-    return q?('"'+s.replace(/"/g,'""')+'"'):s;
-  }
-  function key(k){ return /^[A-Za-z_][A-Za-z0-9_]*$/.test(k)?k:('"'+k.replace(/"/g,'""')+'"'); }
-  function encodeToon(value){ var lines=[]; node(null,value,0,lines); return lines.join("\n"); }
-  function node(k,v,depth,lines){
-    var pad="  ".repeat(depth), d=",";
-    if(Array.isArray(v)){ arr(k===null?"":key(k),v,depth,lines); return; }
-    if(isObj(v)){ if(k!==null) lines.push(pad+key(k)+":"); var cd=k===null?depth:depth+1;
-      var ks=Object.keys(v); for(var i=0;i<ks.length;i++) node(ks[i],v[ks[i]],cd,lines); return; }
-    lines.push(pad+(k===null?"":key(k))+": "+esc(v,d));
-  }
-  function arr(head,a,depth,lines){
-    var pad="  ".repeat(depth), d=",";
-    if(!a.length){ lines.push(pad+head+"[0]:"); return; }
-    if(a.every(isScalar)){ lines.push(pad+head+"["+a.length+"]: "+a.map(function(x){return esc(x,d);}).join(d)); return; }
-    var cols=uniformColumns(a);
-    if(cols){ lines.push(pad+head+"["+a.length+"]{"+cols.join(d)+"}:"); var rp="  ".repeat(depth+1);
-      for(var i=0;i<a.length;i++){ var o=a[i]; lines.push(rp+cols.map(function(c){return esc(o[c],d);}).join(d)); } return; }
-    lines.push(pad+head+"["+a.length+"]:");
-    var ip="  ".repeat(depth+1);
-    for(var j=0;j<a.length;j++){ var el=a[j];
-      if(isScalar(el)){ lines.push(ip+"- "+esc(el,d)); }
-      else { var sub=[]; node(null,el,0,sub); lines.push(ip+"- "+(sub[0]||"")); for(var m=1;m<sub.length;m++) lines.push(ip+"  "+sub[m]); }
-    }
-  }
-  function toCsv(a){
-    var cols=uniformColumns(a); if(!cols) return null;
-    function cell(v){ if(v===null||v===undefined) return ""; var s=String(v); return /[",\n]/.test(s)?('"'+s.replace(/"/g,'""')+'"'):s; }
-    var out=[cols.map(cell).join(",")];
-    for(var i=0;i<a.length;i++){ out.push(cols.map(function(c){return cell(a[i][c]);}).join(",")); }
-    return out.join("\n");
-  }
-  var TOON_INSTR = "Data is TOON: `key[N]{c1,c2}:` declares an N-row table with columns c1,c2; each following indented line is one row of delimiter-separated values. `key[N]: a,b` is an inline list. Quoted values use CSV-style escaping.";
-  var CSV_INSTR = "Data is CSV: first line is the header row; each subsequent line is one record.";
-  var MIN_ABS = 64, MIN_REL = 0.08;
-
-  function selectFormat(payload) {
-    var cands = [];
-    cands.push({ fmt: "json-compact", tokens: countTokens(JSON.stringify(payload)) });
-    cands.push({ fmt: "toon", tokens: countTokens(encodeToon(payload)) + countTokens(TOON_INSTR) });
-    if (Array.isArray(payload)) {
-      var csv = toCsv(payload);
-      if (csv !== null) cands.push({ fmt: "csv", tokens: countTokens(csv) + countTokens(CSV_INSTR) });
-    }
-    var json = cands[0];
-    var best = json, reasonWin = false;
-    for (var i = 1; i < cands.length; i++) {
-      var c = cands[i], abs = json.tokens - c.tokens, rel = json.tokens ? abs / json.tokens : 0;
-      if (abs >= MIN_ABS && rel >= MIN_REL && c.tokens < best.tokens) { best = c; reasonWin = true; }
-    }
-    return { cands: cands, chosen: best.fmt, json: json, best: best, switched: reasonWin };
-  }
+  /* ---------- the real optimizer (product code, in your browser) ---------- */
+  var MODEL = "openai/gpt-4o-mini";
+  var selector = new FormatSelector({ tokenizer: defaultTokenizerRegistry });
 
   /* ---------- number animation ---------- */
   function animate(el, to, fmt) {
@@ -577,33 +523,46 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
   var readoutEl = document.getElementById("readout");
   var maxTok = 1;
 
+  var FMT_ORDER = ["json-compact", "toon", "csv"];
+  var FMT_NAMES = { "json-compact": "JSON", "toon": "TOON", "csv": "CSV" };
+
   function renderFormat() {
     var text = payloadEl.value;
     var parsed;
     try { parsed = JSON.parse(text); errEl.textContent = ""; }
     catch (e) { errEl.textContent = "Waiting for valid JSON… " + e.message; return; }
 
-    var r = selectFormat(parsed);
-    maxTok = Math.max.apply(null, r.cands.map(function (c) { return c.tokens; }));
-    var names = { "json-compact": "JSON", "toon": "TOON", "csv": "CSV" };
+    // The product's real format selector: counts encoded payload + the
+    // instruction overhead each format needs, with the same activation
+    // thresholds the SDK uses (a challenger must beat JSON by an absolute and a
+    // relative margin, or JSON wins).
+    var choice = selector.choose(parsed, { model: MODEL });
+    var cands = FMT_ORDER
+      .filter(function (f) { return choice.candidateTokens[f] != null; })
+      .map(function (f) { return { fmt: f, tokens: choice.candidateTokens[f] }; });
+
+    var jsonTok = choice.candidateTokens["json-compact"] || 0;
+    var chosenTok = choice.candidateTokens[choice.chosen] != null ? choice.candidateTokens[choice.chosen] : jsonTok;
+    var switched = choice.chosen !== "json-compact";
+    maxTok = Math.max.apply(null, cands.map(function (c) { return c.tokens; }).concat([1]));
 
     readoutEl.innerHTML = "";
-    r.cands.forEach(function (c) {
-      var win = c.fmt === r.chosen && r.switched;
+    cands.forEach(function (c) {
+      var win = c.fmt === choice.chosen && switched;
       var row = document.createElement("div");
       row.className = "fmt-row";
       row.innerHTML =
-        '<div class="fmt-name ' + (win ? "win" : "") + '">' + names[c.fmt] + (win ? " ●" : "") + '</div>' +
+        '<div class="fmt-name ' + (win ? "win" : "") + '">' + FMT_NAMES[c.fmt] + (win ? " ●" : "") + '</div>' +
         '<div class="track"><div class="fill ' + (win ? "win" : "") + '" style="width:' + (100 * c.tokens / maxTok).toFixed(1) + '%"></div></div>' +
         '<div class="fmt-tok">' + c.tokens.toLocaleString() + '</div>';
       readoutEl.appendChild(row);
     });
 
-    var abs = r.json.tokens - r.best.tokens;
-    var relPct = r.json.tokens ? (abs / r.json.tokens) * 100 : 0;
-    animate(document.getElementById("fmtSaved"), r.switched ? relPct : 0, pct);
-    document.getElementById("fmtChosen").textContent = names[r.chosen];
-    document.getElementById("fmtDelta").innerHTML = r.switched
+    var abs = jsonTok - chosenTok;
+    var relPct = jsonTok ? (abs / jsonTok) * 100 : 0;
+    animate(document.getElementById("fmtSaved"), switched ? relPct : 0, pct);
+    document.getElementById("fmtChosen").textContent = FMT_NAMES[choice.chosen];
+    document.getElementById("fmtDelta").innerHTML = switched
       ? (abs.toLocaleString() + " tokens saved<br>on every send of this payload")
       : "JSON already wins here.<br>The selector never makes it worse.";
   }
@@ -650,10 +609,138 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
   }
   ids.forEach(function (id) { document.getElementById(id).addEventListener("input", project); });
 
+  // Moving a lever by hand drops the "measured" badge — the projection is no
+  // longer tied to a real run.
+  ["avoid", "elim", "outRed"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () {
+      var tag = document.getElementById("measuredTag");
+      tag.className = "measured-tag idle";
+      tag.textContent = "levers set manually";
+    });
+  });
+
+  /* ---------- real optimizer run (the actual pipeline, over a sample workload) ----------
+   * Panel A already runs the real selector on YOUR data. Here we run the whole
+   * execution pipeline over a representative support workload so the projector's
+   * levers are grounded in a MEASURED run of the product — not guesses. The LLM
+   * itself is mocked (no keys, nothing leaves the page); every optimization
+   * decision — cache hits, format compression, output budgets, provider-cached
+   * input — is the product's real logic. Token reductions come from the run; the
+   * dollar figure applies YOUR prices from the fields above.
+   */
+  function buildWorkload() {
+    var bigSystem =
+      "You are BiVelio's customer-support assistant. Adhere to policy P-2026 and the tone guide. " +
+      "Be accurate, cite the relevant article, and keep answers concise. ".repeat(24);
+    var users = Array.from({ length: 24 }, function (_, i) {
+      return { id: 2000 + i, name: "user_" + i, role: i % 4 === 0 ? "admin" : "member", plan: i % 2 ? "pro" : "free", active: i % 5 !== 0 };
+    });
+    var answer = { type: "object", required: ["answer"], properties: { answer: { type: "string" } } };
+    var summary = { type: "object", required: ["summary"], properties: { summary: { type: "string" } } };
+    var faqs = [
+      "What are your support hours?",
+      "How do I reset my password?",
+      "Where do I download my invoice?",
+      "What is your refund policy?",
+      "How do I add a teammate to my workspace?",
+    ];
+    var w = [];
+    // Each FAQ arrives twice — the second as a paraphrase (case/whitespace). The
+    // canonicalizer collapses them, so the repeat is an exact-cache hit: a whole
+    // call avoided, its input and output eliminated.
+    faqs.forEach(function (q) {
+      w.push({ model: MODEL, messages: [{ role: "system", content: bigSystem }, { role: "user", content: q }], response: { contractId: "answer:v1", schema: answer, maxOutputTokens: 90 } });
+      w.push({ model: MODEL, messages: [{ role: "system", content: bigSystem }, { role: "user", content: "   " + q.toUpperCase() + "  " }], response: { contractId: "answer:v1", schema: answer, maxOutputTokens: 90 } });
+    });
+    // Structured-data summaries: the table gets re-encoded to the cheapest format
+    // (compression) under a tight output budget. Sent 3×, so 2 also cache-hit.
+    for (var i = 0; i < 3; i++) {
+      w.push({ model: MODEL, messages: [{ role: "system", content: bigSystem }, { role: "user", content: "Summarize the active admins in this table." }], structuredData: { users: users }, response: { contractId: "summary:v1", schema: summary, maxOutputTokens: 70 } });
+    }
+    return w;
+  }
+
+  function clampSlider(id, ratio) {
+    var el = document.getElementById(id);
+    var max = parseFloat(el.getAttribute("max")) || 100;
+    el.value = String(Math.max(0, Math.min(max, Math.round(ratio * 100))));
+  }
+
+  var running = false;
+  function setLedger(id, value, unit) {
+    var el = document.getElementById(id);
+    el.textContent = value.toLocaleString();
+    el.className = "mval on";
+    document.getElementById("lgu-" + id.slice(3)).textContent = unit;
+  }
+
+  async function runReal() {
+    if (running) return;
+    running = true;
+    var btn = document.getElementById("runReal");
+    var status = document.getElementById("realStatus");
+    btn.disabled = true;
+    status.innerHTML = '<span class="spin"></span> running the optimizer…';
+    // Let the spinner paint before the (fast, synchronous-ish) run.
+    await new Promise(function (r) { requestAnimationFrame(function () { r(); }); });
+
+    try {
+      var layer = createSavingsLayer({ provider: new MockProvider({ cachedInputTokens: 96 }) });
+      var workload = buildWorkload();
+      var a = { baselineLlm: 0, avoidedLlm: 0, baselineInput: 0, actualInput: 0, eliminatedInput: 0, eliminatedOutput: 0, compressedInput: 0, providerCachedInput: 0, baselineOutput: 0, actualOutput: 0 };
+      for (var i = 0; i < workload.length; i++) {
+        var res = await layer.generate(workload[i]);
+        var rep = res.report;
+        a.baselineLlm += rep.calls.baselineLlm;
+        a.avoidedLlm += rep.calls.avoidedLlm;
+        a.baselineInput += rep.tokens.baselineInput;
+        a.actualInput += rep.tokens.actualInput;
+        a.eliminatedInput += rep.tokens.eliminatedInput;
+        a.eliminatedOutput += rep.tokens.eliminatedOutput;
+        a.compressedInput += rep.tokens.compressedInput;
+        a.providerCachedInput += rep.tokens.providerCachedInput || 0;
+        a.baselineOutput += rep.tokens.baselineOutput;
+        a.actualOutput += rep.tokens.actualOutput;
+      }
+
+      var avoidPct = a.baselineLlm ? a.avoidedLlm / a.baselineLlm : 0;
+      var inputRedPct = a.baselineInput ? (a.baselineInput - a.actualInput) / a.baselineInput : 0;
+      var outputRedPct = a.baselineOutput ? (a.baselineOutput - a.actualOutput) / a.baselineOutput : 0;
+
+      clampSlider("avoid", avoidPct);
+      clampSlider("elim", inputRedPct);
+      clampSlider("outRed", outputRedPct);
+      project();
+
+      setLedger("lg-avoided", a.avoidedLlm, "of " + a.baselineLlm + " calls never ran");
+      setLedger("lg-eliminated", a.eliminatedInput + a.eliminatedOutput, "input + output tokens dropped");
+      setLedger("lg-compressed", a.compressedInput, "input tokens re-encoded smaller");
+      setLedger("lg-cached", a.providerCachedInput, "input tokens billed cheaper");
+
+      var tag = document.getElementById("measuredTag");
+      tag.className = "measured-tag";
+      tag.textContent = "in-browser estimate · mock model";
+      // Honest framing: this runs the REAL optimizer logic, but against a MOCK
+      // model — so it is an illustrative estimate, not a provider-measured
+      // number. Real dollars come from the A/B benchmark (pnpm ab, LIVE).
+      status.innerHTML = "Illustrative estimate from the real optimizer over " + workload.length +
+        " requests (mock model): <b>" + num("avoid") + "%</b> calls avoided · <b>" + num("elim") +
+        "%</b> input cut · <b>" + num("outRed") + "%</b> output cut. For provider-measured $, run the A/B benchmark (LIVE).";
+    } catch (e) {
+      status.textContent = "Could not run the optimizer: " + (e && e.message ? e.message : e);
+    } finally {
+      btn.disabled = false;
+      running = false;
+    }
+  }
+  document.getElementById("runReal").addEventListener("click", function () { runReal(); });
+
   /* ---------- init ---------- */
   payloadEl.value = JSON.stringify(samples.wrapped, null, 2);
   renderFormat();
   project();
+  // Auto-run once so a first-time visitor immediately sees real measured numbers.
+  runReal();
 })();
 </script>
 </body>

@@ -19,12 +19,53 @@ export interface Scenario {
   warm?: boolean;
 }
 
+// Real argument schemas: a tool's JSON schema travels in the prompt, so the
+// tool selector's savings are only measurable when tools carry realistic
+// parameters (an empty {} would make the dropped-tool token delta ~0).
 const tools: ToolDescriptor[] = [
-  { id: "get_weather", intents: ["weather forecast"], risk: "read" },
-  { id: "search_docs", intents: ["search documentation"], risk: "read" },
-  { id: "delete_account", intents: ["delete account"], risk: "destructive" },
-  { id: "get_invoices", intents: ["list invoices billing"], risk: "read" },
-  { id: "send_email", intents: ["send email"], risk: "write" },
+  {
+    id: "get_weather", intents: ["weather forecast"], risk: "read",
+    description: "Get the weather forecast for a city on a given date.",
+    parameters: { type: "object", required: ["city", "date"], properties: {
+      city: { type: "string", description: "City name, e.g. 'Madrid'" },
+      date: { type: "string", description: "ISO date (YYYY-MM-DD)" },
+      units: { type: "string", enum: ["celsius", "fahrenheit"] },
+    } },
+  },
+  {
+    id: "search_docs", intents: ["search documentation"], risk: "read",
+    description: "Full-text search over the product documentation.",
+    parameters: { type: "object", required: ["query"], properties: {
+      query: { type: "string", description: "Search query" },
+      top_k: { type: "integer", minimum: 1, maximum: 20 },
+      section: { type: "string", enum: ["billing", "api", "guides", "faq"] },
+    } },
+  },
+  {
+    id: "delete_account", intents: ["delete account"], risk: "destructive",
+    description: "Permanently delete a user account and all associated data.",
+    parameters: { type: "object", required: ["user_id", "confirm"], properties: {
+      user_id: { type: "string" }, confirm: { type: "boolean" },
+    } },
+  },
+  {
+    id: "get_invoices", intents: ["list invoices billing"], risk: "read",
+    description: "List invoices for an account within a date range.",
+    parameters: { type: "object", required: ["account_id"], properties: {
+      account_id: { type: "string" },
+      from: { type: "string", description: "ISO date" },
+      to: { type: "string", description: "ISO date" },
+      status: { type: "string", enum: ["paid", "open", "void"] },
+    } },
+  },
+  {
+    id: "send_email", intents: ["send email"], risk: "write",
+    description: "Send a transactional email to a recipient.",
+    parameters: { type: "object", required: ["to", "subject", "body"], properties: {
+      to: { type: "string" }, subject: { type: "string" }, body: { type: "string" },
+      cc: { type: "array", items: { type: "string" } },
+    } },
+  },
 ];
 
 const answerContract = {

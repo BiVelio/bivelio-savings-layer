@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomId } from "../util/id.js";
 
 import type {
   SavingsRequest,
@@ -39,7 +39,7 @@ export class SavingsPipeline {
     this.config = config;
     this.deps = resolveDependencies(config);
     this.now = config.now ?? (() => Date.now());
-    this.generateId = config.generateId ?? (() => randomUUID());
+    this.generateId = config.generateId ?? (() => randomId());
   }
 
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
