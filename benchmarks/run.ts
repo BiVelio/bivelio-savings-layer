@@ -1,0 +1,131 @@
+/**
+ * BV-SALA savings demonstration harness. Run: pnpm demo
+ *
+ * Runs realistic scenarios through the layer, checks the answer is still
+ * correct, and reports the REAL savings — aggregated across the batch. The
+ * accounting here is deliberately CONSERVATIVE so we never overclaim:
+ *
+ *  - Avoided calls (cache / resolver): the whole request is saved (input+output).
+ *  - Ran calls: we count input reduction only (compression / pruning), and set
+ *    the baseline output equal to the actual output — i.e. we do NOT claim any
+ *    output-side saving in MOCK mode, because the mock does not over-generate.
+ *
+ * Modes:
+ *   MOCK (default) — deterministic, no network. Token counts are estimated but
+ *     the ledger logic is real: proves the mechanism (calls avoided, tokens
+ *     compressed, quality preserved) end to end.
+ *   LIVE — set BVSALA_DEMO_BASE_URL (+ BVSALA_DEMO_API_KEY, BVSALA_DEMO_MODEL)
+ *     to an OpenAI-compatible endpoint for real provider tokens & dollars.
+ */
+import {
+  createSavingsLayer,
+  createMockProvider,
+  OpenAICompatibleProvider,
+  type CostModel,
+  type Provider,
+  type SavingsResult,
+} from "../src/index.js";
+import { scenarios, type Scenario } from "./scenarios.js";
+
+// Realistic pricing (gpt-4o-mini-class): $/1K tokens.
+const COST: CostModel = { inputPer1k: 0.00015, outputPer1k: 0.0006, cachedInputPer1k: 0.000075 };
+
+const baseUrl = process.env.BVSALA_DEMO_BASE_URL;
+const apiKey = process.env.BVSALA_DEMO_API_KEY;
+const liveModel = process.env.BVSALA_DEMO_MODEL;
+
+const provider: Provider = baseUrl
+  ? new OpenAICompatibleProvider({ baseUrl, ...(apiKey ? { apiKey } : {}), stripProviderPrefix: true })
+  : createMockProvider();
+const mode = baseUrl ? "LIVE" : "MOCK";
+
+const layer = createSavingsLayer({ provider, defaultCostModel: COST });
+
+function pad(s: string, n: number): string {
+  return s.length >= n ? s.slice(0, n) : s + " ".repeat(n - s.length);
+}
+function padL(s: string, n: number): string {
+  return s.length >= n ? s : " ".repeat(n - s.length) + s;
+}
+const money = (n: number): string => "$" + n.toFixed(6);
+
+async function main(): Promise<void> {
+  console.log(`\nBV-SALA savings demonstration  [mode: ${mode}]`);
+  console.log(`provider: ${provider.id}${liveModel ? `  model: ${liveModel}` : ""}  (conservative accounting)`);
+  console.log("─".repeat(98));
+  console.log(
+    pad("scenario", 26) + pad("lever", 36) + pad("cache", 8) +
+    padL("calls", 7) + padL("in saved", 10) + padL("$ saved", 11) + "  ok",
+  );
+  console.log("─".repeat(98));
+
+  let baselineCost = 0, actualCost = 0;
+  let baselineCalls = 0, actualCalls = 0, avoidedCalls = 0;
+  let inputSaved = 0;
+  let qualityPass = 0, qualityTotal = 0;
+
+  for (const s of scenarios) {
+    const req = liveModel ? { ...s.request, model: liveModel } : s.request;
+    if (s.warm) await layer.generate(req); // populate cache without measuring
+
+    const res: SavingsResult = await layer.generate(req);
+    const rep = res.report;
+    const avoided = rep.calls.avoidedLlm > 0;
+
+    // Conservative cost model: no phantom output savings on ran calls.
+    const baselineOut = avoided ? rep.tokens.baselineOutput : rep.tokens.actualOutput;
+    const bCost = (rep.tokens.baselineInput / 1000) * COST.inputPer1k + (baselineOut / 1000) * COST.outputPer1k;
+    const aCost = (rep.tokens.actualInput / 1000) * COST.inputPer1k + (rep.tokens.actualOutput / 1000) * COST.outputPer1k;
+    const savedCost = Math.max(0, bCost - aCost);
+    const inSaved = Math.max(0, rep.tokens.baselineInput - rep.tokens.actualInput);
+
+    baselineCost += bCost;
+    actualCost += aCost;
+    inputSaved += inSaved;
+    baselineCalls += rep.calls.baselineLlm;
+    actualCalls += rep.calls.actualLlm;
+    avoidedCalls += rep.calls.avoidedLlm;
+
+    let ok = "—";
+    if (s.expect) {
+      qualityTotal++;
+      const passed = safeCheck(s, res);
+      if (passed) qualityPass++;
+      ok = passed ? "✓" : "✗";
+    }
+
+    console.log(
+      pad(s.name, 26) + pad(s.lever, 36) + pad(rep.cache.result, 8) +
+      padL(`${rep.calls.avoidedLlm}/${rep.calls.actualLlm}`, 7) +
+      padL(String(inSaved), 10) + padL(money(savedCost), 11) + "  " + ok,
+    );
+  }
+
+  const savedPct = baselineCost === 0 ? 0 : 1 - actualCost / baselineCost;
+  console.log("─".repeat(98));
+  console.log("\nBatch totals (conservative)");
+  console.log(`  LLM calls:      baseline ${baselineCalls}  →  actual ${actualCalls}   (avoided ${avoidedCalls} = ${((avoidedCalls / baselineCalls) * 100).toFixed(0)}%)`);
+  console.log(`  Input tokens:   saved ${inputSaved}   (eliminated + compressed)`);
+  console.log(`  Cost:           baseline ${money(baselineCost)}  →  actual ${money(actualCost)}   (saved ${money(baselineCost - actualCost)})`);
+  console.log(`  Net savings:    ${(savedPct * 100).toFixed(1)}%   ${mode === "MOCK" ? "(estimated; run LIVE for real provider $)" : "(real provider tokens & cost)"}`);
+  console.log(`  Quality:        ${qualityPass}/${qualityTotal} correctness checks passed`);
+  console.log("");
+
+  if (qualityTotal > 0 && qualityPass < qualityTotal) {
+    console.error("Some correctness checks failed — savings without correctness do not count.");
+    process.exitCode = 1;
+  }
+}
+
+function safeCheck(s: Scenario, res: SavingsResult): boolean {
+  try {
+    return s.expect ? s.expect(res) : true;
+  } catch {
+    return false;
+  }
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exitCode = 1;
+});

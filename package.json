@@ -63,6 +63,7 @@
     "example:basic": "tsx examples/basic/index.ts",
     "example:handoff": "tsx examples/multi-agent/handoff.ts",
     "example:serialization": "tsx examples/serialization/format-selector.ts",
+    "demo": "tsx benchmarks/run.ts",
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build"
   },

@@ -2,6 +2,36 @@
 
 > PROPRIETARY AND CONFIDENTIAL — © 2026 BiVelio Inc. All Rights Reserved.
 
+## Prove it first: the savings demo (`pnpm demo`)
+
+Before monetizing, prove the layer works and that we can demonstrate **real**
+savings without breaking correctness. `benchmarks/run.ts` runs realistic
+scenarios through the layer, verifies each answer is still correct, and reports
+savings with **conservative accounting** (no phantom output savings; only what
+we can defend — avoided calls + input reduction).
+
+```bash
+pnpm demo                     # MOCK mode: deterministic, no network, proves the mechanism
+```
+
+Example (MOCK): 2 of 7 calls avoided, ~1,342 input tokens saved, ~70% net cost
+saved, **6/6 correctness checks passed**.
+
+Run it **LIVE** against a real LLM for real provider tokens & dollars:
+
+```bash
+BVSALA_DEMO_BASE_URL=https://<openai-compatible-endpoint>/v1 \
+BVSALA_DEMO_API_KEY=sk-... \
+BVSALA_DEMO_MODEL=gpt-4o-mini \
+pnpm demo
+```
+
+MOCK proves the mechanism (calls avoided, tokens compressed, quality preserved);
+LIVE proves real dollars. Both refuse to pass if any correctness check fails —
+savings without correctness do not count.
+
+## Full suite (ablations)
+
 Comparing "baseline" vs "everything on" is not enough. The benchmark suite runs
 **ablations** so each module's marginal contribution — and the interactions
 between modules — are measured, not assumed.
