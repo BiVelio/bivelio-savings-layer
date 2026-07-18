@@ -1,0 +1,6 @@
+# Isolate apps/web as its own pnpm project (it is NOT a member of the SDK
+# workspace at the repo root — that one only contains packages/* and services/*).
+# This makes `pnpm install` here resolve apps/web's own Next.js dependencies
+# instead of walking up to the SDK workspace. Vercel builds with Root Directory
+# apps/web, so it installs against this file + apps/web/pnpm-lock.yaml.
+packages: []

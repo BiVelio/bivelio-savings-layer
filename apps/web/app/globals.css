@@ -1,0 +1,75 @@
+/* BiVelio Savings Layer — auth surface styles (login / signup / dashboard).
+   Same palette + heading font as the landing (savings.bivelio.com) so the whole
+   product reads as one BiVelio surface. */
+
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/space-grotesk-500.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/space-grotesk-700.woff2") format("woff2"); }
+
+:root {
+  --bg: #FDFDFD; --surface: #FFFFFF; --surface-2: #F4F6F9; --ink: #0F1218;
+  --muted: #5A6070; --line: #DEE4E7; --accent: #2F63D8; --accent-soft: rgba(47,99,216,.1);
+  --success: #14A06F; --warn: #E5484D;
+  --shadow: 0 1px 2px rgba(15,20,30,.05), 0 12px 32px -18px rgba(15,20,30,.18);
+  --radius: 14px;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-heading: "Space Grotesk", var(--sans);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0C0F16; --surface: #131723; --surface-2: #181D2A; --ink: #EEF1F6;
+    --muted: #8A92A3; --line: #252B3A; --accent: #6B8AFA; --accent-soft: rgba(107,138,250,.14);
+    --success: #43D6B2; --warn: #FF6B6B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 20px 44px -22px rgba(0,0,0,.6);
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-family: var(--font-heading); letter-spacing: -.02em; }
+
+/* ---- brand mark (logo + "BiVelio." wordmark) ---- */
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.brand-logo { width: 26px; height: 26px; border-radius: 7px; display: block; }
+.bv-word { font-family: var(--font-heading); font-weight: 700; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); display: inline-flex; align-items: baseline; }
+.bv-i { position: relative; display: inline-block; }
+.bv-i .tit { position: absolute; left: 50%; top: .36em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
+.bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .05em; border-radius: 50%; align-self: flex-end; margin-bottom: .1em; }
+.bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
+.tag { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
+
+/* ---- auth card (login / signup) ---- */
+.auth-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 32px 20px; background:
+  radial-gradient(60% 60% at 50% 0%, var(--accent-soft), transparent 70%), var(--bg); }
+.auth-card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 30px; }
+.auth-card h1 { font-size: 1.5rem; margin: 4px 0 6px; }
+.auth-card .sub { color: var(--muted); font-size: .9rem; margin: 0 0 22px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: .8rem; color: var(--muted); font-weight: 560; }
+.field input { font-family: var(--sans); font-size: .95rem; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); }
+.field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border-radius: 10px; padding: 11px 18px; font-weight: 640; font-size: .95rem; font-family: var(--sans); border: 1px solid transparent; }
+.btn-primary { background: var(--accent); color: #fff; width: 100%; }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-primary:disabled { opacity: .6; cursor: default; }
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn-ghost:hover { border-color: var(--accent); }
+.auth-submit { margin-top: 6px; }
+.auth-alt { margin: 18px 0 0; font-size: .88rem; color: var(--muted); text-align: center; }
+.auth-msg { border-radius: 10px; padding: 10px 13px; font-size: .85rem; margin-bottom: 16px; }
+.auth-msg.error { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn); }
+.auth-msg.info { background: var(--accent-soft); color: var(--accent); }
+
+/* ---- dashboard ---- */
+.dash-shell { min-height: 100dvh; background: var(--bg); }
+.dash-shell .wrap { max-width: 880px; margin: 0 auto; padding: 40px 22px 60px; }
+.eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .7rem; font-weight: 680; color: var(--accent); margin: 0; }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.card .n { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.card h3 { margin: 8px 0 4px; font-size: 1.15rem; }
+.card p { margin: 0; color: var(--muted); font-size: .86rem; }
+@media (max-width: 560px) { .cards { grid-template-columns: 1fr; } }
