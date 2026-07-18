@@ -26,6 +26,7 @@ import {
   type SavingsResult,
 } from "../src/index.js";
 import { scenarios, type Scenario } from "./scenarios.js";
+import { writeReport } from "./report.js";
 
 // Realistic pricing (gpt-4o-mini-class): $/1K tokens.
 const COST: CostModel = { inputPer1k: 0.00015, outputPer1k: 0.0006, cachedInputPer1k: 0.000075 };
@@ -48,6 +49,7 @@ function padL(s: string, n: number): string {
   return s.length >= n ? s : " ".repeat(n - s.length) + s;
 }
 const money = (n: number): string => "$" + n.toFixed(6);
+const round = (n: number): number => Math.round(n * 1e8) / 1e8;
 
 async function main(): Promise<void> {
   console.log(`\nBV-SALA savings demonstration  [mode: ${mode}]`);
@@ -63,6 +65,7 @@ async function main(): Promise<void> {
   let baselineCalls = 0, actualCalls = 0, avoidedCalls = 0;
   let inputSaved = 0;
   let qualityPass = 0, qualityTotal = 0;
+  const detail: Record<string, unknown>[] = [];
 
   for (const s of scenarios) {
     const req = liveModel ? { ...s.request, model: liveModel } : s.request;
@@ -94,6 +97,17 @@ async function main(): Promise<void> {
       ok = passed ? "✓" : "✗";
     }
 
+    detail.push({
+      name: s.name,
+      lever: s.lever,
+      cache: rep.cache.result,
+      avoidedLlm: rep.calls.avoidedLlm,
+      actualLlm: rep.calls.actualLlm,
+      inputTokensSaved: inSaved,
+      savedCost: round(savedCost),
+      quality: ok,
+    });
+
     console.log(
       pad(s.name, 26) + pad(s.lever, 36) + pad(rep.cache.result, 8) +
       padL(`${rep.calls.avoidedLlm}/${rep.calls.actualLlm}`, 7) +
@@ -110,6 +124,28 @@ async function main(): Promise<void> {
   console.log(`  Net savings:    ${(savedPct * 100).toFixed(1)}%   ${mode === "MOCK" ? "(estimated; run LIVE for real provider $)" : "(real provider tokens & cost)"}`);
   console.log(`  Quality:        ${qualityPass}/${qualityTotal} correctness checks passed`);
   console.log("");
+
+  const path = writeReport("demo", {
+    mode,
+    provider: provider.id,
+    ...(liveModel ? { model: liveModel } : {}),
+    costModel: COST,
+    scenarios: detail,
+    totals: {
+      baselineLlmCalls: baselineCalls,
+      actualLlmCalls: actualCalls,
+      avoidedLlmCalls: avoidedCalls,
+      inputTokensSaved: inputSaved,
+      baselineCost: round(baselineCost),
+      actualCost: round(actualCost),
+      savedCost: round(baselineCost - actualCost),
+      netSavings: round(savedPct),
+      qualityPass,
+      qualityTotal,
+    },
+    note: mode === "MOCK" ? "estimated tokens; run LIVE for real provider $" : "real provider tokens & cost",
+  });
+  console.log(`Wrote ${path}\n`);
 
   if (qualityTotal > 0 && qualityPass < qualityTotal) {
     console.error("Some correctness checks failed — savings without correctness do not count.");

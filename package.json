@@ -64,6 +64,7 @@
     "example:handoff": "tsx examples/multi-agent/handoff.ts",
     "example:serialization": "tsx examples/serialization/format-selector.ts",
     "demo": "tsx benchmarks/run.ts",
+    "ablation": "tsx benchmarks/ablation.ts",
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build"
   },

@@ -20,6 +20,7 @@ export function buildExactKey(c: CanonicalRequest): string {
     contract: c.contractId,
     schema: c.schemaVersion,
     tools: c.toolsetHash,
+    data: c.structuredDataHash,
     locale: c.locale,
     temperature: c.temperature,
     seed: c.seed,
@@ -45,6 +46,7 @@ export function buildInflightKey(c: CanonicalRequest): string {
     system: c.systemPromptHash,
     contract: c.contractId,
     tools: c.toolsetHash,
+    data: c.structuredDataHash,
     temperature: c.temperature,
     seed: c.seed,
   });

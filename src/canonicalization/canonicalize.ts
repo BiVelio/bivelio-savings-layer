@@ -15,6 +15,8 @@ export interface CanonicalRequest {
   normalizedText: string;
   systemPromptHash: string;
   toolsetHash: string;
+  /** Hash of the structured payload; part of the cache key so different data never collides. */
+  structuredDataHash: string;
   schemaVersion: string;
   contractId: string | null;
   temperature: number | null;
@@ -86,6 +88,10 @@ export function canonicalize(request: SavingsRequest): CanonicalRequest {
     normalizedText: conversational,
     systemPromptHash: sha256(systemMessages),
     toolsetHash: sha256(stableStringify(tools)),
+    structuredDataHash:
+      request.structuredData !== undefined
+        ? sha256(stableStringify(request.structuredData))
+        : "none",
     schemaVersion: request.response?.version ?? request.response?.contractId ?? "none",
     contractId: request.response?.contractId ?? null,
     temperature: request.temperature ?? null,

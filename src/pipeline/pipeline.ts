@@ -207,31 +207,41 @@ export class SavingsPipeline {
     }
 
     // --- Stage 8: serialization (format selection) for structured payloads. ---
+    // The payload is ALWAYS sent (the app needs its data). The serialization
+    // toggle only chooses the ENCODING: on → pick the cheapest format for this
+    // tokenizer; off → fall back to compact JSON (never drop the data).
     let formatChoice = jsonFallbackChoice();
     const messages: ChatMessage[] = [...request.messages];
-    if (request.structuredData !== undefined && toggles.serialization !== false) {
+    if (request.structuredData !== undefined) {
       const jsonEncoded = JSON.stringify(request.structuredData);
       const jsonTokens = this.tokensFor(jsonEncoded, request);
-      formatChoice = this.deps.formatSelector.choose(request.structuredData, {
-        model: request.model,
-        ...(request.tokenizer ? { tokenizer: request.tokenizer } : {}),
-      });
-      const chosenTokens = this.tokensFor(
-        formatChoice.encoded + formatChoice.instruction,
-        request,
-      );
-      ledger.compress(jsonTokens, chosenTokens);
-      messages.push({
-        role: "system",
-        content:
-          (formatChoice.instruction ? formatChoice.instruction + "\n" : "") +
-          formatChoice.encoded,
-      });
-      trace.record("serialization", formatChoice.chosen, {
-        reason: formatChoice.reason,
-        jsonTokens,
-        chosenTokens,
-      });
+      if (toggles.serialization !== false) {
+        formatChoice = this.deps.formatSelector.choose(request.structuredData, {
+          model: request.model,
+          ...(request.tokenizer ? { tokenizer: request.tokenizer } : {}),
+        });
+        const chosenTokens = this.tokensFor(
+          formatChoice.encoded + formatChoice.instruction,
+          request,
+        );
+        ledger.compress(jsonTokens, chosenTokens);
+        messages.push({
+          role: "system",
+          content:
+            (formatChoice.instruction ? formatChoice.instruction + "\n" : "") +
+            formatChoice.encoded,
+        });
+        trace.record("serialization", formatChoice.chosen, {
+          reason: formatChoice.reason,
+          jsonTokens,
+          chosenTokens,
+        });
+      } else {
+        messages.push({ role: "system", content: jsonEncoded });
+        trace.record("serialization", "json-compact", {
+          reason: "format selector disabled; sent compact JSON",
+        });
+      }
     }
 
     // --- Stage 9: compression (managed feature — license-gated, net-positive only). ---

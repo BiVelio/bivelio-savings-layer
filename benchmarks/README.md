@@ -30,11 +30,34 @@ MOCK proves the mechanism (calls avoided, tokens compressed, quality preserved);
 LIVE proves real dollars. Both refuse to pass if any correctness check fails —
 savings without correctness do not count.
 
-## Full suite (ablations)
+## Ablation: where the savings come from (`pnpm ablation`)
 
-Comparing "baseline" vs "everything on" is not enough. The benchmark suite runs
-**ablations** so each module's marginal contribution — and the interactions
-between modules — are measured, not assumed.
+"Baseline vs everything on" hides which lever pays for itself. `pnpm ablation`
+runs the batch under a ladder of configs, each enabling one more optimization,
+and reports the **marginal** contribution of each:
+
+```
+stage                cost        vs baseline   marginal Δ
+baseline (naive)     $0.000423        0.0%          —
++ exact cache        $0.000409        3.3%      $0.000014
++ resolvers          $0.000398        5.7%      $0.000010
++ router             $0.000398        5.7%      $0.000000   ← 0 here: scenarios have no retrieval to avoid
++ format selector    $0.000203       52.1%      $0.000196   ← the big lever on the table payload
+```
+
+Cost per rung is that config's real spend (actual input+output tokens priced;
+avoided calls cost 0), with fresh caches per rung so stages are independent.
+
+## Exportable reports
+
+Both harnesses write machine-readable JSON to `benchmarks/out/` (gitignored):
+`demo.json` (per-scenario + totals) and `ablation.json` (the ladder). This is the
+same data that later feeds the dashboard and the "verify your savings" page.
+
+## Full suite (production traces, golden tasks, conformance)
+
+The demo/ablation above prove the mechanism on curated scenarios. The broader
+suite below runs on real traffic segments and is measured, not assumed.
 
 ## Suites
 

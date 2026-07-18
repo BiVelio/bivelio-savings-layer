@@ -47,6 +47,14 @@ describe("canonicalization + exact key", () => {
     expect(a).not.toBe(b);
   });
 
+  it("distinguishes different structured payloads (no cross-payload collision)", () => {
+    const a = buildExactKey(canonicalize(req({ structuredData: { rows: [{ id: 1 }] } })));
+    const b = buildExactKey(canonicalize(req({ structuredData: { rows: [{ id: 2 }] } })));
+    const none = buildExactKey(canonicalize(req()));
+    expect(a).not.toBe(b);
+    expect(a).not.toBe(none);
+  });
+
   it("inflight key ignores freshness bucketing but keeps tenant isolation", () => {
     const a = buildInflightKey(canonicalize(req({ context: { tenantId: "t", freshnessBucket: "hour" } })));
     const b = buildInflightKey(canonicalize(req({ context: { tenantId: "t", freshnessBucket: "day" } })));

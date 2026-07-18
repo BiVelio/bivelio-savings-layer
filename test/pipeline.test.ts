@@ -104,6 +104,26 @@ describe("SavingsPipeline end-to-end", () => {
     expect(res.report.tokens.compressedInput).toBeGreaterThan(0);
   });
 
+  it("sends structured data as JSON when the format selector is disabled (never drops it)", async () => {
+    const layer = createSavingsLayer({ provider: createMockProvider({ answer: "ok" }), generateId: deterministicId });
+    const rows = { users: Array.from({ length: 20 }, (_, i) => ({ id: i, name: `u${i}` })) };
+    const withData = await layer.generate({
+      model: "m",
+      messages: [{ role: "user", content: "analyze payload alpha" }],
+      structuredData: rows,
+      savings: { serialization: false },
+    });
+    const withoutData = await layer.generate({
+      model: "m",
+      messages: [{ role: "user", content: "analyze payload beta" }],
+      savings: { serialization: false },
+    });
+    // Payload was sent (not dropped) → more input tokens than the no-data request.
+    expect(withData.report.tokens.actualInput).toBeGreaterThan(withoutData.report.tokens.actualInput);
+    expect(withData.report.serialization.chosen).toBe("json-compact");
+    expect(withData.report.tokens.compressedInput).toBe(0); // no compression when disabled
+  });
+
   it("keeps the four ledgers separate in the report", async () => {
     const layer = createSavingsLayer({
       provider: createMockProvider({ answer: "hi", cachedInputTokens: 30 }),

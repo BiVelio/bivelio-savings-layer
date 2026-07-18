@@ -9,4 +9,5 @@ coverage/
 .turbo/
 .vitest/
 *.tsbuildinfo
+benchmarks/out/
 .claude/
