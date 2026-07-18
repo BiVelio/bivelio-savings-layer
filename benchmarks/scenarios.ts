@@ -8,10 +8,21 @@
  */
 import type { SavingsRequest, SavingsResult, ToolDescriptor } from "../src/index.js";
 
+/** Which of the four ledgers a scenario's saving is attributed to (for the
+ * per-ledger A/B rollup). "none" = a plain call used as setup, not a lever. */
+export type LedgerTag =
+  | "avoided_calls"
+  | "eliminated_tokens"
+  | "compressed_tokens"
+  | "output_restriction"
+  | "none";
+
 export interface Scenario {
   name: string;
   /** Which savings lever this demonstrates. */
   lever: string;
+  /** Which ledger the measured A/B delta is attributed to. */
+  ledger: LedgerTag;
   request: SavingsRequest;
   /** Optional correctness check on the result. */
   expect?: (r: SavingsResult) => boolean;
@@ -86,6 +97,7 @@ export const scenarios: Scenario[] = [
   {
     name: "Local arithmetic",
     lever: "avoided_calls (deterministic resolver)",
+    ledger: "avoided_calls",
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "What is (2 + 2) * 3?" }],
@@ -95,6 +107,7 @@ export const scenarios: Scenario[] = [
   {
     name: "FAQ (first ask)",
     lever: "baseline (populates cache)",
+    ledger: "none",
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "What is the standard refund window in days?" }],
@@ -105,6 +118,7 @@ export const scenarios: Scenario[] = [
   {
     name: "FAQ (repeat ask)",
     lever: "avoided_calls (exact cache hit)",
+    ledger: "avoided_calls",
     warm: true,
     request: {
       model: "openai/gpt-4o-mini",
@@ -117,6 +131,7 @@ export const scenarios: Scenario[] = [
   {
     name: "Summarize provided text",
     lever: "avoided retrieval (NO_RETRIEVAL routing)",
+    ledger: "eliminated_tokens",
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "Summarize the following text: our Q2 report shows steady growth in EU markets with rising retention." }],
@@ -127,6 +142,7 @@ export const scenarios: Scenario[] = [
   {
     name: "Tool-heavy request",
     lever: "fewer tool tokens (tool selector)",
+    ledger: "eliminated_tokens",
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "what is the weather forecast for tomorrow?" }],
@@ -138,6 +154,7 @@ export const scenarios: Scenario[] = [
   {
     name: "Large uniform table",
     lever: "compressed_tokens (TOON/CSV format selector)",
+    ledger: "compressed_tokens",
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "Summarize the attached user table." }],
@@ -157,6 +174,7 @@ export const scenarios: Scenario[] = [
   {
     name: "Constrained structured answer",
     lever: "output restriction (schema + maxOutputTokens)",
+    ledger: "output_restriction",
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "Give a one-line summary of BV-SALA with up to three references." }],

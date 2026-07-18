@@ -66,6 +66,12 @@ const keepPrefix = !!process.env.BVSALA_DEMO_KEEP_PREFIX;
 const mode: "LIVE" | "MOCK" = baseUrl ? "LIVE" : "MOCK";
 const SEED = intEnv("BVSALA_AB_SEED", 1234567);
 const REPS = intEnv("BVSALA_AB_REPS", mode === "LIVE" ? 8 : 4);
+// Adaptive sampling (LIVE only): keep drawing paired reps for a noisy scenario
+// until its savings CI is tight enough, or a hard cap is reached. Deterministic
+// MOCK converges immediately (CI half-width 0).
+const MAX_REPS = intEnv("BVSALA_AB_MAX_REPS", REPS * 3);
+const CI_TARGET = Number(process.env.BVSALA_AB_CI_TARGET ?? 0.03); // desired ± half-width on the savings fraction
+const QUALITY_FLOOR = Number(process.env.BVSALA_AB_QUALITY_FLOOR ?? 0.999);
 
 function intEnv(name: string, def: number): number {
   const v = process.env[name];
@@ -154,6 +160,7 @@ function safeExpect(s: Scenario, res: SavingsResult): boolean {
 interface ScenarioResult {
   name: string;
   lever: string;
+  ledger: string;
   kind: Kind;
   reps: number;
   armA: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
@@ -165,6 +172,11 @@ interface ScenarioResult {
     wilcoxonP: number;
   };
   quality: { gate: string; passed: number; total: number };
+  /** Provably positive savings at 95% AND every answer passed the gate. */
+  proven: boolean;
+  /** False if the provider's system_fingerprint changed mid-run (model swapped). */
+  fingerprintStable: boolean;
+  fingerprints: string[];
   amortization?: { coldMissCost: number; hitCost: number; breakEvenK: number | null };
   attribution: {
     avoidedCall: boolean;
@@ -191,11 +203,13 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
       ? "resolver"
       : "ran";
 
-  const reps = kind === "ran" ? REPS : Math.max(2, Math.ceil(REPS / 2));
+  const minReps = kind === "ran" ? REPS : Math.max(2, Math.ceil(REPS / 2));
 
   const paired: { costA: number; costB: number }[] = [];
   const aIn: number[] = [], aOut: number[] = [], bIn: number[] = [], bOut: number[] = [];
+  const fingerprints = new Set<string>();
   let qPass = 0;
+  let gate = "structural";
   let attribution = {
     avoidedCall: probe.report.calls.avoidedLlm > 0,
     eliminatedInputTokens: probe.report.tokens.eliminatedInput,
@@ -203,9 +217,11 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     providerCachedInputTokens: probe.report.tokens.providerCachedInput ?? 0,
   };
 
-  for (let t = 0; t < reps; t++) {
+  async function sampleOnce(t: number): Promise<void> {
     // Arm A: naive baseline — a real call, measured.
     const respA = await provider.generate(buildNaive(req));
+    const fp = (respA.raw as { system_fingerprint?: string } | undefined)?.system_fingerprint;
+    if (fp) fingerprints.add(fp);
     const uA: Usage = {
       inputTokens: respA.usage.inputTokens,
       outputTokens: respA.usage.outputTokens,
@@ -224,29 +240,41 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     aIn.push(uA.inputTokens); aOut.push(uA.outputTokens);
     bIn.push(uB.inputTokens); bOut.push(uB.outputTokens);
 
-    // Quality gate: ground-truth check when available, else structural / judge.
-    // Cache scenarios' own expect() asserts a cache HIT, which cannot hold on
-    // this cold call — gate them structurally here; their hit correctness is
-    // asserted in the amortization pass.
+    // Quality gate: ground-truth when available, else structural / judge. Cache
+    // scenarios' own expect() asserts a HIT, impossible on this cold call — gate
+    // them structurally here; hit correctness is asserted in the amortization pass.
     const q = await qualityGate(s, resB, respA.text, model, kind === "cache");
     if (q.passed) qPass++;
+    gate = q.gate;
     if (t === 0) attribution = {
       avoidedCall: resB.report.calls.avoidedLlm > 0,
       eliminatedInputTokens: resB.report.tokens.eliminatedInput,
       compressedInputTokens: resB.report.tokens.compressedInput,
       providerCachedInputTokens: resB.report.tokens.providerCachedInput ?? 0,
     };
-    // remember the gate label from the first rep
-    (attribution as unknown as { _gate?: string })._gate = q.gate;
+  }
+
+  // Draw the minimum, then (LIVE only) keep drawing until the savings CI is tight
+  // enough or the cap is hit — spend more reps only where variance demands it.
+  let t = 0;
+  for (; t < minReps; t++) await sampleOnce(t);
+  const ciHalf = (): number => {
+    const ci = bootstrapRatioCI(paired.map((p) => p.costA), paired.map((p) => p.costB), { seed: SEED });
+    return (ci.upper - ci.lower) / 2;
+  };
+  while (mode === "LIVE" && paired.length < MAX_REPS && ciHalf() > CI_TARGET) {
+    await sampleOnce(t++);
   }
 
   const savings = bootstrapRatioCI(paired.map((p) => p.costA), paired.map((p) => p.costB), { seed: SEED });
-  const gate = (attribution as unknown as { _gate?: string })._gate ?? "structural";
-  delete (attribution as unknown as { _gate?: string })._gate;
+  const reps = paired.length;
+  const qualityOk = reps > 0 && qPass / reps >= QUALITY_FLOOR;
+  const fpStable = fingerprints.size <= 1;
 
   const result: ScenarioResult = {
     name: s.name,
     lever: s.lever,
+    ledger: s.ledger,
     kind,
     reps,
     armA: { meanInputTokens: mean(aIn), meanOutputTokens: mean(aOut), meanCost: mean(paired.map((p) => p.costA)) },
@@ -258,6 +286,9 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
       wilcoxonP: wilcoxonSignedRankP(paired.map((p) => p.costA - p.costB)),
     },
     quality: { gate, passed: qPass, total: reps },
+    proven: mode === "LIVE" && savings.lower > 0 && qualityOk && fpStable,
+    fingerprintStable: fpStable,
+    fingerprints: [...fingerprints],
     attribution,
     paired,
   };
@@ -392,18 +423,59 @@ async function main(): Promise<void> {
   const qTotalPass = results.reduce((n, r) => n + r.quality.passed, 0);
   const qTotal = results.reduce((n, r) => n + r.quality.total, 0);
   const qualityPassRate = qTotal ? qTotalPass / qTotal : 0;
+  const allFpStable = results.every((r) => r.fingerprintStable);
 
-  const proven = mode === "LIVE" && agg.lower > 0 && qualityPassRate >= 0.999;
+  const proven = mode === "LIVE" && agg.lower > 0 && qualityPassRate >= QUALITY_FLOOR && allFpStable;
+
+  // Per-ledger attribution. Each scenario maps to exactly ONE ledger, so the
+  // ledger cost-deltas PARTITION the total delta — double-counting is impossible
+  // by construction, and the reconciliation residual below proves it.
+  const sumArr = (xs: number[]): number => xs.reduce((n, x) => n + x, 0);
+  const LEDGERS = ["avoided_calls", "eliminated_tokens", "compressed_tokens", "output_restriction"];
+  const ledgerRollup = LEDGERS.map((lg) => {
+    const rs = results.filter((r) => r.ledger === lg);
+    const a = rs.flatMap((r) => r.paired.map((p) => p.costA));
+    const b = rs.flatMap((r) => r.paired.map((p) => p.costB));
+    const ci = bootstrapRatioCI(a, b, { seed: SEED });
+    return {
+      ledger: lg,
+      scenarios: rs.map((r) => r.name),
+      savings: ci,
+      deltaCost: sumArr(a) - sumArr(b),
+      proven: mode === "LIVE" && ci.lower > 0 && rs.length > 0 && rs.every((r) => r.quality.passed === r.quality.total && r.fingerprintStable),
+    };
+  });
+
+  // Reconciliation: (Σ ledger deltas) + (the "none"/setup bucket) must equal the
+  // total measured delta, to the cent. A non-zero residual means a bug.
+  const totalDelta = sumArr(allA) - sumArr(allB);
+  const noneRs = results.filter((r) => !LEDGERS.includes(r.ledger));
+  const noneDelta =
+    sumArr(noneRs.flatMap((r) => r.paired.map((p) => p.costA))) -
+    sumArr(noneRs.flatMap((r) => r.paired.map((p) => p.costB)));
+  const ledgerSum = ledgerRollup.reduce((n, l) => n + l.deltaCost, 0) + noneDelta;
+  const residual = totalDelta - ledgerSum;
+  const reconciled = Math.abs(residual) < 1e-9;
+
   console.log("\nHeadline (per cold single call, measured both sides)");
   if (mode === "LIVE") {
     console.log(`  Net savings:   point ${pct(agg.point)}   95% CI [${pct(agg.lower)}, ${pct(agg.upper)}]`);
-    console.log(`  Claim:         ${proven ? `VERIFIED ≥ ${pct(agg.lower)} at 95% confidence` : "NOT PROVEN (CI lower ≤ 0 or quality regressed)"}`);
+    console.log(`  Claim:         ${proven ? `VERIFIED ≥ ${pct(agg.lower)} at 95% confidence` : "NOT PROVEN (CI lower ≤ 0, quality regressed, or model swapped)"}`);
     console.log(`  Wilcoxon p:    ${wP.toExponential(2)}   (H1: median saving > 0)`);
+    if (!allFpStable) console.log(`  ⚠ model fingerprint changed mid-run — results may span different model versions.`);
   } else {
     console.log(`  Net savings:   ${pct(agg.point)}  — ESTIMATED (mock provider), NOT a real savings claim`);
     console.log(`  Run LIVE (set BVSALA_DEMO_BASE_URL) for real provider tokens & dollars.`);
   }
   console.log(`  Quality:       ${qTotalPass}/${qTotal} answers passed the gate (${pct(qualityPassRate)})`);
+  console.log(`  Reconciles:    ${reconciled ? "yes" : "NO — residual " + money(residual)}  (ledger deltas partition the total, no double-counting)`);
+
+  console.log("\nPer-ledger attribution (measured; a ledger is 'proven' only if its 95% CI clears 0)");
+  for (const l of ledgerRollup) {
+    const badge = mode !== "LIVE" ? "est" : l.proven ? "proven" : "not-proven";
+    console.log(`  ${pad(l.ledger, 20)} ${padL(pct(l.savings.point), 8)}  95%lo ${padL(pct(l.savings.lower), 8)}   ${badge}`);
+  }
+
   const cacheRows = results.filter((r) => r.amortization);
   if (cacheRows.length) {
     console.log("\nRepeat-traffic (cache amortization — savings grow with reuse)");
@@ -419,12 +491,15 @@ async function main(): Promise<void> {
     ...(liveModel ? { model: liveModel } : {}),
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
     pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE },
-    config: { reps: REPS, seed: SEED },
     methodology:
       "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; " +
       "Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. " +
       "Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
+    config: { reps: REPS, minReps: REPS, maxReps: MAX_REPS, ciTarget: CI_TARGET, qualityFloor: QUALITY_FLOOR, seed: SEED },
     scenarios: results.map((r) => ({ ...r, paired: undefined })),
+    ledgers: ledgerRollup,
+    reconciliation: { totalDelta, ledgerSum, residual, reconciled },
+    fingerprintStable: allFpStable,
     aggregate: {
       savings: agg,
       wilcoxonP: wP,
@@ -438,6 +513,9 @@ async function main(): Promise<void> {
       "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
       "The headline is the 95% CI lower bound, never the point estimate.",
       "A saving is voided if its answer fails the quality gate.",
+      "Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).",
+      "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
+      "A changed model fingerprint mid-run invalidates the 'proven' claim.",
       "Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.",
       "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving.",
     ],

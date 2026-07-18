@@ -1,0 +1,421 @@
+{
+  "mode": "MOCK",
+  "generatedNote": "ESTIMATED — mock provider, not a savings claim",
+  "pricing": {
+    "note": "USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. Both arms share one price, so the savings % is insensitive to price level.",
+    "table": {
+      "gpt-4o-mini": {
+        "inputPer1k": 0.00015,
+        "outputPer1k": 0.0006,
+        "cachedInputPer1k": 0.000075
+      },
+      "gpt-4o": {
+        "inputPer1k": 0.0025,
+        "outputPer1k": 0.01,
+        "cachedInputPer1k": 0.00125
+      },
+      "gpt-4.1-mini": {
+        "inputPer1k": 0.0004,
+        "outputPer1k": 0.0016,
+        "cachedInputPer1k": 0.0001
+      },
+      "gpt-4.1": {
+        "inputPer1k": 0.002,
+        "outputPer1k": 0.008,
+        "cachedInputPer1k": 0.0005
+      }
+    },
+    "fallback": {
+      "inputPer1k": 0.00015,
+      "outputPer1k": 0.0006,
+      "cachedInputPer1k": 0.000075
+    }
+  },
+  "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
+  "config": {
+    "reps": 4,
+    "minReps": 4,
+    "maxReps": 12,
+    "ciTarget": 0.03,
+    "qualityFloor": 0.999,
+    "seed": 1234567
+  },
+  "scenarios": [
+    {
+      "name": "Local arithmetic",
+      "lever": "avoided_calls (deterministic resolver)",
+      "ledger": "avoided_calls",
+      "kind": "resolver",
+      "reps": 2,
+      "armA": {
+        "meanInputTokens": 10,
+        "meanOutputTokens": 15,
+        "meanCost": 0.000010499999999999998
+      },
+      "armB": {
+        "meanInputTokens": 0,
+        "meanOutputTokens": 0,
+        "meanCost": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 10,
+        "outputTokenDeltaMean": 15,
+        "savings": {
+          "point": 1,
+          "lower": 1,
+          "upper": 1
+        },
+        "wilcoxonP": 0.17288928040763485
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 2,
+        "total": 2
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": true,
+        "eliminatedInputTokens": 10,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "FAQ (first ask)",
+      "lever": "baseline (populates cache)",
+      "ledger": "none",
+      "kind": "ran",
+      "reps": 4,
+      "armA": {
+        "meanInputTokens": 12,
+        "meanOutputTokens": 15,
+        "meanCost": 0.000010799999999999998
+      },
+      "armB": {
+        "meanInputTokens": 12,
+        "meanOutputTokens": 20,
+        "meanCost": 0.000013799999999999998
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -5,
+        "savings": {
+          "point": -0.2777777777777779,
+          "lower": -0.2777777777777779,
+          "upper": -0.2777777777777779
+        },
+        "wilcoxonP": 0.9860966005513429
+      },
+      "quality": {
+        "gate": "plumbing(mock)",
+        "passed": 4,
+        "total": 4
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "FAQ (repeat ask)",
+      "lever": "avoided_calls (exact cache hit)",
+      "ledger": "avoided_calls",
+      "kind": "cache",
+      "reps": 2,
+      "armA": {
+        "meanInputTokens": 12,
+        "meanOutputTokens": 15,
+        "meanCost": 0.000010799999999999998
+      },
+      "armB": {
+        "meanInputTokens": 12,
+        "meanOutputTokens": 20,
+        "meanCost": 0.000013799999999999998
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -5,
+        "savings": {
+          "point": -0.2777777777777779,
+          "lower": -0.2777777777777779,
+          "upper": -0.2777777777777779
+        },
+        "wilcoxonP": 0.9703268451875493
+      },
+      "quality": {
+        "gate": "plumbing(mock)",
+        "passed": 2,
+        "total": 2
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      },
+      "amortization": {
+        "coldMissCost": 0.000013799999999999998,
+        "hitCost": 0,
+        "breakEvenK": 2
+      }
+    },
+    {
+      "name": "Summarize provided text",
+      "lever": "avoided retrieval (NO_RETRIEVAL routing)",
+      "ledger": "eliminated_tokens",
+      "kind": "ran",
+      "reps": 4,
+      "armA": {
+        "meanInputTokens": 31,
+        "meanOutputTokens": 15,
+        "meanCost": 0.000013649999999999998
+      },
+      "armB": {
+        "meanInputTokens": 31,
+        "meanOutputTokens": 20,
+        "meanCost": 0.000016649999999999998
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -5,
+        "savings": {
+          "point": -0.2197802197802199,
+          "lower": -0.2197802197802199,
+          "upper": -0.2197802197802199
+        },
+        "wilcoxonP": 0.9860966005513429
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 4,
+        "total": 4
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Tool-heavy request",
+      "lever": "fewer tool tokens (tool selector)",
+      "ledger": "eliminated_tokens",
+      "kind": "ran",
+      "reps": 4,
+      "armA": {
+        "meanInputTokens": 815,
+        "meanOutputTokens": 15,
+        "meanCost": 0.00013125
+      },
+      "armB": {
+        "meanInputTokens": 190,
+        "meanOutputTokens": 20,
+        "meanCost": 0.000040499999999999995
+      },
+      "measured": {
+        "inputTokenDeltaMean": 625,
+        "outputTokenDeltaMean": -5,
+        "savings": {
+          "point": 0.6914285714285715,
+          "lower": 0.6914285714285715,
+          "upper": 0.6914285714285715
+        },
+        "wilcoxonP": 0.035930266797508215
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 4,
+        "total": 4
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Large uniform table",
+      "lever": "compressed_tokens (TOON/CSV format selector)",
+      "ledger": "compressed_tokens",
+      "kind": "ran",
+      "reps": 4,
+      "armA": {
+        "meanInputTokens": 2182,
+        "meanOutputTokens": 15,
+        "meanCost": 0.0003363
+      },
+      "armB": {
+        "meanInputTokens": 877,
+        "meanOutputTokens": 20,
+        "meanCost": 0.00014355
+      },
+      "measured": {
+        "inputTokenDeltaMean": 1305,
+        "outputTokenDeltaMean": -5,
+        "savings": {
+          "point": 0.5731489741302409,
+          "lower": 0.5731489741302409,
+          "upper": 0.5731489741302409
+        },
+        "wilcoxonP": 0.035930266797508215
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 4,
+        "total": 4
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 1306,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Constrained structured answer",
+      "lever": "output restriction (schema + maxOutputTokens)",
+      "ledger": "output_restriction",
+      "kind": "ran",
+      "reps": 4,
+      "armA": {
+        "meanInputTokens": 20,
+        "meanOutputTokens": 15,
+        "meanCost": 0.000011999999999999999
+      },
+      "armB": {
+        "meanInputTokens": 20,
+        "meanOutputTokens": 20,
+        "meanCost": 0.000014999999999999999
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -5,
+        "savings": {
+          "point": -0.25,
+          "lower": -0.25,
+          "upper": -0.25
+        },
+        "wilcoxonP": 0.9860966005513429
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 4,
+        "total": 4
+      },
+      "proven": false,
+      "fingerprintStable": true,
+      "fingerprints": [],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    }
+  ],
+  "ledgers": [
+    {
+      "ledger": "avoided_calls",
+      "scenarios": [
+        "Local arithmetic",
+        "FAQ (repeat ask)"
+      ],
+      "savings": {
+        "point": 0.352112676056338,
+        "lower": -0.2777777777777779,
+        "upper": 1
+      },
+      "deltaCost": 0.000014999999999999995,
+      "proven": false
+    },
+    {
+      "ledger": "eliminated_tokens",
+      "scenarios": [
+        "Summarize provided text",
+        "Tool-heavy request"
+      ],
+      "savings": {
+        "point": 0.6055900621118012,
+        "lower": 0.30753968253968256,
+        "upper": 0.678088803088803
+      },
+      "deltaCost": 0.0003509999999999999,
+      "proven": false
+    },
+    {
+      "ledger": "compressed_tokens",
+      "scenarios": [
+        "Large uniform table"
+      ],
+      "savings": {
+        "point": 0.5731489741302409,
+        "lower": 0.5731489741302409,
+        "upper": 0.5731489741302409
+      },
+      "deltaCost": 0.000771,
+      "proven": false
+    },
+    {
+      "ledger": "output_restriction",
+      "scenarios": [
+        "Constrained structured answer"
+      ],
+      "savings": {
+        "point": -0.25,
+        "lower": -0.25,
+        "upper": -0.25
+      },
+      "deltaCost": -0.000012,
+      "proven": false
+    }
+  ],
+  "reconciliation": {
+    "totalDelta": 0.0011129999999999988,
+    "ledgerSum": 0.0011129999999999998,
+    "residual": -1.0842021724855044e-18,
+    "reconciled": true
+  },
+  "fingerprintStable": true,
+  "aggregate": {
+    "savings": {
+      "point": 0.5406587000874377,
+      "lower": 0.4446711473835815,
+      "upper": 0.5836805771503201
+    },
+    "wilcoxonP": 0.09620579360291859,
+    "qualityPassRate": 1,
+    "proven": false,
+    "headline": "ESTIMATED (mock) — not a savings claim"
+  },
+  "honesty": [
+    "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
+    "The headline is the 95% CI lower bound, never the point estimate.",
+    "A saving is voided if its answer fails the quality gate.",
+    "Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).",
+    "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
+    "A changed model fingerprint mid-run invalidates the 'proven' claim.",
+    "Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.",
+    "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving."
+  ]
+}

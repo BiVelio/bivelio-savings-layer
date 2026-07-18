@@ -204,6 +204,54 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 
+  /* ---- measured A/B section ---- */
+  .ab-root { display: flex; flex-direction: column; gap: 18px; }
+  .ab-loading { color: var(--muted); font-size: .9rem; padding: 20px; text-align: center; }
+  .ab-banner { display: flex; align-items: center; gap: 10px; padding: 11px 15px; border-radius: 10px; font-size: .84rem; }
+  .ab-banner.est { background: var(--baseline-soft); color: var(--muted); border: 1px solid var(--line); }
+  .ab-banner.verified { background: var(--success-soft); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 40%, transparent); }
+  .ab-headline { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; display: grid; grid-template-columns: minmax(220px, 1fr) 1.2fr; gap: 24px; align-items: center; }
+  .ab-hl-num { font-family: var(--mono); font-size: 2.8rem; font-weight: 700; letter-spacing: -.03em; line-height: 1; color: var(--success); font-variant-numeric: tabular-nums; }
+  .ab-hl-num.est { color: var(--muted); }
+  .ab-hl-cap { font-size: .8rem; color: var(--muted); margin-top: 8px; }
+  .ab-hl-cap b { color: var(--ink); }
+  .ci-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .ci-track { position: relative; height: 30px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .ci-band { position: absolute; top: 0; bottom: 0; background: var(--success-soft); border-left: 2px solid var(--success); border-right: 2px solid var(--success); }
+  .ci-band.est { background: var(--baseline-soft); border-color: var(--baseline); }
+  .ci-point { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+  .ci-zero { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--warn); opacity: .55; }
+  .ci-legend { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+  .ab-stats { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .78rem; color: var(--muted); }
+  .ab-stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ab-stats .ok { color: var(--success); }
+  .ab-stats .bad { color: var(--warn); }
+
+  .ab-ledgers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .ab-lg { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); }
+  .ab-lg .n { font-family: var(--mono); font-size: .7rem; color: var(--muted); }
+  .ab-lg .v { font-family: var(--mono); font-size: 1.5rem; font-weight: 640; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+  .ab-lg .v.pos { color: var(--success); } .ab-lg .v.neg { color: var(--warn); }
+  .ab-lg .lo { font-size: .72rem; color: var(--muted); font-family: var(--mono); }
+  .ab-lg .b { display: inline-block; margin-top: 8px; font-size: .64rem; font-family: var(--mono); padding: 2px 7px; border-radius: 999px; }
+  .ab-lg .b.proven { background: var(--success-soft); color: var(--success); }
+  .ab-lg .b.np { background: var(--baseline-soft); color: var(--muted); }
+
+  .ab-table { width: 100%; border-collapse: collapse; font-size: .8rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .ab-table th, .ab-table td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .ab-table th { font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 640; background: var(--surface-2); }
+  .ab-table td:first-child, .ab-table th:first-child { text-align: left; font-variant-numeric: normal; }
+  .ab-table tr:last-child td { border-bottom: none; }
+  .ab-table .mono { font-family: var(--mono); }
+  .ab-table .pos { color: var(--success); } .ab-table .neg { color: var(--warn); }
+  .ab-scroll { overflow-x: auto; }
+  .ab-repro { background: var(--ink); color: #d7e6dd; border-radius: 12px; padding: 16px 18px; font-family: var(--mono); font-size: .76rem; line-height: 1.6; overflow-x: auto; }
+  :root[data-theme="dark"] .ab-repro { background: #0a120d; border: 1px solid var(--line); }
+  @media (prefers-color-scheme: dark) { .ab-repro { background: #0a120d; border: 1px solid var(--line); } }
+  .ab-repro .c { color: #6f8f7e; }
+  @media (max-width: 820px) { .ab-headline { grid-template-columns: 1fr; } .ab-ledgers { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .ab-ledgers { grid-template-columns: 1fr; } }
+
   /* ---- pricing / trust ---- */
   .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: stretch; }
   .price-card { background: var(--ink); color: var(--bg); border-radius: 18px; padding: 30px; display: flex; flex-direction: column; gap: 14px; }
@@ -295,9 +343,9 @@
 
   <section id="verify">
     <div class="sec-head">
-      <span class="eyebrow">Verify, don't trust</span>
-      <h2>Two live instruments. The real optimizer, in your browser.</h2>
-      <p>The left panel runs the actual format selector on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> your monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provider-<i>measured</i> dollars (both arms metered against a real endpoint), run the A/B benchmark — see below.</p>
+      <span class="eyebrow">Step 1 · Preliminary tests — in your browser</span>
+      <h2>Try the optimizer yourself. Nothing leaves this page.</h2>
+      <p>These two instruments run the real optimizer <b>locally</b> so you can sanity-check the mechanism before touching a provider. The left panel runs the actual format selector on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> a monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provably-<i>measured</i> dollars, see <a href="#measured">Step 2</a> below.</p>
     </div>
 
     <div class="instrument">
@@ -375,6 +423,17 @@
     </div>
   </section>
 
+  <section id="measured">
+    <div class="sec-head">
+      <span class="eyebrow">Step 2 · Provably measured — reproducible</span>
+      <h2>Real savings, measured against a real provider. Both arms.</h2>
+      <p>This is the output of the A/B benchmark (<code>pnpm ab</code>): for every scenario it sends a <b>naive</b> request <i>and</i> the BV‑SALA request to the <b>same</b> model, prices both from the provider's own token usage, and reports the <b>95% confidence lower bound</b> — never the flattering point estimate. Nothing is modeled. <span id="ab-mode-note"></span></p>
+    </div>
+    <div id="ab-root" class="ab-root">
+      <div class="ab-loading">Loading measured results…</div>
+    </div>
+  </section>
+
   <section>
     <div class="sec-head">
       <span class="eyebrow">Honest accounting</span>
@@ -448,6 +507,9 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
   </div>
 </footer>
 
+<script type="application/json" id="ab-inline">
+{"mode":"MOCK","generatedNote":"ESTIMATED \u2014 mock provider, not a savings claim","pricing":{"note":"USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. Both arms share one price, so the savings % is insensitive to price level.","table":{"gpt-4o-mini":{"inputPer1k":0.00015,"outputPer1k":0.0006,"cachedInputPer1k":7.5e-05},"gpt-4o":{"inputPer1k":0.0025,"outputPer1k":0.01,"cachedInputPer1k":0.00125},"gpt-4.1-mini":{"inputPer1k":0.0004,"outputPer1k":0.0016,"cachedInputPer1k":0.0001},"gpt-4.1":{"inputPer1k":0.002,"outputPer1k":0.008,"cachedInputPer1k":0.0005}},"fallback":{"inputPer1k":0.00015,"outputPer1k":0.0006,"cachedInputPer1k":7.5e-05}},"methodology":"Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1\u2212\u03a3costB/\u03a3costA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.","config":{"reps":4,"minReps":4,"maxReps":12,"ciTarget":0.03,"qualityFloor":0.999,"seed":1234567},"scenarios":[{"name":"Local arithmetic","lever":"avoided_calls (deterministic resolver)","ledger":"avoided_calls","kind":"resolver","reps":2,"armA":{"meanInputTokens":10,"meanOutputTokens":15,"meanCost":1.0499999999999998e-05},"armB":{"meanInputTokens":0,"meanOutputTokens":0,"meanCost":0},"measured":{"inputTokenDeltaMean":10,"outputTokenDeltaMean":15,"savings":{"point":1,"lower":1,"upper":1},"wilcoxonP":0.17288928040763485},"quality":{"gate":"ground-truth","passed":2,"total":2},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":true,"eliminatedInputTokens":10,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"FAQ (first ask)","lever":"baseline (populates cache)","ledger":"none","kind":"ran","reps":4,"armA":{"meanInputTokens":12,"meanOutputTokens":15,"meanCost":1.0799999999999998e-05},"armB":{"meanInputTokens":12,"meanOutputTokens":20,"meanCost":1.3799999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2777777777777779,"lower":-0.2777777777777779,"upper":-0.2777777777777779},"wilcoxonP":0.9860966005513429},"quality":{"gate":"plumbing(mock)","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"FAQ (repeat ask)","lever":"avoided_calls (exact cache hit)","ledger":"avoided_calls","kind":"cache","reps":2,"armA":{"meanInputTokens":12,"meanOutputTokens":15,"meanCost":1.0799999999999998e-05},"armB":{"meanInputTokens":12,"meanOutputTokens":20,"meanCost":1.3799999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2777777777777779,"lower":-0.2777777777777779,"upper":-0.2777777777777779},"wilcoxonP":0.9703268451875493},"quality":{"gate":"plumbing(mock)","passed":2,"total":2},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0},"amortization":{"coldMissCost":1.3799999999999998e-05,"hitCost":0,"breakEvenK":2}},{"name":"Summarize provided text","lever":"avoided retrieval (NO_RETRIEVAL routing)","ledger":"eliminated_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":31,"meanOutputTokens":15,"meanCost":1.3649999999999998e-05},"armB":{"meanInputTokens":31,"meanOutputTokens":20,"meanCost":1.6649999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2197802197802199,"lower":-0.2197802197802199,"upper":-0.2197802197802199},"wilcoxonP":0.9860966005513429},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"Tool-heavy request","lever":"fewer tool tokens (tool selector)","ledger":"eliminated_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":815,"meanOutputTokens":15,"meanCost":0.00013125},"armB":{"meanInputTokens":190,"meanOutputTokens":20,"meanCost":4.0499999999999995e-05},"measured":{"inputTokenDeltaMean":625,"outputTokenDeltaMean":-5,"savings":{"point":0.6914285714285715,"lower":0.6914285714285715,"upper":0.6914285714285715},"wilcoxonP":0.035930266797508215},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"Large uniform table","lever":"compressed_tokens (TOON/CSV format selector)","ledger":"compressed_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":2182,"meanOutputTokens":15,"meanCost":0.0003363},"armB":{"meanInputTokens":877,"meanOutputTokens":20,"meanCost":0.00014355},"measured":{"inputTokenDeltaMean":1305,"outputTokenDeltaMean":-5,"savings":{"point":0.5731489741302409,"lower":0.5731489741302409,"upper":0.5731489741302409},"wilcoxonP":0.035930266797508215},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":1306,"providerCachedInputTokens":0}},{"name":"Constrained structured answer","lever":"output restriction (schema + maxOutputTokens)","ledger":"output_restriction","kind":"ran","reps":4,"armA":{"meanInputTokens":20,"meanOutputTokens":15,"meanCost":1.1999999999999999e-05},"armB":{"meanInputTokens":20,"meanOutputTokens":20,"meanCost":1.4999999999999999e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.25,"lower":-0.25,"upper":-0.25},"wilcoxonP":0.9860966005513429},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}}],"ledgers":[{"ledger":"avoided_calls","scenarios":["Local arithmetic","FAQ (repeat ask)"],"savings":{"point":0.352112676056338,"lower":-0.2777777777777779,"upper":1},"deltaCost":1.4999999999999995e-05,"proven":false},{"ledger":"eliminated_tokens","scenarios":["Summarize provided text","Tool-heavy request"],"savings":{"point":0.6055900621118012,"lower":0.30753968253968256,"upper":0.678088803088803},"deltaCost":0.0003509999999999999,"proven":false},{"ledger":"compressed_tokens","scenarios":["Large uniform table"],"savings":{"point":0.5731489741302409,"lower":0.5731489741302409,"upper":0.5731489741302409},"deltaCost":0.000771,"proven":false},{"ledger":"output_restriction","scenarios":["Constrained structured answer"],"savings":{"point":-0.25,"lower":-0.25,"upper":-0.25},"deltaCost":-1.2e-05,"proven":false}],"reconciliation":{"totalDelta":0.0011129999999999988,"ledgerSum":0.0011129999999999998,"residual":-1.0842021724855044e-18,"reconciled":true},"fingerprintStable":true,"aggregate":{"savings":{"point":0.5406587000874377,"lower":0.4446711473835815,"upper":0.5836805771503201},"wilcoxonP":0.09620579360291859,"qualityPassRate":1,"proven":false,"headline":"ESTIMATED (mock) \u2014 not a savings claim"},"honesty":["Both arms are metered by the provider's own tokenizer \u2014 no modeled baseline.","The headline is the 95% CI lower bound, never the point estimate.","A saving is voided if its answer fails the quality gate.","Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).","Adaptive sampling adds reps only where variance is high, up to a hard cap.","A changed model fingerprint mid-run invalidates the 'proven' claim.","Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.","Missing provider usage is a hard error (requireUsage), never a silent 0 \u2192 100% saving."]}
+</script>
 <script type="module">
 /*
  * This page runs the REAL BV-SALA optimizer, compiled for the browser from the
@@ -735,12 +797,90 @@ import {
   }
   document.getElementById("runReal").addEventListener("click", function () { runReal(); });
 
+  /* ---------- Step 2: render the MEASURED A/B benchmark artifact ---------- */
+  function fmtPct(n) { return (n >= 0 ? "" : "−") + Math.abs(n * 100).toFixed(1) + "%"; }
+
+  function abHeadline(ab, live) {
+    var s = ab.aggregate.savings;
+    var dmin = Math.min(-0.05, s.lower - 0.05), dmax = Math.max(0.6, s.upper + 0.05);
+    var xp = function (v) { return Math.max(0, Math.min(100, (v - dmin) / (dmax - dmin) * 100)); };
+    var q = ab.aggregate.qualityPassRate, recon = ab.reconciliation ? ab.reconciliation.reconciled : true, fp = ab.fingerprintStable !== false;
+    return '<div class="ab-headline">' +
+      '<div><div class="ab-hl-num ' + (live ? "" : "est") + '">' + fmtPct(s.point) + '</div>' +
+      '<div class="ab-hl-cap">net savings · per cold single call · ' + (live ? "<b>95% CI [" + fmtPct(s.lower) + ", " + fmtPct(s.upper) + "]</b>" : "estimated (mock)") + '</div></div>' +
+      '<div class="ci-wrap"><div class="ci-track">' +
+        '<div class="ci-band ' + (live ? "" : "est") + '" style="left:' + xp(s.lower) + '%;width:' + (xp(s.upper) - xp(s.lower)) + '%"></div>' +
+        '<div class="ci-zero" style="left:' + xp(0) + '%"></div><div class="ci-point" style="left:' + xp(s.point) + '%"></div>' +
+      '</div><div class="ci-legend"><span>' + fmtPct(dmin) + '</span><span>0%</span><span>' + fmtPct(dmax) + '</span></div>' +
+      '<div class="ab-stats">' +
+        '<span>quality <b class="' + (q >= 0.999 ? "ok" : "bad") + '">' + (q * 100).toFixed(0) + '%</b> gate-passed</span>' +
+        '<span>reconciles <b class="' + (recon ? "ok" : "bad") + '">' + (recon ? "✓" : "✗") + '</b></span>' +
+        '<span>model stable <b class="' + (fp ? "ok" : "bad") + '">' + (fp ? "✓" : "✗") + '</b></span>' +
+        (ab.model ? '<span>model <b>' + ab.model + '</b></span>' : "") +
+      '</div></div></div>';
+  }
+  function abLedgers(ab, live) {
+    return '<div class="ab-ledgers">' + (ab.ledgers || []).map(function (l) {
+      var pos = l.savings.point >= 0;
+      var badge = !live ? '<span class="b np">est</span>' : (l.proven ? '<span class="b proven">proven</span>' : '<span class="b np">not proven</span>');
+      return '<div class="ab-lg"><div class="n">' + l.ledger + '</div><div class="v ' + (pos ? "pos" : "neg") + '">' + fmtPct(l.savings.point) +
+        '</div><div class="lo">95% ≥ ' + fmtPct(l.savings.lower) + '</div>' + badge + '</div>';
+    }).join("") + '</div>';
+  }
+  function abTable(ab) {
+    var rows = (ab.scenarios || []).map(function (s) {
+      var sv = s.measured.savings, cls = sv.point >= 0 ? "pos" : "neg";
+      return '<tr><td>' + s.name + '</td><td class="mono">' + s.kind + '</td>' +
+        '<td class="mono">' + Math.round(s.armA.meanInputTokens) + "/" + Math.round(s.armA.meanOutputTokens) + '</td>' +
+        '<td class="mono">' + Math.round(s.armB.meanInputTokens) + "/" + Math.round(s.armB.meanOutputTokens) + '</td>' +
+        '<td class="mono ' + cls + '">' + fmtPct(sv.point) + '</td><td class="mono">' + fmtPct(sv.lower) + '</td>' +
+        '<td class="mono">' + s.quality.passed + "/" + s.quality.total + '</td></tr>';
+    }).join("");
+    return '<div class="ab-scroll"><table class="ab-table"><thead><tr><th>scenario</th><th>kind</th><th>A in/out</th><th>B in/out</th><th>savings</th><th>95% lo</th><th>qa</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  function abCache(ab) {
+    var cache = (ab.scenarios || []).filter(function (s) { return s.amortization; });
+    if (!cache.length) return "";
+    var items = cache.map(function (s) { return s.name + " breaks even at K=" + (s.amortization.breakEvenK == null ? "∞" : s.amortization.breakEvenK); }).join(" · ");
+    return '<div class="ab-banner est"><b>Cache = repeat traffic.</b> On a single cold call caches honestly read ≈0%; savings grow with reuse — ' + items + '.</div>';
+  }
+  function abRepro() {
+    return '<div class="ab-repro"><span class="c"># Reproduce against your own endpoint — nothing hidden:</span>\n' +
+      'BVSALA_DEMO_BASE_URL=https://ai-gateway.vercel.sh/v1 \\\n' +
+      'BVSALA_DEMO_API_KEY=&lt;key&gt; BVSALA_DEMO_MODEL=openai/gpt-4o-mini BVSALA_DEMO_KEEP_PREFIX=1 \\\n' +
+      'pnpm ab\n<span class="c"># raw paired trials → benchmarks/out/ab-live-trials.csv — recompute the CI yourself.</span></div>';
+  }
+  function renderAB(ab) {
+    var root = document.getElementById("ab-root"); if (!root) return;
+    var live = ab.mode === "LIVE", agg = ab.aggregate;
+    var note = document.getElementById("ab-mode-note");
+    if (note) note.innerHTML = live
+      ? "This run is <b>LIVE</b> — real provider tokens & cost."
+      : "This reference run is <b>MOCK</b> (no network): the figures are <b>ESTIMATED</b> plumbing, not a savings claim — it even shows negatives where the mock inflates output, because the harness never fakes a positive. Run <code>pnpm ab</code> against a real endpoint for measured dollars.";
+    var banner = live
+      ? (agg.proven ? '<div class="ab-banner verified">✓ VERIFIED — savings ≥ ' + fmtPct(agg.savings.lower) + " at 95% confidence, quality-gated</div>"
+                    : '<div class="ab-banner est">⚠ NOT PROVEN — 95% CI lower bound ≤ 0, quality regressed, or model changed mid-run</div>')
+      : '<div class="ab-banner est">◐ ESTIMATED — mock provider, not a savings claim</div>';
+    root.innerHTML = banner + abHeadline(ab, live) + abLedgers(ab, live) + abTable(ab) + abCache(ab) + abRepro();
+  }
+  function loadAB() {
+    var inline = document.getElementById("ab-inline"), initial = null;
+    if (inline) { try { initial = JSON.parse(inline.textContent); } catch (e) { /* ignore */ } }
+    if (initial) renderAB(initial);
+    // Progressive refresh: on the deployed site, pick up the freshest artifact.
+    if (window.fetch) fetch("./data/ab-live.json", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j) renderAB(j); })
+      .catch(function () { /* offline / artifact preview — inline fallback already rendered */ });
+  }
+
   /* ---------- init ---------- */
   payloadEl.value = JSON.stringify(samples.wrapped, null, 2);
   renderFormat();
   project();
   // Auto-run once so a first-time visitor immediately sees real measured numbers.
   runReal();
+  loadAB();
 })();
 </script>
 </body>
