@@ -17,14 +17,26 @@ pnpm demo                     # MOCK mode: deterministic, no network, proves the
 Example (MOCK): 2 of 7 calls avoided, ~1,342 input tokens saved, ~70% net cost
 saved, **6/6 correctness checks passed**.
 
-Run it **LIVE** against a real LLM for real provider tokens & dollars:
+Run it **LIVE** against a real LLM for real provider tokens & dollars. Two ways:
 
 ```bash
-BVSALA_DEMO_BASE_URL=https://<openai-compatible-endpoint>/v1 \
+# A) Vercel AI Gateway (one key, many providers; keep the "provider/model" prefix)
+BVSALA_DEMO_BASE_URL=https://ai-gateway.vercel.sh/v1 \
+BVSALA_DEMO_API_KEY=<AI_GATEWAY_KEY> \
+BVSALA_DEMO_MODEL=openai/gpt-4o-mini \
+BVSALA_DEMO_KEEP_PREFIX=1 \
+pnpm demo
+
+# B) A direct OpenAI-compatible endpoint (prefix stripped automatically)
+BVSALA_DEMO_BASE_URL=https://api.openai.com/v1 \
 BVSALA_DEMO_API_KEY=sk-... \
 BVSALA_DEMO_MODEL=gpt-4o-mini \
 pnpm demo
 ```
+
+`BVSALA_DEMO_KEEP_PREFIX=1` keeps the `provider/` prefix on the model id (needed
+by gateways); omit it for a direct provider endpoint. The same env applies to
+`pnpm ablation`.
 
 MOCK proves the mechanism (calls avoided, tokens compressed, quality preserved);
 LIVE proves real dollars. Both refuse to pass if any correctness check fails —

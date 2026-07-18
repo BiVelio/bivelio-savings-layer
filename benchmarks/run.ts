@@ -35,8 +35,11 @@ const baseUrl = process.env.BVSALA_DEMO_BASE_URL;
 const apiKey = process.env.BVSALA_DEMO_API_KEY;
 const liveModel = process.env.BVSALA_DEMO_MODEL;
 
+// Keep the "provider/model" prefix for gateways (e.g. Vercel AI Gateway); strip
+// it for a direct provider endpoint (e.g. api.openai.com).
+const keepPrefix = !!process.env.BVSALA_DEMO_KEEP_PREFIX;
 const provider: Provider = baseUrl
-  ? new OpenAICompatibleProvider({ baseUrl, ...(apiKey ? { apiKey } : {}), stripProviderPrefix: true })
+  ? new OpenAICompatibleProvider({ baseUrl, ...(apiKey ? { apiKey } : {}), stripProviderPrefix: !keepPrefix })
   : createMockProvider();
 const mode = baseUrl ? "LIVE" : "MOCK";
 
