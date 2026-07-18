@@ -7,3 +7,4 @@
  * service so it can be embedded or tested directly.
  */
 export * from "./service.js";
+export * from "./gateway.js";

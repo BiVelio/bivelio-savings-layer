@@ -6,3 +6,4 @@
  * ./server.ts; this module exports the transport-agnostic service.
  */
 export * from "./service.js";
+export * from "./gateway.js";

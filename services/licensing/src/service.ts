@@ -29,19 +29,48 @@ export interface IssueInput {
   graceDays?: number;
 }
 
+/**
+ * Persistence seam for revocations. The in-memory default is fine for the
+ * long-running CP-0 server, but a serverless/Postgres deployment MUST inject a
+ * durable store — otherwise a revoked license keeps validating after a cold
+ * start (the revocation Set is reborn empty). A Postgres impl implements these
+ * three methods with a write-through cache; `has()` stays synchronous by reading
+ * a hydrated in-process snapshot refreshed on `add()` and at boot.
+ */
+export interface RevocationStore {
+  has(jti: string): boolean;
+  add(jti: string): void;
+  list(): string[];
+}
+
+export class InMemoryRevocationStore implements RevocationStore {
+  private readonly set = new Set<string>();
+  has(jti: string): boolean {
+    return this.set.has(jti);
+  }
+  add(jti: string): void {
+    this.set.add(jti);
+  }
+  list(): string[] {
+    return [...this.set];
+  }
+}
+
 export interface LicensingServiceOptions {
   /** Ed25519 private key PEM (signing). Generated if omitted. */
   privateKey?: string;
   /** Ed25519 public key PEM (verification). Generated with the private key if omitted. */
   publicKey?: string;
   nowSeconds?: () => number;
+  /** Durable revocation store. Defaults to in-memory (dev only). */
+  revocationStore?: RevocationStore;
 }
 
 export class LicensingService {
   readonly publicKey: string;
   private readonly privateKey: string;
   private readonly nowSeconds: () => number;
-  private readonly revoked = new Set<string>();
+  private readonly revoked: RevocationStore;
   private readonly issued = new Map<string, LicensePayload>();
 
   constructor(options: LicensingServiceOptions = {}) {
@@ -54,6 +83,7 @@ export class LicensingService {
       this.publicKey = kp.publicKey;
     }
     this.nowSeconds = options.nowSeconds ?? (() => Math.floor(Date.now() / 1000));
+    this.revoked = options.revocationStore ?? new InMemoryRevocationStore();
   }
 
   /** Mint and sign a license. */
@@ -79,7 +109,7 @@ export class LicensingService {
   validate(token: string): ResolvedLicense {
     const client = new LicenseClient({
       publicKey: this.publicKey,
-      revoked: this.revoked,
+      revoked: this.revoked.list(),
       nowSeconds: this.nowSeconds,
     });
     return client.resolve(token);
@@ -94,7 +124,7 @@ export class LicensingService {
   }
 
   revocationList(): string[] {
-    return [...this.revoked];
+    return this.revoked.list();
   }
 
   issuedCount(): number {

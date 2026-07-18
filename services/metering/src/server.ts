@@ -1,18 +1,18 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import type { UsageRecord } from "@bivelio/protocol";
 import { createMeteringService } from "./service.js";
+import { resolveCaller, ingest, summary, loadAuthConfig } from "./gateway.js";
 
 /**
- * Thin HTTP adapter over MeteringService. Control-plane component.
+ * Thin HTTP adapter over the metering gateway. Control-plane component.
  *
- * The SDK (or a control-plane-client) POSTs usage records derived from each
- * SavingsReport via `usageRecordFromReport`. This skeleton stores aggregates in
- * memory; production writes raw records to ClickHouse and rollups to Postgres.
+ * All auth / tenant-derivation / content-validation lives in gateway.ts (and is
+ * unit-tested there). This file only speaks sockets. The store is in-memory in
+ * this CP-0 skeleton; a serverless/Postgres deployment MUST inject a persistent
+ * store (aggregates kept in a Map are lost between cold starts).
  */
 const PORT = Number(process.env.PORT) || 8082;
-const INGEST_TOKEN = process.env.INGEST_TOKEN;
-
 const service = createMeteringService();
+const authConfig = loadAuthConfig(process.env);
 
 function send(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { "content-type": "application/json" });
@@ -26,11 +26,6 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
-function authorized(req: IncomingMessage): boolean {
-  if (!INGEST_TOKEN) return true;
-  return req.headers.authorization === `Bearer ${INGEST_TOKEN}`;
-}
-
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
@@ -39,16 +34,18 @@ const server = createServer(async (req, res) => {
       return send(res, 200, { ok: true, records: service.totalRecords() });
     }
 
+    const caller = resolveCaller(req.headers.authorization, authConfig);
+
     if (req.method === "POST" && url.pathname === "/usage") {
-      if (!authorized(req)) return send(res, 401, { error: "unauthorized" });
-      const body = (await readJson(req)) as UsageRecord | UsageRecord[];
-      const ingested = service.ingest(body);
-      return send(res, 202, { ingested });
+      const body = await readJson(req);
+      const r = ingest(caller, body, service);
+      return send(res, r.status, r.body);
     }
 
     const summaryMatch = url.pathname.match(/^\/usage\/([^/]+)\/summary$/);
     if (req.method === "GET" && summaryMatch) {
-      return send(res, 200, service.summary(decodeURIComponent(summaryMatch[1]!)));
+      const r = summary(caller, decodeURIComponent(summaryMatch[1]!), service);
+      return send(res, r.status, r.body);
     }
 
     return send(res, 404, { error: "not found" });
@@ -59,5 +56,10 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`BV-SALA metering service → http://localhost:${PORT}`);
-  if (!INGEST_TOKEN) console.log("WARNING: INGEST_TOKEN not set — /usage ingest is open (dev only).");
+  if (authConfig.serviceAccounts.size === 0 && !authConfig.devOpen) {
+    console.error(
+      "FATAL POSTURE: no service accounts configured and BVSALA_DEV_OPEN is unset — " +
+        "all /usage routes will refuse (fail closed). Set BVSALA_SERVICE_ACCOUNTS or INGEST_TOKEN+INGEST_ORG_ID.",
+    );
+  }
 });

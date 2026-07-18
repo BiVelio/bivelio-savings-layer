@@ -1,16 +1,19 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createLicensingService, type IssueInput } from "./service.js";
+import { authorizeAdmin, loadAuthConfig } from "./gateway.js";
 
 /**
  * Thin HTTP adapter over LicensingService. Control-plane component.
  *
  * Keypair: reads LICENSE_PRIVATE_KEY / LICENSE_PUBLIC_KEY (PEM) from the
  * environment, or generates an ephemeral pair at boot (dev). Issue/revoke are
- * protected by ADMIN_TOKEN when set. In production this sits behind Keycloak
- * and persists to Postgres; this is the runnable CP-0 skeleton.
+ * fail-closed: refused unless a configured ADMIN_TOKEN is presented (or explicit
+ * BVSALA_DEV_OPEN=1 locally). In production, issuance must be driven by
+ * signature-verified Stripe events + an org-owner check, and revocations must
+ * use a durable RevocationStore — this is the runnable CP-0 skeleton.
  */
 const PORT = Number(process.env.PORT) || 8081;
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+const authConfig = loadAuthConfig(process.env);
 
 const service = createLicensingService(
   process.env.LICENSE_PRIVATE_KEY && process.env.LICENSE_PUBLIC_KEY
@@ -32,8 +35,7 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
 }
 
 function authorized(req: IncomingMessage): boolean {
-  if (!ADMIN_TOKEN) return true; // open in dev when no admin token configured
-  return req.headers.authorization === `Bearer ${ADMIN_TOKEN}`;
+  return authorizeAdmin(req.headers.authorization, authConfig);
 }
 
 const server = createServer(async (req, res) => {
@@ -86,5 +88,9 @@ server.listen(PORT, () => {
     console.log("Ephemeral signing key generated. SDK verification public key:");
     console.log(service.publicKey);
   }
-  if (!ADMIN_TOKEN) console.log("WARNING: ADMIN_TOKEN not set — issue/revoke are open (dev only).");
+  if (!authConfig.adminToken && !authConfig.devOpen) {
+    console.error(
+      "FATAL POSTURE: ADMIN_TOKEN unset and BVSALA_DEV_OPEN unset — issue/revoke refuse (fail closed).",
+    );
+  }
 });

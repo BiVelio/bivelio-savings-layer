@@ -152,4 +152,90 @@ export function usageRecordFromReport(
   };
 }
 
+/**
+ * The EXACT set of fields the control plane accepts on a usage record. This is a
+ * privacy backstop, not a convenience: the metering ingest must build records
+ * ONLY from these keys and REJECT any payload carrying a field outside the set,
+ * so a buggy or hostile client can never smuggle a `prompt`, `completion`,
+ * `messages`, or any other content field across the data-plane / control-plane
+ * boundary. The type guarantee (`body as UsageRecord[]`) is erased at runtime;
+ * this is the runtime enforcement.
+ */
+const USAGE_STRING_FIELDS = ["requestId", "model", "cacheResult"] as const;
+const USAGE_NUMBER_FIELDS = [
+  "at",
+  "avoidedLlm",
+  "actualLlm",
+  "baselineInputTokens",
+  "actualInputTokens",
+  "eliminatedInputTokens",
+  "compressedInputTokens",
+  "baselineOutputTokens",
+  "actualOutputTokens",
+  "providerCachedInputTokens",
+  "baselineCost",
+  "actualCost",
+  "netSavings",
+] as const;
+/** `orgId` is intentionally NOT accepted from the client — the server derives it
+ * from the authenticated service account. `seatId` is the only optional field. */
+const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
+  "orgId",
+  "seatId",
+  ...USAGE_STRING_FIELDS,
+  ...USAGE_NUMBER_FIELDS,
+]);
+
+export class UsageValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UsageValidationError";
+  }
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Parse and validate one untrusted usage record. Throws {@link UsageValidationError}
+ * on any unknown field (content-leak backstop) or type mismatch. `orgId` is
+ * taken from `authorizedOrgId` (server-derived), never from the client body.
+ */
+export function parseUsageRecord(input: unknown, authorizedOrgId: string): UsageRecord {
+  if (!isPlainObject(input)) {
+    throw new UsageValidationError("usage record must be an object");
+  }
+  for (const key of Object.keys(input)) {
+    if (!USAGE_ALLOWED_FIELDS.has(key)) {
+      throw new UsageValidationError(
+        `disallowed field "${key}" on usage record — the control plane accepts only counts/metadata, never content`,
+      );
+    }
+  }
+  const rec: Record<string, unknown> = { orgId: authorizedOrgId };
+  for (const f of USAGE_STRING_FIELDS) {
+    if (typeof input[f] !== "string") throw new UsageValidationError(`field "${f}" must be a string`);
+    rec[f] = input[f];
+  }
+  for (const f of USAGE_NUMBER_FIELDS) {
+    const n = input[f];
+    if (typeof n !== "number" || !Number.isFinite(n)) {
+      throw new UsageValidationError(`field "${f}" must be a finite number`);
+    }
+    rec[f] = n;
+  }
+  if (input["seatId"] !== undefined) {
+    if (typeof input["seatId"] !== "string") throw new UsageValidationError(`field "seatId" must be a string`);
+    rec["seatId"] = input["seatId"];
+  }
+  return rec as unknown as UsageRecord;
+}
+
+/** Parse a batch (single object or array) of untrusted usage records. */
+export function parseUsageRecords(input: unknown, authorizedOrgId: string): UsageRecord[] {
+  const arr = Array.isArray(input) ? input : [input];
+  return arr.map((r) => parseUsageRecord(r, authorizedOrgId));
+}
+
 export const PROTOCOL_VERSION = 1 as const;

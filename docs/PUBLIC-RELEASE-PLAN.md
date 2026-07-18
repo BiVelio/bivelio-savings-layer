@@ -47,6 +47,28 @@ The GTM rests on claims that are **not yet all true**. Treat these as gate-zero,
 with CI lower bound + quality gate + reconciliation (`benchmarks/ab-live.ts`), the
 browser-safe SDK bundle powering the verifier, and the four-ledger honest accounting.
 
+**Progress against Phase 1 (landed in code, 2026-07-18).** Several of the security holes
+above are now closed as tested code in the CP-0 services + SDK (the parts that don't need
+external provisioning):
+
+- ✅ **Privacy code backstop** — `parseUsageRecords` (in `@bivelio/protocol`) rejects any
+  field outside the counts/metadata allowlist; a test proves a `prompt`/`completion` field
+  can never cross into ingest.
+- ✅ **Fail-closed auth** — both services refuse when no credential is configured (dev-open is
+  an explicit opt-in), replacing the old `if (!TOKEN) return true`.
+- ✅ **Server-derived tenant** — metering ingest books usage to the *authenticated* service
+  account's org, never the client-supplied `orgId`; cross-tenant writes are blocked.
+- ✅ **Authorized reads** — the usage summary now requires auth and blocks cross-tenant reads
+  (403), closing the unauthenticated enumeration hole.
+- ✅ **Revocation persistence seam** — a pluggable `RevocationStore` (in-memory default,
+  Postgres impl injected in prod) so a revoked license survives a cold start.
+- ✅ **SDK reliability contract** — the pipeline is fail-open: any internal optimizer error
+  falls back to a direct provider call (a genuine provider error still propagates).
+
+**Still gated on provisioning** (unchanged, still BLOCK): the `/api` Vercel functions on
+Supabase Postgres, Stripe signature verification + idempotency, RLS proof against a real DB,
+the LIVE `ab-live.json`, the SDK EULA + distribution channel, and everything in Phases 2–4.
+
 ---
 
 ## Phase 0 — Make the claims true & the software legally runnable

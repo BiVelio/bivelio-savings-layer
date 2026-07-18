@@ -52,6 +52,15 @@ export interface SavingsLayerConfig {
   /** TTL for exact-cache writes, in ms. */
   exactCacheTtlMs?: number;
 
+  /**
+   * Reliability contract. When true (the default), ANY internal optimizer error
+   * (a resolver, cache, format selector, compressor, or accounting bug) is
+   * caught and the request falls open to a plain provider call — BV-SALA must
+   * never add a crash point to the customer's request path. Set to `false` only
+   * in tests/benchmarks that want internal errors to surface.
+   */
+  failOpen?: boolean;
+
   /** Injectable clock for deterministic tests. */
   now?: () => number;
   /** Injectable id generator for deterministic tests. */

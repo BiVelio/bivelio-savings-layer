@@ -42,7 +42,22 @@ export class SavingsPipeline {
     this.generateId = config.generateId ?? (() => randomId());
   }
 
+  /**
+   * Public entry point with the fail-open reliability contract: an internal
+   * optimizer error must never take down the customer's request. On any thrown
+   * error from the optimized path we fall back to a direct provider call. If the
+   * provider itself then fails, that error is genuine and propagates.
+   */
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
+    try {
+      return await this.generateOptimized<T>(request);
+    } catch (err) {
+      if (this.config.failOpen === false) throw err;
+      return await this.failOpenDirect<T>(request, err);
+    }
+  }
+
+  private async generateOptimized<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
     const trace = new TraceCollector(this.now);
     const ledger = new SavingsLedger();
     const canonical = canonicalize(request);
@@ -464,6 +479,66 @@ export class SavingsPipeline {
       },
       traces: trace.all(),
     };
+  }
+
+  /**
+   * Last-resort direct provider call used when the optimized path throws. Runs
+   * NO optimization: baseline equals actual, so it never claims a saving. The
+   * report carries a `fail-open` trace so the degradation is observable.
+   */
+  private async failOpenDirect<T>(request: SavingsRequest, cause: unknown): Promise<SavingsResult<T>> {
+    const trace = new TraceCollector(this.now);
+    trace.record("fail-open", "internal optimizer error — bypassed to a direct provider call", {
+      error: cause instanceof Error ? cause.message : String(cause),
+    });
+    const ledger = new SavingsLedger();
+    const costModel = this.costModelFor(request.model);
+    let canonical: ReturnType<typeof canonicalize>;
+    try {
+      canonical = canonicalize(request);
+    } catch {
+      canonical = {
+        schemaVersion: request.response?.version ?? request.response?.contractId ?? "none",
+      } as ReturnType<typeof canonicalize>;
+    }
+
+    const schema = request.response?.schema;
+    const providerStart = this.now();
+    const response = await this.config.provider.generate({
+      model: request.model,
+      messages: request.messages,
+      ...(request.tools?.length ? { tools: request.tools } : {}),
+      ...(schema ? { schema } : {}),
+      ...(request.response?.maxOutputTokens != null
+        ? { maxOutputTokens: request.response.maxOutputTokens }
+        : {}),
+      ...(request.temperature != null ? { temperature: request.temperature } : {}),
+      ...(request.seed != null ? { seed: request.seed } : {}),
+    });
+    const providerMs = this.now() - providerStart;
+
+    ledger.baselineLlm = 1;
+    ledger.actualLlm = 1;
+    // No optimization ran → baseline == actual (zero claimed savings).
+    ledger.actualInput = response.usage.inputTokens;
+    ledger.actualOutput = response.usage.outputTokens;
+    ledger.baselineInput = response.usage.inputTokens;
+    ledger.baselineOutput = response.usage.outputTokens;
+    if (response.usage.cachedInputTokens) ledger.providerCached(response.usage.cachedInputTokens);
+
+    let data: unknown = response.text;
+    let structurallyValid = true;
+    if (schema) {
+      const parsed = tryParse(response.text);
+      structurallyValid = parsed.ok ? validateAgainstSchema(parsed.value, schema).valid : false;
+      if (parsed.ok) data = parsed.value;
+    }
+
+    const report = this.buildReport(
+      request, canonical, "miss", ledger, costModel, trace, defaultRoute(),
+      jsonFallbackChoice(), undefined, undefined, structurallyValid, "none", providerMs,
+    );
+    return { requestId: report.requestId, data: data as T, text: response.text, report };
   }
 
   private asCoalescedFollower<T>(
