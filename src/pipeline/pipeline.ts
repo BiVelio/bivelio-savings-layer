@@ -356,15 +356,25 @@ export class SavingsPipeline {
       rendered,
       storedAtMs: this.now(),
     };
-    if (policy.allowExactCache && toggles.exactCache !== false) {
-      await this.deps.exactCache.set(exactKey, answer, this.config.exactCacheTtlMs);
-    }
-    if (
-      policy.allowSemanticCache &&
-      toggles.semanticCache &&
-      this.deps.semanticCache
-    ) {
-      await this.deps.semanticCache.store(canonical, answer as CachedAnswer);
+    // Cache writes are best-effort side effects AFTER the provider was already
+    // billed. A failing cache backend must never fail this request — and must
+    // never bubble to the fail-open handler, which would re-invoke (double-bill)
+    // the provider. Swallow-and-trace instead.
+    try {
+      if (policy.allowExactCache && toggles.exactCache !== false) {
+        await this.deps.exactCache.set(exactKey, answer, this.config.exactCacheTtlMs);
+      }
+      if (
+        policy.allowSemanticCache &&
+        toggles.semanticCache &&
+        this.deps.semanticCache
+      ) {
+        await this.deps.semanticCache.store(canonical, answer as CachedAnswer);
+      }
+    } catch (err) {
+      trace.record("cache-write", "failed (non-fatal; answer already served)", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
 
     return this.finish<T>(

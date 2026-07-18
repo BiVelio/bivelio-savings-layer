@@ -161,7 +161,18 @@ export function usageRecordFromReport(
  * boundary. The type guarantee (`body as UsageRecord[]`) is erased at runtime;
  * this is the runtime enforcement.
  */
-const USAGE_STRING_FIELDS = ["requestId", "model", "cacheResult"] as const;
+/** Identity/label string fields — constrained to a strict charset + length so
+ * they cannot be used as a value channel to smuggle prompt/completion content. */
+const USAGE_ID_FIELDS = ["requestId", "model"] as const;
+const USAGE_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
+/** cacheResult is a closed enum (mirrors the SDK's CacheOutcome), never free text. */
+const USAGE_CACHE_RESULTS: ReadonlySet<string> = new Set<string>([
+  "miss",
+  "exact",
+  "semantic",
+  "singleflight",
+  "deterministic",
+]);
 const USAGE_NUMBER_FIELDS = [
   "at",
   "avoidedLlm",
@@ -182,7 +193,8 @@ const USAGE_NUMBER_FIELDS = [
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",
   "seatId",
-  ...USAGE_STRING_FIELDS,
+  "cacheResult",
+  ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
 ]);
 
@@ -214,10 +226,22 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     }
   }
   const rec: Record<string, unknown> = { orgId: authorizedOrgId };
-  for (const f of USAGE_STRING_FIELDS) {
-    if (typeof input[f] !== "string") throw new UsageValidationError(`field "${f}" must be a string`);
-    rec[f] = input[f];
+  // Identity fields: strict charset + length. This closes the "value channel" —
+  // a free-form string field cannot carry prompt/completion content.
+  for (const f of USAGE_ID_FIELDS) {
+    const v = input[f];
+    if (typeof v !== "string" || !USAGE_ID_PATTERN.test(v)) {
+      throw new UsageValidationError(`field "${f}" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
+    }
+    rec[f] = v;
   }
+  // cacheResult: closed enum, never free text (it is persisted as an object key).
+  if (typeof input["cacheResult"] !== "string" || !USAGE_CACHE_RESULTS.has(input["cacheResult"] as string)) {
+    throw new UsageValidationError(
+      `field "cacheResult" must be one of ${[...USAGE_CACHE_RESULTS].join("|")}`,
+    );
+  }
+  rec["cacheResult"] = input["cacheResult"];
   for (const f of USAGE_NUMBER_FIELDS) {
     const n = input[f];
     if (typeof n !== "number" || !Number.isFinite(n)) {
@@ -226,8 +250,11 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     rec[f] = n;
   }
   if (input["seatId"] !== undefined) {
-    if (typeof input["seatId"] !== "string") throw new UsageValidationError(`field "seatId" must be a string`);
-    rec["seatId"] = input["seatId"];
+    const s = input["seatId"];
+    if (typeof s !== "string" || !USAGE_ID_PATTERN.test(s)) {
+      throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
+    }
+    rec["seatId"] = s;
   }
   return rec as unknown as UsageRecord;
 }

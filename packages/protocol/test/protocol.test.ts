@@ -49,6 +49,26 @@ describe("privacy backstop — parseUsageRecord", () => {
     expect(() => parseUsageRecord(validBody({ note: "hi" }), "org")).toThrow(/disallowed field "note"/);
   });
 
+  it("closes the VALUE channel — content cannot hide in an allowlisted string field", () => {
+    // cacheResult is a closed enum: free text (a smuggled prompt) is rejected.
+    expect(() => parseUsageRecord(validBody({ cacheResult: "USER PROMPT: SSN 123-45-6789 ..." }), "org")).toThrow(
+      /cacheResult/,
+    );
+    expect(() => parseUsageRecord(validBody({ cacheResult: "hit" }), "org")).toThrow(/cacheResult/);
+    // identity fields are charset+length capped: spaces/newlines/long blobs rejected.
+    expect(() => parseUsageRecord(validBody({ seatId: "the user asked: how do I ..." }), "org")).toThrow(/seatId/);
+    expect(() => parseUsageRecord(validBody({ requestId: "x".repeat(200) }), "org")).toThrow(/requestId/);
+    expect(() => parseUsageRecord(validBody({ model: "completion text with spaces" }), "org")).toThrow(/model/);
+  });
+
+  it("still accepts the legitimate enum values and normal identities", () => {
+    for (const cr of ["miss", "exact", "semantic", "singleflight", "deterministic"]) {
+      expect(() => parseUsageRecord(validBody({ cacheResult: cr }), "org")).not.toThrow();
+    }
+    expect(() => parseUsageRecord(validBody({ seatId: "svc-account_01:eu-west" }), "org")).not.toThrow();
+    expect(() => parseUsageRecord(validBody({ model: "anthropic/claude-sonnet-5" }), "org")).not.toThrow();
+  });
+
   it("rejects type mismatches (numbers must be finite numbers)", () => {
     expect(() => parseUsageRecord(validBody({ actualInputTokens: "60" }), "org")).toThrow(UsageValidationError);
     expect(() => parseUsageRecord(validBody({ netSavings: Infinity }), "org")).toThrow(UsageValidationError);

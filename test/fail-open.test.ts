@@ -55,6 +55,35 @@ describe("SDK reliability contract — fail open to the raw provider", () => {
     ).rejects.toThrow(/boom/);
   });
 
+  it("does NOT re-invoke (double-charge) the provider when a post-provider cache write fails", async () => {
+    let calls = 0;
+    const countingProvider = {
+      id: "counting",
+      async generate() {
+        calls += 1;
+        return { text: `answer-${calls}`, usage: { inputTokens: 5, outputTokens: 3 } };
+      },
+    };
+    // Cache miss on read, but the write blows up (backend down) AFTER the provider was billed.
+    const flakyCache: ExactCache = {
+      async get() {
+        return null;
+      },
+      async set() {
+        throw new Error("cache backend down");
+      },
+      async delete() {},
+    };
+    const layer = createSavingsLayer({ provider: countingProvider, exactCache: flakyCache });
+    const res = await layer.generate({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "hi" }],
+    });
+    expect(calls).toBe(1); // billed exactly once — no fail-open double charge
+    expect(res.text).toBe("answer-1");
+    expect(res.report.traces.some((t) => t.stage === "cache-write")).toBe(true);
+  });
+
   it("a genuine provider failure still propagates (not masked by fail-open)", async () => {
     const layer = createSavingsLayer({
       provider: {
