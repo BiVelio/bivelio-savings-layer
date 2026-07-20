@@ -1,7 +1,8 @@
 # Publishing `@bivelio/savings-layer` (private, gated)
 
 **Decision (2026-07-20):** distribute via a **private gated registry** so the
-algorithm bundle is never public. Customers authenticate to install; the
+algorithm bundle is never public. **Host chosen: GitHub Packages** (Option A) —
+zero new infra. Customers authenticate to install; the
 **license key** (runtime auth, passed to `createSavingsLayer`) is separate from
 the **registry token** (install auth, in `.npmrc`).
 
@@ -10,7 +11,7 @@ clean project — run `pnpm demo:install`.
 
 ---
 
-## Option A — GitHub Packages (recommended: zero new infra)
+## Option A — GitHub Packages ✅ CHOSEN (zero new infra)
 
 The repo already lives at `github.com/BiVelio`, so its package registry
 (`npm.pkg.github.com`) needs nothing stood up; scoped packages are private to the
@@ -48,9 +49,9 @@ org by default.
 pnpm add @bivelio/savings-layer
 ```
 
-> The dashboard install snippet currently references `npm.bivelio.com`. If you go
-> with GitHub Packages, update `apps/web/app/dashboard/components/InstallLicensePanel.tsx`
-> (and the landing) to `npm.pkg.github.com`.
+> ✅ Wired: `package.json` (`publishConfig.registry` set + `private` removed), the CI
+> workflow (`.github/workflows/publish.yml`), and the dashboard `.npmrc`
+> (`InstallLicensePanel.tsx`) all point at `npm.pkg.github.com`.
 
 ## Option B — self-hosted `npm.bivelio.com` (Verdaccio) or Cloudsmith
 
@@ -62,8 +63,10 @@ want `npm.bivelio.com` (already referenced in the web) to be a real registry.
 
 ## Not yet done (needs you)
 
-- [ ] **Pick the host** — GitHub Packages (ready now) vs self-hosted `npm.bivelio.com`.
-- [ ] **Flip `private:true` → publish** — deliberately blocked today so nothing
-      ships to public npm by accident.
-- [ ] **Customer token issuance** — wire per-customer registry tokens to the plan
-      (dashboard), distinct from the license key.
+- [x] **Host chosen: GitHub Packages** — `publishConfig` + CI + web `.npmrc` wired.
+- [x] **`private:true` removed** — the package can publish now, pinned to GitHub
+      Packages via `publishConfig.registry` (so it can't hit public npm by accident).
+- [ ] **Publish** — cut a GitHub Release; the workflow runs `npm publish` with the CI
+      `GITHUB_TOKEN`. Verify the first publish links to the repo + scope `@bivelio`.
+- [ ] **Customer token issuance** — per-customer `read:packages` tokens tied to the
+      plan (dashboard), distinct from the license key.

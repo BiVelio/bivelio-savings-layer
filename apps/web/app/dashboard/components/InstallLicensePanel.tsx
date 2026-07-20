@@ -5,8 +5,8 @@ import { TrialKeyButton } from "./TrialKeyButton";
 // Private-registry auth (install-time). The registry token is provisioned with
 // your plan — it authorizes the DOWNLOAD, and is separate from the license key
 // (which is runtime auth for the SDK itself).
-const NPMRC = `@bivelio:registry=https://npm.bivelio.com
-//npm.bivelio.com/:_authToken=\${BIVELIO_NPM_TOKEN}`;
+const NPMRC = `@bivelio:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=\${BIVELIO_NPM_TOKEN}`;
 
 const WRAP = `import { createSavingsLayer } from "@bivelio/savings-layer";
 
