@@ -28,11 +28,24 @@ import {
     icon.textContent = t === "dark" ? "☾" : "☀";
     label.textContent = t === "dark" ? "Dark" : "Light";
   }
-  var startDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var storedTheme = null;
+  try { storedTheme = localStorage.getItem("bv-theme"); } catch (e) {}
+  var startDark = storedTheme
+    ? storedTheme === "dark"
+    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
   apply(startDark ? "dark" : "light");
   document.getElementById("themeToggle").addEventListener("click", function () {
-    apply(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    apply(next);
+    try { localStorage.setItem("bv-theme", next); } catch (e) {}
   });
+  // Keep following the OS while the user hasn't chosen explicitly.
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
+      var s = null; try { s = localStorage.getItem("bv-theme"); } catch (err) {}
+      if (!s) apply(e.matches ? "dark" : "light");
+    });
+  }
 
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
+import { NavBar } from "./components/NavBar";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://savings.bivelio.com"),
@@ -10,12 +11,21 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Set the theme before first paint (no flash): honor a stored choice, else the OS.
+const THEME_INIT = `(function(){try{var s=localStorage.getItem('bv-theme');var d=s?s==='dark':(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
+      <body>
+        <NavBar />
+        {children}
+      </body>
     </html>
   );
 }
