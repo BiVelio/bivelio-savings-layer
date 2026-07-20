@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { NavBar } from "./components/NavBar";
+import { SiteNavGate } from "./components/SiteNavGate";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://savings.bivelio.com"),
@@ -24,7 +25,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body>
-        <NavBar />
+        <SiteNavGate>
+          <NavBar />
+        </SiteNavGate>
         {children}
       </body>
     </html>
