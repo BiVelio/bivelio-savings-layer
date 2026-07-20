@@ -6,8 +6,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "author": "BiVelio Inc.",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+    "access": "public"
   },
   "homepage": "https://github.com/BiVelio/bivelio-savings-layer",
   "repository": {

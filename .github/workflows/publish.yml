@@ -1,8 +1,13 @@
 name: publish
 
-# Publish @bivelio/savings-layer to GitHub Packages (private to the BiVelio org)
-# on a published GitHub Release. Uses the built-in GITHUB_TOKEN — no manual token.
-# Cut a Release (tag) to publish; bump the version in package.json first.
+# Publish @bivelio/savings-layer to the PUBLIC npm registry on a published GitHub
+# Release. The package is "public-inert": the code is readable, but it is fail-closed
+# — it refuses to run without a valid signed license, so the LICENSE (not the
+# registry) is the gate. Install is a friction-free `pnpm add @bivelio/savings-layer`.
+#
+# Requires an `NPM_TOKEN` repo secret: an npm automation/granular token with publish
+# rights for the @bivelio scope (npmjs.com → Access Tokens). The @bivelio org must
+# exist on npmjs.com. Cut a Release (tag) to publish; bump package.json version first.
 on:
   release:
     types: [published]
@@ -12,19 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://npm.pkg.github.com
-          scope: "@bivelio"
+          registry-url: https://registry.npmjs.org
       - name: Enable pnpm (from packageManager)
         run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build:all
-      - name: Publish to GitHub Packages
-        run: npm publish
+      - name: Publish to npm (public)
+        run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

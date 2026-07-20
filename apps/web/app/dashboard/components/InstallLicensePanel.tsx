@@ -2,12 +2,6 @@ import type { AbArtifact, OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
 import { TrialKeyButton } from "./TrialKeyButton";
 
-// Private-registry auth (install-time). The registry token is provisioned with
-// your plan — it authorizes the DOWNLOAD, and is separate from the license key
-// (which is runtime auth for the SDK itself).
-const NPMRC = `@bivelio:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=\${BIVELIO_NPM_TOKEN}`;
-
 const WRAP = `import { createSavingsLayer } from "@bivelio/savings-layer";
 
 // your app — the data plane. LLM traffic goes straight to your provider.
@@ -26,13 +20,14 @@ export function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgConte
       <div className="ck-head">
         <div>
           <p className="ck-eyebrow">Get started</p>
-          <h2>Install &amp; wire the SDK — your prompts never touch our servers.</h2>
+          <h2>Three steps. Your prompts never touch our servers.</h2>
         </div>
       </div>
 
-      {/* 1 · license key (runtime auth) */}
+      {/* 1 · license key (the only credential — install is public, gated at runtime) */}
       <p className="ck-note" style={{ marginTop: 0 }}>
-        <b>1 · Get your license key</b> — runtime auth, passed to <code>createSavingsLayer</code>.
+        <b>1 · Get your license key</b> — the SDK is public but fail-closed; it only runs with a
+        valid key. This key is your one credential (no registry token needed).
       </p>
       <TrialKeyButton />
       <div className="keycard" style={{ marginTop: 10 }}>
@@ -43,25 +38,15 @@ export function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgConte
         <div className="ck-note" style={{ margin: 0 }}>shown once at creation — only the prefix is stored.</div>
       </div>
 
-      {/* 2 · registry (install auth) */}
-      <p className="ck-note">
-        <b>2 · Point npm at the private registry</b> (once) — a separate token that authorizes the
-        <i> download</i>, provisioned with your plan.
-      </p>
-      <div className="code2">
-        <span><span className="c"># .npmrc</span>{"\n"}{NPMRC}</span>
-        <CopyButton text={NPMRC} />
-      </div>
-
-      {/* 3 · install */}
-      <p className="ck-note"><b>3 · Install</b></p>
+      {/* 2 · install (public npm, zero auth) */}
+      <p className="ck-note"><b>2 · Install</b> — public on npm, no token, no config.</p>
       <div className="code2">
         <span>pnpm add @bivelio/savings-layer</span>
         <CopyButton text="pnpm add @bivelio/savings-layer" />
       </div>
 
-      {/* 4 · wire + run */}
-      <p className="ck-note"><b>4 · Wire your provider &amp; read the SavingsReport</b></p>
+      {/* 3 · wire + run */}
+      <p className="ck-note"><b>3 · Wire your provider &amp; read the SavingsReport</b></p>
       <div className="code2">
         <span>{WRAP}</span>
         <CopyButton text={WRAP} />
