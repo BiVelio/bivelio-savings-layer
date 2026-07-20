@@ -23,6 +23,15 @@ import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 
 /**
+ * Build-time flag: the published npm SDK sets this to `false` (tsup `define`) so the
+ * dev escape hatch (`devUnlicensed` / `BVSALA_DEV_OPEN`) is DEAD and the paywall
+ * cannot be bypassed by an installer. It is `true` in the web-demo bundle and
+ * `undefined` from source (tsx/tests) — where ungated runs (CI, benchmarks, the free
+ * in-browser demo) are intentional.
+ */
+declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
+
+/**
  * The BV-SALA execution pipeline.
  *
  * Optimization order (cheapest first): avoid the call entirely -> avoid
@@ -73,6 +82,11 @@ export class SavingsPipeline {
    * environment. For local dev, CI, benchmarks, and the free web demo only.
    */
   private devOpen(): boolean {
+    // Hard-disabled in the published npm build: a public, paid package must not
+    // honor a client-flippable bypass. `typeof` guards the undeclared-from-source case.
+    const allowDevOpen =
+      typeof __BV_SALA_ALLOW_DEV_OPEN__ === "undefined" ? true : __BV_SALA_ALLOW_DEV_OPEN__;
+    if (!allowDevOpen) return false;
     if (this.config.devUnlicensed === true) return true;
     return typeof process !== "undefined" && process.env?.BVSALA_DEV_OPEN === "1";
   }
