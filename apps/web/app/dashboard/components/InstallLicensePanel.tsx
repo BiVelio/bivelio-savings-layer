@@ -1,6 +1,6 @@
 import type { AbArtifact, OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
-import { ServiceAccountKeyButton } from "./ServiceAccountKeyButton";
+import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
 import { TrialKeyButton } from "./TrialKeyButton";
 
 const WRAP = `import { createSavingsLayer } from "@bivelio/savings-layer";
@@ -35,11 +35,11 @@ export function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgConte
 
       {/* 2 · service-account key (the machine credential for metering) */}
       <p className="ck-note">
-        <b>2 · Create a service-account key</b> — a machine credential (<code>bvk_…</code>) so the SDK
-        reports counts-only usage (your seats &amp; savings). Separate from the license key; only its
-        hash is stored.
+        <b>2 · Create &amp; verify a service-account key</b> — a machine credential (<code>bvk_…</code>) so
+        the SDK reports counts-only usage (your seats &amp; savings). Separate from the license key; only
+        its hash is stored. Create one, then <b>Test my key</b> to confirm it&apos;s live.
       </p>
-      <ServiceAccountKeyButton />
+      <ServiceAccountKeySection />
       <div className="keycard" style={{ marginTop: 10 }}>
         <div>
           <div className="ck-note" style={{ margin: 0 }}>current service-account key</div>
