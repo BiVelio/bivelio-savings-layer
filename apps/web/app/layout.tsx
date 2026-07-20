@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description:
     "BV-SALA — BiVelio's provider-neutral LLM cost optimizer. Verify the savings on your own data, then sign in with your BiVelio account.",
   robots: { index: false, follow: false },
+  icons: { icon: "/logo-bivelio.png", apple: "/logo-bivelio.png" },
 };
 
 // Set the theme before first paint (no flash): honor a stored choice, else the OS.
