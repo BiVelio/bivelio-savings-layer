@@ -18,3 +18,6 @@ benchmarks/out/
 # license signing private keys — never commit
 keys/*.key.pem
 keys/*.private.pem
+
+# Supabase CLI link artifacts at the repo root only (NOT apps/web/lib/supabase)
+/supabase/

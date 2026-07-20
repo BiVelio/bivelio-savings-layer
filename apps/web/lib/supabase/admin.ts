@@ -14,5 +14,8 @@ export function createAdminClient() {
   if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
   return createClient(SUPABASE_URL, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // BV-SALA control-plane lives in its own schema (the project's `public` schema
+    // belongs to the shared platform app). All admin reads/writes target `bvsala`.
+    db: { schema: "bvsala" },
   });
 }

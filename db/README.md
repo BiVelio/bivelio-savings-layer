@@ -6,6 +6,18 @@ SQL migrations for BV-SALA's control-plane data on **Supabase Postgres**
 (BiVelio's existing platform database). Auth is **Supabase Auth** — users live
 in `auth.users`; these tables reference them.
 
+## Schema isolation — everything lives in `bvsala`
+
+The bound project is the **shared** BiVelio platform DB: its `public` schema
+belongs to another app (100+ tables, incl. a different `organizations`). So the
+entire BV-SALA control plane lives in a dedicated **`bvsala`** schema — zero
+collision with `public`, sharing only `auth.users`. Consequences:
+
+- The Supabase clients set `db: { schema: "bvsala" }` (`lib/supabase/{admin,server}.ts`).
+- `bvsala` must be in the project's **Exposed schemas** (Data API / PostgREST),
+  otherwise `.from()`/`.rpc()` return a "schema not exposed" error.
+- Functions (`is_org_member`, `ingest_usage_batch`, `billable_seats`) are `bvsala.*`.
+
 ## Tables
 
 | Table | Purpose |
