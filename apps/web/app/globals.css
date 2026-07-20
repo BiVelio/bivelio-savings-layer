@@ -43,6 +43,23 @@ h1 { font-family: var(--font-heading); letter-spacing: -.02em; }
 .bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
 .tag { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
 
+/* ---- top nav (login / signup / dashboard surfaces) ---- */
+.site-nav { position: sticky; top: 0; z-index: 50; background: var(--surface); border-bottom: 1px solid var(--line); }
+.site-nav-inner { max-width: 1080px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.nav-brand { display: inline-flex; align-items: center; gap: 10px; }
+.nav-brand:hover { text-decoration: none; }
+.nav-actions { display: flex; align-items: center; gap: 16px; }
+.nav-link { color: var(--muted); font-size: .9rem; font-weight: 500; }
+.nav-link:hover { color: var(--ink); text-decoration: none; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: 5px 12px; font-size: .82rem; line-height: 1; cursor: pointer; font-family: var(--sans); }
+.toggle:hover { border-color: var(--accent); }
+.toggle-label { font-weight: 500; }
+@media (max-width: 560px) {
+  .site-nav-inner { padding: 10px 14px; gap: 10px; }
+  .nav-actions { gap: 12px; }
+  .toggle-label { display: none; }
+}
+
 /* ---- auth card (login / signup) ---- */
 .auth-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 32px 20px; background:
   radial-gradient(60% 60% at 50% 0%, var(--accent-soft), transparent 70%), var(--bg); }
