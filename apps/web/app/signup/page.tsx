@@ -13,7 +13,7 @@ export default function SignupPage() {
           <BrandMark size={24} /> <span className="tag">Savings Layer</span>
         </div>
         <h1>Create your account</h1>
-        <p className="sub">One BiVelio account across the suite. Free to start — verify your savings first.</p>
+        <p className="sub">One BiVelio account across the suite. Verify your savings free in the browser — create an account to subscribe and get your license key.</p>
         <AuthForm mode="signup" />
         <p className="auth-alt">
           Already have a BiVelio account? <Link href="/login">Sign in</Link>
