@@ -7,9 +7,10 @@ import { CopyButton } from "./CopyButton";
 type State = "idle" | "loading" | "done" | "error";
 
 /**
- * Self-serve trial: mints a real 14-day license key for the signed-in user and
- * reveals it once. Paste it into `createSavingsLayer({ licenseKey })` and the SDK
- * unlocks — the in-product proof of the paid flow.
+ * License-key issuance (owner/pilot only — gated server-side). BV-SALA is paid:
+ * self-serve keys arrive with Stripe checkout. For an allow-listed owner this mints
+ * a real signed key and reveals it once; everyone else gets the "checkout coming
+ * online" message from the API.
  */
 export function TrialKeyButton() {
   const [state, setState] = useState<State>("idle");
@@ -29,7 +30,7 @@ export function TrialKeyButton() {
       };
       if (!res.ok || !json.token) {
         setState("error");
-        setMsg(json.error ?? "Could not issue a trial key.");
+        setMsg(json.error ?? "Could not issue a license key.");
         return;
       }
       setToken(json.token);
@@ -45,7 +46,7 @@ export function TrialKeyButton() {
     return (
       <div className="trialkey">
         <div className="ck-note" style={{ margin: "0 0 6px" }}>
-          your 14-day trial key{expiresAt ? ` · expires ${new Date(expiresAt).toLocaleDateString()}` : ""} — shown once, copy it now
+          your license key{expiresAt ? ` · valid until ${new Date(expiresAt).toLocaleDateString()}` : ""} — shown once, copy it now
         </div>
         <div className="code2">
           <span style={{ wordBreak: "break-all" }}>{token}</span>
@@ -67,13 +68,13 @@ export function TrialKeyButton() {
         disabled={state === "loading"}
         style={{ padding: "10px 16px" }}
       >
-        {state === "loading" ? "Issuing…" : "Get a 14-day trial key →"}
+        {state === "loading" ? "Issuing…" : "Get your license key →"}
       </button>
       {state === "error" ? (
         <p className="ck-note" style={{ color: "var(--warn)", marginTop: "6px" }}>{msg}</p>
       ) : (
         <p className="ck-note" style={{ marginTop: "6px" }}>
-          Free to try — no card. The key unlocks the managed features in your own app.
+          $4 / seat / month or $39 / seat / year. Self-serve checkout is coming online — the key unlocks the SDK in your own app.
         </p>
       )}
     </div>

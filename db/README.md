@@ -16,7 +16,8 @@ in `auth.users`; these tables reference them.
 | `licenses` | Issued signed licenses (mirrors the licensing service) |
 | `revocations` | Append-only revocation ledger (`seq bigserial`, `jti unique`); the SDK's `GET /licenses/revocations` publishes `max(seq)` + all jti. Never deleted → the revision stays monotonic |
 | `subscriptions` | Stripe per-seat subscriptions |
-| `usage_daily` | Daily usage rollups fed by the metering service — what the dashboard charts and billing reads |
+| `seat_activity` | Raw per-`(org, seat, day)` grain the SDK reports (counts + `is_ci` only). The billing basis: `billable_seats()` counts distinct non-CI seats active ≥3 days/month. Stores no content |
+| `usage_daily` | Daily usage rollups (fed atomically by `ingest_usage_batch`) — what the dashboard charts and billing reads |
 
 ## Data-minimization
 
