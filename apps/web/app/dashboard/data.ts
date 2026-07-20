@@ -64,7 +64,8 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
   // bound project — a PGRST error just means "not resolvable here".
   try {
     const { data } = await supabase
-      .from("memberships")
+      .schema("bvsala")
+      .from("org_members")
       .select("role, organizations(name, plan)")
       .eq("user_id", userId)
       .limit(1)
@@ -82,6 +83,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
   if (ctx.org) {
     try {
       const { data } = await supabase
+        .schema("bvsala")
         .from("subscriptions")
         .select("seats, status, current_period_end")
         .limit(1)
@@ -96,6 +98,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
   // Service-account key PREFIX only (plaintext key is never stored/reproducible).
   try {
     const { data } = await supabase
+      .schema("bvsala")
       .from("service_accounts")
       .select("key_prefix, last_used_at")
       .limit(1)
@@ -126,6 +129,7 @@ export interface UsageRollup {
 export async function getUsageRollups(supabase: SupabaseClient): Promise<UsageRollup[]> {
   try {
     const { data, error } = await supabase
+      .schema("bvsala")
       .from("usage_daily")
       .select(
         "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost",
