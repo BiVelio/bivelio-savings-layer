@@ -5,6 +5,8 @@ import { liveGateFromKey } from "../license/live-gate.js";
 import { RevocationSnapshot } from "../license/revocation.js";
 import { RevocationPoller } from "../license/poller.js";
 import { EMBEDDED_PUBLIC_KEY } from "../license/verify.js";
+import { UsageEmitter } from "../metering/emitter.js";
+import { deriveSeatId, detectCi } from "../metering/seat.js";
 import { SavingsPipeline } from "./pipeline.js";
 import type { SavingsLayerConfig } from "./config.js";
 
@@ -85,9 +87,65 @@ export function createSavingsLayer(
   }
 
   const pipeline = new SavingsPipeline(resolved);
+
+  // DETECTIVE usage metering (opt-in via `serviceAccountKey`). Counts-only,
+  // best-effort, and NON-BLOCKING — it can neither block nor break `generate()`.
+  let emitter: UsageEmitter | undefined;
+  if (config.serviceAccountKey && config.metering?.enabled !== false) {
+    const meteringUrl =
+      config.meteringUrl ??
+      (config.licenseServerUrl
+        ? `${config.licenseServerUrl.replace(/\/+$/, "")}/api/metering/usage`
+        : undefined);
+    if (meteringUrl) {
+      emitter = new UsageEmitter({
+        url: meteringUrl,
+        serviceAccountKey: config.serviceAccountKey,
+        ...(config.metering?.orgId ? { orgId: config.metering.orgId } : {}),
+        ...(config.metering?.flushIntervalMs != null
+          ? { flushIntervalMs: config.metering.flushIntervalMs }
+          : {}),
+        ...(config.metering?.maxBatch != null ? { maxBatch: config.metering.maxBatch } : {}),
+        ...(config.metering?.maxBuffer != null ? { maxBuffer: config.metering.maxBuffer } : {}),
+        ...(config.meteringFetch
+          ? { fetchImpl: config.meteringFetch }
+          : config.licenseFetch
+            ? { fetchImpl: config.licenseFetch }
+            : {}),
+        ...(config.now ? { now: config.now } : {}),
+        ...(config.metering?.ci != null ? { ci: config.metering.ci } : {}),
+      });
+      const ci = config.metering?.ci ?? detectCi();
+      if (config.metering?.seatId) {
+        emitter.setSeat(config.metering.seatId, ci);
+      } else {
+        // Async, universal seat derivation. Records buffered before it resolves
+        // are stamped at flush time, so none are lost.
+        const em = emitter;
+        void deriveSeatId(config.serviceAccountKey)
+          .then((sid) => em.setSeat(sid, ci))
+          .catch(() => {});
+      }
+      emitter.start();
+    }
+  }
+
   return {
     pipeline,
-    generate: (request) => pipeline.generate(request),
-    close: () => poller?.stop(),
+    generate: async <T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> => {
+      const result = await pipeline.generate<T>(request);
+      if (emitter) {
+        try {
+          emitter.record(result.report);
+        } catch {
+          /* metering must never affect the caller */
+        }
+      }
+      return result;
+    },
+    close: () => {
+      poller?.stop();
+      emitter?.stop();
+    },
   };
 }

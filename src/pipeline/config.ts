@@ -96,6 +96,44 @@ export interface SavingsLayerConfig {
   };
 
   /**
+   * Service-account key (`bvk_…`) that authenticates DETECTIVE usage metering to
+   * the control plane. When set (alongside {@link licenseServerUrl} or an explicit
+   * {@link meteringUrl}), the SDK reports COUNTS-ONLY usage after each request —
+   * request id, model, cache outcome, and token/cost counts, tagged with an
+   * auto-derived machine seat id — NEVER prompts or completions. Best-effort and
+   * non-blocking: a slow or unreachable control plane never blocks or breaks
+   * `generate()`. Get the key from your dashboard.
+   */
+  serviceAccountKey?: string;
+
+  /**
+   * Usage-ingest URL. Defaults to `${licenseServerUrl}/api/metering/usage`. Set
+   * explicitly to point metering at a different host than the revocation poller.
+   */
+  meteringUrl?: string;
+
+  /** Injectable `fetch` for metering (defaults to {@link licenseFetch}, then global). */
+  meteringFetch?: typeof fetch;
+
+  /** DETECTIVE metering tuning (all optional). */
+  metering?: {
+    /** Off switch even when {@link serviceAccountKey} is set (default: on). */
+    enabled?: boolean;
+    /** Flush cadence in ms (default 15000). */
+    flushIntervalMs?: number;
+    /** Records per POST (default 50). */
+    maxBatch?: number;
+    /** Hard in-memory cap; oldest records dropped past it (default 1000). */
+    maxBuffer?: number;
+    /** Override the auto-derived machine seat id. */
+    seatId?: string;
+    /** Override CI auto-detection (CI/ephemeral seats are excluded from billable seats). */
+    ci?: boolean;
+    /** Optional org hint; the server derives the authoritative org from the key. */
+    orgId?: string;
+  };
+
+  /**
    * Explicit escape hatch: run **ungated** (all managed features on, no license
    * required) for local development, CI, and benchmarks. Also honored via the
    * `BVSALA_DEV_OPEN=1` environment variable. Never set this in production — it
