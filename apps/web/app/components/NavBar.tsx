@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "./BrandMark";
+import { NavLinks } from "./NavLinks";
 import { ThemeToggle } from "./ThemeToggle";
 
 /**
@@ -29,13 +30,7 @@ export async function NavBar() {
           <span className="tag">Savings Layer</span>
         </Link>
         <nav className="nav-actions">
-          <a className="nav-link" href="/#verify">Verifier</a>
-          <a className="nav-link" href="/#pricing">Pricing</a>
-          {authed ? (
-            <Link className="nav-link" href="/dashboard">Dashboard</Link>
-          ) : (
-            <Link className="nav-link" href="/login">Sign in</Link>
-          )}
+          <NavLinks authed={authed} />
           <ThemeToggle />
         </nav>
       </div>
