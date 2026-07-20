@@ -61,6 +61,41 @@ export interface SavingsLayerConfig {
   licenseGate?: LicenseGate;
 
   /**
+   * OPT-IN online revocation call-home. When set (alongside {@link licenseKey} and
+   * with no explicit {@link licenseGate}), the SDK polls this base's
+   * `GET /licenses/revocations` for a signed revocation list and enforces it via a
+   * LIVE gate — a license cancelled mid-term stops working without a restart.
+   *
+   * NEVER-BRICK: the customer request path never blocks on the fetch; the warm poll
+   * is fired but not awaited, and any failed/unreachable poll is a no-op that keeps
+   * the last-known-good snapshot. Leaving this unset keeps the fully-offline,
+   * zero-network default path. Pass the base URL of the licensing service, e.g.
+   * `https://savings.bivelio.com`.
+   */
+  licenseServerUrl?: string;
+
+  /**
+   * Steady-state ceiling between revocation polls, in seconds (default 900 = 15 min).
+   * The effective cadence tightens near license expiry and has a hard floor.
+   */
+  licensePollIntervalSeconds?: number;
+
+  /** Injectable `fetch` for the revocation poller (defaults to the global). Testing/proxy. */
+  licenseFetch?: typeof fetch;
+
+  /** Advanced tuning of the revocation poller cadence + skew tolerance. */
+  licenseRevocation?: {
+    /** Hard floor between polls, seconds (default 300). */
+    floorSeconds?: number;
+    /** Backoff ceiling during a control-plane outage, seconds (default 3600). */
+    maxIntervalSeconds?: number;
+    /** Jitter fraction ± (default 0.1). */
+    jitterRatio?: number;
+    /** Reject a signed list whose `asOf` is more than this far in the future, seconds (default 300). */
+    maxSkewSeconds?: number;
+  };
+
+  /**
    * Explicit escape hatch: run **ungated** (all managed features on, no license
    * required) for local development, CI, and benchmarks. Also honored via the
    * `BVSALA_DEV_OPEN=1` environment variable. Never set this in production — it

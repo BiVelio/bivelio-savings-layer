@@ -64,6 +64,38 @@ export interface Entitlements {
 }
 
 /**
+ * The signed payload of a revocation list — the control plane's published set of
+ * revoked license ids (`jti`). It is distributed as a compact Ed25519 token with
+ * the SAME wire shape as a license token, so the SDK verifies it offline with the
+ * SAME embedded public key (no new key management). `seq` is a monotonic,
+ * non-decreasing revision that lets a client reject a rolled-back/stale list;
+ * `asOf` is when the list was minted (unix seconds), for future-skew rejection.
+ */
+export interface RevocationListPayload {
+  /** Payload schema version. */
+  v: 1;
+  /** Unix seconds when this list was signed. */
+  asOf: number;
+  /** Monotonic, non-decreasing revision of the revocation set. */
+  seq: number;
+  /** Revoked license ids (jti). Grows over time; clients treat it as sticky. */
+  revoked: string[];
+  /** Optional issuer identifier. */
+  iss?: string;
+}
+
+/**
+ * Header of a signed revocation-list token. `typ` differs from a license token's
+ * `"BVL"` for DOMAIN SEPARATION: a license token can never be replayed as a
+ * revocation list (or vice-versa), even though both share the compact
+ * `base64url(header).base64url(body).base64url(sig)` Ed25519 wire format.
+ */
+export const REVOCATION_HEADER = { alg: "EdDSA", typ: "BVSALA-REVOC", v: 1 } as const;
+
+/** Current revocation-list payload schema version. */
+export const REVOCATION_LIST_VERSION = 1 as const;
+
+/**
  * A usage record derived from the SDK's SavingsReport and sent to the metering
  * service. Carries ONLY counts/metadata — never prompts or completions.
  */

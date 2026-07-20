@@ -14,6 +14,7 @@ in `auth.users`; these tables reference them.
 | `org_members` | User↔org membership + role (owner/admin/member/billing) |
 | `service_accounts` | Machine identities the SDK uses to call the control-plane API (only the key **hash** is stored) |
 | `licenses` | Issued signed licenses (mirrors the licensing service) |
+| `revocations` | Append-only revocation ledger (`seq bigserial`, `jti unique`); the SDK's `GET /licenses/revocations` publishes `max(seq)` + all jti. Never deleted → the revision stays monotonic |
 | `subscriptions` | Stripe per-seat subscriptions |
 | `usage_daily` | Daily usage rollups fed by the metering service — what the dashboard charts and billing reads |
 

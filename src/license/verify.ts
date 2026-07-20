@@ -66,14 +66,30 @@ function rawKeyFromSpkiPem(pem: string): Uint8Array {
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-/** Verify a token's signature and decode its payload. Does not check expiry. */
-export function verifyLicenseToken(
-  token: string,
-  publicKeyPem: string,
-): { signatureValid: boolean; payload?: LicenseTokenPayload; reason?: string } {
-  if (!publicKeyPem) return { signatureValid: false, reason: "no verification key" };
+/** Result of verifying a compact `head.body.sig` token's signature. */
+export interface CompactVerification {
+  /** True only if the signature is valid for the given public key. */
+  ok: boolean;
+  /** Decoded header (present when `ok`), e.g. `{ alg, typ, v }`. */
+  header?: Record<string, unknown>;
+  /** Raw payload bytes (present when `ok`); the caller decodes/parses them. */
+  payloadBytes?: Uint8Array;
+  reason?: string;
+}
+
+/**
+ * Verify the Ed25519 signature of any BV-SALA compact token
+ * (`base64url(header).base64url(body).base64url(sig)`, sig over `${head}.${body}`)
+ * and return the decoded header + raw payload bytes. This is the single shared
+ * crypto primitive: license tokens AND signed revocation lists both go through it,
+ * so the browser (`@noble/curves`) and node (`node:crypto`) sides agree byte-for-byte
+ * and there is no bespoke per-message verification path to keep in sync. It does NOT
+ * interpret the payload or the header `typ` — callers do that.
+ */
+export function verifyCompactSignature(token: string, publicKeyPem: string): CompactVerification {
+  if (!publicKeyPem) return { ok: false, reason: "no verification key" };
   const parts = token.split(".");
-  if (parts.length !== 3) return { signatureValid: false, reason: "malformed token" };
+  if (parts.length !== 3) return { ok: false, reason: "malformed token" };
   const head = parts[0]!;
   const body = parts[1]!;
   const sig = parts[2]!;
@@ -81,21 +97,39 @@ export function verifyLicenseToken(
   let rawKey: Uint8Array;
   try {
     rawKey = rawKeyFromSpkiPem(publicKeyPem);
-    if (rawKey.length !== 32) return { signatureValid: false, reason: "invalid public key" };
+    if (rawKey.length !== 32) return { ok: false, reason: "invalid public key" };
   } catch {
-    return { signatureValid: false, reason: "invalid public key" };
+    return { ok: false, reason: "invalid public key" };
   }
 
   let ok = false;
   try {
     ok = ed25519.verify(base64urlToBytes(sig), enc.encode(`${head}.${body}`), rawKey);
   } catch {
-    return { signatureValid: false, reason: "signature verification error" };
+    return { ok: false, reason: "signature verification error" };
   }
-  if (!ok) return { signatureValid: false, reason: "bad signature" };
+  if (!ok) return { ok: false, reason: "bad signature" };
 
+  let header: Record<string, unknown>;
   try {
-    const payload = JSON.parse(dec.decode(base64urlToBytes(body))) as LicenseTokenPayload;
+    header = JSON.parse(dec.decode(base64urlToBytes(head))) as Record<string, unknown>;
+  } catch {
+    return { ok: false, reason: "header is not valid JSON" };
+  }
+  return { ok: true, header, payloadBytes: base64urlToBytes(body) };
+}
+
+/** Verify a token's signature and decode its payload. Does not check expiry. */
+export function verifyLicenseToken(
+  token: string,
+  publicKeyPem: string,
+): { signatureValid: boolean; payload?: LicenseTokenPayload; reason?: string } {
+  const v = verifyCompactSignature(token, publicKeyPem);
+  if (!v.ok || !v.payloadBytes) {
+    return { signatureValid: false, ...(v.reason ? { reason: v.reason } : {}) };
+  }
+  try {
+    const payload = JSON.parse(dec.decode(v.payloadBytes)) as LicenseTokenPayload;
     return { signatureValid: true, payload };
   } catch {
     return { signatureValid: false, reason: "payload is not valid JSON" };
@@ -103,13 +137,31 @@ export function verifyLicenseToken(
 }
 
 /**
- * Verify + apply the grace policy → a resolved status. Mirrors
- * `@bivelio/license-client`'s `LicenseClient.resolve`:
+ * Apply the grace + revocation policy to an already-decoded payload → a status.
+ * Pure and clock-injected, so a LIVE gate can call it on every request to pick up
+ * both revocation (jti in the set) AND expiry transitions without re-verifying the
+ * signature. Revocation takes precedence over the time-based status.
+ *   jti on the revocation set            → revoked
  *   now <= expires_at                    → active
  *   expires_at < now <= +grace_days      → grace (still entitled)
  *   now > expires_at + grace_days        → expired
- *   bad signature / malformed            → invalid
- *   jti on the revocation set            → revoked
+ */
+export function deriveStatus(
+  payload: { jti: string; expires_at: number; grace_days: number },
+  nowSeconds: number,
+  revoked?: ReadonlySet<string>,
+): LicenseStatus {
+  if (revoked?.has(payload.jti)) return "revoked";
+  const graceEnd = payload.expires_at + payload.grace_days * 86400;
+  if (nowSeconds <= payload.expires_at) return "active";
+  if (nowSeconds <= graceEnd) return "grace";
+  return "expired";
+}
+
+/**
+ * Verify + apply the grace policy → a resolved status. Mirrors
+ * `@bivelio/license-client`'s `LicenseClient.resolve`. Bad signature / malformed
+ * → invalid; otherwise the status comes from {@link deriveStatus}.
  */
 export function resolveLicense(
   token: string,
@@ -121,14 +173,10 @@ export function resolveLicense(
     return { status: "invalid", ...(v.reason ? { reason: v.reason } : {}) };
   }
   const p = v.payload;
-  if (opts.revoked?.has(p.jti)) {
-    return { status: "revoked", payload: p, reason: "license revoked" };
-  }
   const now = opts.nowSeconds ?? Math.floor(Date.now() / 1000);
-  const graceEnd = p.expires_at + p.grace_days * 86400;
-  let status: LicenseStatus;
-  if (now <= p.expires_at) status = "active";
-  else if (now <= graceEnd) status = "grace";
-  else status = "expired";
+  const status = deriveStatus(p, now, opts.revoked);
+  if (status === "revoked") {
+    return { status, payload: p, reason: "license revoked" };
+  }
   return { status, payload: p };
 }

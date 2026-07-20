@@ -3,11 +3,10 @@
   "version": "0.1.0",
   "description": "BV-SALA — a provider-neutral LLM execution optimizer. A decision layer in front of any LLM provider that, for every request, picks the cheapest execution that preserves required quality. Avoid the call, avoid retrieval, eliminate context, compress, constrain — with four separate ledgers of savings. Proprietary and confidential — property of BiVelio Inc.",
   "type": "module",
-  "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "author": "BiVelio Inc.",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "homepage": "https://github.com/BiVelio/bivelio-savings-layer",
   "repository": {
@@ -65,6 +64,9 @@
     "example:serialization": "BVSALA_DEV_OPEN=1 tsx examples/serialization/format-selector.ts",
     "example:licensed": "tsx examples/licensing/licensed.ts",
     "license:demo": "tsx examples/licensing/demo.ts",
+    "example:revocation": "tsx examples/licensing/revocation.ts",
+    "demo:e2e": "tsx examples/licensing/e2e.ts",
+    "demo:install": "bash examples/licensing/install-demo.sh",
     "demo": "BVSALA_DEV_OPEN=1 tsx benchmarks/run.ts",
     "ablation": "BVSALA_DEV_OPEN=1 tsx benchmarks/ablation.ts",
     "ab": "BVSALA_DEV_OPEN=1 tsx benchmarks/ab-live.ts",

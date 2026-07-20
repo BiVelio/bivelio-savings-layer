@@ -2,8 +2,10 @@
    Same palette + heading font as the landing (savings.bivelio.com) so the whole
    product reads as one BiVelio surface. */
 
-@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/space-grotesk-500.woff2") format("woff2"); }
-@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/space-grotesk-700.woff2") format("woff2"); }
+/* Same self-hosted families as privacy.bivelio.com: Inter (body) + Space Grotesk
+   (headings/wordmark). Variable woff2 → one file each, covers all weights incl. 600. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("/fonts/inter-var.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("/fonts/space-grotesk-var.woff2") format("woff2"); }
 
 :root {
   --bg: #FDFDFD; --surface: #FFFFFF; --surface-2: #F4F6F9; --ink: #0F1218;
@@ -11,7 +13,7 @@
   --success: #14A06F; --warn: #E5484D;
   --shadow: 0 1px 2px rgba(15,20,30,.05), 0 12px 32px -18px rgba(15,20,30,.18);
   --radius: 14px;
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-heading: "Space Grotesk", var(--sans);
 }
@@ -34,10 +36,10 @@ h1 { font-family: var(--font-heading); letter-spacing: -.02em; }
 /* ---- brand mark (logo + "BiVelio." wordmark) ---- */
 .brand { display: inline-flex; align-items: center; gap: 10px; }
 .brand-logo { width: 26px; height: 26px; border-radius: 7px; display: block; }
-.bv-word { font-family: var(--font-heading); font-weight: 700; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); display: inline-flex; align-items: baseline; }
+.bv-word { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); }
 .bv-i { position: relative; display: inline-block; }
-.bv-i .tit { position: absolute; left: 50%; top: .36em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
-.bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .05em; border-radius: 50%; align-self: flex-end; margin-bottom: .1em; }
+.bv-i .tit { position: absolute; left: 50%; top: .38em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
+.bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .04em; border-radius: 50%; vertical-align: .02em; }
 .bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
 .tag { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
 

@@ -76,48 +76,45 @@ import {
   var readoutEl = document.getElementById("readout");
   var maxTok = 1;
 
-  var FMT_ORDER = ["json-compact", "toon", "csv"];
-  var FMT_NAMES = { "json-compact": "JSON", "toon": "TOON", "csv": "CSV" };
-
   function renderFormat() {
     var text = payloadEl.value;
     var parsed;
     try { parsed = JSON.parse(text); errEl.textContent = ""; }
-    catch (e) { errEl.textContent = "Waiting for valid JSON… " + e.message; return; }
+    catch (e) { errEl.textContent = "Waiting for valid data… " + e.message; return; }
 
-    // The product's real format selector: counts encoded payload + the
-    // instruction overhead each format needs, with the same activation
-    // thresholds the SDK uses (a challenger must beat JSON by an absolute and a
-    // relative margin, or JSON wins).
+    // BV-SALA re-encodes the payload the leanest way and counts the exact tokens,
+    // including the instruction overhead — surfacing only the before/after. A
+    // challenger must beat the baseline by an absolute AND a relative margin, or
+    // the baseline stands (never worse). The internal encodings stay BV-SALA's own.
     var choice = selector.choose(parsed, { model: MODEL });
-    var cands = FMT_ORDER
-      .filter(function (f) { return choice.candidateTokens[f] != null; })
-      .map(function (f) { return { fmt: f, tokens: choice.candidateTokens[f] }; });
-
-    var jsonTok = choice.candidateTokens["json-compact"] || 0;
-    var chosenTok = choice.candidateTokens[choice.chosen] != null ? choice.candidateTokens[choice.chosen] : jsonTok;
+    var baseTok = choice.candidateTokens["json-compact"] || 0;
     var switched = choice.chosen !== "json-compact";
-    maxTok = Math.max.apply(null, cands.map(function (c) { return c.tokens; }).concat([1]));
+    var chosenTok = choice.candidateTokens[choice.chosen] != null ? choice.candidateTokens[choice.chosen] : baseTok;
+    maxTok = Math.max(baseTok, chosenTok, 1);
 
+    // Only two bars — your data vs BV-SALA — never the internal representations.
+    var rows = [
+      { name: "Your data", tokens: baseTok, win: false },
+      { name: "BV-SALA", tokens: chosenTok, win: switched },
+    ];
     readoutEl.innerHTML = "";
-    cands.forEach(function (c) {
-      var win = c.fmt === choice.chosen && switched;
+    rows.forEach(function (c) {
       var row = document.createElement("div");
       row.className = "fmt-row";
       row.innerHTML =
-        '<div class="fmt-name ' + (win ? "win" : "") + '">' + FMT_NAMES[c.fmt] + (win ? " ●" : "") + '</div>' +
-        '<div class="track"><div class="fill ' + (win ? "win" : "") + '" style="width:' + (100 * c.tokens / maxTok).toFixed(1) + '%"></div></div>' +
+        '<div class="fmt-name ' + (c.win ? "win" : "") + '">' + c.name + (c.win ? " ●" : "") + '</div>' +
+        '<div class="track"><div class="fill ' + (c.win ? "win" : "") + '" style="width:' + (100 * c.tokens / maxTok).toFixed(1) + '%"></div></div>' +
         '<div class="fmt-tok">' + c.tokens.toLocaleString() + '</div>';
       readoutEl.appendChild(row);
     });
 
-    var abs = jsonTok - chosenTok;
-    var relPct = jsonTok ? (abs / jsonTok) * 100 : 0;
+    var abs = baseTok - chosenTok;
+    var relPct = baseTok ? (abs / baseTok) * 100 : 0;
     animate(document.getElementById("fmtSaved"), switched ? relPct : 0, pct);
-    document.getElementById("fmtChosen").textContent = FMT_NAMES[choice.chosen];
+    document.getElementById("fmtChosen").textContent = "BV-SALA";
     document.getElementById("fmtDelta").innerHTML = switched
       ? (abs.toLocaleString() + " tokens saved<br>on every send of this payload")
-      : "JSON already wins here.<br>The selector never makes it worse.";
+      : "Already optimal here.<br>BV‑SALA never makes it worse.";
   }
 
   document.getElementById("samples").addEventListener("click", function (e) {

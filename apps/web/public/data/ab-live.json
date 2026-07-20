@@ -31,7 +31,7 @@
       "cachedInputPer1k": 0.000075
     }
   },
-  "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
+  "methodology": "Paired A/B: Arm A = naive request (full payload, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
   "config": {
     "reps": 4,
     "minReps": 4,
@@ -253,7 +253,7 @@
     },
     {
       "name": "Large uniform table",
-      "lever": "compressed_tokens (TOON/CSV format selector)",
+      "lever": "compressed_tokens (BV-SALA)",
       "ledger": "compressed_tokens",
       "kind": "ran",
       "reps": 4,

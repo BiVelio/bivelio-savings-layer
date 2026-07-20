@@ -1,16 +1,22 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { createLicensingService, type IssueInput } from "./service.js";
-import { authorizeAdmin, loadAuthConfig } from "./gateway.js";
+import { createServer } from "node:http";
+import { createLicensingService } from "./service.js";
+import { loadAuthConfig } from "./gateway.js";
+import { createRequestHandler } from "./app.js";
 
 /**
- * Thin HTTP adapter over LicensingService. Control-plane component.
+ * Thin HTTP entrypoint for the licensing control plane. All routing lives in the
+ * side-effect-free ./app.ts handler (so it is unit/integration-testable without a
+ * bound socket); this file only constructs the service from the environment and
+ * binds the port.
  *
  * Keypair: reads LICENSE_PRIVATE_KEY / LICENSE_PUBLIC_KEY (PEM) from the
  * environment, or generates an ephemeral pair at boot (dev). Issue/revoke are
  * fail-closed: refused unless a configured ADMIN_TOKEN is presented (or explicit
- * BVSALA_DEV_OPEN=1 locally). In production, issuance must be driven by
- * signature-verified Stripe events + an org-owner check, and revocations must
- * use a durable RevocationStore — this is the runnable CP-0 skeleton.
+ * BVSALA_DEV_OPEN=1 locally). The revocation call-home (GET /licenses/revocations)
+ * is intentionally PUBLIC — integrity comes from the Ed25519 signature on the
+ * list, not from auth. In production, issuance must be driven by signature-verified
+ * Stripe events + an org-owner check, and revocations must use a durable
+ * RevocationStore — this is the runnable CP-0 skeleton.
  */
 const PORT = Number(process.env.PORT) || 8081;
 const authConfig = loadAuthConfig(process.env);
@@ -21,66 +27,7 @@ const service = createLicensingService(
     : {},
 );
 
-function send(res: ServerResponse, status: number, body: unknown): void {
-  const json = JSON.stringify(body);
-  res.writeHead(status, { "content-type": "application/json" });
-  res.end(json);
-}
-
-async function readJson(req: IncomingMessage): Promise<unknown> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) chunks.push(chunk as Buffer);
-  if (chunks.length === 0) return {};
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-}
-
-function authorized(req: IncomingMessage): boolean {
-  return authorizeAdmin(req.headers.authorization, authConfig);
-}
-
-const server = createServer(async (req, res) => {
-  try {
-    const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
-    const route = `${req.method} ${url.pathname}`;
-
-    if (route === "GET /health") return send(res, 200, { ok: true, issued: service.issuedCount() });
-    if (route === "GET /public-key") return send(res, 200, { publicKey: service.publicKey });
-
-    if (route === "POST /licenses/issue") {
-      if (!authorized(req)) return send(res, 401, { error: "unauthorized" });
-      const input = (await readJson(req)) as IssueInput;
-      if (!input.orgId || !input.plan) return send(res, 400, { error: "orgId and plan are required" });
-      const { token, payload } = service.issue({
-        orgId: input.orgId,
-        plan: input.plan,
-        seats: input.seats ?? 1,
-        features: input.features ?? [],
-        ...(input.termDays != null ? { termDays: input.termDays } : {}),
-        ...(input.graceDays != null ? { graceDays: input.graceDays } : {}),
-      });
-      return send(res, 201, { token, payload });
-    }
-
-    if (route === "POST /licenses/validate") {
-      const body = (await readJson(req)) as { token?: string };
-      if (!body.token) return send(res, 400, { error: "token is required" });
-      const resolved = service.validate(body.token);
-      return send(res, 200, { status: resolved.status, entitlements: resolved.entitlements, reason: resolved.reason });
-    }
-
-    if (route === "POST /licenses/revoke") {
-      if (!authorized(req)) return send(res, 401, { error: "unauthorized" });
-      const body = (await readJson(req)) as { jti?: string };
-      if (!body.jti) return send(res, 400, { error: "jti is required" });
-      service.revoke(body.jti);
-      return send(res, 200, { revoked: true, jti: body.jti });
-    }
-
-    return send(res, 404, { error: "not found" });
-  } catch (err) {
-    return send(res, 500, { error: err instanceof Error ? err.message : "internal error" });
-  }
-});
+const server = createServer(createRequestHandler(service, authConfig));
 
 server.listen(PORT, () => {
   console.log(`BV-SALA licensing service → http://localhost:${PORT}`);

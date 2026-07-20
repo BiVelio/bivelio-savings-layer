@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   signLicense,
+  signRevocationList,
   LicenseClient,
   generateLicenseKeypair,
   type ResolvedLicense,
@@ -41,18 +42,35 @@ export interface RevocationStore {
   has(jti: string): boolean;
   add(jti: string): void;
   list(): string[];
+  /**
+   * Monotonic, non-decreasing revision of the set. It MUST increase whenever a
+   * genuinely-new jti is added and MUST NOT decrease on prune or cold start — it
+   * is published as the signed list's `seq`, and clients reject any list whose
+   * seq is below the highest they have accepted (rollback protection). It is
+   * decoupled from list length so pruning old revocations stays safe.
+   */
+  revision(): number;
 }
 
 export class InMemoryRevocationStore implements RevocationStore {
   private readonly set = new Set<string>();
+  private rev = 0;
   has(jti: string): boolean {
     return this.set.has(jti);
   }
   add(jti: string): void {
-    this.set.add(jti);
+    // Bump the revision ONLY on a genuinely-new jti, so an idempotent re-revoke
+    // does not inflate `seq` (which clients gate polls on for monotonicity).
+    if (!this.set.has(jti)) {
+      this.set.add(jti);
+      this.rev++;
+    }
   }
   list(): string[] {
     return [...this.set];
+  }
+  revision(): number {
+    return this.rev;
   }
 }
 
@@ -125,6 +143,36 @@ export class LicensingService {
 
   revocationList(): string[] {
     return this.revoked.list();
+  }
+
+  /** Current monotonic revision of the revocation set (published as list `seq`). */
+  revocationRevision(): number {
+    return this.revoked.revision();
+  }
+
+  /**
+   * A signed, monotonic snapshot of the revocation set for the SDK call-home. The
+   * client verifies this OFFLINE with the same public key it verifies licenses
+   * with, then applies its own seq-monotonic + asOf-skew policy.
+   *
+   * DURABILITY CONTRACT: a production (Postgres) {@link RevocationStore} MUST
+   * persist BOTH the set and a monotonic revision across cold starts, and MUST
+   * make the HTTP endpoint return 503 (not sign an authentic empty list) until it
+   * is hydrated — otherwise a cold start would emit `seq:0, revoked:[]`, which
+   * every client with a higher accepted seq correctly rejects as a rollback, so
+   * newly-revoked licenses would stop propagating.
+   */
+  signedRevocationList(): string {
+    return signRevocationList(
+      {
+        v: 1,
+        asOf: this.nowSeconds(),
+        seq: this.revoked.revision(),
+        revoked: this.revoked.list(),
+        iss: "bivelio-licensing",
+      },
+      this.privateKey,
+    );
   }
 
   issuedCount(): number {

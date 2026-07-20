@@ -3,14 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Cand = { fmt: string; tokens: number };
-const NAMES: Record<string, string> = { "json-compact": "JSON", toon: "TOON", csv: "CSV" };
 const SAMPLE = JSON.stringify(
   { users: Array.from({ length: 24 }, (_, i) => ({ id: 1000 + i, name: `user_${i}`, role: i % 3 ? "member" : "admin", active: i % 4 !== 0 })) },
   null,
   2,
 );
 
-/** Verify-locally island: the REAL SDK format selector + a bill projector. Every
+/** Verify-locally island: the REAL BV-SALA optimizer + a bill projector. Every
  *  output is a heuristic ESTIMATE, never a provider-metered measurement. */
 export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPer1k: number } }) {
   type Selector = { choose: (p: unknown, o: { model: string }) => { chosen: string; candidateTokens: Record<string, number> } };
@@ -46,17 +45,16 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
   useEffect(() => {
     if (!selector) return;
     let parsed: unknown;
-    try { parsed = JSON.parse(payload); setErr(""); } catch (e) { setErr("Waiting for valid JSON… " + (e as Error).message); return; }
+    try { parsed = JSON.parse(payload); setErr(""); } catch (e) { setErr("Waiting for valid data… " + (e as Error).message); return; }
     const choice = selector.choose(parsed, { model: "openai/gpt-4o-mini" });
     const order = ["json-compact", "toon", "csv"];
     setCands(order.filter((f) => choice.candidateTokens[f] != null).map((f) => ({ fmt: f, tokens: choice.candidateTokens[f]! })));
     setChosen(choice.chosen);
   }, [selector, payload]);
 
-  const maxTok = Math.max(...cands.map((c) => c.tokens), 1);
-  const jsonTok = cands.find((c) => c.fmt === "json-compact")?.tokens ?? 0;
-  const chosenTok = cands.find((c) => c.fmt === chosen)?.tokens ?? jsonTok;
-  const fmtSaved = jsonTok && chosen !== "json-compact" ? ((jsonTok - chosenTok) / jsonTok) * 100 : 0;
+  const baseTok = cands.find((c) => c.fmt === "json-compact")?.tokens ?? 0;
+  const chosenTok = cands.find((c) => c.fmt === chosen)?.tokens ?? baseTok;
+  const maxTok = Math.max(baseTok, chosenTok, 1);
 
   const projected = useMemo(() => {
     const baseline = (reqs * inTok) / 1e6 * prices.inPer1k * 1000 + (reqs * outTok) / 1e6 * prices.outPer1k * 1000;
@@ -74,27 +72,27 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
     <div className="proj">
       <div>
         <div className="ck-head" style={{ marginBottom: "8px" }}>
-          <b style={{ fontSize: ".9rem" }}>Format verifier</b>
+          <b style={{ fontSize: ".9rem" }}>Savings verifier</b>
           <span className="est-tag">ESTIMATE — heuristic, not provider-metered</span>
         </div>
         <textarea className="proj-ta" value={payload} spellCheck={false} onChange={(e) => setPayload(e.target.value)} />
         {err ? <p className="ck-note" style={{ color: "var(--warn)" }}>{err}</p> : null}
         <div style={{ marginTop: "10px" }}>
-          {cands.map((c) => {
-            const win = c.fmt === chosen && chosen !== "json-compact";
-            return (
-              <div key={c.fmt} className="fmt-row2">
-                <span className={`fmt-name2 ${win ? "win" : ""}`}>{NAMES[c.fmt]}{win ? " ●" : ""}</span>
-                <span className="track2"><span className={`fill2 ${win ? "win" : ""}`} style={{ width: `${(100 * c.tokens) / maxTok}%` }} /></span>
-                <span className="fmt-tok2">{c.tokens.toLocaleString()}</span>
-              </div>
-            );
-          })}
+          {[
+            { name: "Your data", tokens: baseTok, win: false },
+            { name: "BV-SALA", tokens: chosenTok, win: chosen !== "json-compact" },
+          ].map((c) => (
+            <div key={c.name} className="fmt-row2">
+              <span className={`fmt-name2 ${c.win ? "win" : ""}`}>{c.name}{c.win ? " ●" : ""}</span>
+              <span className="track2"><span className={`fill2 ${c.win ? "win" : ""}`} style={{ width: `${(100 * c.tokens) / maxTok}%` }} /></span>
+              <span className="fmt-tok2">{c.tokens.toLocaleString()}</span>
+            </div>
+          ))}
         </div>
         <p className="ck-note">
           {chosen !== "json-compact"
-            ? `${NAMES[chosen]} wins — ${(jsonTok - chosenTok).toLocaleString()} tokens saved per send.`
-            : "JSON already wins here — the selector never makes it worse."}
+            ? `BV‑SALA trims ${(baseTok - chosenTok).toLocaleString()} tokens per send.`
+            : "Already optimal here — BV‑SALA never makes it worse."}
         </p>
       </div>
 

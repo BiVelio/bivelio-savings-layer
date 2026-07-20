@@ -15,7 +15,12 @@ try {
   PUBLIC_KEY = "";
 }
 
-const define = { __BV_SALA_PUBLIC_KEY__: JSON.stringify(PUBLIC_KEY) };
+const keyDefine = { __BV_SALA_PUBLIC_KEY__: JSON.stringify(PUBLIC_KEY) };
+// The published npm SDK DISABLES the dev escape hatch (`devUnlicensed` /
+// `BVSALA_DEV_OPEN`) so the paywall is unbypassable; the web-demo bundle keeps it
+// enabled (the free in-browser demo runs ungated).
+const defineNpm = { ...keyDefine, __BV_SALA_ALLOW_DEV_OPEN__: "false" };
+const defineWeb = { ...keyDefine, __BV_SALA_ALLOW_DEV_OPEN__: "true" };
 
 export default defineConfig([
   // 1. The distributable package (data plane SDK). Paid/closed source: no
@@ -30,7 +35,7 @@ export default defineConfig([
     treeshake: true,
     splitting: false,
     minify: false,
-    define,
+    define: defineNpm,
     outDir: "dist",
   },
   // 2. Browser bundle for the product web (apps/web). Same source → the
@@ -49,7 +54,7 @@ export default defineConfig([
     treeshake: true,
     splitting: false,
     minify: true,
-    define,
+    define: defineWeb,
     outDir: "apps/web/vendor",
   },
 ]);
