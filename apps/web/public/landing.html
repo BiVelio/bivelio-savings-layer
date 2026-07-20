@@ -25,7 +25,7 @@
     --shadow: 0 1px 2px rgba(15,26,20,.05), 0 12px 32px -18px rgba(15,26,20,.18);
     --radius: 14px;
     --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
-    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -296,33 +296,51 @@
   /* ── BiVelio brand layer (matches bivelio.com): self-hosted heading font,
      the "BiVelio." wordmark with brand-coloured dots, and the corporate footer.
      Palette already matches (--accent = BiVelio --primary; --success = --bv-mint). */
-  @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/space-grotesk-500.woff2") format("woff2"); }
-  @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/space-grotesk-700.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("./fonts/inter-var.woff2") format("woff2"); }
+  @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("./fonts/space-grotesk-var.woff2") format("woff2"); }
   :root { --font-heading: "Space Grotesk", var(--sans); }
   h1, h2, .sec-head h2, .price-card .amt { font-family: var(--font-heading); }
 
   .brand { text-decoration: none; }
   .brand-logo { width: 26px; height: 26px; border-radius: 7px; display: block; }
-  .bv-word { font-family: var(--font-heading); font-weight: 700; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); display: inline-flex; align-items: baseline; }
+  .bv-word { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); }
   .bv-i { position: relative; display: inline-block; }
-  .bv-i .tit { position: absolute; left: 50%; top: .36em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
-  .bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .05em; border-radius: 50%; align-self: flex-end; margin-bottom: .1em; }
+  .bv-i .tit { position: absolute; left: 50%; top: .38em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
+  .bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .04em; border-radius: 50%; vertical-align: .02em; }
   .bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
   .brand-sub { color: var(--muted); font-weight: 600; letter-spacing: .06em; font-size: .6rem; text-transform: uppercase; border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
 
-  .site-footer { border-top: 1px solid var(--line); background: var(--surface-2); margin-top: 44px; }
-  .site-footer .wrap { padding-top: 44px; padding-bottom: 22px; }
-  .foot-top { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 30px; }
-  .foot-brand .fb-mark { display: flex; align-items: center; gap: 10px; }
-  .foot-brand p { color: var(--muted); font-size: .9rem; line-height: 1.6; max-width: 36ch; margin: 14px 0 0; }
-  .foot-col h4 { font-size: .68rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-weight: 680; margin: 2px 0 14px; }
-  .foot-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 11px; }
-  .foot-col a { color: var(--muted); text-decoration: none; font-size: .9rem; transition: color .12s ease; }
-  .foot-col a:hover { color: var(--accent); }
-  .foot-trust { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: .78rem; }
-  .foot-bar { display: flex; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap; margin-top: 14px; color: var(--muted); font-size: .8rem; }
-  @media (max-width: 820px) { .foot-top { grid-template-columns: 1fr 1fr; } .foot-brand { grid-column: 1 / -1; } }
-  @media (max-width: 520px) { .foot-top { grid-template-columns: 1fr; } }
+  /* ── footer — same design as privacy.bivelio.com (nested card + link columns +
+     giant glass wordmark). Ported with token remaps (--font-mono→--mono,
+     --font-display→--font-heading; --redact→--ink for the badge glyph). ── */
+  .ftr { position: relative; overflow: hidden; padding: 0; margin-top: 30px; }
+  .ftr-card { overflow: hidden; border: 1px solid var(--line); border-radius: 40px; background: var(--surface-2); box-shadow: var(--shadow); margin: clamp(32px,6vw,64px) 0 0; }
+  .ftr-inner { margin: 8px; border: 1px solid var(--line); border-radius: 32px; background: var(--surface); padding: clamp(28px,4vw,48px); }
+  .ftr-grid { display: grid; grid-template-columns: 4fr 8fr; gap: clamp(28px,4vw,48px); }
+  @media (max-width: 860px) { .ftr-grid { grid-template-columns: 1fr; } }
+  .ftr-brand { display: flex; flex-direction: column; gap: 18px; }
+  .ftr-brand > p { max-width: 340px; margin: 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
+  .ftr-badge { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; }
+  .ftr-badge .bar { display: inline-block; width: 18px; height: 11px; background: var(--ink); border-radius: 3px; position: relative; }
+  .ftr-badge .bar::after { content: ""; position: absolute; inset: 2px 3px; background: var(--accent); border-radius: 1px; }
+  .ftr-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  @media (max-width: 560px) { .ftr-cols { grid-template-columns: repeat(2, 1fr); } }
+  .ftr-col h3 { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; }
+  .ftr-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+  .ftr-col a { font-size: 15px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
+  .ftr-col a:hover { color: var(--accent); }
+  .ftr-fine { margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--line); text-align: center; }
+  .ftr-fine p { margin: 0 0 4px; }
+  .ftr-trust { font-size: 12px; color: var(--muted); }
+  .ftr-entity { font-size: 11px; color: var(--muted); opacity: .8; }
+  .ftr-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(20px,3vw,40px); font-size: 13px; }
+  .ftr-bottom > p { margin: 0; font-weight: 500; color: var(--muted); }
+  .ftr-bottom-links { display: flex; align-items: center; gap: 18px; font-weight: 500; color: var(--muted); }
+  .ftr-bottom-links a { text-decoration: none; color: var(--muted); }
+  .ftr-bottom-links a:hover { color: var(--ink); }
+  .ftr-bottom-links .sep { width: 1px; height: 14px; background: var(--line); }
+  .ftr-wordmark-wrap { position: relative; display: flex; width: 100%; align-items: flex-end; justify-content: center; overflow: hidden; pointer-events: none; }
+  .ftr-wordmark { display: block; transform: translateY(14%); font-family: var(--font-heading); font-weight: 700; letter-spacing: -0.02em; line-height: 1; font-size: min(22vw, 260px); color: color-mix(in srgb, var(--ink) 6%, var(--bg)); }
 </style>
 </head>
 <!--
@@ -372,7 +390,7 @@
       <div class="step"><span class="n">01</span><span class="s">Avoid the call entirely<span>resolvers · exact &amp; semantic cache</span></span><span class="tag">0 calls</span></div>
       <div class="step"><span class="n">02</span><span class="s">Avoid retrieval &amp; tools<span>route: none / single / multi / tool</span></span><span class="tag">fewer calls</span></div>
       <div class="step"><span class="n">03</span><span class="s">Eliminate needless context<span>dedupe · rerank · adaptive‑k</span></span><span class="tag grey">−tokens</span></div>
-      <div class="step"><span class="n">04</span><span class="s">Compress what remains<span>JSON / TOON / CSV · net‑positive only</span></span><span class="tag grey">−tokens</span></div>
+      <div class="step"><span class="n">04</span><span class="s">Compress what remains<span>leaner encoding · net‑positive only</span></span><span class="tag grey">−tokens</span></div>
       <div class="step"><span class="n">05</span><span class="s">Constrain the output<span>schema · minimal contract</span></span><span class="tag grey">−output</span></div>
     </div>
   </section>
@@ -381,7 +399,7 @@
     <div class="sec-head">
       <span class="eyebrow">Step 1 · Preliminary tests — in your browser</span>
       <h2>Try the optimizer yourself. Nothing leaves this page.</h2>
-      <p>These two instruments run the real optimizer <b>locally</b> so you can sanity-check the mechanism before touching a provider. The left panel runs the actual format selector on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> a monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provably-<i>measured</i> dollars, see <a href="#measured">Step 2</a> below.</p>
+      <p>These two instruments run the real optimizer <b>locally</b> so you can sanity-check the mechanism before touching a provider. The left panel runs the real BV‑SALA optimizer on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> a monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provably-<i>measured</i> dollars, see <a href="#measured">Step 2</a> below.</p>
     </div>
 
     <div class="instrument">
@@ -390,19 +408,19 @@
         <div class="panel-h">
           <div class="lbl">Ledger 3 · compressed_tokens</div>
           <h3>Encode your payload for less</h3>
-          <p>Paste any JSON. We count tokens for compact JSON, TOON and CSV and pick the cheapest — including the instruction overhead each format needs.</p>
+          <p>Paste any structured data. BV‑SALA re‑encodes it the leanest way and counts the exact tokens — including the instruction overhead.</p>
         </div>
         <div class="panel-b">
           <div class="samples" id="samples">
-            <button class="chip" data-sample="wrapped" aria-pressed="true">Wrapped table → TOON</button>
-            <button class="chip" data-sample="flat">Flat array → CSV</button>
-            <button class="chip" data-sample="config">Small config → JSON</button>
+            <button class="chip" data-sample="wrapped" aria-pressed="true">Wrapped table</button>
+            <button class="chip" data-sample="flat">Flat array</button>
+            <button class="chip" data-sample="config">Small config</button>
           </div>
           <textarea id="payload" spellcheck="false" aria-label="Your JSON payload"></textarea>
           <div class="err" id="payloadErr"></div>
           <div class="readout" id="readout"></div>
           <div class="verdict">
-            <div><div class="big" id="fmtSaved">0%</div><div class="cap">smaller than JSON · chosen: <b id="fmtChosen">—</b></div></div>
+            <div><div class="big" id="fmtSaved">0%</div><div class="cap">smaller than your raw data · via <b id="fmtChosen">—</b></div></div>
             <div class="cap" style="text-align:right" id="fmtDelta"></div>
           </div>
         </div>
@@ -474,7 +492,7 @@
     <div class="sec-head">
       <span class="eyebrow">Honest accounting</span>
       <h2>Four separate ledgers. Never summed into one vanity number.</h2>
-      <p>A cache hit removes a whole call. TOON re‑encodes structured data. Compression drops redundant words. A provider prefix cache makes tokens cheaper without removing them. Mixing them lies to you — so we don't.</p>
+      <p>A cache hit removes a whole call. BV‑SALA re‑encodes structured data more compactly. Compression drops redundant words. A provider prefix cache makes tokens cheaper without removing them. Mixing them lies to you — so we don't.</p>
     </div>
     <div class="ledgers">
       <div class="ledger"><div class="idx">01</div><h4>avoided_calls</h4><p>LLM, retrieval and tool calls that never executed at all.</p><div class="mval" id="lg-avoided">—</div><div class="munit" id="lgu-avoided">run the optimizer to measure</div></div>
@@ -493,7 +511,11 @@
     <pre class="code"><span class="c">// your app — the data plane. LLM traffic goes straight to your provider.</span>
 <span class="k">import</span> { createSavingsLayer } <span class="k">from</span> <span class="s">"@bivelio/savings-layer"</span>;
 
-<span class="k">const</span> layer = createSavingsLayer({ provider: yourProvider });
+<span class="k">const</span> layer = createSavingsLayer({
+  provider: yourProvider,
+  licenseKey: process.env.<span class="s">BIVELIO_LICENSE_KEY</span>,       <span class="c">// from your dashboard</span>
+  licenseServerUrl: <span class="s">"https://savings.bivelio.com"</span>,   <span class="c">// license check + kill-switch</span>
+});
 
 <span class="k">const</span> { data, report } = <span class="k">await</span> layer.generate({
   model: <span class="s">"openai/gpt-4o-mini"</span>,
@@ -536,52 +558,88 @@ report.calls.avoidedLlm;  <span class="c">// → whole calls you never paid for<
   </section>
 </main>
 
-<footer class="site-footer">
+<footer class="ftr">
   <div class="wrap">
-    <div class="foot-top">
-      <div class="foot-brand">
-        <div class="fb-mark">
-          <img class="brand-logo" src="./logo-bivelio.png" alt="BiVelio" width="30" height="30" style="width:30px;height:30px">
-          <span class="bv-word" style="font-size:1.28rem" aria-label="BiVelio">B<span class="bv-i">ı<span class="tit bv-c1"></span></span>Vel<span class="bv-i">ı<span class="tit bv-c2"></span></span>o<span class="bv-period bv-c3"></span></span>
+    <div class="ftr-card">
+      <div class="ftr-inner">
+        <div class="ftr-grid">
+          <div class="ftr-brand">
+            <span class="brand" style="gap:12px">
+              <img class="brand-logo" src="./logo-bivelio.png" alt="BiVelio" width="34" height="34" style="width:34px;height:34px;border-radius:8px">
+              <span class="bv-word" style="font-size:1.4rem" aria-label="BiVelio">B<span class="bv-i">ı<span class="tit bv-c1"></span></span>Vel<span class="bv-i">ı<span class="tit bv-c2"></span></span>o<span class="bv-period bv-c3"></span></span>
+            </span>
+            <p>The operating system for your business. This is <b>BV‑SALA</b>, BiVelio's provider‑neutral LLM cost optimizer — verify the savings yourself before you pay.</p>
+            <span class="ftr-badge"><span class="bar"></span> BV‑SALA · Savings Layer</span>
+          </div>
+          <div class="ftr-cols">
+            <div class="ftr-col">
+              <h3>Savings Layer</h3>
+              <ul>
+                <li><a href="#verify">Verify your savings</a></li>
+                <li><a href="#measured">Measured results</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+              </ul>
+            </div>
+            <div class="ftr-col">
+              <h3>BiVelio</h3>
+              <ul>
+                <li><a href="https://bivelio.com">Home</a></li>
+                <li><a href="https://docs.bivelio.com">Documentation</a></li>
+                <li><a href="https://bivelio.com/es/security">Security</a></li>
+                <li><a href="https://status.bivelio.com">Status</a></li>
+              </ul>
+            </div>
+            <div class="ftr-col">
+              <h3>Legal</h3>
+              <ul>
+                <li><a href="https://bivelio.com/es/privacy">Privacy</a></li>
+                <li><a href="https://bivelio.com/es/terms">Terms of service</a></li>
+                <li><a href="https://bivelio.com/es/gdpr">GDPR</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <p>The operating system for your business. This is <b>BV‑SALA</b>, BiVelio's provider‑neutral LLM cost optimizer — verify the savings yourself before you pay.</p>
+        <div class="ftr-fine">
+          <p class="ftr-trust">Enterprise security · GDPR compliant · Scalable infrastructure</p>
+          <p class="ftr-entity">Powered by BiVelio Inc · Delaware (United States).</p>
+        </div>
       </div>
-      <div class="foot-col">
-        <h4>BiVelio</h4>
-        <ul>
-          <li><a href="https://bivelio.com">Home</a></li>
-          <li><a href="https://bivelio.com/es/security">Security</a></li>
-          <li><a href="https://docs.bivelio.com">Documentation</a></li>
-          <li><a href="https://status.bivelio.com">Status</a></li>
-        </ul>
-      </div>
-      <div class="foot-col">
-        <h4>Savings Layer</h4>
-        <ul>
-          <li><a href="#verify">Verify your savings</a></li>
-          <li><a href="#measured">Measured results</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-        </ul>
-      </div>
-      <div class="foot-col">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="https://bivelio.com/es/privacy">Privacy</a></li>
-          <li><a href="https://bivelio.com/es/terms">Terms</a></li>
-          <li><a href="https://bivelio.com/es/gdpr">GDPR</a></li>
-        </ul>
+      <div class="ftr-bottom">
+        <p>© 2026 BiVelio Inc. All rights reserved.</p>
+        <div class="ftr-bottom-links">
+          <span>From Andorra to the world 🇦🇩</span>
+          <span aria-hidden="true" class="sep"></span>
+          <a href="https://bivelio.com/es/privacy">Privacy</a>
+          <a href="https://bivelio.com/es/terms">Terms</a>
+        </div>
       </div>
     </div>
-    <div class="foot-trust">Enterprise security · GDPR compliant · Scalable infrastructure</div>
-    <div class="foot-bar">
-      <span>© 2026 BiVelio Inc. All rights reserved.</span>
-      <span>From Andorra to the world 🇦🇩 · Powered by BiVelio Inc · Delaware (United States).</span>
-    </div>
+  </div>
+  <div class="ftr-wordmark-wrap" aria-hidden="true">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="ftr-glass" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F1218" flood-opacity="0.18" result="outer"/>
+          <feComponentTransfer in="SourceAlpha" result="alpha"><feFuncA type="linear" slope="1"/></feComponentTransfer>
+          <feOffset in="alpha" dx="0" dy="4" result="ow"/>
+          <feGaussianBlur in="ow" stdDeviation="4" result="bw"/>
+          <feComposite in="alpha" in2="bw" operator="out" result="iwm"/>
+          <feFlood flood-color="#ffffff" flood-opacity="0.35" result="wf"/>
+          <feComposite in="wf" in2="iwm" operator="in" result="iwf"/>
+          <feGaussianBlur in="alpha" stdDeviation="6" result="bb"/>
+          <feComposite in="alpha" in2="bb" operator="out" result="ibm"/>
+          <feFlood flood-color="#1A3477" flood-opacity="0.22" result="bf"/>
+          <feComposite in="bf" in2="ibm" operator="in" result="ibf"/>
+          <feMerge><feMergeNode in="outer"/><feMergeNode in="SourceGraphic"/><feMergeNode in="iwf"/><feMergeNode in="ibf"/></feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <span class="ftr-wordmark" style="filter:url(#ftr-glass)">BiVelio</span>
   </div>
 </footer>
 
 <script type="application/json" id="ab-inline">
-{"mode":"MOCK","generatedNote":"ESTIMATED \u2014 mock provider, not a savings claim","pricing":{"note":"USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. Both arms share one price, so the savings % is insensitive to price level.","table":{"gpt-4o-mini":{"inputPer1k":0.00015,"outputPer1k":0.0006,"cachedInputPer1k":7.5e-05},"gpt-4o":{"inputPer1k":0.0025,"outputPer1k":0.01,"cachedInputPer1k":0.00125},"gpt-4.1-mini":{"inputPer1k":0.0004,"outputPer1k":0.0016,"cachedInputPer1k":0.0001},"gpt-4.1":{"inputPer1k":0.002,"outputPer1k":0.008,"cachedInputPer1k":0.0005}},"fallback":{"inputPer1k":0.00015,"outputPer1k":0.0006,"cachedInputPer1k":7.5e-05}},"methodology":"Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1\u2212\u03a3costB/\u03a3costA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.","config":{"reps":4,"minReps":4,"maxReps":12,"ciTarget":0.03,"qualityFloor":0.999,"seed":1234567},"scenarios":[{"name":"Local arithmetic","lever":"avoided_calls (deterministic resolver)","ledger":"avoided_calls","kind":"resolver","reps":2,"armA":{"meanInputTokens":10,"meanOutputTokens":15,"meanCost":1.0499999999999998e-05},"armB":{"meanInputTokens":0,"meanOutputTokens":0,"meanCost":0},"measured":{"inputTokenDeltaMean":10,"outputTokenDeltaMean":15,"savings":{"point":1,"lower":1,"upper":1},"wilcoxonP":0.17288928040763485},"quality":{"gate":"ground-truth","passed":2,"total":2},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":true,"eliminatedInputTokens":10,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"FAQ (first ask)","lever":"baseline (populates cache)","ledger":"none","kind":"ran","reps":4,"armA":{"meanInputTokens":12,"meanOutputTokens":15,"meanCost":1.0799999999999998e-05},"armB":{"meanInputTokens":12,"meanOutputTokens":20,"meanCost":1.3799999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2777777777777779,"lower":-0.2777777777777779,"upper":-0.2777777777777779},"wilcoxonP":0.9860966005513429},"quality":{"gate":"plumbing(mock)","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"FAQ (repeat ask)","lever":"avoided_calls (exact cache hit)","ledger":"avoided_calls","kind":"cache","reps":2,"armA":{"meanInputTokens":12,"meanOutputTokens":15,"meanCost":1.0799999999999998e-05},"armB":{"meanInputTokens":12,"meanOutputTokens":20,"meanCost":1.3799999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2777777777777779,"lower":-0.2777777777777779,"upper":-0.2777777777777779},"wilcoxonP":0.9703268451875493},"quality":{"gate":"plumbing(mock)","passed":2,"total":2},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0},"amortization":{"coldMissCost":1.3799999999999998e-05,"hitCost":0,"breakEvenK":2}},{"name":"Summarize provided text","lever":"avoided retrieval (NO_RETRIEVAL routing)","ledger":"eliminated_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":31,"meanOutputTokens":15,"meanCost":1.3649999999999998e-05},"armB":{"meanInputTokens":31,"meanOutputTokens":20,"meanCost":1.6649999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2197802197802199,"lower":-0.2197802197802199,"upper":-0.2197802197802199},"wilcoxonP":0.9860966005513429},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"Tool-heavy request","lever":"fewer tool tokens (tool selector)","ledger":"eliminated_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":815,"meanOutputTokens":15,"meanCost":0.00013125},"armB":{"meanInputTokens":190,"meanOutputTokens":20,"meanCost":4.0499999999999995e-05},"measured":{"inputTokenDeltaMean":625,"outputTokenDeltaMean":-5,"savings":{"point":0.6914285714285715,"lower":0.6914285714285715,"upper":0.6914285714285715},"wilcoxonP":0.035930266797508215},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"Large uniform table","lever":"compressed_tokens (TOON/CSV format selector)","ledger":"compressed_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":2182,"meanOutputTokens":15,"meanCost":0.0003363},"armB":{"meanInputTokens":877,"meanOutputTokens":20,"meanCost":0.00014355},"measured":{"inputTokenDeltaMean":1305,"outputTokenDeltaMean":-5,"savings":{"point":0.5731489741302409,"lower":0.5731489741302409,"upper":0.5731489741302409},"wilcoxonP":0.035930266797508215},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":1306,"providerCachedInputTokens":0}},{"name":"Constrained structured answer","lever":"output restriction (schema + maxOutputTokens)","ledger":"output_restriction","kind":"ran","reps":4,"armA":{"meanInputTokens":20,"meanOutputTokens":15,"meanCost":1.1999999999999999e-05},"armB":{"meanInputTokens":20,"meanOutputTokens":20,"meanCost":1.4999999999999999e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.25,"lower":-0.25,"upper":-0.25},"wilcoxonP":0.9860966005513429},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}}],"ledgers":[{"ledger":"avoided_calls","scenarios":["Local arithmetic","FAQ (repeat ask)"],"savings":{"point":0.352112676056338,"lower":-0.2777777777777779,"upper":1},"deltaCost":1.4999999999999995e-05,"proven":false},{"ledger":"eliminated_tokens","scenarios":["Summarize provided text","Tool-heavy request"],"savings":{"point":0.6055900621118012,"lower":0.30753968253968256,"upper":0.678088803088803},"deltaCost":0.0003509999999999999,"proven":false},{"ledger":"compressed_tokens","scenarios":["Large uniform table"],"savings":{"point":0.5731489741302409,"lower":0.5731489741302409,"upper":0.5731489741302409},"deltaCost":0.000771,"proven":false},{"ledger":"output_restriction","scenarios":["Constrained structured answer"],"savings":{"point":-0.25,"lower":-0.25,"upper":-0.25},"deltaCost":-1.2e-05,"proven":false}],"reconciliation":{"totalDelta":0.0011129999999999988,"ledgerSum":0.0011129999999999998,"residual":-1.0842021724855044e-18,"reconciled":true},"fingerprintStable":true,"aggregate":{"savings":{"point":0.5406587000874377,"lower":0.4446711473835815,"upper":0.5836805771503201},"wilcoxonP":0.09620579360291859,"qualityPassRate":1,"proven":false,"headline":"ESTIMATED (mock) \u2014 not a savings claim"},"honesty":["Both arms are metered by the provider's own tokenizer \u2014 no modeled baseline.","The headline is the 95% CI lower bound, never the point estimate.","A saving is voided if its answer fails the quality gate.","Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).","Adaptive sampling adds reps only where variance is high, up to a hard cap.","A changed model fingerprint mid-run invalidates the 'proven' claim.","Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.","Missing provider usage is a hard error (requireUsage), never a silent 0 \u2192 100% saving."]}
+{"mode":"MOCK","generatedNote":"ESTIMATED \u2014 mock provider, not a savings claim","pricing":{"note":"USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. Both arms share one price, so the savings % is insensitive to price level.","table":{"gpt-4o-mini":{"inputPer1k":0.00015,"outputPer1k":0.0006,"cachedInputPer1k":7.5e-05},"gpt-4o":{"inputPer1k":0.0025,"outputPer1k":0.01,"cachedInputPer1k":0.00125},"gpt-4.1-mini":{"inputPer1k":0.0004,"outputPer1k":0.0016,"cachedInputPer1k":0.0001},"gpt-4.1":{"inputPer1k":0.002,"outputPer1k":0.008,"cachedInputPer1k":0.0005}},"fallback":{"inputPer1k":0.00015,"outputPer1k":0.0006,"cachedInputPer1k":7.5e-05}},"methodology":"Paired A/B: Arm A = naive request (full payload, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1\u2212\u03a3costB/\u03a3costA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.","config":{"reps":4,"minReps":4,"maxReps":12,"ciTarget":0.03,"qualityFloor":0.999,"seed":1234567},"scenarios":[{"name":"Local arithmetic","lever":"avoided_calls (deterministic resolver)","ledger":"avoided_calls","kind":"resolver","reps":2,"armA":{"meanInputTokens":10,"meanOutputTokens":15,"meanCost":1.0499999999999998e-05},"armB":{"meanInputTokens":0,"meanOutputTokens":0,"meanCost":0},"measured":{"inputTokenDeltaMean":10,"outputTokenDeltaMean":15,"savings":{"point":1,"lower":1,"upper":1},"wilcoxonP":0.17288928040763485},"quality":{"gate":"ground-truth","passed":2,"total":2},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":true,"eliminatedInputTokens":10,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"FAQ (first ask)","lever":"baseline (populates cache)","ledger":"none","kind":"ran","reps":4,"armA":{"meanInputTokens":12,"meanOutputTokens":15,"meanCost":1.0799999999999998e-05},"armB":{"meanInputTokens":12,"meanOutputTokens":20,"meanCost":1.3799999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2777777777777779,"lower":-0.2777777777777779,"upper":-0.2777777777777779},"wilcoxonP":0.9860966005513429},"quality":{"gate":"plumbing(mock)","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"FAQ (repeat ask)","lever":"avoided_calls (exact cache hit)","ledger":"avoided_calls","kind":"cache","reps":2,"armA":{"meanInputTokens":12,"meanOutputTokens":15,"meanCost":1.0799999999999998e-05},"armB":{"meanInputTokens":12,"meanOutputTokens":20,"meanCost":1.3799999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2777777777777779,"lower":-0.2777777777777779,"upper":-0.2777777777777779},"wilcoxonP":0.9703268451875493},"quality":{"gate":"plumbing(mock)","passed":2,"total":2},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0},"amortization":{"coldMissCost":1.3799999999999998e-05,"hitCost":0,"breakEvenK":2}},{"name":"Summarize provided text","lever":"avoided retrieval (NO_RETRIEVAL routing)","ledger":"eliminated_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":31,"meanOutputTokens":15,"meanCost":1.3649999999999998e-05},"armB":{"meanInputTokens":31,"meanOutputTokens":20,"meanCost":1.6649999999999998e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.2197802197802199,"lower":-0.2197802197802199,"upper":-0.2197802197802199},"wilcoxonP":0.9860966005513429},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"Tool-heavy request","lever":"fewer tool tokens (tool selector)","ledger":"eliminated_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":815,"meanOutputTokens":15,"meanCost":0.00013125},"armB":{"meanInputTokens":190,"meanOutputTokens":20,"meanCost":4.0499999999999995e-05},"measured":{"inputTokenDeltaMean":625,"outputTokenDeltaMean":-5,"savings":{"point":0.6914285714285715,"lower":0.6914285714285715,"upper":0.6914285714285715},"wilcoxonP":0.035930266797508215},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}},{"name":"Large uniform table","lever":"compressed_tokens (BV-SALA)","ledger":"compressed_tokens","kind":"ran","reps":4,"armA":{"meanInputTokens":2182,"meanOutputTokens":15,"meanCost":0.0003363},"armB":{"meanInputTokens":877,"meanOutputTokens":20,"meanCost":0.00014355},"measured":{"inputTokenDeltaMean":1305,"outputTokenDeltaMean":-5,"savings":{"point":0.5731489741302409,"lower":0.5731489741302409,"upper":0.5731489741302409},"wilcoxonP":0.035930266797508215},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":1306,"providerCachedInputTokens":0}},{"name":"Constrained structured answer","lever":"output restriction (schema + maxOutputTokens)","ledger":"output_restriction","kind":"ran","reps":4,"armA":{"meanInputTokens":20,"meanOutputTokens":15,"meanCost":1.1999999999999999e-05},"armB":{"meanInputTokens":20,"meanOutputTokens":20,"meanCost":1.4999999999999999e-05},"measured":{"inputTokenDeltaMean":0,"outputTokenDeltaMean":-5,"savings":{"point":-0.25,"lower":-0.25,"upper":-0.25},"wilcoxonP":0.9860966005513429},"quality":{"gate":"ground-truth","passed":4,"total":4},"proven":false,"fingerprintStable":true,"fingerprints":[],"attribution":{"avoidedCall":false,"eliminatedInputTokens":0,"compressedInputTokens":0,"providerCachedInputTokens":0}}],"ledgers":[{"ledger":"avoided_calls","scenarios":["Local arithmetic","FAQ (repeat ask)"],"savings":{"point":0.352112676056338,"lower":-0.2777777777777779,"upper":1},"deltaCost":1.4999999999999995e-05,"proven":false},{"ledger":"eliminated_tokens","scenarios":["Summarize provided text","Tool-heavy request"],"savings":{"point":0.6055900621118012,"lower":0.30753968253968256,"upper":0.678088803088803},"deltaCost":0.0003509999999999999,"proven":false},{"ledger":"compressed_tokens","scenarios":["Large uniform table"],"savings":{"point":0.5731489741302409,"lower":0.5731489741302409,"upper":0.5731489741302409},"deltaCost":0.000771,"proven":false},{"ledger":"output_restriction","scenarios":["Constrained structured answer"],"savings":{"point":-0.25,"lower":-0.25,"upper":-0.25},"deltaCost":-1.2e-05,"proven":false}],"reconciliation":{"totalDelta":0.0011129999999999988,"ledgerSum":0.0011129999999999998,"residual":-1.0842021724855044e-18,"reconciled":true},"fingerprintStable":true,"aggregate":{"savings":{"point":0.5406587000874377,"lower":0.4446711473835815,"upper":0.5836805771503201},"wilcoxonP":0.09620579360291859,"qualityPassRate":1,"proven":false,"headline":"ESTIMATED (mock) \u2014 not a savings claim"},"honesty":["Both arms are metered by the provider's own tokenizer \u2014 no modeled baseline.","The headline is the 95% CI lower bound, never the point estimate.","A saving is voided if its answer fails the quality gate.","Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).","Adaptive sampling adds reps only where variance is high, up to a hard cap.","A changed model fingerprint mid-run invalidates the 'proven' claim.","Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.","Missing provider usage is a hard error (requireUsage), never a silent 0 \u2192 100% saving."]}
 </script>
 <script type="module" src="./app.js"></script>
 </body>
