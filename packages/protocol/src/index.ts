@@ -103,6 +103,8 @@ export interface UsageRecord {
   orgId: string;
   /** Machine identity (service account) that produced the request. */
   seatId?: string;
+  /** True when produced by a CI / ephemeral runner (excluded from billable seats). */
+  ci?: boolean;
   requestId: string;
   model: string;
   /** Unix ms. */
@@ -160,11 +162,12 @@ export interface SavingsReportLike {
  */
 export function usageRecordFromReport(
   report: SavingsReportLike,
-  ctx: { orgId: string; seatId?: string; at: number },
+  ctx: { orgId: string; seatId?: string; ci?: boolean; at: number },
 ): UsageRecord {
   return {
     orgId: ctx.orgId,
     ...(ctx.seatId ? { seatId: ctx.seatId } : {}),
+    ...(ctx.ci ? { ci: ctx.ci } : {}),
     requestId: report.requestId,
     model: report.model,
     at: ctx.at,
@@ -221,10 +224,11 @@ const USAGE_NUMBER_FIELDS = [
   "netSavings",
 ] as const;
 /** `orgId` is intentionally NOT accepted from the client — the server derives it
- * from the authenticated service account. `seatId` is the only optional field. */
+ * from the authenticated service account. `seatId` and `ci` are the optional fields. */
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",
   "seatId",
+  "ci",
   "cacheResult",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
@@ -287,6 +291,12 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
     }
     rec["seatId"] = s;
+  }
+  if (input["ci"] !== undefined) {
+    if (typeof input["ci"] !== "boolean") {
+      throw new UsageValidationError(`field "ci" must be a boolean`);
+    }
+    rec["ci"] = input["ci"];
   }
   return rec as unknown as UsageRecord;
 }

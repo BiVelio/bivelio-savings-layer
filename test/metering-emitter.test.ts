@@ -1,0 +1,126 @@
+import { describe, it, expect } from "vitest";
+
+import { UsageEmitter } from "../src/metering/emitter.js";
+import type { SavingsReport } from "../src/contracts/types.js";
+
+function mkReport(requestId = "req-abc"): SavingsReport {
+  return {
+    requestId,
+    model: "openai/gpt-4o-mini",
+    calls: { avoidedLlm: 0, actualLlm: 1 },
+    tokens: {
+      baselineInput: 100,
+      actualInput: 40,
+      eliminatedInput: 60,
+      compressedInput: 0,
+      baselineOutput: 20,
+      actualOutput: 20,
+    },
+    cache: { result: "miss" },
+    cost: { baselineEstimate: 0.001, actual: 0.0004, netSavings: 0.0006 },
+  } as unknown as SavingsReport;
+}
+
+function okFetch() {
+  const calls: { url: string; init: RequestInit }[] = [];
+  const fn = ((url: string, init: RequestInit) => {
+    calls.push({ url, init });
+    return Promise.resolve({ ok: true, status: 202 } as Response);
+  }) as unknown as typeof fetch;
+  return { fn, calls };
+}
+
+const URL = "https://savings.bivelio.com/api/metering/usage";
+
+describe("UsageEmitter", () => {
+  it("POSTs counts-only records with the Bearer key, seatId and ci stamped", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_secret", fetchImpl: fn });
+    em.setSeat("m-abc123", true);
+    em.record(mkReport("req-1"));
+    await em.flush();
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.url).toBe(URL);
+    expect((calls[0]!.init.headers as Record<string, string>)["authorization"]).toBe("Bearer bvk_secret");
+    const body = JSON.parse(calls[0]!.init.body as string);
+    expect(Array.isArray(body)).toBe(true);
+    expect(body[0].seatId).toBe("m-abc123");
+    expect(body[0].ci).toBe(true);
+    expect(body[0].requestId).toBe("req-1");
+    expect(body[0].actualInputTokens).toBe(40);
+  });
+
+  it("PRIVACY: the wire body carries only counts/metadata — never content", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport());
+    await em.flush();
+    const rec = JSON.parse(calls[0]!.init.body as string)[0];
+    const ALLOWED = new Set([
+      "orgId", "seatId", "ci", "requestId", "model", "at",
+      "avoidedLlm", "actualLlm", "baselineInputTokens", "actualInputTokens",
+      "eliminatedInputTokens", "compressedInputTokens", "baselineOutputTokens",
+      "actualOutputTokens", "providerCachedInputTokens", "cacheResult",
+      "baselineCost", "actualCost", "netSavings",
+    ]);
+    for (const k of Object.keys(rec)) expect(ALLOWED.has(k)).toBe(true);
+    for (const forbidden of ["prompt", "completion", "messages", "text", "content", "data"]) {
+      expect(rec[forbidden]).toBeUndefined();
+    }
+  });
+
+  it("stamps the seat resolved AFTER records were buffered (none lost)", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport("early")); // recorded before the seat is known
+    em.setSeat("m-late", false); // seat resolves later
+    await em.flush();
+    expect(JSON.parse(calls[0]!.init.body as string)[0].seatId).toBe("m-late");
+  });
+
+  it("never throws and re-queues on a network error (retry later)", async () => {
+    let attempts = 0;
+    const fn = (() => {
+      attempts++;
+      return Promise.reject(new Error("network down"));
+    }) as unknown as typeof fetch;
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport());
+    await expect(em.flush()).resolves.toBeUndefined(); // never throws
+    await em.flush(); // the record survived the failure → it is retried
+    expect(attempts).toBe(2);
+  });
+
+  it("drops a batch on a 4xx (retrying a rejected payload would loop)", async () => {
+    let hits = 0;
+    const fn = (() => {
+      hits++;
+      return Promise.resolve({ ok: false, status: 400 } as Response);
+    }) as unknown as typeof fetch;
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport());
+    await em.flush();
+    await em.flush(); // buffer should be empty now → no second POST
+    expect(hits).toBe(1);
+  });
+
+  it("caps records per POST at maxBatch", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, maxBatch: 3 });
+    for (let i = 0; i < 5; i++) em.record(mkReport(`r${i}`));
+    await em.flush();
+    expect(JSON.parse(calls[0]!.init.body as string)).toHaveLength(3);
+  });
+
+  it("hard-caps the buffer (drops oldest) so an outage can't grow memory unbounded", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, maxBuffer: 2, maxBatch: 10 });
+    em.record(mkReport("oldest"));
+    em.record(mkReport("mid"));
+    em.record(mkReport("newest"));
+    await em.flush();
+    const ids = JSON.parse(calls[0]!.init.body as string).map((r: { requestId: string }) => r.requestId);
+    expect(ids).toEqual(["mid", "newest"]); // "oldest" dropped
+  });
+});
