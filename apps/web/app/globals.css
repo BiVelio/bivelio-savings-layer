@@ -74,6 +74,44 @@ h1 { font-family: var(--font-heading); letter-spacing: -.02em; }
   .toggle-label { display: none; }
 }
 
+/* ---- dashboard app shell (topbar + sidebar + main) — mirrors bivelio-privacy-gateway ---- */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.app-topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 58px; padding: 0 clamp(14px, 3vw, 24px); background: var(--surface); border-bottom: 1px solid var(--line); }
+.app-topbar .brand { display: inline-flex; align-items: center; gap: 10px; }
+.app-topbar .brand:hover { text-decoration: none; }
+.app-spacer { margin-left: auto; }
+.app-account { display: flex; align-items: center; gap: 12px; }
+.app-account .email { font-family: var(--mono); font-size: 12.5px; color: var(--ink); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-plan { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 999px; padding: 3px 9px; }
+.app-signout { font-family: var(--sans); font-size: 13px; cursor: pointer; background: var(--surface); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 12px; transition: color .15s, border-color .15s; }
+.app-signout:hover { color: var(--ink); border-color: var(--accent); }
+@media (max-width: 560px) { .app-account .email { display: none; } }
+@media (max-width: 520px) { .app-topbar .brand .tag { display: none; } .app-plan { display: none; } }
+
+.app-body { display: grid; grid-template-columns: 240px 1fr; flex: 1; min-height: 0; }
+.app-sidebar { border-right: 1px solid var(--line); background: var(--surface); padding: 20px 14px; }
+.app-nav { display: flex; flex-direction: column; gap: 3px; position: sticky; top: 78px; }
+.app-nav-sep { margin: 14px 8px 6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); opacity: .7; }
+.app-nav-item { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 9px; font-size: 14px; color: var(--muted); text-decoration: none; border: 1px solid transparent; transition: background-color .15s, color .15s, border-color .15s; }
+.app-nav-item:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
+.app-nav-item.on { color: var(--accent); background: var(--accent-soft); font-weight: 500; border-color: color-mix(in srgb, var(--accent) 28%, transparent); }
+.app-nav-item .ic { width: 18px; text-align: center; font-size: 14px; opacity: .85; flex: none; }
+.app-main { padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px); min-width: 0; }
+.app-inner { width: min(1040px, 100%); margin: 0 auto; }
+.app-head { margin-bottom: 24px; }
+.app-head .eyebrow, .app-head .ck-eyebrow { color: var(--accent); }
+.app-head h1 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 6px 0 8px; }
+.app-head p { color: var(--muted); margin: 0; max-width: 60ch; }
+
+@media (max-width: 860px) {
+  .app-body { grid-template-columns: 1fr; }
+  .app-sidebar { border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px; position: sticky; top: 58px; z-index: 40; background: var(--surface); }
+  .app-nav { flex-direction: row; gap: 6px; overflow-x: auto; position: static; padding-bottom: 2px; }
+  .app-nav-item { white-space: nowrap; padding: 7px 12px; }
+  .app-nav-item .ic { display: none; }
+  .app-nav-sep { display: none; }
+}
+
 /* ---- auth card (login / signup) ---- */
 .auth-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 32px 20px; background:
   radial-gradient(60% 60% at 50% 0%, var(--accent-soft), transparent 70%), var(--bg); }
