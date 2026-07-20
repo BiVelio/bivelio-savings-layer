@@ -6,6 +6,8 @@
 <meta name="description" content="Verify your LLM savings with BV-SALA — paste your own data and watch real token accounting compute the savings live in your browser.">
 <meta name="robots" content="noindex">
 <title>BiVelio — Verify Your LLM Savings</title>
+<link rel="icon" type="image/png" href="/logo-bivelio.png">
+<link rel="apple-touch-icon" href="/logo-bivelio.png">
 <style>html{-webkit-text-size-adjust:100%}img{max-width:100%}</style>
 <style>
   :root {
@@ -97,6 +99,10 @@
   @media (prefers-color-scheme: dark) { .btn { color: #0C1020; } }
   .btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
   .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  /* The primary .btn goes dark-on-light in dark mode; the ghost btn is transparent,
+     so keep its text at --ink or it turns invisible on the dark background. */
+  :root[data-theme="dark"] .btn.ghost { color: var(--ink); }
+  @media (prefers-color-scheme: dark) { .btn.ghost { color: var(--ink); } }
 
   /* ---- hero ---- */
   .hero { padding: 68px 0 34px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
