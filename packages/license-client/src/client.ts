@@ -46,9 +46,10 @@ const FREE_ENTITLEMENTS = (orgId = "anonymous"): Entitlements => ({
 
 export class LicenseClient {
   private readonly publicKey: string;
-  private readonly revoked: Set<string>;
+  private revoked: Set<string>;
   private readonly nowSeconds: () => number;
   private current: ResolvedLicense | null = null;
+  private currentToken: string | null = null;
 
   constructor(options: LicenseClientOptions) {
     this.publicKey = options.publicKey;
@@ -58,7 +59,30 @@ export class LicenseClient {
 
   /** Load and resolve a token; stores it as the active license. */
   load(token: string): ResolvedLicense {
+    this.currentToken = token;
     this.current = this.resolve(token);
+    return this.current;
+  }
+
+  /**
+   * Add revoked license ids and re-resolve the loaded token. STICKY: the revoked
+   * set only ever grows, so a later call that omits a jti cannot un-revoke it —
+   * this is how the online call-home flips a running client to "revoked" and keeps
+   * it there. No-op on the re-resolve if no token has been loaded yet.
+   */
+  setRevoked(jtis: Iterable<string>): void {
+    for (const jti of jtis) this.revoked.add(jti);
+    this.refresh();
+  }
+
+  /**
+   * Re-resolve the currently-loaded token against the LIVE clock + revoked set.
+   * Picks up BOTH a new revocation and clock-based expiry transitions
+   * (active→grace→expired) without reloading. Returns null if nothing is loaded.
+   */
+  refresh(): ResolvedLicense | null {
+    if (this.currentToken === null) return null;
+    this.current = this.resolve(this.currentToken);
     return this.current;
   }
 
