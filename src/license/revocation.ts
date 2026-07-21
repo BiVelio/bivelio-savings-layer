@@ -99,6 +99,7 @@ export function verifyRevocationList(
 export class RevocationSnapshot {
   private _seq = -1;
   private _asOf = 0;
+  private _lastContactAt = 0;
   private readonly set = new Set<string>();
 
   get seq(): number {
@@ -106,6 +107,15 @@ export class RevocationSnapshot {
   }
   get asOf(): number {
     return this._asOf;
+  }
+  /** Unix seconds of the last CONFIRMED authorized heartbeat (a 304 or a verified
+   *  list). Feeds the live gate's online staleness check; 0 until the first one. */
+  get lastContactAt(): number {
+    return this._lastContactAt;
+  }
+  /** Record a confirmed authorized heartbeat from the control plane (monotonic). */
+  markContact(nowSeconds: number): void {
+    if (nowSeconds > this._lastContactAt) this._lastContactAt = nowSeconds;
   }
 
   has(jti: string): boolean {

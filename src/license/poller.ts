@@ -138,8 +138,10 @@ export class RevocationPoller {
     try {
       const res = await f(this.opts.url, { signal: ctrl.signal, headers });
       if (res.status === 304) {
-        // Unchanged since our last ETag — a SUCCESS: reset backoff, keep snapshot.
+        // Unchanged since our last ETag — a SUCCESS: reset backoff, keep snapshot,
+        // and record the authorized heartbeat (feeds the online staleness gate).
         this.consecutiveFailures = 0;
+        this.opts.snapshot.markContact(this.now());
         this.opts.onEvent?.({ type: "unchanged", seq: this.opts.snapshot.seq });
         return;
       }
@@ -167,6 +169,8 @@ export class RevocationPoller {
         this.opts.onEvent?.({ type: "rejected", reason: v.reason ?? "rejected" });
         return;
       }
+      // A verified, authorized list → record the heartbeat for the staleness gate.
+      this.opts.snapshot.markContact(this.now());
       const changed = this.opts.snapshot.apply(v);
       this.opts.onEvent?.(
         changed

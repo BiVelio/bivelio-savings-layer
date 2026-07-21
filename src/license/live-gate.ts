@@ -30,16 +30,36 @@ export interface ResolvedGate extends LicenseGate {
 export function liveGateFromKey(
   licenseKey: string,
   publicKeyPem: string,
-  opts: { revocation: RevocationSnapshot; now?: () => number },
+  opts: {
+    revocation: RevocationSnapshot;
+    now?: () => number;
+    /** Online staleness ceiling, seconds. If the gate goes this long without a
+     *  confirmed authorized heartbeat, it stops granting (closes the block-egress
+     *  fail-open). Undefined = check disabled (the offline path never sets it). */
+    maxStalenessSeconds?: number;
+    /** Freshness anchor (unix seconds); defaults to construction time (boot). */
+    startedAt?: number;
+  },
 ): ResolvedGate {
   const nowSeconds = (): number => Math.floor((opts.now ? opts.now() : Date.now()) / 1000);
+  const startedAt = opts.startedAt ?? nowSeconds();
   const v = verifyLicenseToken(licenseKey, publicKeyPem);
   const payload: LicenseTokenPayload | undefined = v.signatureValid ? v.payload : undefined;
   const features = new Set<string>(payload?.features ?? []);
 
   const status = (): LicenseStatus => {
     if (!payload) return "invalid";
-    return deriveStatus(payload, nowSeconds(), opts.revocation.snapshot());
+    const s = deriveStatus(payload, nowSeconds(), opts.revocation.snapshot());
+    // Online staleness gate: without a confirmed authorized heartbeat for longer
+    // than maxStalenessSeconds, stop granting — closing the fail-open window where
+    // an adversary blocks egress to keep a revoked license alive until it naturally
+    // expires. Anchored to boot so the fire-and-forget warm poll has a full window.
+    // Reuses "expired" so the LicenseStatus union and every consumer are unchanged.
+    if (opts.maxStalenessSeconds != null && (s === "active" || s === "grace")) {
+      const lastFresh = Math.max(opts.revocation.lastContactAt, startedAt);
+      if (nowSeconds() - lastFresh > opts.maxStalenessSeconds) return "expired";
+    }
+    return s;
   };
   const granted = (): boolean => {
     const s = status();

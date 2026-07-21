@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { loadPrivateKey, signCompact } from "@/lib/license/sign";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Internal / pilot license issuance. BV-SALA is PAID: there is NO free tier and NO
@@ -60,8 +61,13 @@ export async function POST() {
 
   const now = Math.floor(Date.now() / 1000);
   const features = ["semantic_cache", "dashboards", "long_context_compression"];
+  // Bare-uuid jti so it doubles as the `bvsala.licenses.id` (the table's id == jti
+  // invariant). `iss: "bivelio-internal"` — not a jti prefix — is what marks it
+  // internal, and the SDK matches jti by exact string, so this verifies/revokes
+  // identically on already-deployed SDKs.
+  const licenseId = randomUUID();
   const payload = {
-    jti: `internal_${randomUUID()}`,
+    jti: licenseId,
     org_id: user.id,
     plan: "pro",
     seats: 1,
@@ -74,6 +80,35 @@ export async function POST() {
 
   try {
     const token = signCompact(LICENSE_HEADER, payload, privateKey);
+
+    // PERSIST before returning, or the license is unrevocable-by-org (its jti would
+    // live only inside the emitted token). Use the service-role client (the anon
+    // client above is RLS-blocked from writing). Idempotently ensure the parent org
+    // + membership first (the licenses.org_id FK requires it, and nothing else
+    // bootstraps an org for this user). FAIL CLOSED — never return an unpersisted
+    // token, else a DB hiccup silently reproduces the original leak.
+    const admin = createAdminClient();
+    const { error: orgErr } = await admin
+      .from("organizations")
+      .upsert({ id: user.id, name: "My workspace" }, { onConflict: "id", ignoreDuplicates: true });
+    if (orgErr) throw orgErr;
+    const { error: memErr } = await admin
+      .from("org_members")
+      .upsert({ org_id: user.id, user_id: user.id, role: "owner" }, { onConflict: "org_id,user_id", ignoreDuplicates: true });
+    if (memErr) throw memErr;
+    const { error: licErr } = await admin.from("licenses").insert({
+      id: licenseId,
+      org_id: user.id,
+      plan: "pro",
+      seats: 1,
+      features,
+      issued_at: new Date(now * 1000).toISOString(),
+      expires_at: new Date(payload.expires_at * 1000).toISOString(),
+      grace_days: payload.grace_days,
+      token,
+    });
+    if (licErr) throw licErr;
+
     return NextResponse.json({
       token,
       plan: "pro",
@@ -81,7 +116,7 @@ export async function POST() {
       expiresAt: new Date(payload.expires_at * 1000).toISOString(),
     });
   } catch (err) {
-    console.error("[license/issue] signing failed:", err);
-    return NextResponse.json({ error: "Could not sign the license." }, { status: 500 });
+    console.error("[license/issue] issue failed:", err);
+    return NextResponse.json({ error: "Could not issue the license." }, { status: 500 });
   }
 }

@@ -93,6 +93,15 @@ export interface SavingsLayerConfig {
     jitterRatio?: number;
     /** Reject a signed list whose `asOf` is more than this far in the future, seconds (default 300). */
     maxSkewSeconds?: number;
+    /**
+     * ONLINE staleness ceiling, seconds (default ~6h). If the SDK goes this long
+     * without a CONFIRMED authorized heartbeat (a 304 or a verified list), the LIVE
+     * gate stops granting — closing the fail-open window where blocking egress keeps
+     * a revoked license alive until natural expiry. Must exceed the poll cadence
+     * with margin. Applies ONLY on the online path ({@link licenseServerUrl} set);
+     * it is NOT a zero-network opt-out — use the offline path for that.
+     */
+    maxStalenessSeconds?: number;
   };
 
   /**

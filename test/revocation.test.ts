@@ -137,6 +137,39 @@ describe("revocation reaches enforcement (live gate → LicenseError)", () => {
   });
 });
 
+describe("online staleness gate (closes the block-egress fail-open)", () => {
+  it("stops granting after maxStalenessSeconds with no confirmed heartbeat, and recovers on one", () => {
+    let ms = BASE * 1000;
+    const snapshot = new RevocationSnapshot();
+    const gate = liveGateFromKey(licenseToken({ jti: "lic_stale" }), publicKey, {
+      revocation: snapshot,
+      now: () => ms,
+      maxStalenessSeconds: 3600, // 1h ceiling
+      startedAt: BASE, // boot anchor
+    });
+    expect(gate.isActive()).toBe(true); // fresh at boot
+    // 2h pass with egress blocked (no 304 / verified list) → fail CLOSED, not fail-open.
+    ms = (BASE + 2 * 3600) * 1000;
+    expect(gate.status()).toBe("expired");
+    expect(gate.isActive()).toBe(false);
+    // A confirmed authorized heartbeat (poll 304 / verified list) restores it.
+    snapshot.markContact(BASE + 2 * 3600);
+    expect(gate.isActive()).toBe(true);
+  });
+
+  it("the offline gate (no maxStalenessSeconds) never fails closed on staleness", () => {
+    let ms = BASE * 1000;
+    const snapshot = new RevocationSnapshot();
+    const gate = liveGateFromKey(
+      licenseToken({ jti: "lic_off", expires_at: BASE + 365 * DAY }),
+      publicKey,
+      { revocation: snapshot, now: () => ms }, // offline path: no staleness ceiling
+    );
+    ms = (BASE + 10 * 3600) * 1000; // 10h, zero heartbeats
+    expect(gate.isActive()).toBe(true);
+  });
+});
+
 describe("offline live-clock gate (decision 2)", () => {
   it("an expired license stops working mid-process with NO network", async () => {
     let ms = BASE * 1000;

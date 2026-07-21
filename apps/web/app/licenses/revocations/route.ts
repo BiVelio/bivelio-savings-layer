@@ -36,15 +36,39 @@ export async function GET(req: Request): Promise<NextResponse> {
   }
 
   let seq = 0;
-  let revoked: string[] = [];
+  const revoked: string[] = [];
   try {
     const supabase = createAdminClient();
-    const { data, error } = await supabase.from("revocations").select("jti, seq");
-    if (error) throw error;
-    for (const row of data ?? []) {
-      revoked.push(row.jti as string);
-      const s = Number(row.seq) || 0;
-      if (s > seq) seq = s;
+    // Fetch the WHOLE ledger, ordered by seq, in pages. A single unordered select
+    // is silently truncated to PostgREST's db-max-rows (default 1000); on this
+    // append-only table that drops the NEWEST (highest-seq) revocations from the
+    // signed list, so a just-revoked jti keeps validating — a fail-open kill-switch.
+    // Also, seq computed as max-over-returned-rows would then UNDER-report the true
+    // max, so the truncated list still clears the SDK's seq gate and gets applied.
+    const PAGE = 1000; // must be <= the deployment's PostgREST db-max-rows
+    let total: number | null = null;
+    for (let from = 0; ; from += PAGE) {
+      const { data, error, count } = await supabase
+        .from("revocations")
+        .select("jti, seq", { count: "exact" })
+        .order("seq", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) throw error;
+      if (count != null) total = count;
+      const rows = data ?? [];
+      for (const row of rows) {
+        revoked.push(row.jti as string);
+        const s = Number(row.seq) || 0;
+        if (s > seq) seq = s;
+      }
+      if (rows.length < PAGE) break; // last (short) page reached
+    }
+    // Fail CLOSED: if the store says more rows exist than we fetched (db-max-rows set
+    // below PAGE, or any other cap), do NOT publish a truncated list — degrade to the
+    // never-brick 503 below. `<` (not `!=`) tolerates concurrent appends to this
+    // append-only table (count only ever grows).
+    if (total != null && revoked.length < total) {
+      throw new Error(`revocation list truncated (${revoked.length}/${total})`);
     }
   } catch (err) {
     // Durability contract: a store error must NOT emit an authentic empty list
