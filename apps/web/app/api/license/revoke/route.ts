@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -24,7 +25,15 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const authorization = req.headers.get("authorization") ?? "";
   const presented = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
-  if (presented.length === 0 || presented !== adminToken) {
+  // Constant-time compare over fixed-length sha256 digests — no length/prefix timing
+  // leak of LICENSE_ADMIN_TOKEN.
+  const ok =
+    presented.length > 0 &&
+    timingSafeEqual(
+      createHash("sha256").update(presented).digest(),
+      createHash("sha256").update(adminToken).digest(),
+    );
+  if (!ok) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

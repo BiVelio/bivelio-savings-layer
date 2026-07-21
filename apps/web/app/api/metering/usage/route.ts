@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import { parseUsageRecords, UsageValidationError } from "@/lib/metering/usage";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -54,11 +54,15 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "ingest failed" }, { status: 500 });
   }
 
-  // Best-effort liveness stamp; never fail the ingest on it.
-  await supabase
-    .from("service_accounts")
-    .update({ last_used_at: new Date().toISOString() })
-    .eq("key_hash", keyHash);
+  // Best-effort liveness stamp, off the hot path: run it AFTER the response is sent so
+  // billing-critical ingest latency never waits on this extra write to a hot row.
+  after(async () => {
+    const { error: stampErr } = await supabase
+      .from("service_accounts")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("key_hash", keyHash);
+    if (stampErr) console.error("[metering/usage] last_used_at stamp failed:", stampErr);
+  });
 
   return NextResponse.json({ ingested: data ?? records.length }, { status: 202 });
 }

@@ -87,6 +87,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
         .schema("bvsala")
         .from("subscriptions")
         .select("seats, status, current_period_end")
+        .eq("org_id", userId)
         .limit(1)
         .maybeSingle();
       const sub = data as { seats?: number; status?: string; current_period_end?: string } | null;
@@ -102,6 +103,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
       .schema("bvsala")
       .from("service_accounts")
       .select("key_prefix, last_used_at")
+      .eq("org_id", userId)
       .limit(1)
       .maybeSingle();
     const sa = data as { key_prefix?: string; last_used_at?: string | null } | null;
@@ -127,14 +129,19 @@ export interface UsageRollup {
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
-export async function getUsageRollups(supabase: SupabaseClient): Promise<UsageRollup[]> {
+export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageRollup[]> {
   try {
+    // Defense-in-depth: scope to this org explicitly (not just via RLS) and bound the
+    // window so a dashboard read can't grow unbounded as usage history accumulates.
+    const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const { data, error } = await supabase
       .schema("bvsala")
       .from("usage_daily")
       .select(
         "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost",
       )
+      .eq("org_id", orgId)
+      .gte("day", since)
       .order("day", { ascending: true });
     if (error || !data) return [];
     return (data as Record<string, number | string>[]).map((r) => ({

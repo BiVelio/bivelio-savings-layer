@@ -169,4 +169,34 @@ describe("SavingsPipeline end-to-end", () => {
     // Different tenant must not receive tenant-1's cached answer.
     expect(other.report.cache.result).not.toBe("semantic");
   });
+
+  it("injects the retrieved evidence into the prompt (RAG grounding — regression for the docs-discarded bug)", async () => {
+    let captured: { role: string; content: string }[] = [];
+    const provider = {
+      id: "capturing",
+      async generate(req: { messages: { role: string; content: string }[] }) {
+        captured = req.messages;
+        return { text: "Alexander Graham Bell", usage: { inputTokens: 30, outputTokens: 5 } };
+      },
+    };
+    const retriever = {
+      async retrieve() {
+        return [
+          {
+            id: "doc-1",
+            text: "PATENT-1876: Alexander Graham Bell was granted the telephone patent.",
+            score: 0.9,
+          },
+        ];
+      },
+    };
+    const layer = createSavingsLayer({ provider, retriever, generateId: deterministicId });
+    await layer.generate({
+      model: "m",
+      messages: [{ role: "user", content: "who invented the telephone?" }],
+    });
+    // The kept evidence must actually reach the model — not just the ledger/report.
+    const promptText = captured.map((m) => m.content).join("\n");
+    expect(promptText).toContain("PATENT-1876");
+  });
 });

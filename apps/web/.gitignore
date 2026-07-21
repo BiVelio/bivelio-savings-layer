@@ -17,3 +17,8 @@ next-env.d.ts
 # misc
 *.tsbuildinfo
 .DS_Store
+
+# supabase CLI local artifacts (project ref / temp) — never commit the mapping
+/supabase/
+# tsup web-build output (the SERVED copy is public/vendor/, which stays tracked)
+/vendor/

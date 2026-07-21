@@ -280,8 +280,8 @@
       "body": "Aquests dos instruments executen l'optimitzador real <b>localment</b> perquè puguis comprovar el mecanisme abans de tocar cap proveïdor. El panell esquerre executa l'optimitzador real de BV‑SALA sobre les dades que enganxis — comptabilitat real de tokens, el mateix codi que envia el SDK. El panell dret <b>estima</b> una factura mensual executant l'optimitzador sobre una càrrega de treball de mostra contra un model <b>simulat</b>. Per a dòlars <i>mesurats</i> de manera demostrable, consulta el <link>Pas 2</link> més avall."
     },
     "step2": {
-      "eyebrow": "Pas 2 · Mesurat de manera demostrable — reproduïble",
-      "title": "Estalvi real, mesurat contra un proveïdor real. Totes dues branques.",
+      "eyebrow": "Pas 2 · Com es mesuren els estalvis — reproduïble",
+      "title": "Tots dos braços mesurats pel tokenitzador del mateix proveïdor — sense línia base modelada.",
       "body": "Aquest és el resultat del benchmark A/B (<code>pnpm ab</code>): per a cada escenari envia una sol·licitud <b>ingènua</b> <i>i</i> la sol·licitud de BV‑SALA al <b>mateix</b> model, calcula el preu de totes dues a partir del propi ús de tokens del proveïdor i informa del <b>límit inferior de confiança del 95%</b> — mai l'afalagadora estimació puntual. No hi ha res modelat."
     },
     "ledgersHead": {

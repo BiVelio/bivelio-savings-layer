@@ -291,6 +291,21 @@ export class SavingsPipeline {
     // tokenizer; off → fall back to compact JSON (never drop the data).
     let formatChoice = jsonFallbackChoice();
     const messages: ChatMessage[] = [...request.messages];
+
+    // Ground the model on the retrieved evidence. adaptive-k (Stage 7) already
+    // pruned the set to the kept docs; here we actually PROJECT them into the
+    // prompt. Without this, retrieval runs and the report shows "kept N/M" but the
+    // model answers ungrounded — the exact failure retrieval exists to prevent.
+    if (retrieval.docs.length > 0) {
+      const evidence = retrieval.docs
+        .map((d, i) => `[${d.source ?? d.id ?? `doc${i + 1}`}]\n${d.text}`)
+        .join("\n\n");
+      messages.push({
+        role: "system",
+        content: `Retrieved context — answer using only this evidence and cite sources by [id]:\n\n${evidence}`,
+      });
+    }
+
     if (request.structuredData !== undefined) {
       const jsonEncoded = JSON.stringify(request.structuredData);
       const jsonTokens = this.tokensFor(jsonEncoded, request);
@@ -426,7 +441,13 @@ export class SavingsPipeline {
     // the provider. Swallow-and-trace instead.
     try {
       if (policy.allowExactCache && toggles.exactCache !== false) {
-        await this.deps.exactCache.set(exactKey, answer, this.config.exactCacheTtlMs);
+        // Default a finite 24h TTL (not "forever") so a query the freshness
+        // heuristic missed can't serve a permanently-stale answer. Override via config.
+        await this.deps.exactCache.set(
+          exactKey,
+          answer,
+          this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000,
+        );
       }
       if (
         policy.allowSemanticCache &&

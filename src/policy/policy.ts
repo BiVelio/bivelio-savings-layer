@@ -55,10 +55,17 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   if (isPersonalized) reasons.push("personalized/account-scoped request");
   if (stochastic) reasons.push("stochastic sampling (temp>0.3, no seed)");
 
-  // Exact cache is safe as long as the key already isolates tenant/scope/
-  // freshness bucket. It is only disabled for deliberately stochastic outputs,
-  // where an identical replay is not what the caller wants.
-  const allowExactCache = !stochastic;
+  // Exact cache is safe when the key isolates tenant/scope AND the answer can't
+  // go stale under us. A freshness-sensitive request is only cacheable if it
+  // carries an explicit freshness bucket (live/hour/day) that time-partitions the
+  // key so it auto-rotates. With the DEFAULT bucket ('any') a "current price /
+  // latest" query would otherwise replay a stale answer forever — the exact
+  // failure this engine claims to make impossible. Also disabled for deliberately
+  // stochastic outputs, where an identical replay isn't what the caller wants.
+  const freshWithoutBucket =
+    requiresFreshData && (c.freshnessBucket == null || c.freshnessBucket === "any");
+  const allowExactCache = !stochastic && !freshWithoutBucket;
+  if (freshWithoutBucket) reasons.push("freshness-sensitive without a freshness bucket → exact cache off");
 
   // Semantic cache is far more restricted: read-only, non-personalized,
   // non-fresh, deterministic-enough. Even then, a downstream verifier must

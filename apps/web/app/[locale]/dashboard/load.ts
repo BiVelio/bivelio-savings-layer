@@ -25,7 +25,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { user: null, ctx: EMPTY_CTX, usage: [] };
-  const [ctx, usage] = await Promise.all([getOrgContext(supabase, user.id), getUsageRollups(supabase)]);
+  const [ctx, usage] = await Promise.all([getOrgContext(supabase, user.id), getUsageRollups(supabase, user.id)]);
   return { user: { id: user.id, email: user.email ?? null }, ctx, usage };
 });
 

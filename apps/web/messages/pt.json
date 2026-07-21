@@ -280,8 +280,8 @@
       "body": "Estes dois instrumentos executam o otimizador real <b>localmente</b> para que possas validar o mecanismo antes de tocar num fornecedor. O painel da esquerda executa o otimizador real do BV‑SALA sobre os dados que colares — contabilidade real de tokens, o mesmo código que o SDK inclui. O painel da direita <b>estima</b> uma fatura mensal ao executar o otimizador sobre uma carga de trabalho de amostra contra um modelo <b>simulado</b>. Para dólares <i>medidos</i> de forma comprovável, consulta o <link>Passo 2</link> mais abaixo."
     },
     "step2": {
-      "eyebrow": "Passo 2 · Medido de forma comprovável — reproduzível",
-      "title": "Poupança real, medida contra um fornecedor real. Ambos os ramos.",
+      "eyebrow": "Passo 2 · Como as economias são medidas — reproduzível",
+      "title": "Ambos os braços medidos pelo tokenizador do próprio provedor — sem linha de base modelada.",
       "body": "Este é o resultado do benchmark A/B (<code>pnpm ab</code>): para cada cenário envia um pedido <b>ingénuo</b> <i>e</i> o pedido do BV‑SALA ao <b>mesmo</b> modelo, calcula o preço de ambos a partir da própria utilização de tokens do fornecedor e reporta o <b>limite inferior do intervalo de confiança de 95%</b> — nunca a estimativa pontual lisonjeira. Nada é modelado."
     },
     "ledgersHead": {

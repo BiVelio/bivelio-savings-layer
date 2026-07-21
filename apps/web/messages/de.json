@@ -280,8 +280,8 @@
       "body": "Diese beiden Instrumente führen den echten Optimierer <b>lokal</b> aus, damit du den Mechanismus überprüfen kannst, bevor du einen Provider anfasst. Das linke Panel führt den echten BV‑SALA-Optimierer auf den von dir eingefügten Daten aus — echte Token-Abrechnung, derselbe Code, den das SDK ausliefert. Das rechte Panel <b>schätzt</b> eine monatliche Rechnung, indem es den Optimierer über eine Beispiel-Workload gegen ein <b>Mock</b>-Modell laufen lässt. Für nachweislich <i>gemessene</i> Dollar siehe <link>Schritt 2</link> weiter unten."
     },
     "step2": {
-      "eyebrow": "Schritt 2 · Nachweislich gemessen — reproduzierbar",
-      "title": "Echte Einsparungen, gegen einen echten Provider gemessen. Beide Zweige.",
+      "eyebrow": "Schritt 2 · Wie die Einsparungen gemessen werden — reproduzierbar",
+      "title": "Beide Arme durch den Tokenizer des Anbieters selbst gemessen — keine modellierte Baseline.",
       "body": "Dies ist die Ausgabe des A/B-Benchmarks (<code>pnpm ab</code>): für jedes Szenario sendet er eine <b>naive</b> Anfrage <i>und</i> die BV‑SALA-Anfrage an das <b>gleiche</b> Modell, berechnet beide anhand der tatsächlichen Token-Nutzung des Providers und meldet die <b>untere 95%-Konfidenzgrenze</b> — niemals die schmeichelhafte Punktschätzung. Nichts wird modelliert."
     },
     "ledgersHead": {
