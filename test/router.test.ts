@@ -32,6 +32,18 @@ describe("ExecutionRouter", () => {
     expect(decision.executionClass).toBe("TOOL_ACTION");
   });
 
+  it("honors an explicit caller mode over a conflicting keyword (no silent downgrade)", () => {
+    // "which" matches the SINGLE_LOOKUP regex, but the caller explicitly asked for
+    // multi-hop — the explicit intent must win instead of being downgraded to 1 round.
+    const req: SavingsRequest = {
+      model: "m",
+      messages: [{ role: "user", content: "which plan is best for a 50 seat team?" }],
+      retrieval: { mode: "multi" },
+    };
+    const decision = new ExecutionRouter().classify(canonicalize(req));
+    expect(decision.executionClass).toBe("MULTI_HOP_RETRIEVAL");
+  });
+
   it("is stable across simple paraphrases of a comparison", () => {
     const forms = [
       "compare product a and product b",

@@ -16,4 +16,12 @@ export interface Serializer {
    * before the format is worthwhile.
    */
   instruction(value: unknown): string;
+  /**
+   * Decode encoded text back to a value, used ONLY for the selector's round-trip
+   * fidelity check. A serializer without a faithful decoder is treated as
+   * UNVERIFIABLE: the selector will not choose it (fail-closed), so we never ship
+   * — or bill savings for — an encoding we can't prove reproduces the payload.
+   * JSON-compact is inherently lossless and is exempt from the check.
+   */
+  decode?(text: string): unknown;
 }

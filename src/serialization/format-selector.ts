@@ -77,6 +77,15 @@ export class FormatSelector {
     for (const serializer of this.serializers) {
       if (!serializer.supports(payload)) continue;
       const encoded = serializer.encode(payload);
+      // Round-trip fidelity gate: never OFFER a non-JSON encoding we can't prove
+      // reproduces the payload. Embeddeds newlines, arrays of nested objects,
+      // number/null-vs-string ambiguity etc. make TOON/CSV silently lossy; a lossy
+      // candidate here would feed the model corrupted data AND get billed as a
+      // saving. JSON-compact is lossless (exempt); every other candidate must
+      // decode back to a deep-equal value or it is discarded (falls back to JSON).
+      if (serializer.format !== "json-compact" && !roundTrips(serializer, encoded, payload)) {
+        continue;
+      }
       const instruction = serializer.instruction(payload);
       const payloadTokens = this.tokenizer.count(encoded, tokenizerOpts);
       const instructionTokens = instruction
@@ -132,6 +141,37 @@ export class FormatSelector {
 
     return finalize(best, candidateTokens, reason);
   }
+}
+
+/** True only if `serializer.decode(encoded)` deep-equals the original payload. */
+function roundTrips(serializer: Serializer, encoded: string, payload: unknown): boolean {
+  if (!serializer.decode) return false; // no faithful decoder → unverifiable → skip
+  try {
+    return deepEqual(serializer.decode(encoded), payload);
+  } catch {
+    return false;
+  }
+}
+
+/** Structural equality over the JSON data model (primitives, arrays, plain objects). */
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== "object" || typeof b !== "object") return false;
+  const aArr = Array.isArray(a);
+  const bArr = Array.isArray(b);
+  if (aArr || bArr) {
+    if (!aArr || !bArr || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (!deepEqual(a[i], b[i])) return false;
+    return true;
+  }
+  const ka = Object.keys(a as Record<string, unknown>);
+  const kb = Object.keys(b as Record<string, unknown>);
+  if (ka.length !== kb.length) return false;
+  for (const k of ka) {
+    if (!Object.prototype.hasOwnProperty.call(b, k)) return false;
+    if (!deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k])) return false;
+  }
+  return true;
 }
 
 function finalize(

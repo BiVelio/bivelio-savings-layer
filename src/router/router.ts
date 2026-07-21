@@ -79,6 +79,17 @@ export class ExecutionRouter {
       );
     }
 
+    // Explicit caller intent (single/multi) wins over the coarse keyword regexes:
+    // an operator who set mode:"multi" must never be silently downgraded to a single
+    // lookup just because the text happens to contain a word like "which" or "how
+    // much". Previously these ran AFTER the regexes, so the hint was dead when a
+    // keyword matched — a silent quality loss on exactly the queries a caller cared
+    // enough about to annotate.
+    if (requested === "single") return decide("SINGLE_RETRIEVAL", 0.7, "caller hint: single", 1);
+    if (requested === "multi") {
+      return decide("MULTI_HOP_RETRIEVAL", 0.7, "caller hint: multi", Math.min(this.maxRounds, 2));
+    }
+
     if (MULTI_HOP.test(text)) {
       return decide(
         "MULTI_HOP_RETRIEVAL",
@@ -89,10 +100,6 @@ export class ExecutionRouter {
     }
     if (SINGLE_LOOKUP.test(text)) {
       return decide("SINGLE_RETRIEVAL", 0.65, "single factual lookup", 1);
-    }
-    if (requested === "single") return decide("SINGLE_RETRIEVAL", 0.6, "caller hint: single", 1);
-    if (requested === "multi") {
-      return decide("MULTI_HOP_RETRIEVAL", 0.6, "caller hint: multi", Math.min(this.maxRounds, 2));
     }
 
     // Conservative default: when unsure, do not spend on retrieval, but flag

@@ -76,7 +76,7 @@ describe("FormatSelector", () => {
     expect(choice.chosen).toBe("json-compact");
   });
 
-  it("selects CSV for a large flat top-level table (smallest for pure tables)", () => {
+  it("selects TOON for a large flat top-level table; CSV is gated out as lossy", () => {
     const selector = new FormatSelector({ tokenizer });
     const rows = Array.from({ length: 40 }, (_, i) => ({
       id: i,
@@ -85,8 +85,12 @@ describe("FormatSelector", () => {
       active: i % 3 === 0,
     }));
     const choice = selector.choose(rows, { model: "m" });
-    expect(choice.chosen).toBe("csv");
-    expect(choice.candidateTokens.csv!).toBeLessThan(choice.candidateTokens["json-compact"]!);
+    // CSV would encode id/active as bare strings (1 vs "1", true vs "true") and has
+    // no faithful decoder, so the round-trip fidelity gate rejects it and it is never
+    // even offered. TOON round-trips this typed table exactly and wins over JSON.
+    expect(choice.chosen).toBe("toon");
+    expect(choice.candidateTokens.csv).toBeUndefined();
+    expect(choice.candidateTokens.toon!).toBeLessThan(choice.candidateTokens["json-compact"]!);
   });
 
   it("selects TOON over JSON for a nested table CSV cannot represent", () => {
@@ -100,6 +104,16 @@ describe("FormatSelector", () => {
     const choice = selector.choose({ users: rows }, { model: "m" });
     expect(choice.chosen).toBe("toon");
     expect(choice.candidateTokens.toon!).toBeLessThan(choice.candidateTokens["json-compact"]!);
+  });
+
+  it("falls back to JSON when the cheaper encoding would be lossy (embedded newlines)", () => {
+    const selector = new FormatSelector({ tokenizer });
+    // TOON is line-based, so a cell containing a newline cannot round-trip; the
+    // fidelity gate must reject it (and CSV) and keep lossless JSON — even though a
+    // naive token count would have preferred the cheaper, corrupt encoding.
+    const rows = Array.from({ length: 40 }, (_, i) => ({ id: i, note: `first line ${i}\nsecond line ${i}` }));
+    const choice = selector.choose({ rows }, { model: "m" });
+    expect(choice.chosen).toBe("json-compact");
   });
 
   it("never lets a chosen format exceed JSON tokens", () => {

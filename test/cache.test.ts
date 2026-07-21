@@ -6,6 +6,7 @@ import {
   cosine,
   canonicalize,
 } from "../src/index.js";
+import { keyTokensMatch } from "../src/cache/semantic.js";
 import type { SavingsRequest } from "../src/index.js";
 
 describe("InMemoryExactCache", () => {
@@ -87,5 +88,32 @@ describe("InMemorySemanticCache — safety filters", () => {
     await cache.store(canonicalize(request), { text: "v", storedAtMs: 0 });
     expect(cache.invalidateEpoch("e1")).toBe(1);
     expect(cache.size).toBe(0);
+  });
+
+  it("rejects a high-similarity but factually-different query (precision guard)", async () => {
+    // similarityThreshold 0 ⇒ the embedding never blocks; only the key-token guard can.
+    const cache = new InMemorySemanticCache({ embed, similarityThreshold: 0, acceptThreshold: 0 });
+    await cache.store(canon("convert 100 usd to eur", "t1"), { text: "≈92 EUR", storedAtMs: 0 });
+    // Swapped number ⇒ must NOT serve the 100-USD answer for a 200-USD question.
+    expect(await cache.find(canon("convert 200 usd to eur", "t1"))).toBeNull();
+    // The identical question still hits.
+    expect((await cache.find(canon("convert 100 usd to eur", "t1")))?.record.answer.text).toBe("≈92 EUR");
+  });
+});
+
+describe("keyTokensMatch — semantic-cache precision guard", () => {
+  it("accepts true paraphrases", () => {
+    expect(keyTokensMatch("capital of france", "capital of france")).toBe(true);
+    expect(keyTokensMatch("capital of france", "france capital")).toBe(true);
+  });
+  it("rejects swapped numbers and dates", () => {
+    expect(keyTokensMatch("convert 100 usd to eur", "convert 200 usd to eur")).toBe(false);
+    expect(keyTokensMatch("weather in paris on july 20", "weather in paris on july 21")).toBe(false);
+  });
+  it("rejects a negation flip", () => {
+    expect(keyTokensMatch("is aspirin safe in pregnancy", "is aspirin not safe in pregnancy")).toBe(false);
+  });
+  it("rejects a one-token entity swap", () => {
+    expect(keyTokensMatch("capital of north dakota", "capital of south dakota")).toBe(false);
   });
 });

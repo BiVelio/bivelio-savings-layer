@@ -71,6 +71,72 @@ export function cosine(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
+// --- Deterministic precision guard (always on, beneath the embedding) ---------
+//
+// A semantic cache's cardinal sin is confidently serving an answer to a
+// nearby-but-DIFFERENT question. Sentence embeddings are famously blind to
+// negations ("safe" vs "not safe"), swapped numbers/dates (100 vs 200), and
+// one-token entity changes (North vs South Dakota) — cosine can sit >0.95 across
+// all of these. This lexical check catches what the embedding cannot: a candidate
+// is rejected unless the two (already normalized/lowercased) queries agree on the
+// multiset of numeric/date tokens, on negation parity, and on a content-token
+// overlap floor. A rejection only forgoes a cache hit (we make the real call) —
+// it can never produce a wrong answer. (Negation/stopword lists are English-first;
+// the numeric and overlap checks are language-agnostic.)
+const NEGATIONS = new Set([
+  "no", "not", "never", "none", "cannot", "cant", "without", "nor", "nt", "isnt",
+  "arent", "wasnt", "werent", "dont", "doesnt", "didnt", "wont", "cant", "shouldnt",
+]);
+const STOPWORDS = new Set([
+  "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are", "was",
+  "were", "what", "whats", "which", "who", "whom", "how", "when", "where", "me", "my",
+  "i", "you", "please", "tell", "give", "show", "find", "do", "does", "did", "be",
+  "that", "this", "it", "with", "as", "at", "by", "from", "about", "into", "over",
+  "than", "then", "s",
+]);
+
+function numericTokens(s: string): string[] {
+  return (s.match(/\d[\d.,:/-]*/g) ?? []).map((t) => t.replace(/[.,:/-]+$/, ""));
+}
+function multisetEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const counts = new Map<string, number>();
+  for (const x of a) counts.set(x, (counts.get(x) ?? 0) + 1);
+  for (const y of b) {
+    const c = counts.get(y);
+    if (!c) return false;
+    counts.set(y, c - 1);
+  }
+  return true;
+}
+function words(s: string): string[] {
+  return s.split(/\s+/).filter(Boolean);
+}
+function negationCount(tokens: string[]): number {
+  return tokens.filter((t) => NEGATIONS.has(t.replace(/'/g, "")) || t.endsWith("n't")).length;
+}
+
+/** True when two normalized queries agree on the facts an embedding tends to blur. */
+export function keyTokensMatch(a: string, b: string): boolean {
+  // 1. Numbers/dates must match exactly, as a multiset (100 vs 200; Jul 20 vs 21).
+  if (!multisetEqual(numericTokens(a), numericTokens(b))) return false;
+  const ta = words(a);
+  const tb = words(b);
+  // 2. Negation parity ("aspirin safe" vs "aspirin not safe").
+  if (negationCount(ta) !== negationCount(tb)) return false;
+  // 3. Content-token (non-stopword, non-numeric) overlap floor via Jaccard, which
+  //    catches a single swapped entity (north/south) while letting true paraphrases
+  //    through ("capital of france" vs "france capital" -> 1.0).
+  const isContent = (t: string) => t.length > 1 && !STOPWORDS.has(t) && !/^\d/.test(t);
+  const ca = new Set(ta.filter(isContent));
+  const cb = new Set(tb.filter(isContent));
+  if (ca.size === 0 && cb.size === 0) return true;
+  let inter = 0;
+  for (const x of ca) if (cb.has(x)) inter++;
+  const union = ca.size + cb.size - inter;
+  return union === 0 ? true : inter / union >= 0.75;
+}
+
 /**
  * In-memory reference implementation. A production build would back this with a
  * real vector store (pgvector, Qdrant, etc.) and metadata filters pushed down
@@ -121,6 +187,11 @@ export class InMemorySemanticCache {
 
       const similarity = cosine(queryEmbedding, record.embedding);
       if (similarity < this.similarityThreshold) continue;
+
+      // Precision floor beneath the embedding: reject a candidate whose query
+      // disagrees on numbers/dates, negation, or key entities even when cosine is
+      // high (embeddings are blind to exactly these). A rejection only costs a hit.
+      if (!keyTokensMatch(c.normalizedText, record.query)) continue;
 
       const verifierScore = this.verify
         ? await this.verify(c.normalizedText, record.query)
