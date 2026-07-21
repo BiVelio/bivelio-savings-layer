@@ -14,8 +14,10 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-// Set the theme before first paint (no flash): honor a stored choice, else the OS.
-const THEME_INIT = `(function(){try{var s=localStorage.getItem('bv-theme');var d=s?s==='dark':(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();`;
+// Set the theme before first paint (no flash). Default is LIGHT — the OS
+// preference is intentionally ignored; only an explicit stored 'dark' choice
+// flips it, until the user decides otherwise.
+const THEME_INIT = `(function(){try{var s=localStorage.getItem('bv-theme');document.documentElement.setAttribute('data-theme',s==='dark'?'dark':'light');}catch(e){}})();`;
 
 export default async function LocaleLayout({
   children,

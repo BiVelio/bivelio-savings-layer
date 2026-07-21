@@ -6,36 +6,20 @@ import { useEffect, useState } from "react";
 type Theme = "light" | "dark";
 
 /**
- * Theme toggle for the app surfaces. Defaults to the OS preference
- * (`prefers-color-scheme`) and only overrides it once the user clicks — the choice
- * is persisted in localStorage. While no explicit choice exists, it keeps following
- * the OS live. The pre-paint script in the root layout sets the initial `data-theme`
- * so there is no flash before this hydrates.
+ * Theme toggle for the app surfaces. Defaults to LIGHT — the OS preference is
+ * intentionally ignored — and only changes once the user clicks; the choice is
+ * persisted in localStorage. The pre-paint script in the locale layout sets the
+ * initial `data-theme` (light unless a stored 'dark' choice exists) so there is
+ * no flash before this hydrates.
  */
 export function ThemeToggle() {
   const t = useTranslations("app");
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
+    // Sync React state from the data-theme the pre-paint script already applied.
     const current = (document.documentElement.getAttribute("data-theme") as Theme) || "light";
     setTheme(current);
-
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onOsChange = (e: MediaQueryListEvent) => {
-      let stored: string | null = null;
-      try {
-        stored = localStorage.getItem("bv-theme");
-      } catch {
-        /* storage unavailable */
-      }
-      if (!stored) {
-        const next: Theme = e.matches ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", next);
-        setTheme(next);
-      }
-    };
-    mq.addEventListener("change", onOsChange);
-    return () => mq.removeEventListener("change", onOsChange);
   }, []);
 
   function toggle() {
