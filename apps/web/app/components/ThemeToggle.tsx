@@ -17,9 +17,18 @@ export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    // Sync React state from the data-theme the pre-paint script already applied.
-    const current = (document.documentElement.getAttribute("data-theme") as Theme) || "light";
-    setTheme(current);
+    // localStorage is the source of truth (default LIGHT). Re-assert data-theme on
+    // the <html> here so the DOM stays correct even if React hydration dropped the
+    // attribute the pre-paint script set.
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("bv-theme");
+    } catch {
+      /* storage unavailable */
+    }
+    const next: Theme = stored === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    setTheme(next);
   }, []);
 
   function toggle() {
