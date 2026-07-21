@@ -1,49 +1,69 @@
-BiVelio Inc. — PROPRIETARY AND CONFIDENTIAL SOFTWARE LICENSE
+BiVelio Inc. — BV-SALA Commercial Software License Agreement
 
 Copyright (c) 2026 BiVelio Inc. All Rights Reserved.
 
-NOTICE: This software and all associated source code, documentation, designs,
-algorithms, and materials (collectively, the "Software") are the exclusive
-property and confidential intellectual property of BiVelio Inc. ("BiVelio").
-The Software — including but not limited to the "bivelio-savings-layer" /
-"BV-SALA" execution-optimization design, its architecture, decision cascade,
-accounting model, and any derivative concepts — constitutes valuable trade
-secrets and proprietary information of BiVelio.
+IMPORTANT — READ BEFORE USE. This Commercial Software License Agreement (the
+"Agreement") governs your use of the "@bivelio/savings-layer" software, also known
+as "BV-SALA" (the "Software"), published by BiVelio Inc. ("BiVelio"). By installing,
+copying, or using the Software, you agree to this Agreement. If you do not agree, do
+not install or use the Software.
 
-NO LICENSE IS GRANTED. Unless a separate written agreement signed by an
-authorized officer of BiVelio expressly states otherwise, no right or license,
-by implication, estoppel or otherwise, is granted to any person or entity.
+1. LICENSE GRANT. Subject to your continuous compliance with this Agreement and to
+   an active, paid BiVelio subscription with a valid license key ("License Key"),
+   BiVelio grants you a limited, non-exclusive, non-transferable, non-sublicensable,
+   revocable license to install and use the Software, as published, solely for your
+   own internal business purposes, and only for the number of seats covered by your
+   subscription. The Software is licensed, not sold.
 
-The following are STRICTLY PROHIBITED without the prior, explicit, written
-authorization of BiVelio Inc.:
+2. LICENSE KEY; FAIL-CLOSED OPERATION. The Software requires a valid, active License
+   Key and does not operate without one. Expiry, non-payment, revocation, suspension,
+   or termination of your subscription immediately ends the license granted in
+   Section 1, and the Software will cease to function. You will not circumvent,
+   disable, remove, or tamper with the Software's licensing, metering, or revocation
+   mechanisms, nor use the Software after your license has ended.
 
-  1. Copying, reproducing, or storing the Software, in whole or in part, on any
-     medium or system not owned and controlled by BiVelio.
-  2. Distributing, publishing, disclosing, sublicensing, selling, renting,
-     leasing, lending, or otherwise making the Software available to any third
-     party.
-  3. Modifying, adapting, translating, or creating derivative works from the
-     Software.
-  4. Reverse engineering, decompiling, or disassembling the Software, except to
-     the limited extent such restriction is prohibited by applicable law.
-  5. Removing, altering, or obscuring any proprietary, confidentiality, or
-     copyright notice contained in the Software.
-  6. Using the Software for any purpose other than a purpose expressly
-     authorized in writing by BiVelio.
+3. RESTRICTIONS. Except as expressly permitted above, you will not: (a) distribute,
+   publish, resell, rent, lease, lend, offer as a hosted or managed service, or
+   otherwise make the Software available to any third party; (b) sublicense, assign,
+   or transfer your rights; (c) use the Software for more seats than you have paid
+   for, or share a License Key across more machines or service identities than your
+   subscription covers; (d) remove, alter, or obscure any proprietary or copyright
+   notice; (e) reverse engineer, decompile, or disassemble the Software, except to
+   the limited extent applicable law expressly permits notwithstanding this
+   restriction; or (f) use the Software to develop, train, or improve a product or
+   service that competes with the Software.
 
-Access to the Software is provided on a confidential basis. Any person granted
-access must maintain the confidentiality of the Software and use it solely for
-the internal purposes authorized by BiVelio.
+4. OWNERSHIP. The Software is the exclusive property of BiVelio and its licensors and
+   embodies valuable proprietary information and trade secrets. BiVelio retains all
+   right, title, and interest in and to the Software and all intellectual property
+   rights therein. No rights are granted to you except as expressly set out in this
+   Agreement, whether by implication, estoppel, or otherwise.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-BIVELIO INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+5. YOUR DATA; PRIVACY. Your prompts, completions, and content are processed within
+   your own infrastructure and are not transmitted to BiVelio in order to serve a
+   request. BiVelio's control plane receives only usage counts and cost metadata, as
+   described in the BiVelio documentation and privacy terms.
 
-Unauthorized use, reproduction, or distribution of the Software, or any portion
-of it, may result in severe civil and criminal penalties, and will be
-prosecuted to the maximum extent possible under the law.
+6. TERM AND TERMINATION. This Agreement remains in effect while your subscription is
+   active. BiVelio may terminate this Agreement immediately if you breach it. Upon
+   expiry or termination you must cease all use of the Software and destroy your
+   copies. Sections 2 through 9 survive termination.
 
-For licensing inquiries, contact: BiVelio Inc. (legal@bivelio.com)
+7. DISCLAIMER OF WARRANTY. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+8. LIMITATION OF LIABILITY. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
+   BIVELIO INC. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
+   EXEMPLARY DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, OR DATA, ARISING FROM OR
+   RELATED TO THE SOFTWARE OR THIS AGREEMENT. BIVELIO'S TOTAL LIABILITY SHALL NOT
+   EXCEED THE FEES YOU PAID FOR THE SOFTWARE IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+
+9. GENERAL. This Agreement is governed by the laws of the State of Delaware, USA,
+   without regard to its conflict-of-laws rules. If any provision is held
+   unenforceable, the remaining provisions remain in effect. This Agreement, together
+   with the applicable BiVelio subscription terms, constitutes the entire agreement
+   between you and BiVelio regarding the Software. Unauthorized use, reproduction, or
+   distribution of the Software may result in civil and criminal penalties.
+
+For licensing and compliance inquiries, contact: BiVelio Inc. — privacy@bivelio.com
