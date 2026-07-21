@@ -1,21 +1,64 @@
-# bivelio-savings-layer (BV-SALA)
+# @bivelio/savings-layer — BV‑SALA
 
-> **PROPRIETARY AND CONFIDENTIAL — © 2026 BiVelio Inc. All Rights Reserved.**
-> This software is the exclusive intellectual property of BiVelio Inc. No license
-> is granted. Copying, distribution, modification, or use without the prior
-> written authorization of BiVelio Inc. is strictly prohibited. See [LICENSE](./LICENSE).
+**A provider‑neutral LLM execution optimizer.** BV‑SALA sits in front of any LLM
+provider and, for every request, picks the **cheapest execution that still meets
+your quality bar** — then hands you a full, auditable `SavingsReport`.
 
-**BV-SALA is a provider-neutral LLM execution optimizer** — a decision and
-optimization layer that sits in front of any LLM provider and, for every single
-request, chooses the cheapest execution that still meets the required quality.
+It is **not** a prompt compressor. Compression is the *fourth* thing it tries, not
+the first.
 
-It is **not** a prompt compressor and **not** a wrapper around TOON. Compression
-is the *fourth* thing it tries, not the first.
+> **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to run**:
+> BV‑SALA is **fail‑closed** and executes only with a valid, active BiVelio license
+> key. Verification is **offline** (no phone‑home to answer a request) and **your
+> prompts never leave your infrastructure** — only counts and cost are ever reported.
+> Use is governed by the [LICENSE](./LICENSE) and the BiVelio Terms. Not affiliated
+> with, and not a wrapper around, any third‑party library.
+
+## Install
+
+```bash
+pnpm add @bivelio/savings-layer
+# or: npm i @bivelio/savings-layer  ·  yarn add @bivelio/savings-layer
+```
+
+You also need a **license key**. Try the optimizer **free in your browser** — paste
+your own data and watch the meter — at **[savings.bivelio.com](https://savings.bivelio.com)**,
+then subscribe (**$4 / seat / month** or **$39 / seat / year**, USD) to get your key.
+
+## Quick start
+
+```ts
+import { createSavingsLayer } from "@bivelio/savings-layer";
+
+const layer = createSavingsLayer({
+  provider: yourProvider,                        // any OpenAI-compatible / self-hosted provider
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,   // required — from your savings.bivelio.com dashboard
+  licenseServerUrl: "https://savings.bivelio.com", // license check + kill-switch
+});
+
+const { data, text, report } = await layer.generate({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+  response: { contractId: "answer:v1", schema, maxOutputTokens: 220 },
+});
+
+console.log(text);                   // "8"  (computed locally — no LLM call)
+console.log(report.calls.avoidedLlm); // → whole calls you never paid for
+console.log(report.cost.netSavings);  // → verified savings, per request
+```
+
+The hard requirements are a `provider` and a valid `licenseKey`: BV‑SALA is a paid
+product and **refuses to run unlicensed, expired, or tampered** (it throws
+`LicenseError` at the `generate()` entry). For local development, CI and benchmarks,
+pass `devUnlicensed: true` (or set `BVSALA_DEV_OPEN=1`) to run ungated. Every
+component ships with an in‑memory default and is independently swappable (Redis
+exact cache, pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua
+sidecar, XGrammar/llguidance backends, …).
 
 ## The optimization order (cheapest first)
 
-1. **Avoid the call entirely** — reuse or compute the answer (resolvers, exact/semantic cache, singleflight).
-2. **Avoid auxiliary calls** — retrieval, tools, planners, validators, reformatters, retries.
+1. **Avoid the call entirely** — resolvers, exact & semantic cache, singleflight.
+2. **Avoid auxiliary calls** — retrieval, tools, planners, validators, retries.
 3. **Eliminate unnecessary context** before trying to compress it.
 4. **Compress** the tokens that genuinely must be sent.
 5. **Constrain generation** to emit only the structure and length required.
@@ -25,49 +68,18 @@ reduction of the logical prompt size.
 
 ## Four separate ledgers (never summed)
 
-Mixing these produces misleading metrics, so BV-SALA keeps them apart:
+Mixing these produces misleading metrics, so BV‑SALA keeps them apart:
 
 | Ledger | Meaning |
 | --- | --- |
-| `avoided_calls` | LLM / RAG / tool calls that never executed |
+| `avoided_calls` | LLM / retrieval / tool calls that never executed |
 | `eliminated_tokens` | information dropped because it was not needed |
 | `compressed_tokens` | information kept, but encoded with fewer tokens |
-| `provider_cached_tokens` | tokens still in the prompt, billed/processed differently by the provider |
+| `provider_cached_tokens` | tokens still in the prompt, billed/processed more cheaply |
 
-A cache hit eliminates a whole call. TOON re-encodes a structured payload.
-LLMLingua removes redundant words. A prefix cache makes tokens cheaper without
-removing them. These are four different things.
-
-## Quick start
-
-```ts
-import { createSavingsLayer, createMockProvider } from "@bivelio/savings-layer";
-
-const layer = createSavingsLayer({
-  provider: createMockProvider(), // swap for an OpenAI-compatible / self-hosted provider
-  licenseKey: process.env.BIVELIO_LICENSE_KEY, // required — get a free 14-day trial key
-                                               // at savings.bivelio.com (dashboard)
-});
-
-const { data, text, report } = await layer.generate({
-  model: "openai/gpt-4o-mini",
-  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
-});
-
-console.log(text);                 // "8"  (computed locally, no LLM call)
-console.log(report.cache.result);  // "deterministic"
-console.log(report.calls.avoidedLlm); // 1
-```
-
-The hard requirements are a `provider` and a valid `licenseKey` — BV-SALA is a
-paid product and refuses to run unlicensed (get a free 14-day trial key from the
-[savings.bivelio.com](https://savings.bivelio.com) dashboard; the SDK verifies it
-offline, no phone-home to answer a request). For local development, CI, and
-benchmarks, pass `devUnlicensed: true` (or set `BVSALA_DEV_OPEN=1`) to run ungated.
-A heuristic tokenizer and in-memory implementations of every other component are
-wired automatically, and each one is independently swappable (Redis exact cache,
-pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua sidecar,
-XGrammar/llguidance backends, …).
+A cache hit removes a whole call. A re‑encode makes a payload smaller. Compression
+drops redundant words. A prefix cache makes tokens cheaper without removing them.
+Four different things — summing them would lie to you, so the report never does.
 
 ## The decision cascade
 
@@ -91,77 +103,44 @@ Request
   → SavingsReport + traces
 ```
 
-Try it and get a license key at **[savings.bivelio.com](https://savings.bivelio.com)**.
-
-## What each subsystem does
-
-| Package (`src/…`) | Responsibility |
-| --- | --- |
-| `contracts` | Request/result/report types; the typed `BivelioHandoff` for LLM→LLM handoffs |
-| `tokenizer` | Pluggable estimator registry + the four-ledger `SavingsLedger` |
-| `canonicalization` | Normalization + safe exact/inflight cache keys (tenant, scope, epoch, …) |
-| `policy` | Risk & freshness gate — decides which savings are *safe* per request |
-| `cache` | Exact cache, singleflight, safe-by-construction semantic cache |
-| `resolvers` | Deterministic answers with zero LLM calls (e.g. arithmetic) |
-| `router` | Adaptive-RAG-style execution classifier + tool selector |
-| `retrieval` | dedupe → rerank → adaptive-k pruning |
-| `memory` | Conversation state + `memory_delta` merge + context projection |
-| `serialization` | JSON-compact / TOON / CSV + tokenizer-aware format selector |
-| `constraints` | JSON-Schema validation, schema registry, constrained-decoding backends |
-| `compression` | LLMLingua-style sidecar interface with protected spans + net-positive gate |
-| `providers` | Provider-neutral interface, mock provider, OpenAI-compatible adapter |
-| `telemetry` | Trace collector + `SavingsReport` builder |
-| `pipeline` | The BV-SALA cascade and `createSavingsLayer` factory |
-
 ## Why formats are chosen, not assumed
 
-TOON's strength is uniform arrays of flat objects; it can be *larger* than
-compact JSON on nested/non-uniform data. The selector counts, with the
-destination model's tokenizer:
+A compact encoding can be *larger* than plain JSON on nested/non‑uniform data, so
+BV‑SALA counts — with the destination model's tokenizer — before switching:
 
 ```
 tokens(encoded payload) + tokens(instruction to understand it) + quality penalty
 ```
 
-…and only switches away from JSON when a challenger clears both an absolute
-(`≥64` tokens) and a relative (`≥8%`) threshold. Example output:
+…and only moves away from JSON when a challenger clears both an absolute (`≥64`
+tokens) and a relative (`≥8%`) threshold:
 
 ```
-big uniform table  → json 1716, toon 708  → chosen: toon (−58.7%)
+big uniform table   → json 1716, toon 708  → chosen: toon (−58.7%)
 small nested object → json 44,   toon 116  → chosen: json-compact
 ```
 
-## Scripts
+## What's inside
 
-```bash
-pnpm install
-pnpm test          # 60+ unit + end-to-end tests
-pnpm typecheck
-pnpm build
-pnpm example:basic
-pnpm example:serialization
-pnpm example:handoff
-```
+Canonicalization & safe cache keys · risk/freshness policy · exact + singleflight +
+safe semantic cache · deterministic resolvers · Adaptive‑RAG execution router & tool
+selector · retrieval dedupe→rerank→adaptive‑k · conversation memory & context
+projection · tokenizer‑aware JSON/TOON/CSV selection · JSON‑Schema validation &
+constrained decoding · net‑positive compression · a provider‑neutral adapter · and a
+trace collector that builds the `SavingsReport`. Every piece is pluggable.
 
-## Repository boundaries (important)
+## Licensing & privacy
 
-This repo is **deliberately separate** from the official `bivelio.com` corporate
-website, which lives in its **own repository**. The product web prototype under
-[`apps/web`](./apps/web) is the **BV-SALA product/verifier surface only** — it
-must **never** edit, overwrite, deploy over, or share DNS/pipelines with the
-official site. See [`apps/web/README.md`](./apps/web/README.md).
+BV‑SALA is commercial, per‑seat software (**$4 / seat / month** or **$39 / seat /
+year**, USD). The license is a signed token your SDK verifies **offline**; the
+managed control plane (semantic cache, learned thresholds, dashboards) and the
+revocation kill‑switch are served from BiVelio. Your LLM traffic goes **straight to
+your provider** — BiVelio sees counts and cost, never prompts or completions.
 
-```bash
-pnpm web:dev   # preview the product web prototype at http://localhost:4321 (local only)
-```
-
-## Status
-
-v0.1 implements Phase 0–2 of the roadmap end-to-end (measurement/baseline,
-immediate low-risk savings, and the format/tool/memory layer), with pluggable
-interfaces for Adaptive-RAG retrieval, LLMLingua compression, semantic cache,
-and constrained-decoding backends. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+Get a key and read the terms at **[savings.bivelio.com](https://savings.bivelio.com)**.
+Onboarding & general questions: **support@bivelio.com** · licensing & compliance:
+**privacy@bivelio.com** · technical: **team@bivelio.com**.
 
 ---
 
-BiVelio Inc. — proprietary. For licensing inquiries: legal@bivelio.com
+© 2026 BiVelio Inc. All rights reserved. BV‑SALA is a trademark of BiVelio Inc.
