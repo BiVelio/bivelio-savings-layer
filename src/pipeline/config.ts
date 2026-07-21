@@ -13,6 +13,7 @@ import type { Compressor } from "../compression/compression.js";
 import type { Retriever, Reranker } from "../retrieval/retrieval.js";
 import type { Provider } from "../providers/types.js";
 import type { LicenseGate } from "../contracts/types.js";
+import type { LicenseKeyset } from "../license/verify.js";
 
 /**
  * Everything the pipeline depends on. All fields except `provider` and
@@ -47,10 +48,13 @@ export interface SavingsLayerConfig {
   licenseKey?: string;
 
   /**
-   * Override the public key used to verify {@link licenseKey} (SPKI PEM). For
-   * self-hosting and self-testing; defaults to the build-embedded BiVelio key.
+   * Override the public key used to verify {@link licenseKey}. An SPKI PEM string,
+   * or a kid-addressed {@link LicenseKeyset} (`{ keys: {kid: pem}, defaultKid }`)
+   * to support signing-key rotation — legacy no-kid tokens use `defaultKid`, and
+   * an unknown kid fails closed. For self-hosting/self-testing; defaults to the
+   * build-embedded BiVelio key.
    */
-  licensePublicKey?: string;
+  licensePublicKey?: string | LicenseKeyset;
 
   /**
    * Pre-built license gate. Usually you pass {@link licenseKey} instead and let

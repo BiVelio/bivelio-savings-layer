@@ -1,4 +1,5 @@
 import { RevocationSnapshot, verifyRevocationList } from "./revocation.js";
+import type { LicenseKeyset } from "./verify.js";
 
 /**
  * Browser-safe revocation call-home. Uses only Web-standard globals (`fetch`,
@@ -32,8 +33,9 @@ export type RevocationPollEvent =
 export interface RevocationPollerOptions {
   /** Absolute URL of GET /licenses/revocations. */
   url: string;
-  /** SPKI PEM used to verify the signed list (same key that verifies licenses). */
-  publicKeyPem: string;
+  /** SPKI PEM (or a kid-addressed {@link LicenseKeyset}) used to verify the signed
+   *  list — the same key/keyset that verifies license tokens. */
+  publicKeyPem: string | LicenseKeyset;
   /** The sticky snapshot to feed. */
   snapshot: RevocationSnapshot;
   /** Anchor cadence to the license refresh horizon (unix seconds). */

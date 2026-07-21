@@ -4,6 +4,7 @@ import {
   deriveStatus,
   type LicenseStatus,
   type LicenseTokenPayload,
+  type LicenseKeyset,
 } from "./verify.js";
 import type { RevocationSnapshot } from "./revocation.js";
 
@@ -29,7 +30,7 @@ export interface ResolvedGate extends LicenseGate {
  */
 export function liveGateFromKey(
   licenseKey: string,
-  publicKeyPem: string,
+  publicKey: string | LicenseKeyset,
   opts: {
     revocation: RevocationSnapshot;
     now?: () => number;
@@ -43,7 +44,7 @@ export function liveGateFromKey(
 ): ResolvedGate {
   const nowSeconds = (): number => Math.floor((opts.now ? opts.now() : Date.now()) / 1000);
   const startedAt = opts.startedAt ?? nowSeconds();
-  const v = verifyLicenseToken(licenseKey, publicKeyPem);
+  const v = verifyLicenseToken(licenseKey, publicKey);
   const payload: LicenseTokenPayload | undefined = v.signatureValid ? v.payload : undefined;
   const features = new Set<string>(payload?.features ?? []);
 

@@ -79,7 +79,10 @@ export async function POST() {
   };
 
   try {
-    const token = signCompact(LICENSE_HEADER, payload, privateKey);
+    // Stamp a key-id only when configured (byte-identical default output), so a
+    // future keyset deployment can rotate the signing key without a hard cutover.
+    const kid = process.env.LICENSE_KEY_ID;
+    const token = signCompact({ ...LICENSE_HEADER, ...(kid ? { kid } : {}) }, payload, privateKey);
 
     // PERSIST before returning, or the license is unrevocable-by-org (its jti would
     // live only inside the emitted token). Use the service-role client (the anon

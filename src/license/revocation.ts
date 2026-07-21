@@ -1,4 +1,4 @@
-import { verifyCompactSignature } from "./verify.js";
+import { verifyCompactSignature, type LicenseKeyset } from "./verify.js";
 
 /**
  * Browser-safe revocation-list verification + the SDK's sticky, monotonic view of
@@ -50,7 +50,7 @@ const dec = new TextDecoder();
  */
 export function verifyRevocationList(
   token: string,
-  publicKeyPem: string,
+  publicKey: string | LicenseKeyset,
   opts: { minSeq?: number; nowSeconds?: number; maxSkewSeconds?: number } = {},
 ): RevocationListVerification {
   const fail = (reason: string): RevocationListVerification => ({
@@ -61,7 +61,7 @@ export function verifyRevocationList(
     reason,
   });
 
-  const v = verifyCompactSignature(token, publicKeyPem);
+  const v = verifyCompactSignature(token, publicKey);
   if (!v.ok || !v.payloadBytes) return fail(v.reason ?? "bad signature");
   if (v.header?.["typ"] !== REVOCATION_TYP) {
     return fail(`unexpected token type "${String(v.header?.["typ"] ?? "")}" (want ${REVOCATION_TYP})`);
