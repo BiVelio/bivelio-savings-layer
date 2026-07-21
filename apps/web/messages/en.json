@@ -280,8 +280,8 @@
       "body": "These two instruments run the real optimizer <b>locally</b> so you can sanity-check the mechanism before touching a provider. The left panel runs the real BV‑SALA optimizer on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> a monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provably-<i>measured</i> dollars, see <link>Step 2</link> below."
     },
     "step2": {
-      "eyebrow": "Step 2 · Provably measured — reproducible",
-      "title": "Real savings, measured against a real provider. Both arms.",
+      "eyebrow": "Step 2 · How savings are measured — reproducible",
+      "title": "Both arms metered by the provider's own tokenizer — no modeled baseline.",
       "body": "This is the output of the A/B benchmark (<code>pnpm ab</code>): for every scenario it sends a <b>naive</b> request <i>and</i> the BV‑SALA request to the <b>same</b> model, prices both from the provider's own token usage, and reports the <b>95% confidence lower bound</b> — never the flattering point estimate. Nothing is modeled."
     },
     "ledgersHead": {

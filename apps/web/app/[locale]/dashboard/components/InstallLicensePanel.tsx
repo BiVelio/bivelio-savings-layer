@@ -16,7 +16,7 @@ const layer = createSavingsLayer({
 });
 
 const { data, report } = await layer.generate({ model, messages, response });
-report.cost.netSavings; // → verified savings, per request`;
+report.cost.netSavings; // → your net savings, per request`;
 
 export async function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgContext }) {
   const t = await getTranslations("dashboard");

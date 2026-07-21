@@ -280,8 +280,8 @@
       "body": "Bu iki araç, gerçek optimize ediciyi <b>yerel olarak</b> çalıştırır; böylece bir sağlayıcıya dokunmadan önce mekanizmayı gözden geçirebilirsiniz. Sol panel, yapıştırdığınız veriler üzerinde gerçek BV‑SALA optimize edicisini çalıştırır — gerçek token hesaplaması, SDK'nın gönderdiği kodun aynısı. Sağ panel, bir örnek iş yükü üzerinde optimize ediciyi <b>sahte</b> bir modele karşı çalıştırarak aylık bir faturayı <b>tahmin eder</b>. Kanıtlanabilir şekilde <i>ölçülen</i> dolarlar için aşağıdaki <link>Adım 2</link>'ye bakın."
     },
     "step2": {
-      "eyebrow": "Adım 2 · Kanıtlanabilir şekilde ölçüldü — yeniden üretilebilir",
-      "title": "Gerçek tasarruf, gerçek bir sağlayıcıya karşı ölçüldü. Her iki kol da.",
+      "eyebrow": "Adım 2 · Tasarruflar nasıl ölçülür — yinelenebilir",
+      "title": "Her iki kol da sağlayıcının kendi tokenizer'ıyla ölçülür — modellenmiş temel yok.",
       "body": "Bu, A/B kıyaslamasının (<code>pnpm ab</code>) çıktısıdır: her senaryo için <b>saf</b> bir istek <i>ve</i> BV‑SALA isteğini <b>aynı</b> modele gönderir, ikisini de sağlayıcının kendi token kullanımına göre fiyatlandırır ve <b>%95 güven alt sınırını</b> raporlar — asla göz boyayan nokta tahminini değil. Hiçbir şey modellenmez."
     },
     "ledgersHead": {

@@ -280,8 +280,8 @@
       "body": "Hai công cụ này chạy trình tối ưu thực <b>cục bộ</b> để bạn có thể kiểm chứng cơ chế trước khi động đến một nhà cung cấp. Bảng bên trái chạy trình tối ưu BV‑SALA thực trên dữ liệu bạn dán — hạch toán token thực, cùng đoạn mã mà SDK phát hành. Bảng bên phải <b>ước tính</b> hóa đơn hàng tháng bằng cách chạy trình tối ưu trên một khối lượng công việc mẫu đối chiếu với một mô hình <b>mô phỏng</b>. Để có những đô la được <i>đo</i> một cách chứng minh được, xem <link>Bước 2</link> bên dưới."
     },
     "step2": {
-      "eyebrow": "Bước 2 · Đo được một cách chứng minh — có thể tái lập",
-      "title": "Tiết kiệm thực, được đo đối chiếu với một nhà cung cấp thực. Cả hai nhánh.",
+      "eyebrow": "Bước 2 · Cách đo lường mức tiết kiệm — có thể tái lập",
+      "title": "Cả hai nhánh được đo bằng chính tokenizer của nhà cung cấp — không có đường cơ sở mô hình hóa.",
       "body": "Đây là kết quả của benchmark A/B (<code>pnpm ab</code>): với mỗi kịch bản, nó gửi một yêu cầu <b>ngây thơ</b> <i>và</i> yêu cầu BV‑SALA đến <b>cùng một</b> mô hình, định giá cả hai từ chính mức sử dụng token của nhà cung cấp, và báo cáo <b>giới hạn dưới của khoảng tin cậy 95%</b> — không bao giờ là ước tính điểm hào nhoáng. Không có gì được mô hình hóa."
     },
     "ledgersHead": {

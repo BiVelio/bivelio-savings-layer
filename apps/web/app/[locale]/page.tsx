@@ -66,7 +66,7 @@ const CODE: { cls?: "c" | "k" | "s"; v: string }[][] = [
   ],
   [{ v: "});" }],
   [],
-  [{ v: "report.cost.netSavings;   " }, { cls: "c", v: "// → 0.59  (verified, per request)" }],
+  [{ v: "report.cost.netSavings;   " }, { cls: "c", v: "// → your net savings on this request" }],
   [{ v: "report.calls.avoidedLlm;  " }, { cls: "c", v: "// → whole calls you never paid for" }],
 ];
 

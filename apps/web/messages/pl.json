@@ -280,8 +280,8 @@
       "body": "Te dwa narzędzia uruchamiają prawdziwy optymalizator <b>lokalnie</b>, abyś mógł sprawdzić mechanizm, zanim dotkniesz dostawcy. Lewy panel uruchamia prawdziwy optymalizator BV‑SALA na danych, które wkleisz — prawdziwe rozliczanie tokenów, ten sam kod, który dostarcza SDK. Prawy panel <b>szacuje</b> miesięczny rachunek, uruchamiając optymalizator na przykładowym obciążeniu względem modelu <b>mock</b>. Aby zobaczyć dolary <i>zmierzone</i> w sposób dowodliwy, zobacz <link>Krok 2</link> poniżej."
     },
     "step2": {
-      "eyebrow": "Krok 2 · Mierzone w sposób dowodliwy — powtarzalne",
-      "title": "Prawdziwe oszczędności, mierzone względem prawdziwego dostawcy. Oba ramiona.",
+      "eyebrow": "Krok 2 · Jak mierzone są oszczędności — powtarzalne",
+      "title": "Obie gałęzie mierzone tokenizerem samego dostawcy — bez modelowanej linii bazowej.",
       "body": "To wynik benchmarku A/B (<code>pnpm ab</code>): dla każdego scenariusza wysyła żądanie <b>naiwne</b> <i>oraz</i> żądanie BV‑SALA do <b>tego samego</b> modelu, wycenia oba na podstawie własnego zużycia tokenów dostawcy i raportuje <b>dolną granicę 95% przedziału ufności</b> — nigdy pochlebnej estymacji punktowej. Nic nie jest modelowane."
     },
     "ledgersHead": {

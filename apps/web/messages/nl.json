@@ -280,8 +280,8 @@
       "body": "Deze twee instrumenten draaien de echte optimizer <b>lokaal</b>, zodat je het mechanisme kunt controleren voordat je een provider aanraakt. Het linkerpaneel draait de echte BV‑SALA-optimizer op gegevens die je plakt — echte tokenboekhouding, dezelfde code die de SDK meelevert. Het rechterpaneel <b>schat</b> een maandfactuur door de optimizer over een voorbeeldwerklast te draaien tegen een <b>mock</b>-model. Voor aantoonbaar <i>gemeten</i> dollars, zie <link>Stap 2</link> hieronder."
     },
     "step2": {
-      "eyebrow": "Stap 2 · Aantoonbaar gemeten — reproduceerbaar",
-      "title": "Echte besparingen, gemeten tegen een echte provider. Beide takken.",
+      "eyebrow": "Stap 2 · Hoe besparingen worden gemeten — reproduceerbaar",
+      "title": "Beide takken gemeten door de tokenizer van de provider zelf — geen gemodelleerde baseline.",
       "body": "Dit is de uitvoer van de A/B-benchmark (<code>pnpm ab</code>): voor elk scenario stuurt hij een <b>naïef</b> verzoek <i>en</i> het BV‑SALA-verzoek naar <b>hetzelfde</b> model, prijst beide op basis van het eigen tokengebruik van de provider en rapporteert de <b>95%-betrouwbaarheidsondergrens</b> — nooit de vleiende puntschatting. Niets is gemodelleerd."
     },
     "ledgersHead": {

@@ -280,8 +280,8 @@
       "body": "Kedua instrumen ini menjalankan pengoptimal asli <b>secara lokal</b> agar Anda bisa memeriksa mekanismenya sebelum menyentuh penyedia. Panel kiri menjalankan pengoptimal BV‑SALA asli pada data yang Anda tempel — penghitungan token nyata, kode yang sama yang dikirim SDK. Panel kanan <b>memperkirakan</b> tagihan bulanan dengan menjalankan pengoptimal atas beban kerja sampel terhadap model <b>tiruan</b>. Untuk dolar yang <i>terukur</i> secara terbukti, lihat <link>Langkah 2</link> di bawah."
     },
     "step2": {
-      "eyebrow": "Langkah 2 · Terukur secara terbukti — dapat direproduksi",
-      "title": "Penghematan nyata, diukur terhadap penyedia nyata. Kedua sisi.",
+      "eyebrow": "Langkah 2 · Bagaimana penghematan diukur — dapat direproduksi",
+      "title": "Kedua sisi diukur oleh tokenizer penyedia itu sendiri — tanpa baseline yang dimodelkan.",
       "body": "Ini adalah keluaran dari benchmark A/B (<code>pnpm ab</code>): untuk setiap skenario, ia mengirim permintaan <b>naif</b> <i>dan</i> permintaan BV‑SALA ke model yang <b>sama</b>, menetapkan harga keduanya dari penggunaan token milik penyedia sendiri, dan melaporkan <b>batas bawah tingkat keyakinan 95%</b> — bukan estimasi titik yang menyanjung. Tidak ada yang dimodelkan."
     },
     "ledgersHead": {

@@ -38,7 +38,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   // Bootstrap the org + owner membership for this user (idempotent).
   const { error: orgErr } = await admin
     .from("organizations")
-    .upsert({ id: user.id, name: user.email ?? "My workspace" }, { onConflict: "id", ignoreDuplicates: true });
+    .upsert({ id: user.id, name: "My workspace" }, { onConflict: "id", ignoreDuplicates: true });
   if (orgErr) {
     console.error("[service-accounts] org upsert failed:", orgErr);
     return NextResponse.json({ error: "could not set up your workspace" }, { status: 500 });
