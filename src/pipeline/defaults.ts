@@ -9,10 +9,7 @@ import { ExecutionRouter } from "../router/router.js";
 import { ToolSelector } from "../router/tool-selector.js";
 import { FormatSelector } from "../serialization/format-selector.js";
 import { SchemaRegistry } from "../constraints/schema-registry.js";
-import {
-  providerNativeBackend,
-  type ConstraintBackend,
-} from "../constraints/backends.js";
+import type { ConstraintBackend } from "../constraints/backends.js";
 import type { SavingsLayerConfig } from "./config.js";
 
 /** Fully-resolved, non-optional dependency set the pipeline runs against. */
@@ -44,6 +41,12 @@ export function resolveDependencies(config: SavingsLayerConfig): ResolvedDeps {
     formatSelector:
       config.formatSelector ?? new FormatSelector({ tokenizer: config.tokenizer }),
     schemaRegistry: config.schemaRegistry ?? new SchemaRegistry(),
-    constraintBackends: config.constraintBackends ?? [providerNativeBackend()],
+    // Honest default: assume NO decode-time constraint backend. resolveConstraintBackend
+    // then reports backend:"none" ("will validate + repair") instead of over-claiming
+    // "provider-native" enforcement for endpoints/models we haven't verified — and this
+    // re-activates the structural-repair fallback (dead when a backend is always claimed).
+    // Callers whose endpoint truly enforces strict JSON schema can pass
+    // [providerNativeBackend(capabilityCheck)] to opt back in.
+    constraintBackends: config.constraintBackends ?? [],
   };
 }

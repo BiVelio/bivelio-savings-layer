@@ -1,4 +1,5 @@
 import { RevocationSnapshot, verifyRevocationList } from "./revocation.js";
+import type { LicenseKeyset } from "./verify.js";
 
 /**
  * Browser-safe revocation call-home. Uses only Web-standard globals (`fetch`,
@@ -32,8 +33,9 @@ export type RevocationPollEvent =
 export interface RevocationPollerOptions {
   /** Absolute URL of GET /licenses/revocations. */
   url: string;
-  /** SPKI PEM used to verify the signed list (same key that verifies licenses). */
-  publicKeyPem: string;
+  /** SPKI PEM (or a kid-addressed {@link LicenseKeyset}) used to verify the signed
+   *  list — the same key/keyset that verifies license tokens. */
+  publicKeyPem: string | LicenseKeyset;
   /** The sticky snapshot to feed. */
   snapshot: RevocationSnapshot;
   /** Anchor cadence to the license refresh horizon (unix seconds). */
@@ -138,8 +140,10 @@ export class RevocationPoller {
     try {
       const res = await f(this.opts.url, { signal: ctrl.signal, headers });
       if (res.status === 304) {
-        // Unchanged since our last ETag — a SUCCESS: reset backoff, keep snapshot.
+        // Unchanged since our last ETag — a SUCCESS: reset backoff, keep snapshot,
+        // and record the authorized heartbeat (feeds the online staleness gate).
         this.consecutiveFailures = 0;
+        this.opts.snapshot.markContact(this.now());
         this.opts.onEvent?.({ type: "unchanged", seq: this.opts.snapshot.seq });
         return;
       }
@@ -167,6 +171,8 @@ export class RevocationPoller {
         this.opts.onEvent?.({ type: "rejected", reason: v.reason ?? "rejected" });
         return;
       }
+      // A verified, authorized list → record the heartbeat for the staleness gate.
+      this.opts.snapshot.markContact(this.now());
       const changed = this.opts.snapshot.apply(v);
       this.opts.onEvent?.(
         changed

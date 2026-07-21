@@ -13,6 +13,7 @@ import type { Compressor } from "../compression/compression.js";
 import type { Retriever, Reranker } from "../retrieval/retrieval.js";
 import type { Provider } from "../providers/types.js";
 import type { LicenseGate } from "../contracts/types.js";
+import type { LicenseKeyset } from "../license/verify.js";
 
 /**
  * Everything the pipeline depends on. All fields except `provider` and
@@ -47,10 +48,13 @@ export interface SavingsLayerConfig {
   licenseKey?: string;
 
   /**
-   * Override the public key used to verify {@link licenseKey} (SPKI PEM). For
-   * self-hosting and self-testing; defaults to the build-embedded BiVelio key.
+   * Override the public key used to verify {@link licenseKey}. An SPKI PEM string,
+   * or a kid-addressed {@link LicenseKeyset} (`{ keys: {kid: pem}, defaultKid }`)
+   * to support signing-key rotation — legacy no-kid tokens use `defaultKid`, and
+   * an unknown kid fails closed. For self-hosting/self-testing; defaults to the
+   * build-embedded BiVelio key.
    */
-  licensePublicKey?: string;
+  licensePublicKey?: string | LicenseKeyset;
 
   /**
    * Pre-built license gate. Usually you pass {@link licenseKey} instead and let
@@ -93,6 +97,15 @@ export interface SavingsLayerConfig {
     jitterRatio?: number;
     /** Reject a signed list whose `asOf` is more than this far in the future, seconds (default 300). */
     maxSkewSeconds?: number;
+    /**
+     * ONLINE staleness ceiling, seconds (default ~6h). If the SDK goes this long
+     * without a CONFIRMED authorized heartbeat (a 304 or a verified list), the LIVE
+     * gate stops granting — closing the fail-open window where blocking egress keeps
+     * a revoked license alive until natural expiry. Must exceed the poll cadence
+     * with margin. Applies ONLY on the online path ({@link licenseServerUrl} set);
+     * it is NOT a zero-network opt-out — use the offline path for that.
+     */
+    maxStalenessSeconds?: number;
   };
 
   /**

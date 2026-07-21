@@ -78,6 +78,25 @@ export interface CompactVerification {
 }
 
 /**
+ * A pinned set of Ed25519 public keys addressed by key-id (`kid`), enabling signing
+ * key ROTATION without breaking already-deployed SDKs: new keys are added as extra
+ * map entries, and tokens carry the `kid` they were signed with. `defaultKid` is the
+ * key used for legacy tokens that carry NO `kid` (so today's single-key tokens keep
+ * verifying unchanged). Verification FAILS CLOSED on a `kid` not in the map.
+ */
+export interface LicenseKeyset {
+  /** kid → SPKI PEM. */
+  keys: Record<string, string>;
+  /** kid used for tokens without a `kid` header (the current/legacy key). */
+  defaultKid: string;
+}
+
+/** Narrow a verification key to a {@link LicenseKeyset} (vs a bare SPKI PEM string). */
+export function isKeyset(k: string | LicenseKeyset): k is LicenseKeyset {
+  return typeof k === "object" && k !== null && "keys" in k;
+}
+
+/**
  * Verify the Ed25519 signature of any BV-SALA compact token
  * (`base64url(header).base64url(body).base64url(sig)`, sig over `${head}.${body}`)
  * and return the decoded header + raw payload bytes. This is the single shared
@@ -86,13 +105,42 @@ export interface CompactVerification {
  * and there is no bespoke per-message verification path to keep in sync. It does NOT
  * interpret the payload or the header `typ` — callers do that.
  */
-export function verifyCompactSignature(token: string, publicKeyPem: string): CompactVerification {
-  if (!publicKeyPem) return { ok: false, reason: "no verification key" };
+export function verifyCompactSignature(
+  token: string,
+  publicKey: string | LicenseKeyset,
+): CompactVerification {
   const parts = token.split(".");
   if (parts.length !== 3) return { ok: false, reason: "malformed token" };
   const head = parts[0]!;
   const body = parts[1]!;
   const sig = parts[2]!;
+
+  // Parse the header BEFORE resolving the key so a keyset can select the pinned key
+  // by `kid` (JWS semantics). Reading the not-yet-verified kid is safe: it can only
+  // SELECT among pinned keys, never inject one, and an unknown kid fails closed below.
+  let header: Record<string, unknown>;
+  try {
+    header = JSON.parse(dec.decode(base64urlToBytes(head))) as Record<string, unknown>;
+  } catch {
+    return { ok: false, reason: "header is not valid JSON" };
+  }
+
+  // Resolve the verification key. A plain string is used as-is (kid ignored) —
+  // byte-identical to the pre-keyset behavior for every existing caller, so an
+  // already-deployed single-key SDK still verifies a kid-stamped token. A keyset
+  // selects by the token's kid (defaulting to defaultKid for legacy no-kid tokens)
+  // and FAILS CLOSED on an unknown kid — never a silent fallback that would mask a
+  // rotation misconfig.
+  let publicKeyPem: string;
+  if (isKeyset(publicKey)) {
+    const kid = typeof header["kid"] === "string" ? (header["kid"] as string) : publicKey.defaultKid;
+    const pem = publicKey.keys[kid];
+    if (!pem) return { ok: false, reason: `unknown key id "${kid}"` };
+    publicKeyPem = pem;
+  } else {
+    if (!publicKey) return { ok: false, reason: "no verification key" };
+    publicKeyPem = publicKey;
+  }
 
   let rawKey: Uint8Array;
   try {
@@ -110,21 +158,15 @@ export function verifyCompactSignature(token: string, publicKeyPem: string): Com
   }
   if (!ok) return { ok: false, reason: "bad signature" };
 
-  let header: Record<string, unknown>;
-  try {
-    header = JSON.parse(dec.decode(base64urlToBytes(head))) as Record<string, unknown>;
-  } catch {
-    return { ok: false, reason: "header is not valid JSON" };
-  }
   return { ok: true, header, payloadBytes: base64urlToBytes(body) };
 }
 
 /** Verify a token's signature and decode its payload. Does not check expiry. */
 export function verifyLicenseToken(
   token: string,
-  publicKeyPem: string,
+  publicKey: string | LicenseKeyset,
 ): { signatureValid: boolean; payload?: LicenseTokenPayload; reason?: string } {
-  const v = verifyCompactSignature(token, publicKeyPem);
+  const v = verifyCompactSignature(token, publicKey);
   if (!v.ok || !v.payloadBytes) {
     return { signatureValid: false, ...(v.reason ? { reason: v.reason } : {}) };
   }
@@ -165,10 +207,10 @@ export function deriveStatus(
  */
 export function resolveLicense(
   token: string,
-  publicKeyPem: string,
+  publicKey: string | LicenseKeyset,
   opts: { nowSeconds?: number; revoked?: ReadonlySet<string> } = {},
 ): ResolvedLicense {
-  const v = verifyLicenseToken(token, publicKeyPem);
+  const v = verifyLicenseToken(token, publicKey);
   if (!v.signatureValid || !v.payload) {
     return { status: "invalid", ...(v.reason ? { reason: v.reason } : {}) };
   }

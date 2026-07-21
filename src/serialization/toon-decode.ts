@@ -29,6 +29,39 @@ export function decodeToon(
     indent: indentOf(l, indentUnit),
     content: l.slice(indentWidth(l, indentUnit)),
   }));
+  if (lines.length === 0) return {};
+
+  // Top-level array forms (no key prefix): `[N]{cols}:` + rows, or `[N]: a,b,c`.
+  // encodeToon emits these for a top-level array; without handling them here the
+  // decoder mis-reads the header as a key and the round-trip fails, which used to
+  // force the (very common) array-of-records shape to fall back to JSON.
+  const first = lines[0]!;
+  if (first.indent === 0) {
+    const topTable = first.content.match(/^\[(\d+)\]\{(.*)\}:\s*$/);
+    if (topTable) {
+      const columns = splitCells(topTable[2]!, delimiter);
+      const count = Number(topTable[1]);
+      const rows: Record<string, unknown>[] = [];
+      for (let r = 0, i = 1; r < count && i < lines.length; r++, i++) {
+        const row = lines[i]!;
+        if (row.indent !== 1) break;
+        const cells = splitCells(row.content, delimiter);
+        const record: Record<string, unknown> = {};
+        columns.forEach((col, idx) => {
+          record[col] = decodeScalar(cells[idx] ?? "null");
+        });
+        rows.push(record);
+      }
+      return rows;
+    }
+    const topInline = first.content.match(/^\[(\d+)\]:\s*(.*)$/);
+    if (topInline) {
+      const rest = topInline[2]!;
+      if (Number(topInline[1]) === 0 || rest.trim() === "") return [];
+      return splitCells(rest, delimiter).map(decodeScalar);
+    }
+  }
+
   const [obj] = parseObject(lines, 0, 0, delimiter);
   return obj;
 }

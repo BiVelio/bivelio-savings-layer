@@ -37,8 +37,12 @@ export interface RevocationList {
  * license tokens — the SDK's `verifyRevocationList` rejects anything else.
  */
 export function signRevocationList(list: RevocationList, privateKeyPem: string): string {
+  // Stamp a key-id ONLY when configured, so default output is byte-identical to
+  // today. Once a keyset is deployed to SDKs, LICENSE_KEY_ID lets us rotate the
+  // signing key without a coordinated cutover (see LicenseKeyset in the SDK).
+  const kid = process.env.LICENSE_KEY_ID;
   return signCompact(
-    { alg: "EdDSA", typ: "BVSALA-REVOC", v: 1 },
+    { alg: "EdDSA", typ: "BVSALA-REVOC", v: 1, ...(kid ? { kid } : {}) },
     { v: 1, asOf: list.asOf, seq: list.seq, revoked: list.revoked, iss: "bivelio-licensing" },
     privateKeyPem,
   );

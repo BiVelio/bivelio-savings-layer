@@ -170,6 +170,72 @@ describe("SavingsPipeline end-to-end", () => {
     expect(other.report.cache.result).not.toBe("semantic");
   });
 
+  it("credits an avoided call's output baseline from the real answer, not the ceiling default", async () => {
+    const layer = createSavingsLayer({ provider: createMockProvider({ answer: "Paris" }), generateId: deterministicId });
+    const request: SavingsRequest = {
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "capital city output-baseline probe" }],
+    };
+    await layer.generate(request); // miss → populate cache
+    const hit = await layer.generate(request);
+    expect(hit.report.cache.result).toBe("exact");
+    // Old behavior credited the 256 (maxOutputTokens ?? 256) ceiling as saved output;
+    // the honest baseline is the real answer "Paris" (~1 token), never 256.
+    expect(hit.report.tokens.baselineOutput).toBeGreaterThan(0);
+    expect(hit.report.tokens.baselineOutput).toBeLessThan(20);
+  });
+
+  it("actually applies compression to the outgoing prompt and credits only the realized reduction", async () => {
+    let captured: { role: string; content: string }[] = [];
+    const provider = {
+      id: "capturing",
+      async generate(req: { messages: { role: string; content: string }[] }) {
+        captured = req.messages;
+        return { text: "ok", usage: { inputTokens: 5, outputTokens: 2 } };
+      },
+    };
+    const compressor = {
+      async compress(r: { text: string }) {
+        return {
+          compressed: r.text.split(" ").filter((w) => w !== "DROPME").join(" "),
+          originalTokens: 0,
+          compressedTokens: 0,
+          protectedSpans: 0,
+          fidelityPassed: true,
+          skipped: false,
+          reason: "test compressor",
+        };
+      },
+    };
+    const layer = createSavingsLayer({ provider, compressor, generateId: deterministicId });
+    const res = await layer.generate({
+      model: "m",
+      messages: [{ role: "user", content: "please DROPME analyze DROPME this DROPME long DROPME context DROPME with padding padding padding padding padding" }],
+      savings: { compression: true },
+    });
+    const sent = captured.map((m) => m.content).join("\n");
+    // Regression for the phantom-compression bug: the compressed prompt must actually
+    // reach the provider, and the ledger only credits what was truly removed.
+    expect(sent).not.toContain("DROPME");
+    expect(res.report.tokens.compressedInput).toBeGreaterThan(0);
+  });
+
+  it("reports constraints backend 'none' by default (honest validate+repair, not claimed native enforcement)", async () => {
+    const schema: JsonSchema = {
+      type: "object",
+      additionalProperties: false,
+      required: ["answer"],
+      properties: { answer: { type: "string", maxLength: 200 } },
+    };
+    const layer = createSavingsLayer({ provider: createMockProvider(), generateId: deterministicId });
+    const res = await layer.generate({
+      model: "m",
+      messages: [{ role: "user", content: "structured question for backend honesty" }],
+      response: { contractId: "honesty:v1", schema },
+    });
+    expect(res.report.constraints.backend).toBe("none");
+  });
+
   it("injects the retrieved evidence into the prompt (RAG grounding — regression for the docs-discarded bug)", async () => {
     let captured: { role: string; content: string }[] = [];
     const provider = {

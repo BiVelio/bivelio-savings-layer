@@ -2,6 +2,7 @@ import { generateKeyPairSync, sign } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { verifyLicenseToken, type LicenseKeyset } from "../src/license/verify.js";
 import {
   createSavingsLayer,
   createMockProvider,
@@ -134,6 +135,71 @@ describe("revocation reaches enforcement (live gate → LicenseError)", () => {
     expect(gate.status()).toBe("revoked");
     await expect(layer.generate(req)).rejects.toBeInstanceOf(LicenseError);
     layer.close();
+  });
+});
+
+describe("online staleness gate (closes the block-egress fail-open)", () => {
+  it("stops granting after maxStalenessSeconds with no confirmed heartbeat, and recovers on one", () => {
+    let ms = BASE * 1000;
+    const snapshot = new RevocationSnapshot();
+    const gate = liveGateFromKey(licenseToken({ jti: "lic_stale" }), publicKey, {
+      revocation: snapshot,
+      now: () => ms,
+      maxStalenessSeconds: 3600, // 1h ceiling
+      startedAt: BASE, // boot anchor
+    });
+    expect(gate.isActive()).toBe(true); // fresh at boot
+    // 2h pass with egress blocked (no 304 / verified list) → fail CLOSED, not fail-open.
+    ms = (BASE + 2 * 3600) * 1000;
+    expect(gate.status()).toBe("expired");
+    expect(gate.isActive()).toBe(false);
+    // A confirmed authorized heartbeat (poll 304 / verified list) restores it.
+    snapshot.markContact(BASE + 2 * 3600);
+    expect(gate.isActive()).toBe(true);
+  });
+
+  it("the offline gate (no maxStalenessSeconds) never fails closed on staleness", () => {
+    let ms = BASE * 1000;
+    const snapshot = new RevocationSnapshot();
+    const gate = liveGateFromKey(
+      licenseToken({ jti: "lic_off", expires_at: BASE + 365 * DAY }),
+      publicKey,
+      { revocation: snapshot, now: () => ms }, // offline path: no staleness ceiling
+    );
+    ms = (BASE + 10 * 3600) * 1000; // 10h, zero heartbeats
+    expect(gate.isActive()).toBe(true);
+  });
+});
+
+describe("signing-key rotation via kid (backward-compatible)", () => {
+  const kidToken = (kid: string | undefined, over: Record<string, unknown> = {}): string =>
+    signCompact(
+      { alg: "EdDSA", typ: "BVL", v: 1, ...(kid ? { kid } : {}) },
+      { jti: "lic_kid", org_id: "o", plan: "pro", seats: 1, features: [], issued_at: BASE, expires_at: BASE + DAY, grace_days: 0, ...over },
+      privateKey,
+    );
+  // defaultKid pins the real key; a second kid pins a DIFFERENT (wrong) key.
+  const keyset: LicenseKeyset = { keys: { "2026-07": publicKey, "2027-01": wrongKp.publicKey }, defaultKid: "2026-07" };
+
+  it("a legacy NO-kid token verifies with a plain string key (unchanged path)", () => {
+    expect(verifyLicenseToken(kidToken(undefined), publicKey).signatureValid).toBe(true);
+  });
+  it("a legacy NO-kid token verifies with a keyset via defaultKid", () => {
+    expect(verifyLicenseToken(kidToken(undefined), keyset).signatureValid).toBe(true);
+  });
+  it("a kid-stamped token verifies with a keyset pinning that kid", () => {
+    expect(verifyLicenseToken(kidToken("2026-07"), keyset).signatureValid).toBe(true);
+  });
+  it("a kid-stamped token STILL verifies with a plain string key (deployed-SDK compat)", () => {
+    // The crux: an already-shipped single-string-key SDK ignores kid and verifies normally.
+    expect(verifyLicenseToken(kidToken("2026-07"), publicKey).signatureValid).toBe(true);
+  });
+  it("fails CLOSED on an unknown kid (never silently falls back to defaultKid)", () => {
+    expect(verifyLicenseToken(kidToken("no-such-kid"), keyset).signatureValid).toBe(false);
+  });
+  it("rejects when the kid pins the wrong key (signature mismatch)", () => {
+    // Signed by privateKey, but kid 2027-01 pins wrongKp.publicKey → bad signature.
+    expect(verifyLicenseToken(kidToken("2027-01"), keyset).signatureValid).toBe(false);
   });
 });
 

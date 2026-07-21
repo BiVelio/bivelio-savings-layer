@@ -10,6 +10,14 @@ import { deriveSeatId, detectCi } from "../metering/seat.js";
 import { SavingsPipeline } from "./pipeline.js";
 import type { SavingsLayerConfig } from "./config.js";
 
+/**
+ * Default online-staleness ceiling for the LIVE gate (6h). Well above the poll
+ * cadence + backoff (max ~1h) so a transient CP/network outage never trips it,
+ * but bounded so blocking egress can't keep a revoked license alive for its full
+ * remaining term. Override via `licenseRevocation.maxStalenessSeconds`.
+ */
+const DEFAULT_MAX_STALENESS_SECONDS = 6 * 3600;
+
 /** The public handle returned by {@link createSavingsLayer}. */
 export interface SavingsLayer {
   generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>>;
@@ -61,6 +69,11 @@ export function createSavingsLayer(
       const gate = liveGateFromKey(config.licenseKey, publicKey, {
         revocation,
         ...(config.now ? { now: config.now } : {}),
+        // Close the block-egress fail-open: stop granting after a max staleness with
+        // no confirmed heartbeat. Only on this ONLINE path — the offline gate below
+        // never sets it (zero-network deployments must omit licenseServerUrl).
+        maxStalenessSeconds:
+          config.licenseRevocation?.maxStalenessSeconds ?? DEFAULT_MAX_STALENESS_SECONDS,
       });
       resolved.licenseGate = gate;
       // `licenseServerUrl` is a BASE url (e.g. https://savings.bivelio.com); the SDK

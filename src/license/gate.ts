@@ -1,5 +1,6 @@
 import { liveGateFromKey, type ResolvedGate } from "./live-gate.js";
 import { RevocationSnapshot } from "./revocation.js";
+import type { LicenseKeyset } from "./verify.js";
 
 /**
  * Build the SDK's structural {@link import("../contracts/types.js").LicenseGate}
@@ -16,10 +17,10 @@ import { RevocationSnapshot } from "./revocation.js";
  */
 export function gateFromKey(
   licenseKey: string,
-  publicKeyPem: string,
+  publicKey: string | LicenseKeyset,
   now?: () => number,
 ): ResolvedGate {
-  return liveGateFromKey(licenseKey, publicKeyPem, {
+  return liveGateFromKey(licenseKey, publicKey, {
     revocation: new RevocationSnapshot(),
     ...(now ? { now } : {}),
   });

@@ -149,7 +149,10 @@ export class SavingsPipeline {
     if (toggles.deterministicResolvers !== false) {
       const resolved = this.deps.resolvers.try(canonical);
       if (resolved) {
-        ledger.avoidCall(baselineInput, baselineOutput);
+        // Honest avoided-output baseline: the answer we serve is exactly what a
+        // real call would have produced, so measure ITS tokens instead of crediting
+        // the maxOutputTokens ceiling (which overstates the absolute cost avoided).
+        ledger.avoidCall(baselineInput, this.tokensFor(resolved.text, request));
         trace.record("resolver", resolved.resolver, { avoided: true });
         return this.finish<T>(
           request,
@@ -170,7 +173,8 @@ export class SavingsPipeline {
     if (policy.allowExactCache && toggles.exactCache !== false) {
       const hit = await this.deps.exactCache.get<T>(exactKey);
       if (hit) {
-        ledger.avoidCall(baselineInput, baselineOutput);
+        // Measured avoided-output baseline (the cached answer is the real output).
+        ledger.avoidCall(baselineInput, this.tokensFor(hit.text, request));
         trace.record("exact-cache", "hit", { ageMs: this.now() - hit.storedAtMs });
         return this.finish<T>(
           request, canonical, hit, "exact", ledger, costModel, trace,
@@ -185,14 +189,17 @@ export class SavingsPipeline {
     const runExpensive = () =>
       this.expensivePath<T>(
         request, canonical, policy, toggles, ledger, costModel, trace,
-        exactKey, baselineInput, baselineOutput,
+        exactKey, baselineInput,
       );
 
     if (policy.allowSingleflight && toggles.singleflight !== false) {
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
       if (coalesced) {
         trace.record("singleflight", "coalesced", { key: inflightKey });
-        return this.asCoalescedFollower<T>(value, baselineInput, baselineOutput, costModel);
+        // The follower serves the leader's answer — measure that answer's output.
+        return this.asCoalescedFollower<T>(
+          value, baselineInput, this.tokensFor(value.text ?? "", request), costModel,
+        );
       }
       return value;
     }
@@ -209,7 +216,6 @@ export class SavingsPipeline {
     trace: TraceCollector,
     exactKey: string,
     baselineInput: number,
-    baselineOutput: number,
   ): Promise<SavingsResult<T>> {
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
@@ -229,7 +235,11 @@ export class SavingsPipeline {
     ) {
       const hit = await this.deps.semanticCache.find(canonical);
       if (hit) {
-        ledger.avoidCall(baselineInput, baselineOutput);
+        // Measured avoided-output baseline (the cached answer is the real output).
+        ledger.avoidCall(
+          baselineInput,
+          this.tokensFor((hit.record.answer as CachedAnswer<T>).text, request),
+        );
         trace.record("semantic-cache", "hit", {
           confidence: hit.confidence,
           similarity: hit.similarity,
@@ -290,7 +300,7 @@ export class SavingsPipeline {
     // toggle only chooses the ENCODING: on → pick the cheapest format for this
     // tokenizer; off → fall back to compact JSON (never drop the data).
     let formatChoice = jsonFallbackChoice();
-    const messages: ChatMessage[] = [...request.messages];
+    let messages: ChatMessage[] = [...request.messages];
 
     // Ground the model on the retrieved evidence. adaptive-k (Stage 7) already
     // pruned the set to the kept docs; here we actually PROJECT them into the
@@ -345,15 +355,34 @@ export class SavingsPipeline {
       this.config.compressor &&
       this.entitled("long_context_compression")
     ) {
-      const joined = messages.map((m) => m.content).join("\n");
-      const before = this.tokensFor(joined, request);
-      const result = await this.config.compressor.compress({ text: joined });
-      if (!result.skipped && result.fidelityPassed) {
-        const after = this.tokensFor(result.compressed, request);
-        ledger.compress(before, after);
-        trace.record("compression", "applied", { before, after });
+      // Apply-or-drop-reporting: compress each message and REPLACE its content in
+      // the prompt we actually send, crediting ONLY the tokens truly removed from
+      // that outgoing request. (The prior version compressed a throwaway join and
+      // credited savings the provider never saw — a phantom saving.) A message is
+      // kept verbatim unless the compressor returns a shorter, fidelity-passed
+      // rewrite, so a compressor that drops a protected span is a no-op, not a loss.
+      let compressedBefore = 0;
+      let compressedAfter = 0;
+      const rewritten: ChatMessage[] = [];
+      for (const m of messages) {
+        const before = this.tokensFor(m.content, request);
+        const result = await this.config.compressor.compress({ text: m.content });
+        const applies = !result.skipped && result.fidelityPassed;
+        const after = applies ? this.tokensFor(result.compressed, request) : before;
+        if (applies && after < before) {
+          rewritten.push({ ...m, content: result.compressed });
+          compressedBefore += before;
+          compressedAfter += after;
+        } else {
+          rewritten.push(m);
+        }
+      }
+      if (compressedAfter < compressedBefore) {
+        messages = rewritten; // the compressed prompt is what the provider receives
+        ledger.compress(compressedBefore, compressedAfter);
+        trace.record("compression", "applied", { before: compressedBefore, after: compressedAfter });
       } else {
-        trace.record("compression", result.reason);
+        trace.record("compression", "skipped (no fidelity-passed net reduction)");
       }
     }
 
