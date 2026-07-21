@@ -207,7 +207,10 @@
       "seatsCount": "{count, plural, one {# asiento} other {# asientos}}.",
       "planBody": "BV-SALA es fail-closed: solo funciona con una licencia PRO activa. {monthly} por asiento al mes o {yearly} por asiento al año. Un asiento es una máquina o identidad de servicio activa, no una persona.",
       "managePlan": "Gestionar plan →",
-      "subscribe": "Suscribirse →"
+      "subscribe": "Suscribirse →",
+      "checkoutMonthly": "Suscríbete — $4/mes →",
+      "checkoutYearly": "Suscríbete — $39/año →",
+      "checkoutError": "Algo salió mal — inténtalo de nuevo."
     },
     "referenceLedgerCards": {
       "proven": "comprobado",
@@ -267,11 +270,41 @@
       "title": "Gana la ejecución más barata",
       "per": "por solicitud",
       "steps": [
-        { "n": "01", "title": "Evita la llamada por completo", "sub": "resolutores · caché exacta y semántica", "tag": "0 llamadas", "grey": false },
-        { "n": "02", "title": "Evita recuperación y herramientas", "sub": "ruta: ninguna / única / múltiple / herramienta", "tag": "menos llamadas", "grey": false },
-        { "n": "03", "title": "Elimina el contexto innecesario", "sub": "deduplicar · reordenar · k‑adaptativa", "tag": "−tokens", "grey": true },
-        { "n": "04", "title": "Comprime lo que queda", "sub": "codificación más ligera · solo si es neta positiva", "tag": "−tokens", "grey": true },
-        { "n": "05", "title": "Restringe la salida", "sub": "esquema · contrato mínimo", "tag": "−salida", "grey": true }
+        {
+          "n": "01",
+          "title": "Evita la llamada por completo",
+          "sub": "resolutores · caché exacta y semántica",
+          "tag": "0 llamadas",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Evita recuperación y herramientas",
+          "sub": "ruta: ninguna / única / múltiple / herramienta",
+          "tag": "menos llamadas",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Elimina el contexto innecesario",
+          "sub": "deduplicar · reordenar · k‑adaptativa",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Comprime lo que queda",
+          "sub": "codificación más ligera · solo si es neta positiva",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Restringe la salida",
+          "sub": "esquema · contrato mínimo",
+          "tag": "−salida",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -291,10 +324,26 @@
       "runToMeasure": "ejecuta el optimizador para medir"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "Llamadas a LLM, recuperación y herramientas que nunca se ejecutaron." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Información descartada porque simplemente no era necesaria." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Información conservada, pero codificada con menos tokens." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Todavía en el prompt, pero facturada o procesada de forma más barata." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "Llamadas a LLM, recuperación y herramientas que nunca se ejecutaron."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Información descartada porque simplemente no era necesaria."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Información conservada, pero codificada con menos tokens."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Todavía en el prompt, pero facturada o procesada de forma más barata."
+      }
     ],
     "integrate": {
       "eyebrow": "Cinco líneas para empezar",
@@ -318,10 +367,22 @@
       "cta": "Comenzar →",
       "trustTitle": "Por qué el precio puede ser tan bajo",
       "trust": [
-        { "lead": "No movemos tokens.", "rest": "Tu tráfico de LLM va directo a tu proveedor — solo vemos recuentos, nunca contenido." },
-        { "lead": "Tú mismo alojas la parte pesada.", "rest": "El optimizador se ejecuta en tu proceso; nuestros servidores solo licencian, aprenden e informan." },
-        { "lead": "La infraestructura escala con los ingresos.", "rest": "Empieza en un servidor pequeño y solo crece cuando los clientes de pago cubren el siguiente nivel." },
-        { "lead": "El reporte es el medidor.", "rest": "La facturación lee el mismo SavingsReport que verificas arriba — sin caja negra." }
+        {
+          "lead": "No movemos tokens.",
+          "rest": "Tu tráfico de LLM va directo a tu proveedor — solo vemos recuentos, nunca contenido."
+        },
+        {
+          "lead": "Tú mismo alojas la parte pesada.",
+          "rest": "El optimizador se ejecuta en tu proceso; nuestros servidores solo licencian, aprenden e informan."
+        },
+        {
+          "lead": "La infraestructura escala con los ingresos.",
+          "rest": "Empieza en un servidor pequeño y solo crece cuando los clientes de pago cubren el siguiente nivel."
+        },
+        {
+          "lead": "El reporte es el medidor.",
+          "rest": "La facturación lee el mismo SavingsReport que verificas arriba — sin caja negra."
+        }
       ]
     },
     "footer": {

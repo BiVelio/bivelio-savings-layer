@@ -207,7 +207,10 @@
       "seatsCount": "{count, plural, other {# ghế}}.",
       "planBody": "BV-SALA là fail-closed — nó chỉ chạy với một giấy phép PRO đang hoạt động. {monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Một ghế là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
       "managePlan": "Quản lý gói →",
-      "subscribe": "Đăng ký →"
+      "subscribe": "Đăng ký →",
+      "checkoutMonthly": "Subscribe — $4/mo →",
+      "checkoutYearly": "Subscribe — $39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
@@ -267,11 +270,41 @@
       "title": "Phương án thực thi rẻ nhất thắng",
       "per": "mỗi yêu cầu",
       "steps": [
-        { "n": "01", "title": "Tránh lệnh gọi hoàn toàn", "sub": "trình phân giải · bộ đệm chính xác & ngữ nghĩa", "tag": "0 lệnh gọi", "grey": false },
-        { "n": "02", "title": "Tránh truy xuất & công cụ", "sub": "tuyến: không / đơn / đa / công cụ", "tag": "ít lệnh gọi hơn", "grey": false },
-        { "n": "03", "title": "Loại bỏ ngữ cảnh thừa", "sub": "khử trùng lặp · xếp hạng lại · k thích ứng", "tag": "−token", "grey": true },
-        { "n": "04", "title": "Nén phần còn lại", "sub": "mã hóa gọn nhẹ hơn · chỉ khi có lợi ròng", "tag": "−token", "grey": true },
-        { "n": "05", "title": "Ràng buộc đầu ra", "sub": "lược đồ · hợp đồng tối thiểu", "tag": "−đầu ra", "grey": true }
+        {
+          "n": "01",
+          "title": "Tránh lệnh gọi hoàn toàn",
+          "sub": "trình phân giải · bộ đệm chính xác & ngữ nghĩa",
+          "tag": "0 lệnh gọi",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Tránh truy xuất & công cụ",
+          "sub": "tuyến: không / đơn / đa / công cụ",
+          "tag": "ít lệnh gọi hơn",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Loại bỏ ngữ cảnh thừa",
+          "sub": "khử trùng lặp · xếp hạng lại · k thích ứng",
+          "tag": "−token",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Nén phần còn lại",
+          "sub": "mã hóa gọn nhẹ hơn · chỉ khi có lợi ròng",
+          "tag": "−token",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Ràng buộc đầu ra",
+          "sub": "lược đồ · hợp đồng tối thiểu",
+          "tag": "−đầu ra",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -291,10 +324,26 @@
       "runToMeasure": "chạy trình tối ưu để đo"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "Các lệnh gọi LLM, truy xuất và công cụ chưa từng được thực thi." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Thông tin bị loại bỏ vì đơn giản là không cần thiết." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Thông tin được giữ lại, nhưng mã hóa bằng ít token hơn." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Vẫn nằm trong prompt, nhưng được tính phí hoặc xử lý rẻ hơn." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "Các lệnh gọi LLM, truy xuất và công cụ chưa từng được thực thi."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Thông tin bị loại bỏ vì đơn giản là không cần thiết."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Thông tin được giữ lại, nhưng mã hóa bằng ít token hơn."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Vẫn nằm trong prompt, nhưng được tính phí hoặc xử lý rẻ hơn."
+      }
     ],
     "integrate": {
       "eyebrow": "Năm dòng để bắt đầu",
@@ -318,10 +367,22 @@
       "cta": "Bắt đầu →",
       "trustTitle": "Vì sao giá có thể thấp đến vậy",
       "trust": [
-        { "lead": "Chúng tôi không di chuyển token nào.", "rest": "Lưu lượng LLM của bạn đi thẳng đến nhà cung cấp của bạn — chúng tôi chỉ thấy số lượng, không bao giờ thấy nội dung." },
-        { "lead": "Bạn tự lưu trữ phần nặng nhất.", "rest": "Trình tối ưu chạy trong tiến trình của bạn; máy chủ của chúng tôi chỉ cấp phép, học hỏi và báo cáo." },
-        { "lead": "Hạ tầng mở rộng theo doanh thu.", "rest": "Nó bắt đầu trên một máy nhỏ và chỉ lớn lên khi khách hàng trả phí đủ để trang trải cho tầng tiếp theo." },
-        { "lead": "Báo cáo chính là đồng hồ đo.", "rest": "Việc tính phí đọc cùng một SavingsReport mà bạn xác minh ở trên — không có hộp đen." }
+        {
+          "lead": "Chúng tôi không di chuyển token nào.",
+          "rest": "Lưu lượng LLM của bạn đi thẳng đến nhà cung cấp của bạn — chúng tôi chỉ thấy số lượng, không bao giờ thấy nội dung."
+        },
+        {
+          "lead": "Bạn tự lưu trữ phần nặng nhất.",
+          "rest": "Trình tối ưu chạy trong tiến trình của bạn; máy chủ của chúng tôi chỉ cấp phép, học hỏi và báo cáo."
+        },
+        {
+          "lead": "Hạ tầng mở rộng theo doanh thu.",
+          "rest": "Nó bắt đầu trên một máy nhỏ và chỉ lớn lên khi khách hàng trả phí đủ để trang trải cho tầng tiếp theo."
+        },
+        {
+          "lead": "Báo cáo chính là đồng hồ đo.",
+          "rest": "Việc tính phí đọc cùng một SavingsReport mà bạn xác minh ở trên — không có hộp đen."
+        }
       ]
     },
     "footer": {

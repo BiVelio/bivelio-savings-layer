@@ -19,3 +19,6 @@ export function createAdminClient() {
     db: { schema: "bvsala" },
   });
 }
+
+/** The exact `bvsala`-schema service-role client type (for helpers that take it). */
+export type AdminClient = ReturnType<typeof createAdminClient>;

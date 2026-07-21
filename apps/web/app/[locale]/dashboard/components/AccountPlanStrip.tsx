@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import type { OrgContext } from "../data";
+import { BillingButtons } from "./BillingButtons";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
@@ -33,9 +34,9 @@ export async function AccountPlanStrip({ email, ctx }: { email: string; ctx: Org
         <h3>{planLabel}</h3>
         <p>
           {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
-          {t("accountPlanStrip.planBody", { monthly: "$4", yearly: "$39" })}{" "}
-          <a href="/#pricing">{isActive ? t("accountPlanStrip.managePlan") : t("accountPlanStrip.subscribe")}</a>
+          {t("accountPlanStrip.planBody", { monthly: "$4", yearly: "$39" })}
         </p>
+        <BillingButtons isActive={isActive} />
       </div>
     </div>
   );
