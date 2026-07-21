@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
-import "./globals.css";
-import { NavBar } from "./components/NavBar";
-import { SiteNavGate } from "./components/SiteNavGate";
-
+// Root layout is intentionally a pass-through: the <html>/<body> element, the
+// pre-paint theme script and the next-intl provider all live in
+// app/[locale]/layout.tsx (the active locale drives <html lang/dir>). Every page
+// route lives under [locale]; the API, auth and revocation route handlers render
+// no layout, so nothing outside [locale] needs an <html> shell.
 export const metadata: Metadata = {
   metadataBase: new URL("https://savings.bivelio.com"),
   title: "BiVelio — Savings Layer",
@@ -13,23 +15,6 @@ export const metadata: Metadata = {
   icons: { icon: "/logo-bivelio.png", apple: "/logo-bivelio.png" },
 };
 
-// Set the theme before first paint (no flash): honor a stored choice, else the OS.
-const THEME_INIT = `(function(){try{var s=localStorage.getItem('bv-theme');var d=s?s==='dark':(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();`;
-
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
-      </head>
-      <body>
-        <SiteNavGate>
-          <NavBar />
-        </SiteNavGate>
-        {children}
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  return children;
 }

@@ -1,0 +1,351 @@
+{
+  "nav": {
+    "langTitle": "Pilih bahasa Anda",
+    "langSubtitle": "Pilih bahasa yang ingin Anda gunakan untuk BiVelio Savings Layer.",
+    "langSearch": "Cari bahasa",
+    "langAria": "Ubah bahasa",
+    "langClose": "Tutup",
+    "verifier": "Verifikator",
+    "pricing": "Harga",
+    "signIn": "Masuk",
+    "dashboard": "Dasbor",
+    "signOut": "Keluar"
+  },
+  "app": {
+    "themeToggle": {
+      "light": "Terang",
+      "dark": "Gelap",
+      "ariaLabel": "Ganti tema",
+      "title": "Ganti terang / gelap"
+    },
+    "sidebar": {
+      "overview": "Ikhtisar",
+      "savings": "Penghematan",
+      "proof": "Bukti",
+      "verify": "Verifikasi",
+      "integrate": "Integrasikan",
+      "install": "Pasang",
+      "account": "Akun"
+    }
+  },
+  "auth": {
+    "signinTitle": "Masuk · BiVelio Savings Layer",
+    "signupTitle": "Buat akun Anda · BiVelio Savings Layer",
+    "welcomeBack": "Selamat datang kembali",
+    "loginSubtitle": "Masuk dengan akun BiVelio Anda — akun yang sama yang Anda gunakan di seluruh suite.",
+    "newToBivelio": "Baru di BiVelio?",
+    "createAnAccount": "Buat akun",
+    "backToVerifier": "← Kembali ke verifikator",
+    "createYourAccount": "Buat akun Anda",
+    "signupSubtitle": "Satu akun BiVelio untuk seluruh suite. Verifikasi penghematan Anda gratis di browser — buat akun untuk berlangganan dan mendapatkan kunci lisensi Anda.",
+    "alreadyHaveAccount": "Sudah punya akun BiVelio?",
+    "signIn": "Masuk",
+    "workEmail": "Email kerja",
+    "password": "Kata sandi",
+    "createAccountCta": "Buat akun →",
+    "signInCta": "Masuk →",
+    "loadingEllipsis": "…",
+    "notWired": "Fitur masuk belum tersambung — atur NEXT_PUBLIC_SUPABASE_ANON_KEY di deployment.",
+    "checkEmail": "Periksa email Anda untuk mengonfirmasi akun, lalu masuk.",
+    "somethingWrong": "Terjadi kesalahan."
+  },
+  "dashboard": {
+    "overview": {
+      "metaTitle": "Ikhtisar · BiVelio Savings Layer",
+      "authNotWired": "Fitur masuk belum tersambung. Atur variabel lingkungan Supabase untuk mengaktifkannya.",
+      "eyebrow": "Menuju penghematan langsung",
+      "title": "Meteran Anda",
+      "intro": "Pasang SDK dan penghematan bersih Anda muncul di sini — diukur dari lalu lintas Anda sendiri, bukan angka pinjaman.",
+      "savingsEyebrow": "Penghematan Anda",
+      "savingsTitle": "Yang Anda hemat — diukur dari lalu lintas Anda sendiri",
+      "savingsTrend": "tren penghematan",
+      "traffic": "lalu lintas",
+      "steps": {
+        "accountCreated": "Akun dibuat",
+        "sdkInstalled": "SDK terpasang",
+        "licenseActive": "Lisensi aktif",
+        "firstReport": "Laporan pertama",
+        "liveMeter": "Meteran langsung"
+      }
+    },
+    "proof": {
+      "metaTitle": "Bukti · BiVelio Savings Layer",
+      "eyebrow": "Verifikasi, jangan percaya begitu saja · bench referensi",
+      "title": "Bukti bahwa pengoptimal berfungsi",
+      "intro": "Diukur di kedua sisi — mesin kredibilitas di balik angka Anda sendiri."
+    },
+    "verify": {
+      "metaTitle": "Verifikasi · BiVelio Savings Layer",
+      "eyebrow": "Verifikasi secara lokal · tidak ada yang keluar dari halaman ini",
+      "title": "Modelkan payload Anda sendiri",
+      "intro": "Menjalankan tokenizer asli di browser Anda — tempel payload dan amati penghitungannya."
+    },
+    "install": {
+      "metaTitle": "Pasang · BiVelio Savings Layer",
+      "eyebrow": "Integrasikan",
+      "title": "Pasang & sambungkan SDK",
+      "intro": "Tempatkan BV-SALA di depan penyedia Anda — prompt Anda tidak pernah keluar dari infrastruktur Anda."
+    },
+    "account": {
+      "metaTitle": "Akun · BiVelio Savings Layer",
+      "eyebrow": "Akun",
+      "title": "Akun BiVelio Anda",
+      "intro": "Satu akun untuk seluruh suite BiVelio."
+    },
+    "verdictHero": {
+      "eyebrow": "Penghematan Anda · diukur oleh SDK",
+      "savedLine": "dari pengeluaran LLM Anda yang dihemat pada periode ini · <b>{money}</b> dihemat (baseline − aktual, pada harga Anda).",
+      "emptyCap": "Belum mengukur lalu lintas Anda — 0 permintaan terlihat. Pasang SDK dan penghematan bersih Anda muncul di sini — harga Anda, beban kerja Anda. Bukan angka pinjaman atau rekaan."
+    },
+    "liveLedgerTiles": {
+      "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
+      "whatEliminatedTokens": "token input yang dibuang karena tidak perlu",
+      "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
+      "whatProviderCachedTokens": "token input yang ditagih lebih murah (cache prefix)",
+      "ghostAwaiting": "{ref} · menunggu laporan pertama",
+      "footnote": "Empat ledger, <b>tidak pernah dijumlahkan</b> — kami tidak bisa menghitung satu dolar dua kali. Hanya jumlah dan biaya, bukan prompt Anda. Laporan itulah meterannya."
+    },
+    "savingsTrendChart": {
+      "skeleton": "Tren penghematan Anda terbentuk setelah ~7 hari lalu lintas terukur.",
+      "chartAria": "Penghematan kumulatif",
+      "cumulativeNote": "Penghematan kumulatif: {money} selama {days, plural, other {# hari terukur}}."
+    },
+    "trafficModelMix": {
+      "empty": "Belum ada permintaan yang terukur — pembagian dihindari-vs-dijalankan dan campuran per model muncul begitu SDK melapor.",
+      "title": "panggilan llm · dihindari vs dijalankan",
+      "split": "{avoided} dihindari · {ran} dijalankan ({pct}% dihindari)"
+    },
+    "instrumentationSpine": {
+      "eyebrow": "Menuju penghematan langsung",
+      "title": "Anda tinggal beberapa langkah dari meteran Anda sendiri",
+      "statusDone": "selesai",
+      "statusNext": "berikutnya",
+      "statusPending": "menunggu",
+      "nextLabel": "Berikutnya: {label}",
+      "installComment": "# tempatkan di depan penyedia Anda — prompt Anda tidak pernah keluar dari infrastruktur Anda",
+      "hintLicense": "Tempel kunci lisensi BiVelio Anda agar SDK membuka fitur terkelola dan melaporkan penggunaan.",
+      "hintFirstReport": "Bungkus panggilan penyedia yang sebenarnya — SavingsReport pertama tiba di sini dan meteran Anda menjadi aktif.",
+      "hintDefault": "Ini terbuka begitu baris usage_daily pertama Anda tiba."
+    },
+    "scenarioTable": {
+      "colScenario": "skenario",
+      "colKind": "jenis",
+      "colAInOut": "A masuk/keluar",
+      "colBInOut": "B masuk/keluar",
+      "colACost": "biaya A",
+      "colBCost": "biaya B",
+      "colSavings": "penghematan",
+      "colQa": "qa"
+    },
+    "projectorVerifier": {
+      "verifierTitle": "Verifikator penghematan",
+      "estimateFull": "ESTIMASI — heuristik, bukan diukur penyedia",
+      "errBundle": "Tidak dapat memuat bundel pengoptimal.",
+      "errInvalidData": "Menunggu data yang valid… {message}",
+      "yourData": "Data Anda",
+      "trims": "BV‑SALA memangkas {tokens} token per pengiriman.",
+      "alreadyOptimal": "Sudah optimal di sini — BV‑SALA tidak pernah memperburuknya.",
+      "projectorTitle": "Proyektor tagihan",
+      "estimate": "ESTIMASI",
+      "reqsPerMonth": "Permintaan / bulan",
+      "avgInputTokens": "Rata-rata token input",
+      "avgOutputTokens": "Rata-rata token output",
+      "callsAvoided": "Panggilan dihindari",
+      "inputCut": "Pemangkasan input",
+      "outputCut": "Pemangkasan output",
+      "projectedSaving": "penghematan proyeksi / bulan · pada harga {model}",
+      "projLower": "{baseline} → {opt} · {pct}% lebih rendah"
+    },
+    "copyButton": {
+      "copied": "Tersalin",
+      "copy": "Salin"
+    },
+    "trialKeyButton": {
+      "errCreate": "Tidak dapat menerbitkan kunci lisensi.",
+      "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
+      "keyLabel": "kunci lisensi Anda{suffix} — ditampilkan sekali, salin sekarang",
+      "validUntil": " · berlaku hingga {date}",
+      "pasteHint": "Tempel ke <code></code> untuk membuka SDK.",
+      "issuing": "Menerbitkan…",
+      "getKey": "Dapatkan kunci lisensi Anda →",
+      "priceNote": "{monthly} per kursi per bulan atau {yearly} per kursi per tahun. Checkout swalayan segera hadir — kunci ini membuka SDK di aplikasi Anda sendiri."
+    },
+    "serviceAccountKeySection": {
+      "errCreate": "Tidak dapat membuat kunci.",
+      "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
+      "errNotRecognized": "Tidak dikenali — periksa kesalahan ketik, atau buat kunci baru di atas.",
+      "errUnexpected": "Respons tak terduga ({status}). Coba lagi sebentar lagi.",
+      "keyLabel": "kunci akun layanan Anda{suffix} — ditampilkan sekali, salin sekarang",
+      "passHint": "Berikan sebagai <code>serviceAccountKey</code>. Sudah terisi di bawah — klik <b>Uji kunci saya</b> untuk memastikannya aktif.",
+      "creating": "Membuat…",
+      "createKey": "Buat kunci akun layanan →",
+      "hashNote": "Hanya hash yang disimpan. Ini mengautentikasi pengukuran penggunaan berbasis-hitungan — bukan prompt Anda.",
+      "verifyTitle": "Verifikasi bahwa kunci aktif",
+      "testInputAria": "Kunci akun layanan untuk diuji",
+      "testing": "Menguji…",
+      "testMyKey": "Uji kunci saya",
+      "validResult": "✓ Valid — SDK Anda dapat melaporkan penggunaan dengan kunci ini."
+    },
+    "installLicensePanel": {
+      "eyebrow": "Mulai",
+      "heading": "Empat langkah. Prompt Anda tidak pernah menyentuh server kami.",
+      "step1": "<b>1 · Dapatkan kunci lisensi Anda</b> — SDK bersifat publik tetapi fail-closed; hanya berjalan dengan kunci yang valid. Diberikan sebagai <code>licenseKey</code>.",
+      "step2": "<b>2 · Buat & verifikasi kunci akun layanan</b> — kredensial mesin (<code>bvk_…</code>) agar SDK melaporkan penggunaan berbasis-hitungan (kursi & penghematan Anda). Terpisah dari kunci lisensi; hanya hash-nya yang disimpan. Buat satu, lalu <b>Uji kunci saya</b> untuk memastikannya aktif.",
+      "currentKey": "kunci akun layanan saat ini",
+      "noneYet": "belum ada — klik di atas",
+      "shownOnce": "ditampilkan sekali saat pembuatan — hanya prefiks yang disimpan.",
+      "step3": "<b>3 · Pasang</b> — publik di npm, tanpa token, tanpa konfigurasi.",
+      "step4": "<b>4 · Sambungkan penyedia Anda & baca SavingsReport</b>",
+      "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi."
+    },
+    "accountPlanStrip": {
+      "noActivePlan": "Tidak ada paket aktif",
+      "signedInAs": "masuk sebagai",
+      "organization": "Organisasi: <b>{name}</b>",
+      "personalNote": "Pribadi — belum ada organisasi yang tertaut. Satu akun BiVelio, dibagikan di seluruh suite.",
+      "plan": "paket",
+      "seatsCount": "{count, plural, other {# kursi}}.",
+      "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi PRO aktif. {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
+      "managePlan": "Kelola paket →",
+      "subscribe": "Berlangganan →"
+    },
+    "referenceLedgerCards": {
+      "proven": "terbukti",
+      "notProven": "tidak terbukti",
+      "estimatedMock": "diperkirakan (tiruan)",
+      "footnoteMain": "Empat ledger, <b>tidak pernah dijumlahkan</b> — masing-masing adalah tuas yang diukur terpisah, sehingga satu dolar tidak bisa dihitung dua kali.",
+      "reconciledNote": "Residual rekonsiliasi ≈ 0 membuktikannya.",
+      "residualNote": "residual {residual} — periksa penghitungannya.",
+      "footnoteReference": "Ini adalah <b>tuas referensi</b>: rel langsung Anda mengukur empat yang berbeda — provider-cached menggantikan output-restriction — jadi kami tidak pernah memetakan yang satu ke yang lain."
+    },
+    "integrityQualityChips": {
+      "qualityGate": "Gerbang kualitas <b>{rate}</b> lolos",
+      "ledgersReconcile": "Ledger cocok",
+      "ledgersMismatch": "Ledger TIDAK COCOK",
+      "fingerprintStable": "Sidik jari model stabil",
+      "fingerprintChanged": "Sidik jari model berubah",
+      "cacheBreakEven": "Titik impas cache <b>K={k}</b>",
+      "provenAt95": "terbukti pada 95%",
+      "unprovenMock": "belum terbukti (tiruan)",
+      "regressedVoids": "Jawaban yang memburuk membatalkan penghematannya"
+    },
+    "netSavingsCIBand": {
+      "caption": "penghematan bersih, <b>batas bawah CI 95%</b>. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah{mockNote}.",
+      "mockNote": " (beban kerja referensi, penyedia tiruan)"
+    },
+    "cacheBreakEven": {
+      "tag": "cache · teramortisasi",
+      "body": "<b>{name}</b>: miss dingin {coldMiss} → hit {hit}. Mencapai titik impas pada <b>K={breakEvenK}</b> pengulangan — penghematan cache berasal dari lalu lintas berulang, bukan angka satu panggilan, sehingga panggilan dingin secara jujur terbaca ≈0%."
+    },
+    "provenancePill": {
+      "mock": "MOCK · referensi",
+      "live": "LIVE · organisasi Anda",
+      "await": "menunggu"
+    },
+    "referenceModeBadge": {
+      "liveDesc": "— diukur terhadap penyedia nyata, dengan gerbang kualitas.",
+      "mock": "<b>DIPERKIRAKAN · penyedia tiruan</b> — ini membuktikan mekanismenya berfungsi, bukan tagihan Anda. Menjalankan LIVE yang telah di-commit menggantikan setiap angka di sini."
+    },
+    "connectionStatePill": {
+      "meteringLive": "Pengukuran langsung",
+      "awaitingFirstReport": "Menunggu laporan pertama"
+    }
+  },
+  "landing": {
+    "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
+    "metaDescription": "Verifikasi penghematan LLM Anda dengan BV-SALA — tempel data Anda sendiri dan amati penghitungan token nyata menghitung penghematan secara langsung di browser Anda.",
+    "hero": {
+      "eyebrow": "Lapisan biaya LLM yang bisa dipasang siapa saja — berlisensi untuk berjalan",
+      "title": "Buktikan penghematan pada",
+      "titleAccent": "data Anda sendiri.",
+      "lede": "BV‑SALA berada di depan penyedia LLM mana pun dan, untuk setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Jangan hanya percaya kata kami — tempel data Anda di bawah dan amati meteran bergerak.",
+      "ctaRun": "Jalankan verifikator",
+      "ctaPricing": "Lihat harga",
+      "note": "Berjalan sepenuhnya di browser Anda. Tanpa pendaftaran, tidak ada yang keluar dari halaman ini."
+    },
+    "cascade": {
+      "title": "Eksekusi termurah menang",
+      "per": "per permintaan",
+      "steps": [
+        { "n": "01", "title": "Hindari panggilan sepenuhnya", "sub": "resolver · cache eksak & semantik", "tag": "0 panggilan", "grey": false },
+        { "n": "02", "title": "Hindari retrieval & tool", "sub": "rute: tidak ada / tunggal / multi / tool", "tag": "lebih sedikit panggilan", "grey": false },
+        { "n": "03", "title": "Hilangkan konteks yang tidak perlu", "sub": "dedupe · rerank · adaptive‑k", "tag": "−token", "grey": true },
+        { "n": "04", "title": "Kompres sisanya", "sub": "pengodean lebih ramping · hanya jika net‑positif", "tag": "−token", "grey": true },
+        { "n": "05", "title": "Batasi output", "sub": "skema · kontrak minimal", "tag": "−output", "grey": true }
+      ]
+    },
+    "step1": {
+      "eyebrow": "Langkah 1 · Uji pendahuluan — di browser Anda",
+      "title": "Coba sendiri pengoptimalnya. Tidak ada yang keluar dari halaman ini.",
+      "body": "Kedua instrumen ini menjalankan pengoptimal asli <b>secara lokal</b> agar Anda bisa memeriksa mekanismenya sebelum menyentuh penyedia. Panel kiri menjalankan pengoptimal BV‑SALA asli pada data yang Anda tempel — penghitungan token nyata, kode yang sama yang dikirim SDK. Panel kanan <b>memperkirakan</b> tagihan bulanan dengan menjalankan pengoptimal atas beban kerja sampel terhadap model <b>tiruan</b>. Untuk dolar yang <i>terukur</i> secara terbukti, lihat <link>Langkah 2</link> di bawah."
+    },
+    "step2": {
+      "eyebrow": "Langkah 2 · Terukur secara terbukti — dapat direproduksi",
+      "title": "Penghematan nyata, diukur terhadap penyedia nyata. Kedua sisi.",
+      "body": "Ini adalah keluaran dari benchmark A/B (<code>pnpm ab</code>): untuk setiap skenario, ia mengirim permintaan <b>naif</b> <i>dan</i> permintaan BV‑SALA ke model yang <b>sama</b>, menetapkan harga keduanya dari penggunaan token milik penyedia sendiri, dan melaporkan <b>batas bawah tingkat keyakinan 95%</b> — bukan estimasi titik yang menyanjung. Tidak ada yang dimodelkan."
+    },
+    "ledgersHead": {
+      "eyebrow": "Penghitungan yang jujur",
+      "title": "Empat ledger terpisah. Tidak pernah dijumlahkan menjadi satu angka gengsi.",
+      "body": "Cache hit menghapus satu panggilan penuh. BV‑SALA mengodekan ulang data terstruktur secara lebih ringkas. Kompresi membuang kata-kata yang berlebihan. Cache prefix penyedia membuat token lebih murah tanpa menghapusnya. Mencampurnya berarti membohongi Anda — jadi kami tidak melakukannya.",
+      "runToMeasure": "jalankan pengoptimal untuk mengukur"
+    },
+    "ledgers": [
+      { "idx": "01", "name": "avoided_calls", "desc": "Panggilan LLM, retrieval, dan tool yang sama sekali tidak pernah dieksekusi." },
+      { "idx": "02", "name": "eliminated_tokens", "desc": "Informasi yang dibuang karena memang tidak diperlukan." },
+      { "idx": "03", "name": "compressed_tokens", "desc": "Informasi tetap dipertahankan, tetapi dikodekan dengan lebih sedikit token." },
+      { "idx": "04", "name": "provider_cached_tokens", "desc": "Masih ada dalam prompt, tetapi ditagih atau diproses lebih murah." }
+    ],
+    "integrate": {
+      "eyebrow": "Lima baris untuk memulai",
+      "title": "Jalankan di aplikasi Anda sendiri. Prompt Anda tidak pernah menyentuh server kami.",
+      "body": "Tempatkan SDK di depan penyedia Anda. Setiap respons membawa SavingsReport lengkap yang bisa Anda grafikkan — angka yang sama yang dibaca dasbor."
+    },
+    "pricing": {
+      "eyebrow": "Satu paket, dihargai per kursi",
+      "title": "Recehan untuk menjalankan. Berlipat untuk menghemat.",
+      "body": "Tanpa tier gratis, tanpa uji coba — uji BV‑SALA langsung di browser Anda, lalu berlangganan untuk menjalankannya di aplikasi Anda. Dihargai per kursi, dalam USD.",
+      "amount": "$4",
+      "per": "/ kursi / bulan",
+      "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>$39 / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
+      "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> aktif, bukan orang — ditagih hanya jika aktif pada 3+ hari dalam sebulan. CI dan runner sementara tidak dihitung.",
+      "features": [
+        "Setiap optimasi BV‑SALA, tanpa batas",
+        "Cache semantik terkelola & ambang batas yang dipelajari",
+        "Dasbor penghematan & analitik tim",
+        "Prompt Anda tidak pernah keluar dari infrastruktur Anda"
+      ],
+      "cta": "Mulai →",
+      "trustTitle": "Mengapa harganya bisa serendah ini",
+      "trust": [
+        { "lead": "Kami tidak memindahkan token.", "rest": "Lalu lintas LLM Anda mengalir langsung ke penyedia Anda — kami hanya melihat jumlah, bukan konten." },
+        { "lead": "Anda meng-host sendiri bagian beratnya.", "rest": "Pengoptimal berjalan di proses Anda; server kami hanya memberi lisensi, belajar, dan melapor." },
+        { "lead": "Infrastruktur berkembang seiring pendapatan.", "rest": "Dimulai dari satu server kecil dan baru tumbuh setelah pelanggan berbayar menutupi tingkat berikutnya." },
+        { "lead": "Laporan itulah meterannya.", "rest": "Penagihan membaca SavingsReport yang sama yang Anda verifikasi di atas — tanpa kotak hitam." }
+      ]
+    },
+    "footer": {
+      "tagline": "Sistem operasi untuk bisnis Anda. Ini adalah <b>BV‑SALA</b>, pengoptimal biaya LLM netral-penyedia dari BiVelio — verifikasi sendiri penghematannya sebelum Anda membayar.",
+      "badge": "BV‑SALA · Savings Layer",
+      "colSavings": "Savings Layer",
+      "colBivelio": "BiVelio",
+      "colLegal": "Hukum",
+      "verify": "Verifikasi penghematan Anda",
+      "measured": "Hasil terukur",
+      "pricing": "Harga",
+      "home": "Beranda",
+      "docs": "Dokumentasi",
+      "security": "Keamanan",
+      "status": "Status",
+      "privacy": "Privasi",
+      "terms": "Ketentuan layanan",
+      "gdpr": "GDPR",
+      "trust": "Keamanan enterprise · Patuh GDPR · Infrastruktur yang skalabel",
+      "entity": "Didukung oleh BiVelio Inc · Delaware (Amerika Serikat).",
+      "copyright": "© 2026 BiVelio Inc. Semua hak dilindungi.",
+      "andorra": "Dari Andorra untuk dunia 🇦🇩",
+      "bottomPrivacy": "Privasi",
+      "bottomTerms": "Ketentuan"
+    }
+  }
+}

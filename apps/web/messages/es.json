@@ -1,0 +1,351 @@
+{
+  "nav": {
+    "langTitle": "Elige tu idioma",
+    "langSubtitle": "Selecciona el idioma en el que quieres usar BiVelio Savings Layer.",
+    "langSearch": "Buscar idioma",
+    "langAria": "Cambiar idioma",
+    "langClose": "Cerrar",
+    "verifier": "Verificador",
+    "pricing": "Precios",
+    "signIn": "Iniciar sesión",
+    "dashboard": "Panel",
+    "signOut": "Cerrar sesión"
+  },
+  "app": {
+    "themeToggle": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "ariaLabel": "Cambiar tema",
+      "title": "Cambiar entre claro y oscuro"
+    },
+    "sidebar": {
+      "overview": "Resumen",
+      "savings": "Ahorros",
+      "proof": "Prueba",
+      "verify": "Verificar",
+      "integrate": "Integrar",
+      "install": "Instalar",
+      "account": "Cuenta"
+    }
+  },
+  "auth": {
+    "signinTitle": "Iniciar sesión · BiVelio Savings Layer",
+    "signupTitle": "Crea tu cuenta · BiVelio Savings Layer",
+    "welcomeBack": "Bienvenido de nuevo",
+    "loginSubtitle": "Inicia sesión con tu cuenta de BiVelio, la misma que usas en toda la suite.",
+    "newToBivelio": "¿Nuevo en BiVelio?",
+    "createAnAccount": "Crear una cuenta",
+    "backToVerifier": "← Volver al verificador",
+    "createYourAccount": "Crea tu cuenta",
+    "signupSubtitle": "Una sola cuenta de BiVelio para toda la suite. Verifica tu ahorro gratis en el navegador; crea una cuenta para suscribirte y obtener tu clave de licencia.",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta de BiVelio?",
+    "signIn": "Iniciar sesión",
+    "workEmail": "Correo de trabajo",
+    "password": "Contraseña",
+    "createAccountCta": "Crear cuenta →",
+    "signInCta": "Iniciar sesión →",
+    "loadingEllipsis": "…",
+    "notWired": "El inicio de sesión aún no está configurado: define NEXT_PUBLIC_SUPABASE_ANON_KEY en el despliegue.",
+    "checkEmail": "Revisa tu correo para confirmar tu cuenta y luego inicia sesión.",
+    "somethingWrong": "Algo salió mal."
+  },
+  "dashboard": {
+    "overview": {
+      "metaTitle": "Resumen · BiVelio Savings Layer",
+      "authNotWired": "El inicio de sesión aún no está configurado. Define las variables de entorno de Supabase para habilitarlo.",
+      "eyebrow": "Consigue un ahorro real",
+      "title": "Tu medidor",
+      "intro": "Instala el SDK y tu ahorro neto aparecerá aquí, medido con tu propio tráfico y nunca con una cifra prestada.",
+      "savingsEyebrow": "Tu ahorro",
+      "savingsTitle": "Lo que estás ahorrando, medido con tu propio tráfico",
+      "savingsTrend": "tendencia de ahorro",
+      "traffic": "tráfico",
+      "steps": {
+        "accountCreated": "Cuenta creada",
+        "sdkInstalled": "SDK instalado",
+        "licenseActive": "Licencia activa",
+        "firstReport": "Primer informe",
+        "liveMeter": "Medidor en vivo"
+      }
+    },
+    "proof": {
+      "metaTitle": "Prueba · BiVelio Savings Layer",
+      "eyebrow": "Verifica, no confíes · banco de referencia",
+      "title": "La prueba de que el optimizador funciona",
+      "intro": "Medido en ambas ramas: el motor de credibilidad detrás de tus propias cifras."
+    },
+    "verify": {
+      "metaTitle": "Verificar · BiVelio Savings Layer",
+      "eyebrow": "Verifica localmente · nada sale de esta página",
+      "title": "Modela tus propias cargas útiles",
+      "intro": "Ejecuta el tokenizador real en tu navegador: pega una carga útil y observa el cálculo."
+    },
+    "install": {
+      "metaTitle": "Instalar · BiVelio Savings Layer",
+      "eyebrow": "Integra",
+      "title": "Instala y conecta el SDK",
+      "intro": "Coloca BV-SALA delante de tu proveedor: tus prompts nunca salen de tu infraestructura."
+    },
+    "account": {
+      "metaTitle": "Cuenta · BiVelio Savings Layer",
+      "eyebrow": "Cuenta",
+      "title": "Tu cuenta de BiVelio",
+      "intro": "Una sola cuenta para toda la suite de BiVelio."
+    },
+    "verdictHero": {
+      "eyebrow": "Tu ahorro · medido por el SDK",
+      "savedLine": "de tu gasto en LLM conservado este período · <b>{money}</b> ahorrados (línea base − real, a tus precios).",
+      "emptyCap": "Aún no medimos tu tráfico — 0 solicitudes vistas. Instala el SDK y tu ahorro neto aparecerá aquí — tus precios, tu carga de trabajo. Nunca una cifra prestada ni inventada."
+    },
+    "liveLedgerTiles": {
+      "whatAvoidedCalls": "llamadas a LLM/recuperación/herramientas que nunca se ejecutaron",
+      "whatEliminatedTokens": "tokens de entrada descartados por innecesarios",
+      "whatCompressedTokens": "tokens de entrada recodificados de forma más compacta",
+      "whatProviderCachedTokens": "tokens de entrada facturados más baratos (caché de prefijo)",
+      "ghostAwaiting": "{ref} · esperando el primer reporte",
+      "footnote": "Cuatro libros contables, <b>nunca sumados</b> — no podemos contar un dólar dos veces. Solo conteos y costo, nunca tus prompts. El reporte es el medidor."
+    },
+    "savingsTrendChart": {
+      "skeleton": "Tu tendencia de ahorro se construye tras ~7 días de tráfico medido.",
+      "chartAria": "Ahorro acumulado",
+      "cumulativeNote": "Ahorro acumulado: {money} en {days, plural, one {# día medido} other {# días medidos}}."
+    },
+    "trafficModelMix": {
+      "empty": "Aún no hay solicitudes medidas — tu división evitadas-vs-ejecutadas y la mezcla por modelo aparecerán en cuanto el SDK reporte.",
+      "title": "llamadas llm · evitadas vs ejecutadas",
+      "split": "{avoided} evitadas · {ran} ejecutadas ({pct}% evitadas)"
+    },
+    "instrumentationSpine": {
+      "eyebrow": "Llega al ahorro en vivo",
+      "title": "Estás a pocos pasos de tu propio medidor",
+      "statusDone": "listo",
+      "statusNext": "siguiente",
+      "statusPending": "pendiente",
+      "nextLabel": "Siguiente: {label}",
+      "installComment": "# colócalo delante de tu proveedor — tus prompts nunca salen de tu infraestructura",
+      "hintLicense": "Pega tu clave de licencia de BiVelio para que el SDK desbloquee las funciones gestionadas y reporte el uso.",
+      "hintFirstReport": "Envuelve una llamada real al proveedor — el primer SavingsReport llega aquí y tu medidor se activa.",
+      "hintDefault": "Esto se desbloquea en cuanto llegue tu primera fila usage_daily."
+    },
+    "scenarioTable": {
+      "colScenario": "escenario",
+      "colKind": "tipo",
+      "colAInOut": "A ent/sal",
+      "colBInOut": "B ent/sal",
+      "colACost": "costo A",
+      "colBCost": "costo B",
+      "colSavings": "ahorro",
+      "colQa": "qa"
+    },
+    "projectorVerifier": {
+      "verifierTitle": "Verificador de ahorro",
+      "estimateFull": "ESTIMACIÓN — heurística, no medida por el proveedor",
+      "errBundle": "No se pudo cargar el paquete del optimizador.",
+      "errInvalidData": "Esperando datos válidos… {message}",
+      "yourData": "Tus datos",
+      "trims": "BV‑SALA recorta {tokens} tokens por envío.",
+      "alreadyOptimal": "Ya es óptimo aquí — BV‑SALA nunca lo empeora.",
+      "projectorTitle": "Proyector de factura",
+      "estimate": "ESTIMACIÓN",
+      "reqsPerMonth": "Solicitudes / mes",
+      "avgInputTokens": "Tokens de entrada prom.",
+      "avgOutputTokens": "Tokens de salida prom.",
+      "callsAvoided": "Llamadas evitadas",
+      "inputCut": "Recorte de entrada",
+      "outputCut": "Recorte de salida",
+      "projectedSaving": "ahorro proyectado / mes · a precios de {model}",
+      "projLower": "{baseline} → {opt} · {pct}% menos"
+    },
+    "copyButton": {
+      "copied": "Copiado",
+      "copy": "Copiar"
+    },
+    "trialKeyButton": {
+      "errCreate": "No se pudo emitir una clave de licencia.",
+      "errNetwork": "Error de red: vuelve a intentarlo.",
+      "keyLabel": "tu clave de licencia{suffix}: se muestra una sola vez, cópiala ahora",
+      "validUntil": " · válida hasta {date}",
+      "pasteHint": "Pégala en <code></code> para desbloquear el SDK.",
+      "issuing": "Emitiendo…",
+      "getKey": "Obtén tu clave de licencia →",
+      "priceNote": "{monthly} por asiento al mes o {yearly} por asiento al año. El pago de autoservicio está por habilitarse; la clave desbloquea el SDK en tu propia app."
+    },
+    "serviceAccountKeySection": {
+      "errCreate": "No se pudo crear una clave.",
+      "errNetwork": "Error de red: vuelve a intentarlo.",
+      "errNotRecognized": "No reconocida: revisa que no haya errores de escritura, o crea una nueva clave arriba.",
+      "errUnexpected": "Respuesta inesperada ({status}). Vuelve a intentarlo en un momento.",
+      "keyLabel": "tu clave de cuenta de servicio{suffix}: se muestra una sola vez, cópiala ahora",
+      "passHint": "Pásala como <code>serviceAccountKey</code>. Ya está rellenada abajo: pulsa <b>Probar mi clave</b> para confirmar que está activa.",
+      "creating": "Creando…",
+      "createKey": "Crear una clave de cuenta de servicio →",
+      "hashNote": "Solo se almacena el hash. Autentica la medición de uso de solo recuentos, nunca tus prompts.",
+      "verifyTitle": "Verifica que una clave esté activa",
+      "testInputAria": "Clave de cuenta de servicio para probar",
+      "testing": "Probando…",
+      "testMyKey": "Probar mi clave",
+      "validResult": "✓ Válida: tu SDK puede reportar uso con esta clave."
+    },
+    "installLicensePanel": {
+      "eyebrow": "Empezar",
+      "heading": "Cuatro pasos. Tus prompts nunca pasan por nuestros servidores.",
+      "step1": "<b>1 · Obtén tu clave de licencia</b>: el SDK es público pero fail-closed; solo funciona con una clave válida. Se pasa como <code>licenseKey</code>.",
+      "step2": "<b>2 · Crea y verifica una clave de cuenta de servicio</b>: una credencial de máquina (<code>bvk_…</code>) para que el SDK reporte uso de solo recuentos (tus asientos y ahorros). Es independiente de la clave de licencia; solo se almacena su hash. Crea una y luego pulsa <b>Probar mi clave</b> para confirmar que está activa.",
+      "currentKey": "clave de cuenta de servicio actual",
+      "noneYet": "ninguna todavía: haz clic arriba",
+      "shownOnce": "se muestra una sola vez al crearla; solo se almacena el prefijo.",
+      "step3": "<b>3 · Instala</b>: público en npm, sin token, sin configuración.",
+      "step4": "<b>4 · Conecta tu proveedor y lee el SavingsReport</b>",
+      "finalNote": "Eso es todo. Sin licencia válida → <code>generate()</code> se rechaza. Si cancelas tu plan, el SDK se detiene en ~15 min mediante <code>licenseServerUrl</code>: sin reiniciar, y nunca inutiliza tu producción si no podemos conectarnos."
+    },
+    "accountPlanStrip": {
+      "noActivePlan": "Sin plan activo",
+      "signedInAs": "sesión iniciada como",
+      "organization": "Organización: <b>{name}</b>",
+      "personalNote": "Personal: aún no hay ninguna organización vinculada. Una sola cuenta de BiVelio, compartida en toda la suite.",
+      "plan": "plan",
+      "seatsCount": "{count, plural, one {# asiento} other {# asientos}}.",
+      "planBody": "BV-SALA es fail-closed: solo funciona con una licencia PRO activa. {monthly} por asiento al mes o {yearly} por asiento al año. Un asiento es una máquina o identidad de servicio activa, no una persona.",
+      "managePlan": "Gestionar plan →",
+      "subscribe": "Suscribirse →"
+    },
+    "referenceLedgerCards": {
+      "proven": "comprobado",
+      "notProven": "no comprobado",
+      "estimatedMock": "estimado (simulado)",
+      "footnoteMain": "Cuatro libros, <b>nunca sumados</b>: cada uno es una palanca medida por separado, así que un dólar no se puede contar dos veces.",
+      "reconciledNote": "El residual de conciliación ≈ 0 lo demuestra.",
+      "residualNote": "residual {residual}: revisa la contabilidad.",
+      "footnoteReference": "Estas son <b>palancas de referencia</b>: tu vía en vivo mide otras cuatro (provider-cached reemplaza a output-restriction), así que nunca las equiparamos entre sí."
+    },
+    "integrityQualityChips": {
+      "qualityGate": "Control de calidad <b>{rate}</b> superado",
+      "ledgersReconcile": "Los libros cuadran",
+      "ledgersMismatch": "Los libros NO CUADRAN",
+      "fingerprintStable": "Huella del modelo estable",
+      "fingerprintChanged": "Huella del modelo cambiada",
+      "cacheBreakEven": "Punto de equilibrio de caché <b>K={k}</b>",
+      "provenAt95": "comprobado al 95%",
+      "unprovenMock": "sin comprobar (simulado)",
+      "regressedVoids": "Una respuesta que empeora anula su ahorro"
+    },
+    "netSavingsCIBand": {
+      "caption": "ahorro neto, <b>límite inferior del IC del 95%</b>. Estimación puntual {point}, superior {upper}: destacamos el piso{mockNote}.",
+      "mockNote": " (carga de trabajo de referencia, proveedor simulado)"
+    },
+    "cacheBreakEven": {
+      "tag": "caché · amortizado",
+      "body": "<b>{name}</b>: fallo en frío {coldMiss} → acierto {hit}. Alcanza el equilibrio con <b>K={breakEvenK}</b> repeticiones: el ahorro de caché es de tráfico repetido, no una cifra de una sola llamada, por lo que una llamada en frío honestamente marca ≈0%."
+    },
+    "provenancePill": {
+      "mock": "MOCK · referencia",
+      "live": "LIVE · tu organización",
+      "await": "esperando"
+    },
+    "referenceModeBadge": {
+      "liveDesc": "— medido contra un proveedor real, con control de calidad.",
+      "mock": "<b>ESTIMADO · proveedor simulado</b>: esto demuestra que el mecanismo funciona, no tu factura. Una ejecución LIVE confirmada reemplaza cada número aquí."
+    },
+    "connectionStatePill": {
+      "meteringLive": "Medición en vivo",
+      "awaitingFirstReport": "Esperando el primer reporte"
+    }
+  },
+  "landing": {
+    "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
+    "metaDescription": "Verifica tu ahorro en LLM con BV-SALA: pega tus propios datos y observa cómo la contabilidad real de tokens calcula el ahorro en vivo en tu navegador.",
+    "hero": {
+      "eyebrow": "La capa de coste de LLM que cualquiera puede instalar — con licencia para ejecutar",
+      "title": "Demuestra el ahorro con",
+      "titleAccent": "tus propios datos.",
+      "lede": "BV‑SALA se sitúa delante de cualquier proveedor de LLM y, en cada solicitud, elige la ejecución más barata que aún cumple tu umbral de calidad. No nos creas sin más: pega tus datos abajo y observa cómo se mueve el medidor.",
+      "ctaRun": "Ejecutar el verificador",
+      "ctaPricing": "Ver precios",
+      "note": "Se ejecuta por completo en tu navegador. Sin registro, nada sale de esta página."
+    },
+    "cascade": {
+      "title": "Gana la ejecución más barata",
+      "per": "por solicitud",
+      "steps": [
+        { "n": "01", "title": "Evita la llamada por completo", "sub": "resolutores · caché exacta y semántica", "tag": "0 llamadas", "grey": false },
+        { "n": "02", "title": "Evita recuperación y herramientas", "sub": "ruta: ninguna / única / múltiple / herramienta", "tag": "menos llamadas", "grey": false },
+        { "n": "03", "title": "Elimina el contexto innecesario", "sub": "deduplicar · reordenar · k‑adaptativa", "tag": "−tokens", "grey": true },
+        { "n": "04", "title": "Comprime lo que queda", "sub": "codificación más ligera · solo si es neta positiva", "tag": "−tokens", "grey": true },
+        { "n": "05", "title": "Restringe la salida", "sub": "esquema · contrato mínimo", "tag": "−salida", "grey": true }
+      ]
+    },
+    "step1": {
+      "eyebrow": "Paso 1 · Pruebas preliminares — en tu navegador",
+      "title": "Prueba tú mismo el optimizador. Nada sale de esta página.",
+      "body": "Estos dos instrumentos ejecutan el optimizador real <b>localmente</b> para que puedas comprobar el mecanismo antes de tocar un proveedor. El panel izquierdo ejecuta el optimizador real de BV‑SALA sobre los datos que pegues — contabilidad real de tokens, el mismo código que envía el SDK. El panel derecho <b>estima</b> una factura mensual ejecutando el optimizador sobre una carga de trabajo de muestra contra un modelo <b>simulado</b>. Para dólares <i>medidos</i> de forma demostrable, consulta el <link>Paso 2</link> más abajo."
+    },
+    "step2": {
+      "eyebrow": "Paso 2 · Medido de forma demostrable — reproducible",
+      "title": "Ahorro real, medido contra un proveedor real. Ambas ramas.",
+      "body": "Este es el resultado del benchmark A/B (<code>pnpm ab</code>): para cada escenario envía una solicitud <b>ingenua</b> <i>y</i> la solicitud de BV‑SALA al <b>mismo</b> modelo, cotiza ambas a partir del propio uso de tokens del proveedor e informa el <b>límite inferior del intervalo de confianza del 95%</b> — nunca la estimación puntual halagadora. Nada está modelado."
+    },
+    "ledgersHead": {
+      "eyebrow": "Contabilidad honesta",
+      "title": "Cuatro libros contables separados. Nunca sumados en una sola cifra de vanidad.",
+      "body": "Un acierto de caché elimina una llamada entera. BV‑SALA recodifica los datos estructurados de forma más compacta. La compresión descarta palabras redundantes. Una caché de prefijo del proveedor abarata los tokens sin eliminarlos. Mezclarlos te miente — así que no lo hacemos.",
+      "runToMeasure": "ejecuta el optimizador para medir"
+    },
+    "ledgers": [
+      { "idx": "01", "name": "avoided_calls", "desc": "Llamadas a LLM, recuperación y herramientas que nunca se ejecutaron." },
+      { "idx": "02", "name": "eliminated_tokens", "desc": "Información descartada porque simplemente no era necesaria." },
+      { "idx": "03", "name": "compressed_tokens", "desc": "Información conservada, pero codificada con menos tokens." },
+      { "idx": "04", "name": "provider_cached_tokens", "desc": "Todavía en el prompt, pero facturada o procesada de forma más barata." }
+    ],
+    "integrate": {
+      "eyebrow": "Cinco líneas para empezar",
+      "title": "Ejecútalo en tu propia app. Tus prompts nunca tocan nuestros servidores.",
+      "body": "Coloca el SDK delante de tu proveedor. Cada respuesta lleva un SavingsReport completo que puedes graficar — las mismas cifras que lee el panel."
+    },
+    "pricing": {
+      "eyebrow": "Un solo plan, con precio por asiento",
+      "title": "Céntimos para ejecutar. Múltiplos para ahorrar.",
+      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en USD.",
+      "amount": "$4",
+      "per": "/ asiento / mes",
+      "proNote": "<b>PRO</b> — facturado por asiento. O <b>$39 / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
+      "seatNote": "Un asiento es una <b>máquina o identidad de servicio</b> activa, no una persona — facturado solo si está activo 3 o más días en un mes. CI y ejecutores efímeros no cuentan.",
+      "features": [
+        "Cada optimización de BV‑SALA, sin límite",
+        "Caché semántica gestionada y umbrales aprendidos",
+        "Paneles de ahorro y analíticas de equipo",
+        "Tus prompts nunca salen de tu infraestructura"
+      ],
+      "cta": "Comenzar →",
+      "trustTitle": "Por qué el precio puede ser tan bajo",
+      "trust": [
+        { "lead": "No movemos tokens.", "rest": "Tu tráfico de LLM va directo a tu proveedor — solo vemos recuentos, nunca contenido." },
+        { "lead": "Tú mismo alojas la parte pesada.", "rest": "El optimizador se ejecuta en tu proceso; nuestros servidores solo licencian, aprenden e informan." },
+        { "lead": "La infraestructura escala con los ingresos.", "rest": "Empieza en un servidor pequeño y solo crece cuando los clientes de pago cubren el siguiente nivel." },
+        { "lead": "El reporte es el medidor.", "rest": "La facturación lee el mismo SavingsReport que verificas arriba — sin caja negra." }
+      ]
+    },
+    "footer": {
+      "tagline": "El sistema operativo para tu negocio. Esto es <b>BV‑SALA</b>, el optimizador de coste de LLM neutral respecto al proveedor de BiVelio — verifica tú mismo el ahorro antes de pagar.",
+      "badge": "BV‑SALA · Savings Layer",
+      "colSavings": "Savings Layer",
+      "colBivelio": "BiVelio",
+      "colLegal": "Legal",
+      "verify": "Verifica tu ahorro",
+      "measured": "Resultados medidos",
+      "pricing": "Precios",
+      "home": "Inicio",
+      "docs": "Documentación",
+      "security": "Seguridad",
+      "status": "Estado",
+      "privacy": "Privacidad",
+      "terms": "Términos del servicio",
+      "gdpr": "RGPD",
+      "trust": "Seguridad empresarial · Conforme al RGPD · Infraestructura escalable",
+      "entity": "Con la tecnología de BiVelio Inc · Delaware (Estados Unidos).",
+      "copyright": "© 2026 BiVelio Inc. Todos los derechos reservados.",
+      "andorra": "Desde Andorra para el mundo 🇦🇩",
+      "bottomPrivacy": "Privacidad",
+      "bottomTerms": "Términos"
+    }
+  }
+}

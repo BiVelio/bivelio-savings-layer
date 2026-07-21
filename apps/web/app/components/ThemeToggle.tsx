@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
@@ -12,6 +13,7 @@ type Theme = "light" | "dark";
  * so there is no flash before this hydrates.
  */
 export function ThemeToggle() {
+  const t = useTranslations("app");
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
@@ -48,9 +50,9 @@ export function ThemeToggle() {
   }
 
   return (
-    <button type="button" className="toggle" onClick={toggle} aria-label="Switch theme" title="Switch light / dark">
+    <button type="button" className="toggle" onClick={toggle} aria-label={t("themeToggle.ariaLabel")} title={t("themeToggle.title")}>
       <span aria-hidden="true">{theme === "dark" ? "☾" : "☀"}</span>
-      <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
+      <span className="toggle-label">{theme === "dark" ? t("themeToggle.dark") : t("themeToggle.light")}</span>
     </button>
   );
 }

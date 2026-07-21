@@ -1,3 +1,7 @@
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
 /** @type {import('next').NextConfig} */
 
 // CSP for the whole surface. The static landing (public/landing.html) uses inline
@@ -39,14 +43,9 @@ const nextConfig = {
   // Re-add proper session-refresh middleware on Next 16 (proxy.ts, Node runtime).
   // The marketing landing stays the exact static page (byte-identical, already
   // branded + verified): serve it at "/" without a React port.
-  async rewrites() {
-    return {
-      beforeFiles: [{ source: "/", destination: "/landing.html" }],
-    };
-  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

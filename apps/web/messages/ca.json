@@ -1,0 +1,351 @@
+{
+  "nav": {
+    "langTitle": "Tria el teu idioma",
+    "langSubtitle": "Tria l'idioma amb què vols fer servir BiVelio Savings Layer.",
+    "langSearch": "Cerca un idioma",
+    "langAria": "Canvia d'idioma",
+    "langClose": "Tanca",
+    "verifier": "Verificador",
+    "pricing": "Preus",
+    "signIn": "Inicia la sessió",
+    "dashboard": "Tauler",
+    "signOut": "Tanca la sessió"
+  },
+  "app": {
+    "themeToggle": {
+      "light": "Clar",
+      "dark": "Fosc",
+      "ariaLabel": "Canvia el tema",
+      "title": "Canvia entre clar i fosc"
+    },
+    "sidebar": {
+      "overview": "Resum",
+      "savings": "Estalvi",
+      "proof": "Prova",
+      "verify": "Verifica",
+      "integrate": "Integra",
+      "install": "Instal·la",
+      "account": "Compte"
+    }
+  },
+  "auth": {
+    "signinTitle": "Inicia la sessió · BiVelio Savings Layer",
+    "signupTitle": "Crea el teu compte · BiVelio Savings Layer",
+    "welcomeBack": "Benvingut de nou",
+    "loginSubtitle": "Inicia la sessió amb el teu compte de BiVelio, el mateix que fas servir a tota la suite.",
+    "newToBivelio": "Nou a BiVelio?",
+    "createAnAccount": "Crea un compte",
+    "backToVerifier": "← Torna al verificador",
+    "createYourAccount": "Crea el teu compte",
+    "signupSubtitle": "Un sol compte de BiVelio per a tota la suite. Verifica el teu estalvi de manera gratuïta al navegador; crea un compte per subscriure't i obtenir la teva clau de llicència.",
+    "alreadyHaveAccount": "Ja tens un compte de BiVelio?",
+    "signIn": "Inicia la sessió",
+    "workEmail": "Correu de la feina",
+    "password": "Contrasenya",
+    "createAccountCta": "Crea el compte →",
+    "signInCta": "Inicia la sessió →",
+    "loadingEllipsis": "…",
+    "notWired": "L'inici de sessió encara no està configurat: defineix NEXT_PUBLIC_SUPABASE_ANON_KEY al desplegament.",
+    "checkEmail": "Revisa el teu correu per confirmar el compte i després inicia la sessió.",
+    "somethingWrong": "Alguna cosa ha anat malament."
+  },
+  "dashboard": {
+    "overview": {
+      "metaTitle": "Resum · BiVelio Savings Layer",
+      "authNotWired": "L'inici de sessió encara no està configurat. Defineix les variables d'entorn de Supabase per habilitar-lo.",
+      "eyebrow": "Arriba a l'estalvi en viu",
+      "title": "El teu mesurador",
+      "intro": "Instal·la el SDK i el teu estalvi net apareixerà aquí, mesurat amb el teu propi trànsit i mai amb una xifra prestada.",
+      "savingsEyebrow": "El teu estalvi",
+      "savingsTitle": "El que estàs estalviant, mesurat amb el teu propi trànsit",
+      "savingsTrend": "tendència d'estalvi",
+      "traffic": "trànsit",
+      "steps": {
+        "accountCreated": "Compte creat",
+        "sdkInstalled": "SDK instal·lat",
+        "licenseActive": "Llicència activa",
+        "firstReport": "Primer informe",
+        "liveMeter": "Mesurador en viu"
+      }
+    },
+    "proof": {
+      "metaTitle": "Prova · BiVelio Savings Layer",
+      "eyebrow": "Verifica, no confiïs · banc de referència",
+      "title": "La prova que l'optimitzador funciona",
+      "intro": "Mesurat en totes dues branques: el motor de credibilitat rere les teves pròpies xifres."
+    },
+    "verify": {
+      "metaTitle": "Verifica · BiVelio Savings Layer",
+      "eyebrow": "Verifica localment · res no surt d'aquesta pàgina",
+      "title": "Modela les teves pròpies càrregues útils",
+      "intro": "Executa el tokenitzador real al teu navegador: enganxa una càrrega útil i observa el càlcul."
+    },
+    "install": {
+      "metaTitle": "Instal·la · BiVelio Savings Layer",
+      "eyebrow": "Integra",
+      "title": "Instal·la i connecta el SDK",
+      "intro": "Col·loca BV-SALA davant del teu proveïdor: els teus prompts mai no surten de la teva infraestructura."
+    },
+    "account": {
+      "metaTitle": "Compte · BiVelio Savings Layer",
+      "eyebrow": "Compte",
+      "title": "El teu compte de BiVelio",
+      "intro": "Un sol compte per a tota la suite de BiVelio."
+    },
+    "verdictHero": {
+      "eyebrow": "El teu estalvi · mesurat pel SDK",
+      "savedLine": "de la teva despesa en LLM conservada aquest període · <b>{money}</b> estalviats (línia base − real, als teus preus).",
+      "emptyCap": "Encara no mesurem el teu trànsit — 0 sol·licituds vistes. Instal·la el SDK i el teu estalvi net apareixerà aquí — els teus preus, la teva càrrega de treball. Mai una xifra prestada ni inventada."
+    },
+    "liveLedgerTiles": {
+      "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
+      "whatEliminatedTokens": "tokens d'entrada descartats per innecessaris",
+      "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
+      "whatProviderCachedTokens": "tokens d'entrada facturats més barats (memòria cau de prefix)",
+      "ghostAwaiting": "{ref} · esperant el primer informe",
+      "footnote": "Quatre llibres comptables, <b>mai sumats</b>: no podem comptar un dòlar dues vegades. Només recomptes i cost, mai els teus prompts. L'informe és el mesurador."
+    },
+    "savingsTrendChart": {
+      "skeleton": "La teva tendència d'estalvi es construeix després d'uns 7 dies de trànsit mesurat.",
+      "chartAria": "Estalvi acumulat",
+      "cumulativeNote": "Estalvi acumulat: {money} en {days, plural, one {# dia mesurat} other {# dies mesurats}}."
+    },
+    "trafficModelMix": {
+      "empty": "Encara no hi ha sol·licituds mesurades: la teva divisió d'evitades vs. executades i la barreja per model apareixeran quan el SDK informi.",
+      "title": "crides llm · evitades vs. executades",
+      "split": "{avoided} evitades · {ran} executades ({pct}% evitades)"
+    },
+    "instrumentationSpine": {
+      "eyebrow": "Arriba a l'estalvi en viu",
+      "title": "Estàs a pocs passos del teu propi mesurador",
+      "statusDone": "fet",
+      "statusNext": "següent",
+      "statusPending": "pendent",
+      "nextLabel": "Següent: {label}",
+      "installComment": "# col·loca'l davant del teu proveïdor — els teus prompts mai no surten de la teva infraestructura",
+      "hintLicense": "Enganxa la teva clau de llicència de BiVelio perquè el SDK desbloquegi les funcions gestionades i informi de l'ús.",
+      "hintFirstReport": "Embolcalla una crida real al proveïdor: el primer SavingsReport arriba aquí i el teu mesurador s'activa.",
+      "hintDefault": "Això es desbloqueja en el moment que arriba la teva primera fila usage_daily."
+    },
+    "scenarioTable": {
+      "colScenario": "escenari",
+      "colKind": "tipus",
+      "colAInOut": "A ent/sort",
+      "colBInOut": "B ent/sort",
+      "colACost": "cost A",
+      "colBCost": "cost B",
+      "colSavings": "estalvi",
+      "colQa": "qa"
+    },
+    "projectorVerifier": {
+      "verifierTitle": "Verificador d'estalvi",
+      "estimateFull": "ESTIMACIÓ — heurística, no mesurada pel proveïdor",
+      "errBundle": "No s'ha pogut carregar el paquet de l'optimitzador.",
+      "errInvalidData": "Esperant dades vàlides… {message}",
+      "yourData": "Les teves dades",
+      "trims": "BV‑SALA retalla {tokens} tokens per enviament.",
+      "alreadyOptimal": "Ja és òptim aquí — BV‑SALA mai no ho empitjora.",
+      "projectorTitle": "Projector de factura",
+      "estimate": "ESTIMACIÓ",
+      "reqsPerMonth": "Sol·licituds / mes",
+      "avgInputTokens": "Mitjana de tokens d'entrada",
+      "avgOutputTokens": "Mitjana de tokens de sortida",
+      "callsAvoided": "Crides evitades",
+      "inputCut": "Retall d'entrada",
+      "outputCut": "Retall de sortida",
+      "projectedSaving": "estalvi projectat / mes · a preus de {model}",
+      "projLower": "{baseline} → {opt} · {pct}% menys"
+    },
+    "copyButton": {
+      "copied": "Copiat",
+      "copy": "Copia"
+    },
+    "trialKeyButton": {
+      "errCreate": "No s'ha pogut emetre una clau de llicència.",
+      "errNetwork": "Error de xarxa: torna-ho a provar.",
+      "keyLabel": "la teva clau de llicència{suffix} — es mostra un sol cop, copia-la ara",
+      "validUntil": " · vàlida fins al {date}",
+      "pasteHint": "Enganxa-la a <code></code> per desbloquejar el SDK.",
+      "issuing": "Emetent…",
+      "getKey": "Obtén la teva clau de llicència →",
+      "priceNote": "{monthly} per seient al mes o {yearly} per seient a l'any. El pagament d'autoservei està a punt d'arribar: la clau desbloqueja el SDK a la teva pròpia app."
+    },
+    "serviceAccountKeySection": {
+      "errCreate": "No s'ha pogut crear una clau.",
+      "errNetwork": "Error de xarxa: torna-ho a provar.",
+      "errNotRecognized": "No reconeguda: comprova que no hi hagi errors d'escriptura, o crea una clau nova a dalt.",
+      "errUnexpected": "Resposta inesperada ({status}). Torna-ho a provar d'aquí a un moment.",
+      "keyLabel": "la teva clau de compte de servei{suffix} — es mostra un sol cop, copia-la ara",
+      "passHint": "Passa-la com a <code>serviceAccountKey</code>. Ja està emplenada a sota: prem <b>Prova la meva clau</b> per confirmar que està activa.",
+      "creating": "Creant…",
+      "createKey": "Crea una clau de compte de servei →",
+      "hashNote": "Només se n'emmagatzema el hash. Autentica el mesurament d'ús de només recomptes, mai els teus prompts.",
+      "verifyTitle": "Verifica que una clau està activa",
+      "testInputAria": "Clau de compte de servei per provar",
+      "testing": "Provant…",
+      "testMyKey": "Prova la meva clau",
+      "validResult": "✓ Vàlida: el teu SDK pot informar de l'ús amb aquesta clau."
+    },
+    "installLicensePanel": {
+      "eyebrow": "Comença",
+      "heading": "Quatre passos. Els teus prompts mai no toquen els nostres servidors.",
+      "step1": "<b>1 · Obtén la teva clau de llicència</b> — el SDK és públic però fail-closed; només funciona amb una clau vàlida. Es passa com a <code>licenseKey</code>.",
+      "step2": "<b>2 · Crea i verifica una clau de compte de servei</b> — una credencial de màquina (<code>bvk_…</code>) perquè el SDK informi de l'ús de només recomptes (els teus seients i estalvi). És independent de la clau de llicència; només se n'emmagatzema el hash. Crea'n una i després prem <b>Prova la meva clau</b> per confirmar que està activa.",
+      "currentKey": "clau de compte de servei actual",
+      "noneYet": "encara cap: fes clic a dalt",
+      "shownOnce": "es mostra un sol cop en crear-la — només se n'emmagatzema el prefix.",
+      "step3": "<b>3 · Instal·la</b> — públic a npm, sense token, sense configuració.",
+      "step4": "<b>4 · Connecta el teu proveïdor i llegeix el SavingsReport</b>",
+      "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar."
+    },
+    "accountPlanStrip": {
+      "noActivePlan": "Sense pla actiu",
+      "signedInAs": "sessió iniciada com a",
+      "organization": "Organització: <b>{name}</b>",
+      "personalNote": "Personal: encara no hi ha cap organització vinculada. Un sol compte de BiVelio, compartit a tota la suite.",
+      "plan": "pla",
+      "seatsCount": "{count, plural, one {# seient} other {# seients}}.",
+      "planBody": "BV-SALA és fail-closed: només funciona amb una llicència PRO activa. {monthly} per seient al mes o {yearly} per seient a l'any. Un seient és una màquina o identitat de servei activa, no una persona.",
+      "managePlan": "Gestiona el pla →",
+      "subscribe": "Subscriu-te →"
+    },
+    "referenceLedgerCards": {
+      "proven": "comprovat",
+      "notProven": "no comprovat",
+      "estimatedMock": "estimat (simulat)",
+      "footnoteMain": "Quatre llibres comptables, <b>mai sumats</b>: cadascun és una palanca mesurada per separat, de manera que un dòlar no es pot comptar dues vegades.",
+      "reconciledNote": "El residu de conciliació ≈ 0 ho demostra.",
+      "residualNote": "residu {residual}: revisa la comptabilitat.",
+      "footnoteReference": "Aquestes són <b>palanques de referència</b>: la teva via en viu mesura unes altres quatre — provider-cached substitueix output-restriction — de manera que mai no en fem correspondre una amb l'altra."
+    },
+    "integrityQualityChips": {
+      "qualityGate": "Control de qualitat <b>{rate}</b> superat",
+      "ledgersReconcile": "Els llibres quadren",
+      "ledgersMismatch": "Els llibres NO QUADREN",
+      "fingerprintStable": "Empremta del model estable",
+      "fingerprintChanged": "Empremta del model canviada",
+      "cacheBreakEven": "Punt d'equilibri de la memòria cau <b>K={k}</b>",
+      "provenAt95": "comprovat al 95%",
+      "unprovenMock": "sense comprovar (simulat)",
+      "regressedVoids": "Una resposta que empitjora anul·la el seu estalvi"
+    },
+    "netSavingsCIBand": {
+      "caption": "estalvi net, <b>límit inferior de l'IC del 95%</b>. Estimació puntual {point}, superior {upper} — destaquem el mínim{mockNote}.",
+      "mockNote": " (càrrega de treball de referència, proveïdor simulat)"
+    },
+    "cacheBreakEven": {
+      "tag": "memòria cau · amortitzat",
+      "body": "<b>{name}</b>: error en fred {coldMiss} → encert {hit}. Assoleix l'equilibri amb <b>K={breakEvenK}</b> repeticions — l'estalvi de la memòria cau és de trànsit repetit, no una xifra d'una sola crida, així que una crida en fred honestament marca ≈0%."
+    },
+    "provenancePill": {
+      "mock": "MOCK · referència",
+      "live": "LIVE · la teva organització",
+      "await": "esperant"
+    },
+    "referenceModeBadge": {
+      "liveDesc": "— mesurat contra un proveïdor real, amb control de qualitat.",
+      "mock": "<b>ESTIMAT · proveïdor simulat</b> — això demostra que el mecanisme funciona, no la teva factura. Una execució LIVE confirmada substitueix cada xifra d'aquí."
+    },
+    "connectionStatePill": {
+      "meteringLive": "Mesurament en viu",
+      "awaitingFirstReport": "Esperant el primer informe"
+    }
+  },
+  "landing": {
+    "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
+    "metaDescription": "Verifica el teu estalvi en LLM amb BV-SALA: enganxa les teves pròpies dades i observa com la comptabilitat real de tokens calcula l'estalvi en viu al teu navegador.",
+    "hero": {
+      "eyebrow": "La capa de cost de LLM que qualsevol pot instal·lar — amb llicència per executar",
+      "title": "Demostra l'estalvi amb",
+      "titleAccent": "les teves pròpies dades.",
+      "lede": "BV‑SALA se situa davant de qualsevol proveïdor de LLM i, en cada sol·licitud, tria l'execució més barata que encara compleix el teu llindar de qualitat. No ens creguis sense més: enganxa les teves dades a sota i observa com es mou el mesurador.",
+      "ctaRun": "Executa el verificador",
+      "ctaPricing": "Veure els preus",
+      "note": "S'executa completament al teu navegador. Sense registre, res no surt d'aquesta pàgina."
+    },
+    "cascade": {
+      "title": "Guanya l'execució més barata",
+      "per": "per sol·licitud",
+      "steps": [
+        { "n": "01", "title": "Evita la crida completament", "sub": "resolutors · memòria cau exacta i semàntica", "tag": "0 crides", "grey": false },
+        { "n": "02", "title": "Evita la recuperació i les eines", "sub": "ruta: cap / única / múltiple / eina", "tag": "menys crides", "grey": false },
+        { "n": "03", "title": "Elimina el context innecessari", "sub": "desduplica · reordena · k‑adaptativa", "tag": "−tokens", "grey": true },
+        { "n": "04", "title": "Comprimeix el que queda", "sub": "codificació més lleugera · només si és net positiu", "tag": "−tokens", "grey": true },
+        { "n": "05", "title": "Restringeix la sortida", "sub": "esquema · contracte mínim", "tag": "−sortida", "grey": true }
+      ]
+    },
+    "step1": {
+      "eyebrow": "Pas 1 · Proves preliminars — al teu navegador",
+      "title": "Prova l'optimitzador tu mateix. Res no surt d'aquesta pàgina.",
+      "body": "Aquests dos instruments executen l'optimitzador real <b>localment</b> perquè puguis comprovar el mecanisme abans de tocar cap proveïdor. El panell esquerre executa l'optimitzador real de BV‑SALA sobre les dades que enganxis — comptabilitat real de tokens, el mateix codi que envia el SDK. El panell dret <b>estima</b> una factura mensual executant l'optimitzador sobre una càrrega de treball de mostra contra un model <b>simulat</b>. Per a dòlars <i>mesurats</i> de manera demostrable, consulta el <link>Pas 2</link> més avall."
+    },
+    "step2": {
+      "eyebrow": "Pas 2 · Mesurat de manera demostrable — reproduïble",
+      "title": "Estalvi real, mesurat contra un proveïdor real. Totes dues branques.",
+      "body": "Aquest és el resultat del benchmark A/B (<code>pnpm ab</code>): per a cada escenari envia una sol·licitud <b>ingènua</b> <i>i</i> la sol·licitud de BV‑SALA al <b>mateix</b> model, calcula el preu de totes dues a partir del propi ús de tokens del proveïdor i informa del <b>límit inferior de confiança del 95%</b> — mai l'afalagadora estimació puntual. No hi ha res modelat."
+    },
+    "ledgersHead": {
+      "eyebrow": "Comptabilitat honesta",
+      "title": "Quatre llibres comptables separats. Mai sumats en una sola xifra de vanitat.",
+      "body": "Un encert de memòria cau elimina una crida sencera. BV‑SALA recodifica les dades estructurades de manera més compacta. La compressió descarta paraules redundants. Una memòria cau de prefix del proveïdor abarateix els tokens sense eliminar-los. Barrejar-los et menteix — així que no ho fem.",
+      "runToMeasure": "executa l'optimitzador per mesurar"
+    },
+    "ledgers": [
+      { "idx": "01", "name": "avoided_calls", "desc": "Crides a LLM, recuperació i eines que mai no s'han executat." },
+      { "idx": "02", "name": "eliminated_tokens", "desc": "Informació descartada perquè simplement no calia." },
+      { "idx": "03", "name": "compressed_tokens", "desc": "Informació conservada, però codificada amb menys tokens." },
+      { "idx": "04", "name": "provider_cached_tokens", "desc": "Encara al prompt, però facturada o processada de manera més barata." }
+    ],
+    "integrate": {
+      "eyebrow": "Cinc línies per començar",
+      "title": "Executa'l a la teva pròpia app. Els teus prompts mai no toquen els nostres servidors.",
+      "body": "Col·loca el SDK davant del teu proveïdor. Cada resposta porta un SavingsReport complet que pots representar en gràfics — les mateixes xifres que llegeix el tauler."
+    },
+    "pricing": {
+      "eyebrow": "Un sol pla, amb preu per seient",
+      "title": "Cèntims per executar. Múltiples per estalviar.",
+      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en USD.",
+      "amount": "$4",
+      "per": "/ seient / mes",
+      "proNote": "<b>PRO</b> — facturat per seient. O <b>$39 / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
+      "seatNote": "Un seient és una <b>màquina o identitat de servei</b> activa, no una persona — facturat només si està actiu 3 dies o més en un mes. La CI i els executors efímers no compten.",
+      "features": [
+        "Cada optimització de BV‑SALA, sense límit",
+        "Memòria cau semàntica gestionada i llindars apresos",
+        "Taulers d'estalvi i analítiques d'equip",
+        "Els teus prompts mai no surten de la teva infraestructura"
+      ],
+      "cta": "Comença →",
+      "trustTitle": "Per què el preu pot ser tan baix",
+      "trust": [
+        { "lead": "No movem cap token.", "rest": "El teu trànsit de LLM va directe al teu proveïdor — només veiem recomptes, mai contingut." },
+        { "lead": "Tu allotges la part pesada.", "rest": "L'optimitzador s'executa al teu procés; els nostres servidors només llicencien, aprenen i informen." },
+        { "lead": "La infraestructura escala amb els ingressos.", "rest": "Comença en un servidor petit i només creix quan els clients de pagament cobreixen el nivell següent." },
+        { "lead": "L'informe és el mesurador.", "rest": "La facturació llegeix el mateix SavingsReport que verifiques a dalt — sense caixa negra." }
+      ]
+    },
+    "footer": {
+      "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM de BiVelio neutral respecte al proveïdor — verifica tu mateix l'estalvi abans de pagar.",
+      "badge": "BV‑SALA · Savings Layer",
+      "colSavings": "Savings Layer",
+      "colBivelio": "BiVelio",
+      "colLegal": "Legal",
+      "verify": "Verifica el teu estalvi",
+      "measured": "Resultats mesurats",
+      "pricing": "Preus",
+      "home": "Inici",
+      "docs": "Documentació",
+      "security": "Seguretat",
+      "status": "Estat",
+      "privacy": "Privadesa",
+      "terms": "Termes del servei",
+      "gdpr": "RGPD",
+      "trust": "Seguretat empresarial · Compleix el RGPD · Infraestructura escalable",
+      "entity": "Amb la tecnologia de BiVelio Inc · Delaware (Estats Units).",
+      "copyright": "© 2026 BiVelio Inc. Tots els drets reservats.",
+      "andorra": "D'Andorra al món 🇦🇩",
+      "bottomPrivacy": "Privadesa",
+      "bottomTerms": "Termes"
+    }
+  }
+}
