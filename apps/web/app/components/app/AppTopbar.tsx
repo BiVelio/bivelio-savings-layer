@@ -1,10 +1,14 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/i18n/navigation";
 
 import { BrandMark } from "@/app/components/BrandMark";
+import { LocaleSwitcher } from "@/app/components/LocaleSwitcher";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 
 /** Dashboard top bar — brand + plan + email + theme + sign out (mirrors the neighbor). */
-export function AppTopbar({ email, plan }: { email: string; plan: string }) {
+export async function AppTopbar({ email, plan }: { email: string; plan: string }) {
+  const t = await getTranslations("nav");
   return (
     <header className="app-topbar">
       <Link href="/dashboard" className="brand" aria-label="BiVelio — dashboard">
@@ -18,10 +22,11 @@ export function AppTopbar({ email, plan }: { email: string; plan: string }) {
             {email}
           </span>
         )}
+        <LocaleSwitcher />
         <ThemeToggle />
         <form action="/auth/signout" method="post">
           <button className="app-signout" type="submit">
-            Sign out
+            {t("signOut")}
           </button>
         </form>
       </div>

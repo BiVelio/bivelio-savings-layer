@@ -1,0 +1,351 @@
+{
+  "nav": {
+    "langTitle": "Chọn ngôn ngữ của bạn",
+    "langSubtitle": "Chọn ngôn ngữ bạn muốn dùng BiVelio Savings Layer.",
+    "langSearch": "Tìm ngôn ngữ",
+    "langAria": "Đổi ngôn ngữ",
+    "langClose": "Đóng",
+    "verifier": "Trình xác minh",
+    "pricing": "Giá",
+    "signIn": "Đăng nhập",
+    "dashboard": "Bảng điều khiển",
+    "signOut": "Đăng xuất"
+  },
+  "app": {
+    "themeToggle": {
+      "light": "Sáng",
+      "dark": "Tối",
+      "ariaLabel": "Chuyển giao diện",
+      "title": "Chuyển sáng / tối"
+    },
+    "sidebar": {
+      "overview": "Tổng quan",
+      "savings": "Tiết kiệm",
+      "proof": "Bằng chứng",
+      "verify": "Xác minh",
+      "integrate": "Tích hợp",
+      "install": "Cài đặt",
+      "account": "Tài khoản"
+    }
+  },
+  "auth": {
+    "signinTitle": "Đăng nhập · BiVelio Savings Layer",
+    "signupTitle": "Tạo tài khoản của bạn · BiVelio Savings Layer",
+    "welcomeBack": "Chào mừng trở lại",
+    "loginSubtitle": "Đăng nhập bằng tài khoản BiVelio của bạn — cùng tài khoản bạn dùng trên toàn bộ bộ sản phẩm.",
+    "newToBivelio": "Mới đến với BiVelio?",
+    "createAnAccount": "Tạo tài khoản",
+    "backToVerifier": "← Quay lại trình xác minh",
+    "createYourAccount": "Tạo tài khoản của bạn",
+    "signupSubtitle": "Một tài khoản BiVelio dùng chung cho cả bộ sản phẩm. Xác minh mức tiết kiệm của bạn miễn phí ngay trong trình duyệt — tạo tài khoản để đăng ký và nhận khóa cấp phép.",
+    "alreadyHaveAccount": "Đã có tài khoản BiVelio?",
+    "signIn": "Đăng nhập",
+    "workEmail": "Email công việc",
+    "password": "Mật khẩu",
+    "createAccountCta": "Tạo tài khoản →",
+    "signInCta": "Đăng nhập →",
+    "loadingEllipsis": "…",
+    "notWired": "Tính năng đăng nhập chưa được kết nối — hãy đặt NEXT_PUBLIC_SUPABASE_ANON_KEY trong bản triển khai.",
+    "checkEmail": "Kiểm tra email để xác nhận tài khoản, rồi đăng nhập.",
+    "somethingWrong": "Đã xảy ra lỗi."
+  },
+  "dashboard": {
+    "overview": {
+      "metaTitle": "Tổng quan · BiVelio Savings Layer",
+      "authNotWired": "Tính năng đăng nhập chưa được kết nối. Đặt các biến môi trường Supabase để bật nó.",
+      "eyebrow": "Tiến tới tiết kiệm trực tiếp",
+      "title": "Đồng hồ đo của bạn",
+      "intro": "Cài đặt SDK và mức tiết kiệm ròng của bạn sẽ hiện ở đây — đo trên chính lưu lượng của bạn, không bao giờ là con số vay mượn.",
+      "savingsEyebrow": "Mức tiết kiệm của bạn",
+      "savingsTitle": "Những gì bạn đang giữ lại — đo trên chính lưu lượng của bạn",
+      "savingsTrend": "xu hướng tiết kiệm",
+      "traffic": "lưu lượng",
+      "steps": {
+        "accountCreated": "Đã tạo tài khoản",
+        "sdkInstalled": "Đã cài SDK",
+        "licenseActive": "Giấy phép đang hoạt động",
+        "firstReport": "Báo cáo đầu tiên",
+        "liveMeter": "Đồng hồ đo trực tiếp"
+      }
+    },
+    "proof": {
+      "metaTitle": "Bằng chứng · BiVelio Savings Layer",
+      "eyebrow": "Xác minh, đừng tin suông · điểm chuẩn tham chiếu",
+      "title": "Bằng chứng cho thấy trình tối ưu hoạt động",
+      "intro": "Được đo trên cả hai nhánh — cỗ máy đáng tin cậy đứng sau chính những con số của bạn."
+    },
+    "verify": {
+      "metaTitle": "Xác minh · BiVelio Savings Layer",
+      "eyebrow": "Xác minh cục bộ · không có gì rời khỏi trang này",
+      "title": "Mô phỏng payload của riêng bạn",
+      "intro": "Chạy trình token hóa thực trong trình duyệt của bạn — dán một payload và theo dõi phần hạch toán."
+    },
+    "install": {
+      "metaTitle": "Cài đặt · BiVelio Savings Layer",
+      "eyebrow": "Tích hợp",
+      "title": "Cài đặt và kết nối SDK",
+      "intro": "Đặt BV-SALA trước nhà cung cấp của bạn — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn."
+    },
+    "account": {
+      "metaTitle": "Tài khoản · BiVelio Savings Layer",
+      "eyebrow": "Tài khoản",
+      "title": "Tài khoản BiVelio của bạn",
+      "intro": "Một tài khoản dùng chung cho cả bộ sản phẩm BiVelio."
+    },
+    "verdictHero": {
+      "eyebrow": "Mức tiết kiệm của bạn · được đo bởi SDK",
+      "savedLine": "chi tiêu LLM của bạn được giữ lại trong kỳ này · đã tiết kiệm <b>{money}</b> (đường cơ sở − thực tế, theo giá của bạn).",
+      "emptyCap": "Chưa đo lưu lượng của bạn — đã thấy 0 yêu cầu. Cài đặt SDK và mức tiết kiệm ròng của bạn sẽ hiện ở đây — giá của bạn, khối lượng công việc của bạn. Không bao giờ là con số vay mượn hay bịa đặt."
+    },
+    "liveLedgerTiles": {
+      "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
+      "whatEliminatedTokens": "token đầu vào bị loại bỏ vì không cần thiết",
+      "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
+      "whatProviderCachedTokens": "token đầu vào được tính phí rẻ hơn (bộ đệm tiền tố)",
+      "ghostAwaiting": "{ref} · đang chờ báo cáo đầu tiên",
+      "footnote": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — chúng tôi không thể đếm một đô la hai lần. Chỉ số lượng và chi phí, không bao giờ là prompt của bạn. Báo cáo chính là đồng hồ đo."
+    },
+    "savingsTrendChart": {
+      "skeleton": "Xu hướng tiết kiệm của bạn được dựng lên sau khoảng 7 ngày lưu lượng được đo.",
+      "chartAria": "Tiết kiệm tích lũy",
+      "cumulativeNote": "Tiết kiệm tích lũy: {money} trong {days, plural, other {# ngày được đo}}."
+    },
+    "trafficModelMix": {
+      "empty": "Chưa có yêu cầu nào được đo — tỷ lệ tránh-so-với-chạy và cơ cấu theo từng mô hình sẽ hiện khi SDK báo cáo.",
+      "title": "lệnh gọi llm · đã tránh vs đã chạy",
+      "split": "{avoided} đã tránh · {ran} đã chạy ({pct}% đã tránh)"
+    },
+    "instrumentationSpine": {
+      "eyebrow": "Tiến tới tiết kiệm trực tiếp",
+      "title": "Bạn chỉ còn vài bước nữa là có đồng hồ đo của riêng mình",
+      "statusDone": "xong",
+      "statusNext": "tiếp theo",
+      "statusPending": "đang chờ",
+      "nextLabel": "Tiếp theo: {label}",
+      "installComment": "# đặt nó trước nhà cung cấp của bạn — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn",
+      "hintLicense": "Dán khóa cấp phép BiVelio của bạn để SDK mở khóa các tính năng được quản lý và báo cáo mức sử dụng.",
+      "hintFirstReport": "Bao bọc một lệnh gọi nhà cung cấp thực — SavingsReport đầu tiên sẽ xuất hiện ở đây và đồng hồ đo của bạn được kích hoạt.",
+      "hintDefault": "Điều này được mở khóa ngay khi hàng usage_daily đầu tiên của bạn xuất hiện."
+    },
+    "scenarioTable": {
+      "colScenario": "kịch bản",
+      "colKind": "loại",
+      "colAInOut": "A vào/ra",
+      "colBInOut": "B vào/ra",
+      "colACost": "chi phí A",
+      "colBCost": "chi phí B",
+      "colSavings": "tiết kiệm",
+      "colQa": "qa"
+    },
+    "projectorVerifier": {
+      "verifierTitle": "Trình xác minh tiết kiệm",
+      "estimateFull": "ƯỚC TÍNH — theo phương pháp heuristic, không đo bởi nhà cung cấp",
+      "errBundle": "Không thể tải gói trình tối ưu.",
+      "errInvalidData": "Đang chờ dữ liệu hợp lệ… {message}",
+      "yourData": "Dữ liệu của bạn",
+      "trims": "BV‑SALA cắt bớt {tokens} token mỗi lần gửi.",
+      "alreadyOptimal": "Đã tối ưu ở đây — BV‑SALA không bao giờ làm nó tệ hơn.",
+      "projectorTitle": "Trình dự phóng hóa đơn",
+      "estimate": "ƯỚC TÍNH",
+      "reqsPerMonth": "Số yêu cầu / tháng",
+      "avgInputTokens": "Token đầu vào trung bình",
+      "avgOutputTokens": "Token đầu ra trung bình",
+      "callsAvoided": "Lệnh gọi đã tránh",
+      "inputCut": "Cắt giảm đầu vào",
+      "outputCut": "Cắt giảm đầu ra",
+      "projectedSaving": "tiết kiệm dự phóng / tháng · theo giá {model}",
+      "projLower": "{baseline} → {opt} · thấp hơn {pct}%"
+    },
+    "copyButton": {
+      "copied": "Đã sao chép",
+      "copy": "Sao chép"
+    },
+    "trialKeyButton": {
+      "errCreate": "Không thể cấp khóa cấp phép.",
+      "errNetwork": "Lỗi mạng — vui lòng thử lại.",
+      "keyLabel": "khóa cấp phép của bạn{suffix} — chỉ hiển thị một lần, hãy sao chép ngay",
+      "validUntil": " · có hiệu lực đến {date}",
+      "pasteHint": "Dán nó vào <code></code> để mở khóa SDK.",
+      "issuing": "Đang cấp…",
+      "getKey": "Nhận khóa cấp phép của bạn →",
+      "priceNote": "{monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Thanh toán tự phục vụ sắp ra mắt — khóa sẽ mở khóa SDK trong ứng dụng của riêng bạn."
+    },
+    "serviceAccountKeySection": {
+      "errCreate": "Không thể tạo khóa.",
+      "errNetwork": "Lỗi mạng — vui lòng thử lại.",
+      "errNotRecognized": "Không nhận diện được — kiểm tra lỗi chính tả, hoặc tạo khóa mới ở trên.",
+      "errUnexpected": "Phản hồi ngoài dự kiến ({status}). Hãy thử lại sau giây lát.",
+      "keyLabel": "khóa tài khoản dịch vụ của bạn{suffix} — chỉ hiển thị một lần, hãy sao chép ngay",
+      "passHint": "Truyền nó dưới dạng <code>serviceAccountKey</code>. Nó đã được điền sẵn bên dưới — nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
+      "creating": "Đang tạo…",
+      "createKey": "Tạo khóa tài khoản dịch vụ →",
+      "hashNote": "Chỉ hash được lưu trữ. Nó xác thực việc đo mức sử dụng chỉ-đếm-số-lượng — không bao giờ là prompt của bạn.",
+      "verifyTitle": "Xác minh một khóa đang hoạt động",
+      "testInputAria": "Khóa tài khoản dịch vụ cần kiểm tra",
+      "testing": "Đang kiểm tra…",
+      "testMyKey": "Kiểm tra khóa của tôi",
+      "validResult": "✓ Hợp lệ — SDK của bạn có thể báo cáo mức sử dụng bằng khóa này."
+    },
+    "installLicensePanel": {
+      "eyebrow": "Bắt đầu",
+      "heading": "Bốn bước. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
+      "step1": "<b>1 · Nhận khóa cấp phép của bạn</b> — SDK là mã nguồn công khai nhưng fail-closed; nó chỉ chạy với một khóa hợp lệ. Được truyền dưới dạng <code>licenseKey</code>.",
+      "step2": "<b>2 · Tạo và xác minh khóa tài khoản dịch vụ</b> — một thông tin xác thực máy (<code>bvk_…</code>) để SDK báo cáo mức sử dụng chỉ-đếm-số-lượng (số ghế và mức tiết kiệm của bạn). Tách biệt với khóa cấp phép; chỉ hash của nó được lưu trữ. Tạo một khóa, rồi nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
+      "currentKey": "khóa tài khoản dịch vụ hiện tại",
+      "noneYet": "chưa có — nhấp vào ở trên",
+      "shownOnce": "chỉ hiển thị một lần khi tạo — chỉ tiền tố được lưu trữ.",
+      "step3": "<b>3 · Cài đặt</b> — công khai trên npm, không token, không cấu hình.",
+      "step4": "<b>4 · Kết nối nhà cung cấp của bạn và đọc SavingsReport</b>",
+      "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được."
+    },
+    "accountPlanStrip": {
+      "noActivePlan": "Không có gói đang hoạt động",
+      "signedInAs": "đã đăng nhập với tư cách",
+      "organization": "Tổ chức: <b>{name}</b>",
+      "personalNote": "Cá nhân — chưa có tổ chức nào được liên kết. Một tài khoản BiVelio, dùng chung cho cả bộ sản phẩm.",
+      "plan": "gói",
+      "seatsCount": "{count, plural, other {# ghế}}.",
+      "planBody": "BV-SALA là fail-closed — nó chỉ chạy với một giấy phép PRO đang hoạt động. {monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Một ghế là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
+      "managePlan": "Quản lý gói →",
+      "subscribe": "Đăng ký →"
+    },
+    "referenceLedgerCards": {
+      "proven": "đã chứng minh",
+      "notProven": "chưa chứng minh",
+      "estimatedMock": "ước tính (mô phỏng)",
+      "footnoteMain": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — mỗi cái là một đòn bẩy được đo riêng biệt, nên một đô la không thể bị đếm hai lần.",
+      "reconciledNote": "Phần dư đối chiếu ≈ 0 chứng minh điều đó.",
+      "residualNote": "phần dư {residual} — kiểm tra lại phần hạch toán.",
+      "footnoteReference": "Đây là <b>các đòn bẩy tham chiếu</b>: đường truyền trực tiếp của bạn đo bốn cái khác — provider-cached thay thế cho output-restriction — nên chúng tôi không bao giờ ánh xạ cái này sang cái kia."
+    },
+    "integrityQualityChips": {
+      "qualityGate": "Cổng chất lượng <b>{rate}</b> đã vượt qua",
+      "ledgersReconcile": "Các sổ cái khớp nhau",
+      "ledgersMismatch": "Các sổ cái KHÔNG KHỚP",
+      "fingerprintStable": "Dấu vân tay mô hình ổn định",
+      "fingerprintChanged": "Dấu vân tay mô hình đã thay đổi",
+      "cacheBreakEven": "Điểm hòa vốn bộ đệm <b>K={k}</b>",
+      "provenAt95": "đã chứng minh ở mức 95%",
+      "unprovenMock": "chưa chứng minh (mô phỏng)",
+      "regressedVoids": "Một câu trả lời bị suy giảm sẽ làm mất hiệu lực mức tiết kiệm của nó"
+    },
+    "netSavingsCIBand": {
+      "caption": "tiết kiệm ròng, <b>giới hạn dưới của khoảng tin cậy 95%</b>. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề{mockNote}.",
+      "mockNote": " (khối lượng công việc tham chiếu, nhà cung cấp mô phỏng)"
+    },
+    "cacheBreakEven": {
+      "tag": "bộ đệm · khấu hao",
+      "body": "<b>{name}</b>: miss lạnh {coldMiss} → hit {hit}. Hòa vốn ở <b>K={breakEvenK}</b> lần lặp — tiết kiệm từ bộ đệm là của lưu lượng lặp lại, không phải con số một-lần-gọi, nên một lệnh gọi lạnh trung thực mà nói sẽ hiển thị ≈0%."
+    },
+    "provenancePill": {
+      "mock": "MOCK · tham chiếu",
+      "live": "LIVE · tổ chức của bạn",
+      "await": "đang chờ"
+    },
+    "referenceModeBadge": {
+      "liveDesc": "— được đo đối chiếu với một nhà cung cấp thực, có kiểm soát chất lượng.",
+      "mock": "<b>ƯỚC TÍNH · nhà cung cấp mô phỏng</b> — điều này chứng minh cơ chế hoạt động, không phải hóa đơn của bạn. Một lần chạy LIVE đã cam kết sẽ thay thế mọi con số ở đây."
+    },
+    "connectionStatePill": {
+      "meteringLive": "Đang đo trực tiếp",
+      "awaitingFirstReport": "Đang chờ báo cáo đầu tiên"
+    }
+  },
+  "landing": {
+    "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
+    "metaDescription": "Xác minh mức tiết kiệm LLM của bạn với BV-SALA — dán dữ liệu của chính bạn và theo dõi cách hạch toán token thực tính toán mức tiết kiệm trực tiếp trong trình duyệt của bạn.",
+    "hero": {
+      "eyebrow": "Lớp chi phí LLM mà ai cũng có thể cài đặt — được cấp phép để chạy",
+      "title": "Chứng minh mức tiết kiệm trên",
+      "titleAccent": "dữ liệu của chính bạn.",
+      "lede": "BV‑SALA đứng trước bất kỳ nhà cung cấp LLM nào và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Đừng chỉ tin lời chúng tôi — dán dữ liệu của bạn bên dưới và xem đồng hồ đo chuyển động.",
+      "ctaRun": "Chạy trình xác minh",
+      "ctaPricing": "Xem bảng giá",
+      "note": "Chạy hoàn toàn trong trình duyệt của bạn. Không cần đăng ký, không có gì rời khỏi trang này."
+    },
+    "cascade": {
+      "title": "Phương án thực thi rẻ nhất thắng",
+      "per": "mỗi yêu cầu",
+      "steps": [
+        { "n": "01", "title": "Tránh lệnh gọi hoàn toàn", "sub": "trình phân giải · bộ đệm chính xác & ngữ nghĩa", "tag": "0 lệnh gọi", "grey": false },
+        { "n": "02", "title": "Tránh truy xuất & công cụ", "sub": "tuyến: không / đơn / đa / công cụ", "tag": "ít lệnh gọi hơn", "grey": false },
+        { "n": "03", "title": "Loại bỏ ngữ cảnh thừa", "sub": "khử trùng lặp · xếp hạng lại · k thích ứng", "tag": "−token", "grey": true },
+        { "n": "04", "title": "Nén phần còn lại", "sub": "mã hóa gọn nhẹ hơn · chỉ khi có lợi ròng", "tag": "−token", "grey": true },
+        { "n": "05", "title": "Ràng buộc đầu ra", "sub": "lược đồ · hợp đồng tối thiểu", "tag": "−đầu ra", "grey": true }
+      ]
+    },
+    "step1": {
+      "eyebrow": "Bước 1 · Kiểm tra sơ bộ — trong trình duyệt của bạn",
+      "title": "Tự mình thử trình tối ưu. Không có gì rời khỏi trang này.",
+      "body": "Hai công cụ này chạy trình tối ưu thực <b>cục bộ</b> để bạn có thể kiểm chứng cơ chế trước khi động đến một nhà cung cấp. Bảng bên trái chạy trình tối ưu BV‑SALA thực trên dữ liệu bạn dán — hạch toán token thực, cùng đoạn mã mà SDK phát hành. Bảng bên phải <b>ước tính</b> hóa đơn hàng tháng bằng cách chạy trình tối ưu trên một khối lượng công việc mẫu đối chiếu với một mô hình <b>mô phỏng</b>. Để có những đô la được <i>đo</i> một cách chứng minh được, xem <link>Bước 2</link> bên dưới."
+    },
+    "step2": {
+      "eyebrow": "Bước 2 · Đo được một cách chứng minh — có thể tái lập",
+      "title": "Tiết kiệm thực, được đo đối chiếu với một nhà cung cấp thực. Cả hai nhánh.",
+      "body": "Đây là kết quả của benchmark A/B (<code>pnpm ab</code>): với mỗi kịch bản, nó gửi một yêu cầu <b>ngây thơ</b> <i>và</i> yêu cầu BV‑SALA đến <b>cùng một</b> mô hình, định giá cả hai từ chính mức sử dụng token của nhà cung cấp, và báo cáo <b>giới hạn dưới của khoảng tin cậy 95%</b> — không bao giờ là ước tính điểm hào nhoáng. Không có gì được mô hình hóa."
+    },
+    "ledgersHead": {
+      "eyebrow": "Hạch toán trung thực",
+      "title": "Bốn sổ cái riêng biệt. Không bao giờ cộng gộp thành một con số phù phiếm.",
+      "body": "Một lần trúng bộ đệm loại bỏ nguyên một lệnh gọi. BV‑SALA mã hóa lại dữ liệu có cấu trúc gọn gàng hơn. Nén loại bỏ những từ ngữ dư thừa. Bộ đệm tiền tố của nhà cung cấp làm token rẻ hơn mà không loại bỏ chúng. Trộn lẫn chúng là dối gạt bạn — nên chúng tôi không làm vậy.",
+      "runToMeasure": "chạy trình tối ưu để đo"
+    },
+    "ledgers": [
+      { "idx": "01", "name": "avoided_calls", "desc": "Các lệnh gọi LLM, truy xuất và công cụ chưa từng được thực thi." },
+      { "idx": "02", "name": "eliminated_tokens", "desc": "Thông tin bị loại bỏ vì đơn giản là không cần thiết." },
+      { "idx": "03", "name": "compressed_tokens", "desc": "Thông tin được giữ lại, nhưng mã hóa bằng ít token hơn." },
+      { "idx": "04", "name": "provider_cached_tokens", "desc": "Vẫn nằm trong prompt, nhưng được tính phí hoặc xử lý rẻ hơn." }
+    ],
+    "integrate": {
+      "eyebrow": "Năm dòng để bắt đầu",
+      "title": "Chạy nó trong ứng dụng của riêng bạn. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
+      "body": "Đặt SDK trước nhà cung cấp của bạn. Mỗi phản hồi đều mang theo một SavingsReport đầy đủ mà bạn có thể vẽ biểu đồ — cùng những con số mà bảng điều khiển đọc."
+    },
+    "pricing": {
+      "eyebrow": "Một gói, tính giá theo ghế",
+      "title": "Vài xu để chạy. Gấp nhiều lần để tiết kiệm.",
+      "body": "Không có gói miễn phí, không dùng thử — kiểm tra BV‑SALA ngay tại đây trong trình duyệt của bạn, rồi đăng ký để chạy nó trong ứng dụng của bạn. Tính giá theo ghế, bằng USD.",
+      "amount": "$4",
+      "per": "/ ghế / tháng",
+      "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>$39 / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
+      "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> đang hoạt động, không phải một người — chỉ tính phí nếu hoạt động từ 3 ngày trở lên trong một tháng. CI và các trình chạy tạm thời không được tính.",
+      "features": [
+        "Mọi tối ưu hóa của BV‑SALA, không giới hạn",
+        "Bộ đệm ngữ nghĩa được quản lý & ngưỡng được học",
+        "Bảng điều khiển tiết kiệm & phân tích cho nhóm",
+        "Prompt của bạn không bao giờ rời khỏi hạ tầng của bạn"
+      ],
+      "cta": "Bắt đầu →",
+      "trustTitle": "Vì sao giá có thể thấp đến vậy",
+      "trust": [
+        { "lead": "Chúng tôi không di chuyển token nào.", "rest": "Lưu lượng LLM của bạn đi thẳng đến nhà cung cấp của bạn — chúng tôi chỉ thấy số lượng, không bao giờ thấy nội dung." },
+        { "lead": "Bạn tự lưu trữ phần nặng nhất.", "rest": "Trình tối ưu chạy trong tiến trình của bạn; máy chủ của chúng tôi chỉ cấp phép, học hỏi và báo cáo." },
+        { "lead": "Hạ tầng mở rộng theo doanh thu.", "rest": "Nó bắt đầu trên một máy nhỏ và chỉ lớn lên khi khách hàng trả phí đủ để trang trải cho tầng tiếp theo." },
+        { "lead": "Báo cáo chính là đồng hồ đo.", "rest": "Việc tính phí đọc cùng một SavingsReport mà bạn xác minh ở trên — không có hộp đen." }
+      ]
+    },
+    "footer": {
+      "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, trình tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — hãy tự mình xác minh mức tiết kiệm trước khi trả phí.",
+      "badge": "BV‑SALA · Savings Layer",
+      "colSavings": "Savings Layer",
+      "colBivelio": "BiVelio",
+      "colLegal": "Pháp lý",
+      "verify": "Xác minh mức tiết kiệm của bạn",
+      "measured": "Kết quả đo được",
+      "pricing": "Giá",
+      "home": "Trang chủ",
+      "docs": "Tài liệu",
+      "security": "Bảo mật",
+      "status": "Trạng thái",
+      "privacy": "Quyền riêng tư",
+      "terms": "Điều khoản dịch vụ",
+      "gdpr": "GDPR",
+      "trust": "Bảo mật doanh nghiệp · Tuân thủ GDPR · Hạ tầng có thể mở rộng",
+      "entity": "Được vận hành bởi BiVelio Inc · Delaware (Hoa Kỳ).",
+      "copyright": "© 2026 BiVelio Inc. Bảo lưu mọi quyền.",
+      "andorra": "Từ Andorra ra thế giới 🇦🇩",
+      "bottomPrivacy": "Quyền riêng tư",
+      "bottomTerms": "Điều khoản"
+    }
+  }
+}

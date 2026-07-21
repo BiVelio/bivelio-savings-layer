@@ -1,7 +1,8 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "./BrandMark";
+import { LocaleSwitcher } from "./LocaleSwitcher";
 import { NavLinks } from "./NavLinks";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -31,6 +32,7 @@ export async function NavBar() {
         </Link>
         <nav className="nav-actions">
           <NavLinks authed={authed} />
+          <LocaleSwitcher />
           <ThemeToggle />
         </nav>
       </div>

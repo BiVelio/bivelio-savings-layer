@@ -1,0 +1,351 @@
+{
+  "nav": {
+    "langTitle": "Kies je taal",
+    "langSubtitle": "Kies de taal waarin je BiVelio Savings Layer wilt gebruiken.",
+    "langSearch": "Taal zoeken",
+    "langAria": "Taal wijzigen",
+    "langClose": "Sluiten",
+    "verifier": "Verificatie",
+    "pricing": "Prijzen",
+    "signIn": "Inloggen",
+    "dashboard": "Dashboard",
+    "signOut": "Uitloggen"
+  },
+  "app": {
+    "themeToggle": {
+      "light": "Licht",
+      "dark": "Donker",
+      "ariaLabel": "Thema wisselen",
+      "title": "Wisselen tussen licht/donker"
+    },
+    "sidebar": {
+      "overview": "Overzicht",
+      "savings": "Besparingen",
+      "proof": "Bewijs",
+      "verify": "Verifiëren",
+      "integrate": "Integreren",
+      "install": "Installeren",
+      "account": "Account"
+    }
+  },
+  "auth": {
+    "signinTitle": "Inloggen · BiVelio Savings Layer",
+    "signupTitle": "Maak je account aan · BiVelio Savings Layer",
+    "welcomeBack": "Welkom terug",
+    "loginSubtitle": "Log in met je BiVelio-account — hetzelfde account dat je in de hele suite gebruikt.",
+    "newToBivelio": "Nieuw bij BiVelio?",
+    "createAnAccount": "Een account aanmaken",
+    "backToVerifier": "← Terug naar de verificatie",
+    "createYourAccount": "Maak je account aan",
+    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Verifieer je besparingen gratis in de browser — maak een account aan om je te abonneren en je licentiesleutel te krijgen.",
+    "alreadyHaveAccount": "Heb je al een BiVelio-account?",
+    "signIn": "Inloggen",
+    "workEmail": "Zakelijk e-mailadres",
+    "password": "Wachtwoord",
+    "createAccountCta": "Account aanmaken →",
+    "signInCta": "Inloggen →",
+    "loadingEllipsis": "…",
+    "notWired": "Inloggen is nog niet gekoppeld — stel NEXT_PUBLIC_SUPABASE_ANON_KEY in bij de deploy.",
+    "checkEmail": "Controleer je e-mail om je account te bevestigen en log daarna in.",
+    "somethingWrong": "Er is iets misgegaan."
+  },
+  "dashboard": {
+    "overview": {
+      "metaTitle": "Overzicht · BiVelio Savings Layer",
+      "authNotWired": "Inloggen is nog niet gekoppeld. Stel de Supabase-omgevingsvariabelen in om het in te schakelen.",
+      "eyebrow": "Naar live besparingen",
+      "title": "Jouw meter",
+      "intro": "Installeer de SDK en je netto besparingen verschijnen hier — gemeten op je eigen verkeer, nooit een geleend getal.",
+      "savingsEyebrow": "Jouw besparingen",
+      "savingsTitle": "Wat je bespaart — gemeten op je eigen verkeer",
+      "savingsTrend": "besparingstrend",
+      "traffic": "verkeer",
+      "steps": {
+        "accountCreated": "Account aangemaakt",
+        "sdkInstalled": "SDK geïnstalleerd",
+        "licenseActive": "Licentie actief",
+        "firstReport": "Eerste rapport",
+        "liveMeter": "Live meter"
+      }
+    },
+    "proof": {
+      "metaTitle": "Bewijs · BiVelio Savings Layer",
+      "eyebrow": "Verifieer, vertrouw niet · referentiebenchmark",
+      "title": "Bewijs dat de optimizer werkt",
+      "intro": "Gemeten op beide takken — de geloofwaardigheidsmotor achter je eigen cijfers."
+    },
+    "verify": {
+      "metaTitle": "Verifiëren · BiVelio Savings Layer",
+      "eyebrow": "Verifieer lokaal · niets verlaat deze pagina",
+      "title": "Modelleer je eigen payloads",
+      "intro": "Voert de echte tokenizer uit in je browser — plak een payload en volg de berekening."
+    },
+    "install": {
+      "metaTitle": "Installeren · BiVelio Savings Layer",
+      "eyebrow": "Integreren",
+      "title": "Installeer en koppel de SDK",
+      "intro": "Plaats BV-SALA vóór je provider — je prompts verlaten nooit je eigen infrastructuur."
+    },
+    "account": {
+      "metaTitle": "Account · BiVelio Savings Layer",
+      "eyebrow": "Account",
+      "title": "Jouw BiVelio-account",
+      "intro": "Eén account voor de hele BiVelio-suite."
+    },
+    "verdictHero": {
+      "eyebrow": "Jouw besparingen · gemeten door de SDK",
+      "savedLine": "van je LLM-uitgaven bespaard in deze periode · <b>{money}</b> bespaard (basislijn − werkelijk, tegen jouw prijzen).",
+      "emptyCap": "Nog geen meting van je verkeer — 0 verzoeken gezien. Installeer de SDK en je netto besparingen verschijnen hier — jouw prijzen, jouw werklast. Nooit een geleend of verzonnen getal."
+    },
+    "liveLedgerTiles": {
+      "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
+      "whatEliminatedTokens": "invoertokens die als overbodig zijn geschrapt",
+      "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
+      "whatProviderCachedTokens": "invoertokens die goedkoper worden gefactureerd (prefixcache)",
+      "ghostAwaiting": "{ref} · wacht op eerste rapport",
+      "footnote": "Vier grootboeken, <b>nooit opgeteld</b> — we kunnen een dollar niet dubbel tellen. Alleen aantallen en kosten, nooit je prompts. Het rapport is de meter."
+    },
+    "savingsTrendChart": {
+      "skeleton": "Je besparingstrend wordt opgebouwd na ~7 dagen gemeten verkeer.",
+      "chartAria": "Cumulatieve besparingen",
+      "cumulativeNote": "Cumulatief bespaard: {money} over {days, plural, one {# gemeten dag} other {# gemeten dagen}}."
+    },
+    "trafficModelMix": {
+      "empty": "Nog geen verzoeken gemeten — je verdeling vermeden-vs-uitgevoerd en de mix per model verschijnen zodra de SDK rapporteert.",
+      "title": "llm-aanroepen · vermeden vs uitgevoerd",
+      "split": "{avoided} vermeden · {ran} uitgevoerd ({pct}% vermeden)"
+    },
+    "instrumentationSpine": {
+      "eyebrow": "Naar live besparingen",
+      "title": "Je bent een paar stappen verwijderd van je eigen meter",
+      "statusDone": "klaar",
+      "statusNext": "volgende",
+      "statusPending": "in behandeling",
+      "nextLabel": "Volgende: {label}",
+      "installComment": "# plaats het vóór je provider — je prompts verlaten nooit je eigen infrastructuur",
+      "hintLicense": "Plak je BiVelio-licentiesleutel zodat de SDK de beheerde functies ontgrendelt en het gebruik rapporteert.",
+      "hintFirstReport": "Wikkel een echte provideraanroep in — het eerste SavingsReport landt hier en je meter gaat live.",
+      "hintDefault": "Dit wordt ontgrendeld zodra je eerste usage_daily-rij binnenkomt."
+    },
+    "scenarioTable": {
+      "colScenario": "scenario",
+      "colKind": "soort",
+      "colAInOut": "A in/uit",
+      "colBInOut": "B in/uit",
+      "colACost": "kosten A",
+      "colBCost": "kosten B",
+      "colSavings": "besparing",
+      "colQa": "qa"
+    },
+    "projectorVerifier": {
+      "verifierTitle": "Besparingsverificatie",
+      "estimateFull": "SCHATTING — heuristisch, niet door provider gemeten",
+      "errBundle": "Kon de optimizer-bundle niet laden.",
+      "errInvalidData": "Wachten op geldige gegevens… {message}",
+      "yourData": "Jouw gegevens",
+      "trims": "BV‑SALA schrapt {tokens} tokens per verzending.",
+      "alreadyOptimal": "Hier al optimaal — BV‑SALA maakt het nooit slechter.",
+      "projectorTitle": "Factuurprojectie",
+      "estimate": "SCHATTING",
+      "reqsPerMonth": "Verzoeken / maand",
+      "avgInputTokens": "Gem. invoertokens",
+      "avgOutputTokens": "Gem. uitvoertokens",
+      "callsAvoided": "Vermeden aanroepen",
+      "inputCut": "Invoerreductie",
+      "outputCut": "Uitvoerreductie",
+      "projectedSaving": "verwachte besparing / maand · tegen {model}-prijzen",
+      "projLower": "{baseline} → {opt} · {pct}% lager"
+    },
+    "copyButton": {
+      "copied": "Gekopieerd",
+      "copy": "Kopiëren"
+    },
+    "trialKeyButton": {
+      "errCreate": "Kon geen licentiesleutel uitgeven.",
+      "errNetwork": "Netwerkfout — probeer het opnieuw.",
+      "keyLabel": "je licentiesleutel{suffix} — eenmalig getoond, kopieer hem nu",
+      "validUntil": " · geldig tot {date}",
+      "pasteHint": "Plak hem in <code></code> om de SDK te ontgrendelen.",
+      "issuing": "Uitgeven…",
+      "getKey": "Haal je licentiesleutel op →",
+      "priceNote": "{monthly} per seat per maand of {yearly} per seat per jaar. Self-service afrekenen komt eraan — de sleutel ontgrendelt de SDK in je eigen app."
+    },
+    "serviceAccountKeySection": {
+      "errCreate": "Kon geen sleutel aanmaken.",
+      "errNetwork": "Netwerkfout — probeer het opnieuw.",
+      "errNotRecognized": "Niet herkend — controleer op typefouten of maak hierboven een nieuwe sleutel aan.",
+      "errUnexpected": "Onverwacht antwoord ({status}). Probeer het zo meteen opnieuw.",
+      "keyLabel": "je service-account-sleutel{suffix} — eenmalig getoond, kopieer hem nu",
+      "passHint": "Geef hem door als <code>serviceAccountKey</code>. Hij is hieronder al ingevuld — klik op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
+      "creating": "Aanmaken…",
+      "createKey": "Maak een service-account-sleutel aan →",
+      "hashNote": "Alleen de hash wordt opgeslagen. Die authenticeert de gebruiksmeting met alleen aantallen — nooit je prompts.",
+      "verifyTitle": "Controleer of een sleutel live is",
+      "testInputAria": "Te testen service-account-sleutel",
+      "testing": "Testen…",
+      "testMyKey": "Mijn sleutel testen",
+      "validResult": "✓ Geldig — je SDK kan met deze sleutel gebruik rapporteren."
+    },
+    "installLicensePanel": {
+      "eyebrow": "Aan de slag",
+      "heading": "Vier stappen. Je prompts raken nooit onze servers.",
+      "step1": "<b>1 · Haal je licentiesleutel op</b> — de SDK is publiek maar fail-closed; hij draait alleen met een geldige sleutel. Doorgegeven als <code>licenseKey</code>.",
+      "step2": "<b>2 · Maak een service-account-sleutel aan en verifieer die</b> — een machine-credential (<code>bvk_…</code>) zodat de SDK gebruik met alleen aantallen rapporteert (je seats en besparingen). Los van de licentiesleutel; alleen de hash ervan wordt opgeslagen. Maak er een aan en klik dan op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
+      "currentKey": "huidige service-account-sleutel",
+      "noneYet": "nog geen — klik hierboven",
+      "shownOnce": "eenmalig getoond bij aanmaken — alleen de prefix wordt opgeslagen.",
+      "step3": "<b>3 · Installeren</b> — publiek op npm, geen token, geen configuratie.",
+      "step4": "<b>4 · Koppel je provider en lees het SavingsReport</b>",
+      "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn."
+    },
+    "accountPlanStrip": {
+      "noActivePlan": "Geen actief abonnement",
+      "signedInAs": "ingelogd als",
+      "organization": "Organisatie: <b>{name}</b>",
+      "personalNote": "Persoonlijk — nog geen organisatie gekoppeld. Eén BiVelio-account, gedeeld over de hele suite.",
+      "plan": "abonnement",
+      "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
+      "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve PRO-licentie. {monthly} per seat per maand of {yearly} per seat per jaar. Een seat is één actieve machine- of service-identiteit, geen persoon.",
+      "managePlan": "Abonnement beheren →",
+      "subscribe": "Abonneren →"
+    },
+    "referenceLedgerCards": {
+      "proven": "bewezen",
+      "notProven": "niet bewezen",
+      "estimatedMock": "geschat (mock)",
+      "footnoteMain": "Vier grootboeken, <b>nooit opgeteld</b> — elk is een afzonderlijk gemeten hefboom, dus een dollar kan niet dubbel geteld worden.",
+      "reconciledNote": "Het reconciliatierestant ≈ 0 bewijst het.",
+      "residualNote": "restant {residual} — controleer de boekhouding.",
+      "footnoteReference": "Dit zijn <b>referentiehefbomen</b>: je live-rail meet een andere vier — provider-cached vervangt output-restriction — dus we projecteren de een nooit op de ander."
+    },
+    "integrityQualityChips": {
+      "qualityGate": "Kwaliteitscontrole <b>{rate}</b> geslaagd",
+      "ledgersReconcile": "Grootboeken sluiten aan",
+      "ledgersMismatch": "Grootboeken KOMEN NIET OVEREEN",
+      "fingerprintStable": "Modelvingerafdruk stabiel",
+      "fingerprintChanged": "Modelvingerafdruk gewijzigd",
+      "cacheBreakEven": "Cache break-even <b>K={k}</b>",
+      "provenAt95": "bewezen op 95%",
+      "unprovenMock": "onbewezen (mock)",
+      "regressedVoids": "Een verslechterd antwoord doet zijn besparing teniet"
+    },
+    "netSavingsCIBand": {
+      "caption": "netto besparingen, <b>ondergrens van het 95%-BI</b>. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop{mockNote}.",
+      "mockNote": " (referentiewerklast, mock-provider)"
+    },
+    "cacheBreakEven": {
+      "tag": "cache · geamortiseerd",
+      "body": "<b>{name}</b>: koude misser {coldMiss} → treffer {hit}. Bereikt break-even bij <b>K={breakEvenK}</b> herhalingen — cachebesparing komt van herhaald verkeer, niet van één aanroep, dus een koude aanroep leest eerlijk ≈0%."
+    },
+    "provenancePill": {
+      "mock": "MOCK · referentie",
+      "live": "LIVE · jouw organisatie",
+      "await": "wachten"
+    },
+    "referenceModeBadge": {
+      "liveDesc": "— gemeten tegen een echte provider, met kwaliteitscontrole.",
+      "mock": "<b>GESCHAT · mock-provider</b> — dit bewijst dat het mechanisme werkt, niet je factuur. Een vastgelegde LIVE-run vervangt elk getal hier."
+    },
+    "connectionStatePill": {
+      "meteringLive": "Meting live",
+      "awaitingFirstReport": "Wacht op eerste rapport"
+    }
+  },
+  "landing": {
+    "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
+    "metaDescription": "Verifieer je LLM-besparingen met BV-SALA — plak je eigen gegevens en zie hoe echte tokenboekhouding de besparingen live in je browser berekent.",
+    "hero": {
+      "eyebrow": "De LLM-kostenlaag die iedereen kan installeren — met licentie om te draaien",
+      "title": "Bewijs de besparingen op",
+      "titleAccent": "je eigen gegevens.",
+      "lede": "BV‑SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Neem niet zomaar ons woord aan — plak hieronder je gegevens en zie de meter bewegen.",
+      "ctaRun": "Start de verificatie",
+      "ctaPricing": "Bekijk prijzen",
+      "note": "Draait volledig in je browser. Geen registratie, niets verlaat deze pagina."
+    },
+    "cascade": {
+      "title": "De goedkoopste uitvoering wint",
+      "per": "per verzoek",
+      "steps": [
+        { "n": "01", "title": "Vermijd de aanroep volledig", "sub": "resolvers · exacte en semantische cache", "tag": "0 aanroepen", "grey": false },
+        { "n": "02", "title": "Vermijd ophalen en tools", "sub": "route: geen / enkel / meervoudig / tool", "tag": "minder aanroepen", "grey": false },
+        { "n": "03", "title": "Elimineer overbodige context", "sub": "dedupe · rerank · adaptieve k", "tag": "−tokens", "grey": true },
+        { "n": "04", "title": "Comprimeer wat overblijft", "sub": "compactere codering · alleen netto-positief", "tag": "−tokens", "grey": true },
+        { "n": "05", "title": "Beperk de uitvoer", "sub": "schema · minimaal contract", "tag": "−uitvoer", "grey": true }
+      ]
+    },
+    "step1": {
+      "eyebrow": "Stap 1 · Voorlopige tests — in je browser",
+      "title": "Probeer de optimizer zelf. Niets verlaat deze pagina.",
+      "body": "Deze twee instrumenten draaien de echte optimizer <b>lokaal</b>, zodat je het mechanisme kunt controleren voordat je een provider aanraakt. Het linkerpaneel draait de echte BV‑SALA-optimizer op gegevens die je plakt — echte tokenboekhouding, dezelfde code die de SDK meelevert. Het rechterpaneel <b>schat</b> een maandfactuur door de optimizer over een voorbeeldwerklast te draaien tegen een <b>mock</b>-model. Voor aantoonbaar <i>gemeten</i> dollars, zie <link>Stap 2</link> hieronder."
+    },
+    "step2": {
+      "eyebrow": "Stap 2 · Aantoonbaar gemeten — reproduceerbaar",
+      "title": "Echte besparingen, gemeten tegen een echte provider. Beide takken.",
+      "body": "Dit is de uitvoer van de A/B-benchmark (<code>pnpm ab</code>): voor elk scenario stuurt hij een <b>naïef</b> verzoek <i>en</i> het BV‑SALA-verzoek naar <b>hetzelfde</b> model, prijst beide op basis van het eigen tokengebruik van de provider en rapporteert de <b>95%-betrouwbaarheidsondergrens</b> — nooit de vleiende puntschatting. Niets is gemodelleerd."
+    },
+    "ledgersHead": {
+      "eyebrow": "Eerlijke boekhouding",
+      "title": "Vier afzonderlijke grootboeken. Nooit opgeteld tot één ijdel getal.",
+      "body": "Een cachetreffer verwijdert een hele aanroep. BV‑SALA hercodeert gestructureerde gegevens compacter. Compressie schrapt overbodige woorden. Een prefixcache van de provider maakt tokens goedkoper zonder ze te verwijderen. Ze door elkaar halen liegt tegen je — dus dat doen we niet.",
+      "runToMeasure": "voer de optimizer uit om te meten"
+    },
+    "ledgers": [
+      { "idx": "01", "name": "avoided_calls", "desc": "LLM-, ophaal- en tool-aanroepen die helemaal niet zijn uitgevoerd." },
+      { "idx": "02", "name": "eliminated_tokens", "desc": "Informatie die is geschrapt omdat ze simpelweg niet nodig was." },
+      { "idx": "03", "name": "compressed_tokens", "desc": "Informatie behouden, maar gecodeerd met minder tokens." },
+      { "idx": "04", "name": "provider_cached_tokens", "desc": "Nog in de prompt, maar goedkoper gefactureerd of verwerkt." }
+    ],
+    "integrate": {
+      "eyebrow": "Vijf regels om te beginnen",
+      "title": "Draai het in je eigen app. Je prompts raken nooit onze servers.",
+      "body": "Plaats de SDK vóór je provider. Elke respons bevat een volledig SavingsReport dat je kunt uitzetten in grafieken — dezelfde cijfers die het dashboard leest."
+    },
+    "pricing": {
+      "eyebrow": "Eén abonnement, geprijsd per seat",
+      "title": "Centen om te draaien. Veelvouden om te besparen.",
+      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in USD.",
+      "amount": "$4",
+      "per": "/ seat / maand",
+      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>$39 / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
+      "seatNote": "Een seat is één actieve <b>machine- of service-identiteit</b>, geen persoon — alleen gefactureerd bij activiteit op 3+ dagen in een maand. CI en kortstondige runners tellen niet mee.",
+      "features": [
+        "Elke BV‑SALA-optimalisatie, ongelimiteerd",
+        "Beheerde semantische cache en geleerde drempels",
+        "Besparingsdashboards en teamanalyses",
+        "Je prompts verlaten nooit je infrastructuur"
+      ],
+      "cta": "Aan de slag →",
+      "trustTitle": "Waarom de prijs zo laag kan zijn",
+      "trust": [
+        { "lead": "We verplaatsen geen tokens.", "rest": "Je LLM-verkeer gaat rechtstreeks naar je provider — wij zien alleen aantallen, nooit inhoud." },
+        { "lead": "Jij host zelf het zware deel.", "rest": "De optimizer draait in jouw proces; onze servers zorgen alleen voor licentie, leren en rapporteren." },
+        { "lead": "Infra schaalt mee met de omzet.", "rest": "Het start op één kleine server en groeit pas als betalende klanten het volgende niveau dekken." },
+        { "lead": "Het rapport is de meter.", "rest": "De facturering leest hetzelfde SavingsReport dat je hierboven verifieert — geen black box." }
+      ]
+    },
+    "footer": {
+      "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's provider-neutrale LLM-kostenoptimizer — verifieer de besparingen zelf voordat je betaalt.",
+      "badge": "BV‑SALA · Savings Layer",
+      "colSavings": "Savings Layer",
+      "colBivelio": "BiVelio",
+      "colLegal": "Juridisch",
+      "verify": "Verifieer je besparingen",
+      "measured": "Gemeten resultaten",
+      "pricing": "Prijzen",
+      "home": "Home",
+      "docs": "Documentatie",
+      "security": "Beveiliging",
+      "status": "Status",
+      "privacy": "Privacy",
+      "terms": "Servicevoorwaarden",
+      "gdpr": "AVG",
+      "trust": "Enterprise-beveiliging · AVG-conform · Schaalbare infrastructuur",
+      "entity": "Mogelijk gemaakt door BiVelio Inc · Delaware (Verenigde Staten).",
+      "copyright": "© 2026 BiVelio Inc. Alle rechten voorbehouden.",
+      "andorra": "Van Andorra naar de wereld 🇦🇩",
+      "bottomPrivacy": "Privacy",
+      "bottomTerms": "Voorwaarden"
+    }
+  }
+}

@@ -1,0 +1,351 @@
+{
+  "nav": {
+    "langTitle": "Dilinizi seçin",
+    "langSubtitle": "BiVelio Savings Layer'ı kullanmak istediğiniz dili seçin.",
+    "langSearch": "Dil ara",
+    "langAria": "Dili değiştir",
+    "langClose": "Kapat",
+    "verifier": "Doğrulayıcı",
+    "pricing": "Fiyatlandırma",
+    "signIn": "Giriş yap",
+    "dashboard": "Panel",
+    "signOut": "Çıkış yap"
+  },
+  "app": {
+    "themeToggle": {
+      "light": "Açık",
+      "dark": "Koyu",
+      "ariaLabel": "Temayı değiştir",
+      "title": "Açık / koyu geçişi"
+    },
+    "sidebar": {
+      "overview": "Genel bakış",
+      "savings": "Tasarruf",
+      "proof": "Kanıt",
+      "verify": "Doğrula",
+      "integrate": "Entegre et",
+      "install": "Kur",
+      "account": "Hesap"
+    }
+  },
+  "auth": {
+    "signinTitle": "Giriş yap · BiVelio Savings Layer",
+    "signupTitle": "Hesabınızı oluşturun · BiVelio Savings Layer",
+    "welcomeBack": "Tekrar hoş geldiniz",
+    "loginSubtitle": "BiVelio hesabınızla giriş yapın — tüm pakette kullandığınız hesabın aynısı.",
+    "newToBivelio": "BiVelio'da yeni misiniz?",
+    "createAnAccount": "Hesap oluştur",
+    "backToVerifier": "← Doğrulayıcıya dön",
+    "createYourAccount": "Hesabınızı oluşturun",
+    "signupSubtitle": "Tüm paket için tek bir BiVelio hesabı. Tasarrufunuzu tarayıcıda ücretsiz doğrulayın — abone olmak ve lisans anahtarınızı almak için bir hesap oluşturun.",
+    "alreadyHaveAccount": "Zaten bir BiVelio hesabınız var mı?",
+    "signIn": "Giriş yap",
+    "workEmail": "İş e-postası",
+    "password": "Parola",
+    "createAccountCta": "Hesap oluştur →",
+    "signInCta": "Giriş yap →",
+    "loadingEllipsis": "…",
+    "notWired": "Giriş henüz yapılandırılmadı — dağıtımda NEXT_PUBLIC_SUPABASE_ANON_KEY değerini ayarlayın.",
+    "checkEmail": "Hesabınızı onaylamak için e-postanızı kontrol edin, ardından giriş yapın.",
+    "somethingWrong": "Bir şeyler ters gitti."
+  },
+  "dashboard": {
+    "overview": {
+      "metaTitle": "Genel bakış · BiVelio Savings Layer",
+      "authNotWired": "Giriş henüz yapılandırılmadı. Etkinleştirmek için Supabase ortam değişkenlerini ayarlayın.",
+      "eyebrow": "Canlı tasarrufa ulaşın",
+      "title": "Sayacınız",
+      "intro": "SDK'yı kurun; net tasarrufunuz burada görünür — kendi trafiğinizde ölçülür, asla ödünç alınmış bir rakam değil.",
+      "savingsEyebrow": "Tasarrufunuz",
+      "savingsTitle": "Cebinizde kalan — kendi trafiğinizde ölçülür",
+      "savingsTrend": "tasarruf eğilimi",
+      "traffic": "trafik",
+      "steps": {
+        "accountCreated": "Hesap oluşturuldu",
+        "sdkInstalled": "SDK kuruldu",
+        "licenseActive": "Lisans etkin",
+        "firstReport": "İlk rapor",
+        "liveMeter": "Canlı sayaç"
+      }
+    },
+    "proof": {
+      "metaTitle": "Kanıt · BiVelio Savings Layer",
+      "eyebrow": "Güvenme, doğrula · referans testi",
+      "title": "Optimize edicinin çalıştığının kanıtı",
+      "intro": "Her iki kolda da ölçüldü — kendi rakamlarınızın arkasındaki güvenilirlik motoru."
+    },
+    "verify": {
+      "metaTitle": "Doğrula · BiVelio Savings Layer",
+      "eyebrow": "Yerel olarak doğrulayın · bu sayfadan hiçbir şey çıkmaz",
+      "title": "Kendi veri yüklerinizi modelleyin",
+      "intro": "Gerçek tokenleştiriciyi tarayıcınızda çalıştırır — bir veri yükü yapıştırın ve hesaplamayı izleyin."
+    },
+    "install": {
+      "metaTitle": "Kur · BiVelio Savings Layer",
+      "eyebrow": "Entegre et",
+      "title": "SDK'yı kurun ve bağlayın",
+      "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin — prompt'larınız altyapınızdan asla çıkmaz."
+    },
+    "account": {
+      "metaTitle": "Hesap · BiVelio Savings Layer",
+      "eyebrow": "Hesap",
+      "title": "BiVelio hesabınız",
+      "intro": "BiVelio paketinin tamamı için tek bir hesap."
+    },
+    "verdictHero": {
+      "eyebrow": "Tasarrufunuz · SDK tarafından ölçüldü",
+      "savedLine": "LLM harcamanızdan bu dönem cebinizde kaldı · <b>{money}</b> tasarruf (taban − gerçek, sizin fiyatlarınızla).",
+      "emptyCap": "Trafiğiniz henüz ölçülmüyor — 0 istek görüldü. SDK'yı kurun; net tasarrufunuz burada görünür — sizin fiyatlarınız, sizin iş yükünüz. Asla ödünç alınmış ya da uydurulmuş bir rakam değil."
+    },
+    "liveLedgerTiles": {
+      "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
+      "whatEliminatedTokens": "gereksiz olduğu için düşürülen girdi token'ları",
+      "whatCompressedTokens": "daha küçük olarak yeniden kodlanan girdi token'ları",
+      "whatProviderCachedTokens": "daha ucuza faturalandırılan girdi token'ları (önek önbelleği)",
+      "ghostAwaiting": "{ref} · ilk rapor bekleniyor",
+      "footnote": "Dört defter, <b>asla toplanmaz</b> — bir doları iki kez sayamayız. Yalnızca sayımlar ve maliyet, asla prompt'larınız. Rapor, sayacın kendisidir."
+    },
+    "savingsTrendChart": {
+      "skeleton": "Tasarruf eğiliminiz, ~7 günlük ölçülen trafiğin ardından oluşur.",
+      "chartAria": "Kümülatif tasarruf",
+      "cumulativeNote": "Kümülatif tasarruf: {days, plural, other {# ölçülen günde}} {money}."
+    },
+    "trafficModelMix": {
+      "empty": "Henüz ölçülen istek yok — kaçınılan-vs-çalıştırılan dağılımınız ve modele göre karışım, SDK rapor gönderdiğinde görünür.",
+      "title": "llm çağrıları · kaçınılan vs çalıştırılan",
+      "split": "{avoided} kaçınıldı · {ran} çalıştırıldı (%{pct} kaçınıldı)"
+    },
+    "instrumentationSpine": {
+      "eyebrow": "Canlı tasarrufa ulaşın",
+      "title": "Kendi sayacınıza birkaç adım uzaktasınız",
+      "statusDone": "tamam",
+      "statusNext": "sıradaki",
+      "statusPending": "beklemede",
+      "nextLabel": "Sıradaki: {label}",
+      "installComment": "# sağlayıcınızın önüne yerleştirin — prompt'larınız altyapınızdan asla çıkmaz",
+      "hintLicense": "BiVelio lisans anahtarınızı yapıştırın; böylece SDK, yönetilen özellikleri açar ve kullanımı raporlar.",
+      "hintFirstReport": "Gerçek bir sağlayıcı çağrısını sarmalayın — ilk SavingsReport buraya düşer ve sayacınız canlanır.",
+      "hintDefault": "Bu, ilk usage_daily satırınız geldiği anda açılır."
+    },
+    "scenarioTable": {
+      "colScenario": "senaryo",
+      "colKind": "tür",
+      "colAInOut": "A gir/çık",
+      "colBInOut": "B gir/çık",
+      "colACost": "A maliyet",
+      "colBCost": "B maliyet",
+      "colSavings": "tasarruf",
+      "colQa": "qa"
+    },
+    "projectorVerifier": {
+      "verifierTitle": "Tasarruf doğrulayıcı",
+      "estimateFull": "TAHMİN — sezgisel, sağlayıcı tarafından ölçülmedi",
+      "errBundle": "Optimize edici paketi yüklenemedi.",
+      "errInvalidData": "Geçerli veri bekleniyor… {message}",
+      "yourData": "Verileriniz",
+      "trims": "BV‑SALA, her gönderimde {tokens} token kırpar.",
+      "alreadyOptimal": "Burada zaten en uygun durumda — BV‑SALA asla kötüleştirmez.",
+      "projectorTitle": "Fatura tahmincisi",
+      "estimate": "TAHMİN",
+      "reqsPerMonth": "İstek / ay",
+      "avgInputTokens": "Ort. girdi token'ları",
+      "avgOutputTokens": "Ort. çıktı token'ları",
+      "callsAvoided": "Kaçınılan çağrılar",
+      "inputCut": "Girdi kesintisi",
+      "outputCut": "Çıktı kesintisi",
+      "projectedSaving": "öngörülen tasarruf / ay · {model} fiyatlarıyla",
+      "projLower": "{baseline} → {opt} · %{pct} daha düşük"
+    },
+    "copyButton": {
+      "copied": "Kopyalandı",
+      "copy": "Kopyala"
+    },
+    "trialKeyButton": {
+      "errCreate": "Lisans anahtarı verilemedi.",
+      "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
+      "keyLabel": "lisans anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
+      "validUntil": " · {date} tarihine kadar geçerli",
+      "pasteHint": "SDK'yı açmak için <code></code> içine yapıştırın.",
+      "issuing": "Veriliyor…",
+      "getKey": "Lisans anahtarınızı alın →",
+      "priceNote": "Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Self-servis ödeme yakında devreye giriyor — anahtar, SDK'yı kendi uygulamanızda açar."
+    },
+    "serviceAccountKeySection": {
+      "errCreate": "Anahtar oluşturulamadı.",
+      "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
+      "errNotRecognized": "Tanınmadı — yazım hatalarını kontrol edin ya da yukarıdan yeni bir anahtar oluşturun.",
+      "errUnexpected": "Beklenmeyen yanıt ({status}). Birazdan tekrar deneyin.",
+      "keyLabel": "servis hesabı anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
+      "passHint": "<code>serviceAccountKey</code> olarak geçirin. Aşağıda önceden doldurulmuş — canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
+      "creating": "Oluşturuluyor…",
+      "createKey": "Servis hesabı anahtarı oluştur →",
+      "hashNote": "Yalnızca hash saklanır. Yalnızca sayımlara dayalı kullanım ölçümünü doğrular — asla prompt'larınızı değil.",
+      "verifyTitle": "Bir anahtarın canlı olduğunu doğrula",
+      "testInputAria": "Test edilecek servis hesabı anahtarı",
+      "testing": "Test ediliyor…",
+      "testMyKey": "Anahtarımı test et",
+      "validResult": "✓ Geçerli — SDK'nız bu anahtarla kullanım raporlayabilir."
+    },
+    "installLicensePanel": {
+      "eyebrow": "Başlayın",
+      "heading": "Dört adım. Prompt'larınız sunucularımıza asla dokunmaz.",
+      "step1": "<b>1 · Lisans anahtarınızı alın</b> — SDK herkese açıktır ama fail-closed'dur; yalnızca geçerli bir anahtarla çalışır. <code>licenseKey</code> olarak geçirilir.",
+      "step2": "<b>2 · Bir servis hesabı anahtarı oluşturun ve doğrulayın</b> — SDK'nın yalnızca sayımlara dayalı kullanımı (koltuklarınız ve tasarrufunuz) raporlaması için bir makine kimlik bilgisi (<code>bvk_…</code>). Lisans anahtarından ayrıdır; yalnızca hash'i saklanır. Bir tane oluşturun, ardından canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
+      "currentKey": "mevcut servis hesabı anahtarı",
+      "noneYet": "henüz yok — yukarıya tıklayın",
+      "shownOnce": "oluşturulurken yalnızca bir kez gösterilir — yalnızca önek saklanır.",
+      "step3": "<b>3 · Kurun</b> — npm'de herkese açık, token yok, yapılandırma yok.",
+      "step4": "<b>4 · Sağlayıcınızı bağlayın ve SavingsReport'u okuyun</b>",
+      "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz."
+    },
+    "accountPlanStrip": {
+      "noActivePlan": "Etkin plan yok",
+      "signedInAs": "giriş yapan",
+      "organization": "Kuruluş: <b>{name}</b>",
+      "personalNote": "Kişisel — henüz bağlı bir kuruluş yok. Tek bir BiVelio hesabı, tüm paket boyunca paylaşılır.",
+      "plan": "plan",
+      "seatsCount": "{count, plural, other {# koltuk}}.",
+      "planBody": "BV-SALA fail-closed'dur — yalnızca etkin bir PRO lisansıyla çalışır. Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bir koltuk, bir kişi değil, etkin bir makine ya da servis kimliğidir.",
+      "managePlan": "Planı yönet →",
+      "subscribe": "Abone ol →"
+    },
+    "referenceLedgerCards": {
+      "proven": "kanıtlandı",
+      "notProven": "kanıtlanmadı",
+      "estimatedMock": "tahmini (sahte)",
+      "footnoteMain": "Dört defter, <b>asla toplanmaz</b> — her biri ayrı ayrı ölçülen bir kaldıraçtır, dolayısıyla bir dolar iki kez sayılamaz.",
+      "reconciledNote": "Mutabakat kalıntısı ≈ 0 bunu kanıtlar.",
+      "residualNote": "kalıntı {residual} — hesaplamayı kontrol edin.",
+      "footnoteReference": "Bunlar <b>referans kaldıraçlarıdır</b>: canlı hattınız farklı dört tanesini ölçer — provider-cached, output-restriction'ın yerini alır — dolayısıyla birini asla diğerine eşlemeyiz."
+    },
+    "integrityQualityChips": {
+      "qualityGate": "Kalite kapısı <b>{rate}</b> geçildi",
+      "ledgersReconcile": "Defterler mutabık",
+      "ledgersMismatch": "Defterler UYUŞMUYOR",
+      "fingerprintStable": "Model parmak izi kararlı",
+      "fingerprintChanged": "Model parmak izi değişti",
+      "cacheBreakEven": "Önbellek başabaş <b>K={k}</b>",
+      "provenAt95": "%95'te kanıtlandı",
+      "unprovenMock": "kanıtlanmadı (sahte)",
+      "regressedVoids": "Kötüleşen bir yanıt, tasarrufunu geçersiz kılar"
+    },
+    "netSavingsCIBand": {
+      "caption": "net tasarruf, <b>%95 GA alt sınırı</b>. Nokta tahmini {point}, üst {upper} — biz tabanı öne çıkarırız{mockNote}.",
+      "mockNote": " (referans iş yükü, sahte sağlayıcı)"
+    },
+    "cacheBreakEven": {
+      "tag": "önbellek · amortize edilmiş",
+      "body": "<b>{name}</b>: soğuk ıska {coldMiss} → isabet {hit}. <b>K={breakEvenK}</b> tekrarda başabaşa ulaşır — önbellek tasarrufu tek bir çağrının rakamı değil, tekrar eden trafiktir; bu yüzden soğuk bir çağrı dürüstçe ≈%0 gösterir."
+    },
+    "provenancePill": {
+      "mock": "MOCK · referans",
+      "live": "LIVE · kuruluşunuz",
+      "await": "bekleniyor"
+    },
+    "referenceModeBadge": {
+      "liveDesc": "— gerçek bir sağlayıcıya karşı ölçüldü, kalite kapısından geçti.",
+      "mock": "<b>TAHMİNİ · sahte sağlayıcı</b> — bu, mekanizmanın çalıştığını kanıtlar, faturanızı değil. Taahhüt edilmiş bir LIVE çalıştırması buradaki her rakamın yerini alır."
+    },
+    "connectionStatePill": {
+      "meteringLive": "Ölçüm canlı",
+      "awaitingFirstReport": "İlk rapor bekleniyor"
+    }
+  },
+  "landing": {
+    "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
+    "metaDescription": "LLM tasarrufunuzu BV-SALA ile doğrulayın — kendi verilerinizi yapıştırın ve gerçek token hesaplamasının tasarrufu tarayıcınızda canlı olarak hesaplamasını izleyin.",
+    "hero": {
+      "eyebrow": "Herkesin kurabileceği LLM maliyet katmanı — çalıştırmak için lisanslı",
+      "title": "Tasarrufu kanıtlayın",
+      "titleAccent": "kendi verilerinizle.",
+      "lede": "BV‑SALA, herhangi bir LLM sağlayıcısının önünde yer alır ve her istek için kalite eşiğinizi hâlâ karşılayan en ucuz yürütmeyi seçer. Bize öylece inanmayın — verilerinizi aşağıya yapıştırın ve sayacın hareketini izleyin.",
+      "ctaRun": "Doğrulayıcıyı çalıştır",
+      "ctaPricing": "Fiyatları gör",
+      "note": "Tamamen tarayıcınızda çalışır. Kayıt yok, bu sayfadan hiçbir şey çıkmaz."
+    },
+    "cascade": {
+      "title": "En ucuz yürütme kazanır",
+      "per": "istek başına",
+      "steps": [
+        { "n": "01", "title": "Çağrıdan tümüyle kaçının", "sub": "çözümleyiciler · tam ve anlamsal önbellek", "tag": "0 çağrı", "grey": false },
+        { "n": "02", "title": "Getirme ve araçlardan kaçının", "sub": "yönlendirme: yok / tek / çoklu / araç", "tag": "daha az çağrı", "grey": false },
+        { "n": "03", "title": "Gereksiz bağlamı ortadan kaldırın", "sub": "yinelenenleri ayıkla · yeniden sırala · uyarlanır‑k", "tag": "−token", "grey": true },
+        { "n": "04", "title": "Kalanı sıkıştırın", "sub": "daha yalın kodlama · yalnızca net pozitifse", "tag": "−token", "grey": true },
+        { "n": "05", "title": "Çıktıyı sınırlandırın", "sub": "şema · asgari sözleşme", "tag": "−çıktı", "grey": true }
+      ]
+    },
+    "step1": {
+      "eyebrow": "Adım 1 · Ön testler — tarayıcınızda",
+      "title": "Optimize ediciyi kendiniz deneyin. Bu sayfadan hiçbir şey çıkmaz.",
+      "body": "Bu iki araç, gerçek optimize ediciyi <b>yerel olarak</b> çalıştırır; böylece bir sağlayıcıya dokunmadan önce mekanizmayı gözden geçirebilirsiniz. Sol panel, yapıştırdığınız veriler üzerinde gerçek BV‑SALA optimize edicisini çalıştırır — gerçek token hesaplaması, SDK'nın gönderdiği kodun aynısı. Sağ panel, bir örnek iş yükü üzerinde optimize ediciyi <b>sahte</b> bir modele karşı çalıştırarak aylık bir faturayı <b>tahmin eder</b>. Kanıtlanabilir şekilde <i>ölçülen</i> dolarlar için aşağıdaki <link>Adım 2</link>'ye bakın."
+    },
+    "step2": {
+      "eyebrow": "Adım 2 · Kanıtlanabilir şekilde ölçüldü — yeniden üretilebilir",
+      "title": "Gerçek tasarruf, gerçek bir sağlayıcıya karşı ölçüldü. Her iki kol da.",
+      "body": "Bu, A/B kıyaslamasının (<code>pnpm ab</code>) çıktısıdır: her senaryo için <b>saf</b> bir istek <i>ve</i> BV‑SALA isteğini <b>aynı</b> modele gönderir, ikisini de sağlayıcının kendi token kullanımına göre fiyatlandırır ve <b>%95 güven alt sınırını</b> raporlar — asla göz boyayan nokta tahminini değil. Hiçbir şey modellenmez."
+    },
+    "ledgersHead": {
+      "eyebrow": "Dürüst muhasebe",
+      "title": "Dört ayrı defter. Asla tek bir gösteriş rakamına toplanmaz.",
+      "body": "Bir önbellek isabeti, koca bir çağrıyı ortadan kaldırır. BV‑SALA, yapılandırılmış verileri daha kompakt biçimde yeniden kodlar. Sıkıştırma, gereksiz sözcükleri atar. Bir sağlayıcı önek önbelleği, token'ları kaldırmadan daha ucuz hale getirir. Bunları karıştırmak size yalan söyler — bu yüzden yapmayız.",
+      "runToMeasure": "ölçmek için optimize ediciyi çalıştırın"
+    },
+    "ledgers": [
+      { "idx": "01", "name": "avoided_calls", "desc": "Hiç çalıştırılmayan LLM, getirme ve araç çağrıları." },
+      { "idx": "02", "name": "eliminated_tokens", "desc": "Basitçe gerekmediği için düşürülen bilgi." },
+      { "idx": "03", "name": "compressed_tokens", "desc": "Korunan ama daha az token'la kodlanan bilgi." },
+      { "idx": "04", "name": "provider_cached_tokens", "desc": "Hâlâ prompt'ta, ama daha ucuza faturalandırılan ya da işlenen." }
+    ],
+    "integrate": {
+      "eyebrow": "Başlamak için beş satır",
+      "title": "Kendi uygulamanızda çalıştırın. Prompt'larınız sunucularımıza asla dokunmaz.",
+      "body": "SDK'yı sağlayıcınızın önüne yerleştirin. Her yanıt, grafiğe dökebileceğiniz eksiksiz bir SavingsReport taşır — panelin okuduğu rakamların aynısı."
+    },
+    "pricing": {
+      "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
+      "title": "Çalıştırmak kuruşluk. Tasarruf ise katlarca.",
+      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, USD cinsinden fiyatlandırılır.",
+      "amount": "$4",
+      "per": "/ koltuk / ay",
+      "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>$39 / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
+      "seatNote": "Bir koltuk, bir kişi değil, etkin bir <b>makine ya da servis kimliğidir</b> — yalnızca bir ayda 3+ gün etkinse faturalandırılır. CI ve geçici çalıştırıcılar sayılmaz.",
+      "features": [
+        "Her BV‑SALA optimizasyonu, sınırsız",
+        "Yönetilen anlamsal önbellek ve öğrenilmiş eşikler",
+        "Tasarruf panelleri ve ekip analitiği",
+        "Prompt'larınız altyapınızdan asla çıkmaz"
+      ],
+      "cta": "Başlayın →",
+      "trustTitle": "Fiyat neden bu kadar düşük olabiliyor",
+      "trust": [
+        { "lead": "Token taşımıyoruz.", "rest": "LLM trafiğiniz doğrudan sağlayıcınıza akar — biz yalnızca sayımları görürüz, asla içeriği değil." },
+        { "lead": "Ağır kısmı kendiniz barındırırsınız.", "rest": "Optimize edici sizin sürecinizde çalışır; sunucularımız yalnızca lisanslar, öğrenir ve raporlar." },
+        { "lead": "Altyapı gelirle birlikte ölçeklenir.", "rest": "Küçük bir sunucuda başlar ve yalnızca ödeme yapan müşteriler bir sonraki kademeyi karşıladığında büyür." },
+        { "lead": "Rapor, sayacın kendisidir.", "rest": "Faturalandırma, yukarıda doğruladığınız SavingsReport'un aynısını okur — kara kutu yok." }
+      ]
+    },
+    "footer": {
+      "tagline": "İşletmeniz için işletim sistemi. Bu, <b>BV‑SALA</b>, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimize edicisi — ödemeden önce tasarrufu kendiniz doğrulayın.",
+      "badge": "BV‑SALA · Savings Layer",
+      "colSavings": "Savings Layer",
+      "colBivelio": "BiVelio",
+      "colLegal": "Yasal",
+      "verify": "Tasarrufunuzu doğrulayın",
+      "measured": "Ölçülen sonuçlar",
+      "pricing": "Fiyatlandırma",
+      "home": "Ana sayfa",
+      "docs": "Dokümantasyon",
+      "security": "Güvenlik",
+      "status": "Durum",
+      "privacy": "Gizlilik",
+      "terms": "Hizmet şartları",
+      "gdpr": "GDPR",
+      "trust": "Kurumsal güvenlik · GDPR uyumlu · Ölçeklenebilir altyapı",
+      "entity": "BiVelio Inc tarafından desteklenmektedir · Delaware (Amerika Birleşik Devletleri).",
+      "copyright": "© 2026 BiVelio Inc. Tüm hakları saklıdır.",
+      "andorra": "Andorra'dan tüm dünyaya 🇦🇩",
+      "bottomPrivacy": "Gizlilik",
+      "bottomTerms": "Şartlar"
+    }
+  }
+}
