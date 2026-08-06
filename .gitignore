@@ -21,3 +21,6 @@ keys/*.private.pem
 
 # Supabase CLI link artifacts at the repo root only (NOT apps/web/lib/supabase)
 /supabase/
+
+# Credenciales del benchmark LIVE (pnpm ab). NUNCA se versiona.
+.env.bench

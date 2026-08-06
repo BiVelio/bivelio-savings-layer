@@ -36,21 +36,33 @@ tarjetas de referencia. Está honestamente etiquetado —el badge dice
 "ESTIMADO · proveedor simulado"— pero significa que **el producto todavía no ha
 demostrado su ahorro contra un proveedor real**.
 
-Hace falta una ejecución `pnpm ab` LIVE contra OpenAI con `requireUsage`
-activado. Ojo: `benchmarks/run.ts` en modo LIVE **no** activa `requireUsage` hoy
-y aun así imprime "(real provider tokens & cost)". Arreglarlo es una línea, y
-es condición para que la cifra publicada valga algo.
+Hace falta una ejecución `pnpm ab` LIVE contra un proveedor real. Todo lo que
+la rodea ya está montado (§1.2.1); falta la clave y ejecutar.
 
 Y ahora hay un motivo nuevo para rehacerlo: la regla de una sola regla cambia
 los números. El artefacto actual se generó con el baseline heurístico, así que
 sus porcentajes están inflados por el mismo sesgo que acabamos de quitar.
 
-### 1.3 Rotación de secretos y KMS
+#### 1.2.1 Lo que ya está montado
 
-Pendiente de coordinación con el propietario, no técnico. La clave de firma de
-licencias (`LICENSE_PRIVATE_KEY_B64`) vive hoy en un fichero local. La migración
-0007 ya rotó los identificadores de clave (`kid`), así que la infraestructura
-soporta la rotación; falta ejecutarla contra un KMS.
+- **`benchmarks/run.ts` exigía `usage`… salvo en LIVE.** `ab-live.ts` sí lo
+  exigía; `run.ts` no, y es el que imprime *"(real provider tokens & cost)"* en
+  la misma línea. Un proveedor que no devuelva `usage` dejaba el coste en 0 —
+  un 100% de ahorro fabricado con la etiqueta de medido. Corregido.
+- **`pnpm ab:publish`** — publicar dejó de ser un `cp` a mano. `publish-guard.ts`
+  bloquea: un artefacto que no sea LIVE, degradar un LIVE ya publicado a MOCK
+  (esto ni con `--allow-mock`), un fingerprint que cambió a mitad de tirada,
+  unos libros que no cuadran, y cualquier ahorro >100% o con el intervalo dado
+  la vuelta. `proven: false` sí se publica, pero avisando. 12 tests.
+- **`.env.bench`** (en `.gitignore`) con `.env.bench.example` al lado. Los
+  scripts lo cargan solos, así que la clave no pasa por el historial del shell.
+
+### 1.3 Rotación de secretos y KMS — APLAZADO por decisión
+
+El propietario decide no hacerla ahora (2026-08-06). La clave de firma de
+licencias (`LICENSE_PRIVATE_KEY_B64`) sigue en un fichero local. La migración
+0007 ya introdujo el identificador de clave (`kid`), así que cuando se quiera
+hacer, la infraestructura lo soporta sin cambios de código.
 
 ---
 
@@ -119,12 +131,12 @@ vs estimado).
 
 ## 4. Orden que yo seguiría
 
-1. **`requireUsage` en el benchmark LIVE** — una línea, y sin ella la cifra
-   publicada no vale.
-2. **Ejecutar `pnpm ab` LIVE** y sustituir `ab-live.json`. Cierra 1.2 y da por
-   fin una cifra defendible, ya con el baseline corregido.
-3. **Publicar en npm**, con el test del bundle antes.
-4. **Purga de `usage_ingest_seen`** — antes de que haya volumen, no después.
-5. Los dos graves de caché (2.3).
-6. `loading.tsx` / `error.tsx`.
-7. Rotación de secretos y KMS, cuando el propietario pueda coordinarlo.
+1. ~~`requireUsage` en el benchmark LIVE~~ — hecho.
+2. ~~Tubería de publicación con verja~~ — hecho (`pnpm ab:publish`).
+3. **Ejecutar `pnpm ab` LIVE** y publicar. Solo falta la clave del proveedor.
+   Cierra 1.2 y da por fin una cifra defendible, ya con el baseline corregido.
+4. **Publicar en npm**, con el test del bundle antes.
+5. **Purga de `usage_ingest_seen`** — antes de que haya volumen, no después.
+6. Los dos graves de caché (2.3).
+7. `loading.tsx` / `error.tsx`.
+8. ~~Rotación de secretos y KMS~~ — aplazado por decisión del propietario.

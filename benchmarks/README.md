@@ -65,14 +65,42 @@ paired dollar delta.
 ```bash
 pnpm ab            # MOCK: exercises the whole A/B pipeline; dollars labeled ESTIMATED (not a claim)
 
-# LIVE (real provider tokens & cost):
+# LIVE (real provider tokens & cost) — put the credentials in .env.bench once:
+cp .env.bench.example .env.bench     # fill in BVSALA_DEMO_API_KEY
+pnpm ab                              # the script loads .env.bench by itself
+
+# …or pass them inline for a one-off:
 BVSALA_DEMO_BASE_URL=https://ai-gateway.vercel.sh/v1 \
 BVSALA_DEMO_API_KEY=<KEY> BVSALA_DEMO_MODEL=openai/gpt-4o-mini BVSALA_DEMO_KEEP_PREFIX=1 \
-BVSALA_AB_REPS=8 \
 pnpm ab
-# Optional answer-vs-answer quality judge:
-#   BVSALA_JUDGE_BASE_URL=… BVSALA_JUDGE_API_KEY=… BVSALA_JUDGE_MODEL=…
 ```
+
+`.env.bench` is gitignored and read via `--env-file-if-exists`, so the key never
+reaches the shell history. The same file drives `pnpm demo` and `pnpm ablation`.
+
+### Publishing the artifact (`pnpm ab:publish`)
+
+The figure the landing shows **is** the product's commercial claim, so getting it
+onto the site is not a `cp`. That is exactly how a `mode: "MOCK"` artifact came
+to be served in the first place.
+
+```bash
+pnpm ab:publish --dry-run    # decide and print, write nothing
+pnpm ab:publish              # benchmarks/out → apps/web/public/data
+```
+
+`publish-guard.ts` refuses to publish when:
+
+- the artifact is not `LIVE` (override with `--allow-mock`, deliberately);
+- it would **downgrade** an already-published `LIVE` to a MOCK — this one has no
+  override, because losing the only defensible number by accident is silent;
+- the model fingerprint changed mid-run (the two arms measured different models);
+- the ledgers don't reconcile — a non-zero residual means double counting;
+- savings exceed 100%, the interval is inverted, or the point estimate falls
+  outside its own interval.
+
+`proven: false` **is** publishable — under-claiming is honest — but it warns, and
+the landing must not present it as demonstrated savings.
 
 **Honesty rules built into the harness** (each closes a specific audited defect):
 
