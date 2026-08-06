@@ -23,6 +23,18 @@ export async function VerdictHero({ usage }: { usage: UsageRollup[] }) {
   // la clase `pos` estaba fija, y no existía regla para `neg`.
   const tono = net < 0 ? "neg" : "pos";
 
+  // La parte COMPROBABLE contra la factura: solo peticiones cuyo baseline se
+  // reconstruyó desde el contador del proveedor. El resto son llamadas
+  // evitadas, donde el baseline es necesariamente estimado. El titular las
+  // mezclaba en una sola cifra.
+  const mBase = usage.reduce((n, r) => n + (r.measuredBaselineCost ?? 0), 0);
+  const mAct = usage.reduce((n, r) => n + (r.measuredActualCost ?? 0), 0);
+  const mReq = usage.reduce((n, r) => n + (r.measuredRequests ?? 0), 0);
+  const peticiones = usage.reduce((n, r) => n + r.requests, 0);
+  const medido = mBase > 0
+    ? { net: 1 - mAct / mBase, share: peticiones > 0 ? mReq / peticiones : 0 }
+    : null;
+
   return (
     <div className="verdict">
       <div>
@@ -30,6 +42,14 @@ export async function VerdictHero({ usage }: { usage: UsageRollup[] }) {
         {live ? (
           <>
             <div className={`big ${tono} ck-num`}>{pct(net)}</div>
+            {medido !== null && (
+              <p className="ck-note" style={{ marginTop: "8px" }}>
+                {t("verdictHero.measuredSplit", {
+                  pct: pct(medido.net),
+                  share: `${Math.round(medido.share * 100)}%`,
+                })}
+              </p>
+            )}
             <div className="cap">
               {t.rich("verdictHero.savedLine", {
                 money: money(saved),

@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Vos économies · mesurées par le SDK",
+      "measuredSplit": "Dont {pct} est mesuré sur les compteurs de tokens de votre fournisseur ({share} des requêtes). Le reste provient d’appels évités, où aucun compteur n’existe.",
       "savedLine": "de vos dépenses LLM conservées cette période · <b>{money}</b> économisés (référence − réel, à vos prix).",
       "emptyCap": "Nous ne mesurons pas encore votre trafic — 0 requête observée. Installez le SDK et vos économies nettes apparaissent ici — vos prix, votre charge de travail. Jamais un chiffre emprunté ou inventé."
     },

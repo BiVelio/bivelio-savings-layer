@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Tasarrufunuz · SDK tarafından ölçüldü",
+      "measuredSplit": "Bunun {pct} kadarı sağlayıcınızın kendi token sayaçlarına göre ölçülmüştür (isteklerin {share} kadarı). Gerisi, sayacın bulunmadığı önlenen çağrılardan gelir.",
       "savedLine": "LLM harcamanızdan bu dönem cebinizde kaldı · <b>{money}</b> tasarruf (taban − gerçek, sizin fiyatlarınızla).",
       "emptyCap": "Trafiğiniz henüz ölçülmüyor — 0 istek görüldü. SDK'yı kurun; net tasarrufunuz burada görünür — sizin fiyatlarınız, sizin iş yükünüz. Asla ödünç alınmış ya da uydurulmuş bir rakam değil."
     },

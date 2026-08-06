@@ -53,26 +53,60 @@ describe("titular de ahorro", () => {
     // El cálculo era `net = baseline > 0 ? 1 - actual/baseline : 0` y la clase
     // `pos` estaba fija: salía "0.0%" en verde, que es exactamente el cero
     // fabricado que el comentario del componente promete no pintar jamás.
-    const v = deriveVerdict([{ baselineCost: 0, actualCost: 0 }]);
+    const v = deriveVerdict([{ requests: 1, baselineCost: 0, actualCost: 0 }]);
     expect(v.kind).toBe("unpriced");
     expect(v).not.toHaveProperty("net", 0);
   });
 
   it("una PÉRDIDA no se pinta de verde", () => {
-    const v = deriveVerdict([{ baselineCost: 100, actualCost: 112 }]);
+    const v = deriveVerdict([{ requests: 1, baselineCost: 100, actualCost: 112 }]);
     expect(v).toMatchObject({ kind: "measured", tone: "neg" });
     if (v.kind === "measured") expect(v.net).toBeCloseTo(-0.12, 6);
   });
 
   it("un ahorro real se mide y se pinta en positivo", () => {
     const v = deriveVerdict([
-      { baselineCost: 60, actualCost: 20 },
-      { baselineCost: 40, actualCost: 20 },
+      { requests: 1, baselineCost: 60, actualCost: 20 },
+      { requests: 1, baselineCost: 40, actualCost: 20 },
     ]);
     expect(v).toMatchObject({ kind: "measured", tone: "pos" });
     if (v.kind === "measured") {
       expect(v.net).toBeCloseTo(0.6, 6);
       expect(v.saved).toBeCloseTo(60, 6);
     }
+  });
+});
+
+describe("dinero medido vs estimado", () => {
+  it("separa lo comprobable contra la factura de lo que solo está modelado", () => {
+    // Tres peticiones: una MEDIDA (contador del proveedor) y dos evitadas, cuyo
+    // baseline es necesariamente estimado porque la llamada nunca ocurrió.
+    // Mezclarlas daba un 80%; lo verificable es un 40%.
+    const v = deriveVerdict([
+      { requests: 3, baselineCost: 0.30, actualCost: 0.06,
+        measuredRequests: 1, measuredBaselineCost: 0.10, measuredActualCost: 0.06 },
+    ]);
+    expect(v.kind).toBe("measured");
+    if (v.kind !== "measured") return;
+    expect(v.net).toBeCloseTo(0.80, 6);            // el total, como antes
+    expect(v.measured).not.toBeNull();
+    expect(v.measured!.net).toBeCloseTo(0.40, 6);  // lo comprobable
+    expect(v.measured!.share).toBeCloseTo(1 / 3, 6);
+  });
+
+  it("sin nada medido, `measured` es null y no se inventa un cero", () => {
+    const v = deriveVerdict([
+      { requests: 2, baselineCost: 0.20, actualCost: 0, measuredRequests: 0,
+        measuredBaselineCost: 0, measuredActualCost: 0 },
+    ]);
+    if (v.kind !== "measured") throw new Error("esperaba measured");
+    expect(v.measured).toBeNull();
+  });
+
+  it("filas de un SDK antiguo (sin las columnas) no rompen el cálculo", () => {
+    const v = deriveVerdict([{ requests: 1, baselineCost: 10, actualCost: 4 }]);
+    if (v.kind !== "measured") throw new Error("esperaba measured");
+    expect(v.net).toBeCloseTo(0.6, 6);
+    expect(v.measured).toBeNull();
   });
 });

@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Your savings · metered by the SDK",
+      "measuredSplit": "Of which {pct} is measured against your provider’s own token counts ({share} of requests). The rest is from avoided calls, where no provider count exists.",
       "savedLine": "of your LLM spend kept this period · <b>{money}</b> saved (baseline − actual, at your prices).",
       "emptyCap": "Not measuring your traffic yet — 0 requests seen. Install the SDK and your net savings appears here — your prices, your workload. Never a borrowed or fabricated number."
     },

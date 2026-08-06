@@ -27,6 +27,7 @@ interface UsageWire {
   baselineCost: number;
   actualCost: number;
   netSavings: number;
+  basis?: string;
 }
 
 export interface UsageEmitterOptions {
@@ -172,6 +173,8 @@ export class UsageEmitter {
       baselineCost: r.cost.baselineEstimate,
       actualCost: r.cost.actual,
       netSavings: r.cost.netSavings,
+      // Viaja para que el panel agregue el dinero MEDIDO aparte del estimado.
+      ...(r.cost.basis ? { basis: r.cost.basis } : {}),
     };
   }
 }

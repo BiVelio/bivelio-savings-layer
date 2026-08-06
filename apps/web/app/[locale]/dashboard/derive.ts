@@ -40,7 +40,32 @@ export function deriveLicenseStatus(row: LicenseRow | null, nowMs: number): Lice
 export type Verdict =
   | { kind: "empty" }                          // no hay tráfico medido
   | { kind: "unpriced" }                       // hay tráfico, pero sin baseline con el que comparar
-  | { kind: "measured"; net: number; saved: number; tone: "pos" | "neg" };
+  | {
+      kind: "measured";
+      net: number;
+      saved: number;
+      tone: "pos" | "neg";
+      /**
+       * La parte COMPROBABLE contra la factura del proveedor: solo peticiones
+       * cuyo baseline se reconstruyó desde su contador (basis "measured"). El
+       * resto son llamadas evitadas, donde el baseline es necesariamente
+       * estimado porque la llamada nunca ocurrió.
+       *
+       * `null` cuando no hay ninguna medida. Se expone aparte a propósito: el
+       * titular mezclaba las dos y enseñaba, por ejemplo, un 80% cuando lo
+       * verificable era un 40%.
+       */
+      measured: { net: number; saved: number; share: number } | null;
+    };
+
+export interface FilaUso {
+  requests: number;
+  baselineCost: number;
+  actualCost: number;
+  measuredRequests?: number;
+  measuredBaselineCost?: number;
+  measuredActualCost?: number;
+}
 
 /**
  * El titular era `net = baseline > 0 ? 1 - actual/baseline : 0` y se pintaba con
@@ -48,11 +73,28 @@ export type Verdict =
  * baseline 0 salía "0.0%" en verde —un cero fabricado— y una pérdida real
  * (actual > baseline) también salía en verde.
  */
-export function deriveVerdict(usage: { baselineCost: number; actualCost: number }[]): Verdict {
+export function deriveVerdict(usage: FilaUso[]): Verdict {
   if (usage.length === 0) return { kind: "empty" };
-  const baseline = usage.reduce((n, r) => n + r.baselineCost, 0);
-  const actual = usage.reduce((n, r) => n + r.actualCost, 0);
+  const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
+
+  const baseline = suma((r) => r.baselineCost);
+  const actual = suma((r) => r.actualCost);
   if (!(baseline > 0)) return { kind: "unpriced" };
   const net = 1 - actual / baseline;
-  return { kind: "measured", net, saved: baseline - actual, tone: net < 0 ? "neg" : "pos" };
+
+  const mBase = suma((r) => r.measuredBaselineCost ?? 0);
+  const mAct = suma((r) => r.measuredActualCost ?? 0);
+  const peticiones = suma((r) => r.requests);
+  const mReq = suma((r) => r.measuredRequests ?? 0);
+
+  return {
+    kind: "measured",
+    net,
+    saved: baseline - actual,
+    tone: net < 0 ? "neg" : "pos",
+    measured:
+      mBase > 0
+        ? { net: 1 - mAct / mBase, saved: mBase - mAct, share: peticiones > 0 ? mReq / peticiones : 0 }
+        : null,
+  };
 }

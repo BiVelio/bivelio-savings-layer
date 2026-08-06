@@ -36,8 +36,11 @@ const USAGE_NUMBER_FIELDS = [
 ] as const;
 // orgId is server-derived (never trusted from the body). seatId is the machine
 // identity; ci flags CI/ephemeral seats (excluded from billable seats).
+/** Valores admitidos en `basis` (espejo de CostBasis del SDK). */
+const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured"]);
+
 const USAGE_ALLOWED_FIELDS = new Set<string>([
-  "orgId", "seatId", "ci", "cacheResult",
+  "orgId", "seatId", "ci", "cacheResult", "basis",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
 ]);
@@ -116,6 +119,13 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
     }
     rec["seatId"] = s;
+  }
+  if (input["basis"] !== undefined) {
+    const b = input["basis"];
+    if (typeof b !== "string" || !USAGE_BASIS.has(b)) {
+      throw new UsageValidationError(`field "basis" must be one of ${[...USAGE_BASIS].join("|")}`);
+    }
+    rec["basis"] = b;
   }
   if (input["ci"] !== undefined) {
     if (typeof input["ci"] !== "boolean") throw new UsageValidationError(`field "ci" must be a boolean`);

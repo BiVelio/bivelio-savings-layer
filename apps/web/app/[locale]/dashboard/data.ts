@@ -154,6 +154,10 @@ export interface UsageRollup {
   providerCachedInputTokens: number;
   baselineCost: number;
   actualCost: number;
+  /** Subconjunto MEDIDO: baseline reconstruido desde el contador del proveedor. */
+  measuredRequests: number;
+  measuredBaselineCost: number;
+  measuredActualCost: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -166,7 +170,7 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       .schema("bvsala")
       .from("usage_daily")
       .select(
-        "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost",
+        "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost",
       )
       .eq("org_id", orgId)
       .gte("day", since)
@@ -182,6 +186,9 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       providerCachedInputTokens: Number(r["provider_cached_input_tokens"] ?? 0),
       baselineCost: Number(r["baseline_cost"] ?? 0),
       actualCost: Number(r["actual_cost"] ?? 0),
+      measuredRequests: Number(r["measured_requests"] ?? 0),
+      measuredBaselineCost: Number(r["measured_baseline_cost"] ?? 0),
+      measuredActualCost: Number(r["measured_actual_cost"] ?? 0),
     }));
   } catch {
     return [];

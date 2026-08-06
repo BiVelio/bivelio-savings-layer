@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Jouw besparingen · gemeten door de SDK",
+      "measuredSplit": "Waarvan {pct} is gemeten aan de tokentellers van je provider ({share} van de verzoeken). De rest komt uit vermeden aanroepen, waar geen teller bestaat.",
       "savedLine": "van je LLM-uitgaven bespaard in deze periode · <b>{money}</b> bespaard (basislijn − werkelijk, tegen jouw prijzen).",
       "emptyCap": "Nog geen meting van je verkeer — 0 verzoeken gezien. Installeer de SDK en je netto besparingen verschijnen hier — jouw prijzen, jouw werklast. Nooit een geleend of verzonnen getal."
     },
