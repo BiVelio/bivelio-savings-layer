@@ -231,6 +231,20 @@ export interface SavingsReport {
     baselineEstimate: number;
     actual: number;
     netSavings: number;
+    /**
+     * De dónde sale el baseline. Es lo que separa el dinero medido del estimado.
+     *
+     * - `measured`   — reconstruido desde el contador del proveedor de ESTA
+     *                  petición. Es dinero, y se puede contrastar con la factura.
+     * - `estimated`  — la llamada se EVITÓ, así que nunca hubo contador del
+     *                  proveedor y el baseline sale del estimador local. Es la
+     *                  mejor cifra disponible, pero no está medida.
+     * - `unmeasured` — el proveedor no reportó uso. No se reclama nada.
+     *
+     * Un panel que sume `measured` y `estimated` en una sola cifra de "dinero
+     * ahorrado" está haciendo justo lo que este producto promete no hacer.
+     */
+    basis: import("../tokenizer/accounting.js").CostBasis;
   };
 
   latencyMs: {

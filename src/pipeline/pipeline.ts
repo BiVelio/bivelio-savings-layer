@@ -414,6 +414,20 @@ export class SavingsPipeline {
     ledger.actualLlm = 1;
     ledger.actualInput = response.usage.inputTokens;
     ledger.actualOutput = response.usage.outputTokens;
+
+    // Calibración de la regla, medida en ESTA petición. `sentInputLocal` es la
+    // cuenta local del prompt que de verdad salió; la diferencia contra el
+    // baseline local es lo que la capa quitó, y es una resta entre dos medidas
+    // del MISMO estimador, así que su sesgo se cancela. Ver la nota larga en
+    // SavingsLedger. El clamp a 0 importa: si el prompt enviado CRECIÓ (evidencia
+    // de retrieval, instrucciones de formato) no se reclama nada, que es lo
+    // honesto — no un ahorro negativo inventado.
+    ledger.sentInputLocal = this.tokensFor(
+      this.assemblePromptText(messages, toolSelection.tools),
+      request,
+    );
+    ledger.removedInputLocal = Math.max(0, baselineInput - ledger.sentInputLocal);
+
     if (response.usage.cachedInputTokens) {
       ledger.providerCached(response.usage.cachedInputTokens);
     }
@@ -432,13 +446,14 @@ export class SavingsPipeline {
         // backend to prevent the invalid output in the first place.
         ledger.retries = 1;
         trace.record("validation", "repair-attempt", { errors: validation.errors });
+        const mensajesReparacion: ChatMessage[] = [
+          ...messages,
+          { role: "assistant", content: response.text },
+          { role: "user", content: "Return only a JSON object matching the contract." },
+        ];
         response = await this.config.provider.generate({
           model: request.model,
-          messages: [
-            ...messages,
-            { role: "assistant", content: response.text },
-            { role: "user", content: "Return only a JSON object matching the contract." },
-          ],
+          messages: mensajesReparacion,
           schema,
           ...(request.response?.maxOutputTokens != null
             ? { maxOutputTokens: request.response.maxOutputTokens }
@@ -447,6 +462,18 @@ export class SavingsPipeline {
         ledger.actualLlm = 2;
         ledger.actualInput += response.usage.inputTokens;
         ledger.actualOutput += response.usage.outputTokens;
+        // La reparación es coste NUESTRO, así que su salida se marca aparte para
+        // que NO engorde el baseline. Antes solo se sumaba a actualOutput, y como
+        // el baseline de una llamada ejecutada se deriva de actualOutput, el
+        // reintento se pagaba a sí mismo: la pérdida se reportaba mucho menor de
+        // lo que fue. La entrada del reintento también entra en sentInputLocal
+        // para que la calibración no se descuadre (actualInput ya acumula las dos
+        // llamadas; si la lectura local cubriera solo la primera, k saldría ~2x).
+        ledger.repairOutput += response.usage.outputTokens;
+        ledger.sentInputLocal += this.tokensFor(
+          this.assemblePromptText(mensajesReparacion, toolSelection.tools),
+          request,
+        );
         const reparsed = tryParse(response.text);
         validation = reparsed.ok
           ? validateAgainstSchema(reparsed.value, schema)
@@ -585,7 +612,7 @@ export class SavingsPipeline {
         actualInput: ledger.actualInput,
         eliminatedInput: ledger.eliminatedInput,
         compressedInput: ledger.compressedInput,
-        baselineOutput: ledger.baselineOutput,
+        baselineOutput: ledger.publishedBaselineOutput,
         actualOutput: ledger.actualOutput,
         eliminatedOutput: ledger.eliminatedOutput,
         ...(ledger.providerCachedInput
@@ -720,7 +747,7 @@ export class SavingsPipeline {
           actualInput: ledger.actualInput,
           eliminatedInput: ledger.eliminatedInput,
           compressedInput: ledger.compressedInput,
-          baselineOutput: ledger.baselineOutput,
+          baselineOutput: ledger.publishedBaselineOutput,
           actualOutput: ledger.actualOutput,
           eliminatedOutput: ledger.eliminatedOutput,
           ...(ledger.providerCachedInput
@@ -734,11 +761,31 @@ export class SavingsPipeline {
   }
 
   private assembleBaselinePrompt(request: SavingsRequest): string {
-    const parts = request.messages.map((m) => m.content);
-    if (request.structuredData !== undefined) {
-      parts.push(JSON.stringify(request.structuredData));
+    return this.assemblePromptText(
+      request.messages,
+      request.tools,
+      request.structuredData,
+    );
+  }
+
+  /**
+   * Ensamblador ÚNICO del texto que se mide en local.
+   *
+   * El baseline y la lectura del prompt realmente enviado TIENEN que ensamblarse
+   * igual, byte a byte. Si no, la calibración k = actualInput / sentInputLocal
+   * sale sesgada y el sesgo vuelve a colarse como ahorro por la puerta de atrás
+   * — que es exactamente el bug que la regla de una sola regla viene a cerrar.
+   */
+  private assemblePromptText(
+    messages: ChatMessage[],
+    tools?: SavingsRequest["tools"],
+    structuredData?: unknown,
+  ): string {
+    const parts = messages.map((m) => m.content);
+    if (structuredData !== undefined) {
+      parts.push(JSON.stringify(structuredData));
     }
-    for (const tool of request.tools ?? []) {
+    for (const tool of tools ?? []) {
       parts.push(JSON.stringify(tool.parameters ?? {}));
     }
     return parts.join("\n");
