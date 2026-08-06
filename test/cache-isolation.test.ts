@@ -88,3 +88,55 @@ describe("caché exacta: una respuesta personalizada no cruza de usuario", () =>
     expect(segunda.text).toBe(primera.text);
   });
 });
+
+/**
+ * La caché SEMÁNTICA tenía la misma clase de fuga que la exacta, por otra vía:
+ * su filtro de metadatos solo miraba tenant, scope, epoch y contrato. La clave
+ * exacta declara necesarios otros seis campos, y el embedding no ve ninguno.
+ */
+describe("caché semántica: el embedding no decide solo", () => {
+  const embed = async (t: string): Promise<number[]> =>
+    // Embedding de juguete: cuenta caracteres por clase. Dos preguntas
+    // redactadas casi igual salen casi idénticas, que es justo el escenario.
+    [0, 1, 2, 3].map((i) => [...t].filter((c) => c.charCodeAt(0) % 4 === i).length);
+
+  it("no sirve una respuesta calculada sobre datos ADJUNTOS distintos", async () => {
+    const { InMemorySemanticCache } = await import("../src/cache/semantic.js");
+    const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
+    const provider = new ProveedorPersonalizado();
+    const layer = createSavingsLayer({ provider, semanticCache, devUnlicensed: true });
+
+    const base = {
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user" as const, content: "cuantas filas tiene la tabla adjunta" }],
+      savings: { semanticCache: true as const, exactCache: false },
+      context: { tenantId: "acme", knowledgeEpoch: "e1" },
+    };
+
+    const conTablaA = await layer.generate({ ...base, structuredData: { filas: [1, 2, 3] } });
+    const conTablaB = await layer.generate({ ...base, structuredData: { filas: [1, 2, 3, 4, 5, 6, 7] } });
+
+    // Misma pregunta, datos distintos: el embedding las ve iguales, pero la
+    // respuesta correcta NO lo es. Antes se servía la de la primera tabla.
+    expect(conTablaB.report.cache.result).not.toBe("semantic");
+    expect(conTablaB.text).not.toBe(conTablaA.text);
+  });
+
+  it("no sirve la respuesta de OTRO modelo", async () => {
+    const { InMemorySemanticCache } = await import("../src/cache/semantic.js");
+    const semanticCache = new InMemorySemanticCache({ embed, similarityThreshold: 0.3, acceptThreshold: 0.3 });
+    const provider = new ProveedorPersonalizado();
+    const layer = createSavingsLayer({ provider, semanticCache, devUnlicensed: true });
+
+    const base = {
+      messages: [{ role: "user" as const, content: "explica el teorema de forma breve" }],
+      savings: { semanticCache: true as const, exactCache: false },
+      context: { tenantId: "acme", knowledgeEpoch: "e1" },
+    };
+    const barato = await layer.generate({ ...base, model: "openai/gpt-4o-mini" });
+    const caro = await layer.generate({ ...base, model: "openai/gpt-4o" });
+
+    expect(caro.report.cache.result).not.toBe("semantic");
+    expect(caro.text).not.toBe(barato.text);
+  });
+});
