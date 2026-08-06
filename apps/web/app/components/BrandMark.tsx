@@ -1,6 +1,6 @@
 /* The BiVelio brand mark: the logo + the "BiVelio." wordmark with the exact
    brand-coloured dots (#00B3FC / #0073FF / #00CBF2), matching bivelio.com. */
-export function BrandMark({ size = 26 }: { size?: number }) {
+export function BrandMark({ size = 28 }: { size?: number }) {
   return (
     <span className="brand">
       {/* eslint-disable-next-line @next/next/no-img-element */}

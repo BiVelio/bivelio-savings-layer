@@ -2,16 +2,19 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { safeNextPath } from "../safe-next";
+
 // Redirect target after email confirmation / OAuth: exchange the code for a
 // session cookie, then send the user to the dashboard.
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  // Only accept a same-origin RELATIVE path — never an attacker-controlled absolute
-  // URL or a protocol-relative "//host" (open-redirect / phishing guard). Building
-  // the redirect with new URL(next, origin) means `origin` can never be overridden.
-  const nextParam = searchParams.get("next") ?? "/dashboard";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/dashboard";
+  // `next` llega del query string, así que resolverlo sin sanear es una
+  // redirección abierta (CWE-601). La comprobación anterior era de cadena
+  // (startsWith "/" y no "//") y NO bastaba: el parser de URL borra tabuladores
+  // y saltos de línea ANTES de resolver, de modo que "/\t/evil.com" pasaba el
+  // filtro y acababa en "//evil.com". Ver safeNextPath.
+  const next = safeNextPath(searchParams.get("next"));
 
   if (code) {
     const supabase = await createClient();

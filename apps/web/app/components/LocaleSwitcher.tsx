@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 
 import { useRouter, usePathname } from "@/i18n/navigation";
@@ -38,18 +39,33 @@ export function LocaleSwitcher() {
     .filter((l) => (q ? `${l.native} ${l.english} ${l.code}`.toLowerCase().includes(q) : true));
   const activeMeta = metaFor(active);
 
-  // On open: focus the search, lock body scroll. On close: reset the query and
-  // return focus to the trigger.
+  // Al abrir: bloquear el scroll de fondo y enfocar la búsqueda. Al cerrar:
+  // limpiar la consulta, restaurar la posición y devolver el foco al disparador.
+  //
+  // El bloqueo NO puede hacerse con `body.style.overflow = "hidden"`: html y body
+  // ya declaran `overflow-x` (clip) para contener las bandas a sangre, y con eso
+  // el truco deja de detener el scroll — comprobado en Chrome. Se fija el body y
+  // se compensa con un desplazamiento negativo, que funciona pase lo que pase con
+  // la semántica de overflow y además evita el salto al restaurar.
   useEffect(() => {
     if (!open) {
       setQuery("");
       return;
     }
-    document.body.style.overflow = "hidden";
+    const y = window.scrollY;
+    const body = document.body;
+    const prev = { position: body.style.position, top: body.style.top, width: body.style.width };
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.width = "100%";
+
     const id = window.setTimeout(() => searchRef.current?.focus(), 20);
     return () => {
       window.clearTimeout(id);
-      document.body.style.overflow = "";
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      window.scrollTo({ top: y, behavior: "instant" });
       triggerRef.current?.focus();
     };
   }, [open]);
@@ -86,10 +102,19 @@ export function LocaleSwitcher() {
         onClick={() => setOpen(true)}
       >
         <GlobeIcon />
+        {/* El disparador nunca se queda mudo: por debajo de 640px el nombre
+            nativo cede el sitio al código, como el `sm:hidden` del origen. */}
         <span className="lang-trigger-name">{activeMeta.native}</span>
+        <span className="lang-trigger-code">{active.toUpperCase()}</span>
       </button>
 
-      {open && (
+      {/* El overlay se monta en <body> mediante un portal, NO aquí dentro. La
+          barra de navegación lleva `backdrop-filter`, y un ancestro con filtro
+          de fondo se convierte en el bloque contenedor de sus descendientes
+          `position: fixed`: sin el portal, `inset: 0` se resolvía contra los
+          64px del nav y el modal aparecía encajado dentro de la barra. Es lo
+          mismo que hace bivelio.com con <Dialog.Portal>. */}
+      {open && createPortal(
         <div
           className="lang-overlay"
           onClick={(e) => {
@@ -159,7 +184,8 @@ export function LocaleSwitcher() {
               {items.length === 0 && <p className="lang-empty">—</p>}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

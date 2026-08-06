@@ -1,15 +1,17 @@
 import { Link } from "@/i18n/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { AnnouncementBar } from "./AnnouncementBar";
 import { BrandMark } from "./BrandMark";
 import { LocaleSwitcher } from "./LocaleSwitcher";
-import { NavLinks } from "./NavLinks";
-import { ThemeToggle } from "./ThemeToggle";
+import { NavCta, NavSections } from "./NavLinks";
 
 /**
- * Top navigation for the app surfaces (login / signup / dashboard). The static
- * marketing landing (public/landing.html) has its own header. Auth-aware: signed-in
- * users see "Dashboard", signed-out users see "Sign in".
+ * Chrome superior de las superficies públicas (landing / login / signup) —
+ * mismo montaje que el <SiteNav> de bivelio.com: franja de anuncio negra,
+ * cabecera pegajosa de 64px translúcida con blur, marca a la izquierda con sus
+ * secciones, y a la derecha el idioma y un único CTA tinta.
+ * El dashboard tiene su propio shell (topbar + sidebar).
  */
 export async function NavBar() {
   let authed = false;
@@ -20,22 +22,27 @@ export async function NavBar() {
     } = await supabase.auth.getUser();
     authed = !!user;
   } catch {
-    // Auth not resolvable (e.g. env missing) — render the signed-out nav.
+    // Auth no resoluble (p. ej. faltan variables) — se pinta el nav de invitado.
   }
 
   return (
-    <header className="site-nav">
-      <div className="site-nav-inner">
-        <Link href="/" className="nav-brand" aria-label="BiVelio Savings Layer — home">
-          <BrandMark size={24} />
-          <span className="tag">Savings Layer</span>
-        </Link>
-        <nav className="nav-actions">
-          <NavLinks authed={authed} />
-          <LocaleSwitcher />
-          <ThemeToggle />
-        </nav>
-      </div>
-    </header>
+    <>
+      <AnnouncementBar />
+      <header className="site-nav">
+        <div className="site-nav-inner">
+          <div className="nav-left">
+            <Link href="/" className="nav-brand" aria-label="BiVelio Savings Layer">
+              <BrandMark size={28} />
+              <span className="tag">Savings Layer</span>
+            </Link>
+            <NavSections />
+          </div>
+          <div className="nav-actions">
+            <LocaleSwitcher />
+            <NavCta authed={authed} />
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "Savings Layer maakt deel uit van het BiVelio-platform",
+    "announceClose": "Sluiten",
     "langTitle": "Kies je taal",
     "langSubtitle": "Kies de taal waarin je BiVelio Savings Layer wilt gebruiken.",
     "langSearch": "Taal zoeken",
@@ -12,12 +14,6 @@
     "signOut": "Uitloggen"
   },
   "app": {
-    "themeToggle": {
-      "light": "Licht",
-      "dark": "Donker",
-      "ariaLabel": "Thema wisselen",
-      "title": "Wisselen tussen licht/donker"
-    },
     "sidebar": {
       "overview": "Overzicht",
       "savings": "Besparingen",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Meet het op je eigen verkeer",
+      "ctaSub": "De verifier draait gratis in je browser. De licentie heb je alleen nodig om BV‑SALA in je eigen app te draaien.",
+      "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's provider-neutrale LLM-kostenoptimizer — verifieer de besparingen zelf voordat je betaalt.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Privacy",
       "terms": "Servicevoorwaarden",
       "gdpr": "AVG",
+      "cookies": "Cookies",
+      "billing": "Facturatie",
+      "aiAct": "Verantwoorde AI (AI Act)",
+      "legalCenter": "Juridisch centrum",
       "trust": "Enterprise-beveiliging · AVG-conform · Schaalbare infrastructuur",
       "entity": "Mogelijk gemaakt door BiVelio Inc · Delaware (Verenigde Staten).",
       "copyright": "© 2026 BiVelio Inc. Alle rechten voorbehouden.",

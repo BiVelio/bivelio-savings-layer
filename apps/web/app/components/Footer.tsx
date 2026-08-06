@@ -1,6 +1,32 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { Link } from "@/i18n/navigation";
+
+import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
+
 import { BrandMark } from "./BrandMark";
+import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
+
+// Cuentas propiedad de BiVelio, las mismas que publica el SocialDock de
+// bivelio.com. No hay cuenta de X (x.com/bivelio es un 404), así que X no está
+// en vez de apuntar a otro sitio.
+const SOCIALS = [
+  { href: "https://www.linkedin.com/company/bivelio/", label: "BiVelio on LinkedIn", Icon: LinkedInIcon },
+  { href: "https://github.com/BiVelio", label: "BiVelio on GitHub", Icon: GitHubIcon },
+];
+
+/** Dock de cristal con las redes de la compañía — la píldora del footer corporativo. */
+function SocialDock() {
+  return (
+    <div className="ftr-social">
+      {SOCIALS.map(({ href, label, Icon }) => (
+        <a key={href} href={href} target="_blank" rel="noopener noreferrer me" aria-label={label}>
+          <Icon />
+        </a>
+      ))}
+    </div>
+  );
+}
 
 // The corporate BiVelio footer (brand + link columns + trust/legal + the giant
 // glass background wordmark), mirroring the static public/landing.html footer.
@@ -74,29 +100,48 @@ export default async function Footer() {
     [t("footer.pricing"), "#pricing"],
   ];
   const bivelio: string[][] = [
-    [t("footer.home"), "https://bivelio.com"],
+    [t("footer.home"), corporateUrl("", locale)],
     [t("footer.docs"), "https://docs.bivelio.com"],
-    [t("footer.security"), `https://bivelio.com/${locale}/security`],
+    [t("footer.security"), corporateUrl("/security", locale)],
     [t("footer.status"), "https://status.bivelio.com"],
   ];
-  const legal: string[][] = [
-    [t("footer.privacy"), `https://bivelio.com/${locale}/privacy`],
-    [t("footer.terms"), `https://bivelio.com/${locale}/terms`],
-    [t("footer.gdpr"), `https://bivelio.com/${locale}/gdpr`],
-  ];
+  // El corpus legal COMPLETO de bivelio.com, no un extracto: seis documentos
+  // más el centro legal que los agrupa.
+  const legal: string[][] = LEGAL_DOCS.map((d) => [t(`footer.${d.key}`), corporateUrl(d.path, locale)]);
 
   return (
     <footer className="ftr">
+      {/* Banda CTA — la pieza que abre el footer de bivelio.com. El fantasma
+          lleva a la oferta gratuita (el verificador) y el de tinta al alta. */}
+      <div className="ftr-cta">
+        <div className="ftr-cta-inner">
+          <div>
+            <p className="ftr-cta-title">{t("footer.ctaTitle")}</p>
+            <p className="ftr-cta-sub">{t("footer.ctaSub")}</p>
+          </div>
+          <div className="ftr-cta-actions">
+            <a className="btn btn-ghost" href="#verify">
+              {t("hero.ctaRun")}
+            </a>
+            <Link className="btn btn-primary" href="/signup">
+              {t("footer.ctaStart")}
+              <ArrowRightIcon />
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="wrap">
         <div className="ftr-card">
           <div className="ftr-inner">
             <div className="ftr-grid">
               <div className="ftr-brand">
-                <BrandMark size={34} />
+                <BrandMark size={36} />
                 <p>{t.rich("footer.tagline", { b: (c) => <b>{c}</b> })}</p>
                 <span className="ftr-badge">
                   <span className="bar" /> {t("footer.badge")}
                 </span>
+                <SocialDock />
               </div>
               <div className="ftr-cols">
                 <Column head={t("footer.colSavings")} links={savings} />
@@ -114,10 +159,10 @@ export default async function Footer() {
             <div className="ftr-bottom-links">
               <span>{t("footer.andorra")}</span>
               <span aria-hidden className="sep" />
-              <a href={`https://bivelio.com/${locale}/privacy`} target="_blank" rel="noopener noreferrer">
+              <a href={corporateUrl("/privacy", locale)} target="_blank" rel="noopener noreferrer">
                 {t("footer.bottomPrivacy")}
               </a>
-              <a href={`https://bivelio.com/${locale}/terms`} target="_blank" rel="noopener noreferrer">
+              <a href={corporateUrl("/terms", locale)} target="_blank" rel="noopener noreferrer">
                 {t("footer.bottomTerms")}
               </a>
             </div>

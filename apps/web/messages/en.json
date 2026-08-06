@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "Savings Layer is part of the BiVelio platform",
+    "announceClose": "Close",
     "langTitle": "Choose your language",
     "langSubtitle": "Pick the language you want to use BiVelio Savings Layer in.",
     "langSearch": "Search language",
@@ -12,12 +14,6 @@
     "signOut": "Sign out"
   },
   "app": {
-    "themeToggle": {
-      "light": "Light",
-      "dark": "Dark",
-      "ariaLabel": "Switch theme",
-      "title": "Switch light / dark"
-    },
     "sidebar": {
       "overview": "Overview",
       "savings": "Savings",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Measure it on your own traffic",
+      "ctaSub": "The verifier runs free in your browser. The licence is only needed to run BV‑SALA inside your app.",
+      "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV‑SALA</b>, BiVelio's provider‑neutral LLM cost optimizer — verify the savings yourself before you pay.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Privacy",
       "terms": "Terms of service",
       "gdpr": "GDPR",
+      "cookies": "Cookies",
+      "billing": "Billing",
+      "aiAct": "Responsible AI (AI Act)",
+      "legalCenter": "Legal center",
       "trust": "Enterprise security · GDPR compliant · Scalable infrastructure",
       "entity": "Powered by BiVelio Inc · Delaware (United States).",
       "copyright": "© 2026 BiVelio Inc. All rights reserved.",

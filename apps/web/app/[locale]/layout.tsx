@@ -14,11 +14,6 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-// Set the theme before first paint (no flash). Default is LIGHT — the OS
-// preference is intentionally ignored; only an explicit stored 'dark' choice
-// flips it, until the user decides otherwise.
-const THEME_INIT = `(function(){try{var s=localStorage.getItem('bv-theme');document.documentElement.setAttribute('data-theme',s==='dark'?'dark':'light');}catch(e){}})();`;
-
 export default async function LocaleLayout({
   children,
   params,
@@ -35,9 +30,17 @@ export default async function LocaleLayout({
   const dir = metaFor(locale).dir;
 
   return (
-    <html lang={locale} dir={dir} data-theme="light" suppressHydrationWarning>
+    // Superficie light-only, igual que bivelio.com: no hay script de tema, ni
+    // atributo que corregir antes del primer paint, ni parpadeo que evitar.
+    <html lang={locale} dir={dir}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        {/* Las @font-face viven dentro de globals.css, así que el navegador no
+            descubre los woff2 hasta parsear la hoja — un round-trip extra justo
+            sobre el elemento LCP (el h1 en Space Grotesk). JetBrains Mono NO se
+            precarga, replicando el `preload: false` de bivelio.com: nada por
+            encima del pliegue depende de ella. */}
+        <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
         <NextIntlClientProvider messages={messages}>

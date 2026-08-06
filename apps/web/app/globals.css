@@ -1,466 +1,894 @@
-/* BiVelio Savings Layer — auth surface styles (login / signup / dashboard).
-   Same palette + heading font as the landing (savings.bivelio.com) so the whole
-   product reads as one BiVelio surface. */
+/* ============================================================================
+   BiVelio Savings Layer — hoja de estilo única (landing + auth + dashboard).
 
-/* Same self-hosted families as privacy.bivelio.com: Inter (body) + Space Grotesk
-   (headings/wordmark). Variable woff2 → one file each, covers all weights incl. 600. */
+   FUENTE DE VERDAD: bivelio.com (repo bivelio-site, proyecto Vercel "website").
+   Este fichero es el puerto en CSS plano de su design system "Attio ink":
+   paleta v2, Inter + Space Grotesk, botones tinta, hairlines, sombras planas,
+   badges de 11px y superficie LIGHT-ONLY — bivelio.com fuerza light antes del
+   primer paint (themeInitScript borra siempre la clase `dark`), así que aquí
+   tampoco hay modo oscuro: ni tokens, ni media query, ni toggle.
+
+   El acento azul (--brand) es un acento, no el color del producto: los CTA son
+   tinta (#16181D), los estados activos son neutros y el azul queda reservado a
+   badges, enlaces de prosa y marcas de dato.
+   ============================================================================ */
+
+/* Las TRES familias de bivelio.com, aquí self-hosted porque la CSP declara
+   `font-src 'self'`: un woff2 variable por familia, subconjunto latino, que
+   cubre todo el eje de pesos. Ver public/fonts/README.md (OFL 1.1).
+   JetBrains Mono no se precarga — igual que en bivelio.com, donde va con
+   `preload: false`: nada por encima del pliegue depende de ella. */
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("/fonts/inter-var.woff2") format("woff2"); }
 @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("/fonts/space-grotesk-var.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap; src: url("/fonts/jetbrains-mono-var.woff2") format("woff2"); }
 
 :root {
-  --bg: #FDFDFD; --surface: #FFFFFF; --surface-2: #F4F6F9; --ink: #0F1218;
-  --muted: #5A6070; --line: #DEE4E7; --accent: #2F63D8; --accent-soft: rgba(47,99,216,.1);
-  --success: #14A06F; --warn: #E5484D;
-  --shadow: 0 1px 2px rgba(15,20,30,.05), 0 12px 32px -18px rgba(15,20,30,.18);
-  --radius: 14px;
-  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --font-heading: "Space Grotesk", var(--sans);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0C0F16; --surface: #131723; --surface-2: #181D2A; --ink: #EEF1F6;
-    --muted: #8A92A3; --line: #252B3A; --accent: #6B8AFA; --accent-soft: rgba(107,138,250,.14);
-    --success: #43D6B2; --warn: #FF6B6B;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 20px 44px -22px rgba(0,0,0,.6);
-  }
-}
-/* Explicit theme override from the toggle — MUST win over the OS media query so
-   the button actually flips the palette (not just when the OS matches). */
-:root[data-theme="light"] {
-  --bg: #FDFDFD; --surface: #FFFFFF; --surface-2: #F4F6F9; --ink: #0F1218;
-  --muted: #5A6070; --line: #DEE4E7; --accent: #2F63D8; --accent-soft: rgba(47,99,216,.1);
-  --success: #14A06F; --warn: #E5484D;
-  --shadow: 0 1px 2px rgba(15,20,30,.05), 0 12px 32px -18px rgba(15,20,30,.18);
-}
-:root[data-theme="dark"] {
-  --bg: #0C0F16; --surface: #131723; --surface-2: #181D2A; --ink: #EEF1F6;
-  --muted: #8A92A3; --line: #252B3A; --accent: #6B8AFA; --accent-soft: rgba(107,138,250,.14);
-  --success: #43D6B2; --warn: #FF6B6B;
-  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 20px 44px -22px rgba(0,0,0,.6);
+  /* La superficie es light y solo light: díselo al navegador para que los
+     controles nativos (inputs, scrollbars, autofill) no se pinten en oscuro
+     cuando el SO está en modo noche. */
+  color-scheme: light;
+
+  /* ── Paleta oficial BiVelio v2 — light (idéntica a bivelio-site/app/globals.css) ── */
+  --bg:          #FDFDFD;
+  --surface:     #FFFFFF;
+  --surface-2:   #F4F6F9;
+  --surface-3:   #F6F7F9;   /* hover neutro: el `hover:bg-[#f6f7f9]` del megamenú */
+  --ink:         #0F1218;
+  --ink-soft:    #5A6070;
+  --line:        #DEE4E7;
+
+  --brand:       #2F63D8;
+  --brand-soft:  #EAF0FF;   /* tono "trig" de lib/attio/badge.ts */
+  --ui:          #6B8AFA;
+  --deep:        #16245F;
+  --mint:        #14A06F;
+  --mint-soft:   #E7F6EE;   /* tono "done" */
+  --amber:       #B7791F;
+  --amber-soft:  #FBF1DE;   /* tono "wait" */
+  --danger:      #EF4444;
+  /* Barra de comparación "sin optimizar". Antes .fill2 caía en un #94A3B8
+     hardcodeado porque --baseline no estaba definida en ninguna parte. */
+  --baseline:    color-mix(in srgb, var(--ink-soft) 45%, transparent);
+
+  /* Botones (los dos únicos de bivelio.com: .btn-dark y .btn-ghost) */
+  --btn-ink:              #16181D;
+  --btn-ink-hover:        #2A2D34;
+  --btn-ghost-line:       #E4E4E8;
+  --btn-ghost-line-hover: #C9C9CF;
+
+  /* Alias heredados — los componentes existentes siguen nombrando así. */
+  --accent:      var(--brand);
+  --accent-soft: var(--brand-soft);
+  --muted:       var(--ink-soft);
+  --success:     var(--mint);
+
+  /* ── Elevación: sombras PLANAS. La antigua tenía 32px de blur y hacía flotar
+        cada tarjeta; bivelio.com apila 1px sobre 1px y deja mandar al hairline. ── */
+  --shadow-card:     0 1px 3px 0 rgba(15, 18, 24, .08), 0 1px 2px -1px rgba(15, 18, 24, .06);
+  --shadow-elevated: 0 28px 70px -28px rgba(15, 18, 24, .35);
+  --shadow-brand:    0 12px 32px -16px rgba(58, 94, 145, .45);
+
+  /* ── Radios: misma base 0.625rem y misma escala derivada que el @theme de
+        bivelio.com. Las tarjetas usan xl (14px), los botones lg (10px). ── */
+  --radius:     0.625rem;                  /* 10px */
+  --radius-sm:  calc(var(--radius) * 0.6); /*  6px */
+  --radius-md:  calc(var(--radius) * 0.8); /*  8px */
+  --radius-lg:  var(--radius);             /* 10px */
+  --radius-xl:  calc(var(--radius) * 1.4); /* 14px */
+  --radius-2xl: calc(var(--radius) * 1.8); /* 18px */
+  --radius-3xl: calc(var(--radius) * 2.2); /* 22px */
+  --radius-4xl: calc(var(--radius) * 2.6); /* 26px */
+
+  /* Tipografía */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-heading: "Space Grotesk", var(--font-sans);
+  /* Alias cortos: las 26 referencias internas siguen valiendo, pero el nombre
+     canónico es el de bivelio.com y privacy-gateway. */
+  --sans: var(--font-sans);
+  --mono: var(--font-mono);
+
+  /* Contenedores (max-w-7xl del nav, 1180px del cuerpo de la home) */
+  --nav-h:    64px;
+  --nav-max:  1280px;
+  --page-max: 1180px;
 }
 
+/* ── Base ──────────────────────────────────────────────────────────────── */
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-h1 { font-family: var(--font-heading); letter-spacing: -.02em; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Los enlaces del nav son anclas y la cabecera es pegajosa: sin esto el
+     titular de destino queda debajo de la barra. Es el `scroll-mt-24` que
+     bivelio.com pone en cada ancla, aquí resuelto de una vez. */
+  scroll-padding-top: calc(var(--nav-h) + 24px);
+  /* Sin esto, cada toque en móvil pinta el rectángulo gris del sistema — que
+     sobre la tarjeta tinta del selector de idioma se ve especialmente mal. */
+  -webkit-tap-highlight-color: transparent;
+}
+/* Contención del desbordamiento horizontal (lo provocan las bandas a sangre de
+   100vw del hero y de los separadores de sección).
+   OJO: `overflow-x: hidden` convierte al elemento en contenedor de scroll, y eso
+   ANULA el `position: sticky` de todos sus descendientes — el nav público y la
+   topbar y la sidebar del dashboard dejan de pegarse. bivelio.com arrastra hoy
+   ese mismo fallo en producción por esta misma regla.
+   `clip` recorta igual pero NO crea contenedor de scroll, así que el sticky
+   sobrevive. Se declaran las dos: un Safari anterior a la 16 no entiende `clip`,
+   descarta esa línea y se queda con `hidden` (recorta, sin sticky); todo lo
+   demás se queda con `clip` (recorta Y sticky). */
+html, body { overflow-x: hidden; overflow-x: clip; max-width: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  /* 1.5 es la base del preflight de Tailwind, que es lo que hereda bivelio.com.
+     La escalera por tamaño se declara abajo; con 1.6 heredado, 83 de las 97
+     reglas con font-size se iban de interlineado y las tarjetas respiraban de
+     más. */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* ---- brand mark (logo + "BiVelio." wordmark) ---- */
+/* ── Escalera de interlineado (las utilidades leading-* del origen) ─────── */
+/* leading-tight 1.25 — titulares de tarjeta y cifras */
+.lp .ledger h4, .card h3, .spine-task .t, .lp .cascade-h .t, .lang-card-native { line-height: 1.25; }
+/* leading-snug 1.375 — texto de apoyo dentro de superficies compactas */
+.lp .ledger p, .card p, .lp .trust li, .lp .price-card li, .kpi .sub, .spine-node .st,
+.chip2, .bench-badge, .tbl td, .auth-card .sub, .lang-card-english, .ck-note, .footnote { line-height: 1.375; }
+/* leading-relaxed 1.625 — prosa de verdad, la única que respira */
+.lp .sec-head p, .app-head p, .lp .lede, .lp .ftr-brand > p { line-height: 1.625; }
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* Prosa: el subrayado está SIEMPRE y el hover solo lo engorda de 1px a 2px. */
+.lp .sec-head p a, .lp .lede a, .auth-alt a, .card p a, .ck-note a, .footnote a {
+  text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px;
+}
+.lp .sec-head p a:hover, .lp .lede a:hover, .auth-alt a:hover, .card p a:hover,
+.ck-note a:hover, .footnote a:hover { text-decoration-thickness: 2px; }
+
+/* Titulares en la display de la marca — la regla `h1,h2,h3` de bivelio.com. */
+h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -.02em; font-weight: 600; }
+
+*::selection { background: var(--brand); color: #fff; }
+
+/* Anillo de foco de marca — el `ring-3 ring-ring/50` de los botones shadcn de
+   bivelio.com, donde --ring es el azul de marca. */
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 50%, transparent);
+  outline-offset: 2px;
+}
+
+/* Retícula de puntos del hero de bivelio.com. */
+.dot-grid {
+  background-image: radial-gradient(rgba(20, 22, 28, .06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn:active:not(:disabled), .app-signout:active, .copybtn:active, .toggle:active,
+  .lang-close:active, .lang-card:active, .announce-close:active { transform: none; }
+}
+
+/* ── Raíles con scroll: barra fina teñida de marca, nunca la del sistema ── */
+.tbl-scroll, .code2, .lp .code, .lang-grid, .app-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(119, 140, 227, .3) transparent;
+}
+.tbl-scroll::-webkit-scrollbar, .code2::-webkit-scrollbar, .lp .code::-webkit-scrollbar,
+.lang-grid::-webkit-scrollbar, .app-nav::-webkit-scrollbar { width: 4px; height: 4px; }
+.tbl-scroll::-webkit-scrollbar-track, .code2::-webkit-scrollbar-track, .lp .code::-webkit-scrollbar-track,
+.lang-grid::-webkit-scrollbar-track, .app-nav::-webkit-scrollbar-track { background: transparent; }
+.tbl-scroll::-webkit-scrollbar-thumb, .code2::-webkit-scrollbar-thumb, .lp .code::-webkit-scrollbar-thumb,
+.lang-grid::-webkit-scrollbar-thumb, .app-nav::-webkit-scrollbar-thumb { background: rgba(119, 140, 227, .3); border-radius: 4px; }
+.tbl-scroll::-webkit-scrollbar-thumb:hover, .code2::-webkit-scrollbar-thumb:hover, .lp .code::-webkit-scrollbar-thumb:hover,
+.lang-grid::-webkit-scrollbar-thumb:hover, .app-nav::-webkit-scrollbar-thumb:hover { background: rgba(119, 140, 227, .5); }
+
+/* Los controles de rango heredaban el azul del sistema operativo. */
+input[type="range"] { accent-color: var(--brand); }
+
+/* ── Marca (logo + wordmark "BiVelio." con los tres puntos) ────────────── */
 .brand { display: inline-flex; align-items: center; gap: 10px; }
-.brand-logo { width: 26px; height: 26px; border-radius: 7px; display: block; }
-.bv-word { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.02em; font-size: 1.1rem; color: var(--ink); }
+.brand-logo { width: 28px; height: 28px; border-radius: var(--radius-md); display: block; }
+.bv-word { font-family: var(--font-heading); font-weight: 700; letter-spacing: -.025em; font-size: 1.125rem; color: var(--ink); }
 .bv-i { position: relative; display: inline-block; }
 .bv-i .tit { position: absolute; left: 50%; top: .38em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
 .bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .04em; border-radius: 50%; vertical-align: .02em; }
 .bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
-.tag { font-family: var(--mono); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; }
 
-/* ---- top nav (login / signup / dashboard surfaces) ---- */
-.site-nav { position: sticky; top: 0; z-index: 50; background: var(--surface); border-bottom: 1px solid var(--line); }
-.site-nav-inner { max-width: 1080px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+/* ── Badges: la única familia de píldoras del sistema. Es la traducción de
+      lib/attio/badge.ts (11px, 600, tonos done/wait/trig) al CSS plano. ──── */
+.tag,
+.pill,
+.app-plan,
+.est-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.tag, .app-plan { background: var(--brand-soft); color: var(--brand); }
+/* Chip de PRODUCTO ("Savings Layer") junto al wordmark: perfilado y en mono,
+   como el de privacy-gateway — relleno de azul competía con la propia marca.
+   Va acotado al chrome: `.tag` a secas sigue siendo la píldora de la familia de
+   badges, que es lo que usan los pasos de la cascada de la landing. */
+.nav-brand .tag, .app-topbar .brand .tag {
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0;
+  text-transform: none; padding: 2px 7px; border-radius: var(--radius-md);
+  background: transparent; border-color: var(--line); color: var(--ink-soft);
+}
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.live  { background: var(--mint-soft);  color: var(--mint); }
+.pill.mock  { background: var(--amber-soft); color: var(--amber); }
+.pill.await { background: var(--surface-2);  color: var(--ink-soft); }
+
+/* ── Botones: los dos de bivelio.com. Primario TINTA (no azul), secundario
+      blanco con hairline. Todo CTA del producto sale de aquí. ───────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  padding: 10px 20px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  line-height: 1.2;
+  transition: background-color .2s, border-color .2s, color .2s, transform .2s;
+}
+.btn:hover { text-decoration: none; }
+.btn svg { width: 15px; height: 15px; flex: none; }
+/* El hundido de 1px al pulsar (`active:translate-y-px` del <Button> de origen).
+   Sin él, un CTA no acusa la pulsación hasta que se suelta. */
+.btn:active:not(:disabled),
+.app-signout:active, .copybtn:active, .toggle:active, .lang-close:active,
+.lang-card:active, .announce-close:active { transform: translateY(1px); }
+/* Deshabilitado: apagado Y sin eventos de puntero, para que ni el hover ni el
+   cursor mientan. Cubre los dos variantes, no solo el primario. */
+.btn:disabled, .btn[aria-disabled="true"] { opacity: .5; pointer-events: none; cursor: default; }
+
+.btn-primary { background: var(--btn-ink); color: #fff; }
+.btn-primary:hover { background: var(--btn-ink-hover); }
+.btn-primary:disabled { background: var(--btn-ink); }
+
+.btn-ghost { background: var(--surface); color: var(--btn-ink); border-color: var(--btn-ghost-line); }
+.btn-ghost:hover { border-color: var(--btn-ghost-line-hover); }
+
+/* ── Barra de anuncio (la franja negra sobre el nav de bivelio.com) ─────── */
+.announce {
+  position: relative;
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.announce a { display: inline-flex; align-items: center; gap: 6px; color: #fff; }
+.announce a:hover { opacity: .9; text-decoration: none; }
+.announce svg { width: 14px; height: 14px; flex: none; }
+.announce-close {
+  position: absolute; inset-inline-end: 8px; top: 50%; transform: translateY(-50%);
+  display: grid; place-items: center; width: 44px; height: 44px;
+  background: none; border: 0; padding: 0; cursor: pointer; color: rgba(255, 255, 255, .6);
+  transition: color .15s;
+}
+.announce-close:hover { color: #fff; }
+.announce-close svg { width: 16px; height: 16px; }
+
+/* ── Nav superior (landing / login / signup) ───────────────────────────── */
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, .95);
+}
+@media (min-width: 1024px) {
+  .site-nav {
+    background: rgba(255, 255, 255, .85);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
+}
+.site-nav-inner {
+  max-width: var(--nav-max); margin: 0 auto; height: var(--nav-h);
+  padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+@media (min-width: 640px)  { .site-nav-inner { padding: 0 24px; } }
+@media (min-width: 1024px) { .site-nav-inner { padding: 0 32px; } }
+
+.nav-left { display: flex; align-items: center; gap: 32px; min-width: 0; }
 .nav-brand { display: inline-flex; align-items: center; gap: 10px; }
 .nav-brand:hover { text-decoration: none; }
-.nav-actions { display: flex; align-items: center; gap: 16px; }
-.nav-link { color: var(--muted); font-size: .9rem; font-weight: 500; }
+.nav-menu { display: none; align-items: center; gap: 20px; }
+@media (min-width: 640px) { .nav-menu { display: flex; } }
+/* Por debajo de 640px la píldora del producto libera ~112px para los enlaces. */
+@media (max-width: 639px) { .nav-brand .tag { display: none; } }
+.nav-link { font-size: 14px; font-weight: 500; color: var(--ink-soft); transition: color .15s; }
 .nav-link:hover { color: var(--ink); text-decoration: none; }
-.toggle { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: 5px 12px; font-size: .82rem; line-height: 1; cursor: pointer; font-family: var(--sans); }
-.toggle:hover { border-color: var(--accent); }
-.toggle-label { font-weight: 500; }
-@media (max-width: 560px) {
-  .site-nav-inner { padding: 10px 14px; gap: 10px; }
-  .nav-actions { gap: 12px; }
-  .toggle-label { display: none; }
-}
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.nav-cta { padding: 8px 16px; font-size: 14px; }
+/* En pantallas estrechas el CTA se queda, pero sin la flecha: es la única vía
+   de entrada a la cuenta y aquí no hay menú hamburguesa donde esconderla. */
+@media (max-width: 480px) { .nav-cta { padding: 8px 13px; } .nav-cta svg { display: none; } }
 
-/* ---- dashboard app shell (topbar + sidebar + main) — mirrors bivelio-privacy-gateway ---- */
+/* Disparador del selector de idioma: botón fantasma, como el de bivelio.com. */
+.toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 44px; padding: 0 10px;
+  border-radius: var(--radius-md); border: 1px solid transparent;
+  background: transparent; color: var(--ink-soft);
+  font-family: var(--sans); font-size: 14px; font-weight: 500; line-height: 1;
+  cursor: pointer; transition: background-color .15s, color .15s;
+}
+@media (min-width: 1024px) { .toggle { height: 36px; } }
+.toggle:hover { background: var(--surface-3); color: var(--ink); }
+
+/* ── Shell del dashboard (topbar + sidebar + main) ─────────────────────── */
 .app { display: flex; flex-direction: column; min-height: 100vh; }
-.app-topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 58px; padding: 0 clamp(14px, 3vw, 24px); background: var(--surface); border-bottom: 1px solid var(--line); }
-.app-topbar .brand { display: inline-flex; align-items: center; gap: 10px; }
+.app-topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 14px;
+  height: var(--nav-h); padding: 0 clamp(16px, 3vw, 32px);
+  background: rgba(255, 255, 255, .9);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
 .app-topbar .brand:hover { text-decoration: none; }
 .app-spacer { margin-left: auto; }
-.app-account { display: flex; align-items: center; gap: 12px; }
-.app-account .email { font-family: var(--mono); font-size: 12.5px; color: var(--ink); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.app-plan { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 999px; padding: 3px 9px; }
-.app-signout { font-family: var(--sans); font-size: 13px; cursor: pointer; background: var(--surface); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; padding: 6px 12px; transition: color .15s, border-color .15s; }
-.app-signout:hover { color: var(--ink); border-color: var(--accent); }
-@media (max-width: 560px) { .app-account .email { display: none; } }
+.app-account { display: flex; align-items: center; gap: 10px; }
+.app-account .email { font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Fantasma de texto, no botón perfilado: es lo que hace el topbar del hermano. */
+.app-signout {
+  font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer;
+  background: transparent; border: 1px solid transparent; color: var(--ink);
+  border-radius: var(--radius-md); padding: 7px 12px;
+  transition: border-color .15s, background-color .15s;
+}
+.app-signout:hover { background: var(--surface-3); }
+@media (max-width: 640px) { .app-account .email { display: none; } }
 @media (max-width: 520px) { .app-topbar .brand .tag { display: none; } .app-plan { display: none; } }
 
 .app-body { display: grid; grid-template-columns: 240px 1fr; flex: 1; min-height: 0; }
-.app-sidebar { border-right: 1px solid var(--line); background: var(--surface); padding: 20px 14px; }
-.app-nav { display: flex; flex-direction: column; gap: 3px; position: sticky; top: 78px; }
-.app-nav-sep { margin: 14px 8px 6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); opacity: .7; }
-.app-nav-item { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 9px; font-size: 14px; color: var(--muted); text-decoration: none; border: 1px solid transparent; transition: background-color .15s, color .15s, border-color .15s; }
-.app-nav-item:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
-.app-nav-item.on { color: var(--accent); background: var(--accent-soft); font-weight: 500; border-color: color-mix(in srgb, var(--accent) 28%, transparent); }
-.app-nav-item .ic { width: 18px; text-align: center; font-size: 14px; opacity: .85; flex: none; }
+.app-sidebar { border-right: 1px solid var(--line); background: var(--bg); padding: 20px 14px; }
+.app-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--nav-h) + 20px); }
+.app-nav-sep {
+  margin: 18px 12px 6px;
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink-soft) 70%, transparent);
+}
+.app-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: var(--radius-lg);
+  font-size: 15px; font-weight: 500; color: var(--ink-soft);
+  text-decoration: none; border: 1px solid transparent;
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.app-nav-item:hover { color: var(--ink); background: var(--surface-3); text-decoration: none; }
+/* Activo NEUTRO: bivelio.com no pinta de azul un estado seleccionado — lo
+   marca con superficie + hairline + peso. */
+.app-nav-item.on { color: var(--ink); background: var(--surface-2); border-color: var(--line); font-weight: 600; }
+.app-nav-item .ic {
+  display: grid; place-items: center; width: 32px; height: 32px; flex: none;
+  border-radius: var(--radius-lg); border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink-soft); transition: color .15s, border-color .15s;
+}
+.app-nav-item .ic svg { width: 16px; height: 16px; }
+.app-nav-item:hover .ic { color: var(--ink); border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+.app-nav-item.on .ic { color: var(--ink); border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+
 .app-main { padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px); min-width: 0; }
 .app-inner { width: min(1040px, 100%); margin: 0 auto; }
 .app-head { margin-bottom: 24px; }
-.app-head .eyebrow, .app-head .ck-eyebrow { color: var(--accent); }
-.app-head h1 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 6px 0 8px; }
-.app-head p { color: var(--muted); margin: 0; max-width: 60ch; }
+.app-head h1 { font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -.03em; margin: 6px 0 8px; }
+.app-head p { color: var(--ink-soft); margin: 0; max-width: 60ch; }
 
 @media (max-width: 860px) {
-  .app-body { grid-template-columns: 1fr; }
-  .app-sidebar { border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px; position: sticky; top: 58px; z-index: 40; background: var(--surface); }
+  /* `auto 1fr`: en una sola columna las filas automáticas se estiraban a partes
+     iguales y la barra de navegación se comía media pantalla antes de que
+     empezara el contenido. */
+  .app-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .app-sidebar { border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px; position: sticky; top: var(--nav-h); z-index: 40; background: var(--surface); }
   .app-nav { flex-direction: row; gap: 6px; overflow-x: auto; position: static; padding-bottom: 2px; }
   .app-nav-item { white-space: nowrap; padding: 7px 12px; }
   .app-nav-item .ic { display: none; }
   .app-nav-sep { display: none; }
 }
 
-/* ---- service-account key tester ---- */
-.keytester { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface-2); }
+/* ── Probador de claves de service account ────────────────────────────── */
+.keytester, .trialkey { margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 14px; background: var(--surface-2); }
 .kt-row { display: flex; gap: 8px; align-items: center; }
-.kt-input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
-.kt-input::placeholder { color: var(--muted); }
-.kt-input:focus { outline: none; border-color: var(--accent); }
-.kt-row .btn { white-space: nowrap; padding: 9px 14px; }
+.kt-input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+.kt-input::placeholder { color: var(--ink-soft); }
+.kt-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.kt-row .btn { white-space: nowrap; padding: 9px 14px; font-size: 14px; }
 .kt-result { margin: 8px 0 0; font-size: 13px; font-weight: 500; }
-.kt-ok { color: var(--success); }
-.kt-bad { color: var(--warn); }
+.kt-ok { color: var(--mint); }
+.kt-bad { color: var(--danger); }
 @media (max-width: 480px) { .kt-row { flex-direction: column; align-items: stretch; } }
 
-/* ---- auth card (login / signup) ---- */
-.auth-wrap { min-height: 100dvh; display: grid; place-items: center; padding: 32px 20px; background:
-  radial-gradient(60% 60% at 50% 0%, var(--accent-soft), transparent 70%), var(--bg); }
-.auth-card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 30px; }
-.auth-card h1 { font-size: 1.5rem; margin: 4px 0 6px; }
-.auth-card .sub { color: var(--muted); font-size: .9rem; margin: 0 0 22px; }
+/* ── Tarjeta de autenticación (login / signup) ─────────────────────────── */
+/* El alto se descuenta del chrome que tiene encima (franja + nav); con 100dvh
+   a secas, login y signup arrastraban ~102px de scroll que no llevaba a nada. */
+.auth-wrap {
+  min-height: calc(100dvh - var(--nav-h)); display: grid; place-items: center; padding: 32px 20px;
+  background-color: var(--bg);
+  background-image: radial-gradient(rgba(20, 22, 28, .06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.auth-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); box-shadow: var(--shadow-elevated); padding: 32px; }
+.auth-card h1 { font-size: 1.5rem; letter-spacing: -.03em; margin: 4px 0 6px; }
+.auth-card .sub { color: var(--ink-soft); font-size: .9rem; margin: 0 0 22px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.field label { font-size: .8rem; color: var(--muted); font-weight: 560; }
-.field input { font-family: var(--sans); font-size: .95rem; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); }
-.field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border-radius: 10px; padding: 11px 18px; font-weight: 640; font-size: .95rem; font-family: var(--sans); border: 1px solid transparent; }
-.btn-primary { background: var(--accent); color: #fff; width: 100%; }
-.btn-primary:hover { filter: brightness(1.05); }
-.btn-primary:disabled { opacity: .6; cursor: default; }
-.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
-.btn-ghost:hover { border-color: var(--accent); }
-.auth-submit { margin-top: 6px; }
-.auth-alt { margin: 18px 0 0; font-size: .88rem; color: var(--muted); text-align: center; }
-.auth-msg { border-radius: 10px; padding: 10px 13px; font-size: .85rem; margin-bottom: 16px; }
-.auth-msg.error { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn); }
-.auth-msg.info { background: var(--accent-soft); color: var(--accent); }
+.field label { font-size: 14px; color: var(--ink-soft); font-weight: 500; }
+.field input {
+  /* 16px exactos: por debajo, iOS Safari hace zoom sobre el campo al enfocarlo. */
+  font-family: var(--sans); font-size: 16px; padding: 11px 13px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--bg); color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input::placeholder { color: var(--ink-soft); }
+/* El foco de un campo es AZUL DE MARCA con anillo pegado (`focus:border-primary
+   focus:ring-1 focus:ring-primary` del origen). En tinta, el único aviso era que
+   un hairline cambiaba de gris a negro: invisible. */
+.field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.auth-submit { width: 100%; margin-top: 6px; }
+.auth-alt { margin: 18px 0 0; font-size: .88rem; color: var(--ink-soft); text-align: center; }
+.auth-msg { border-radius: var(--radius-lg); padding: 10px 13px; font-size: .85rem; margin-bottom: 16px; }
+.auth-msg.error { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+.auth-msg.info { background: var(--mint-soft); color: var(--mint); }
 
-/* ---- dashboard ---- */
+/* ── Superficies genéricas ─────────────────────────────────────────────── */
 .dash-shell { min-height: 100dvh; background: var(--bg); }
 .dash-shell .wrap { max-width: 880px; margin: 0 auto; padding: 40px 22px 60px; }
-.eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .7rem; font-weight: 680; color: var(--accent); margin: 0; }
+
+/* Eyebrow: NEUTRO. En bivelio.com el kicker es ink-soft, no azul — el azul
+   está reservado a badges y datos. */
+.eyebrow, .ck-eyebrow, .app-head .eyebrow, .app-head .ck-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .18em;
+  color: var(--brand); margin: 0;
+}
+/* Punto menta de 6px, no un filete: es lo que pintan las DOS referencias — el
+   <Eyebrow> de bivelio.com (components/ui/section.tsx) y el .eyebrow::before de
+   privacy-gateway. Era la pieza que más delataba a savings como "otro sitio". */
+.eyebrow::before, .ck-eyebrow::before, .app-head .eyebrow::before, .app-head .ck-eyebrow::before {
+  content: ""; flex: none; width: 6px; height: 6px; border-radius: 999px;
+  background: var(--mint); display: inline-block;
+}
+
 .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
-.card .n { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.card h3 { margin: 8px 0 4px; font-size: 1.15rem; }
-.card p { margin: 0; color: var(--muted); font-size: .86rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 20px; box-shadow: var(--shadow-card); }
+.lp .ledger, .lp .cascade { transition: transform .2s, box-shadow .2s, border-color .2s; }
+.lp .ledger:hover { transform: translateY(-2px); box-shadow: var(--shadow-brand); border-color: color-mix(in srgb, var(--brand) 22%, var(--line)); }
+.card .n { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); }
+.card h3 { margin: 8px 0 4px; font-size: 1.05rem; letter-spacing: -.02em; }
+.card p { margin: 0; color: var(--ink-soft); font-size: .86rem; }
 @media (max-width: 560px) { .cards { grid-template-columns: 1fr; } }
 
 /* ============================================================================
-   THE METER — savings cockpit (savings.bivelio.com/dashboard)
-   Verify-don't-trust: every number carries a provenance pill; unmetered fields
-   render "—", never 0; the customer's live rail and the reference bench are
-   visually distinct. Reuses the BiVelio tokens + Space Grotesk.
+   THE METER — cockpit de ahorro (savings.bivelio.com/dashboard)
+   Verify-don't-trust: cada número lleva su píldora de procedencia; lo no medido
+   se pinta "—", nunca 0; el raíl vivo del cliente y el banco de referencia se
+   distinguen a la vista. Mismo vocabulario visual que bivelio.com.
    ============================================================================ */
 .cockpit { max-width: 1080px; }
 .ck-num { font-family: var(--font-heading); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .ck-mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-.ck-sec { margin-top: 34px; }
+.ck-sec { margin-top: 40px; }
 .ck-sec > .ck-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-.ck-sec > .ck-head h2 { font-size: 1.15rem; letter-spacing: -.02em; margin: 0; }
-.ck-eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .66rem; font-weight: 680; color: var(--accent); margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
-.ck-eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--accent); display: inline-block; }
-.ck-note { color: var(--muted); font-size: .8rem; margin: 4px 0 0; }
+.ck-sec > .ck-head h2 { font-size: 1.15rem; letter-spacing: -.025em; margin: 0; }
+.ck-eyebrow { margin: 0 0 4px; }
+.ck-note { color: var(--ink-soft); font-size: .8rem; margin: 4px 0 0; }
 
-/* header */
 .ck-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .ck-header .rt { display: flex; align-items: center; gap: 12px; }
 
-/* provenance + status pills */
-.pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
-.pill .dot { width: 6px; height: 6px; border-radius: 50%; }
-.pill.live { color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, transparent); background: color-mix(in srgb, var(--success) 10%, transparent); }
-.pill.live .dot { background: var(--success); }
-.pill.mock { color: #B7791F; border-color: color-mix(in srgb, #B7791F 45%, transparent); background: color-mix(in srgb, #B7791F 12%, transparent); }
-.pill.mock .dot { background: #B7791F; }
-.pill.await { color: var(--muted); }
-.pill.await .dot { background: var(--muted); }
-@media (prefers-color-scheme: dark) { .pill.mock { color: #E0B878; } .pill.mock .dot { background: #E0B878; } }
-
-/* generic chip row (integrity) */
+/* Fila de chips (integridad) */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip2 { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); }
-.chip2 b { color: var(--ink); font-weight: 620; }
-.chip2.good { color: var(--success); border-color: color-mix(in srgb, var(--success) 35%, transparent); background: color-mix(in srgb, var(--success) 9%, transparent); }
-.chip2.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: color-mix(in srgb, var(--warn) 9%, transparent); }
+.chip2 {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 500; padding: 5px 11px;
+  border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink-soft);
+}
+.chip2 b { color: var(--ink); font-weight: 600; }
+.chip2.good { color: var(--mint); border-color: transparent; background: var(--mint-soft); }
+.chip2.good b { color: var(--mint); }
+.chip2.warn { color: var(--danger); border-color: transparent; background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.chip2.warn b { color: var(--danger); }
 
-/* instrumentation spine */
-.spine { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-.spine-node { padding: 14px 14px; border-right: 1px solid var(--line); position: relative; }
+/* Espina de instrumentación */
+.spine { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-card); }
+.spine-node { padding: 14px; border-right: 1px solid var(--line); position: relative; }
 .spine-node:last-child { border-right: none; }
-.spine-node .idx { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-family: var(--mono); font-size: .66rem; margin-bottom: 8px; }
-.spine-node.done .idx { background: var(--success); color: #fff; }
-.spine-node.current .idx { background: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-soft); }
-.spine-node.pending .idx { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
-.spine-node .lbl { font-size: .82rem; font-weight: 560; }
-.spine-node.pending .lbl { color: var(--muted); }
-.spine-node .st { font-size: .66rem; color: var(--muted); margin-top: 2px; }
-.spine-task { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
-.spine-task .t { font-size: .84rem; font-weight: 560; margin: 0 0 8px; }
+.spine-node .idx { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-family: var(--mono); font-size: .66rem; margin-bottom: 8px; }
+.spine-node.done .idx { background: var(--mint); color: #fff; }
+.spine-node.current .idx { background: var(--ink); color: #fff; box-shadow: 0 0 0 4px var(--surface-2); }
+.spine-node.pending .idx { background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line); }
+.spine-node .lbl { font-size: .82rem; font-weight: 500; }
+.spine-node.pending .lbl { color: var(--ink-soft); }
+.spine-node .st { font-size: .66rem; color: var(--ink-soft); margin-top: 2px; }
+.spine-task { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 14px 16px; box-shadow: var(--shadow-card); }
+.spine-task .t { font-size: .84rem; font-weight: 600; margin: 0 0 8px; }
 @media (max-width: 720px) { .spine { grid-template-columns: 1fr 1fr; } .spine-node:nth-child(2n) { border-right: none; } }
 
-/* code + copy */
-.code2 { background: #0a120d; color: #d7e6dd; border-radius: 10px; padding: 12px 14px; font-family: var(--mono); font-size: .76rem; line-height: 1.6; overflow-x: auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-:root[data-theme="dark"] .code2 { border: 1px solid var(--line); }
-@media (prefers-color-scheme: dark) { .code2 { border: 1px solid var(--line); } }
-.code2 .c { color: #6f8f7e; }
-.copybtn { flex-shrink: 0; cursor: pointer; background: rgba(255,255,255,.08); color: #d7e6dd; border: 1px solid rgba(255,255,255,.15); border-radius: 7px; padding: 4px 9px; font-family: var(--sans); font-size: .7rem; }
-.copybtn:hover { background: rgba(255,255,255,.16); }
+/* Código + copiar. bivelio.com renderiza el código en CLARO (shiki con tema
+   `github-light` sobre `<pre class="rounded-xl border border-border bg-card">`),
+   nunca en un bloque negro. Aquí igual: tarjeta blanca con hairline. */
+.code2 {
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 12px 14px; font-family: var(--mono); font-size: .76rem; line-height: 1.6;
+  overflow-x: auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+}
+.code2 .c { color: var(--ink-soft); }
+.copybtn {
+  flex-shrink: 0; cursor: pointer;
+  background: var(--surface-2); color: var(--ink-soft);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 4px 9px; font-family: var(--sans); font-size: .7rem; font-weight: 500;
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.copybtn:hover { background: var(--surface-3); color: var(--ink); border-color: var(--btn-ghost-line-hover); }
 
-/* KPI tile grid (live rail + reference) */
+/* Rejilla de KPIs (raíl vivo + referencia) */
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 15px; box-shadow: var(--shadow); position: relative; min-height: 118px; }
-.kpi .n { font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
-.kpi .v { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 640; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin: 8px 0 2px; }
-.kpi .v.pos { color: var(--success); } .kpi .v.neg { color: var(--warn); } .kpi .v.empty { color: var(--muted); }
-.kpi .sub { font-size: .72rem; color: var(--muted); }
-.kpi .ghost { font-family: var(--mono); font-size: .64rem; color: var(--muted); opacity: .6; margin-top: 6px; }
-.kpi .lo { font-size: .68rem; color: var(--muted); font-family: var(--mono); }
-.kpi .src { font-family: var(--mono); font-size: .6rem; color: var(--muted); opacity: .7; margin-top: 6px; word-break: break-all; }
-.footnote { font-size: .74rem; color: var(--muted); margin-top: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 16px; box-shadow: var(--shadow-card); position: relative; min-height: 118px; }
+.kpi .n { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
+.kpi .v { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin: 8px 0 2px; }
+.kpi .v.pos { color: var(--mint); } .kpi .v.neg { color: var(--danger); } .kpi .v.empty { color: var(--ink-soft); }
+.kpi .sub { font-size: .72rem; color: var(--ink-soft); }
+.kpi .ghost { font-family: var(--mono); font-size: .64rem; color: var(--ink-soft); opacity: .6; margin-top: 6px; }
+.kpi .lo { font-size: .68rem; color: var(--ink-soft); font-family: var(--mono); }
+.kpi .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; margin-top: 6px; word-break: break-all; }
+.footnote { font-size: .74rem; color: var(--ink-soft); margin-top: 10px; }
 @media (max-width: 640px) { .kpis { grid-template-columns: 1fr 1fr; } }
 
-/* verdict hero */
-.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: center; }
-.verdict .big { font-family: var(--font-heading); font-size: 3rem; font-weight: 700; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-.verdict .big.empty { color: var(--muted); }
-.verdict .big.pos { color: var(--success); }
-.verdict .cap { font-size: .82rem; color: var(--muted); margin-top: 10px; max-width: 40ch; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
-.seg button { background: var(--surface); border: none; padding: 6px 12px; font-size: .76rem; color: var(--muted); font-family: var(--sans); cursor: default; }
+/* Veredicto */
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: 26px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: center; }
+.verdict .big { font-family: var(--font-heading); font-size: 3rem; font-weight: 600; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.verdict .big.empty { color: var(--ink-soft); }
+.verdict .big.pos { color: var(--mint); }
+.verdict .cap { font-size: .82rem; color: var(--ink-soft); margin-top: 10px; max-width: 40ch; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.seg button { background: var(--surface); border: none; padding: 6px 12px; font-size: .76rem; color: var(--ink-soft); font-family: var(--sans); cursor: default; }
 .seg button[disabled] { opacity: .5; }
 @media (max-width: 680px) { .verdict { grid-template-columns: 1fr; } .verdict .big { font-size: 2.4rem; } }
 
-/* CI band */
-.ciband { }
-.ci-track2 { position: relative; height: 34px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
-.ci-fill2 { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--success) 16%, transparent); }
-.ci-lo { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--success); }
+/* Banda de intervalo de confianza */
+.ci-track2 { position: relative; height: 34px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.ci-fill2 { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--mint) 16%, transparent); }
+.ci-lo { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--mint); }
 .ci-pt { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); opacity: .6; }
-.ci-zero2 { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--warn); opacity: .5; }
-.ci-legend2 { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .66rem; color: var(--muted); margin-top: 6px; }
+.ci-zero2 { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--danger); opacity: .5; }
+.ci-legend2 { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .66rem; color: var(--ink-soft); margin-top: 6px; }
 
-/* reference bench container tint */
-.bench { border: 1px solid color-mix(in srgb, #B7791F 22%, var(--line)); border-radius: var(--radius); padding: 18px; background: color-mix(in srgb, #B7791F 3%, var(--surface)); }
-.bench-badge { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--muted); background: color-mix(in srgb, #B7791F 10%, transparent); border: 1px solid color-mix(in srgb, #B7791F 30%, transparent); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
-.bench-badge b { color: #B7791F; }
-@media (prefers-color-scheme: dark) { .bench-badge b { color: #E0B878; } }
+/* Banco de referencia — tono ámbar (el "wait" del sistema de badges) */
+.bench { border: 1px solid color-mix(in srgb, var(--amber) 22%, var(--line)); border-radius: var(--radius-xl); padding: 20px; background: color-mix(in srgb, var(--amber) 3%, var(--surface)); }
+.bench-badge { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--ink-soft); background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 25%, transparent); border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 16px; }
+.bench-badge b { color: var(--amber); font-weight: 600; }
 
-/* scenario table */
+/* Tabla de escenarios */
 .tbl-scroll { overflow-x: auto; }
-.tbl { width: 100%; border-collapse: collapse; font-size: .8rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-.tbl th, .tbl td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
-.tbl th { font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 640; background: var(--surface-2); cursor: pointer; user-select: none; }
+.tbl { width: 100%; border-collapse: collapse; font-size: .8rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-card); }
+.tbl th, .tbl td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.tbl th { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); font-weight: 600; background: var(--surface-2); cursor: pointer; user-select: none; transition: color .15s, background-color .15s; }
+.tbl th:hover { color: var(--ink); background: var(--surface-3); }
 .tbl td:first-child, .tbl th:first-child { text-align: left; font-variant-numeric: normal; }
 .tbl tr:last-child td { border-bottom: none; }
 .tbl .mono { font-family: var(--mono); }
-.tbl .pos { color: var(--success); } .tbl .neg { color: var(--warn); }
+.tbl .pos { color: var(--mint); } .tbl .neg { color: var(--danger); }
 .ltag { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 
-/* install / legend */
+/* Instalación / leyenda */
 .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.legend .lg { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .68rem; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; }
-.keycard { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-top: 12px; flex-wrap: wrap; }
+.legend .lg { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .68rem; color: var(--ink-soft); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px 8px; }
+.keycard { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px 14px; margin-top: 12px; flex-wrap: wrap; }
 .keycard .k { font-family: var(--mono); font-size: .82rem; }
 
-/* projector reuse (mirror the landing) */
+/* Proyector (reutilizado por la landing) */
 .proj { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-@media (max-width: 780px) { .proj { grid-template-columns: 1fr; } .verdict .big { } }
+@media (max-width: 780px) { .proj { grid-template-columns: 1fr; } }
 .fmt-row2 { display: grid; grid-template-columns: 74px 1fr 70px; align-items: center; gap: 10px; margin-bottom: 8px; }
-.fmt-name2 { font-family: var(--mono); font-size: .76rem; color: var(--muted); }
-.fmt-name2.win { color: var(--success); font-weight: 600; }
+.fmt-name2 { font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+.fmt-name2.win { color: var(--mint); font-weight: 600; }
 .track2 { height: 11px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
-.fill2 { height: 100%; border-radius: 6px; background: var(--baseline, #94A3B8); }
-.fill2.win { background: var(--success); }
+.fill2 { height: 100%; border-radius: 6px; background: var(--baseline); }
+.fill2.win { background: var(--mint); }
 .fmt-tok2 { font-family: var(--mono); font-size: .8rem; text-align: right; font-variant-numeric: tabular-nums; }
 .field2 { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; margin-bottom: 8px; }
-.field2 label { font-size: .78rem; color: var(--muted); }
-.field2 input { font-family: var(--mono); font-size: .8rem; width: 110px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); text-align: right; }
-textarea.proj-ta { width: 100%; min-height: 110px; resize: vertical; font-family: var(--mono); font-size: .76rem; line-height: 1.5; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; }
-.est-tag { display: inline-block; font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
-.skeleton { height: 140px; border: 1px dashed var(--line); border-radius: var(--radius); display: grid; place-items: center; color: var(--muted); font-size: .82rem; background: repeating-linear-gradient(45deg, transparent, transparent 10px, color-mix(in srgb, var(--line) 30%, transparent) 10px, color-mix(in srgb, var(--line) 30%, transparent) 11px); }
+.field2 label { font-size: .78rem; color: var(--ink-soft); }
+.field2 input { font-family: var(--mono); font-size: .8rem; width: 110px; padding: 6px 9px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); text-align: right; transition: border-color .15s, box-shadow .15s; }
+.field2 input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+textarea.proj-ta { width: 100%; min-height: 110px; resize: vertical; font-family: var(--mono); font-size: .76rem; line-height: 1.5; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 11px 12px; transition: border-color .15s, box-shadow .15s; }
+textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.skeleton { height: 140px; border: 1px dashed var(--line); border-radius: var(--radius-xl); display: grid; place-items: center; color: var(--ink-soft); font-size: .82rem; background: var(--surface-2); }
 
-/* Language switcher — iLovePDF-style modal grid (matches bivelio.com) ------- */
-.lang-trigger { gap: 6px; }
-.lang-trigger svg { width: 15px; height: 15px; opacity: .85; }
+/* ── Selector de idioma — el modal en rejilla de bivelio.com ───────────── */
+.lang-trigger svg { width: 16px; height: 16px; opacity: .9; }
 .lang-trigger-name { font-weight: 500; }
-@media (max-width: 520px) { .lang-trigger-name { display: none; } }
+.lang-trigger-code { display: none; font-weight: 500; }
+@media (max-width: 640px) {
+  .lang-trigger-name { display: none; }
+  .lang-trigger-code { display: inline; }
+}
+.toggle[aria-expanded="true"] { background: var(--surface-3); color: var(--ink); }
 
 .lang-overlay {
   position: fixed; inset: 0; z-index: 60;
   display: flex; align-items: center; justify-content: center; padding: 20px;
-  background: rgba(8, 11, 18, .5);
-  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, .4);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   animation: langFade .15s ease;
 }
 .lang-modal {
-  width: min(92vw, 620px); max-height: 82vh; display: flex; flex-direction: column; overflow: hidden;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+  width: min(92vw, 640px); max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-elevated);
   animation: langPop .18s ease;
 }
-.lang-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 0; }
-.lang-modal-title { margin: 0; font-family: var(--font-heading); font-size: 1.15rem; font-weight: 600; color: var(--ink); }
-.lang-modal-sub { margin: 4px 0 0; font-size: .86rem; color: var(--muted); }
-.lang-close { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer; }
-.lang-close:hover { color: var(--ink); background: var(--surface-2); }
+.lang-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 24px 24px 0; }
+.lang-modal-title { margin: 0; font-family: var(--font-heading); font-size: 1.125rem; font-weight: 600; letter-spacing: -.025em; color: var(--ink); }
+.lang-modal-sub { margin: 2px 0 0; font-size: .875rem; color: var(--ink-soft); }
+.lang-close { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-md); border: 1px solid transparent; background: transparent; color: var(--ink-soft); cursor: pointer; transition: background-color .15s, color .15s; }
+.lang-close:hover { color: var(--ink); background: var(--surface-3); }
 .lang-close svg { width: 16px; height: 16px; }
 .lang-search-wrap { padding: 16px 24px 0; }
-.lang-search { width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: .9rem; padding: 10px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); }
-.lang-search::placeholder { color: var(--muted); }
-.lang-search:focus-visible { outline: none; border-color: var(--accent); }
-.lang-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 18px 24px 22px; overflow-y: auto; }
+.lang-search { width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: .875rem; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); transition: border-color .15s; }
+.lang-search::placeholder { color: color-mix(in srgb, var(--ink-soft) 70%, transparent); }
+.lang-search:focus { outline: none; border-color: var(--ink); }
+.lang-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 20px 24px 22px; overflow-y: auto; }
 @media (min-width: 560px) { .lang-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.lang-card { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; padding: 11px 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); cursor: pointer; font-family: var(--sans); transition: border-color .12s, background-color .12s, color .12s; }
-.lang-card:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--surface-2); }
-.lang-card.on { border-color: transparent; background: var(--accent); color: #fff; }
-.lang-card.on:hover { background: var(--accent); }
+.lang-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  text-align: left; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: var(--radius-xl);
+  background: var(--surface); color: var(--ink); cursor: pointer; font-family: var(--sans);
+  transition: border-color .12s, background-color .12s, color .12s;
+}
+.lang-card:hover { border-color: color-mix(in srgb, var(--ink) 20%, transparent); background: var(--surface-3); }
+/* Activo TINTA — el `bg-ink text-white` del switcher de bivelio.com. */
+.lang-card.on { border-color: transparent; background: var(--ink); color: #fff; }
+.lang-card.on:hover { background: var(--ink); }
 .lang-card-names { min-width: 0; display: flex; flex-direction: column; }
-.lang-card-native { font-size: .92rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lang-card-english { font-size: .72rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lang-card.on .lang-card-english { color: rgba(255, 255, 255, .72); }
-.lang-card svg { width: 15px; height: 15px; flex-shrink: 0; }
-.lang-empty { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 20px 0; }
+.lang-card-native { font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lang-card-english { font-size: 12px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lang-card.on .lang-card-english { color: rgba(255, 255, 255, .6); }
+.lang-card svg { width: 16px; height: 16px; flex-shrink: 0; }
+.lang-empty { grid-column: 1 / -1; text-align: center; color: var(--ink-soft); padding: 20px 0; }
 @keyframes langFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes langPop { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .lang-overlay, .lang-modal { animation: none; } }
 
 /* ============================================================================
-   LANDING (marketing) — scoped port of public/landing.html.
-   EVERY selector is prefixed with `.lp ` so these marketing rules never collide
-   with the app's global classes (.btn, .eyebrow, .tag, .card, .verdict, .kpi,
-   .step, .n …). Reuses the existing :root tokens + Space Grotesk; do NOT unscope
-   any rule below. The keyframe is renamed `lp-pulse` to avoid a global clash.
-   Step 1 (ProjectorVerifier) and Step 2 (reference-bench components) keep their
-   own dashboard classes — intentionally NOT restyled here.
+   LANDING (marketing) — puerto scoped de public/landing.html.
+   TODO selector va prefijado con `.lp ` para que estas reglas de marketing no
+   choquen con las clases globales de la app (.btn, .eyebrow, .tag, .card,
+   .verdict, .kpi, .step, .n …). No dejes ninguna regla sin prefijar.
    ============================================================================ */
-.lp .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-.lp section { padding: 40px 0; }
+.lp .wrap { max-width: var(--page-max); margin: 0 auto; padding: 0 24px; }
+.lp section { padding: clamp(80px, 8vw, 112px) 0; }
+/* Cada sección se separa de la anterior con un hairline a sangre completa —
+   el `border-b border-line` que reparte en bandas la home de bivelio.com. El
+   hero queda fuera (es la primera) y ya trae el suyo en su propio ::before. */
+.lp section + section { position: relative; }
+.lp section + section::before {
+  content: ""; position: absolute; top: 0; left: 50%; width: 100vw; height: 1px;
+  transform: translateX(-50%); background: var(--line);
+}
 .lp h1, .lp h2, .lp .sec-head h2, .lp .price-card .amt { font-family: var(--font-heading); }
 
-/* eyebrow (landing variant, with the leading rule) */
-.lp .eyebrow { display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: .15em; font-size: .72rem; font-weight: 640; color: var(--accent); margin: 0 0 20px; }
-.lp .eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--accent); display: inline-block; }
+.lp .eyebrow { display: inline-flex; align-items: flex-start; gap: 8px; font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .18em; line-height: 1.5; color: var(--brand); margin: 0; max-width: 56ch; }
+/* La regla se ancla a la PRIMERA línea: con un kicker de dos líneas, centrarla
+   la dejaba flotando entre las dos. */
+.lp .eyebrow::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: .42em; border-radius: 999px; background: var(--mint); display: inline-block; }
 
-/* buttons (landing filled + ghost) */
-.lp .btn { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 11px 18px; font-weight: 640; font-size: .92rem; font-family: var(--sans); text-decoration: none; transition: transform .12s ease, filter .12s ease; }
-.lp .btn:hover { filter: brightness(1.05); transform: translateY(-1px); text-decoration: none; }
-.lp .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-@media (prefers-color-scheme: dark) { .lp .btn { color: #0C1020; } .lp .btn.ghost { color: var(--ink); } }
-:root[data-theme="light"] .lp .btn { color: #fff; }
-:root[data-theme="light"] .lp .btn.ghost { color: var(--ink); }
-:root[data-theme="dark"] .lp .btn { color: #0C1020; }
-:root[data-theme="dark"] .lp .btn.ghost { color: var(--ink); }
+/* Los CTA de la landing hablan el mismo idioma que los del nav: tinta y fantasma. */
+.lp .btn { background: var(--btn-ink); color: #fff; border-color: transparent; text-decoration: none; }
+.lp .btn:hover { background: var(--btn-ink-hover); text-decoration: none; }
+/* `.lp .btn` gana en especificidad a `.btn-ghost` (0,2,0 vs 0,1,0), así que el
+   fantasma tiene que reclamarse dentro del scope o saldría relleno de tinta. */
+.lp .btn.ghost, .lp .btn.btn-ghost { background: var(--surface); color: var(--btn-ink); border-color: var(--btn-ghost-line); }
+.lp .btn.ghost:hover, .lp .btn.btn-ghost:hover { background: var(--surface); border-color: var(--btn-ghost-line-hover); }
 
-/* hero */
-.lp .hero { padding: 68px 0 34px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
-.lp h1 { font-size: clamp(2.3rem, 5.2vw, 3.7rem); line-height: 1.02; letter-spacing: -.035em; font-weight: 780; margin: 0 0 20px; text-wrap: balance; }
-.lp h1 .u { color: var(--accent); }
-.lp .lede { font-size: 1.12rem; color: var(--muted); max-width: 46ch; margin: 0 0 28px; }
+/* Hero. La retícula de puntos y el hairline de cierre van a sangre completa,
+   como la banda del hero de bivelio.com — se pintan con un ::before de 100vw
+   para no tener que sacar la sección fuera del <main> centrado. */
+.lp .hero { position: relative; padding: clamp(64px, 7vw, 96px) 0; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
+.lp .hero::before {
+  content: ""; position: absolute; z-index: -1;
+  top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
+  background-image: radial-gradient(rgba(20, 22, 28, .06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.lp h1 { font-size: clamp(2.4rem, 4.6vw, 3.6rem); line-height: 1.02; letter-spacing: -.03em; font-weight: 600; margin: 20px 0; text-wrap: balance; }
+/* El segundo tramo del titular va en ink-soft, no en azul: es exactamente lo
+   que hace el <h1> de bivelio.com (`<span className="text-ink-soft">`). */
+.lp h1 .u { color: var(--ink-soft); }
+.lp .lede { font-size: 17px; line-height: 1.65; color: var(--ink-soft); max-width: 46ch; margin: 0 0 28px; }
 .lp .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-.lp .hero-note { font-size: .82rem; color: var(--muted); margin-top: 16px; display: flex; align-items: center; gap: 7px; }
-.lp .hero-note .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 var(--accent-soft); animation: lp-pulse 2.4s infinite; }
-@keyframes lp-pulse { 0% { box-shadow: 0 0 0 0 var(--accent-soft); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.lp .hero-note { font-size: 13px; color: var(--ink-soft); margin-top: 20px; display: flex; align-items: center; gap: 7px; }
+.lp .hero-note .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 var(--mint-soft); animation: lp-pulse 2.4s infinite; }
+@keyframes lp-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--mint) 40%, transparent); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .lp .hero-note .pulse { animation: none; } }
 
-/* cascade card (hero right) */
-.lp .cascade { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+/* Entrada escalonada del hero, en CSS puro y con los tiempos del motion/react
+   de Hero.tsx. El h1 NO anima opacidad a propósito: pinta desde el HTML del
+   servidor para no penalizar el LCP, igual que en el origen. El bloque global
+   de prefers-reduced-motion ya las neutraliza. */
+@keyframes lp-rise     { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes lp-rise-lcp { from { transform: translateY(16px); } to { transform: none; } }
+@keyframes lp-fade     { from { opacity: 0; } to { opacity: 1; } }
+.lp .hero .eyebrow { animation: lp-rise .5s ease-out both; }
+.lp .hero h1       { animation: lp-rise-lcp .6s ease-out .05s both; }
+.lp .lede          { animation: lp-rise .6s ease-out .12s both; }
+.lp .hero-cta      { animation: lp-rise .6s ease-out .2s both; }
+.lp .hero-note     { animation: lp-fade .6s ease-out .28s both; }
+.lp .cascade       { animation: lp-fade .6s ease-out .34s both; }
+
+/* Tarjeta de cascada (derecha del hero) */
+.lp .cascade { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); overflow: hidden; }
 .lp .cascade-h { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
-.lp .cascade-h .t { font-weight: 680; font-size: .95rem; }
-.lp .cascade-h .k { font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+.lp .cascade-h .t { font-weight: 600; font-size: .95rem; }
+.lp .cascade-h .k { font-family: var(--mono); font-size: .72rem; color: var(--ink-soft); }
 .lp .step { display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid var(--line); }
 .lp .step:last-child { border-bottom: none; }
-.lp .step .n { font-family: var(--mono); font-size: .72rem; color: var(--muted); width: 20px; }
-.lp .step .s { flex: 1; font-size: .9rem; font-weight: 560; }
-.lp .step .s span { display: block; color: var(--muted); font-weight: 440; font-size: .78rem; }
-.lp .step .tag { font-family: var(--mono); font-size: .68rem; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--success) 14%, transparent); color: var(--success); white-space: nowrap; }
-.lp .step .tag.grey { background: color-mix(in srgb, var(--muted) 16%, transparent); color: var(--muted); }
+.lp .step .n { font-family: var(--mono); font-size: .72rem; color: var(--ink-soft); width: 20px; }
+.lp .step .s { flex: 1; font-size: .9rem; font-weight: 500; }
+.lp .step .s span { display: block; color: var(--ink-soft); font-weight: 400; font-size: .78rem; }
+.lp .step .tag { background: var(--mint-soft); color: var(--mint); }
+.lp .step .tag.grey { background: var(--surface-2); color: var(--ink-soft); }
 
-/* section heads */
-.lp .sec-head { max-width: 60ch; margin-bottom: 26px; }
-.lp .sec-head h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); letter-spacing: -.025em; margin: 8px 0 10px; font-weight: 720; text-wrap: balance; }
-.lp .sec-head p { color: var(--muted); margin: 0; }
+/* Cabeceras de sección */
+/* 20 / 20 / 56 — el ritmo exacto del bloque de cabecera de bivelio.com. El
+   margen superior del titular es el que lo separa del eyebrow. */
+.lp .sec-head { max-width: 62ch; margin-bottom: 56px; }
+.lp .sec-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1.08; letter-spacing: -.03em; margin: 20px 0; font-weight: 600; text-wrap: balance; }
+.lp .sec-head p { color: var(--ink-soft); margin: 0; font-size: 16px; }
 .lp .sec-head code { font-family: var(--mono); font-size: .92em; }
 
-/* ledgers */
+/* Libros mayores */
 .lp .ledgers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.lp .ledger { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
-.lp .ledger .idx { font-family: var(--mono); font-size: .7rem; color: var(--accent); }
-.lp .ledger h4 { margin: 8px 0 6px; font-size: .96rem; letter-spacing: -.01em; }
-.lp .ledger p { margin: 0; font-size: .82rem; color: var(--muted); }
-.lp .ledger .mval { margin-top: 12px; font-family: var(--mono); font-size: 1.4rem; font-weight: 640; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-.lp .ledger .munit { font-size: .72rem; color: var(--muted); font-weight: 440; }
+.lp .ledger { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 20px; box-shadow: var(--shadow-card); }
+.lp .ledger .idx { font-family: var(--mono); font-size: .7rem; color: var(--brand); }
+.lp .ledger h4 { margin: 8px 0 6px; font-size: .96rem; letter-spacing: -.015em; font-family: var(--font-heading); font-weight: 600; }
+.lp .ledger p { margin: 0; font-size: .82rem; color: var(--ink-soft); }
+.lp .ledger .mval { margin-top: 12px; font-family: var(--mono); font-size: 1.4rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.lp .ledger .munit { font-size: .72rem; color: var(--ink-soft); font-weight: 400; }
 
-/* integrate (code block) */
-.lp .code { background: var(--ink); color: #d7e6dd; border-radius: 14px; padding: 20px 22px; overflow-x: auto; font-family: var(--mono); font-size: .8rem; line-height: 1.65; box-shadow: var(--shadow); white-space: pre; }
-:root[data-theme="dark"] .lp .code { background: #0a120d; border: 1px solid var(--line); }
-@media (prefers-color-scheme: dark) { .lp .code { background: #0a120d; border: 1px solid var(--line); } }
-.lp .code .c { color: #6f8f7e; }
-.lp .code .k { color: var(--accent); }
-.lp .code .s { color: #e0b878; }
+/* Bloque de código — mismo tratamiento claro que los <pre> de bivelio.com. */
+.lp .code { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 22px 24px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7; white-space: pre; }
+.lp .code .c { color: var(--ink-soft); }
+.lp .code .k { color: var(--brand); }
+.lp .code .s { color: var(--amber); }
 
-/* pricing / trust */
+/* Precio / confianza */
 .lp .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: stretch; }
-.lp .price-card { background: var(--ink); color: var(--bg); border-radius: 18px; padding: 30px; display: flex; flex-direction: column; gap: 14px; }
-:root[data-theme="dark"] .lp .price-card { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
-@media (prefers-color-scheme: dark) { .lp .price-card { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); } }
-.lp .price-card .amt { font-size: 3rem; font-weight: 700; letter-spacing: -.03em; }
+.lp .price-card { background: var(--ink); color: #fff; border-radius: var(--radius-2xl); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+.lp .price-card .amt { font-size: 3rem; font-weight: 600; letter-spacing: -.04em; }
 .lp .price-card .amt small { font-size: 1rem; opacity: .7; font-weight: 500; }
 .lp .price-card ul { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 9px; font-size: .9rem; }
 .lp .price-card li { display: flex; gap: 10px; align-items: flex-start; opacity: .92; }
-.lp .price-card li::before { content: "→"; color: var(--accent); }
-.lp .price-card a.btn { align-self: flex-start; }
-.lp .trust { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 30px; box-shadow: var(--shadow); }
-.lp .trust h3 { margin: 0 0 8px; letter-spacing: -.02em; }
+.lp .price-card li::before { content: "→"; color: var(--ui); }
+/* Sobre la tarjeta tinta el CTA se invierte: blanco sobre negro. */
+.lp .price-card a.btn { align-self: flex-start; background: #fff; color: var(--ink); }
+.lp .price-card a.btn:hover { background: rgba(255, 255, 255, .88); }
+.lp .trust { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); padding: 32px; box-shadow: var(--shadow-card); }
+.lp .trust h3 { margin: 0 0 8px; letter-spacing: -.025em; }
 .lp .trust ul { padding-left: 0; list-style: none; margin: 16px 0 0; display: flex; flex-direction: column; gap: 12px; }
-.lp .trust li { font-size: .88rem; color: var(--muted); padding-left: 26px; position: relative; }
-.lp .trust li b { color: var(--ink); font-weight: 620; }
-.lp .trust li::before { content: ""; position: absolute; left: 0; top: 7px; width: 12px; height: 12px; border-radius: 3px; background: var(--accent-soft); border: 1px solid var(--accent); }
+.lp .trust li { font-size: .88rem; color: var(--ink-soft); padding-left: 26px; position: relative; }
+.lp .trust li b { color: var(--ink); font-weight: 600; }
+.lp .trust li::before { content: ""; position: absolute; left: 0; top: 7px; width: 12px; height: 12px; border-radius: 3px; background: var(--brand-soft); border: 1px solid var(--brand); }
 
-/* footer (mirrors bivelio.com — nested card + link columns + glass wordmark) */
-.lp .ftr { position: relative; overflow: hidden; padding: 0; margin-top: 30px; border-top: none; color: var(--muted); font-size: .8rem; }
-.lp .ftr-card { overflow: hidden; border: 1px solid var(--line); border-radius: 40px; background: var(--surface-2); box-shadow: var(--shadow); margin: clamp(32px,6vw,64px) 0 0; }
-.lp .ftr-inner { margin: 8px; border: 1px solid var(--line); border-radius: 32px; background: var(--surface); padding: clamp(28px,4vw,48px); }
-.lp .ftr-grid { display: grid; grid-template-columns: 4fr 8fr; gap: clamp(28px,4vw,48px); }
+/* Footer — la tarjeta anidada de bivelio.com (40px fuera, 32px dentro) */
+.lp .ftr { position: relative; overflow: hidden; padding: 0; margin-top: 0; color: var(--ink-soft); font-size: .8rem; }
+
+/* Banda CTA que abre el footer, a sangre completa y con el degradado
+   deep→mint al 5% de bivelio.com. */
+.lp .ftr-cta {
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  background: linear-gradient(to right,
+    color-mix(in srgb, var(--deep) 5%, transparent),
+    color-mix(in srgb, var(--mint) 5%, transparent));
+}
+.lp .ftr-cta-inner {
+  max-width: var(--nav-max); margin: 0 auto; padding: 40px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
+}
+@media (min-width: 640px)  { .lp .ftr-cta-inner { padding: 40px 24px; } }
+@media (min-width: 768px)  { .lp .ftr-cta-inner { flex-direction: row; justify-content: space-between; text-align: start; } }
+@media (min-width: 1024px) { .lp .ftr-cta-inner { padding: 40px 32px; } }
+.lp .ftr-cta-title { margin: 0; font-family: var(--font-heading); font-size: 1.125rem; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.lp .ftr-cta-sub { margin: 4px 0 0; font-size: .875rem; color: var(--ink-soft); }
+.lp .ftr-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.lp .ftr-cta-actions .btn { padding: 10px 20px; font-size: 14px; }
+
+/* Dock social: píldora de cristal con tiles de 44px que se elevan al pasar. */
+.lp .ftr-social {
+  display: inline-flex; width: fit-content; align-items: center; gap: 6px;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-2xl);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  box-shadow: var(--shadow-elevated);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+}
+.lp .ftr-social a {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  border-radius: var(--radius-xl); color: var(--ink);
+  transition: background-color .15s, color .15s, transform .22s cubic-bezier(.2, .8, .2, 1);
+}
+.lp .ftr-social a:hover { background: var(--surface-2); color: var(--brand); text-decoration: none; transform: translateY(-4px) scale(1.16); }
+.lp .ftr-social a:active { transform: scale(.95); }
+.lp .ftr-social svg { width: 20px; height: 20px; }
+@media (prefers-reduced-motion: reduce) {
+  .lp .ftr-social a:hover, .lp .ftr-social a:active { transform: none; }
+}
+.lp .ftr-card { overflow: hidden; border: 1px solid var(--line); border-radius: 40px; background: var(--surface-2); box-shadow: var(--shadow-card); margin: 48px 0; }
+.lp .ftr-inner { margin: 8px; border: 1px solid color-mix(in srgb, var(--line) 60%, transparent); border-radius: 32px; background: var(--surface); padding: clamp(28px, 4vw, 48px); }
+.lp .ftr-grid { display: grid; grid-template-columns: 4fr 8fr; gap: 48px; }
 @media (max-width: 860px) { .lp .ftr-grid { grid-template-columns: 1fr; } }
-.lp .ftr-brand { display: flex; flex-direction: column; gap: 18px; }
-.lp .ftr-brand > p { max-width: 340px; margin: 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
+.lp .ftr-brand { display: flex; flex-direction: column; gap: 32px; }
+.lp .ftr-brand > p { max-width: 340px; margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
 .lp .ftr-brand .bv-word { font-size: 1.4rem; }
-.lp .ftr-badge { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; }
+.lp .ftr-badge { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 5px 10px; }
 .lp .ftr-badge .bar { display: inline-block; width: 18px; height: 11px; background: var(--ink); border-radius: 3px; position: relative; }
-.lp .ftr-badge .bar::after { content: ""; position: absolute; inset: 2px 3px; background: var(--accent); border-radius: 1px; }
-.lp .ftr-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.lp .ftr-badge .bar::after { content: ""; position: absolute; inset: 2px 3px; background: var(--brand); border-radius: 1px; }
+.lp .ftr-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
 @media (max-width: 560px) { .lp .ftr-cols { grid-template-columns: repeat(2, 1fr); } }
-.lp .ftr-col h3 { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 16px; }
-.lp .ftr-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
-.lp .ftr-col a { font-size: 15px; font-weight: 500; color: var(--muted); text-decoration: none; transition: color .15s; }
-.lp .ftr-col a:hover { color: var(--accent); text-decoration: none; }
-.lp .ftr-fine { margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--line); text-align: center; }
-.lp .ftr-fine p { margin: 0 0 4px; }
-.lp .ftr-trust { font-size: 12px; color: var(--muted); }
-.lp .ftr-entity { font-size: 11px; color: var(--muted); opacity: .8; }
-.lp .ftr-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(20px,3vw,40px); font-size: 13px; }
-.lp .ftr-bottom > p { margin: 0; font-weight: 500; color: var(--muted); }
-.lp .ftr-bottom-links { display: flex; align-items: center; gap: 18px; font-weight: 500; color: var(--muted); }
-.lp .ftr-bottom-links a { text-decoration: none; color: var(--muted); }
+/* Cabeceras de columna en sans, no en mono: bivelio.com usa
+   `text-[13px] font-semibold uppercase tracking-[0.12em]`. */
+/* Sin font-family: los <h3> caen en la regla global y salen en Space Grotesk,
+   que es lo que hace el HEAD_CLS del footer de bivelio.com al no fijar familia. */
+.lp .ftr-col h3 { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--ink-soft) 70%, transparent); margin: 0 0 20px; }
+.lp .ftr-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.lp .ftr-col a { font-size: 15px; font-weight: 500; color: var(--ink-soft); text-decoration: none; transition: color .15s; }
+.lp .ftr-col a:hover { color: var(--brand); text-decoration: none; }
+.lp .ftr-fine { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); text-align: center; }
+.lp .ftr-fine p { margin: 0 0 8px; }
+.lp .ftr-fine p:last-child { margin-bottom: 0; }
+.lp .ftr-trust { font-size: 12px; color: var(--ink-soft); }
+.lp .ftr-entity { font-size: 11px; color: var(--ink-soft); opacity: .8; }
+.lp .ftr-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(20px, 3vw, 40px); font-size: 13px; }
+.lp .ftr-bottom > p { margin: 0; font-weight: 500; color: var(--ink-soft); }
+.lp .ftr-bottom-links { display: flex; align-items: center; gap: 18px; font-weight: 500; color: var(--ink-soft); }
+.lp .ftr-bottom-links a { text-decoration: none; color: var(--ink-soft); }
 .lp .ftr-bottom-links a:hover { color: var(--ink); text-decoration: none; }
 .lp .ftr-bottom-links .sep { width: 1px; height: 14px; background: var(--line); }
 .lp .ftr-wordmark-wrap { position: relative; display: flex; width: 100%; align-items: flex-end; justify-content: center; overflow: hidden; pointer-events: none; }
-.lp .ftr-wordmark { display: block; transform: translateY(14%); font-family: var(--font-heading); font-weight: 700; letter-spacing: -0.02em; line-height: 1; font-size: min(22vw, 260px); color: color-mix(in srgb, var(--ink) 6%, var(--bg)); }
+/* Wordmark de cristal: BLANCO puro, como en bivelio.com. Lo que lo hace legible
+   sobre un fondo casi blanco es el filtro (sombra exterior + biseles interiores),
+   no el color — pintarlo de gris, como estaba, mataba el efecto. */
+.lp .ftr-wordmark { display: block; transform: translateY(12%); padding: 0 16px; font-family: var(--font-heading); font-weight: 700; letter-spacing: -.025em; line-height: 1; font-size: min(22vw, 280px); color: #FFFFFF; }
 
-/* landing responsive */
+/* Responsive de la landing */
 @media (max-width: 900px) {
-  .lp .hero { grid-template-columns: 1fr; gap: 34px; padding-top: 44px; }
+  .lp .hero { grid-template-columns: 1fr; gap: 34px; }
   .lp .ledgers { grid-template-columns: 1fr 1fr; }
   .lp .split { grid-template-columns: 1fr; }
 }

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { safeNextPath } from "../safe-next";
+
 /**
  * One-shot session refresh. Server Components can't persist a refreshed auth
  * cookie (setAll is a no-op there), so when the access token has expired the
@@ -12,9 +14,9 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/dashboard";
-  // Guard against a redirect loop: only ever bounce to internal paths.
-  const dest = next.startsWith("/") ? next : "/dashboard";
+  // Esta ruta era la más expuesta de las dos: solo comprobaba startsWith("/"),
+  // así que /auth/refresh?next=//evil.com redirigía fuera del origen sin más.
+  const dest = safeNextPath(searchParams.get("next"));
 
   const supabase = await createClient();
   const {

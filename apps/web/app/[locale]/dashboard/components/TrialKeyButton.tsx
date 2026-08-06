@@ -79,7 +79,7 @@ export function TrialKeyButton() {
         {state === "loading" ? t("trialKeyButton.issuing") : t("trialKeyButton.getKey")}
       </button>
       {state === "error" ? (
-        <p className="ck-note" style={{ color: "var(--warn)", marginTop: "6px" }}>{msg}</p>
+        <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{msg}</p>
       ) : (
         <p className="ck-note" style={{ marginTop: "6px" }}>
           {t("trialKeyButton.priceNote", { monthly: "$4", yearly: "$39" })}
