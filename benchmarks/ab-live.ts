@@ -39,6 +39,8 @@ import {
   type Provider,
   type SavingsRequest,
   type SavingsResult,
+  TokenizerRegistry,
+  registrarTokenizadorExacto,
 } from "../src/index.js";
 import { scenarios, type Scenario } from "./scenarios.js";
 import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
@@ -93,6 +95,28 @@ function makeProvider(): Provider {
 
 const modelId = (r: SavingsRequest): string => (liveModel ? liveModel : r.model);
 
+// ── Tokenizador EXACTO. Una tirada que hace afirmaciones en dólares no puede
+// contar con el estimador heurístico: mide 2171 tokens donde o200k_base mide
+// 1155 en el mismo JSON (1,88x), y ese sesgo NO se cancela al restar contra un
+// formato distinto. Con él registrado, `basis` puede ser "measured"; sin él, el
+// propio layer degrada a "estimated" y la tirada lo dirá.
+const registroTokens = new TokenizerRegistry();
+const tokenizadorExacto = await registrarTokenizadorExacto(registroTokens);
+if (!tokenizadorExacto) {
+  console.warn(
+    "[ab] gpt-tokenizer no está instalado: se usará el estimador heurístico y la " +
+      "contabilidad se publicará como ESTIMADA. Instálalo con `pnpm add -D gpt-tokenizer`.",
+  );
+}
+
+/** Todas las capas de la tirada comparten el mismo registro y el mismo proveedor. */
+const nuevaCapa = (provider: Provider, model: string) =>
+  createSavingsLayer({
+    provider,
+    defaultCostModel: priceFor(model),
+    tokenizer: registroTokens,
+  });
+
 function priceFor(model: string): CostModel {
   const key = model.replace(/^[^/]+\//, "");
   return PRICES[key] ?? PRICES[model] ?? FALLBACK_PRICE;
@@ -140,6 +164,16 @@ function buildNaive(req: SavingsRequest): {
 
 type Kind = "resolver" | "cache" | "ran";
 
+/**
+ * El modelo que el proveedor dice haber servido. Se normaliza el prefijo de
+ * proveedor ("openai/gpt-4o-mini" y "gpt-4o-mini" son el mismo modelo) porque a
+ * través de una pasarela el eco puede traerlo o no.
+ */
+function modeloDe(raw: unknown): string | null {
+  const m = (raw as { model?: unknown } | undefined)?.model;
+  return typeof m === "string" && m ? m.replace(/^[^/]+\//, "") : null;
+}
+
 function usageOf(res: SavingsResult): Usage {
   const t = res.report.tokens;
   return {
@@ -174,8 +208,17 @@ interface ScenarioResult {
   quality: { gate: string; passed: number; total: number };
   /** Provably positive savings at 95% AND every answer passed the gate. */
   proven: boolean;
-  /** False if the provider's system_fingerprint changed mid-run (model swapped). */
-  fingerprintStable: boolean;
+  /**
+   * True cuando LOS DOS BRAZOS hablaron con el mismo modelo en todas las reps.
+   * Esta es la garantía que hace comparable un A/B pareado.
+   */
+  modelStable: boolean;
+  servedModels: string[];
+  /**
+   * INFORMATIVO, nunca una verja: a través de una pasarela `system_fingerprint`
+   * es un id por petición, así que exigir que sea estable haría imposible
+   * demostrar nada.
+   */
   fingerprints: string[];
   amortization?: { coldMissCost: number; hitCost: number; breakEvenK: number | null };
   attribution: {
@@ -189,14 +232,23 @@ interface ScenarioResult {
 
 async function runScenario(s: Scenario): Promise<ScenarioResult> {
   const provider = makeProvider();
-  const req: SavingsRequest = liveModel ? { ...s.request, model: liveModel } : s.request;
+  // Los dos brazos tienen que muestrear de la MISMA distribución. El brazo A
+  // fijaba temperature:0 y seed:7 (buildNaive) y el B no mandaba ninguno de los
+  // dos, porque el pipeline solo los propaga si vienen en el request. Comparar
+  // así mezcla el efecto de la capa con el del muestreo.
+  const req: SavingsRequest = {
+    ...s.request,
+    ...(liveModel ? { model: liveModel } : {}),
+    temperature: s.request.temperature ?? 0,
+    seed: s.request.seed ?? 7,
+  };
   const model = modelId(req);
 
   // Probe the optimized arm once (fresh layer) to classify the scenario.
   // `warm` scenarios demonstrate caching (their value is repeat-traffic, shown
   // in the amortization pass); the COLD headline treats their first call like
   // any ran call so caches honestly read ~0% per single call.
-  const probe = await createSavingsLayer({ provider, defaultCostModel: priceFor(model) }).generate(req);
+  const probe = await nuevaCapa(provider, model).generate(req);
   const kind: Kind = s.warm
     ? "cache"
     : probe.report.calls.actualLlm === 0
@@ -208,6 +260,24 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
   const paired: { costA: number; costB: number }[] = [];
   const aIn: number[] = [], aOut: number[] = [], bIn: number[] = [], bOut: number[] = [];
   const fingerprints = new Set<string>();
+  // Lo que de verdad hay que garantizar: que los DOS brazos hablaron con el
+  // mismo modelo. La verja anterior solo recogía el fingerprint del brazo A y
+  // nunca los comparaba, mientras el README y la verja de publicación afirmaban
+  // literalmente "los dos brazos no midieron el mismo modelo". Y encima
+  // `system_fingerprint` a través de una pasarela es un id POR PETICIÓN (14 de
+  // 14 distintos en la primera tirada), así que como señal de estabilidad es
+  // inalcanzable: proven=true nunca podría darse con más de una repetición.
+  const modelosServidos = new Set<string>();
+  /** Envuelve el proveedor para poder ver qué modelo sirvió al brazo B. */
+  const espia: Provider = {
+    id: provider.id,
+    generate: async (r) => {
+      const resp = await provider.generate(r);
+      const m = modeloDe(resp.raw);
+      if (m) modelosServidos.add(m);
+      return resp;
+    },
+  };
   let qPass = 0;
   let gate = "structural";
   let attribution = {
@@ -222,6 +292,7 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     const respA = await provider.generate(buildNaive(req));
     const fp = (respA.raw as { system_fingerprint?: string } | undefined)?.system_fingerprint;
     if (fp) fingerprints.add(fp);
+    modelosServidos.add(modeloDe(respA.raw) ?? "(sin declarar)");
     const uA: Usage = {
       inputTokens: respA.usage.inputTokens,
       outputTokens: respA.usage.outputTokens,
@@ -231,7 +302,7 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
 
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
-    const resB = await createSavingsLayer({ provider, defaultCostModel: priceFor(model) }).generate(req);
+    const resB = await nuevaCapa(espia, model).generate(req);
     const uB = usageOf(resB);
     const ran = resB.report.calls.actualLlm > 0;
     const costB = ran ? cost(model, uB) : 0;
@@ -269,7 +340,10 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
   const savings = bootstrapRatioCI(paired.map((p) => p.costA), paired.map((p) => p.costB), { seed: SEED });
   const reps = paired.length;
   const qualityOk = reps > 0 && qPass / reps >= QUALITY_FLOOR;
-  const fpStable = fingerprints.size <= 1;
+  // Solo cuenta cuando hubo llamada de verdad en el brazo B: en un escenario
+  // resolver la capa no llama al proveedor, así que solo hay modelo del brazo A
+  // y exigir dos coincidentes convertiría el único +100% de la tirada en error.
+  const modelStable = modelosServidos.size <= 1;
 
   const result: ScenarioResult = {
     name: s.name,
@@ -286,8 +360,9 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
       wilcoxonP: wilcoxonSignedRankP(paired.map((p) => p.costA - p.costB)),
     },
     quality: { gate, passed: qPass, total: reps },
-    proven: mode === "LIVE" && savings.lower > 0 && qualityOk && fpStable,
-    fingerprintStable: fpStable,
+    proven: mode === "LIVE" && savings.lower > 0 && qualityOk && modelStable,
+    modelStable,
+    servedModels: [...modelosServidos],
     fingerprints: [...fingerprints],
     attribution,
     paired,
@@ -295,7 +370,7 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
 
   // Cache amortization: repeat traffic pays the miss ONCE, then hits are $0.
   if (kind === "cache") {
-    const layer = createSavingsLayer({ provider, defaultCostModel: priceFor(model) });
+    const layer = nuevaCapa(provider, model);
     const miss = await layer.generate(req); // cold miss (real optimized cost)
     const coldMissCost = miss.report.calls.actualLlm > 0 ? cost(model, usageOf(miss)) : 0;
     const hit = await layer.generate(req); // warmed → hit
@@ -423,7 +498,7 @@ async function main(): Promise<void> {
   const qTotalPass = results.reduce((n, r) => n + r.quality.passed, 0);
   const qTotal = results.reduce((n, r) => n + r.quality.total, 0);
   const qualityPassRate = qTotal ? qTotalPass / qTotal : 0;
-  const allFpStable = results.every((r) => r.fingerprintStable);
+  const allFpStable = results.every((r) => r.modelStable);
 
   const proven = mode === "LIVE" && agg.lower > 0 && qualityPassRate >= QUALITY_FLOOR && allFpStable;
 
@@ -442,7 +517,7 @@ async function main(): Promise<void> {
       scenarios: rs.map((r) => r.name),
       savings: ci,
       deltaCost: sumArr(a) - sumArr(b),
-      proven: mode === "LIVE" && ci.lower > 0 && rs.length > 0 && rs.every((r) => r.quality.passed === r.quality.total && r.fingerprintStable),
+      proven: mode === "LIVE" && ci.lower > 0 && rs.length > 0 && rs.every((r) => r.quality.passed === r.quality.total && r.modelStable),
     };
   });
 
@@ -462,7 +537,7 @@ async function main(): Promise<void> {
     console.log(`  Net savings:   point ${pct(agg.point)}   95% CI [${pct(agg.lower)}, ${pct(agg.upper)}]`);
     console.log(`  Claim:         ${proven ? `VERIFIED ≥ ${pct(agg.lower)} at 95% confidence` : "NOT PROVEN (CI lower ≤ 0, quality regressed, or model swapped)"}`);
     console.log(`  Wilcoxon p:    ${wP.toExponential(2)}   (H1: median saving > 0)`);
-    if (!allFpStable) console.log(`  ⚠ model fingerprint changed mid-run — results may span different model versions.`);
+    if (!allFpStable) console.log(`  ⚠ los dos brazos no hablaron con el mismo modelo: ${results.flatMap((r) => r.servedModels).join(", ")}`);
   } else {
     console.log(`  Net savings:   ${pct(agg.point)}  — ESTIMATED (mock provider), NOT a real savings claim`);
     console.log(`  Run LIVE (set BVSALA_DEMO_BASE_URL) for real provider tokens & dollars.`);
@@ -499,7 +574,7 @@ async function main(): Promise<void> {
     scenarios: results.map((r) => ({ ...r, paired: undefined })),
     ledgers: ledgerRollup,
     reconciliation: { totalDelta, ledgerSum, residual, reconciled },
-    fingerprintStable: allFpStable,
+    modelStable: allFpStable,
     aggregate: {
       savings: agg,
       wilcoxonP: wP,
@@ -515,7 +590,7 @@ async function main(): Promise<void> {
       "A saving is voided if its answer fails the quality gate.",
       "Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).",
       "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
-      "A changed model fingerprint mid-run invalidates the 'proven' claim.",
+      "El modelo SERVIDO se compara entre los dos brazos; si difiere, la afirmación no vale. (system_fingerprint se registra pero no se usa como verja: a través de una pasarela es un id por petición.)",
       "Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.",
       "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving.",
     ],

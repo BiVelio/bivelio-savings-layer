@@ -87,7 +87,11 @@ const answerContract = {
     required: ["answer"],
     properties: {
       answer: { type: "string" as const, maxLength: 400 },
-      refs: { type: "array" as const, maxItems: 3, items: { type: "string" as const, maxLength: 24 } },
+      // `maxLength: 24` era inalcanzable por cualquier referencia real y NINGÚN
+      // modo estructurado lo impone (OpenAI no aplica maxLength), así que
+      // garantizaba el fallo de validación y con él el reintento de reparación
+      // — el camino que se llevaba el 40-63% del gasto de la capa.
+      refs: { type: "array" as const, maxItems: 3, items: { type: "string" as const, maxLength: 120 } },
     },
   },
   maxOutputTokens: 180,
@@ -169,7 +173,11 @@ export const scenarios: Scenario[] = [
         })),
       },
     },
-    expect: (r) => r.report.tokens.compressedInput > 0,
+    // Antes: `r.report.tokens.compressedInput > 0` — comprobaba su propio libro.
+    // El escenario que perdió 49,5% de dinero y sobreacreditó su ledger 3x se
+    // puntuaba "calidad 2/2" por afirmar que el ledger que infló no es cero.
+    // Una verja de calidad tiene que mirar la RESPUESTA, no la contabilidad.
+    expect: (r) => r.report.constraints.structurallyValid && r.text.trim().length > 0,
   },
   {
     name: "Constrained structured answer",

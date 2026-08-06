@@ -13,6 +13,22 @@
 export interface TokenEstimator {
   /** Stable id, e.g. "o200k_base" or "heuristic". */
   readonly id: string;
+  /**
+   * ¿Cuenta este estimador con la MISMA regla que factura el proveedor?
+   *
+   * No es un detalle de calidad: decide si una cifra derivada puede llamarse
+   * MEDIDA. El baseline de una llamada que se ejecutó se reconstruye como
+   * "lo enviado (medido por el proveedor) + lo quitado (contado aquí)". Si lo
+   * quitado se cuenta con otra regla, el resultado es una estimación aunque uno
+   * de los dos sumandos venga del proveedor — y publicarlo como medido es
+   * exactamente la clase de mentira que este producto existe para no contar.
+   *
+   * El heurístico vale para RANKEAR formatos candidatos (le basta con acertar el
+   * orden). No vale para restar tokens entre formatos distintos: cobra cada
+   * símbolo suelto como un token entero, así que infla el JSON denso en símbolos
+   * mucho más que el TOON, y la diferencia se acredita como ahorro inexistente.
+   */
+  readonly exact: boolean;
   /** Estimate the number of tokens in a string. */
   count(text: string): number;
 }
@@ -27,6 +43,8 @@ export interface TokenEstimator {
  */
 export class HeuristicEstimator implements TokenEstimator {
   readonly id: string;
+  /** Aproxima; no comparte regla con ningún proveedor. Ver {@link TokenEstimator.exact}. */
+  readonly exact = false;
 
   constructor(id = "heuristic") {
     this.id = id;

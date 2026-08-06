@@ -11,7 +11,7 @@ import { decidePublish, type ArtifactShape } from "../benchmarks/publish-guard.j
 const live = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
   mode: "LIVE",
   model: "gpt-4o-mini",
-  fingerprintStable: true,
+  modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
   scenarios: [{}, {}],
   aggregate: { savings: { point: 0.42, lower: 0.31, upper: 0.5 }, proven: true, qualityPassRate: 1 },
@@ -20,7 +20,7 @@ const live = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
 
 const mock = (): ArtifactShape => ({
   mode: "MOCK",
-  fingerprintStable: true,
+  modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
   scenarios: [{}],
   aggregate: { savings: { point: 0.6, lower: 0.6, upper: 0.6 }, proven: false, qualityPassRate: 1 },
@@ -53,12 +53,14 @@ describe("verja de publicación del artefacto A/B", () => {
     expect(d.blockers.join(" ")).toMatch(/degradar una medición real/);
   });
 
-  it("un fingerprint inestable invalida la tirada", () => {
-    // Los dos brazos tienen que haber medido el MISMO modelo; si el proveedor lo
-    // cambió a mitad, la diferencia de coste ya no es atribuible a la capa.
-    const d = decidePublish(null, live({ fingerprintStable: false }));
+  it("dos brazos con modelos distintos invalidan la tirada", () => {
+    // Es la garantía que hace comparable un A/B pareado. Antes se comprobaba
+    // `system_fingerprint`, que a través de una pasarela es un id POR PETICIÓN:
+    // la verja fallaba siempre y afirmaba, además, algo que el benchmark nunca
+    // llegó a calcular (solo recogía el fingerprint del brazo A).
+    const d = decidePublish(null, live({ modelStable: false }));
     expect(d.ok).toBe(false);
-    expect(d.blockers.join(" ")).toMatch(/fingerprint/);
+    expect(d.blockers.join(" ")).toMatch(/mismo modelo/);
   });
 
   it("unos libros que no cuadran bloquean: es doble conteo", () => {

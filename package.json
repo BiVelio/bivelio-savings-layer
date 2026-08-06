@@ -78,10 +78,19 @@
   "devDependencies": {
     "@noble/curves": "^2.2.0",
     "@types/node": "^22.10.2",
+    "gpt-tokenizer": "^3.4.0",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
-  "packageManager": "pnpm@10.17.1"
+  "packageManager": "pnpm@10.17.1",
+  "peerDependencies": {
+    "gpt-tokenizer": "^3"
+  },
+  "peerDependenciesMeta": {
+    "gpt-tokenizer": {
+      "optional": true
+    }
+  }
 }

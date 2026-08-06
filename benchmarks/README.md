@@ -94,7 +94,7 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
 - the artifact is not `LIVE` (override with `--allow-mock`, deliberately);
 - it would **downgrade** an already-published `LIVE` to a MOCK — this one has no
   override, because losing the only defensible number by accident is silent;
-- the model fingerprint changed mid-run (the two arms measured different models);
+- the two arms did not talk to the same **served model** (what actually makes a paired A/B comparable — `system_fingerprint` is recorded but never gated on, because through a gateway it is a per-request id);
 - the ledgers don't reconcile — a non-zero residual means double counting;
 - savings exceed 100%, the interval is inverted, or the point estimate falls
   outside its own interval.

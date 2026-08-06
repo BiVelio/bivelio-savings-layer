@@ -59,20 +59,44 @@ export class SavingsLedger {
   // (x0,83 en prompts cortos), así que no se puede corregir con un factor global.
   //
   // La salida no es afinar el estimador: es no comparar niveles de reglas
-  // distintas. Lo que sí es fiable del estimador local es la DIFERENCIA entre
-  // dos textos medidos con él mismo — ahí el sesgo se cancela en la resta. Así
-  // que el baseline se reconstruye sobre la regla del proveedor:
+  // distintas. Así que el baseline se reconstruye sobre la regla del proveedor:
   //
   //     baselineInput = actualInput + k · (tokens quitados, medidos en local)
   //     k = actualInput / sentInputLocal      (calibración de ESTA petición)
   //
   // Con cero optimización, `quitados` es 0 y baseline == actual: 0% de ahorro
   // por construcción, sin depender de qué tokenizador tenga registrado nadie.
+  //
+  // DÓNDE FALLA ESTO, y por qué `basis` importa.
+  // La versión anterior de este comentario afirmaba que el sesgo del estimador
+  // "se cancela en la resta". Se cancela solo si los dos textos tienen la misma
+  // densidad de símbolos, y justo el caso que más ahorra —cambiar JSON por un
+  // formato tabular— rompe esa condición. `k` se calibra sobre el prompt ENVIADO
+  // y se aplica a texto QUITADO que estaba en otro formato:
+  //
+  //   Medido en el escenario de la tabla (50 filas): el estimador cuenta 2182
+  //   tokens del JSON (40% de sus caracteres son símbolos, y cobra cada símbolo
+  //   suelto a token entero) y 877 del TOON (16%). k sale 0,901 cuando la k
+  //   correcta para el texto quitado era 0,538. Baseline publicado 4319 contra
+  //   1174 reales: 3,68x, o sea +47,4% de ahorro donde el proveedor midió
+  //   −49,6%. Un positivo FABRICADO, y encima etiquetado "measured".
+  //
+  // Por eso `basis` solo puede ser "measured" cuando la conversión es de fiar:
+  // o no hubo nada que convertir (`removedInputLocal == 0`), o el estimador
+  // cuenta con la misma regla que factura el proveedor (`estimatorExact`).
+  // Con el heurístico y algo quitado, la cifra es "estimated" — sigue siendo la
+  // mejor disponible, pero no se cobra como comprobable contra la factura.
 
   /** Cuenta LOCAL del prompt que de verdad se envió al proveedor. */
   sentInputLocal = 0;
   /** Tokens que la capa quitó de ese prompt, en cuenta LOCAL. */
   removedInputLocal = 0;
+  /**
+   * ¿El estimador que produjo las dos cifras anteriores cuenta con la regla del
+   * proveedor? Lo fija el pipeline al resolver el tokenizador del modelo.
+   * Por defecto NO: asumir exactitud sin comprobarla es el fallo que esto cierra.
+   */
+  estimatorExact = false;
   /** Salida del reintento de reparación. Es coste NUESTRO, nunca del baseline. */
   repairOutput = 0;
 
@@ -148,7 +172,31 @@ export class SavingsLedger {
       if (this.actualInput > 0 && this.sentInputLocal > 0) {
         const k = this.actualInput / this.sentInputLocal;
         this.baselineInput = this.actualInput + Math.round(k * this.removedInputLocal);
-        basis = "measured";
+        // Un baseline RECONSTRUIDO nunca es "measured", por bueno que sea el
+        // tokenizador. Medido contra el proveedor real, con o200k_base exacto y
+        // el escenario de la tabla:
+        //
+        //   quitado de verdad (exacto)     432
+        //   lo que este cálculo acredita   616     ← k = 1042/731 = 1,426
+        //
+        // k no vale 1 aunque las dos reglas coincidan, porque `actualInput`
+        // incluye ~311 tokens de PROTOCOLO que el conteo local del texto no ve:
+        // el bloque `response_format`, los marcadores de rol, la plantilla de
+        // chat. O sea que k mezcla un sobrecoste ADITIVO con una diferencia
+        // MULTIPLICATIVA, y al multiplicar acredita tokens que nadie quitó.
+        //
+        // Y sumarlo sin k tampoco arregla: `actualInput` carga sobrecoste que la
+        // petición naive nunca habría pagado (el bloque de esquema lo mete la
+        // capa), así que el baseline seguiría contando contra el cliente algo que
+        // no era suyo. El sobrecoste de protocolo del naive no se puede conocer
+        // sin enviarlo.
+        //
+        // La conclusión honesta: el ÚNICO baseline medido de una llamada que se
+        // ejecutó es uno que se haya ejecutado también — un A/B. Aquí solo cabe
+        // estimar. Se sigue publicando, porque es la mejor cifra disponible y
+        // ahora es mucho mejor (el libro de compresión pasó de 1306 a 432 con el
+        // tokenizador exacto), pero no se cobra como comprobable contra factura.
+        basis = this.removedInputLocal === 0 ? "measured" : "estimated";
       } else if (this.actualInput > 0) {
         // Hay medición del proveedor pero no lectura local con la que calibrar:
         // no se puede convertir, así que no se reclama nada.

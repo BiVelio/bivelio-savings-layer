@@ -20,7 +20,7 @@ export interface CI {
 export interface ArtifactShape {
   mode?: unknown;
   model?: unknown;
-  fingerprintStable?: unknown;
+  modelStable?: unknown;
   reconciliation?: { reconciled?: unknown; residual?: unknown };
   aggregate?: {
     savings?: Partial<CI>;
@@ -82,8 +82,8 @@ export function decidePublish(
   // ── 3. Integridad interna. Estas tres las calcula el propio benchmark; si
   // alguna falla, la tirada no vale aunque el porcentaje sea bonito.
   if (esLive) {
-    if (incoming.fingerprintStable === false) {
-      blockers.push("el fingerprint del modelo cambió a mitad de la tirada: los dos brazos no midieron el mismo modelo");
+    if (incoming.modelStable === false) {
+      blockers.push("los dos brazos no hablaron con el mismo modelo: el A/B pareado no es comparable");
     }
     if (incoming.reconciliation?.reconciled === false) {
       blockers.push(

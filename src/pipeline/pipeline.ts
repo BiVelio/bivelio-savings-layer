@@ -417,16 +417,20 @@ export class SavingsPipeline {
 
     // Calibración de la regla, medida en ESTA petición. `sentInputLocal` es la
     // cuenta local del prompt que de verdad salió; la diferencia contra el
-    // baseline local es lo que la capa quitó, y es una resta entre dos medidas
-    // del MISMO estimador, así que su sesgo se cancela. Ver la nota larga en
-    // SavingsLedger. El clamp a 0 importa: si el prompt enviado CRECIÓ (evidencia
-    // de retrieval, instrucciones de formato) no se reclama nada, que es lo
-    // honesto — no un ahorro negativo inventado.
+    // baseline local es lo que la capa quitó. Ver la nota larga en SavingsLedger:
+    // esa resta NO es neutra si los dos textos tienen densidades de símbolos
+    // distintas, que es justo lo que pasa al cambiar JSON por un formato tabular.
+    // Por eso se anota TAMBIÉN si el estimador cuenta con la regla del proveedor:
+    // de ello depende que el resultado pueda llamarse medido o solo estimado.
+    // El clamp a 0 importa: si el prompt enviado CRECIÓ (evidencia de retrieval,
+    // instrucciones de formato) no se reclama nada, que es lo honesto — no un
+    // ahorro negativo inventado.
     ledger.sentInputLocal = this.tokensFor(
       this.assemblePromptText(messages, toolSelection.tools),
       request,
     );
     ledger.removedInputLocal = Math.max(0, baselineInput - ledger.sentInputLocal);
+    ledger.estimatorExact = this.estimatorEsExacto(request);
 
     if (response.usage.cachedInputTokens) {
       ledger.providerCached(response.usage.cachedInputTokens);
@@ -446,10 +450,37 @@ export class SavingsPipeline {
         // backend to prevent the invalid output in the first place.
         ledger.retries = 1;
         trace.record("validation", "repair-attempt", { errors: validation.errors });
+
+        // El reintento reenviaba `...messages` ENTERO — con los datos
+        // estructurados dentro, que es donde está el volumen. En el escenario de
+        // la tabla eso arrastraba ~780 tokens dos veces, y medido contra un
+        // proveedor real este camino se llevaba entre el 40% y el 63% de todo el
+        // gasto de la capa. Es coste que la capa se inflige a sí misma mientras
+        // dice estar ahorrando.
+        //
+        // Y era CIEGO: `validation.errors` se calculaba, se metía en la traza y
+        // NO se le decía al modelo; el mensaje era una constante. Se le pedía que
+        // adivinara qué estaba mal. Experimento natural en la propia tirada:
+        // "FAQ (first)" y "FAQ (repeat)" son la misma petición byte a byte; la
+        // que reparó sacó 0/2 de calidad y la que no reparó, 2/2. El reintento
+        // duplicaba el coste y empeoraba el resultado.
+        //
+        // Ahora se manda lo justo para arreglar: la salida inválida y QUÉ falla
+        // exactamente. La respuesta previa ya contiene la sustancia, así que no
+        // hace falta reenviar el material de origen.
+        const detalle = validation.errors
+          .slice(0, 5) // no convertir el propio informe de errores en el nuevo volumen
+          .map((e) => `- ${e.path}: ${e.message}`)
+          .join("\n");
         const mensajesReparacion: ChatMessage[] = [
-          ...messages,
-          { role: "assistant", content: response.text },
-          { role: "user", content: "Return only a JSON object matching the contract." },
+          {
+            role: "user",
+            content:
+              "Your previous reply did not satisfy the required JSON contract.\n\n" +
+              `Previous reply:\n${response.text}\n\n` +
+              `Problems found:\n${detalle}\n\n` +
+              "Return ONLY the corrected JSON object. Keep the same content; fix only what is listed.",
+          },
         ];
         response = await this.config.provider.generate({
           model: request.model,
@@ -470,8 +501,12 @@ export class SavingsPipeline {
         // para que la calibración no se descuadre (actualInput ya acumula las dos
         // llamadas; si la lectura local cubriera solo la primera, k saldría ~2x).
         ledger.repairOutput += response.usage.outputTokens;
+        // SIN las herramientas: la llamada de reparación no las envía (mírala
+        // arriba, no lleva `tools`). Contarlas aquí metía en la lectura local
+        // tokens que el proveedor nunca facturó, y descuadraba la calibración en
+        // el sentido de acreditar de más.
         ledger.sentInputLocal += this.tokensFor(
-          this.assemblePromptText(mensajesReparacion, toolSelection.tools),
+          this.assemblePromptText(mensajesReparacion),
           request,
         );
         const reparsed = tryParse(response.text);
@@ -786,7 +821,24 @@ export class SavingsPipeline {
       parts.push(JSON.stringify(structuredData));
     }
     for (const tool of tools ?? []) {
-      parts.push(JSON.stringify(tool.parameters ?? {}));
+      // El envoltorio cuenta. Antes solo se contaban los `parameters`, pero el
+      // proveedor factura la herramienta ENTERA — nombre, descripción y la
+      // envoltura `{type:"function",function:{…}}` que arma el adaptador (ver
+      // providers/openai-compatible.ts). Dejarlo fuera hacía que la cuenta local
+      // del prompt enviado quedara POR DEBAJO de lo que midió el proveedor, y
+      // entonces k = actualInput/sentInputLocal salía > 1 (medido: 1,31), o sea
+      // que cada token quitado se acreditaba inflado. En el escenario tool-heavy
+      // publicaba un baseline de 785 contra 262 reales: 3,00x.
+      parts.push(
+        JSON.stringify({
+          type: "function",
+          function: {
+            name: tool.id,
+            ...(tool.description ? { description: tool.description } : {}),
+            parameters: tool.parameters ?? { type: "object", properties: {} },
+          },
+        }),
+      );
     }
     return parts.join("\n");
   }
@@ -796,6 +848,29 @@ export class SavingsPipeline {
       ...(request.tokenizer ? { tokenizer: request.tokenizer } : {}),
       model: request.model,
     });
+  }
+
+  /**
+   * ¿El tokenizador que se usará para ESTA petición cuenta con la regla del
+   * proveedor? De ello depende que un baseline reconstruido pueda publicarse
+   * como medido. Fail-closed: un registro que no sepa responder cuenta como
+   * inexacto, porque la duda tiene que restar afirmación, no sumarla.
+   */
+  private estimatorEsExacto(request: SavingsRequest): boolean {
+    const registro = this.config.tokenizer as {
+      resolve?: (o: { tokenizer?: string; model?: string }) => { exact?: boolean };
+    };
+    if (typeof registro.resolve !== "function") return false;
+    try {
+      return (
+        registro.resolve({
+          ...(request.tokenizer ? { tokenizer: request.tokenizer } : {}),
+          model: request.model,
+        }).exact === true
+      );
+    } catch {
+      return false;
+    }
   }
 
   /**
