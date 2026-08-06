@@ -79,7 +79,7 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
           <span className="est-tag">{t("projectorVerifier.estimateFull")}</span>
         </div>
         <textarea className="proj-ta" value={payload} spellCheck={false} onChange={(e) => setPayload(e.target.value)} />
-        {err ? <p className="ck-note" style={{ color: "var(--warn)" }}>{err}</p> : null}
+        {err ? <p className="ck-note" style={{ color: "var(--danger)" }}>{err}</p> : null}
         <div style={{ marginTop: "10px" }}>
           {[
             { name: t("projectorVerifier.yourData"), tokens: baseTok, win: false },

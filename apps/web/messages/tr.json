@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "Savings Layer, BiVelio platformunun bir parçası",
+    "announceClose": "Kapat",
     "langTitle": "Dilinizi seçin",
     "langSubtitle": "BiVelio Savings Layer'ı kullanmak istediğiniz dili seçin.",
     "langSearch": "Dil ara",
@@ -12,12 +14,6 @@
     "signOut": "Çıkış yap"
   },
   "app": {
-    "themeToggle": {
-      "light": "Açık",
-      "dark": "Koyu",
-      "ariaLabel": "Temayı değiştir",
-      "title": "Açık / koyu geçişi"
-    },
     "sidebar": {
       "overview": "Genel bakış",
       "savings": "Tasarruf",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Kendi trafiğinde ölç",
+      "ctaSub": "Doğrulayıcı tarayıcında ücretsiz çalışır. Lisans yalnızca BV‑SALA’yı kendi uygulamanda çalıştırmak için gerekir.",
+      "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, <b>BV‑SALA</b>, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimize edicisi — ödemeden önce tasarrufu kendiniz doğrulayın.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Gizlilik",
       "terms": "Hizmet şartları",
       "gdpr": "GDPR",
+      "cookies": "Çerezler",
+      "billing": "Faturalandırma",
+      "aiAct": "Sorumlu yapay zekâ (AI Act)",
+      "legalCenter": "Hukuk merkezi",
       "trust": "Kurumsal güvenlik · GDPR uyumlu · Ölçeklenebilir altyapı",
       "entity": "BiVelio Inc tarafından desteklenmektedir · Delaware (Amerika Birleşik Devletleri).",
       "copyright": "© 2026 BiVelio Inc. Tüm hakları saklıdır.",

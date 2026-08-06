@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "Savings Layer là một phần của nền tảng BiVelio",
+    "announceClose": "Đóng",
     "langTitle": "Chọn ngôn ngữ của bạn",
     "langSubtitle": "Chọn ngôn ngữ bạn muốn dùng BiVelio Savings Layer.",
     "langSearch": "Tìm ngôn ngữ",
@@ -12,12 +14,6 @@
     "signOut": "Đăng xuất"
   },
   "app": {
-    "themeToggle": {
-      "light": "Sáng",
-      "dark": "Tối",
-      "ariaLabel": "Chuyển giao diện",
-      "title": "Chuyển sáng / tối"
-    },
     "sidebar": {
       "overview": "Tổng quan",
       "savings": "Tiết kiệm",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Đo trên chính lưu lượng của bạn",
+      "ctaSub": "Trình xác minh chạy miễn phí trong trình duyệt của bạn. Giấy phép chỉ cần khi chạy BV‑SALA trong ứng dụng của bạn.",
+      "ctaStart": "Bắt đầu",
       "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, trình tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — hãy tự mình xác minh mức tiết kiệm trước khi trả phí.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Quyền riêng tư",
       "terms": "Điều khoản dịch vụ",
       "gdpr": "GDPR",
+      "cookies": "Cookie",
+      "billing": "Thanh toán",
+      "aiAct": "AI có trách nhiệm (AI Act)",
+      "legalCenter": "Trung tâm pháp lý",
       "trust": "Bảo mật doanh nghiệp · Tuân thủ GDPR · Hạ tầng có thể mở rộng",
       "entity": "Được vận hành bởi BiVelio Inc · Delaware (Hoa Kỳ).",
       "copyright": "© 2026 BiVelio Inc. Bảo lưu mọi quyền.",

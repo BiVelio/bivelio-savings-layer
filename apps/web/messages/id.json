@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "Savings Layer adalah bagian dari platform BiVelio",
+    "announceClose": "Tutup",
     "langTitle": "Pilih bahasa Anda",
     "langSubtitle": "Pilih bahasa yang ingin Anda gunakan untuk BiVelio Savings Layer.",
     "langSearch": "Cari bahasa",
@@ -12,12 +14,6 @@
     "signOut": "Keluar"
   },
   "app": {
-    "themeToggle": {
-      "light": "Terang",
-      "dark": "Gelap",
-      "ariaLabel": "Ganti tema",
-      "title": "Ganti terang / gelap"
-    },
     "sidebar": {
       "overview": "Ikhtisar",
       "savings": "Penghematan",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Ukur dengan trafik Anda sendiri",
+      "ctaSub": "Verifier berjalan gratis di peramban Anda. Lisensi hanya diperlukan untuk menjalankan BV‑SALA di aplikasi Anda.",
+      "ctaStart": "Mulai",
       "tagline": "Sistem operasi untuk bisnis Anda. Ini adalah <b>BV‑SALA</b>, pengoptimal biaya LLM netral-penyedia dari BiVelio — verifikasi sendiri penghematannya sebelum Anda membayar.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Privasi",
       "terms": "Ketentuan layanan",
       "gdpr": "GDPR",
+      "cookies": "Cookie",
+      "billing": "Penagihan",
+      "aiAct": "AI yang bertanggung jawab (AI Act)",
+      "legalCenter": "Pusat hukum",
       "trust": "Keamanan enterprise · Patuh GDPR · Infrastruktur yang skalabel",
       "entity": "Didukung oleh BiVelio Inc · Delaware (Amerika Serikat).",
       "copyright": "© 2026 BiVelio Inc. Semua hak dilindungi.",

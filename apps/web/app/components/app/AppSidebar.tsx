@@ -3,19 +3,21 @@ import { getTranslations } from "next-intl/server";
 import { AppNavLink } from "./AppNavLink";
 
 const GROUPS: { label?: string; items: { href: string; label: string; icon: string }[] }[] = [
-  { items: [{ href: "/dashboard", label: "overview", icon: "◧" }] },
+  { items: [{ href: "/dashboard", label: "overview", icon: "overview" }] },
   {
     label: "savings",
     items: [
-      { href: "/dashboard/proof", label: "proof", icon: "✓" },
-      { href: "/dashboard/verify", label: "verify", icon: "▶" },
+      { href: "/dashboard/proof", label: "proof", icon: "proof" },
+      { href: "/dashboard/verify", label: "verify", icon: "verify" },
     ],
   },
-  { label: "integrate", items: [{ href: "/dashboard/install", label: "install", icon: "⤳" }] },
-  { label: "account", items: [{ href: "/dashboard/account", label: "account", icon: "◔" }] },
+  { label: "integrate", items: [{ href: "/dashboard/install", label: "install", icon: "install" }] },
+  { label: "account", items: [{ href: "/dashboard/account", label: "account", icon: "account" }] },
 ];
 
-/** Left dashboard sidebar — grouped nav, mirrors bivelio-privacy-gateway's AppSidebar. */
+/** Barra lateral del dashboard — navegación agrupada, con los mismos
+ *  encabezados de grupo (11px, 600, versalitas) y las mismas cajas de icono
+ *  (32px, hairline, blanco) que los menús de bivelio.com. */
 export async function AppSidebar() {
   const t = await getTranslations("app.sidebar");
   return (

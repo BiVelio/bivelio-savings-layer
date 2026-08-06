@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 // Root layout is intentionally a pass-through: the <html>/<body> element, the
@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     "BV-SALA — BiVelio's provider-neutral LLM cost optimizer. Verify the savings on your own data, then sign in with your BiVelio account.",
   robots: { index: false, follow: false },
   icons: { icon: "/logo-bivelio.png", apple: "/logo-bivelio.png" },
+};
+
+// Color con el que se tiñe la barra de direcciones del móvil. Un solo valor:
+// esta superficie es light-only, así que no procede el par light/dark que
+// declara bivelio.com (cuyo tema tampoco conmuta ya, pero mantiene ambos).
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

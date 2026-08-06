@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "A Savings Layer faz parte da plataforma BiVelio",
+    "announceClose": "Fechar",
     "langTitle": "Escolhe o teu idioma",
     "langSubtitle": "Seleciona o idioma em que queres usar a BiVelio Savings Layer.",
     "langSearch": "Procurar idioma",
@@ -12,12 +14,6 @@
     "signOut": "Terminar sessão"
   },
   "app": {
-    "themeToggle": {
-      "light": "Claro",
-      "dark": "Escuro",
-      "ariaLabel": "Mudar tema",
-      "title": "Alternar claro / escuro"
-    },
     "sidebar": {
       "overview": "Visão geral",
       "savings": "Poupança",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Meça-o com o seu próprio tráfego",
+      "ctaSub": "O verificador corre gratuitamente no seu navegador. A licença só é necessária para executar o BV‑SALA na sua app.",
+      "ctaStart": "Começar",
       "tagline": "O sistema operativo para o teu negócio. Isto é o <b>BV‑SALA</b>, o otimizador de custo de LLM neutro em relação ao fornecedor da BiVelio — verifica tu mesmo a poupança antes de pagar.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Privacidade",
       "terms": "Termos do serviço",
       "gdpr": "RGPD",
+      "cookies": "Cookies",
+      "billing": "Faturação",
+      "aiAct": "IA responsável (AI Act)",
+      "legalCenter": "Centro jurídico",
       "trust": "Segurança empresarial · Conforme ao RGPD · Infraestrutura escalável",
       "entity": "Desenvolvido pela BiVelio Inc · Delaware (Estados Unidos).",
       "copyright": "© 2026 BiVelio Inc. Todos os direitos reservados.",

@@ -17,10 +17,13 @@ export const LEDGER_LABEL: Record<string, string> = {
   provider_cached_tokens: "provider_cached_tokens",
   output_restriction: "output_restriction",
 };
+// Los cinco libros mayores se pintan con la rampa de la marca (brand · mint ·
+// ui · amber · deep). Antes dos de ellos eran hexes del modo oscuro (#6B8AFA,
+// #43D6B2) escritos a mano: sobre fondo claro ya no pegaban con nada.
 export const LEDGER_COLOR: Record<string, string> = {
-  avoided_calls: "var(--accent)",
-  eliminated_tokens: "var(--success)",
-  compressed_tokens: "#6B8AFA",
-  output_restriction: "var(--warn)",
-  provider_cached_tokens: "#43D6B2",
+  avoided_calls: "var(--brand)",
+  eliminated_tokens: "var(--mint)",
+  compressed_tokens: "var(--ui)",
+  output_restriction: "var(--amber)",
+  provider_cached_tokens: "var(--deep)",
 };

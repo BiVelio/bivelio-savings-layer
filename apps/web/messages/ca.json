@@ -1,5 +1,7 @@
 {
   "nav": {
+    "announce": "Savings Layer forma part de la plataforma BiVelio",
+    "announceClose": "Tanca",
     "langTitle": "Tria el teu idioma",
     "langSubtitle": "Tria l'idioma amb què vols fer servir BiVelio Savings Layer.",
     "langSearch": "Cerca un idioma",
@@ -12,12 +14,6 @@
     "signOut": "Tanca la sessió"
   },
   "app": {
-    "themeToggle": {
-      "light": "Clar",
-      "dark": "Fosc",
-      "ariaLabel": "Canvia el tema",
-      "title": "Canvia entre clar i fosc"
-    },
     "sidebar": {
       "overview": "Resum",
       "savings": "Estalvi",
@@ -325,6 +321,9 @@
       ]
     },
     "footer": {
+      "ctaTitle": "Mesura-ho amb el teu propi trànsit",
+      "ctaSub": "El verificador s’executa gratis al teu navegador. La llicència només cal per executar BV‑SALA dins la teva app.",
+      "ctaStart": "Comença",
       "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM de BiVelio neutral respecte al proveïdor — verifica tu mateix l'estalvi abans de pagar.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
@@ -340,6 +339,10 @@
       "privacy": "Privadesa",
       "terms": "Termes del servei",
       "gdpr": "RGPD",
+      "cookies": "Cookies",
+      "billing": "Facturació",
+      "aiAct": "IA responsable (AI Act)",
+      "legalCenter": "Centre legal",
       "trust": "Seguretat empresarial · Compleix el RGPD · Infraestructura escalable",
       "entity": "Amb la tecnologia de BiVelio Inc · Delaware (Estats Units).",
       "copyright": "© 2026 BiVelio Inc. Tots els drets reservats.",

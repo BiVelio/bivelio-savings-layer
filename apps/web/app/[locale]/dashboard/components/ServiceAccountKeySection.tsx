@@ -111,7 +111,7 @@ export function ServiceAccountKeySection() {
               : t("serviceAccountKeySection.createKey")}
           </button>
           {cState === "error" ? (
-            <p className="ck-note" style={{ color: "var(--warn)", marginTop: "6px" }}>{cMsg}</p>
+            <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{cMsg}</p>
           ) : (
             <p className="ck-note" style={{ marginTop: "6px" }}>
               {t("serviceAccountKeySection.hashNote")}
