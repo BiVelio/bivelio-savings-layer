@@ -440,3 +440,56 @@ describe("browser-safety invariant", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * C8 · Los dos fail-opens de la puerta de obsolescencia.
+ *
+ * La puerta existe para cerrar la ventana en la que alguien bloquea el egress y
+ * mantiene viva una licencia revocada hasta su expiración natural. Estas dos
+ * cosas la dejaban inerte.
+ */
+describe("puerta de obsolescencia: el ancla de arranque no es un cheque en blanco", () => {
+  const VENTANA = 3600; // 1 h de obsolescencia máxima
+
+  it("una licencia RECIENTE conserva su ventana completa tras arrancar", () => {
+    // El caso legítimo: proceso recién arrancado, licencia recién emitida, aún
+    // sin contactar. Debe poder trabajar mientras el sondeo caliente va en curso.
+    const gate = liveGateFromKey(licenseToken({ issued_at: BASE }), publicKey, {
+      revocation: new RevocationSnapshot(),
+      now: () => BASE * 1000,
+      maxStalenessSeconds: VENTANA,
+      startedAt: BASE,
+    });
+    expect(gate.status()).toBe("active");
+  });
+
+  it("una licencia VIEJA sin contacto queda obsoleta por muchos reinicios que haya", () => {
+    // El fallo: en serverless cada invocación es un proceso nuevo, así que
+    // `startedAt` valía siempre "ahora" y la resta daba ~0. La puerta no podía
+    // dispararse nunca. Ahora `issued_at` —que va firmado y no se puede empujar—
+    // acota cuánto puede ayudar el arranque.
+    const emitida = BASE - 10 * DAY;
+    const gate = liveGateFromKey(
+      licenseToken({ issued_at: emitida, expires_at: BASE + 30 * DAY }),
+      publicKey,
+      {
+        revocation: new RevocationSnapshot(),
+        now: () => BASE * 1000,
+        maxStalenessSeconds: VENTANA,
+        startedAt: BASE, // "acabo de arrancar", una y otra vez
+      },
+    );
+    expect(gate.status()).toBe("expired");
+  });
+
+  it("un contacto autorizado reciente la mantiene viva, que es su función", () => {
+    const snapshot = new RevocationSnapshot();
+    snapshot.markContact(BASE - 60); // hace un minuto
+    const gate = liveGateFromKey(
+      licenseToken({ issued_at: BASE - 10 * DAY, expires_at: BASE + 30 * DAY }),
+      publicKey,
+      { revocation: snapshot, now: () => BASE * 1000, maxStalenessSeconds: VENTANA, startedAt: BASE },
+    );
+    expect(gate.status()).toBe("active");
+  });
+});
