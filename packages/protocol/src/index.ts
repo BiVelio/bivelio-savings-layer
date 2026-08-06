@@ -200,6 +200,10 @@ export function usageRecordFromReport(
  * they cannot be used as a value channel to smuggle prompt/completion content. */
 const USAGE_ID_FIELDS = ["requestId", "model"] as const;
 const USAGE_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
+// Umbral de unidad de `at`: la frontera segundos/milisegundos. Espejo de
+// apps/web/lib/metering/usage.ts — mantener los dos valores en sincronía.
+const AT_MIN_MS = 1e12;
+const AT_MAX_SKEW_MS = 48 * 60 * 60 * 1000;
 /** cacheResult is a closed enum (mirrors the SDK's CacheOutcome), never free text. */
 const USAGE_CACHE_RESULTS: ReadonlySet<string> = new Set<string>([
   "miss",
@@ -282,6 +286,23 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     const n = input[f];
     if (typeof n !== "number" || !Number.isFinite(n)) {
       throw new UsageValidationError(`field "${f}" must be a finite number`);
+    }
+    // Mismo dominio que el backstop del servidor (apps/web/lib/metering/usage.ts).
+    // Los dos ficheros son espejos deliberados; si uno gana una regla, el otro
+    // también, o el emisor deja pasar lo que el ingest luego rechaza con un 400.
+    if (f === "at") {
+      if (n < AT_MIN_MS || n > Date.now() + AT_MAX_SKEW_MS) {
+        throw new UsageValidationError(
+          `field "at" is out of range (${n}); expected epoch MILLISECONDS. ` +
+            `A value near ${Math.floor(Date.now() / 1000)} suggests seconds instead of milliseconds.`,
+        );
+      }
+    } else if (f === "netSavings") {
+      if (n > 1 || n < -100) {
+        throw new UsageValidationError(`field "netSavings" must be a ratio in [-100, 1], got ${n}`);
+      }
+    } else if (n < 0) {
+      throw new UsageValidationError(`field "${f}" must be >= 0, got ${n}`);
     }
     rec[f] = n;
   }

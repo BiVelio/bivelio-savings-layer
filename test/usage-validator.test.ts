@@ -12,7 +12,7 @@ const clean = {
   cacheResult: "miss",
   seatId: "bvk_ab12:9f3c",
   ci: false,
-  at: 1_800_000_000_000,
+  at: Date.now(),
   avoidedLlm: 0,
   actualLlm: 1,
   baselineInputTokens: 100,
@@ -58,5 +58,40 @@ describe("usage ingest content backstop", () => {
 
   it("rejects an oversized batch", () => {
     expect(() => parseUsageRecords(new Array(1001).fill(clean), "o")).toThrow(/batch too large/);
+  });
+});
+
+/**
+ * Dominio de los datos, no solo su tipo. El validador solo exigía
+ * `Number.isFinite`, así que dejaba entrar dos clases de basura que luego
+ * corrompen los agregados sin dejar rastro.
+ */
+describe("usage ingest — dominio de los números", () => {
+  const base = () => ({ ...clean, at: Date.now() });
+
+  it("rechaza `at` en SEGUNDOS (el desliz de unidad que fechaba todo en 1970)", () => {
+    const enSegundos = Math.floor(Date.now() / 1000);
+    expect(() => parseUsageRecord({ ...base(), at: enSegundos }, "org")).toThrow(/out of range|MILLISECONDS/i);
+  });
+
+  it("rechaza `at` muy en el futuro (reloj del cliente desbocado)", () => {
+    expect(() => parseUsageRecord({ ...base(), at: Date.now() + 30 * 86_400_000 }, "org")).toThrow(/out of range/i);
+  });
+
+  it("acepta un desfase de reloj razonable", () => {
+    expect(() => parseUsageRecord({ ...base(), at: Date.now() + 60_000 }, "org")).not.toThrow();
+  });
+
+  it("rechaza recuentos negativos (restaban de los agregados)", () => {
+    for (const campo of ["actualInputTokens", "baselineCost", "avoidedLlm"]) {
+      expect(() => parseUsageRecord({ ...base(), [campo]: -5 }, "org")).toThrow(/must be >= 0/i);
+    }
+  });
+
+  it("rechaza un netSavings imposible (> 1) pero ACEPTA uno negativo", () => {
+    // Una petición puede salir más cara que la ingenua: eso es una pérdida real
+    // y tiene que poder registrarse. Lo que no existe es ahorrar más del 100%.
+    expect(() => parseUsageRecord({ ...base(), netSavings: 1.5 }, "org")).toThrow(/ratio in/i);
+    expect(() => parseUsageRecord({ ...base(), netSavings: -0.25 }, "org")).not.toThrow();
   });
 });
