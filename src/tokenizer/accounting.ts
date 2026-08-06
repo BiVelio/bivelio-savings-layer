@@ -92,13 +92,31 @@ export class SavingsLedger {
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;
 
     return {
-      baselineEstimate: round(baselineEstimate),
-      actual: round(actual),
-      netSavings: round(netSavings),
+      baselineEstimate: roundUsd(baselineEstimate),
+      actual: roundUsd(actual),
+      netSavings: roundRatio(netSavings),
     };
   }
 }
 
-function round(n: number): number {
+/**
+ * Redondeo de importes en dólares.
+ *
+ * Era a 1e-6 (microdólares) para los tres valores. Con gpt-4o-mini un token de
+ * entrada cuesta ~1,5e-7 $, así que una petición corta cuesta menos que el
+ * propio cuanto de redondeo: $0,00000195 se convertía en $0,000002 (+2,6%) y
+ * cualquier coste por debajo de 5e-7 caía a CERO. Como cada petición se
+ * redondea por separado y luego se SUMAN en usage_daily, el error no se
+ * compensa: se acumula.
+ *
+ * 1e-10 mantiene el propósito original —quitar la basura binaria del tipo
+ * 0.30000000000000004— sin tirar precisión que sí vale dinero.
+ */
+function roundUsd(n: number): number {
+  return Math.round(n * 1e10) / 1e10;
+}
+
+/** netSavings es una proporción (0..1): seis decimales sobran. */
+function roundRatio(n: number): number {
   return Math.round(n * 1e6) / 1e6;
 }

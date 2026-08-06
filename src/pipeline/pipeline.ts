@@ -44,6 +44,7 @@ export class SavingsPipeline {
   private readonly config: SavingsLayerConfig;
   private readonly now: () => number;
   private readonly generateId: () => string;
+  private illustrativePriceWarned = false;
 
   constructor(config: SavingsLayerConfig) {
     this.config = config;
@@ -760,12 +761,41 @@ export class SavingsPipeline {
     return !!this.config.licenseGate && this.config.licenseGate.isEntitled(feature);
   }
 
+  /**
+   * Precio del modelo. Se prueba el id COMPLETO y, si no está, el id sin el
+   * prefijo de proveedor.
+   *
+   * Antes era un único lookup exacto, y el contrato del SDK pide ids
+   * cualificados ("openai/gpt-4o-mini"): quien configuraba sus precios con la
+   * clave desnuda —lo natural, y lo que hace la tabla de precios del propio
+   * proveedor— fallaba el lookup y caía en DEFAULT_COST_MODEL, que el código
+   * etiqueta como "Illustrative". El panel presentaba el resultado como "a tus
+   * precios". Sin aviso, sin traza y con un desvío de varias veces el real.
+   */
   private costModelFor(model: string): CostModel {
-    return (
-      this.config.costModels?.[model] ??
-      this.config.defaultCostModel ??
-      DEFAULT_COST_MODEL
-    );
+    const models = this.config.costModels;
+    if (models) {
+      const exacto = models[model];
+      if (exacto) return exacto;
+      const barra = model.indexOf("/");
+      if (barra >= 0) {
+        const desnudo = models[model.slice(barra + 1)];
+        if (desnudo) return desnudo;
+      }
+    }
+    if (this.config.defaultCostModel) return this.config.defaultCostModel;
+
+    // Caer en el precio ilustrativo deja de ser silencioso: el ahorro en dólares
+    // que se derive de aquí no es el del cliente. Una vez por instancia.
+    if (!this.illustrativePriceWarned) {
+      this.illustrativePriceWarned = true;
+      console.warn(
+        `[bv-sala] no cost model configured for "${model}"; falling back to the ` +
+          `ILLUSTRATIVE default price. Dollar figures will not match your bill. ` +
+          `Pass { costModels: { "${model}": { inputPer1k, outputPer1k } } }.`,
+      );
+    }
+    return DEFAULT_COST_MODEL;
   }
 }
 
