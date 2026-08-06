@@ -575,6 +575,9 @@ input[type="range"] { accent-color: var(--brand); }
 .verdict .big { font-family: var(--font-heading); font-size: 3rem; font-weight: 600; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
 .verdict .big.empty { color: var(--ink-soft); }
 .verdict .big.pos { color: var(--mint); }
+/* Una pérdida no se pinta de verde. La clase existía sin regla, así que un
+   ahorro negativo heredaba el color del texto normal. */
+.verdict .big.neg { color: var(--danger); }
 .verdict .cap { font-size: .82rem; color: var(--ink-soft); margin-top: 10px; max-width: 40ch; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
 .seg button { background: var(--surface); border: none; padding: 6px 12px; font-size: .76rem; color: var(--ink-soft); font-family: var(--sans); cursor: default; }

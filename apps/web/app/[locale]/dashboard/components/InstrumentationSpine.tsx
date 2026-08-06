@@ -36,7 +36,7 @@ export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
       {current ? (
         <div className="spine-task">
           <p className="t">{t("instrumentationSpine.nextLabel", { label: current.label })}</p>
-          {current.label === "SDK installed" ? (
+          {current.id === "SDK installed" ? (
             <div className="code2">
               <span>
                 <span className="c">{t("instrumentationSpine.installComment")}</span>

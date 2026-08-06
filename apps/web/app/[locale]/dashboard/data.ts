@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { deriveLicenseStatus } from "./derive";
 
 /**
  * Server data layer for the dashboard. Every query is best-effort: the bound
@@ -53,7 +54,7 @@ export interface OrgContext {
   org: { name: string; plan: string } | null;
   role: string | null;
   seats: number | null;
-  license: { status: "active" | "grace" | "expired" | "unknown"; expiresAt: string | null } | null;
+  license: { status: "active" | "grace" | "expired" | "revoked"; expiresAt: string | null } | null;
   serviceAccount: { keyPrefix: string; lastUsedAt: string | null } | null;
 }
 
@@ -95,6 +96,33 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
     } catch {
       /* no subscription table */
     }
+  }
+
+  // Licencia real. Este bloque NO existía: `ctx.license` se declaraba, se
+  // inicializaba a null y no se asignaba nunca, así que la espina daba por
+  // buena la licencia con solo existir la organización — y esa fila la crea el
+  // endpoint de claves de servicio. Pulsar "crear clave" encendía "License
+  // active" sin que hubiera ni una fila en bvsala.licenses.
+  //
+  // La migración 0007 quitó `token` del alcance de authenticated, así que aquí
+  // solo se piden las columnas de estado, que siguen siendo legibles.
+  try {
+    const { data } = await supabase
+      .schema("bvsala")
+      .from("licenses")
+      .select("expires_at, grace_days, revoked")
+      .eq("org_id", userId)
+      .eq("revoked", false)
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const lic = data as { expires_at?: string; grace_days?: number; revoked?: boolean } | null;
+    const estado = deriveLicenseStatus(lic, Date.now());
+    if (estado && lic?.expires_at) {
+      ctx.license = { status: estado, expiresAt: lic.expires_at };
+    }
+  } catch {
+    /* sin tabla de licencias: se queda en null, que significa AUSENCIA medida */
   }
 
   // Service-account key PREFIX only (plaintext key is never stored/reproducible).
@@ -181,7 +209,10 @@ export async function activationSteps(
 ): Promise<StepState[]> {
   const t = await getTranslations("dashboard");
   const installed = ctx.serviceAccount != null;
-  const licensed = ctx.license?.status === "active" || ctx.org != null;
+  // Sin `|| ctx.org != null`. Ese fallback era el que encendía el paso: la
+  // organización la crea el endpoint de claves, así que no prueba nada sobre la
+  // licencia. Una licencia en periodo de gracia SÍ cuenta: sigue vigente.
+  const licensed = ctx.license?.status === "active" || ctx.license?.status === "grace";
   const reporting = usage.length > 0;
   const raw: Array<[string, string, boolean]> = [
     ["Account created", t("overview.steps.accountCreated"), hasUser],
