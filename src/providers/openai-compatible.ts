@@ -99,12 +99,22 @@ export class OpenAICompatibleProvider implements Provider {
     const inputTokens = usage.prompt_tokens ?? 0;
     const outputTokens = usage.completion_tokens ?? 0;
 
-    // A call that returned content but no (or zero) token accounting cannot be
-    // priced honestly. Never let that become 0 tokens → a fabricated 100%
-    // saving. Fail loud when measurement is required.
-    if (this.opts.requireUsage && inputTokens <= 0 && outputTokens <= 0) {
+    // Una llamada que devolvió contenido pero no su contabilidad de tokens no se
+    // puede tarifar con honestidad: 0 tokens medidos frente a un baseline
+    // modelado da un ahorro fabricado cercano al 100%.
+    //
+    // La guardia comprueba AUSENCIA, no valor cero, y por separado en cada
+    // contador. Antes era `inputTokens <= 0 && outputTokens <= 0`, con dos
+    // fallos: (1) el `&&` sólo saltaba si faltaban AMBOS, así que un bloque
+    // `usage` parcial —prompt_tokens presente, completion_tokens ausente, algo
+    // habitual en gateways y en streaming— se colaba como 0 y fabricaba ahorro;
+    // (2) `<= 0` confundía "no lo sé" con "de verdad fueron 0", y un cero
+    // legítimo (respuesta vacía, parada inmediata) es medible y no debe fallar.
+    const inputAbsent = typeof usage.prompt_tokens !== "number";
+    const outputAbsent = typeof usage.completion_tokens !== "number";
+    if (this.opts.requireUsage && (inputAbsent || outputAbsent)) {
       throw new Error(
-        `provider returned no usage tokens (prompt=${usage.prompt_tokens ?? "absent"}, ` +
+        `provider returned incomplete usage (prompt=${usage.prompt_tokens ?? "absent"}, ` +
           `completion=${usage.completion_tokens ?? "absent"}); cannot measure cost. ` +
           `For gateways/streaming, ensure usage reporting is enabled.`,
       );

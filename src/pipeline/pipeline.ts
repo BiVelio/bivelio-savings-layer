@@ -44,7 +44,6 @@ export class SavingsPipeline {
   private readonly config: SavingsLayerConfig;
   private readonly now: () => number;
   private readonly generateId: () => string;
-  private licenseWarned = false;
 
   constructor(config: SavingsLayerConfig) {
     this.config = config;
@@ -93,8 +92,8 @@ export class SavingsPipeline {
 
   /**
    * Fail-closed entry gate. Throws {@link LicenseError} unless the caller is in
-   * dev-open mode or holds an active/grace license. A legacy structural gate
-   * (no `isActive()`) is treated as a self-managed deployment for back-compat.
+   * dev-open mode or holds an active/grace license. Un gate sin `isActive()`
+   * TAMBIÉN es rechazado: no puede demostrar que la licencia esté viva.
    */
   private assertLicensed(): void {
     if (this.devOpen()) return;
@@ -107,14 +106,19 @@ export class SavingsPipeline {
         st,
       );
     }
+    // Un gate SIN isActive() no es "auto-gestionado": es la puerta abierta. La
+    // rama anterior avisaba por consola y hacía `return`, así que bastaba pasar
+    // `licenseGate: { isEntitled: () => true }` —o cualquier objeto al que le
+    // falte el método— para saltarse el pago entero en el paquete publicado en
+    // npm. El escape legítimo para desarrollo local ya existe y es explícito:
+    // `devUnlicensed: true` (ver devOpen()). Así que aquí se falla cerrado.
     if (gate) {
-      if (!this.licenseWarned) {
-        this.licenseWarned = true;
-        console.warn(
-          "[bv-sala] licenseGate has no isActive(); running self-managed. Pass { licenseKey } for enforced licensing.",
-        );
-      }
-      return;
+      throw new LicenseError(
+        "licenseGate must implement isActive(). A gate without it cannot prove the " +
+          "licence is live, so the pipeline refuses to run. Pass { licenseKey } for " +
+          "enforced licensing, or { devUnlicensed: true } for local development.",
+        "invalid",
+      );
     }
     throw new LicenseError(
       "No BiVelio license configured. Pass { licenseKey } from your subscription (or { devUnlicensed: true } for local dev). Get a key at https://savings.bivelio.com",

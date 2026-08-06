@@ -255,11 +255,15 @@ export interface SavingsReport {
 export interface LicenseGate {
   isEntitled(feature: string): boolean;
   /**
-   * Whether there is an overall active (or in-grace) license. Consulted by the
-   * pipeline's fail-closed entry gate. Optional for backwards compatibility: a
-   * legacy gate without it is treated as a self-managed deployment.
+   * Whether there is an overall active (or in-grace) license. La consulta la
+   * puerta de entrada fail-closed del pipeline.
+   *
+   * OBLIGATORIO. Fue opcional "por compatibilidad", y esa opcionalidad era el
+   * bypass: un gate al que le faltara el método dejaba pasar todas las
+   * peticiones con solo un aviso por consola. Para desarrollo local está
+   * `devUnlicensed: true`, que es explícito y no se cuela sin querer.
    */
-  isActive?(): boolean;
+  isActive(): boolean;
   /** Resolved status (active|grace|expired|invalid|revoked), for error messages. */
   status?(): string;
 }
