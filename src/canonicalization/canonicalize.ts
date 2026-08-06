@@ -23,6 +23,15 @@ export interface CanonicalRequest {
   seed: number | null;
   tenantId: string;
   authorizationScope: string;
+  /**
+   * Quién pregunta, dentro del tenant. Sale de `context.sessionId`.
+   *
+   * Es lo que permite cachear una respuesta PERSONALIZADA sin servírsela a otro:
+   * tenant y scope son compartidos por defecto, así que sin esto dos usuarios de
+   * la misma organización comparten entrada de caché. `null` cuando no se
+   * aporta, y entonces la política apaga la caché exacta para ese tráfico.
+   */
+  principal: string | null;
   locale: string;
   knowledgeEpoch: string;
   freshnessBucket: string;
@@ -98,6 +107,7 @@ export function canonicalize(request: SavingsRequest): CanonicalRequest {
     seed: request.seed ?? null,
     tenantId: ctx.tenantId ?? "anonymous",
     authorizationScope: ctx.authorizationScope ?? "default",
+    principal: ctx.sessionId ?? null,
     locale: ctx.locale ?? "und",
     knowledgeEpoch: ctx.knowledgeEpoch ?? "none",
     freshnessBucket: ctx.freshnessBucket ?? "any",
