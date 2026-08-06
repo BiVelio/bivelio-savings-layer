@@ -516,13 +516,29 @@ export class SavingsPipeline {
     formatChoice: FormatChoice,
     ageMs?: number,
     confidence?: number,
-    structurallyValid = true,
+    structurallyValid?: boolean,
     backend = "none",
     providerMs = 0,
   ): SavingsResult<T> {
+    // La validez estructural se COMPRUEBA aquí, no se hereda de un valor por
+    // defecto. El parámetro tenía `= true`, y las cuatro rutas de atajo
+    // (resolver determinista, caché exacta, caché semántica y seguidor de
+    // singleflight) no lo pasaban: el informe afirmaba que la respuesta cumplía
+    // el contrato de salida sin haberlo mirado nunca. Un resolver podía
+    // devolver {value: 8} a quien pidió {answer: string} y el informe lo daba
+    // por válido, con 100% de ahorro acreditado.
+    //
+    // Ahora se valida SIEMPRE lo que de verdad se sirve, venga de donde venga.
+    // Las rutas que ya lo calcularon (la que llama al proveedor) lo pasan y su
+    // valor manda; el resto se resuelve contra el esquema del contrato.
+    const schema = request.response?.schema;
+    const valid =
+      structurallyValid ??
+      (schema ? validateAgainstSchema(answer.data, schema).valid : true);
+
     const report = this.buildReport(
       request, canonical, cacheResult, ledger, costModel, trace, route,
-      formatChoice, ageMs, confidence, structurallyValid, backend, providerMs,
+      formatChoice, ageMs, confidence, valid, backend, providerMs,
     );
     return {
       requestId: report.requestId,
@@ -678,13 +694,38 @@ export class SavingsPipeline {
     const ledger = new SavingsLedger();
     ledger.avoidCall(baselineInput, baselineOutput);
     const cost = ledger.estimateCost(costModel);
+
+    // Un id por seguidor, no dos. Antes se llamaba a generateId() por separado
+    // para el resultado y para el informe, así que result.requestId nunca
+    // coincidía con result.report.requestId y correlacionar una petición con su
+    // registro de medición era imposible.
+    const requestId = this.generateId();
+
     return {
       ...leader,
-      requestId: this.generateId(),
+      requestId,
       report: {
         ...leader.report,
-        requestId: this.generateId(),
+        requestId,
         calls: { ...leader.report.calls, actualLlm: 0, avoidedLlm: 1 },
+        // El bloque `tokens` se construye desde el ledger DEL SEGUIDOR, no se
+        // hereda del líder. Con `{...leader.report}` cada seguidor reemitía los
+        // tokens que el proveedor facturó UNA vez: con N seguidores,
+        // compressedInput y providerCachedInput se contaban N+1 veces en
+        // usage_daily, y actualInput imputaba a los seguidores un gasto que
+        // nunca hicieron (su llamada se coalesció: no tocaron el proveedor).
+        tokens: {
+          baselineInput: ledger.baselineInput,
+          actualInput: ledger.actualInput,
+          eliminatedInput: ledger.eliminatedInput,
+          compressedInput: ledger.compressedInput,
+          baselineOutput: ledger.baselineOutput,
+          actualOutput: ledger.actualOutput,
+          eliminatedOutput: ledger.eliminatedOutput,
+          ...(ledger.providerCachedInput
+            ? { providerCachedInput: ledger.providerCachedInput }
+            : {}),
+        },
         cache: { result: "singleflight" },
         cost,
       },
