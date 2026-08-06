@@ -31,6 +31,55 @@ export interface OpenAICompatibleOptions {
   requireUsage?: boolean;
 }
 
+/**
+ * ¿Cumple este esquema las reglas del modo `strict` de OpenAI?
+ *
+ * Son dos, y aplican a TODO objeto anidado:
+ *   1. `additionalProperties: false`.
+ *   2. `required` tiene que listar TODAS las claves de `properties` — no solo
+ *      las obligatorias. En modo strict no existe el campo opcional.
+ *
+ * Un esquema perfectamente válido como
+ *   { properties: { answer, refs }, required: ["answer"] }
+ * incumple la segunda y el proveedor responde 400. No es un fallo del cliente:
+ * es una restricción de OpenAI que JSON Schema no tiene.
+ */
+export function isStrictCompatible(schema: unknown): boolean {
+  if (schema == null || typeof schema !== "object") return true;
+  const s = schema as Record<string, unknown>;
+
+  const props = s["properties"];
+  if (props && typeof props === "object") {
+    if (s["additionalProperties"] !== false) return false;
+    const claves = Object.keys(props as Record<string, unknown>);
+    const req = Array.isArray(s["required"]) ? (s["required"] as unknown[]).map(String) : [];
+    if (claves.some((k) => !req.includes(k))) return false;
+    for (const v of Object.values(props as Record<string, unknown>)) {
+      if (!isStrictCompatible(v)) return false;
+    }
+  }
+
+  // Ramas donde también puede esconderse un objeto.
+  if (s["items"] !== undefined && !isStrictCompatible(s["items"])) return false;
+  for (const rama of ["anyOf", "oneOf", "allOf"]) {
+    const xs = s[rama];
+    if (Array.isArray(xs) && xs.some((x) => !isStrictCompatible(x))) return false;
+  }
+  const defs = s["$defs"] ?? s["definitions"];
+  if (defs && typeof defs === "object") {
+    if (Object.values(defs as Record<string, unknown>).some((d) => !isStrictCompatible(d))) return false;
+  }
+  return true;
+}
+
+/** Un aviso por proceso y por causa: útil la primera vez, ruido a partir de la segunda. */
+const avisado = new Set<string>();
+function avisarUnaVez(clave: string, mensaje: string): void {
+  if (avisado.has(clave)) return;
+  avisado.add(clave);
+  console.warn(mensaje);
+}
+
 export class OpenAICompatibleProvider implements Provider {
   readonly id: string;
   private readonly opts: OpenAICompatibleOptions;
@@ -55,9 +104,36 @@ export class OpenAICompatibleProvider implements Provider {
     if (req.temperature != null) body["temperature"] = req.temperature;
     if (req.seed != null) body["seed"] = req.seed;
     if (req.schema) {
+      // `strict: true` iba fijo, y eso convertía cualquier contrato con un campo
+      // OPCIONAL en un 400 duro contra OpenAI: en modo strict, `required` tiene
+      // que listar todas las claves de `properties`. Un esquema tan corriente
+      // como {answer, refs?} tumbaba la petición entera — y también el reintento
+      // de fail-open, que reenvía el mismo esquema.
+      //
+      // Deliberadamente NO reescribimos el esquema del cliente. La receta de
+      // OpenAI para lo opcional es exigir la clave y permitirle null, pero eso
+      // cambia lo que llega: el campo pasa de AUSENTE a presente-y-null, que es
+      // precisamente lo que nuestro propio validador rechazaría. Cambiaríamos un
+      // fallo ruidoso por uno silencioso, y encima del lado del cliente.
+      //
+      // Así que degradamos a `strict: false`. El esquema sigue viajando, así que
+      // el modelo sigue guiado; lo que se pierde es la garantía del proveedor, no
+      // la nuestra: el layer valida igual y `structurallyValid` sigue diciendo la
+      // verdad sobre lo que se sirvió.
+      const strict = isStrictCompatible(req.schema);
+      if (!strict) {
+        avisarUnaVez(
+          "strict-incompatible",
+          "[bvsala] El contrato de respuesta no cumple el modo `strict` de OpenAI " +
+            "(en strict, `required` debe listar TODAS las claves de `properties`, y todo objeto " +
+            "necesita `additionalProperties: false`). Se envía el esquema con `strict: false`: " +
+            "el modelo sigue guiado y el layer sigue validando, pero la garantía la da el layer, " +
+            "no el proveedor. Para recuperarla, haz obligatorias todas las claves del contrato.",
+        );
+      }
       body["response_format"] = {
         type: "json_schema",
-        json_schema: { name: "bvsala_contract", schema: req.schema, strict: true },
+        json_schema: { name: "bvsala_contract", schema: req.schema, strict },
       };
     }
     // Transmit tools in the provider-native `tools` field so their JSON schema
