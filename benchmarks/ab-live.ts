@@ -146,6 +146,7 @@ function buildNaive(req: SavingsRequest): {
   model: string;
   messages: { role: "system" | "user" | "assistant" | "tool"; content: string }[];
   tools?: SavingsRequest["tools"];
+  schema?: unknown;
   temperature: number;
   seed: number;
 } {
@@ -157,6 +158,22 @@ function buildNaive(req: SavingsRequest): {
     model: modelId(req),
     messages,
     ...(req.tools && req.tools.length ? { tools: req.tools } : {}),
+    // EL CONTRATO VA EN LOS DOS BRAZOS. Antes `buildNaive` descartaba
+    // `req.response` entero, así que el brazo A resolvía una tarea MÁS FÁCIL:
+    // respondía en texto libre mientras el B tenía que devolver JSON válido
+    // contra el contrato. El B pagaba el bloque `response_format` (+38 tokens de
+    // entrada, medidos) y la estructura JSON en la salida — que cuesta 4x por
+    // token — sin que el A pagara ninguno de los dos. Eso no mide la capa: mide
+    // la diferencia entre dos tareas distintas.
+    //
+    // El contrato lo pide QUIEN LLAMA (está en el request del escenario), no lo
+    // añade la capa. Un equipo sin BV-SALA que necesite JSON estructurado manda
+    // el mismo esquema. Así que el brazo A honesto lo manda también.
+    //
+    // El TOPE de salida sí se queda solo en B: ese es el lever bajo medición
+    // (`output_restriction`). Consecuencia asumida: ese libro leerá ~0, que es la
+    // verdad — el tope de 180 nunca fue vinculante (el A, sin tope, emitió 122).
+    ...(req.response?.schema ? { schema: req.response.schema } : {}),
     temperature: 0,
     seed: 7,
   };
