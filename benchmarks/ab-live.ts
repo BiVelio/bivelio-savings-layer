@@ -159,6 +159,7 @@ function buildNaive(req: SavingsRequest): {
   messages: { role: "system" | "user" | "assistant" | "tool"; content: string }[];
   tools?: SavingsRequest["tools"];
   schema?: unknown;
+  maxOutputTokens?: number;
   temperature: number;
   seed: number;
 } {
@@ -182,10 +183,20 @@ function buildNaive(req: SavingsRequest): {
     // añade la capa. Un equipo sin BV-SALA que necesite JSON estructurado manda
     // el mismo esquema. Así que el brazo A honesto lo manda también.
     //
-    // El TOPE de salida sí se queda solo en B: ese es el lever bajo medición
-    // (`output_restriction`). Consecuencia asumida: ese libro leerá ~0, que es la
-    // verdad — el tope de 180 nunca fue vinculante (el A, sin tope, emitió 122).
+    // Y el TOPE de salida también. Lo dejé fuera en su momento porque era el
+    // lever bajo medición (`output_restriction`), pero 210 ensayos después ese
+    // libro mide -2,8%: el tope NO ahorra. Así que la asimetría no estaba
+    // midiendo nada, solo distorsionando en las dos direcciones — nos penalizaba
+    // en calidad (nuestro brazo truncaba, el suyo no: 5 fallos de 210) y nos
+    // favorecía en coste (pagábamos menos salida por estar capados).
+    //
+    // El tope está en el contrato de QUIEN LLAMA, exactamente igual que el
+    // esquema. Un equipo sin BV-SALA que declare `maxOutputTokens` lo manda. Así
+    // que va en los dos brazos y la comparación queda simétrica.
     ...(req.response?.schema ? { schema: req.response.schema } : {}),
+    ...(req.response?.maxOutputTokens != null
+      ? { maxOutputTokens: req.response.maxOutputTokens }
+      : {}),
     temperature: 0,
     seed: 7,
   };
