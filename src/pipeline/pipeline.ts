@@ -46,12 +46,27 @@ export class SavingsPipeline {
   private readonly now: () => number;
   private readonly generateId: () => string;
   private illustrativePriceWarned = false;
+  /**
+   * Contratos a los que un modelo YA les incumplió una restricción de valor.
+   *
+   * Avisar de esas restricciones cuesta tokens de entrada en cada petición, y
+   * medido son 27 sobre prompts de 60-72: más de lo que cualquier palanca puede
+   * quitar ahí. Peor aún, decirle a un modelo que dispone de 400 caracteres le
+   * hace usarlos — en la FAQ la salida subió de 18 a 34 tokens, y la salida
+   * cuesta 4x. Se pagaba por avisar de un límite que nadie iba a rozar.
+   *
+   * Así que se avisa solo donde está demostrado que hace falta: la primera
+   * petición que incumpla paga su reparación, y a partir de ahí ese contrato
+   * lleva el aviso. Vive en la instancia, no en el módulo.
+   */
+  private readonly contratosQueIncumplen: Set<string>;
 
   constructor(config: SavingsLayerConfig) {
     this.config = config;
     this.deps = resolveDependencies(config);
     this.now = config.now ?? (() => Date.now());
     this.generateId = config.generateId ?? (() => randomId());
+    this.contratosQueIncumplen = config.constraintMemory ?? new Set<string>();
   }
 
   /**
@@ -334,7 +349,10 @@ export class SavingsPipeline {
     //
     // Cuesta unos pocos tokens de entrada y los cuenta el ledger como cualquier
     // otro: no se esconde en el baseline.
-    const reglasDeValor = describeValueConstraints(request.response?.schema);
+    const idContrato = contractKey(request);
+    const reglasDeValor = this.contratosQueIncumplen.has(idContrato)
+      ? describeValueConstraints(request.response?.schema)
+      : "";
     if (reglasDeValor) {
       messages.push({
         role: "system",
@@ -465,6 +483,14 @@ export class SavingsPipeline {
       let validation = parsed.ok
         ? validateAgainstSchema(parsed.value, schema)
         : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
+
+      // Aprender del fallo, pero SOLO de los que el aviso puede evitar. Un JSON
+      // mal formado o una clave que falta no se arreglan contándole al modelo un
+      // maxLength: el modo estructurado ya cubre la forma. Apuntar esos casos
+      // haría pagar el aviso para siempre sin ganar nada.
+      if (!validation.valid && esFalloDeValor(validation.errors)) {
+        this.contratosQueIncumplen.add(contractKey(request));
+      }
 
       // Un JSON cortado a media cadena por el tope de salida NO se arregla
       // reintentando con el mismo tope: vuelve a cortarse en el mismo sitio y se
@@ -1041,4 +1067,26 @@ function describeValueConstraints(schema: unknown, ruta = ""): string {
     if (linea) lineas.push(linea);
   }
   return lineas.join("; ");
+}
+
+/** Identidad del contrato para la memoria de incumplimientos. */
+function contractKey(request: SavingsRequest): string {
+  const r = request.response;
+  if (!r) return "";
+  return r.contractId ?? r.version ?? JSON.stringify(r.schema ?? {}).slice(0, 200);
+}
+
+/**
+ * ¿Alguno de estos fallos lo arreglaría avisar al modelo?
+ *
+ * Solo las restricciones de VALOR. La forma (claves, tipos, JSON bien formado)
+ * ya la garantiza el modo estructurado del proveedor, así que un fallo de forma
+ * no es motivo para empezar a pagar el aviso en cada petición.
+ */
+function esFalloDeValor(errores: readonly { message: string }[]): boolean {
+  return errores.some((e) =>
+    /exceeds maxItems|exceeds maxLength|match pattern|exceeds maximum|below minimum|below minLength|below minItems/.test(
+      e.message,
+    ),
+  );
 }

@@ -115,11 +115,18 @@ if (!tokenizadorExacto) {
 }
 
 /** Todas las capas de la tirada comparten el mismo registro y el mismo proveedor. */
+// Lo aprendido sobre los contratos SÍ persiste entre repeticiones; las cachés
+// no. Es el modelo honesto de una capa desplegada: los aciertos de caché no se
+// precalientan para el titular, pero tampoco se finge que cada petición sea la
+// primera que ve ese contrato — en producción no lo es.
+const memoriaContratos = new Set<string>();
+
 const nuevaCapa = (provider: Provider, model: string) =>
   createSavingsLayer({
     provider,
     defaultCostModel: priceFor(model),
     tokenizer: registroTokens,
+    constraintMemory: memoriaContratos,
   });
 
 function priceFor(model: string): CostModel {
