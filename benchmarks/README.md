@@ -55,7 +55,12 @@ This is the **gold standard** and the only output that should ever back a saving
 claim. For every scenario it sends **two real requests to the same provider/model**:
 
 - **Arm A (naive)** — what a team *without* BV-SALA sends: full uncompressed JSON
-  payload on the wire, all tools transmitted, no cache, no output cap, no schema.
+  payload on the wire, all tools transmitted, no cache, no output cap. It **does**
+  carry the caller's response contract when the request declares one: the contract
+  is the caller's requirement, not something the layer adds, so an arm without it
+  would be solving an easier task. Arm A's answers are validated against that
+  contract too — the layer pays tokens to guarantee validity, so it only counts if
+  the same is asked of the baseline.
 - **Arm B (BV-SALA)** — the same task through the layer.
 
 **Both** arms are priced from the provider's own `usage` — so no modeled baseline
@@ -119,6 +124,13 @@ the landing must not present it as demonstrated savings.
    never a fabricated 0-token → 100% saving.
 6. **MOCK never claims dollars.** Without a real endpoint every figure is labeled
    `ESTIMATED — not a savings claim`.
+7. **Same task, same sampling.** Both arms carry the caller's contract and the same
+   `temperature`/`seed`. Quality gates assert the **answer**, never the layer's own
+   ledger — a scenario that scored itself on `compressedInput > 0` was scoring the
+   very number it had inflated.
+8. **Warm knowledge, cold caches.** What the layer learns about a contract persists
+   across reps (a deployed layer is not reborn per request); caches do not, so the
+   headline never gets a pre-warmed hit.
 
 Output: `benchmarks/out/ab-live.json` (per-scenario + aggregate, with CI and
 provenance) and `benchmarks/out/ab-live-trials.csv` (raw paired trials).
