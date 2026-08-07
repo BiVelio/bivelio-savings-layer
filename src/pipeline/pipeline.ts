@@ -350,8 +350,19 @@ export class SavingsPipeline {
     // Cuesta unos pocos tokens de entrada y los cuenta el ledger como cualquier
     // otro: no se esconde en el baseline.
     const idContrato = contractKey(request);
+    // El techo REAL de caracteres: el que impone el presupuesto de salida, que
+    // suele ser más estricto que el `maxLength` del contrato. Anunciar 1200
+    // caracteres cuando el tope de 600 tokens solo da para ~1600 —menos el
+    // andamiaje del JSON— hace que el modelo escriba hasta el límite anunciado y
+    // se corte a media cadena. Medido en el escenario de la tabla: con la pista,
+    // nuestra salida válida cae a 27/40, mientras el brazo naive —con el MISMO
+    // tope y SIN pista— cumple 39/40. La pista provocaba el fallo que pretende
+    // evitar.
+    const techoPorTokens = request.response?.maxOutputTokens != null
+      ? Math.floor(request.response.maxOutputTokens * 3.2) // ~3,2 car/token en prosa, conservador
+      : null;
     const reglasDeValor = this.contratosQueIncumplen.has(idContrato)
-      ? describeValueConstraints(request.response?.schema)
+      ? describeValueConstraints(request.response?.schema, "", techoPorTokens)
       : "";
     if (reglasDeValor) {
       messages.push({
@@ -1031,7 +1042,7 @@ function jsonFallbackChoice(): FormatChoice {
  * Solo las que el proveedor NO impone: la forma (claves, tipos) ya la garantiza
  * el modo estructurado, repetirla sería gastar tokens en vano.
  */
-function describeValueConstraints(schema: unknown, ruta = ""): string {
+function describeValueConstraints(schema: unknown, ruta = "", techoChars: number | null = null): string {
   if (schema == null || typeof schema !== "object") return "";
   const s = schema as Record<string, unknown>;
   const lineas: string[] = [];
@@ -1047,7 +1058,13 @@ function describeValueConstraints(schema: unknown, ruta = ""): string {
 
   // Telegráfico a propósito: esto se paga en tokens de entrada en CADA petición
   // con contrato, así que cada palabra de más es dinero del cliente.
-  if (maxLength != null) lineas.push(`${nombre}<=${maxLength}ch`);
+  // Se anuncia el límite VINCULANTE, no el del contrato: si el presupuesto de
+  // salida es más estricto, prometerle al modelo el del contrato le hace escribir
+  // hasta un tamaño que no cabe, y se corta.
+  if (maxLength != null) {
+    const efectivo = techoChars != null ? Math.min(maxLength, techoChars) : maxLength;
+    lineas.push(`${nombre}<=${efectivo}ch`);
+  }
   if (minLength != null) lineas.push(`${nombre}>=${minLength}ch`);
   if (maxItems != null) lineas.push(`${nombre}<=${maxItems} items`);
   if (minItems != null) lineas.push(`${nombre}>=${minItems} items`);
@@ -1058,12 +1075,12 @@ function describeValueConstraints(schema: unknown, ruta = ""): string {
   const props = s["properties"];
   if (props && typeof props === "object") {
     for (const [clave, sub] of Object.entries(props as Record<string, unknown>)) {
-      const linea = describeValueConstraints(sub, ruta ? `${ruta}.${clave}` : clave);
+      const linea = describeValueConstraints(sub, ruta ? `${ruta}.${clave}` : clave, techoChars);
       if (linea) lineas.push(linea);
     }
   }
   if (s["items"] !== undefined) {
-    const linea = describeValueConstraints(s["items"], `${nombre} entries`);
+    const linea = describeValueConstraints(s["items"], `${nombre} entries`, techoChars);
     if (linea) lineas.push(linea);
   }
   return lineas.join("; ");
