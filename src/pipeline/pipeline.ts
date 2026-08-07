@@ -1,4 +1,5 @@
 import { randomId } from "../util/id.js";
+import { avisarUnaVez } from "../util/warn-once.js";
 
 import type {
   SavingsRequest,
@@ -321,6 +322,26 @@ export class SavingsPipeline {
       });
     }
 
+    // Restricciones de VALOR que ningún modo estructurado impone. `strict` de
+    // OpenAI garantiza la FORMA (qué claves, de qué tipo), pero ignora
+    // `maxLength`, `maxItems`, `pattern`, `minimum`… Nuestro validador SÍ las
+    // exige, así que sin decírselas al modelo la petición está condenada: el
+    // modelo no puede cumplir una regla que nadie le contó, el layer rechaza la
+    // respuesta y se dispara una reparación igual de ciega.
+    //
+    // Medido: el escenario de la tabla pedía resumir 50 filas con
+    // `answer.maxLength: 400` y fallaba su validación 10 de 12 veces.
+    //
+    // Cuesta unos pocos tokens de entrada y los cuenta el ledger como cualquier
+    // otro: no se esconde en el baseline.
+    const reglasDeValor = describeValueConstraints(request.response?.schema);
+    if (reglasDeValor) {
+      messages.push({
+        role: "system",
+        content: `JSON limits (not API-enforced): ${reglasDeValor}`,
+      });
+    }
+
     if (request.structuredData !== undefined) {
       const jsonEncoded = JSON.stringify(request.structuredData);
       const jsonTokens = this.tokensFor(jsonEncoded, request);
@@ -445,7 +466,31 @@ export class SavingsPipeline {
         ? validateAgainstSchema(parsed.value, schema)
         : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
 
-      if (!validation.valid && backendPlan.backend === "none") {
+      // Un JSON cortado a media cadena por el tope de salida NO se arregla
+      // reintentando con el mismo tope: vuelve a cortarse en el mismo sitio y se
+      // paga una segunda llamada para obtener el mismo fallo. Medido contra el
+      // proveedor con el escenario de la tabla: finish_reason "length",
+      // exactamente 180 tokens (el tope), `Unterminated string in JSON`.
+      //
+      // Tampoco se sube el tope por nuestra cuenta: lo fijó quien llama, y puede
+      // haberlo hecho para controlar el gasto. Lo honesto es no cobrarle una
+      // llamada inútil y decirle exactamente qué pasa.
+      const truncadoPorTope = response.finishReason === "length";
+      if (!validation.valid && truncadoPorTope) {
+        trace.record("validation", "repair-skipped", {
+          reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
+          maxOutputTokens: request.response?.maxOutputTokens ?? null,
+          outputTokens: response.usage.outputTokens,
+        });
+        avisarUnaVez(
+          "salida-truncada",
+          "[bvsala] La respuesta se cortó al agotar `maxOutputTokens`" +
+            (request.response?.maxOutputTokens != null ? ` (${request.response.maxOutputTokens})` : "") +
+            ", así que no valida contra el contrato. NO se reintenta: con el mismo tope volvería a " +
+            "cortarse y sería una llamada pagada para el mismo fallo. Sube `maxOutputTokens` o " +
+            "reduce lo que pide el contrato.",
+        );
+      } else if (!validation.valid && backendPlan.backend === "none") {
         // Single deterministic repair attempt only when we had no constraint
         // backend to prevent the invalid output in the first place.
         ledger.retries = 1;
@@ -952,4 +997,48 @@ function jsonFallbackChoice(): FormatChoice {
     instructionOverheadTokens: 0,
     reason: "no structured payload",
   };
+}
+
+/**
+ * Enumera las restricciones de VALOR de un esquema en lenguaje llano.
+ *
+ * Solo las que el proveedor NO impone: la forma (claves, tipos) ya la garantiza
+ * el modo estructurado, repetirla sería gastar tokens en vano.
+ */
+function describeValueConstraints(schema: unknown, ruta = ""): string {
+  if (schema == null || typeof schema !== "object") return "";
+  const s = schema as Record<string, unknown>;
+  const lineas: string[] = [];
+  const nombre = ruta || "the value";
+
+  const num = (k: string): number | null => (typeof s[k] === "number" ? (s[k] as number) : null);
+  const maxLength = num("maxLength");
+  const minLength = num("minLength");
+  const maxItems = num("maxItems");
+  const minItems = num("minItems");
+  const maximum = num("maximum");
+  const minimum = num("minimum");
+
+  // Telegráfico a propósito: esto se paga en tokens de entrada en CADA petición
+  // con contrato, así que cada palabra de más es dinero del cliente.
+  if (maxLength != null) lineas.push(`${nombre}<=${maxLength}ch`);
+  if (minLength != null) lineas.push(`${nombre}>=${minLength}ch`);
+  if (maxItems != null) lineas.push(`${nombre}<=${maxItems} items`);
+  if (minItems != null) lineas.push(`${nombre}>=${minItems} items`);
+  if (maximum != null) lineas.push(`${nombre}<=${maximum}`);
+  if (minimum != null) lineas.push(`${nombre}>=${minimum}`);
+  if (typeof s["pattern"] === "string") lineas.push(`${nombre} matches /${s["pattern"]}/`);
+
+  const props = s["properties"];
+  if (props && typeof props === "object") {
+    for (const [clave, sub] of Object.entries(props as Record<string, unknown>)) {
+      const linea = describeValueConstraints(sub, ruta ? `${ruta}.${clave}` : clave);
+      if (linea) lineas.push(linea);
+    }
+  }
+  if (s["items"] !== undefined) {
+    const linea = describeValueConstraints(s["items"], `${nombre} entries`);
+    if (linea) lineas.push(linea);
+  }
+  return lineas.join("; ");
 }

@@ -45,6 +45,11 @@ import {
 import { scenarios, type Scenario } from "./scenarios.js";
 import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
+import { validateAgainstSchema } from "../src/constraints/validate.js";
+
+function tryParseJson(s: string): unknown {
+  try { return JSON.parse(s); } catch { return undefined; }
+}
 
 // ── Real per-model price table (USD per 1K tokens). Public list pricing; the
 // EXACT figures are dated in the report and overridable. Because both arms are
@@ -223,6 +228,8 @@ interface ScenarioResult {
     wilcoxonP: number;
   };
   quality: { gate: string; passed: number; total: number };
+  /** Cuántas respuestas del brazo NAIVE cumplían el contrato que se le pidió. */
+  naiveContractValid: { valid: number; total: number };
   /** Provably positive savings at 95% AND every answer passed the gate. */
   proven: boolean;
   /**
@@ -285,6 +292,8 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
   // 14 distintos en la primera tirada), así que como señal de estabilidad es
   // inalcanzable: proven=true nunca podría darse con más de una repetición.
   const modelosServidos = new Set<string>();
+  let naiveValid = 0;
+  let naiveTotal = 0;
   /** Envuelve el proveedor para poder ver qué modelo sirvió al brazo B. */
   const espia: Provider = {
     id: provider.id,
@@ -316,6 +325,18 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
       ...(respA.usage.cachedInputTokens != null ? { cachedInputTokens: respA.usage.cachedInputTokens } : {}),
     };
     const costA = cost(model, uA);
+
+    // ¿El brazo naive cumplió de verdad el contrato? Hasta ahora nadie lo
+    // comprobaba: se le exigía validez SOLO al brazo optimizado. Pero el layer
+    // paga tokens por avisar al modelo de las restricciones que el proveedor NO
+    // impone (maxLength, maxItems…), y el naive no los paga. Si a cambio el
+    // naive devuelve respuestas que incumplen el contrato, no ha hecho la misma
+    // tarea y compararlas es engañoso — esta vez en NUESTRO favor.
+    if (req.response?.schema) {
+      naiveTotal++;
+      const p = tryParseJson(respA.text);
+      if (p !== undefined && validateAgainstSchema(p, req.response.schema).valid) naiveValid++;
+    }
 
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
@@ -377,6 +398,7 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
       wilcoxonP: wilcoxonSignedRankP(paired.map((p) => p.costA - p.costB)),
     },
     quality: { gate, passed: qPass, total: reps },
+    naiveContractValid: { valid: naiveValid, total: naiveTotal },
     proven: mode === "LIVE" && savings.lower > 0 && qualityOk && modelStable,
     modelStable,
     servedModels: [...modelosServidos],
@@ -560,6 +582,12 @@ async function main(): Promise<void> {
     console.log(`  Run LIVE (set BVSALA_DEMO_BASE_URL) for real provider tokens & dollars.`);
   }
   console.log(`  Quality:       ${qTotalPass}/${qTotal} answers passed the gate (${pct(qualityPassRate)})`);
+  const nv = results.reduce((n, r) => n + r.naiveContractValid.valid, 0);
+  const nt = results.reduce((n, r) => n + r.naiveContractValid.total, 0);
+  if (nt > 0) {
+    console.log(`  Naive valid:   ${nv}/${nt} respuestas del brazo SIN la capa cumplían el contrato (${pct(nv / nt)})`);
+    console.log(`                 (la capa paga tokens por garantizarlo; el naive no, y hasta ahora nadie se lo exigía)`);
+  }
   console.log(`  Reconciles:    ${reconciled ? "yes" : "NO — residual " + money(residual)}  (ledger deltas partition the total, no double-counting)`);
 
   console.log("\nPer-ledger attribution (measured; a ledger is 'proven' only if its 95% CI clears 0)");

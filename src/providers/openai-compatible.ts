@@ -1,3 +1,4 @@
+import { avisarUnaVez } from "../util/warn-once.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
 
 /**
@@ -70,14 +71,6 @@ export function isStrictCompatible(schema: unknown): boolean {
     if (Object.values(defs as Record<string, unknown>).some((d) => !isStrictCompatible(d))) return false;
   }
   return true;
-}
-
-/** Un aviso por proceso y por causa: útil la primera vez, ruido a partir de la segunda. */
-const avisado = new Set<string>();
-function avisarUnaVez(clave: string, mensaje: string): void {
-  if (avisado.has(clave)) return;
-  avisado.add(clave);
-  console.warn(mensaje);
 }
 
 export class OpenAICompatibleProvider implements Provider {
@@ -196,8 +189,11 @@ export class OpenAICompatibleProvider implements Provider {
       );
     }
 
+    const finishReason = json.choices?.[0]?.finish_reason;
+
     return {
       text,
+      ...(finishReason ? { finishReason } : {}),
       usage: {
         inputTokens,
         outputTokens,
@@ -212,7 +208,7 @@ export class OpenAICompatibleProvider implements Provider {
 }
 
 interface OpenAIChatResponse {
-  choices?: { message?: { content?: string } }[];
+  choices?: { message?: { content?: string }; finish_reason?: string }[];
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
