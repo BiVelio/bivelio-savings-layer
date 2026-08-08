@@ -165,6 +165,12 @@ export class SavingsPipeline {
   }
 
   private async generateOptimized<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
+    // Defensa en profundidad: el gate también aquí, no solo en generate(). El
+    // `private` de TypeScript se borra al compilar, así que si alguien alcanzara
+    // una instancia del pipeline (hoy ya no se expone `layer.pipeline` ni se
+    // reexporta la clase) no debe poder correr el optimizador sin licencia. Es
+    // idempotente con la llamada de generate().
+    this.assertLicensed();
     const trace = new TraceCollector(this.now);
     const ledger = new SavingsLedger();
     const canonical = canonicalize(request);

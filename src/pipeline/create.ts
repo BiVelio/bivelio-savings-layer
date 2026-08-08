@@ -10,6 +10,8 @@ import { deriveSeatId, detectCi } from "../metering/seat.js";
 import { SavingsPipeline } from "./pipeline.js";
 import type { SavingsLayerConfig } from "./config.js";
 
+declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
+
 /**
  * Default online-staleness ceiling for the LIVE gate (6h). Well above the poll
  * cadence + backoff (max ~1h) so a transient CP/network outage never trips it,
@@ -21,7 +23,6 @@ const DEFAULT_MAX_STALENESS_SECONDS = 6 * 3600;
 /** The public handle returned by {@link createSavingsLayer}. */
 export interface SavingsLayer {
   generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>>;
-  readonly pipeline: SavingsPipeline;
   /**
    * Stop the background revocation poller (when the online call-home was enabled
    * via `licenseServerUrl`) and abort any in-flight request. Always safe to call —
@@ -49,6 +50,24 @@ export function createSavingsLayer(
   config: Omit<SavingsLayerConfig, "tokenizer"> &
     Partial<Pick<SavingsLayerConfig, "tokenizer">>,
 ): SavingsLayer {
+  // En el paquete PUBLICADO se descarta cualquier `licenseGate` inyectado por el
+  // llamante. Era la vía MÁS FÁCIL de saltarse el pago —más aún que la clave
+  // falsa que ya cerramos, porque no exige ni firmar un token—: bastaba
+  // `createSavingsLayer({ provider, licenseGate: { isActive: () => true } })`.
+  // El único camino de licencia válido en el paquete publicado es un `licenseKey`
+  // verificado contra la clave EMBEBIDA. Desde el fuente (tests, benchmarks) la
+  // bandera es undefined → se respeta el gate inyectado, que es como los tests
+  // montan sus escenarios.
+  const buildPublicado =
+    typeof __BV_SALA_ALLOW_DEV_OPEN__ !== "undefined" && __BV_SALA_ALLOW_DEV_OPEN__ === false;
+  if (buildPublicado && config.licenseGate) {
+    console.warn(
+      "[bvsala] Se ignora el `licenseGate` inyectado: en el paquete publicado la " +
+        "licencia solo se acepta vía `licenseKey` verificado contra la clave de BiVelio.",
+    );
+    config = { ...config, licenseGate: undefined };
+  }
+
   const resolved: SavingsLayerConfig = {
     ...config,
     tokenizer: config.tokenizer ?? defaultTokenizerRegistry,
@@ -153,7 +172,9 @@ export function createSavingsLayer(
   }
 
   return {
-    pipeline,
+    // `pipeline` NO se expone: layer.pipeline.generateOptimized() corría el
+    // optimizador entero saltándose assertLicensed(). El único punto de entrada
+    // público es generate(), que sí gatea.
     generate: async <T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> => {
       const result = await pipeline.generate<T>(request);
       if (emitter) {
