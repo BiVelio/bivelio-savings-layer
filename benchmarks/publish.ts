@@ -17,7 +17,9 @@ import { decidePublish, type ArtifactShape } from "./publish-guard.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ORIGEN = join(here, "out", "ab-live.json");
+const ORIGEN_CSV = join(here, "out", "ab-live-trials.csv");
 const DESTINO = join(here, "..", "apps", "web", "public", "data", "ab-live.json");
+const DESTINO_CSV = join(here, "..", "apps", "web", "public", "data", "ab-live-trials.csv");
 
 const flags = new Set(process.argv.slice(2));
 const allowMock = flags.has("--allow-mock");
@@ -61,4 +63,20 @@ if (dryRun) {
 
 mkdirSync(dirname(DESTINO), { recursive: true });
 writeFileSync(DESTINO, JSON.stringify(entrante, null, 2) + "\n");
-console.log(`\nPublicado en ${DESTINO}\n`);
+console.log(`\nPublicado en ${DESTINO}`);
+
+// Los ENSAYOS CRUDOS viajan con el artefacto. El README promete que cualquiera
+// pueda recalcular el intervalo por su cuenta, y esa promesa era falsa:
+// `benchmarks/out/` está en .gitignore, así que el CSV nunca salía de la máquina
+// donde se ejecutó. Un producto que se vende como "verify-don't-trust" no puede
+// pedir que le crean el intervalo de confianza sin enseñar los datos.
+if (existsSync(ORIGEN_CSV)) {
+  writeFileSync(DESTINO_CSV, readFileSync(ORIGEN_CSV, "utf8"));
+  console.log(`Ensayos crudos en ${DESTINO_CSV}`);
+} else {
+  console.warn(
+    "AVISO: no hay ab-live-trials.csv. El artefacto se publica sin los ensayos " +
+      "crudos, así que nadie podrá recalcular el intervalo.",
+  );
+}
+console.log("");

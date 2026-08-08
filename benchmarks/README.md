@@ -107,6 +107,13 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
 `proven: false` **is** publishable — under-claiming is honest — but it warns, and
 the landing must not present it as demonstrated savings.
 
+**The raw trials ship with the artifact.** `ab-live-trials.csv` is copied next to
+`ab-live.json` into `apps/web/public/data/`, so anyone can download it and
+recompute the confidence interval themselves. This used to be a broken promise:
+the README claimed it while `benchmarks/out/` sat in `.gitignore`, so the CSV
+never left the machine that ran it. A product sold on "verify-don't-trust" cannot
+ask you to take its confidence interval on faith.
+
 **Honesty rules built into the harness** (each closes a specific audited defect):
 
 1. **Measured vs measured.** The naive baseline is *executed*, never modeled — no
