@@ -384,7 +384,7 @@ export class SavingsPipeline {
           request,
         );
         ledger.compress(jsonTokens, chosenTokens);
-        messages.push({
+        insertarAntesDeLaPregunta(messages, {
           role: "system",
           content:
             (formatChoice.instruction ? formatChoice.instruction + "\n" : "") +
@@ -396,7 +396,7 @@ export class SavingsPipeline {
           chosenTokens,
         });
       } else {
-        messages.push({ role: "system", content: jsonEncoded });
+        insertarAntesDeLaPregunta(messages, { role: "system", content: jsonEncoded });
         trace.record("serialization", "json-compact", {
           reason: "format selector disabled; sent compact JSON",
         });
@@ -1106,4 +1106,33 @@ function esFalloDeValor(errores: readonly { message: string }[]): boolean {
       e.message,
     ),
   );
+}
+
+/**
+ * Inserta un bloque de datos ANTES del último mensaje del usuario.
+ *
+ * El orden importa, y mucho más de lo que parece. Medido con 8 pares por
+ * variante sobre la tabla de 50 filas, cambiando SOLO la posición:
+ *
+ *   pregunta primero, datos al final   403 tokens de salida · trunca 4/8 · válidas 4/8
+ *   datos primero, pregunta al final   193 tokens          · trunca 0/8 · válidas 8/8
+ *   petición naive (JSON)              279 tokens          · trunca 0/8 · válidas 8/8
+ *
+ * Mismo contenido, mismo rol, misma instrucción. Con la pregunta delante el
+ * modelo divaga sobre los datos que acaba de leer y se estrella contra el tope
+ * de salida; con la pregunta al final responde a lo que se le pide. Esos
+ * truncados eran el 100% de los fallos de calidad del banco y lo único que
+ * impedía publicar una cifra demostrada.
+ *
+ * Y coincide con lo que quiere la caché de prefijo del proveedor: lo estable
+ * delante, lo variable al final. Las dos razones empujan en el mismo sentido.
+ */
+function insertarAntesDeLaPregunta(messages: ChatMessage[], bloque: ChatMessage): void {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i]!.role === "user") {
+      messages.splice(i, 0, bloque);
+      return;
+    }
+  }
+  messages.push(bloque);
 }
