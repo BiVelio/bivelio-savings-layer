@@ -34,7 +34,23 @@ export default defineConfig([
     clean: true,
     treeshake: true,
     splitting: false,
-    minify: false,
+    // MINIFICADO, y estaba al revés: el bundle de la demo web gratuita se
+    // minificaba y el paquete DE PAGO se publicaba legible — 174 KB con nombres
+    // de función y los comentarios en español que explican qué defiende cada
+    // comprobación de licencia. Eso es entregarle el mapa a quien quiera
+    // saltarse el pago: le dice dónde mirar y por qué existe cada guardia.
+    //
+    // Que quede claro lo que esto NO es: minificar no es seguridad. Quien se
+    // empeñe seguirá pudiendo parchear el bundle, como en cualquier software que
+    // corre en la máquina del cliente. Lo que hace es subir el listón del
+    // saltárselo por casualidad y borrar la documentación gratuita del ataque.
+    // La defensa de verdad es otra: el valor —recibos reconciliados, registro de
+    // precios firmado, panel de ahorro— vive en el control plane, así que quien
+    // parchee el cliente se queda con las optimizaciones y pierde la prueba.
+    //
+    // Los tipos (dts) SIGUEN legibles a propósito: son la API pública y el
+    // cliente tiene que poder leerlos.
+    minify: true,
     define: defineNpm,
     outDir: "dist",
   },
