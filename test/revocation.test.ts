@@ -463,11 +463,18 @@ describe("puerta de obsolescencia: el ancla de arranque no es un cheque en blanc
     expect(gate.status()).toBe("active");
   });
 
-  it("una licencia VIEJA sin contacto queda obsoleta por muchos reinicios que haya", () => {
-    // El fallo: en serverless cada invocación es un proceso nuevo, así que
-    // `startedAt` valía siempre "ahora" y la resta daba ~0. La puerta no podía
-    // dispararse nunca. Ahora `issued_at` —que va firmado y no se puede empujar—
-    // acota cuánto puede ayudar el arranque.
+  it("una licencia VÁLIDA en serverless frío NO se apaga sola (B1)", () => {
+    // CAMBIO DE COMPORTAMIENTO DELIBERADO, no un test que se rompió. La versión
+    // anterior acotaba el ancla por `issued_at`, así que esta licencia —emitida
+    // hace 10 días pero VÁLIDA hasta dentro de 30— salía `expired` en serverless.
+    // Es indistinguible de un cliente que paga arrancando en frío, y lo bloqueaba.
+    // El requisito manda: si pagó mensual/anual, funciona hasta su caducidad real.
+    //
+    // Lo que se pierde: en serverless puro no se puede exigir frescura de
+    // revocación desde el cliente (cada invocación arranca "fresca", sin estado
+    // que la delate). Esa defensa se mueve al CONTROL PLANE: el ingest/metering
+    // rechaza una org revocada. Ver license-lifecycle.test.ts para el ciclo
+    // completo mensual/anual.
     const emitida = BASE - 10 * DAY;
     const gate = liveGateFromKey(
       licenseToken({ issued_at: emitida, expires_at: BASE + 30 * DAY }),
@@ -476,7 +483,26 @@ describe("puerta de obsolescencia: el ancla de arranque no es un cheque en blanc
         revocation: new RevocationSnapshot(),
         now: () => BASE * 1000,
         maxStalenessSeconds: VENTANA,
-        startedAt: BASE, // "acabo de arrancar", una y otra vez
+        startedAt: BASE, // serverless: "acabo de arrancar", cada invocación
+      },
+    );
+    expect(gate.status()).toBe("active");
+  });
+
+  it("pero la verja SÍ muerde en un proceso de vida larga con egress bloqueado", () => {
+    // Donde la defensa de frescura sí es aplicable (desktop, gateway, servidor):
+    // un proceso que arrancó hace más de la ventana y nunca pudo contactar se
+    // cierra. Esto es lo que impide mantener viva una licencia revocada
+    // bloqueando la salida de red. Aquí startedAt es el arranque REAL, en el
+    // pasado, no "ahora" de cada request.
+    const gate = liveGateFromKey(
+      licenseToken({ issued_at: BASE - 10 * DAY, expires_at: BASE + 30 * DAY }),
+      publicKey,
+      {
+        revocation: new RevocationSnapshot(),
+        now: () => BASE * 1000,
+        maxStalenessSeconds: VENTANA,
+        startedAt: BASE - 2 * VENTANA, // arrancó hace 2 h, ventana de 1 h
       },
     );
     expect(gate.status()).toBe("expired");

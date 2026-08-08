@@ -57,17 +57,34 @@ export function liveGateFromKey(
     // expires. Anchored to boot so the fire-and-forget warm poll has a full window.
     // Reuses "expired" so the LicenseStatus union and every consumer are unchanged.
     if (opts.maxStalenessSeconds != null && (s === "active" || s === "grace")) {
-      // El ancla de arranque da margen al primer sondeo, pero NO puede ser un
-      // cheque en blanco: en serverless cada invocación es un proceso nuevo, así
-      // que `startedAt` valía siempre "ahora" y la resta daba ~0 — la puerta no
-      // podía dispararse jamás, que es justo el fail-open que venía a cerrar.
+      // Esta verja NO es la caducidad de la licencia (eso lo decide `expires_at`
+      // en deriveStatus, arriba: mensual = 30 días, anual = 365, intactos). Es
+      // una verja de FRESCURA: obliga a contactar con el control plane cada
+      // `maxStaleness` para que una revocación no se pueda mantener viva bloqueando
+      // la salida de red.
       //
-      // Se acota con `issued_at`, que va FIRMADO dentro del token y por tanto no
-      // se puede empujar hacia adelante: el arranque solo ayuda mientras la
-      // licencia sea reciente. Una licencia vieja que nunca ha conseguido
-      // contactar queda obsoleta por muchas veces que se reinicie el proceso.
-      const techoPorEmision = payload.issued_at + opts.maxStalenessSeconds;
-      const anclaArranque = Math.min(startedAt, techoPorEmision);
+      // El ancla se acota por el FIN DE LA GRACIA (expires_at + grace_days), no
+      // por `issued_at + maxStaleness`. La versión anterior acotaba por issued_at
+      // y eso apagaba a un cliente que PAGA: en serverless cada invocación es un
+      // proceso nuevo con `startedAt = ahora`, y una licencia mensual de más de
+      // unas horas caía en `expired` mucho antes de su caducidad real. También
+      // recortaba la ventana de gracia (los días para renovar) a `maxStaleness`.
+      // Los dos son sustos que no pueden pasar.
+      //
+      // Con el fin de la gracia como techo, para una licencia todavía válida
+      // (activa o en gracia) se cumple `startedAt <= ahora <= graceEnd`, así que
+      // el mínimo es `startedAt` y la verja concede — que es lo correcto: mientras
+      // la licencia esté dentro de su validez pagada, no se corta.
+      //
+      // Consecuencia asumida y correcta: en serverless puro, sin estado
+      // persistente entre invocaciones, esta verja no puede exigir frescura de
+      // revocación —cada proceso arranca "fresco"— así que es prácticamente un
+      // no-op ahí, y la revocación en ese entorno se aplica en el control plane
+      // (el ingest rechaza una org revocada). En un proceso de vida larga
+      // —desktop, gateway de equipo, servidor— sí muerde: si se bloquea la salida
+      // desde el arranque, la puerta se cierra `maxStaleness` después.
+      const graceEnd = payload.expires_at + payload.grace_days * 86400;
+      const anclaArranque = Math.min(startedAt, graceEnd);
       const lastFresh = Math.max(opts.revocation.lastContactAt, anclaArranque);
       if (nowSeconds() - lastFresh > opts.maxStalenessSeconds) return "expired";
     }
