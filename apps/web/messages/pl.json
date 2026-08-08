@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Twoje oszczędności · mierzone przez SDK",
+      "measuredSplit": "Z czego {pct} jest zmierzone względem liczników tokenów Twojego dostawcy ({share} zapytań). Reszta pochodzi z uniknietych wywołań, gdzie licznik nie istnieje.",
       "savedLine": "Twoich wydatków na LLM zatrzymanych w tym okresie · <b>{money}</b> zaoszczędzone (linia bazowa − rzeczywiste, w Twoich cenach).",
       "emptyCap": "Jeszcze nie mierzymy Twojego ruchu — 0 zaobserwowanych żądań. Zainstaluj SDK, a Twoje oszczędności netto pojawią się tutaj — Twoje ceny, Twoje obciążenie. Nigdy zapożyczona ani zmyślona liczba."
     },
@@ -218,8 +219,8 @@
       "qualityGate": "Bramka jakości <b>{rate}</b> zaliczona",
       "ledgersReconcile": "Księgi się zgadzają",
       "ledgersMismatch": "Księgi SIĘ NIE ZGADZAJĄ",
-      "fingerprintStable": "Odcisk modelu stabilny",
-      "fingerprintChanged": "Odcisk modelu zmieniony",
+      "modelStable": "Ten sam model w obu ramionach",
+      "modelChanged": "Różne modele w ramionach",
       "cacheBreakEven": "Próg opłacalności cache <b>K={k}</b>",
       "provenAt95": "udowodnione przy 95%",
       "unprovenMock": "nieudowodnione (mock)",

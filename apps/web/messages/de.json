@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Deine Einsparungen · vom SDK gemessen",
+      "measuredSplit": "Davon sind {pct} an den Token-Zählern Ihres Anbieters gemessen ({share} der Anfragen). Der Rest stammt aus vermiedenen Aufrufen, für die es keinen Zähler gibt.",
       "savedLine": "deiner LLM-Ausgaben in diesem Zeitraum behalten · <b>{money}</b> gespart (Baseline − Ist-Wert, zu deinen Preisen).",
       "emptyCap": "Dein Traffic wird noch nicht gemessen — 0 Anfragen gesehen. Installiere das SDK und deine Netto-Einsparungen erscheinen hier — deine Preise, deine Workload. Niemals eine geliehene oder erfundene Zahl."
     },
@@ -218,8 +219,8 @@
       "qualityGate": "Quality-Gate <b>{rate}</b> bestanden",
       "ledgersReconcile": "Ledger stimmen überein",
       "ledgersMismatch": "Ledger STIMMEN NICHT ÜBEREIN",
-      "fingerprintStable": "Modell-Fingerprint stabil",
-      "fingerprintChanged": "Modell-Fingerprint geändert",
+      "modelStable": "Gleiches Modell in beiden Armen",
+      "modelChanged": "Unterschiedliche Modelle je Arm",
       "cacheBreakEven": "Cache-Break-even <b>K={k}</b>",
       "provenAt95": "bewiesen bei 95%",
       "unprovenMock": "unbewiesen (Mock)",

@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "I tuoi risparmi · misurati dall'SDK",
+      "measuredSplit": "Di cui {pct} è misurato sui contatori di token del tuo provider ({share} delle richieste). Il resto deriva da chiamate evitate, dove non esiste un contatore.",
       "savedLine": "della tua spesa in LLM trattenuta in questo periodo · <b>{money}</b> risparmiati (base di riferimento − effettivo, ai tuoi prezzi).",
       "emptyCap": "Non stiamo ancora misurando il tuo traffico — 0 richieste rilevate. Installa l'SDK e il tuo risparmio netto apparirà qui: i tuoi prezzi, il tuo carico di lavoro. Mai una cifra presa in prestito o inventata."
     },
@@ -218,8 +219,8 @@
       "qualityGate": "Controllo qualità <b>{rate}</b> superato",
       "ledgersReconcile": "I registri quadrano",
       "ledgersMismatch": "I registri NON QUADRANO",
-      "fingerprintStable": "Impronta del modello stabile",
-      "fingerprintChanged": "Impronta del modello cambiata",
+      "modelStable": "Stesso modello su entrambi i rami",
+      "modelChanged": "Modelli diversi tra i rami",
       "cacheBreakEven": "Pareggio della cache <b>K={k}</b>",
       "provenAt95": "comprovato al 95%",
       "unprovenMock": "non comprovato (simulato)",

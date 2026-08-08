@@ -21,10 +21,10 @@ export async function IntegrityQualityChips({ ab }: { ab: AbArtifact }) {
           : t("integrityQualityChips.ledgersMismatch")}
         {!ab.reconciliation.reconciled ? <> · {money(ab.reconciliation.residual)}</> : null}
       </span>
-      <span className={`chip2 ${ab.fingerprintStable ? "good" : "warn"}`}>
-        {ab.fingerprintStable
-          ? t("integrityQualityChips.fingerprintStable")
-          : t("integrityQualityChips.fingerprintChanged")}
+      <span className={`chip2 ${ab.modelStable ? "good" : "warn"}`}>
+        {ab.modelStable
+          ? t("integrityQualityChips.modelStable")
+          : t("integrityQualityChips.modelChanged")}
       </span>
       {cache?.amortization?.breakEvenK != null ? (
         <span className="chip2">

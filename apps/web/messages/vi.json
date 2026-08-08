@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "Mức tiết kiệm của bạn · được đo bởi SDK",
+      "measuredSplit": "Trong đó {pct} được đo theo bộ đếm token của nhà cung cấp ({share} số yêu cầu). Phần còn lại đến từ các lệnh gọi đã tránh, nơi không có bộ đếm.",
       "savedLine": "chi tiêu LLM của bạn được giữ lại trong kỳ này · đã tiết kiệm <b>{money}</b> (đường cơ sở − thực tế, theo giá của bạn).",
       "emptyCap": "Chưa đo lưu lượng của bạn — đã thấy 0 yêu cầu. Cài đặt SDK và mức tiết kiệm ròng của bạn sẽ hiện ở đây — giá của bạn, khối lượng công việc của bạn. Không bao giờ là con số vay mượn hay bịa đặt."
     },
@@ -218,8 +219,8 @@
       "qualityGate": "Cổng chất lượng <b>{rate}</b> đã vượt qua",
       "ledgersReconcile": "Các sổ cái khớp nhau",
       "ledgersMismatch": "Các sổ cái KHÔNG KHỚP",
-      "fingerprintStable": "Dấu vân tay mô hình ổn định",
-      "fingerprintChanged": "Dấu vân tay mô hình đã thay đổi",
+      "modelStable": "Cùng một mô hình ở cả hai nhánh",
+      "modelChanged": "Các nhánh chạy mô hình khác nhau",
       "cacheBreakEven": "Điểm hòa vốn bộ đệm <b>K={k}</b>",
       "provenAt95": "đã chứng minh ở mức 95%",
       "unprovenMock": "chưa chứng minh (mô phỏng)",
