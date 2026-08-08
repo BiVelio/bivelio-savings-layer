@@ -24,3 +24,6 @@ keys/*.private.pem
 
 # Credenciales del benchmark LIVE (pnpm ab). NUNCA se versiona.
 .env.bench
+# Artefactos de build de Next: nunca se versionan.
+.next/
+apps/web/.next/
