@@ -98,7 +98,13 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   return {
     allowExactCache,
     allowSemanticCache,
-    allowSingleflight: !hasWriteTools,
+    // Singleflight fusiona dos peticiones idénticas concurrentes y le da a las
+    // DOS la misma respuesta. Con una petición personalizada sin principal, eso
+    // es la misma fuga que la caché exacta: el segundo usuario recibe la
+    // respuesta calculada para el primero. Se calculaba `personalizedWithoutPrincipal`
+    // arriba, se aplicaba a la caché exacta, y aquí se ignoraba — dejando abierta
+    // la misma puerta por otra vía.
+    allowSingleflight: !hasWriteTools && !personalizedWithoutPrincipal,
     allowCompression: true,
     requiresFreshData,
     hasSideEffects: hasWriteTools,

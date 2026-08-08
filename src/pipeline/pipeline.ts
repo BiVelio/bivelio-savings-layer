@@ -1,5 +1,6 @@
 import { randomId } from "../util/id.js";
 import { avisarUnaVez } from "../util/warn-once.js";
+import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
 
 import type {
   SavingsRequest,
@@ -31,6 +32,17 @@ import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
  * in-browser demo) are intentional.
  */
 declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
+
+/**
+ * Build-time flag: en el bundle WEB (la demo pública), correr sin licencia se
+ * limita al proveedor de demo interno. Sin esto, cualquiera importaba
+ * `savings.bivelio.com/vendor/bv-sala.js` y hacía
+ * `createSavingsLayer({ provider: unProveedorReal, devUnlicensed: true })`
+ * para tener el optimizador entero gratis — el producto de pago regalado. La
+ * demo del landing usa un MockProvider, que no sirve valor real, así que sigue
+ * funcionando. `undefined` desde el fuente (tests, benchmarks) → sin restricción.
+ */
+declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
 
 /**
  * The BV-SALA execution pipeline.
@@ -103,6 +115,16 @@ export class SavingsPipeline {
     const allowDevOpen =
       typeof __BV_SALA_ALLOW_DEV_OPEN__ === "undefined" ? true : __BV_SALA_ALLOW_DEV_OPEN__;
     if (!allowDevOpen) return false;
+
+    // En el bundle WEB (demo pública) el modo abierto se limita al proveedor de
+    // demo interno. Así la demo del landing —que usa un MockProvider— funciona,
+    // pero quien importe el bundle con un proveedor REAL no tiene barra libre.
+    // Desde el fuente (tests/benchmarks) la bandera es undefined → sin límite,
+    // que es lo que necesitan `pnpm ab` y los tests con proveedores reales.
+    const soloDemo =
+      typeof __BV_SALA_DEMO_ONLY__ === "undefined" ? false : __BV_SALA_DEMO_ONLY__;
+    if (soloDemo && !isBuiltInDemoProvider(this.config.provider)) return false;
+
     if (this.config.devUnlicensed === true) return true;
     return typeof process !== "undefined" && process.env?.BVSALA_DEV_OPEN === "1";
   }

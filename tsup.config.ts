@@ -19,8 +19,11 @@ const keyDefine = { __BV_SALA_PUBLIC_KEY__: JSON.stringify(PUBLIC_KEY) };
 // The published npm SDK DISABLES the dev escape hatch (`devUnlicensed` /
 // `BVSALA_DEV_OPEN`) so the paywall is unbypassable; the web-demo bundle keeps it
 // enabled (the free in-browser demo runs ungated).
-const defineNpm = { ...keyDefine, __BV_SALA_ALLOW_DEV_OPEN__: "false" };
-const defineWeb = { ...keyDefine, __BV_SALA_ALLOW_DEV_OPEN__: "true" };
+const defineNpm = { ...keyDefine, __BV_SALA_ALLOW_DEV_OPEN__: "false", __BV_SALA_DEMO_ONLY__: "false" };
+// El bundle web permite correr sin licencia SOLO contra el proveedor de demo
+// interno (__BV_SALA_DEMO_ONLY__). La demo del landing usa un MockProvider; quien
+// importe este bundle con un proveedor real queda gateado igual que en npm.
+const defineWeb = { ...keyDefine, __BV_SALA_ALLOW_DEV_OPEN__: "true", __BV_SALA_DEMO_ONLY__: "true" };
 
 export default defineConfig([
   // 1. The distributable package (data plane SDK). Paid/closed source: no

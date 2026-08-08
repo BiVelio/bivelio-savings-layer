@@ -33,6 +33,15 @@ export interface SemanticRecord {
   knowledgeEpoch: string;
   contractId: string | null;
   /**
+   * QUIÉN hizo la petición (sessionId/principal), o null si es anónima.
+   *
+   * Faltaba, y era la fuga más cara: la caché exacta aísla por principal pero la
+   * semántica no lo miraba, así que dos usuarios distintos del MISMO tenant con
+   * la misma pregunta casaban por embedding y el segundo recibía la respuesta
+   * calculada para el primero. `tenantId` separa organizaciones, no personas.
+   */
+  principal: string | null;
+  /**
    * Identidad COMPLETA de la petición que produjo esta respuesta.
    *
    * Antes solo se guardaban tenant, scope, epoch y contrato: la clave exacta
@@ -192,6 +201,12 @@ export class InMemorySemanticCache {
     for (const record of this.records) {
       if (record.tenantId !== c.tenantId) continue;
       if (record.authorizationScope !== c.authorizationScope) continue;
+      // El principal separa PERSONAS dentro del tenant. `null === null` es
+      // legítimo: dos peticiones anónimas del mismo tenant sí comparten (no hay
+      // nadie a quien filtrar). Lo que no puede pasar es que la de un usuario
+      // identificado sirva a otro — y la política ya apaga la caché para una
+      // petición personalizada SIN principal, así que aquí no hay que adivinar.
+      if (record.principal !== c.principal) continue;
       if (record.knowledgeEpoch !== c.knowledgeEpoch) continue;
       if (record.contractId !== c.contractId) continue;
       // Los cinco campos que la clave exacta declara necesarios y este filtro
@@ -246,6 +261,7 @@ export class InMemorySemanticCache {
       answer,
       tenantId: c.tenantId,
       authorizationScope: c.authorizationScope,
+      principal: c.principal,
       knowledgeEpoch: c.knowledgeEpoch,
       contractId: c.contractId,
       model: c.model,

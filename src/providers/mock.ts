@@ -1,4 +1,5 @@
 import type { JsonSchema } from "../contracts/types.js";
+import { marcarDemo } from "./demo-brand.js";
 import { heuristicEstimator } from "../tokenizer/estimator.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
 
@@ -26,6 +27,7 @@ export class MockProvider implements Provider {
 
   constructor(options: MockProviderOptions = {}) {
     this.options = options;
+    marcarDemo(this);
   }
 
   async generate(req: ProviderRequest): Promise<ProviderResponse> {

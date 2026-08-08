@@ -59,7 +59,16 @@ export function createSavingsLayer(
   // Ergonomic path: a raw `licenseKey` string is verified offline and turned into
   // a gate here. An explicitly-provided `licenseGate` takes precedence (advanced).
   if (config.licenseKey && !config.licenseGate) {
-    const publicKey = config.licensePublicKey ?? EMBEDDED_PUBLIC_KEY;
+    // La clave EMBEBIDA gana siempre que exista. Antes era
+    // `config.licensePublicKey ?? EMBEDDED`, así que un atacante pasaba su propia
+    // clave pública, firmaba una licencia con su privada y el layer la aceptaba:
+    // el paywall roto con un campo de configuración. En el paquete publicado la
+    // clave va embebida (tsup define), así que el override queda ignorado. Solo
+    // cuando NO hay clave embebida —un build de desarrollo sin fijarla— se admite
+    // que el llamante pase una, que es lo que necesitan los tests con su par de
+    // prueba. Un cliente que de verdad quiera su propia autoridad de licencias es
+    // un caso enterprise, fuera de v0.1.
+    const publicKey = EMBEDDED_PUBLIC_KEY || config.licensePublicKey || "";
     if (config.licenseServerUrl) {
       // ONLINE path: a LIVE gate over a sticky snapshot fed by a background poller.
       // The customer request path never touches the network; the warm poll is fired
