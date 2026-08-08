@@ -42,7 +42,13 @@ export interface AbArtifact {
   scenarios: AbScenario[];
   ledgers: AbLedger[];
   reconciliation: { totalDelta: number; ledgerSum: number; residual: number; reconciled: boolean };
-  fingerprintStable: boolean;
+  /**
+   * Los DOS brazos hablaron con el mismo modelo. Antes se leía
+   * `fingerprintStable`, que comprobaba el `system_fingerprint` del brazo naive y
+   * nunca los comparaba entre sí — y a través de una pasarela ese valor es un id
+   * POR PETICIÓN, así que la señal era ruido.
+   */
+  modelStable: boolean;
   aggregate: { savings: CI; wilcoxonP: number; qualityPassRate: number; proven: boolean; headline: string };
   honesty: string[];
 }

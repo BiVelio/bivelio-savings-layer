@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "A tua poupança · medida pelo SDK",
+      "measuredSplit": "Dos quais {pct} está medido face aos contadores de tokens do seu fornecedor ({share} dos pedidos). O resto vem de chamadas evitadas, onde não existe contador.",
       "savedLine": "do teu gasto em LLM conservado este período · <b>{money}</b> poupados (linha de base − real, aos teus preços).",
       "emptyCap": "Ainda não estamos a medir o teu tráfego — 0 pedidos vistos. Instala o SDK e a tua poupança líquida aparece aqui — os teus preços, a tua carga de trabalho. Nunca um número emprestado ou inventado."
     },
@@ -218,8 +219,8 @@
       "qualityGate": "Controlo de qualidade <b>{rate}</b> aprovado",
       "ledgersReconcile": "Os livros-razão batem certo",
       "ledgersMismatch": "Os livros-razão NÃO BATEM",
-      "fingerprintStable": "Impressão digital do modelo estável",
-      "fingerprintChanged": "Impressão digital do modelo alterada",
+      "modelStable": "Mesmo modelo nos dois braços",
+      "modelChanged": "Modelos diferentes entre os braços",
       "cacheBreakEven": "Ponto de equilíbrio da cache <b>K={k}</b>",
       "provenAt95": "comprovado a 95%",
       "unprovenMock": "não comprovado (simulado)",

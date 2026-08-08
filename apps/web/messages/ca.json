@@ -90,6 +90,7 @@
     },
     "verdictHero": {
       "eyebrow": "El teu estalvi · mesurat pel SDK",
+      "measuredSplit": "Dels quals {pct} està mesurat contra els comptadors de tokens del teu proveïdor ({share} de les peticions). La resta ve de crides evitades, on no hi ha comptador del proveïdor.",
       "savedLine": "de la teva despesa en LLM conservada aquest període · <b>{money}</b> estalviats (línia base − real, als teus preus).",
       "emptyCap": "Encara no mesurem el teu trànsit — 0 sol·licituds vistes. Instal·la el SDK i el teu estalvi net apareixerà aquí — els teus preus, la teva càrrega de treball. Mai una xifra prestada ni inventada."
     },
@@ -218,8 +219,8 @@
       "qualityGate": "Control de qualitat <b>{rate}</b> superat",
       "ledgersReconcile": "Els llibres quadren",
       "ledgersMismatch": "Els llibres NO QUADREN",
-      "fingerprintStable": "Empremta del model estable",
-      "fingerprintChanged": "Empremta del model canviada",
+      "modelStable": "Mateix model a tots dos braços",
+      "modelChanged": "Models diferents entre braços",
       "cacheBreakEven": "Punt d'equilibri de la memòria cau <b>K={k}</b>",
       "provenAt95": "comprovat al 95%",
       "unprovenMock": "sense comprovar (simulat)",
