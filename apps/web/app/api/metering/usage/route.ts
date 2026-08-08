@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { after, NextResponse } from "next/server";
 
 import { parseUsageRecords, UsageValidationError } from "@/lib/metering/usage";
+import { decideEntitlement } from "@/lib/metering/entitlement";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -38,6 +39,42 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
   if (!sa) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const orgId = sa.org_id as string;
+
+  // ── Candado de entitlement (servidor). El SDK del cliente es parcheable; esto
+  // no. Una org revocada o caducada-pasada-la-gracia sin suscripción activa deja
+  // de poder ingerir uso (402), así que pierde panel y facturación. La lógica
+  // refleja la del SDK para que no se contradigan.
+  //
+  // Fail-OPEN ante error de BD: el trabajo primario de este endpoint es no
+  // PERDER datos de facturación, así que un fallo transitorio de la consulta de
+  // entitlement no debe descartar el uso de un cliente que paga. La revocación
+  // la refuerzan también el gate del SDK y el poller; una ventana breve durante
+  // una caída de BD es aceptable, tirar el uso legítimo no.
+  const [{ data: licenses, error: licErr }, { data: sub, error: subErr }] = await Promise.all([
+    supabase.from("licenses").select("revoked, expires_at, grace_days").eq("org_id", orgId),
+    supabase
+      .from("subscriptions")
+      .select("status, current_period_end")
+      .eq("org_id", orgId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  if (licErr || subErr) {
+    console.error("[metering/usage] entitlement lookup failed (fail-open):", licErr ?? subErr);
+  } else {
+    const decision = decideEntitlement(licenses ?? [], sub ?? null, Date.now());
+    if (decision.blocked) {
+      return NextResponse.json(
+        {
+          error: "subscription required",
+          reason: decision.reason,
+          detail: "This organization has no active BiVelio license or subscription. Renew at https://savings.bivelio.com",
+        },
+        { status: 402 },
+      );
+    }
+  }
 
   let records;
   try {
