@@ -69,7 +69,7 @@ describe("los datos van ANTES de la pregunta", () => {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "Summarize the attached user table." }],
       structuredData: tabla,
-      savings: { formatSelector: false },
+      savings: { serialization: false },
     });
 
     const r = provider.visto!;
