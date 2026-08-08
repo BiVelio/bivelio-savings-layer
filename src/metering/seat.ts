@@ -22,16 +22,40 @@ function proc(): ProcLike | undefined {
   return (globalThis as { process?: ProcLike }).process;
 }
 
+/**
+ * ¿El HOSTNAME de este entorno sobrevive a un reinicio?
+ *
+ * En Docker es el id del contenedor (12 hex) y en Kubernetes lleva el sufijo
+ * aleatorio del pod: los dos cambian en CADA arranque. Meterlos en la huella
+ * hacía que el asiento fuese nuevo cada vez que el proceso se reiniciaba, y
+ * `billable_seats` exige >= 3 días distintos POR asiento
+ * (db/migrations/0003_metering.sql): un contenedor que se reinicia a diario
+ * nunca acumula tres días con el mismo id, así que la base facturable se
+ * desploma a CERO. El docstring de este módulo prometía justo lo contrario.
+ */
+function hostnameEsEfimero(e: Record<string, string | undefined>): boolean {
+  if (e["KUBERNETES_SERVICE_HOST"]) return true; // pod: sufijo aleatorio
+  const h = e["HOSTNAME"];
+  if (!h) return false;
+  if (/^[0-9a-f]{12}$/.test(h)) return true; // id corto de contenedor Docker
+  return /-[0-9a-z]{5,10}-[0-9a-z]{5}$/.test(h); // <deploy>-<rs>-<pod> de k8s
+}
+
 /** Stable-ish per-machine+user fingerprint from ambient process info (Node). */
 function machineFingerprint(): string | undefined {
   const p = proc();
   if (!p || !p.env) return undefined;
   const e = p.env;
+  // El hostname solo entra en la huella si de verdad identifica a la máquina.
+  // Si es efímero se descarta: más vale que varias réplicas de un despliegue
+  // compartan asiento —son una misma identidad de servicio— a que cada reinicio
+  // invente uno nuevo y la facturación no cuente ninguno.
+  const host = hostnameEsEfimero(e) ? undefined : (e["HOSTNAME"] ?? e["COMPUTERNAME"]);
   const parts = [
     p.platform,
     p.arch,
     p.execPath,
-    e["HOSTNAME"] ?? e["COMPUTERNAME"],
+    host,
     e["USER"] ?? e["USERNAME"] ?? e["LOGNAME"],
     e["HOME"] ?? e["USERPROFILE"],
   ].filter((x): x is string => typeof x === "string" && x.length > 0);
@@ -117,9 +141,20 @@ async function hmacSha256Hex(key: string, data: string): Promise<string | undefi
  * The id (`m-<32 hex>`) matches the control plane's identity charset.
  */
 export async function deriveSeatId(serviceAccountKey: string): Promise<string | undefined> {
+  // Escape explícito, sin tocar código: en un despliegue donde la identidad de
+  // máquina no se puede deducir (contenedores, funciones sin estado), basta con
+  // fijar BVSALA_SEAT_ID por réplica o por servicio. Es la vía recomendada, y la
+  // única que garantiza que el asiento signifique lo que el cliente quiere.
+  const env = proc()?.env;
+  const explicito = env?.["BVSALA_SEAT_ID"];
+  if (explicito && SEAT_ID_PATTERN.test(explicito)) return explicito;
+
   const fp = machineFingerprint();
   if (!fp) return undefined;
   const hex = await hmacSha256Hex(serviceAccountKey, fp);
   if (!hex) return undefined;
   return `m-${hex.slice(0, 32)}`;
 }
+
+/** Mismo juego de caracteres que exige el plano de control para una identidad. */
+const SEAT_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;

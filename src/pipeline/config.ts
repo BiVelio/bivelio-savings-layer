@@ -22,6 +22,19 @@ import type { LicenseKeyset } from "../license/verify.js";
  * component is independently swappable.
  */
 export interface SavingsLayerConfig {
+  /**
+   * Contratos a los que ya se les incumplió una restricción de valor.
+   *
+   * La capa lo aprende sola, pero lo aprendido muere con la instancia. En
+   * serverless —una instancia por petición— eso significa no aprender NUNCA:
+   * cada llamada estrena y paga su reparación. Pasar aquí un conjunto
+   * compartido (o respaldado por Redis, con la API de Set) hace que se aprenda
+   * una vez para todo el despliegue.
+   *
+   * Solo guarda identificadores de contrato, nunca contenido de peticiones.
+   */
+  constraintMemory?: Set<string>;
+
   provider: Provider;
   tokenizer: TokenizerRegistry;
 

@@ -58,7 +58,56 @@ describe("OpenAICompatibleProvider — requireUsage guard", () => {
     });
     await expect(
       provider.generate({ model: "m", messages: [{ role: "user", content: "hi" }] }),
-    ).rejects.toThrow(/no usage tokens/i);
+    ).rejects.toThrow(/incomplete usage/i);
+  });
+
+  // El bug que la guardia original NO cubría: usaba `&&`, así que sólo saltaba
+  // cuando faltaban AMBOS contadores. Un bloque `usage` a medias —lo habitual en
+  // gateways y en streaming— pasaba el filtro, se coaccionaba a 0 y fabricaba un
+  // ahorro cercano al 100% sobre el contador ausente.
+  it("throws on PARTIAL usage: prompt present, completion absent", async () => {
+    const provider = new OpenAICompatibleProvider({
+      baseUrl: "https://example.test/v1",
+      requireUsage: true,
+      fetchImpl: fakeFetch({}, {
+        choices: [{ message: { content: "x" } }],
+        usage: { prompt_tokens: 1200 },
+      }),
+    });
+    await expect(
+      provider.generate({ model: "m", messages: [{ role: "user", content: "hi" }] }),
+    ).rejects.toThrow(/incomplete usage/i);
+  });
+
+  it("throws on PARTIAL usage: completion present, prompt absent", async () => {
+    const provider = new OpenAICompatibleProvider({
+      baseUrl: "https://example.test/v1",
+      requireUsage: true,
+      fetchImpl: fakeFetch({}, {
+        choices: [{ message: { content: "x" } }],
+        usage: { completion_tokens: 40 },
+      }),
+    });
+    await expect(
+      provider.generate({ model: "m", messages: [{ role: "user", content: "hi" }] }),
+    ).rejects.toThrow(/incomplete usage/i);
+  });
+
+  // Y el reverso: un CERO medido es un hecho, no una ausencia. La guardia
+  // comprueba presencia del campo, no que su valor sea mayor que cero, así que
+  // una respuesta legítimamente vacía no debe romper la petición.
+  it("accepts a measured zero (empty completion is a fact, not a gap)", async () => {
+    const provider = new OpenAICompatibleProvider({
+      baseUrl: "https://example.test/v1",
+      requireUsage: true,
+      fetchImpl: fakeFetch({}, {
+        choices: [{ message: { content: "" } }],
+        usage: { prompt_tokens: 30, completion_tokens: 0 },
+      }),
+    });
+    const res = await provider.generate({ model: "m", messages: [{ role: "user", content: "hi" }] });
+    expect(res.usage.inputTokens).toBe(30);
+    expect(res.usage.outputTokens).toBe(0);
   });
 
   it("does not throw on absent usage when requireUsage is off (back-compat), coercing to 0", async () => {

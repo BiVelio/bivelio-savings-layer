@@ -87,7 +87,11 @@ const answerContract = {
     required: ["answer"],
     properties: {
       answer: { type: "string" as const, maxLength: 400 },
-      refs: { type: "array" as const, maxItems: 3, items: { type: "string" as const, maxLength: 24 } },
+      // `maxLength: 24` era inalcanzable por cualquier referencia real y NINGÚN
+      // modo estructurado lo impone (OpenAI no aplica maxLength), así que
+      // garantizaba el fallo de validación y con él el reintento de reparación
+      // — el camino que se llevaba el 40-63% del gasto de la capa.
+      refs: { type: "array" as const, maxItems: 3, items: { type: "string" as const, maxLength: 120 } },
     },
   },
   maxOutputTokens: 180,
@@ -110,7 +114,16 @@ export const scenarios: Scenario[] = [
     ledger: "none",
     request: {
       model: "openai/gpt-4o-mini",
-      messages: [{ role: "user", content: "What is the standard refund window in days?" }],
+      // CON el dato en el prompt. Sin él la pregunta no tiene respuesta
+      // correcta: los dos brazos se inventaban un número distinto y el juez
+      // —con razón— decía que no eran equivalentes. Eso no medía la capa, medía
+      // dos alucinaciones, y hundía la verja de calidad 8 de cada 12 veces.
+      // Los dos escenarios FAQ llevan el mismo prompt byte a byte, que es la
+      // condición para que la caché acierte.
+      messages: [
+        { role: "system", content: "Refund policy: the standard refund window is 30 days from purchase." },
+        { role: "user", content: "What is the standard refund window in days?" },
+      ],
       response: answerContract,
       context: { tenantId: "acme", knowledgeEpoch: "kb-2026-07" },
     },
@@ -122,7 +135,16 @@ export const scenarios: Scenario[] = [
     warm: true,
     request: {
       model: "openai/gpt-4o-mini",
-      messages: [{ role: "user", content: "What is the standard refund window in days?" }],
+      // CON el dato en el prompt. Sin él la pregunta no tiene respuesta
+      // correcta: los dos brazos se inventaban un número distinto y el juez
+      // —con razón— decía que no eran equivalentes. Eso no medía la capa, medía
+      // dos alucinaciones, y hundía la verja de calidad 8 de cada 12 veces.
+      // Los dos escenarios FAQ llevan el mismo prompt byte a byte, que es la
+      // condición para que la caché acierte.
+      messages: [
+        { role: "system", content: "Refund policy: the standard refund window is 30 days from purchase." },
+        { role: "user", content: "What is the standard refund window in days?" },
+      ],
       response: answerContract,
       context: { tenantId: "acme", knowledgeEpoch: "kb-2026-07" },
     },
@@ -158,7 +180,26 @@ export const scenarios: Scenario[] = [
     request: {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "Summarize the attached user table." }],
-      response: answerContract,
+      // Contrato PROPIO con un tope que cabe. El compartido tope a 180 tokens
+      // una tarea cuya respuesta natural son ~360 (medido: el brazo naive, sin
+      // tope, emitió 362), así que el JSON se cortaba a media cadena y no
+      // validaba NUNCA. Eso no medía la palanca de compresión: medía una mala
+      // configuración del banco. Un cliente que pide el resumen de 50 filas y lo
+      // limita a 180 tokens tiene el mismo problema, y ahora el layer se lo dice
+      // en vez de pagar dos llamadas para acabar igual.
+      response: {
+        contractId: "demo-answer-largo:v1",
+        schema: {
+          type: "object" as const,
+          additionalProperties: false,
+          required: ["answer"],
+          properties: {
+            answer: { type: "string" as const, maxLength: 1200 },
+            refs: { type: "array" as const, maxItems: 3, items: { type: "string" as const, maxLength: 120 } },
+          },
+        },
+        maxOutputTokens: 600,
+      },
       structuredData: {
         users: Array.from({ length: 50 }, (_, i) => ({
           id: 1000 + i,
@@ -169,7 +210,11 @@ export const scenarios: Scenario[] = [
         })),
       },
     },
-    expect: (r) => r.report.tokens.compressedInput > 0,
+    // Antes: `r.report.tokens.compressedInput > 0` — comprobaba su propio libro.
+    // El escenario que perdió 49,5% de dinero y sobreacreditó su ledger 3x se
+    // puntuaba "calidad 2/2" por afirmar que el ledger que infló no es cero.
+    // Una verja de calidad tiene que mirar la RESPUESTA, no la contabilidad.
+    expect: (r) => r.report.constraints.structurallyValid && r.text.trim().length > 0,
   },
   {
     name: "Constrained structured answer",

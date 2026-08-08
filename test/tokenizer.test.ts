@@ -53,13 +53,26 @@ describe("SavingsLedger — four separate accounts", () => {
     expect(ledger.providerCachedInput).toBe(50);
   });
 
-  it("avoiding a call eliminates the whole input and output", () => {
+  it("una llamada evitada va SOLO al libro 1, no también al 2", () => {
+    // El README promete que los cuatro libros son disjuntos: "summing them would
+    // lie to you, so the report never does". avoidCall sumaba el prompt entero a
+    // eliminatedInput ADEMÁS de contar la llamada evitada, así que el mismo
+    // ahorro aparecía en dos libros — y el panel los enseña en fila, de modo que
+    // quien los lea los suma con la vista. Este test antes afirmaba el bug.
     const ledger = new SavingsLedger();
     ledger.avoidCall(500, 200);
     expect(ledger.avoidedLlm).toBe(1);
     expect(ledger.actualLlm).toBe(0);
-    expect(ledger.eliminatedInput).toBe(500);
-    expect(ledger.eliminatedOutput).toBe(200);
+    expect(ledger.baselineInput).toBe(500);   // el ahorro vive AQUÍ
+    expect(ledger.eliminatedInput).toBe(0);   // y no se duplica aquí
+    expect(ledger.eliminatedOutput).toBe(0);
+  });
+
+  it("el libro 2 sigue registrando las eliminaciones de verdad", () => {
+    // No se ha desactivado el libro: una poda real de contexto sigue contando.
+    const ledger = new SavingsLedger();
+    ledger.eliminate(320);
+    expect(ledger.eliminatedInput).toBe(320);
   });
 
   it("does not credit phantom output savings on a call that actually ran", () => {

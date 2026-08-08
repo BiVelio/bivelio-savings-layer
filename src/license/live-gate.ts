@@ -57,7 +57,18 @@ export function liveGateFromKey(
     // expires. Anchored to boot so the fire-and-forget warm poll has a full window.
     // Reuses "expired" so the LicenseStatus union and every consumer are unchanged.
     if (opts.maxStalenessSeconds != null && (s === "active" || s === "grace")) {
-      const lastFresh = Math.max(opts.revocation.lastContactAt, startedAt);
+      // El ancla de arranque da margen al primer sondeo, pero NO puede ser un
+      // cheque en blanco: en serverless cada invocación es un proceso nuevo, así
+      // que `startedAt` valía siempre "ahora" y la resta daba ~0 — la puerta no
+      // podía dispararse jamás, que es justo el fail-open que venía a cerrar.
+      //
+      // Se acota con `issued_at`, que va FIRMADO dentro del token y por tanto no
+      // se puede empujar hacia adelante: el arranque solo ayuda mientras la
+      // licencia sea reciente. Una licencia vieja que nunca ha conseguido
+      // contactar queda obsoleta por muchas veces que se reinicie el proceso.
+      const techoPorEmision = payload.issued_at + opts.maxStalenessSeconds;
+      const anclaArranque = Math.min(startedAt, techoPorEmision);
+      const lastFresh = Math.max(opts.revocation.lastContactAt, anclaArranque);
       if (nowSeconds() - lastFresh > opts.maxStalenessSeconds) return "expired";
     }
     return s;

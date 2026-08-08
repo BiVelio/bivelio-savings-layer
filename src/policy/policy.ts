@@ -46,8 +46,12 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     c.freshnessBucket === "live" ||
     c.freshnessBucket === "hour" ||
     FRESHNESS_MARKERS.test(text);
-  const isPersonalized =
-    c.tenantId !== "anonymous" && PERSONAL_MARKERS.test(text);
+  // La personalización la delata el TEXTO, no el tenant. La condición
+  // `tenantId !== "anonymous"` dejaba el guardarraíl muerto justo en la
+  // configuración por defecto —que es la que más protección necesita, no la que
+  // menos— porque canonicalize() rellena tenantId con "anonymous" cuando no se
+  // pasa contexto.
+  const isPersonalized = PERSONAL_MARKERS.test(text);
   const stochastic = (c.temperature ?? 0) > 0.3 && c.seed == null;
 
   if (hasWriteTools) reasons.push("write/destructive tools present");
@@ -64,8 +68,22 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   // stochastic outputs, where an identical replay isn't what the caller wants.
   const freshWithoutBucket =
     requiresFreshData && (c.freshnessBucket == null || c.freshnessBucket === "any");
-  const allowExactCache = !stochastic && !freshWithoutBucket;
+
+  // Una respuesta personalizada solo se puede cachear si la clave AÍSLA a quien
+  // pregunta. La clave exacta lleva tenant y scope, pero los dos son compartidos
+  // por defecto ("anonymous" / "default"), así que dos usuarios de la misma
+  // organización preguntando "cuál es el saldo de mi cuenta" caían en la misma
+  // entrada: el segundo recibía la respuesta del primero. `allowExactCache`
+  // calculaba isPersonalized y no lo miraba.
+  //
+  // Con principal (sessionId) la clave sí separa y el cacheo es seguro y útil;
+  // sin él, se apaga. El tráfico no personalizado no pierde ni un acierto.
+  const personalizedWithoutPrincipal = isPersonalized && c.principal == null;
+  const allowExactCache = !stochastic && !freshWithoutBucket && !personalizedWithoutPrincipal;
   if (freshWithoutBucket) reasons.push("freshness-sensitive without a freshness bucket → exact cache off");
+  if (personalizedWithoutPrincipal) {
+    reasons.push("personalized request with no principal (context.sessionId) → exact cache off");
+  }
 
   // Semantic cache is far more restricted: read-only, non-personalized,
   // non-fresh, deterministic-enough. Even then, a downstream verifier must

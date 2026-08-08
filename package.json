@@ -67,20 +67,30 @@
     "example:revocation": "tsx examples/licensing/revocation.ts",
     "demo:e2e": "tsx examples/licensing/e2e.ts",
     "demo:install": "bash examples/licensing/install-demo.sh",
-    "demo": "BVSALA_DEV_OPEN=1 tsx benchmarks/run.ts",
-    "ablation": "BVSALA_DEV_OPEN=1 tsx benchmarks/ablation.ts",
-    "ab": "BVSALA_DEV_OPEN=1 tsx benchmarks/ab-live.ts",
+    "demo": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/run.ts",
+    "ablation": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/ablation.ts",
+    "ab": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/ab-live.ts",
     "web:build": "tsup",
     "web:dev": "node apps/web/serve.mjs",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "ab:publish": "tsx benchmarks/publish.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
     "@types/node": "^22.10.2",
+    "gpt-tokenizer": "^3.4.0",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
-  "packageManager": "pnpm@10.17.1"
+  "packageManager": "pnpm@10.17.1",
+  "peerDependencies": {
+    "gpt-tokenizer": "^3"
+  },
+  "peerDependenciesMeta": {
+    "gpt-tokenizer": {
+      "optional": true
+    }
+  }
 }

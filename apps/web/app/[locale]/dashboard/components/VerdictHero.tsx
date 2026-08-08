@@ -8,11 +8,32 @@ import { ProvenancePill } from "./ProvenancePill";
  *  or ABSENT (—) — never borrowed from the reference, never a fabricated 0. */
 export async function VerdictHero({ usage }: { usage: UsageRollup[] }) {
   const t = await getTranslations("dashboard");
-  const live = usage.length > 0;
   const baseline = usage.reduce((n, r) => n + r.baselineCost, 0);
   const actual = usage.reduce((n, r) => n + r.actualCost, 0);
-  const net = baseline > 0 ? 1 - actual / baseline : 0;
   const saved = baseline - actual;
+
+  // "Hay filas" NO es lo mismo que "hay algo que enseñar". Con filas medidas
+  // pero baseline 0 —tráfico ingerido antes de que hubiera precios, o un modelo
+  // sin tarifa configurada— el cálculo caía a `net = 0` y se pintaba como
+  // "0.0%" EN VERDE: un cero fabricado, justo lo que el comentario de este
+  // fichero promete no hacer nunca. Ahora eso es su propio estado.
+  const live = usage.length > 0 && baseline > 0;
+  const net = baseline > 0 ? 1 - actual / baseline : 0;
+  // Y un ahorro NEGATIVO (la capa salió más cara) no puede pintarse de verde:
+  // la clase `pos` estaba fija, y no existía regla para `neg`.
+  const tono = net < 0 ? "neg" : "pos";
+
+  // La parte COMPROBABLE contra la factura: solo peticiones cuyo baseline se
+  // reconstruyó desde el contador del proveedor. El resto son llamadas
+  // evitadas, donde el baseline es necesariamente estimado. El titular las
+  // mezclaba en una sola cifra.
+  const mBase = usage.reduce((n, r) => n + (r.measuredBaselineCost ?? 0), 0);
+  const mAct = usage.reduce((n, r) => n + (r.measuredActualCost ?? 0), 0);
+  const mReq = usage.reduce((n, r) => n + (r.measuredRequests ?? 0), 0);
+  const peticiones = usage.reduce((n, r) => n + r.requests, 0);
+  const medido = mBase > 0
+    ? { net: 1 - mAct / mBase, share: peticiones > 0 ? mReq / peticiones : 0 }
+    : null;
 
   return (
     <div className="verdict">
@@ -20,7 +41,15 @@ export async function VerdictHero({ usage }: { usage: UsageRollup[] }) {
         <p className="ck-eyebrow">{t("verdictHero.eyebrow")}</p>
         {live ? (
           <>
-            <div className="big pos ck-num">{pct(net)}</div>
+            <div className={`big ${tono} ck-num`}>{pct(net)}</div>
+            {medido !== null && (
+              <p className="ck-note" style={{ marginTop: "8px" }}>
+                {t("verdictHero.measuredSplit", {
+                  pct: pct(medido.net),
+                  share: `${Math.round(medido.share * 100)}%`,
+                })}
+              </p>
+            )}
             <div className="cap">
               {t.rich("verdictHero.savedLine", {
                 money: money(saved),

@@ -60,3 +60,60 @@ describe("detectCi", () => {
     expect(detectCi()).toBe(false);
   });
 });
+
+/**
+ * La identidad de asiento es la base de la facturación por asiento, y en
+ * contenedores era inestable: HOSTNAME es el id del contenedor (Docker) o lleva
+ * el sufijo del pod (k8s), así que cambiaba en CADA reinicio. Como
+ * billable_seats exige >= 3 días distintos por asiento, un contenedor que se
+ * reinicia a diario nunca acumula tres días con el mismo id y la base
+ * facturable cae a CERO.
+ */
+describe("identidad de asiento en entornos efímeros", () => {
+  const guardado = { ...process.env };
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) if (!(k in guardado)) delete process.env[k];
+    Object.assign(process.env, guardado);
+  });
+
+  it("sobrevive al reinicio de un contenedor Docker (HOSTNAME cambia)", async () => {
+    process.env.HOSTNAME = "3f2a1b9c8d7e";           // id de contenedor
+    const antes = await deriveSeatId("sa-key");
+    process.env.HOSTNAME = "ff11ee22dd33";           // reinicio → id nuevo
+    const despues = await deriveSeatId("sa-key");
+    expect(antes).toBeDefined();
+    expect(despues).toBe(antes);
+  });
+
+  it("sobrevive al reprogramado de un pod de Kubernetes", async () => {
+    process.env.KUBERNETES_SERVICE_HOST = "10.0.0.1";
+    process.env.HOSTNAME = "api-7d9f8b6c5d-x2k9p";
+    const antes = await deriveSeatId("sa-key");
+    process.env.HOSTNAME = "api-7d9f8b6c5d-q7w3z";   // otro pod
+    const despues = await deriveSeatId("sa-key");
+    expect(despues).toBe(antes);
+  });
+
+  it("un hostname REAL sí distingue máquinas (no se ha roto el caso normal)", async () => {
+    delete process.env.KUBERNETES_SERVICE_HOST;
+    process.env.HOSTNAME = "portatil-de-ana";
+    const a = await deriveSeatId("sa-key");
+    process.env.HOSTNAME = "servidor-de-produccion";
+    const b = await deriveSeatId("sa-key");
+    expect(a).not.toBe(b);
+  });
+
+  it("BVSALA_SEAT_ID manda sobre cualquier deducción", async () => {
+    process.env.BVSALA_SEAT_ID = "worker-03";
+    process.env.HOSTNAME = "da-igual";
+    expect(await deriveSeatId("sa-key")).toBe("worker-03");
+  });
+
+  it("un BVSALA_SEAT_ID con caracteres inválidos se ignora, no se propaga", async () => {
+    process.env.BVSALA_SEAT_ID = "tiene espacios y ñ";
+    process.env.HOSTNAME = "portatil-de-ana";
+    const sid = await deriveSeatId("sa-key");
+    expect(sid).not.toBe("tiene espacios y ñ");
+    expect(sid).toMatch(/^m-[0-9a-f]{32}$/);
+  });
+});

@@ -20,6 +20,10 @@ export default defineConfig({
     env: { BVSALA_DEV_OPEN: "1" },
     include: [
       "test/**/*.test.ts",
+      // apps/web NO estaba en ningún glob: el dashboard entero llegó a
+      // producción con cobertura cero. Las derivaciones puras viven en
+      // dashboard/derive.ts precisamente para poder probarse desde aquí.
+      "apps/web/**/*.test.ts",
       "packages/**/test/**/*.test.ts",
       "services/**/test/**/*.test.ts",
     ],

@@ -18,6 +18,14 @@ export class UsageValidationError extends Error {
 }
 
 const USAGE_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
+// Umbral de unidad de `at`. No es una "época del producto" arbitraria: es la
+// frontera que separa SEGUNDOS de MILISEGUNDOS. Un epoch en segundos vale hoy
+// ~1,79e9, que interpretado como ms cae en enero de 1970 y hace desaparecer el
+// lote del panel y del mes facturable; cualquier ms real está por encima de
+// 1e12 (2001). Tres órdenes de magnitud de margen, cero falsos positivos.
+const AT_MIN_MS = 1e12;
+const AT_MAX_SKEW_MS = 48 * 60 * 60 * 1000;
+
 const USAGE_ID_FIELDS = ["requestId", "model"] as const;
 const USAGE_CACHE_RESULTS = new Set(["miss", "exact", "semantic", "singleflight", "deterministic"]);
 const USAGE_NUMBER_FIELDS = [
@@ -28,8 +36,11 @@ const USAGE_NUMBER_FIELDS = [
 ] as const;
 // orgId is server-derived (never trusted from the body). seatId is the machine
 // identity; ci flags CI/ephemeral seats (excluded from billable seats).
+/** Valores admitidos en `basis` (espejo de CostBasis del SDK). */
+const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured"]);
+
 const USAGE_ALLOWED_FIELDS = new Set<string>([
-  "orgId", "seatId", "ci", "cacheResult",
+  "orgId", "seatId", "ci", "cacheResult", "basis",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
 ]);
@@ -76,6 +87,30 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     if (typeof num !== "number" || !Number.isFinite(num)) {
       throw new UsageValidationError(`field "${f}" must be a finite number`);
     }
+    // Dominio, no solo tipo. "Finito" aceptaba cualquier disparate: contadores
+    // negativos que restan de los agregados (el titular del panel podía pasar
+    // del 100% de ahorro) y un `at` en segundos en vez de milisegundos, que
+    // fecha todo el lote en 1970 y lo hace desaparecer a la vez del panel y del
+    // mes facturable — sin error, sin fila roja, sin nada.
+    if (f === "at") {
+      if (num < AT_MIN_MS || num > Date.now() + AT_MAX_SKEW_MS) {
+        throw new UsageValidationError(
+          `field "at" is out of range (${num}); expected epoch MILLISECONDS between ` +
+            `${AT_MIN_MS} and now+${AT_MAX_SKEW_MS}ms. A value near ${Math.floor(Date.now() / 1000)} ` +
+            `suggests seconds instead of milliseconds.`,
+        );
+      }
+    } else if (f === "netSavings") {
+      // Es una proporción y SÍ puede ser negativa: una petición puede salir más
+      // cara que la ingenua. Se acota para que un signo o una unidad mal puestos
+      // no arrastren el agregado.
+      if (num > 1 || num < -100) {
+        throw new UsageValidationError(`field "netSavings" must be a ratio in [-100, 1], got ${num}`);
+      }
+    } else if (num < 0) {
+      // El resto son recuentos y dólares: nunca negativos.
+      throw new UsageValidationError(`field "${f}" must be >= 0, got ${num}`);
+    }
     rec[f] = num;
   }
   if (input["seatId"] !== undefined) {
@@ -84,6 +119,13 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
     }
     rec["seatId"] = s;
+  }
+  if (input["basis"] !== undefined) {
+    const b = input["basis"];
+    if (typeof b !== "string" || !USAGE_BASIS.has(b)) {
+      throw new UsageValidationError(`field "basis" must be one of ${[...USAGE_BASIS].join("|")}`);
+    }
+    rec["basis"] = b;
   }
   if (input["ci"] !== undefined) {
     if (typeof input["ci"] !== "boolean") throw new UsageValidationError(`field "ci" must be a boolean`);

@@ -97,7 +97,7 @@ describe("privacy backstop — parseUsageRecord", () => {
       cache: { result: "exact" },
       cost: { baselineEstimate: 0.01, actual: 0, netSavings: 1 },
     };
-    const emitted = usageRecordFromReport(report, { orgId: "o", seatId: "svc-1", at: 1 });
+    const emitted = usageRecordFromReport(report, { orgId: "o", seatId: "svc-1", at: Date.now() });
     // Simulate the wire: strip the server-derived orgId, re-validate as the server would.
     const { orgId: _drop, ...onWire } = emitted as Record<string, unknown> & { orgId: string };
     expect(() => parseUsageRecord(onWire, "o")).not.toThrow();

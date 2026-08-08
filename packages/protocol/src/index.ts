@@ -122,6 +122,14 @@ export interface UsageRecord {
   baselineCost: number;
   actualCost: number;
   netSavings: number;
+  /**
+   * De dónde sale el baseline de ESTE registro: "measured" (contador del
+   * proveedor), "estimated" (llamada evitada, sin contador) o "unmeasured".
+   * Viaja hasta el panel para que el dinero medido y el estimado se puedan
+   * agregar POR SEPARADO — sumarlos en una sola cifra de "ahorrado" es lo que
+   * este producto promete no hacer.
+   */
+  basis?: string;
 }
 
 /** Response from the licensing service when validating/refreshing online. */
@@ -152,7 +160,7 @@ export interface SavingsReportLike {
     providerCachedInput?: number;
   };
   cache: { result: string };
-  cost: { baselineEstimate: number; actual: number; netSavings: number };
+  cost: { baselineEstimate: number; actual: number; netSavings: number; basis?: string };
 }
 
 /**
@@ -184,6 +192,7 @@ export function usageRecordFromReport(
     baselineCost: report.cost.baselineEstimate,
     actualCost: report.cost.actual,
     netSavings: report.cost.netSavings,
+    ...(report.cost.basis ? { basis: report.cost.basis } : {}),
   };
 }
 
@@ -200,6 +209,10 @@ export function usageRecordFromReport(
  * they cannot be used as a value channel to smuggle prompt/completion content. */
 const USAGE_ID_FIELDS = ["requestId", "model"] as const;
 const USAGE_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
+// Umbral de unidad de `at`: la frontera segundos/milisegundos. Espejo de
+// apps/web/lib/metering/usage.ts — mantener los dos valores en sincronía.
+const AT_MIN_MS = 1e12;
+const AT_MAX_SKEW_MS = 48 * 60 * 60 * 1000;
 /** cacheResult is a closed enum (mirrors the SDK's CacheOutcome), never free text. */
 const USAGE_CACHE_RESULTS: ReadonlySet<string> = new Set<string>([
   "miss",
@@ -225,11 +238,15 @@ const USAGE_NUMBER_FIELDS = [
 ] as const;
 /** `orgId` is intentionally NOT accepted from the client — the server derives it
  * from the authenticated service account. `seatId` and `ci` are the optional fields. */
+/** Valores admitidos en `basis` (espejo de CostBasis del SDK). */
+const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured"]);
+
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",
   "seatId",
   "ci",
   "cacheResult",
+  "basis",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
 ]);
@@ -283,6 +300,23 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     if (typeof n !== "number" || !Number.isFinite(n)) {
       throw new UsageValidationError(`field "${f}" must be a finite number`);
     }
+    // Mismo dominio que el backstop del servidor (apps/web/lib/metering/usage.ts).
+    // Los dos ficheros son espejos deliberados; si uno gana una regla, el otro
+    // también, o el emisor deja pasar lo que el ingest luego rechaza con un 400.
+    if (f === "at") {
+      if (n < AT_MIN_MS || n > Date.now() + AT_MAX_SKEW_MS) {
+        throw new UsageValidationError(
+          `field "at" is out of range (${n}); expected epoch MILLISECONDS. ` +
+            `A value near ${Math.floor(Date.now() / 1000)} suggests seconds instead of milliseconds.`,
+        );
+      }
+    } else if (f === "netSavings") {
+      if (n > 1 || n < -100) {
+        throw new UsageValidationError(`field "netSavings" must be a ratio in [-100, 1], got ${n}`);
+      }
+    } else if (n < 0) {
+      throw new UsageValidationError(`field "${f}" must be >= 0, got ${n}`);
+    }
     rec[f] = n;
   }
   if (input["seatId"] !== undefined) {
@@ -291,6 +325,13 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
     }
     rec["seatId"] = s;
+  }
+  if (input["basis"] !== undefined) {
+    const b = input["basis"];
+    if (typeof b !== "string" || !USAGE_BASIS.has(b)) {
+      throw new UsageValidationError(`field "basis" must be one of ${[...USAGE_BASIS].join("|")}`);
+    }
+    rec["basis"] = b;
   }
   if (input["ci"] !== undefined) {
     if (typeof input["ci"] !== "boolean") {

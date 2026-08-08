@@ -17,7 +17,7 @@ function cfg(over: Partial<MeteringAuthConfig> = {}): MeteringAuthConfig {
 
 function record(over: Record<string, unknown> = {}) {
   return {
-    requestId: "r1", model: "m", at: 1, avoidedLlm: 0, actualLlm: 1,
+    requestId: "r1", model: "m", at: Date.now(), avoidedLlm: 0, actualLlm: 1,
     baselineInputTokens: 100, actualInputTokens: 60, eliminatedInputTokens: 0, compressedInputTokens: 40,
     baselineOutputTokens: 80, actualOutputTokens: 20, providerCachedInputTokens: 0,
     cacheResult: "miss", baselineCost: 0.001, actualCost: 0.0004, netSavings: 0.6, ...over,
@@ -72,7 +72,7 @@ describe("metering gateway — tenant is server-derived, never client-supplied",
 describe("metering gateway — summary read is authorized", () => {
   it("blocks cross-tenant reads (403) and unauthenticated reads (401)", () => {
     const svc = createMeteringService();
-    svc.ingest([{ orgId: "acme", requestId: "r", model: "m", at: 1, avoidedLlm: 0, actualLlm: 1, baselineInputTokens: 1, actualInputTokens: 1, eliminatedInputTokens: 0, compressedInputTokens: 0, baselineOutputTokens: 1, actualOutputTokens: 1, providerCachedInputTokens: 0, cacheResult: "miss", baselineCost: 0, actualCost: 0, netSavings: 0 }]);
+    svc.ingest([{ orgId: "acme", requestId: "r", model: "m", at: Date.now(), avoidedLlm: 0, actualLlm: 1, baselineInputTokens: 1, actualInputTokens: 1, eliminatedInputTokens: 0, compressedInputTokens: 0, baselineOutputTokens: 1, actualOutputTokens: 1, providerCachedInputTokens: 0, cacheResult: "miss", baselineCost: 0, actualCost: 0, netSavings: 0 }]);
     const acme = resolveCaller("Bearer tok-acme", cfg())!;
     expect(summary(null, "acme", svc).status).toBe(401);
     expect(summary(acme, "other-org", svc).status).toBe(403);

@@ -13,6 +13,7 @@ export function buildExactKey(c: CanonicalRequest): string {
   const material = stableStringify({
     tenant: c.tenantId,
     scope: c.authorizationScope,
+    principal: c.principal,
     text: c.normalizedText,
     modelFamily: c.modelFamily,
     model: c.model,
@@ -41,6 +42,7 @@ export function buildInflightKey(c: CanonicalRequest): string {
   const material = stableStringify({
     tenant: c.tenantId,
     scope: c.authorizationScope,
+    principal: c.principal,
     text: c.normalizedText,
     model: c.model,
     system: c.systemPromptHash,

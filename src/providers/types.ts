@@ -34,6 +34,17 @@ export interface ProviderResponse {
   usage: ProviderUsage;
   /** Whether the provider enforced the schema natively. */
   structuredNatively?: boolean;
+  /**
+   * Por qué paró de generar el modelo. `"length"` significa que se quedó sin
+   * presupuesto de salida, no que terminara.
+   *
+   * No es un dato decorativo: distingue una respuesta MALA de una respuesta
+   * CORTADA, y esas dos no se arreglan igual. Un JSON truncado a media cadena no
+   * valida, y reintentar con el MISMO tope vuelve a truncarlo — se paga una
+   * segunda llamada para obtener el mismo fallo. Sin este campo el layer no
+   * podía distinguirlo y hacía exactamente eso.
+   */
+  finishReason?: "stop" | "length" | "content_filter" | "tool_calls" | (string & {});
   raw?: unknown;
 }
 

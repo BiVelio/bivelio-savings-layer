@@ -90,6 +90,9 @@ export function computeNextDelay(opts: {
   return Math.max(opts.floorSeconds, base * jitter);
 }
 
+/** Cuántos 304 seguidos se aceptan antes de exigir la lista firmada entera. */
+const MAX_304_ANTES_DE_REVALIDAR = 10;
+
 export class RevocationPoller {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private controller: AbortController | null = null;
@@ -99,6 +102,8 @@ export class RevocationPoller {
   private warnedNoFetch = false;
   /** ETag of the last 200; sent as If-None-Match so an unchanged list 304s (cheap no-op). */
   private lastEtag: string | null = null;
+  /** 304 seguidos; al llegar al tope se fuerza una descarga firmada. */
+  private consecutive304 = 0;
 
   constructor(private readonly opts: RevocationPollerOptions) {}
 
@@ -145,8 +150,25 @@ export class RevocationPoller {
         this.consecutiveFailures = 0;
         this.opts.snapshot.markContact(this.now());
         this.opts.onEvent?.({ type: "unchanged", seq: this.opts.snapshot.seq });
+
+        // Un 304 es una CABECERA: sin cuerpo, sin firma Ed25519, sin `seq`. Vale
+        // como prueba de alcanzabilidad, pero no prueba nada sobre el contenido
+        // de la lista, así que no puede sostener el latido para siempre — quien
+        // controle el endpoint podría devolver 304 indefinidamente y mantener
+        // viva una licencia revocada hasta su expiración natural.
+        //
+        // Cada N respuestas 304 seguidas se tira el ETag, de modo que el
+        // siguiente sondeo pide la lista COMPLETA y vuelve a verificar la firma.
+        // Coste: una descarga cada N ciclos. A cambio, la ventana en la que un
+        // servidor tonto puede sostener el latido queda acotada.
+        this.consecutive304 += 1;
+        if (this.consecutive304 >= MAX_304_ANTES_DE_REVALIDAR) {
+          this.consecutive304 = 0;
+          this.lastEtag = null;
+        }
         return;
       }
+      this.consecutive304 = 0;
       if (!res.ok) throw new Error(`revocations HTTP ${res.status}`);
 
       // Remember the ETag so the next poll can send If-None-Match and short-circuit

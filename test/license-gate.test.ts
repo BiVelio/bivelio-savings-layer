@@ -113,3 +113,39 @@ describe("per-feature gating under an active license", () => {
     expect(traces.some((t) => t.startsWith("semantic-cache"))).toBe(true);
   });
 });
+
+/**
+ * El bypass del paywall que tenía el paquete publicado en npm.
+ *
+ * `assertLicensed` sólo exigía licencia si el gate inyectado TENÍA `isActive`.
+ * Si faltaba —y la interfaz lo declaraba OPCIONAL, así que TypeScript lo
+ * bendecía— avisaba una vez por consola y hacía `return`: cualquier objeto con
+ * un `isEntitled` bastaba para ejecutar el producto entero gratis.
+ */
+describe("paywall: un gate sin isActive() no abre el producto", () => {
+  it("rechaza un gate estructural al que le falta isActive()", async () => {
+    // Exactamente la forma que se colaba: sin isActive, y con isEntitled
+    // devolviendo true para que ninguna otra puerta lo pare antes.
+    const gateSinIsActive = { isEntitled: () => true } as unknown as LicenseGate;
+    await expect(layer({ gate: gateSinIsActive }).generate(req)).rejects.toThrow(/isActive/i);
+  });
+
+  it("sigue rechazando cuando el gate sí lo implementa pero devuelve false", async () => {
+    const gateInactivo: LicenseGate = {
+      isEntitled: () => true,
+      isActive: () => false,
+      status: () => "expired",
+    };
+    await expect(layer({ gate: gateInactivo }).generate(req)).rejects.toThrow(/not active/i);
+  });
+
+  it("y deja pasar al que lo implementa y está activo (control positivo)", async () => {
+    const gateActivo: LicenseGate = {
+      isEntitled: () => true,
+      isActive: () => true,
+      status: () => "active",
+    };
+    const res = await layer({ gate: gateActivo }).generate(req);
+    expect(res.report.requestId).toBeTruthy();
+  });
+});

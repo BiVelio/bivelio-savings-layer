@@ -55,7 +55,12 @@ This is the **gold standard** and the only output that should ever back a saving
 claim. For every scenario it sends **two real requests to the same provider/model**:
 
 - **Arm A (naive)** — what a team *without* BV-SALA sends: full uncompressed JSON
-  payload on the wire, all tools transmitted, no cache, no output cap, no schema.
+  payload on the wire, all tools transmitted, no cache, no output cap. It **does**
+  carry the caller's response contract when the request declares one: the contract
+  is the caller's requirement, not something the layer adds, so an arm without it
+  would be solving an easier task. Arm A's answers are validated against that
+  contract too — the layer pays tokens to guarantee validity, so it only counts if
+  the same is asked of the baseline.
 - **Arm B (BV-SALA)** — the same task through the layer.
 
 **Both** arms are priced from the provider's own `usage` — so no modeled baseline
@@ -65,14 +70,42 @@ paired dollar delta.
 ```bash
 pnpm ab            # MOCK: exercises the whole A/B pipeline; dollars labeled ESTIMATED (not a claim)
 
-# LIVE (real provider tokens & cost):
+# LIVE (real provider tokens & cost) — put the credentials in .env.bench once:
+cp .env.bench.example .env.bench     # fill in BVSALA_DEMO_API_KEY
+pnpm ab                              # the script loads .env.bench by itself
+
+# …or pass them inline for a one-off:
 BVSALA_DEMO_BASE_URL=https://ai-gateway.vercel.sh/v1 \
 BVSALA_DEMO_API_KEY=<KEY> BVSALA_DEMO_MODEL=openai/gpt-4o-mini BVSALA_DEMO_KEEP_PREFIX=1 \
-BVSALA_AB_REPS=8 \
 pnpm ab
-# Optional answer-vs-answer quality judge:
-#   BVSALA_JUDGE_BASE_URL=… BVSALA_JUDGE_API_KEY=… BVSALA_JUDGE_MODEL=…
 ```
+
+`.env.bench` is gitignored and read via `--env-file-if-exists`, so the key never
+reaches the shell history. The same file drives `pnpm demo` and `pnpm ablation`.
+
+### Publishing the artifact (`pnpm ab:publish`)
+
+The figure the landing shows **is** the product's commercial claim, so getting it
+onto the site is not a `cp`. That is exactly how a `mode: "MOCK"` artifact came
+to be served in the first place.
+
+```bash
+pnpm ab:publish --dry-run    # decide and print, write nothing
+pnpm ab:publish              # benchmarks/out → apps/web/public/data
+```
+
+`publish-guard.ts` refuses to publish when:
+
+- the artifact is not `LIVE` (override with `--allow-mock`, deliberately);
+- it would **downgrade** an already-published `LIVE` to a MOCK — this one has no
+  override, because losing the only defensible number by accident is silent;
+- the two arms did not talk to the same **served model** (what actually makes a paired A/B comparable — `system_fingerprint` is recorded but never gated on, because through a gateway it is a per-request id);
+- the ledgers don't reconcile — a non-zero residual means double counting;
+- savings exceed 100%, the interval is inverted, or the point estimate falls
+  outside its own interval.
+
+`proven: false` **is** publishable — under-claiming is honest — but it warns, and
+the landing must not present it as demonstrated savings.
 
 **Honesty rules built into the harness** (each closes a specific audited defect):
 
@@ -91,6 +124,13 @@ pnpm ab
    never a fabricated 0-token → 100% saving.
 6. **MOCK never claims dollars.** Without a real endpoint every figure is labeled
    `ESTIMATED — not a savings claim`.
+7. **Same task, same sampling.** Both arms carry the caller's contract and the same
+   `temperature`/`seed`. Quality gates assert the **answer**, never the layer's own
+   ledger — a scenario that scored itself on `compressedInput > 0` was scoring the
+   very number it had inflated.
+8. **Warm knowledge, cold caches.** What the layer learns about a contract persists
+   across reps (a deployed layer is not reborn per request); caches do not, so the
+   headline never gets a pre-warmed hit.
 
 Output: `benchmarks/out/ab-live.json` (per-scenario + aggregate, with CI and
 provenance) and `benchmarks/out/ab-live-trials.csv` (raw paired trials).

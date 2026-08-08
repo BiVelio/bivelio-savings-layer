@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { deriveLicenseStatus } from "./derive";
 
 /**
  * Server data layer for the dashboard. Every query is best-effort: the bound
@@ -44,9 +45,9 @@ export interface AbArtifact {
   reconciliation: { totalDelta: number; ledgerSum: number; residual: number; reconciled: boolean };
   /**
    * Los DOS brazos hablaron con el mismo modelo. Antes se leía
-   * `fingerprintStable`, que comprobaba el `system_fingerprint` del brazo naive y
-   * nunca los comparaba entre sí — y a través de una pasarela ese valor es un id
-   * POR PETICIÓN, así que la señal era ruido.
+   * `fingerprintStable`, que comprobaba el `system_fingerprint` del brazo naive
+   * y nunca los comparaba entre sí — y a través de una pasarela ese valor es un
+   * id POR PETICIÓN, así que la señal era ruido.
    */
   modelStable: boolean;
   aggregate: { savings: CI; wilcoxonP: number; qualityPassRate: number; proven: boolean; headline: string };
@@ -59,7 +60,7 @@ export interface OrgContext {
   org: { name: string; plan: string } | null;
   role: string | null;
   seats: number | null;
-  license: { status: "active" | "grace" | "expired" | "unknown"; expiresAt: string | null } | null;
+  license: { status: "active" | "grace" | "expired" | "revoked"; expiresAt: string | null } | null;
   serviceAccount: { keyPrefix: string; lastUsedAt: string | null } | null;
 }
 
@@ -103,6 +104,33 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
     }
   }
 
+  // Licencia real. Este bloque NO existía: `ctx.license` se declaraba, se
+  // inicializaba a null y no se asignaba nunca, así que la espina daba por
+  // buena la licencia con solo existir la organización — y esa fila la crea el
+  // endpoint de claves de servicio. Pulsar "crear clave" encendía "License
+  // active" sin que hubiera ni una fila en bvsala.licenses.
+  //
+  // La migración 0007 quitó `token` del alcance de authenticated, así que aquí
+  // solo se piden las columnas de estado, que siguen siendo legibles.
+  try {
+    const { data } = await supabase
+      .schema("bvsala")
+      .from("licenses")
+      .select("expires_at, grace_days, revoked")
+      .eq("org_id", userId)
+      .eq("revoked", false)
+      .order("expires_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const lic = data as { expires_at?: string; grace_days?: number; revoked?: boolean } | null;
+    const estado = deriveLicenseStatus(lic, Date.now());
+    if (estado && lic?.expires_at) {
+      ctx.license = { status: estado, expiresAt: lic.expires_at };
+    }
+  } catch {
+    /* sin tabla de licencias: se queda en null, que significa AUSENCIA medida */
+  }
+
   // Service-account key PREFIX only (plaintext key is never stored/reproducible).
   try {
     const { data } = await supabase
@@ -132,6 +160,10 @@ export interface UsageRollup {
   providerCachedInputTokens: number;
   baselineCost: number;
   actualCost: number;
+  /** Subconjunto MEDIDO: baseline reconstruido desde el contador del proveedor. */
+  measuredRequests: number;
+  measuredBaselineCost: number;
+  measuredActualCost: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -144,7 +176,7 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       .schema("bvsala")
       .from("usage_daily")
       .select(
-        "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost",
+        "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost",
       )
       .eq("org_id", orgId)
       .gte("day", since)
@@ -160,6 +192,9 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       providerCachedInputTokens: Number(r["provider_cached_input_tokens"] ?? 0),
       baselineCost: Number(r["baseline_cost"] ?? 0),
       actualCost: Number(r["actual_cost"] ?? 0),
+      measuredRequests: Number(r["measured_requests"] ?? 0),
+      measuredBaselineCost: Number(r["measured_baseline_cost"] ?? 0),
+      measuredActualCost: Number(r["measured_actual_cost"] ?? 0),
     }));
   } catch {
     return [];
@@ -187,7 +222,10 @@ export async function activationSteps(
 ): Promise<StepState[]> {
   const t = await getTranslations("dashboard");
   const installed = ctx.serviceAccount != null;
-  const licensed = ctx.license?.status === "active" || ctx.org != null;
+  // Sin `|| ctx.org != null`. Ese fallback era el que encendía el paso: la
+  // organización la crea el endpoint de claves, así que no prueba nada sobre la
+  // licencia. Una licencia en periodo de gracia SÍ cuenta: sigue vigente.
+  const licensed = ctx.license?.status === "active" || ctx.license?.status === "grace";
   const reporting = usage.length > 0;
   const raw: Array<[string, string, boolean]> = [
     ["Account created", t("overview.steps.accountCreated"), hasUser],

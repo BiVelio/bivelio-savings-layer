@@ -32,6 +32,22 @@ export interface SemanticRecord {
   authorizationScope: string;
   knowledgeEpoch: string;
   contractId: string | null;
+  /**
+   * Identidad COMPLETA de la petición que produjo esta respuesta.
+   *
+   * Antes solo se guardaban tenant, scope, epoch y contrato: la clave exacta
+   * declara necesarios otros cinco campos, y la semántica los ignoraba. El peor
+   * era `structuredDataHash` — dos preguntas redactadas igual pero con datos
+   * ADJUNTOS distintos casan por embedding, así que se servía la respuesta
+   * calculada sobre la tabla de otro. `model` y `systemPromptHash` van detrás:
+   * un modelo o un system prompt distintos son otra respuesta.
+   */
+  model: string;
+  systemPromptHash: string;
+  structuredDataHash: string;
+  locale: string;
+  schemaVersion: string;
+  safetyPolicyVersion: string;
   storedAtMs: number;
 }
 
@@ -178,6 +194,15 @@ export class InMemorySemanticCache {
       if (record.authorizationScope !== c.authorizationScope) continue;
       if (record.knowledgeEpoch !== c.knowledgeEpoch) continue;
       if (record.contractId !== c.contractId) continue;
+      // Los cinco campos que la clave exacta declara necesarios y este filtro
+      // ignoraba. Sin ellos, el embedding decide solo — y el embedding no ve el
+      // modelo, ni el system prompt, ni los datos adjuntos.
+      if (record.model !== c.model) continue;
+      if (record.systemPromptHash !== c.systemPromptHash) continue;
+      if (record.structuredDataHash !== c.structuredDataHash) continue;
+      if (record.locale !== c.locale) continue;
+      if (record.schemaVersion !== c.schemaVersion) continue;
+      if (record.safetyPolicyVersion !== c.safetyPolicyVersion) continue;
       if (
         this.ttlMs != null &&
         this.now() - record.storedAtMs > this.ttlMs
@@ -223,6 +248,12 @@ export class InMemorySemanticCache {
       authorizationScope: c.authorizationScope,
       knowledgeEpoch: c.knowledgeEpoch,
       contractId: c.contractId,
+      model: c.model,
+      systemPromptHash: c.systemPromptHash,
+      structuredDataHash: c.structuredDataHash,
+      locale: c.locale,
+      schemaVersion: c.schemaVersion,
+      safetyPolicyVersion: c.safetyPolicyVersion,
       storedAtMs: this.now(),
     });
   }

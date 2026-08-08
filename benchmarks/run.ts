@@ -39,7 +39,16 @@ const liveModel = process.env.BVSALA_DEMO_MODEL;
 // it for a direct provider endpoint (e.g. api.openai.com).
 const keepPrefix = !!process.env.BVSALA_DEMO_KEEP_PREFIX;
 const provider: Provider = baseUrl
-  ? new OpenAICompatibleProvider({ baseUrl, ...(apiKey ? { apiKey } : {}), stripProviderPrefix: !keepPrefix })
+  ? new OpenAICompatibleProvider({
+      baseUrl,
+      ...(apiKey ? { apiKey } : {}),
+      stripProviderPrefix: !keepPrefix,
+      // Sin esto, un proveedor que no devuelva `usage` deja el coste real en 0 y
+      // el informe imprime igualmente "(real provider tokens & cost)": un 100%
+      // de ahorro fabricado con la etiqueta de medido. `ab-live.ts` ya lo exigía;
+      // este harness no, y es el que dice "real" en la misma línea.
+      requireUsage: true,
+    })
   : createMockProvider();
 const mode = baseUrl ? "LIVE" : "MOCK";
 
