@@ -34,10 +34,10 @@
   },
   "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
   "config": {
-    "reps": 6,
-    "minReps": 6,
-    "maxReps": 12,
-    "ciTarget": 0.03,
+    "reps": 30,
+    "minReps": 30,
+    "maxReps": 40,
+    "ciTarget": 0.02,
     "qualityFloor": 0.999,
     "seed": 1234567
   },
@@ -47,11 +47,11 @@
       "lever": "avoided_calls (deterministic resolver)",
       "ledger": "avoided_calls",
       "kind": "resolver",
-      "reps": 3,
+      "reps": 15,
       "armA": {
         "meanInputTokens": 19,
-        "meanOutputTokens": 76.33333333333333,
-        "meanCost": 0.00004865
+        "meanOutputTokens": 76.73333333333333,
+        "meanCost": 0.000048890000000000015
       },
       "armB": {
         "meanInputTokens": 0,
@@ -60,18 +60,18 @@
       },
       "measured": {
         "inputTokenDeltaMean": 19,
-        "outputTokenDeltaMean": 76.33333333333333,
+        "outputTokenDeltaMean": 76.73333333333333,
         "savings": {
           "point": 1,
           "lower": 1,
           "upper": 1
         },
-        "wilcoxonP": 0.08678414473808105
+        "wilcoxonP": 0.00012644923364391047
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 3,
-        "total": 3
+        "passed": 15,
+        "total": 15
       },
       "naiveContractValid": {
         "valid": 0,
@@ -83,9 +83,21 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_1zukobie8r",
-        "fp_1im32g78e1",
-        "fp_303mw3wgvm"
+        "fp_8n4ayhvit2",
+        "fp_15wkmyxyse",
+        "fp_qo2b4yjaxp",
+        "fp_6g9b8xt8km",
+        "fp_41ziyh8svk",
+        "fp_wyqhz7qoyj",
+        "fp_p5bzfstt07",
+        "fp_w0tsve6s2g",
+        "fp_xq1njisu79",
+        "fp_mr3ka6bq0p",
+        "fp_h7nrswwarz",
+        "fp_peavtz7kde",
+        "fp_58ux0jq06w",
+        "fp_5rx9b9ue1q",
+        "fp_m2fz2pdocu"
       ],
       "attribution": {
         "avoidedCall": true,
@@ -99,35 +111,35 @@
       "lever": "baseline (populates cache)",
       "ledger": "none",
       "kind": "ran",
-      "reps": 6,
+      "reps": 30,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18,
-        "meanCost": 0.000021599999999999996
+        "meanOutputTokens": 18.1,
+        "meanCost": 0.00002165999999999999
       },
       "armB": {
-        "meanInputTokens": 99,
-        "meanOutputTokens": 33.666666666666664,
-        "meanCost": 0.000035050000000000005
+        "meanInputTokens": 72,
+        "meanOutputTokens": 18.1,
+        "meanCost": 0.00002165999999999999
       },
       "measured": {
-        "inputTokenDeltaMean": -27,
-        "outputTokenDeltaMean": -15.666666666666664,
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": 0,
         "savings": {
-          "point": -0.6226851851851856,
-          "lower": -0.6319444444444451,
-          "upper": -0.6134259259259263
+          "point": 0,
+          "lower": -0.008333333333333304,
+          "upper": 0.008264462809917439
         },
-        "wilcoxonP": 0.9913259997113631
+        "wilcoxonP": 0.6813240418756354
       },
       "quality": {
         "gate": "judge",
-        "passed": 6,
-        "total": 6
+        "passed": 30,
+        "total": 30
       },
       "naiveContractValid": {
-        "valid": 6,
-        "total": 6
+        "valid": 30,
+        "total": 30
       },
       "proven": false,
       "modelStable": true,
@@ -135,12 +147,36 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_ov73ioq62b",
-        "fp_lur1o7g0su",
-        "fp_q2smi66adr",
-        "fp_6a990mz7v1",
-        "fp_ah3hn13jna",
-        "fp_0v0kf7h7kx"
+        "fp_hw2gfya7m9",
+        "fp_rpzk2noksh",
+        "fp_b8ufzrc2uk",
+        "fp_h7sj7mb37o",
+        "fp_bgtnbn8k7l",
+        "fp_mbjqksncf2",
+        "fp_h9wfz4oajd",
+        "fp_lvwfo4c41p",
+        "fp_d3s2iilt3e",
+        "fp_uz279xnrfc",
+        "fp_jho5amc6as",
+        "fp_lolrnkq3mz",
+        "fp_d5i3u0oi4a",
+        "fp_c24i3gwah1",
+        "fp_ox8mavb3ue",
+        "fp_zncpgkj0a3",
+        "fp_8lp9g0alat",
+        "fp_p9ohvljlel",
+        "fp_844wikyf8e",
+        "fp_1x7x6qjt2a",
+        "fp_4ytcj63wvp",
+        "fp_p7nyvvk326",
+        "fp_nj9u90pi3n",
+        "fp_u1150arwt4",
+        "fp_l4m3n6whxa",
+        "fp_92xmm9r5kg",
+        "fp_ed3ye8eilu",
+        "fp_ylu5obhe47",
+        "fp_blnt15l8oq",
+        "fp_sumnhl5f6k"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -154,35 +190,35 @@
       "lever": "avoided_calls (exact cache hit)",
       "ledger": "avoided_calls",
       "kind": "cache",
-      "reps": 3,
+      "reps": 15,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18,
-        "meanCost": 0.000021599999999999996
+        "meanOutputTokens": 18.2,
+        "meanCost": 0.00002171999999999999
       },
       "armB": {
-        "meanInputTokens": 99,
-        "meanOutputTokens": 33.666666666666664,
-        "meanCost": 0.000035050000000000005
+        "meanInputTokens": 72,
+        "meanOutputTokens": 18,
+        "meanCost": 0.00002159999999999999
       },
       "measured": {
-        "inputTokenDeltaMean": -27,
-        "outputTokenDeltaMean": -15.666666666666664,
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": 0.1999999999999993,
         "savings": {
-          "point": -0.6226851851851856,
-          "lower": -0.6319444444444449,
-          "upper": -0.604166666666667
+          "point": 0.0055248618784530246,
+          "lower": 0,
+          "upper": 0.01639344262295106
         },
-        "wilcoxonP": 0.9716203431265099
+        "wilcoxonP": 0.49999999949999996
       },
       "quality": {
         "gate": "judge",
-        "passed": 3,
-        "total": 3
+        "passed": 15,
+        "total": 15
       },
       "naiveContractValid": {
-        "valid": 3,
-        "total": 3
+        "valid": 15,
+        "total": 15
       },
       "proven": false,
       "modelStable": true,
@@ -190,9 +226,21 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_7k77namypk",
-        "fp_kfauadiqii",
-        "fp_cs2rffhvf5"
+        "fp_8etoqyudxm",
+        "fp_xncxbqwe98",
+        "fp_ipu61lh268",
+        "fp_3rwt76rh7v",
+        "fp_gwdbnk7j1s",
+        "fp_5k06t42z0f",
+        "fp_m2nkjk6ycm",
+        "fp_nns5eoyjim",
+        "fp_0w25artqg5",
+        "fp_c2wrtykj8a",
+        "fp_v5xdf8xam4",
+        "fp_lopyjf031r",
+        "fp_4zomnpthq1",
+        "fp_x2y09fq1gd",
+        "fp_2vrqwtor3t"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -201,9 +249,9 @@
         "providerCachedInputTokens": 0
       },
       "amortization": {
-        "coldMissCost": 0.00003465,
+        "coldMissCost": 0.000021599999999999996,
         "hitCost": 0,
-        "breakEvenK": 2
+        "breakEvenK": 1
       }
     },
     {
@@ -211,35 +259,35 @@
       "lever": "avoided retrieval (NO_RETRIEVAL routing)",
       "ledger": "eliminated_tokens",
       "kind": "ran",
-      "reps": 6,
+      "reps": 30,
       "armA": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25.166666666666668,
-        "meanCost": 0.000025
+        "meanOutputTokens": 25.5,
+        "meanCost": 0.000025200000000000013
       },
       "armB": {
-        "meanInputTokens": 93,
-        "meanOutputTokens": 37,
-        "meanCost": 0.00003614999999999999
+        "meanInputTokens": 66,
+        "meanOutputTokens": 25.633333333333333,
+        "meanCost": 0.000025280000000000012
       },
       "measured": {
-        "inputTokenDeltaMean": -27,
-        "outputTokenDeltaMean": -11.833333333333332,
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -0.13333333333333286,
         "savings": {
-          "point": -0.4459999999999995,
-          "lower": -0.4518072289156625,
-          "upper": -0.4345238095238093
+          "point": -0.0031746031746031633,
+          "lower": -0.009538950715421546,
+          "upper": 0.003162055335968361
         },
-        "wilcoxonP": 0.9927462258672058
+        "wilcoxonP": 0.8483568674602942
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 6,
-        "total": 6
+        "passed": 30,
+        "total": 30
       },
       "naiveContractValid": {
-        "valid": 6,
-        "total": 6
+        "valid": 30,
+        "total": 30
       },
       "proven": false,
       "modelStable": true,
@@ -247,12 +295,36 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_3gmqy30xs3",
-        "fp_sex9lydh5c",
-        "fp_pk2a65x2r6",
-        "fp_nw8nzg2wzz",
-        "fp_piw6kr5u71",
-        "fp_hxdxrvdmyi"
+        "fp_9ws7or5zlk",
+        "fp_s6qpj2bbaa",
+        "fp_bc3mynd2mg",
+        "fp_ddh88na0is",
+        "fp_9wxfdppzic",
+        "fp_8hfqhy8ioj",
+        "fp_jmywg76qx7",
+        "fp_g233r2tm9y",
+        "fp_fzdjh73nhg",
+        "fp_gdj7thw13v",
+        "fp_er7mn4vo22",
+        "fp_e5aceaz9nk",
+        "fp_sh9s5b3b3u",
+        "fp_j0dlxdasq7",
+        "fp_z0w3sgassm",
+        "fp_qw2wzj17se",
+        "fp_ri3evzbmp1",
+        "fp_jmhxv47bye",
+        "fp_qxqm765juv",
+        "fp_42uwqexrc7",
+        "fp_c610d9ap19",
+        "fp_g2bmmi40vl",
+        "fp_idm94i7sqz",
+        "fp_h7eiwiioue",
+        "fp_zx0fh04hoq",
+        "fp_kk0ybzjbiz",
+        "fp_58t2uoq06x",
+        "fp_k2biz62dag",
+        "fp_h28vmkm9u2",
+        "fp_s6smwv17j7"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -266,35 +338,35 @@
       "lever": "fewer tool tokens (tool selector)",
       "ledger": "eliminated_tokens",
       "kind": "ran",
-      "reps": 12,
+      "reps": 40,
       "armA": {
         "meanInputTokens": 300,
         "meanOutputTokens": 30,
-        "meanCost": 0.000063
+        "meanCost": 0.00006299999999999999
       },
       "armB": {
-        "meanInputTokens": 148,
-        "meanOutputTokens": 43.5,
-        "meanCost": 0.00004829999999999999
+        "meanInputTokens": 129.7,
+        "meanOutputTokens": 41.825,
+        "meanCost": 0.00004455
       },
       "measured": {
-        "inputTokenDeltaMean": 152,
-        "outputTokenDeltaMean": -13.5,
+        "inputTokenDeltaMean": 170.3,
+        "outputTokenDeltaMean": -11.825000000000003,
         "savings": {
-          "point": 0.2333333333333335,
-          "lower": 0.19523809523809554,
-          "upper": 0.2761904761904763
+          "point": 0.2928571428571428,
+          "lower": 0.25857142857142856,
+          "upper": 0.3193452380952383
         },
-        "wilcoxonP": 0.0009886474308042903
+        "wilcoxonP": 1.9497622516517765e-8
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 12,
-        "total": 12
+        "passed": 40,
+        "total": 40
       },
       "naiveContractValid": {
         "valid": 0,
-        "total": 12
+        "total": 40
       },
       "proven": true,
       "modelStable": true,
@@ -302,18 +374,46 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_mw34xhw014",
-        "fp_j31m4i3gmk",
-        "fp_egfhjh8duk",
-        "fp_6976rianpi",
-        "fp_63n67zsxlh",
-        "fp_mp5rj2lgqm",
-        "fp_5rlxh5pf4d",
-        "fp_5c163ph3tt",
-        "fp_iw9aauh2tk",
-        "fp_1ns7i58zud",
-        "fp_394s6kgkq3",
-        "fp_92fjqnwl1n"
+        "fp_y0jkayishd",
+        "fp_g4kabgrihy",
+        "fp_z0ijp0thdw",
+        "fp_193k27ur57",
+        "fp_bl7qfr2o4h",
+        "fp_72o6iqoxa1",
+        "fp_jfswnobp6l",
+        "fp_2tjto3fvq8",
+        "fp_uqw3enq1re",
+        "fp_4hs3zn6g5m",
+        "fp_ftd2q12zng",
+        "fp_rgd9g3wmfg",
+        "fp_fj6nclr4p7",
+        "fp_dp1chcyy1w",
+        "fp_6cyy16ocvx",
+        "fp_2tbwswfk7m",
+        "fp_57dy3zr98s",
+        "fp_m1qzzylyan",
+        "fp_7ds6lydt1w",
+        "fp_0t7ao7cofg",
+        "fp_ap70ct2gse",
+        "fp_p3iakcav3u",
+        "fp_eb0w8cknbi",
+        "fp_q2xi9cu1a8",
+        "fp_a33z7qczw8",
+        "fp_n9cqb7qhk7",
+        "fp_gzw7ep39ii",
+        "fp_bzgcylmd9c",
+        "fp_ptkulqpvxy",
+        "fp_6olwax7w5i",
+        "fp_yv75lblwdw",
+        "fp_ywjddkc3cm",
+        "fp_ufugz1ktvl",
+        "fp_s4wrwnw26m",
+        "fp_yl6kkrp3zl",
+        "fp_21o2h5zj5i",
+        "fp_kh1s1orpbj",
+        "fp_4mdjh3bmv4",
+        "fp_7vztluficp",
+        "fp_89geobsnx8"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -327,48 +427,82 @@
       "lever": "compressed_tokens (TOON/CSV format selector)",
       "ledger": "compressed_tokens",
       "kind": "ran",
-      "reps": 6,
+      "reps": 40,
       "armA": {
         "meanInputTokens": 1212,
-        "meanOutputTokens": 289.8333333333333,
-        "meanCost": 0.00031729999999999996
+        "meanOutputTokens": 346.775,
+        "meanCost": 0.0003514650000000001
       },
       "armB": {
-        "meanInputTokens": 808,
-        "meanOutputTokens": 164.66666666666666,
-        "meanCost": 0.00021999999999999995
+        "meanInputTokens": 780,
+        "meanOutputTokens": 333.325,
+        "meanCost": 0.00031699500000000004
       },
       "measured": {
-        "inputTokenDeltaMean": 404,
-        "outputTokenDeltaMean": 125.16666666666666,
+        "inputTokenDeltaMean": 432,
+        "outputTokenDeltaMean": 13.449999999999989,
         "savings": {
-          "point": 0.3066498581783801,
-          "lower": 0.2973835354179961,
-          "upper": 0.3170807453416149
+          "point": 0.09807519952200083,
+          "lower": -0.009991423670668853,
+          "upper": 0.19926122686145942
         },
-        "wilcoxonP": 0.01801578027670625
+        "wilcoxonP": 0.05786914427134637
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 6,
-        "total": 6
+        "passed": 28,
+        "total": 40
       },
       "naiveContractValid": {
-        "valid": 6,
-        "total": 6
+        "valid": 39,
+        "total": 40
       },
-      "proven": true,
+      "proven": false,
       "modelStable": true,
       "servedModels": [
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_a1ienvdcsa",
-        "fp_r4iu7mfxrc",
-        "fp_se84ggz86u",
-        "fp_7gvjgnjum6",
-        "fp_u6g2dho18i",
-        "fp_3rs7sq00p3"
+        "fp_3xx8ruv9ws",
+        "fp_nidq6nkvky",
+        "fp_ytbv1py44e",
+        "fp_rp9e9as7bz",
+        "fp_yv16gctizo",
+        "fp_wi1wt8v3ou",
+        "fp_hksir49s05",
+        "fp_9y1qsqphpb",
+        "fp_xxpuxasadw",
+        "fp_nfhy87vqn6",
+        "fp_dtxls7eu40",
+        "fp_upye5h9k7w",
+        "fp_xe0jfhwowk",
+        "fp_1pg9i0hrnp",
+        "fp_mwqopsbvzp",
+        "fp_su7w089oph",
+        "fp_o83wlrjwa6",
+        "fp_0m13tb17bj",
+        "fp_or8hmvqxlc",
+        "fp_zizhw6fcru",
+        "fp_6m0aqh5l76",
+        "fp_a6smr1y7hb",
+        "fp_4cfx4xbj0f",
+        "fp_m5vml38ycj",
+        "fp_2rwwqayilu",
+        "fp_b2mcpq22gi",
+        "fp_azxsa1jf7x",
+        "fp_okguxdszlc",
+        "fp_9tf5lsdgvm",
+        "fp_usx2k16jrz",
+        "fp_44ozyl3l55",
+        "fp_gqmk1jrh9h",
+        "fp_2mp9qn9ac1",
+        "fp_sd6zvsgdku",
+        "fp_g64uv1rq7m",
+        "fp_grpvmwgy5q",
+        "fp_vv7716vnnk",
+        "fp_vzhvx15aep",
+        "fp_y01svwlubr",
+        "fp_4wx7j2ngl5"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -382,54 +516,82 @@
       "lever": "output restriction (schema + maxOutputTokens)",
       "ledger": "output_restriction",
       "kind": "ran",
-      "reps": 12,
+      "reps": 40,
       "armA": {
         "meanInputTokens": 60,
-        "meanOutputTokens": 63.75,
-        "meanCost": 0.00004725
+        "meanOutputTokens": 63.725,
+        "meanCost": 0.00004723499999999999
       },
       "armB": {
-        "meanInputTokens": 87,
-        "meanOutputTokens": 48.25,
-        "meanCost": 0.00004199999999999999
+        "meanInputTokens": 60,
+        "meanOutputTokens": 67.6,
+        "meanCost": 0.00004955999999999998
       },
       "measured": {
-        "inputTokenDeltaMean": -27,
-        "outputTokenDeltaMean": 15.5,
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -3.874999999999993,
         "savings": {
-          "point": 0.11111111111111127,
-          "lower": 0.0034482758620693055,
-          "upper": 0.205252918287938
+          "point": -0.04922197523023164,
+          "lower": -0.13059092393078675,
+          "upper": 0.027531355154481796
         },
-        "wilcoxonP": 0.02190242858304292
+        "wilcoxonP": 0.8694786843544684
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 12,
-        "total": 12
+        "passed": 40,
+        "total": 40
       },
       "naiveContractValid": {
-        "valid": 12,
-        "total": 12
+        "valid": 39,
+        "total": 40
       },
-      "proven": true,
+      "proven": false,
       "modelStable": true,
       "servedModels": [
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_4tldr1urri",
-        "fp_owfif1l8q4",
-        "fp_ciwua4u8xd",
-        "fp_bfone1odqu",
-        "fp_ieo5amvyzs",
-        "fp_umznqblkkt",
-        "fp_3nb60uytut",
-        "fp_chuvl4flje",
-        "fp_8wcbeuv3w3",
-        "fp_c88a115umw",
-        "fp_7sdd0bcnn3",
-        "fp_qotj24t396"
+        "fp_idj5rfhsg9",
+        "fp_fhdcu4hgfz",
+        "fp_xtnr9zooho",
+        "fp_8iwhiqke05",
+        "fp_d8fz74y7ii",
+        "fp_u9joypmgd8",
+        "fp_rzwbsk6k1h",
+        "fp_lfk2i17qb4",
+        "fp_i57yr59rg9",
+        "fp_id02p0r9zk",
+        "fp_b55wpuajz7",
+        "fp_jhrvwjh6ei",
+        "fp_pj747mjs6g",
+        "fp_dbin5t8ti2",
+        "fp_gs18d7vn3w",
+        "fp_9s3a84v8q6",
+        "fp_op0eij3szy",
+        "fp_ppp2bpvmlr",
+        "fp_undqwp24hw",
+        "fp_n2zv858e5l",
+        "fp_stj9o32v54",
+        "fp_0oyqq6sgbf",
+        "fp_kohqo5svbt",
+        "fp_oq5rbrardt",
+        "fp_v206ave8s8",
+        "fp_zqs5igpix0",
+        "fp_52jaencsps",
+        "fp_l8k22f74yl",
+        "fp_g2t4bni99r",
+        "fp_7youimbpbm",
+        "fp_clw65yvqxu",
+        "fp_xvgv3yn4gy",
+        "fp_86k5hyiwig",
+        "fp_l6hsehulew",
+        "fp_aodxlld5yr",
+        "fp_u78oqy352e",
+        "fp_57pad0aa0h",
+        "fp_ceo6dnhp1b",
+        "fp_n5oktg6sgc",
+        "fp_80gaooat47"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -447,12 +609,12 @@
         "FAQ (repeat ask)"
       ],
       "savings": {
-        "point": 0.5010676156583629,
-        "lower": -0.12704523580365779,
-        "upper": 0.8695652173913043
+        "point": 0.6940943209177173,
+        "lower": 0.5307917888563052,
+        "upper": 0.8194583751253762
       },
-      "deltaCost": 0.00010559999999999994,
-      "proven": false
+      "deltaCost": 0.0007351500000000006,
+      "proven": true
     },
     {
       "ledger": "eliminated_tokens",
@@ -461,11 +623,11 @@
         "Tool-heavy request"
       ],
       "savings": {
-        "point": 0.12086092715231822,
-        "lower": 0.005171042163882644,
-        "upper": 0.20674985819625658
+        "point": 0.2245421245421252,
+        "lower": 0.18696064485538233,
+        "upper": 0.25663413799007073
       },
-      "deltaCost": 0.00010950000000000033,
+      "deltaCost": 0.0007356000000000025,
       "proven": true
     },
     {
@@ -474,12 +636,12 @@
         "Large uniform table"
       ],
       "savings": {
-        "point": 0.3066498581783801,
-        "lower": 0.2973835354179961,
-        "upper": 0.3170807453416149
+        "point": 0.09807519952200083,
+        "lower": -0.009991423670668853,
+        "upper": 0.19926122686145942
       },
-      "deltaCost": 0.0005838,
-      "proven": true
+      "deltaCost": 0.0013788000000000012,
+      "proven": false
     },
     {
       "ledger": "output_restriction",
@@ -487,31 +649,31 @@
         "Constrained structured answer"
       ],
       "savings": {
-        "point": 0.11111111111111127,
-        "lower": 0.0034482758620693055,
-        "upper": 0.205252918287938
+        "point": -0.04922197523023164,
+        "lower": -0.13059092393078675,
+        "upper": 0.027531355154481796
       },
-      "deltaCost": 0.00006300000000000012,
-      "proven": true
+      "deltaCost": -0.00009299999999999955,
+      "proven": false
     }
   ],
   "reconciliation": {
-    "totalDelta": 0.0007811999999999988,
-    "ledgerSum": 0.0007812000000000003,
-    "residual": -1.5178830414797062e-18,
+    "totalDelta": 0.002756549999999993,
+    "ledgerSum": 0.002756550000000005,
+    "residual": -1.214306433183765e-17,
     "reconciled": true
   },
   "modelStable": true,
   "aggregate": {
     "savings": {
-      "point": 0.21016101045155533,
-      "lower": 0.12314275525971707,
-      "upper": 0.2665344745362812
+      "point": 0.1316847362650746,
+      "lower": 0.05702371511166893,
+      "upper": 0.20161092211146991
     },
-    "wilcoxonP": 0.009757850102577348,
-    "qualityPassRate": 1,
-    "proven": true,
-    "headline": "verified ≥ 12.3% (95% CI lower bound)"
+    "wilcoxonP": 5.56179786670441e-8,
+    "qualityPassRate": 0.9428571428571428,
+    "proven": false,
+    "headline": "not proven"
   },
   "honesty": [
     "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
