@@ -34,9 +34,9 @@
   },
   "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
   "config": {
-    "reps": 30,
-    "minReps": 30,
-    "maxReps": 40,
+    "reps": 20,
+    "minReps": 20,
+    "maxReps": 30,
     "ciTarget": 0.02,
     "qualityFloor": 0.999,
     "seed": 1234567
@@ -47,11 +47,11 @@
       "lever": "avoided_calls (deterministic resolver)",
       "ledger": "avoided_calls",
       "kind": "resolver",
-      "reps": 15,
+      "reps": 10,
       "armA": {
         "meanInputTokens": 19,
-        "meanOutputTokens": 76.73333333333333,
-        "meanCost": 0.000048890000000000015
+        "meanOutputTokens": 76.6,
+        "meanCost": 0.00004881000000000001
       },
       "armB": {
         "meanInputTokens": 0,
@@ -60,18 +60,18 @@
       },
       "measured": {
         "inputTokenDeltaMean": 19,
-        "outputTokenDeltaMean": 76.73333333333333,
+        "outputTokenDeltaMean": 76.6,
         "savings": {
           "point": 1,
           "lower": 1,
           "upper": 1
         },
-        "wilcoxonP": 0.00012644923364391047
+        "wilcoxonP": 0.0017623175315095718
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 15,
-        "total": 15
+        "passed": 10,
+        "total": 10
       },
       "naiveContractValid": {
         "valid": 0,
@@ -83,21 +83,16 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_8n4ayhvit2",
-        "fp_15wkmyxyse",
-        "fp_qo2b4yjaxp",
-        "fp_6g9b8xt8km",
-        "fp_41ziyh8svk",
-        "fp_wyqhz7qoyj",
-        "fp_p5bzfstt07",
-        "fp_w0tsve6s2g",
-        "fp_xq1njisu79",
-        "fp_mr3ka6bq0p",
-        "fp_h7nrswwarz",
-        "fp_peavtz7kde",
-        "fp_58ux0jq06w",
-        "fp_5rx9b9ue1q",
-        "fp_m2fz2pdocu"
+        "fp_zwi5gathpd",
+        "fp_2awqvu197d",
+        "fp_2rf7k056qo",
+        "fp_lnighjlnlm",
+        "fp_3uzz5y8wr0",
+        "fp_styg111com",
+        "fp_a2q9ojrc5j",
+        "fp_pbo2zl9810",
+        "fp_l2v8qw7p21",
+        "fp_x0ki8dk0dl"
       ],
       "attribution": {
         "avoidedCall": true,
@@ -114,23 +109,23 @@
       "reps": 30,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.1,
-        "meanCost": 0.00002165999999999999
+        "meanOutputTokens": 19.2,
+        "meanCost": 0.000022319999999999996
       },
       "armB": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.1,
-        "meanCost": 0.00002165999999999999
+        "meanOutputTokens": 18.6,
+        "meanCost": 0.000021959999999999993
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": 0.5999999999999979,
         "savings": {
-          "point": 0,
-          "lower": -0.008333333333333304,
-          "upper": 0.008264462809917439
+          "point": 0.016129032258064724,
+          "lower": -0.005420054200542035,
+          "upper": 0.034759358288770525
         },
-        "wilcoxonP": 0.6813240418756354
+        "wilcoxonP": 0.07070129160337202
       },
       "quality": {
         "gate": "judge",
@@ -147,36 +142,36 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_hw2gfya7m9",
-        "fp_rpzk2noksh",
-        "fp_b8ufzrc2uk",
-        "fp_h7sj7mb37o",
-        "fp_bgtnbn8k7l",
-        "fp_mbjqksncf2",
-        "fp_h9wfz4oajd",
-        "fp_lvwfo4c41p",
-        "fp_d3s2iilt3e",
-        "fp_uz279xnrfc",
-        "fp_jho5amc6as",
-        "fp_lolrnkq3mz",
-        "fp_d5i3u0oi4a",
-        "fp_c24i3gwah1",
-        "fp_ox8mavb3ue",
-        "fp_zncpgkj0a3",
-        "fp_8lp9g0alat",
-        "fp_p9ohvljlel",
-        "fp_844wikyf8e",
-        "fp_1x7x6qjt2a",
-        "fp_4ytcj63wvp",
-        "fp_p7nyvvk326",
-        "fp_nj9u90pi3n",
-        "fp_u1150arwt4",
-        "fp_l4m3n6whxa",
-        "fp_92xmm9r5kg",
-        "fp_ed3ye8eilu",
-        "fp_ylu5obhe47",
-        "fp_blnt15l8oq",
-        "fp_sumnhl5f6k"
+        "fp_flx5ofimq6",
+        "fp_582prqzfso",
+        "fp_yjf9a453kh",
+        "fp_mqftpitnrj",
+        "fp_3xsbzty7hp",
+        "fp_g135bicugv",
+        "fp_2qwbodbgv1",
+        "fp_0u5ib4a3e0",
+        "fp_9y8ptqighz",
+        "fp_svl0dm6wle",
+        "fp_eof1z6e6ul",
+        "fp_hyfou48bj6",
+        "fp_m54sucsl9y",
+        "fp_7a8m2yfluk",
+        "fp_v7qsqouqpg",
+        "fp_fu0i26eker",
+        "fp_sn2dtdx085",
+        "fp_jgibwykqgz",
+        "fp_4ps1mxyrrz",
+        "fp_7y1ykjfesp",
+        "fp_do8eldqldt",
+        "fp_hht5gzwujd",
+        "fp_rulv0adx37",
+        "fp_2qu6kvcd8i",
+        "fp_ehhpup537m",
+        "fp_rco2k38qzo",
+        "fp_tbjmtkjara",
+        "fp_h1uo3tppx4",
+        "fp_3ckt93oc5z",
+        "fp_etwnzyb38x"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -190,35 +185,35 @@
       "lever": "avoided_calls (exact cache hit)",
       "ledger": "avoided_calls",
       "kind": "cache",
-      "reps": 15,
+      "reps": 25,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.2,
-        "meanCost": 0.00002171999999999999
+        "meanOutputTokens": 18.96,
+        "meanCost": 0.000022175999999999996
       },
       "armB": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18,
-        "meanCost": 0.00002159999999999999
+        "meanOutputTokens": 18.84,
+        "meanCost": 0.000022103999999999994
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.1999999999999993,
+        "outputTokenDeltaMean": 0.120000000000001,
         "savings": {
-          "point": 0.0055248618784530246,
-          "lower": 0,
-          "upper": 0.01639344262295106
+          "point": 0.0032467532467532756,
+          "lower": -0.01639344262295106,
+          "upper": 0.022435897435898022
         },
-        "wilcoxonP": 0.49999999949999996
+        "wilcoxonP": 0.39486297182734653
       },
       "quality": {
         "gate": "judge",
-        "passed": 15,
-        "total": 15
+        "passed": 25,
+        "total": 25
       },
       "naiveContractValid": {
-        "valid": 15,
-        "total": 15
+        "valid": 25,
+        "total": 25
       },
       "proven": false,
       "modelStable": true,
@@ -226,21 +221,31 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_8etoqyudxm",
-        "fp_xncxbqwe98",
-        "fp_ipu61lh268",
-        "fp_3rwt76rh7v",
-        "fp_gwdbnk7j1s",
-        "fp_5k06t42z0f",
-        "fp_m2nkjk6ycm",
-        "fp_nns5eoyjim",
-        "fp_0w25artqg5",
-        "fp_c2wrtykj8a",
-        "fp_v5xdf8xam4",
-        "fp_lopyjf031r",
-        "fp_4zomnpthq1",
-        "fp_x2y09fq1gd",
-        "fp_2vrqwtor3t"
+        "fp_t0eaapk2ji",
+        "fp_jfjpojkmrg",
+        "fp_etra6nwe1j",
+        "fp_lsdcb9uqz2",
+        "fp_b5m2dy9sdd",
+        "fp_o7zw8jnibu",
+        "fp_k0sgm5q3sz",
+        "fp_v5bo2wrbpv",
+        "fp_7r01r6sxfh",
+        "fp_imbbw0nhn3",
+        "fp_fgw29mnfrs",
+        "fp_iju7gvmf8s",
+        "fp_b6s2z9jgkx",
+        "fp_ne81ob7c6z",
+        "fp_j3gbn1wgh6",
+        "fp_jhdiagylmf",
+        "fp_dvstgsmoej",
+        "fp_x2iyjoi8wt",
+        "fp_hgf46f5731",
+        "fp_k6b55x76jy",
+        "fp_8i9415f7bj",
+        "fp_habwnem67j",
+        "fp_83zyt25x88",
+        "fp_krj24ace0w",
+        "fp_7kuwt8juz3"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -259,26 +264,253 @@
       "lever": "avoided retrieval (NO_RETRIEVAL routing)",
       "ledger": "eliminated_tokens",
       "kind": "ran",
-      "reps": 30,
+      "reps": 20,
       "armA": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25.5,
-        "meanCost": 0.000025200000000000013
+        "meanOutputTokens": 25.15,
+        "meanCost": 0.000024990000000000006
       },
       "armB": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25.633333333333333,
-        "meanCost": 0.000025280000000000012
+        "meanOutputTokens": 25.15,
+        "meanCost": 0.000024990000000000006
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -0.13333333333333286,
+        "outputTokenDeltaMean": 0,
         "savings": {
-          "point": -0.0031746031746031633,
-          "lower": -0.009538950715421546,
-          "upper": 0.003162055335968361
+          "point": 0,
+          "lower": -0.006016847172081841,
+          "upper": 0.005980861244019087
         },
-        "wilcoxonP": 0.8483568674602942
+        "wilcoxonP": 0.5464283147055902
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 20,
+        "total": 20
+      },
+      "naiveContractValid": {
+        "valid": 20,
+        "total": 20
+      },
+      "proven": false,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_bij86brp7b",
+        "fp_ido3v4gx1n",
+        "fp_l2ip7eycpd",
+        "fp_jgip6r1fzq",
+        "fp_lgaxmsw6lf",
+        "fp_8xpz0cmbta",
+        "fp_t0mvb2ly4t",
+        "fp_cdpwug7vs6",
+        "fp_dzfhm1nvya",
+        "fp_oufovg4xjo",
+        "fp_r5fcl05998",
+        "fp_ibio7s5vhd",
+        "fp_p1sgaw7rjd",
+        "fp_pyrzr6pq78",
+        "fp_eo2gnoaerg",
+        "fp_7e9jg48y9o",
+        "fp_my57vy9m3k",
+        "fp_ksxfeg4kyn",
+        "fp_463gqoalg8",
+        "fp_doyxaiiaql"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Tool-heavy request",
+      "lever": "fewer tool tokens (tool selector)",
+      "ledger": "eliminated_tokens",
+      "kind": "ran",
+      "reps": 30,
+      "armA": {
+        "meanInputTokens": 300,
+        "meanOutputTokens": 30,
+        "meanCost": 0.00006299999999999996
+      },
+      "armB": {
+        "meanInputTokens": 187.7,
+        "meanOutputTokens": 46.2,
+        "meanCost": 0.00005587499999999997
+      },
+      "measured": {
+        "inputTokenDeltaMean": 112.30000000000001,
+        "outputTokenDeltaMean": -16.200000000000003,
+        "savings": {
+          "point": 0.11309523809523792,
+          "lower": 0.07214285714285695,
+          "upper": 0.1603174603174603
+        },
+        "wilcoxonP": 2.987379630337017e-7
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 30,
+        "total": 30
+      },
+      "naiveContractValid": {
+        "valid": 0,
+        "total": 30
+      },
+      "proven": true,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_nbya2nuv1m",
+        "fp_ipzwr6zsir",
+        "fp_i97l7wi54t",
+        "fp_noij2jht8b",
+        "fp_jv2oqg00qj",
+        "fp_k7e4lr18rw",
+        "fp_ivxrziku6f",
+        "fp_4g7sq0fc06",
+        "fp_j4vd5azxp9",
+        "fp_7hk1u10w3w",
+        "fp_ypgnfkgtbk",
+        "fp_g8zrr7xmnz",
+        "fp_s9bnkwfb1r",
+        "fp_f0rnih5ea5",
+        "fp_f5zlf4f2n7",
+        "fp_uhp9x6c9o3",
+        "fp_tvbg1gbm4i",
+        "fp_1lk5zacd3s",
+        "fp_4wx0fn3kab",
+        "fp_j5hpdbnmsq",
+        "fp_3hw42s3jgw",
+        "fp_1iwyiwycaa",
+        "fp_cidzbolvw7",
+        "fp_4d8b2hxa1j",
+        "fp_sj79ip31ns",
+        "fp_vau7t1zztp",
+        "fp_x20bosy52a",
+        "fp_hpnpt0w3dj",
+        "fp_5nos907s4j",
+        "fp_iyketp3a90"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Large uniform table",
+      "lever": "compressed_tokens (TOON/CSV format selector)",
+      "ledger": "compressed_tokens",
+      "kind": "ran",
+      "reps": 30,
+      "armA": {
+        "meanInputTokens": 1212,
+        "meanOutputTokens": 336.6,
+        "meanCost": 0.00035303999999999994
+      },
+      "armB": {
+        "meanInputTokens": 780,
+        "meanOutputTokens": 191.53333333333333,
+        "meanCost": 0.00023192000000000007
+      },
+      "measured": {
+        "inputTokenDeltaMean": 432,
+        "outputTokenDeltaMean": 145.0666666666667,
+        "savings": {
+          "point": 0.34307727169725777,
+          "lower": 0.3080221547257457,
+          "upper": 0.3734293760831885
+        },
+        "wilcoxonP": 9.007424683904475e-7
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 30,
+        "total": 30
+      },
+      "naiveContractValid": {
+        "valid": 29,
+        "total": 30
+      },
+      "proven": true,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_scfhyauaer",
+        "fp_0hi5kmlxpg",
+        "fp_ft6jrybqq9",
+        "fp_c3kb33xjwd",
+        "fp_r1v05m6tis",
+        "fp_wd0fzvxrm8",
+        "fp_i1bliviy37",
+        "fp_1ox7tg4eql",
+        "fp_h6azijy9j3",
+        "fp_scmwm3f3xq",
+        "fp_b1llxyxb59",
+        "fp_08q051x00k",
+        "fp_drdjczoxuw",
+        "fp_dlz9lc323y",
+        "fp_5zve0kry3d",
+        "fp_ybg6ksfzb2",
+        "fp_dbmnrhzbz7",
+        "fp_aekfdw0gur",
+        "fp_jxj145ph9i",
+        "fp_2o91zf71ej",
+        "fp_1a11ifcxe3",
+        "fp_nnwcfwwnac",
+        "fp_3h9kbtht3v",
+        "fp_r4nq9ekpcp",
+        "fp_6kfegue4rj",
+        "fp_fqruiqhj75",
+        "fp_crc52dqyrd",
+        "fp_jih6bbj4kt",
+        "fp_4aw981mcmr",
+        "fp_12h7y1ms01"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 432,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Constrained structured answer",
+      "lever": "output restriction (schema + maxOutputTokens)",
+      "ledger": "output_restriction",
+      "kind": "ran",
+      "reps": 30,
+      "armA": {
+        "meanInputTokens": 60,
+        "meanOutputTokens": 63.46666666666667,
+        "meanCost": 0.00004708
+      },
+      "armB": {
+        "meanInputTokens": 60,
+        "meanOutputTokens": 62.4,
+        "meanCost": 0.00004643999999999998
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": 1.06666666666667,
+        "savings": {
+          "point": 0.013593882752761743,
+          "lower": -0.07709154621112568,
+          "upper": 0.09367493995196174
+        },
+        "wilcoxonP": 0.27375782464930387
       },
       "quality": {
         "gate": "ground-truth",
@@ -295,303 +527,36 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_9ws7or5zlk",
-        "fp_s6qpj2bbaa",
-        "fp_bc3mynd2mg",
-        "fp_ddh88na0is",
-        "fp_9wxfdppzic",
-        "fp_8hfqhy8ioj",
-        "fp_jmywg76qx7",
-        "fp_g233r2tm9y",
-        "fp_fzdjh73nhg",
-        "fp_gdj7thw13v",
-        "fp_er7mn4vo22",
-        "fp_e5aceaz9nk",
-        "fp_sh9s5b3b3u",
-        "fp_j0dlxdasq7",
-        "fp_z0w3sgassm",
-        "fp_qw2wzj17se",
-        "fp_ri3evzbmp1",
-        "fp_jmhxv47bye",
-        "fp_qxqm765juv",
-        "fp_42uwqexrc7",
-        "fp_c610d9ap19",
-        "fp_g2bmmi40vl",
-        "fp_idm94i7sqz",
-        "fp_h7eiwiioue",
-        "fp_zx0fh04hoq",
-        "fp_kk0ybzjbiz",
-        "fp_58t2uoq06x",
-        "fp_k2biz62dag",
-        "fp_h28vmkm9u2",
-        "fp_s6smwv17j7"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 0,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Tool-heavy request",
-      "lever": "fewer tool tokens (tool selector)",
-      "ledger": "eliminated_tokens",
-      "kind": "ran",
-      "reps": 40,
-      "armA": {
-        "meanInputTokens": 300,
-        "meanOutputTokens": 30,
-        "meanCost": 0.00006299999999999999
-      },
-      "armB": {
-        "meanInputTokens": 129.7,
-        "meanOutputTokens": 41.825,
-        "meanCost": 0.00004455
-      },
-      "measured": {
-        "inputTokenDeltaMean": 170.3,
-        "outputTokenDeltaMean": -11.825000000000003,
-        "savings": {
-          "point": 0.2928571428571428,
-          "lower": 0.25857142857142856,
-          "upper": 0.3193452380952383
-        },
-        "wilcoxonP": 1.9497622516517765e-8
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 40,
-        "total": 40
-      },
-      "naiveContractValid": {
-        "valid": 0,
-        "total": 40
-      },
-      "proven": true,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_y0jkayishd",
-        "fp_g4kabgrihy",
-        "fp_z0ijp0thdw",
-        "fp_193k27ur57",
-        "fp_bl7qfr2o4h",
-        "fp_72o6iqoxa1",
-        "fp_jfswnobp6l",
-        "fp_2tjto3fvq8",
-        "fp_uqw3enq1re",
-        "fp_4hs3zn6g5m",
-        "fp_ftd2q12zng",
-        "fp_rgd9g3wmfg",
-        "fp_fj6nclr4p7",
-        "fp_dp1chcyy1w",
-        "fp_6cyy16ocvx",
-        "fp_2tbwswfk7m",
-        "fp_57dy3zr98s",
-        "fp_m1qzzylyan",
-        "fp_7ds6lydt1w",
-        "fp_0t7ao7cofg",
-        "fp_ap70ct2gse",
-        "fp_p3iakcav3u",
-        "fp_eb0w8cknbi",
-        "fp_q2xi9cu1a8",
-        "fp_a33z7qczw8",
-        "fp_n9cqb7qhk7",
-        "fp_gzw7ep39ii",
-        "fp_bzgcylmd9c",
-        "fp_ptkulqpvxy",
-        "fp_6olwax7w5i",
-        "fp_yv75lblwdw",
-        "fp_ywjddkc3cm",
-        "fp_ufugz1ktvl",
-        "fp_s4wrwnw26m",
-        "fp_yl6kkrp3zl",
-        "fp_21o2h5zj5i",
-        "fp_kh1s1orpbj",
-        "fp_4mdjh3bmv4",
-        "fp_7vztluficp",
-        "fp_89geobsnx8"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 0,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Large uniform table",
-      "lever": "compressed_tokens (TOON/CSV format selector)",
-      "ledger": "compressed_tokens",
-      "kind": "ran",
-      "reps": 40,
-      "armA": {
-        "meanInputTokens": 1212,
-        "meanOutputTokens": 346.775,
-        "meanCost": 0.0003514650000000001
-      },
-      "armB": {
-        "meanInputTokens": 780,
-        "meanOutputTokens": 333.325,
-        "meanCost": 0.00031699500000000004
-      },
-      "measured": {
-        "inputTokenDeltaMean": 432,
-        "outputTokenDeltaMean": 13.449999999999989,
-        "savings": {
-          "point": 0.09807519952200083,
-          "lower": -0.009991423670668853,
-          "upper": 0.19926122686145942
-        },
-        "wilcoxonP": 0.05786914427134637
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 28,
-        "total": 40
-      },
-      "naiveContractValid": {
-        "valid": 39,
-        "total": 40
-      },
-      "proven": false,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_3xx8ruv9ws",
-        "fp_nidq6nkvky",
-        "fp_ytbv1py44e",
-        "fp_rp9e9as7bz",
-        "fp_yv16gctizo",
-        "fp_wi1wt8v3ou",
-        "fp_hksir49s05",
-        "fp_9y1qsqphpb",
-        "fp_xxpuxasadw",
-        "fp_nfhy87vqn6",
-        "fp_dtxls7eu40",
-        "fp_upye5h9k7w",
-        "fp_xe0jfhwowk",
-        "fp_1pg9i0hrnp",
-        "fp_mwqopsbvzp",
-        "fp_su7w089oph",
-        "fp_o83wlrjwa6",
-        "fp_0m13tb17bj",
-        "fp_or8hmvqxlc",
-        "fp_zizhw6fcru",
-        "fp_6m0aqh5l76",
-        "fp_a6smr1y7hb",
-        "fp_4cfx4xbj0f",
-        "fp_m5vml38ycj",
-        "fp_2rwwqayilu",
-        "fp_b2mcpq22gi",
-        "fp_azxsa1jf7x",
-        "fp_okguxdszlc",
-        "fp_9tf5lsdgvm",
-        "fp_usx2k16jrz",
-        "fp_44ozyl3l55",
-        "fp_gqmk1jrh9h",
-        "fp_2mp9qn9ac1",
-        "fp_sd6zvsgdku",
-        "fp_g64uv1rq7m",
-        "fp_grpvmwgy5q",
-        "fp_vv7716vnnk",
-        "fp_vzhvx15aep",
-        "fp_y01svwlubr",
-        "fp_4wx7j2ngl5"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 432,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Constrained structured answer",
-      "lever": "output restriction (schema + maxOutputTokens)",
-      "ledger": "output_restriction",
-      "kind": "ran",
-      "reps": 40,
-      "armA": {
-        "meanInputTokens": 60,
-        "meanOutputTokens": 63.725,
-        "meanCost": 0.00004723499999999999
-      },
-      "armB": {
-        "meanInputTokens": 60,
-        "meanOutputTokens": 67.6,
-        "meanCost": 0.00004955999999999998
-      },
-      "measured": {
-        "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -3.874999999999993,
-        "savings": {
-          "point": -0.04922197523023164,
-          "lower": -0.13059092393078675,
-          "upper": 0.027531355154481796
-        },
-        "wilcoxonP": 0.8694786843544684
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 40,
-        "total": 40
-      },
-      "naiveContractValid": {
-        "valid": 39,
-        "total": 40
-      },
-      "proven": false,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_idj5rfhsg9",
-        "fp_fhdcu4hgfz",
-        "fp_xtnr9zooho",
-        "fp_8iwhiqke05",
-        "fp_d8fz74y7ii",
-        "fp_u9joypmgd8",
-        "fp_rzwbsk6k1h",
-        "fp_lfk2i17qb4",
-        "fp_i57yr59rg9",
-        "fp_id02p0r9zk",
-        "fp_b55wpuajz7",
-        "fp_jhrvwjh6ei",
-        "fp_pj747mjs6g",
-        "fp_dbin5t8ti2",
-        "fp_gs18d7vn3w",
-        "fp_9s3a84v8q6",
-        "fp_op0eij3szy",
-        "fp_ppp2bpvmlr",
-        "fp_undqwp24hw",
-        "fp_n2zv858e5l",
-        "fp_stj9o32v54",
-        "fp_0oyqq6sgbf",
-        "fp_kohqo5svbt",
-        "fp_oq5rbrardt",
-        "fp_v206ave8s8",
-        "fp_zqs5igpix0",
-        "fp_52jaencsps",
-        "fp_l8k22f74yl",
-        "fp_g2t4bni99r",
-        "fp_7youimbpbm",
-        "fp_clw65yvqxu",
-        "fp_xvgv3yn4gy",
-        "fp_86k5hyiwig",
-        "fp_l6hsehulew",
-        "fp_aodxlld5yr",
-        "fp_u78oqy352e",
-        "fp_57pad0aa0h",
-        "fp_ceo6dnhp1b",
-        "fp_n5oktg6sgc",
-        "fp_80gaooat47"
+        "fp_0r007mtdpf",
+        "fp_wkz7buvht7",
+        "fp_b87cong4kh",
+        "fp_stqhp1rjea",
+        "fp_4pu1ywimz4",
+        "fp_pmknqi2rip",
+        "fp_7sscshimtx",
+        "fp_7mi3r9yi77",
+        "fp_vi3gjbalk2",
+        "fp_yojps3sax2",
+        "fp_r42j5wwm1j",
+        "fp_049wau0jqm",
+        "fp_ctylqwfd4t",
+        "fp_4ao20eacab",
+        "fp_1yqqkajkkz",
+        "fp_hhxnawoe0y",
+        "fp_aoy1w6af4s",
+        "fp_3x1foukayw",
+        "fp_5oq35234sf",
+        "fp_uto6mkd0ni",
+        "fp_7uvre3w3ap",
+        "fp_fc709ni7uj",
+        "fp_isc0ctyyr2",
+        "fp_vkwrstht4g",
+        "fp_irvys7ehq6",
+        "fp_aawz88t51k",
+        "fp_xvnyi9024o",
+        "fp_s11qfqnfo7",
+        "fp_vhxipnccfm",
+        "fp_nbcsqa3dct"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -609,11 +574,11 @@
         "FAQ (repeat ask)"
       ],
       "savings": {
-        "point": 0.6940943209177173,
-        "lower": 0.5307917888563052,
-        "upper": 0.8194583751253762
+        "point": 0.46992805755395717,
+        "lower": 0.270630868061275,
+        "upper": 0.6269668670845596
       },
-      "deltaCost": 0.0007351500000000006,
+      "deltaCost": 0.0004899000000000006,
       "proven": true
     },
     {
@@ -623,11 +588,11 @@
         "Tool-heavy request"
       ],
       "savings": {
-        "point": 0.2245421245421252,
-        "lower": 0.18696064485538233,
-        "upper": 0.25663413799007073
+        "point": 0.08944263118252593,
+        "lower": 0.05349227267281653,
+        "upper": 0.1272196545852592
       },
-      "deltaCost": 0.0007356000000000025,
+      "deltaCost": 0.0002137500000000004,
       "proven": true
     },
     {
@@ -636,12 +601,12 @@
         "Large uniform table"
       ],
       "savings": {
-        "point": 0.09807519952200083,
-        "lower": -0.009991423670668853,
-        "upper": 0.19926122686145942
+        "point": 0.34307727169725777,
+        "lower": 0.3080221547257457,
+        "upper": 0.3734293760831885
       },
-      "deltaCost": 0.0013788000000000012,
-      "proven": false
+      "deltaCost": 0.0036335999999999964,
+      "proven": true
     },
     {
       "ledger": "output_restriction",
@@ -649,31 +614,31 @@
         "Constrained structured answer"
       ],
       "savings": {
-        "point": -0.04922197523023164,
-        "lower": -0.13059092393078675,
-        "upper": 0.027531355154481796
+        "point": 0.013593882752761743,
+        "lower": -0.07709154621112568,
+        "upper": 0.09367493995196174
       },
-      "deltaCost": -0.00009299999999999955,
+      "deltaCost": 0.000019200000000000684,
       "proven": false
     }
   ],
   "reconciliation": {
-    "totalDelta": 0.002756549999999993,
-    "ledgerSum": 0.002756550000000005,
-    "residual": -1.214306433183765e-17,
+    "totalDelta": 0.00436725,
+    "ledgerSum": 0.004367249999999998,
+    "residual": 1.734723475976807e-18,
     "reconciled": true
   },
   "modelStable": true,
   "aggregate": {
     "savings": {
-      "point": 0.1316847362650746,
-      "lower": 0.05702371511166893,
-      "upper": 0.20161092211146991
+      "point": 0.27116512992455966,
+      "lower": 0.23148472553429622,
+      "upper": 0.3029733613352492
     },
-    "wilcoxonP": 5.56179786670441e-8,
-    "qualityPassRate": 0.9428571428571428,
-    "proven": false,
-    "headline": "not proven"
+    "wilcoxonP": 3.3306690738754696e-15,
+    "qualityPassRate": 1,
+    "proven": true,
+    "headline": "verified ≥ 23.1% (95% CI lower bound)"
   },
   "honesty": [
     "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
