@@ -56,7 +56,8 @@
     "updatePassword": "Atualizar palavra-passe →",
     "passwordUpdated": "Palavra-passe atualizada. A iniciar sessão…",
     "passwordsDontMatch": "As palavras-passe não coincidem.",
-    "resetLinkExpired": "Este link é inválido ou expirou. Solicita um novo."
+    "resetLinkExpired": "Este link é inválido ou expirou. Solicita um novo.",
+    "callbackFailed": "Não conseguimos validar este link. Solicita um novo."
   },
   "dashboard": {
     "overview": {

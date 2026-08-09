@@ -56,7 +56,8 @@
     "updatePassword": "Passwort aktualisieren →",
     "passwordUpdated": "Passwort aktualisiert. Anmeldung…",
     "passwordsDontMatch": "Die Passwörter stimmen nicht überein.",
-    "resetLinkExpired": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an."
+    "resetLinkExpired": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an.",
+    "callbackFailed": "Wir konnten diesen Link nicht überprüfen. Fordere einen neuen an."
   },
   "dashboard": {
     "overview": {

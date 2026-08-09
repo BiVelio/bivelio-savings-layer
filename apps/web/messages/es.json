@@ -56,7 +56,8 @@
     "updatePassword": "Actualizar contraseña →",
     "passwordUpdated": "Contraseña actualizada. Iniciando sesión…",
     "passwordsDontMatch": "Las contraseñas no coinciden.",
-    "resetLinkExpired": "Este enlace no es válido o ha caducado. Solicita uno nuevo."
+    "resetLinkExpired": "Este enlace no es válido o ha caducado. Solicita uno nuevo.",
+    "callbackFailed": "No hemos podido validar el enlace. Solicita uno nuevo."
   },
   "dashboard": {
     "overview": {

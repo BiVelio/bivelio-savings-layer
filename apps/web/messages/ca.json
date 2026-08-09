@@ -56,7 +56,8 @@
     "updatePassword": "Actualitza la contrasenya →",
     "passwordUpdated": "Contrasenya actualitzada. Iniciant sessió…",
     "passwordsDontMatch": "Les contrasenyes no coincideixen.",
-    "resetLinkExpired": "Aquest enllaç no és vàlid o ha caducat. Sol·licita'n un de nou."
+    "resetLinkExpired": "Aquest enllaç no és vàlid o ha caducat. Sol·licita'n un de nou.",
+    "callbackFailed": "No hem pogut validar l'enllaç. Sol·licita'n un de nou."
   },
   "dashboard": {
     "overview": {

@@ -56,7 +56,8 @@
     "updatePassword": "Zaktualizuj hasło →",
     "passwordUpdated": "Hasło zaktualizowane. Logowanie…",
     "passwordsDontMatch": "Hasła nie są zgodne.",
-    "resetLinkExpired": "Ten link jest nieprawidłowy lub wygasł. Poproś o nowy."
+    "resetLinkExpired": "Ten link jest nieprawidłowy lub wygasł. Poproś o nowy.",
+    "callbackFailed": "Nie udało się zweryfikować tego linku. Poproś o nowy."
   },
   "dashboard": {
     "overview": {

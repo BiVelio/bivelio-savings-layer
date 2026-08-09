@@ -56,7 +56,8 @@
     "updatePassword": "Aggiorna la password →",
     "passwordUpdated": "Password aggiornata. Accesso in corso…",
     "passwordsDontMatch": "Le password non coincidono.",
-    "resetLinkExpired": "Questo link non è valido o è scaduto. Richiedine uno nuovo."
+    "resetLinkExpired": "Questo link non è valido o è scaduto. Richiedine uno nuovo.",
+    "callbackFailed": "Non siamo riusciti a convalidare il link. Richiedine uno nuovo."
   },
   "dashboard": {
     "overview": {

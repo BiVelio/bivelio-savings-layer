@@ -56,7 +56,8 @@
     "updatePassword": "Mettre à jour le mot de passe →",
     "passwordUpdated": "Mot de passe mis à jour. Connexion…",
     "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
-    "resetLinkExpired": "Ce lien est invalide ou a expiré. Demandes-en un nouveau."
+    "resetLinkExpired": "Ce lien est invalide ou a expiré. Demandes-en un nouveau.",
+    "callbackFailed": "Nous n'avons pas pu valider ce lien. Demandes-en un nouveau."
   },
   "dashboard": {
     "overview": {

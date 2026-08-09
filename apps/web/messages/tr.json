@@ -56,7 +56,8 @@
     "updatePassword": "Şifreyi güncelle →",
     "passwordUpdated": "Şifre güncellendi. Giriş yapılıyor…",
     "passwordsDontMatch": "Şifreler eşleşmiyor.",
-    "resetLinkExpired": "Bu bağlantı geçersiz veya süresi dolmuş. Yenisini iste."
+    "resetLinkExpired": "Bu bağlantı geçersiz veya süresi dolmuş. Yenisini iste.",
+    "callbackFailed": "Bu bağlantıyı doğrulayamadık. Yenisini iste."
   },
   "dashboard": {
     "overview": {

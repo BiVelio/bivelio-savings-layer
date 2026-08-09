@@ -56,7 +56,8 @@
     "updatePassword": "Update password →",
     "passwordUpdated": "Password updated. Signing you in…",
     "passwordsDontMatch": "The passwords don't match.",
-    "resetLinkExpired": "This reset link is invalid or has expired. Request a new one."
+    "resetLinkExpired": "This reset link is invalid or has expired. Request a new one.",
+    "callbackFailed": "We couldn't validate that link. Request a new one."
   },
   "dashboard": {
     "overview": {

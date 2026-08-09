@@ -11,8 +11,20 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("signinTitle") };
 }
 
-export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LoginPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { locale } = await params;
+  // /auth/callback rebota aquí con `?error=…` cuando el enlace del correo no se
+  // puede canjear. Sin esto el parámetro se tragaba en silencio y el usuario
+  // volvía al login sin saber por qué. Se muestra un texto FIJO y traducido, no
+  // el valor del query: reflejarlo sería inyectar contenido controlado por quien
+  // fabrique la URL.
+  const { error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("auth");
   return (
@@ -23,6 +35,7 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
         </div>
         <h1>{t("welcomeBack")}</h1>
         <p className="sub">{t("loginSubtitle")}</p>
+        {error ? <div className="auth-msg error">{t("callbackFailed")}</div> : null}
         <AuthForm mode="login" />
         <p className="auth-alt">
           {t("newToBivelio")} <Link href="/signup">{t("createAnAccount")}</Link>

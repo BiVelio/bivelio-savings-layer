@@ -56,7 +56,8 @@
     "updatePassword": "Perbarui kata sandi →",
     "passwordUpdated": "Kata sandi diperbarui. Masuk…",
     "passwordsDontMatch": "Kata sandi tidak cocok.",
-    "resetLinkExpired": "Tautan ini tidak valid atau kedaluwarsa. Minta yang baru."
+    "resetLinkExpired": "Tautan ini tidak valid atau kedaluwarsa. Minta yang baru.",
+    "callbackFailed": "Kami tidak dapat memvalidasi tautan ini. Minta yang baru."
   },
   "dashboard": {
     "overview": {

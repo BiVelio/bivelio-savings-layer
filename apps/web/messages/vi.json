@@ -56,7 +56,8 @@
     "updatePassword": "Cập nhật mật khẩu →",
     "passwordUpdated": "Đã cập nhật mật khẩu. Đang đăng nhập…",
     "passwordsDontMatch": "Mật khẩu không khớp.",
-    "resetLinkExpired": "Liên kết này không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới."
+    "resetLinkExpired": "Liên kết này không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới.",
+    "callbackFailed": "Chúng tôi không thể xác thực liên kết này. Hãy yêu cầu liên kết mới."
   },
   "dashboard": {
     "overview": {

@@ -56,7 +56,8 @@
     "updatePassword": "Wachtwoord bijwerken →",
     "passwordUpdated": "Wachtwoord bijgewerkt. Bezig met inloggen…",
     "passwordsDontMatch": "De wachtwoorden komen niet overeen.",
-    "resetLinkExpired": "Deze link is ongeldig of verlopen. Vraag een nieuwe aan."
+    "resetLinkExpired": "Deze link is ongeldig of verlopen. Vraag een nieuwe aan.",
+    "callbackFailed": "We konden deze link niet valideren. Vraag een nieuwe aan."
   },
   "dashboard": {
     "overview": {
