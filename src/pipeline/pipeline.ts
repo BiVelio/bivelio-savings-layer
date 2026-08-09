@@ -541,7 +541,26 @@ export class SavingsPipeline {
       // haberlo hecho para controlar el gasto. Lo honesto es no cobrarle una
       // llamada inútil y decirle exactamente qué pasa.
       const truncadoPorTope = response.finishReason === "length";
-      if (!validation.valid && truncadoPorTope) {
+      // Un fallo cuya causa es el ESQUEMA del cliente (un `pattern` que no
+      // compila) no se puede reparar: ningún texto cumple un regex invalido, asi
+      // que el reintento fallaria igual y seria otra llamada pagada — la segunda
+      // fuente de doble cobro por el mismo error de configuracion. Como el
+      // truncado: se detecta y NO se reintenta.
+      const esquemaRoto =
+        !validation.valid &&
+        validation.errors.some((e) => /not a valid regular expression/.test(e.message));
+      if (!validation.valid && esquemaRoto) {
+        trace.record("validation", "repair-skipped", {
+          reason: "schema defect (uncompilable pattern); no output can satisfy it, a retry is a wasted call",
+          errors: validation.errors,
+        });
+        avisarUnaVez(
+          "esquema-roto",
+          "[bvsala] El contrato de respuesta tiene un `pattern` que no es un regex valido, asi que " +
+            "ninguna respuesta puede cumplirlo. NO se reintenta (seria una llamada pagada para el mismo " +
+            "fallo). Corrige el `pattern` del esquema.",
+        );
+      } else if (!validation.valid && truncadoPorTope) {
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
           maxOutputTokens: request.response?.maxOutputTokens ?? null,

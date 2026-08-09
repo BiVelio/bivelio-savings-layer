@@ -49,10 +49,16 @@ console.log(report.cost.netSavings);  // → verified savings, per request
 
 The hard requirements are a `provider` and a valid `licenseKey`: BV‑SALA is a paid
 product and **refuses to run unlicensed, expired, or tampered** (it throws
-`LicenseError` at the `generate()` entry). For local development, CI and benchmarks,
-pass `devUnlicensed: true` (or set `BVSALA_DEV_OPEN=1`) to run ungated. Every
-component ships with an in‑memory default and is independently swappable (Redis
-exact cache, pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua
+`LicenseError` at the `generate()` entry). Get a key at
+[savings.bivelio.com](https://savings.bivelio.com).
+
+> The `devUnlicensed` flag and `BVSALA_DEV_OPEN=1` are development‑only, honored
+> **only when building from source** (this repo's tests and benchmarks). They are
+> **disabled in this published package** — a valid `licenseKey` is the only way to
+> run it. They are not a way to use the product for free.
+
+Every component ships with an in‑memory default and is independently swappable
+(Redis exact cache, pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua
 sidecar, XGrammar/llguidance backends, …).
 
 ## The optimization order (cheapest first)

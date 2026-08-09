@@ -160,10 +160,14 @@ export interface SavingsLayerConfig {
   };
 
   /**
-   * Explicit escape hatch: run **ungated** (all managed features on, no license
-   * required) for local development, CI, and benchmarks. Also honored via the
-   * `BVSALA_DEV_OPEN=1` environment variable. Never set this in production — it
-   * disables the paid licensing check entirely.
+   * Development-only escape hatch to run ungated, honored ONLY when building from
+   * source (local dev, CI, benchmarks) — also via the `BVSALA_DEV_OPEN=1`
+   * environment variable.
+   *
+   * IMPORTANT: this flag is **disabled in the published npm package**. The
+   * distributed build hard-codes the licensing check on, so setting
+   * `devUnlicensed` (or `BVSALA_DEV_OPEN`) there has NO effect — the layer still
+   * requires a valid `licenseKey`. It is not a way to run the product for free.
    */
   devUnlicensed?: boolean;
 

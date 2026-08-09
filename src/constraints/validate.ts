@@ -133,8 +133,21 @@ function validateString(
   if (schema.minLength != null && value.length < schema.minLength) {
     errors.push({ path, message: `string below minLength ${schema.minLength}` });
   }
-  if (schema.pattern && !new RegExp(schema.pattern).test(value)) {
-    errors.push({ path, message: `string does not match pattern` });
+  if (schema.pattern) {
+    // Un `pattern` con sintaxis inválida en el contrato del cliente NO puede
+    // lanzar aquí: la excepción tumbaba la validación entera y disparaba el
+    // fail-open, que reenvía la petición al proveedor — el cliente pagaba DOS
+    // veces por un error de SU propio esquema. Un regex que no compila se trata
+    // como un fallo de validación (ruidoso, con motivo), no como una excepción.
+    let re: RegExp | null = null;
+    try {
+      re = new RegExp(schema.pattern);
+    } catch {
+      errors.push({ path, message: `schema pattern is not a valid regular expression: ${schema.pattern}` });
+    }
+    if (re && !re.test(value)) {
+      errors.push({ path, message: `string does not match pattern` });
+    }
   }
 }
 
