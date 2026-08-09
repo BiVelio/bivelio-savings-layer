@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 type Cand = { fmt: string; tokens: number };
 const SAMPLE = JSON.stringify(
@@ -17,6 +17,7 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
   type Selector = { choose: (p: unknown, o: { model: string }) => { chosen: string; candidateTokens: Record<string, number> } };
   type SdkModule = { FormatSelector: new (o: { tokenizer: unknown }) => Selector; defaultTokenizerRegistry: unknown };
   const t = useTranslations("dashboard");
+  const locale = useLocale();
   const [selector, setSelector] = useState<Selector | null>(null);
   const [payload, setPayload] = useState(SAMPLE);
   const [err, setErr] = useState("");
@@ -88,13 +89,13 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
             <div key={c.name} className="fmt-row2">
               <span className={`fmt-name2 ${c.win ? "win" : ""}`}>{c.name}{c.win ? " ●" : ""}</span>
               <span className="track2"><span className={`fill2 ${c.win ? "win" : ""}`} style={{ width: `${(100 * c.tokens) / maxTok}%` }} /></span>
-              <span className="fmt-tok2">{c.tokens.toLocaleString()}</span>
+              <span className="fmt-tok2">{c.tokens.toLocaleString(locale)}</span>
             </div>
           ))}
         </div>
         <p className="ck-note">
           {chosen !== "json-compact"
-            ? t("projectorVerifier.trims", { tokens: (baseTok - chosenTok).toLocaleString() })
+            ? t("projectorVerifier.trims", { tokens: (baseTok - chosenTok).toLocaleString(locale) })
             : t("projectorVerifier.alreadyOptimal")}
         </p>
       </div>

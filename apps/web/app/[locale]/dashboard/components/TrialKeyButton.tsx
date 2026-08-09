@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useState } from "react";
 
 import { CopyButton } from "./CopyButton";
@@ -15,6 +15,7 @@ type State = "idle" | "loading" | "done" | "error";
  */
 export function TrialKeyButton() {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
   const [state, setState] = useState<State>("idle");
   const [token, setToken] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -50,7 +51,7 @@ export function TrialKeyButton() {
         <div className="ck-note" style={{ margin: "0 0 6px" }}>
           {t("trialKeyButton.keyLabel", {
             suffix: expiresAt
-              ? t("trialKeyButton.validUntil", { date: new Date(expiresAt).toLocaleDateString() })
+              ? t("trialKeyButton.validUntil", { date: new Date(expiresAt).toLocaleDateString(locale) })
               : "",
           })}
         </div>

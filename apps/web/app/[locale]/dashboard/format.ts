@@ -8,7 +8,13 @@ export function money(n: number): string {
   if (a > 0 && a < 0.01) return "$" + n.toFixed(6);
   return "$" + n.toFixed(2);
 }
-export const intfmt = (n: number): string => Math.round(n).toLocaleString();
+// Separador de millares FIJO (coma), no `toLocaleString()` sin locale. Ese
+// dependía del idioma del runtime: el servidor lo pintaba "1,212" y el navegador
+// en español "1.212", y esa diferencia de TEXTO rompía la hidratación de React
+// (error #418) en el ScenarioTable. Un formato determinista lo cierra: mismo
+// texto en servidor y en cliente, siempre.
+export const intfmt = (n: number): string =>
+  Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 /** Ledger display names shared between reference and live rails. */
 export const LEDGER_LABEL: Record<string, string> = {
   avoided_calls: "avoided_calls",
