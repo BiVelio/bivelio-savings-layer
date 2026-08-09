@@ -74,6 +74,6 @@ export default defineConfig([
     splitting: false,
     minify: true,
     define: defineWeb,
-    outDir: "apps/web/vendor",
+    outDir: "apps/web/public/vendor",
   },
 ]);
