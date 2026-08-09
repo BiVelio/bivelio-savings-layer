@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Un unico piano, con prezzo per postazione",
       "title": "Pochi centesimi per eseguirlo. Molto di più da risparmiare.",
-      "body": "Nessun piano gratuito, nessuna prova — prova BV‑SALA proprio qui nel tuo browser, poi abbonati per eseguirlo nella tua app. Prezzo per postazione, in USD.",
-      "amount": "$4",
+      "body": "Nessun piano gratuito, nessuna prova — prova BV‑SALA proprio qui nel tuo browser, poi abbonati per eseguirlo nella tua app. Prezzo per postazione, in EUR.",
+      "amount": "€4",
       "per": "/ postazione / mese",
-      "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>$39 / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
+      "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>€39 / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
       "seatNote": "Una postazione è una <b>macchina o identità di servizio</b> attiva, non una persona — fatturata solo se attiva per 3+ giorni in un mese. CI e runner effimeri non contano.",
       "features": [
         "Ogni ottimizzazione BV‑SALA, senza limiti",

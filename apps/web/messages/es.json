@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
       "title": "Céntimos para ejecutar. Múltiplos para ahorrar.",
-      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en USD.",
-      "amount": "$4",
+      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en EUR.",
+      "amount": "€4",
       "per": "/ asiento / mes",
-      "proNote": "<b>PRO</b> — facturado por asiento. O <b>$39 / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
+      "proNote": "<b>PRO</b> — facturado por asiento. O <b>€39 / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
       "seatNote": "Un asiento es una <b>máquina o identidad de servicio</b> activa, no una persona — facturado solo si está activo 3 o más días en un mes. CI y ejecutores efímeros no cuentan.",
       "features": [
         "Cada optimización de BV‑SALA, sin límite",

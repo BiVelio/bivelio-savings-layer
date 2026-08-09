@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
       "title": "Cêntimos para executar. Múltiplos para poupar.",
-      "body": "Sem plano gratuito, sem teste — experimenta o BV‑SALA aqui mesmo no teu navegador e depois subscreve para o executar na tua app. Preço por lugar, em USD.",
-      "amount": "$4",
+      "body": "Sem plano gratuito, sem teste — experimenta o BV‑SALA aqui mesmo no teu navegador e depois subscreve para o executar na tua app. Preço por lugar, em EUR.",
+      "amount": "€4",
       "per": "/ lugar / mês",
-      "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>$39 / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
+      "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>€39 / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
       "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b> ativa, não uma pessoa — faturado apenas se estiver ativo em 3 ou mais dias num mês. CI e executores efémeros não contam.",
       "features": [
         "Todas as otimizações do BV‑SALA, sem limite",

@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
       "title": "Grosze za uruchomienie. Wielokrotności do zaoszczędzenia.",
-      "body": "Bez darmowego planu, bez okresu próbnego — przetestuj BV‑SALA właśnie tutaj, w przeglądarce, a następnie wykup subskrypcję, aby uruchomić to w swojej aplikacji. Cena za stanowisko, w USD.",
-      "amount": "$4",
+      "body": "Bez darmowego planu, bez okresu próbnego — przetestuj BV‑SALA właśnie tutaj, w przeglądarce, a następnie wykup subskrypcję, aby uruchomić to w swojej aplikacji. Cena za stanowisko, w EUR.",
+      "amount": "€4",
       "per": "/ stanowisko / mies.",
-      "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>$39 / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
+      "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>€39 / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
       "seatNote": "Stanowisko to jedna aktywna <b>maszyna lub tożsamość usługi</b>, nie osoba — rozliczane tylko wtedy, gdy jest aktywne przez 3+ dni w miesiącu. CI i efemeryczne runnery się nie liczą.",
       "features": [
         "Każda optymalizacja BV‑SALA, bez limitu",

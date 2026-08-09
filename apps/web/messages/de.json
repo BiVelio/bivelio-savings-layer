@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Ein Plan, Preis pro Seat",
       "title": "Cent zum Ausführen. Ein Vielfaches beim Sparen.",
-      "body": "Kein Gratis-Tarif, keine Testphase — teste BV‑SALA direkt hier in deinem Browser und abonniere dann, um es in deiner App auszuführen. Preis pro Seat, in USD.",
-      "amount": "$4",
+      "body": "Kein Gratis-Tarif, keine Testphase — teste BV‑SALA direkt hier in deinem Browser und abonniere dann, um es in deiner App auszuführen. Preis pro Seat, in EUR.",
+      "amount": "€4",
       "per": "/ Seat / Monat",
-      "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>$39 / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
+      "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>€39 / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
       "seatNote": "Ein Seat ist eine aktive <b>Maschine oder Dienstidentität</b>, keine Person — nur abgerechnet, wenn an 3+ Tagen im Monat aktiv. CI und kurzlebige Runner zählen nicht.",
       "features": [
         "Jede BV‑SALA-Optimierung, ohne Limit",

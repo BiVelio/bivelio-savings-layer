@@ -45,7 +45,7 @@ export async function POST() {
     return NextResponse.json(
       {
         error:
-          "Subscription checkout is coming online — self-serve license keys aren't issued yet. $4 / seat / month or $39 / seat / year.",
+          "Subscription checkout is coming online — self-serve license keys aren't issued yet. €4 / seat / month or €39 / seat / year.",
       },
       { status: 402 },
     );

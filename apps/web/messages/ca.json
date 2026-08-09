@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Un sol pla, amb preu per seient",
       "title": "Cèntims per executar. Múltiples per estalviar.",
-      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en USD.",
-      "amount": "$4",
+      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en EUR.",
+      "amount": "€4",
       "per": "/ seient / mes",
-      "proNote": "<b>PRO</b> — facturat per seient. O <b>$39 / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
+      "proNote": "<b>PRO</b> — facturat per seient. O <b>€39 / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
       "seatNote": "Un seient és una <b>màquina o identitat de servei</b> activa, no una persona — facturat només si està actiu 3 dies o més en un mes. La CI i els executors efímers no compten.",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",

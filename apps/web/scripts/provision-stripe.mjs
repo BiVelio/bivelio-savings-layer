@@ -1,6 +1,6 @@
 // One-shot Stripe provisioning for BV-SALA per-seat PRO billing.
 //
-// Creates the Product, the two Licensed Prices ($4/mo + $39/yr USD) and the
+// Creates the Product, the two Licensed Prices (4 EUR/mo + 39 EUR/yr) and the
 // production webhook endpoint, then prints the three values you paste into
 // Vercel. Idempotency: re-running creates NEW objects, so run it ONCE (or delete
 // the extras in the dashboard). Your secret key is read from the environment and
@@ -42,8 +42,8 @@ async function main() {
   // Licensed (quantity-based) recurring prices — the default usage_type.
   const monthly = await stripe.prices.create({
     product: product.id,
-    currency: "usd",
-    unit_amount: 400, // $4.00
+    currency: "eur",
+    unit_amount: 400, // 4,00 €
     recurring: { interval: "month" },
     nickname: "PRO monthly (per seat)",
   });
@@ -51,8 +51,8 @@ async function main() {
 
   const yearly = await stripe.prices.create({
     product: product.id,
-    currency: "usd",
-    unit_amount: 3900, // $39.00
+    currency: "eur",
+    unit_amount: 3900, // 39,00 €
     recurring: { interval: "year" },
     nickname: "PRO yearly (per seat)",
   });

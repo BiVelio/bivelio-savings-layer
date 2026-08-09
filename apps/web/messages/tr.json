@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
       "title": "Çalıştırmak kuruşluk. Tasarruf ise katlarca.",
-      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, USD cinsinden fiyatlandırılır.",
-      "amount": "$4",
+      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, EUR cinsinden fiyatlandırılır.",
+      "amount": "€4",
       "per": "/ koltuk / ay",
-      "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>$39 / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
+      "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>€39 / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
       "seatNote": "Bir koltuk, bir kişi değil, etkin bir <b>makine ya da servis kimliğidir</b> — yalnızca bir ayda 3+ gün etkinse faturalandırılır. CI ve geçici çalıştırıcılar sayılmaz.",
       "features": [
         "Her BV‑SALA optimizasyonu, sınırsız",

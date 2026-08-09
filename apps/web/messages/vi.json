@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Một gói, tính giá theo ghế",
       "title": "Vài xu để chạy. Gấp nhiều lần để tiết kiệm.",
-      "body": "Không có gói miễn phí, không dùng thử — kiểm tra BV‑SALA ngay tại đây trong trình duyệt của bạn, rồi đăng ký để chạy nó trong ứng dụng của bạn. Tính giá theo ghế, bằng USD.",
-      "amount": "$4",
+      "body": "Không có gói miễn phí, không dùng thử — kiểm tra BV‑SALA ngay tại đây trong trình duyệt của bạn, rồi đăng ký để chạy nó trong ứng dụng của bạn. Tính giá theo ghế, bằng EUR.",
+      "amount": "€4",
       "per": "/ ghế / tháng",
-      "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>$39 / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
+      "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>€39 / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
       "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> đang hoạt động, không phải một người — chỉ tính phí nếu hoạt động từ 3 ngày trở lên trong một tháng. CI và các trình chạy tạm thời không được tính.",
       "features": [
         "Mọi tối ưu hóa của BV‑SALA, không giới hạn",

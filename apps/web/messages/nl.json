@@ -364,10 +364,10 @@
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
       "title": "Centen om te draaien. Veelvouden om te besparen.",
-      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in USD.",
-      "amount": "$4",
+      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in EUR.",
+      "amount": "€4",
       "per": "/ seat / maand",
-      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>$39 / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
+      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>€39 / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
       "seatNote": "Een seat is één actieve <b>machine- of service-identiteit</b>, geen persoon — alleen gefactureerd bij activiteit op 3+ dagen in een maand. CI en kortstondige runners tellen niet mee.",
       "features": [
         "Elke BV‑SALA-optimalisatie, ongelimiteerd",

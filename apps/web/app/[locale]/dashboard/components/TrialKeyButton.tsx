@@ -83,7 +83,7 @@ export function TrialKeyButton() {
         <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{msg}</p>
       ) : (
         <p className="ck-note" style={{ marginTop: "6px" }}>
-          {t("trialKeyButton.priceNote", { monthly: "$4", yearly: "$39" })}
+          {t("trialKeyButton.priceNote", { monthly: "€4", yearly: "€39" })}
         </p>
       )}
     </div>
