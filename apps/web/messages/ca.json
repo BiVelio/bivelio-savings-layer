@@ -204,7 +204,10 @@
       "seatsCount": "{count, plural, one {# seient} other {# seients}}.",
       "planBody": "BV-SALA és fail-closed: només funciona amb una llicència PRO activa. {monthly} per seient al mes o {yearly} per seient a l'any. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
-      "subscribe": "Subscriu-te →"
+      "subscribe": "Subscriu-te →",
+      "checkoutMonthly": "Subscribe — €4/mo →",
+      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -264,11 +267,41 @@
       "title": "Guanya l'execució més barata",
       "per": "per sol·licitud",
       "steps": [
-        { "n": "01", "title": "Evita la crida completament", "sub": "resolutors · memòria cau exacta i semàntica", "tag": "0 crides", "grey": false },
-        { "n": "02", "title": "Evita la recuperació i les eines", "sub": "ruta: cap / única / múltiple / eina", "tag": "menys crides", "grey": false },
-        { "n": "03", "title": "Elimina el context innecessari", "sub": "desduplica · reordena · k‑adaptativa", "tag": "−tokens", "grey": true },
-        { "n": "04", "title": "Comprimeix el que queda", "sub": "codificació més lleugera · només si és net positiu", "tag": "−tokens", "grey": true },
-        { "n": "05", "title": "Restringeix la sortida", "sub": "esquema · contracte mínim", "tag": "−sortida", "grey": true }
+        {
+          "n": "01",
+          "title": "Evita la crida completament",
+          "sub": "resolutors · memòria cau exacta i semàntica",
+          "tag": "0 crides",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Evita la recuperació i les eines",
+          "sub": "ruta: cap / única / múltiple / eina",
+          "tag": "menys crides",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Elimina el context innecessari",
+          "sub": "desduplica · reordena · k‑adaptativa",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Comprimeix el que queda",
+          "sub": "codificació més lleugera · només si és net positiu",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Restringeix la sortida",
+          "sub": "esquema · contracte mínim",
+          "tag": "−sortida",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -288,10 +321,26 @@
       "runToMeasure": "executa l'optimitzador per mesurar"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "Crides a LLM, recuperació i eines que mai no s'han executat." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Informació descartada perquè simplement no calia." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Informació conservada, però codificada amb menys tokens." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Encara al prompt, però facturada o processada de manera més barata." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "Crides a LLM, recuperació i eines que mai no s'han executat."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Informació descartada perquè simplement no calia."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Informació conservada, però codificada amb menys tokens."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Encara al prompt, però facturada o processada de manera més barata."
+      }
     ],
     "integrate": {
       "eyebrow": "Cinc línies per començar",
@@ -315,10 +364,22 @@
       "cta": "Comença →",
       "trustTitle": "Per què el preu pot ser tan baix",
       "trust": [
-        { "lead": "No movem cap token.", "rest": "El teu trànsit de LLM va directe al teu proveïdor — només veiem recomptes, mai contingut." },
-        { "lead": "Tu allotges la part pesada.", "rest": "L'optimitzador s'executa al teu procés; els nostres servidors només llicencien, aprenen i informen." },
-        { "lead": "La infraestructura escala amb els ingressos.", "rest": "Comença en un servidor petit i només creix quan els clients de pagament cobreixen el nivell següent." },
-        { "lead": "L'informe és el mesurador.", "rest": "La facturació llegeix el mateix SavingsReport que verifiques a dalt — sense caixa negra." }
+        {
+          "lead": "No movem cap token.",
+          "rest": "El teu trànsit de LLM va directe al teu proveïdor — només veiem recomptes, mai contingut."
+        },
+        {
+          "lead": "Tu allotges la part pesada.",
+          "rest": "L'optimitzador s'executa al teu procés; els nostres servidors només llicencien, aprenen i informen."
+        },
+        {
+          "lead": "La infraestructura escala amb els ingressos.",
+          "rest": "Comença en un servidor petit i només creix quan els clients de pagament cobreixen el nivell següent."
+        },
+        {
+          "lead": "L'informe és el mesurador.",
+          "rest": "La facturació llegeix el mateix SavingsReport que verifiques a dalt — sense caixa negra."
+        }
       ]
     },
     "footer": {

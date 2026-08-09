@@ -204,7 +204,10 @@
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
       "planBody": "BV-SALA is fail-closed — it only runs with an active PRO license. {monthly} per seat per month or {yearly} per seat per year. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
-      "subscribe": "Subscribe →"
+      "subscribe": "Subscribe →",
+      "checkoutMonthly": "Subscribe — €4/mo →",
+      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "proven",
@@ -264,11 +267,41 @@
       "title": "Cheapest execution wins",
       "per": "per request",
       "steps": [
-        { "n": "01", "title": "Avoid the call entirely", "sub": "resolvers · exact & semantic cache", "tag": "0 calls", "grey": false },
-        { "n": "02", "title": "Avoid retrieval & tools", "sub": "route: none / single / multi / tool", "tag": "fewer calls", "grey": false },
-        { "n": "03", "title": "Eliminate needless context", "sub": "dedupe · rerank · adaptive‑k", "tag": "−tokens", "grey": true },
-        { "n": "04", "title": "Compress what remains", "sub": "leaner encoding · net‑positive only", "tag": "−tokens", "grey": true },
-        { "n": "05", "title": "Constrain the output", "sub": "schema · minimal contract", "tag": "−output", "grey": true }
+        {
+          "n": "01",
+          "title": "Avoid the call entirely",
+          "sub": "resolvers · exact & semantic cache",
+          "tag": "0 calls",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Avoid retrieval & tools",
+          "sub": "route: none / single / multi / tool",
+          "tag": "fewer calls",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Eliminate needless context",
+          "sub": "dedupe · rerank · adaptive‑k",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Compress what remains",
+          "sub": "leaner encoding · net‑positive only",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Constrain the output",
+          "sub": "schema · minimal contract",
+          "tag": "−output",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -288,10 +321,26 @@
       "runToMeasure": "run the optimizer to measure"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "LLM, retrieval and tool calls that never executed at all." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Information dropped because it simply wasn't needed." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Information kept, but encoded with fewer tokens." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Still in the prompt, but billed or processed more cheaply." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "LLM, retrieval and tool calls that never executed at all."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Information dropped because it simply wasn't needed."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Information kept, but encoded with fewer tokens."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Still in the prompt, but billed or processed more cheaply."
+      }
     ],
     "integrate": {
       "eyebrow": "Five lines to start",
@@ -315,10 +364,22 @@
       "cta": "Get started →",
       "trustTitle": "Why the price can be this low",
       "trust": [
-        { "lead": "We move no tokens.", "rest": "Your LLM traffic flows straight to your provider — we only see counts, never content." },
-        { "lead": "You self‑host the heavy part.", "rest": "The optimizer runs in your process; our servers just license, learn and report." },
-        { "lead": "Infra scales with revenue.", "rest": "It starts on one small box and only grows once paying customers cover the next tier." },
-        { "lead": "The report is the meter.", "rest": "Billing reads the same SavingsReport you verify above — no black box." }
+        {
+          "lead": "We move no tokens.",
+          "rest": "Your LLM traffic flows straight to your provider — we only see counts, never content."
+        },
+        {
+          "lead": "You self‑host the heavy part.",
+          "rest": "The optimizer runs in your process; our servers just license, learn and report."
+        },
+        {
+          "lead": "Infra scales with revenue.",
+          "rest": "It starts on one small box and only grows once paying customers cover the next tier."
+        },
+        {
+          "lead": "The report is the meter.",
+          "rest": "Billing reads the same SavingsReport you verify above — no black box."
+        }
       ]
     },
     "footer": {

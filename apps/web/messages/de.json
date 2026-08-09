@@ -204,7 +204,10 @@
       "seatsCount": "{count, plural, one {# Seat} other {# Seats}}.",
       "planBody": "BV-SALA ist fail-closed — es läuft nur mit einer aktiven PRO-Lizenz. {monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Ein Seat ist eine aktive Maschine oder Dienstidentität, keine Person.",
       "managePlan": "Plan verwalten →",
-      "subscribe": "Abonnieren →"
+      "subscribe": "Abonnieren →",
+      "checkoutMonthly": "Subscribe — €4/mo →",
+      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -264,11 +267,41 @@
       "title": "Die günstigste Ausführung gewinnt",
       "per": "pro Anfrage",
       "steps": [
-        { "n": "01", "title": "Den Aufruf ganz vermeiden", "sub": "Resolver · exakter und semantischer Cache", "tag": "0 Aufrufe", "grey": false },
-        { "n": "02", "title": "Retrieval und Tools vermeiden", "sub": "Route: keine / einzeln / mehrfach / Tool", "tag": "weniger Aufrufe", "grey": false },
-        { "n": "03", "title": "Unnötigen Kontext eliminieren", "sub": "Deduplizieren · Rerank · adaptives k", "tag": "−Tokens", "grey": true },
-        { "n": "04", "title": "Den Rest komprimieren", "sub": "schlankere Kodierung · nur netto positiv", "tag": "−Tokens", "grey": true },
-        { "n": "05", "title": "Die Ausgabe einschränken", "sub": "Schema · minimaler Vertrag", "tag": "−Ausgabe", "grey": true }
+        {
+          "n": "01",
+          "title": "Den Aufruf ganz vermeiden",
+          "sub": "Resolver · exakter und semantischer Cache",
+          "tag": "0 Aufrufe",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Retrieval und Tools vermeiden",
+          "sub": "Route: keine / einzeln / mehrfach / Tool",
+          "tag": "weniger Aufrufe",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Unnötigen Kontext eliminieren",
+          "sub": "Deduplizieren · Rerank · adaptives k",
+          "tag": "−Tokens",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Den Rest komprimieren",
+          "sub": "schlankere Kodierung · nur netto positiv",
+          "tag": "−Tokens",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Die Ausgabe einschränken",
+          "sub": "Schema · minimaler Vertrag",
+          "tag": "−Ausgabe",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -288,10 +321,26 @@
       "runToMeasure": "führe den Optimierer aus, um zu messen"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "LLM-, Retrieval- und Tool-Aufrufe, die überhaupt nie ausgeführt wurden." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Informationen, die verworfen wurden, weil sie einfach nicht nötig waren." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Informationen, die erhalten bleiben, aber mit weniger Tokens kodiert sind." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Noch im Prompt, aber günstiger abgerechnet oder verarbeitet." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "LLM-, Retrieval- und Tool-Aufrufe, die überhaupt nie ausgeführt wurden."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Informationen, die verworfen wurden, weil sie einfach nicht nötig waren."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Informationen, die erhalten bleiben, aber mit weniger Tokens kodiert sind."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Noch im Prompt, aber günstiger abgerechnet oder verarbeitet."
+      }
     ],
     "integrate": {
       "eyebrow": "Fünf Zeilen zum Starten",
@@ -315,10 +364,22 @@
       "cta": "Loslegen →",
       "trustTitle": "Warum der Preis so niedrig sein kann",
       "trust": [
-        { "lead": "Wir bewegen keine Tokens.", "rest": "Dein LLM-Traffic fließt direkt zu deinem Provider — wir sehen nur Zählwerte, niemals Inhalte." },
-        { "lead": "Du hostest den schweren Teil selbst.", "rest": "Der Optimierer läuft in deinem Prozess; unsere Server lizenzieren, lernen und berichten nur." },
-        { "lead": "Die Infrastruktur skaliert mit dem Umsatz.", "rest": "Sie startet auf einem kleinen Server und wächst erst, wenn zahlende Kunden die nächste Stufe decken." },
-        { "lead": "Der Bericht ist der Zähler.", "rest": "Die Abrechnung liest denselben SavingsReport, den du oben verifizierst — keine Blackbox." }
+        {
+          "lead": "Wir bewegen keine Tokens.",
+          "rest": "Dein LLM-Traffic fließt direkt zu deinem Provider — wir sehen nur Zählwerte, niemals Inhalte."
+        },
+        {
+          "lead": "Du hostest den schweren Teil selbst.",
+          "rest": "Der Optimierer läuft in deinem Prozess; unsere Server lizenzieren, lernen und berichten nur."
+        },
+        {
+          "lead": "Die Infrastruktur skaliert mit dem Umsatz.",
+          "rest": "Sie startet auf einem kleinen Server und wächst erst, wenn zahlende Kunden die nächste Stufe decken."
+        },
+        {
+          "lead": "Der Bericht ist der Zähler.",
+          "rest": "Die Abrechnung liest denselben SavingsReport, den du oben verifizierst — keine Blackbox."
+        }
       ]
     },
     "footer": {

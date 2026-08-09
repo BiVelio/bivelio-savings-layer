@@ -204,7 +204,10 @@
       "seatsCount": "{count, plural, other {# koltuk}}.",
       "planBody": "BV-SALA fail-closed'dur — yalnızca etkin bir PRO lisansıyla çalışır. Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bir koltuk, bir kişi değil, etkin bir makine ya da servis kimliğidir.",
       "managePlan": "Planı yönet →",
-      "subscribe": "Abone ol →"
+      "subscribe": "Abone ol →",
+      "checkoutMonthly": "Subscribe — €4/mo →",
+      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
@@ -264,11 +267,41 @@
       "title": "En ucuz yürütme kazanır",
       "per": "istek başına",
       "steps": [
-        { "n": "01", "title": "Çağrıdan tümüyle kaçının", "sub": "çözümleyiciler · tam ve anlamsal önbellek", "tag": "0 çağrı", "grey": false },
-        { "n": "02", "title": "Getirme ve araçlardan kaçının", "sub": "yönlendirme: yok / tek / çoklu / araç", "tag": "daha az çağrı", "grey": false },
-        { "n": "03", "title": "Gereksiz bağlamı ortadan kaldırın", "sub": "yinelenenleri ayıkla · yeniden sırala · uyarlanır‑k", "tag": "−token", "grey": true },
-        { "n": "04", "title": "Kalanı sıkıştırın", "sub": "daha yalın kodlama · yalnızca net pozitifse", "tag": "−token", "grey": true },
-        { "n": "05", "title": "Çıktıyı sınırlandırın", "sub": "şema · asgari sözleşme", "tag": "−çıktı", "grey": true }
+        {
+          "n": "01",
+          "title": "Çağrıdan tümüyle kaçının",
+          "sub": "çözümleyiciler · tam ve anlamsal önbellek",
+          "tag": "0 çağrı",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Getirme ve araçlardan kaçının",
+          "sub": "yönlendirme: yok / tek / çoklu / araç",
+          "tag": "daha az çağrı",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Gereksiz bağlamı ortadan kaldırın",
+          "sub": "yinelenenleri ayıkla · yeniden sırala · uyarlanır‑k",
+          "tag": "−token",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Kalanı sıkıştırın",
+          "sub": "daha yalın kodlama · yalnızca net pozitifse",
+          "tag": "−token",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Çıktıyı sınırlandırın",
+          "sub": "şema · asgari sözleşme",
+          "tag": "−çıktı",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -288,10 +321,26 @@
       "runToMeasure": "ölçmek için optimize ediciyi çalıştırın"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "Hiç çalıştırılmayan LLM, getirme ve araç çağrıları." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Basitçe gerekmediği için düşürülen bilgi." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Korunan ama daha az token'la kodlanan bilgi." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Hâlâ prompt'ta, ama daha ucuza faturalandırılan ya da işlenen." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "Hiç çalıştırılmayan LLM, getirme ve araç çağrıları."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Basitçe gerekmediği için düşürülen bilgi."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Korunan ama daha az token'la kodlanan bilgi."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Hâlâ prompt'ta, ama daha ucuza faturalandırılan ya da işlenen."
+      }
     ],
     "integrate": {
       "eyebrow": "Başlamak için beş satır",
@@ -315,10 +364,22 @@
       "cta": "Başlayın →",
       "trustTitle": "Fiyat neden bu kadar düşük olabiliyor",
       "trust": [
-        { "lead": "Token taşımıyoruz.", "rest": "LLM trafiğiniz doğrudan sağlayıcınıza akar — biz yalnızca sayımları görürüz, asla içeriği değil." },
-        { "lead": "Ağır kısmı kendiniz barındırırsınız.", "rest": "Optimize edici sizin sürecinizde çalışır; sunucularımız yalnızca lisanslar, öğrenir ve raporlar." },
-        { "lead": "Altyapı gelirle birlikte ölçeklenir.", "rest": "Küçük bir sunucuda başlar ve yalnızca ödeme yapan müşteriler bir sonraki kademeyi karşıladığında büyür." },
-        { "lead": "Rapor, sayacın kendisidir.", "rest": "Faturalandırma, yukarıda doğruladığınız SavingsReport'un aynısını okur — kara kutu yok." }
+        {
+          "lead": "Token taşımıyoruz.",
+          "rest": "LLM trafiğiniz doğrudan sağlayıcınıza akar — biz yalnızca sayımları görürüz, asla içeriği değil."
+        },
+        {
+          "lead": "Ağır kısmı kendiniz barındırırsınız.",
+          "rest": "Optimize edici sizin sürecinizde çalışır; sunucularımız yalnızca lisanslar, öğrenir ve raporlar."
+        },
+        {
+          "lead": "Altyapı gelirle birlikte ölçeklenir.",
+          "rest": "Küçük bir sunucuda başlar ve yalnızca ödeme yapan müşteriler bir sonraki kademeyi karşıladığında büyür."
+        },
+        {
+          "lead": "Rapor, sayacın kendisidir.",
+          "rest": "Faturalandırma, yukarıda doğruladığınız SavingsReport'un aynısını okur — kara kutu yok."
+        }
       ]
     },
     "footer": {

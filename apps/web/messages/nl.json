@@ -204,7 +204,10 @@
       "seatsCount": "{count, plural, one {# seat} other {# seats}}.",
       "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve PRO-licentie. {monthly} per seat per maand of {yearly} per seat per jaar. Een seat is één actieve machine- of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
-      "subscribe": "Abonneren →"
+      "subscribe": "Abonneren →",
+      "checkoutMonthly": "Subscribe — €4/mo →",
+      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
@@ -264,11 +267,41 @@
       "title": "De goedkoopste uitvoering wint",
       "per": "per verzoek",
       "steps": [
-        { "n": "01", "title": "Vermijd de aanroep volledig", "sub": "resolvers · exacte en semantische cache", "tag": "0 aanroepen", "grey": false },
-        { "n": "02", "title": "Vermijd ophalen en tools", "sub": "route: geen / enkel / meervoudig / tool", "tag": "minder aanroepen", "grey": false },
-        { "n": "03", "title": "Elimineer overbodige context", "sub": "dedupe · rerank · adaptieve k", "tag": "−tokens", "grey": true },
-        { "n": "04", "title": "Comprimeer wat overblijft", "sub": "compactere codering · alleen netto-positief", "tag": "−tokens", "grey": true },
-        { "n": "05", "title": "Beperk de uitvoer", "sub": "schema · minimaal contract", "tag": "−uitvoer", "grey": true }
+        {
+          "n": "01",
+          "title": "Vermijd de aanroep volledig",
+          "sub": "resolvers · exacte en semantische cache",
+          "tag": "0 aanroepen",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Vermijd ophalen en tools",
+          "sub": "route: geen / enkel / meervoudig / tool",
+          "tag": "minder aanroepen",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Elimineer overbodige context",
+          "sub": "dedupe · rerank · adaptieve k",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Comprimeer wat overblijft",
+          "sub": "compactere codering · alleen netto-positief",
+          "tag": "−tokens",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Beperk de uitvoer",
+          "sub": "schema · minimaal contract",
+          "tag": "−uitvoer",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -288,10 +321,26 @@
       "runToMeasure": "voer de optimizer uit om te meten"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "LLM-, ophaal- en tool-aanroepen die helemaal niet zijn uitgevoerd." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Informatie die is geschrapt omdat ze simpelweg niet nodig was." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Informatie behouden, maar gecodeerd met minder tokens." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Nog in de prompt, maar goedkoper gefactureerd of verwerkt." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "LLM-, ophaal- en tool-aanroepen die helemaal niet zijn uitgevoerd."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Informatie die is geschrapt omdat ze simpelweg niet nodig was."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Informatie behouden, maar gecodeerd met minder tokens."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Nog in de prompt, maar goedkoper gefactureerd of verwerkt."
+      }
     ],
     "integrate": {
       "eyebrow": "Vijf regels om te beginnen",
@@ -315,10 +364,22 @@
       "cta": "Aan de slag →",
       "trustTitle": "Waarom de prijs zo laag kan zijn",
       "trust": [
-        { "lead": "We verplaatsen geen tokens.", "rest": "Je LLM-verkeer gaat rechtstreeks naar je provider — wij zien alleen aantallen, nooit inhoud." },
-        { "lead": "Jij host zelf het zware deel.", "rest": "De optimizer draait in jouw proces; onze servers zorgen alleen voor licentie, leren en rapporteren." },
-        { "lead": "Infra schaalt mee met de omzet.", "rest": "Het start op één kleine server en groeit pas als betalende klanten het volgende niveau dekken." },
-        { "lead": "Het rapport is de meter.", "rest": "De facturering leest hetzelfde SavingsReport dat je hierboven verifieert — geen black box." }
+        {
+          "lead": "We verplaatsen geen tokens.",
+          "rest": "Je LLM-verkeer gaat rechtstreeks naar je provider — wij zien alleen aantallen, nooit inhoud."
+        },
+        {
+          "lead": "Jij host zelf het zware deel.",
+          "rest": "De optimizer draait in jouw proces; onze servers zorgen alleen voor licentie, leren en rapporteren."
+        },
+        {
+          "lead": "Infra schaalt mee met de omzet.",
+          "rest": "Het start op één kleine server en groeit pas als betalende klanten het volgende niveau dekken."
+        },
+        {
+          "lead": "Het rapport is de meter.",
+          "rest": "De facturering leest hetzelfde SavingsReport dat je hierboven verifieert — geen black box."
+        }
       ]
     },
     "footer": {

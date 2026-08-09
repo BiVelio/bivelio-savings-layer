@@ -204,7 +204,10 @@
       "seatsCount": "{count, plural, other {# kursi}}.",
       "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi PRO aktif. {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
       "managePlan": "Kelola paket →",
-      "subscribe": "Berlangganan →"
+      "subscribe": "Berlangganan →",
+      "checkoutMonthly": "Subscribe — €4/mo →",
+      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutError": "Something went wrong — try again."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",
@@ -264,11 +267,41 @@
       "title": "Eksekusi termurah menang",
       "per": "per permintaan",
       "steps": [
-        { "n": "01", "title": "Hindari panggilan sepenuhnya", "sub": "resolver · cache eksak & semantik", "tag": "0 panggilan", "grey": false },
-        { "n": "02", "title": "Hindari retrieval & tool", "sub": "rute: tidak ada / tunggal / multi / tool", "tag": "lebih sedikit panggilan", "grey": false },
-        { "n": "03", "title": "Hilangkan konteks yang tidak perlu", "sub": "dedupe · rerank · adaptive‑k", "tag": "−token", "grey": true },
-        { "n": "04", "title": "Kompres sisanya", "sub": "pengodean lebih ramping · hanya jika net‑positif", "tag": "−token", "grey": true },
-        { "n": "05", "title": "Batasi output", "sub": "skema · kontrak minimal", "tag": "−output", "grey": true }
+        {
+          "n": "01",
+          "title": "Hindari panggilan sepenuhnya",
+          "sub": "resolver · cache eksak & semantik",
+          "tag": "0 panggilan",
+          "grey": false
+        },
+        {
+          "n": "02",
+          "title": "Hindari retrieval & tool",
+          "sub": "rute: tidak ada / tunggal / multi / tool",
+          "tag": "lebih sedikit panggilan",
+          "grey": false
+        },
+        {
+          "n": "03",
+          "title": "Hilangkan konteks yang tidak perlu",
+          "sub": "dedupe · rerank · adaptive‑k",
+          "tag": "−token",
+          "grey": true
+        },
+        {
+          "n": "04",
+          "title": "Kompres sisanya",
+          "sub": "pengodean lebih ramping · hanya jika net‑positif",
+          "tag": "−token",
+          "grey": true
+        },
+        {
+          "n": "05",
+          "title": "Batasi output",
+          "sub": "skema · kontrak minimal",
+          "tag": "−output",
+          "grey": true
+        }
       ]
     },
     "step1": {
@@ -288,10 +321,26 @@
       "runToMeasure": "jalankan pengoptimal untuk mengukur"
     },
     "ledgers": [
-      { "idx": "01", "name": "avoided_calls", "desc": "Panggilan LLM, retrieval, dan tool yang sama sekali tidak pernah dieksekusi." },
-      { "idx": "02", "name": "eliminated_tokens", "desc": "Informasi yang dibuang karena memang tidak diperlukan." },
-      { "idx": "03", "name": "compressed_tokens", "desc": "Informasi tetap dipertahankan, tetapi dikodekan dengan lebih sedikit token." },
-      { "idx": "04", "name": "provider_cached_tokens", "desc": "Masih ada dalam prompt, tetapi ditagih atau diproses lebih murah." }
+      {
+        "idx": "01",
+        "name": "avoided_calls",
+        "desc": "Panggilan LLM, retrieval, dan tool yang sama sekali tidak pernah dieksekusi."
+      },
+      {
+        "idx": "02",
+        "name": "eliminated_tokens",
+        "desc": "Informasi yang dibuang karena memang tidak diperlukan."
+      },
+      {
+        "idx": "03",
+        "name": "compressed_tokens",
+        "desc": "Informasi tetap dipertahankan, tetapi dikodekan dengan lebih sedikit token."
+      },
+      {
+        "idx": "04",
+        "name": "provider_cached_tokens",
+        "desc": "Masih ada dalam prompt, tetapi ditagih atau diproses lebih murah."
+      }
     ],
     "integrate": {
       "eyebrow": "Lima baris untuk memulai",
@@ -315,10 +364,22 @@
       "cta": "Mulai →",
       "trustTitle": "Mengapa harganya bisa serendah ini",
       "trust": [
-        { "lead": "Kami tidak memindahkan token.", "rest": "Lalu lintas LLM Anda mengalir langsung ke penyedia Anda — kami hanya melihat jumlah, bukan konten." },
-        { "lead": "Anda meng-host sendiri bagian beratnya.", "rest": "Pengoptimal berjalan di proses Anda; server kami hanya memberi lisensi, belajar, dan melapor." },
-        { "lead": "Infrastruktur berkembang seiring pendapatan.", "rest": "Dimulai dari satu server kecil dan baru tumbuh setelah pelanggan berbayar menutupi tingkat berikutnya." },
-        { "lead": "Laporan itulah meterannya.", "rest": "Penagihan membaca SavingsReport yang sama yang Anda verifikasi di atas — tanpa kotak hitam." }
+        {
+          "lead": "Kami tidak memindahkan token.",
+          "rest": "Lalu lintas LLM Anda mengalir langsung ke penyedia Anda — kami hanya melihat jumlah, bukan konten."
+        },
+        {
+          "lead": "Anda meng-host sendiri bagian beratnya.",
+          "rest": "Pengoptimal berjalan di proses Anda; server kami hanya memberi lisensi, belajar, dan melapor."
+        },
+        {
+          "lead": "Infrastruktur berkembang seiring pendapatan.",
+          "rest": "Dimulai dari satu server kecil dan baru tumbuh setelah pelanggan berbayar menutupi tingkat berikutnya."
+        },
+        {
+          "lead": "Laporan itulah meterannya.",
+          "rest": "Penagihan membaca SavingsReport yang sama yang Anda verifikasi di atas — tanpa kotak hitam."
+        }
       ]
     },
     "footer": {
