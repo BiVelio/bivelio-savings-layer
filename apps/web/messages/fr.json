@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "La connexion n'est pas encore configurée — définissez NEXT_PUBLIC_SUPABASE_ANON_KEY dans le déploiement.",
     "checkEmail": "Consultez votre e-mail pour confirmer votre compte, puis connectez-vous.",
-    "somethingWrong": "Une erreur s'est produite."
+    "somethingWrong": "Une erreur s'est produite.",
+    "forgotPassword": "Mot de passe oublié ?",
+    "resetSubtitle": "Saisis ton e-mail et nous t'enverrons un lien pour réinitialiser ton mot de passe.",
+    "sendResetLink": "Envoyer le lien →",
+    "resetEmailSent": "Si cet e-mail est enregistré, nous avons envoyé un lien. Vérifie ta boîte.",
+    "backToLogin": "← Retour à la connexion",
+    "resetTitle": "Réinitialise ton mot de passe",
+    "newPasswordSubtitle": "Choisis un nouveau mot de passe pour ton compte.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirme le mot de passe",
+    "updatePassword": "Mettre à jour le mot de passe →",
+    "passwordUpdated": "Mot de passe mis à jour. Connexion…",
+    "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
+    "resetLinkExpired": "Ce lien est invalide ou a expiré. Demandes-en un nouveau."
   },
   "dashboard": {
     "overview": {

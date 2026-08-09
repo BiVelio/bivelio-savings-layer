@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "Inloggen is nog niet gekoppeld — stel NEXT_PUBLIC_SUPABASE_ANON_KEY in bij de deploy.",
     "checkEmail": "Controleer je e-mail om je account te bevestigen en log daarna in.",
-    "somethingWrong": "Er is iets misgegaan."
+    "somethingWrong": "Er is iets misgegaan.",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "resetSubtitle": "Voer je e-mail in en we sturen je een link om je wachtwoord opnieuw in te stellen.",
+    "sendResetLink": "Link versturen →",
+    "resetEmailSent": "Als dat e-mailadres bestaat, hebben we een link gestuurd. Controleer je inbox.",
+    "backToLogin": "← Terug naar inloggen",
+    "resetTitle": "Wachtwoord opnieuw instellen",
+    "newPasswordSubtitle": "Kies een nieuw wachtwoord voor je account.",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmPassword": "Bevestig wachtwoord",
+    "updatePassword": "Wachtwoord bijwerken →",
+    "passwordUpdated": "Wachtwoord bijgewerkt. Bezig met inloggen…",
+    "passwordsDontMatch": "De wachtwoorden komen niet overeen.",
+    "resetLinkExpired": "Deze link is ongeldig of verlopen. Vraag een nieuwe aan."
   },
   "dashboard": {
     "overview": {

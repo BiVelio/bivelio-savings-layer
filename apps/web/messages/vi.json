@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "Tính năng đăng nhập chưa được kết nối — hãy đặt NEXT_PUBLIC_SUPABASE_ANON_KEY trong bản triển khai.",
     "checkEmail": "Kiểm tra email để xác nhận tài khoản, rồi đăng nhập.",
-    "somethingWrong": "Đã xảy ra lỗi."
+    "somethingWrong": "Đã xảy ra lỗi.",
+    "forgotPassword": "Quên mật khẩu?",
+    "resetSubtitle": "Nhập email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.",
+    "sendResetLink": "Gửi liên kết →",
+    "resetEmailSent": "Nếu email đó đã đăng ký, chúng tôi đã gửi liên kết. Kiểm tra hộp thư của bạn.",
+    "backToLogin": "← Quay lại đăng nhập",
+    "resetTitle": "Đặt lại mật khẩu",
+    "newPasswordSubtitle": "Chọn mật khẩu mới cho tài khoản của bạn.",
+    "newPassword": "Mật khẩu mới",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "updatePassword": "Cập nhật mật khẩu →",
+    "passwordUpdated": "Đã cập nhật mật khẩu. Đang đăng nhập…",
+    "passwordsDontMatch": "Mật khẩu không khớp.",
+    "resetLinkExpired": "Liên kết này không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới."
   },
   "dashboard": {
     "overview": {

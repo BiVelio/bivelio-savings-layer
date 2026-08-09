@@ -148,6 +148,15 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .lp .sec-head p a:hover, .lp .lede a:hover, .auth-alt a:hover, .card p a:hover,
 .ck-note a:hover, .footnote a:hover { text-decoration-thickness: 2px; }
 
+/* Enlace de "olvidé la contraseña": un <button> que se ve y actúa como enlace,
+   para no meter navegación cuando solo cambia la vista del formulario. */
+.auth-link {
+  background: none; border: 0; padding: 0; margin: 0; cursor: pointer;
+  color: var(--brand); font: inherit;
+  text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px;
+}
+.auth-link:hover { text-decoration-thickness: 2px; }
+
 /* Titulares en la display de la marca — la regla `h1,h2,h3` de bivelio.com. */
 h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -.02em; font-weight: 600; }
 

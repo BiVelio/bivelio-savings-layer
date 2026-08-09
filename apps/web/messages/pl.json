@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "Logowanie nie jest jeszcze skonfigurowane — ustaw NEXT_PUBLIC_SUPABASE_ANON_KEY we wdrożeniu.",
     "checkEmail": "Sprawdź skrzynkę e-mail, aby potwierdzić konto, a następnie zaloguj się.",
-    "somethingWrong": "Coś poszło nie tak."
+    "somethingWrong": "Coś poszło nie tak.",
+    "forgotPassword": "Nie pamiętasz hasła?",
+    "resetSubtitle": "Podaj swój e-mail, a wyślemy link do zresetowania hasła.",
+    "sendResetLink": "Wyślij link →",
+    "resetEmailSent": "Jeśli ten e-mail jest zarejestrowany, wysłaliśmy link. Sprawdź skrzynkę.",
+    "backToLogin": "← Powrót do logowania",
+    "resetTitle": "Zresetuj hasło",
+    "newPasswordSubtitle": "Wybierz nowe hasło do swojego konta.",
+    "newPassword": "Nowe hasło",
+    "confirmPassword": "Potwierdź hasło",
+    "updatePassword": "Zaktualizuj hasło →",
+    "passwordUpdated": "Hasło zaktualizowane. Logowanie…",
+    "passwordsDontMatch": "Hasła nie są zgodne.",
+    "resetLinkExpired": "Ten link jest nieprawidłowy lub wygasł. Poproś o nowy."
   },
   "dashboard": {
     "overview": {

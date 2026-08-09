@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "El inicio de sesión aún no está configurado: define NEXT_PUBLIC_SUPABASE_ANON_KEY en el despliegue.",
     "checkEmail": "Revisa tu correo para confirmar tu cuenta y luego inicia sesión.",
-    "somethingWrong": "Algo salió mal."
+    "somethingWrong": "Algo salió mal.",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "resetSubtitle": "Escribe tu correo y te enviaremos un enlace para restablecer la contraseña.",
+    "sendResetLink": "Enviar enlace →",
+    "resetEmailSent": "Si ese correo está registrado, te hemos enviado un enlace. Revisa tu bandeja.",
+    "backToLogin": "← Volver a iniciar sesión",
+    "resetTitle": "Restablece tu contraseña",
+    "newPasswordSubtitle": "Elige una nueva contraseña para tu cuenta.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirma la contraseña",
+    "updatePassword": "Actualizar contraseña →",
+    "passwordUpdated": "Contraseña actualizada. Iniciando sesión…",
+    "passwordsDontMatch": "Las contraseñas no coinciden.",
+    "resetLinkExpired": "Este enlace no es válido o ha caducado. Solicita uno nuevo."
   },
   "dashboard": {
     "overview": {

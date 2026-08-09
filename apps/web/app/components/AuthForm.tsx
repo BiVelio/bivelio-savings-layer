@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
@@ -11,11 +11,16 @@ type Msg = { type: "error" | "info" | "idle"; text: string };
 
 export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<Msg>({ type: "idle", text: "" });
   const [loading, setLoading] = useState(false);
+  // Sub-vista de recuperación: solo aparece en login. Pide el email y manda el
+  // enlace de reset. El cambio de contraseña se hace en /reset-password, adonde
+  // lleva ese enlace tras pasar por /auth/callback.
+  const [view, setView] = useState<"form" | "reset">("form");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +33,16 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     try {
-      if (mode === "signup") {
+      if (view === "reset") {
+        // El enlace del email vuelve a /auth/callback, que crea la sesión de
+        // recuperación y redirige a la página de nueva contraseña (con locale).
+        const next = encodeURIComponent(`/${locale}/reset-password`);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/callback?next=${next}`,
+        });
+        if (error) throw error;
+        setMsg({ type: "info", text: t("resetEmailSent") });
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -49,9 +63,12 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
     }
   }
 
+  const enReset = view === "reset";
+
   return (
     <form onSubmit={onSubmit} noValidate>
       {msg.type !== "idle" ? <div className={`auth-msg ${msg.type}`}>{msg.text}</div> : null}
+      {enReset ? <p className="sub" style={{ marginTop: 0 }}>{t("resetSubtitle")}</p> : null}
       <div className="field">
         <label htmlFor="email">{t("workEmail")}</label>
         <input
@@ -64,22 +81,44 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
           placeholder="you@company.com"
         />
       </div>
-      <div className="field">
-        <label htmlFor="password">{t("password")}</label>
-        <input
-          id="password"
-          type="password"
-          autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-        />
-      </div>
+      {!enReset ? (
+        <div className="field">
+          <label htmlFor="password">{t("password")}</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+        </div>
+      ) : null}
       <button className="btn btn-primary auth-submit" type="submit" disabled={loading}>
-        {loading ? t("loadingEllipsis") : mode === "signup" ? t("createAccountCta") : t("signInCta")}
+        {loading
+          ? t("loadingEllipsis")
+          : enReset
+            ? t("sendResetLink")
+            : mode === "signup"
+              ? t("createAccountCta")
+              : t("signInCta")}
       </button>
+      {mode === "login" ? (
+        <p className="auth-alt" style={{ marginTop: "12px", textAlign: "center" }}>
+          <button
+            type="button"
+            className="auth-link"
+            onClick={() => {
+              setMsg({ type: "idle", text: "" });
+              setView(enReset ? "form" : "reset");
+            }}
+          >
+            {enReset ? t("backToLogin") : t("forgotPassword")}
+          </button>
+        </p>
+      ) : null}
     </form>
   );
 }

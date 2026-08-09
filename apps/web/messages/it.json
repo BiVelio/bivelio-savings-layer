@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "L'accesso non è ancora configurato: imposta NEXT_PUBLIC_SUPABASE_ANON_KEY nel deploy.",
     "checkEmail": "Controlla la tua email per confermare l'account, poi accedi.",
-    "somethingWrong": "Qualcosa è andato storto."
+    "somethingWrong": "Qualcosa è andato storto.",
+    "forgotPassword": "Password dimenticata?",
+    "resetSubtitle": "Inserisci la tua email e ti invieremo un link per reimpostare la password.",
+    "sendResetLink": "Invia il link →",
+    "resetEmailSent": "Se quell'email è registrata, ti abbiamo inviato un link. Controlla la posta.",
+    "backToLogin": "← Torna all'accesso",
+    "resetTitle": "Reimposta la password",
+    "newPasswordSubtitle": "Scegli una nuova password per il tuo account.",
+    "newPassword": "Nuova password",
+    "confirmPassword": "Conferma la password",
+    "updatePassword": "Aggiorna la password →",
+    "passwordUpdated": "Password aggiornata. Accesso in corso…",
+    "passwordsDontMatch": "Le password non coincidono.",
+    "resetLinkExpired": "Questo link non è valido o è scaduto. Richiedine uno nuovo."
   },
   "dashboard": {
     "overview": {

@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "Die Anmeldung ist noch nicht eingerichtet — setze NEXT_PUBLIC_SUPABASE_ANON_KEY im Deployment.",
     "checkEmail": "Prüfe deine E-Mails, um dein Konto zu bestätigen, und melde dich dann an.",
-    "somethingWrong": "Etwas ist schiefgelaufen."
+    "somethingWrong": "Etwas ist schiefgelaufen.",
+    "forgotPassword": "Passwort vergessen?",
+    "resetSubtitle": "Gib deine E-Mail ein und wir senden dir einen Link zum Zurücksetzen des Passworts.",
+    "sendResetLink": "Link senden →",
+    "resetEmailSent": "Falls diese E-Mail registriert ist, haben wir einen Link gesendet. Prüfe dein Postfach.",
+    "backToLogin": "← Zurück zur Anmeldung",
+    "resetTitle": "Passwort zurücksetzen",
+    "newPasswordSubtitle": "Wähle ein neues Passwort für dein Konto.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "updatePassword": "Passwort aktualisieren →",
+    "passwordUpdated": "Passwort aktualisiert. Anmeldung…",
+    "passwordsDontMatch": "Die Passwörter stimmen nicht überein.",
+    "resetLinkExpired": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an."
   },
   "dashboard": {
     "overview": {

@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "Giriş henüz yapılandırılmadı — dağıtımda NEXT_PUBLIC_SUPABASE_ANON_KEY değerini ayarlayın.",
     "checkEmail": "Hesabınızı onaylamak için e-postanızı kontrol edin, ardından giriş yapın.",
-    "somethingWrong": "Bir şeyler ters gitti."
+    "somethingWrong": "Bir şeyler ters gitti.",
+    "forgotPassword": "Şifreni mi unuttun?",
+    "resetSubtitle": "E-postanı gir, şifreni sıfırlaman için bir bağlantı gönderelim.",
+    "sendResetLink": "Bağlantı gönder →",
+    "resetEmailSent": "Bu e-posta kayıtlıysa bir bağlantı gönderdik. Gelen kutunu kontrol et.",
+    "backToLogin": "← Girişe dön",
+    "resetTitle": "Şifreni sıfırla",
+    "newPasswordSubtitle": "Hesabın için yeni bir şifre seç.",
+    "newPassword": "Yeni şifre",
+    "confirmPassword": "Şifreyi onayla",
+    "updatePassword": "Şifreyi güncelle →",
+    "passwordUpdated": "Şifre güncellendi. Giriş yapılıyor…",
+    "passwordsDontMatch": "Şifreler eşleşmiyor.",
+    "resetLinkExpired": "Bu bağlantı geçersiz veya süresi dolmuş. Yenisini iste."
   },
   "dashboard": {
     "overview": {

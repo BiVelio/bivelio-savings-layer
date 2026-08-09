@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "L'inici de sessió encara no està configurat: defineix NEXT_PUBLIC_SUPABASE_ANON_KEY al desplegament.",
     "checkEmail": "Revisa el teu correu per confirmar el compte i després inicia la sessió.",
-    "somethingWrong": "Alguna cosa ha anat malament."
+    "somethingWrong": "Alguna cosa ha anat malament.",
+    "forgotPassword": "Has oblidat la contrasenya?",
+    "resetSubtitle": "Escriu el teu correu i t'enviarem un enllaç per restablir la contrasenya.",
+    "sendResetLink": "Envia l'enllaç →",
+    "resetEmailSent": "Si aquest correu està registrat, t'hem enviat un enllaç. Revisa la safata.",
+    "backToLogin": "← Torna a iniciar sessió",
+    "resetTitle": "Restableix la contrasenya",
+    "newPasswordSubtitle": "Tria una nova contrasenya per al teu compte.",
+    "newPassword": "Nova contrasenya",
+    "confirmPassword": "Confirma la contrasenya",
+    "updatePassword": "Actualitza la contrasenya →",
+    "passwordUpdated": "Contrasenya actualitzada. Iniciant sessió…",
+    "passwordsDontMatch": "Les contrasenyes no coincideixen.",
+    "resetLinkExpired": "Aquest enllaç no és vàlid o ha caducat. Sol·licita'n un de nou."
   },
   "dashboard": {
     "overview": {

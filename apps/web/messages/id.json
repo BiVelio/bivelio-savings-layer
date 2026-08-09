@@ -43,7 +43,20 @@
     "loadingEllipsis": "…",
     "notWired": "Fitur masuk belum tersambung — atur NEXT_PUBLIC_SUPABASE_ANON_KEY di deployment.",
     "checkEmail": "Periksa email Anda untuk mengonfirmasi akun, lalu masuk.",
-    "somethingWrong": "Terjadi kesalahan."
+    "somethingWrong": "Terjadi kesalahan.",
+    "forgotPassword": "Lupa kata sandi?",
+    "resetSubtitle": "Masukkan email Anda dan kami akan mengirim tautan untuk mengatur ulang kata sandi.",
+    "sendResetLink": "Kirim tautan →",
+    "resetEmailSent": "Jika email itu terdaftar, kami telah mengirim tautan. Periksa kotak masuk Anda.",
+    "backToLogin": "← Kembali ke masuk",
+    "resetTitle": "Atur ulang kata sandi",
+    "newPasswordSubtitle": "Pilih kata sandi baru untuk akun Anda.",
+    "newPassword": "Kata sandi baru",
+    "confirmPassword": "Konfirmasi kata sandi",
+    "updatePassword": "Perbarui kata sandi →",
+    "passwordUpdated": "Kata sandi diperbarui. Masuk…",
+    "passwordsDontMatch": "Kata sandi tidak cocok.",
+    "resetLinkExpired": "Tautan ini tidak valid atau kedaluwarsa. Minta yang baru."
   },
   "dashboard": {
     "overview": {
