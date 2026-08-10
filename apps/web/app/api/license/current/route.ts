@@ -1,7 +1,8 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 
 /**
  * GET /api/license/current — devuelve al dueño de la organización el token de su
@@ -45,37 +46,14 @@ interface LicenseRow {
   grace_days: number;
 }
 
-export async function GET(): Promise<NextResponse> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return json({ error: "Sign in first." }, 401);
-
-  let admin;
-  try {
-    admin = createAdminClient();
-  } catch {
-    return json({ error: "License service isn't configured." }, 501);
-  }
-
-  // Organizaciones a las que pertenece de verdad. Se añade `user.id` porque la
-  // convención CP-0 es org_id == id del usuario y es lo que el checkout mete en
-  // los metadatos; sin él, una cuenta cuya fila de pertenencia aún no exista se
-  // quedaría sin su propia licencia.
-  const orgIds = new Set<string>([user.id]);
-  const { data: miembro } = await admin.from("org_members").select("org_id").eq("user_id", user.id);
-  for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
-    if (fila.org_id) orgIds.add(fila.org_id);
-  }
-
-  // La vigente = la más nueva sin revocar. `issued_at` se guarda truncado a
-  // segundos, así que dos emisiones del mismo segundo empatarían; se desempata
-  // por `created_at`, que tiene resolución de microsegundos.
+/** La vigente = la más nueva sin revocar, servida con la forma pública de la
+ *  ruta. `issued_at` se guarda truncado a segundos, así que dos emisiones del
+ *  mismo segundo empatarían; se desempata por `created_at` (microsegundos). */
+async function entregarLicencia(admin: AdminClient, orgIds: string[]): Promise<NextResponse> {
   const { data, error } = await admin
     .from("licenses")
     .select("id, org_id, plan, seats, token, expires_at, grace_days")
-    .in("org_id", [...orgIds])
+    .in("org_id", orgIds)
     .eq("revoked", false)
     .order("issued_at", { ascending: false })
     .order("created_at", { ascending: false })
@@ -105,4 +83,66 @@ export async function GET(): Promise<NextResponse> {
     },
     200,
   );
+}
+
+/**
+ * Vía MÁQUINA: `Authorization: Bearer bvk_…` — la renovación mensual sin
+ * humanos. `invoice.paid` emite un token nuevo, pero la entrega era solo de
+ * sesión: una máquina en producción con su `licenseKey` estático no podía
+ * recoger el renovado y se apagaba fail-closed hacia el día ~45 de cada ciclo,
+ * PAGANDO. La clave de servicio ya es la credencial de la org (autentica el
+ * ingest de metering, con acceso a `usage_daily` de la org); recoger el token
+ * de SU PROPIA org no le concede nada de otro alcance. Misma autenticación que
+ * /api/metering/usage: hash → `service_accounts` → org derivada en el servidor.
+ */
+async function entregarAServiceAccount(clave: string): Promise<NextResponse> {
+  let admin: AdminClient;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return json({ error: "License service isn't configured." }, 501);
+  }
+  const keyHash = createHash("sha256").update(clave).digest("hex");
+  const { data: sa, error: saErr } = await admin
+    .from("service_accounts")
+    .select("org_id")
+    .eq("key_hash", keyHash)
+    .maybeSingle();
+  if (saErr) {
+    console.error("[license/current] service-account lookup failed:", saErr);
+    return json({ error: "Could not read your license." }, 503);
+  }
+  if (!sa?.org_id) return json({ error: "unauthorized" }, 401);
+  return entregarLicencia(admin, [sa.org_id as string]);
+}
+
+export async function GET(req: Request): Promise<NextResponse> {
+  const auth = req.headers.get("authorization") ?? "";
+  const portador = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (portador.startsWith("bvk_")) return entregarAServiceAccount(portador);
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return json({ error: "Sign in first." }, 401);
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return json({ error: "License service isn't configured." }, 501);
+  }
+
+  // Organizaciones a las que pertenece de verdad. Se añade `user.id` porque la
+  // convención CP-0 es org_id == id del usuario y es lo que el checkout mete en
+  // los metadatos; sin él, una cuenta cuya fila de pertenencia aún no exista se
+  // quedaría sin su propia licencia.
+  const orgIds = new Set<string>([user.id]);
+  const { data: miembro } = await admin.from("org_members").select("org_id").eq("user_id", user.id);
+  for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
+    if (fila.org_id) orgIds.add(fila.org_id);
+  }
+
+  return entregarLicencia(admin, [...orgIds]);
 }
