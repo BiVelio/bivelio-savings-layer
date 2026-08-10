@@ -23,7 +23,7 @@ function proc(): ProcLike | undefined {
 }
 
 /**
- * ¿El HOSTNAME de este entorno sobrevive a un reinicio?
+ * ¿Este nombre de máquina sobrevive a un reinicio?
  *
  * En Docker es el id del contenedor (12 hex) y en Kubernetes lleva el sufijo
  * aleatorio del pod: los dos cambian en CADA arranque. Meterlos en la huella
@@ -33,24 +33,65 @@ function proc(): ProcLike | undefined {
  * nunca acumula tres días con el mismo id, así que la base facturable se
  * desploma a CERO. El docstring de este módulo prometía justo lo contrario.
  */
-function hostnameEsEfimero(e: Record<string, string | undefined>): boolean {
-  if (e["KUBERNETES_SERVICE_HOST"]) return true; // pod: sufijo aleatorio
-  const h = e["HOSTNAME"];
-  if (!h) return false;
+function esNombreEfimero(h: string): boolean {
   if (/^[0-9a-f]{12}$/.test(h)) return true; // id corto de contenedor Docker
   return /-[0-9a-z]{5,10}-[0-9a-z]{5}$/.test(h); // <deploy>-<rs>-<pod> de k8s
 }
 
+/**
+ * Lee `os.hostname()` sin que el módulo gane un import de builtin de Node.
+ *
+ * El especificador se construye en tiempo de ejecución (join, no un literal que
+ * esbuild pudiera plegar) para que el bundler NO lo resuelva ni lo meta en el
+ * bundle de navegador; en un navegador `proc()?.execPath` no existe y esto ni
+ * se intenta, y si algún runtime raro lo intentara igual, el catch lo absorbe.
+ */
+async function nodeHostname(): Promise<string | undefined> {
+  if (!proc()?.execPath) return undefined; // solo un runtime Node-like
+  try {
+    const especificador = ["node", "os"].join(":");
+    const os = (await import(/* @vite-ignore */ especificador)) as {
+      hostname?: () => string;
+    };
+    const h = typeof os.hostname === "function" ? os.hostname() : "";
+    return h.length > 0 ? h : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * El nombre estable de la máquina, si existe.
+ *
+ * `HOSTNAME` es una variable de bash INTERACTIVO: bajo systemd, launchd o
+ * cualquier gestor de servicios —el despliegue de producción más común— no está
+ * en el entorno. Con `host=undefined`, la huella quedaba en
+ * platform|arch|execPath|USER|HOME, que es IDÉNTICA en una flota de VMs
+ * clonadas: 10 máquinas facturaban como 1 asiento. No era solo un problema de
+ * contenedores. De ahí el fallback a `os.hostname()`, que sí existe siempre en
+ * Node. Un nombre efímero (contenedor/pod) se sigue descartando venga de donde
+ * venga: más vale que varias réplicas compartan asiento a que cada reinicio
+ * invente uno nuevo y la facturación no cuente ninguno.
+ *
+ * Exportada para poder probar la lógica con un lector inyectado; el parámetro
+ * tiene el valor real por defecto.
+ */
+export async function hostDeMaquina(
+  e: Record<string, string | undefined>,
+  leerHostname: () => Promise<string | undefined> = nodeHostname,
+): Promise<string | undefined> {
+  if (e["KUBERNETES_SERVICE_HOST"]) return undefined; // pod: sufijo aleatorio
+  const candidato = e["HOSTNAME"] ?? e["COMPUTERNAME"] ?? (await leerHostname());
+  if (!candidato || esNombreEfimero(candidato)) return undefined;
+  return candidato;
+}
+
 /** Stable-ish per-machine+user fingerprint from ambient process info (Node). */
-function machineFingerprint(): string | undefined {
+async function machineFingerprint(): Promise<string | undefined> {
   const p = proc();
   if (!p || !p.env) return undefined;
   const e = p.env;
-  // El hostname solo entra en la huella si de verdad identifica a la máquina.
-  // Si es efímero se descarta: más vale que varias réplicas de un despliegue
-  // compartan asiento —son una misma identidad de servicio— a que cada reinicio
-  // invente uno nuevo y la facturación no cuente ninguno.
-  const host = hostnameEsEfimero(e) ? undefined : (e["HOSTNAME"] ?? e["COMPUTERNAME"]);
+  const host = await hostDeMaquina(e);
   const parts = [
     p.platform,
     p.arch,
@@ -149,7 +190,7 @@ export async function deriveSeatId(serviceAccountKey: string): Promise<string | 
   const explicito = env?.["BVSALA_SEAT_ID"];
   if (explicito && SEAT_ID_PATTERN.test(explicito)) return explicito;
 
-  const fp = machineFingerprint();
+  const fp = await machineFingerprint();
   if (!fp) return undefined;
   const hex = await hmacSha256Hex(serviceAccountKey, fp);
   if (!hex) return undefined;
