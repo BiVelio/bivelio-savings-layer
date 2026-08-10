@@ -27,6 +27,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** `no-store` en TODAS las respuestas, no solo en la que lleva el token. Ninguna
+ *  de las de error contiene credencial, pero un endpoint de credencial no debería
+ *  tener ni una respuesta cacheable: así no depende de qué rama se tomó. */
+const SIN_CACHE = { "Cache-Control": "no-store" } as const;
+
+const json = (cuerpo: unknown, status: number) =>
+  NextResponse.json(cuerpo, { status, headers: SIN_CACHE });
+
 interface LicenseRow {
   id: string;
   org_id: string;
@@ -42,13 +50,13 @@ export async function GET(): Promise<NextResponse> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+  if (!user) return json({ error: "Sign in first." }, 401);
 
   let admin;
   try {
     admin = createAdminClient();
   } catch {
-    return NextResponse.json({ error: "License service isn't configured." }, { status: 501 });
+    return json({ error: "License service isn't configured." }, 501);
   }
 
   // Organizaciones a las que pertenece de verdad. Se añade `user.id` porque la
@@ -76,17 +84,17 @@ export async function GET(): Promise<NextResponse> {
 
   if (error) {
     console.error("[license/current] lookup failed:", error);
-    return NextResponse.json({ error: "Could not read your license." }, { status: 503 });
+    return json({ error: "Could not read your license." }, 503);
   }
 
   const lic = data as LicenseRow | null;
   if (!lic?.token) {
     // 404 y no 402: aquí no se juzga si puede comprar, solo si hay algo que
     // entregar. Quien no tenga licencia pasa por el checkout.
-    return NextResponse.json({ error: "No active license for this account." }, { status: 404 });
+    return json({ error: "No active license for this account." }, 404);
   }
 
-  return NextResponse.json(
+  return json(
     {
       token: lic.token,
       jti: lic.id,
@@ -95,6 +103,6 @@ export async function GET(): Promise<NextResponse> {
       expiresAt: lic.expires_at,
       graceDays: lic.grace_days,
     },
-    { headers: { "Cache-Control": "no-store" } },
+    200,
   );
 }
