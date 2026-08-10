@@ -8,7 +8,8 @@ import { BrandMark } from "@/app/components/BrandMark";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "auth" });
-  return { title: t("signupTitle") };
+  // Pantalla de aplicación, no de marketing: fuera del índice.
+  return { title: t("signupTitle"), robots: { index: false, follow: false } };
 }
 
 export default async function SignupPage({ params }: { params: Promise<{ locale: string }> }) {

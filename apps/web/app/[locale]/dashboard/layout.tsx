@@ -7,6 +7,11 @@ import { loadDashboard, planLabel } from "./load";
 
 export const dynamic = "force-dynamic";
 
+// Todo /dashboard/* queda fuera del índice desde el propio shell, así que ninguna
+// pantalla nueva bajo esta rama puede olvidarse de declararlo. Va aquí y no en el
+// layout raíz a propósito: la landing SÍ debe indexarse.
+export const metadata = { robots: { index: false, follow: false } };
+
 /**
  * Dashboard shell: sticky topbar + left sidebar + main content, wrapping every
  * /dashboard/* route. Single auth gate — an expired token bounces through

@@ -13,6 +13,7 @@ import { ScenarioTable } from "@/app/[locale]/dashboard/components/ScenarioTable
 import { CacheBreakEven } from "@/app/[locale]/dashboard/components/CacheBreakEven";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
+import { absolute, languageAlternates } from "@/i18n/site";
 
 // The measured A/B artifact powers Step 2 (the reference bench) and the price
 // used by the Step-1 projector — exactly like the dashboard verify/proof pages.
@@ -73,7 +74,35 @@ const CODE: { cls?: "c" | "k" | "s"; v: string }[][] = [
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "landing" });
-  return { title: t("metaTitle"), description: t("metaDescription") };
+  const title = t("metaTitle");
+  const description = t("metaDescription");
+  const url = absolute(`/${locale}`);
+
+  return {
+    title,
+    description,
+    // `canonical` por idioma + `hreflang` de los 12 (con x-default). Sin esto,
+    // doce traducciones de esta misma página compiten entre sí como duplicados.
+    alternates: { canonical: url, languages: languageAlternates() },
+    // Sin Open Graph, compartir el enlace en LinkedIn, X, Slack o WhatsApp
+    // producía una URL pelada, sin título ni imagen. Para un producto cuyo gancho
+    // es "entra y verifica tu ahorro", esa tarjeta es la primera impresión.
+    openGraph: {
+      type: "website",
+      siteName: "BiVelio Savings Layer",
+      title,
+      description,
+      url,
+      locale,
+      images: [{ url: `${url}/opengraph-image`, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`${url}/opengraph-image`],
+    },
+  };
 }
 
 export default async function LandingPage({ params }: { params: Promise<{ locale: string }> }) {

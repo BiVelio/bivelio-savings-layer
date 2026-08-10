@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   title: "BiVelio — Savings Layer",
   description:
     "BV-SALA — BiVelio's provider-neutral LLM cost optimizer. Verify the savings on your own data, then sign in with your BiVelio account.",
-  robots: { index: false, follow: false },
+  // NO hay `robots: noindex` global. Lo hubo, y silenciaba el sitio entero: la
+  // landing de los 12 idiomas servía `noindex, nofollow`, que no es "no me
+  // encuentran" sino "prohíbo indexarme y seguir mis enlaces". El bloqueo se
+  // aplica ahora SOLO donde toca — el shell del dashboard y las tres pantallas
+  // de auth lo declaran en su propio metadata.
   icons: { icon: "/logo-bivelio.png", apple: "/logo-bivelio.png" },
 };
 

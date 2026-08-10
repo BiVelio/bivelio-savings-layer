@@ -8,7 +8,8 @@ import ResetPasswordForm from "@/app/components/ResetPasswordForm";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "auth" });
-  return { title: t("resetTitle") };
+  // Pantalla de aplicación, no de marketing: fuera del índice.
+  return { title: t("resetTitle"), robots: { index: false, follow: false } };
 }
 
 export default async function ResetPasswordPage({ params }: { params: Promise<{ locale: string }> }) {
