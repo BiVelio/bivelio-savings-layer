@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { revokeLicense } from "@/lib/license/issue";
 
 /**
  * Admin revoke — records a jti in the append-only revocation ledger so the SDK's
@@ -49,13 +50,15 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   try {
     const supabase = createAdminClient();
-    const { error } = await supabase
-      .from("revocations")
-      .upsert(
-        { jti: body.jti, reason: body.reason ?? null },
-        { onConflict: "jti", ignoreDuplicates: true },
-      );
-    if (error) throw error;
+    // Por revokeLicense(), NO un upsert crudo al ledger. La ruta solo escribía
+    // `revocations` y nunca marcaba `licenses.revoked`, y de esa columna dependen
+    // los DOS candados del servidor: `/api/license/current` filtra
+    // `.eq("revoked", false)` — re-ENTREGABA la credencial revocada a cualquier
+    // miembro/máquina — y `decideEntitlement` la lee para bloquear el ingest.
+    // Una revocación manual (fraude, chargeback, token filtrado) solo la
+    // aplicaba el poller del SDK del cliente, que es parcheable.
+    // revokeLicense hace ledger PRIMERO (fail-closed) y después la fila.
+    await revokeLicense(supabase, body.jti, body.reason ?? "admin revoke");
   } catch (err) {
     console.error("[license/revoke] insert error:", err);
     return NextResponse.json({ error: "could not record revocation" }, { status: 500 });
