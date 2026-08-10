@@ -360,21 +360,34 @@ export class SavingsPipeline {
     }
 
     // --- Stage 5: execution routing (avoid retrieval / tools). ---
-    const route: RouteDecision =
-      toggles.router === false
-        ? defaultRoute()
-        : this.deps.router.classify(canonical);
+    const routerApagado = toggles.router === false;
+    const route: RouteDecision = routerApagado
+      ? defaultRoute()
+      : this.deps.router.classify(canonical);
     trace.record("router", route.executionClass, {
       confidence: route.confidence,
       reason: route.reason,
     });
 
     // --- Stage 6: tool selection. ---
-    const toolSelection = this.deps.toolSelector.select(
-      canonical.normalizedText,
-      request.tools,
-      route.executionClass,
-    );
+    // Con el router APAGADO no hay clasificación de la que derivar el riesgo, y el
+    // selector solo deja pasar write/destructive con TOOL_ACTION: filtrar sobre el
+    // defaultRoute() (NO_RETRIEVAL) tiraba las herramientas de escritura en
+    // silencio — el mismo fallo que se cerró para `retrieval:"off"`, reabierto por
+    // la palanca hermana, y justo en el "shadow mode" que el docstring del router
+    // recomienda como primer paso. Apagar el router significa "no optimices por
+    // esta vía", así que las herramientas del llamante pasan ÍNTEGRAS.
+    const toolSelection = routerApagado
+      ? {
+          tools: request.tools ?? [],
+          droppedIds: [] as string[],
+          reason: "router off: caller tools passed through unfiltered",
+        }
+      : this.deps.toolSelector.select(
+          canonical.normalizedText,
+          request.tools,
+          route.executionClass,
+        );
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
       trace.record("tool-selector", toolSelection.reason, {
@@ -613,7 +626,17 @@ export class SavingsPipeline {
     // --- Stage 11: structural validation (+ at most one repair). ---
     let data: unknown = response.text;
     let structurallyValid = true;
-    if (schema) {
+    // El modelo PIDIÓ ejecutar herramientas: `text` viene vacío a propósito y la
+    // respuesta final no existe todavía (llegará cuando el llamante ejecute la
+    // acción y continúe el turno). Validar "" contra el contrato aquí disparaba
+    // una reparación PAGADA condenada a fallar — el modelo no puede dar la
+    // respuesta final antes de conocer el resultado de la herramienta —, así que
+    // el contrato de salida se aplica SOLO a respuestas finales.
+    const pidioHerramientas = (response.toolCalls?.length ?? 0) > 0;
+    if (schema && pidioHerramientas) {
+      trace.record("validation", "skipped: model requested tool calls (the output contract applies to the final answer)");
+    }
+    if (schema && !pidioHerramientas) {
       const parsed = tryParse(response.text);
       let validation = parsed.ok
         ? validateAgainstSchema(parsed.value, schema)
@@ -773,8 +796,19 @@ export class SavingsPipeline {
       // modelo se convertía en una caída de 24 h para esa consulta — contabilizada
       // como el mayor ahorro del día, porque cada relectura acreditaba una llamada
       // evitada al 100 %.
-      const cacheable = structurallyValid !== false;
-      if (!cacheable) trace.record("cache-write", "skipped: response fails its output contract");
+      // Tampoco se cachea una PETICIÓN DE HERRAMIENTA. No es una respuesta: es
+      // la orden de ejecutar una acción. Reproducirla desde caché servía "" como
+      // texto durante 24 h y acreditaba una llamada 100 % evitada sobre una
+      // acción que nunca se ejecutó — ahorro inventado sobre trabajo no hecho.
+      const cacheable = structurallyValid !== false && !pidioHerramientas;
+      if (!cacheable) {
+        trace.record(
+          "cache-write",
+          pidioHerramientas
+            ? "skipped: tool-call turn (an action request must not be replayed from cache)"
+            : "skipped: response fails its output contract",
+        );
+      }
 
       if (cacheable && policy.allowExactCache && toggles.exactCache !== false) {
         // TTL finito (no "para siempre") para que una consulta que la heurística
@@ -800,11 +834,18 @@ export class SavingsPipeline {
       });
     }
 
-    return this.finish<T>(
+    const result = this.finish<T>(
       request, canonical, answer, "miss", ledger, costModel, trace,
       route, formatChoice, undefined, undefined, structurallyValid,
       backendPlan.backend, providerMs,
     );
+    // Las tool calls y el finishReason viajan HASTA EL LLAMANTE. Se quedaban en
+    // ProviderResponse: el arreglo del adaptador (content:null + tool_calls)
+    // moría una capa más arriba porque aquí solo se copiaba `text`, y el cliente
+    // recibía cadena vacía como si fuera la respuesta buena.
+    if (pidioHerramientas) result.toolCalls = response.toolCalls!;
+    if (response.finishReason !== undefined) result.finishReason = response.finishReason;
+    return result;
   }
 
   // --- helpers -----------------------------------------------------------
@@ -981,7 +1022,10 @@ export class SavingsPipeline {
 
     let data: unknown = response.text;
     let structurallyValid = true;
-    if (schema) {
+    // Igual que en el camino optimizado: un turno de tool calls no es la
+    // respuesta final, así que ni se valida contra el contrato ni se pierde.
+    const pidioHerramientas = (response.toolCalls?.length ?? 0) > 0;
+    if (schema && !pidioHerramientas) {
       const parsed = tryParse(response.text);
       structurallyValid = parsed.ok ? validateAgainstSchema(parsed.value, schema).valid : false;
       if (parsed.ok) data = parsed.value;
@@ -991,7 +1035,14 @@ export class SavingsPipeline {
       request, canonical, "miss", ledger, costModel, trace, defaultRoute(),
       jsonFallbackChoice(), undefined, undefined, structurallyValid, "none", providerMs,
     );
-    return { requestId: report.requestId, data: data as T, text: response.text, report };
+    return {
+      requestId: report.requestId,
+      data: data as T,
+      text: response.text,
+      ...(pidioHerramientas ? { toolCalls: response.toolCalls! } : {}),
+      ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+      report,
+    };
   }
 
   private asCoalescedFollower<T>(
