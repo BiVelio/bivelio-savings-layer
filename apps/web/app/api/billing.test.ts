@@ -22,11 +22,15 @@ interface Escenario {
   usuario: { id: string; email?: string } | null;
   licencia: Record<string, unknown> | null;
   suscripcionActiva: Record<string, unknown> | null;
+  serviceAccount: Record<string, unknown> | null;
   errorLicencia?: unknown;
   errorSuscripcion?: unknown;
 }
 
-const esc: Escenario = { usuario: null, licencia: null, suscripcionActiva: null };
+const esc: Escenario = { usuario: null, licencia: null, suscripcionActiva: null, serviceAccount: null };
+
+/** Petición de la vía de SESIÓN (sin cabecera de autorización). */
+const peticionSesion = () => new Request("https://savings.bivelio.com/api/license/current");
 /** Registra cada upsert para poder afirmar que la pertenencia SÍ se escribe. */
 const upserts: { tabla: string; fila: unknown }[] = [];
 
@@ -48,6 +52,7 @@ function tabla(nombre: string) {
   q.maybeSingle = async () => {
     if (nombre === "licenses") return { data: esc.licencia, error: esc.errorLicencia ?? null };
     if (nombre === "subscriptions") return { data: esc.suscripcionActiva, error: esc.errorSuscripcion ?? null };
+    if (nombre === "service_accounts") return { data: esc.serviceAccount, error: null };
     if (nombre === "organizations") return { data: null, error: null };
     return { data: null, error: null };
   };
@@ -104,9 +109,11 @@ vi.mock("@/lib/stripe/client", () => ({
 }));
 
 // La emisión real necesita la clave Ed25519 del servidor; aquí solo interesa que
-// la PERTENENCIA se escriba, así que se sustituye por un doble.
+// la PERTENENCIA se escriba, así que se sustituye por un doble. Es un espía para
+// poder afirmar también cuándo NO debe emitirse (checkout reentregado).
+const emitirLicencia = vi.fn(async () => ({ jti: "jti-1", token: "bvl.t", expiresAt: 1_802_592_000 }));
 vi.mock("@/lib/license/issue", () => ({
-  issueLicense: async () => ({ jti: "jti-1", token: "bvl.t", expiresAt: 1_802_592_000 }),
+  issueLicense: (...a: unknown[]) => emitirLicencia(...(a as [])),
   supersedeLicense: async () => {},
   currentLicense: async () => null,
   currentLicenseJti: async () => null,
@@ -117,10 +124,13 @@ beforeEach(() => {
   esc.usuario = { id: "11111111-1111-4111-8111-111111111111", email: "cliente@example.com" };
   esc.licencia = null;
   esc.suscripcionActiva = null;
+  esc.serviceAccount = null;
   esc.errorLicencia = undefined;
   esc.errorSuscripcion = undefined;
   upserts.length = 0;
   crearSesion.mockClear();
+  emitirLicencia.mockClear();
+  suscripcionStripe.status = "active";
 });
 
 // --- B1: la licencia pagada se puede recoger -----------------------------------
@@ -137,7 +147,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
       grace_days: 14,
     };
     const { GET } = await import("./license/current/route.js");
-    const res = await GET();
+    const res = await GET(peticionSesion());
     expect(res.status).toBe(200);
     const body = (await res.json()) as { token?: string; seats?: number; plan?: string };
     // ESTE es el defecto B1: antes el token no era recuperable por ninguna vía.
@@ -157,13 +167,13 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
       grace_days: 14,
     };
     const { GET } = await import("./license/current/route.js");
-    const res = await GET();
+    const res = await GET(peticionSesion());
     expect(res.headers.get("cache-control")).toBe("no-store");
   });
 
   it("404 cuando no hay licencia, sin filtrar nada", async () => {
     const { GET } = await import("./license/current/route.js");
-    const res = await GET();
+    const res = await GET(peticionSesion());
     expect(res.status).toBe(404);
     expect(JSON.stringify(await res.json())).not.toContain("bvl.");
   });
@@ -172,7 +182,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
     esc.usuario = null;
     esc.licencia = { id: "l", org_id: "o", plan: "pro", seats: 1, token: "SECRETO", expires_at: "x", grace_days: 14 };
     const { GET } = await import("./license/current/route.js");
-    const res = await GET();
+    const res = await GET(peticionSesion());
     expect(res.status).toBe(401);
     expect(JSON.stringify(await res.json())).not.toContain("SECRETO");
   });
@@ -180,7 +190,51 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
   it("una licencia revocada sin token no se entrega como si fuera válida", async () => {
     esc.licencia = { id: "l", org_id: esc.usuario!.id, plan: "pro", seats: 1, token: null, expires_at: "x", grace_days: 14 };
     const { GET } = await import("./license/current/route.js");
-    expect((await GET()).status).toBe(404);
+    expect((await GET(peticionSesion())).status).toBe(404);
+  });
+});
+
+// --- la RENOVACIÓN también llega: vía máquina con la clave de servicio ---------
+
+describe("GET /api/license/current — vía máquina (bvk_): la renovación se recoge sin humanos", () => {
+  const conBvk = (clave: string) =>
+    new Request("https://savings.bivelio.com/api/license/current", {
+      headers: { authorization: `Bearer ${clave}` },
+    });
+
+  it("una clave de servicio válida recibe el token vigente de SU org", async () => {
+    esc.usuario = null; // sin sesión: es una máquina, no un humano
+    esc.serviceAccount = { org_id: "org-maquina" };
+    esc.licencia = {
+      id: "lic-renovada",
+      org_id: "org-maquina",
+      plan: "pro",
+      seats: 2,
+      token: "bvl.renovado",
+      expires_at: "2027-01-31T00:00:00.000Z",
+      grace_days: 14,
+    };
+    const { GET } = await import("./license/current/route.js");
+    const res = await GET(conBvk("bvk_test_123"));
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { token?: string }).token).toBe("bvl.renovado");
+    expect(res.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("una bvk_ desconocida: 401 y ni rastro del token", async () => {
+    esc.serviceAccount = null;
+    esc.licencia = { id: "l", org_id: "o", plan: "pro", seats: 1, token: "SECRETO", expires_at: "x", grace_days: 14 };
+    const { GET } = await import("./license/current/route.js");
+    const res = await GET(conBvk("bvk_falsa"));
+    expect(res.status).toBe(401);
+    expect(JSON.stringify(await res.json())).not.toContain("SECRETO");
+  });
+
+  it("sin sesión y sin bvk_, sigue siendo 401 (la vía de sesión no se relajó)", async () => {
+    esc.usuario = null;
+    const { GET } = await import("./license/current/route.js");
+    const res = await GET(new Request("https://savings.bivelio.com/api/license/current"));
+    expect(res.status).toBe(401);
   });
 });
 
@@ -271,5 +325,62 @@ describe("POST /api/stripe/webhook — B2: la pertenencia se crea al pagar", () 
     const pertenencia = upserts.find((u) => u.tabla === "org_members");
     expect(pertenencia, "el webhook debe crear la pertenencia del que paga").toBeTruthy();
     expect(pertenencia!.fila).toMatchObject({ org_id: orgId, user_id: orgId, role: "owner" });
+  });
+});
+
+// --- un checkout.session.completed reentregado no reabre una org cancelada -----
+
+describe("POST /api/stripe/webhook — el reintento tardío de un checkout no resucita una org", () => {
+  const orgId = "33333333-3333-4333-8333-333333333333";
+  const eventoCheckout = () => ({
+    id: "evt_replay",
+    type: "checkout.session.completed",
+    created: 1_700_000_000,
+    data: {
+      object: {
+        mode: "subscription",
+        metadata: { org_id: orgId, email: "cliente@example.com" },
+        client_reference_id: orgId,
+        subscription: "sub_123",
+      },
+    },
+  });
+  const dispara = async () => {
+    const { POST } = await import("./stripe/webhook/route.js");
+    return POST(
+      new Request("https://savings.bivelio.com/api/stripe/webhook", {
+        method: "POST",
+        body: "{}",
+        headers: { "stripe-signature": "t=1,v1=x" },
+      }),
+    );
+  };
+
+  it("con la suscripción YA cancelada: ni plan pro, ni pertenencia, ni licencia", async () => {
+    // El escenario: el primer intento del evento respondió 503, Stripe reintenta
+    // hasta 72 h y entre medias se procesó subscription.deleted. El retrieve
+    // fresco devuelve la suscripción cancelada.
+    suscripcionStripe.status = "canceled";
+    construirEvento.mockReturnValueOnce(eventoCheckout());
+    const res = await dispara();
+    expect(res.status).toBe(200); // reconocido y registrado, pero SIN efectos
+    expect(emitirLicencia).not.toHaveBeenCalled();
+    expect(upserts.find((u) => u.tabla === "org_members")).toBeFalsy();
+    expect(upserts.find((u) => u.tabla === "organizations")).toBeFalsy();
+  });
+
+  it("fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA licencia", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", seats: 2, last_event_at: "2099-01-01T00:00:00.000Z" };
+    construirEvento.mockReturnValueOnce(eventoCheckout());
+    const res = await dispara();
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
+  it("el camino feliz sigue emitiendo la licencia (el cobro no se rompió)", async () => {
+    construirEvento.mockReturnValueOnce(eventoCheckout());
+    const res = await dispara();
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
   });
 });
