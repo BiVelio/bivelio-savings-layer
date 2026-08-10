@@ -136,15 +136,26 @@ async function upsertSub(
   admin: Admin,
   sub: Stripe.Subscription,
   orgId: string,
-): Promise<{ id: string | null; prevSeats: number | null }> {
+  eventCreated: number,
+): Promise<{ id: string | null; prevSeats: number | null; stale: boolean }> {
   const f = subFacts(sub);
   const { data: existing } = await admin
     .from("subscriptions")
-    .select("id, seats")
+    .select("id, seats, last_event_at")
     .eq("stripe_subscription_id", sub.id)
     .maybeSingle();
   const prevSeats = (existing as { seats?: number } | null)?.seats ?? null;
   const existingId = (existing as { id?: string } | null)?.id ?? null;
+
+  // GUARDIA DE ORDEN. Stripe no garantiza orden y reintenta durante días lo que
+  // respondió 5xx, así que un evento viejo puede reentrar DESPUÉS de uno nuevo.
+  // Si el que llega es anterior al último aplicado, no se toca la fila: aplicarlo
+  // des-cancelaría una org o revertiría un cambio de asientos. `event.created` es
+  // del ORIGEN, inmutable entre reintentos.
+  const lastEventAt = (existing as { last_event_at?: string | null } | null)?.last_event_at ?? null;
+  if (lastEventAt && eventCreated * 1000 < new Date(lastEventAt).getTime()) {
+    return { id: existingId, prevSeats, stale: true };
+  }
 
   const row: Record<string, unknown> = {
     org_id: orgId,
@@ -158,6 +169,7 @@ async function upsertSub(
     current_period_end: iso(f.periodEnd),
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     canceled_at: iso(sub.canceled_at),
+    last_event_at: iso(eventCreated),
     updated_at: new Date().toISOString(),
   };
   const { data, error } = await admin
@@ -166,14 +178,14 @@ async function upsertSub(
     .select("id")
     .maybeSingle();
   if (error) throw error;
-  return { id: (data as { id?: string } | null)?.id ?? existingId, prevSeats };
+  return { id: (data as { id?: string } | null)?.id ?? existingId, prevSeats, stale: false };
 }
 
 // ---------------------------------------------------------------------------
 // Event handlers
 // ---------------------------------------------------------------------------
 
-async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Checkout.Session, eventId: string) {
+async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Checkout.Session, eventId: string, eventCreated: number) {
   if (session.mode !== "subscription") return;
   const orgId = (session.metadata?.org_id as string | undefined) || session.client_reference_id;
   const email = (session.metadata?.email as string | undefined) || session.customer_email || null;
@@ -185,7 +197,7 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
   const sub = await stripe.subscriptions.retrieve(subId);
   const f = subFacts(sub);
   await ensureOrg(admin, orgId, email, f.customerId, "pro");
-  const { id: subRowId } = await upsertSub(admin, sub, orgId);
+  const { id: subRowId } = await upsertSub(admin, sub, orgId, eventCreated);
   const issued = await issueLicense(admin, {
     orgId,
     seats: f.quantity,
@@ -195,13 +207,19 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
   await audit(admin, orgId, eventId, "checkout", { subId, seats: f.quantity, jti: issued.jti });
 }
 
-async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: string, isUpdate: boolean) {
+async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: string, isUpdate: boolean, eventCreated: number) {
   const f = subFacts(sub);
   if (!f.orgId) {
     console.error("[stripe/webhook] subscription without org_id metadata", sub.id);
     return;
   }
-  const { id: subRowId } = await upsertSub(admin, sub, f.orgId);
+  const { id: subRowId, stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
+  // Evento fuera de orden: la fila ya refleja uno más nuevo. NO se toca el plan ni
+  // se reemite — aplicarlo des-cancelaría la org o revertiría un cambio de asientos.
+  if (stale) {
+    await audit(admin, f.orgId, eventId, "sub_upsert_stale_ignored", { status: sub.status, created: eventCreated });
+    return;
+  }
   const active = sub.status === "active" || sub.status === "trialing";
   await setOrgPlan(admin, f.orgId, planForStatus(sub.status));
 
@@ -224,10 +242,16 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
   }
 }
 
-async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId: string) {
+async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId: string, eventCreated: number) {
   const f = subFacts(sub);
   if (!f.orgId) return;
-  await upsertSub(admin, sub, f.orgId);
+  const { stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
+  // Un `deleted` viejo que reentra tras un evento más nuevo no debe revocar: la
+  // suscripción podría haberse recreado. La guardia de orden lo frena.
+  if (stale) {
+    await audit(admin, f.orgId, eventId, "sub_deleted_stale_ignored", { subId: sub.id, created: eventCreated });
+    return;
+  }
   await setOrgPlan(admin, f.orgId, "free");
   // Revoke EVERY live token (re-issues leave superseded predecessors unrevoked),
   // not just the newest — else a canceled org keeps PRO on an older license.
@@ -235,7 +259,7 @@ async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId:
   await audit(admin, f.orgId, eventId, "sub_deleted", { subId: sub.id, revokedJtis: revoked });
 }
 
-async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.Invoice, eventId: string) {
+async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.Invoice, eventId: string, eventCreated: number) {
   // Only renewals — the first invoice (subscription_create) is covered by checkout.
   if (invoice.billing_reason !== "subscription_cycle") return;
   const subId = invoiceSubId(invoice);
@@ -243,7 +267,13 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
   const sub = await stripe.subscriptions.retrieve(subId);
   const f = subFacts(sub);
   if (!f.orgId) return;
-  const { id: subRowId } = await upsertSub(admin, sub, f.orgId);
+  const { id: subRowId } = await upsertSub(admin, sub, f.orgId, eventCreated);
+  // `invoice.paid` retrieve() la suscripción FRESCA de Stripe, así que no reabre
+  // una cancelada por un snapshot viejo: solo pasa a pro si de verdad está activa.
+  if (planForStatus(sub.status) !== "pro") {
+    await audit(admin, f.orgId, eventId, "invoice_paid_not_active", { subId, status: sub.status });
+    return;
+  }
   await setOrgPlan(admin, f.orgId, "pro");
   const oldJti = await currentLicenseJti(admin, f.orgId);
   if (oldJti) await supersedeLicense(admin, oldJti);
@@ -323,19 +353,19 @@ export async function POST(req: Request): Promise<NextResponse> {
   try {
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckout(admin, stripe, event.data.object as Stripe.Checkout.Session, event.id);
+        await handleCheckout(admin, stripe, event.data.object as Stripe.Checkout.Session, event.id, event.created);
         break;
       case "customer.subscription.created":
-        await handleSubUpsert(admin, event.data.object as Stripe.Subscription, event.id, false);
+        await handleSubUpsert(admin, event.data.object as Stripe.Subscription, event.id, false, event.created);
         break;
       case "customer.subscription.updated":
-        await handleSubUpsert(admin, event.data.object as Stripe.Subscription, event.id, true);
+        await handleSubUpsert(admin, event.data.object as Stripe.Subscription, event.id, true, event.created);
         break;
       case "customer.subscription.deleted":
-        await handleSubDeleted(admin, event.data.object as Stripe.Subscription, event.id);
+        await handleSubDeleted(admin, event.data.object as Stripe.Subscription, event.id, event.created);
         break;
       case "invoice.paid":
-        await handleInvoicePaid(admin, stripe, event.data.object as Stripe.Invoice, event.id);
+        await handleInvoicePaid(admin, stripe, event.data.object as Stripe.Invoice, event.id, event.created);
         break;
       case "invoice.payment_failed":
         await handleInvoiceFailed(admin, event.data.object as Stripe.Invoice, event.id);
