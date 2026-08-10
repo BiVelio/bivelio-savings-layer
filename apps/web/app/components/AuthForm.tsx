@@ -46,7 +46,15 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          // `?next=` con el `?` inicial: cuando `confirm-signup.html` migre a
+          // `{{ .RedirectTo }}&token_hash=...` (Parte B, paso 3), este `redirectTo` es el
+          // que usará el enlace del correo; sin el `?` saldría malformado. INERTE hasta ese
+          // flip (hoy la plantilla usa `{{ .SiteURL }}` e ignora este valor).
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+              `/${locale}/dashboard`,
+            )}`,
+          },
         });
         if (error) throw error;
         setMsg({ type: "info", text: t("checkEmail") });
