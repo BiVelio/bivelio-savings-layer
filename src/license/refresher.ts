@@ -35,16 +35,26 @@ export interface LicenseRefresherOptions {
   initialToken: string;
   /** Se invoca SOLO con un token verificado, más nuevo y de la misma org. */
   onNewToken: (token: string) => void;
+  /**
+   * Jtis revocados conocidos. Se consulta ANTES de adoptar: un token puede venir
+   * firmado, ser más nuevo y ser de la misma org y aun así estar revocado, y
+   * adoptarlo tumbaría una flota que estaba funcionando. Es el mismo snapshot que
+   * alimenta el gate, así que las dos piezas ven la misma verdad.
+   */
+  revocados?: { snapshot(): ReadonlySet<string> };
   fetchImpl?: typeof fetch;
   now?: () => number;
   /** Cadencia de comprobación, ms (default 1 h). */
   pollIntervalMs?: number;
   /** Antelación sobre `expires_at` con la que se empieza a buscar, s (default 7 días). */
   refreshLeadSeconds?: number;
+  /** Corte de una recogida colgada, ms (default 30 s). */
+  requestTimeoutMs?: number;
 }
 
 const DEFAULT_POLL_INTERVAL_MS = 3600_000;
 const DEFAULT_REFRESH_LEAD_SECONDS = 7 * 86400;
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 
 export class LicenseRefresher {
   private readonly opts: LicenseRefresherOptions;
@@ -52,6 +62,9 @@ export class LicenseRefresher {
   private readonly refreshLeadSeconds: number;
   private timer: ReturnType<typeof setInterval> | null = null;
   private enVuelo = false;
+  private parado = false;
+  private controller: AbortController | null = null;
+  private avisadoDeCredencial = false;
   /** Unix s de la caducidad del token vigente; 0 si el inicial no verifica
    *  (entonces se intenta recoger uno bueno desde ya). */
   private currentExpiresAt: number;
@@ -76,8 +89,14 @@ export class LicenseRefresher {
   }
 
   stop(): void {
+    this.parado = true;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    // Aborta la recogida en vuelo: `SavingsLayer.close()` promete liberar
+    // cualquier petición pendiente, y sin esto el socket quedaba referenciado y
+    // el proceso Node no terminaba.
+    this.controller?.abort();
+    this.controller = null;
   }
 
   private nowSeconds(): number {
@@ -86,29 +105,64 @@ export class LicenseRefresher {
 
   /** Una comprobación completa. `true` si adoptó un token nuevo. Nunca lanza. */
   async checkNow(): Promise<boolean> {
-    if (this.enVuelo) return false;
+    if (this.enVuelo || this.parado) return false;
     // Lejos de la caducidad no hay nada que buscar: el token renovado ni existe
     // hasta que Stripe cobra el ciclo siguiente. Se empieza a mirar con
     // `refreshLead` de antelación y se insiste (cada vuelta) durante la gracia.
     if (this.currentExpiresAt - this.nowSeconds() > this.refreshLeadSeconds) return false;
     this.enVuelo = true;
+    // TIMEOUT DURO. Sin esto, un CP que acepta la conexión y gotea bytes deja la
+    // promesa sin resolver para siempre: `enVuelo` se queda en true, TODAS las
+    // vueltas siguientes salen por la primera línea sin mirar la red, y la
+    // máquina muere fail-closed el día ~45 — justo el fallo que esta clase
+    // existe para cerrar. El RevocationPoller ya se blindaba así.
+    const ctrl = new AbortController();
+    this.controller = ctrl;
+    const to = setTimeout(() => ctrl.abort(), this.opts.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS);
+    (to as unknown as { unref?: () => void }).unref?.();
     try {
       const f =
         this.opts.fetchImpl ??
         (globalThis.fetch.bind(globalThis) as typeof fetch);
       const res = await f(this.opts.url, {
+        signal: ctrl.signal,
         headers: {
           authorization: `Bearer ${this.opts.serviceAccountKey}`,
           accept: "application/json",
         },
       });
-      if (!res.ok) return false;
+      if (!res.ok) {
+        // Una credencial mala NO se cura sola, a diferencia de un 5xx. Sin este
+        // aviso, rotar la clave de servicio y olvidar actualizarla daba 401 en
+        // silencio cada hora durante semanas y el único síntoma era el
+        // LicenseError del día ~45, que no apunta a la causa.
+        if ((res.status === 401 || res.status === 403 || res.status === 404) && !this.avisadoDeCredencial) {
+          this.avisadoDeCredencial = true;
+          console.warn(
+            `[bv-sala] la recogida automática de la licencia renovada falla con HTTP ${res.status} ` +
+              `en ${this.opts.url}. Revisa 'serviceAccountKey' (¿rotada? ¿de otra organización?) y ` +
+              `'licenseServerUrl': mientras no funcione, el token NO se renovará solo y el SDK dejará ` +
+              `de operar al terminar el periodo de gracia.`,
+          );
+        }
+        return false;
+      }
       const body = (await res.json()) as { token?: unknown };
       if (typeof body.token !== "string") return false;
       const v = verifyLicenseToken(body.token, this.opts.publicKey);
       if (!v.signatureValid || !v.payload) return false;
       if (v.payload.expires_at <= this.currentExpiresAt) return false; // rancio o el mismo
       if (this.currentOrg && v.payload.org_id !== this.currentOrg) return false; // otra org
+      // REVOCADO. Firma válida, más nuevo y de la misma org NO basta: un token
+      // revocado (chargeback, fuga) cumple las tres cosas, y adoptarlo apagaría
+      // una flota que estaba funcionando con un token todavía válido. Pasa
+      // también sin atacante: revokeLicense() solo registra el fallo si el UPDATE
+      // de la fila falla, así que el CP puede seguir sirviendo un token que el
+      // ledger ya da por revocado.
+      if (this.opts.revocados?.snapshot().has(v.payload.jti)) return false;
+      // Si la capa se cerró mientras la petición estaba en vuelo, no se conmuta
+      // el gate de una capa ya cerrada.
+      if (this.parado) return false;
       this.currentExpiresAt = v.payload.expires_at;
       this.currentOrg = v.payload.org_id;
       this.opts.onNewToken(body.token);
@@ -116,6 +170,8 @@ export class LicenseRefresher {
     } catch {
       return false; // best-effort: el token vigente sigue mandando
     } finally {
+      clearTimeout(to);
+      if (this.controller === ctrl) this.controller = null;
       this.enVuelo = false;
     }
   }

@@ -245,7 +245,16 @@ export interface SavingsReport {
   constraints: {
     backend: string;
     schemaVersion: string;
-    structurallyValid: boolean;
+    /**
+     * Si lo servido cumple el contrato de salida.
+     *
+     * SE OMITE cuando no hay respuesta final que validar — hoy, un turno en el
+     * que el modelo pidió ejecutar herramientas (`toolCalls`): ahí la respuesta
+     * llegará en el turno siguiente, así que afirmar `true` sería certificar un
+     * contrato que nadie miró, y afirmar `false` sería acusar de incumplimiento
+     * a algo que ni pretende ser la respuesta.
+     */
+    structurallyValid?: boolean;
   };
 
   quality: {

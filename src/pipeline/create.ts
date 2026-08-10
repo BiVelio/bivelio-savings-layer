@@ -139,17 +139,26 @@ export function createSavingsLayer(
       // servicio — la misma credencial de org que ya autentica el metering. Sin
       // clave de servicio no hay vía de recogida de máquina: queda el pull
       // manual del panel, como hasta ahora.
-      if (config.serviceAccountKey) {
+      if (config.serviceAccountKey && config.licenseRefresh?.enabled !== false) {
         refresher = new LicenseRefresher({
           url: `${config.licenseServerUrl.replace(/\/+$/, "")}/api/license/current`,
           serviceAccountKey: config.serviceAccountKey,
           publicKey,
           initialToken: config.licenseKey,
+          // El MISMO snapshot que alimenta el gate, para que el refresher no
+          // adopte un token ya revocado y tumbe una flota que funcionaba.
+          revocados: revocation,
           onNewToken: (token) => {
             gate = crearGate(token);
           },
           ...(config.licenseFetch ? { fetchImpl: config.licenseFetch } : {}),
           ...(config.now ? { now: config.now } : {}),
+          ...(config.licenseRefresh?.intervalMs != null
+            ? { pollIntervalMs: config.licenseRefresh.intervalMs }
+            : {}),
+          ...(config.licenseRefresh?.leadSeconds != null
+            ? { refreshLeadSeconds: config.licenseRefresh.leadSeconds }
+            : {}),
         });
         refresher.start();
       }
