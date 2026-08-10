@@ -178,7 +178,7 @@
       "errNetwork": "Lỗi mạng — vui lòng thử lại.",
       "keyLabel": "khóa cấp phép của bạn{suffix} — chỉ hiển thị một lần, hãy sao chép ngay",
       "validUntil": " · có hiệu lực đến {date}",
-      "pasteHint": "Dán nó vào <code></code> để mở khóa SDK.",
+      "pasteHint": "Dán nó vào <code></code> để mở khóa SDK. Nó hết hạn vào cuối kỳ thanh toán: hãy thêm một khóa tài khoản dịch vụ bên dưới và SDK sẽ tự mình gia hạn nó.",
       "issuing": "Đang cấp…",
       "getKey": "Nhận khóa cấp phép của bạn →",
       "priceNote": "{monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Thanh toán tự phục vụ sắp ra mắt — khóa sẽ mở khóa SDK trong ứng dụng của riêng bạn."
@@ -192,7 +192,7 @@
       "passHint": "Truyền nó dưới dạng <code>serviceAccountKey</code>. Nó đã được điền sẵn bên dưới — nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
       "creating": "Đang tạo…",
       "createKey": "Tạo khóa tài khoản dịch vụ →",
-      "hashNote": "Chỉ hash được lưu trữ. Nó xác thực việc đo mức sử dụng chỉ-đếm-số-lượng — không bao giờ là prompt của bạn.",
+      "hashNote": "Chỉ hash được lưu trữ. Nó xác thực việc đo mức sử dụng chỉ-đếm-số-lượng và việc tự động lấy giấy phép đã gia hạn của bạn — không bao giờ là prompt của bạn.",
       "verifyTitle": "Xác minh một khóa đang hoạt động",
       "testInputAria": "Khóa tài khoản dịch vụ cần kiểm tra",
       "testing": "Đang kiểm tra…",
@@ -203,10 +203,11 @@
       "eyebrow": "Bắt đầu",
       "heading": "Bốn bước. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
       "step1": "<b>1 · Nhận khóa cấp phép của bạn</b> — SDK là mã nguồn công khai nhưng fail-closed; nó chỉ chạy với một khóa hợp lệ. Được truyền dưới dạng <code>licenseKey</code>.",
-      "step2": "<b>2 · Tạo và xác minh khóa tài khoản dịch vụ</b> — một thông tin xác thực máy (<code>bvk_…</code>) để SDK báo cáo mức sử dụng chỉ-đếm-số-lượng (số ghế và mức tiết kiệm của bạn). Tách biệt với khóa cấp phép; chỉ hash của nó được lưu trữ. Tạo một khóa, rồi nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
+      "step2": "<b>2 · Tạo và xác minh khóa tài khoản dịch vụ</b> — một thông tin xác thực máy (<code>bvk_…</code>) làm hai việc: nó báo cáo mức sử dụng chỉ-đếm-số-lượng (số ghế và mức tiết kiệm của bạn), và nó cho phép SDK <b>tự mình lấy giấy phép đã gia hạn</b> của bạn mỗi kỳ thanh toán. Tách biệt với khóa cấp phép; chỉ hash của nó được lưu trữ. Tạo một khóa, rồi nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
       "currentKey": "khóa tài khoản dịch vụ hiện tại",
       "noneYet": "chưa có — nhấp vào ở trên",
       "shownOnce": "chỉ hiển thị một lần khi tạo — chỉ tiền tố được lưu trữ.",
+      "renewalNote": "<b>Hãy giữ khóa này trong bản triển khai của bạn.</b> Giấy phép của bạn hết hạn vào cuối mỗi kỳ thanh toán và lần gia hạn sẽ cấp một giấy phép mới. Với khóa này, SDK sẽ tự lấy giấy phép mới và thay nó vào mà không cần khởi động lại. Không có nó thì không ai lấy giấy phép mới cả, nên mỗi kỳ phải có người dán khóa mới bằng tay — và nếu không ai làm, SDK sẽ dừng ngay khi thời gian ân hạn kết thúc, dù gói đăng ký đã được thanh toán đầy đủ và vẫn còn hiệu lực.",
       "step3": "<b>3 · Cài đặt</b> — công khai trên npm, không token, không cấu hình.",
       "step4": "<b>4 · Kết nối nhà cung cấp của bạn và đọc SavingsReport</b>",
       "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được."
@@ -223,7 +224,7 @@
       "subscribe": "Đăng ký →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Đã xảy ra lỗi — vui lòng thử lại."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",

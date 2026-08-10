@@ -178,7 +178,7 @@
       "errNetwork": "Netwerkfout — probeer het opnieuw.",
       "keyLabel": "je licentiesleutel{suffix} — eenmalig getoond, kopieer hem nu",
       "validUntil": " · geldig tot {date}",
-      "pasteHint": "Plak hem in <code></code> om de SDK te ontgrendelen.",
+      "pasteHint": "Plak hem in <code></code> om de SDK te ontgrendelen. Hij verloopt aan het einde van de facturatieperiode: voeg hieronder een service-account-sleutel toe, dan vernieuwt de SDK hem zelf.",
       "issuing": "Uitgeven…",
       "getKey": "Haal je licentiesleutel op →",
       "priceNote": "{monthly} per seat per maand of {yearly} per seat per jaar. Self-service afrekenen komt eraan — de sleutel ontgrendelt de SDK in je eigen app."
@@ -192,7 +192,7 @@
       "passHint": "Geef hem door als <code>serviceAccountKey</code>. Hij is hieronder al ingevuld — klik op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
       "creating": "Aanmaken…",
       "createKey": "Maak een service-account-sleutel aan →",
-      "hashNote": "Alleen de hash wordt opgeslagen. Die authenticeert de gebruiksmeting met alleen aantallen — nooit je prompts.",
+      "hashNote": "Alleen de hash wordt opgeslagen. Die authenticeert de gebruiksmeting met alleen aantallen en het automatisch ophalen van je vernieuwde licentie — nooit je prompts.",
       "verifyTitle": "Controleer of een sleutel live is",
       "testInputAria": "Te testen service-account-sleutel",
       "testing": "Testen…",
@@ -203,10 +203,11 @@
       "eyebrow": "Aan de slag",
       "heading": "Vier stappen. Je prompts raken nooit onze servers.",
       "step1": "<b>1 · Haal je licentiesleutel op</b> — de SDK is publiek maar fail-closed; hij draait alleen met een geldige sleutel. Doorgegeven als <code>licenseKey</code>.",
-      "step2": "<b>2 · Maak een service-account-sleutel aan en verifieer die</b> — een machine-credential (<code>bvk_…</code>) zodat de SDK gebruik met alleen aantallen rapporteert (je seats en besparingen). Los van de licentiesleutel; alleen de hash ervan wordt opgeslagen. Maak er een aan en klik dan op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
+      "step2": "<b>2 · Maak een service-account-sleutel aan en verifieer die</b> — een machine-credential (<code>bvk_…</code>) met twee taken: hij rapporteert gebruik met alleen aantallen (je seats en besparingen), en hij laat de SDK je <b>vernieuwde licentie zelf ophalen</b> in elke facturatieperiode. Los van de licentiesleutel; alleen de hash ervan wordt opgeslagen. Maak er een aan en klik dan op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
       "currentKey": "huidige service-account-sleutel",
       "noneYet": "nog geen — klik hierboven",
       "shownOnce": "eenmalig getoond bij aanmaken — alleen de prefix wordt opgeslagen.",
+      "renewalNote": "<b>Houd deze sleutel in je deployment.</b> Je licentie verloopt aan het einde van elke facturatieperiode en bij de verlenging wordt er een nieuwe uitgegeven. Met deze sleutel haalt de SDK die op en zet hem zelf in, zonder herstart. Zonder die sleutel haalt niemand hem op, dus moet iemand elke periode de nieuwe sleutel met de hand plakken — en doet niemand dat, dan stopt de SDK zodra de respijtperiode afloopt, ook al is het abonnement betaald en loopt er niets achter.",
       "step3": "<b>3 · Installeren</b> — publiek op npm, geen token, geen configuratie.",
       "step4": "<b>4 · Koppel je provider en lees het SavingsReport</b>",
       "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn."
@@ -223,7 +224,7 @@
       "subscribe": "Abonneren →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Er is iets misgegaan — probeer het opnieuw."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",

@@ -178,7 +178,7 @@
       "errNetwork": "Error de xarxa: torna-ho a provar.",
       "keyLabel": "la teva clau de llicència{suffix} — es mostra un sol cop, copia-la ara",
       "validUntil": " · vàlida fins al {date}",
-      "pasteHint": "Enganxa-la a <code></code> per desbloquejar el SDK.",
+      "pasteHint": "Enganxa-la a <code></code> per desbloquejar el SDK. Caduca al final del període de facturació: afegeix una clau de compte de servei a sota i el SDK la renova tot sol.",
       "issuing": "Emetent…",
       "getKey": "Obtén la teva clau de llicència →",
       "priceNote": "{monthly} per seient al mes o {yearly} per seient a l'any. El pagament d'autoservei està a punt d'arribar: la clau desbloqueja el SDK a la teva pròpia app."
@@ -192,7 +192,7 @@
       "passHint": "Passa-la com a <code>serviceAccountKey</code>. Ja està emplenada a sota: prem <b>Prova la meva clau</b> per confirmar que està activa.",
       "creating": "Creant…",
       "createKey": "Crea una clau de compte de servei →",
-      "hashNote": "Només se n'emmagatzema el hash. Autentica el mesurament d'ús de només recomptes, mai els teus prompts.",
+      "hashNote": "Només se n'emmagatzema el hash. Autentica el mesurament d'ús de només recomptes i la recollida automàtica de la teva llicència renovada — mai els teus prompts.",
       "verifyTitle": "Verifica que una clau està activa",
       "testInputAria": "Clau de compte de servei per provar",
       "testing": "Provant…",
@@ -203,10 +203,11 @@
       "eyebrow": "Comença",
       "heading": "Quatre passos. Els teus prompts mai no toquen els nostres servidors.",
       "step1": "<b>1 · Obtén la teva clau de llicència</b> — el SDK és públic però fail-closed; només funciona amb una clau vàlida. Es passa com a <code>licenseKey</code>.",
-      "step2": "<b>2 · Crea i verifica una clau de compte de servei</b> — una credencial de màquina (<code>bvk_…</code>) perquè el SDK informi de l'ús de només recomptes (els teus seients i estalvi). És independent de la clau de llicència; només se n'emmagatzema el hash. Crea'n una i després prem <b>Prova la meva clau</b> per confirmar que està activa.",
+      "step2": "<b>2 · Crea i verifica una clau de compte de servei</b> — una credencial de màquina (<code>bvk_…</code>) que fa dues feines: informa de l'ús de només recomptes (els teus seients i estalvi) i permet que el SDK reculli <b>tot sol la teva llicència renovada</b> cada període de facturació. És independent de la clau de llicència; només se n'emmagatzema el hash. Crea'n una i després prem <b>Prova la meva clau</b> per confirmar que està activa.",
       "currentKey": "clau de compte de servei actual",
       "noneYet": "encara cap: fes clic a dalt",
       "shownOnce": "es mostra un sol cop en crear-la — només se n'emmagatzema el prefix.",
+      "renewalNote": "<b>Mantén aquesta clau al teu desplegament.</b> La teva llicència caduca al final de cada període de facturació i la renovació n'emet una de nova. Amb aquesta clau, el SDK la recull i la substitueix sense reiniciar. Sense la clau no la recull ningú, i algú haurà d'enganxar la clau nova a mà cada període — i si no ho fa ningú, el SDK s'atura quan s'acaba el període de gràcia, encara que la subscripció estigui pagada i al dia.",
       "step3": "<b>3 · Instal·la</b> — públic a npm, sense token, sense configuració.",
       "step4": "<b>4 · Connecta el teu proveïdor i llegeix el SavingsReport</b>",
       "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar."
@@ -223,7 +224,7 @@
       "subscribe": "Subscriu-te →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",

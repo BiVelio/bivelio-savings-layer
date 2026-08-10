@@ -178,7 +178,7 @@
       "errNetwork": "Netzwerkfehler — bitte versuche es erneut.",
       "keyLabel": "dein Lizenzschlüssel{suffix} — wird einmal angezeigt, kopiere ihn jetzt",
       "validUntil": " · gültig bis {date}",
-      "pasteHint": "Füge ihn in <code></code> ein, um das SDK freizuschalten.",
+      "pasteHint": "Füge ihn in <code></code> ein, um das SDK freizuschalten. Er läuft am Ende des Abrechnungszeitraums ab: Füge unten einen Service-Account-Schlüssel hinzu, dann erneuert ihn das SDK von selbst.",
       "issuing": "Wird ausgestellt…",
       "getKey": "Hol dir deinen Lizenzschlüssel →",
       "priceNote": "{monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Der Self-Service-Checkout geht bald online — der Schlüssel schaltet das SDK in deiner eigenen App frei."
@@ -192,7 +192,7 @@
       "passHint": "Übergib ihn als <code>serviceAccountKey</code>. Er ist unten vorausgefüllt — klicke auf <b>Schlüssel testen</b>, um zu bestätigen, dass er aktiv ist.",
       "creating": "Wird erstellt…",
       "createKey": "Service-Account-Schlüssel erstellen →",
-      "hashNote": "Es wird nur der Hash gespeichert. Er authentifiziert die reine Zählwert-Nutzungsmessung — niemals deine Prompts.",
+      "hashNote": "Es wird nur der Hash gespeichert. Er authentifiziert die reine Zählwert-Nutzungsmessung und das automatische Abholen deiner erneuerten Lizenz — niemals deine Prompts.",
       "verifyTitle": "Prüfen, ob ein Schlüssel aktiv ist",
       "testInputAria": "Zu testender Service-Account-Schlüssel",
       "testing": "Wird getestet…",
@@ -203,10 +203,11 @@
       "eyebrow": "Erste Schritte",
       "heading": "Vier Schritte. Deine Prompts berühren niemals unsere Server.",
       "step1": "<b>1 · Hol dir deinen Lizenzschlüssel</b> — das SDK ist öffentlich, aber fail-closed; es läuft nur mit einem gültigen Schlüssel. Wird als <code>licenseKey</code> übergeben.",
-      "step2": "<b>2 · Erstelle und verifiziere einen Service-Account-Schlüssel</b> — ein Maschinen-Credential (<code>bvk_…</code>), damit das SDK die reine Zählwert-Nutzung meldet (deine Seats und Einsparungen). Getrennt vom Lizenzschlüssel; es wird nur dessen Hash gespeichert. Erstelle einen und klicke dann auf <b>Schlüssel testen</b>, um zu bestätigen, dass er aktiv ist.",
+      "step2": "<b>2 · Erstelle und verifiziere einen Service-Account-Schlüssel</b> — ein Maschinen-Credential (<code>bvk_…</code>) mit zwei Aufgaben: Es meldet die reine Zählwert-Nutzung (deine Seats und Einsparungen), und es lässt das SDK in jedem Abrechnungszeitraum deine <b>erneuerte Lizenz selbst abholen</b>. Getrennt vom Lizenzschlüssel; es wird nur dessen Hash gespeichert. Erstelle einen und klicke dann auf <b>Schlüssel testen</b>, um zu bestätigen, dass er aktiv ist.",
       "currentKey": "aktueller Service-Account-Schlüssel",
       "noneYet": "noch keiner — klicke oben",
       "shownOnce": "wird einmal bei der Erstellung angezeigt — nur der Präfix wird gespeichert.",
+      "renewalNote": "<b>Lass diesen Schlüssel in deinem Deployment.</b> Deine Lizenz läuft am Ende jedes Abrechnungszeitraums ab, und die Verlängerung stellt eine neue aus. Mit diesem Schlüssel holt das SDK sie ab und tauscht sie ohne Neustart aus. Ohne ihn holt sie niemand ab — dann muss jemand den neuen Schlüssel in jedem Zeitraum von Hand einfügen, und tut es niemand, stoppt das SDK nach Ablauf der Karenzzeit, obwohl das Abonnement bezahlt und aktuell ist.",
       "step3": "<b>3 · Installieren</b> — öffentlich auf npm, kein Token, keine Konfiguration.",
       "step4": "<b>4 · Provider einbinden und den SavingsReport lesen</b>",
       "finalNote": "Das war's. Keine gültige Lizenz → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind."
@@ -223,7 +224,7 @@
       "subscribe": "Abonnieren →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Etwas ist schiefgelaufen — versuche es erneut."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
