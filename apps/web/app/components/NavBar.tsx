@@ -1,6 +1,8 @@
 import { Link } from "@/i18n/navigation";
 
-import { createClient } from "@/lib/supabase/server";
+// Server Component: cliente de SOLO LECTURA. No puede persistir un token
+// rotado, asi que tampoco debe provocar la rotacion — ver server.ts.
+import { createReadOnlyClient } from "@/lib/supabase/server";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { BrandMark } from "./BrandMark";
 import { LocaleSwitcher } from "./LocaleSwitcher";
@@ -16,7 +18,7 @@ import { NavCta, NavSections } from "./NavLinks";
 export async function NavBar() {
   let authed = false;
   try {
-    const supabase = await createClient();
+    const supabase = await createReadOnlyClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

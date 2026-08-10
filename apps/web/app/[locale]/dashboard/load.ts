@@ -1,7 +1,9 @@
 import { cache } from "react";
 
 import { authConfigured } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
+// Server Component: cliente de SOLO LECTURA. No puede persistir un token
+// rotado, asi que tampoco debe provocar la rotacion — ver server.ts.
+import { createReadOnlyClient } from "@/lib/supabase/server";
 import { getOrgContext, getUsageRollups, type OrgContext, type UsageRollup } from "./data";
 
 export interface DashboardData {
@@ -20,7 +22,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Without Supabase env (e.g. local without .env), createClient() would throw —
   // degrade to a signed-out shell instead of a 500.
   if (!authConfigured) return { user: null, ctx: EMPTY_CTX, usage: [] };
-  const supabase = await createClient();
+  const supabase = await createReadOnlyClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
