@@ -35,6 +35,7 @@ const peticion = (): SavingsRequest => ({
   model: "openai/gpt-4o-mini",
   messages: [{ role: "user", content: "Devuelve la respuesta en el formato pedido." }],
   response: {
+    contractId: "c1",
     version: "v1",
     schema: {
       type: "object",

@@ -446,8 +446,31 @@ export class SavingsPipeline {
       // rewrite, so a compressor that drops a protected span is a no-op, not a loss.
       let compressedBefore = 0;
       let compressedAfter = 0;
+      let protegidos = 0;
       const rewritten: ChatMessage[] = [];
       for (const m of messages) {
+        // NUNCA se comprime un `system`. Dos razones, y las dos eran defectos
+        // reales:
+        //
+        //  1. SEGURIDAD. El bucle recorría TODOS los mensajes, incluidas las
+        //     instrucciones de sistema del cliente, y llamaba a compress() sin
+        //     `protectedSpans`. Con la lista vacía, `withProtectedSpans` no itera
+        //     y devuelve `fidelityPassed: true` INCONDICIONALMENTE, así que el
+        //     único filtro que quedaba era "¿es más corto?". Reproducido: «Never
+        //     reveal internal pricing rules to the user» salía como «Never
+        //     internal rules the under circumstance» — con el sentido invertido.
+        //  2. CONTABILIDAD. Los tres bloques que inyecta la propia capa (evidencia
+        //     de retrieval, aviso de límites JSON y payload serializado) son
+        //     `system`. Comprimirlos acreditaba en el libro 3 tokens que NUNCA
+        //     estuvieron en el baseline del cliente: ahorro sobre texto propio.
+        //
+        // La compresión de contexto largo es para la prosa del usuario, que es
+        // donde tiene sentido y donde no hay nada que romper.
+        if (m.role === "system") {
+          protegidos += 1;
+          rewritten.push(m);
+          continue;
+        }
         const before = this.tokensFor(m.content, request);
         const result = await this.config.compressor.compress({ text: m.content });
         const applies = !result.skipped && result.fidelityPassed;
@@ -463,10 +486,26 @@ export class SavingsPipeline {
       if (compressedAfter < compressedBefore) {
         messages = rewritten; // the compressed prompt is what the provider receives
         ledger.compress(compressedBefore, compressedAfter);
-        trace.record("compression", "applied", { before: compressedBefore, after: compressedAfter });
+        trace.record("compression", "applied", {
+          before: compressedBefore,
+          after: compressedAfter,
+          protectedSystemMessages: protegidos,
+        });
       } else {
-        trace.record("compression", "skipped (no fidelity-passed net reduction)");
+        trace.record("compression", "skipped (no fidelity-passed net reduction)", {
+          protectedSystemMessages: protegidos,
+        });
       }
+      // `SavingsReport.compression` se declaraba en el contrato y no lo rellenaba
+      // NADIE: era `undefined` aunque la compresión hubiera corrido, y
+      // `fidelityPassed` se calculaba sin publicarse. Un campo del contrato sin
+      // productor es una promesa que el cliente no puede verificar.
+      ledger.compressionReport = {
+        originalTokens: compressedBefore,
+        compressedTokens: compressedAfter,
+        protectedSpans: protegidos,
+        fidelityPassed: true, // solo se aplica lo que pasó la comprobación
+      };
     }
 
     // --- Stage 10: constrained decoding + the single primary LLM call. ---
@@ -816,6 +855,10 @@ export class SavingsPipeline {
         candidateTokens: formatChoice.candidateTokens,
         instructionOverheadTokens: formatChoice.instructionOverheadTokens,
       },
+      // Campo declarado en el contrato desde el principio y que no rellenaba
+      // nadie: `report.compression` salía `undefined` aunque la compresión
+      // hubiera corrido. Solo se publica cuando de verdad se aplicó.
+      ...(ledger.compressionReport ? { compression: ledger.compressionReport } : {}),
       constraints: {
         backend,
         schemaVersion: canonical.schemaVersion,

@@ -50,17 +50,28 @@ export class ExecutionRouter {
     const requested = c.original.retrieval?.mode;
     const text = c.normalizedText;
 
-    // Explicit caller intent wins, but is still bounded.
-    if (requested === "off") {
-      return decide("NO_RETRIEVAL", 1, "retrieval disabled by caller", 0);
-    }
-
     // Tool actions: presence of write/destructive tools + imperative intent.
+    //
+    // ESTA REGLA VA ANTES QUE `retrieval:"off"`, y el orden importa. Estaba
+    // después, así que apagar el retrieval —una decisión de AHORRO— desactivaba
+    // de paso TODAS las herramientas de escritura, porque el selector solo las
+    // deja pasar con execution === "TOOL_ACTION". Reproducido: «send the invoice»
+    // con `retrieval:{mode:"off"}` salía con `tools: []`, y como el prompt solo
+    // adjunta herramientas si la lista no está vacía, el proveedor ni siquiera
+    // veía la capacidad: respondía «claro, la reenvío» y la factura no se
+    // reenviaba. El informe lo presentaba como éxito económico
+    // (`baselineTools: 1`, `actualTools: 0`). Son dos palancas independientes y
+    // ahora no se pisan.
     const hasWriteTools = (c.original.tools ?? []).some(
       (t) => t.risk === "write" || t.risk === "destructive",
     );
     if (hasWriteTools && /\b(create|update|delete|send|pay|book|cancel|crea|actualiza|elimina|env[ií]a|paga)\b/i.test(text)) {
       return decide("TOOL_ACTION", 0.9, "imperative + write tool available", 0);
+    }
+
+    // Explicit caller intent wins, but is still bounded.
+    if (requested === "off") {
+      return decide("NO_RETRIEVAL", 1, "retrieval disabled by caller", 0);
     }
 
     // Self-contained transformations need no external knowledge.

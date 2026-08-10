@@ -114,6 +114,15 @@ export class SavingsLedger {
    * entrada no había nada.
    */
   repairInput = 0;
+  /**
+   * Lo que de verdad hizo la compresión, para publicarlo en
+   * `SavingsReport.compression`. El campo estaba declarado en el contrato y no lo
+   * rellenaba nadie: salía `undefined` aunque la compresión hubiera corrido, y
+   * `fidelityPassed` se calculaba sin llegar nunca al informe.
+   */
+  compressionReport:
+    | { originalTokens: number; compressedTokens: number; protectedSpans: number; fidelityPassed: boolean }
+    | undefined = undefined;
 
   /** Ledger 2: tokens removed because they were not needed. */
   eliminate(tokens: number): void {
