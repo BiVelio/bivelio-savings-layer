@@ -175,8 +175,20 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   // Con principal (sessionId) la clave sí separa y el cacheo es seguro y útil;
   // sin él, se apaga. El tráfico no personalizado no pierde ni un acierto.
   const personalizedWithoutPrincipal = isPersonalized && c.principal == null;
+  // `hasWriteTools` TAMBIÉN apaga la caché exacta. El contrato lo promete
+  // literalmente ("Write/destructive tools are never cached", ToolRisk en
+  // contracts/types.ts) y la semántica y el singleflight ya lo cumplían — solo
+  // esta condición lo omitía. Reproducido: dos generate() idénticos con un tool
+  // risk:"write" y texto imperativo neutro («send the weekly report»): el
+  // segundo salía de caché con netSavings=1, la acción no se ejecutaba y el
+  // informe vendía como ahorro un trabajo que nunca se hizo.
   const allowExactCache =
-    !stochastic && !freshWithoutBucket && !liveNoCache && !personalizedWithoutPrincipal;
+    !stochastic &&
+    !freshWithoutBucket &&
+    !liveNoCache &&
+    !personalizedWithoutPrincipal &&
+    !hasWriteTools;
+  if (hasWriteTools) reasons.push("write/destructive tools → exact cache off (side effects must execute)");
   if (liveNoCache) reasons.push("freshnessBucket=live → exact cache off (answer must be current)");
   if (freshWithoutBucket) reasons.push("freshness-sensitive without a freshness bucket → exact cache off");
   if (personalizedWithoutPrincipal) {

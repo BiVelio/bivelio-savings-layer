@@ -141,6 +141,14 @@ export interface SavingsRequest {
   structuredData?: unknown;
 }
 
+/** A tool invocation the model requested (the provider-neutral shape). */
+export interface ToolCallRequest {
+  id?: string;
+  name: string;
+  /** Argumentos tal cual los serializó el modelo (JSON en crudo). */
+  arguments: string;
+}
+
 /** Result returned to the caller. */
 export interface SavingsResult<T = unknown> {
   requestId: string;
@@ -150,6 +158,25 @@ export interface SavingsResult<T = unknown> {
   text: string;
   /** Locally-rendered, human-facing representation, when produced. */
   rendered?: string;
+  /**
+   * Llamadas a herramienta que pidió el modelo. Cuando está presente, `text` y
+   * `data` NO son la respuesta final: el modelo devolvió `content` vacío y pide
+   * ejecutar la acción (`finishReason === "tool_calls"`).
+   *
+   * Faltaba: el adaptador ya propagaba `tool_calls` (content:null + tool_calls es
+   * el camino NORMAL en cuanto hay herramientas), pero el pipeline construía la
+   * respuesta solo con `{text, data, rendered}` y este contrato ni declaraba el
+   * campo — el cliente recibía "" como si fuera la respuesta buena y la
+   * invocación se perdía entera. La palanca de herramientas que vende el README
+   * era inservible en el paquete publicado.
+   */
+  toolCalls?: ToolCallRequest[];
+  /**
+   * Por qué paró de generar el modelo (`"stop"`, `"length"`, `"tool_calls"`, …).
+   * Presente cuando la respuesta viene del proveedor; ausente en los atajos
+   * (caché/resolver), que solo sirven respuestas finales completas.
+   */
+  finishReason?: string;
   report: SavingsReport;
 }
 
