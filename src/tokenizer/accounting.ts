@@ -99,6 +99,21 @@ export class SavingsLedger {
   estimatorExact = false;
   /** Salida del reintento de reparación. Es coste NUESTRO, nunca del baseline. */
   repairOutput = 0;
+  /**
+   * ENTRADA del reintento de reparación. Simétrico de `repairOutput`, y faltaba.
+   *
+   * El baseline de una llamada ejecutada se reconstruye desde `actualInput`, y
+   * `actualInput` ya acumula las DOS llamadas (pipeline.ts:623). Sin descontar la
+   * del reintento, el baseline se inflaba con un coste que es NUESTRO, no del
+   * cliente: una petición que costó el doble que el camino naive se publicaba con
+   * ahorro POSITIVO. Medido: netSavings = -0,2857 cuando la verdad era -100 %, y
+   * con `structuredData` llegaba a +36,4 % — y encima con `basis: 'measured'`,
+   * que es justo lo que el panel presenta como contrastable con la factura.
+   *
+   * Para la salida ya existía la corrección (`baselineOutputHonesto`); para la
+   * entrada no había nada.
+   */
+  repairInput = 0;
 
   /** Ledger 2: tokens removed because they were not needed. */
   eliminate(tokens: number): void {
@@ -171,7 +186,12 @@ export class SavingsLedger {
     if (ranCall) {
       if (this.actualInput > 0 && this.sentInputLocal > 0) {
         const k = this.actualInput / this.sentInputLocal;
-        this.baselineInput = this.actualInput + Math.round(k * this.removedInputLocal);
+        // `actualInput` acumula las DOS llamadas cuando hubo reparación, y esa
+        // segunda es coste NUESTRO: si entra en el baseline, el reintento se paga
+        // a sí mismo y una pérdida se publica como ahorro. Se descuenta igual que
+        // ya se hacía con la salida (`baselineOutputHonesto`).
+        const entradaDelCliente = Math.max(0, this.actualInput - this.repairInput);
+        this.baselineInput = entradaDelCliente + Math.round(k * this.removedInputLocal);
         // Un baseline RECONSTRUIDO nunca es "measured", por bueno que sea el
         // tokenizador. Medido contra el proveedor real, con o200k_base exacto y
         // el escenario de la tabla:

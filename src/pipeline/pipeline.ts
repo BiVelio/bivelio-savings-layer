@@ -630,6 +630,11 @@ export class SavingsPipeline {
         // para que la calibración no se descuadre (actualInput ya acumula las dos
         // llamadas; si la lectura local cubriera solo la primera, k saldría ~2x).
         ledger.repairOutput += response.usage.outputTokens;
+        // Y la ENTRADA del reintento, que faltaba. Sin esto el baseline se
+        // reconstruía desde un `actualInput` que ya incluía las dos llamadas, así
+        // que el reintento se pagaba a sí mismo: una petición que costó el doble
+        // que el camino naive se publicaba con ahorro POSITIVO.
+        ledger.repairInput += response.usage.inputTokens;
         // SIN las herramientas: la llamada de reparación no las envía (mírala
         // arriba, no lleva `tools`). Contarlas aquí metía en la lectura local
         // tokens que el proveedor nunca facturó, y descuadraba la calibración en
