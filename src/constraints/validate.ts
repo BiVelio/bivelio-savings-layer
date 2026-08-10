@@ -30,6 +30,41 @@ export function validateAgainstSchema(
   return { valid: errors.length === 0, errors };
 }
 
+/**
+ * Tipo efectivo de un esquema SIN `type` declarado.
+ *
+ * `type` es OPCIONAL en el contrato público (`JsonSchema.type?`), y el `switch`
+ * de abajo tenía `default: break` — así que un esquema legal como
+ * `{properties:{...}, required:[...], additionalProperties:false}` NO se
+ * comprobaba en absoluto: ni `required`, ni `additionalProperties`, ni
+ * `maxLength`. Todo eso vive dentro de `validateObject`, alcanzable solo desde
+ * `case "object"`. El resultado era `valid: true` para CUALQUIER respuesta, y el
+ * informe lo publicaba como `structurallyValid: true`: mentía en positivo. Peor:
+ * con `valid` siempre cierto, la reparación de la etapa 11 no se disparaba nunca
+ * y las rutas de atajo acreditaban 100% de ahorro sobre respuestas que no
+ * cumplían el contrato.
+ *
+ * Se resuelve como manda JSON Schema: las palabras clave aplican según el tipo
+ * de la INSTANCIA, no según un `type` declarado. Un esquema sin `type` y sin
+ * palabras clave sigue sin comprobar nada, que es lo correcto.
+ */
+function tipoEfectivo(value: unknown): JsonSchema["type"] {
+  if (Array.isArray(value)) return "array";
+  if (value === null) return "null";
+  switch (typeof value) {
+    case "object":
+      return "object";
+    case "string":
+      return "string";
+    case "number":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return undefined;
+  }
+}
+
 function walk(
   value: unknown,
   schema: JsonSchema,
@@ -40,7 +75,9 @@ function walk(
     errors.push({ path, message: `value not in enum` });
   }
 
-  switch (schema.type) {
+  const tipo = schema.type ?? tipoEfectivo(value);
+
+  switch (tipo) {
     case "object":
       validateObject(value, schema, path, errors);
       break;

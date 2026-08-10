@@ -24,16 +24,95 @@ export interface Policy {
   hasSideEffects: boolean;
   /** Is the response personalized to a user/account? */
   isPersonalized: boolean;
+  /**
+   * Techo de antigüedad para una entrada de caché exacta, derivado del
+   * `freshnessBucket`. `null` = sin techo propio (manda el TTL por defecto).
+   * Existe porque el bucket NO particiona la clave —va crudo al hash y no rota—,
+   * así que sin esto "hour" y "day" no significaban nada operativamente.
+   */
+  maxCacheAgeMs: number | null;
   reasons: string[];
 }
 
-/** Words that imply the answer depends on "now". */
-const FRESHNESS_MARKERS =
-  /\b(now|today|current|currently|latest|live|price|prices|stock|availability|weather|score|breaking|ahora|hoy|actual|precio|precios|disponibilidad)\b/i;
+/**
+ * Marcadores léxicos, en los 12 idiomas que el producto sirve.
+ *
+ * Estaban SOLO en inglés y español. Como de `PERSONAL_MARKERS` sale lo único que
+ * apaga la caché exacta, el singleflight y la caché semántica cuando no hay
+ * `principal`, en los otros 10 idiomas el guardarraíl no casaba nunca: dos
+ * usuarios del mismo tenant preguntando «Wie hoch ist mein Kontostand?»
+ * compartían entrada de caché y el segundo recibía el saldo del primero — y el
+ * informe lo apuntaba como acierto de caché, o sea como AHORRO.
+ *
+ * Sigue siendo una heurística léxica, con sus falsos negativos («how much do I
+ * owe» no lleva ninguna de estas palabras). Es una red de seguridad para quien no
+ * pasa `context.sessionId`; el aislamiento de verdad lo da el `principal`, que
+ * mete al usuario en la clave. Por eso conviene leer esto como "reduce el daño
+ * por defecto", no como "garantiza el aislamiento".
+ */
+const FRESHNESS_MARKERS = new RegExp(
+  "\\b(" +
+    [
+      // en
+      "now|today|current|currently|latest|live|price|prices|stock|availability|weather|score|breaking",
+      // es
+      "ahora|hoy|actual|actualmente|ultimo|último|precio|precios|disponibilidad|cotizacion|cotización",
+      // ca
+      "ara|avui|preu|preus|disponibilitat|darrer",
+      // fr
+      "maintenant|aujourd'hui|actuel|actuelle|dernier|prix|disponibilite|disponibilité|meteo|météo",
+      // de
+      "jetzt|heute|aktuell|aktuelle|neueste|preis|preise|verfugbarkeit|verfügbarkeit|wetter|kurs",
+      // it
+      "adesso|oggi|attuale|ultimo|prezzo|prezzi|disponibilita|disponibilità|meteo",
+      // pt
+      "agora|hoje|atual|ultimo|último|preco|preço|precos|preços|disponibilidade|cotacao|cotação",
+      // nl
+      "nu|vandaag|huidige|laatste|prijs|prijzen|beschikbaarheid|weer|koers",
+      // pl
+      "teraz|dzisiaj|dzis|dziś|aktualny|aktualna|najnowszy|cena|ceny|dostepnosc|dostępność|pogoda",
+      // tr
+      "simdi|şimdi|bugun|bugün|guncel|güncel|son|fiyat|fiyatlar|stok|hava",
+      // id
+      "sekarang|hari ini|terkini|terbaru|harga|ketersediaan|cuaca",
+      // vi
+      "bay gio|bây giờ|hom nay|hôm nay|hien tai|hiện tại|moi nhat|mới nhất|gia|giá|thoi tiet|thời tiết",
+    ].join("|") +
+    ")\\b",
+  "i",
+);
 
-/** Words that imply personalization / account scope. */
-const PERSONAL_MARKERS =
-  /\b(my|mine|our|account|balance|subscription|invoice|order|profile|mi|mis|cuenta|factura|pedido|saldo)\b/i;
+const PERSONAL_MARKERS = new RegExp(
+  "\\b(" +
+    [
+      // en
+      "my|mine|our|ours|account|balance|subscription|invoice|order|profile",
+      // es
+      "mi|mis|mio|mío|nuestro|nuestra|cuenta|factura|pedido|saldo|suscripcion|suscripción|perfil",
+      // ca
+      "meu|meva|nostre|compte|factura|comanda|saldo|subscripcio|subscripció|perfil",
+      // fr
+      "mon|ma|mes|notre|nos|compte|solde|facture|commande|abonnement|profil",
+      // de
+      "mein|meine|meinem|unser|unsere|konto|kontostand|saldo|rechnung|bestellung|abo|abonnement|profil",
+      // it
+      "mio|mia|miei|nostro|nostra|conto|saldo|fattura|ordine|abbonamento|profilo",
+      // pt
+      "meu|minha|meus|nosso|nossa|conta|saldo|fatura|pedido|assinatura|perfil",
+      // nl
+      "mijn|onze|ons|rekening|saldo|factuur|bestelling|abonnement|profiel",
+      // pl
+      "moj|mój|moja|moje|nasz|nasza|konto|saldo|faktura|zamowienie|zamówienie|subskrypcja|profil",
+      // tr
+      "benim|bizim|hesap|hesabim|hesabım|bakiye|fatura|siparis|sipariş|abonelik|profil",
+      // id
+      "saya|kami|akun|saldo|tagihan|pesanan|langganan|profil",
+      // vi
+      "cua toi|của tôi|tai khoan|tài khoản|so du|số dư|hoa don|hóa đơn|don hang|đơn hàng|thue bao|thuê bao",
+    ].join("|") +
+    ")\\b",
+  "i",
+);
 
 export function evaluatePolicy(c: CanonicalRequest): Policy {
   const reasons: string[] = [];
@@ -60,14 +139,31 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   if (stochastic) reasons.push("stochastic sampling (temp>0.3, no seed)");
 
   // Exact cache is safe when the key isolates tenant/scope AND the answer can't
-  // go stale under us. A freshness-sensitive request is only cacheable if it
-  // carries an explicit freshness bucket (live/hour/day) that time-partitions the
-  // key so it auto-rotates. With the DEFAULT bucket ('any') a "current price /
-  // latest" query would otherwise replay a stale answer forever — the exact
-  // failure this engine claims to make impossible. Also disabled for deliberately
-  // stochastic outputs, where an identical replay isn't what the caller wants.
+  // go stale under us. Also disabled for deliberately stochastic outputs, where an
+  // identical replay isn't what the caller wants.
+  //
+  // AQUÍ HABÍA UNA INVERSIÓN. La regla era `requiresFreshData && (bucket == null ||
+  // bucket === "any")`, justificada con que un bucket explícito "particiona la
+  // clave por tiempo, así que rota sola". Eso es FALSO: `freshnessBucket` es un
+  // enum de cuatro literales fijos que `buildExactKey` mete crudo en el material
+  // del hash — el literal "live" es constante, así que la clave es idéntica dentro
+  // de un segundo o dentro de un día. Consecuencia: declarar `freshnessBucket:
+  // "live"`, que es lo MÁS estricto que puede decir un integrador, era justo lo
+  // que ENCENDÍA la caché exacta con un TTL de 24 h. Quien no declaraba nada
+  // quedaba protegido y quien hacía bien su trabajo recibía respuestas de hace
+  // medio día. Reproducido: "what is the current price of BTC?" servida a las 12 h
+  // con `ageMs = 43.200.000` y 100 % de ahorro acreditado.
+  //
+  // Ahora el bucket manda de verdad y en la dirección correcta:
+  //   live  -> nunca se cachea (la respuesta debe ser de AHORA)
+  //   hour  -> se cachea, con un techo de 1 h
+  //   day   -> se cachea, con un techo de 24 h
+  //   any/ausente + el texto huele a frescura -> no se cachea
+  // El techo lo aplica el pipeline al escribir y al leer (`maxCacheAgeMs`), que es
+  // lo único que de verdad hace caducar una entrada.
   const freshWithoutBucket =
     requiresFreshData && (c.freshnessBucket == null || c.freshnessBucket === "any");
+  const liveNoCache = c.freshnessBucket === "live";
 
   // Una respuesta personalizada solo se puede cachear si la clave AÍSLA a quien
   // pregunta. La clave exacta lleva tenant y scope, pero los dos son compartidos
@@ -79,7 +175,9 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   // Con principal (sessionId) la clave sí separa y el cacheo es seguro y útil;
   // sin él, se apaga. El tráfico no personalizado no pierde ni un acierto.
   const personalizedWithoutPrincipal = isPersonalized && c.principal == null;
-  const allowExactCache = !stochastic && !freshWithoutBucket && !personalizedWithoutPrincipal;
+  const allowExactCache =
+    !stochastic && !freshWithoutBucket && !liveNoCache && !personalizedWithoutPrincipal;
+  if (liveNoCache) reasons.push("freshnessBucket=live → exact cache off (answer must be current)");
   if (freshWithoutBucket) reasons.push("freshness-sensitive without a freshness bucket → exact cache off");
   if (personalizedWithoutPrincipal) {
     reasons.push("personalized request with no principal (context.sessionId) → exact cache off");
@@ -109,6 +207,8 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     requiresFreshData,
     hasSideEffects: hasWriteTools,
     isPersonalized,
+    maxCacheAgeMs:
+      c.freshnessBucket === "hour" ? 3_600_000 : c.freshnessBucket === "day" ? 86_400_000 : null,
     reasons,
   };
 }

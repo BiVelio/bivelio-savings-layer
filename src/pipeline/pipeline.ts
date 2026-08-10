@@ -665,16 +665,28 @@ export class SavingsPipeline {
     // never bubble to the fail-open handler, which would re-invoke (double-bill)
     // the provider. Swallow-and-trace instead.
     try {
-      if (policy.allowExactCache && toggles.exactCache !== false) {
-        // Default a finite 24h TTL (not "forever") so a query the freshness
-        // heuristic missed can't serve a permanently-stale answer. Override via config.
-        await this.deps.exactCache.set(
-          exactKey,
-          answer,
-          this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000,
-        );
+      // NO se cachea una respuesta que YA sabemos que incumple su contrato.
+      // `structurallyValid` se calculaba arriba y solo se usaba para el informe:
+      // un `{oops not json` con `response.schema` se pagaba dos veces (original +
+      // reparación) y encima se guardaba 24 h, de modo que un fallo puntual del
+      // modelo se convertía en una caída de 24 h para esa consulta — contabilizada
+      // como el mayor ahorro del día, porque cada relectura acreditaba una llamada
+      // evitada al 100 %.
+      const cacheable = structurallyValid !== false;
+      if (!cacheable) trace.record("cache-write", "skipped: response fails its output contract");
+
+      if (cacheable && policy.allowExactCache && toggles.exactCache !== false) {
+        // TTL finito (no "para siempre") para que una consulta que la heurística
+        // de frescura no detectó no sirva una respuesta rancia indefinidamente.
+        // El techo del `freshnessBucket` manda sobre el TTL configurado: es lo
+        // único que hace que "hour" y "day" signifiquen algo, porque el bucket va
+        // crudo al hash de la clave y NO la rota.
+        const ttlBase = this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000;
+        const ttl = policy.maxCacheAgeMs == null ? ttlBase : Math.min(ttlBase, policy.maxCacheAgeMs);
+        await this.deps.exactCache.set(exactKey, answer, ttl);
       }
       if (
+        cacheable &&
         policy.allowSemanticCache &&
         toggles.semanticCache &&
         this.deps.semanticCache

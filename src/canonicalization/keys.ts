@@ -37,6 +37,15 @@ export function buildExactKey(c: CanonicalRequest): string {
  * a single execution. It can be slightly looser than the exact key (it does not
  * need freshness bucketing, since the work is happening *now*), but must still
  * isolate tenants and permissions.
+ *
+ * `schema` NO es opcional aquí, por mucho que ya esté `contract`. Faltaba, y el
+ * efecto era servirle a un llamante la respuesta de OTRO contrato: dos
+ * `generate()` concurrentes que solo difieren en `schemaVersion` colapsaban en
+ * una, y el seguidor recibía el objeto del líder —que viola su esquema— con
+ * `structurallyValid: true`, porque `asCoalescedFollower` clona el informe del
+ * líder sin recalcular `constraints` ni pasar por la validación. `buildExactKey`
+ * ya lo incluía y la caché semántica lo filtra a mano; esta era la única de las
+ * tres puertas que no lo miraba.
  */
 export function buildInflightKey(c: CanonicalRequest): string {
   const material = stableStringify({
@@ -47,6 +56,7 @@ export function buildInflightKey(c: CanonicalRequest): string {
     model: c.model,
     system: c.systemPromptHash,
     contract: c.contractId,
+    schema: c.schemaVersion,
     tools: c.toolsetHash,
     data: c.structuredDataHash,
     temperature: c.temperature,
