@@ -18,6 +18,7 @@ import { resolveConstraintBackend } from "../constraints/backends.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
+import type { Provider, ProviderResponse } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import type { FormatChoice } from "../serialization/format-selector.js";
 import { LicenseError } from "../license/errors.js";
@@ -52,6 +53,13 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
  * compress what remains -> constrain generation. Provider prefix/KV caching is
  * recorded as ledger 4 (cheaper tokens), never as eliminated tokens.
  */
+/** Rastro de lo que esta peticion ya ha gastado, para que el fail-open no
+ *  rescate algo que ya costo dinero ni reintente un fallo del proveedor. */
+interface TestigoDeFacturacion {
+  llamadas: number;
+  falloDelProveedor: boolean;
+}
+
 export class SavingsPipeline {
   private readonly deps: ResolvedDeps;
   private readonly config: SavingsLayerConfig;
@@ -96,12 +104,55 @@ export class SavingsPipeline {
    */
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
     this.assertLicensed();
+    // Testigo de facturación de ESTA petición. No puede ser un campo de la
+    // instancia: una misma capa sirve peticiones concurrentes.
+    const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false };
     try {
-      return await this.generateOptimized<T>(request);
+      return await this.generateOptimized<T>(request, testigo);
     } catch (err) {
       if (err instanceof LicenseError) throw err;
       if (this.config.failOpen === false) throw err;
+
+      // El fail-open existe para que un fallo INTERNO del optimizador no tumbe la
+      // petición del cliente. Se le habían colado dos casos que no son eso, y los
+      // dos cuestan dinero de verdad:
+      //
+      //  1. UN FALLO DEL PROVEEDOR. El docstring dice desde el principio que «a
+      //     genuine provider error propagates», pero el catch solo excluía
+      //     LicenseError: un 429 o un 5xx del proveedor provocaba OTRA llamada
+      //     completa contra el mismo proveedor que acababa de fallar. No arregla
+      //     nada y duplica el gasto.
+      //  2. CUALQUIER EXCEPCIÓN POSTERIOR A UNA LLAMADA YA FACTURADA. failOpenDirect
+      //     construye un ledger NUEVO desde cero (actualLlm = 1), así que las
+      //     llamadas anteriores desaparecían del informe. Reproducido por la
+      //     auditoría con TRES llamadas facturadas y un informe que decía
+      //     `actualLlm: 1`, `retries: 0`, el coste de un solo intento y encima
+      //     `basis: "measured"` — justo el campo que el panel presenta como
+      //     contrastable con la factura. El cliente no tenía forma de verlo.
+      //
+      // Regla: el fail-open solo puede rescatar lo que aún no ha costado nada.
+      if (testigo.falloDelProveedor) throw err;
+      if (testigo.llamadas > 0) throw err;
+
       return await this.failOpenDirect<T>(request, err);
+    }
+  }
+
+  /**
+   * Llama al proveedor dejando constancia. Todo punto que gaste dinero pasa por
+   * aquí para que el fail-open sepa si la petición ya ha costado algo y para
+   * distinguir un fallo DEL PROVEEDOR de un fallo del optimizador.
+   */
+  private async llamarProveedor(
+    req: Parameters<Provider["generate"]>[0],
+    testigo: TestigoDeFacturacion,
+  ): Promise<ProviderResponse> {
+    testigo.llamadas += 1;
+    try {
+      return await this.config.provider.generate(req);
+    } catch (err) {
+      testigo.falloDelProveedor = true;
+      throw err;
     }
   }
 
@@ -164,7 +215,12 @@ export class SavingsPipeline {
     );
   }
 
-  private async generateOptimized<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
+  private async generateOptimized<T = unknown>(
+    request: SavingsRequest,
+    // Con valor por defecto para que invocarlo directamente (tests de superficie,
+    // benchmarks) siga funcionando. En el camino real siempre llega el de generate().
+    testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false },
+  ): Promise<SavingsResult<T>> {
     // Defensa en profundidad: el gate también aquí, no solo en generate(). El
     // `private` de TypeScript se borra al compilar, así que si alguien alcanzara
     // una instancia del pipeline (hoy ya no se expone `layer.pipeline` ni se
@@ -237,7 +293,7 @@ export class SavingsPipeline {
     const inflightKey = buildInflightKey(canonical);
     const runExpensive = () =>
       this.expensivePath<T>(
-        request, canonical, policy, toggles, ledger, costModel, trace,
+        testigo, request, canonical, policy, toggles, ledger, costModel, trace,
         exactKey, baselineInput,
       );
 
@@ -256,6 +312,7 @@ export class SavingsPipeline {
   }
 
   private async expensivePath<T>(
+    testigo: TestigoDeFacturacion,
     request: SavingsRequest,
     canonical: ReturnType<typeof canonicalize>,
     policy: ReturnType<typeof evaluatePolicy>,
@@ -516,7 +573,7 @@ export class SavingsPipeline {
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
     const providerStart = this.now();
-    let response = await this.config.provider.generate({
+    let response = await this.llamarProveedor({
       model: request.model,
       messages,
       ...(toolSelection.tools.length ? { tools: toolSelection.tools } : {}),
@@ -527,7 +584,7 @@ export class SavingsPipeline {
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
       constraintBackend: backendPlan.backend,
-    });
+    }, testigo);
     ledger.actualLlm = 1;
     ledger.actualInput = response.usage.inputTokens;
     ledger.actualOutput = response.usage.outputTokens;
@@ -650,14 +707,14 @@ export class SavingsPipeline {
               "Return ONLY the corrected JSON object. Keep the same content; fix only what is listed.",
           },
         ];
-        response = await this.config.provider.generate({
+        response = await this.llamarProveedor({
           model: request.model,
           messages: mensajesReparacion,
           schema,
           ...(request.response?.maxOutputTokens != null
             ? { maxOutputTokens: request.response.maxOutputTokens }
             : {}),
-        });
+        }, testigo);
         ledger.actualLlm = 2;
         ledger.actualInput += response.usage.inputTokens;
         ledger.actualOutput += response.usage.outputTokens;
