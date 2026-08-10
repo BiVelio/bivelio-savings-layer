@@ -45,7 +45,17 @@ const VIEJO = token({ ...base, jti: "v", org_id: "org-1", issued_at: ISSUED, exp
 const NUEVO = token({ ...base, jti: "n", org_id: "org-1", issued_at: ISSUED + 30 * DAY, expires_at: ISSUED + 60 * DAY });
 
 const respuestaConToken = (t: string) =>
-  vi.fn(async () => ({ ok: true, json: async () => ({ token: t }) })) as unknown as typeof fetch;
+  vi.fn(async (_url: string, _init?: RequestInit) => ({
+    ok: true,
+    json: async () => ({ token: t }),
+  })) as unknown as typeof fetch;
+
+/** La cabecera de autorización que salió en la última llamada al doble. */
+const autorizacionDe = (f: typeof fetch): string | undefined => {
+  const calls = (f as unknown as { mock: { calls: [string, RequestInit?][] } }).mock.calls;
+  const init = calls[calls.length - 1]?.[1];
+  return (init?.headers as Record<string, string> | undefined)?.["authorization"];
+};
 
 function refresher(opts: {
   fetchImpl: typeof fetch;
@@ -71,6 +81,15 @@ describe("LicenseRefresher — la recogida del token renovado", () => {
     const r = refresher({ fetchImpl: f, nowDay: 40, onNewToken: onNew });
     expect(await r.checkNow()).toBe(true);
     expect(onNew).toHaveBeenCalledWith(NUEVO);
+  });
+
+  it("AUTENTICA la recogida con la clave de servicio", async () => {
+    // Sin esta afirmación, quitar la cabecera dejaba la suite verde y en
+    // producción daba un 401 permanente y silencioso: el cliente mensual volvía
+    // a morir hacia el día 45 pagando, que es justo lo que este módulo cierra.
+    const f = respuestaConToken(NUEVO);
+    await refresher({ fetchImpl: f, nowDay: 40 }).checkNow();
+    expect(autorizacionDe(f)).toBe("Bearer bvk_test");
   });
 
   it("lejos de la caducidad NI llama a la red (no machaca el control plane)", async () => {

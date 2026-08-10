@@ -185,6 +185,51 @@ async function upsertSub(
 // Event handlers
 // ---------------------------------------------------------------------------
 
+/**
+ * Red de seguridad de la PRIMERA licencia: si la org esta en estado de pago y NO
+ * tiene ninguna licencia viva, se emite aqui.
+ *
+ * Existe porque `checkout.session.completed` era el UNICO camino que minaba la
+ * primera licencia, y eso lo hacia fatalmente fragil: cualquier motivo por el que
+ * ese handler no llegara a emitir dejaba al cliente cobrado y sin licencia PARA
+ * SIEMPRE (ningun otro handler mina una primera; handleSubUpsert solo re-emite
+ * comparando contra una licencia que no existe, e invoice.paid solo atiende
+ * `subscription_cycle`). Dos formas reales de que pase, las dos reproducidas:
+ *
+ *   - FUERA DE ORDEN. Stripe no garantiza orden. Si `customer.subscription.updated`
+ *     entra antes que el checkout, adelanta `last_event_at` y el checkout llega
+ *     `stale`. Peor: el reintento tras un 503 —que es el mecanismo de recuperacion
+ *     DISEnADO (ensureOrg lanza a proposito para que Stripe reintente)— es stale si
+ *     cualquier `updated` cayo durante el backoff, responde 200 y Stripe deja de
+ *     reintentar: perdida silenciosa y permanente.
+ *   - PAGO ASINCRONO. Con SEPA (lo habitual en EUR/Espana, y el checkout no fija
+ *     `payment_method_types`) el `retrieve` fresco del checkout devuelve
+ *     `incomplete`, asi que no se emite; cuando el adeudo liquida dias despues no
+ *     hay ningun handler que mine la primera.
+ *
+ * Es idempotente y no puede resucitar nada: solo emite si NO hay licencia viva, y
+ * quien la llama ya ha comprobado que el estado de la suscripcion es de pago.
+ */
+async function ensurePrimeraLicencia(
+  admin: Admin,
+  orgId: string,
+  f: ReturnType<typeof subFacts>,
+  subRowId: string | null,
+  eventId: string,
+  motivo: string,
+): Promise<boolean> {
+  const cur = await currentLicense(admin, orgId);
+  if (cur) return false;
+  const issued = await issueLicense(admin, {
+    orgId,
+    seats: f.quantity,
+    periodEndUnix: f.periodEnd ?? nowUnix() + 31 * 86400,
+    subscriptionId: subRowId,
+  });
+  await audit(admin, orgId, eventId, "primera_licencia", { motivo, seats: f.quantity, jti: issued.jti });
+  return true;
+}
+
 async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Checkout.Session, eventId: string, eventCreated: number) {
   if (session.mode !== "subscription") return;
   const orgId = (session.metadata?.org_id as string | undefined) || session.client_reference_id;
@@ -211,8 +256,18 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
   const { id: subRowId, stale } = await upsertSub(admin, sub, orgId, eventCreated);
   // Fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA
   // licencia — la que corresponde al estado actual ya la emitió el evento nuevo.
+  //
+  // PERO este es el único handler que mina la PRIMERA, así que "no re-emitir" no
+  // puede significar "no emitir nunca": si la org no tiene ninguna licencia viva,
+  // saltarse la emisión aquí deja al que ha pagado sin producto de forma
+  // permanente. La red de seguridad emite solo en ese caso.
   if (stale) {
-    await audit(admin, orgId, eventId, "checkout_stale_ignored", { subId, created: eventCreated });
+    const emitida = await ensurePrimeraLicencia(admin, orgId, f, subRowId, eventId, "checkout_stale");
+    await audit(admin, orgId, eventId, "checkout_stale_ignored", {
+      subId,
+      created: eventCreated,
+      primeraLicenciaEmitida: emitida,
+    });
     return;
   }
   const issued = await issueLicense(admin, {
@@ -239,6 +294,17 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
   }
   const active = sub.status === "active" || sub.status === "trialing";
   await setOrgPlan(admin, f.orgId, planForStatus(sub.status));
+
+  // Red de seguridad de la primera licencia. Este es el handler que ve la
+  // transición `incomplete -> active` de un pago asíncrono (SEPA), que es justo
+  // cuando el checkout ya decidió no emitir. Si acaba de emitirla, lleva los
+  // asientos correctos y no hay nada más que hacer.
+  if (
+    planForStatus(sub.status) === "pro" &&
+    (await ensurePrimeraLicencia(admin, f.orgId, f, subRowId, eventId, `sub_${sub.status}`))
+  ) {
+    return;
+  }
 
   // Re-issue ONLY on a real seat-quantity change (updates fire for many reasons).
   // Compare against the CURRENT LICENSE's seats — not the subscription row we just
@@ -277,8 +343,6 @@ async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId:
 }
 
 async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.Invoice, eventId: string, eventCreated: number) {
-  // Only renewals — the first invoice (subscription_create) is covered by checkout.
-  if (invoice.billing_reason !== "subscription_cycle") return;
   const subId = invoiceSubId(invoice);
   if (!subId) return;
   const sub = await stripe.subscriptions.retrieve(subId);
@@ -292,6 +356,23 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
     return;
   }
   await setOrgPlan(admin, f.orgId, "pro");
+
+  // La primera factura (`subscription_create`) no renueva nada, así que no
+  // supersede ni re-emite. Pero SÍ es la confirmación de cobro de un pago
+  // asíncrono, y para entonces el checkout puede haber decidido no emitir por
+  // `incomplete`: la red de seguridad cubre ese caso y no hace nada si ya hay
+  // licencia. Antes esta rama salía en la primera línea del handler y ese
+  // camino no lo recogía nadie.
+  if (invoice.billing_reason !== "subscription_cycle") {
+    const emitida = await ensurePrimeraLicencia(
+      admin, f.orgId, f, subRowId, eventId, `invoice_${invoice.billing_reason ?? "sin_motivo"}`,
+    );
+    if (!emitida) {
+      await audit(admin, f.orgId, eventId, "invoice_paid_no_cycle", { subId, reason: invoice.billing_reason });
+    }
+    return;
+  }
+
   const oldJti = await currentLicenseJti(admin, f.orgId);
   if (oldJti) await supersedeLicense(admin, oldJti);
   const invId = typeof invoice.id === "string" ? invoice.id : null;
@@ -369,7 +450,13 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   try {
     switch (event.type) {
+      // `async_payment_succeeded` es la liquidación de un pago diferido (SEPA, y
+      // el checkout no fija `payment_method_types`, así que en EUR/España es un
+      // camino normal). Lleva el mismo objeto de sesión y handleCheckout ya hace
+      // `retrieve` fresco, de modo que ahora sí llega a emitir cuando el adeudo
+      // se confirma días después.
       case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded":
         await handleCheckout(admin, stripe, event.data.object as Stripe.Checkout.Session, event.id, event.created);
         break;
       case "customer.subscription.created":
