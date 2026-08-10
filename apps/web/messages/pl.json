@@ -178,7 +178,7 @@
       "errNetwork": "Błąd sieci — spróbuj ponownie.",
       "keyLabel": "Twój klucz licencyjny{suffix} — pokazany raz, skopiuj go teraz",
       "validUntil": " · ważny do {date}",
-      "pasteHint": "Wklej go do <code></code>, aby odblokować SDK.",
+      "pasteHint": "Wklej go do <code></code>, aby odblokować SDK. Wygasa on na koniec okresu rozliczeniowego: dodaj poniżej klucz konta serwisowego, a SDK sam go odnowi.",
       "issuing": "Wydawanie…",
       "getKey": "Uzyskaj klucz licencyjny →",
       "priceNote": "{monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Samoobsługowa płatność jest w drodze — klucz odblokowuje SDK w Twojej własnej aplikacji."
@@ -192,7 +192,7 @@
       "passHint": "Przekaż go jako <code>serviceAccountKey</code>. Jest wstępnie wypełniony poniżej — kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
       "creating": "Tworzenie…",
       "createKey": "Utwórz klucz konta serwisowego →",
-      "hashNote": "Przechowywany jest tylko hash. Uwierzytelnia on pomiar użycia obejmujący wyłącznie liczby — nigdy Twoje prompty.",
+      "hashNote": "Przechowywany jest tylko hash. Uwierzytelnia on pomiar użycia obejmujący wyłącznie liczby oraz automatyczne pobieranie Twojej odnowionej licencji — nigdy Twoje prompty.",
       "verifyTitle": "Sprawdź, czy klucz działa",
       "testInputAria": "Klucz konta serwisowego do przetestowania",
       "testing": "Testowanie…",
@@ -203,10 +203,11 @@
       "eyebrow": "Rozpocznij",
       "heading": "Cztery kroki. Twoje prompty nigdy nie dotykają naszych serwerów.",
       "step1": "<b>1 · Uzyskaj klucz licencyjny</b> — SDK jest publiczny, ale działa w trybie fail-closed; uruchamia się tylko z ważnym kluczem. Przekazywany jako <code>licenseKey</code>.",
-      "step2": "<b>2 · Utwórz i zweryfikuj klucz konta serwisowego</b> — poświadczenie maszynowe (<code>bvk_…</code>), aby SDK raportował użycie obejmujące wyłącznie liczby (Twoje stanowiska i oszczędności). Niezależny od klucza licencyjnego; przechowywany jest tylko jego hash. Utwórz go, a następnie kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
+      "step2": "<b>2 · Utwórz i zweryfikuj klucz konta serwisowego</b> — poświadczenie maszynowe (<code>bvk_…</code>), które pełni dwie funkcje: raportuje użycie obejmujące wyłącznie liczby (Twoje stanowiska i oszczędności) oraz pozwala SDK <b>samodzielnie pobierać odnowioną licencję</b> w każdym okresie rozliczeniowym. Niezależny od klucza licencyjnego; przechowywany jest tylko jego hash. Utwórz go, a następnie kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
       "currentKey": "bieżący klucz konta serwisowego",
       "noneYet": "jeszcze brak — kliknij powyżej",
       "shownOnce": "pokazywany raz przy tworzeniu — przechowywany jest tylko prefiks.",
+      "renewalNote": "<b>Zostaw ten klucz w swoim wdrożeniu.</b> Twoja licencja wygasa na koniec każdego okresu rozliczeniowego, a odnowienie wydaje nową. Z tym kluczem SDK sam ją pobiera i podmienia bez restartu. Bez niego nikt jej nie pobierze, więc ktoś musi ręcznie wklejać nowy klucz w każdym okresie — a jeśli nikt tego nie zrobi, SDK zatrzyma się po zakończeniu okresu karencji, mimo że subskrypcja jest opłacona i aktualna.",
       "step3": "<b>3 · Zainstaluj</b> — publicznie na npm, bez tokena, bez konfiguracji.",
       "step4": "<b>4 · Podłącz swojego dostawcę i odczytaj SavingsReport</b>",
       "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni."
@@ -223,7 +224,7 @@
       "subscribe": "Subskrybuj →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Coś poszło nie tak — spróbuj ponownie."
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",

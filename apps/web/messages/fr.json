@@ -178,7 +178,7 @@
       "errNetwork": "Erreur réseau — veuillez réessayer.",
       "keyLabel": "votre clé de licence{suffix} — affichée une seule fois, copiez-la maintenant",
       "validUntil": " · valable jusqu'au {date}",
-      "pasteHint": "Collez-la dans <code></code> pour débloquer le SDK.",
+      "pasteHint": "Collez-la dans <code></code> pour débloquer le SDK. Elle expire à la fin de la période de facturation : ajoutez une clé de compte de service ci-dessous et le SDK la renouvelle tout seul.",
       "issuing": "Émission…",
       "getKey": "Obtenez votre clé de licence →",
       "priceNote": "{monthly} par siège et par mois ou {yearly} par siège et par an. Le paiement en libre-service arrive bientôt — la clé débloque le SDK dans votre propre application."
@@ -192,7 +192,7 @@
       "passHint": "Transmettez-la comme <code>serviceAccountKey</code>. Elle est pré-remplie ci-dessous — cliquez sur <b>Tester ma clé</b> pour confirmer qu'elle est active.",
       "creating": "Création…",
       "createKey": "Créer une clé de compte de service →",
-      "hashNote": "Seul le hachage est stocké. Il authentifie une mesure d'utilisation par décomptes uniquement — jamais vos prompts.",
+      "hashNote": "Seul le hachage est stocké. Il authentifie la mesure d'utilisation par décomptes uniquement et la récupération automatique de votre licence renouvelée — jamais vos prompts.",
       "verifyTitle": "Vérifiez qu'une clé est active",
       "testInputAria": "Clé de compte de service à tester",
       "testing": "Test en cours…",
@@ -203,10 +203,11 @@
       "eyebrow": "Commencer",
       "heading": "Quatre étapes. Vos prompts ne touchent jamais nos serveurs.",
       "step1": "<b>1 · Obtenez votre clé de licence</b> — le SDK est public mais fail-closed ; il ne fonctionne qu'avec une clé valide. Transmise comme <code>licenseKey</code>.",
-      "step2": "<b>2 · Créez et vérifiez une clé de compte de service</b> — un identifiant machine (<code>bvk_…</code>) pour que le SDK rapporte l'utilisation par décomptes uniquement (vos sièges et vos économies). Distincte de la clé de licence ; seul son hachage est stocké. Créez-en une, puis <b>Tester ma clé</b> pour confirmer qu'elle est active.",
+      "step2": "<b>2 · Créez et vérifiez une clé de compte de service</b> — un identifiant machine (<code>bvk_…</code>) qui fait deux choses : il rapporte l'utilisation par décomptes uniquement (vos sièges et vos économies), et il permet au SDK de récupérer <b>tout seul votre licence renouvelée</b> à chaque période de facturation. Distincte de la clé de licence ; seul son hachage est stocké. Créez-en une, puis <b>Tester ma clé</b> pour confirmer qu'elle est active.",
       "currentKey": "clé de compte de service actuelle",
       "noneYet": "aucune pour l'instant — cliquez ci-dessus",
       "shownOnce": "affichée une seule fois à la création — seul le préfixe est stocké.",
+      "renewalNote": "<b>Gardez cette clé dans votre déploiement.</b> Votre licence expire à la fin de chaque période de facturation et le renouvellement en émet une nouvelle. Avec cette clé, le SDK la récupère et la remplace sans redémarrage. Sans elle, personne ne la récupère : quelqu'un doit alors coller la nouvelle clé à la main à chaque période — et si personne ne le fait, le SDK s'arrête dès la fin de la période de grâce, alors même que l'abonnement est payé et à jour.",
       "step3": "<b>3 · Installez</b> — public sur npm, sans token, sans configuration.",
       "step4": "<b>4 · Connectez votre fournisseur et lisez le SavingsReport</b>",
       "finalNote": "C'est tout. Pas de licence valide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables."
@@ -223,7 +224,7 @@
       "subscribe": "S'abonner →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Une erreur s'est produite — veuillez réessayer."
     },
     "referenceLedgerCards": {
       "proven": "prouvé",

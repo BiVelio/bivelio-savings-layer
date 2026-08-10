@@ -178,7 +178,7 @@
       "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
       "keyLabel": "lisans anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
       "validUntil": " · {date} tarihine kadar geçerli",
-      "pasteHint": "SDK'yı açmak için <code></code> içine yapıştırın.",
+      "pasteHint": "SDK'yı açmak için <code></code> içine yapıştırın. Faturalandırma döneminin sonunda süresi dolar: aşağıdan bir servis hesabı anahtarı ekleyin, SDK onu kendi başına yenilesin.",
       "issuing": "Veriliyor…",
       "getKey": "Lisans anahtarınızı alın →",
       "priceNote": "Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Self-servis ödeme yakında devreye giriyor — anahtar, SDK'yı kendi uygulamanızda açar."
@@ -192,7 +192,7 @@
       "passHint": "<code>serviceAccountKey</code> olarak geçirin. Aşağıda önceden doldurulmuş — canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "creating": "Oluşturuluyor…",
       "createKey": "Servis hesabı anahtarı oluştur →",
-      "hashNote": "Yalnızca hash saklanır. Yalnızca sayımlara dayalı kullanım ölçümünü doğrular — asla prompt'larınızı değil.",
+      "hashNote": "Yalnızca hash saklanır. Yalnızca sayımlara dayalı kullanım ölçümünü ve yenilenen lisansınızın otomatik olarak alınmasını doğrular — asla prompt'larınızı değil.",
       "verifyTitle": "Bir anahtarın canlı olduğunu doğrula",
       "testInputAria": "Test edilecek servis hesabı anahtarı",
       "testing": "Test ediliyor…",
@@ -203,10 +203,11 @@
       "eyebrow": "Başlayın",
       "heading": "Dört adım. Prompt'larınız sunucularımıza asla dokunmaz.",
       "step1": "<b>1 · Lisans anahtarınızı alın</b> — SDK herkese açıktır ama fail-closed'dur; yalnızca geçerli bir anahtarla çalışır. <code>licenseKey</code> olarak geçirilir.",
-      "step2": "<b>2 · Bir servis hesabı anahtarı oluşturun ve doğrulayın</b> — SDK'nın yalnızca sayımlara dayalı kullanımı (koltuklarınız ve tasarrufunuz) raporlaması için bir makine kimlik bilgisi (<code>bvk_…</code>). Lisans anahtarından ayrıdır; yalnızca hash'i saklanır. Bir tane oluşturun, ardından canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
+      "step2": "<b>2 · Bir servis hesabı anahtarı oluşturun ve doğrulayın</b> — iki iş yapan bir makine kimlik bilgisi (<code>bvk_…</code>): yalnızca sayımlara dayalı kullanımı (koltuklarınız ve tasarrufunuz) raporlar ve SDK'nın her faturalandırma döneminde <b>yenilenen lisansınızı kendi başına almasını</b> sağlar. Lisans anahtarından ayrıdır; yalnızca hash'i saklanır. Bir tane oluşturun, ardından canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "currentKey": "mevcut servis hesabı anahtarı",
       "noneYet": "henüz yok — yukarıya tıklayın",
       "shownOnce": "oluşturulurken yalnızca bir kez gösterilir — yalnızca önek saklanır.",
+      "renewalNote": "<b>Bu anahtarı dağıtımınızda tutun.</b> Lisansınızın süresi her faturalandırma döneminin sonunda dolar ve yenileme yeni bir lisans üretir. Bu anahtar varsa SDK yenisini kendisi alır ve yeniden başlatmadan devreye sokar. Yoksa kimse almaz; yeni anahtarı her dönem birinin elle yapıştırması gerekir — ve kimse yapmazsa, abonelik ödenmiş ve güncel olsa bile ek süre bittiğinde SDK durur.",
       "step3": "<b>3 · Kurun</b> — npm'de herkese açık, token yok, yapılandırma yok.",
       "step4": "<b>4 · Sağlayıcınızı bağlayın ve SavingsReport'u okuyun</b>",
       "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz."
@@ -223,7 +224,7 @@
       "subscribe": "Abone ol →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Bir şeyler ters gitti — tekrar deneyin."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",

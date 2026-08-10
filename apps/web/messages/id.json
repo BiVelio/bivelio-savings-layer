@@ -178,7 +178,7 @@
       "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
       "keyLabel": "kunci lisensi Anda{suffix} — ditampilkan sekali, salin sekarang",
       "validUntil": " · berlaku hingga {date}",
-      "pasteHint": "Tempel ke <code></code> untuk membuka SDK.",
+      "pasteHint": "Tempel ke <code></code> untuk membuka SDK. Kunci ini kedaluwarsa pada akhir periode penagihan: tambahkan kunci akun layanan di bawah dan SDK memperbaruinya sendiri.",
       "issuing": "Menerbitkan…",
       "getKey": "Dapatkan kunci lisensi Anda →",
       "priceNote": "{monthly} per kursi per bulan atau {yearly} per kursi per tahun. Checkout swalayan segera hadir — kunci ini membuka SDK di aplikasi Anda sendiri."
@@ -192,7 +192,7 @@
       "passHint": "Berikan sebagai <code>serviceAccountKey</code>. Sudah terisi di bawah — klik <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "creating": "Membuat…",
       "createKey": "Buat kunci akun layanan →",
-      "hashNote": "Hanya hash yang disimpan. Ini mengautentikasi pengukuran penggunaan berbasis-hitungan — bukan prompt Anda.",
+      "hashNote": "Hanya hash yang disimpan. Ini mengautentikasi pengukuran penggunaan berbasis-hitungan dan pengambilan otomatis lisensi Anda yang diperbarui — bukan prompt Anda.",
       "verifyTitle": "Verifikasi bahwa kunci aktif",
       "testInputAria": "Kunci akun layanan untuk diuji",
       "testing": "Menguji…",
@@ -203,10 +203,11 @@
       "eyebrow": "Mulai",
       "heading": "Empat langkah. Prompt Anda tidak pernah menyentuh server kami.",
       "step1": "<b>1 · Dapatkan kunci lisensi Anda</b> — SDK bersifat publik tetapi fail-closed; hanya berjalan dengan kunci yang valid. Diberikan sebagai <code>licenseKey</code>.",
-      "step2": "<b>2 · Buat & verifikasi kunci akun layanan</b> — kredensial mesin (<code>bvk_…</code>) agar SDK melaporkan penggunaan berbasis-hitungan (kursi & penghematan Anda). Terpisah dari kunci lisensi; hanya hash-nya yang disimpan. Buat satu, lalu <b>Uji kunci saya</b> untuk memastikannya aktif.",
+      "step2": "<b>2 · Buat & verifikasi kunci akun layanan</b> — kredensial mesin (<code>bvk_…</code>) dengan dua tugas: melaporkan penggunaan berbasis-hitungan (kursi & penghematan Anda), dan memungkinkan SDK <b>mengambil sendiri lisensi Anda yang diperbarui</b> pada setiap periode penagihan. Terpisah dari kunci lisensi; hanya hash-nya yang disimpan. Buat satu, lalu <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "currentKey": "kunci akun layanan saat ini",
       "noneYet": "belum ada — klik di atas",
       "shownOnce": "ditampilkan sekali saat pembuatan — hanya prefiks yang disimpan.",
+      "renewalNote": "<b>Simpan kunci ini di deployment Anda.</b> Lisensi Anda kedaluwarsa pada akhir setiap periode penagihan, dan perpanjangan menerbitkan lisensi baru. Dengan kunci ini, SDK mengambilnya dan menggantinya tanpa restart. Tanpa kunci ini, tidak ada yang mengambilnya, sehingga seseorang harus menempelkan kunci baru secara manual setiap periode — dan jika tidak ada yang melakukannya, SDK berhenti begitu masa tenggang berakhir, meskipun langganan Anda sudah dibayar dan tidak menunggak.",
       "step3": "<b>3 · Pasang</b> — publik di npm, tanpa token, tanpa konfigurasi.",
       "step4": "<b>4 · Sambungkan penyedia Anda & baca SavingsReport</b>",
       "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi."
@@ -223,7 +224,7 @@
       "subscribe": "Berlangganan →",
       "checkoutMonthly": "Subscribe — €4/mo →",
       "checkoutYearly": "Subscribe — €39/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutError": "Terjadi kesalahan — silakan coba lagi."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",

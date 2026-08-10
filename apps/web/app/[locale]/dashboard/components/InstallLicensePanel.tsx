@@ -11,7 +11,7 @@ const WRAP = `import { createSavingsLayer } from "@bivelio/savings-layer";
 const layer = createSavingsLayer({
   provider: yourProvider,
   licenseKey: process.env.BIVELIO_LICENSE_KEY,          // step 1 — unlocks the SDK
-  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 — counts-only usage metering
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 — metering + auto-renewal
   licenseServerUrl: "https://savings.bivelio.com",      // license check, kill-switch + metering
 });
 
@@ -53,6 +53,14 @@ export async function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: Or
         </div>
         <div className="ck-note" style={{ margin: 0 }}>{t("installLicensePanel.shownOnce")}</div>
       </div>
+
+      {/* Por qué esta clave NO es opcional: sin ella nadie recoge la licencia
+          renovada y el despliegue se para al acabar la gracia, pagando. El panel
+          la describía solo como telemetría, así que quien no quería telemetría la
+          borraba del snippet y se quedaba sin producto sin ninguna pista. */}
+      <p className="ck-note" style={{ marginTop: 10 }}>
+        {t.rich("installLicensePanel.renewalNote", { b: (chunks) => <b>{chunks}</b> })}
+      </p>
 
       {/* 3 · install (public npm, zero auth) */}
       <p className="ck-note">
