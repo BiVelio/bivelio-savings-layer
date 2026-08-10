@@ -163,7 +163,23 @@ export class OpenAICompatibleProvider implements Provider {
     }
 
     const json = (await response.json()) as OpenAIChatResponse;
-    const text = json.choices?.[0]?.message?.content ?? "";
+    const mensaje = json.choices?.[0]?.message as
+      | { content?: string | null; tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[] }
+      | undefined;
+    const text = mensaje?.content ?? "";
+
+    // Cuando el modelo invoca una herramienta devuelve `content: null` +
+    // `tool_calls`. El `?? ""` de arriba convertía eso en cadena vacía y la
+    // petición del modelo se PERDÍA: la capa servía "" como si fuera la respuesta,
+    // la cacheaba, y la siguiente repetición acreditaba 100 % de ahorro sobre una
+    // acción que nunca se ejecutó. Ahora se propagan.
+    const toolCalls = (mensaje?.tool_calls ?? [])
+      .map((tc) => ({
+        ...(tc.id ? { id: tc.id } : {}),
+        name: tc.function?.name ?? "",
+        arguments: tc.function?.arguments ?? "",
+      }))
+      .filter((tc) => tc.name !== "");
     const usage = json.usage ?? {};
     const inputTokens = usage.prompt_tokens ?? 0;
     const outputTokens = usage.completion_tokens ?? 0;
@@ -193,6 +209,7 @@ export class OpenAICompatibleProvider implements Provider {
 
     return {
       text,
+      ...(toolCalls.length > 0 ? { toolCalls } : {}),
       ...(finishReason ? { finishReason } : {}),
       usage: {
         inputTokens,

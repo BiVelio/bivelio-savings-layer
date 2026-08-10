@@ -45,6 +45,17 @@ export interface ProviderResponse {
    * podía distinguirlo y hacía exactamente eso.
    */
   finishReason?: "stop" | "length" | "content_filter" | "tool_calls" | (string & {});
+  /**
+   * Llamadas a herramienta que pidió el modelo, tal cual las devolvió el
+   * proveedor.
+   *
+   * Faltaba, y el adaptador hacía `content ?? ""`: cuando el modelo invoca una
+   * herramienta devuelve `content: null` + `tool_calls`, así que la capa entregaba
+   * CADENA VACÍA y la petición del modelo se perdía por completo. El pipeline
+   * transmite herramientas por diseño y son una palanca que el README vende, de
+   * modo que el caso no es exótico: es el camino normal en cuanto hay tools.
+   */
+  toolCalls?: { id?: string; name: string; arguments: string }[];
   raw?: unknown;
 }
 
