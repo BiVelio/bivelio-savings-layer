@@ -99,6 +99,25 @@ async function ensureOrg(
       billing_email: email,
     });
   }
+
+  // La fila de PERTENENCIA, que faltaba. Sin ella el que acaba de pagar no ve su
+  // propio plan: `getOrgContext` resuelve la organización con un join sobre
+  // `org_members` (data.ts:74-78), así que `ctx.org` quedaba en null, el panel
+  // mostraba "Sin plan activo" y `BillingButtons` le reofrecía comprar — con
+  // `checkout` sin guardia, el segundo clic abría una SEGUNDA suscripción real.
+  //
+  // Se lanza si falla en vez de tragárselo: un cliente que ha pagado y no consta
+  // como miembro es exactamente el defecto que esto cierra, así que es preferible
+  // devolver 503 y que Stripe reintente. `org_id == user_id` es la convención CP-0
+  // y es lo que el checkout mete en los metadatos, así que la FK contra
+  // `auth.users` se satisface.
+  const { error: memErr } = await admin
+    .from("org_members")
+    .upsert(
+      { org_id: orgId, user_id: orgId, role: "owner" },
+      { onConflict: "org_id,user_id", ignoreDuplicates: true },
+    );
+  if (memErr) throw memErr;
 }
 
 async function setOrgPlan(admin: Admin, orgId: string, plan: string) {

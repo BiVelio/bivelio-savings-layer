@@ -45,10 +45,45 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: `No Stripe price configured for ${period}.` }, { status: 501 });
   }
 
+  // GUARDIA ANTI-DOBLE-COBRO. No existía: nada impedía que quien ya paga abriera
+  // una segunda suscripción real, y el panel EMPUJABA a hacerlo — sin la fila de
+  // `org_members` que el webhook no creaba, la cuenta figuraba como "Sin plan
+  // activo" y se le volvían a ofrecer los botones de compra.
+  //
+  // Falla CERRADA a propósito: si no se puede comprobar el estado, se rechaza. Un
+  // cobro duplicado exige reembolso y quema la confianza; una compra bloqueada se
+  // reintenta en diez segundos.
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return NextResponse.json({ error: "Billing isn't configured yet." }, { status: 501 });
+  }
+
+  const { data: activa, error: subErr } = await admin
+    .from("subscriptions")
+    .select("id, status")
+    .eq("org_id", user.id)
+    .in("status", ["active", "trialing", "past_due"])
+    .limit(1)
+    .maybeSingle();
+  if (subErr) {
+    console.error("[stripe/checkout] subscription lookup failed:", subErr);
+    return NextResponse.json(
+      { error: "Could not verify your current plan. Try again in a moment." },
+      { status: 503 },
+    );
+  }
+  if (activa) {
+    return NextResponse.json(
+      { error: "This account already has an active subscription. Use “Manage plan” to change seats or billing." },
+      { status: 409 },
+    );
+  }
+
   // Reuse the org's existing Stripe customer if we've recorded one (no duplicates).
   let customer: string | undefined;
   try {
-    const admin = createAdminClient();
     const { data } = await admin
       .from("organizations")
       .select("stripe_customer_id")

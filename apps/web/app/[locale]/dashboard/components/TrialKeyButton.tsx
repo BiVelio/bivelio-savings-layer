@@ -25,6 +25,24 @@ export function TrialKeyButton() {
     setState("loading");
     setMsg("");
     try {
+      // 1) La licencia PAGADA, si existe. El webhook de Stripe la emitía y
+      // descartaba el token, así que quien pagaba no tenía NINGUNA forma de
+      // recogerlo y el SDK, fail-closed, no arrancaba ni una vez. Se pide primero
+      // porque es la que corresponde a un cliente de pago; 404 significa
+      // simplemente que aún no hay ninguna.
+      const actual = await fetch("/api/license/current");
+      if (actual.ok) {
+        const json = (await actual.json()) as { token?: string; expiresAt?: string };
+        if (json.token) {
+          setToken(json.token);
+          setExpiresAt(json.expiresAt ?? "");
+          setState("done");
+          return;
+        }
+      }
+
+      // 2) Sin licencia de pago: la ruta interna (allow-list del dueño, o el 402
+      // que explica que se entra por checkout).
       const res = await fetch("/api/license/trial", { method: "POST" });
       const json = (await res.json()) as {
         token?: string;

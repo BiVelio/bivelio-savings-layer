@@ -9,6 +9,12 @@ export default defineConfig({
       // Resolve workspace packages to their source so tests run without a build.
       "@bivelio/protocol": pkg("./packages/protocol/src/index.ts"),
       "@bivelio/license-client": pkg("./packages/license-client/src/index.ts"),
+      // El alias `@/` de apps/web. Sin esto no se puede importar una route
+      // handler desde un test, que es la razón por la que `app/api/**` llegó a
+      // producción con cobertura CERO: las rutas que cobran, emiten licencias y
+      // aceptan ingest no tenían ni un test. Va el ÚLTIMO porque vite empareja
+      // los alias por prefijo y `@bivelio/...` debe resolverse antes.
+      "@/": pkg("./apps/web/"),
     },
   },
   test: {
