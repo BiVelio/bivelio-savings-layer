@@ -43,10 +43,17 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         if (error) throw error;
         setMsg({ type: "info", text: t("resetEmailSent") });
       } else if (mode === "signup") {
+        // El `?next=` NO es cosmético: la plantilla de correo compartida de la
+        // suite construye el enlace desde `{{ .RedirectTo }}` + `&token_hash=…`,
+        // así que un redirectTo SIN query string produce una URL malformada. Y
+        // además conserva el idioma, igual que ya hace la rama de recuperación.
+        const nextSignup = encodeURIComponent(`/${locale}/dashboard`);
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${nextSignup}`,
+          },
         });
         if (error) throw error;
         setMsg({ type: "info", text: t("checkEmail") });
