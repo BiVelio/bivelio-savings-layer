@@ -7,11 +7,33 @@ import { intfmt, LEDGER_COLOR } from "../format";
 // real usage_daily column; a faint reference "ghost" keeps the never-summed model
 // legible before any customer data exists.
 const LIVE = [
-  { key: "avoided_calls", col: "avoided_llm", whatKey: "whatAvoidedCalls", ghost: "ref 35%" },
-  { key: "eliminated_tokens", col: "eliminated_input_tokens", whatKey: "whatEliminatedTokens", ghost: "ref 61%" },
-  { key: "compressed_tokens", col: "compressed_input_tokens", whatKey: "whatCompressedTokens", ghost: "ref 57%" },
-  { key: "provider_cached_tokens", col: "provider_cached_input_tokens", whatKey: "whatProviderCachedTokens", ghost: "—" },
+  { key: "avoided_calls", col: "avoided_llm", whatKey: "whatAvoidedCalls" },
+  { key: "eliminated_tokens", col: "eliminated_input_tokens", whatKey: "whatEliminatedTokens" },
+  { key: "compressed_tokens", col: "compressed_input_tokens", whatKey: "whatCompressedTokens" },
+  { key: "provider_cached_tokens", col: "provider_cached_input_tokens", whatKey: "whatProviderCachedTokens" },
 ] as const;
+
+/**
+ * El "fantasma" de referencia sale del artefacto A/B que la propia app publica,
+ * NO de constantes a mano.
+ *
+ * Estaban escritas a pelo: «ref 35% / ref 61% / ref 57%» cuando el artefacto que
+ * este mismo componente RECIBE por props —y no usaba— mide 47,0% / 8,9% / 34,3%.
+ * El de eliminated_tokens sobreestimaba x6,8, y se enseña durante toda la ventana
+ * de onboarding, que es justo cuando el cliente decide si paga. Eso no es un fallo
+ * de render: es material de venta falso.
+ *
+ * `provider_cached_tokens` no tiene contrapartida en la referencia (allí el cuarto
+ * libro es `output_restriction`), así que se queda sin fantasma en vez de
+ * inventarle uno.
+ */
+function fantasmaDeReferencia(ab: AbArtifact, key: string): string {
+  if (key === "provider_cached_tokens") return "—";
+  const l = (ab?.ledgers ?? []).find((x) => x.ledger === key);
+  const punto = l?.savings?.point;
+  if (typeof punto !== "number" || !Number.isFinite(punto)) return "—";
+  return `ref ${Math.round(punto * 100)}%`;
+}
 
 function liveValue(usage: UsageRollup[], key: string): number | null {
   if (usage.length === 0) return null;
@@ -25,7 +47,7 @@ function liveValue(usage: UsageRollup[], key: string): number | null {
   }
 }
 
-export async function LiveLedgerTiles({ usage }: { usage: UsageRollup[]; ab: AbArtifact }) {
+export async function LiveLedgerTiles({ usage, ab }: { usage: UsageRollup[]; ab: AbArtifact }) {
   const t = await getTranslations("dashboard");
   return (
     <>
@@ -42,7 +64,9 @@ export async function LiveLedgerTiles({ usage }: { usage: UsageRollup[]; ab: AbA
                 <>
                   <div className="v empty ck-num">—</div>
                   <div className="sub">{t(`liveLedgerTiles.${l.whatKey}`)}</div>
-                  <div className="ghost">{t("liveLedgerTiles.ghostAwaiting", { ref: l.ghost })}</div>
+                  <div className="ghost">
+                    {t("liveLedgerTiles.ghostAwaiting", { ref: fantasmaDeReferencia(ab, l.key) })}
+                  </div>
                 </>
               ) : (
                 <>
