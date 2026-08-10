@@ -4,6 +4,7 @@ import { gateFromKey } from "../license/gate.js";
 import { liveGateFromKey } from "../license/live-gate.js";
 import { RevocationSnapshot } from "../license/revocation.js";
 import { RevocationPoller } from "../license/poller.js";
+import { LicenseRefresher } from "../license/refresher.js";
 import { EMBEDDED_PUBLIC_KEY } from "../license/verify.js";
 import { UsageEmitter } from "../metering/emitter.js";
 import { deriveSeatId, detectCi } from "../metering/seat.js";
@@ -74,6 +75,7 @@ export function createSavingsLayer(
   };
 
   let poller: RevocationPoller | undefined;
+  let refresher: LicenseRefresher | undefined;
 
   // Ergonomic path: a raw `licenseKey` string is verified offline and turned into
   // a gate here. An explicitly-provided `licenseGate` takes precedence (advanced).
@@ -94,16 +96,29 @@ export function createSavingsLayer(
       // (not awaited) so a control plane that is down at boot cannot brick or delay
       // the first generate().
       const revocation = new RevocationSnapshot();
-      const gate = liveGateFromKey(config.licenseKey, publicKey, {
-        revocation,
-        ...(config.now ? { now: config.now } : {}),
-        // Close the block-egress fail-open: stop granting after a max staleness with
-        // no confirmed heartbeat. Only on this ONLINE path — the offline gate below
-        // never sets it (zero-network deployments must omit licenseServerUrl).
-        maxStalenessSeconds:
-          config.licenseRevocation?.maxStalenessSeconds ?? DEFAULT_MAX_STALENESS_SECONDS,
-      });
-      resolved.licenseGate = gate;
+      const crearGate = (token: string) =>
+        liveGateFromKey(token, publicKey, {
+          revocation,
+          ...(config.now ? { now: config.now } : {}),
+          // Close the block-egress fail-open: stop granting after a max staleness with
+          // no confirmed heartbeat. Only on this ONLINE path — the offline gate below
+          // never sets it (zero-network deployments must omit licenseServerUrl).
+          maxStalenessSeconds:
+            config.licenseRevocation?.maxStalenessSeconds ?? DEFAULT_MAX_STALENESS_SECONDS,
+        });
+      // CONMUTABLE, no un gate congelado en la construcción. La renovación
+      // mensual emite un token NUEVO y el viejo solo se supersede: muere en
+      // expires_at + gracia. Con el gate atado al literal de la construcción,
+      // todo cliente mensual que no re-pegara su token a mano se apagaba
+      // fail-closed hacia el día ~45 de cada ciclo — pagando. El proxy delega en
+      // el gate vigente y el refresher lo reemplaza al recoger (y verificar
+      // contra la clave embebida) el token renovado.
+      let gate = crearGate(config.licenseKey);
+      resolved.licenseGate = {
+        isEntitled: (feature: string) => gate.isEntitled(feature),
+        isActive: () => gate.isActive(),
+        status: () => gate.status(),
+      };
       // `licenseServerUrl` is a BASE url (e.g. https://savings.bivelio.com); the SDK
       // owns the endpoint path so callers never hardcode it.
       const revocationsUrl = `${config.licenseServerUrl.replace(/\/+$/, "")}/licenses/revocations`;
@@ -120,6 +135,24 @@ export function createSavingsLayer(
         ...(config.licenseRevocation ?? {}),
       });
       poller.start();
+      // Recogida automática del token renovado, autenticada con la clave de
+      // servicio — la misma credencial de org que ya autentica el metering. Sin
+      // clave de servicio no hay vía de recogida de máquina: queda el pull
+      // manual del panel, como hasta ahora.
+      if (config.serviceAccountKey) {
+        refresher = new LicenseRefresher({
+          url: `${config.licenseServerUrl.replace(/\/+$/, "")}/api/license/current`,
+          serviceAccountKey: config.serviceAccountKey,
+          publicKey,
+          initialToken: config.licenseKey,
+          onNewToken: (token) => {
+            gate = crearGate(token);
+          },
+          ...(config.licenseFetch ? { fetchImpl: config.licenseFetch } : {}),
+          ...(config.now ? { now: config.now } : {}),
+        });
+        refresher.start();
+      }
     } else {
       // OFFLINE path: live-clock gate, zero network. Still enforces expiry
       // mid-process (no restart needed), just with no revocation source.
@@ -188,6 +221,7 @@ export function createSavingsLayer(
     },
     close: () => {
       poller?.stop();
+      refresher?.stop();
       emitter?.stop();
     },
   };

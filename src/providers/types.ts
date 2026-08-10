@@ -1,6 +1,7 @@
 import type {
   ChatMessage,
   JsonSchema,
+  ToolCallRequest,
   ToolDescriptor,
 } from "../contracts/types.js";
 
@@ -54,8 +55,10 @@ export interface ProviderResponse {
    * CADENA VACÍA y la petición del modelo se perdía por completo. El pipeline
    * transmite herramientas por diseño y son una palanca que el README vende, de
    * modo que el caso no es exótico: es el camino normal en cuanto hay tools.
+   * Mismo tipo que expone `SavingsResult.toolCalls`: el pipeline lo transmite
+   * tal cual hasta el llamante (no solo hasta aquí).
    */
-  toolCalls?: { id?: string; name: string; arguments: string }[];
+  toolCalls?: ToolCallRequest[];
   raw?: unknown;
 }
 

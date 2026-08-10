@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 
-import { deriveSeatId, detectCi } from "../src/metering/seat.js";
+import { deriveSeatId, detectCi, hostDeMaquina } from "../src/metering/seat.js";
 
 const USAGE_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
 
@@ -115,5 +115,53 @@ describe("identidad de asiento en entornos efímeros", () => {
     const sid = await deriveSeatId("sa-key");
     expect(sid).not.toBe("tiene espacios y ñ");
     expect(sid).toMatch(/^m-[0-9a-f]{32}$/);
+  });
+});
+
+/**
+ * El colapso de asientos no era solo de contenedores: `HOSTNAME` es una
+ * variable de bash INTERACTIVO y bajo systemd/launchd no existe, así que la
+ * huella quedaba en platform|arch|execPath|USER|HOME — idéntica en una flota de
+ * VMs clonadas. Diez máquinas facturaban como UN asiento. El fallback a
+ * `os.hostname()` (que en Node existe siempre) cierra el hueco sin meter un
+ * import de builtin en el bundle de navegador.
+ */
+describe("hostDeMaquina — el nombre estable de la máquina", () => {
+  const guardado = { ...process.env };
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) if (!(k in guardado)) delete process.env[k];
+    Object.assign(process.env, guardado);
+  });
+
+  it("sin HOSTNAME en el entorno (systemd/launchd) cae a os.hostname()", async () => {
+    const host = await hostDeMaquina({}, async () => "vm-prod-01");
+    expect(host).toBe("vm-prod-01");
+  });
+
+  it("el HOSTNAME del entorno, si existe y es estable, sigue mandando", async () => {
+    const host = await hostDeMaquina({ HOSTNAME: "portatil-de-ana" }, async () => "otro");
+    expect(host).toBe("portatil-de-ana");
+  });
+
+  it("un os.hostname() efímero (id de contenedor) se descarta igual", async () => {
+    expect(await hostDeMaquina({}, async () => "3f2a1b9c8d7e")).toBeUndefined();
+  });
+
+  it("dentro de Kubernetes no se usa ningún nombre, venga de donde venga", async () => {
+    const host = await hostDeMaquina(
+      { KUBERNETES_SERVICE_HOST: "10.0.0.1", HOSTNAME: "api-7d9f8b6c5d-x2k9p" },
+      async () => "lo-que-sea",
+    );
+    expect(host).toBeUndefined();
+  });
+
+  it("integración: sin HOSTNAME/COMPUTERNAME el asiento sigue derivándose y es estable", async () => {
+    delete process.env.HOSTNAME;
+    delete process.env.COMPUTERNAME;
+    delete process.env.KUBERNETES_SERVICE_HOST;
+    const a = await deriveSeatId("sa-key");
+    const b = await deriveSeatId("sa-key");
+    expect(a).toBeDefined();
+    expect(a).toBe(b);
   });
 });

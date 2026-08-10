@@ -195,9 +195,26 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
     return;
   }
   const sub = await stripe.subscriptions.retrieve(subId);
+  // La MISMA guardia que handleInvoicePaid, que aquí faltaba: el retrieve es
+  // FRESCO, así que si la suscripción ya no está en estado de pago este evento
+  // es un reintento tardío (Stripe reintenta hasta 72 h lo que respondió 5xx) y
+  // entre medias se procesó un `deleted`. Sin esto, el reintento ejecutaba
+  // ensureOrg('pro') + issueLicense incondicionalmente: la org cancelada volvía
+  // a pro con un token vivo y sin revocar hasta period_end + gracia — ingest y
+  // SDK reabiertos sin cobro. Va ANTES de ensureOrg para no tocar ni el plan.
+  if (planForStatus(sub.status) !== "pro") {
+    await audit(admin, orgId, eventId, "checkout_not_active_ignored", { subId, status: sub.status });
+    return;
+  }
   const f = subFacts(sub);
   await ensureOrg(admin, orgId, email, f.customerId, "pro");
-  const { id: subRowId } = await upsertSub(admin, sub, orgId, eventCreated);
+  const { id: subRowId, stale } = await upsertSub(admin, sub, orgId, eventCreated);
+  // Fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA
+  // licencia — la que corresponde al estado actual ya la emitió el evento nuevo.
+  if (stale) {
+    await audit(admin, orgId, eventId, "checkout_stale_ignored", { subId, created: eventCreated });
+    return;
+  }
   const issued = await issueLicense(admin, {
     orgId,
     seats: f.quantity,
