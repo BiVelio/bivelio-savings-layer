@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 /**
@@ -29,6 +30,10 @@ interface Escenario {
 
 const esc: Escenario = { usuario: null, licencia: null, suscripcionActiva: null, serviceAccount: null };
 
+/** El hash que la ruta calcula de una clave de servicio, para que el doble
+ *  pueda comprobar de verdad el `.eq("key_hash", …)` que la autentica. */
+const hashDe = (clave: string) => createHash("sha256").update(clave).digest("hex");
+
 /** Petición de la vía de SESIÓN (sin cabecera de autorización). */
 const peticionSesion = () => new Request("https://savings.bivelio.com/api/license/current");
 /** Registra cada upsert para poder afirmar que la pertenencia SÍ se escribe. */
@@ -37,9 +42,32 @@ const upserts: { tabla: string; fila: unknown }[] = [];
 /** Constructor de consultas encadenable: cada método devuelve `this` y el
  *  terminal resuelve según la tabla que se pidió. */
 function tabla(nombre: string) {
+  // Los filtros se REGISTRAN y se aplican en el terminal. Antes `eq`/`in` eran
+  // no-ops que devolvían `this`, así que el doble entregaba la fila del escenario
+  // pasara lo que pasara: se podía sustituir `[sa.org_id]` por la org de otro
+  // cliente, borrar el `.eq("key_hash", …)` que autentica la clave de servicio o
+  // borrar el `.eq("revoked", false)` que impide re-entregar una licencia
+  // revocada, y los tests seguían verdes. Una superficie que sirve credenciales
+  // no puede tener el control de acceso sin cobertura.
+  const filtros: { col: string; op: "eq" | "in"; val: unknown }[] = [];
   const q: Record<string, unknown> = {};
   const self = () => q;
-  for (const m of ["select", "eq", "in", "order", "limit", "not", "neq"]) q[m] = self;
+  for (const m of ["select", "order", "limit", "not", "neq"]) q[m] = self;
+  q.eq = (col: string, val: unknown) => {
+    filtros.push({ col, op: "eq", val });
+    return q;
+  };
+  q.in = (col: string, val: unknown) => {
+    filtros.push({ col, op: "in", val });
+    return q;
+  };
+  const pasa = (fila: Record<string, unknown> | null): boolean =>
+    fila != null &&
+    filtros.every((f) =>
+      f.op === "eq"
+        ? fila[f.col] === f.val
+        : Array.isArray(f.val) && (f.val as unknown[]).includes(fila[f.col]),
+    );
   q.upsert = (fila: unknown) => {
     upserts.push({ tabla: nombre, fila });
     return { ...q, error: null };
@@ -50,9 +78,17 @@ function tabla(nombre: string) {
   };
   q.update = self;
   q.maybeSingle = async () => {
-    if (nombre === "licenses") return { data: esc.licencia, error: esc.errorLicencia ?? null };
-    if (nombre === "subscriptions") return { data: esc.suscripcionActiva, error: esc.errorSuscripcion ?? null };
-    if (nombre === "service_accounts") return { data: esc.serviceAccount, error: null };
+    if (nombre === "licenses") {
+      if (esc.errorLicencia) return { data: null, error: esc.errorLicencia };
+      return { data: pasa(esc.licencia) ? esc.licencia : null, error: null };
+    }
+    if (nombre === "subscriptions") {
+      if (esc.errorSuscripcion) return { data: null, error: esc.errorSuscripcion };
+      return { data: pasa(esc.suscripcionActiva) ? esc.suscripcionActiva : null, error: null };
+    }
+    if (nombre === "service_accounts") {
+      return { data: pasa(esc.serviceAccount) ? esc.serviceAccount : null, error: null };
+    }
     if (nombre === "organizations") return { data: null, error: null };
     return { data: null, error: null };
   };
@@ -112,11 +148,14 @@ vi.mock("@/lib/stripe/client", () => ({
 // la PERTENENCIA se escriba, así que se sustituye por un doble. Es un espía para
 // poder afirmar también cuándo NO debe emitirse (checkout reentregado).
 const emitirLicencia = vi.fn(async () => ({ jti: "jti-1", token: "bvl.t", expiresAt: 1_802_592_000 }));
+/** Lo que ve el webhook al preguntar "¿esta org ya tiene licencia viva?" — es lo
+ *  que decide si la red de seguridad de la PRIMERA licencia entra o no. */
+let licenciaVigente: { jti: string; seats: number } | null = null;
 vi.mock("@/lib/license/issue", () => ({
   issueLicense: (...a: unknown[]) => emitirLicencia(...(a as [])),
   supersedeLicense: async () => {},
-  currentLicense: async () => null,
-  currentLicenseJti: async () => null,
+  currentLicense: async () => licenciaVigente,
+  currentLicenseJti: async () => licenciaVigente?.jti ?? null,
   revokeAllLicenses: async () => [],
 }));
 
@@ -130,6 +169,7 @@ beforeEach(() => {
   upserts.length = 0;
   crearSesion.mockClear();
   emitirLicencia.mockClear();
+  licenciaVigente = null;
   suscripcionStripe.status = "active";
 });
 
@@ -143,6 +183,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
       plan: "pro",
       seats: 3,
       token: "bvl.header.payload.sig",
+      revoked: false,
       expires_at: "2026-12-31T00:00:00.000Z",
       grace_days: 14,
     };
@@ -163,6 +204,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
       plan: "pro",
       seats: 1,
       token: "t",
+      revoked: false,
       expires_at: "2026-12-31T00:00:00.000Z",
       grace_days: 14,
     };
@@ -180,7 +222,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
 
   it("401 sin sesión — el token jamás se sirve a un anónimo", async () => {
     esc.usuario = null;
-    esc.licencia = { id: "l", org_id: "o", plan: "pro", seats: 1, token: "SECRETO", expires_at: "x", grace_days: 14 };
+    esc.licencia = { id: "l", org_id: "o", plan: "pro", seats: 1, token: "SECRETO", revoked: false, expires_at: "x", grace_days: 14 };
     const { GET } = await import("./license/current/route.js");
     const res = await GET(peticionSesion());
     expect(res.status).toBe(401);
@@ -188,7 +230,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
   });
 
   it("una licencia revocada sin token no se entrega como si fuera válida", async () => {
-    esc.licencia = { id: "l", org_id: esc.usuario!.id, plan: "pro", seats: 1, token: null, expires_at: "x", grace_days: 14 };
+    esc.licencia = { id: "l", org_id: esc.usuario!.id, plan: "pro", seats: 1, token: null, revoked: false, expires_at: "x", grace_days: 14 };
     const { GET } = await import("./license/current/route.js");
     expect((await GET(peticionSesion())).status).toBe(404);
   });
@@ -204,13 +246,14 @@ describe("GET /api/license/current — vía máquina (bvk_): la renovación se r
 
   it("una clave de servicio válida recibe el token vigente de SU org", async () => {
     esc.usuario = null; // sin sesión: es una máquina, no un humano
-    esc.serviceAccount = { org_id: "org-maquina" };
+    esc.serviceAccount = { org_id: "org-maquina", key_hash: hashDe("bvk_test_123") };
     esc.licencia = {
       id: "lic-renovada",
       org_id: "org-maquina",
       plan: "pro",
       seats: 2,
       token: "bvl.renovado",
+      revoked: false,
       expires_at: "2027-01-31T00:00:00.000Z",
       grace_days: 14,
     };
@@ -223,11 +266,40 @@ describe("GET /api/license/current — vía máquina (bvk_): la renovación se r
 
   it("una bvk_ desconocida: 401 y ni rastro del token", async () => {
     esc.serviceAccount = null;
-    esc.licencia = { id: "l", org_id: "o", plan: "pro", seats: 1, token: "SECRETO", expires_at: "x", grace_days: 14 };
+    esc.licencia = { id: "l", org_id: "o", plan: "pro", seats: 1, token: "SECRETO", revoked: false, expires_at: "x", grace_days: 14 };
     const { GET } = await import("./license/current/route.js");
     const res = await GET(conBvk("bvk_falsa"));
     expect(res.status).toBe(401);
     expect(JSON.stringify(await res.json())).not.toContain("SECRETO");
+  });
+
+  it("una bvk_ EQUIVOCADA no vale aunque existan claves de servicio: 401", async () => {
+    // Discrimina "la ruta filtra por key_hash" de "el fixture no tenía nada":
+    // aquí SÍ hay una clave registrada, pero es la de otra máquina. Sin esta
+    // prueba, borrar el `.eq("key_hash", …)` de la ruta pasaba desapercibido.
+    esc.serviceAccount = { org_id: "org-maquina", key_hash: hashDe("bvk_la_buena") };
+    esc.licencia = {
+      id: "l", org_id: "org-maquina", plan: "pro", seats: 1,
+      token: "SECRETO", revoked: false, expires_at: "x", grace_days: 14,
+    };
+    const { GET } = await import("./license/current/route.js");
+    const res = await GET(conBvk("bvk_la_equivocada"));
+    expect(res.status).toBe(401);
+    expect(JSON.stringify(await res.json())).not.toContain("SECRETO");
+  });
+
+  it("una licencia REVOCADA no se re-entrega, ni por sesión ni por bvk_", async () => {
+    // El plano de control no puede seguir sirviendo una credencial revocada:
+    // es lo que convierte una revocación manual en efectiva.
+    esc.serviceAccount = { org_id: "org-maquina", key_hash: hashDe("bvk_test_123") };
+    esc.licencia = {
+      id: "l", org_id: "org-maquina", plan: "pro", seats: 1,
+      token: "TOKEN-REVOCADO", revoked: true, expires_at: "x", grace_days: 14,
+    };
+    const { GET } = await import("./license/current/route.js");
+    const res = await GET(conBvk("bvk_test_123"));
+    expect(res.status).toBe(404);
+    expect(JSON.stringify(await res.json())).not.toContain("TOKEN-REVOCADO");
   });
 
   it("sin sesión y sin bvk_, sigue siendo 401 (la vía de sesión no se relajó)", async () => {
@@ -250,7 +322,7 @@ function peticionCheckout() {
 
 describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
   it("409 si la organización YA tiene una suscripción activa, y NO llama a Stripe", async () => {
-    esc.suscripcionActiva = { id: "sub-row-1", status: "active" };
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "active" };
     const { POST } = await import("./stripe/checkout/route.js");
     const res = await POST(peticionCheckout());
     expect(res.status).toBe(409);
@@ -260,7 +332,7 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
 
   it("también bloquea en past_due y trialing, no solo en active", async () => {
     for (const status of ["past_due", "trialing"]) {
-      esc.suscripcionActiva = { id: "sub-row-1", status };
+      esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status };
       const { POST } = await import("./stripe/checkout/route.js");
       expect((await POST(peticionCheckout())).status).toBe(409);
     }
@@ -369,12 +441,28 @@ describe("POST /api/stripe/webhook — el reintento tardío de un checkout no re
     expect(upserts.find((u) => u.tabla === "organizations")).toBeFalsy();
   });
 
-  it("fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA licencia", async () => {
-    esc.suscripcionActiva = { id: "sub-row-1", seats: 2, last_event_at: "2099-01-01T00:00:00.000Z" };
+  it("fuera de orden pero la org YA tiene licencia: no se emite otra", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", seats: 2, last_event_at: "2099-01-01T00:00:00.000Z" };
+    licenciaVigente = { jti: "ya-existe", seats: 2 };
     construirEvento.mockReturnValueOnce(eventoCheckout());
     const res = await dispara();
     expect(res.status).toBe(200);
     expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
+  it("fuera de orden y SIN licencia: se emite igual — si no, el que paga se queda sin producto", async () => {
+    // `checkout.session.completed` es el ÚNICO camino que mina la PRIMERA
+    // licencia. Un `customer.subscription.updated` que se adelante (Stripe no
+    // garantiza orden) adelanta `last_event_at` y deja el checkout stale; si la
+    // guardia de orden se aplicara también a la primera emisión, la org quedaría
+    // cobrada, con plan pro y CERO filas en `licenses`, y el SDK moriría con
+    // LicenseError de forma permanente.
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", seats: 2, last_event_at: "2099-01-01T00:00:00.000Z" };
+    licenciaVigente = null;
+    construirEvento.mockReturnValueOnce(eventoCheckout());
+    const res = await dispara();
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
   });
 
   it("el camino feliz sigue emitiendo la licencia (el cobro no se rompió)", async () => {

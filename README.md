@@ -34,6 +34,7 @@ const layer = createSavingsLayer({
   provider: yourProvider,                        // any OpenAI-compatible / self-hosted provider
   licenseKey: process.env.BIVELIO_LICENSE_KEY,   // required — from your savings.bivelio.com dashboard
   licenseServerUrl: "https://savings.bivelio.com", // license check + kill-switch
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY, // seat metering + AUTO-RENEWAL pickup
 });
 
 const { data, text, report } = await layer.generate({
@@ -51,6 +52,34 @@ The hard requirements are a `provider` and a valid `licenseKey`: BV‑SALA is a 
 product and **refuses to run unlicensed, expired, or tampered** (it throws
 `LicenseError` at the `generate()` entry). Get a key at
 [savings.bivelio.com](https://savings.bivelio.com).
+
+> **Set `serviceAccountKey` on every long‑running deployment.** Your licence token
+> expires at the end of the billing period; each renewal mints a **new** token. With
+> a service‑account key (`bvk_…`, same dashboard) the SDK picks the renewed token up
+> by itself and swaps it in without a restart. **Without it there is no machine
+> pickup**, so somebody has to paste the new token by hand every cycle — and if
+> nobody does, the deployment stops with `LicenseError` once the grace period ends,
+> while the subscription is paid and current. The key also enables seat metering
+> (counts only — never prompts or completions).
+
+### Tool calls
+
+When you pass `tools` and the model asks to invoke one, the reply is not the final
+answer: `text` is empty by design and the request is in `toolCalls`. Execute it,
+append the result to `messages`, and call `generate()` again.
+
+```ts
+const res = await layer.generate({ model, messages, tools });
+if (res.toolCalls?.length) {
+  // res.finishReason === "tool_calls"
+  for (const call of res.toolCalls) await run(call.name, JSON.parse(call.arguments));
+} else {
+  console.log(res.text);
+}
+```
+
+A tool‑call turn is never served from cache and never counted as an avoided call:
+an action that has not run yet cannot be a saving.
 
 > The `devUnlicensed` flag and `BVSALA_DEV_OPEN=1` are development‑only, honored
 > **only when building from source** (this repo's tests and benchmarks). They are

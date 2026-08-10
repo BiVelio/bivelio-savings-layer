@@ -1,6 +1,9 @@
 import { describe, it, expect, afterEach } from "vitest";
 
-import { deriveSeatId, detectCi, hostDeMaquina } from "../src/metering/seat.js";
+import { hostname } from "node:os";
+import { readFileSync } from "node:fs";
+
+import { deriveSeatId, detectCi, esNombreEfimero, hostDeMaquina } from "../src/metering/seat.js";
 
 const USAGE_ID_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/;
 
@@ -163,5 +166,112 @@ describe("hostDeMaquina — el nombre estable de la máquina", () => {
     const b = await deriveSeatId("sa-key");
     expect(a).toBeDefined();
     expect(a).toBe(b);
+  });
+});
+
+/**
+ * El heurístico de "nombre efímero" era `-[0-9a-z]{5,10}-[0-9a-z]{5}$` y daba
+ * FALSO POSITIVO sobre nombres de máquina corrientes. Como ahora se aplica
+ * SIEMPRE (antes solo a `$HOSTNAME`, que bajo systemd casi nunca existe), un
+ * falso positivo descarta el hostname bueno, la huella se queda sin host y la
+ * flota de VMs clonadas vuelve a facturar UN asiento — el defecto que este
+ * módulo cierra.
+ */
+describe("esNombreEfimero — distingue una máquina de un contenedor", () => {
+  it("NO marca como efímeros los nombres de máquina corrientes", () => {
+    for (const h of [
+      "app-worker-node1", "web-server-prod1", "api-worker-node1",
+      "bivelio-gateway-node1", "srv-london-node7", "db-shard-node2",
+      "app-backend-blue1", "portatil-de-ana", "vm-prod-01",
+    ]) {
+      expect(esNombreEfimero(h), `${h} no es efímero`).toBe(false);
+    }
+  });
+
+  it("SÍ marca los identificadores efímeros de verdad", () => {
+    for (const h of [
+      "3f2a1b9c8d7e",              // id corto de contenedor Docker
+      "api-7d9f8b6c5d-x2k9p",      // <deploy>-<rs>-<pod> de k8s
+      "web-5f4b7c8d9-q7w2z",   // k8s genera sus sufijos sin vocales y sin 0/1/3
+      "169.254.79.129",            // hostname que en realidad es una IP
+      "ip-10-0-1-23",              // EC2 con DHCP
+    ]) {
+      expect(esNombreEfimero(h), `${h} es efímero`).toBe(true);
+    }
+  });
+});
+
+describe("identidad de asiento en plataformas sin máquina (FaaS)", () => {
+  const guardado = { ...process.env };
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) if (!(k in guardado)) delete process.env[k];
+    Object.assign(process.env, guardado);
+  });
+
+  it("en Lambda/Vercel/Cloud Run no se usa hostname: cada sandbox tendría el suyo", async () => {
+    // Si el hostname del sandbox entrara en la huella, cada invocación sería un
+    // asiento nuevo; `billable_seats` exige >= 3 días DISTINTOS por asiento, así
+    // que la base facturable de la org se desplomaría a CERO.
+    for (const marca of ["AWS_LAMBDA_FUNCTION_NAME", "VERCEL", "K_SERVICE", "FUNCTIONS_WORKER_RUNTIME"]) {
+      const host = await hostDeMaquina({ [marca]: "1" }, async () => "sandbox-efimero-123");
+      expect(host, `${marca} debe anular el hostname`).toBeUndefined();
+    }
+  });
+
+  it("el asiento de una función serverless es ESTABLE entre invocaciones", async () => {
+    process.env.AWS_LAMBDA_FUNCTION_NAME = "mi-funcion";
+    delete process.env.HOSTNAME;
+    const a = await deriveSeatId("sa-key");
+    const b = await deriveSeatId("sa-key");
+    expect(a).toBeDefined();
+    expect(a).toBe(b);
+  });
+});
+
+describe("el fallback REAL a os.hostname() (no un lector inyectado)", () => {
+  const guardado = { ...process.env };
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) if (!(k in guardado)) delete process.env[k];
+    Object.assign(process.env, guardado);
+  });
+
+  it("sin HOSTNAME en el entorno, lee el hostname real de la máquina", async () => {
+    // Éste es el test que faltaba: los demás inyectan su propio lector, así que
+    // desactivar `nodeHostname()` por completo —o sea, revertir el arreglo—
+    // dejaba la suite entera en verde.
+    const real = hostname();
+    if (esNombreEfimero(real)) return; // la máquina que corre los tests es efímera
+    const host = await hostDeMaquina({});
+    expect(host).toBe(real);
+  });
+
+  it("dos VMs clonadas con nombres distintos NO comparten asiento", async () => {
+    // El caso del bloqueante: 10 VMs Ubuntu clonadas bajo systemd. Con el
+    // heurístico viejo, "app-worker-node1" y "app-worker-node2" se daban por
+    // efímeros, la huella perdía el host y las dos derivaban el MISMO id.
+    delete process.env.KUBERNETES_SERVICE_HOST;
+    process.env.HOSTNAME = "app-worker-node1";
+    const a = await deriveSeatId("sa-key");
+    process.env.HOSTNAME = "app-worker-node2";
+    const b = await deriveSeatId("sa-key");
+    expect(a).toBeDefined();
+    expect(a).not.toBe(b);
+  });
+});
+
+/**
+ * El fallback solo es viable porque el especificador se construye en ejecución
+ * (`["node","os"].join(":")`), que es lo que impide al bundler resolverlo y meter
+ * `node:os` en el bundle que se sirve al navegador. Si alguien "limpia" ese join
+ * a un literal, la web pública rompe — y sin esta guardia, en silencio.
+ */
+describe("el bundle de navegador no arrastra builtins de node", () => {
+  it("public/vendor/bv-sala.js no contiene node:os", () => {
+    const bundle = readFileSync(
+      new URL("../apps/web/public/vendor/bv-sala.js", import.meta.url),
+      "utf8",
+    );
+    expect(bundle).toContain("BVSALA_SEAT_ID"); // el código de asiento SÍ está dentro
+    expect(bundle).not.toContain("node:os");
   });
 });

@@ -33,9 +33,59 @@ function proc(): ProcLike | undefined {
  * nunca acumula tres días con el mismo id, así que la base facturable se
  * desploma a CERO. El docstring de este módulo prometía justo lo contrario.
  */
-function esNombreEfimero(h: string): boolean {
+export function esNombreEfimero(h: string): boolean {
   if (/^[0-9a-f]{12}$/.test(h)) return true; // id corto de contenedor Docker
-  return /-[0-9a-z]{5,10}-[0-9a-z]{5}$/.test(h); // <deploy>-<rs>-<pod> de k8s
+
+  // Un nombre que en realidad es una IP no identifica una maquina estable: es lo
+  // que devuelve os.hostname() en varios entornos gestionados (169.254.x.x en
+  // Lambda, ip-10-0-1-23 en EC2 con DHCP), y cambia con la instancia.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return true;
+  if (/^ip-\d{1,3}(-\d{1,3}){3}$/i.test(h)) return true;
+
+  // <deploy>-<hash-rs>-<sufijo> de k8s. El patron va ANCLADO al alfabeto que usa
+  // Kubernetes para sus sufijos aleatorios ("bcdfghjklmnpqrstvwxz2456789": sin
+  // vocales y sin 0/1/3, a proposito, para no generar palabras ni confundir
+  // caracteres). El patron anterior era -[0-9a-z]{5,10}-[0-9a-z]{5}$ y daba
+  // FALSO POSITIVO sobre nombres de maquina corrientes — "app-worker-node1",
+  // "web-server-prod1", "srv-london-node7" —, que es lo peor que podia pasar:
+  // descartaba el hostname bueno, la huella se quedaba sin host y una flota de
+  // VMs clonadas volvia a facturar UN asiento, o sea el defecto que este modulo
+  // existe para cerrar. Con el alfabeto correcto y el minimo de 8, "worker" y
+  // "node1" ya no casan, y "api-7d9f8b6c5d-x2k9p" si.
+  //
+  // Que se quede corto es preferible a que se pase: en un pod de verdad
+  // KUBERNETES_SERVICE_HOST ya lo delata antes de llegar aqui, asi que esto es
+  // una red de respaldo, y un falso positivo cuesta dinero mal facturado.
+  const K8S = "[bcdfghjklmnpqrstvwxz2456789]";
+  return new RegExp(`-${K8S}{8,10}-${K8S}{5}$`).test(h);
+}
+
+/**
+ * ¿Estamos en una plataforma sin identidad de maquina persistente (FaaS)?
+ *
+ * En Lambda, Vercel Functions, Cloud Run/Functions o Azure Functions cada sandbox
+ * es efimero y `os.hostname()` devuelve un nombre distinto por sandbox (a menudo
+ * derivado de la IP). Meterlo en la huella daria un seat_id nuevo en cada
+ * invocacion, y como `billable_seats` exige >= 3 dias DISTINTOS por asiento
+ * (db/migrations/0003_metering.sql), la base facturable de esa org se desplomaria
+ * a CERO — el mismo desastre que el modulo evita para los contenedores, por otra
+ * puerta, y en el stack propio de BiVelio.
+ *
+ * Aqui lo correcto es NO usar hostname: todas las invocaciones del mismo servicio
+ * y usuario comparten huella, que es la semantica que se quiere (un servicio
+ * desplegado = un asiento) y ademas es estable en el tiempo.
+ */
+function esPlataformaSinMaquina(e: Record<string, string | undefined>): boolean {
+  return Boolean(
+    e["AWS_LAMBDA_FUNCTION_NAME"] ??
+      e["LAMBDA_TASK_ROOT"] ??
+      e["VERCEL"] ??
+      e["VERCEL_ENV"] ??
+      e["K_SERVICE"] ?? // Cloud Run / Cloud Functions 2ª gen
+      e["FUNCTION_TARGET"] ?? // Cloud Functions 1ª gen
+      e["FUNCTIONS_WORKER_RUNTIME"] ?? // Azure Functions
+      e["NETLIFY"],
+  );
 }
 
 /**
@@ -81,6 +131,10 @@ export async function hostDeMaquina(
   leerHostname: () => Promise<string | undefined> = nodeHostname,
 ): Promise<string | undefined> {
   if (e["KUBERNETES_SERVICE_HOST"]) return undefined; // pod: sufijo aleatorio
+  // En FaaS no se consulta el hostname EN ABSOLUTO: cada sandbox tiene el suyo y
+  // el asiento se renovaria en cada invocacion. Se comprueba antes que el
+  // `HOSTNAME` del entorno porque algunos runtimes tambien lo exportan.
+  if (esPlataformaSinMaquina(e)) return undefined;
   const candidato = e["HOSTNAME"] ?? e["COMPUTERNAME"] ?? (await leerHostname());
   if (!candidato || esNombreEfimero(candidato)) return undefined;
   return candidato;
