@@ -62,6 +62,25 @@ product and **refuses to run unlicensed, expired, or tampered** (it throws
 > while the subscription is paid and current. The key also enables seat metering
 > (counts only — never prompts or completions).
 
+### Seats (how you are billed)
+
+A **seat is a machine**, never a person. The SDK derives a stable, opaque id per
+machine + service-account key and reports it with the counts; the control plane
+bills a seat only once it has been seen on **3 separate days**.
+
+**Set `BVSALA_SEAT_ID` (one value per replica or service) whenever the machine
+identity can't be deduced** — Kubernetes, or any fleet where the hostname is
+assigned dynamically. Without it, every pod of a deployment shares one fingerprint
+and the whole deployment counts as a **single** seat. It is also the way to keep
+seat ids stable across an SDK upgrade: the fingerprint changed in v0.1.x, so a
+fleet that never set it may be counted twice in the month it upgrades.
+
+```bash
+BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
+```
+
+CI runners are auto-detected and excluded from billable seats.
+
 ### Tool calls
 
 When you pass `tools` and the model asks to invoke one, the reply is not the final

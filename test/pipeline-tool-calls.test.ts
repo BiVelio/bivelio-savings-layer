@@ -217,3 +217,103 @@ describe("router:false no tira las herramientas del llamante", () => {
     expect(proveedor.llamadas[0]!.tools ?? []).toHaveLength(0);
   });
 });
+
+/**
+ * La mitad del arreglo que vive en `failOpenDirect` no la cubría ningún test:
+ * borrar la propagación de `toolCalls` allí dejaba 460/460 en verde. Y ese
+ * camino es real en producción — cualquier error interno del optimizador cae
+ * ahí—, que es justo donde el llamante volvería a recibir "" sin la acción.
+ */
+describe("el camino de degradación (fail-open) tampoco pierde las tool calls", () => {
+  it("propaga toolCalls cuando el optimizador falla antes de llamar al proveedor", async () => {
+    const proveedor = new ProveedorConHerramientas(turnoDeHerramienta);
+    const capa = createSavingsLayer({
+      provider: proveedor,
+      costModels: PRECIOS,
+      // Revienta en la etapa 2, antes de que nada haya costado dinero: es la
+      // condición exacta que el fail-open existe para rescatar.
+      exactCache: {
+        get: async () => {
+          throw new Error("backend de caché caído");
+        },
+        set: async () => {},
+      } as never,
+    });
+    const res = await capa.generate({
+      model: "openai/gpt-4o-mini",
+      // Herramienta de LECTURA a propósito: con una de escritura la política ya
+      // apaga la caché exacta, así que el fallo inyectado nunca se dispararía.
+      messages: [{ role: "user", content: "capital of France lookup" }],
+      tools: [consultaCapital],
+    });
+
+    expect(res.report.traces.some((t) => t.stage === "fail-open")).toBe(true);
+    expect(res.toolCalls).toHaveLength(1);
+    expect(res.toolCalls![0]!.name).toBe("send_invoice");
+    expect(res.finishReason).toBe("tool_calls");
+  });
+});
+
+describe("el informe no certifica un contrato que no ha mirado", () => {
+  it("omite structurallyValid en un turno de herramientas", async () => {
+    const capa = createSavingsLayer({
+      provider: new ProveedorConHerramientas(turnoDeHerramienta),
+      costModels: PRECIOS,
+    });
+    const res = await capa.generate({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "send the invoice to accounting" }],
+      tools: [enviarFactura],
+      response: {
+        contractId: "factura:v1",
+        schema: { type: "object", properties: { ok: { type: "boolean" } }, required: ["ok"] },
+      },
+    });
+    // Antes decía `true`: afirmaba que "" cumplía el contrato sin validarlo.
+    expect(res.report.constraints.structurallyValid).toBeUndefined();
+  });
+
+  it("una respuesta final normal SÍ lo publica (no se ha roto el caso corriente)", async () => {
+    const capa = createSavingsLayer({
+      provider: new ProveedorConHerramientas(() => ({
+        text: '{"ok":true}',
+        usage: { inputTokens: 10, outputTokens: 5 },
+        finishReason: "stop",
+      })),
+      costModels: PRECIOS,
+    });
+    const res = await capa.generate({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "dame el json" }],
+      response: {
+        contractId: "f:v1",
+        schema: { type: "object", properties: { ok: { type: "boolean" } }, required: ["ok"] },
+      },
+    });
+    expect(res.report.constraints.structurallyValid).toBe(true);
+  });
+});
+
+describe("router:false respeta el presupuesto de esquemas", () => {
+  it("acota a maxTools en vez de mandar la lista entera al proveedor", async () => {
+    const proveedor = new ProveedorConHerramientas(() => ({
+      text: "ok",
+      usage: { inputTokens: 10, outputTokens: 2 },
+    }));
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+    const muchas: ToolDescriptor[] = Array.from({ length: 30 }, (_, i) => ({
+      id: `tool_${i}`,
+      intents: [`intent ${i}`],
+      risk: "read" as const,
+    }));
+    await capa.generate({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "haz algo" }],
+      tools: muchas,
+      savings: { router: false },
+    });
+    // Sin el tope, 200 herramientas serían un 400 del proveedor y la petición
+    // fallaría en duro, sin rescate del fail-open.
+    expect((proveedor.llamadas[0]!.tools ?? []).length).toBe(8);
+  });
+});

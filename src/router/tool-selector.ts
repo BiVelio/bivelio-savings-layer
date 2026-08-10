@@ -30,6 +30,34 @@ export class ToolSelector {
     this.scoreIntentMatch = opts.scoreIntentMatch ?? defaultScore;
   }
 
+  /**
+   * Todas las herramientas que pasó el llamante, acotadas SOLO por el
+   * presupuesto de esquema (`maxTools`).
+   *
+   * Se usa cuando el llamante apaga el router (`savings:{router:false}`): sin
+   * clasificación no hay de dónde derivar el riesgo, y filtrar sobre el
+   * `defaultRoute()` tiraba en silencio las herramientas de escritura. Apagar el
+   * router significa "yo elijo las herramientas", así que la relevancia pasa a
+   * ser del llamante — pero el tope de presupuesto NO se levanta: mandar 200
+   * esquemas al proveedor es un 400 seguro y una petición que antes funcionaba
+   * pasaría a fallar en duro.
+   */
+  passthrough(tools: ToolDescriptor[] | undefined): ToolSelection {
+    if (!tools || tools.length === 0) {
+      return { tools: [], droppedIds: [], reason: "no tools provided" };
+    }
+    const selected = tools.slice(0, this.maxTools);
+    const droppedIds = tools.slice(this.maxTools).map((t) => t.id);
+    return {
+      tools: selected,
+      droppedIds,
+      reason:
+        `router off: caller tools passed through unfiltered ` +
+        `(${selected.length}/${tools.length}, capped at maxTools=${this.maxTools}; ` +
+        `risk gating is the caller's responsibility while routing is off)`,
+    };
+  }
+
   select(
     text: string,
     tools: ToolDescriptor[] | undefined,

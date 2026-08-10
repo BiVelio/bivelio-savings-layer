@@ -133,6 +133,61 @@ describe("LicenseRefresher — la recogida del token renovado", () => {
     expect(await r.checkNow()).toBe(false);
   });
 
+  it("NO adopta un token revocado, aunque venga firmado, más nuevo y de la misma org", async () => {
+    // Un CP comprometido (o un revoke cuyo UPDATE de la fila falló) puede servir
+    // un token real y revocado: adoptarlo apagaría una flota que funcionaba con
+    // un token todavía válido.
+    const onNew = vi.fn();
+    const r = new LicenseRefresher({
+      url: "https://cp.test/api/license/current",
+      serviceAccountKey: "bvk_test",
+      publicKey: kp.publicKey,
+      initialToken: VIEJO,
+      onNewToken: onNew,
+      revocados: { snapshot: () => new Set(["n"]) }, // el jti de NUEVO
+      fetchImpl: respuestaConToken(NUEVO),
+      now: () => (ISSUED + 40 * DAY) * 1000,
+    });
+    expect(await r.checkNow()).toBe(false);
+    expect(onNew).not.toHaveBeenCalled();
+  });
+
+  it("un CP que se cuelga no deja la recogida muerta para siempre", async () => {
+    // Sin timeout, `enVuelo` se quedaba en true y TODAS las vueltas siguientes
+    // salían sin mirar la red: el token renovado no se recogía jamás y la
+    // máquina moría el día ~45, que es justo lo que esta clase evita.
+    let abortada = false;
+    const colgado = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            abortada = true;
+            reject(new Error("abortada"));
+          });
+        }),
+    ) as unknown as typeof fetch;
+    const r = refresher({ fetchImpl: colgado, nowDay: 40 });
+    (r as unknown as { opts: { requestTimeoutMs: number } }).opts.requestTimeoutMs = 20;
+    expect(await r.checkNow()).toBe(false);
+    expect(abortada).toBe(true);
+    // Y la siguiente vuelta SÍ vuelve a intentarlo (no quedó encallada).
+    const f2 = respuestaConToken(NUEVO);
+    const r2 = refresher({ fetchImpl: f2, nowDay: 40 });
+    expect(await r2.checkNow()).toBe(true);
+  });
+
+  it("avisa una sola vez cuando la credencial es mala (401), que no se cura sola", async () => {
+    const avisos: string[] = [];
+    const spy = vi.spyOn(console, "warn").mockImplementation((m) => avisos.push(String(m)));
+    const f = vi.fn(async () => ({ ok: false, status: 401, json: async () => ({}) })) as unknown as typeof fetch;
+    const r = refresher({ fetchImpl: f, nowDay: 40 });
+    await r.checkNow();
+    await r.checkNow();
+    spy.mockRestore();
+    expect(avisos.length).toBe(1);
+    expect(avisos[0]).toContain("serviceAccountKey");
+  });
+
   it("monotónico: tras adoptar, el mismo token no se re-adopta en la siguiente vuelta", async () => {
     const onNew = vi.fn();
     const r = refresher({ fetchImpl: respuestaConToken(NUEVO), nowDay: 40, onNewToken: onNew });

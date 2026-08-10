@@ -122,15 +122,41 @@ export interface SavingsLayerConfig {
   };
 
   /**
-   * Service-account key (`bvk_…`) that authenticates DETECTIVE usage metering to
-   * the control plane. When set (alongside {@link licenseServerUrl} or an explicit
-   * {@link meteringUrl}), the SDK reports COUNTS-ONLY usage after each request —
-   * request id, model, cache outcome, and token/cost counts, tagged with an
-   * auto-derived machine seat id — NEVER prompts or completions. Best-effort and
-   * non-blocking: a slow or unreachable control plane never blocks or breaks
-   * `generate()`. Get the key from your dashboard.
+   * Service-account key (`bvk_…`) — your machine credential. It does TWO things,
+   * and the second one is why a long-running deployment needs it:
+   *
+   *  1. **Licence renewal pickup.** Each billing period mints a NEW licence token;
+   *     the one you deployed expires at the end of the period (+ grace). With this
+   *     key the SDK fetches the renewed token from the control plane and swaps it
+   *     in without a restart. WITHOUT it there is no machine pickup, so somebody
+   *     must paste the new token by hand every cycle or the deployment stops with
+   *     `LicenseError` once the grace period ends — while the subscription is paid
+   *     and current. Disable with {@link licenseRefresh}`.enabled = false`.
+   *  2. **DETECTIVE usage metering.** COUNTS-ONLY usage after each request —
+   *     request id, model, cache outcome, and token/cost counts, tagged with an
+   *     auto-derived machine seat id — NEVER prompts or completions. Disable with
+   *     {@link metering}`.enabled = false` (which does NOT disable renewal pickup).
+   *
+   * Both are best-effort and non-blocking: a slow or unreachable control plane
+   * never blocks or breaks `generate()`. Get the key from your dashboard.
    */
   serviceAccountKey?: string;
+
+  /**
+   * Automatic licence-renewal pickup (on by default when {@link serviceAccountKey}
+   * and {@link licenseServerUrl} are both set).
+   *
+   * Turning it OFF means you take responsibility for deploying the renewed token
+   * each billing period; if nobody does, the SDK stops at the end of the grace
+   * period even though the subscription is paid.
+   */
+  licenseRefresh?: {
+    enabled?: boolean;
+    /** Check cadence in ms (default 3600000 = 1 h). */
+    intervalMs?: number;
+    /** How long before expiry to start looking, seconds (default 7 days). */
+    leadSeconds?: number;
+  };
 
   /**
    * Usage-ingest URL. Defaults to `${licenseServerUrl}/api/metering/usage`. Set
@@ -143,7 +169,12 @@ export interface SavingsLayerConfig {
 
   /** DETECTIVE metering tuning (all optional). */
   metering?: {
-    /** Off switch even when {@link serviceAccountKey} is set (default: on). */
+    /**
+     * Off switch for USAGE REPORTING even when {@link serviceAccountKey} is set
+     * (default: on). It does NOT disable licence-renewal pickup — that has its
+     * own switch, {@link licenseRefresh}`.enabled`, because turning off telemetry
+     * must not silently stop your licence from renewing.
+     */
     enabled?: boolean;
     /** Flush cadence in ms (default 15000). */
     flushIntervalMs?: number;

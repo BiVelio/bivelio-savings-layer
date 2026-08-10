@@ -378,11 +378,7 @@ export class SavingsPipeline {
     // recomienda como primer paso. Apagar el router significa "no optimices por
     // esta vía", así que las herramientas del llamante pasan ÍNTEGRAS.
     const toolSelection = routerApagado
-      ? {
-          tools: request.tools ?? [],
-          droppedIds: [] as string[],
-          reason: "router off: caller tools passed through unfiltered",
-        }
+      ? this.deps.toolSelector.passthrough(request.tools)
       : this.deps.toolSelector.select(
           canonical.normalizedText,
           request.tools,
@@ -625,7 +621,12 @@ export class SavingsPipeline {
 
     // --- Stage 11: structural validation (+ at most one repair). ---
     let data: unknown = response.text;
-    let structurallyValid = true;
+    // `null` = NO APLICA (turno de herramientas: no hay respuesta final que
+    // validar). Antes se inicializaba a `true` y ese `true` viajaba hasta el
+    // informe, que certificaba el cumplimiento de un contrato que nadie había
+    // mirado — justo la mentira en positivo que `finish()` dice haber cerrado
+    // para el resolver y las cachés, reabierta por la rama nueva.
+    let structurallyValid: boolean | null = true;
     // El modelo PIDIÓ ejecutar herramientas: `text` viene vacío a propósito y la
     // respuesta final no existe todavía (llegará cuando el llamante ejecute la
     // acción y continúe el turno). Validar "" contra el contrato aquí disparaba
@@ -633,8 +634,13 @@ export class SavingsPipeline {
     // respuesta final antes de conocer el resultado de la herramienta —, así que
     // el contrato de salida se aplica SOLO a respuestas finales.
     const pidioHerramientas = (response.toolCalls?.length ?? 0) > 0;
-    if (schema && pidioHerramientas) {
-      trace.record("validation", "skipped: model requested tool calls (the output contract applies to the final answer)");
+    if (pidioHerramientas) {
+      // No aplica: la respuesta final llegara en el turno siguiente, cuando el
+      // llamante ejecute la herramienta y continue la conversacion.
+      structurallyValid = null;
+      if (schema) {
+        trace.record("validation", "n/a: model requested tool calls (the output contract applies to the final answer)");
+      }
     }
     if (schema && !pidioHerramientas) {
       const parsed = tryParse(response.text);
@@ -862,7 +868,7 @@ export class SavingsPipeline {
     formatChoice: FormatChoice,
     ageMs?: number,
     confidence?: number,
-    structurallyValid?: boolean,
+    structurallyValid?: boolean | null,
     backend = "none",
     providerMs = 0,
   ): SavingsResult<T> {
@@ -878,9 +884,14 @@ export class SavingsPipeline {
     // Las rutas que ya lo calcularon (la que llama al proveedor) lo pasan y su
     // valor manda; el resto se resuelve contra el esquema del contrato.
     const schema = request.response?.schema;
+    // `null` = no aplica (turno de herramientas) y se propaga tal cual para que el
+    // informe OMITA el campo. `undefined` = nadie lo calculo aun, asi que se valida
+    // aqui lo que de verdad se sirve (resolver, caches, seguidor de singleflight).
     const valid =
-      structurallyValid ??
-      (schema ? validateAgainstSchema(answer.data, schema).valid : true);
+      structurallyValid === null
+        ? null
+        : (structurallyValid ??
+          (schema ? validateAgainstSchema(answer.data, schema).valid : true));
 
     const report = this.buildReport(
       request, canonical, cacheResult, ledger, costModel, trace, route,
@@ -906,7 +917,7 @@ export class SavingsPipeline {
     formatChoice: FormatChoice,
     ageMs: number | undefined,
     confidence: number | undefined,
-    structurallyValid: boolean,
+    structurallyValid: boolean | null,
     backend: string,
     providerMs: number,
   ): SavingsReport {
@@ -960,7 +971,7 @@ export class SavingsPipeline {
       constraints: {
         backend,
         schemaVersion: canonical.schemaVersion,
-        structurallyValid,
+        ...(structurallyValid === null ? {} : { structurallyValid }),
       },
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
@@ -1021,10 +1032,12 @@ export class SavingsPipeline {
     if (response.usage.cachedInputTokens) ledger.providerCached(response.usage.cachedInputTokens);
 
     let data: unknown = response.text;
-    let structurallyValid = true;
+    let structurallyValid: boolean | null = true;
     // Igual que en el camino optimizado: un turno de tool calls no es la
-    // respuesta final, así que ni se valida contra el contrato ni se pierde.
+    // respuesta final, así que ni se valida contra el contrato ni se pierde, y el
+    // informe omite structurallyValid en vez de certificar un contrato no mirado.
     const pidioHerramientas = (response.toolCalls?.length ?? 0) > 0;
+    if (pidioHerramientas) structurallyValid = null;
     if (schema && !pidioHerramientas) {
       const parsed = tryParse(response.text);
       structurallyValid = parsed.ok ? validateAgainstSchema(parsed.value, schema).valid : false;
