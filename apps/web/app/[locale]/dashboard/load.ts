@@ -10,6 +10,8 @@ export interface DashboardData {
   user: { id: string; email: string | null } | null;
   ctx: OrgContext;
   usage: UsageRollup[];
+  /** La lectura de uso falló (503/RLS/columna ausente), distinto de "sin tráfico". */
+  usageFailed: boolean;
 }
 
 const EMPTY_CTX: OrgContext = { org: null, role: null, seats: null, license: null, serviceAccount: null };
@@ -21,14 +23,14 @@ const EMPTY_CTX: OrgContext = { org: null, role: null, seats: null, license: nul
 export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Without Supabase env (e.g. local without .env), createClient() would throw —
   // degrade to a signed-out shell instead of a 500.
-  if (!authConfigured) return { user: null, ctx: EMPTY_CTX, usage: [] };
+  if (!authConfigured) return { user: null, ctx: EMPTY_CTX, usage: [], usageFailed: false };
   const supabase = await createReadOnlyClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { user: null, ctx: EMPTY_CTX, usage: [] };
+  if (!user) return { user: null, ctx: EMPTY_CTX, usage: [], usageFailed: false };
   const [ctx, usage] = await Promise.all([getOrgContext(supabase, user.id), getUsageRollups(supabase, user.id)]);
-  return { user: { id: user.id, email: user.email ?? null }, ctx, usage };
+  return { user: { id: user.id, email: user.email ?? null }, ctx, usage: usage.rows, usageFailed: usage.failed };
 });
 
 /** Display label for the account plan pill (no active plan → "free"). */

@@ -106,7 +106,9 @@
       "eyebrow": "Vos économies · mesurées par le SDK",
       "measuredSplit": "Dont {pct} est mesuré sur les compteurs de tokens de votre fournisseur ({share} des requêtes). Le reste provient d’appels évités, où aucun compteur n’existe.",
       "savedLine": "de vos dépenses LLM conservées cette période · <b>{money}</b> économisés (référence − réel, à vos prix).",
-      "emptyCap": "Nous ne mesurons pas encore votre trafic — 0 requête observée. Installez le SDK et vos économies nettes apparaissent ici — vos prix, votre charge de travail. Jamais un chiffre emprunté ou inventé."
+      "emptyCap": "Nous ne mesurons pas encore votre trafic — 0 requête observée. Installez le SDK et vos économies nettes apparaissent ici — vos prix, votre charge de travail. Jamais un chiffre emprunté ou inventé.",
+      "errorCap": "Nous n'avons pas pu lire ton usage pour l'instant — une erreur temporaire de notre côté, pas des données perdues. Tes rapports sont saufs ; recharge dans un instant.",
+      "unpricedCap": "Nous voyons {count} requêtes mais ne pouvons pas encore les tarifer — définis un modèle de coût pour tes modèles et ton économie nette apparaîtra ici. Ton trafic est mesuré."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "appels LLM/récupération/outil qui n'ont jamais été exécutés",

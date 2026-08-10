@@ -106,7 +106,9 @@
       "eyebrow": "A tua poupança · medida pelo SDK",
       "measuredSplit": "Dos quais {pct} está medido face aos contadores de tokens do seu fornecedor ({share} dos pedidos). O resto vem de chamadas evitadas, onde não existe contador.",
       "savedLine": "do teu gasto em LLM conservado este período · <b>{money}</b> poupados (linha de base − real, aos teus preços).",
-      "emptyCap": "Ainda não estamos a medir o teu tráfego — 0 pedidos vistos. Instala o SDK e a tua poupança líquida aparece aqui — os teus preços, a tua carga de trabalho. Nunca um número emprestado ou inventado."
+      "emptyCap": "Ainda não estamos a medir o teu tráfego — 0 pedidos vistos. Instala o SDK e a tua poupança líquida aparece aqui — os teus preços, a tua carga de trabalho. Nunca um número emprestado ou inventado.",
+      "errorCap": "Não conseguimos ler o teu uso agora — é um erro temporário do nosso lado, não dados perdidos. Os teus relatórios estão seguros; recarrega daqui a pouco.",
+      "unpricedCap": "Vemos {count} pedidos mas ainda não os podemos tarifar — define um modelo de custo para o(s) teu(s) modelo(s) e a tua poupança líquida aparece aqui. O teu tráfego está a ser medido."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chamadas a LLM/recuperação/ferramentas que nunca chegaram a correr",

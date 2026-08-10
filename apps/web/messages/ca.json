@@ -106,7 +106,9 @@
       "eyebrow": "El teu estalvi · mesurat pel SDK",
       "measuredSplit": "Dels quals {pct} està mesurat contra els comptadors de tokens del teu proveïdor ({share} de les peticions). La resta ve de crides evitades, on no hi ha comptador del proveïdor.",
       "savedLine": "de la teva despesa en LLM conservada aquest període · <b>{money}</b> estalviats (línia base − real, als teus preus).",
-      "emptyCap": "Encara no mesurem el teu trànsit — 0 sol·licituds vistes. Instal·la el SDK i el teu estalvi net apareixerà aquí — els teus preus, la teva càrrega de treball. Mai una xifra prestada ni inventada."
+      "emptyCap": "Encara no mesurem el teu trànsit — 0 sol·licituds vistes. Instal·la el SDK i el teu estalvi net apareixerà aquí — els teus preus, la teva càrrega de treball. Mai una xifra prestada ni inventada.",
+      "errorCap": "No hem pogut llegir el teu ús ara mateix — és un error temporal nostre, no dades perdudes. Els teus informes són segurs; recarrega d'aquí a un moment.",
+      "unpricedCap": "Veiem {count} sol·licituds però encara no les podem tarifar — defineix un model de cost per als teus models i el teu estalvi net apareixerà aquí. El teu trànsit s'està mesurant."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",

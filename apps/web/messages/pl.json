@@ -106,7 +106,9 @@
       "eyebrow": "Twoje oszczędności · mierzone przez SDK",
       "measuredSplit": "Z czego {pct} jest zmierzone względem liczników tokenów Twojego dostawcy ({share} zapytań). Reszta pochodzi z uniknietych wywołań, gdzie licznik nie istnieje.",
       "savedLine": "Twoich wydatków na LLM zatrzymanych w tym okresie · <b>{money}</b> zaoszczędzone (linia bazowa − rzeczywiste, w Twoich cenach).",
-      "emptyCap": "Jeszcze nie mierzymy Twojego ruchu — 0 zaobserwowanych żądań. Zainstaluj SDK, a Twoje oszczędności netto pojawią się tutaj — Twoje ceny, Twoje obciążenie. Nigdy zapożyczona ani zmyślona liczba."
+      "emptyCap": "Jeszcze nie mierzymy Twojego ruchu — 0 zaobserwowanych żądań. Zainstaluj SDK, a Twoje oszczędności netto pojawią się tutaj — Twoje ceny, Twoje obciążenie. Nigdy zapożyczona ani zmyślona liczba.",
+      "errorCap": "Nie udało się teraz odczytać Twojego zużycia — to chwilowy błąd po naszej stronie, nie utracone dane. Twoje raporty są bezpieczne; odśwież za chwilę.",
+      "unpricedCap": "Widzimy {count} żądań, ale nie możemy ich jeszcze wycenić — ustaw model kosztów dla swoich modeli, a Twoje oszczędności netto pojawią się tutaj. Twój ruch jest mierzony."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",

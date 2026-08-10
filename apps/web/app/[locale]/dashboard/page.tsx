@@ -24,7 +24,7 @@ export default async function OverviewPage() {
   if (!authConfigured) {
     return <p className="ck-note">{t("overview.authNotWired")}</p>;
   }
-  const { ctx, usage } = await loadDashboard();
+  const { ctx, usage, usageFailed } = await loadDashboard();
   const steps = await activationSteps(true, ctx, usage);
 
   return (
@@ -45,7 +45,7 @@ export default async function OverviewPage() {
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <VerdictHero usage={usage} />
+          <VerdictHero usage={usage} failed={usageFailed} />
           <LiveLedgerTiles usage={usage} ab={ab} />
           <div className="cards" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
             <div className="card" style={{ padding: "16px" }}>

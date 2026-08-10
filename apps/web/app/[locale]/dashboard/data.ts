@@ -167,7 +167,19 @@ export interface UsageRollup {
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
-export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageRollup[]> {
+/**
+ * Resultado de leer el uso. `failed` distingue "la consulta falló" de "no hay
+ * tráfico" — antes las dos colapsaban al array vacío, así que un 503 de
+ * PostgREST, una columna que aún no existe (proyecto por detrás de una
+ * migración) o un RLS que deniega se le pintaban al cliente como
+ * "0 solicitudes vistas. Instala el SDK", con sus datos intactos en la base.
+ */
+export interface UsageResult {
+  rows: UsageRollup[];
+  failed: boolean;
+}
+
+export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageResult> {
   try {
     // Defense-in-depth: scope to this org explicitly (not just via RLS) and bound the
     // window so a dashboard read can't grow unbounded as usage history accumulates.
@@ -181,8 +193,14 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       .eq("org_id", orgId)
       .gte("day", since)
       .order("day", { ascending: true });
-    if (error || !data) return [];
-    return (data as Record<string, number | string>[]).map((r) => ({
+    // Un error de PostgREST llega como VALOR, no como excepción. Se distingue de
+    // "no hay filas" (data === [] sin error), que sí es tráfico cero legítimo.
+    if (error) {
+      console.error("[dashboard] usage_daily read failed:", error);
+      return { rows: [], failed: true };
+    }
+    if (!data) return { rows: [], failed: false };
+    const rows = (data as Record<string, number | string>[]).map((r) => ({
       day: String(r["day"]),
       requests: Number(r["requests"] ?? 0),
       avoidedLlm: Number(r["avoided_llm"] ?? 0),
@@ -196,8 +214,10 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       measuredBaselineCost: Number(r["measured_baseline_cost"] ?? 0),
       measuredActualCost: Number(r["measured_actual_cost"] ?? 0),
     }));
-  } catch {
-    return [];
+    return { rows, failed: false };
+  } catch (err) {
+    console.error("[dashboard] usage_daily read threw:", err);
+    return { rows: [], failed: true };
   }
 }
 
