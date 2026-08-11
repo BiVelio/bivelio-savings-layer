@@ -60,11 +60,27 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Billing isn't configured yet." }, { status: 501 });
   }
 
+  // `incomplete` VA EN LA LISTA, y es el estado que faltaba. Es donde Stripe deja
+  // una suscripción cuyo PRIMER cobro aún no ha liquidado. Con tarjeta dura
+  // segundos, pero el checkout no fija `payment_method_types`, así que en euros
+  // Stripe ofrece SEPA — y un adeudo SEPA tarda DÍAS en confirmarse.
+  //
+  // Durante esos días la suscripción existe, el dinero está en camino, y hasta
+  // ahora esta guardia no la veía: el panel seguía mostrando "Sin plan activo"
+  // (planForStatus manda `incomplete` a free) y el botón de comprar seguía vivo.
+  // El comprador, que no ve nada de lo que pagó, vuelve a pulsar — y se abre una
+  // SEGUNDA suscripción real. Cuando los dos adeudos liquidan, se le cobra dos
+  // veces. No hace falta ninguna carrera ni concurrencia: es el camino normal de
+  // la interfaz para cualquiera que pague por domiciliación.
+  //
+  // `unpaid` se deja FUERA a propósito: ahí Stripe ya agotó los reintentos y no
+  // hay dinero en vuelo, así que bloquear una compra nueva dejaría al cliente sin
+  // ninguna salida desde la web.
   const { data: activa, error: subErr } = await admin
     .from("subscriptions")
     .select("id, status")
     .eq("org_id", user.id)
-    .in("status", ["active", "trialing", "past_due"])
+    .in("status", ["active", "trialing", "past_due", "incomplete"])
     .limit(1)
     .maybeSingle();
   if (subErr) {
@@ -75,8 +91,17 @@ export async function POST(req: Request): Promise<NextResponse> {
     );
   }
   if (activa) {
+    // El mensaje se separa por estado: mandar a "Manage plan" a quien tiene un
+    // adeudo en vuelo no le sirve de nada — ahí no hay nada que gestionar
+    // todavía. Lo que necesita es saber que su pago se está procesando y que NO
+    // tiene que volver a comprar.
+    const pendiente = (activa as { status?: string }).status === "incomplete";
     return NextResponse.json(
-      { error: "This account already has an active subscription. Use “Manage plan” to change seats or billing." },
+      {
+        error: pendiente
+          ? "Your payment is still being processed — bank debits can take a few days to clear. You'll get access as soon as it settles. Please don't start a second subscription."
+          : "This account already has an active subscription. Use “Manage plan” to change seats or billing.",
+      },
       { status: 409 },
     );
   }
