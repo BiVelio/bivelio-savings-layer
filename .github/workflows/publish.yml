@@ -26,7 +26,55 @@ jobs:
       - name: Enable pnpm (from packageManager)
         run: corepack enable
       - run: pnpm install --frozen-lockfile
+
+      # VERJA ANTES DE PUBLICAR. Publicar en npm es la acción MÁS irreversible del
+      # proyecto: una versión no se puede retirar pasadas 72 h, y aunque se pudiera,
+      # romperías a quien ya la tenga fijada. Hasta ahora este workflow solo
+      # construía: un fallo que compilara se publicaba igual, y así llegó al registro
+      # una 0.1.0 que tiraba las llamadas a herramienta y apagaba al cliente mensual
+      # el día 45. Cada paso de aquí abajo es una razón para NO publicar.
+      - name: Tests
+        run: pnpm test
+      - name: Typecheck (SDK, paquetes y servicios)
+        run: pnpm run typecheck:all
       - run: pnpm run build:all
+
+      # La versión que se publica tiene que ser la que se etiquetó. Sin esto, cortar
+      # una Release v0.2.0 sobre un package.json que sigue en 0.1.0 falla en el
+      # `npm publish` con un error críptico — o peor, publica algo que no es lo que
+      # dice la etiqueta.
+      - name: La etiqueta coincide con package.json
+        run: |
+          ETIQUETA="${GITHUB_REF_NAME#v}"
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "$ETIQUETA" != "$VERSION" ]; then
+            echo "::error::La Release es '$GITHUB_REF_NAME' pero package.json dice '$VERSION'."
+            exit 1
+          fi
+          echo "etiqueta y package.json coinciden en $VERSION"
+
+      # Lo que de verdad se va a subir, comprobado sobre el tarball y no sobre el
+      # árbol de trabajo: que el paywall va cerrado (la puerta de desarrollo se
+      # compila fuera del build publicado) y que no se filtra el código fuente.
+      - name: El paquete no regala el producto
+        run: |
+          npm pack --silent >/dev/null
+          tar xzf bivelio-savings-layer-*.tgz
+          if grep -q "BVSALA_DEV_OPEN" package/dist/index.js; then
+            echo "::error::El build publicado conserva la puerta de desarrollo: sería gratis."
+            exit 1
+          fi
+          if find package -name "*.map" | grep -q .; then
+            echo "::error::El paquete lleva sourcemaps: filtraría el código fuente propietario."
+            exit 1
+          fi
+          if ! grep -q "BEGIN PUBLIC KEY" package/dist/index.js; then
+            echo "::error::Falta la clave pública embebida: ninguna licencia verificaría."
+            exit 1
+          fi
+          rm -rf package bivelio-savings-layer-*.tgz
+          echo "paquete verificado"
+
       - name: Publish to npm (public)
         run: npm publish --access public
         env:
