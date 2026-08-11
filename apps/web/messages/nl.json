@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Kon geen licentiesleutel uitgeven.",
       "errNetwork": "Netwerkfout — probeer het opnieuw.",
+      "errNoSubscription": "Dit account heeft nog geen abonnement — start er een via Account en je licentiesleutel verschijnt hier.",
+      "errPaymentPending": "Je betaling wordt nog verwerkt. Zodra dat klaar is, verschijnt je licentiesleutel hier; je hoeft niet opnieuw te betalen.",
       "keyLabel": "je licentiesleutel{suffix} — eenmalig getoond, kopieer hem nu",
       "validUntil": " · geldig tot {date}",
       "pasteHint": "Plak hem in <code></code> om de SDK te ontgrendelen. Hij verloopt aan het einde van de facturatieperiode: voeg hieronder een service-account-sleutel toe, dan vernieuwt de SDK hem zelf.",
       "issuing": "Uitgeven…",
       "getKey": "Haal je licentiesleutel op →",
-      "priceNote": "{monthly} per seat per maand of {yearly} per seat per jaar. Self-service afrekenen komt eraan — de sleutel ontgrendelt de SDK in je eigen app."
+      "priceNote": "{monthly} per seat per maand of {yearly} per seat per jaar. Nog geen abonnement op dit account? Start er een via Account."
     },
     "serviceAccountKeySection": {
       "errCreate": "Kon geen sleutel aanmaken.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Meting live",
       "awaitingFirstReport": "Wacht op eerste rapport"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Betaling ontvangen.</b> We activeren je licentie — dit duurt meestal een paar seconden en deze pagina ververst zichzelf.",
+      "successActive": "<b>Je abonnement is actief.</b> De volgende stap is je licentiesleutel ophalen.",
+      "goToInstall": "Haal je licentiesleutel op →",
+      "cancelled": "<b>Er is geen betaling voltooid</b> — er is niets bij je in rekening gebracht. Je kunt het opnieuw proberen wanneer je maar wilt."
     }
   },
   "landing": {

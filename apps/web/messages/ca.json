@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "No s'ha pogut emetre una clau de llicència.",
       "errNetwork": "Error de xarxa: torna-ho a provar.",
+      "errNoSubscription": "Aquest compte encara no té cap subscripció — comença-la des de Compte i la teva clau de llicència apareixerà aquí.",
+      "errPaymentPending": "El teu pagament encara s'està confirmant. La teva clau de llicència apareixerà aquí tan bon punt es confirmi; no cal que tornis a pagar.",
       "keyLabel": "la teva clau de llicència{suffix} — es mostra un sol cop, copia-la ara",
       "validUntil": " · vàlida fins al {date}",
       "pasteHint": "Enganxa-la a <code></code> per desbloquejar el SDK. Caduca al final del període de facturació: afegeix una clau de compte de servei a sota i el SDK la renova tot sol.",
       "issuing": "Emetent…",
       "getKey": "Obtén la teva clau de llicència →",
-      "priceNote": "{monthly} per seient al mes o {yearly} per seient a l'any. El pagament d'autoservei està a punt d'arribar: la clau desbloqueja el SDK a la teva pròpia app."
+      "priceNote": "{monthly} per seient al mes o {yearly} per seient a l'any. Encara no tens cap subscripció en aquest compte? Comença-la des de Compte."
     },
     "serviceAccountKeySection": {
       "errCreate": "No s'ha pogut crear una clau.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Mesurament en viu",
       "awaitingFirstReport": "Esperant el primer informe"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Pagament rebut.</b> Estem activant la teva llicència — normalment triga uns segons i aquesta pàgina s'actualitza sola.",
+      "successActive": "<b>La teva subscripció està activa.</b> El pas següent és recollir la teva clau de llicència.",
+      "goToInstall": "Obtén la teva clau de llicència →",
+      "cancelled": "<b>No s'ha completat cap pagament</b> — no se t'ha cobrat res. Pots tornar a començar quan vulguis."
     }
   },
   "landing": {

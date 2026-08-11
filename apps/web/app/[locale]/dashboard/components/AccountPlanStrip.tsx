@@ -5,7 +5,18 @@ import { BillingButtons } from "./BillingButtons";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
-export async function AccountPlanStrip({ email, ctx }: { email: string; ctx: OrgContext }) {
+export async function AccountPlanStrip({
+  email,
+  ctx,
+  // Acaba de pagar y la activación está en curso: se ocultan los botones de
+  // compra. Reofrecérselos en ese momento es la vía directa al doble cobro, y la
+  // guardia del servidor no lo frena mientras la suscripción está `incomplete`.
+  ocultarCompra = false,
+}: {
+  email: string;
+  ctx: OrgContext;
+  ocultarCompra?: boolean;
+}) {
   const t = await getTranslations("dashboard");
   const plan = ctx.org?.plan;
   const isActive = plan === "pro" || plan === "enterprise";
@@ -36,7 +47,7 @@ export async function AccountPlanStrip({ email, ctx }: { email: string; ctx: Org
           {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
           {t("accountPlanStrip.planBody", { monthly: "€4", yearly: "€39" })}
         </p>
-        <BillingButtons isActive={isActive} />
+        {ocultarCompra ? null : <BillingButtons isActive={isActive} />}
       </div>
     </div>
   );

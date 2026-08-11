@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Lisans anahtarı verilemedi.",
       "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
+      "errNoSubscription": "Bu hesabın henüz bir aboneliği yok — Hesap'tan başlatın, lisans anahtarınız burada görünür.",
+      "errPaymentPending": "Ödemeniz hâlâ onaylanıyor. Onaylanır onaylanmaz lisans anahtarınız burada görünecek; yeniden ödeme yapmanıza gerek yok.",
       "keyLabel": "lisans anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
       "validUntil": " · {date} tarihine kadar geçerli",
       "pasteHint": "SDK'yı açmak için <code></code> içine yapıştırın. Faturalandırma döneminin sonunda süresi dolar: aşağıdan bir servis hesabı anahtarı ekleyin, SDK onu kendi başına yenilesin.",
       "issuing": "Veriliyor…",
       "getKey": "Lisans anahtarınızı alın →",
-      "priceNote": "Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Self-servis ödeme yakında devreye giriyor — anahtar, SDK'yı kendi uygulamanızda açar."
+      "priceNote": "Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bu hesapta henüz abonelik yok mu? Hesap'tan başlatın."
     },
     "serviceAccountKeySection": {
       "errCreate": "Anahtar oluşturulamadı.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Ölçüm canlı",
       "awaitingFirstReport": "İlk rapor bekleniyor"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Ödemeniz alındı.</b> Lisansınızı etkinleştiriyoruz — bu genellikle birkaç saniye sürer ve bu sayfa kendi kendine yenilenir.",
+      "successActive": "<b>Aboneliğiniz etkin.</b> Sıradaki adım: lisans anahtarınızı almak.",
+      "goToInstall": "Lisans anahtarınızı alın →",
+      "cancelled": "<b>Ödeme tamamlanmadı</b> — sizden hiçbir ücret alınmadı. İstediğiniz zaman yeniden başlayabilirsiniz."
     }
   },
   "landing": {

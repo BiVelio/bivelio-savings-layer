@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Impossibile emettere una chiave di licenza.",
       "errNetwork": "Errore di rete — riprova.",
+      "errNoSubscription": "Questo account non ha ancora un abbonamento — attivalo da Account e la tua chiave di licenza apparirà qui.",
+      "errPaymentPending": "Il tuo pagamento è ancora in fase di conferma. La tua chiave di licenza apparirà qui non appena sarà confermato; non serve pagare di nuovo.",
       "keyLabel": "la tua chiave di licenza{suffix} — mostrata una sola volta, copiala ora",
       "validUntil": " · valida fino al {date}",
       "pasteHint": "Incollala in <code></code> per sbloccare l'SDK. Scade alla fine del periodo di fatturazione: aggiungi qui sotto una chiave dell'account di servizio e l'SDK la rinnova da solo.",
       "issuing": "Emissione in corso…",
       "getKey": "Ottieni la tua chiave di licenza →",
-      "priceNote": "{monthly} per postazione al mese o {yearly} per postazione all'anno. Il checkout self-service sta per arrivare — la chiave sblocca l'SDK nella tua app."
+      "priceNote": "{monthly} per postazione al mese o {yearly} per postazione all'anno. Non hai ancora un abbonamento su questo account? Attivalo da Account."
     },
     "serviceAccountKeySection": {
       "errCreate": "Impossibile creare una chiave.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Misurazione attiva",
       "awaitingFirstReport": "In attesa del primo report"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Pagamento ricevuto.</b> Stiamo attivando la tua licenza — di solito ci vogliono pochi secondi e questa pagina si aggiorna da sola.",
+      "successActive": "<b>Il tuo abbonamento è attivo.</b> Il passo successivo è ritirare la tua chiave di licenza.",
+      "goToInstall": "Ottieni la tua chiave di licenza →",
+      "cancelled": "<b>Nessun pagamento è stato completato</b> — non ti abbiamo addebitato nulla. Puoi ricominciare quando vuoi."
     }
   },
   "landing": {

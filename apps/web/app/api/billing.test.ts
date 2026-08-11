@@ -472,3 +472,48 @@ describe("POST /api/stripe/webhook — el reintento tardío de un checkout no re
     expect(emitirLicencia).toHaveBeenCalledTimes(1);
   });
 });
+
+// --- los dos textos que decían al que paga que no se le puede vender ----------
+
+/**
+ * En el momento exacto en que un cliente pagaba y venía a por su clave, la ruta
+ * respondía con una frase fija en inglés: «Subscription checkout is coming online
+ * — self-serve license keys aren't issued yet». Copia fósil de cuando el checkout
+ * no existía. Ahora devuelve un CÓDIGO que el cliente traduce, y distingue los dos
+ * motivos, que llevan a acciones OPUESTAS: a quien ya pagó no se le puede sugerir
+ * que pague otra vez.
+ */
+describe("POST /api/license/trial — el 402 dice el motivo, no una frase en inglés", () => {
+  const sinAllowList = () => {
+    delete process.env.LICENSE_ISSUER_EMAILS; // fail-closed: no emite a nadie
+  };
+
+  it("con un pago en curso responde `pago_en_curso` y NO invita a pagar de nuevo", async () => {
+    sinAllowList();
+    esc.suscripcionActiva = { id: "s1", org_id: esc.usuario!.id, status: "incomplete" };
+    const { POST } = await import("./license/trial/route.js");
+    const res = await POST();
+    expect(res.status).toBe(402);
+    const body = (await res.json()) as { code?: string; error?: string };
+    expect(body.code).toBe("pago_en_curso");
+    // Lo que NO debe volver a aparecer nunca:
+    expect(JSON.stringify(body)).not.toContain("coming online");
+  });
+
+  it("sin suscripción responde `sin_suscripcion`", async () => {
+    sinAllowList();
+    esc.suscripcionActiva = null;
+    const { POST } = await import("./license/trial/route.js");
+    const res = await POST();
+    expect(res.status).toBe(402);
+    expect(((await res.json()) as { code?: string }).code).toBe("sin_suscripcion");
+  });
+
+  it("si no se puede comprobar, falla hacia el lado que NO provoca un segundo cobro", async () => {
+    sinAllowList();
+    esc.errorSuscripcion = { message: "connection reset" };
+    const { POST } = await import("./license/trial/route.js");
+    const res = await POST();
+    expect(((await res.json()) as { code?: string }).code).toBe("pago_en_curso");
+  });
+});

@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Could not issue a license key.",
       "errNetwork": "Network error — please try again.",
+      "errNoSubscription": "This account doesn't have a subscription yet — start one from Account and your licence key appears here.",
+      "errPaymentPending": "Your payment is still clearing. Your licence key will appear here as soon as it does; there's no need to pay again.",
       "keyLabel": "your license key{suffix} — shown once, copy it now",
       "validUntil": " · valid until {date}",
       "pasteHint": "Paste it into <code></code> to unlock the SDK. It expires at the end of the billing period: add a service-account key below and the SDK renews it by itself.",
       "issuing": "Issuing…",
       "getKey": "Get your license key →",
-      "priceNote": "{monthly} per seat per month or {yearly} per seat per year. Self-serve checkout is coming online — the key unlocks the SDK in your own app."
+      "priceNote": "{monthly} per seat per month or {yearly} per seat per year. No subscription on this account yet? Start one from Account."
     },
     "serviceAccountKeySection": {
       "errCreate": "Could not create a key.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Metering live",
       "awaitingFirstReport": "Awaiting first report"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Payment received.</b> We're activating your licence — this usually takes a few seconds and this page refreshes itself.",
+      "successActive": "<b>Your subscription is active.</b> The next step is to collect your licence key.",
+      "goToInstall": "Get your licence key →",
+      "cancelled": "<b>No payment was completed</b> — nothing has been charged to you. You can start again whenever you like."
     }
   },
   "landing": {

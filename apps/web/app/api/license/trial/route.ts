@@ -21,6 +21,37 @@ export const dynamic = "force-dynamic";
 const LICENSE_HEADER = { alg: "EdDSA", typ: "BVL", v: 1 } as const;
 const ISSUE_DAYS = 90; // internal/pilot window; revoke early via /api/license/revoke
 
+/**
+ * ¿Por qué esta cuenta no tiene licencia? Son dos casos con acciones OPUESTAS y
+ * confundirlos cuesta dinero: a quien ya pagó no se le puede sugerir que vuelva a
+ * pagar, y a quien no tiene suscripción no se le puede decir que espere.
+ *
+ * Fail-safe hacia el caso menos dañino: si la consulta falla, se responde «el pago
+ * se está procesando», que como mucho hace esperar de más — nunca provoca un
+ * segundo cobro.
+ */
+async function motivoSinLicencia(userId: string): Promise<"pago_en_curso" | "sin_suscripcion"> {
+  try {
+    const admin = createAdminClient();
+    const orgIds = new Set<string>([userId]); // convención CP-0: org_id == id de usuario
+    const { data: miembro } = await admin.from("org_members").select("org_id").eq("user_id", userId);
+    for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
+      if (fila.org_id) orgIds.add(fila.org_id);
+    }
+    const { data: sub, error } = await admin
+      .from("subscriptions")
+      .select("status")
+      .in("org_id", [...orgIds])
+      .in("status", ["incomplete", "active", "trialing", "past_due"])
+      .limit(1)
+      .maybeSingle();
+    if (error) return "pago_en_curso";
+    return sub ? "pago_en_curso" : "sin_suscripcion";
+  } catch {
+    return "pago_en_curso";
+  }
+}
+
 /** Emails allowed to self-issue a license (owner + pilots). Fail-closed if unset. */
 function issuerAllowList(): Set<string> {
   return new Set(
@@ -38,15 +69,20 @@ export async function POST() {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
-  // Paid product: no free/self-serve keys. Gated to the owner/pilot allow-list until
-  // Stripe checkout is live. Fail-closed — an empty allow-list issues to no one.
+  // Paid product: esta ruta interna solo emite a la allow-list del dueño. El resto
+  // llega aquí porque `/api/license/current` no encontró licencia, y hay DOS
+  // motivos muy distintos que hay que saber distinguir.
+  //
+  // Antes se respondía con una frase fija en inglés — «Subscription checkout is
+  // coming online — self-serve license keys aren't issued yet» — que era copia
+  // fósil de cuando el checkout no existía. O sea que en el momento exacto en que
+  // un cliente pagaba y venía a por su llave, el producto le decía que todavía no
+  // podía vendérsela. Ahora se devuelve un CÓDIGO y el cliente lo traduce al
+  // idioma del usuario con un mensaje que además dice qué hacer.
   const email = (user.email ?? "").toLowerCase();
   if (!issuerAllowList().has(email)) {
     return NextResponse.json(
-      {
-        error:
-          "Subscription checkout is coming online — self-serve license keys aren't issued yet. €4 / seat / month or €39 / seat / year.",
-      },
+      { code: await motivoSinLicencia(user.id) },
       { status: 402 },
     );
   }
