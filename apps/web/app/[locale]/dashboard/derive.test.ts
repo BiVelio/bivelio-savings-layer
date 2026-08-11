@@ -1,11 +1,54 @@
 import { describe, it, expect } from "vitest";
 
-import { deriveLicenseStatus, deriveVerdict } from "./derive";
+import { deriveLicenseStatus, deriveVerdict, elegirLicencia } from "./derive";
 
 /**
  * El panel de un producto que se vende como "verify-don't-trust" no puede
  * afirmar hechos que no ha medido. Estos son los tres que afirmaba.
  */
+
+describe("cuál de las licencias describe la situación de la org", () => {
+  const DIA = 86_400_000;
+  const ahora = Date.UTC(2026, 7, 6);
+  const enISO = (ms: number) => new Date(ms).toISOString();
+  const viva = { expires_at: enISO(ahora + 30 * DIA), grace_days: 21, revoked: false };
+  const revocada = { expires_at: enISO(ahora + 30 * DIA), grace_days: 21, revoked: true };
+  const caducada = { expires_at: enISO(ahora - 90 * DIA), grace_days: 21, revoked: false };
+
+  it("sin ninguna licencia, null", () => {
+    expect(elegirLicencia([], ahora)).toBeNull();
+  });
+
+  it("una revocación sola SÍ se ve — era el estado invisible", () => {
+    // La consulta filtraba `revoked = false`, así que una org con la licencia
+    // revocada no devolvía ninguna fila y el panel la trataba como "nunca tuvo
+    // licencia": le habíamos cortado el servicio a propósito y no se lo decíamos.
+    expect(elegirLicencia([revocada], ahora)?.status).toBe("revoked");
+  });
+
+  it("una revocación ANTIGUA seguida de reemisión es un cliente sano", () => {
+    expect(elegirLicencia([revocada, viva], ahora)?.status).toBe("active");
+    expect(elegirLicencia([viva, revocada], ahora)?.status).toBe("active");
+  });
+
+  it("sin ninguna viva, una revocación explica más que una caducidad", () => {
+    expect(elegirLicencia([caducada, revocada], ahora)?.status).toBe("revoked");
+  });
+
+  it("solo caducadas: caducada", () => {
+    expect(elegirLicencia([caducada], ahora)?.status).toBe("expired");
+  });
+
+  it("una en gracia cuenta como viva", () => {
+    const enGracia = { expires_at: enISO(ahora - 2 * DIA), grace_days: 21, revoked: false };
+    expect(elegirLicencia([enGracia, revocada], ahora)?.status).toBe("grace");
+  });
+
+  it("devuelve la FILA elegida, no solo el estado (el panel necesita sus fechas)", () => {
+    const elegida = elegirLicencia([revocada, viva], ahora);
+    expect(elegida?.row).toBe(viva);
+  });
+});
 
 describe("estado de licencia", () => {
   const DIA = 86_400_000;

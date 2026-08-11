@@ -14,7 +14,14 @@ export interface DashboardData {
   usageFailed: boolean;
 }
 
-const EMPTY_CTX: OrgContext = { org: null, role: null, seats: null, license: null, serviceAccount: null };
+const EMPTY_CTX: OrgContext = {
+  org: null,
+  role: null,
+  seats: null,
+  subscription: null,
+  license: null,
+  serviceAccount: null,
+};
 
 /**
  * Load the signed-in user + org context + usage once per request. `cache()` dedupes

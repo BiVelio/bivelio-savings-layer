@@ -274,6 +274,21 @@
       "successActive": "<b>Tu suscripción está activa.</b> El siguiente paso es recoger tu clave de licencia.",
       "goToInstall": "Obtén tu clave de licencia →",
       "cancelled": "<b>No se ha completado ningún pago</b> — no se te ha cobrado nada. Puedes empezar de nuevo cuando quieras."
+    },
+    "billingState": {
+      "pastDueTitle": "El cobro ha fallado",
+      "pastDueBody": "No hemos podido cobrar tu método de pago. Actualízalo y lo reintentamos automáticamente — tu servicio sigue funcionando {days, plural, one {# día más} other {# días más}}.",
+      "pastDueNoCount": "No hemos podido cobrar tu método de pago. Actualízalo y lo reintentamos automáticamente.",
+      "pastDueEnded": "No hemos podido cobrar tu método de pago y el periodo de gracia ha terminado. Actualízalo para recuperar tu plan.",
+      "pastDueAction": "Actualizar método de pago →",
+      "incompleteTitle": "Pago en proceso",
+      "incompleteBody": "Los adeudos bancarios tardan unos días en liquidarse. Tendrás acceso en cuanto se confirme — no inicies una segunda suscripción.",
+      "graceTitle": "Licencia caducada — aún funcionando",
+      "graceBody": "Tu licencia caducó el {date} y sigue funcionando {days, plural, one {# día más} other {# días más}}. Renuévala para que no se interrumpa.",
+      "expiredTitle": "Licencia caducada",
+      "expiredBody": "Tu licencia caducó el {date}. BV-SALA falla cerrado, así que el SDK se ha detenido.",
+      "revokedTitle": "Licencia revocada",
+      "revokedBody": "Esta licencia ha sido revocada. Escribe a support@bivelio.com si crees que es un error."
     }
   },
   "landing": {

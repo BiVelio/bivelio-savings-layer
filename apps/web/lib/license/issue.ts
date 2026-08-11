@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { AdminClient } from "@/lib/supabase/admin";
+import { diasDeGracia } from "@/lib/billing/gracia";
 import { loadPrivateKey, signCompact } from "./sign";
 
 /**
@@ -57,7 +58,11 @@ export async function issueLicense(
   if (!privateKey) throw new Error("LICENSE_PRIVATE_KEY missing");
 
   const now = Math.floor(Date.now() / 1000);
-  const graceDays = input.graceDays ?? 14;
+  // La gracia sale de la constante única del producto, no de un literal. Estaba
+  // escrita a mano aquí (14) y otra vez en `0001_init.sql`, sin derivarse de nada;
+  // el número tiene que cubrir la ventana de reintentos de Stripe o apagamos a
+  // clientes cuyo cobro todavía puede prosperar. Ver `lib/billing/gracia.ts`.
+  const graceDays = input.graceDays ?? diasDeGracia();
   const plan: Plan = input.plan ?? "pro";
   const features = [...(input.features ?? PRO_FEATURES)];
   const jti = randomUUID(); // bare uuid == licenses.id

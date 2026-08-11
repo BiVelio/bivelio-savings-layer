@@ -274,6 +274,21 @@
       "successActive": "<b>Aboneliğiniz etkin.</b> Sıradaki adım: lisans anahtarınızı almak.",
       "goToInstall": "Lisans anahtarınızı alın →",
       "cancelled": "<b>Ödeme tamamlanmadı</b> — sizden hiçbir ücret alınmadı. İstediğiniz zaman yeniden başlayabilirsiniz."
+    },
+    "billingState": {
+      "pastDueTitle": "Ödeme başarısız oldu",
+      "pastDueBody": "Ödeme yönteminizden tahsilat yapamadık. Güncelleyin, otomatik olarak yeniden deneyelim — hizmetiniz {days, plural, other {# gün daha}} çalışmaya devam ediyor.",
+      "pastDueNoCount": "Ödeme yönteminizden tahsilat yapamadık. Güncelleyin, otomatik olarak yeniden deneyelim.",
+      "pastDueEnded": "Ödeme yönteminizden tahsilat yapamadık ve ek süre doldu. Planınızı geri kazanmak için ödeme yönteminizi güncelleyin.",
+      "pastDueAction": "Ödeme yöntemini güncelleyin →",
+      "incompleteTitle": "Ödeme işleniyor",
+      "incompleteBody": "Banka ödemelerinin geçmesi birkaç gün sürer. Ödeme onaylanır onaylanmaz erişiminiz açılır — lütfen ikinci bir abonelik başlatmayın.",
+      "graceTitle": "Lisans doldu — hâlâ çalışıyor",
+      "graceBody": "Lisansınız {date} tarihinde doldu ve {days, plural, other {# gün daha}} çalışmaya devam ediyor. Kesinti yaşamamak için yenileyin.",
+      "expiredTitle": "Lisans doldu",
+      "expiredBody": "Lisansınız {date} tarihinde doldu. BV-SALA fail-closed çalışır, bu yüzden SDK durdu.",
+      "revokedTitle": "Lisans iptal edildi",
+      "revokedBody": "Bu lisans iptal edildi. Bunun bir hata olduğunu düşünüyorsanız support@bivelio.com adresine yazın."
     }
   },
   "landing": {

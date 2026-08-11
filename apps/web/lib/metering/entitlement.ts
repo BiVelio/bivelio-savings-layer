@@ -26,8 +26,16 @@ export interface SubscriptionRow {
 
 const DAY_MS = 86_400_000;
 
-/** ¿Alguna licencia sigue dentro de su validez pagada (vigente o en gracia)? */
-function hasValidLicense(licenses: LicenseRow[], nowMs: number): boolean {
+/**
+ * ¿Alguna licencia sigue dentro de su validez pagada (vigente o en gracia)?
+ *
+ * Se EXPORTA para que el barrido de impago use exactamente este predicado y no
+ * una tercera versión del mismo criterio. Si el servidor y el barrido
+ * discreparan sobre qué es "una licencia viva", degradaríamos a orgs a las que
+ * el producto les sigue funcionando — y el panel diría "sin plan activo" a
+ * alguien con el SDK corriendo.
+ */
+export function hasValidLicense(licenses: LicenseRow[], nowMs: number): boolean {
   return licenses.some((l) => {
     if (l.revoked) return false;
     const expira = Date.parse(l.expires_at);

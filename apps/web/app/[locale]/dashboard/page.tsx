@@ -3,6 +3,7 @@ import { authConfigured } from "@/lib/supabase/env";
 import abData from "@/public/data/ab-live.json";
 import { activationSteps, type AbArtifact } from "./data";
 import { loadDashboard } from "./load";
+import { BillingStateBanner } from "./components/BillingStateBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { SavingsTrendChart } from "./components/SavingsTrendChart";
@@ -34,6 +35,10 @@ export default async function OverviewPage() {
         <h1>{t("overview.title")}</h1>
         <p>{t("overview.intro")}</p>
       </div>
+
+      {/* Lo primero de la primera pantalla: si el cobro va mal, se entera aquí
+          y no cuando el SDK se le pare. */}
+      <BillingStateBanner ctx={ctx} />
 
       <InstrumentationSpine steps={steps} />
 

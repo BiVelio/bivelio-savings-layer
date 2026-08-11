@@ -274,6 +274,21 @@
       "successActive": "<b>Dein Abonnement ist aktiv.</b> Als Nächstes holst du dir deinen Lizenzschlüssel.",
       "goToInstall": "Hol dir deinen Lizenzschlüssel →",
       "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten."
+    },
+    "billingState": {
+      "pastDueTitle": "Zahlung fehlgeschlagen",
+      "pastDueBody": "Wir konnten deine Zahlungsmethode nicht belasten. Aktualisiere sie, wir versuchen es automatisch erneut — dein Dienst läuft noch {days, plural, one {# Tag} other {# Tage}} weiter.",
+      "pastDueNoCount": "Wir konnten deine Zahlungsmethode nicht belasten. Aktualisiere sie, wir versuchen es automatisch erneut.",
+      "pastDueEnded": "Wir konnten deine Zahlungsmethode nicht belasten und die Kulanzfrist ist abgelaufen. Aktualisiere sie, um deinen Plan wiederherzustellen.",
+      "pastDueAction": "Zahlungsmethode aktualisieren →",
+      "incompleteTitle": "Zahlung wird verarbeitet",
+      "incompleteBody": "Bankeinzüge brauchen einige Tage. Du bekommst Zugang, sobald die Zahlung durch ist — starte bitte kein zweites Abo.",
+      "graceTitle": "Lizenz abgelaufen — läuft noch",
+      "graceBody": "Deine Lizenz ist am {date} abgelaufen und läuft noch {days, plural, one {# Tag} other {# Tage}} weiter. Verlängere sie, um eine Unterbrechung zu vermeiden.",
+      "expiredTitle": "Lizenz abgelaufen",
+      "expiredBody": "Deine Lizenz ist am {date} abgelaufen. BV-SALA ist fail-closed, das SDK hat sich beendet.",
+      "revokedTitle": "Lizenz widerrufen",
+      "revokedBody": "Diese Lizenz wurde widerrufen. Schreib an support@bivelio.com, wenn das ein Fehler ist."
     }
   },
   "landing": {

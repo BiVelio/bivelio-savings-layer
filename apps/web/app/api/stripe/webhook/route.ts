@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
+import { selloDeImpago } from "@/lib/billing/dunning";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
@@ -141,11 +142,12 @@ async function upsertSub(
   const f = subFacts(sub);
   const { data: existing } = await admin
     .from("subscriptions")
-    .select("id, seats, last_event_at")
+    .select("id, seats, last_event_at, past_due_since")
     .eq("stripe_subscription_id", sub.id)
     .maybeSingle();
   const prevSeats = (existing as { seats?: number } | null)?.seats ?? null;
   const existingId = (existing as { id?: string } | null)?.id ?? null;
+  const selloPrevio = (existing as { past_due_since?: string | null } | null)?.past_due_since ?? null;
 
   // GUARDIA DE ORDEN. Stripe no garantiza orden y reintenta durante días lo que
   // respondió 5xx, así que un evento viejo puede reentrar DESPUÉS de uno nuevo.
@@ -170,6 +172,12 @@ async function upsertSub(
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     canceled_at: iso(sub.canceled_at),
     last_event_at: iso(eventCreated),
+    // EL SELLO DE IMPAGO SE GESTIONA AQUÍ, y antes no lo gestionaba nadie: se
+    // escribía en `invoice.payment_failed` y no se borraba jamás. Al recuperarse
+    // el cobro la fila volvía a `active` conservando el sello, y meses después el
+    // SIGUIENTE impago se degradaba el día 1 leyendo esa fecha rancia. Ver
+    // `selloDeImpago`, que es donde vive la regla y donde la prueban los tests.
+    past_due_since: selloDeImpago(sub.status, selloPrevio, new Date().toISOString()),
     updated_at: new Date().toISOString(),
   };
   const { data, error } = await admin
@@ -389,8 +397,12 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
 async function handleInvoiceFailed(admin: Admin, invoice: Stripe.Invoice, eventId: string) {
   const subId = invoiceSubId(invoice);
   if (!subId) return;
-  // past_due + stamp; NO revoke (14-day dunning grace; a nightly cron downgrades
-  // only past-grace).
+  // past_due + sello; NO se revoca. La gracia la cuenta el barrido diario
+  // `/api/cron/dunning` (apps/web/vercel.json), que degrada el plan solo a los
+  // que la han pasado. Ese cron NO existía cuando este comentario lo prometía:
+  // `past_due_since` se sellaba aquí y no se leía en ningún sitio, así que una
+  // org en impago conservaba "pro" indefinidamente y el panel se lo pintaba con
+  // toda normalidad. Los días de gracia salen de `lib/billing/gracia.ts`.
   const { data } = await admin
     .from("subscriptions")
     .select("id, org_id, past_due_since")

@@ -274,6 +274,21 @@
       "successActive": "<b>Langganan Anda aktif.</b> Langkah berikutnya adalah mengambil kunci lisensi Anda.",
       "goToInstall": "Dapatkan kunci lisensi Anda →",
       "cancelled": "<b>Tidak ada pembayaran yang diselesaikan</b> — Anda tidak dikenai biaya apa pun. Anda bisa mulai lagi kapan saja."
+    },
+    "billingState": {
+      "pastDueTitle": "Pembayaran gagal",
+      "pastDueBody": "Kami tidak dapat menagih metode pembayaran Anda. Perbarui dan kami akan mencoba lagi secara otomatis — layanan Anda tetap berjalan {days, plural, other {# hari lagi}}.",
+      "pastDueNoCount": "Kami tidak dapat menagih metode pembayaran Anda. Perbarui dan kami akan mencoba lagi secara otomatis.",
+      "pastDueEnded": "Kami tidak dapat menagih metode pembayaran Anda dan masa tenggang telah berakhir. Perbarui untuk memulihkan paket Anda.",
+      "pastDueAction": "Perbarui metode pembayaran →",
+      "incompleteTitle": "Pembayaran sedang diproses",
+      "incompleteBody": "Debit bank butuh beberapa hari untuk selesai. Anda akan mendapat akses begitu pembayaran dikonfirmasi — jangan memulai langganan kedua.",
+      "graceTitle": "Lisensi kedaluwarsa — masih berjalan",
+      "graceBody": "Lisensi Anda kedaluwarsa pada {date} dan masih berjalan {days, plural, other {# hari lagi}}. Perpanjang agar tidak terputus.",
+      "expiredTitle": "Lisensi kedaluwarsa",
+      "expiredBody": "Lisensi Anda kedaluwarsa pada {date}. BV-SALA bersifat fail-closed, jadi SDK telah berhenti.",
+      "revokedTitle": "Lisensi dicabut",
+      "revokedBody": "Lisensi ini telah dicabut. Hubungi support@bivelio.com jika menurut Anda ini keliru."
     }
   },
   "landing": {
