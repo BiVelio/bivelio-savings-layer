@@ -224,8 +224,8 @@
       "planBody": "BV-SALA fail-closed'dur — yalnızca etkin bir PRO lisansıyla çalışır. Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bir koltuk, bir kişi değil, etkin bir makine ya da servis kimliğidir.",
       "managePlan": "Planı yönet →",
       "subscribe": "Abone ol →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Abone ol — {monthly}/ay →",
+      "checkoutYearly": "Abone ol — {yearly}/yıl →",
       "checkoutError": "Bir şeyler ters gitti — tekrar deneyin."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
       "title": "Çalıştırmak kuruşluk. Tasarruf ise katlarca.",
-      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, EUR cinsinden fiyatlandırılır.",
-      "amount": "€4",
+      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, {currency} cinsinden fiyatlandırılır.",
+      "amount": "{amount}",
       "per": "/ koltuk / ay",
-      "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>€39 / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
+      "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
       "seatNote": "Bir koltuk, bir kişi değil, etkin bir <b>makine ya da servis kimliğidir</b> — yalnızca bir ayda 3+ gün etkinse faturalandırılır. CI ve geçici çalıştırıcılar sayılmaz.",
       "features": [
         "Her BV‑SALA optimizasyonu, sınırsız",

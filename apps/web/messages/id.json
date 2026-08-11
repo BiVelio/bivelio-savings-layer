@@ -224,8 +224,8 @@
       "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi PRO aktif. {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
       "managePlan": "Kelola paket →",
       "subscribe": "Berlangganan →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Berlangganan — {monthly}/bln →",
+      "checkoutYearly": "Berlangganan — {yearly}/thn →",
       "checkoutError": "Terjadi kesalahan — silakan coba lagi."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Satu paket, dihargai per kursi",
       "title": "Recehan untuk menjalankan. Berlipat untuk menghemat.",
-      "body": "Tanpa tier gratis, tanpa uji coba — uji BV‑SALA langsung di browser Anda, lalu berlangganan untuk menjalankannya di aplikasi Anda. Dihargai per kursi, dalam EUR.",
-      "amount": "€4",
+      "body": "Tanpa tier gratis, tanpa uji coba — uji BV‑SALA langsung di browser Anda, lalu berlangganan untuk menjalankannya di aplikasi Anda. Dihargai per kursi, dalam {currency}.",
+      "amount": "{amount}",
       "per": "/ kursi / bulan",
-      "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>€39 / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
+      "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
       "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> aktif, bukan orang — ditagih hanya jika aktif pada 3+ hari dalam sebulan. CI dan runner sementara tidak dihitung.",
       "features": [
         "Setiap optimasi BV‑SALA, tanpa batas",

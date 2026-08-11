@@ -30,8 +30,8 @@ Collect: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
 
 ## 2. Stripe
 
-- Create a **Product** "BV-SALA Pro" with a **per-seat recurring Price** (e.g.
-  $4/seat/month). Note the `price_id`.
+- Create a **Product** "BV-SALA Pro" with a **per-seat recurring Price**
+  (€4/seat/month — the live currency is **EUR**). Note the `price_id`.
 - Add a webhook to `https://savings.bivelio.com/api/stripe/webhook` for
   `customer.subscription.*` and `checkout.session.completed`.
 

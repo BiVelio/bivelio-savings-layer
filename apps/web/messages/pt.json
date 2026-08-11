@@ -224,8 +224,8 @@
       "planBody": "O BV-SALA é fail-closed — só funciona com uma licença PRO ativa. {monthly} por lugar por mês ou {yearly} por lugar por ano. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
       "managePlan": "Gerir plano →",
       "subscribe": "Subscrever →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Subscrever — {monthly}/mês →",
+      "checkoutYearly": "Subscrever — {yearly}/ano →",
       "checkoutError": "Algo correu mal — tenta novamente."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
       "title": "Cêntimos para executar. Múltiplos para poupar.",
-      "body": "Sem plano gratuito, sem teste — experimenta o BV‑SALA aqui mesmo no teu navegador e depois subscreve para o executar na tua app. Preço por lugar, em EUR.",
-      "amount": "€4",
+      "body": "Sem plano gratuito, sem teste — experimenta o BV‑SALA aqui mesmo no teu navegador e depois subscreve para o executar na tua app. Preço por lugar, em {currency}.",
+      "amount": "{amount}",
       "per": "/ lugar / mês",
-      "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>€39 / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
+      "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
       "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b> ativa, não uma pessoa — faturado apenas se estiver ativo em 3 ou mais dias num mês. CI e executores efémeros não contam.",
       "features": [
         "Todas as otimizações do BV‑SALA, sem limite",

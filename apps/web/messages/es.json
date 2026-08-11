@@ -224,8 +224,8 @@
       "planBody": "BV-SALA es fail-closed: solo funciona con una licencia PRO activa. {monthly} por asiento al mes o {yearly} por asiento al año. Un asiento es una máquina o identidad de servicio activa, no una persona.",
       "managePlan": "Gestionar plan →",
       "subscribe": "Suscribirse →",
-      "checkoutMonthly": "Suscríbete — €4/mes →",
-      "checkoutYearly": "Suscríbete — €39/año →",
+      "checkoutMonthly": "Suscríbete — {monthly}/mes →",
+      "checkoutYearly": "Suscríbete — {yearly}/año →",
       "checkoutError": "Algo salió mal — inténtalo de nuevo."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
       "title": "Céntimos para ejecutar. Múltiplos para ahorrar.",
-      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en EUR.",
-      "amount": "€4",
+      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en {currency}.",
+      "amount": "{amount}",
       "per": "/ asiento / mes",
-      "proNote": "<b>PRO</b> — facturado por asiento. O <b>€39 / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
+      "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
       "seatNote": "Un asiento es una <b>máquina o identidad de servicio</b> activa, no una persona — facturado solo si está activo 3 o más días en un mes. CI y ejecutores efímeros no cuentan.",
       "features": [
         "Cada optimización de BV‑SALA, sin límite",

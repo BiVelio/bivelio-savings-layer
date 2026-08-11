@@ -224,8 +224,8 @@
       "planBody": "BV-SALA è fail-closed — funziona solo con una licenza PRO attiva. {monthly} per postazione al mese o {yearly} per postazione all'anno. Una postazione è una macchina o identità di servizio attiva, non una persona.",
       "managePlan": "Gestisci piano →",
       "subscribe": "Abbonati →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Abbonati — {monthly}/mese →",
+      "checkoutYearly": "Abbonati — {yearly}/anno →",
       "checkoutError": "Qualcosa è andato storto — riprova."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Un unico piano, con prezzo per postazione",
       "title": "Pochi centesimi per eseguirlo. Molto di più da risparmiare.",
-      "body": "Nessun piano gratuito, nessuna prova — prova BV‑SALA proprio qui nel tuo browser, poi abbonati per eseguirlo nella tua app. Prezzo per postazione, in EUR.",
-      "amount": "€4",
+      "body": "Nessun piano gratuito, nessuna prova — prova BV‑SALA proprio qui nel tuo browser, poi abbonati per eseguirlo nella tua app. Prezzo per postazione, in {currency}.",
+      "amount": "{amount}",
       "per": "/ postazione / mese",
-      "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>€39 / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
+      "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
       "seatNote": "Una postazione è una <b>macchina o identità di servizio</b> attiva, non una persona — fatturata solo se attiva per 3+ giorni in un mese. CI e runner effimeri non contano.",
       "features": [
         "Ogni ottimizzazione BV‑SALA, senza limiti",

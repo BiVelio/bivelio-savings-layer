@@ -1,4 +1,7 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+
+import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { formatearPrecio } from "@/lib/format/precio";
 
 import type { AbArtifact, OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
@@ -20,6 +23,12 @@ report.cost.netSavings; // → your net savings, per request`;
 
 export async function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgContext }) {
   const t = await getTranslations("dashboard");
+  // El precio, del Price de Stripe y formateado aquí (servidor) para bajarlo ya
+  // hecho al botón, que es de cliente.
+  const locale = await getLocale();
+  const precios = await preciosDelPlan();
+  const precioMensual = formatearPrecio(locale, precios.monthly);
+  const precioAnual = formatearPrecio(locale, precios.yearly);
   return (
     <section className="ck-sec">
       <div className="ck-head">
@@ -36,7 +45,7 @@ export async function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: Or
           code: (chunks) => <code>{chunks}</code>,
         })}
       </p>
-      <TrialKeyButton />
+      <TrialKeyButton monthly={precioMensual} yearly={precioAnual} />
 
       {/* 2 · service-account key (the machine credential for metering) */}
       <p className="ck-note">

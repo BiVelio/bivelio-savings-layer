@@ -14,6 +14,8 @@ import { CacheBreakEven } from "@/app/[locale]/dashboard/components/CacheBreakEv
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
+import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { formatearPrecio } from "@/lib/format/precio";
 
 // The measured A/B artifact powers Step 2 (the reference bench) and the price
 // used by the Step-1 projector — exactly like the dashboard verify/proof pages.
@@ -120,6 +122,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const ledgers = t.raw("ledgers") as { idx: string; name: string; desc: string }[];
   const features = t.raw("pricing.features") as string[];
   const trust = t.raw("pricing.trust") as { lead: string; rest: string }[];
+
+  // El precio sale del Price de Stripe, que es lo que de verdad se cobra, y se
+  // formatea AQUÍ (servidor) para el idioma de la página. Antes estaba escrito a
+  // mano en los 12 ficheros de traducción y no se hablaba con Stripe: por eso la
+  // landing estática llegó a anunciar dólares mientras se cobraban euros.
+  const precios = await preciosDelPlan();
+  const precioMensual = formatearPrecio(locale, precios.monthly);
+  const precioAnual = formatearPrecio(locale, precios.yearly);
+  const moneda = precios.monthly.currency.toUpperCase();
 
   return (
     <div className="lp">
@@ -260,16 +271,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <div className="sec-head">
             <span className="eyebrow">{t("pricing.eyebrow")}</span>
             <h2>{t("pricing.title")}</h2>
-            <p>{t("pricing.body")}</p>
+            <p>{t("pricing.body", { currency: moneda })}</p>
           </div>
           <div className="split">
             <div className="price-card">
               <div className="amt">
-                {t("pricing.amount")}
+                {t("pricing.amount", { amount: precioMensual })}
                 <small> {t("pricing.per")}</small>
               </div>
               <p style={{ margin: 0, opacity: 0.85 }}>
-                {t.rich("pricing.proNote", { b: (c) => <b>{c}</b> })}
+                {t.rich("pricing.proNote", { b: (c) => <b>{c}</b>, yearly: precioAnual })}
               </p>
               <p style={{ margin: "6px 0 0", opacity: 0.65, fontSize: 13 }}>
                 {t.rich("pricing.seatNote", { b: (c) => <b>{c}</b> })}
