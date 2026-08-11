@@ -86,7 +86,15 @@ describe("la verja de frescura sigue mordiendo donde DEBE (proceso de vida larga
     // bloqueando la red.
     const now = ISSUED + 5 * DAY;
     const arrancoHace20h = now - 20 * 3600;
-    expect(gateAt(mensual, now, arrancoHace20h).status()).toBe("expired");
+    const gate = gateAt(mensual, now, arrancoHace20h);
+    // Lo que importa es que la puerta CIERRA, y eso no ha cambiado.
+    expect(gate.isActive()).toBe(false);
+    // Pero el estado es "stale", NO "expired": esta licencia está pagada y le
+    // quedan 25 días. Llamarlo "expired" hacía que el mensaje le dijera al
+    // cliente que renovara una suscripción que ya tenía al día, mandándole a
+    // pagar cuando su problema era un cortafuegos.
+    expect(gate.status()).toBe("stale");
+    expect(gate.status()).not.toBe("expired");
   });
 
   it("pero si arrancó hace poco, la ventana de gracia del arranque lo mantiene", () => {

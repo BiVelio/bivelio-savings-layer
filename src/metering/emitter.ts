@@ -1,4 +1,5 @@
 import type { SavingsReport } from "../contracts/types.js";
+import { avisarUnaVez } from "../util/warn-once.js";
 
 /**
  * A counts-only usage record on the wire. Mirrors `@bivelio/protocol`'s
@@ -49,6 +50,14 @@ export interface UsageEmitterOptions {
   now?: () => number;
   /** Whether this process is a CI/ephemeral runner (excluded from billable seats). */
   ci?: boolean;
+  /**
+   * Se llama cuando el ingest rechaza la credencial (401/403). Existe para que un
+   * despliegue con observabilidad pueda ENTERARSE: el aviso por consola sirve en
+   * un portátil, pero en producción los `console.warn` no despiertan a nadie, y
+   * este fallo concreto es invisible por definición —deja de llegar uso, que es
+   * exactamente lo mismo que se ve cuando no hay tráfico—.
+   */
+  onAuthError?: (status: number) => void;
 }
 
 interface Entry {
@@ -137,7 +146,25 @@ export class UsageEmitter {
         },
         body: JSON.stringify(records),
       });
-      if (!res.ok && res.status >= 500) this.requeue(batch);
+      if (!res.ok && res.status >= 500) {
+        this.requeue(batch);
+      } else if (res.status === 401 || res.status === 403) {
+        // UNA CREDENCIAL MALA NO SE CURA SOLA, a diferencia de un 5xx, y hasta
+        // ahora este lote se descartaba SIN log, sin excepción y sin callback.
+        // Consecuencia: rotar la `bvk_` y olvidar actualizarla dejaba de reportar
+        // uso para siempre, en silencio — y el panel, al no llegarle filas, le
+        // decía al cliente «aún no estamos midiendo tu tráfico: instala el SDK»
+        // a alguien que lo tenía instalado y funcionando. El síntoma apuntaba al
+        // sitio opuesto de la causa.
+        avisarUnaVez(
+          `metering-auth-${res.status}`,
+          `[bv-sala] el envío de uso está siendo rechazado con HTTP ${res.status} en ${this.options.url}. ` +
+            `Revisa 'serviceAccountKey' (¿rotada? ¿revocada? ¿de otra organización?). Mientras no ` +
+            `funcione NO se reporta uso: el panel dirá que no ve tráfico y los asientos facturables ` +
+            `saldrán a cero.`,
+        );
+        this.options.onAuthError?.(res.status);
+      }
     } catch {
       this.requeue(batch);
     } finally {
