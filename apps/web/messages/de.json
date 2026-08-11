@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Es konnte kein Lizenzschlüssel ausgestellt werden.",
       "errNetwork": "Netzwerkfehler — bitte versuche es erneut.",
+      "errNoSubscription": "Dieses Konto hat noch kein Abonnement — starte eines unter Konto, dann erscheint dein Lizenzschlüssel hier.",
+      "errPaymentPending": "Deine Zahlung wird noch bestätigt. Sobald das erledigt ist, erscheint dein Lizenzschlüssel hier — du musst nicht noch einmal bezahlen.",
       "keyLabel": "dein Lizenzschlüssel{suffix} — wird einmal angezeigt, kopiere ihn jetzt",
       "validUntil": " · gültig bis {date}",
       "pasteHint": "Füge ihn in <code></code> ein, um das SDK freizuschalten. Er läuft am Ende des Abrechnungszeitraums ab: Füge unten einen Service-Account-Schlüssel hinzu, dann erneuert ihn das SDK von selbst.",
       "issuing": "Wird ausgestellt…",
       "getKey": "Hol dir deinen Lizenzschlüssel →",
-      "priceNote": "{monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Der Self-Service-Checkout geht bald online — der Schlüssel schaltet das SDK in deiner eigenen App frei."
+      "priceNote": "{monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Noch kein Abonnement für dieses Konto? Starte eines unter Konto."
     },
     "serviceAccountKeySection": {
       "errCreate": "Der Schlüssel konnte nicht erstellt werden.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Messung live",
       "awaitingFirstReport": "Wartet auf ersten Bericht"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Zahlung erhalten.</b> Wir aktivieren deine Lizenz — das dauert meist ein paar Sekunden, und diese Seite aktualisiert sich von selbst.",
+      "successActive": "<b>Dein Abonnement ist aktiv.</b> Als Nächstes holst du dir deinen Lizenzschlüssel.",
+      "goToInstall": "Hol dir deinen Lizenzschlüssel →",
+      "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten."
     }
   },
   "landing": {

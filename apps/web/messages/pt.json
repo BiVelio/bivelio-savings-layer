@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Não foi possível emitir uma chave de licença.",
       "errNetwork": "Erro de rede — tenta novamente.",
+      "errNoSubscription": "Esta conta ainda não tem uma subscrição — começa uma em Conta e a tua chave de licença aparece aqui.",
+      "errPaymentPending": "O teu pagamento ainda está a ser confirmado. A tua chave de licença aparece aqui assim que isso acontecer; não precisas de pagar outra vez.",
       "keyLabel": "a tua chave de licença{suffix} — mostrada uma só vez, copia-a agora",
       "validUntil": " · válida até {date}",
       "pasteHint": "Cola-a em <code></code> para desbloquear o SDK. Expira no final do período de faturação: adiciona uma chave de conta de serviço abaixo e o SDK renova-a sozinho.",
       "issuing": "A emitir…",
       "getKey": "Obtém a tua chave de licença →",
-      "priceNote": "{monthly} por lugar por mês ou {yearly} por lugar por ano. O checkout self-service está a chegar — a chave desbloqueia o SDK na tua própria app."
+      "priceNote": "{monthly} por lugar por mês ou {yearly} por lugar por ano. Ainda não tens subscrição nesta conta? Começa uma em Conta."
     },
     "serviceAccountKeySection": {
       "errCreate": "Não foi possível criar uma chave.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Medição em direto",
       "awaitingFirstReport": "À espera do primeiro relatório"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Pagamento recebido.</b> Estamos a ativar a tua licença — normalmente demora alguns segundos e esta página atualiza-se sozinha.",
+      "successActive": "<b>A tua subscrição está ativa.</b> O passo seguinte é obter a tua chave de licença.",
+      "goToInstall": "Obtém a tua chave de licença →",
+      "cancelled": "<b>Não foi concluído nenhum pagamento</b> — não te foi cobrado nada. Podes começar de novo quando quiseres."
     }
   },
   "landing": {

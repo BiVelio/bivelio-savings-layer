@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "No se pudo emitir una clave de licencia.",
       "errNetwork": "Error de red: vuelve a intentarlo.",
+      "errNoSubscription": "Esta cuenta aún no tiene suscripción — empieza una desde Cuenta y tu clave de licencia aparecerá aquí.",
+      "errPaymentPending": "Tu pago todavía se está confirmando. Tu clave de licencia aparecerá aquí en cuanto se confirme; no hace falta que vuelvas a pagar.",
       "keyLabel": "tu clave de licencia{suffix}: se muestra una sola vez, cópiala ahora",
       "validUntil": " · válida hasta {date}",
       "pasteHint": "Pégala en <code></code> para desbloquear el SDK. Caduca al final del período de facturación: añade abajo una clave de cuenta de servicio y el SDK la renueva por sí solo.",
       "issuing": "Emitiendo…",
       "getKey": "Obtén tu clave de licencia →",
-      "priceNote": "{monthly} por asiento al mes o {yearly} por asiento al año. El pago de autoservicio está por habilitarse; la clave desbloquea el SDK en tu propia app."
+      "priceNote": "{monthly} por asiento al mes o {yearly} por asiento al año. ¿Aún no hay suscripción en esta cuenta? Empieza una desde Cuenta."
     },
     "serviceAccountKeySection": {
       "errCreate": "No se pudo crear una clave.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Medición en vivo",
       "awaitingFirstReport": "Esperando el primer reporte"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Pago recibido.</b> Estamos activando tu licencia — suele tardar unos segundos y esta página se actualiza sola.",
+      "successActive": "<b>Tu suscripción está activa.</b> El siguiente paso es recoger tu clave de licencia.",
+      "goToInstall": "Obtén tu clave de licencia →",
+      "cancelled": "<b>No se ha completado ningún pago</b> — no se te ha cobrado nada. Puedes empezar de nuevo cuando quieras."
     }
   },
   "landing": {

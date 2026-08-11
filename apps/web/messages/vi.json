@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Không thể cấp khóa cấp phép.",
       "errNetwork": "Lỗi mạng — vui lòng thử lại.",
+      "errNoSubscription": "Tài khoản này chưa có gói đăng ký — hãy bắt đầu một gói ở mục Tài khoản và khóa cấp phép của bạn sẽ hiện ở đây.",
+      "errPaymentPending": "Khoản thanh toán của bạn vẫn đang được xác nhận. Khóa cấp phép của bạn sẽ hiện ở đây ngay khi xong; bạn không cần thanh toán lại.",
       "keyLabel": "khóa cấp phép của bạn{suffix} — chỉ hiển thị một lần, hãy sao chép ngay",
       "validUntil": " · có hiệu lực đến {date}",
       "pasteHint": "Dán nó vào <code></code> để mở khóa SDK. Nó hết hạn vào cuối kỳ thanh toán: hãy thêm một khóa tài khoản dịch vụ bên dưới và SDK sẽ tự mình gia hạn nó.",
       "issuing": "Đang cấp…",
       "getKey": "Nhận khóa cấp phép của bạn →",
-      "priceNote": "{monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Thanh toán tự phục vụ sắp ra mắt — khóa sẽ mở khóa SDK trong ứng dụng của riêng bạn."
+      "priceNote": "{monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Tài khoản này chưa có gói đăng ký? Hãy bắt đầu ở mục Tài khoản."
     },
     "serviceAccountKeySection": {
       "errCreate": "Không thể tạo khóa.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Đang đo trực tiếp",
       "awaitingFirstReport": "Đang chờ báo cáo đầu tiên"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Đã nhận được thanh toán.</b> Chúng tôi đang kích hoạt giấy phép của bạn — việc này thường mất vài giây và trang này sẽ tự làm mới.",
+      "successActive": "<b>Gói đăng ký của bạn đang hoạt động.</b> Bước tiếp theo là nhận khóa cấp phép của bạn.",
+      "goToInstall": "Nhận khóa cấp phép của bạn →",
+      "cancelled": "<b>Chưa có khoản thanh toán nào được hoàn tất</b> — bạn chưa bị tính phí gì cả. Bạn có thể bắt đầu lại bất cứ lúc nào."
     }
   },
   "landing": {

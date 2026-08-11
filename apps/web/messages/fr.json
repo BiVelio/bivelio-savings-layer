@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Impossible d'émettre une clé de licence.",
       "errNetwork": "Erreur réseau — veuillez réessayer.",
+      "errNoSubscription": "Ce compte n'a pas encore d'abonnement — abonnez-vous depuis l'onglet Compte et votre clé de licence apparaîtra ici.",
+      "errPaymentPending": "Votre paiement est en cours de confirmation. Votre clé de licence apparaîtra ici dès qu'il sera confirmé ; vous n'avez pas à payer une deuxième fois.",
       "keyLabel": "votre clé de licence{suffix} — affichée une seule fois, copiez-la maintenant",
       "validUntil": " · valable jusqu'au {date}",
       "pasteHint": "Collez-la dans <code></code> pour débloquer le SDK. Elle expire à la fin de la période de facturation : ajoutez une clé de compte de service ci-dessous et le SDK la renouvelle tout seul.",
       "issuing": "Émission…",
       "getKey": "Obtenez votre clé de licence →",
-      "priceNote": "{monthly} par siège et par mois ou {yearly} par siège et par an. Le paiement en libre-service arrive bientôt — la clé débloque le SDK dans votre propre application."
+      "priceNote": "{monthly} par siège et par mois ou {yearly} par siège et par an. Pas encore d'abonnement sur ce compte ? Abonnez-vous depuis l'onglet Compte."
     },
     "serviceAccountKeySection": {
       "errCreate": "Impossible de créer une clé.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Mesure en direct",
       "awaitingFirstReport": "En attente du premier rapport"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Paiement reçu.</b> Nous activons votre licence — cela prend en général quelques secondes et cette page se rafraîchit toute seule.",
+      "successActive": "<b>Votre abonnement est actif.</b> Prochaine étape : obtenir votre clé de licence.",
+      "goToInstall": "Obtenez votre clé de licence →",
+      "cancelled": "<b>Aucun paiement n'a été effectué</b> — rien ne vous a été débité. Vous pouvez recommencer quand vous voulez."
     }
   },
   "landing": {

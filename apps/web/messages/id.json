@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Tidak dapat menerbitkan kunci lisensi.",
       "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
+      "errNoSubscription": "Akun ini belum punya langganan — mulai dari halaman Akun dan kunci lisensi Anda muncul di sini.",
+      "errPaymentPending": "Pembayaran Anda masih diproses. Kunci lisensi Anda muncul di sini begitu pembayaran selesai; Anda tidak perlu membayar lagi.",
       "keyLabel": "kunci lisensi Anda{suffix} — ditampilkan sekali, salin sekarang",
       "validUntil": " · berlaku hingga {date}",
       "pasteHint": "Tempel ke <code></code> untuk membuka SDK. Kunci ini kedaluwarsa pada akhir periode penagihan: tambahkan kunci akun layanan di bawah dan SDK memperbaruinya sendiri.",
       "issuing": "Menerbitkan…",
       "getKey": "Dapatkan kunci lisensi Anda →",
-      "priceNote": "{monthly} per kursi per bulan atau {yearly} per kursi per tahun. Checkout swalayan segera hadir — kunci ini membuka SDK di aplikasi Anda sendiri."
+      "priceNote": "{monthly} per kursi per bulan atau {yearly} per kursi per tahun. Belum ada langganan di akun ini? Mulai dari halaman Akun."
     },
     "serviceAccountKeySection": {
       "errCreate": "Tidak dapat membuat kunci.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Pengukuran langsung",
       "awaitingFirstReport": "Menunggu laporan pertama"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Pembayaran diterima.</b> Kami sedang mengaktifkan lisensi Anda — biasanya hanya beberapa detik, dan halaman ini menyegarkan dirinya sendiri.",
+      "successActive": "<b>Langganan Anda aktif.</b> Langkah berikutnya adalah mengambil kunci lisensi Anda.",
+      "goToInstall": "Dapatkan kunci lisensi Anda →",
+      "cancelled": "<b>Tidak ada pembayaran yang diselesaikan</b> — Anda tidak dikenai biaya apa pun. Anda bisa mulai lagi kapan saja."
     }
   },
   "landing": {

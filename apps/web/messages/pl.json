@@ -176,12 +176,14 @@
     "trialKeyButton": {
       "errCreate": "Nie udało się wydać klucza licencyjnego.",
       "errNetwork": "Błąd sieci — spróbuj ponownie.",
+      "errNoSubscription": "To konto nie ma jeszcze subskrypcji — wykup ją w zakładce Konto, a Twój klucz licencyjny pojawi się tutaj.",
+      "errPaymentPending": "Twoja płatność jest jeszcze przetwarzana. Twój klucz licencyjny pojawi się tutaj, gdy tylko się zaksięguje — nie musisz płacić ponownie.",
       "keyLabel": "Twój klucz licencyjny{suffix} — pokazany raz, skopiuj go teraz",
       "validUntil": " · ważny do {date}",
       "pasteHint": "Wklej go do <code></code>, aby odblokować SDK. Wygasa on na koniec okresu rozliczeniowego: dodaj poniżej klucz konta serwisowego, a SDK sam go odnowi.",
       "issuing": "Wydawanie…",
       "getKey": "Uzyskaj klucz licencyjny →",
-      "priceNote": "{monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Samoobsługowa płatność jest w drodze — klucz odblokowuje SDK w Twojej własnej aplikacji."
+      "priceNote": "{monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Nie masz jeszcze subskrypcji na tym koncie? Wykup ją w zakładce Konto."
     },
     "serviceAccountKeySection": {
       "errCreate": "Nie udało się utworzyć klucza.",
@@ -266,6 +268,12 @@
     "connectionStatePill": {
       "meteringLive": "Pomiar na żywo",
       "awaitingFirstReport": "Oczekiwanie na pierwszy raport"
+    },
+    "checkoutBanner": {
+      "successPending": "<b>Płatność otrzymana.</b> Aktywujemy Twoją licencję — zwykle zajmuje to kilka sekund, a ta strona odświeży się sama.",
+      "successActive": "<b>Twoja subskrypcja jest aktywna.</b> Następny krok to odebranie klucza licencyjnego.",
+      "goToInstall": "Uzyskaj klucz licencyjny →",
+      "cancelled": "<b>Płatność nie została dokończona</b> — nie pobraliśmy żadnej opłaty. Możesz zacząć od nowa, kiedy tylko zechcesz."
     }
   },
   "landing": {

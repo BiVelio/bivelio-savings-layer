@@ -48,10 +48,20 @@ export function TrialKeyButton() {
         token?: string;
         expiresAt?: string;
         error?: string;
+        code?: string;
       };
       if (!res.ok || !json.token) {
         setState("error");
-        setMsg(json.error ?? t("trialKeyButton.errCreate"));
+        // El servidor manda un CÓDIGO y se traduce aquí. Antes se pintaba
+        // `json.error` tal cual: una frase en inglés que además decía que el pago
+        // de autoservicio «aún no está habilitado» — justo lo que el cliente
+        // acababa de usar. Los dos motivos llevan a acciones opuestas, así que
+        // cada uno tiene su texto.
+        const porCodigo: Record<string, string> = {
+          pago_en_curso: t("trialKeyButton.errPaymentPending"),
+          sin_suscripcion: t("trialKeyButton.errNoSubscription"),
+        };
+        setMsg((json.code && porCodigo[json.code]) || t("trialKeyButton.errCreate"));
         return;
       }
       setToken(json.token);
