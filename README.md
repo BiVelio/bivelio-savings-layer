@@ -28,24 +28,52 @@ then subscribe (**€4 / seat / month** or **€39 / seat / year**, EUR) to get 
 ## Quick start
 
 ```ts
-import { createSavingsLayer } from "@bivelio/savings-layer";
+import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
+
+// Your provider. LLM traffic goes straight to it — BV-SALA never proxies it.
+// Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
+const provider = new OpenAICompatibleProvider({
+  baseUrl: "https://api.openai.com/v1",
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const layer = createSavingsLayer({
-  provider: yourProvider,                        // any OpenAI-compatible / self-hosted provider
-  licenseKey: process.env.BIVELIO_LICENSE_KEY,   // required — from your savings.bivelio.com dashboard
-  licenseServerUrl: "https://savings.bivelio.com", // license check + kill-switch
+  provider,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,        // required — from your savings.bivelio.com dashboard
+  licenseServerUrl: "https://savings.bivelio.com",    // license check + kill-switch
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY, // seat metering + AUTO-RENEWAL pickup
 });
 
-const { data, text, report } = await layer.generate({
+const { text, report } = await layer.generate({
   model: "openai/gpt-4o-mini",
   messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
-  response: { contractId: "answer:v1", schema, maxOutputTokens: 220 },
 });
 
-console.log(text);                   // "8"  (computed locally — no LLM call)
+console.log(text);                    // "8"  (computed locally — no LLM call)
 console.log(report.calls.avoidedLlm); // → whole calls you never paid for
 console.log(report.cost.netSavings);  // → verified savings, per request
+```
+
+Ask for a **structured contract** and you also get `data`, validated against your
+schema — the JSON-repair and constrained-decoding levers switch on here:
+
+```ts
+const { data, text } = await layer.generate<{ answer: number }>({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+  response: {
+    contractId: "answer:v1",
+    schema: {
+      type: "object",
+      properties: { answer: { type: "number" } },
+      required: ["answer"],
+      additionalProperties: false,
+    },
+    maxOutputTokens: 220,
+  },
+});
+
+console.log(data.answer); // 8
 ```
 
 The hard requirements are a `provider` and a valid `licenseKey`: BV‑SALA is a paid
@@ -88,10 +116,35 @@ answer: `text` is empty by design and the request is in `toolCalls`. Execute it,
 append the result to `messages`, and call `generate()` again.
 
 ```ts
-const res = await layer.generate({ model, messages, tools });
+import type { ToolDescriptor } from "@bivelio/savings-layer";
+
+const tools: ToolDescriptor[] = [
+  {
+    id: "get_weather",
+    intents: ["weather", "forecast"],
+    risk: "read",
+    description: "Current weather for a city",
+    parameters: {
+      type: "object",
+      properties: { city: { type: "string" } },
+      required: ["city"],
+      additionalProperties: false,
+    },
+  },
+];
+
+const res = await layer.generate({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "What's the weather in Madrid?" }],
+  tools,
+});
+
 if (res.toolCalls?.length) {
   // res.finishReason === "tool_calls"
-  for (const call of res.toolCalls) await run(call.name, JSON.parse(call.arguments));
+  for (const call of res.toolCalls) {
+    const args = JSON.parse(call.arguments) as { city: string };
+    console.log(call.name, args); // ← run your tool here, then append its result
+  }
 } else {
   console.log(res.text);
 }
