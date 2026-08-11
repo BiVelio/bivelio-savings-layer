@@ -224,8 +224,8 @@
       "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve PRO-licentie. {monthly} per seat per maand of {yearly} per seat per jaar. Een seat is één actieve machine- of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
       "subscribe": "Abonneren →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Abonneren — {monthly}/mnd →",
+      "checkoutYearly": "Abonneren — {yearly}/jaar →",
       "checkoutError": "Er is iets misgegaan — probeer het opnieuw."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
       "title": "Centen om te draaien. Veelvouden om te besparen.",
-      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in EUR.",
-      "amount": "€4",
+      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in {currency}.",
+      "amount": "{amount}",
       "per": "/ seat / maand",
-      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>€39 / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
+      "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
       "seatNote": "Een seat is één actieve <b>machine- of service-identiteit</b>, geen persoon — alleen gefactureerd bij activiteit op 3+ dagen in een maand. CI en kortstondige runners tellen niet mee.",
       "features": [
         "Elke BV‑SALA-optimalisatie, ongelimiteerd",

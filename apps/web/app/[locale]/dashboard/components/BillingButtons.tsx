@@ -9,7 +9,18 @@ import { useLocale, useTranslations } from "next-intl";
  * Stripe Billing Portal. Each posts to the server route and redirects to the
  * hosted Stripe URL it returns.
  */
-export function BillingButtons({ isActive }: { isActive: boolean }) {
+export function BillingButtons({
+  isActive,
+  // Ya formateados en el servidor. Este componente NO llama al formateador: la ICU
+  // de Node y la del navegador pueden diferir en detalles invisibles, y esa
+  // diferencia de texto es la que rompe la hidratación (error #418).
+  monthly,
+  yearly,
+}: {
+  isActive: boolean;
+  monthly: string;
+  yearly: string;
+}) {
   const t = useTranslations("dashboard");
   const locale = useLocale();
   const [loading, setLoading] = useState<string | null>(null);
@@ -56,7 +67,7 @@ export function BillingButtons({ isActive }: { isActive: boolean }) {
             disabled={loading !== null}
             onClick={() => go("/api/stripe/checkout", { period: "monthly" }, "m")}
           >
-            {loading === "m" ? "…" : t("accountPlanStrip.checkoutMonthly")}
+            {loading === "m" ? "…" : t("accountPlanStrip.checkoutMonthly", { monthly })}
           </button>
           <button
             type="button"
@@ -64,7 +75,7 @@ export function BillingButtons({ isActive }: { isActive: boolean }) {
             disabled={loading !== null}
             onClick={() => go("/api/stripe/checkout", { period: "yearly" }, "y")}
           >
-            {loading === "y" ? "…" : t("accountPlanStrip.checkoutYearly")}
+            {loading === "y" ? "…" : t("accountPlanStrip.checkoutYearly", { yearly })}
           </button>
         </>
       )}

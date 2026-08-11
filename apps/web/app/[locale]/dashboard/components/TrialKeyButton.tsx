@@ -13,7 +13,15 @@ type State = "idle" | "loading" | "done" | "error";
  * a real signed key and reveals it once; everyone else gets the "checkout coming
  * online" message from the API.
  */
-export function TrialKeyButton() {
+export function TrialKeyButton({
+  // Formateados en el servidor por InstallLicensePanel. Ver el comentario de
+  // lib/format/precio.ts: formatear también aquí reabriría el error #418.
+  monthly,
+  yearly,
+}: {
+  monthly: string;
+  yearly: string;
+}) {
   const t = useTranslations("dashboard");
   const locale = useLocale();
   const [state, setState] = useState<State>("idle");
@@ -111,7 +119,7 @@ export function TrialKeyButton() {
         <p className="ck-note" style={{ color: "var(--danger)", marginTop: "6px" }}>{msg}</p>
       ) : (
         <p className="ck-note" style={{ marginTop: "6px" }}>
-          {t("trialKeyButton.priceNote", { monthly: "€4", yearly: "€39" })}
+          {t("trialKeyButton.priceNote", { monthly, yearly })}
         </p>
       )}
     </div>

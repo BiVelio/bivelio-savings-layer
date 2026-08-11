@@ -1,7 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import type { OrgContext } from "../data";
 import { BillingButtons } from "./BillingButtons";
+import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { formatearPrecio } from "@/lib/format/precio";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
@@ -18,6 +20,13 @@ export async function AccountPlanStrip({
   ocultarCompra?: boolean;
 }) {
   const t = await getTranslations("dashboard");
+  // El precio se formatea en SERVIDOR y baja como cadena a los botones, que son de
+  // cliente. Formatear en los dos lados reabriría el error de hidratación #418: la
+  // ICU de Node y la del navegador no siempre coinciden en detalles invisibles.
+  const locale = await getLocale();
+  const precios = await preciosDelPlan();
+  const precioMensual = formatearPrecio(locale, precios.monthly);
+  const precioAnual = formatearPrecio(locale, precios.yearly);
   const plan = ctx.org?.plan;
   const isActive = plan === "pro" || plan === "enterprise";
   const planLabel = isActive ? plan.charAt(0).toUpperCase() + plan.slice(1) : t("accountPlanStrip.noActivePlan");
@@ -45,9 +54,11 @@ export async function AccountPlanStrip({
         <h3>{planLabel}</h3>
         <p>
           {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
-          {t("accountPlanStrip.planBody", { monthly: "€4", yearly: "€39" })}
+          {t("accountPlanStrip.planBody", { monthly: precioMensual, yearly: precioAnual })}
         </p>
-        {ocultarCompra ? null : <BillingButtons isActive={isActive} />}
+        {ocultarCompra ? null : (
+          <BillingButtons isActive={isActive} monthly={precioMensual} yearly={precioAnual} />
+        )}
       </div>
     </div>
   );

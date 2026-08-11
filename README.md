@@ -23,7 +23,7 @@ pnpm add @bivelio/savings-layer
 
 You also need a **license key**. Try the optimizer **free in your browser** — paste
 your own data and watch the meter — at **[savings.bivelio.com](https://savings.bivelio.com)**,
-then subscribe (**$4 / seat / month** or **$39 / seat / year**, USD) to get your key.
+then subscribe (**€4 / seat / month** or **€39 / seat / year**, EUR) to get your key.
 
 ## Quick start
 
@@ -185,8 +185,8 @@ trace collector that builds the `SavingsReport`. Every piece is pluggable.
 
 ## Licensing & privacy
 
-BV‑SALA is commercial, per‑seat software (**$4 / seat / month** or **$39 / seat /
-year**, USD). The license is a signed token your SDK verifies **offline**; the
+BV‑SALA is commercial, per‑seat software (**€4 / seat / month** or **€39 / seat /
+year**, EUR). The license is a signed token your SDK verifies **offline**; the
 managed control plane (semantic cache, learned thresholds, dashboards) and the
 revocation kill‑switch are served from BiVelio. Your LLM traffic goes **straight to
 your provider** — BiVelio sees counts and cost, never prompts or completions.

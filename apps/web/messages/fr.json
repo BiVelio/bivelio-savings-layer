@@ -224,8 +224,8 @@
       "planBody": "BV-SALA est fail-closed — il ne fonctionne qu'avec une licence PRO active. {monthly} par siège et par mois ou {yearly} par siège et par an. Un siège est une machine ou une identité de service active, pas une personne.",
       "managePlan": "Gérer le forfait →",
       "subscribe": "S'abonner →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "S'abonner — {monthly}/mois →",
+      "checkoutYearly": "S'abonner — {yearly}/an →",
       "checkoutError": "Une erreur s'est produite — veuillez réessayer."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Un seul forfait, facturé par siège",
       "title": "Des centimes pour l'exécuter. Des multiples d'économies.",
-      "body": "Pas de version gratuite, pas d'essai — testez BV‑SALA ici même dans votre navigateur, puis abonnez-vous pour l'exécuter dans votre application. Facturé par siège, en EUR.",
-      "amount": "€4",
+      "body": "Pas de version gratuite, pas d'essai — testez BV‑SALA ici même dans votre navigateur, puis abonnez-vous pour l'exécuter dans votre application. Facturé par siège, en {currency}.",
+      "amount": "{amount}",
       "per": "/ siège / mois",
-      "proNote": "<b>PRO</b> — facturé par siège. Ou <b>€39 / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",
+      "proNote": "<b>PRO</b> — facturé par siège. Ou <b>{yearly} / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",
       "seatNote": "Un siège est une <b>machine ou identité de service</b> active, pas une personne — facturé uniquement s'il est actif 3 jours ou plus dans un mois. Les exécuteurs CI et éphémères ne comptent pas.",
       "features": [
         "Chaque optimisation BV‑SALA, sans plafond",

@@ -224,8 +224,8 @@
       "planBody": "BV-SALA és fail-closed: només funciona amb una llicència PRO activa. {monthly} per seient al mes o {yearly} per seient a l'any. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
       "subscribe": "Subscriu-te →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Subscriu-te — {monthly}/mes →",
+      "checkoutYearly": "Subscriu-te — {yearly}/any →",
       "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Un sol pla, amb preu per seient",
       "title": "Cèntims per executar. Múltiples per estalviar.",
-      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en EUR.",
-      "amount": "€4",
+      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en {currency}.",
+      "amount": "{amount}",
       "per": "/ seient / mes",
-      "proNote": "<b>PRO</b> — facturat per seient. O <b>€39 / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
+      "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
       "seatNote": "Un seient és una <b>màquina o identitat de servei</b> activa, no una persona — facturat només si està actiu 3 dies o més en un mes. La CI i els executors efímers no compten.",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",

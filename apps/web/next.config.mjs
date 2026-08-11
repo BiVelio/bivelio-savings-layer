@@ -4,8 +4,12 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 /** @type {import('next').NextConfig} */
 
-// CSP for the whole surface. The static landing (public/landing.html) uses inline
-// <style> and a JSON data block; the Next auth pages need their hydration script.
+// CSP for the whole surface. Las páginas de Next necesitan su script de hidratación
+// y estilos inline.
+//
+// NOTA: `'unsafe-inline'` se justificaba antes por la landing ESTÁTICA
+// (public/landing.html), que ya no existe. Sigue haciendo falta por el runtime de
+// Next, pero conviene revisar si puede estrecharse — no en este cambio.
 //
 // `connect-src` SE DERIVA de NEXT_PUBLIC_SUPABASE_URL, no se escribe a mano.
 // Antes listaba dos hosts fijos (el proyecto canónico y el dominio propio
@@ -71,10 +75,30 @@ const nextConfig = {
   // at runtime (500s every route). Auth works without it — the browser client
   // refreshes tokens; server components/routes validate on the Node runtime.
   // Re-add proper session-refresh middleware on Next 16 (proxy.ts, Node runtime).
-  // The marketing landing stays the exact static page (byte-identical, already
-  // branded + verified): serve it at "/" without a React port.
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
+  },
+  /**
+   * La landing de marketing ES la página React de `app/[locale]/page.tsx`. Hubo una
+   * versión estática previa en `public/landing.html` que se quedó publicada por
+   * inercia: nadie la enlazaba, pero era alcanzable por URL, `robots.ts` no la
+   * bloqueaba —así que era indexable— y anunciaba el precio en DÓLARES cuando Stripe
+   * cobra euros. Además llevaba incrustado el banco de pruebas MOCK antiguo.
+   *
+   * Se ha borrado, y su URL se redirige en vez de dar 404 para no romper enlaces
+   * externos y para que los buscadores trasladen el histórico a la página buena.
+   *
+   * Se fija `statusCode: 301` explícitamente en vez de `permanent: true`, que en Next
+   * emite **308**. Los dos son permanentes y Google los trata igual, pero el 301 lo
+   * entiende cualquier cliente viejo o comprobador de enlaces. Son mutuamente
+   * excluyentes: o uno, o el otro.
+   *
+   * Destino `/` y no `/es`: el middleware negocia el idioma del visitante. Mandar a
+   * `/es` serviría español a quien llegue desde un enlace en inglés, que es otra
+   * variante del mismo problema que esto viene a cerrar.
+   */
+  async redirects() {
+    return [{ source: "/landing.html", destination: "/", statusCode: 301 }];
   },
 };
 

@@ -92,6 +92,25 @@ describe("mensajes: paridad de los 12 idiomas", () => {
     });
   }
 
+  /**
+   * CERO símbolos de moneda en los ficheros de mensajes.
+   *
+   * El precio vive en el Price de Stripe y baja como `{placeholder}`. Escribirlo en
+   * una traducción es cómo la web llegó a anunciar dólares mientras se cobraban
+   * euros: 24 literales repartidos en 12 ficheros que nadie sincronizaba. Este
+   * candado hace que la regresión no se pueda representar — ni una persona ni un
+   * agente puede devolver un importe a un mensaje sin poner la suite en rojo.
+   *
+   * No afecta al gasto en tokens del proveedor, que va en dólares con razón: ese
+   * vive en `dashboard/format.ts`, no en un fichero de mensajes.
+   */
+  for (const loc of LOCALES) {
+    it(`${loc}: ningún mensaje lleva un símbolo de moneda escrito a mano`, () => {
+      const con = Object.entries(cargar(loc)).filter(([, v]) => /[€$£¥]|\bEUR\b|\bUSD\b/.test(v));
+      expect(con.map(([k]) => k)).toEqual([]);
+    });
+  }
+
   // Reglas propias de dos cadenas que el componente rellena o rendeza en plano.
   for (const loc of LOCALES) {
     it(`${loc}: pasteHint mantiene el <code></code> VACÍO que rellena el componente`, () => {

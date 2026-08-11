@@ -224,8 +224,8 @@
       "planBody": "BV-SALA działa w trybie fail-closed — uruchamia się tylko z aktywną licencją PRO. {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba.",
       "managePlan": "Zarządzaj planem →",
       "subscribe": "Subskrybuj →",
-      "checkoutMonthly": "Subscribe — €4/mo →",
-      "checkoutYearly": "Subscribe — €39/yr →",
+      "checkoutMonthly": "Subskrybuj — {monthly}/mies. →",
+      "checkoutYearly": "Subskrybuj — {yearly}/rok →",
       "checkoutError": "Coś poszło nie tak — spróbuj ponownie."
     },
     "referenceLedgerCards": {
@@ -375,10 +375,10 @@
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
       "title": "Grosze za uruchomienie. Wielokrotności do zaoszczędzenia.",
-      "body": "Bez darmowego planu, bez okresu próbnego — przetestuj BV‑SALA właśnie tutaj, w przeglądarce, a następnie wykup subskrypcję, aby uruchomić to w swojej aplikacji. Cena za stanowisko, w EUR.",
-      "amount": "€4",
+      "body": "Bez darmowego planu, bez okresu próbnego — przetestuj BV‑SALA właśnie tutaj, w przeglądarce, a następnie wykup subskrypcję, aby uruchomić to w swojej aplikacji. Cena za stanowisko, w {currency}.",
+      "amount": "{amount}",
       "per": "/ stanowisko / mies.",
-      "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>€39 / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
+      "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
       "seatNote": "Stanowisko to jedna aktywna <b>maszyna lub tożsamość usługi</b>, nie osoba — rozliczane tylko wtedy, gdy jest aktywne przez 3+ dni w miesiącu. CI i efemeryczne runnery się nie liczą.",
       "features": [
         "Każda optymalizacja BV‑SALA, bez limitu",

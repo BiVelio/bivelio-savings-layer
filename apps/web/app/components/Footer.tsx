@@ -29,7 +29,8 @@ function SocialDock() {
 }
 
 // The corporate BiVelio footer (brand + link columns + trust/legal + the giant
-// glass background wordmark), mirroring the static public/landing.html footer.
+// glass background wordmark). Its design came from the old static landing, which
+// has since been deleted — this is now the only footer.
 // Product sections link to in-page anchors; BiVelio/legal columns link out to
 // bivelio.com — locale-aware where the corporate site is localized.
 function Column({ head, links }: { head: string; links: string[][] }) {

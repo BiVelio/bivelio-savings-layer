@@ -26,6 +26,11 @@ export default function robots(): MetadataRoute.Robots {
           "/*/login",
           "/*/signup",
           "/*/reset-password",
+          // OJO: `/landing.html` NO va aquí, y es deliberado. Esa página se borró y
+          // su URL responde con un 301 hacia la landing buena. Un `Disallow` impediría
+          // rastrearla, así que Googlebot nunca vería la redirección y la URL vieja
+          // podría quedarse en el índice sin contenido. Un 301 ya es la instrucción
+          // más fuerte que existe para retirarla.
         ],
       },
     ],
