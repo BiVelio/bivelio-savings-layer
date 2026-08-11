@@ -46,11 +46,16 @@ jobs:
       # construía: un fallo que compilara se publicaba igual, y así llegó al registro
       # una 0.1.0 que tiraba las llamadas a herramienta y apagaba al cliente mensual
       # el día 45. Cada paso de aquí abajo es una razón para NO publicar.
-      - name: Tests
-        run: pnpm test
+      # EL ORDEN IMPORTA: primero construir. `services/*` typechequea contra los
+      # TIPOS CONSTRUIDOS de los paquetes del workspace (`@bivelio/protocol`,
+      # `@bivelio/license-client`), asi que sin `build:packages` delante falla con
+      # "Cannot find module". En un portatil no se nota porque packages/*/dist
+      # lleva ahi desde el primer build.
+      - run: pnpm run build:all
       - name: Typecheck (SDK, paquetes y servicios)
         run: pnpm run typecheck:all
-      - run: pnpm run build:all
+      - name: Tests
+        run: pnpm test
 
       # La versión que se publica tiene que ser la que se etiquetó. Sin esto, cortar
       # una Release v0.2.0 sobre un package.json que sigue en 0.1.0 falla en el
