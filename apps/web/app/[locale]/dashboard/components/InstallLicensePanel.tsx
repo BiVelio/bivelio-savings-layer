@@ -8,18 +8,41 @@ import { CopyButton } from "./CopyButton";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
 import { TrialKeyButton } from "./TrialKeyButton";
 
-const WRAP = `import { createSavingsLayer } from "@bivelio/savings-layer";
+/**
+ * EL FRAGMENTO TIENE QUE COMPILAR PEGADO TAL CUAL, y no compilaba: `yourProvider`,
+ * `model`, `messages` y `response` eran identificadores inexistentes — cuatro
+ * errores de tsc en las dos líneas que importan. Y en toda la documentación no
+ * había UN SOLO ejemplo de proveedor real, así que el paso que convierte a quien
+ * ha pagado en quien funciona terminaba en un ejercicio para el lector.
+ *
+ * `test/fragmento-instalacion.test.ts` lo compila de verdad contra los tipos
+ * publicados, así que no puede volver a derivar en silencio.
+ */
+const WRAP = `import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
 
-// your app — the data plane. LLM traffic goes straight to your provider.
+// 1 · your provider. LLM traffic goes straight to it — BV-SALA never proxies it.
+//     Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, a gateway.
+const provider = new OpenAICompatibleProvider({
+  baseUrl: "https://api.openai.com/v1",
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// 2 · the layer, wrapped around it.
 const layer = createSavingsLayer({
-  provider: yourProvider,
+  provider,
   licenseKey: process.env.BIVELIO_LICENSE_KEY,          // step 1 — unlocks the SDK
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 — metering + auto-renewal
   licenseServerUrl: "https://savings.bivelio.com",      // license check, kill-switch + metering
 });
 
-const { data, report } = await layer.generate({ model, messages, response });
-report.cost.netSavings; // → your net savings, per request`;
+// 3 · call it exactly where you called your provider before.
+const { text, report } = await layer.generate({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+});
+
+console.log(text);                    // the answer
+console.log(report.cost.netSavings);  // → your net savings, per request`;
 
 export async function InstallLicensePanel({ ab, ctx }: { ab: AbArtifact; ctx: OrgContext }) {
   const t = await getTranslations("dashboard");
