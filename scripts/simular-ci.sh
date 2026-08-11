@@ -35,6 +35,12 @@ paso "install (apps/web)"        pnpm install --frozen-lockfile --dir apps/web
 paso "build:all"                 pnpm run build:all
 paso "typecheck:all"             pnpm run typecheck:all
 paso "tests"                     pnpm test
+# Los dos de la web: `typecheck:all` no la cubre (no está en el workspace de la
+# raíz), así que el código que cobra no lo miraba nadie hasta que Vercel
+# construía EN PRODUCCIÓN. `--dir` va antes de `run`, o pnpm ejecuta el script
+# de la raíz con argumentos basura.
+paso "typecheck (apps/web)"      pnpm --dir apps/web run typecheck
+paso "build (apps/web)"          pnpm --dir apps/web run build
 
 printf '  %-42s' "etiqueta vs package.json"
 node -p "require('./package.json').version"

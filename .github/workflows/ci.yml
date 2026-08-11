@@ -1,0 +1,73 @@
+name: ci
+
+# LA VERJA DE TODOS LOS DÍAS. Hasta ahora este repositorio no tenía ninguna: los
+# 565 tests solo corrían al cortar una Release (publish.yml), es decir DESPUÉS de
+# haber mergeado, y Vercel publica en savings.bivelio.com a los ~40 s de cada push
+# a `main`. En la práctica el código llegaba a producción —y al dinero— sin que
+# nada lo hubiera ejecutado.
+#
+# Con esto, más `required_status_checks` en la protección de `main`, la cadena
+# queda cerrada: no se puede mergear en rojo, y como a `main` solo se entra por PR,
+# lo que Vercel despliega ya ha pasado por aquí.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Un push nuevo sobre la misma rama cancela el run anterior: no tiene sentido
+# gastar minutos verificando un commit que ya está superado.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+
+      - run: pnpm install --frozen-lockfile
+
+      # `apps/web` es un PROYECTO APARTE: tiene su propio pnpm-lock.yaml y su
+      # propio pnpm-workspace.yaml, y el workspace de la raíz solo incluye
+      # packages/* y services/*. Sin este install, 26 tests revientan con
+      # "Failed to load url next/server" — pasó de verdad, en el primer intento
+      # de publicar. En un portátil no se nota porque apps/web/node_modules
+      # lleva ahí desde el primer `pnpm dev`.
+      - name: Dependencias de apps/web (lockfile propio)
+        run: pnpm install --frozen-lockfile --dir apps/web
+
+      # EL ORDEN IMPORTA: primero construir. `services/*` typechequea contra los
+      # TIPOS CONSTRUIDOS de los paquetes del workspace (@bivelio/protocol,
+      # @bivelio/license-client), así que sin `build:all` delante falla con
+      # "Cannot find module". También pasó de verdad, en el segundo intento.
+      - run: pnpm run build:all
+      - name: Typecheck (SDK, paquetes y servicios)
+        run: pnpm run typecheck:all
+      - name: Tests
+        run: pnpm test
+
+      # `typecheck:all` NO cubre apps/web (no está en el workspace de la raíz),
+      # así que hasta ahora el código que COBRA —webhook de Stripe, checkout,
+      # emisión de licencias— no lo typechequeaba nadie en CI. Un error de tipos
+      # ahí no lo veía nadie hasta que Vercel construía en producción.
+      # OJO con la sintaxis: `--dir` va ANTES de `run`. Escrito al revés
+      # (`pnpm run typecheck --dir apps/web`) pnpm ejecuta el script de la RAÍZ
+      # pasándole `--dir apps/web` como argumentos — typechequea el SDK otra vez
+      # y la web se queda sin mirar, que es justo el agujero que esto cierra.
+      - name: Typecheck de apps/web (el código que cobra)
+        run: pnpm --dir apps/web run typecheck
+
+      # Construir la web aquí, y no dejar que el primero en enterarse sea el
+      # despliegue de producción. `next build` compila las rutas y ejecuta el
+      # prerender de las páginas estáticas, así que caza roturas que ni el
+      # typecheck ni los tests ven.
+      - name: Build de apps/web (antes que Vercel, no después)
+        run: pnpm --dir apps/web run build
