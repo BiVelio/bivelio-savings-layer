@@ -274,6 +274,21 @@
       "successActive": "<b>Je abonnement is actief.</b> De volgende stap is je licentiesleutel ophalen.",
       "goToInstall": "Haal je licentiesleutel op →",
       "cancelled": "<b>Er is geen betaling voltooid</b> — er is niets bij je in rekening gebracht. Je kunt het opnieuw proberen wanneer je maar wilt."
+    },
+    "billingState": {
+      "pastDueTitle": "Betaling mislukt",
+      "pastDueBody": "We konden je betaalmethode niet belasten. Werk hem bij, dan proberen we het automatisch opnieuw — je dienst blijft nog {days, plural, one {# dag} other {# dagen}} werken.",
+      "pastDueNoCount": "We konden je betaalmethode niet belasten. Werk hem bij, dan proberen we het automatisch opnieuw.",
+      "pastDueEnded": "We konden je betaalmethode niet belasten en de respijtperiode is voorbij. Werk hem bij om je abonnement te herstellen.",
+      "pastDueAction": "Betaalmethode bijwerken →",
+      "incompleteTitle": "Betaling wordt verwerkt",
+      "incompleteBody": "Bankincasso's duren een paar dagen. Je krijgt toegang zodra de betaling rond is — start alsjeblieft geen tweede abonnement.",
+      "graceTitle": "Licentie verlopen — werkt nog",
+      "graceBody": "Je licentie is op {date} verlopen en werkt nog {days, plural, one {# dag} other {# dagen}}. Verleng hem om onderbreking te voorkomen.",
+      "expiredTitle": "Licentie verlopen",
+      "expiredBody": "Je licentie is op {date} verlopen. BV-SALA is fail-closed, dus de SDK is gestopt.",
+      "revokedTitle": "Licentie ingetrokken",
+      "revokedBody": "Deze licentie is ingetrokken. Mail naar support@bivelio.com als je denkt dat dat een vergissing is."
     }
   },
   "landing": {

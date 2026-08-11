@@ -274,6 +274,21 @@
       "successActive": "<b>Gói đăng ký của bạn đang hoạt động.</b> Bước tiếp theo là nhận khóa cấp phép của bạn.",
       "goToInstall": "Nhận khóa cấp phép của bạn →",
       "cancelled": "<b>Chưa có khoản thanh toán nào được hoàn tất</b> — bạn chưa bị tính phí gì cả. Bạn có thể bắt đầu lại bất cứ lúc nào."
+    },
+    "billingState": {
+      "pastDueTitle": "Thanh toán thất bại",
+      "pastDueBody": "Chúng tôi không thể trừ tiền từ phương thức thanh toán của bạn. Hãy cập nhật và chúng tôi sẽ tự động thử lại — dịch vụ của bạn vẫn chạy thêm {days, plural, other {# ngày}}.",
+      "pastDueNoCount": "Chúng tôi không thể trừ tiền từ phương thức thanh toán của bạn. Hãy cập nhật và chúng tôi sẽ tự động thử lại.",
+      "pastDueEnded": "Chúng tôi không thể trừ tiền từ phương thức thanh toán của bạn và thời gian gia hạn đã kết thúc. Hãy cập nhật để khôi phục gói của bạn.",
+      "pastDueAction": "Cập nhật phương thức thanh toán →",
+      "incompleteTitle": "Đang xử lý thanh toán",
+      "incompleteBody": "Lệnh ghi nợ ngân hàng mất vài ngày để hoàn tất. Bạn sẽ có quyền truy cập ngay khi thanh toán được xác nhận — đừng bắt đầu gói đăng ký thứ hai.",
+      "graceTitle": "Giấy phép đã hết hạn — vẫn đang chạy",
+      "graceBody": "Giấy phép của bạn đã hết hạn vào {date} và vẫn chạy thêm {days, plural, other {# ngày}}. Hãy gia hạn để tránh gián đoạn.",
+      "expiredTitle": "Giấy phép đã hết hạn",
+      "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. BV-SALA hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
+      "revokedTitle": "Giấy phép đã bị thu hồi",
+      "revokedBody": "Giấy phép này đã bị thu hồi. Hãy viết thư tới support@bivelio.com nếu bạn cho rằng đây là nhầm lẫn."
     }
   },
   "landing": {

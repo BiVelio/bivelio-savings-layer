@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { deriveLicenseStatus } from "./derive";
+import { elegirLicencia } from "./derive";
 
 /**
  * Server data layer for the dashboard. Every query is best-effort: the bound
@@ -60,13 +60,33 @@ export interface OrgContext {
   org: { name: string; plan: string } | null;
   role: string | null;
   seats: number | null;
-  license: { status: "active" | "grace" | "expired" | "revoked"; expiresAt: string | null } | null;
+  /**
+   * Estado de cobro de la suscripción. Los tres campos SE LEÍAN YA de la base
+   * (el SELECT de abajo los pedía) y se tiraban: solo se usaba `seats`. Por eso
+   * un impago era invisible — `past_due` mapea a plan "pro", así que el panel
+   * pintaba "Pro" con normalidad mientras corría la gracia y el cliente se
+   * enteraba cuando el SDK se le paraba, semanas después.
+   */
+  subscription: { status: string; currentPeriodEnd: string | null; pastDueSince: string | null } | null;
+  license: {
+    status: "active" | "grace" | "expired" | "revoked";
+    expiresAt: string | null;
+    /** Los días de gracia FIRMADOS en esa licencia, para contar lo que le queda. */
+    graceDays: number;
+  } | null;
   serviceAccount: { keyPrefix: string; lastUsedAt: string | null } | null;
 }
 
 /** Try the standard membership→organization shape; degrade silently on any error. */
 export async function getOrgContext(supabase: SupabaseClient, userId: string): Promise<OrgContext> {
-  const ctx: OrgContext = { org: null, role: null, seats: null, license: null, serviceAccount: null };
+  const ctx: OrgContext = {
+    org: null,
+    role: null,
+    seats: null,
+    subscription: null,
+    license: null,
+    serviceAccount: null,
+  };
 
   // organizations via a membership table. Table/column names may differ in the
   // bound project — a PGRST error just means "not resolvable here".
@@ -93,12 +113,24 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
       const { data } = await supabase
         .schema("bvsala")
         .from("subscriptions")
-        .select("seats, status, current_period_end")
+        .select("seats, status, current_period_end, past_due_since")
         .eq("org_id", userId)
         .limit(1)
         .maybeSingle();
-      const sub = data as { seats?: number; status?: string; current_period_end?: string } | null;
+      const sub = data as {
+        seats?: number;
+        status?: string;
+        current_period_end?: string | null;
+        past_due_since?: string | null;
+      } | null;
       if (sub?.seats != null) ctx.seats = sub.seats;
+      if (sub?.status) {
+        ctx.subscription = {
+          status: sub.status,
+          currentPeriodEnd: sub.current_period_end ?? null,
+          pastDueSince: sub.past_due_since ?? null,
+        };
+      }
     } catch {
       /* no subscription table */
     }
@@ -118,14 +150,21 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
       .from("licenses")
       .select("expires_at, grace_days, revoked")
       .eq("org_id", userId)
-      .eq("revoked", false)
+      // SIN filtrar por `revoked`, a propósito. Filtrarlas antes de mirar hacía
+      // que una org con la licencia revocada no devolviera ninguna fila y el
+      // panel la tratara como "nunca tuvo licencia": el peor estado posible era
+      // el único sin una palabra en pantalla. Quién manda cuando hay varias lo
+      // decide `elegirLicencia`, que sí prefiere una viva a una revocada vieja.
       .order("expires_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    const lic = data as { expires_at?: string; grace_days?: number; revoked?: boolean } | null;
-    const estado = deriveLicenseStatus(lic, Date.now());
-    if (estado && lic?.expires_at) {
-      ctx.license = { status: estado, expiresAt: lic.expires_at };
+      .limit(5);
+    const filas = (data ?? []) as { expires_at?: string; grace_days?: number; revoked?: boolean }[];
+    const elegida = elegirLicencia(filas, Date.now());
+    if (elegida?.row.expires_at) {
+      ctx.license = {
+        status: elegida.status,
+        expiresAt: elegida.row.expires_at,
+        graceDays: elegida.row.grace_days ?? 0,
+      };
     }
   } catch {
     /* sin tabla de licencias: se queda en null, que significa AUSENCIA medida */

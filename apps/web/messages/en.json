@@ -274,6 +274,21 @@
       "successActive": "<b>Your subscription is active.</b> The next step is to collect your licence key.",
       "goToInstall": "Get your licence key →",
       "cancelled": "<b>No payment was completed</b> — nothing has been charged to you. You can start again whenever you like."
+    },
+    "billingState": {
+      "pastDueTitle": "Payment failed",
+      "pastDueBody": "We couldn't charge your payment method. Update it and we'll retry automatically — your service keeps running for {days, plural, one {# more day} other {# more days}}.",
+      "pastDueNoCount": "We couldn't charge your payment method. Update it and we'll retry automatically.",
+      "pastDueEnded": "We couldn't charge your payment method and the grace period has ended. Update it to restore your plan.",
+      "pastDueAction": "Update payment method →",
+      "incompleteTitle": "Payment being processed",
+      "incompleteBody": "Bank debits take a few days to clear. You'll get access as soon as it settles — please don't start a second subscription.",
+      "graceTitle": "License expired — still running",
+      "graceBody": "Your license expired on {date} and keeps working for {days, plural, one {# more day} other {# more days}}. Renew it to avoid an interruption.",
+      "expiredTitle": "License expired",
+      "expiredBody": "Your license expired on {date}. BV-SALA is fail-closed, so the SDK has stopped.",
+      "revokedTitle": "License revoked",
+      "revokedBody": "This license was revoked. Write to support@bivelio.com if you think that's a mistake."
     }
   },
   "landing": {

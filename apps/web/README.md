@@ -47,13 +47,18 @@ Launch host is **Vercel** (least maintenance; same platform as the corporate
 site). Steps:
 
 1. **Create a NEW Vercel project** (do not reuse the corporate project). Set its
-   **Root Directory to `apps/web`**. It deploys as a static site — no build
-   command needed. `vercel.json` here adds clean URLs + security headers.
-2. In that project's **Domains**, add `savings.bivelio.com`.
-3. In DNS for `bivelio.com`, add the record Vercel shows for the subdomain
+   **Root Directory to `apps/web`** — de ahí que `vercel.json` viva en esta
+   carpeta y no en la raíz del repo: desde la raíz, Vercel no lo lee. Es una app
+   Next.js con build; las cabeceras de seguridad están en `next.config.mjs`.
+   `vercel.json` declara **los crons**.
+2. **Da de alta `CRON_SECRET`** en las variables del proyecto. Vercel solo manda
+   la cabecera `Authorization: Bearer $CRON_SECRET` **si la variable existe**;
+   sin ella el cron se registra, se llama cada noche, `/api/cron/dunning`
+   responde 501 y no hace nada. Es un fallo cerrado **y silencioso**: parece que
+   funciona. Las demás variables, en `.env.local.example`.
+3. In that project's **Domains**, add `savings.bivelio.com`.
+4. In DNS for `bivelio.com`, add the record Vercel shows for the subdomain
    (a `CNAME` `savings` → Vercel). The apex and `www` are **not** touched.
-4. Remove `<meta name="robots" content="noindex">` from `index.html` when you're
-   ready to be indexed (kept while it's a prototype).
 
 That's it — no servers, TLS and scaling are automatic.
 

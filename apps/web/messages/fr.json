@@ -274,6 +274,21 @@
       "successActive": "<b>Votre abonnement est actif.</b> Prochaine étape : obtenir votre clé de licence.",
       "goToInstall": "Obtenez votre clé de licence →",
       "cancelled": "<b>Aucun paiement n'a été effectué</b> — rien ne vous a été débité. Vous pouvez recommencer quand vous voulez."
+    },
+    "billingState": {
+      "pastDueTitle": "Le paiement a échoué",
+      "pastDueBody": "Nous n'avons pas pu débiter votre moyen de paiement. Mettez-le à jour, nous réessaierons automatiquement — votre service continue de fonctionner pendant encore {days, plural, one {# jour} other {# jours}}.",
+      "pastDueNoCount": "Nous n'avons pas pu débiter votre moyen de paiement. Mettez-le à jour, nous réessaierons automatiquement.",
+      "pastDueEnded": "Nous n'avons pas pu débiter votre moyen de paiement et le délai de grâce est terminé. Mettez-le à jour pour rétablir votre plan.",
+      "pastDueAction": "Mettre à jour le moyen de paiement →",
+      "incompleteTitle": "Paiement en cours de traitement",
+      "incompleteBody": "Les prélèvements bancaires mettent quelques jours à être validés. Vous aurez accès dès que le paiement sera confirmé — ne souscrivez pas un second abonnement.",
+      "graceTitle": "Licence expirée — encore active",
+      "graceBody": "Votre licence a expiré le {date} et fonctionne encore pendant {days, plural, one {# jour} other {# jours}}. Renouvelez-la pour éviter une interruption.",
+      "expiredTitle": "Licence expirée",
+      "expiredBody": "Votre licence a expiré le {date}. BV-SALA est fail-closed : le SDK s'est arrêté.",
+      "revokedTitle": "Licence révoquée",
+      "revokedBody": "Cette licence a été révoquée. Écrivez à support@bivelio.com si vous pensez qu'il s'agit d'une erreur."
     }
   },
   "landing": {

@@ -274,6 +274,21 @@
       "successActive": "<b>Twoja subskrypcja jest aktywna.</b> Następny krok to odebranie klucza licencyjnego.",
       "goToInstall": "Uzyskaj klucz licencyjny →",
       "cancelled": "<b>Płatność nie została dokończona</b> — nie pobraliśmy żadnej opłaty. Możesz zacząć od nowa, kiedy tylko zechcesz."
+    },
+    "billingState": {
+      "pastDueTitle": "Płatność nie powiodła się",
+      "pastDueBody": "Nie udało się obciążyć Twojej metody płatności. Zaktualizuj ją, a spróbujemy ponownie automatycznie — usługa działa jeszcze przez {days, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}.",
+      "pastDueNoCount": "Nie udało się obciążyć Twojej metody płatności. Zaktualizuj ją, a spróbujemy ponownie automatycznie.",
+      "pastDueEnded": "Nie udało się obciążyć Twojej metody płatności, a okres karencji dobiegł końca. Zaktualizuj ją, aby przywrócić plan.",
+      "pastDueAction": "Zaktualizuj metodę płatności →",
+      "incompleteTitle": "Płatność w trakcie realizacji",
+      "incompleteBody": "Obciążenia bankowe księgują się kilka dni. Dostęp otrzymasz, gdy płatność zostanie potwierdzona — nie zakładaj drugiej subskrypcji.",
+      "graceTitle": "Licencja wygasła — nadal działa",
+      "graceBody": "Twoja licencja wygasła {date} i działa jeszcze przez {days, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}. Odnów ją, aby uniknąć przerwy.",
+      "expiredTitle": "Licencja wygasła",
+      "expiredBody": "Twoja licencja wygasła {date}. BV-SALA działa w trybie fail-closed, więc SDK się zatrzymał.",
+      "revokedTitle": "Licencja unieważniona",
+      "revokedBody": "Ta licencja została unieważniona. Napisz na support@bivelio.com, jeśli uważasz, że to pomyłka."
     }
   },
   "landing": {

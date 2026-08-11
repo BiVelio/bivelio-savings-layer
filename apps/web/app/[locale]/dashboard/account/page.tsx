@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { loadDashboard } from "../load";
 import { AccountPlanStrip } from "../components/AccountPlanStrip";
+import { BillingStateBanner } from "../components/BillingStateBanner";
 import { CheckoutBanner } from "../components/CheckoutBanner";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ export default async function AccountPage({
         <p>{t("account.intro")}</p>
       </div>
       {resultado ? <CheckoutBanner resultado={resultado} activo={activo} /> : null}
+      {/* El estado real del cobro, ANTES de la tarjeta del plan: si la tarjeta
+          no pasa, eso es lo primero que hay que leer, no el precio. */}
+      <BillingStateBanner ctx={ctx} />
       <AccountPlanStrip
         email={user?.email ?? "you@bivelio.com"}
         ctx={ctx}

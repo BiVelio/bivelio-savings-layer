@@ -36,6 +36,36 @@ export function deriveLicenseStatus(row: LicenseRow | null, nowMs: number): Lice
   return nowMs <= expira + gracia ? "grace" : "expired";
 }
 
+/**
+ * De TODAS las licencias de la org, la que describe su situación real.
+ *
+ * POR QUÉ NO BASTA CON PEDIR LA MÁS NUEVA. La consulta filtraba `revoked = false`
+ * antes de mirar, así que una org con la licencia revocada no devolvía ninguna
+ * fila: el panel la trataba como "esta org nunca tuvo licencia" y no enseñaba
+ * absolutamente nada. El peor estado en que puede estar un cliente —le hemos
+ * cortado el servicio a propósito— era el único sin una sola palabra en pantalla,
+ * y `deriveLicenseStatus` nunca podía devolver "revoked" aunque supiera hacerlo.
+ *
+ * Regla: si hay CUALQUIER licencia viva (vigente o en gracia), esa manda — una
+ * revocación antigua seguida de una reemisión es un cliente sano. Solo cuando no
+ * queda ninguna viva se informa del peor motivo, y ahí una revocación explica más
+ * que una caducidad.
+ */
+export function elegirLicencia(
+  rows: LicenseRow[],
+  nowMs: number,
+): { status: LicenseStatus; row: LicenseRow } | null {
+  const conEstado = rows
+    .map((row) => ({ row, status: deriveLicenseStatus(row, nowMs) }))
+    .filter((x): x is { row: LicenseRow; status: LicenseStatus } => x.status !== null);
+  if (conEstado.length === 0) return null;
+
+  const viva = conEstado.find((x) => x.status === "active") ?? conEstado.find((x) => x.status === "grace");
+  if (viva) return viva;
+
+  return conEstado.find((x) => x.status === "revoked") ?? conEstado[0];
+}
+
 /** Lo que el titular de ahorro puede decir con lo que de verdad se ha medido. */
 export type Verdict =
   | { kind: "empty" }                          // no hay tráfico medido

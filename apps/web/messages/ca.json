@@ -274,6 +274,21 @@
       "successActive": "<b>La teva subscripció està activa.</b> El pas següent és recollir la teva clau de llicència.",
       "goToInstall": "Obtén la teva clau de llicència →",
       "cancelled": "<b>No s'ha completat cap pagament</b> — no se t'ha cobrat res. Pots tornar a començar quan vulguis."
+    },
+    "billingState": {
+      "pastDueTitle": "El cobrament ha fallat",
+      "pastDueBody": "No hem pogut cobrar el teu mètode de pagament. Actualitza'l i ho reintentarem automàticament — el teu servei continua funcionant {days, plural, one {# dia més} other {# dies més}}.",
+      "pastDueNoCount": "No hem pogut cobrar el teu mètode de pagament. Actualitza'l i ho reintentarem automàticament.",
+      "pastDueEnded": "No hem pogut cobrar el teu mètode de pagament i el període de gràcia s'ha acabat. Actualitza'l per recuperar el teu pla.",
+      "pastDueAction": "Actualitza el mètode de pagament →",
+      "incompleteTitle": "Pagament en procés",
+      "incompleteBody": "Els càrrecs bancaris triguen uns dies a liquidar-se. Tindràs accés tan bon punt es confirmi — no iniciïs una segona subscripció.",
+      "graceTitle": "Llicència caducada — encara funciona",
+      "graceBody": "La teva llicència va caducar el {date} i continua funcionant {days, plural, one {# dia més} other {# dies més}}. Renova-la perquè no s'interrompi.",
+      "expiredTitle": "Llicència caducada",
+      "expiredBody": "La teva llicència va caducar el {date}. BV-SALA falla tancat, així que l'SDK s'ha aturat.",
+      "revokedTitle": "Llicència revocada",
+      "revokedBody": "Aquesta llicència s'ha revocat. Escriu a support@bivelio.com si creus que és un error."
     }
   },
   "landing": {
