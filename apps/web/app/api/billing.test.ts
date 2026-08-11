@@ -339,6 +339,37 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
     expect(crearSesion).not.toHaveBeenCalled();
   });
 
+  // El agujero de verdad, y el único que no necesita ninguna carrera para darse:
+  // un adeudo SEPA deja la suscripción en `incomplete` DURANTE DÍAS. El panel
+  // muestra "Sin plan activo" (planForStatus manda incomplete a free) y reofrece
+  // comprar; el comprador, que no ve nada de lo que pagó, pulsa otra vez. Antes
+  // de esto la guardia no miraba `incomplete`, así que se abría una segunda
+  // suscripción real y liquidaban las dos.
+  it("bloquea con un pago SEPA en vuelo (`incomplete`): es el doble cobro del camino normal", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "incomplete" };
+    const { POST } = await import("./stripe/checkout/route.js");
+    const res = await POST(peticionCheckout());
+    expect(res.status).toBe(409);
+    expect(crearSesion).not.toHaveBeenCalled();
+  });
+
+  it("a quien tiene el pago en vuelo le dice que espere, no que gestione un plan que aún no tiene", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "incomplete" };
+    const { POST } = await import("./stripe/checkout/route.js");
+    const cuerpo = (await (await POST(peticionCheckout())).json()) as { error: string };
+    expect(cuerpo.error).toMatch(/still being processed/i);
+    expect(cuerpo.error).not.toMatch(/Manage plan/i);
+  });
+
+  // `unpaid` queda FUERA a propósito: Stripe ya agotó los reintentos, no hay
+  // dinero en vuelo, y bloquear aquí dejaría al cliente sin salida desde la web.
+  it("NO bloquea en `unpaid`: ahí no hay cobro en curso y el cliente necesita poder comprar", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "unpaid" };
+    const { POST } = await import("./stripe/checkout/route.js");
+    expect((await POST(peticionCheckout())).status).toBe(200);
+    expect(crearSesion).toHaveBeenCalledTimes(1);
+  });
+
   it("deja pasar el primer pago cuando no hay suscripción", async () => {
     const { POST } = await import("./stripe/checkout/route.js");
     const res = await POST(peticionCheckout());
