@@ -1,0 +1,63 @@
+name: deprecate
+
+# Marca una versión publicada como OBSOLETA en npm.
+#
+# POR QUÉ EXISTE COMO WORKFLOW y no como un comando a mano: `npm deprecate` necesita
+# el token de publicación, y ese token vive SOLO en los secretos del repositorio. Ni
+# hace falta que nadie lo tenga en su portátil ni que se pegue en una terminal, que es
+# como se filtran. De paso queda registro de quién lo lanzó y cuándo.
+#
+# Deprecar NO borra la versión: quien la tenga fijada la sigue instalando, pero ve el
+# aviso. Es lo máximo que npm permite pasadas 72 h desde la publicación, y es
+# deliberado — retirar código del que otros dependen rompería sus instalaciones.
+#
+# Para DESHACERLO, se lanza con un mensaje vacío (npm lo interpreta como "ya no está
+# obsoleta").
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versión a marcar (p. ej. 0.1.0)"
+        required: true
+        type: string
+      message:
+        description: "Aviso que verá quien la instale. Vacío = deshacer la marca."
+        required: false
+        type: string
+        default: "Broken: tool calls are dropped and renewed licences are never picked up (the SDK stops mid-billing-period). Upgrade with: npm i @bivelio/savings-layer@latest"
+
+jobs:
+  deprecate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      # Que la versión EXISTA antes de intentar nada: `npm deprecate` sobre una
+      # versión inexistente falla de forma poco clara, y un dedazo en el número es el
+      # error más probable aquí.
+      - name: La versión existe en el registro
+        run: |
+          if ! npm view "@bivelio/savings-layer@${{ inputs.version }}" version >/dev/null 2>&1; then
+            echo "::error::@bivelio/savings-layer@${{ inputs.version }} no existe en npm."
+            exit 1
+          fi
+          echo "encontrada: $(npm view "@bivelio/savings-layer@${{ inputs.version }}" version)"
+
+      - name: Marcar como obsoleta
+        run: npm deprecate "@bivelio/savings-layer@${{ inputs.version }}" "${{ inputs.message }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Comprobar que el aviso quedó puesto
+        run: |
+          AVISO="$(npm view "@bivelio/savings-layer@${{ inputs.version }}" deprecated 2>/dev/null || true)"
+          if [ -z "${{ inputs.message }}" ]; then
+            [ -z "$AVISO" ] && echo "marca retirada" || { echo "::error::sigue marcada: $AVISO"; exit 1; }
+          else
+            [ -n "$AVISO" ] && echo "aviso activo: $AVISO" || { echo "::error::no se aplicó el aviso"; exit 1; }
+          fi
