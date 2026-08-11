@@ -27,6 +27,19 @@ jobs:
         run: corepack enable
       - run: pnpm install --frozen-lockfile
 
+      # `apps/web` es un PROYECTO APARTE: tiene su propio pnpm-lock.yaml y su propio
+      # pnpm-workspace.yaml, y el workspace de la raiz solo incluye packages/* y
+      # services/*. Asi que el install de arriba NO instala sus dependencias — pero
+      # vitest.config.ts SI ejecuta apps/web/**/*.test.ts, y esos tests importan las
+      # route handlers, que importan `next/server`.
+      #
+      # En un portatil no se nota, porque apps/web/node_modules lleva ahi desde el
+      # primer `pnpm dev`. En CI, en cambio, 26 tests reventaron con "Failed to load
+      # url next/server" — reproducido en local escondiendo ese directorio. Es la
+      # diferencia clasica entre "pasa en mi maquina" y "pasa".
+      - name: Dependencias de apps/web (lockfile propio)
+        run: pnpm install --frozen-lockfile --dir apps/web
+
       # VERJA ANTES DE PUBLICAR. Publicar en npm es la acción MÁS irreversible del
       # proyecto: una versión no se puede retirar pasadas 72 h, y aunque se pudiera,
       # romperías a quien ya la tenga fijada. Hasta ahora este workflow solo
