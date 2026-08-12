@@ -5,6 +5,8 @@ import { authConfigured } from "@/lib/supabase/env";
 // rotado, asi que tampoco debe provocar la rotacion — ver server.ts.
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { medirAsientos, type MedidaDeAsientos } from "@/lib/billing/asientos-usados";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { resolverOrgSiExiste, orgParaElPanel } from "@/lib/org/resolver";
 import { getOrgContext, getUsageRollups, type OrgContext, type UsageRollup } from "./data";
 
 export interface DashboardData {
@@ -43,12 +45,28 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { user: null, ctx: EMPTY_CTX, usage: [], usageFailed: false, asientos: SIN_MEDIDA };
-  // `user.id` sale de la sesión verificada, NUNCA del cliente: `medirAsientos`
-  // usa el cliente de servicio y salta la RLS (ver su cabecera).
+  // LA ORGANIZACIÓN SE RESUELVE UNA VEZ, AQUÍ. Antes este bloque pasaba `user.id`
+  // tres veces donde se espera el id del INQUILINO — una suposición que solo se
+  // sostenía mientras la organización fuese una persona. Para cualquier miembro
+  // cuyo user_id no sea el org_id, las tres devolvían vacío SIN error: panel sin
+  // plan, sin licencia, sin clave y con cero peticiones, mientras sus datos
+  // seguían intactos en la base.
+  //
+  // Si no se puede resolver NO se cae a `user.id`: se devuelve el contexto vacío.
+  // Un respaldo silencioso ahí es lo que reabre el defecto por la puerta de atrás.
+  let orgId: string | null = null;
+  try {
+    orgId = orgParaElPanel(await resolverOrgSiExiste(createAdminClient(), user.id));
+  } catch (err) {
+    console.error("[dashboard] no se pudo resolver la organización:", err);
+  }
+  if (!orgId) {
+    return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, usage: [], usageFailed: false, asientos: SIN_MEDIDA };
+  }
   const [ctx, usage, asientos] = await Promise.all([
-    getOrgContext(supabase, user.id),
-    getUsageRollups(supabase, user.id),
-    medirAsientos(user.id),
+    getOrgContext(supabase, orgId),
+    getUsageRollups(supabase, orgId),
+    medirAsientos(orgId),
   ]);
   return {
     user: { id: user.id, email: user.email ?? null },

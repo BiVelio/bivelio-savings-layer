@@ -141,3 +141,20 @@ export async function resolverOrgDelUsuario(
 
   return { orgId, role: "owner" };
 }
+
+/**
+ * La organización con la que el panel debe consultar, o `null`.
+ *
+ * Existe como función propia por UN motivo: para que se pueda probar que NUNCA
+ * cae a `user.id`. Ese respaldo es la forma más fácil de reabrir el defecto por
+ * la puerta de atrás —un panel que "casi siempre funciona" y que a un miembro
+ * invitado le enseña los datos de otra organización, o ninguno— y era invisible
+ * para los tests mientras vivía dentro de `loadDashboard`, que no se puede
+ * cargar desde vitest (importa `next-intl/server` y clientes de Supabase).
+ *
+ * Sin organización resuelta, el panel se pinta VACÍO. Es peor experiencia y es la
+ * respuesta correcta: enseñar datos de quien no eres no es una alternativa.
+ */
+export function orgParaElPanel(resuelta: OrgResuelta | null): string | null {
+  return resuelta?.orgId ?? null;
+}

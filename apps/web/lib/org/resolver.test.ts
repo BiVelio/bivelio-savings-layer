@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { resolverOrgSiExiste, resolverOrgDelUsuario } from "./resolver";
+import { resolverOrgSiExiste, resolverOrgDelUsuario, orgParaElPanel } from "./resolver";
 import type { AdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -180,5 +180,20 @@ describe("resolverOrgDelUsuario", () => {
 
   it("sin userId lanza: nunca se resuelve una organización sin sesión", async () => {
     await expect(resolverOrgDelUsuario(dobleAdmin(base()), "")).rejects.toThrow();
+  });
+});
+
+describe("orgParaElPanel", () => {
+  it("devuelve la organización resuelta", () => {
+    expect(orgParaElPanel({ orgId: "org-a", role: "owner" })).toBe("org-a");
+  });
+
+  it("⛔ sin organización devuelve null, JAMÁS el user id", () => {
+    // El respaldo a `user.id` es la forma mas facil de reabrir el defecto por la
+    // puerta de atras: un panel que "casi siempre funciona" y que a un miembro
+    // invitado le enseña los datos de otra organizacion — o ninguno, en silencio.
+    // Sin organizacion, el panel se pinta VACIO. Peor experiencia, respuesta
+    // correcta: enseñar datos de quien no eres no es una alternativa.
+    expect(orgParaElPanel(null)).toBeNull();
   });
 });

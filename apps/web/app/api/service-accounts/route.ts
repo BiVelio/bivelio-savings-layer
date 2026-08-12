@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolverOrgSiExiste } from "@/lib/org/resolver";
 
 /**
  * Mint a service-account key (bvk_…) for the signed-in user's org. This is the
@@ -70,10 +71,12 @@ export async function GET(): Promise<NextResponse> {
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
 
   const admin = createAdminClient();
+  const org = await resolverOrgSiExiste(admin, user.id);
+  if (!org) return NextResponse.json({ keys: [] });
   const { data, error } = await admin
     .from("service_accounts")
     .select("id, label, key_prefix, last_used_at, created_at")
-    .eq("org_id", user.id)
+    .eq("org_id", org.orgId)
     .order("created_at", { ascending: false });
   if (error) {
     console.error("[service-accounts] list failed:", error);
@@ -114,14 +117,16 @@ export async function DELETE(req: Request): Promise<NextResponse> {
   if (!id) return NextResponse.json({ error: "Which key?" }, { status: 400 });
 
   const admin = createAdminClient();
-  // El `.eq("org_id", user.id)` NO es decorativo: sin él, un id de otra
-  // organización borraría la clave de otro cliente. Es el mismo control que ya
-  // exige `/api/license/current`, y por eso el borrado se hace por (id, org).
+  const org = await resolverOrgSiExiste(admin, user.id);
+  // Sin organización no hay nada que revocar — y sobre todo, NO se borra por id a
+  // secas: ese `.eq("org_id", …)` es el ÚNICO control que impide borrar la clave
+  // de otro cliente, y ahora lleva la organización RESUELTA, no el user id.
+  if (!org) return NextResponse.json({ error: "No such key in your account." }, { status: 404 });
   const { data, error } = await admin
     .from("service_accounts")
     .delete()
     .eq("id", id)
-    .eq("org_id", user.id)
+    .eq("org_id", org.orgId)
     .select("id, key_prefix");
   if (error) {
     console.error("[service-accounts] revoke failed:", error);
@@ -134,7 +139,7 @@ export async function DELETE(req: Request): Promise<NextResponse> {
 
   try {
     await admin.from("billing_audit").insert({
-      org_id: user.id,
+      org_id: org.orgId,
       event_id: `sa_revoke_${Date.now()}`,
       kind: "service_account_revoked",
       detail: { keyPrefix: borrada.key_prefix },
