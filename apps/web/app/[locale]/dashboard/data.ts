@@ -78,7 +78,7 @@ export interface OrgContext {
 }
 
 /** Try the standard membership→organization shape; degrade silently on any error. */
-export async function getOrgContext(supabase: SupabaseClient, userId: string): Promise<OrgContext> {
+export async function getOrgContext(supabase: SupabaseClient, orgId: string): Promise<OrgContext> {
   const ctx: OrgContext = {
     org: null,
     role: null,
@@ -95,7 +95,10 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
       .schema("bvsala")
       .from("org_members")
       .select("role, organizations(name, plan)")
-      .eq("user_id", userId)
+      // La organización ya viene resuelta por `load.ts`; aquí solo se lee el rol
+      // del usuario EN ELLA. La RLS (`is_org_member`) sigue debajo como defensa
+      // en profundidad: si la sesión no pertenece, esto vuelve vacío.
+      .eq("org_id", orgId)
       .limit(1)
       .maybeSingle();
     const row = data as { role?: string; organizations?: { name?: string; plan?: string } | null } | null;
@@ -114,7 +117,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
         .schema("bvsala")
         .from("subscriptions")
         .select("seats, status, current_period_end, past_due_since")
-        .eq("org_id", userId)
+        .eq("org_id", orgId)
         .limit(1)
         .maybeSingle();
       const sub = data as {
@@ -149,7 +152,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
       .schema("bvsala")
       .from("licenses")
       .select("expires_at, grace_days, revoked")
-      .eq("org_id", userId)
+      .eq("org_id", orgId)
       // SIN filtrar por `revoked`, a propósito. Filtrarlas antes de mirar hacía
       // que una org con la licencia revocada no devolviera ninguna fila y el
       // panel la tratara como "nunca tuvo licencia": el peor estado posible era
@@ -176,7 +179,7 @@ export async function getOrgContext(supabase: SupabaseClient, userId: string): P
       .schema("bvsala")
       .from("service_accounts")
       .select("key_prefix, last_used_at")
-      .eq("org_id", userId)
+      .eq("org_id", orgId)
       .limit(1)
       .maybeSingle();
     const sa = data as { key_prefix?: string; last_used_at?: string | null } | null;

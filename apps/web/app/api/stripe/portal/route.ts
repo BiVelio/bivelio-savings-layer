@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolverOrgSiExiste } from "@/lib/org/resolver";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured } from "@/lib/stripe/env";
 
@@ -32,10 +33,16 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   const admin = createAdminClient();
+  // El cliente de Stripe cuelga de la ORGANIZACIÓN, no del usuario. Con `user.id`
+  // aquí, cualquier miembro que no sea el fundador recibía un 409 «no hay nada que
+  // gestionar» mientras el 409 del checkout le decía que usara «Gestionar plan»:
+  // sin poder comprar y sin poder gestionar.
+  const org = await resolverOrgSiExiste(admin, user.id);
+  if (!org) return NextResponse.json({ error: "No subscription to manage yet." }, { status: 409 });
   const { data } = await admin
     .from("organizations")
     .select("stripe_customer_id")
-    .eq("id", user.id)
+    .eq("id", org.orgId)
     .maybeSingle();
   const customer = (data as { stripe_customer_id?: string | null } | null)?.stripe_customer_id;
   if (!customer) {

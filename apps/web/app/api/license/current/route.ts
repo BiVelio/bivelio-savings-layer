@@ -149,15 +149,31 @@ export async function GET(req: Request): Promise<NextResponse> {
     return json({ error: "License service isn't configured." }, 501);
   }
 
-  // Organizaciones a las que pertenece de verdad. Se añade `user.id` porque la
-  // convención CP-0 es org_id == id del usuario y es lo que el checkout mete en
-  // los metadatos; sin él, una cuenta cuya fila de pertenencia aún no exista se
-  // quedaría sin su propia licencia.
-  const orgIds = new Set<string>([user.id]);
-  const { data: miembro } = await admin.from("org_members").select("org_id").eq("user_id", user.id);
-  for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
-    if (fila.org_id) orgIds.add(fila.org_id);
+  // SE HA QUITADO LA SIEMBRA `new Set([user.id])`.
+  //
+  // Estaba ahí por la convención CP-0 (org_id == id de usuario) y era, sin
+  // pretenderlo, una PUERTA TRASERA PERMANENTE: la licencia se entrega por
+  // pertenencia, pero ese conjunto añadía siempre la organización cuyo id es el
+  // del propio usuario. O sea que el fundador podría descargar el token firmado
+  // COMPLETO de su antigua organización para siempre — aunque se le hubiera
+  // sacado de `org_members` o se hubiera transferido la propiedad, que es justo
+  // el escenario que este trabajo existe para habilitar.
+  //
+  // Lo que cubría (quien pagó y aún no tiene fila de pertenencia) ya no puede
+  // darse: el webhook la escribe siempre, y la comprobación 3 de la fase 0
+  // confirmó que no hay ninguna organización sin membresía en producción.
+  const { data: miembro, error: memErr } = await admin
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", user.id);
+  if (memErr) {
+    console.error("[license/current] lectura de pertenencia falló:", memErr);
+    return json({ error: "Could not read your license." }, 503);
   }
+  const orgIds = ((miembro as { org_id?: string }[] | null) ?? [])
+    .map((f) => f.org_id)
+    .filter((x): x is string => Boolean(x));
+  if (orgIds.length === 0) return json({ error: "unauthorized" }, 401);
 
-  return entregarLicencia(admin, [...orgIds]);
+  return entregarLicencia(admin, orgIds);
 }

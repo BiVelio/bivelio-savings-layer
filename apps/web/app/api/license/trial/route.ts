@@ -33,7 +33,11 @@ const ISSUE_DAYS = 90; // internal/pilot window; revoke early via /api/license/r
 async function motivoSinLicencia(userId: string): Promise<"pago_en_curso" | "sin_suscripcion"> {
   try {
     const admin = createAdminClient();
-    const orgIds = new Set<string>([userId]); // convención CP-0: org_id == id de usuario
+    // Sin la siembra CP-0: las organizaciones son las que constan por PERTENENCIA.
+    // (Aquí el impacto es solo el mensaje que se le enseña a quien no tiene
+    // licencia, no una entrega de credencial — pero la regla debe ser la misma en
+    // todo el producto, o vuelve a haber dos verdades.)
+    const orgIds = new Set<string>();
     const { data: miembro } = await admin.from("org_members").select("org_id").eq("user_id", userId);
     for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
       if (fila.org_id) orgIds.add(fila.org_id);

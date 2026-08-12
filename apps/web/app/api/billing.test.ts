@@ -21,6 +21,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 interface Escenario {
   usuario: { id: string; email?: string } | null;
+  /** Organizaciones a las que pertenece la sesión. La entrega de licencia se
+   *  decide SOLO por aquí desde que se quitó la siembra CP-0 `new Set([user.id])`,
+   *  que era una puerta trasera permanente para el fundador. */
+  pertenencias: { org_id: string }[];
   licencia: Record<string, unknown> | null;
   suscripcionActiva: Record<string, unknown> | null;
   serviceAccount: Record<string, unknown> | null;
@@ -28,7 +32,11 @@ interface Escenario {
   errorSuscripcion?: unknown;
 }
 
-const esc: Escenario = { usuario: null, licencia: null, suscripcionActiva: null, serviceAccount: null };
+/** Id de organización DISTINTO del id del usuario: el caso que el producto
+ *  habilita y que ningún fixture cubría. */
+const ORG_DEL_CLIENTE = "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb";
+
+const esc: Escenario = { usuario: null, pertenencias: [], licencia: null, suscripcionActiva: null, serviceAccount: null };
 
 /** El hash que la ruta calcula de una clave de servicio, para que el doble
  *  pueda comprobar de verdad el `.eq("key_hash", …)` que la autentica. */
@@ -94,7 +102,7 @@ function tabla(nombre: string) {
   };
   // `org_members` sin `.maybeSingle()` devuelve una lista (así lo usa la ruta).
   (q as { then?: unknown }).then = (resolve: (v: unknown) => unknown) =>
-    resolve({ data: nombre === "org_members" ? [] : [], error: null });
+    resolve({ data: nombre === "org_members" ? esc.pertenencias : [], error: null });
   return q;
 }
 
@@ -167,6 +175,11 @@ vi.mock("@/lib/license/issue", () => ({
 
 beforeEach(() => {
   esc.usuario = { id: "11111111-1111-4111-8111-111111111111", email: "cliente@example.com" };
+  // ⚠️ LA ORGANIZACIÓN NO ES EL USUARIO. Antes los fixtures los hacían coincidir,
+  // y por eso la siembra CP-0 `new Set([user.id])` de license/current pasaba
+  // desapercibida: era una puerta trasera permanente para el fundador y ningún
+  // test podía verla.
+  esc.pertenencias = [{ org_id: ORG_DEL_CLIENTE }];
   esc.licencia = null;
   esc.suscripcionActiva = null;
   esc.serviceAccount = null;
@@ -186,7 +199,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
   it("devuelve el token de la licencia vigente a su dueño", async () => {
     esc.licencia = {
       id: "lic-1",
-      org_id: esc.usuario!.id,
+      org_id: ORG_DEL_CLIENTE,
       plan: "pro",
       seats: 3,
       token: "bvl.header.payload.sig",
@@ -207,7 +220,7 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
   it("no cachea la respuesta: es una credencial", async () => {
     esc.licencia = {
       id: "lic-1",
-      org_id: esc.usuario!.id,
+      org_id: ORG_DEL_CLIENTE,
       plan: "pro",
       seats: 1,
       token: "t",
@@ -236,8 +249,29 @@ describe("GET /api/license/current — B1: la licencia pagada llega al cliente",
     expect(JSON.stringify(await res.json())).not.toContain("SECRETO");
   });
 
+  it("⛔ NO entrega la licencia de la organización cuyo id ES el del usuario, si ya no pertenece", async () => {
+    // LA PUERTA TRASERA QUE SE CERRO. La ruta sembraba el conjunto de
+    // organizaciones con `new Set([user.id])` por la convencion CP-0, asi que el
+    // fundador podria descargarse el token firmado COMPLETO de su antigua
+    // organizacion PARA SIEMPRE — aunque se le hubiera sacado de `org_members` o
+    // se hubiera transferido la propiedad, que es justo el escenario que el
+    // trabajo de organizaciones existe para habilitar.
+    //
+    // Aqui la licencia existe y su org_id ES el id del usuario, pero el usuario ya
+    // no pertenece a esa organizacion. Tiene que salir 401.
+    esc.pertenencias = [];
+    esc.licencia = {
+      id: "l", org_id: esc.usuario!.id, plan: "pro", seats: 1,
+      token: "SECRETO", revoked: false, expires_at: "2099-01-01", grace_days: 21,
+    };
+    const { GET } = await import("./license/current/route.js");
+    const res = await GET(new Request("https://savings.bivelio.com/api/license/current"));
+    expect(res.status).toBe(401);
+    expect(JSON.stringify(await res.json())).not.toContain("SECRETO");
+  });
+
   it("una licencia revocada sin token no se entrega como si fuera válida", async () => {
-    esc.licencia = { id: "l", org_id: esc.usuario!.id, plan: "pro", seats: 1, token: null, revoked: false, expires_at: "x", grace_days: 14 };
+    esc.licencia = { id: "l", org_id: ORG_DEL_CLIENTE, plan: "pro", seats: 1, token: null, revoked: false, expires_at: "x", grace_days: 14 };
     const { GET } = await import("./license/current/route.js");
     expect((await GET(peticionSesion())).status).toBe(404);
   });
@@ -538,7 +572,7 @@ describe("POST /api/license/trial — el 402 dice el motivo, no una frase en ing
 
   it("con un pago en curso responde `pago_en_curso` y NO invita a pagar de nuevo", async () => {
     sinAllowList();
-    esc.suscripcionActiva = { id: "s1", org_id: esc.usuario!.id, status: "incomplete" };
+    esc.suscripcionActiva = { id: "s1", org_id: ORG_DEL_CLIENTE, status: "incomplete" };
     const { POST } = await import("./license/trial/route.js");
     const res = await POST();
     expect(res.status).toBe(402);
