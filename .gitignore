@@ -5,7 +5,15 @@ coverage/
 .DS_Store
 .env
 .env.*
+# Los ficheros de EJEMPLO sí van al repositorio: documentan los NOMBRES de las
+# variables (nunca un valor) y son lo único que le dice a quien clona esto qué
+# hay que aprovisionar. La excepción era solo `.env.example`, así que
+# `apps/web/.env.local.example` y `.env.bench.example` llevaban desde siempre
+# fuera de git sin que nadie lo notara: dos veces se documentó ahí una variable
+# nueva (CRON_SECRET entre ellas) creyendo que quedaba registrada, y no salía del
+# portátil de quien la escribió.
 !.env.example
+!*.example
 .turbo/
 .vitest/
 *.tsbuildinfo

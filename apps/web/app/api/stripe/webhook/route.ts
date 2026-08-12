@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { selloDeImpago } from "@/lib/billing/dunning";
+import { motivoDeReemision } from "@/lib/billing/reemision";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
@@ -314,12 +315,25 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
     return;
   }
 
-  // Re-issue ONLY on a real seat-quantity change (updates fire for many reasons).
-  // Compare against the CURRENT LICENSE's seats — not the subscription row we just
-  // overwrote — so a retry after a failed issue still re-issues. Never revoke on a
-  // change: supersede so a running fleet keeps working until pickup.
+  // SE RE-EMITE CUANDO LA LICENCIA DEJA DE REFLEJAR LO PAGADO, no solo cuando
+  // cambian los asientos. La condición anterior (`f.quantity !== cur.seats`) tenía
+  // un agujero de dinero: un cliente que pasa de mensual a anual con los MISMOS
+  // asientos no cambia la cantidad, así que nadie re-emitía y su licencia
+  // conservaba la caducidad mensual — pagaba doce meses y el SDK se le paraba
+  // hacia el día 51. (`handleInvoicePaid` tampoco lo cubre: ignora toda factura
+  // que no sea `subscription_cycle`.) Ver `motivoDeReemision`.
+  //
+  // Se compara contra la CURRENT LICENSE, no contra la fila de la suscripción que
+  // acabamos de sobrescribir, para que un reintento tras una emisión fallida
+  // vuelva a intentarlo. Y NUNCA se revoca al cambiar: se supersede, así la flota
+  // en marcha sigue funcionando hasta que recoja la nueva.
   const cur = isUpdate && active ? await currentLicense(admin, f.orgId) : null;
-  if (cur && f.quantity !== cur.seats) {
+  const motivo = motivoDeReemision({
+    asientosNuevos: f.quantity,
+    finDePeriodoUnix: f.periodEnd,
+    licencia: cur,
+  });
+  if (cur && motivo) {
     await supersedeLicense(admin, cur.jti);
     const issued = await issueLicense(admin, {
       orgId: f.orgId,
@@ -327,7 +341,13 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
       periodEndUnix: f.periodEnd ?? nowUnix() + 31 * 86400,
       subscriptionId: subRowId,
     });
-    await audit(admin, f.orgId, eventId, "reissue", { from: cur.seats, to: f.quantity, jti: issued.jti });
+    await audit(admin, f.orgId, eventId, "reissue", {
+      motivo,
+      from: cur.seats,
+      to: f.quantity,
+      caducidadAnterior: cur.expiresAt,
+      jti: issued.jti,
+    });
   } else {
     await audit(admin, f.orgId, eventId, "sub_upsert", { status: sub.status, seats: f.quantity });
   }

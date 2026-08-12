@@ -44,8 +44,27 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const origin = new URL(req.url).origin;
   try {
+    // La configuración se pasa EXPLÍCITAMENTE cuando está aprovisionada. Sin
+    // ella, Stripe usa la de por defecto de la cuenta —un ajuste de panel que
+    // nadie ha versionado y que nadie revisa—, y ahí `subscription_update` viene
+    // DESACTIVADO: el cliente que crece no puede cambiar sus asientos, aunque el
+    // 409 del checkout le diga que use «Gestionar plan». La crea
+    // `scripts/provision-portal.mjs`.
+    //
+    // Si falta la variable NO se rompe la ruta: abrir el portal por defecto es
+    // mucho mejor que no abrir ninguno —ahí es donde el cliente arregla su
+    // tarjeta cuando le falla el cobro—, así que se avisa y se sigue.
+    const configuration = process.env.STRIPE_PORTAL_CONFIGURATION_ID;
+    if (!configuration) {
+      console.warn(
+        "[stripe/portal] STRIPE_PORTAL_CONFIGURATION_ID sin definir: se usa la configuración por " +
+          "defecto de la cuenta. Si en ella no está activado 'subscription_update', un cliente NO " +
+          "podrá cambiar sus asientos. Aprovisiónala con scripts/provision-portal.mjs.",
+      );
+    }
     const session = await getStripe().billingPortal.sessions.create({
       customer,
+      ...(configuration ? { configuration } : {}),
       return_url: `${origin}/${locale}/dashboard/account`,
     });
     return NextResponse.json({ url: session.url });
