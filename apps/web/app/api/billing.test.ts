@@ -398,14 +398,19 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
 describe("POST /api/stripe/webhook — B2: la pertenencia se crea al pagar", () => {
   it("un checkout completado escribe la fila de org_members", async () => {
     const orgId = "22222222-2222-4222-8222-222222222222";
+    const compradorId = "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa";
     const evento = {
       id: "evt_1",
       type: "checkout.session.completed",
       data: {
         object: {
           mode: "subscription",
-          metadata: { org_id: orgId, email: "cliente@example.com" },
-          client_reference_id: orgId,
+          // ⚠️ EL COMPRADOR Y LA ORGANIZACION SON DISTINTOS, que es el caso que
+          // este cambio habilita. Antes el fixture los hacia coincidir y por eso
+          // `user_id: orgId` pasaba los tests: la convencion estaba codificada
+          // tambien aqui, no solo en el codigo.
+          metadata: { org_id: orgId, email: "cliente@example.com", user_id: compradorId },
+          client_reference_id: compradorId,
           subscription: "sub_123",
         },
       },
@@ -427,7 +432,12 @@ describe("POST /api/stripe/webhook — B2: la pertenencia se crea al pagar", () 
     // null, el panel muestra "Sin plan activo" y reofrece el checkout.
     const pertenencia = upserts.find((u) => u.tabla === "org_members");
     expect(pertenencia, "el webhook debe crear la pertenencia del que paga").toBeTruthy();
-    expect(pertenencia!.fila).toMatchObject({ org_id: orgId, user_id: orgId, role: "owner" });
+    // La pertenencia lleva el id del COMPRADOR, no el de la organizacion. Escribir
+    // aqui el orgId —como se hacia— violaria la clave ajena contra `auth.users` en
+    // cuanto la organizacion tenga id propio: 503, Stripe reintenta 72 h y se
+    // rinde, y el cliente se queda pagando sin licencia para siempre.
+    expect(pertenencia!.fila).toMatchObject({ org_id: orgId, user_id: compradorId, role: "owner" });
+    expect((pertenencia!.fila as Record<string, unknown>).user_id, "jamás el org id").not.toBe(orgId);
   });
 });
 

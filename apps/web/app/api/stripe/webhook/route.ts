@@ -83,24 +83,51 @@ async function audit(
 async function ensureOrg(
   admin: Admin,
   orgId: string,
+  /**
+   * QUIEN COMPRA. Antes no existía este parámetro: la pertenencia se escribía con
+   * `user_id: orgId`, y eso solo se sostiene mientras la organización SEA una
+   * persona. Con una organización de id propio, esa fila revienta la clave ajena
+   * contra `auth.users`, `throw memErr` devuelve 503, Stripe reintenta 72 h y se
+   * rinde — y el cliente se queda pagando sin licencia, para siempre.
+   */
+  ownerUserId: string,
   email: string | null,
   customerId: string | null,
   plan: string,
 ) {
   const { data } = await admin.from("organizations").select("id").eq("id", orgId).maybeSingle();
   if (data) {
-    await admin
+    // SE COMPRUEBA EL ERROR. Antes se descartaba, y ese silencio era el riesgo nº 2
+    // del plan: si esta escritura falla —por ejemplo por el `unique` de
+    // `stripe_customer_id`, o porque PostgREST aún no ve una columna nueva— el
+    // fallo no aparecía aquí sino una línea después, como violación de clave
+    // ajena, y sin ninguna pista de la causa real.
+    const { error } = await admin
       .from("organizations")
-      .update({ stripe_customer_id: customerId, plan, ...(email ? { billing_email: email } : {}) })
+      .update({
+        stripe_customer_id: customerId,
+        plan,
+        ...(email ? { billing_email: email } : {}),
+      })
       .eq("id", orgId);
+    if (error) throw error;
+    // El dueño se rellena aparte y SOLO si falta, para no pisar una transferencia.
+    const { error: ownErr } = await admin
+      .from("organizations")
+      .update({ owner_user_id: ownerUserId })
+      .eq("id", orgId)
+      .is("owner_user_id", null);
+    if (ownErr) throw ownErr;
   } else {
-    await admin.from("organizations").insert({
+    const { error } = await admin.from("organizations").insert({
       id: orgId,
       name: email || "BiVelio account",
       stripe_customer_id: customerId,
       plan,
       billing_email: email,
+      owner_user_id: ownerUserId,
     });
+    if (error) throw error;
   }
 
   // La fila de PERTENENCIA, que faltaba. Sin ella el que acaba de pagar no ve su
@@ -111,13 +138,15 @@ async function ensureOrg(
   //
   // Se lanza si falla en vez de tragárselo: un cliente que ha pagado y no consta
   // como miembro es exactamente el defecto que esto cierra, así que es preferible
-  // devolver 503 y que Stripe reintente. `org_id == user_id` es la convención CP-0
-  // y es lo que el checkout mete en los metadatos, así que la FK contra
-  // `auth.users` se satisface.
+  // devolver 503 y que Stripe reintente.
+  //
+  // El `user_id` es el de QUIEN COMPRA, no el de la organización. Antes eran lo
+  // mismo por convención; ahora la organización tiene id propio y escribir aquí
+  // el `orgId` violaría la clave ajena contra `auth.users`.
   const { error: memErr } = await admin
     .from("org_members")
     .upsert(
-      { org_id: orgId, user_id: orgId, role: "owner" },
+      { org_id: orgId, user_id: ownerUserId, role: "owner" },
       { onConflict: "org_id,user_id", ignoreDuplicates: true },
     );
   if (memErr) throw memErr;
@@ -244,6 +273,11 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
   if (session.mode !== "subscription") return;
   const orgId = (session.metadata?.org_id as string | undefined) || session.client_reference_id;
   const email = (session.metadata?.email as string | undefined) || session.customer_email || null;
+  // QUIÉN COMPRA. `metadata.user_id` lo empezará a poner el checkout en la fase 6;
+  // `client_reference_id` ya se pone en TODAS las sesiones (checkout:137) y
+  // siempre es el id del usuario, así que cubre las que se crearon con el código
+  // viejo y puedan estar todavía en vuelo — un adeudo SEPA tarda días.
+  const compradorId = (session.metadata?.user_id as string | undefined) || session.client_reference_id || null;
   const subId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
   if (!orgId || !subId) {
     console.error("[stripe/webhook] checkout missing org_id/subscription", { orgId, subId });
@@ -262,7 +296,19 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
     return;
   }
   const f = subFacts(sub);
-  await ensureOrg(admin, orgId, email, f.customerId, "pro");
+  if (!compradorId) {
+    // Sin saber QUIÉN compra no se puede escribir la pertenencia, y sin ella el
+    // que acaba de pagar ve "Sin plan activo" y se le reofrece comprar. Antes esto
+    // no podía pasar porque el comprador ERA la organización; ahora sí, así que
+    // se falla ruidoso en vez de escribir una fila inventada.
+    await alertar({
+      nivel: "critico",
+      asunto: "Checkout sin poder identificar al comprador: no se ha creado la pertenencia",
+      detalle: { orgId, subId, eventId },
+    });
+    return;
+  }
+  await ensureOrg(admin, orgId, compradorId, email, f.customerId, "pro");
   const { id: subRowId, stale } = await upsertSub(admin, sub, orgId, eventCreated);
   // Fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA
   // licencia — la que corresponde al estado actual ya la emitió el evento nuevo.
