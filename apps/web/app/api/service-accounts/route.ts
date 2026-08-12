@@ -57,3 +57,93 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   return NextResponse.json({ key: token, keyPrefix, label }, { status: 201 });
 }
+
+/**
+ * Las claves de servicio VIVAS de la org (nunca el secreto: solo prefijo y uso).
+ * El panel las necesita para poder ofrecer revocarlas.
+ */
+export async function GET(): Promise<NextResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("service_accounts")
+    .select("id, label, key_prefix, last_used_at, created_at")
+    .eq("org_id", user.id)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("[service-accounts] list failed:", error);
+    return NextResponse.json({ error: "could not list keys" }, { status: 503 });
+  }
+  return NextResponse.json({ keys: data ?? [] });
+}
+
+/**
+ * REVOCAR una clave de servicio. No existía, y su ausencia era un no rotundo en
+ * cualquier revisión de seguridad B2B: la `bvk_` es la credencial que descarga la
+ * licencia COMPLETA de la organización (ver `/api/license/current`), y si un
+ * empleado se iba con ella en el portátil el cliente no tenía forma de
+ * desactivarla. Podía acuñar otra, pero la vieja seguía viva y seguía sirviendo
+ * la licencia.
+ *
+ * Se BORRA la fila en vez de marcarla. Se puede: nada en el esquema referencia
+ * `service_accounts` (el historial de facturación cuelga de `seat_activity`, que
+ * referencia la ORGANIZACIÓN), así que revocar no destruye ni un dato de uso. Y
+ * borrar hace imposible el fallo clásico de un borrado lógico: que a alguien se
+ * le olvide filtrar por `revoked` en una de las dos rutas que autentican con esta
+ * clave y la credencial siga sirviendo. El rastro queda en `billing_audit`.
+ */
+export async function DELETE(req: Request): Promise<NextResponse> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
+
+  let body: { id?: string } = {};
+  try {
+    body = (await req.json()) as { id?: string };
+  } catch {
+    /* sin cuerpo */
+  }
+  const id = typeof body.id === "string" ? body.id.trim() : "";
+  if (!id) return NextResponse.json({ error: "Which key?" }, { status: 400 });
+
+  const admin = createAdminClient();
+  // El `.eq("org_id", user.id)` NO es decorativo: sin él, un id de otra
+  // organización borraría la clave de otro cliente. Es el mismo control que ya
+  // exige `/api/license/current`, y por eso el borrado se hace por (id, org).
+  const { data, error } = await admin
+    .from("service_accounts")
+    .delete()
+    .eq("id", id)
+    .eq("org_id", user.id)
+    .select("id, key_prefix");
+  if (error) {
+    console.error("[service-accounts] revoke failed:", error);
+    return NextResponse.json({ error: "could not revoke the key" }, { status: 503 });
+  }
+  const borrada = (data ?? [])[0] as { id?: string; key_prefix?: string } | undefined;
+  // 404 y no 200: si el id no era de esta org, el cliente tiene que saber que NO
+  // ha revocado nada. Un 200 vacío le haría creer que la clave está muerta.
+  if (!borrada) return NextResponse.json({ error: "No such key in your account." }, { status: 404 });
+
+  try {
+    await admin.from("billing_audit").insert({
+      org_id: user.id,
+      event_id: `sa_revoke_${Date.now()}`,
+      kind: "service_account_revoked",
+      detail: { keyPrefix: borrada.key_prefix },
+    });
+  } catch (err) {
+    // El rastro es deseable, no imprescindible: la clave YA está revocada y eso
+    // es lo que importa. No se deshace por no poder anotarlo.
+    console.error("[service-accounts] audit insert failed:", err);
+  }
+
+  return NextResponse.json({ revoked: borrada.key_prefix ?? id });
+}

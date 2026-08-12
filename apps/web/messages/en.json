@@ -199,7 +199,20 @@
       "testInputAria": "Service-account key to test",
       "testing": "Testing…",
       "testMyKey": "Test my key",
-      "validResult": "✓ Valid — your SDK can report usage with this key."
+      "validResult": "✓ Valid — your SDK can report usage with this key.",
+      "liveKeysTitle": "Your service-account keys",
+      "lastUsed": "last used {when}",
+      "neverUsed": "never used",
+      "revoke": "Revoke",
+      "revoking": "Revoking…",
+      "revokeNote": "Revoking takes effect immediately: that key stops reporting usage and can no longer fetch your license. Your usage history is kept.",
+      "errRevoke": "Could not revoke that key — try again.",
+      "revokeConfirm": "Revoke this key?",
+      "revokeYes": "Yes, revoke",
+      "revokeNo": "Cancel",
+      "revokeAria": "Revoke key {prefix}",
+      "revokeYesAria": "Confirm revoking key {prefix}",
+      "errList": "Couldn't load your keys — reload to manage or revoke them."
     },
     "installLicensePanel": {
       "eyebrow": "Get started",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA is fail-closed — it only runs with an active PRO license. {monthly} per seat per month or {yearly} per seat per year. A seat is one active machine or service identity, not a person.",
       "managePlan": "Manage plan →",
       "subscribe": "Subscribe →",
-      "checkoutMonthly": "Subscribe — {monthly}/mo →",
-      "checkoutYearly": "Subscribe — {yearly}/yr →",
-      "checkoutError": "Something went wrong — try again."
+      "checkoutMonthly": "Subscribe — {monthly}/seat/mo →",
+      "checkoutYearly": "Subscribe — {yearly}/seat/yr →",
+      "checkoutError": "Something went wrong — try again.",
+      "seatsLabel": "Seats",
+      "seatsHint": "A seat is one active machine or service identity — not a person. Count the processes that will run the SDK, not your headcount. On Kubernetes, set BVSALA_SEAT_ID per replica.",
+      "seatsInUse": "{used, plural, one {# seat} other {# seats}} in use this month.",
+      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. Raise your seat count from “Manage plan” so your invoice matches what you run.",
+      "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan."
     },
     "referenceLedgerCards": {
       "proven": "proven",

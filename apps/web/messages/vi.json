@@ -199,7 +199,20 @@
       "testInputAria": "Khóa tài khoản dịch vụ cần kiểm tra",
       "testing": "Đang kiểm tra…",
       "testMyKey": "Kiểm tra khóa của tôi",
-      "validResult": "✓ Hợp lệ — SDK của bạn có thể báo cáo mức sử dụng bằng khóa này."
+      "validResult": "✓ Hợp lệ — SDK của bạn có thể báo cáo mức sử dụng bằng khóa này.",
+      "liveKeysTitle": "Các khoá tài khoản dịch vụ của bạn",
+      "lastUsed": "dùng lần cuối {when}",
+      "neverUsed": "chưa từng dùng",
+      "revoke": "Thu hồi",
+      "revoking": "Đang thu hồi…",
+      "revokeNote": "Thu hồi có hiệu lực ngay: khoá đó ngừng báo cáo mức dùng và không lấy được giấy phép của bạn nữa. Lịch sử sử dụng vẫn được giữ.",
+      "errRevoke": "Không thể thu hồi khoá đó — hãy thử lại.",
+      "revokeConfirm": "Thu hồi khoá này?",
+      "revokeYes": "Có, thu hồi",
+      "revokeNo": "Huỷ",
+      "revokeAria": "Thu hồi khoá {prefix}",
+      "revokeYesAria": "Xác nhận thu hồi khoá {prefix}",
+      "errList": "Không tải được danh sách khoá — hãy tải lại để quản lý hoặc thu hồi."
     },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA là fail-closed — nó chỉ chạy với một giấy phép PRO đang hoạt động. {monthly} mỗi ghế mỗi tháng hoặc {yearly} mỗi ghế mỗi năm. Một ghế là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người.",
       "managePlan": "Quản lý gói →",
       "subscribe": "Đăng ký →",
-      "checkoutMonthly": "Đăng ký — {monthly}/tháng →",
-      "checkoutYearly": "Đăng ký — {yearly}/năm →",
-      "checkoutError": "Đã xảy ra lỗi — vui lòng thử lại."
+      "checkoutMonthly": "Đăng ký — {monthly}/ghế/tháng →",
+      "checkoutYearly": "Đăng ký — {yearly}/ghế/năm →",
+      "checkoutError": "Đã xảy ra lỗi — vui lòng thử lại.",
+      "seatsLabel": "Ghế",
+      "seatsHint": "Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người. Hãy đếm số tiến trình sẽ chạy SDK, không phải số nhân viên. Trên Kubernetes, đặt BVSALA_SEAT_ID cho mỗi bản sao.",
+      "seatsInUse": "{used, plural, other {# ghế}} đang dùng trong tháng này.",
+      "seatsOver": "⚠ {used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Hãy tăng số lượng ở «Quản lý gói» để hoá đơn khớp với những gì bạn đang chạy.",
+      "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",

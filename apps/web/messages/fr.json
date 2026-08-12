@@ -199,7 +199,20 @@
       "testInputAria": "Clé de compte de service à tester",
       "testing": "Test en cours…",
       "testMyKey": "Tester ma clé",
-      "validResult": "✓ Valide — votre SDK peut rapporter l'utilisation avec cette clé."
+      "validResult": "✓ Valide — votre SDK peut rapporter l'utilisation avec cette clé.",
+      "liveKeysTitle": "Vos clés de compte de service",
+      "lastUsed": "dernière utilisation {when}",
+      "neverUsed": "jamais utilisée",
+      "revoke": "Révoquer",
+      "revoking": "Révocation…",
+      "revokeNote": "La révocation est immédiate : cette clé cesse de rapporter l'usage et ne peut plus récupérer votre licence. Votre historique d'usage est conservé.",
+      "errRevoke": "Impossible de révoquer cette clé — réessayez.",
+      "revokeConfirm": "Révoquer cette clé ?",
+      "revokeYes": "Oui, révoquer",
+      "revokeNo": "Annuler",
+      "revokeAria": "Révoquer la clé {prefix}",
+      "revokeYesAria": "Confirmer la révocation de la clé {prefix}",
+      "errList": "Impossible de charger vos clés — rechargez pour les gérer ou les révoquer."
     },
     "installLicensePanel": {
       "eyebrow": "Commencer",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA est fail-closed — il ne fonctionne qu'avec une licence PRO active. {monthly} par siège et par mois ou {yearly} par siège et par an. Un siège est une machine ou une identité de service active, pas une personne.",
       "managePlan": "Gérer le forfait →",
       "subscribe": "S'abonner →",
-      "checkoutMonthly": "S'abonner — {monthly}/mois →",
-      "checkoutYearly": "S'abonner — {yearly}/an →",
-      "checkoutError": "Une erreur s'est produite — veuillez réessayer."
+      "checkoutMonthly": "S'abonner — {monthly}/siège/mois →",
+      "checkoutYearly": "S'abonner — {yearly}/siège/an →",
+      "checkoutError": "Une erreur s'est produite — veuillez réessayer.",
+      "seatsLabel": "Sièges",
+      "seatsHint": "Un poste est une machine ou une identité de service active, pas une personne. Comptez les processus qui exécuteront le SDK, pas vos effectifs. Sur Kubernetes, définissez BVSALA_SEAT_ID par réplique.",
+      "seatsInUse": "{used, plural, one {# siège utilisé} other {# sièges utilisés}} ce mois-ci.",
+      "seatsOver": "⚠ {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Augmentez la quantité depuis « Gérer le forfait » pour que votre facture corresponde à votre usage.",
+      "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait."
     },
     "referenceLedgerCards": {
       "proven": "prouvé",

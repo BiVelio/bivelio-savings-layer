@@ -199,7 +199,20 @@
       "testInputAria": "Clau de compte de servei per provar",
       "testing": "Provant…",
       "testMyKey": "Prova la meva clau",
-      "validResult": "✓ Vàlida: el teu SDK pot informar de l'ús amb aquesta clau."
+      "validResult": "✓ Vàlida: el teu SDK pot informar de l'ús amb aquesta clau.",
+      "liveKeysTitle": "Les teves claus de servei",
+      "lastUsed": "últim ús {when}",
+      "neverUsed": "mai utilitzada",
+      "revoke": "Revoca",
+      "revoking": "Revocant…",
+      "revokeNote": "La revocació és immediata: aquesta clau deixa de reportar ús i ja no pot recollir la teva llicència. L'historial d'ús es conserva.",
+      "errRevoke": "No s'ha pogut revocar aquesta clau. Torna-ho a provar.",
+      "revokeConfirm": "Vols revocar aquesta clau?",
+      "revokeYes": "Sí, revoca-la",
+      "revokeNo": "Cancel·la",
+      "revokeAria": "Revoca la clau {prefix}",
+      "revokeYesAria": "Confirma la revocació de la clau {prefix}",
+      "errList": "No s'han pogut carregar les teves claus. Torna a carregar per gestionar-les o revocar-les."
     },
     "installLicensePanel": {
       "eyebrow": "Comença",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA és fail-closed: només funciona amb una llicència PRO activa. {monthly} per seient al mes o {yearly} per seient a l'any. Un seient és una màquina o identitat de servei activa, no una persona.",
       "managePlan": "Gestiona el pla →",
       "subscribe": "Subscriu-te →",
-      "checkoutMonthly": "Subscriu-te — {monthly}/mes →",
-      "checkoutYearly": "Subscriu-te — {yearly}/any →",
-      "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar."
+      "checkoutMonthly": "Subscriu-t'hi — {monthly}/seient/mes →",
+      "checkoutYearly": "Subscriu-t'hi — {yearly}/seient/any →",
+      "checkoutError": "Alguna cosa ha anat malament — torna-ho a provar.",
+      "seatsLabel": "Seients",
+      "seatsHint": "Un seient és una màquina o identitat de servei activa, no una persona. Compta els processos que executaran l'SDK, no els teus empleats. A Kubernetes, fixa BVSALA_SEAT_ID a cada rèplica.",
+      "seatsInUse": "{used, plural, one {# seient} other {# seients}} en ús aquest mes.",
+      "seatsOver": "⚠ {used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. Puja la quantitat des de «Gestiona el pla» perquè la factura quadri amb el que executes.",
+      "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",

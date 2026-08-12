@@ -199,7 +199,20 @@
       "testInputAria": "Chave de conta de serviço a testar",
       "testing": "A testar…",
       "testMyKey": "Testar a minha chave",
-      "validResult": "✓ Válida — o teu SDK pode reportar utilização com esta chave."
+      "validResult": "✓ Válida — o teu SDK pode reportar utilização com esta chave.",
+      "liveKeysTitle": "As tuas chaves de serviço",
+      "lastUsed": "última utilização {when}",
+      "neverUsed": "nunca utilizada",
+      "revoke": "Revogar",
+      "revoking": "A revogar…",
+      "revokeNote": "A revogação é imediata: essa chave deixa de reportar uso e já não pode obter a tua licença. O histórico de uso é mantido.",
+      "errRevoke": "Não foi possível revogar essa chave — tenta de novo.",
+      "revokeConfirm": "Revogar esta chave?",
+      "revokeYes": "Sim, revogar",
+      "revokeNo": "Cancelar",
+      "revokeAria": "Revogar a chave {prefix}",
+      "revokeYesAria": "Confirmar a revogação da chave {prefix}",
+      "errList": "Não foi possível carregar as tuas chaves — recarrega para as gerires ou revogares."
     },
     "installLicensePanel": {
       "eyebrow": "Começar",
@@ -224,9 +237,14 @@
       "planBody": "O BV-SALA é fail-closed — só funciona com uma licença PRO ativa. {monthly} por lugar por mês ou {yearly} por lugar por ano. Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa.",
       "managePlan": "Gerir plano →",
       "subscribe": "Subscrever →",
-      "checkoutMonthly": "Subscrever — {monthly}/mês →",
-      "checkoutYearly": "Subscrever — {yearly}/ano →",
-      "checkoutError": "Algo correu mal — tenta novamente."
+      "checkoutMonthly": "Subscrever — {monthly}/lugar/mês →",
+      "checkoutYearly": "Subscrever — {yearly}/lugar/ano →",
+      "checkoutError": "Algo correu mal — tenta novamente.",
+      "seatsLabel": "Lugares",
+      "seatsHint": "Um lugar é uma máquina ou identidade de serviço ativa, não uma pessoa. Conta os processos que vão executar o SDK, não os teus colaboradores. No Kubernetes, define BVSALA_SEAT_ID em cada réplica.",
+      "seatsInUse": "{used, plural, one {# lugar} other {# lugares}} em uso este mês.",
+      "seatsOver": "⚠ {used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. Aumenta a quantidade em «Gerir plano» para a fatura corresponder ao que executas.",
+      "seatsRotated": "{used, plural, one {# lugar contado} other {# lugares contados}} este mês. Revogaste uma chave de serviço e, ao rodá-la, as tuas máquinas estreiam identidade de lugar — por isso este mês conta-as duas vezes. Corrige-se sozinho no mês seguinte: não precisas de mudar de plano."
     },
     "referenceLedgerCards": {
       "proven": "comprovado",

@@ -199,7 +199,20 @@
       "testInputAria": "Klucz konta serwisowego do przetestowania",
       "testing": "Testowanie…",
       "testMyKey": "Przetestuj klucz",
-      "validResult": "✓ Prawidłowy — Twój SDK może raportować użycie za pomocą tego klucza."
+      "validResult": "✓ Prawidłowy — Twój SDK może raportować użycie za pomocą tego klucza.",
+      "liveKeysTitle": "Twoje klucze konta serwisowego",
+      "lastUsed": "ostatnio użyty {when}",
+      "neverUsed": "nigdy nieużywany",
+      "revoke": "Unieważnij",
+      "revoking": "Unieważnianie…",
+      "revokeNote": "Unieważnienie działa natychmiast: ten klucz przestaje raportować użycie i nie pobierze już licencji. Historia użycia zostaje zachowana.",
+      "errRevoke": "Nie udało się unieważnić klucza — spróbuj ponownie.",
+      "revokeConfirm": "Unieważnić ten klucz?",
+      "revokeYes": "Tak, unieważnij",
+      "revokeNo": "Anuluj",
+      "revokeAria": "Unieważnij klucz {prefix}",
+      "revokeYesAria": "Potwierdź unieważnienie klucza {prefix}",
+      "errList": "Nie udało się wczytać kluczy — odśwież, aby nimi zarządzać lub je unieważnić."
     },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA działa w trybie fail-closed — uruchamia się tylko z aktywną licencją PRO. {monthly} za stanowisko miesięcznie lub {yearly} za stanowisko rocznie. Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba.",
       "managePlan": "Zarządzaj planem →",
       "subscribe": "Subskrybuj →",
-      "checkoutMonthly": "Subskrybuj — {monthly}/mies. →",
-      "checkoutYearly": "Subskrybuj — {yearly}/rok →",
-      "checkoutError": "Coś poszło nie tak — spróbuj ponownie."
+      "checkoutMonthly": "Subskrybuj — {monthly}/stanowisko/mies. →",
+      "checkoutYearly": "Subskrybuj — {yearly}/stanowisko/rok →",
+      "checkoutError": "Coś poszło nie tak — spróbuj ponownie.",
+      "seatsLabel": "Stanowiska",
+      "seatsHint": "Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba. Policz procesy, które będą uruchamiać SDK, a nie pracowników. W Kubernetes ustaw BVSALA_SEAT_ID dla każdej repliki.",
+      "seatsInUse": "{used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} w użyciu w tym miesiącu.",
+      "seatsOver": "⚠ W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Zwiększ liczbę w „Zarządzaj planem”, aby faktura odpowiadała temu, co uruchamiasz.",
+      "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu."
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",

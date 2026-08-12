@@ -199,7 +199,20 @@
       "testInputAria": "Te testen service-account-sleutel",
       "testing": "Testen…",
       "testMyKey": "Mijn sleutel testen",
-      "validResult": "✓ Geldig — je SDK kan met deze sleutel gebruik rapporteren."
+      "validResult": "✓ Geldig — je SDK kan met deze sleutel gebruik rapporteren.",
+      "liveKeysTitle": "Je service-account-sleutels",
+      "lastUsed": "laatst gebruikt {when}",
+      "neverUsed": "nooit gebruikt",
+      "revoke": "Intrekken",
+      "revoking": "Bezig met intrekken…",
+      "revokeNote": "Intrekken werkt direct: die sleutel rapporteert geen gebruik meer en kan je licentie niet meer ophalen. Je gebruiksgeschiedenis blijft bewaard.",
+      "errRevoke": "Kon die sleutel niet intrekken — probeer het opnieuw.",
+      "revokeConfirm": "Deze sleutel intrekken?",
+      "revokeYes": "Ja, intrekken",
+      "revokeNo": "Annuleren",
+      "revokeAria": "Sleutel {prefix} intrekken",
+      "revokeYesAria": "Intrekken van sleutel {prefix} bevestigen",
+      "errList": "Kon je sleutels niet laden — herlaad om ze te beheren of in te trekken."
     },
     "installLicensePanel": {
       "eyebrow": "Aan de slag",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA is fail-closed — het draait alleen met een actieve PRO-licentie. {monthly} per seat per maand of {yearly} per seat per jaar. Een seat is één actieve machine- of service-identiteit, geen persoon.",
       "managePlan": "Abonnement beheren →",
       "subscribe": "Abonneren →",
-      "checkoutMonthly": "Abonneren — {monthly}/mnd →",
-      "checkoutYearly": "Abonneren — {yearly}/jaar →",
-      "checkoutError": "Er is iets misgegaan — probeer het opnieuw."
+      "checkoutMonthly": "Abonneren — {monthly}/seat/mnd →",
+      "checkoutYearly": "Abonneren — {yearly}/seat/jaar →",
+      "checkoutError": "Er is iets misgegaan — probeer het opnieuw.",
+      "seatsLabel": "Seats",
+      "seatsHint": "Een plaats is één actieve machine of service-identiteit, geen persoon. Tel de processen die de SDK draaien, niet je medewerkers. Op Kubernetes: stel BVSALA_SEAT_ID per replica in.",
+      "seatsInUse": "{used, plural, one {# seat} other {# seats}} deze maand in gebruik.",
+      "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. Verhoog het aantal via “Abonnement beheren” zodat je factuur klopt met wat je draait.",
+      "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",

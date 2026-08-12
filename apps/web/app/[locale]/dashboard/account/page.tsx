@@ -18,7 +18,7 @@ export default async function AccountPage({
   searchParams: Promise<{ checkout?: string }>;
 }) {
   const t = await getTranslations("dashboard");
-  const { user, ctx } = await loadDashboard();
+  const { user, ctx, asientos } = await loadDashboard();
   // `checkout.session.create` manda a esta página con `?checkout=success` o
   // `?checkout=cancelled` desde el principio, y hasta ahora no lo leía nadie.
   const { checkout } = await searchParams;
@@ -42,6 +42,7 @@ export default async function AccountPage({
       <AccountPlanStrip
         email={user?.email ?? "you@bivelio.com"}
         ctx={ctx}
+        asientos={asientos}
         ocultarCompra={activacionPendiente}
       />
     </>

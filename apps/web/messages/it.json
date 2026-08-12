@@ -199,7 +199,20 @@
       "testInputAria": "Chiave dell'account di servizio da provare",
       "testing": "Verifica in corso…",
       "testMyKey": "Prova la mia chiave",
-      "validResult": "✓ Valida — il tuo SDK può riportare l'utilizzo con questa chiave."
+      "validResult": "✓ Valida — il tuo SDK può riportare l'utilizzo con questa chiave.",
+      "liveKeysTitle": "Le tue chiavi di servizio",
+      "lastUsed": "ultimo utilizzo {when}",
+      "neverUsed": "mai usata",
+      "revoke": "Revoca",
+      "revoking": "Revoca in corso…",
+      "revokeNote": "La revoca è immediata: quella chiave smette di riportare l'uso e non può più recuperare la licenza. Lo storico d'uso resta.",
+      "errRevoke": "Non è stato possibile revocare la chiave — riprova.",
+      "revokeConfirm": "Revocare questa chiave?",
+      "revokeYes": "Sì, revoca",
+      "revokeNo": "Annulla",
+      "revokeAria": "Revoca la chiave {prefix}",
+      "revokeYesAria": "Conferma la revoca della chiave {prefix}",
+      "errList": "Non è stato possibile caricare le tue chiavi — ricarica per gestirle o revocarle."
     },
     "installLicensePanel": {
       "eyebrow": "Inizia",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA è fail-closed — funziona solo con una licenza PRO attiva. {monthly} per postazione al mese o {yearly} per postazione all'anno. Una postazione è una macchina o identità di servizio attiva, non una persona.",
       "managePlan": "Gestisci piano →",
       "subscribe": "Abbonati →",
-      "checkoutMonthly": "Abbonati — {monthly}/mese →",
-      "checkoutYearly": "Abbonati — {yearly}/anno →",
-      "checkoutError": "Qualcosa è andato storto — riprova."
+      "checkoutMonthly": "Abbonati — {monthly}/postazione/mese →",
+      "checkoutYearly": "Abbonati — {yearly}/postazione/anno →",
+      "checkoutError": "Qualcosa è andato storto — riprova.",
+      "seatsLabel": "Postazioni",
+      "seatsHint": "Una postazione è una macchina o identità di servizio attiva, non una persona. Conta i processi che eseguiranno l'SDK, non i dipendenti. Su Kubernetes, imposta BVSALA_SEAT_ID per ogni replica.",
+      "seatsInUse": "{used, plural, one {# postazione} other {# postazioni}} in uso questo mese.",
+      "seatsOver": "⚠ {used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. Aumenta la quantità da «Gestisci piano» così la fattura corrisponde a ciò che esegui.",
+      "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano."
     },
     "referenceLedgerCards": {
       "proven": "comprovato",

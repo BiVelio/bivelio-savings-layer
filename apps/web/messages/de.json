@@ -199,7 +199,20 @@
       "testInputAria": "Zu testender Service-Account-Schlüssel",
       "testing": "Wird getestet…",
       "testMyKey": "Schlüssel testen",
-      "validResult": "✓ Gültig — dein SDK kann mit diesem Schlüssel die Nutzung melden."
+      "validResult": "✓ Gültig — dein SDK kann mit diesem Schlüssel die Nutzung melden.",
+      "liveKeysTitle": "Deine Service-Account-Schlüssel",
+      "lastUsed": "zuletzt verwendet {when}",
+      "neverUsed": "nie verwendet",
+      "revoke": "Widerrufen",
+      "revoking": "Wird widerrufen…",
+      "revokeNote": "Der Widerruf wirkt sofort: Dieser Schlüssel meldet keine Nutzung mehr und kann deine Lizenz nicht mehr abholen. Deine Nutzungshistorie bleibt erhalten.",
+      "errRevoke": "Der Schlüssel konnte nicht widerrufen werden — bitte erneut versuchen.",
+      "revokeConfirm": "Diesen Schlüssel widerrufen?",
+      "revokeYes": "Ja, widerrufen",
+      "revokeNo": "Abbrechen",
+      "revokeAria": "Schlüssel {prefix} widerrufen",
+      "revokeYesAria": "Widerruf des Schlüssels {prefix} bestätigen",
+      "errList": "Deine Schlüssel konnten nicht geladen werden — lade neu, um sie zu verwalten oder zu widerrufen."
     },
     "installLicensePanel": {
       "eyebrow": "Erste Schritte",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA ist fail-closed — es läuft nur mit einer aktiven PRO-Lizenz. {monthly} pro Seat und Monat oder {yearly} pro Seat und Jahr. Ein Seat ist eine aktive Maschine oder Dienstidentität, keine Person.",
       "managePlan": "Plan verwalten →",
       "subscribe": "Abonnieren →",
-      "checkoutMonthly": "Abonnieren — {monthly}/Mon. →",
-      "checkoutYearly": "Abonnieren — {yearly}/Jahr →",
-      "checkoutError": "Etwas ist schiefgelaufen — versuche es erneut."
+      "checkoutMonthly": "Abonnieren — {monthly}/Seat/Mon. →",
+      "checkoutYearly": "Abonnieren — {yearly}/Seat/Jahr →",
+      "checkoutError": "Etwas ist schiefgelaufen — versuche es erneut.",
+      "seatsLabel": "Seats",
+      "seatsHint": "Ein Platz ist eine aktive Maschine oder Service-Identität, keine Person. Zähle die Prozesse, die das SDK ausführen, nicht deine Mitarbeitenden. In Kubernetes: BVSALA_SEAT_ID pro Replica setzen.",
+      "seatsInUse": "{used, plural, one {# Seat} other {# Seats}} diesen Monat in Benutzung.",
+      "seatsOver": "⚠ {used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Erhöhe die Anzahl unter „Plan verwalten“, damit deine Rechnung zu deinem Betrieb passt.",
+      "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
