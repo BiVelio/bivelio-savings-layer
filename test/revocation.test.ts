@@ -151,7 +151,10 @@ describe("online staleness gate (closes the block-egress fail-open)", () => {
     expect(gate.isActive()).toBe(true); // fresh at boot
     // 2h pass with egress blocked (no 304 / verified list) → fail CLOSED, not fail-open.
     ms = (BASE + 2 * 3600) * 1000;
-    expect(gate.status()).toBe("expired");
+    // "stale", not "expired": the license is paid and unexpired — the ONLY problem
+    // is that egress is blocked. Naming it "expired" made the customer-facing
+    // message tell a paying customer to renew a subscription they already had.
+    expect(gate.status()).toBe("stale");
     expect(gate.isActive()).toBe(false);
     // A confirmed authorized heartbeat (poll 304 / verified list) restores it.
     snapshot.markContact(BASE + 2 * 3600);
@@ -505,7 +508,10 @@ describe("puerta de obsolescencia: el ancla de arranque no es un cheque en blanc
         startedAt: BASE - 2 * VENTANA, // arrancó hace 2 h, ventana de 1 h
       },
     );
-    expect(gate.status()).toBe("expired");
+    // Cierra igual que antes; lo que cambia es CÓMO se llama, porque de ese
+    // nombre sale el mensaje que se lleva el cliente.
+    expect(gate.isActive()).toBe(false);
+    expect(gate.status()).toBe("stale");
   });
 
   it("un contacto autorizado reciente la mantiene viva, que es su función", () => {

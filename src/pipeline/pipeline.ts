@@ -22,6 +22,7 @@ import type { Provider, ProviderResponse } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import type { FormatChoice } from "../serialization/format-selector.js";
 import { LicenseError } from "../license/errors.js";
+import type { LicenseStatus } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 
@@ -58,6 +59,50 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
 interface TestigoDeFacturacion {
   llamadas: number;
   falloDelProveedor: boolean;
+}
+
+/**
+ * El mensaje que se lleva el cliente cuando la puerta está cerrada. Es, con
+ * diferencia, el texto más importante del producto: es lo ÚNICO que ve alguien a
+ * quien el SDK acaba de dejar de funcionar, y decide si va al sitio correcto o
+ * pierde una tarde.
+ *
+ * Antes era uno solo para todos los casos: *"BiVelio license is not active (X).
+ * Renew your subscription"*. O sea que a quien acababa de pagar y había pegado
+ * mal la clave —o había pegado la `bvk_` donde va la licencia— se le decía que
+ * renovara la suscripción que acababa de comprar; y a quien tenía la salida de
+ * red cerrada, lo mismo. Mandarle a pagar es el peor consejo posible en los dos
+ * casos, porque el problema está a un copiar-y-pegar de distancia.
+ */
+export function mensajeDeLicencia(st: LicenseStatus | string | undefined): string {
+  switch (st) {
+    case "invalid":
+      // No verifica contra nuestra clave pública. Casi siempre es un problema de
+      // copiar y pegar, y NUNCA se arregla pagando.
+      return (
+        "BiVelio license key is not valid (it does not verify). Check you pasted the WHOLE key, " +
+        "and that it is the license key from your dashboard — not the `bvk_` service-account key, " +
+        "which goes in `serviceAccountKey`. Keys: https://savings.bivelio.com/dashboard/install"
+      );
+    case "revoked":
+      // Aquí sí hay algo que gestionar, pero no es "renovar": es entender por qué.
+      return (
+        "BiVelio license has been revoked. If this is unexpected, check your billing status " +
+        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com"
+      );
+    case "stale":
+      // La licencia está PAGADA y VIGENTE. El problema es la red.
+      return (
+        "BiVelio could not confirm your license with the control plane in time — this is a " +
+        "connectivity problem, not a billing one: your license is still valid. Allow outbound " +
+        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry."
+      );
+    case "expired":
+    case "grace":
+      return `BiVelio license is not active (${st}). Renew your subscription at https://savings.bivelio.com`;
+    default:
+      return `BiVelio license is not active${st ? ` (${st})` : ""}. See https://savings.bivelio.com/dashboard/account`;
+  }
 }
 
 export class SavingsPipeline {
@@ -191,10 +236,7 @@ export class SavingsPipeline {
     if (gate && typeof gate.isActive === "function") {
       if (gate.isActive()) return;
       const st = typeof gate.status === "function" ? gate.status() : undefined;
-      throw new LicenseError(
-        `BiVelio license is not active${st ? ` (${st})` : ""}. Renew your subscription at https://savings.bivelio.com`,
-        st,
-      );
+      throw new LicenseError(mensajeDeLicencia(st), st);
     }
     // Un gate SIN isActive() no es "auto-gestionado": es la puerta abierta. La
     // rama anterior avisaba por consola y hacía `return`, así que bastaba pasar

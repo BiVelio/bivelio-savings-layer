@@ -55,7 +55,9 @@ export function liveGateFromKey(
     // than maxStalenessSeconds, stop granting — closing the fail-open window where
     // an adversary blocks egress to keep a revoked license alive until it naturally
     // expires. Anchored to boot so the fire-and-forget warm poll has a full window.
-    // Reuses "expired" so the LicenseStatus union and every consumer are unchanged.
+    // Devuelve "stale", NO "expired". Reutilizar "expired" ahorraba tocar el union
+    // y a cambio le decía a un cliente al día, con la única falta de tener la
+    // salida de red cerrada, que renovara una suscripción que ya tenía pagada.
     if (opts.maxStalenessSeconds != null && (s === "active" || s === "grace")) {
       // Esta verja NO es la caducidad de la licencia (eso lo decide `expires_at`
       // en deriveStatus, arriba: mensual = 30 días, anual = 365, intactos). Es
@@ -86,7 +88,7 @@ export function liveGateFromKey(
       const graceEnd = payload.expires_at + payload.grace_days * 86400;
       const anclaArranque = Math.min(startedAt, graceEnd);
       const lastFresh = Math.max(opts.revocation.lastContactAt, anclaArranque);
-      if (nowSeconds() - lastFresh > opts.maxStalenessSeconds) return "expired";
+      if (nowSeconds() - lastFresh > opts.maxStalenessSeconds) return "stale";
     }
     return s;
   };

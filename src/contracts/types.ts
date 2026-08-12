@@ -314,7 +314,18 @@ export interface LicenseGate {
    * `devUnlicensed: true`, que es explícito y no se cuela sin querer.
    */
   isActive(): boolean;
-  /** Resolved status (active|grace|expired|invalid|revoked), for error messages. */
+  /**
+   * Resolved status (active|grace|expired|invalid|revoked|stale), for error messages.
+   *
+   * `stale` es una licencia PAGADA Y VIGENTE que no ha podido confirmarse contra
+   * el control plane — un problema de red, no de dinero. Se distingue de
+   * `expired` porque el mensaje que se le da al cliente NO puede mandarle a
+   * renovar algo que ya tiene pagado.
+   *
+   * El tipo es `string` y no el union a propósito: un gate lo implementa el
+   * llamante y puede devolver cualquier cosa, así que `mensajeDeLicencia` tiene
+   * que tener una rama por defecto de todas formas.
+   */
   status?(): string;
 }
 

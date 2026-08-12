@@ -14,7 +14,22 @@ import { ed25519 } from "@noble/curves/ed25519.js";
  * public key is embedded here, so a token cannot be forged or tampered with.
  */
 
-export type LicenseStatus = "active" | "grace" | "expired" | "invalid" | "revoked";
+/**
+ * `stale` NO es una licencia caducada: es una licencia PAGADA Y VIGENTE que no ha
+ * podido confirmar su estado contra el control plane dentro de la ventana de
+ * frescura — típicamente porque la salida de red está bloqueada.
+ *
+ * Existe porque antes ese caso reutilizaba `expired` "para que el union y todos
+ * los consumidores siguieran igual", y el ahorro de tipo se pagaba con el peor
+ * mensaje posible del producto: a un cliente al día, cuyo único problema era un
+ * cortafuegos, se le decía *"license is not active (expired). Renew your
+ * subscription"*. Le mandábamos a pagar otra vez algo que ya había pagado, y a
+ * mirar donde no estaba el problema.
+ *
+ * El comportamiento no cambia —sigue siendo fail-closed, `granted()` no lo
+ * concede— pero ahora el mensaje puede decir la verdad.
+ */
+export type LicenseStatus = "active" | "grace" | "expired" | "invalid" | "revoked" | "stale";
 
 /** Decoded license token body (mirror of `@bivelio/protocol`'s LicensePayload,
  *  declared locally so the SDK stays free of a control-plane dependency). */
