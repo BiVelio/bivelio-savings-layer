@@ -3,6 +3,7 @@ import { loadDashboard } from "../load";
 import { AccountPlanStrip } from "../components/AccountPlanStrip";
 import { BillingStateBanner } from "../components/BillingStateBanner";
 import { CheckoutBanner } from "../components/CheckoutBanner";
+import { EquipoPanel } from "../components/EquipoPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,10 @@ export default async function AccountPage({
         asientos={asientos}
         ocultarCompra={activacionPendiente}
       />
+      {/* El equipo va DESPUÉS del plan: quien entra aquí viene casi siempre a
+          mirar lo que paga. Y se pinta solo si el servidor deja verlo — a un
+          `member` le devuelve 403 y el panel entero desaparece. */}
+      <EquipoPanel />
     </>
   );
 }

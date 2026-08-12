@@ -307,6 +307,44 @@
       "expiredBody": "Lisansınız {date} tarihinde doldu. BV-SALA fail-closed çalışır, bu yüzden SDK durdu.",
       "revokedTitle": "Lisans iptal edildi",
       "revokedBody": "Bu lisans iptal edildi. Bunun bir hata olduğunu düşünüyorsanız support@bivelio.com adresine yazın."
+    },
+    "equipo": {
+      "title": "Ekip",
+      "intro": "Bu kuruluşa kimler erişebilir ve neler yapabilir.",
+      "invitarTitulo": "Birini davet edin",
+      "invitarEmail": "E-posta",
+      "invitarRol": "Rol",
+      "invitarBoton": "Daveti gönder",
+      "invitando": "Gönderiliyor…",
+      "rolOwner": "Sahip",
+      "rolAdmin": "Yönetici",
+      "rolMember": "Üye",
+      "rolBilling": "Faturalandırma",
+      "ayudaRoles": "Yönetici ekibi ve kimlik bilgilerini yönetir. Faturalandırma planı görür ve ödeme yapabilir, ancak lisansı indiremez. Üye yalnızca paneli görüntüler.",
+      "miembrosTitulo": "Üyeler",
+      "columnaPersona": "Kişi",
+      "columnaRol": "Rol",
+      "columnaDesde": "Başlangıç",
+      "tu": "siz",
+      "invitacionesTitulo": "Bekleyen davetler",
+      "pendiente": "Bekliyor",
+      "caducada": "Süresi doldu",
+      "revocar": "İptal et",
+      "reenviar": "Yeniden gönder",
+      "quitar": "Çıkar",
+      "confirmar": "Emin misiniz?",
+      "cancelar": "Vazgeç",
+      "transferirTitulo": "Sahipliği devredin",
+      "transferirIntro": "Aboneliği iptal edebilen ve ödeme yöntemini değiştirebilen kişi sahiptir. Devrettikten sonra yönetici olursunuz.",
+      "transferirBoton": "Devret",
+      "transferirConfirmar": "Evet, devret",
+      "vacio": "Henüz başka kimse yok.",
+      "cargando": "Yükleniyor…",
+      "error": "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
+      "enviadoOk": "Davet gönderildi.",
+      "enviadoFallo": "Davet oluşturuldu, ancak e-posta gönderilemedi. Yeniden göndermeyi deneyin.",
+      "sinPermiso": "Ekibi yalnızca sahip ve yöneticiler yönetebilir.",
+      "asientosNota": "Birini davet etmek koltuk harcamaz: bir koltuk bir makinedir, bir kişi değil."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Gizlilik",
       "bottomTerms": "Şartlar"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Davet · BiVelio",
+    "title": "Bir kuruluşa davet edildiniz",
+    "comprobando": "Davet kontrol ediliyor…",
+    "aceptar": "Daveti kabul edin",
+    "aceptando": "Kabul ediliyor…",
+    "exito": "Artık kuruluşun bir parçasısınız.",
+    "irAlPanel": "Panele git",
+    "entrar": "Daveti kabul etmek için lütfen oturum açın.",
+    "iniciarSesion": "Oturum aç",
+    "invalida": "Bu davet geçerli değil.",
+    "caducada": "Bu davetin süresi dolmuş. Yenisini isteyin.",
+    "yaAceptada": "Bu davet daha önce kullanılmış.",
+    "otroCorreo": "Bu davet başka bir e-posta adresi için. Davetin gönderildiği hesapla oturum açın.",
+    "yaEnOtra": "Zaten başka bir kuruluşa aitsiniz. Önce oradan çıkarılmanızı isteyin veya farklı bir hesap kullanın."
   }
 }

@@ -307,6 +307,44 @@
       "expiredBody": "Je licentie is op {date} verlopen. BV-SALA is fail-closed, dus de SDK is gestopt.",
       "revokedTitle": "Licentie ingetrokken",
       "revokedBody": "Deze licentie is ingetrokken. Mail naar support@bivelio.com als je denkt dat dat een vergissing is."
+    },
+    "equipo": {
+      "title": "Team",
+      "intro": "Wie toegang heeft tot deze organisatie en wat diegene kan doen.",
+      "invitarTitulo": "Iemand uitnodigen",
+      "invitarEmail": "E-mail",
+      "invitarRol": "Rol",
+      "invitarBoton": "Uitnodiging versturen",
+      "invitando": "Versturen…",
+      "rolOwner": "Eigenaar",
+      "rolAdmin": "Beheerder",
+      "rolMember": "Lid",
+      "rolBilling": "Facturatie",
+      "ayudaRoles": "De beheerder beheert het team en de inloggegevens. Facturatie ziet het abonnement en kan betalen, maar kan de licentie niet downloaden. Een lid bekijkt alleen het dashboard.",
+      "miembrosTitulo": "Leden",
+      "columnaPersona": "Persoon",
+      "columnaRol": "Rol",
+      "columnaDesde": "Sinds",
+      "tu": "u",
+      "invitacionesTitulo": "Openstaande uitnodigingen",
+      "pendiente": "Openstaand",
+      "caducada": "Verlopen",
+      "revocar": "Intrekken",
+      "reenviar": "Opnieuw versturen",
+      "quitar": "Verwijderen",
+      "confirmar": "Weet u het zeker?",
+      "cancelar": "Annuleren",
+      "transferirTitulo": "Eigendom overdragen",
+      "transferirIntro": "De eigenaar kan opzeggen en de betaalwijze wijzigen. Na de overdracht wordt u beheerder.",
+      "transferirBoton": "Overdragen",
+      "transferirConfirmar": "Ja, overdragen",
+      "vacio": "Nog niemand anders.",
+      "cargando": "Laden…",
+      "error": "Dat is niet gelukt. Probeer het opnieuw.",
+      "enviadoOk": "Uitnodiging verstuurd.",
+      "enviadoFallo": "De uitnodiging is aangemaakt, maar de e-mail is niet verstuurd. Probeer opnieuw te versturen.",
+      "sinPermiso": "Alleen de eigenaar en beheerders kunnen het team beheren.",
+      "asientosNota": "Iemand uitnodigen kost geen seat: een seat is een machine, geen persoon."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Voorwaarden"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Uitnodiging · BiVelio",
+    "title": "U bent uitgenodigd voor een organisatie",
+    "comprobando": "Uitnodiging controleren…",
+    "aceptar": "Uitnodiging accepteren",
+    "aceptando": "Accepteren…",
+    "exito": "U maakt nu deel uit van de organisatie.",
+    "irAlPanel": "Naar het dashboard",
+    "entrar": "Meld u aan om de uitnodiging te accepteren.",
+    "iniciarSesion": "Aanmelden",
+    "invalida": "Deze uitnodiging is niet geldig.",
+    "caducada": "Deze uitnodiging is verlopen. Vraag om een nieuwe.",
+    "yaAceptada": "Deze uitnodiging is al gebruikt.",
+    "otroCorreo": "Deze uitnodiging is voor een ander e-mailadres. Meld u aan met het account waaraan hij is verstuurd.",
+    "yaEnOtra": "U hoort al bij een andere organisatie. Vraag eerst om daar verwijderd te worden, of gebruik een ander account."
   }
 }

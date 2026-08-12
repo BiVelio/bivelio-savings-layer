@@ -307,6 +307,44 @@
       "expiredBody": "A tua licença expirou a {date}. O BV-SALA é fail-closed, por isso o SDK parou.",
       "revokedTitle": "Licença revogada",
       "revokedBody": "Esta licença foi revogada. Escreve para support@bivelio.com se achares que é um erro."
+    },
+    "equipo": {
+      "title": "Equipa",
+      "intro": "Quem pode aceder a esta organização e o que pode fazer.",
+      "invitarTitulo": "Convidar alguém",
+      "invitarEmail": "E-mail",
+      "invitarRol": "Perfil",
+      "invitarBoton": "Enviar convite",
+      "invitando": "A enviar…",
+      "rolOwner": "Proprietário",
+      "rolAdmin": "Administrador",
+      "rolMember": "Membro",
+      "rolBilling": "Faturação",
+      "ayudaRoles": "O administrador gere a equipa e as credenciais. A faturação vê o plano e pode pagar, mas não pode descarregar a licença. O membro apenas consulta o painel.",
+      "miembrosTitulo": "Membros",
+      "columnaPersona": "Pessoa",
+      "columnaRol": "Perfil",
+      "columnaDesde": "Desde",
+      "tu": "você",
+      "invitacionesTitulo": "Convites pendentes",
+      "pendiente": "Pendente",
+      "caducada": "Expirado",
+      "revocar": "Revogar",
+      "reenviar": "Reenviar",
+      "quitar": "Remover",
+      "confirmar": "Tem a certeza?",
+      "cancelar": "Cancelar",
+      "transferirTitulo": "Transferir a propriedade",
+      "transferirIntro": "O proprietário é quem pode cancelar e alterar a forma de pagamento. Ao transferir, passa a administrador.",
+      "transferirBoton": "Transferir",
+      "transferirConfirmar": "Sim, transferir",
+      "vacio": "Ainda não há mais ninguém.",
+      "cargando": "A carregar…",
+      "error": "Não foi possível concluir. Tente novamente.",
+      "enviadoOk": "Convite enviado.",
+      "enviadoFallo": "O convite foi criado, mas o e-mail não saiu. Tente reenviá-lo.",
+      "sinPermiso": "Apenas o proprietário e os administradores podem gerir a equipa.",
+      "asientosNota": "Convidar alguém não consome lugar: um lugar é uma máquina, não uma pessoa."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privacidade",
       "bottomTerms": "Termos"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Convite · BiVelio",
+    "title": "Foi convidado para uma organização",
+    "comprobando": "A verificar o convite…",
+    "aceptar": "Aceitar o convite",
+    "aceptando": "A aceitar…",
+    "exito": "Já faz parte da organização.",
+    "irAlPanel": "Ir para o painel",
+    "entrar": "Inicie sessão para aceitar o convite.",
+    "iniciarSesion": "Iniciar sessão",
+    "invalida": "Este convite não é válido.",
+    "caducada": "Este convite expirou. Peça um novo.",
+    "yaAceptada": "Este convite já foi utilizado.",
+    "otroCorreo": "Este convite é para outro endereço de e-mail. Inicie sessão com a conta para a qual foi enviado.",
+    "yaEnOtra": "Já pertence a outra organização. Peça para ser removido dela primeiro, ou use outra conta."
   }
 }

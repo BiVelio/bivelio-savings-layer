@@ -307,6 +307,44 @@
       "expiredBody": "Twoja licencja wygasła {date}. BV-SALA działa w trybie fail-closed, więc SDK się zatrzymał.",
       "revokedTitle": "Licencja unieważniona",
       "revokedBody": "Ta licencja została unieważniona. Napisz na support@bivelio.com, jeśli uważasz, że to pomyłka."
+    },
+    "equipo": {
+      "title": "Zespół",
+      "intro": "Kto ma dostęp do tej organizacji i co może w niej robić.",
+      "invitarTitulo": "Zaproś osobę",
+      "invitarEmail": "E-mail",
+      "invitarRol": "Rola",
+      "invitarBoton": "Wyślij zaproszenie",
+      "invitando": "Wysyłanie…",
+      "rolOwner": "Właściciel",
+      "rolAdmin": "Administrator",
+      "rolMember": "Członek",
+      "rolBilling": "Rozliczenia",
+      "ayudaRoles": "Administrator zarządza zespołem i poświadczeniami. Rozliczenia widzą plan i mogą płacić, ale nie mogą pobrać licencji. Członek tylko przegląda panel.",
+      "miembrosTitulo": "Członkowie",
+      "columnaPersona": "Osoba",
+      "columnaRol": "Rola",
+      "columnaDesde": "Od",
+      "tu": "Państwo",
+      "invitacionesTitulo": "Oczekujące zaproszenia",
+      "pendiente": "Oczekuje",
+      "caducada": "Wygasło",
+      "revocar": "Unieważnij",
+      "reenviar": "Wyślij ponownie",
+      "quitar": "Usuń",
+      "confirmar": "Na pewno?",
+      "cancelar": "Anuluj",
+      "transferirTitulo": "Przekaż własność",
+      "transferirIntro": "Właściciel może anulować subskrypcję i zmienić metodę płatności. Po przekazaniu stają się Państwo administratorem.",
+      "transferirBoton": "Przekaż",
+      "transferirConfirmar": "Tak, przekaż",
+      "vacio": "Nie ma jeszcze nikogo innego.",
+      "cargando": "Wczytywanie…",
+      "error": "Nie udało się. Prosimy spróbować ponownie.",
+      "enviadoOk": "Zaproszenie wysłane.",
+      "enviadoFallo": "Zaproszenie zostało utworzone, ale e-mail nie został wysłany. Prosimy spróbować wysłać ponownie.",
+      "sinPermiso": "Tylko właściciel i administratorzy mogą zarządzać zespołem.",
+      "asientosNota": "Zaproszenie nie zajmuje stanowiska: stanowisko to maszyna, a nie osoba."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Prywatność",
       "bottomTerms": "Warunki"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Zaproszenie · BiVelio",
+    "title": "Zaproszenie do organizacji",
+    "comprobando": "Sprawdzanie zaproszenia…",
+    "aceptar": "Przyjmij zaproszenie",
+    "aceptando": "Przyjmowanie…",
+    "exito": "Należą już Państwo do tej organizacji.",
+    "irAlPanel": "Przejdź do panelu",
+    "entrar": "Prosimy się zalogować, aby przyjąć zaproszenie.",
+    "iniciarSesion": "Zaloguj się",
+    "invalida": "To zaproszenie jest nieprawidłowe.",
+    "caducada": "To zaproszenie wygasło. Prosimy poprosić o nowe.",
+    "yaAceptada": "To zaproszenie zostało już wykorzystane.",
+    "otroCorreo": "To zaproszenie dotyczy innego adresu e-mail. Prosimy zalogować się na konto, na które je wysłano.",
+    "yaEnOtra": "Należą już Państwo do innej organizacji. Prosimy najpierw poprosić o usunięcie z niej lub użyć innego konta."
   }
 }

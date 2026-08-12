@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { authConfigured } from "@/lib/supabase/env";
+import { safeNextPath } from "@/app/auth/safe-next";
 
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
@@ -22,8 +23,30 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
   // lleva ese enlace tras pasar por /auth/callback.
   const [view, setView] = useState<"form" | "reset">("form");
 
+  /**
+   * ADÓNDE VOLVER DESPUÉS DE ENTRAR. Lo trae `?next=` y lo pone, por ahora, el
+   * enlace de una invitación: quien la recibe sin sesión iniciada tenía que
+   * firmar y luego VOLVER AL CORREO a buscar el enlace otra vez, que es el tipo
+   * de paso manual que sobra en un producto que se vende solo.
+   *
+   * SE LEE AL ENVIAR, no con `useSearchParams()`. Ese hook obliga a envolver el
+   * formulario en un `<Suspense>` y saca de la generación estática a `/login` y
+   * `/signup` — el build lo rechaza de plano. Aquí el dato solo hace falta cuando
+   * alguien pulsa el botón, y en ese momento el cliente ya existe.
+   *
+   * Pasa por `safeNextPath`, el mismo guardián que ya usan /auth/callback y
+   * /auth/refresh: un `next` sin validar es una redirección abierta (CWE-601), y
+   * llega directamente de una URL que fabrica cualquiera.
+   */
+  function destinoPedido(): string | null {
+    if (typeof window === "undefined") return null;
+    const pedido = new URLSearchParams(window.location.search).get("next");
+    return pedido ? safeNextPath(pedido) : null;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const destino = destinoPedido();
     if (!authConfigured) {
       setMsg({ type: "error", text: t("notWired") });
       return;
@@ -47,7 +70,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         // suite construye el enlace desde `{{ .RedirectTo }}` + `&token_hash=…`,
         // así que un redirectTo SIN query string produce una URL malformada. Y
         // además conserva el idioma, igual que ya hace la rama de recuperación.
-        const nextSignup = encodeURIComponent(`/${locale}/dashboard`);
+        const nextSignup = encodeURIComponent(destino ?? `/${locale}/dashboard`);
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -60,6 +83,14 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (destino) {
+          // Navegación DURA a propósito. El `destino` ya viene con su prefijo de
+          // idioma (`/es/invitacion/…`), y el router de next-intl le añadiría
+          // otro: `/es/es/invitacion/…`. Una recarga completa tras iniciar sesión
+          // no cuesta nada y no tiene ese modo de fallo.
+          window.location.assign(destino);
+          return;
+        }
         router.push("/dashboard");
         router.refresh();
       }
