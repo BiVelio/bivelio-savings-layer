@@ -307,6 +307,44 @@
       "expiredBody": "Giấy phép của bạn đã hết hạn vào {date}. BV-SALA hoạt động theo cơ chế fail-closed, nên SDK đã dừng.",
       "revokedTitle": "Giấy phép đã bị thu hồi",
       "revokedBody": "Giấy phép này đã bị thu hồi. Hãy viết thư tới support@bivelio.com nếu bạn cho rằng đây là nhầm lẫn."
+    },
+    "equipo": {
+      "title": "Nhóm",
+      "intro": "Ai có thể truy cập tổ chức này và họ được làm gì.",
+      "invitarTitulo": "Mời một người",
+      "invitarEmail": "Email",
+      "invitarRol": "Vai trò",
+      "invitarBoton": "Gửi lời mời",
+      "invitando": "Đang gửi…",
+      "rolOwner": "Chủ sở hữu",
+      "rolAdmin": "Quản trị viên",
+      "rolMember": "Thành viên",
+      "rolBilling": "Thanh toán",
+      "ayudaRoles": "Quản trị viên quản lý nhóm và thông tin xác thực. Thanh toán xem gói và có thể trả tiền, nhưng không thể tải giấy phép. Thành viên chỉ xem bảng điều khiển.",
+      "miembrosTitulo": "Thành viên",
+      "columnaPersona": "Người",
+      "columnaRol": "Vai trò",
+      "columnaDesde": "Từ",
+      "tu": "quý vị",
+      "invitacionesTitulo": "Lời mời đang chờ",
+      "pendiente": "Đang chờ",
+      "caducada": "Đã hết hạn",
+      "revocar": "Thu hồi",
+      "reenviar": "Gửi lại",
+      "quitar": "Xóa",
+      "confirmar": "Quý vị chắc chứ?",
+      "cancelar": "Hủy",
+      "transferirTitulo": "Chuyển quyền sở hữu",
+      "transferirIntro": "Chủ sở hữu là người có thể hủy và thay đổi phương thức thanh toán. Sau khi chuyển, quý vị trở thành quản trị viên.",
+      "transferirBoton": "Chuyển",
+      "transferirConfirmar": "Có, chuyển",
+      "vacio": "Chưa có ai khác.",
+      "cargando": "Đang tải…",
+      "error": "Không thành công. Vui lòng thử lại.",
+      "enviadoOk": "Đã gửi lời mời.",
+      "enviadoFallo": "Lời mời đã được tạo, nhưng email chưa gửi được. Hãy thử gửi lại.",
+      "sinPermiso": "Chỉ chủ sở hữu và quản trị viên mới có thể quản lý nhóm.",
+      "asientosNota": "Mời một người không tốn chỗ ngồi: một chỗ ngồi là một máy, không phải một người."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Quyền riêng tư",
       "bottomTerms": "Điều khoản"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Lời mời · BiVelio",
+    "title": "Quý vị được mời tham gia một tổ chức",
+    "comprobando": "Đang kiểm tra lời mời…",
+    "aceptar": "Chấp nhận lời mời",
+    "aceptando": "Đang chấp nhận…",
+    "exito": "Quý vị đã là thành viên của tổ chức.",
+    "irAlPanel": "Đến bảng điều khiển",
+    "entrar": "Vui lòng đăng nhập để chấp nhận lời mời.",
+    "iniciarSesion": "Đăng nhập",
+    "invalida": "Lời mời này không hợp lệ.",
+    "caducada": "Lời mời này đã hết hạn. Hãy yêu cầu một lời mời mới.",
+    "yaAceptada": "Lời mời này đã được sử dụng.",
+    "otroCorreo": "Lời mời này dành cho một địa chỉ email khác. Hãy đăng nhập bằng tài khoản đã nhận lời mời.",
+    "yaEnOtra": "Quý vị đã thuộc về một tổ chức khác. Hãy yêu cầu được xóa khỏi tổ chức đó trước, hoặc dùng tài khoản khác."
   }
 }

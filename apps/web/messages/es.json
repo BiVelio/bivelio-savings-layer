@@ -307,6 +307,44 @@
       "expiredBody": "Tu licencia caducó el {date}. BV-SALA falla cerrado, así que el SDK se ha detenido.",
       "revokedTitle": "Licencia revocada",
       "revokedBody": "Esta licencia ha sido revocada. Escribe a support@bivelio.com si crees que es un error."
+    },
+    "equipo": {
+      "title": "Equipo",
+      "intro": "Quién puede entrar en esta organización y qué puede hacer.",
+      "invitarTitulo": "Invitar a alguien",
+      "invitarEmail": "Correo electrónico",
+      "invitarRol": "Perfil",
+      "invitarBoton": "Enviar invitación",
+      "invitando": "Enviando…",
+      "rolOwner": "Propietario",
+      "rolAdmin": "Administrador",
+      "rolMember": "Miembro",
+      "rolBilling": "Facturación",
+      "ayudaRoles": "El administrador gestiona el equipo y las credenciales. Facturación ve el plan y paga, pero no puede descargar la licencia. Miembro solo consulta el panel.",
+      "miembrosTitulo": "Miembros",
+      "columnaPersona": "Persona",
+      "columnaRol": "Perfil",
+      "columnaDesde": "Desde",
+      "tu": "tú",
+      "invitacionesTitulo": "Invitaciones pendientes",
+      "pendiente": "Pendiente",
+      "caducada": "Caducada",
+      "revocar": "Revocar",
+      "reenviar": "Reenviar",
+      "quitar": "Quitar",
+      "confirmar": "¿Seguro?",
+      "cancelar": "Cancelar",
+      "transferirTitulo": "Transferir la propiedad",
+      "transferirIntro": "El propietario es quien puede cancelar y cambiar la forma de pago. Al transferir, usted pasa a administrador.",
+      "transferirBoton": "Transferir",
+      "transferirConfirmar": "Sí, transferir",
+      "vacio": "Todavía no hay nadie más.",
+      "cargando": "Cargando…",
+      "error": "No se ha podido completar. Inténtelo de nuevo.",
+      "enviadoOk": "Invitación enviada.",
+      "enviadoFallo": "La invitación está creada, pero el correo no ha salido. Pruebe a reenviarla.",
+      "sinPermiso": "Solo el propietario y los administradores pueden gestionar el equipo.",
+      "asientosNota": "Invitar a alguien no consume asiento: un asiento es una máquina, no una persona."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privacidad",
       "bottomTerms": "Términos"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Invitación · BiVelio",
+    "title": "Le han invitado a una organización",
+    "comprobando": "Comprobando la invitación…",
+    "aceptar": "Aceptar la invitación",
+    "aceptando": "Aceptando…",
+    "exito": "Ya forma parte de la organización.",
+    "irAlPanel": "Ir al panel",
+    "entrar": "Inicie sesión para aceptar la invitación.",
+    "iniciarSesion": "Iniciar sesión",
+    "invalida": "Esta invitación no es válida.",
+    "caducada": "Esta invitación ha caducado. Pida que se la envíen de nuevo.",
+    "yaAceptada": "Esta invitación ya se ha usado.",
+    "otroCorreo": "Esta invitación es para otra dirección de correo. Inicie sesión con la cuenta a la que se envió.",
+    "yaEnOtra": "Ya pertenece a otra organización. Pida que le saquen de ella primero, o use otra cuenta."
   }
 }

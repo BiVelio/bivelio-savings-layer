@@ -307,6 +307,44 @@
       "expiredBody": "La teva llicència va caducar el {date}. BV-SALA falla tancat, així que l'SDK s'ha aturat.",
       "revokedTitle": "Llicència revocada",
       "revokedBody": "Aquesta llicència s'ha revocat. Escriu a support@bivelio.com si creus que és un error."
+    },
+    "equipo": {
+      "title": "Equip",
+      "intro": "Qui pot entrar en aquesta organització i què hi pot fer.",
+      "invitarTitulo": "Convidar algú",
+      "invitarEmail": "Correu electrònic",
+      "invitarRol": "Perfil",
+      "invitarBoton": "Enviar la invitació",
+      "invitando": "Enviant…",
+      "rolOwner": "Propietari",
+      "rolAdmin": "Administrador",
+      "rolMember": "Membre",
+      "rolBilling": "Facturació",
+      "ayudaRoles": "L'administrador gestiona l'equip i les credencials. Facturació veu el pla i paga, però no pot baixar la llicència. Membre només consulta el tauler.",
+      "miembrosTitulo": "Membres",
+      "columnaPersona": "Persona",
+      "columnaRol": "Perfil",
+      "columnaDesde": "Des de",
+      "tu": "vós",
+      "invitacionesTitulo": "Invitacions pendents",
+      "pendiente": "Pendent",
+      "caducada": "Caducada",
+      "revocar": "Revocar",
+      "reenviar": "Reenviar",
+      "quitar": "Treure",
+      "confirmar": "Segur?",
+      "cancelar": "Cancel·lar",
+      "transferirTitulo": "Transferir la propietat",
+      "transferirIntro": "El propietari és qui pot cancel·lar i canviar la forma de pagament. En transferir, passeu a administrador.",
+      "transferirBoton": "Transferir",
+      "transferirConfirmar": "Sí, transferir",
+      "vacio": "Encara no hi ha ningú més.",
+      "cargando": "Carregant…",
+      "error": "No s'ha pogut completar. Torneu-ho a provar.",
+      "enviadoOk": "Invitació enviada.",
+      "enviadoFallo": "La invitació està creada, però el correu no ha sortit. Proveu de reenviar-la.",
+      "sinPermiso": "Només el propietari i els administradors poden gestionar l'equip.",
+      "asientosNota": "Convidar algú no consumeix seient: un seient és una màquina, no una persona."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privadesa",
       "bottomTerms": "Termes"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Invitació · BiVelio",
+    "title": "Us han convidat a una organització",
+    "comprobando": "Comprovant la invitació…",
+    "aceptar": "Acceptar la invitació",
+    "aceptando": "Acceptant…",
+    "exito": "Ja formeu part de l'organització.",
+    "irAlPanel": "Anar al tauler",
+    "entrar": "Inicieu la sessió per acceptar la invitació.",
+    "iniciarSesion": "Iniciar la sessió",
+    "invalida": "Aquesta invitació no és vàlida.",
+    "caducada": "Aquesta invitació ha caducat. Demaneu que us n'enviïn una de nova.",
+    "yaAceptada": "Aquesta invitació ja s'ha fet servir.",
+    "otroCorreo": "Aquesta invitació és per a una altra adreça. Inicieu la sessió amb el compte al qual es va enviar.",
+    "yaEnOtra": "Ja pertanyeu a una altra organització. Demaneu que us en treguin primer, o feu servir un altre compte."
   }
 }

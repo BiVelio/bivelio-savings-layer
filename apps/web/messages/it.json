@@ -307,6 +307,44 @@
       "expiredBody": "La tua licenza è scaduta il {date}. BV-SALA è fail-closed, quindi l'SDK si è fermato.",
       "revokedTitle": "Licenza revocata",
       "revokedBody": "Questa licenza è stata revocata. Scrivi a support@bivelio.com se pensi che sia un errore."
+    },
+    "equipo": {
+      "title": "Team",
+      "intro": "Chi può accedere a questa organizzazione e cosa può farci.",
+      "invitarTitulo": "Invita qualcuno",
+      "invitarEmail": "E-mail",
+      "invitarRol": "Ruolo",
+      "invitarBoton": "Invia l'invito",
+      "invitando": "Invio…",
+      "rolOwner": "Proprietario",
+      "rolAdmin": "Amministratore",
+      "rolMember": "Membro",
+      "rolBilling": "Fatturazione",
+      "ayudaRoles": "L'amministratore gestisce il team e le credenziali. Fatturazione vede il piano e può pagare, ma non può scaricare la licenza. Il membro consulta solo il pannello.",
+      "miembrosTitulo": "Membri",
+      "columnaPersona": "Persona",
+      "columnaRol": "Ruolo",
+      "columnaDesde": "Dal",
+      "tu": "lei",
+      "invitacionesTitulo": "Inviti in sospeso",
+      "pendiente": "In sospeso",
+      "caducada": "Scaduto",
+      "revocar": "Revoca",
+      "reenviar": "Reinvia",
+      "quitar": "Rimuovi",
+      "confirmar": "È sicuro?",
+      "cancelar": "Annulla",
+      "transferirTitulo": "Trasferisci la proprietà",
+      "transferirIntro": "Il proprietario è chi può disdire e cambiare il metodo di pagamento. Dopo il trasferimento lei diventa amministratore.",
+      "transferirBoton": "Trasferisci",
+      "transferirConfirmar": "Sì, trasferisci",
+      "vacio": "Ancora nessun altro.",
+      "cargando": "Caricamento…",
+      "error": "Non ha funzionato. Riprovi.",
+      "enviadoOk": "Invito inviato.",
+      "enviadoFallo": "L'invito è stato creato, ma l'e-mail non è partita. Provi a reinviarlo.",
+      "sinPermiso": "Solo il proprietario e gli amministratori possono gestire il team.",
+      "asientosNota": "Invitare qualcuno non consuma una postazione: una postazione è una macchina, non una persona."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Termini"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Invito · BiVelio",
+    "title": "Le è stato chiesto di unirsi a un'organizzazione",
+    "comprobando": "Verifica dell'invito…",
+    "aceptar": "Accetta l'invito",
+    "aceptando": "Accettazione…",
+    "exito": "Ora fa parte dell'organizzazione.",
+    "irAlPanel": "Vai al pannello",
+    "entrar": "Acceda per accettare l'invito.",
+    "iniciarSesion": "Accedi",
+    "invalida": "Questo invito non è valido.",
+    "caducada": "Questo invito è scaduto. Ne chieda uno nuovo.",
+    "yaAceptada": "Questo invito è già stato usato.",
+    "otroCorreo": "Questo invito è per un altro indirizzo e-mail. Acceda con l'account a cui è stato inviato.",
+    "yaEnOtra": "Appartiene già a un'altra organizzazione. Chieda di esserne rimosso prima, oppure usi un altro account."
   }
 }

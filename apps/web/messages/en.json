@@ -307,6 +307,44 @@
       "expiredBody": "Your license expired on {date}. BV-SALA is fail-closed, so the SDK has stopped.",
       "revokedTitle": "License revoked",
       "revokedBody": "This license was revoked. Write to support@bivelio.com if you think that's a mistake."
+    },
+    "equipo": {
+      "title": "Team",
+      "intro": "Who can access this organization, and what they can do.",
+      "invitarTitulo": "Invite someone",
+      "invitarEmail": "Email",
+      "invitarRol": "Role",
+      "invitarBoton": "Send invitation",
+      "invitando": "Sending…",
+      "rolOwner": "Owner",
+      "rolAdmin": "Administrator",
+      "rolMember": "Member",
+      "rolBilling": "Billing",
+      "ayudaRoles": "Administrators manage the team and credentials. Billing sees the plan and can pay, but can't download the license. Members only view the dashboard.",
+      "miembrosTitulo": "Members",
+      "columnaPersona": "Person",
+      "columnaRol": "Role",
+      "columnaDesde": "Since",
+      "tu": "you",
+      "invitacionesTitulo": "Pending invitations",
+      "pendiente": "Pending",
+      "caducada": "Expired",
+      "revocar": "Revoke",
+      "reenviar": "Resend",
+      "quitar": "Remove",
+      "confirmar": "Are you sure?",
+      "cancelar": "Cancel",
+      "transferirTitulo": "Transfer ownership",
+      "transferirIntro": "The owner is who can cancel and change the payment method. After transferring, you become an administrator.",
+      "transferirBoton": "Transfer",
+      "transferirConfirmar": "Yes, transfer",
+      "vacio": "Nobody else yet.",
+      "cargando": "Loading…",
+      "error": "That didn't work. Please try again.",
+      "enviadoOk": "Invitation sent.",
+      "enviadoFallo": "The invitation exists, but the email didn't go out. Try resending it.",
+      "sinPermiso": "Only the owner and administrators can manage the team.",
+      "asientosNota": "Inviting someone doesn't use a seat: a seat is a machine, not a person."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Terms"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Invitation · BiVelio",
+    "title": "You've been invited to an organization",
+    "comprobando": "Checking the invitation…",
+    "aceptar": "Accept the invitation",
+    "aceptando": "Accepting…",
+    "exito": "You're now part of the organization.",
+    "irAlPanel": "Go to the dashboard",
+    "entrar": "Sign in to accept the invitation.",
+    "iniciarSesion": "Sign in",
+    "invalida": "This invitation isn't valid.",
+    "caducada": "This invitation has expired. Ask for a new one.",
+    "yaAceptada": "This invitation has already been used.",
+    "otroCorreo": "This invitation is for a different email address. Sign in with the account it was sent to.",
+    "yaEnOtra": "You already belong to another organization. Ask to be removed from it first, or use a different account."
   }
 }

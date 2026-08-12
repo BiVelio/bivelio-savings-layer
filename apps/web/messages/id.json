@@ -307,6 +307,44 @@
       "expiredBody": "Lisensi Anda kedaluwarsa pada {date}. BV-SALA bersifat fail-closed, jadi SDK telah berhenti.",
       "revokedTitle": "Lisensi dicabut",
       "revokedBody": "Lisensi ini telah dicabut. Hubungi support@bivelio.com jika menurut Anda ini keliru."
+    },
+    "equipo": {
+      "title": "Tim",
+      "intro": "Siapa yang dapat mengakses organisasi ini dan apa yang boleh dilakukannya.",
+      "invitarTitulo": "Undang seseorang",
+      "invitarEmail": "Email",
+      "invitarRol": "Peran",
+      "invitarBoton": "Kirim undangan",
+      "invitando": "Mengirim…",
+      "rolOwner": "Pemilik",
+      "rolAdmin": "Administrator",
+      "rolMember": "Anggota",
+      "rolBilling": "Penagihan",
+      "ayudaRoles": "Administrator mengelola tim dan kredensial. Penagihan melihat paket dan dapat membayar, tetapi tidak dapat mengunduh lisensi. Anggota hanya melihat dasbor.",
+      "miembrosTitulo": "Anggota",
+      "columnaPersona": "Orang",
+      "columnaRol": "Peran",
+      "columnaDesde": "Sejak",
+      "tu": "Anda",
+      "invitacionesTitulo": "Undangan tertunda",
+      "pendiente": "Tertunda",
+      "caducada": "Kedaluwarsa",
+      "revocar": "Cabut",
+      "reenviar": "Kirim ulang",
+      "quitar": "Hapus",
+      "confirmar": "Anda yakin?",
+      "cancelar": "Batal",
+      "transferirTitulo": "Alihkan kepemilikan",
+      "transferirIntro": "Pemilik adalah pihak yang dapat membatalkan dan mengubah metode pembayaran. Setelah dialihkan, Anda menjadi administrator.",
+      "transferirBoton": "Alihkan",
+      "transferirConfirmar": "Ya, alihkan",
+      "vacio": "Belum ada orang lain.",
+      "cargando": "Memuat…",
+      "error": "Tidak berhasil. Silakan coba lagi.",
+      "enviadoOk": "Undangan terkirim.",
+      "enviadoFallo": "Undangan sudah dibuat, tetapi email tidak terkirim. Coba kirim ulang.",
+      "sinPermiso": "Hanya pemilik dan administrator yang dapat mengelola tim.",
+      "asientosNota": "Mengundang seseorang tidak memakai kursi: satu kursi adalah satu mesin, bukan satu orang."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Privasi",
       "bottomTerms": "Ketentuan"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Undangan · BiVelio",
+    "title": "Anda diundang ke sebuah organisasi",
+    "comprobando": "Memeriksa undangan…",
+    "aceptar": "Terima undangan",
+    "aceptando": "Menerima…",
+    "exito": "Anda kini bagian dari organisasi ini.",
+    "irAlPanel": "Buka dasbor",
+    "entrar": "Masuk untuk menerima undangan.",
+    "iniciarSesion": "Masuk",
+    "invalida": "Undangan ini tidak berlaku.",
+    "caducada": "Undangan ini sudah kedaluwarsa. Mintalah yang baru.",
+    "yaAceptada": "Undangan ini sudah digunakan.",
+    "otroCorreo": "Undangan ini untuk alamat email lain. Masuk dengan akun yang menerimanya.",
+    "yaEnOtra": "Anda sudah tergabung dalam organisasi lain. Mintalah dikeluarkan dari sana dulu, atau gunakan akun lain."
   }
 }

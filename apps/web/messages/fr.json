@@ -307,6 +307,44 @@
       "expiredBody": "Votre licence a expiré le {date}. BV-SALA est fail-closed : le SDK s'est arrêté.",
       "revokedTitle": "Licence révoquée",
       "revokedBody": "Cette licence a été révoquée. Écrivez à support@bivelio.com si vous pensez qu'il s'agit d'une erreur."
+    },
+    "equipo": {
+      "title": "Équipe",
+      "intro": "Qui peut accéder à cette organisation, et ce qu'il peut y faire.",
+      "invitarTitulo": "Inviter quelqu'un",
+      "invitarEmail": "E-mail",
+      "invitarRol": "Rôle",
+      "invitarBoton": "Envoyer l'invitation",
+      "invitando": "Envoi…",
+      "rolOwner": "Propriétaire",
+      "rolAdmin": "Administrateur",
+      "rolMember": "Membre",
+      "rolBilling": "Facturation",
+      "ayudaRoles": "L'administrateur gère l'équipe et les identifiants. La facturation voit l'offre et peut payer, mais ne peut pas télécharger la licence. Le membre consulte seulement le tableau de bord.",
+      "miembrosTitulo": "Membres",
+      "columnaPersona": "Personne",
+      "columnaRol": "Rôle",
+      "columnaDesde": "Depuis",
+      "tu": "vous",
+      "invitacionesTitulo": "Invitations en attente",
+      "pendiente": "En attente",
+      "caducada": "Expirée",
+      "revocar": "Révoquer",
+      "reenviar": "Renvoyer",
+      "quitar": "Retirer",
+      "confirmar": "Êtes-vous sûr ?",
+      "cancelar": "Annuler",
+      "transferirTitulo": "Transférer la propriété",
+      "transferirIntro": "Le propriétaire est celui qui peut résilier et changer le moyen de paiement. Après le transfert, vous devenez administrateur.",
+      "transferirBoton": "Transférer",
+      "transferirConfirmar": "Oui, transférer",
+      "vacio": "Personne d'autre pour l'instant.",
+      "cargando": "Chargement…",
+      "error": "Cela n'a pas fonctionné. Veuillez réessayer.",
+      "enviadoOk": "Invitation envoyée.",
+      "enviadoFallo": "L'invitation est créée, mais l'e-mail n'est pas parti. Essayez de la renvoyer.",
+      "sinPermiso": "Seuls le propriétaire et les administrateurs peuvent gérer l'équipe.",
+      "asientosNota": "Inviter quelqu'un ne consomme pas de siège : un siège est une machine, pas une personne."
     }
   },
   "landing": {
@@ -470,5 +508,21 @@
       "bottomPrivacy": "Confidentialité",
       "bottomTerms": "Conditions"
     }
+  },
+  "invitacion": {
+    "metaTitle": "Invitation · BiVelio",
+    "title": "Vous êtes invité à rejoindre une organisation",
+    "comprobando": "Vérification de l'invitation…",
+    "aceptar": "Accepter l'invitation",
+    "aceptando": "Acceptation…",
+    "exito": "Vous faites désormais partie de l'organisation.",
+    "irAlPanel": "Aller au tableau de bord",
+    "entrar": "Connectez-vous pour accepter l'invitation.",
+    "iniciarSesion": "Se connecter",
+    "invalida": "Cette invitation n'est pas valide.",
+    "caducada": "Cette invitation a expiré. Demandez-en une nouvelle.",
+    "yaAceptada": "Cette invitation a déjà été utilisée.",
+    "otroCorreo": "Cette invitation concerne une autre adresse e-mail. Connectez-vous avec le compte auquel elle a été envoyée.",
+    "yaEnOtra": "Vous appartenez déjà à une autre organisation. Demandez d'en être retiré d'abord, ou utilisez un autre compte."
   }
 }
