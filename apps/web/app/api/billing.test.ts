@@ -113,6 +113,12 @@ vi.mock("@/lib/stripe/env", () => ({
   priceIdFor: () => "price_test_123",
   STRIPE_SECRET_KEY: "sk_test_x",
   STRIPE_WEBHOOK_SECRET: "whsec_x",
+  // El catálogo lo usa la VERJA DE PRODUCTO del webhook: los dos productos de
+  // BiVelio comparten cuenta de Stripe y hay que poder distinguir de quién es
+  // cada evento. Con el catálogo completo, un evento de precio desconocido se
+  // descarta con 200 en vez de reventar contra la clave ajena.
+  STRIPE_PRICE_ID_MONTHLY: "price_test_123",
+  STRIPE_PRICE_ID_YEARLY: "price_test_anual",
 }));
 
 const crearSesion = vi.fn(async () => ({ url: "https://checkout.stripe.com/c/test" }));
@@ -171,6 +177,7 @@ beforeEach(() => {
   emitirLicencia.mockClear();
   licenciaVigente = null;
   suscripcionStripe.status = "active";
+  suscripcionStripe.items.data[0]!.price = { id: "price_test_123" };
 });
 
 // --- B1: la licencia pagada se puede recoger -----------------------------------
@@ -556,5 +563,66 @@ describe("POST /api/license/trial — el 402 dice el motivo, no una frase en ing
     const { POST } = await import("./license/trial/route.js");
     const res = await POST();
     expect(((await res.json()) as { code?: string }).code).toBe("pago_en_curso");
+  });
+});
+
+
+// --- la verja de producto: dos productos comparten la cuenta de Stripe --------
+
+describe("POST /api/stripe/webhook — un evento de OTRO producto no se procesa ni se registra", () => {
+  const AJENO = "price_DE_PRIVACY_GATEWAY";
+  const eventoAjeno = (tipo: string, precio = AJENO) => ({
+    id: "evt_de_otro_producto",
+    type: tipo,
+    created: 1_700_000_000,
+    data: {
+      object: tipo.startsWith("checkout")
+        ? { mode: "subscription", metadata: { org_id: "2a81de77-8aa5-492e-8915-18b65104e67c" }, subscription: "sub_ajena" }
+        : { id: "sub_ajena", status: "active", customer: "cus_x", metadata: { org_id: "2a81de77-8aa5-492e-8915-18b65104e67c" },
+            items: { data: [{ id: "si_x", quantity: 2, price: { id: precio }, current_period_start: 1, current_period_end: 2 }] } },
+    },
+  });
+  const dispara = async (tipo: string, precio = AJENO) => {
+    construirEvento.mockReturnValue(eventoAjeno(tipo, precio));
+    const { POST } = await import("./stripe/webhook/route.js");
+    return POST(new Request("https://savings.bivelio.com/api/stripe/webhook", {
+      method: "POST", body: "{}", headers: { "stripe-signature": "t=1,v1=x" },
+    }));
+  };
+
+  it("responde 200 para que Stripe DEJE de reintentar", async () => {
+    // El incidente del 2026-08-12: una suscripción real de BV-PRGA llegaba aquí,
+    // se intentaba insertar con un `org_id` que no existe en `bvsala`, la clave
+    // ajena lo reventaba y la ruta devolvía 503. Stripe reintenta ~3 días y
+    // después DESHABILITA el endpoint — y ahí se cae el cobro entero.
+    suscripcionStripe.items.data[0]!.price = { id: "price_DE_PRIVACY_GATEWAY" };
+    const res = await dispara("customer.subscription.created");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ ignored: "otro producto" });
+  });
+
+  it("NO escribe absolutamente nada", async () => {
+    suscripcionStripe.items.data[0]!.price = { id: "price_DE_PRIVACY_GATEWAY" };
+    await dispara("customer.subscription.created");
+    expect(upserts, "un evento ajeno no puede tocar nuestras tablas").toHaveLength(0);
+  });
+
+  it("⛔ NO lo registra en stripe_events, y eso es lo que hace el error reparable", async () => {
+    // La comprobación de duplicados corta ANTES del manejador, así que un evento
+    // registrado ya no se reprocesa ni reenviándolo desde Stripe. Si algún día la
+    // verja se equivoca y descarta algo NUESTRO, no haberlo registrado es lo
+    // único que permite arreglarlo: se corrige la regla y se reenvía.
+    suscripcionStripe.items.data[0]!.price = { id: "price_DE_PRIVACY_GATEWAY" };
+    await dispara("customer.subscription.created");
+    expect(upserts.find((u) => u.tabla === "stripe_events")).toBeUndefined();
+  });
+
+  it("un evento con NUESTRO precio sí se procesa", async () => {
+    // El control positivo: sin él, esta verja podría estar descartándolo todo — y
+    // de hecho la primera versión de este test estaba mal, porque para un evento
+    // de suscripción el precio viaja en el PROPIO evento, no en el `retrieve`.
+    const res = await dispara("customer.subscription.created", "price_test_123");
+    expect(res.status).toBe(200);
+    expect(await res.json()).not.toMatchObject({ ignored: "otro producto" });
   });
 });

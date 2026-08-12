@@ -67,7 +67,10 @@ async function porCorreo(nivel: NivelDeAlerta, asunto: string, detalle?: Record<
     `<p><b>Qué hacer:</b> <a href="${MANUAL}">manual de alertas</a>. ` +
       `Casi todas se reparan <b>reenviando el evento en Stripe</b> ` +
       `(Developers → Events → el id de arriba → Resend); los handlers son ` +
-      `idempotentes, así que reenviar no duplica licencias ni cobra dos veces.</p>`,
+      `idempotentes, así que reenviar no duplica licencias ni cobra dos veces. ` +
+      `<b>Ojo:</b> si el evento YA se procesó una vez, el webhook lo corta como ` +
+      `duplicado y devuelve 200 sin hacer nada — hay que borrar antes su fila de ` +
+      `<code>bvsala.stripe_events</code>. El manual lo explica.</p>`,
     `<p style="color:#666;font-size:12px">savings.bivelio.com · ${new Date().toISOString()}</p>`,
   ].join("");
 
