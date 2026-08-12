@@ -21,8 +21,16 @@ const live = key.startsWith("sk_live_");
 const stripe = new Stripe(key);
 const WEBHOOK_URL = process.env.WEBHOOK_URL || "https://savings.bivelio.com/api/stripe/webhook";
 
+// LOS SIETE QUE EL WEBHOOK MANEJA. Esta lista tiene que cuadrar EXACTAMENTE con
+// los `case` de apps/web/app/api/stripe/webhook/route.ts, y hay un test que lo
+// ata (`test/eventos-del-webhook.test.ts`) porque ya se desincronizó una vez: se
+// aprovisionó con seis, y `checkout.session.async_payment_succeeded` se añadió al
+// código DESPUÉS. Ese es justo el evento del pago SEPA —normal en EUR/España—,
+// que llega días después de que el cliente pague: sin él, el checkout ve
+// `incomplete`, el dinero entra y NADIE emite la licencia. Nunca.
 const EVENTS = [
   "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
   "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
@@ -32,6 +40,29 @@ const EVENTS = [
 
 async function main() {
   console.log(`\nMode: ${live ? "LIVE" : "TEST"}  ·  webhook: ${WEBHOOK_URL}\n`);
+
+  // GUARDIA DE NO-REEJECUCIÓN. Este script CREA objetos nuevos cada vez: relanzarlo
+  // sobre una cuenta ya aprovisionada deja un producto duplicado, dos precios que
+  // nadie sabe cuál es el bueno y DOS endpoints de webhook con secretos distintos.
+  // La nota de la cabecera ya lo decía, pero una nota no para a nadie a las once de
+  // la noche. Si lo que hace falta es AÑADIR un evento a un endpoint que ya existe,
+  // eso se hace en el panel de Stripe, no aquí.
+  const existentes = await stripe.webhookEndpoints.list({ limit: 100 });
+  const yaEsta = existentes.data.find((w) => w.url === WEBHOOK_URL);
+  if (yaEsta) {
+    const suyos = new Set(yaEsta.enabled_events);
+    const faltan = EVENTS.filter((e) => !suyos.has(e) && !suyos.has("*"));
+    console.error(`✗ Ya existe un endpoint para ${WEBHOOK_URL} (${yaEsta.id}).`);
+    console.error("  NO se re-aprovisiona: duplicaría producto, precios y webhook.");
+    if (faltan.length) {
+      console.error(`\n  Le FALTAN ${faltan.length} evento(s), añádelos en el panel de Stripe:`);
+      for (const e of faltan) console.error(`    · ${e}`);
+      console.error("\n  Developers → Webhooks → ese endpoint → Update details → Select events.");
+    } else {
+      console.error("  Tiene los siete eventos: no hay nada que hacer.");
+    }
+    process.exit(1);
+  }
 
   const product = await stripe.products.create({
     name: "BiVelio Savings Layer — Pro",
