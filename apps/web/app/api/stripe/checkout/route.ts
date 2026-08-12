@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured, priceIdFor, type BillingPeriod } from "@/lib/stripe/env";
+import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 
 /**
  * Start a Stripe Checkout for the per-seat PRO plan (monthly or yearly). Auth'd
@@ -32,9 +33,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   try {
     const body = (await req.json()) as { period?: string; seats?: number; locale?: string };
     if (body.period === "yearly") period = "yearly";
-    if (typeof body.seats === "number" && Number.isFinite(body.seats) && body.seats > 0) {
-      seats = Math.floor(body.seats);
-    }
+    // MISMA función que el campo del panel, no una copia del criterio. Y el tope
+    // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
+    // este cuerpo lo puede mandar cualquiera con una sesión y un `curl`, y sin
+    // tope un `seats: 1e9` crea una sesión de Checkout por un importe absurdo —
+    // que si alguien completa, es un cobro REAL que hay que reembolsar a mano.
+    if (body.seats != null) seats = normalizarAsientos(body.seats);
     if (typeof body.locale === "string" && body.locale.length <= 5) locale = body.locale;
   } catch {
     /* no body — use defaults */
@@ -123,7 +127,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   try {
     const session = await getStripe().checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price, quantity: seats, adjustable_quantity: { enabled: true, minimum: 1 } }],
+      // `maximum` explicito: por defecto Stripe lo deja en 99, asi que un cliente
+      // con 150 maquinas veia el selector del panel aceptar 150 y la pantalla de
+      // Stripe recortarlo a 99 sin decir nada. Los dos topes son ahora el mismo.
+      line_items: [
+        { price, quantity: seats, adjustable_quantity: { enabled: true, minimum: 1, maximum: MAX_ASIENTOS } },
+      ],
       ...(customer ? { customer } : { customer_email: user.email ?? undefined }),
       client_reference_id: user.id,
       metadata: { org_id: user.id, email: user.email ?? "" },

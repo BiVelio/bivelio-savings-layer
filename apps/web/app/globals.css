@@ -624,6 +624,16 @@ input[type="range"] { accent-color: var(--brand); }
 .keycard { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px 14px; margin-top: 12px; flex-wrap: wrap; }
 .keycard .k { font-family: var(--mono); font-size: .82rem; }
 
+/* Botonera de facturación. `billing-cta` y `billing-err` se usaban desde que
+   existen los botones de compra y NO estaban definidas en ninguna parte: los
+   botones se apoyaban en el flujo por defecto y el error se pintaba con el color
+   del texto normal. Al añadir el selector de asientos hacía falta de verdad. */
+.billing-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.billing-err { flex-basis: 100%; font-size: .78rem; color: var(--danger); }
+.seatpick { display: inline-flex; align-items: center; gap: 8px; }
+.seatpick label { font-size: .78rem; color: var(--ink-soft); }
+.seatpick .kt-input { flex: 0 0 auto; text-align: right; }
+
 /* Proyector (reutilizado por la landing) */
 .proj { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 780px) { .proj { grid-template-columns: 1fr; } }

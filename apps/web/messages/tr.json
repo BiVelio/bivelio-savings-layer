@@ -199,7 +199,20 @@
       "testInputAria": "Test edilecek servis hesabı anahtarı",
       "testing": "Test ediliyor…",
       "testMyKey": "Anahtarımı test et",
-      "validResult": "✓ Geçerli — SDK'nız bu anahtarla kullanım raporlayabilir."
+      "validResult": "✓ Geçerli — SDK'nız bu anahtarla kullanım raporlayabilir.",
+      "liveKeysTitle": "Servis hesabı anahtarlarınız",
+      "lastUsed": "son kullanım {when}",
+      "neverUsed": "hiç kullanılmadı",
+      "revoke": "İptal et",
+      "revoking": "İptal ediliyor…",
+      "revokeNote": "İptal anında geçerlidir: o anahtar kullanım bildirmeyi durdurur ve lisansınızı artık alamaz. Kullanım geçmişiniz korunur.",
+      "errRevoke": "Anahtar iptal edilemedi — tekrar deneyin.",
+      "revokeConfirm": "Bu anahtar iptal edilsin mi?",
+      "revokeYes": "Evet, iptal et",
+      "revokeNo": "Vazgeç",
+      "revokeAria": "{prefix} anahtarını iptal et",
+      "revokeYesAria": "{prefix} anahtarının iptalini onayla",
+      "errList": "Anahtarlarınız yüklenemedi — yönetmek veya iptal etmek için sayfayı yenileyin."
     },
     "installLicensePanel": {
       "eyebrow": "Başlayın",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA fail-closed'dur — yalnızca etkin bir PRO lisansıyla çalışır. Koltuk başına aylık {monthly} veya koltuk başına yıllık {yearly}. Bir koltuk, bir kişi değil, etkin bir makine ya da servis kimliğidir.",
       "managePlan": "Planı yönet →",
       "subscribe": "Abone ol →",
-      "checkoutMonthly": "Abone ol — {monthly}/ay →",
-      "checkoutYearly": "Abone ol — {yearly}/yıl →",
-      "checkoutError": "Bir şeyler ters gitti — tekrar deneyin."
+      "checkoutMonthly": "Abone ol — {monthly}/koltuk/ay →",
+      "checkoutYearly": "Abone ol — {yearly}/koltuk/yıl →",
+      "checkoutError": "Bir şeyler ters gitti — tekrar deneyin.",
+      "seatsLabel": "Koltuk",
+      "seatsHint": "Bir koltuk, etkin bir makine ya da servis kimliğidir; kişi değildir. Çalışan sayınızı değil, SDK'yı çalıştıracak süreçleri sayın. Kubernetes'te her replika için BVSALA_SEAT_ID tanımlayın.",
+      "seatsInUse": "Bu ay {used, plural, other {# koltuk}} kullanımda.",
+      "seatsOver": "⚠ {used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Faturanızın çalıştırdığınızla örtüşmesi için «Planı yönet»ten sayıyı artırın.",
+      "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",

@@ -199,7 +199,20 @@
       "testInputAria": "Clave de cuenta de servicio para probar",
       "testing": "Probando…",
       "testMyKey": "Probar mi clave",
-      "validResult": "✓ Válida: tu SDK puede reportar uso con esta clave."
+      "validResult": "✓ Válida: tu SDK puede reportar uso con esta clave.",
+      "liveKeysTitle": "Tus claves de servicio",
+      "lastUsed": "último uso {when}",
+      "neverUsed": "nunca usada",
+      "revoke": "Revocar",
+      "revoking": "Revocando…",
+      "revokeNote": "La revocación es inmediata: esa clave deja de reportar uso y ya no puede recoger tu licencia. Tu historial de uso se conserva.",
+      "errRevoke": "No se ha podido revocar esa clave. Inténtalo de nuevo.",
+      "revokeConfirm": "¿Revocar esta clave?",
+      "revokeYes": "Sí, revocar",
+      "revokeNo": "Cancelar",
+      "revokeAria": "Revocar la clave {prefix}",
+      "revokeYesAria": "Confirmar la revocación de la clave {prefix}",
+      "errList": "No se han podido cargar tus claves. Recarga para gestionarlas o revocarlas."
     },
     "installLicensePanel": {
       "eyebrow": "Empezar",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA es fail-closed: solo funciona con una licencia PRO activa. {monthly} por asiento al mes o {yearly} por asiento al año. Un asiento es una máquina o identidad de servicio activa, no una persona.",
       "managePlan": "Gestionar plan →",
       "subscribe": "Suscribirse →",
-      "checkoutMonthly": "Suscríbete — {monthly}/mes →",
-      "checkoutYearly": "Suscríbete — {yearly}/año →",
-      "checkoutError": "Algo salió mal — inténtalo de nuevo."
+      "checkoutMonthly": "Suscríbete — {monthly}/asiento/mes →",
+      "checkoutYearly": "Suscríbete — {yearly}/asiento/año →",
+      "checkoutError": "Algo salió mal — inténtalo de nuevo.",
+      "seatsLabel": "Asientos",
+      "seatsHint": "Un asiento es una máquina o identidad de servicio activa, no una persona. Cuenta los procesos que van a ejecutar el SDK, no tus empleados. En Kubernetes, fija BVSALA_SEAT_ID en cada réplica.",
+      "seatsInUse": "{used, plural, one {# asiento} other {# asientos}} en uso este mes.",
+      "seatsOver": "⚠ {used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. Sube la cantidad desde «Gestionar plan» para que tu factura cuadre con lo que ejecutas.",
+      "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan."
     },
     "referenceLedgerCards": {
       "proven": "comprobado",

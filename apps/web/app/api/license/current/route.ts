@@ -105,7 +105,7 @@ async function entregarAServiceAccount(clave: string): Promise<NextResponse> {
   const keyHash = createHash("sha256").update(clave).digest("hex");
   const { data: sa, error: saErr } = await admin
     .from("service_accounts")
-    .select("org_id")
+    .select("id, org_id")
     .eq("key_hash", keyHash)
     .maybeSingle();
   if (saErr) {
@@ -113,6 +113,21 @@ async function entregarAServiceAccount(clave: string): Promise<NextResponse> {
     return json({ error: "Could not read your license." }, 503);
   }
   if (!sa?.org_id) return json({ error: "unauthorized" }, 401);
+
+  // SE SELLA EL USO TAMBIÉN AQUÍ. `last_used_at` solo lo escribía el ingest de
+  // medición, así que una clave cuyo único trabajo es RENOVAR LA LICENCIA —que es
+  // exactamente la que no se puede perder de vista— figuraba como "nunca usada"
+  // después de meses funcionando. Y esa etiqueta es justo la que el cliente mira
+  // para decidir cuál revocar: le estábamos señalando la buena.
+  const saId = (sa as { id?: string }).id;
+  if (saId) {
+    const { error: stampErr } = await admin
+      .from("service_accounts")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", saId);
+    if (stampErr) console.error("[license/current] last_used_at stamp failed:", stampErr);
+  }
+
   return entregarLicencia(admin, [sa.org_id as string]);
 }
 

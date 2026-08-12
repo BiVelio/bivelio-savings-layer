@@ -199,7 +199,20 @@
       "testInputAria": "Kunci akun layanan untuk diuji",
       "testing": "Menguji…",
       "testMyKey": "Uji kunci saya",
-      "validResult": "✓ Valid — SDK Anda dapat melaporkan penggunaan dengan kunci ini."
+      "validResult": "✓ Valid — SDK Anda dapat melaporkan penggunaan dengan kunci ini.",
+      "liveKeysTitle": "Kunci akun layanan Anda",
+      "lastUsed": "terakhir dipakai {when}",
+      "neverUsed": "belum pernah dipakai",
+      "revoke": "Cabut",
+      "revoking": "Mencabut…",
+      "revokeNote": "Pencabutan berlaku seketika: kunci itu berhenti melaporkan penggunaan dan tidak bisa lagi mengambil lisensi Anda. Riwayat penggunaan tetap tersimpan.",
+      "errRevoke": "Tidak dapat mencabut kunci itu — coba lagi.",
+      "revokeConfirm": "Cabut kunci ini?",
+      "revokeYes": "Ya, cabut",
+      "revokeNo": "Batal",
+      "revokeAria": "Cabut kunci {prefix}",
+      "revokeYesAria": "Konfirmasi pencabutan kunci {prefix}",
+      "errList": "Tidak dapat memuat kunci Anda — muat ulang untuk mengelola atau mencabutnya."
     },
     "installLicensePanel": {
       "eyebrow": "Mulai",
@@ -224,9 +237,14 @@
       "planBody": "BV-SALA bersifat fail-closed — hanya berjalan dengan lisensi PRO aktif. {monthly} per kursi per bulan atau {yearly} per kursi per tahun. Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang.",
       "managePlan": "Kelola paket →",
       "subscribe": "Berlangganan →",
-      "checkoutMonthly": "Berlangganan — {monthly}/bln →",
-      "checkoutYearly": "Berlangganan — {yearly}/thn →",
-      "checkoutError": "Terjadi kesalahan — silakan coba lagi."
+      "checkoutMonthly": "Berlangganan — {monthly}/kursi/bln →",
+      "checkoutYearly": "Berlangganan — {yearly}/kursi/thn →",
+      "checkoutError": "Terjadi kesalahan — silakan coba lagi.",
+      "seatsLabel": "Kursi",
+      "seatsHint": "Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang. Hitung proses yang akan menjalankan SDK, bukan jumlah karyawan. Di Kubernetes, setel BVSALA_SEAT_ID per replika.",
+      "seatsInUse": "{used, plural, other {# kursi}} terpakai bulan ini.",
+      "seatsOver": "⚠ {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Naikkan jumlahnya lewat «Kelola paket» agar tagihan sesuai dengan yang Anda jalankan.",
+      "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",

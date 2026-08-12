@@ -4,12 +4,20 @@ import type { OrgContext } from "../data";
 import { BillingButtons } from "./BillingButtons";
 import { preciosDelPlan } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
+import { avisoDeAsientos } from "@/lib/billing/asientos";
 
 /** Real account/plan — reads organizations.plan (best-effort), never hardcoded.
  *  Degrades honestly when the schema can't resolve org/seats. */
 export async function AccountPlanStrip({
   email,
   ctx,
+  /**
+   * Asientos USADOS este mes. `null` = no se ha podido medir (que no es cero).
+   * Antes solo se pintaban los PAGADOS, así que ni el cliente podía ver que se
+   * estaba pasando ni nosotros enseñárselo — y el dato lo calcula
+   * `billable_seats` desde el primer día.
+   */
+  asientos = { usados: null, rotacionEsteMes: false },
   // Acaba de pagar y la activación está en curso: se ocultan los botones de
   // compra. Reofrecérselos en ese momento es la vía directa al doble cobro, y la
   // guardia del servidor no lo frena mientras la suscripción está `incomplete`.
@@ -17,6 +25,7 @@ export async function AccountPlanStrip({
 }: {
   email: string;
   ctx: OrgContext;
+  asientos?: { usados: number | null; rotacionEsteMes: boolean };
   ocultarCompra?: boolean;
 }) {
   const t = await getTranslations("dashboard");
@@ -29,6 +38,13 @@ export async function AccountPlanStrip({
   const precioAnual = formatearPrecio(locale, precios.yearly);
   const plan = ctx.org?.plan;
   const isActive = plan === "pro" || plan === "enterprise";
+  const seatsUsados = asientos.usados;
+  const aviso = avisoDeAsientos({
+    planActivo: isActive,
+    usados: seatsUsados,
+    pagados: ctx.seats,
+    rotacionEsteMes: asientos.rotacionEsteMes,
+  });
   const planLabel = isActive ? plan.charAt(0).toUpperCase() + plan.slice(1) : t("accountPlanStrip.noActivePlan");
   return (
     <div className="cards" style={{ gridTemplateColumns: "1.4fr 1fr", marginTop: "6px" }}>
@@ -56,6 +72,28 @@ export async function AccountPlanStrip({
           {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
           {t("accountPlanStrip.planBody", { monthly: precioMensual, yearly: precioAnual })}
         </p>
+        {/* USADOS vs PAGADOS. Solo si hay plan y hay medida: enseñar "0 en uso" a
+            quien acaba de comprar y todavía no ha desplegado nada sería alarmar
+            por nada. Y `null` (no se pudo medir) no se pinta como cero. */}
+        {/* `seatsUsados != null` se repite aunque `avisoDeAsientos` ya lo
+            garantice: el compilador no puede seguir esa garantía a través de la
+            variable, y prefiero un booleano de más que un `!` que le dice a TS
+            que se calle. */}
+        {aviso === "exceso" && seatsUsados != null && ctx.seats != null ? (
+          <p className="ck-note" style={{ marginTop: 6, color: "var(--danger)" }}>
+            {t("accountPlanStrip.seatsOver", { used: seatsUsados, paid: ctx.seats })}
+          </p>
+        ) : aviso === "rotado" && seatsUsados != null ? (
+          /* Rotó la clave este mes: el recuento está inflado porque el seat_id
+             sale de un HMAC con esa clave. Se explica en vez de pedirle dinero. */
+          <p className="ck-note" style={{ marginTop: 6 }}>
+            {t("accountPlanStrip.seatsRotated", { used: seatsUsados })}
+          </p>
+        ) : aviso === "en-uso" && seatsUsados != null ? (
+          <p className="ck-note" style={{ marginTop: 6 }}>
+            {t("accountPlanStrip.seatsInUse", { used: seatsUsados })}
+          </p>
+        ) : null}
         {ocultarCompra ? null : (
           <BillingButtons isActive={isActive} monthly={precioMensual} yearly={precioAnual} />
         )}
