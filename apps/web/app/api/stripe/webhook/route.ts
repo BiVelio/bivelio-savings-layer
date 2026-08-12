@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 
 import { selloDeImpago } from "@/lib/billing/dunning";
 import { motivoDeReemision } from "@/lib/billing/reemision";
+import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
@@ -291,7 +292,14 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
 async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: string, isUpdate: boolean, eventCreated: number) {
   const f = subFacts(sub);
   if (!f.orgId) {
-    console.error("[stripe/webhook] subscription without org_id metadata", sub.id);
+    // Se responde 200, asi que Stripe NO reintenta y el evento queda marcado como
+    // visto: el desajuste es PERMANENTE. Quien acaba de subir de 5 a 20 asientos
+    // ya paga 20 en Stripe y su licencia firmada sigue diciendo 5.
+    await alertar({
+      nivel: "critico",
+      asunto: "Cambio de suscripcion SIN org_id: ni asientos ni periodo se han aplicado",
+      detalle: { subId: sub.id, status: sub.status, seats: f.quantity, eventId, esActualizacion: isUpdate },
+    });
     return;
   }
   const { id: subRowId, stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
@@ -355,7 +363,17 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
 
 async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId: string, eventCreated: number) {
   const f = subFacts(sub);
-  if (!f.orgId) return;
+  if (!f.orgId) {
+    // Mudo hasta ahora. Aqui el error va en la direccion contraria a los otros
+    // dos —nadie se queda sin producto— pero seguimos sirviendo a quien ya no
+    // paga, y sin rastro de que ha pasado.
+    await alertar({
+      nivel: "aviso",
+      asunto: "Cancelacion SIN org_id: no se ha revocado ninguna licencia",
+      detalle: { subId: sub.id, eventId },
+    });
+    return;
+  }
   const { stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
   // Un `deleted` viejo que reentra tras un evento más nuevo no debe revocar: la
   // suscripción podría haberse recreado. La guardia de orden lo frena.
@@ -375,7 +393,20 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
   if (!subId) return;
   const sub = await stripe.subscriptions.retrieve(subId);
   const f = subFacts(sub);
-  if (!f.orgId) return;
+  if (!f.orgId) {
+    // ERA UN `return` MUDO: ni log, ni auditoría, ni nada. Y es el peor sitio
+    // donde callar, porque `invoice.paid` es el ÚNICO camino que re-emite la
+    // licencia con el periodo nuevo: si se sale por aquí, el cliente PAGA el mes
+    // siguiente y su token conserva la caducidad del anterior. Se responde 200,
+    // así que Stripe no reintenta y ningún otro handler lo recoge — el SDK se le
+    // para al agotar la gracia, semanas después, sin que nadie lo haya visto.
+    await alertar({
+      nivel: "critico",
+      asunto: "Renovación cobrada SIN org_id: la licencia NO se ha re-emitido",
+      detalle: { subId, invoiceId: invoice.id, eventId, billingReason: invoice.billing_reason },
+    });
+    return;
+  }
   const { id: subRowId } = await upsertSub(admin, sub, f.orgId, eventCreated);
   // `invoice.paid` retrieve() la suscripción FRESCA de Stripe, así que no reabre
   // una cancelada por un snapshot viejo: solo pasa a pro si de verdad está activa.
@@ -456,7 +487,19 @@ export async function POST(req: Request): Promise<NextResponse> {
   try {
     event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
   } catch (err) {
+    // Una firma suelta es un escaneo de internet y no significa nada. Un RITMO
+    // sostenido significa que `STRIPE_WEBHOOK_SECRET` esta mal o se roto sin
+    // redesplegar — y entonces la tuberia ENTERA esta muerta: ningun checkout
+    // mina licencia, ninguna renovacion re-emite, ninguna cancelacion revoca.
+    // Stripe reintenta unos tres dias y despues DESHABILITA el endpoint; pasado
+    // ese plazo los eventos se pierden para siempre. De ahi que se avise aunque
+    // el caso benigno sea comun: el coste de callar es toda la cartera a la vez.
     console.error("[stripe/webhook] signature verification failed:", err);
+    await alertar({
+      nivel: "critico",
+      asunto: "Webhook de Stripe con firma invalida: revisa STRIPE_WEBHOOK_SECRET",
+      detalle: { motivo: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json({ error: "invalid signature" }, { status: 400 });
   }
 

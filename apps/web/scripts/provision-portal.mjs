@@ -41,22 +41,41 @@ const MAX_ASIENTOS = 500;
 async function main() {
   console.log(`\nModo: ${live ? "REAL" : "TEST"}\n`);
 
-  // Los dos precios tienen que ser del MISMO producto para poder ofrecer el
-  // cambio mensual <-> anual dentro del portal.
+  // El portal admite HASTA 10 productos, y el cliente puede saltar a cualquiera
+  // de los precios listados. En esta cuenta el mensual y el anual cuelgan de
+  // productos DISTINTOS, asi que se listan los dos: agrupar por producto es lo
+  // que hace que el cambio mensual <-> anual siga siendo posible.
   const [mensual, anual] = await Promise.all([
     stripe.prices.retrieve(PRECIO_MENSUAL),
     stripe.prices.retrieve(PRECIO_ANUAL),
   ]);
-  const producto = typeof mensual.product === "string" ? mensual.product : mensual.product.id;
-  const productoAnual = typeof anual.product === "string" ? anual.product : anual.product.id;
-  if (producto !== productoAnual) {
-    console.error(
-      `✗ Los dos precios son de productos distintos (${producto} vs ${productoAnual}).\n` +
-        "  El portal solo permite cambiar entre precios del MISMO producto.",
-    );
-    process.exit(1);
+  const idDeProducto = (p) => (typeof p.product === "string" ? p.product : p.product.id);
+
+  /** producto -> precios suyos que el portal debe ofrecer. */
+  const porProducto = new Map();
+  for (const precio of [mensual, anual]) {
+    const prod = idDeProducto(precio);
+    porProducto.set(prod, [...(porProducto.get(prod) ?? []), precio.id]);
   }
-  console.log(`✓ Producto: ${producto}`);
+  const productos = [...porProducto.entries()].map(([product, prices]) => ({
+    product,
+    prices,
+    // El mismo tope que el resto del producto, para que el panel y Stripe no
+    // digan cosas distintas.
+    adjustable_quantity: { enabled: true, minimum: 1, maximum: MAX_ASIENTOS },
+  }));
+
+  if (porProducto.size === 1) {
+    console.log(`✓ Producto: ${[...porProducto.keys()][0]}`);
+  } else {
+    console.log(`✓ ${porProducto.size} productos (mensual y anual estan separados en esta cuenta):`);
+    for (const [prod, precios] of porProducto) console.log(`    ${prod}  ->  ${precios.join(", ")}`);
+    console.log(
+      "  ⚠ Funciona, pero conviene UNIFICARLOS en un solo producto con dos precios:\n" +
+        "    los informes de Stripe agrupan por producto, asi que hoy tus ingresos\n" +
+        "    mensuales y anuales salen como dos lineas de negocio distintas.",
+    );
+  }
 
   const features = {
     // Lo mínimo imprescindible: sin esto, el aviso de impago del panel manda al
@@ -69,15 +88,7 @@ async function main() {
       enabled: true,
       // `quantity` = crecer y decrecer en asientos. `price` = mensual <-> anual.
       default_allowed_updates: ["quantity", "price"],
-      products: [
-        {
-          product: producto,
-          prices: [PRECIO_MENSUAL, PRECIO_ANUAL],
-          // El mismo tope que el resto del producto, para que el panel y Stripe
-          // no digan cosas distintas.
-          adjustable_quantity: { enabled: true, minimum: 1, maximum: MAX_ASIENTOS },
-        },
-      ],
+      products: productos,
       // Se factura EN EL MOMENTO de ampliar (decisión del dueño, 2026-08-12).
       proration_behavior: "always_invoice",
     },

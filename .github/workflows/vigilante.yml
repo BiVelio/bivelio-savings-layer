@@ -1,0 +1,76 @@
+name: vigilante
+
+# Vigila producción DESDE FUERA.
+#
+# POR QUÉ NO BASTA CON LOS CRONS DE VERCEL. Los crons corren DENTRO del
+# despliegue: si el despliegue está caído, mal configurado o le falta una
+# variable de entorno, no corren — y su silencio es indistinguible de "todo va
+# bien". Esta verja vive en la infraestructura de GitHub, que ya se paga, y su
+# despertador es el que menos falla: **un workflow programado que falla manda un
+# correo al dueño del repositorio.** Sin cuenta nueva, sin dependencia nueva, sin
+# un secreto más.
+#
+# Solo mira endpoints PÚBLICOS a propósito. Las comprobaciones que necesitan
+# credenciales (el invariante del negocio) las hace el cron de Vercel, que sí las
+# tiene; meter aquí un `CRON_SECRET` sería duplicar un secreto en otro sitio para
+# ganar poco.
+on:
+  schedule:
+    # Cada 6 horas. Más a menudo no aporta: los fallos que esto caza (par de
+    # claves roto, despliegue caído) no se arreglan solos en minutos, y un
+    # workflow ruidoso se acaba silenciando.
+    - cron: "13 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: La landing responde
+        run: |
+          codigo=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://savings.bivelio.com/es)
+          echo "landing: $codigo"
+          [ "$codigo" = "200" ] || { echo "::error::La landing devolvió $codigo"; exit 1; }
+
+      # LA SONDA MÁS IMPORTANTE. Si la privada del despliegue deja de ser pareja
+      # de la pública que el SDK embebe, la emisión de licencias sigue
+      # funcionando con toda normalidad y son los SDK de TODOS los clientes los
+      # que las rechazan a la vez, cada uno en su infraestructura. Es una caída
+      # total del producto que desde dentro no se ve.
+      #
+      # La huella se compara contra la conocida buena: que el endpoint responda
+      # `ok:true` no basta — respondería `ok:true` con OTRO par cargado, y
+      # entonces todas las licencias ya emitidas dejarían de valer.
+      - name: La pareja de claves de firma es la correcta
+        env:
+          HUELLA_ESPERADA: 74ff7ba0d84b
+        run: |
+          cuerpo=$(curl -s --max-time 20 https://savings.bivelio.com/api/health/signing)
+          echo "sonda: $cuerpo"
+          echo "$cuerpo" | grep -q '"ok":true' || { echo "::error::La sonda de firma NO está ok: $cuerpo"; exit 1; }
+          echo "$cuerpo" | grep -q "\"huella\":\"$HUELLA_ESPERADA\"" || {
+            echo "::error::HUELLA DISTINTA. Se esperaba $HUELLA_ESPERADA. Si el par ha cambiado, TODAS las licencias emitidas serán rechazadas por TODOS los clientes."
+            exit 1
+          }
+
+      - name: La lista de revocaciones se sirve firmada
+        run: |
+          codigo=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://savings.bivelio.com/licenses/revocations)
+          echo "revocaciones: $codigo"
+          [ "$codigo" = "200" ] || { echo "::error::/licenses/revocations devolvió $codigo"; exit 1; }
+
+      # Que los candados sigan cerrados. Un 200 aquí significaría que el ingest
+      # acepta uso sin credencial, o que el cron de degradación es disparable por
+      # cualquiera.
+      - name: Los candados siguen cerrados
+        run: |
+          fallos=0
+          comprobar() {
+            codigo=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$2" ${3:+-X "$3"})
+            echo "$1: $codigo (se espera $4)"
+            [ "$codigo" = "$4" ] || { echo "::error::$1 devolvió $codigo, se esperaba $4"; fallos=1; }
+          }
+          comprobar "metering sin clave" https://savings.bivelio.com/api/metering/usage POST 401
+          comprobar "cron de impago"     https://savings.bivelio.com/api/cron/dunning     GET  401
+          comprobar "cron de invariante" https://savings.bivelio.com/api/cron/invariantes GET  401
+          exit $fallos

@@ -3,6 +3,7 @@ import { after, NextResponse } from "next/server";
 
 import { parseUsageRecords, UsageValidationError } from "@/lib/metering/usage";
 import { decideEntitlement } from "@/lib/metering/entitlement";
+import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -87,7 +88,18 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const { data, error } = await supabase.rpc("ingest_usage_batch", { p_org: orgId, records });
   if (error) {
+    // SE PIERDEN DATOS DE FACTURACION. `usage_daily` es de donde salen las cifras
+    // del panel y `billable_seats`, que decide los asientos cobrables — y aqui no
+    // hay cola ni reintento: el SDK reencola solo los 5xx, pero un fallo
+    // sostenido del RPC (un CHECK, un deadlock, saturacion) abre un agujero en el
+    // historico que crece cada minuto y no se recupera. Mientras tanto, todos los
+    // paneles degradan a "0 peticiones vistas".
     console.error("[metering/usage] ingest RPC failed:", error);
+    await alertar({
+      nivel: "critico",
+      asunto: "El ingest de uso esta fallando: se estan perdiendo datos de facturacion",
+      detalle: { org: orgId, registros: records.length, motivo: error.message ?? String(error) },
+    });
     return NextResponse.json({ error: "ingest failed" }, { status: 500 });
   }
 
