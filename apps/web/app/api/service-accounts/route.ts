@@ -3,14 +3,15 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { resolverOrgSiExiste } from "@/lib/org/resolver";
+import { resolverOrgSiExiste, resolverOrgDelUsuario } from "@/lib/org/resolver";
 
 /**
  * Mint a service-account key (bvk_…) for the signed-in user's org. This is the
  * machine credential the SDK uses to report usage (and, later, pull a rotated
  * license). Only the sha256 HASH + prefix are stored; the plaintext is returned
- * ONCE. CP-0 org model: org id == the user's id (matching the trial route) — the
- * real org/membership model gets populated by the Stripe onboarding flow.
+ * ONCE. La organización se RESUELVE por pertenencia (`lib/org/resolver`) y se crea
+ * con identidad propia si el usuario no tiene ninguna: ya no se asume que el id de
+ * la organización sea el del usuario.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,21 +37,30 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   const admin = createAdminClient();
 
-  // Bootstrap the org + owner membership for this user (idempotent).
-  const { error: orgErr } = await admin
-    .from("organizations")
-    .upsert({ id: user.id, name: "My workspace" }, { onConflict: "id", ignoreDuplicates: true });
-  if (orgErr) {
-    console.error("[service-accounts] org upsert failed:", orgErr);
-    return NextResponse.json({ error: "could not set up your workspace" }, { status: 500 });
+  // LA ORGANIZACIÓN SE RESUELVE, NO SE ASUME.
+  //
+  // Antes esto era `upsert({ id: user.id })`, y la trampa estaba en el `upsert`:
+  // funcionaba solo mientras el id de la organización FUESE el del usuario. En
+  // cuanto una organización nace con un uuid propio —que es lo que hace ya el
+  // checkout de Stripe— deja de haber conflicto que absorber, así que el upsert
+  // no encuentra nada: CREA UNA SEGUNDA organización, vacía, y le cuelga la clave
+  // `bvk_`. La flota del cliente se autentica entonces contra una organización sin
+  // suscripción y sin licencia, y se apaga fail-closed semanas después sin un solo
+  // error visible. Es el fallo más caro que puede tener este producto.
+  //
+  // Falla CERRADA: si no se puede resolver ni crear, 503 y que el cliente
+  // reintente. Nunca se acuña una clave contra una organización adivinada.
+  let orgId: string;
+  try {
+    orgId = (await resolverOrgDelUsuario(admin, user.id)).orgId;
+  } catch (err) {
+    console.error("[service-accounts] org resolve failed:", err);
+    return NextResponse.json({ error: "could not set up your workspace" }, { status: 503 });
   }
-  await admin
-    .from("org_members")
-    .upsert({ org_id: user.id, user_id: user.id, role: "owner" }, { onConflict: "org_id,user_id", ignoreDuplicates: true });
 
   const { error } = await admin
     .from("service_accounts")
-    .insert({ org_id: user.id, label, key_hash: keyHash, key_prefix: keyPrefix });
+    .insert({ org_id: orgId, label, key_hash: keyHash, key_prefix: keyPrefix });
   if (error) {
     console.error("[service-accounts] insert failed:", error);
     return NextResponse.json({ error: "could not create key" }, { status: 500 });

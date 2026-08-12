@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { loadPrivateKey, signCompact } from "@/lib/license/sign";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolverOrgDelUsuario } from "@/lib/org/resolver";
 
 /**
  * Internal / pilot license issuance. BV-SALA is PAID: there is NO free tier and NO
@@ -42,6 +43,16 @@ async function motivoSinLicencia(userId: string): Promise<"pago_en_curso" | "sin
     for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
       if (fila.org_id) orgIds.add(fila.org_id);
     }
+    // SIN PERTENENCIAS SE RESPONDE «pago en curso», Y ES DELIBERADO. Es justo el
+    // hueco entre pagar y que el webhook escriba la organización: quien acaba de
+    // comprar no tiene todavía ninguna, y decirle «no tienes suscripción» le
+    // invita a comprar dos veces. La respuesta correcta es que espere.
+    //
+    // Antes esto salía bien POR ACCIDENTE: `.in("org_id", [])` genera `in.()`, que
+    // PostgREST rechaza con un 400, y el `error` caía en la misma rama. Un accidente
+    // no es una decisión — el día que PostgREST devolviese `[]` en vez de un error,
+    // la respuesta se habría dado la vuelta hacia el lado caro, en silencio.
+    if (orgIds.size === 0) return "pago_en_curso";
     const { data: sub, error } = await admin
       .from("subscriptions")
       .select("status")
@@ -99,6 +110,21 @@ export async function POST() {
     );
   }
 
+  // LA ORGANIZACIÓN, ANTES DE FIRMAR. El `org_id` viaja FIRMADO dentro del token y
+  // el SDK descarta en silencio cualquier renovación cuyo org no case
+  // (`src/license/refresher.ts:155`), así que no se puede decidir después: antes se
+  // firmaba con `user.id` y solo luego se hacía `upsert({ id: user.id })` para que
+  // la clave ajena cuadrase. Esa pareja solo funcionaba mientras las dos mitades
+  // dijeran la misma mentira. Ahora se resuelve primero y se firma lo resuelto.
+  const admin = createAdminClient();
+  let orgId: string;
+  try {
+    orgId = (await resolverOrgDelUsuario(admin, user.id)).orgId;
+  } catch (err) {
+    console.error("[license/issue] org resolve failed:", err);
+    return NextResponse.json({ error: "Could not issue the license." }, { status: 503 });
+  }
+
   const now = Math.floor(Date.now() / 1000);
   const features = ["semantic_cache", "dashboards", "long_context_compression"];
   // Bare-uuid jti so it doubles as the `bvsala.licenses.id` (the table's id == jti
@@ -108,7 +134,7 @@ export async function POST() {
   const licenseId = randomUUID();
   const payload = {
     jti: licenseId,
-    org_id: user.id,
+    org_id: orgId,
     plan: "pro",
     seats: 1,
     features,
@@ -126,22 +152,13 @@ export async function POST() {
 
     // PERSIST before returning, or the license is unrevocable-by-org (its jti would
     // live only inside the emitted token). Use the service-role client (the anon
-    // client above is RLS-blocked from writing). Idempotently ensure the parent org
-    // + membership first (the licenses.org_id FK requires it, and nothing else
-    // bootstraps an org for this user). FAIL CLOSED — never return an unpersisted
-    // token, else a DB hiccup silently reproduces the original leak.
-    const admin = createAdminClient();
-    const { error: orgErr } = await admin
-      .from("organizations")
-      .upsert({ id: user.id, name: "My workspace" }, { onConflict: "id", ignoreDuplicates: true });
-    if (orgErr) throw orgErr;
-    const { error: memErr } = await admin
-      .from("org_members")
-      .upsert({ org_id: user.id, user_id: user.id, role: "owner" }, { onConflict: "org_id,user_id", ignoreDuplicates: true });
-    if (memErr) throw memErr;
+    // client above is RLS-blocked from writing). La organización y la pertenencia ya
+    // existen: las garantizó `resolverOrgDelUsuario` arriba, que es también lo que
+    // satisface la clave ajena de `licenses.org_id`. FAIL CLOSED — never return an
+    // unpersisted token, else a DB hiccup silently reproduces the original leak.
     const { error: licErr } = await admin.from("licenses").insert({
       id: licenseId,
-      org_id: user.id,
+      org_id: orgId,
       plan: "pro",
       seats: 1,
       features,
