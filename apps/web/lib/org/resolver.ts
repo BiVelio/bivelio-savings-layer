@@ -119,9 +119,15 @@ export async function resolverOrgDelUsuario(
   const yaTiene = await resolverOrgSiExiste(admin, userId);
   if (yaTiene) return yaTiene;
 
+  // NACE CON DUEÑO. `owner_user_id` no se deja para que lo rellene el webhook más
+  // tarde: es la premisa entera de la 0013 —una organización sin dueño no la puede
+  // gestionar nadie, ni cambiar la tarjeta ni cancelar, y la suscripción sigue
+  // cobrando— y el hueco entre crearla y pagar puede durar días con un adeudo SEPA.
+  // `ensureOrg` del webhook solo lo escribe cuando está a null, así que esto no
+  // pisa nada; simplemente hace que ese caso no llegue a existir.
   const { data: orgCreada, error: orgErr } = await admin
     .from("organizations")
-    .insert({ name: nombre?.trim() || "Mi organización" })
+    .insert({ name: nombre?.trim() || "Mi organización", owner_user_id: userId })
     .select("id")
     .single();
   if (orgErr) throw orgErr;

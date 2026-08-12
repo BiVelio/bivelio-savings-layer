@@ -5,11 +5,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured, priceIdFor, type BillingPeriod } from "@/lib/stripe/env";
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
+import { resolverOrgDelUsuario } from "@/lib/org/resolver";
 
 /**
  * Start a Stripe Checkout for the per-seat PRO plan (monthly or yearly). Auth'd
- * by the cookie session; the org id (CP-0: == the auth user id) is carried in
- * the session + subscription metadata so the webhook can resolve it. Returns the
+ * by the cookie session. La organización se RESUELVE (creándola si hace falta) y
+ * su id viaja en la metadata de la sesión y de la suscripción junto al `user_id`
+ * de quien compra — dos datos distintos que hasta ahora eran el mismo. Returns the
  * hosted Checkout URL; the client redirects.
  */
 export const runtime = "nodejs";
@@ -64,6 +66,26 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Billing isn't configured yet." }, { status: 501 });
   }
 
+  // LA ORGANIZACIÓN, ANTES DE LA GUARDIA. Y en este orden a propósito: la guardia
+  // anti-doble-cobro pregunta «¿esta ORGANIZACIÓN ya paga?», así que con el id
+  // equivocado no protege de nada. Se crea si no existe —el id tiene que quedar
+  // fijado ANTES de mandar a nadie a Stripe, porque viaja en la metadata y es lo
+  // que el webhook usará para casar el cobro— y así un carrito abandonado y
+  // reintentado media hora después resuelve la MISMA organización, en vez de
+  // acuñar una por intento.
+  //
+  // Falla CERRADA, igual que la guardia: sin organización no se abre checkout.
+  let orgId: string;
+  try {
+    orgId = (await resolverOrgDelUsuario(admin, user.id, user.email ?? null)).orgId;
+  } catch (err) {
+    console.error("[stripe/checkout] org resolve failed:", err);
+    return NextResponse.json(
+      { error: "Could not verify your current plan. Try again in a moment." },
+      { status: 503 },
+    );
+  }
+
   // `incomplete` VA EN LA LISTA, y es el estado que faltaba. Es donde Stripe deja
   // una suscripción cuyo PRIMER cobro aún no ha liquidado. Con tarjeta dura
   // segundos, pero el checkout no fija `payment_method_types`, así que en euros
@@ -83,7 +105,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   const { data: activa, error: subErr } = await admin
     .from("subscriptions")
     .select("id, status")
-    .eq("org_id", user.id)
+    .eq("org_id", orgId)
     .in("status", ["active", "trialing", "past_due", "incomplete"])
     .limit(1)
     .maybeSingle();
@@ -116,7 +138,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     const { data } = await admin
       .from("organizations")
       .select("stripe_customer_id")
-      .eq("id", user.id)
+      .eq("id", orgId)
       .maybeSingle();
     customer = (data as { stripe_customer_id?: string | null } | null)?.stripe_customer_id ?? undefined;
   } catch {
@@ -135,8 +157,17 @@ export async function POST(req: Request): Promise<NextResponse> {
       ],
       ...(customer ? { customer } : { customer_email: user.email ?? undefined }),
       client_reference_id: user.id,
-      metadata: { org_id: user.id, email: user.email ?? "" },
-      subscription_data: { metadata: { org_id: user.id } },
+      // DOS IDS DISTINTOS, y hasta ahora eran el mismo. `org_id` es a quién se le
+      // cobra; `user_id` es QUIÉN compra, y es el que va a la fila de pertenencia y
+      // a `owner_user_id`. Escribir el org id donde va el user id revienta la clave
+      // ajena contra `auth.users`, el webhook devuelve 503, Stripe reintenta 72 h y
+      // se rinde: el cliente se queda pagando sin licencia, para siempre.
+      //
+      // `user_id` es el que el webhook prefiere (`webhook:281`) y `client_reference_id`
+      // su respaldo, que cubre las sesiones creadas con el código viejo y todavía en
+      // vuelo — un adeudo SEPA tarda días en liquidar.
+      metadata: { org_id: orgId, user_id: user.id, email: user.email ?? "" },
+      subscription_data: { metadata: { org_id: orgId, user_id: user.id } },
       allow_promotion_codes: true,
       success_url: `${origin}/${locale}/dashboard/account?checkout=success`,
       cancel_url: `${origin}/${locale}/dashboard/account?checkout=cancelled`,

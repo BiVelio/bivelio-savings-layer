@@ -363,7 +363,7 @@ function peticionCheckout() {
 
 describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
   it("409 si la organización YA tiene una suscripción activa, y NO llama a Stripe", async () => {
-    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "active" };
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: ORG_DEL_CLIENTE, status: "active" };
     const { POST } = await import("./stripe/checkout/route.js");
     const res = await POST(peticionCheckout());
     expect(res.status).toBe(409);
@@ -373,7 +373,7 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
 
   it("también bloquea en past_due y trialing, no solo en active", async () => {
     for (const status of ["past_due", "trialing"]) {
-      esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status };
+      esc.suscripcionActiva = { id: "sub-row-1", org_id: ORG_DEL_CLIENTE, status };
       const { POST } = await import("./stripe/checkout/route.js");
       expect((await POST(peticionCheckout())).status).toBe(409);
     }
@@ -387,7 +387,7 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
   // de esto la guardia no miraba `incomplete`, así que se abría una segunda
   // suscripción real y liquidaban las dos.
   it("bloquea con un pago SEPA en vuelo (`incomplete`): es el doble cobro del camino normal", async () => {
-    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "incomplete" };
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: ORG_DEL_CLIENTE, status: "incomplete" };
     const { POST } = await import("./stripe/checkout/route.js");
     const res = await POST(peticionCheckout());
     expect(res.status).toBe(409);
@@ -395,7 +395,7 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
   });
 
   it("a quien tiene el pago en vuelo le dice que espere, no que gestione un plan que aún no tiene", async () => {
-    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "incomplete" };
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: ORG_DEL_CLIENTE, status: "incomplete" };
     const { POST } = await import("./stripe/checkout/route.js");
     const cuerpo = (await (await POST(peticionCheckout())).json()) as { error: string };
     expect(cuerpo.error).toMatch(/still being processed/i);
@@ -405,7 +405,7 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
   // `unpaid` queda FUERA a propósito: Stripe ya agotó los reintentos, no hay
   // dinero en vuelo, y bloquear aquí dejaría al cliente sin salida desde la web.
   it("NO bloquea en `unpaid`: ahí no hay cobro en curso y el cliente necesita poder comprar", async () => {
-    esc.suscripcionActiva = { id: "sub-row-1", org_id: esc.usuario!.id, status: "unpaid" };
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: ORG_DEL_CLIENTE, status: "unpaid" };
     const { POST } = await import("./stripe/checkout/route.js");
     expect((await POST(peticionCheckout())).status).toBe(200);
     expect(crearSesion).toHaveBeenCalledTimes(1);
