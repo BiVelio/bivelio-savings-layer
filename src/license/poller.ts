@@ -1,3 +1,4 @@
+import { avisarUnaVez } from "../util/warn-once.js";
 import { RevocationSnapshot, verifyRevocationList } from "./revocation.js";
 import type { LicenseKeyset } from "./verify.js";
 
@@ -22,6 +23,18 @@ const DEFAULTS = {
   maxSkewSeconds: 300,
   requestTimeoutMs: 30_000,
 } as const;
+
+/**
+ * Cuántos fallos seguidos antes del primer aviso, y cada cuántos se repite.
+ *
+ * No se avisa al primero a propósito: una petición perdida es normal y el sondeo
+ * es fail-open por diseño. Con la cadencia por defecto (15 min) el primer aviso
+ * llega a los ~45 minutos de silencio, y se repite cada ~3 horas mientras dure.
+ * Un aviso que se repite en cada ciclo se convierte en ruido, y uno que solo sale
+ * una vez se pierde en el arranque de un despliegue.
+ */
+const FALLOS_ANTES_DE_AVISAR = 3;
+const REPETIR_AVISO_CADA = 12;
 
 export type RevocationPollEvent =
   | { type: "applied"; seq: number; size: number }
@@ -54,6 +67,14 @@ export interface RevocationPollerOptions {
   random?: () => number;
   /** Optional observer (telemetry/tests). */
   onEvent?: (e: RevocationPollEvent) => void;
+  /**
+   * Silencia los avisos por consola. Por defecto están ENCENDIDOS, y ese defecto
+   * es la corrección: el sondeo es fail-open, así que un call-home roto no rompe
+   * nada visible — la lista de revocaciones simplemente se queda vieja, en
+   * silencio, durante días. Quien tenga observabilidad propia puede apagarlos;
+   * quien no la tenga, que es casi todo el mundo, se entera igual.
+   */
+  silenciarAvisos?: boolean;
 }
 
 /**
@@ -171,10 +192,14 @@ export class RevocationPoller {
       this.consecutive304 = 0;
       if (!res.ok) throw new Error(`revocations HTTP ${res.status}`);
 
-      // Remember the ETag so the next poll can send If-None-Match and short-circuit
-      // to a bodiless 304 when nothing changed (saves transfer + Ed25519 re-verify).
-      const et = res.headers.get("etag");
-      if (et) this.lastEtag = et;
+      // El ETag NO se guarda todavía. Se guardaba AQUÍ, antes de verificar la
+      // firma, y eso convertía un rechazo en algo que ocurría UNA vez y luego se
+      // callaba: la lista mala quedaba cacheada, el siguiente sondeo mandaba
+      // `If-None-Match`, el servidor respondía 304 y el rechazo no se repetía
+      // hasta once ciclos después —casi tres horas— cuando el contador de 304
+      // forzaba una revalidación. Un fallo que solo se ve una vez cada tres horas
+      // es un fallo que nadie ve. Se guarda al final, y solo si la lista verifica.
+      const etag = res.headers.get("etag");
 
       const data = (await res.json()) as { list?: string };
       if (!data.list) throw new Error("response missing `list`");
@@ -190,9 +215,26 @@ export class RevocationPoller {
         maxSkewSeconds: this.opts.maxSkewSeconds ?? DEFAULTS.maxSkewSeconds,
       });
       if (!v.ok) {
-        this.opts.onEvent?.({ type: "rejected", reason: v.reason ?? "rejected" });
+        const razon = v.reason ?? "rejected";
+        // NO se guarda el ETag: el siguiente sondeo vuelve a pedir la lista
+        // COMPLETA y vuelve a rechazarla, así que el problema sigue a la vista en
+        // vez de quedar tapado por una cadena de 304.
+        this.opts.onEvent?.({ type: "rejected", reason: razon });
+        // Una lista que no verifica no es una incidencia de red: o hay un fallo de
+        // despliegue o alguien está sirviendo algo que no firmamos nosotros. Se
+        // avisa la primera vez de cada causa, aunque el cliente no haya cableado
+        // `onEvent` — que es lo normal.
+        this.avisar(
+          `rechazada:${razon}`,
+          `[bv-sala] la lista de revocaciones NO verifica (${razon}). Se mantiene la última buena conocida, ` +
+            `así que las revocaciones YA conocidas se siguen aplicando, pero las nuevas no llegan. ` +
+            `Revise ${this.opts.url}.`,
+        );
         return;
       }
+      // Verificada: ahora sí se recuerda el ETag, para que el siguiente sondeo
+      // pueda cortocircuitar con un 304 sin cuerpo.
+      if (etag) this.lastEtag = etag;
       // A verified, authorized list → record the heartbeat for the staleness gate.
       this.opts.snapshot.markContact(this.now());
       const changed = this.opts.snapshot.apply(v);
@@ -206,10 +248,46 @@ export class RevocationPoller {
       // the sticky snapshot and back off. Enforcement never blocks on this.
       this.consecutiveFailures++;
       this.opts.onEvent?.({ type: "error", error });
+      this.avisarFalloDeRed(error);
     } finally {
       clearTimeout(to);
       this.controller = null;
     }
+  }
+
+  /** Un aviso por causa y por proceso, respetando el interruptor. */
+  private avisar(clave: string, mensaje: string): void {
+    if (this.opts.silenciarAvisos) return;
+    avisarUnaVez(`poller:${this.opts.url}:${clave}`, mensaje);
+  }
+
+  /**
+   * EL CALL-HOME LLEVA CAÍDO UN RATO Y NADIE SE HA ENTERADO.
+   *
+   * Este es el fallo silencioso del SDK: el sondeo es fail-open a propósito —una
+   * red caída no puede tumbar la producción de un cliente— pero la consecuencia
+   * es que un endpoint mal configurado, un cortafuegos nuevo o una URL cambiada
+   * no producen NINGÚN síntoma. La licencia sigue funcionando, las peticiones
+   * siguen pasando, y lo único que ocurre es que la lista de revocaciones se
+   * queda congelada. Durante días.
+   *
+   * `onEvent` existía para esto, pero es opcional y casi nadie lo cablea. Así que
+   * el aviso sale por consola por defecto.
+   *
+   * NO se usa `avisarUnaVez` a secas: una caída de una semana tiene que seguir
+   * recordándose. Se avisa al tercer fallo seguido y luego cada doce.
+   */
+  private avisarFalloDeRed(error: unknown): void {
+    if (this.opts.silenciarAvisos) return;
+    const n = this.consecutiveFailures;
+    if (n < FALLOS_ANTES_DE_AVISAR) return;
+    if ((n - FALLOS_ANTES_DE_AVISAR) % REPETIR_AVISO_CADA !== 0) return;
+    const motivo = error instanceof Error ? error.message : String(error);
+    console.warn(
+      `[bv-sala] no se ha podido contactar con el servidor de revocaciones ${n} veces seguidas ` +
+        `(${motivo}). La licencia SIGUE funcionando y las revocaciones ya conocidas se siguen ` +
+        `aplicando, pero las NUEVAS no están llegando. Compruebe la salida hacia ${this.opts.url}.`,
+    );
   }
 
   /** Fire one non-blocking warm poll, then self-schedule. Idempotent. */

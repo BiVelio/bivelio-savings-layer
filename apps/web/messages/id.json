@@ -108,7 +108,8 @@
       "savedLine": "dari pengeluaran LLM Anda yang dihemat pada periode ini · <b>{money}</b> dihemat (baseline − aktual, pada harga Anda).",
       "emptyCap": "Belum mengukur lalu lintas Anda — 0 permintaan terlihat. Pasang SDK dan penghematan bersih Anda muncul di sini — harga Anda, beban kerja Anda. Bukan angka pinjaman atau rekaan.",
       "errorCap": "Kami tidak dapat membaca penggunaanmu saat ini — ini kesalahan sementara di pihak kami, bukan data hilang. Laporanmu aman; muat ulang sebentar lagi.",
-      "unpricedCap": "Kami melihat {count} permintaan tetapi belum bisa memberi harga — atur model biaya untuk model Anda dan penghematan bersih Anda muncul di sini. Lalu lintas Anda sedang diukur."
+      "unpricedCap": "Kami melihat {count} permintaan tetapi belum bisa memberi harga — atur model biaya untuk model Anda dan penghematan bersih Anda muncul di sini. Lalu lintas Anda sedang diukur.",
+      "hiddenCap": "Data penggunaan Anda ada, tetapi akun ini tidak dapat melihatnya. Ini kesalahan di pihak kami dan kami sudah diberi tahu. Hubungi support@bivelio.com jika berlanjut."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
