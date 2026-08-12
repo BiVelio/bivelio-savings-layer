@@ -108,7 +108,8 @@
       "savedLine": "chi tiêu LLM của bạn được giữ lại trong kỳ này · đã tiết kiệm <b>{money}</b> (đường cơ sở − thực tế, theo giá của bạn).",
       "emptyCap": "Chưa đo lưu lượng của bạn — đã thấy 0 yêu cầu. Cài đặt SDK và mức tiết kiệm ròng của bạn sẽ hiện ở đây — giá của bạn, khối lượng công việc của bạn. Không bao giờ là con số vay mượn hay bịa đặt.",
       "errorCap": "Chúng tôi tạm thời không đọc được mức sử dụng của bạn — đây là lỗi tạm thời từ phía chúng tôi, không phải mất dữ liệu. Báo cáo của bạn vẫn an toàn; hãy tải lại sau giây lát.",
-      "unpricedCap": "Chúng tôi thấy {count} yêu cầu nhưng chưa thể định giá — hãy đặt mô hình chi phí cho (các) mô hình của bạn và mức tiết kiệm ròng sẽ hiển thị ở đây. Lưu lượng của bạn đang được đo."
+      "unpricedCap": "Chúng tôi thấy {count} yêu cầu nhưng chưa thể định giá — hãy đặt mô hình chi phí cho (các) mô hình của bạn và mức tiết kiệm ròng sẽ hiển thị ở đây. Lưu lượng của bạn đang được đo.",
+      "hiddenCap": "Dữ liệu sử dụng của quý vị vẫn tồn tại, nhưng tài khoản này không xem được. Đây là lỗi từ phía chúng tôi và chúng tôi đã được cảnh báo. Hãy viết cho support@bivelio.com nếu tình trạng kéo dài."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",

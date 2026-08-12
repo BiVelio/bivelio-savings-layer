@@ -108,7 +108,8 @@
       "savedLine": "LLM harcamanızdan bu dönem cebinizde kaldı · <b>{money}</b> tasarruf (taban − gerçek, sizin fiyatlarınızla).",
       "emptyCap": "Trafiğiniz henüz ölçülmüyor — 0 istek görüldü. SDK'yı kurun; net tasarrufunuz burada görünür — sizin fiyatlarınız, sizin iş yükünüz. Asla ödünç alınmış ya da uydurulmuş bir rakam değil.",
       "errorCap": "Kullanımını şu anda okuyamadık — bizim tarafımızda geçici bir hata, kaybolan veri değil. Raporların güvende; birazdan yenile.",
-      "unpricedCap": "{count} istek görüyoruz ama henüz fiyatlandıramıyoruz — modellerin için bir maliyet modeli tanımla, net tasarrufun burada görünsün. Trafiğin ölçülüyor."
+      "unpricedCap": "{count} istek görüyoruz ama henüz fiyatlandıramıyoruz — modellerin için bir maliyet modeli tanımla, net tasarrufun burada görünsün. Trafiğin ölçülüyor.",
+      "hiddenCap": "Kullanım verileriniz mevcut, ancak bu hesap onları göremiyor. Bu bizim tarafımızdaki bir hata ve uyarı aldık. Sürerse support@bivelio.com adresine yazın."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",

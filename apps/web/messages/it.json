@@ -108,7 +108,8 @@
       "savedLine": "della tua spesa in LLM trattenuta in questo periodo · <b>{money}</b> risparmiati (base di riferimento − effettivo, ai tuoi prezzi).",
       "emptyCap": "Non stiamo ancora misurando il tuo traffico — 0 richieste rilevate. Installa l'SDK e il tuo risparmio netto apparirà qui: i tuoi prezzi, il tuo carico di lavoro. Mai una cifra presa in prestito o inventata.",
       "errorCap": "Non siamo riusciti a leggere il tuo utilizzo ora — è un errore temporaneo dalla nostra parte, non dati persi. I tuoi report sono al sicuro; ricarica tra poco.",
-      "unpricedCap": "Vediamo {count} richieste ma non possiamo ancora tariffarle — imposta un modello di costo per i tuoi modelli e il tuo risparmio netto apparirà qui. Il tuo traffico è misurato."
+      "unpricedCap": "Vediamo {count} richieste ma non possiamo ancora tariffarle — imposta un modello di costo per i tuoi modelli e il tuo risparmio netto apparirà qui. Il tuo traffico è misurato.",
+      "hiddenCap": "I suoi dati di utilizzo esistono, ma questo account non può vederli. È un errore nostro e siamo già stati avvisati. Scriva a support@bivelio.com se persiste."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",

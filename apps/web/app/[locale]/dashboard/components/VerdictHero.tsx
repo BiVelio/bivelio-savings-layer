@@ -6,14 +6,28 @@ import { ProvenancePill } from "./ProvenancePill";
 
 /** Two-state hero, SAME slot: the big number is the customer's OWN net savings
  *  or ABSENT (—) — never borrowed from the reference, never a fabricated 0. */
-export async function VerdictHero({ usage, failed = false }: { usage: UsageRollup[]; failed?: boolean }) {
+export async function VerdictHero({
+  usage,
+  failed = false,
+  visibilidad,
+}: {
+  usage: UsageRollup[];
+  failed?: boolean;
+  /** Por qué está vacío: `oculto` = las filas EXISTEN y esta cuenta no las ve. */
+  visibilidad?: "con_datos" | "sin_trafico" | "oculto" | "desconocido";
+}) {
   const t = await getTranslations("dashboard");
   const baseline = usage.reduce((n, r) => n + r.baselineCost, 0);
   const actual = usage.reduce((n, r) => n + r.actualCost, 0);
   const saved = baseline - actual;
   const peticionesTotales = usage.reduce((n, r) => n + r.requests, 0);
 
-  // Tres cosas que NO son "no tienes tráfico" y que antes se le pintaban igual:
+  // CUATRO cosas que NO son "no tienes tráfico" y que antes se pintaban igual:
+  //  · las filas EXISTEN y esta cuenta no las ve (visibilidad "oculto"). Una
+  //    denegación de RLS en PostgREST devuelve `[]` con `error: null`, así que era
+  //    indistinguible de "aún no has enviado nada" — y decirle eso a un cliente
+  //    que lleva semanas midiendo es la forma más rápida de perderlo. Se comprueba
+  //    contra el `service_role`, que salta la RLS, y solo cuando ha visto cero.
   //  · la consulta falló (failed): 503/RLS/columna ausente, con datos intactos.
   //  · hay tráfico pero sin precio (filas y peticiones, baseline 0): modelo sin
   //    tarifa o ingerido antes de haber precios. Decir "0 solicitudes vistas" es
@@ -69,7 +83,9 @@ export async function VerdictHero({ usage, failed = false }: { usage: UsageRollu
           <>
             <div className="big empty ck-num">—</div>
             <div className="cap">
-              {failed
+              {visibilidad === "oculto"
+                ? t("verdictHero.hiddenCap")
+                : failed
                 ? t("verdictHero.errorCap")
                 : sinPrecioConTrafico
                   ? t("verdictHero.unpricedCap", { count: peticionesTotales })

@@ -108,7 +108,8 @@
       "savedLine": "of your LLM spend kept this period · <b>{money}</b> saved (baseline − actual, at your prices).",
       "emptyCap": "Not measuring your traffic yet — 0 requests seen. Install the SDK and your net savings appears here — your prices, your workload. Never a borrowed or fabricated number.",
       "errorCap": "We couldn't read your usage right now — this is a temporary error on our side, not lost data. Your reports are safe; refresh in a moment.",
-      "unpricedCap": "We're seeing {count} requests but can't price them yet — set a cost model for your model(s) and your net savings appears here. Your traffic is being measured."
+      "unpricedCap": "We're seeing {count} requests but can't price them yet — set a cost model for your model(s) and your net savings appears here. Your traffic is being measured.",
+      "hiddenCap": "Your usage data exists, but this account can't see it. That's a fault on our side and we've been alerted. Write to support@bivelio.com if it persists."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",

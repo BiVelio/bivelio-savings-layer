@@ -108,7 +108,8 @@
       "savedLine": "van je LLM-uitgaven bespaard in deze periode · <b>{money}</b> bespaard (basislijn − werkelijk, tegen jouw prijzen).",
       "emptyCap": "Nog geen meting van je verkeer — 0 verzoeken gezien. Installeer de SDK en je netto besparingen verschijnen hier — jouw prijzen, jouw werklast. Nooit een geleend of verzonnen getal.",
       "errorCap": "We konden je gebruik nu niet lezen — een tijdelijke fout aan onze kant, geen verloren data. Je rapporten zijn veilig; ververs zo meteen.",
-      "unpricedCap": "We zien {count} verzoeken maar kunnen ze nog niet beprijzen — stel een kostenmodel in voor je model(len) en je nettobesparing verschijnt hier. Je verkeer wordt gemeten."
+      "unpricedCap": "We zien {count} verzoeken maar kunnen ze nog niet beprijzen — stel een kostenmodel in voor je model(len) en je nettobesparing verschijnt hier. Je verkeer wordt gemeten.",
+      "hiddenCap": "Uw gebruiksgegevens bestaan, maar dit account kan ze niet zien. Dat is een fout aan onze kant en wij zijn gewaarschuwd. Schrijf naar support@bivelio.com als het aanhoudt."
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",

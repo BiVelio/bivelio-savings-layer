@@ -7,6 +7,8 @@ import { createReadOnlyClient } from "@/lib/supabase/server";
 import { medirAsientos, type MedidaDeAsientos } from "@/lib/billing/asientos-usados";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolverOrgSiExiste, orgParaElPanel } from "@/lib/org/resolver";
+import { contarFilasReales, diagnosticar, type Visibilidad } from "@/lib/org/visibilidad";
+import { alertar } from "@/lib/observabilidad/alerta";
 import { getOrgContext, getUsageRollups, type OrgContext, type UsageRollup } from "./data";
 
 export interface DashboardData {
@@ -15,6 +17,12 @@ export interface DashboardData {
   usage: UsageRollup[];
   /** La lectura de uso falló (503/RLS/columna ausente), distinto de "sin tráfico". */
   usageFailed: boolean;
+  /**
+   * POR QUÉ está vacío, cuando lo está. `sin_trafico` es normal el primer día;
+   * `oculto` significa que las filas EXISTEN y este usuario no las ve, que es un
+   * fallo nuestro y no se puede pintar como «aún no has enviado peticiones».
+   */
+  visibilidad: Visibilidad;
   /**
    * Asientos USADOS este mes (`billable_seats`), frente a los PAGADOS que ya
    * vivían en `ctx.seats`, más si hubo rotación de clave (que infla el recuento).
@@ -39,12 +47,13 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Without Supabase env (e.g. local without .env), createClient() would throw —
   // degrade to a signed-out shell instead of a 500.
   const SIN_MEDIDA = { usados: null, rotacionEsteMes: false };
-  if (!authConfigured) return { user: null, ctx: EMPTY_CTX, usage: [], usageFailed: false, asientos: SIN_MEDIDA };
+  const VACIO = { usage: [], usageFailed: false, visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA };
+  if (!authConfigured) return { user: null, ctx: EMPTY_CTX, ...VACIO };
   const supabase = await createReadOnlyClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { user: null, ctx: EMPTY_CTX, usage: [], usageFailed: false, asientos: SIN_MEDIDA };
+  if (!user) return { user: null, ctx: EMPTY_CTX, ...VACIO };
   // LA ORGANIZACIÓN SE RESUELVE UNA VEZ, AQUÍ. Antes este bloque pasaba `user.id`
   // tres veces donde se espera el id del INQUILINO — una suposición que solo se
   // sostenía mientras la organización fuese una persona. Para cualquier miembro
@@ -61,18 +70,40 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     console.error("[dashboard] no se pudo resolver la organización:", err);
   }
   if (!orgId) {
-    return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, usage: [], usageFailed: false, asientos: SIN_MEDIDA };
+    return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, ...VACIO };
   }
   const [ctx, usage, asientos] = await Promise.all([
     getOrgContext(supabase, orgId),
     getUsageRollups(supabase, orgId),
     medirAsientos(orgId),
   ]);
+  // POR QUÉ ESTÁ VACÍO. Solo se pregunta cuando el usuario ha visto CERO filas y
+  // la lectura no dio error — el caso raro. En el camino normal no cuesta nada.
+  let visibilidad: Visibilidad = "con_datos";
+  if (!usage.failed && usage.rows.length === 0) {
+    const desde = new Date(Date.now() - 120 * 86_400_000).toISOString().slice(0, 10);
+    const reales = await contarFilasReales(createAdminClient(), orgId, desde);
+    visibilidad = diagnosticar(0, reales);
+    if (visibilidad === "oculto") {
+      // Un cliente que paga mirando un panel vacío mientras sus datos están en la
+      // base es de los fallos más caros que tiene este producto, y de los más
+      // silenciosos: no hay error en ningún registro, solo un cliente que se va.
+      await alertar({
+        nivel: "critico",
+        asunto: "El panel de un cliente está VACÍO pero sus filas de uso existen (RLS)",
+        detalle: { orgId, userId: user.id, filasReales: reales },
+      });
+    }
+  } else if (usage.failed) {
+    visibilidad = "desconocido";
+  }
+
   return {
     user: { id: user.id, email: user.email ?? null },
     ctx,
     usage: usage.rows,
     usageFailed: usage.failed,
+    visibilidad,
     asientos,
   };
 });
