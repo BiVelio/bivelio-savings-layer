@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 import { selloDeImpago } from "@/lib/billing/dunning";
 import { motivoDeReemision } from "@/lib/billing/reemision";
 import { alertar } from "@/lib/observabilidad/alerta";
+import { atribuirPorPrecio, type Atribucion } from "@/lib/stripe/atribucion";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
@@ -520,6 +521,48 @@ async function handleInvoiceFailed(admin: Admin, invoice: Stripe.Invoice, eventI
 
 // ---------------------------------------------------------------------------
 
+/**
+ * De qué producto es este evento. Se resuelve SIEMPRE desde el objeto
+ * Subscription: sus items llevan un `price` completo en todas las versiones del
+ * SDK, mientras que las líneas de factura no (`invoice.lines.data[*].price` no
+ * existe en stripe 22.x — es `pricing.price_details.price`).
+ */
+async function atribuirEvento(stripe: Stripe, event: Stripe.Event): Promise<Atribucion> {
+  let sub: Stripe.Subscription | null = null;
+  try {
+    switch (event.type) {
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted":
+        sub = event.data.object as Stripe.Subscription;
+        break;
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
+        const ses = event.data.object as Stripe.Checkout.Session;
+        const id = typeof ses.subscription === "string" ? ses.subscription : ses.subscription?.id;
+        if (id) sub = await stripe.subscriptions.retrieve(id);
+        break;
+      }
+      case "invoice.paid":
+      case "invoice.payment_failed": {
+        const id = invoiceSubId(event.data.object as Stripe.Invoice);
+        if (id) sub = await stripe.subscriptions.retrieve(id);
+        break;
+      }
+      default:
+        return "nuestro"; // los que no manejamos caen en el `default` del switch
+    }
+  } catch (err) {
+    // Si no se puede resolver la suscripción NO se descarta: sin señal se
+    // procesa y se avisa. Descartar ante un fallo de red sería tirar un cobro.
+    console.error("[stripe/webhook] no se pudo atribuir el evento:", err);
+    return "sin_senal";
+  }
+  const item = sub?.items.data[0];
+  const producto = typeof item?.price?.product === "string" ? item.price.product : item?.price?.product?.id;
+  return atribuirPorPrecio(item?.price?.id ?? null, producto ?? null);
+}
+
 export async function POST(req: Request): Promise<NextResponse> {
   if (!STRIPE_SECRET_KEY || !STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json({ error: "Billing webhook isn't configured." }, { status: 501 });
@@ -567,6 +610,39 @@ export async function POST(req: Request): Promise<NextResponse> {
   } catch (err) {
     console.error("[stripe/webhook] idempotency check failed:", err);
     return NextResponse.json({ error: "store unavailable" }, { status: 503 });
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // LA VERJA DE PRODUCTO. BV-SALA y BV-PRGA comparten la MISMA cuenta de Stripe,
+  // y Stripe entrega por TIPO de evento, no por producto: este endpoint recibe
+  // también los del otro. Los dos usan la clave `metadata.org_id`, con uuids de
+  // esquemas distintos, así que un evento ajeno llegaba hasta el insert y la
+  // clave ajena contra `bvsala.organizations` lo reventaba → 503 → Stripe
+  // reintenta durante ~3 días y después DESHABILITA el endpoint. Ahí se cae el
+  // cobro entero, y sin dar la cara.
+  //
+  // ⚠️ UN EVENTO DESCARTADO NO SE REGISTRA EN `stripe_events`, Y ESO ES EL PUNTO.
+  // La comprobación de duplicados de más arriba corta ANTES del manejador, así
+  // que un evento registrado ya no se puede reprocesar ni reenviándolo desde
+  // Stripe. Si algún día esta regla se equivoca y descarta algo NUESTRO, no
+  // registrarlo es lo único que deja el error reparable: se corrige la regla, se
+  // reenvía el evento y se procesa. Registrarlo lo haría irreversible.
+  const veredicto = await atribuirEvento(stripe, event);
+  if (veredicto === "ajeno") {
+    // 200 para que Stripe deje de reintentar. Sin alerta: las ventas del otro
+    // producto son constantes y esto sería una alarma diaria que enseñaría a
+    // ignorar el canal.
+    return NextResponse.json({ received: true, ignored: "otro producto" });
+  }
+  if (veredicto === "sin_senal") {
+    // NO se descarta: se procesa Y se avisa. Aquí puede haber un evento NUESTRO
+    // con el catálogo mal configurado o el metadato roto, y ése es justo el fallo
+    // que no se puede silenciar.
+    await alertar({
+      nivel: "aviso",
+      asunto: "Evento de Stripe que no se ha podido atribuir: se procesa igual",
+      detalle: { eventId: event.id, tipo: event.type },
+    });
   }
 
   try {

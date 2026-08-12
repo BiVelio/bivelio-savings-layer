@@ -10,8 +10,24 @@ arreglarlo y en cuánto tiempo hay que hacerlo.
 antes de emitir— así que reenviar es seguro: no duplica licencias ni cobra dos
 veces.
 
-> Stripe → **Developers → Events** → busca el evento por su id (viene en el correo)
-> → **Resend**.
+> ⚠️ **PERO REENVIAR NO BASTA SI EL EVENTO YA SE PROCESÓ UNA VEZ**, y esto no es
+> evidente: `webhook/route.ts:560-566` corta ANTES del manejador cuando el evento
+> ya está en `bvsala.stripe_events`, y responde `{duplicate:true}` con un 200. Si
+> reenvías sin más, verás un 200 y el problema seguirá ahí — con la falsa
+> sensación de haberlo arreglado. (Esta corrección sale de un incidente real: el
+> manual decía lo contrario.)
+>
+> El procedimiento correcto es **borrar primero la marca** y después reenviar:
+>
+> ```sql
+> delete from bvsala.stripe_events where id = 'evt_…';
+> ```
+>
+> Y luego: Stripe → **Developers → Events** → el evento por su id (viene en el
+> correo) → **Resend**.
+>
+> Un evento que NUNCA llegó a procesarse (503, o descartado por la verja de
+> producto) no está registrado, así que ahí reenviar a secas sí funciona.
 
 ---
 
@@ -75,6 +91,26 @@ Mismo procedimiento: añade el `org_id` a la suscripción y reenvía el
 `customer.subscription.updated`.
 
 ---
+
+## 3 bis · «Evento de Stripe que no se ha podido atribuir: se procesa igual»
+
+**Qué significa.** Llegó un evento y no se pudo decidir de qué producto es.
+BV-SALA y BV-PRGA **comparten cuenta de Stripe**, así que este endpoint recibe
+también los eventos del otro producto; los suyos se descartan en silencio con un
+200, pero éste no se ha podido clasificar.
+
+**No es urgente, pero no se ignora**: se ha procesado igual —a propósito, porque
+descartar un cobro real es peor— y puede ser un evento NUESTRO con algo roto.
+
+**Qué mirar**, por orden de probabilidad:
+
+1. **El catálogo del entorno.** La verja necesita `STRIPE_PRICE_ID_MONTHLY` y
+   `STRIPE_PRICE_ID_YEARLY` en Vercel; con uno solo no descarta nada y avisa de
+   todo. Compruébalos.
+2. **Un precio nuestro que el despliegue no conoce** (cortesía, socio, un nivel
+   nuevo). Se añade a `STRIPE_PRICE_IDS_EXTRA`, separado por comas.
+3. **Un fallo de red al resolver la suscripción en Stripe.** Ante la duda se
+   procesa; si es esporádico, no hay nada que hacer.
 
 ## 4 · «Webhook de Stripe con firma inválida»
 
