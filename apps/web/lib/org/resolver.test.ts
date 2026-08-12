@@ -156,10 +156,23 @@ describe("resolverOrgDelUsuario", () => {
     const r = await resolverOrgDelUsuario(dobleAdmin(e), USUARIO, "Acme");
     const org = e.insertados.find((i) => i.tabla === "organizations");
     expect(org).toBeTruthy();
-    // Ni `id`, ni nada que huela a user id: lo pone `gen_random_uuid()`.
+    // El `id` no se pasa: lo pone `gen_random_uuid()`. El user id SOLO puede
+    // aparecer como `owner_user_id` — que es un dato de la fila, no su identidad.
     expect(org!.fila).not.toHaveProperty("id");
-    expect(JSON.stringify(org!.fila)).not.toContain(USUARIO);
     expect(r.orgId).not.toBe(USUARIO);
+    const { owner_user_id, ...resto } = org!.fila as Record<string, unknown>;
+    expect(owner_user_id).toBe(USUARIO);
+    expect(JSON.stringify(resto)).not.toContain(USUARIO);
+  });
+
+  it("la organización nueva nace CON dueño", async () => {
+    // Sin esto quedaría a null hasta que pasara el webhook, y con un adeudo SEPA
+    // eso son días en los que nadie puede gestionar lo que se está cobrando.
+    const e = base();
+    await resolverOrgDelUsuario(dobleAdmin(e), USUARIO);
+    expect(e.insertados.find((i) => i.tabla === "organizations")!.fila).toMatchObject({
+      owner_user_id: USUARIO,
+    });
   });
 
   it("la pertenencia se escribe con el USER id, no con el org id", async () => {

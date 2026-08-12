@@ -1,0 +1,183 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+/**
+ * EL CHECKOUT ACUÑA LA ORGANIZACIÓN (fase 6). El punto de no retorno.
+ *
+ * A partir de aquí una compra crea una organización con uuid PROPIO, y el id que
+ * viaja a Stripe en la metadata es el que el webhook usará para casar el cobro
+ * durante toda la vida de esa suscripción. Dos cosas tienen que ser ciertas y las
+ * dos fallan en silencio:
+ *
+ *  · `org_id` y `user_id` son DATOS DISTINTOS. Escribir el org id donde va el user
+ *    id revienta la clave ajena contra `auth.users` en `ensureOrg`; el webhook
+ *    devuelve 503, Stripe reintenta 72 h y se rinde. El cliente se queda pagando
+ *    sin licencia, para siempre, y en el panel de Stripe todo está en verde.
+ *
+ *  · La organización se resuelve ANTES de la guardia anti-doble-cobro. La guardia
+ *    pregunta «¿esta ORGANIZACIÓN ya paga?»: con el id equivocado no protege de
+ *    nada, y lo que deja pasar es un SEGUNDO cobro real.
+ */
+
+const USUARIO = "11111111-1111-1111-1111-111111111111";
+const ORG_REAL = "99999999-9999-4999-8999-999999999999";
+const ORG_NUEVA = "abcdabcd-abcd-4bcd-8bcd-abcdabcdabcd";
+
+interface Estado {
+  pertenencias: { org_id: string; role: string; created_at: string; user_id: string }[];
+  subs: { org_id: string; status: string; id: string }[];
+  orgs: { id: string; stripe_customer_id: string | null }[];
+  insertados: { tabla: string; fila: Record<string, unknown> }[];
+  fallar?: string;
+}
+let e: Estado;
+/** Lo que se le manda a Stripe. Es el contrato con el webhook. */
+let sesion: Record<string, unknown> | null = null;
+
+const consulta = (tabla: string) => {
+  let filas: unknown[] =
+    tabla === "org_members" ? e.pertenencias
+    : tabla === "subscriptions" ? e.subs
+    : tabla === "organizations" ? e.orgs
+    : [];
+  const q: Record<string, unknown> = {
+    select: () => q,
+    order: () => q,
+    limit: () => q,
+    eq: (col: string, val: unknown) => {
+      filas = (filas as Record<string, unknown>[]).filter((f) => f[col] === val);
+      return q;
+    },
+    in: (col: string, vals: unknown[]) => {
+      filas = (filas as Record<string, unknown>[]).filter((f) => vals.includes(f[col]));
+      return q;
+    },
+    maybeSingle: async () => ({ data: (filas as unknown[])[0] ?? null, error: null }),
+    insert: (fila: Record<string, unknown>) => {
+      if (e.fallar === tabla) {
+        return Object.assign(Promise.resolve({ data: null, error: { message: "boom" } }), {
+          select: () => ({ single: async () => ({ data: null, error: { message: "boom" } }) }),
+        });
+      }
+      e.insertados.push({ tabla, fila });
+      return Object.assign(Promise.resolve({ data: null, error: null }), {
+        select: () => ({ single: async () => ({ data: { id: ORG_NUEVA, ...fila }, error: null }) }),
+      });
+    },
+    then: (res: (v: { data: unknown; error: null }) => unknown) => res({ data: filas, error: null }),
+  };
+  return q;
+};
+
+vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => ({ from: consulta }) }));
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getUser: async () => ({ data: { user: { id: USUARIO, email: "yo@example.com" } } }) },
+  }),
+}));
+vi.mock("@/lib/stripe/env", () => ({
+  billingFullyConfigured: true,
+  priceIdFor: () => "price_mensual",
+}));
+vi.mock("@/lib/stripe/client", () => ({
+  getStripe: () => ({
+    checkout: {
+      sessions: {
+        create: async (args: Record<string, unknown>) => {
+          sesion = args;
+          return { url: "https://checkout.stripe.com/x" };
+        },
+      },
+    },
+  }),
+}));
+
+beforeEach(() => {
+  e = { pertenencias: [], subs: [], orgs: [], insertados: [] };
+  sesion = null;
+  vi.resetModules();
+});
+
+const peticion = (cuerpo: unknown = { seats: 3 }) =>
+  new Request("https://savings.bivelio.com/api/stripe/checkout", {
+    method: "POST",
+    body: JSON.stringify(cuerpo),
+    headers: { "content-type": "application/json" },
+  });
+
+describe("POST /api/stripe/checkout — la organización se acuña aquí", () => {
+  it("⛔ org_id y user_id son distintos, y cada uno en su sitio", async () => {
+    // El fallo que esto cierra no da error en el checkout: lo da el WEBHOOK, horas
+    // después, como violación de clave ajena, y acaba con el cliente pagando sin
+    // licencia porque Stripe se rinde a las 72 h.
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(200);
+
+    const meta = sesion!.metadata as Record<string, string>;
+    expect(meta.org_id).toBe(ORG_NUEVA);
+    expect(meta.user_id).toBe(USUARIO);
+    expect(meta.org_id).not.toBe(meta.user_id);
+
+    // Y lo mismo en la SUSCRIPCIÓN: es de donde salen los eventos de renovación,
+    // que llegan durante años y no traen la sesión de checkout.
+    const metaSub = (sesion!.subscription_data as { metadata: Record<string, string> }).metadata;
+    expect(metaSub.org_id).toBe(ORG_NUEVA);
+    expect(metaSub.user_id).toBe(USUARIO);
+  });
+
+  it("client_reference_id sigue siendo el USUARIO — es el respaldo del webhook", async () => {
+    // `webhook:281` lo usa cuando falta `metadata.user_id`, y eso cubre las sesiones
+    // creadas con el código viejo que sigan en vuelo: un adeudo SEPA tarda días.
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.client_reference_id).toBe(USUARIO);
+  });
+
+  it("con organización ya existente se reutiliza, no se acuña otra", async () => {
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(e.insertados.filter((i) => i.tabla === "organizations")).toHaveLength(0);
+    expect((sesion!.metadata as Record<string, string>).org_id).toBe(ORG_REAL);
+  });
+
+  it("⛔ la guardia anti-doble-cobro mira la ORGANIZACIÓN resuelta", async () => {
+    // Si mirase `user.id` no encontraría la suscripción de una organización con
+    // uuid propio, y dejaría abrir una SEGUNDA de verdad. Con dinero real.
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.subs = [{ id: "sub_1", org_id: ORG_REAL, status: "active" }];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(409);
+    expect(sesion).toBeNull(); // no se ha llegado a abrir nada en Stripe
+  });
+
+  it("un adeudo SEPA en vuelo sigue bloqueando, con su mensaje propio", async () => {
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.subs = [{ id: "sub_1", org_id: ORG_REAL, status: "incomplete" }];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toContain("still being processed");
+  });
+
+  it("⛔ si la organización no se puede resolver, NO se abre checkout", async () => {
+    // Falla CERRADA. Mandar a alguien a pagar sin saber a qué organización se le
+    // imputa el cobro produce exactamente el caso irreparable: dinero cobrado que
+    // no se puede casar con nadie.
+    e.fallar = "organizations";
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(503);
+    expect(sesion).toBeNull();
+  });
+
+  it("el cliente de Stripe se busca por la ORGANIZACIÓN, para no duplicarlo", async () => {
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.orgs = [{ id: ORG_REAL, stripe_customer_id: "cus_viejo" }];
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.customer).toBe("cus_viejo");
+    expect(sesion!.customer_email).toBeUndefined();
+  });
+});
