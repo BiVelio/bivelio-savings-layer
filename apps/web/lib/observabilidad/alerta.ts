@@ -29,6 +29,67 @@ export interface Alerta {
 /** Prefijo estable y buscable. No lo cambies: puede haber alertas atadas a él. */
 export const MARCA = "[bv-sala:ALERTA]";
 
+/** Buzón por defecto. Decisión del dueño (2026-08-12). Ajustable por entorno. */
+const DESTINO_POR_DEFECTO = "support@bivelio.com";
+/** Remitente. Cualquier dirección del dominio verificado en Resend sirve. */
+const REMITENTE = "BiVelio Savings <alertas@bivelio.com>";
+/** El procedimiento, versionado junto al código que dispara la alerta. */
+const MANUAL = "https://github.com/BiVelio/bivelio-savings-layer/blob/main/docs/RUNBOOK-ALERTAS.md";
+
+/**
+ * Correo, por la cuenta de Resend que la plataforma YA tiene (dominio
+ * `bivelio.com` verificado). Con `fetch` directo y sin SDK: una dependencia más
+ * en el camino de un avisador es una cosa más que puede romperse justo cuando
+ * hace falta.
+ *
+ * SOLO LO CRÍTICO LLEGA POR CORREO. Mandar también los avisos entrenaría a
+ * ignorarlos, y entonces el correo que importa se pierde entre los que no. Los
+ * `aviso` se quedan en el registro y en el webhook, si lo hay.
+ */
+async function porCorreo(nivel: NivelDeAlerta, asunto: string, detalle?: Record<string, unknown>) {
+  if (nivel !== "critico") return;
+  const clave = process.env.RESEND_API_KEY;
+  if (!clave) return;
+  const destino = (process.env.BVSALA_ALERT_EMAIL || DESTINO_POR_DEFECTO)
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
+  if (destino.length === 0) return;
+
+  // EL CORREO LLEVA SU PROPIO MANUAL. Una alerta sin procedimiento es ansiedad a
+  // las tres de la mañana: quien la recibe tiene que saber qué mirar y qué hacer
+  // sin ir a buscarlo, y lo primero de casi todas es reenviar el evento en Stripe.
+  const cuerpo = [
+    `<p><b>${escapar(asunto)}</b></p>`,
+    `<pre style="background:#f6f6f6;padding:12px;border-radius:6px;overflow:auto">${escapar(
+      JSON.stringify(detalle ?? {}, null, 2),
+    )}</pre>`,
+    `<p><b>Qué hacer:</b> <a href="${MANUAL}">manual de alertas</a>. ` +
+      `Casi todas se reparan <b>reenviando el evento en Stripe</b> ` +
+      `(Developers → Events → el id de arriba → Resend); los handlers son ` +
+      `idempotentes, así que reenviar no duplica licencias ni cobra dos veces.</p>`,
+    `<p style="color:#666;font-size:12px">savings.bivelio.com · ${new Date().toISOString()}</p>`,
+  ].join("");
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { authorization: `Bearer ${clave}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      from: REMITENTE,
+      to: destino,
+      subject: `🔴 BV-SALA: ${asunto}`,
+      html: cuerpo,
+    }),
+    signal: AbortSignal.timeout(8_000),
+  });
+  if (!res.ok) console.error(`${MARCA} el correo no salió (${res.status})`);
+}
+
+/** El detalle lo componemos nosotros, pero puede traer texto de un error ajeno. */
+function escapar(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 /**
  * Manda la alerta. NUNCA lanza y NUNCA bloquea más de unos segundos: esto se
  * llama desde caminos que ya están gestionando un fallo, y un avisador que rompe
@@ -40,6 +101,18 @@ export async function alertar({ nivel, asunto, detalle }: Alerta): Promise<void>
   if (nivel === "critico") console.error(linea, detalle ?? {});
   else console.warn(linea, detalle ?? {});
 
+  // Los dos canales van EN PARALELO y ninguno puede tumbar al otro: si el webhook
+  // está caído, el correo tiene que salir igual, y al revés. `allSettled` porque
+  // aquí un fallo no se propaga nunca — se está gestionando otro fallo ya.
+  await Promise.allSettled([
+    porCorreo(nivel, asunto, detalle).catch((err) =>
+      console.error(`${MARCA} no se pudo enviar el correo:`, err instanceof Error ? err.message : err),
+    ),
+    porWebhook(nivel, asunto, detalle),
+  ]);
+}
+
+async function porWebhook(nivel: NivelDeAlerta, asunto: string, detalle?: Record<string, unknown>) {
   const url = process.env.BVSALA_ALERT_WEBHOOK;
   if (!url) return;
 
