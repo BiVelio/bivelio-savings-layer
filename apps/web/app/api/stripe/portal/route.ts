@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolverOrgSiExiste } from "@/lib/org/resolver";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured } from "@/lib/stripe/env";
+import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 
 /**
  * Open the Stripe Billing Portal so the customer can change seats, update the
@@ -39,6 +40,11 @@ export async function POST(req: Request): Promise<NextResponse> {
   // sin poder comprar y sin poder gestionar.
   const org = await resolverOrgSiExiste(admin, user.id);
   if (!org) return NextResponse.json({ error: "No subscription to manage yet." }, { status: 409 });
+  // El portal de Stripe cancela la suscripción, cambia la tarjeta y mueve los
+  // asientos. No es una pantalla de consulta.
+  if (!puede(org.role, "gestionar_facturacion")) {
+    return NextResponse.json({ error: NO_AUTORIZADO }, { status: 403 });
+  }
   const { data } = await admin
     .from("organizations")
     .select("stripe_customer_id")

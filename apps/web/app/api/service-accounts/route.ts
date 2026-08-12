@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolverOrgSiExiste, resolverOrgDelUsuario } from "@/lib/org/resolver";
+import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 
 /**
  * Mint a service-account key (bvk_…) for the signed-in user's org. This is the
@@ -52,7 +53,14 @@ export async function POST(req: Request): Promise<NextResponse> {
   // reintente. Nunca se acuña una clave contra una organización adivinada.
   let orgId: string;
   try {
-    orgId = (await resolverOrgDelUsuario(admin, user.id)).orgId;
+    const org = await resolverOrgDelUsuario(admin, user.id);
+    // La `bvk_` descarga la licencia COMPLETA de la organización desde cualquier
+    // máquina. Acuñarla es la otra puerta al mismo secreto que /license/current, y
+    // tiene que estar cerrada con la misma llave.
+    if (!puede(org.role, "gestionar_claves")) {
+      return NextResponse.json({ error: NO_AUTORIZADO }, { status: 403 });
+    }
+    orgId = org.orgId;
   } catch (err) {
     console.error("[service-accounts] org resolve failed:", err);
     return NextResponse.json({ error: "could not set up your workspace" }, { status: 503 });
@@ -132,6 +140,11 @@ export async function DELETE(req: Request): Promise<NextResponse> {
   // secas: ese `.eq("org_id", …)` es el ÚNICO control que impide borrar la clave
   // de otro cliente, y ahora lleva la organización RESUELTA, no el user id.
   if (!org) return NextResponse.json({ error: "No such key in your account." }, { status: 404 });
+  // Revocar es tan sensible como acuñar en la otra dirección: quien puede revocar
+  // puede dejar sin medición ni renovación a toda la flota de su empresa.
+  if (!puede(org.role, "gestionar_claves")) {
+    return NextResponse.json({ error: NO_AUTORIZADO }, { status: 403 });
+  }
   const { data, error } = await admin
     .from("service_accounts")
     .delete()

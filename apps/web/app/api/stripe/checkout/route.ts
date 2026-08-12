@@ -6,6 +6,7 @@ import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured, priceIdFor, type BillingPeriod } from "@/lib/stripe/env";
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 import { resolverOrgDelUsuario } from "@/lib/org/resolver";
+import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 
 /**
  * Start a Stripe Checkout for the per-seat PRO plan (monthly or yearly). Auth'd
@@ -77,7 +78,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   // Falla CERRADA, igual que la guardia: sin organización no se abre checkout.
   let orgId: string;
   try {
-    orgId = (await resolverOrgDelUsuario(admin, user.id, user.email ?? null)).orgId;
+    const org = await resolverOrgDelUsuario(admin, user.id, user.email ?? null);
+    // Abrir un checkout mueve DINERO REAL de la empresa. Un `member` no compra.
+    if (!puede(org.role, "comprar")) {
+      return NextResponse.json({ error: NO_AUTORIZADO }, { status: 403 });
+    }
+    orgId = org.orgId;
   } catch (err) {
     console.error("[stripe/checkout] org resolve failed:", err);
     return NextResponse.json(

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
+import { resolverOrgSiExiste } from "@/lib/org/resolver";
+import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
 
 /**
  * GET /api/license/current — devuelve al dueño de la organización el token de su
@@ -162,18 +164,33 @@ export async function GET(req: Request): Promise<NextResponse> {
   // Lo que cubría (quien pagó y aún no tiene fila de pertenencia) ya no puede
   // darse: el webhook la escribe siempre, y la comprobación 3 de la fase 0
   // confirmó que no hay ninguna organización sin membresía en producción.
-  const { data: miembro, error: memErr } = await admin
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id);
-  if (memErr) {
-    console.error("[license/current] lectura de pertenencia falló:", memErr);
+  //
+  // Y se resuelve con el RESOLVEDOR compartido en vez de leer la primera fila que
+  // devuelva la consulta. Coger `filas[0]` sin `order` es un sorteo: con dos
+  // pertenencias, la licencia que te descargas puede cambiar entre dos peticiones
+  // seguidas. El resolvedor desempata siempre igual y prefiere la organización que
+  // PAGA, que es la única respuesta defendible cuando lo que se entrega es una
+  // credencial.
+  let org;
+  try {
+    org = await resolverOrgSiExiste(admin, user.id);
+  } catch (err) {
+    console.error("[license/current] lectura de pertenencia falló:", err);
     return json({ error: "Could not read your license." }, 503);
   }
-  const orgIds = ((miembro as { org_id?: string }[] | null) ?? [])
-    .map((f) => f.org_id)
-    .filter((x): x is string => Boolean(x));
-  if (orgIds.length === 0) return json({ error: "unauthorized" }, 401);
+  if (!org) return json({ error: "unauthorized" }, 401);
 
-  return entregarLicencia(admin, orgIds);
+  // EL ROL, en la superficie que entrega el TOKEN FIRMADO COMPLETO. Es la puerta
+  // más valiosa del producto: ese token vale para toda la flota, en cualquier
+  // máquina, hasta que caduque. Un `member` invitado a ver el gasto no tiene por
+  // qué salir de aquí con la credencial de producción de su empresa.
+  //
+  // 403 y no 404: el que pregunta ES de la organización, así que negar su
+  // existencia no oculta nada y solo confunde. Lo que no se dice es qué rol haría
+  // falta.
+  if (!puede(org.role, "descargar_licencia")) {
+    return json({ error: NO_AUTORIZADO }, 403);
+  }
+
+  return entregarLicencia(admin, [org.orgId]);
 }

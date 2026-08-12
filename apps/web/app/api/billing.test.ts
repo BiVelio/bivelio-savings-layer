@@ -24,7 +24,7 @@ interface Escenario {
   /** Organizaciones a las que pertenece la sesión. La entrega de licencia se
    *  decide SOLO por aquí desde que se quitó la siembra CP-0 `new Set([user.id])`,
    *  que era una puerta trasera permanente para el fundador. */
-  pertenencias: { org_id: string }[];
+  pertenencias: { org_id: string; role?: string }[];
   licencia: Record<string, unknown> | null;
   suscripcionActiva: Record<string, unknown> | null;
   serviceAccount: Record<string, unknown> | null;
@@ -179,7 +179,10 @@ beforeEach(() => {
   // y por eso la siembra CP-0 `new Set([user.id])` de license/current pasaba
   // desapercibida: era una puerta trasera permanente para el fundador y ningún
   // test podía verla.
-  esc.pertenencias = [{ org_id: ORG_DEL_CLIENTE }];
+  // CON ROL. Sin él, la fase 7 deniega —y hace bien: `puede(undefined, …)` es
+  // false. Los fixtures que no lo llevaban dieron 403 en bloque, que es
+  // exactamente la garantía que se buscaba.
+  esc.pertenencias = [{ org_id: ORG_DEL_CLIENTE, role: "owner" }];
   esc.licencia = null;
   esc.suscripcionActiva = null;
   esc.serviceAccount = null;
