@@ -164,17 +164,20 @@ export async function supersedeLicense(admin: AdminClient, jti: string): Promise
 export async function currentLicense(
   admin: AdminClient,
   orgId: string,
-): Promise<{ jti: string; seats: number } | null> {
+): Promise<{ jti: string; seats: number; expiresAt: string | null } | null> {
   const { data } = await admin
+    // `expires_at` NO se leía, y por eso el webhook no podía comparar la
+    // caducidad de la licencia contra el periodo de la suscripción: solo sabía
+    // mirar los asientos. Ver la condición de re-emisión en el webhook.
     .from("licenses")
-    .select("id, seats")
+    .select("id, seats, expires_at")
     .eq("org_id", orgId)
     .eq("revoked", false)
     .order("issued_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const row = data as { id?: string; seats?: number } | null;
-  return row?.id ? { jti: row.id, seats: row.seats ?? 0 } : null;
+  const row = data as { id?: string; seats?: number; expires_at?: string | null } | null;
+  return row?.id ? { jti: row.id, seats: row.seats ?? 0, expiresAt: row.expires_at ?? null } : null;
 }
 
 /**
