@@ -9,7 +9,7 @@ import { ed25519 } from "@noble/curves/ed25519.js";
  * against BiVelio's public key, decode the payload, and apply the same grace
  * policy the license-client uses. Verification is **browser-safe**: it uses
  * `@noble/curves` (pure JS) + Web primitives (`atob`, `TextEncoder`) rather than
- * `node:crypto`, so the shared `src/index.ts` still compiles into the browser
+ * `node:crypto`, so the shared entry point still compiles into the browser
  * demo bundle. The private signing key never leaves the control plane; only the
  * public key is embedded here, so a token cannot be forged or tampered with.
  */

@@ -13,7 +13,7 @@ import type { LicenseKeyset } from "./verify.js";
  * hole the old one-shot resolution left open. `isActive()` is true while active or
  * in grace; `isEntitled` additionally requires the feature in the token's grant.
  * Online revocation is added by pairing {@link liveGateFromKey} with a
- * poller-fed snapshot (see src/pipeline/create.ts + poller.ts).
+ * poller-fed snapshot, which `createSavingsLayer` wires up for you.
  */
 export function gateFromKey(
   licenseKey: string,

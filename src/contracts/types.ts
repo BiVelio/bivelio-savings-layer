@@ -163,12 +163,9 @@ export interface SavingsResult<T = unknown> {
    * `data` NO son la respuesta final: el modelo devolvió `content` vacío y pide
    * ejecutar la acción (`finishReason === "tool_calls"`).
    *
-   * Faltaba: el adaptador ya propagaba `tool_calls` (content:null + tool_calls es
-   * el camino NORMAL en cuanto hay herramientas), pero el pipeline construía la
-   * respuesta solo con `{text, data, rendered}` y este contrato ni declaraba el
-   * campo — el cliente recibía "" como si fuera la respuesta buena y la
-   * invocación se perdía entera. La palanca de herramientas que vende el README
-   * era inservible en el paquete publicado.
+   * `content: null` + `tool_calls` is the NORMAL shape as soon as tools are in
+   * play, so treat an empty `text` together with a populated `toolCalls` as a
+   * tool invocation to execute — not as an empty answer.
    */
   toolCalls?: ToolCallRequest[];
   /**

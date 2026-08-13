@@ -1,7 +1,8 @@
 /**
  * The four-ledger savings accounting.
  *
- * These ledgers are kept strictly separate on purpose (see contracts/types.ts).
+ * These ledgers are kept strictly separate on purpose: each answers a different
+ * question, and summing them would double-count.
  * The ledger is a pure accumulator: the pipeline records events into it, and it
  * produces the numbers that populate the SavingsReport. It never guesses — every
  * increment is driven by an explicit pipeline decision.
@@ -94,24 +95,17 @@ export class SavingsLedger {
   /**
    * ¿El estimador que produjo las dos cifras anteriores cuenta con la regla del
    * proveedor? Lo fija el pipeline al resolver el tokenizador del modelo.
-   * Por defecto NO: asumir exactitud sin comprobarla es el fallo que esto cierra.
+   * Defaults to NO: exactness is claimed only once it has been verified.
    */
   estimatorExact = false;
   /** Salida del reintento de reparación. Es coste NUESTRO, nunca del baseline. */
   repairOutput = 0;
   /**
-   * ENTRADA del reintento de reparación. Simétrico de `repairOutput`, y faltaba.
+   * INPUT of the repair retry. Mirrors `repairOutput`.
    *
-   * El baseline de una llamada ejecutada se reconstruye desde `actualInput`, y
-   * `actualInput` ya acumula las DOS llamadas (pipeline.ts:623). Sin descontar la
-   * del reintento, el baseline se inflaba con un coste que es NUESTRO, no del
-   * cliente: una petición que costó el doble que el camino naive se publicaba con
-   * ahorro POSITIVO. Medido: netSavings = -0,2857 cuando la verdad era -100 %, y
-   * con `structuredData` llegaba a +36,4 % — y encima con `basis: 'measured'`,
-   * que es justo lo que el panel presenta como contrastable con la factura.
-   *
-   * Para la salida ya existía la corrección (`baselineOutputHonesto`); para la
-   * entrada no había nada.
+   * Both are OUR cost, never the customer's, so both are subtracted from the
+   * reconstructed baseline. The baseline is what the naive path would have
+   * cost; work the layer does to fix its own output has no place in it.
    */
   repairInput = 0;
   /**
