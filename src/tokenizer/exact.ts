@@ -6,18 +6,9 @@
  * contamos aquí. Con el estimador heurístico esos dos sumandos vienen de reglas
  * distintas, y la diferencia NO es ruido: el heurístico cobra cada símbolo suelto
  * como un token entero, así que infla el JSON (40% de símbolos) mucho más que el
- * TOON (16%). Medido en el escenario de la tabla: publicaba un baseline 3,68x el
- * naive real, o sea un +47,4% de ahorro donde el proveedor midió −49,6%.
- *
- * Cómo se instala. `gpt-tokenizer` son ~53 MB desempaquetados, así que NO es
- * dependencia dura: imponérsela a todo el que instale el SDK, cuando la mayoría
- * no necesita contabilidad medida, sería abusivo. Es peerDependency opcional:
- *
- *   pnpm add gpt-tokenizer
- *
- * Sin ella el layer sigue funcionando con el heurístico, y el `basis` de cada
- * informe lo dice — "estimated" en vez de "measured". Esa es la diferencia
- * importante: el producto no deja de funcionar, deja de AFIRMAR de más.
+ * An estimator that is not calibrated for the destination model can miss by
+ * enough to publish a baseline several times the real one, which would credit a
+ * saving that never existed. That is why `basis` degrades instead of claiming.
  */
 import type { TokenEstimator } from "./estimator.js";
 

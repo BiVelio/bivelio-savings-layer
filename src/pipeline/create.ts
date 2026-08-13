@@ -37,7 +37,7 @@ export interface SavingsLayer {
  * Create a savings layer. The only hard requirement is a `provider`; a default
  * heuristic tokenizer and in-memory implementations of every other component
  * are wired automatically. Replace any of them for production (Redis exact
- * cache, pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua sidecar,
+ * cache, a vector-backed semantic cache, a real tokenizer, a compressor sidecar,
  * XGrammar/llguidance backends, etc.).
  *
  * @example

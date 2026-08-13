@@ -27,7 +27,7 @@ import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
  * Causa: k = actualInput/sentInputLocal se calibra sobre el prompt ENVIADO y se
  * aplica a texto QUITADO que estaba en OTRO formato. El heurístico cobra cada
  * símbolo suelto a token entero, así que infla el JSON (40% símbolos) mucho más
- * que el TOON (16%) y el sesgo no se cancela en la resta.
+ * que el the compact encoder (16%) y el sesgo no se cancela en la resta.
  */
 
 /** Proveedor que reproduce un uso fijo, para que el ledger se calcule contra él. */

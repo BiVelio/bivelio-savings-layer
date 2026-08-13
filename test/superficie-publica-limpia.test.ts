@@ -97,7 +97,7 @@ describe("la superficie pública del paquete", () => {
    * LO QUE SE ANUNCIA NO PUEDE SER EL ÍNDICE DE LA RECETA.
    *
    * Las `keywords` de npm decían `prompt-compression, semantic-cache,
-   * singleflight, adaptive-rag, toon, constrained-decoding`, y el README traía la
+   * singleflight, adaptive-rag, filas, constrained-decoding`, y el README traía la
    * cascada en orden, los umbrales exactos (`≥64` tokens, `≥8%`) y las cifras
    * medidas de una comparación de formatos. Eso no le dice a un comprador QUÉ
    * hace el producto: le dice a un competidor CÓMO está hecho, gratis y en la
@@ -114,7 +114,7 @@ describe("la superficie pública del paquete", () => {
     // Nombres de técnica y de dependencias evaluadas. No son secretos de estado,
     // pero juntos son la lista de la compra de quien quiera reproducirlo.
     const delatores = [
-      "toon", "TOON", "singleflight", "LLMLingua", "XGrammar", "llguidance",
+      "compact-rows", "the compact encoder", "singleflight", "LLMLingua", "XGrammar", "llguidance",
       "adaptive-rag", "Adaptive-RAG", "prompt-compression", "semantic-cache",
       "constrained-decoding", "adaptive-k", "pgvector", "Qdrant",
     ];
@@ -122,8 +122,28 @@ describe("la superficie pública del paquete", () => {
     for (const d of delatores) {
       if (readme.includes(d)) encontrados.push(`README: ${d}`);
       if (pkg.includes(d)) encontrados.push(`package.json: ${d}`);
+
     }
     expect(encontrados).toEqual([]);
+  });
+
+  /**
+   * EN LOS TIPOS PUBLICADOS, SOLO LO QUE NO SEA CONTRATO.
+   *
+   * Aquí no se puede usar la misma lista que en el README. `singleflight` es un
+   * VALOR de `CacheOutcome` y `xgrammar`/`llguidance` son ids de
+   * `ConstraintBackendId`: eso es API funcional, y sacarlo es una decisión de
+   * producto —rompe a quien lea `report.cache.result`— no una limpieza.
+   *
+   * Lo que sí sobra sin discusión son los nombres de TERCEROS citados en prosa:
+   * decirle al mundo qué dependencias evaluamos no le sirve de nada a un cliente
+   * y le ahorra a un competidor la parte más lenta, que es elegir.
+   */
+  it("⛔ los tipos publicados no citan dependencias de terceros", () => {
+    const tipos = readFileSync(fileURLToPath(new URL("../dist/index.d.ts", import.meta.url)), "utf8");
+    const terceros = ["LLMLingua", "Qdrant", "pgvector", "RouteLLM", "GPTCache", "LiteLLM", "TOON", "toon"];
+    const hallados = terceros.filter((t) => tipos.includes(t));
+    expect(hallados).toEqual([]);
   });
 
   it("⛔ tampoco umbrales ni cifras medidas de comparación", () => {
@@ -140,7 +160,7 @@ describe("la superficie pública del paquete", () => {
   /**
    * TRINQUETE DEL ESPAÑOL EN LOS COMENTARIOS.
    *
-   * Quedan ~97 líneas de JSDoc en español en los tipos publicados. NO es una
+   * Quedan ~91 líneas de JSDoc en español en los tipos publicados. NO es una
    * fuga —no revelan nada que el bundle no diga ya— pero son lo que ve el tooltip
    * del IDE de un cliente que instaló leyendo un README en inglés, y eso lee como
    * inmadurez antes de que nadie mire una línea de lógica.
@@ -150,7 +170,7 @@ describe("la superficie pública del paquete", () => {
    * Un trinquete que solo puede apretarse.
    */
   it("el español en los comentarios no crece", () => {
-    const TECHO = 97;
+    const TECHO = 91;
     const cuantas = lineas.filter((l) => /[áéíóúñ¿¡]/.test(l)).length;
     expect(
       cuantas,

@@ -23,8 +23,8 @@ describe("HeuristicEstimator", () => {
       { id: 1, name: "Alice", role: "admin" },
       { id: 2, name: "Bob", role: "user" },
     ]);
-    const toon = "users[2]{id,name,role}:\n  1,Alice,admin\n  2,Bob,user";
-    expect(est.count(json)).toBeGreaterThan(est.count(toon));
+    const filas = "users[2]{id,name,role}:\n  1,Alice,admin\n  2,Bob,user";
+    expect(est.count(json)).toBeGreaterThan(est.count(filas));
   });
 });
 

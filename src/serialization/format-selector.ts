@@ -2,13 +2,13 @@ import type { SerializationFormat } from "../contracts/types.js";
 import type { TokenizerRegistry } from "../tokenizer/registry.js";
 import type { Serializer } from "./types.js";
 import { jsonCompactSerializer } from "./json-compact.js";
-import { toonSerializer } from "./toon.js";
+import { compactRowsSerializer } from "./compact-rows.js";
 import { csvSerializer } from "./csv.js";
 
 /**
  * Format selector.
  *
- * TOON is a candidate, never a default. For each request we count, USING THE
+ * It is a candidate, never a default. For each request we count, USING THE
  * DESTINATION MODEL'S TOKENIZER:
  *
  *   tokens(encoded payload) + tokens(instruction to understand it)
@@ -27,7 +27,7 @@ export interface FormatSelectorOptions {
   minimumSavingsRatio?: number;
   /**
    * Per-(model,format) quality penalty in tokens. Encodes "this model is worse
-   * at reading TOON" as an additive cost, learned from production traces.
+   * at reading the compact rows" as an additive cost, learned from production traces.
    */
   qualityPenalty?: (model: string, format: SerializationFormat) => number;
 }
@@ -62,7 +62,7 @@ export class FormatSelector {
     this.tokenizer = opts.tokenizer;
     this.serializers = opts.serializers ?? [
       jsonCompactSerializer,
-      toonSerializer,
+      compactRowsSerializer,
       csvSerializer,
     ];
     this.minSavingsTokens = opts.minimumSavingsTokens ?? 64;
@@ -79,7 +79,7 @@ export class FormatSelector {
       const encoded = serializer.encode(payload);
       // Round-trip fidelity gate: never OFFER a non-JSON encoding we can't prove
       // reproduces the payload. Embeddeds newlines, arrays of nested objects,
-      // number/null-vs-string ambiguity etc. make TOON/CSV silently lossy; a lossy
+      // number/null-vs-string ambiguity etc. make row/CSV silently lossy; a lossy
       // candidate here would feed the model corrupted data AND get billed as a
       // saving. JSON-compact is lossless (exempt); every other candidate must
       // decode back to a deep-equal value or it is discarded (falls back to JSON).
