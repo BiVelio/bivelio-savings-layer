@@ -346,7 +346,11 @@
       "enviadoOk": "Invitation envoyée.",
       "enviadoFallo": "L'invitation est créée, mais l'e-mail n'est pas parti. Essayez de la renvoyer.",
       "sinPermiso": "Seuls le propriétaire et les administrateurs peuvent gérer l'équipe.",
-      "asientosNota": "Inviter quelqu'un ne consomme pas de siège : un siège est une machine, pas une personne."
+      "asientosNota": "Inviter quelqu'un ne consomme pas de siège : un siège est une machine, pas une personne.",
+      "nombreOrg": "Nom de l'organisation",
+      "nombreOrgAyuda": "C'est le nom que verra toute personne invitée.",
+      "guardar": "Enregistrer",
+      "guardado": "Enregistré."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Cette invitation a expiré. Demandez-en une nouvelle.",
     "yaAceptada": "Cette invitation a déjà été utilisée.",
     "otroCorreo": "Cette invitation concerne une autre adresse e-mail. Connectez-vous avec le compte auquel elle a été envoyée.",
-    "yaEnOtra": "Vous appartenez déjà à une autre organisation. Demandez d'en être retiré d'abord, ou utilisez un autre compte."
+    "yaEnOtra": "Vous appartenez déjà à une autre organisation. Demandez d'en être retiré d'abord, ou utilisez un autre compte.",
+    "invitadoA": "Vous êtes invité à rejoindre <b>{org}</b> en tant que <b>{email}</b>.",
+    "creaTuClave": "Créez un mot de passe pour entrer. Votre compte est créé avec cette adresse.",
+    "tuCorreo": "Votre e-mail",
+    "passNueva": "Mot de passe (8 caractères minimum)",
+    "passRepetir": "Répétez le mot de passe",
+    "crearYEntrar": "Créer le compte et continuer",
+    "creando": "Création…",
+    "passCorta": "Le mot de passe doit contenir au moins 8 caractères.",
+    "passDistintas": "Les deux mots de passe ne correspondent pas.",
+    "yaRegistrado": "Un compte existe déjà avec cette adresse. Connectez-vous pour accepter l'invitation.",
+    "errorCrear": "Impossible de créer le compte. Veuillez réessayer.",
+    "creadaEntraTu": "Votre compte a été créé. Connectez-vous pour continuer.",
+    "yaTengoCuenta": "Vous avez déjà un compte ?"
   }
 }

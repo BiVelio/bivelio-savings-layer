@@ -346,7 +346,11 @@
       "enviadoOk": "Davet gönderildi.",
       "enviadoFallo": "Davet oluşturuldu, ancak e-posta gönderilemedi. Yeniden göndermeyi deneyin.",
       "sinPermiso": "Ekibi yalnızca sahip ve yöneticiler yönetebilir.",
-      "asientosNota": "Birini davet etmek koltuk harcamaz: bir koltuk bir makinedir, bir kişi değil."
+      "asientosNota": "Birini davet etmek koltuk harcamaz: bir koltuk bir makinedir, bir kişi değil.",
+      "nombreOrg": "Kuruluş adı",
+      "nombreOrgAyuda": "Davet ettiğiniz kişilerin göreceği ad budur.",
+      "guardar": "Kaydet",
+      "guardado": "Kaydedildi."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Bu davetin süresi dolmuş. Yenisini isteyin.",
     "yaAceptada": "Bu davet daha önce kullanılmış.",
     "otroCorreo": "Bu davet başka bir e-posta adresi için. Davetin gönderildiği hesapla oturum açın.",
-    "yaEnOtra": "Zaten başka bir kuruluşa aitsiniz. Önce oradan çıkarılmanızı isteyin veya farklı bir hesap kullanın."
+    "yaEnOtra": "Zaten başka bir kuruluşa aitsiniz. Önce oradan çıkarılmanızı isteyin veya farklı bir hesap kullanın.",
+    "invitadoA": "<b>{org}</b> kuruluşuna <b>{email}</b> olarak katılmaya davet edildiniz.",
+    "creaTuClave": "Girmek için bir parola oluşturun. Hesabınız bu adresle oluşturulur.",
+    "tuCorreo": "E-postanız",
+    "passNueva": "Parola (en az 8 karakter)",
+    "passRepetir": "Parolayı tekrar girin",
+    "crearYEntrar": "Hesap oluştur ve devam et",
+    "creando": "Oluşturuluyor…",
+    "passCorta": "Parola en az 8 karakter olmalıdır.",
+    "passDistintas": "İki parola aynı değil.",
+    "yaRegistrado": "Bu adresle bir hesap zaten var. Daveti kabul etmek için oturum açın.",
+    "errorCrear": "Hesap oluşturulamadı. Lütfen tekrar deneyin.",
+    "creadaEntraTu": "Hesabınız oluşturuldu. Devam etmek için oturum açın.",
+    "yaTengoCuenta": "Zaten hesabınız var mı?"
   }
 }

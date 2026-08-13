@@ -346,7 +346,11 @@
       "enviadoOk": "Invitación enviada.",
       "enviadoFallo": "La invitación está creada, pero el correo no ha salido. Pruebe a reenviarla.",
       "sinPermiso": "Solo el propietario y los administradores pueden gestionar el equipo.",
-      "asientosNota": "Invitar a alguien no consume asiento: un asiento es una máquina, no una persona."
+      "asientosNota": "Invitar a alguien no consume asiento: un asiento es una máquina, no una persona.",
+      "nombreOrg": "Nombre de la organización",
+      "nombreOrgAyuda": "Es el nombre que verá quien reciba una invitación.",
+      "guardar": "Guardar",
+      "guardado": "Guardado."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Esta invitación ha caducado. Pida que se la envíen de nuevo.",
     "yaAceptada": "Esta invitación ya se ha usado.",
     "otroCorreo": "Esta invitación es para otra dirección de correo. Inicie sesión con la cuenta a la que se envió.",
-    "yaEnOtra": "Ya pertenece a otra organización. Pida que le saquen de ella primero, o use otra cuenta."
+    "yaEnOtra": "Ya pertenece a otra organización. Pida que le saquen de ella primero, o use otra cuenta.",
+    "invitadoA": "Le han invitado a unirse a <b>{org}</b> como <b>{email}</b>.",
+    "creaTuClave": "Cree una contraseña para entrar. Su cuenta se crea con esta dirección.",
+    "tuCorreo": "Su correo",
+    "passNueva": "Contraseña (mínimo 8 caracteres)",
+    "passRepetir": "Repita la contraseña",
+    "crearYEntrar": "Crear cuenta y entrar",
+    "creando": "Creando…",
+    "passCorta": "La contraseña debe tener al menos 8 caracteres.",
+    "passDistintas": "Las dos contraseñas no coinciden.",
+    "yaRegistrado": "Ya existe una cuenta con esta dirección. Inicie sesión para aceptar la invitación.",
+    "errorCrear": "No se ha podido crear la cuenta. Inténtelo de nuevo.",
+    "creadaEntraTu": "Su cuenta se ha creado. Inicie sesión para continuar.",
+    "yaTengoCuenta": "¿Ya tiene cuenta?"
   }
 }

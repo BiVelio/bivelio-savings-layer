@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolverOrgSiExiste } from "@/lib/org/resolver";
 import { hashDeToken, sePuedeAceptar, type Invitacion } from "@/lib/org/invitaciones";
+import { unirseAOrganizacion } from "@/lib/org/unirse";
 
 /**
  * ACEPTAR UNA INVITACIÓN. La única ruta de este producto en la que alguien de
@@ -93,41 +94,14 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: true, orgId: inv.org_id, role: yaTiene.role, yaEstaba: true });
   }
 
-  // LA PERTENENCIA PRIMERO, LA MARCA DESPUÉS, y ese orden importa. Al revés, si el
-  // alta de la pertenencia fallara después de marcar la invitación como aceptada,
-  // el enlace quedaría quemado y la persona FUERA, sin forma de reintentar. Así, el
-  // peor caso es que la invitación siga viva para alguien que ya está dentro — que
-  // se resuelve solo en el reintento, por la rama de arriba.
-  const { error: altaErr } = await admin
-    .from("org_members")
-    .upsert(
-      { org_id: inv.org_id, user_id: user.id, role: inv.role },
-      { onConflict: "org_id,user_id", ignoreDuplicates: true },
-    );
-  if (altaErr) {
-    console.error("[org/invitations/accept] alta de pertenencia falló:", altaErr);
+  // La escritura la hace el helper COMPARTIDO con `registrar`: son la misma
+  // operación por dos puertas distintas (quien ya tiene cuenta y quien la acaba
+  // de crear), y duplicarla es cómo se separan.
+  const unido = await unirseAOrganizacion(admin, inv, user.id);
+  if (!unido.ok) {
+    console.error("[org/invitations/accept] no se pudo entrar:", unido.error);
     return NextResponse.json({ error: "Could not accept the invitation.", code: "error" }, { status: 503 });
   }
-
-  // `.is("accepted_at", null)` hace la marca de un solo uso: dos peticiones
-  // simultáneas con el mismo enlace, solo una escribe.
-  const { error: marcaErr } = await admin
-    .from("org_invitations")
-    .update({ accepted_at: new Date().toISOString() })
-    .eq("id", inv.id)
-    .is("accepted_at", null);
-  if (marcaErr) {
-    // La persona YA está dentro; no se le devuelve un error por no haber podido
-    // anotar. La invitación caduca sola en su fecha.
-    console.error("[org/invitations/accept] no se pudo marcar como aceptada:", marcaErr);
-  }
-
-  await admin.from("billing_audit").insert({
-    org_id: inv.org_id,
-    event_id: `invitacion_${inv.id}`,
-    kind: "org_member_joined",
-    detail: { userId: user.id, role: inv.role, invitacion: inv.id },
-  });
 
   return NextResponse.json({ ok: true, orgId: inv.org_id, role: inv.role });
 }

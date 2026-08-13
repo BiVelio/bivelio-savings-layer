@@ -69,7 +69,11 @@ export async function GET(): Promise<NextResponse> {
     }),
   );
 
-  return NextResponse.json({ miembros, miRol: g.role });
+  // El nombre de la organización viaja con la lista: el panel lo necesita para
+  // poder cambiarlo, y evita una segunda llamada.
+  const { data: org } = await admin.from("organizations").select("name").eq("id", g.orgId).maybeSingle();
+
+  return NextResponse.json({ miembros, miRol: g.role, org: (org as { name?: string } | null)?.name ?? "" });
 }
 
 /** PATCH — cambiar el rol de alguien. */

@@ -346,7 +346,11 @@
       "enviadoOk": "Undangan terkirim.",
       "enviadoFallo": "Undangan sudah dibuat, tetapi email tidak terkirim. Coba kirim ulang.",
       "sinPermiso": "Hanya pemilik dan administrator yang dapat mengelola tim.",
-      "asientosNota": "Mengundang seseorang tidak memakai kursi: satu kursi adalah satu mesin, bukan satu orang."
+      "asientosNota": "Mengundang seseorang tidak memakai kursi: satu kursi adalah satu mesin, bukan satu orang.",
+      "nombreOrg": "Nama organisasi",
+      "nombreOrgAyuda": "Ini nama yang akan dilihat orang yang Anda undang.",
+      "guardar": "Simpan",
+      "guardado": "Tersimpan."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Undangan ini sudah kedaluwarsa. Mintalah yang baru.",
     "yaAceptada": "Undangan ini sudah digunakan.",
     "otroCorreo": "Undangan ini untuk alamat email lain. Masuk dengan akun yang menerimanya.",
-    "yaEnOtra": "Anda sudah tergabung dalam organisasi lain. Mintalah dikeluarkan dari sana dulu, atau gunakan akun lain."
+    "yaEnOtra": "Anda sudah tergabung dalam organisasi lain. Mintalah dikeluarkan dari sana dulu, atau gunakan akun lain.",
+    "invitadoA": "Anda diundang bergabung dengan <b>{org}</b> sebagai <b>{email}</b>.",
+    "creaTuClave": "Buat kata sandi untuk masuk. Akun Anda dibuat dengan alamat ini.",
+    "tuCorreo": "Email Anda",
+    "passNueva": "Kata sandi (minimal 8 karakter)",
+    "passRepetir": "Ulangi kata sandi",
+    "crearYEntrar": "Buat akun dan lanjutkan",
+    "creando": "Membuat…",
+    "passCorta": "Kata sandi harus minimal 8 karakter.",
+    "passDistintas": "Kedua kata sandi tidak cocok.",
+    "yaRegistrado": "Akun dengan alamat ini sudah ada. Masuk untuk menerima undangan.",
+    "errorCrear": "Akun tidak dapat dibuat. Silakan coba lagi.",
+    "creadaEntraTu": "Akun Anda telah dibuat. Masuk untuk melanjutkan.",
+    "yaTengoCuenta": "Sudah punya akun?"
   }
 }

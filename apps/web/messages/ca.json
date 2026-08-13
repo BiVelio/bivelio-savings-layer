@@ -346,7 +346,11 @@
       "enviadoOk": "Invitació enviada.",
       "enviadoFallo": "La invitació està creada, però el correu no ha sortit. Proveu de reenviar-la.",
       "sinPermiso": "Només el propietari i els administradors poden gestionar l'equip.",
-      "asientosNota": "Convidar algú no consumeix seient: un seient és una màquina, no una persona."
+      "asientosNota": "Convidar algú no consumeix seient: un seient és una màquina, no una persona.",
+      "nombreOrg": "Nom de l'organització",
+      "nombreOrgAyuda": "És el nom que veurà qui rebi una invitació.",
+      "guardar": "Desar",
+      "guardado": "Desat."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Aquesta invitació ha caducat. Demaneu que us n'enviïn una de nova.",
     "yaAceptada": "Aquesta invitació ja s'ha fet servir.",
     "otroCorreo": "Aquesta invitació és per a una altra adreça. Inicieu la sessió amb el compte al qual es va enviar.",
-    "yaEnOtra": "Ja pertanyeu a una altra organització. Demaneu que us en treguin primer, o feu servir un altre compte."
+    "yaEnOtra": "Ja pertanyeu a una altra organització. Demaneu que us en treguin primer, o feu servir un altre compte.",
+    "invitadoA": "Us han convidat a unir-vos a <b>{org}</b> com a <b>{email}</b>.",
+    "creaTuClave": "Creeu una contrasenya per entrar. El vostre compte es crea amb aquesta adreça.",
+    "tuCorreo": "El vostre correu",
+    "passNueva": "Contrasenya (mínim 8 caràcters)",
+    "passRepetir": "Repetiu la contrasenya",
+    "crearYEntrar": "Crear el compte i entrar",
+    "creando": "Creant…",
+    "passCorta": "La contrasenya ha de tenir com a mínim 8 caràcters.",
+    "passDistintas": "Les dues contrasenyes no coincideixen.",
+    "yaRegistrado": "Ja existeix un compte amb aquesta adreça. Inicieu la sessió per acceptar la invitació.",
+    "errorCrear": "No s'ha pogut crear el compte. Torneu-ho a provar.",
+    "creadaEntraTu": "El vostre compte s'ha creat. Inicieu la sessió per continuar.",
+    "yaTengoCuenta": "Ja teniu compte?"
   }
 }

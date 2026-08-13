@@ -346,7 +346,11 @@
       "enviadoOk": "Uitnodiging verstuurd.",
       "enviadoFallo": "De uitnodiging is aangemaakt, maar de e-mail is niet verstuurd. Probeer opnieuw te versturen.",
       "sinPermiso": "Alleen de eigenaar en beheerders kunnen het team beheren.",
-      "asientosNota": "Iemand uitnodigen kost geen seat: een seat is een machine, geen persoon."
+      "asientosNota": "Iemand uitnodigen kost geen seat: een seat is een machine, geen persoon.",
+      "nombreOrg": "Naam van de organisatie",
+      "nombreOrgAyuda": "Dit is de naam die iedereen die u uitnodigt te zien krijgt.",
+      "guardar": "Opslaan",
+      "guardado": "Opgeslagen."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Deze uitnodiging is verlopen. Vraag om een nieuwe.",
     "yaAceptada": "Deze uitnodiging is al gebruikt.",
     "otroCorreo": "Deze uitnodiging is voor een ander e-mailadres. Meld u aan met het account waaraan hij is verstuurd.",
-    "yaEnOtra": "U hoort al bij een andere organisatie. Vraag eerst om daar verwijderd te worden, of gebruik een ander account."
+    "yaEnOtra": "U hoort al bij een andere organisatie. Vraag eerst om daar verwijderd te worden, of gebruik een ander account.",
+    "invitadoA": "U bent uitgenodigd om lid te worden van <b>{org}</b> als <b>{email}</b>.",
+    "creaTuClave": "Maak een wachtwoord aan om in te loggen. Uw account wordt met dit adres aangemaakt.",
+    "tuCorreo": "Uw e-mail",
+    "passNueva": "Wachtwoord (minimaal 8 tekens)",
+    "passRepetir": "Herhaal het wachtwoord",
+    "crearYEntrar": "Account aanmaken en doorgaan",
+    "creando": "Aanmaken…",
+    "passCorta": "Het wachtwoord moet minstens 8 tekens hebben.",
+    "passDistintas": "De twee wachtwoorden komen niet overeen.",
+    "yaRegistrado": "Er bestaat al een account met dit adres. Meld u aan om de uitnodiging te accepteren.",
+    "errorCrear": "Het account kon niet worden aangemaakt. Probeer het opnieuw.",
+    "creadaEntraTu": "Uw account is aangemaakt. Meld u aan om door te gaan.",
+    "yaTengoCuenta": "Heeft u al een account?"
   }
 }
