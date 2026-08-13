@@ -10,6 +10,13 @@ import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
  * with a JSON schema when a contract is present, which is the provider-native
  * constrained-decoding path preferred by the layer.
  *
+ * Models that predate structured outputs reject `response_format` with a 400. The
+ * adapter degrades for those: it repeats the request once with the schema carried
+ * in the prompt instead, remembers the model so later requests skip the rejected
+ * attempt, and reports `structuredNatively: false` so the savings report states
+ * `constraints.backend: "none"` rather than claiming a guarantee the provider
+ * never gave.
+ *
  * Network calls use global `fetch` (Node >= 18) so there is no SDK dependency.
  */
 export interface OpenAICompatibleOptions {
@@ -73,10 +80,54 @@ export function isStrictCompatible(schema: unknown): boolean {
   return true;
 }
 
+/**
+ * ¿Este 400 dice que el MODELO no conoce `response_format`?
+ *
+ * Los modelos anteriores a structured outputs (gpt-3.5-turbo, gpt-4, gpt-4-turbo)
+ * rechazan el parámetro entero. Medido contra la API real, el cuerpo es
+ * «Invalid parameter: 'response_format' of type 'json_schema' is not supported
+ * with this model»; otros endpoints compatibles contestan «Unrecognized request
+ * argument supplied: response_format».
+ *
+ * Se descarta a propósito «Invalid schema for response_format»: ahí el parámetro
+ * SÍ existe y lo que está mal es el contrato de quien llama. Degradar en ese caso
+ * cambiaría un error de configuración visible por una garantía silenciosamente
+ * más débil, que es justo lo que esta capa se niega a hacer.
+ */
+function esResponseFormatNoSoportado(detalle: string): boolean {
+  if (!/response_format/i.test(detalle)) return false;
+  if (/invalid schema/i.test(detalle)) return false;
+  return /invalid parameter|not supported|unsupported|unrecognized request argument|unknown parameter/i.test(
+    detalle,
+  );
+}
+
+/**
+ * Instrucción que sustituye a `response_format` cuando el modelo no lo admite.
+ *
+ * El esquema tiene que VIAJAR igual: es lo único que guía al modelo cuando el
+ * proveedor no lo va a imponer. Va como último mensaje de sistema porque es la
+ * posición que menos se pierde entre el material de la petición.
+ *
+ * Estos tokens los factura el proveedor y NO los ve la cuenta local del prompt
+ * (`sentInputLocal`), porque los añade el adaptador. El sesgo va en la dirección
+ * segura: `actualInput` sube, el baseline no, así que el ahorro publicado sale
+ * MENOR del real. Nunca al revés, que es lo que no se podría tolerar.
+ */
+function instruccionDeJsonPorPrompt(schema: unknown): string {
+  return (
+    "Respond with a single JSON object and nothing else: no prose, no explanation, " +
+    "no markdown code fences. The object must validate against this JSON Schema:\n" +
+    JSON.stringify(schema)
+  );
+}
+
 export class OpenAICompatibleProvider implements Provider {
   readonly id: string;
   private readonly opts: OpenAICompatibleOptions;
   private readonly fetchImpl: typeof fetch;
+  /** Models of this endpoint already known to reject `response_format`. */
+  private readonly sinResponseFormat = new Set<string>();
 
   constructor(opts: OpenAICompatibleOptions) {
     this.opts = opts;
@@ -89,14 +140,73 @@ export class OpenAICompatibleProvider implements Provider {
       ? req.model.replace(/^[^/]+\//, "")
       : req.model;
 
+    // Se intenta la vía nativa salvo que ESTE modelo ya la haya rechazado antes.
+    // Ese conjunto es lo que acota el coste del descubrimiento: el viaje de más
+    // se paga UNA vez por modelo y por instancia, no en cada petición.
+    let nativo = req.schema != null && !this.sinResponseFormat.has(model);
+    let response = await this.enviar(model, req, nativo);
+
+    // DEGRADAR, NO REVENTAR. Tres modelos vivos y de uso corriente (gpt-3.5-turbo,
+    // gpt-4, gpt-4-turbo) son anteriores a structured outputs y devuelven 400 al
+    // ver `response_format`. Ese 400 llegaba crudo al cliente, así que una elección
+    // de modelo perfectamente legítima parecía una avería de BV-SALA.
+    //
+    // Por qué aquí SÍ se reintenta, cuando el truncado por `maxOutputTokens` y el
+    // `pattern` no compilable NO: aquellos son respuestas GENERADAS y facturadas,
+    // así que el reintento es una segunda llamada pagada para el mismo fallo. Un
+    // 400 se rechaza antes de generar un solo token — no hay nada que duplicar—, y
+    // además el segundo intento ataca una causa distinta, no repite el mismo
+    // envío. El memo de arriba impide que se convierta en un bucle.
+    //
+    // Por eso tampoco cuenta como `retries` en el libro: el intento rechazado no
+    // consumió tokens ni llegó a facturarse, y apuntarlo inflaría un contador que
+    // el cliente contrasta con su factura.
+    if (!response.ok && response.status === 400 && nativo) {
+      const detalle = await safeText(response);
+      if (!esResponseFormatNoSoportado(detalle)) {
+        throw new Error(`provider ${response.status}: ${detalle}`);
+      }
+      this.sinResponseFormat.add(model);
+      avisarUnaVez(
+        `sin-response-format:${model}`,
+        `[bvsala] El modelo "${model}" rechaza \`response_format\` con un 400: no tiene ` +
+          "structured outputs. Se repite la petición pidiendo el JSON por prompt (una sola vez: " +
+          "el modelo queda anotado y las siguientes van directas). El esquema sigue viajando y el " +
+          "layer sigue validando, pero la garantía la da el layer, no el proveedor, y el informe " +
+          'lo dice: `constraints.backend: "none"`. Para recuperar la garantía nativa, usa un ' +
+          "modelo con structured outputs (gpt-4o o posterior).",
+      );
+      nativo = false;
+      response = await this.enviar(model, req, false);
+    }
+
+    if (!response.ok) {
+      const detail = await safeText(response);
+      throw new Error(`provider ${response.status}: ${detail}`);
+    }
+
+    return this.leer(response, req, nativo);
+  }
+
+  /** Build the request body and post it. `nativo` selects the `response_format` path. */
+  private async enviar(
+    model: string,
+    req: ProviderRequest,
+    nativo: boolean,
+  ): Promise<Response> {
+    const mensajes = req.messages.map((m) => ({ role: m.role, content: m.content }));
+    if (req.schema && !nativo) {
+      mensajes.push({ role: "system", content: instruccionDeJsonPorPrompt(req.schema) });
+    }
+
     const body: Record<string, unknown> = {
       model,
-      messages: req.messages.map((m) => ({ role: m.role, content: m.content })),
+      messages: mensajes,
     };
     if (req.maxOutputTokens != null) body["max_tokens"] = req.maxOutputTokens;
     if (req.temperature != null) body["temperature"] = req.temperature;
     if (req.seed != null) body["seed"] = req.seed;
-    if (req.schema) {
+    if (req.schema && nativo) {
       // `strict: true` iba fijo, y eso convertía cualquier contrato con un campo
       // OPCIONAL en un 400 duro contra OpenAI: en modo strict, `required` tiene
       // que listar todas las claves de `properties`. Un esquema tan corriente
@@ -144,7 +254,7 @@ export class OpenAICompatibleProvider implements Provider {
       }));
     }
 
-    const response = await this.fetchImpl(
+    return await this.fetchImpl(
       `${this.opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
       {
         method: "POST",
@@ -156,12 +266,14 @@ export class OpenAICompatibleProvider implements Provider {
         body: JSON.stringify(body),
       },
     );
+  }
 
-    if (!response.ok) {
-      const detail = await safeText(response);
-      throw new Error(`provider ${response.status}: ${detail}`);
-    }
-
+  /** Translate a 2xx endpoint response into the provider-neutral shape. */
+  private async leer(
+    response: Response,
+    req: ProviderRequest,
+    nativo: boolean,
+  ): Promise<ProviderResponse> {
     const json = (await response.json()) as OpenAIChatResponse;
     const mensaje = json.choices?.[0]?.message as
       | { content?: string | null; tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[] }
@@ -218,7 +330,11 @@ export class OpenAICompatibleProvider implements Provider {
           ? { cachedInputTokens: usage.prompt_tokens_details.cached_tokens }
           : {}),
       },
-      structuredNatively: req.schema != null,
+      // Solo es NATIVO si el contrato viajó en `response_format`. Cuando se
+      // degradó a pedir el JSON por prompt, quien impone la forma es el layer al
+      // validar, y de este campo depende que el informe no publique una garantía
+      // del proveedor que el proveedor no dio.
+      structuredNatively: req.schema != null && nativo,
       raw: json,
     };
   }
