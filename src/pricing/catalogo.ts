@@ -1,45 +1,42 @@
 import type { CostModel } from "../tokenizer/accounting.js";
 
 /**
- * PRECIOS DE LISTA POR MODELO.
+ * LIST PRICES PER MODEL.
  *
- * POR QUÉ EXISTE. Hasta ahora había UN solo precio ilustrativo
- * (`DEFAULT_COST_MODEL`) que se aplicaba a todo lo que el cliente no configurara
- * a mano. El SDK avisaba —bien— pero el efecto práctico es que, de fábrica,
- * ninguna cifra en dólares se correspondía con ninguna factura. Y la promesa
- * central de este producto es exactamente esa: un ahorro que puedes contrastar
- * con lo que te cobra tu proveedor.
+ * The layer reports savings in money, and money needs a price. This is the
+ * built-in catalogue of published list prices, so the dollar figures mean
+ * something without any configuration.
  *
- * ⚠️ UN PRECIO EQUIVOCADO AQUÍ ES PEOR QUE NO TENER CATÁLOGO. Un modelo ausente
- * cae en el precio ilustrativo Y AVISA, así que el cliente sabe que esa columna
- * no vale. Un modelo presente con el precio mal calla el aviso y entrega una
- * cifra confiada y falsa — que es justo el fallo que este producto existe para no
- * cometer. Por eso aquí SOLO entran modelos cuyo precio de lista se conoce con
- * certeza, y `PRECIOS_AL_DIA` deja por escrito de cuándo son.
+ * ⚠️ A WRONG PRICE HERE IS WORSE THAN NO CATALOGUE. A model that is ABSENT falls
+ * back to the illustrative default AND warns, so the customer knows that column
+ * is not their invoice. A model that is PRESENT with the wrong price silences
+ * that warning and hands over a confident, wrong number. So only models whose
+ * published price is known with certainty belong here, and {@link PRECIOS_AL_DIA}
+ * records when they were last checked.
  *
- * Los precios son en USD por 1.000 tokens (la unidad del `CostModel`), aunque los
- * proveedores los publiquen por millón: 1 M → 1 K es dividir entre mil.
+ * Prices are USD per 1,000 tokens — the unit of `CostModel` — even though
+ * providers publish per million: 1M to 1K is a division by a thousand.
  *
- * SE SOBREESCRIBE SIEMPRE con `costModels`, que gana a esto. Un cliente con
- * descuento por volumen, con precios negociados o en una región distinta pone los
- * suyos y este catálogo no le estorba.
+ * `costModels` on the layer config ALWAYS wins over this. A customer with volume
+ * discounts, negotiated rates or a different region sets their own and this
+ * catalogue stays out of the way.
  */
 
-/** Fecha de la última revisión de estos precios contra las tarifas públicas. */
+/** When these prices were last checked against the providers' public rates. */
 export const PRECIOS_AL_DIA = "2026-08-13";
 
 /**
- * Clave = el identificador del modelo tal cual lo publica el proveedor, sin
- * prefijo. El lookup prueba el id exacto, luego el id sin prefijo de proveedor, y
- * por último el PREFIJO más largo que case — para que `gpt-4o-2024-08-06` herede
- * el precio de `gpt-4o` sin tener que enumerar cada instantánea fechada.
+ * Key = the model id as the provider publishes it, without a vendor prefix.
+ * Lookup tries the exact id, then the id without its provider prefix, then the
+ * LONGEST matching prefix — so `gpt-4o-2024-08-06` inherits `gpt-4o` without
+ * having to enumerate every dated snapshot.
  */
 export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // ── OpenAI ────────────────────────────────────────────────────────────────
-  // `cachedInputPer1k`: el prompt caching de OpenAI factura la entrada cacheada
-  // al 50 % en la familia 4o/4.1. Donde no está documentado, se omite en vez de
-  // inventarlo: sin el campo, el contable lo trata como entrada normal, que es el
-  // lado seguro (nunca infla el ahorro).
+  // `cachedInputPer1k`: OpenAI bills cached input at 50% on the 4o/4.1 family.
+  // Where it is not documented the field is omitted rather than guessed: without
+  // it the accountant treats those tokens as normal input, which is the safe
+  // side — it never inflates the reported saving.
   "gpt-4.1":       { inputPer1k: 0.002,   outputPer1k: 0.008,  cachedInputPer1k: 0.0005   },
   "gpt-4.1-mini":  { inputPer1k: 0.0004,  outputPer1k: 0.0016, cachedInputPer1k: 0.0001   },
   "gpt-4.1-nano":  { inputPer1k: 0.0001,  outputPer1k: 0.0004, cachedInputPer1k: 0.000025 },
@@ -50,7 +47,7 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gpt-3.5-turbo": { inputPer1k: 0.0005,  outputPer1k: 0.0015 },
 
   // ── Anthropic ─────────────────────────────────────────────────────────────
-  // La lectura de caché de Anthropic se factura al 10 % de la entrada.
+  // Anthropic bills a cache read at 10% of the input rate.
   "claude-opus-4":     { inputPer1k: 0.015,  outputPer1k: 0.075, cachedInputPer1k: 0.0015  },
   "claude-sonnet-4":   { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-haiku-4-5":  { inputPer1k: 0.001,  outputPer1k: 0.005, cachedInputPer1k: 0.0001  },
@@ -59,33 +56,33 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "claude-3-opus":     { inputPer1k: 0.015,  outputPer1k: 0.075, cachedInputPer1k: 0.0015  },
   "claude-3-haiku":    { inputPer1k: 0.00025, outputPer1k: 0.00125, cachedInputPer1k: 0.000025 },
 
-  // Los modelos cuyo precio de lista NO se conoce con certeza quedan FUERA a
-  // propósito: caen en el ilustrativo y avisan, que es la respuesta honesta.
+  // Models whose published price is NOT known with certainty stay out on purpose:
+  // they fall back to the illustrative default and warn, which is the honest answer.
 };
 
-/** Las claves ordenadas de más larga a más corta, para que gane el prefijo más
- *  específico: `claude-haiku-4-5` antes que `claude-haiku`. */
+/** Keys longest-first, so the most specific prefix wins: `claude-haiku-4-5`
+ *  before `claude-haiku`. */
 const CLAVES_POR_LONGITUD = Object.keys(CATALOGO).sort((a, b) => b.length - a.length);
 
 /**
- * El precio de lista de un modelo, o `undefined` si no está en el catálogo.
+ * The list price for a model, or `undefined` when it is not in the catalogue.
  *
- * @param model el id tal cual lo pide el llamante, con o sin prefijo de proveedor.
+ * @param model the id as the caller passes it, with or without a vendor prefix.
  */
 export function precioDeLista(model: string): CostModel | undefined {
   if (!model) return undefined;
   const exacto = CATALOGO[model];
   if (exacto) return exacto;
 
-  // "openai/gpt-4o-mini" → "gpt-4o-mini"
+  // "openai/gpt-4o-mini" -> "gpt-4o-mini"
   const barra = model.lastIndexOf("/");
   const desnudo = barra >= 0 ? model.slice(barra + 1) : model;
   const porNombre = CATALOGO[desnudo];
   if (porNombre) return porNombre;
 
-  // Instantáneas fechadas: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`.
-  // Se exige que el siguiente carácter NO sea alfanumérico, o `gpt-4` casaría con
-  // `gpt-4o` —que cuesta doce veces menos— y el error pasaría desapercibido.
+  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. The next
+  // character must be a separator, or `gpt-4` would match `gpt-4o` — which costs
+  // twelve times less — and nobody would notice.
   for (const clave of CLAVES_POR_LONGITUD) {
     if (desnudo.startsWith(clave)) {
       const siguiente = desnudo.charAt(clave.length);
