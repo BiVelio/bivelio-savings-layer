@@ -132,6 +132,11 @@ export function createSavingsLayer(
         ...(config.licensePollIntervalSeconds != null
           ? { pollIntervalSeconds: config.licensePollIntervalSeconds }
           : {}),
+        // Un solo interruptor para todos los avisos de la capa. Sin esto,
+        // `silenceWarnings` callaría el pipeline y dejaría hablando al poller y
+        // al emisor, que tienen el suyo propio y hasta aquí era inalcanzable
+        // desde la configuración pública.
+        ...(config.silenceWarnings != null ? { silenceWarnings: config.silenceWarnings } : {}),
         ...(config.licenseRevocation ?? {}),
       });
       poller.start();
@@ -197,6 +202,7 @@ export function createSavingsLayer(
             : {}),
         ...(config.now ? { now: config.now } : {}),
         ...(config.metering?.ci != null ? { ci: config.metering.ci } : {}),
+        ...(config.silenceWarnings != null ? { silenceWarnings: config.silenceWarnings } : {}),
       });
       const ci = config.metering?.ci ?? detectCi();
       if (config.metering?.seatId) {

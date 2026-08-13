@@ -258,6 +258,60 @@ export class SavingsPipeline {
     );
   }
 
+  /**
+   * PEDIR UNA PALANCA QUE NO ESTÁ ENCHUFADA NO PUEDE SER GRATIS Y MUDO.
+   *
+   * Ni el compresor ni la caché semántica tienen valor por defecto, y ese
+   * defecto es correcto: un compresor y un embebedor son gasto y proveedor
+   * ajenos, y elegirlos por el cliente le mete latencia y factura que no pidió.
+   * Lo que no es correcto es que `savings: { compression: "auto" }` no haga
+   * nada y tampoco diga nada: el informe sale con `compression: null` y
+   * `eliminatedInput: 0`, que es EXACTAMENTE lo que se ve cuando el compresor sí
+   * corrió y no encontró nada que quitar. Medido contra el paquete publicado con
+   * 51.956 tokens de contexto redundante: 16 modelos de 16 sin comprimir, sin
+   * una señal. Y el fragmento de instalación del README no configura ninguna de
+   * las dos, así que quien lo copia cree que las tiene.
+   *
+   * SOLO CON PETICIÓN EXPLÍCITA, nunca por "el contexto era grande". Un aviso
+   * disparado por tamaño le hablaría de una palanca a quien no la pidió —puede
+   * haber decidido a conciencia no pagar un compresor— y encima se dispararía a
+   * veces por los bloques `system` que inyecta la propia capa (evidencia de
+   * retrieval, payload serializado): culparíamos al cliente de nuestro volumen.
+   * Un aviso que salta cuando no toca deja de leerse, y entonces tampoco se lee
+   * el que sí importa.
+   *
+   * No se mira la política ni la licencia a propósito: la dependencia ausente lo
+   * está para TODA la capa, así que el aviso es cierto y accionable en cualquier
+   * petición, y es de los que se emiten una vez por proceso.
+   */
+  private avisarDePalancasSinConfigurar(toggles: NonNullable<SavingsRequest["savings"]>): void {
+    if (this.config.silenceWarnings) return;
+
+    if ((toggles.compression === true || toggles.compression === "auto") && !this.config.compressor) {
+      avisarUnaVez(
+        "palanca-sin-compresor",
+        "[bv-sala] se pidió `savings.compression` pero esta capa no tiene compresor, así que NO se " +
+          "comprime nada: el contexto largo viaja y se paga entero, y el informe dirá " +
+          "`compression: null` con `tokens.eliminatedInput: 0` — indistinguible de haber comprimido " +
+          "sin ganancia. El compresor es un sidecar (LLMLingua o el suyo) porque añade latencia y " +
+          "cómputo que solo usted debe decidir pagar: enchúfelo con " +
+          "`createSavingsLayer({ compressor })`, cualquier objeto con `compress({ text })`. El resto " +
+          "de la capa sigue ahorrando igual.",
+      );
+    }
+
+    if (toggles.semanticCache && !this.deps.semanticCache) {
+      avisarUnaVez(
+        "palanca-sin-cache-semantica",
+        "[bv-sala] se pidió `savings.semanticCache` pero esta capa no tiene caché semántica, así que " +
+          "toda pregunta reformulada saldrá `cache: \"miss\"` y se pagará al proveedor otra vez. " +
+          "No viene por defecto porque necesita un embebedor, que es coste y proveedor suyos: " +
+          "enchúfela con `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
+          "La caché exacta y el resto de la capa siguen funcionando.",
+      );
+    }
+  }
+
   private async generateOptimized<T = unknown>(
     request: SavingsRequest,
     // Con valor por defecto para que invocarlo directamente (tests de superficie,
@@ -275,6 +329,7 @@ export class SavingsPipeline {
     const canonical = canonicalize(request);
     const policy = evaluatePolicy(canonical);
     const toggles = request.savings ?? {};
+    this.avisarDePalancasSinConfigurar(toggles);
     const costModel = this.costModelFor(request.model);
 
     trace.record("canonicalize", "done", {
