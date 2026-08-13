@@ -346,7 +346,11 @@
       "enviadoOk": "Zaproszenie wysłane.",
       "enviadoFallo": "Zaproszenie zostało utworzone, ale e-mail nie został wysłany. Prosimy spróbować wysłać ponownie.",
       "sinPermiso": "Tylko właściciel i administratorzy mogą zarządzać zespołem.",
-      "asientosNota": "Zaproszenie nie zajmuje stanowiska: stanowisko to maszyna, a nie osoba."
+      "asientosNota": "Zaproszenie nie zajmuje stanowiska: stanowisko to maszyna, a nie osoba.",
+      "nombreOrg": "Nazwa organizacji",
+      "nombreOrgAyuda": "Tę nazwę zobaczy każdy, kogo Państwo zaproszą.",
+      "guardar": "Zapisz",
+      "guardado": "Zapisano."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "To zaproszenie wygasło. Prosimy poprosić o nowe.",
     "yaAceptada": "To zaproszenie zostało już wykorzystane.",
     "otroCorreo": "To zaproszenie dotyczy innego adresu e-mail. Prosimy zalogować się na konto, na które je wysłano.",
-    "yaEnOtra": "Należą już Państwo do innej organizacji. Prosimy najpierw poprosić o usunięcie z niej lub użyć innego konta."
+    "yaEnOtra": "Należą już Państwo do innej organizacji. Prosimy najpierw poprosić o usunięcie z niej lub użyć innego konta.",
+    "invitadoA": "Zaproszono Państwa do <b>{org}</b> jako <b>{email}</b>.",
+    "creaTuClave": "Prosimy utworzyć hasło. Konto zostanie założone na ten adres.",
+    "tuCorreo": "Państwa e-mail",
+    "passNueva": "Hasło (co najmniej 8 znaków)",
+    "passRepetir": "Powtórz hasło",
+    "crearYEntrar": "Utwórz konto i przejdź dalej",
+    "creando": "Tworzenie…",
+    "passCorta": "Hasło musi mieć co najmniej 8 znaków.",
+    "passDistintas": "Hasła nie są takie same.",
+    "yaRegistrado": "Konto z tym adresem już istnieje. Prosimy się zalogować, aby przyjąć zaproszenie.",
+    "errorCrear": "Nie udało się utworzyć konta. Prosimy spróbować ponownie.",
+    "creadaEntraTu": "Konto zostało utworzone. Prosimy się zalogować, aby kontynuować.",
+    "yaTengoCuenta": "Mają już Państwo konto?"
   }
 }

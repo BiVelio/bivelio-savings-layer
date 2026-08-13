@@ -48,6 +48,9 @@ export function EquipoPanel() {
   const [miembros, setMiembros] = useState<Miembro[] | null>(null);
   const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
   const [miRol, setMiRol] = useState<string>("");
+  /** El nombre de la organización: es lo que ve quien recibe una invitación. */
+  const [nombreOrg, setNombreOrg] = useState("");
+  const [nombreGuardado, setNombreGuardado] = useState("");
   const [oculto, setOculto] = useState(false);
   const [msg, setMsg] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
 
@@ -72,9 +75,13 @@ export function EquipoPanel() {
         setMsg({ tipo: "error", texto: t("error") });
         return;
       }
-      const m = (await mRes.json()) as { miembros: Miembro[]; miRol: string };
+      const m = (await mRes.json()) as { miembros: Miembro[]; miRol: string; org?: string };
       setMiembros(m.miembros);
       setMiRol(m.miRol);
+      if (typeof m.org === "string") {
+        setNombreOrg(m.org);
+        setNombreGuardado(m.org);
+      }
       if (iRes.ok) setInvitaciones(((await iRes.json()) as { invitaciones: Invitacion[] }).invitaciones);
     } catch {
       setMsg({ tipo: "error", texto: t("error") });
@@ -145,6 +152,45 @@ export function EquipoPanel() {
     <section className="card equipo">
       <h2>{t("title")}</h2>
       <p className="sub">{t("intro")}</p>
+
+      {/* ------------------------------------------------ nombre de la org */}
+      {/* Nace con el CORREO de quien pagó, y ese nombre acaba dentro del correo
+          de invitación: «jmfisagol@gmail.com le ha invitado a unirse a
+          jmfisagol@gmail.com» es el primer contacto de un desconocido con el
+          producto de un cliente, y parece un correo roto o una suplantación. */}
+      <form
+        className="equipo-form"
+        style={{ marginBottom: "14px" }}
+        onSubmit={async (ev) => {
+          ev.preventDefault();
+          setMsg(null);
+          const res = await fetch("/api/org", {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ name: nombreOrg }),
+          });
+          if (!res.ok) {
+            const j = (await res.json().catch(() => ({}))) as { error?: string };
+            setMsg({ tipo: "error", texto: j.error ?? t("error") });
+            return;
+          }
+          setNombreGuardado(nombreOrg);
+          setMsg({ tipo: "ok", texto: t("guardado") });
+        }}
+      >
+        <input
+          className="kt-input"
+          value={nombreOrg}
+          maxLength={80}
+          onChange={(ev) => setNombreOrg(ev.target.value)}
+          placeholder={t("nombreOrg")}
+          aria-label={t("nombreOrg")}
+        />
+        <button type="submit" className="btn btn-ghost" disabled={!nombreOrg.trim() || nombreOrg === nombreGuardado}>
+          {t("guardar")}
+        </button>
+      </form>
+      <p className="ck-note" style={{ marginBottom: "18px" }}>{t("nombreOrgAyuda")}</p>
 
       {/* ---------------------------------------------------------- invitar */}
       <form onSubmit={invitar} className="equipo-form">

@@ -346,7 +346,11 @@
       "enviadoOk": "Invitation sent.",
       "enviadoFallo": "The invitation exists, but the email didn't go out. Try resending it.",
       "sinPermiso": "Only the owner and administrators can manage the team.",
-      "asientosNota": "Inviting someone doesn't use a seat: a seat is a machine, not a person."
+      "asientosNota": "Inviting someone doesn't use a seat: a seat is a machine, not a person.",
+      "nombreOrg": "Organization name",
+      "nombreOrgAyuda": "This is the name anyone you invite will see.",
+      "guardar": "Save",
+      "guardado": "Saved."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "This invitation has expired. Ask for a new one.",
     "yaAceptada": "This invitation has already been used.",
     "otroCorreo": "This invitation is for a different email address. Sign in with the account it was sent to.",
-    "yaEnOtra": "You already belong to another organization. Ask to be removed from it first, or use a different account."
+    "yaEnOtra": "You already belong to another organization. Ask to be removed from it first, or use a different account.",
+    "invitadoA": "You've been invited to join <b>{org}</b> as <b>{email}</b>.",
+    "creaTuClave": "Create a password to get in. Your account is created with this address.",
+    "tuCorreo": "Your email",
+    "passNueva": "Password (at least 8 characters)",
+    "passRepetir": "Repeat the password",
+    "crearYEntrar": "Create account and continue",
+    "creando": "Creating…",
+    "passCorta": "The password must be at least 8 characters.",
+    "passDistintas": "The two passwords don't match.",
+    "yaRegistrado": "An account with this address already exists. Sign in to accept the invitation.",
+    "errorCrear": "We couldn't create the account. Please try again.",
+    "creadaEntraTu": "Your account was created. Sign in to continue.",
+    "yaTengoCuenta": "Already have an account?"
   }
 }

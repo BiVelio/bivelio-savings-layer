@@ -346,7 +346,11 @@
       "enviadoOk": "Einladung gesendet.",
       "enviadoFallo": "Die Einladung wurde erstellt, aber die E-Mail ging nicht raus. Versuchen Sie, sie erneut zu senden.",
       "sinPermiso": "Nur der Inhaber und Administratoren können das Team verwalten.",
-      "asientosNota": "Eine Einladung verbraucht keinen Platz: Ein Platz ist eine Maschine, keine Person."
+      "asientosNota": "Eine Einladung verbraucht keinen Platz: Ein Platz ist eine Maschine, keine Person.",
+      "nombreOrg": "Name der Organisation",
+      "nombreOrgAyuda": "Diesen Namen sehen alle, die Sie einladen.",
+      "guardar": "Speichern",
+      "guardado": "Gespeichert."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Diese Einladung ist abgelaufen. Bitten Sie um eine neue.",
     "yaAceptada": "Diese Einladung wurde bereits verwendet.",
     "otroCorreo": "Diese Einladung gilt für eine andere E-Mail-Adresse. Melden Sie sich mit dem Konto an, an das sie gesendet wurde.",
-    "yaEnOtra": "Sie gehören bereits zu einer anderen Organisation. Lassen Sie sich zuerst dort entfernen oder verwenden Sie ein anderes Konto."
+    "yaEnOtra": "Sie gehören bereits zu einer anderen Organisation. Lassen Sie sich zuerst dort entfernen oder verwenden Sie ein anderes Konto.",
+    "invitadoA": "Sie wurden eingeladen, <b>{org}</b> als <b>{email}</b> beizutreten.",
+    "creaTuClave": "Erstellen Sie ein Passwort. Ihr Konto wird mit dieser Adresse angelegt.",
+    "tuCorreo": "Ihre E-Mail",
+    "passNueva": "Passwort (mindestens 8 Zeichen)",
+    "passRepetir": "Passwort wiederholen",
+    "crearYEntrar": "Konto erstellen und fortfahren",
+    "creando": "Wird erstellt…",
+    "passCorta": "Das Passwort muss mindestens 8 Zeichen haben.",
+    "passDistintas": "Die beiden Passwörter stimmen nicht überein.",
+    "yaRegistrado": "Mit dieser Adresse besteht bereits ein Konto. Melden Sie sich an, um die Einladung anzunehmen.",
+    "errorCrear": "Das Konto konnte nicht erstellt werden. Bitte erneut versuchen.",
+    "creadaEntraTu": "Ihr Konto wurde erstellt. Melden Sie sich an, um fortzufahren.",
+    "yaTengoCuenta": "Haben Sie schon ein Konto?"
   }
 }

@@ -346,7 +346,11 @@
       "enviadoOk": "Convite enviado.",
       "enviadoFallo": "O convite foi criado, mas o e-mail não saiu. Tente reenviá-lo.",
       "sinPermiso": "Apenas o proprietário e os administradores podem gerir a equipa.",
-      "asientosNota": "Convidar alguém não consome lugar: um lugar é uma máquina, não uma pessoa."
+      "asientosNota": "Convidar alguém não consome lugar: um lugar é uma máquina, não uma pessoa.",
+      "nombreOrg": "Nome da organização",
+      "nombreOrgAyuda": "É o nome que verá quem receber um convite.",
+      "guardar": "Guardar",
+      "guardado": "Guardado."
     }
   },
   "landing": {
@@ -526,6 +530,19 @@
     "caducada": "Este convite expirou. Peça um novo.",
     "yaAceptada": "Este convite já foi utilizado.",
     "otroCorreo": "Este convite é para outro endereço de e-mail. Inicie sessão com a conta para a qual foi enviado.",
-    "yaEnOtra": "Já pertence a outra organização. Peça para ser removido dela primeiro, ou use outra conta."
+    "yaEnOtra": "Já pertence a outra organização. Peça para ser removido dela primeiro, ou use outra conta.",
+    "invitadoA": "Foi convidado para se juntar a <b>{org}</b> como <b>{email}</b>.",
+    "creaTuClave": "Crie uma palavra-passe para entrar. A sua conta é criada com este endereço.",
+    "tuCorreo": "O seu e-mail",
+    "passNueva": "Palavra-passe (mínimo 8 caracteres)",
+    "passRepetir": "Repita a palavra-passe",
+    "crearYEntrar": "Criar conta e continuar",
+    "creando": "A criar…",
+    "passCorta": "A palavra-passe deve ter pelo menos 8 caracteres.",
+    "passDistintas": "As duas palavras-passe não coincidem.",
+    "yaRegistrado": "Já existe uma conta com este endereço. Inicie sessão para aceitar o convite.",
+    "errorCrear": "Não foi possível criar a conta. Tente novamente.",
+    "creadaEntraTu": "A sua conta foi criada. Inicie sessão para continuar.",
+    "yaTengoCuenta": "Já tem conta?"
   }
 }

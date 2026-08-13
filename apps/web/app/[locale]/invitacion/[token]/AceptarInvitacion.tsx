@@ -3,26 +3,51 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
-type Estado = "comprobando" | "sin_sesion" | "listo" | "aceptando" | "exito" | "error";
+type Estado =
+  | "comprobando"
+  /** Sin sesión y sin cuenta conocida: se le ofrece crear la contraseña. */
+  | "registrarse"
+  | "creando"
+  | "aceptando"
+  | "exito"
+  | "error";
+
+interface Vista {
+  email: string;
+  org: string;
+  role: string;
+}
 
 /**
- * ACEPTAR LA INVITACIÓN.
+ * ACEPTAR UNA INVITACIÓN — incluido el caso de quien NO tiene cuenta.
  *
- * El token llega en la RUTA (no en la query: las query strings acaban en los
- * registros de los proxies y en el `Referer` de la siguiente navegación) y no se
- * pinta nunca en pantalla.
+ * EL AGUJERO QUE ESTO CIERRA. A quien se invita normalmente no es cliente de
+ * BiVelio: es un compañero de la empresa que sí lo es. La primera versión le
+ * mandaba a iniciar sesión, y ahí se acababa el camino — no tiene contraseña, y
+ * «he olvidado mi contraseña» no le encuentra porque su dirección no está en la
+ * base. El correo llegaba, se veía bien, y la invitación no se podía aceptar.
  *
- * Se intenta aceptar SOLO. Si hace falta iniciar sesión, el enlace de login lleva
- * un `?next=` de vuelta a esta misma página, así que al volver se acepta sin que
- * nadie tenga que buscar el correo otra vez.
+ * Ahora, si no hay sesión, la pantalla le pide crear su contraseña (dos veces) y
+ * la cuenta nace ya con el correo verificado: la posesión del enlace, que se le
+ * mandó a esa dirección exacta, es la misma prueba que usa cualquier correo de
+ * confirmación. Pedirle después que confirme un correo que acaba de demostrar que
+ * controla sería un paso de más que solo sirve para perder gente.
+ *
+ * El token va en la RUTA y no se pinta nunca en pantalla.
  */
 export function AceptarInvitacion({ token }: { token: string }) {
   const t = useTranslations("invitacion");
   const locale = useLocale();
   const [estado, setEstado] = useState<Estado>("comprobando");
   const [motivo, setMotivo] = useState<string>("");
+  const [vista, setVista] = useState<Vista | null>(null);
 
-  const aceptar = useCallback(async () => {
+  const [pass1, setPass1] = useState("");
+  const [pass2, setPass2] = useState("");
+  const [errorForm, setErrorForm] = useState("");
+
+  /** Intenta aceptar con la sesión que haya. Si no hay, se ofrece registrarse. */
+  const intentarAceptar = useCallback(async () => {
     setEstado("aceptando");
     try {
       const res = await fetch("/api/org/invitations/accept", {
@@ -31,14 +56,8 @@ export function AceptarInvitacion({ token }: { token: string }) {
         body: JSON.stringify({ token }),
       });
       const json = (await res.json().catch(() => ({}))) as { code?: string };
-      if (res.ok) {
-        setEstado("exito");
-        return;
-      }
-      if (res.status === 401) {
-        setEstado("sin_sesion");
-        return;
-      }
+      if (res.ok) return setEstado("exito");
+      if (res.status === 401) return setEstado("registrarse");
       setMotivo(json.code ?? "invalida");
       setEstado("error");
     } catch {
@@ -47,12 +66,76 @@ export function AceptarInvitacion({ token }: { token: string }) {
     }
   }, [token]);
 
-  // Se intenta nada más llegar: si ya hay sesión con el correo correcto, aceptar
-  // no requiere ni un clic. Es una acción con consentimiento previo — el enlace
-  // solo llega por correo y solo funciona para su destinatario.
+  // Al llegar se pide primero QUÉ dice la invitación, para poder enseñar a qué
+  // organización y con qué perfil. Un enlace de un remitente desconocido que pide
+  // una contraseña sin contar a qué tiene exactamente la forma de un phishing.
   useEffect(() => {
-    void aceptar();
-  }, [aceptar]);
+    void (async () => {
+      try {
+        const res = await fetch("/api/org/invitations/preview", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        const json = (await res.json().catch(() => ({}))) as Vista & { code?: string };
+        if (!res.ok) {
+          setMotivo(json.code ?? "invalida");
+          setEstado("error");
+          return;
+        }
+        setVista({ email: json.email, org: json.org, role: json.role });
+        await intentarAceptar();
+      } catch {
+        setMotivo("invalida");
+        setEstado("error");
+      }
+    })();
+  }, [token, intentarAceptar]);
+
+  async function crearCuenta(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorForm("");
+    if (pass1.length < 8) return setErrorForm(t("passCorta"));
+    if (pass1 !== pass2) return setErrorForm(t("passDistintas"));
+
+    setEstado("creando");
+    try {
+      const res = await fetch("/api/org/invitations/registrar", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token, password: pass1 }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { email?: string; code?: string };
+
+      if (!res.ok) {
+        setEstado("registrarse");
+        // «Ya tienes cuenta» no es un error del que entra: es alguien registrado
+        // que tiene que usar su contraseña. Se le manda al login CON la vuelta
+        // puesta, para que no tenga que buscar el correo otra vez.
+        setErrorForm(json.code === "ya_registrado" ? t("yaRegistrado") : t("errorCrear"));
+        return;
+      }
+
+      // La sesión se crea AQUÍ, en el cliente: es lo que deja la cookie bien
+      // puesta. El servidor solo ha creado la cuenta.
+      const { createClient } = await import("@/lib/supabase/client");
+      const { error } = await createClient().auth.signInWithPassword({
+        email: json.email!,
+        password: pass1,
+      });
+      if (error) {
+        // La cuenta existe y está dentro de la organización; solo ha fallado el
+        // último paso. Que entre por la puerta normal en vez de dejarle colgado.
+        setEstado("registrarse");
+        setErrorForm(t("creadaEntraTu"));
+        return;
+      }
+      setEstado("exito");
+    } catch {
+      setEstado("registrarse");
+      setErrorForm(t("errorCrear"));
+    }
+  }
 
   const textoError =
     motivo === "caducada" ? t("caducada")
@@ -61,34 +144,67 @@ export function AceptarInvitacion({ token }: { token: string }) {
     : motivo === "ya_en_otra" ? t("yaEnOtra")
     : t("invalida");
 
+  const login = `/${locale}/login?next=${encodeURIComponent(`/${locale}/invitacion/${encodeURIComponent(token)}`)}`;
+
   return (
     <main className="auth-wrap">
       <div className="auth-card">
         <h1>{t("title")}</h1>
 
+        {/* A QUÉ te invitan, en cuanto se sabe. */}
+        {vista ? (
+          <p className="sub">
+            {t.rich("invitadoA", { org: vista.org, email: vista.email, b: (c) => <b>{c}</b> })}
+          </p>
+        ) : null}
+
         {estado === "comprobando" || estado === "aceptando" ? (
           <p className="sub">{estado === "aceptando" ? t("aceptando") : t("comprobando")}</p>
         ) : null}
 
-        {estado === "sin_sesion" ? (
+        {estado === "registrarse" || estado === "creando" ? (
           <>
-            <p className="sub">{t("entrar")}</p>
-            {/* La vuelta a ESTA página, con el token. `safeNextPath` la valida al
-                otro lado; aquí se construye entera nuestra, sin nada de fuera
-                salvo el token, que va escapado. */}
-            <a
-              className="ck-btn"
-              href={`/${locale}/login?next=${encodeURIComponent(`/${locale}/invitacion/${encodeURIComponent(token)}`)}`}
-            >
-              {t("iniciarSesion")}
-            </a>
+            <p className="sub">{t("creaTuClave")}</p>
+            <form onSubmit={crearCuenta}>
+              {/* El correo se ENSEÑA y no se puede tocar: sale de la invitación,
+                  no de lo que escriba quien llega. Va como campo desactivado para
+                  que se vea con qué cuenta se está entrando. */}
+              <input type="email" value={vista?.email ?? ""} disabled readOnly aria-label={t("tuCorreo")} />
+              <input
+                type="password"
+                required
+                autoComplete="new-password"
+                minLength={8}
+                value={pass1}
+                onChange={(ev) => setPass1(ev.target.value)}
+                placeholder={t("passNueva")}
+                aria-label={t("passNueva")}
+              />
+              <input
+                type="password"
+                required
+                autoComplete="new-password"
+                minLength={8}
+                value={pass2}
+                onChange={(ev) => setPass2(ev.target.value)}
+                placeholder={t("passRepetir")}
+                aria-label={t("passRepetir")}
+              />
+              {errorForm ? <div className="auth-msg error">{errorForm}</div> : null}
+              <button type="submit" className="btn btn-primary" disabled={estado === "creando"}>
+                {estado === "creando" ? t("creando") : t("crearYEntrar")}
+              </button>
+            </form>
+            <p className="auth-alt" style={{ marginTop: "12px" }}>
+              {t("yaTengoCuenta")} <a href={login}>{t("iniciarSesion")}</a>
+            </p>
           </>
         ) : null}
 
         {estado === "exito" ? (
           <>
             <p className="sub">{t("exito")}</p>
-            <a className="ck-btn" href={`/${locale}/dashboard`}>
+            <a className="btn btn-primary" href={`/${locale}/dashboard`}>
               {t("irAlPanel")}
             </a>
           </>
@@ -97,9 +213,6 @@ export function AceptarInvitacion({ token }: { token: string }) {
         {estado === "error" ? (
           <>
             <div className="auth-msg error">{textoError}</div>
-            {/* Con «esta invitación es de otro correo» la salida real es cambiar
-                de cuenta, así que se ofrece ir al login en vez de dejar un
-                callejón sin salida. */}
             {motivo === "otro_correo" || motivo === "ya_en_otra" ? (
               <p className="auth-alt" style={{ marginTop: "12px" }}>
                 <a href={`/${locale}/login`}>{t("iniciarSesion")}</a>

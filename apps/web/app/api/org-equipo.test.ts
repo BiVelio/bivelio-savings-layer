@@ -20,6 +20,7 @@ const YO = "11111111-1111-1111-1111-111111111111";
 const OTRO = "22222222-2222-2222-2222-222222222222";
 const ORG = "99999999-9999-4999-8999-999999999999";
 const ORG_AJENA = "88888888-8888-4888-8888-888888888888";
+const NUEVO_USUARIO = "33333333-3333-4333-8333-333333333333";
 
 interface Fila {
   org_id: string;
@@ -40,6 +41,10 @@ interface Inv {
 
 interface Estado {
   sinSesion?: boolean;
+  /** Simula que ya existe una cuenta con ese correo. */
+  correoYaRegistrado?: boolean;
+  /** Lo que se le pidió a Supabase crear. */
+  usuariosCreados?: Record<string, unknown>[];
   miRol: string;
   miCorreo: string | null;
   miembros: Fila[];
@@ -159,7 +164,18 @@ const consulta = (nombre: string) => {
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
     from: consulta,
-    auth: { admin: { getUserById: async (id: string) => ({ data: { user: { email: `${id}@x.com` } } }) } },
+    auth: {
+      admin: {
+        getUserById: async (id: string) => ({ data: { user: { email: `${id}@x.com` } } }),
+        createUser: async (args: Record<string, unknown>) => {
+          if (e.correoYaRegistrado) {
+            return { data: null, error: { message: "User already registered", status: 422 } };
+          }
+          (e.usuariosCreados ??= []).push(args);
+          return { data: { user: { id: NUEVO_USUARIO, email: args.email } }, error: null };
+        },
+      },
+    },
     rpc: async (nombre: string, args: unknown) => {
       e.rpc.push({ nombre, args });
       if (e.errorRpc) return { data: null, error: e.errorRpc };
@@ -530,5 +546,163 @@ describe("POST /api/org/transfer — la transferencia", () => {
     const { POST } = await import("./org/transfer/route");
     expect((await POST(pet("POST", { userId: YO }))).status).toBe(409);
     expect(e.rpc).toHaveLength(0);
+  });
+});
+
+
+// ------------------------------------------------- registrarse sin cuenta -----
+
+describe("POST /api/org/invitations/registrar — quien NO tiene cuenta", () => {
+  /**
+   * EL AGUJERO QUE ESTO CIERRA. A quien se invita normalmente no es cliente: es
+   * un compañero de la empresa que sí lo es. La pantalla le mandaba a iniciar
+   * sesión y ahí se acababa — no tiene contraseña, y «he olvidado mi contraseña»
+   * no le encuentra porque su dirección no está en la base. El correo llegaba, se
+   * veía bien, y la invitación no se podía aceptar.
+   */
+  beforeEach(() => {
+    e.miembros = [{ org_id: ORG, user_id: OTRO, role: "owner", created_at: "2026-01-01" }];
+    e.invitaciones = [invViva()];
+    e.usuariosCreados = [];
+  });
+
+  it("crea la cuenta con el correo de la INVITACIÓN y entra con su rol", async () => {
+    const { POST } = await import("./org/invitations/registrar/route");
+    const res = await POST(pet("POST", { token: TOKEN, password: "unaClaveLarga" }));
+    expect(res.status).toBe(201);
+
+    const creado = e.usuariosCreados![0]!;
+    expect(creado.email).toBe("nuevo@empresa.com");
+    // Nace VERIFICADO: la posesión del enlace, que se mandó a esa dirección, ya
+    // prueba que la controla. Pedirle confirmar después solo pierde gente.
+    expect(creado.email_confirm).toBe(true);
+
+    expect(e.miembros.find((m) => m.user_id === NUEVO_USUARIO)).toMatchObject({ org_id: ORG, role: "member" });
+    expect(e.invitaciones[0]!.accepted_at).toBeTruthy();
+  });
+
+  it("⛔ el correo NO puede venir del cuerpo de la petición", async () => {
+    // Es la línea que sostiene toda la seguridad de la ruta: si se aceptara un
+    // correo del cliente, cualquiera con un enlace válido crearía una cuenta a
+    // nombre de otra persona —incluida una del dominio del cliente— y entraría.
+    const { POST } = await import("./org/invitations/registrar/route");
+    await POST(pet("POST", { token: TOKEN, password: "unaClaveLarga", email: "yo@atacante.com" }));
+    expect(e.usuariosCreados![0]!.email).toBe("nuevo@empresa.com");
+    expect(JSON.stringify(e.usuariosCreados)).not.toContain("atacante");
+  });
+
+  it("⛔ una contraseña corta no crea NADA", async () => {
+    const { POST } = await import("./org/invitations/registrar/route");
+    const res = await POST(pet("POST", { token: TOKEN, password: "1234567" }));
+    expect(res.status).toBe(400);
+    expect(e.usuariosCreados).toHaveLength(0);
+    expect(e.miembros.find((m) => m.user_id === NUEVO_USUARIO)).toBeUndefined();
+  });
+
+  it("⛔ una invitación caducada no crea cuenta", async () => {
+    // Sin esto, un enlace viejo seguiría sirviendo para registrarse indefinidamente.
+    e.invitaciones = [invViva({ expires_at: "2020-01-01T00:00:00Z" })];
+    const { POST } = await import("./org/invitations/registrar/route");
+    expect((await POST(pet("POST", { token: TOKEN, password: "unaClaveLarga" }))).status).toBe(410);
+    expect(e.usuariosCreados).toHaveLength(0);
+  });
+
+  it("⛔ una ya aceptada tampoco", async () => {
+    e.invitaciones = [invViva({ accepted_at: "2026-08-12T10:00:00Z" })];
+    const { POST } = await import("./org/invitations/registrar/route");
+    expect((await POST(pet("POST", { token: TOKEN, password: "unaClaveLarga" }))).status).toBe(410);
+    expect(e.usuariosCreados).toHaveLength(0);
+  });
+
+  it("⛔ un token inventado no crea cuenta", async () => {
+    const { POST } = await import("./org/invitations/registrar/route");
+    expect((await POST(pet("POST", { token: "bvi_loquesea", password: "unaClaveLarga" }))).status).toBe(404);
+    expect(e.usuariosCreados).toHaveLength(0);
+  });
+
+  it("si ya tiene cuenta: 409 que le dice qué hacer, y sin pertenencia a medias", async () => {
+    e.correoYaRegistrado = true;
+    const { POST } = await import("./org/invitations/registrar/route");
+    const res = await POST(pet("POST", { token: TOKEN, password: "unaClaveLarga" }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe("ya_registrado");
+    expect(e.miembros.find((m) => m.user_id === NUEVO_USUARIO)).toBeUndefined();
+    expect(e.invitaciones[0]!.accepted_at).toBeNull();
+  });
+});
+
+describe("POST /api/org/invitations/preview — qué dice la invitación", () => {
+  beforeEach(() => {
+    e.invitaciones = [invViva()];
+  });
+
+  it("dice a qué organización y con qué perfil, sin sesión", async () => {
+    // Un enlace de un remitente desconocido que pide una contraseña sin contar a
+    // qué tiene la forma exacta de un phishing.
+    e.sinSesion = true;
+    const { POST } = await import("./org/invitations/preview/route");
+    const res = await POST(pet("POST", { token: TOKEN }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ email: "nuevo@empresa.com", org: "Acme S.L.", role: "member" });
+  });
+
+  it("⛔ NO dice si esa dirección tiene ya cuenta", async () => {
+    // Responderlo convertiría cualquier invitación en un oráculo para saber quién
+    // está registrado en BiVelio.
+    const { POST } = await import("./org/invitations/preview/route");
+    const cuerpo = JSON.stringify(await (await POST(pet("POST", { token: TOKEN }))).json());
+    expect(cuerpo).not.toMatch(/registrad|tieneCuenta|existe/i);
+  });
+
+  it("⛔ nunca devuelve el hash del token", async () => {
+    const { POST } = await import("./org/invitations/preview/route");
+    const cuerpo = JSON.stringify(await (await POST(pet("POST", { token: TOKEN }))).json());
+    expect(cuerpo).not.toContain(hashDeToken(TOKEN));
+  });
+
+  it("una caducada no se previsualiza", async () => {
+    e.invitaciones = [invViva({ expires_at: "2020-01-01T00:00:00Z" })];
+    const { POST } = await import("./org/invitations/preview/route");
+    expect((await POST(pet("POST", { token: TOKEN }))).status).toBe(410);
+  });
+});
+
+
+describe("PATCH /api/org — el nombre de la organización", () => {
+  it("lo cambia quien gestiona el equipo", async () => {
+    // Nace con el CORREO de quien pagó, y ese nombre acaba dentro del correo de
+    // invitación: «jmfisagol@gmail.com le ha invitado a unirse a
+    // jmfisagol@gmail.com» parece un correo roto, o una suplantación.
+    const { PATCH } = await import("./org/route");
+    const res = await PATCH(pet("PATCH", { name: "  Acme   Corporation  " }));
+    expect(res.status).toBe(200);
+    // Se normalizan los espacios de paso.
+    expect(e.orgs[0]!.name).toBe("Acme Corporation");
+  });
+
+  it("⛔ un member no puede", async () => {
+    conRol("member");
+    const { PATCH } = await import("./org/route");
+    expect((await PATCH(pet("PATCH", { name: "Mío" }))).status).toBe(403);
+    expect(e.orgs[0]!.name).toBe("Acme S.L.");
+  });
+
+  it("⛔ ni saltos de línea ni caracteres de control", async () => {
+    // El nombre se interpola en el ASUNTO de un correo que mandamos nosotros, y
+    // un salto ahí permite inyectar cabeceras. Se escriben por CÓDIGO: como
+    // literales serían invisibles en el fuente.
+    const { PATCH } = await import("./org/route");
+    const malos = [`Acme${String.fromCharCode(10)}Bcc: otro@sitio.com`, `Acme${String.fromCharCode(13)}X`, `Acme${String.fromCharCode(7)}`];
+    for (const malo of malos) {
+      expect((await PATCH(pet("PATCH", { name: malo }))).status).toBe(400);
+    }
+    expect(e.orgs[0]!.name).toBe("Acme S.L.");
+  });
+
+  it("vacío o demasiado largo se rechaza", async () => {
+    const { PATCH } = await import("./org/route");
+    expect((await PATCH(pet("PATCH", { name: "   " }))).status).toBe(400);
+    expect((await PATCH(pet("PATCH", { name: "x".repeat(81) }))).status).toBe(400);
+    expect(e.orgs[0]!.name).toBe("Acme S.L.");
   });
 });
