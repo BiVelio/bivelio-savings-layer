@@ -915,3 +915,76 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .lp .split { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .lp .ledgers { grid-template-columns: 1fr; } }
+
+/* ── Equipo (miembros e invitaciones) ──────────────────────────────────────
+   La sección se pintaba con clases que NO existían (`ck-card`, `ck-btn`,
+   `ck-table`…), así que el navegador aplicaba sus valores por defecto: input con
+   borde de sistema, `<select>` gris y una tabla desnuda. Aquí no se inventa nada
+   nuevo: se reutilizan `.card`, `.btn` y las variables del tema, y solo se añade
+   lo que de verdad faltaba — un `<select>`, la fila de una persona y las píldoras
+   de rol. Una LISTA y no una tabla: son ≤20 filas de texto, y `.tbl` alinea a la
+   derecha y numera en tabular, que es para cifras, no para correos. */
+
+.equipo { margin-top: 22px; }
+.equipo > h2 { margin: 6px 0 4px; font-size: 1.05rem; letter-spacing: -.02em; }
+.equipo > .sub { margin: 0 0 16px; color: var(--ink-soft); font-size: .86rem; }
+.equipo h3 {
+  margin: 22px 0 10px; font-family: var(--mono); font-size: 10.5px;
+  text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); font-weight: 600;
+}
+
+/* Invitar */
+.equipo-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.equipo-form .kt-input { font-family: inherit; font-size: 14px; flex: 1 1 240px; }
+.equipo-select {
+  font: inherit; font-size: 14px; padding: 9px 32px 9px 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-md);
+  background: var(--surface); color: var(--ink); cursor: pointer;
+  /* La flecha, dibujada: el `appearance` del sistema es lo que hacía que el
+     control cantara como de otro producto. */
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 11px center;
+  transition: border-color .15s, box-shadow .15s;
+}
+.equipo-select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.equipo-select:disabled { opacity: .55; cursor: default; }
+
+/* La lista de personas */
+.equipo-lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-xl); background: var(--surface); overflow: hidden; }
+.equipo-fila { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.equipo-fila:last-child { border-bottom: none; }
+.equipo-fila .ini {
+  flex: none; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--line);
+  display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--ink-soft);
+  text-transform: uppercase;
+}
+.equipo-fila .quien { flex: 1 1 auto; min-width: 0; }
+.equipo-fila .quien b { display: block; font-weight: 500; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.equipo-fila .quien span { font-size: .76rem; color: var(--ink-soft); }
+.equipo-fila .acciones { flex: none; display: flex; gap: 6px; align-items: center; }
+.equipo-fila .btn { padding: 6px 10px; font-size: .78rem; }
+
+/* Píldora de rol */
+.rol {
+  flex: none; font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: .1em; padding: 4px 9px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-soft);
+}
+.rol.owner { border-color: color-mix(in srgb, var(--brand) 34%, var(--line)); background: color-mix(in srgb, var(--brand) 9%, var(--surface)); color: var(--brand); }
+.rol.pendiente { border-color: color-mix(in srgb, var(--amber) 38%, var(--line)); background: color-mix(in srgb, var(--amber) 10%, var(--surface)); color: var(--amber); }
+.rol.caducada { border-color: color-mix(in srgb, var(--danger) 32%, var(--line)); background: color-mix(in srgb, var(--danger) 8%, var(--surface)); color: var(--danger); }
+
+/* Estados */
+.equipo-vacio { margin: 0; padding: 18px 14px; text-align: center; color: var(--ink-soft); font-size: .82rem; }
+.equipo-msg { margin-top: 10px; font-size: .8rem; padding: 9px 12px; border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-soft); }
+.equipo-msg.ok { border-color: color-mix(in srgb, var(--mint) 34%, var(--line)); background: color-mix(in srgb, var(--mint) 8%, var(--surface)); color: var(--mint); }
+.equipo-msg.error { border-color: color-mix(in srgb, var(--danger) 32%, var(--line)); background: color-mix(in srgb, var(--danger) 7%, var(--surface)); color: var(--danger); }
+
+@media (max-width: 560px) {
+  .equipo-form { flex-direction: column; align-items: stretch; }
+  .equipo-fila { flex-wrap: wrap; }
+  .equipo-fila .quien { flex-basis: calc(100% - 42px); }
+  .equipo-fila .acciones { margin-left: 42px; }
+}

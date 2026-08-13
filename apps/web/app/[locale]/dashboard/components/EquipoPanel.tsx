@@ -31,6 +31,13 @@ const ROLES = ["admin", "member", "billing"] as const;
  *
  * Si el listado devuelve 403 el panel se calla entero: un `member` no tiene por
  * qué ver siquiera cuánta gente hay en la organización.
+ *
+ * SOBRE EL ASPECTO: la primera versión usaba clases inventadas (`ck-card`,
+ * `ck-btn`, `ck-table`) que no existen en `globals.css`, así que el navegador
+ * aplicaba sus valores por defecto y la sección parecía de otro producto. Ahora
+ * usa el vocabulario real —`card`, `btn btn-primary`, `kt-input`— y una LISTA en
+ * vez de una tabla: `.tbl` alinea a la derecha y numera en tabular porque está
+ * pensada para cifras, no para direcciones de correo.
  */
 export function EquipoPanel() {
   const t = useTranslations("dashboard.equipo");
@@ -132,159 +139,161 @@ export function EquipoPanel() {
   const puedoTransferir = miRol === "owner";
   const nombreRol = (r: string) =>
     r === "owner" ? t("rolOwner") : r === "admin" ? t("rolAdmin") : r === "billing" ? t("rolBilling") : t("rolMember");
+  const inicial = (m: Miembro) => (m.email ?? m.userId).trim().charAt(0) || "?";
 
   return (
-    <section className="ck-card" style={{ marginTop: "22px" }}>
+    <section className="card equipo">
       <h2>{t("title")}</h2>
-      <p className="ck-sub">{t("intro")}</p>
+      <p className="sub">{t("intro")}</p>
 
       {/* ---------------------------------------------------------- invitar */}
-      <form onSubmit={invitar} style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "14px" }}>
+      <form onSubmit={invitar} className="equipo-form">
         <input
           type="email"
           required
+          className="kt-input"
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           placeholder={t("invitarEmail")}
           aria-label={t("invitarEmail")}
-          style={{ flex: "1 1 220px", minWidth: 0 }}
         />
-        <select value={rol} onChange={(ev) => setRol(ev.target.value as (typeof ROLES)[number])} aria-label={t("invitarRol")}>
+        <select
+          className="equipo-select"
+          value={rol}
+          onChange={(ev) => setRol(ev.target.value as (typeof ROLES)[number])}
+          aria-label={t("invitarRol")}
+        >
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {nombreRol(r)}
             </option>
           ))}
         </select>
-        <button type="submit" className="ck-btn" disabled={enviando}>
+        <button type="submit" className="btn btn-primary" disabled={enviando}>
           {enviando ? t("invitando") : t("invitarBoton")}
         </button>
       </form>
-      <p className="ck-hint" style={{ marginTop: "8px" }}>{t("ayudaRoles")}</p>
+      <p className="ck-note">{t("ayudaRoles")}</p>
       {/* Se dice explícitamente para que nadie deduzca que invitar cuesta dinero:
           un asiento es una MÁQUINA, no una persona. */}
-      <p className="ck-hint">{t("asientosNota")}</p>
+      <p className="ck-note">{t("asientosNota")}</p>
 
-      {msg ? (
-        <div className={msg.tipo === "ok" ? "auth-msg" : "auth-msg error"} style={{ marginTop: "10px" }}>
-          {msg.texto}
-        </div>
-      ) : null}
+      {msg ? <div className={`equipo-msg ${msg.tipo}`}>{msg.texto}</div> : null}
 
       {/* --------------------------------------------------------- miembros */}
-      <h3 style={{ marginTop: "22px" }}>{t("miembrosTitulo")}</h3>
+      <h3>{t("miembrosTitulo")}</h3>
       {miembros === null ? (
-        <p className="ck-hint">{t("cargando")}</p>
+        <p className="ck-note">{t("cargando")}</p>
       ) : (
-        <table className="ck-table">
-          <thead>
-            <tr>
-              <th>{t("columnaPersona")}</th>
-              <th>{t("columnaRol")}</th>
-              <th>{t("columnaDesde")}</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {miembros.map((m) => (
-              <tr key={m.userId}>
-                <td>
+        <ul className="equipo-lista">
+          {miembros.map((m) => (
+            <li key={m.userId} className="equipo-fila">
+              <span className="ini" aria-hidden>
+                {inicial(m)}
+              </span>
+              <span className="quien">
+                <b>
                   {m.email ?? m.userId}
-                  {m.soyYo ? <span className="ck-hint"> ({t("tu")})</span> : null}
-                </td>
-                <td>
-                  {m.role === "owner" || m.soyYo ? (
-                    nombreRol(m.role)
-                  ) : (
-                    <select
-                      value={m.role}
-                      onChange={(ev) => accion("/api/org/members", "PATCH", { userId: m.userId, role: ev.target.value })}
-                      aria-label={t("columnaRol")}
-                    >
-                      {ROLES.map((r) => (
-                        <option key={r} value={r}>
-                          {nombreRol(r)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </td>
-                <td>{fecha(m.desde)}</td>
-                <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                  {/* Al dueño no se le toca desde aquí: se transfiere primero. Y
-                      uno no se echa a sí mismo por accidente. */}
-                  {m.role === "owner" || m.soyYo ? null : confirmando === `q:${m.userId}` ? (
-                    <>
-                      <button type="button" className="ck-btn danger" onClick={() => accion("/api/org/members", "DELETE", { userId: m.userId })}>
-                        {t("confirmar")}
-                      </button>{" "}
-                      <button type="button" className="ck-btn ghost" onClick={() => setConfirmando(null)}>
-                        {t("cancelar")}
+                  {m.soyYo ? ` (${t("tu")})` : ""}
+                </b>
+                <span>{fecha(m.desde)}</span>
+              </span>
+
+              {/* Al dueño no se le cambia el rol desde aquí: se transfiere. Y uno
+                  no se degrada a sí mismo por accidente. */}
+              {m.role === "owner" || m.soyYo ? (
+                <span className={`rol${m.role === "owner" ? " owner" : ""}`}>{nombreRol(m.role)}</span>
+              ) : (
+                <select
+                  className="equipo-select"
+                  value={m.role}
+                  onChange={(ev) => accion("/api/org/members", "PATCH", { userId: m.userId, role: ev.target.value })}
+                  aria-label={t("columnaRol")}
+                >
+                  {ROLES.map((r) => (
+                    <option key={r} value={r}>
+                      {nombreRol(r)}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <span className="acciones">
+                {m.role === "owner" || m.soyYo ? null : confirmando === `q:${m.userId}` ? (
+                  <>
+                    <button type="button" className="btn btn-primary" onClick={() => accion("/api/org/members", "DELETE", { userId: m.userId })}>
+                      {t("confirmar")}
+                    </button>
+                    <button type="button" className="btn btn-ghost" onClick={() => setConfirmando(null)}>
+                      {t("cancelar")}
+                    </button>
+                  </>
+                ) : confirmando === `t:${m.userId}` ? (
+                  <>
+                    <button type="button" className="btn btn-primary" onClick={() => accion("/api/org/transfer", "POST", { userId: m.userId })}>
+                      {t("transferirConfirmar")}
+                    </button>
+                    <button type="button" className="btn btn-ghost" onClick={() => setConfirmando(null)}>
+                      {t("cancelar")}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" className="btn btn-ghost" onClick={() => setConfirmando(`q:${m.userId}`)}>
+                      {t("quitar")}
+                    </button>
+                    {puedoTransferir ? (
+                      <button type="button" className="btn btn-ghost" onClick={() => setConfirmando(`t:${m.userId}`)}>
+                        {t("transferirBoton")}
                       </button>
-                    </>
-                  ) : (
-                    <>
-                      <button type="button" className="ck-btn ghost" onClick={() => setConfirmando(`q:${m.userId}`)}>
-                        {t("quitar")}
-                      </button>
-                      {puedoTransferir ? (
-                        confirmando === `t:${m.userId}` ? (
-                          <>
-                            {" "}
-                            <button type="button" className="ck-btn danger" onClick={() => accion("/api/org/transfer", "POST", { userId: m.userId })}>
-                              {t("transferirConfirmar")}
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            {" "}
-                            <button type="button" className="ck-btn ghost" onClick={() => setConfirmando(`t:${m.userId}`)}>
-                              {t("transferirBoton")}
-                            </button>
-                          </>
-                        )
-                      ) : null}
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    ) : null}
+                  </>
+                )}
+              </span>
+            </li>
+          ))}
+          {miembros.length <= 1 ? <li className="equipo-vacio">{t("vacio")}</li> : null}
+        </ul>
       )}
-      {miembros !== null && miembros.length <= 1 ? <p className="ck-hint">{t("vacio")}</p> : null}
-      {puedoTransferir ? <p className="ck-hint">{t("transferirIntro")}</p> : null}
+      {puedoTransferir && miembros !== null && miembros.length > 1 ? (
+        <p className="ck-note">{t("transferirIntro")}</p>
+      ) : null}
 
       {/* ---------------------------------------------------- invitaciones */}
       {invitaciones.length > 0 ? (
         <>
-          <h3 style={{ marginTop: "22px" }}>{t("invitacionesTitulo")}</h3>
-          <table className="ck-table">
-            <tbody>
-              {invitaciones.map((i) => (
-                <tr key={i.id}>
-                  <td>{i.email}</td>
-                  <td>{nombreRol(i.role)}</td>
-                  <td>{i.caducada ? t("caducada") : t("pendiente")}</td>
-                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                    <button
-                      type="button"
-                      className="ck-btn ghost"
-                      onClick={() => {
-                        setEmail(i.email);
-                        setRol(i.role as (typeof ROLES)[number]);
-                      }}
-                    >
-                      {t("reenviar")}
-                    </button>{" "}
-                    <button type="button" className="ck-btn ghost" onClick={() => accion("/api/org/invitations", "DELETE", { id: i.id })}>
-                      {t("revocar")}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h3>{t("invitacionesTitulo")}</h3>
+          <ul className="equipo-lista">
+            {invitaciones.map((i) => (
+              <li key={i.id} className="equipo-fila">
+                <span className="ini" aria-hidden>
+                  {i.email.charAt(0)}
+                </span>
+                <span className="quien">
+                  <b>{i.email}</b>
+                  <span>{nombreRol(i.role)}</span>
+                </span>
+                <span className={`rol ${i.caducada ? "caducada" : "pendiente"}`}>
+                  {i.caducada ? t("caducada") : t("pendiente")}
+                </span>
+                <span className="acciones">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      setEmail(i.email);
+                      setRol(i.role as (typeof ROLES)[number]);
+                    }}
+                  >
+                    {t("reenviar")}
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={() => accion("/api/org/invitations", "DELETE", { id: i.id })}>
+                    {t("revocar")}
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
         </>
       ) : null}
     </section>
