@@ -63,6 +63,31 @@ interface TestigoDeFacturacion {
 }
 
 /**
+ * Errores que YA costaron dinero, aunque el testigo de quien los recibe esté a
+ * cero: los pagó el LÍDER del singleflight.
+ *
+ * El testigo es por petición —tiene que serlo: una misma capa sirve peticiones
+ * concurrentes—, así que un seguidor coalescido hereda la excepción del líder
+ * con `llamadas: 0` y `falloDelProveedor: false`. Para él es indistinguible de
+ * un fallo interno del optimizador, y el fail-open hace justo lo que no debe:
+ * abrir OTRA llamada completa contra el proveedor que acaba de devolver un 429.
+ * Con N seguidores son N-1 llamadas extra sobre un proveedor caído, que es la
+ * amplificación que el singleflight existe para evitar.
+ *
+ * La marca viaja con el objeto de error, que es lo único que cruza esa frontera.
+ * WeakSet para no retener errores vivos.
+ */
+const erroresYaFacturados = new WeakSet<object>();
+
+function marcarErrorFacturado(err: unknown): void {
+  if (typeof err === "object" && err !== null) erroresYaFacturados.add(err);
+}
+
+function errorYaFacturado(err: unknown): boolean {
+  return typeof err === "object" && err !== null && erroresYaFacturados.has(err);
+}
+
+/**
  * El mensaje que se lleva el cliente cuando la puerta está cerrada. Es, con
  * diferencia, el texto más importante del producto: es lo ÚNICO que ve alguien a
  * quien el SDK acaba de dejar de funcionar, y decide si va al sitio correcto o
@@ -179,6 +204,9 @@ export class SavingsPipeline {
       // Regla: el fail-open solo puede rescatar lo que aún no ha costado nada.
       if (testigo.falloDelProveedor) throw err;
       if (testigo.llamadas > 0) throw err;
+      // El mismo criterio cuando quien pagó fue el líder del singleflight: su
+      // testigo no es el nuestro, así que la deuda viaja marcada en el error.
+      if (errorYaFacturado(err)) throw err;
 
       return await this.failOpenDirect<T>(request, err);
     }
@@ -389,11 +417,20 @@ export class SavingsPipeline {
 
     // --- Stage 3: singleflight around the expensive path. ---
     const inflightKey = buildInflightKey(canonical);
-    const runExpensive = () =>
-      this.expensivePath<T>(
-        testigo, request, canonical, policy, toggles, ledger, costModel, trace,
-        exactKey, baselineInput,
-      );
+    const runExpensive = async (): Promise<SavingsResult<T>> => {
+      try {
+        return await this.expensivePath<T>(
+          testigo, request, canonical, policy, toggles, ledger, costModel, trace,
+          exactKey, baselineInput,
+        );
+      } catch (err) {
+        // Aquí, y no en el catch de generate(), porque este es el ÚNICO punto
+        // donde coinciden el error y el testigo del que lo pagó: cuando la
+        // excepción llegue a un seguidor coalescido, su testigo ya será otro.
+        if (testigo.falloDelProveedor || testigo.llamadas > 0) marcarErrorFacturado(err);
+        throw err;
+      }
+    };
 
     if (policy.allowSingleflight && toggles.singleflight !== false) {
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
