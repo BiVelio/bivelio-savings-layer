@@ -18,7 +18,23 @@ import { fileURLToPath } from "node:url";
 
 // `fileURLToPath` y no `.pathname`: la ruta lleva `[locale]`, que en una URL
 // sale escapado como `%5Blocale%5D` y no existe en el disco.
-const RAIZ = fileURLToPath(new URL("./components/", import.meta.url));
+const APP = fileURLToPath(new URL("../../", import.meta.url));
+
+/**
+ * TODOS los .tsx de la aplicación, no solo los del panel. La primera versión
+ * miraba únicamente `dashboard/components/`, y por eso la pantalla de invitación
+ * —que vive en otra carpeta— se publicó con `<input>` a pelo: el navegador le
+ * puso su borde de sistema y los campos se solapaban con el botón.
+ */
+function tsx(dir: string, acc: string[] = []): string[] {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === "node_modules" || e.name.startsWith(".")) continue;
+    const full = `${dir}/${e.name}`;
+    if (e.isDirectory()) tsx(full, acc);
+    else if (e.name.endsWith(".tsx")) acc.push(full);
+  }
+  return acc;
+}
 const CSS = readFileSync(fileURLToPath(new URL("../../globals.css", import.meta.url)), "utf8");
 
 /**
@@ -54,18 +70,18 @@ function usadas(fuente: string): Set<string> {
   return s;
 }
 
-const ficheros = readdirSync(RAIZ).filter((f) => f.endsWith(".tsx"));
+const ficheros = tsx(APP).map((f) => f.slice(APP.length));
 
 describe("las clases del panel existen en globals.css", () => {
   const enLaHoja = definidas();
 
   it("hay componentes que revisar", () => {
-    expect(ficheros.length).toBeGreaterThan(5);
+    expect(ficheros.length).toBeGreaterThan(20);
   });
 
   for (const f of ficheros) {
     it(`${f} no usa ninguna clase inventada`, () => {
-      const huerfanas = [...usadas(readFileSync(RAIZ + f, "utf8"))].filter(
+      const huerfanas = [...usadas(readFileSync(APP + f, "utf8"))].filter(
         (c) => !enLaHoja.has(c) && !PERMITIDAS.has(c),
       );
       expect(huerfanas).toEqual([]);
