@@ -33,23 +33,20 @@ export interface SemanticRecord {
   knowledgeEpoch: string;
   contractId: string | null;
   /**
-   * QUIÉN hizo la petición (sessionId/principal), o null si es anónima.
+   * Who made the request (session/principal), or null when anonymous.
    *
-   * Faltaba, y era la fuga más cara: la caché exacta aísla por principal pero la
-   * semántica no lo miraba, así que dos usuarios distintos del MISMO tenant con
-   * la misma pregunta casaban por embedding y el segundo recibía la respuesta
-   * calculada para el primero. `tenantId` separa organizaciones, no personas.
+   * Isolation boundary: `tenantId` separates organizations, `principal`
+   * separates people within one. Both are hard filters applied BEFORE any
+   * similarity scoring — a semantic match never crosses either.
    */
   principal: string | null;
   /**
-   * Identidad COMPLETA de la petición que produjo esta respuesta.
+   * The COMPLETE identity of the request that produced this answer.
    *
-   * Antes solo se guardaban tenant, scope, epoch y contrato: la clave exacta
-   * declara necesarios otros cinco campos, y la semántica los ignoraba. El peor
-   * era `structuredDataHash` — dos preguntas redactadas igual pero con datos
-   * ADJUNTOS distintos casan por embedding, así que se servía la respuesta
-   * calculada sobre la tabla de otro. `model` y `systemPromptHash` van detrás:
-   * un modelo o un system prompt distintos son otra respuesta.
+   * Every field here is a hard filter, checked before similarity is scored, and
+   * the set is identical to the one the exact cache keys on. Two questions
+   * worded alike but carrying different attached data, a different model or a
+   * different system prompt are different questions, and never match.
    */
   model: string;
   systemPromptHash: string;

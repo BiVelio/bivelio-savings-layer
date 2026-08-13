@@ -18,21 +18,14 @@
  */
 
 /**
- * La versión que el SDK declara de sí mismo. Va a mano y NO se lee de
- * package.json a propósito: el bundle publicado no incluye package.json, así que
- * un `require` aquí rompería en tiempo de ejecución en casa del cliente.
+ * The version the SDK reports for itself.
  *
- * El precio de escribirla a mano es que se queda atrás — y se quedó: el paquete
- * pasó a 0.2.0 y esto seguía diciendo "0.1.0", que es justamente la versión que
- * vamos a marcar como rota. Todo cliente instalado se habría identificado como
- * la versión defectuosa en soporte y en telemetría, y no habría forma de
- * distinguir a quien ya actualizó de quien no.
- *
- * Por eso hay un test que la ata a package.json (`test/version-declarada.test.ts`).
- * Si subes la versión del paquete y olvidas esta línea, la suite se pone roja
- * antes de que la Release llegue a npm.
+ * Written by hand and deliberately NOT read from package.json: the published
+ * bundle does not ship package.json, so a `require` here would fail at runtime
+ * on the customer's machine. `test/version-declarada.test.ts` ties this
+ * constant to package.json so the two can never drift.
  */
-export const BV_SALA_VERSION = "0.2.1";
+export const BV_SALA_VERSION = "0.2.2";
 
 export * from "./util/index.js";
 export * from "./contracts/index.js";

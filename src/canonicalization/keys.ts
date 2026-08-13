@@ -38,14 +38,10 @@ export function buildExactKey(c: CanonicalRequest): string {
  * need freshness bucketing, since the work is happening *now*), but must still
  * isolate tenants and permissions.
  *
- * `schema` NO es opcional aquí, por mucho que ya esté `contract`. Faltaba, y el
- * efecto era servirle a un llamante la respuesta de OTRO contrato: dos
- * `generate()` concurrentes que solo difieren en `schemaVersion` colapsaban en
- * una, y el seguidor recibía el objeto del líder —que viola su esquema— con
- * `structurallyValid: true`, porque `asCoalescedFollower` clona el informe del
- * líder sin recalcular `constraints` ni pasar por la validación. `buildExactKey`
- * ya lo incluía y la caché semántica lo filtra a mano; esta era la única de las
- * tres puertas que no lo miraba.
+ * `schema` is REQUIRED here, even though `contract` is already part of the key:
+ * two concurrent calls that differ only in `schemaVersion` are different
+ * requests and must never coalesce. All three doors — exact key, in-flight key
+ * and semantic filter — key on the same identity, by design.
  */
 export function buildInflightKey(c: CanonicalRequest): string {
   const material = stableStringify({

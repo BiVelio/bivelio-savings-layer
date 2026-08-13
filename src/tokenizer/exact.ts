@@ -22,14 +22,14 @@
 import type { TokenEstimator } from "./estimator.js";
 
 /** Lo que necesitamos de gpt-tokenizer. Tipado aquí para no depender de sus tipos. */
-interface CodificadorBpe {
+interface BpeEncoder {
   encode(text: string): number[] | { length: number };
 }
 
 /**
  * Estimador exacto sobre una codificación BPE ya cargada.
  *
- * Se construye con el codificador ya resuelto en vez de importarlo dentro: así
+ * Se construye con el encoder ya resuelto en vez de importarlo dentro: así
  * este módulo no obliga a nadie a tener el paquete, y quien lo tiene decide qué
  * codificación carga (o200k_base para gpt-4o/4.1/5, cl100k_base para 3.5/4).
  */
@@ -37,18 +37,18 @@ export class ExactTokenizer implements TokenEstimator {
   readonly id: string;
   readonly exact = true;
 
-  constructor(id: string, private readonly codificador: CodificadorBpe) {
+  constructor(id: string, private readonly encoder: BpeEncoder) {
     this.id = id;
   }
 
   count(text: string): number {
     if (text.length === 0) return 0;
-    return this.codificador.encode(text).length;
+    return this.encoder.encode(text).length;
   }
 }
 
 /** Modelos que usan cada codificación. Sirve para mapear el registro de una vez. */
-export const MODELOS_POR_CODIFICACION: Readonly<Record<string, readonly string[]>> = {
+export const MODELS_BY_ENCODING: Readonly<Record<string, readonly string[]>> = {
   o200k_base: [
     "gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano",
     "o1", "o1-mini", "o3", "o3-mini", "o4-mini",
@@ -66,7 +66,7 @@ export const MODELOS_POR_CODIFICACION: Readonly<Record<string, readonly string[]
  * expone un punto de entrada por codificación y cargarlas todas serían decenas
  * de MB en memoria sin motivo.
  */
-export async function registrarTokenizadorExacto(
+export async function registerExactTokenizer(
   registro: {
     register(e: TokenEstimator): unknown;
     mapModel(model: string, tokenizerId: string): unknown;
@@ -76,29 +76,38 @@ export async function registrarTokenizadorExacto(
   const codificaciones = opciones.codificaciones ?? ["o200k_base", "cl100k_base"];
   let algunaCargada = false;
 
-  for (const nombre of codificaciones) {
-    let modulo: CodificadorBpe;
+  for (const encodingName of codificaciones) {
+    let mod: BpeEncoder;
     try {
       // Especificador en variable a propósito: impide que el empaquetador lo
       // resuelva estáticamente y arrastre el paquete al bundle de quien no lo usa.
-      const especificador = `gpt-tokenizer/encoding/${nombre}`;
-      modulo = (await import(/* @vite-ignore */ especificador)) as CodificadorBpe;
+      const specifier = `gpt-tokenizer/encoding/${encodingName}`;
+      mod = (await import(/* @vite-ignore */ specifier)) as BpeEncoder;
     } catch {
       continue; // No instalado, o esa codificación no existe: seguimos.
     }
-    if (typeof modulo.encode !== "function") continue;
+    if (typeof mod.encode !== "function") continue;
 
-    registro.register(new ExactTokenizer(nombre, modulo));
+    registro.register(new ExactTokenizer(encodingName, mod));
     algunaCargada = true;
 
-    for (const modelo of MODELOS_POR_CODIFICACION[nombre] ?? []) {
+    for (const model of MODELS_BY_ENCODING[encodingName] ?? []) {
       // Con y sin prefijo de proveedor: el registro resuelve por id exacto, y el
-      // mismo modelo llega como "gpt-4o-mini" o como "openai/gpt-4o-mini" según
+      // mismo model llega como "gpt-4o-mini" o como "openai/gpt-4o-mini" según
       // se hable con OpenAI directo o a través de una pasarela.
-      registro.mapModel(modelo, nombre);
-      registro.mapModel(`openai/${modelo}`, nombre);
+      registro.mapModel(model, encodingName);
+      registro.mapModel(`openai/${model}`, encodingName);
     }
   }
 
   return algunaCargada;
 }
+
+/**
+ * @deprecated Spanish-named aliases kept for one minor version. Use
+ * {@link MODELS_BY_ENCODING} and {@link registerExactTokenizer}. The public
+ * surface of this package is English-only; these leaked and are on the way out.
+ */
+export const MODELOS_POR_CODIFICACION = MODELS_BY_ENCODING;
+/** @deprecated Use {@link registerExactTokenizer}. */
+export const registrarTokenizadorExacto = registerExactTokenizer;

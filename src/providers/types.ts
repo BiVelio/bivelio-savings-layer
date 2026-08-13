@@ -50,13 +50,10 @@ export interface ProviderResponse {
    * Llamadas a herramienta que pidió el modelo, tal cual las devolvió el
    * proveedor.
    *
-   * Faltaba, y el adaptador hacía `content ?? ""`: cuando el modelo invoca una
-   * herramienta devuelve `content: null` + `tool_calls`, así que la capa entregaba
-   * CADENA VACÍA y la petición del modelo se perdía por completo. El pipeline
-   * transmite herramientas por diseño y son una palanca que el README vende, de
-   * modo que el caso no es exótico: es el camino normal en cuanto hay tools.
-   * Mismo tipo que expone `SavingsResult.toolCalls`: el pipeline lo transmite
-   * tal cual hasta el llamante (no solo hasta aquí).
+   * When the model invokes a tool it returns `content: null` + `tool_calls`, so
+   * this is the normal shape as soon as tools are in play — not an edge case.
+   * Same type as `SavingsResult.toolCalls`: the pipeline forwards it unchanged
+   * all the way to the caller.
    */
   toolCalls?: ToolCallRequest[];
   raw?: unknown;

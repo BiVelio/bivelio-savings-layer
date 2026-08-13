@@ -74,6 +74,12 @@ export interface RevocationPollerOptions {
    * silencio, durante días. Quien tenga observabilidad propia puede apagarlos;
    * quien no la tenga, que es casi todo el mundo, se entera igual.
    */
+  silenceWarnings?: boolean;
+  /**
+   * @deprecated Spanish name that leaked into the public options. Use
+   * {@link RevocationPollerOptions.silenceWarnings}. Honoured for one minor
+   * version so nobody gets their warnings back by surprise.
+   */
   silenciarAvisos?: boolean;
 }
 
@@ -255,30 +261,32 @@ export class RevocationPoller {
     }
   }
 
+  /** El interruptor, aceptando todavía el nombre viejo. */
+  private callado(): boolean {
+    return Boolean(this.opts.silenceWarnings ?? this.opts.silenciarAvisos);
+  }
+
   /** Un aviso por causa y por proceso, respetando el interruptor. */
   private avisar(clave: string, mensaje: string): void {
-    if (this.opts.silenciarAvisos) return;
+    if (this.callado()) return;
     avisarUnaVez(`poller:${this.opts.url}:${clave}`, mensaje);
   }
 
   /**
-   * EL CALL-HOME LLEVA CAÍDO UN RATO Y NADIE SE HA ENTERADO.
+   * THE CONTROL PLANE HAS BEEN UNREACHABLE FOR A WHILE.
    *
-   * Este es el fallo silencioso del SDK: el sondeo es fail-open a propósito —una
-   * red caída no puede tumbar la producción de un cliente— pero la consecuencia
-   * es que un endpoint mal configurado, un cortafuegos nuevo o una URL cambiada
-   * no producen NINGÚN síntoma. La licencia sigue funcionando, las peticiones
-   * siguen pasando, y lo único que ocurre es que la lista de revocaciones se
-   * queda congelada. Durante días.
+   * Polling is fail-open by design: a network outage must never take down the
+   * customer's production traffic. The trade-off is that an unreachable control
+   * plane has no visible symptom — the license keeps working and requests keep
+   * flowing while the revocation list quietly goes stale.
    *
-   * `onEvent` existía para esto, pero es opcional y casi nadie lo cablea. Así que
-   * el aviso sale por consola por defecto.
-   *
-   * NO se usa `avisarUnaVez` a secas: una caída de una semana tiene que seguir
-   * recordándose. Se avisa al tercer fallo seguido y luego cada doce.
+   * So the warning goes to the console BY DEFAULT, not only through the optional
+   * `onEvent` observer. It fires on the third consecutive failure and then every
+   * twelfth: a lost request is normal, a week-long outage must keep reminding.
+   * Silence it with `silenceWarnings` if you have your own observability.
    */
   private avisarFalloDeRed(error: unknown): void {
-    if (this.opts.silenciarAvisos) return;
+    if (this.callado()) return;
     const n = this.consecutiveFailures;
     if (n < FALLOS_ANTES_DE_AVISAR) return;
     if ((n - FALLOS_ANTES_DE_AVISAR) % REPETIR_AVISO_CADA !== 0) return;
