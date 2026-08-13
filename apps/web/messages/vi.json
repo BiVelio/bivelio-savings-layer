@@ -531,7 +531,7 @@
     "yaAceptada": "Lời mời này đã được sử dụng.",
     "otroCorreo": "Lời mời này dành cho một địa chỉ email khác. Hãy đăng nhập bằng tài khoản đã nhận lời mời.",
     "yaEnOtra": "Quý vị đã thuộc về một tổ chức khác. Hãy yêu cầu được xóa khỏi tổ chức đó trước, hoặc dùng tài khoản khác.",
-    "invitadoA": "Quý vị được mời tham gia <b>{org}</b> với tư cách <b>{email}</b>.",
+    "invitadoA": "Quý vị được mời tham gia <b>{org}</b>.",
     "creaTuClave": "Hãy tạo mật khẩu để vào. Tài khoản của quý vị được tạo với địa chỉ này.",
     "tuCorreo": "Email của quý vị",
     "passNueva": "Mật khẩu (ít nhất 8 ký tự)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Đã có tài khoản với địa chỉ này. Hãy đăng nhập để chấp nhận lời mời.",
     "errorCrear": "Không thể tạo tài khoản. Vui lòng thử lại.",
     "creadaEntraTu": "Tài khoản của quý vị đã được tạo. Hãy đăng nhập để tiếp tục.",
-    "yaTengoCuenta": "Đã có tài khoản?"
+    "yaTengoCuenta": "Đã có tài khoản?",
+    "invitacionPara": "Lời mời này dành cho <b>{email}</b>.",
+    "sesionActual": "Hiện quý vị đang đăng nhập với <b>{email}</b>.",
+    "cerrarYContinuar": "Đăng xuất và dùng tài khoản khác",
+    "cerrando": "Đang đăng xuất…"
   }
 }

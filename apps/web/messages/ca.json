@@ -531,7 +531,7 @@
     "yaAceptada": "Aquesta invitació ja s'ha fet servir.",
     "otroCorreo": "Aquesta invitació és per a una altra adreça. Inicieu la sessió amb el compte al qual es va enviar.",
     "yaEnOtra": "Ja pertanyeu a una altra organització. Demaneu que us en treguin primer, o feu servir un altre compte.",
-    "invitadoA": "Us han convidat a unir-vos a <b>{org}</b> com a <b>{email}</b>.",
+    "invitadoA": "Us han convidat a unir-vos a <b>{org}</b>.",
     "creaTuClave": "Creeu una contrasenya per entrar. El vostre compte es crea amb aquesta adreça.",
     "tuCorreo": "El vostre correu",
     "passNueva": "Contrasenya (mínim 8 caràcters)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Ja existeix un compte amb aquesta adreça. Inicieu la sessió per acceptar la invitació.",
     "errorCrear": "No s'ha pogut crear el compte. Torneu-ho a provar.",
     "creadaEntraTu": "El vostre compte s'ha creat. Inicieu la sessió per continuar.",
-    "yaTengoCuenta": "Ja teniu compte?"
+    "yaTengoCuenta": "Ja teniu compte?",
+    "invitacionPara": "La invitació és per a <b>{email}</b>.",
+    "sesionActual": "Ara mateix heu iniciat la sessió com a <b>{email}</b>.",
+    "cerrarYContinuar": "Tancar la sessió i usar un altre compte",
+    "cerrando": "Tancant la sessió…"
   }
 }

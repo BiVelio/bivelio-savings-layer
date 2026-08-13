@@ -531,7 +531,7 @@
     "yaAceptada": "Deze uitnodiging is al gebruikt.",
     "otroCorreo": "Deze uitnodiging is voor een ander e-mailadres. Meld u aan met het account waaraan hij is verstuurd.",
     "yaEnOtra": "U hoort al bij een andere organisatie. Vraag eerst om daar verwijderd te worden, of gebruik een ander account.",
-    "invitadoA": "U bent uitgenodigd om lid te worden van <b>{org}</b> als <b>{email}</b>.",
+    "invitadoA": "U bent uitgenodigd om lid te worden van <b>{org}</b>.",
     "creaTuClave": "Maak een wachtwoord aan om in te loggen. Uw account wordt met dit adres aangemaakt.",
     "tuCorreo": "Uw e-mail",
     "passNueva": "Wachtwoord (minimaal 8 tekens)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Er bestaat al een account met dit adres. Meld u aan om de uitnodiging te accepteren.",
     "errorCrear": "Het account kon niet worden aangemaakt. Probeer het opnieuw.",
     "creadaEntraTu": "Uw account is aangemaakt. Meld u aan om door te gaan.",
-    "yaTengoCuenta": "Heeft u al een account?"
+    "yaTengoCuenta": "Heeft u al een account?",
+    "invitacionPara": "De uitnodiging is voor <b>{email}</b>.",
+    "sesionActual": "U bent momenteel aangemeld als <b>{email}</b>.",
+    "cerrarYContinuar": "Afmelden en ander account gebruiken",
+    "cerrando": "Afmelden…"
   }
 }

@@ -531,7 +531,7 @@
     "yaAceptada": "To zaproszenie zostało już wykorzystane.",
     "otroCorreo": "To zaproszenie dotyczy innego adresu e-mail. Prosimy zalogować się na konto, na które je wysłano.",
     "yaEnOtra": "Należą już Państwo do innej organizacji. Prosimy najpierw poprosić o usunięcie z niej lub użyć innego konta.",
-    "invitadoA": "Zaproszono Państwa do <b>{org}</b> jako <b>{email}</b>.",
+    "invitadoA": "Zaproszono Państwa do <b>{org}</b>.",
     "creaTuClave": "Prosimy utworzyć hasło. Konto zostanie założone na ten adres.",
     "tuCorreo": "Państwa e-mail",
     "passNueva": "Hasło (co najmniej 8 znaków)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Konto z tym adresem już istnieje. Prosimy się zalogować, aby przyjąć zaproszenie.",
     "errorCrear": "Nie udało się utworzyć konta. Prosimy spróbować ponownie.",
     "creadaEntraTu": "Konto zostało utworzone. Prosimy się zalogować, aby kontynuować.",
-    "yaTengoCuenta": "Mają już Państwo konto?"
+    "yaTengoCuenta": "Mają już Państwo konto?",
+    "invitacionPara": "Zaproszenie jest dla <b>{email}</b>.",
+    "sesionActual": "Obecnie są Państwo zalogowani jako <b>{email}</b>.",
+    "cerrarYContinuar": "Wyloguj się i użyj innego konta",
+    "cerrando": "Wylogowywanie…"
   }
 }

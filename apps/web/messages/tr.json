@@ -531,7 +531,7 @@
     "yaAceptada": "Bu davet daha önce kullanılmış.",
     "otroCorreo": "Bu davet başka bir e-posta adresi için. Davetin gönderildiği hesapla oturum açın.",
     "yaEnOtra": "Zaten başka bir kuruluşa aitsiniz. Önce oradan çıkarılmanızı isteyin veya farklı bir hesap kullanın.",
-    "invitadoA": "<b>{org}</b> kuruluşuna <b>{email}</b> olarak katılmaya davet edildiniz.",
+    "invitadoA": "<b>{org}</b> kuruluşuna katılmaya davet edildiniz.",
     "creaTuClave": "Girmek için bir parola oluşturun. Hesabınız bu adresle oluşturulur.",
     "tuCorreo": "E-postanız",
     "passNueva": "Parola (en az 8 karakter)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Bu adresle bir hesap zaten var. Daveti kabul etmek için oturum açın.",
     "errorCrear": "Hesap oluşturulamadı. Lütfen tekrar deneyin.",
     "creadaEntraTu": "Hesabınız oluşturuldu. Devam etmek için oturum açın.",
-    "yaTengoCuenta": "Zaten hesabınız var mı?"
+    "yaTengoCuenta": "Zaten hesabınız var mı?",
+    "invitacionPara": "Davet <b>{email}</b> içindir.",
+    "sesionActual": "Şu anda <b>{email}</b> olarak oturum açtınız.",
+    "cerrarYContinuar": "Oturumu kapat ve başka hesap kullan",
+    "cerrando": "Oturum kapatılıyor…"
   }
 }

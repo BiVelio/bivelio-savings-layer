@@ -531,7 +531,7 @@
     "yaAceptada": "Undangan ini sudah digunakan.",
     "otroCorreo": "Undangan ini untuk alamat email lain. Masuk dengan akun yang menerimanya.",
     "yaEnOtra": "Anda sudah tergabung dalam organisasi lain. Mintalah dikeluarkan dari sana dulu, atau gunakan akun lain.",
-    "invitadoA": "Anda diundang bergabung dengan <b>{org}</b> sebagai <b>{email}</b>.",
+    "invitadoA": "Anda diundang bergabung dengan <b>{org}</b>.",
     "creaTuClave": "Buat kata sandi untuk masuk. Akun Anda dibuat dengan alamat ini.",
     "tuCorreo": "Email Anda",
     "passNueva": "Kata sandi (minimal 8 karakter)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Akun dengan alamat ini sudah ada. Masuk untuk menerima undangan.",
     "errorCrear": "Akun tidak dapat dibuat. Silakan coba lagi.",
     "creadaEntraTu": "Akun Anda telah dibuat. Masuk untuk melanjutkan.",
-    "yaTengoCuenta": "Sudah punya akun?"
+    "yaTengoCuenta": "Sudah punya akun?",
+    "invitacionPara": "Undangan ini untuk <b>{email}</b>.",
+    "sesionActual": "Saat ini Anda masuk sebagai <b>{email}</b>.",
+    "cerrarYContinuar": "Keluar dan gunakan akun lain",
+    "cerrando": "Keluar…"
   }
 }
