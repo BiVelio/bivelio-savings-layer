@@ -14,7 +14,7 @@ import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import { evaluatePolicy } from "../policy/policy.js";
 import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
-import { resolveConstraintBackend } from "../constraints/backends.js";
+import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/backends.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -60,6 +60,31 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
 interface TestigoDeFacturacion {
   llamadas: number;
   falloDelProveedor: boolean;
+}
+
+/**
+ * Errores que YA costaron dinero, aunque el testigo de quien los recibe esté a
+ * cero: los pagó el LÍDER del singleflight.
+ *
+ * El testigo es por petición —tiene que serlo: una misma capa sirve peticiones
+ * concurrentes—, así que un seguidor coalescido hereda la excepción del líder
+ * con `llamadas: 0` y `falloDelProveedor: false`. Para él es indistinguible de
+ * un fallo interno del optimizador, y el fail-open hace justo lo que no debe:
+ * abrir OTRA llamada completa contra el proveedor que acaba de devolver un 429.
+ * Con N seguidores son N-1 llamadas extra sobre un proveedor caído, que es la
+ * amplificación que el singleflight existe para evitar.
+ *
+ * La marca viaja con el objeto de error, que es lo único que cruza esa frontera.
+ * WeakSet para no retener errores vivos.
+ */
+const erroresYaFacturados = new WeakSet<object>();
+
+function marcarErrorFacturado(err: unknown): void {
+  if (typeof err === "object" && err !== null) erroresYaFacturados.add(err);
+}
+
+function errorYaFacturado(err: unknown): boolean {
+  return typeof err === "object" && err !== null && erroresYaFacturados.has(err);
 }
 
 /**
@@ -111,7 +136,6 @@ export class SavingsPipeline {
   private readonly config: SavingsLayerConfig;
   private readonly now: () => number;
   private readonly generateId: () => string;
-  private illustrativePriceWarned = false;
   /**
    * Contratos a los que un modelo YA les incumplió una restricción de valor.
    *
@@ -179,6 +203,9 @@ export class SavingsPipeline {
       // Regla: el fail-open solo puede rescatar lo que aún no ha costado nada.
       if (testigo.falloDelProveedor) throw err;
       if (testigo.llamadas > 0) throw err;
+      // El mismo criterio cuando quien pagó fue el líder del singleflight: su
+      // testigo no es el nuestro, así que la deuda viaja marcada en el error.
+      if (errorYaFacturado(err)) throw err;
 
       return await this.failOpenDirect<T>(request, err);
     }
@@ -258,6 +285,79 @@ export class SavingsPipeline {
     );
   }
 
+  /**
+   * PEDIR UNA PALANCA QUE NO ESTÁ ENCHUFADA NO PUEDE SER GRATIS Y MUDO.
+   *
+   * Ni el compresor ni la caché semántica tienen valor por defecto, y ese
+   * defecto es correcto: un compresor y un embebedor son gasto y proveedor
+   * ajenos, y elegirlos por el cliente le mete latencia y factura que no pidió.
+   * Lo que no es correcto es que `savings: { compression: "auto" }` no haga
+   * nada y tampoco diga nada: el informe sale SIN la clave `compression` y con
+   * `eliminatedInput: 0`, que es EXACTAMENTE lo que se ve cuando el compresor sí
+   * corrió y no encontró nada que quitar. Medido contra el paquete publicado con
+   * 51.956 tokens de contexto redundante: 16 modelos de 16 sin comprimir, sin
+   * una señal. Y el fragmento de instalación del README no configura ninguna de
+   * las dos, así que quien lo copia cree que las tiene.
+   *
+   * SOLO CON PETICIÓN EXPLÍCITA, nunca por "el contexto era grande". Un aviso
+   * disparado por tamaño le hablaría de una palanca a quien no la pidió —puede
+   * haber decidido a conciencia no pagar un compresor— y encima se dispararía a
+   * veces por los bloques `system` que inyecta la propia capa (evidencia de
+   * retrieval, payload serializado): culparíamos al cliente de nuestro volumen.
+   * Un aviso que salta cuando no toca deja de leerse, y entonces tampoco se lee
+   * el que sí importa.
+   *
+   * No se mira la política ni la licencia a propósito: la dependencia ausente lo
+   * está para TODA la capa, así que el aviso es cierto y accionable en cualquier
+   * petición, y es de los que se emiten una vez por proceso.
+   */
+  /**
+   * EL ÚNICO PORTERO DE LOS AVISOS DEL PIPELINE.
+   *
+   * `silenceWarnings` se consultaba en UN solo sitio mientras su documentación
+   * —publicada en npm, y npm es inmutable— prometía que callaba el pipeline
+   * entero. Un interruptor que apaga una de las fuentes y deja las otras
+   * hablando es la peor clase de interruptor: la que hay que descubrir probando.
+   *
+   * Todo aviso del pipeline pasa por aquí. Si mañana se añade otro y alguien
+   * llama a `console.warn` directamente, la promesa vuelve a romperse — por eso
+   * hay un test que recorre este fichero y falla si aparece un `console.warn`
+   * suelto.
+   */
+  private avisar(clave: string, mensaje: string): void {
+    if (this.config.silenceWarnings) return;
+    avisarUnaVez(clave, mensaje);
+  }
+
+  private avisarDePalancasSinConfigurar(toggles: NonNullable<SavingsRequest["savings"]>): void {
+    if (this.config.silenceWarnings) return;
+
+    if ((toggles.compression === true || toggles.compression === "auto") && !this.config.compressor) {
+      this.avisar(
+        "palanca-sin-compresor",
+        "[bv-sala] se pidió `savings.compression` pero esta capa no tiene compresor, así que NO se " +
+          "comprime nada: el contexto largo viaja y se paga entero. En el informe, " +
+          "`report.compression` sale AUSENTE y `tokens.eliminatedInput` a 0 — lo mismo que se ve " +
+          "cuando no había nada que comprimir. El compresor es un sidecar (LLMLingua o el suyo) " +
+          "porque añade latencia y cómputo que solo usted debe decidir pagar: enchúfelo con " +
+          "`createSavingsLayer({ compressor })`, cualquier objeto con `compress({ text })`. " +
+          "Si su plan no incluye `long_context_compression`, hará falta además esa función. " +
+          "El resto de la capa sigue ahorrando igual.",
+      );
+    }
+
+    if (toggles.semanticCache && !this.deps.semanticCache) {
+      this.avisar(
+        "palanca-sin-cache-semantica",
+        "[bv-sala] se pidió `savings.semanticCache` pero esta capa no tiene caché semántica, así que " +
+          "toda pregunta reformulada saldrá `cache: \"miss\"` y se pagará al proveedor otra vez. " +
+          "No viene por defecto porque necesita un embebedor, que es coste y proveedor suyos: " +
+          "enchúfela con `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
+          "La caché exacta y el resto de la capa siguen funcionando.",
+      );
+    }
+  }
+
   private async generateOptimized<T = unknown>(
     request: SavingsRequest,
     // Con valor por defecto para que invocarlo directamente (tests de superficie,
@@ -275,6 +375,7 @@ export class SavingsPipeline {
     const canonical = canonicalize(request);
     const policy = evaluatePolicy(canonical);
     const toggles = request.savings ?? {};
+    this.avisarDePalancasSinConfigurar(toggles);
     const costModel = this.costModelFor(request.model);
 
     trace.record("canonicalize", "done", {
@@ -334,11 +435,20 @@ export class SavingsPipeline {
 
     // --- Stage 3: singleflight around the expensive path. ---
     const inflightKey = buildInflightKey(canonical);
-    const runExpensive = () =>
-      this.expensivePath<T>(
-        testigo, request, canonical, policy, toggles, ledger, costModel, trace,
-        exactKey, baselineInput,
-      );
+    const runExpensive = async (): Promise<SavingsResult<T>> => {
+      try {
+        return await this.expensivePath<T>(
+          testigo, request, canonical, policy, toggles, ledger, costModel, trace,
+          exactKey, baselineInput,
+        );
+      } catch (err) {
+        // Aquí, y no en el catch de generate(), porque este es el ÚNICO punto
+        // donde coinciden el error y el testigo del que lo pagó: cuando la
+        // excepción llegue a un seguidor coalescido, su testigo ya será otro.
+        if (testigo.falloDelProveedor || testigo.llamadas > 0) marcarErrorFacturado(err);
+        throw err;
+      }
+    };
 
     if (policy.allowSingleflight && toggles.singleflight !== false) {
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
@@ -619,9 +729,9 @@ export class SavingsPipeline {
 
     // --- Stage 10: constrained decoding + the single primary LLM call. ---
     const schema = request.response?.schema;
-    const backendPlan = schema
+    let backendPlan: ConstraintPlan = schema
       ? resolveConstraintBackend(request.model, schema, this.deps.constraintBackends)
-      : { backend: "none" as const, reason: "no output contract" };
+      : { backend: "none", reason: "no output contract" };
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
     const providerStart = this.now();
@@ -640,6 +750,34 @@ export class SavingsPipeline {
     ledger.actualLlm = 1;
     ledger.actualInput = response.usage.inputTokens;
     ledger.actualOutput = response.usage.outputTokens;
+
+    // EL PLAN SE DECIDE ANTES DE LLAMAR; LO QUE SE PUBLICA TIENE QUE SER LO QUE
+    // PASÓ. `provider-native` se resolvía por lo que el backend DECLARA soportar y
+    // viajaba al informe sin mirar la respuesta, así que un modelo anterior a los
+    // structured outputs —que rechaza `response_format` y obliga al adaptador a
+    // pedir el JSON por prompt— seguía publicándose como garantía del proveedor.
+    // `structuredNatively` existe en ProviderResponse desde el principio y no lo
+    // leía nadie; leerlo aquí es lo que impide certificar una garantía que no se
+    // obtuvo.
+    //
+    // Solo se degrada con un `false` EXPLÍCITO: un adaptador que no informa no
+    // afirma nada, y no vamos a inventarle una degradación.
+    //
+    // Bajar a "none" no es solo cosmético: habilita la reparación única de abajo,
+    // que es exactamente la red que corresponde cuando la forma no la impone
+    // nadie más que nuestro validador.
+    if (schema && backendPlan.backend === "provider-native" && response.structuredNatively === false) {
+      backendPlan = {
+        backend: "none",
+        reason:
+          "provider did not enforce the contract natively; the schema travelled in the prompt " +
+          "and the layer is the only validator",
+      };
+      trace.record("constraints", "none", {
+        downgradedFrom: "provider-native",
+        reason: backendPlan.reason,
+      });
+    }
 
     // Calibración de la regla, medida en ESTA petición. `sentInputLocal` es la
     // cuenta local del prompt que de verdad salió; la diferencia contra el
@@ -722,7 +860,7 @@ export class SavingsPipeline {
           reason: "schema defect (uncompilable pattern); no output can satisfy it, a retry is a wasted call",
           errors: validation.errors,
         });
-        avisarUnaVez(
+        this.avisar(
           "esquema-roto",
           "[bvsala] El contrato de respuesta tiene un `pattern` que no es un regex valido, asi que " +
             "ninguna respuesta puede cumplirlo. NO se reintenta (seria una llamada pagada para el mismo " +
@@ -734,7 +872,7 @@ export class SavingsPipeline {
           maxOutputTokens: request.response?.maxOutputTokens ?? null,
           outputTokens: response.usage.outputTokens,
         });
-        avisarUnaVez(
+        this.avisar(
           "salida-truncada",
           "[bvsala] La respuesta se cortó al agotar `maxOutputTokens`" +
             (request.response?.maxOutputTokens != null ? ` (${request.response.maxOutputTokens})` : "") +
@@ -1268,15 +1406,14 @@ export class SavingsPipeline {
     if (this.config.defaultCostModel) return this.config.defaultCostModel;
 
     // Caer en el precio ilustrativo deja de ser silencioso: el ahorro en dólares
-    // que se derive de aquí no es el del cliente. Una vez por instancia.
-    if (!this.illustrativePriceWarned) {
-      this.illustrativePriceWarned = true;
-      console.warn(
-        `[bv-sala] no cost model configured for "${model}"; falling back to the ` +
-          `ILLUSTRATIVE default price. Dollar figures will not match your bill. ` +
-          `Pass { costModels: { "${model}": { inputPer1k, outputPer1k } } }.`,
-      );
-    }
+    // que se derive de aquí no es el del cliente. Una vez por causa y proceso, y
+    // por el portero, que es lo que hace cierta la promesa de `silenceWarnings`.
+    this.avisar(
+      `precio-ilustrativo:${model}`,
+      `[bv-sala] no cost model configured for "${model}"; falling back to the ` +
+        `ILLUSTRATIVE default price. Dollar figures will not match your bill. ` +
+        `Pass { costModels: { "${model}": { inputPer1k, outputPer1k } } }.`,
+    );
     return DEFAULT_COST_MODEL;
   }
 }

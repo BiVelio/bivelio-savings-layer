@@ -218,6 +218,17 @@ export interface SavingsLayerConfig {
    */
   failOpen?: boolean;
 
+  /**
+   * Silence BV-SALA's console warnings. They are ON by default, and they only
+   * ever report a condition whose symptom is otherwise invisible: a saving knob
+   * asked for but not wired up, usage that stops reaching the control plane, a
+   * revocation list going stale. Nothing here throws and nothing here changes
+   * what the layer does — turning it on only removes the console noise, so set
+   * it when you have your own observability. Applies to the pipeline, the usage
+   * emitter and the revocation poller alike.
+   */
+  silenceWarnings?: boolean;
+
   /** Injectable clock for deterministic tests. */
   now?: () => number;
   /** Injectable id generator for deterministic tests. */

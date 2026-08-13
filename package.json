@@ -1,19 +1,13 @@
 {
   "name": "@bivelio/savings-layer",
   "version": "0.2.3",
-  "description": "BV-SALA — a provider-neutral LLM execution optimizer. A decision layer in front of any LLM provider that, for every request, picks the cheapest execution that preserves required quality. Avoid the call, avoid retrieval, eliminate context, compress, constrain — with four separate ledgers of savings. Proprietary and confidential — property of BiVelio Inc.",
+  "description": "BV-SALA — provider-neutral LLM execution optimizer. A decision layer in front of any LLM provider that cuts the cost of every request while preserving required quality, and reports the saving per call with token-level accounting you can check against your bill. Proprietary and confidential — property of BiVelio Inc.",
   "keywords": [
     "llm",
-    "gateway",
     "cost-optimization",
-    "prompt-compression",
-    "semantic-cache",
-    "singleflight",
-    "adaptive-rag",
-    "toon",
-    "constrained-decoding",
-    "structured-output",
+    "llm-costs",
     "token-accounting",
+    "observability",
     "bivelio"
   ],
   "homepage": "https://savings.bivelio.com",

@@ -93,6 +93,46 @@ describe("la superficie pública del paquete", () => {
     expect(espanolas).toEqual([]);
   });
 
+  /**
+   * LO QUE SE ANUNCIA NO PUEDE SER EL ÍNDICE DE LA RECETA.
+   *
+   * Las `keywords` de npm decían `prompt-compression, semantic-cache,
+   * singleflight, adaptive-rag, toon, constrained-decoding`, y el README traía la
+   * cascada en orden, los umbrales exactos (`≥64` tokens, `≥8%`) y las cifras
+   * medidas de una comparación de formatos. Eso no le dice a un comprador QUÉ
+   * hace el producto: le dice a un competidor CÓMO está hecho, gratis y en la
+   * primera pantalla.
+   *
+   * Lo que se queda es la propuesta —hay etapas, se mide, se reporta por
+   * petición— porque es lo que un comprador técnico necesita para creer que esto
+   * no es un envoltorio. Lo que se va es el plano.
+   */
+  it("⛔ ni el README ni las keywords nombran las técnicas internas", () => {
+    const raiz = fileURLToPath(new URL("../", import.meta.url));
+    const readme = readFileSync(`${raiz}README.md`, "utf8");
+    const pkg = readFileSync(`${raiz}package.json`, "utf8");
+    // Nombres de técnica y de dependencias evaluadas. No son secretos de estado,
+    // pero juntos son la lista de la compra de quien quiera reproducirlo.
+    const delatores = [
+      "toon", "TOON", "singleflight", "LLMLingua", "XGrammar", "llguidance",
+      "adaptive-rag", "Adaptive-RAG", "prompt-compression", "semantic-cache",
+      "constrained-decoding", "adaptive-k", "pgvector", "Qdrant",
+    ];
+    const encontrados: string[] = [];
+    for (const d of delatores) {
+      if (readme.includes(d)) encontrados.push(`README: ${d}`);
+      if (pkg.includes(d)) encontrados.push(`package.json: ${d}`);
+    }
+    expect(encontrados).toEqual([]);
+  });
+
+  it("⛔ tampoco umbrales ni cifras medidas de comparación", () => {
+    // Un umbral publicado es un parámetro que un competidor no tiene que buscar.
+    const readme = readFileSync(fileURLToPath(new URL("../README.md", import.meta.url)), "utf8");
+    expect(readme).not.toMatch(/≥\s*\d+%|≥\s*\d+\s*tokens/);
+    expect(readme).not.toMatch(/json\s+\d{3,}/i);
+  });
+
   it("no lleva secretos, y sí la clave PÚBLICA de verificación", () => {
     expect(d).not.toMatch(/sk_(live|test)_|rk_live_|whsec_|BEGIN (RSA |EC )?PRIVATE KEY/);
   });

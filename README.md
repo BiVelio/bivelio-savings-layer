@@ -55,7 +55,7 @@ console.log(report.cost.netSavings);  // → verified savings, per request
 ```
 
 Ask for a **structured contract** and you also get `data`, validated against your
-schema — the JSON-repair and constrained-decoding levers switch on here:
+schema — the JSON-repair and output contracts levers switch on here:
 
 ```ts
 const { data, text } = await layer.generate<{ answer: number }>({
@@ -158,17 +158,19 @@ an action that has not run yet cannot be a saving.
 > **disabled in this published package** — a valid `licenseKey` is the only way to
 > run it. They are not a way to use the product for free.
 
-Every component ships with an in‑memory default and is independently swappable
-(Redis exact cache, pgvector/Qdrant semantic cache, a real tokenizer, an LLMLingua
-sidecar, XGrammar/llguidance backends, …).
+Every component ships with an in‑memory default and is independently swappable:
+plug in your own cache, vector store, tokenizer, compressor or constraint backend
+behind the same interfaces.
 
 ## The optimization order (cheapest first)
 
-1. **Avoid the call entirely** — resolvers, exact & semantic cache, singleflight.
-2. **Avoid auxiliary calls** — retrieval, tools, planners, validators, retries.
-3. **Eliminate unnecessary context** before trying to compress it.
-4. **Compress** the tokens that genuinely must be sent.
+1. **Avoid the call entirely** when the answer can be produced or reused safely.
+2. **Avoid auxiliary calls** — the retrievals, tool hops and retries around it.
+3. **Eliminate unnecessary context** before trying to shrink what remains.
+4. **Shrink** the tokens that genuinely must be sent.
 5. **Constrain generation** to emit only the structure and length required.
+
+The order is the point: work removed at step 1 costs nothing to compress at step 4.
 
 Provider prompt/KV caching is treated as a cost/latency saving — **never** as a
 reduction of the logical prompt size.
@@ -195,15 +197,12 @@ Request
   → Canonicalize + Policy (risk & freshness)
   → Deterministic resolvers ─────────────► answer (0 calls)
   → Exact cache ─────────────────────────► answer (0 calls)
-  → Singleflight (coalesce in-flight)
-      → Safe semantic cache ─────────────► answer (0 calls)
-      → Execution router (NO / SINGLE / MULTI / TOOL)
-      → Tool selector (drop irrelevant, gate writes)
-      → Retrieval: retrieve → dedupe → rerank → adaptive-k
-      → Context projection (memory deltas)
-      → Compression (only when net-positive)
-      → JSON / TOON / CSV selector (tokenizer-aware)
-      → Output contract + constrained decoding
+  → Concurrent duplicates coalesced ─────► answer (0 calls)
+      → Near-duplicate reuse ────────────► answer (0 calls)
+      → Execution planning (how much work this really needs)
+      → Context reduction (only when it pays for itself)
+      → Payload encoding chosen by measurement, not by default
+      → Output contract enforced
       → ONE primary LLM call
       → Structural + semantic validation (+ ≤1 repair)
       → Local render / transcode / cache write
@@ -212,29 +211,26 @@ Request
 
 ## Why formats are chosen, not assumed
 
-A compact encoding can be *larger* than plain JSON on nested/non‑uniform data, so
-BV‑SALA counts — with the destination model's tokenizer — before switching:
+A compact encoding can be *larger* than plain JSON on nested or non‑uniform data,
+so BV‑SALA never assumes one. It counts the candidates with the destination
+model's own tokenizer — including the cost of explaining the encoding to the
+model — and only moves away from JSON when the saving clears a margin worth the
+change.
 
-```
-tokens(encoded payload) + tokens(instruction to understand it) + quality penalty
-```
-
-…and only moves away from JSON when a challenger clears both an absolute (`≥64`
-tokens) and a relative (`≥8%`) threshold:
-
-```
-big uniform table   → json 1716, toon 708  → chosen: toon (−58.7%)
-small nested object → json 44,   toon 116  → chosen: json-compact
-```
+On a wide, uniform table that is a large reduction. On a small nested object it
+leaves JSON alone. Whichever it picks, `report.serialization` tells you what was
+chosen and what each candidate would have cost, so the decision is auditable
+rather than promised.
 
 ## What's inside
 
-Canonicalization & safe cache keys · risk/freshness policy · exact + singleflight +
-safe semantic cache · deterministic resolvers · Adaptive‑RAG execution router & tool
-selector · retrieval dedupe→rerank→adaptive‑k · conversation memory & context
-projection · tokenizer‑aware JSON/TOON/CSV selection · JSON‑Schema validation &
-constrained decoding · net‑positive compression · a provider‑neutral adapter · and a
-trace collector that builds the `SavingsReport`. Every piece is pluggable.
+Safe cache keys and a risk/freshness policy · several independent ways to answer
+without spending a call · execution planning · context reduction that must pay for
+itself · measured payload encoding · output contracts with validation · a
+provider‑neutral adapter · and a trace collector that builds the `SavingsReport`.
+
+Every piece is pluggable, and every saving it claims is reported per request with
+the token counts behind it.
 
 ## Licensing & privacy
 
