@@ -59,10 +59,10 @@ export interface UsageEmitterOptions {
    */
   onAuthError?: (status: number) => void;
   /**
-   * Silencia los avisos por consola. Por defecto están ENCENDIDOS, igual que en
-   * el poller de revocaciones: medir es best-effort, así que un ingest roto no
-   * rompe nada visible — simplemente deja de llegar uso, en silencio, y el panel
-   * del cliente se queda vacío para siempre.
+   * Silence the console warnings. They are ON by default, exactly as in the
+   * revocation poller: metering is best-effort, so a broken ingest breaks
+   * nothing visible — usage simply stops arriving, silently, and the customer's
+   * dashboard stays empty forever.
    */
   silenceWarnings?: boolean;
 }
@@ -91,9 +91,10 @@ export class UsageEmitter {
   private timer: ReturnType<typeof setInterval> | undefined;
   private flushing = false;
   /**
-   * Envíos fallidos SEGUIDOS. Se avisa al tercero y luego cada doce: uno perdido
-   * es normal, una hora entera no. Mismo criterio que el poller, a propósito —
-   * dos cadencias distintas para el mismo tipo de fallo solo confunden.
+   * CONSECUTIVE failed flushes. Warn on the third and then every twelfth: one
+   * lost batch is normal, a whole hour is not. Same cadence as the revocation
+   * poller on purpose — two different rhythms for the same class of failure
+   * only confuse whoever reads the logs.
    */
   private fallosSeguidos = 0;
 
@@ -207,15 +208,16 @@ export class UsageEmitter {
   }
 
   /**
-   * EL INGEST LLEVA UN RATO SIN FUNCIONAR Y NADIE SE HA ENTERADO.
+   * THE INGEST HAS BEEN FAILING FOR A WHILE AND NOBODY NOTICED.
    *
-   * Medir es best-effort por diseño —no puede tumbar la petición del cliente— y
-   * eso convierte cualquier fallo en pérdida MUDA de datos. Sin esto, el único
-   * síntoma es un panel vacío, que es idéntico a "todavía no has enviado nada":
-   * el síntoma apunta al sitio opuesto de la causa.
+   * Metering is best-effort by design — it must never take down the customer's
+   * request — and that turns every failure into SILENT data loss. Without this,
+   * the only symptom is an empty dashboard, which is indistinguishable from
+   * "you haven't sent anything yet": the symptom points the opposite way from
+   * the cause.
    *
-   * Se avisa al tercer fallo seguido y luego cada doce. No al primero, que una
-   * petición perdida es normal; no en cada uno, que se convierte en ruido.
+   * Warns on the third consecutive failure and then every twelfth. Not the
+   * first — a lost request is normal — and not every one, which becomes noise.
    */
   private avisarDeFallo(motivo: string): void {
     if (this.options.silenceWarnings) return;
