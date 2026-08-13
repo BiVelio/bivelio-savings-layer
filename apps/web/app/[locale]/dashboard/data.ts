@@ -78,7 +78,11 @@ export interface OrgContext {
 }
 
 /** Try the standard membership→organization shape; degrade silently on any error. */
-export async function getOrgContext(supabase: SupabaseClient, orgId: string): Promise<OrgContext> {
+export async function getOrgContext(
+  supabase: SupabaseClient,
+  orgId: string,
+  userId: string,
+): Promise<OrgContext> {
   const ctx: OrgContext = {
     org: null,
     role: null,
@@ -95,11 +99,17 @@ export async function getOrgContext(supabase: SupabaseClient, orgId: string): Pr
       .schema("bvsala")
       .from("org_members")
       .select("role, organizations(name, plan)")
-      // La organización ya viene resuelta por `load.ts`; aquí solo se lee el rol
-      // del usuario EN ELLA. La RLS (`is_org_member`) sigue debajo como defensa
-      // en profundidad: si la sesión no pertenece, esto vuelve vacío.
+      // LOS DOS FILTROS, Y EL SEGUNDO FALTABA. `.eq("org_id", …)` a secas devuelve
+      // una fila ARBITRARIA de la organización —`limit(1)` sin `order`— así que en
+      // cuanto una organización tiene dos miembros, el panel le enseña a cualquiera
+      // el rol de OTRO. Le dijo "owner" a un `member` recién invitado.
+      //
+      // No era escalada de privilegios: el servidor decide con `lib/org/permisos`
+      // y la resolución propia, no con esto. Pero era una mentira en pantalla, y se
+      // habría convertido en escalada el día que alguien enseñara u ocultara un
+      // botón mirando `ctx.role`.
       .eq("org_id", orgId)
-      .limit(1)
+      .eq("user_id", userId)
       .maybeSingle();
     const row = data as { role?: string; organizations?: { name?: string; plan?: string } | null } | null;
     if (row?.organizations?.name) {

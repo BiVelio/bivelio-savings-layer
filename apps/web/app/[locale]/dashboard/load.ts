@@ -73,7 +73,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, ...VACIO };
   }
   const [ctx, usage, asientos] = await Promise.all([
-    getOrgContext(supabase, orgId),
+    getOrgContext(supabase, orgId, user.id),
     getUsageRollups(supabase, orgId),
     medirAsientos(orgId),
   ]);

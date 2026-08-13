@@ -190,33 +190,40 @@ export function AceptarInvitacion({ token }: { token: string }) {
         {estado === "registrarse" || estado === "creando" ? (
           <>
             <p className="sub">{t("creaTuClave")}</p>
-            <form onSubmit={crearCuenta}>
-              {/* El correo se ENSEÑA y no se puede tocar: sale de la invitación,
-                  no de lo que escriba quien llega. Va como campo desactivado para
-                  que se vea con qué cuenta se está entrando. */}
-              <input type="email" value={vista?.email ?? ""} disabled readOnly aria-label={t("tuCorreo")} />
-              <input
-                type="password"
-                required
-                autoComplete="new-password"
-                minLength={8}
-                value={pass1}
-                onChange={(ev) => setPass1(ev.target.value)}
-                placeholder={t("passNueva")}
-                aria-label={t("passNueva")}
-              />
-              <input
-                type="password"
-                required
-                autoComplete="new-password"
-                minLength={8}
-                value={pass2}
-                onChange={(ev) => setPass2(ev.target.value)}
-                placeholder={t("passRepetir")}
-                aria-label={t("passRepetir")}
-              />
+            <form onSubmit={crearCuenta} noValidate>
               {errorForm ? <div className="auth-msg error">{errorForm}</div> : null}
-              <button type="submit" className="btn btn-primary" disabled={estado === "creando"}>
+              {/* El correo se ENSEÑA y no se puede tocar: sale de la invitación, no
+                  de lo que escriba quien llega. Va desactivado para que se vea con
+                  qué cuenta se está entrando. */}
+              <div className="field">
+                <label htmlFor="inv-email">{t("tuCorreo")}</label>
+                <input id="inv-email" type="email" value={vista?.email ?? ""} disabled readOnly />
+              </div>
+              <div className="field">
+                <label htmlFor="inv-pass1">{t("passNueva")}</label>
+                <input
+                  id="inv-pass1"
+                  type="password"
+                  required
+                  autoComplete="new-password"
+                  minLength={8}
+                  value={pass1}
+                  onChange={(ev) => setPass1(ev.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="inv-pass2">{t("passRepetir")}</label>
+                <input
+                  id="inv-pass2"
+                  type="password"
+                  required
+                  autoComplete="new-password"
+                  minLength={8}
+                  value={pass2}
+                  onChange={(ev) => setPass2(ev.target.value)}
+                />
+              </div>
+              <button type="submit" className="btn btn-primary auth-submit" disabled={estado === "creando"}>
                 {estado === "creando" ? t("creando") : t("crearYEntrar")}
               </button>
             </form>
