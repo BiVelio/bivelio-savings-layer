@@ -58,6 +58,13 @@ export interface UsageEmitterOptions {
    * exactamente lo mismo que se ve cuando no hay tráfico—.
    */
   onAuthError?: (status: number) => void;
+  /**
+   * Silencia los avisos por consola. Por defecto están ENCENDIDOS, igual que en
+   * el poller de revocaciones: medir es best-effort, así que un ingest roto no
+   * rompe nada visible — simplemente deja de llegar uso, en silencio, y el panel
+   * del cliente se queda vacío para siempre.
+   */
+  silenceWarnings?: boolean;
 }
 
 interface Entry {
@@ -83,6 +90,12 @@ export class UsageEmitter {
   private ci: boolean;
   private timer: ReturnType<typeof setInterval> | undefined;
   private flushing = false;
+  /**
+   * Envíos fallidos SEGUIDOS. Se avisa al tercero y luego cada doce: uno perdido
+   * es normal, una hora entera no. Mismo criterio que el poller, a propósito —
+   * dos cadencias distintas para el mismo tipo de fallo solo confunden.
+   */
+  private fallosSeguidos = 0;
 
   constructor(options: UsageEmitterOptions) {
     this.options = options;
@@ -146,8 +159,12 @@ export class UsageEmitter {
         },
         body: JSON.stringify(records),
       });
-      if (!res.ok && res.status >= 500) {
+      if (res.ok) {
+        this.fallosSeguidos = 0;
+      } else if (res.status >= 500) {
+        this.fallosSeguidos++;
         this.requeue(batch);
+        this.avisarDeFallo(`el servidor respondió ${res.status}`);
       } else if (res.status === 401 || res.status === 403) {
         // UNA CREDENCIAL MALA NO SE CURA SOLA, a diferencia de un 5xx, y hasta
         // ahora este lote se descartaba SIN log, sin excepción y sin callback.
@@ -164,12 +181,52 @@ export class UsageEmitter {
             `saldrán a cero.`,
         );
         this.options.onAuthError?.(res.status);
+      } else {
+        // EL HUECO QUE FALTABA, y el más fácil de pisar: un 404 o un 405 no es
+        // 5xx ni es 401/403, así que el lote se descartaba SIN UNA SOLA SEÑAL.
+        //
+        // Es exactamente lo que pasa con la `meteringUrl` mal puesta: por defecto
+        // es `${licenseServerUrl}/api/metering/usage`, y quien la fija "para ser
+        // explícito" olvidando la ruta apunta a la raíz del sitio, que contesta
+        // con una página. El uso se pierde entero y el panel dice, durante meses,
+        // que no ve tráfico — a alguien que lo tiene todo funcionando.
+        this.fallosSeguidos++;
+        this.avisarDeFallo(
+          res.status === 404 || res.status === 405
+            ? `HTTP ${res.status}: la URL de envío parece equivocada`
+            : `el servidor rechazó el lote con HTTP ${res.status}`,
+        );
       }
-    } catch {
+    } catch (err) {
+      this.fallosSeguidos++;
       this.requeue(batch);
+      this.avisarDeFallo(err instanceof Error ? err.message : "error de red");
     } finally {
       this.flushing = false;
     }
+  }
+
+  /**
+   * EL INGEST LLEVA UN RATO SIN FUNCIONAR Y NADIE SE HA ENTERADO.
+   *
+   * Medir es best-effort por diseño —no puede tumbar la petición del cliente— y
+   * eso convierte cualquier fallo en pérdida MUDA de datos. Sin esto, el único
+   * síntoma es un panel vacío, que es idéntico a "todavía no has enviado nada":
+   * el síntoma apunta al sitio opuesto de la causa.
+   *
+   * Se avisa al tercer fallo seguido y luego cada doce. No al primero, que una
+   * petición perdida es normal; no en cada uno, que se convierte en ruido.
+   */
+  private avisarDeFallo(motivo: string): void {
+    if (this.options.silenceWarnings) return;
+    const n = this.fallosSeguidos;
+    if (n < 3 || (n - 3) % 12 !== 0) return;
+    console.warn(
+      `[bv-sala] el envío de uso lleva ${n} intentos seguidos fallando contra ${this.options.url} ` +
+        `(${motivo}). Las peticiones SIGUEN funcionando, pero el uso no está llegando: el panel dirá ` +
+        `que no ve tráfico y los asientos facturables saldrán a cero. Comprueba 'meteringUrl' — por ` +
+        `defecto es \`\${licenseServerUrl}/api/metering/usage\`.`,
+    );
   }
 
   private requeue(batch: Entry[]): void {
