@@ -57,7 +57,22 @@ export async function POST(req: Request): Promise<NextResponse> {
   if (!veredicto.ok) {
     // 410 para lo que existió y ya no sirve; 404 para lo que nunca existió.
     const status = veredicto.motivo === "invalida" ? 404 : 410;
-    return NextResponse.json({ error: "This invitation isn't valid.", code: veredicto.motivo }, { status });
+    // CON QUÉ CUENTA ESTÁ MIRANDO. Solo cuando el motivo es `otro_correo`, y solo
+    // su PROPIO correo: es el de la sesión que hace la petición, así que no
+    // revela nada que quien pregunta no supiera.
+    //
+    // Sin este dato la pantalla decía «esta invitación es para otra dirección» y
+    // se quedaba ahí: quien abre el enlace en el navegador donde ya tenía sesión
+    // —que es el caso NORMAL, no el raro— no tiene forma de saber por qué le
+    // rechaza ni con qué cuenta está entrando.
+    return NextResponse.json(
+      {
+        error: "This invitation isn't valid.",
+        code: veredicto.motivo,
+        ...(veredicto.motivo === "otro_correo" ? { sesion: user.email ?? null } : {}),
+      },
+      { status },
+    );
   }
   const inv = data as Invitacion;
 

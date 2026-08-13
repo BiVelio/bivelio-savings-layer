@@ -531,7 +531,7 @@
     "yaAceptada": "Diese Einladung wurde bereits verwendet.",
     "otroCorreo": "Diese Einladung gilt für eine andere E-Mail-Adresse. Melden Sie sich mit dem Konto an, an das sie gesendet wurde.",
     "yaEnOtra": "Sie gehören bereits zu einer anderen Organisation. Lassen Sie sich zuerst dort entfernen oder verwenden Sie ein anderes Konto.",
-    "invitadoA": "Sie wurden eingeladen, <b>{org}</b> als <b>{email}</b> beizutreten.",
+    "invitadoA": "Sie wurden eingeladen, <b>{org}</b> beizutreten.",
     "creaTuClave": "Erstellen Sie ein Passwort. Ihr Konto wird mit dieser Adresse angelegt.",
     "tuCorreo": "Ihre E-Mail",
     "passNueva": "Passwort (mindestens 8 Zeichen)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Mit dieser Adresse besteht bereits ein Konto. Melden Sie sich an, um die Einladung anzunehmen.",
     "errorCrear": "Das Konto konnte nicht erstellt werden. Bitte erneut versuchen.",
     "creadaEntraTu": "Ihr Konto wurde erstellt. Melden Sie sich an, um fortzufahren.",
-    "yaTengoCuenta": "Haben Sie schon ein Konto?"
+    "yaTengoCuenta": "Haben Sie schon ein Konto?",
+    "invitacionPara": "Die Einladung gilt für <b>{email}</b>.",
+    "sesionActual": "Sie sind derzeit als <b>{email}</b> angemeldet.",
+    "cerrarYContinuar": "Abmelden und anderes Konto verwenden",
+    "cerrando": "Wird abgemeldet…"
   }
 }

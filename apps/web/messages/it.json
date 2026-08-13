@@ -531,7 +531,7 @@
     "yaAceptada": "Questo invito è già stato usato.",
     "otroCorreo": "Questo invito è per un altro indirizzo e-mail. Acceda con l'account a cui è stato inviato.",
     "yaEnOtra": "Appartiene già a un'altra organizzazione. Chieda di esserne rimosso prima, oppure usi un altro account.",
-    "invitadoA": "Le è stato chiesto di unirsi a <b>{org}</b> come <b>{email}</b>.",
+    "invitadoA": "Le è stato chiesto di unirsi a <b>{org}</b>.",
     "creaTuClave": "Crei una password per entrare. Il Suo account viene creato con questo indirizzo.",
     "tuCorreo": "La Sua e-mail",
     "passNueva": "Password (almeno 8 caratteri)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Esiste già un account con questo indirizzo. Acceda per accettare l'invito.",
     "errorCrear": "Non è stato possibile creare l'account. Riprovi.",
     "creadaEntraTu": "Il Suo account è stato creato. Acceda per continuare.",
-    "yaTengoCuenta": "Ha già un account?"
+    "yaTengoCuenta": "Ha già un account?",
+    "invitacionPara": "L'invito è per <b>{email}</b>.",
+    "sesionActual": "Al momento ha effettuato l'accesso come <b>{email}</b>.",
+    "cerrarYContinuar": "Esci e usa un altro account",
+    "cerrando": "Disconnessione…"
   }
 }

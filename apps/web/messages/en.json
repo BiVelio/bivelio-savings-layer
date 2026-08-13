@@ -531,7 +531,7 @@
     "yaAceptada": "This invitation has already been used.",
     "otroCorreo": "This invitation is for a different email address. Sign in with the account it was sent to.",
     "yaEnOtra": "You already belong to another organization. Ask to be removed from it first, or use a different account.",
-    "invitadoA": "You've been invited to join <b>{org}</b> as <b>{email}</b>.",
+    "invitadoA": "You've been invited to join <b>{org}</b>.",
     "creaTuClave": "Create a password to get in. Your account is created with this address.",
     "tuCorreo": "Your email",
     "passNueva": "Password (at least 8 characters)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "An account with this address already exists. Sign in to accept the invitation.",
     "errorCrear": "We couldn't create the account. Please try again.",
     "creadaEntraTu": "Your account was created. Sign in to continue.",
-    "yaTengoCuenta": "Already have an account?"
+    "yaTengoCuenta": "Already have an account?",
+    "invitacionPara": "The invitation is for <b>{email}</b>.",
+    "sesionActual": "You're currently signed in as <b>{email}</b>.",
+    "cerrarYContinuar": "Sign out and use another account",
+    "cerrando": "Signing out…"
   }
 }

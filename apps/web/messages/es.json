@@ -531,7 +531,7 @@
     "yaAceptada": "Esta invitación ya se ha usado.",
     "otroCorreo": "Esta invitación es para otra dirección de correo. Inicie sesión con la cuenta a la que se envió.",
     "yaEnOtra": "Ya pertenece a otra organización. Pida que le saquen de ella primero, o use otra cuenta.",
-    "invitadoA": "Le han invitado a unirse a <b>{org}</b> como <b>{email}</b>.",
+    "invitadoA": "Le han invitado a unirse a <b>{org}</b>.",
     "creaTuClave": "Cree una contraseña para entrar. Su cuenta se crea con esta dirección.",
     "tuCorreo": "Su correo",
     "passNueva": "Contraseña (mínimo 8 caracteres)",
@@ -543,6 +543,10 @@
     "yaRegistrado": "Ya existe una cuenta con esta dirección. Inicie sesión para aceptar la invitación.",
     "errorCrear": "No se ha podido crear la cuenta. Inténtelo de nuevo.",
     "creadaEntraTu": "Su cuenta se ha creado. Inicie sesión para continuar.",
-    "yaTengoCuenta": "¿Ya tiene cuenta?"
+    "yaTengoCuenta": "¿Ya tiene cuenta?",
+    "invitacionPara": "La invitación es para <b>{email}</b>.",
+    "sesionActual": "Ahora mismo ha iniciado sesión como <b>{email}</b>.",
+    "cerrarYContinuar": "Cerrar sesión y usar otra cuenta",
+    "cerrando": "Cerrando sesión…"
   }
 }

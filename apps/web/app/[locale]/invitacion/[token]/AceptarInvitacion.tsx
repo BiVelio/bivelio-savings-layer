@@ -45,6 +45,10 @@ export function AceptarInvitacion({ token }: { token: string }) {
   const [pass1, setPass1] = useState("");
   const [pass2, setPass2] = useState("");
   const [errorForm, setErrorForm] = useState("");
+  /** Con qué cuenta está mirando quien abre el enlace. Lo devuelve `accept`
+   *  cuando el motivo es `otro_correo`, y es SU propio correo. */
+  const [sesion, setSesion] = useState<string | null>(null);
+  const [cerrando, setCerrando] = useState(false);
 
   /** Intenta aceptar con la sesión que haya. Si no hay, se ofrece registrarse. */
   const intentarAceptar = useCallback(async () => {
@@ -55,9 +59,10 @@ export function AceptarInvitacion({ token }: { token: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ token }),
       });
-      const json = (await res.json().catch(() => ({}))) as { code?: string };
+      const json = (await res.json().catch(() => ({}))) as { code?: string; sesion?: string | null };
       if (res.ok) return setEstado("exito");
       if (res.status === 401) return setEstado("registrarse");
+      if (json.sesion) setSesion(json.sesion);
       setMotivo(json.code ?? "invalida");
       setEstado("error");
     } catch {
@@ -144,6 +149,25 @@ export function AceptarInvitacion({ token }: { token: string }) {
     : motivo === "ya_en_otra" ? t("yaEnOtra")
     : t("invalida");
 
+  /**
+   * CERRAR SESIÓN Y VOLVER AQUÍ.
+   *
+   * NO se cierra sola. Quien abre el enlace reenviado de un compañero en el
+   * navegador donde tiene su propia sesión —el caso normal, no el raro— se
+   * encontraría echado de su cuenta sin haberlo pedido. La decisión es suya; lo
+   * que faltaba era el botón y saber con qué cuenta estaba.
+   */
+  async function cerrarSesion() {
+    setCerrando(true);
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      await createClient().auth.signOut();
+    } catch {
+      /* aunque falle, se recarga: la pantalla vuelve a decidir con lo que haya */
+    }
+    window.location.reload();
+  }
+
   const login = `/${locale}/login?next=${encodeURIComponent(`/${locale}/invitacion/${encodeURIComponent(token)}`)}`;
 
   return (
@@ -154,7 +178,8 @@ export function AceptarInvitacion({ token }: { token: string }) {
         {/* A QUÉ te invitan, en cuanto se sabe. */}
         {vista ? (
           <p className="sub">
-            {t.rich("invitadoA", { org: vista.org, email: vista.email, b: (c) => <b>{c}</b> })}
+            {t.rich("invitadoA", { org: vista.org, b: (c) => <b>{c}</b> })}{" "}
+            {t.rich("invitacionPara", { email: vista.email, b: (c) => <b>{c}</b> })}
           </p>
         ) : null}
 
@@ -213,7 +238,18 @@ export function AceptarInvitacion({ token }: { token: string }) {
         {estado === "error" ? (
           <>
             <div className="auth-msg error">{textoError}</div>
-            {motivo === "otro_correo" || motivo === "ya_en_otra" ? (
+            {/* CON QUÉ CUENTA ESTÁ. Sin esto, el mensaje «es para otra dirección»
+                parece arbitrario: no hay forma de saber por qué le rechaza. */}
+            {sesion ? (
+              <>
+                <p className="sub" style={{ marginTop: "12px" }}>
+                  {t.rich("sesionActual", { email: sesion, b: (c) => <b>{c}</b> })}
+                </p>
+                <button type="button" className="btn btn-primary" onClick={cerrarSesion} disabled={cerrando}>
+                  {cerrando ? t("cerrando") : t("cerrarYContinuar")}
+                </button>
+              </>
+            ) : motivo === "otro_correo" || motivo === "ya_en_otra" ? (
               <p className="auth-alt" style={{ marginTop: "12px" }}>
                 <a href={`/${locale}/login`}>{t("iniciarSesion")}</a>
               </p>
