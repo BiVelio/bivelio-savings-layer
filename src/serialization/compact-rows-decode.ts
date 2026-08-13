@@ -1,14 +1,14 @@
 /**
- * TOON decoder for the subset emitted by {@link encodeToon}.
+ * Decoder for the subset emitted by {@link encodeCompactRows}.
  *
  * Supports: scalar fields, nested objects, empty arrays, inline scalar arrays
  * (`key[N]: a,b,c`) and tabular object arrays (`key[N]{c1,c2}:` + rows). This
- * covers the cases the format selector actually chooses TOON for, and makes the
- * JSON<->TOON round-trip deterministic and testable. List-form arrays of nested
+ * covers the cases the format selector actually chooses it for, and makes the
+ * JSON<->rows round-trip deterministic and testable. List-form arrays of nested
  * objects are intentionally out of scope for decoding (the selector never picks
- * TOON for those, since JSON wins there anyway).
+ * it for those, since JSON wins there anyway).
  */
-export interface ToonDecodeOptions {
+export interface CompactRowsDecodeOptions {
   delimiter?: "," | "\t";
   indent?: string;
 }
@@ -18,9 +18,9 @@ interface Line {
   content: string;
 }
 
-export function decodeToon(
+export function decodeCompactRows(
   text: string,
-  options: ToonDecodeOptions = {},
+  options: CompactRowsDecodeOptions = {},
 ): unknown {
   const delimiter = options.delimiter ?? ",";
   const indentUnit = options.indent ?? "  ";
@@ -32,7 +32,7 @@ export function decodeToon(
   if (lines.length === 0) return {};
 
   // Top-level array forms (no key prefix): `[N]{cols}:` + rows, or `[N]: a,b,c`.
-  // encodeToon emits these for a top-level array; without handling them here the
+  // encodeCompactRows emits these for a top-level array; without handling them here the
   // decoder mis-reads the header as a key and the round-trip fails, which used to
   // force the (very common) array-of-records shape to fall back to JSON.
   const first = lines[0]!;

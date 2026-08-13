@@ -5,7 +5,7 @@
  * be re-explained in free-form natural language at every hop. BV-SALA replaces
  * that with a compact, typed handoff object. Each consumer receives a
  * projection of the state, not the whole conversation. The serializer then
- * decides whether to send it as compact JSON or TOON.
+ * decides whether to send it as compact JSON or compact rows.
  */
 export interface HandoffFact {
   id: string;

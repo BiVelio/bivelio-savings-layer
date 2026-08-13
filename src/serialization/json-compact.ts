@@ -4,7 +4,7 @@ import type { Serializer } from "./types.js";
  * Compact JSON: the lossless baseline every other format is measured against.
  * No indentation, no incidental whitespace. This is frequently the *winner* for
  * deeply nested or non-uniform data, which is exactly why it is the baseline and
- * TOON is only ever a challenger.
+ * The compact encoder is only ever a challenger.
  */
 export const jsonCompactSerializer: Serializer = {
   format: "json-compact",

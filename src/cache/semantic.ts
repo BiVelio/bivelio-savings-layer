@@ -161,7 +161,7 @@ export function keyTokensMatch(a: string, b: string): boolean {
 
 /**
  * In-memory reference implementation. A production build would back this with a
- * real vector store (pgvector, Qdrant, etc.) and metadata filters pushed down
+ * real vector store and metadata filters pushed down
  * to the store. The verification logic — the part that makes it *safe* — stays
  * identical regardless of the backend.
  */

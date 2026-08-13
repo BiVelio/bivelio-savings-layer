@@ -26,7 +26,7 @@ export interface TokenEstimator {
    * El heurístico vale para RANKEAR formatos candidatos (le basta con acertar el
    * orden). No vale para restar tokens entre formatos distintos: cobra cada
    * símbolo suelto como un token entero, así que infla el JSON denso en símbolos
-   * mucho más que el TOON, y la diferencia se acredita como ahorro inexistente.
+   * mucho más que el the compact encoder, y la diferencia se acredita como ahorro inexistente.
    */
   readonly exact: boolean;
   /** Estimate the number of tokens in a string. */

@@ -12,7 +12,7 @@ export interface Serializer {
   encode(value: unknown): string;
   /**
    * The instruction text a model needs to interpret this format. For JSON this
-   * is empty; for TOON/CSV it is the per-request cost that must be amortized
+   * is empty; for row/CSV it is the per-request cost that must be amortized
    * before the format is worthwhile.
    */
   instruction(value: unknown): string;

@@ -88,7 +88,7 @@ describe("SavingsPipeline end-to-end", () => {
     expect(typeof (res.data as { answer: string }).answer).toBe("string");
   });
 
-  it("records compression ledger when a large table is serialized as TOON", async () => {
+  it("records compression ledger when a large table is serialized as the compact encoder", async () => {
     const layer = createSavingsLayer({ provider: createMockProvider({ answer: "ok" }), generateId: deterministicId });
     const rows = Array.from({ length: 40 }, (_, i) => ({
       id: i,
@@ -100,7 +100,7 @@ describe("SavingsPipeline end-to-end", () => {
       messages: [{ role: "user", content: "summarize the attached table" }],
       structuredData: { users: rows },
     });
-    expect(res.report.serialization.chosen).toBe("toon");
+    expect(res.report.serialization.chosen).toBe("compact-rows");
     expect(res.report.tokens.compressedInput).toBeGreaterThan(0);
   });
 

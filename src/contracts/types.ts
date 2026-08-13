@@ -11,8 +11,8 @@
  *  - provider_cached_tokens tokens still in the prompt that the provider may
  *                           bill or process differently (prefix/KV caching).
  *
- * A cache hit eliminates a whole call. TOON re-encodes a structured payload.
- * LLMLingua removes redundant words. A provider prefix cache makes tokens
+ * A cache hit eliminates a whole call. A compact encoding re-encodes a structured payload.
+ * A context compressor removes redundant words. A provider prefix cache makes tokens
  * cheaper without removing them. Mixing these produces misleading metrics.
  */
 
@@ -92,7 +92,7 @@ export interface OutputContract {
 }
 
 /** Serialization formats the format-selector can choose between. */
-export type SerializationFormat = "json-compact" | "toon" | "csv";
+export type SerializationFormat = "json-compact" | "compact-rows" | "csv";
 
 export interface RetrievalOptions {
   mode: "off" | "auto" | "single" | "multi";

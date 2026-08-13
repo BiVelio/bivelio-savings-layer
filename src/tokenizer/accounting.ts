@@ -77,9 +77,8 @@ export class SavingsLedger {
   //
   //   Medido en el escenario de la tabla (50 filas): el estimador cuenta 2182
   //   tokens del JSON (40% de sus caracteres son símbolos, y cobra cada símbolo
-  //   suelto a token entero) y 877 del TOON (16%). k sale 0,901 cuando la k
-  //   correcta para el texto quitado era 0,538. Baseline publicado 4319 contra
-  //   1174 reales: 3,68x, o sea +47,4% de ahorro donde el proveedor midió
+  //   La constante se calibra contra el contador del proveedor, no contra el
+  //   estimador local: sin eso el baseline se infla y el ahorro publicado con él.
   //   −49,6%. Un positivo FABRICADO, y encima etiquetado "measured".
   //
   // Por eso `basis` solo puede ser "measured" cuando la conversión es de fiar:

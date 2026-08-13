@@ -1,9 +1,9 @@
 import type { Serializer } from "./types.js";
-import { uniformColumns } from "./toon.js";
+import { uniformColumns } from "./compact-rows.js";
 
 /**
  * CSV serializer — only valid for genuinely tabular data (a uniform array of
- * flat objects). CSV can be marginally smaller than TOON on pure tables, but it
+ * flat objects). CSV can be marginally smaller than the compact rows on pure tables, but it
  * does NOT preserve the JSON data model in general, so `supports()` is strict.
  */
 export const csvSerializer: Serializer = {

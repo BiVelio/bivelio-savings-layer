@@ -338,7 +338,7 @@ export class SavingsPipeline {
         "[bv-sala] se pidió `savings.compression` pero esta capa no tiene compresor, así que NO se " +
           "comprime nada: el contexto largo viaja y se paga entero. En el informe, " +
           "`report.compression` sale AUSENTE y `tokens.eliminatedInput` a 0 — lo mismo que se ve " +
-          "cuando no había nada que comprimir. El compresor es un sidecar (LLMLingua o el suyo) " +
+          "cuando no había nada que comprimir. El compresor es un sidecar  " +
           "porque añade latencia y cómputo que solo usted debe decidir pagar: enchúfelo con " +
           "`createSavingsLayer({ compressor })`, cualquier objeto con `compress({ text })`. " +
           "Si su plan no incluye `long_context_compression`, hará falta además esa función. " +
