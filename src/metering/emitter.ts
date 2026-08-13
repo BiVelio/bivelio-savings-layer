@@ -58,6 +58,13 @@ export interface UsageEmitterOptions {
    * exactamente lo mismo que se ve cuando no hay tráfico—.
    */
   onAuthError?: (status: number) => void;
+  /**
+   * Silence the console warnings. They are ON by default, exactly as in the
+   * revocation poller: metering is best-effort, so a broken ingest breaks
+   * nothing visible — usage simply stops arriving, silently, and the customer's
+   * dashboard stays empty forever.
+   */
+  silenceWarnings?: boolean;
 }
 
 interface Entry {
@@ -83,6 +90,13 @@ export class UsageEmitter {
   private ci: boolean;
   private timer: ReturnType<typeof setInterval> | undefined;
   private flushing = false;
+  /**
+   * CONSECUTIVE failed flushes. Warn on the third and then every twelfth: one
+   * lost batch is normal, a whole hour is not. Same cadence as the revocation
+   * poller on purpose — two different rhythms for the same class of failure
+   * only confuse whoever reads the logs.
+   */
+  private fallosSeguidos = 0;
 
   constructor(options: UsageEmitterOptions) {
     this.options = options;
@@ -146,8 +160,12 @@ export class UsageEmitter {
         },
         body: JSON.stringify(records),
       });
-      if (!res.ok && res.status >= 500) {
+      if (res.ok) {
+        this.fallosSeguidos = 0;
+      } else if (res.status >= 500) {
+        this.fallosSeguidos++;
         this.requeue(batch);
+        this.avisarDeFallo(`el servidor respondió ${res.status}`);
       } else if (res.status === 401 || res.status === 403) {
         // UNA CREDENCIAL MALA NO SE CURA SOLA, a diferencia de un 5xx, y hasta
         // ahora este lote se descartaba SIN log, sin excepción y sin callback.
@@ -164,12 +182,53 @@ export class UsageEmitter {
             `saldrán a cero.`,
         );
         this.options.onAuthError?.(res.status);
+      } else {
+        // EL HUECO QUE FALTABA, y el más fácil de pisar: un 404 o un 405 no es
+        // 5xx ni es 401/403, así que el lote se descartaba SIN UNA SOLA SEÑAL.
+        //
+        // Es exactamente lo que pasa con la `meteringUrl` mal puesta: por defecto
+        // es `${licenseServerUrl}/api/metering/usage`, y quien la fija "para ser
+        // explícito" olvidando la ruta apunta a la raíz del sitio, que contesta
+        // con una página. El uso se pierde entero y el panel dice, durante meses,
+        // que no ve tráfico — a alguien que lo tiene todo funcionando.
+        this.fallosSeguidos++;
+        this.avisarDeFallo(
+          res.status === 404 || res.status === 405
+            ? `HTTP ${res.status}: la URL de envío parece equivocada`
+            : `el servidor rechazó el lote con HTTP ${res.status}`,
+        );
       }
-    } catch {
+    } catch (err) {
+      this.fallosSeguidos++;
       this.requeue(batch);
+      this.avisarDeFallo(err instanceof Error ? err.message : "error de red");
     } finally {
       this.flushing = false;
     }
+  }
+
+  /**
+   * THE INGEST HAS BEEN FAILING FOR A WHILE AND NOBODY NOTICED.
+   *
+   * Metering is best-effort by design — it must never take down the customer's
+   * request — and that turns every failure into SILENT data loss. Without this,
+   * the only symptom is an empty dashboard, which is indistinguishable from
+   * "you haven't sent anything yet": the symptom points the opposite way from
+   * the cause.
+   *
+   * Warns on the third consecutive failure and then every twelfth. Not the
+   * first — a lost request is normal — and not every one, which becomes noise.
+   */
+  private avisarDeFallo(motivo: string): void {
+    if (this.options.silenceWarnings) return;
+    const n = this.fallosSeguidos;
+    if (n < 3 || (n - 3) % 12 !== 0) return;
+    console.warn(
+      `[bv-sala] el envío de uso lleva ${n} intentos seguidos fallando contra ${this.options.url} ` +
+        `(${motivo}). Las peticiones SIGUEN funcionando, pero el uso no está llegando: el panel dirá ` +
+        `que no ve tráfico y los asientos facturables saldrán a cero. Comprueba 'meteringUrl' — por ` +
+        `defecto es \`\${licenseServerUrl}/api/metering/usage\`.`,
+    );
   }
 
   private requeue(batch: Entry[]): void {
