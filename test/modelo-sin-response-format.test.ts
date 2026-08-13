@@ -166,11 +166,17 @@ describe("qué 400 SÍ y qué 400 NO merecen el segundo intento", () => {
     return { envios, fetchImpl };
   };
 
-  it("un esquema INVÁLIDO no se degrada: es el contrato del cliente lo que está mal", async () => {
+  it("⛔ un esquema INVÁLIDO no se degrada, aunque el mensaje diga «not supported»", async () => {
+    // EL FIXTURE IMPORTA MÁS QUE LA ASERCIÓN. El primero que se usó aquí no casaba
+    // con la alternancia positiva, así que el test pasaba con o sin la exclusión de
+    // «invalid schema»: la línea que decía probar era código muerto para la suite,
+    // y una mutación que la borraba sobrevivía. Este cuerpo SÍ casa —es la forma
+    // real del error de OpenAI cuando el esquema usa algo que no admite— de modo
+    // que ahora lo único que separa degradar de no degradar es esa exclusión.
     // Aquí `response_format` sí existe. Degradar convertiría un error de
     // configuración visible en una garantía silenciosamente más débil.
     const { envios, fetchImpl } = conCuerpo(
-      "Invalid schema for response_format 'bvsala_contract': 'required' is required to be supplied",
+      "Invalid schema for response_format 'bvsala_contract': In context=(), 'anyOf' is not supported",
     );
     const p = new OpenAICompatibleProvider({ baseUrl: "https://x/v1", fetchImpl });
 

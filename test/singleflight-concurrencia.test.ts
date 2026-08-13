@@ -94,6 +94,12 @@ class ProveedorContado implements Provider {
     this.caido = error;
     for (const p of this.enVuelo.splice(0)) p.fallar(error);
   }
+
+  /** Vuelve a estar sano. Sin esto no se puede reutilizar la MISMA capa, y sin
+   *  reutilizarla el mapa de en-vuelo no se prueba: cada capa tiene el suyo. */
+  recuperarse(): void {
+    this.caido = undefined;
+  }
 }
 
 /** Ni aritmética (resolver determinista), ni marcadores de frescura o de cuenta. */
@@ -364,20 +370,35 @@ describe("cuando el líder falla", () => {
     }
   });
 
-  it("un fallo del líder no envenena la siguiente petición idéntica", async () => {
+  it("⛔ un fallo del líder no envenena la siguiente petición idéntica", async () => {
+    // ESTE TEST ERA DECORATIVO. Creaba una capa NUEVA para la segunda ronda, y
+    // `resolveDependencies` construye un `new Singleflight()` por capa: el mapa
+    // que comprobaba estaba vacío por construcción. Se verificó borrando entero
+    // el `finally { inflight.delete(key) }` de `src/cache/singleflight.ts` —un
+    // mapa envenenado para siempre— y los 20 tests seguían pasando.
+    //
+    // Para probar algo hay que reutilizar la MISMA capa, que es lo que hace un
+    // proceso real: una capa vive lo que vive el servidor y atiende miles de
+    // peticiones. Si la clave no se libera, la segunda ronda se queda colgada
+    // esperando a un líder que ya murió.
     const proveedor = new ProveedorContado();
     const capa = crearCapa(proveedor);
 
     const primeras = await lanzar(capa, [peticion(), peticion()]);
     proveedor.reventar(new Error("boom"));
-    await Promise.allSettled(primeras);
+    const caidas = await Promise.allSettled(primeras);
+    expect(caidas.every((r) => r.status === "rejected")).toBe(true);
 
-    // La clave debe haberse liberado del mapa de en-vuelo pase lo que pase.
-    const proveedorSano = new ProveedorContado();
-    const capaSana = crearCapa(proveedorSano);
-    const segundas = await lanzar(capaSana, [peticion()]);
-    expect(proveedorSano.llamadas).toBe(1);
-    proveedorSano.responder("ya va bien");
+    // MISMA capa, mismo mapa de en-vuelo, misma clave.
+    proveedor.recuperarse();
+    const antes = proveedor.llamadas;
+    const segundas = await lanzar(capa, [peticion()]);
+    // Se mide el INCREMENTO, no el total: `llamadas` es acumulativo y la ronda
+    // caída ya gastó la suya. Si la clave siguiera en el mapa, el incremento
+    // sería 0 — la petición se habría enganchado como seguidora de un líder que
+    // ya está muerto, y se quedaría esperando para siempre.
+    expect(proveedor.llamadas - antes).toBe(1);
+    proveedor.responder("ya va bien");
     expect((await segundas[0]!).text).toBe("ya va bien");
   });
 });

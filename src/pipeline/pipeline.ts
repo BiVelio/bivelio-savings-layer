@@ -136,7 +136,6 @@ export class SavingsPipeline {
   private readonly config: SavingsLayerConfig;
   private readonly now: () => number;
   private readonly generateId: () => string;
-  private illustrativePriceWarned = false;
   /**
    * Contratos a los que un modelo YA les incumplió una restricción de valor.
    *
@@ -293,7 +292,7 @@ export class SavingsPipeline {
    * defecto es correcto: un compresor y un embebedor son gasto y proveedor
    * ajenos, y elegirlos por el cliente le mete latencia y factura que no pidió.
    * Lo que no es correcto es que `savings: { compression: "auto" }` no haga
-   * nada y tampoco diga nada: el informe sale con `compression: null` y
+   * nada y tampoco diga nada: el informe sale SIN la clave `compression` y con
    * `eliminatedInput: 0`, que es EXACTAMENTE lo que se ve cuando el compresor sí
    * corrió y no encontró nada que quitar. Medido contra el paquete publicado con
    * 51.956 tokens de contexto redundante: 16 modelos de 16 sin comprimir, sin
@@ -312,24 +311,43 @@ export class SavingsPipeline {
    * está para TODA la capa, así que el aviso es cierto y accionable en cualquier
    * petición, y es de los que se emiten una vez por proceso.
    */
+  /**
+   * EL ÚNICO PORTERO DE LOS AVISOS DEL PIPELINE.
+   *
+   * `silenceWarnings` se consultaba en UN solo sitio mientras su documentación
+   * —publicada en npm, y npm es inmutable— prometía que callaba el pipeline
+   * entero. Un interruptor que apaga una de las fuentes y deja las otras
+   * hablando es la peor clase de interruptor: la que hay que descubrir probando.
+   *
+   * Todo aviso del pipeline pasa por aquí. Si mañana se añade otro y alguien
+   * llama a `console.warn` directamente, la promesa vuelve a romperse — por eso
+   * hay un test que recorre este fichero y falla si aparece un `console.warn`
+   * suelto.
+   */
+  private avisar(clave: string, mensaje: string): void {
+    if (this.config.silenceWarnings) return;
+    avisarUnaVez(clave, mensaje);
+  }
+
   private avisarDePalancasSinConfigurar(toggles: NonNullable<SavingsRequest["savings"]>): void {
     if (this.config.silenceWarnings) return;
 
     if ((toggles.compression === true || toggles.compression === "auto") && !this.config.compressor) {
-      avisarUnaVez(
+      this.avisar(
         "palanca-sin-compresor",
         "[bv-sala] se pidió `savings.compression` pero esta capa no tiene compresor, así que NO se " +
-          "comprime nada: el contexto largo viaja y se paga entero, y el informe dirá " +
-          "`compression: null` con `tokens.eliminatedInput: 0` — indistinguible de haber comprimido " +
-          "sin ganancia. El compresor es un sidecar (LLMLingua o el suyo) porque añade latencia y " +
-          "cómputo que solo usted debe decidir pagar: enchúfelo con " +
-          "`createSavingsLayer({ compressor })`, cualquier objeto con `compress({ text })`. El resto " +
-          "de la capa sigue ahorrando igual.",
+          "comprime nada: el contexto largo viaja y se paga entero. En el informe, " +
+          "`report.compression` sale AUSENTE y `tokens.eliminatedInput` a 0 — lo mismo que se ve " +
+          "cuando no había nada que comprimir. El compresor es un sidecar (LLMLingua o el suyo) " +
+          "porque añade latencia y cómputo que solo usted debe decidir pagar: enchúfelo con " +
+          "`createSavingsLayer({ compressor })`, cualquier objeto con `compress({ text })`. " +
+          "Si su plan no incluye `long_context_compression`, hará falta además esa función. " +
+          "El resto de la capa sigue ahorrando igual.",
       );
     }
 
     if (toggles.semanticCache && !this.deps.semanticCache) {
-      avisarUnaVez(
+      this.avisar(
         "palanca-sin-cache-semantica",
         "[bv-sala] se pidió `savings.semanticCache` pero esta capa no tiene caché semántica, así que " +
           "toda pregunta reformulada saldrá `cache: \"miss\"` y se pagará al proveedor otra vez. " +
@@ -842,7 +860,7 @@ export class SavingsPipeline {
           reason: "schema defect (uncompilable pattern); no output can satisfy it, a retry is a wasted call",
           errors: validation.errors,
         });
-        avisarUnaVez(
+        this.avisar(
           "esquema-roto",
           "[bvsala] El contrato de respuesta tiene un `pattern` que no es un regex valido, asi que " +
             "ninguna respuesta puede cumplirlo. NO se reintenta (seria una llamada pagada para el mismo " +
@@ -854,7 +872,7 @@ export class SavingsPipeline {
           maxOutputTokens: request.response?.maxOutputTokens ?? null,
           outputTokens: response.usage.outputTokens,
         });
-        avisarUnaVez(
+        this.avisar(
           "salida-truncada",
           "[bvsala] La respuesta se cortó al agotar `maxOutputTokens`" +
             (request.response?.maxOutputTokens != null ? ` (${request.response.maxOutputTokens})` : "") +
@@ -1388,15 +1406,14 @@ export class SavingsPipeline {
     if (this.config.defaultCostModel) return this.config.defaultCostModel;
 
     // Caer en el precio ilustrativo deja de ser silencioso: el ahorro en dólares
-    // que se derive de aquí no es el del cliente. Una vez por instancia.
-    if (!this.illustrativePriceWarned) {
-      this.illustrativePriceWarned = true;
-      console.warn(
-        `[bv-sala] no cost model configured for "${model}"; falling back to the ` +
-          `ILLUSTRATIVE default price. Dollar figures will not match your bill. ` +
-          `Pass { costModels: { "${model}": { inputPer1k, outputPer1k } } }.`,
-      );
-    }
+    // que se derive de aquí no es el del cliente. Una vez por causa y proceso, y
+    // por el portero, que es lo que hace cierta la promesa de `silenceWarnings`.
+    this.avisar(
+      `precio-ilustrativo:${model}`,
+      `[bv-sala] no cost model configured for "${model}"; falling back to the ` +
+        `ILLUSTRATIVE default price. Dollar figures will not match your bill. ` +
+        `Pass { costModels: { "${model}": { inputPer1k, outputPer1k } } }.`,
+    );
     return DEFAULT_COST_MODEL;
   }
 }
