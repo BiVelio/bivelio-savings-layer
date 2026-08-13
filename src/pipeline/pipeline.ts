@@ -14,7 +14,7 @@ import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import { evaluatePolicy } from "../policy/policy.js";
 import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
-import { resolveConstraintBackend } from "../constraints/backends.js";
+import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/backends.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -674,9 +674,9 @@ export class SavingsPipeline {
 
     // --- Stage 10: constrained decoding + the single primary LLM call. ---
     const schema = request.response?.schema;
-    const backendPlan = schema
+    let backendPlan: ConstraintPlan = schema
       ? resolveConstraintBackend(request.model, schema, this.deps.constraintBackends)
-      : { backend: "none" as const, reason: "no output contract" };
+      : { backend: "none", reason: "no output contract" };
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
     const providerStart = this.now();
@@ -695,6 +695,34 @@ export class SavingsPipeline {
     ledger.actualLlm = 1;
     ledger.actualInput = response.usage.inputTokens;
     ledger.actualOutput = response.usage.outputTokens;
+
+    // EL PLAN SE DECIDE ANTES DE LLAMAR; LO QUE SE PUBLICA TIENE QUE SER LO QUE
+    // PASÓ. `provider-native` se resolvía por lo que el backend DECLARA soportar y
+    // viajaba al informe sin mirar la respuesta, así que un modelo anterior a los
+    // structured outputs —que rechaza `response_format` y obliga al adaptador a
+    // pedir el JSON por prompt— seguía publicándose como garantía del proveedor.
+    // `structuredNatively` existe en ProviderResponse desde el principio y no lo
+    // leía nadie; leerlo aquí es lo que impide certificar una garantía que no se
+    // obtuvo.
+    //
+    // Solo se degrada con un `false` EXPLÍCITO: un adaptador que no informa no
+    // afirma nada, y no vamos a inventarle una degradación.
+    //
+    // Bajar a "none" no es solo cosmético: habilita la reparación única de abajo,
+    // que es exactamente la red que corresponde cuando la forma no la impone
+    // nadie más que nuestro validador.
+    if (schema && backendPlan.backend === "provider-native" && response.structuredNatively === false) {
+      backendPlan = {
+        backend: "none",
+        reason:
+          "provider did not enforce the contract natively; the schema travelled in the prompt " +
+          "and the layer is the only validator",
+      };
+      trace.record("constraints", "none", {
+        downgradedFrom: "provider-native",
+        reason: backendPlan.reason,
+      });
+    }
 
     // Calibración de la regla, medida en ESTA petición. `sentInputLocal` es la
     // cuenta local del prompt que de verdad salió; la diferencia contra el

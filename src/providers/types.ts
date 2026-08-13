@@ -33,7 +33,15 @@ export interface ProviderUsage {
 export interface ProviderResponse {
   text: string;
   usage: ProviderUsage;
-  /** Whether the provider enforced the schema natively. */
+  /**
+   * Whether the provider enforced the schema natively.
+   *
+   * An explicit `false` is a claim about the guarantee that was obtained, not a
+   * detail: the pipeline reads it and reports `constraints.backend: "none"`, so
+   * an adapter that had to ask for JSON in the prompt (for instance because the
+   * model rejects `response_format`) must set it. Leaving it undefined asserts
+   * nothing and keeps the planned backend.
+   */
   structuredNatively?: boolean;
   /**
    * Por qué paró de generar el modelo. `"length"` significa que se quedó sin
