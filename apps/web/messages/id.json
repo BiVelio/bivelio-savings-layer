@@ -245,7 +245,8 @@
       "seatsHint": "Satu kursi adalah satu mesin atau identitas layanan aktif, bukan orang. Hitung proses yang akan menjalankan SDK, bukan jumlah karyawan. Di Kubernetes, setel BVSALA_SEAT_ID per replika.",
       "seatsInUse": "{used, plural, other {# kursi}} terpakai bulan ini.",
       "seatsOver": "⚠ {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Naikkan jumlahnya lewat «Kelola paket» agar tagihan sesuai dengan yang Anda jalankan.",
-      "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket."
+      "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket.",
+      "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",
@@ -477,7 +478,8 @@
           "lead": "Laporan itulah meterannya.",
           "rest": "Penagihan membaca SavingsReport yang sama yang Anda verifikasi di atas — tanpa kotak hitam."
         }
-      ]
+      ],
+      "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge."
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",

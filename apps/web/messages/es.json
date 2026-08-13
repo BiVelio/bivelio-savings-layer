@@ -245,7 +245,8 @@
       "seatsHint": "Un asiento es una máquina o identidad de servicio activa, no una persona. Cuenta los procesos que van a ejecutar el SDK, no tus empleados. En Kubernetes, fija BVSALA_SEAT_ID en cada réplica.",
       "seatsInUse": "{used, plural, one {# asiento} other {# asientos}} en uso este mes.",
       "seatsOver": "⚠ {used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. Sube la cantidad desde «Gestionar plan» para que tu factura cuadre con lo que ejecutas.",
-      "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan."
+      "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan.",
+      "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo."
     },
     "referenceLedgerCards": {
       "proven": "comprobado",
@@ -477,7 +478,8 @@
           "lead": "El reporte es el medidor.",
           "rest": "La facturación lee el mismo SavingsReport que verificas arriba — sin caja negra."
         }
-      ]
+      ],
+      "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo."
     },
     "footer": {
       "ctaTitle": "Mídelo con tu propio tráfico",

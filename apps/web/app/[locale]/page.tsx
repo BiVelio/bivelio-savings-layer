@@ -282,6 +282,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <p style={{ margin: 0, opacity: 0.85 }}>
                 {t.rich("pricing.proNote", { b: (c) => <b>{c}</b>, yearly: precioAnual })}
               </p>
+              <p className="ck-note">
+                {t("pricing.taxNote")}
+              </p>
               <p style={{ margin: "6px 0 0", opacity: 0.65, fontSize: 13 }}>
                 {t.rich("pricing.seatNote", { b: (c) => <b>{c}</b> })}
               </p>

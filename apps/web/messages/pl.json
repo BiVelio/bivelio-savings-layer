@@ -245,7 +245,8 @@
       "seatsHint": "Stanowisko to jedna aktywna maszyna lub tożsamość usługi, nie osoba. Policz procesy, które będą uruchamiać SDK, a nie pracowników. W Kubernetes ustaw BVSALA_SEAT_ID dla każdej repliki.",
       "seatsInUse": "{used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} w użyciu w tym miesiącu.",
       "seatsOver": "⚠ W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Zwiększ liczbę w „Zarządzaj planem”, aby faktura odpowiadała temu, co uruchamiasz.",
-      "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu."
+      "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu.",
+      "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie."
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",
@@ -477,7 +478,8 @@
           "lead": "Raport jest licznikiem.",
           "rest": "Rozliczenia odczytują ten sam SavingsReport, który weryfikujesz powyżej — bez czarnej skrzynki."
         }
-      ]
+      ],
+      "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie."
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",

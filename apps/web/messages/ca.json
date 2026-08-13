@@ -245,7 +245,8 @@
       "seatsHint": "Un seient és una màquina o identitat de servei activa, no una persona. Compta els processos que executaran l'SDK, no els teus empleats. A Kubernetes, fixa BVSALA_SEAT_ID a cada rèplica.",
       "seatsInUse": "{used, plural, one {# seient} other {# seients}} en ús aquest mes.",
       "seatsOver": "⚠ {used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. Puja la quantitat des de «Gestiona el pla» perquè la factura quadri amb el que executes.",
-      "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla."
+      "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla.",
+      "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -477,7 +478,8 @@
           "lead": "L'informe és el mesurador.",
           "rest": "La facturació llegeix el mateix SavingsReport que verifiques a dalt — sense caixa negra."
         }
-      ]
+      ],
+      "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu."
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",

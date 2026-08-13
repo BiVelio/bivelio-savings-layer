@@ -245,7 +245,8 @@
       "seatsHint": "Bir koltuk, etkin bir makine ya da servis kimliğidir; kişi değildir. Çalışan sayınızı değil, SDK'yı çalıştıracak süreçleri sayın. Kubernetes'te her replika için BVSALA_SEAT_ID tanımlayın.",
       "seatsInUse": "Bu ay {used, plural, other {# koltuk}} kullanımda.",
       "seatsOver": "⚠ {used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Faturanızın çalıştırdığınızla örtüşmesi için «Planı yönet»ten sayıyı artırın.",
-      "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok."
+      "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok.",
+      "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
@@ -477,7 +478,8 @@
           "lead": "Rapor, sayacın kendisidir.",
           "rest": "Faturalandırma, yukarıda doğruladığınız SavingsReport'un aynısını okur — kara kutu yok."
         }
-      ]
+      ],
+      "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır."
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",

@@ -245,7 +245,8 @@
       "seatsHint": "Een plaats is één actieve machine of service-identiteit, geen persoon. Tel de processen die de SDK draaien, niet je medewerkers. Op Kubernetes: stel BVSALA_SEAT_ID per replica in.",
       "seatsInUse": "{used, plural, one {# seat} other {# seats}} deze maand in gebruik.",
       "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. Verhoog het aantal via “Abonnement beheren” zodat je factuur klopt met wat je draait.",
-      "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen."
+      "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen.",
+      "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
@@ -477,7 +478,8 @@
           "lead": "Het rapport is de meter.",
           "rest": "De facturering leest hetzelfde SavingsReport dat je hierboven verifieert — geen black box."
         }
-      ]
+      ],
+      "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling."
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
