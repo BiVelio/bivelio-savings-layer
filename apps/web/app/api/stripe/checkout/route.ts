@@ -162,6 +162,25 @@ export async function POST(req: Request): Promise<NextResponse> {
         { price, quantity: seats, adjustable_quantity: { enabled: true, minimum: 1, maximum: MAX_ASIENTOS } },
       ],
       ...(customer ? { customer } : { customer_email: user.email ?? undefined }),
+      // LA FACTURA TIENE QUE SERVIRLE A SU CONTABLE, o no es una venta B2B: es un
+      // cargo que el cliente no puede justificar. Sin estas dos líneas, la factura
+      // que emite Stripe sale sin dirección fiscal y sin NIF-IVA del comprador, y
+      // eso en España —y en media Europa— es una factura que no se puede deducir.
+      // El coste es un campo más en la pantalla de pago; el beneficio es que el
+      // primer cliente no tenga que escribirnos para pedir una factura correcta.
+      billing_address_collection: "required",
+      // Opcional para el comprador: un autónomo o una empresa sin NIF intracomunitario
+      // puede seguir comprando. Quien lo ponga, lo verá impreso en su factura — y es
+      // además el dato que hará falta el día que se encienda el cálculo de impuestos,
+      // porque es lo que activa la inversión del sujeto pasivo en una venta B2B.
+      tax_id_collection: { enabled: true },
+      // ⚠️ IMPRESCINDIBLE CUANDO SE REUTILIZA UN `customer`. Sin esto Stripe pide los
+      // datos, los enseña en la pantalla… y NO los guarda en el cliente existente:
+      // se quedan solo en esa sesión. La segunda factura volvería a salir sin
+      // dirección, y nadie entendería por qué. Con `customer_email` (cliente nuevo)
+      // Stripe lo guarda solo, pero pasarlo siempre no molesta y evita que el día
+      // que alguien reordene este objeto reaparezca el fallo.
+      customer_update: customer ? { address: "auto", name: "auto" } : undefined,
       client_reference_id: user.id,
       // DOS IDS DISTINTOS, y hasta ahora eran el mismo. `org_id` es a quién se le
       // cobra; `user_id` es QUIÉN compra, y es el que va a la fila de pertenencia y

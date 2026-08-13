@@ -1,6 +1,6 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "BV-SALA — a provider-neutral LLM execution optimizer. A decision layer in front of any LLM provider that, for every request, picks the cheapest execution that preserves required quality. Avoid the call, avoid retrieval, eliminate context, compress, constrain — with four separate ledgers of savings. Proprietary and confidential — property of BiVelio Inc.",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",

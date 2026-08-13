@@ -32,7 +32,7 @@
  * Si subes la versión del paquete y olvidas esta línea, la suite se pone roja
  * antes de que la Release llegue a npm.
  */
-export const BV_SALA_VERSION = "0.2.0";
+export const BV_SALA_VERSION = "0.2.1";
 
 export * from "./util/index.js";
 export * from "./contracts/index.js";
