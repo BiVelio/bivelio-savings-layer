@@ -25,6 +25,10 @@
  * on the customer's machine. `test/version-declarada.test.ts` ties this
  * constant to package.json so the two can never drift.
  */
+// El catálogo de precios de lista, exportado para que un cliente pueda
+// inspeccionarlo, extenderlo o comprobar qué modelos cubre.
+export { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "./pricing/catalogo.js";
+
 export const BV_SALA_VERSION = "0.2.3";
 
 export * from "./util/index.js";

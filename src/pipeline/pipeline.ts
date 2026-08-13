@@ -24,6 +24,7 @@ import type { FormatChoice } from "../serialization/format-selector.js";
 import { LicenseError } from "../license/errors.js";
 import type { LicenseStatus } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
+import { precioDeLista } from "../pricing/catalogo.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 
 /**
@@ -1257,6 +1258,13 @@ export class SavingsPipeline {
         if (desnudo) return desnudo;
       }
     }
+    // EL CATÁLOGO DE PRECIOS DE LISTA, antes del defecto del cliente. Un
+    // `defaultCostModel` significa "para lo que yo no conozca"; con el catálogo,
+    // muchos menos modelos son desconocidos, y el precio real de gpt-4o sirve
+    // mejor al cliente que su propio precio genérico.
+    const deLista = precioDeLista(model);
+    if (deLista) return deLista;
+
     if (this.config.defaultCostModel) return this.config.defaultCostModel;
 
     // Caer en el precio ilustrativo deja de ser silencioso: el ahorro en dólares
