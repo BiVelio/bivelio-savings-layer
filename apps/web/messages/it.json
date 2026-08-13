@@ -245,7 +245,8 @@
       "seatsHint": "Una postazione è una macchina o identità di servizio attiva, non una persona. Conta i processi che eseguiranno l'SDK, non i dipendenti. Su Kubernetes, imposta BVSALA_SEAT_ID per ogni replica.",
       "seatsInUse": "{used, plural, one {# postazione} other {# postazioni}} in uso questo mese.",
       "seatsOver": "⚠ {used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. Aumenta la quantità da «Gestisci piano» così la fattura corrisponde a ciò che esegui.",
-      "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano."
+      "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano.",
+      "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile."
     },
     "referenceLedgerCards": {
       "proven": "comprovato",
@@ -477,7 +478,8 @@
           "lead": "Il report è il contatore.",
           "rest": "La fatturazione legge lo stesso SavingsReport che verifichi sopra — nessuna scatola nera."
         }
-      ]
+      ],
+      "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile."
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",

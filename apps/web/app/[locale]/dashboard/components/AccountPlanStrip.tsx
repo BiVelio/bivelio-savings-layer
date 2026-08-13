@@ -72,6 +72,12 @@ export async function AccountPlanStrip({
           {isActive && ctx.seats != null ? <>{t("accountPlanStrip.seatsCount", { count: ctx.seats })} </> : null}
           {t("accountPlanStrip.planBody", { monthly: precioMensual, yearly: precioAnual })}
         </p>
+        {/* EL IMPUESTO VA APARTE, Y HAY QUE DECIRLO. Los precios son `exclusive`:
+            el cliente paga 4 € + IVA. Anunciar "4 €" a secas sin esta línea es
+            enseñar un importe que no es el que se cobra. */}
+        <p className="ck-note">
+          {t("accountPlanStrip.taxNote")}
+        </p>
         {/* USADOS vs PAGADOS. Solo si hay plan y hay medida: enseñar "0 en uso" a
             quien acaba de comprar y todavía no ha desplegado nada sería alarmar
             por nada. Y `null` (no se pudo medir) no se pinta como cero. */}

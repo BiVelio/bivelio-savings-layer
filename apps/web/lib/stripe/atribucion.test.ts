@@ -76,3 +76,55 @@ describe("atribución por precio", () => {
     expect(preciosPropios()).toEqual(["a"]);
   });
 });
+
+describe("el cambio a tax_behavior exclusive (2026-08-13)", () => {
+  /**
+   * Los precios se recrearon `exclusive` sobre los MISMOS productos, y la
+   * suscripción que ya existía se quedó con el precio VIEJO — Stripe no deja
+   * cambiar `tax_behavior` en un precio vivo.
+   *
+   * A partir de ahí hay una forma concreta de perder un cobro real: si la
+   * atribución solo mirase los precios NUEVOS, la renovación de esa suscripción
+   * llegaría con el precio viejo, no estaría en la lista, y se descartaría como
+   * ajena. En silencio, y con el panel de Stripe en verde.
+   */
+  const NUEVO = "price_nuevo_exclusive";
+  const VIEJO = "price_viejo_inclusive";
+  const NUESTRO = "prod_nuestro";
+
+  async function comoEnProduccion() {
+    vi.resetModules();
+    process.env.STRIPE_PRICE_ID_MONTHLY = NUEVO;
+    process.env.STRIPE_PRICE_ID_YEARLY = "price_nuevo_anual";
+    process.env.STRIPE_PRICE_IDS_EXTRA = VIEJO;
+    process.env.STRIPE_PRODUCT_IDS = NUESTRO;
+    return import("./atribucion");
+  }
+
+  it("⛔ la renovación con el precio VIEJO sigue siendo NUESTRA", async () => {
+    const { atribuirPorPrecio } = await comoEnProduccion();
+    expect(atribuirPorPrecio(VIEJO, NUESTRO)).toBe("nuestro");
+    // Y también sin conocer el producto, gracias a STRIPE_PRICE_IDS_EXTRA.
+    expect(atribuirPorPrecio(VIEJO, null)).toBe("nuestro");
+  });
+
+  it("el precio nuevo también, evidentemente", async () => {
+    const { atribuirPorPrecio } = await comoEnProduccion();
+    expect(atribuirPorPrecio(NUEVO, NUESTRO)).toBe("nuestro");
+  });
+
+  it("⛔ y lo de BV-PRGA sigue siendo ajeno", async () => {
+    // Su suscripción vive en la MISMA cuenta de Stripe (price_1TxknI…, producto
+    // "BiVelio Shield"). Si el cambio de precios la hubiera vuelto nuestra,
+    // habríamos empezado a escribir su cobro en nuestro esquema.
+    const { atribuirPorPrecio } = await comoEnProduccion();
+    expect(atribuirPorPrecio("price_de_shield", "prod_shield")).toBe("ajeno");
+  });
+
+  it("el producto MANDA sobre el precio: es lo que sobrevive a recrear el catálogo", async () => {
+    // Un `price_id` se rompe cada vez que se toca el importe o el impuesto. El
+    // product id no. Por eso la regla mira primero el producto.
+    const { atribuirPorPrecio } = await comoEnProduccion();
+    expect(atribuirPorPrecio("price_que_nadie_conoce", NUESTRO)).toBe("nuestro");
+  });
+});

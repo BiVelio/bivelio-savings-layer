@@ -245,7 +245,8 @@
       "seatsHint": "Ein Platz ist eine aktive Maschine oder Service-Identität, keine Person. Zähle die Prozesse, die das SDK ausführen, nicht deine Mitarbeitenden. In Kubernetes: BVSALA_SEAT_ID pro Replica setzen.",
       "seatsInUse": "{used, plural, one {# Seat} other {# Seats}} diesen Monat in Benutzung.",
       "seatsOver": "⚠ {used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Erhöhe die Anzahl unter „Plan verwalten“, damit deine Rechnung zu deinem Betrieb passt.",
-      "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern."
+      "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern.",
+      "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -477,7 +478,8 @@
           "lead": "Der Bericht ist der Zähler.",
           "rest": "Die Abrechnung liest denselben SavingsReport, den du oben verifizierst — keine Blackbox."
         }
-      ]
+      ],
+      "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren."
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",

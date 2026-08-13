@@ -245,7 +245,8 @@
       "seatsHint": "Un poste est une machine ou une identité de service active, pas une personne. Comptez les processus qui exécuteront le SDK, pas vos effectifs. Sur Kubernetes, définissez BVSALA_SEAT_ID par réplique.",
       "seatsInUse": "{used, plural, one {# siège utilisé} other {# sièges utilisés}} ce mois-ci.",
       "seatsOver": "⚠ {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Augmentez la quantité depuis « Gérer le forfait » pour que votre facture corresponde à votre usage.",
-      "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait."
+      "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait.",
+      "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique."
     },
     "referenceLedgerCards": {
       "proven": "prouvé",
@@ -477,7 +478,8 @@
           "lead": "Le rapport est le compteur.",
           "rest": "La facturation lit le même SavingsReport que celui que vous vérifiez ci-dessus — aucune boîte noire."
         }
-      ]
+      ],
+      "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique."
     },
     "footer": {
       "ctaTitle": "Mesurez-le sur votre propre trafic",

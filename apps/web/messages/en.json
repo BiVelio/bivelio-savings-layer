@@ -245,7 +245,8 @@
       "seatsHint": "A seat is one active machine or service identity — not a person. Count the processes that will run the SDK, not your headcount. On Kubernetes, set BVSALA_SEAT_ID per replica.",
       "seatsInUse": "{used, plural, one {# seat} other {# seats}} in use this month.",
       "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. Raise your seat count from “Manage plan” so your invoice matches what you run.",
-      "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan."
+      "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan.",
+      "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies."
     },
     "referenceLedgerCards": {
       "proven": "proven",
@@ -477,7 +478,8 @@
           "lead": "The report is the meter.",
           "rest": "Billing reads the same SavingsReport you verify above — no black box."
         }
-      ]
+      ],
+      "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies."
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",

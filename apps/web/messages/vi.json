@@ -245,7 +245,8 @@
       "seatsHint": "Một chỗ là một máy hoặc danh tính dịch vụ đang hoạt động, không phải một người. Hãy đếm số tiến trình sẽ chạy SDK, không phải số nhân viên. Trên Kubernetes, đặt BVSALA_SEAT_ID cho mỗi bản sao.",
       "seatsInUse": "{used, plural, other {# ghế}} đang dùng trong tháng này.",
       "seatsOver": "⚠ {used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Hãy tăng số lượng ở «Quản lý gói» để hoá đơn khớp với những gì bạn đang chạy.",
-      "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói."
+      "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói.",
+      "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
@@ -477,7 +478,8 @@
           "lead": "Báo cáo chính là đồng hồ đo.",
           "rest": "Việc tính phí đọc cùng một SavingsReport mà bạn xác minh ở trên — không có hộp đen."
         }
-      ]
+      ],
+      "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng."
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
