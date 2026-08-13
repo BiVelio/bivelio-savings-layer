@@ -181,3 +181,39 @@ describe("POST /api/stripe/checkout — la organización se acuña aquí", () =>
     expect(sesion!.customer_email).toBeUndefined();
   });
 });
+
+describe("la factura tiene que servirle al contable del cliente", () => {
+  it("⛔ se piden dirección fiscal y NIF-IVA", async () => {
+    // Sin esto, Stripe emite una factura sin dirección ni NIF del comprador: en
+    // España y en media Europa eso NO es deducible, así que el primer cliente
+    // tiene que escribirnos para pedir una factura correcta. Es la diferencia
+    // entre "esto lo pasamos a gastos" y "esto no me sirve".
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.billing_address_collection).toBe("required");
+    expect(sesion!.tax_id_collection).toEqual({ enabled: true });
+  });
+
+  it("⛔ con un cliente de Stripe YA existente, los datos se GUARDAN", async () => {
+    // La trampa: sin `customer_update`, Stripe pide la dirección, la enseña en la
+    // pantalla de pago… y no la escribe en el cliente existente. La primera
+    // factura sale bien y la SEGUNDA vuelve a salir sin dirección, sin que nadie
+    // entienda por qué.
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.orgs = [{ id: ORG_REAL, stripe_customer_id: "cus_viejo" }];
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.customer).toBe("cus_viejo");
+    expect(sesion!.customer_update).toEqual({ address: "auto", name: "auto" });
+  });
+
+  it("con cliente NUEVO no se manda customer_update (Stripe lo rechaza)", async () => {
+    // `customer_update` solo es válido junto a `customer`. Mandarlo con
+    // `customer_email` es un 400 de Stripe: checkout roto para todo cliente nuevo,
+    // que es exactamente el peor sitio donde tener un fallo.
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.customer).toBeUndefined();
+    expect(sesion!.customer_update).toBeUndefined();
+  });
+});
