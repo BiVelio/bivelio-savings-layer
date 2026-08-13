@@ -25,7 +25,7 @@
  * on the customer's machine. `test/version-declarada.test.ts` ties this
  * constant to package.json so the two can never drift.
  */
-export const BV_SALA_VERSION = "0.2.2";
+export const BV_SALA_VERSION = "0.2.3";
 
 export * from "./util/index.js";
 export * from "./contracts/index.js";
