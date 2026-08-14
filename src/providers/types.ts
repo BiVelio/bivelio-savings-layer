@@ -21,6 +21,23 @@ export interface ProviderRequest {
   seed?: number;
   /** Backend id selected by the constraints layer, for observability. */
   constraintBackend?: string;
+  /**
+   * How many LEADING messages form the stable, cacheable prefix — the part the
+   * provider may reuse across requests. `undefined` claims nothing and adapters
+   * mark no cache breakpoint.
+   *
+   * Adapters that need EXPLICIT breakpoints (Anthropic) place them at this
+   * boundary; adapters that cache automatically (OpenAI) may ignore it. The
+   * count is a claim about byte-for-byte stability, so a caller that rewrites an
+   * earlier turn must lower it.
+   */
+  stablePrefixMessages?: number;
+  /**
+   * Routing hint so requests sharing a prefix land on the same cache shard
+   * (OpenAI `prompt_cache_key`). It is a hint, never an identity: it must not
+   * carry tenant or user data, because it does not isolate anything.
+   */
+  promptCacheKey?: string;
 }
 
 export interface ProviderUsage {
@@ -28,6 +45,16 @@ export interface ProviderUsage {
   outputTokens: number;
   /** Provider-reported prefix/KV-cached input tokens (ledger 4), if any. */
   cachedInputTokens?: number;
+  /**
+   * Input tokens billed at a PREMIUM to WRITE the provider's prefix cache
+   * (Anthropic `cache_creation_input_tokens`: 1.25x the normal rate).
+   *
+   * This is a COST, not a discount, and it is reported separately for exactly
+   * that reason: `cachedInputTokens` is a saving to publish in ledger 4, this
+   * is the price paid to obtain it. Folding the two together would report a
+   * bill INCREASE as a saving.
+   */
+  cacheWriteInputTokens?: number;
 }
 
 export interface ProviderResponse {

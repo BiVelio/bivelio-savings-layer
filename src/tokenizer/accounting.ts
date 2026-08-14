@@ -247,6 +247,31 @@ export class SavingsLedger {
     // Tarifándolo solo en el lado "actual", una petición en la que la capa no
     // hiciera absolutamente nada reportaba ahorro. El recuento sigue publicado
     // como libro 4, que es su sitio: contarlo, sin cobrárselo.
+    //
+    // REVISADO cuando la capa empezó a PROVOCAR el acierto (marca `cache_control`
+    // explícito contra Anthropic), que es justo el caso que esta regla parecía
+    // castigar. Se mantiene, y por cuatro razones que no se cancelan:
+    //
+    //  1. AQUÍ NO HAY BASELINE MEDIDO. En una llamada que se ejecutó, el
+    //     baseline se RECONSTRUYE desde `actualInput`; nadie ejecutó la variante
+    //     sin marcar. Acreditar el descuento sería cobrar un contrafactual que
+    //     no se corrió — exactamente lo que la nota larga de arriba concluye que
+    //     no se puede hacer.
+    //  2. ESTE CÓDIGO NO SABE DE QUÉ PROVEEDOR VIENE. Con OpenAI la caché es
+    //     AUTOMÁTICA: el descuento le llega al cliente use o no use la capa. Una
+    //     regla que acredite la lectura cacheada sobreacreditaría en cada
+    //     petición contra OpenAI.
+    //  3. NO SE PUEDE SABER SI EL CLIENTE YA LA MARCABA. Un cliente que ya ponía
+    //     sus `cache_control` vería cómo le facturamos como ahorro nuestro un
+    //     descuento que ya tenía.
+    //  4. SÓLO ENTRARÍA LA MITAD BUENA. El acierto se paga con una PRIMA de
+    //     escritura (1,25x, `cacheWriteInputTokens`). Acreditar la lectura sin
+    //     cargar la escritura es la asimetría que ya fabricó ahorro una vez.
+    //
+    // El instrumento honesto para esa afirmación existe y tiene nombre: el A/B
+    // de `benchmarks/ab-live.ts`, donde los DOS brazos se ejecutan y se miden.
+    // Ahí sí se puede demostrar que el acierto lo provocó la capa. Aquí no, y
+    // por eso aquí se cuenta y no se cobra.
     const cachedRate = model.cachedInputPer1k ?? model.inputPer1k;
     const cached = Math.min(this.providerCachedInput, this.actualInput);
     const precioEntrada = (facturable: number): number =>

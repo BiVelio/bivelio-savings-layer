@@ -61,6 +61,13 @@ const PRICES: Record<string, CostModel> = {
   "gpt-4o": { inputPer1k: 0.0025, outputPer1k: 0.01, cachedInputPer1k: 0.00125 },
   "gpt-4.1-mini": { inputPer1k: 0.0004, outputPer1k: 0.0016, cachedInputPer1k: 0.0001 },
   "gpt-4.1": { inputPer1k: 0.002, outputPer1k: 0.008, cachedInputPer1k: 0.0005 },
+  // Anthropic. La lectura cacheada cuesta el 10% de la entrada —contra el 50%
+  // de la familia 4o/4.1— y por eso es donde más vale la palanca de la caché de
+  // prefijo. Lo que esta tabla NO puede expresar es la otra mitad del trato: la
+  // ESCRITURA se cobra a 1,25x, así que un escenario con pocos aciertos sale más
+  // caro de lo que este precio sugiere. La verja económica del layer es quien
+  // vigila eso; aquí sólo se tarifa lo que el proveedor reporte.
+  "claude-sonnet-4-5": { inputPer1k: 0.003, outputPer1k: 0.015, cachedInputPer1k: 0.0003 },
 };
 const PRICING_NOTE =
   "USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. " +
