@@ -201,11 +201,33 @@ describe("la compresión y el prefijo, que se pisan", () => {
     { role: "user" as const, content: "la pregunta de hoy" },
   ];
 
+  /**
+   * LAS VERJAS ECONÓMICAS DE LA COMPRESIÓN, ABIERTAS A PROPÓSITO.
+   *
+   * Desde que comprimir pasa por la caja, `shouldCompress` corta por TAMAÑO
+   * antes de nada: por defecto no toca un contexto de menos de 2000 tokens, y el
+   * historial de este fichero tiene ~30. Con los valores por defecto la etapa 9
+   * se salta entera, `messages` no se sustituye, y el recorte del prefijo que
+   * este bloque existe para probar NO LLEGA A EJECUTARSE NUNCA: los tests
+   * pasarían en verde sobre una guarda muerta, que es justo el fallo que la
+   * mutación encontró la primera vez.
+   *
+   * Así que se declara una economía que deja pasar la compresión. No es aflojar
+   * la verja: es ponerla donde el escenario del test la necesita para que lo que
+   * se prueba —la interacción entre compresión y prefijo— ocurra de verdad.
+   */
+  const ECONOMIA_PERMISIVA = {
+    minimumContextTokens: 1,
+    minimumNetTokens: 1,
+    compressorCostTokens: 0,
+  };
+
   it("si la compresión reescribe el historial, el prefijo se recorta a `system`", async () => {
     const p = new Testigo();
     await capa(p, {
       compressor: compresor,
       entitlements: ["long_context_compression"],
+      compressionEconomics: ECONOMIA_PERMISIVA,
     }).generate(peticion({ messages: CONVERSACION, savings: { compression: true } }));
 
     const req = p.vistas[0]!;
@@ -230,6 +252,28 @@ describe("la compresión y el prefijo, que se pisan", () => {
     // El contraste es el que hace portante al test de arriba: la diferencia la
     // provoca la compresión, no la forma de la conversación.
     expect(p.vistas[0]!.stablePrefixMessages).toBe(3);
+  });
+
+  it("si la verja económica RECHAZA la compresión, el prefijo NO se recorta", async () => {
+    const p = new Testigo();
+    await capa(p, {
+      compressor: compresor,
+      entitlements: ["long_context_compression"],
+      // Sin economía permisiva mandan los valores por defecto y la verja de
+      // tamaño (2000 tokens) rechaza este contexto de ~30.
+    }).generate(peticion({ messages: CONVERSACION, savings: { compression: true } }));
+
+    const req = p.vistas[0]!;
+    // EL CASO QUE NACIÓ AL COMPONER LAS DOS PALANCAS. Ahora el compresor puede
+    // correr y que su resultado se DESCARTE por no salir a cuenta. El prompt que
+    // recibe el proveedor es entonces el original, byte a byte, así que el
+    // prefijo sigue intacto y recortarlo sería regalar el descuento por una
+    // reescritura que nadie llegó a ver. La pérdida sería muda: ningún test
+    // falla, sólo bajan los aciertos.
+    expect(req.stablePrefixMessages).toBe(3);
+    // Y se comprueba que el prompt NO se comprimió, para que el test no pase por
+    // el motivo equivocado.
+    expect(req.messages.some((m) => m.role === "user" && m.content.length <= 10)).toBe(false);
   });
 });
 
@@ -299,5 +343,146 @@ describe("el libro 4 y la prima de escritura", () => {
     // el proveedor aplicó un descuento que habría aplicado igual.
     expect(r.report.tokens.providerCachedInput).toBe(900);
     expect(r.report.cost.netSavings).toBe(0);
+  });
+});
+
+/**
+ * LA FRONTERA DEL PREFIJO CONTRA LOS TRES BLOQUES QUE INYECTA LA CAPA.
+ *
+ * Estas dos palancas se escribieron a la vez y sin verse: el montaje segmentado
+ * calcula la frontera sobre `request.messages`, y el orden del prompt mete
+ * límites · payload · evidencia DELANTE de la última pregunta. Componen porque
+ * los tres bloques entran por `insertarAntesDeLaPregunta`, o sea DESPUÉS del
+ * corte —empujan la pregunta a la derecha y no tocan los `q` mensajes de
+ * delante—, pero eso es un razonamiento, y un razonamiento no es una verja.
+ *
+ * Lo que se fija aquí es la propiedad de la que depende el dinero: los tres
+ * bloques quedan FUERA del tramo que se le declara estable al proveedor. El caso
+ * peligroso es la evidencia de retrieval, que es el bloque más grande y el más
+ * variable —cambia con cada consulta—: si entrara en el prefijo, cada petición
+ * pagaría la prima de escritura (1,25x) sobre texto que no se repite jamás y no
+ * leería nada. El test que ya había sólo miraba el payload, que es el bloque que
+ * respetaba la posición ANTES de que los otros dos se movieran.
+ */
+class TestigoDeContrato implements Provider {
+  readonly id = "testigo-contrato";
+  readonly vistas: ProviderRequest[] = [];
+  async generate(req: ProviderRequest): Promise<ProviderResponse> {
+    this.vistas.push(req);
+    // La primera respuesta incumple `maxLength` para que el contrato "aprenda" y
+    // la SIGUIENTE petición lleve el aviso de límites JSON: es la única forma de
+    // tener los tres bloques a la vez en un mismo prompt.
+    const texto =
+      this.vistas.length === 1
+        ? JSON.stringify({ answer: "x".repeat(3000) })
+        : JSON.stringify({ answer: "ok" });
+    return { text: texto, usage: { inputTokens: 100, outputTokens: 10 } };
+  }
+}
+
+const RECUPERADOR = {
+  async retrieve() {
+    return [
+      { id: "doc-1", text: "El envío a Canarias tarda 5 días hábiles.", source: "logistica" },
+      { id: "doc-2", text: "Los pedidos de más de 50 EUR no pagan portes.", source: "tarifas" },
+    ];
+  },
+};
+
+const CONTRATO = {
+  contractId: "prefijo-vs-orden:v1",
+  schema: {
+    type: "object" as const,
+    additionalProperties: false,
+    required: ["answer"],
+    properties: { answer: { type: "string" as const, maxLength: 40 } },
+  },
+  maxOutputTokens: 120,
+};
+
+describe("la frontera del prefijo con los TRES bloques de la capa dentro", () => {
+  /** Una petición que dispara los tres bloques: límites, payload y evidencia. */
+  const conLosTres = (pregunta: string, importe: number) =>
+    peticion({
+      messages: [
+        { role: "system", content: POLITICA },
+        { role: "user", content: pregunta },
+      ],
+      response: CONTRATO,
+      retrieval: { mode: "single" },
+      structuredData: [{ id: 1, concepto: "portes", importe }],
+      savings: { exactCache: false },
+    } as Partial<SavingsRequest>);
+
+  async function dosPeticiones() {
+    const p = new TestigoDeContrato();
+    const c = capa(p, { retriever: RECUPERADOR });
+    // La primera enseña el incumplimiento; la segunda ya lleva los tres bloques.
+    await c.generate(conLosTres("¿Cuánto tarda un envío a Canarias?", 100));
+    await c.generate(conLosTres("¿Y a Baleares, con portes incluidos?", 250));
+    // Las llamadas de REPARACIÓN se descartan: llevan un prompt propio (la
+    // respuesta anterior y la lista de fallos) que no es el montaje segmentado
+    // que se está probando aquí. Contarlas comparaba peras con manzanas.
+    return p.vistas.filter((r) => r.messages[0]?.content === POLITICA);
+  }
+
+  it("los tres bloques —límites, payload y evidencia— quedan FUERA del prefijo", async () => {
+    const vistas = await dosPeticiones();
+    const req = vistas.find((r) => r.messages.some((m) => m.content.includes("JSON limits")));
+    expect(req, "ninguna petición llevó el aviso de límites").toBeDefined();
+
+    const prefijo = req!.messages.slice(0, req!.stablePrefixMessages);
+    const texto = JSON.stringify(prefijo);
+    // Los tres, de más estable a más variable. Ninguno puede estar dentro.
+    expect(texto).not.toContain("JSON limits");
+    expect(texto).not.toContain("concepto");
+    expect(texto).not.toContain("Retrieved context");
+    // …y sí están en el prompt: no se comprueba el vacío por accidente.
+    const todo = JSON.stringify(req!.messages);
+    expect(todo).toContain("JSON limits");
+    expect(todo).toContain("concepto");
+    expect(todo).toContain("Retrieved context");
+  });
+
+  it("la frontera sigue cayendo donde debe: el prefijo es la cabecera del llamante", async () => {
+    const vistas = await dosPeticiones();
+    const req = vistas.find((r) => r.messages.some((m) => m.content.includes("JSON limits")))!;
+    // Se calcula sobre `request.messages`, así que vale 1 (la política) aunque el
+    // array que sale lleve tres mensajes más. Si la frontera se calculara sobre el
+    // array YA montado, aquí saldría 4 y los tres bloques entrarían en el prefijo.
+    expect(req.stablePrefixMessages).toBe(1);
+    expect(req.messages.slice(0, req.stablePrefixMessages)[0]!.content).toBe(POLITICA);
+    expect(req.messages.length).toBeGreaterThan(req.stablePrefixMessages! + 1);
+  });
+
+  it("la evidencia, que es lo más variable, queda por detrás del payload y fuera del prefijo", async () => {
+    const vistas = await dosPeticiones();
+    const req = vistas.find((r) => r.messages.some((m) => m.content.includes("JSON limits")))!;
+    const idx = (aguja: string) => req.messages.findIndex((m) => m.content.includes(aguja));
+
+    const limites = idx("JSON limits");
+    const payload = idx("concepto");
+    const evidencia = idx("Retrieved context");
+    const pregunta = req.messages.map((m) => m.role).lastIndexOf("user");
+
+    // El orden medido de #64 sigue en pie…
+    expect(limites).toBeLessThan(payload);
+    expect(payload).toBeLessThan(evidencia);
+    expect(evidencia).toBeLessThan(pregunta);
+    // …y entero por detrás de la frontera del prefijo, que es lo que esta rama
+    // necesita que se cumpla.
+    expect(req.stablePrefixMessages!).toBeLessThanOrEqual(limites);
+  });
+
+  it("dos consultas distintas comparten los MISMOS bytes de prefijo", async () => {
+    const [a, b] = await dosPeticiones();
+    const bytes = (r: ProviderRequest) =>
+      JSON.stringify(r.messages.slice(0, r.stablePrefixMessages));
+    // Evidencia distinta, payload distinto y pregunta distinta en las dos, y aun
+    // así el prefijo es idéntico: es exactamente de lo que depende que el
+    // proveedor pueda servirlo a 0,10x. Si un bloque de la capa se colara en el
+    // prefijo, este igualdad se rompería y el acierto se iría a cero.
+    expect(bytes(a!)).toBe(bytes(b!));
+    expect(a!.promptCacheKey).toBe(b!.promptCacheKey);
   });
 });
