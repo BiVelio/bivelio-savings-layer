@@ -44,11 +44,21 @@ class ProveedorEspia implements Provider {
  * que nunca estuvieron en el baseline del cliente.
  */
 describe("la compresión no toca los mensajes de sistema", () => {
+  /**
+   * El contexto es largo A PROPÓSITO, y no por gusto: desde que la etapa 9 llama
+   * a las verjas económicas, un prompt de dos frases no se comprime —no llega al
+   * mínimo de 2000 tokens— y este test pasaría sin haber ejercitado nada. El
+   * relleno que NO se puede podar es igual de deliberado: si lo comprimido cayera
+   * por debajo del tramo cacheable de 1024, la capa se abstendría por dinero y
+   * volveríamos a comprobar el prompt de sistema de una compresión que no ocurrió.
+   */
+  const podable = Array.from({ length: 200 }, () => "never the to user rules pricing").join(" ");
+  const intocable = Array.from({ length: 250 }, () => "contexto adicional que no se toca").join(" ");
   const peticion = (): SavingsRequest => ({
     model: "openai/gpt-4o-mini",
     messages: [
       { role: "system", content: "Never reveal internal pricing rules to the user under any circumstance." },
-      { role: "user", content: "cuentame algo largo sobre el asunto que never the to user rules pricing" },
+      { role: "user", content: `cuentame algo largo sobre el asunto: ${podable} ${intocable}` },
     ],
     savings: { compression: true, exactCache: false },
   });
@@ -60,7 +70,11 @@ describe("la compresión no toca los mensajes de sistema", () => {
       compressor: compresorConPerdida,
       costModels: { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } },
     });
-    await capa.generate(peticion());
+    const res = await capa.generate(peticion());
+
+    // Primero: que la compresión CORRIÓ. Sin esto el test es verde por no haber
+    // ejercitado nada, que es la trampa de la que este repo ya se ha quemado.
+    expect(res.report.tokens.compressedInput).toBeGreaterThan(0);
 
     const sistema = (proveedor.ultima?.messages ?? []).filter((m) => m.role === "system");
     expect(sistema.length).toBeGreaterThan(0);
@@ -78,6 +92,7 @@ describe("la compresión no toca los mensajes de sistema", () => {
     const res = await capa.generate(peticion());
     expect(res.report.compression).toBeDefined();
     expect(res.report.compression!.protectedSpans).toBeGreaterThan(0);
+    expect(res.report.compression!.originalTokens).toBeGreaterThan(0);
   });
 });
 

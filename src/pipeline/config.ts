@@ -10,6 +10,7 @@ import type { FormatSelector } from "../serialization/format-selector.js";
 import type { SchemaRegistry } from "../constraints/schema-registry.js";
 import type { ConstraintBackend } from "../constraints/backends.js";
 import type { Compressor } from "../compression/compression.js";
+import type { CompressionEconomics } from "../economics/politica-compresion.js";
 import type { Retriever, Reranker } from "../retrieval/retrieval.js";
 import type { Provider } from "../providers/types.js";
 import type { LicenseGate } from "../contracts/types.js";
@@ -48,6 +49,17 @@ export interface SavingsLayerConfig {
   schemaRegistry?: SchemaRegistry;
   constraintBackends?: ConstraintBackend[];
   compressor?: Compressor;
+  /**
+   * The numbers behind "compress only when it pays for itself" — in money, not
+   * in tokens.
+   *
+   * All optional, and the default never invents a saving: the layer compresses
+   * when the net token saving justifies it, and holds back when compressing
+   * would push the prompt below the provider's cacheable minimum — where fewer
+   * tokens can mean a larger bill. Declare {@link CompressionEconomics.prefix}
+   * with your own measurements to unlock the full decision in both directions.
+   */
+  compressionEconomics?: CompressionEconomics;
   retriever?: Retriever;
   reranker?: Reranker;
 

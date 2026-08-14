@@ -1,34 +1,54 @@
-/**
- * Verja económica cache-aware: ¿comprimir sale a cuenta, de verdad?
- *
- * EL FALLO QUE ESTO CIERRA, medido contra el proveedor real en el escenario de
- * la tabla de 50 filas:
- *
- *     naive   1212 tokens de entrada  ->  SÍ entra en la caché de prefijo
- *     nuestro  780 tokens de entrada  ->  NO, cae por debajo del mínimo de 1024
- *
- *     quitamos    35,6% de los tokens
- *     capturamos  18,5% del dinero
- *
- * La mitad del ahorro se evapora porque la compresión nos saca del tramo
- * cacheable. Y el punto de equilibrio está en ~71% de aciertos de prefijo: por
- * encima de eso, comprimir PIERDE dinero. Un cliente de alto volumen con un
- * prefijo estable —justo el que más paga— es al que peor le iría.
- *
- * Contar tokens eliminados no es contar dinero. Esta es la diferencia entre un
- * "compresor de prompts" y un plano de control económico.
- */
+// Verja económica cache-aware: ¿comprimir sale a cuenta, de verdad?
+//
+// Los comentarios de este fichero van en `//` a propósito, no en JSDoc: `CacheTier`
+// viaja al `.d.ts` publicado (lo referencia la configuración de la capa), y ahí un
+// bloque JSDoc se publica entero en npm. Lo que sigue es contexto interno.
+//
+// EL FALLO QUE ESTO CIERRA, medido contra el proveedor real en el escenario de
+// la tabla de 50 filas:
+//
+//     naive   1212 tokens de entrada  ->  SÍ entra en la caché de prefijo
+//     nuestro  780 tokens de entrada  ->  NO, cae por debajo del mínimo de 1024
+//
+//     quitamos    35,6% de los tokens
+//     capturamos  18,5% del dinero
+//
+// La mitad del ahorro se evapora porque la compresión nos saca del tramo
+// cacheable. Y el punto de equilibrio está en ~71% de aciertos de prefijo: por
+// encima de eso, comprimir PIERDE dinero. Un cliente de alto volumen con un
+// prefijo estable —justo el que más paga— es al que peor le iría.
+//
+// Contar tokens eliminados no es contar dinero. Esta es la diferencia entre un
+// "compresor de prompts" y un plano de control económico.
 
-/** Lo que hay que saber del proveedor para decidir. Sale del registro de precios. */
+/** What the layer needs to know about a provider's prefix cache to price a decision. */
 export interface CacheTier {
   /**
-   * Tokens mínimos de prompt para que el proveedor cachee el prefijo.
-   * OpenAI: 1024. Anthropic: 1024-2048 según modelo. `null` = no cachea.
+   * Minimum prompt tokens before the provider caches the prefix at all;
+   * `null` means it never does.
+   *
+   * The built-in tiers assume 1024 for every model. That is an ASSUMPTION, not a
+   * verified figure: real minimums differ per model and family. Set your model's
+   * own minimum here when you know it.
    */
   minimumCacheTokens: number | null;
-  /** Precio de un token leído de caché, como fracción del normal. OpenAI 0,5; Anthropic 0,1. */
+  // El único número que se deja como está pese a saber que es una simplificación,
+  // y la razón es que los dos errores no cuestan lo mismo:
+  //
+  //  - Si el mínimo REAL es mayor que el supuesto (2048 y suponemos 1024), la
+  //    capa cree cacheable un prompt de 1500 que el proveedor no cachea: protege
+  //    una caché que no existe y RENUNCIA a una compresión que salía a cuenta. Se
+  //    pierde ahorro; no se inventa ninguno.
+  //  - Si el mínimo real es MENOR, la capa comprime creyendo que el prompt ya
+  //    estaba fuera del tramo cuando seguía dentro, y ahí sí rompe una caché real.
+  //    Es el error caro, y es el que el valor alto evita.
+  //
+  // Inventarle un desglose por modelo que no se puede comprobar desde este repo
+  // sería peor que la simplificación: un número inventado no avisa de que lo es.
+
+  /** Price of a cache-read token as a fraction of a normal one (e.g. 0.5, 0.1). */
   cacheReadMultiplier: number;
-  /** Sobrecoste de ESCRIBIR la caché la primera vez. Anthropic cobra 1,25x-2x; OpenAI no. */
+  /** Surcharge for WRITING the cache the first time; some providers bill above 1. */
   cacheWriteMultiplier: number;
 }
 
@@ -47,6 +67,24 @@ export const ANTHROPIC_CACHE_TIER: CacheTier = {
 /** Ni cachea ni descuenta: la decisión se reduce a "menos tokens es mejor". */
 export const NO_CACHE_TIER: CacheTier = {
   minimumCacheTokens: null,
+  cacheReadMultiplier: 1,
+  cacheWriteMultiplier: 1,
+};
+
+// El tramo que se usa cuando no se reconoce el proveedor del modelo. Las dos
+// mitades tiran de lados distintos a propósito:
+//
+//  - multiplicadores a 1: de un proveedor desconocido NO se reclama ningún
+//    descuento de caché, porque un descuento inventado es ahorro inventado.
+//  - mínimo a 1024: se asume que PODRÍA cachear, así que la compresión no puede
+//    sacar el prompt del tramo. Renunciar a una compresión cuesta un ahorro que
+//    no se captura; romper una caché que sí existía cuesta dinero del cliente, y
+//    esas dos no empatan.
+//
+// O sea: por defecto no se promete nada y no se rompe nada. Quien sepa lo que
+// hace su proveedor lo declara en `compressionEconomics`.
+export const UNKNOWN_PROVIDER_CACHE_TIER: CacheTier = {
+  minimumCacheTokens: 1024,
   cacheReadMultiplier: 1,
   cacheWriteMultiplier: 1,
 };
@@ -80,6 +118,16 @@ export interface Decision {
   costeSinComprimir: number;
   /** Ganancia neta en tokens equivalentes. Negativa = comprimir sale caro. */
   ganancia: number;
+  /**
+   * En INGLÉS, y no por gusto: este texto no se queda en el repo. El pipeline lo
+   * copia tal cual a `detail.reason` de la traza de compresión, y `report.traces`
+   * es contrato publicado — lo lee el cliente en su panel, en cada petición con
+   * la palanca encendida. El resto de motivos de la capa («no output contract»,
+   * «net saving N tokens») están en inglés; una frase en español aquí es la misma
+   * fuga que el trinquete de `superficie-publica-limpia` persigue en el `.d.ts`,
+   * solo que por la puerta grande, porque viaja en el payload y no en un tooltip.
+   * El identificador se queda en español: ese no sale del repo.
+   */
   razon: string;
 }
 
@@ -140,13 +188,24 @@ export function decidirCompresion(e: EntradaDecision): Decision {
 
   let razon: string;
   if (ganancia <= 0) {
+    // La tercera razón existe porque las dos primeras mentían en el caso que más
+    // importa: un prefijo caliente que se lee a 0,1x hace que el prompt SIN
+    // comprimir salga más barato aunque el comprimido siga dentro del tramo. Ahí
+    // no se sale de ningún tramo y el compresor puede ser gratis, así que decirle
+    // al cliente "el ahorro no cubre el coste del compresor" le manda a mirar el
+    // sitio equivocado.
+    const pierdeElDescuento = costeSinComprimir < e.originalTokens;
     razon = saleDelTramo
-      ? `comprimir saca el prompt del tramo cacheable (${e.compressedTokens} < ${min}) y cuesta más de lo que ahorra`
-      : `el ahorro no cubre el coste del compresor`;
+      ? `compressing drops the prompt out of the cacheable tier (${e.compressedTokens} < ${min}) and costs more than it saves`
+      : pierdeElDescuento
+        ? `not compressing is cheaper: the provider's prefix cache already discounts ` +
+          `this prompt (${costeSinComprimir.toFixed(0)} vs ${costeComprimido.toFixed(0)} ` +
+          `equivalent tokens, at a ${(e.prefixHitRate * 100).toFixed(0)}% hit rate)`
+        : `the saving does not cover the compressor's cost`;
   } else if (saleDelTramo) {
-    razon = `compensa pese a perder la caché de prefijo (aciertos ${(e.prefixHitRate * 100).toFixed(0)}%)`;
+    razon = `pays off even after losing the prefix cache (${(e.prefixHitRate * 100).toFixed(0)}% hit rate)`;
   } else {
-    razon = `compensa y no toca el tramo de caché`;
+    razon = `pays off and does not touch the cache tier`;
   }
 
   return { comprimir: ganancia > 0, costeComprimido, costeSinComprimir, ganancia, razon };

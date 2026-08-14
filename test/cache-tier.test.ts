@@ -69,7 +69,7 @@ describe("la verja: comprimir solo si de verdad ahorra dinero", () => {
     // paga— es justo al que peor le iría. Antes se le comprimía igual.
     const d = decidirCompresion({ ...TABLA, prefixHitRate: 1, tier: ANTHROPIC_CACHE_TIER });
     expect(d.comprimir).toBe(false);
-    expect(d.razon).toMatch(/saca el prompt del tramo cacheable/);
+    expect(d.razon).toMatch(/drops the prompt out of the cacheable tier/);
     expect(d.costeSinComprimir).toBeCloseTo(751.2, 3);
   });
 

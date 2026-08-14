@@ -44,6 +44,20 @@ export * from "./memory/index.js";
 export * from "./serialization/index.js";
 export * from "./constraints/index.js";
 export * from "./compression/index.js";
+// De la verja económica de la compresión se exportan los DOS TIPOS y nada más.
+//
+// Los tipos, porque la decisión depende de datos que solo tiene el cliente —el
+// mínimo de tramo de SU modelo, la tasa de aciertos de prefijo de SU tráfico— y
+// sin poder nombrarlos no puede escribir el objeto que `compressionEconomics`
+// acepta ni guardarlo en una constante compartida. No cuestan superficie: la
+// configuración ya los arrastra al `.d.ts` publicado.
+//
+// Y nada más, porque las funciones que deciden se llaman `decidirCompresion`,
+// `costeEsperado` o `tramoDeCache`: exportarlas pondría identificadores en
+// español en la cara del producto (la verja de `superficie-publica-limpia`), y
+// su único llamante legítimo es el pipeline. Un cliente que las invocara a mano
+// estaría reimplementando la capa que compró.
+export type { CacheTier, CompressionEconomics } from "./economics/index.js";
 export * from "./providers/index.js";
 export * from "./telemetry/index.js";
 export * from "./license/index.js";
