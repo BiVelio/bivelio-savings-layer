@@ -184,6 +184,49 @@ export type CacheOutcome =
   | "singleflight"
   | "deterministic";
 
+/**
+ * The quality claims this layer is able to DEMONSTRATE for the answer it served.
+ *
+ * A boolean cannot carry this. `constraints.structurallyValid` puts an answer
+ * computed by a deterministic resolver — exact by construction — in the same box
+ * as one the model wrote while nobody checked anything but its shape. Those two
+ * are the difference between "this is the result" and "this is what the model
+ * said", and a product that claims savings owes the reader that distinction.
+ *
+ * THE RULE BEHIND THIS VOCABULARY: never report "no loss" on the strength of
+ * cosine similarity, BLEU, ROUGE or another model's judgement. Those scores stay
+ * high while a figure, a negation or an exception quietly disappears — precisely
+ * the fields that decide a legal or financial document. A claim of equivalence
+ * rests on a deterministic gate, or it is not made.
+ *
+ * - `exact`            exact by construction: a deterministic resolver computed
+ *                      the answer, or an exact-cache hit replayed the answer
+ *                      already produced for this very same request.
+ * - `task_equivalent`  not byte-identical, but it cleared a deterministic gate
+ *                      before being served — numbers and dates as a multiset,
+ *                      negation parity and a key-entity floor all had to agree,
+ *                      on top of any similarity score.
+ * - `not_verified`     the model was called and nothing beyond the shape of the
+ *                      answer was checked. The honest default, and the common case.
+ * - `rejected`         what was served does not satisfy its output contract, and
+ *                      a repair either failed or would have been a wasted call.
+ *                      The answer is still returned: this is the layer's verdict
+ *                      on it, not a refusal to hand it over.
+ *
+ * The list is deliberately short. A status nobody produces is a promise the
+ * reader cannot check, so levers that do not exist yet bring their own status
+ * the day they can demonstrate it. Read this as an OPEN set — keep a default
+ * branch, exactly as with a licence status.
+ */
+export const QUALITY_STATUSES = [
+  "exact",
+  "task_equivalent",
+  "not_verified",
+  "rejected",
+] as const;
+
+export type QualityStatus = (typeof QUALITY_STATUSES)[number];
+
 export interface SavingsReport {
   requestId: string;
   model: string;
@@ -254,8 +297,28 @@ export interface SavingsReport {
     structurallyValid?: boolean;
   };
 
+  /**
+   * How the served answer earned its place, in one word. Optional and additive:
+   * a report built by an older SDK simply does not carry it, so treat an absent
+   * value as "unknown", never as a pass.
+   *
+   * It only ever DEGRADES what the rest of the report claims. An answer that
+   * fails its output contract is `rejected` however it was produced — a resolver
+   * that computes the right number for the wrong contract does not get to keep
+   * the `exact` label.
+   */
+  qualityStatus?: QualityStatus;
+
   quality: {
     taskPassed?: boolean;
+    /**
+     * Similarity score of the retained answer, when one was computed.
+     *
+     * A number here is NOT evidence of equivalence: see {@link QualityStatus}.
+     * Cosine (and BLEU, ROUGE, or an LLM judge) can sit above 0.95 across a
+     * changed figure or a dropped negation, so it informs a decision — it never
+     * licenses a "no loss" claim.
+     */
     semanticScore?: number;
     freshnessPassed?: boolean;
   };

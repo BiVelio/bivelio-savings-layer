@@ -256,6 +256,16 @@ export class UsageEmitter {
       actualOutputTokens: r.tokens.actualOutput,
       providerCachedInputTokens: r.tokens.providerCachedInput ?? 0,
       cacheResult: r.cache.result,
+      // `report.qualityStatus` NO viaja todavía, y es a propósito. El ingest
+      // valida con LISTA BLANCA y rechaza el registro entero ante un campo
+      // desconocido —ese rechazo es el cortafuegos que impide que se cuele
+      // contenido del cliente—, así que un SDK que lo mandara antes de que el
+      // servidor lo conozca recibiría un 4xx, el lote se descarta (un 4xx no se
+      // reintenta: reintentar un payload rechazado es un bucle) y ese cliente
+      // deja de reportar uso hasta que actualice otra vez. npm es inmutable, o
+      // sea que no habría vuelta atrás. El orden obligatorio es SERVIDOR
+      // PRIMERO, SDK DESPUÉS; hasta entonces la etiqueta vive en el informe por
+      // petición, que es donde el cliente ya puede leerla.
       baselineCost: r.cost.baselineEstimate,
       actualCost: r.cost.actual,
       netSavings: r.cost.netSavings,
