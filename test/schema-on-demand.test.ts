@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
+import { AnthropicProvider } from "../src/providers/anthropic.js";
 import {
   decidirDescubrimiento,
   descriptorLigero,
@@ -772,5 +773,171 @@ describe("descubrimiento + libro 2 (#65): lo escondido por el sondeo NO se acred
     expect(invocacion.tools!.find((t) => t.id === "reenviar_envio")!.parameters).toEqual(
       esquemaEnorme("envio"),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// #71 CACHÉ DE PREFIJO DEL PROVEEDOR: la palanca APAGA el marcado, y a propósito.
+//
+// LA DECISIÓN, escrita para que no dependa del orden accidental del código: con
+// `toolDiscovery` puesto NO se marca prefijo en NINGUNA de las dos llamadas. Ni
+// el sondeo ni la invocación llevan `stablePrefixMessages` ni `promptCacheKey`.
+//
+// La tentación de marcar el sondeo es real y es falsa. Las instrucciones de
+// sistema del cliente son idénticas en las dos llamadas, así que parece que
+// escribir la caché en el sondeo le regalaría a la invocación una lectura a
+// 0,10x. No, y la razón es el ORDEN DE RENDERIZADO —tools -> system ->
+// messages—: el emparejamiento es por bytes DESDE EL PRINCIPIO y lo primero que
+// hay es `tools`, que en el sondeo son descriptores ligeros y en la invocación
+// esquemas completos de un subconjunto. El `system` compartido va DETRÁS de un
+// bloque que difiere, así que el prefijo común de las dos peticiones mide CERO.
+// No es que el punto de ruptura caiga mal: `cache_control` marca el FINAL de un
+// tramo, así que no existe punto que pueda ir por delante de `tools`.
+//
+// Y tampoco se marca la invocación, aunque el selector no haya podado nada: qué
+// esquemas viajan lo decide una respuesta NO DETERMINISTA, así que dos
+// peticiones que la huella agruparía como el mismo prefijo pueden mandar
+// catálogos distintos. Meter las herramientas ENVIADAS en la huella no arregla
+// nada: parte el tráfico en un prefijo por subconjunto y cada uno paga sus 8
+// peticiones de exploración a 1,25x para medir h = 0.
+//
+// Lo que se pierde es ahorro NO capturado; lo que se evita es factura de más. No
+// cuestan lo mismo, y por eso la renuncia va de este lado.
+// ---------------------------------------------------------------------------
+
+const PRECIO_SONNET = {
+  "anthropic/claude-sonnet-4-5": {
+    inputPer1k: 0.003,
+    outputPer1k: 0.015,
+    cachedInputPer1k: 0.0003,
+  },
+};
+
+/** Cabecera larga de verdad: por debajo del mínimo de tramo no habría prefijo. */
+const POLITICA = "Eres el asistente de una tienda de electrónica. ".repeat(200);
+
+/** 8 lecturas con esquema ENORME: la verja del descubrimiento aprueba con holgura. */
+const CATALOGO_CARO: ToolDescriptor[] = Array.from({ length: 8 }, (_, i) => ({
+  id: `tool_${i}`,
+  intents: [`customer tool_${i} lookup`],
+  risk: "read" as const,
+  description: `Look up tool_${i} for a customer`,
+  parameters: esquemaEnorme(`tool_${i}`),
+}));
+
+const peticionConCabecera = (toolDiscovery: boolean) => ({
+  model: "anthropic/claude-sonnet-4-5",
+  messages: [
+    { role: "system" as const, content: POLITICA },
+    { role: "user" as const, content: "look up the customer record for order 42" },
+  ],
+  tools: CATALOGO_CARO,
+  savings: { router: false, toolDiscovery },
+});
+
+describe("descubrimiento + caché de prefijo (#71): con la palanca puesta no se marca NADA", () => {
+  it("ni el sondeo ni la invocación llevan `stablePrefixMessages` ni `promptCacheKey`", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      respuestaFinal("listo"),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIO_SONNET });
+    const res = await capa.generate(peticionConCabecera(true));
+
+    // El test no puede pasar por vacío: el patrón TIENE que haberse aplicado.
+    expect(proveedor.llamadas).toHaveLength(2);
+    expect(
+      res.report.traces.find((t) => t.stage === "tool-discovery")?.outcome,
+    ).toContain("applied");
+
+    for (const llamada of proveedor.llamadas) {
+      expect(llamada.stablePrefixMessages).toBeUndefined();
+      expect(llamada.promptCacheKey).toBeUndefined();
+    }
+  });
+
+  it("y la traza dice POR QUÉ: una palanca que se apaga en silencio se descubre probando", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      respuestaFinal("listo"),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIO_SONNET });
+    const res = await capa.generate(peticionConCabecera(true));
+
+    const traza = res.report.traces.find((t) => t.stage === "prefix-cache");
+    expect(traza?.outcome).toBe("skipped");
+    expect(String(traza?.detail?.["reason"])).toContain("toolDiscovery");
+  });
+
+  /**
+   * EL CONTROL, y sin él los dos de arriba pasarían por accidente: bastaría con
+   * que el modelo no tuviera tramo, o con que la cabecera no llegara a prefijo,
+   * para que nadie marcara nada y nadie se enterase.
+   */
+  it("CONTROL: la MISMA petición sin la palanca SÍ reclama prefijo", async () => {
+    const proveedor = new ProveedorGuionizado([respuestaFinal("listo")]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIO_SONNET });
+    await capa.generate(peticionConCabecera(false));
+
+    expect(proveedor.llamadas).toHaveLength(1);
+    // La cabecera es el mensaje 0; la pregunta, el 1 — y la pregunta nunca entra.
+    expect(proveedor.llamadas[0]!.stablePrefixMessages).toBe(1);
+    expect(proveedor.llamadas[0]!.promptCacheKey).toEqual(expect.any(String));
+  });
+
+  /**
+   * LA RAZÓN FÍSICA, medida sobre el cuerpo que sale por el cable y no sobre
+   * nuestra intención: aunque alguien marcara el sondeo, la invocación no podría
+   * leer nada, porque las dos peticiones no comparten ni un byte de prefijo.
+   */
+  it("el `system` compartido no es prefijo común: `tools` va delante y difiere", async () => {
+    const cuerpos: Record<string, unknown>[] = [];
+    const guion = [
+      {
+        content: [{ type: "tool_use", id: "c0", name: "tool_3", input: {} }],
+        stop_reason: "tool_use",
+        usage: { input_tokens: 500, output_tokens: 10 },
+      },
+      {
+        content: [{ type: "text", text: "listo" }],
+        stop_reason: "end_turn",
+        usage: { input_tokens: 800, output_tokens: 100 },
+      },
+    ];
+    const fetchImpl = (async (_url: unknown, init: { body: string }) => {
+      cuerpos.push(JSON.parse(init.body));
+      return {
+        ok: true,
+        status: 200,
+        json: async () => guion[Math.min(cuerpos.length - 1, guion.length - 1)],
+      } as unknown as Response;
+    }) as unknown as typeof fetch;
+
+    const capa = createSavingsLayer({
+      provider: new AnthropicProvider({ fetchImpl }),
+      costModels: PRECIO_SONNET,
+    });
+    await capa.generate(peticionConCabecera(true));
+
+    expect(cuerpos).toHaveLength(2);
+    const [sondeo, invocacion] = cuerpos as [Record<string, unknown>, Record<string, unknown>];
+
+    // 1. El texto compartido existe y es EL MISMO. Aquí es donde nace la idea de
+    //    que marcar el sondeo aprovecharía a la invocación.
+    expect(sondeo["system"]).toEqual(invocacion["system"]);
+    expect(JSON.stringify(sondeo["system"])).toContain("tienda de electrónica");
+
+    // 2. Pero `tools` se renderiza DELANTE, y no es el mismo bloque: el sondeo
+    //    manda 8 descriptores sin esquema, la invocación uno con el esquema
+    //    entero. El prefijo común de las dos peticiones mide cero.
+    expect(JSON.stringify(sondeo["tools"])).not.toEqual(JSON.stringify(invocacion["tools"]));
+    expect((sondeo["tools"] as unknown[]).length).toBe(8);
+    expect((invocacion["tools"] as unknown[]).length).toBe(1);
+
+    // 3. Y como no se marca, no se paga ninguna prima de escritura por ese
+    //    prefijo inexistente: ni un `cache_control` en todo el cable.
+    for (const cuerpo of cuerpos) {
+      expect(JSON.stringify(cuerpo)).not.toContain("cache_control");
+    }
   });
 });

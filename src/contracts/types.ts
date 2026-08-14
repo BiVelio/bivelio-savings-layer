@@ -147,6 +147,16 @@ export interface SavingsToggles {
    * often than that — a chat assistant with a big catalogue answers most turns
    * directly — leave this off. Only an A/B against your own traffic settles it.
    *
+   * IT ALSO GIVES UP THE PROVIDER'S PREFIX CACHE, on every request, not just the
+   * ones where it applies. Tools render FIRST in a provider request, and with
+   * this on, which schemas travel is decided by a probe whose answer is not
+   * deterministic — so the front of the prompt varies between requests that
+   * would otherwise share a cacheable prefix. Marking one would pay the write
+   * premium (1.25x on Anthropic) for a prefix that cannot hit. If your prompts
+   * carry a long fixed system header and your traffic repeats it, that discount
+   * is very likely worth more than this lever: measure both before choosing.
+   * `report.traces` says which one is off and why.
+   *
    * When the second call happened, `report.calls.actualLlm` is 2. The extra
    * call's tokens are counted as spend and never credited to your baseline.
    * Write and destructive tools always travel with their full schema, so no
