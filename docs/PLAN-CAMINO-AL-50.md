@@ -255,6 +255,20 @@ y catalán.
 > **Aceptación:** el artefacto publica la forma de factura por escenario y al
 > menos uno con `providerCachedInputTokens > 0` en el brazo naive.
 
+**Hallazgo al ejecutar F0:** `benchmarks/` no estaba en el `include` del
+`tsconfig`. El código que produce nuestras cifras publicadas no pasaba por
+ninguna verja de tipos, y al añadirlo salieron cuatro errores reales. El que
+importa: tres predicados de la verja de calidad devolvían `boolean | undefined`
+porque `constraints.structurallyValid` es opcional, así que una respuesta **no
+verificada** podía contar como aprobada. Para una verja de calidad, *ausente*
+significa *no verificado*, y no verificado no pasa — la duda tiene que restar
+afirmación, no sumarla.
+
+Segundo hallazgo, menor pero operativo: **el bundle vendor commiteado en `main`
+está desactualizado.** Reconstruirlo sobre un `main` limpio lo modifica, así que
+cualquier PR que toque `src/` arrastra esa deriva previa además de su propio
+cambio. Conviene regenerarlo y commitearlo suelto antes de seguir.
+
 ### F1 · Reparar la contabilidad
 
 Conectar `ledger.eliminate()` o retirar el libro del README y del panel; enchufar
