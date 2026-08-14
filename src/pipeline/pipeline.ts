@@ -9,6 +9,7 @@ import type {
   ChatMessage,
   CacheOutcome,
   QualityStatus,
+  ToolDescriptor,
 } from "../contracts/types.js";
 import { canonicalize, sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
@@ -26,6 +27,14 @@ import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
 import type { Provider, ProviderResponse } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
+import {
+  decidirDescubrimiento,
+  descriptorLigero,
+  herramientasDeLaSegunda,
+  peorCasoDeEsquemas,
+  MAX_LECTURAS_DE_LA_SEGUNDA,
+  SALIDA_DEL_SONDEO_TOKENS,
+} from "../router/schema-on-demand.js";
 import type { FormatChoice } from "../serialization/format-selector.js";
 import { LicenseError } from "../license/errors.js";
 import type { LicenseStatus } from "../license/verify.js";
@@ -247,7 +256,7 @@ export class SavingsPipeline {
   /**
    * ¿Se marca el prefijo de esta petición para la caché del proveedor?
    *
-   * Tres razones para NO marcar, y ninguna es opcional:
+   * Cuatro razones para NO marcar, y ninguna es opcional:
    *
    *  1. NO SE RECONOCE EL PROVEEDOR. Sin tramo no se puede poner precio a la
    *     escritura, y marcar a ciegas es apostar.
@@ -260,13 +269,33 @@ export class SavingsPipeline {
    *     ahorro medido y ya publicado), y la caché se reclama sólo cuando no hay
    *     poda. El selector ya estabiliza el ORDEN, que es la mitad del problema
    *     que sí sale gratis.
-   *  3. LA VERJA ECONÓMICA. Con la escritura a 1,25x y la lectura a 0,10x,
+   *  3. SCHEMA-ON-DEMAND ESTÁ PUESTO. Es la razón 2 otra vez, pero peor, y por eso
+   *     tiene entrada propia: con `toolDiscovery` el conjunto que viaja no lo
+   *     elige el selector sino la RESPUESTA DEL SONDEO, que no es determinista.
+   *     Dos peticiones idénticas pueden mandar catálogos distintos, así que el
+   *     bloque `tools` —lo primero del prompt— cambia entre peticiones que la
+   *     huella agruparía como el mismo prefijo. Y no se arregla metiendo las
+   *     herramientas ENVIADAS en la huella: eso parte el tráfico en un prefijo
+   *     por subconjunto, y cada uno paga sus 8 peticiones de exploración a 1,25x
+   *     para medir h = 0. O sea, la exploración se multiplica por el número de
+   *     subconjuntos y ninguno vuelve a repetirse.
+   *
+   *     Se renuncia a marcar en TODA petición con la palanca puesta, no sólo en
+   *     las que el sondeo llegó a recortar. Es a propósito y es conservador: la
+   *     caché de prefijo es una propiedad del TRÁFICO, no de una petición, y una
+   *     huella que mezcla peticiones con catálogo entero y con catálogo recortado
+   *     no mide ningún prefijo. Además, saber si el sondeo se aplicó exige
+   *     haberlo lanzado ya, y para entonces esta decisión llegaría tarde o se
+   *     tomaría dentro del cronómetro del proveedor. El error que se comete así
+   *     es ahorro no capturado; el otro es factura de más. No cuestan lo mismo.
+   *  4. LA VERJA ECONÓMICA. Con la escritura a 1,25x y la lectura a 0,10x,
    *     marcar sólo compensa por encima de ~21,7% de aciertos.
    */
   private decidirMarcadoDeCache(
     request: SavingsRequest,
     messages: ChatMessage[],
     toolSelection: { tools: SavingsRequest["tools"] & object; setIsStable: boolean },
+    descubrimientoActivo: boolean,
     mensajesDePrefijo: number,
     trace: TraceCollector,
   ): { marcar: boolean; huella: string; mensajesDePrefijo: number } {
@@ -286,6 +315,16 @@ export class SavingsPipeline {
         reason:
           "the tool SET is selected per request; tools render first, so the prefix cannot hit. " +
           "Pruning wins here (it is a measured saving); pass the tools you want fixed.",
+      });
+      return nada;
+    }
+    if (descubrimientoActivo) {
+      trace.record("prefix-cache", "skipped", {
+        reason:
+          "savings.toolDiscovery is on: which schemas travel is decided by a non-deterministic " +
+          "probe, so the tool block — which renders first — varies across requests that would " +
+          "share a prefix fingerprint. Marking would pay the 1.25x write premium for a prefix " +
+          "that cannot hit. Turn tool discovery off to reclaim the prefix cache.",
       });
       return nada;
     }
@@ -1072,19 +1111,43 @@ export class SavingsPipeline {
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
     // --- La verja que impide que marcar la caché de prefijo pierda dinero. ---
+    //
+    // SIGUE AQUÍ, POR DELANTE DEL SONDEO, y no es inercia: contar los tokens del
+    // prefijo es trabajo de la capa, y con `providerStart` ya arrancado se
+    // publicaría como latencia del proveedor. Que la decisión no necesite
+    // esperar al sondeo es justamente lo que permite dejarla donde estaba: la
+    // palanca `toolDiscovery` basta para decidir, sin su resultado.
     const marcado = this.decidirMarcadoDeCache(
       request,
       messages,
       toolSelection,
+      toggles.toolDiscovery === true,
       comprimioElPrefijo ? limiteDelPrefijoEstable(messages, true) : finDelPrefijo,
       trace,
     );
 
+    // El cronómetro del proveedor arranca ANTES del sondeo: si el patrón parte la
+    // petición en dos llamadas, las dos son tiempo de proveedor y las dos las
+    // espera el cliente. Dejarlas fuera vendería como "preprocesamiento" la mitad
+    // de una latencia que se duplicó.
     const providerStart = this.now();
+
+    // --- Stage 9b: schema-on-demand (opt-in, y cambia el contrato de latencia). ---
+    const descubrimiento = await this.descubrirHerramientas(
+      testigo, request, toggles, toolSelection.tools, messages, ledger, costModel, trace,
+    );
+    const herramientasAEnviar = descubrimiento.tools;
+    ledger.actualTools = herramientasAEnviar.length;
+
     let response = await this.llamarProveedor({
       model: request.model,
       messages,
-      ...(toolSelection.tools.length ? { tools: toolSelection.tools } : {}),
+      // Lo que viaja es lo que SALIÓ del descubrimiento, no las candidatas. Los
+      // dos coinciden siempre que `marcado.marcar` es cierto —la verja no marca
+      // con `toolDiscovery` puesto—, así que el bloque `tools` que se cachea es
+      // el mismo que la huella describe. Si un día se marcara con la palanca
+      // puesta, aquí es donde la contradicción se volvería factura.
+      ...(herramientasAEnviar.length ? { tools: herramientasAEnviar } : {}),
       // El esquema que viaja es el que eligió la etapa 10a (compacto si el
       // codebook se aplicó, el del llamante si no). La caché de prefijo no opina
       // sobre CUÁL es: el esquema no está en `messages`, así que no entra en el
@@ -1103,9 +1166,13 @@ export class SavingsPipeline {
       ...(request.seed != null ? { seed: request.seed } : {}),
       constraintBackend: backendPlan.backend,
     }, testigo);
-    ledger.actualLlm = 1;
-    ledger.actualInput = response.usage.inputTokens;
-    ledger.actualOutput = response.usage.outputTokens;
+    // Acumulativo, no asignado: con schema-on-demand esta ya es la SEGUNDA llamada
+    // de la petición y el sondeo anterior también costó dinero. Asignar borraba su
+    // rastro del informe, que es como el fail-open llegó a publicar `actualLlm: 1`
+    // sobre tres llamadas facturadas.
+    ledger.actualLlm += 1;
+    ledger.actualInput += response.usage.inputTokens;
+    ledger.actualOutput += response.usage.outputTokens;
 
     // --- Etapa 10b: deshacer el codebook ---
     //
@@ -1184,10 +1251,17 @@ export class SavingsPipeline {
     // instrucciones de formato) no se reclama nada, que es lo honesto — no un
     // ahorro negativo inventado.
     ledger.sentInputLocal = this.tokensFor(
-      this.assemblePromptText(messages, toolSelection.tools),
+      this.assemblePromptText(messages, herramientasAEnviar),
       request,
     );
     ledger.removedInputLocal = Math.max(0, baselineInput - ledger.sentInputLocal);
+    // El prompt del sondeo entra en la lectura local DESPUÉS de calcular lo
+    // quitado, exactamente como el de la reparación: `removedInputLocal` compara
+    // el baseline contra la llamada del CLIENTE, y meter ahí una llamada que puso
+    // la capa se comería el ahorro que sí es suyo. Pero sí tiene que sumar a
+    // `sentInputLocal`, porque `actualInput` ya cuenta las dos llamadas y si la
+    // lectura local cubriera solo una, k saldría ~2x y acreditaría el doble.
+    ledger.sentInputLocal += descubrimiento.tokensLocalesDelSondeo;
     ledger.estimatorExact = this.estimatorEsExacto(request);
 
     if (response.usage.cachedInputTokens) {
@@ -1340,7 +1414,7 @@ export class SavingsPipeline {
             ? { maxOutputTokens: request.response.maxOutputTokens }
             : {}),
         }, testigo);
-        ledger.actualLlm = 2;
+        ledger.actualLlm += 1;
         ledger.actualInput += response.usage.inputTokens;
         ledger.actualOutput += response.usage.outputTokens;
         // La reparación es coste NUESTRO, así que su salida se marca aparte para
@@ -1451,6 +1525,185 @@ export class SavingsPipeline {
     if (pidioHerramientas) result.toolCalls = response.toolCalls!;
     if (response.finishReason !== undefined) result.finishReason = response.finishReason;
     return result;
+  }
+
+  /**
+   * SCHEMA-ON-DEMAND: primero se pregunta CUÁL, después se manda el esquema.
+   *
+   * Devuelve las herramientas que llevará la llamada de verdad. Sin patrón (o con
+   * él descartado, degradado o roto) devuelve las candidatas tal cual, así que el
+   * llamante no tiene ninguna rama que escribir: la ruta de una sola llamada con
+   * todos los esquemas es literalmente el valor por defecto de esta función.
+   *
+   * TRES CUIDADOS QUE NO SON NEGOCIABLES, y los tres están aquí:
+   *
+   *  1. LA VERJA ECONÓMICA (`decidirDescubrimiento`). La segunda llamada cuesta:
+   *     el prompt se paga dos veces y la salida del sondeo entera. Con un
+   *     catálogo pequeño esto PIERDE dinero, y sin verja sería un empeoramiento
+   *     disfrazado de optimización. Se decide en dinero y por petición.
+   *  2. LA RESPUESTA DEL SONDEO NO SE SIRVE NUNCA. Aunque venga un texto perfecto
+   *     y ganas de ahorrarse la segunda llamada: ese texto lo escribió un modelo
+   *     que veía descriptores SIN `parameters`, o sea con menos información de la
+   *     que declaró el llamante. Convertir eso en la respuesta del cliente es la
+   *     forma exacta del fallo que documenta el router — «claro, la reenvío» sin
+   *     poder reenviarla — y encima contabilizado como ahorro.
+   *  3. FAIL-OPEN DE VERDAD. Si el sondeo revienta, o devuelve basura, o no elige
+   *     nada, se sigue con TODOS los esquemas. Un patrón de ahorro no puede ser un
+   *     punto de caída nuevo en la petición del cliente.
+   */
+  private async descubrirHerramientas(
+    testigo: TestigoDeFacturacion,
+    request: SavingsRequest,
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    candidatas: ToolDescriptor[],
+    messages: ChatMessage[],
+    ledger: SavingsLedger,
+    costModel: CostModel,
+    trace: TraceCollector,
+  ): Promise<{ tools: ToolDescriptor[]; tokensLocalesDelSondeo: number }> {
+    const sinPatron = { tools: candidatas, tokensLocalesDelSondeo: 0 };
+    if (toggles.toolDiscovery !== true) return sinPatron;
+    // Con una sola candidata no hay nada que descubrir: el sondeo preguntaría por
+    // la única respuesta posible y después habría que mandar su esquema igual.
+    // Se deja constancia igualmente — una palanca que se pide y no hace nada no
+    // puede además ser muda, que es como se descubren probando.
+    if (candidatas.length < 2) {
+      trace.record("tool-discovery", "skipped (nothing to discover)", {
+        candidates: candidatas.length,
+      });
+      return sinPatron;
+    }
+
+    // Las herramientas se cuentan con el MISMO ensamblador que produce el
+    // baseline, no con uno paralelo. Es la regla de una sola regla: si el
+    // baseline y la cuenta de lo que se evita ensamblan distinto, la diferencia
+    // se cuela como ahorro (medido en su día: 785 tokens publicados contra 262
+    // reales). `assemblePromptText([], [t])` es exactamente el texto facturable
+    // de una herramienta.
+    const esquemaDe = (t: ToolDescriptor): number =>
+      this.tokensFor(this.assemblePromptText([], [t]), request);
+    const ligeras = candidatas.map(descriptorLigero);
+
+    const decision = decidirDescubrimiento({
+      promptTokens: this.tokensFor(this.assemblePromptText(messages), request),
+      esquemasCompletos: candidatas.reduce((n, t) => n + esquemaDe(t), 0),
+      descriptoresLigeros: ligeras.reduce((n, t) => n + esquemaDe(t), 0),
+      esquemasDeLaSegunda: peorCasoDeEsquemas(
+        candidatas.map((t) => ({ risk: t.risk, tokens: esquemaDe(t) })),
+        MAX_LECTURAS_DE_LA_SEGUNDA,
+      ),
+      salidaFinal: request.response?.maxOutputTokens ?? 256,
+      salidaDelSondeo: SALIDA_DEL_SONDEO_TOKENS,
+      precio: costModel,
+    });
+
+    if (!decision.aplicar) {
+      trace.record("tool-discovery", "skipped (not worth a second call)", {
+        reason: decision.razon,
+        oneCall: decision.costeDeUnaLlamada,
+        twoCalls: decision.costeDeDosLlamadas,
+      });
+      return sinPatron;
+    }
+
+    // El sondeo va SIN el contrato de salida a propósito. Forzar ahí el modo
+    // estructurado le pide al modelo la respuesta final —que es justo lo que no
+    // queremos todavía— y en varios proveedores compite con las tool calls. Va
+    // también sin `constraintBackend`: no hay nada que restringir.
+    //
+    // Y VA SIN MARCADO DE CACHÉ DE PREFIJO: ni `stablePrefixMessages` ni
+    // `promptCacheKey`. Es una decisión, no un olvido, y la tentación es real —
+    // las instrucciones de sistema del cliente son idénticas en el sondeo y en la
+    // llamada de abajo, así que parece que marcar aquí le regalaría a la segunda
+    // una lectura a 0,10x. No es cierto, y por el orden de renderizado:
+    //
+    //     tools -> system -> messages
+    //
+    // El emparejamiento de la caché es por BYTES DESDE EL PRINCIPIO, y lo primero
+    // que hay es `tools`. El sondeo manda descriptores ligeros SIN `parameters`;
+    // la llamada de abajo manda los esquemas completos de un subconjunto. Los dos
+    // bloques difieren en el primer byte que cuenta, así que todo lo que va
+    // detrás —el `system` compartido incluido— deja de ser prefijo común. No es
+    // que el punto de ruptura caiga mal: es que NO EXISTE un punto que se pueda
+    // poner por delante de `tools`, porque `cache_control` marca el FINAL de un
+    // tramo. La segunda llamada no puede leer lo que escribiera el sondeo, jamás.
+    //
+    // Marcar aquí sería, entonces, pagar la prima de escritura (1,25x) por un
+    // prefijo cuyo único lector posible sería OTRO sondeo con el mismo catálogo
+    // ligero dentro del TTL. Eso es una apuesta sobre tráfico que no se ha
+    // medido, y el equilibrio no perdona: h > 0,217. La casa ya tiene regla para
+    // esto — se prefiere el ahorro no capturado a la apuesta con dinero del
+    // cliente.
+    //
+    // COMPROBADO, y conviene que quede escrito porque la trampa está a un paso:
+    // `finDelPrefijo` se calcula sobre `request.messages` y sigue siendo un
+    // índice VÁLIDO aquí, porque el sondeo reenvía el MISMO array `messages` que
+    // la llamada de abajo (mismos bloques inyectados, misma compresión). O sea
+    // que marcar el sondeo sería seguro en cuanto a índices; se descarta por
+    // dinero, no por riesgo de recortar mal. Si algún día el sondeo se montara su
+    // propio array de mensajes, esa frontera dejaría de valer y habría que
+    // recalcularla — pero para entonces esta llamada seguirá sin marcarse.
+    let sondeo: ProviderResponse;
+    const tokensLocalesDelSondeo = this.tokensFor(
+      this.assemblePromptText(messages, ligeras),
+      request,
+    );
+    try {
+      sondeo = await this.llamarProveedor({
+        model: request.model,
+        messages,
+        tools: ligeras,
+        maxOutputTokens: SALIDA_DEL_SONDEO_TOKENS,
+        ...(request.temperature != null ? { temperature: request.temperature } : {}),
+        ...(request.seed != null ? { seed: request.seed } : {}),
+      }, testigo);
+    } catch (err) {
+      // Ni un token que apuntar: la llamada no llegó a devolver uso. Lo que sí
+      // queda es la constancia de que se intentó, porque el intento pudo costar
+      // dinero y el cliente no puede enterarse de esto por su factura.
+      trace.record("tool-discovery", "failed (falling back to a single call with every schema)", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return sinPatron;
+    }
+
+    ledger.actualLlm += 1;
+    ledger.actualInput += sondeo.usage.inputTokens;
+    ledger.actualOutput += sondeo.usage.outputTokens;
+    // Y aparte, para que no engorde el baseline: esta llamada la pone la capa.
+    ledger.discoveryInput += sondeo.usage.inputTokens;
+    ledger.discoveryOutput += sondeo.usage.outputTokens;
+    // El libro 4 (tokens que el proveedor sirvió de su caché de prefijo) NO se
+    // alimenta del sondeo. Ese libro habla del prompt del cliente; los tokens de
+    // una llamada que añadimos nosotros no le abaratan nada a él, y meterlos
+    // aplicaría el descuento también al lado del baseline, donde esa llamada ni
+    // existe. Se paga a precio lleno en el informe: equivocarse en contra propia.
+
+    const elegidas = herramientasDeLaSegunda(
+      (sondeo.toolCalls ?? []).map((c) => c.name),
+      candidatas,
+      MAX_LECTURAS_DE_LA_SEGUNDA,
+    );
+
+    if (elegidas.reconocidos.length === 0) {
+      // Ni una herramienta reconocida: o el modelo contestó en texto, o se
+      // inventó nombres. Se manda la llamada de siempre, con todos los esquemas.
+      // Cuesta el sondeo de más, y por eso la verja de arriba exige que la
+      // ganancia cubra justamente este caso.
+      trace.record("tool-discovery", "degraded: probe named no known tool", {
+        finishReason: sondeo.finishReason ?? null,
+        ...(elegidas.ignorados.length ? { unknownNames: elegidas.ignorados } : {}),
+      });
+      return { tools: candidatas, tokensLocalesDelSondeo };
+    }
+
+    trace.record("tool-discovery", "applied (two provider calls)", {
+      chosen: elegidas.reconocidos,
+      sent: elegidas.tools.map((t) => t.id),
+      candidates: candidatas.length,
+      ...(elegidas.ignorados.length ? { unknownNames: elegidas.ignorados } : {}),
+    });
+    return { tools: elegidas.tools, tokensLocalesDelSondeo };
   }
 
   // --- helpers -----------------------------------------------------------

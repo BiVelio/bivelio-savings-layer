@@ -124,6 +124,27 @@ export interface SavingsToggles {
    * decided and why.
    */
   outputCodebook?: boolean;
+  /**
+   * OPT-IN, and it changes the latency contract: where it applies, one request
+   * becomes TWO provider calls, one after the other.
+   *
+   * With a large tool catalogue the full JSON schema of every candidate travels
+   * on every request, even though the model will use one tool or none. With this
+   * on, the layer may first send lightweight descriptors (name + one line, no
+   * `parameters`), read which tools the model asks for, and only then send those
+   * full schemas.
+   *
+   * It is applied only when the token arithmetic for THIS request, priced with
+   * your cost model, says the second call pays for itself with margin — so a
+   * small catalogue silently keeps the single-call path, and turning this on can
+   * never make a request cost more in the typical case.
+   *
+   * When the second call happened, `report.calls.actualLlm` is 2. The extra
+   * call's tokens are counted as spend and never credited to your baseline.
+   * Write and destructive tools always travel with their full schema, so no
+   * action can be lost to a discovery step.
+   */
+  toolDiscovery?: boolean;
 }
 
 export interface RequestContext {
