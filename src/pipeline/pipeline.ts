@@ -591,19 +591,25 @@ export class SavingsPipeline {
     let formatChoice = jsonFallbackChoice();
     let messages: ChatMessage[] = [...request.messages];
 
-    // Ground the model on the retrieved evidence. adaptive-k (Stage 7) already
-    // pruned the set to the kept docs; here we actually PROJECT them into the
-    // prompt. Without this, retrieval runs and the report shows "kept N/M" but the
-    // model answers ungrounded — the exact failure retrieval exists to prevent.
-    if (retrieval.docs.length > 0) {
-      const evidence = retrieval.docs
-        .map((d, i) => `[${d.source ?? d.id ?? `doc${i + 1}`}]\n${d.text}`)
-        .join("\n\n");
-      messages.push({
-        role: "system",
-        content: `Retrieved context — answer using only this evidence and cite sources by [id]:\n\n${evidence}`,
-      });
-    }
+    // La evidencia recuperada se PROYECTA en el prompt más abajo, después del
+    // payload serializado. El orden importa y está medido: ver
+    // `insertarAntesDeLaPregunta`. Aquí solo se construye el bloque; adaptive-k
+    // (etapa 7) ya podó el conjunto a los documentos que se quedan.
+    //
+    // Sin esta proyección, el retrieval corre y el informe dice "kept N/M" pero
+    // el modelo responde sin fundamento — justo el fallo que el retrieval existe
+    // para evitar.
+    const bloqueEvidencia: ChatMessage | null =
+      retrieval.docs.length > 0
+        ? {
+            role: "system",
+            content:
+              "Retrieved context — answer using only this evidence and cite sources by [id]:\n\n" +
+              retrieval.docs
+                .map((d, i) => `[${d.source ?? d.id ?? `doc${i + 1}`}]\n${d.text}`)
+                .join("\n\n"),
+          }
+        : null;
 
     // Restricciones de VALOR que ningún modo estructurado impone. `strict` de
     // OpenAI garantiza la FORMA (qué claves, de qué tipo), pero ignora
@@ -633,7 +639,10 @@ export class SavingsPipeline {
       ? describeValueConstraints(request.response?.schema, "", techoPorTokens)
       : "";
     if (reglasDeValor) {
-      messages.push({
+      // Va DELANTE de la pregunta, y el primero de los tres bloques de la capa:
+      // es el más estable de los tres (depende solo del contrato, no de esta
+      // petición), así que es el que más partido saca del prefijo cacheable.
+      insertarAntesDeLaPregunta(messages, {
         role: "system",
         content: `JSON limits (not API-enforced): ${reglasDeValor}`,
       });
@@ -670,6 +679,12 @@ export class SavingsPipeline {
         });
       }
     }
+
+    // La evidencia va la ÚLTIMA de los tres bloques de la capa —pegada a la
+    // pregunta y por detrás del payload— porque es la más variable: cambia con
+    // cada consulta. Lo estable delante, lo variable al final es justo lo que
+    // quiere la caché de prefijo del proveedor.
+    if (bloqueEvidencia) insertarAntesDeLaPregunta(messages, bloqueEvidencia);
 
     // --- Stage 9: compression (managed feature — license-gated, net-positive only). ---
     if (
@@ -1576,6 +1591,26 @@ function textoDeHerramienta(tool: NonNullable<SavingsRequest["tools"]>[number]):
  *
  * Y coincide con lo que quiere la caché de prefijo del proveedor: lo estable
  * delante, lo variable al final. Las dos razones empujan en el mismo sentido.
+ *
+ * DURANTE UN TIEMPO ESTO SE APLICÓ A UN SOLO BLOQUE. La medición de arriba está
+ * en este fichero desde que se hizo, pero solo el payload serializado la
+ * respetaba: la evidencia de retrieval y el aviso de límites JSON entraban con
+ * `messages.push`, o sea DETRÁS de la pregunta — exactamente la variante que
+ * mide 403 tokens y trunca la mitad de las veces. Y el peor sitio es justo el
+ * del retrieval, porque es el bloque más grande.
+ *
+ * Ahora los tres entran por aquí, y el orden entre ellos también está elegido.
+ * Cada inserción queda pegada a la pregunta, así que la ÚLTIMA en insertarse es
+ * la más cercana. De más estable a más variable:
+ *
+ *   [ … del cliente ]  límites JSON  ·  payload  ·  evidencia  ·  pregunta
+ *
+ * Los límites dependen solo del contrato; el payload, de esta petición; la
+ * evidencia, de esta consulta concreta. Poner lo variable al final es lo que
+ * deja crecer el prefijo cacheable.
+ *
+ * Lo fija `test/orden-del-prompt.test.ts`: ningún bloque de la capa puede
+ * quedar por detrás de la última pregunta del usuario.
  */
 function insertarAntesDeLaPregunta(messages: ChatMessage[], bloque: ChatMessage): void {
   for (let i = messages.length - 1; i >= 0; i--) {
