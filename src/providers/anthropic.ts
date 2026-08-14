@@ -119,7 +119,7 @@ export class AnthropicProvider implements Provider {
     body: Record<string, unknown>;
     contratoNativo: boolean;
   } {
-    const { system, messages, prefijoEnMensajes } = repartirMensajes(req);
+    const { system, messages, prefijoEnMensajes, prefijoEnSystem } = repartirMensajes(req);
 
     if (messages.length === 0) {
       // Sin un solo turno de usuario no hay petición: la API exige al menos un
@@ -194,7 +194,7 @@ export class AnthropicProvider implements Provider {
     // sería un 400 por un campo que el llamante puso para otro proveedor, y
     // fallar por eso convertiría una petición portable en una avería.
 
-    this.marcarCache(req, system, messages, prefijoEnMensajes);
+    this.marcarCache(req, system, messages, prefijoEnMensajes, prefijoEnSystem);
 
     return { body, contratoNativo };
   }
@@ -222,6 +222,7 @@ export class AnthropicProvider implements Provider {
     system: BloqueDeTexto[],
     messages: MensajeAnthropic[],
     prefijoEnMensajes: number,
+    prefijoEnSystem: number,
   ): void {
     if (req.promptCacheKey != null) {
       // La API de Anthropic no tiene un campo equivalente: el emparejamiento es
@@ -237,7 +238,15 @@ export class AnthropicProvider implements Provider {
     );
     if (presupuesto <= 0) return;
 
-    const ultimoSystem = system[system.length - 1];
+    // EL PUNTO VA AL FINAL DEL `system` QUE ESTA DENTRO DEL PREFIJO, no al final
+    // del array. Son cosas distintas en cuanto queda un bloque de sistema fuera
+    // del prefijo declarado: el esquema por prompt que se anade mas abajo, o una
+    // cabecera cuyo ultimo bloque el llamante NO declaro estable. Ese bloque
+    // cambia entre peticiones, y un punto de ruptura por detras de el mete texto
+    // variable dentro del tramo cacheado. El emparejamiento es por bytes, asi
+    // que no se falla a medias: no acierta NUNCA, y cada peticion paga la prima
+    // de escritura (1,25x) del tramo entero.
+    const ultimoSystem = prefijoEnSystem > 0 ? system[prefijoEnSystem - 1] : undefined;
     if (ultimoSystem) {
       ultimoSystem.cache_control = { type: "ephemeral" };
       presupuesto -= 1;
@@ -353,22 +362,55 @@ export class AnthropicProvider implements Provider {
  * están mezclados, y al sacarlos los índices se desplazan. Usar el número
  * directamente pondría el punto de ruptura por detrás del prefijo real y
  * cachearía texto variable — que es la forma cara de equivocarse.
+ *
+ * SOLO SE IZA LA TIRADA INICIAL DE `system`, Y ESO ES LO QUE PERMITE QUE LA CACHÉ
+ * ACIERTE ALGUNA VEZ.
+ *
+ * Izar TODOS los `system` parecía inocuo y costaba el ahorro entero. El orden de
+ * renderizado es tools -> system -> messages, así que el campo `system` es el
+ * PRINCIPIO del prompt. Los tres bloques que inyecta la capa —evidencia de
+ * retrieval, aviso de límites JSON y payload serializado— viajan con
+ * `role: "system"` y cambian en CADA petición: izarlos los ponía por delante del
+ * historial, de modo que el tramo que va hasta el punto de ruptura del historial
+ * ya no coincidía byte a byte con el de la petición anterior. Reproducido con el
+ * pipeline entero: el `cache_control` de `system` aterrizaba sobre
+ * `{"nonce":12345}`.
+ *
+ * El coste no era «dejar de ahorrar»: era pagar la PRIMA de escritura (1,25x)
+ * sobre el tramo entero en cada petición y leer cero, hasta que la verja se
+ * apagase sola tras las 8 de exploración — y publicar entonces «tasa de aciertos
+ * 0,0%» como si fuera un hecho sobre el tráfico del cliente y no sobre un fallo
+ * nuestro.
+ *
+ * Un `system` que aparece DESPUÉS del primer turno se emite en su sitio, como
+ * turno de `user`. Se pierde el rango de sistema —`messages` solo admite
+ * user/assistant de forma portable en esta API, y es el mismo trato que ya
+ * recibía el rol `tool`— pero se conserva la POSICIÓN, que es lo que decide si
+ * queda algún prefijo reutilizable.
  */
 function repartirMensajes(req: ProviderRequest): {
   system: BloqueDeTexto[];
   messages: MensajeAnthropic[];
   prefijoEnMensajes: number;
+  prefijoEnSystem: number;
 } {
   const system: BloqueDeTexto[] = [];
   const messages: MensajeAnthropic[] = [];
   const limite = req.stablePrefixMessages ?? 0;
   let prefijoEnMensajes = 0;
+  let prefijoEnSystem = 0;
+  let cabecera = true;
 
   req.messages.forEach((m, i) => {
-    if (m.role === "system") {
+    if (m.role === "system" && cabecera) {
       system.push({ type: "text", text: m.content });
+      // Solo cuenta como prefijo el `system` que el pipeline declaro dentro. Un
+      // llamante puede declarar menos cabecera de la que manda, y marcar de mas
+      // es justo el error caro.
+      if (i < limite) prefijoEnSystem = system.length;
       return;
     }
+    cabecera = false;
     // `tool` no existe como rol aquí: el resultado de una herramienta se
     // devuelve dentro de un turno de usuario. Se traduce a `user` en vez de
     // descartarlo — perderlo dejaría al modelo respondiendo sin el resultado que
@@ -388,7 +430,7 @@ function repartirMensajes(req: ProviderRequest): {
     if (prefijoEnMensajes > 0) prefijoEnMensajes += 1;
   }
 
-  return { system, messages, prefijoEnMensajes };
+  return { system, messages, prefijoEnMensajes, prefijoEnSystem };
 }
 
 /** `stop_reason` de Anthropic -> el vocabulario neutro de `finishReason`. */
