@@ -124,6 +124,45 @@ export interface SavingsToggles {
    * decided and why.
    */
   outputCodebook?: boolean;
+  /**
+   * OPT-IN, and it changes the latency contract: where it applies, one request
+   * becomes TWO provider calls, one after the other.
+   *
+   * With a large tool catalogue the full JSON schema of every candidate travels
+   * on every request, even though the model will use one tool or none. With this
+   * on, the layer may first send lightweight descriptors (name + one line, no
+   * `parameters`), read which tools the model asks for, and only then send those
+   * full schemas.
+   *
+   * It is applied only when the token arithmetic for THIS request, priced with
+   * your cost model, says the second call pays for itself with margin — so a
+   * small catalogue silently keeps the single-call path.
+   *
+   * THE MARGIN IS NOT A GUARANTEE THAT EVERY REQUEST GETS CHEAPER. When the
+   * model names no tool in the first call, the request still goes out with every
+   * schema and the first call is pure added cost: that request costs MORE, and
+   * the report says so (`cost.netSavings` goes negative). The margin required is
+   * exactly the cost of that outcome, so the pattern breaks even while it
+   * happens on at most one request in two. If your traffic asks for a tool less
+   * often than that — a chat assistant with a big catalogue answers most turns
+   * directly — leave this off. Only an A/B against your own traffic settles it.
+   *
+   * IT ALSO GIVES UP THE PROVIDER'S PREFIX CACHE, on every request, not just the
+   * ones where it applies. Tools render FIRST in a provider request, and with
+   * this on, which schemas travel is decided by a probe whose answer is not
+   * deterministic — so the front of the prompt varies between requests that
+   * would otherwise share a cacheable prefix. Marking one would pay the write
+   * premium (1.25x on Anthropic) for a prefix that cannot hit. If your prompts
+   * carry a long fixed system header and your traffic repeats it, that discount
+   * is very likely worth more than this lever: measure both before choosing.
+   * `report.traces` says which one is off and why.
+   *
+   * When the second call happened, `report.calls.actualLlm` is 2. The extra
+   * call's tokens are counted as spend and never credited to your baseline.
+   * Write and destructive tools always travel with their full schema, so no
+   * action can be lost to a discovery step.
+   */
+  toolDiscovery?: boolean;
 }
 
 export interface RequestContext {

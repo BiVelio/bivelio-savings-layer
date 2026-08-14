@@ -108,6 +108,19 @@ export class SavingsLedger {
    */
   repairInput = 0;
   /**
+   * INPUT of the schema-on-demand discovery probe. Held apart exactly like
+   * {@link repairInput}, and for the same reason.
+   *
+   * The layer ADDS this call; the naive path would never make it. Letting its
+   * tokens into the reconstructed baseline would make the probe pay for itself,
+   * and a request that cost MORE than going without the layer would publish a
+   * positive saving. It still counts in full towards `actualInput` — that is
+   * money genuinely spent — it just cannot inflate what that is compared against.
+   */
+  discoveryInput = 0;
+  /** OUTPUT of the discovery probe. Our cost, kept out of the baseline. */
+  discoveryOutput = 0;
+  /**
    * Lo que de verdad hizo la compresión, para publicarlo en
    * `SavingsReport.compression`. El campo estaba declarado en el contrato y no lo
    * rellenaba nadie: salía `undefined` aunque la compresión hubiera corrido, y
@@ -158,7 +171,7 @@ export class SavingsLedger {
    */
   get publishedBaselineOutput(): number {
     return this.avoidedLlm === 0
-      ? Math.max(0, this.actualOutput - this.repairOutput)
+      ? Math.max(0, this.actualOutput - this.repairOutput - this.discoveryOutput)
       : this.baselineOutput;
   }
 
@@ -191,8 +204,13 @@ export class SavingsLedger {
         // `actualInput` acumula las DOS llamadas cuando hubo reparación, y esa
         // segunda es coste NUESTRO: si entra en el baseline, el reintento se paga
         // a sí mismo y una pérdida se publica como ahorro. Se descuenta igual que
-        // ya se hacía con la salida (`baselineOutputHonesto`).
-        const entradaDelCliente = Math.max(0, this.actualInput - this.repairInput);
+        // ya se hacía con la salida (`baselineOutputHonesto`). Lo mismo vale para
+        // el sondeo de descubrimiento: otra llamada que pone la capa, no el
+        // cliente, y que por tanto no pertenece a aquello contra lo que se compara.
+        const entradaDelCliente = Math.max(
+          0,
+          this.actualInput - this.repairInput - this.discoveryInput,
+        );
         this.baselineInput = entradaDelCliente + Math.round(k * this.removedInputLocal);
         // Un baseline RECONSTRUIDO nunca es "measured", por bueno que sea el
         // tokenizador. Medido contra el proveedor real, con o200k_base exacto y
@@ -238,7 +256,7 @@ export class SavingsLedger {
     // NUESTRO. Sumarla al baseline (via actualOutput) la escondía, y una pérdida
     // se reportaba unas cuatro veces menor de lo que fue.
     const baselineOutputHonesto = ranCall
-      ? Math.max(0, this.actualOutput - this.repairOutput)
+      ? Math.max(0, this.actualOutput - this.repairOutput - this.discoveryOutput)
       : this.baselineOutput;
 
     // Precio de entrada. Los tokens que el proveedor sirvió de su caché de
