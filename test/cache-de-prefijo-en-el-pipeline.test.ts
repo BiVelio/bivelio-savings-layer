@@ -177,6 +177,62 @@ describe("cuándo el pipeline NO reclama prefijo", () => {
   });
 });
 
+describe("la compresión y el prefijo, que se pisan", () => {
+  /** Compresor que de verdad acorta: sustituye el texto por una versión corta. */
+  const compresor = {
+    async compress({ text }: { text: string }) {
+      const compressed = text.length > 20 ? text.slice(0, 10) : text;
+      return {
+        compressed,
+        originalTokens: text.length,
+        compressedTokens: compressed.length,
+        protectedSpans: 0,
+        fidelityPassed: true,
+        skipped: false,
+        reason: "test",
+      };
+    },
+  };
+
+  const CONVERSACION = [
+    { role: "system" as const, content: POLITICA },
+    { role: "user" as const, content: "un turno viejo bastante largo del historial" },
+    { role: "assistant" as const, content: "una respuesta vieja bastante larga del historial" },
+    { role: "user" as const, content: "la pregunta de hoy" },
+  ];
+
+  it("si la compresión reescribe el historial, el prefijo se recorta a `system`", async () => {
+    const p = new Testigo();
+    await capa(p, {
+      compressor: compresor,
+      entitlements: ["long_context_compression"],
+    }).generate(peticion({ messages: CONVERSACION, savings: { compression: true } }));
+
+    const req = p.vistas[0]!;
+    // EL FALLO QUE ESTO CIERRA. La compresión reescribe mensajes que no son
+    // `system`, o sea que puede tocar el historial que habíamos metido en el
+    // prefijo. Si el prefijo siguiera declarando 3 mensajes, los bytes ya no
+    // coincidirían con los de la petición anterior: el proveedor lo trataría
+    // como nuevo, cobraría la PRIMA de escritura, y no acertaría nunca. Se
+    // pagaría de más en cada petición, para siempre, por un prefijo que ya no
+    // existe.
+    const prefijo = req.messages.slice(0, req.stablePrefixMessages);
+    expect(prefijo.every((m) => m.role === "system")).toBe(true);
+    expect(req.stablePrefixMessages).toBe(1);
+    // Y se comprueba que la compresión de verdad corrió sobre el historial: sin
+    // eso el test pasaría por el motivo equivocado.
+    expect(req.messages.some((m) => m.role === "user" && m.content.length <= 10)).toBe(true);
+  });
+
+  it("sin compresión, el mismo historial SÍ cuenta como prefijo", async () => {
+    const p = new Testigo();
+    await capa(p).generate(peticion({ messages: CONVERSACION }));
+    // El contraste es el que hace portante al test de arriba: la diferencia la
+    // provoca la compresión, no la forma de la conversación.
+    expect(p.vistas[0]!.stablePrefixMessages).toBe(3);
+  });
+});
+
 describe("el orden de las herramientas, que va lo PRIMERO del prompt", () => {
   const TOOLS: ToolDescriptor[] = [
     { id: "zeta_envios", intents: ["envío", "envio"], risk: "read" },
