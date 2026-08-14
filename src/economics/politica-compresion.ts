@@ -135,9 +135,10 @@ export function politicaDeCompresion(e: EntradaPolitica): Decision {
   return {
     ...decision,
     comprimir: false,
+    // En inglés porque acaba en `report.traces`. Ver la nota de `Decision.razon`.
     razon:
-      `comprimir sacaría el prompt del tramo cacheable (${e.compressedTokens} < ${min}) ` +
-      `y nadie ha medido la tasa de aciertos de prefijo: no se puede afirmar que salga a ` +
-      `cuenta. Declárala en \`compressionEconomics.prefix\` y se resuelve la cuenta entera`,
+      `compressing would drop the prompt out of the cacheable tier (${e.compressedTokens} < ${min}) ` +
+      `and nobody has measured the prefix hit rate, so it cannot be claimed to pay for itself. ` +
+      `Declare it in \`compressionEconomics.prefix\` to unlock the full decision`,
   };
 }

@@ -118,6 +118,16 @@ export interface Decision {
   costeSinComprimir: number;
   /** Ganancia neta en tokens equivalentes. Negativa = comprimir sale caro. */
   ganancia: number;
+  /**
+   * En INGLÉS, y no por gusto: este texto no se queda en el repo. El pipeline lo
+   * copia tal cual a `detail.reason` de la traza de compresión, y `report.traces`
+   * es contrato publicado — lo lee el cliente en su panel, en cada petición con
+   * la palanca encendida. El resto de motivos de la capa («no output contract»,
+   * «net saving N tokens») están en inglés; una frase en español aquí es la misma
+   * fuga que el trinquete de `superficie-publica-limpia` persigue en el `.d.ts`,
+   * solo que por la puerta grande, porque viaja en el payload y no en un tooltip.
+   * El identificador se queda en español: ese no sale del repo.
+   */
   razon: string;
 }
 
@@ -186,16 +196,16 @@ export function decidirCompresion(e: EntradaDecision): Decision {
     // sitio equivocado.
     const pierdeElDescuento = costeSinComprimir < e.originalTokens;
     razon = saleDelTramo
-      ? `comprimir saca el prompt del tramo cacheable (${e.compressedTokens} < ${min}) y cuesta más de lo que ahorra`
+      ? `compressing drops the prompt out of the cacheable tier (${e.compressedTokens} < ${min}) and costs more than it saves`
       : pierdeElDescuento
-        ? `sin comprimir sale más barato: la caché de prefijo del proveedor ya descuenta ` +
-          `ese prompt (${costeSinComprimir.toFixed(0)} frente a ${costeComprimido.toFixed(0)} ` +
-          `tokens equivalentes, con ${(e.prefixHitRate * 100).toFixed(0)}% de aciertos)`
-        : `el ahorro no cubre el coste del compresor`;
+        ? `not compressing is cheaper: the provider's prefix cache already discounts ` +
+          `this prompt (${costeSinComprimir.toFixed(0)} vs ${costeComprimido.toFixed(0)} ` +
+          `equivalent tokens, at a ${(e.prefixHitRate * 100).toFixed(0)}% hit rate)`
+        : `the saving does not cover the compressor's cost`;
   } else if (saleDelTramo) {
-    razon = `compensa pese a perder la caché de prefijo (aciertos ${(e.prefixHitRate * 100).toFixed(0)}%)`;
+    razon = `pays off even after losing the prefix cache (${(e.prefixHitRate * 100).toFixed(0)}% hit rate)`;
   } else {
-    razon = `compensa y no toca el tramo de caché`;
+    razon = `pays off and does not touch the cache tier`;
   }
 
   return { comprimir: ganancia > 0, costeComprimido, costeSinComprimir, ganancia, razon };

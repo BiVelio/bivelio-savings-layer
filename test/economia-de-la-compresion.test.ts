@@ -128,7 +128,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
 
     const traza = trazaDeCompresion(res.report.traces);
     expect(traza.outcome).toBe("skipped");
-    expect(String(traza.detail?.reason)).toMatch(/tramo cacheable/);
+    expect(String(traza.detail?.reason)).toMatch(/cacheable tier/);
     expect(String(traza.detail?.reason)).toContain("1024");
   });
 
@@ -164,7 +164,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
     expect(proveedor.enviado()).toContain("RUIDO");
     expect(res.report.tokens.compressedInput).toBe(0);
     expect(String(trazaDeCompresion(res.report.traces).detail?.reason)).toMatch(
-      /tramo cacheable/,
+      /cacheable tier/,
     );
   });
 
@@ -188,7 +188,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
     expect(proveedor.enviado()).toContain("RUIDO");
     expect(res.report.tokens.compressedInput).toBe(0);
     expect(String(trazaDeCompresion(res.report.traces).detail?.reason)).toMatch(
-      /sin comprimir sale más barato/,
+      /not compressing is cheaper/,
     );
   });
 });
@@ -229,7 +229,7 @@ describe("cuando sale a cuenta, se comprime — las verjas no apagan la palanca"
     expect(res.report.compression?.originalTokens).toBeGreaterThan(0);
     const traza = trazaDeCompresion(res.report.traces);
     expect(traza.outcome).toBe("applied");
-    expect(String(traza.detail?.reason)).toMatch(/compensa/);
+    expect(String(traza.detail?.reason)).toMatch(/pays off/);
   });
 });
 
@@ -277,7 +277,7 @@ describe("la política, sin pipeline por medio", () => {
       prefix: { stableTokens: 512, hitRate: 1 },
     });
     expect(d.comprimir).toBe(true);
-    expect(d.razon).toMatch(/pese a perder la caché/);
+    expect(d.razon).toMatch(/losing the prefix cache/);
   });
 
   it("sin tramo de caché no hay nada que proteger: decide el recuento de tokens", () => {
@@ -294,5 +294,101 @@ describe("la política, sin pipeline por medio", () => {
       compressorCostTokens: 4000,
     });
     expect(d.comprimir).toBe(false);
+  });
+});
+
+describe("la verja de tamaño mide el contexto del CLIENTE, no el texto de la capa", () => {
+  it("un `system` enorme no le abre la puerta a un contexto corto", async () => {
+    // `contextoComprimible` suma solo los no-system, y esa resta no es cosmética:
+    // los bloques que la propia capa inyecta (evidencia de retrieval, aviso de
+    // límites JSON, payload serializado) son `system`, y el bucle no los toca
+    // NUNCA. Si contaran, un prompt cuyo único texto largo lo puso la capa
+    // pasaría la verja a fuerza de texto propio: se pagaría el compresor para
+    // podar dos frases del cliente, y `contextTokens` publicaría como "contexto
+    // comprimible" tokens que nadie iba a comprimir.
+    const { estado, compresor } = compresorContador();
+    const proveedor = new ProveedorEspia();
+    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+
+    const res = await capa.generate({
+      model: "openai/gpt-4o-mini",
+      messages: [
+        { role: "system", content: contexto(0, 1500) }, // ~3000 tokens intocables
+        { role: "user", content: contexto(20, 30) }, // ~100 tokens podables
+      ],
+      savings: { compression: true, exactCache: false },
+    });
+
+    expect(estado.llamadas).toBe(0);
+    expect(res.report.tokens.compressedInput).toBe(0);
+
+    const traza = trazaDeCompresion(res.report.traces);
+    expect(traza.outcome).toBe("skipped");
+    expect(String(traza.detail?.reason)).toMatch(/context \d+ < 2000 min/);
+    // Y el número publicado es el del cliente, no el del prompt entero.
+    expect(Number(traza.detail?.contextTokens)).toBeLessThan(2000);
+    expect(Number(traza.detail?.promptTokens)).toBeGreaterThan(2000);
+  });
+});
+
+describe("el motivo que se le publica al cliente está en inglés", () => {
+  /**
+   * `detail.reason` viaja en `report.traces`, que es contrato publicado: lo lee
+   * el cliente en su panel en CADA petición con la palanca encendida. El resto
+   * de la capa ya habla inglés ahí («no output contract», «net saving N
+   * tokens»), y `decidirCompresion()` no lo hacía porque hasta este cambio no
+   * la llamaba nadie: sus motivos eran texto muerto. Al enchufarla, la frase en
+   * español pasó a salir en el camino FELIZ —«compensa y no toca el tramo de
+   * caché» en toda compresión aplicada—, que es la misma fuga que el trinquete
+   * de `superficie-publica-limpia` persigue en el `.d.ts`, pero en el payload.
+   *
+   * Este test la fija en los tres desenlaces: se aplica, se bloquea por dinero y
+   * se bloquea por tamaño.
+   */
+  const sinEspanol = async (
+    model: string,
+    texto: string,
+    esperado: string,
+  ): Promise<void> => {
+    const { compresor } = compresorContador();
+    const proveedor = new ProveedorEspia();
+    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const res = await capa.generate(peticion(model, texto));
+
+    const traza = trazaDeCompresion(res.report.traces);
+    expect(traza.outcome).toBe(esperado);
+    const motivo = String(traza.detail?.reason);
+    expect(motivo, `motivo en español publicado al cliente: ${motivo}`).not.toMatch(
+      /[áéíóúüñ¿¡]/i,
+    );
+    expect(motivo).toMatch(/^[\x20-\x7E]+$/);
+  };
+
+  it("cuando se aplica", async () => {
+    await sinEspanol("openai/gpt-4o-mini", contexto(700, 900), "applied");
+  });
+
+  it("cuando se bloquea por el tramo de caché", async () => {
+    await sinEspanol("openai/gpt-4o-mini", contexto(700, 350), "skipped");
+  });
+
+  it("cuando se bloquea por tamaño", async () => {
+    await sinEspanol("openai/gpt-4o-mini", contexto(20, 30), "skipped");
+  });
+
+  it("y también el motivo de 'sin comprimir sale más barato'", async () => {
+    const { compresor } = compresorContador();
+    const proveedor = new ProveedorEspia();
+    const capa = createSavingsLayer({
+      provider: proveedor,
+      compressor: compresor,
+      compressionEconomics: { prefix: { stableTokens: 3000, hitRate: 1 } },
+    });
+    const res = await capa.generate(
+      peticion("anthropic/claude-sonnet-4", contexto(500, 1500)),
+    );
+    const motivo = String(trazaDeCompresion(res.report.traces).detail?.reason);
+    expect(motivo).toMatch(/not compressing is cheaper/);
+    expect(motivo).not.toMatch(/[áéíóúüñ¿¡]/i);
   });
 });
