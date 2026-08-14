@@ -1,3 +1,4 @@
+import { normalizeText } from "../canonicalization/canonicalize.js";
 import type { ExecutionClass, ToolDescriptor } from "../contracts/types.js";
 
 /**
@@ -90,10 +91,27 @@ export class ToolSelector {
 }
 
 function defaultScore(text: string, tool: ToolDescriptor): number {
-  const haystack = text.toLowerCase();
+  // LOS DOS LADOS SE PLIEGAN CON LA MISMA FUNCIÓN, y no es cosmética.
+  //
+  // El texto llega ya normalizado desde el pipeline (`canonical.normalizedText`),
+  // mientras que los `intents` los escribe el CLIENTE, en su idioma y tal cual.
+  // Desde que `normalizeText` pliega diacríticos, comparar uno contra otro sin
+  // plegar los dos deja la herramienta MUDA en cuanto el intent lleva una tilde:
+  // con `intents: ["envío"]`, «envía el envío de hoy» se normaliza a «envia el
+  // envio de hoy» y `includes("envío")` es falso, así que el selector la descarta
+  // (medido: `tools: []`, `droppedIds: ["envio"]`, contra la selección correcta
+  // antes de plegar). Ahí no se pierde un acierto de caché: el proveedor no llega
+  // a ver la capacidad, el modelo contesta «claro, lo envío» y no se envía nada
+  // —el mismo fallo que ya se cerró en el router para `retrieval:"off"`— y el
+  // libro lo apunta como ahorro (`actualTools: 0`).
+  const haystack = normalizeText(text);
   let score = 0;
   for (const intent of tool.intents) {
-    const needle = intent.toLowerCase();
+    const needle = normalizeText(intent);
+    // Un intent que se queda vacío al normalizar (solo puntuación) casaría con
+    // TODO, porque `includes("")` es siempre cierto: sería la herramienta de
+    // escritura de un cliente descuidado adjuntada a cualquier petición.
+    if (!needle) continue;
     if (haystack.includes(needle)) score += 2;
     else if (needle.split(/\s+/).some((w) => w.length > 3 && haystack.includes(w))) {
       score += 1;
