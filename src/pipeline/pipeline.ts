@@ -539,8 +539,29 @@ export class SavingsPipeline {
         );
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
+      // LIBRO 2. Hasta ahora `SavingsLedger.eliminate()` no tenía NI UN llamante
+      // en todo `src/` —solo dos tests—, así que `tokens.eliminatedInput` salía 0
+      // en TODA petición, el metering enviaba 0 al panel y el README anunciaba
+      // `eliminated_tokens` como uno de los cuatro libros. El ahorro existía y se
+      // veía en el total (el baseline SÍ cuenta las herramientas, ver
+      // `assemblePromptText`), pero no estaba atribuido a nada.
+      //
+      // Una herramienta descartada es el caso de libro 2 más limpio que hay: el
+      // llamante la declaró, el baseline la cuenta entera, y no se envía. No es
+      // que ocupe menos —eso sería el libro 3—, es que no va.
+      //
+      // Se cuenta con el MISMO ensamblador que el baseline, byte a byte. Contarla
+      // de otra forma reintroduciría por la puerta de atrás el sesgo que
+      // `assemblePromptText` documenta: medir el envoltorio distinto en los dos
+      // lados publicaba 785 tokens de baseline contra 262 reales.
+      const descartadas = new Set(toolSelection.droppedIds);
+      const tokensDescartados = (request.tools ?? [])
+        .filter((t) => descartadas.has(t.id))
+        .reduce((n, t) => n + this.tokensFor(textoDeHerramienta(t), request), 0);
+      ledger.eliminate(tokensDescartados);
       trace.record("tool-selector", toolSelection.reason, {
         dropped: toolSelection.droppedIds,
+        eliminatedTokens: tokensDescartados,
       });
     }
 
@@ -1320,16 +1341,7 @@ export class SavingsPipeline {
       // entonces k = actualInput/sentInputLocal salía > 1 (medido: 1,31), o sea
       // que cada token quitado se acreditaba inflado. En el escenario tool-heavy
       // publicaba un baseline de 785 contra 262 reales: 3,00x.
-      parts.push(
-        JSON.stringify({
-          type: "function",
-          function: {
-            name: tool.id,
-            ...(tool.description ? { description: tool.description } : {}),
-            parameters: tool.parameters ?? { type: "object", properties: {} },
-          },
-        }),
-      );
+      parts.push(textoDeHerramienta(tool));
     }
     return parts.join("\n");
   }
@@ -1521,6 +1533,29 @@ function esFalloDeValor(errores: readonly { message: string }[]): boolean {
       e.message,
     ),
   );
+}
+
+/**
+ * El texto de UNA herramienta tal y como se cuenta.
+ *
+ * Vive fuera de la clase y lo usan los dos sitios que necesitan contar
+ * herramientas —el ensamblador del baseline y el libro 2 de las descartadas—
+ * precisamente para que no puedan divergir. Es la misma regla de una sola regla
+ * que documenta `assemblePromptText`: si el baseline y el conteo de lo quitado
+ * ensamblan distinto, la diferencia se cuela como ahorro.
+ *
+ * El envoltorio cuenta: el proveedor factura la herramienta entera, no solo sus
+ * `parameters`.
+ */
+function textoDeHerramienta(tool: NonNullable<SavingsRequest["tools"]>[number]): string {
+  return JSON.stringify({
+    type: "function",
+    function: {
+      name: tool.id,
+      ...(tool.description ? { description: tool.description } : {}),
+      parameters: tool.parameters ?? { type: "object", properties: {} },
+    },
+  });
 }
 
 /**
