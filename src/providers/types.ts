@@ -38,6 +38,19 @@ export interface ProviderRequest {
    * carry tenant or user data, because it does not isolate anything.
    */
   promptCacheKey?: string;
+  /**
+   * The caller declares this answer is not needed immediately, so the adapter
+   * may ask for a cheaper, slower processing tier.
+   *
+   * It is DECLARED, never inferred: whether a request can wait is a property of
+   * the business, not of the text. An adapter whose provider has no cheaper
+   * synchronous tier leaves the request unchanged.
+   *
+   * Asking is not getting. A provider may serve a downgraded tier and bill it at
+   * the standard rate, so the discount is only ever read back from
+   * {@link ProviderResponse.servedServiceTier}.
+   */
+  deferrable?: boolean;
 }
 
 export interface ProviderUsage {
@@ -91,6 +104,30 @@ export interface ProviderResponse {
    * all the way to the caller.
    */
   toolCalls?: ToolCallRequest[];
+  /**
+   * The processing tier the provider reports having SERVED this request, exactly
+   * as it named it (OpenAI `service_tier`, Anthropic `usage.service_tier`).
+   *
+   * This is the only field a discount may be credited from, and the reason is
+   * that it is not always what was asked for: a provider short on capacity may
+   * serve the standard tier and bill the standard rate while the request said
+   * otherwise. Crediting the REQUESTED tier would publish a saving the invoice
+   * does not carry.
+   *
+   * Absent means the provider said nothing, which is NOT the same as "standard":
+   * it means the tier cannot be known, so nothing is credited.
+   */
+  servedServiceTier?: string;
+  /**
+   * The processing tier this adapter ASKED the provider for, when it asked for
+   * one. Absent means it asked for nothing — which is the honest answer for a
+   * provider that has no cheaper synchronous tier to ask for.
+   *
+   * Reported by the adapter rather than assumed by the caller: only the adapter
+   * knows its provider's vocabulary, and a caller that hardcoded a tier name
+   * would be describing a request some other adapter never made.
+   */
+  requestedServiceTier?: string;
   raw?: unknown;
 }
 

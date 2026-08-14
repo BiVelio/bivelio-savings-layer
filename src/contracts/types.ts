@@ -174,6 +174,104 @@ export interface SavingsToggles {
    * cannot protect you from. Start at `"shadow"`.
    */
   modelCascade?: ModelCascadeMode;
+  /**
+   * Declare that this answer is NOT needed immediately, so the layer may ask the
+   * provider for a cheaper, slower processing tier. Defaults to `false`.
+   *
+   * YOU DECLARE IT; THE LAYER NEVER GUESSES. Whether a request can wait is a
+   * property of your business, not of the text: the same prompt is deferrable in
+   * a nightly enrichment job and not deferrable behind a user's cursor. There is
+   * no heuristic that can tell those apart, so there is no default that could be
+   * right.
+   *
+   * IT CHANGES YOUR LATENCY, AND THAT IS THE WHOLE POINT. Where a cheaper tier
+   * exists it is slower and its latency is variable, so a request on a
+   * user-facing path must not carry this. `report.deferred.latency` states what
+   * the provider documents. Nothing else about the request changes: same model,
+   * same prompt, same sampling controls, so the answer is the answer you would
+   * have got.
+   *
+   * WHAT IT IS WORTH IS READ BACK, NEVER ASSUMED. A provider short on capacity
+   * may serve the standard tier and bill the standard rate without saying so in
+   * the response body's shape. The layer therefore reads the tier the provider
+   * reports having SERVED and credits only that — see
+   * {@link DeferredExecutionReport}. On a provider with no cheaper synchronous
+   * tier the request is sent unchanged and the report says so.
+   */
+  deferrable?: boolean;
+}
+
+/**
+ * What asking for a cheaper processing tier actually got you on this request.
+ *
+ * Present whenever `savings.deferrable` is `true`, INCLUDING when it earned
+ * nothing — "we asked and did not get it" is the answer you need most often, and
+ * it is the one a report that only spoke on success would hide.
+ *
+ * ⚠️ THE FAILURE THIS EXISTS TO PREVENT. Asking for a discounted tier is not
+ * getting one. Providers document that a request may be served at a different
+ * tier from the one it asked for and billed at that tier's rate, and the
+ * downgrade is silent: the answer comes back looking exactly the same. A layer
+ * that credited the tier it REQUESTED would publish a discount your invoice does
+ * not carry, on every request the provider quietly downgraded.
+ *
+ * So {@link servedTier} is read from the provider's response and it is the only
+ * thing {@link credited} is allowed to depend on. When the provider reports no
+ * tier at all, nothing is credited: an absent value means "cannot be known", not
+ * "standard".
+ */
+export interface DeferredExecutionReport {
+  /** The tier the layer asked the provider for, absent if it asked for none. */
+  requestedTier?: string;
+  /**
+   * The tier the provider reports having SERVED, exactly as it named it. Absent
+   * when the provider reported none.
+   */
+  servedTier?: string;
+  /**
+   * Whether the served tier bills BELOW the standard rate card, which is the
+   * only condition under which a discount is claimed here.
+   */
+  credited: boolean;
+  /**
+   * Fraction of the standard list price the served tier bills — `0.5` for a tier
+   * documented at half price. Present only when {@link credited}.
+   */
+  discountRate?: number;
+  /**
+   * What the tier was worth on this request, in your currency unit.
+   *
+   * A COUNTERFACTUAL priced from the standard rate card: this request was not
+   * also run at standard price, so it is `cost.actual * (1 - discountRate)`.
+   *
+   * ⚠️ `cost.actual` prices this request at the STANDARD rate card, so when this
+   * field is present your invoice line will be LOWER than `cost.actual` by
+   * roughly this amount. The bias is deliberate and it is the safe one: the
+   * layer under-reports the saving rather than promising one it cannot prove.
+   * The reason it is not folded in is {@link creditedLedger}.
+   */
+  estimatedTierSaving?: number;
+  /**
+   * Which of the four ledgers this credits: none, and that is the honest answer.
+   * Deferring avoids no call (ledger 1), removes no tokens (2), re-encodes
+   * nothing (3) and is not provider caching (4). It changes the PRICE of the
+   * tokens, exactly as the model cascade does, and there is no ledger for that.
+   *
+   * `cost.netSavings` therefore does not move: it is a ratio of baseline to
+   * actual priced from a SINGLE rate card, and a discount that scales both sides
+   * cannot change it. Folding this in would require a baseline priced from the
+   * other card — a request nobody ran.
+   */
+  creditedLedger: "none";
+  /**
+   * What the provider documents about this tier's latency, in one sentence.
+   *
+   * It is a quotation of what is published, not an estimate. Where a provider
+   * commits to no latency figure, this says so rather than inventing one.
+   */
+  latency: string;
+  /** Why it did what it did, in one sentence. Never empty. */
+  reason: string;
 }
 
 /**
@@ -527,6 +625,12 @@ export interface SavingsReport {
    * cascade on: it documents a failure mode no gate in this layer can catch.
    */
   modelCascade?: ModelCascadeReport;
+
+  /**
+   * What asking for a cheaper processing tier got you. Present whenever
+   * `savings.deferrable` is `true`, including when it got you nothing.
+   */
+  deferred?: DeferredExecutionReport;
 
   quality: {
     taskPassed?: boolean;
