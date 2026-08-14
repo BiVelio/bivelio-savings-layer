@@ -136,8 +136,16 @@ export interface SavingsToggles {
    *
    * It is applied only when the token arithmetic for THIS request, priced with
    * your cost model, says the second call pays for itself with margin — so a
-   * small catalogue silently keeps the single-call path, and turning this on can
-   * never make a request cost more in the typical case.
+   * small catalogue silently keeps the single-call path.
+   *
+   * THE MARGIN IS NOT A GUARANTEE THAT EVERY REQUEST GETS CHEAPER. When the
+   * model names no tool in the first call, the request still goes out with every
+   * schema and the first call is pure added cost: that request costs MORE, and
+   * the report says so (`cost.netSavings` goes negative). The margin required is
+   * exactly the cost of that outcome, so the pattern breaks even while it
+   * happens on at most one request in two. If your traffic asks for a tool less
+   * often than that — a chat assistant with a big catalogue answers most turns
+   * directly — leave this off. Only an A/B against your own traffic settles it.
    *
    * When the second call happened, `report.calls.actualLlm` is 2. The extra
    * call's tokens are counted as spend and never credited to your baseline.

@@ -1479,13 +1479,33 @@ export class SavingsPipeline {
       // la orden de ejecutar una acción. Reproducirla desde caché servía "" como
       // texto durante 24 h y acreditaba una llamada 100 % evitada sobre una
       // acción que nunca se ejecutó — ahorro inventado sobre trabajo no hecho.
-      const cacheable = structurallyValid !== false && !pidioHerramientas;
+      // Y TAMPOCO se cachea una respuesta que salió con MENOS herramientas de
+      // las que declaró el llamante. Reproducido: el sondeo elige `tool_3`, la
+      // invocación solo ve `tool_3`, el modelo contesta «no tengo una herramienta
+      // para eso» —texto válido, contrato cumplido, ninguna tool call— y eso se
+      // guarda 24 h. La siguiente petición idéntica, INCLUSO SIN la palanca
+      // puesta (la clave exacta lleva el `toolsetHash` del llamante, no el de lo
+      // que se envió), la sirve de caché con `avoidedLlm: 1` y `netSavings: 1`.
+      //
+      // O sea: una capacidad que la capa escondió se congela un día entero y se
+      // publica como el mayor ahorro posible, sobre trabajo que nadie hizo. Es el
+      // mismo fallo que ya cerraron las dos condiciones de arriba, por una puerta
+      // que ninguna cubre: la respuesta no incumple nada y no pide herramientas.
+      //
+      // Y no basta con meter la palanca en la clave: qué herramientas viajan lo
+      // decide la respuesta del sondeo, que NO es determinista. Dos peticiones
+      // idénticas con la palanca igual pueden ver catálogos distintos, así que la
+      // única regla honesta es no cachear lo que se generó con la vista recortada.
+      const vistaRecortada = descubrimiento.aplicado;
+      const cacheable = structurallyValid !== false && !pidioHerramientas && !vistaRecortada;
       if (!cacheable) {
         trace.record(
           "cache-write",
           pidioHerramientas
             ? "skipped: tool-call turn (an action request must not be replayed from cache)"
-            : "skipped: response fails its output contract",
+            : structurallyValid === false
+              ? "skipped: response fails its output contract"
+              : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
         );
       }
 
@@ -1560,8 +1580,8 @@ export class SavingsPipeline {
     ledger: SavingsLedger,
     costModel: CostModel,
     trace: TraceCollector,
-  ): Promise<{ tools: ToolDescriptor[]; tokensLocalesDelSondeo: number }> {
-    const sinPatron = { tools: candidatas, tokensLocalesDelSondeo: 0 };
+  ): Promise<{ tools: ToolDescriptor[]; tokensLocalesDelSondeo: number; aplicado: boolean }> {
+    const sinPatron = { tools: candidatas, tokensLocalesDelSondeo: 0, aplicado: false };
     if (toggles.toolDiscovery !== true) return sinPatron;
     // Con una sola candidata no hay nada que descubrir: el sondeo preguntaría por
     // la única respuesta posible y después habría que mandar su esquema igual.
@@ -1694,7 +1714,7 @@ export class SavingsPipeline {
         finishReason: sondeo.finishReason ?? null,
         ...(elegidas.ignorados.length ? { unknownNames: elegidas.ignorados } : {}),
       });
-      return { tools: candidatas, tokensLocalesDelSondeo };
+      return { tools: candidatas, tokensLocalesDelSondeo, aplicado: false };
     }
 
     trace.record("tool-discovery", "applied (two provider calls)", {
@@ -1703,7 +1723,7 @@ export class SavingsPipeline {
       candidates: candidatas.length,
       ...(elegidas.ignorados.length ? { unknownNames: elegidas.ignorados } : {}),
     });
-    return { tools: elegidas.tools, tokensLocalesDelSondeo };
+    return { tools: elegidas.tools, tokensLocalesDelSondeo, aplicado: true };
   }
 
   // --- helpers -----------------------------------------------------------

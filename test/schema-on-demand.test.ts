@@ -7,6 +7,7 @@ import {
   herramientasDeLaSegunda,
   peorCasoDeEsquemas,
   MAX_LECTURAS_DE_LA_SEGUNDA,
+  SALIDA_DEL_SONDEO_TOKENS,
 } from "../src/router/schema-on-demand.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { JsonSchema, ToolDescriptor } from "../src/contracts/types.js";
@@ -407,6 +408,101 @@ describe("el sondeo degrada, nunca revienta ni se sirve como respuesta", () => {
     const traza = res.report.traces.find((t) => t.stage === "tool-discovery");
     expect(traza?.outcome).toContain("degraded");
     expect(traza?.detail?.["unknownNames"]).toEqual(["herramienta_que_no_existe"]);
+  });
+});
+
+/**
+ * REVISIÓN. Dos verjas que la primera versión daba por hechas sin fijarlas.
+ */
+describe("el techo de salida del sondeo llega de verdad al proveedor", () => {
+  // La verja presupuesta la salida del sondeo a `SALIDA_DEL_SONDEO_TOKENS` y su
+  // docstring dice, literalmente, que ese número «no es una estimación sino un
+  // límite que se le pasa al proveedor, así que la verja puede usarlo como peor
+  // caso sin suponer nada». Nada lo comprobaba: quitando el `maxOutputTokens` de
+  // la llamada del sondeo no caía NI UNO de los 1077 tests, ni el typecheck. Y
+  // sin ese tope la aritmética decide con un peor caso que el proveedor no
+  // respeta: un modelo que se pone a razonar en vez de elegir gasta salida —a 4x
+  // el precio de la entrada— hasta el tope que tenga por defecto.
+  it("la llamada del sondeo lleva el tope, y la de verdad NO lo hereda", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      respuestaFinal("listo"),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+    await capa.generate(peticion(CATALOGO_GRANDE));
+
+    expect(proveedor.llamadas[0]!.maxOutputTokens).toBe(SALIDA_DEL_SONDEO_TOKENS);
+    // El presupuesto de salida del CLIENTE es cosa suya: el techo del sondeo no
+    // puede colarse en la llamada que sí le responde.
+    expect(proveedor.llamadas[1]!.maxOutputTokens).toBeUndefined();
+  });
+});
+
+/**
+ * LA VISTA RECORTADA NO SE CACHEA.
+ *
+ * Reproducido antes del arreglo: el sondeo elige una herramienta, la invocación
+ * solo ve esa, el modelo contesta «no tengo una herramienta para eso» —texto
+ * válido, sin tool calls— y esa respuesta se guardaba 24 h. La petición idéntica
+ * siguiente, INCLUSO SIN la palanca, la servía de caché con `avoidedLlm: 1` y
+ * `netSavings: 1`: una capacidad que escondió la capa, congelada un día y
+ * publicada como el mayor ahorro posible sobre trabajo que nadie hizo.
+ */
+describe("una respuesta dada con menos herramientas de las declaradas no se cachea", () => {
+  // Una pregunta NO personalizada: con la del resto del fichero la política
+  // apaga la caché exacta sola y el test pasaría por el motivo equivocado.
+  const preguntaCacheable = "summarise the late returns policy for the team";
+  const peticionCacheable = (toolDiscovery: boolean) => ({
+    model: "openai/gpt-4o-mini",
+    messages: [{ role: "user" as const, content: preguntaCacheable }],
+    tools: CATALOGO_GRANDE,
+    savings: { router: false, toolDiscovery },
+  });
+
+  it("y la siguiente petición, sin la palanca, no cobra una llamada evitada", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      () => ({
+        text: "I do not have a tool to look that up.",
+        usage: { inputTokens: 800, outputTokens: 20 },
+        finishReason: "stop",
+      }),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+
+    const conPalanca = await capa.generate(peticionCacheable(true));
+    // El escenario es el peligroso de verdad: respuesta VÁLIDA (no incumple
+    // ningún contrato) y sin tool calls, así que las dos verjas que ya existían
+    // la dejarían pasar a la caché.
+    expect(conPalanca.report.constraints.structurallyValid).not.toBe(false);
+    expect(conPalanca.toolCalls).toBeUndefined();
+    expect(proveedor.llamadas[1]!.tools!.map((t) => t.id)).toEqual(["tool_3"]);
+    expect(
+      conPalanca.report.traces.find((t) => t.stage === "cache-write")?.outcome,
+    ).toContain("reduced tool view");
+
+    const sinPalanca = await capa.generate(peticionCacheable(false));
+    expect(sinPalanca.report.cache.result).toBe("miss");
+    expect(sinPalanca.report.calls.avoidedLlm).toBe(0);
+    // Y sale al proveedor con el catálogo entero, que es lo que pidió.
+    expect(proveedor.llamadas).toHaveLength(3);
+    expect(proveedor.llamadas[2]!.tools).toHaveLength(8);
+  });
+
+  it("sin descubrimiento la misma respuesta SÍ se cachea: la verja es del recorte, no de la caché", async () => {
+    const proveedor = new ProveedorGuionizado([
+      () => ({
+        text: "I do not have a tool to look that up.",
+        usage: { inputTokens: 800, outputTokens: 20 },
+        finishReason: "stop",
+      }),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+
+    await capa.generate(peticionCacheable(false));
+    const segunda = await capa.generate(peticionCacheable(false));
+    expect(segunda.report.cache.result).toBe("exact");
+    expect(proveedor.llamadas).toHaveLength(1);
   });
 });
 
