@@ -26,6 +26,7 @@ import {
   type SavingsResult,
 } from "../src/index.js";
 import { scenarios, type Scenario } from "./scenarios.js";
+import { compresorDeRepeticionesLiterales } from "./compresor.js";
 import { writeReport } from "./report.js";
 
 // Realistic pricing (gpt-4o-mini-class): $/1K tokens.
@@ -52,7 +53,15 @@ const provider: Provider = baseUrl
   : createMockProvider();
 const mode = baseUrl ? "LIVE" : "MOCK";
 
-const layer = createSavingsLayer({ provider, defaultCostModel: COST });
+// El compresor va aquí por la misma razón que en `ab-live.ts`: sin él, el
+// escenario de compresión no comprime y la capa avisa —con razón— de que la
+// palanca se pidió y no hay con qué. Es local y determinista; la decisión de
+// aplicarlo la siguen tomando las tres verjas económicas del pipeline.
+const layer = createSavingsLayer({
+  provider,
+  defaultCostModel: COST,
+  compressor: compresorDeRepeticionesLiterales,
+});
 
 function pad(s: string, n: number): string {
   return s.length >= n ? s.slice(0, n) : s + " ".repeat(n - s.length);
