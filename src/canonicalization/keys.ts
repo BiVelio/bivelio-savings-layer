@@ -93,11 +93,36 @@ export function buildExactKey(
  * routed and the other is not, and coalescing hands one of them the other's
  * model. Whoever the layer decided must go to the strong model has to actually
  * go there.
+ *
+ * `deferrable` CLOSES THE SAME HOLE ON THE LATENCY AXIS, which is why it belongs
+ * here and NOT in {@link buildExactKey}. The two doors do not risk the same
+ * thing: the exact key hands out an answer that is ALREADY WRITTEN, where the
+ * processing tier only picked a queue and changes neither the text nor the wait
+ * of whoever receives it. This one binds a follower to a call that HAS NOT COME
+ * BACK YET, so it imposes the leader's wait on them.
+ *
+ * A caller who never set `savings.deferrable` must not be made to wait for one
+ * who did.
  */
 export function buildInflightKey(
   c: CanonicalRequest,
-  opciones: { servedModel?: string } = {},
+  opciones: { servedModel?: string; deferrable?: boolean } = {},
 ): string {
+  // MEDIDO, y por eso `deferrable` esta en el material. Con el proveedor
+  // simulado: lider con `savings.deferrable: true` (tier `flex`, 300 ms) y
+  // segunda peticion concurrente identica SIN la palanca (5 ms). La segunda
+  // esperaba 293 ms -- la espera del lider, no la suya -- y su informe no decia
+  // nada, porque `report.deferred` solo se publica a quien declaro la palanca:
+  // el unico sitio donde eso se veia era su monitorizacion.
+  //
+  // Contra el proveedor real la diferencia no son 300 ms. El `timeout` por
+  // defecto de flex son 10 minutos y el SDK reintenta dos veces, asi que una
+  // peticion de camino de usuario podia quedarse colgada minutos por la decision
+  // de otra.
+  //
+  // Este comentario va en `//` a proposito: el JSDoc de esta funcion SI viaja a
+  // `dist/index.d.ts`, y el trinquete de `superficie-publica-limpia` cuenta las
+  // lineas con acentos que se publican en npm.
   const material = stableStringify({
     tenant: c.tenantId,
     scope: c.authorizationScope,
@@ -111,6 +136,7 @@ export function buildInflightKey(
     data: c.structuredDataHash,
     temperature: c.temperature,
     seed: c.seed,
+    deferrable: opciones.deferrable === true,
   });
   return `bvsala:inflight:${GENERACION}:${sha256(material)}`;
 }

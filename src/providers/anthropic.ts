@@ -194,6 +194,32 @@ export class AnthropicProvider implements Provider {
     // sería un 400 por un campo que el llamante puso para otro proveedor, y
     // fallar por eso convertiría una petición portable en una avería.
 
+    // EL TIER DIFERIBLE NO EXISTE AQUÍ, Y HAY QUE DECIRLO EN VOZ ALTA.
+    //
+    // La API de Mensajes SÍ tiene un `service_tier`, y esa es justo la trampa:
+    // acepta 'auto' | 'standard_only', y lo que elige es capacidad PRIORITARIA
+    // —más rápida y más CARA— frente a la estándar. No hay un flex. Mandar
+    // cualquiera de los dos valores porque el llamante declaró la petición
+    // diferible no abarataría nada, y `standard_only` podría además anularle a un
+    // cliente con tier prioritario contratado una latencia que está pagando.
+    //
+    // El descuento del 50% por diferir existe en Anthropic, pero SOLO en la
+    // Message Batches API, que es asíncrona y no cabe en `generate()`. Así que
+    // aquí no se toca el cuerpo: se avisa una vez y la petición sale idéntica.
+    // El informe lo dirá igual, porque `usage.service_tier` de la respuesta SÍ se
+    // lee y dirá `standard` — que es la prueba, no la suposición, de que no hubo
+    // descuento.
+    if (req.deferrable === true) {
+      avisarUnaVez(
+        "anthropic-sin-tier-diferible",
+        "[bvsala] Esta petición se declaró diferible, pero la API de Mensajes de Anthropic NO tiene " +
+          "un tier síncrono más barato: su `service_tier` elige entre capacidad prioritaria (más " +
+          "cara) y estándar, no un flex. La petición sale sin cambios y el informe no acredita " +
+          "ningún descuento. El 50% por diferir existe en la Message Batches API, que es asíncrona " +
+          "y no cabe en una llamada de petición/respuesta.",
+      );
+    }
+
     this.marcarCache(req, system, messages, prefijoEnMensajes, prefijoEnSystem);
 
     return { body, contratoNativo };
@@ -333,10 +359,20 @@ export class AnthropicProvider implements Provider {
       );
     }
 
+    // El tier SERVIDO viaja aquí dentro de `usage`, no en la raíz como en OpenAI,
+    // y su vocabulario es otro: "standard" | "priority" | "batch". Se lee aunque
+    // esta capa no pida nunca un tier a este proveedor, y no es decorativo: es lo
+    // que permite al informe DEMOSTRAR que no hubo descuento en vez de suponerlo.
+    const servedServiceTier =
+      typeof usage.service_tier === "string" && usage.service_tier !== ""
+        ? usage.service_tier
+        : undefined;
+
     return {
       text: textoFinal,
       ...(toolCalls.length > 0 ? { toolCalls } : {}),
       ...(json.stop_reason ? { finishReason: traducirParada(json.stop_reason) } : {}),
+      ...(servedServiceTier ? { servedServiceTier } : {}),
       usage: {
         inputTokens,
         outputTokens,
@@ -467,6 +503,8 @@ interface RespuestaAnthropic {
     output_tokens?: number;
     cache_read_input_tokens?: number;
     cache_creation_input_tokens?: number;
+    /** "standard" | "priority" | "batch" — se trata como conjunto abierto. */
+    service_tier?: string;
   };
 }
 

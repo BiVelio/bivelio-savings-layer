@@ -8,6 +8,7 @@ import type {
   SavingsReport,
   ChatMessage,
   CacheOutcome,
+  DeferredExecutionReport,
   ModelCascadeMode,
   ModelCascadeReport,
   QualityStatus,
@@ -17,6 +18,12 @@ import { canonicalize, sha256, stableStringify } from "../canonicalization/canon
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
+import {
+  SIN_TIER_DIFERIBLE,
+  ahorroDelTier,
+  latenciaDelTier,
+  veredictoDelTier,
+} from "../economics/tier-diferido.js";
 import {
   VerjaDeCascada,
   economiaDelPar,
@@ -852,7 +859,19 @@ export class SavingsPipeline {
     // texto del líder tal cual. Sin esto, dos peticiones concurrentes idénticas
     // en las que solo una traía `modelCascade: "on"` se coalescían, y la que
     // tenía la cascada APAGADA recibía la respuesta del modelo barato.
-    const inflightKey = buildInflightKey(canonical, { servedModel: cascada.modeloServido });
+    //
+    // Y CON LA MARCA DE DIFERIBLE, por el mismo motivo en el otro eje. El tier no
+    // parte la clave EXACTA a propósito —ahí la respuesta ya está escrita y el
+    // tier sólo eligió la cola—, pero esta puerta ata al seguidor a una llamada
+    // que aún no ha vuelto. Sin separar, un llamante que NO declaró la palanca se
+    // coalescía con un líder que sí, y pagaba la latencia de `flex` (10 min de
+    // timeout por defecto, con dos reintentos del SDK) por una decisión que no
+    // era suya, sin nada en el informe que se lo dijera: `report.deferred` sólo
+    // se le publica a quien declaró la palanca.
+    const inflightKey = buildInflightKey(canonical, {
+      servedModel: cascada.modeloServido,
+      deferrable: toggles.deferrable === true,
+    });
     const runExpensive = async (): Promise<SavingsResult<T>> => {
       try {
         return await this.expensivePath<T>(
@@ -874,7 +893,7 @@ export class SavingsPipeline {
         trace.record("singleflight", "coalesced", { key: inflightKey });
         // The follower serves the leader's answer — measure that answer's output.
         return this.asCoalescedFollower<T>(
-          value, baselineInput, this.tokensFor(value.text ?? "", request), costModel,
+          value, baselineInput, this.tokensFor(value.text ?? "", request), costModel, request,
         );
       }
       return value;
@@ -1491,6 +1510,18 @@ export class SavingsPipeline {
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
+      // LO DECLARA EL CLIENTE Y VIAJA TAL CUAL. Que una peticion sea diferible es
+      // una propiedad del negocio, no del texto, asi que no hay heuristica que
+      // pueda deducirlo: el mismo prompt es diferible en un backfill nocturno y no
+      // lo es detras del cursor de un usuario.
+      //
+      // Va dentro de `peticionAlProveedor`, que es lo que una ESCALADA de la
+      // cascada repite identico, y eso es deliberado: enrutar y diferir son
+      // ortogonales -- una elige el modelo, la otra la cola en la que se sirve --,
+      // y si la escalada saliera sin la marca, la segunda llamada de una peticion
+      // que el cliente declaro diferible se pagaria a precio entero sin que nadie
+      // se lo hubiera pedido.
+      ...(toggles.deferrable ? { deferrable: true } : {}),
       constraintBackend: backendPlan.backend,
     };
 
@@ -1942,6 +1973,31 @@ export class SavingsPipeline {
       rendered,
       storedAtMs: this.now(),
     };
+    // EL TIER SERVIDO, LEIDO ANTES DE ARCHIVAR NADA.
+    //
+    // Y NO ENTRA EN LA CLAVE DE CACHE, que es la pregunta que habia que
+    // contestar. Una respuesta servida por `flex` es la MISMA respuesta: mismo
+    // modelo, mismo prompt, mismo `temperature` y mismo `seed`. El tier elige la
+    // cola en la que se atiende, no como se genera, asi que meterlo en la clave
+    // partiria la cache por un accidente de programacion del proveedor.
+    //
+    // El coste de esa particion no es teorico y va justo contra el trafico que
+    // esta palanca sirve: enriquecimiento y backfill repiten peticiones, o sea
+    // que viven del libro 1 (llamadas evitadas), que vale el 100% de una llamada
+    // -- el doble que el 50% del tier. Y hay algo peor: el tier servido no se
+    // conoce hasta DESPUES de llamar, asi que la clave tendria que construirse
+    // con el PEDIDO, y entonces dos peticiones identicas que pidieron tiers
+    // distintos no se encontrarian nunca aunque las dos acabaran servidas igual.
+    const diferido = this.informeDeDiferido(toggles, response, precioServido);
+    if (diferido) {
+      trace.record("deferred-tier", diferido.credited ? "credited" : "not-credited", {
+        ...(diferido.requestedTier ? { requestedTier: diferido.requestedTier } : {}),
+        ...(diferido.servedTier ? { servedTier: diferido.servedTier } : {}),
+        creditedLedger: "none",
+        reason: diferido.reason,
+      });
+    }
+
     // Cache writes are best-effort side effects AFTER the provider was already
     // billed. A failing cache backend must never fail this request — and must
     // never bubble to the fail-open handler, which would re-invoke (double-bill)
@@ -2086,6 +2142,12 @@ export class SavingsPipeline {
             }
           : {}),
       }),
+      // El tier se lee de `response`, que a estas alturas es la respuesta que de
+      // verdad se sirvio -- la del fuerte si la cascada escalo -- y se tarifa con
+      // `precioServido`, que es el precio de quien contesto. Las dos cosas tienen
+      // que venir de la misma llamada, o el descuento se aplicaria a los tokens de
+      // una y al precio de otra.
+      diferido,
     );
     // Las tool calls y el finishReason viajan HASTA EL LLAMANTE. Se quedaban en
     // ProviderResponse: el arreglo del adaptador (content:null + tool_calls)
@@ -2331,6 +2393,120 @@ export class SavingsPipeline {
     };
   }
 
+  /**
+   * El bloque `report.deferred` de una peticion que SI llamo al proveedor.
+   *
+   * TODO SALE DEL TIER SERVIDO, NUNCA DEL PEDIDO, y ese es el motivo de que este
+   * metodo exista en vez de rellenar el informe donde se manda la peticion. Un
+   * tier degradado se cobra a precio estandar EN SILENCIO -- la respuesta llega
+   * con exactamente la misma pinta --, asi que acreditar por haber pedido
+   * publicaria un descuento que la factura del cliente no trae. Es el mismo fallo
+   * que ya se cazo dos veces en este repo: un libro sin llamantes y una verja
+   * huerfana.
+   *
+   * El ahorro se tarifa sobre los tokens de LA LLAMADA CUYO TIER SE LEYO, y no
+   * sobre `cost.actual`. No es lo mismo: `cost.actual` puede llevar el dinero de
+   * una reparacion, de un sondeo o del intento descartado de la cascada, y de
+   * ninguna de esas tres se leyo el tier. Acreditarlas seria extender un
+   * descuento medido a llamadas que nadie miro.
+   */
+  private informeDeDiferido(
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    response: ProviderResponse,
+    precio: CostModel,
+  ): DeferredExecutionReport | undefined {
+    if (toggles.deferrable !== true) return undefined;
+
+    const pedido = response.requestedServiceTier;
+    const veredicto = veredictoDelTier(response.servedServiceTier);
+    const base: DeferredExecutionReport = {
+      ...(pedido ? { requestedTier: pedido } : {}),
+      ...(veredicto ? { servedTier: veredicto.servido } : {}),
+      credited: false,
+      creditedLedger: "none",
+      latency: latenciaDelTier(pedido),
+      reason: "",
+    };
+
+    if (!pedido) {
+      return { ...base, reason: SIN_TIER_DIFERIBLE };
+    }
+    if (!veredicto) {
+      // AUSENTE NO ES <<ESTANDAR>>. Significa que no se puede saber a que tarifa
+      // se facturo, y de lo que no se sabe no se acredita nada.
+      return {
+        ...base,
+        reason:
+          `asked the provider for the "${pedido}" tier, and it reported none back: the rate this ` +
+          `request was billed at cannot be known, so nothing is credited`,
+      };
+    }
+    if (veredicto.factor == null) {
+      return {
+        ...base,
+        reason:
+          `asked for "${pedido}" and the provider reports serving "${veredicto.servido}", a tier ` +
+          `this layer has no published rate for: nothing is credited`,
+      };
+    }
+    if (!veredicto.conDescuento) {
+      return {
+        ...base,
+        reason:
+          `asked for "${pedido}" and the provider reports serving "${veredicto.servido}", which ` +
+          `bills at the standard rate: this request was billed as if it had never been deferred`,
+      };
+    }
+
+    // Los tokens que el proveedor sirvio de su cache de prefijo se tarifan a SU
+    // tarifa tambien aqui. Sin esto el descuento del tier se aplicaria sobre un
+    // coste inflado (todo a precio de entrada normal) y saldria mayor del real,
+    // que es exactamente el sentido en el que no se puede errar.
+    const uso = response.usage;
+    const cacheados = Math.min(
+      Math.max(0, uso.cachedInputTokens ?? 0),
+      Math.max(0, uso.inputTokens),
+    );
+    const tarifaCacheada = precio.cachedInputPer1k ?? precio.inputPer1k;
+    const costeEstandar =
+      ((Math.max(0, uso.inputTokens) - cacheados) / 1000) * precio.inputPer1k +
+      (cacheados / 1000) * tarifaCacheada +
+      (Math.max(0, uso.outputTokens) / 1000) * precio.outputPer1k;
+    const ahorro = ahorroDelTier(veredicto, costeEstandar);
+
+    return {
+      ...base,
+      credited: true,
+      discountRate: redondear(veredicto.factor),
+      ...(ahorro != null ? { estimatedTierSaving: roundUsdPublico(ahorro) } : {}),
+      reason:
+        `the provider reports serving the "${veredicto.servido}" tier, which bills at ` +
+        `${(veredicto.factor * 100).toFixed(0)}% of the standard rate; the discount stacks with ` +
+        `provider prefix caching rather than replacing it`,
+    };
+  }
+
+  /**
+   * El bloque `report.deferred` de una peticion que NO llamo al proveedor: un
+   * acierto de cache, un resolver determinista, un seguidor de singleflight.
+   *
+   * Se publica igualmente, y no es relleno: sin el, la palanca desaparece del
+   * informe justo en las peticiones donde MAS ahorro. Y lo que dice es lo
+   * correcto -- no hubo tier porque no hubo llamada --, asi que nadie puede leer
+   * un descuento de proveedor sobre una llamada que no se hizo.
+   */
+  private diferidoSinLlamada(request: SavingsRequest): DeferredExecutionReport | undefined {
+    if (request.savings?.deferrable !== true) return undefined;
+    return {
+      credited: false,
+      creditedLedger: "none",
+      latency: "not applicable: no provider call was made for this request.",
+      reason:
+        "no provider call was made, so no processing tier was served and none is credited; the " +
+        "call was avoided outright, which is worth more than any tier discount on it",
+    };
+  }
+
   private finish<T>(
     request: SavingsRequest,
     canonical: ReturnType<typeof canonicalize>,
@@ -2347,6 +2523,7 @@ export class SavingsPipeline {
     backend = "none",
     providerMs = 0,
     cascada?: ModelCascadeReport | undefined,
+    diferido?: DeferredExecutionReport | undefined,
   ): SavingsResult<T> {
     // La validez estructural se COMPRUEBA aquí, no se hereda de un valor por
     // defecto. El parámetro tenía `= true`, y las cuatro rutas de atajo
@@ -2372,6 +2549,12 @@ export class SavingsPipeline {
     const report = this.buildReport(
       request, canonical, cacheResult, ledger, costModel, trace, route,
       formatChoice, ageMs, confidence, valid, backend, providerMs, cascada,
+      // El camino del proveedor pasa el suyo; los ATAJOS no lo pasan, y ahi es
+      // donde `diferidoSinLlamada` rellena. Sin esa rama, una peticion declarada
+      // diferible que acierta en cache salia SIN el bloque, y un panel que
+      // condiciona por su presencia habria dado por apagada una palanca que el
+      // cliente si encendio.
+      diferido ?? this.diferidoSinLlamada(request),
     );
     return {
       requestId: report.requestId,
@@ -2397,6 +2580,7 @@ export class SavingsPipeline {
     backend: string,
     providerMs: number,
     cascada: ModelCascadeReport | undefined,
+    diferido: DeferredExecutionReport | undefined,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
     const total = trace.elapsed();
@@ -2466,6 +2650,7 @@ export class SavingsPipeline {
       // singleflight es la excepción y hereda (ver asCoalescedFollower).
       qualityStatus: estadoDeCalidad(cacheResult, structurallyValid, degradado),
       ...(cascada ? { modelCascade: cascada } : {}),
+      ...(diferido ? { deferred: diferido } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
       },
@@ -2545,6 +2730,26 @@ export class SavingsPipeline {
       // porque este camino se toma cuando el optimizador ya falló. Publicar uno
       // vacío afirmaría que la palanca corrió.
       undefined,
+      // EL FAIL-OPEN NO PIDE TIER BARATO, Y ES UNA DECISION, NO UN OLVIDO. El
+      // tier diferible puede contestar 429 por falta de capacidad donde el
+      // estandar habria contestado; en el camino de ultimo recurso -- el que
+      // existe porque el optimizador YA se rompio -- cambiar disponibilidad por un
+      // 50% es el trueque equivocado. Pero se DICE, en vez de omitir el bloque:
+      // quien declaro la peticion diferible tiene que poder ver por que esta no lo
+      // fue.
+      request.savings?.deferrable === true
+        ? {
+            credited: false,
+            creditedLedger: "none",
+            latency:
+              "unchanged: the fail-open path asks for no processing tier, so this request was " +
+              "scheduled exactly as an ordinary one.",
+            reason:
+              "the optimizer failed and this request went out on the direct fail-open path, which " +
+              "asks for no cheaper tier: that tier can be refused for lack of capacity, and " +
+              "trading availability for a discount on a last-resort call is the wrong trade",
+          }
+        : undefined,
     );
     return {
       requestId: report.requestId,
@@ -2561,6 +2766,7 @@ export class SavingsPipeline {
     baselineInput: number,
     baselineOutput: number,
     costModel: CostModel,
+    request: SavingsRequest,
   ): SavingsResult<T> {
     const ledger = new SavingsLedger();
     ledger.avoidCall(baselineInput, baselineOutput);
@@ -2572,11 +2778,21 @@ export class SavingsPipeline {
     // registro de medición era imposible.
     const requestId = this.generateId();
 
+    // Se calcula UNA vez y se esparce, para que la clave `deferred` no llegue a
+    // existir con valor `undefined` cuando el seguidor no declaro nada: un panel
+    // que pregunta por la PRESENCIA del bloque no puede distinguir esas dos cosas.
+    const diferidoDelSeguidor = this.diferidoSinLlamada(request);
+    const bloqueDiferidoDelSeguidor = diferidoDelSeguidor
+      ? { deferred: diferidoDelSeguidor }
+      : {};
+
+    const { deferred: _delLider, ...informeDelLider } = leader.report;
+
     return {
       ...leader,
       requestId,
       report: {
-        ...leader.report,
+        ...informeDelLider,
         requestId,
         calls: { ...leader.report.calls, actualLlm: 0, avoidedLlm: 1 },
         // El bloque `tokens` se construye desde el ledger DEL SEGUIDOR, no se
@@ -2598,6 +2814,19 @@ export class SavingsPipeline {
             : {}),
         },
         cache: { result: "singleflight" },
+        // `deferred` SE RECONSTRUYE, NO SE HEREDA, y es el mismo motivo que los
+        // tokens de aqui arriba: el seguidor NO llamo al proveedor, asi que
+        // ningun tier se sirvio para el. Heredando el bloque del lider, un
+        // `estimatedTierSaving` de UNA llamada se republicaba N+1 veces -- una por
+        // seguidor -- sobre peticiones que no tocaron al proveedor. Es
+        // exactamente el fallo que el bloque `tokens` ya documenta.
+        //
+        // Y se reconstruye desde la peticion DEL SEGUIDOR, no la del lider: la
+        // clave de singleflight no lleva el flag (a proposito, igual que la de
+        // cache), asi que un seguidor que no declaro nada puede coalescerse con un
+        // lider que si, y viceversa. Lo que el informe del seguidor tiene que
+        // decir es lo que EL pidio.
+        ...bloqueDiferidoDelSeguidor,
         // `qualityStatus` es de lo POCO que sí se hereda del líder, y es
         // deliberado: el seguidor sirve EL TEXTO DEL LÍDER, así que le
         // corresponde la calidad del líder. Coalescerse no verifica nada, de

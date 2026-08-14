@@ -1,3 +1,4 @@
+import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
 import { avisarUnaVez } from "../util/warn-once.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
 
@@ -217,6 +218,18 @@ export class OpenAICompatibleProvider implements Provider {
     // tenerla — el mismo fallo que la caché exacta cerró keyeando por tenant de
     // verdad.
     if (req.promptCacheKey != null) body["prompt_cache_key"] = req.promptCacheKey;
+    // EL TIER DIFERIBLE. `flex` cobra los tokens a tarifa de la Batch API —la
+    // mitad— a cambio de una latencia mayor y variable, y compone con la caché de
+    // prefijo en vez de pisarla (la propia guía de OpenAI dice que los descuentos
+    // de caché se suman encima). Por eso va DESPUÉS de `prompt_cache_key` y no en
+    // su lugar: las dos palancas viajan juntas.
+    //
+    // Se manda SOLO cuando el llamante lo declaró. Y hay una razón extra para no
+    // mandar `service_tier: "default"` cuando no lo declaró, que parece inocuo:
+    // el valor por defecto de OpenAI es `auto`, o sea «lo que diga la
+    // configuración del proyecto», y fijar `default` desde aquí le anularía al
+    // cliente una elección que hizo en su panel.
+    if (req.deferrable === true) body["service_tier"] = TIER_DIFERIBLE_OPENAI;
     // `stablePrefixMessages` se ignora a propósito: aquí no hay nada que marcar.
     // Ignorarlo no pierde el descuento (es automático); marcarlo no existe.
     if (req.schema && nativo) {
@@ -332,10 +345,27 @@ export class OpenAICompatibleProvider implements Provider {
 
     const finishReason = json.choices?.[0]?.finish_reason;
 
+    // EL TIER QUE SE SIRVIÓ, NO EL QUE SE PIDIÓ. OpenAI lo dice sin rodeos: «the
+    // response body will include the `service_tier` value based on the processing
+    // mode actually used to serve the request. This response value may be
+    // different from the value set in the parameter.» Un `flex` degradado
+    // contesta `default` y se cobra entero, en silencio.
+    //
+    // Se propaga TAL CUAL, sin normalizar y sin rellenar cuando falta: el
+    // vocabulario es del proveedor y puede crecer, y un hueco significa «no se
+    // sabe», que no es lo mismo que «estándar». Quien decide qué se acredita es
+    // `veredictoDelTier`, y ante un valor que no conoce no acredita nada.
+    const servedServiceTier =
+      typeof json.service_tier === "string" && json.service_tier !== ""
+        ? json.service_tier
+        : undefined;
+
     return {
       text,
       ...(toolCalls.length > 0 ? { toolCalls } : {}),
       ...(finishReason ? { finishReason } : {}),
+      ...(servedServiceTier ? { servedServiceTier } : {}),
+      ...(req.deferrable === true ? { requestedServiceTier: TIER_DIFERIBLE_OPENAI } : {}),
       usage: {
         inputTokens,
         outputTokens,
@@ -355,6 +385,8 @@ export class OpenAICompatibleProvider implements Provider {
 
 interface OpenAIChatResponse {
   choices?: { message?: { content?: string }; finish_reason?: string }[];
+  /** 'auto' | 'default' | 'flex' | 'scale' | 'priority' | 'fast' — open set on purpose. */
+  service_tier?: string;
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
