@@ -120,6 +120,52 @@ export class SavingsLedger {
   discoveryInput = 0;
   /** OUTPUT of the discovery probe. Our cost, kept out of the baseline. */
   discoveryOutput = 0;
+
+  // --- La cascada de modelos: dinero, no tokens ------------------------------
+  //
+  // Cuando la cascada escala (o cuando el modo sombra toma una muestra) hay UNA
+  // llamada más, y la paga OTRO MODELO a OTRO PRECIO. Eso rompe el supuesto de
+  // todo lo de arriba: `estimateCost` recibe UN `CostModel` y tarifa con él tanto
+  // el baseline como lo real, así que meter los tokens del intento barato en
+  // `actualInput`/`actualOutput` los tarifaría al precio del modelo FUERTE — que
+  // no es lo que costaron, y en el sentido de cobrar de más.
+  //
+  // Así que de esa llamada entra el DINERO, ya tarifado con su propio precio, y
+  // no los tokens. Los tokens no se pierden: se publican en
+  // `report.modelCascade` y en la traza, que es donde se pueden leer junto al
+  // modelo que los facturó.
+  //
+  // Y entra SOLO en `actual`, nunca en el baseline, exactamente como
+  // `repairInput`/`discoveryInput`: es una llamada que pone la capa, no el
+  // cliente. Si entrara en el baseline, la medición se pagaría a sí misma y una
+  // petición que costó MÁS se publicaría con ahorro positivo.
+  /**
+   * Already-priced cost of a call the model cascade made to a cheaper model
+   * whose answer was NOT served. Added to `actual`, never to the baseline.
+   */
+  extraCostUsd = 0;
+  /** Input tokens of that call. Published, not priced here. */
+  cascadeInput = 0;
+  /** Output tokens of that call. Published, not priced here. */
+  cascadeOutput = 0;
+
+  /**
+   * Record a call to the cheap model that did not produce the served answer:
+   * the one discarded on an escalation, or a shadow-mode sample.
+   *
+   * The caller raises `actualLlm`, because the call happened and the report owes
+   * the reader that count.
+   */
+  cascadeAttempt(
+    usage: { inputTokens: number; outputTokens: number },
+    cheapPrice: CostModel,
+  ): void {
+    this.cascadeInput += Math.max(0, usage.inputTokens);
+    this.cascadeOutput += Math.max(0, usage.outputTokens);
+    this.extraCostUsd +=
+      (Math.max(0, usage.inputTokens) / 1000) * cheapPrice.inputPer1k +
+      (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k;
+  }
   /**
    * Lo que de verdad hizo la compresión, para publicarlo en
    * `SavingsReport.compression`. El campo estaba declarado en el contrato y no lo
@@ -298,8 +344,15 @@ export class SavingsLedger {
 
     const baselineEstimate =
       precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k;
+    // `extraCostUsd` SOLO aquí, y ésa es toda la asimetría: el intento con el
+    // modelo barato es dinero que el cliente pagó de verdad, así que tiene que
+    // estar en `actual`; y es una llamada que puso la capa, así que no puede
+    // estar en aquello contra lo que se compara. Una petición que escaló sale con
+    // ahorro NEGATIVO, que es exactamente lo que le pasó a su factura.
     const actual =
-      precioEntrada(this.actualInput) + (this.actualOutput / 1000) * model.outputPer1k;
+      precioEntrada(this.actualInput) +
+      (this.actualOutput / 1000) * model.outputPer1k +
+      this.extraCostUsd;
 
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;

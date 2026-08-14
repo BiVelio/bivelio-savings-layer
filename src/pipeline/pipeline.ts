@@ -8,6 +8,8 @@ import type {
   SavingsReport,
   ChatMessage,
   CacheOutcome,
+  ModelCascadeMode,
+  ModelCascadeReport,
   QualityStatus,
   ToolDescriptor,
 } from "../contracts/types.js";
@@ -15,6 +17,19 @@ import { canonicalize, sha256, stableStringify } from "../canonicalization/canon
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
+import {
+  VerjaDeCascada,
+  economiaDelPar,
+  modeloBarato,
+  PARES_POR_DEFECTO,
+  type EconomiaDelPar,
+} from "../economics/cascada-de-modelos.js";
+import {
+  elegibilidadDeLaCascada,
+  hechosDivergentes,
+  verificarRespuesta,
+  type FuerzaDelVerificador,
+} from "../constraints/verificador-de-cascada.js";
 import { evaluatePolicy } from "../policy/policy.js";
 import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
@@ -75,6 +90,34 @@ declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
 interface TestigoDeFacturacion {
   llamadas: number;
   falloDelProveedor: boolean;
+}
+
+/**
+ * Lo que la cascada de modelos decidió para ESTA petición, tomado antes de
+ * tocar la caché porque la clave de caché depende de ello.
+ */
+interface DecisionDeCascada {
+  modo: ModelCascadeMode;
+  /** El que pidió el llamante. El hecho de partida, y nunca se reescribe. */
+  modeloPedido: string;
+  /** El modelo al que se va a llamar. Igual al pedido salvo que `enruta`. */
+  modeloServido: string;
+  /** El modelo barato del par, exista o no la intención de usarlo. */
+  candidato: string | null;
+  /** Solo cierto en modo `on` y con la verja a favor. */
+  enruta: boolean;
+  /** Si la petición admitiría cascada: hay contrato y no hay escritura. */
+  elegible: boolean;
+  razon: string;
+  fuerza: FuerzaDelVerificador;
+  /** Identificador del workload sobre el que se mide P(escalar). */
+  bucket: string;
+  economia: EconomiaDelPar | null;
+  observada: number | null;
+  muestras: number;
+  precioBarato: CostModel | null;
+  /** Fracción de peticiones de sombra que pagan una llamada extra para medir. */
+  tasaDeMuestreo: number;
 }
 
 /**
@@ -175,12 +218,25 @@ export class SavingsPipeline {
    */
   private readonly verjaDeCache = new VerjaDeCacheDePrefijo();
 
+  /**
+   * Verja de la cascada de modelos. Vive en la instancia por lo mismo que las
+   * otras dos: lo que aprende —la P(escalar) real de cada workload— es una
+   * MEDICIÓN, y una medición hay que acumularla entre peticiones o no se llega a
+   * tener nunca.
+   */
+  private readonly verjaDeCascada: VerjaDeCascada;
+
   constructor(config: SavingsLayerConfig) {
     this.config = config;
     this.deps = resolveDependencies(config);
     this.now = config.now ?? (() => Date.now());
     this.generateId = config.generateId ?? (() => randomId());
     this.contratosQueIncumplen = config.constraintMemory ?? new Set<string>();
+    this.verjaDeCascada = new VerjaDeCascada(
+      config.modelCascade?.exploration != null
+        ? { exploracion: config.modelCascade.exploration }
+        : {},
+    );
   }
 
   /**
@@ -293,6 +349,7 @@ export class SavingsPipeline {
    */
   private decidirMarcadoDeCache(
     request: SavingsRequest,
+    modeloServido: string,
     messages: ChatMessage[],
     toolSelection: { tools: SavingsRequest["tools"] & object; setIsStable: boolean },
     descubrimientoActivo: boolean,
@@ -301,11 +358,11 @@ export class SavingsPipeline {
   ): { marcar: boolean; huella: string; mensajesDePrefijo: number } {
     const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0 };
 
-    const tier = tramoDelModelo(request.model, this.config.compressionEconomics);
+    const tier = tramoDelModelo(modeloServido, this.config.compressionEconomics);
     if (!tier) {
       trace.record("prefix-cache", "skipped", {
         reason:
-          `no cache read discount for model "${request.model}" (unrecognised provider, ` +
+          `no cache read discount for model "${modeloServido}" (unrecognised provider, ` +
           `or a declared tier that does not discount reads): not claiming a cacheable prefix`,
       });
       return nada;
@@ -348,7 +405,7 @@ export class SavingsPipeline {
     // frontera de aislamiento, y fingir lo contrario sería peor que no tenerla.
     const huella = sha256(
       stableStringify({
-        model: request.model,
+        model: modeloServido,
         tools: (toolSelection.tools ?? []).map((t) => t.id),
         prefijo: prefijo.map((m) => `${m.role}:${m.content}`),
       }),
@@ -368,6 +425,181 @@ export class SavingsPipeline {
     return decision.marcar
       ? { marcar: true, huella, mensajesDePrefijo }
       : nada;
+  }
+
+  /**
+   * LA CASCADA DE MODELOS: ¿a qué modelo va esta petición, y qué se mide?
+   *
+   * SE DECIDE AQUÍ, ANTES DE LA ETAPA 2, y la posición es la mitad del diseño.
+   * La clave de la caché exacta se construye con el modelo que va a CONTESTAR
+   * (ver `buildExactKey`), así que la decisión tiene que estar tomada antes de
+   * tocar la caché o se guardaría la respuesta del barato bajo la clave del
+   * fuerte — un cambio de modelo silencioso y diferido, que es la peor versión
+   * del cambio de modelo silencioso. Y puede decidirse tan pronto porque no
+   * necesita nada del prompt: le bastan el modelo, el contrato, las herramientas
+   * y el precio.
+   *
+   * TRES MODOS, y solo uno toca algo:
+   *  · `off` (defecto)  ni mide ni decide. Ni siquiera se construye el informe.
+   *  · `shadow`         mide y publica; el modelo NO cambia. Es gratis salvo que
+   *                     se pida muestreo, que es un opt-in aparte y con precio.
+   *  · `on`             enruta de verdad, con la verja de apagado automático.
+   *
+   * LA ELEGIBILIDAD MANDA SOBRE EL DINERO, y por eso se comprueba primero: sin
+   * contrato de salida o con herramientas de escritura no hay verificador que
+   * valga, y un par estupendamente barato no compra el derecho a servir sin
+   * comprobar nada.
+   */
+  private decidirCascada(
+    request: SavingsRequest,
+    canonical: ReturnType<typeof canonicalize>,
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    trace: TraceCollector,
+  ): DecisionDeCascada {
+    const modo: ModelCascadeMode = toggles.modelCascade ?? "off";
+    const apagada: DecisionDeCascada = {
+      modo: "off",
+      modeloPedido: request.model,
+      modeloServido: request.model,
+      candidato: null,
+      enruta: false,
+      elegible: false,
+      razon: "the model cascade is off",
+      fuerza: "none",
+      bucket: "",
+      economia: null,
+      observada: null,
+      muestras: 0,
+      precioBarato: null,
+      tasaDeMuestreo: 0,
+    };
+    if (modo === "off") return apagada;
+
+    const elegibilidad = elegibilidadDeLaCascada({
+      schema: request.response?.schema,
+      tools: request.tools,
+    });
+
+    const candidato = modeloBarato(request.model, this.config.modelCascade?.pairs ?? PARES_POR_DEFECTO);
+    const precioFuerte = this.costModelFor(request.model);
+    const precioBarato = candidato ? this.costModelFor(candidato) : undefined;
+    const economia = economiaDelPar(precioBarato, precioFuerte);
+
+    // El bucket: MISMO trabajo, no misma petición. Lleva el tenant (dos clientes
+    // no comparten medición), el contrato y su versión (lo que de verdad define
+    // "tipo de petición"), el par de modelos y las herramientas. NO lleva el
+    // texto del usuario, ni siquiera hasheado: es un identificador de workload
+    // que sale en el informe, y ahí no puede viajar contenido de nadie.
+    const bucket = sha256(
+      stableStringify({
+        tenant: canonical.tenantId,
+        scope: canonical.authorizationScope,
+        contract: canonical.contractId,
+        schema: canonical.schemaVersion,
+        fuerte: request.model,
+        barato: candidato,
+        tools: canonical.toolsetHash,
+      }),
+    );
+
+    const medido = this.verjaDeCascada.estado(bucket);
+    const base = {
+      modo,
+      modeloPedido: request.model,
+      modeloServido: request.model,
+      candidato,
+      enruta: false,
+      elegible: false,
+      razon: elegibilidad.razon,
+      fuerza: elegibilidad.fuerza,
+      bucket,
+      economia,
+      // `null` mientras no haya NADA medido, nunca 0: un cero optimista sobre
+      // cero muestras diría «este workload no escala jamás» a quien lea el
+      // informe de su primera petición.
+      observada: medido && medido.enrutadas > 0 ? medido.escaladas / medido.enrutadas : null,
+      muestras: medido?.enrutadas ?? 0,
+      precioBarato: precioBarato ?? null,
+      tasaDeMuestreo: 0,
+    } satisfies DecisionDeCascada;
+
+    const rechazar = (razon: string): DecisionDeCascada => {
+      trace.record("model-cascade", modo === "on" ? "not routed" : "not eligible", { reason: razon });
+      return { ...base, razon };
+    };
+
+    if (!elegibilidad.elegible) return rechazar(elegibilidad.razon);
+    if (!candidato) {
+      return rechazar(
+        `no cheaper model is paired with "${request.model}"; declare one in ` +
+          `createSavingsLayer({ modelCascade: { pairs } }) if your provider has one`,
+      );
+    }
+    if (!economia) {
+      return rechazar(
+        `no list price for "${request.model}" or "${candidato}", so the arithmetic that decides ` +
+          `whether routing pays cannot be run; pass \`costModels\` for both`,
+      );
+    }
+    if (!economia.viable) return rechazar(economia.razon);
+
+    // A partir de aquí el par vale la pena. En SOMBRA se queda en eso: se publica
+    // lo que se habría hecho y no se toca el modelo.
+    const tasaDeMuestreo = Math.min(1, Math.max(0, this.config.modelCascade?.shadowSampleRate ?? 0));
+    if (modo === "shadow") {
+      trace.record("model-cascade", "shadow", {
+        candidateModel: candidato,
+        costRatio: economia.r,
+        breakEvenEscalationRate: economia.equilibrio,
+        verifier: elegibilidad.fuerza,
+        workload: bucket,
+        note:
+          "measuring only: the request goes to the model you asked for. The escalation rate is not " +
+          "a quality score — a well-formed answer with wrong content passes the verifier.",
+      });
+      return { ...base, elegible: true, razon: elegibilidad.razon, tasaDeMuestreo };
+    }
+
+    const verja = this.verjaDeCascada.decidir(bucket, economia);
+    if (!verja.enrutar) {
+      trace.record("model-cascade", "off (gate)", {
+        reason: verja.razon,
+        observedEscalationRate: verja.observada,
+        breakEvenEscalationRate: economia.equilibrio,
+      });
+      return { ...base, elegible: true, razon: verja.razon, observada: verja.observada, muestras: verja.muestras };
+    }
+
+    // ENRUTAR NUNCA ES SILENCIOSO. Un aviso por proceso y por par, además de la
+    // traza y del informe: cambiar el modelo de un cliente es exactamente el tipo
+    // de cosa de la que uno se entera tarde si solo está en un campo JSON.
+    this.avisar(
+      `cascada:${request.model}->${candidato}`,
+      `[bv-sala] model cascade ON: requests for "${request.model}" may be answered by ` +
+        `"${candidato}" when a deterministic gate accepts the answer. The gate checks the SHAPE of ` +
+        `the answer against your output contract, never its meaning, so a well-formed answer with ` +
+        `wrong content is served and counted as a success. report.model always names the model that ` +
+        `answered, and report.qualityStatus reads "bounded_degradation".`,
+    );
+    trace.record("model-cascade", "routed", {
+      candidateModel: candidato,
+      costRatio: economia.r,
+      breakEvenEscalationRate: economia.equilibrio,
+      observedEscalationRate: verja.observada,
+      verifier: elegibilidad.fuerza,
+      workload: bucket,
+      reason: verja.razon,
+    });
+    return {
+      ...base,
+      modeloServido: candidato,
+      enruta: true,
+      elegible: true,
+      razon: verja.razon,
+      observada: verja.observada,
+      muestras: verja.muestras,
+      tasaDeMuestreo: 0,
+    };
   }
 
   /**
@@ -517,7 +749,17 @@ export class SavingsPipeline {
     const policy = evaluatePolicy(canonical);
     const toggles = request.savings ?? {};
     this.avisarDePalancasSinConfigurar(toggles);
-    const costModel = this.costModelFor(request.model);
+
+    // --- Etapa 0: la cascada de modelos. ---
+    //
+    // VA ANTES QUE TODO LO DEMÁS porque decide QUIÉN contesta, y de eso depende
+    // la clave de la caché exacta (etapa 2). Ver `decidirCascada`.
+    const cascada = this.decidirCascada(request, canonical, toggles, trace);
+    // El precio con el que se tarifa TODA la petición es el del modelo que va a
+    // contestar. Si sirve el barato y se tarifara con el fuerte, `cost.actual`
+    // —la única cifra del informe que se contrasta contra la factura— saldría
+    // hasta veinte veces por encima de lo que el cliente va a pagar.
+    const costModel = this.costModelFor(cascada.modeloServido);
 
     trace.record("canonicalize", "done", {
       tenant: canonical.tenantId,
@@ -554,12 +796,26 @@ export class SavingsPipeline {
           trace,
           defaultRoute(),
           jsonFallbackChoice(),
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          // Aquí NO ha contestado ningún modelo: lo calculó un resolver. Aunque la
+          // cascada hubiera decidido enrutar, el modelo servido es el que pidió el
+          // llamante — porque no se sirvió modelo ninguno, y decir "gpt-4o-mini"
+          // sería atribuirle una respuesta que no escribió.
+          this.informeDeCascada(cascada, { servedModel: request.model }),
         );
       }
     }
 
     // --- Stage 2: exact cache (avoid the call entirely). ---
-    const exactKey = buildExactKey(canonical);
+    // LA CLAVE LLEVA EL MODELO QUE VA A CONTESTAR. Con la cascada enrutando, una
+    // respuesta del barato se guarda bajo SU clave y solo se le sirve a quien
+    // vuelva a enrutar; quien pida el fuerte no la ve nunca, ni desde este
+    // proceso ni desde otro que comparta el Redis.
+    const exactKey = buildExactKey(canonical, { servedModel: cascada.modeloServido });
     if (policy.allowExactCache && toggles.exactCache !== false) {
       const hit = await this.deps.exactCache.get<T>(exactKey);
       if (hit) {
@@ -569,6 +825,11 @@ export class SavingsPipeline {
         return this.finish<T>(
           request, canonical, hit, "exact", ledger, costModel, trace,
           defaultRoute(), jsonFallbackChoice(), this.now() - hit.storedAtMs,
+          undefined, undefined, undefined, undefined,
+          // Se repite una respuesta que escribió el modelo de la clave. Si la
+          // clave era la del barato, lo honesto es decir que la sirvió el barato:
+          // un acierto de caché no asciende a una respuesta de categoría.
+          this.informeDeCascada(cascada),
         );
       }
       trace.record("exact-cache", "miss");
@@ -580,7 +841,7 @@ export class SavingsPipeline {
       try {
         return await this.expensivePath<T>(
           testigo, request, canonical, policy, toggles, ledger, costModel, trace,
-          exactKey, baselineInput,
+          exactKey, baselineInput, cascada,
         );
       } catch (err) {
         // Aquí, y no en el catch de generate(), porque este es el ÚNICO punto
@@ -616,6 +877,7 @@ export class SavingsPipeline {
     trace: TraceCollector,
     exactKey: string,
     baselineInput: number,
+    cascada: DecisionDeCascada,
   ): Promise<SavingsResult<T>> {
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
@@ -647,7 +909,13 @@ export class SavingsPipeline {
         return this.finish<T>(
           request, canonical, hit.record.answer as CachedAnswer<T>, "semantic",
           ledger, costModel, trace, defaultRoute(), jsonFallbackChoice(),
-          hit.ageMs, hit.confidence,
+          hit.ageMs, hit.confidence, undefined, undefined, undefined,
+          // La caché semántica NUNCA guarda una respuesta enrutada (ver la
+          // escritura de la etapa 12: su identidad la fija `canonical.model`, el
+          // que PIDIÓ el llamante, así que una respuesta del barato guardada ahí
+          // se le serviría a quien pidió el fuerte). O sea que un acierto
+          // semántico viene siempre del modelo pedido.
+          this.informeDeCascada(cascada, { servedModel: request.model }),
         );
       }
       trace.record("semantic-cache", "miss");
@@ -1115,8 +1383,17 @@ export class SavingsPipeline {
     // backend puede imponer el contrato es el contrato que va a recibir.
     const esquemaAlProveedor = codebook?.applied ? codebook.plan.compactSchema : schema;
 
+    // Se resuelve para el modelo que VA A CONTESTAR, no para el que se pidió.
+    // Qué backend puede imponer el contrato es una propiedad del modelo concreto
+    // —`gpt-4` no acepta `response_format` y `gpt-4o` sí—, así que con la cascada
+    // enrutando, preguntarle al modelo pedido daría una garantía que el que
+    // contesta no puede dar.
     let backendPlan: ConstraintPlan = esquemaAlProveedor
-      ? resolveConstraintBackend(request.model, esquemaAlProveedor, this.deps.constraintBackends)
+      ? resolveConstraintBackend(
+          cascada.modeloServido,
+          esquemaAlProveedor,
+          this.deps.constraintBackends,
+        )
       : { backend: "none", reason: "no output contract" };
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
@@ -1127,8 +1404,16 @@ export class SavingsPipeline {
     // publicaría como latencia del proveedor. Que la decisión no necesite
     // esperar al sondeo es justamente lo que permite dejarla donde estaba: la
     // palanca `toolDiscovery` basta para decidir, sin su resultado.
+    // Con el MODELO SERVIDO, y esta es la composición con #71 que hay que tener
+    // presente antes de encender la cascada: LAS CACHÉS DE PREFIJO SON POR
+    // MODELO. Enrutar parte el tráfico de un prefijo en dos poblaciones —la del
+    // fuerte y la del barato— y cada una tiene que pagar su propia exploración
+    // para descubrir su tasa de aciertos. Si la huella llevara el modelo pedido,
+    // las dos poblaciones se mezclarían en una sola medición y la verja decidiría
+    // sobre un promedio de dos cachés distintas, que no es la tasa de ninguna.
     const marcado = this.decidirMarcadoDeCache(
       request,
+      cascada.modeloServido,
       messages,
       toolSelection,
       toggles.toolDiscovery === true,
@@ -1168,8 +1453,11 @@ export class SavingsPipeline {
     const herramientasAEnviar = descubrimiento.tools;
     ledger.actualTools = herramientasAEnviar.length;
 
-    let response = await this.llamarProveedor({
-      model: request.model,
+    // Los argumentos de la llamada, en una constante, porque una ESCALADA de la
+    // cascada tiene que repetirlos idénticos cambiando solo el modelo. Si los dos
+    // brazos difirieran en algo más, la P(escalar) que se mide sería la de otra
+    // petición y no serviría para decidir sobre ésta.
+    const peticionAlProveedor = {
       messages,
       // Lo que viaja es lo que SALIÓ del descubrimiento, no las candidatas. Los
       // dos coinciden siempre que `marcado.marcar` es cierto —la verja no marca
@@ -1182,26 +1470,29 @@ export class SavingsPipeline {
       // sobre CUÁL es: el esquema no está en `messages`, así que no entra en el
       // prefijo que se marca ni mueve su frontera.
       ...(esquemaAlProveedor ? { schema: esquemaAlProveedor } : {}),
-      ...(marcado.marcar
-        ? {
-            stablePrefixMessages: marcado.mensajesDePrefijo,
-            promptCacheKey: marcado.huella,
-          }
-        : {}),
       ...(request.response?.maxOutputTokens != null
         ? { maxOutputTokens: request.response.maxOutputTokens }
         : {}),
       ...(request.temperature != null ? { temperature: request.temperature } : {}),
       ...(request.seed != null ? { seed: request.seed } : {}),
       constraintBackend: backendPlan.backend,
+    };
+
+    let response = await this.llamarProveedor({
+      model: cascada.modeloServido,
+      ...peticionAlProveedor,
+      ...(marcado.marcar
+        ? {
+            stablePrefixMessages: marcado.mensajesDePrefijo,
+            promptCacheKey: marcado.huella,
+          }
+        : {}),
     }, testigo);
     // Acumulativo, no asignado: con schema-on-demand esta ya es la SEGUNDA llamada
     // de la petición y el sondeo anterior también costó dinero. Asignar borraba su
     // rastro del informe, que es como el fail-open llegó a publicar `actualLlm: 1`
     // sobre tres llamadas facturadas.
     ledger.actualLlm += 1;
-    ledger.actualInput += response.usage.inputTokens;
-    ledger.actualOutput += response.usage.outputTokens;
 
     // --- Etapa 10b: deshacer el codebook ---
     //
@@ -1222,23 +1513,91 @@ export class SavingsPipeline {
     // gastado el modelo escribiendo la forma larga. La diferencia local entre las
     // dos formas de ESTA respuesta sí se puede contar, y se anota en la traza,
     // pero se anota como lo que es: una cuenta local, no facturable, sin libro.
-    let textoServido = response.text;
-    if (codebook?.applied) {
-      const compacta = tryParse(response.text);
-      if (compacta.ok) {
-        textoServido = JSON.stringify(codebook.plan.expand(compacta.value));
-        trace.record("output-codebook", "expanded", {
-          localOutputTokensCompact: this.tokensFor(response.text, request),
-          localOutputTokensExpanded: this.tokensFor(textoServido, request),
-          creditedLedger: "none",
-          note: "local count of the served answer in both shapes; not credited to any ledger",
-        });
-      } else {
-        // Sin JSON no hay nada que expandir. Se deja el texto crudo para que el
-        // validador de la etapa 11 diagnostique el fallo real ("not valid JSON")
-        // en vez de uno inventado por la expansión.
-        trace.record("output-codebook", "not-expanded (response was not JSON)");
+    //
+    // ES UNA FUNCIÓN Y NO UN BLOQUE porque la cascada puede tener DOS respuestas
+    // que expandir (la del barato, para juzgarla, y la del fuerte si se escala), y
+    // el verificador tiene que juzgar la forma DEL LLAMANTE — juzgar la compacta
+    // contra el esquema original rechazaría todas y escalaría siempre.
+    const expandirDelCodebook = (texto: string): string => {
+      if (!codebook?.applied) return texto;
+      const compacta = tryParse(texto);
+      return compacta.ok ? JSON.stringify(codebook.plan.expand(compacta.value)) : texto;
+    };
+
+    let textoServido = expandirDelCodebook(response.text);
+    // El uso de la llamada QUE SE MARCÓ, capturado antes de que una escalada
+    // pueda reemplazar `response`. La medición de la caché de prefijo solo vale
+    // de la petición que llevaba la marca; leer el uso de la escalada —que sale
+    // sin marcar, y encima contra la caché de OTRO modelo— apuntaría un fallo de
+    // acierto que nunca tuvo ocasión de producirse y apagaría la verja por una
+    // medición que no es sobre ella.
+    const usoDeLaLlamadaMarcada = response.usage;
+
+    // --- Etapa 10c: la cascada de modelos verifica y, si hace falta, escala. ---
+    let escalo = false;
+    if (cascada.enruta) {
+      const veredicto = verificarRespuesta({
+        texto: textoServido,
+        schema,
+        finishReason: response.finishReason,
+        pidioHerramientas: (response.toolCalls?.length ?? 0) > 0,
+      });
+      // Se apunta SIEMPRE, acepte o rechace: la tasa de escalado de este workload
+      // es la razón de ser de la verja, y solo se puede medir sobre peticiones que
+      // de verdad se enrutaron.
+      this.verjaDeCascada.registrar(cascada.bucket, !veredicto.acepta);
+      trace.record("model-cascade", veredicto.acepta ? "accepted" : "escalating", {
+        servedModel: cascada.modeloServido,
+        reason: veredicto.motivo,
+        checks: veredicto.comprobaciones,
+      });
+      if (!veredicto.acepta) {
+        escalo = true;
+        // El intento con el barato ya está pagado y no produjo la respuesta: su
+        // dinero va a `actual` con SU precio, y ni sus tokens ni su coste tocan el
+        // baseline. Es la misma regla que la reparación y el sondeo.
+        ledger.cascadeAttempt(response.usage, cascada.precioBarato ?? costModel);
+        ledger.actualLlm += 1;
+        // Sin `promptCacheKey`: el prefijo que se midió es el del modelo barato, y
+        // marcar aquí pagaría la prima de escritura de una caché (la del fuerte)
+        // sobre la que esta petición no tiene ninguna medición.
+        response = await this.llamarProveedor(
+          { model: request.model, ...peticionAlProveedor },
+          testigo,
+        );
+        textoServido = expandirDelCodebook(response.text);
       }
+    }
+    const modeloServido = escalo ? request.model : cascada.modeloServido;
+    // EL PRECIO SIGUE AL MODELO QUE ACABÓ CONTESTANDO. `costModel` se resolvió
+    // antes de la etapa 2 con el modelo que la cascada iba a usar; si se ha
+    // escalado, quien contesta es otro y sus tokens los factura a SU tarifa.
+    // Sin esto, una petición escalada publicaba `cost.actual` con el precio del
+    // barato sobre tokens del fuerte: casi diecisiete veces por debajo de lo que
+    // el cliente iba a pagar, y sobre la única cifra del informe que se contrasta
+    // contra la factura.
+    const precioServido = escalo ? this.costModelFor(request.model) : costModel;
+
+    // La contabilidad de tokens habla de la llamada que produjo LO SERVIDO. La
+    // del intento descartado vive en `ledger.cascadeInput/Output`, que se publican
+    // aparte porque los facturó otro modelo a otro precio y sumarlos aquí los
+    // tarifaría al precio equivocado.
+    ledger.actualInput += response.usage.inputTokens;
+    ledger.actualOutput += response.usage.outputTokens;
+
+    if (codebook?.applied) {
+      trace.record(
+        "output-codebook",
+        tryParse(response.text).ok ? "expanded" : "not-expanded (response was not JSON)",
+        tryParse(response.text).ok
+          ? {
+              localOutputTokensCompact: this.tokensFor(response.text, request),
+              localOutputTokensExpanded: this.tokensFor(textoServido, request),
+              creditedLedger: "none",
+              note: "local count of the served answer in both shapes; not credited to any ledger",
+            }
+          : {},
+      );
     }
 
     // EL PLAN SE DECIDE ANTES DE LLAMAR; LO QUE SE PUBLICA TIENE QUE SER LO QUE
@@ -1303,14 +1662,83 @@ export class SavingsPipeline {
     // ocasión de acertar, y la verja se apagaría por una medición que no es
     // sobre ella.
     if (marcado.marcar) {
-      this.verjaDeCache.registrar(marcado.huella, response.usage);
+      // LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE, no de dos expresiones
+      // equivalentes. Con dos, una mutación de la que alimenta a la VERJA —la que
+      // decide el dinero— deja la traza intacta, y un test que mire la traza sigue
+      // en verde mientras la verja mide otra cosa. Medido al provocarlo: en una
+      // petición escalada la traza publicaba 1800 tokens de acierto y la verja
+      // apuntaba 0, o sea que se habría apagado sola por una lectura ajena.
+      this.verjaDeCache.registrar(marcado.huella, usoDeLaLlamadaMarcada);
       trace.record("prefix-cache", "measured", {
-        cacheRead: response.usage.cachedInputTokens ?? 0,
+        cacheRead: usoDeLaLlamadaMarcada.cachedInputTokens ?? 0,
         // La prima de escritura se publica en la traza JUNTO al descuento, no
         // escondida: es lo que costó obtenerlo, y sin ella el número de al lado
         // parece un ahorro neto que no es.
-        cacheWritePremiumTokens: response.usage.cacheWriteInputTokens ?? 0,
+        cacheWritePremiumTokens: usoDeLaLlamadaMarcada.cacheWriteInputTokens ?? 0,
       });
+    }
+
+    // --- Etapa 10d: la MUESTRA del modo sombra (opt-in, y cuesta dinero). ---
+    //
+    // El modo sombra es gratis porque no llama al modelo barato: publica la
+    // elegibilidad, la aritmética del par y lo que habría valido el cambio. Lo
+    // que NO puede saber gratis es la única cifra que decide, P(escalar) — y esa
+    // no existe hasta que el modelo barato escribe una respuesta que juzgar. No
+    // hay atajo: es una propiedad de un texto que nadie ha generado.
+    //
+    // Así que se compra, y el precio se publica: una llamada barata de más, o sea
+    // `r` sobre lo que la petición ya costaba (~6% con gpt-4o → gpt-4o-mini). Con
+    // `shadowSampleRate: 0.05` eso es ~0,3% de la factura. Va DESPUÉS de la
+    // respuesta buena y envuelta en su propio try/catch: medir no puede romper ni
+    // retrasar lo que el cliente vino a buscar. Sí duplica la latencia de la
+    // petición muestreada, y por eso está apagado por defecto.
+    let muestra: { coste: number; divergio: boolean | null } | null = null;
+    if (
+      cascada.modo === "shadow" &&
+      cascada.elegible &&
+      cascada.candidato &&
+      cascada.precioBarato &&
+      enLaMuestra(exactKey, cascada.tasaDeMuestreo)
+    ) {
+      try {
+        const respuestaBarata = await this.llamarProveedor(
+          { model: cascada.candidato, ...peticionAlProveedor },
+          testigo,
+        );
+        ledger.actualLlm += 1;
+        const antes = ledger.extraCostUsd;
+        ledger.cascadeAttempt(respuestaBarata.usage, cascada.precioBarato);
+        const textoBarato = expandirDelCodebook(respuestaBarata.text);
+        const veredicto = verificarRespuesta({
+          texto: textoBarato,
+          schema,
+          finishReason: respuestaBarata.finishReason,
+          pidioHerramientas: (respuestaBarata.toolCalls?.length ?? 0) > 0,
+        });
+        this.verjaDeCascada.registrar(cascada.bucket, !veredicto.acepta);
+        // La divergencia solo tiene sentido cuando las DOS respuestas pasan el
+        // contrato: si la barata ya lo incumple, el desacuerdo no dice nada nuevo.
+        const divergencia = veredicto.acepta ? hechosDivergentes(textoBarato, textoServido) : null;
+        muestra = {
+          coste: ledger.extraCostUsd - antes,
+          divergio: divergencia ? divergencia.divergen : null,
+        };
+        trace.record("model-cascade", veredicto.acepta ? "sample accepted" : "sample escalated", {
+          candidateModel: cascada.candidato,
+          reason: veredicto.motivo,
+          sampleCost: muestra.coste,
+          ...(divergencia ? { diverged: divergencia.divergen, divergence: divergencia.motivo } : {}),
+          note:
+            "measurement only: this answer was NEVER served. The escalation rate it feeds is a " +
+            "money figure, not a quality one",
+        });
+      } catch (err) {
+        // Ni un token que apuntar y, sobre todo, ni una excepción que propagar:
+        // la respuesta del cliente ya está en la mano.
+        trace.record("model-cascade", "sample failed (measurement only; the answer is unaffected)", {
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
     }
 
     // --- Stage 11: structural validation (+ at most one repair). ---
@@ -1436,7 +1864,13 @@ export class SavingsPipeline {
         // contratos distintos en el mismo mensaje. Reparar ya es un coste que esta
         // capa detesta: no se le añade una traducción de más.
         response = await this.llamarProveedor({
-          model: request.model,
+          // Al MODELO SERVIDO, no al pedido: con la cascada enrutando, todo el
+          // informe está tarifado con el precio del que contesta, y reparar en
+          // otro metería en `actual` tokens a un precio que no es el que se usó
+          // para tarifarlos. (Con la cascada aceptando no se llega aquí —el
+          // verificador ya validó el contrato— y con ella escalada `modeloServido`
+          // ES el pedido, así que en la práctica esto solo fija la regla.)
+          model: modeloServido,
           messages: mensajesReparacion,
           schema,
           ...(request.response?.maxOutputTokens != null
@@ -1538,6 +1972,17 @@ export class SavingsPipeline {
         );
       }
 
+      // LA CLAVE DE ESCRITURA ES LA DEL MODELO QUE ESCRIBIÓ LA RESPUESTA. La de
+      // lectura se construyó antes de la etapa 2 con el modelo al que la cascada
+      // iba a llamar; si se ha escalado, quien contestó es OTRO y guardar bajo la
+      // clave del barato archivaría una respuesta del fuerte como si fuera suya.
+      // No es una fuga —a nadie se le sirve algo peor de lo que pidió— pero sí
+      // una mentira: la siguiente petición idéntica saldría de caché etiquetada
+      // `bounded_degradation` sobre un texto que escribió el modelo bueno, y la
+      // escalada, que es la parte cara, desaparecería del historial.
+      const claveDeEscritura = escalo
+        ? buildExactKey(canonical, { servedModel: modeloServido })
+        : exactKey;
       if (cacheable && policy.allowExactCache && toggles.exactCache !== false) {
         // TTL finito (no "para siempre") para que una consulta que la heurística
         // de frescura no detectó no sirva una respuesta rancia indefinidamente.
@@ -1546,15 +1991,31 @@ export class SavingsPipeline {
         // crudo al hash de la clave y NO la rota.
         const ttlBase = this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000;
         const ttl = policy.maxCacheAgeMs == null ? ttlBase : Math.min(ttlBase, policy.maxCacheAgeMs);
-        await this.deps.exactCache.set(exactKey, answer, ttl);
+        await this.deps.exactCache.set(claveDeEscritura, answer, ttl);
       }
+      // LA CACHÉ SEMÁNTICA NO GUARDA UNA RESPUESTA ENRUTADA, y es la otra puerta
+      // por la que un cambio de modelo se volvería silencioso. Su identidad la
+      // fija `canonical.model` —el que PIDIÓ el llamante—, no la clave que se
+      // construyó para el que contestó, así que una respuesta del modelo barato
+      // guardada ahí se le serviría después a quien pidiera el fuerte, con la
+      // cascada apagada y todo, y el informe diría `semantic` sin más. La clave
+      // exacta sí lo separa (lleva el modelo servido); ésta no puede, porque el
+      // filtro es de la caché y no nuestro. Así que no se guarda.
+      const respuestaEnrutada = modeloServido !== request.model;
       if (
         cacheable &&
+        !respuestaEnrutada &&
         policy.allowSemanticCache &&
         toggles.semanticCache &&
         this.deps.semanticCache
       ) {
         await this.deps.semanticCache.store(canonical, answer as CachedAnswer);
+      } else if (cacheable && respuestaEnrutada && toggles.semanticCache) {
+        trace.record(
+          "cache-write",
+          "semantic write skipped: a cheaper model answered, and this cache keys on the model the " +
+            "caller asked for",
+        );
       }
     } catch (err) {
       trace.record("cache-write", "failed (non-fatal; answer already served)", {
@@ -1563,9 +2024,37 @@ export class SavingsPipeline {
     }
 
     const result = this.finish<T>(
-      request, canonical, answer, "miss", ledger, costModel, trace,
+      request, canonical, answer, "miss", ledger, precioServido, trace,
       route, formatChoice, undefined, undefined, structurallyValid,
       backendPlan.backend, providerMs,
+      this.informeDeCascada(cascada, {
+        servedModel: modeloServido,
+        ...(cascada.enruta ? { escalated: escalo } : {}),
+        // Lo que habría valido (o costado) el cambio de modelo en dinero, con las
+        // cuentas de tokens MEDIDAS de esta petición a los dos precios. Es un
+        // contrafactual —el otro modelo no se ejecutó— y por eso no entra en
+        // `cost.netSavings`; entra aquí, con su etiqueta. Solo se publica sobre
+        // peticiones ELEGIBLES: dar la cifra de un cambio que nunca podría
+        // hacerse (sin contrato, con herramientas de escritura) sería enseñar un
+        // ahorro que no está en la mesa.
+        ...(cascada.elegible && cascada.precioBarato
+          ? {
+              estimatedSwapSaving: ahorroDelCambio(
+                ledger,
+                escalo,
+                cascada.precioBarato,
+                this.costModelFor(request.model),
+              ),
+            }
+          : {}),
+        ...(muestra
+          ? {
+              sampled: true,
+              sampleCost: roundUsdPublico(muestra.coste),
+              ...(muestra.divergio !== null ? { divergedOnSample: muestra.divergio } : {}),
+            }
+          : {}),
+      }),
     );
     // Las tool calls y el finishReason viajan HASTA EL LLAMANTE. Se quedaban en
     // ProviderResponse: el arreglo del adaptador (content:null + tool_calls)
@@ -1770,6 +2259,47 @@ export class SavingsPipeline {
 
   // --- helpers -----------------------------------------------------------
 
+  /**
+   * El bloque `report.modelCascade`, o `undefined` si la cascada está apagada.
+   *
+   * Se publica también cuando la petición NO era elegible, y a propósito: «no se
+   * enrutó esto, y por esto» es la respuesta que más veces hace falta. Un informe
+   * que solo aparece cuando la palanca actúa deja a quien la evalúa sin saber si
+   * está apagada, si no aplica, o si aplica y no vale la pena.
+   */
+  private informeDeCascada(
+    cascada: DecisionDeCascada,
+    extra: Partial<ModelCascadeReport> = {},
+  ): ModelCascadeReport | undefined {
+    if (cascada.modo === "off") return undefined;
+    return {
+      mode: cascada.modo,
+      servedModel: extra.servedModel ?? cascada.modeloServido,
+      eligible: cascada.elegible,
+      reason: cascada.razon,
+      verifier: cascada.fuerza,
+      creditedLedger: "none",
+      ...(cascada.candidato ? { candidateModel: cascada.candidato } : {}),
+      ...(cascada.economia
+        ? {
+            costRatio: redondear(cascada.economia.r),
+            breakEvenEscalationRate: redondear(cascada.economia.equilibrio),
+            targetEscalationRate: redondear(cascada.economia.escaladoMaximo),
+          }
+        : {}),
+      ...(cascada.bucket ? { workload: cascada.bucket } : {}),
+      ...(cascada.observada != null
+        ? { escalationRate: redondear(cascada.observada), escalationSamples: cascada.muestras }
+        : {}),
+      ...extra,
+      // `requestedModel` se fija DESPUÉS del spread, y es el único campo que
+      // ningún llamante puede reescribir: es el hecho de partida —lo que el
+      // cliente pidió— y dejar que se confunda con lo servido sería justo el
+      // cambio silencioso que esta palanca tiene prohibido.
+      requestedModel: cascada.modeloPedido,
+    };
+  }
+
   private finish<T>(
     request: SavingsRequest,
     canonical: ReturnType<typeof canonicalize>,
@@ -1785,6 +2315,7 @@ export class SavingsPipeline {
     structurallyValid?: boolean | null,
     backend = "none",
     providerMs = 0,
+    cascada?: ModelCascadeReport | undefined,
   ): SavingsResult<T> {
     // La validez estructural se COMPRUEBA aquí, no se hereda de un valor por
     // defecto. El parámetro tenía `= true`, y las cuatro rutas de atajo
@@ -1809,7 +2340,7 @@ export class SavingsPipeline {
 
     const report = this.buildReport(
       request, canonical, cacheResult, ledger, costModel, trace, route,
-      formatChoice, ageMs, confidence, valid, backend, providerMs,
+      formatChoice, ageMs, confidence, valid, backend, providerMs, cascada,
     );
     return {
       requestId: report.requestId,
@@ -1834,12 +2365,23 @@ export class SavingsPipeline {
     structurallyValid: boolean | null,
     backend: string,
     providerMs: number,
+    cascada: ModelCascadeReport | undefined,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
     const total = trace.elapsed();
+    // UNA RESPUESTA SERVIDA POR UN MODELO MÁS BARATO DEL QUE SE PIDIÓ. Es lo que
+    // convierte el informe en algo que se puede leer sin engañarse: `model` pasa
+    // a nombrar al que contestó, y `qualityStatus` baja a `bounded_degradation`.
+    const degradado = cascada != null && cascada.servedModel !== cascada.requestedModel;
     return {
       requestId: this.generateId(),
-      model: request.model,
+      // EL INFORME DECLARA SIEMPRE EL MODELO QUE CONTESTÓ. Sin la cascada esto es
+      // literalmente el modelo pedido (nada cambia para quien no la encienda);
+      // con ella enrutando, seguir publicando el pedido convertiría el informe en
+      // el sitio donde el cambio de modelo se vuelve invisible — y `cost.actual`
+      // está tarifado con el precio del que contestó, así que además no cuadraría
+      // con su propia etiqueta.
+      model: cascada?.servedModel ?? request.model,
       calls: {
         baselineLlm: ledger.baselineLlm,
         actualLlm: ledger.actualLlm,
@@ -1891,7 +2433,8 @@ export class SavingsPipeline {
       // para las tres familias de camino —atajos, camino del proveedor y
       // fail-open— porque las tres pasan por buildReport(); el seguidor de
       // singleflight es la excepción y hereda (ver asCoalescedFollower).
-      qualityStatus: estadoDeCalidad(cacheResult, structurallyValid),
+      qualityStatus: estadoDeCalidad(cacheResult, structurallyValid, degradado),
+      ...(cascada ? { modelCascade: cascada } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
       },
@@ -1966,6 +2509,11 @@ export class SavingsPipeline {
     const report = this.buildReport(
       request, canonical, "miss", ledger, costModel, trace, defaultRoute(),
       jsonFallbackChoice(), undefined, undefined, structurallyValid, "none", providerMs,
+      // Sin bloque de cascada: el fail-open llama al proveedor DIRECTAMENTE, sin
+      // capa, así que aquí no hay decisión de cascada que informar — ni la hubo,
+      // porque este camino se toma cuando el optimizador ya falló. Publicar uno
+      // vacío afirmaría que la palanca corrió.
+      undefined,
     );
     return {
       requestId: report.requestId,
@@ -2207,12 +2755,30 @@ function renderLocally(data: unknown): string {
  * verificó, que es exactamente lo que pasa. Y la ausencia del campo ya significa
  * otra cosa («este SDK es anterior a la etiqueta»): darle un segundo significado
  * haría indistinguibles los dos casos para el cliente.
+ *
+ * `bounded_degradation` ES EL CASO DE LA CASCADA DE MODELOS, y va DESPUÉS de
+ * `rejected` y ANTES que todo lo demás. Después de `rejected` porque el
+ * incumplimiento del contrato sigue mandando sobre la procedencia. Y antes que
+ * `exact`, que es lo que menos se ve venir: un acierto de caché exacta cuya clave
+ * llevaba el modelo BARATO está repitiendo una respuesta que escribió un modelo
+ * más flojo del que se pidió, y llamar a eso «exacto por construcción» sería
+ * ascender la respuesta por el mero hecho de repetirla. Lo que la caché conserva
+ * es la respuesta; no puede conservar una calidad que no hubo.
+ *
+ * El límite que promete la etiqueta es exactamente el de la verja determinista:
+ * la forma, y las restricciones de VALOR que declare el contrato. NO el
+ * significado. Una respuesta bien formada con contenido equivocado lleva también
+ * esta etiqueta, y esa es la razón de que la etiqueta exista en vez de dejar la
+ * cascada en `not_verified`: el lector tiene que poder ver que se le sirvió otro
+ * modelo.
  */
 function estadoDeCalidad(
   cacheResult: CacheOutcome,
   structurallyValid: boolean | null,
+  degradado = false,
 ): QualityStatus {
   if (structurallyValid === false) return "rejected";
+  if (degradado) return "bounded_degradation";
   switch (cacheResult) {
     // Exacto POR CONSTRUCCIÓN: o lo calculó un resolver, o es la respuesta que ya
     // se dio a esta misma pregunta (la clave exacta incluye tenant, modelo,
@@ -2229,6 +2795,74 @@ function estadoDeCalidad(
     default:
       return "not_verified";
   }
+}
+
+/** Proporciones publicables: seis decimales, como `netSavings`. */
+function redondear(n: number): number {
+  return Math.round(n * 1e6) / 1e6;
+}
+
+/** Importes publicables, con la misma resolución que usa el ledger. */
+function roundUsdPublico(n: number): number {
+  const r = Math.round(n * 1e10) / 1e10;
+  // `-0` no es un importe: es lo mismo que 0 y se lee peor en un JSON.
+  return r === 0 ? 0 : r;
+}
+
+/**
+ * ¿QUÉ VALE EL CAMBIO DE MODELO EN ESTA PETICIÓN? En dinero, con las cuentas de
+ * tokens MEDIDAS tarifadas a los dos precios.
+ *
+ * Hace la misma cuenta enrutando y en SOMBRA, y ahí está su utilidad: en sombra
+ * los tokens son los del modelo fuerte y tarifarlos también con el barato
+ * responde «esto es lo que se habría ahorrado hoy», que es exactamente para lo
+ * que existe el modo sombra. Enrutando son los del barato y la cuenta es la
+ * misma al revés.
+ *
+ * ES UN CONTRAFACTUAL Y SE PUBLICA COMO TAL. El otro modelo no se ejecutó, así
+ * que no hay medición suya: solo se sabe cuántos tokens hubo con el que sí
+ * corrió, y el número de SALIDA es justamente el que un modelo distinto habría
+ * cambiado. Por eso esta cifra NO entra en `cost.netSavings`, que se queda siendo
+ * lo que siempre fue —una comparación a un solo precio, sobre lo que hicieron
+ * las otras palancas—; entra en `report.modelCascade`, con su nombre y su aviso
+ * al lado.
+ *
+ * En una petición ESCALADA sale negativa, que es exactamente lo que le pasó a la
+ * factura: se pagaron las dos llamadas, y la del barato no sirvió de nada.
+ */
+function ahorroDelCambio(
+  ledger: SavingsLedger,
+  escalo: boolean,
+  precioBarato: CostModel,
+  precioFuerte: CostModel,
+): number {
+  // Al escalar, lo pagado de más es literalmente el intento descartado: no hay
+  // contrafactual que estimar, hay una factura de más que ya está medida.
+  if (escalo) return roundUsdPublico(-ledger.extraCostUsd);
+
+  const coste = (p: CostModel): number =>
+    (ledger.actualInput / 1000) * p.inputPer1k + (ledger.actualOutput / 1000) * p.outputPer1k;
+  return roundUsdPublico(coste(precioFuerte) - coste(precioBarato));
+}
+
+/**
+ * ¿Entra esta petición en la muestra del modo sombra?
+ *
+ * DETERMINISTA, y no es un capricho: `Math.random` haría que la misma petición
+ * se muestreara o no según la tirada, o sea que el gasto del cliente dependería
+ * de un dado. Con el hash de su propia clave de caché, una petición está siempre
+ * dentro o siempre fuera, dos procesos deciden igual, y un test puede fijar el
+ * comportamiento sin inyectar relojes ni semillas.
+ *
+ * Los 13 primeros dígitos hexadecimales (52 bits) caben exactos en un `double`,
+ * así que la fracción no pierde precisión ni se sesga por redondeo.
+ */
+function enLaMuestra(clave: string, tasa: number): boolean {
+  if (!(tasa > 0)) return false;
+  if (tasa >= 1) return true;
+  const digest = sha256(`${clave}:cascade-sample`);
+  const trozo = Number.parseInt(digest.slice(0, 13), 16);
+  return trozo / 2 ** 52 < tasa;
 }
 
 function defaultRoute(): RouteDecision {

@@ -1,5 +1,5 @@
 import type { CanonicalRequest } from "./canonicalize.js";
-import { sha256, stableStringify } from "./canonicalize.js";
+import { modelFamilyOf, sha256, stableStringify } from "./canonicalize.js";
 
 /**
  * GENERACIÓN DE LA CLAVE. Súbela cada vez que cambie `normalizeText` o el
@@ -28,15 +28,30 @@ const GENERACION = "n2";
  * text but differ in tenant, permission scope, model version, system prompt,
  * schema, toolset, locale, sampling, knowledge epoch or safety policy — any of
  * which can change the correct answer. The exact key includes all of them.
+ *
+ * `servedModel` CARRIES THE MODEL THAT WILL ACTUALLY ANSWER, not the one the
+ * caller named, and that distinction is what stops the model cascade from
+ * poisoning the cache. Routing to a cheap model and storing its answer under the
+ * STRONG model's key would hand that answer to the next request — one with the
+ * cascade off, or from another process entirely — while the report claims the
+ * requested model served it. That is a silent model swap, deferred, which is the
+ * worst kind of silent model swap.
+ *
+ * `modelFamily` is derived from whichever id is used, for the same reason: it is
+ * part of the identity of whoever answers.
  */
-export function buildExactKey(c: CanonicalRequest): string {
+export function buildExactKey(
+  c: CanonicalRequest,
+  opciones: { servedModel?: string } = {},
+): string {
+  const model = opciones.servedModel ?? c.model;
   const material = stableStringify({
     tenant: c.tenantId,
     scope: c.authorizationScope,
     principal: c.principal,
     text: c.normalizedText,
-    modelFamily: c.modelFamily,
-    model: c.model,
+    modelFamily: model === c.model ? c.modelFamily : modelFamilyOf(model),
+    model,
     system: c.systemPromptHash,
     contract: c.contractId,
     schema: c.schemaVersion,
