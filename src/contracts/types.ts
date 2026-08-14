@@ -108,6 +108,22 @@ export interface SavingsToggles {
   singleflight?: boolean;
   deterministicResolvers?: boolean;
   router?: boolean;
+  /**
+   * OPT-IN. Send the provider a compacted form of your output contract — short
+   * property keys, short enum codes — so the model spends fewer tokens saying
+   * the same thing, and expand the reply back to YOUR shape before it is
+   * validated, cached or returned. What you receive in `data`, `text` and
+   * `rendered` is identical either way.
+   *
+   * It is applied only when the layer can prove the expansion is exact for that
+   * schema and only when it counts as a net token win on both sides (the
+   * compact contract itself travels as input). Otherwise your schema is sent
+   * unchanged. Off by default because it changes what the provider sees, and
+   * whether a model answers as WELL from a compact contract is a question only
+   * an A/B on your own traffic can settle. Check `report.traces` for what it
+   * decided and why.
+   */
+  outputCodebook?: boolean;
 }
 
 export interface RequestContext {

@@ -16,6 +16,7 @@ import { evaluatePolicy } from "../policy/policy.js";
 import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
 import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/backends.js";
+import { planOutputCodebook } from "../constraints/codebook.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -766,8 +767,48 @@ export class SavingsPipeline {
 
     // --- Stage 10: constrained decoding + the single primary LLM call. ---
     const schema = request.response?.schema;
-    let backendPlan: ConstraintPlan = schema
-      ? resolveConstraintBackend(request.model, schema, this.deps.constraintBackends)
+
+    // --- Etapa 10a: codebook de salida (opt-in) ---
+    //
+    // Cambia el contrato que ve el PROVEEDOR por una forma equivalente y más
+    // barata de escribir, y deshace el cambio antes de que lo vea nadie más. Es
+    // opt-in porque el ahorro es demostrable (ver las verjas de codebook.ts) pero
+    // el efecto sobre la CALIDAD de lo que el modelo decide no lo es: esta capa ya
+    // se quemó una vez dando por bueno un cambio plausible en la salida —el techo
+    // de `maxOutputTokens`, medido en −2,8% neto— y no va a repetirlo por defecto
+    // sobre despliegues que ya están en producción.
+    //
+    // El esquema del llamante NUNCA estuvo en el baseline (`assembleBaselinePrompt`
+    // solo ensambla mensajes, herramientas y datos estructurados), así que un
+    // esquema más pequeño no acredita ni descuenta nada en ningún libro. Lo único
+    // que se mueve es `actualInput`, que sí lo mide el proveedor, y eso baja el
+    // `k` de la calibración: la reconstrucción del baseline sale MÁS pequeña, o
+    // sea que la palanca se reclama a la baja. Ese es el lado correcto.
+    const codebook =
+      schema && toggles.outputCodebook === true
+        ? planOutputCodebook(schema, (t) => this.tokensFor(t, request))
+        : null;
+    if (codebook) {
+      trace.record("output-codebook", codebook.applied ? "applied" : "skipped", {
+        reason: codebook.reason,
+        ...(codebook.applied
+          ? {
+              renamedKeys: codebook.plan.renamedKeys,
+              codedEnumValues: codebook.plan.codedEnumValues,
+              schemaTokensOriginal: codebook.plan.schemaTokensOriginal,
+              schemaTokensCompact: codebook.plan.schemaTokensCompact,
+              modelledOutputSavingTokens: codebook.plan.modelledOutputSavingTokens,
+            }
+          : {}),
+      });
+    }
+    // Lo que de verdad viaja en `response_format`. El backend de restricciones se
+    // resuelve sobre ESTE esquema y no sobre el original: lo que decide si un
+    // backend puede imponer el contrato es el contrato que va a recibir.
+    const esquemaAlProveedor = codebook?.applied ? codebook.plan.compactSchema : schema;
+
+    let backendPlan: ConstraintPlan = esquemaAlProveedor
+      ? resolveConstraintBackend(request.model, esquemaAlProveedor, this.deps.constraintBackends)
       : { backend: "none", reason: "no output contract" };
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
@@ -776,7 +817,7 @@ export class SavingsPipeline {
       model: request.model,
       messages,
       ...(toolSelection.tools.length ? { tools: toolSelection.tools } : {}),
-      ...(schema ? { schema } : {}),
+      ...(esquemaAlProveedor ? { schema: esquemaAlProveedor } : {}),
       ...(request.response?.maxOutputTokens != null
         ? { maxOutputTokens: request.response.maxOutputTokens }
         : {}),
@@ -787,6 +828,44 @@ export class SavingsPipeline {
     ledger.actualLlm = 1;
     ledger.actualInput = response.usage.inputTokens;
     ledger.actualOutput = response.usage.outputTokens;
+
+    // --- Etapa 10b: deshacer el codebook ---
+    //
+    // A partir de aquí NADIE vuelve a mirar `response.text`: se sirve, se valida,
+    // se repara y se cachea `textoServido`, que está en la forma DEL LLAMANTE. Si
+    // la forma compacta se colara en la caché, una petición futura con la palanca
+    // apagada recibiría claves que su contrato no declara, y el ahorro de hoy
+    // sería una avería mañana.
+    //
+    // POR QUÉ ESTO NO ACREDITA NINGÚN LIBRO, y es deliberado:
+    //  · Libro 1 (llamadas evitadas): no se evitó ninguna llamada.
+    //  · Libro 2 (tokens eliminados): no se ha quitado información, está entera.
+    //  · Libro 3 (tokens comprimidos): es el libro de la ENTRADA. Apuntar aquí un
+    //    ahorro de SALIDA mezclaría dos cosas que el informe promete separadas.
+    //  · Libro 4: esto no es caché de prefijo del proveedor.
+    // Y el baseline de salida de una llamada EJECUTADA es, por doctrina de esta
+    // capa, su salida medida: no se sabe —sin un A/B— cuántos tokens habría
+    // gastado el modelo escribiendo la forma larga. La diferencia local entre las
+    // dos formas de ESTA respuesta sí se puede contar, y se anota en la traza,
+    // pero se anota como lo que es: una cuenta local, no facturable, sin libro.
+    let textoServido = response.text;
+    if (codebook?.applied) {
+      const compacta = tryParse(response.text);
+      if (compacta.ok) {
+        textoServido = JSON.stringify(codebook.plan.expand(compacta.value));
+        trace.record("output-codebook", "expanded", {
+          localOutputTokensCompact: this.tokensFor(response.text, request),
+          localOutputTokensExpanded: this.tokensFor(textoServido, request),
+          creditedLedger: "none",
+          note: "local count of the served answer in both shapes; not credited to any ledger",
+        });
+      } else {
+        // Sin JSON no hay nada que expandir. Se deja el texto crudo para que el
+        // validador de la etapa 11 diagnostique el fallo real ("not valid JSON")
+        // en vez de uno inventado por la expansión.
+        trace.record("output-codebook", "not-expanded (response was not JSON)");
+      }
+    }
 
     // EL PLAN SE DECIDE ANTES DE LLAMAR; LO QUE SE PUBLICA TIENE QUE SER LO QUE
     // PASÓ. `provider-native` se resolvía por lo que el backend DECLARA soportar y
@@ -838,7 +917,7 @@ export class SavingsPipeline {
     }
 
     // --- Stage 11: structural validation (+ at most one repair). ---
-    let data: unknown = response.text;
+    let data: unknown = textoServido;
     // `null` = NO APLICA (turno de herramientas: no hay respuesta final que
     // validar). Antes se inicializaba a `true` y ese `true` viajaba hasta el
     // informe, que certificaba el cumplimiento de un contrato que nadie había
@@ -861,7 +940,7 @@ export class SavingsPipeline {
       }
     }
     if (schema && !pidioHerramientas) {
-      const parsed = tryParse(response.text);
+      const parsed = tryParse(textoServido);
       let validation = parsed.ok
         ? validateAgainstSchema(parsed.value, schema)
         : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
@@ -949,11 +1028,16 @@ export class SavingsPipeline {
             role: "user",
             content:
               "Your previous reply did not satisfy the required JSON contract.\n\n" +
-              `Previous reply:\n${response.text}\n\n` +
+              `Previous reply:\n${textoServido}\n\n` +
               `Problems found:\n${detalle}\n\n` +
               "Return ONLY the corrected JSON object. Keep the same content; fix only what is listed.",
           },
         ];
+        // Con el esquema ORIGINAL, nunca con el compacto. La respuesta previa que
+        // se le enseña y los errores que se le enumeran están en la forma del
+        // llamante, así que pedirle la corrección en otra forma sería darle dos
+        // contratos distintos en el mismo mensaje. Reparar ya es un coste que esta
+        // capa detesta: no se le añade una traducción de más.
         response = await this.llamarProveedor({
           model: request.model,
           messages: mensajesReparacion,
@@ -986,7 +1070,10 @@ export class SavingsPipeline {
           this.assemblePromptText(mensajesReparacion),
           request,
         );
-        const reparsed = tryParse(response.text);
+        // La reparación ya viene en la forma del llamante (se pidió con el esquema
+        // original), así que pasa a ser lo servido tal cual.
+        textoServido = response.text;
+        const reparsed = tryParse(textoServido);
         validation = reparsed.ok
           ? validateAgainstSchema(reparsed.value, schema)
           : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
@@ -1003,7 +1090,7 @@ export class SavingsPipeline {
     // --- Stage 12: local render + approved cache writes. ---
     const rendered = renderLocally(data);
     const answer: CachedAnswer<T> = {
-      text: response.text,
+      text: textoServido,
       data: data as T,
       rendered,
       storedAtMs: this.now(),
