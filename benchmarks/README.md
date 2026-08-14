@@ -83,6 +83,84 @@ pnpm ab
 `.env.bench` is gitignored and read via `--env-file-if-exists`, so the key never
 reaches the shell history. The same file drives `pnpm demo` and `pnpm ablation`.
 
+### The opt-in levers of 0.3.0 ★
+
+`outputCodebook`, `toolDiscovery`, `compression` and `semanticCache` appeared
+**zero** times in `benchmarks/scenarios.ts`. The bench did not switch a single
+one of them on, so a live run would have measured the same thing as the
+2026-08-13 one and the conclusion — *"the new work saves nothing"* — would have
+been a property of the bench, not of the product. That is the same failure the
+prefix-cache scenario already cost us once.
+
+Switching them on is not enough. Each has an **economic gate** that discards it —
+correctly — when the request does not have the right shape, and a scenario that
+switches the lever on without bringing that shape measures zero *with the lever
+apparently on*, which is worse, because it looks measured.
+
+| Scenario | Lever | What the gate demands |
+| --- | --- | --- |
+| `Triage decision (output codebook)` | `outputCodebook` | a contract with **long enums and long keys**: the money gate wants ≥ 8 net tokens counting both sides. Measured on this one with o200k_base: output −7, schema −29, **net 36** — four times the prudence floor. |
+| `Big tool catalogue (schema-on-demand)` | `toolDiscovery` | a **large catalogue** — 8 read tools (the selector's `maxTools` ceiling), 470 schema tokens each, 3 762 in total. With five small ones the gate refuses, and it is right: two calls would cost more than one. **It carries no stable prefix on purpose**: this lever gives up the provider prefix cache on every request, so mixing them would measure the difference of two levers and attribute it to one. |
+| `Forwarded support thread (compression)` | `compression` | an injected `compressor` **and** > 2000 compressible tokens **and** ≥ 200 net tokens removed **and** a compressed prompt that stays inside the cacheable tier. Measured: 3 770 → 1 765 tokens. |
+| — | `semanticCache` | **not exercised, deliberately.** It needs an `EmbeddingFn` and there is no implementation in this repo. A ten-line word-hash "embedding" would measure lexical overlap — what the deterministic guard in `cache/semantic.ts` already checks — not semantic similarity, so the scenario would go green measuring something else. The report lists it as NOT EXERCISED with that reason. |
+
+The compressor is `benchmarks/compresor.ts`: it drops **only lines that already
+appear verbatim earlier in the same text** (a forwarded thread repeats the order
+card, the signature and the legal footer in every message). It rewrites nothing,
+so there is no loss to argue about and the saving is defensible without a judge.
+
+**A lever that did not fire says so.** A lever the gate discarded, one whose
+probe degraded and one that genuinely saves nothing all produce the *same*
+numbers. So every scenario declares its lever, the harness reads the layer's own
+trace to see whether it actually fired, and both the console and the artifact
+(`levers.exercised` / `levers.notExercised`) carry the verdict with the layer's
+own reason. In MOCK two of them can never fire — the mock provider never returns
+`tool_calls` and never reports `cached_tokens` — and the run prints exactly that
+instead of letting you read a limitation of the mock as a result.
+
+### Per model, without editing code ★
+
+`BVSALA_DEMO_MODEL` overrides the model of **every** scenario and produces one
+figure. `BVSALA_DEMO_MODELS` takes a comma-separated list and measures each model
+**separately**, then prints one comparable table:
+
+```bash
+# one run per model, plus the comparison table
+BVSALA_DEMO_MODELS="openai/gpt-4o-mini,openai/gpt-4o,anthropic/claude-sonnet-4-5" pnpm ab
+
+# one model only (this is the one that writes ab-live.json, i.e. the publishable artifact)
+BVSALA_DEMO_MODEL=openai/gpt-4o-mini pnpm ab
+```
+
+Scenarios that do not apply to a model are **skipped and declared**, never
+measured badly. The Anthropic `cache_control` scenario served against an OpenAI
+endpoint would measure the discount OpenAI applies *by itself* and book it under
+ledger 4 as our contribution; it now says `n/a` in the table and carries its
+reason in `scenariosNotApplicable`.
+
+Artifacts: with one model, `out/ab-live.json` (+ trials CSV) exactly as before —
+that is what `pnpm ab:publish` reads. With several, one
+`out/ab-live--<model>.json` each plus `out/ab-live-por-modelo.{json,csv}`, and
+**no** `ab-live.json`: a headline needs one model.
+
+### What the run costs, before you pay for it ★
+
+Every LIVE run prints an estimate first, per model, from the SDK's own list-price
+catalogue (`src/pricing/catalogo.ts`) and the tokens of each scenario:
+
+```
+Coste estimado de la tirada (techo: salida al tope, brazo B como el A, reps a la cota dura)
+  openai/gpt-4o-mini                    $0.0733 –    $0.2142   11 escenarios
+  Estas llamadas se pagan. Corta ahora si la cifra no te cuadra.
+```
+
+It is a **ceiling** and says so: output counted at the declared cap, arm B priced
+as if it spent as much as arm A, adaptive sampling counted at its hard cap. A
+model missing from the catalogue is priced illustratively **and flagged**.
+
+`BVSALA_AB_BUDGET_USD=2.50 pnpm ab` aborts before the first provider call if the
+ceiling exceeds the budget.
+
 ### Publishing the artifact (`pnpm ab:publish`)
 
 The figure the landing shows **is** the product's commercial claim, so getting it
@@ -150,12 +228,22 @@ and reports the **marginal** contribution of each:
 
 ```
 stage                cost        vs baseline   marginal Δ
-baseline (naive)     $0.000423        0.0%          —
-+ exact cache        $0.000409        3.3%      $0.000014
-+ resolvers          $0.000398        5.7%      $0.000010
-+ router             $0.000398        5.7%      $0.000000   ← 0 here: scenarios have no retrieval to avoid
-+ format selector    $0.000203       52.1%      $0.000196   ← the big lever on the table payload
+baseline (naive)     $0.004784        0.0%          —
++ exact cache        $0.004768        0.4%      $0.000017
++ resolvers          $0.004757        0.6%      $0.000010
++ router             $0.004663        2.5%      $0.000094
++ format selector    $0.004468        6.6%      $0.000195   ← the big lever on the table payload
++ compression        $0.004016       16.1%      $0.000452   ← the forwarded-thread scenario
++ output codebook    $0.004003       16.3%      $0.000013
++ tool discovery     $0.004084       14.6%     $-0.000082   ← negative in MOCK: the mock never
+                                                              returns tool_calls, so the probe
+                                                              always degrades and this rung
+                                                              measures the pattern's worst case
 ```
+
+The last three rungs are the 0.3.0 opt-in levers. They used to sit outside the
+ladder because nothing switched them on, so their marginal contribution was zero
+*by construction* and read as "they add nothing".
 
 Cost per rung is that config's real spend (actual input+output tokens priced;
 avoided calls cost 0), with fresh caches per rung so stages are independent.

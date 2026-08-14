@@ -27,14 +27,22 @@
  *           prove the plumbing, but every dollar is labeled "ESTIMATED — NOT a
  *           savings claim" because the mock is not a real model.
  *
+ * POR MODELO. `BVSALA_DEMO_MODEL` fija UN modelo para todos los escenarios;
+ * `BVSALA_DEMO_MODELS` acepta una lista separada por comas y mide cada uno por
+ * separado, saltando los escenarios que no apliquen a ese modelo (ver
+ * `Scenario.familia`) y publicando una tabla comparable entre modelos.
+ *
  * ENV: BVSALA_AB_REPS (paired reps for generative scenarios), BVSALA_AB_SEED,
- *      BVSALA_DEMO_KEEP_PREFIX, and optionally a judge endpoint
+ *      BVSALA_DEMO_KEEP_PREFIX, BVSALA_AB_BUDGET_USD (aborta si la estimación de
+ *      coste de la tirada lo supera), and optionally a judge endpoint
  *      BVSALA_JUDGE_BASE_URL / _API_KEY / _MODEL for LIVE answer-vs-answer QA.
  */
 import {
   createSavingsLayer,
   createMockProvider,
   OpenAICompatibleProvider,
+  precioDeLista,
+  PRECIOS_AL_DIA,
   type CostModel,
   type Provider,
   type SavingsRequest,
@@ -43,7 +51,18 @@ import {
   registrarTokenizadorExacto,
 } from "../src/index.js";
 import type { ProviderRequest } from "../src/providers/types.js";
-import { scenarios, type Scenario } from "./scenarios.js";
+import {
+  scenarios,
+  estadoDePalanca,
+  familiaDeModelo,
+  LIBROS,
+  PALANCAS_SIN_ESCENARIO,
+  type LedgerTag,
+  type EstadoDePalanca,
+  type Palanca,
+  type Scenario,
+} from "./scenarios.js";
+import { compresorDeRepeticionesLiterales } from "./compresor.js";
 import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
@@ -76,9 +95,31 @@ const FALLBACK_PRICE: CostModel = { inputPer1k: 0.00015, outputPer1k: 0.0006, ca
 
 const baseUrl = process.env.BVSALA_DEMO_BASE_URL;
 const apiKey = process.env.BVSALA_DEMO_API_KEY;
-const liveModel = process.env.BVSALA_DEMO_MODEL;
 const keepPrefix = !!process.env.BVSALA_DEMO_KEEP_PREFIX;
 const mode: "LIVE" | "MOCK" = baseUrl ? "LIVE" : "MOCK";
+
+/**
+ * LOS MODELOS QUE SE MIDEN, cada uno por separado.
+ *
+ * `BVSALA_DEMO_MODEL` sobrescribía el modelo de TODOS los escenarios y producía
+ * UNA cifra: la del último modelo que alguien puso en el `.env`. El dueño
+ * necesita la cifra de cada modelo, y sobre todo necesita que un escenario que
+ * no aplica a un modelo (la caché de prefijo explícita de Anthropic contra un
+ * endpoint de OpenAI) se SALTE en vez de medirse mal.
+ *
+ * Vacío = comportamiento de siempre: cada escenario con el modelo que declara.
+ */
+const modelosPedidos = (process.env.BVSALA_DEMO_MODELS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const modeloUnico = process.env.BVSALA_DEMO_MODEL;
+/** `null` = no se fuerza ningún modelo; manda el de cada escenario. */
+const modelosAMedir: (string | null)[] = modelosPedidos.length
+  ? modelosPedidos
+  : modeloUnico
+    ? [modeloUnico]
+    : [null];
 const SEED = intEnv("BVSALA_AB_SEED", 1234567);
 const REPS = intEnv("BVSALA_AB_REPS", mode === "LIVE" ? 8 : 4);
 // Adaptive sampling (LIVE only): keep drawing paired reps for a noisy scenario
@@ -106,7 +147,7 @@ function makeProvider(): Provider {
     : createMockProvider();
 }
 
-const modelId = (r: SavingsRequest): string => (liveModel ? liveModel : r.model);
+const modelId = (r: SavingsRequest, forzado: string | null): string => forzado ?? r.model;
 
 // ── Tokenizador EXACTO. Una tirada que hace afirmaciones en dólares no puede
 // contar con el estimador heurístico: mide 2171 tokens donde o200k_base mide
@@ -135,11 +176,43 @@ const nuevaCapa = (provider: Provider, model: string) =>
     defaultCostModel: priceFor(model),
     tokenizer: registroTokens,
     constraintMemory: memoriaContratos,
+    // EL COMPRESOR VA EN TODAS LAS CAPAS, no solo en la del escenario que lo
+    // usa: la palanca `compression` es opt-in POR PETICIÓN, así que quien decide
+    // si corre es el escenario, y quien decide si vale la pena son las tres
+    // verjas económicas del pipeline. Un contexto corto no lo activa por mucho
+    // que el compresor esté ahí (mínimo de 2000 tokens comprimibles), y eso es
+    // comprobable: los demás escenarios siguen midiendo lo mismo con y sin él.
+    //
+    // Sin esto, el escenario de compresión no comprime NADA y el informe
+    // publicaría un 0% que se lee como "la compresión no ahorra".
+    compressor: compresorDeRepeticionesLiterales,
+    // `compressionEconomics.prefix` NO se declara a propósito. Es la tasa de
+    // aciertos de prefijo del tráfico, y nadie la ha medido para este banco;
+    // inventarla desbloquea la decisión completa a cambio de un número falso. Sin
+    // ella la capa se niega a comprimir un prompt fuera del tramo cacheable, que
+    // es la abstención honesta.
   });
 
+/**
+ * El precio del modelo, en este orden: la tabla local del banco, el CATÁLOGO DE
+ * PRECIOS DE LISTA del SDK y, si tampoco está, el precio ilustrativo.
+ *
+ * El catálogo en medio es lo que permite medir un modelo que esta tabla no
+ * enumera sin que la cifra en dólares se convierta en ficción silenciosa:
+ * `precioDeLista` conoce las familias 4o/4.1 y Claude con sus tarifas cacheadas.
+ * Cuando ninguno de los dos lo conoce se cae en el precio ilustrativo, y eso el
+ * informe lo AVISA — un modelo ausente que se tarifa como si estuviera es
+ * exactamente el fallo que documenta `pricing/catalogo.ts`.
+ */
 function priceFor(model: string): CostModel {
   const key = model.replace(/^[^/]+\//, "");
-  return PRICES[key] ?? PRICES[model] ?? FALLBACK_PRICE;
+  return PRICES[key] ?? PRICES[model] ?? precioDeLista(model) ?? FALLBACK_PRICE;
+}
+
+/** ¿El precio de este modelo sale de una tarifa publicada, o del ilustrativo? */
+function precioConocido(model: string): boolean {
+  const key = model.replace(/^[^/]+\//, "");
+  return !!(PRICES[key] ?? PRICES[model] ?? precioDeLista(model));
 }
 
 /**
@@ -181,13 +254,13 @@ function cost(model: string, u: Usage): number {
  * Arm A — the naive request an un-optimized team would send: full JSON payload
  * inline, all tools transmitted natively, NO schema, NO output cap.
  */
-function buildNaive(req: SavingsRequest): ProviderRequest {
+function buildNaive(req: SavingsRequest, forzado: string | null): ProviderRequest {
   const messages = req.messages.map((m) => ({ role: m.role, content: m.content }));
   if (req.structuredData !== undefined) {
     messages.push({ role: "user", content: JSON.stringify(req.structuredData) });
   }
   return {
-    model: modelId(req),
+    model: modelId(req, forzado),
     messages,
     ...(req.tools && req.tools.length ? { tools: req.tools } : {}),
     // EL CONTRATO VA EN LOS DOS BRAZOS. Antes `buildNaive` descartaba
@@ -254,6 +327,10 @@ interface ScenarioResult {
   name: string;
   lever: string;
   ledger: string;
+  /** El modelo que se le PIDIÓ al proveedor en esta tirada. */
+  model: string;
+  /** La palanca opt-in del escenario y si llegó a disparar. `null` = no declara ninguna. */
+  palanca: EstadoDePalanca | null;
   kind: Kind;
   reps: number;
   armA: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
@@ -315,7 +392,7 @@ interface ScenarioResult {
   paired: { costA: number; costB: number }[];
 }
 
-async function runScenario(s: Scenario): Promise<ScenarioResult> {
+async function runScenario(s: Scenario, forzado: string | null): Promise<ScenarioResult> {
   const provider = makeProvider();
   // Los dos brazos tienen que muestrear de la MISMA distribución. El brazo A
   // fijaba temperature:0 y seed:7 (buildNaive) y el B no mandaba ninguno de los
@@ -323,11 +400,11 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
   // así mezcla el efecto de la capa con el del muestreo.
   const req: SavingsRequest = {
     ...s.request,
-    ...(liveModel ? { model: liveModel } : {}),
+    ...(forzado ? { model: forzado } : {}),
     temperature: s.request.temperature ?? 0,
     seed: s.request.seed ?? 7,
   };
-  const model = modelId(req);
+  const model = modelId(req, forzado);
 
   // Probe the optimized arm once (fresh layer) to classify the scenario.
   // `warm` scenarios demonstrate caching (their value is repeat-traffic, shown
@@ -376,10 +453,14 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     compressedInputTokens: probe.report.tokens.compressedInput,
     providerCachedInputTokens: probe.report.tokens.providerCachedInput ?? 0,
   };
+  // Se calcula sobre el SONDEO de clasificación (una petición completa por la
+  // capa) y se recalcula en la primera repetición, para que refleje la misma
+  // llamada que produjo las cifras que se publican.
+  let palanca = estadoDePalanca(s, probe, probe.report.tokens.providerCachedInput ?? 0);
 
   async function sampleOnce(t: number): Promise<void> {
     // Arm A: naive baseline — a real call, measured.
-    const respA = await provider.generate(buildNaive(req));
+    const respA = await provider.generate(buildNaive(req, forzado));
     const fp = (respA.raw as { system_fingerprint?: string } | undefined)?.system_fingerprint;
     if (fp) fingerprints.add(fp);
     modelosServidos.add(modeloDe(respA.raw) ?? "(sin declarar)");
@@ -421,12 +502,15 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     const q = await qualityGate(s, resB, respA.text, model, kind === "cache");
     if (q.passed) qPass++;
     gate = q.gate;
-    if (t === 0) attribution = {
-      avoidedCall: resB.report.calls.avoidedLlm > 0,
-      eliminatedInputTokens: resB.report.tokens.eliminatedInput,
-      compressedInputTokens: resB.report.tokens.compressedInput,
-      providerCachedInputTokens: resB.report.tokens.providerCachedInput ?? 0,
-    };
+    if (t === 0) {
+      attribution = {
+        avoidedCall: resB.report.calls.avoidedLlm > 0,
+        eliminatedInputTokens: resB.report.tokens.eliminatedInput,
+        compressedInputTokens: resB.report.tokens.compressedInput,
+        providerCachedInputTokens: resB.report.tokens.providerCachedInput ?? 0,
+      };
+      palanca = estadoDePalanca(s, resB, uB.cachedInputTokens ?? 0);
+    }
   }
 
   // Draw the minimum, then (LIVE only) keep drawing until the savings CI is tight
@@ -453,6 +537,8 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     name: s.name,
     lever: s.lever,
     ledger: s.ledger,
+    model,
+    palanca,
     kind,
     reps,
     armA: { meanInputTokens: mean(aIn), meanOutputTokens: mean(aOut), meanCost: mean(paired.map((p) => p.costA)) },
@@ -569,17 +655,214 @@ async function judgeEquivalent(a: string, b: string, s: Scenario, model: string)
 // ── Reporting ────────────────────────────────────────────────────────────────
 const pct = (n: number): string => (n * 100).toFixed(1) + "%";
 const money = (n: number): string => "$" + n.toFixed(6);
+const dinero4 = (n: number): string => "$" + n.toFixed(4);
 const pad = (s: string, n: number): string => (s.length >= n ? s.slice(0, n) : s + " ".repeat(n - s.length));
 const padL = (s: string, n: number): string => (s.length >= n ? s : " ".repeat(n - s.length) + s);
 
-async function main(): Promise<void> {
-  console.log(`\nBV-SALA TRUE A/B live benchmark  [mode: ${mode}]`);
+// ── ¿Qué escenarios aplican a qué modelo? ────────────────────────────────────
+/**
+ * Un escenario que declara `familia` solo se mide contra modelos de esa familia.
+ * Lo que devuelve la segunda lista NO se descarta en silencio: va al informe con
+ * su motivo, porque "no se midió" y "se midió y salió cero" son cosas distintas.
+ */
+function repartirEscenarios(modelo: string | null): {
+  aplican: Scenario[];
+  noAplican: { name: string; lever: string; motivo: string }[];
+} {
+  if (!modelo) return { aplican: scenarios, noAplican: [] };
+  const familia = familiaDeModelo(modelo);
+  const aplican: Scenario[] = [];
+  const noAplican: { name: string; lever: string; motivo: string }[] = [];
+  for (const s of scenarios) {
+    if (!s.familia || s.familia === familia) aplican.push(s);
+    else
+      noAplican.push({
+        name: s.name,
+        lever: s.lever,
+        motivo:
+          `el escenario mide una palanca de la familia ${s.familia} y ${modelo} es ` +
+          `${familia === "desconocida" ? "de una familia que este banco no reconoce" : `de la familia ${familia}`}`,
+      });
+  }
+  return { aplican, noAplican };
+}
+
+// ── Estimación de coste de la tirada ─────────────────────────────────────────
+/**
+ * LO QUE VA A COSTAR ESTA TIRADA, ANTES DE LANZARLA.
+ *
+ * Nadie debería pagar una medición sin saber su precio, y el banco tiene todos
+ * los datos para calcularlo: los tokens de cada escenario los cuenta el mismo
+ * tokenizador que factura el proveedor, y el precio sale del catálogo de precios
+ * de lista del SDK.
+ *
+ * ES UN TECHO, y se dice: la salida se cuenta al tope declarado (`maxOutputTokens`)
+ * aunque el modelo casi siempre escriba menos, el brazo B se cuenta como si
+ * gastara lo mismo que el A —cuando la gracia del producto es que gaste menos— y
+ * el muestreo adaptativo se cuenta a su cota dura. Equivocarse por arriba es el
+ * lado correcto en una cifra que sirve para decidir si se lanza el gasto.
+ */
+interface EstimacionDeEscenario {
+  escenario: string;
+  /** Tokens de entrada por llamada, tal y como sale el brazo naive. */
+  entradaTokens: number;
+  /** Techo de tokens de salida por llamada. */
+  salidaTokens: number;
+  llamadasMinimo: number;
+  llamadasTecho: number;
+  costeMinimo: number;
+  costeTecho: number;
+}
+
+interface EstimacionDeModelo {
+  modelo: string;
+  precioConocido: boolean;
+  escenarios: EstimacionDeEscenario[];
+  costeMinimo: number;
+  costeTecho: number;
+}
+
+function tokensDe(texto: string, model: string): number {
+  return registroTokens.count(texto, { model });
+}
+
+function estimarEscenario(s: Scenario, model: string): EstimacionDeEscenario {
+  const p = priceFor(model);
+  let entrada = tokensDe(s.request.messages.map((m) => m.content).join("\n"), model);
+  if (s.request.structuredData !== undefined) {
+    entrada += tokensDe(JSON.stringify(s.request.structuredData), model);
+  }
+  if (s.request.tools?.length) {
+    entrada += tokensDe(
+      JSON.stringify(
+        s.request.tools.map((t) => ({
+          type: "function",
+          function: { name: t.id, description: t.description, parameters: t.parameters ?? {} },
+        })),
+      ),
+      model,
+    );
+  }
+  // El contrato viaja en `response_format` en LOS DOS brazos.
+  if (s.request.response?.schema) entrada += tokensDe(JSON.stringify(s.request.response.schema), model);
+
+  const salida = s.request.response?.maxOutputTokens ?? 256;
+
+  // Llamadas: 1 sondeo de clasificación (brazo B) + por repetición un brazo A y
+  // un brazo B; `toolDiscovery` puede partir el brazo B en dos; los escenarios de
+  // caché añaden el par fallo-frío/acierto de la amortización.
+  const porRepeticion = 2 + (s.request.savings?.toolDiscovery === true ? 1 : 0);
+  const extraCache = s.warm ? 2 : 0;
+  // Los escenarios de caché tiran la mitad de repeticiones; los resolvers
+  // también, pero eso no se sabe hasta ejecutarlos, así que se les cuenta la
+  // tanda entera. Un techo que se pasa por arriba en el caso barato no engaña a
+  // nadie; uno que se quede corto, sí.
+  const minimo = s.warm ? Math.max(2, Math.ceil(REPS / 2)) : REPS;
+  const llamadasMinimo = 1 + extraCache + minimo * porRepeticion;
+  const llamadasTecho = 1 + extraCache + MAX_REPS * porRepeticion;
+
+  const porLlamada = (entrada / 1000) * p.inputPer1k + (salida / 1000) * p.outputPer1k;
+  return {
+    escenario: s.name,
+    entradaTokens: entrada,
+    salidaTokens: salida,
+    llamadasMinimo,
+    llamadasTecho,
+    costeMinimo: llamadasMinimo * porLlamada,
+    costeTecho: llamadasTecho * porLlamada,
+  };
+}
+
+function estimarTirada(): EstimacionDeModelo[] {
+  const out: EstimacionDeModelo[] = [];
+  for (const modelo of modelosAMedir) {
+    const { aplican } = repartirEscenarios(modelo);
+    // Sin modelo forzado cada escenario lleva el suyo, así que la estimación se
+    // hace escenario a escenario con su propio precio.
+    const filas = aplican.map((s) => estimarEscenario(s, modelo ?? s.request.model));
+    out.push({
+      modelo: modelo ?? "(el de cada escenario)",
+      precioConocido: modelo
+        ? precioConocido(modelo)
+        : aplican.every((s) => precioConocido(s.request.model)),
+      escenarios: filas,
+      costeMinimo: filas.reduce((n, f) => n + f.costeMinimo, 0),
+      costeTecho: filas.reduce((n, f) => n + f.costeTecho, 0),
+    });
+  }
+  return out;
+}
+
+function imprimirEstimacion(est: EstimacionDeModelo[]): number {
+  const totalMin = est.reduce((n, e) => n + e.costeMinimo, 0);
+  const totalMax = est.reduce((n, e) => n + e.costeTecho, 0);
+  console.log("\nCoste estimado de la tirada (techo: salida al tope, brazo B como el A, reps a la cota dura)");
+  for (const e of est) {
+    const aviso = e.precioConocido ? "" : "   ⚠ precio ILUSTRATIVO: este modelo no está en el catálogo";
+    console.log(
+      `  ${pad(e.modelo, 34)} ${padL(dinero4(e.costeMinimo), 10)} – ${padL(dinero4(e.costeTecho), 10)}` +
+        `   ${e.escenarios.length} escenarios${aviso}`,
+    );
+  }
+  if (est.length > 1) console.log(`  ${pad("TOTAL", 34)} ${padL(dinero4(totalMin), 10)} – ${padL(dinero4(totalMax), 10)}`);
   console.log(
     mode === "LIVE"
-      ? `provider: real endpoint   model: ${liveModel ?? "(per-request)"}   reps: ${REPS}   (both arms metered by the provider)`
-      : `provider: mock (no network)   reps: ${REPS}   —  ESTIMATED plumbing run, NOT a savings claim`,
+      ? "  Estas llamadas se pagan. Corta ahora si la cifra no te cuadra."
+      : "  MOCK: esta tirada no cuesta nada. La cifra es lo que costaría en LIVE.",
   );
-  console.log("─".repeat(104));
+  return totalMax;
+}
+
+// ── Una tirada completa contra UN modelo ─────────────────────────────────────
+//
+// El banco medía SIEMPRE un solo modelo —el que hubiera en `BVSALA_DEMO_MODEL`—
+// y publicaba una cifra sin apellido. Aquí cada modelo tiene su tirada, sus
+// escenarios aplicables y su artefacto, y la comparación entre ellos es una
+// tabla y no una conjetura.
+
+/** Los libros que se agregan. Sale de `LIBROS` para que un libro nuevo no pueda
+ *  caer en silencio en el saco de "none" — que es lo que le pasaba al libro 4:
+ *  la lista de aquí estaba escrita a mano y no lo incluía, así que el escenario
+ *  de Anthropic no tenía fila propia en la atribución. */
+const LEDGERS: LedgerTag[] = LIBROS.filter((l): l is Exclude<LedgerTag, "none"> => l !== "none");
+
+interface FilaDeLibro {
+  ledger: string;
+  scenarios: string[];
+  savings: CI;
+  deltaCost: number;
+  proven: boolean;
+}
+
+interface EstadoDePalancaEnLaTirada {
+  palanca: Palanca;
+  escenario: string;
+  ejercitada: boolean;
+  motivo: string;
+}
+
+interface Tirada {
+  modelo: string | null;
+  etiqueta: string;
+  results: ScenarioResult[];
+  noAplican: { name: string; lever: string; motivo: string }[];
+  agg: CI;
+  wilcoxonP: number;
+  qualityPassRate: number;
+  proven: boolean;
+  modelStable: boolean;
+  ledgerRollup: FilaDeLibro[];
+  palancas: EstadoDePalancaEnLaTirada[];
+  artefacto: Record<string, unknown>;
+}
+
+const sumArr = (xs: number[]): number => xs.reduce((n, x) => n + x, 0);
+
+async function medirModelo(modelo: string | null): Promise<Tirada> {
+  const etiqueta = modelo ?? "(el de cada escenario)";
+  const { aplican, noAplican } = repartirEscenarios(modelo);
+
+  console.log(`\n╭─ modelo: ${etiqueta}`);
   console.log(
     pad("scenario", 26) + pad("kind", 9) + padL("A in/out tok", 16) + padL("B in/out tok", 16) +
     padL("bill in/out", 14) + padL("cached A/B", 12) +
@@ -588,7 +871,7 @@ async function main(): Promise<void> {
   console.log("─".repeat(130));
 
   const results: ScenarioResult[] = [];
-  for (const s of scenarios) results.push(await runScenario(s));
+  for (const s of aplican) results.push(await runScenario(s, modelo));
 
   for (const r of results) {
     const qa = `${r.quality.passed}/${r.quality.total}`;
@@ -634,9 +917,7 @@ async function main(): Promise<void> {
   // Per-ledger attribution. Each scenario maps to exactly ONE ledger, so the
   // ledger cost-deltas PARTITION the total delta — double-counting is impossible
   // by construction, and the reconciliation residual below proves it.
-  const sumArr = (xs: number[]): number => xs.reduce((n, x) => n + x, 0);
-  const LEDGERS = ["avoided_calls", "eliminated_tokens", "compressed_tokens", "output_restriction"];
-  const ledgerRollup = LEDGERS.map((lg) => {
+  const ledgerRollup: FilaDeLibro[] = LEDGERS.map((lg) => {
     const rs = results.filter((r) => r.ledger === lg);
     const a = rs.flatMap((r) => r.paired.map((p) => p.costA));
     const b = rs.flatMap((r) => r.paired.map((p) => p.costB));
@@ -653,7 +934,7 @@ async function main(): Promise<void> {
   // Reconciliation: (Σ ledger deltas) + (the "none"/setup bucket) must equal the
   // total measured delta, to the cent. A non-zero residual means a bug.
   const totalDelta = sumArr(allA) - sumArr(allB);
-  const noneRs = results.filter((r) => !LEDGERS.includes(r.ledger));
+  const noneRs = results.filter((r) => !(LEDGERS as string[]).includes(r.ledger));
   const noneDelta =
     sumArr(noneRs.flatMap((r) => r.paired.map((p) => p.costA))) -
     sumArr(noneRs.flatMap((r) => r.paired.map((p) => p.costB)));
@@ -682,8 +963,51 @@ async function main(): Promise<void> {
 
   console.log("\nPer-ledger attribution (measured; a ledger is 'proven' only if its 95% CI clears 0)");
   for (const l of ledgerRollup) {
-    const badge = mode !== "LIVE" ? "est" : l.proven ? "proven" : "not-proven";
+    const badge = l.scenarios.length === 0 ? "sin escenario" : mode !== "LIVE" ? "est" : l.proven ? "proven" : "not-proven";
     console.log(`  ${pad(l.ledger, 20)} ${padL(pct(l.savings.point), 8)}  95%lo ${padL(pct(l.savings.lower), 8)}   ${badge}`);
+  }
+
+  // ── EL AVISO HONESTO: qué palancas NO se ejercitaron y por qué ────────────
+  //
+  // Una palanca que la verja económica descartó, una que degradó y una que
+  // ahorra cero producen la MISMA cifra. Sin esta sección el lector no puede
+  // distinguirlas, y las tres se arreglan de forma distinta.
+  const palancas: EstadoDePalancaEnLaTirada[] = results
+    .filter((r) => r.palanca)
+    .map((r) => ({ ...r.palanca!, escenario: r.name }));
+  const sinEjercitar = palancas.filter((p) => !p.ejercitada);
+  console.log("\nPalancas opt-in de la 0.3.0 en esta tirada");
+  for (const p of palancas) {
+    console.log(`  ${p.ejercitada ? "✓" : "✗"} ${pad(p.palanca, 22)} ${pad(p.escenario, 28)} ${p.motivo}`);
+  }
+  for (const { palanca, motivo } of PALANCAS_SIN_ESCENARIO) {
+    console.log(`  ✗ ${pad(palanca, 22)} ${pad("(sin escenario)", 28)} ${motivo}`);
+  }
+  if (sinEjercitar.length > 0 || PALANCAS_SIN_ESCENARIO.length > 0) {
+    console.log(
+      "  ⚠ Las marcadas con ✗ NO se midieron. Un cero suyo no significa que no ahorren:\n" +
+      "    significa que en esta tirada no llegaron a ejecutarse.",
+    );
+  }
+  // Dos avisos que solo tienen sentido en MOCK, y que evitan leer como resultado
+  // lo que es una limitación del proveedor simulado.
+  if (mode === "MOCK") {
+    if (sinEjercitar.some((p) => p.palanca === "toolDiscovery")) {
+      console.log(
+        "    · toolDiscovery: el proveedor simulado NUNCA devuelve tool_calls, así que el sondeo\n" +
+        "      siempre degrada y esta fila mide el PEOR caso del patrón (una llamada extra pagada\n" +
+        "      y ningún esquema ahorrado). En LIVE el modelo sí elige, y ahí se mide la palanca.",
+      );
+    }
+    if (sinEjercitar.some((p) => p.palanca === "providerPrefixCache")) {
+      console.log(
+        "    · providerPrefixCache: el proveedor simulado no reporta `cached_tokens`. Esta palanca\n" +
+        "      solo es medible en LIVE, por construcción.",
+      );
+    }
+  }
+  for (const s of noAplican) {
+    console.log(`  – ${pad("(no aplica)", 22)} ${pad(s.name, 28)} ${s.motivo}`);
   }
 
   const cacheRows = results.filter((r) => r.amortization);
@@ -694,19 +1018,33 @@ async function main(): Promise<void> {
       console.log(`  ${pad(r.name, 26)} cold-miss ${money(a.coldMissCost)}  hit ${money(a.hitCost)}  break-even at K=${a.breakEvenK ?? "∞"}`);
     }
   }
-  console.log("");
 
-  const artifact = {
+  const artefacto: Record<string, unknown> = {
     mode,
-    ...(liveModel ? { model: liveModel } : {}),
+    ...(modelo ? { model: modelo } : {}),
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
-    pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE },
+    pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
     methodology:
       "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; " +
       "Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. " +
       "Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
     config: { reps: REPS, minReps: REPS, maxReps: MAX_REPS, ciTarget: CI_TARGET, qualityFloor: QUALITY_FLOOR, seed: SEED },
     scenarios: results.map((r) => ({ ...r, paired: undefined })),
+    // LOS ESCENARIOS QUE NO SE MIDIERON CONTRA ESTE MODELO, con su motivo. Sin
+    // esta lista, un artefacto de `gpt-4o-mini` y uno de `claude-haiku` parecen
+    // comparables aunque midan conjuntos de escenarios distintos.
+    scenariosNotApplicable: noAplican,
+    // LAS PALANCAS, ejercitadas o no. Ver la nota de `EstadoDePalanca`.
+    levers: {
+      exercised: palancas.filter((p) => p.ejercitada),
+      notExercised: [
+        ...sinEjercitar,
+        ...PALANCAS_SIN_ESCENARIO.map((p) => ({ ...p, escenario: null, ejercitada: false, motivo: p.motivo })),
+      ],
+      warning:
+        "Una palanca NO ejercitada produce las mismas cifras que una que no ahorra. " +
+        "No leas su cero como una medición: no llegó a ejecutarse.",
+    },
     ledgers: ledgerRollup,
     reconciliation: { totalDelta, ledgerSum, residual, reconciled },
     modelStable: allFpStable,
@@ -728,18 +1066,186 @@ async function main(): Promise<void> {
       "El modelo SERVIDO se compara entre los dos brazos; si difiere, la afirmación no vale. (system_fingerprint se registra pero no se usa como verja: a través de una pasarela es un id por petición.)",
       "Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.",
       "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving.",
+      "Una palanca opt-in que no llegó a dispararse se DECLARA en `levers.notExercised`: su cero no es una medición.",
+      "Un escenario que no aplica a este modelo se SALTA y se declara en `scenariosNotApplicable`, en vez de medirse mal.",
     ],
   };
-  const jsonPath = writeReport("ab-live", artifact);
-  // Raw paired trials so anyone can recompute the CI themselves.
-  const csvRows = results.flatMap((r) =>
-    r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0 })),
-  );
-  const csvPath = writeCsv("ab-live-trials", ["scenario", "kind", "rep", "costA", "costB", "savedFraction"], csvRows);
-  console.log(`Wrote ${jsonPath}`);
-  console.log(`Wrote ${csvPath}  (raw paired trials — recompute the CI yourself)\n`);
 
-  if (mode === "LIVE" && !proven) process.exitCode = 1;
+  return {
+    modelo,
+    etiqueta,
+    results,
+    noAplican,
+    agg,
+    wilcoxonP: wP,
+    qualityPassRate,
+    proven,
+    modelStable: allFpStable,
+    ledgerRollup,
+    palancas,
+    artefacto,
+  };
+}
+
+/** `openai/gpt-4o-mini` → `openai-gpt-4o-mini`, para nombrar ficheros. */
+function babosa(modelo: string): string {
+  return modelo.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+async function main(): Promise<void> {
+  console.log(`\nBV-SALA TRUE A/B live benchmark  [mode: ${mode}]`);
+  console.log(
+    mode === "LIVE"
+      ? `provider: real endpoint   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   (both arms metered by the provider)`
+      : `provider: mock (no network)   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   —  ESTIMATED plumbing run, NOT a savings claim`,
+  );
+
+  // ── El precio ANTES de gastarlo ──────────────────────────────────────────
+  const estimacion = estimarTirada();
+  const techo = imprimirEstimacion(estimacion);
+  const presupuesto = Number(process.env.BVSALA_AB_BUDGET_USD ?? NaN);
+  if (mode === "LIVE" && Number.isFinite(presupuesto) && techo > presupuesto) {
+    console.error(
+      `\n✗ La tirada puede costar hasta ${dinero4(techo)} y BVSALA_AB_BUDGET_USD son ${dinero4(presupuesto)}.\n` +
+        `  No se ha llamado a ningún proveedor. Sube el presupuesto o recorta BVSALA_AB_REPS / BVSALA_DEMO_MODELS.\n`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  const tiradas: Tirada[] = [];
+  for (const modelo of modelosAMedir) tiradas.push(await medirModelo(modelo));
+
+  // ── La tabla comparable entre modelos ────────────────────────────────────
+  if (tiradas.length > 1) {
+    const nombres = [...new Set(scenarios.map((s) => s.name))];
+    console.log("\n\nAhorro por escenario y modelo  (punto, con la cota inferior al 95% entre paréntesis)");
+    console.log("n/a = el escenario no aplica a ese modelo y NO se midió; ver el motivo en el artefacto.\n");
+    const anchoNombre = 34;
+    const anchoModelo = 26;
+    // Se recorta a `anchoModelo - 2` para que SIEMPRE queden dos espacios entre
+    // columnas: un id de modelo que ocupe la celda entera se pega al siguiente y
+    // la tabla deja de poder leerse.
+    const celda = (s: string): string => padL(s.slice(0, anchoModelo - 2), anchoModelo);
+    const raya = "─".repeat(anchoNombre + anchoModelo * tiradas.length);
+    console.log(pad("scenario", anchoNombre) + tiradas.map((t) => celda(t.etiqueta)).join(""));
+    console.log(raya);
+    for (const nombre of nombres) {
+      const celdas = tiradas.map((t) => {
+        const r = t.results.find((x) => x.name === nombre);
+        if (!r) return celda("n/a");
+        return celda(`${pct(r.measured.savings.point)} (${pct(r.measured.savings.lower)})`);
+      });
+      console.log(pad(nombre, anchoNombre) + celdas.join(""));
+    }
+    console.log(raya);
+    console.log(
+      pad("AGREGADO", anchoNombre) +
+        tiradas.map((t) => celda(`${pct(t.agg.point)} (${pct(t.agg.lower)})`)).join(""),
+    );
+    console.log(
+      pad("proven", anchoNombre) +
+        tiradas.map((t) => celda(mode === "LIVE" ? String(t.proven) : "est")).join(""),
+    );
+    console.log(
+      pad("calidad", anchoNombre) + tiradas.map((t) => celda(pct(t.qualityPassRate))).join(""),
+    );
+  }
+  console.log("");
+
+  // ── Artefactos ───────────────────────────────────────────────────────────
+  const rutas: string[] = [];
+  if (tiradas.length === 1) {
+    // UN solo modelo: el artefacto de siempre, en su ruta de siempre. Es la que
+    // lee `pnpm ab:publish`, y cambiarla rompería la publicación.
+    const t = tiradas[0]!;
+    rutas.push(writeReport("ab-live", t.artefacto));
+    rutas.push(
+      writeCsv(
+        "ab-live-trials",
+        ["scenario", "kind", "rep", "costA", "costB", "savedFraction"],
+        t.results.flatMap((r) =>
+          r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0 })),
+        ),
+      ),
+    );
+  } else {
+    // VARIOS modelos: un artefacto por modelo y una comparación. `ab-live.json`
+    // NO se escribe, y es deliberado: publicar una tirada multi-modelo bajo un
+    // solo titular es exactamente la confusión que este cambio viene a quitar.
+    // Para publicar, se elige un modelo y se corre con `BVSALA_DEMO_MODEL`.
+    for (const t of tiradas) {
+      const slug = babosa(t.etiqueta);
+      rutas.push(writeReport(`ab-live--${slug}`, t.artefacto));
+      rutas.push(
+        writeCsv(
+          `ab-live-trials--${slug}`,
+          ["scenario", "kind", "rep", "costA", "costB", "savedFraction"],
+          t.results.flatMap((r) =>
+            r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0 })),
+          ),
+        ),
+      );
+    }
+    rutas.push(
+      writeReport("ab-live-por-modelo", {
+        mode,
+        generatedNote:
+          mode === "LIVE"
+            ? "real provider tokens & cost, quality-gated, one run per model"
+            : "ESTIMATED — mock provider, not a savings claim",
+        models: tiradas.map((t) => t.etiqueta),
+        costEstimate: estimacion,
+        comparison: tiradas.map((t) => ({
+          model: t.etiqueta,
+          aggregate: { savings: t.agg, proven: t.proven, qualityPassRate: t.qualityPassRate },
+          ledgers: t.ledgerRollup.map((l) => ({ ledger: l.ledger, savings: l.savings, scenarios: l.scenarios.length })),
+          levers: t.palancas,
+          scenariosNotApplicable: t.noAplican,
+          scenarios: t.results.map((r) => ({
+            name: r.name,
+            ledger: r.ledger,
+            kind: r.kind,
+            savings: r.measured.savings,
+            quality: r.quality,
+            palanca: r.palanca,
+          })),
+        })),
+        leversWithoutScenario: PALANCAS_SIN_ESCENARIO,
+        honesty: [
+          "Cada modelo se mide por separado, con sus propios escenarios aplicables.",
+          "n/a en la tabla = el escenario NO se midió contra ese modelo; nunca es un cero.",
+          "Una palanca opt-in que no llegó a dispararse se declara; su cero no es una medición.",
+          "No se escribe `ab-live.json` en una tirada multi-modelo: un titular necesita un modelo.",
+        ],
+      }),
+    );
+    rutas.push(
+      writeCsv(
+        "ab-live-por-modelo",
+        ["model", "scenario", "ledger", "kind", "palanca", "palancaEjercitada", "savingsPoint", "savingsLower", "reps", "qualityPassed", "qualityTotal"],
+        tiradas.flatMap((t) =>
+          t.results.map((r) => ({
+            model: t.etiqueta,
+            scenario: r.name,
+            ledger: r.ledger,
+            kind: r.kind,
+            palanca: r.palanca?.palanca ?? "",
+            palancaEjercitada: r.palanca ? String(r.palanca.ejercitada) : "",
+            savingsPoint: r.measured.savings.point,
+            savingsLower: r.measured.savings.lower,
+            reps: r.reps,
+            qualityPassed: r.quality.passed,
+            qualityTotal: r.quality.total,
+          })),
+        ),
+      ),
+    );
+  }
+  for (const ruta of rutas) console.log(`Wrote ${ruta}`);
+  console.log("");
+
+  if (mode === "LIVE" && tiradas.some((t) => !t.proven)) process.exitCode = 1;
 }
 
 main().catch((err) => {

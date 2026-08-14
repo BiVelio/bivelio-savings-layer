@@ -19,6 +19,7 @@ import {
   type SavingsToggles,
 } from "../src/index.js";
 import { scenarios } from "./scenarios.js";
+import { compresorDeRepeticionesLiterales } from "./compresor.js";
 import { writeReport } from "./report.js";
 
 const COST: CostModel = { inputPer1k: 0.00015, outputPer1k: 0.0006, cachedInputPer1k: 0.000075 };
@@ -39,10 +40,28 @@ const LADDER: { name: string; toggles: SavingsToggles }[] = [
   { name: "+ resolvers",       toggles: { deterministicResolvers: true,  exactCache: true,  singleflight: true,  router: false, serialization: false, compression: false } },
   { name: "+ router",          toggles: { deterministicResolvers: true,  exactCache: true,  singleflight: true,  router: true,  serialization: false, compression: false } },
   { name: "+ format selector", toggles: { deterministicResolvers: true,  exactCache: true,  singleflight: true,  router: true,  serialization: true,  compression: false } },
+  // Los tres peldaños de las palancas OPT-IN de la 0.3.0. Iban fuera de la
+  // escalera porque el banco no las encendía en ningún sitio, así que su
+  // contribución marginal salía 0 por construcción y se leía como "no aportan".
+  //
+  // `compression` va antes que las otras dos porque toca la ENTRADA y las otras
+  // dos tocan la salida y las herramientas: así cada peldaño sigue añadiendo una
+  // palanca sobre un terreno que la anterior no ha movido.
+  { name: "+ compression",     toggles: { deterministicResolvers: true,  exactCache: true,  singleflight: true,  router: true,  serialization: true,  compression: true } },
+  { name: "+ output codebook", toggles: { deterministicResolvers: true,  exactCache: true,  singleflight: true,  router: true,  serialization: true,  compression: true, outputCodebook: true } },
+  // El ÚLTIMO, y su delta marginal puede salir NEGATIVO: el sondeo parte la
+  // petición en dos y contra el proveedor simulado —que nunca devuelve
+  // tool_calls— siempre degrada, así que aquí mide el peor caso del patrón. Es
+  // el dato honesto, no un fallo de la escalera.
+  { name: "+ tool discovery",  toggles: { deterministicResolvers: true,  exactCache: true,  singleflight: true,  router: true,  serialization: true,  compression: true, outputCodebook: true, toolDiscovery: true } },
 ];
 
 async function stageCost(toggles: SavingsToggles): Promise<number> {
-  const layer = createSavingsLayer({ provider, defaultCostModel: COST }); // fresh caches
+  const layer = createSavingsLayer({
+    provider,
+    defaultCostModel: COST,
+    compressor: compresorDeRepeticionesLiterales,
+  }); // fresh caches
   let total = 0;
   for (const s of scenarios) {
     const req = { ...(liveModel ? { ...s.request, model: liveModel } : s.request), savings: toggles };
