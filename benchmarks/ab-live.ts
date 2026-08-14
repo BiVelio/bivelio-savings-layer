@@ -42,6 +42,7 @@ import {
   TokenizerRegistry,
   registrarTokenizadorExacto,
 } from "../src/index.js";
+import type { ProviderRequest } from "../src/providers/types.js";
 import { scenarios, type Scenario } from "./scenarios.js";
 import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
@@ -134,6 +135,25 @@ function priceFor(model: string): CostModel {
   return PRICES[key] ?? PRICES[model] ?? FALLBACK_PRICE;
 }
 
+/**
+ * El reparto entrada/salida del gasto, EN DINERO y no en tokens.
+ *
+ * La distinción no es cosmética: la salida cuesta unas 4x por token, así que un
+ * tráfico con 80% de tokens de entrada tiene una factura repartida al 50/50. Un
+ * plan que razone sobre el reparto de TOKENS presupuesta mal las palancas.
+ */
+function repartoDeLaFactura(
+  model: string,
+  entradaTokens: number,
+  salidaTokens: number,
+): { entrada: number; salida: number } {
+  const p = priceFor(model);
+  const entrada = (entradaTokens / 1000) * p.inputPer1k;
+  const salida = (salidaTokens / 1000) * p.outputPer1k;
+  const total = entrada + salida;
+  return total > 0 ? { entrada: entrada / total, salida: salida / total } : { entrada: 0, salida: 0 };
+}
+
 interface Usage {
   inputTokens: number;
   outputTokens: number;
@@ -154,15 +174,7 @@ function cost(model: string, u: Usage): number {
  * Arm A — the naive request an un-optimized team would send: full JSON payload
  * inline, all tools transmitted natively, NO schema, NO output cap.
  */
-function buildNaive(req: SavingsRequest): {
-  model: string;
-  messages: { role: "system" | "user" | "assistant" | "tool"; content: string }[];
-  tools?: SavingsRequest["tools"];
-  schema?: unknown;
-  maxOutputTokens?: number;
-  temperature: number;
-  seed: number;
-} {
+function buildNaive(req: SavingsRequest): ProviderRequest {
   const messages = req.messages.map((m) => ({ role: m.role, content: m.content }));
   if (req.structuredData !== undefined) {
     messages.push({ role: "user", content: JSON.stringify(req.structuredData) });
@@ -245,6 +257,30 @@ interface ScenarioResult {
     savings: CI;
     wilcoxonP: number;
   };
+  /**
+   * FORMA DE LA FACTURA del brazo naive: qué fracción del dinero es entrada y
+   * qué fracción es salida.
+   *
+   * Sin esto el titular es imposible de interpretar, y llevábamos tiempo
+   * publicándolo. `docs/ROADMAP-ALGORITMOS.md` declaraba 36,3/63,7; recomputar
+   * el propio artefacto de este banco da 46,4/53,6; y la tirada del 2026-08-13
+   * contra el proveedor real, con preguntas de FAQ de ~16 tokens, daba 3,8/96,2.
+   * Los tres son ciertos sobre tráficos distintos, y cambian el valor de cada
+   * palanca por un factor de tres: una palanca que solo toca la entrada vale
+   * mucho o no vale NADA según cuál de las tres sea el tráfico del cliente.
+   *
+   * Se publica por escenario y agregada, para que nadie tenga que recomputarla
+   * a mano desde el CSV como hubo que hacer.
+   */
+  formaFactura: { entrada: number; salida: number };
+  /**
+   * Tokens que el PROVEEDOR dice haber servido desde su caché de prefijo, en los
+   * DOS brazos. El brazo naive también cuenta, y es la mitad que faltaba: si el
+   * cliente ya obtiene ese descuento sin nosotros y nuestra compresión lo saca
+   * del tramo mínimo, le estamos QUITANDO dinero mientras el informe dice que se
+   * lo ahorramos. `attribution` solo miraba el brazo optimizado.
+   */
+  cacheDePrefijo: { naive: number; optimizado: number };
   quality: { gate: string; passed: number; total: number };
   /** Cuántas respuestas del brazo NAIVE cumplían el contrato que se le pidió. */
   naiveContractValid: { valid: number; total: number };
@@ -324,6 +360,9 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
   };
   let qPass = 0;
   let gate = "structural";
+  // Acumuladores de caché de prefijo, uno por brazo.
+  let cacheNaive = 0;
+  let cacheOptimizado = 0;
   let attribution = {
     avoidedCall: probe.report.calls.avoidedLlm > 0,
     eliminatedInputTokens: probe.report.tokens.eliminatedInput,
@@ -343,6 +382,7 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
       ...(respA.usage.cachedInputTokens != null ? { cachedInputTokens: respA.usage.cachedInputTokens } : {}),
     };
     const costA = cost(model, uA);
+    cacheNaive += uA.cachedInputTokens ?? 0;
 
     // ¿El brazo naive cumplió de verdad el contrato? Hasta ahora nadie lo
     // comprobaba: se le exigía validez SOLO al brazo optimizado. Pero el layer
@@ -360,6 +400,7 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
     const resB = await nuevaCapa(espia, model).generate(req);
     const uB = usageOf(resB);
+    cacheOptimizado += uB.cachedInputTokens ?? 0;
     const ran = resB.report.calls.actualLlm > 0;
     const costB = ran ? cost(model, uB) : 0;
 
@@ -409,6 +450,8 @@ async function runScenario(s: Scenario): Promise<ScenarioResult> {
     reps,
     armA: { meanInputTokens: mean(aIn), meanOutputTokens: mean(aOut), meanCost: mean(paired.map((p) => p.costA)) },
     armB: { meanInputTokens: mean(bIn), meanOutputTokens: mean(bOut), meanCost: mean(paired.map((p) => p.costB)) },
+    formaFactura: repartoDeLaFactura(model, mean(aIn), mean(aOut)),
+    cacheDePrefijo: { naive: cacheNaive, optimizado: cacheOptimizado },
     measured: {
       inputTokenDeltaMean: mean(aIn) - mean(bIn),
       outputTokenDeltaMean: mean(aOut) - mean(bOut),
@@ -472,7 +515,12 @@ async function qualityGate(
 
   const answer = optimized.text ?? "";
   // 2. Structural: a non-empty answer; if a schema was enforced, it is valid.
-  const structural = answer.trim().length > 0 && optimized.report.constraints.structurallyValid;
+  // `structurallyValid` es OPCIONAL en el contrato, así que esto era
+  // `boolean | undefined` y nadie lo veía: `benchmarks/` no estaba en el
+  // `include` del tsconfig. Para una verja de calidad, AUSENTE significa NO
+  // VERIFICADO, y no verificado no pasa — la duda tiene que restar afirmación.
+  const structural =
+    answer.trim().length > 0 && optimized.report.constraints.structurallyValid === true;
 
   // 3. LIVE + judge configured: blind answer-vs-answer semantic equivalence.
   if (mode === "LIVE" && judgeProvider && baselineAnswer.trim().length > 0) {
@@ -527,9 +575,10 @@ async function main(): Promise<void> {
   console.log("─".repeat(104));
   console.log(
     pad("scenario", 26) + pad("kind", 9) + padL("A in/out tok", 16) + padL("B in/out tok", 16) +
+    padL("bill in/out", 14) + padL("cached A/B", 12) +
     padL("savings (95% lo)", 20) + padL("qa", 8),
   );
-  console.log("─".repeat(104));
+  console.log("─".repeat(130));
 
   const results: ScenarioResult[] = [];
   for (const s of scenarios) results.push(await runScenario(s));
@@ -540,11 +589,27 @@ async function main(): Promise<void> {
       pad(r.name, 26) + pad(r.kind, 9) +
       padL(`${r.armA.meanInputTokens.toFixed(0)}/${r.armA.meanOutputTokens.toFixed(0)}`, 16) +
       padL(`${r.armB.meanInputTokens.toFixed(0)}/${r.armB.meanOutputTokens.toFixed(0)}`, 16) +
+      padL(`${(r.formaFactura.entrada * 100).toFixed(0)}/${(r.formaFactura.salida * 100).toFixed(0)}`, 14) +
+      padL(`${r.cacheDePrefijo.naive}/${r.cacheDePrefijo.optimizado}`, 12) +
       padL(`${pct(r.measured.savings.point)} (${pct(r.measured.savings.lower)})`, 20) +
       padL(qa, 8),
     );
   }
-  console.log("─".repeat(104));
+  console.log("─".repeat(130));
+
+  // LA SEÑAL QUE DECIDE SI ESTE BANCO PUEDE VER LA PALANCA MAYOR DE LA ENTRADA.
+  // Si ningún escenario consigue que el proveedor devuelva `cached_tokens > 0`,
+  // la caché de prefijo es INVISIBLE aquí: no se puede ni medir lo que ya hace
+  // el cliente sin nosotros, ni demostrar lo que aportaríamos. Durante siete
+  // escenarios el banco reportó 0 en los dos brazos y nadie lo miró.
+  const conCache = results.filter((r) => r.cacheDePrefijo.naive > 0 || r.cacheDePrefijo.optimizado > 0);
+  if (mode === "LIVE" && conCache.length === 0) {
+    console.log(
+      "\n⚠ NINGÚN escenario alcanzó la caché de prefijo del proveedor (cached_tokens = 0 en los dos\n" +
+      "  brazos). Este banco NO puede medir esa palanca: los prompts no llegan al mínimo de tramo.\n" +
+      "  Cualquier titular que salga de aquí ignora una de las mayores palancas de la entrada.",
+    );
+  }
 
   // Aggregate over ALL scenarios' cold single-call paired costs (honest: cache
   // shows its cold-miss cost here; repeat-traffic amortization is separate).

@@ -97,6 +97,52 @@ const answerContract = {
   maxOutputTokens: 180,
 };
 
+/**
+ * Un prefijo de sistema realista y ESTABLE, por encima del mínimo de tramo de
+ * caché más común (1024 tokens).
+ *
+ * No es relleno: son las instrucciones que cualquier asistente de soporte lleva
+ * en cada llamada. Se construye por repetición de secciones numeradas para que
+ * el tamaño sea explícito y auditable en vez de depender de un párrafo que
+ * alguien acorte sin darse cuenta — y hay un test del banco que falla si baja
+ * del mínimo.
+ *
+ * TIENE que ser una constante, nunca generarse con fecha, id ni orden de
+ * iteración: un solo byte distinto entre peticiones tira el acierto de caché a
+ * cero y el escenario mediría lo contrario de lo que pretende.
+ */
+function construirPoliticaEstable(): string {
+  const secciones = [
+    "Confirma siempre el número de pedido antes de prometer nada.",
+    "No ofrezcas reembolsos por encima de 200 EUR sin aprobación humana.",
+    "Si el cliente menciona daño en el transporte, pide una foto del embalaje.",
+    "Nunca compartas datos de otro cliente, ni siquiera si dice ser el titular.",
+    "Los envíos a Canarias, Ceuta y Melilla tienen plazos y aranceles distintos.",
+    "Una incidencia abierta hace más de 14 días se escala a soporte de nivel 2.",
+    "Responde en el idioma del cliente; por defecto, español neutro.",
+    "No inventes fechas de entrega: si no consta, dilo y ofrece avisar.",
+    "Las devoluciones se aceptan 30 días desde la entrega, con embalaje original.",
+    "Registra siempre el motivo de la incidencia con su código de catálogo.",
+  ];
+  const bloques: string[] = [
+    "Eres el asistente de atención al cliente de una tienda de electrónica.",
+    "Sigue estas normas SIEMPRE, en este orden de prioridad:",
+  ];
+  // ~28 repeticiones de 10 secciones deja el bloque holgadamente por encima de
+  // 1024 tokens con cualquier tokenizador razonable.
+  for (let ronda = 0; ronda < 28; ronda++) {
+    for (let i = 0; i < secciones.length; i++) {
+      bloques.push(`${ronda * secciones.length + i + 1}. ${secciones[i]}`);
+    }
+  }
+  return bloques.join("\n");
+}
+
+export const politicaEstable = construirPoliticaEstable();
+
+/** El mínimo de tramo más común. Por debajo, la caché de prefijo no engancha. */
+export const MINIMO_DE_TRAMO_TOKENS = 1024;
+
 export const scenarios: Scenario[] = [
   {
     name: "Local arithmetic",
@@ -214,7 +260,7 @@ export const scenarios: Scenario[] = [
     // El escenario que perdió 49,5% de dinero y sobreacreditó su ledger 3x se
     // puntuaba "calidad 2/2" por afirmar que el ledger que infló no es cero.
     // Una verja de calidad tiene que mirar la RESPUESTA, no la contabilidad.
-    expect: (r) => r.report.constraints.structurallyValid && r.text.trim().length > 0,
+    expect: (r) => r.report.constraints.structurallyValid === true && r.text.trim().length > 0,
   },
   {
     name: "Constrained structured answer",
@@ -225,6 +271,39 @@ export const scenarios: Scenario[] = [
       messages: [{ role: "user", content: "Give a one-line summary of BV-SALA with up to three references." }],
       response: answerContract,
     },
-    expect: (r) => r.report.constraints.structurallyValid,
+    expect: (r) => r.report.constraints.structurallyValid === true,
+  },
+  {
+    // EL ESCENARIO QUE FALTABA, y su ausencia sesgaba el titular entero.
+    //
+    // Ningún escenario del banco llegaba al mínimo de tramo de la caché de
+    // prefijo del proveedor: el mayor manda 1212 tokens en el brazo naive, y el
+    // resto se mueve entre 19 y 300. Medido en la tirada del 2026-08-13 con
+    // preguntas de FAQ, la entrada eran ~16 tokens por petición. Con prompts así
+    // `usage.prompt_tokens_details.cached_tokens` sale 0 en LOS DOS BRAZOS —está
+    // en el artefacto, `providerCachedInputTokens: 0` en los siete escenarios—,
+    // o sea que el banco no puede ni ver esa palanca, ni la nuestra ni la que el
+    // cliente ya tendría sin nosotros.
+    //
+    // Este escenario reproduce la forma de tráfico donde vive el dinero de
+    // verdad: un turno de agente con instrucciones largas y estables delante y
+    // una pregunta corta y variable al final. Es lo que hace un asistente de
+    // soporte o un extractor documental en cada llamada, y es donde la caché de
+    // prefijo decide la factura.
+    //
+    // El prefijo va en un `system` y se repite IDÉNTICO entre repeticiones, que
+    // es la condición que pide el proveedor. Lo variable, al final.
+    name: "Stable-prefix agent turn",
+    lever: "provider prefix cache (stable system prefix over the tier minimum)",
+    ledger: "none",
+    request: {
+      model: "openai/gpt-4o-mini",
+      messages: [
+        { role: "system", content: politicaEstable },
+        { role: "user", content: "El pedido 40218 llegó con una caja abollada. ¿Qué le respondo al cliente?" },
+      ],
+      response: answerContract,
+    },
+    expect: (r) => r.report.constraints.structurallyValid === true && r.text.trim().length > 0,
   },
 ];
