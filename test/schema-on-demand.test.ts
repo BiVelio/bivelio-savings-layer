@@ -551,3 +551,226 @@ describe("la contabilidad del sondeo es honesta", () => {
     expect(res.report.tokens.baselineOutput).toBe(100); // solo la respuesta del cliente
   });
 });
+
+// ---------------------------------------------------------------------------
+// EL PATRÓN CONVIVIENDO CON LO QUE ENTRÓ EN `main` DESPUÉS DE ESCRIBIRLO.
+//
+// El rebase puso este patrón encima de tres cambios que tocan justo lo que él
+// toca, y una resolución de conflicto puede dejar una verja HUÉRFANA sin que
+// caiga ni un test. Lo que sigue es lo que fija que las tres siguen atadas:
+//
+//   · #69 codebook de salida  — etapas 10a/10b alrededor de la llamada.
+//   · #65 libro 2             — los tokens de las herramientas descartadas.
+//   · #68 intents normalizados — el selector pliega diacríticos en los dos lados.
+// ---------------------------------------------------------------------------
+
+/** Un esquema MUCHO más gordo: aquí la verja económica aprueba con holgura. */
+function esquemaEnorme(prefijo: string): JsonSchema {
+  const properties: Record<string, JsonSchema> = {};
+  for (let i = 0; i < 40; i++) {
+    properties[`${prefijo}_field_${i}`] = {
+      type: "string",
+      description:
+        `The ${prefijo} field number ${i}, expressed as a fully qualified value ` +
+        `including its unit, its currency where applicable and its provenance`,
+      maxLength: 120,
+    };
+  }
+  return { type: "object", properties, required: Object.keys(properties) };
+}
+
+const CONTRATO_TRIAJE: JsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["decision", "confidence", "evidence"],
+  properties: {
+    decision: { type: "string", enum: ["human_review", "auto_approve", "auto_reject"] },
+    confidence: { type: "integer", minimum: 0, maximum: 100 },
+    evidence: { type: "array", maxItems: 4, items: { type: "string", maxLength: 16 } },
+  },
+};
+
+describe("descubrimiento + codebook de salida (#69): son ortogonales y se aplican los dos", () => {
+  const peticionConContrato = (toolDiscovery: boolean) => ({
+    model: "openai/gpt-4o-mini",
+    messages: [{ role: "user" as const, content: "summarise the late returns policy for the team" }],
+    tools: CATALOGO_GRANDE,
+    response: { contractId: "triage:v1", schema: CONTRATO_TRIAJE, maxOutputTokens: 200 },
+    savings: { router: false, toolDiscovery, outputCodebook: true },
+  });
+
+  it("el sondeo no lleva NINGÚN contrato; la llamada de verdad lleva el COMPACTO y las elegidas", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      () => ({
+        // En la forma COMPACTA, que es la única que el proveedor conoce.
+        text: JSON.stringify({ d: "H", c: 87, e: ["E17:4"] }),
+        usage: { inputTokens: 800, outputTokens: 30 },
+        finishReason: "stop",
+        structuredNatively: true,
+      }),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+    const res = await capa.generate(peticionConContrato(true));
+
+    expect(proveedor.llamadas).toHaveLength(2);
+
+    // El sondeo: descriptores ligeros y CERO contrato de salida. Ni el del
+    // llamante ni el compacto — su respuesta no se sirve jamás, así que pagar
+    // tokens de contrato ahí sería pagarlos para tirarlos.
+    const sondeo = proveedor.llamadas[0]!;
+    expect(sondeo.schema).toBeUndefined();
+    expect(sondeo.tools!.every((t) => t.parameters === undefined)).toBe(true);
+
+    // La llamada de verdad lleva LAS DOS COSAS a la vez: el contrato compacto de
+    // la etapa 10a y solo las herramientas que el sondeo eligió.
+    const invocacion = proveedor.llamadas[1]!;
+    expect(Object.keys(invocacion.schema?.properties ?? {})).toEqual(["d", "c", "e"]);
+    expect(invocacion.tools!.map((t) => t.id)).toEqual(["tool_3"]);
+
+    // Y la etapa 10b deshace el codebook antes de validar y de servir: lo que
+    // sale por la puerta está en la forma del LLAMANTE.
+    expect(res.data).toEqual({ decision: "human_review", confidence: 87, evidence: ["E17:4"] });
+    expect(JSON.parse(res.text)).toEqual(res.data);
+    expect(res.report.constraints.structurallyValid).toBe(true);
+  });
+
+  it("el techo del sondeo NO le come el presupuesto de salida al llamante", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      () => ({
+        text: JSON.stringify({ d: "H", c: 87, e: ["E17:4"] }),
+        usage: { inputTokens: 800, outputTokens: 30 },
+        finishReason: "stop",
+        structuredNatively: true,
+      }),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+    await capa.generate(peticionConContrato(true));
+
+    // El otro test del techo comprueba que la segunda llamada no lo HEREDA
+    // cuando el llamante no puso ninguno (`undefined`). Este es el caso que de
+    // verdad duele: el llamante SÍ tiene presupuesto, y tiene que llegar entero.
+    // Un 96 colado aquí trunca la respuesta del cliente y el fallo se lee como
+    // "el modelo se corta", no como "la capa le bajó el tope".
+    expect(proveedor.llamadas[0]!.maxOutputTokens).toBe(SALIDA_DEL_SONDEO_TOKENS);
+    expect(proveedor.llamadas[1]!.maxOutputTokens).toBe(200);
+  });
+
+  it("expandida por el codebook y todo, una respuesta de vista recortada SIGUE sin cachearse", async () => {
+    // La verja de la vista recortada mira `descubrimiento.aplicado`, no el texto.
+    // Importa después del rebase porque con codebook lo que se cachea ya NO es
+    // `response.text` sino `textoServido`: si la verja se hubiera atado al texto
+    // crudo, la etapa 10b la habría dejado atrás sin que cayera nada.
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("tool_3"),
+      () => ({
+        text: JSON.stringify({ d: "H", c: 87, e: ["E17:4"] }),
+        usage: { inputTokens: 800, outputTokens: 30 },
+        finishReason: "stop",
+        structuredNatively: true,
+      }),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+
+    const conPalanca = await capa.generate(peticionConContrato(true));
+    // Respuesta VÁLIDA y sin tool calls: las dos verjas anteriores la dejarían
+    // pasar. La única que la para es la del recorte.
+    expect(conPalanca.report.constraints.structurallyValid).toBe(true);
+    expect(conPalanca.toolCalls).toBeUndefined();
+    expect(
+      conPalanca.report.traces.find((t) => t.stage === "cache-write")?.outcome,
+    ).toContain("reduced tool view");
+
+    const sinPalanca = await capa.generate(peticionConContrato(false));
+    expect(sinPalanca.report.cache.result).toBe("miss");
+    expect(sinPalanca.report.calls.avoidedLlm).toBe(0);
+    // Y la petición sin palanca sale con el catálogo entero, que es lo que pidió.
+    expect(proveedor.llamadas).toHaveLength(3);
+    expect(proveedor.llamadas[2]!.tools).toHaveLength(8);
+  });
+});
+
+describe("descubrimiento + libro 2 (#65): lo escondido por el sondeo NO se acredita", () => {
+  // 7 lecturas que el selector SÍ quiere, 3 que no, y una escritura.
+  const lecturaEnorme = (id: string, intent: string): ToolDescriptor => ({
+    id,
+    intents: [intent],
+    risk: "read",
+    description: `Consulta ${id}`,
+    parameters: esquemaEnorme(id),
+  });
+  const RELEVANTES = Array.from({ length: 7 }, (_, i) =>
+    lecturaEnorme(`factura_${i}`, "factura"),
+  );
+  const IRRELEVANTES = Array.from({ length: 3 }, (_, i) =>
+    lecturaEnorme(`orbital_${i}`, "meteorologia orbital"),
+  );
+  const ESCRITURA_ACENTUADA: ToolDescriptor = {
+    id: "reenviar_envio",
+    // Con tilde A PROPÓSITO: es el intent que #68 desatascó. `normalizeText`
+    // pliega los dos lados, así que «envía» del texto casa con «envío» del intent.
+    intents: ["envío"],
+    risk: "write",
+    description: "Reenvía el envío de una factura al cliente",
+    parameters: esquemaEnorme("envio"),
+  };
+  const CATALOGO = [...RELEVANTES, ...IRRELEVANTES, ESCRITURA_ACENTUADA];
+
+  const peticionReal = (toolDiscovery: boolean) => ({
+    model: "openai/gpt-4o-mini",
+    // Imperativo + herramienta de escritura ⇒ TOOL_ACTION, con el router REAL.
+    messages: [
+      { role: "user" as const, content: "envía la factura F-118 al cliente y confírmame el envío" },
+    ],
+    tools: CATALOGO,
+    savings: { toolDiscovery, exactCache: false },
+  });
+
+  it("el libro 2 sale IDÉNTICO con y sin la palanca: no hay doble conteo", async () => {
+    const conSondeo = new ProveedorGuionizado([
+      eligeHerramientas("factura_2"),
+      respuestaFinal("hecho"),
+    ]);
+    const sinSondeo = new ProveedorGuionizado([respuestaFinal("hecho")]);
+
+    const a = await createSavingsLayer({ provider: conSondeo, costModels: PRECIOS })
+      .generate(peticionReal(true));
+    const b = await createSavingsLayer({ provider: sinSondeo, costModels: PRECIOS })
+      .generate(peticionReal(false));
+
+    // El patrón se aplicó de verdad: si no, este test no prueba nada.
+    expect(conSondeo.llamadas).toHaveLength(2);
+    expect(sinSondeo.llamadas).toHaveLength(1);
+    expect(a.report.calls.actualTools).toBeLessThan(b.report.calls.actualTools);
+
+    // EL PUNTO. El libro 2 es el de lo que no costó NADA: las 3 herramientas que
+    // tiró el selector. Los esquemas que esconde el sondeo no son de ese libro
+    // —los pagó una llamada extra—, así que la cifra no puede moverse ni un token
+    // por encender la palanca. Si se moviera, el mismo ahorro estaría contado dos
+    // veces: una en el libro 2 y otra en el total, vía `removedInputLocal`.
+    expect(b.report.tokens.eliminatedInput).toBeGreaterThan(0);
+    expect(a.report.tokens.eliminatedInput).toBe(b.report.tokens.eliminatedInput);
+  });
+
+  it("la escritura con intent ACENTUADO sobrevive al selector Y al sondeo", async () => {
+    const proveedor = new ProveedorGuionizado([
+      eligeHerramientas("factura_2"), // el sondeo NO nombra la escritura
+      respuestaFinal("hecho"),
+    ]);
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS });
+    await capa.generate(peticionReal(true));
+
+    // Dos filtros seguidos, y cada uno se comió esta herramienta alguna vez en la
+    // historia de este repo: el selector por no plegar la tilde (#68) y el sondeo
+    // por no elegirla. El resultado tiene que ser el mismo por los dos lados: la
+    // capacidad llega al proveedor CON su esquema completo, porque perder una
+    // escritura no se nota nunca — el modelo contesta «claro, la reenvío».
+    expect(proveedor.llamadas[0]!.tools!.map((t) => t.id)).toContain("reenviar_envio");
+    const invocacion = proveedor.llamadas[1]!;
+    expect(invocacion.tools!.map((t) => t.id)).toContain("reenviar_envio");
+    expect(invocacion.tools!.find((t) => t.id === "reenviar_envio")!.parameters).toEqual(
+      esquemaEnorme("envio"),
+    );
+  });
+});

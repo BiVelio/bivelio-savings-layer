@@ -920,6 +920,16 @@ export class SavingsPipeline {
         if (m.role === "system") protegidos += 1;
         else contextoComprimible += this.tokensFor(m.content, request);
       }
+      // CON TODAS LAS CANDIDATAS, aunque `toolDiscovery` pueda esconder algunas
+      // más abajo (etapa 10a-bis). No es un descuido: el sondeo aún no ha
+      // ocurrido y su resultado NO es determinista, así que aquí no hay forma
+      // honesta de saber qué esquemas viajarán. La verja de dinero compara este
+      // prompt contra el comprimido, y el error que introduce esa incertidumbre
+      // es acotado y va en el sentido bueno en el caso normal: los esquemas que
+      // el sondeo esconda se restan a los DOS lados, así que la reducción que se
+      // acredita no cambia; lo único que puede desplazarse es de qué lado del
+      // tramo de caché del proveedor cae cada cifra. Queda anotado como riesgo
+      // conocido en lugar de resolverse adivinando el sondeo.
       const promptSinComprimir = this.tokensFor(
         this.assemblePromptText(messages, toolSelection.tools),
         request,
@@ -1132,7 +1142,26 @@ export class SavingsPipeline {
     // de una latencia que se duplicó.
     const providerStart = this.now();
 
-    // --- Stage 9b: schema-on-demand (opt-in, y cambia el contrato de latencia). ---
+    // --- Etapa 10a-bis: schema-on-demand (opt-in, y cambia el contrato de latencia). ---
+    //
+    // VA AQUÍ, entre 10a (planificar el codebook) y la llamada, y no antes, por
+    // dos razones que se leen mal desde el número de etapa:
+    //
+    //  · El sondeo manda los mensajes YA comprimidos y con los tres bloques que
+    //    inyecta la capa en su sitio (etapas 8 y 9). Adelantarlo pagaría el prompt
+    //    largo en la llamada que precisamente viene a ser barata.
+    //  · El codebook (10a) toca el CONTRATO DE SALIDA y esto toca las
+    //    HERRAMIENTAS DE ENTRADA: son ortogonales, y por eso la segunda llamada
+    //    lleva las dos cosas a la vez (`esquemaAlProveedor` + las elegidas). El
+    //    sondeo, en cambio, no lleva ninguna de las dos — ver `descubrirHerramientas`.
+    //
+    // `actualTools` se REESCRIBE aquí. La etapa 6 lo dejó en las candidatas que
+    // sobrevivieron al selector; lo que se publica tiene que ser lo que salió, y
+    // con el patrón aplicado salieron menos. Las descartadas por el SELECTOR ya
+    // están acreditadas en el libro 2 (etapa 6) y las escondidas por el SONDEO no
+    // lo están ni pueden estarlo: no salieron gratis, las pagó una llamada extra.
+    // Los dos conjuntos son disjuntos —el sondeo solo mira lo que el selector
+    // dejó pasar—, así que ningún token se cuenta dos veces.
     const descubrimiento = await this.descubrirHerramientas(
       testigo, request, toggles, toolSelection.tools, messages, ledger, costModel, trace,
     );
@@ -1594,14 +1623,18 @@ export class SavingsPipeline {
       return sinPatron;
     }
 
-    // Las herramientas se cuentan con el MISMO ensamblador que produce el
-    // baseline, no con uno paralelo. Es la regla de una sola regla: si el
-    // baseline y la cuenta de lo que se evita ensamblan distinto, la diferencia
-    // se cuela como ahorro (medido en su día: 785 tokens publicados contra 262
-    // reales). `assemblePromptText([], [t])` es exactamente el texto facturable
-    // de una herramienta.
+    // Las herramientas se cuentan con `textoDeHerramienta`, que es LA regla —la
+    // misma que usan el ensamblador del baseline y el libro 2 de las descartadas
+    // por el selector—, no con una copia paralela. Es la regla de una sola regla:
+    // si el baseline y la cuenta de lo que se evita ensamblan distinto, la
+    // diferencia se cuela como ahorro (medido en su día: 785 tokens publicados
+    // contra 262 reales). Este fichero llegó a contarlo como
+    // `assemblePromptText([], [t])`, que hoy da el MISMO texto byte a byte; pero
+    // eso es un empate que dependía de que el ensamblador no cambie, y un empate
+    // no es una garantía. Llamando a la función compartida, si mañana cambia el
+    // envoltorio cambia en los tres sitios a la vez o no cambia en ninguno.
     const esquemaDe = (t: ToolDescriptor): number =>
-      this.tokensFor(this.assemblePromptText([], [t]), request);
+      this.tokensFor(textoDeHerramienta(t), request);
     const ligeras = candidatas.map(descriptorLigero);
 
     const decision = decidirDescubrimiento({
@@ -1626,10 +1659,19 @@ export class SavingsPipeline {
       return sinPatron;
     }
 
-    // El sondeo va SIN el contrato de salida a propósito. Forzar ahí el modo
-    // estructurado le pide al modelo la respuesta final —que es justo lo que no
-    // queremos todavía— y en varios proveedores compite con las tool calls. Va
-    // también sin `constraintBackend`: no hay nada que restringir.
+    // El sondeo va SIN el contrato de salida a propósito, ni el del llamante ni
+    // el compacto del codebook (`esquemaAlProveedor`, etapa 10a). Forzar ahí el
+    // modo estructurado le pide al modelo la respuesta final —que es justo lo que
+    // no queremos todavía— y en varios proveedores compite con las tool calls. Va
+    // también sin `constraintBackend`: no hay nada que restringir. Y como el
+    // codebook solo existe para abaratar la SALIDA que se sirve, y la del sondeo
+    // no se sirve jamás, mandarlo aquí sería pagar tokens de contrato dos veces
+    // para nada.
+    //
+    // Y va con `maxOutputTokens` PROPIO, el techo duro del sondeo. Es el peor
+    // caso con el que acaba de decidir la verja de arriba, así que tiene que
+    // aplicarse de verdad; y no lo hereda la llamada de abajo, que lleva el
+    // presupuesto de salida del llamante intacto.
     //
     // Y VA SIN MARCADO DE CACHÉ DE PREFIJO: ni `stablePrefixMessages` ni
     // `promptCacheKey`. Es una decisión, no un olvido, y la tentación es real —
