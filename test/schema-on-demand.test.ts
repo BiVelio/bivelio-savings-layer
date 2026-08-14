@@ -592,12 +592,24 @@ const CONTRATO_TRIAJE: JsonSchema = {
 };
 
 describe("descubrimiento + codebook de salida (#69): son ortogonales y se aplican los dos", () => {
+  // EL DELTA MEDIDO VA EXPLÍCITO, y no es adorno del fixture: sin él la capa se
+  // niega a aplicar el codebook contra `gpt-4o-mini`, porque para ese modelo hay
+  // una medición en vivo que dice que la salida CRECE (−16 tokens, −8,2 % neto;
+  // ver `constraints/codebook-evidencia.ts`). Lo que estos tests fijan es que las
+  // dos palancas son ORTOGONALES y que la etapa 10b deshace lo que hizo la 10a,
+  // no que el codebook pague en este modelo — así que la precondición se declara
+  // aquí en vez de esconderla eligiendo el modelo que sale bien.
   const peticionConContrato = (toolDiscovery: boolean) => ({
     model: "openai/gpt-4o-mini",
     messages: [{ role: "user" as const, content: "summarise the late returns policy for the team" }],
     tools: CATALOGO_GRANDE,
     response: { contractId: "triage:v1", schema: CONTRATO_TRIAJE, maxOutputTokens: 200 },
-    savings: { router: false, toolDiscovery, outputCodebook: true },
+    savings: {
+      router: false,
+      toolDiscovery,
+      outputCodebook: true,
+      outputCodebookMeasuredOutputDeltaTokens: 5,
+    },
   });
 
   it("el sondeo no lleva NINGÚN contrato; la llamada de verdad lleva el COMPACTO y las elegidas", async () => {

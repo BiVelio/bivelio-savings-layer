@@ -99,10 +99,46 @@ apparently on*, which is worse, because it looks measured.
 
 | Scenario | Lever | What the gate demands |
 | --- | --- | --- |
-| `Triage decision (output codebook)` | `outputCodebook` | a contract with **long enums and long keys**: the money gate wants ≥ 8 net tokens counting both sides. Measured on this one with o200k_base: output −7, schema −29, **net 36** — four times the prudence floor. |
+| `Triage decision (output codebook)` | `outputCodebook` | a contract with **long enums and long keys** — measured with o200k_base, the compact contract saves 29 input tokens — **and a measured output delta for the model**. See the warning below: this lever's sign depends on the model, and the gate refuses without a measurement. |
 | `Big tool catalogue (schema-on-demand)` | `toolDiscovery` | a **large catalogue** — 8 read tools (the selector's `maxTools` ceiling), 470 schema tokens each, 3 762 in total. With five small ones the gate refuses, and it is right: two calls would cost more than one. **It carries no stable prefix on purpose**: this lever gives up the provider prefix cache on every request, so mixing them would measure the difference of two levers and attribute it to one. |
 | `Forwarded support thread (compression)` | `compression` | an injected `compressor` **and** > 2000 compressible tokens **and** ≥ 200 net tokens removed **and** a compressed prompt that stays inside the cacheable tier. Measured: 3 770 → 1 765 tokens. |
 | — | `semanticCache` | **not exercised, deliberately.** It needs an `EmbeddingFn` and there is no implementation in this repo. A ten-line word-hash "embedding" would measure lexical overlap — what the deterministic guard in `cache/semantic.ts` already checks — not semantic similarity, so the scenario would go green measuring something else. The report lists it as NOT EXERCISED with that reason. |
+
+#### ⚠️ The output codebook: MOCK said +24.8%, LIVE said it depends on the model
+
+This is the most expensive lesson in the bench, and it applies to every row of
+it, not just this one.
+
+In MOCK the output-codebook scenario reported **+24.8%**. That number is an
+artefact of `src/providers/mock.ts`, which fabricates its answer **from the
+schema it receives** — hand it a compact contract and it fabricates a compact
+answer, every time, whatever model id is being simulated. The half of this lever
+that actually decides the money is *how much a real model chooses to write*, and
+the mock does not model it at all.
+
+Measured live, same scenario, same prompts, 8 paired repetitions each:
+
+| model | A (no layer) | B (codebook) | Δ output | net |
+| --- | --- | --- | --- | --- |
+| `gpt-4o` | 184 / 75 | 158 / 72 | **+3** | **+8.0%** (95% lo 4.8%) |
+| `gpt-4o-mini` | 184 / 72 | 158 / 88 | **−16** | **−8.2%** |
+
+Input falls identically on both (−26 tokens): that part is deterministic, it is
+the smaller contract. **The output changes sign with the model.** A smaller model
+appears to lose semantic guidance from short field names (`"d"` instead of
+`"decision"`) and fills in more; a larger one does not.
+
+With only the `gpt-4o-mini` run in hand the conclusion was *"this lever loses
+money, retire it"* — and the `gpt-4o` run inverted it. **One run against one
+model is not a result.** No claim about this lever, or any other, is meaningful
+without the model attached to it.
+
+So the layer no longer guesses: it applies the codebook only where the output
+delta has been **measured** for that model (`src/constraints/codebook-evidencia.ts`),
+and the scenario declares `gpt-4o` because that is the model with a measured
+positive delta. Force `BVSALA_DEMO_MODELS=gpt-4o-mini` and the layer discards the
+lever and says so in the trace — which is also the correct outcome, and the
+report distinguishes it from *"applied and saved nothing"*.
 
 The compressor is `benchmarks/compresor.ts`: it drops **only lines that already
 appear verbatim earlier in the same text** (a forwarded thread repeats the order
@@ -234,7 +270,11 @@ baseline (naive)     $0.004784        0.0%          —
 + router             $0.004663        2.5%      $0.000094
 + format selector    $0.004468        6.6%      $0.000195   ← the big lever on the table payload
 + compression        $0.004016       16.1%      $0.000452   ← the forwarded-thread scenario
-+ output codebook    $0.004003       16.3%      $0.000013
++ output codebook    $0.004003       16.3%      $0.000013   ← MOCK ONLY, and an artefact: the
+                                                              mock fabricates from the schema, so
+                                                              a compact contract always looks like
+                                                              a smaller answer. Live it is +8.0% on
+                                                              gpt-4o and −8.2% on gpt-4o-mini
 + tool discovery     $0.004084       14.6%     $-0.000082   ← negative in MOCK: the mock never
                                                               returns tool_calls, so the probe
                                                               always degrades and this rung

@@ -11,6 +11,22 @@ import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
  * demonstrating the constrained-decoding contract end to end. Token usage is
  * derived from the heuristic estimator so SavingsReport numbers are meaningful
  * in examples and tests.
+ *
+ * ⚠️ WHAT THIS PROVIDER CANNOT MEASURE, and it has already cost money once.
+ * It fabricates the answer FROM THE SCHEMA it receives, so a smaller schema
+ * always produces a smaller answer. Any lever that shrinks the contract sent to
+ * the provider therefore appears to shrink the OUTPUT too — automatically, on
+ * every run, whatever model id is being simulated. That is a property of this
+ * file, not of any model.
+ *
+ * The output codebook is exactly that shape of lever, and against this provider
+ * the benchmark reported it saving 24.8%. Measured live it saves 8.0% on
+ * `gpt-4o` and COSTS 8.2% on `gpt-4o-mini`, because a real model decides how
+ * much to WRITE and a smaller model writes more when the field names carry less
+ * meaning. So: never take an output-token saving measured here as evidence of
+ * anything. Prove those with the paired A/B in `benchmarks/ab-live.ts`, and
+ * write tests for output-side effects against a provider that models the
+ * behaviour you are claiming — see `test/codebook-de-salida.test.ts`.
  */
 export interface MockProviderOptions {
   /** Fixed text to return when no schema is present. */

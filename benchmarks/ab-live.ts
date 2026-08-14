@@ -129,6 +129,34 @@ const MAX_REPS = intEnv("BVSALA_AB_MAX_REPS", REPS * 3);
 const CI_TARGET = Number(process.env.BVSALA_AB_CI_TARGET ?? 0.03); // desired ± half-width on the savings fraction
 const QUALITY_FLOOR = Number(process.env.BVSALA_AB_QUALITY_FLOOR ?? 0.999);
 
+/**
+ * EL AVISO MÁS CARO DEL BANCO, y va junto a la cifra que desmiente — no en un
+ * fichero que hay que ir a buscar.
+ *
+ * En MOCK el codebook de salida sale ahorrando SIEMPRE, contra cualquier modelo
+ * simulado, porque `providers/mock.ts` fabrica la respuesta A PARTIR DEL ESQUEMA
+ * que recibe: dale un contrato compacto y fabrica una respuesta compacta. La
+ * mitad de esta palanca que de verdad decide el dinero —cuánto elige ESCRIBIR un
+ * modelo de verdad— el simulador no la modela en absoluto.
+ *
+ * Y en vivo esa mitad cambia de SIGNO según el modelo, lo que hace que este
+ * aviso no sea prudencia genérica sino un hecho medido. Con solo la tirada de
+ * `gpt-4o-mini` la conclusión fue «retirar la palanca»; la de `gpt-4o` la
+ * invirtió. Una tirada contra un solo modelo no es un resultado — y eso vale
+ * para todas las filas de este informe, no solo para ésta.
+ */
+const AVISO_MOCK_DEL_CODEBOOK =
+  "    · outputCodebook: ⚠ SE EJERCITÓ, Y SU CIFRA NO VALE. El proveedor simulado fabrica la\n" +
+  "      respuesta DESDE EL ESQUEMA, así que un contrato compacto le sale siempre en una\n" +
+  "      respuesta compacta: en MOCK esta palanca ahorra por construcción, contra cualquier\n" +
+  "      modelo. Medido en vivo sobre el MISMO escenario y con 8 pares por modelo:\n" +
+  "          gpt-4o        A 184/75 → B 158/72   salida −3 tokens   → +8,0 % (95%lo 4,8 %)\n" +
+  "          gpt-4o-mini   A 184/72 → B 158/88   salida +16 tokens  → −8,2 %\n" +
+  "      La ENTRADA baja igual en los dos (−26): eso es el esquema compacto y es determinista.\n" +
+  "      Lo que cambia de signo es la SALIDA, y depende del MODELO. Con solo la tirada del\n" +
+  "      pequeño se concluyó «retirar la palanca» y la del grande lo invirtió: UNA TIRADA\n" +
+  "      CONTRA UN SOLO MODELO NO ES UN RESULTADO, aquí ni en ninguna otra fila.";
+
 function intEnv(name: string, def: number): number {
   const v = process.env[name];
   const n = v ? Number(v) : NaN;
@@ -1004,6 +1032,12 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
         "    · providerPrefixCache: el proveedor simulado no reporta `cached_tokens`. Esta palanca\n" +
         "      solo es medible en LIVE, por construcción.",
       );
+    }
+    // EL CASO INVERSO, Y EL MÁS CARO DE LOS TRES: aquí la palanca SÍ se ejercitó
+    // y su cifra es la que no vale. Un ✗ se lee como "no medido"; un ✓ con un
+    // 24,8% al lado se lee como resultado, y es un artefacto del fixture.
+    if (palancas.some((p) => p.palanca === "outputCodebook" && p.ejercitada)) {
+      console.log(AVISO_MOCK_DEL_CODEBOOK);
     }
   }
   for (const s of noAplican) {

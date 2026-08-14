@@ -42,6 +42,7 @@ import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
 import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/backends.js";
 import { planOutputCodebook } from "../constraints/codebook.js";
+import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { shouldCompress } from "../compression/compression.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
@@ -232,6 +233,21 @@ export class SavingsPipeline {
    * tener nunca.
    */
   private readonly verjaDeCascada: VerjaDeCascada;
+
+  /**
+   * Delta de salida del codebook, POR MODELO Y POR CONTRATO.
+   *
+   * Vive en la instancia como las otras tres memorias, pero con una diferencia
+   * que conviene no perder de vista: aquéllas APRENDEN de lo que devuelve cada
+   * petición, y ésta no puede —lo que decide es un contrafactual—, así que solo
+   * recuerda lo que el llamante ya midió, sobre el catálogo de lo que midió
+   * BiVelio. El razonamiento entero está en `codebook-evidencia.ts`.
+   *
+   * LA CLAVE LLEVA EL MODELO. El mismo contrato da +8,0% en `gpt-4o` y −8,2% en
+   * `gpt-4o-mini`: una memoria indexada solo por contrato aplicaría el dato de
+   * uno al otro, y perdería exactamente ese 8% en el sentido malo.
+   */
+  private readonly memoriaDelCodebook = new MemoriaDelCodebook();
 
   constructor(config: SavingsLayerConfig) {
     this.config = config;
@@ -1379,7 +1395,7 @@ export class SavingsPipeline {
     // --- Stage 10: constrained decoding + the single primary LLM call. ---
     const schema = request.response?.schema;
 
-    // --- Etapa 10a: codebook de salida (opt-in) ---
+    // --- Etapa 10a: codebook de salida (opt-in, y solo con medición) ---
     //
     // Cambia el contrato que ve el PROVEEDOR por una forma equivalente y más
     // barata de escribir, y deshace el cambio antes de que lo vea nadie más. Es
@@ -1389,6 +1405,17 @@ export class SavingsPipeline {
     // de `maxOutputTokens`, medido en −2,8% neto— y no va a repetirlo por defecto
     // sobre despliegues que ya están en producción.
     //
+    // Y NO SE APLICA SIN UN DELTA DE SALIDA MEDIDO PARA ESTE MODELO. Medido en
+    // vivo sobre el mismo contrato: `gpt-4o` escribe 3 tokens MENOS (+8,0% neto) y
+    // `gpt-4o-mini` escribe 16 MÁS (−8,2% neto). El signo es del MODELO, no del
+    // esquema, así que no hay nada que deducir aquí — ver `codebook-evidencia.ts`.
+    //
+    // EL PRECIO Y EL DELTA VAN DEL MODELO QUE VA A CONTESTAR (`modeloServido`), no
+    // del que se pidió. Con la cascada enrutando son distintos, y las dos cifras
+    // son propiedades del que de verdad escribe: la tarifa relativa salida/entrada
+    // y la verbosidad. Decidir con el precio del fuerte una llamada que hace el
+    // barato es decidir con la aritmética de otro.
+    //
     // El esquema del llamante NUNCA estuvo en el baseline (`assembleBaselinePrompt`
     // solo ensambla mensajes, herramientas y datos estructurados), así que un
     // esquema más pequeño no acredita ni descuenta nada en ningún libro. Lo único
@@ -1397,7 +1424,13 @@ export class SavingsPipeline {
     // sea que la palanca se reclama a la baja. Ese es el lado correcto.
     const codebook =
       schema && toggles.outputCodebook === true
-        ? planOutputCodebook(schema, (t) => this.tokensFor(t, request))
+        ? planOutputCodebook(schema, (t) => this.tokensFor(t, request), costModel, {
+            evidencia: this.memoriaDelCodebook.resolver(
+              cascada.modeloServido,
+              contractKey(request),
+              toggles.outputCodebookMeasuredOutputDeltaTokens,
+            ),
+          })
         : null;
     if (codebook) {
       trace.record("output-codebook", codebook.applied ? "applied" : "skipped", {
@@ -1408,7 +1441,17 @@ export class SavingsPipeline {
               codedEnumValues: codebook.plan.codedEnumValues,
               schemaTokensOriginal: codebook.plan.schemaTokensOriginal,
               schemaTokensCompact: codebook.plan.schemaTokensCompact,
-              modelledOutputSavingTokens: codebook.plan.modelledOutputSavingTokens,
+              // El ahorro de FORMA ya no decide y por eso cambia de nombre: se
+              // llamaba `modelledOutputSavingTokens` y sí decidía, que es el
+              // error que costó la jornada. Quien lea la traza tiene que ver que
+              // esto es un modelo sobre un testigo, y que lo que decidió fue
+              // `measuredOutputDeltaTokens` con su procedencia al lado.
+              modelledShapeSavingTokens: codebook.plan.modelledShapeSavingTokens,
+              measuredOutputDeltaTokens: codebook.plan.measuredOutputDeltaTokens,
+              outputDeltaProvenance: codebook.plan.outputDeltaProvenance,
+              breakEvenOutputDeltaTokens: codebook.plan.breakEvenOutputDeltaTokens,
+              netSavingUsd: codebook.plan.netSavingUsd,
+              pricedForModel: cascada.modeloServido,
             }
           : {}),
       });

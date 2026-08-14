@@ -316,13 +316,23 @@ export const MINIMO_DE_TRAMO_TOKENS = 1024;
  * Contrato de triaje con enums LARGOS y claves LARGAS: lo que el codebook de
  * salida necesita para tener algo que acortar.
  *
- * LA VERJA DE DINERO (`constraints/codebook.ts`) exige un ahorro NETO de 8
- * tokens contando por los dos lados: lo que adelgaza la salida menos lo que
- * engorda el `response_format` de la entrada. Un contrato de `{answer: string}`
- * no la pasa —no hay enums que codificar y renombrar una clave ahorra un token—,
- * y por eso el contrato compartido del banco no sirve para medir esto. Medido
- * con o200k_base sobre este esquema: la salida adelgaza 7 tokens y el propio
- * esquema 29, o sea NETO 36 — cuatro veces el mínimo de prudencia.
+ * LA VERJA DE DINERO (`constraints/codebook.ts`) decide EN DINERO y exige un
+ * ahorro neto de 8 tokens de ENTRADA equivalentes contando por los dos lados:
+ * lo que adelgaza el `response_format` de la entrada, tarifado a precio de
+ * entrada, más el delta de SALIDA medido, tarifado a precio de salida — que en
+ * la familia 4o es 4x. Un contrato de `{answer: string}` no la pasa —no hay
+ * enums que codificar y renombrar una clave ahorra un token—, y por eso el
+ * contrato compartido del banco no sirve para medir esto.
+ *
+ * Medido con o200k_base sobre este esquema: el esquema compacto ahorra 29 tokens
+ * de ENTRADA. Eso es determinista y es el lado bueno. El otro lado lo decide el
+ * modelo, y con 29 tokens de esquema el equilibrio está en −5,25 tokens de
+ * salida: el codebook paga mientras la respuesta no crezca más que eso.
+ *
+ * ⚠️ LA CIFRA VIEJA DE ESTE COMENTARIO ERA «NETO 36», y salía de modelar el
+ * ahorro de salida sobre un testigo sintético (7 tokens) y sumarlo sin ponderar
+ * por precio. En vivo, ese modelo se equivocaba de SIGNO en la mitad de los
+ * casos: ver la nota del escenario «Triage decision (output codebook)».
  *
  * Es la forma de un clasificador real, no un contrato de laboratorio: decidir,
  * priorizar, categorizar y justificar es lo que hace un triaje de soporte en
@@ -917,14 +927,42 @@ export const scenarios: Scenario[] = [
     //
     // Los dos brazos resuelven la MISMA tarea con el MISMO contrato: el brazo A
     // manda el esquema del llamante (es lo que mandaría un equipo sin la capa) y
-    // el B manda el compacto. Lo que cambia es cuántos tokens cuesta escribir la
-    // respuesta, que es exactamente la palanca.
+    // el B manda el compacto.
+    //
+    // ═════════════════════════════════════════════════════════════════════════
+    // ⚠️ ESTE ESCENARIO MINTIÓ EN MOCK, Y LA LECCIÓN VALE PARA TODO EL BANCO.
+    // ═════════════════════════════════════════════════════════════════════════
+    //
+    // En MOCK publicaba +24,8 % de ahorro. Es un ARTEFACTO DEL SIMULADOR:
+    // `providers/mock.ts` fabrica la respuesta A PARTIR DEL ESQUEMA que recibe,
+    // así que con un esquema compacto fabrica una respuesta compacta, siempre,
+    // contra cualquier modelo. Lo que en un modelo de verdad decide la mitad
+    // cara de esta palanca —cuánto ESCRIBE— el simulador no lo modela.
+    //
+    // Medido en vivo, mismo escenario, mismos 8 pares, dos modelos:
+    //
+    //     modelo         A (sin capa)   B (codebook)   Δ salida   neto
+    //     gpt-4o           184 / 75      158 / 72         +3      +8,0 %  (95 %lo 4,8 %)
+    //     gpt-4o-mini      184 / 72      158 / 88        −16      −8,2 %
+    //
+    // La ENTRADA baja igual en los dos (−26 tokens): eso es el esquema compacto
+    // y es determinista. Lo que cambia de SIGNO es la salida, y depende del
+    // MODELO: el pequeño pierde guía semántica con `"d"` en vez de `"decision"`
+    // y rellena más. Con solo la tirada del pequeño la conclusión fue «retirar
+    // la palanca», y la del grande la invirtió: UNA TIRADA CONTRA UN SOLO MODELO
+    // NO ES UN RESULTADO, ni aquí ni en ninguna otra fila de este banco.
+    //
+    // Por eso este escenario declara `gpt-4o`: es el modelo para el que hay un
+    // delta medido POSITIVO, así que la palanca dispara y se mide lo que se
+    // quiere medir. Forzando `BVSALA_DEMO_MODELS=gpt-4o-mini` la capa la
+    // descarta y lo dice en la traza — que también es el resultado correcto, y
+    // el informe lo distingue de «se aplicó y no ahorró» (ver `estadoDePalanca`).
     name: "Triage decision (output codebook)",
     lever: "output codebook (compact contract to the provider, caller's shape back)",
     ledger: "output_codebook",
     palanca: "outputCodebook",
     request: {
-      model: "openai/gpt-4o-mini",
+      model: "openai/gpt-4o",
       messages: [
         {
           role: "user",

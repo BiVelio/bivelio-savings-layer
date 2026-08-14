@@ -193,12 +193,30 @@ Perfil de referencia, entrada 46,4 % (medida):
 | Llamadas evitadas (resolvers · singleflight · caché compartida) | +22,0 | lossless | Parcial: la caché exacta aporta 0 |
 | Cascada de modelos con verificador determinista | +13,7 | task-preserving | No existe |
 | Entrada: torneo · knapsack de evidencia · schema-on-demand | +10,4 | mixta | Torneo sí; knapsack y tools no |
-| Salida re-codificada con codebook y JSON Patch | +6,2 | lossless | No existe |
+| Salida re-codificada con codebook y JSON Patch | +6,2 ⚠ | lossless en DATOS, no en tokens | Existe, y solo donde está medido (ver nota) |
 | Caché de prefijo del proveedor | +5,3 | lossless | Inexpresable |
 | Batch / Flex sobre tráfico declarado diferible | +2,1 | lossless | No existe |
 | Holdout permanente del 3 % | −1,8 | — | No existe |
 | Coste de la propia capa | −2,5 | — | Sin contabilizar |
 | **Ahorro compuesto** | **55,5 %** | | Banda 22,6 % – 73,6 % |
+
+> ⚠ **CORRECCIÓN MEDIDA (2026-08-14) sobre la fila del codebook de salida.** Los
+> +6,2 puntos de esta tabla se proyectaron sobre el supuesto de que compactar el
+> contrato reduce la salida. Medido en vivo, ese supuesto **cambia de signo según
+> el modelo**: mismo contrato de triaje, mismos prompts, 8 pares por modelo, la
+> entrada baja igual en los dos (184 → 158 tokens) pero la salida no —
+> `gpt-4o` escribió 3 tokens MENOS (**+8,0 %** neto, 95 %lo 4,8 %) y
+> `gpt-4o-mini` escribió 16 MÁS (**−8,2 %** neto). Un modelo pequeño parece
+> perder guía semántica con nombres de campo cortos y rellena más.
+>
+> Con SOLO la tirada del pequeño la conclusión fue «retirar la palanca», y la del
+> grande la invirtió: **una tirada contra un solo modelo no es un resultado**, y
+> eso vale para todas las filas de esta tabla. La palanca no se retira —donde
+> gana, gana un 8 %— pero solo se aplica donde el delta de salida está MEDIDO
+> para ese modelo (`src/constraints/codebook-evidencia.ts`), así que estos +6,2
+> puntos hay que leerlos como el techo de una palanca cuya cobertura es la lista
+> de modelos medidos, no el parque entero. La reversión sigue siendo lossless en
+> DATOS; lo que no es automático es que ahorre TOKENS.
 
 ### Quién llega y quién no
 
