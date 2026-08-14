@@ -310,6 +310,47 @@ describe("`on` enruta de verdad, y nunca en silencio", () => {
     expect(conCascada.report.cost.netSavings).toBeLessThan(sinCascada.report.cost.netSavings);
   });
 
+  it("`cost.actual` CUADRA: los tokens del intento descartado se publican", async () => {
+    // La promesa del producto es una contabilidad que el cliente puede contrastar
+    // contra su factura. `cost.actual` lleva el dinero del intento con el barato
+    // (vía `extraCostUsd`), pero sus TOKENS no pueden estar en `tokens.actual*`:
+    // los facturó otro modelo a otro precio y ahí se tarifarían con el del fuerte.
+    // Si no se publican en ningún sitio, `cost.actual` sale con un hueco que nada
+    // en el informe explica. Los contadores existían en el ledger y no los leía
+    // nadie: esta cuenta se rompía en TODA petición escalada.
+    const res = await capa(
+      new ProveedorPorModelo({
+        [BARATO]: { text: "no json", usage: { inputTokens: 900, outputTokens: 40 } },
+        [FUERTE]: { text: '{"answer":"ok"}', usage: { inputTokens: 1000, outputTokens: 200 } },
+      }),
+    ).generate(peticion({ savings: { modelCascade: "on" } }));
+
+    const c = res.report.modelCascade!;
+    expect(c.escalated).toBe(true);
+    expect(c.cascadeInputTokens).toBe(900);
+    expect(c.cascadeOutputTokens).toBe(40);
+
+    // Y con esas dos cifras la identidad se cierra al céntimo: lo servido al
+    // precio del fuerte, más el intento descartado al precio del barato.
+    const fuerte = precioDeLista("gpt-4o")!;
+    const barato = precioDeLista("gpt-4o-mini")!;
+    const servido =
+      (res.report.tokens.actualInput / 1000) * fuerte.inputPer1k +
+      (res.report.tokens.actualOutput / 1000) * fuerte.outputPer1k;
+    const descartado =
+      (c.cascadeInputTokens! / 1000) * barato.inputPer1k +
+      (c.cascadeOutputTokens! / 1000) * barato.outputPer1k;
+    expect(res.report.cost.actual).toBeCloseTo(servido + descartado, 10);
+  });
+
+  it("sin escalada ni muestra no se publican: no hubo llamada descartada", async () => {
+    const res = await capa(new ProveedorPorModelo({})).generate(
+      peticion({ savings: { modelCascade: "on" } }),
+    );
+    expect(res.report.modelCascade!.cascadeInputTokens).toBeUndefined();
+    expect(res.report.modelCascade!.cascadeOutputTokens).toBeUndefined();
+  });
+
   it("⛔ sin contrato de salida NO enruta, aunque se pida `on`", async () => {
     const p = new ProveedorPorModelo({ "*": { text: "cualquier cosa" } });
     const res = await capa(p).generate({
@@ -470,6 +511,164 @@ describe("LA CACHÉ: una respuesta del barato no se le sirve a quien pidió el f
 
     expect(reformulada.report.cache.result).toBe("miss");
     expect(reformulada.text).toBe('{"answer":"del fuerte"}');
+  });
+});
+
+/**
+ * LA TERCERA PUERTA, y es la que se abre ANTES que las otras dos.
+ *
+ * La clave exacta protege la respuesta una vez GUARDADA; el singleflight la
+ * reparte mientras todavía se está escribiendo, y un seguidor coalescido no
+ * vuelve a ejecutar nada: se le entrega el texto del líder tal cual. Si su clave
+ * no separa por el modelo que va a contestar, la palanca más peligrosa del
+ * producto tiene una puerta trasera abierta para quien nunca la encendió.
+ *
+ * Se comprobó provocándolo, con la clave de antes del arreglo: dos peticiones
+ * concurrentes con el mismo texto, una con `modelCascade: "on"` y otra con la
+ * cascada APAGADA, se coalescían — y la apagada recibía `{"answer":"del
+ * barato"}`, escrito por gpt-4o-mini, habiendo pedido gpt-4o. El proveedor no
+ * llegó a ver una sola llamada a gpt-4o.
+ */
+describe("EL SINGLEFLIGHT: coalescerse no puede cambiarle el modelo a nadie", () => {
+  const dosModelos = () =>
+    new ProveedorPorModelo({
+      [FUERTE]: { text: '{"answer":"del fuerte"}' },
+      [BARATO]: { text: '{"answer":"del barato"}' },
+    });
+
+  it("⛔ quien tiene la cascada APAGADA no recibe la respuesta del barato de un líder enrutado", async () => {
+    const p = dosModelos();
+    const capaUnica = capa(p);
+
+    const [enrutada, apagada] = await Promise.all([
+      capaUnica.generate(peticion({ savings: { modelCascade: "on" } })),
+      // Sin `savings`: la cascada está en `off`, cuyo contrato publicado dice
+      // literalmente que no cambia nada. Recibir la respuesta de otro modelo
+      // porque un vecino concurrente opinó distinto lo rompe entero.
+      capaUnica.generate(peticion()),
+    ]);
+
+    expect(enrutada.text).toBe('{"answer":"del barato"}');
+    expect(apagada.text).toBe('{"answer":"del fuerte"}');
+    expect(apagada.report.model).toBe(FUERTE);
+    expect(apagada.report.qualityStatus).not.toBe("bounded_degradation");
+    // Y se pagaron las dos llamadas, que es lo correcto: son dos peticiones que
+    // van a modelos distintos, así que no había nada que coalescer.
+    expect([...p.llamadas].sort()).toEqual([FUERTE, BARATO].sort());
+  });
+
+  it("dos peticiones que SÍ van al mismo modelo se siguen coalesciendo", async () => {
+    // El arreglo separa por modelo servido, no rompe el singleflight: si las dos
+    // enrutan, comparten ejecución y solo hay UNA llamada al proveedor.
+    const p = dosModelos();
+    const capaUnica = capa(p);
+
+    const [a, b] = await Promise.all([
+      capaUnica.generate(peticion({ savings: { modelCascade: "on" } })),
+      capaUnica.generate(peticion({ savings: { modelCascade: "on" } })),
+    ]);
+
+    expect(p.llamadas).toEqual([BARATO]);
+    expect([a.report.cache.result, b.report.cache.result].sort()).toEqual(["miss", "singleflight"]);
+    // El seguidor sirve el texto del líder, así que le corresponde su etiqueta:
+    // los dos pidieron enrutar y a los dos les contestó el barato.
+    expect(a.text).toBe('{"answer":"del barato"}');
+    expect(b.text).toBe('{"answer":"del barato"}');
+    expect(b.report.qualityStatus).toBe(a.report.qualityStatus);
+  });
+
+  it("`shadow` se coalesce con `off`, porque los dos van al modelo pedido", async () => {
+    // El sombra NO cambia el modelo, así que separar por él lo dejaría fuera del
+    // singleflight sin motivo — y perder una coalescencia es perder ahorro real
+    // a cambio de nada.
+    const p = dosModelos();
+    const capaUnica = capa(p);
+
+    await Promise.all([
+      capaUnica.generate(peticion({ savings: { modelCascade: "shadow" } })),
+      capaUnica.generate(peticion()),
+    ]);
+
+    expect(p.llamadas).toEqual([FUERTE]);
+  });
+});
+
+/**
+ * SIN PRECIO NO HAY ARITMÉTICA, y la aritmética es toda la protección que hay.
+ *
+ * `costModelFor` no puede decir «no lo sé»: tiene que devolver algo con lo que
+ * tarifar, así que cae en el precio ILUSTRATIVO. Preguntándole a él, la rama de
+ * «no hay precio» de `decidirCascada` era código muerto y el par se aprobaba con
+ * una cuenta inventada. Medido con `pairs: { "gpt-4o": "mi-modelo-casero" }` y el
+ * casero sin precio: el ilustrativo daba `costRatio: 0.2`, el par salía viable, y
+ * el tráfico del cliente se enrutaba a un modelo cuyo precio la capa desconoce.
+ */
+describe("UN PAR SIN PRECIO no se enruta, aunque el ilustrativo lo aprobara", () => {
+  const CASERO = "openai/mi-modelo-casero";
+
+  it("⛔ no enruta a un modelo que no está ni en `costModels` ni en el catálogo", async () => {
+    const p = new ProveedorPorModelo({});
+    const res = await capa(p, {
+      costModels: { [FUERTE]: precioDeLista("gpt-4o")! },
+      modelCascade: { pairs: { "gpt-4o": "mi-modelo-casero" } },
+    }).generate(peticion({ savings: { modelCascade: "on" } }));
+
+    expect(p.llamadas).toEqual([FUERTE]);
+    expect(res.report.model).toBe(FUERTE);
+    expect(res.report.modelCascade!.servedModel).toBe(FUERTE);
+    expect(res.report.modelCascade!.reason).toMatch(/no known price for "openai\/mi-modelo-casero"/);
+    // Y no se publica NINGUNA cifra derivada de un precio que no existe: ni la
+    // razón de coste, ni el equilibrio, ni el ahorro del cambio. Un `costRatio`
+    // sacado del precio ilustrativo es peor que no publicar nada, porque se lee
+    // igual que uno real.
+    expect(res.report.modelCascade!.costRatio).toBeUndefined();
+    expect(res.report.modelCascade!.breakEvenEscalationRate).toBeUndefined();
+    expect(res.report.modelCascade!.estimatedSwapSaving).toBeUndefined();
+  });
+
+  it("⛔ tampoco cuando el que no tiene precio es el FUERTE", async () => {
+    // Simétrico: sin el precio del fuerte no hay denominador, y `r` es una razón.
+    const p = new ProveedorPorModelo({});
+    const res = await capa(p, {
+      costModels: { [BARATO]: precioDeLista("gpt-4o-mini")! },
+      modelCascade: { pairs: { "modelo-privado": "gpt-4o-mini" } },
+    }).generate(
+      peticion({ model: "openai/modelo-privado", savings: { modelCascade: "on" } }),
+    );
+
+    expect(p.llamadas).toEqual(["openai/modelo-privado"]);
+    expect(res.report.modelCascade!.reason).toMatch(/no known price for "openai\/modelo-privado"/);
+  });
+
+  it("con los dos precios declarados, el mismo par SÍ se enruta", async () => {
+    // El control: lo que bloquea es la ausencia de precio, no el nombre del
+    // modelo ni el hecho de venir de `pairs`.
+    const p = new ProveedorPorModelo({});
+    const res = await capa(p, {
+      costModels: {
+        [FUERTE]: precioDeLista("gpt-4o")!,
+        [CASERO]: { inputPer1k: 0.0002, outputPer1k: 0.0008 },
+      },
+      modelCascade: { pairs: { "gpt-4o": "mi-modelo-casero" } },
+    }).generate(peticion({ savings: { modelCascade: "on" } }));
+
+    expect(p.llamadas).toEqual([CASERO]);
+    expect(res.report.modelCascade!.costRatio).toBeCloseTo(0.08, 6);
+  });
+
+  it("un par declarado a mano cuyo precio NO sale a cuenta sigue rechazándose", async () => {
+    // La otra mitad de la promesa de `pairs`: declararlo no salta la aritmética.
+    const p = new ProveedorPorModelo({});
+    const res = await capa(p, {
+      costModels: {
+        [FUERTE]: precioDeLista("gpt-4o")!,
+        [CASERO]: { inputPer1k: 0.002, outputPer1k: 0.008 },
+      },
+      modelCascade: { pairs: { "gpt-4o": "mi-modelo-casero" } },
+    }).generate(peticion({ savings: { modelCascade: "on" } }));
+
+    expect(p.llamadas).toEqual([FUERTE]);
+    expect(res.report.modelCascade!.reason).toMatch(/cannot reach the 50.0% target/);
   });
 });
 

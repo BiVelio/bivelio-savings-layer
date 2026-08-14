@@ -77,14 +77,33 @@ export function buildExactKey(
  * two concurrent calls that differ only in `schemaVersion` are different
  * requests and must never coalesce. All three doors — exact key, in-flight key
  * and semantic filter — key on the same identity, by design.
+ *
+ * `servedModel` CARRIES THE MODEL THAT WILL ACTUALLY ANSWER, for the same reason
+ * {@link buildExactKey} does, and this door is the one that leaks FIRST. The
+ * exact key protects the answer AFTER it is stored; this one protects it while
+ * it is still being written, and a follower does not re-run anything — it is
+ * handed the leader's text verbatim.
+ *
+ * The leak it closes, measured: two concurrent requests for the same text, one
+ * with `savings.modelCascade: "on"` and one with the cascade OFF, coalesced onto
+ * one execution. The routed leader called the cheap model, and the caller who
+ * never opted in — whose own decision was "do not route" — was served the cheap
+ * model's answer. Same shape inside a single uniformly-configured deployment:
+ * the automatic shut-off can latch between two concurrent requests, so one is
+ * routed and the other is not, and coalescing hands one of them the other's
+ * model. Whoever the layer decided must go to the strong model has to actually
+ * go there.
  */
-export function buildInflightKey(c: CanonicalRequest): string {
+export function buildInflightKey(
+  c: CanonicalRequest,
+  opciones: { servedModel?: string } = {},
+): string {
   const material = stableStringify({
     tenant: c.tenantId,
     scope: c.authorizationScope,
     principal: c.principal,
     text: c.normalizedText,
-    model: c.model,
+    model: opciones.servedModel ?? c.model,
     system: c.systemPromptHash,
     contract: c.contractId,
     schema: c.schemaVersion,

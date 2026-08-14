@@ -481,8 +481,12 @@ export class SavingsPipeline {
     });
 
     const candidato = modeloBarato(request.model, this.config.modelCascade?.pairs ?? PARES_POR_DEFECTO);
-    const precioFuerte = this.costModelFor(request.model);
-    const precioBarato = candidato ? this.costModelFor(candidato) : undefined;
+    // CON EL PRECIO CONOCIDO, NO CON EL DE TARIFAR. `costModelFor` nunca devuelve
+    // `undefined` —cae en el ilustrativo— así que preguntándole a él la rama de
+    // «sin precio no hay aritmética» de más abajo era código muerto y un par sin
+    // precio se aprobaba con una cuenta inventada. Ver `precioConocido`.
+    const precioFuerte = this.precioConocido(request.model);
+    const precioBarato = candidato ? this.precioConocido(candidato) : undefined;
     const economia = economiaDelPar(precioBarato, precioFuerte);
 
     // El bucket: MISMO trabajo, no misma petición. Lleva el tenant (dos clientes
@@ -536,9 +540,15 @@ export class SavingsPipeline {
       );
     }
     if (!economia) {
+      const sinPrecio = [
+        ...(this.precioConocido(request.model) ? [] : [request.model]),
+        ...(precioBarato ? [] : [candidato]),
+      ];
       return rechazar(
-        `no list price for "${request.model}" or "${candidato}", so the arithmetic that decides ` +
-          `whether routing pays cannot be run; pass \`costModels\` for both`,
+        `no known price for ${sinPrecio.map((m) => `"${m}"`).join(" or ") || "this pair"}, so the ` +
+          `arithmetic that decides whether routing pays cannot be run. The illustrative default ` +
+          `price is deliberately NOT used here: it would approve a pair nobody has priced. Pass ` +
+          `\`costModels\` for both models to enable the cascade for them`,
       );
     }
     if (!economia.viable) return rechazar(economia.razon);
@@ -836,7 +846,13 @@ export class SavingsPipeline {
     }
 
     // --- Stage 3: singleflight around the expensive path. ---
-    const inflightKey = buildInflightKey(canonical);
+    // CON EL MODELO SERVIDO, igual que la clave exacta. Es la TERCERA puerta por
+    // la que una respuesta del barato llega a quien pidió el fuerte, y es la que
+    // se abre primero: el seguidor no vuelve a ejecutar nada, se le entrega el
+    // texto del líder tal cual. Sin esto, dos peticiones concurrentes idénticas
+    // en las que solo una traía `modelCascade: "on"` se coalescían, y la que
+    // tenía la cascada APAGADA recibía la respuesta del modelo barato.
+    const inflightKey = buildInflightKey(canonical, { servedModel: cascada.modeloServido });
     const runExpensive = async (): Promise<SavingsResult<T>> => {
       try {
         return await this.expensivePath<T>(
@@ -1579,9 +1595,9 @@ export class SavingsPipeline {
     const precioServido = escalo ? this.costModelFor(request.model) : costModel;
 
     // La contabilidad de tokens habla de la llamada que produjo LO SERVIDO. La
-    // del intento descartado vive en `ledger.cascadeInput/Output`, que se publican
-    // aparte porque los facturó otro modelo a otro precio y sumarlos aquí los
-    // tarifaría al precio equivocado.
+    // del intento descartado vive en `ledger.cascadeInput/Output`, y se publica
+    // aparte —en `report.modelCascade`— porque la facturó otro modelo a otro
+    // precio y sumarla aquí la tarifaría al precio equivocado.
     ledger.actualInput += response.usage.inputTokens;
     ledger.actualOutput += response.usage.outputTokens;
 
@@ -2052,6 +2068,21 @@ export class SavingsPipeline {
               sampled: true,
               sampleCost: roundUsdPublico(muestra.coste),
               ...(muestra.divergio !== null ? { divergedOnSample: muestra.divergio } : {}),
+            }
+          : {}),
+        // LOS TOKENS DE LA LLAMADA QUE NO SIRVIÓ, publicados aquí porque en
+        // ningún otro sitio caben. Se quedan fuera de `tokens.actualInput/Output`
+        // a propósito —los facturó otro modelo a otro precio, y `estimateCost`
+        // recibe UN solo `CostModel`— pero su DINERO sí entra en `cost.actual`
+        // vía `extraCostUsd`. Sin estas dos cifras, la identidad que el cliente
+        // usa para cuadrar el informe contra su factura
+        // (`actualInput·pIn + actualOutput·pOut == cost.actual`) se rompe en toda
+        // petición escalada o muestreada, y no hay ningún campo que explique el
+        // hueco. Los contadores existían en el ledger y no los leía NADIE.
+        ...(ledger.cascadeInput > 0 || ledger.cascadeOutput > 0
+          ? {
+              cascadeInputTokens: ledger.cascadeInput,
+              cascadeOutputTokens: ledger.cascadeOutput,
             }
           : {}),
       }),
@@ -2669,7 +2700,27 @@ export class SavingsPipeline {
    * etiqueta como "Illustrative". El panel presentaba el resultado como "a tus
    * precios". Sin aviso, sin traza y con un desvío de varias veces el real.
    */
-  private costModelFor(model: string): CostModel {
+  /**
+   * El precio de un modelo SOLO si de verdad se conoce: el del cliente, o el de
+   * lista del catálogo. Nunca el ilustrativo, nunca el `defaultCostModel`.
+   *
+   * `costModelFor` no puede decir «no lo sé»: tiene que devolver algo con lo que
+   * tarifar el informe, así que acaba en el precio ilustrativo con su aviso al
+   * lado. Para TARIFAR eso está bien —una cifra aproximada y advertida es mejor
+   * que ninguna—. Para DECIDIR si enrutar es exactamente lo contrario: la
+   * aritmética del par es toda la protección que hay contra una cascada que
+   * pierde dinero, y correrla sobre un precio inventado la convierte en un sello
+   * de goma.
+   *
+   * Medido al provocarlo: con `pairs: { "gpt-4o": "mi-modelo-casero" }` y el
+   * precio del casero sin declarar, el ilustrativo (0,0005/0,0015) contra el real
+   * de gpt-4o daba `r = 0,200` y el par salía VIABLE — se enrutaba el tráfico del
+   * cliente a un modelo cuyo precio la capa no conoce, y el informe publicaba
+   * `costRatio: 0.2` como si fuera una cuenta. Si el modelo costara el doble que
+   * el fuerte, la cascada perdería dinero en cada petición y nada la pararía: el
+   * apagado automático vigila P(escalar), no el precio.
+   */
+  private precioConocido(model: string): CostModel | undefined {
     const models = this.config.costModels;
     if (models) {
       const exacto = models[model];
@@ -2684,8 +2735,15 @@ export class SavingsPipeline {
     // `defaultCostModel` significa "para lo que yo no conozca"; con el catálogo,
     // muchos menos modelos son desconocidos, y el precio real de gpt-4o sirve
     // mejor al cliente que su propio precio genérico.
-    const deLista = precioDeLista(model);
-    if (deLista) return deLista;
+    return precioDeLista(model);
+  }
+
+  private costModelFor(model: string): CostModel {
+    // Una sola regla de medir para los dos: lo que `costModelFor` añade por
+    // encima de `precioConocido` son las dos capas de respaldo, y son justo las
+    // que la cascada no puede usar.
+    const conocido = this.precioConocido(model);
+    if (conocido) return conocido;
 
     if (this.config.defaultCostModel) return this.config.defaultCostModel;
 

@@ -275,6 +275,20 @@ export interface ModelCascadeReport {
    * there is no ledger for that.
    */
   creditedLedger: "none";
+  /**
+   * Input tokens of the cheap call whose answer was NOT served — the attempt
+   * discarded on an escalation, or a shadow-mode sample.
+   *
+   * They are deliberately absent from `tokens.actualInput`: another model billed
+   * them at another price, and that block is priced with a single cost model, so
+   * folding them in would price them wrong. Their MONEY is in `cost.actual`.
+   * These two fields are what closes the gap, so
+   * `tokens.actualInput * inputPer1k + tokens.actualOutput * outputPer1k` plus
+   * the cheap model's price applied here accounts for `cost.actual` in full.
+   */
+  cascadeInputTokens?: number;
+  /** Output tokens of that same unserved call. See {@link cascadeInputTokens}. */
+  cascadeOutputTokens?: number;
   /** Whether this shadow request paid for an extra cheap call to measure the rate. */
   sampled?: boolean;
   /** What that extra call cost, in your currency unit. */

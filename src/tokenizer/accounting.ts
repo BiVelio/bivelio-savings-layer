@@ -131,9 +131,12 @@ export class SavingsLedger {
   // no es lo que costaron, y en el sentido de cobrar de más.
   //
   // Así que de esa llamada entra el DINERO, ya tarifado con su propio precio, y
-  // no los tokens. Los tokens no se pierden: se publican en
-  // `report.modelCascade` y en la traza, que es donde se pueden leer junto al
-  // modelo que los facturó.
+  // no los tokens. Los tokens no se pierden: quien los lee es el pipeline, y los
+  // publica en `report.modelCascade.cascadeInputTokens/cascadeOutputTokens`, que
+  // es donde se pueden leer junto al modelo que los facturó. ESE LECTOR TIENE QUE
+  // EXISTIR: sin él, `cost.actual` lleva el dinero de unos tokens que no aparecen
+  // en ninguna cuenta del informe, y la identidad con la que el cliente cuadra la
+  // factura se rompe sin dejar rastro que lo explique.
   //
   // Y entra SOLO en `actual`, nunca en el baseline, exactamente como
   // `repairInput`/`discoveryInput`: es una llamada que pone la capa, no el
@@ -144,9 +147,9 @@ export class SavingsLedger {
    * whose answer was NOT served. Added to `actual`, never to the baseline.
    */
   extraCostUsd = 0;
-  /** Input tokens of that call. Published, not priced here. */
+  /** Input tokens of that call. Published by the pipeline, not priced here. */
   cascadeInput = 0;
-  /** Output tokens of that call. Published, not priced here. */
+  /** Output tokens of that call. Published by the pipeline, not priced here. */
   cascadeOutput = 0;
 
   /**
