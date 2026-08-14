@@ -163,6 +163,145 @@ export interface SavingsToggles {
    * action can be lost to a discovery step.
    */
   toolDiscovery?: boolean;
+  /**
+   * Send the request to a CHEAPER model of the same family, check the answer
+   * with a deterministic gate, and fall back to the model you asked for only
+   * when that gate rejects it. Defaults to `"off"`.
+   *
+   * It is the only lever here that changes the price of the WHOLE bill — input
+   * and output — instead of one axis of it. Read {@link ModelCascadeMode} for
+   * what each mode does, and {@link ModelCascadeReport} for the failure this
+   * cannot protect you from. Start at `"shadow"`.
+   */
+  modelCascade?: ModelCascadeMode;
+}
+
+/**
+ * How much authority the model cascade has over your requests.
+ *
+ * - `"off"`     (default) it neither measures nor decides. Nothing changes.
+ * - `"shadow"`  it MEASURES and reports, and never changes your model. Every
+ *               request still goes to the model you asked for. The report gains
+ *               a {@link ModelCascadeReport} saying which cheaper model was
+ *               eligible, what the arithmetic says about it, and what the swap
+ *               would have been worth on THIS request. Costs nothing extra
+ *               unless you also set `modelCascade.shadowSampleRate` on the
+ *               layer, which is a separate, priced opt-in.
+ * - `"on"`      it routes for real. Opt-in, never silent: the report always
+ *               declares the model that served the answer, and a request served
+ *               by a cheaper model is labelled `bounded_degradation`.
+ *
+ * `"on"` carries a gate: when a workload's measured escalation rate reaches the
+ * break-even, the cascade turns ITSELF off for that workload and says so. That
+ * gate protects your BILL. It cannot protect quality — see
+ * {@link ModelCascadeReport}.
+ */
+export type ModelCascadeMode = "off" | "shadow" | "on";
+
+/**
+ * What the model cascade did, or would have done, on this request.
+ *
+ * Present whenever `savings.modelCascade` is not `"off"` — including when the
+ * request was not eligible, because "we did not route this and here is why" is
+ * the answer you need most often.
+ *
+ * ⚠️ READ THIS BEFORE YOU TURN THE CASCADE ON.
+ *
+ * The gate that decides whether a cheap answer is good enough is DETERMINISTIC,
+ * which is what makes the saving real: an LLM judge would cost the very money
+ * this lever exists to save. But a deterministic gate measures FORM, not
+ * MEANING. An answer with impeccable JSON and the wrong content passes it.
+ *
+ * That failure is invisible by construction. It lowers the escalation rate, it
+ * raises the reported saving, and the automatic shut-off never fires — because
+ * the shut-off watches the escalation rate, and the escalation rate looks
+ * excellent. It has the same signature as success, and it surfaces weeks later
+ * as customer complaints.
+ *
+ * So: `escalationRate` is a MONEY figure. Its complement is not a quality score,
+ * and this report deliberately does not publish one. If you need evidence about
+ * quality, run an A/B on your own traffic. `divergedOnSample` (from shadow
+ * sampling) is a hint that something is wrong, never proof that nothing is.
+ */
+export interface ModelCascadeReport {
+  mode: ModelCascadeMode;
+  /** The model the caller asked for. */
+  requestedModel: string;
+  /**
+   * The model that actually produced the answer. In `"shadow"` this always
+   * equals {@link requestedModel}; in `"on"` it is the cheap model when its
+   * answer was accepted, and the requested one when it was escalated.
+   */
+  servedModel: string;
+  /** The cheaper model this request was (or would have been) routed to. */
+  candidateModel?: string;
+  /** Whether the cascade was allowed to consider this request at all. */
+  eligible: boolean;
+  /** Why it did what it did, in one sentence. Never empty. */
+  reason: string;
+  /** What the deterministic gate is able to check here. */
+  verifier: "none" | "structural" | "value-constrained";
+  /**
+   * cost(cheap) / cost(strong), worst case over any token mix. The saving on
+   * routed traffic is `1 - r - escalationRate`.
+   */
+  costRatio?: number;
+  /** Escalation rate above which routing costs MORE than not routing (`1 - r`). */
+  breakEvenEscalationRate?: number;
+  /** Escalation rate above which routing stops hitting the target capture. */
+  targetEscalationRate?: number;
+  /** Opaque, stable id of the workload these rates are measured over. */
+  workload?: string;
+  /** Measured escalation rate for this workload, or absent if nothing measured yet. */
+  escalationRate?: number;
+  /** How many requests that rate is measured over. */
+  escalationSamples?: number;
+  /** Whether THIS request was escalated to the requested model after the gate rejected it. */
+  escalated?: boolean;
+  /**
+   * What swapping the model was worth on this request, in your currency unit.
+   *
+   * A COUNTERFACTUAL: the strong model was not run, so this is priced from the
+   * measured token counts at both list prices. It is deliberately NOT part of
+   * `cost.netSavings` — that number stays a comparison at a single price, and
+   * this one would inflate it with a call nobody made. Negative on an escalated
+   * request, which is exactly what an escalation costs you.
+   */
+  estimatedSwapSaving?: number;
+  /**
+   * Which of the four ledgers this credits: none, and that is the honest answer.
+   * Routing avoids no call (ledger 1), removes no tokens (2), re-encodes nothing
+   * (3) and is not provider caching (4). It changes the PRICE of the tokens, and
+   * there is no ledger for that.
+   */
+  creditedLedger: "none";
+  /**
+   * Input tokens of the cheap call whose answer was NOT served — the attempt
+   * discarded on an escalation, or a shadow-mode sample.
+   *
+   * They are deliberately absent from `tokens.actualInput`: another model billed
+   * them at another price, and that block is priced with a single cost model, so
+   * folding them in would price them wrong. Their MONEY is in `cost.actual`.
+   * These two fields are what closes the gap, so
+   * `tokens.actualInput * inputPer1k + tokens.actualOutput * outputPer1k` plus
+   * the cheap model's price applied here accounts for `cost.actual` in full.
+   */
+  cascadeInputTokens?: number;
+  /** Output tokens of that same unserved call. See {@link cascadeInputTokens}. */
+  cascadeOutputTokens?: number;
+  /** Whether this shadow request paid for an extra cheap call to measure the rate. */
+  sampled?: boolean;
+  /** What that extra call cost, in your currency unit. */
+  sampleCost?: number;
+  /**
+   * On a sampled request where BOTH answers satisfied the contract: whether they
+   * disagree on a hard value (a number, a boolean, a short code).
+   *
+   * A hint about false valids, and nothing more. It only covers sampled traffic,
+   * disagreement is not proof the cheap answer is the wrong one, and agreement
+   * is not proof either answer is right.
+   */
+  divergedOnSample?: boolean;
 }
 
 export interface RequestContext {
@@ -263,6 +402,14 @@ export type CacheOutcome =
  *                      on top of any similarity score.
  * - `not_verified`     the model was called and nothing beyond the shape of the
  *                      answer was checked. The honest default, and the common case.
+ * - `bounded_degradation`
+ *                      the answer was produced by a model CHEAPER than the one
+ *                      you asked for, and it cleared the deterministic gate for
+ *                      its output contract before being served. The bound is
+ *                      exactly what that gate checks — shape, and whatever value
+ *                      constraints your contract declares. NOT meaning: a
+ *                      well-formed answer with wrong content earns this label
+ *                      too. See {@link ModelCascadeReport}.
  * - `rejected`         what was served does not satisfy its output contract, and
  *                      a repair either failed or would have been a wasted call.
  *                      The answer is still returned: this is the layer's verdict
@@ -277,6 +424,7 @@ export const QUALITY_STATUSES = [
   "exact",
   "task_equivalent",
   "not_verified",
+  "bounded_degradation",
   "rejected",
 ] as const;
 
@@ -284,6 +432,15 @@ export type QualityStatus = (typeof QUALITY_STATUSES)[number];
 
 export interface SavingsReport {
   requestId: string;
+  /**
+   * The model that produced this answer.
+   *
+   * Equal to the model you asked for, EXCEPT when `savings.modelCascade` is
+   * `"on"` and a cheaper model's answer cleared the deterministic gate — then
+   * this names the cheaper model, because that is what ran and what your bill
+   * will show. `report.modelCascade.requestedModel` always holds what you asked
+   * for. Changing your model is never silent.
+   */
   model: string;
 
   calls: {
@@ -363,6 +520,13 @@ export interface SavingsReport {
    * the `exact` label.
    */
   qualityStatus?: QualityStatus;
+
+  /**
+   * What the model cascade did, or would have done. Present whenever
+   * `savings.modelCascade` is not `"off"`. Read its docstring before turning the
+   * cascade on: it documents a failure mode no gate in this layer can catch.
+   */
+  modelCascade?: ModelCascadeReport;
 
   quality: {
     taskPassed?: boolean;

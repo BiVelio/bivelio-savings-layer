@@ -210,7 +210,14 @@ function sortValue(value: unknown): unknown {
   return value;
 }
 
-function modelFamilyOf(model: string): string {
+/**
+ * The version-and-size-independent family of a model id.
+ *
+ * Exported because the cache key is now built for the model that will actually
+ * ANSWER, which is not always the one the caller named. Deriving the family a
+ * second time somewhere else is how two rulers start to disagree.
+ */
+export function modelFamilyOf(model: string): string {
   // "openai/gpt-4o-mini" -> "openai/gpt-4o", "gpt-4o-mini-2024" -> "gpt-4o".
   const noVersion = model.replace(/[-_]?\d{4,}.*$/, "");
   return noVersion.replace(/[-_](mini|nano|small|large|latest)$/i, "");

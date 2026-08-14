@@ -39,7 +39,24 @@ class ProveedorFijo implements Provider {
 }
 
 const capa = (provider: Provider, extra: Record<string, unknown> = {}) =>
-  createSavingsLayer({ provider, costModels: PRECIOS, ...extra });
+  createSavingsLayer({ provider, costModels: PRECIOS, silenceWarnings: true, ...extra });
+
+/** Precios reales del par que usa la cascada de modelos (r = 0,060). */
+const PRECIOS_DEL_PAR = {
+  "openai/gpt-4o": { inputPer1k: 0.0025, outputPer1k: 0.01 },
+  "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 },
+};
+
+/** Como `ProveedorFijo`, pero apunta a QUÉ modelo se llamó. */
+class ProveedorPorModelo implements Provider {
+  readonly id = "por-modelo";
+  readonly modelos: string[] = [];
+  constructor(private readonly texto = '{"answer":"ok"}') {}
+  async generate(r: ProviderRequest): Promise<ProviderResponse> {
+    this.modelos.push(r.model);
+    return { text: this.texto, usage: { inputTokens: 100, outputTokens: 10 } };
+  }
+}
 
 /** Contrato que pide `{answer: string}` y prohíbe lo demás. */
 const CONTRATO = {
@@ -242,6 +259,41 @@ describe("rejected — no cumplió el contrato, ni después de reparar", () => {
   });
 });
 
+describe("bounded_degradation — contestó un modelo MÁS BARATO del que se pidió", () => {
+  it("la cascada sirve el barato tras pasar la verja determinista", async () => {
+    const proveedor = new ProveedorPorModelo();
+    const res = await capa(proveedor, { costModels: PRECIOS_DEL_PAR }).generate({
+      model: "openai/gpt-4o",
+      messages: [{ role: "user", content: "dame el json del resumen" }],
+      response: CONTRATO,
+      savings: { modelCascade: "on" },
+    });
+
+    // Contestó otro modelo, y el informe lo dice en los tres sitios.
+    expect(proveedor.modelos).toEqual(["openai/gpt-4o-mini"]);
+    expect(res.report.model).toBe("openai/gpt-4o-mini");
+    expect(res.report.modelCascade!.requestedModel).toBe("openai/gpt-4o");
+    // NO es `not_verified` —sí pasó una verja determinista— y NO es
+    // `task_equivalent`, que afirmaría una equivalencia que nadie ha medido: la
+    // verja mira la FORMA. Lo que se declara es exactamente lo que pasó.
+    expect(res.report.qualityStatus).toBe("bounded_degradation");
+  });
+
+  it("el incumplimiento del contrato sigue mandando sobre la degradación", async () => {
+    // Un JSON válido para la cascada y roto para el contrato no puede existir
+    // (es el mismo validador), así que se prueba por el otro lado: la cascada NO
+    // enruta y el modelo pedido incumple. Sigue siendo `rejected`.
+    const proveedor = new ProveedorPorModelo("{roto");
+    const res = await capa(proveedor, { costModels: PRECIOS_DEL_PAR }).generate({
+      model: "openai/gpt-4o",
+      messages: [{ role: "user", content: "dame el json del resumen" }],
+      response: CONTRATO,
+      savings: { modelCascade: "shadow" },
+    });
+    expect(res.report.qualityStatus).toBe("rejected");
+  });
+});
+
 describe("el seguidor de singleflight hereda la calidad del líder", () => {
   it("sirve el texto del líder, así que lleva la etiqueta del líder", async () => {
     // Líder que acaba en `rejected`: si el seguidor no heredara, saldría con el
@@ -282,6 +334,10 @@ describe("el seguidor de singleflight hereda la calidad del líder", () => {
  *
  * En los dos sentidos: si alguien añade un estado al tipo sin emitirlo, esto se
  * pone rojo; si alguien deja de emitir uno, también.
+ *
+ * `bounded_degradation` ya está declarado porque YA HAY QUIEN LO EMITE: la
+ * cascada de modelos, cuando sirve la respuesta de un modelo más barato del que
+ * pidió el llamante. `insufficient_evidence` sigue fuera, y por la misma regla.
  */
 describe("el vocabulario declarado es exactamente el que se produce", () => {
   it("cada estado de QUALITY_STATUSES tiene un camino que lo emite", async () => {
@@ -318,6 +374,18 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
           model: "openai/gpt-4o-mini",
           messages: [{ role: "user", content: "dame el json" }],
           response: CONTRATO,
+        })
+      ).report.qualityStatus,
+    );
+
+    // bounded_degradation — la cascada sirvió un modelo más barato.
+    anota(
+      (
+        await capa(new ProveedorPorModelo(), { costModels: PRECIOS_DEL_PAR }).generate({
+          model: "openai/gpt-4o",
+          messages: [{ role: "user", content: "dame el json del resumen" }],
+          response: CONTRATO,
+          savings: { modelCascade: "on" },
         })
       ).report.qualityStatus,
     );

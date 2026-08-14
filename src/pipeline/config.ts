@@ -64,6 +64,12 @@ export interface SavingsLayerConfig {
   reranker?: Reranker;
 
   /**
+   * Tuning for the model cascade (`savings.modelCascade`). All optional; the
+   * defaults measure and never spend.
+   */
+  modelCascade?: ModelCascadeSettings;
+
+  /**
    * Signed BiVelio license token (from your paid subscription). This is the
    * primary way to license the SDK: `createSavingsLayer` verifies it offline
    * against the embedded public key and builds a {@link licenseGate} from it.
@@ -245,6 +251,61 @@ export interface SavingsLayerConfig {
   now?: () => number;
   /** Injectable id generator for deterministic tests. */
   generateId?: () => string;
+}
+
+/**
+ * Tuning for the model cascade. Everything here is optional, and the defaults
+ * cost nothing: with no settings at all, `modelCascade: "shadow"` measures what
+ * it can measure for free and makes no extra provider call.
+ */
+export interface ModelCascadeSettings {
+  /**
+   * Your own strong → cheap pairs, replacing the built-in table.
+   *
+   * Keys and values are model ids WITHOUT a vendor prefix (`"gpt-4o"`, not
+   * `"openai/gpt-4o"`); the caller's prefix is carried over automatically, and a
+   * dated snapshot inherits from its base id. A pair whose economics do not work
+   * out at your prices is refused with a reason in the report — declaring it here
+   * does not override the arithmetic.
+   */
+  pairs?: Record<string, string>;
+
+  /**
+   * How many requests of a workload are routed before the automatic shut-off
+   * judges the measured escalation rate (default 20).
+   *
+   * The rate is only observable on requests that were actually routed, so there
+   * is no way to know without spending a bounded amount to find out. Worst case
+   * (every one of them escalates) that exploration costs `n x r` requests'
+   * worth of extra spend, once per workload per process — with a ratio of 0.06
+   * and the default, about 1.2 requests.
+   */
+  exploration?: number;
+
+  /**
+   * PRICED OPT-IN, default 0 (off). Fraction of `"shadow"` requests on which the
+   * layer also calls the cheap model, purely to measure.
+   *
+   * Shadow mode is free precisely because it does not run the cheap model: it
+   * reports eligibility, the arithmetic, and what the swap would have been worth.
+   * What it cannot know for free is the one number that decides everything — how
+   * often the deterministic gate would have REJECTED the cheap answer. That
+   * answer does not exist until the cheap model writes one.
+   *
+   * So this buys it, and the price is exact: each sampled request costs one extra
+   * cheap call, i.e. `r` of what the request already cost — about 6% for
+   * gpt-4o → gpt-4o-mini. At `0.05` that is roughly 0.3% on top of your bill, and
+   * every sampled request reports its own `modelCascade.sampleCost`. It also
+   * DOUBLES that request's provider latency, because the extra call is sequential.
+   *
+   * The sampled request's tokens count as spend and are held out of the baseline,
+   * exactly like the repair retry: measurement must never pay for itself.
+   *
+   * Which requests get sampled is derived from the request's own cache key, so it
+   * is deterministic and stable — the same request is always sampled or always
+   * not, and no `Math.random` decides how your money is spent.
+   */
+  shadowSampleRate?: number;
 }
 
 export const DEFAULT_COST_MODEL: CostModel = {
