@@ -8,6 +8,7 @@ import type {
   SavingsReport,
   ChatMessage,
   CacheOutcome,
+  QualityStatus,
 } from "../contracts/types.js";
 import { canonicalize } from "../canonicalization/canonicalize.js";
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
@@ -1190,6 +1191,11 @@ export class SavingsPipeline {
         schemaVersion: canonical.schemaVersion,
         ...(structurallyValid === null ? {} : { structurallyValid }),
       },
+      // El ÚNICO sitio donde se calcula la etiqueta de calidad. Sale de aquí
+      // para las tres familias de camino —atajos, camino del proveedor y
+      // fail-open— porque las tres pasan por buildReport(); el seguidor de
+      // singleflight es la excepción y hereda (ver asCoalescedFollower).
+      qualityStatus: estadoDeCalidad(cacheResult, structurallyValid),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
       },
@@ -1317,6 +1323,13 @@ export class SavingsPipeline {
             : {}),
         },
         cache: { result: "singleflight" },
+        // `qualityStatus` es de lo POCO que sí se hereda del líder, y es
+        // deliberado: el seguidor sirve EL TEXTO DEL LÍDER, así que le
+        // corresponde la calidad del líder. Coalescerse no verifica nada, de
+        // modo que no puede subir la nota; y si el líder acabó en `rejected`,
+        // el seguidor está sirviendo esa misma respuesta incumplidora y tiene
+        // que decirlo. Los tokens son lo contrario —gasto del líder que el
+        // seguidor no hizo— y por eso se reconstruyen arriba.
         cost,
       },
     };
@@ -1456,6 +1469,70 @@ function tryParse(text: string): { ok: true; value: unknown } | { ok: false } {
 function renderLocally(data: unknown): string {
   if (typeof data === "string") return data;
   return JSON.stringify(data, null, 2);
+}
+
+/**
+ * QUÉ CLASE DE RESPUESTA SE ESTÁ SIRVIENDO, EN UNA PALABRA.
+ *
+ * La única señal de calidad era `constraints.structurallyValid`, un booleano y
+ * encima opcional: metía en la misma casilla lo que CALCULÓ un resolver
+ * determinista —exacto por construcción— y lo que escribió el modelo sin que
+ * nadie comprobara nada más que la forma. Son la diferencia entre «esto es el
+ * resultado» y «esto es lo que dijo el modelo», y el producto afirma ahorro
+ * sobre las dos.
+ *
+ * LA REGLA QUE SOSTIENE EL VOCABULARIO: NUNCA decir «sin pérdida» cuando lo
+ * único medido es similitud coseno, BLEU, ROUGE o el juicio de otro LLM. Esas
+ * métricas se quedan altas mientras desaparece una cifra, una negación o una
+ * excepción — justo los campos que deciden un documento jurídico o financiero.
+ * Por eso el acierto semántico NO es `task_equivalent` por su coseno: lo es por
+ * la verja determinista que corre por debajo del embebedor (números y fechas
+ * como multiconjunto, paridad de negaciones, suelo de solapamiento de
+ * entidades). Si un día esa verja se quitara, el acierto semántico tendría que
+ * bajar a `not_verified` — el coseno solo no compra la etiqueta.
+ *
+ * PRECEDENCIA, y el orden importa: el incumplimiento del contrato manda sobre la
+ * procedencia. El resolver aritmético devuelve `{value: 8}` a quien pidió
+ * `{answer: string}`: acierta el número y falla el contrato. Eso es `rejected`,
+ * no `exact`. La etiqueta solo puede DEGRADAR lo que el resto del informe dice.
+ *
+ * `not_verified` es el defecto y es el caso mayoritario. Ahí cae también el
+ * fail-open —respuesta directa del proveedor, sin capa— y a propósito no tiene
+ * estado propio: lo que se degradó es el OPTIMIZADOR, no la respuesta, que está
+ * tan verificada (o tan poco) como en el camino normal. La degradación ya se ve
+ * donde le corresponde, en la traza `fail-open`; darle además una etiqueta de
+ * calidad sería contar dos veces lo mismo y, peor, sugerir que la respuesta es
+ * de peor calidad por un motivo que no la toca.
+ *
+ * Un turno de herramientas SÍ lleva etiqueta, al contrario que
+ * `structurallyValid`, que se omite. No es una contradicción: `true`/`false` ahí
+ * serían certificar o acusar de incumplir un contrato que nadie ha mirado,
+ * mientras que `not_verified` no afirma nada sobre el contrato — dice que nadie
+ * verificó, que es exactamente lo que pasa. Y la ausencia del campo ya significa
+ * otra cosa («este SDK es anterior a la etiqueta»): darle un segundo significado
+ * haría indistinguibles los dos casos para el cliente.
+ */
+function estadoDeCalidad(
+  cacheResult: CacheOutcome,
+  structurallyValid: boolean | null,
+): QualityStatus {
+  if (structurallyValid === false) return "rejected";
+  switch (cacheResult) {
+    // Exacto POR CONSTRUCCIÓN: o lo calculó un resolver, o es la respuesta que ya
+    // se dio a esta misma pregunta (la clave exacta incluye tenant, modelo,
+    // system, datos adjuntos, contrato, locale y muestreo: «la misma pregunta»
+    // significa la misma de verdad).
+    case "deterministic":
+    case "exact":
+      return "exact";
+    // Otra redacción, misma tarea: pasó la verja determinista.
+    case "semantic":
+      return "task_equivalent";
+    // `miss` (proveedor y fail-open) y `singleflight`, que no llega aquí porque
+    // el seguidor hereda: cualquier cosa que no se haya demostrado es el suelo.
+    default:
+      return "not_verified";
+  }
 }
 
 function defaultRoute(): RouteDecision {
