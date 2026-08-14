@@ -1,0 +1,1638 @@
+{
+  "version": "1.0.0",
+  "dominio": "soporte-y-politicas",
+  "generado": "2026-08-14",
+  "naturaleza": "sintetico",
+  "comercioFicticio": "Botiga Nord SL",
+  "casos": [
+    {
+      "id": "sop-es-001",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devoluciones",
+      "dificultad": "facil",
+      "trampas": [],
+      "consulta": "¿Cuántos días tengo para devolver un pedido?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El plazo de entrega estándar en la península es de 3 a 5 días laborables desde la confirmación del pedido."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "El plazo de tramitación interna de una solicitud de devolución, una vez recibida la mercancía en el almacén, es de 5 días laborables."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Política de devoluciones v4, en vigor desde el 01/01/2026. El cliente dispone de 21 días naturales desde la recepción del pedido para solicitar la devolución de cualquier artículo no excluido en la cláusula 4.2."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "plazo_dias": 21, "tipo_dias": "naturales", "desde": "recepcion" }
+      },
+      "camposCriticos": ["plazo_dias", "tipo_dias", "desde"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": null,
+      "nota": "Caso base sin trampa. Sirve de control: si el knapsack falla aquí, el fallo no es de dificultad sino de mecanismo. Las dos distractoras son plazos del mismo dominio (5 laborables, 3-5 laborables) que compiten por el campo plazo_dias.  AUDITORÍA 2026-08-14: la ventana de devolución de la tienda era de 30 días naturales, que es el valor que anuncia medio comercio electrónico y que un modelo responde sin leer. Se ha cambiado a 21 en todo el corpus de soporte para que el campo mida la evidencia y no la memoria.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-002",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devoluciones",
+      "dificultad": "dificil",
+      "trampas": ["negacion", "condicion"],
+      "consulta": "Buenos días, me gustaría saber si puedo devolver el artículo que compré la semana pasada con el embalaje original y todas las etiquetas puestas",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Los artículos adquiridos durante una campaña de rebajas conservan el mismo plazo de devolución de 21 días naturales que el resto del catálogo."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Cláusula 4.3. Cuando el artículo se devuelve sin su embalaje original o con las etiquetas retiradas, la devolución se admite igualmente, pero el reembolso se minora en un 20 % en concepto de depreciación."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Cláusula 4.1. Se admite la devolución de artículos en su embalaje original, con las etiquetas y precintos intactos, dentro del plazo de 21 días naturales. El reembolso será del 100 % del precio pagado."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "procede": true, "porcentaje_reembolso": 100, "depreciacion_aplicada": false }
+      },
+      "camposCriticos": ["procede", "porcentaje_reembolso", "depreciacion_aplicada"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-003",
+        "porQueDifiere": "La única diferencia en la consulta es «con el embalaje original» frente a «sin el embalaje original». El reembolso pasa de 100 % a 80 %.",
+        "colisionaEnCache": true
+      },
+      "nota": "Trampa de negación en la CONSULTA, no en la evidencia. «sin» no está en la lista NEGATIONS de src/cache/semantic.ts (que es anglocéntrica: tiene «without», no «sin»), así que la paridad de negación no lo ve. Verificado: esta consulta y la de sop-es-003 colisionan hoy bajo keyTokensMatch. E2 es la MISMA unidad que en el gemelo cambia de papel: aquí es distractora (la 4.1 basta para responder) y allí es necesaria. Es la distractora más dura posible, porque es la cláusula contigua del mismo documento y contesta a la misma pregunta con otra cifra.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-003",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devoluciones",
+      "dificultad": "dificil",
+      "trampas": ["negacion", "condicion"],
+      "consulta": "Buenos días, me gustaría saber si puedo devolver el artículo que compré la semana pasada sin el embalaje original y todas las etiquetas puestas",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Cláusula 4.1. Se admite la devolución de artículos en su embalaje original, con las etiquetas y precintos intactos, dentro del plazo de 21 días naturales. El reembolso será del 100 % del precio pagado."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Cláusula 4.3. Cuando el artículo se devuelve sin su embalaje original o con las etiquetas retiradas, la devolución se admite igualmente, pero el reembolso se minora en un 20 % en concepto de depreciación."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Los artículos adquiridos durante una campaña de rebajas conservan el mismo plazo de devolución de 21 días naturales que el resto del catálogo."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "procede": true, "porcentaje_reembolso": 80, "depreciacion_aplicada": true }
+      },
+      "camposCriticos": ["procede", "porcentaje_reembolso", "depreciacion_aplicada"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-002",
+        "porQueDifiere": "Una preposición de tres letras invierte qué cláusula aplica. El campo procede coincide (true en ambos); lo que cambia es el importe.",
+        "colisionaEnCache": true
+      },
+      "nota": "El par 002/003 es el peor escenario comercial: procede=true en los dos, así que una respuesta cacheada de forma cruzada PARECE correcta y solo está mal en la cifra. Un juez que compare «¿se admite la devolución?» no detecta el error; solo lo detecta comparar porcentaje_reembolso.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-004",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "plazos-por-zona",
+      "dificultad": "dificil",
+      "trampas": ["entidad-casi-igual", "condicion"],
+      "consulta": "Hola, quería consultar cuál es el plazo de entrega estimado para un pedido estándar enviado a Ceuta desde la península",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Melilla: de 10 a 15 días laborables, sujeto a despacho aduanero."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Canarias: de 7 a 10 días laborables, sujeto a despacho aduanero y presentación del DUA."
+        },
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "En Ceuta y Melilla no se aplica IVA, sino el Impuesto sobre la Producción, los Servicios y la Importación (IPSI). El importe del IPSI no está incluido en el precio mostrado en la web."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Ceuta: de 8 a 12 días laborables, sujeto a despacho aduanero. El plazo se computa desde la salida del almacén peninsular."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "zona": "Ceuta",
+          "plazo_min_dias": 8,
+          "plazo_max_dias": 12,
+          "tipo_dias": "laborables",
+          "despacho_aduanero": true
+        }
+      },
+      "camposCriticos": ["plazo_min_dias", "plazo_max_dias", "tipo_dias"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-005",
+        "porQueDifiere": "Solo cambia el topónimo: Ceuta (8-12) frente a Melilla (10-15). Los plazos son distintos.",
+        "colisionaEnCache": true
+      },
+      "nota": "Verificado empíricamente: en consulta larga y cortés —la forma habitual del tráfico de soporte— Ceuta y Melilla COLISIONAN bajo keyTokensMatch, porque el suelo de solapamiento Jaccard (0,75) se cumple de sobra cuando solo difiere 1 token de ~18. El mismo par en consulta corta sí se separa. La protección del guardarraíl decae con la longitud de la consulta, y el tráfico real de soporte es largo.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["zona"]
+    },
+    {
+      "id": "sop-es-005",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "plazos-por-zona",
+      "dificultad": "dificil",
+      "trampas": ["entidad-casi-igual", "condicion"],
+      "consulta": "Hola, quería consultar cuál es el plazo de entrega estimado para un pedido estándar enviado a Melilla desde la península",
+      "evidencia": [
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "En Ceuta y Melilla no se aplica IVA, sino el Impuesto sobre la Producción, los Servicios y la Importación (IPSI). El importe del IPSI no está incluido en el precio mostrado en la web."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Ceuta: de 8 a 12 días laborables, sujeto a despacho aduanero. El plazo se computa desde la salida del almacén peninsular."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Canarias: de 7 a 10 días laborables, sujeto a despacho aduanero y presentación del DUA."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Melilla: de 10 a 15 días laborables, sujeto a despacho aduanero."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "zona": "Melilla",
+          "plazo_min_dias": 10,
+          "plazo_max_dias": 15,
+          "tipo_dias": "laborables",
+          "despacho_aduanero": true
+        }
+      },
+      "camposCriticos": ["plazo_min_dias", "plazo_max_dias", "tipo_dias"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-004",
+        "porQueDifiere": "Solo cambia el topónimo. Servir la respuesta de Ceuta a quien pregunta por Melilla adelanta la entrega prometida en 3 días.",
+        "colisionaEnCache": true
+      },
+      "nota": "E4 es la distractora fuerte: menciona LAS DOS ciudades y es del mismo tema fiscal, así que puntúa alto en relevancia léxica para ambas consultas sin aportar nada al campo crítico. Un knapsack que ordene solo por similitud la conservará antes que E2.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["zona"]
+    },
+    {
+      "id": "sop-es-006",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "reembolsos",
+      "dificultad": "dificil",
+      "trampas": ["identificador-casi-igual"],
+      "consulta": "Buenas, ¿podrían decirme en qué estado se encuentra la solicitud de devolución con referencia RMA 4471-A que abrí hace unos días?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El reembolso se abona en un plazo máximo de 14 días naturales desde la recepción del artículo devuelto en el almacén."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Expediente RMA 4471-A. Estado: APROBADO el 03/08/2026. Importe a reembolsar: 12.480,55 EUR. Medio de abono: el mismo utilizado en la compra."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Expediente RMA 4471-B. Estado: DENEGADO el 05/08/2026. Motivo: artículo fuera del plazo de 21 días naturales."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "expediente": "RMA 4471-A",
+          "estado": "APROBADO",
+          "importe_eur": "12.480,55",
+          "fecha": "2026-08-03"
+        }
+      },
+      "camposCriticos": ["estado", "importe_eur"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-007",
+        "porQueDifiere": "El sufijo -A frente a -B. Uno está aprobado con 12.480,55 EUR y el otro denegado.",
+        "colisionaEnCache": true
+      },
+      "nota": "El hallazgo más grave de este corpus. En src/cache/semantic.ts, numericTokens captura «4471-a» y le quita el sufijo no numérico al normalizar bordes, e isContent EXCLUYE todo token que empiece por dígito. Resultado: «4471-a» y «4471-b» son invisibles para las DOS verjas — ni la igualdad de multiconjunto numérico ni el solapamiento Jaccard los distinguen. Verificado: colisionan en consulta corta Y larga, en es y en ca. Un identificador con sufijo alfabético es la forma habitual de un RMA.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["expediente"]
+    },
+    {
+      "id": "sop-es-007",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "reembolsos",
+      "dificultad": "dificil",
+      "trampas": ["identificador-casi-igual", "negacion"],
+      "consulta": "Buenas, ¿podrían decirme en qué estado se encuentra la solicitud de devolución con referencia RMA 4471-B que abrí hace unos días?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Expediente RMA 4471-B. Estado: DENEGADO el 05/08/2026. Motivo: artículo fuera del plazo de 21 días naturales."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Expediente RMA 4471-A. Estado: APROBADO el 03/08/2026. Importe a reembolsar: 12.480,55 EUR. Medio de abono: el mismo utilizado en la compra."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El reembolso se abona en un plazo máximo de 14 días naturales desde la recepción del artículo devuelto en el almacén."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "expediente": "RMA 4471-B",
+          "estado": "DENEGADO",
+          "importe_eur": "0,00",
+          "fecha": "2026-08-05"
+        }
+      },
+      "camposCriticos": ["estado", "importe_eur"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-006",
+        "porQueDifiere": "Servir cruzado promete 12.480,55 EUR a un cliente cuya solicitud está denegada.",
+        "colisionaEnCache": true
+      },
+      "nota": "El daño de la colisión no es simétrico: contestar «denegado» a un expediente aprobado genera una reclamación; contestar «aprobado, 12.480,55 EUR» a uno denegado genera una obligación que la empresa no tiene y que el cliente ya ha leído por escrito.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["expediente"]
+    },
+    {
+      "id": "sop-es-008",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "reembolsos",
+      "dificultad": "dificil",
+      "trampas": ["unidades", "importes-parecidos"],
+      "consulta": "¿Cuál es el importe del reembolso del pedido con IVA incluido?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Pedido P-2026-9014. Base imponible: 10.314,50 EUR. IVA (21 %): 2.166,05 EUR. Total con IVA: 12.480,55 EUR."
+        },
+        {
+          "id": "E3",
+          "papel": "necesaria",
+          "texto": "El reembolso de una devolución aceptada comprende el importe total efectivamente pagado por el cliente, impuestos incluidos."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Pedido P-2026-9041. Base imponible: 10.254,00 EUR. IVA (21 %): 2.153,34 EUR. Total con IVA: 12.408,55 EUR."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "importe_eur": "12.480,55", "base_imponible_eur": "10.314,50", "iva_incluido": true }
+      },
+      "camposCriticos": ["importe_eur", "iva_incluido"],
+      "citas": ["E1", "E3"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-009",
+        "porQueDifiere": "«con IVA incluido» frente a «con IVA excluido»: 12.480,55 frente a 10.314,50 EUR sobre el mismo pedido.",
+        "colisionaEnCache": true
+      },
+      "nota": "Doble trampa. La de unidades (incluido/excluido) decide qué cifra de E1 es la buena. La de importes parecidos (12.480,55 en E1 frente a 12.408,55 en E2) castiga al que recupere el pedido equivocado: las dos cifras son plausibles y difieren en una transposición de dígitos. Verificado: el par incluido/excluido colisiona en caché.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-009",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "reembolsos",
+      "dificultad": "dificil",
+      "trampas": ["unidades", "importes-parecidos"],
+      "consulta": "¿Cuál es el importe del reembolso del pedido con IVA excluido?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Pedido P-2026-9014. Base imponible: 10.314,50 EUR. IVA (21 %): 2.166,05 EUR. Total con IVA: 12.480,55 EUR."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Pedido P-2026-9041. Base imponible: 10.254,00 EUR. IVA (21 %): 2.153,34 EUR. Total con IVA: 12.408,55 EUR."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El reembolso de una devolución aceptada comprende el importe total efectivamente pagado por el cliente, impuestos incluidos."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "importe_eur": "10.314,50", "base_imponible_eur": "10.314,50", "iva_incluido": false }
+      },
+      "camposCriticos": ["importe_eur", "iva_incluido"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-008",
+        "porQueDifiere": "La misma pregunta con una palabra cambiada devuelve una cifra 2.166,05 EUR menor.",
+        "colisionaEnCache": true
+      },
+      "nota": "E3 cambia de papel entre los gemelos: es necesaria en 008 (sostiene que se reembolsan los impuestos) y distractora en 009 (donde el cliente pregunta por la base). Un knapsack que fije el papel de una unidad por su contenido, y no por la consulta, se equivoca en uno de los dos.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-010",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "incidencias-transporte",
+      "dificultad": "dificil",
+      "trampas": ["verbo-modal"],
+      "consulta": "Buenas tardes, necesito saber si el cliente deberá abonar el transporte de devolución cuando el artículo llega con un defecto de fábrica",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Cláusula 6.2. En las devoluciones por desistimiento, el cliente deberá abonar los gastos de transporte de devolución, que se descontarán del importe reembolsado."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Cláusula 6.1. Cuando la devolución trae causa de un defecto de fábrica o de un error en el envío, los gastos de transporte de devolución serán asumidos íntegramente por Botiga Nord SL. El cliente no deberá abonar cantidad alguna."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Cláusula 6.4. El cliente podrá solicitar la recogida a domicilio a través del transportista designado, sin coste adicional sobre lo previsto en las cláusulas anteriores."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "cliente_paga_transporte": false, "obligacion": "deberá", "quien_asume": "vendedor" }
+      },
+      "camposCriticos": ["cliente_paga_transporte", "quien_asume"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-011",
+        "porQueDifiere": "«deberá» frente a «podrá». La consulta con «podrá» pregunta por una facultad del cliente, no por una obligación, y la evidencia que la resuelve es otra (E3, no E1).",
+        "colisionaEnCache": true
+      },
+      "nota": "Trampa de verbo modal en la consulta y en la evidencia a la vez. E1 contiene además la negación explícita («no deberá abonar»), que es lo que un resumen agresivo tiende a perder porque parece redundante con el resto de la frase.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-011",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "incidencias-transporte",
+      "dificultad": "dificil",
+      "trampas": ["verbo-modal"],
+      "consulta": "Buenas tardes, necesito saber si el cliente podrá abonar el transporte de devolución cuando el artículo llega con un defecto de fábrica",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "necesaria",
+          "texto": "Cláusula 6.4. El cliente podrá solicitar la recogida a domicilio a través del transportista designado, sin coste adicional sobre lo previsto en las cláusulas anteriores."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Cláusula 6.1. Cuando la devolución trae causa de un defecto de fábrica o de un error en el envío, los gastos de transporte de devolución serán asumidos íntegramente por Botiga Nord SL. El cliente no deberá abonar cantidad alguna."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Cláusula 6.2. En las devoluciones por desistimiento, el cliente deberá abonar los gastos de transporte de devolución, que se descontarán del importe reembolsado."
+        },
+        {
+          "id": "E4",
+          "papel": "necesaria",
+          "texto": "Cláusula 6.5. En ningún caso se admitirá el pago voluntario del transporte de devolución por parte del cliente cuando los gastos correspondan al vendedor conforme a la cláusula 6.1."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "cliente_puede_pagar": false, "obligacion": "podrá", "quien_asume": "vendedor" }
+      },
+      "camposCriticos": ["cliente_puede_pagar", "quien_asume"],
+      "citas": ["E3", "E4"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-es-010",
+        "porQueDifiere": "Cambia el modal y cambia el campo crítico: cliente_paga_transporte frente a cliente_puede_pagar. La respuesta cacheada del gemelo ni siquiera contiene el campo que esta consulta pide.",
+        "colisionaEnCache": true
+      },
+      "nota": "Este caso es el que demuestra que la colisión no solo falsea un valor: falsea el ESQUEMA. Un verificador que compare campo a campo detecta la ausencia; uno que compare prosa («no, no paga») da por bueno el cruce. E4 solo existe aquí y es la que convierte una respuesta plausible («sí, si quiere puede pagarlo») en la correcta.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-012",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "garantia",
+      "dificultad": "dificil",
+      "trampas": ["derogacion", "version-desactualizada", "fechas-parecidas"],
+      "consulta": "Compré una cafetera el 12/03/2026. ¿Cuántos años de garantía tiene?",
+      "evidencia": [
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "La garantía comercial adicional del fabricante, cuando se contrata aparte, extiende la cobertura 12 meses más allá de la garantía legal."
+        },
+        {
+          "id": "E1",
+          "papel": "contradictoria",
+          "texto": "Condiciones de garantía v3. Todos los productos del catálogo cuentan con una garantía comercial de Botiga Nord de 3 años desde la fecha de entrega, que amplía en un año la garantía legal de conformidad.",
+          "vigencia": { "desde": "2020-01-01", "hasta": "2025-12-31" },
+          "derogadaPor": "E2"
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Condiciones de garantía v4. Queda sin efecto la versión v3 desde el 01/01/2026. Todos los productos del catálogo cuentan con una garantía comercial de Botiga Nord de 5 años desde la fecha de entrega, que amplía en tres años la garantía legal de conformidad.",
+          "vigencia": { "desde": "2026-01-01", "hasta": null },
+          "deroga": "E1"
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El plazo para comunicar una falta de conformidad, una vez detectada, es de 2 meses desde que el consumidor tuvo conocimiento de ella."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "anios_garantia": 5, "version_aplicable": "v4", "desde": "fecha_entrega" }
+      },
+      "camposCriticos": ["anios_garantia", "version_aplicable"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "reglaDeDesempate": "Rige la versión en vigor en la fecha de compra (12/03/2026), que es la v4. La v3 está expresamente derogada por la v4 desde el 01/01/2026.",
+      "nota": "La trampa reina del dominio junto a la negación: la versión vieja y la vigente conviven en el índice recuperado y las DOS responden a la pregunta con una cifra plausible. E1 no se puede descartar por irrelevante —es del mismo documento y del mismo tema—, solo por FECHA. Un knapsack sin noción de vigencia elegirá E1 o E2 según el orden del recuperador, es decir, al azar.  AUDITORÍA 2026-08-14: la cifra correcta era 3 años y la derogada 2, que son exactamente la garantía legal española después y antes de 2022. Un modelo que no leyera nada contestaba 3 y acertaba, así que la trampa de vigencia estaba desactivada: el caso no distinguía leer de recordar. Ahora la política de la tienda son 5 años (v4) frente a 3 (v3), y lo que se sabe de memoria apunta a la unidad DEROGADA.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-013",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "garantia",
+      "dificultad": "media",
+      "trampas": ["negacion", "excepcion"],
+      "consulta": "Se me ha mojado el móvil y no enciende. ¿Lo cubre la garantía?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El servicio técnico oficial emite un presupuesto de reparación sin coste para el cliente cuando el daño queda fuera de la cobertura de la garantía."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Condiciones de garantía v4, cláusula 2.1. La garantía cubre las faltas de conformidad que se manifiesten en el producto durante el plazo de 5 años desde la entrega."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Condiciones de garantía v4, cláusula 2.7. La garantía NO cubre los daños causados por líquidos, humedad, corrosión, caídas, sobretensión ni por un uso contrario a las instrucciones del fabricante."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "cubierto": false, "motivo": "dano_por_liquidos", "clausula": "2.7" }
+      },
+      "camposCriticos": ["cubierto", "motivo", "clausula"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "nota": "La negación vive dentro de la unidad de evidencia, no en la consulta. E1 y E2 son del mismo documento y contiguas en el índice; un troceado por longitud fija puede partir E2 justo después de «La garantía» y dejar el «NO cubre» en otro fragmento que el knapsack descarte por baja relevancia.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-014",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "incidencias-transporte",
+      "dificultad": "dificil",
+      "trampas": ["condicion", "fechas-parecidas"],
+      "consulta": "El paquete llegó con la caja aplastada el 30/06/2026 y lo comuniqué el 03/07/2026. ¿Me admiten la reclamación?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Cláusula 8.2. Los daños ocultos, no apreciables en el momento de la entrega, podrán comunicarse en el plazo de 7 días naturales desde la recepción."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El transportista deja constancia en el albarán de cualquier anomalía observada en el bulto en el momento de la entrega."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Cláusula 8.1. Los daños aparentes en el embalaje deberán comunicarse en el plazo de 24 horas desde la entrega, siempre que se aporten fotografías del bulto. Transcurrido ese plazo, la reclamación por daño aparente no será admitida."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "admitida": false,
+          "plazo_aplicable_horas": 24,
+          "horas_transcurridas": 72,
+          "clausula": "8.1"
+        }
+      },
+      "camposCriticos": ["admitida", "plazo_aplicable_horas", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "Trampa de condición con dos plazos plausibles (24 h y 7 días) y dos fechas cercanas (30/06 y 03/07) que además cruzan el cambio de mes, donde es fácil contar mal. La caja aplastada es daño APARENTE, así que manda E1; E2 es la trampa que convertiría un «no» en un «sí».",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-015",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "incidencias-transporte",
+      "dificultad": "media",
+      "trampas": ["condicion", "excepcion"],
+      "consulta": "Abrí la caja a los cinco días y el aparato estaba rayado por dentro. ¿Puedo reclamar?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Cláusula 8.1. Los daños aparentes en el embalaje deberán comunicarse en el plazo de 24 horas desde la entrega, siempre que se aporten fotografías del bulto."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Las reclamaciones por transporte se tramitan a través del formulario de incidencias del área de cliente."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Cláusula 8.2. Los daños ocultos, no apreciables en el momento de la entrega, podrán comunicarse en el plazo de 7 días naturales desde la recepción."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "admitida": true, "plazo_aplicable_dias": 7, "dias_transcurridos": 5, "clausula": "8.2" }
+      },
+      "camposCriticos": ["admitida", "plazo_aplicable_dias", "clausula"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "nota": "Pareja conceptual de sop-es-014 con la misma evidencia y respuesta contraria. Lo que decide no es el plazo sino la calificación del daño (aparente/oculto), que está en el texto de la consulta, no en la evidencia.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-016",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "cancelaciones",
+      "dificultad": "media",
+      "trampas": ["condicion"],
+      "consulta": "Hice el pedido hace una hora y todavía no lo han preparado. ¿Puedo cancelarlo sin coste?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Cláusula 3.1. El pedido podrá cancelarse sin coste alguno mientras no haya entrado en fase de preparación en el almacén. La cancelación se solicita desde el área de cliente."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Cláusula 3.2. Una vez expedido el pedido, la solicitud de cancelación se tramitará conforme a lo previsto en la cláusula 4.2 para las devoluciones."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El importe de una cancelación aceptada se abona en el mismo medio de pago en un plazo máximo de 14 días naturales."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "cancelable": true, "coste_eur": "0,00", "clausula": "3.1" }
+      },
+      "camposCriticos": ["cancelable", "coste_eur", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "Caso de dificultad media que sirve de control para sop-es-017: misma evidencia, distinto estado del pedido, respuesta contraria.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-017",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "cancelaciones",
+      "dificultad": "dificil",
+      "trampas": ["referencia-cruzada", "excepcion"],
+      "consulta": "Mi pedido ya salió del almacén ayer. Quiero cancelarlo, ¿qué pasa con los gastos?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "necesaria",
+          "texto": "Cláusula 4.2. En las devoluciones por desistimiento, los gastos de transporte de devolución corren a cargo del cliente y se descuentan del importe reembolsado. Se exceptúan los casos de defecto de fábrica o error en el envío."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Cláusula 3.1. El pedido podrá cancelarse sin coste alguno mientras no haya entrado en fase de preparación en el almacén."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Cláusula 3.2. Una vez expedido el pedido, la solicitud de cancelación se tramitará conforme a lo previsto en la cláusula 4.2 para las devoluciones."
+        },
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "Cláusula 4.5. Los artículos personalizados o fabricados a medida quedan excluidos del derecho de desistimiento."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "cancelable": true,
+          "tratamiento": "devolucion_por_desistimiento",
+          "cliente_paga_transporte": true,
+          "clausula": "4.2"
+        }
+      },
+      "camposCriticos": ["cancelable", "tratamiento", "cliente_paga_transporte", "clausula"],
+      "citas": ["E2", "E3"],
+      "abstencion": null,
+      "nota": "Referencia cruzada pura: E2 responde a la consulta pero NO contiene la respuesta; remite a la 4.2, que vive en E3. Descartar E3 por baja similitud léxica con la consulta (no menciona «cancelar» en ningún momento) deja una cadena rota que parece completa. Es el caso que un knapsack por relevancia marginal falla con más naturalidad.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-018",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "cambios",
+      "dificultad": "media",
+      "trampas": ["condicion"],
+      "consulta": "Quiero cambiar unas zapatillas por otra talla. ¿Cuánto tiempo tengo y me cuesta algo?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El plazo de desistimiento legal es de 14 días naturales desde la recepción del pedido."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Cláusula 5.2. El cambio por un artículo distinto de precio superior requiere el abono de la diferencia. Si el precio es inferior, la diferencia se reembolsa."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Cláusula 5.1. El cambio de talla o color del mismo artículo podrá solicitarse en el plazo de 21 días naturales desde la recepción, sin coste de transporte para el cliente, siempre que el artículo conserve su embalaje y etiquetas."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "plazo_dias": 21, "coste_transporte_eur": "0,00", "requiere_embalaje": true }
+      },
+      "camposCriticos": ["plazo_dias", "coste_transporte_eur", "requiere_embalaje"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "E3 es la distractora peligrosa: 14 días es una cifra correcta del dominio y para OTRA pregunta. El cambio de talla se rige por los 30 días de la política comercial, no por el desistimiento legal.  AUDITORÍA 2026-08-14: la ventana de devolución de la tienda era de 30 días naturales, que es el valor que anuncia medio comercio electrónico y que un modelo responde sin leer. Se ha cambiado a 21 en todo el corpus de soporte para que el campo mida la evidencia y no la memoria.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-019",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "cambios",
+      "dificultad": "dificil",
+      "trampas": ["abstencion", "contradiccion-sin-desempate"],
+      "consulta": "¿Puedo cambiar un artículo comprado en una tienda física a través de la web?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "contradictoria",
+          "texto": "Condiciones generales de venta, cláusula 5.6. Los cambios de artículos adquiridos en tienda física se tramitarán exclusivamente en tienda física. El canal web queda reservado a los pedidos realizados en línea."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El plazo para solicitar un cambio es de 21 días naturales desde la fecha de compra, con independencia del canal utilizado."
+        },
+        {
+          "id": "E1",
+          "papel": "contradictoria",
+          "texto": "Preguntas frecuentes, sección Cambios. Los artículos adquiridos en tienda física pueden cambiarse en cualquier tienda de la red y también a través del área de cliente de la web."
+        }
+      ],
+      "respuesta": {
+        "tipo": "abstencion",
+        "campos": {}
+      },
+      "camposCriticos": [],
+      "citas": ["E1", "E2"],
+      "abstencion": {
+        "motivo": "evidencia-contradictoria-sin-regla-de-desempate",
+        "explicacion": "E1 (FAQ) y E2 (condiciones generales) se contradicen frontalmente sobre el canal admitido. Ninguna de las dos lleva fecha de vigencia ni número de versión, y el corpus no incluye una regla que dé prioridad a las condiciones generales sobre las FAQ. Sin ese desempate, la respuesta correcta es abstenerse y escalar, no elegir la más plausible."
+      },
+      "nota": "Contrapunto deliberado de sop-es-012: allí la contradicción SÍ tiene desempate (fechas de vigencia) y hay que resolverla; aquí no lo tiene y hay que abstenerse. Un sistema que resuelva los dos igual está mal en uno de los dos. Las dos unidades contradictorias son de citación obligatoria: la abstención hay que justificarla señalando el choque.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-020",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "plazos-por-zona",
+      "dificultad": "media",
+      "trampas": ["unidades", "condicion"],
+      "consulta": "¿Cuánto tarda un pedido a Canarias y pago IVA?",
+      "evidencia": [
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "El plazo de entrega estándar en la península es de 3 a 5 días laborables desde la confirmación del pedido."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Plazos de entrega por zona (anexo I, vigente). Canarias: de 7 a 10 días laborables, sujeto a despacho aduanero y presentación del DUA."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "En Ceuta y Melilla no se aplica IVA, sino el IPSI, que tampoco está incluido en el precio mostrado en la web."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "En Canarias no se aplica IVA. La operación queda sujeta al IGIC, que se liquida en destino y no está incluido en el precio mostrado en la web."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "zona": "Canarias",
+          "plazo_min_dias": 7,
+          "plazo_max_dias": 10,
+          "aplica_iva": false,
+          "impuesto": "IGIC"
+        }
+      },
+      "camposCriticos": ["plazo_min_dias", "plazo_max_dias", "aplica_iva", "impuesto"],
+      "citas": ["E1", "E2"],
+      "abstencion": null,
+      "nota": "Consulta con DOS preguntas en una, que es lo normal en soporte y lo que rompe los knapsack que optimizan cobertura de un solo eje. Hacen falta dos unidades necesarias de documentos distintos (plazos y fiscalidad), y E3 es casi idéntica a E2 salvo en el impuesto y el territorio.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["zona"]
+    },
+    {
+      "id": "sop-es-021",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devoluciones",
+      "dificultad": "dificil",
+      "trampas": ["abstencion", "evidencia-insuficiente"],
+      "consulta": "¿Estoy todavía en plazo para devolver mi pedido?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "El plazo de tramitación interna de una solicitud de devolución, una vez recibida la mercancía en el almacén, es de 5 días laborables."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Los artículos personalizados o fabricados a medida quedan excluidos del derecho de desistimiento."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Política de devoluciones v4, en vigor desde el 01/01/2026. El cliente dispone de 21 días naturales desde la recepción del pedido para solicitar la devolución."
+        }
+      ],
+      "respuesta": {
+        "tipo": "abstencion",
+        "campos": {}
+      },
+      "camposCriticos": [],
+      "citas": ["E1"],
+      "abstencion": {
+        "motivo": "evidencia-insuficiente",
+        "explicacion": "La regla aplicable está disponible (21 días naturales desde la recepción), pero ninguna unidad de evidencia aporta la fecha de recepción del pedido del cliente ni la fecha actual de referencia. Sin ese dato el cómputo es imposible y hay que pedirlo, no estimarlo."
+      },
+      "nota": "Abstención por falta de un DATO, no por contradicción. Es el caso que distingue «no sé» de «no hay regla»: aquí la política está completa y bien recuperada, y aun así la respuesta correcta es preguntar la fecha. Un sistema entrenado a responder siempre contestará «sí, 30 días» y sonará impecable.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-022",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "garantia",
+      "dificultad": "dificil",
+      "trampas": ["referencia-cruzada", "excepcion", "verbo-modal"],
+      "consulta": "El fabricante dice que la reparación tarda 40 días. ¿Puedo pedir directamente la sustitución del producto?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Condiciones de garantía v4, cláusula 7.1. Ante una falta de conformidad, el consumidor podrá optar entre la reparación y la sustitución del producto, salvo que la opción elegida resulte imposible o desproporcionada conforme a lo previsto en la cláusula 7.3."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Condiciones de garantía v4, cláusula 7.3. La reparación o la sustitución deberán llevarse a cabo en un plazo razonable y, en todo caso, no superior a 21 días naturales. Superado ese plazo, el consumidor podrá exigir la medida alternativa sin coste alguno."
+        },
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "El servicio técnico oficial emite un presupuesto de reparación sin coste para el cliente cuando el daño queda fuera de la cobertura de la garantía."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Condiciones de garantía v4, cláusula 7.5. La resolución del contrato y la rebaja del precio proceden únicamente cuando la reparación y la sustitución hayan resultado ambas fallidas."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "puede_exigir_sustitucion": true,
+          "plazo_maximo_dias": 21,
+          "clausula": "7.3",
+          "coste_eur": "0,00"
+        }
+      },
+      "camposCriticos": ["puede_exigir_sustitucion", "plazo_maximo_dias", "clausula"],
+      "citas": ["E1", "E2"],
+      "abstencion": null,
+      "nota": "Cadena de dos saltos: E1 concede la opción pero la condiciona a la 7.3, y es la 7.3 (E2) la que contiene el número que decide (30 días frente a los 40 del fabricante). Además el modal cambia de sentido a mitad: «podrá optar» es facultad, «deberán llevarse a cabo» es obligación del vendedor. Perder E2 deja una respuesta que cita bien y concluye mal.  AUDITORÍA 2026-08-14: la ventana de devolución de la tienda era de 30 días naturales, que es el valor que anuncia medio comercio electrónico y que un modelo responde sin leer. Se ha cambiado a 21 en todo el corpus de soporte para que el campo mida la evidencia y no la memoria.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-es-023",
+      "idioma": "es",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devoluciones",
+      "dificultad": "media",
+      "trampas": ["excepcion", "negacion"],
+      "consulta": "Compré unos auriculares intraurales y ya he abierto el precinto. ¿Puedo devolverlos?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Cláusula 4.5. Los artículos personalizados o fabricados a medida quedan excluidos del derecho de desistimiento."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Política de devoluciones v4. El cliente dispone de 21 días naturales desde la recepción del pedido para solicitar la devolución de cualquier artículo no excluido en la cláusula 4.2."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Cláusula 4.6. No se admite la devolución de artículos precintados que no resulten aptos para su devolución por razones de higiene o de protección de la salud, cuando hayan sido desprecintados tras la entrega. Se incluyen expresamente los auriculares intraurales."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "procede": false, "motivo": "higiene_precinto_roto", "clausula": "4.6" }
+      },
+      "camposCriticos": ["procede", "motivo", "clausula"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "nota": "La excepción está lejos de la regla general y solo E2 nombra el producto concreto. E3 es otra exclusión, igual de plausible y del mismo bloque de cláusulas, que llevaría a la respuesta correcta por el motivo equivocado: acertar procede=false citando la 4.5 es un fallo, y por eso clausula es campo crítico.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-001",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devolucions",
+      "dificultad": "facil",
+      "trampas": [],
+      "consulta": "Quants dies tinc per retornar una comanda?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Política de devolucions v4, en vigor des de l'01/01/2026. El client disposa de 21 dies naturals des de la recepció de la comanda per sol·licitar-ne la devolució."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El termini de lliurament estàndard a la península és de 3 a 5 dies laborables des de la confirmació de la comanda."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "El termini de tramitació interna d'una sol·licitud de devolució, un cop rebuda la mercaderia al magatzem, és de 5 dies laborables."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "plazo_dias": 21, "tipo_dias": "naturals", "desde": "recepcio" }
+      },
+      "camposCriticos": ["plazo_dias", "tipo_dias", "desde"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": null,
+      "nota": "Control en català, paral·lel a sop-es-001. Exercita l'apòstrof en «l'01/01/2026», «d'una» i el punt volat en «sol·licitud»/«sol·licitar»: normalizeText esborra el punt volat entre lletres (sol·licitud → sollicitud) però CONSERVA l'apòstrof dins de paraula.  AUDITORÍA 2026-08-14: la ventana de devolución de la tienda era de 30 días naturales, que es el valor que anuncia medio comercio electrónico y que un modelo responde sin leer. Se ha cambiado a 21 en todo el corpus de soporte para que el campo mida la evidencia y no la memoria.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-002",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devolucions",
+      "dificultad": "dificil",
+      "trampas": ["negacion", "condicion"],
+      "consulta": "Bon dia, voldria saber si puc retornar l'article que vaig comprar la setmana passada amb l'embalatge original i totes les etiquetes posades",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Clàusula 4.1. S'admet la devolució d'articles amb l'embalatge original, amb les etiquetes i els precintes intactes, dins del termini de 21 dies naturals. El reembossament serà del 100 % del preu pagat."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Clàusula 4.3. Quan l'article es retorna sense l'embalatge original o amb les etiquetes retirades, la devolució s'admet igualment, però el reembossament es minora en un 20 % en concepte de depreciació."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Els articles adquirits durant una campanya de rebaixes conserven el mateix termini de devolució de 21 dies naturals que la resta del catàleg."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "procede": true, "porcentaje_reembolso": 100, "depreciacion_aplicada": false }
+      },
+      "camposCriticos": ["procede", "porcentaje_reembolso", "depreciacion_aplicada"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-ca-003",
+        "porQueDifiere": "«amb l'embalatge» davant de «sense l'embalatge». El reembossament passa del 100 % al 80 %.",
+        "colisionaEnCache": true
+      },
+      "nota": "«sense» tampoc és a la llista NEGATIONS de src/cache/semantic.ts, que només té «without». Comprovat: en consulta CURTA aquest parell se separa per poc (Jaccard 0,714 < 0,75), però en consulta llarga i cortès —la real— COL·LISIONA. La protecció depèn de la longitud de la consulta, no del risc.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-003",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devolucions",
+      "dificultad": "dificil",
+      "trampas": ["negacion", "condicion"],
+      "consulta": "Bon dia, voldria saber si puc retornar l'article que vaig comprar la setmana passada sense l'embalatge original i totes les etiquetes posades",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Clàusula 4.3. Quan l'article es retorna sense l'embalatge original o amb les etiquetes retirades, la devolució s'admet igualment, però el reembossament es minora en un 20 % en concepte de depreciació."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Els articles adquirits durant una campanya de rebaixes conserven el mateix termini de devolució de 21 dies naturals que la resta del catàleg."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Clàusula 4.1. S'admet la devolució d'articles amb l'embalatge original, amb les etiquetes i els precintes intactes, dins del termini de 21 dies naturals. El reembossament serà del 100 % del preu pagat."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "procede": true, "porcentaje_reembolso": 80, "depreciacion_aplicada": true }
+      },
+      "camposCriticos": ["procede", "porcentaje_reembolso", "depreciacion_aplicada"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-ca-002",
+        "porQueDifiere": "Una preposició inverteix quina clàusula s'aplica; procede segueix sent true als dos i només canvia l'import.",
+        "colisionaEnCache": true
+      },
+      "nota": "Parell bessó del castellà 002/003, en català. Que la mateixa trampa funcioni en les dues llengües és el que permet mesurar si el knapsack degrada per idioma, que és exactament el criteri d'acceptació de F6 al pla.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-004",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "garantia",
+      "dificultad": "dificil",
+      "trampas": ["excepcion", "negacion"],
+      "consulta": "Voldria confirmar si la garantia del producte cobreix la pantalla trencada quan el paquet arriba malmès del transport",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Condicions de garantia v4, clàusula 2.9. Els danys de transport constatats en el lliurament es cobreixen per l'assegurança de transport i es tramiten com una incidència de transport, no com una garantia. La cobertura és del 100 % de l'import de l'article."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Condicions de garantia v4, clàusula 2.1. La garantia cobreix les faltes de conformitat que es manifestin en el producte durant el termini de 5 anys des del lliurament."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Condicions de garantia v4, clàusula 2.7. La garantia NO cobreix els danys causats per líquids, humitat, corrosió, caigudes ni per un ús contrari a les instruccions del fabricant."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "cubierto": true,
+          "via": "incidencia_transporte",
+          "clausula": "2.9",
+          "cobertura_pct": 100
+        }
+      },
+      "camposCriticos": ["cubierto", "via", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-ca-005",
+        "porQueDifiere": "Afegir «excepte» davant de «quan el paquet arriba malmès» inverteix quin supòsit es pregunta i canvia la via de tramitació.",
+        "colisionaEnCache": true
+      },
+      "nota": "La resposta correcta no és sí/no sinó PER QUINA VIA, que és el camp que un resum lliure perd primer. E3 conté una negació en majúscules que atrau qualsevol heurística de «conserva les negacions» i que aquí és irrellevant: una pantalla trencada al transport no és un dany per líquids.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-005",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "garantia",
+      "dificultad": "dificil",
+      "trampas": ["excepcion", "negacion"],
+      "consulta": "Voldria confirmar si la garantia del producte cobreix la pantalla trencada excepte quan el paquet arriba malmès del transport",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Condicions de garantia v4, clàusula 2.1. La garantia cobreix les faltes de conformitat que es manifestin en el producte durant el termini de 5 anys des del lliurament."
+        },
+        {
+          "id": "E3",
+          "papel": "necesaria",
+          "texto": "Condicions de garantia v4, clàusula 2.7. La garantia NO cobreix els danys causats per líquids, humitat, corrosió, caigudes ni per un ús contrari a les instruccions del fabricant. Una pantalla trencada per una caiguda queda fora de cobertura."
+        },
+        {
+          "id": "E1",
+          "papel": "distractora",
+          "texto": "Condicions de garantia v4, clàusula 2.9. Els danys de transport constatats en el lliurament es cobreixen per l'assegurança de transport i es tramiten com una incidència de transport, no com una garantia."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "cubierto": false, "via": "cap", "clausula": "2.7", "cobertura_pct": 0 }
+      },
+      "camposCriticos": ["cubierto", "via", "clausula"],
+      "citas": ["E3"],
+      "abstencion": null,
+      "gemelo": {
+        "caso": "sop-ca-004",
+        "porQueDifiere": "Amb «excepte», la pregunta ja no és pel dany de transport sinó per la pantalla trencada en la resta de supòsits, i llavors mana la clàusula d'exclusió. cubierto passa de true a false.",
+        "colisionaEnCache": true
+      },
+      "nota": "Comprovat: «excepte» no és a NEGATIONS i, en consulta llarga, el parell 004/005 COL·LISIONA malgrat que la resposta s'inverteix de true a false. És el pitjor cas del corpus per a una caché: mateixa clau, resposta contrària, i totes dues formulacions són naturals en un xat de suport.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-006",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "cancel·lacions",
+      "dificultad": "dificil",
+      "trampas": ["derogacion", "version-desactualizada", "ela-geminada"],
+      "consulta": "Quin és el termini per demanar la cancel·lació d'una comanda ja pagada?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Condicions de cancel·lació v3. Queda sense efecte la versió v2 des de l'01/01/2026. La cancel·lació d'una comanda pagada es pot sol·licitar mentre la comanda no hagi entrat en fase de preparació, i com a màxim dins de les 48 hores següents al pagament.",
+          "vigencia": { "desde": "2026-01-01", "hasta": null },
+          "deroga": "E1"
+        },
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "L'import d'una cancel·lació acceptada s'abona en el mateix mitjà de pagament en un termini màxim de 14 dies naturals."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "L'anul·lació d'una subscripció mensual s'ha de comunicar amb 30 dies d'antelació a la data de renovació."
+        },
+        {
+          "id": "E1",
+          "papel": "contradictoria",
+          "texto": "Condicions de cancel·lació v2. La cancel·lació d'una comanda pagada s'ha de sol·licitar dins de les 24 hores següents al pagament.",
+          "vigencia": { "desde": "2021-01-01", "hasta": "2025-12-31" },
+          "derogadaPor": "E2"
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "plazo_horas": 48,
+          "version_aplicable": "v3",
+          "condicion_adicional": "no_iniciada_preparacion"
+        }
+      },
+      "camposCriticos": ["plazo_horas", "version_aplicable", "condicion_adicional"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "reglaDeDesempate": "Mana la versió vigent a la data de la consulta (2026), que és la v3. La v2 queda expressament derogada des de l'01/01/2026.",
+      "nota": "Trampa doble. La derogació (24 h de la v2 contra 48 h de la v3) i l'ela geminada: «cancel·lació» i «anul·lació» comparteixen el punt volat, i normalizeText el suprimeix entre lletres, de manera que «cancel·lació» i «cancellació» (escrit sense el punt, com fa mig internet) són la MATEIXA clau. Això és desitjable; el perill és E3, que parla d'«anul·lació» d'una subscripció amb un termini de 30 dies igual de plausible.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-007",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "reembossaments",
+      "dificultad": "dificil",
+      "trampas": ["importes-parecidos", "apostrof", "identificador-casi-igual"],
+      "consulta": "Quin és l'import exacte del reembossament de la comanda C-2026-118?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Comanda C-2026-118. Import total pagat: 1.204,90 EUR. Devolució acceptada el 07/08/2026. Import a reembossar: 1.204,90 EUR."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El reembossament s'abona en el mateix mitjà de pagament en un termini màxim de 14 dies naturals des de la recepció de l'article al magatzem."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Comanda C-2026-1118. Import total pagat: 1.240,90 EUR. Devolució acceptada el 07/08/2026. Import a reembossar: 1.240,90 EUR."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "comanda": "C-2026-118", "importe_eur": "1.204,90" }
+      },
+      "camposCriticos": ["importe_eur"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "Aquí les dues verges SÍ funcionen: 118 i 1118 són tokens numèrics diferents i el multiconjunt no quadra, igual que 1.204,90 i 1.240,90 (comprovat: se separen). Serveix de contrapunt honest a sop-es-006: l'identificador amb sufixos NUMÈRICS es detecta; el que porta sufix ALFABÈTIC (4471-A/4471-B) no. La diferència no és de disseny, és un efecte lateral de numericTokens.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["comanda"]
+    },
+    {
+      "id": "sop-ca-008",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "incidencies-transport",
+      "dificultad": "media",
+      "trampas": ["condicion", "verbo-modal"],
+      "consulta": "El paquet ha arribat amb la capsa oberta. Què he de fer i quant de temps tinc?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El transportista deixa constància a l'albarà de qualsevol anomalia observada a l'embalum en el moment del lliurament."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Clàusula 8.2. Els danys ocults, no apreciables en el moment del lliurament, es podran comunicar en el termini de 7 dies naturals des de la recepció."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Clàusula 8.1. Els danys aparents en l'embalatge s'hauran de comunicar en el termini de 24 hores des del lliurament, sempre que s'aportin fotografies del embalum."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "plazo_horas": 24,
+          "requiere_fotografias": true,
+          "clausula": "8.1",
+          "obligacion": "hauran de"
+        }
+      },
+      "camposCriticos": ["plazo_horas", "requiere_fotografias", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "La condició («sempre que s'aportin fotografies») és un camp crític propi: una resposta que doni bé les 24 hores i s'oblidi de les fotografies fa perdre la reclamació igual que una que doni malament el termini. Exercita «s'hauran» i «s'aportin» amb apòstrof.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-009",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "terminis-per-zona",
+      "dificultad": "dificil",
+      "trampas": ["unidades", "entidad-casi-igual", "condicion"],
+      "consulta": "Envieu a Canàries? Quant triga i quins impostos he de pagar?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Terminis de lliurament per zona (annex I, vigent). Canàries: de 7 a 10 dies laborables, subjecte a despatx duaner i presentació del DUA."
+        },
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "Terminis de lliurament per zona (annex I, vigent). Balears: de 4 a 6 dies laborables, sense despatx duaner."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "A les Canàries no s'aplica l'IVA. L'operació queda subjecta a l'IGIC, que es liquida a destinació i no està inclòs en el preu que es mostra al web."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "A Ceuta i Melilla no s'aplica l'IVA, sinó l'IPSI, que tampoc no està inclòs en el preu que es mostra al web."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "zona": "Canaries",
+          "plazo_min_dias": 7,
+          "plazo_max_dias": 10,
+          "aplica_iva": false,
+          "impuesto": "IGIC",
+          "despacho_aduanero": true
+        }
+      },
+      "camposCriticos": ["plazo_min_dias", "plazo_max_dias", "aplica_iva", "impuesto"],
+      "citas": ["E1", "E2"],
+      "abstencion": null,
+      "nota": "Paral·lel català de sop-es-020, amb Balears com a distractora afegida perquè els seus terminis (4-6) encavalquen els de la península (3-5) sense coincidir-hi: prou a prop per convidar a barrejar zones, prou lluny perquè la unitat de la península no respongui per ella. E3 conté la negació «tampoc no», que és la doble negació normativa del català i que cap llista anglocèntrica reconeix.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["zona"]
+    },
+    {
+      "id": "sop-ca-010",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "garantia",
+      "dificultad": "media",
+      "trampas": ["version-desactualizada"],
+      "consulta": "Quants anys de garantia té un electrodomèstic comprat al març del 2026?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "La garantia comercial addicional del fabricant, quan es contracta a part, amplia la cobertura 12 mesos més enllà de la garantia legal."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Condicions de garantia v4. Queda sense efecte la versió v3 des de l'01/01/2026. Tots els productes del catàleg tenen una garantia comercial de Botiga Nord de 5 anys des de la data de lliurament, que amplia en tres anys la garantia legal de conformitat.",
+          "vigencia": { "desde": "2026-01-01", "hasta": null },
+          "deroga": "E1"
+        },
+        {
+          "id": "E1",
+          "papel": "contradictoria",
+          "texto": "Condicions de garantia v3. Tots els productes del catàleg tenen una garantia comercial de Botiga Nord de 3 anys des de la data de lliurament, que amplia en un any la garantia legal de conformitat.",
+          "vigencia": { "desde": "2020-01-01", "hasta": "2025-12-31" },
+          "derogadaPor": "E2"
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "anios_garantia": 5, "version_aplicable": "v4", "desde": "data_lliurament" }
+      },
+      "camposCriticos": ["anios_garantia", "version_aplicable"],
+      "citas": ["E2"],
+      "abstencion": null,
+      "reglaDeDesempate": "Regeix la versió en vigor a la data de compra (març del 2026), que és la v4.",
+      "nota": "Parell conceptual de sop-es-012 en català, per poder comparar la conservació de la trampa de derogació entre idiomes amb la resta de variables iguals.  AUDITORÍA 2026-08-14: la cifra correcta era 3 años y la derogada 2, que son exactamente la garantía legal española después y antes de 2022. Un modelo que no leyera nada contestaba 3 y acertaba, así que la trampa de vigencia estaba desactivada: el caso no distinguía leer de recordar. Ahora la política de la tienda son 5 años (v4) frente a 3 (v3), y lo que se sabe de memoria apunta a la unidad DEROGADA.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-011",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devolucions",
+      "dificultad": "dificil",
+      "trampas": ["abstencion", "contradiccion-sin-desempate"],
+      "consulta": "Els articles de rebaixes es poden retornar?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "contradictoria",
+          "texto": "Preguntes freqüents, secció Devolucions. Els articles adquirits en rebaixes no admeten devolució ni canvi."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El reembossament s'abona en el mateix mitjà de pagament en un termini màxim de 14 dies naturals."
+        },
+        {
+          "id": "E2",
+          "papel": "contradictoria",
+          "texto": "Política de devolucions v4, clàusula 4.8. Els articles adquirits durant una campanya de rebaixes conserven el mateix termini de devolució de 21 dies naturals que la resta del catàleg."
+        }
+      ],
+      "respuesta": {
+        "tipo": "abstencion",
+        "campos": {}
+      },
+      "camposCriticos": [],
+      "citas": ["E1", "E2"],
+      "abstencion": {
+        "motivo": "evidencia-contradictoria-sin-regla-de-desempate",
+        "explicacion": "Les FAQ (E1) neguen la devolució en rebaixes i la política v4 (E2) la concedeix amb el termini general. Cap de les dues unitats porta data de vigència comparable ni el corpus inclou una regla que doni prioritat a la política sobre les FAQ, de manera que no hi ha desempat i cal abstenir-se i escalar."
+      },
+      "nota": "Aquesta contradicció és la més perillosa comercialment de totes les del corpus perquè la resposta plausible (E2, que és la política formal) és probablement la correcta al món real, i tot i així el corpus obliga a abstenir-se: sense una regla de precedència ESCRITA, encertar per intuïció és indistingible d'encertar per sort. Contrast deliberat amb sop-ca-006, on la derogació sí que està escrita.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-012",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "canvis",
+      "dificultad": "media",
+      "trampas": ["condicion", "unidades"],
+      "consulta": "Vull canviar una jaqueta per una altra de mes cara. Que he de pagar?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Clàusula 5.2. El canvi per un article diferent de preu superior requereix l'abonament de la diferència. Si el preu és inferior, la diferència es reembossa."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Les despeses de transport del canvi són gratuïtes per al client en el primer canvi de cada comanda."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Clàusula 5.1. El canvi de talla o color del mateix article es pot sol·licitar en el termini de 21 dies naturals des de la recepció, sense cost de transport per al client."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "paga_diferencia": true, "coste_transporte_eur": "0,00", "clausula": "5.2" }
+      },
+      "camposCriticos": ["paga_diferencia", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "La consulta ve escrita SENSE accents («mes cara», «Que he de pagar»), que és com arriba mig tràfic de suport des del mòbil. normalizeText plega els diacrítics, de manera que aquesta forma i la ben escrita són la mateixa clau: aquí el plegat ajuda i no fa mal, i el cas hi és per documentar el costat bo del compromís. E3 exercita «despeses» (plural) davant de «despesa», parell que el corpus separa a propòsit.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-013",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "incidencies-transport",
+      "dificultad": "dificil",
+      "trampas": ["referencia-cruzada", "condicion"],
+      "consulta": "El transportista diu que ha lliurat la comanda però jo no l'he rebuda. Com es tramita?",
+      "evidencia": [
+        {
+          "id": "E4",
+          "papel": "distractora",
+          "texto": "El client pot consultar l'estat del lliurament amb el número de seguiment a l'àrea de client en qualsevol moment."
+        },
+        {
+          "id": "E2",
+          "papel": "necesaria",
+          "texto": "Clàusula 8.9. La investigació de lliurament no reconegut té una durada màxima de 15 dies naturals. Si transcorregut aquest termini no s'acredita el lliurament efectiu, s'ha de reexpedir la comanda sense cost o reembossar-ne l'import íntegre, a elecció del client."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Clàusula 8.6. En els casos de lliurament no reconegut pel client, s'obrirà una investigació amb el transportista i es resoldrà conforme al que preveu la clàusula 8.9."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "Clàusula 8.1. Els danys aparents en l'embalatge s'hauran de comunicar en el termini de 24 hores des del lliurament."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "abre_investigacion": true,
+          "plazo_maximo_dias": 15,
+          "resultado": "reexpedicion_o_reembolso_a_eleccion_del_cliente",
+          "clausula": "8.9"
+        }
+      },
+      "camposCriticos": ["abre_investigacion", "plazo_maximo_dias", "resultado", "clausula"],
+      "citas": ["E1", "E2"],
+      "abstencion": null,
+      "nota": "Referència creuada en català, paral·lela a sop-es-017. E1 sona a resposta completa i no ho és: no conté ni el termini ni el resultat. Un knapsack que talli per pressupost després d'incloure E1 deixa una resposta que cita correctament i no respon.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-014",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "reembossaments",
+      "dificultad": "dificil",
+      "trampas": ["negacion", "unidades", "excepcion"],
+      "consulta": "Quan em retorneu els diners, m'incloeu també les despeses d'enviament que vaig pagar?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Clàusula 9.4. La despesa de transport de la devolució va a càrrec del client, llevat que es tracti d'un defecte de fàbrica o d'un error en l'enviament."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Clàusula 9.3. El reembossament inclou les despeses d'enviament estàndard que el client va abonar en la comanda inicial. No inclou el sobrecost de l'enviament urgent o premium, si el client el va escollir."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El reembossament s'abona en el mateix mitjà de pagament en un termini màxim de 14 dies naturals."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "incluye_envio_estandar": true, "incluye_sobrecoste_premium": false, "clausula": "9.3" }
+      },
+      "camposCriticos": ["incluye_envio_estandar", "incluye_sobrecoste_premium", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "La unitat necessària conté una afirmació i la seva excepció en frases consecutives, i la segona comença per «No inclou». Qualsevol compressió que es quedi amb la primera frase respon «sí» a seques i s'equivoca en el sobrecost. Exercita a més el parell «despeses» (E1, plural, enviament) contra «despesa» (E2, singular, devolució): dues coses diferents que un plegat agressiu de morfologia fusionaria, i que decideixen qui paga.",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-015",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "terminis-per-zona",
+      "dificultad": "media",
+      "trampas": ["entidad-casi-igual"],
+      "consulta": "Quant triga una comanda estàndard a les Balears?",
+      "evidencia": [
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Terminis de lliurament per zona (annex I, vigent). Balears: de 4 a 6 dies laborables, sense despatx duaner."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Terminis de lliurament per zona (annex I, vigent). Canàries: de 7 a 10 dies laborables, subjecte a despatx duaner i presentació del DUA."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El termini de lliurament estàndard a la península és de 3 a 5 dies laborables des de la confirmació de la comanda."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "zona": "Balears", "plazo_min_dias": 4, "plazo_max_dias": 6, "despacho_aduanero": false }
+      },
+      "camposCriticos": ["plazo_min_dias", "plazo_max_dias", "despacho_aduanero"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "Cas amb una distractora que conté LES MATEIXES XIFRES que la resposta correcta (E3, península, també 3-5). Encertar el termini citant E3 és un fals encert: els números coincideixen i la zona no. Per això zona i despacho_aduanero són camps crítics.  AUDITORÍA 2026-08-14: Balears tenía los mismos 3-5 días laborables que la península, así que la distractora de la península respondía sola los dos campos numéricos y el caso se aprobaba tirando la unidad necesaria. Balears pasa a 4-6: encabalga sin coincidir.",
+      "presupuesto": { "unidades_max": 2 },
+      "camposEco": ["zona"]
+    },
+    {
+      "id": "sop-ca-016",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "cancel·lacions",
+      "dificultad": "dificil",
+      "trampas": ["verbo-modal", "ela-geminada", "condicion"],
+      "consulta": "Per anul·lar la instal·lació contractada, el client ha d'avisar o pot avisar quan vulgui?",
+      "evidencia": [
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Clàusula 10.3. El client podrà reprogramar la franja horària de la instal·lació una sola vegada sense cost, sempre que ho faci amb una antelació mínima de 24 hores."
+        },
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "L'anul·lació d'una subscripció mensual s'ha de comunicar amb 30 dies d'antelació a la data de renovació."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Clàusula 10.2. Per anul·lar el servei d'instal·lació contractat, el client haurà d'avisar amb una antelació mínima de 48 hores respecte de la franja horària assignada. L'incompliment d'aquest preavís comporta la facturació íntegra del desplaçament."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": {
+          "obligacion": "haura de",
+          "preaviso_horas": 48,
+          "consecuencia_incumplimiento": "facturacion_integra_desplazamiento",
+          "clausula": "10.2"
+        }
+      },
+      "camposCriticos": ["obligacion", "preaviso_horas", "consecuencia_incumplimiento", "clausula"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "La consulta pregunta EXPLÍCITAMENT pel modal («ha d'avisar o pot avisar»), així que obligacion és camp crític i no adorn. E2 respon amb l'altre modal («podrà») i un termini diferent (24 h) per a una acció diferent (reprogramar, no anul·lar): la confusió entre les dues costa el desplaçament facturat. Exercita dues eles geminades, «anul·lar» i «instal·lació».",
+      "presupuesto": { "unidades_max": 2 }
+    },
+    {
+      "id": "sop-ca-017",
+      "idioma": "ca",
+      "dominio": "soporte-y-politicas",
+      "subdominio": "devolucions",
+      "dificultad": "dificil",
+      "trampas": ["condicion", "fechas-parecidas", "negacion"],
+      "consulta": "Vaig rebre la comanda el 30/06/2026 i vull retornar-la ara, el 06/08/2026. Encara hi soc a temps?",
+      "evidencia": [
+        {
+          "id": "E3",
+          "papel": "distractora",
+          "texto": "El termini per comunicar una falta de conformitat, un cop detectada, és de 2 mesos des que el consumidor en va tenir coneixement."
+        },
+        {
+          "id": "E2",
+          "papel": "distractora",
+          "texto": "Clàusula 4.9. En les campanyes de Nadal, les comandes lliurades entre l'01/12 i el 06/01 tenen un termini ampliat de devolució fins al 31/01."
+        },
+        {
+          "id": "E1",
+          "papel": "necesaria",
+          "texto": "Política de devolucions v4, en vigor des de l'01/01/2026. El client disposa de 21 dies naturals des de la recepció de la comanda per sol·licitar-ne la devolució. Transcorregut aquest termini no s'admet cap devolució per desistiment."
+        }
+      ],
+      "respuesta": {
+        "tipo": "estructurada",
+        "campos": { "en_plazo": false, "dias_transcurridos": 37, "plazo_dias": 21 }
+      },
+      "camposCriticos": ["en_plazo", "dias_transcurridos", "plazo_dias"],
+      "citas": ["E1"],
+      "abstencion": null,
+      "nota": "Aritmètica de dates que creua dos canvis de mes (30/06 → 06/08 són 37 dies), amb un parell de dates confusible: 30/06 i 06/08 comparteixen el 6 i el 0 i s'inverteixen fàcilment en format americà. E2 ofereix una pròrroga real però d'una campanya que no aplica, i E3 dóna un termini de 2 mesos que faria semblar que sí hi és a temps: les dues distractores empenyen cap al «sí».  AUDITORÍA 2026-08-14: la ventana de devolución de la tienda era de 30 días naturales, que es el valor que anuncia medio comercio electrónico y que un modelo responde sin leer. Se ha cambiado a 21 en todo el corpus de soporte para que el campo mida la evidencia y no la memoria.",
+      "presupuesto": { "unidades_max": 2 }
+    }
+  ],
+  "presupuesto_imputado_por": "corpus/auditoria/reparar.ts — los casos no traían presupuesto y sin él no plantean un knapsack"
+}
