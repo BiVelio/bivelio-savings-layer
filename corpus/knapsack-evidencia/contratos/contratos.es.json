@@ -1,0 +1,1549 @@
+[
+  {
+    "id": "ct-es-001",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "facil",
+    "trampas": ["verbo-modal"],
+    "par": "ct-ca-001",
+    "consulta": "¿El Prestador está obligado a entregar el informe mensual de actividad, o es potestativo?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "3.2" },
+        "texto": "El Prestador podrá entregar informes adicionales de carácter extraordinario cuando lo estime conveniente.",
+        "nota": "Mismo objeto (informes), verbo POTESTATIVO. Solapa léxicamente casi tanto como la 3.1."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "9.1" },
+        "texto": "Las comunicaciones entre las Partes se cursarán por correo electrónico a las direcciones designadas en el Anexo I."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "3.1" },
+        "texto": "El Prestador deberá entregar un informe mensual de actividad dentro de los cinco (5) primeros días hábiles de cada mes natural."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "obligatorio": true, "verbo": "debera", "plazo_dias_habiles": 5, "clausula": "3.1" }
+    },
+    "camposCriticos": ["obligatorio", "verbo", "plazo_dias_habiles", "clausula"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "obligatorio",
+      "valorErroneo": false,
+      "siSeCae": ["u1"]
+    },
+    "nota": "CONTROL fácil: una sola necesaria y solapamiento léxico alto con la consulta. Si un selector falla aquí no hace falta seguir midiendo. La trampa está igualmente puesta: quedarse con la 3.2 convierte una obligación en una facultad sin cambiar ni una palabra del resto."
+  },
+  {
+    "id": "ct-es-002",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "penalizacion-por-retraso",
+    "dificultad": "dificil",
+    "trampas": ["importes-parecidos", "condicion", "referencia-cruzada"],
+    "par": "ct-ca-005",
+    "consulta": "El hito 2 se entregó con 12 días naturales de retraso. ¿Qué penalización se devenga?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.1" },
+        "texto": "Por cada día natural de retraso en la entrega de un hito, el Prestador abonará una penalización del 0,5 % de la cuota mensual del mes en que se produzca el retraso, con el límite previsto en la cláusula 7.3."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.3" },
+        "texto": "Las penalizaciones acumuladas por retraso no podrán exceder, en ningún caso, del 5 % de la cuota mensual afectada."
+      },
+      {
+        "id": "u4",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Anexo I", "clausula": "2" },
+        "texto": "La cuota mensual del servicio objeto del contrato asciende a 12.480,55 EUR, IVA no incluido."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "Anexo III", "clausula": "1" },
+        "texto": "La cuota mensual del servicio de soporte ampliado asciende a 12.408,55 EUR, IVA no incluido.",
+        "nota": "Importe a 72 céntimos del correcto y de otro servicio."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "tope_aplicado": true,
+        "porcentaje_aplicado": 5,
+        "base_eur": 12480.55,
+        "penalizacion_eur": 624.03,
+        "clausula": "7.3"
+      }
+    },
+    "camposCriticos": ["tope_aplicado", "porcentaje_aplicado", "base_eur", "penalizacion_eur"],
+    "citasObligatorias": ["u1", "u2", "u4"],
+    "campoTrampa": {
+      "campo": "penalizacion_eur",
+      "valorErroneo": 748.83,
+      "siSeCae": ["u2"]
+    },
+    "nota": "12 días × 0,5 % = 6 %, por encima del tope. Sin la 7.3 la cuenta sale 748,83 EUR: una cifra bien calculada, con la aritmética visible y equivocada en un 20 %. La referencia cruzada de la 7.1 al tope es la única pista de que falta algo, y es media línea."
+  },
+  {
+    "id": "ct-es-003",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["excepcion", "condicion"],
+    "par": "ct-ca-009",
+    "consulta": "¿Puede el Arrendatario ceder el uso de la nave a una sociedad de su grupo sin pedir permiso?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "11.1" },
+        "texto": "Queda prohibido el subarriendo total o parcial de la finca sin consentimiento escrito del Arrendador."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "19.4" },
+        "texto": "No se considerará subarriendo, a los efectos de la cláusula 11, la cesión del uso a sociedades del mismo grupo del Arrendatario, siempre que se comunique al Arrendador con quince (15) días naturales de antelación.",
+        "nota": "La excepción vive en disposiciones finales, ocho cláusulas por debajo de su regla."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "2.1" },
+        "texto": "El destino pactado de la finca es el de almacén logístico, sin que pueda alterarse sin autorización."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "11.2" },
+        "texto": "El subarriendo no autorizado será causa de resolución del contrato con pérdida de la fianza."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "permitido": true,
+        "requiere_consentimiento": false,
+        "preaviso_dias": 15,
+        "clausula_regla": "11.1",
+        "clausula_excepcion": "19.4"
+      }
+    },
+    "camposCriticos": ["permitido", "requiere_consentimiento", "preaviso_dias", "clausula_excepcion"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "permitido",
+      "valorErroneo": false,
+      "siSeCae": ["u2"]
+    },
+    "nota": "La 11.1 y la 11.2 son vecinas, hablan de subarriendo y responden que NO con toda la firmeza del mundo. La excepción está en la 19.4, lejos, y no contiene la palabra «prohibido» ni «consentimiento». Un selector que agrupe por proximidad de cláusula o por solapamiento con la consulta se queda con el bloque 11 entero y tira la única unidad que cambia la respuesta."
+  },
+  {
+    "id": "ct-es-004",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "facil",
+    "trampas": ["negacion", "condicion"],
+    "par": "ct-ca-003",
+    "consulta": "¿La información que el Receptor ya conocía antes de la firma está sujeta al deber de confidencialidad?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.2" },
+        "texto": "No tendrá la consideración de Información Confidencial aquella que el Receptor pruebe documentalmente que ya obraba en su poder con anterioridad a la fecha de firma y sin obligación de secreto."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.1" },
+        "texto": "El Receptor mantendrá la confidencialidad de toda la Información Confidencial recibida y no la revelará a terceros."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.4" },
+        "texto": "El deber de confidencialidad subsistirá durante cinco (5) años desde la extinción del contrato."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "sujeta": false, "requiere_prueba_documental": true, "clausula": "5.2" }
+    },
+    "camposCriticos": ["sujeta", "requiere_prueba_documental", "clausula"],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "sujeta",
+      "valorErroneo": true,
+      "siSeCae": ["u2"]
+    },
+    "nota": "CONTROL fácil con negación: la regla general (u1) es la que más se parece a la consulta y responde exactamente lo contrario. La negación no está en la consulta, está en la unidad que EXCLUYE, así que ninguna comprobación de paridad de negación entre pregunta y evidencia la ve."
+  },
+  {
+    "id": "ct-es-005",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "dificil",
+    "trampas": ["referencia-cruzada", "importes-parecidos"],
+    "par": "ct-ca-011",
+    "consulta": "El servicio tuvo una disponibilidad del 99,1 % en marzo. ¿Qué bonificación corresponde?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.1" },
+        "texto": "El compromiso de disponibilidad mensual del servicio es del 99,5 %, medido conforme al procedimiento del Anexo II."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.2" },
+        "texto": "Si la disponibilidad mensual es inferior al compromiso del 99,5 %, el Cliente tendrá derecho a la bonificación prevista en la cláusula 6.5."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.5" },
+        "texto": "La bonificación será del 5 % de la cuota mensual cuando la disponibilidad se sitúe entre el 99,0 % y el 99,5 %, y del 15 % cuando sea inferior al 99,0 %."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.6" },
+        "texto": "Las bonificaciones se aplicarán como descuento en la factura del mes siguiente, con el límite del 10 % de la facturación anual, y no tendrán la consideración de indemnización de daños.",
+        "nota": "Lleva un porcentaje, y es el único que queda a la vista si se pierde la escala de la 6.5."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "bonificacion_pct": 5, "tramo": "99,0-99,5", "clausula": "6.5" }
+    },
+    "camposCriticos": ["bonificacion_pct", "tramo", "clausula"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "bonificacion_pct",
+      "valorErroneo": 10,
+      "siSeCae": ["u2"]
+    },
+    "nota": "u1 y u3 contienen «99,5» y «disponibilidad», que es literalmente lo que pregunta la consulta; u2 es la única que tiene la escala y no menciona el compromiso. El puente entre las dos es la frase «prevista en la cláusula 6.5», seis palabras. Con presupuesto para dos, la elección natural por parecido es u1+u3, que son casi la misma unidad dos veces."
+  },
+  {
+    "id": "ct-es-006",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prorroga-tacita",
+    "dificultad": "dificil",
+    "trampas": ["condicion", "fechas-parecidas", "referencia-cruzada"],
+    "par": "ct-ca-006",
+    "consulta": "El contrato vence el 30/06/2026. ¿Se prorroga, si el Cliente envió el burofax de no prórroga el 05/06/2026?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "15.2" },
+        "texto": "Las comunicaciones entre las Partes surtirán efecto desde la fecha de su recepción."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de mantenimiento MNT-2025-08", "clausula": "4.1" },
+        "texto": "El contrato de mantenimiento asociado vence el 06/07/2026 y se rige por su propio régimen de prórroga.",
+        "nota": "06/07 y 30/06 a un mes de distancia, con los mismos dígitos barajados."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registro de comunicaciones", "fecha": "2026-06-06" },
+        "texto": "Burofax de no prórroga remitido por el Cliente el 05/06/2026 y entregado al Prestador el 06/06/2026."
+      },
+      {
+        "id": "u5",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.1" },
+        "texto": "La duración inicial del contrato es de doce (12) meses contados desde el 01/07/2025."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.2" },
+        "texto": "El contrato se prorrogará tácitamente por periodos anuales salvo denuncia de cualquiera de las Partes comunicada por escrito con una antelación mínima de treinta (30) días naturales a la fecha de vencimiento."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "se_prorroga": true,
+        "preaviso_valido": false,
+        "dias_de_antelacion": 24,
+        "dias_requeridos": 30,
+        "clausula": "4.2"
+      }
+    },
+    "camposCriticos": ["se_prorroga", "preaviso_valido", "dias_de_antelacion", "dias_requeridos"],
+    "citasObligatorias": ["u1", "u2", "u3"],
+    "campoTrampa": {
+      "campo": "dias_de_antelacion",
+      "valorErroneo": 25,
+      "siSeCae": ["u3"]
+    },
+    "nota": "Dos fechas a un día de distancia y una cláusula, la 15.2, que decide cuál de las dos cuenta. Con u3 el cómputo es 24 días; sin ella son 25, y como los dos números están por debajo de 30 el resultado final (se prorroga) sale bien POR CASUALIDAD: el selector aprueba el caso habiendo tirado una unidad necesaria. Por eso `dias_de_antelacion` es campo crítico y no solo `se_prorroga` — un corpus que solo mirase la conclusión daría por buena una selección rota."
+  },
+  {
+    "id": "ct-es-007",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "resolucion-anticipada",
+    "dificultad": "dificil",
+    "trampas": ["derogacion", "verbo-modal"],
+    "par": "ct-ca-010",
+    "consulta": "¿Con cuánta antelación puede el Cliente resolver anticipadamente el contrato sin causa?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato marco", "clausula": "12.3" },
+        "texto": "La resolución por incumplimiento exigirá requerimiento previo con plazo de subsanación de treinta (30) días naturales."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Adenda nº 2", "clausula": "3", "fecha": "2025-03-10" },
+        "texto": "Se deja sin efecto la cláusula 12.1 del contrato marco. El Cliente podrá resolver sin causa mediante preaviso escrito de noventa (90) días naturales; el Prestador no podrá resolver sin causa."
+      },
+      {
+        "id": "u1",
+        "papel": "derogada",
+        "procedencia": { "documento": "contrato marco", "clausula": "12.1", "fecha": "2024-01-12" },
+        "texto": "Cualquiera de las Partes podrá resolver el contrato sin necesidad de causa mediante preaviso escrito de sesenta (60) días naturales.",
+        "nota": "Responde a la consulta mejor que la unidad que manda: la contesta entera, sin remitir a nada."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "preaviso_dias": 90,
+        "quien_puede_resolver": "cliente",
+        "clausula_aplicable": "Adenda 2, cl. 3",
+        "clausula_derogada": "12.1"
+      }
+    },
+    "camposCriticos": ["preaviso_dias", "clausula_aplicable"],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "preaviso_dias",
+      "valorErroneo": 60,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Trampa INVERTIDA. Con presupuesto de una sola unidad, la que más se parece a la consulta es la derogada: dice «resolver», «sin causa» y «preaviso» en veinte palabras. La que manda empieza hablando de otra cláusula. Además u1 no es necesaria pese a que el campo `clausula_derogada` la nombra: la adenda ya dice cuál deroga, así que tirarla es correcto y quedársela a ella sola es el fallo.",
+    "camposEco": ["quien_puede_resolver"]
+  },
+  {
+    "id": "ct-es-008",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "media",
+    "trampas": ["condicion", "importes-parecidos"],
+    "par": "ct-ca-007",
+    "consulta": "¿En qué plazo debe el Encargado notificar al Responsable una violación de la seguridad de los datos?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.6" },
+        "texto": "El Encargado notificará al Responsable, sin dilación indebida y en todo caso dentro de las veinticuatro (24) horas siguientes a que tenga conocimiento de ella, cualquier violación de la seguridad de los datos personales."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.1" },
+        "texto": "El Encargado tratará los datos personales únicamente siguiendo instrucciones documentadas del Responsable."
+      },
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.7" },
+        "texto": "El Responsable notificará la violación a la autoridad de control en el plazo de setenta y dos (72) horas, conforme al artículo 33 del RGPD.",
+        "nota": "Las 72 horas del RGPD son el número que todo el mundo asocia a esta pregunta, y aquí obligan a OTRA parte frente a OTRO destinatario."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "plazo_horas": 24,
+        "obligado": "encargado",
+        "destinatario": "responsable",
+        "clausula": "14.6"
+      }
+    },
+    "camposCriticos": ["plazo_horas"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "plazo_horas",
+      "valorErroneo": 72,
+      "siSeCae": ["u1"]
+    },
+    "nota": "Las dos unidades hablan de notificar una brecha y llevan un plazo en horas. La diferencia está en QUIÉN notifica A QUIÉN, que son cuatro palabras al principio de cada frase. Es el caso más barato del corpus para detectar un selector que puntúa por tema y no por sujeto.",
+    "camposEco": ["obligado", "destinatario"]
+  },
+  {
+    "id": "ct-es-009",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "importes-parecidos", "unidades"],
+    "par": "ct-es-010",
+    "consulta": "¿Cuál es el precio por hora del desarrollo adicional?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "8.5" },
+        "texto": "Las horas de desarrollo adicional se facturarán por fracciones de quince (15) minutos."
+      },
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "Anexo II", "clausula": "1.2", "fecha": "2025-05-12" },
+        "texto": "Hora de desarrollo adicional: 85,00 EUR/hora, IVA no incluido."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "8.1" },
+        "texto": "Los precios se revisarán anualmente conforme a la variación del IPC general."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "8.4", "fecha": "2025-05-12" },
+        "texto": "El precio de la hora de desarrollo adicional será de 92,00 EUR/hora, IVA no incluido."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "valores_en_conflicto_eur": [85, 92],
+        "documentos_en_conflicto": ["Anexo II cl. 1.2", "contrato cl. 8.4"],
+        "hay_regla_de_prelacion": false
+      }
+    },
+    "camposCriticos": ["valores_en_conflicto_eur", "hay_regla_de_prelacion"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Misma fecha de firma y sin cláusula de prelación entre clausulado y anexos: ni «lo posterior deroga» ni «prevalece el anexo» tienen dónde apoyarse. Abstenerse es la respuesta correcta y las DOS unidades del conflicto son necesarias — un selector que se quede solo con una contesta 85 o 92 con total aplomo, y esa respuesta es indistinguible de la buena para quien la lea."
+  },
+  {
+    "id": "ct-es-010",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "dificil",
+    "trampas": ["referencia-cruzada", "importes-parecidos"],
+    "par": "ct-es-009",
+    "consulta": "¿Cuál es el precio por hora del desarrollo adicional?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Anexo II", "clausula": "1.2", "fecha": "2025-05-12" },
+        "texto": "Hora de desarrollo adicional: 85,00 EUR/hora, IVA no incluido."
+      },
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "1.3" },
+        "texto": "En caso de discrepancia entre el clausulado del contrato y sus Anexos, prevalecerá lo dispuesto en los Anexos.",
+        "nota": "No contiene ni «hora», ni «precio», ni ninguna cifra: es la unidad con MENOS parecido con la consulta y la que decide el caso."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "8.5" },
+        "texto": "Las horas de desarrollo adicional se facturarán por fracciones de quince (15) minutos."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "8.4", "fecha": "2025-05-12" },
+        "texto": "El precio de la hora de desarrollo adicional será de 92,00 EUR/hora, IVA no incluido."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "precio_hora_eur": 85,
+        "iva_incluido": false,
+        "clausula_de_desempate": "1.3",
+        "documento_que_prevalece": "Anexo II"
+      }
+    },
+    "camposCriticos": ["precio_hora_eur", "iva_incluido", "clausula_de_desempate"],
+    "citasObligatorias": ["u1", "u3"],
+    "campoTrampa": {
+      "campo": "precio_hora_eur",
+      "valorErroneo": 92,
+      "siSeCae": ["u3"]
+    },
+    "nota": "Gemelo de ct-es-009: MISMAS unidades salvo que aquí existe la cláusula de prelación. El par es la prueba de que un selector no está abstiniéndose por miedo ni respondiendo por inercia — tiene que separar dos escenarios que se diferencian en una sola unidad, y esa unidad es justamente la que menos se parece a la pregunta."
+  },
+  {
+    "id": "ct-es-011",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["unidades", "importes-parecidos"],
+    "par": "ct-ca-015",
+    "consulta": "¿Cuál es la renta mensual total con impuestos de la nave arrendada?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "2.2" },
+        "texto": "La finca dispone además de 120 m² de zona de aparcamiento descubierta, no computable a efectos de renta.",
+        "nota": "Suma 120 a los 480 y da 600 m², una renta de 4.350 EUR y un total de 4.524,00 EUR: todo perfectamente aritmético y mal."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "5.4" },
+        "texto": "La finca está situada en Ceuta, por lo que la operación no está sujeta a IVA, sino al Impuesto sobre la Producción, los Servicios y la Importación (IPSI), que la ordenanza fiscal fija en el 4 % para el arrendamiento de naves industriales.",
+        "nota": "Antes esta unidad decía «IVA al tipo legal vigente, actualmente del 21 %», y con eso el caso no medía nada: un modelo entrenado con internet en español sabe que el IVA general es el 21 % y contestaba 4.210,80 EUR habiendo tirado esta unidad. El tipo del IPSI lo fija una ordenanza municipal y no se sabe de memoria: ahora tirar u2 se paga."
+      },
+      {
+        "id": "u5",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "5.6" },
+        "texto": "La fianza legal asciende a dos mensualidades de renta, que el Arrendatario deposita a la firma."
+      },
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "2.1" },
+        "texto": "La finca arrendada tiene una superficie construida de 480 m²."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "5.1" },
+        "texto": "La renta se fija en 7,25 EUR por metro cuadrado y mes, IVA no incluido."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "superficie_m2": 480,
+        "renta_sin_impuesto_eur": 3480,
+        "impuesto_pct": 4,
+        "impuesto": "IPSI",
+        "renta_con_impuesto_eur": 3619.2
+      }
+    },
+    "camposCriticos": ["superficie_m2", "renta_sin_impuesto_eur", "impuesto_pct", "renta_con_impuesto_eur"],
+    "citasObligatorias": ["u1", "u2", "u3"],
+    "campoTrampa": {
+      "campo": "renta_con_impuesto_eur",
+      "valorErroneo": 4524,
+      "siSeCae": ["u3"]
+    },
+    "nota": "Tres necesarias y un presupuesto de tres: no sobra nada. La unidad de medida está repartida en tres sitios (EUR/m², m², %) y ninguna de las tres responde por sí sola. La distractora u4 no contradice a nadie, solo añade metros que no cuentan, y por eso es más peligrosa que una contradicción: no hay nada que detecte el choque. El impuesto es el IPSI de Ceuta al 4 % y no el IVA al 21 % por una razón que la auditoría midió: con el 21 %, tirar u2 no costaba nada porque el tipo se sabe de memoria, y el caso daba por bueno a un selector que se dejaba fuera la unidad fiscal."
+  },
+  {
+    "id": "ct-es-012",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "dificil",
+    "trampas": ["negacion", "excepcion", "referencia-cruzada"],
+    "consulta": "Una caída de 4 horas causada por el suministro eléctrico del centro de datos, ¿computa como indisponibilidad?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.7" },
+        "texto": "El Prestador publicará un informe mensual de disponibilidad en el portal del Cliente dentro de los diez (10) primeros días de cada mes."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.3" },
+        "texto": "No computarán como indisponibilidad las paradas planificadas comunicadas con setenta y dos (72) horas de antelación ni los eventos de fuerza mayor."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.4" },
+        "texto": "A los efectos de la cláusula 6.3, no se considerará fuerza mayor el fallo de los suministros contratados por el Prestador, incluida la energía eléctrica del centro de datos."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "16.1" },
+        "texto": "Se entenderá por fuerza mayor todo acontecimiento imprevisible o inevitable ajeno al control de las Partes que impida el cumplimiento de sus obligaciones.",
+        "nota": "La definición general responde «no computa», y es la que un selector recupera cuando la consulta contiene «causada por»."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "computa": true, "es_fuerza_mayor": false, "clausula": "6.4" }
+    },
+    "camposCriticos": ["computa", "es_fuerza_mayor", "clausula"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "computa",
+      "valorErroneo": false,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Tres negaciones encadenadas: la 6.3 excluye la fuerza mayor, la 6.4 excluye de la fuerza mayor los suministros del Prestador, y la 16.1 define la fuerza mayor en términos que encajan con un corte eléctrico. Quedarse con 6.3+16.1 —las dos que hablan de fuerza mayor— produce la respuesta contraria con dos citas correctas y accesibles."
+  },
+  {
+    "id": "ct-es-013",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "media",
+    "trampas": ["identificadores-parecidos", "fechas-parecidas"],
+    "consulta": "¿Qué acuerdo de confidencialidad rige el intercambio de información del proyecto Delta y hasta cuándo está vigente?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "registro de acuerdos" },
+        "texto": "NDA-2023-118: acuerdo de confidencialidad del proyecto Delta correspondiente a la fase previa, extinguido el 31/12/2024."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "registro de acuerdos" },
+        "texto": "NDA-2024-1118: acuerdo de confidencialidad con el proveedor logístico, ámbito «datos de transporte», vigente hasta el 31/12/2027.",
+        "nota": "Un dígito de diferencia y una fecha más lejana, que es la que suena a «la vigente»."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acta de inicio del proyecto Delta" },
+        "texto": "El intercambio de información técnica del proyecto Delta se rige por el acuerdo NDA-2024-118."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registro de acuerdos" },
+        "texto": "NDA-2024-118: acuerdo de confidencialidad bilateral, ámbito «especificaciones técnicas del proyecto Delta», vigente hasta el 30/09/2026."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "acuerdo": "NDA-2024-118",
+        "vigente_hasta": "2026-09-30",
+        "ambito": "especificaciones tecnicas del proyecto Delta"
+      }
+    },
+    "camposCriticos": ["acuerdo", "vigente_hasta"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "vigente_hasta",
+      "valorErroneo": "2027-12-31",
+      "siSeCae": ["u2"]
+    },
+    "nota": "Tres identificadores a un carácter de distancia y uno de ellos, el NDA-2023-118, contiene además «proyecto Delta», así que gana por solapamiento léxico. La normalización de `canonicalize.ts` conserva los dígitos y los guiones, de modo que aquí el riesgo no es la clave de caché: es el reranker."
+  },
+  {
+    "id": "ct-es-014",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "penalizacion-por-retraso",
+    "dificultad": "dificil",
+    "trampas": ["condicion", "fechas-parecidas"],
+    "par": "ct-ca-016",
+    "consulta": "El Cliente reclama por carta de 2 de julio de 2026 las penalizaciones de un retraso de marzo. ¿Procede el cobro?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.1" },
+        "texto": "Por cada día natural de retraso se devengará una penalización del 0,5 % de la cuota mensual afectada."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.5" },
+        "texto": "Las penalizaciones deberán reclamarse por escrito dentro de los treinta (30) días naturales siguientes al mes en que se produjo el retraso; transcurrido dicho plazo se entenderán renunciadas.",
+        "nota": "No contiene ni «0,5 %», ni «día de retraso», ni ninguna cifra de dinero: es la unidad que menos se parece a una pregunta sobre cobrar penalizaciones."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registro del proyecto" },
+        "texto": "Retraso registrado en el hito 3: 14/03/2026. Carta de reclamación del Cliente: 02/07/2026."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.4" },
+        "texto": "Las penalizaciones devengadas se compensarán de oficio con las facturas pendientes de pago al Prestador."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "procede": false,
+        "motivo": "plazo-de-reclamacion-caducado",
+        "fecha_limite": "2026-04-30",
+        "plazo_dias": 30,
+        "clausula": "7.5"
+      }
+    },
+    "camposCriticos": ["procede", "motivo", "fecha_limite"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "procede",
+      "valorErroneo": true,
+      "siSeCae": ["u1"]
+    },
+    "nota": "La cláusula que MATA el derecho es la que menos se parece a la pregunta, y las dos que sí se parecen (7.1 y 7.4) explican cómo se calcula y cómo se cobra, o sea que empujan hacia «sí procede». El plazo vence el 30/04/2026 y la carta es de julio: dos meses tarde, y sin la 7.5 no hay ninguna señal en el resto de la evidencia."
+  },
+  {
+    "id": "ct-es-015",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "media",
+    "trampas": ["abstencion", "referencia-cruzada"],
+    "par": "ct-ca-012",
+    "consulta": "¿Puede el Encargado subcontratar el alojamiento de los datos con un proveedor en India?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.2" },
+        "texto": "El Encargado no destinará los datos a una finalidad distinta de la prevista en el contrato principal."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.9" },
+        "texto": "El Encargado podrá recurrir a subencargados de tratamiento previa autorización por escrito del Responsable."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.10" },
+        "texto": "La relación de subencargados autorizados, con indicación del país de tratamiento, figura en el Anexo V."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.11" },
+        "texto": "El Encargado impondrá contractualmente a sus subencargados las mismas obligaciones de protección de datos previstas en el presente anexo."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "evidencia-insuficiente",
+      "campos": {
+        "documento_que_falta": "Anexo V",
+        "lo_que_falta": "relacion de subencargados autorizados y pais de tratamiento",
+        "hay_autorizacion_generica": false
+      }
+    },
+    "camposCriticos": ["documento_que_falta", "hay_autorizacion_generica"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "La evidencia recuperada remite a un documento que no está entre las unidades. La respuesta correcta no es «sí, previa autorización» —que es lo que sale de u1 sola y suena impecable— sino nombrar el Anexo V que falta. u2 es necesaria precisamente porque es la que hace VISIBLE el hueco: tirarla convierte una abstención en un sí."
+  },
+  {
+    "id": "ct-es-016",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prorroga-tacita",
+    "dificultad": "dificil",
+    "trampas": ["derogacion", "referencia-cruzada"],
+    "consulta": "¿Cuántas prórrogas anuales caben como máximo?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.2" },
+        "texto": "Cualquiera de las Partes podrá denunciar el contrato con treinta (30) días naturales de antelación a cada vencimiento."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Adenda nº 1", "clausula": "2", "fecha": "2026-02-18" },
+        "texto": "La cláusula 4.4 queda redactada como sigue: «El contrato podrá prorrogarse tácitamente por periodos anuales sin límite de prórrogas, sin perjuicio del derecho de denuncia de la cláusula 4.2»."
+      },
+      {
+        "id": "u1",
+        "papel": "derogada",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.4", "fecha": "2024-09-30" },
+        "texto": "El contrato podrá prorrogarse tácitamente por un máximo de tres (3) periodos anuales.",
+        "nota": "Contesta la pregunta con un número redondo. Es la respuesta que un lector rápido daría por buena."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "limite_prorrogas": null,
+        "sin_limite": true,
+        "clausula_aplicable": "4.4 segun Adenda 1",
+        "clausula_sustituida": "4.4 redaccion original"
+      }
+    },
+    "camposCriticos": ["limite_prorrogas", "sin_limite", "clausula_aplicable"],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "limite_prorrogas",
+      "valorErroneo": 3,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Derogación por NUEVA REDACCIÓN, no por supresión: las dos unidades se llaman «cláusula 4.4» y dicen cosas incompatibles, así que ordenarlas exige mirar la fecha del documento y no el número de cláusula. La respuesta correcta es además un `null`, que es el valor que un modelo evita cuando tiene delante un 3 disponible."
+  },
+  {
+    "id": "ct-es-017",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "dificil",
+    "trampas": ["verbo-modal", "referencia-cruzada"],
+    "consulta": "¿Está obligado el Prestador a sustituir al jefe de proyecto si el Cliente lo solicita, y en qué plazo?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "10.5" },
+        "texto": "Las sustituciones de personal se harán efectivas en un plazo máximo de quince (15) días hábiles desde la solicitud, garantizando el solapamiento con el sustituido."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "10.3" },
+        "texto": "El Cliente podrá solicitar motivadamente la sustitución de cualquier miembro del equipo. El Prestador deberá atender la solicitud en el plazo previsto en la cláusula 10.5."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "10.1" },
+        "texto": "El Prestador podrá organizar libremente los medios personales adscritos a la prestación del servicio."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "10.4" },
+        "texto": "El Prestador comunicará al Cliente cualquier cambio en el equipo con una antelación mínima de cinco (5) días.",
+        "nota": "Otro plazo en días sobre cambios de equipo. Es el número que se cuela si se pierde la 10.5."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "obligado": true,
+        "plazo_dias_habiles": 15,
+        "requisito": "solicitud motivada",
+        "clausulas": ["10.3", "10.5"]
+      }
+    },
+    "camposCriticos": ["obligado", "plazo_dias_habiles", "requisito"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "plazo_dias_habiles",
+      "valorErroneo": 5,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Los dos verbos modales conviven en la MISMA unidad: «podrá solicitar» (facultad del Cliente) y «deberá atender» (obligación del Prestador). La consulta pregunta por la obligación, así que un extracto que se quede con la primera frase responde «es potestativo». El plazo, además, está en otra cláusula y hay un plazo rival de 5 días a dos líneas."
+  },
+  {
+    "id": "ct-es-018",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["excepcion", "condicion", "importes-parecidos"],
+    "consulta": "El IPC del año ha sido del 6 %. ¿En cuánto puede actualizar el Arrendador la renta en el segundo año de vigencia?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "6.4" },
+        "texto": "A partir del cuarto año de vigencia la actualización se regirá exclusivamente por lo dispuesto en la cláusula 6.1.",
+        "nota": "Confirma el tope por implicación, pero leída sola dice que manda la 6.1 — que es exactamente la respuesta equivocada para el año dos."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "6.2" },
+        "texto": "La actualización se aplicará de oficio desde la mensualidad siguiente a la publicación del índice, sin necesidad de requerimiento."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "6.3" },
+        "texto": "No obstante lo anterior, durante los tres (3) primeros años de vigencia la actualización de la renta no podrá exceder del 3 % anual."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "6.1" },
+        "texto": "La renta se actualizará anualmente conforme a la variación del IPC general de los doce meses anteriores a cada vencimiento."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "actualizacion_pct": 3, "tope_aplicado": true, "ipc_pct": 6, "clausula": "6.3" }
+    },
+    "camposCriticos": ["actualizacion_pct", "tope_aplicado", "clausula"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "actualizacion_pct",
+      "valorErroneo": 6,
+      "siSeCae": ["u2"]
+    },
+    "nota": "El tope tiene una condición temporal («los tres primeros años») y la consulta da el año en una sola palabra. u4 es la trampa fina: menciona la 6.1 y un límite temporal, así que parece la unidad que resuelve el año, y responde 6 %."
+  },
+  {
+    "id": "ct-es-019",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "dificil",
+    "trampas": ["excepcion", "condicion", "fechas-parecidas"],
+    "par": "ct-ca-013",
+    "consulta": "El contrato se extinguió el 31/01/2024. ¿Sigue vigente el deber de confidencialidad sobre el listado de precios de compra el 15/02/2029?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Anexo III" },
+        "texto": "Objeto del intercambio: listado de precios de compra a proveedores, clasificado por ambas Partes como secreto empresarial."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.4" },
+        "texto": "El deber de confidencialidad subsistirá durante los cinco (5) años siguientes a la extinción del contrato.",
+        "nota": "Responde la pregunta con una regla clara y un plazo que venció el 31/01/2029, quince días antes de la fecha consultada."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.6" },
+        "texto": "A la extinción del contrato el Receptor devolverá o destruirá los soportes que contengan Información Confidencial."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.5" },
+        "texto": "Tratándose de secretos empresariales en el sentido de la Ley 1/2019, la obligación de secreto subsistirá mientras conserven tal condición, sin límite temporal."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "vigente": true,
+        "base": "secreto-empresarial-sin-limite-temporal",
+        "plazo_general_vencio": "2029-01-31",
+        "clausula": "5.5"
+      }
+    },
+    "camposCriticos": ["vigente", "base", "clausula"],
+    "citasObligatorias": ["u2", "u3"],
+    "campoTrampa": {
+      "campo": "vigente",
+      "valorErroneo": false,
+      "siSeCae": ["u2", "u3"]
+    },
+    "nota": "La excepción necesita DOS unidades: la regla especial (5.5) y la calificación del objeto como secreto empresarial (Anexo III). Perder cualquiera de las dos devuelve la respuesta a la regla general y la fecha cae quince días fuera de plazo. Es el caso donde la trampa es una diferencia de dos semanas sobre cinco años."
+  },
+  {
+    "id": "ct-es-020",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "resolucion-anticipada",
+    "dificultad": "facil",
+    "trampas": ["negacion", "verbo-modal"],
+    "consulta": "¿Puede el Prestador resolver el contrato por el impago de una sola factura?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "8.7" },
+        "texto": "Las facturas se abonarán a treinta (30) días fecha factura mediante transferencia."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "12.5" },
+        "texto": "El impago de una única factura no facultará para resolver el contrato, sin perjuicio del devengo de intereses de demora."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "12.4" },
+        "texto": "El Prestador podrá resolver el contrato en caso de impago de dos (2) o más facturas vencidas y no controvertidas."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "puede_resolver": false, "facturas_impagadas_minimas": 2, "clausula": "12.5" }
+    },
+    "camposCriticos": ["puede_resolver"],
+    "camposDegradados": [
+      {
+        "campo": "facturas_impagadas_minimas",
+        "porque": "El número 2 solo lo dice u1, que es DISTRACTORA y que el presupuesto de una unidad obliga a tirar. Un campo crítico que solo se sostiene sobre evidencia que el caso manda descartar convierte en fallo la selección correcta: sigue en la respuesta, pero deja de contar para la conservación de campos críticos."
+      }
+    ],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "puede_resolver",
+      "valorErroneo": true,
+      "siSeCae": ["u2"]
+    },
+    "nota": "CONTROL fácil: u1 y u2 dicen lo mismo por caminos opuestos, así que con presupuesto de una unidad hay DOS elecciones que llevan a la respuesta correcta si el lector razona, y solo una que la deja explícita. Se marca u1 como distractora y no como necesaria a propósito: lo que se mide es si el selector prefiere la unidad que contesta la pregunta LITERAL sobre la que la contesta por inferencia."
+  },
+  {
+    "id": "ct-es-021",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "media",
+    "trampas": ["importes-parecidos", "condicion"],
+    "par": "ct-ca-004",
+    "consulta": "¿Cuál es el compromiso de disponibilidad exigible en horario crítico?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "Anexo II", "clausula": "1.2" },
+        "texto": "Disponibilidad comprometida fuera del horario crítico: 99,5 %."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "Anexo II", "clausula": "4.3" },
+        "texto": "Objetivo interno de disponibilidad de la plataforma: 99,99 %, sin carácter contractualmente exigible.",
+        "nota": "La cifra más alta y la que un resumen tiende a destacar; y es la única que el contrato declara NO exigible."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Anexo II", "clausula": "1.1" },
+        "texto": "Disponibilidad comprometida en horario crítico (lunes a viernes, de 8:00 a 20:00): 99,95 %."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "disponibilidad_pct": 99.95, "ventana": "L-V 8:00-20:00", "exigible": true }
+    },
+    "camposCriticos": ["disponibilidad_pct", "ventana", "exigible"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "disponibilidad_pct",
+      "valorErroneo": 99.99,
+      "siSeCae": ["u1"]
+    },
+    "nota": "99,95 / 99,5 / 99,99 en tres líneas seguidas del mismo anexo. Un embedding las ve prácticamente idénticas y `keyTokensMatch` de `src/cache/semantic.ts` sí las separaría —compara el multiconjunto de tokens numéricos—, pero ese guardarraíl protege la caché, no la selección de evidencia: aquí no hay nada equivalente y por eso el caso existe."
+  },
+  {
+    "id": "ct-es-022",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "dificil",
+    "trampas": ["derogacion", "referencia-cruzada", "fechas-parecidas"],
+    "par": "ct-ca-019",
+    "consulta": "¿En qué formato y plazo debe el Encargado devolver los datos al terminar el contrato?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Anexo VI bis", "fecha": "2026-04-09" },
+        "texto": "Formato de devolución: exportación en Parquet cifrada con la clave pública del Responsable, depositada en el bucket S3 designado. Plazo: treinta (30) días naturales desde la terminación."
+      },
+      {
+        "id": "u4",
+        "papel": "derogada",
+        "procedencia": { "documento": "Anexo VI", "fecha": "2024-09-30" },
+        "texto": "Formato de devolución: CSV en soporte físico cifrado, entregado en el domicilio social del Responsable. Plazo: quince (15) días naturales desde la terminación.",
+        "nota": "Formato y plazo completos, redactados igual que el bueno. Con presupuesto de dos, u1+u4 es la pareja que cualquier medida de coherencia interna premiaría: la cláusula y el anexo al que remite."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.12" },
+        "texto": "Al terminar la prestación, el Encargado devolverá los datos personales al Responsable en el formato previsto en el Anexo VI y suprimirá las copias en su poder."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Adenda nº 3", "clausula": "5", "fecha": "2026-04-09" },
+        "texto": "Se sustituye el Anexo VI por el Anexo VI bis. Las referencias del contrato y de sus anexos al Anexo VI se entenderán hechas al Anexo VI bis."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "formato": "Parquet cifrado",
+        "canal": "bucket S3 designado",
+        "plazo_dias": 30,
+        "anexo_aplicable": "VI bis"
+      }
+    },
+    "camposCriticos": ["formato", "canal", "plazo_dias", "anexo_aplicable"],
+    "citasObligatorias": ["u2", "u3"],
+    "campoTrampa": {
+      "campo": "plazo_dias",
+      "valorErroneo": 15,
+      "siSeCae": ["u2", "u3"]
+    },
+    "nota": "Dos saltos: la cláusula apunta al Anexo VI y una adenda redirige TODAS las referencias al VI bis. La cadena solo se sostiene si sobreviven las dos unidades del final, y la unidad de partida (u1), que es la que más se parece a la consulta, resulta ser prescindible. Es el caso que castiga a un selector que puntúe por coherencia entre unidades recuperadas."
+  },
+  {
+    "id": "ct-es-023",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "penalizacion-por-retraso",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "importes-parecidos"],
+    "consulta": "¿Cuál es el tope máximo de penalizaciones acumuladas?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.6" },
+        "texto": "El pago de las penalizaciones no exonera al Prestador de la obligación de completar la prestación."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.1" },
+        "texto": "Por cada día natural de retraso se devengará una penalización del 0,5 % de la cuota mensual afectada."
+      },
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "7.3", "fecha": "2025-05-12" },
+        "texto": "El tope de las penalizaciones acumuladas será del 10 % del precio anual del contrato."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "Anexo I", "clausula": "5", "fecha": "2025-05-12" },
+        "texto": "Tope de penalizaciones acumuladas: 20 % del precio anual del contrato."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "valores_en_conflicto_pct": [10, 20],
+        "documentos_en_conflicto": ["contrato cl. 7.3", "Anexo I cl. 5"],
+        "hay_regla_de_prelacion": false,
+        "misma_fecha": true
+      }
+    },
+    "camposCriticos": ["valores_en_conflicto_pct", "hay_regla_de_prelacion", "misma_fecha"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Mismo día de firma, y el conflicto es exactamente el doble: 10 % contra 20 %. Sin cláusula de prelación no hay desempate posible, y la asimetría del daño es total — responder 20 % expone al Cliente al doble de lo pactado y responder 10 % le hace renunciar a la mitad de lo que quizá le corresponde. Es el caso que justifica que abstenerse sea una respuesta y no un fallo."
+  },
+  {
+    "id": "ct-es-024",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "media",
+    "trampas": ["identificadores-parecidos", "fechas-parecidas"],
+    "consulta": "¿Qué orden de servicio ampara los trabajos del hito 3 y cuál es su importe?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "registro de órdenes de servicio" },
+        "texto": "OS-2025-118: orden de servicio del ejercicio anterior con el mismo alcance, cerrada el 31/12/2025, importe 78.500 EUR."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registro de órdenes de servicio" },
+        "texto": "OS-2026-118: alcance «migración de la plataforma de facturación», hitos 1 a 4, importe 84.000 EUR."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acta de seguimiento" },
+        "texto": "Los trabajos del hito 3 se ejecutan al amparo de la orden de servicio OS-2026-118, firmada el 03/02/2026."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "registro de órdenes de servicio" },
+        "texto": "OS-2026-1118: orden de mantenimiento correctivo firmada el 03/12/2026, sin hitos asociados, importe 8.400 EUR.",
+        "nota": "Un dígito en el identificador, un dígito en el importe y los mismos números en la fecha (03/02 contra 03/12)."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "orden": "OS-2026-118",
+        "alcance": "migracion de la plataforma de facturacion",
+        "importe_eur": 84000
+      }
+    },
+    "camposCriticos": ["orden", "importe_eur"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "importe_eur",
+      "valorErroneo": 8400,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Cuatro identificadores que difieren en un carácter, dos importes que difieren en un cero y dos fechas con los mismos dígitos en distinto orden. u4 comparte además el alcance textual, así que gana por parecido de contenido y pierde por año."
+  },
+  {
+    "id": "ct-es-025",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["negacion", "excepcion", "condicion"],
+    "consulta": "El Arrendatario quiere instalar tabiquería móvil de oficinas en la planta primera, sin tocar pilares, forjados ni fachada. ¿Necesita autorización?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "13.4" },
+        "texto": "Las obras ejecutadas quedarán en beneficio de la finca al término del arrendamiento, sin derecho a indemnización ni retirada."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "13.1" },
+        "texto": "El Arrendatario no podrá realizar obras que modifiquen la configuración o la estructura de la finca sin autorización escrita del Arrendador."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de arrendamiento", "clausula": "13.2" },
+        "texto": "Sí podrá ejecutar, sin autorización previa, obras de mera adaptación interior que no afecten a elementos estructurales ni a la fachada, siempre que las comunique al Arrendador dentro de los diez (10) días siguientes a su inicio."
+      },
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "memoria de la obra proyectada" },
+        "texto": "Obra proyectada: instalación de tabiquería móvil de oficinas en planta primera. No afecta a pilares, forjados ni fachada."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "requiere_autorizacion": false,
+        "requiere_comunicacion": true,
+        "plazo_comunicacion_dias": 10,
+        "clausula": "13.2"
+      }
+    },
+    "camposCriticos": ["requiere_autorizacion", "requiere_comunicacion", "plazo_comunicacion_dias"],
+    "citasObligatorias": ["u2", "u3"],
+    "campoTrampa": {
+      "campo": "requiere_autorizacion",
+      "valorErroneo": true,
+      "siSeCae": ["u2"]
+    },
+    "nota": "La prohibición (13.1) contiene las palabras de la consulta —«obras», «autorización»— y la excepción (13.2) es la que aplica. Y la respuesta no es un simple «no hace falta»: hay que conservar la CONDICIÓN de comunicar en 10 días, que es la mitad de la unidad y la parte que un resumen suprime primero por ir al final de la frase."
+  },
+  {
+    "id": "ct-es-026",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "resolucion-anticipada",
+    "dificultad": "media",
+    "trampas": ["condicion", "fechas-parecidas"],
+    "consulta": "El Cliente requirió la subsanación el 01/04/2026 y declaró la resolución el 20/04/2026. ¿Fue válida?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "12.1" },
+        "texto": "Cualquiera de las Partes podrá resolver el contrato sin causa mediante preaviso de sesenta (60) días naturales."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "12.3" },
+        "texto": "La resolución por incumplimiento exigirá requerimiento escrito previo y solo podrá declararse si el incumplimiento no se subsana en el plazo de treinta (30) días naturales desde su recepción."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registro de comunicaciones" },
+        "texto": "Requerimiento de subsanación recibido por el Prestador el 01/04/2026. Declaración de resolución notificada el 20/04/2026."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "12.6" },
+        "texto": "La resolución no afectará a las obligaciones de confidencialidad, que subsistirán conforme a la cláusula 5.4."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "valida": false,
+        "motivo": "plazo-de-subsanacion-no-agotado",
+        "dias_transcurridos": 19,
+        "dias_requeridos": 30,
+        "clausula": "12.3"
+      }
+    },
+    "camposCriticos": ["valida", "motivo", "dias_transcurridos", "dias_requeridos"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "valida",
+      "valorErroneo": true,
+      "siSeCae": ["u1"]
+    },
+    "nota": "Diecinueve días contra treinta: la resolución se declaró once días antes de tiempo. La trampa es que la evidencia contiene otro plazo de resolución (60 días, sin causa) que no aplica y que hace de ancla numérica."
+  },
+  {
+    "id": "ct-es-027",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "negacion", "condicion"],
+    "consulta": "¿Sobre qué base horaria se calcula la disponibilidad mensual comprometida?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "Anexo II", "clausula": "3" },
+        "texto": "La disponibilidad se calcula sobre las horas totales del mes natural (24×7), incluidas las ventanas de mantenimiento programado."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.1" },
+        "texto": "El compromiso de disponibilidad mensual del servicio es del 99,5 %."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.2" },
+        "texto": "La disponibilidad se calcula sobre el horario de servicio (lunes a viernes, de 8:00 a 20:00), excluidas las ventanas de mantenimiento programado."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "6.7" },
+        "texto": "El Prestador publicará mensualmente el cálculo de disponibilidad en el portal del Cliente."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "bases_en_conflicto": ["24x7 con mantenimiento incluido", "L-V 8:00-20:00 con mantenimiento excluido"],
+        "documentos_en_conflicto": ["Anexo II §3", "contrato cl. 6.2"],
+        "hay_regla_de_prelacion": false
+      }
+    },
+    "camposCriticos": ["bases_en_conflicto", "hay_regla_de_prelacion"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Las dos definiciones se contradicen en DOS ejes a la vez (ventana horaria y tratamiento del mantenimiento) y las dos son plausibles en un contrato real. La contradicción es semántica y no numérica: no hay dos cifras que choquen, así que ninguna comprobación de coherencia de importes la detecta. Sin cláusula de prelación, abstenerse."
+  },
+  {
+    "id": "ct-es-028",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "dificil",
+    "trampas": ["verbo-modal", "excepcion", "negacion"],
+    "consulta": "Un juzgado requiere al Receptor información confidencial. ¿Debe avisar al Emisor antes de entregarla?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.7" },
+        "texto": "El incumplimiento del deber de secreto facultará al Emisor para reclamar los daños y perjuicios acreditados."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.1" },
+        "texto": "El Receptor mantendrá la confidencialidad de toda la Información Confidencial recibida y no la revelará a terceros."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.3, párrafo primero" },
+        "texto": "El Receptor podrá revelar Información Confidencial cuando se lo exija una autoridad judicial o administrativa competente.",
+        "nota": "Contesta la consulta entera y en positivo: «podrá revelar». Es la unidad que un selector recupera primero."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acuerdo de confidencialidad", "clausula": "5.3, párrafo segundo" },
+        "texto": "En tal caso, el Receptor deberá notificarlo al Emisor con carácter previo, salvo que la propia autoridad lo prohíba, y limitará la revelación al mínimo exigido por el requerimiento."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "debe_avisar": true,
+        "excepcion_al_aviso": "prohibicion expresa de la autoridad",
+        "obligacion_adicional": "limitar la revelacion al minimo exigido",
+        "clausula": "5.3"
+      }
+    },
+    "camposCriticos": ["debe_avisar", "excepcion_al_aviso", "obligacion_adicional"],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "debe_avisar",
+      "valorErroneo": false,
+      "siSeCae": ["u2"]
+    },
+    "nota": "La misma cláusula partida en dos unidades, que es exactamente lo que hace un troceador por párrafos. El primer párrafo es una FACULTAD y el segundo una OBLIGACIÓN, y el segundo empieza por «En tal caso», sin repetir ni «juzgado» ni «autoridad» ni «revelar»: pierde todo el parecido léxico con la consulta justo por estar bien redactado."
+  },
+  {
+    "id": "ct-es-029",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "facil",
+    "trampas": ["negacion", "unidades", "condicion"],
+    "consulta": "Un interesado ejerce su derecho de acceso directamente ante el Encargado. ¿Qué debe hacer y en qué plazo?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.4" },
+        "texto": "El Responsable resolverá las solicitudes de ejercicio de derechos en el plazo de un (1) mes, prorrogable por otros dos meses en atención a la complejidad.",
+        "nota": "Plazo en MESES frente a plazo en HORAS, y sobre la misma solicitud. Mezclar las unidades da «un mes» para una obligación de dos días."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.6" },
+        "texto": "El Encargado notificará al Responsable cualquier violación de la seguridad dentro de las veinticuatro (24) horas siguientes a su conocimiento."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "anexo de encargo de tratamiento", "clausula": "14.8" },
+        "texto": "Si el Encargado recibe directamente una solicitud de ejercicio de derechos, la comunicará al Responsable en el plazo máximo de cuarenta y ocho (48) horas, sin atenderla por sí mismo."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "obligacion": "comunicar al responsable",
+        "plazo_horas": 48,
+        "atiende_el_encargado": false,
+        "clausula": "14.8"
+      }
+    },
+    "camposCriticos": ["obligacion", "plazo_horas", "atiende_el_encargado"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "plazo_horas",
+      "valorErroneo": 24,
+      "siSeCae": ["u1"]
+    },
+    "nota": "CONTROL fácil con tres plazos distintos en la evidencia (48 h, 24 h, 1 mes) sobre tres supuestos distintos. La negación —«sin atenderla por sí mismo»— va al final de la unidad necesaria y es un campo crítico: es la parte que una compresión agresiva recorta y la que determina quién responde al ciudadano."
+  },
+  {
+    "id": "ct-es-030",
+    "idioma": "es",
+    "dominio": "contratos",
+    "subdominio": "prorroga-tacita",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "negacion", "derogacion"],
+    "par": "ct-ca-017",
+    "consulta": "¿El contrato se prorroga automáticamente al vencimiento?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.6", "fecha": "2025-11-03" },
+        "texto": "No operará la prórroga tácita: toda prórroga del contrato requerirá acuerdo expreso y escrito de ambas Partes."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.1" },
+        "texto": "La duración inicial del contrato es de doce (12) meses desde la fecha de firma."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.5" },
+        "texto": "Las prórrogas, en su caso, se regirán por las mismas condiciones económicas, actualizadas conforme a la cláusula 6.1."
+      },
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contrato de servicios", "clausula": "4.2", "fecha": "2025-11-03" },
+        "texto": "El contrato se prorrogará tácitamente por periodos anuales sucesivos salvo denuncia de cualquiera de las Partes."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "posturas_en_conflicto": ["prorroga tacita", "prorroga solo por acuerdo expreso"],
+        "clausulas_en_conflicto": ["4.2", "4.6"],
+        "mismo_documento": true,
+        "hay_regla_de_prelacion": false
+      }
+    },
+    "camposCriticos": ["posturas_en_conflicto", "mismo_documento", "hay_regla_de_prelacion"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Las dos cláusulas están en el MISMO documento y llevan la misma fecha. La regla «la posterior deroga a la anterior» es de documentos, no de numeración interna: dentro de un contrato firmado de una vez, que la 4.6 vaya después de la 4.2 no la hace prevalecer. Ese razonamiento —ordenar por número de cláusula— es el error concreto que este caso caza, y por eso las dos unidades son contradictorias y ninguna es derogada."
+  }
+]

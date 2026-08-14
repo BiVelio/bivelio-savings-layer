@@ -1,0 +1,1020 @@
+[
+  {
+    "id": "ct-ca-001",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "facil",
+    "trampas": ["verbo-modal", "apostrofo"],
+    "par": "ct-es-001",
+    "consulta": "El Prestador està obligat a lliurar l'informe mensual d'activitat, o és potestatiu?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "9.1" },
+        "texto": "Les comunicacions entre les Parts es cursaran per correu electrònic a les adreces designades a l'Annex I."
+      },
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "3.2" },
+        "texto": "El Prestador podrà lliurar informes addicionals de caràcter extraordinari quan ho consideri oportú.",
+        "nota": "Mateix objecte, verb POTESTATIU. Amb l'apòstrof de «d'activitat» fora, u1 i u2 comparteixen encara més tokens."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "3.1" },
+        "texto": "El Prestador haurà de lliurar un informe mensual d'activitat dins dels cinc (5) primers dies hàbils de cada mes natural."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "obligatori": true, "verb": "haura de", "termini_dies_habils": 5, "clausula": "3.1" }
+    },
+    "camposCriticos": ["obligatori", "verb", "termini_dies_habils", "clausula"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "obligatori",
+      "valorErroneo": false,
+      "siSeCae": ["u1"]
+    },
+    "nota": "CONTROL fàcil i parella de ct-es-001. La diferència entre obligació i facultat és «haurà de» contra «podrà», dues paraules que després de la normalització de `canonicalize.ts` conserven la seva forma però que cap comprovació de paritat —ni la de negació de `keyTokensMatch`— mira. Si un selector encerta en castellà i falla aquí, la degradació és PER IDIOMA i el par ho fa visible."
+  },
+  {
+    "id": "ct-ca-002",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["ela-geminada", "identificadores-parecidos", "apostrofo"],
+    "consulta": "Quin contracte regeix el lloguer del local de l'edifici del Col·legi d'Enginyers i quina renda té?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "registre de contractes" },
+        "texto": "ARR-2026-118-B: addenda de places d'aparcament del Col·legi d'Enginyers, 120,00 EUR/mes."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acta de la comissió de patrimoni" },
+        "texto": "L'arrendament del local situat a l'edifici del Col·legi d'Enginyers es regeix pel contracte ARR-2026-118."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registre de contractes" },
+        "texto": "ARR-2026-118: arrendament del local de l'edifici del Collegi d'Enginyers, renda 2.450,00 EUR/mes, vigent fins al 30/06/2027.",
+        "nota": "«Collegi» sense punt volat, tal com surt d'un OCR o d'una base de dades antiga. És la MATEIXA entitat que «Col·legi» de u1, i cap dels dos escrits és un error del corpus."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "registre de contractes" },
+        "texto": "ARR-2026-1118: arrendament del magatzem del polígon, renda 2.540,00 EUR/mes, vigent fins al 31/12/2028."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "contracte": "ARR-2026-118", "renda_eur": 2450, "vigent_fins": "2027-06-30" }
+    },
+    "camposCriticos": ["contracte", "renda_eur", "vigent_fins"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "renda_eur",
+      "valorErroneo": 2540,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Dues trampes superposades. La primera és l'ela geminada: `normalizeText` de `src/canonicalization/canonicalize.ts` tracta el punt volat entre lletres com a adorn i el suprimeix, de manera que «col·legi» i «collegi» col·lapsen — cosa que aquí AJUDA a aparellar u1 amb u2, i és la raó per la qual el corpus ho escriu de les dues maneres a propòsit. La segona és que els imports 2.450 i 2.540 són els mateixos dígits en un altre ordre, i els identificadors difereixen en un caràcter. u4, que sí que porta «Col·legi d'Enginyers» amb la grafia de la consulta, és la que guanya per semblança i respon 120 EUR."
+  },
+  {
+    "id": "ct-ca-003",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "dificil",
+    "trampas": ["negacion", "condicion", "apostrofo"],
+    "par": "ct-es-004",
+    "consulta": "La informació que el Receptor ja tenia abans de la signatura està sotmesa al deure de confidencialitat?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.1" },
+        "texto": "El Receptor mantindrà la confidencialitat de tota la Informació Confidencial rebuda i no la revelarà a tercers."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.2" },
+        "texto": "No tindrà la consideració d'Informació Confidencial aquella que el Receptor provi documentalment que ja tenia en el seu poder abans de la data de signatura i sense cap obligació de secret."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.4" },
+        "texto": "El deure de confidencialitat subsistirà durant cinc (5) anys des de l'extinció del contracte."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "sotmesa": false, "cal_prova_documental": true, "clausula": "5.2" }
+    },
+    "camposCriticos": ["sotmesa", "cal_prova_documental", "clausula"],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "sotmesa",
+      "valorErroneo": true,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Parella de ct-es-004, i el motiu de la parella és una limitació REAL del repositori: la llista `NEGATIONS` de `src/cache/semantic.ts` està escrita en anglès (no, not, never, without, nor…). El castellà cola de rebot perquè «no» hi és, però les negacions catalanes «sense», «cap» i «ni» —les tres apareixen en aquesta unitat— no hi figuren, així que la paritat de negació de `keyTokensMatch` no les compta. Aquest cas no arregla res: documenta el forat perquè qui escrigui F6 no doni per fet un guardarail que en català no existeix."
+  },
+  {
+    "id": "ct-ca-004",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "media",
+    "trampas": ["importes-parecidos", "condicion"],
+    "par": "ct-es-021",
+    "consulta": "Quin és el compromís de disponibilitat exigible en horari crític?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "Annex II", "clausula": "4.3" },
+        "texto": "Objectiu intern de disponibilitat de la plataforma: 99,99 %, sense caràcter contractualment exigible."
+      },
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "Annex II", "clausula": "1.2" },
+        "texto": "Disponibilitat compromesa fora de l'horari crític: 99,5 %."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Annex II", "clausula": "1.1" },
+        "texto": "Disponibilitat compromesa en horari crític (de dilluns a divendres, de 8:00 a 20:00): 99,95 %."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "disponibilitat_pct": 99.95, "finestra": "dl-dv 8:00-20:00", "exigible": true }
+    },
+    "camposCriticos": ["disponibilitat_pct", "finestra", "exigible"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "disponibilitat_pct",
+      "valorErroneo": 99.99,
+      "siSeCae": ["u1"]
+    },
+    "nota": "Parella de ct-es-021 amb les mateixes xifres: si el selector encerta en castellà i falla aquí, el problema no és la trampa numèrica sinó l'idioma, i és exactament la degradació que l'acceptació de F6 prohibeix («sense degradació per idioma ni tipus documental»)."
+  },
+  {
+    "id": "ct-ca-005",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "penalizacion-por-retraso",
+    "dificultad": "dificil",
+    "trampas": ["importes-parecidos", "condicion", "referencia-cruzada"],
+    "par": "ct-es-002",
+    "consulta": "La fita 2 s'ha lliurat amb 6 dies naturals de retard. Quina penalització es merita?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "7.1" },
+        "texto": "Per cada dia natural de retard en el lliurament d'una fita, el Prestador abonarà una penalització del 0,5 % de la quota mensual del mes en què es produeixi el retard, amb el límit previst a la clàusula 7.3."
+      },
+      {
+        "id": "u4",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Annex I", "clausula": "2" },
+        "texto": "Quota mensual del servei objecte del contracte: 8.240,10 EUR, IVA no inclòs."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "7.3" },
+        "texto": "Les penalitzacions acumulades per retard no podran excedir, en cap cas, del 5 % de la quota mensual afectada."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "Annex III", "clausula": "1" },
+        "texto": "Quota mensual del servei de suport ampliat: 8.204,10 EUR, IVA no inclòs.",
+        "nota": "Els mateixos quatre dígits que la quota bona, en un altre ordre."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "sostre_aplicat": false,
+        "percentatge_aplicat": 3,
+        "base_eur": 8240.1,
+        "penalitzacio_eur": 247.2,
+        "clausula": "7.1"
+      }
+    },
+    "camposCriticos": ["sostre_aplicat", "percentatge_aplicat", "base_eur", "penalitzacio_eur"],
+    "citasObligatorias": ["u1", "u2", "u4"],
+    "campoTrampa": {
+      "campo": "base_eur",
+      "valorErroneo": 8204.1,
+      "siSeCae": ["u4"]
+    },
+    "nota": "Parella ASIMÈTRICA de ct-es-002: allà 12 dies passen del sostre i aquí 6 dies no hi arriben (3 % < 5 %). Un selector que aprengui del corpus «sempre s'aplica el sostre» encerta el castellà i falla el català, i un que aprengui «el sostre mai no importa» falla al revés. u2 continua sent necessària encara que el sostre NO s'apliqui: sense ella no es pot afirmar que 3 % és el percentatge final, només que és el calculat."
+  },
+  {
+    "id": "ct-ca-006",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "prorroga-tacita",
+    "dificultad": "dificil",
+    "trampas": ["condicion", "fechas-parecidas", "referencia-cruzada"],
+    "par": "ct-es-006",
+    "consulta": "El contracte venç el 30/06/2026. Es prorroga, si el Client va trametre el burofax de no-pròrroga el 20/05/2026?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u5",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "4.1" },
+        "texto": "La durada inicial del contracte és de dotze (12) mesos comptats des de l'1 de juliol de 2025."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "4.2" },
+        "texto": "El contracte es prorrogarà tàcitament per períodes anuals llevat de denúncia de qualsevol de les Parts comunicada per escrit amb una antelació mínima de trenta (30) dies naturals a la data de venciment."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de manteniment MNT-2025-08", "clausula": "4.1" },
+        "texto": "El contracte de manteniment associat venç el 06/07/2026 i es regeix pel seu propi règim de pròrroga."
+      },
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "15.2" },
+        "texto": "Les comunicacions entre les Parts produiran efectes des de la data de la seva recepció."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registre de comunicacions", "fecha": "2026-05-21" },
+        "texto": "Burofax de no-pròrroga tramès pel Client el 20/05/2026 i lliurat al Prestador el 21/05/2026."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "es_prorroga": false,
+        "preavis_valid": true,
+        "dies_antelacio": 40,
+        "dies_requerits": 30,
+        "clausula": "4.2"
+      }
+    },
+    "camposCriticos": ["es_prorroga", "preavis_valid", "dies_antelacio", "dies_requerits"],
+    "citasObligatorias": ["u1", "u2", "u3"],
+    "campoTrampa": {
+      "campo": "dies_antelacio",
+      "valorErroneo": 41,
+      "siSeCae": ["u3"]
+    },
+    "nota": "Parella ASIMÈTRICA de ct-es-006: allà el preavís arriba tard i el contracte es prorroga; aquí arriba a temps i no es prorroga. Les unitats són les mateixes i només canvien dues dates, així que el par mesura si el selector conserva la clàusula 15.2 —la que decideix si compta l'enviament o la recepció— o si l'ha estat tirant sempre i encertava per casualitat."
+  },
+  {
+    "id": "ct-ca-007",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "facil",
+    "trampas": ["condicion", "importes-parecidos"],
+    "par": "ct-es-008",
+    "consulta": "En quin termini ha de notificar l'Encarregat al Responsable una violació de la seguretat de les dades?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.7" },
+        "texto": "El Responsable notificarà la violació a l'autoritat de control en el termini de setanta-dues (72) hores, d'acord amb l'article 33 del RGPD."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.1" },
+        "texto": "L'Encarregat tractarà les dades personals únicament seguint instruccions documentades del Responsable."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.6" },
+        "texto": "L'Encarregat notificarà al Responsable, sense dilació indeguda i en tot cas dins de les vint-i-quatre (24) hores següents al fet que en tingui coneixement, qualsevol violació de la seguretat de les dades personals."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "termini_hores": 24,
+        "obligat": "encarregat",
+        "destinatari": "responsable",
+        "clausula": "14.6"
+      }
+    },
+    "camposCriticos": ["termini_hores", "obligat"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "termini_hores",
+      "valorErroneo": 72,
+      "siSeCae": ["u1"]
+    },
+    "nota": "Parella de ct-es-008. En català l'apòstrof aferra el subjecte al verb («L'Encarregat», «l'autoritat»), de manera que la marca que distingeix les dues unitats —qui notifica a qui— queda dins d'una sola paraula normalitzada en comptes de dues. És un detall petit i és exactament el que separa aquest cas del seu bessó castellà.",
+    "camposEco": ["destinatari"]
+  },
+  {
+    "id": "ct-ca-008",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "prestacion-de-servicios",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "ela-geminada", "unidades"],
+    "consulta": "Qui assumeix les despeses de la instal·lació inicial?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "8.6", "fecha": "2026-01-15" },
+        "texto": "Les despeses d'instal·lació inicial aniran a càrrec del Client i es facturaran amb la primera quota."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "8.7" },
+        "texto": "Les despeses de desplaçament es facturaran a part, segons les tarifes de l'Annex IV."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "8.9" },
+        "texto": "Totes les quantitats indicades en aquest contracte s'entenen sense IVA."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "2.4", "fecha": "2026-01-15" },
+        "texto": "La despesa d'installació inicial és a càrrec del Prestador i està inclosa en la quota d'alta.",
+        "nota": "Singular («despesa») i sense punt volat («installació»), com surt d'un document reconstruït. La unitat que contradiu és la que menys s'assembla lèxicament a la consulta."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "postures_en_conflicte": ["a carrec del client", "a carrec del prestador"],
+        "clausules_en_conflicte": ["8.6", "2.4"],
+        "mateix_document": true,
+        "hi_ha_regla_de_prelacio": false
+      }
+    },
+    "camposCriticos": ["postures_en_conflicte", "mateix_document", "hi_ha_regla_de_prelacio"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Contradicció frontal dins del mateix document i la mateixa data. La trampa lingüística és doble: «despesa» i «despeses» no són el mateix token per a cap mesura de solapament lèxic, i `normalizeText` col·lapsa «instal·lació» i «installació» però no arregla el singular. Amb pressupost de dues unitats, la parella que guanya per semblança amb la consulta és u1+u3 —les dues que diuen «despeses»— i aquesta parella respon «el Client» sense cap senyal de conflicte."
+  },
+  {
+    "id": "ct-ca-009",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["excepcion", "condicion"],
+    "par": "ct-es-003",
+    "consulta": "L'Arrendatari pot cedir l'ús de la nau a una societat del seu grup sense demanar permís?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "11.1" },
+        "texto": "Resta prohibit el subarrendament total o parcial de la finca sense consentiment escrit de l'Arrendador."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "19.4" },
+        "texto": "No es considerarà subarrendament, als efectes de la clàusula 11, la cessió d'ús a societats del mateix grup de l'Arrendatari, sempre que es comuniqui a l'Arrendador amb quinze (15) dies naturals d'antelació."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "2.1" },
+        "texto": "La destinació pactada de la finca és la de magatzem logístic i no es pot alterar sense autorització."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "11.2" },
+        "texto": "El subarrendament no autoritzat serà causa de resolució del contracte amb pèrdua de la fiança."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "permes": true,
+        "cal_consentiment": false,
+        "preavis_dies": 15,
+        "clausula_regla": "11.1",
+        "clausula_excepcio": "19.4"
+      }
+    },
+    "camposCriticos": ["permes", "cal_consentiment", "preavis_dies", "clausula_excepcio"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "permes",
+      "valorErroneo": false,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Parella SIMÈTRICA de ct-es-003: mateixa estructura, mateixes distàncies entre regla i excepció, mateixa resposta. Les parelles simètriques són les que mesuren la degradació per idioma en estat pur, perquè qualsevol diferència de resultat entre les dues no es pot atribuir al cas."
+  },
+  {
+    "id": "ct-ca-010",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "resolucion-anticipada",
+    "dificultad": "dificil",
+    "trampas": ["derogacion", "verbo-modal"],
+    "par": "ct-es-007",
+    "consulta": "Amb quina antelació pot el Client resoldre anticipadament el contracte sense causa?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte marc", "clausula": "12.3" },
+        "texto": "La resolució per incompliment exigirà requeriment previ amb termini d'esmena de trenta (30) dies naturals."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Addenda núm. 2", "clausula": "3", "fecha": "2025-03-10" },
+        "texto": "Es deixa sense efecte la clàusula 12.1 del contracte marc. El Client podrà resoldre sense causa mitjançant un preavís escrit de noranta (90) dies naturals; el Prestador no podrà resoldre sense causa."
+      },
+      {
+        "id": "u1",
+        "papel": "derogada",
+        "procedencia": { "documento": "contracte marc", "clausula": "12.1", "fecha": "2024-01-12" },
+        "texto": "Qualsevol de les Parts podrà resoldre el contracte sense necessitat de causa mitjançant un preavís escrit de seixanta (60) dies naturals.",
+        "nota": "Respon la consulta sencera i en vint paraules. És la que guanya amb pressupost d'una sola unitat."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "preavis_dies": 90,
+        "qui_pot_resoldre": "client",
+        "clausula_aplicable": "Addenda 2, cl. 3",
+        "clausula_derogada": "12.1"
+      }
+    },
+    "camposCriticos": ["preavis_dies", "clausula_aplicable"],
+    "citasObligatorias": ["u2"],
+    "campoTrampa": {
+      "campo": "preavis_dies",
+      "valorErroneo": 60,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Parella simètrica de ct-es-007. La derogació és el cas on una palanca task-preserving pot fer més mal: la clàusula morta és la que MILLOR respon, i el resultat de conservar-la és un contracte que el client creu que pot trencar amb trenta dies menys dels que pertoca.",
+    "camposEco": ["qui_pot_resoldre"]
+  },
+  {
+    "id": "ct-ca-011",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "dificil",
+    "trampas": ["referencia-cruzada", "importes-parecidos"],
+    "par": "ct-es-005",
+    "consulta": "El servei ha tingut una disponibilitat del 98,8 % al març. Quina bonificació correspon?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.1" },
+        "texto": "El compromís de disponibilitat mensual del servei és del 99,5 %, mesurat segons el procediment de l'Annex II."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.6" },
+        "texto": "Les bonificacions s'aplicaran com a descompte a la factura del mes següent, amb el límit del 10 % de la facturació anual, i no tindran la consideració d'indemnització.",
+        "nota": "Porta un percentatge, i és l'únic que queda a la vista si es perd l'escala de la 6.5."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.5" },
+        "texto": "La bonificació serà del 5 % de la quota mensual quan la disponibilitat se situï entre el 99,0 % i el 99,5 %, i del 15 % quan sigui inferior al 99,0 %."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.2" },
+        "texto": "Si la disponibilitat mensual és inferior al compromís del 99,5 %, el Client tindrà dret a la bonificació prevista a la clàusula 6.5."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "bonificacio_pct": 15, "tram": "inferior a 99,0", "clausula": "6.5" }
+    },
+    "camposCriticos": ["bonificacio_pct", "tram", "clausula"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "bonificacio_pct",
+      "valorErroneo": 10,
+      "siSeCae": ["u2"]
+    },
+    "nota": "Parella ASIMÈTRICA de ct-es-005: allà la disponibilitat cau al tram alt (5 %) i aquí al baix (15 %). La diferència entre 99,1 i 98,8 és de tres dècimes i triplica la bonificació; és el tipus de precisió que un embedding no veu i que aquí decideix diners."
+  },
+  {
+    "id": "ct-ca-012",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "media",
+    "trampas": ["abstencion", "referencia-cruzada"],
+    "par": "ct-es-015",
+    "consulta": "L'Encarregat pot subcontractar l'allotjament de les dades amb un proveïdor de l'Índia?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.2" },
+        "texto": "L'Encarregat no destinarà les dades a una finalitat diferent de la prevista en el contracte principal."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.9" },
+        "texto": "L'Encarregat podrà recórrer a subencarregats del tractament amb l'autorització prèvia i per escrit del Responsable."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.11" },
+        "texto": "L'Encarregat imposarà contractualment als seus subencarregats les mateixes obligacions de protecció de dades previstes en aquest annex."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.10" },
+        "texto": "La relació de subencarregats autoritzats, amb indicació del país de tractament, consta a l'Annex V."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "evidencia-insuficiente",
+      "campos": {
+        "document_que_falta": "Annex V",
+        "el_que_falta": "relacio de subencarregats autoritzats i pais de tractament",
+        "hi_ha_autoritzacio_generica": false
+      }
+    },
+    "camposCriticos": ["document_que_falta", "hi_ha_autoritzacio_generica"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Parella simètrica de ct-es-015. L'abstenció per evidència insuficient és la més fàcil de convertir en un «sí» ben redactat: u1 sola diu «podrà, amb autorització prèvia», que és una resposta correcta a una pregunta que ningú no ha fet. Conservar u2 és el que fa visible que l'Annex V no hi és."
+  },
+  {
+    "id": "ct-ca-013",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "dificil",
+    "trampas": ["excepcion", "condicion", "fechas-parecidas"],
+    "par": "ct-es-019",
+    "consulta": "El contracte es va extingir el 31/01/2024. El deure de confidencialitat sobre la llista de preus de compra continua vigent el 15/02/2029?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Annex III" },
+        "texto": "Objecte de l'intercanvi: llista de preus de compra a proveïdors, classificada per ambdues Parts com a secret empresarial."
+      },
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.4" },
+        "texto": "El deure de confidencialitat subsistirà durant els cinc (5) anys següents a l'extinció del contracte.",
+        "nota": "El termini va vèncer el 31/01/2029, quinze dies abans de la data consultada."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.6" },
+        "texto": "A l'extinció del contracte el Receptor retornarà o destruirà els suports que continguin Informació Confidencial."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.5" },
+        "texto": "Tractant-se de secrets empresarials en el sentit de la Llei 1/2019, l'obligació de secret subsistirà mentre conservin aquesta condició, sense límit temporal."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "vigent": true,
+        "base": "secret-empresarial-sense-limit-temporal",
+        "termini_general_va_vencer": "2029-01-31",
+        "clausula": "5.5"
+      }
+    },
+    "camposCriticos": ["vigent", "base", "clausula"],
+    "citasObligatorias": ["u2", "u3"],
+    "campoTrampa": {
+      "campo": "vigent",
+      "valorErroneo": false,
+      "siSeCae": ["u2", "u3"]
+    },
+    "nota": "Parella simètrica de ct-es-019. Aquí «sense límit temporal» torna a portar la negació catalana «sense», que cap llista de negacions del repositori reconeix; i la unitat que qualifica l'objecte com a secret empresarial (u3) no conté ni «confidencialitat» ni «deure» ni cap data, o sigui que no s'assembla gens a la consulta tot i ser imprescindible."
+  },
+  {
+    "id": "ct-ca-014",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "niveles-de-servicio",
+    "dificultad": "dificil",
+    "trampas": ["diacriticos", "importes-parecidos", "condicion"],
+    "consulta": "Quin percentatge de la quota s'ha de bonificar, quin és el sostre anual acumulat i en quin mes s'aplica el descompte?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.7" },
+        "texto": "El Prestador publicarà un informe mensual de disponibilitat dins dels deu (10) primers dies de cada mes.",
+        "nota": "Tercera unitat amb «mes» i «mensual»; després de plegar diacrítics comparteix tokens amb les dues necessàries."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.5" },
+        "texto": "La bonificació serà del 5 % de la quota mensual i no podrà ser mai més del 15 % acumulat anual."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.6" },
+        "texto": "La bonificació s'aplicarà com a descompte en la factura del mes següent al de la incidència."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "6.8" },
+        "texto": "Les bonificacions no meritaran interessos ni es podran compensar amb altres deutes."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "bonificacio_pct": 5,
+        "sostre_anual_pct": 15,
+        "aplicacio": "factura del mes seguent",
+        "clausules": ["6.5", "6.6"]
+      }
+    },
+    "camposCriticos": ["bonificacio_pct", "sostre_anual_pct", "aplicacio"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "aplicacio",
+      "valorErroneo": "informe mensual dins dels 10 primers dies",
+      "siSeCae": ["u2"]
+    },
+    "nota": "El cas dels DIACRÍTICS, i no és teòric. `normalizeText` de `src/canonicalization/canonicalize.ts` plega tota marca sobre base llatina, així que «més» (quantitat) i «mes» (unitat de temps) surten com el MATEIX token. u1 diu «més del 15 %» i u2 diu «el mes següent»: després de normalitzar, les dues unitats semblen parlar del mateix, i u3 —que porta «mes» i «mensual» dues vegades— sembla la més rellevant de les tres. El repositori ja va pagar aquesta factura una vegada: el 2026-08-14 es va descobrir que plegar diacrítics deixava muda una eina amb l'`intent` accentuat. Aquí el que es plega no és un identificador, és una paraula del text jurídic, i el que està en joc és si el descompte s'aplica el mes vinent o mai."
+  },
+  {
+    "id": "ct-ca-015",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "arrendamiento",
+    "dificultad": "dificil",
+    "trampas": ["unidades", "importes-parecidos"],
+    "par": "ct-es-011",
+    "consulta": "Quina és la renda mensual total amb impostos de la nau arrendada?",
+    "presupuesto": { "maxUnidades": 3 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "5.1" },
+        "texto": "La renda es fixa en 6,80 EUR per metre quadrat i mes, IVA no inclòs."
+      },
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "2.1" },
+        "texto": "La finca arrendada té una superfície construïda de 350 m²."
+      },
+      {
+        "id": "u5",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "5.6" },
+        "texto": "La fiança legal és de dues mensualitats de renda, que l'Arrendatari diposita a la signatura."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "5.4" },
+        "texto": "La finca està situada a Ceuta, per la qual cosa l'operació no està subjecta a IVA, sinó a l'Impost sobre la Producció, els Serveis i la Importació (IPSI), que l'ordenança fiscal fixa en el 4 % per a l'arrendament de naus industrials.",
+        "nota": "Abans deia «IVA al tipus legal vigent, actualment del 21 %». Un model que sap de memòria que l'IVA general espanyol és el 21 % responia bé havent tirat aquesta unitat, i el cas no mesurava res. El tipus de l'IPSI el fixa una ordenança municipal: no se sap de memòria."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte d'arrendament", "clausula": "2.2" },
+        "texto": "La finca disposa a més de 90 m² de zona d'aparcament descoberta, no computable a efectes de renda.",
+        "nota": "«a més» amb accent i «m²» a la mateixa frase: suma 90 als 350 i dona 440 m², 2.992 EUR i 3.111,68 EUR amb impostos."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "superficie_m2": 350,
+        "renda_sense_impost_eur": 2380,
+        "impost_pct": 4,
+        "impost": "IPSI",
+        "renda_amb_impost_eur": 2475.2
+      }
+    },
+    "camposCriticos": ["superficie_m2", "renda_sense_impost_eur", "impost_pct", "renda_amb_impost_eur"],
+    "citasObligatorias": ["u1", "u2", "u3"],
+    "campoTrampa": {
+      "campo": "renda_amb_impost_eur",
+      "valorErroneo": 3111.68,
+      "siSeCae": ["u3"]
+    },
+    "nota": "Parella simètrica de ct-es-011 amb xifres diferents, perquè el par mesuri l'idioma i no la memòria de la resposta. Tres unitats necessàries i pressupost de tres: qualsevol cosa que es tiri trenca el càlcul, i el resultat erroni continua sent un import ben format en euros. L'impost és l'IPSI de Ceuta al 4 % i no l'IVA al 21 % perquè el 21 % se sap de memòria i feia que tirar u2 sortís gratis."
+  },
+  {
+    "id": "ct-ca-016",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "penalizacion-por-retraso",
+    "dificultad": "media",
+    "trampas": ["condicion", "fechas-parecidas", "diacriticos"],
+    "par": "ct-es-014",
+    "consulta": "El Client reclama per carta les penalitzacions d'un retard de la fita 3. Escau el cobrament?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "7.5" },
+        "texto": "Les penalitzacions s'hauran de reclamar per escrit dins dels trenta (30) dies naturals següents al mes en què s'hagi produït el retard; transcorregut aquest termini s'entendran renunciades."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "7.4" },
+        "texto": "Les penalitzacions meritades es compensaran d'ofici amb les factures pendents de pagament al Prestador."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "registre del projecte" },
+        "texto": "Retard registrat a la fita 3: 14/03/2026. Carta de reclamació del Client: 25/04/2026."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "7.1" },
+        "texto": "Per cada dia natural de retard es meritarà una penalització del 0,5 % de la quota mensual afectada, sense que mai pugui ser més d'una quota.",
+        "nota": "«més d'una quota» aquí i «al mes en què s'hagi produït» a u1: després de plegar diacrítics són el mateix token, i «mes» és justament la paraula que decideix el còmput."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "escau": true, "data_limit": "2026-04-30", "termini_dies": 30, "clausula": "7.5" }
+    },
+    "camposCriticos": ["escau", "data_limit", "termini_dies"],
+    "citasObligatorias": ["u1", "u2"],
+    "campoTrampa": {
+      "campo": "escau",
+      "valorErroneo": false,
+      "siSeCae": ["u1"]
+    },
+    "nota": "Parella ASIMÈTRICA de ct-es-014: allà la carta arriba dos mesos tard i el dret decau; aquí arriba dins de termini i el cobrament escau. La clau és que el còmput no és «30 dies des del retard» —que donaria el 13/04 i deixaria la carta del 25/04 fora de termini— sinó «30 dies des del final del mes en què s'ha produït», és a dir el 30/04. Aquesta diferència viu en sis paraules de la clàusula 7.5, i les dues lectures donen conclusions OPOSADES: si el selector tira u1, el que queda (u3, penalització per dia) empeny cap a la lectura fàcil i la resposta surt «no escau»."
+  },
+  {
+    "id": "ct-ca-017",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "prorroga-tacita",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "negacion", "derogacion"],
+    "par": "ct-es-030",
+    "consulta": "El contracte es prorroga automàticament al venciment?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "4.5" },
+        "texto": "Les pròrrogues, si escau, es regiran per les mateixes condicions econòmiques, actualitzades segons la clàusula 6.1."
+      },
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "4.2", "fecha": "2025-11-03" },
+        "texto": "El contracte es prorrogarà tàcitament per períodes anuals successius llevat de denúncia de qualsevol de les Parts."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "4.6", "fecha": "2025-11-03" },
+        "texto": "No operarà la pròrroga tàcita: tota pròrroga del contracte requerirà acord exprés i escrit d'ambdues Parts."
+      },
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "4.1" },
+        "texto": "La durada inicial del contracte és de dotze (12) mesos des de la data de signatura."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "postures_en_conflicte": ["prorroga tacita", "prorroga nomes per acord expres"],
+        "clausules_en_conflicte": ["4.2", "4.6"],
+        "mateix_document": true,
+        "hi_ha_regla_de_prelacio": false
+      }
+    },
+    "camposCriticos": ["postures_en_conflicte", "mateix_document", "hi_ha_regla_de_prelacio"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "Parella simètrica de ct-es-030. La negació de u2 («No operarà») és la que fa el conflicte, i és la primera paraula de la unitat: una compressió que retalli capçaleres o que resumeixi la clàusula com «pròrroga: acord de les Parts» esborra el xoc i deixa dues unitats compatibles on n'hi havia dues incompatibles."
+  },
+  {
+    "id": "ct-ca-018",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "resolucion-anticipada",
+    "dificultad": "media",
+    "trampas": ["verbo-modal", "ela-geminada", "condicion"],
+    "consulta": "En resoldre's el contracte, el Prestador ha de desinstal·lar els equips o només ho pot fer si vol?",
+    "presupuesto": { "maxUnidades": 1 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "12.6" },
+        "texto": "La resolució no afectarà les obligacions de confidencialitat, que subsistiran segons la clàusula 5.4."
+      },
+      {
+        "id": "u1",
+        "papel": "necesaria",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "12.7" },
+        "texto": "En cas de resolució, el Prestador haurà de desinstal·lar els equips cedits i retirar-los de les instal·lacions del Client dins dels deu (10) dies hàbils següents."
+      },
+      {
+        "id": "u2",
+        "papel": "distractora",
+        "procedencia": { "documento": "contracte de serveis", "clausula": "12.8" },
+        "texto": "El Prestador podrà retirar la retolació i els elements de marca de les instal·lacions en qualsevol moment posterior a la resolució.",
+        "nota": "Mateix verb d'acció («retirar»), mateixes «instal·lacions», verb modal contrari."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": { "obligatori": true, "verb": "haura de", "termini_dies_habils": 10, "clausula": "12.7" }
+    },
+    "camposCriticos": ["obligatori", "verb", "termini_dies_habils"],
+    "citasObligatorias": ["u1"],
+    "campoTrampa": {
+      "campo": "obligatori",
+      "valorErroneo": false,
+      "siSeCae": ["u1"]
+    },
+    "nota": "Tres eles geminades en dues unitats («desinstal·lar», «instal·lacions» dues vegades) que `normalizeText` col·lapsa a «desinstallar» i «installacions», augmentant el solapament entre la unitat que obliga i la que faculta. Al damunt, la que faculta és la que porta el termini més laxe («en qualsevol moment»), que és la resposta còmoda."
+  },
+  {
+    "id": "ct-ca-019",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "proteccion-de-datos",
+    "dificultad": "dificil",
+    "trampas": ["derogacion", "referencia-cruzada", "fechas-parecidas"],
+    "par": "ct-es-022",
+    "consulta": "En quin format i termini ha de retornar l'Encarregat les dades en acabar el contracte?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u1",
+        "papel": "distractora",
+        "procedencia": { "documento": "annex d'encàrrec del tractament", "clausula": "14.12" },
+        "texto": "En acabar la prestació, l'Encarregat retornarà les dades personals al Responsable en el format previst a l'Annex VI i suprimirà les còpies que tingui."
+      },
+      {
+        "id": "u3",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Annex VI bis", "fecha": "2026-04-09" },
+        "texto": "Format de retorn: exportació en Parquet xifrada amb la clau pública del Responsable, dipositada al bucket S3 designat. Termini: trenta (30) dies naturals des de l'acabament."
+      },
+      {
+        "id": "u4",
+        "papel": "derogada",
+        "procedencia": { "documento": "Annex VI", "fecha": "2024-09-30" },
+        "texto": "Format de retorn: CSV en suport físic xifrat, lliurat al domicili social del Responsable. Termini: quinze (15) dies naturals des de l'acabament.",
+        "nota": "Amb pressupost de dues unitats, u1+u4 és la parella coherent: la clàusula i l'annex al qual remet. I és la parella equivocada."
+      },
+      {
+        "id": "u2",
+        "papel": "necesaria",
+        "procedencia": { "documento": "Addenda núm. 3", "clausula": "5", "fecha": "2026-04-09" },
+        "texto": "Se substitueix l'Annex VI per l'Annex VI bis. Les referències del contracte i dels seus annexos a l'Annex VI s'entendran fetes a l'Annex VI bis."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": false,
+      "campos": {
+        "format": "Parquet xifrat",
+        "canal": "bucket S3 designat",
+        "termini_dies": 30,
+        "annex_aplicable": "VI bis"
+      }
+    },
+    "camposCriticos": ["format", "canal", "termini_dies", "annex_aplicable"],
+    "citasObligatorias": ["u2", "u3"],
+    "campoTrampa": {
+      "campo": "termini_dies",
+      "valorErroneo": 15,
+      "siSeCae": ["u2", "u3"]
+    },
+    "nota": "Parella simètrica de ct-es-022. La cadena de referències té dos salts i la unitat de partida resulta prescindible: és el cas que castiga un selector que premiï la coherència entre les unitats que ja ha triat, perquè les dues peces mortes encaixen perfectament l'una amb l'altra."
+  },
+  {
+    "id": "ct-ca-020",
+    "idioma": "ca",
+    "dominio": "contratos",
+    "subdominio": "confidencialidad",
+    "dificultad": "dificil",
+    "trampas": ["abstencion", "apostrofo", "condicion"],
+    "consulta": "Quant dura el deure de confidencialitat després de l'extinció del contracte?",
+    "presupuesto": { "maxUnidades": 2 },
+    "unidades": [
+      {
+        "id": "u3",
+        "papel": "distractora",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.1" },
+        "texto": "El Receptor mantindrà la confidencialitat de tota la Informació Confidencial rebuda."
+      },
+      {
+        "id": "u1",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.4", "fecha": "2025-09-08" },
+        "texto": "El deure de confidencialitat subsistirà durant els cinc (5) anys següents a l'extinció del contracte."
+      },
+      {
+        "id": "u2",
+        "papel": "contradictoria",
+        "procedencia": { "documento": "Annex I", "clausula": "7", "fecha": "2025-09-08" },
+        "texto": "L'obligació de secret s'estén a tres (3) anys des de l'extinció del contracte."
+      },
+      {
+        "id": "u4",
+        "papel": "distractora",
+        "procedencia": { "documento": "acord de confidencialitat", "clausula": "5.8" },
+        "texto": "Aquest acord es regeix pel dret català i, en allò que no hi estigui previst, pel dret comú espanyol."
+      }
+    ],
+    "respuesta": {
+      "abstenerse": true,
+      "motivoAbstencion": "contradiccion-sin-regla-de-desempate",
+      "campos": {
+        "valors_en_conflicte_anys": [5, 3],
+        "documents_en_conflicte": ["acord cl. 5.4", "Annex I cl. 7"],
+        "hi_ha_regla_de_prelacio": false,
+        "mateixa_data": true
+      }
+    },
+    "camposCriticos": ["valors_en_conflicte_anys", "hi_ha_regla_de_prelacio", "mateixa_data"],
+    "citasObligatorias": ["u1", "u2"],
+    "nota": "El conflicte és entre el clausulat i un annex de la mateixa data, i el contracte NO té clàusula de prelació —a diferència de ct-es-010, que sí que en té—. Les dues unitats fan servir sinònims («deure de confidencialitat» i «obligació de secret») i cap de les dues repeteix el vocabulari de l'altra, de manera que un selector que busqui contradiccions per xoc de paraules no en veu cap: només xoquen els números 5 i 3, separats per dues unitats que parlen d'altres coses."
+  }
+]

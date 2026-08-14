@@ -1,0 +1,2170 @@
+{
+  "version_de_la_forma": "1.0.0",
+  "dominio": "facturacion-y-cobros",
+  "idioma": "ca",
+  "sintetico": true,
+  "advertencia": "Conjunto SINTÉTICO escrito a mano. Demuestra que un selector de evidencia no descarta un campo crítico en situaciones construidas para que descartarlo salga caro, incluidas las que dependen de un acento, de una ela geminada o de un apóstrofo. NO demuestra que el ahorro se materialice en el tráfico real de un cliente, ni que la mezcla de casos difíciles de aquí se parezca a la suya.",
+  "casos": [
+    {
+      "id": "fac-ca-001",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "facil",
+      "trampas": [],
+      "consulta": "Quin és l'import total amb IVA de la factura F-2025-021?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2025-020 · capçalera",
+          "texto": "Factura F-2025-020, emesa el 30/01/2025 al mateix client. Base imposable 1.150,00 €, total amb IVA 1.391,50 €."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "F-2025-021 · capçalera",
+          "texto": "Factura F-2025-021, emesa el 03/02/2025 a Distribucions Aran SL. Base imposable: 800,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "F-2025-021 · condicions",
+          "texto": "Condicions de pagament: transferència bancària a 30 dies data factura, al compte que consta al peu del document."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-021 · desglossament d'impostos",
+          "texto": "Sobre la base imposable de la factura F-2025-021 s'aplica l'IVA general del 21 %, que puja a 168,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_total",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "968.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u2",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell de control del fac-es-001: mateixa estructura i mateixes xifres en castellà i en català, per poder atribuir a l'idioma qualsevol diferència de resultat."
+    },
+    {
+      "id": "fac-ca-002",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "numero-gramatical",
+        "ela-geminada",
+        "apostrof",
+        "importes-parecidos"
+      ],
+      "consulta": "Quin és l'import de la despesa d'instal·lació que s'ha repercutit a la factura F-2025-118?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Condicions comercials",
+          "texto": "L'assegurança de transport és del 0,3 % sobre el valor declarat de la mercaderia."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Facturació del mes anterior",
+          "texto": "Les despeses d'instal·lació del mes anterior van ser de 41,50 € sense IVA."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "F-2025-118 · resum de despeses",
+          "texto": "Total de les despeses d'instal·lacions, embalatge i assegurança repercutides a la factura F-2025-118: 122,00 € sense IVA."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Condicions comercials",
+          "texto": "L'embalatge es factura a part quan el seu cost supera els 20,00 € per enviament."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-118 · línia 4",
+          "texto": "Línia 4: despesa d'instal·lació repercutida, 34,00 € sense IVA."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_despesa_installacio",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "34.00",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "«Instal·lació» i «instal·lacions» es diferencien en dues lletres i aquí són la diferència entre 34,00 € i 122,00 €: el plural és el total de tres conceptes. A sobre porten ela geminada, que la normalització esborra entre lletres, de manera que les dues formes queden encara més a prop. La unitat del resum té més paraules en comú amb la consulta —hi surt «despeses», «repercutides» i el número de factura— i és la que qualsevol recuperador puntua més amunt."
+    },
+    {
+      "id": "fac-ca-003",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "diacritico",
+        "fechas-parecidas"
+      ],
+      "consulta": "Quina és la data de venciment definitiva de la factura F-2025-031?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-031 · capçalera",
+          "texto": "Factura F-2025-031, emesa el 10/02/2025, amb venciment a 30 dies data factura."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Procediment intern",
+          "texto": "Les pròrrogues de venciment les autoritza el departament financer i es comuniquen sempre per escrit."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Comunicació al client",
+          "texto": "S'ha concedit una pròrroga de 15 dies naturals sobre el venciment de la factura F-2025-031, comunicada per escrit el 05/03/2025."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Estat de comptes",
+          "texto": "La factura F-2025-030 va vèncer el 10/03/2025 i es va cobrar el mateix dia."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Contracte marc · cl. 2",
+          "texto": "El contracte marc es prorroga automàticament per anualitats si cap de les parts no el denuncia amb dos mesos d'antelació."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "data_venciment",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-03-27"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "dies_de_prorroga",
+            "valor": {
+              "clase": "entero",
+              "valor": 15
+            },
+            "critico": false,
+            "citas": [
+              "u1"
+            ]
+          }
+        ]
+      },
+      "nota": "«Pròrroga» és el nom —l'ajornament del venciment— i «prorroga» és el verb —la renovació automàtica del contracte—: dos fets que no tenen res a veure i que `normalizeText` deixa iguals, perquè plega tota marca sobre base llatina. La unitat del contracte marc parla de renovacions anuals i no toca cap venciment, però després de plegar l'accent comparteix el token clau amb la consulta. És el mateix mecanisme de l'incident del 2026-08-14."
+    },
+    {
+      "id": "fac-ca-004",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "ela-geminada",
+        "identificadores-parecidos",
+        "unidades"
+      ],
+      "consulta": "Quin és l'import sense IVA de la línia de l'article MOD-CEL·LA-12 de la factura F-2025-140?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Fitxa de magatzem",
+          "texto": "Els dos articles comparteixen proveïdor i s'emmagatzemen al mateix passadís del magatzem."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-140 · línia 2",
+          "texto": "Línia 2: article MOD-CEL·LA-12 (cel·la de bateria de recanvi), 40 unitats a 18,50 €/u."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Catàleg 2025",
+          "texto": "L'article MOD-CEL·LA-12 va substituir el MOD-CEL·LA-11 el gener del 2025."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2025-140 · línia 3",
+          "texto": "Línia 3: article MOD-CELLA-12 (cella de subjecció metàl·lica), 40 unitats a 1,85 €/u."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Manual de facturació",
+          "texto": "L'import de cada línia s'obté multiplicant el nombre d'unitats pel preu unitari, abans d'impostos."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_linia",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "740.00",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "`normalizeText` esborra el punt volat entre lletres, així que MOD-CEL·LA-12 i MOD-CELLA-12 entren a la clau com el mateix codi. Són dos articles diferents de la mateixa factura, amb el mateix nombre d'unitats i preus que es diferencien en un factor de deu: 740,00 € contra 74,00 €. La regla de càlcul és tan necessària com la línia, perquè l'import no hi és escrit enlloc."
+    },
+    {
+      "id": "fac-ca-005",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "negacion",
+        "apostrof",
+        "identificadores-parecidos"
+      ],
+      "consulta": "Queda pendent alguna cosa de la factura F-2025-205?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Liquidació d'IVA",
+          "texto": "L'IVA repercutit del mes de maig s'ha ingressat dins de termini."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Estat de comptes a 30/06/2025",
+          "texto": "La factura F-2025-204 s'ha abonat íntegrament el 20/05/2025 per transferència."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Correspondència",
+          "texto": "El client ha demanat un fraccionament del deute en tres terminis mensuals."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Estat de comptes a 30/06/2025",
+          "texto": "A data de 30/06/2025 la factura F-2025-205 no s'ha abonat."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2025-205 · peu",
+          "texto": "Factura F-2025-205, de 12/05/2025: base imposable 1.250,00 €, IVA 21 % 262,50 €, total 1.512,50 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "queda_pendent",
+            "valor": {
+              "clase": "booleano",
+              "valor": true
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          },
+          {
+            "nombre": "import_pendent",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "1512.50",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "«No s'ha abonat» i «s'ha abonat» es diferencien en dues lletres i es refereixen a dues factures consecutives, la 205 i la 204. `keyTokensMatch` compta negacions i protegiria la clau de la memòria cau, però un selector d'evidència que puntua per similitud no en compta cap: les dues unitats parlen d'abonaments, del mateix client i del mateix mes."
+    },
+    {
+      "id": "fac-ca-006",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "Quin és el total de la factura F-2025-210 que s'emet a Queviures Molins?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-210 · desglossament",
+          "texto": "Els productes facturats tributen al tipus reduït del 10 %, al qual correspon un recàrrec d'equivalència de l'1,4 %."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Fitxa fiscal del client",
+          "texto": "Queviures Molins tributa en el règim especial del recàrrec d'equivalència, de manera que a les seves factures s'hi repercuteix el recàrrec a més de l'IVA."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-210 · línies",
+          "texto": "Factura F-2025-210 a Queviures Molins, comerç detallista. Base imposable de les línies facturades: 1.800,00 €."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Històric de vendes",
+          "texto": "L'any passat es van facturar 24.000,00 € a aquest client amb recàrrec d'equivalència."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Manual fiscal",
+          "texto": "El recàrrec d'equivalència el repercuteix i l'ingressa el proveïdor en la seva declaració trimestral."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Taula de tipus",
+          "texto": "Al tipus general del 21 % li correspon un recàrrec d'equivalència del 5,2 %."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "total_factura",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "2005.20",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u2",
+              "u5"
+            ]
+          },
+          {
+            "nombre": "quota_recarrec",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "25.20",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Hi ha dos parells de tipus a la vista i només un s'aplica. Amb el parell equivocat el total surt 2.271,60 € en comptes de 2.005,20 €. La unitat del règim fiscal no conté cap xifra, així que és la primera que un selector per densitat numèrica descarta, i sense ella el recàrrec desapareix del tot: 1.980,00 €."
+    },
+    {
+      "id": "fac-ca-007",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "importes-parecidos"
+      ],
+      "consulta": "Quin recàrrec per impagament s'aplica a la factura F-2025-262?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Annex de tarifes (exemplar sense datar)",
+          "texto": "El recàrrec per impagament és del 2 % sobre l'import pendent."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Expedient contractual",
+          "texto": "Cap dels dos documents no indica data ni número de versió, i cap no diu quin preval sobre l'altre."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "Condicions particulars (exemplar sense datar)",
+          "texto": "El recàrrec per impagament és del 5 % sobre l'import pendent."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "El recàrrec per impagament es liquida a la factura del mes següent."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Estat de comptes",
+          "texto": "La factura F-2025-262 va resultar impagada el 03/07/2025 per devolució del rebut domiciliat."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "desempate": {
+        "regla": "ninguna",
+        "ganadora": null,
+        "desplazadas": [],
+        "porque": "Els dos exemplars són sense datar i sense versió, cap no es remet a l'altre i no hi ha cap clàusula de prevalença entre les condicions particulars i l'annex de tarifes."
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "contradiccion-sin-regla-de-desempate",
+        "que_falta": "la data de signatura o el número de versió de cada exemplar, o una clàusula de prevalença entre les condicions particulars i l'annex de tarifes",
+        "citas": [
+          "u5",
+          "u1",
+          "u3"
+        ]
+      },
+      "nota": "Parell del fac-es-010 amb un percentatge en comptes d'un termini. Els dos recàrrecs són plausibles i qualsevol dels dos es pot citar amb una unitat real; el que no es pot fer és triar-ne un sense dir que n'hi havia dos."
+    },
+    {
+      "id": "fac-ca-008",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "excepcion",
+        "fechas-parecidas"
+      ],
+      "consulta": "Quan venç la factura F-2025-288?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2025-288 · capçalera",
+          "texto": "Factura F-2025-288, de 08/04/2025, per obra certificada el 22/04/2025."
+        },
+        {
+          "id": "u4",
+          "papel": "contradictoria",
+          "fuente": "Annex III · cl. 4.7",
+          "texto": "Clàusula 4.7 — Les factures d'obra certificada s'abonen a 60 dies naturals des de la data de certificació."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Procediment d'obra",
+          "texto": "La certificació d'obra la signa la direcció facultativa i s'adjunta a la factura."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Portal del client",
+          "texto": "El 08/04/2025 es va registrar la factura al portal de proveïdors del client."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Condicions generals · cl. 4.1",
+          "texto": "Clàusula 4.1 — Les factures s'abonen a 30 dies data factura."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Condicions generals · cl. 4.2",
+          "texto": "Clàusula 4.2 — Les factures de lloguer de maquinària s'abonen per avançat."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "clausula-especial",
+        "ganadora": "u4",
+        "desplazadas": [
+          "u2"
+        ],
+        "porque": "L'annex III regula expressament l'obra certificada, que és el concepte d'aquesta factura, i a més canvia el dia des del qual es compta el termini."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "data_venciment",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-06-21"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u3"
+            ]
+          },
+          {
+            "nombre": "dies_de_termini",
+            "valor": {
+              "clase": "entero",
+              "valor": 60
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "L'excepció no només allarga el termini: en canvia el dia inicial, que passa de la data de factura a la de certificació. Hi ha dues dates a la capçalera i la que compta és la segona. Amb la clàusula general surt 08/05/2025; comptant 60 dies des de la factura, 07/06/2025; el bo és 21/06/2025."
+    },
+    {
+      "id": "fac-ca-009",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "con-iva-sin-iva"
+      ],
+      "consulta": "Quin és el total amb IVA de la factura F-2025-301?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Condicions d'enviament",
+          "texto": "El transport dels llibres es factura a part quan la comanda no arriba a 300,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-301 · línies",
+          "texto": "Factura F-2025-301: base imposable 640,00 € per subministrament de llibres en paper."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Catàleg",
+          "texto": "Els llibres electrònics tributen al mateix tipus que els de paper."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Taula de tipus",
+          "texto": "El material d'oficina tributa al tipus general del 21 %."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Taula de tipus",
+          "texto": "Els llibres en paper tributen al tipus superreduït del 4 %."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "total_factura",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "665.60",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u3"
+            ]
+          },
+          {
+            "nombre": "quota_iva",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "25.60",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": false,
+            "citas": [
+              "u5",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "Tres tipus a la vista i el que val és el menys freqüent. Amb el general el total puja a 774,40 €, un 16 % més."
+    },
+    {
+      "id": "fac-ca-010",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "referencia-cruzada",
+        "importes-parecidos",
+        "apostrof"
+      ],
+      "consulta": "Quin tipus d'interès de demora s'aplica a la factura F-2025-410, impagada des del juliol del 2025?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Butlletí de tipus",
+          "texto": "El tipus aplicat pel Banc Central Europeu a la seva operació principal de finançament vigent l'01/07/2025 és del 2,90 %."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Butlletí de tipus",
+          "texto": "L'interès legal dels diners per a l'exercici 2025 es fixa en el 3,25 %."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 8.1",
+          "texto": "Clàusula 8.1 — L'import impagat meritarà l'interès de demora previst a la clàusula 4.2 des de l'endemà del venciment."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 4.2",
+          "texto": "Clàusula 4.2 — L'interès de demora serà el tipus aplicat pel Banc Central Europeu a la seva operació principal de finançament més vuit punts percentuals."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Contracte · cl. 4.3",
+          "texto": "Clàusula 4.3 — Les despeses de devolució bancària es repercuteixen al client al cost que facturi l'entitat."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Contracte · cl. 13",
+          "texto": "Clàusula 13 — Les reclamacions s'adrecen al departament d'administració del proveïdor."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "tipus_de_demora",
+            "valor": {
+              "clase": "porcentaje",
+              "valor": "10.90"
+            },
+            "critico": true,
+            "citas": [
+              "u1",
+              "u6",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-013 amb un tipus diferent. La clàusula que respon la consulta no conté la resposta: remet a una altra, i aquesta remet a una dada que és a una tercera unitat. Pel camí hi ha l'interès legal del 3,25 %, que s'assembla al 2,90 % del BCE i no és el que mana."
+    },
+    {
+      "id": "fac-ca-011",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "verbo-modal",
+        "condicion",
+        "ela-geminada"
+      ],
+      "consulta": "El client estava obligat a comunicar la disconformitat amb la factura F-2025-315? Quin efecte té no haver-ho fet?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 9.1",
+          "texto": "Clàusula 9.1 — El client haurà de comunicar per escrit qualsevol disconformitat amb la factura dins dels 7 dies naturals següents a la recepció."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 9.3",
+          "texto": "Clàusula 9.3 — Transcorregut el termini de la clàusula 9.1 sense comunicació, la factura es té per conforme i acceptada a tots els efectes."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Contracte · cl. 9.2",
+          "texto": "Clàusula 9.2 — El client podrà sol·licitar l'ajornament del pagament de la factura, que l'empresa valorarà cas per cas."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Justificant de recepció",
+          "texto": "La factura F-2025-315 es va lliurar al client el 03/02/2025 i el justificant va quedar signat el mateix dia."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "Les factures es trameten en PDF signat electrònicament i s'arxiven durant sis anys."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Contracte · cl. 9.4",
+          "texto": "Clàusula 9.4 — Les comunicacions s'adrecen a l'adreça d'administració que consta al peu de la factura."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "comunicacio_obligatoria",
+            "valor": {
+              "clase": "booleano",
+              "valor": true
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          },
+          {
+            "nombre": "data_limit_comunicacio",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-02-10"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "factura_te_per_conforme",
+            "valor": {
+              "clase": "booleano",
+              "valor": true
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u6"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-014. «Haurà de» i «podrà» distingeixen l'obligació de la facultat, i les dues clàusules parlen del que fa el client amb la factura. La 9.2 porta a més una ela geminada a «sol·licitar»: després de la normalització el verb queda «sollicitar», i la unitat continua sent la que més s'assembla a una consulta sobre què pot fer el client."
+    },
+    {
+      "id": "fac-ca-012",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "abstencion",
+        "con-iva-sin-iva"
+      ],
+      "consulta": "Quin import cobrarà el professional per la factura P-2025-044?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Expedient d'un altre proveïdor",
+          "texto": "Un altre professional del mateix despatx factura amb una retenció del 15 % sobre la base imposable."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Condicions de pagament",
+          "texto": "El pagament es farà per transferència el dia 10 del mes següent a la recepció."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "P-2025-044 · observacions",
+          "texto": "A la factura hi consta que s'aplica retenció d'IRPF, però no s'hi indica el tipus ni l'import retingut."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "P-2025-044 · desglossament",
+          "texto": "Factura P-2025-044 d'un professional autònom: base imposable 1.900,00 €, IVA repercutit al 21 % 399,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Manual fiscal",
+          "texto": "El pagador ingressa les retencions practicades amb el model 111 trimestral."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "evidencia-insuficiente",
+        "que_falta": "el tipus de retenció d'IRPF aplicat a la factura P-2025-044: cap unitat no el diu i el 15 % que apareix és d'un altre professional",
+        "citas": [
+          "u1",
+          "u5"
+        ]
+      },
+      "nota": "Hi ha un 15 % a la vista i és d'un altre expedient. Amb ell la resposta surt 2.014,00 € i és perfectament citable. La unitat que salva el cas és la que diu que hi ha retenció però no el tipus: és una frase sense cap xifra, i per tant la primera que cau."
+    },
+    {
+      "id": "fac-ca-013",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "importes-parecidos",
+        "identificadores-parecidos"
+      ],
+      "consulta": "Quin import s'ha de pagar per la factura F-2025-320?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Correspondència",
+          "texto": "El client va demanar que se li agrupessin els venciments de les dues factures."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Estat de comptes",
+          "texto": "La suma de les dues factures és de 6.266,40 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2025-321 · peu",
+          "texto": "Factura F-2025-321, de 09/06/2025. Total amb IVA: 3.151,20 €."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-320 · peu",
+          "texto": "Factura F-2025-320, de 09/06/2025. Total amb IVA: 3.115,20 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Registre de trameses",
+          "texto": "Les dues factures es van enviar al client el mateix dia i amb el mateix assumpte al correu."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_a_pagar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "3115.20",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "3.115,20 i 3.151,20 tenen dues xifres intercanviades, les factures són consecutives i van sortir el mateix dia amb el mateix assumpte. Tres unitats de cinc parlen de totes dues alhora, així que la que cal conservar és justament la que només parla d'una."
+    },
+    {
+      "id": "fac-ca-014",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "importes-parecidos",
+        "numero-gramatical"
+      ],
+      "consulta": "Quant deu el client de la factura F-2025-333 després de la devolució del rebut?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Procediment de cobrament",
+          "texto": "La despesa de gestió d'un segon intent de cobrament és de 4,00 € i va a càrrec del creditor."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Tarifes de l'entitat",
+          "texto": "L'entitat cobra al creditor una comissió de 3,50 € per cada rebut retornat."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Procediment de cobrament",
+          "texto": "El segon intent de cobrament es fa als 15 dies de la devolució."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Avís de devolució",
+          "texto": "El rebut domiciliat de la factura F-2025-333, per 847,00 €, ha estat retornat per l'entitat del client el 12/09/2025."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Mandat de domiciliació",
+          "texto": "El mandat de domiciliació continua vigent i no ha estat revocat pel client."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 7",
+          "texto": "Clàusula 7 — Les despeses de devolució de rebut, de 12,00 €, es repercuteixen al client i s'afegeixen a l'import pendent."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_total_a_pagar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "859.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u1",
+              "u5"
+            ]
+          },
+          {
+            "nombre": "despeses_repercutides",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "12.00",
+              "moneda": "EUR",
+              "base": "no-aplica"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Hi ha tres imports de despeses i només un es repercuteix al client: la comissió de 3,50 € i la despesa de gestió de 4,00 € les paga el creditor. «Les despeses de devolució» (plural, al client) i «la despesa de gestió» (singular, al creditor) es diferencien en una lletra i en qui les paga; amb la xifra equivocada el deute surt 850,50 € o 851,00 € en comptes de 859,00 €."
+    },
+    {
+      "id": "fac-ca-015",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "derogacion",
+        "fechas-parecidas"
+      ],
+      "consulta": "Quan venç la factura F-2025-350?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "Addenda al contracte · cl. 6 bis",
+          "fecha": "2025-02-01",
+          "texto": "Clàusula 6 bis — El termini de pagament passa a ser de 45 dies data factura i deixa sense efecte el termini de la clàusula 6."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Circular interna 2024/07",
+          "fecha": "2024-05-20",
+          "texto": "Recordeu als comercials que el termini estàndard de pagament de la companyia és de 30 dies."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2025-350 · capçalera",
+          "texto": "Factura F-2025-350, emesa el 20/03/2025 per 8.712,00 € impostos inclosos."
+        },
+        {
+          "id": "u6",
+          "papel": "contradictoria",
+          "fuente": "Contracte de manteniment · cl. 6",
+          "fecha": "2023-03-01",
+          "texto": "Clàusula 6 — El termini de pagament és de 30 dies data factura."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Contracte de manteniment · cl. 14",
+          "fecha": "2023-03-01",
+          "texto": "Clàusula 14 — El contracte es renova tàcitament per anualitats llevat de denúncia amb dos mesos d'antelació."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Addenda al contracte · cl. 2",
+          "fecha": "2025-02-01",
+          "texto": "L'addenda designa també un nou interlocutor tècnic per al servei a partir de l'01/03/2025."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "fecha-posterior",
+        "ganadora": "u5",
+        "desplazadas": [
+          "u6"
+        ],
+        "porque": "L'addenda és de l'01/02/2025, posterior al contracte del 2023, i declara expressament que deixa sense efecte el termini de la clàusula 6."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "data_venciment",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-05-04"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u3"
+            ]
+          },
+          {
+            "nombre": "dies_de_termini",
+            "valor": {
+              "clase": "entero",
+              "valor": 45
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell exacte del fac-es-019: mateixes dates, mateixes xifres i mateixa estructura, en català. Serveix per comprovar que la degradació per idioma, si n'hi ha, no s'explica per una diferència de dificultat del cas."
+    },
+    {
+      "id": "fac-ca-016",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "La comanda C-2025-812 supera el límit de crèdit del client?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Política de riscos",
+          "texto": "El límit de crèdit de cada client es revisa cada sis mesos pel comitè de riscos."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "C-2025-812 · resum",
+          "texto": "Comanda C-2025-812: base imposable 4.800,00 €."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Fitxa de risc del client",
+          "texto": "El límit de crèdit concedit al client és de 5.000,00 €, referit a base imposable i sense incloure-hi impostos."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Estat de comptes",
+          "texto": "El client no té factures vençudes impagades a data d'avui."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "C-2025-812 · peu",
+          "texto": "L'import total de la comanda C-2025-812, impostos inclosos, puja a 5.808,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "supera_limit",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u1",
+              "u5"
+            ]
+          },
+          {
+            "nombre": "marge_disponible",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "200.00",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u1",
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-021. Les dues xifres que cal comparar són sobre bases diferents i el document ofereix el total amb impostos al costat. La frase que salva el cas —«referit a base imposable i sense incloure-hi impostos»— és una cua al final d'una unitat de riscos."
+    },
+    {
+      "id": "fac-ca-017",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "derogacion",
+        "importes-parecidos",
+        "identificadores-parecidos"
+      ],
+      "consulta": "Quant s'ha de pagar per la factura F-2025-360?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "Les factures rectificatives porten sèrie pròpia i s'han de referir expressament a la factura que rectifiquen."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "R-2025-021 · cos",
+          "fecha": "2025-05-20",
+          "texto": "Factura rectificativa R-2025-021, de 20/05/2025, que rectifica íntegrament la factura F-2025-360 i la substitueix: base imposable 1.400,00 €, IVA 21 % 294,00 €, total 1.694,00 €."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "R-2025-021 · motiu",
+          "texto": "El motiu de la rectificació és un descompte pactat després de l'emissió de la factura."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Recordatori de pagament",
+          "fecha": "2025-05-15",
+          "texto": "Recordatori enviat el 15/05/2025: consta pendent la factura F-2025-360 per import de 1.936,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "contradictoria",
+          "fuente": "F-2025-360 · peu",
+          "fecha": "2025-05-02",
+          "texto": "Factura F-2025-360, de 02/05/2025: base imposable 1.600,00 €, IVA 21 % 336,00 €, total 1.936,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "desempate": {
+        "regla": "rectificativa",
+        "ganadora": "u5",
+        "desplazadas": [
+          "u3",
+          "u2"
+        ],
+        "porque": "La rectificativa R-2025-021 declara que rectifica íntegrament la F-2025-360 i la substitueix; el recordatori del 15/05 és anterior i repeteix la xifra antiga."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_a_pagar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "1694.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          },
+          {
+            "nombre": "document_aplicable",
+            "valor": {
+              "clase": "identificador",
+              "valor": "R-2025-021"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-004 amb un pressupost més estret: només hi caben dues unitats de cinc i dues de les cinc diuen la xifra derogada, una d'elles en un requeriment de pagament, que és el document que més s'assembla a la consulta."
+    },
+    {
+      "id": "fac-ca-018",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "identificadores-parecidos"
+      ],
+      "consulta": "Quant suma la 118?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Resum anual",
+          "texto": "El total facturat el 2025 puja a 214.300,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "Les sèries de vendes i d'abonaments comparteixen numeració correlativa des del 2019."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Sèrie d'abonaments · 2025",
+          "texto": "Factura A-2025-118 (sèrie d'abonaments): total -940,50 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Correspondència",
+          "texto": "El client demana que se li trameti el detall per correu abans del tancament del mes."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Sèrie de vendes · 2025",
+          "texto": "Factura F-2025-118 (sèrie de vendes): total 12.480,55 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "identificador-ambiguo",
+        "que_falta": "la sèrie a què es refereix «la 118»: hi ha dos documents amb aquest número, de sèries diferents i de signe contrari",
+        "citas": [
+          "u4",
+          "u2"
+        ]
+      },
+      "nota": "Parell del fac-es-018. L'abreviatura és la mateixa en els dos idiomes i les dues sèries comparteixen numeració; la diferència entre les dues respostes possibles és de 13.421,05 € amb el signe canviat."
+    },
+    {
+      "id": "fac-ca-019",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "condicion",
+        "fechas-parecidas",
+        "importes-parecidos"
+      ],
+      "consulta": "A més del principal, què pot reclamar el creditor per la factura F-2025-370 a data de 30/06/2025?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 10",
+          "texto": "Clàusula 10 — L'interès de demora pactat és del 10,90 % anual, calculat sobre l'import degut per dies naturals de retard i sobre una base de 365 dies."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "F-2025-370 · capçalera",
+          "texto": "La factura F-2025-370 es va emetre el 10/04/2025."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Manual comptable",
+          "texto": "Els interessos de demora meritats es liquiden al tancament de cada exercici."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Expedient de reclamació",
+          "texto": "El requeriment de pagament es va enviar per burofax el 02/06/2025 amb justificant de recepció."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 11",
+          "texto": "Clàusula 11 — En cas de mora, el creditor podrà reclamar a més una indemnització fixa de 40,00 € per despeses de cobrament, sense necessitat de requeriment previ."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Estat de comptes",
+          "texto": "La factura F-2025-370, per 2.420,00 €, va vèncer el 10/05/2025 i continua impagada el 30/06/2025."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "dies_de_mora",
+            "valor": {
+              "clase": "entero",
+              "valor": 51
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          },
+          {
+            "nombre": "interessos_de_demora",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "36.86",
+              "moneda": "EUR",
+              "base": "no-aplica"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "indemnitzacio_despeses",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "40.00",
+              "moneda": "EUR",
+              "base": "no-aplica"
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-022 amb un altre tipus i un altre principal. La mora es compta des del venciment i no des de l'emissió, i totes dues dates hi són: comptar des del 10/04 dona 81 dies i 58,54 € en comptes de 36,86 €. Els 40,00 € viuen en una clàusula a part i no depenen de cap càlcul, només que algú conservi la unitat."
+    },
+    {
+      "id": "fac-ca-020",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "derogacion",
+        "fechas-parecidas"
+      ],
+      "consulta": "Quin és el termini de pagament exigible de la factura F-2025-500 i quan venç?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Nota del departament jurídic",
+          "texto": "En les operacions entre empreses el termini de pagament no pot excedir els 60 dies naturals, i el pacte que el superi es té per no posat."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Expedient contractual",
+          "texto": "El contracte de subministrament es va signar el 14/01/2024 i no ha estat modificat."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Contracte de subministrament · cl. 6",
+          "texto": "Clàusula 6 — Les parts acorden un termini de pagament de 90 dies data factura."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Política comercial",
+          "texto": "El proveïdor concedeix habitualment 90 dies als seus millors clients."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-500 · capçalera",
+          "texto": "Factura F-2025-500, emesa el 02/06/2025 entre dues societats mercantils."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "jerarquia-documental",
+        "ganadora": "u1",
+        "desplazadas": [
+          "u2"
+        ],
+        "porque": "La nota jurídica recull un límit imperatiu que s'imposa al pacte entre les parts: el termini pactat per sobre del màxim es té per no posat."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "dies_de_termini",
+            "valor": {
+              "clase": "entero",
+              "valor": 60
+            },
+            "critico": true,
+            "citas": [
+              "u1"
+            ]
+          },
+          {
+            "nombre": "data_venciment",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-08-01"
+            },
+            "critico": true,
+            "citas": [
+              "u1",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-027. El document amb més aparença d'autoritat diu 90 dies i el que mana és una nota interna sense número de clàusula."
+    },
+    {
+      "id": "fac-ca-021",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "condicion",
+        "fechas-parecidas"
+      ],
+      "consulta": "S'aplica el descompte per pagament immediat a la factura F-2025-380?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Condicions de l'entitat",
+          "texto": "El banc aplica data valor del mateix dia a les transferències rebudes abans de les 14.00."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2025-380 · capçalera",
+          "texto": "Factura F-2025-380, emesa el 02/04/2025. Total amb IVA: 4.840,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Condicions comercials · ap. 4",
+          "texto": "Descompte per pagament immediat del 2 % sobre el total de la factura, sempre que el pagament es rebi dins dels 10 dies naturals següents a la data d'emissió."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Extracte bancari",
+          "texto": "Transferència rebuda el 14/04/2025 per 4.840,00 €, amb la referència F-2025-380 al concepte."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Acord d'ajornament",
+          "texto": "El client té concedit un ajornament de 30 dies per a les factures emeses el desembre."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "El descompte per pagament immediat es documenta amb una factura rectificativa de sèrie R."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "s_aplica_descompte",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u5",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "data_limit_descompte",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-04-12"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u5"
+            ]
+          },
+          {
+            "nombre": "import_a_pagar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "4840.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u6"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-007. Calen tres unitats alhora —emissió, condició i data de cobrament— i la de la condició és la que més s'assembla a la consulta i la que menys serveix tota sola. Si cau la de l'extracte, no hi ha manera de saber que va arribar tard i la resposta s'inverteix."
+    },
+    {
+      "id": "fac-ca-022",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "facil",
+      "trampas": [],
+      "consulta": "Quina factura rectifica la R-2025-021?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "Les factures rectificatives porten sèrie R i numeració pròpia dins de l'exercici."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "R-2025-021 · cos",
+          "texto": "La factura rectificativa R-2025-021 rectifica íntegrament la factura F-2025-360 i la substitueix."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Llibre registre",
+          "texto": "La factura F-2025-361 es va emetre el mateix dia que la F-2025-359 i cap de les dues no ha estat rectificada."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "R-2025-021 · motiu",
+          "texto": "El motiu de la rectificació és un descompte pactat després de l'emissió."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "factura_rectificada",
+            "valor": {
+              "clase": "identificador",
+              "valor": "F-2025-360"
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Cas de terra en català: la resposta és literal en una unitat i l'única distractora amb un identificador porta un número consecutiu."
+    },
+    {
+      "id": "fac-ca-023",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "diacritico",
+        "derogacion",
+        "condicion"
+      ],
+      "consulta": "Quin recàrrec per retard s'aplica a la factura F-2025-390?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Estadística interna",
+          "texto": "El 2024 es van aplicar 14 recàrrecs per retard, per un total de 3.180,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "Condicions generals · cl. 5.4",
+          "fecha": "2025-01-01",
+          "version": "2025-01",
+          "texto": "Clàusula 5.4, en vigor des de l'01/01/2025, que substitueix la clàusula 5.2 — S'aplicarà un recàrrec únic del 5 % sobre l'import degut quan el retard sigui de més d'un mes."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "El recàrrec per retard es liquida a la factura del mes següent al pagament."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Estat de comptes",
+          "texto": "La factura F-2025-390, per 1.000,00 €, va vèncer el 15/03/2025 i es va pagar el 29/05/2025, amb 75 dies de retard."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Condicions generals · cl. 5.2",
+          "version": "2019-06",
+          "texto": "Clàusula 5.2 — S'aplicarà un recàrrec del 5 % sobre l'import degut per cada mes de retard iniciat."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "version-posterior",
+        "ganadora": "u5",
+        "desplazadas": [
+          "u2"
+        ],
+        "porque": "La redacció de gener del 2025 de la clàusula 5.4 declara que substitueix la 5.2, i el retard és posterior a la seva entrada en vigor."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "nombre_de_recarrecs",
+            "valor": {
+              "clase": "entero",
+              "valor": 1
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u4"
+            ]
+          },
+          {
+            "nombre": "recarrec_aplicat",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "50.00",
+              "moneda": "EUR",
+              "base": "no-aplica"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "«Per cada mes de retard» i «de més d'un mes» es diferencien en un accent, i l'accent és tota la resposta: un recàrrec de 50,00 € contra tres de 150,00 €. `normalizeText` plega la marca sobre base llatina, així que «mes» i «més» entren a la clau com el mateix token i les dues clàusules queden gairebé idèntiques; el que les separa és quina versió mana."
+    },
+    {
+      "id": "fac-ca-024",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "apostrof",
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "Quina quota d'IVA s'ha de liquidar d'aquest trimestre?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Manual fiscal",
+          "texto": "La quota a liquidar s'obté restant de l'IVA repercutit l'IVA suportat deduïble del mateix període."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Llibre d'IVA suportat · 2T 2025",
+          "texto": "L'IVA suportat no deduïble del segon trimestre del 2025 puja a 340,00 €."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Llibre d'IVA repercutit · 1T 2025",
+          "texto": "L'IVA repercutit del primer trimestre del 2025 va ser de 7.980,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Llibre d'IVA repercutit · 2T 2025",
+          "texto": "L'IVA repercutit del segon trimestre del 2025 puja a 8.410,00 €."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Llibre d'IVA suportat · 2T 2025",
+          "texto": "L'IVA suportat deduïble del segon trimestre del 2025 puja a 5.925,50 €."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Calendari fiscal",
+          "texto": "La declaració trimestral es presenta el dia 20 del mes següent al tancament del trimestre."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "quota_a_liquidar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "2484.50",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u2",
+              "u1"
+            ]
+          }
+        ]
+      },
+      "nota": "Quatre unitats parlen d'IVA d'un trimestre i només tres entren al càlcul. La del suportat NO deduïble és la trampa caríssima: restar-la també dona 2.144,50 € i és exactament l'error que fa que una declaració surti malament sense que cap xifra sembli inventada. La regla de càlcul no porta cap import i és la primera candidata a caure."
+    },
+    {
+      "id": "fac-ca-025",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "referencia-cruzada",
+        "fechas-parecidas"
+      ],
+      "consulta": "Quin recàrrec per gestió d'impagats correspon a la factura F-2025-402?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Contracte · cl. 12 bis",
+          "texto": "L'annex III s'actualitza cada any per acord escrit de les parts abans del 31 de desembre."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Estat de comptes",
+          "texto": "La factura F-2025-402 va resultar impagada el 15/03/2025 després de la devolució del rebut domiciliat."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Contracte · cl. 12",
+          "texto": "Clàusula 12 — El recàrrec per gestió d'impagats serà el que consti a l'annex III de tarifes vigent en la data de l'impagament."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Manual de facturació",
+          "texto": "El recàrrec per gestió d'impagats es factura en un document a part del deute principal."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Annex III de tarifes · edició 2024",
+          "fecha": "2024-01-01",
+          "texto": "Annex III de tarifes, vigent de l'01/01/2024 al 31/12/2024: el recàrrec per gestió d'impagats és del 3 %."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "evidencia-caducada",
+        "que_falta": "l'annex III de tarifes vigent el març del 2025: l'únic annex disponible va deixar d'estar vigent el 31/12/2024",
+        "citas": [
+          "u3",
+          "u2",
+          "u5"
+        ]
+      },
+      "nota": "Parell del fac-es-023. El 3 % és escrit, és de l'annex correcte i respon exactament el que es pregunta; l'únic que l'invalida són les dues dates de vigència del començament de la unitat i la data de l'impagament, que és del 2025."
+    },
+    {
+      "id": "fac-ca-026",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "excepcion",
+        "condicion",
+        "con-iva-sin-iva"
+      ],
+      "consulta": "Quant cobrarà el professional per la factura P-2025-018?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Històric de factures",
+          "texto": "El 2023 se li va aplicar a aquest professional el tipus del 15 % en totes les factures."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Instrucció de retencions · ap. 1",
+          "texto": "Retenció general d'IRPF aplicable a les factures de professionals: 15 % sobre la base imposable."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Manual fiscal",
+          "texto": "El pagador ingressa les retencions practicades amb el model 111 trimestral."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "P-2025-018 · desglossament",
+          "texto": "Factura P-2025-018, de 14/03/2025: base imposable 2.400,00 €, IVA repercutit al 21 % 504,00 €."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Expedient del proveïdor",
+          "texto": "El professional va iniciar l'activitat l'01/09/2024 i va comunicar per escrit l'aplicació del tipus reduït el 03/09/2024."
+        },
+        {
+          "id": "u3",
+          "papel": "contradictoria",
+          "fuente": "Instrucció de retencions · ap. 3",
+          "texto": "Els professionals podran aplicar el tipus reduït del 7 % l'any d'inici de l'activitat i els dos següents, sempre que ho comuniquin per escrit al pagador."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "desempate": {
+        "regla": "clausula-especial",
+        "ganadora": "u3",
+        "desplazadas": [
+          "u2"
+        ],
+        "porque": "El tipus reduït desplaça el general quan es compleixen les seves dues condicions —ser dins dels tres primers anys d'activitat i haver-ho comunicat per escrit—, i l'evidència acredita totes dues."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "retencio_aplicada",
+            "valor": {
+              "clase": "porcentaje",
+              "valor": "7.00"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "import_a_percebre",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "2736.00",
+              "moneda": "EUR",
+              "base": "neto-a-percibir"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u6",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-031. L'excepció té dues condicions i totes dues s'acrediten en una unitat diferent de la que les enuncia. Amb el 15 % el professional cobra 2.544,00 € en comptes de 2.736,00 €."
+    },
+    {
+      "id": "fac-ca-027",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "Quant queda pendent de la factura F-2025-410 després de la nota d'abonament?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "NC-2025-055 · peu",
+          "texto": "Nota d'abonament NC-2025-055 sobre la F-2025-410: base 500,00 €, IVA 21 % 105,00 €, total 605,00 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Estat de comptes",
+          "texto": "El saldo del client abans d'aquesta operació era de 3.630,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Correspondència",
+          "texto": "El client va reclamar per correu electrònic el 12/06/2025 i va adjuntar l'albarà signat."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Albarà de devolució",
+          "texto": "L'abonament correspon a dues unitats no servides de l'article ART-12, per un import de 500,00 €."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "F-2025-410 · peu",
+          "texto": "Factura F-2025-410: base imposable 2.000,00 €, IVA 21 % 420,00 €, total 2.420,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "import_pendent",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "1815.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u2",
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Parell del fac-es-025. L'albarà ofereix els 500,00 € de base, que és la xifra que es resta si falta el peu de la nota d'abonament: dona 1.920,00 € i es deixa l'IVA pel camí."
+    },
+    {
+      "id": "fac-ca-028",
+      "idioma": "ca",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "unidades",
+        "numero-gramatical",
+        "condicion",
+        "importes-parecidos"
+      ],
+      "consulta": "Quin és l'import sense IVA de la comanda C-2025-900?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Tarifa vigent 2025",
+          "texto": "L'article ART-76 es factura a 3,45 €/unitat sense trams de volum."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Condicions d'enviament",
+          "texto": "Les comandes superiors a 500,00 € tenen els ports pagats."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Condicions comercials",
+          "texto": "El descompte per volum no s'acumula amb el descompte comercial de campanya."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Històric de comandes",
+          "texto": "L'any passat es van servir 99 unitats de l'ART-77 en una sola comanda."
+        },
+        {
+          "id": "u7",
+          "papel": "necesaria",
+          "fuente": "C-2025-900 · línies",
+          "texto": "Comanda C-2025-900: 120 unitats de l'article ART-77."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condicions comercials",
+          "texto": "El tram de preu es determina per les unitats de cada comanda, no per les comandes acumulades de l'any."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Tarifa vigent 2025",
+          "texto": "L'article ART-77 es factura a 3,45 €/unitat per a comandes de fins a 99 unitats i a 3,10 €/unitat a partir de 100 unitats."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "preu_unitari_aplicat",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "3.10",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u7",
+              "u6",
+              "u2"
+            ]
+          },
+          {
+            "nombre": "import_linia",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "372.00",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u7",
+              "u6",
+              "u2"
+            ]
+          }
+        ]
+      },
+      "nota": "El preu depèn del tram, el tram depèn de la quantitat i «cada comanda» contra «les comandes acumulades» decideix quina quantitat compta: amb les 99 unitats de l'any passat sumades, el tram tampoc no canvia, però amb la lectura acumulada d'un any sencer sí que ho faria. Amb el preu de l'altre tram surten 414,00 € en comptes de 372,00 €, i amb la tarifa de l'ART-76 —que és un article diferent amb el mateix preu base— també."
+    }
+  ]
+}

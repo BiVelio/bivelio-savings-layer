@@ -1,0 +1,2515 @@
+{
+  "version_de_la_forma": "1.0.0",
+  "dominio": "facturacion-y-cobros",
+  "idioma": "es",
+  "sintetico": true,
+  "advertencia": "Conjunto SINTÉTICO escrito a mano. Demuestra que un selector de evidencia no descarta un campo crítico en situaciones construidas para que descartarlo salga caro. NO demuestra que el ahorro se materialice en el tráfico real de un cliente, ni que la mezcla de casos difíciles de aquí se parezca a la suya.",
+  "casos": [
+    {
+      "id": "fac-es-001",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "facil",
+      "trampas": [],
+      "consulta": "¿Cuál es el importe total con IVA de la factura F-2025-014?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-014 · desglose de impuestos",
+          "texto": "A la base imponible de la factura F-2025-014 se le aplica el IVA general del 21 %, que asciende a 168,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Ficha del cliente",
+          "texto": "Distribuciones Arán SL tiene concedido un límite de crédito de 10.000,00 €, que se revisa cada año."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2025-013 · cabecera",
+          "texto": "Factura F-2025-013, emitida el 30/01/2025 al mismo cliente. Base imponible 1.150,00 €, total con IVA 1.391,50 €."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "F-2025-014 · condiciones",
+          "texto": "Condiciones de pago: transferencia bancaria a 30 días fecha factura, al IBAN que consta al pie del documento."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-014 · cabecera",
+          "texto": "Factura F-2025-014, emitida el 03/02/2025 a Distribuciones Arán SL. Base imponible: 800,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_total",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "968.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u4"
+            ]
+          },
+          {
+            "nombre": "cuota_iva",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "168.00",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": false,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Caso de control. Existe para tener suelo: si un selector falla aquí, lo que falle en los difíciles no informa de nada."
+    },
+    {
+      "id": "fac-es-002",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "identificadores-parecidos",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuál es el total con IVA de la factura F-2024-118?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Libro registro de facturas emitidas",
+          "texto": "En el ejercicio 2024 la serie F llegó hasta el número 1.240, con un total facturado de 2.146.300,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "F-2024-118 · condiciones",
+          "texto": "La factura F-2024-118 vence el 30/08/2024 y se cobrará mediante recibo domiciliado."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "F-2024-1118 · pie",
+          "texto": "Factura F-2024-1118 (serie F, ejercicio 2024). Base imponible 10.255,00 €, cuota de IVA al 21 % 2.153,55 €, total 12.408,55 €."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2024-118 · pie",
+          "texto": "Factura F-2024-118 (serie F, ejercicio 2024). Base imponible 10.314,50 €, cuota de IVA al 21 % 2.166,05 €, total 12.480,55 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_total",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "12480.55",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Los dos números se parecen (12.480,55 y 12.408,55) y los dos identificadores también (118 y 1118). Un recuperador por similitud trae las dos facturas; el selector tiene que quedarse con la del número exacto, no con la del número parecido."
+    },
+    {
+      "id": "fac-es-003",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Cuándo vence la factura F-2024-540?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Extracto de recibos",
+          "texto": "El recibo domiciliado inmediatamente anterior de este cliente venció el 30/08/2024 por 3.146,00 €."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Portal del proveedor",
+          "texto": "El portal del cliente muestra la factura con fecha 06/30/2024, en el formato mes/día que usa su matriz estadounidense."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Registro contable",
+          "texto": "La factura F-2024-540 se registró en contabilidad el 05/07/2024 y se archivó con el asiento 2024/3118."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Albarán 2024-1902",
+          "texto": "La mercancía de la factura F-2024-540 se entregó el 02/07/2024 y el albarán se firmó sin reservas."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "F-2024-540 · cabecera",
+          "texto": "Factura F-2024-540, fecha de emisión 30/06/2024, por 4.235,00 € impuestos incluidos."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Contrato de suministro · cl. 5",
+          "texto": "El pago de las facturas se efectuará a 60 días naturales contados desde la fecha de factura."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "fecha_vencimiento",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2024-08-29"
+            },
+            "critico": true,
+            "citas": [
+              "u1",
+              "u4"
+            ]
+          },
+          {
+            "nombre": "dias_de_plazo",
+            "valor": {
+              "clase": "entero",
+              "valor": 60
+            },
+            "critico": false,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Hay cinco fechas en la evidencia y solo dos cuentan: emisión y plazo. Las otras tres son fechas de verdad del mismo expediente (registro, entrega, recibo anterior) y una es la misma fecha escrita al revés, 06/30/2024. El vencimiento correcto, 29/08/2024, no aparece escrito en ninguna unidad: hay que calcularlo, así que no se puede acertar reteniendo la unidad que «suena» a vencimiento."
+    },
+    {
+      "id": "fac-es-004",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "derogacion",
+        "importes-parecidos",
+        "identificadores-parecidos"
+      ],
+      "consulta": "¿Cuánto hay que pagar por la factura F-2024-207?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "Las facturas rectificativas se emiten en serie propia y deben referirse expresamente a la factura que rectifican."
+        },
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "F-2024-207 · pie",
+          "fecha": "2024-06-28",
+          "texto": "Factura F-2024-207, de 28/06/2024: base imponible 3.000,00 €, IVA 21 % 630,00 €, total 3.630,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "R-2024-014 · cuerpo",
+          "fecha": "2024-07-15",
+          "texto": "Factura rectificativa R-2024-014, de 15/07/2024, que rectifica íntegramente la factura F-2024-207 y la sustituye: base imponible 2.700,00 €, IVA 21 % 567,00 €, total 3.267,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "contradictoria",
+          "fuente": "Recordatorio de pago",
+          "fecha": "2024-07-10",
+          "texto": "Recordatorio enviado el 10/07/2024: le consta pendiente la factura F-2024-207 por importe de 3.630,00 €."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Albarán 2024-1755",
+          "texto": "La mercancía de la factura F-2024-207 se entregó el 20/06/2024 en el almacén del cliente."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "desempate": {
+        "regla": "rectificativa",
+        "ganadora": "u5",
+        "desplazadas": [
+          "u1",
+          "u3"
+        ],
+        "porque": "La rectificativa R-2024-014 declara que rectifica íntegramente la F-2024-207 y la sustituye, así que el importe exigible es el suyo. El recordatorio del 10/07 es anterior a la rectificativa y repite la cifra vieja."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_a_pagar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "3267.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          },
+          {
+            "nombre": "documento_aplicable",
+            "valor": {
+              "clase": "identificador",
+              "valor": "R-2024-014"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "El fallo caro no es quedarse corto: es tirar la rectificativa y conservar las dos unidades que dicen 3.630,00 €. Son dos contra una, las dos nombran la factura de la consulta y una de ellas es un requerimiento de pago, que es justo el documento que más se parece a lo que se pregunta. La respuesta equivocada sale bien formada, con cita, y cobra 363,00 € de más."
+    },
+    {
+      "id": "fac-es-005",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "negacion",
+        "excepcion",
+        "condicion"
+      ],
+      "consulta": "La factura F-2025-061 de Talleres Nadal SL venció el 12/05/2025 sin pagar. ¿Se le aplica el recargo del 2 %?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Condiciones generales · cl. 6.3",
+          "texto": "Cláusula 6.3 — El recargo previsto en la cláusula 6.1 no se aplicará a los clientes acogidos al acuerdo marco de servicios mientras este permanezca vigente."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Condiciones generales · cl. 6.2",
+          "texto": "Cláusula 6.2 — El recargo devengado se liquidará en la siguiente factura mensual del cliente."
+        },
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Condiciones generales · cl. 6.1",
+          "texto": "Cláusula 6.1 — Toda factura impagada a su vencimiento devengará un recargo del 2 % sobre el importe pendiente."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Expediente de otro cliente",
+          "texto": "A Montajes Ferrer SL se le aplicó el recargo del 2 % sobre la factura F-2025-058, impagada el 10/05/2025."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Ficha de cliente · Talleres Nadal SL",
+          "texto": "Talleres Nadal SL está acogido al acuerdo marco de servicios, vigente desde el 01/01/2024 hasta el 31/12/2025."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "clausula-especial",
+        "ganadora": "u2",
+        "desplazadas": [
+          "u1"
+        ],
+        "porque": "La 6.3 es la excepción expresa a la 6.1 y se refiere a ella por su número; la regla general cede ante la excepción concreta cuando el cliente cumple la condición de estar acogido al acuerdo marco."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "aplica_recargo",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u2",
+              "u4"
+            ]
+          },
+          {
+            "nombre": "clausula_aplicable",
+            "valor": {
+              "clase": "referencia",
+              "unidad": "u2"
+            },
+            "critico": true,
+            "citas": [
+              "u2"
+            ]
+          }
+        ]
+      },
+      "nota": "La regla general y la excepción están en unidades distintas, y la excepción es la que lleva la negación. Tirar la 6.3 deja una respuesta afirmativa perfectamente citada: la 6.1 dice literalmente lo que se pregunta. Además hace falta la ficha del cliente para saber que la condición se cumple: sin ella, la 6.3 no se puede aplicar y la respuesta correcta sería abstenerse."
+    },
+    {
+      "id": "fac-es-006",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "excepcion",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Cuándo vence la factura F-2025-142?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "contradictoria",
+          "fuente": "Anexo II · cl. 3.4",
+          "texto": "Cláusula 3.4 — Para los servicios de mantenimiento preventivo el plazo de pago será de 60 días naturales desde la fecha de factura."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "F-2025-142 · cabecera",
+          "texto": "Factura F-2025-142, de 14/03/2025. Concepto: mantenimiento preventivo trimestral de las unidades de climatización."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Mandato de domiciliación",
+          "texto": "El cobro se realizará mediante domiciliación en el IBAN terminado en 4471, firmado el 09/01/2024."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "Condiciones generales · cl. 3.1",
+          "texto": "Cláusula 3.1 — Las facturas se abonarán a 30 días fecha factura."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Condiciones generales · cl. 3.2",
+          "texto": "Cláusula 3.2 — Las facturas de suministro de material se abonan por adelantado antes de la salida de almacén."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "clausula-especial",
+        "ganadora": "u4",
+        "desplazadas": [
+          "u5"
+        ],
+        "porque": "El anexo II regula expresamente el mantenimiento preventivo, que es el concepto de esta factura; la cláusula 3.1 solo rige lo que no tiene plazo propio."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "fecha_vencimiento",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-05-13"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "dias_de_plazo",
+            "valor": {
+              "clase": "entero",
+              "valor": 60
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "El concepto de la factura es lo que decide qué plazo rige, así que la unidad de la cabecera no es contexto: es la que engancha la excepción. Quedarse con la 3.1 y la cabecera da 13/04/2025, un mes antes, con las dos citas correctas para la regla equivocada."
+    },
+    {
+      "id": "fac-es-007",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "condicion",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Se aplica el descuento por pronto pago a la factura F-2025-088?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Extracto bancario",
+          "texto": "Transferencia recibida el 14/04/2025 por 4.840,00 €, con la referencia F-2025-088 en el concepto."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Condiciones comerciales · ap. 4",
+          "texto": "Descuento por pronto pago del 2 % sobre el total de la factura, siempre que el pago se reciba dentro de los 10 días naturales siguientes a la fecha de emisión."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-088 · cabecera",
+          "texto": "Factura F-2025-088, emitida el 02/04/2025. Total con IVA: 4.840,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Condiciones del banco",
+          "texto": "El banco aplica valor mismo día a las transferencias recibidas antes de las 14:00."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Acuerdo de aplazamiento",
+          "texto": "El cliente tiene concedido un aplazamiento de 30 días para las facturas emitidas en diciembre."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "El descuento por pronto pago se documenta mediante factura rectificativa en serie R."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "aplica_descuento",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u6",
+              "u3"
+            ]
+          },
+          {
+            "nombre": "fecha_limite_descuento",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-04-12"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "importe_a_pagar",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "4840.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "La condición se incumple por dos días. Hacen falta tres unidades a la vez —emisión, condición y fecha de cobro— y ninguna de las tres, por separado, parece más importante que las otras: la de la condición es la que más se parece a la consulta y es justamente la que no basta. Si se cae la del extracto, no hay forma de saber que llegó tarde y la respuesta se invierte."
+    },
+    {
+      "id": "fac-es-008",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuál es el total de la factura F-2025-119 que se emite a Perfumería Lois?",
+      "evidencia": [
+        {
+          "id": "u7",
+          "papel": "necesaria",
+          "fuente": "Tabla de tipos",
+          "texto": "Tipos aplicables: al tipo general del 21 % le corresponde un recargo de equivalencia del 5,2 %; al tipo reducido del 10 %, un recargo del 1,4 %."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Ficha del cliente",
+          "texto": "Perfumería Lois figura de alta en el epígrafe 652.2 del IAE desde el 03/2019."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Ficha fiscal del cliente",
+          "texto": "Perfumería Lois tributa en el régimen especial del recargo de equivalencia, por lo que en sus facturas se repercute, además del IVA, el recargo que corresponda."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Histórico de ventas",
+          "texto": "En el ejercicio anterior se facturaron a este cliente 18.400,00 € con recargo de equivalencia."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2025-119 · líneas",
+          "texto": "Factura F-2025-119 a Perfumería Lois, comercio minorista. Base imponible de las líneas facturadas: 2.000,00 €."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Manual fiscal",
+          "texto": "El recargo de equivalencia lo repercute e ingresa el proveedor en su declaración trimestral."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "F-2025-119 · desglose",
+          "texto": "Todos los artículos facturados en la F-2025-119 tributan al tipo general."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 5
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "total_factura",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "2524.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u2",
+              "u7",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "cuota_recargo_equivalencia",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "104.00",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u2",
+              "u7",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "cuota_iva",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "420.00",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": false,
+            "citas": [
+              "u3",
+              "u7",
+              "u1"
+            ]
+          }
+        ]
+      },
+      "nota": "Cuatro unidades necesarias de siete, y las cuatro parecen administrativas: base, régimen del cliente, tabla de tipos y a qué tipo tributan los artículos. Tirar la del régimen da 2.420,00 € —una factura correcta para otro cliente— y tirar la del tipo aplicable obliga a elegir entre 5,2 % y 1,4 % a ciegas. La diferencia entre las dos respuestas equivocadas y la buena es de 104,00 € que el proveedor tiene que ingresar igual."
+    },
+    {
+      "id": "fac-es-009",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuánto va a cobrar el proveedor por la factura P-2025-042?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "P-2025-042 · desglose",
+          "texto": "IVA repercutido al 21 % sobre la base imponible: 630,00 €."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Libro registro de facturas recibidas",
+          "texto": "El total de la factura P-2025-042, a efectos del libro registro, es de 3.630,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Condiciones de pago",
+          "texto": "El pago se realizará por transferencia el día 5 del mes siguiente a la recepción de la factura."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "P-2025-042 · líneas",
+          "texto": "Factura P-2025-042 por servicios profesionales de asesoría. Base imponible: 3.000,00 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual fiscal",
+          "texto": "La retención practicada la ingresa el pagador mediante el modelo 111 del trimestre correspondiente."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "P-2025-042 · desglose",
+          "texto": "Retención de IRPF del 15 % sobre la base imponible: -450,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_a_percibir",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "3180.00",
+              "moneda": "EUR",
+              "base": "neto-a-percibir"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u2",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "retencion_aplicada",
+            "valor": {
+              "clase": "porcentaje",
+              "valor": "15.00"
+            },
+            "critico": false,
+            "citas": [
+              "u6"
+            ]
+          }
+        ]
+      },
+      "nota": "La unidad más peligrosa es la del libro registro: dice «total de la factura» y da 3.630,00 €, que es una cifra correcta sobre otra base. Si el selector la conserva y tira la retención, la respuesta es un número exacto, citado y equivocado en 450,00 €. Lo que se pregunta es lo que cobra el proveedor, no lo que suma el documento."
+    },
+    {
+      "id": "fac-es-010",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion"
+      ],
+      "consulta": "¿Cuándo vence la factura F-2025-233, emitida el 10/06/2025?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Expediente contractual",
+          "texto": "En el expediente constan los dos documentos sin fecha de firma ni número de versión, y ninguno declara prevalecer sobre el otro."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Correspondencia",
+          "texto": "El cliente pidió por correo el 12/06/2025 que se le confirmara la fecha de cargo del recibo."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Condiciones particulares · ap. 4 (ejemplar sin fechar)",
+          "texto": "Apartado 4 — El pago de las facturas se efectuará a 60 días fecha factura."
+        },
+        {
+          "id": "u3",
+          "papel": "contradictoria",
+          "fuente": "Contrato de servicios · cl. 5 (ejemplar sin fechar)",
+          "texto": "Cláusula 5 — El pago de las facturas se efectuará a 30 días fecha factura."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "F-2025-233 · cabecera",
+          "texto": "Factura F-2025-233, emitida el 10/06/2025 por 5.324,00 € impuestos incluidos."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "ninguna",
+        "ganadora": null,
+        "desplazadas": [],
+        "porque": "Los dos ejemplares están sin fechar y sin versión, ninguno se remite al otro y no hay cláusula de prevalencia entre el contrato y las condiciones particulares. No hay nada en la evidencia que decida cuál manda."
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "contradiccion-sin-regla-de-desempate",
+        "que_falta": "la fecha de firma o el número de versión de cada ejemplar, o una cláusula de prevalencia entre el contrato de servicios y las condiciones particulares",
+        "citas": [
+          "u3",
+          "u2",
+          "u5"
+        ]
+      },
+      "nota": "Los dos plazos son plausibles y los dos están escritos con la misma autoridad aparente. Un selector que se quede con uno solo produce una fecha de vencimiento concreta —10/07 o 09/08— y nadie sabrá nunca que existía la otra. Abstenerse aquí exige conservar las dos unidades que chocan más la que dice que no hay forma de ordenarlas: sin la tercera, la abstención no se puede justificar."
+    },
+    {
+      "id": "fac-es-011",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "abstencion",
+        "con-iva-sin-iva"
+      ],
+      "consulta": "¿Cuál es el total con IVA de la factura F-2025-150?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Presupuesto aceptado",
+          "texto": "El presupuesto aceptado para el evento ascendía a 1.480,00 € más los impuestos que correspondieran."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Ficha fiscal del cliente",
+          "texto": "El cliente no está sujeto a retención por los servicios que contrata."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Tabla de tipos · material",
+          "texto": "Las facturas de material de oficina tributan al tipo general del 21 %."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "El total con impuestos se redondea al céntimo más próximo."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-150 · líneas",
+          "texto": "Factura F-2025-150. Base imponible: 1.480,00 €. Concepto: servicios de catering para evento corporativo."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "evidencia-insuficiente",
+        "que_falta": "el tipo de IVA aplicable a los servicios de catering: la única unidad que menciona un tipo se refiere a material de oficina",
+        "citas": [
+          "u4",
+          "u2"
+        ]
+      },
+      "nota": "Aquí no falta contexto: falta un dato, y hay un tipo del 21 % a la vista que no es el de este concepto. La respuesta cómoda —1.790,80 €— es la que sale de aplicar el único porcentaje que aparece. La abstención tiene que citar las dos unidades a la vez, porque es la distancia entre «catering» y «material de oficina» lo que la justifica."
+    },
+    {
+      "id": "fac-es-012",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "diacritico",
+        "identificadores-parecidos",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuánto queda pendiente de la factura F-2025-096?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "NC-2025-012 · cuerpo",
+          "texto": "Nota de abono NC-2025-012, de 18/03/2025, por 1.815,00 € (base 1.500,00 € más IVA 315,00 €), que minora la factura F-2025-096 por devolución parcial de mercancía."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Extracto bancario",
+          "texto": "El cliente abonó 968,00 € el 12/03/2025 a cuenta de la factura F-2025-090."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Estado de cuentas",
+          "texto": "La factura F-2025-090 quedó saldada el 12/03/2025 y no figura pendiente."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-096 · pie",
+          "texto": "Factura F-2025-096, de 04/03/2025: base imponible 3.500,00 €, IVA 21 % 735,00 €, total 4.235,00 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Condiciones comerciales",
+          "texto": "El plazo de pago acordado con este cliente es de 30 días fecha factura."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Manual contable",
+          "texto": "Las notas de abono por devolución de mercancía se contabilizan en la cuenta 708."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_pendiente",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "2420.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u2"
+            ]
+          }
+        ]
+      },
+      "nota": "«El cliente abonó» y «nota de abono» son dos hechos de signo contrario —un cobro y una minoración de la deuda— y `normalizeText` pliega los diacríticos latinos, así que «abonó» y «abono» entran en la clave como el mismo token. La distractora habla además de la F-2025-090, a un dígito de la que se pregunta. Quedarse con ella y tirar la nota de abono da 3.267,00 € en vez de 2.420,00 €: el mismo mecanismo que en el incidente del 2026-08-14, donde plegar una tilde dejó muda una herramienta."
+    },
+    {
+      "id": "fac-es-013",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "referencia-cruzada",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Qué tipo de interés de demora se aplica a la factura F-2025-410, impagada desde enero de 2025?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Boletín de tipos",
+          "texto": "El interés legal del dinero para el ejercicio 2025 se fija en el 3,25 %."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Contrato · cl. 13",
+          "texto": "Cláusula 13 — Las reclamaciones se dirigirán al departamento de administración del proveedor."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Boletín de tipos",
+          "texto": "El tipo aplicado por el Banco Central Europeo a su operación principal de financiación vigente el 01/01/2025 es del 3,15 %."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 7.1",
+          "texto": "Cláusula 7.1 — El importe impagado devengará el interés de demora previsto en la cláusula 4.2 desde el día siguiente al vencimiento."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 4.2",
+          "texto": "Cláusula 4.2 — El interés de demora será el tipo de interés aplicado por el Banco Central Europeo a su operación principal de financiación más ocho puntos porcentuales."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Contrato · cl. 4.3",
+          "texto": "Cláusula 4.3 — Los gastos de devolución bancaria se repercutirán al cliente al coste que facture la entidad."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "tipo_de_demora",
+            "valor": {
+              "clase": "porcentaje",
+              "valor": "11.15"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u1",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "La cláusula que responde a la consulta no contiene la respuesta: remite a otra, y esa otra remite a un dato externo que está en una tercera unidad. Tres saltos, y en el camino hay un tipo del 3,25 % —el interés legal— que se parece al 3,15 % del BCE y que no es el que manda. Cortar cualquiera de los tres eslabones deja un número plausible: 3,15 %, 3,25 % u 11,25 %."
+    },
+    {
+      "id": "fac-es-014",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "verbo-modal",
+        "condicion"
+      ],
+      "consulta": "¿Estaba obligado el cliente a comunicar la disconformidad con la factura F-2025-031 y qué efecto tiene no haberlo hecho?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Contrato · cl. 9.4",
+          "texto": "Cláusula 9.4 — Las comunicaciones se dirigirán a la dirección de administración que consta al pie de la factura."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Acuse de recepción",
+          "texto": "La factura F-2025-031 se entregó al cliente el 03/02/2025 y el acuse quedó firmado ese mismo día."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 9.3",
+          "texto": "Cláusula 9.3 — Transcurrido el plazo del apartado 9.1 sin comunicación, la factura se tendrá por conforme y aceptada a todos los efectos."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "Las facturas se remiten en PDF firmado electrónicamente y se archivan durante seis años."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 9.1",
+          "texto": "Cláusula 9.1 — El cliente deberá comunicar por escrito cualquier disconformidad con la factura dentro de los 7 días naturales siguientes a su recepción."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Contrato · cl. 9.2",
+          "texto": "Cláusula 9.2 — El cliente podrá solicitar el aplazamiento del pago de la factura, que la empresa valorará caso por caso."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "comunicacion_obligatoria",
+            "valor": {
+              "clase": "booleano",
+              "valor": true
+            },
+            "critico": true,
+            "citas": [
+              "u6"
+            ]
+          },
+          {
+            "nombre": "fecha_limite_comunicacion",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-02-10"
+            },
+            "critico": true,
+            "citas": [
+              "u6",
+              "u3"
+            ]
+          },
+          {
+            "nombre": "factura_se_tiene_por_conforme",
+            "valor": {
+              "clase": "booleano",
+              "valor": true
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "La 9.1 y la 9.2 hablan las dos de lo que hace el cliente con la factura y solo se distinguen en el verbo: «deberá» contra «podrá». La 9.2 es la distractora perfecta, porque es la que suena a favor del cliente. Y sin la 9.3 se puede contestar que sí estaba obligado sin decir lo único que importa, que es que la factura ya se tiene por aceptada."
+    },
+    {
+      "id": "fac-es-015",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "condicion",
+        "fechas-parecidas"
+      ],
+      "consulta": "El cliente pide que le devuelvan el recibo de la factura F-2025-077. ¿Procede la devolución?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Reglas del esquema SEPA CORE",
+          "texto": "En los adeudos SEPA CORE el deudor puede solicitar la devolución del adeudo sin justificación dentro de las 8 semanas siguientes a la fecha de cargo."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Reglas del esquema SEPA B2B",
+          "texto": "En los adeudos SEPA B2B no existe derecho de devolución una vez liquidado el adeudo."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Extracto de adeudos",
+          "texto": "El recibo domiciliado de la factura F-2025-077, por 1.210,00 €, se cargó en la cuenta del cliente el 05/02/2025."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Tarifas de la entidad",
+          "texto": "La comisión por devolución de recibo es de 12,00 € y se repercute al cliente."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Correspondencia con el cliente",
+          "texto": "El cliente solicitó por escrito la devolución del adeudo de la F-2025-077 el 15/04/2025."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Mandato de domiciliación",
+          "texto": "El mandato de domiciliación del cliente se firmó el 12/01/2024 y sigue vigente."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "procede_devolucion",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u4",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "fecha_limite_devolucion",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-04-02"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Las ocho semanas hay que contarlas: la fecha límite, 02/04/2025, no está escrita en ninguna unidad y la solicitud llega trece días tarde. La regla del esquema B2B dice «no existe derecho de devolución», que es la frase que más se parece a la respuesta correcta y que llevaría a decir que no por el motivo equivocado, en un adeudo que no es B2B."
+    },
+    {
+      "id": "fac-es-016",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "unidades",
+        "importes-parecidos",
+        "con-iva-sin-iva"
+      ],
+      "consulta": "¿Cuál es el importe sin IVA de la línea 3 de la factura F-2025-201?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Pedido anterior P-2025-644",
+          "texto": "En el pedido anterior se sirvieron 55 unidades del mismo artículo a 12,04 €/ud."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Condiciones comerciales",
+          "texto": "El descuento comercial del 5 % se aplica únicamente a las líneas de servicio."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-201 · línea 3",
+          "texto": "Línea 3: rollos de film industrial, 55 unidades, precio unitario 12,40 €/ud."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "F-2025-201 · línea 5",
+          "texto": "Línea 5: transporte del envío completo, 1.240,00 € por servicio."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Tabla de tipos",
+          "texto": "El film industrial tributa al tipo general del IVA."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Manual de facturación",
+          "texto": "El importe de cada línea se obtiene multiplicando el número de unidades por el precio unitario, antes de impuestos."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_linea",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "682.00",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u6"
+            ]
+          }
+        ]
+      },
+      "nota": "Tres cifras casi iguales con unidades distintas: 12,40 €/ud, 12,04 €/ud y 1.240,00 € por servicio. La única que sirve va acompañada de un multiplicador, así que la regla de cálculo —que parece burocracia y es lo primero que un selector tira— es tan necesaria como la línea. Sin ella, 12,40 € es una respuesta defendible a «cuál es el importe de la línea»."
+    },
+    {
+      "id": "fac-es-017",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "identificadores-parecidos",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuál es el importe pendiente de la factura FR-2024-118?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "La serie FR se reserva a las facturas rectificativas y sigue numeración propia."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "F-2024-1118 · pie",
+          "texto": "Factura F-2024-1118: importe 12.408,55 €, pendiente de cobro."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2024-118 · pie",
+          "texto": "Factura F-2024-118: importe 12.480,55 €, cobrada por transferencia el 30/08/2024."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "FR-2024-118 · pie",
+          "texto": "Factura rectificativa FR-2024-118, de 09/09/2024: importe 517,00 €, pendiente de cobro."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 2
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_pendiente",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "517.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Tres identificadores que comparten el 118 y una sola letra de diferencia entre la serie F y la FR. La distractora más peligrosa es la F-2024-1118, porque también está pendiente: coincide con la palabra clave de la consulta y con el estado, y solo falla en el documento."
+    },
+    {
+      "id": "fac-es-018",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "identificadores-parecidos"
+      ],
+      "consulta": "¿Cuánto suma la 118?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Serie de abonos · 2024",
+          "texto": "Factura A-2024-118 (serie de abonos): total -940,50 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Correspondencia",
+          "texto": "El cliente solicita que se le remita el detalle por correo electrónico antes del cierre del mes."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Resumen anual",
+          "texto": "El total facturado en 2024 asciende a 214.300,00 €."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "Las series de ventas y de abonos comparten numeración correlativa desde 2019."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Serie de ventas · 2024",
+          "texto": "Factura F-2024-118 (serie de ventas): total 12.480,55 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "identificador-ambiguo",
+        "que_falta": "la serie a la que se refiere «la 118»: hay dos documentos con ese número, de series distintas y de signo contrario",
+        "citas": [
+          "u3",
+          "u5"
+        ]
+      },
+      "nota": "El usuario abrevia como abrevia todo el mundo en administración, y las dos series comparten numeración. Cualquiera de las dos respuestas es un número exacto y citable, y la diferencia entre ellas es de 13.421,05 € con el signo cambiado. La abstención solo se sostiene si sobreviven las dos unidades: con una sola no hay ambigüedad que enseñar."
+    },
+    {
+      "id": "fac-es-019",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "derogacion",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Cuándo vence la factura F-2025-310?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Contrato de suministro · cl. 8",
+          "fecha": "2023-05-01",
+          "texto": "Cláusula 8 — El plazo de pago será de 30 días fecha factura."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Anexo I al contrato · cl. 2",
+          "fecha": "2025-01-15",
+          "texto": "El anexo I designa además un nuevo interlocutor comercial para la cuenta a partir del 01/02/2025."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Circular interna 2024/07",
+          "fecha": "2024-02-10",
+          "texto": "Recordar a los comerciales que el plazo estándar de pago de la compañía es de 30 días."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "F-2025-310 · cabecera",
+          "texto": "Factura F-2025-310, emitida el 20/03/2025 por 8.712,00 € impuestos incluidos."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Contrato de suministro · cl. 14",
+          "fecha": "2023-05-01",
+          "texto": "Cláusula 14 — El contrato se renueva tácitamente por anualidades salvo denuncia con dos meses de antelación."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "Anexo I al contrato · cl. 8 bis",
+          "fecha": "2025-01-15",
+          "texto": "Cláusula 8 bis — El plazo de pago pasa a ser de 45 días fecha factura y deja sin efecto el plazo de la cláusula 8."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "fecha-posterior",
+        "ganadora": "u5",
+        "desplazadas": [
+          "u1"
+        ],
+        "porque": "El anexo I es de 15/01/2025, posterior al contrato de 2023, y declara expresamente que deja sin efecto el plazo de la cláusula 8."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "fecha_vencimiento",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-05-04"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u4"
+            ]
+          },
+          {
+            "nombre": "dias_de_plazo",
+            "valor": {
+              "clase": "entero",
+              "valor": 45
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "Dos unidades dicen 30 días —la cláusula derogada y una circular interna— y una sola dice 45. Por mayoría y por afinidad de vocabulario, un selector se queda con las dos que coinciden entre sí. La circular no es contractual y por eso no desempata nada, pero refuerza la respuesta equivocada, que adelanta el vencimiento quince días."
+    },
+    {
+      "id": "fac-es-020",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "facil",
+      "trampas": [
+        "con-iva-sin-iva"
+      ],
+      "consulta": "¿Cuál es el total con IVA de la factura F-2025-045, de servicios de restauración?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "F-2025-045 · observaciones",
+          "texto": "El servicio se prestó el 14/02/2025 en las instalaciones del cliente."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Condiciones de pago",
+          "texto": "El cliente abona en efectivo al término del servicio, con recibo firmado."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Tabla de tipos",
+          "texto": "Los servicios de hostelería y restauración tributan al tipo reducido del 10 %."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-045 · líneas",
+          "texto": "Factura F-2025-045 por servicios de restauración: base imponible 1.250,00 €."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Tabla de tipos",
+          "texto": "El tipo general del IVA es del 21 % y se aplica a las operaciones sin tipo específico."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "total_factura",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "1375.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "cuota_iva",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "125.00",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": false,
+            "citas": [
+              "u5",
+              "u1"
+            ]
+          }
+        ]
+      },
+      "nota": "Caso de suelo con una sola trampa: hay dos tipos a la vista y el general está escrito en la unidad más genérica, que es la que un recuperador puntúa alto para cualquier pregunta sobre IVA."
+    },
+    {
+      "id": "fac-es-021",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Supera el pedido P-2025-812 el límite de crédito del cliente?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "P-2025-812 · resumen",
+          "texto": "Pedido P-2025-812: base imponible 4.800,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Política de riesgos",
+          "texto": "Los pedidos que superen el límite de crédito requieren autorización expresa del director financiero."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Estado de cuentas",
+          "texto": "El cliente no tiene facturas vencidas impagadas a fecha de hoy."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Ficha de riesgo del cliente",
+          "texto": "El límite de crédito concedido al cliente es de 5.000,00 €, referido a base imponible y sin incluir impuestos."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Política de riesgos",
+          "texto": "El límite de crédito de cada cliente se revisa cada seis meses por el comité de riesgos."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "P-2025-812 · pie",
+          "texto": "El importe total del pedido P-2025-812, impuestos incluidos, asciende a 5.808,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "supera_limite",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u2",
+              "u4"
+            ]
+          },
+          {
+            "nombre": "margen_disponible",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "200.00",
+              "moneda": "EUR",
+              "base": "sin-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u2",
+              "u4"
+            ]
+          }
+        ]
+      },
+      "nota": "Los dos números que hay que comparar están sobre bases distintas y el documento ofrece el total con impuestos justo al lado. Comparar 5.808,00 € con 5.000,00 € da «sí, lo supera», bloquea un pedido que no había que bloquear y cita dos unidades reales. La frase que salva el caso —«referido a base imponible y sin incluir impuestos»— es una coletilla al final de una unidad de riesgos, que es exactamente lo que un resumidor corta."
+    },
+    {
+      "id": "fac-es-022",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "condicion",
+        "fechas-parecidas",
+        "importes-parecidos"
+      ],
+      "consulta": "Además del principal, ¿qué puede reclamar el acreedor por la factura F-2025-119 a fecha 30/06/2025?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 11",
+          "texto": "Cláusula 11 — En caso de mora, el acreedor podrá reclamar además una indemnización fija de 40,00 € por costes de cobro, sin necesidad de requerimiento previo."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Manual contable",
+          "texto": "Los intereses de demora devengados se liquidan al cierre de cada ejercicio."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Expediente de reclamación",
+          "texto": "El requerimiento de pago se envió por burofax el 02/06/2025 con acuse de recibo."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "F-2025-119 · cabecera",
+          "texto": "La factura F-2025-119 se emitió el 10/04/2025."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Estado de cuentas",
+          "texto": "La factura F-2025-119, por 2.524,00 €, venció el 10/05/2025 y sigue impagada a 30/06/2025."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 10",
+          "texto": "Cláusula 10 — El interés de demora pactado es del 11,15 % anual, calculado sobre el importe adeudado por días naturales de retraso y sobre una base de 365 días."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "dias_de_mora",
+            "valor": {
+              "clase": "entero",
+              "valor": 51
+            },
+            "critico": true,
+            "citas": [
+              "u3"
+            ]
+          },
+          {
+            "nombre": "intereses_de_demora",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "39.32",
+              "moneda": "EUR",
+              "base": "no-aplica"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u1"
+            ]
+          },
+          {
+            "nombre": "indemnizacion_costes_cobro",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "40.00",
+              "moneda": "EUR",
+              "base": "no-aplica"
+            },
+            "critico": true,
+            "citas": [
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "La mora se cuenta desde el vencimiento, no desde la emisión, y en la evidencia están las dos fechas: contar desde el 10/04 da 81 días y 62,45 € en vez de 39,32 €. Además hay dos conceptos distintos que reclamar y viven en cláusulas separadas; tirar la 11 quita 40,00 € que no dependen de ningún cálculo, solo de que alguien conserve la unidad que los menciona."
+    },
+    {
+      "id": "fac-es-023",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "referencia-cruzada",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Qué recargo por gestión de impagados corresponde a la factura F-2025-402?",
+      "evidencia": [
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Contrato · cl. 12",
+          "texto": "Cláusula 12 — El recargo por gestión de impagados será el que figure en el anexo III de tarifas vigente en la fecha del impago."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual de facturación",
+          "texto": "El recargo por gestión de impagados se factura en documento aparte de la deuda principal."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Estado de cuentas",
+          "texto": "La factura F-2025-402 resultó impagada el 15/03/2025 tras la devolución del recibo domiciliado."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Estadística interna",
+          "texto": "Durante 2024 se aplicaron 14 recargos por gestión de impagados, por un total de 3.180,00 €."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Anexo III de tarifas · edición 2024",
+          "fecha": "2024-01-01",
+          "texto": "Anexo III de tarifas, vigente del 01/01/2024 al 31/12/2024: el recargo por gestión de impagados es del 3 %."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Contrato · cl. 12 bis",
+          "texto": "El anexo III se actualiza cada año por acuerdo escrito de las partes antes del 31 de diciembre."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "evidencia-caducada",
+        "que_falta": "el anexo III de tarifas vigente en marzo de 2025: el único anexo disponible dejó de estar vigente el 31/12/2024",
+        "citas": [
+          "u5",
+          "u2",
+          "u4"
+        ]
+      },
+      "nota": "El 3 % está escrito, es del anexo correcto y responde exactamente a lo que se pregunta. Lo único que lo invalida son las dos fechas de vigencia al principio de la unidad y el impago de 2025. Es el caso donde una respuesta se sostiene sobre evidencia auténtica pero caducada, y donde abstenerse exige conservar las tres unidades: la tarifa, la cláusula que la ata a la fecha del impago, y la fecha del impago."
+    },
+    {
+      "id": "fac-es-024",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "verbo-modal",
+        "condicion",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Qué día vence la factura F-2025-260?",
+      "evidencia": [
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Condiciones de pago",
+          "texto": "El cliente podrá adelantar el pago al día hábil anterior al vencimiento si lo comunica con 48 horas de antelación."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Procedimiento de tesorería",
+          "texto": "Las órdenes de pago se ejecutan los martes y los jueves de cada semana."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Registro de entrada",
+          "texto": "La factura se registró en el sistema del cliente el 05/05/2025."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Condiciones de pago",
+          "texto": "Pago a 30 días fecha factura. Si el vencimiento cae en sábado, domingo o festivo, se traslada al siguiente día hábil."
+        },
+        {
+          "id": "u7",
+          "papel": "necesaria",
+          "fuente": "F-2025-260 · cabecera",
+          "texto": "Factura F-2025-260, emitida el 01/05/2025 por 2.178,00 € impuestos incluidos."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Calendario laboral del cliente",
+          "texto": "El 01/05/2025 figura como festivo nacional no laborable."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Calendario laboral del cliente",
+          "texto": "En el calendario aplicable, el 31/05/2025 es sábado y el 02/06/2025 es el siguiente día hábil."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "fecha_vencimiento",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-06-02"
+            },
+            "critico": true,
+            "citas": [
+              "u7",
+              "u1",
+              "u2"
+            ]
+          }
+        ]
+      },
+      "nota": "La regla de traslado es una frase pegada al final de las condiciones de pago y el dato que la activa —que el 31/05 cae en sábado— está en otra unidad que parece calendario de recursos humanos. Sin ella el resultado es 31/05/2025 con la cita correcta de las condiciones. Y las dos frases que hablan de mover el vencimiento se distinguen solo por el verbo: «se traslada» es la regla que aplica sola y «podrá adelantar» es una facultad del cliente que nadie ha ejercido; quedarse con la segunda adelanta el vencimiento al 30/05/2025."
+    },
+    {
+      "id": "fac-es-025",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "con-iva-sin-iva",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuánto queda pendiente de la factura F-2025-330 después de la nota de crédito?",
+      "evidencia": [
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "NC-2025-041 · pie",
+          "texto": "Nota de crédito NC-2025-041 sobre la F-2025-330: base 500,00 €, IVA 21 % 105,00 €, total 605,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Estado de cuentas",
+          "texto": "El saldo del cliente antes de esta operación era de 3.630,00 €."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "NC-2025-041 · motivo",
+          "texto": "La nota de crédito se emite por un descuento comercial pactado con posterioridad a la operación."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Albarán de devolución",
+          "texto": "El importe de 500,00 € corresponde a dos unidades no servidas del artículo ART-12."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Correspondencia",
+          "texto": "El cliente reclamó por correo electrónico el 12/06/2025 y adjuntó el albarán firmado."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-330 · pie",
+          "texto": "Factura F-2025-330: base imponible 2.000,00 €, IVA 21 % 420,00 €, total 2.420,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "importe_pendiente",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "1815.00",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "cuota_iva_minorada",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "105.00",
+              "moneda": "EUR",
+              "base": "solo-cuota"
+            },
+            "critico": false,
+            "citas": [
+              "u6"
+            ]
+          }
+        ]
+      },
+      "nota": "Hay cuatro importes en juego —2.420,00, 605,00, 500,00 y 3.630,00— y solo dos entran en la resta. La unidad del albarán ofrece los 500,00 € de base, que es la cifra que un modelo resta si le falta el pie de la nota de crédito: da 1.920,00 €, se deja el IVA por el camino y descuadra la liquidación del trimestre."
+    },
+    {
+      "id": "fac-es-026",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "negacion",
+        "excepcion",
+        "fechas-parecidas"
+      ],
+      "consulta": "El cliente comunica un defecto de fabricación. ¿Se admite la devolución de la mercancía?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Condiciones de venta · cl. 10.1",
+          "texto": "Cláusula 10.1 — No se admitirán devoluciones de mercancía transcurridos 15 días desde la entrega."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Albarán 2025-0912",
+          "texto": "La mercancía se entregó mediante albarán 2025-0912, firmado sin reservas por el cliente."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Procedimiento de devoluciones",
+          "texto": "Las devoluciones se tramitan siempre con autorización previa del departamento comercial."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Expediente de incidencia",
+          "texto": "El cliente comunicó el 20/06/2025 un defecto de fabricación en la mercancía entregada el 03/03/2025."
+        },
+        {
+          "id": "u2",
+          "papel": "contradictoria",
+          "fuente": "Condiciones de venta · cl. 10.4",
+          "texto": "Cláusula 10.4 — Lo dispuesto en la cláusula 10.1 no será de aplicación a los defectos de fabricación, que podrán reclamarse durante el periodo de garantía de dos años."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Catálogo",
+          "texto": "La garantía comercial ampliada a tres años se contrata aparte y tiene coste adicional."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "clausula-especial",
+        "ganadora": "u2",
+        "desplazadas": [
+          "u1"
+        ],
+        "porque": "La 10.4 excluye expresamente la aplicación de la 10.1 a los defectos de fabricación, que es lo que el cliente comunica, y abre un plazo propio de dos años."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "admite_devolucion",
+            "valor": {
+              "clase": "booleano",
+              "valor": true
+            },
+            "critico": true,
+            "citas": [
+              "u2",
+              "u6"
+            ]
+          },
+          {
+            "nombre": "clausula_aplicable",
+            "valor": {
+              "clase": "referencia",
+              "unidad": "u2"
+            },
+            "critico": true,
+            "citas": [
+              "u2"
+            ]
+          }
+        ]
+      },
+      "nota": "Los 109 días transcurridos hacen que la 10.1 encaje perfectamente con los hechos y dé una negativa impecable. La excepción está tres apartados más abajo, empieza con una doble negación —«no será de aplicación»— y es lo único que cambia el resultado. Aquí el firmado sin reservas del albarán es la distractora que confirma la respuesta equivocada."
+    },
+    {
+      "id": "fac-es-027",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "media",
+      "trampas": [
+        "derogacion",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Cuál es el plazo de pago exigible de la factura F-2025-500 y cuándo vence?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "Contrato de suministro · cl. 6",
+          "texto": "Cláusula 6 — Las partes acuerdan un plazo de pago de 90 días fecha factura."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Expediente contractual",
+          "texto": "El contrato de suministro se firmó el 14/01/2024 y no ha sido modificado."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Política comercial",
+          "texto": "El proveedor concede habitualmente 90 días a sus mejores clientes."
+        },
+        {
+          "id": "u4",
+          "papel": "contradictoria",
+          "fuente": "Nota del departamento jurídico",
+          "texto": "En las operaciones entre empresas el plazo de pago no puede exceder de 60 días naturales, y el pacto que lo supere se tiene por no puesto."
+        },
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "F-2025-500 · cabecera",
+          "texto": "Factura F-2025-500, emitida el 02/06/2025 entre dos sociedades mercantiles."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "desempate": {
+        "regla": "jerarquia-documental",
+        "ganadora": "u4",
+        "desplazadas": [
+          "u5"
+        ],
+        "porque": "La nota jurídica recoge un límite imperativo que se impone al pacto entre las partes: el plazo pactado por encima del máximo se tiene por no puesto."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "dias_de_plazo",
+            "valor": {
+              "clase": "entero",
+              "valor": 60
+            },
+            "critico": true,
+            "citas": [
+              "u4"
+            ]
+          },
+          {
+            "nombre": "fecha_vencimiento",
+            "valor": {
+              "clase": "fecha",
+              "iso": "2025-08-01"
+            },
+            "critico": true,
+            "citas": [
+              "u4",
+              "u1"
+            ]
+          }
+        ]
+      },
+      "nota": "El contrato firmado es el documento con más pinta de autoridad y dice 90 días; el que manda es una nota interna que no lleva ni número de cláusula. Dos unidades de la evidencia refuerzan los 90 días. La diferencia son 30 días de financiación gratis mal concedida."
+    },
+    {
+      "id": "fac-es-028",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "fechas-parecidas"
+      ],
+      "consulta": "¿Cuándo vence la factura INV-2025-0774 del proveedor estadounidense?",
+      "evidencia": [
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Pedido",
+          "texto": "El pedido correspondiente se cursó durante el primer trimestre de 2025."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Ficha del proveedor",
+          "texto": "El proveedor factura en euros y no repercute impuestos indirectos españoles."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Expediente del proveedor",
+          "texto": "En el mismo expediente figura otro documento del mismo proveedor fechado el 13/05/2025, que solo puede leerse en formato día/mes; el proveedor usa los dos formatos sin declarar cuál emplea en cada documento."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "INV-2025-0774 · cabecera",
+          "texto": "Invoice INV-2025-0774, issued by a supplier established in the United States. Invoice date: 04/07/2025. Payment terms: net 30."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Manual contable",
+          "texto": "Las facturas de proveedores extracomunitarios se registran en el libro correspondiente dentro del trimestre de recepción."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "formato-de-fecha-ambiguo",
+        "que_falta": "saber si «04/07/2025» está escrito en formato día/mes o mes/día: el expediente usa los dos y la diferencia entre las dos lecturas son 88 días de vencimiento",
+        "citas": [
+          "u2",
+          "u4"
+        ]
+      },
+      "nota": "«04/07/2025» es 4 de julio o 7 de abril, y las dos lecturas son posibles: el pedido del primer trimestre no descarta ninguna. El vencimiento sale 07/05/2025 o 03/08/2025. La unidad que revela el problema no habla de esta factura sino de otro documento del expediente, así que es la primera candidata a caer por irrelevante — y sin ella no hay ambigüedad visible, solo una fecha."
+    },
+    {
+      "id": "fac-es-029",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "importes-parecidos",
+        "identificadores-parecidos"
+      ],
+      "consulta": "¿Queda algún importe pendiente de la factura F-2025-611?",
+      "evidencia": [
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Extracto bancario 12/07/2025",
+          "texto": "Otra transferencia del 12/07/2025 por 1.234,56 € corresponde a la factura F-2025-610."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2025-611 · pie",
+          "texto": "Factura F-2025-611. Total con IVA: 1.234,56 €."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Extracto bancario 12/07/2025",
+          "texto": "Transferencia recibida el 12/07/2025 con el concepto «F-2025-611»: 1.234,65 €."
+        },
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Manual contable",
+          "texto": "Las diferencias de cobro inferiores a un euro se regularizan en la cuenta 669."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Extracto bancario 12/07/2025",
+          "texto": "El extracto del 12/07/2025 suma 2.469,21 € en abonos del mismo cliente."
+        },
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Ficha del cliente",
+          "texto": "El cliente paga habitualmente por transferencia y agrupa varias facturas en un solo envío."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "queda_pendiente",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u2"
+            ]
+          },
+          {
+            "nombre": "diferencia_a_favor_del_cliente",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "0.09",
+              "moneda": "EUR",
+              "base": "con-iva"
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u2"
+            ]
+          }
+        ]
+      },
+      "nota": "1.234,56 y 1.234,65 son la misma cifra con dos dígitos intercambiados, y en el mismo extracto hay una transferencia por el importe exacto de la factura que corresponde a OTRA factura, la 610. Emparejar por importe idéntico —que es lo que hace cualquier heurística de conciliación— cruza los dos cobros y deja la 611 impagada en el sistema y la 610 pagada dos veces."
+    },
+    {
+      "id": "fac-es-030",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "facil",
+      "trampas": [
+        "negacion"
+      ],
+      "consulta": "El cliente pide el 10/09/2025 que se le devuelva el adeudo B2B de la factura F-2025-455. ¿Procede?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Reglas del esquema SEPA CORE",
+          "texto": "En el esquema SEPA CORE el plazo de devolución sin justificación es de 8 semanas desde el cargo."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Reglas del esquema SEPA B2B",
+          "texto": "En el esquema SEPA B2B el deudor no dispone de derecho de devolución una vez liquidado el adeudo."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "Extracto de adeudos",
+          "texto": "El adeudo SEPA B2B de la factura F-2025-455, por 3.025,00 €, se liquidó el 08/09/2025."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Mandato B2B",
+          "texto": "El mandato B2B se registró en la entidad del deudor el 02/01/2025 y sigue vigente."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Tarifas de la entidad",
+          "texto": "La comisión por devolución de recibo sería de 12,00 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 3
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "procede_devolucion",
+            "valor": {
+              "clase": "booleano",
+              "valor": false
+            },
+            "critico": true,
+            "citas": [
+              "u5",
+              "u3"
+            ]
+          }
+        ]
+      },
+      "nota": "Caso de suelo con una negación: la respuesta está escrita casi literalmente en una unidad, y la única forma de fallar es quedarse con la regla del esquema equivocado, que dice ocho semanas y también parece responder."
+    },
+    {
+      "id": "fac-es-031",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "excepcion",
+        "condicion",
+        "con-iva-sin-iva"
+      ],
+      "consulta": "¿Cuánto se le paga al profesional por la factura P-2025-018?",
+      "evidencia": [
+        {
+          "id": "u6",
+          "papel": "distractora",
+          "fuente": "Histórico de facturas",
+          "texto": "En 2023 se le aplicó a este profesional el tipo del 15 % en todas sus facturas."
+        },
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Instrucción de retenciones · ap. 1",
+          "texto": "Retención general de IRPF aplicable a las facturas de profesionales: 15 % sobre la base imponible."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "P-2025-018 · desglose",
+          "texto": "Factura P-2025-018, de 14/03/2025: base imponible 2.400,00 €, IVA repercutido al 21 % 504,00 €."
+        },
+        {
+          "id": "u3",
+          "papel": "contradictoria",
+          "fuente": "Instrucción de retenciones · ap. 3",
+          "texto": "Los profesionales podrán aplicar el tipo reducido del 7 % en el año de inicio de la actividad y en los dos siguientes, siempre que lo comuniquen por escrito al pagador."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Expediente del proveedor",
+          "texto": "El profesional inició su actividad el 01/09/2024 y comunicó por escrito la aplicación del tipo reducido el 03/09/2024."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Manual fiscal",
+          "texto": "El pagador ingresa las retenciones practicadas mediante el modelo 111 trimestral."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "desempate": {
+        "regla": "clausula-especial",
+        "ganadora": "u3",
+        "desplazadas": [
+          "u1"
+        ],
+        "porque": "El tipo reducido desplaza al general cuando se cumplen sus dos condiciones —estar dentro de los tres primeros años de actividad y haberlo comunicado por escrito—, y la evidencia acredita las dos."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "retencion_aplicada",
+            "valor": {
+              "clase": "porcentaje",
+              "valor": "7.00"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u2"
+            ]
+          },
+          {
+            "nombre": "importe_a_percibir",
+            "valor": {
+              "clase": "importe",
+              "cantidad": "2736.00",
+              "moneda": "EUR",
+              "base": "neto-a-percibir"
+            },
+            "critico": true,
+            "citas": [
+              "u3",
+              "u2",
+              "u5"
+            ]
+          }
+        ]
+      },
+      "nota": "La excepción tiene dos condiciones y las dos se acreditan en una unidad distinta de la que las enuncia. El histórico de 2023 dice 15 % y es cierto para su año, así que refuerza la regla general. Con el 15 % el profesional cobra 2.544,00 € en vez de 2.736,00: 192,00 € retenidos de más que él no puede recuperar hasta la declaración anual."
+    },
+    {
+      "id": "fac-es-032",
+      "idioma": "es",
+      "dominio": "facturacion-y-cobros",
+      "dificultad": "dificil",
+      "trampas": [
+        "abstencion",
+        "importes-parecidos"
+      ],
+      "consulta": "¿Cuál es el total de la factura F-2025-700?",
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "Expediente de la factura",
+          "texto": "Los dos ejemplares llevan el mismo número y la misma fecha de emisión, 01/04/2025, ninguno indica versión y no consta rectificativa que corrija a la otra."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Correspondencia con el proveedor",
+          "texto": "El proveedor confirma por teléfono que la factura F-2025-700 se emitió una sola vez."
+        },
+        {
+          "id": "u3",
+          "papel": "contradictoria",
+          "fuente": "F-2025-700 · ejemplar recibido por correo electrónico",
+          "fecha": "2025-04-01",
+          "texto": "Ejemplar de la factura F-2025-700 recibido por correo electrónico el 04/04/2025: total 6.352,50 €."
+        },
+        {
+          "id": "u2",
+          "papel": "distractora",
+          "fuente": "Presupuesto aceptado",
+          "texto": "El importe presupuestado para este pedido era de 6.300,00 € más impuestos."
+        },
+        {
+          "id": "u5",
+          "papel": "contradictoria",
+          "fuente": "F-2025-700 · ejemplar en papel",
+          "fecha": "2025-04-01",
+          "texto": "Ejemplar de la factura F-2025-700 recibido en papel el 04/04/2025: total 6.325,50 €."
+        }
+      ],
+      "presupuesto": {
+        "unidades_max": 4
+      },
+      "desempate": {
+        "regla": "ninguna",
+        "ganadora": null,
+        "desplazadas": [],
+        "porque": "Mismo número, misma fecha de emisión, sin versión y sin rectificativa. Nada en la evidencia permite decidir cuál de los dos ejemplares es el bueno, y el proveedor sostiene que solo emitió uno."
+      },
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "contradiccion-sin-regla-de-desempate",
+        "que_falta": "un criterio de prevalencia entre los dos ejemplares —fecha de firma, versión o rectificativa— o la confirmación del importe por el emisor",
+        "citas": [
+          "u3",
+          "u5",
+          "u1"
+        ]
+      },
+      "nota": "27,00 € de diferencia por dos dígitos intercambiados: 6.352,50 y 6.325,50. Es la contradicción más fácil de no ver, porque las dos cifras se leen igual de rápido, y es la que un selector resuelve solo, quedándose con una y sin dejar rastro de que había otra."
+    }
+  ]
+}

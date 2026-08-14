@@ -1,0 +1,773 @@
+{
+  "version_de_la_forma": "1.0.0",
+  "dominio": "clase-incomoda",
+  "sintetico": true,
+  "vive_aparte_porque": "Estos doce casos ROMPEN A PROPÓSITO dos invariantes de corpus/tipos.ts, y por eso no se cargan con cargarCorpusEntero() ni entran en ninguna tasa agregada. La primera: hay casos donde necesarias > presupuesto.unidades_max, o sea que NO existe una selección correcta y la respuesta correcta es decir que no cabe. La segunda: hay casos donde la respuesta correcta no se puede sostener con citas accesibles dentro del presupuesto. Los dos corpus de dominio prohíben ambas cosas con un test, y hacen bien: mezcladas con los 150, estas doce hundirían la tasa agregada sin decir por qué. Separadas, son lo único del conjunto que puede DESCUBRIR algo, porque son las únicas cuya solución no sabemos escribir hoy.",
+  "advertencia": "Conjunto SINTÉTICO escrito a mano. NO demuestra nada sobre el tráfico real de un cliente. Su función es la contraria a la de un golden set: no acredita un mecanismo, enseña dónde el mecanismo que el plan describe no llega. Un knapsack que apruebe los 150 casos de los tres dominios y suspenda estos doce no está roto — está incompleto de una manera concreta y nombrada, y eso es lo que se puede meter en la hoja de ruta.",
+  "casos": [
+    {
+      "id": "inc-es-001",
+      "idioma": "es",
+      "clase": "puente-semantico-sin-solape",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["excepcion", "negacion"],
+      "par": "inc-ca-001",
+      "consulta": "¿Puedo devolver el jarrón de cerámica que compré la semana pasada?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Política de devoluciones v4 · cláusula 3.1",
+          "texto": "El cliente dispone de 21 días naturales desde la recepción del pedido para solicitar la devolución de cualquier artículo no excluido."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Política de devoluciones v4 · cláusula 4.2",
+          "texto": "Los artículos incluidos en la categoría 7 del catálogo no admiten devolución una vez retirado el precinto."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Ficha de producto · colección Nord",
+          "texto": "Los jarrones de la colección Nord se sirven con embalaje reforzado y sin coste adicional de transporte."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Estructura del catálogo · tabla de categorías",
+          "texto": "Menaje decorativo de cerámica, vidrio soplado y porcelana: categoría 7."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Manual de atención al cliente · § 6",
+          "texto": "Las devoluciones de artículos de menaje se tramitan en el mostrador de atención al cliente de cualquier tienda física."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          { "nombre": "puede_devolver", "valor": false, "critico": true, "citas": ["u2", "u4"] },
+          { "nombre": "categoria", "valor": 7, "critico": true, "citas": ["u4"] },
+          {
+            "nombre": "condicion_que_lo_impide",
+            "valor": "precinto retirado",
+            "critico": false,
+            "citas": ["u2"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "Las dos unidades necesarias no comparten NI UN token con la consulta: u2 habla de «categoría 7» y u4 de «menaje decorativo», y el cliente escribe «jarrón de cerámica». El puente —un jarrón de cerámica es menaje decorativo, y el menaje decorativo es categoría 7— son dos saltos, uno de conocimiento del mundo y otro de tabla. Mientras tanto, la unidad que MÁS se parece a la consulta (u3, que dice «jarrones» y «cerámica») es irrelevante, y la segunda (u1, que dice «devolución» y «artículo») responde lo contrario. Cualquier selector que puntúe cada unidad contra la consulta por separado —solape léxico, BM25, coseno de embeddings, un modelo de utilidad entrenado con pares consulta-pasaje— ordena exactamente al revés. Resolverlo pide recuperación multi-salto DENTRO del presupuesto, y eso no es el knapsack que describe F6: es un problema distinto que F6 da por resuelto río arriba.",
+      "nota": "Escrito para que caiga en el núcleo discriminante y no salga de él: las dos necesarias son las dos peor puntuadas por parecido con la consulta."
+    },
+    {
+      "id": "inc-ca-001",
+      "idioma": "ca",
+      "clase": "puente-semantico-sin-solape",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["excepcion", "negacion", "apostrof"],
+      "par": "inc-es-001",
+      "consulta": "Puc retornar el gerro de ceràmica que vaig comprar la setmana passada?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Política de devolucions v4 · clàusula 3.1",
+          "texto": "El client disposa de 21 dies naturals des de la recepció de la comanda per sol·licitar-ne la devolució de qualsevol article no exclòs."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Política de devolucions v4 · clàusula 4.2",
+          "texto": "Els articles inclosos a la categoria 7 del catàleg no admeten devolució un cop retirat el precinte."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Fitxa de producte · col·lecció Nord",
+          "texto": "Els gerros de la col·lecció Nord se serveixen amb embalatge reforçat i sense cost addicional de transport."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Estructura del catàleg · taula de categories",
+          "texto": "Parament decoratiu de ceràmica, vidre bufat i porcellana: categoria 7."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Manual d'atenció al client · § 6",
+          "texto": "Les devolucions d'articles de parament es tramiten al taulell d'atenció al client de qualsevol botiga física."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          { "nombre": "pot_retornar", "valor": false, "critico": true, "citas": ["u2", "u4"] },
+          { "nombre": "categoria", "valor": 7, "critico": true, "citas": ["u4"] },
+          {
+            "nombre": "condicio_que_ho_impedeix",
+            "valor": "precinte retirat",
+            "critico": false,
+            "citas": ["u2"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "El mateix forat que inc-es-001, i en català amb una capa més: la unitat que més s'assembla a la consulta (u3) porta «col·lecció» amb ela geminada i «gerros», i `normalizeText` de src/canonicalization/canonicalize.ts esborra el punt volat, cosa que encara l'acosta més a la consulta. El pont «gerro de ceràmica → parament decoratiu → categoria 7» no el veu cap puntuació per semblança.",
+      "nota": "Parella exacta de inc-es-001: mateixes xifres, mateixa estructura, mateixa resposta. Si un selector encerta en castellà i falla aquí, la degradació és per idioma."
+    },
+    {
+      "id": "inc-es-002",
+      "idioma": "es",
+      "clase": "evidencia-por-ausencia",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["excepcion", "negacion", "referencia-cruzada"],
+      "par": "inc-ca-002",
+      "consulta": "¿Cubre la garantía la rotura de la pantalla del portátil por una caída?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Condiciones de garantía v4 · cláusula 2.9",
+          "texto": "Quedan expresamente excluidos de la cobertura los daños por líquidos, los producidos por sobretensión de la red eléctrica, los derivados de un uso contrario a las instrucciones del fabricante y los ocasionados por reparaciones efectuadas en un servicio técnico no autorizado por Botiga Nord."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condiciones de garantía v4 · cláusula 2.4",
+          "texto": "La enumeración de la cláusula 2.3 es cerrada: cualquier supuesto no enumerado en ella queda fuera de la cobertura, sin necesidad de exclusión expresa."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Tarifa de reparaciones · modelo N-14",
+          "texto": "La pantalla del portátil modelo N-14 puede sustituirse fuera de garantía por 189,00 EUR, mano de obra incluida."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Condiciones de garantía v4 · cláusula 2.3",
+          "texto": "La garantía cubre exclusivamente los defectos de fabricación, los de materiales y los de conformidad con la descripción del producto."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Folleto del seguro de accidentes",
+          "texto": "Las caídas accidentales, los golpes y la rotura de pantalla están cubiertos por el seguro de accidentes opcional, que se contrata en el momento de la compra por un 6 % del precio del aparato y que cubre dos siniestros al año con una franquicia de 39,00 EUR por siniestro."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          { "nombre": "cubre_garantia", "valor": false, "critico": true, "citas": ["u4", "u2"] },
+          {
+            "nombre": "base",
+            "valor": "enumeracion_cerrada",
+            "critico": true,
+            "citas": ["u2"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "La evidencia decisiva es una AUSENCIA: la caída no está en la lista de la 2.3, y la 2.4 dice que esa lista es cerrada. Ninguna de las dos necesarias menciona «caída» ni «pantalla». La que sí las menciona (u5) empuja al «sí», y la lista de exclusiones de la 2.9 —que no incluye las caídas— empuja al «sí» todavía más fuerte, porque invita a razonar «si tuvieran que excluirla, la habrían excluido». Hoy no hay forma de puntuar una unidad por lo que NO dice: todo lo que existe mide parecido con la consulta, y el parecido de una lista cerrada con la pregunta que cae fuera de ella es cero por construcción. Peor: al selector le hace falta la 2.4 para saber que la 2.3 vale, y la 2.4 no habla de garantía, habla de otra cláusula.",
+      "nota": "Es la trampa inversa de la negación. Aquí no hay ningún «no cubre» que buscar: hay un «solo cubre» y, en otra unidad, la regla de que ese «solo» es literal."
+    },
+    {
+      "id": "inc-ca-002",
+      "idioma": "ca",
+      "clase": "evidencia-por-ausencia",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["excepcion", "negacion", "referencia-cruzada"],
+      "par": "inc-es-002",
+      "consulta": "La garantia cobreix el trencament de la pantalla del portàtil per una caiguda?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Condicions de garantia v4 · clàusula 2.9",
+          "texto": "Queden exclosos expressament de la cobertura els danys per líquids, els produïts per sobretensió de la xarxa elèctrica, els derivats d'un ús contrari a les instruccions del fabricant i els ocasionats per reparacions fetes en un servei tècnic no autoritzat per Botiga Nord."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condicions de garantia v4 · clàusula 2.4",
+          "texto": "L'enumeració de la clàusula 2.3 és tancada: qualsevol supòsit no enumerat queda fora de la cobertura, sense necessitat d'exclusió expressa."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Tarifa de reparacions · model N-14",
+          "texto": "La pantalla del portàtil model N-14 es pot substituir fora de garantia per 189,00 EUR, mà d'obra inclosa."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Condicions de garantia v4 · clàusula 2.3",
+          "texto": "La garantia cobreix exclusivament els defectes de fabricació, els de materials i els de conformitat amb la descripció del producte."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Fullet de l'assegurança d'accidents",
+          "texto": "Les caigudes accidentals, els cops i el trencament de pantalla estan coberts per l'assegurança d'accidents opcional, que es contracta en el moment de la compra per un 6 % del preu de l'aparell i que cobreix dos sinistres l'any amb una franquícia de 39,00 EUR per sinistre."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          { "nombre": "cobreix_garantia", "valor": false, "critico": true, "citas": ["u4", "u2"] },
+          { "nombre": "base", "valor": "enumeracio_tancada", "critico": true, "citas": ["u2"] }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "El mateix forat que inc-es-002. La prova és el que la llista NO diu: la caiguda no surt a la 2.3, i la 2.4 diu que aquella llista és tancada. Cap de les dues unitats necessàries no esmenta «caiguda» ni «pantalla», i les dues que sí que ho fan empenyen cap al «sí» — la de l'assegurança perquè diu que les caigudes estan cobertes en un altre lloc, i la llista d'exclusions de la 2.9 perquè convida a raonar «si l'haguessin d'excloure, l'haurien exclosa». No hi ha cap manera de puntuar una unitat pel que no diu: tot el que existeix mesura semblança amb la consulta, i la semblança d'una llista tancada amb la pregunta que en queda fora és zero per construcció.",
+      "nota": "Parella exacta de inc-es-002."
+    },
+    {
+      "id": "inc-es-003",
+      "idioma": "es",
+      "clase": "presupuesto-insuficiente",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["abstencion", "unidades"],
+      "par": "inc-ca-003",
+      "consulta": "¿Cuál es el importe total que hay que pagar por el pedido P-2026-0448?",
+      "presupuesto": { "unidades_max": 3 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "P-2026-0448 · línea 1",
+          "texto": "Línea 1: 40 unidades del artículo MOD-118 a 24,50 EUR/ud. Importe de línea: 980,00 EUR."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "P-2026-0448 · línea 2",
+          "texto": "Línea 2: 12 unidades del artículo MOD-204 a 61,00 EUR/ud. Importe de línea: 732,00 EUR."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "P-2026-0448 · portes",
+          "texto": "Portes: 48,00 EUR, no incluidos en los importes de línea."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "P-2026-0448 · descuento",
+          "texto": "Descuento comercial pactado: 5 % sobre la suma de los importes de línea, portes excluidos."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "P-2026-0448 · impuestos",
+          "texto": "Al importe resultante se le aplica el IPSI de Ceuta al 4 %, por estar el domicilio de entrega en dicha ciudad."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Condiciones generales de venta · cláusula 8",
+          "texto": "El importe a pagar de un pedido resulta de sumar los importes de todas sus líneas, restar el descuento comercial, añadir los portes y aplicar por último el impuesto que corresponda al domicilio de entrega."
+        },
+        {
+          "id": "u7",
+          "papel": "distractora",
+          "fuente": "Ficha del cliente",
+          "texto": "El cliente tiene concedido un límite de crédito de 10.000,00 EUR y paga a 30 días fecha factura."
+        }
+      ],
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "presupuesto-insuficiente",
+        "que_falta": "El importe a pagar se compone de seis piezas (dos líneas, portes, descuento, impuesto y la regla de composición) y el presupuesto solo admite tres unidades. Con tres, cualquier total que se afirme está incompleto, y estará además bien formado en euros: 1.712,00 sin portes ni descuento, 1.626,40 con descuento y sin portes, 1.760,00 con portes y sin descuento. La respuesta correcta es decir que con este presupuesto el total no se puede afirmar, y enseñar por qué citando la regla de composición.",
+        "citas": ["u6"]
+      },
+      "porQueNoSabemosResolverlo": "Aquí NO EXISTE una selección correcta: hacen falta seis unidades y caben tres. El corpus de facturación y el de contratos prohíben este caso con un test —exigen `necesarias <= unidades_max`— y hacen bien, porque mezclado con los demás solo baja la nota. Pero en producción es la situación más frecuente de todas: el presupuesto lo fija el tamaño del contexto, no el problema. Y hoy no hay ninguna manera de que un selector diga «no cabe»: la interfaz que describe el plan es (consulta, unidades, presupuesto) → subconjunto, y ningún subconjunto es esa respuesta. Un knapsack que mande sus tres mejores unidades produce un total perfectamente aritmético y mal, con citas válidas y accesibles a las tres unidades que mandó. Es el fallo más caro posible —el cliente no lo ve venir— y este corpus, tal y como está construido, no lo puede ni representar.",
+      "nota": "Lo que hace falta para arreglarlo no es un algoritmo mejor: es que el contrato de F6 tenga una tercera salida además de «este subconjunto» y «no sé». Algo como «no cabe, hace falta un presupuesto de al menos seis unidades». Eso es una decisión de diseño de la API, y este caso existe para forzarla antes de escribir el código."
+    },
+    {
+      "id": "inc-ca-003",
+      "idioma": "ca",
+      "clase": "presupuesto-insuficiente",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["abstencion", "unidades", "apostrof"],
+      "par": "inc-es-003",
+      "consulta": "Quin és l'import total que s'ha de pagar per la comanda P-2026-0451?",
+      "presupuesto": { "unidades_max": 3 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "necesaria",
+          "fuente": "P-2026-0451 · línia 1",
+          "texto": "Línia 1: 30 unitats de l'article MOD-118 a 24,50 EUR/u. Import de línia: 735,00 EUR."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "P-2026-0451 · línia 2",
+          "texto": "Línia 2: 15 unitats de l'article MOD-204 a 61,00 EUR/u. Import de línia: 915,00 EUR."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "P-2026-0451 · ports",
+          "texto": "Ports: 48,00 EUR, no inclosos en els imports de línia."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "P-2026-0451 · descompte",
+          "texto": "Descompte comercial pactat: 5 % sobre la suma dels imports de línia, ports exclosos."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "P-2026-0451 · impostos",
+          "texto": "A l'import resultant s'hi aplica l'IPSI de Ceuta al 4 %, perquè el domicili de lliurament és en aquesta ciutat."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Condicions generals de venda · clàusula 8",
+          "texto": "L'import a pagar d'una comanda resulta de sumar els imports de totes les línies, restar-ne el descompte comercial, afegir-hi els ports i aplicar per últim l'impost que correspongui al domicili de lliurament."
+        },
+        {
+          "id": "u7",
+          "papel": "distractora",
+          "fuente": "Fitxa del client",
+          "texto": "El client té concedit un límit de crèdit de 10.000,00 EUR i paga a 30 dies data factura."
+        }
+      ],
+      "respuesta": {
+        "tipo": "abstencion",
+        "motivo": "presupuesto-insuficiente",
+        "que_falta": "Calen sis unitats i n'hi caben tres. Qualsevol total que s'afirmi amb tres serà un import ben format en euros i incomplet. La resposta correcta és dir que amb aquest pressupost no es pot afirmar el total, i ensenyar-ho citant la regla de composició.",
+        "citas": ["u6"]
+      },
+      "porQueNoSabemosResolverlo": "El mateix forat de contracte que inc-es-003, i no és un forat d'algorisme sinó d'interfície: (consulta, unitats, pressupost) → subconjunt no té cap manera d'expressar «no hi cap». Calen sis unitats i n'hi caben tres, de manera que cap subconjunt no és la resposta correcta. Un selector que enviï les seves tres millors unitats produirà un total ben format en euros, amb cites vàlides i accessibles a les tres que ha enviat, i equivocat — que és el fallada més cara possible perquè el client no la veu venir.",
+      "nota": "Parella de inc-es-003 amb xifres diferents perquè el par mesuri l'idioma i no la memòria de la resposta."
+    },
+    {
+      "id": "inc-es-004",
+      "idioma": "es",
+      "clase": "regla-general-sin-anclaje",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["con-iva-sin-iva", "importes-parecidos"],
+      "par": "inc-ca-004",
+      "consulta": "¿Se aplicó bien el recargo por demora en la factura F-2026-207?",
+      "presupuesto": { "unidades_max": 4 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2026-207 · observaciones",
+          "texto": "La factura F-2026-207 se emitió el 03/07/2026 y venció el 02/08/2026 sin que constara el cobro."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condiciones generales · cláusula 11.4",
+          "texto": "El recargo por demora se calcula siempre sobre la base imponible del documento, nunca sobre el total con impuestos."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2026-207 · desglose",
+          "texto": "F-2026-207: base imponible 4.950,00 EUR; total con impuestos 5.989,50 EUR."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Registro de avisos de cobro",
+          "texto": "Se remitieron dos avisos de cobro de la factura F-2026-207, el 05/08/2026 y el 19/08/2026."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2026-207 · línea de recargo",
+          "texto": "F-2026-207: recargo por demora aplicado, 148,50 EUR."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Contrato marco · anexo de precios",
+          "texto": "El tipo del recargo por demora pactado entre las Partes es del 3 %."
+        },
+        {
+          "id": "u7",
+          "papel": "distractora",
+          "fuente": "Condiciones generales · cláusula 11.7",
+          "texto": "Los intereses de demora se devengan además del recargo y se liquidan al cierre del ejercicio."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "aplicado_correctamente",
+            "valor": true,
+            "critico": true,
+            "citas": ["u2", "u3", "u5", "u6"]
+          },
+          {
+            "nombre": "base_de_calculo",
+            "valor": "sin-iva",
+            "critico": true,
+            "citas": ["u2"]
+          },
+          {
+            "nombre": "recargo_correcto_eur",
+            "valor": "148.50",
+            "critico": false,
+            "citas": ["u3", "u6"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "La unidad que decide la respuesta —la 11.4, que dice sobre qué base se calcula— no menciona la factura, ni el importe, ni la fecha: es una REGLA GENERAL, y la pregunta es sobre un caso concreto. Todo lo que un recuperador sabe puntuar es parecido con la consulta, y la consulta lleva «F-2026-207», que es justamente lo que la regla no dice. Las cuatro necesarias caben exactas en el presupuesto, así que no hay margen: tirar la 11.4 y quedarse con cualquiera de las distractoras —que sí llevan «F-2026-207» en el texto— produce la respuesta contraria, «mal aplicado», porque el 3 % de 5.989,50 son 179,69 y no 148,50. Un fallo así sale bien formado, citado y con aritmética verificable. Que las reglas generales pesen poco en cualquier ranking por similitud es un problema conocido de la recuperación y no está resuelto; el knapsack lo hereda entero.",
+      "nota": "Las tres distractoras están escritas para ganar por parecido: todas nombran la factura por su número."
+    },
+    {
+      "id": "inc-ca-004",
+      "idioma": "ca",
+      "clase": "regla-general-sin-anclaje",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["con-iva-sin-iva", "importes-parecidos"],
+      "par": "inc-es-004",
+      "consulta": "S'ha aplicat bé el recàrrec per demora a la factura F-2026-311?",
+      "presupuesto": { "unidades_max": 4 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "F-2026-311 · observacions",
+          "texto": "La factura F-2026-311 es va emetre el 03/07/2026 i va vèncer el 02/08/2026 sense que hi constés el cobrament."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condicions generals · clàusula 11.4",
+          "texto": "El recàrrec per demora es calcula sempre sobre la base imposable del document, mai sobre el total amb impostos."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "F-2026-311 · desglossament",
+          "texto": "F-2026-311: base imposable 3.600,00 EUR; total amb impostos 4.356,00 EUR."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "Registre d'avisos de cobrament",
+          "texto": "Es van trametre dos avisos de cobrament de la factura F-2026-311, el 05/08/2026 i el 19/08/2026."
+        },
+        {
+          "id": "u5",
+          "papel": "necesaria",
+          "fuente": "F-2026-311 · línia de recàrrec",
+          "texto": "F-2026-311: recàrrec per demora aplicat, 108,00 EUR."
+        },
+        {
+          "id": "u6",
+          "papel": "necesaria",
+          "fuente": "Contracte marc · annex de preus",
+          "texto": "El tipus del recàrrec per demora pactat entre les Parts és del 3 %."
+        },
+        {
+          "id": "u7",
+          "papel": "distractora",
+          "fuente": "Condicions generals · clàusula 11.7",
+          "texto": "Els interessos de demora es meriten a més del recàrrec i es liquiden al tancament de l'exercici."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "aplicat_correctament",
+            "valor": true,
+            "critico": true,
+            "citas": ["u2", "u3", "u5", "u6"]
+          },
+          { "nombre": "base_de_calcul", "valor": "sin-iva", "critico": true, "citas": ["u2"] },
+          {
+            "nombre": "recarrec_correcte_eur",
+            "valor": "108.00",
+            "critico": false,
+            "citas": ["u3", "u6"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "El mateix que inc-es-004: la unitat que decideix la resposta —la 11.4, que diu sobre quina base es calcula— no esmenta ni la factura, ni l'import, ni la data, perquè és una REGLA GENERAL i la pregunta és sobre un cas concret. Les tres distractores sí que porten «F-2026-311» al text i guanyen per semblança. Les quatre necessàries caben justes al pressupost, així que no hi ha marge: tirar la 11.4 dona 130,68 EUR (el 3 % del total amb impostos) en comptes de 108,00, i la resposta surt ben formada, citada i amb aritmètica verificable. Que les regles generals pesin poc en qualsevol ordenació per semblança és un problema conegut de la recuperació i no està resolt.",
+      "nota": "Parella de inc-es-004 amb xifres diferents."
+    },
+    {
+      "id": "inc-es-005",
+      "idioma": "es",
+      "clase": "autoridad-separada-del-dato",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["referencia-cruzada", "derogacion"],
+      "par": "inc-ca-005",
+      "consulta": "¿Qué plazo de preaviso hay que respetar para que el contrato no se renueve?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Contrato marco · cláusula 4.1",
+          "texto": "El contrato se prorroga automáticamente por periodos anuales salvo preaviso de cualquiera de las Partes."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Anexo III · apartado 1",
+          "texto": "Preaviso de no renovación: sesenta (60) días naturales antes del vencimiento."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Contrato marco · cláusula 12.2",
+          "texto": "El preaviso de resolución anticipada por incumplimiento es de treinta (30) días naturales."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Acta de firma · 12/02/2026",
+          "texto": "El Anexo III, en su versión de 12 de febrero de 2026, forma parte inseparable del contrato y ha sido firmado por ambas Partes; deja sin efecto cualquier anexo anterior de igual objeto."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Anexo III · apartado 4",
+          "texto": "Las notificaciones entre las Partes se cursarán por burofax con acuse de recibo."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          { "nombre": "plazo_preaviso_dias", "valor": 60, "critico": true, "citas": ["u2", "u4"] },
+          {
+            "nombre": "fuente_vinculante",
+            "valor": "Anexo III v. 12/02/2026",
+            "critico": true,
+            "citas": ["u4"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "u4 no aporta NINGÚN hecho de la respuesta: no dice ningún plazo. Lo que aporta es la admisibilidad del hecho —que el Anexo III vincula y que deja fuera cualquier anexo anterior—. Cualquier función de utilidad que puntúe una unidad por lo que añade al VALOR de la respuesta le da cero y la tira, y entonces la cita queda muerta: la aceptación de F6 exige «citas válidas y accesibles» y aquí la única cita que sostiene que el 60 es el bueno se ha quedado fuera del contexto. La respuesta sigue siendo 60 y sigue siendo correcta; lo que no se puede es defenderla. No sabemos puntuar autoridad, solo contenido, y las dos cosas no viven en la misma unidad.",
+      "nota": "Este caso es el que separa «responder bien» de «responder de forma auditable», que en documentos jurídicos no es lo mismo. Un knapsack que optimice información por token lo suspende siempre."
+    },
+    {
+      "id": "inc-ca-005",
+      "idioma": "ca",
+      "clase": "autoridad-separada-del-dato",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["referencia-cruzada", "derogacion", "apostrof"],
+      "par": "inc-es-005",
+      "consulta": "Quin termini de preavís s'ha de respectar perquè el contracte no es renovi?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "distractora",
+          "fuente": "Contracte marc · clàusula 4.1",
+          "texto": "El contracte es prorroga automàticament per períodes anuals llevat de preavís de qualsevol de les Parts."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Annex III · apartat 1",
+          "texto": "Preavís de no-renovació: noranta (90) dies naturals abans del venciment."
+        },
+        {
+          "id": "u3",
+          "papel": "distractora",
+          "fuente": "Contracte marc · clàusula 12.2",
+          "texto": "El preavís de resolució anticipada per incompliment és de trenta (30) dies naturals."
+        },
+        {
+          "id": "u4",
+          "papel": "necesaria",
+          "fuente": "Acta de signatura · 12/02/2026",
+          "texto": "L'Annex III, en la versió de 12 de febrer de 2026, forma part inseparable del contracte i ha estat signat per totes dues Parts; deixa sense efecte qualsevol annex anterior del mateix objecte."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Annex III · apartat 4",
+          "texto": "Les notificacions entre les Parts es cursaran per burofax amb justificant de recepció."
+        }
+      ],
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          { "nombre": "termini_preavis_dies", "valor": 90, "critico": true, "citas": ["u2", "u4"] },
+          {
+            "nombre": "font_vinculant",
+            "valor": "Annex III v. 12/02/2026",
+            "critico": true,
+            "citas": ["u4"]
+          }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "El mateix que inc-es-005: u4 no aporta CAP fet de la resposta —no diu cap termini—, aporta l'admissibilitat del fet, que l'Annex III vincula i que deixa fora qualsevol annex anterior. Qualsevol funció d'utilitat que puntuï una unitat pel que afegeix al VALOR de la resposta li dona zero i la llença, i llavors la cita queda morta: l'acceptació de F6 exigeix «cites vàlides i accessibles» i aquí l'única cita que sosté que el 90 és el bo s'ha quedat fora del context. Noranta dies i no seixanta perquè el par mesuri l'idioma i no la memòria de la resposta.",
+      "nota": "Parella de inc-es-005."
+    },
+    {
+      "id": "inc-es-006",
+      "idioma": "es",
+      "clase": "seleccionar-exige-haber-respondido",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["derogacion", "importes-parecidos", "unidades"],
+      "par": "inc-ca-006",
+      "consulta": "¿Qué penalización se aplica por el retraso en la entrega de julio del pedido PED-2026-311?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Contrato marco · cláusula 9.2",
+          "fecha": "2026-01-15",
+          "texto": "Penalización por retraso: 0,5 % del importe del pedido por cada día natural de demora, con un tope del 10 %."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condiciones particulares PED-2026-311 · cláusula 3",
+          "fecha": "2026-06-30",
+          "texto": "Penalización por retraso: 250,00 EUR por cada día natural de demora, sin tope."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Contrato marco · cláusula 1.3",
+          "fecha": "2026-01-15",
+          "texto": "En caso de discrepancia entre lo previsto en este contrato marco y las condiciones particulares de un pedido concreto, prevalecerán estas últimas."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "PED-2026-311 · cabecera",
+          "texto": "PED-2026-311: importe del pedido 46.000,00 EUR, entrega comprometida el 15/07/2026."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Registro de incidencias",
+          "texto": "La entrega de PED-2026-311 se completó el 19/07/2026 tras una incidencia en el transporte."
+        }
+      ],
+      "desempate": {
+        "regla": "jerarquia-documental",
+        "ganadora": "u2",
+        "desplazadas": ["u1"],
+        "porque": "La cláusula 1.3 del contrato marco cede expresamente ante las condiciones particulares del pedido."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "penalizacion_por_dia_eur",
+            "valor": "250.00",
+            "critico": true,
+            "citas": ["u2", "u3"]
+          },
+          {
+            "nombre": "regla_aplicada",
+            "valor": "condiciones-particulares-prevalecen",
+            "critico": true,
+            "citas": ["u3"]
+          },
+          { "nombre": "hay_tope", "valor": false, "critico": false, "citas": ["u2"] }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "u1 y u2 son SIMÉTRICAS para cualquier puntuación independiente: las dos dicen «penalización por retraso», las dos dan una cifra, las dos son plausibles y las dos están vigentes. Nada dentro de u1 ni dentro de u2 dice cuál manda. Lo dice u3, que ni menciona la penalización ni el pedido. Con un presupuesto de dos, el selector tiene que quedarse con u3 y con la GANADORA, y para saber cuál es la ganadora tiene que haber leído y aplicado u3 — es decir, tiene que haber resuelto el caso antes de decidir qué manda al modelo que lo resuelve. La formulación del plan (puntuar cada unidad, meter en la mochila por valor/coste) supone que el valor de una unidad se puede evaluar por separado, y aquí el valor de u1 y de u2 depende de si u3 entra o no. Es un knapsack con dependencias entre objetos, que no es el mismo problema y no tiene la misma solución. Quedarse con u1 y u2 —lo que hace cualquier selector por similitud— produce una contradicción sin regla y empuja a una abstención que aquí es EQUIVOCADA: la regla existe, la ha tirado él.",
+      "nota": "El compañero de esto es ct-es-009/ct-es-010 del corpus de contratos, que es el mismo montaje con la regla presente y ausente. La diferencia es que allí el presupuesto permite quedarse con todo lo que hace falta y aquí no: aquí hay que ELEGIR sabiendo, y elegir es lo que se está midiendo."
+    },
+    {
+      "id": "inc-ca-006",
+      "idioma": "ca",
+      "clase": "seleccionar-exige-haber-respondido",
+      "dominio": "clase-incomoda",
+      "dificultad": "dificil",
+      "trampas": ["derogacion", "importes-parecidos", "unidades", "apostrof"],
+      "par": "inc-es-006",
+      "consulta": "Quina penalització s'aplica pel retard en el lliurament de juliol de la comanda PED-2026-318?",
+      "presupuesto": { "unidades_max": 2 },
+      "evidencia": [
+        {
+          "id": "u1",
+          "papel": "contradictoria",
+          "fuente": "Contracte marc · clàusula 9.2",
+          "fecha": "2026-01-15",
+          "texto": "Penalització per retard: 0,5 % de l'import de la comanda per cada dia natural de demora, amb un límit del 10 %."
+        },
+        {
+          "id": "u2",
+          "papel": "necesaria",
+          "fuente": "Condicions particulars PED-2026-318 · clàusula 3",
+          "fecha": "2026-06-30",
+          "texto": "Penalització per retard: 180,00 EUR per cada dia natural de demora, sense límit."
+        },
+        {
+          "id": "u3",
+          "papel": "necesaria",
+          "fuente": "Contracte marc · clàusula 1.3",
+          "fecha": "2026-01-15",
+          "texto": "En cas de discrepància entre el que preveu aquest contracte marc i les condicions particulars d'una comanda concreta, prevaldran aquestes últimes."
+        },
+        {
+          "id": "u4",
+          "papel": "distractora",
+          "fuente": "PED-2026-318 · capçalera",
+          "texto": "PED-2026-318: import de la comanda 39.000,00 EUR, lliurament compromès el 15/07/2026."
+        },
+        {
+          "id": "u5",
+          "papel": "distractora",
+          "fuente": "Registre d'incidències",
+          "texto": "El lliurament de PED-2026-318 es va completar el 19/07/2026 després d'una incidència en el transport."
+        }
+      ],
+      "desempate": {
+        "regla": "jerarquia-documental",
+        "ganadora": "u2",
+        "desplazadas": ["u1"],
+        "porque": "La clàusula 1.3 del contracte marc cedeix expressament davant les condicions particulars de la comanda."
+      },
+      "respuesta": {
+        "tipo": "valor",
+        "campos": [
+          {
+            "nombre": "penalitzacio_per_dia_eur",
+            "valor": "180.00",
+            "critico": true,
+            "citas": ["u2", "u3"]
+          },
+          {
+            "nombre": "regla_aplicada",
+            "valor": "condicions-particulars-prevalen",
+            "critico": true,
+            "citas": ["u3"]
+          },
+          { "nombre": "hi_ha_limit", "valor": false, "critico": false, "citas": ["u2"] }
+        ]
+      },
+      "porQueNoSabemosResolverlo": "El mateix que inc-es-006: u1 i u2 són SIMÈTRIQUES per a qualsevol puntuació independent —totes dues diuen «penalització per retard», totes dues donen una xifra, totes dues són vigents— i el que decideix quina mana és u3, que no esmenta ni la penalització ni la comanda. Amb un pressupost de dues, per saber quina és la guanyadora cal haver llegit i aplicat u3, és a dir, cal haver resolt el cas abans de decidir què s'envia al model que l'ha de resoldre. El valor de u1 i de u2 depèn de si u3 entra a la motxilla, i una motxilla amb dependències entre objectes no és el problema que descriu el pla ni té la mateixa solució.",
+      "nota": "Parella de inc-es-006 amb xifres diferents."
+    }
+  ]
+}
