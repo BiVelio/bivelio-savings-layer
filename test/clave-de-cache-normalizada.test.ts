@@ -71,6 +71,16 @@ const PARES_PELIGROSOS: ReadonlyArray<readonly [string, string, string]> = [
   ["el precio es 3.14 euros", "el precio es 314 euros", "cifra: el punto decimal NO es adorno"],
   ["el precio es 1.234,56 euros", "el precio es 1.23456 euros", "cifra: separador de miles"],
   ["el tren de las 12:30", "el tren de las 1230", "hora: los dos puntos separan"],
+  // El «;» es Shift+«,» y el «:» es Shift+«.» en el teclado español: son teclas
+  // vecinas, así que «12;30» es la hora escrita deprisa. Se iba sin mirar a los
+  // vecinos y fusionaba las cifras igual que lo habría hecho el «:».
+  ["el tren de las 12;30", "el tren de las 1230", "hora: el punto y coma del teclado"],
+  // El decimal sin entero. Sin la guarda, «.5» se queda en «5» y la clave
+  // promete medio euro donde el texto decía cinco.
+  ["el precio es .5 euros", "el precio es 5 euros", "cifra: el decimal sin entero"],
+  // Las pulgadas escritas con el signo tipográfico correcto (prima doble, «″»),
+  // que NFKC parte en dos primas simples antes de que la tabla lo vea.
+  ["una pantalla de 5″", "una pantalla de 5'", "unidad: el prima doble son pulgadas"],
   ["cuanto es 2·3", "cuanto es 23", "cifra: el punto volado multiplica"],
   ["la reunión del 20/07/2026", "la reunion del 21/07/2026", "fecha: un día"],
   ["el precio incluye IVA", "el precio no incluye IVA", "es: negación"],
@@ -91,6 +101,7 @@ const PELIGROSOS_TAMBIEN_PARA_LA_SEMANTICA = [
   "cifra: el punto decimal NO es adorno",
   "cifra: el punto volado multiplica",
   "hora: los dos puntos separan",
+  "hora: el punto y coma del teclado",
   "fecha: un día",
   "es: negación",
   "ca: negació",
@@ -139,6 +150,17 @@ describe("⛔ lo que NO puede colisionar", () => {
     expect(resolvers.try(canonicalize(peticion("cuanto es 3! + 2")))).toBeNull();
     expect(resolvers.try(canonicalize(peticion("¿Cuánto es 2 + 2?")))?.text).toBe("4");
     expect(resolvers.try(canonicalize(peticion("cuanto es (2+3)*4")))?.text).toBe("20");
+  });
+
+  it("tampoco calcula nada cuando el separador de una lista desaparece", () => {
+    // El «;» separa listas en las hojas de cálculo en español. Si la
+    // normalización se lo come, «cuánto es 1;2;3» le llega al resolver como
+    // «cuánto es 123» y contesta «123» sin llamar a nadie: una respuesta
+    // fabricada aquí y apuntada como llamada evitada. Es el mismo fallo que
+    // evita la guarda del «!», por otra tecla.
+    const resolvers = createDefaultResolvers();
+    expect(resolvers.try(canonicalize(peticion("cuanto es 1;2;3")))).toBeNull();
+    expect(resolvers.try(canonicalize(peticion("cuanto es 2;3")))).toBeNull();
   });
 });
 

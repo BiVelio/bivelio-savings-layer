@@ -95,6 +95,13 @@ const ESPACIOS = /\s+/g;
 // curvas, guiones largos, el apóstrofo tipográfico. El autor no eligió ninguno y
 // no distinguen nada, pero parten la clave en dos.
 const TIPOGRAFICAS: ReadonlyArray<readonly [RegExp, string]> = [
+  // Esta fila va PRIMERA y no es redundante con la de las comillas dobles: NFKC
+  // ya ha corrido, y descompone el prima doble «″» (la marca tipográfica de las
+  // pulgadas) en dos primas simples. Sin esta línea la fila siguiente ya no lo
+  // ve, lo recoge la de la comilla simple y «mide 5″» sale como «mide 5'»: cinco
+  // PULGADAS convertidas en cinco PIES, colisionando con la clave de los pies.
+  // Es el mismo par que el test declara peligroso, escrito con el signo correcto.
+  [/′′/g, '"'], // ″ tras NFKC
   [/[‘’‚‛′´`]/g, "'"], // ‘ ’ ‚ ‛ ′ ´ `
   [/[“”„‟″«»]/g, '"'], // “ ” „ ‟ ″ « »
   [/[‐-―−]/g, "-"], // ‐ ‑ ‒ – — ― −
@@ -142,7 +149,16 @@ export function normalizeText(text: string): string {
       case "?":
       case "¡":
       case ";":
-        return "";
+        // Adorno de frase, salvo si SEPARA DOS CIFRAS. El «;» es el caso real:
+        // en el teclado español es Shift+«,» y el «:» es Shift+«.», así que
+        // «12;30» es la hora escrita deprisa, y en las hojas de cálculo en
+        // español es el separador de listas («suma 1;2;3»). Quitarlo sin mirar
+        // fusiona los números: «12;30» pasaba a «1230» y «1;2;3» a «123», que es
+        // exactamente el fallo del que protegen las guardas de «.» y «:». Y no
+        // se quedaba en la clave: el resolver aritmético, que declina «3! + 2»
+        // porque no sabe qué es «!», sí contestaba «123» a «cuánto es 1;2;3» —una
+        // respuesta calculada aquí, con la llamada apuntada como evitada—.
+        return esDigito(antes) && esDigito(despues) ? signo : "";
       case "!":
         // Pegado a una cifra es un factorial, y el resolver aritmético declina al
         // verlo. Quitarlo le hace leer «3! + 2» como «3 + 2» y responder 5.
