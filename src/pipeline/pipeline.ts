@@ -859,7 +859,19 @@ export class SavingsPipeline {
     // texto del líder tal cual. Sin esto, dos peticiones concurrentes idénticas
     // en las que solo una traía `modelCascade: "on"` se coalescían, y la que
     // tenía la cascada APAGADA recibía la respuesta del modelo barato.
-    const inflightKey = buildInflightKey(canonical, { servedModel: cascada.modeloServido });
+    //
+    // Y CON LA MARCA DE DIFERIBLE, por el mismo motivo en el otro eje. El tier no
+    // parte la clave EXACTA a propósito —ahí la respuesta ya está escrita y el
+    // tier sólo eligió la cola—, pero esta puerta ata al seguidor a una llamada
+    // que aún no ha vuelto. Sin separar, un llamante que NO declaró la palanca se
+    // coalescía con un líder que sí, y pagaba la latencia de `flex` (10 min de
+    // timeout por defecto, con dos reintentos del SDK) por una decisión que no
+    // era suya, sin nada en el informe que se lo dijera: `report.deferred` sólo
+    // se le publica a quien declaró la palanca.
+    const inflightKey = buildInflightKey(canonical, {
+      servedModel: cascada.modeloServido,
+      deferrable: toggles.deferrable === true,
+    });
     const runExpensive = async (): Promise<SavingsResult<T>> => {
       try {
         return await this.expensivePath<T>(

@@ -284,6 +284,42 @@ describe("el informe del tier diferible", () => {
     expect(report.deferred!.estimatedTierSaving).toBeCloseTo(0.0018, 10);
   });
 
+  it("⛔ los tokens de la caché de prefijo se tarifan a SU tarifa, no a la entera", async () => {
+    // LA VERJA QUE ESTABA ESCRITA Y NO PROBADA: quitar el `cachedInputPer1k` del
+    // cálculo no tumbaba NINGÚN test, porque ningún caso traía tarifa cacheada.
+    //
+    // Y es la interacción que más importa de las dos palancas, porque componen:
+    // «Tokens are priced at Batch API rates, WITH ADDITIONAL DISCOUNTS FROM
+    // PROMPT CACHING» (guía Flex de OpenAI). O sea que el 0,5 va ENCIMA de la
+    // tarifa cacheada, no en su lugar. Tarifando los 800 tokens cacheados a
+    // precio de entrada entero, el ahorro publicado sale de 0,0012 a 0,0018: un
+    // 50% de más sobre una petición que acertó en la caché del proveedor, que
+    // contra OpenAI es automática y por tanto el caso NORMAL, no el raro.
+    const p: Provider = {
+      id: "con-cache",
+      async generate(): Promise<ProviderResponse> {
+        return {
+          text: "ok",
+          usage: { inputTokens: 1000, outputTokens: 200, cachedInputTokens: 800 },
+          servedServiceTier: "flex",
+          requestedServiceTier: "flex",
+        };
+      },
+    };
+    const capaConCache = createSavingsLayer({
+      provider: p,
+      costModels: {
+        "openai/gpt-4o-mini": { inputPer1k: 0.002, cachedInputPer1k: 0.0005, outputPer1k: 0.008 },
+      },
+    });
+    const { report } = await capaConCache.generate(peticion(true));
+
+    // 200 no cacheados a 0,002/1k + 800 cacheados a 0,0005/1k + 200 de salida a
+    // 0,008/1k = 0,0024. La mitad, 0,0012.
+    expect(report.deferred!.credited).toBe(true);
+    expect(report.deferred!.estimatedTierSaving).toBeCloseTo(0.0012, 10);
+  });
+
   it("⛔ NO SE ACREDITA un tier DEGRADADO, aunque se haya pedido", async () => {
     // ESTE ES EL TEST QUE JUSTIFICA LA PALANCA ENTERA. El proveedor recibió
     // `flex` y contestó `default`: se cobra entero, en silencio. Acreditar aquí
@@ -377,13 +413,18 @@ describe("contabilidad: diferir no toca ninguno de los cuatro libros", () => {
 
 // ── La caché: el tier NO parte la clave ────────────────────────────────────
 
+type Informe = Awaited<ReturnType<ReturnType<typeof capa>["generate"]>>;
+
 /**
- * Coalesce dos peticiones en una: el LÍDER siempre declara `deferrable`, el
- * seguidor declara lo que se le pase. Devuelve el informe del seguidor.
+ * Lanza dos peticiones CONCURRENTES e idénticas salvo por la palanca: el LÍDER
+ * siempre declara `deferrable`, el segundo declara lo que se le pase.
+ *
+ * El proveedor se queda parado en una puerta hasta que las dos han entrado, que
+ * es lo que fuerza la ventana de singleflight.
  */
-async function coalescer(
-  seguidorDeclara: boolean,
-): Promise<{ seguidor: Awaited<ReturnType<ReturnType<typeof capa>["generate"]>>; llamadas: number }> {
+async function concurrentes(
+  segundoDeclara: boolean,
+): Promise<{ primero: Informe; segundo: Informe; llamadas: number }> {
   let soltar: (() => void) | undefined;
   const puerta = new Promise<void>((res) => {
     soltar = res;
@@ -404,12 +445,11 @@ async function coalescer(
   };
   const capaUnica = capa(lento);
   const a = capaUnica.generate(peticion(true));
-  const b = capaUnica.generate(peticion(seguidorDeclara));
+  const b = capaUnica.generate(peticion(segundoDeclara));
   await new Promise((r) => setTimeout(r, 0));
   soltar!();
-  const [ra, rb] = await Promise.all([a, b]);
-  const seguidor = ra.report.cache.result === "singleflight" ? ra : rb;
-  return { seguidor, llamadas };
+  const [primero, segundo] = await Promise.all([a, b]);
+  return { primero, segundo, llamadas };
 }
 
 describe("la clave de caché no se parte por el tier", () => {
@@ -434,8 +474,11 @@ describe("la clave de caché no se parte por el tier", () => {
     // los tokens: el seguidor construía su informe con `{...leader.report}`, así
     // que un `estimatedTierSaving` de UNA llamada se republicaba N+1 veces —una
     // por seguidor— sobre peticiones que no tocaron al proveedor.
-    const { seguidor, llamadas } = await coalescer(true);
+    // Los DOS declararon la palanca, así que sí coalescen: es la misma decisión
+    // de latencia y el seguidor no hereda una espera que no hubiera aceptado.
+    const { primero, segundo, llamadas } = await concurrentes(true);
     expect(llamadas).toBe(1);
+    const seguidor = primero.report.cache.result === "singleflight" ? primero : segundo;
     expect(seguidor.report.cache.result).toBe("singleflight");
     expect(seguidor.report.calls.actualLlm).toBe(0);
     // No llamó al proveedor: no se le sirvió ningún tier y no se le acredita nada.
@@ -445,17 +488,59 @@ describe("la clave de caché no se parte por el tier", () => {
     expect(seguidor.report.deferred!.reason).toMatch(/no provider call was made/);
   });
 
-  it("⛔ un seguidor que NO declaró nada no recibe el bloque del líder que SÍ", async () => {
-    // LA FUGA DE VERDAD, y la que el caso de arriba no cubre. La clave de
-    // singleflight no lleva el flag —a propósito, igual que la de caché—, así que
-    // un seguidor que nunca pidió diferir puede coalescerse con un líder que sí.
-    // Heredando el informe del líder, ese seguidor recibía un bloque `deferred`
-    // acreditado sobre una palanca que él no encendió y una llamada que no hizo.
-    const { seguidor, llamadas } = await coalescer(false);
-    expect(llamadas).toBe(1);
-    expect(seguidor.report.cache.result).toBe("singleflight");
-    expect(seguidor.report.deferred).toBeUndefined();
-    expect("deferred" in seguidor.report).toBe(false);
+  it("⛔ quien NO declaró la palanca NO se coalesce con un líder que SÍ", async () => {
+    // LA FUGA EN EL EJE DE LA LATENCIA, y es la que la clave de singleflight ya
+    // documenta para la cascada: el seguidor no re-ejecuta nada, se le entrega lo
+    // del líder, así que hereda TAMBIÉN su espera. Con el flag fuera de la clave,
+    // un llamante de camino de usuario se coalescía con un líder en `flex` y
+    // pagaba su latencia —10 min de timeout por defecto, con dos reintentos del
+    // SDK— por una decisión que no era suya. Y sin nada en el informe que se lo
+    // dijera: `report.deferred` sólo se publica a quien declaró la palanca, así
+    // que el único sitio donde eso se veía era su monitorización.
+    //
+    // El tier NO parte la clave EXACTA a propósito (ahí la respuesta ya está
+    // escrita y no hay espera que heredar). Ésta sí, porque ata a una llamada que
+    // aún no ha vuelto.
+    const { primero, segundo, llamadas } = await concurrentes(false);
+    expect(llamadas).toBe(2);
+    expect(primero.report.cache.result).not.toBe("singleflight");
+    expect(segundo.report.cache.result).not.toBe("singleflight");
+    // Y el que no declaró nada sigue sin recibir bloque alguno.
+    const sinPalanca = primero.report.deferred === undefined ? primero : segundo;
+    expect("deferred" in sinPalanca.report).toBe(false);
+  });
+
+  it("⛔ el que no difirió no ESPERA la latencia del que sí", async () => {
+    // La cuenta que de verdad importa, medida: sin separar la clave el segundo
+    // esperaba lo que tardó el primero. `flex` es «slower and variable» y OpenAI
+    // no publica compromiso, así que esa espera no tiene techo conocido.
+    let llamadas = 0;
+    const lento: Provider = {
+      id: "lento-flex",
+      async generate(req: ProviderRequest): Promise<ProviderResponse> {
+        llamadas += 1;
+        await new Promise((r) => setTimeout(r, req.deferrable === true ? 300 : 5));
+        return {
+          text: "ok",
+          usage: { inputTokens: 1000, outputTokens: 200 },
+          ...(req.deferrable === true
+            ? { servedServiceTier: "flex", requestedServiceTier: "flex" }
+            : { servedServiceTier: "default" }),
+        };
+      },
+    };
+    const capaUnica = capa(lento);
+    const diferido = capaUnica.generate(peticion(true));
+    await new Promise((r) => setTimeout(r, 10));
+    const t0 = Date.now();
+    await capaUnica.generate(peticion(false));
+    const espera = Date.now() - t0;
+    await diferido;
+
+    expect(llamadas).toBe(2);
+    // Su propia llamada (5 ms), no la del líder (300 ms). El margen es amplio a
+    // propósito: lo que se afirma es que NO heredó, no cuánto tarda la máquina.
+    expect(espera).toBeLessThan(150);
   });
 
   it("en un acierto de caché el bloque se publica igual, diciendo que no hubo llamada", async () => {

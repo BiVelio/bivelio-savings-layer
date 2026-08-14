@@ -242,13 +242,22 @@ export interface DeferredExecutionReport {
    * What the tier was worth on this request, in your currency unit.
    *
    * A COUNTERFACTUAL priced from the standard rate card: this request was not
-   * also run at standard price, so it is `cost.actual * (1 - discountRate)`.
+   * also run at standard price, so it is `(1 - discountRate)` applied to the
+   * standard-rate cost of THE ONE CALL whose {@link servedTier} was read.
+   *
+   * ⚠️ IT IS NOT `cost.actual * (1 - discountRate)`, and the difference is not
+   * rounding. `cost.actual` is the whole request: it can also carry a repair
+   * retry, a tool-discovery probe, or a model-cascade attempt that was tried and
+   * thrown away. No tier was read back for any of those, so none of them is
+   * credited here even though they very likely got the discount too. Compute the
+   * product yourself and you will get a LARGER number than this field — this
+   * field is the part that was actually observed.
    *
    * ⚠️ `cost.actual` prices this request at the STANDARD rate card, so when this
-   * field is present your invoice line will be LOWER than `cost.actual` by
-   * roughly this amount. The bias is deliberate and it is the safe one: the
-   * layer under-reports the saving rather than promising one it cannot prove.
-   * The reason it is not folded in is {@link creditedLedger}.
+   * field is present your invoice line will be LOWER than `cost.actual` by at
+   * least this amount. The bias is deliberate and it is the safe one: the layer
+   * under-reports the saving rather than promising one it cannot prove. The
+   * reason it is not folded in is {@link creditedLedger}.
    */
   estimatedTierSaving?: number;
   /**
