@@ -206,6 +206,19 @@ export class OpenAICompatibleProvider implements Provider {
     if (req.maxOutputTokens != null) body["max_tokens"] = req.maxOutputTokens;
     if (req.temperature != null) body["temperature"] = req.temperature;
     if (req.seed != null) body["seed"] = req.seed;
+    // OpenAI cachea el prefijo SOLA —no hay puntos de ruptura que marcar— pero
+    // enruta por instancia, y una petición que aterriza en otra instancia no
+    // encuentra el prefijo aunque sea idéntico. `prompt_cache_key` agrupa las
+    // que comparten prefijo para que caigan en la misma.
+    //
+    // Es una PISTA DE ENRUTADO, nunca una identidad: no aísla nada, así que el
+    // pipeline la deriva del prefijo y jamás del tenant ni del usuario. Meter
+    // ahí un identificador de cliente no daría privacidad y sí la ilusión de
+    // tenerla — el mismo fallo que la caché exacta cerró keyeando por tenant de
+    // verdad.
+    if (req.promptCacheKey != null) body["prompt_cache_key"] = req.promptCacheKey;
+    // `stablePrefixMessages` se ignora a propósito: aquí no hay nada que marcar.
+    // Ignorarlo no pierde el descuento (es automático); marcarlo no existe.
     if (req.schema && nativo) {
       // `strict: true` iba fijo, y eso convertía cualquier contrato con un campo
       // OPCIONAL en un 400 duro contra OpenAI: en modo strict, `required` tiene

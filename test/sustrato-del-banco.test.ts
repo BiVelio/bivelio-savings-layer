@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { scenarios, politicaEstable, MINIMO_DE_TRAMO_TOKENS } from "../benchmarks/scenarios.js";
+import { scenarios, politicaEstable, MINIMO_DE_TRAMO_TOKENS, LIBROS } from "../benchmarks/scenarios.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
 
 /**
@@ -69,13 +69,12 @@ describe("sustrato del banco", () => {
   });
 
   it("cada escenario declara un libro conocido", () => {
-    const libros = new Set([
-      "avoided_calls",
-      "eliminated_tokens",
-      "compressed_tokens",
-      "output_restriction",
-      "none",
-    ]);
+    // La lista viene de `scenarios.ts`, que es donde vive también el tipo. Antes
+    // se copiaba aquí a mano y las dos copias divergieron: el cuarto libro
+    // (`provider_cached`) entró en el tipo y esta verja siguió sin conocerlo,
+    // así que rechazaba un escenario perfectamente válido. Una verja que se
+    // mantiene sola no protege de nada.
+    const libros = new Set<string>(LIBROS);
     for (const s of scenarios) {
       expect(libros.has(s.ledger), `${s.name} declara un libro desconocido: ${s.ledger}`).toBe(true);
     }

@@ -10,8 +10,10 @@ import type {
   CacheOutcome,
   QualityStatus,
 } from "../contracts/types.js";
-import { canonicalize } from "../canonicalization/canonicalize.js";
+import { canonicalize, sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
+import type { CacheTier } from "../economics/cache-tier.js";
+import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
 import { evaluatePolicy } from "../policy/policy.js";
 import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
@@ -155,6 +157,15 @@ export class SavingsPipeline {
    */
   private readonly contratosQueIncumplen: Set<string>;
 
+  /**
+   * Verja de la caché de prefijo del proveedor.
+   *
+   * Vive en la instancia por la misma razón que `contratosQueIncumplen`: lo que
+   * aprende es una MEDICIÓN (la tasa de aciertos real de un prefijo), y una
+   * medición hay que acumularla entre peticiones o no se llega a tener nunca.
+   */
+  private readonly verjaDeCache = new VerjaDeCacheDePrefijo();
+
   constructor(config: SavingsLayerConfig) {
     this.config = config;
     this.deps = resolveDependencies(config);
@@ -231,6 +242,93 @@ export class SavingsPipeline {
       testigo.falloDelProveedor = true;
       throw err;
     }
+  }
+
+  /**
+   * ¿Se marca el prefijo de esta petición para la caché del proveedor?
+   *
+   * Tres razones para NO marcar, y ninguna es opcional:
+   *
+   *  1. NO SE RECONOCE EL PROVEEDOR. Sin tramo no se puede poner precio a la
+   *     escritura, y marcar a ciegas es apostar.
+   *  2. EL CONJUNTO DE HERRAMIENTAS DEPENDE DE LA PREGUNTA. `tools` se renderiza
+   *     lo PRIMERO, así que un conjunto que cambia con la consulta mueve el
+   *     principio del prompt e invalida todo lo que va detrás. El prefijo no
+   *     podría acertar aunque lo marcáramos: se pagaría la prima de escritura a
+   *     cambio de nada. Aquí está el choque real entre dos palancas —la poda de
+   *     herramientas alimenta el libro 2— y se resuelve así: la poda GANA (es un
+   *     ahorro medido y ya publicado), y la caché se reclama sólo cuando no hay
+   *     poda. El selector ya estabiliza el ORDEN, que es la mitad del problema
+   *     que sí sale gratis.
+   *  3. LA VERJA ECONÓMICA. Con la escritura a 1,25x y la lectura a 0,10x,
+   *     marcar sólo compensa por encima de ~21,7% de aciertos.
+   */
+  private decidirMarcadoDeCache(
+    request: SavingsRequest,
+    messages: ChatMessage[],
+    toolSelection: { tools: SavingsRequest["tools"] & object; setIsStable: boolean },
+    mensajesDePrefijo: number,
+    trace: TraceCollector,
+  ): { marcar: boolean; huella: string; mensajesDePrefijo: number } {
+    const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0 };
+
+    const tier = tramoDelModelo(request.model, this.config.compressionEconomics);
+    if (!tier) {
+      trace.record("prefix-cache", "skipped", {
+        reason:
+          `no cache read discount for model "${request.model}" (unrecognised provider, ` +
+          `or a declared tier that does not discount reads): not claiming a cacheable prefix`,
+      });
+      return nada;
+    }
+    if (!toolSelection.setIsStable) {
+      trace.record("prefix-cache", "skipped", {
+        reason:
+          "the tool SET is selected per request; tools render first, so the prefix cannot hit. " +
+          "Pruning wins here (it is a measured saving); pass the tools you want fixed.",
+      });
+      return nada;
+    }
+    if (mensajesDePrefijo <= 0) return nada;
+
+    const prefijo = messages.slice(0, mensajesDePrefijo);
+    const stablePrefixTokens = this.tokensFor(
+      this.assemblePromptText(prefijo, toolSelection.tools),
+      request,
+    );
+    const totalTokens = this.tokensFor(
+      this.assemblePromptText(messages, toolSelection.tools),
+      request,
+    );
+
+    // La huella identifica EL PREFIJO, no la petición: dos preguntas distintas
+    // sobre el mismo sistema y el mismo historial comparten huella, que es
+    // justamente lo que permite acumular la medición. Va hasheada porque también
+    // viaja como `prompt_cache_key` de OpenAI, y ahí no puede salir texto del
+    // cliente. No lleva tenant ni usuario: es una pista de enrutado, no una
+    // frontera de aislamiento, y fingir lo contrario sería peor que no tenerla.
+    const huella = sha256(
+      stableStringify({
+        model: request.model,
+        tools: (toolSelection.tools ?? []).map((t) => t.id),
+        prefijo: prefijo.map((m) => `${m.role}:${m.content}`),
+      }),
+    );
+
+    const decision = this.verjaDeCache.decidir(huella, {
+      totalTokens,
+      stablePrefixTokens,
+      tier,
+    });
+    trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
+      reason: decision.razon,
+      stablePrefixTokens,
+      breakEvenHitRate: decision.umbral,
+      observedHitRate: decision.observada,
+    });
+    return decision.marcar
+      ? { marcar: true, huella, mensajesDePrefijo }
+      : nada;
   }
 
   /**
@@ -595,6 +693,46 @@ export class SavingsPipeline {
     let formatChoice = jsonFallbackChoice();
     let messages: ChatMessage[] = [...request.messages];
 
+    // --- MONTAJE SEGMENTADO DEL PROMPT ---------------------------------------
+    //
+    // El prompt que sale de aquí tiene tres tramos, y el orden entre ellos es lo
+    // que decide si el proveedor puede reutilizar algo:
+    //
+    //   [PREFIJO ESTATICO]   herramientas, instrucciones, esquemas, política
+    //   [ESTADO APPEND-ONLY] historial y resultados de herramientas
+    //   [COLA DE LA CONSULTA] límites JSON · payload · evidencia · pregunta
+    //
+    // Los dos primeros son el PREFIJO: lo que un proveedor con caché de prefijo
+    // puede servir a 0,10x. El tercero cambia en cada petición por definición y
+    // se paga entero siempre.
+    //
+    // La frontera se calcula AQUÍ, sobre `request.messages`, y no después:
+    // todos los bloques que inyecta la capa entran por delante de la última
+    // pregunta del usuario (los tres pasan por `insertarAntesDeLaPregunta`), así
+    // que empujan la pregunta a la derecha y dejan intactos los `q` mensajes
+    // anteriores. Calcularla luego, sobre el array ya montado, contaría los
+    // bloques de la capa como prefijo — y son justo lo más variable que hay.
+    //
+    // LA COLA DE ARRIBA ES LA MISMA QUE FIJA `insertarAntesDeLaPregunta`, y no es
+    // casualidad: las dos palancas piden lo mismo —lo estable delante, lo
+    // variable pegado a la pregunta—, así que el orden medido de los tres
+    // bloques (límites · payload · evidencia) cae ENTERO fuera del prefijo. La
+    // evidencia, que es el bloque más grande y el más variable, es la última en
+    // insertarse y por tanto la más lejos de la frontera. Lo fija
+    // `test/cache-de-prefijo-en-el-pipeline.test.ts`.
+    const finDelPrefijo = limiteDelPrefijoEstable(request.messages);
+    // La compresión reescribe mensajes que NO son `system`, o sea que puede
+    // tocar el historial que acabamos de meter en el prefijo. Se anota y, si
+    // ocurre, el prefijo se recorta al tramo de `system` inicial — lo único que
+    // la etapa 9 tiene prohibido tocar.
+    let comprimioElPrefijo = false;
+
+    // El historial cuenta como prefijo porque es APPEND-ONLY: un turno viejo no
+    // se reescribe, así que los bytes de ayer siguen siendo los bytes de hoy. Si
+    // el llamante reescribe un turno anterior, el prefijo se invalida y la verja
+    // de más abajo lo VE (la tasa de aciertos se hunde) y deja de marcar. No hay
+    // que confiar en la promesa: se mide.
+
     // La evidencia recuperada se PROYECTA en el prompt más abajo, después del
     // payload serializado. El orden importa y está medido: ver
     // `insertarAntesDeLaPregunta`. Aquí solo se construye el bloque; adaptive-k
@@ -831,6 +969,21 @@ export class SavingsPipeline {
         } else {
           aplicada = true;
           motivo = dinero.razon;
+          // ¿Se reescribió algo que estaba DENTRO del prefijo? Comparar por
+          // contenido y no por «corrió la compresión»: si el compresor no cambió
+          // ningún mensaje del prefijo, el prefijo sigue siendo el mismo byte a
+          // byte y no hay por qué renunciar a la caché.
+          //
+          // VA AQUÍ, PEGADO AL `messages = rewritten`, Y NO DONDE ESTABA. Desde
+          // que la compresión pasa por la caja (verjas de tamaño, ahorro neto y
+          // dinero), `rewritten` puede calcularse y NO aplicarse: el compresor
+          // quitó tokens pero la cuenta salió negativa. Anotar el recorte por
+          // haber comprimido —en vez de por haber SUSTITUIDO el prompt— tiraría
+          // el prefijo por una reescritura que el proveedor no llega a ver, y la
+          // pérdida sería muda: menos aciertos de caché sin que nada falle.
+          comprimioElPrefijo = rewritten
+            .slice(0, finDelPrefijo)
+            .some((m, i) => m.content !== messages[i]?.content);
           messages = rewritten; // the compressed prompt is what the provider receives
           ledger.compress(compressedBefore, compressedAfter);
         }
@@ -854,6 +1007,10 @@ export class SavingsPipeline {
         promptTokens: promptSinComprimir,
         cacheTierMinimum: tramo.minimumCacheTokens,
         protectedSystemMessages: protegidos,
+        // Que la compresión haya tocado el prefijo se PUBLICA: es lo que explica
+        // que la caché de prefijo se recorte en esta petición, y sin el dato las
+        // dos palancas parecerían no hablarse.
+        prefixRewritten: comprimioElPrefijo,
       });
       // `SavingsReport.compression` se declaraba en el contrato y no lo rellenaba
       // NADIE: era `undefined` aunque la compresión hubiera corrido, y
@@ -914,12 +1071,31 @@ export class SavingsPipeline {
       : { backend: "none", reason: "no output contract" };
     trace.record("constraints", backendPlan.backend, { reason: backendPlan.reason });
 
+    // --- La verja que impide que marcar la caché de prefijo pierda dinero. ---
+    const marcado = this.decidirMarcadoDeCache(
+      request,
+      messages,
+      toolSelection,
+      comprimioElPrefijo ? limiteDelPrefijoEstable(messages, true) : finDelPrefijo,
+      trace,
+    );
+
     const providerStart = this.now();
     let response = await this.llamarProveedor({
       model: request.model,
       messages,
       ...(toolSelection.tools.length ? { tools: toolSelection.tools } : {}),
+      // El esquema que viaja es el que eligió la etapa 10a (compacto si el
+      // codebook se aplicó, el del llamante si no). La caché de prefijo no opina
+      // sobre CUÁL es: el esquema no está en `messages`, así que no entra en el
+      // prefijo que se marca ni mueve su frontera.
       ...(esquemaAlProveedor ? { schema: esquemaAlProveedor } : {}),
+      ...(marcado.marcar
+        ? {
+            stablePrefixMessages: marcado.mensajesDePrefijo,
+            promptCacheKey: marcado.huella,
+          }
+        : {}),
       ...(request.response?.maxOutputTokens != null
         ? { maxOutputTokens: request.response.maxOutputTokens }
         : {}),
@@ -1016,6 +1192,22 @@ export class SavingsPipeline {
 
     if (response.usage.cachedInputTokens) {
       ledger.providerCached(response.usage.cachedInputTokens);
+    }
+
+    // LO QUE CONTESTÓ EL PROVEEDOR ES LA ÚNICA MEDICIÓN DE h QUE EXISTE, y sólo
+    // vale de las peticiones que de verdad se marcaron: apuntar una sin marcar
+    // como «no acertó» hundiría la tasa con peticiones que nunca tuvieron
+    // ocasión de acertar, y la verja se apagaría por una medición que no es
+    // sobre ella.
+    if (marcado.marcar) {
+      this.verjaDeCache.registrar(marcado.huella, response.usage);
+      trace.record("prefix-cache", "measured", {
+        cacheRead: response.usage.cachedInputTokens ?? 0,
+        // La prima de escritura se publica en la traza JUNTO al descuento, no
+        // escondida: es lo que costó obtenerlo, y sin ella el número de al lado
+        // parece un ahorro neto que no es.
+        cacheWritePremiumTokens: response.usage.cacheWriteInputTokens ?? 0,
+      });
     }
 
     // --- Stage 11: structural validation (+ at most one repair). ---
@@ -1886,4 +2078,62 @@ function insertarAntesDeLaPregunta(messages: ChatMessage[], bloque: ChatMessage)
     }
   }
   messages.push(bloque);
+}
+
+/**
+ * Dónde acaba el prefijo que se puede llamar ESTABLE, como número de mensajes
+ * iniciales.
+ *
+ * Por defecto es todo lo que hay antes de la última pregunta del usuario:
+ * instrucciones de sistema y el historial, que es append-only. Con
+ * `soloSystem` se recorta al tramo de `system` INICIAL, que es lo que queda
+ * garantizado cuando la compresión ha podido reescribir turnos del historial.
+ *
+ * Nunca incluye la última pregunta: es, por construcción, la parte variable.
+ * Meterla en el prefijo pagaría prima de escritura por un texto que no se va a
+ * repetir jamás — el error caro, y el único que esta función existe para evitar.
+ */
+function limiteDelPrefijoEstable(messages: ChatMessage[], soloSystem = false): number {
+  if (soloSystem) {
+    let n = 0;
+    while (n < messages.length && messages[n]!.role === "system") n += 1;
+    return n;
+  }
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i]!.role === "user") return i;
+  }
+  // Sin pregunta del usuario no hay cola variable identificable. Se devuelve el
+  // tramo de `system` inicial en vez de todo: afirmar de más aquí es afirmar que
+  // texto variable es estable, y eso se paga.
+  return limiteDelPrefijoEstable(messages, true);
+}
+
+/**
+ * Qué tramo de caché aplica a este modelo, o `null` si marcar no puede pagar.
+ *
+ * RESUELVE CON `tramoDeCache`, EL MISMO QUE LA COMPRESIÓN, y eso es lo único
+ * importante de esta función. Nació con su propia tabla de expresiones
+ * regulares, escrita cuando la compresión todavía no tenía ninguna; mantener dos
+ * mapas modelo→tramo es garantizar que un día discrepen, y el día que discrepen
+ * una palanca creerá que el modelo cachea y la otra que no —sobre el MISMO
+ * prompt y la misma petición—. Es el mismo argumento que `textoDeHerramienta`:
+ * una sola regla, o la diferencia se cuela.
+ *
+ * Componer sale además gratis en alcance: `tramoDeCache` honra el tramo que el
+ * cliente declare en `compressionEconomics.cacheTier`, así que quien conozca su
+ * proveedor pasa a poder reclamar prefijo aunque su modelo no esté en la tabla.
+ *
+ * `null` = ESTE TRAMO NO DESCUENTA LA LECTURA. Cubre el proveedor desconocido
+ * (`UNKNOWN_PROVIDER_CACHE_TIER` deja los multiplicadores a 1) y cualquier tramo
+ * sin descuento, y la regla vale para los dos por la misma razón económica: si
+ * leer no sale más barato, la prima de escritura no se recupera NUNCA y marcar
+ * solo puede perder dinero. Se prefiere el ahorro no capturado a la apuesta con
+ * dinero del cliente: los dos errores no cuestan lo mismo.
+ */
+function tramoDelModelo(
+  model: string,
+  econ: SavingsLayerConfig["compressionEconomics"],
+): CacheTier | null {
+  const tier = tramoDeCache(model, econ);
+  return tier.cacheReadMultiplier < 1 ? tier : null;
 }
