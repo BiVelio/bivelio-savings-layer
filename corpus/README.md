@@ -30,6 +30,12 @@ import { cargarCorpusEntero } from "./corpus/vista.js";
 const casos = cargarCorpusEntero();   // 150, comparables entre sí
 ```
 
+**Para ejecutarlo hay un arnés: `corpus/arnes/`** (`pnpm corpus:arnes`). Carga
+el corpus validándolo —revienta ruidosamente si no cuadra—, puntúa un selector
+inyectable contra las cuatro métricas que decide F6, y desglosa por idioma **y
+por dominio cruzados**. `cargarCorpusEntero()` no valida nada; `cargarCorpus()`
+del arnés sí, y usar el segundo es lo que impide arbitrar con un corpus roto.
+
 ---
 
 ## ⚠️ Lo primero: qué saca aquí un knapsack que no piensa

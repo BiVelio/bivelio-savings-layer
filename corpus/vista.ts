@@ -67,21 +67,40 @@ export interface CasoVista {
    * preguntarle al corpus si la respuesta se puede ADIVINAR sin la evidencia.
    */
   valores: Array<{ campo: string; valor: string; critico: boolean }>;
+  /**
+   * Las citas de CADA campo, cuando el corpus de origen las escribe por campo.
+   * Solo facturación lo hace; contratos y soporte declaran una lista global y
+   * aquí llega `undefined`. La distinción no es cosmética: sin ella, «campo
+   * crítico conservado» solo se puede aproximar con la lista global, y un
+   * arnés que no distinga las dos cosas está informando de una cobertura más
+   * fina de la que puede medir. `corpus/arnes/metricas.ts` cuenta las dos por
+   * separado.
+   */
+  citasPorCampo?: Record<string, string[]>;
   nota: string;
 }
 
 /**
  * La regla de imputación de presupuesto para los casos que no lo traen.
  *
- * `max(necesarias, ceil(total * 0.6))`, y como poco una menos que el total.
- * El 0,6 no sale de ninguna teoría: es la mediana de `unidades_max / total` de
- * los 110 casos que SÍ declaran presupuesto (facturación y contratos), medida
- * en `auditoria/auditar.ts`. Se usa esa y no un número redondo para que los 40
- * casos imputados no queden sistemáticamente más flojos ni más duros que el
- * resto, que es lo que convertiría el desglose por dominio en un artefacto.
+ * `max(necesarias, ceil(total * 0.5))`, y como poco una menos que el total.
+ * El 0,5 no sale de ninguna teoría: es la mediana de `unidades_max / total` de
+ * los 110 casos que SÍ declaran presupuesto (facturación y contratos). Se usa
+ * esa y no un número redondo para que los 40 casos imputados no queden
+ * sistemáticamente más flojos ni más duros que el resto, que es lo que
+ * convertiría el desglose por dominio en un artefacto.
+ *
+ * ⚠️ ES UN RESPALDO, NO LA FUENTE. `corpus/auditoria/reparar.ts` ya ESCRIBIÓ un
+ * presupuesto dentro de `benchmarks/corpus/soporte/casos.json`, y el fichero de
+ * datos manda sobre cualquier recálculo. Esta función se quedó en 0,6 mientras
+ * `reparar.ts` escribía con 0,5, así que la vista medía 10 de los 40 casos de
+ * soporte contra un presupuesto de 3 que el fichero declaraba como 2 — un
+ * cuarto del dominio puntuado contra una cifra que no está escrita en ninguna
+ * parte y que nadie eligió. `corpus/arnes/cargar.ts` compara las dos y falla si
+ * vuelven a separarse.
  */
 export function PRESUPUESTO_IMPUTADO(totalUnidades: number, necesarias: number): number {
-  const porFraccion = Math.ceil(totalUnidades * 0.6);
+  const porFraccion = Math.ceil(totalUnidades * 0.5);
   return Math.min(Math.max(necesarias, porFraccion), Math.max(1, totalUnidades - 1));
 }
 
@@ -109,7 +128,13 @@ function deFacturacion(caso: CasoDelCorpus): CasoVista {
         }))
       : [{ campo: "abstencion", valor: caso.respuesta.motivo, critico: true }];
 
+  const citasPorCampo: Record<string, string[]> =
+    caso.respuesta.tipo === "valor"
+      ? Object.fromEntries(caso.respuesta.campos.map((c) => [c.nombre, [...c.citas]]))
+      : { abstencion: [...caso.respuesta.citas] };
+
   return {
+    citasPorCampo,
     id: caso.id,
     origen: "facturacion",
     idioma: caso.idioma,
@@ -184,6 +209,8 @@ interface CasoSoporte {
   camposCriticos: string[];
   citas: string[];
   abstencion: unknown;
+  /** Lo escribió `corpus/auditoria/reparar.ts`, no el autor del caso. */
+  presupuesto?: { unidades_max: number };
   nota: string;
 }
 
@@ -210,7 +237,14 @@ function deSoporte(caso: CasoSoporte): CasoVista {
       texto: u.texto,
       orden: i,
     })),
-    presupuestoMax: PRESUPUESTO_IMPUTADO(caso.evidencia.length, necesarias.length),
+    // El fichero manda. `reparar.ts` ya escribió el presupuesto dentro del JSON
+    // y recalcularlo aquí era medir contra una cifra que no está en ningún
+    // sitio: las dos reglas se separaron (0,5 contra 0,6) y 10 de los 40 casos
+    // se puntuaban con un presupuesto de 3 cuando el fichero decía 2.
+    presupuestoMax:
+      caso.presupuesto?.unidades_max ??
+      PRESUPUESTO_IMPUTADO(caso.evidencia.length, necesarias.length),
+    // Sigue siendo `true`: lo puso un script, no el autor del caso.
     presupuestoImputado: true,
     necesarias,
     citas: caso.citas ?? [],

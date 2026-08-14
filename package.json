@@ -68,7 +68,9 @@
     "web:build": "tsup",
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build",
-    "ab:publish": "tsx benchmarks/publish.ts"
+    "ab:publish": "tsx benchmarks/publish.ts",
+    "corpus:arnes": "tsx corpus/arnes/informe.ts",
+    "corpus:auditar": "tsx corpus/auditoria/auditar.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
