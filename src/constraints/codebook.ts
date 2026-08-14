@@ -32,18 +32,25 @@ import { validateAgainstSchema } from "./validate.js";
  *     esquema compacto viaja en la ENTRADA (`response_format`), así que si lo
  *     que engorda ahí supera lo que adelgaza en la salida, no se aplica.
  *
- * QUÉ DEMUESTRA HOY CADA VERJA, medido por mutación y no por intuición: si se
- * desactivan la 1 o la 2 —una a una, dejándolas pasar siempre— la suite ENTERA
- * sigue en verde (1075/1075). No están mal escritas: es que hoy son
- * INALCANZABLES, porque los guardias por nodo cortan antes todos los caminos que
- * las harían morder (`usados` impide dos claves con el mismo código, el guardia
- * de ambigüedad tumba el nodo cuando un código choca con otro nombre, y el de
+ * QUÉ DEMUESTRA HOY CADA VERJA, medido por mutación y no por intuición. Las
+ * verjas 1 y 2 son INALCANZABLES desde `planOutputCodebook` con la derivación
+ * correcta, porque los guardias por nodo cortan antes todos los caminos que las
+ * harían morder (`usados` impide dos claves con el mismo código, el guardia de
+ * ambigüedad tumba el nodo cuando un código choca con otro nombre, y el de
  * `minLength` impide el único caso conocido de esquema compacto inadmisible).
- * Lo que hoy prueba que la reversión es correcta son ESOS guardias y los tests
- * de round-trip; las verjas 1 y 2 son la red para cuando se afloje un guardia
- * —que es trabajo pendiente y declarado (`pattern`, `additionalProperties`
- * abierto)—, no la prueba. Quien afloje uno tiene que traer el caso que hace
- * morder la verja, o la red sigue sin estar tendida.
+ * Eso es buena ingeniería, pero dejaba la red SIN VERIFICAR: desactivar la 1 o
+ * la 2 —una a una, dejándolas pasar siempre— dejaba la suite ENTERA en verde
+ * (1077/1077), y de la 1 cuelga entera la afirmación de que esto es lossless.
+ * Por eso las dos viven ahora en `verificarTestigos`, una función suelta a la
+ * que los tests le pasan un `node` ROTO a mano —un mapa inverso que no es el
+ * inverso, un `required` compacto sin reescribir— y le ejercitan el camino de
+ * RECHAZO, que era el que nadie recorría. Mutar hoy cualquiera de las dos a
+ * `if (false)` tumba 2 tests cada una. Lo que prueba que la reversión es
+ * correcta en el camino REAL siguen siendo esos guardias y los tests de
+ * round-trip; las verjas 1 y 2 son la red para cuando se afloje un guardia —que
+ * es trabajo pendiente y declarado (`pattern`, `additionalProperties` abierto)—,
+ * y ahora consta que la red existe. Quien afloje un guardia sigue debiendo el
+ * caso que la hace morder a través de `planOutputCodebook`.
  *
  * LO QUE NO SE PUEDE PROBAR AQUÍ, y por eso esta palanca es opt-in: que el
  * modelo razone IGUAL de bien rellenando `{"d":"H"}` que `{"decision":
@@ -67,8 +74,12 @@ const AHORRO_MINIMO_POR_DEFECTO = 8;
  * Lo que hay que deshacer al expandir una respuesta. Un subárbol sin renombres
  * ni códigos no produce nodo: expandir es entonces la identidad y se evita
  * recorrer datos que nadie tocó.
+ *
+ * Exportado solo para que los tests puedan CONSTRUIR uno roto y ver morder las
+ * verjas; ver `verificarTestigos`. No cuesta superficie pública: este fichero no
+ * se reexporta desde `constraints/index.ts`.
  */
-interface CodebookNode {
+export interface CodebookNode {
   /** clave compacta → clave original. */
   keysBack?: Map<string, string>;
   /** clave original → clave compacta. */
@@ -163,21 +174,8 @@ export function planOutputCodebook(
 
   // --- Verjas 1 y 2: reversibilidad y admisibilidad -------------------------
   const witnesses = testigosDe(schema);
-  for (const t of witnesses) {
-    // El testigo tiene que cumplir el contrato del PROPIO llamante. Si no,
-    // compararlo contra el esquema compacto no demuestra nada, y el fallo puede
-    // estar en el esquema y no en el codebook.
-    if (!validateAgainstSchema(t, schema).valid) {
-      return { applied: false, reason: "synthesised witness does not satisfy the caller's own schema; nothing can be proven" };
-    }
-    const c = compactar(t);
-    if (!validateAgainstSchema(c, derivado.compact).valid) {
-      return { applied: false, reason: "compact witness does not validate against the compact schema" };
-    }
-    if (!igualEnProfundidad(expandir(c), t)) {
-      return { applied: false, reason: "round trip is not the identity" };
-    }
-  }
+  const veredicto = verificarTestigos(schema, derivado.compact, nodo, witnesses);
+  if (!veredicto.ok) return { applied: false, reason: veredicto.reason };
 
   // --- Verja 3: dinero ------------------------------------------------------
   const schemaTokensOriginal = countTokens(JSON.stringify(schema));
@@ -217,6 +215,64 @@ export function planOutputCodebook(
       modelledOutputSavingTokens: ahorroSalida,
     },
   };
+}
+
+// --- verjas 1 y 2 -----------------------------------------------------------
+
+/** Veredicto de `verificarTestigos`: el motivo solo existe cuando hay rechazo. */
+export type VeredictoTestigos = { ok: true } | { ok: false; reason: string };
+
+/**
+ * Las verjas de REVERSIBILIDAD y ADMISIBILIDAD, sobre los testigos sintéticos.
+ *
+ * POR QUÉ ES UNA FUNCIÓN SUELTA Y EXPORTADA, que es lo único que la hace
+ * comprobable. Con la derivación correcta estas dos verjas NO SE ALCANZAN desde
+ * `planOutputCodebook`: los guardias por nodo (`usados`, el de ambigüedad, el de
+ * `minLength`) cortan antes todos los caminos que las harían morder. Medido: con
+ * la comprobación incrustada en el bucle de `planOutputCodebook`, sustituir
+ * cualquiera de las dos condiciones por `if (false)` dejaba la suite ENTERA en
+ * verde (1077/1077). Es decir, la red de la que cuelga la afirmación de que el
+ * codebook es lossless no estaba comprobada, y un cambio futuro en `transformar`
+ * o en `derivar` que rompiera el round-trip se publicaría en silencio: el cliente
+ * recibiría —y cachearía 24 h— datos distintos de los que generó el modelo, sin
+ * que nada pareciera un error. Como función pura se le puede pasar un `node`
+ * ROTO a mano (un mapa inverso que no es el inverso, un esquema compacto cuyo
+ * `required` no case) y ejercitar el camino de RECHAZO. Ver
+ * `test/codebook-de-salida.test.ts`.
+ *
+ * EL ORDEN ES PARTE DEL CONTRATO, y por testigo: primero que el testigo cumpla
+ * el esquema del PROPIO llamante —si no, compararlo contra el compacto no
+ * demuestra nada y el fallo puede estar en su contrato y no aquí—, luego la
+ * admisibilidad del compactado, y por último el round-trip.
+ *
+ * `node` y `compactSchema` tienen que ser los que produjo `derivar` PARA
+ * `schema`: la función no los deriva, los AUDITA.
+ */
+export function verificarTestigos(
+  schema: JsonSchema,
+  compactSchema: JsonSchema,
+  node: CodebookNode,
+  witnesses: readonly unknown[],
+): VeredictoTestigos {
+  for (const t of witnesses) {
+    if (!validateAgainstSchema(t, schema).valid) {
+      return { ok: false, reason: "synthesised witness does not satisfy the caller's own schema; nothing can be proven" };
+    }
+    const c = transformar(t, node, true);
+    // ADMISIBILIDAD: el compactado tiene que validar contra el esquema que viaja
+    // al proveedor. Sin esto, un `required` o un `enum` mal reescritos viajan
+    // como contrato y el proveedor rechaza la petición entera.
+    if (!validateAgainstSchema(c, compactSchema).valid) {
+      return { ok: false, reason: "compact witness does not validate against the compact schema" };
+    }
+    // REVERSIBILIDAD: `expand(compact(t)) === t`. Aquí es donde se cae un mapa
+    // inverso que no es el inverso, que es el fallo que devuelve datos plausibles
+    // y equivocados en vez de un error.
+    if (!igualEnProfundidad(transformar(c, node, false), t)) {
+      return { ok: false, reason: "round trip is not the identity" };
+    }
+  }
+  return { ok: true };
 }
 
 // --- derivación ------------------------------------------------------------
@@ -438,8 +494,12 @@ function esObjetoLlano(value: unknown): value is Record<string, unknown> {
  * valor y un código mal asignado a los demás pasaría la verja sin que nadie lo
  * tocara. Se genera una ronda por posición de enum, de modo que TODO valor de
  * TODO enum aparece en algún testigo.
+ *
+ * Exportada para que los tests de `verificarTestigos` usen los testigos DE
+ * VERDAD y no unos escritos a mano: si esta síntesis dejara de cubrir todos los
+ * valores de un enum, esos tests tienen que enterarse.
  */
-function testigosDe(schema: JsonSchema): unknown[] {
+export function testigosDe(schema: JsonSchema): unknown[] {
   const rondas = Math.min(ENUM_MAXIMO, Math.max(1, mayorEnum(schema, 0)));
   const out: unknown[] = [];
   for (let i = 0; i < rondas; i++) out.push(testigo(schema, i, 0));

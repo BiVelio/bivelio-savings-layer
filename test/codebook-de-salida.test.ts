@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { planOutputCodebook } from "../src/constraints/codebook.js";
+import {
+  planOutputCodebook,
+  testigosDe,
+  verificarTestigos,
+  type CodebookNode,
+} from "../src/constraints/codebook.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
 import { heuristicEstimator } from "../src/tokenizer/estimator.js";
 import {
@@ -304,6 +309,192 @@ describe("las verjas del codebook muerden", () => {
     expect(d.applied).toBe(false);
     if (d.applied) return;
     expect(d.reason).toMatch(/nothing to compact/);
+  });
+});
+
+describe("las verjas 1 y 2, ejercitadas por su camino de RECHAZO", () => {
+  /**
+   * POR QUÉ ESTE BLOQUE EXISTE, y por qué no puede escribirse contra
+   * `planOutputCodebook`.
+   *
+   * Las verjas de ADMISIBILIDAD y REVERSIBILIDAD son INALCANZABLES desde la
+   * derivación real: los guardias por nodo (`usados`, el de ambigüedad, el de
+   * `minLength`) cortan antes todos los caminos que las harían morder. Medido por
+   * mutación: con la comprobación incrustada en `planOutputCodebook`, sustituir
+   * cualquiera de las dos condiciones por `if (false)` dejaba la suite ENTERA en
+   * verde. Es decir, la única red que sostiene la afirmación «esto es lossless»
+   * no estaba comprobada, y un cambio futuro en `transformar()` o en `derivar()`
+   * que rompiera el round-trip se publicaría en silencio: el cliente recibiría
+   * —y cachearía 24 h— datos distintos de los que generó el modelo, sin que nada
+   * se pareciera a un error.
+   *
+   * Así que la comprobación se sacó a `verificarTestigos`, y aquí se le pasa un
+   * `node` ROTO A MANO: lo que se ejercita es el camino de RECHAZO, que es el que
+   * no recorría nadie. Los testigos son los DE VERDAD (`testigosDe`), no unos
+   * escritos a mano, para que estos tests se enteren si la síntesis deja de
+   * cubrir algún valor de algún enum.
+   */
+
+  /** Contrato de una sola clave renombrable, sin enum: aísla la verja de claves. */
+  const UNA_CLAVE: JsonSchema = {
+    type: "object",
+    additionalProperties: false,
+    required: ["decision"],
+    properties: { decision: { type: "string", maxLength: 20 } },
+  };
+  /** El nodo y el esquema compacto que le corresponden, ambos CORRECTOS. */
+  const nodoBueno = (): CodebookNode => ({
+    keysFwd: new Map([["decision", "d"]]),
+    keysBack: new Map([["d", "decision"]]),
+  });
+  const COMPACTO_BUENO: JsonSchema = {
+    type: "object",
+    additionalProperties: false,
+    required: ["d"],
+    properties: { d: { type: "string", maxLength: 20 } },
+  };
+
+  /** Contrato con enum, para romper el otro mapa: el de valores. */
+  const CON_ENUM: JsonSchema = {
+    type: "object",
+    additionalProperties: false,
+    required: ["decision"],
+    properties: { decision: { type: "string", enum: ["human_review", "auto_approve"] } },
+  };
+  const nodoConEnum = (enumBack: Map<string, string>): CodebookNode => ({
+    keysFwd: new Map([["decision", "d"]]),
+    keysBack: new Map([["d", "decision"]]),
+    props: new Map<string, CodebookNode>([
+      [
+        "decision",
+        {
+          enumFwd: new Map([
+            ["human_review", "H"],
+            ["auto_approve", "A"],
+          ]),
+          enumBack,
+        },
+      ],
+    ]),
+  });
+  const COMPACTO_CON_ENUM: JsonSchema = {
+    type: "object",
+    additionalProperties: false,
+    required: ["d"],
+    properties: { d: { type: "string", enum: ["H", "A"] } },
+  };
+
+  it("✅ control: con el nodo y el esquema compacto correctos, las dos verjas dejan pasar", () => {
+    // Sin este control, los rechazos de abajo podrían estar disparándose por un
+    // fixture mal escrito en vez de por lo que cada test dice romper.
+    expect(verificarTestigos(UNA_CLAVE, COMPACTO_BUENO, nodoBueno(), testigosDe(UNA_CLAVE)).ok).toBe(
+      true,
+    );
+    const back = new Map([
+      ["H", "human_review"],
+      ["A", "auto_approve"],
+    ]);
+    expect(
+      verificarTestigos(CON_ENUM, COMPACTO_CON_ENUM, nodoConEnum(back), testigosDe(CON_ENUM)).ok,
+    ).toBe(true);
+  });
+
+  it("⛔ ADMISIBILIDAD: un `required` compacto sin reescribir se rechaza", () => {
+    // El esquema compacto renombra la propiedad a `d` pero sigue exigiendo
+    // `decision`. Describe algo que ninguna respuesta puede cumplir, y viaja al
+    // proveedor como `response_format`: sin esta verja, la petición entera se
+    // rechaza en el proveedor y el fallo aparece a mil kilómetros de su causa.
+    const compactoRoto: JsonSchema = { ...COMPACTO_BUENO, required: ["decision"] };
+    const v = verificarTestigos(UNA_CLAVE, compactoRoto, nodoBueno(), testigosDe(UNA_CLAVE));
+    expect(v.ok).toBe(false);
+    if (v.ok) return;
+    expect(v.reason).toBe("compact witness does not validate against the compact schema");
+  });
+
+  it("⛔ ADMISIBILIDAD: un enum compacto sin reescribir se rechaza", () => {
+    // El nodo codifica "human_review" → "H" pero el esquema compacto sigue
+    // publicando los valores largos: el contrato prohíbe exactamente lo que la
+    // capa va a pedir. Es la misma trampa que el guardia de `minLength` evita
+    // desde el otro lado.
+    const sinReescribirElEnum: JsonSchema = {
+      ...COMPACTO_CON_ENUM,
+      properties: { d: { type: "string", enum: ["human_review", "auto_approve"] } },
+    };
+    const back = new Map([
+      ["H", "human_review"],
+      ["A", "auto_approve"],
+    ]);
+    const v = verificarTestigos(
+      CON_ENUM,
+      sinReescribirElEnum,
+      nodoConEnum(back),
+      testigosDe(CON_ENUM),
+    );
+    expect(v.ok).toBe(false);
+    if (v.ok) return;
+    expect(v.reason).toBe("compact witness does not validate against the compact schema");
+  });
+
+  it("⛔ REVERSIBILIDAD: un mapa de claves cuyo inverso NO es el inverso se rechaza", () => {
+    // `keysBack` devuelve `decisiones` donde `keysFwd` mandó `decision`. Nada de
+    // esto se parece a un error visto desde fuera: la respuesta llega, es un JSON
+    // bien formado, y lleva una clave que el llamante nunca declaró. Este es el
+    // fallo del que la reversibilidad es la ÚNICA red.
+    const inversoRoto: CodebookNode = {
+      keysFwd: new Map([["decision", "d"]]),
+      keysBack: new Map([["d", "decisiones"]]),
+    };
+    const v = verificarTestigos(UNA_CLAVE, COMPACTO_BUENO, inversoRoto, testigosDe(UNA_CLAVE));
+    expect(v.ok).toBe(false);
+    if (v.ok) return;
+    expect(v.reason).toBe("round trip is not the identity");
+  });
+
+  it("⛔ REVERSIBILIDAD: un valor de enum que falta en el mapa inverso se rechaza, y hace falta el SEGUNDO testigo para verlo", () => {
+    // `enumBack` sabe deshacer "H" pero no "A": expandir es total, así que "A" se
+    // deja pasar tal cual y el llamante recibe `{"decision":"A"}` — un valor que
+    // su propio enum no contiene. El primer testigo pasa; lo caza el segundo.
+    const backIncompleto = new Map([["H", "human_review"]]);
+    const testigos = testigosDe(CON_ENUM);
+    expect(testigos).toEqual([{ decision: "human_review" }, { decision: "auto_approve" }]);
+
+    const v = verificarTestigos(
+      CON_ENUM,
+      COMPACTO_CON_ENUM,
+      nodoConEnum(backIncompleto),
+      testigos,
+    );
+    expect(v.ok).toBe(false);
+    if (v.ok) return;
+    expect(v.reason).toBe("round trip is not the identity");
+
+    // Y con SOLO el primer testigo el mismo nodo roto pasaría: la ronda por
+    // posición de enum no es un lujo, es lo que hace visible este fallo.
+    expect(
+      verificarTestigos(CON_ENUM, COMPACTO_CON_ENUM, nodoConEnum(backIncompleto), [testigos[0]]).ok,
+    ).toBe(true);
+  });
+
+  it("y `planOutputCodebook` publica el veredicto TAL CUAL", () => {
+    // Las dos verjas de arriba no se alcanzan desde la derivación real, pero la
+    // TERCERA comprobación de `verificarTestigos` —que el testigo cumpla el
+    // contrato del propio llamante— sí. Que el motivo salga idéntico por las dos
+    // vías es lo que ata la función al sitio donde decide: si alguien quitara la
+    // llamada, esto cae.
+    const seContradice: JsonSchema = {
+      type: "object",
+      additionalProperties: false,
+      required: ["decision"],
+      properties: { decision: { type: "string", maxLength: 6, enum: ["ok", "human_review"] } },
+    };
+    const v = verificarTestigos(seContradice, seContradice, {}, testigosDe(seContradice));
+    expect(v.ok).toBe(false);
+    if (v.ok) return;
+
+    const d = planOutputCodebook(seContradice, contar, { minimumSavingsTokens: 0 });
+    expect(d.applied).toBe(false);
+    if (d.applied) return;
+    expect(d.reason).toBe(v.reason);
   });
 });
 
