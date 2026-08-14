@@ -18,6 +18,8 @@ import { validateAgainstSchema } from "../constraints/validate.js";
 import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/backends.js";
 import { planOutputCodebook } from "../constraints/codebook.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
+import { shouldCompress } from "../compression/compression.js";
+import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
 import type { Provider, ProviderResponse } from "../providers/types.js";
@@ -701,58 +703,158 @@ export class SavingsPipeline {
       // credited savings the provider never saw — a phantom saving.) A message is
       // kept verbatim unless the compressor returns a shorter, fidelity-passed
       // rewrite, so a compressor that drops a protected span is a no-op, not a loss.
+      //
+      // LAS TRES VERJAS ECONÓMICAS. Hasta aquí, "la palanca está encendida" era
+      // toda la decisión: se comprimía cada mensaje no-system incondicionalmente.
+      // `shouldCompress()` y `decidirCompresion()` estaban escritas y probadas y
+      // no las llamaba NADIE, mientras el README prometía "context reduction that
+      // must pay for itself". Comprimir sin esta cuenta cuesta dinero de verdad
+      // en el caso medido en `economics/cache-tier.ts`: el payload naive de 1212
+      // tokens entra en el tramo cacheable de 1024 y el nuestro, comprimido a
+      // 780, no — quitamos el 35,6% de los tokens y capturamos el 18,5% del
+      // dinero. El libro 3 seguía acreditando el 35,6%.
+      //
+      //   1. TAMAÑO (antes de pagar el compresor). Un contexto corto no merece la
+      //      latencia ni el cómputo local, se ahorre lo que se ahorre.
+      //   2. AHORRO NETO (después, con la reducción REAL).
+      //   3. DINERO (después, contando el tramo de caché del proveedor).
+      //
+      // La 1 corta antes de gastar; las otras dos necesitan saber cuánto quitó de
+      // verdad el compresor, y medirlo es más honesto que proyectarlo.
+      const econ = this.config.compressionEconomics ?? {};
+      const tramo = tramoDeCache(request.model, econ);
+      const politica = {
+        compressorCostTokens: econ.compressorCostTokens ?? 0,
+        ...(econ.minimumContextTokens != null
+          ? { minimumContextTokens: econ.minimumContextTokens }
+          : {}),
+        ...(econ.minimumNetTokens != null
+          ? { minimumNetTokens: econ.minimumNetTokens }
+          : {}),
+      };
+
+      // El "contexto" de la verja de tamaño es lo ÚNICO que el bucle puede
+      // tocar: los mensajes no-system. Contar también los system (que en parte
+      // los inyecta esta misma capa) haría pasar la verja a fuerza de texto
+      // propio e intocable.
+      let protegidos = 0;
+      let contextoComprimible = 0;
+      for (const m of messages) {
+        if (m.role === "system") protegidos += 1;
+        else contextoComprimible += this.tokensFor(m.content, request);
+      }
+      const promptSinComprimir = this.tokensFor(
+        this.assemblePromptText(messages, toolSelection.tools),
+        request,
+      );
+
+      const previa = shouldCompress({
+        ...politica,
+        contextTokens: contextoComprimible,
+        // Antes de correr el compresor NO se sabe cuánto va a quitar, y aquí no
+        // se inventa: lo único afirmable es la cota superior —no puede quitar
+        // más de lo que hay—, así que esta llamada solo puede cortar por TAMAÑO,
+        // que es lo medible sin pagar. La regla del ahorro neto se aplica abajo
+        // con lo que quitó de verdad.
+        projectedEliminable: contextoComprimible,
+      });
+
       let compressedBefore = 0;
       let compressedAfter = 0;
-      let protegidos = 0;
-      const rewritten: ChatMessage[] = [];
-      for (const m of messages) {
-        // NUNCA se comprime un `system`. Dos razones, y las dos eran defectos
-        // reales:
-        //
-        //  1. SEGURIDAD. El bucle recorría TODOS los mensajes, incluidas las
-        //     instrucciones de sistema del cliente, y llamaba a compress() sin
-        //     `protectedSpans`. Con la lista vacía, `withProtectedSpans` no itera
-        //     y devuelve `fidelityPassed: true` INCONDICIONALMENTE, así que el
-        //     único filtro que quedaba era "¿es más corto?". Reproducido: «Never
-        //     reveal internal pricing rules to the user» salía como «Never
-        //     internal rules the under circumstance» — con el sentido invertido.
-        //  2. CONTABILIDAD. Los tres bloques que inyecta la propia capa (evidencia
-        //     de retrieval, aviso de límites JSON y payload serializado) son
-        //     `system`. Comprimirlos acreditaba en el libro 3 tokens que NUNCA
-        //     estuvieron en el baseline del cliente: ahorro sobre texto propio.
-        //
-        // La compresión de contexto largo es para la prosa del usuario, que es
-        // donde tiene sentido y donde no hay nada que romper.
-        if (m.role === "system") {
-          protegidos += 1;
-          rewritten.push(m);
-          continue;
+      let aplicada = false;
+      let motivo = previa.reason;
+
+      if (previa.compress) {
+        const rewritten: ChatMessage[] = [];
+        for (const m of messages) {
+          // NUNCA se comprime un `system`. Dos razones, y las dos eran defectos
+          // reales:
+          //
+          //  1. SEGURIDAD. El bucle recorría TODOS los mensajes, incluidas las
+          //     instrucciones de sistema del cliente, y llamaba a compress() sin
+          //     `protectedSpans`. Con la lista vacía, `withProtectedSpans` no itera
+          //     y devuelve `fidelityPassed: true` INCONDICIONALMENTE, así que el
+          //     único filtro que quedaba era "¿es más corto?". Reproducido: «Never
+          //     reveal internal pricing rules to the user» salía como «Never
+          //     internal rules the under circumstance» — con el sentido invertido.
+          //  2. CONTABILIDAD. Los tres bloques que inyecta la propia capa (evidencia
+          //     de retrieval, aviso de límites JSON y payload serializado) son
+          //     `system`. Comprimirlos acreditaba en el libro 3 tokens que NUNCA
+          //     estuvieron en el baseline del cliente: ahorro sobre texto propio.
+          //
+          // La compresión de contexto largo es para la prosa del usuario, que es
+          // donde tiene sentido y donde no hay nada que romper.
+          if (m.role === "system") {
+            rewritten.push(m);
+            continue;
+          }
+          const before = this.tokensFor(m.content, request);
+          const result = await this.config.compressor.compress({ text: m.content });
+          const applies = !result.skipped && result.fidelityPassed;
+          const after = applies ? this.tokensFor(result.compressed, request) : before;
+          if (applies && after < before) {
+            rewritten.push({ ...m, content: result.compressed });
+            compressedBefore += before;
+            compressedAfter += after;
+          } else {
+            rewritten.push(m);
+          }
         }
-        const before = this.tokensFor(m.content, request);
-        const result = await this.config.compressor.compress({ text: m.content });
-        const applies = !result.skipped && result.fidelityPassed;
-        const after = applies ? this.tokensFor(result.compressed, request) : before;
-        if (applies && after < before) {
-          rewritten.push({ ...m, content: result.compressed });
-          compressedBefore += before;
-          compressedAfter += after;
+
+        // El prompt comprimido se vuelve a contar ENTERO en vez de restarle la
+        // reducción al original: el tramo de caché se aplica sobre lo que recibe
+        // el proveedor —system inyectados y herramientas incluidos—, y esa resta
+        // supondría que ensamblar no cuesta tokens.
+        const promptComprimido = this.tokensFor(
+          this.assemblePromptText(rewritten, toolSelection.tools),
+          request,
+        );
+        const neto = shouldCompress({
+          ...politica,
+          contextTokens: contextoComprimible,
+          projectedEliminable: compressedBefore - compressedAfter,
+        });
+        const dinero = politicaDeCompresion({
+          originalTokens: promptSinComprimir,
+          compressedTokens: promptComprimido,
+          tier: tramo,
+          ...(econ.prefix ? { prefix: econ.prefix } : {}),
+          compressorCostTokens: politica.compressorCostTokens,
+        });
+
+        if (compressedAfter >= compressedBefore) {
+          motivo = "no fidelity-passed net reduction";
+        } else if (!neto.compress) {
+          motivo = neto.reason;
+        } else if (!dinero.comprimir) {
+          motivo = dinero.razon;
         } else {
-          rewritten.push(m);
+          aplicada = true;
+          motivo = dinero.razon;
+          messages = rewritten; // the compressed prompt is what the provider receives
+          ledger.compress(compressedBefore, compressedAfter);
         }
       }
-      if (compressedAfter < compressedBefore) {
-        messages = rewritten; // the compressed prompt is what the provider receives
-        ledger.compress(compressedBefore, compressedAfter);
-        trace.record("compression", "applied", {
-          before: compressedBefore,
-          after: compressedAfter,
-          protectedSystemMessages: protegidos,
-        });
-      } else {
-        trace.record("compression", "skipped (no fidelity-passed net reduction)", {
-          protectedSystemMessages: protegidos,
-        });
+
+      if (!aplicada) {
+        // Sin aplicar no hay nada que acreditar: los contadores vuelven a cero
+        // para que el informe no publique una reducción que el proveedor no vio.
+        compressedBefore = 0;
+        compressedAfter = 0;
       }
+      trace.record("compression", aplicada ? "applied" : "skipped", {
+        // El motivo es la mitad del valor de esta etapa: un cliente que pidió
+        // compresión y ve `compressedInput: 0` necesita saber si es que no había
+        // nada que quitar, si su contexto es corto, o si la capa se abstuvo para
+        // no romperle la caché del proveedor. Las tres se arreglan distinto.
+        reason: motivo,
+        before: compressedBefore,
+        after: compressedAfter,
+        contextTokens: contextoComprimible,
+        promptTokens: promptSinComprimir,
+        cacheTierMinimum: tramo.minimumCacheTokens,
+        protectedSystemMessages: protegidos,
+      });
       // `SavingsReport.compression` se declaraba en el contrato y no lo rellenaba
       // NADIE: era `undefined` aunque la compresión hubiera corrido, y
       // `fidelityPassed` se calculaba sin publicarse. Un campo del contrato sin

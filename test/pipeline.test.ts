@@ -208,9 +208,17 @@ describe("SavingsPipeline end-to-end", () => {
       },
     };
     const layer = createSavingsLayer({ provider, compressor, generateId: deterministicId });
+    // El contexto es grande a propósito: la etapa 9 ya no comprime a ciegas, así
+    // que un prompt de una línea no llega al mínimo de 2000 tokens y este test
+    // pasaría sin comprimir nada. El relleno que sobrevive mantiene el prompt
+    // comprimido por encima del tramo cacheable de 1024, que es la otra verja.
+    const contenido =
+      "please analyze this long context " +
+      "DROPME ".repeat(300) +
+      "padding ".repeat(1200);
     const res = await layer.generate({
       model: "m",
-      messages: [{ role: "user", content: "please DROPME analyze DROPME this DROPME long DROPME context DROPME with padding padding padding padding padding" }],
+      messages: [{ role: "user", content: contenido }],
       savings: { compression: true },
     });
     const sent = captured.map((m) => m.content).join("\n");
