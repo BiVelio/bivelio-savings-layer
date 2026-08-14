@@ -1,8 +1,14 @@
 import type { JsonSchema } from "../contracts/types.js";
+import type { CostModel } from "../tokenizer/accounting.js";
+import type { EvidenciaDelCodebook } from "./codebook-evidencia.js";
 import { validateAgainstSchema } from "./validate.js";
 
 /**
  * Codebook de salida.
+ *
+ * ⚠️ MEDIDO EN VIVO: EL SIGNO DE ESTA PALANCA DEPENDE DEL MODELO. Gana un 8 % en
+ * `gpt-4o` y pierde un 8 % en `gpt-4o-mini`, con el mismo contrato y el mismo
+ * prompt. Lee la sección «LA CUARTA VERJA» antes de tocar nada.
  *
  * POR QUÉ EXISTE. La salida es la parte cara de la factura y la palanca obvia
  * —bajar `maxOutputTokens`— está medida como NETO NEGATIVO: un techo no es una
@@ -18,9 +24,11 @@ import { validateAgainstSchema } from "./validate.js";
  * Es la misma idea que el torneo de serializadores aplicada al otro eje: mismo
  * contenido, menos símbolos. La diferencia es que aquí la reversión tiene que
  * ser DEMOSTRABLE, porque el valor que se expande es el que se le devuelve al
- * llamante y el que se guarda en caché.
+ * llamante y el que se guarda en caché. Y la otra diferencia, la que costó el
+ * dinero: en el torneo de serializadores el texto que se acorta ya está escrito,
+ * y aquí lo tiene que escribir el modelo DESPUÉS de leer el contrato compacto.
  *
- * LAS TRES VERJAS, todas apply-or-drop (nunca a medias):
+ * LAS CUATRO VERJAS, todas apply-or-drop (nunca a medias):
  *
  *  1. REVERSIBILIDAD. Se sintetizan testigos a partir del esquema ORIGINAL que
  *     tocan cada clave renombrada y cada valor de enum codificado, y se exige
@@ -28,9 +36,105 @@ import { validateAgainstSchema } from "./validate.js";
  *  2. ADMISIBILIDAD. El testigo compactado tiene que validar contra el esquema
  *     COMPACTO, que es el que viaja al proveedor. Sin esto, un `required` mal
  *     reescrito viaja como contrato y el proveedor rechaza la petición entera.
- *  3. DINERO. Se cuenta con el tokenizador de destino y por los DOS lados: el
- *     esquema compacto viaja en la ENTRADA (`response_format`), así que si lo
- *     que engorda ahí supera lo que adelgaza en la salida, no se aplica.
+ *  3. DINERO, PONDERADO POR PRECIO. Se cuenta con el tokenizador de destino, por
+ *     los DOS lados y con la TARIFA de cada lado: el esquema compacto viaja en la
+ *     ENTRADA (`response_format`) y la respuesta se factura como SALIDA, que en
+ *     la familia 4o cuesta 4x. Comparar los dos lados en tokens pelados —como se
+ *     hacía— es comparar dólares con céntimos.
+ *  4. EVIDENCIA. El signo del efecto sobre la SALIDA no está en el esquema: es
+ *     una propiedad DEL MODELO y hay que haberla medido. Sin dato para ese
+ *     modelo no hay codebook. Es la verja que faltaba, y la que sigue.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LA CUARTA VERJA: EL SIGNO DEPENDE DEL MODELO
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Escenario «Triage decision», misma capa, mismo contrato, 8 repeticiones
+ * pareadas, dos modelos de la MISMA familia y con la MISMA tarifa relativa
+ * (salida = 4x entrada):
+ *
+ *     modelo         A (sin capa)   B (codebook)   Δ salida   neto
+ *     gpt-4o-mini      184 / 72      158 / 88        −16      −8,2 %
+ *     gpt-4o           184 / 75      158 / 72         +3      +8,0 %  (95 %lo 4,8 %)
+ *
+ * LA ENTRADA BAJA IGUAL EN LOS DOS: 184 → 158, −26 tokens. Eso es determinista
+ * —es el esquema compacto— y se calcula aquí sin llamar a nadie. LO QUE CAMBIA DE
+ * SIGNO ES LA SALIDA: el modelo pequeño parece perder guía semántica con nombres
+ * de campo cortos (`"d"` en vez de `"decision"`) y rellena más; el grande no.
+ *
+ * Y ESA ES LA LECCIÓN QUE COSTÓ LA JORNADA: con SOLO la tirada de `gpt-4o-mini`
+ * la conclusión fue «la palanca pierde dinero, hay que retirarla», y la segunda
+ * tirada la invirtió. Una tirada contra un solo modelo no es un resultado.
+ * Ninguna afirmación sobre el codebook vale sin el modelo pegado — ni en un
+ * comentario, ni en el README, ni en el informe del banco.
+ *
+ * POR QUÉ NO SE VIO ANTES NINGUNO DE LOS DOS: en MOCK no puede verse.
+ * `providers/mock.ts` fabrica la respuesta A PARTIR DEL ESQUEMA que recibe, así
+ * que con un esquema compacto fabrica una respuesta compacta y la palanca
+ * «ahorra» siempre, contra cualquier modelo simulado. Es un artefacto del
+ * simulador, no una propiedad del mundo, y el banco lo publicaba como +24,8 %.
+ *
+ * Y EL RAZONAMIENTO DE LA VERJA VIEJA ERA FALSO, no solo incompleto. Decía que
+ * comparar sin ponderar por precio «hace la regla más estricta de lo necesario,
+ * que es el lado correcto en el que equivocarse». Eso solo es cierto si el ahorro
+ * de salida es POSITIVO. Cuando es NEGATIVO, no ponderar INFRAVALORA una pérdida
+ * que pesa 4x y la regla sale DEMASIADO PERMISIVA. Una aproximación «conservadora»
+ * que cambia de lado con el signo del dato no es conservadora: es una suposición
+ * sin comprobar. Por eso la verja 3 pondera ahora por precio, y por eso pide el
+ * `CostModel` en vez de aceptar decidir sin él.
+ *
+ * EL MARGEN, EN NÚMEROS, que es lo que explica que aquí no se pueda adivinar. Con
+ * el suelo de prudencia de 8 tokens de entrada, la tarifa de la familia 4o y el
+ * contrato de triaje del banco, que ahorra 29 tokens de entrada en su
+ * `response_format`:
+ *
+ *     paga mientras el delta de salida se mantenga por encima de −5,25 tokens
+ *
+ * Sobre una respuesta de ~72 tokens eso es una banda del ±7 %. Los dos efectos
+ * medidos son +4 % y −22 %: uno a cada lado, y el malo tres veces más grande que
+ * todo el margen. No hay función del esquema que separe esos dos casos, porque
+ * el esquema es EL MISMO en los dos.
+ *
+ * LO QUE SE PROBÓ Y NO VALE, para que nadie lo reintente:
+ *
+ *  · UNA PENALIZACIÓN FIJA POR DEFECTO («supongamos que la salida crece un X %»).
+ *    Con X del lado de `gpt-4o-mini` se apaga la palanca en `gpt-4o`, donde gana
+ *    un 8 % probado; con X del lado de `gpt-4o` se deja encendida donde pierde.
+ *    No hay X que acierte en los dos, porque el parámetro que decide no es X, es
+ *    el modelo.
+ *  · MODELAR LA INFLACIÓN SOBRE EL TESTIGO SINTÉTICO. Aplicar el −22 % medido al
+ *    testigo da 7,5 tokens de riesgo sobre el contrato de triaje, y la verja
+ *    SEGUIRÍA aplicando en `gpt-4o-mini` (neto +27 en equivalentes de entrada):
+ *    seguiría perdiendo. El testigo es un SUELO de la respuesta real (34 tokens
+ *    contra los 72 medidos), así que como base de un RIESGO infravalora por 2x.
+ *    Equivocarse a la baja está bien para un ahorro y está mal para una pérdida.
+ *  · MODELARLA SOBRE `maxOutputTokens`. Es un techo, no una expectativa: con el
+ *    256 por defecto el riesgo sale 56 tokens (3,5x el medido) y la verja no
+ *    dispararía jamás, ni siquiera donde gana. Eso no es prudencia, es apagarla
+ *    con un número inventado.
+ *  · APRENDERLO EN EL CAMINO CALIENTE, como hacen las otras tres verjas con
+ *    memoria de la capa. No se puede, y el motivo está desarrollado en
+ *    `codebook-evidencia.ts`: las tres aprenden de algo que UNA petición revela
+ *    por sí sola, y el delta del codebook es un CONTRAFACTUAL que la petición
+ *    enviada no contesta. El instrumento con potencia para medirlo es el A/B
+ *    PAREADO sobre el mismo prompt (`benchmarks/ab-live.ts`), que lo resuelve en
+ *    8 pares; estimarlo por medias en producción necesita cientos de peticiones
+ *    y pierde dinero en la mitad mientras tanto.
+ *
+ * DE AHÍ LA VERJA 4: el delta de salida ENTRA, no se deduce. Lo trae el llamante
+ * medido sobre su tráfico, o sale del catálogo de lo que BiVelio ha medido por
+ * modelo (`codebook-evidencia.ts`), y sin ninguno de los dos la palanca no se
+ * aplica. El motivo del rechazo publica el delta de equilibrio exacto, para que
+ * lo que hay que medir no haya que adivinarlo.
+ *
+ * Y UN DELTA NEGATIVO APAGA LA PALANCA SIN MÁS ARITMÉTICA, aunque el esquema
+ * ahorre mucho. Con un delta medido de −16 la verja de dinero volvería a aplicar
+ * en cuanto un contrato ahorrara 72 tokens de entrada… que es justo un contrato
+ * GRANDE, con respuestas más largas, donde la pérdida de salida sería mayor que
+ * los −16 medidos sobre respuestas de 72 tokens. El ahorro de entrada está
+ * ACOTADO por el tamaño del esquema; la pérdida de salida ESCALA con la longitud
+ * de la respuesta y se factura 4x. Dejar que la primera compre a la segunda es
+ * extrapolar una medición justo hacia donde deja de valer.
  *
  * QUÉ DEMUESTRA HOY CADA VERJA, medido por mutación y no por intuición. Las
  * verjas 1 y 2 son INALCANZABLES desde `planOutputCodebook` con la derivación
@@ -67,8 +171,25 @@ const PROFUNDIDAD_MAXIMA = 16;
  *  y el número de testigos que hay que verificar crece con ellos. */
 const ENUM_MAXIMO = 64;
 
-/** Ahorro NETO mínimo (tokens) para aplicar. Ver `planOutputCodebook`. */
-const AHORRO_MINIMO_POR_DEFECTO = 8;
+/**
+ * Ahorro NETO mínimo para aplicar, expresado en TOKENS DE ENTRADA equivalentes.
+ *
+ * La unidad importa desde que la verja pondera por precio: el suelo se convierte
+ * a dinero con la tarifa de ENTRADA del modelo de destino, así que «8» significa
+ * lo mismo en un modelo caro que en uno barato —lo que cuesta enviar 8 tokens de
+ * prompt— y no lo que valga un token de salida, que es entre 2x y 5x según el
+ * modelo. Ver `planOutputCodebook`.
+ */
+const SUELO_POR_DEFECTO_EN_TOKENS_DE_ENTRADA = 8;
+
+/**
+ * Las dos mediciones en vivo, en una frase, para citarlas en el motivo del
+ * rechazo sin repetirlas a mano. Van LAS DOS: media frase («la salida crece»)
+ * es la que produjo la conclusión equivocada.
+ */
+const LO_QUE_SE_MIDIO =
+  "measured live on the same triage contract, 8 paired reps each: gpt-4o-mini wrote 16 tokens MORE " +
+  "(-8.2% net) and gpt-4o wrote 3 tokens FEWER (+8.0% net)";
 
 /**
  * Lo que hay que deshacer al expandir una respuesta. Un subárbol sin renombres
@@ -107,11 +228,35 @@ export interface CodebookPlan {
   schemaTokensOriginal: number;
   schemaTokensCompact: number;
   /**
-   * Ahorro de salida MODELADO sobre el testigo sintético, no medido sobre una
-   * respuesta real. Sirve para decidir si se aplica; no se acredita en ningún
-   * libro (ver la nota de contabilidad en el pipeline).
+   * Ahorro de FORMA modelado sobre el peor testigo sintético: cuántos tokens
+   * menos ocupan LOS MISMOS DATOS escritos en compacto.
+   *
+   * SE PUBLICA COMO DIAGNÓSTICO, NO DECIDE NADA, y el cambio de nombre es
+   * deliberado: antes se llamaba `modelledOutputSavingTokens` y sí decidía, que
+   * es exactamente el error. Un testigo sintético no dice cuánto CONTENIDO va a
+   * escribir el modelo, que es la mitad que pesa; medido en vivo, esos 7 tokens
+   * de forma quedaron sepultados por 16 de contenido extra.
    */
-  modelledOutputSavingTokens: number;
+  modelledShapeSavingTokens: number;
+  /**
+   * El delta de salida MEDIDO con el que se decidió, en tokens. Positivo = con
+   * el codebook el modelo escribe MENOS. Es la única cifra que decide el lado de
+   * la salida, y entra: no se deduce de nada de aquí.
+   */
+  measuredOutputDeltaTokens: number;
+  /**
+   * De dónde salió ese delta. Viaja hasta la traza porque un delta sin
+   * procedencia es la forma exacta en que este repo se equivocó: «−16» sin el
+   * modelo pegado parecía una propiedad del codebook y era una del modelo.
+   */
+  outputDeltaProvenance: string;
+  /**
+   * Delta de salida en el que este contrato deja de pagar, con estos precios.
+   * Negativo = la respuesta puede crecer hasta ahí y seguir saliendo a cuenta.
+   */
+  breakEvenOutputDeltaTokens: number;
+  /** Ahorro neto en DINERO por petición, con la tarifa del modelo de destino. */
+  netSavingUsd: number;
 }
 
 export type CodebookDecision =
@@ -122,23 +267,37 @@ export type CodebookDecision =
  * Deriva un codebook para el esquema del llamante y decide si merece la pena.
  *
  * `countTokens` tiene que ser el tokenizador REAL del modelo de destino (el
- * mismo `tokensFor` que usa el torneo de formatos): la verja de dinero compara
- * tokens, y con un contador distinto al que factura el proveedor la comparación
- * no significa nada.
+ * mismo `tokensFor` que usa el torneo de formatos): la verja de dinero cuenta
+ * tokens, y con un contador distinto al que factura el proveedor la cuenta no
+ * significa nada.
  *
- * El mínimo por defecto (8 tokens netos) no es un umbral de precisión, es un
- * umbral de PRUDENCIA: cambiar el `response_format` que ve el proveedor tiene
- * un riesgo de calidad que ninguna verja de aquí puede medir, así que no se
- * corre por ganancias triviales. Y se compara sin ponderar por precio aunque un
- * token de salida cueste ~3-4x uno de entrada: eso hace la regla más estricta de
- * lo necesario, que es el lado correcto en el que equivocarse.
+ * `precio` ES OBLIGATORIO, y esa es media reparación. La decisión es en DINERO:
+ * los tokens de esquema que se ahorran son de ENTRADA y los de la respuesta son
+ * de SALIDA, y la razón entre las dos tarifas no es 1 ni es la misma en todos los
+ * modelos —4,0x en la familia 4o, 5,0x en `claude-opus-4`, 2,0x en `gpt-4`, ver
+ * `pricing/catalogo.ts`—. Con la firma vieja se podía decidir sin precio, y sin
+ * precio la decisión sale mal por construcción. Se pide el del modelo que VA A
+ * CONTESTAR, no el que se pidió: con la cascada enrutando son distintos.
+ *
+ * `opts.evidencia` es la verja 4: el delta de salida MEDIDO para ESTE modelo,
+ * con su procedencia pegada, tal y como lo resuelve `MemoriaDelCodebook`.
+ * Positivo = el codebook hace que el modelo escriba menos. Sin evidencia no se
+ * aplica jamás, y el motivo del rechazo dice qué número habría que medir y cuál
+ * es el umbral. Ver la cabecera del módulo para por qué esa cifra no se puede
+ * derivar del esquema ni aprender en el camino caliente.
+ *
+ * El mínimo por defecto (8 tokens de ENTRADA equivalentes) no es un umbral de
+ * precisión, es un umbral de PRUDENCIA: cambiar el `response_format` que ve el
+ * proveedor tiene un riesgo de calidad que ninguna verja de aquí puede medir,
+ * así que no se corre por ganancias triviales.
  */
 export function planOutputCodebook(
   schema: JsonSchema,
   countTokens: (text: string) => number,
-  opts: { minimumSavingsTokens?: number } = {},
+  precio: CostModel,
+  opts: { minimumSavingsTokens?: number; evidencia?: EvidenciaDelCodebook | null } = {},
 ): CodebookDecision {
-  const minimo = opts.minimumSavingsTokens ?? AHORRO_MINIMO_POR_DEFECTO;
+  const minimo = opts.minimumSavingsTokens ?? SUELO_POR_DEFECTO_EN_TOKENS_DE_ENTRADA;
 
   let derivado: Derivado;
   try {
@@ -177,33 +336,119 @@ export function planOutputCodebook(
   const veredicto = verificarTestigos(schema, derivado.compact, nodo, witnesses);
   if (!veredicto.ok) return { applied: false, reason: veredicto.reason };
 
-  // --- Verja 3: dinero ------------------------------------------------------
+  // --- Verjas 3 y 4: dinero ponderado por precio, y evidencia ---------------
   const schemaTokensOriginal = countTokens(JSON.stringify(schema));
   const schemaTokensCompact = countTokens(JSON.stringify(derivado.compact));
-  // El coste de ENTRADA del cambio: lo que engorda (o adelgaza) el bloque
-  // `response_format`. Positivo = el esquema compacto cuesta más.
-  const costeEntrada = schemaTokensCompact - schemaTokensOriginal;
-  // El ahorro de SALIDA, modelado sobre el peor testigo. Con un array el testigo
-  // lleva un solo elemento, así que esto queda por DEBAJO de lo que ahorraría una
-  // respuesta real con la lista llena: la estimación se equivoca a la baja.
-  let ahorroSalida = Number.POSITIVE_INFINITY;
+  // Lo que adelgaza el bloque `response_format`, que viaja en la ENTRADA.
+  // Positivo = el esquema compacto ahorra tokens de entrada. Se tarifa a la
+  // tarifa de entrada, y ahí esta cuenta se equivoca por ARRIBA en un caso que
+  // conviene tener presente: si el contrato cae dentro del prefijo que el
+  // proveedor sirve de su caché, esos tokens se facturan al 50 % (OpenAI) o al
+  // 10 % (Anthropic), así que el ahorro real es menor. Se deja sin corregir
+  // porque aquí no se sabe si habrá acierto —eso lo decide la verja de prefijo,
+  // más tarde y con su propia medición—, pero consta que este lado es el
+  // permisivo: si aun así la verja se niega, se niega de sobra.
+  const ahorroEsquema = schemaTokensOriginal - schemaTokensCompact;
+
+  // El ahorro de FORMA, sobre el peor testigo: los mismos datos con menos
+  // símbolos. Con un array el testigo lleva un solo elemento, así que queda por
+  // debajo de lo que ahorraría una respuesta con la lista llena.
+  //
+  // YA NO DECIDE. Es la mitad que se puede modelar de una resta cuyas dos
+  // mitades importan, y la que falta —cuánto CONTENIDO de más escribe el modelo
+  // al ver nombres cortos— tiene el signo contrario y, medida, el doble de
+  // tamaño. Se publica para que un rechazo se pueda leer: «la forma ahorraba 7 y
+  // el contenido costó 16» explica el rechazo; «ahorro modelado 7» lo escondía.
+  let ahorroDeForma = Number.POSITIVE_INFINITY;
   for (const t of witnesses) {
     const delta = countTokens(JSON.stringify(t)) - countTokens(JSON.stringify(compactar(t)));
-    if (delta < ahorroSalida) ahorroSalida = delta;
+    if (delta < ahorroDeForma) ahorroDeForma = delta;
   }
-  if (!Number.isFinite(ahorroSalida)) ahorroSalida = 0;
+  if (!Number.isFinite(ahorroDeForma)) ahorroDeForma = 0;
 
-  const neto = ahorroSalida - costeEntrada;
-  if (neto < minimo) {
+  const dolaresDeEntrada = (t: number): number => (t / 1000) * precio.inputPer1k;
+  const dolaresDeSalida = (t: number): number => (t / 1000) * precio.outputPer1k;
+  const suelo = dolaresDeEntrada(minimo);
+
+  // EL DELTA DE EQUILIBRIO: a partir de cuántos tokens de salida deja de pagar.
+  //     ahorroEsquema·pEntrada + delta·pSalida  ≥  minimo·pEntrada
+  //     delta ≥ (minimo − ahorroEsquema) · pEntrada / pSalida
+  // Sale casi siempre NEGATIVO, y leído en voz alta es la frase que resume la
+  // palanca: «paga mientras el delta de salida no baje de N». Sobre el contrato
+  // de triaje del banco y la tarifa de la familia 4o, N = −5,25: el +3 medido en
+  // `gpt-4o` lo supera de sobra y el −16 de `gpt-4o-mini` se queda a 3x. Ahí se
+  // ve que el margen es más estrecho que la variación que hay que predecir, y de
+  // ahí sale la verja 4. Con una tarifa de salida de 0 (no existe hoy, pero un catálogo de
+  // cliente puede traerla) la división no significa nada y el equilibrio es que
+  // no hay riesgo de salida que valga: −Infinity.
+  const equilibrio =
+    precio.outputPer1k > 0
+      ? ((minimo - ahorroEsquema) * precio.inputPer1k) / precio.outputPer1k
+      : Number.NEGATIVE_INFINITY;
+  const equilibrioLegible = Number.isFinite(equilibrio) ? equilibrio.toFixed(1) : "any";
+  const razonDePrecio =
+    precio.inputPer1k > 0 ? `${(precio.outputPer1k / precio.inputPer1k).toFixed(1)}x` : "more than";
+
+  const evidencia = opts.evidencia;
+  if (evidencia == null) {
+    // LA VERJA 4. No es prudencia excesiva ni miedo: es que la cantidad que
+    // decide no está en el esquema, está en el modelo. El motivo lleva el número
+    // que hay que medir y el umbral que tiene que batir, para que quien lo lea
+    // sepa exactamente qué hacer para encenderla.
     return {
       applied: false,
-      reason: `net saving ${neto} tokens is below the ${minimo}-token floor (output ${ahorroSalida}, schema ${costeEntrada > 0 ? "+" : ""}${costeEntrada})`,
+      reason:
+        `no measured output delta for this model, so the codebook is not applied. Short field names ` +
+        `change how much the model WRITES, and that is a property of the model, not of the schema: ` +
+        `${LO_QUE_SE_MIDIO}. Here the compact contract saves ${ahorroEsquema} input tokens and output ` +
+        `is billed ${razonDePrecio} input, so it only pays while the output delta stays above ` +
+        `${equilibrioLegible} tokens. Measure yours (benchmarks/ab-live.ts) and pass it in`,
+    };
+  }
+  const medido = evidencia.deltaTokens;
+
+  // UN DELTA NEGATIVO APAGA, y no se le deja comprar con el ahorro de esquema.
+  // La aritmética sola volvería a aplicar en cuanto un contrato ahorrara
+  // 8 + |delta|·(salida/entrada) tokens de entrada —72 con el −16 medido—, y ese
+  // contrato es justamente uno grande, con respuestas más largas, donde la
+  // pérdida de salida sería MAYOR que la medida. El ahorro de entrada está
+  // acotado por el esquema; la pérdida de salida escala con la respuesta.
+  if (medido < 0) {
+    return {
+      applied: false,
+      reason:
+        `the measured output delta is ${medido} tokens: this model writes MORE from a compact ` +
+        `contract (${evidencia.procedencia}). The input win is capped by the size of the schema ` +
+        `while the output loss grows with the answer and is billed ${razonDePrecio} input, so no ` +
+        `schema is big enough to buy it back`,
+    };
+  }
+
+  const neto = dolaresDeEntrada(ahorroEsquema) + dolaresDeSalida(medido);
+  const netoEnTokensDeEntrada =
+    precio.inputPer1k > 0 ? (neto * 1000) / precio.inputPer1k : ahorroEsquema;
+  // El signo del delta se explica EN EL PROPIO MOTIVO. Es la cifra que decide y
+  // se lee en un panel sin el JSDoc al lado; un signo que hay que ir a buscar a
+  // la documentación es un signo que alguien va a interpretar al revés.
+  const deltaLegible =
+    `+${medido} tokens (${medido > 0 ? "the model wrote LESS" : "no measured change"}), ` +
+    `${evidencia.procedencia}`;
+  if (neto < suelo) {
+    return {
+      applied: false,
+      reason:
+        `net saving $${neto.toFixed(9)}/request is below the floor of ${minimo} input tokens ` +
+        `($${suelo.toFixed(9)}): the compact contract saves ${ahorroEsquema} input tokens and the ` +
+        `measured output delta is ${deltaLegible}; break-even at ${equilibrioLegible}`,
     };
   }
 
   return {
     applied: true,
-    reason: `output ${ahorroSalida} tokens, schema ${costeEntrada > 0 ? "+" : ""}${costeEntrada}, net ${neto}`,
+    reason:
+      `net saving $${neto.toFixed(9)}/request (${netoEnTokensDeEntrada.toFixed(1)} input tokens ` +
+      `equivalent): the compact contract saves ${ahorroEsquema} input tokens and the measured ` +
+      `output delta is ${deltaLegible}; break-even at ${equilibrioLegible}`,
     plan: {
       compactSchema: derivado.compact,
       expand: expandir,
@@ -212,7 +457,11 @@ export function planOutputCodebook(
       codedEnumValues: derivado.coded,
       schemaTokensOriginal,
       schemaTokensCompact,
-      modelledOutputSavingTokens: ahorroSalida,
+      modelledShapeSavingTokens: ahorroDeForma,
+      measuredOutputDeltaTokens: medido,
+      outputDeltaProvenance: evidencia.procedencia,
+      breakEvenOutputDeltaTokens: equilibrio,
+      netSavingUsd: neto,
     },
   };
 }

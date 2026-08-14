@@ -109,21 +109,55 @@ export interface SavingsToggles {
   deterministicResolvers?: boolean;
   router?: boolean;
   /**
-   * OPT-IN. Send the provider a compacted form of your output contract — short
-   * property keys, short enum codes — so the model spends fewer tokens saying
-   * the same thing, and expand the reply back to YOUR shape before it is
-   * validated, cached or returned. What you receive in `data`, `text` and
-   * `rendered` is identical either way.
+   * OPT-IN, AND WHETHER IT SAVES OR COSTS DEPENDS ON THE MODEL. Read this whole
+   * entry before switching it on.
    *
-   * It is applied only when the layer can prove the expansion is exact for that
-   * schema and only when it counts as a net token win on both sides (the
-   * compact contract itself travels as input). Otherwise your schema is sent
-   * unchanged. Off by default because it changes what the provider sees, and
-   * whether a model answers as WELL from a compact contract is a question only
-   * an A/B on your own traffic can settle. Check `report.traces` for what it
-   * decided and why.
+   * It sends the provider a compacted form of your output contract — short
+   * property keys, short enum codes — and expands the reply back to YOUR shape
+   * before it is validated, cached or returned. What you receive in `data`,
+   * `text` and `rendered` is identical either way, and the layer proves that
+   * round trip is exact before it applies anything.
+   *
+   * WHAT LIVE A/Bs MEASURED, same triage contract, same prompts, 8 paired
+   * repetitions each. Input fell identically on both models, from 184 to 158
+   * tokens — that part is deterministic, it is the smaller contract. Output did
+   * not: `gpt-4o` wrote 3 tokens FEWER and the request came out 8.0% cheaper,
+   * while `gpt-4o-mini` wrote 16 tokens MORE and the request came out 8.2% more
+   * expensive. Short field names appear to give a smaller model less to go on,
+   * so it fills in more, and output is billed around 4x input on that family.
+   *
+   * SO THE LEVER APPLIES ONLY WHERE THAT DELTA HAS BEEN MEASURED. It cannot be
+   * read off a schema — the schema was identical in both runs — so the layer
+   * does not guess. It uses, in order: the delta you measured and passed in
+   * {@link SavingsToggles.outputCodebookMeasuredOutputDeltaTokens}; the same
+   * delta remembered from an earlier request for that contract and model; the
+   * delta BiVelio has published for that model. With none of those it skips and
+   * says so in `report.traces`, including the exact break-even for your contract
+   * so you know what a measurement would have to beat.
    */
   outputCodebook?: boolean;
+  /**
+   * The output-token delta you MEASURED for the contract on this request, with
+   * {@link SavingsToggles.outputCodebook} on versus off, against the model you
+   * are sending it to. POSITIVE means the compact contract made the model write
+   * FEWER output tokens; negative means it wrote more.
+   *
+   * This is what lets the layer apply the codebook on a model it has not
+   * published a figure for, and it overrides the published one when it has —
+   * your traffic beats our benchmark. A negative delta switches the lever off
+   * for that model: the input win is capped by the size of your schema while the
+   * output loss grows with the answer, so no schema is large enough to buy it
+   * back.
+   *
+   * It belongs to ONE contract against ONE model, which is why it travels on the
+   * request rather than the layer config: a delta measured on your triage
+   * contract says nothing about your extraction contract, and one measured on
+   * `gpt-4o` says nothing about `gpt-4o-mini` — those two came out with opposite
+   * signs. Measure it with a paired A/B over the same prompts, which is what
+   * `benchmarks/ab-live.ts` in this package does, and measure it again when you
+   * change model, contract or prompt.
+   */
+  outputCodebookMeasuredOutputDeltaTokens?: number;
   /**
    * OPT-IN, and it changes the latency contract: where it applies, one request
    * becomes TWO provider calls, one after the other.

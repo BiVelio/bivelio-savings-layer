@@ -60,9 +60,56 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // they fall back to the illustrative default and warn, which is the honest answer.
 };
 
+/**
+ * Busca una entrada por identificador de modelo: exacto, sin prefijo de
+ * proveedor, y por último el prefijo MÁS LARGO que case.
+ *
+ * ES GENÉRICA PORQUE HAY DOS CATÁLOGOS POR MODELO, no porque quede elegante:
+ * éste (precios) y el de deltas de salida medidos del codebook
+ * (`constraints/codebook-evidencia.ts`). La segunda copia escrita a mano de esta
+ * búsqueda divergiría de la primera —este repo ya pagó dos copias de una cuenta
+ * que se separaron— y la divergencia aquí es cara: el corte por separador es lo
+ * único que impide que `gpt-4` case con `gpt-4o`, que cuesta doce veces menos.
+ *
+ * @param model el id tal y como lo pasa el llamante, con o sin prefijo de vendor.
+ */
+export function buscarPorModelo<T>(
+  catalogo: Readonly<Record<string, T>>,
+  clavesPorLongitud: readonly string[],
+  model: string,
+): T | undefined {
+  if (!model) return undefined;
+  const exacto = catalogo[model];
+  if (exacto) return exacto;
+
+  // "openai/gpt-4o-mini" -> "gpt-4o-mini"
+  const barra = model.lastIndexOf("/");
+  const desnudo = barra >= 0 ? model.slice(barra + 1) : model;
+  const porNombre = catalogo[desnudo];
+  if (porNombre) return porNombre;
+
+  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. The next
+  // character must be a separator, or `gpt-4` would match `gpt-4o` — which costs
+  // twelve times less — and nobody would notice.
+  for (const clave of clavesPorLongitud) {
+    if (desnudo.startsWith(clave)) {
+      const siguiente = desnudo.charAt(clave.length);
+      if (siguiente === "" || siguiente === "-" || siguiente === "." || siguiente === "_") {
+        return catalogo[clave];
+      }
+    }
+  }
+  return undefined;
+}
+
+/** Claves ordenadas de más larga a más corta, para que gane la más específica. */
+export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): string[] {
+  return Object.keys(catalogo).sort((a, b) => b.length - a.length);
+}
+
 /** Keys longest-first, so the most specific prefix wins: `claude-haiku-4-5`
  *  before `claude-haiku`. */
-const CLAVES_POR_LONGITUD = Object.keys(CATALOGO).sort((a, b) => b.length - a.length);
+const CLAVES_POR_LONGITUD = clavesPorLongitud(CATALOGO);
 
 /**
  * The list price for a model, or `undefined` when it is not in the catalogue.
@@ -70,26 +117,5 @@ const CLAVES_POR_LONGITUD = Object.keys(CATALOGO).sort((a, b) => b.length - a.le
  * @param model the id as the caller passes it, with or without a vendor prefix.
  */
 export function precioDeLista(model: string): CostModel | undefined {
-  if (!model) return undefined;
-  const exacto = CATALOGO[model];
-  if (exacto) return exacto;
-
-  // "openai/gpt-4o-mini" -> "gpt-4o-mini"
-  const barra = model.lastIndexOf("/");
-  const desnudo = barra >= 0 ? model.slice(barra + 1) : model;
-  const porNombre = CATALOGO[desnudo];
-  if (porNombre) return porNombre;
-
-  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. The next
-  // character must be a separator, or `gpt-4` would match `gpt-4o` — which costs
-  // twelve times less — and nobody would notice.
-  for (const clave of CLAVES_POR_LONGITUD) {
-    if (desnudo.startsWith(clave)) {
-      const siguiente = desnudo.charAt(clave.length);
-      if (siguiente === "" || siguiente === "-" || siguiente === "." || siguiente === "_") {
-        return CATALOGO[clave];
-      }
-    }
-  }
-  return undefined;
+  return buscarPorModelo(CATALOGO, CLAVES_POR_LONGITUD, model);
 }

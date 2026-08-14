@@ -5,11 +5,17 @@ import {
   verificarTestigos,
   type CodebookNode,
 } from "../src/constraints/codebook.js";
+import {
+  MemoriaDelCodebook,
+  deltaMedidoDeLista,
+  type EvidenciaDelCodebook,
+} from "../src/constraints/codebook-evidencia.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
 import { heuristicEstimator } from "../src/tokenizer/estimator.js";
 import {
   createSavingsLayer,
   createMockProvider,
+  precioDeLista,
   type JsonSchema,
   type ProviderRequest,
   type SavingsRequest,
@@ -25,9 +31,36 @@ import {
  *
  * De ahí que cada verja tenga su prueba de que MUERDE (un caso que la dispara),
  * y no solo su prueba de que deja pasar lo bueno.
+ *
+ * ⚠️ EL SESGO DEL SIMULADOR, que es lo que hay que tener presente para leer este
+ * fichero. `MockProvider` fabrica su respuesta A PARTIR DEL ESQUEMA que recibe:
+ * con un esquema compacto fabrica una respuesta compacta, SIEMPRE. O sea que
+ * cualquier test que mida "ahorro de salida" contra el simulador va a decir que
+ * el codebook ahorra, contra cualquier modelo y con cualquier contrato — y eso
+ * es un artefacto del fixture, no una propiedad del mundo. Medido en vivo, el
+ * mismo contrato da +8,0 % en `gpt-4o` y −8,2 % en `gpt-4o-mini`, porque el
+ * modelo pequeño ESCRIBE MÁS cuando le das nombres de campo cortos.
+ *
+ * Por eso aquí el delta de salida no se mide nunca contra el simulador: ENTRA
+ * como dato (`EvidenciaDelCodebook`), y los tests lo ejercitan CON LOS DOS
+ * SIGNOS. El proveedor `verboso()` de más abajo existe para poder escribir el
+ * caso que el simulador no sabe representar: el de la salida que CRECE.
  */
 
 const contar = (t: string) => heuristicEstimator.count(t);
+
+/** Precios de lista de verdad: la verja decide en dinero, no en tokens pelados. */
+const P_4O_MINI = precioDeLista("gpt-4o-mini")!; // salida = 4,0x entrada
+const P_4O = precioDeLista("gpt-4o")!; //           salida = 4,0x entrada
+const P_GPT4 = precioDeLista("gpt-4")!; //          salida = 2,0x entrada
+const P_OPUS = precioDeLista("claude-opus-4")!; //  salida = 5,0x entrada
+
+/** Un delta de salida MEDIDO, con la procedencia que la verja exige. */
+const medido = (deltaTokens: number): EvidenciaDelCodebook => ({
+  deltaTokens,
+  origen: "caller",
+  procedencia: "measured by the caller for this contract",
+});
 
 /** El contrato del ejemplo: claves largas y un enum de valores largos. */
 const CONTRATO: JsonSchema = {
@@ -43,7 +76,7 @@ const CONTRATO: JsonSchema = {
 
 describe("el codebook deriva un contrato equivalente y más barato", () => {
   it("acorta claves y codifica los valores de enum", () => {
-    const d = planOutputCodebook(CONTRATO, contar);
+    const d = planOutputCodebook(CONTRATO, contar, P_4O_MINI, { evidencia: medido(0) });
     expect(d.applied).toBe(true);
     if (!d.applied) return;
 
@@ -59,7 +92,7 @@ describe("el codebook deriva un contrato equivalente y más barato", () => {
   });
 
   it("la expansión devuelve EXACTAMENTE la forma del llamante", () => {
-    const d = planOutputCodebook(CONTRATO, contar);
+    const d = planOutputCodebook(CONTRATO, contar, P_4O_MINI, { evidencia: medido(0) });
     if (!d.applied) throw new Error("se esperaba que se aplicara");
 
     const delLlamante = {
@@ -75,7 +108,7 @@ describe("el codebook deriva un contrato equivalente y más barato", () => {
   });
 
   it("expandir es TOTAL: lo que no reconoce lo deja intacto", () => {
-    const d = planOutputCodebook(CONTRATO, contar);
+    const d = planOutputCodebook(CONTRATO, contar, P_4O_MINI, { evidencia: medido(0) });
     if (!d.applied) throw new Error("se esperaba que se aplicara");
     // Un valor de enum que el modelo devolvió en largo NO se reescribe a ciegas:
     // ya es la respuesta correcta.
@@ -100,8 +133,8 @@ describe("el codebook deriva un contrato equivalente y más barato", () => {
         decision: { type: "string", enum: ["auto_reject", "auto_approve", "human_review"] },
       },
     };
-    const a = planOutputCodebook(CONTRATO, contar);
-    const b = planOutputCodebook(alReves, contar);
+    const a = planOutputCodebook(CONTRATO, contar, P_4O_MINI, { evidencia: medido(0) });
+    const b = planOutputCodebook(alReves, contar, P_4O_MINI, { evidencia: medido(0) });
     if (!a.applied || !b.applied) throw new Error("se esperaba que se aplicaran las dos");
 
     const valor = { decision: "auto_reject", confidence: 5, evidence: ["x"] };
@@ -114,9 +147,10 @@ describe("el codebook deriva un contrato equivalente y más barato", () => {
 });
 
 describe("las verjas del codebook muerden", () => {
-  // Las verjas ESTRUCTURALES se prueban con el suelo de ahorro a cero, para que
-  // lo que se observe sea la verja y no la de dinero tapándola.
-  const sinSuelo = { minimumSavingsTokens: 0 };
+  // Las verjas ESTRUCTURALES se prueban con el suelo de ahorro a cero Y con un
+  // delta de salida medido NEUTRO, para que lo que se observe sea la verja que
+  // el test dice y no la de dinero o la de evidencia tapándola.
+  const sinSuelo = { minimumSavingsTokens: 0, evidencia: medido(0) };
 
   it("⛔ un `pattern` deja el esquema fuera: no hay testigo que lo demuestre", () => {
     const conPattern: JsonSchema = {
@@ -126,7 +160,7 @@ describe("las verjas del codebook muerden", () => {
         evidence: { type: "array", maxItems: 4, items: { type: "string", pattern: "^E\\d+$" } },
       },
     };
-    const d = planOutputCodebook(conPattern, contar, sinSuelo);
+    const d = planOutputCodebook(conPattern, contar, P_4O_MINI, sinSuelo);
     expect(d.applied).toBe(false);
     if (d.applied) return;
     expect(d.reason).toMatch(/pattern/);
@@ -137,7 +171,7 @@ describe("las verjas del codebook muerden", () => {
     // nuestro al expandir, y expandir dejaría de ser demostrable.
     const abierto: JsonSchema = { ...CONTRATO };
     delete abierto.additionalProperties;
-    const d = planOutputCodebook(abierto, contar, sinSuelo);
+    const d = planOutputCodebook(abierto, contar, P_4O_MINI, sinSuelo);
     expect(d.applied).toBe(true);
     if (!d.applied) return;
     expect(Object.keys(d.plan.compactSchema.properties ?? {})).toEqual([
@@ -163,7 +197,7 @@ describe("las verjas del codebook muerden", () => {
         decision: { type: "string", enum: ["human_review", "auto_approve"] },
       },
     };
-    const d = planOutputCodebook(ambiguo, contar, sinSuelo);
+    const d = planOutputCodebook(ambiguo, contar, P_4O_MINI, sinSuelo);
     expect(d.applied).toBe(true);
     if (!d.applied) return;
     expect(Object.keys(d.plan.compactSchema.properties ?? {})).toEqual(["de", "decision"]);
@@ -179,7 +213,7 @@ describe("las verjas del codebook muerden", () => {
         decision: { type: "string", minLength: 6, enum: ["human_review", "auto_approve"] },
       },
     };
-    const d = planOutputCodebook(conMinimo, contar, sinSuelo);
+    const d = planOutputCodebook(conMinimo, contar, P_4O_MINI, sinSuelo);
     expect(d.applied).toBe(true);
     if (!d.applied) return;
     expect(d.plan.compactSchema.properties?.["d"]?.enum).toEqual(["human_review", "auto_approve"]);
@@ -191,19 +225,129 @@ describe("las verjas del codebook muerden", () => {
   });
 
   it("⛔ verja de dinero: cuenta los DOS lados y se niega por debajo del suelo", () => {
-    const d = planOutputCodebook(CONTRATO, contar, { minimumSavingsTokens: 10_000 });
+    const d = planOutputCodebook(CONTRATO, contar, P_4O_MINI, {
+      minimumSavingsTokens: 10_000,
+      evidencia: medido(0),
+    });
     expect(d.applied).toBe(false);
     if (d.applied) return;
-    // El motivo publica las dos mitades: lo que se ahorra en la SALIDA y lo que
-    // cuesta (o devuelve) el contrato compacto en la ENTRADA.
-    expect(d.reason).toMatch(/^net saving -?\d+ tokens is below the 10000-token floor \(output \d+, schema [-+]?\d+\)$/);
+    // El motivo publica el DINERO —que es la unidad en la que se decide— y las
+    // dos mitades que lo componen, más el delta de equilibrio: sin él, quien lea
+    // el rechazo no sabe qué tendría que medir para darle la vuelta.
+    expect(d.reason).toMatch(
+      /^net saving \$-?[\d.]+\/request is below the floor of 10000 input tokens \(\$[\d.]+\): the compact contract saves \d+ input tokens and the measured output delta is \+0 tokens .+; break-even at -?[\d.]+$/,
+    );
   });
 
-  it("⛔ el ahorro modelado es el del PEOR testigo, no el del mejor", () => {
+  it("⛔ SIN MEDICIÓN no se aplica, y el motivo dice qué hay que medir", () => {
+    // La verja 4. El contrato es el mismo que sí se aplica con un delta medido
+    // dos tests más abajo: lo que falta no es compresión, es EVIDENCIA.
+    const d = planOutputCodebook(CONTRATO, contar, P_4O_MINI, { minimumSavingsTokens: 0 });
+    expect(d.applied).toBe(false);
+    if (d.applied) return;
+    expect(d.reason).toMatch(/^no measured output delta for this model/);
+    // Y publica las DOS mediciones, no la mala sola: media frase («la salida
+    // crece») fue exactamente lo que produjo la conclusión equivocada de retirar
+    // una palanca que gana un 8 % en el otro modelo.
+    expect(d.reason).toContain("gpt-4o-mini wrote 16 tokens MORE");
+    expect(d.reason).toContain("gpt-4o wrote 3 tokens FEWER");
+    // Y el umbral concreto de ESTE contrato, no una recomendación genérica.
+    expect(d.reason).toMatch(/output delta stays above -?[\d.]+ tokens/);
+    expect(d.reason).toContain("benchmarks/ab-live.ts");
+  });
+
+  it("⛔ un delta MEDIDO NEGATIVO apaga la palanca, y no hay esquema que la compre", () => {
+    // EL CASO REAL DE `gpt-4o-mini`: la salida CRECE. Con la verja vieja —tokens
+    // pelados, y dando por hecho que compactar el esquema no aumenta la salida—
+    // este contrato se aplicaba y la petición salía un 8,2 % más cara.
+    const d = planOutputCodebook(CONTRATO, contar, P_4O_MINI, { evidencia: medido(-16) });
+    expect(d.applied).toBe(false);
+    if (d.applied) return;
+    expect(d.reason).toMatch(/this model writes MORE from a compact contract/);
+
+    // Y NO SE COMPRA CON UN ESQUEMA ENORME. La aritmética sola volvería a aplicar
+    // en cuanto el ahorro de entrada superara 8 + 16·4 = 72 tokens, que es justo
+    // un contrato grande — con respuestas más largas, donde la pérdida de salida
+    // sería MAYOR que los −16 medidos sobre respuestas de 72 tokens.
+    const props: Record<string, JsonSchema> = {};
+    for (let i = 0; i < 20; i++) {
+      props[`un_nombre_de_propiedad_deliberadamente_larguisimo_${i}`] = { type: "string", maxLength: 8 };
+    }
+    const enorme: JsonSchema = {
+      type: "object",
+      additionalProperties: false,
+      required: Object.keys(props),
+      properties: props,
+    };
+    const conEsquemaEnorme = planOutputCodebook(enorme, contar, P_4O_MINI, { evidencia: medido(0) });
+    if (!conEsquemaEnorme.applied) throw new Error("el fixture tiene que ahorrar de sobra");
+    expect(
+      conEsquemaEnorme.plan.schemaTokensOriginal - conEsquemaEnorme.plan.schemaTokensCompact,
+    ).toBeGreaterThan(72);
+    expect(planOutputCodebook(enorme, contar, P_4O_MINI, { evidencia: medido(-16) }).applied).toBe(
+      false,
+    );
+  });
+
+  it("✅ un delta MEDIDO POSITIVO sí se aplica: el otro signo también existe", () => {
+    // EL CASO REAL DE `gpt-4o`, y la razón de que la palanca no se retirara: con
+    // el mismo contrato y el mismo prompt escribió 3 tokens MENOS y la petición
+    // salió un 8,0 % más barata. Una verja que solo supiera representar el caso
+    // de `gpt-4o-mini` dejaría ese dinero encima de la mesa.
+    const d = planOutputCodebook(CONTRATO, contar, P_4O, { evidencia: medido(3) });
+    expect(d.applied).toBe(true);
+    if (!d.applied) return;
+    expect(d.plan.measuredOutputDeltaTokens).toBe(3);
+    // Y el neto es DINERO, con cada lado a SU tarifa. Escrito a mano para que la
+    // cuenta no dependa de la propia función: 18 tokens de entrada ahorrados a
+    // 0,0025 $/1k más 3 de salida a 0,01 $/1k. Una suma en tokens pelados (21
+    // tokens de entrada) daría 0,0000525 $, un 30 % menos.
+    const ahorroEsquema = d.plan.schemaTokensOriginal - d.plan.schemaTokensCompact;
+    expect(ahorroEsquema).toBe(18);
+    expect(d.plan.netSavingUsd).toBeCloseTo(
+      (18 / 1000) * P_4O.inputPer1k + (3 / 1000) * P_4O.outputPer1k,
+      12,
+    );
+    // La procedencia viaja pegada al número. Un «+3» suelto es lo que hace que
+    // alguien lo aplique al modelo de al lado, que es donde vale −16.
+    expect(d.plan.outputDeltaProvenance).toContain("measured by the caller");
+  });
+
+  it("⛔ la verja PONDERA POR PRECIO: el mismo contrato y el mismo delta cambian de veredicto según el modelo", () => {
+    // Sin ponderar, el ahorro de esquema y el delta de salida se sumarían como si
+    // un token valiera lo mismo en los dos lados. Y la razón NO es la misma en
+    // todos los modelos: 2,0x en `gpt-4`, 5,0x en `claude-opus-4`.
+    //
+    // Este contrato ahorra 18 tokens de entrada y el delta medido es +3 de salida.
+    // Con el suelo en 30 tokens de entrada equivalentes:
+    //
+    //   tokens pelados:                 18 + 3   = 21  < 30  → los DOS se niegan
+    //   `gpt-4` (salida 2,0x):          18 + 3·2 = 24  < 30  → se niega
+    //   `claude-opus-4` (salida 5,0x):  18 + 3·5 = 33  ≥ 30  → SE APLICA
+    //
+    // Mismo esquema, mismos tokens, mismo delta: lo único que cambia es la
+    // tarifa, y cambia el veredicto. Con la verja vieja los dos daban lo mismo.
+    const suelo = { minimumSavingsTokens: 30 };
+    const conGpt4 = planOutputCodebook(CONTRATO, contar, P_GPT4, { ...suelo, evidencia: medido(3) });
+    const conOpus = planOutputCodebook(CONTRATO, contar, P_OPUS, { ...suelo, evidencia: medido(3) });
+    expect(conGpt4.applied).toBe(false);
+    expect(conOpus.applied).toBe(true);
+
+    // Y la razón de precio de verdad es la del catálogo, no una constante local:
+    // si mañana cambia una tarifa, este test tiene que enterarse.
+    expect(P_OPUS.outputPer1k / P_OPUS.inputPer1k).toBeCloseTo(5, 6);
+    expect(P_GPT4.outputPer1k / P_GPT4.inputPer1k).toBeCloseTo(2, 6);
+  });
+
+  it("⛔ el ahorro de FORMA modelado es el del PEOR testigo, y ya no decide", () => {
     // El módulo dice equivocarse a la BAJA y de ahí depende que la palanca no se
     // aplique donde no paga. Con un enum de valores muy desiguales las dos reglas
-    // se separan: quedarse con el mejor testigo casi triplica la cifra sobre la
-    // que decide la verja de dinero, y nada más en la suite nota la diferencia.
+    // se separan: quedarse con el mejor testigo casi triplica la cifra.
+    //
+    // Y HOY ESA CIFRA NO DECIDE NADA: se publica como diagnóstico. Ésa es la
+    // reparación de fondo — modelar la salida sobre un testigo sintético mide la
+    // FORMA (los mismos datos con menos símbolos) y no el CONTENIDO (cuánto
+    // escribe el modelo), que es la mitad que se llevó el dinero.
     const desigual: JsonSchema = {
       type: "object",
       additionalProperties: false,
@@ -212,7 +356,7 @@ describe("las verjas del codebook muerden", () => {
         decision: { type: "string", enum: ["ok", "escalate_to_a_human_operator_immediately"] },
       },
     };
-    const d = planOutputCodebook(desigual, contar, sinSuelo);
+    const d = planOutputCodebook(desigual, contar, P_4O_MINI, sinSuelo);
     if (!d.applied) throw new Error("se esperaba que se aplicara");
 
     const delta = (v: unknown) =>
@@ -220,7 +364,7 @@ describe("las verjas del codebook muerden", () => {
     const peor = delta({ decision: "ok" });
     const mejor = delta({ decision: "escalate_to_a_human_operator_immediately" });
     expect(mejor).toBeGreaterThan(peor);
-    expect(d.plan.modelledOutputSavingTokens).toBe(peor);
+    expect(d.plan.modelledShapeSavingTokens).toBe(peor);
   });
 
   it("⛔ un esquema demasiado profundo o cíclico se descarta POR SU MOTIVO, no por un `pattern` inventado", () => {
@@ -238,7 +382,7 @@ describe("las verjas del codebook muerden", () => {
         properties: { [`nivel_${i}`]: profundo },
       };
     }
-    const hondo = planOutputCodebook(profundo, contar, sinSuelo);
+    const hondo = planOutputCodebook(profundo, contar, P_4O_MINI, sinSuelo);
     expect(hondo.applied).toBe(false);
     if (hondo.applied) return;
     expect(hondo.reason).toBe("schema too deep or cyclic");
@@ -248,7 +392,7 @@ describe("las verjas del codebook muerden", () => {
     const ciclico: JsonSchema = { type: "object", additionalProperties: false, properties: {} };
     (ciclico.properties as Record<string, JsonSchema>)["hijo"] = ciclico;
     (ciclico.properties as Record<string, JsonSchema>)["descripcion_larga"] = { type: "string" };
-    const circular = planOutputCodebook(ciclico, contar, sinSuelo);
+    const circular = planOutputCodebook(ciclico, contar, P_4O_MINI, sinSuelo);
     expect(circular.applied).toBe(false);
     if (circular.applied) return;
     expect(circular.reason).toBe("schema too deep or cyclic");
@@ -263,13 +407,13 @@ describe("las verjas del codebook muerden", () => {
       required: ["ok"],
       properties: { ok: { type: "boolean" } },
     };
-    const d = planOutputCodebook(minusculo, contar);
+    const d = planOutputCodebook(minusculo, contar, P_4O_MINI, { evidencia: medido(0) });
     expect(d.applied).toBe(false);
     if (d.applied) return;
-    expect(d.reason).toMatch(/below the 8-token floor/);
+    expect(d.reason).toMatch(/below the floor of 8 input tokens/);
     // Con el suelo a cero sí habría codebook: lo que lo frena es el suelo, no una
     // incapacidad de comprimir.
-    expect(planOutputCodebook(minusculo, contar, sinSuelo).applied).toBe(true);
+    expect(planOutputCodebook(minusculo, contar, P_4O_MINI, sinSuelo).applied).toBe(true);
   });
 
   it("⛔ NO basta con un testigo: el fallo puede estar en el segundo valor del enum", () => {
@@ -284,7 +428,7 @@ describe("las verjas del codebook muerden", () => {
       required: ["decision"],
       properties: { decision: { type: "string", maxLength: 6, enum: ["ok", "human_review"] } },
     };
-    const d = planOutputCodebook(seContradice, contar, sinSuelo);
+    const d = planOutputCodebook(seContradice, contar, P_4O_MINI, sinSuelo);
     expect(d.applied).toBe(false);
     if (d.applied) return;
     expect(d.reason).toMatch(/witness does not satisfy the caller's own schema/);
@@ -295,7 +439,7 @@ describe("las verjas del codebook muerden", () => {
       ...seContradice,
       properties: { decision: { type: "string", maxLength: 6, enum: ["ok", "review"] } },
     };
-    expect(planOutputCodebook(coherente, contar, sinSuelo).applied).toBe(true);
+    expect(planOutputCodebook(coherente, contar, P_4O_MINI, sinSuelo).applied).toBe(true);
   });
 
   it("⛔ un contrato sin nada que comprimir no se aplica ni con el suelo a cero", () => {
@@ -305,7 +449,7 @@ describe("las verjas del codebook muerden", () => {
       required: ["a"],
       properties: { a: { type: "boolean" } },
     };
-    const d = planOutputCodebook(yaCorto, contar, sinSuelo);
+    const d = planOutputCodebook(yaCorto, contar, P_4O_MINI, sinSuelo);
     expect(d.applied).toBe(false);
     if (d.applied) return;
     expect(d.reason).toMatch(/nothing to compact/);
@@ -491,7 +635,7 @@ describe("las verjas 1 y 2, ejercitadas por su camino de RECHAZO", () => {
     expect(v.ok).toBe(false);
     if (v.ok) return;
 
-    const d = planOutputCodebook(seContradice, contar, { minimumSavingsTokens: 0 });
+    const d = planOutputCodebook(seContradice, contar, P_4O_MINI, { minimumSavingsTokens: 0 });
     expect(d.applied).toBe(false);
     if (d.applied) return;
     expect(d.reason).toBe(v.reason);
@@ -517,8 +661,41 @@ describe("el codebook enchufado al pipeline", () => {
     return { provider, vistos };
   }
 
+  /**
+   * Proveedor VERBOSO: el que el simulador no sabe ser.
+   *
+   * `MockProvider` fabrica desde el esquema, así que con el contrato compacto
+   * devuelve una respuesta compacta y el codebook «ahorra» siempre. El mundo no
+   * se comporta así: medido contra `gpt-4o-mini`, con nombres de campo cortos el
+   * modelo RELLENA MÁS y la salida pasó de 72 a 88 tokens. Esto reproduce ese
+   * comportamiento — mismo contenido útil, más evidencia de relleno cuando ve
+   * `"d"` en vez de `"decision"` — para poder escribir el caso que cuesta dinero.
+   */
+  function verboso() {
+    const salidas: number[] = [];
+    const provider = {
+      id: "verboso",
+      async generate(req: ProviderRequest) {
+        const compacto = req.schema?.properties?.["d"] != null;
+        // Con el contrato compacto rellena el array opcional hasta el tope; con
+        // el largo se queda en lo justo. Es la verbosidad medida, no la forma.
+        const relleno = compacto ? ["E17:4", "E22:1", "E31:9", "E44:2"] : ["E17:4"];
+        const text = compacto
+          ? JSON.stringify({ d: "H", c: 87, e: relleno })
+          : JSON.stringify({ decision: "human_review", confidence: 87, evidence: relleno });
+        salidas.push(contar(text));
+        return { text, usage: { inputTokens: 100, outputTokens: contar(text) }, structuredNatively: true };
+      },
+    };
+    return { provider, salidas };
+  }
+
   const peticion = (extra?: Partial<SavingsRequest>): SavingsRequest => ({
-    model: "openai/gpt-4o-mini",
+    // `gpt-4o`, y el modelo es parte del fixture: es aquel para el que BiVelio
+    // TIENE un delta medido positivo. Con `gpt-4o-mini` —mismo contrato, mismo
+    // prompt— el catálogo trae −16 y la palanca no se aplica, que es lo que
+    // comprueba el test «el MISMO contrato, dos modelos, dos veredictos».
+    model: "openai/gpt-4o",
     messages: [{ role: "user", content: "clasifica el expediente 4711 y cita la evidencia" }],
     response: { contractId: "triage:v1", schema: CONTRATO, maxOutputTokens: 200 },
     ...extra,
@@ -572,6 +749,136 @@ describe("el codebook enchufado al pipeline", () => {
       "evidence",
     ]);
     expect(res.report.traces.some((t) => t.stage === "output-codebook")).toBe(false);
+  });
+
+  it("el MISMO contrato, dos modelos, dos veredictos: el signo es del MODELO", async () => {
+    // LA LECCIÓN DE LA JORNADA, ejercitada por el pipeline de verdad. El esquema
+    // es idéntico en las dos llamadas —así que ninguna función del esquema podría
+    // separarlas—, y sin embargo una aplica y la otra no, porque el delta de
+    // salida medido tiene signo opuesto:
+    //
+    //     gpt-4o        salida 75 → 72   (+3)   +8,0 % neto   → aplica
+    //     gpt-4o-mini   salida 72 → 88   (−16)  −8,2 % neto   → no aplica
+    const conGrande = espia();
+    const capaGrande = createSavingsLayer({ provider: conGrande.provider });
+    const rGrande = await capaGrande.generate(peticion({ savings: { outputCodebook: true } }));
+    const tGrande = rGrande.report.traces.find((t) => t.stage === "output-codebook");
+    expect(tGrande?.outcome).toBe("applied");
+    expect(Object.keys(conGrande.vistos[0]?.properties ?? {})).toEqual(["d", "c", "e"]);
+
+    const conPequeno = espia((req) =>
+      JSON.stringify(
+        req.schema?.properties?.["d"]
+          ? { d: "H", c: 87, e: ["E17:4"] }
+          : { decision: "human_review", confidence: 87, evidence: ["E17:4"] },
+      ),
+    );
+    const capaPequena = createSavingsLayer({ provider: conPequeno.provider });
+    const rPequeno = await capaPequena.generate(
+      peticion({ model: "openai/gpt-4o-mini", savings: { outputCodebook: true } }),
+    );
+    const tPequeno = rPequeno.report.traces.find((t) => t.stage === "output-codebook");
+    expect(tPequeno?.outcome).toBe("skipped");
+    expect(String(tPequeno?.detail?.["reason"])).toMatch(/writes MORE from a compact contract/);
+    // Y el proveedor recibió el contrato ENTERO: apply-or-drop, nunca a medias.
+    expect(Object.keys(conPequeno.vistos[0]?.properties ?? {})).toEqual([
+      "decision",
+      "confidence",
+      "evidence",
+    ]);
+  });
+
+  it("un modelo del que NO hay medición no dispara la palanca, y la traza dice qué medir", async () => {
+    // EL CASO POR DEFECTO EN PRODUCCIÓN: el cliente enciende la palanca contra un
+    // modelo que BiVelio no ha medido. Aplicarla sería jugarse su factura a cara
+    // o cruz — de los dos modelos medidos, uno gana un 8 % y el otro lo pierde—,
+    // así que no se aplica y la traza publica el umbral concreto de SU contrato.
+    const { provider, vistos } = espia((req) =>
+      JSON.stringify(
+        req.schema?.properties?.["d"]
+          ? { d: "H", c: 87, e: ["E17:4"] }
+          : { decision: "human_review", confidence: 87, evidence: ["E17:4"] },
+      ),
+    );
+    const layer = createSavingsLayer({
+      provider,
+      costModels: { "mistral/large-latest": { inputPer1k: 0.002, outputPer1k: 0.006 } },
+    });
+    const res = await layer.generate(
+      peticion({ model: "mistral/large-latest", savings: { outputCodebook: true } }),
+    );
+    const t = res.report.traces.find((x) => x.stage === "output-codebook");
+    expect(t?.outcome).toBe("skipped");
+    expect(String(t?.detail?.["reason"])).toMatch(/^no measured output delta for this model/);
+    expect(String(t?.detail?.["reason"])).toContain("benchmarks/ab-live.ts");
+    expect(Object.keys(vistos[0]?.properties ?? {})).toEqual([
+      "decision",
+      "confidence",
+      "evidence",
+    ]);
+  });
+
+  it("la medición del LLAMANTE gana al catálogo, y se recuerda para la siguiente", async () => {
+    // El cliente midió su propio tráfico contra `gpt-4o-mini` y le sale POSITIVO
+    // —otro prompt, otro contrato, otra respuesta—. Su medición manda sobre la
+    // nuestra: la tabla de BiVelio se midió sobre un contrato que no es el suyo.
+    const { provider, vistos } = espia();
+    const layer = createSavingsLayer({ provider });
+    const res = await layer.generate(
+      peticion({
+        model: "openai/gpt-4o-mini",
+        savings: { outputCodebook: true, outputCodebookMeasuredOutputDeltaTokens: 5 },
+      }),
+    );
+    const t = res.report.traces.find((x) => x.stage === "output-codebook");
+    expect(t?.outcome).toBe("applied");
+    expect(t?.detail?.["measuredOutputDeltaTokens"]).toBe(5);
+    expect(String(t?.detail?.["outputDeltaProvenance"])).toContain("measured by the caller");
+    expect(Object.keys(vistos[0]?.properties ?? {})).toEqual(["d", "c", "e"]);
+
+    // Y la SEGUNDA petición del mismo par modelo/contrato ya no tiene que
+    // repetir la cifra: la memoria la conserva. Sin esto, el cliente que la
+    // olvidara una vez vería la palanca apagarse sin haber cambiado nada.
+    const segunda = await layer.generate(
+      peticion({
+        model: "openai/gpt-4o-mini",
+        messages: [{ role: "user", content: "clasifica el expediente 9999" }],
+        savings: { outputCodebook: true },
+      }),
+    );
+    const t2 = segunda.report.traces.find((x) => x.stage === "output-codebook");
+    expect(t2?.outcome).toBe("applied");
+    expect(String(t2?.detail?.["outputDeltaProvenance"])).toContain("on an earlier request");
+  });
+
+  it("con un proveedor que RELLENA MÁS al ver el contrato compacto, la palanca no se aplica", async () => {
+    // EL CASO QUE EL SIMULADOR NO SABE REPRESENTAR, y por el que este test no usa
+    // `MockProvider`: aquí la salida CRECE con el contrato compacto, que es lo que
+    // se midió contra `gpt-4o-mini`. La verja lo sabe por el catálogo y no aplica,
+    // así que el proveedor nunca llega a ver el esquema corto y nunca llega a
+    // rellenar de más.
+    const { provider, salidas } = verboso();
+    const layer = createSavingsLayer({ provider });
+    const res = await layer.generate(
+      peticion({ model: "openai/gpt-4o-mini", savings: { outputCodebook: true } }),
+    );
+    const t = res.report.traces.find((x) => x.stage === "output-codebook");
+    expect(t?.outcome).toBe("skipped");
+    expect(res.data).toEqual({ decision: "human_review", confidence: 87, evidence: ["E17:4"] });
+
+    // Y la contraprueba, que es lo que hace este test una medición y no una
+    // afirmación: FORZANDO la palanca con un delta positivo inventado, el mismo
+    // proveedor devuelve una respuesta MÁS LARGA. Ése es exactamente el dinero
+    // que la verja acaba de no gastar.
+    const forzado = verboso();
+    const capaForzada = createSavingsLayer({ provider: forzado.provider });
+    await capaForzada.generate(
+      peticion({
+        model: "openai/gpt-4o-mini",
+        savings: { outputCodebook: true, outputCodebookMeasuredOutputDeltaTokens: 5 },
+      }),
+    );
+    expect(forzado.salidas[0]).toBeGreaterThan(salidas[0]!);
   });
 
   it("no acredita NINGÚN libro, y lo deja dicho en la traza", async () => {
@@ -672,9 +979,72 @@ describe("el codebook enchufado al pipeline", () => {
     // MockProvider construye su respuesta a partir del esquema que le llega: si
     // recibe el compacto, responde compacto. Que el llamante vea su propia forma
     // demuestra el viaje entero de ida y vuelta sin fixture cómplice.
+    //
+    // ⚠️ Y ES LO ÚNICO QUE DEMUESTRA. Que la respuesta salga más corta contra este
+    // proveedor es el artefacto de fabricar-desde-el-esquema, no un ahorro: por
+    // eso NINGÚN test de dinero de este fichero mide contra él.
     const layer = createSavingsLayer({ provider: createMockProvider() });
     const res = await layer.generate(peticion({ savings: { outputCodebook: true } }));
     expect(res.data).toEqual({ decision: "human_review", confidence: 0, evidence: ["mock"] });
     expect(validateAgainstSchema(res.data, CONTRATO).valid).toBe(true);
+  });
+});
+
+describe("de dónde sale el delta de salida, y con qué procedencia", () => {
+  /**
+   * LA MEMORIA LLEVA EL MODELO EN LA CLAVE. Es la diferencia con
+   * `contratosQueIncumplen`, que se indexa solo por contrato, y no es un matiz:
+   * el mismo contrato mide +3 en `gpt-4o` y −16 en `gpt-4o-mini`, así que una
+   * memoria sin el modelo aplicaría el dato de uno al otro.
+   */
+  it("el catálogo publica LOS DOS SIGNOS, cada uno con su modelo", () => {
+    const grande = deltaMedidoDeLista("openai/gpt-4o");
+    const pequeno = deltaMedidoDeLista("gpt-4o-mini");
+    expect(grande?.deltaTokens).toBe(3);
+    expect(pequeno?.deltaTokens).toBe(-16);
+    // Y cada entrada trae con qué se midió: sin el contrato y las repeticiones,
+    // «−16» es un número sin unidades sobre el que nadie puede decidir.
+    expect(pequeno?.pares).toBe(8);
+    expect(pequeno?.contrato).toMatch(/triage/);
+    // La búsqueda respeta el corte por separador de `precioDeLista`: `gpt-4o` no
+    // puede tragarse `gpt-4o-mini`, que es donde estaría el error caro.
+    expect(deltaMedidoDeLista("gpt-4o-2024-08-06")?.deltaTokens).toBe(3);
+    // Un modelo sin medir NO se rellena por familia: se queda sin dato.
+    expect(deltaMedidoDeLista("gpt-4.1-mini")).toBeUndefined();
+    expect(deltaMedidoDeLista("anthropic/claude-sonnet-4")).toBeUndefined();
+  });
+
+  it("la precedencia es llamante > recordado > catálogo > nada", () => {
+    const m = new MemoriaDelCodebook();
+    // 4. Sin nada, nada. Y sin nada la palanca no se aplica.
+    expect(m.resolver("mistral/whatever", "triage:v1")).toBeNull();
+
+    // 3. El catálogo, declarado como extrapolación entre contratos.
+    const deLista = m.resolver("openai/gpt-4o-mini", "triage:v1");
+    expect(deLista?.deltaTokens).toBe(-16);
+    expect(deLista?.origen).toBe("catalogue");
+    expect(deLista?.procedencia).toContain("NOT measured on YOUR contract");
+
+    // 1. La medición del llamante gana al catálogo, aunque sea de signo opuesto.
+    const delLlamante = m.resolver("openai/gpt-4o-mini", "triage:v1", 7);
+    expect(delLlamante?.deltaTokens).toBe(7);
+    expect(delLlamante?.origen).toBe("caller");
+
+    // 2. Y queda recordada para ese par modelo/contrato…
+    expect(m.resolver("openai/gpt-4o-mini", "triage:v1")?.origen).toBe("remembered");
+    expect(m.resolver("openai/gpt-4o-mini", "triage:v1")?.deltaTokens).toBe(7);
+    // …y SOLO para ese par: ni el mismo contrato en otro modelo, ni otro
+    // contrato en el mismo modelo, heredan la cifra.
+    expect(m.resolver("openai/gpt-4o", "triage:v1")?.origen).toBe("catalogue");
+    expect(m.resolver("openai/gpt-4o-mini", "extraccion:v1")?.origen).toBe("catalogue");
+  });
+
+  it("una medición que no es un número no se recuerda ni decide", () => {
+    // `NaN` entrando por la API pública sería un delta que compara falso contra
+    // todo: la verja de dinero lo dejaría pasar por debajo del suelo sin decir
+    // nada. Se trata como ausencia de medición, que es lo que es.
+    const m = new MemoriaDelCodebook();
+    expect(m.resolver("mistral/whatever", "triage:v1", Number.NaN)).toBeNull();
+    expect(m.resolver("mistral/whatever", "triage:v1")).toBeNull();
   });
 });

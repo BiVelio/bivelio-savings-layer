@@ -207,11 +207,34 @@ describe("las palancas opt-in de la 0.3.0 se ejercitan de verdad", () => {
     expect(
       t?.outcome,
       `el codebook no se aplicó: ${String(t?.detail?.reason)}. El contrato necesita enums ` +
-        "y claves largas para superar el mínimo de ahorro neto",
+        "y claves largas para superar el mínimo de ahorro neto, y el modelo del escenario " +
+        "tiene que ser uno con delta de salida medido POSITIVO",
     ).toBe("applied");
     // Y la reversión: lo que llega está en la forma del LLAMANTE, no en códigos.
     const d = r.data as { decision?: string };
     expect(contratoDeTriaje.schema.properties.decision.enum as readonly string[]).toContain(d.decision!);
+  });
+
+  it("el MISMO escenario contra el modelo pequeño se DESCARTA, y esa es la lección", async () => {
+    // MOCK dijo +24,8 % sobre este escenario y en vivo salió −8,2 % contra
+    // `gpt-4o-mini` y +8,0 % contra `gpt-4o`. El simulador no puede ver la
+    // diferencia —fabrica la respuesta desde el esquema, así que un esquema
+    // compacto siempre le sale compacto—, y por eso este test NO mira tokens:
+    // mira que la capa DECIDA distinto según el modelo, que es lo único que el
+    // banco puede comprobar sin red.
+    //
+    // Si alguien "arregla" la verja para que vuelva a aplicar en el pequeño,
+    // esto se cae, y se cae por el motivo correcto.
+    const capa = await capaDelBanco();
+    const s = escenario("Triage decision (output codebook)");
+    const r = await capa.generate({ ...s.request, model: "openai/gpt-4o-mini" });
+    const t = trazas(r, "output-codebook")[0];
+    expect(t?.outcome).toBe("skipped");
+    expect(String(t?.detail?.["reason"])).toMatch(/writes MORE from a compact contract/);
+    // Y el estado de palanca del informe lo distingue de "se aplicó y no ahorró".
+    const estado = estadoDePalanca(s, r, 0);
+    expect(estado?.ejercitada).toBe(false);
+    expect(estado?.motivo).toContain("skipped");
   });
 
   it("el catálogo grande supera la verja económica del sondeo", async () => {
