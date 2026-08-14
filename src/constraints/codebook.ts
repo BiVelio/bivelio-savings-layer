@@ -32,6 +32,19 @@ import { validateAgainstSchema } from "./validate.js";
  *     esquema compacto viaja en la ENTRADA (`response_format`), así que si lo
  *     que engorda ahí supera lo que adelgaza en la salida, no se aplica.
  *
+ * QUÉ DEMUESTRA HOY CADA VERJA, medido por mutación y no por intuición: si se
+ * desactivan la 1 o la 2 —una a una, dejándolas pasar siempre— la suite ENTERA
+ * sigue en verde (1075/1075). No están mal escritas: es que hoy son
+ * INALCANZABLES, porque los guardias por nodo cortan antes todos los caminos que
+ * las harían morder (`usados` impide dos claves con el mismo código, el guardia
+ * de ambigüedad tumba el nodo cuando un código choca con otro nombre, y el de
+ * `minLength` impide el único caso conocido de esquema compacto inadmisible).
+ * Lo que hoy prueba que la reversión es correcta son ESOS guardias y los tests
+ * de round-trip; las verjas 1 y 2 son la red para cuando se afloje un guardia
+ * —que es trabajo pendiente y declarado (`pattern`, `additionalProperties`
+ * abierto)—, no la prueba. Quien afloje uno tiene que traer el caso que hace
+ * morder la verja, o la red sigue sin estar tendida.
+ *
  * LO QUE NO SE PUEDE PROBAR AQUÍ, y por eso esta palanca es opt-in: que el
  * modelo razone IGUAL de bien rellenando `{"d":"H"}` que `{"decision":
  * "human_review"}`. La reversión es lossless en DATOS; la calidad de lo que el
@@ -116,16 +129,24 @@ export function planOutputCodebook(
 ): CodebookDecision {
   const minimo = opts.minimumSavingsTokens ?? AHORRO_MINIMO_POR_DEFECTO;
 
-  // Un `pattern` en cualquier parte deja el esquema fuera. No es que el codebook
-  // rompa un regex —no toca esa restricción— sino que no se puede SINTETIZAR un
-  // testigo que lo cumpla, y sin testigo válido no hay nada que demostrar. Sin
-  // prueba, no hay palanca.
-  if (contienePattern(schema, 0)) {
-    return { applied: false, reason: "schema has a pattern; no witness can be synthesised to prove the round trip" };
-  }
-
   let derivado: Derivado;
   try {
+    // Un `pattern` en cualquier parte deja el esquema fuera. No es que el codebook
+    // rompa un regex —no toca esa restricción— sino que no se puede SINTETIZAR un
+    // testigo que lo cumpla, y sin testigo válido no hay nada que demostrar. Sin
+    // prueba, no hay palanca.
+    //
+    // EL RECORRIDO VA DENTRO DEL `try`, y ese detalle es el arreglo. Antes
+    // `contienePattern` devolvía `true` al pasarse de profundidad, así que un
+    // esquema de 18 niveles o uno cíclico —sin un solo regex— se descartaba con el
+    // motivo «schema has a pattern» y la rama `RangeError` de aquí abajo no se
+    // ejecutaba NUNCA: código muerto publicando un diagnóstico falso. Quien leyera
+    // esa traza se iría a buscar en su contrato un `pattern` que no existe, que es
+    // peor que no decirle nada. Ahora el corte por profundidad lanza y se reporta
+    // por lo que es.
+    if (contienePattern(schema, 0)) {
+      return { applied: false, reason: "schema has a pattern; no witness can be synthesised to prove the round trip" };
+    }
     derivado = derivar(schema, 0);
   } catch (err) {
     return { applied: false, reason: err instanceof RangeError ? "schema too deep or cyclic" : "schema could not be compacted" };
@@ -480,8 +501,13 @@ function testigo(schema: JsonSchema, indiceEnum: number, prof: number): unknown 
   }
 }
 
+/**
+ * ¿Hay un `pattern` en algún sitio? Lanza `RangeError` al pasarse de profundidad,
+ * que es lo que corta un esquema cíclico. Devolver `true` ahí —como hacía antes—
+ * también cortaba, pero mentía sobre el motivo: ver la nota de `planOutputCodebook`.
+ */
 function contienePattern(schema: JsonSchema, prof: number): boolean {
-  if (prof > PROFUNDIDAD_MAXIMA) return true;
+  if (prof > PROFUNDIDAD_MAXIMA) throw new RangeError("schema too deep");
   if (schema.pattern != null) return true;
   for (const sub of Object.values(schema.properties ?? {})) {
     if (contienePattern(sub, prof + 1)) return true;

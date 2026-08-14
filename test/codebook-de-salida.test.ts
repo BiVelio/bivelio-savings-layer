@@ -194,6 +194,61 @@ describe("las verjas del codebook muerden", () => {
     expect(d.reason).toMatch(/^net saving -?\d+ tokens is below the 10000-token floor \(output \d+, schema [-+]?\d+\)$/);
   });
 
+  it("⛔ el ahorro modelado es el del PEOR testigo, no el del mejor", () => {
+    // El módulo dice equivocarse a la BAJA y de ahí depende que la palanca no se
+    // aplique donde no paga. Con un enum de valores muy desiguales las dos reglas
+    // se separan: quedarse con el mejor testigo casi triplica la cifra sobre la
+    // que decide la verja de dinero, y nada más en la suite nota la diferencia.
+    const desigual: JsonSchema = {
+      type: "object",
+      additionalProperties: false,
+      required: ["decision"],
+      properties: {
+        decision: { type: "string", enum: ["ok", "escalate_to_a_human_operator_immediately"] },
+      },
+    };
+    const d = planOutputCodebook(desigual, contar, sinSuelo);
+    if (!d.applied) throw new Error("se esperaba que se aplicara");
+
+    const delta = (v: unknown) =>
+      contar(JSON.stringify(v)) - contar(JSON.stringify(d.plan.compact(v)));
+    const peor = delta({ decision: "ok" });
+    const mejor = delta({ decision: "escalate_to_a_human_operator_immediately" });
+    expect(mejor).toBeGreaterThan(peor);
+    expect(d.plan.modelledOutputSavingTokens).toBe(peor);
+  });
+
+  it("⛔ un esquema demasiado profundo o cíclico se descarta POR SU MOTIVO, no por un `pattern` inventado", () => {
+    // El corte por profundidad vivía dentro de `contienePattern`, que devolvía
+    // `true`: los dos esquemas de aquí abajo —sin un solo regex— se rechazaban
+    // diciendo «schema has a pattern», y la rama de `RangeError` era código muerto.
+    // Una traza que manda al cliente a buscar en su contrato algo que no está es
+    // peor que una traza que calla.
+    let profundo: JsonSchema = { type: "string", maxLength: 4 };
+    for (let i = 0; i < 18; i++) {
+      profundo = {
+        type: "object",
+        additionalProperties: false,
+        required: [`nivel_${i}`],
+        properties: { [`nivel_${i}`]: profundo },
+      };
+    }
+    const hondo = planOutputCodebook(profundo, contar, sinSuelo);
+    expect(hondo.applied).toBe(false);
+    if (hondo.applied) return;
+    expect(hondo.reason).toBe("schema too deep or cyclic");
+    expect(hondo.reason).not.toMatch(/pattern/);
+
+    // Y un esquema construido por referencia circular: sin el corte no termina.
+    const ciclico: JsonSchema = { type: "object", additionalProperties: false, properties: {} };
+    (ciclico.properties as Record<string, JsonSchema>)["hijo"] = ciclico;
+    (ciclico.properties as Record<string, JsonSchema>)["descripcion_larga"] = { type: "string" };
+    const circular = planOutputCodebook(ciclico, contar, sinSuelo);
+    expect(circular.applied).toBe(false);
+    if (circular.applied) return;
+    expect(circular.reason).toBe("schema too deep or cyclic");
+  });
+
   it("⛔ un ahorro trivial no vale el cambio de contrato", () => {
     // Renombrable (la clave se acorta), pero lo que se gana no llega al suelo por
     // defecto: cambiar el `response_format` que ve el proveedor no se hace gratis.
