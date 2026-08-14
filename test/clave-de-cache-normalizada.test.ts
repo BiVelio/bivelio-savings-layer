@@ -7,8 +7,9 @@ import {
   keyTokensMatch,
   evaluatePolicy,
   createDefaultResolvers,
+  ToolSelector,
 } from "../src/index.js";
-import type { SavingsRequest } from "../src/index.js";
+import type { SavingsRequest, ToolDescriptor } from "../src/index.js";
 
 /**
  * LA CLAVE DE CACHÉ FALLABA POR UN SIGNO DE INTERROGACIÓN.
@@ -212,6 +213,50 @@ describe("los guardarraíles de política sobreviven a la normalización", () =>
 
   it.each(FRESCOS)("[%s] sigue viéndose como sensible al tiempo", (_idioma, texto) => {
     expect(evaluatePolicy(canonicalize(peticion(texto))).requiresFreshData).toBe(true);
+  });
+});
+
+describe("⛔ lo que lee el texto normalizado no se queda mudo", () => {
+  /**
+   * `normalizedText` no alimenta solo la clave: el selector de herramientas
+   * compara contra él los `intents` que escribe el CLIENTE, sin normalizar. En
+   * cuanto el texto se pliega y el intent no, un intent con tilde deja de casar y
+   * la herramienta se descarta. Eso no cuesta un acierto de caché: el proveedor
+   * no ve la capacidad, el modelo contesta «claro, lo envío», no se envía nada y
+   * el libro lo apunta como ahorro (`actualTools: 0`). Es el fallo que el
+   * comentario de `router.ts` ya documenta reproducido por otra vía.
+   */
+  // El intent es de UNA palabra a propósito. Con «envío de factura» el test pasa
+  // igual sin arreglar nada: al fallar la coincidencia completa, el selector cae
+  // al reparto por palabras y «factura» —sin tilde— rescata la herramienta con
+  // media puntuación. Una sola palabra acentuada no tiene quién la rescate, que
+  // es el caso que de verdad deja la palanca muda.
+  const ENVIAR: ToolDescriptor = { id: "enviar", intents: ["envío"], risk: "write" };
+  const TEXTO = "envía el envío de hoy";
+
+  it("una herramienta con el intent acentuado sigue seleccionándose", () => {
+    const c = canonicalize(peticion(TEXTO, { tools: [ENVIAR] }));
+    const seleccion = new ToolSelector().select(c.normalizedText, [ENVIAR], "TOOL_ACTION");
+    expect(seleccion.tools.map((t) => t.id)).toEqual(["enviar"]);
+    expect(seleccion.droppedIds).toEqual([]);
+  });
+
+  it("y también cuando el llamante pasa el texto en crudo", () => {
+    // `select` es superficie pública: nada obliga a que el texto llegue ya
+    // normalizado. Si solo se pliega el intent, un llamante que pase el texto tal
+    // cual se queda con el mismo agujero al revés.
+    const seleccion = new ToolSelector().select(TEXTO, [ENVIAR], "TOOL_ACTION");
+    expect(seleccion.tools.map((t) => t.id)).toEqual(["enviar"]);
+  });
+
+  it("un intent que al plegarse se queda vacío no casa con todo", () => {
+    const vacio: ToolDescriptor = { id: "comodin", intents: ["¿?"], risk: "write" };
+    const seleccion = new ToolSelector().select(
+      normalizeText("¿cuál es el total?"),
+      [vacio],
+      "TOOL_ACTION",
+    );
+    expect(seleccion.tools).toEqual([]);
   });
 });
 
