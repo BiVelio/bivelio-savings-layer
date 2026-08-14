@@ -33,7 +33,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { cargarCorpus } from "../corpus/arnes/cargar.js";
+import { cargarCorpus, type CasoDelArnes } from "../corpus/arnes/cargar.js";
 import { degradaciones, puntuarCorpus } from "../corpus/arnes/metricas.js";
 import { MUTANTES, respondeUnaAbstencion, tiraUnaCita } from "../corpus/arnes/mutantes.js";
 import { conEntradaLimpia, mandarloTodo } from "../corpus/arnes/selectores.js";
@@ -103,6 +103,56 @@ describe("verificación por mutación · cada mutante suspende", () => {
     expect(i.global.citasConservadas).toBe(1);
     expect(i.global.aprobados).toBe(0);
     expect(i.fallos.every((f) => f.idsInventados.length === 1)).toBe(true);
+  });
+});
+
+describe("verificación por mutación · el caso que el corpus real no sabe expresar", () => {
+  // Encontrado mutando el propio arnés: al quitar `abst.ok` de `aprobado`, los
+  // cuatro mutantes de arriba SEGUÍAN suspendiendo. Motivo: en los 150 casos de
+  // hoy los dos lados de una contradicción están siempre citados, así que tirar
+  // uno rompe también las citas y el mutante suspende por la otra puerta. La
+  // comprobación de abstención no quedaba fijada por ninguna de las cuatro.
+  //
+  // Este corpus de un solo caso es la que la fija: una contradictoria SIN citar.
+  // El cargador prohíbe esa forma en los datos reales —hay un test— y por eso
+  // hay que construirla a mano. Las dos comprobaciones son la misma puerta con
+  // dos cerraduras: si alguien quita una, esto se pone rojo.
+  const conContradictoriaSinCitar: CasoDelArnes = {
+    id: "mut-es-001",
+    origen: "facturacion",
+    idioma: "es",
+    dominio: "pruebas",
+    dificultad: "dificil",
+    trampas: ["abstencion"],
+    consulta: "¿Se puede devolver un artículo comprado en rebajas?",
+    unidades: [
+      { id: "u1", papel: "contradictoria", papelOriginal: "contradictoria", texto: "Las FAQ dicen que los artículos de rebajas no admiten devolución.", orden: 0 },
+      { id: "u2", papel: "contradictoria", papelOriginal: "contradictoria", texto: "La política v4 dice que los artículos de rebajas conservan el plazo general.", orden: 1 },
+      { id: "u3", papel: "distractora", papelOriginal: "distractora", texto: "El reembolso se abona en el mismo medio de pago en catorce días.", orden: 2 },
+    ],
+    presupuestoMax: 2,
+    presupuestoImputado: false,
+    necesarias: [],
+    citas: ["u1"],
+    abstencion: true,
+    valores: [{ campo: "abstencion", valor: "contradiccion-sin-regla-de-desempate", critico: true }],
+    nota: "solo para la mutación: u2 contradice a u1 y nadie la cita",
+  };
+
+  it("⛔ tirar el otro lado suspende AUNQUE no muera ninguna cita", () => {
+    const i = puntuarCorpus([conContradictoriaSinCitar], () => ["u1"], { nombre: "mut" });
+    expect(i.global.citasConservadas).toBe(1);
+    expect(i.global.coberturaDeCamposCriticos).toBe(1);
+    // Y aun así suspende: es lo único que lo separa de un aprobado perfecto.
+    expect(i.global.aprobados).toBe(0);
+    expect(i.global.tasaDeAbstencionCorrecta).toBe(0);
+    expect(i.fallos[0]?.abstencionRota).toContain("un solo lado");
+  });
+
+  it("conservar los dos lados aprueba: el caso no está roto de fábrica", () => {
+    const i = puntuarCorpus([conContradictoriaSinCitar], () => ["u1", "u2"], { nombre: "mut" });
+    expect(i.global.aprobados).toBe(1);
+    expect(i.global.tasaDeAbstencionCorrecta).toBe(1);
   });
 });
 

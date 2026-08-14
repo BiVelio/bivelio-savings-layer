@@ -172,6 +172,29 @@ mirase citas y campos críticos, este mutante pasaría por «casi perfecto» —
 eso la tasa de abstención correcta es una métrica con nombre propio y no una
 línea del agregado.
 
+### Lo que encontró mutar el propio arnés
+
+Los cuatro mutantes de arriba se verificaron a mano rompiendo cada cláusula de
+`aprobado` una a una, con `git diff` delante para no creerse un no-op. Cinco de
+las seis rondas salieron rojas donde tenían que salir. **Una no**: al quitar
+`abst.ok` de `aprobado`, los cuatro mutantes seguían suspendiendo.
+
+El motivo es del corpus, no del arnés. En los 150 casos de hoy los dos lados de
+una contradicción están **siempre citados**, así que tirar uno rompe también las
+citas y el mutante suspende por la otra puerta. La comprobación de abstención no
+quedaba fijada por ninguno de los cuatro: se podía borrar sin que la suite se
+enterase.
+
+El agujero está tapado con un caso sintético de un solo elemento
+(`el caso que el corpus real no sabe expresar`): una unidad contradictoria **sin
+citar**. Es una forma que el cargador prohíbe en los datos reales —hay un test
+que lo comprueba— y por eso hay que construirla a mano. Las dos comprobaciones
+son la misma puerta con dos cerraduras, y ahora quitar cualquiera de las dos
+pone algo rojo.
+
+Es exactamente para lo que sirve mutar: la ronda que sale verde cuando debería
+salir roja es la que informa.
+
 ---
 
 ## Ficheros
