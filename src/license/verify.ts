@@ -4,10 +4,10 @@ import { ed25519 } from "@noble/curves/ed25519.js";
  * Offline license verification for the paid SDK.
  *
  * A license is a compact signed token `base64url(header).base64url(payload).
- * base64url(sig)` (the exact format the licensing service mints in
- * `@bivelio/license-client`'s `signLicense`). We verify the Ed25519 signature
- * against BiVelio's public key, decode the payload, and apply the same grace
- * policy the license-client uses. Verification is **browser-safe**: it uses
+ * base64url(sig)`, the exact format BiVelio's licensing service mints. We verify
+ * the Ed25519 signature against BiVelio's public key, decode the payload, and
+ * apply the same grace policy the issuer applies. Verification is
+ * **browser-safe**: it uses
  * `@noble/curves` (pure JS) + Web primitives (`atob`, `TextEncoder`) rather than
  * `node:crypto`, so the shared entry point still compiles into the browser
  * demo bundle. The private signing key never leaves the control plane; only the
@@ -216,8 +216,8 @@ export function deriveStatus(
 }
 
 /**
- * Verify + apply the grace policy → a resolved status. Mirrors
- * `@bivelio/license-client`'s `LicenseClient.resolve`. Bad signature / malformed
+ * Verify + apply the grace policy → a resolved status. Mirrors what the issuing
+ * control plane resolves for the same token. Bad signature / malformed
  * → invalid; otherwise the status comes from {@link deriveStatus}.
  */
 export function resolveLicense(

@@ -88,10 +88,11 @@ export interface SavingsLayerConfig {
   licensePublicKey?: string | LicenseKeyset;
 
   /**
-   * Pre-built license gate. Usually you pass {@link licenseKey} instead and let
-   * the SDK construct this. Advanced/self-managed callers can inject their own
-   * gate (e.g. `@bivelio/license-client`'s `createLicenseGate()`). When both are
-   * given, `licenseGate` wins.
+   * Pre-built license gate. **Ignored in the published npm package**, where a
+   * {@link licenseKey} verified against the embedded BiVelio public key is the
+   * only accepted license — passing a gate there logs a warning and changes
+   * nothing. It exists for builds from source (this repo's own tests and
+   * benchmarks), where it takes precedence over {@link licenseKey}.
    */
   licenseGate?: LicenseGate;
 

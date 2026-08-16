@@ -723,10 +723,14 @@ export interface SavingsReport {
  * Structural license gate the pipeline consults before enabling a managed
  * feature (semantic cache, learned thresholds, long-context compression, …).
  *
- * It is intentionally a bare shape — the SDK never imports the license package.
- * `@bivelio/license-client`'s `createLicenseGate()` returns a compatible object,
- * but any implementation of this interface works. When no gate is configured the
- * pipeline behaves as an ungated self-managed deployment (backwards compatible).
+ * It is intentionally a bare shape, so any object with these methods works and
+ * the SDK never has to import a licensing package.
+ *
+ * There is no ungated mode: with no gate and no `licenseKey`, `generate()`
+ * throws {@link LicenseError} on entry. In the published npm package an injected
+ * gate is ignored entirely — a `licenseKey` verified against BiVelio's embedded
+ * public key is the only accepted license there, and this interface is what that
+ * key is turned into internally.
  */
 export interface LicenseGate {
   isEntitled(feature: string): boolean;

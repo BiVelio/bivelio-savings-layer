@@ -166,36 +166,148 @@ function errorYaFacturado(err: unknown): boolean {
  * renovara la suscripción que acababa de comprar; y a quien tenía la salida de
  * red cerrada, lo mismo. Mandarle a pagar es el peor consejo posible en los dos
  * casos, porque el problema está a un copiar-y-pegar de distancia.
+ *
+ * TODOS terminan con el estado —`(license status: X)`— porque es el único asidero
+ * con el que se puede buscar: el texto se reescribe, el estado no. Y todos
+ * apuntan a la página que RESUELVE ese estado, nunca a la raíz del sitio: la
+ * raíz es la portada de venta, y a quien ya pagó le manda a buscar otra vez.
  */
 export function mensajeDeLicencia(st: LicenseStatus | string | undefined): string {
   switch (st) {
+    case "none":
+      // NADA configurado. Es el primer contacto de CUALQUIERA que instale el
+      // paquete y pegue el fragmento del README, así que es el mensaje más leído
+      // del producto — y es donde el consejo tiene que ser ejecutable palabra por
+      // palabra. Se separa de `undefined` a propósito: `undefined` es "un gate
+      // devolvió un estado que no conozco", y son dos arreglos distintos.
+      return mensajeSinLicencia();
     case "invalid":
       // No verifica contra nuestra clave pública. Casi siempre es un problema de
       // copiar y pegar, y NUNCA se arregla pagando.
       return (
         "BiVelio license key is not valid (it does not verify). Check you pasted the WHOLE key, " +
         "and that it is the license key from your dashboard — not the `bvk_` service-account key, " +
-        "which goes in `serviceAccountKey`. Keys: https://savings.bivelio.com/dashboard/install"
+        "which goes in `serviceAccountKey`. Keys: https://savings.bivelio.com/dashboard/install " +
+        "(license status: invalid)"
       );
     case "revoked":
       // Aquí sí hay algo que gestionar, pero no es "renovar": es entender por qué.
       return (
         "BiVelio license has been revoked. If this is unexpected, check your billing status " +
-        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com"
+        "at https://savings.bivelio.com/dashboard/account or write to support@bivelio.com " +
+        "(license status: revoked)"
       );
     case "stale":
       // La licencia está PAGADA y VIGENTE. El problema es la red.
       return (
         "BiVelio could not confirm your license with the control plane in time — this is a " +
         "connectivity problem, not a billing one: your license is still valid. Allow outbound " +
-        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry."
+        "HTTPS to your `licenseServerUrl` (https://savings.bivelio.com by default) and retry. " +
+        "(license status: stale)"
       );
     case "expired":
     case "grace":
-      return `BiVelio license is not active (${st}). Renew your subscription at https://savings.bivelio.com`;
+      return (
+        "BiVelio license is not active. Renew your subscription at " +
+        `https://savings.bivelio.com/dashboard/account (license status: ${st})`
+      );
     default:
-      return `BiVelio license is not active${st ? ` (${st})` : ""}. See https://savings.bivelio.com/dashboard/account`;
+      return (
+        "BiVelio license is not active. See " +
+        `https://savings.bivelio.com/dashboard/account${st ? ` (license status: ${st})` : ""}`
+      );
   }
+}
+
+/**
+ * EL MENSAJE QUE MÁS SE LEE, Y EL QUE MANDABA A UNA PUERTA TAPIADA.
+ *
+ * Decía: *"Pass { licenseKey } … (or { devUnlicensed: true } for local dev). Get
+ * a key at https://savings.bivelio.com"*. Las dos mitades estaban rotas en el
+ * paquete PUBLICADO, que es el único que toca un cliente:
+ *
+ *   · `devUnlicensed` —y la variable de entorno— se compilan FUERA del build de
+ *     npm (`__BV_SALA_ALLOW_DEV_OPEN__: "false"` en tsup.config.ts), así que
+ *     seguir ese consejo devolvía EL MISMO ERROR, con el mismo consejo dentro.
+ *     Un bucle cerrado en la primera pantalla del producto. Recomendar una
+ *     puerta tapiada es peor que no decir nada: gasta la confianza y la tarde de
+ *     quien acaba de instalar.
+ *   · el enlace iba a la raíz del sitio, que es la portada de venta. La página
+ *     que resuelve ESTE error —la clave ya emitida, con su fragmento para
+ *     pegar— es `/dashboard/install`.
+ *
+ * Y tiene que ser cierto en CADA build, no solo en el de npm: desde el fuente
+ * (tests, banco, ejemplos del repo) `devUnlicensed` sí funciona y tiene que
+ * seguir funcionando. Lo deciden las MISMAS constantes de build que deciden si
+ * la puerta abre, no una copia de la intención: así no pueden divergir.
+ *
+ * La forma `const …; if (!…) return …;` no es estilo: es lo que mantiene el
+ * texto del fuente FUERA del bundle publicado. esbuild sustituye la constante
+ * por `false` y elimina la rama muerta. Es la misma forma que usa `devOpen()`,
+ * y allí por una razón que además es una verja: si el literal del nombre de la
+ * variable de entorno sobrevive en `dist/index.js`, publish.yml aborta la
+ * Release. El test de sala limpia comprueba lo mismo en cada PR.
+ */
+function mensajeSinLicencia(): string {
+  const hayPuertaDeDesarrollo =
+    typeof __BV_SALA_ALLOW_DEV_OPEN__ === "undefined" ? true : __BV_SALA_ALLOW_DEV_OPEN__;
+  if (!hayPuertaDeDesarrollo) {
+    return (
+      "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
+      "from your subscription, verified offline. This published package has no unlicensed mode. " +
+      "Copy your key and a ready-to-paste snippet at " +
+      "https://savings.bivelio.com/dashboard/install (license status: none)"
+    );
+  }
+  // TRES builds, no dos. El bundle del navegador (`__BV_SALA_DEMO_ONLY__`) SÍ
+  // tiene puerta, pero solo para el proveedor de demo interno: a quien lo importe
+  // con un proveedor real, recomendarle `devUnlicensed` le devuelve el mismo
+  // error otra vez — exactamente el bucle que este arreglo cierra, en otro
+  // envoltorio. Se comprueba aquí y no con `isBuiltInDemoProvider` porque solo
+  // una condición de constantes de BUILD se pliega: pasada como argumento, el
+  // texto del fuente viajaría dentro del tarball de npm y tumbaría la verja de
+  // publish.yml.
+  const soloDemo = typeof __BV_SALA_DEMO_ONLY__ === "undefined" ? false : __BV_SALA_DEMO_ONLY__;
+  if (soloDemo) {
+    return (
+      "BiVelio license required: none was configured. This in-browser demo build runs ungated " +
+      "only with BiVelio's built-in demo provider; against a real provider it needs " +
+      "{ licenseKey } — the signed token from your subscription. Get one at " +
+      "https://savings.bivelio.com/dashboard/install (license status: none)"
+    );
+  }
+  return (
+    "BiVelio license required: none was configured. Pass { licenseKey } — the signed token " +
+    "from your subscription, verified offline — or { devUnlicensed: true }, honored ONLY in " +
+    "this from-source build and never in the published npm package. Get a key at " +
+    "https://savings.bivelio.com/dashboard/install (license status: none)"
+  );
+}
+
+/**
+ * Gate inyectado al que le falta `isActive()`. Mismo defecto que el anterior y
+ * por eso mismo criterio: el texto solo puede nombrar palancas que EXISTAN en
+ * este build. En el paquete publicado no solo está tapiada la puerta de
+ * desarrollo — es que un `licenseGate` inyectado se descarta entero
+ * (`createSavingsLayer`), así que el único camino es `licenseKey`. Decirle otra
+ * cosa a quien ya está atascado le cuesta otra vuelta.
+ */
+function mensajeDeGateIncompleto(): string {
+  const hayPuertaDeDesarrollo =
+    typeof __BV_SALA_ALLOW_DEV_OPEN__ === "undefined" ? true : __BV_SALA_ALLOW_DEV_OPEN__;
+  if (!hayPuertaDeDesarrollo) {
+    return (
+      "licenseGate must implement isActive(): a gate that cannot prove the license is live " +
+      "is refused. In this published package an injected gate is not a licensing path at " +
+      "all — pass { licenseKey } instead, from " +
+      "https://savings.bivelio.com/dashboard/install (license status: invalid)"
+    );
+  }
+  return (
+    "licenseGate must implement isActive(): a gate that cannot prove the license is live " +
+    "is refused. Pass { licenseKey } for enforced licensing, or { devUnlicensed: true } for " +
+    "local development from source. (license status: invalid)"
+  );
 }
 
 export class SavingsPipeline {
@@ -680,16 +792,14 @@ export class SavingsPipeline {
     // npm. El escape legítimo para desarrollo local ya existe y es explícito:
     // `devUnlicensed: true` (ver devOpen()). Así que aquí se falla cerrado.
     if (gate) {
-      throw new LicenseError(
-        "licenseGate must implement isActive(). A gate without it cannot prove the " +
-          "licence is live, so the pipeline refuses to run. Pass { licenseKey } for " +
-          "enforced licensing, or { devUnlicensed: true } for local development.",
-        "invalid",
-      );
+      throw new LicenseError(mensajeDeGateIncompleto(), "invalid");
     }
-    throw new LicenseError(
-      "No BiVelio license configured. Pass { licenseKey } from your subscription (or { devUnlicensed: true } for local dev). Get a key at https://savings.bivelio.com",
-    );
+    // `"none"` y no `undefined`. El estado ya se documentaba como
+    // «expired | invalid | revoked | none» en LicenseError y NUNCA se ponía: quien
+    // capturaba el error para ramificar recibía `undefined` —indistinguible de un
+    // gate que no sabe responder— y solo le quedaba parsear el texto, que es lo
+    // que se reescribe cada vez que se mejora el mensaje.
+    throw new LicenseError(mensajeDeLicencia("none"), "none");
   }
 
   /**

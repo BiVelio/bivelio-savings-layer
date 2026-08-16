@@ -78,8 +78,10 @@ console.log(data.answer); // 8
 
 The hard requirements are a `provider` and a valid `licenseKey`: BV‑SALA is a paid
 product and **refuses to run unlicensed, expired, or tampered** (it throws
-`LicenseError` at the `generate()` entry). Get a key at
-[savings.bivelio.com](https://savings.bivelio.com).
+`LicenseError` at the `generate()` entry, carrying a `status` of `none`,
+`invalid`, `expired`, `grace`, `revoked` or `stale`). Your key — and this snippet
+with the key already filled in — is at
+[savings.bivelio.com/dashboard/install](https://savings.bivelio.com/dashboard/install).
 
 > **Set `serviceAccountKey` on every long‑running deployment.** Your licence token
 > expires at the end of the billing period; each renewal mints a **new** token. With
