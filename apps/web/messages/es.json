@@ -416,11 +416,30 @@
       "title": "Ambos brazos medidos por el tokenizador del propio proveedor — sin línea base modelada.",
       "body": "Este es el resultado del benchmark A/B (<code>pnpm ab</code>): para cada escenario envía una solicitud <b>ingenua</b> <i>y</i> la solicitud de BV‑SALA al <b>mismo</b> modelo, cotiza ambas a partir del propio uso de tokens del proveedor e informa el <b>límite inferior del intervalo de confianza del 95%</b> — nunca la estimación puntual halagadora. Nada está modelado."
     },
+    "anthropicCache": {
+      "eyebrow": "Medido · caché de prefijo de Anthropic",
+      "title": "Anthropic no cachea sola. Tu integración no se lo pide; la nuestra sí.",
+      "body": "OpenAI aplica su caché de prefijo automáticamente: ese descuento ya lo tienes con nosotros o sin nosotros. <b>Anthropic no.</b> Exige marcar el punto de corte en cada petición, y quien no lo marca paga la entrada entera, siempre.",
+      "evidenceTitle": "Lo que se midió",
+      "evidenceLede": "Turno de agente con contexto de sistema largo y repetido — un asistente de soporte, un extractor documental. Ocho pares, mismo modelo en los dos brazos, tarifados con el contador del propio Anthropic.",
+      "rowNaiveLabel": "Sin la capa",
+      "rowNaiveValue": "0 tokens servidos desde caché",
+      "rowOursLabel": "Con la capa",
+      "rowOursValue": "58 624 tokens servidos desde caché",
+      "figure": "78 %",
+      "figureNote": "menos coste en esas peticiones · límite inferior del 95 % en 78,0 % · calidad 8/8, sin regresión",
+      "scopeTitle": "Qué NO dice esta cifra",
+      "scope": "Es el ahorro de <b>esa</b> palanca sobre <b>ese</b> tráfico, no el de tu factura entera. Sale del escenario de prefijo estable, donde vive el dinero de la caché; en tráfico sin contexto repetido esta palanca vale cero. El titular de la tirada completa se mide aparte, y lo publicamos con su intervalo, arriba.",
+      "verifyTitle": "Y no hace falta que nos creas",
+      "verify": "Es comprobable en tu propia factura sin instalar nada: mira si tus llamadas a Claude traen <code>cache_read_input_tokens</code>. Si salen a cero, ese descuento lo estás dejando en la mesa hoy."
+    },
     "ledgersHead": {
       "eyebrow": "Contabilidad honesta",
       "title": "Cuatro libros contables separados. Nunca sumados en una sola cifra de vanidad.",
       "body": "Un acierto de caché elimina una llamada entera. BV‑SALA recodifica los datos estructurados de forma más compacta. La compresión descarta palabras redundantes. Una caché de prefijo del proveedor abarata los tokens sin eliminarlos. Mezclarlos te miente — así que no lo hacemos.",
-      "runToMeasure": "ejecuta el optimizador para medir"
+      "runToMeasure": "ejecuta el optimizador para medir",
+      "measuredFloor": "medido · suelo del 95 %",
+      "notProven": "medido · no despeja el cero"
     },
     "ledgers": [
       {

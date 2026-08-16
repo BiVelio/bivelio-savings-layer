@@ -988,3 +988,35 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   .equipo-fila .quien { flex-basis: calc(100% - 42px); }
   .equipo-fila .acciones { margin-left: 42px; }
 }
+
+/* ── Caché de prefijo de Anthropic ─────────────────────────────────────────
+   Sin cifra en el héroe: el argumento es el MECANISMO (Anthropic no cachea
+   sola), y la medición lo respalda en su sitio, con su alcance al lado. La
+   landing ya se quemó una vez publicando un número que no aguantaba. */
+.ancache { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); gap: 20px; align-items: stretch; }
+@media (max-width: 760px) { .ancache { grid-template-columns: 1fr; } }
+
+.ancache-medida { border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 20px; background: var(--surface); }
+.ancache-medida h4 { margin: 0 0 6px; font-size: .95rem; }
+.ancache-lede { margin: 0 0 14px; color: var(--ink-soft); font-size: .9rem; }
+
+.ancache-filas { margin: 0; display: grid; gap: 8px; }
+.ancache-filas > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg); }
+.ancache-filas dt { margin: 0; color: var(--ink-soft); font-size: .86rem; }
+.ancache-filas dd { margin: 0; font-variant-numeric: tabular-nums; font-size: .92rem; }
+.ancache-filas .es-nuestra { border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
+  background: var(--brand-soft); }
+.ancache-filas .es-nuestra dd { color: var(--brand); font-weight: 650; }
+
+.ancache-cifra { display: flex; flex-direction: column; justify-content: center; gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, var(--line)); border-radius: var(--radius-xl);
+  padding: 20px; background: var(--brand-soft); }
+.ancache-cifra .n { font-size: clamp(2.4rem, 6vw, 3.4rem); line-height: 1; font-weight: 300;
+  color: var(--brand); font-variant-numeric: tabular-nums; }
+.ancache-cifra .nota { font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
+
+.ancache-notas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 16px; margin-top: 16px; }
+.ancache-notas > div { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 18px; background: var(--surface); }
+.ancache-notas h4 { margin: 0 0 6px; font-size: .9rem; }
+.ancache-notas p { margin: 0; color: var(--ink-soft); font-size: .88rem; line-height: 1.6; }

@@ -120,6 +120,24 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     grey: boolean;
   }[];
   const ledgers = t.raw("ledgers") as { idx: string; name: string; desc: string }[];
+
+  // Las cuatro tarjetas llevaban un guion ESCRITO A MANO y el texto «ejecuta el
+  // optimizador para medir», encima de un artefacto que YA traía las cuatro
+  // cifras medidas con su intervalo. Cuatro cajas vacías sobre datos reales: la
+  // misma clase de fallo que un libro contable sin productor.
+  //
+  // Se casa por NOMBRE del libro, no por posición: el artefacto viejo traía
+  // `output_restriction` donde el nuevo trae `provider_cached`, y casar por
+  // índice habría puesto la cifra de una palanca bajo el título de otra.
+  const CLAVE_DE_TARJETA: Record<string, string> = {
+    avoided_calls: "avoided_calls",
+    eliminated_tokens: "eliminated_tokens",
+    compressed_tokens: "compressed_tokens",
+    provider_cached_tokens: "provider_cached",
+  };
+  const medidoPorLibro = new Map(
+    (ab.ledgers ?? []).map((l) => [l.ledger, l]),
+  );
   const features = t.raw("pricing.features") as string[];
   const trust = t.raw("pricing.trust") as { lead: string; rest: string }[];
 
@@ -221,6 +239,52 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
+        {/* CACHÉ DE PREFIJO DE ANTHROPIC — el mecanismo, no un titular */}
+        <section id="anthropic-cache">
+          <div className="sec-head">
+            <span className="eyebrow">{t("anthropicCache.eyebrow")}</span>
+            <h2>{t("anthropicCache.title")}</h2>
+            <p>
+              {t.rich("anthropicCache.body", {
+                b: (c) => <b>{c}</b>,
+                code: (c) => <code>{c}</code>,
+              })}
+            </p>
+          </div>
+
+          <div className="ancache">
+            <div className="ancache-medida">
+              <h4>{t("anthropicCache.evidenceTitle")}</h4>
+              <p className="ancache-lede">{t("anthropicCache.evidenceLede")}</p>
+              <dl className="ancache-filas">
+                <div>
+                  <dt>{t("anthropicCache.rowNaiveLabel")}</dt>
+                  <dd>{t("anthropicCache.rowNaiveValue")}</dd>
+                </div>
+                <div className="es-nuestra">
+                  <dt>{t("anthropicCache.rowOursLabel")}</dt>
+                  <dd>{t("anthropicCache.rowOursValue")}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="ancache-cifra">
+              <span className="n">{t("anthropicCache.figure")}</span>
+              <span className="nota">{t("anthropicCache.figureNote")}</span>
+            </div>
+          </div>
+
+          <div className="ancache-notas">
+            <div>
+              <h4>{t("anthropicCache.scopeTitle")}</h4>
+              <p>{t.rich("anthropicCache.scope", { b: (c) => <b>{c}</b> })}</p>
+            </div>
+            <div>
+              <h4>{t("anthropicCache.verifyTitle")}</h4>
+              <p>{t.rich("anthropicCache.verify", { code: (c) => <code>{c}</code> })}</p>
+            </div>
+          </div>
+        </section>
+
         {/* LEDGERS — four separate ledgers, never summed */}
         <section>
           <div className="sec-head">
@@ -229,15 +293,29 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <p>{t("ledgersHead.body")}</p>
           </div>
           <div className="ledgers">
-            {ledgers.map((l) => (
-              <div className="ledger" key={l.idx}>
-                <div className="idx">{l.idx}</div>
-                <h4>{l.name}</h4>
-                <p>{l.desc}</p>
-                <div className="mval">—</div>
-                <div className="munit">{t("ledgersHead.runToMeasure")}</div>
-              </div>
-            ))}
+            {ledgers.map((l) => {
+              const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");
+              // Se publica el LÍMITE INFERIOR del intervalo, nunca el punto: es
+              // la regla del banco y no cambia por estar en una landing. Y un
+              // libro que no despejó el cero NO se anuncia como ahorro.
+              const cifra =
+                m && m.proven ? `${(m.savings.lower * 100).toFixed(1)}%` : "—";
+              const pie =
+                m && m.proven
+                  ? t("ledgersHead.measuredFloor")
+                  : m
+                    ? t("ledgersHead.notProven")
+                    : t("ledgersHead.runToMeasure");
+              return (
+                <div className="ledger" key={l.idx}>
+                  <div className="idx">{l.idx}</div>
+                  <h4>{l.name}</h4>
+                  <p>{l.desc}</p>
+                  <div className="mval">{cifra}</div>
+                  <div className="munit">{pie}</div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
