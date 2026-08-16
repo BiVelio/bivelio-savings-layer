@@ -336,17 +336,47 @@ describe("contrato de salida y herramientas", () => {
     expect(r.structuredNatively).toBe(false);
   });
 
-  it("con herramientas del llamante NO se fuerza el contrato: se le dejan sus acciones", async () => {
+  it("con herramientas del llamante se fuerza `any`, NO la nuestra: conserva sus acciones y le quita la prosa", async () => {
     const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
     const r = await new AnthropicProvider({ fetchImpl }).generate({
       ...PETICION,
       schema: ESQUEMA,
       tools: [{ id: "buscar", intents: [], risk: "read" }],
     });
-    // Forzar la nuestra dejaría al modelo sin poder invocar las suyas, y el
-    // turno de herramientas es justo lo que la capa promete no romper.
-    expect(enviados[0]!["tool_choice"]).toBeUndefined();
+    // Forzar LA NUESTRA (`{type:"tool", name}`) dejaría al modelo sin poder
+    // invocar las suyas, y el turno de herramientas es justo lo que la capa
+    // promete no romper. `any` no: obliga a llamar a ALGUNA, y la elige él.
+    expect(enviados[0]!["tool_choice"]).toEqual({ type: "any" });
+    // Las suyas siguen ahí, y el contrato viaja como una más.
+    const tools = enviados[0]!["tools"] as Record<string, unknown>[];
+    expect(tools.map((t) => t["name"])).toEqual(["buscar", "bvsala_contract"]);
+    // Y SIGUE SIN SER UNA GARANTÍA: el modelo puede escoger `buscar`, que es
+    // precisamente lo que queremos que pueda hacer. Quien impone la forma es el
+    // validador del layer, así que el informe no puede decir "provider-native".
     expect(r.structuredNatively).toBe(false);
+  });
+
+  it("la escotilla devuelve la conducta anterior: sin `tool_choice`", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
+    await new AnthropicProvider({ fetchImpl, forceAnswerThroughTool: false }).generate({
+      ...PETICION,
+      schema: ESQUEMA,
+      tools: [{ id: "buscar", intents: [], risk: "read" }],
+    });
+    expect(enviados[0]!["tool_choice"]).toBeUndefined();
+  });
+
+  it("con el nombre del contrato ocupado NO se fuerza nada: no habría a qué acudir", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
+    await new AnthropicProvider({ fetchImpl }).generate({
+      ...PETICION,
+      schema: ESQUEMA,
+      tools: [{ id: "bvsala_contract", intents: [], risk: "read" }],
+    });
+    // Ahí el contrato viaja como prosa (no cabe como herramienta sin colisionar),
+    // así que obligar a llamar a una herramienta dejaría al modelo sin ninguna
+    // forma de entregar la respuesta final: daría vueltas por las del llamante.
+    expect(enviados[0]!["tool_choice"]).toBeUndefined();
   });
 
   // ═════════════════════════════════════════════════════════════════════════
