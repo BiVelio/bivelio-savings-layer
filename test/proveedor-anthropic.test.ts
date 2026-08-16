@@ -346,8 +346,92 @@ describe("contrato de salida y herramientas", () => {
     // Forzar la nuestra dejaría al modelo sin poder invocar las suyas, y el
     // turno de herramientas es justo lo que la capa promete no romper.
     expect(enviados[0]!["tool_choice"]).toBeUndefined();
-    expect(JSON.stringify(enviados[0]!["system"])).toContain("JSON Schema");
     expect(r.structuredNatively).toBe(false);
+  });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // LA REGRESIÓN DEL 63%: «no forzar» no era «mandar el esquema como prosa».
+  // ═════════════════════════════════════════════════════════════════════════
+  //
+  // Medido en vivo contra claude-sonnet-4-5, escenario "Tool-heavy request",
+  // 8 pares: brazo A 1135 entrada / 67 salida, brazo B 1449 / 189 → −63,0%.
+  // El esquema en prosa no lo impone nadie, el modelo contestaba en texto
+  // libre, no validaba, y el pipeline pagaba su reparación: una SEGUNDA
+  // llamada entera que en esta API vuelve a pagar el prompt de sistema de uso
+  // de herramientas. Reproducido con un servidor local que habla este
+  // dialecto: 779 + 751 = 1530 de entrada contra los 1057 del brazo naive.
+  it("con herramientas del llamante el contrato viaja como HERRAMIENTA, no como prosa", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
+    await new AnthropicProvider({ fetchImpl }).generate({
+      ...PETICION,
+      schema: ESQUEMA,
+      tools: [{ id: "buscar", intents: [], risk: "read" }],
+    });
+    const body = enviados[0]!;
+    const tools = body["tools"] as Record<string, unknown>[];
+
+    // Las del llamante siguen enteras y las primeras: `tools` se renderiza al
+    // principio del prompt, así que añadir al final no mueve sus bytes y la
+    // caché de prefijo del llamante sigue acertando.
+    expect(tools.map((t) => t["name"])).toEqual(["buscar", "bvsala_contract"]);
+    expect(tools[1]!["input_schema"]).toEqual(ESQUEMA);
+
+    // Y NO por prosa: ese bloque iba a `system`, por detrás del punto de
+    // ruptura de caché, así que se pagaba entero en CADA petición.
+    expect(JSON.stringify(body["system"] ?? [])).not.toContain("JSON Schema");
+  });
+
+  it("añadir el contrato como herramienta NO lo convierte en garantía del proveedor", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
+    const r = await new AnthropicProvider({ fetchImpl }).generate({
+      ...PETICION,
+      // Estrictamente compatible: sin herramientas del llamante SÍ se forzaría.
+      schema: ESQUEMA,
+      tools: [{ id: "buscar", intents: [], risk: "read" }],
+    });
+    // Sin `tool_choice` el modelo puede ignorarla, así que la forma NO está
+    // garantizada. Publicarla como `provider-native` sería vender por garantía
+    // lo que sigue siendo una sugerencia — y el pipeline decide si repara
+    // mirando justo este campo.
+    expect((enviados[0]!["tools"] as Record<string, unknown>[])[1]!["strict"]).toBeUndefined();
+    expect(r.structuredNatively).toBe(false);
+  });
+
+  it("si el modelo toma el contrato, la respuesta sale ya parseada y sin prosa alrededor", async () => {
+    const { fetchImpl } = espia({
+      content: [
+        { type: "tool_use", id: "t1", name: "bvsala_contract", input: { answer: "24 grados" } },
+      ],
+      stop_reason: "tool_use",
+      usage: USO_BASE,
+    });
+    const r = await new AnthropicProvider({ fetchImpl }).generate({
+      ...PETICION,
+      schema: ESQUEMA,
+      tools: [{ id: "buscar", intents: [], risk: "read" }],
+    });
+    // Ese es TODO el ahorro: `input` llega como objeto, así que siempre parsea
+    // —ni valla markdown ni «claro, aquí tienes»— y la reparación de 751 tokens
+    // de entrada más su salida (que en Sonnet cuesta 5x por token) no ocurre.
+    expect(r.text).toBe('{"answer":"24 grados"}');
+    // Y no se le devuelve al llamante como acción a ejecutar: no es suya.
+    expect(r.toolCalls).toBeUndefined();
+  });
+
+  it("una herramienta del llamante que ya se llame `bvsala_contract` no se duplica", async () => {
+    const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
+    await new AnthropicProvider({ fetchImpl }).generate({
+      ...PETICION,
+      schema: ESQUEMA,
+      tools: [{ id: "bvsala_contract", intents: [], risk: "read" }],
+    });
+    const tools = enviados[0]!["tools"] as Record<string, unknown>[];
+    // Dos `tools` con el mismo nombre son un 400: una petición que hoy funciona
+    // pasaría a fallar en duro por una optimización nuestra. Se cede el nombre
+    // al llamante y el contrato vuelve a la prosa, que es más cara pero no rompe.
+    expect(tools).toHaveLength(1);
+    expect(tools[0]!["input_schema"]).toEqual({ type: "object", properties: {} });
+    expect(JSON.stringify(enviados[0]!["system"])).toContain("JSON Schema");
   });
 
   it("las llamadas a herramienta del modelo se propagan con sus argumentos", async () => {

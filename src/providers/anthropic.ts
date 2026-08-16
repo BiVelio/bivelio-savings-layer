@@ -139,28 +139,114 @@ export class AnthropicProvider implements Provider {
 
     // --- Contrato de salida ---------------------------------------------------
     // El idiolecto de Anthropic para "devuélveme esta forma" es una llamada a
-    // herramienta FORZADA cuyo `input_schema` es el contrato. Con `strict: true`
-    // el proveedor garantiza que `input` valida; sin él solo guía.
+    // herramienta cuyo `input_schema` es el contrato. FORZARLA (`tool_choice`) es
+    // lo que convierte la guía en garantía, y con `strict: true` el proveedor se
+    // compromete además a que `input` valide.
     //
-    // Pero si el llamante trae SUS herramientas, forzar la nuestra le quita al
-    // modelo la posibilidad de invocarlas, y el turno de herramientas es
-    // precisamente lo que la capa promete no romper. En ese caso el esquema
-    // viaja por prompt y se declara `structuredNatively: false`: el layer sigue
-    // validando, pero la garantía es suya, no del proveedor.
+    // Si el llamante trae SUS herramientas no se puede forzar: forzar la nuestra
+    // dejaría al modelo sin poder invocar las suyas, y el turno de herramientas
+    // es precisamente lo que la capa promete no romper.
+    //
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PERO «NO FORZAR» NO ERA «MANDAR EL ESQUEMA COMO PROSA», Y ESA CONFUSIÓN
+    // COSTABA UN 63% MÁS.
+    // ═══════════════════════════════════════════════════════════════════════════
+    //
+    // Antes esta rama pegaba el esquema en `system` como texto
+    // (`instruccionDeJsonPorPrompt`). Lo que el modelo devolvía entonces era
+    // texto libre —a veces con prosa de cortesía y el JSON dentro de una valla
+    // markdown—, no validaba, y el pipeline disparaba su ÚNICA reparación: una
+    // SEGUNDA llamada completa.
+    //
+    // LA HIPÓTESIS QUE SE CAYÓ AL MEDIRLA: no es que el esquema por prompt
+    // cueste más de lo que la poda ahorra. Los DOS brazos pasan por este
+    // adaptador con `tools` + `schema`, así que los dos pagaban esos 81 tokens
+    // de prosa: era simétrico y no explicaba nada. Y la poda del selector SÍ
+    // ahorraba, 278 tokens por llamada (90 de esquemas de herramienta contra
+    // 368). Lo que no era simétrico es que SOLO nuestro brazo repara.
+    //
+    // Reproducido con un servidor local que habla este dialecto, escenario
+    // "Tool-heavy request", contando con o200k_base:
+    //
+    //   brazo A (sin capa)   5 herramientas + esquema en prosa      1.057 entrada
+    //   brazo B, llamada 1   1 herramienta  + esquema en prosa        779 entrada
+    //   brazo B, reparación  contrato como herramienta                751 entrada
+    //                                                              ─────────────
+    //   brazo B total                                               1.530 entrada
+    //
+    // La reparación se comía el ahorro de la poda casi TRES VECES. Y lo caro de
+    // ella no es el mensaje de corrección (77 tokens): es que toda petición con
+    // `tools` paga el prompt de sistema de uso de herramientas de Anthropic
+    // ENTERO, y la reparación lo vuelve a pagar sólo para llevar el contrato.
+    // Ese peaje el servidor local lo modela en 600 tokens, que es el valor con
+    // el que la simulación reproduce las magnitudes de la tirada en vivo (1.057
+    // contra los 1.135 medidos); es una CALIBRACIÓN, no una cifra publicada por
+    // el proveedor, y lo que sostiene el diagnóstico es la aritmética de las DOS
+    // llamadas, que ninguna llamada sola explica.
+    //
+    // Y la salida —que en Sonnet cuesta 5x por token— se paga dos veces: en vivo
+    // 67 tokens el brazo A contra 189 el nuestro. Puesto en dinero, DOS TERCIOS
+    // de la regresión son salida y sólo un tercio entrada.
+    //
+    // LA SALIDA ES LO QUE HAY QUE ATACAR, y por eso la palanca no es quitar
+    // tokens de entrada. La primera llamada YA lleva `tools`, o sea que el peaje
+    // ya está pagado: añadir el contrato como una herramienta más cuesta 93
+    // tokens (esquema + descripción, medido) y ahorra los 81 de la prosa que
+    // sustituye — un +12 por llamada. Eso no es el ahorro; el ahorro es que el
+    // modelo tiene por fin un camino NATIVO para devolver la forma SIN perder sus
+    // herramientas, y cuando lo toma el `input` llega ya parseado: no hay valla
+    // markdown que romper, no hay prosa de cortesía que pagar a 5x, y la
+    // reparación no ocurre. Los 12 tokens se amortizan si evitan UNA reparación
+    // de cada 62 llamadas.
+    //
+    // Medido contra el mismo servidor local, con el arreglo puesto:
+    //
+    //   brazo A (sin capa)                                          1.069 entrada
+    //   brazo B, si el modelo toma el contrato (1 llamada)            791  → −26%
+    //   brazo B, si contesta en prosa igual (2 llamadas)            ~1.540  → peor
+    //
+    // O SEA: EL ARREGLO QUITA LA CAUSA, NO ACOTA EL PEOR CASO. Cuántas veces el
+    // modelo toma el camino nativo sólo lo dice una tirada EN VIVO, y ahí el
+    // servidor local no puede opinar: no es un modelo. El aviso de más abajo
+    // existe para que, mientras tanto, nadie pague el peor caso en silencio.
+    //
+    // LO QUE FALTA, MEDIDO Y NO HECHO AQUÍ A PROPÓSITO: de esos 751 tokens de
+    // reparación, 674 son peaje de herramientas por llevar un contrato que en
+    // ese momento NO se fuerza (el esquema del banco no cumple `strict`), o sea
+    // que compra exactamente lo mismo que la prosa por 8x el precio. Arreglarlo
+    // pide cambiar la rama SIN herramientas del llamante, que es la que usan
+    // todos los demás escenarios de Anthropic, y eso mueve la conducta del
+    // modelo en sitios que esta regresión no tocaba. Va aparte y con su tirada.
+    //
+    // NO SE FUERZA y por eso NO se declara nativo: `structuredNatively` sigue
+    // false y `constraints.backend` sigue "none". La garantía la da el validador
+    // del layer, igual que antes. Lo que cambia es el PRECIO de conseguirla.
+    //
+    // Estos tokens los añade el ADAPTADOR, así que no los ve la cuenta local del
+    // prompt: `actualInput` sube y el baseline no, o sea que el ahorro publicado
+    // sale MENOR del real. Es el mismo sesgo, y en la misma dirección segura, que
+    // ya documenta `instruccionDeJsonPorPrompt`.
     let contratoNativo = false;
     if (req.schema) {
-      if (tools.length > 0) {
+      const traeHerramientas = tools.length > 0;
+      // Un llamante que ya tenga una herramienta con ese nombre haría que la
+      // petición saliera con dos `tools` homónimas, y eso es un 400 del
+      // proveedor: una petición que hoy funciona pasaría a fallar en duro. En ese
+      // caso el contrato se queda en prosa, que es peor pero no rompe nada.
+      const nombreOcupado = tools.some((t) => t["name"] === HERRAMIENTA_DE_CONTRATO);
+      const strict = isStrictCompatible(req.schema);
+
+      if (nombreOcupado) {
         system.push({ type: "text", text: instruccionDeJsonPorPrompt(req.schema) });
         avisarUnaVez(
-          "anthropic-contrato-con-herramientas",
-          "[bvsala] La petición lleva herramientas del llamante Y un contrato de salida. En la API " +
-            "de Anthropic la forma se impone forzando una llamada a herramienta, y forzarla dejaría " +
-            "al modelo sin poder invocar las tuyas. Se envía el esquema por prompt: el layer valida " +
-            'igual, pero la garantía la da el layer, no el proveedor (`constraints.backend: "none"`).',
+          "anthropic-contrato-nombre-ocupado",
+          `[bvsala] One of your tools is already named \`${HERRAMIENTA_DE_CONTRATO}\`, so the output ` +
+            "contract cannot travel as a tool without colliding with it (duplicate tool names are a " +
+            "provider error). The schema is sent as prompt text instead, which is measurably more " +
+            "expensive on this API. Rename that tool to get the cheaper path.",
         );
       } else {
-        const strict = isStrictCompatible(req.schema);
-        if (!strict) {
+        if (!strict && !traeHerramientas) {
           avisarUnaVez(
             "anthropic-strict-incompatible",
             "[bvsala] El contrato de respuesta no cumple el modo `strict` (en strict, `required` debe " +
@@ -169,13 +255,34 @@ export class AnthropicProvider implements Provider {
               "guiado y el layer sigue validando, pero la garantía la da el layer, no el proveedor.",
           );
         }
+        contratoNativo = strict && !traeHerramientas;
         tools.push({
           name: HERRAMIENTA_DE_CONTRATO,
-          description: "Return the final answer in the required shape.",
+          // La descripción es lo único que decide si el modelo escoge este camino
+          // o contesta en prosa, y vive DENTRO del bloque `tools` —que va lo
+          // primero del prompt y por tanto cae dentro del tramo cacheable—, así
+          // que estos tokens se pagan una vez y se leen a 0,1x.
+          description: traeHerramientas
+            ? "Return the final answer in the required shape. Use the other tools first if you " +
+              "need data; call this one instead of writing the answer as text."
+            : "Return the final answer in the required shape.",
           input_schema: req.schema,
-          ...(strict ? { strict: true } : {}),
+          ...(contratoNativo ? { strict: true } : {}),
         });
-        contratoNativo = strict;
+        if (traeHerramientas) {
+          avisarUnaVez(
+            "anthropic-contrato-con-herramientas",
+            "[bvsala] This request carries BOTH your tools and an output contract. On Anthropic's " +
+              "Messages API a shape is only GUARANTEED by forcing a tool call, and forcing ours " +
+              "would leave the model unable to call yours. The contract travels as one extra, " +
+              "non-forced tool: cheaper than sending the schema as prompt text and it keeps your " +
+              'tool turn intact, but the guarantee is the layer\'s, not the provider\'s ' +
+              '(`constraints.backend: "none"`). If the model answers in prose anyway, the layer ' +
+              "pays a second full call to repair it — on this API that second call re-pays the " +
+              "whole tool-use overhead. Dropping either the tools or the contract from this " +
+              "request is what makes the guarantee free.",
+          );
+        }
       }
     }
 
