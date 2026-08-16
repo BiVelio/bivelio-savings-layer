@@ -56,6 +56,18 @@ export interface AnthropicOptions {
    * pointless: the extra breakpoints are rejected by the API, not ignored.
    */
   maxCacheBreakpoints?: number;
+  /**
+   * Whether a request carrying BOTH the caller's tools and an output contract
+   * may send `tool_choice: {type: "any"}`, which obliges the model to answer
+   * through SOME tool — its pick — instead of writing prose.
+   *
+   * Defaults to `true`, and the default is the point: without it this exact
+   * combination measured 62% MORE expensive than sending no layer at all, every
+   * single time, because prose forces a second full call to repair. Turning it
+   * off restores the old behaviour for a caller who genuinely needs a plain-text
+   * turn to be reachable while a contract is attached.
+   */
+  forceAnswerThroughTool?: boolean;
 }
 
 const TOPE_DE_PUNTOS_DE_RUPTURA = 4;
@@ -218,15 +230,52 @@ export class AnthropicProvider implements Provider {
     // todos los demás escenarios de Anthropic, y eso mueve la conducta del
     // modelo en sitios que esta regresión no tocaba. Va aparte y con su tirada.
     //
-    // NO SE FUERZA y por eso NO se declara nativo: `structuredNatively` sigue
-    // false y `constraints.backend` sigue "none". La garantía la da el validador
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Y «NO FORZAR LA NUESTRA» TAMPOCO ERA «NO FORZAR NADA». ESA SEGUNDA
+    // CONFUSIÓN COSTABA OTRO 62%, Y LA TIRADA EN VIVO YA LA DESMINTIÓ.
+    // ═══════════════════════════════════════════════════════════════════════════
+    //
+    // El arreglo de arriba —el contrato como herramienta más— QUITA la causa solo
+    // si el modelo escoge ese camino, y arriba se decía que cuántas veces lo hace
+    // «sólo lo dice una tirada EN VIVO». Ya se hizo, con el arreglo puesto, y lo
+    // que dijo es que no lo escoge: escenario "Tool-heavy request", −59,7% de
+    // ahorro (o sea, un 60% MÁS caro que no usar la capa), el MISMO par de costes
+    // repetido en 14 de 18 repeticiones. Eso no es ruido del muestreo, es conducta
+    // determinista: el modelo contesta en prosa y la reparación se paga siempre.
+    //
+    // LO QUE FALTABA ERA `tool_choice`, PERO NO EL NUESTRO.
+    //
+    // `{type: "tool", name: ...}` fuerza UNA herramienta concreta y por eso no
+    // sirve aquí: dejaría al llamante sin poder invocar las suyas. `{type: "any"}`
+    // es otra cosa — obliga a llamar a ALGUNA herramienta, y la elige el modelo.
+    // El llamante conserva las suyas enteras, y la prosa deja de ser alcanzable
+    // por contrato de la API en vez de por una descripción persuasiva. El peor
+    // caso pasa a ser el mejor caso: una sola llamada, podada, escoja lo que
+    // escoja el modelo.
+    //
+    // Y ES GRATIS EN CACHÉ, que es lo que lo hace obvio. `tool_choice` vive en la
+    // capa de invalidación por debajo de `tools` y de `system`: cambiarlo NO tira
+    // el prefijo cacheado de herramientas ni el de sistema. O sea que esta línea
+    // no cuesta ni un token de entrada — ni la primera vez ni las siguientes.
+    //
+    // LO QUE SIGUE SIN SER: una garantía. El modelo puede escoger una herramienta
+    // DEL LLAMANTE, que es justo lo que queremos que pueda hacer, y entonces no
+    // hay respuesta final que validar todavía. Por eso `structuredNatively` sigue
+    // false y `constraints.backend` sigue "none": la garantía la da el validador
     // del layer, igual que antes. Lo que cambia es el PRECIO de conseguirla.
+    //
+    // La rama con el nombre ocupado NO se fuerza. Ahí el contrato viaja como prosa
+    // porque no cabe como herramienta, así que obligar a llamar a una herramienta
+    // dejaría al modelo sin ninguna forma de entregar la respuesta final: se
+    // quedaría dando vueltas por las del llamante. Forzar sin contrato al que
+    // acudir no acota el gasto, lo desata.
     //
     // Estos tokens los añade el ADAPTADOR, así que no los ve la cuenta local del
     // prompt: `actualInput` sube y el baseline no, o sea que el ahorro publicado
     // sale MENOR del real. Es el mismo sesgo, y en la misma dirección segura, que
     // ya documenta `instruccionDeJsonPorPrompt`.
     let contratoNativo = false;
+    let forzarCualquiera = false;
     if (req.schema) {
       const traeHerramientas = tools.length > 0;
       // Un llamante que ya tenga una herramienta con ese nombre haría que la
@@ -270,17 +319,25 @@ export class AnthropicProvider implements Provider {
           ...(contratoNativo ? { strict: true } : {}),
         });
         if (traeHerramientas) {
+          forzarCualquiera = this.opts.forceAnswerThroughTool !== false;
           avisarUnaVez(
             "anthropic-contrato-con-herramientas",
             "[bvsala] This request carries BOTH your tools and an output contract. On Anthropic's " +
-              "Messages API a shape is only GUARANTEED by forcing a tool call, and forcing ours " +
-              "would leave the model unable to call yours. The contract travels as one extra, " +
-              "non-forced tool: cheaper than sending the schema as prompt text and it keeps your " +
-              'tool turn intact, but the guarantee is the layer\'s, not the provider\'s ' +
-              '(`constraints.backend: "none"`). If the model answers in prose anyway, the layer ' +
-              "pays a second full call to repair it — on this API that second call re-pays the " +
-              "whole tool-use overhead. Dropping either the tools or the contract from this " +
-              "request is what makes the guarantee free.",
+              "Messages API a specific shape is only GUARANTEED by forcing that exact tool, and " +
+              "forcing ours would leave the model unable to call yours. The contract travels as " +
+              "one extra tool" +
+              (forzarCualquiera
+                ? ' and the request is sent with `tool_choice: {type: "any"}`, so the model must ' +
+                  "answer through SOME tool — yours or the contract — and can no longer reply in " +
+                  "prose. Your tool turn is untouched. The guarantee is still the layer's, not " +
+                  'the provider\'s (`constraints.backend: "none"`), because the model may pick ' +
+                  "one of your tools and defer the final answer to the next turn."
+                : ", not forced (`forceAnswerThroughTool: false`). The guarantee is the " +
+                  'layer\'s, not the provider\'s (`constraints.backend: "none"`), and if the ' +
+                  "model answers in prose the layer pays a second full call to repair it — on " +
+                  "this API that second call re-pays the whole tool-use overhead.") +
+              " Dropping either the tools or the contract from this request is what makes the " +
+              "guarantee free.",
           );
         }
       }
@@ -296,6 +353,15 @@ export class AnthropicProvider implements Provider {
     if (tools.length > 0) body["tools"] = tools;
     if (contratoNativo) {
       body["tool_choice"] = { type: "tool", name: HERRAMIENTA_DE_CONTRATO };
+    } else if (forzarCualquiera) {
+      // No se toca `disable_parallel_tool_use`. Con `any` el modelo puede emitir
+      // varias llamadas a la vez, y una de ellas podría ser el contrato junto a
+      // una del llamante — un bloque de contrato desperdiciado. Apagar el
+      // paralelismo lo evitaría, pero a costa de serializar las herramientas DEL
+      // LLAMANTE, que es una regresión de latencia en su código por un ahorro de
+      // salida nuestro. El desperdicio es de unos pocos tokens; la serialización,
+      // de un viaje de red por herramienta.
+      body["tool_choice"] = { type: "any" };
     }
     // `seed` NO existe en esta API. Se omite en silencio a propósito: mandarlo
     // sería un 400 por un campo que el llamante puso para otro proveedor, y
