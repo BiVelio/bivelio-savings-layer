@@ -27,6 +27,17 @@
  *           prove the plumbing, but every dollar is labeled "ESTIMATED — NOT a
  *           savings claim" because the mock is not a real model.
  *
+ * EL ENDPOINT NATIVO DE ANTHROPIC, Y POR QUÉ HACE FALTA UNO APARTE.
+ * `BVSALA_DEMO_BASE_URL` apunta casi siempre a una PASARELA que habla el
+ * protocolo de OpenAI, y por ahí `cache_control` no cabe: no hay campo donde
+ * ponerlo. Como Anthropic no cachea sola, la palanca de la caché de prefijo
+ * explícita —la que más vale de la entrada, lectura a 0,1x— no viaja y el banco
+ * publicaba un 0 en los dos brazos sobre un prefijo de 7.287 tokens, que se lee
+ * como un fracaso medido y no lo era: el adaptador no se instanciaba nunca.
+ * Declara `BVSALA_DEMO_ANTHROPIC_BASE_URL` (+ `_API_KEY`) y los modelos de esa
+ * familia van por `AnthropicProvider`. Sin él, esos escenarios NO se miden: se
+ * declaran no medibles con su motivo, que es lo contrario de publicar un cero.
+ *
  * POR MODELO. `BVSALA_DEMO_MODEL` fija UN modelo para todos los escenarios;
  * `BVSALA_DEMO_MODELS` acepta una lista separada por comas y mide cada uno por
  * separado, saltando los escenarios que no apliquen a ese modelo (ver
@@ -39,7 +50,6 @@
  */
 import {
   createSavingsLayer,
-  createMockProvider,
   OpenAICompatibleProvider,
   precioDeLista,
   PRECIOS_AL_DIA,
@@ -55,13 +65,21 @@ import {
   scenarios,
   estadoDePalanca,
   familiaDeModelo,
+  noMedibleEnTransporte,
   LIBROS,
   PALANCAS_SIN_ESCENARIO,
   type LedgerTag,
   type EstadoDePalanca,
+  type PalancaNoMedible,
   type Palanca,
   type Scenario,
+  type TransporteDelBanco,
 } from "./scenarios.js";
+import {
+  proveedorDelBanco,
+  transporteDeModelo,
+  type ConfigDeTransporte,
+} from "./transporte.js";
 import { compresorDeRepeticionesLiterales } from "./compresor.js";
 import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
@@ -97,6 +115,39 @@ const baseUrl = process.env.BVSALA_DEMO_BASE_URL;
 const apiKey = process.env.BVSALA_DEMO_API_KEY;
 const keepPrefix = !!process.env.BVSALA_DEMO_KEEP_PREFIX;
 const mode: "LIVE" | "MOCK" = baseUrl ? "LIVE" : "MOCK";
+
+/**
+ * EL ENDPOINT NATIVO DE ANTHROPIC, OPCIONAL Y APARTE DEL PRINCIPAL.
+ *
+ * Es aparte porque no es intercambiable: `BVSALA_DEMO_BASE_URL` habla el
+ * protocolo de OpenAI (una pasarela, OpenAI, vLLM…) y `AnthropicProvider` habla
+ * el de Mensajes. No es «otra URL para lo mismo»: son dos dialectos, y el único
+ * de los dos que tiene `cache_control` es el segundo.
+ *
+ * Quien apunte su endpoint principal directamente a Anthropic pone aquí la MISMA
+ * url: el banco elegirá adaptador por familia de modelo y cada escenario irá por
+ * donde le corresponde.
+ */
+const anthropicBaseUrl = process.env.BVSALA_DEMO_ANTHROPIC_BASE_URL;
+
+/**
+ * LOS ENDPOINTS, LEÍDOS DEL ENTORNO UNA SOLA VEZ Y AQUÍ.
+ *
+ * La decisión que sale de ellos vive en `benchmarks/transporte.ts`, sin entorno
+ * y sin red, para que una verja pueda comprobarla sin pagar una tirada. Este
+ * objeto es la única frontera con `process.env`.
+ */
+const CONFIG_DE_TRANSPORTE: ConfigDeTransporte = {
+  baseUrl,
+  apiKey,
+  keepPrefix,
+  anthropicBaseUrl,
+  anthropicApiKey: process.env.BVSALA_DEMO_ANTHROPIC_API_KEY,
+};
+
+/** Por dónde va a hablar el banco con el proveedor PARA ESTE MODELO. */
+const transporteDe = (model: string | null): TransporteDelBanco =>
+  transporteDeModelo(model, CONFIG_DE_TRANSPORTE);
 
 /**
  * LOS MODELOS QUE SE MIDEN, cada uno por separado.
@@ -163,17 +214,23 @@ function intEnv(name: string, def: number): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : def;
 }
 
-/** Raw provider (Arm A calls this directly, bypassing the layer). */
-function makeProvider(): Provider {
-  return baseUrl
-    ? new OpenAICompatibleProvider({
-        baseUrl,
-        ...(apiKey ? { apiKey } : {}),
-        stripProviderPrefix: !keepPrefix,
-        requireUsage: true, // never let missing usage become a fabricated 100% saving
-      })
-    : createMockProvider();
-}
+/**
+ * Raw provider (Arm A calls this directly, bypassing the layer).
+ *
+ * EL ADAPTADOR SE ELIGE POR EL MODELO, y ése era el fallo: `makeProvider()`
+ * instanciaba SIEMPRE `OpenAICompatibleProvider`, así que el escenario de
+ * Anthropic —el único que mide `cache_control`— hablaba el protocolo
+ * equivocado. La palanca del PR #71 no la había medido nadie y el informe
+ * publicaba su cero como si fuera un resultado.
+ *
+ * Sin endpoint nativo declarado NO se cae a la pasarela para esa familia: el
+ * escenario que depende del protocolo se declara no medible antes de gastar un
+ * céntimo (ver `repartirEscenarios`). Los demás escenarios sí van por la
+ * pasarela con un modelo de Anthropic — no dependen del dialecto — y eso es lo
+ * que permite seguir teniendo una cifra por modelo.
+ */
+const makeProvider = (model: string | null): Provider =>
+  proveedorDelBanco(model, CONFIG_DE_TRANSPORTE);
 
 const modelId = (r: SavingsRequest, forzado: string | null): string => forzado ?? r.model;
 
@@ -421,7 +478,10 @@ interface ScenarioResult {
 }
 
 async function runScenario(s: Scenario, forzado: string | null): Promise<ScenarioResult> {
-  const provider = makeProvider();
+  // El adaptador se elige por el modelo QUE SE VA A PEDIR, así que se instancia
+  // después de resolverlo — y el de este escenario puede no ser el forzado.
+  const transporte = transporteDe(forzado ?? s.request.model);
+  const provider = makeProvider(forzado ?? s.request.model);
   // Los dos brazos tienen que muestrear de la MISMA distribución. El brazo A
   // fijaba temperature:0 y seed:7 (buildNaive) y el B no mandaba ninguno de los
   // dos, porque el pipeline solo los propaga si vienen en el request. Comparar
@@ -484,7 +544,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   // Se calcula sobre el SONDEO de clasificación (una petición completa por la
   // capa) y se recalcula en la primera repetición, para que refleje la misma
   // llamada que produjo las cifras que se publican.
-  let palanca = estadoDePalanca(s, probe, probe.report.tokens.providerCachedInput ?? 0);
+  let palanca = estadoDePalanca(s, probe, probe.report.tokens.providerCachedInput ?? 0, transporte);
 
   async function sampleOnce(t: number): Promise<void> {
     // Arm A: naive baseline — a real call, measured.
@@ -537,7 +597,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
         compressedInputTokens: resB.report.tokens.compressedInput,
         providerCachedInputTokens: resB.report.tokens.providerCachedInput ?? 0,
       };
-      palanca = estadoDePalanca(s, resB, uB.cachedInputTokens ?? 0);
+      palanca = estadoDePalanca(s, resB, uB.cachedInputTokens ?? 0, transporte);
     }
   }
 
@@ -689,30 +749,71 @@ const padL = (s: string, n: number): string => (s.length >= n ? s : " ".repeat(n
 
 // ── ¿Qué escenarios aplican a qué modelo? ────────────────────────────────────
 /**
- * Un escenario que declara `familia` solo se mide contra modelos de esa familia.
- * Lo que devuelve la segunda lista NO se descarta en silencio: va al informe con
- * su motivo, porque "no se midió" y "se midió y salió cero" son cosas distintas.
+ * Un escenario que no se mide, con la CAUSA de por qué no.
+ *
+ * Son dos causas distintas y llevan a acciones distintas, así que no comparten
+ * frase: `familia` significa "este escenario no va con este modelo" (se arregla
+ * midiendo el modelo que toca) y `transporte` significa "va con este modelo pero
+ * el endpoint configurado no puede ejercitarlo" (se arregla configurando el
+ * endpoint). Lo que ninguna de las dos permite es publicar un cero.
+ */
+interface EscenarioNoMedido {
+  name: string;
+  lever: string;
+  causa: "familia" | "transporte";
+  motivo: string;
+  /** Qué hay que configurar para poder medirlo. Sólo en la causa `transporte`. */
+  comoMedirlo?: string;
+}
+
+/**
+ * Un escenario que declara `familia` solo se mide contra modelos de esa familia,
+ * y además necesita un TRANSPORTE capaz de ejercitar su palanca.
+ *
+ * Nada de lo que devuelve la segunda lista se descarta en silencio: va al informe
+ * con su motivo, porque "no se midió" y "se midió y salió cero" son cosas
+ * distintas — y la segunda es la que se lee como un fracaso del producto.
  */
 function repartirEscenarios(modelo: string | null): {
   aplican: Scenario[];
-  noAplican: { name: string; lever: string; motivo: string }[];
+  noAplican: EscenarioNoMedido[];
+  noMedibles: PalancaNoMedible[];
 } {
-  if (!modelo) return { aplican: scenarios, noAplican: [] };
-  const familia = familiaDeModelo(modelo);
+  const familia = modelo ? familiaDeModelo(modelo) : null;
   const aplican: Scenario[] = [];
-  const noAplican: { name: string; lever: string; motivo: string }[] = [];
+  const noAplican: EscenarioNoMedido[] = [];
+  const noMedibles: PalancaNoMedible[] = [];
   for (const s of scenarios) {
-    if (!s.familia || s.familia === familia) aplican.push(s);
-    else
+    // 1. ¿Va este escenario con este modelo? Sólo se puede juzgar cuando hay un
+    //    modelo forzado; sin él cada escenario lleva el suyo y siempre encaja.
+    if (familia && s.familia && s.familia !== familia) {
       noAplican.push({
         name: s.name,
         lever: s.lever,
+        causa: "familia",
         motivo:
           `el escenario mide una palanca de la familia ${s.familia} y ${modelo} es ` +
           `${familia === "desconocida" ? "de una familia que este banco no reconoce" : `de la familia ${familia}`}`,
       });
+      continue;
+    }
+    // 2. ¿Puede el transporte configurado ejercitar su palanca? El modelo que
+    //    manda es el de la tirada si lo hay, y si no el que declara el escenario.
+    const noMedible = noMedibleEnTransporte(s, transporteDe(modelo ?? s.request.model));
+    if (noMedible) {
+      noMedibles.push(noMedible);
+      noAplican.push({
+        name: s.name,
+        lever: s.lever,
+        causa: "transporte",
+        motivo: noMedible.motivo,
+        comoMedirlo: noMedible.comoMedirla,
+      });
+      continue;
+    }
+    aplican.push(s);
   }
-  return { aplican, noAplican };
+  return { aplican, noAplican, noMedibles };
 }
 
 // ── Estimación de coste de la tirada ─────────────────────────────────────────
@@ -873,7 +974,9 @@ interface Tirada {
   modelo: string | null;
   etiqueta: string;
   results: ScenarioResult[];
-  noAplican: { name: string; lever: string; motivo: string }[];
+  noAplican: EscenarioNoMedido[];
+  /** Palancas que este transporte no puede ejercitar, con cómo configurarlo. */
+  noMedibles: PalancaNoMedible[];
   agg: CI;
   wilcoxonP: number;
   qualityPassRate: number;
@@ -888,7 +991,7 @@ const sumArr = (xs: number[]): number => xs.reduce((n, x) => n + x, 0);
 
 async function medirModelo(modelo: string | null): Promise<Tirada> {
   const etiqueta = modelo ?? "(el de cada escenario)";
-  const { aplican, noAplican } = repartirEscenarios(modelo);
+  const { aplican, noAplican, noMedibles } = repartirEscenarios(modelo);
 
   console.log(`\n╭─ modelo: ${etiqueta}`);
   console.log(
@@ -1011,10 +1114,24 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   for (const { palanca, motivo } of PALANCAS_SIN_ESCENARIO) {
     console.log(`  ✗ ${pad(palanca, 22)} ${pad("(sin escenario)", 28)} ${motivo}`);
   }
+  // LA TERCERA CATEGORÍA, y sin ella el informe mentía por omisión. Un ✗ dice
+  // "se pidió y no disparó", que es una medición; esto dice "con este endpoint no
+  // se puede ni pedir", que no lo es. El escenario ni se ha ejecutado, así que
+  // aquí no hay ningún cero que enseñar — hay una instrucción de configuración.
+  for (const p of noMedibles) {
+    console.log(`  ⊘ ${pad(p.palanca, 22)} ${pad(p.escenario, 28)} NO MEDIBLE: ${p.motivo}`);
+    console.log(`    ${" ".repeat(22)} ${pad("", 28)} → para medirla: ${p.comoMedirla}`);
+  }
   if (sinEjercitar.length > 0 || PALANCAS_SIN_ESCENARIO.length > 0) {
     console.log(
       "  ⚠ Las marcadas con ✗ NO se midieron. Un cero suyo no significa que no ahorren:\n" +
       "    significa que en esta tirada no llegaron a ejecutarse.",
+    );
+  }
+  if (noMedibles.length > 0) {
+    console.log(
+      "  ⚠ Las marcadas con ⊘ NO se midieron NI SE PODÍAN MEDIR con este transporte, así que su\n" +
+      "    escenario no llegó a ejecutarse y no hay cifra suya en este informe — ni un cero.",
     );
   }
   // Dos avisos que solo tienen sentido en MOCK, y que evitan leer como resultado
@@ -1041,6 +1158,11 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     }
   }
   for (const s of noAplican) {
+    // Las de causa `transporte` ya salieron arriba con su ⊘ y su instrucción de
+    // configuración; repetirlas aquí como "(no aplica)" diría lo contrario de lo
+    // que pasa: el escenario SÍ aplica a este modelo, es el endpoint el que no
+    // puede ejercitarlo.
+    if (s.causa === "transporte") continue;
     console.log(`  – ${pad("(no aplica)", 22)} ${pad(s.name, 28)} ${s.motivo}`);
   }
 
@@ -1075,9 +1197,18 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
         ...sinEjercitar,
         ...PALANCAS_SIN_ESCENARIO.map((p) => ({ ...p, escenario: null, ejercitada: false, motivo: p.motivo })),
       ],
+      // NO MEDIBLE ≠ NO EJERCITADA. La primera es una propiedad del endpoint que
+      // se ha configurado —el escenario ni se ejecutó— y la segunda es el
+      // resultado de ejecutarlo. Meterlas en el mismo saco fue lo que dejó que se
+      // publicara un 0 de la caché de Anthropic como si fuera un fracaso medido.
+      notMeasurable: noMedibles,
       warning:
         "Una palanca NO ejercitada produce las mismas cifras que una que no ahorra. " +
         "No leas su cero como una medición: no llegó a ejecutarse.",
+      notMeasurableWarning:
+        "Una palanca en `notMeasurable` no tiene cifra en este artefacto porque su escenario NO " +
+        "se ejecutó: el transporte configurado no puede ejercitarla. `comoMedirla` dice qué " +
+        "configurar para que la haya.",
     },
     ledgers: ledgerRollup,
     reconciliation: { totalDelta, ledgerSum, residual, reconciled },
@@ -1102,6 +1233,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving.",
       "Una palanca opt-in que no llegó a dispararse se DECLARA en `levers.notExercised`: su cero no es una medición.",
       "Un escenario que no aplica a este modelo se SALTA y se declara en `scenariosNotApplicable`, en vez de medirse mal.",
+      "Una palanca que el TRANSPORTE configurado no puede ejercitar (cache_control por una pasarela OpenAI) se declara en `levers.notMeasurable` con lo que hay que configurar, y su escenario NO se ejecuta: publicar su cero sería publicar un fracaso que nadie ha medido.",
     ],
   };
 
@@ -1110,6 +1242,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     etiqueta,
     results,
     noAplican,
+    noMedibles,
     agg,
     wilcoxonP: wP,
     qualityPassRate,
@@ -1133,6 +1266,17 @@ async function main(): Promise<void> {
       ? `provider: real endpoint   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   (both arms metered by the provider)`
       : `provider: mock (no network)   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   —  ESTIMATED plumbing run, NOT a savings claim`,
   );
+  // POR EXISTENCIA, NUNCA POR VALOR: se dice SI hay endpoint nativo declarado,
+  // jamás cuál ni con qué clave. Y se dice siempre, porque su ausencia es la que
+  // decide que la palanca mayor de la entrada no se mida en esta tirada.
+  if (mode === "LIVE") {
+    console.log(
+      anthropicBaseUrl
+        ? "anthropic: endpoint NATIVO declarado — los modelos de esa familia van por AnthropicProvider (cache_control viaja)"
+        : "anthropic: sin endpoint nativo (BVSALA_DEMO_ANTHROPIC_BASE_URL) — `cache_control` no cabe en el protocolo de OpenAI,\n" +
+          "           así que los escenarios que lo miden se declaran NO MEDIBLES y no se ejecutan",
+    );
+  }
 
   // ── El precio ANTES de gastarlo ──────────────────────────────────────────
   const estimacion = estimarTirada();
@@ -1235,6 +1379,7 @@ async function main(): Promise<void> {
           aggregate: { savings: t.agg, proven: t.proven, qualityPassRate: t.qualityPassRate },
           ledgers: t.ledgerRollup.map((l) => ({ ledger: l.ledger, savings: l.savings, scenarios: l.scenarios.length })),
           levers: t.palancas,
+          leversNotMeasurable: t.noMedibles,
           scenariosNotApplicable: t.noAplican,
           scenarios: t.results.map((r) => ({
             name: r.name,
@@ -1250,6 +1395,7 @@ async function main(): Promise<void> {
           "Cada modelo se mide por separado, con sus propios escenarios aplicables.",
           "n/a en la tabla = el escenario NO se midió contra ese modelo; nunca es un cero.",
           "Una palanca opt-in que no llegó a dispararse se declara; su cero no es una medición.",
+          "Una palanca que el transporte configurado no puede ejercitar va en `leversNotMeasurable`, con qué configurar para medirla; su escenario no se ejecuta.",
           "No se escribe `ab-live.json` en una tirada multi-modelo: un titular necesita un modelo.",
         ],
       }),
