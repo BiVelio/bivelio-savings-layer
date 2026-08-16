@@ -81,6 +81,7 @@ import {
   type ConfigDeTransporte,
 } from "./transporte.js";
 import { compresorDeRepeticionesLiterales } from "./compresor.js";
+import { avisoDeTruncado, cortadaPorElTope, veredictoDeCalidad } from "./verja-de-calidad.js";
 import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
@@ -453,6 +454,14 @@ interface ScenarioResult {
   quality: { gate: string; passed: number; total: number };
   /** Cuántas respuestas del brazo NAIVE cumplían el contrato que se le pidió. */
   naiveContractValid: { valid: number; total: number };
+  /**
+   * Repeticiones que el PROVEEDOR cortó al agotar el tope, por brazo.
+   *
+   * Va en la fila y no solo en el agregado porque es lo que convierte un «calidad
+   * 0/8» ilegible en un diagnóstico: la tirada del 2026-08-16 obligó a deducirlo
+   * comparando los tokens de salida con el tope, a mano y desde un CSV.
+   */
+  truncated: { naive: number; optimizado: number };
   /** Provably positive savings at 95% AND every answer passed the gate. */
   proven: boolean;
   /**
@@ -520,6 +529,8 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   const modelosServidos = new Set<string>();
   let naiveValid = 0;
   let naiveTotal = 0;
+  let truncadasA = 0;
+  let truncadasB = 0;
   /** Envuelve el proveedor para poder ver qué modelo sirvió al brazo B. */
   const espia: Provider = {
     id: provider.id,
@@ -571,6 +582,11 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
       const p = tryParseJson(respA.text);
       if (p !== undefined && validateAgainstSchema(p, req.response.schema).valid) naiveValid++;
     }
+    // El brazo naive TAMBIÉN puede salir cortado, y hay que contarlo aparte: un
+    // truncado que ocurre en los dos brazos no lo causó la capa, lo causó un
+    // contrato que no cabe. Sin este contador, la fila se lee como si la capa
+    // hubiera roto una respuesta que el cliente tenía sana.
+    if (cortadaPorElTope(respA.finishReason)) truncadasA++;
 
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
@@ -587,7 +603,17 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // Quality gate: ground-truth when available, else structural / judge. Cache
     // scenarios' own expect() asserts a HIT, impossible on this cold call — gate
     // them structurally here; hit correctness is asserted in the amortization pass.
-    const q = await qualityGate(s, resB, respA.text, model, kind === "cache");
+    // El veto por truncado va DELANTE del `expect` del escenario, y por eso pasa
+    // por `veredictoDeCalidad` en vez de por un `if` aquí: media respuesta no es
+    // una respuesta, la mire quien la mire. Un escenario sin contrato de salida
+    // aprobaba un texto cortado a media frase con `text.trim().length > 0` y
+    // publicaba su ahorro como probado — el mismo agujero que el pipeline ya cerró
+    // para la escritura en caché.
+    if (cortadaPorElTope(resB.finishReason)) truncadasB++;
+    const q = await veredictoDeCalidad({
+      finishReason: resB.finishReason,
+      evaluar: () => qualityGate(s, resB, respA.text, model, kind === "cache"),
+    });
     if (q.passed) qPass++;
     gate = q.gate;
     if (t === 0) {
@@ -641,6 +667,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     },
     quality: { gate, passed: qPass, total: reps },
     naiveContractValid: { valid: naiveValid, total: naiveTotal },
+    truncated: { naive: truncadasA, optimizado: truncadasB },
     proven: mode === "LIVE" && savings.lower > 0 && qualityOk && modelStable,
     modelStable,
     servedModels: [...modelosServidos],
@@ -1091,6 +1118,12 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     console.log(`                 (la capa paga tokens por garantizarlo; el naive no, y hasta ahora nadie se lo exigía)`);
   }
   console.log(`  Reconciles:    ${reconciled ? "yes" : "NO — residual " + money(residual)}  (ledger deltas partition the total, no double-counting)`);
+  // Va PEGADO al titular de calidad, no en una sección al final: es la diferencia
+  // entre «la capa empeoró la respuesta» y «el tope cortó la respuesta», y quien
+  // lea el 0/8 sin esto sacará la conclusión equivocada — que es la que sacó la
+  // tirada del 2026-08-16 hasta que alguien fue a contar tokens al CSV.
+  const cortadas = avisoDeTruncado(results);
+  if (cortadas) console.log(cortadas);
 
   console.log("\nPer-ledger attribution (measured; a ledger is 'proven' only if its 95% CI clears 0)");
   for (const l of ledgerRollup) {
@@ -1226,6 +1259,10 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
       "The headline is the 95% CI lower bound, never the point estimate.",
       "A saving is voided if its answer fails the quality gate.",
+      "Una respuesta cortada por el tope (`finish_reason: \"length\"`) SUSPENDE la verja aunque el " +
+        "escenario no tenga contrato de salida: media respuesta con longitud > 0 aprobaba y publicaba " +
+        "su ahorro. `scenarios[].truncated` cuenta los cortes de cada brazo, porque un corte en LOS DOS " +
+        "no lo causó la capa — lo causó un contrato que no cabe.",
       "Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).",
       "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
       "El modelo SERVIDO se compara entre los dos brazos; si difiere, la afirmación no vale. (system_fingerprint se registra pero no se usa como verja: a través de una pasarela es un id por petición.)",
@@ -1387,6 +1424,7 @@ async function main(): Promise<void> {
             kind: r.kind,
             savings: r.measured.savings,
             quality: r.quality,
+            truncated: r.truncated,
             palanca: r.palanca,
           })),
         })),
@@ -1403,7 +1441,10 @@ async function main(): Promise<void> {
     rutas.push(
       writeCsv(
         "ab-live-por-modelo",
-        ["model", "scenario", "ledger", "kind", "palanca", "palancaEjercitada", "savingsPoint", "savingsLower", "reps", "qualityPassed", "qualityTotal"],
+        // `truncadasA`/`truncadasB` van en el CSV porque es donde se leyó a mano la
+        // tirada del 2026-08-16: entonces había que deducir el truncado comparando
+        // los tokens de salida con el tope, columna a columna.
+        ["model", "scenario", "ledger", "kind", "palanca", "palancaEjercitada", "savingsPoint", "savingsLower", "reps", "qualityPassed", "qualityTotal", "truncadasA", "truncadasB"],
         tiradas.flatMap((t) =>
           t.results.map((r) => ({
             model: t.etiqueta,
@@ -1417,6 +1458,8 @@ async function main(): Promise<void> {
             reps: r.reps,
             qualityPassed: r.quality.passed,
             qualityTotal: r.quality.total,
+            truncadasA: r.truncated.naive,
+            truncadasB: r.truncated.optimizado,
           })),
         ),
       ),

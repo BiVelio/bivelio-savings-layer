@@ -1240,6 +1240,37 @@ export const scenarios: Scenario[] = [
       },
       savings: { compression: true },
     },
+    // EL TOPE Y EL ESQUEMA DE ESTE CONTRATO NO SE TOCAN, Y HAY QUE DECIR POR QUÉ.
+    //
+    // La tirada del 2026-08-16 sacó este escenario en 0/8 con los DOS brazos a 500
+    // tokens de salida exactos —el tope—, o sea cortados, y un 32,4% de ahorro
+    // publicado sobre respuestas rotas. NO es el fallo del PR #79: allí el tope
+    // estaba calibrado con o200k_base y el esquema no cabía con el estimador de
+    // Claude. Aquí sí cabe —466 tokens contra un tope de 500, y la verja
+    // `sustrato-del-banco` lo comprueba contra cada modelo que el banco nombra—,
+    // así que el tope no es el problema: el modelo escribe por encima de lo que su
+    // propio `maxLength: 1200` autoriza, y ningún modo estructurado lo impone (ni
+    // el `strict` de OpenAI ni el `input_schema` de la herramienta forzada de
+    // Anthropic).
+    //
+    // Subir el tope no arreglaría nada —compraría respuestas más largas que siguen
+    // incumpliendo el `maxLength`— y es justo lo que la verja anti-maquillaje de
+    // `sustrato-del-banco` existe para impedir. Quien lo arregla es la CAPA: un
+    // truncado sobre un contrato que cabe entra ahora en `constraintMemory` y las
+    // siguientes peticiones llevan los límites escritos en el prompt.
+    //
+    // CONSECUENCIA PARA LA ATRIBUCIÓN, y no es menor: cuando eso ocurre, el ahorro
+    // de esta fila deja de ser sólo compresión — lleva dentro los tokens de salida
+    // que el modelo deja de escribir al conocer su límite. Medido contra un
+    // servidor local que habla el dialecto de Anthropic: 32,0% sin la pista (con
+    // calidad 0/3) y 41,4% con ella (3/3), con la salida del brazo B bajando de
+    // 500 a 366 tokens. El libro dice `compressed_tokens` y se lo queda entero,
+    // que es como está construido el banco (un escenario, un libro). Si algún día
+    // hace falta la cifra de compresión LIMPIA, la forma de conseguirla es que la
+    // petición declare su presupuesto en el prompt del LLAMANTE —en los dos
+    // brazos— para que el contrato nunca se incumpla y la pista no llegue a
+    // dispararse. No se ha hecho porque eso sólo se puede comprobar en vivo.
+    //
     // La RESPUESTA, no el libro. `compressedInput > 0` sería puntuarse a sí mismo
     // con el número que la propia palanca infla — el error que ya se corrigió en
     // el escenario de la tabla de 50 filas.
