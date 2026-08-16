@@ -16,6 +16,7 @@ import {
 } from "../benchmarks/scenarios.js";
 import { compresorDeRepeticionesLiterales, MINIMO_DE_LINEA_REPETIDA } from "../benchmarks/compresor.js";
 import { TokenizerRegistry } from "../src/tokenizer/registry.js";
+import { tokensDeLaMayorRespuesta } from "../src/constraints/techo-de-salida.js";
 import {
   createSavingsLayer,
   createMockProvider,
@@ -317,6 +318,105 @@ describe("las palancas opt-in de la 0.3.0 se ejercitan de verdad", () => {
     expect(familiaDeModelo("anthropic/claude-sonnet-4-5")).toBe("anthropic");
     expect(familiaDeModelo("gpt-4o-mini")).toBe("openai");
     expect(familiaDeModelo("mistral-large")).toBe("desconocida");
+  });
+});
+
+/**
+ * UN CONTRATO QUE NO CABE EN SU PROPIO TOPE MIDE EL BANCO, NO EL PRODUCTO.
+ *
+ * Tirada del 2026-08-16: `Constrained structured answer` contra
+ * `claude-sonnet-4-5` falló 8 de 8 y dejó la tirada entera en NO PROBADA. Los dos
+ * brazos salieron con 180 tokens de salida exactos —el tope—, o sea truncados.
+ *
+ * La causa no era el modelo. El esquema acota en CARACTERES (`maxLength`) y el
+ * tope en TOKENS, y los tokens son de cada tokenizador: la mayor respuesta que
+ * ese contrato autoriza mide 154 tokens con o200k_base y 232 con el estimador que
+ * la capa usa cuando no tiene tokenizador exacto del modelo. El tope estaba en
+ * 180, justo entre las dos cuentas, así que era correcto contra GPT e imposible
+ * contra Claude.
+ *
+ * Esta verja cierra el camino por los dos lados:
+ *
+ *   · POR ABAJO — ningún contrato puede declarar un tope en el que no quepa la
+ *     respuesta que él mismo autoriza, con NINGUNO de los modelos que el banco
+ *     nombra. `BVSALA_DEMO_MODELS` apunta cualquier escenario a cualquier modelo,
+ *     así que comprobar solo el modelo declarado por el escenario no habría visto
+ *     este fallo.
+ *   · POR ARRIBA — y esto es lo que impide "arreglarlo" maquillando. Subir el
+ *     tope hasta que la verja de calidad apruebe es exactamente el error que ya
+ *     documenta el escenario `Large uniform table` en sentido contrario. Con esta
+ *     verja, para subir el tope hay que ensanchar el esquema, que es cambiar lo
+ *     que el contrato promete y se lee en el diff.
+ */
+const HOLGURA_MAXIMA_DEL_TOPE = 2;
+
+describe("los contratos del banco caben en su propio tope", () => {
+  /** Todos los modelos que el banco nombra: cualquiera puede servir cualquier escenario. */
+  const modelosDelBanco = [...new Set(scenarios.map((s) => s.request.model))];
+
+  const techos = async (esquema: Parameters<typeof tokensDeLaMayorRespuesta>[0]) => {
+    await tokenizadorListo;
+    return modelosDelBanco
+      .map((m) => ({
+        modelo: m,
+        techo: tokensDeLaMayorRespuesta(esquema, (t) => registroExacto.count(t, { model: m })),
+      }))
+      .filter((x): x is { modelo: string; techo: number } => x.techo !== null);
+  };
+
+  it("el banco nombra más de una familia de modelo: si no, esta verja no vería nada", () => {
+    const familias = new Set(modelosDelBanco.map(familiaDeModelo));
+    expect(
+      [...familias].sort(),
+      "con una sola familia, un tope calibrado contra su tokenizador parece correcto " +
+        "hasta el día que alguien mide otra — que es como se descubrió éste",
+    ).toContain("anthropic");
+    expect([...familias].length).toBeGreaterThan(1);
+  });
+
+  it("la mayor respuesta que autoriza el esquema CABE en el tope, con cada modelo del banco", async () => {
+    for (const s of scenarios) {
+      const contrato = s.request.response;
+      if (!contrato?.maxOutputTokens) continue;
+      for (const { modelo, techo } of await techos(contrato.schema)) {
+        expect(
+          techo,
+          `«${contrato.contractId}» (escenario "${s.name}") autoriza respuestas de hasta ${techo} ` +
+            `tokens con ${modelo} y declara un tope de ${contrato.maxOutputTokens}: contra ese modelo ` +
+            "el JSON se corta a media cadena, no valida NUNCA, y lo que se mide es la mala " +
+            "configuración del banco y no la palanca. Sube el tope hasta lo que el esquema " +
+            "autoriza, o recorta el esquema — pero no lo dejes en medio.",
+        ).toBeLessThanOrEqual(contrato.maxOutputTokens);
+      }
+    }
+  });
+
+  it("y el tope no lleva holgura de más: no se sube un tope para aprobar una tirada", async () => {
+    for (const s of scenarios) {
+      const contrato = s.request.response;
+      if (!contrato?.maxOutputTokens) continue;
+      const lista = await techos(contrato.schema);
+      if (!lista.length) continue;
+      const mayor = Math.max(...lista.map((x) => x.techo));
+      expect(
+        contrato.maxOutputTokens,
+        `«${contrato.contractId}» declara un tope de ${contrato.maxOutputTokens} sobre un esquema que ` +
+          `no autoriza más de ${mayor} tokens. Un tope holgado no corta nada, y por eso es la forma ` +
+          "cómoda de hacer pasar una verja de calidad sin arreglar nada. Si de verdad hacen falta " +
+          "más tokens, es que el esquema autoriza menos de lo que la tarea necesita: ensánchalo.",
+      ).toBeLessThanOrEqual(mayor * HOLGURA_MAXIMA_DEL_TOPE);
+    }
+  });
+
+  it("un esquema SIN acotar no produce cifra, y por tanto no se comprueba", () => {
+    // Callar es lo correcto: de una cadena sin `maxLength` no sale ningún techo
+    // honesto, y publicar uno inventado sería peor que no tener verja.
+    expect(
+      tokensDeLaMayorRespuesta(
+        { type: "object", additionalProperties: false, properties: { a: { type: "string" } } },
+        contarExacto,
+      ),
+    ).toBeNull();
   });
 });
 

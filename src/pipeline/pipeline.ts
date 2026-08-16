@@ -40,6 +40,7 @@ import {
 import { evaluatePolicy } from "../policy/policy.js";
 import { SavingsLedger, type CostModel } from "../tokenizer/accounting.js";
 import { validateAgainstSchema } from "../constraints/validate.js";
+import { tokensDeLaMayorRespuesta } from "../constraints/techo-de-salida.js";
 import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/backends.js";
 import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
@@ -733,6 +734,65 @@ export class SavingsPipeline {
   private avisar(clave: string, mensaje: string): void {
     if (this.config.silenceWarnings) return;
     avisarUnaVez(clave, mensaje);
+  }
+
+  /**
+   * EL AVISO DE TRUNCADO LLEVA EL CONTRATO Y EL MODELO EN LA CLAVE, Y NO ES UN
+   * DETALLE DE FORMATO: SIN ESO, LA MAYORÍA DE LOS TRUNCADOS NO SE CUENTAN.
+   *
+   * La clave era la constante `"salida-truncada"`, y `avisarUnaVez` dedup por
+   * clave y por PROCESO. O sea: el primer contrato que se cortara consumía el
+   * aviso para todos los demás y para todos los modelos. El caso que lo destapó
+   * es exactamente el que más importa —cambiar de modelo sin recalibrar el
+   * contrato—: si otro contrato ya se había cortado antes en la misma tirada, el
+   * cambio de modelo pasaba en SILENCIO. Un aviso que solo se emite una vez por
+   * proceso tiene que estar keyado por la cosa de la que avisa.
+   *
+   * Y el texto dice CUÁL de las dos cosas cambiar, que es lo que a la tirada del
+   * 2026-08-16 le costó leer números a mano de un CSV. La aritmética la tiene la
+   * capa: `maxLength` acota CARACTERES —iguales para todo modelo— y el tope
+   * acota TOKENS —distintos en cada tokenizador—, así que compara lo que el
+   * esquema autoriza, ya contado con el tokenizador de ESTE modelo, contra el
+   * tope. Son dos diagnósticos opuestos y el arreglo no es el mismo:
+   *
+   *   · el esquema autoriza MÁS de lo que el tope permite → el contrato se
+   *     contradice a sí mismo y ninguna respuesta conforme cabe: es el tope (o el
+   *     esquema) lo que hay que mover, y da igual el modelo;
+   *   · el esquema cabe en el tope → el tope no es el problema: este modelo está
+   *     escribiendo más de lo que el propio esquema autoriza.
+   *
+   * NO SE SUBE EL TOPE POR NUESTRA CUENTA, ni aquí ni en la rama de reparación:
+   * lo fijó quien llama y puede haberlo puesto para controlar el gasto.
+   */
+  private avisarDeTruncado(
+    request: SavingsRequest,
+    modeloServido: string,
+    tokensDeSalida: number,
+    techoDelEsquema: number | null,
+  ): void {
+    const tope = request.response?.maxOutputTokens;
+    const contrato = contractKey(request) || "(sin contractId)";
+    const diagnostico =
+      techoDelEsquema === null
+        ? " El esquema no acota la respuesta (falta `maxLength`/`maxItems`), así que no hay forma de " +
+          "saber de antemano cuánto necesita: acótalo y el tope deja de ser una apuesta."
+        : tope != null && techoDelEsquema > tope
+          ? ` El contrato autoriza respuestas de hasta ~${techoDelEsquema} tokens con este modelo ` +
+            `(lo que permiten sus \`maxLength\`/\`maxItems\`) y el tope son ${tope}: ninguna respuesta ` +
+            "que use lo que el propio esquema permite cabe. Un tope calibrado con otro modelo NO se " +
+            "hereda — el esquema acota CARACTERES, que son iguales en todas partes, y el tope acota " +
+            "TOKENS, que son distintos en cada tokenizador."
+          : ` El contrato autoriza ~${techoDelEsquema} tokens y el tope son ${tope}, así que el tope ` +
+            "no es el problema: este modelo está escribiendo más de lo que su propio esquema permite " +
+            "(ningún modo estructurado impone `maxLength`).";
+    this.avisar(
+      `salida-truncada:${contrato}:${modeloServido}`,
+      `[bvsala] La respuesta se cortó al agotar \`maxOutputTokens\`${tope != null ? ` (${tope})` : ""} ` +
+        `con el modelo ${modeloServido} y el contrato «${contrato}»: el proveedor devolvió ` +
+        `finish_reason "length" y ${tokensDeSalida} tokens de salida, así que el JSON no valida. NO se ` +
+        "reintenta: con el mismo tope volvería a cortarse y sería una llamada pagada para el mismo " +
+        `fallo.${diagnostico}`,
+    );
   }
 
   private avisarDePalancasSinConfigurar(toggles: NonNullable<SavingsRequest["savings"]>): void {
@@ -1898,19 +1958,15 @@ export class SavingsPipeline {
             "fallo). Corrige el `pattern` del esquema.",
         );
       } else if (!validation.valid && truncadoPorTope) {
+        const techoDelEsquema = tokensDeLaMayorRespuesta(schema, (t) => this.tokensFor(t, request));
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
           maxOutputTokens: request.response?.maxOutputTokens ?? null,
           outputTokens: response.usage.outputTokens,
+          model: modeloServido,
+          ...(techoDelEsquema !== null ? { schemaAllowsTokens: techoDelEsquema } : {}),
         });
-        this.avisar(
-          "salida-truncada",
-          "[bvsala] La respuesta se cortó al agotar `maxOutputTokens`" +
-            (request.response?.maxOutputTokens != null ? ` (${request.response.maxOutputTokens})` : "") +
-            ", así que no valida contra el contrato. NO se reintenta: con el mismo tope volvería a " +
-            "cortarse y sería una llamada pagada para el mismo fallo. Sube `maxOutputTokens` o " +
-            "reduce lo que pide el contrato.",
-        );
+        this.avisarDeTruncado(request, modeloServido, response.usage.outputTokens, techoDelEsquema);
       } else if (!validation.valid && backendPlan.backend === "none") {
         // Single deterministic repair attempt only when we had no constraint
         // backend to prevent the invalid output in the first place.
@@ -2075,7 +2131,26 @@ export class SavingsPipeline {
       // idénticas con la palanca igual pueden ver catálogos distintos, así que la
       // única regla honesta es no cachear lo que se generó con la vista recortada.
       const vistaRecortada = descubrimiento.aplicado;
-      const cacheable = structurallyValid !== false && !pidioHerramientas && !vistaRecortada;
+      // Y LA CUARTA PUERTA: TAMPOCO SE CACHEA MEDIA RESPUESTA.
+      //
+      // Aquí no hay heurística que discutir —lo dice el propio proveedor con
+      // `finish_reason: "length"`—, y la condición de "incumple su contrato" NO
+      // lo cubre: una petición SIN esquema (o con uno que no acota nada) sale con
+      // `structurallyValid` en true porque no hay nada que validar, así que el
+      // truncado no lo veía nadie. Ni siquiera hace falta que el llamante ponga
+      // tope: la API de Anthropic EXIGE `max_tokens` y el adaptador manda 4096
+      // por defecto, o sea que una generación larga se corta sin que el cliente
+      // haya pedido ningún tope.
+      //
+      // Lo que entraba por ahí es el mismo fallo que cierran las tres
+      // condiciones de arriba: media respuesta guardada 24 h y servida a cada
+      // petición idéntica con `avoidedLlm: 1`, publicada como ahorro del 100%
+      // sobre algo que ningún cliente aceptaría. Equivocarse al revés —no
+      // cachear una respuesta cortada que al llamante le valía— cuesta una
+      // llamada más, y queda dicho en la traza en vez de en silencio.
+      const cortadaPorElTope = response.finishReason === "length";
+      const cacheable =
+        structurallyValid !== false && !pidioHerramientas && !vistaRecortada && !cortadaPorElTope;
       if (!cacheable) {
         trace.record(
           "cache-write",
@@ -2083,7 +2158,10 @@ export class SavingsPipeline {
             ? "skipped: tool-call turn (an action request must not be replayed from cache)"
             : structurallyValid === false
               ? "skipped: response fails its output contract"
-              : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+              : cortadaPorElTope
+                ? "skipped: answer cut off by the output cap (finish_reason \"length\"); replaying half " +
+                  "an answer would bill it as a 100% avoided call"
+                : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
         );
       }
 
