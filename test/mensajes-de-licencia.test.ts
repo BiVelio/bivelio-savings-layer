@@ -2,6 +2,7 @@ import { generateKeyPairSync, sign } from "node:crypto";
 import { describe, it, expect, vi, afterEach } from "vitest";
 
 import { mensajeDeLicencia } from "../src/pipeline/pipeline.js";
+import { createSavingsLayer, createMockProvider, LicenseError } from "../src/index.js";
 import { liveGateFromKey } from "../src/license/live-gate.js";
 import { UsageEmitter } from "../src/metering/emitter.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
@@ -53,6 +54,57 @@ describe("el mensaje manda a la acción correcta", () => {
     const m = mensajeDeLicencia(undefined);
     expect(m).toMatch(/not active/i);
     expect(m).not.toMatch(/renew/i);
+  });
+});
+
+/**
+ * LA OTRA MITAD DEL MENSAJE MÁS LEÍDO DEL PRODUCTO.
+ *
+ * `test/sala-limpia-del-tarball.test.ts` comprueba el contexto PUBLICADO: allí el
+ * mensaje no puede nombrar `devUnlicensed` porque está tapiado. Aquí se comprueba
+ * el contexto FUENTE, donde sí funciona y tiene que seguir funcionando: tests,
+ * banco y ejemplos del repo dependen de él, y un mensaje que no lo nombrara
+ * mandaría a quien desarrolla sobre el repo a buscar una licencia que no
+ * necesita. Un mensaje solo es correcto si lo es en los DOS.
+ */
+describe("el mensaje de «no hay licencia» es correcto en el contexto FUENTE", () => {
+  it("nombra la puerta que aquí SÍ abre, y dice que solo vale aquí", () => {
+    const m = mensajeDeLicencia("none");
+    expect(m).toMatch(/devUnlicensed/);
+    // Y no la vende como una forma de usar el producto: dice dónde NO vale.
+    expect(m).toMatch(/never in the published npm package/i);
+  });
+
+  it("«no configuraste nada» y «un gate devolvió algo raro» son mensajes distintos", () => {
+    // Antes los dos caían en la misma rama por defecto, con `status` undefined:
+    // dos problemas con arreglos opuestos y una sola pista.
+    expect(mensajeDeLicencia("none")).not.toBe(mensajeDeLicencia(undefined));
+    expect(mensajeDeLicencia("none")).toMatch(/license status: none/);
+  });
+
+  it("manda a la página que resuelve, no a la portada de venta", () => {
+    const enlaces = mensajeDeLicencia("none").match(/https:\/\/savings\.bivelio\.com[^\s)]*/g) ?? [];
+    expect(enlaces).toContain("https://savings.bivelio.com/dashboard/install");
+    expect(enlaces.filter((u) => !/savings\.bivelio\.com\/\w/.test(u))).toEqual([]);
+  });
+
+  it("y el error que se lanza trae el estado, no `undefined`", async () => {
+    // El asidero estable para ramificar en código del cliente. La suite corre
+    // dev-open (vitest.config.ts); aquí se cierra la puerta para ver la
+    // denegación real, y se restaura.
+    const guardado = process.env.BVSALA_DEV_OPEN;
+    delete process.env.BVSALA_DEV_OPEN;
+    try {
+      const capa = createSavingsLayer({ provider: createMockProvider({ answer: "x" }) });
+      const err = await capa
+        .generate({ model: "m", messages: [{ role: "user", content: "hola" }] })
+        .then(() => null)
+        .catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(LicenseError);
+      expect((err as LicenseError).status).toBe("none");
+    } finally {
+      if (guardado !== undefined) process.env.BVSALA_DEV_OPEN = guardado;
+    }
   });
 });
 

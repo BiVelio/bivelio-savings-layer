@@ -40,9 +40,15 @@ export interface SavingsLayer {
  * cache, a vector-backed semantic cache, a real tokenizer, a compressor sidecar,
  * XGrammar/llguidance backends, etc.).
  *
+ * A `licenseKey` is not optional in practice: `generate()` is fail-closed and
+ * throws {@link LicenseError} without one, so it belongs in the smallest example
+ * there is.
+ *
  * @example
- * const layer = createSavingsLayer({ provider: createMockProvider() });
- * const { data, report } = await layer.generate({
+ * // `licenseKey` is the signed token from savings.bivelio.com/dashboard/install,
+ * // read from wherever you keep secrets (BIVELIO_LICENSE_KEY in the README).
+ * const layer = createSavingsLayer({ provider, licenseKey });
+ * const { text, report } = await layer.generate({
  *   model: "openai/gpt-4o-mini",
  *   messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
  * });
@@ -62,9 +68,14 @@ export function createSavingsLayer(
   const buildPublicado =
     typeof __BV_SALA_ALLOW_DEV_OPEN__ !== "undefined" && __BV_SALA_ALLOW_DEV_OPEN__ === false;
   if (buildPublicado && config.licenseGate) {
+    // EN INGLÉS, como todo lo que ve el cliente. Salía en español a un paquete
+    // publicado en npm y leído en cualquier parte del mundo: quien lo recibía no
+    // sabía si era un aviso, un error o una traza, y encima llega justo cuando ya
+    // está atascado con la licencia.
     console.warn(
-      "[bvsala] Se ignora el `licenseGate` inyectado: en el paquete publicado la " +
-        "licencia solo se acepta vía `licenseKey` verificado contra la clave de BiVelio.",
+      "[bvsala] Ignoring the injected `licenseGate`: in the published package a license is " +
+        "only accepted as a `licenseKey` verified against BiVelio's embedded public key. " +
+        "Get yours at https://savings.bivelio.com/dashboard/install",
     );
     config = { ...config, licenseGate: undefined };
   }
