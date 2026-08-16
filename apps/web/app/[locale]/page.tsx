@@ -3,8 +3,9 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import abData from "@/public/data/ab-live.json";
+import porModeloData from "@/public/data/ab-por-modelo.json";
+import { SelectorDeModelo, type ModeloMedido } from "./components/SelectorDeModelo";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
-import { ProjectorVerifier } from "@/app/[locale]/dashboard/components/ProjectorVerifier";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
 import { ReferenceLedgerCards } from "@/app/[locale]/dashboard/components/ReferenceLedgerCards";
@@ -20,6 +21,24 @@ import { formatearPrecio } from "@/lib/format/precio";
 // The measured A/B artifact powers Step 2 (the reference bench) and the price
 // used by the Step-1 projector — exactly like the dashboard verify/proof pages.
 const ab = abData as unknown as AbArtifact;
+
+// Una tirada por modelo. Solo las PROBADAS entran en el selector: un modelo cuya
+// verja de calidad no paso no se puede anunciar como ahorro, asi que se mide
+// igual y se enseña aparte, con su motivo. Ocultarlo seria elegir el modelo que
+// mejor sale y callar los otros — justo lo que esta pagina promete no hacer.
+const porModelo = porModeloData as unknown as {
+  comparison: {
+    model: string;
+    aggregate: { savings: { point: number; lower: number; upper: number }; proven: boolean; qualityPassRate: number };
+    ledgers: { ledger: string; savings: { point: number; lower: number; upper: number } }[];
+  }[];
+};
+const marcaDe = (m: string): string =>
+  m.startsWith("anthropic/") ? "Anthropic" : m.startsWith("openai/") ? "OpenAI" : (m.split("/")[0] ?? m);
+const modelosProbados: ModeloMedido[] = porModelo.comparison
+  .filter((c) => c.aggregate.proven)
+  .map((c) => ({ ...c, marca: marcaDe(c.model) }));
+const modelosNoPublicables = porModelo.comparison.filter((c) => !c.aggregate.proven);
 const mini = (ab.pricing.table["gpt-4o-mini"] ?? {}) as { inputPer1k?: number; outputPer1k?: number };
 const prices = { inPer1k: mini.inputPer1k ?? 0.00015, outPer1k: mini.outputPer1k ?? 0.0006 };
 
@@ -116,7 +135,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     n: string;
     title: string;
     sub: string;
-    tag: string;
+    ledger: string;
     grey: boolean;
   }[];
   const ledgers = t.raw("ledgers") as { idx: string; name: string; desc: string }[];
@@ -162,7 +181,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </h1>
             <p className="lede">{t("hero.lede")}</p>
             <div className="hero-cta">
-              <a className="btn" href="#verify">
+              <a className="btn" href="#measured">
                 {t("hero.ctaRun")}
               </a>
               <a className="btn ghost" href="#pricing">
@@ -172,6 +191,27 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div className="hero-note">
               <span className="pulse" /> {t("hero.note")}
             </div>
+
+            {/* La prueba, en el heroe. Este producto no vende una promesa: vende
+                una medicion contra el contador del proveedor. Enseñarla arriba es
+                el argumento, no un adorno. */}
+            <div className="hero-prueba">
+              <span className="hero-prueba-t">{t("hero.proofTitle")}</span>
+              <div className="hero-prueba-filas">
+                {(t.raw("hero.proofs") as { marca: string; modelo: string; cifra: string; que: string }[]).map((p) => (
+                  <div className="hp" key={p.marca}>
+                    <div className="hp-marca">
+                      <b>{p.marca}</b>
+                      <code>{p.modelo}</code>
+                    </div>
+                    <div className="hp-dato">
+                      <span className="hp-n">{p.cifra}</span>
+                      <span className="hp-q">{p.que}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="cascade" aria-label={t("cascade.title")}>
@@ -179,36 +219,27 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <span className="t">{t("cascade.title")}</span>
               <span className="k">{t("cascade.per")}</span>
             </div>
-            {cascadeSteps.map((s) => (
-              <div className="step" key={s.n}>
-                <span className="n">{s.n}</span>
-                <span className="s">
-                  {s.title}
-                  <span>{s.sub}</span>
-                </span>
-                <span className={`tag${s.grey ? " grey" : ""}`}>{s.tag}</span>
-              </div>
-            ))}
+            {cascadeSteps.map((s) => {
+              // La etiqueta era cualitativa («−tokens») sobre un artefacto que
+              // ya traía la cifra medida de ese libro. Es lo primero que ve un
+              // cliente: o lleva un número que se puede defender, o no va.
+              const m = medidoPorLibro.get(s.ledger);
+              if (!m || !m.proven) return null;
+              return (
+                <div className="step" key={s.n}>
+                  <span className="n">{s.n}</span>
+                  <span className="s">
+                    {s.title}
+                    <span>{s.sub}</span>
+                  </span>
+                  <span className="tag">{`${(m.savings.lower * 100).toFixed(1)}%`}</span>
+                </div>
+              );
+            })}
           </div>
+          <p className="cascade-nota">{t("cascade.footnote")}</p>
         </section>
 
-        {/* STEP 1 — verify locally (reused ProjectorVerifier island) */}
-        <section id="verify">
-          <div className="sec-head">
-            <span className="eyebrow">{t("step1.eyebrow")}</span>
-            <h2>{t("step1.title")}</h2>
-            <p>
-              {t.rich("step1.body", {
-                b: (c) => <b>{c}</b>,
-                i: (c) => <i>{c}</i>,
-                link: (c) => <a href="#measured">{c}</a>,
-              })}
-            </p>
-          </div>
-          <ProjectorVerifier prices={prices} />
-        </section>
-
-        {/* STEP 2 — provably measured (reused reference-bench components) */}
         <section id="measured">
           <div className="sec-head">
             <span className="eyebrow">{t("step2.eyebrow")}</span>
@@ -239,9 +270,47 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
+        {/* SELECTOR POR MODELO — la misma capa da cifras distintas segun el modelo */}
+        <section id="por-modelo">
+          <div className="sec-head">
+            <span className="eyebrow">{t("selectorModelo.eyebrow")}</span>
+            <h2>{t("selectorModelo.title")}</h2>
+            <p>{t("selectorModelo.body")}</p>
+          </div>
+
+          <SelectorDeModelo
+            modelos={modelosProbados}
+            etiquetas={{
+              titular: t("selectorModelo.titular"),
+              suelo: t("selectorModelo.suelo"),
+              calidad: t("selectorModelo.calidad"),
+              sinLibro: t("selectorModelo.sinLibro"),
+              libro: t.raw("selectorModelo.libro") as Record<string, string>,
+            }}
+          />
+
+          {modelosNoPublicables.length > 0 && (
+            <div className="nopub">
+              <h4>{t("selectorModelo.noPublicableTitle")}</h4>
+              {modelosNoPublicables.map((c) => (
+                <p key={c.model}>
+                  {t("selectorModelo.noPublicable", {
+                    model: c.model,
+                    q: `${(c.aggregate.qualityPassRate * 100).toFixed(1).replace(".", ",")} %`,
+                  })}
+                </p>
+              ))}
+            </div>
+          )}
+        </section>
+
         {/* CACHÉ DE PREFIJO DE ANTHROPIC — el mecanismo, no un titular */}
         <section id="anthropic-cache">
           <div className="sec-head">
+            <div className="prov">
+              <span className="prov-marca">{t("anthropicCache.providerTag")}</span>
+              <code className="prov-modelo">{t("anthropicCache.providerModel")}</code>
+            </div>
             <span className="eyebrow">{t("anthropicCache.eyebrow")}</span>
             <h2>{t("anthropicCache.title")}</h2>
             <p>
@@ -288,24 +357,33 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         {/* LEDGERS — four separate ledgers, never summed */}
         <section>
           <div className="sec-head">
+            <div className="prov">
+              <span className="prov-marca">{t("ledgersHead.providerTag")}</span>
+              <code className="prov-modelo">{t("ledgersHead.providerModel")}</code>
+            </div>
             <span className="eyebrow">{t("ledgersHead.eyebrow")}</span>
             <h2>{t("ledgersHead.title")}</h2>
             <p>{t("ledgersHead.body")}</p>
+            <p className="ledgers-modelo">{t("ledgersHead.providerNote")}</p>
           </div>
           <div className="ledgers">
-            {ledgers.map((l) => {
+            {ledgers
+              .filter((l) => {
+                // Una tarjeta sin cifra define una palanca y remata con un guion:
+                // promete y no cumple, en la seccion cuya tesis es justamente que
+                // aqui no se infla nada. Si esta tirada no midio ese libro, el
+                // libro no sale. Que salgan tres tarjetas en vez de cuatro es la
+                // verdad de esa tirada.
+                const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");
+                return !!m && m.proven;
+              })
+              .map((l) => {
               const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");
               // Se publica el LÍMITE INFERIOR del intervalo, nunca el punto: es
               // la regla del banco y no cambia por estar en una landing. Y un
               // libro que no despejó el cero NO se anuncia como ahorro.
-              const cifra =
-                m && m.proven ? `${(m.savings.lower * 100).toFixed(1)}%` : "—";
-              const pie =
-                m && m.proven
-                  ? t("ledgersHead.measuredFloor")
-                  : m
-                    ? t("ledgersHead.notProven")
-                    : t("ledgersHead.runToMeasure");
+              const cifra = `${(m!.savings.lower * 100).toFixed(1)}%`;
+              const pie = t("ledgersHead.measuredFloor");
               return (
                 <div className="ledger" key={l.idx}>
                   <div className="idx">{l.idx}</div>

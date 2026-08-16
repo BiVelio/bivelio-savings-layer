@@ -1020,3 +1020,89 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .ancache-notas > div { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 18px; background: var(--surface); }
 .ancache-notas h4 { margin: 0 0 6px; font-size: .9rem; }
 .ancache-notas p { margin: 0; color: var(--ink-soft); font-size: .88rem; line-height: 1.6; }
+
+/* Tarjetas de libro: la cifra al fondo, alineada entre tarjetas aunque las
+   descripciones ocupen distinto numero de lineas. Sin esto, los numeros bailan
+   segun la longitud del texto de arriba. */
+.ledger { display: flex; flex-direction: column; }
+.ledger p { flex: 1 1 auto; }
+.ledger .mval { margin-top: auto; }
+.ledgers-modelo { margin-top: 10px; font-size: .86rem; color: var(--ink-soft); }
+
+/* Chapa de proveedor. Nombre en texto + id de modelo real: se entiende el
+   alcance de un vistazo sin usar marcas registradas ajenas, que en una pagina
+   que vende implicarian respaldo. */
+.prov { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  padding: 6px 12px 6px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.prov-marca { font-size: 1rem; font-weight: 650; letter-spacing: -.01em; }
+.prov-modelo { font-size: .78rem; color: var(--ink-soft); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
+.cascade-nota { margin-top: 14px; font-size: .85rem; color: var(--ink-soft); max-width: 68ch; line-height: 1.6; }
+
+/* ── Héroe: la prueba a la vista ───────────────────────────────────────────
+   Este producto no vende una promesa, vende una medición contra el contador
+   del proveedor. Ponerla arriba es el argumento; esconderla sería desperdiciar
+   lo único que la competencia no puede copiar. */
+.lp .hero-prueba { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
+.hero-prueba-t { display: block; font-size: .72rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--ink-soft); margin-bottom: 14px; }
+.hero-prueba-filas { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+
+.hp { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface);
+  transition: border-color .15s ease, box-shadow .15s ease; }
+.hp:hover { border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+  box-shadow: 0 1px 2px rgba(15,18,24,.04), 0 8px 20px -14px rgba(15,18,24,.18); }
+.hp-marca { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.hp-marca b { font-size: .95rem; font-weight: 650; letter-spacing: -.01em; }
+.hp-marca code { font-size: .7rem; color: var(--ink-soft); background: var(--surface-2);
+  border-radius: 999px; padding: 2px 8px; }
+.hp-dato { display: flex; flex-direction: column; gap: 2px; }
+.hp-n { font-size: 1.55rem; line-height: 1; font-weight: 300; letter-spacing: -.02em;
+  color: var(--brand); font-variant-numeric: tabular-nums; }
+.hp-q { font-size: .78rem; color: var(--ink-soft); line-height: 1.45; }
+
+/* Chapa de proveedor: de píldora sosa a marca con peso. La barra de color la
+   ata a la sección y el id de modelo queda subordinado, no compitiendo. */
+.prov { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  padding: 9px 16px 9px 14px; border: 1px solid var(--line); border-left: 3px solid var(--brand);
+  border-radius: var(--radius-lg); background: var(--surface); }
+.prov-marca { font-size: 1.12rem; font-weight: 650; letter-spacing: -.02em; color: var(--ink); }
+.prov-modelo { font-size: .74rem; color: var(--ink-soft); background: var(--surface-2);
+  border: none; border-radius: 999px; padding: 3px 10px; letter-spacing: .01em; }
+
+/* ── Selector por modelo ───────────────────────────────────────────────────
+   La misma capa da cifras distintas segun el modelo, y eso no es una salvedad:
+   es el hecho central. Enseñar una sola cifra obligaba a elegir un modelo y
+   callar los otros. */
+.selmod { border: 1px solid var(--line); border-radius: var(--radius-xl); overflow: hidden; background: var(--surface); }
+.selmod-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); background: var(--surface-2); overflow-x: auto; }
+.selmod-tab { flex: 1 1 auto; min-width: 170px; display: flex; flex-direction: column; align-items: flex-start;
+  gap: 3px; padding: 14px 18px; border: 0; border-bottom: 2px solid transparent; background: transparent;
+  cursor: pointer; font: inherit; text-align: left; color: var(--ink-soft);
+  transition: background .15s ease, border-color .15s ease, color .15s ease; }
+.selmod-tab:hover { background: var(--surface-3); }
+.selmod-tab.on { background: var(--surface); border-bottom-color: var(--brand); color: var(--ink); }
+.selmod-tab b { font-size: .98rem; font-weight: 650; letter-spacing: -.01em; }
+.selmod-tab code { font-size: .72rem; color: var(--ink-soft); }
+.selmod-tab:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+
+.selmod-panel { padding: 24px; display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 28px; align-items: center; }
+@media (max-width: 760px) { .selmod-panel { grid-template-columns: 1fr; gap: 20px; } }
+.selmod-titular { display: flex; flex-direction: column; gap: 6px; }
+.selmod-n { font-size: clamp(2.6rem, 6vw, 3.6rem); line-height: 1; font-weight: 300; letter-spacing: -.03em;
+  color: var(--brand); font-variant-numeric: tabular-nums; }
+.selmod-q { font-size: .92rem; color: var(--ink); display: flex; flex-direction: column; gap: 2px; }
+.selmod-q em { font-style: normal; font-size: .78rem; color: var(--ink-soft); }
+
+.selmod-libros { display: grid; gap: 8px; }
+.selmod-libro { display: flex; align-items: baseline; gap: 12px; padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg); }
+.lb-n { font-size: 1.02rem; font-weight: 650; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 62px; }
+.lb-t { font-size: .86rem; color: var(--ink-soft); }
+.selmod-vacio { margin: 0; font-size: .88rem; color: var(--ink-soft); }
+
+.nopub { margin-top: 16px; padding: 16px 18px; border: 1px solid var(--line);
+  border-left: 3px solid var(--amber); border-radius: var(--radius-lg); background: var(--amber-soft); }
+.nopub h4 { margin: 0 0 6px; font-size: .9rem; }
+.nopub p { margin: 0; font-size: .86rem; color: var(--ink-soft); line-height: 1.6; }
