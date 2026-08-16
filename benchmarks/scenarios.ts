@@ -376,7 +376,48 @@ const answerContract = {
       refs: { type: "array" as const, maxItems: 3, items: { type: "string" as const, maxLength: 120 } },
     },
   },
-  maxOutputTokens: 180,
+  // ═══════════════════════════════════════════════════════════════════════════
+  // EL TOPE ERA 180 Y CORTABA LAS RESPUESTAS DE CLAUDE POR LA MITAD, 8 DE 8.
+  // ═══════════════════════════════════════════════════════════════════════════
+  //
+  // Tirada del 2026-08-16, `Constrained structured answer` contra
+  // `claude-sonnet-4-5`: brazo A 236/180 y brazo B 236/180 — los dos brazos
+  // clavados en 180, que ES el tope. O sea truncado, JSON cortado a media cadena,
+  // y la verja de calidad (con razón) dejó la tirada entera en NO PROBADA con un
+  // 93,2% frente al suelo de 99,9%.
+  //
+  // NO ES QUE CLAUDE SEA MÁS VERBOSO. Es que el tope y el esquema miden la misma
+  // respuesta en unidades distintas: `maxLength` cuenta CARACTERES, que no
+  // dependen del modelo, y `maxOutputTokens` cuenta TOKENS, que dependen del
+  // tokenizador. La mayor respuesta que ESTE esquema autoriza —400 caracteres de
+  // `answer` más tres referencias de 120: 791 caracteres de JSON— medida con
+  // `constraints/techo-de-salida.ts` sale:
+  //
+  //     o200k_base (familia GPT, exacto)      154 tokens   ← cabía en 180
+  //     estimador de la capa (Claude)         232 tokens   ← NO cabía en 180
+  //
+  // El tope de 180 estaba JUSTO EN MEDIO de esas dos cuentas. Por eso aguantó
+  // todas las tiradas contra la familia GPT sin decir nada y reventó la primera
+  // vez que se midió otra familia: no había margen que heredar, había un número
+  // calibrado contra un tokenizador y usado contra otro.
+  //
+  // ASÍ QUE EL TOPE NO SE ELIGE, SE CALCULA: es lo que ocupa la mayor respuesta
+  // que el propio esquema autoriza, contada con el contador más caro de los
+  // modelos que este banco mide. Subirlo "hasta que apruebe" ya no es posible —
+  // para subirlo hay que ensanchar el esquema, que es cambiar lo que el contrato
+  // promete—, y `sustrato-del-banco.test.ts` lo comprueba contra CADA modelo que
+  // el banco declara, no solo contra el de este escenario: `BVSALA_DEMO_MODELS`
+  // apunta cualquier escenario a cualquier modelo, y ése fue justo el camino del
+  // fallo.
+  //
+  // Lo que este arreglo NO promete: que el modelo se quede dentro. Ningún modo
+  // estructurado impone `maxLength` (está escrito tres líneas más arriba), así
+  // que Claude puede escribir más de lo que el esquema autoriza. La diferencia es
+  // que entonces el fallo sale como «exceeds maxLength» —un fallo de VALOR, que
+  // la capa aprende y corrige avisando al modelo en la siguiente petición— y no
+  // como «Unterminated string in JSON», que no enseña nada a nadie. El tope corto
+  // no solo cortaba la respuesta: tapaba el mecanismo que la habría arreglado.
+  maxOutputTokens: 232,
 };
 
 /**
