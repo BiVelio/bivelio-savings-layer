@@ -83,6 +83,43 @@ pnpm ab
 `.env.bench` is gitignored and read via `--env-file-if-exists`, so the key never
 reaches the shell history. The same file drives `pnpm demo` and `pnpm ablation`.
 
+### Anthropic needs its own endpoint, or its lever is not measurable ★
+
+`BVSALA_DEMO_BASE_URL` almost always points at a **gateway that speaks the OpenAI
+protocol**. `cache_control` — the *only* thing that makes Anthropic cache, because
+it does not cache on its own — does not exist in that protocol: there is no field
+to put it in. So a `claude-*` model served through the gateway can never exercise
+the prefix-cache lever, and the run that pretended otherwise published **0 cached
+tokens on both arms over a 7,287-token stable prefix**, which reads as a measured
+failure and was not one: the adapter was never instantiated.
+
+Two things changed, and both are needed:
+
+```bash
+# the native Messages API, declared separately — it is a different dialect,
+# not another URL for the same thing
+BVSALA_DEMO_ANTHROPIC_BASE_URL=https://api.anthropic.com/v1
+BVSALA_DEMO_ANTHROPIC_API_KEY=<your Anthropic key>   # put it in .env.bench, never inline
+```
+
+1. **With it declared**, every model of that family is served by
+   `AnthropicProvider`: `cache_control` travels, the cached read is billed at 0.1x,
+   and ledger 4 gets a delta that is genuinely attributable to the layer (the naive
+   arm does not mark anything, because almost nobody does).
+2. **Without it**, the scenario is **not run at all**. Its lever is declared in
+   `levers.notMeasurable` with the reason *and* with what to configure, and the
+   console prints `⊘ NO MEDIBLE`. There is no zero to misread, and no money is
+   spent on a scenario that cannot measure what it exists to measure.
+
+The model id sent to the native endpoint is always stripped of its `provider/`
+prefix (`anthropic/claude-sonnet-4-5` → `claude-sonnet-4-5`): `BVSALA_DEMO_KEEP_PREFIX`
+is a property of the gateway, and that same id is a 404 against the native API.
+
+`test/transporte-del-banco.test.ts` holds this down with a fake `fetch`: it asserts
+the request lands on `/messages`, that `cache_control` sits at the end of the stable
+prefix, and that the same model through the gateway carries no `cache_control` at
+all. Proving this live costs money, and that cannot be the only way to know.
+
 ### The opt-in levers of 0.3.0 ★
 
 `outputCodebook`, `toolDiscovery`, `compression` and `semanticCache` appeared
@@ -154,6 +191,29 @@ own reason. In MOCK two of them can never fire — the mock provider never retur
 `tool_calls` and never reports `cached_tokens` — and the run prints exactly that
 instead of letting you read a limitation of the mock as a result.
 
+**And a lever the *transport* cannot carry is a third thing.** `notExercised`
+means "it was asked for and it did not fire", which is a measurement.
+`levers.notMeasurable` means "with this endpoint it cannot even be asked for" —
+the scenario does not run, so there is no figure at all, and the entry carries
+`comoMedirla`, the configuration that would produce one. Folding the two together
+is exactly how a 0 from the Anthropic cache scenario got published as if someone
+had measured a failure.
+
+#### A bare `cached_tokens = 0` is never published on its own
+
+The same run measured **5,120 cached tokens on `gpt-4o` and 0 on `gpt-4o-mini`**
+for `Stable-prefix agent turn` — the same prompt, byte for byte, ~5,258 tokens
+(and 5,120 is 40 × 128, OpenAI's caching granularity). So the **tier minimum does
+not explain that zero**: both prompts clear 1,024 by a factor of five. The bench
+now says which of the three possible causes it is, because they lead to opposite
+decisions:
+
+| what the report says | cause |
+| --- | --- |
+| *"…no llega al mínimo de tramo"* | the prompt is below the tier minimum — the provider caches nothing there, and the zero **is** explained |
+| *"la capa NO marcó el prefijo: `<reason>`"* | our own gate declined to mark; the zero says nothing about the provider |
+| *"el tamaño del prompt NO explica este cero"* | prompt over the minimum **and** prefix marked: what is left is the endpoint not reporting `cached_tokens`, or the requests not landing on a warm instance (through a gateway, routing is not ours). **Not** a measurement that the lever does not save |
+
 ### Per model, without editing code ★
 
 `BVSALA_DEMO_MODEL` overrides the model of **every** scenario and produces one
@@ -172,7 +232,9 @@ Scenarios that do not apply to a model are **skipped and declared**, never
 measured badly. The Anthropic `cache_control` scenario served against an OpenAI
 endpoint would measure the discount OpenAI applies *by itself* and book it under
 ledger 4 as our contribution; it now says `n/a` in the table and carries its
-reason in `scenariosNotApplicable`.
+reason in `scenariosNotApplicable` — with `causa: "familia"` when the model is of
+the other family, and `causa: "transporte"` when the model is right but the
+configured endpoint cannot speak its protocol (see the Anthropic section above).
 
 Artifacts: with one model, `out/ab-live.json` (+ trials CSV) exactly as before —
 that is what `pnpm ab:publish` reads. With several, one

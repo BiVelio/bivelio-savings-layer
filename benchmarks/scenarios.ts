@@ -112,13 +112,89 @@ export interface EstadoDePalanca {
 }
 
 /**
+ * CÓMO VA A HABLAR EL BANCO CON EL PROVEEDOR EN ESTA TIRADA.
+ *
+ * No es un detalle de fontanería: decide qué palancas pueden siquiera VIAJAR.
+ * `cache_control` —lo único que hace cachear a Anthropic, porque no cachea
+ * sola— existe en el protocolo de Mensajes y en ningún otro. A través de una
+ * pasarela que habla el protocolo de OpenAI no hay campo donde ponerlo, así que
+ * la palanca no es que no ahorre: es que no se ejecuta.
+ */
+export type TransporteDelBanco = "mock" | "openai-compatible" | "anthropic-nativo";
+
+/**
+ * Una palanca que el TRANSPORTE configurado no puede ejercitar, con lo que
+ * habría que configurar para poder medirla.
+ *
+ * ES UNA TERCERA CATEGORÍA, y hacen falta las tres. `ejercitada: false` dice
+ * "se pidió y no disparó" —la verja la descartó, el sondeo degradó—, y eso es
+ * una medición. Esto otro dice "aquí no se puede pedir", que no lo es. Publicar
+ * lo segundo como si fuera lo primero es exactamente lo que pasó con el
+ * escenario de Anthropic: 0 tokens cacheados en los dos brazos sobre un prefijo
+ * de 7.287 tokens, publicado como si alguien hubiera medido un fracaso, cuando
+ * lo que ocurrió es que el adaptador nativo no llegó a instanciarse nunca.
+ */
+export interface PalancaNoMedible {
+  palanca: Palanca;
+  escenario: string;
+  /** Por qué no se puede medir con este transporte. */
+  motivo: string;
+  /** Qué hay que configurar para que sí se mida. Nunca vacío. */
+  comoMedirla: string;
+}
+
+/**
+ * ¿Puede este transporte ejercitar la palanca que el escenario mide?
+ *
+ * Devuelve `null` cuando sí, y la declaración de por qué no cuando no. La
+ * decisión mira `familia` y no el modelo: la etiqueta ya significa "este
+ * escenario mide una palanca del PROTOCOLO de esa familia" —es la razón por la
+ * que existe—, y `Anthropic stable-prefix agent turn` es el único caso hoy.
+ *
+ * MOCK no cuenta como no medible y es deliberado: ahí ninguna cifra es una
+ * afirmación de ahorro, la tirada existe para probar la fontanería (que la capa
+ * marque el prefijo, que el adaptador reparta los mensajes) y el informe ya
+ * avisa aparte de que el proveedor simulado nunca devuelve `cached_tokens`.
+ */
+export function noMedibleEnTransporte(
+  s: Scenario,
+  transporte: TransporteDelBanco,
+): PalancaNoMedible | null {
+  if (!s.palanca) return null;
+  if (s.familia !== "anthropic" || transporte !== "openai-compatible") return null;
+  return {
+    palanca: s.palanca,
+    escenario: s.name,
+    motivo:
+      "el endpoint configurado habla el protocolo de OpenAI, y `cache_control` sólo existe en la " +
+      "API de Mensajes de Anthropic: no hay campo por el que enviarlo, así que la palanca no " +
+      "llega a ejecutarse. Su cero no sería una medición.",
+    comoMedirla:
+      "declara un endpoint NATIVO de Anthropic en BVSALA_DEMO_ANTHROPIC_BASE_URL (+ " +
+      "BVSALA_DEMO_ANTHROPIC_API_KEY) y el banco usará AnthropicProvider para los modelos de esa " +
+      "familia.",
+  };
+}
+
+/**
  * Lee de la traza de la capa si la palanca del escenario disparó.
  *
  * Se lee de `report.traces` y no de los libros a propósito: los libros son el
  * NÚMERO, y un número a cero es ambiguo. La traza es la DECISIÓN, con su motivo,
  * y es contrato publicado del SDK — el mismo texto que ve el cliente en su panel.
+ *
+ * `transporte` sólo lo usa la caché de prefijo, y para no mentir en el diagnóstico
+ * de un cero: contra el proveedor simulado la causa se conoce (no reporta
+ * `cached_tokens`), contra el endpoint nativo la causa candidata es otra (el
+ * prefijo cambió o expiró el TTL) y contra una pasarela hay que nombrar el
+ * enrutado. Omitirlo mantiene el diagnóstico genérico.
  */
-export function estadoDePalanca(s: Scenario, r: SavingsResult, cacheOptimizado: number): EstadoDePalanca | null {
+export function estadoDePalanca(
+  s: Scenario,
+  r: SavingsResult,
+  cacheOptimizado: number,
+  transporte?: TransporteDelBanco,
+): EstadoDePalanca | null {
   if (!s.palanca) return null;
   // LA PRIMERA traza de la etapa, no la última: la etapa del codebook deja DOS
   // —la decisión ("applied"/"skipped") y luego la expansión de la respuesta
@@ -142,18 +218,66 @@ export function estadoDePalanca(s: Scenario, r: SavingsResult, cacheOptimizado: 
       const t = traza("compression");
       return { palanca: s.palanca, ejercitada: t?.outcome === "applied", motivo: motivoDe(t) };
     }
-    case "providerPrefixCache":
+    case "providerPrefixCache": {
       // Ésta no la decide la capa sino el PROVEEDOR: o devuelve tokens
       // cacheados o no. En MOCK nunca los devuelve, y por eso la tirada MOCK
       // dirá siempre que esta palanca no se ejercitó — que es la verdad.
-      return {
-        palanca: s.palanca,
-        ejercitada: cacheOptimizado > 0,
-        motivo:
-          cacheOptimizado > 0
-            ? `el proveedor sirvió ${cacheOptimizado} tokens desde su caché de prefijo`
-            : "el proveedor no devolvió ni un token cacheado (cached_tokens = 0)",
-      };
+      if (cacheOptimizado > 0) {
+        return {
+          palanca: s.palanca,
+          ejercitada: true,
+          motivo: `el proveedor sirvió ${cacheOptimizado} tokens desde su caché de prefijo`,
+        };
+      }
+      // EL CERO DESNUDO NO VALE, Y ESTO ES LO QUE LO VISTE.
+      //
+      // «cached_tokens = 0» tiene tres causas que llevan a decisiones opuestas y
+      // hasta ahora se publicaban con la misma frase:
+      //
+      //   1. el prompt no llega al mínimo de tramo → el proveedor no cachea nada
+      //      por debajo, y el cero SÍ está explicado;
+      //   2. la capa no marcó el prefijo (su verja económica lo descartó, o el
+      //      escenario renuncia a la caché) → tampoco es cosa del proveedor;
+      //   3. el prompt supera el mínimo, la capa marcó, y aun así vuelve 0 → el
+      //      tamaño NO lo explica.
+      //
+      // El caso 3 es el que motivó esto: `Stable-prefix agent turn` manda ~5.258
+      // tokens y midió 5.120 cacheados en `gpt-4o` (40 tramos de 128, que es la
+      // granularidad de OpenAI) y CERO en `gpt-4o-mini`, con el mismo prompt byte
+      // a byte. O sea que el mínimo de tramo no puede ser la explicación, y
+      // dejar el 0 sin decirlo invita a leerlo como «la palanca no ahorra en el
+      // modelo pequeño», que es justo lo que no se ha medido.
+      const entrada = r.report?.tokens?.actualInput ?? 0;
+      const marcado = traza("prefix-cache");
+      let motivo: string;
+      if (transporte === "mock") {
+        motivo =
+          "el proveedor simulado no reporta `cached_tokens`: esta palanca sólo es medible en " +
+          "LIVE, por construcción";
+      } else if (entrada > 0 && entrada < MINIMO_DE_TRAMO_TOKENS) {
+        motivo =
+          `cached_tokens = 0 y está explicado: el prompt mide ${entrada} tokens y no llega al ` +
+          `mínimo de tramo (${MINIMO_DE_TRAMO_TOKENS}), por debajo del cual el proveedor no ` +
+          "cachea nada";
+      } else if (marcado && marcado.outcome !== "marked") {
+        motivo =
+          `cached_tokens = 0 y la capa NO marcó el prefijo: ${motivoDe(marcado)}. La palanca no ` +
+          "llegó a pedirse, así que el cero no dice nada sobre el proveedor";
+      } else {
+        motivo =
+          `cached_tokens = 0 con un prompt de ${entrada} tokens, POR ENCIMA del mínimo de tramo ` +
+          `(${MINIMO_DE_TRAMO_TOKENS})${marcado ? " y con el prefijo marcado" : ""}: el tamaño ` +
+          "del prompt NO explica este cero. Lo que queda no es que la palanca no ahorre, sino " +
+          (transporte === "anthropic-nativo"
+            ? "que el prefijo dejara de coincidir byte a byte entre peticiones, o que expirara " +
+              "el TTL de la caché efímera (5 min) entre una y otra"
+            : "que el endpoint no reporte cached_tokens, o que las peticiones no aterricen en " +
+              "una instancia con el prefijo caliente — a través de una pasarela el enrutado no " +
+              "es nuestro") +
+          ". No lo leas como una medición";
+      }
+      return { palanca: s.palanca, ejercitada: false, motivo };
+    }
     default:
       return { palanca: s.palanca, ejercitada: false, motivo: "sin detector" };
   }
