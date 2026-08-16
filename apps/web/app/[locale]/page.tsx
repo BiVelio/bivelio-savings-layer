@@ -3,8 +3,7 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import abData from "@/public/data/ab-live.json";
-import porModeloData from "@/public/data/ab-por-modelo.json";
-import { SelectorDeModelo, type ModeloMedido } from "./components/SelectorDeModelo";
+import { ReservarLlamada } from "./components/ReservarLlamada";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
@@ -22,23 +21,6 @@ import { formatearPrecio } from "@/lib/format/precio";
 // used by the Step-1 projector — exactly like the dashboard verify/proof pages.
 const ab = abData as unknown as AbArtifact;
 
-// Una tirada por modelo. Solo las PROBADAS entran en el selector: un modelo cuya
-// verja de calidad no paso no se puede anunciar como ahorro, asi que se mide
-// igual y se enseña aparte, con su motivo. Ocultarlo seria elegir el modelo que
-// mejor sale y callar los otros — justo lo que esta pagina promete no hacer.
-const porModelo = porModeloData as unknown as {
-  comparison: {
-    model: string;
-    aggregate: { savings: { point: number; lower: number; upper: number }; proven: boolean; qualityPassRate: number };
-    ledgers: { ledger: string; savings: { point: number; lower: number; upper: number } }[];
-  }[];
-};
-const marcaDe = (m: string): string =>
-  m.startsWith("anthropic/") ? "Anthropic" : m.startsWith("openai/") ? "OpenAI" : (m.split("/")[0] ?? m);
-const modelosProbados: ModeloMedido[] = porModelo.comparison
-  .filter((c) => c.aggregate.proven)
-  .map((c) => ({ ...c, marca: marcaDe(c.model) }));
-const modelosNoPublicables = porModelo.comparison.filter((c) => !c.aggregate.proven);
 const mini = (ab.pricing.table["gpt-4o-mini"] ?? {}) as { inputPer1k?: number; outputPer1k?: number };
 const prices = { inPer1k: mini.inputPer1k ?? 0.00015, outPer1k: mini.outputPer1k ?? 0.0006 };
 
@@ -214,6 +196,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </div>
           </div>
 
+          <div className="hero-col">
           <div className="cascade" aria-label={t("cascade.title")}>
             <div className="cascade-h">
               <span className="t">{t("cascade.title")}</span>
@@ -237,7 +220,22 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               );
             })}
           </div>
-          <p className="cascade-nota">{t("cascade.footnote")}</p>
+
+            <ReservarLlamada
+              t={{
+                titulo: t("cta15.titulo"),
+                sub: t("cta15.sub"),
+                placeholder: t("cta15.placeholder"),
+                boton: t("cta15.boton"),
+                enviando: t("cta15.enviando"),
+                ok: t("cta15.ok"),
+                errorCorreo: t("cta15.errorCorreo"),
+                errorEnvio: t("cta15.errorEnvio"),
+                alterna: t("cta15.alterna"),
+              }}
+            />
+            <p className="cascade-nota">{t("cascade.footnote")}</p>
+          </div>
         </section>
 
         <section id="measured">
@@ -268,40 +266,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <CacheBreakEven ab={ab} />
             </div>
           </div>
-        </section>
-
-        {/* SELECTOR POR MODELO — la misma capa da cifras distintas segun el modelo */}
-        <section id="por-modelo">
-          <div className="sec-head">
-            <span className="eyebrow">{t("selectorModelo.eyebrow")}</span>
-            <h2>{t("selectorModelo.title")}</h2>
-            <p>{t("selectorModelo.body")}</p>
-          </div>
-
-          <SelectorDeModelo
-            modelos={modelosProbados}
-            etiquetas={{
-              titular: t("selectorModelo.titular"),
-              suelo: t("selectorModelo.suelo"),
-              calidad: t("selectorModelo.calidad"),
-              sinLibro: t("selectorModelo.sinLibro"),
-              libro: t.raw("selectorModelo.libro") as Record<string, string>,
-            }}
-          />
-
-          {modelosNoPublicables.length > 0 && (
-            <div className="nopub">
-              <h4>{t("selectorModelo.noPublicableTitle")}</h4>
-              {modelosNoPublicables.map((c) => (
-                <p key={c.model}>
-                  {t("selectorModelo.noPublicable", {
-                    model: c.model,
-                    q: `${(c.aggregate.qualityPassRate * 100).toFixed(1).replace(".", ",")} %`,
-                  })}
-                </p>
-              ))}
-            </div>
-          )}
         </section>
 
         {/* CACHÉ DE PREFIJO DE ANTHROPIC — el mecanismo, no un titular */}

@@ -413,25 +413,6 @@
       "title": "Ambos brazos medidos por el tokenizador del propio proveedor — sin línea base modelada.",
       "body": "Este es el resultado del benchmark A/B (<code>pnpm ab</code>): para cada escenario envía una solicitud <b>ingenua</b> <i>y</i> la solicitud de BV‑SALA al <b>mismo</b> modelo, cotiza ambas a partir del propio uso de tokens del proveedor e informa el <b>límite inferior del intervalo de confianza del 95%</b> — nunca la estimación puntual halagadora. Nada está modelado."
     },
-    "selectorModelo": {
-      "eyebrow": "Medido · por modelo",
-      "title": "Elige el modelo que usas y mira lo que se midió sobre él.",
-      "body": "La misma capa da cifras distintas según el modelo. No es una salvedad legal: es el hecho central de este producto — hoy mismo una de las palancas midió −8,2 % en un modelo y +8,0 % en otro, con el mismo contrato y los mismos prompts. Por eso aquí nunca verás un porcentaje sin su modelo al lado.",
-      "titular": "menos factura",
-      "suelo": "suelo del 95 %",
-      "calidad": "calidad {n}",
-      "sinLibro": "Esta tirada no dejó ningún libro con el intervalo despejado.",
-      "noPublicableTitle": "Medido, pero no publicable",
-      "noPublicable": "{model} — la verja de calidad exige que ninguna respuesta se degrade y esta tirada quedó en {q}. Se mide igual y se enseña aquí, pero no se anuncia como ahorro.",
-      "libro": {
-        "avoided_calls": "llamadas que no se hicieron",
-        "eliminated_tokens": "tokens que no hacía falta enviar",
-        "compressed_tokens": "tokens codificados más corto",
-        "provider_cached": "tokens servidos desde la caché del proveedor",
-        "output_restriction": "salida acotada",
-        "output_codebook": "salida recodificada"
-      }
-    },
     "anthropicCache": {
       "eyebrow": "Medido · caché de prefijo de Anthropic",
       "title": "Anthropic no cachea sola. Tu integración no se lo pide; la nuestra sí.",
@@ -554,6 +535,17 @@
       "andorra": "Desde Andorra para el mundo 🇦🇩",
       "bottomPrivacy": "Privacidad",
       "bottomTerms": "Términos"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Te decimos qué ahorrarías con tu tráfico, sin instalar nada.",
+      "placeholder": "tu@empresa.com",
+      "boton": "Book 15-min call",
+      "enviando": "Enviando…",
+      "ok": "Recibido. Te escribimos hoy mismo para cuadrar la llamada.",
+      "errorCorreo": "Ese correo no parece válido.",
+      "errorEnvio": "No hemos podido enviarlo.",
+      "alterna": "Escríbenos"
     }
   },
   "invitacion": {

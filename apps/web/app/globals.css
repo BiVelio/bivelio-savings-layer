@@ -1106,3 +1106,73 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   border-left: 3px solid var(--amber); border-radius: var(--radius-lg); background: var(--amber-soft); }
 .nopub h4 { margin: 0 0 6px; font-size: .9rem; }
 .nopub p { margin: 0; font-size: .86rem; color: var(--ink-soft); line-height: 1.6; }
+
+/* ── Héroe a pantalla completa ─────────────────────────────────────────────
+   Todo lo que importa cabe sin scroll: quien abre la pagina ve la tesis, la
+   prueba medida y la cascada de una sola mirada. Con `min-height` y no `height`
+   porque en pantallas cortas el contenido tiene que poder crecer en vez de
+   recortarse — un heroe que corta texto es peor que uno que obliga a bajar.
+   `svh` en vez de `vh`: en movil la barra del navegador cambia `vh` al scrollear
+   y el bloque daba saltos. */
+.lp .hero {
+  min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100svh - var(--nav-h));
+  padding: clamp(28px, 4vh, 64px) 0;
+  align-content: center;
+}
+/* Aire más ajustado dentro del héroe: cada margen de más era un pixel que
+   empujaba la prueba fuera de la primera pantalla. */
+.lp .hero h1 { margin: 16px 0 14px; }
+.lp .hero .lede { margin-bottom: 22px; }
+.lp .hero-prueba { margin-top: 24px; padding-top: 18px; }
+
+/* En pantallas bajas (portátiles de 13", ventanas a media altura) el héroe deja
+   de forzar altura: ahí ocupar la pantalla entera significaría cortar. */
+@media (max-height: 720px) {
+  .lp .hero { min-height: 0; padding: clamp(32px, 6vh, 56px) 0; }
+}
+/* En movil las dos columnas se apilan, y forzar altura completa dejaría la
+   cascada fuera de vista igualmente. */
+@media (max-width: 860px) {
+  .lp .hero { min-height: 0; }
+}
+
+/* ── CTA de la llamada de 15 min ───────────────────────────────────────────
+   En el hueco inferior derecho del heroe, debajo de la cascada: ahi cae la
+   mirada despues de leer la prueba medida, y como el heroe ocupa la pantalla
+   entera, es el ultimo sitio visible sin bajar. Tinta sobre el resto en claro:
+   es el unico bloque oscuro de la primera pantalla, asi que atrae sin competir
+   con las cifras. */
+.cta15 { margin-top: 14px; padding: 18px 20px; border-radius: var(--radius-xl);
+  background: var(--ink); color: #fff; display: grid; gap: 12px;
+  box-shadow: 0 1px 2px rgba(15,18,24,.08), 0 18px 40px -24px rgba(15,18,24,.55); }
+.cta15-txt { display: grid; gap: 3px; }
+.cta15-txt strong { font-size: 1.02rem; font-weight: 650; letter-spacing: -.01em; }
+.cta15-txt span { font-size: .82rem; color: rgba(255,255,255,.72); line-height: 1.45; }
+
+.cta15-fila { display: flex; gap: 8px; }
+.cta15-fila input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: .88rem;
+  padding: 10px 13px; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.08); color: #fff; }
+.cta15-fila input::placeholder { color: rgba(255,255,255,.45); }
+.cta15-fila input:focus { outline: none; border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.14); }
+.cta15-fila input:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
+.cta15-fila button { flex: 0 0 auto; font: inherit; font-size: .88rem; font-weight: 600;
+  padding: 10px 16px; border: 0; border-radius: var(--radius-lg); cursor: pointer;
+  background: #fff; color: var(--ink); white-space: nowrap; transition: transform .12s ease, opacity .12s ease; }
+.cta15-fila button:hover:not(:disabled) { transform: translateY(-1px); }
+.cta15-fila button:disabled { opacity: .55; cursor: default; }
+.cta15-fila button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.cta15-err { margin: 0; font-size: .8rem; color: #FFC9BC; }
+.cta15-err a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+
+.cta15-ok { grid-template-columns: auto 1fr; align-items: center; gap: 12px; }
+.cta15-ok p { margin: 0; font-size: .9rem; }
+.cta15-tic { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 999px;
+  background: rgba(255,255,255,.16); font-size: .8rem; }
+
+@media (prefers-reduced-motion: reduce) { .cta15-fila button:hover:not(:disabled) { transform: none; } }
+/* Columna derecha del heroe: cascada + CTA apilados. */
+.lp .hero-col { display: flex; flex-direction: column; min-width: 0; }
