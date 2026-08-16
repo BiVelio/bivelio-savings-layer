@@ -763,28 +763,47 @@ export class SavingsPipeline {
    *
    * NO SE SUBE EL TOPE POR NUESTRA CUENTA, ni aquí ni en la rama de reparación:
    * lo fijó quien llama y puede haberlo puesto para controlar el gasto.
+   *
+   * `aprendido` dice si la capa ADEMÁS va a hacer algo la próxima vez. Sale del
+   * mismo cálculo que el diagnóstico y se recibe hecho, en vez de rehacerlo aquí:
+   * dos copias de la misma condición divergen, y entonces el aviso prometería una
+   * pista que la memoria no guardó.
    */
   private avisarDeTruncado(
     request: SavingsRequest,
     modeloServido: string,
     tokensDeSalida: number,
     techoDelEsquema: number | null,
+    aprendido: boolean,
   ): void {
     const tope = request.response?.maxOutputTokens;
     const contrato = contractKey(request) || "(sin contractId)";
+    // Lo que la capa hará por su cuenta a partir de ahora, dicho solo cuando de
+    // verdad lo va a hacer. Un aviso que anuncia una corrección que no ocurre es
+    // peor que no decir nada: manda al lector a esperar en vez de a arreglarlo.
+    const loQueHaraLaCapa = aprendido
+      ? " La capa lo ha APUNTADO: las siguientes peticiones de este contrato llevarán sus límites de " +
+        "valor escritos en el prompt, que es lo único que puede corregirlo sin tocarte el tope. Si aun " +
+        "así se corta, es que la tarea no cabe en el contrato: ensancha el esquema y sube el tope con él."
+      : "";
     const diagnostico =
       techoDelEsquema === null
         ? " El esquema no acota la respuesta (falta `maxLength`/`maxItems`), así que no hay forma de " +
           "saber de antemano cuánto necesita: acótalo y el tope deja de ser una apuesta."
-        : tope != null && techoDelEsquema > tope
-          ? ` El contrato autoriza respuestas de hasta ~${techoDelEsquema} tokens con este modelo ` +
-            `(lo que permiten sus \`maxLength\`/\`maxItems\`) y el tope son ${tope}: ninguna respuesta ` +
-            "que use lo que el propio esquema permite cabe. Un tope calibrado con otro modelo NO se " +
-            "hereda — el esquema acota CARACTERES, que son iguales en todas partes, y el tope acota " +
-            "TOKENS, que son distintos en cada tokenizador."
-          : ` El contrato autoriza ~${techoDelEsquema} tokens y el tope son ${tope}, así que el tope ` +
-            "no es el problema: este modelo está escribiendo más de lo que su propio esquema permite " +
-            "(ningún modo estructurado impone `maxLength`).";
+        : tope == null
+          ? ` El contrato autoriza ~${techoDelEsquema} tokens y esta petición no declara tope, así que ` +
+            "quien cortó fue un tope del PROVEEDOR (la API de Anthropic exige `max_tokens` y el " +
+            "adaptador manda 4096 por defecto). Declara `maxOutputTokens` y el corte deja de ser una " +
+            "sorpresa."
+          : techoDelEsquema > tope
+            ? ` El contrato autoriza respuestas de hasta ~${techoDelEsquema} tokens con este modelo ` +
+              `(lo que permiten sus \`maxLength\`/\`maxItems\`) y el tope son ${tope}: ninguna respuesta ` +
+              "que use lo que el propio esquema permite cabe. Un tope calibrado con otro modelo NO se " +
+              "hereda — el esquema acota CARACTERES, que son iguales en todas partes, y el tope acota " +
+              "TOKENS, que son distintos en cada tokenizador."
+            : ` El contrato autoriza ~${techoDelEsquema} tokens y el tope son ${tope}, así que el tope ` +
+              "no es el problema: este modelo está escribiendo más de lo que su propio esquema permite " +
+              `(ningún modo estructurado impone \`maxLength\`).${loQueHaraLaCapa}`;
     this.avisar(
       `salida-truncada:${contrato}:${modeloServido}`,
       `[bvsala] La respuesta se cortó al agotar \`maxOutputTokens\`${tope != null ? ` (${tope})` : ""} ` +
@@ -1959,14 +1978,65 @@ export class SavingsPipeline {
         );
       } else if (!validation.valid && truncadoPorTope) {
         const techoDelEsquema = tokensDeLaMayorRespuesta(schema, (t) => this.tokensFor(t, request));
+        // UN TRUNCADO TAMBIÉN ES UN INCUMPLIMIENTO DE VALOR, Y ERA EL ÚNICO QUE LA
+        // MEMORIA NO PODÍA VER.
+        //
+        // `esFalloDeValor` decide sobre los errores del validador, y una respuesta
+        // cortada no llega a producir ninguno de los suyos: el JSON se parte a
+        // media cadena (`not valid JSON`) o —contra Anthropic, donde el contrato
+        // viaja como herramienta forzada— llega como `{}` porque la API no puede
+        // entregar un `input` a medio parsear, y entonces el error es `missing
+        // required property`. Los dos son fallos de FORMA, así que el contrato NO
+        // entraba en `contratosQueIncumplen` y la pista de restricciones no se
+        // enviaba NUNCA. Es el mismo bloqueo que el PR #79 cerró un nivel más
+        // abajo: el fallo de forma tapaba el aprendizaje.
+        //
+        // El resultado es el día de la marmota, y está medido: escenario
+        // «Forwarded support thread» contra `claude-sonnet-4-5`, tirada del
+        // 2026-08-16, 8 pares con la memoria COMPARTIDA entre repeticiones y 8
+        // truncados idénticos a 500 tokens de salida (el tope) — calidad 0/8 y un
+        // ahorro del 32,4% publicado sobre respuestas rotas. Reproducido contra un
+        // servidor local que habla el dialecto de Anthropic: 0/3 con la memoria
+        // compartida, o sea que la primera repetición no enseñaba nada a la
+        // segunda.
+        //
+        // SOLO CUANDO EL ESQUEMA CABE EN EL TOPE, y la distinción es la misma que
+        // ya hace el aviso de arriba:
+        //
+        //   · el esquema NO cabe (el caso del #79) → el contrato se contradice a sí
+        //     mismo y ninguna respuesta conforme entra. Anunciarle sus límites al
+        //     modelo no arregla nada, así que apuntarlo sería cobrar la pista en
+        //     cada petición para siempre a cambio de nada;
+        //   · el esquema SÍ cabe → el modelo está escribiendo por encima de lo que
+        //     su propio contrato autoriza, y la pista es exactamente el remedio:
+        //     ningún modo estructurado impone `maxLength`, así que decírselo es lo
+        //     ÚNICO que puede hacer la capa sin subirle el tope a quien lo fijó.
+        //
+        // Se exige `maxOutputTokens` declarado: sin él, el corte lo puso un tope
+        // del proveedor que no conocemos (la API de Anthropic exige `max_tokens` y
+        // el adaptador manda 4096), y "cabe" no sería una afirmación demostrable.
+        const tope = request.response?.maxOutputTokens ?? null;
+        const desbordaSuContrato =
+          techoDelEsquema !== null && tope != null && techoDelEsquema <= tope;
+        if (desbordaSuContrato) this.contratosQueIncumplen.add(contractKey(request));
         trace.record("validation", "repair-skipped", {
           reason: "output truncated by maxOutputTokens; a retry with the same cap would truncate again",
           maxOutputTokens: request.response?.maxOutputTokens ?? null,
           outputTokens: response.usage.outputTokens,
           model: modeloServido,
           ...(techoDelEsquema !== null ? { schemaAllowsTokens: techoDelEsquema } : {}),
+          // Que se vea en la traza si la capa APRENDIÓ algo de este truncado: es la
+          // diferencia entre "la siguiente petición lleva la pista" y "esto se va a
+          // repetir igual", y sin decirlo no hay forma de distinguirlas desde fuera.
+          learnedValueLimits: desbordaSuContrato,
         });
-        this.avisarDeTruncado(request, modeloServido, response.usage.outputTokens, techoDelEsquema);
+        this.avisarDeTruncado(
+          request,
+          modeloServido,
+          response.usage.outputTokens,
+          techoDelEsquema,
+          desbordaSuContrato,
+        );
       } else if (!validation.valid && backendPlan.backend === "none") {
         // Single deterministic repair attempt only when we had no constraint
         // backend to prevent the invalid output in the first place.
