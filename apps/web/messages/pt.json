@@ -363,64 +363,85 @@
       "lede": "O BV‑SALA coloca-se à frente de qualquer fornecedor de LLM e, em cada pedido, escolhe a execução mais barata que ainda cumpre o teu limiar de qualidade. Não acredites só na nossa palavra — cola os teus dados abaixo e observa o medidor a mover-se.",
       "ctaRun": "Executar o verificador",
       "ctaPricing": "Ver preços",
-      "note": "Executa-se inteiramente no teu navegador. Sem registo, nada sai desta página."
+      "note": "Executa-se inteiramente no teu navegador. Sem registo, nada sai desta página.",
+      "proofTitle": "Medido contra fornecedor real",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24,1%",
+          "que": "menos fatura, verificado a 95%"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78%",
+          "que": "menos custo com cache de prefixo"
+        }
+      ]
     },
     "cascade": {
       "title": "Ganha a execução mais barata",
-      "per": "por pedido",
+      "per": "medido · piso de 95%",
       "steps": [
         {
           "n": "01",
           "title": "Evita a chamada por completo",
-          "sub": "resolvedores · cache exata e semântica",
-          "tag": "0 chamadas",
+          "sub": "resolvedores · cache exato · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Evita recuperação e ferramentas",
-          "sub": "rota: nenhuma / única / múltipla / ferramenta",
-          "tag": "menos chamadas",
+          "title": "Retira o que não era preciso enviar",
+          "sub": "ferramentas podadas · recuperação · contexto redundante",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Elimina o contexto desnecessário",
-          "sub": "deduplicação · reordenação · k‑adaptativo",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Comprime o que resta",
-          "sub": "codificação mais leve · só se for líquido positivo",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Restringe a saída",
-          "sub": "esquema · contrato mínimo",
-          "tag": "−saída",
-          "grey": true
+          "sub": "codificação mais leve · só se compensar",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Passo 1 · Testes preliminares — no teu navegador",
-      "title": "Experimenta o otimizador tu mesmo. Nada sai desta página.",
-      "body": "Estes dois instrumentos executam o otimizador real <b>localmente</b> para que possas validar o mecanismo antes de tocar num fornecedor. O painel da esquerda executa o otimizador real do BV‑SALA sobre os dados que colares — contabilidade real de tokens, o mesmo código que o SDK inclui. O painel da direita <b>estima</b> uma fatura mensal ao executar o otimizador sobre uma carga de trabalho de amostra contra um modelo <b>simulado</b>. Para dólares <i>medidos</i> de forma comprovável, consulta o <link>Passo 2</link> mais abaixo."
+      ],
+      "footnote": "Cada passo cai num livro contabilístico DIFERENTE, por isso estes números não se somam entre si. Um passo cujo livro não ultrapassa o zero não aparece aqui: a restrição de saída foi medida e não poupa, por isso não é anunciada."
     },
     "step2": {
       "eyebrow": "Passo 2 · Como as economias são medidas — reproduzível",
       "title": "Ambos os braços medidos pelo tokenizador do próprio provedor — sem linha de base modelada.",
       "body": "Este é o resultado do benchmark A/B (<code>pnpm ab</code>): para cada cenário envia um pedido <b>ingénuo</b> <i>e</i> o pedido do BV‑SALA ao <b>mesmo</b> modelo, calcula o preço de ambos a partir da própria utilização de tokens do fornecedor e reporta o <b>limite inferior do intervalo de confiança de 95%</b> — nunca a estimativa pontual lisonjeira. Nada é modelado."
     },
+    "anthropicCache": {
+      "eyebrow": "Medido · cache de prefixo da Anthropic",
+      "title": "A Anthropic não faz cache sozinha. A tua integração não pede; a nossa pede.",
+      "body": "A OpenAI aplica o seu cache de prefixo automaticamente: esse desconto já o tens connosco ou sem nós. <b>A Anthropic não.</b> Exige marcar o ponto de corte em cada pedido, e quem não o marca paga a entrada inteira, sempre.",
+      "evidenceTitle": "O que foi medido",
+      "evidenceLede": "Turno de agente com contexto de sistema longo e repetido — um assistente de suporte, um extrator documental. Oito pares, mesmo modelo nos dois braços, tarifados com o contador da própria Anthropic.",
+      "rowNaiveLabel": "Sem a camada",
+      "rowNaiveValue": "0 tokens servidos a partir do cache",
+      "rowOursLabel": "Com a camada",
+      "rowOursValue": "58.624 tokens servidos a partir do cache",
+      "figure": "78%",
+      "figureNote": "menos custo nesses pedidos · limite inferior de 95% em 78,0% · qualidade 8/8, sem regressão",
+      "scopeTitle": "O que este número NÃO diz",
+      "scope": "É a poupança <b>daquela</b> alavanca sobre <b>aquele</b> tráfego, não a da tua fatura inteira. Vem do cenário de prefixo estável, onde está o dinheiro do cache; em tráfego sem contexto repetido esta alavanca vale zero. O número principal da campanha completa é medido à parte, e publicamo-lo com o seu intervalo, acima.",
+      "verifyTitle": "E não tens de acreditar em nós",
+      "verify": "É verificável na tua própria fatura sem instalar nada: vê se as tuas chamadas ao Claude trazem <code>cache_read_input_tokens</code>. Se saírem a zero, esse desconto estás a deixá-lo em cima da mesa hoje.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Contabilidade honesta",
       "title": "Quatro livros-razão separados. Nunca somados numa única cifra de vaidade.",
       "body": "Um acerto de cache remove uma chamada inteira. O BV‑SALA recodifica dados estruturados de forma mais compacta. A compressão elimina palavras redundantes. Uma cache de prefixo do fornecedor torna os tokens mais baratos sem os remover. Misturá-los mente-te — por isso não o fazemos.",
-      "runToMeasure": "executa o otimizador para medir"
+      "runToMeasure": "executa o otimizador para medir",
+      "measuredFloor": "medido · piso de 95%",
+      "notProven": "medido · não ultrapassa o zero",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Quatro livros medidos contra a API da OpenAI. Uma percentagem sem o seu modelo ao lado não significa nada: a mesma alavanca pode poupar num modelo e custar noutro."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "De Andorra para o mundo 🇦🇩",
       "bottomPrivacy": "Privacidade",
       "bottomTerms": "Termos"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Dizemos-te quanto pouparias com o teu tráfego, sem instalar nada.",
+      "placeholder": "tu@empresa.com",
+      "boton": "Book 15-min call",
+      "enviando": "A enviar…",
+      "ok": "Recebido. Escrevemos-te hoje mesmo para marcar a chamada.",
+      "errorCorreo": "Esse email não parece válido.",
+      "errorEnvio": "Não conseguimos enviar.",
+      "alterna": "Escreve-nos"
     }
   },
   "invitacion": {

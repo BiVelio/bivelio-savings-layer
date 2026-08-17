@@ -363,64 +363,85 @@
       "lede": "BV‑SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Neem niet zomaar ons woord aan — plak hieronder je gegevens en zie de meter bewegen.",
       "ctaRun": "Start de verificatie",
       "ctaPricing": "Bekijk prijzen",
-      "note": "Draait volledig in je browser. Geen registratie, niets verlaat deze pagina."
+      "note": "Draait volledig in je browser. Geen registratie, niets verlaat deze pagina.",
+      "proofTitle": "Gemeten tegen een echte provider",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24,1%",
+          "que": "minder factuur, geverifieerd op 95%"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78%",
+          "que": "minder kosten met prefix-cache"
+        }
+      ]
     },
     "cascade": {
       "title": "De goedkoopste uitvoering wint",
-      "per": "per verzoek",
+      "per": "gemeten · 95%-ondergrens",
       "steps": [
         {
           "n": "01",
           "title": "Vermijd de aanroep volledig",
-          "sub": "resolvers · exacte en semantische cache",
-          "tag": "0 aanroepen",
+          "sub": "resolvers · exacte cache · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Vermijd ophalen en tools",
-          "sub": "route: geen / enkel / meervoudig / tool",
-          "tag": "minder aanroepen",
+          "title": "Verwijder wat nooit verstuurd hoefde te worden",
+          "sub": "gesnoeide tools · retrieval · redundante context",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Elimineer overbodige context",
-          "sub": "dedupe · rerank · adaptieve k",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Comprimeer wat overblijft",
-          "sub": "compactere codering · alleen netto-positief",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Beperk de uitvoer",
-          "sub": "schema · minimaal contract",
-          "tag": "−uitvoer",
-          "grey": true
+          "sub": "lichtere codering · alleen als het loont",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Stap 1 · Voorlopige tests — in je browser",
-      "title": "Probeer de optimizer zelf. Niets verlaat deze pagina.",
-      "body": "Deze twee instrumenten draaien de echte optimizer <b>lokaal</b>, zodat je het mechanisme kunt controleren voordat je een provider aanraakt. Het linkerpaneel draait de echte BV‑SALA-optimizer op gegevens die je plakt — echte tokenboekhouding, dezelfde code die de SDK meelevert. Het rechterpaneel <b>schat</b> een maandfactuur door de optimizer over een voorbeeldwerklast te draaien tegen een <b>mock</b>-model. Voor aantoonbaar <i>gemeten</i> dollars, zie <link>Stap 2</link> hieronder."
+      ],
+      "footnote": "Elke stap valt in ÉÉN ander ledger, dus deze cijfers tellen niet bij elkaar op. Een stap waarvan het ledger niet boven nul komt, staat hier niet: de uitvoerbeperking is gemeten en bespaart niet, dus we adverteren die niet."
     },
     "step2": {
       "eyebrow": "Stap 2 · Hoe besparingen worden gemeten — reproduceerbaar",
       "title": "Beide takken gemeten door de tokenizer van de provider zelf — geen gemodelleerde baseline.",
       "body": "Dit is de uitvoer van de A/B-benchmark (<code>pnpm ab</code>): voor elk scenario stuurt hij een <b>naïef</b> verzoek <i>en</i> het BV‑SALA-verzoek naar <b>hetzelfde</b> model, prijst beide op basis van het eigen tokengebruik van de provider en rapporteert de <b>95%-betrouwbaarheidsondergrens</b> — nooit de vleiende puntschatting. Niets is gemodelleerd."
     },
+    "anthropicCache": {
+      "eyebrow": "Gemeten · prefix-cache van Anthropic",
+      "title": "Anthropic cachet niet uit zichzelf. Jouw integratie vraagt er niet om; de onze wel.",
+      "body": "OpenAI past zijn prefix-cache automatisch toe: die korting krijg je met ons of zonder ons. <b>Anthropic niet.</b> Daar moet je het afkappunt bij elke aanvraag markeren, en wie dat niet doet betaalt altijd de volledige invoer.",
+      "evidenceTitle": "Wat er gemeten is",
+      "evidenceLede": "Een agent-beurt met lange, herhaalde systeemcontext — een supportassistent, een documentextractor. Acht paren, hetzelfde model in beide armen, afgerekend met Anthropics eigen teller.",
+      "rowNaiveLabel": "Zonder de laag",
+      "rowNaiveValue": "0 tokens uit de cache geleverd",
+      "rowOursLabel": "Met de laag",
+      "rowOursValue": "58.624 tokens uit de cache geleverd",
+      "figure": "78%",
+      "figureNote": "minder kosten op die aanvragen · 95%-ondergrens op 78,0% · kwaliteit 8/8, geen regressie",
+      "scopeTitle": "Wat dit cijfer NIET zegt",
+      "scope": "Het is de besparing van <b>die</b> hefboom op <b>dat</b> verkeer, niet die van je hele factuur. Het komt uit het scenario met stabiele prefix, waar het cachegeld zit; op verkeer zonder herhaalde context is deze hefboom nul waard. Het hoofdcijfer van de volledige run wordt apart gemeten, en dat publiceren we met zijn interval, hierboven.",
+      "verifyTitle": "En je hoeft ons niet op ons woord te geloven",
+      "verify": "Je kunt het op je eigen factuur controleren zonder iets te installeren: kijk of je Claude-aanroepen <code>cache_read_input_tokens</code> bevatten. Staan ze op nul, dan laat je die korting vandaag liggen.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Eerlijke boekhouding",
       "title": "Vier afzonderlijke grootboeken. Nooit opgeteld tot één ijdel getal.",
       "body": "Een cachetreffer verwijdert een hele aanroep. BV‑SALA hercodeert gestructureerde gegevens compacter. Compressie schrapt overbodige woorden. Een prefixcache van de provider maakt tokens goedkoper zonder ze te verwijderen. Ze door elkaar halen liegt tegen je — dus dat doen we niet.",
-      "runToMeasure": "voer de optimizer uit om te meten"
+      "runToMeasure": "voer de optimizer uit om te meten",
+      "measuredFloor": "gemeten · 95%-ondergrens",
+      "notProven": "gemeten · komt niet boven nul",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Vier ledgers gemeten tegen de OpenAI-API. Een percentage zonder zijn model ernaast betekent niets: dezelfde hefboom kan besparen op het ene model en geld kosten op het andere."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "Van Andorra naar de wereld 🇦🇩",
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Voorwaarden"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "We vertellen je wat je zou besparen op jouw verkeer, zonder iets te installeren.",
+      "placeholder": "jij@bedrijf.com",
+      "boton": "Book 15-min call",
+      "enviando": "Versturen…",
+      "ok": "Ontvangen. We schrijven je vandaag nog om het gesprek in te plannen.",
+      "errorCorreo": "Dat e-mailadres lijkt niet geldig.",
+      "errorEnvio": "We konden het niet versturen.",
+      "alterna": "Mail ons"
     }
   },
   "invitacion": {

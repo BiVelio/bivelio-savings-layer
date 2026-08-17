@@ -363,64 +363,85 @@
       "lede": "BV‑SALA, herhangi bir LLM sağlayıcısının önünde yer alır ve her istek için kalite eşiğinizi hâlâ karşılayan en ucuz yürütmeyi seçer. Bize öylece inanmayın — verilerinizi aşağıya yapıştırın ve sayacın hareketini izleyin.",
       "ctaRun": "Doğrulayıcıyı çalıştır",
       "ctaPricing": "Fiyatları gör",
-      "note": "Tamamen tarayıcınızda çalışır. Kayıt yok, bu sayfadan hiçbir şey çıkmaz."
+      "note": "Tamamen tarayıcınızda çalışır. Kayıt yok, bu sayfadan hiçbir şey çıkmaz.",
+      "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ %24,1",
+          "que": "daha az fatura, %95 güvenle doğrulandı"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "%78",
+          "que": "önek önbelleğiyle daha az maliyet"
+        }
+      ]
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
-      "per": "istek başına",
+      "per": "ölçüldü · %95 tabanı",
       "steps": [
         {
           "n": "01",
-          "title": "Çağrıdan tümüyle kaçının",
-          "sub": "çözümleyiciler · tam ve anlamsal önbellek",
-          "tag": "0 çağrı",
+          "title": "Çağrıyı tamamen önle",
+          "sub": "çözücüler · tam önbellek · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Getirme ve araçlardan kaçının",
-          "sub": "yönlendirme: yok / tek / çoklu / araç",
-          "tag": "daha az çağrı",
+          "title": "Gönderilmesi gerekmeyeni çıkar",
+          "sub": "budanmış araçlar · getirme · gereksiz bağlam",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Gereksiz bağlamı ortadan kaldırın",
-          "sub": "yinelenenleri ayıkla · yeniden sırala · uyarlanır‑k",
-          "tag": "−token",
-          "grey": true
-        },
-        {
-          "n": "04",
-          "title": "Kalanı sıkıştırın",
-          "sub": "daha yalın kodlama · yalnızca net pozitifse",
-          "tag": "−token",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Çıktıyı sınırlandırın",
-          "sub": "şema · asgari sözleşme",
-          "tag": "−çıktı",
-          "grey": true
+          "title": "Kalanı sıkıştır",
+          "sub": "daha hafif kodlama · yalnızca kârlıysa",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Adım 1 · Ön testler — tarayıcınızda",
-      "title": "Optimize ediciyi kendiniz deneyin. Bu sayfadan hiçbir şey çıkmaz.",
-      "body": "Bu iki araç, gerçek optimize ediciyi <b>yerel olarak</b> çalıştırır; böylece bir sağlayıcıya dokunmadan önce mekanizmayı gözden geçirebilirsiniz. Sol panel, yapıştırdığınız veriler üzerinde gerçek BV‑SALA optimize edicisini çalıştırır — gerçek token hesaplaması, SDK'nın gönderdiği kodun aynısı. Sağ panel, bir örnek iş yükü üzerinde optimize ediciyi <b>sahte</b> bir modele karşı çalıştırarak aylık bir faturayı <b>tahmin eder</b>. Kanıtlanabilir şekilde <i>ölçülen</i> dolarlar için aşağıdaki <link>Adım 2</link>'ye bakın."
+      ],
+      "footnote": "Her adım FARKLI bir deftere düşer, bu yüzden bu rakamlar birbirine eklenmez. Defteri sıfırı geçmeyen bir adım burada görünmez: çıktı kısıtlaması ölçüldü ve tasarruf ettirmiyor, bu yüzden duyurulmuyor."
     },
     "step2": {
       "eyebrow": "Adım 2 · Tasarruflar nasıl ölçülür — yinelenebilir",
       "title": "Her iki kol da sağlayıcının kendi tokenizer'ıyla ölçülür — modellenmiş temel yok.",
       "body": "Bu, A/B kıyaslamasının (<code>pnpm ab</code>) çıktısıdır: her senaryo için <b>saf</b> bir istek <i>ve</i> BV‑SALA isteğini <b>aynı</b> modele gönderir, ikisini de sağlayıcının kendi token kullanımına göre fiyatlandırır ve <b>%95 güven alt sınırını</b> raporlar — asla göz boyayan nokta tahminini değil. Hiçbir şey modellenmez."
     },
+    "anthropicCache": {
+      "eyebrow": "Ölçüldü · Anthropic önek önbelleği",
+      "title": "Anthropic kendiliğinden önbelleğe almaz. Senin entegrasyonun bunu istemiyor; bizimki istiyor.",
+      "body": "OpenAI önek önbelleğini otomatik uygular: o indirimi bizimle de bizsiz de alırsın. <b>Anthropic almaz.</b> Her istekte kesme noktasının işaretlenmesini şart koşar ve işaretlemeyen, girdinin tamamını her seferinde öder.",
+      "evidenceTitle": "Ne ölçüldü",
+      "evidenceLede": "Uzun ve tekrar eden sistem bağlamına sahip bir ajan turu — bir destek asistanı, bir belge çıkarıcı. Sekiz çift, iki kolda da aynı model, Anthropic'in kendi sayacıyla ücretlendirildi.",
+      "rowNaiveLabel": "Katman olmadan",
+      "rowNaiveValue": "önbellekten sunulan 0 token",
+      "rowOursLabel": "Katman ile",
+      "rowOursValue": "önbellekten sunulan 58.624 token",
+      "figure": "%78",
+      "figureNote": "bu isteklerde daha az maliyet · %95 alt sınırı %78,0 · kalite 8/8, gerileme yok",
+      "scopeTitle": "Bu rakamın söyleMEdiği şey",
+      "scope": "Bu, <b>o</b> kaldıracın <b>o</b> trafik üzerindeki tasarrufudur; faturanın tamamının değil. Önbellek parasının bulunduğu kararlı önek senaryosundan gelir; tekrar eden bağlamı olmayan trafikte bu kaldıraç sıfır değerindedir. Tam turun manşet rakamı ayrıca ölçülür ve onu aralığıyla birlikte yukarıda yayımlıyoruz.",
+      "verifyTitle": "Ve bize inanmak zorunda değilsin",
+      "verify": "Hiçbir şey kurmadan kendi faturanda doğrulanabilir: Claude çağrılarının <code>cache_read_input_tokens</code> taşıyıp taşımadığına bak. Sıfır çıkıyorsa, o indirimi bugün masada bırakıyorsun.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Dürüst muhasebe",
       "title": "Dört ayrı defter. Asla tek bir gösteriş rakamına toplanmaz.",
       "body": "Bir önbellek isabeti, koca bir çağrıyı ortadan kaldırır. BV‑SALA, yapılandırılmış verileri daha kompakt biçimde yeniden kodlar. Sıkıştırma, gereksiz sözcükleri atar. Bir sağlayıcı önek önbelleği, token'ları kaldırmadan daha ucuz hale getirir. Bunları karıştırmak size yalan söyler — bu yüzden yapmayız.",
-      "runToMeasure": "ölçmek için optimize ediciyi çalıştırın"
+      "runToMeasure": "ölçmek için optimize ediciyi çalıştırın",
+      "measuredFloor": "ölçüldü · %95 tabanı",
+      "notProven": "ölçüldü · sıfırı geçmiyor",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "OpenAI API'sine karşı ölçülmüş dört defter. Yanında modeli olmayan bir yüzde hiçbir şey ifade etmez: aynı kaldıraç bir modelde tasarruf ettirirken başka bir modelde maliyet çıkarabilir."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "Andorra'dan tüm dünyaya 🇦🇩",
       "bottomPrivacy": "Gizlilik",
       "bottomTerms": "Şartlar"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Kendi trafiğinde ne kadar tasarruf edeceğini söyleriz, hiçbir şey kurmadan.",
+      "placeholder": "sen@sirket.com",
+      "boton": "Book 15-min call",
+      "enviando": "Gönderiliyor…",
+      "ok": "Alındı. Görüşmeyi ayarlamak için bugün sana yazıyoruz.",
+      "errorCorreo": "Bu e-posta geçerli görünmüyor.",
+      "errorEnvio": "Gönderemedik.",
+      "alterna": "Bize yaz"
     }
   },
   "invitacion": {
