@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "És el nom que veurà qui rebi una invitació.",
       "guardar": "Desar",
       "guardado": "Desat."
+    },
+    "tokenTotals": {
+      "spentLabel": "Tokens gastats",
+      "spentWhat": "entrada + sortida, el que va facturar el teu proveïdor",
+      "savedLabel": "Tokens estalviats",
+      "savedWhat": "enfront de no fer servir la capa",
+      "savedBreakdown": "{fraction} · entrada {input} · sortida {output}",
+      "unavailable": "encara no disponible: falta aplicar la migració 0015",
+      "footnote": "L'<b>estalvi de sortida és gairebé sempre zero</b>, i no és cap error: en una crida que SÍ s'ha executat la capa no encongeix la resposta, així que el seu baseline de sortida és la sortida mesurada. L'estalvi de tokens viu a l'entrada i a les crides evitades. Un total NEGATIU tampoc és un error: vol dir que la capa va gastar més del que hauria costat sense ella, i es mostra."
     }
   },
   "landing": {

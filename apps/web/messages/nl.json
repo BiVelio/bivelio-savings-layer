@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Dit is de naam die iedereen die u uitnodigt te zien krijgt.",
       "guardar": "Opslaan",
       "guardado": "Opgeslagen."
+    },
+    "tokenTotals": {
+      "spentLabel": "Verbruikte tokens",
+      "spentWhat": "invoer + uitvoer, wat je provider factureerde",
+      "savedLabel": "Bespaarde tokens",
+      "savedWhat": "ten opzichte van zonder de laag",
+      "savedBreakdown": "{fraction} · invoer {input} · uitvoer {output}",
+      "unavailable": "nog niet beschikbaar: migratie 0015 is niet toegepast",
+      "footnote": "De <b>uitvoerbesparing is bijna altijd nul</b>, en dat is geen bug: bij een aanroep die daadwerkelijk liep verkleint de laag het antwoord niet, dus is de uitvoerbaseline de gemeten uitvoer. Tokenbesparing zit in de invoer en in vermeden aanroepen. Een NEGATIEF totaal is evenmin een fout: het betekent dat de laag meer kostte dan zonder, en we tonen het."
     }
   },
   "landing": {

@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "C'est le nom que verra toute personne invitée.",
       "guardar": "Enregistrer",
       "guardado": "Enregistré."
+    },
+    "tokenTotals": {
+      "spentLabel": "Tokens dépensés",
+      "spentWhat": "entrée + sortie, ce que votre fournisseur a facturé",
+      "savedLabel": "Tokens économisés",
+      "savedWhat": "par rapport à sans la couche",
+      "savedBreakdown": "{fraction} · entrée {input} · sortie {output}",
+      "unavailable": "pas encore disponible : la migration 0015 n'est pas appliquée",
+      "footnote": "L'<b>économie de sortie est presque toujours nulle</b>, et ce n'est pas un bug : sur un appel réellement exécuté la couche ne réduit pas la réponse, donc son baseline de sortie est la sortie mesurée. L'économie de tokens se trouve dans l'entrée et dans les appels évités. Un total NÉGATIF n'est pas non plus une erreur : il signifie que la couche a coûté plus cher que sans elle, et nous l'affichons."
     }
   },
   "landing": {

@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Đây là tên mà người được quý vị mời sẽ nhìn thấy.",
       "guardar": "Lưu",
       "guardado": "Đã lưu."
+    },
+    "tokenTotals": {
+      "spentLabel": "Token đã dùng",
+      "spentWhat": "đầu vào + đầu ra, phần nhà cung cấp đã tính phí",
+      "savedLabel": "Token tiết kiệm",
+      "savedWhat": "so với không dùng lớp này",
+      "savedBreakdown": "{fraction} · đầu vào {input} · đầu ra {output}",
+      "unavailable": "chưa có: chưa áp dụng bản di trú 0015",
+      "footnote": "<b>Tiết kiệm đầu ra gần như luôn bằng không</b>, và đó không phải lỗi: với lệnh gọi thực sự chạy, lớp này không rút ngắn câu trả lời, nên mốc đầu ra của nó chính là đầu ra đo được. Tiết kiệm token nằm ở đầu vào và ở các lệnh gọi được tránh. Tổng ÂM cũng không phải lỗi: nghĩa là lớp này tốn hơn so với khi không dùng, và chúng tôi hiển thị điều đó."
     }
   },
   "landing": {

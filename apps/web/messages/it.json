@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "È il nome che vedrà chi riceve un invito.",
       "guardar": "Salva",
       "guardado": "Salvato."
+    },
+    "tokenTotals": {
+      "spentLabel": "Token spesi",
+      "spentWhat": "input + output, quello che il tuo provider ha fatturato",
+      "savedLabel": "Token risparmiati",
+      "savedWhat": "rispetto a non usare il layer",
+      "savedBreakdown": "{fraction} · input {input} · output {output}",
+      "unavailable": "non ancora disponibile: manca la migrazione 0015",
+      "footnote": "Il <b>risparmio sull'output è quasi sempre zero</b>, e non è un difetto: su una chiamata realmente eseguita il layer non accorcia la risposta, quindi il suo baseline di output è l'output misurato. Il risparmio di token sta nell'input e nelle chiamate evitate. Anche un totale NEGATIVO non è un errore: significa che il layer è costato più di quanto sarebbe costato senza, e lo mostriamo."
     }
   },
   "landing": {

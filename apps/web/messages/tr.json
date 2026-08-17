@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Davet ettiğiniz kişilerin göreceği ad budur.",
       "guardar": "Kaydet",
       "guardado": "Kaydedildi."
+    },
+    "tokenTotals": {
+      "spentLabel": "Harcanan token",
+      "spentWhat": "girdi + çıktı, sağlayıcının faturaladığı",
+      "savedLabel": "Kazanılan token",
+      "savedWhat": "katmanı kullanmamaya kıyasla",
+      "savedBreakdown": "{fraction} · girdi {input} · çıktı {output}",
+      "unavailable": "henüz yok: 0015 taşıması uygulanmadı",
+      "footnote": "<b>Çıktı tasarrufu neredeyse her zaman sıfırdır</b> ve bu bir hata değil: gerçekten çalışan bir çağrıda katman yanıtı küçültmez, dolayısıyla çıktı taban çizgisi ölçülen çıktıdır. Token tasarrufu girdide ve önlenen çağrılarda yaşar. NEGATİF bir toplam da hata değildir: katmanın, o olmadan olacağından daha pahalıya mal olduğu anlamına gelir ve bunu gösteririz."
     }
   },
   "landing": {
