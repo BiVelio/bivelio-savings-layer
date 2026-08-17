@@ -229,6 +229,42 @@ export interface SavingsLayerConfig {
   exactCacheTtlMs?: number;
 
   /**
+   * Refuse the single repair retry when paying for it would push this request's
+   * cost above what it would have cost WITHOUT the layer. The invalid answer is
+   * then returned as-is with `constraints.structurallyValid: false`, plus a
+   * warning naming the three figures.
+   *
+   * OFF by default, and the default is a deliberate, measured choice rather than
+   * caution — read this before turning it on.
+   *
+   * The bound sounds narrow ("only the worst case") and is not. The baseline of
+   * a call that ran is reconstructed EXCLUDING the repair (see `estimateCost`:
+   * `actualInput - repairInput`), precisely so a retry cannot pay for itself in
+   * the report. That makes the threshold unreachable by construction: the repair
+   * only ever moves `actual`, never the baseline, so ANY repair breaches it
+   * whenever the layer's other books came out flat. On a request where nothing
+   * was compressed, cached or eliminated, `baseline === actual` exactly and the
+   * gate suppresses every repair, however cheap.
+   *
+   * So this is not "cap the tail", it is "stop repairing unless the layer has
+   * already banked more than the repair will cost". That is a real quality
+   * policy, not a rounding rule, and it is the caller's contract to decide on —
+   * hence opt-in.
+   *
+   * There is no threshold that fires on the pathological case and spares the
+   * flat one; they are the same arithmetic at different magnitudes. And there is
+   * a genuine argument on the other side: an answer that misses its contract is
+   * a MODEL failure, so the no-layer path would have had to pay for its own
+   * second call too — charging the whole retry against the layer compares one
+   * valid answer to one invalid answer.
+   *
+   * Turn it on when a hard per-request ceiling matters more than contract
+   * compliance — a batch backfill, a cost-capped tenant. Leave it off when the
+   * caller relies on the shape being right.
+   */
+  skipRepairAboveBaseline?: boolean;
+
+  /**
    * Reliability contract. When true (the default), ANY internal optimizer error
    * (a resolver, cache, format selector, compressor, or accounting bug) is
    * caught and the request falls open to a plain provider call — BV-SALA must

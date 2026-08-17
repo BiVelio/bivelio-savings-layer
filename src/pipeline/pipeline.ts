@@ -2049,6 +2049,29 @@ export class SavingsPipeline {
         ? validateAgainstSchema(parsed.value, schema)
         : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
 
+      // EL RESCATE SOLO CUENTA SI ADEMÁS CUMPLE EL CONTRATO.
+      //
+      // Sacar el objeto de la valla no basta para servirlo: si lo rescatado no
+      // valida, `textoServido` tiene que seguir siendo la respuesta ORIGINAL,
+      // porque es la que se le enseña al modelo en el mensaje de reparación.
+      // Enseñarle un recorte nuestro le ocultaría justo la parte que explica el
+      // fallo (la prosa que envolvía el JSON) y le pediría corregir un texto que
+      // él no escribió.
+      //
+      // Cuando sí valida, se sirve la forma limpia: el llamante pidió un
+      // contrato, así que devolverle la valla markdown le obligaría a repetir
+      // este mismo rescate por su cuenta — y es lo que se cachea, de modo que la
+      // prosa se quedaría pegada a la respuesta durante toda la vida de la
+      // entrada.
+      if (parsed.ok && parsed.rescatado != null && validation.valid) {
+        textoServido = parsed.rescatado;
+        trace.record("validation", "rescued-locally", {
+          reason:
+            "the model wrapped valid JSON in prose or a markdown fence; it was extracted locally " +
+            "instead of paying a repair call",
+        });
+      }
+
       // Aprender del fallo, pero SOLO de los que el aviso puede evitar. Un JSON
       // mal formado o una clave que falta no se arreglan contándole al modelo un
       // maxLength: el modo estructurado ya cubre la forma. Apuntar esos casos
@@ -2150,9 +2173,7 @@ export class SavingsPipeline {
       } else if (!validation.valid && backendPlan.backend === "none") {
         // Single deterministic repair attempt only when we had no constraint
         // backend to prevent the invalid output in the first place.
-        ledger.retries = 1;
-        trace.record("validation", "repair-attempt", { errors: validation.errors });
-
+        //
         // El reintento reenviaba `...messages` ENTERO — con los datos
         // estructurados dentro, que es donde está el volumen. En el escenario de
         // la tabla eso arrastraba ~780 tokens dos veces, y medido contra un
@@ -2184,57 +2205,172 @@ export class SavingsPipeline {
               "Return ONLY the corrected JSON object. Keep the same content; fix only what is listed.",
           },
         ];
-        // Con el esquema ORIGINAL, nunca con el compacto. La respuesta previa que
-        // se le enseña y los errores que se le enumeran están en la forma del
-        // llamante, así que pedirle la corrección en otra forma sería darle dos
-        // contratos distintos en el mismo mensaje. Reparar ya es un coste que esta
-        // capa detesta: no se le añade una traducción de más.
-        response = await this.llamarProveedor({
-          // Al MODELO SERVIDO, no al pedido: con la cascada enrutando, todo el
-          // informe está tarifado con el precio del que contesta, y reparar en
-          // otro metería en `actual` tokens a un precio que no es el que se usó
-          // para tarifarlos. (Con la cascada aceptando no se llega aquí —el
-          // verificador ya validó el contrato— y con ella escalada `modeloServido`
-          // ES el pedido, así que en la práctica esto solo fija la regla.)
-          model: modeloServido,
-          messages: mensajesReparacion,
-          schema,
-          ...(request.response?.maxOutputTokens != null
-            ? { maxOutputTokens: request.response.maxOutputTokens }
-            : {}),
-        }, testigo);
-        ledger.actualLlm += 1;
-        ledger.actualInput += response.usage.inputTokens;
-        ledger.actualOutput += response.usage.outputTokens;
-        // La reparación es coste NUESTRO, así que su salida se marca aparte para
-        // que NO engorde el baseline. Antes solo se sumaba a actualOutput, y como
-        // el baseline de una llamada ejecutada se deriva de actualOutput, el
-        // reintento se pagaba a sí mismo: la pérdida se reportaba mucho menor de
-        // lo que fue. La entrada del reintento también entra en sentInputLocal
-        // para que la calibración no se descuadre (actualInput ya acumula las dos
-        // llamadas; si la lectura local cubriera solo la primera, k saldría ~2x).
-        ledger.repairOutput += response.usage.outputTokens;
-        // Y la ENTRADA del reintento, que faltaba. Sin esto el baseline se
-        // reconstruía desde un `actualInput` que ya incluía las dos llamadas, así
-        // que el reintento se pagaba a sí mismo: una petición que costó el doble
-        // que el camino naive se publicaba con ahorro POSITIVO.
-        ledger.repairInput += response.usage.inputTokens;
-        // SIN las herramientas: la llamada de reparación no las envía (mírala
-        // arriba, no lleva `tools`). Contarlas aquí metía en la lectura local
-        // tokens que el proveedor nunca facturó, y descuadraba la calibración en
-        // el sentido de acreditar de más.
-        ledger.sentInputLocal += this.tokensFor(
+        // ═══════════════════════════════════════════════════════════════════════
+        // VERJA DE DINERO: NO SE REPARA SI REPARAR SALE MÁS CARO QUE NO HABER
+        // USADO LA CAPA.
+        // ═══════════════════════════════════════════════════════════════════════
+        //
+        // Las dos guardias de arriba (truncado por tope, esquema roto) ya niegan
+        // el reintento cuando se sabe que va a FALLAR. Esta niega el caso distinto
+        // y peor: el reintento que va a FUNCIONAR, y que aun así deja al cliente
+        // pagando más de lo que habría pagado sin nosotros. Medido contra el
+        // proveedor real, escenario "Tool-heavy request": 0,004635 $ sin capa
+        // contra 0,007401 $ con ella, el mismo par repetido en 14 de 18
+        // repeticiones. La capa cobraba un 60% de sobrecoste mientras publicaba
+        // que ahorraba.
+        //
+        // LA COMPARACIÓN NO SE REIMPLEMENTA AQUÍ, y eso es deliberado. El baseline
+        // de una llamada ejecutada se reconstruye descontando `repairInput` y
+        // `repairOutput` (mira `estimateCost`), o sea que NO se mueve cuando se
+        // repara: solo se mueve `actual`. Así que basta con preguntarle al libro
+        // por las dos cifras de AHORA —cuando los contadores de reparación siguen
+        // a cero, luego son exactamente las de "no reparar"— y sumarle a `actual`
+        // lo que costaría el reintento. Una sola regla de tarificación, en su
+        // sitio.
+        //
+        // LAS DOS ESTIMACIONES, Y HACIA DÓNDE SESGA CADA UNA:
+        //
+        //   entrada: se cuenta el prompt de reparación en local y se escala por
+        //     k = actualInput/sentInputLocal, la misma calibración que usa el
+        //     libro. SUBESTIMA, porque el peaje de protocolo de esta API (el
+        //     prompt de uso de herramientas) es ADITIVO y no multiplicativo: en el
+        //     escenario medido la reparación real fueron 751 tokens de los que 674
+        //     eran peaje. O sea que la verja tarda MÁS en dispararse de lo que
+        //     debería, que es el lado prudente — solo se niega la reparación
+        //     cuando sobra margen.
+        //
+        //   salida: la de la primera llamada. SOBREESTIMA, porque el reintento
+        //     devuelve solo el JSON corregido y la primera respuesta traía además
+        //     la prosa que envolvía. Es una cota superior honesta, no un factor
+        //     de ajuste.
+        //
+        // Los dos sesgos apuntan en sentidos contrarios y ninguno decide nada en
+        // el caso que motiva esto: ahí el margen es del 60%, no del 2%.
+        const reparacionEnLocal = this.tokensFor(
           this.assemblePromptText(mensajesReparacion),
           request,
         );
-        // La reparación ya viene en la forma del llamante (se pidió con el esquema
-        // original), así que pasa a ser lo servido tal cual.
-        textoServido = response.text;
-        const reparsed = tryParse(textoServido);
-        validation = reparsed.ok
-          ? validateAgainstSchema(reparsed.value, schema)
-          : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
-        if (reparsed.ok) data = reparsed.value;
+        const k =
+          ledger.sentInputLocal > 0 ? ledger.actualInput / ledger.sentInputLocal : 1;
+        const entradaEstimada = Math.round(k * reparacionEnLocal);
+        const salidaEstimada = Math.min(
+          response.usage.outputTokens,
+          request.response?.maxOutputTokens ?? Number.POSITIVE_INFINITY,
+        );
+        // Sin tarifa cacheada: el prompt de reparación es corto y nuevo, no
+        // comparte prefijo con nada, así que no hay acierto de caché que aplicar.
+        const precioDeReparar =
+          (entradaEstimada / 1000) * precioServido.inputPer1k +
+          (salidaEstimada / 1000) * precioServido.outputPer1k;
+        // OPT-IN, Y NO POR PRUDENCIA SINO POR ARITMÉTICA. El baseline excluye la
+        // reparación por construcción, así que NUNCA se mueve cuando se repara:
+        // solo se mueve `actual`. Eso hace el umbral inalcanzable en cuanto los
+        // demás libros salen planos — sin compresión ni caché ni eliminación,
+        // `baseline === actual` exactamente y la verja niega TODA reparación, por
+        // barata que sea. No es acotar la cola, es dejar de reparar salvo que la
+        // capa ya haya ahorrado más de lo que la reparación va a costar. Eso es
+        // una política de calidad, y la decide quien llama. La explicación entera,
+        // con el argumento en contra, en `skipRepairAboveBaseline` (config.ts).
+        const sinReparar = this.config.skipRepairAboveBaseline
+          ? ledger.estimateCost(precioServido)
+          : undefined;
+        // Un baseline de 0 es el caso "unmeasured" (el proveedor no reportó uso):
+        // ahí no hay contra qué comparar, y negar la reparación por una cifra que
+        // no existe sería peor que pagarla. Se repara.
+        const saldriaCaro =
+          sinReparar != null &&
+          sinReparar.baselineEstimate > 0 &&
+          sinReparar.actual + precioDeReparar > sinReparar.baselineEstimate;
+
+        if (saldriaCaro && sinReparar != null) {
+          trace.record("validation", "repair-skipped", {
+            reason:
+              "repairing would cost more than not using the layer at all; the invalid answer is " +
+              "served as-is and reported as invalid",
+            errors: validation.errors,
+            baselineUsd: sinReparar.baselineEstimate,
+            actualUsd: sinReparar.actual,
+            repairEstimateUsd: precioDeReparar,
+          });
+          // EN VOZ ALTA, SIEMPRE. Servir una respuesta que no cumple el contrato
+          // es una decisión que el llamante tiene que poder ver: es su contrato,
+          // y la alternativa que le ahorramos era dinero suyo. Callarlo dejaría
+          // una respuesta inválida indistinguible de una válida salvo mirando
+          // `structurallyValid`.
+          this.avisar(
+            "reparacion-mas-cara-que-el-baseline",
+            "[bvsala] The answer did not satisfy the output contract, and repairing it would have " +
+              "cost MORE than sending this request without the layer at all " +
+              `(baseline ~$${sinReparar.baselineEstimate}, already spent ~$${sinReparar.actual}, ` +
+              `repair ~$${precioDeReparar.toFixed(6)}). The repair was skipped and the invalid ` +
+              "answer is returned with `constraints.structurallyValid: false` — check it before " +
+              "using it. This combination is usually a request carrying both tools and an output " +
+              "contract; see the adapter warning for the cheaper shapes.",
+          );
+        } else {
+          ledger.retries = 1;
+          trace.record("validation", "repair-attempt", { errors: validation.errors });
+          // Con el esquema ORIGINAL, nunca con el compacto. La respuesta previa
+          // que se le enseña y los errores que se le enumeran están en la forma
+          // del llamante, así que pedirle la corrección en otra forma sería darle
+          // dos contratos distintos en el mismo mensaje. Reparar ya es un coste
+          // que esta capa detesta: no se le añade una traducción de más.
+          response = await this.llamarProveedor({
+            // Al MODELO SERVIDO, no al pedido: con la cascada enrutando, todo el
+            // informe está tarifado con el precio del que contesta, y reparar en
+            // otro metería en `actual` tokens a un precio que no es el que se usó
+            // para tarifarlos. (Con la cascada aceptando no se llega aquí —el
+            // verificador ya validó el contrato— y con ella escalada
+            // `modeloServido` ES el pedido, así que esto solo fija la regla.)
+            model: modeloServido,
+            messages: mensajesReparacion,
+            schema,
+            ...(request.response?.maxOutputTokens != null
+              ? { maxOutputTokens: request.response.maxOutputTokens }
+              : {}),
+          }, testigo);
+          ledger.actualLlm += 1;
+          ledger.actualInput += response.usage.inputTokens;
+          ledger.actualOutput += response.usage.outputTokens;
+          // La reparación es coste NUESTRO, así que su salida se marca aparte
+          // para que NO engorde el baseline. Antes solo se sumaba a actualOutput,
+          // y como el baseline de una llamada ejecutada se deriva de
+          // actualOutput, el reintento se pagaba a sí mismo: la pérdida se
+          // reportaba mucho menor de lo que fue. La entrada del reintento también
+          // entra en sentInputLocal para que la calibración no se descuadre
+          // (actualInput ya acumula las dos llamadas; si la lectura local cubriera
+          // solo la primera, k saldría ~2x).
+          ledger.repairOutput += response.usage.outputTokens;
+          // Y la ENTRADA del reintento, que faltaba. Sin esto el baseline se
+          // reconstruía desde un `actualInput` que ya incluía las dos llamadas,
+          // así que el reintento se pagaba a sí mismo: una petición que costó el
+          // doble que el camino naive se publicaba con ahorro POSITIVO.
+          ledger.repairInput += response.usage.inputTokens;
+          // SIN las herramientas: la llamada de reparación no las envía (mírala
+          // arriba, no lleva `tools`). Contarlas aquí metía en la lectura local
+          // tokens que el proveedor nunca facturó, y descuadraba la calibración
+          // en el sentido de acreditar de más.
+          //
+          // Es el MISMO recuento que la verja acaba de hacer para decidir, así que
+          // se reutiliza en vez de contarlo dos veces: el tokenizador no es gratis
+          // y este es el camino caliente.
+          ledger.sentInputLocal += reparacionEnLocal;
+          // La reparación ya viene en la forma del llamante (se pidió con el
+          // esquema original), así que pasa a ser lo servido tal cual.
+          textoServido = response.text;
+          const reparsed = tryParse(textoServido);
+          validation = reparsed.ok
+            ? validateAgainstSchema(reparsed.value, schema)
+            : { valid: false, errors: [{ path: "$", message: "not valid JSON" }] };
+          if (reparsed.ok) {
+            data = reparsed.value;
+            // Si la reparación TAMBIÉN vino envuelta en prosa, se sirve el recorte
+            // limpio por la misma razón que arriba: el llamante pidió un contrato.
+            if (reparsed.rescatado != null && validation.valid) {
+              textoServido = reparsed.rescatado;
+            }
+          }
+        }
       } else if (parsed.ok) {
         data = parsed.value;
       }
@@ -3290,12 +3426,120 @@ export class SavingsPipeline {
   }
 }
 
-function tryParse(text: string): { ok: true; value: unknown } | { ok: false } {
+/**
+ * Parseo del texto servido, CON RESCATE LOCAL antes de darlo por perdido.
+ *
+ * Era un `JSON.parse` pelado, y esa desnudez costaba una llamada entera. El modo
+ * de fallo dominante contra Anthropic no es que el modelo invente una forma: es
+ * que contesta en prosa de cortesía con el JSON CORRECTO dentro de una valla
+ * markdown. `JSON.parse` de eso lanza, la validación anota "not valid JSON" y el
+ * pipeline dispara su única reparación — una SEGUNDA llamada completa que en esa
+ * API vuelve a pagar el prompt de uso de herramientas entero.
+ *
+ * O sea: se pagaba una llamada por sacar un objeto que ya estaba en la respuesta.
+ *
+ * El rescate es local, cuesta cero tokens y cero llamadas, y NO puede empeorar
+ * nada: solo se intenta cuando el parseo estricto YA falló, así que lo único que
+ * puede hacer es convertir un fallo en un acierto. Se prueba en orden de menos a
+ * más adivinanza:
+ *
+ *   1. el texto tal cual (camino rápido, conducta idéntica a la de antes);
+ *   2. el contenido de cada valla markdown, que es el caso real medido;
+ *   3. el primer `{` o `[` con su cierre equilibrado, para la prosa sin valla.
+ *
+ * `rescatado` viaja de vuelta para que quien llama pueda servir la forma limpia
+ * en vez de la prosa: el llamante pidió un contrato, y devolverle la valla lo
+ * obligaría a repetir este mismo trabajo por su cuenta.
+ */
+function tryParse(
+  text: string,
+): { ok: true; value: unknown; rescatado?: string } | { ok: false } {
   try {
     return { ok: true, value: JSON.parse(text) };
   } catch {
-    return { ok: false };
+    // El estricto falló: se pasa al rescate. No es un camino de error, es el
+    // caso normal cuando el modelo contesta en prosa.
   }
+
+  for (const candidato of candidatosDeJson(text)) {
+    try {
+      return { ok: true, value: JSON.parse(candidato), rescatado: candidato };
+    } catch {
+      continue;
+    }
+  }
+  return { ok: false };
+}
+
+/**
+ * Trozos del texto que podrían ser el JSON, en orden de preferencia.
+ *
+ * Se devuelven como mucho unos pocos: cada candidato es un `JSON.parse` más, y
+ * esta función corre en el camino caliente de cada respuesta con contrato.
+ */
+function candidatosDeJson(text: string): string[] {
+  const candidatos: string[] = [];
+
+  // Las vallas primero, porque son la señal MÁS fuerte que hay: el modelo marcó
+  // él mismo dónde empieza y acaba la carga útil. Se admite el infijo de lenguaje
+  // (```json) y también su ausencia (```), que es lo que sale cuando el modelo se
+  // salta la etiqueta.
+  const valla = /```[ \t]*[a-zA-Z0-9_-]*[ \t]*\r?\n([\s\S]*?)```/g;
+  for (const m of text.matchAll(valla)) {
+    const dentro = m[1]?.trim();
+    if (dentro) candidatos.push(dentro);
+  }
+
+  // Y si no hubo valla, el primer objeto o array equilibrado. SOLO el primero de
+  // cada clase: escanear desde cada llave del texto sería cuadrático sobre una
+  // respuesta que puede ser larga, y el JSON de una respuesta con prosa alrededor
+  // está en el primer `{` en la práctica totalidad de los casos.
+  for (const apertura of ["{", "["] as const) {
+    const desde = text.indexOf(apertura);
+    if (desde === -1) continue;
+    const recorte = recorteEquilibrado(text, desde);
+    if (recorte) candidatos.push(recorte);
+  }
+
+  return candidatos;
+}
+
+/**
+ * Desde `desde`, el trozo hasta el cierre que equilibra la apertura.
+ *
+ * Cuenta profundidad SALTÁNDOSE lo que va dentro de cadenas, que es la parte que
+ * un contador ingenuo se come: un `}` dentro de un valor de texto cerraría el
+ * objeto antes de tiempo y devolvería un recorte que no parsea. Las comillas
+ * escapadas (`\"`) tampoco abren ni cierran cadena.
+ */
+function recorteEquilibrado(text: string, desde: number): string | undefined {
+  const abre = text[desde];
+  const cierra = abre === "{" ? "}" : "]";
+  let profundidad = 0;
+  let enCadena = false;
+  let escapado = false;
+
+  for (let i = desde; i < text.length; i += 1) {
+    const c = text[i]!;
+    if (enCadena) {
+      if (escapado) escapado = false;
+      else if (c === "\\") escapado = true;
+      else if (c === '"') enCadena = false;
+      continue;
+    }
+    if (c === '"') {
+      enCadena = true;
+      continue;
+    }
+    if (c === abre) profundidad += 1;
+    else if (c === cierra) {
+      profundidad -= 1;
+      if (profundidad === 0) return text.slice(desde, i + 1);
+    }
+  }
+  // Sin cierre: la respuesta se cortó a media estructura (tope de salida). No se
+  // devuelve nada — cerrar el objeto por nuestra cuenta sería inventar contenido.
+  return undefined;
 }
 
 function renderLocally(data: unknown): string {
