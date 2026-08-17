@@ -363,64 +363,85 @@
       "lede": "BV‑SALA berada di depan penyedia LLM mana pun dan, untuk setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Jangan hanya percaya kata kami — tempel data Anda di bawah dan amati meteran bergerak.",
       "ctaRun": "Jalankan verifikator",
       "ctaPricing": "Lihat harga",
-      "note": "Berjalan sepenuhnya di browser Anda. Tanpa pendaftaran, tidak ada yang keluar dari halaman ini."
+      "note": "Berjalan sepenuhnya di browser Anda. Tanpa pendaftaran, tidak ada yang keluar dari halaman ini.",
+      "proofTitle": "Diukur terhadap penyedia nyata",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24,1%",
+          "que": "tagihan lebih rendah, terverifikasi 95%"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78%",
+          "que": "biaya lebih rendah dengan cache prefiks"
+        }
+      ]
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
-      "per": "per permintaan",
+      "per": "terukur · batas bawah 95%",
       "steps": [
         {
           "n": "01",
           "title": "Hindari panggilan sepenuhnya",
-          "sub": "resolver · cache eksak & semantik",
-          "tag": "0 panggilan",
+          "sub": "resolver · cache persis · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Hindari retrieval & tool",
-          "sub": "rute: tidak ada / tunggal / multi / tool",
-          "tag": "lebih sedikit panggilan",
+          "title": "Buang yang memang tak perlu dikirim",
+          "sub": "alat dipangkas · retrieval · konteks berlebih",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Hilangkan konteks yang tidak perlu",
-          "sub": "dedupe · rerank · adaptive‑k",
-          "tag": "−token",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Kompres sisanya",
-          "sub": "pengodean lebih ramping · hanya jika net‑positif",
-          "tag": "−token",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Batasi output",
-          "sub": "skema · kontrak minimal",
-          "tag": "−output",
-          "grey": true
+          "sub": "pengodean lebih ringan · hanya bila menguntungkan",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Langkah 1 · Uji pendahuluan — di browser Anda",
-      "title": "Coba sendiri pengoptimalnya. Tidak ada yang keluar dari halaman ini.",
-      "body": "Kedua instrumen ini menjalankan pengoptimal asli <b>secara lokal</b> agar Anda bisa memeriksa mekanismenya sebelum menyentuh penyedia. Panel kiri menjalankan pengoptimal BV‑SALA asli pada data yang Anda tempel — penghitungan token nyata, kode yang sama yang dikirim SDK. Panel kanan <b>memperkirakan</b> tagihan bulanan dengan menjalankan pengoptimal atas beban kerja sampel terhadap model <b>tiruan</b>. Untuk dolar yang <i>terukur</i> secara terbukti, lihat <link>Langkah 2</link> di bawah."
+      ],
+      "footnote": "Setiap langkah jatuh ke SATU buku yang berbeda, jadi angka-angka ini tidak saling dijumlahkan. Langkah yang bukunya tidak melewati nol tidak muncul di sini: pembatasan keluaran sudah diukur dan tidak menghemat, jadi tidak diiklankan."
     },
     "step2": {
       "eyebrow": "Langkah 2 · Bagaimana penghematan diukur — dapat direproduksi",
       "title": "Kedua sisi diukur oleh tokenizer penyedia itu sendiri — tanpa baseline yang dimodelkan.",
       "body": "Ini adalah keluaran dari benchmark A/B (<code>pnpm ab</code>): untuk setiap skenario, ia mengirim permintaan <b>naif</b> <i>dan</i> permintaan BV‑SALA ke model yang <b>sama</b>, menetapkan harga keduanya dari penggunaan token milik penyedia sendiri, dan melaporkan <b>batas bawah tingkat keyakinan 95%</b> — bukan estimasi titik yang menyanjung. Tidak ada yang dimodelkan."
     },
+    "anthropicCache": {
+      "eyebrow": "Terukur · cache prefiks Anthropic",
+      "title": "Anthropic tidak melakukan cache sendiri. Integrasimu tidak memintanya; milik kami meminta.",
+      "body": "OpenAI menerapkan cache prefiksnya secara otomatis: diskon itu kamu dapat dengan atau tanpa kami. <b>Anthropic tidak.</b> Ia menuntut penandaan titik potong pada setiap permintaan, dan yang tidak menandainya membayar seluruh input, selalu.",
+      "evidenceTitle": "Apa yang diukur",
+      "evidenceLede": "Giliran agen dengan konteks sistem yang panjang dan berulang — asisten dukungan, pengekstrak dokumen. Delapan pasang, model yang sama di kedua lengan, ditarifkan dengan penghitung milik Anthropic sendiri.",
+      "rowNaiveLabel": "Tanpa lapisan",
+      "rowNaiveValue": "0 token dilayani dari cache",
+      "rowOursLabel": "Dengan lapisan",
+      "rowOursValue": "58.624 token dilayani dari cache",
+      "figure": "78%",
+      "figureNote": "biaya lebih rendah pada permintaan tersebut · batas bawah 95% di 78,0% · kualitas 8/8, tanpa regresi",
+      "scopeTitle": "Apa yang TIDAK dikatakan angka ini",
+      "scope": "Ini penghematan dari <b>tuas itu</b> pada <b>trafik itu</b>, bukan pada seluruh tagihanmu. Angkanya berasal dari skenario prefiks stabil, tempat uang cache berada; pada trafik tanpa konteks berulang tuas ini bernilai nol. Angka utama dari uji penuh diukur terpisah, dan kami publikasikan dengan intervalnya, di atas.",
+      "verifyTitle": "Dan kamu tidak perlu percaya begitu saja",
+      "verify": "Bisa kamu periksa di tagihanmu sendiri tanpa memasang apa pun: lihat apakah panggilan Claude-mu membawa <code>cache_read_input_tokens</code>. Kalau hasilnya nol, diskon itu kamu tinggalkan begitu saja hari ini.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Penghitungan yang jujur",
       "title": "Empat ledger terpisah. Tidak pernah dijumlahkan menjadi satu angka gengsi.",
       "body": "Cache hit menghapus satu panggilan penuh. BV‑SALA mengodekan ulang data terstruktur secara lebih ringkas. Kompresi membuang kata-kata yang berlebihan. Cache prefix penyedia membuat token lebih murah tanpa menghapusnya. Mencampurnya berarti membohongi Anda — jadi kami tidak melakukannya.",
-      "runToMeasure": "jalankan pengoptimal untuk mengukur"
+      "runToMeasure": "jalankan pengoptimal untuk mengukur",
+      "measuredFloor": "terukur · batas bawah 95%",
+      "notProven": "terukur · tidak melewati nol",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Empat buku diukur terhadap API OpenAI. Persentase tanpa modelnya di sebelahnya tidak berarti apa-apa: tuas yang sama bisa menghemat pada satu model dan justru memakan biaya pada model lain."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "Dari Andorra untuk dunia 🇦🇩",
       "bottomPrivacy": "Privasi",
       "bottomTerms": "Ketentuan"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Kami beri tahu berapa yang bisa kamu hemat dengan trafikmu, tanpa memasang apa pun.",
+      "placeholder": "kamu@perusahaan.com",
+      "boton": "Book 15-min call",
+      "enviando": "Mengirim…",
+      "ok": "Diterima. Kami akan menulis hari ini juga untuk mengatur panggilannya.",
+      "errorCorreo": "Email itu sepertinya tidak valid.",
+      "errorEnvio": "Kami tidak dapat mengirimnya.",
+      "alterna": "Kirim email"
     }
   },
   "invitacion": {

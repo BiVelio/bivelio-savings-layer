@@ -357,70 +357,91 @@
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
     "metaDescription": "Verifica tu ahorro en LLM con BV-SALA: pega tus propios datos y observa cómo la contabilidad real de tokens calcula el ahorro en vivo en tu navegador.",
     "hero": {
-      "eyebrow": "La capa de coste de LLM que cualquiera puede instalar — con licencia para ejecutar",
-      "title": "Demuestra el ahorro con",
-      "titleAccent": "tus propios datos.",
-      "lede": "BV‑SALA se sitúa delante de cualquier proveedor de LLM y, en cada solicitud, elige la ejecución más barata que aún cumple tu umbral de calidad. No nos creas sin más: pega tus datos abajo y observa cómo se mueve el medidor.",
-      "ctaRun": "Ejecutar el verificador",
-      "ctaPricing": "Ver precios",
-      "note": "Se ejecuta por completo en tu navegador. Sin registro, nada sale de esta página."
+      "eyebrow": "Capa de coste para LLM · SDK con licencia",
+      "title": "Tu factura de LLM,",
+      "titleAccent": "medida y recortada.",
+      "lede": "BV‑SALA se sitúa delante de tu proveedor y, en cada petición, elige la ejecución más barata que aún cumple tu contrato de calidad. Cada cifra de esta página está medida contra el contador del propio proveedor, con su intervalo de confianza al lado — nunca una estimación.",
+      "ctaRun": "Ver lo medido",
+      "ctaPricing": "Precios",
+      "note": "Instalación en cinco líneas. La licencia se activa desde tu panel.",
+      "proofTitle": "Medido contra proveedor real",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24,1 %",
+          "que": "menos factura, verificado al 95 %"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78 %",
+          "que": "menos coste con caché de prefijo"
+        }
+      ]
     },
     "cascade": {
       "title": "Gana la ejecución más barata",
-      "per": "por solicitud",
+      "per": "medido · suelo del 95 %",
       "steps": [
         {
           "n": "01",
           "title": "Evita la llamada por completo",
-          "sub": "resolutores · caché exacta y semántica",
-          "tag": "0 llamadas",
+          "sub": "resolutores · caché exacta · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Evita recuperación y herramientas",
-          "sub": "ruta: ninguna / única / múltiple / herramienta",
-          "tag": "menos llamadas",
+          "title": "Quita lo que no hacía falta enviar",
+          "sub": "herramientas podadas · recuperación · contexto redundante",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Elimina el contexto innecesario",
-          "sub": "deduplicar · reordenar · k‑adaptativa",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Comprime lo que queda",
-          "sub": "codificación más ligera · solo si es neta positiva",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Restringe la salida",
-          "sub": "esquema · contrato mínimo",
-          "tag": "−salida",
-          "grey": true
+          "sub": "codificación más ligera · solo si sale a cuenta",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Paso 1 · Pruebas preliminares — en tu navegador",
-      "title": "Prueba tú mismo el optimizador. Nada sale de esta página.",
-      "body": "Estos dos instrumentos ejecutan el optimizador real <b>localmente</b> para que puedas comprobar el mecanismo antes de tocar un proveedor. El panel izquierdo ejecuta el optimizador real de BV‑SALA sobre los datos que pegues — contabilidad real de tokens, el mismo código que envía el SDK. El panel derecho <b>estima</b> una factura mensual ejecutando el optimizador sobre una carga de trabajo de muestra contra un modelo <b>simulado</b>. Para dólares <i>medidos</i> de forma demostrable, consulta el <link>Paso 2</link> más abajo."
+      ],
+      "footnote": "Cada paso cae en UN libro contable distinto, así que estas cifras no se suman entre sí. Un paso cuyo libro no despeja el cero no aparece aquí: la restricción de salida se midió y no ahorra, así que no se anuncia."
     },
     "step2": {
-      "eyebrow": "Paso 2 · Cómo se miden los ahorros — reproducible",
+      "eyebrow": "Cómo se miden los ahorros — reproducible",
       "title": "Ambos brazos medidos por el tokenizador del propio proveedor — sin línea base modelada.",
       "body": "Este es el resultado del benchmark A/B (<code>pnpm ab</code>): para cada escenario envía una solicitud <b>ingenua</b> <i>y</i> la solicitud de BV‑SALA al <b>mismo</b> modelo, cotiza ambas a partir del propio uso de tokens del proveedor e informa el <b>límite inferior del intervalo de confianza del 95%</b> — nunca la estimación puntual halagadora. Nada está modelado."
+    },
+    "anthropicCache": {
+      "eyebrow": "Medido · caché de prefijo de Anthropic",
+      "title": "Anthropic no cachea sola. Tu integración no se lo pide; la nuestra sí.",
+      "body": "OpenAI aplica su caché de prefijo automáticamente: ese descuento ya lo tienes con nosotros o sin nosotros. <b>Anthropic no.</b> Exige marcar el punto de corte en cada petición, y quien no lo marca paga la entrada entera, siempre.",
+      "evidenceTitle": "Lo que se midió",
+      "evidenceLede": "Turno de agente con contexto de sistema largo y repetido — un asistente de soporte, un extractor documental. Ocho pares, mismo modelo en los dos brazos, tarifados con el contador del propio Anthropic.",
+      "rowNaiveLabel": "Sin la capa",
+      "rowNaiveValue": "0 tokens servidos desde caché",
+      "rowOursLabel": "Con la capa",
+      "rowOursValue": "58 624 tokens servidos desde caché",
+      "figure": "78 %",
+      "figureNote": "menos coste en esas peticiones · límite inferior del 95 % en 78,0 % · calidad 8/8, sin regresión",
+      "scopeTitle": "Qué NO dice esta cifra",
+      "scope": "Es el ahorro de <b>esa</b> palanca sobre <b>ese</b> tráfico, no el de tu factura entera. Sale del escenario de prefijo estable, donde vive el dinero de la caché; en tráfico sin contexto repetido esta palanca vale cero. El titular de la tirada completa se mide aparte, y lo publicamos con su intervalo, arriba.",
+      "verifyTitle": "Y no hace falta que nos creas",
+      "verify": "Es comprobable en tu propia factura sin instalar nada: mira si tus llamadas a Claude traen <code>cache_read_input_tokens</code>. Si salen a cero, ese descuento lo estás dejando en la mesa hoy.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
     },
     "ledgersHead": {
       "eyebrow": "Contabilidad honesta",
       "title": "Cuatro libros contables separados. Nunca sumados en una sola cifra de vanidad.",
       "body": "Un acierto de caché elimina una llamada entera. BV‑SALA recodifica los datos estructurados de forma más compacta. La compresión descarta palabras redundantes. Una caché de prefijo del proveedor abarata los tokens sin eliminarlos. Mezclarlos te miente — así que no lo hacemos.",
-      "runToMeasure": "ejecuta el optimizador para medir"
+      "runToMeasure": "ejecuta el optimizador para medir",
+      "measuredFloor": "medido · suelo del 95 %",
+      "notProven": "medido · no despeja el cero",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Cuatro libros medidos contra la API de OpenAI. Un porcentaje sin su modelo al lado no significa nada: la misma palanca puede ahorrar en un modelo y costar en otro."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "Desde Andorra para el mundo 🇦🇩",
       "bottomPrivacy": "Privacidad",
       "bottomTerms": "Términos"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Te decimos qué ahorrarías con tu tráfico, sin instalar nada.",
+      "placeholder": "tu@empresa.com",
+      "boton": "Book 15-min call",
+      "enviando": "Enviando…",
+      "ok": "Recibido. Te escribimos hoy mismo para cuadrar la llamada.",
+      "errorCorreo": "Ese correo no parece válido.",
+      "errorEnvio": "No hemos podido enviarlo.",
+      "alterna": "Escríbenos"
     }
   },
   "invitacion": {

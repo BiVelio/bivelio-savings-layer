@@ -24,20 +24,27 @@
         "inputPer1k": 0.002,
         "outputPer1k": 0.008,
         "cachedInputPer1k": 0.0005
+      },
+      "claude-sonnet-4-5": {
+        "inputPer1k": 0.003,
+        "outputPer1k": 0.015,
+        "cachedInputPer1k": 0.0003
       }
     },
     "fallback": {
       "inputPer1k": 0.00015,
       "outputPer1k": 0.0006,
       "cachedInputPer1k": 0.000075
-    }
+    },
+    "catalogueDated": "2026-08-13",
+    "listPriceKnown": true
   },
   "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
   "config": {
-    "reps": 20,
-    "minReps": 20,
-    "maxReps": 30,
-    "ciTarget": 0.02,
+    "reps": 8,
+    "minReps": 8,
+    "maxReps": 24,
+    "ciTarget": 0.03,
     "qualityFloor": 0.999,
     "seed": 1234567
   },
@@ -46,32 +53,42 @@
       "name": "Local arithmetic",
       "lever": "avoided_calls (deterministic resolver)",
       "ledger": "avoided_calls",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "resolver",
-      "reps": 10,
+      "reps": 4,
       "armA": {
         "meanInputTokens": 19,
-        "meanOutputTokens": 76.6,
-        "meanCost": 0.00004881000000000001
+        "meanOutputTokens": 77,
+        "meanCost": 0.00004905
       },
       "armB": {
         "meanInputTokens": 0,
         "meanOutputTokens": 0,
         "meanCost": 0
       },
+      "formaFactura": {
+        "entrada": 0.05810397553516819,
+        "salida": 0.9418960244648318
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
+      },
       "measured": {
         "inputTokenDeltaMean": 19,
-        "outputTokenDeltaMean": 76.6,
+        "outputTokenDeltaMean": 77,
         "savings": {
           "point": 1,
           "lower": 1,
           "upper": 1
         },
-        "wilcoxonP": 0.0017623175315095718
+        "wilcoxonP": 0.035930266797508215
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 10,
-        "total": 10
+        "passed": 4,
+        "total": 4
       },
       "naiveContractValid": {
         "valid": 0,
@@ -83,16 +100,10 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_zwi5gathpd",
-        "fp_2awqvu197d",
-        "fp_2rf7k056qo",
-        "fp_lnighjlnlm",
-        "fp_3uzz5y8wr0",
-        "fp_styg111com",
-        "fp_a2q9ojrc5j",
-        "fp_pbo2zl9810",
-        "fp_l2v8qw7p21",
-        "fp_x0ki8dk0dl"
+        "fp_l63gpzahbh",
+        "fp_ac49zk0oqu",
+        "fp_wcwrhspqhk",
+        "fp_vsuwmd3d2u"
       ],
       "attribution": {
         "avoidedCall": true,
@@ -105,36 +116,46 @@
       "name": "FAQ (first ask)",
       "lever": "baseline (populates cache)",
       "ledger": "none",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "ran",
-      "reps": 30,
+      "reps": 9,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 19.2,
-        "meanCost": 0.000022319999999999996
+        "meanOutputTokens": 18.333333333333332,
+        "meanCost": 0.000021799999999999995
       },
       "armB": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.6,
-        "meanCost": 0.000021959999999999993
+        "meanOutputTokens": 18.666666666666668,
+        "meanCost": 0.000022
+      },
+      "formaFactura": {
+        "entrada": 0.4954128440366972,
+        "salida": 0.5045871559633028
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.5999999999999979,
+        "outputTokenDeltaMean": -0.3333333333333357,
         "savings": {
-          "point": 0.016129032258064724,
-          "lower": -0.005420054200542035,
-          "upper": 0.034759358288770525
+          "point": -0.009174311926605672,
+          "lower": -0.0370370370370372,
+          "upper": 0.0181818181818183
         },
-        "wilcoxonP": 0.07070129160337202
+        "wilcoxonP": 0.8067619259389414
       },
       "quality": {
         "gate": "judge",
-        "passed": 30,
-        "total": 30
+        "passed": 9,
+        "total": 9
       },
       "naiveContractValid": {
-        "valid": 30,
-        "total": 30
+        "valid": 9,
+        "total": 9
       },
       "proven": false,
       "modelStable": true,
@@ -142,36 +163,15 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_flx5ofimq6",
-        "fp_582prqzfso",
-        "fp_yjf9a453kh",
-        "fp_mqftpitnrj",
-        "fp_3xsbzty7hp",
-        "fp_g135bicugv",
-        "fp_2qwbodbgv1",
-        "fp_0u5ib4a3e0",
-        "fp_9y8ptqighz",
-        "fp_svl0dm6wle",
-        "fp_eof1z6e6ul",
-        "fp_hyfou48bj6",
-        "fp_m54sucsl9y",
-        "fp_7a8m2yfluk",
-        "fp_v7qsqouqpg",
-        "fp_fu0i26eker",
-        "fp_sn2dtdx085",
-        "fp_jgibwykqgz",
-        "fp_4ps1mxyrrz",
-        "fp_7y1ykjfesp",
-        "fp_do8eldqldt",
-        "fp_hht5gzwujd",
-        "fp_rulv0adx37",
-        "fp_2qu6kvcd8i",
-        "fp_ehhpup537m",
-        "fp_rco2k38qzo",
-        "fp_tbjmtkjara",
-        "fp_h1uo3tppx4",
-        "fp_3ckt93oc5z",
-        "fp_etwnzyb38x"
+        "fp_qxgmy96mc9",
+        "fp_nablsxbgan",
+        "fp_jffyd5vy42",
+        "fp_k7lz5lmguo",
+        "fp_zv9wr4sbqv",
+        "fp_cw7jttqwxf",
+        "fp_tufdaniqrg",
+        "fp_82zzsm5qdj",
+        "fp_u50cxkrtb9"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -184,36 +184,46 @@
       "name": "FAQ (repeat ask)",
       "lever": "avoided_calls (exact cache hit)",
       "ledger": "avoided_calls",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "cache",
-      "reps": 25,
+      "reps": 4,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.96,
-        "meanCost": 0.000022175999999999996
+        "meanOutputTokens": 18.75,
+        "meanCost": 0.000022049999999999997
       },
       "armB": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.84,
-        "meanCost": 0.000022103999999999994
+        "meanOutputTokens": 18,
+        "meanCost": 0.000021599999999999996
+      },
+      "formaFactura": {
+        "entrada": 0.4897959183673469,
+        "salida": 0.5102040816326531
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.120000000000001,
+        "outputTokenDeltaMean": 0.75,
         "savings": {
-          "point": 0.0032467532467532756,
-          "lower": -0.01639344262295106,
-          "upper": 0.022435897435898022
+          "point": 0.020408163265306145,
+          "lower": 0,
+          "upper": 0.05882352941176483
         },
-        "wilcoxonP": 0.39486297182734653
+        "wilcoxonP": 0.49999999949999996
       },
       "quality": {
         "gate": "judge",
-        "passed": 25,
-        "total": 25
+        "passed": 4,
+        "total": 4
       },
       "naiveContractValid": {
-        "valid": 25,
-        "total": 25
+        "valid": 4,
+        "total": 4
       },
       "proven": false,
       "modelStable": true,
@@ -221,31 +231,10 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_t0eaapk2ji",
-        "fp_jfjpojkmrg",
-        "fp_etra6nwe1j",
-        "fp_lsdcb9uqz2",
-        "fp_b5m2dy9sdd",
-        "fp_o7zw8jnibu",
-        "fp_k0sgm5q3sz",
-        "fp_v5bo2wrbpv",
-        "fp_7r01r6sxfh",
-        "fp_imbbw0nhn3",
-        "fp_fgw29mnfrs",
-        "fp_iju7gvmf8s",
-        "fp_b6s2z9jgkx",
-        "fp_ne81ob7c6z",
-        "fp_j3gbn1wgh6",
-        "fp_jhdiagylmf",
-        "fp_dvstgsmoej",
-        "fp_x2iyjoi8wt",
-        "fp_hgf46f5731",
-        "fp_k6b55x76jy",
-        "fp_8i9415f7bj",
-        "fp_habwnem67j",
-        "fp_83zyt25x88",
-        "fp_krj24ace0w",
-        "fp_7kuwt8juz3"
+        "fp_g4ihd0ox0h",
+        "fp_rau1fp62j6",
+        "fp_v014haljkj",
+        "fp_3a0ukszeuz"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -263,36 +252,46 @@
       "name": "Summarize provided text",
       "lever": "avoided retrieval (NO_RETRIEVAL routing)",
       "ledger": "eliminated_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "ran",
-      "reps": 20,
+      "reps": 8,
       "armA": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25.15,
-        "meanCost": 0.000024990000000000006
+        "meanOutputTokens": 25,
+        "meanCost": 0.000024900000000000002
       },
       "armB": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25.15,
-        "meanCost": 0.000024990000000000006
+        "meanOutputTokens": 25.5,
+        "meanCost": 0.0000252
+      },
+      "formaFactura": {
+        "entrada": 0.39759036144578314,
+        "salida": 0.6024096385542168
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -0.5,
         "savings": {
-          "point": 0,
-          "lower": -0.006016847172081841,
-          "upper": 0.005980861244019087
+          "point": -0.012048192771084265,
+          "lower": -0.02108433734939741,
+          "upper": -0.003012048192771122
         },
-        "wilcoxonP": 0.5464283147055902
+        "wilcoxonP": 0.9860966005513429
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 20,
-        "total": 20
+        "passed": 8,
+        "total": 8
       },
       "naiveContractValid": {
-        "valid": 20,
-        "total": 20
+        "valid": 8,
+        "total": 8
       },
       "proven": false,
       "modelStable": true,
@@ -300,26 +299,14 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_bij86brp7b",
-        "fp_ido3v4gx1n",
-        "fp_l2ip7eycpd",
-        "fp_jgip6r1fzq",
-        "fp_lgaxmsw6lf",
-        "fp_8xpz0cmbta",
-        "fp_t0mvb2ly4t",
-        "fp_cdpwug7vs6",
-        "fp_dzfhm1nvya",
-        "fp_oufovg4xjo",
-        "fp_r5fcl05998",
-        "fp_ibio7s5vhd",
-        "fp_p1sgaw7rjd",
-        "fp_pyrzr6pq78",
-        "fp_eo2gnoaerg",
-        "fp_7e9jg48y9o",
-        "fp_my57vy9m3k",
-        "fp_ksxfeg4kyn",
-        "fp_463gqoalg8",
-        "fp_doyxaiiaql"
+        "fp_l5gosulzad",
+        "fp_pbunjyjml8",
+        "fp_b43lvjd884",
+        "fp_24ad0mql1d",
+        "fp_zclscjxbir",
+        "fp_t9jo7uorjy",
+        "fp_757s6btlqi",
+        "fp_c5fglun22y"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -332,36 +319,46 @@
       "name": "Tool-heavy request",
       "lever": "fewer tool tokens (tool selector)",
       "ledger": "eliminated_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "ran",
-      "reps": 30,
+      "reps": 10,
       "armA": {
         "meanInputTokens": 300,
         "meanOutputTokens": 30,
-        "meanCost": 0.00006299999999999996
+        "meanCost": 0.000063
       },
       "armB": {
-        "meanInputTokens": 187.7,
-        "meanOutputTokens": 46.2,
-        "meanCost": 0.00005587499999999997
+        "meanInputTokens": 121,
+        "meanOutputTokens": 33.3,
+        "meanCost": 0.000038129999999999996
+      },
+      "formaFactura": {
+        "entrada": 0.7142857142857144,
+        "salida": 0.28571428571428575
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
       },
       "measured": {
-        "inputTokenDeltaMean": 112.30000000000001,
-        "outputTokenDeltaMean": -16.200000000000003,
+        "inputTokenDeltaMean": 179,
+        "outputTokenDeltaMean": -3.299999999999997,
         "savings": {
-          "point": 0.11309523809523792,
-          "lower": 0.07214285714285695,
-          "upper": 0.1603174603174603
+          "point": 0.39476190476190487,
+          "lower": 0.3633333333333335,
+          "upper": 0.41666666666666685
         },
-        "wilcoxonP": 2.987379630337017e-7
+        "wilcoxonP": 0.002131780416693152
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 30,
-        "total": 30
+        "passed": 10,
+        "total": 10
       },
       "naiveContractValid": {
         "valid": 0,
-        "total": 30
+        "total": 10
       },
       "proven": true,
       "modelStable": true,
@@ -369,40 +366,20 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_nbya2nuv1m",
-        "fp_ipzwr6zsir",
-        "fp_i97l7wi54t",
-        "fp_noij2jht8b",
-        "fp_jv2oqg00qj",
-        "fp_k7e4lr18rw",
-        "fp_ivxrziku6f",
-        "fp_4g7sq0fc06",
-        "fp_j4vd5azxp9",
-        "fp_7hk1u10w3w",
-        "fp_ypgnfkgtbk",
-        "fp_g8zrr7xmnz",
-        "fp_s9bnkwfb1r",
-        "fp_f0rnih5ea5",
-        "fp_f5zlf4f2n7",
-        "fp_uhp9x6c9o3",
-        "fp_tvbg1gbm4i",
-        "fp_1lk5zacd3s",
-        "fp_4wx0fn3kab",
-        "fp_j5hpdbnmsq",
-        "fp_3hw42s3jgw",
-        "fp_1iwyiwycaa",
-        "fp_cidzbolvw7",
-        "fp_4d8b2hxa1j",
-        "fp_sj79ip31ns",
-        "fp_vau7t1zztp",
-        "fp_x20bosy52a",
-        "fp_hpnpt0w3dj",
-        "fp_5nos907s4j",
-        "fp_iyketp3a90"
+        "fp_sv8yyu14wg",
+        "fp_p4y916pnpn",
+        "fp_wgmt6ctqpb",
+        "fp_m6fckdbnov",
+        "fp_5bnwlx5ozo",
+        "fp_o2pmeh9krv",
+        "fp_quiy0f3sm9",
+        "fp_iznya08lhd",
+        "fp_hsxhmkccpx",
+        "fp_1ao3fndjct"
       ],
       "attribution": {
         "avoidedCall": false,
-        "eliminatedInputTokens": 0,
+        "eliminatedInputTokens": 302,
         "compressedInputTokens": 0,
         "providerCachedInputTokens": 0
       }
@@ -411,36 +388,46 @@
       "name": "Large uniform table",
       "lever": "compressed_tokens (TOON/CSV format selector)",
       "ledger": "compressed_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "ran",
-      "reps": 30,
+      "reps": 24,
       "armA": {
         "meanInputTokens": 1212,
-        "meanOutputTokens": 336.6,
-        "meanCost": 0.00035303999999999994
+        "meanOutputTokens": 343.5416666666667,
+        "meanCost": 0.00036872500000000003
       },
       "armB": {
-        "meanInputTokens": 780,
-        "meanOutputTokens": 191.53333333333333,
-        "meanCost": 0.00023192000000000007
+        "meanInputTokens": 781,
+        "meanOutputTokens": 139.08333333333334,
+        "meanCost": 0.00020059999999999997
+      },
+      "formaFactura": {
+        "entrada": 0.4686472900689566,
+        "salida": 0.5313527099310433
+      },
+      "cacheDePrefijo": {
+        "naive": 6144,
+        "optimizado": 0
       },
       "measured": {
-        "inputTokenDeltaMean": 432,
-        "outputTokenDeltaMean": 145.0666666666667,
+        "inputTokenDeltaMean": 431,
+        "outputTokenDeltaMean": 204.45833333333334,
         "savings": {
-          "point": 0.34307727169725777,
-          "lower": 0.3080221547257457,
-          "upper": 0.3734293760831885
+          "point": 0.4559631161434675,
+          "lower": 0.4102724059055939,
+          "upper": 0.4938149103658136
         },
-        "wilcoxonP": 9.007424683904475e-7
+        "wilcoxonP": 0.000009708440066535928
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 30,
-        "total": 30
+        "passed": 24,
+        "total": 24
       },
       "naiveContractValid": {
-        "valid": 29,
-        "total": 30
+        "valid": 23,
+        "total": 24
       },
       "proven": true,
       "modelStable": true,
@@ -448,41 +435,35 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_scfhyauaer",
-        "fp_0hi5kmlxpg",
-        "fp_ft6jrybqq9",
-        "fp_c3kb33xjwd",
-        "fp_r1v05m6tis",
-        "fp_wd0fzvxrm8",
-        "fp_i1bliviy37",
-        "fp_1ox7tg4eql",
-        "fp_h6azijy9j3",
-        "fp_scmwm3f3xq",
-        "fp_b1llxyxb59",
-        "fp_08q051x00k",
-        "fp_drdjczoxuw",
-        "fp_dlz9lc323y",
-        "fp_5zve0kry3d",
-        "fp_ybg6ksfzb2",
-        "fp_dbmnrhzbz7",
-        "fp_aekfdw0gur",
-        "fp_jxj145ph9i",
-        "fp_2o91zf71ej",
-        "fp_1a11ifcxe3",
-        "fp_nnwcfwwnac",
-        "fp_3h9kbtht3v",
-        "fp_r4nq9ekpcp",
-        "fp_6kfegue4rj",
-        "fp_fqruiqhj75",
-        "fp_crc52dqyrd",
-        "fp_jih6bbj4kt",
-        "fp_4aw981mcmr",
-        "fp_12h7y1ms01"
+        "fp_kc4413ime5",
+        "fp_r6wlck51e2",
+        "fp_zknvnvqxtm",
+        "fp_98qegs1sw6",
+        "fp_psk3hbynir",
+        "fp_25mlrmy58g",
+        "fp_5h6szjrpc8",
+        "fp_cpjotx7mny",
+        "fp_0er2czg2my",
+        "fp_pkbnmufa1v",
+        "fp_ovv7xpcl6a",
+        "fp_hm7nx4x9x8",
+        "fp_d7ihucrykz",
+        "fp_o4kpllu258",
+        "fp_0czgql3k9w",
+        "fp_gp52ib8ino",
+        "fp_oajdi9bp5n",
+        "fp_8uzeyapzog",
+        "fp_vpukrbi9qc",
+        "fp_zd106vjyof",
+        "fp_nu32u04zvv",
+        "fp_xn9fom8kh3",
+        "fp_07eer1a2fz",
+        "fp_wmmhvjgk6m"
       ],
       "attribution": {
         "avoidedCall": false,
         "eliminatedInputTokens": 0,
-        "compressedInputTokens": 432,
+        "compressedInputTokens": 431,
         "providerCachedInputTokens": 0
       }
     },
@@ -490,36 +471,46 @@
       "name": "Constrained structured answer",
       "lever": "output restriction (schema + maxOutputTokens)",
       "ledger": "output_restriction",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
       "kind": "ran",
-      "reps": 30,
+      "reps": 24,
       "armA": {
         "meanInputTokens": 60,
-        "meanOutputTokens": 63.46666666666667,
-        "meanCost": 0.00004708
+        "meanOutputTokens": 66.875,
+        "meanCost": 0.00004912499999999999
       },
       "armB": {
         "meanInputTokens": 60,
-        "meanOutputTokens": 62.4,
-        "meanCost": 0.00004643999999999998
+        "meanOutputTokens": 65.45833333333333,
+        "meanCost": 0.000048274999999999994
+      },
+      "formaFactura": {
+        "entrada": 0.18320610687022898,
+        "salida": 0.8167938931297709
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 1.06666666666667,
+        "outputTokenDeltaMean": 1.4166666666666714,
         "savings": {
-          "point": 0.013593882752761743,
-          "lower": -0.07709154621112568,
-          "upper": 0.09367493995196174
+          "point": 0.017302798982188117,
+          "lower": -0.10386740331491717,
+          "upper": 0.12284894837476112
         },
-        "wilcoxonP": 0.27375782464930387
+        "wilcoxonP": 0.38136114785835007
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 30,
-        "total": 30
+        "passed": 24,
+        "total": 24
       },
       "naiveContractValid": {
-        "valid": 30,
-        "total": 30
+        "valid": 24,
+        "total": 24
       },
       "proven": false,
       "modelStable": true,
@@ -527,36 +518,30 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_0r007mtdpf",
-        "fp_wkz7buvht7",
-        "fp_b87cong4kh",
-        "fp_stqhp1rjea",
-        "fp_4pu1ywimz4",
-        "fp_pmknqi2rip",
-        "fp_7sscshimtx",
-        "fp_7mi3r9yi77",
-        "fp_vi3gjbalk2",
-        "fp_yojps3sax2",
-        "fp_r42j5wwm1j",
-        "fp_049wau0jqm",
-        "fp_ctylqwfd4t",
-        "fp_4ao20eacab",
-        "fp_1yqqkajkkz",
-        "fp_hhxnawoe0y",
-        "fp_aoy1w6af4s",
-        "fp_3x1foukayw",
-        "fp_5oq35234sf",
-        "fp_uto6mkd0ni",
-        "fp_7uvre3w3ap",
-        "fp_fc709ni7uj",
-        "fp_isc0ctyyr2",
-        "fp_vkwrstht4g",
-        "fp_irvys7ehq6",
-        "fp_aawz88t51k",
-        "fp_xvnyi9024o",
-        "fp_s11qfqnfo7",
-        "fp_vhxipnccfm",
-        "fp_nbcsqa3dct"
+        "fp_m6flhrhjg5",
+        "fp_uzss3b60ic",
+        "fp_mgxgq235v9",
+        "fp_k8ofbhopph",
+        "fp_jf35ftgy5b",
+        "fp_pbdr51v1el",
+        "fp_t7x7ujhzvz",
+        "fp_owttt1kv88",
+        "fp_xsabdapink",
+        "fp_47tkvhvhy6",
+        "fp_bvnc361sn3",
+        "fp_kx5odxpl7m",
+        "fp_u6msc9kyac",
+        "fp_jlfvvzcw7k",
+        "fp_mb1rqtnjrz",
+        "fp_8e3qc4g3rd",
+        "fp_hi1mp3hnsq",
+        "fp_hif5nja67m",
+        "fp_r3udbftrgu",
+        "fp_ugnobk0p8b",
+        "fp_x4cys9zz8y",
+        "fp_h4g90w1uce",
+        "fp_u02x4z6bil",
+        "fp_f5goy858r1"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -564,8 +549,375 @@
         "compressedInputTokens": 0,
         "providerCachedInputTokens": 0
       }
+    },
+    {
+      "name": "Stable-prefix agent turn",
+      "lever": "provider prefix cache (stable system prefix over the tier minimum)",
+      "ledger": "none",
+      "model": "openai/gpt-4o-mini",
+      "palanca": {
+        "palanca": "providerPrefixCache",
+        "ejercitada": false,
+        "motivo": "cached_tokens = 0 con un prompt de 5307 tokens, POR ENCIMA del mínimo de tramo (1024) y con el prefijo marcado: el tamaño del prompt NO explica este cero. Lo que queda no es que la palanca no ahorre, sino que el endpoint no reporte cached_tokens, o que las peticiones no aterricen en una instancia con el prefijo caliente — a través de una pasarela el enrutado no es nuestro. No lo leas como una medición"
+      },
+      "kind": "ran",
+      "reps": 24,
+      "armA": {
+        "meanInputTokens": 5307,
+        "meanOutputTokens": 59.458333333333336,
+        "meanCost": 0.0006397250000000001
+      },
+      "armB": {
+        "meanInputTokens": 5307,
+        "meanOutputTokens": 58.625,
+        "meanCost": 0.000591225
+      },
+      "formaFactura": {
+        "entrada": 0.9571072169286724,
+        "salida": 0.04289278307132766
+      },
+      "cacheDePrefijo": {
+        "naive": 61440,
+        "optimizado": 76800
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": 0.8333333333333357,
+        "savings": {
+          "point": 0.07581382625346833,
+          "lower": -0.08765068556179223,
+          "upper": 0.21463941323206337
+        },
+        "wilcoxonP": 0.13448967359533148
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 24,
+        "total": 24
+      },
+      "naiveContractValid": {
+        "valid": 24,
+        "total": 24
+      },
+      "proven": false,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_bp0ugt8gnh",
+        "fp_rf7y5uticr",
+        "fp_84kcdu5cz4",
+        "fp_bca5xt3rfj",
+        "fp_bbppa05nac",
+        "fp_m6gte5h7dk",
+        "fp_c050w10dy8",
+        "fp_hcuh8qb1s9",
+        "fp_zmj6xd87v2",
+        "fp_ph05j738xj",
+        "fp_poxeygsoca",
+        "fp_fyund4g9ep",
+        "fp_9lnf2cbxno",
+        "fp_wcmae8b70s",
+        "fp_984t0kuo9c",
+        "fp_lofttru7ta",
+        "fp_2aouhu98fm",
+        "fp_sfuy3mnp29",
+        "fp_fynslejo84",
+        "fp_g0p8y2co57",
+        "fp_eateoq43cg",
+        "fp_v09dzs8aos",
+        "fp_bqugsbwb53",
+        "fp_sjdav4nnlx"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Triage decision (output codebook)",
+      "lever": "output codebook (compact contract to the provider, caller's shape back)",
+      "ledger": "output_codebook",
+      "model": "openai/gpt-4o-mini",
+      "palanca": {
+        "palanca": "outputCodebook",
+        "ejercitada": false,
+        "motivo": "skipped: the measured output delta is -16 tokens: this model writes MORE from a compact contract (measured by BiVelio on openai/gpt-4o-mini (2026-08-14, 8 paired reps, triage (6 fields, long enums), 72-token answers) — NOT measured on YOUR contract). The input win is capped by the size of the schema while the output loss grows with the answer and is billed 4.0x input, so no schema is big enough to buy it back"
+      },
+      "kind": "ran",
+      "reps": 8,
+      "armA": {
+        "meanInputTokens": 184,
+        "meanOutputTokens": 71.875,
+        "meanCost": 0.00007072499999999998
+      },
+      "armB": {
+        "meanInputTokens": 184,
+        "meanOutputTokens": 72,
+        "meanCost": 0.00007079999999999999
+      },
+      "formaFactura": {
+        "entrada": 0.3902439024390244,
+        "salida": 0.6097560975609756
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -0.125,
+        "savings": {
+          "point": -0.0010604453870626251,
+          "lower": -0.0031880977683316214,
+          "upper": 0
+        },
+        "wilcoxonP": 0.9772499371127437
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 8,
+        "total": 8
+      },
+      "naiveContractValid": {
+        "valid": 8,
+        "total": 8
+      },
+      "proven": false,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_9rrjkd3ouf",
+        "fp_nsx0f3i0a1",
+        "fp_go3we26cen",
+        "fp_zu17synccp",
+        "fp_6mekrypfbk",
+        "fp_f13ardqba5",
+        "fp_kb1lrlrih1",
+        "fp_fp1rrcs25v"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Big tool catalogue (schema-on-demand)",
+      "lever": "toolDiscovery (probe with light descriptors, then only the schemas needed)",
+      "ledger": "eliminated_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": {
+        "palanca": "toolDiscovery",
+        "ejercitada": true,
+        "motivo": "applied (two provider calls)"
+      },
+      "kind": "ran",
+      "reps": 24,
+      "armA": {
+        "meanInputTokens": 3091,
+        "meanOutputTokens": 216,
+        "meanCost": 0.00051045
+      },
+      "armB": {
+        "meanInputTokens": 1062,
+        "meanOutputTokens": 262.7916666666667,
+        "meanCost": 0.0003169749999999999
+      },
+      "formaFactura": {
+        "entrada": 0.781542351453856,
+        "salida": 0.2184576485461441
+      },
+      "cacheDePrefijo": {
+        "naive": 26496,
+        "optimizado": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 2029,
+        "outputTokenDeltaMean": -46.791666666666686,
+        "savings": {
+          "point": 0.3790283083553728,
+          "lower": 0.3175261061470558,
+          "upper": 0.42101416171767947
+        },
+        "wilcoxonP": 0.000007079460836889595
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 24,
+        "total": 24
+      },
+      "naiveContractValid": {
+        "valid": 0,
+        "total": 0
+      },
+      "proven": true,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_1wyxmj2bwn",
+        "fp_o2ggpv8sy6",
+        "fp_9o4g8561nh",
+        "fp_e3b8e87ok3",
+        "fp_6a478u7tjo",
+        "fp_diul51v3u4",
+        "fp_dq4eenon9y",
+        "fp_flt2xf0jyu",
+        "fp_gvccqonr5k",
+        "fp_5kjqjtoc4",
+        "fp_sqwa5i3uco",
+        "fp_12xcosfd3q",
+        "fp_7lk04daxnb",
+        "fp_vzkklq26xk",
+        "fp_au2t7py1d3",
+        "fp_p6p761zyw4",
+        "fp_xuhqplj5kz",
+        "fp_14zmammtyh",
+        "fp_izvevdn2rb",
+        "fp_4861nkjlwn",
+        "fp_ac8pagpafj",
+        "fp_or45aymgjx",
+        "fp_z3c8w5101o",
+        "fp_5gakradnmr"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Forwarded support thread (compression)",
+      "lever": "context compression (drop verbatim repetitions from a forwarded thread)",
+      "ledger": "compressed_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": {
+        "palanca": "compression",
+        "ejercitada": true,
+        "motivo": "applied: pays off and does not touch the cache tier"
+      },
+      "kind": "ran",
+      "reps": 12,
+      "armA": {
+        "meanInputTokens": 3838,
+        "meanOutputTokens": 356.8333333333333,
+        "meanCost": 0.0007666
+      },
+      "armB": {
+        "meanInputTokens": 1861,
+        "meanOutputTokens": 200.41666666666666,
+        "meanCost": 0.0003786
+      },
+      "formaFactura": {
+        "entrada": 0.7289187135983793,
+        "salida": 0.27108128640162066
+      },
+      "cacheDePrefijo": {
+        "naive": 3712,
+        "optimizado": 3328
+      },
+      "measured": {
+        "inputTokenDeltaMean": 1977,
+        "outputTokenDeltaMean": 156.41666666666666,
+        "savings": {
+          "point": 0.506130967910253,
+          "lower": 0.482811306340718,
+          "upper": 0.5400235048315487
+        },
+        "wilcoxonP": 0.0012631564030984865
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 12,
+        "total": 12
+      },
+      "naiveContractValid": {
+        "valid": 0,
+        "total": 12
+      },
+      "proven": true,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini"
+      ],
+      "fingerprints": [
+        "fp_t7v76rmlli",
+        "fp_hnzuldds9b",
+        "fp_cgt1d968h5",
+        "fp_60j2rghiw2",
+        "fp_34qcz3c0pl",
+        "fp_a5d622hnqa",
+        "fp_5fuyx3dhlw",
+        "fp_dp91qmubsc",
+        "fp_4nkh5mmqw1",
+        "fp_c9ojfzxbvl",
+        "fp_gaw6bm7mke",
+        "fp_x935acczcl"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 2005,
+        "providerCachedInputTokens": 0
+      }
     }
   ],
+  "scenariosNotApplicable": [
+    {
+      "name": "Anthropic stable-prefix agent turn",
+      "lever": "provider prefix cache (explicit cache_control over a stable system prefix)",
+      "causa": "familia",
+      "motivo": "el escenario mide una palanca de la familia anthropic y openai/gpt-4o-mini es de la familia openai"
+    }
+  ],
+  "levers": {
+    "exercised": [
+      {
+        "palanca": "toolDiscovery",
+        "ejercitada": true,
+        "motivo": "applied (two provider calls)",
+        "escenario": "Big tool catalogue (schema-on-demand)"
+      },
+      {
+        "palanca": "compression",
+        "ejercitada": true,
+        "motivo": "applied: pays off and does not touch the cache tier",
+        "escenario": "Forwarded support thread (compression)"
+      }
+    ],
+    "notExercised": [
+      {
+        "palanca": "providerPrefixCache",
+        "ejercitada": false,
+        "motivo": "cached_tokens = 0 con un prompt de 5307 tokens, POR ENCIMA del mínimo de tramo (1024) y con el prefijo marcado: el tamaño del prompt NO explica este cero. Lo que queda no es que la palanca no ahorre, sino que el endpoint no reporte cached_tokens, o que las peticiones no aterricen en una instancia con el prefijo caliente — a través de una pasarela el enrutado no es nuestro. No lo leas como una medición",
+        "escenario": "Stable-prefix agent turn"
+      },
+      {
+        "palanca": "outputCodebook",
+        "ejercitada": false,
+        "motivo": "skipped: the measured output delta is -16 tokens: this model writes MORE from a compact contract (measured by BiVelio on openai/gpt-4o-mini (2026-08-14, 8 paired reps, triage (6 fields, long enums), 72-token answers) — NOT measured on YOUR contract). The input win is capped by the size of the schema while the output loss grows with the answer and is billed 4.0x input, so no schema is big enough to buy it back",
+        "escenario": "Triage decision (output codebook)"
+      },
+      {
+        "palanca": "semanticCache",
+        "motivo": "exige un EmbeddingFn y no hay ninguna implementación en el repo. Un embedding por hash de palabras mediría solapamiento léxico —lo que la verja determinista ya comprueba— y no similitud semántica, así que el escenario saldría verde midiendo otra cosa.",
+        "escenario": null,
+        "ejercitada": false
+      }
+    ],
+    "notMeasurable": [],
+    "warning": "Una palanca NO ejercitada produce las mismas cifras que una que no ahorra. No leas su cero como una medición: no llegó a ejecutarse.",
+    "notMeasurableWarning": "Una palanca en `notMeasurable` no tiene cifra en este artefacto porque su escenario NO se ejecutó: el transporte configurado no puede ejercitarla. `comoMedirla` dice qué configurar para que la haya."
+  },
   "ledgers": [
     {
       "ledger": "avoided_calls",
@@ -574,39 +926,52 @@
         "FAQ (repeat ask)"
       ],
       "savings": {
-        "point": 0.46992805755395717,
-        "lower": 0.270630868061275,
-        "upper": 0.6269668670845596
+        "point": 0.6962025316455697,
+        "lower": 0.2582781456953642,
+        "upper": 0.9408138101109741
       },
-      "deltaCost": 0.0004899000000000006,
+      "deltaCost": 0.000198,
       "proven": true
     },
     {
       "ledger": "eliminated_tokens",
       "scenarios": [
         "Summarize provided text",
-        "Tool-heavy request"
+        "Tool-heavy request",
+        "Big tool catalogue (schema-on-demand)"
       ],
       "savings": {
-        "point": 0.08944263118252593,
-        "lower": 0.05349227267281653,
-        "upper": 0.1272196545852592
+        "point": 0.37383027522935797,
+        "lower": 0.31898536367568475,
+        "upper": 0.41793082345741495
       },
-      "deltaCost": 0.0002137500000000004,
+      "deltaCost": 0.004889700000000002,
       "proven": true
     },
     {
       "ledger": "compressed_tokens",
       "scenarios": [
-        "Large uniform table"
+        "Large uniform table",
+        "Forwarded support thread (compression)"
       ],
       "savings": {
-        "point": 0.34307727169725777,
-        "lower": 0.3080221547257457,
-        "upper": 0.3734293760831885
+        "point": 0.48153319371031555,
+        "lower": 0.4534724271406504,
+        "upper": 0.50786810316683
       },
-      "deltaCost": 0.0036335999999999964,
+      "deltaCost": 0.008691,
       "proven": true
+    },
+    {
+      "ledger": "provider_cached",
+      "scenarios": [],
+      "savings": {
+        "point": 0,
+        "lower": 0,
+        "upper": 0
+      },
+      "deltaCost": 0,
+      "proven": false
     },
     {
       "ledger": "output_restriction",
@@ -614,31 +979,44 @@
         "Constrained structured answer"
       ],
       "savings": {
-        "point": 0.013593882752761743,
-        "lower": -0.07709154621112568,
-        "upper": 0.09367493995196174
+        "point": 0.017302798982188117,
+        "lower": -0.10386740331491717,
+        "upper": 0.12284894837476112
       },
-      "deltaCost": 0.000019200000000000684,
+      "deltaCost": 0.000020399999999999845,
+      "proven": false
+    },
+    {
+      "ledger": "output_codebook",
+      "scenarios": [
+        "Triage decision (output codebook)"
+      ],
+      "savings": {
+        "point": -0.0010604453870626251,
+        "lower": -0.0031880977683316214,
+        "upper": 0
+      },
+      "deltaCost": -6.000000000000146e-7,
       "proven": false
     }
   ],
   "reconciliation": {
-    "totalDelta": 0.00436725,
-    "ledgerSum": 0.004367249999999998,
-    "residual": 1.734723475976807e-18,
+    "totalDelta": 0.014960699999999987,
+    "ledgerSum": 0.014960700000000004,
+    "residual": -1.734723475976807e-17,
     "reconciled": true
   },
   "modelStable": true,
   "aggregate": {
     "savings": {
-      "point": 0.27116512992455966,
-      "lower": 0.23148472553429622,
-      "upper": 0.3029733613352492
+      "point": 0.30715455967676353,
+      "lower": 0.24092208618675381,
+      "upper": 0.3627718533560105
     },
-    "wilcoxonP": 3.3306690738754696e-15,
+    "wilcoxonP": 1.7763568394002505e-14,
     "qualityPassRate": 1,
     "proven": true,
-    "headline": "verified ≥ 23.1% (95% CI lower bound)"
+    "headline": "verified ≥ 24.1% (95% CI lower bound)"
   },
   "honesty": [
     "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
@@ -648,6 +1026,9 @@
     "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
     "El modelo SERVIDO se compara entre los dos brazos; si difiere, la afirmación no vale. (system_fingerprint se registra pero no se usa como verja: a través de una pasarela es un id por petición.)",
     "Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.",
-    "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving."
+    "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving.",
+    "Una palanca opt-in que no llegó a dispararse se DECLARA en `levers.notExercised`: su cero no es una medición.",
+    "Un escenario que no aplica a este modelo se SALTA y se declara en `scenariosNotApplicable`, en vez de medirse mal.",
+    "Una palanca que el TRANSPORTE configurado no puede ejercitar (cache_control por una pasarela OpenAI) se declara en `levers.notMeasurable` con lo que hay que configurar, y su escenario NO se ejecuta: publicar su cero sería publicar un fracaso que nadie ha medido."
   ]
 }

@@ -363,64 +363,85 @@
       "lede": "BV‑SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Don't take our word for it — paste your data below and watch the meter move.",
       "ctaRun": "Run the verifier",
       "ctaPricing": "See pricing",
-      "note": "Runs entirely in your browser. No signup, nothing leaves this page."
+      "note": "Runs entirely in your browser. No signup, nothing leaves this page.",
+      "proofTitle": "Measured against a real provider",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24.1%",
+          "que": "less bill, verified at 95%"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78%",
+          "que": "less cost with prefix cache"
+        }
+      ]
     },
     "cascade": {
       "title": "Cheapest execution wins",
-      "per": "per request",
+      "per": "measured · 95% floor",
       "steps": [
         {
           "n": "01",
           "title": "Avoid the call entirely",
-          "sub": "resolvers · exact & semantic cache",
-          "tag": "0 calls",
+          "sub": "resolvers · exact cache · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Avoid retrieval & tools",
-          "sub": "route: none / single / multi / tool",
-          "tag": "fewer calls",
+          "title": "Remove what never needed sending",
+          "sub": "pruned tools · retrieval · redundant context",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Eliminate needless context",
-          "sub": "dedupe · rerank · adaptive‑k",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Compress what remains",
-          "sub": "leaner encoding · net‑positive only",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Constrain the output",
-          "sub": "schema · minimal contract",
-          "tag": "−output",
-          "grey": true
+          "sub": "leaner encoding · only when it pays off",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Step 1 · Preliminary tests — in your browser",
-      "title": "Try the optimizer yourself. Nothing leaves this page.",
-      "body": "These two instruments run the real optimizer <b>locally</b> so you can sanity-check the mechanism before touching a provider. The left panel runs the real BV‑SALA optimizer on data you paste — real token accounting, the same code the SDK ships. The right panel <b>estimates</b> a monthly bill by running the optimizer over a sample workload against a <b>mock</b> model. For provably-<i>measured</i> dollars, see <link>Step 2</link> below."
+      ],
+      "footnote": "Each step falls into ONE different ledger, so these figures do not add up to each other. A step whose ledger does not clear zero does not appear here: output restriction was measured and does not save, so it is not advertised."
     },
     "step2": {
       "eyebrow": "Step 2 · How savings are measured — reproducible",
       "title": "Both arms metered by the provider's own tokenizer — no modeled baseline.",
       "body": "This is the output of the A/B benchmark (<code>pnpm ab</code>): for every scenario it sends a <b>naive</b> request <i>and</i> the BV‑SALA request to the <b>same</b> model, prices both from the provider's own token usage, and reports the <b>95% confidence lower bound</b> — never the flattering point estimate. Nothing is modeled."
     },
+    "anthropicCache": {
+      "eyebrow": "Measured · Anthropic prefix cache",
+      "title": "Anthropic doesn't cache on its own. Your integration doesn't ask; ours does.",
+      "body": "OpenAI applies its prefix cache automatically: you get that discount with us or without us. <b>Anthropic doesn't.</b> It requires marking the cut-off point on every request, and whoever doesn't mark it pays for the whole input, every time.",
+      "evidenceTitle": "What was measured",
+      "evidenceLede": "An agent turn with long, repeated system context — a support assistant, a document extractor. Eight pairs, same model in both arms, priced with Anthropic's own counter.",
+      "rowNaiveLabel": "Without the layer",
+      "rowNaiveValue": "0 tokens served from cache",
+      "rowOursLabel": "With the layer",
+      "rowOursValue": "58,624 tokens served from cache",
+      "figure": "78%",
+      "figureNote": "less cost on those requests · 95% lower bound at 78.0% · quality 8/8, no regression",
+      "scopeTitle": "What this number does NOT say",
+      "scope": "It is the saving of <b>that</b> lever on <b>that</b> traffic, not on your whole bill. It comes from the stable-prefix scenario, where the cache money lives; on traffic without repeated context this lever is worth zero. The headline for the full run is measured separately, and we publish it with its interval, above.",
+      "verifyTitle": "And you don't have to take our word for it",
+      "verify": "You can check it on your own bill without installing anything: look at whether your Claude calls carry <code>cache_read_input_tokens</code>. If they come back at zero, you are leaving that discount on the table today.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Honest accounting",
       "title": "Four separate ledgers. Never summed into one vanity number.",
       "body": "A cache hit removes a whole call. BV‑SALA re‑encodes structured data more compactly. Compression drops redundant words. A provider prefix cache makes tokens cheaper without removing them. Mixing them lies to you — so we don't.",
-      "runToMeasure": "run the optimizer to measure"
+      "runToMeasure": "run the optimizer to measure",
+      "measuredFloor": "measured · 95% floor",
+      "notProven": "measured · does not clear zero",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Four ledgers measured against the OpenAI API. A percentage without its model next to it means nothing: the same lever can save on one model and cost on another."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "From Andorra to the world 🇦🇩",
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Terms"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "We'll tell you what you'd save on your traffic, without installing anything.",
+      "placeholder": "you@company.com",
+      "boton": "Book 15-min call",
+      "enviando": "Sending…",
+      "ok": "Got it. We'll write to you today to set up the call.",
+      "errorCorreo": "That email doesn't look valid.",
+      "errorEnvio": "We couldn't send it.",
+      "alterna": "Email us"
     }
   },
   "invitacion": {

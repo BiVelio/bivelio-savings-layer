@@ -363,64 +363,85 @@
       "lede": "BV‑SALA se situa davant de qualsevol proveïdor de LLM i, en cada sol·licitud, tria l'execució més barata que encara compleix el teu llindar de qualitat. No ens creguis sense més: enganxa les teves dades a sota i observa com es mou el mesurador.",
       "ctaRun": "Executa el verificador",
       "ctaPricing": "Veure els preus",
-      "note": "S'executa completament al teu navegador. Sense registre, res no surt d'aquesta pàgina."
+      "note": "S'executa completament al teu navegador. Sense registre, res no surt d'aquesta pàgina.",
+      "proofTitle": "Mesurat contra proveïdor real",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24,1 %",
+          "que": "menys factura, verificat al 95 %"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78 %",
+          "que": "menys cost amb memòria cau de prefix"
+        }
+      ]
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
-      "per": "per sol·licitud",
+      "per": "mesurat · sòl del 95 %",
       "steps": [
         {
           "n": "01",
-          "title": "Evita la crida completament",
-          "sub": "resolutors · memòria cau exacta i semàntica",
-          "tag": "0 crides",
+          "title": "Evita la crida del tot",
+          "sub": "resolutors · memòria cau exacta · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Evita la recuperació i les eines",
-          "sub": "ruta: cap / única / múltiple / eina",
-          "tag": "menys crides",
+          "title": "Treu el que no calia enviar",
+          "sub": "eines podades · recuperació · context redundant",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Elimina el context innecessari",
-          "sub": "desduplica · reordena · k‑adaptativa",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Comprimeix el que queda",
-          "sub": "codificació més lleugera · només si és net positiu",
-          "tag": "−tokens",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Restringeix la sortida",
-          "sub": "esquema · contracte mínim",
-          "tag": "−sortida",
-          "grey": true
+          "sub": "codificació més lleugera · només si surt a compte",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Pas 1 · Proves preliminars — al teu navegador",
-      "title": "Prova l'optimitzador tu mateix. Res no surt d'aquesta pàgina.",
-      "body": "Aquests dos instruments executen l'optimitzador real <b>localment</b> perquè puguis comprovar el mecanisme abans de tocar cap proveïdor. El panell esquerre executa l'optimitzador real de BV‑SALA sobre les dades que enganxis — comptabilitat real de tokens, el mateix codi que envia el SDK. El panell dret <b>estima</b> una factura mensual executant l'optimitzador sobre una càrrega de treball de mostra contra un model <b>simulat</b>. Per a dòlars <i>mesurats</i> de manera demostrable, consulta el <link>Pas 2</link> més avall."
+      ],
+      "footnote": "Cada pas cau en UN llibre comptable diferent, així que aquestes xifres no se sumen entre si. Un pas el llibre del qual no supera el zero no apareix aquí: la restricció de sortida es va mesurar i no estalvia, així que no s'anuncia."
     },
     "step2": {
       "eyebrow": "Pas 2 · Com es mesuren els estalvis — reproduïble",
       "title": "Tots dos braços mesurats pel tokenitzador del mateix proveïdor — sense línia base modelada.",
       "body": "Aquest és el resultat del benchmark A/B (<code>pnpm ab</code>): per a cada escenari envia una sol·licitud <b>ingènua</b> <i>i</i> la sol·licitud de BV‑SALA al <b>mateix</b> model, calcula el preu de totes dues a partir del propi ús de tokens del proveïdor i informa del <b>límit inferior de confiança del 95%</b> — mai l'afalagadora estimació puntual. No hi ha res modelat."
     },
+    "anthropicCache": {
+      "eyebrow": "Mesurat · memòria cau de prefix d'Anthropic",
+      "title": "Anthropic no fa memòria cau sola. La teva integració no l'hi demana; la nostra sí.",
+      "body": "OpenAI aplica la seva memòria cau de prefix automàticament: aquest descompte ja el tens amb nosaltres o sense. <b>Anthropic no.</b> Exigeix marcar el punt de tall a cada petició, i qui no el marca paga l'entrada sencera, sempre.",
+      "evidenceTitle": "Què es va mesurar",
+      "evidenceLede": "Torn d'agent amb context de sistema llarg i repetit — un assistent de suport, un extractor documental. Vuit parells, mateix model als dos braços, tarifats amb el comptador del mateix Anthropic.",
+      "rowNaiveLabel": "Sense la capa",
+      "rowNaiveValue": "0 tokens servits des de la memòria cau",
+      "rowOursLabel": "Amb la capa",
+      "rowOursValue": "58.624 tokens servits des de la memòria cau",
+      "figure": "78 %",
+      "figureNote": "menys cost en aquelles peticions · límit inferior del 95 % en 78,0 % · qualitat 8/8, sense regressió",
+      "scopeTitle": "Què NO diu aquesta xifra",
+      "scope": "És l'estalvi d'<b>aquella</b> palanca sobre <b>aquell</b> trànsit, no el de tota la teva factura. Surt de l'escenari de prefix estable, on viuen els diners de la memòria cau; en trànsit sense context repetit aquesta palanca val zero. El titular de la tirada completa es mesura a part, i el publiquem amb el seu interval, a dalt.",
+      "verifyTitle": "I no cal que ens creguis",
+      "verify": "És comprovable a la teva pròpia factura sense instal·lar res: mira si les teves crides a Claude porten <code>cache_read_input_tokens</code>. Si surten a zero, aquest descompte l'estàs deixant sobre la taula avui.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Comptabilitat honesta",
       "title": "Quatre llibres comptables separats. Mai sumats en una sola xifra de vanitat.",
       "body": "Un encert de memòria cau elimina una crida sencera. BV‑SALA recodifica les dades estructurades de manera més compacta. La compressió descarta paraules redundants. Una memòria cau de prefix del proveïdor abarateix els tokens sense eliminar-los. Barrejar-los et menteix — així que no ho fem.",
-      "runToMeasure": "executa l'optimitzador per mesurar"
+      "runToMeasure": "executa l'optimitzador per mesurar",
+      "measuredFloor": "mesurat · sòl del 95 %",
+      "notProven": "mesurat · no supera el zero",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Quatre llibres mesurats contra l'API d'OpenAI. Un percentatge sense el seu model al costat no significa res: la mateixa palanca pot estalviar en un model i costar en un altre."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "D'Andorra al món 🇦🇩",
       "bottomPrivacy": "Privadesa",
       "bottomTerms": "Termes"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Et diem què estalviaries amb el teu trànsit, sense instal·lar res.",
+      "placeholder": "tu@empresa.com",
+      "boton": "Book 15-min call",
+      "enviando": "Enviant…",
+      "ok": "Rebut. T'escrivim avui mateix per quadrar la trucada.",
+      "errorCorreo": "Aquest correu no sembla vàlid.",
+      "errorEnvio": "No hem pogut enviar-ho.",
+      "alterna": "Escriu-nos"
     }
   },
   "invitacion": {

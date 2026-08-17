@@ -363,64 +363,85 @@
       "lede": "BV‑SALA đứng trước bất kỳ nhà cung cấp LLM nào và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Đừng chỉ tin lời chúng tôi — dán dữ liệu của bạn bên dưới và xem đồng hồ đo chuyển động.",
       "ctaRun": "Chạy trình xác minh",
       "ctaPricing": "Xem bảng giá",
-      "note": "Chạy hoàn toàn trong trình duyệt của bạn. Không cần đăng ký, không có gì rời khỏi trang này."
+      "note": "Chạy hoàn toàn trong trình duyệt của bạn. Không cần đăng ký, không có gì rời khỏi trang này.",
+      "proofTitle": "Đo với nhà cung cấp thật",
+      "proofs": [
+        {
+          "marca": "OpenAI",
+          "modelo": "gpt-4o-mini",
+          "cifra": "≥ 24,1%",
+          "que": "hóa đơn thấp hơn, đã xác minh ở mức 95%"
+        },
+        {
+          "marca": "Anthropic",
+          "modelo": "claude-sonnet-4-5",
+          "cifra": "78%",
+          "que": "chi phí thấp hơn nhờ bộ nhớ đệm tiền tố"
+        }
+      ]
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "per": "mỗi yêu cầu",
+      "per": "đã đo · sàn 95%",
       "steps": [
         {
           "n": "01",
-          "title": "Tránh lệnh gọi hoàn toàn",
-          "sub": "trình phân giải · bộ đệm chính xác & ngữ nghĩa",
-          "tag": "0 lệnh gọi",
+          "title": "Tránh hoàn toàn lệnh gọi",
+          "sub": "bộ giải · bộ nhớ đệm chính xác · singleflight",
+          "ledger": "avoided_calls",
           "grey": false
         },
         {
           "n": "02",
-          "title": "Tránh truy xuất & công cụ",
-          "sub": "tuyến: không / đơn / đa / công cụ",
-          "tag": "ít lệnh gọi hơn",
+          "title": "Bỏ những gì không cần gửi",
+          "sub": "công cụ đã cắt tỉa · truy hồi · ngữ cảnh dư thừa",
+          "ledger": "eliminated_tokens",
           "grey": false
         },
         {
           "n": "03",
-          "title": "Loại bỏ ngữ cảnh thừa",
-          "sub": "khử trùng lặp · xếp hạng lại · k thích ứng",
-          "tag": "−token",
-          "grey": true
-        },
-        {
-          "n": "04",
           "title": "Nén phần còn lại",
-          "sub": "mã hóa gọn nhẹ hơn · chỉ khi có lợi ròng",
-          "tag": "−token",
-          "grey": true
-        },
-        {
-          "n": "05",
-          "title": "Ràng buộc đầu ra",
-          "sub": "lược đồ · hợp đồng tối thiểu",
-          "tag": "−đầu ra",
-          "grey": true
+          "sub": "mã hóa nhẹ hơn · chỉ khi có lợi",
+          "ledger": "compressed_tokens",
+          "grey": false
         }
-      ]
-    },
-    "step1": {
-      "eyebrow": "Bước 1 · Kiểm tra sơ bộ — trong trình duyệt của bạn",
-      "title": "Tự mình thử trình tối ưu. Không có gì rời khỏi trang này.",
-      "body": "Hai công cụ này chạy trình tối ưu thực <b>cục bộ</b> để bạn có thể kiểm chứng cơ chế trước khi động đến một nhà cung cấp. Bảng bên trái chạy trình tối ưu BV‑SALA thực trên dữ liệu bạn dán — hạch toán token thực, cùng đoạn mã mà SDK phát hành. Bảng bên phải <b>ước tính</b> hóa đơn hàng tháng bằng cách chạy trình tối ưu trên một khối lượng công việc mẫu đối chiếu với một mô hình <b>mô phỏng</b>. Để có những đô la được <i>đo</i> một cách chứng minh được, xem <link>Bước 2</link> bên dưới."
+      ],
+      "footnote": "Mỗi bước rơi vào MỘT sổ khác nhau, nên các con số này không cộng dồn với nhau. Một bước mà sổ của nó không vượt qua số không sẽ không xuất hiện ở đây: việc hạn chế đầu ra đã được đo và không tiết kiệm, nên chúng tôi không quảng bá nó."
     },
     "step2": {
       "eyebrow": "Bước 2 · Cách đo lường mức tiết kiệm — có thể tái lập",
       "title": "Cả hai nhánh được đo bằng chính tokenizer của nhà cung cấp — không có đường cơ sở mô hình hóa.",
       "body": "Đây là kết quả của benchmark A/B (<code>pnpm ab</code>): với mỗi kịch bản, nó gửi một yêu cầu <b>ngây thơ</b> <i>và</i> yêu cầu BV‑SALA đến <b>cùng một</b> mô hình, định giá cả hai từ chính mức sử dụng token của nhà cung cấp, và báo cáo <b>giới hạn dưới của khoảng tin cậy 95%</b> — không bao giờ là ước tính điểm hào nhoáng. Không có gì được mô hình hóa."
     },
+    "anthropicCache": {
+      "eyebrow": "Đã đo · bộ nhớ đệm tiền tố của Anthropic",
+      "title": "Anthropic không tự lưu đệm. Tích hợp của bạn không yêu cầu điều đó; của chúng tôi thì có.",
+      "body": "OpenAI áp dụng bộ nhớ đệm tiền tố tự động: khoản giảm giá đó bạn có dù có chúng tôi hay không. <b>Anthropic thì không.</b> Nó đòi hỏi đánh dấu điểm cắt ở mỗi yêu cầu, và ai không đánh dấu sẽ luôn trả tiền cho toàn bộ đầu vào.",
+      "evidenceTitle": "Những gì đã được đo",
+      "evidenceLede": "Một lượt tác tử với ngữ cảnh hệ thống dài và lặp lại — một trợ lý hỗ trợ, một bộ trích xuất tài liệu. Tám cặp, cùng một mô hình ở cả hai nhánh, tính giá bằng chính bộ đếm của Anthropic.",
+      "rowNaiveLabel": "Không có lớp",
+      "rowNaiveValue": "0 token được phục vụ từ bộ nhớ đệm",
+      "rowOursLabel": "Có lớp",
+      "rowOursValue": "58.624 token được phục vụ từ bộ nhớ đệm",
+      "figure": "78%",
+      "figureNote": "chi phí thấp hơn trên những yêu cầu đó · cận dưới 95% ở mức 78,0% · chất lượng 8/8, không suy giảm",
+      "scopeTitle": "Điều con số này KHÔNG nói",
+      "scope": "Đây là khoản tiết kiệm của <b>đòn bẩy đó</b> trên <b>lưu lượng đó</b>, không phải của toàn bộ hóa đơn. Nó đến từ kịch bản tiền tố ổn định, nơi có tiền của bộ nhớ đệm; với lưu lượng không có ngữ cảnh lặp lại, đòn bẩy này bằng không. Con số tổng của toàn bộ đợt chạy được đo riêng, và chúng tôi công bố kèm khoảng tin cậy, ở phía trên.",
+      "verifyTitle": "Và bạn không cần tin lời chúng tôi",
+      "verify": "Bạn có thể kiểm tra trên chính hóa đơn của mình mà không cần cài gì: xem các lệnh gọi Claude của bạn có mang <code>cache_read_input_tokens</code> hay không. Nếu chúng bằng không, hôm nay bạn đang bỏ lại khoản giảm giá đó trên bàn.",
+      "providerTag": "Anthropic",
+      "providerModel": "claude-sonnet-4-5"
+    },
     "ledgersHead": {
       "eyebrow": "Hạch toán trung thực",
       "title": "Bốn sổ cái riêng biệt. Không bao giờ cộng gộp thành một con số phù phiếm.",
       "body": "Một lần trúng bộ đệm loại bỏ nguyên một lệnh gọi. BV‑SALA mã hóa lại dữ liệu có cấu trúc gọn gàng hơn. Nén loại bỏ những từ ngữ dư thừa. Bộ đệm tiền tố của nhà cung cấp làm token rẻ hơn mà không loại bỏ chúng. Trộn lẫn chúng là dối gạt bạn — nên chúng tôi không làm vậy.",
-      "runToMeasure": "chạy trình tối ưu để đo"
+      "runToMeasure": "chạy trình tối ưu để đo",
+      "measuredFloor": "đã đo · sàn 95%",
+      "notProven": "đã đo · không vượt qua số không",
+      "providerTag": "OpenAI",
+      "providerModel": "gpt-4o-mini",
+      "providerNote": "Bốn sổ được đo với API của OpenAI. Một tỷ lệ phần trăm mà không có mô hình đi kèm thì chẳng có nghĩa gì: cùng một đòn bẩy có thể tiết kiệm trên mô hình này và tốn kém trên mô hình khác."
     },
     "ledgers": [
       {
@@ -514,6 +535,17 @@
       "andorra": "Từ Andorra ra thế giới 🇦🇩",
       "bottomPrivacy": "Quyền riêng tư",
       "bottomTerms": "Điều khoản"
+    },
+    "cta15": {
+      "titulo": "Book 15-min call",
+      "sub": "Chúng tôi sẽ cho bạn biết bạn tiết kiệm được bao nhiêu với lưu lượng của mình, không cần cài gì.",
+      "placeholder": "ban@congty.com",
+      "boton": "Book 15-min call",
+      "enviando": "Đang gửi…",
+      "ok": "Đã nhận. Chúng tôi sẽ viết cho bạn ngay hôm nay để sắp lịch gọi.",
+      "errorCorreo": "Email đó có vẻ không hợp lệ.",
+      "errorEnvio": "Chúng tôi không gửi được.",
+      "alterna": "Gửi email cho chúng tôi"
     }
   },
   "invitacion": {
