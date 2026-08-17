@@ -1,4 +1,5 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
 
 /**
@@ -66,7 +67,21 @@ export interface SemanticHit {
 }
 
 export interface SemanticCacheOptions {
-  embed: EmbeddingFn;
+  /**
+   * How text becomes a vector. OPTIONAL: omit it and {@link embebedorLocal} is
+   * used — no network, no API key, no per-call cost.
+   *
+   * It used to be required, and the package shipped NO implementation, so this
+   * cache could not be constructed without bringing your own embedding provider.
+   * That is why the benchmark reported it as unmeasurable run after run: not that
+   * it saved little, but that it never got to run at all.
+   *
+   * Pass your own for true semantics; the local one only sees LEXICAL closeness.
+   * Either way the deterministic guard below still rejects a candidate whose
+   * numbers, negation or entities differ, so a weaker vector can only cost you a
+   * cache miss — never a wrong answer.
+   */
+  embed?: EmbeddingFn;
   verify?: SemanticVerifier;
   /** Cosine similarity floor for a candidate to be considered at all. */
   similarityThreshold?: number;
@@ -109,13 +124,51 @@ const NEGATIONS = new Set([
   "no", "not", "never", "none", "cannot", "cant", "without", "nor", "nt", "isnt",
   "arent", "wasnt", "werent", "dont", "doesnt", "didnt", "wont", "cant", "shouldnt",
 ]);
+// LA LISTA ERA SOLO INGLESA, Y ESO NO ERA UNA LAGUNA COSMÉTICA: hacía que la
+// MISMA paráfrasis pasara o se cortara según el idioma. Medido con el guard:
+//
+//     "summarize this report" ↔ "please summarize this report"   → PASA
+//     "resume este informe"   ↔ "por favor resume este informe"  → CORTA
+//
+// Idéntica semántica, resultado opuesto, y el producto es español-primero: en
+// castellano y catalán la cortesía y los artículos contaban como tokens de
+// CONTENIDO, así que dos palabras de relleno bastaban para hundir el Jaccard por
+// debajo del 0,75 y negar el acierto. La caché semántica no es que ahorrase
+// poco en esos idiomas: es que no podía acertar.
+//
+// Añadir stopwords NO toca la parte de seguridad. Los números y la paridad de
+// negación se comprueban ANTES y por separado; esto solo iguala el trato del
+// suelo de solapamiento entre idiomas, que es lo que el inglés ya tenía.
+//
+// Se cubren es/ca porque son los idiomas con tráfico y con corpus (el golden set
+// de 150 casos es es/ca). Los otros nueve locales siguen con el trato inglés:
+// conservador, o sea que pierden aciertos, nunca que sirvan de más.
 const STOPWORDS = new Set([
+  // inglés
   "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are", "was",
   "were", "what", "whats", "which", "who", "whom", "how", "when", "where", "me", "my",
   "i", "you", "please", "tell", "give", "show", "find", "do", "does", "did", "be",
   "that", "this", "it", "with", "as", "at", "by", "from", "about", "into", "over",
   "than", "then", "s",
+  // castellano
+  "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del", "al", "en",
+  "por", "para", "con", "sin", "sobre", "y", "o", "u", "es", "son", "era", "eran",
+  "ser", "estar", "esta", "este", "esto", "estos", "estas", "ese", "esa", "eso",
+  "que", "cual", "cuales", "quien", "quienes", "como", "cuando", "donde", "dame",
+  "dime", "quiero", "necesito", "puedes", "podrias", "favor", "porfavor", "gracias",
+  "me", "mi", "mis", "tu", "tus", "su", "sus", "lo", "le", "se", "hay",
+  // catalán
+  "el", "la", "els", "les", "un", "una", "uns", "unes", "de", "del", "dels", "al",
+  "als", "en", "per", "amb", "sense", "sobre", "i", "o", "es", "son", "era", "eren",
+  "ser", "estar", "aquest", "aquesta", "aquests", "aquestes", "aquell", "aquella",
+  "que", "quin", "quina", "qui", "com", "quan", "on", "dona", "vull", "necessito",
+  "pots", "podries", "sisplau", "gracies", "meu", "meva", "seu", "seva", "hi",
 ]);
+// NO entran, y es deliberado: los temporales ("ahora"/"ara"), los comparativos
+// ("más"/"menos", "mes"/"menys") y los aditivos ("también"/"també") CAMBIAN el
+// significado. «más de 100» no es «menos de 100», y preguntar «ahora» pide dato
+// fresco. El inglés tampoco los tiene, así que dejarlos fuera es lo que iguala
+// las listas en vez de volver el castellano MÁS permisivo que el inglés.
 
 function numericTokens(s: string): string[] {
   return (s.match(/\d[\d.,:/-]*/g) ?? []).map((t) => t.replace(/[.,:/-]+$/, ""));
@@ -175,10 +228,23 @@ export class InMemorySemanticCache {
   private readonly maxRecords: number;
   private readonly now: () => number;
 
-  constructor(opts: SemanticCacheOptions) {
-    this.embed = opts.embed;
+  constructor(opts: SemanticCacheOptions = {}) {
+    // Sin `embed`, el local. Es lo que convierte esta caché en algo que se puede
+    // construir —y por tanto medir— sin traerse un proveedor de embeddings.
+    const propio = opts.embed == null;
+    this.embed = opts.embed ?? embebedorLocal;
     this.verify = opts.verify;
-    this.similarityThreshold = opts.similarityThreshold ?? 0.9;
+    // EL UMBRAL SIGUE AL EMBEBEDOR, y no hacerlo dejaba la palanca muerta igual.
+    //
+    // 0,9 es el suelo que le corresponde a un sentence-transformer. Un vector
+    // léxico se queda por debajo en paráfrasis legítimas, así que heredar ese 0,9
+    // habría rechazado casi todo: la caché se construiría, no fallaría nada, y no
+    // acertaría nunca — el mismo cero de antes con más código detrás.
+    //
+    // Solo cambia cuando el embebedor es el nuestro. Quien traiga el suyo
+    // conserva 0,9 exactamente como hasta ahora.
+    this.similarityThreshold =
+      opts.similarityThreshold ?? (propio ? UMBRAL_LOCAL : 0.9);
     this.acceptThreshold = opts.acceptThreshold ?? 0.85;
     this.ttlMs = opts.ttlMs;
     this.maxRecords = opts.maxRecords ?? 5_000;

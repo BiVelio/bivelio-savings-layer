@@ -351,8 +351,8 @@
       "abstencion": null,
       "gemelo": {
         "caso": "sop-es-009",
-        "porQueDifiere": "«con IVA incluido» frente a «con IVA excluido»: 12.480,55 frente a 10.314,50 EUR sobre el mismo pedido.",
-        "colisionaEnCache": true
+        "porQueDifiere": "«con IVA incluido» frente a «con IVA excluido»: 12.480,55 frente a 10.314,50 EUR sobre el mismo pedido. · Desde 2026-08-17 el guardarraíl SÍ lo corta: al añadir stopwords de castellano y catalán, el conjunto de tokens de contenido se reduce y una sola palabra distinta («incluido»/«excluido») pesa lo suficiente para hundir el Jaccard por debajo del 0,75.",
+        "colisionaEnCache": false
       },
       "nota": "Doble trampa. La de unidades (incluido/excluido) decide qué cifra de E1 es la buena. La de importes parecidos (12.480,55 en E1 frente a 12.408,55 en E2) castiga al que recupere el pedido equivocado: las dos cifras son plausibles y difieren en una transposición de dígitos. Verificado: el par incluido/excluido colisiona en caché.",
       "presupuesto": { "unidades_max": 2 }
@@ -391,8 +391,8 @@
       "abstencion": null,
       "gemelo": {
         "caso": "sop-es-008",
-        "porQueDifiere": "La misma pregunta con una palabra cambiada devuelve una cifra 2.166,05 EUR menor.",
-        "colisionaEnCache": true
+        "porQueDifiere": "La misma pregunta con una palabra cambiada devuelve una cifra 2.166,05 EUR menor. · Desde 2026-08-17 el guardarraíl SÍ lo corta: al añadir stopwords de castellano y catalán, el conjunto de tokens de contenido se reduce y una sola palabra distinta («incluido»/«excluido») pesa lo suficiente para hundir el Jaccard por debajo del 0,75.",
+        "colisionaEnCache": false
       },
       "nota": "E3 cambia de papel entre los gemelos: es necesaria en 008 (sostiene que se reembolsan los impuestos) y distractora en 009 (donde el cliente pregunta por la base). Un knapsack que fije el papel de una unidad por su contenido, y no por la consulta, se equivoca en uno de los dos.",
       "presupuesto": { "unidades_max": 2 }
