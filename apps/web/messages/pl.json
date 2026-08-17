@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Tę nazwę zobaczy każdy, kogo Państwo zaproszą.",
       "guardar": "Zapisz",
       "guardado": "Zapisano."
+    },
+    "tokenTotals": {
+      "spentLabel": "Zużyte tokeny",
+      "spentWhat": "wejście + wyjście, to, co naliczył twój dostawca",
+      "savedLabel": "Zaoszczędzone tokeny",
+      "savedWhat": "w porównaniu z brakiem warstwy",
+      "savedBreakdown": "{fraction} · wejście {input} · wyjście {output}",
+      "unavailable": "jeszcze niedostępne: nie zastosowano migracji 0015",
+      "footnote": "<b>Oszczędność na wyjściu jest prawie zawsze zerowa</b> i nie jest to błąd: przy wywołaniu, które faktycznie się wykonało, warstwa nie skraca odpowiedzi, więc jej baseline wyjścia to zmierzone wyjście. Oszczędność tokenów leży w wejściu i w uniknietych wywołaniach. Wynik UJEMNY też nie jest błędem: oznacza, że warstwa kosztowała więcej niż bez niej — i to pokazujemy."
     }
   },
   "landing": {

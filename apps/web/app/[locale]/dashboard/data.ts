@@ -216,6 +216,15 @@ export interface UsageRollup {
   measuredRequests: number;
   measuredBaselineCost: number;
   measuredActualCost: number;
+  /**
+   * Totales de tokens (migración 0015). OPCIONALES a propósito: un proyecto que
+   * aún no la haya aplicado no tiene estas columnas, y ahí la respuesta honesta
+   * es "no disponible", nunca 0 — un cero se lee como "no ahorraste nada".
+   */
+  baselineInputTokens?: number;
+  actualInputTokens?: number;
+  baselineOutputTokens?: number;
+  actualOutputTokens?: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -231,20 +240,58 @@ export interface UsageResult {
   failed: boolean;
 }
 
+/**
+ * ¿El error de PostgREST es «esa columna no existe»?
+ *
+ * `42703` es el `undefined_column` de Postgres. Se mira también el mensaje
+ * porque PostgREST no siempre propaga el `code` del motor —según la versión
+ * devuelve `PGRST204` o solo texto—, y confundir este caso con un fallo real de
+ * lectura es justo lo que deja el panel en blanco.
+ */
+function esColumnaInexistente(error: { code?: string; message?: string }): boolean {
+  if (error.code === "42703" || error.code === "PGRST204") return true;
+  const m = (error.message ?? "").toLowerCase();
+  return m.includes("does not exist") || m.includes("could not find");
+}
+
+/** Columnas que existían antes de la migración 0015. */
+const COLUMNAS_BASE =
+  "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost";
+/** Los cuatro totales de tokens que añade 0015. */
+const COLUMNAS_TOKENS =
+  "baseline_input_tokens, actual_input_tokens, baseline_output_tokens, actual_output_tokens";
+
 export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageResult> {
   try {
     // Defense-in-depth: scope to this org explicitly (not just via RLS) and bound the
     // window so a dashboard read can't grow unbounded as usage history accumulates.
     const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const { data, error } = await supabase
-      .schema("bvsala")
-      .from("usage_daily")
-      .select(
-        "day, requests, avoided_llm, actual_llm, eliminated_input_tokens, compressed_input_tokens, provider_cached_input_tokens, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost",
-      )
-      .eq("org_id", orgId)
-      .gte("day", since)
-      .order("day", { ascending: true });
+    const leer = (columnas: string) =>
+      supabase
+        .schema("bvsala")
+        .from("usage_daily")
+        .select(columnas)
+        .eq("org_id", orgId)
+        .gte("day", since)
+        .order("day", { ascending: true });
+
+    let { data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}`);
+    // EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN, y sin esto eso tumbaba el
+    // panel ENTERO. PostgREST responde 42703 cuando una columna no existe; si
+    // pedimos las de 0015 contra un proyecto que aún no la tiene, el `failed`
+    // de abajo le pinta "la lectura falló" a un cliente cuyos datos están
+    // intactos — y no solo en la tarjeta nueva, sino en todo lo demás.
+    //
+    // Se reintenta sin ellas. Las filas salen sin los totales de tokens, que es
+    // exactamente lo que son: no disponibles todavía. La tarjeta lo dirá así, y
+    // el resto del panel sigue funcionando.
+    if (error && esColumnaInexistente(error)) {
+      console.warn(
+        "[dashboard] usage_daily sin las columnas de tokens (¿falta la migración 0015?); " +
+          "se lee sin ellas y la tarjeta de tokens saldrá como no disponible",
+      );
+      ({ data, error } = await leer(COLUMNAS_BASE));
+    }
     // Un error de PostgREST llega como VALOR, no como excepción. Se distingue de
     // "no hay filas" (data === [] sin error), que sí es tráfico cero legítimo.
     if (error) {
@@ -252,7 +299,12 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       return { rows: [], failed: true };
     }
     if (!data) return { rows: [], failed: false };
-    const rows = (data as Record<string, number | string>[]).map((r) => ({
+    // Vía `unknown`: al construir el `select` con una lista de columnas variable
+    // (para poder reintentar sin las de 0015) supabase-js pierde la inferencia y
+    // tipa `data` como su union de error. El acceso de abajo es por índice y ya
+    // normaliza cada campo con `Number`/`String`, así que la forma real la fija
+    // el mapeo, no el tipo declarado.
+    const rows = (data as unknown as Record<string, number | string>[]).map((r) => ({
       day: String(r["day"]),
       requests: Number(r["requests"] ?? 0),
       avoidedLlm: Number(r["avoided_llm"] ?? 0),
@@ -265,6 +317,17 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
       measuredRequests: Number(r["measured_requests"] ?? 0),
       measuredBaselineCost: Number(r["measured_baseline_cost"] ?? 0),
       measuredActualCost: Number(r["measured_actual_cost"] ?? 0),
+      // `undefined` cuando la columna no vino (proyecto por detrás de 0015), NO
+      // 0: el derivador distingue las dos cosas y la tarjeta no publica un cero
+      // que se leería como "no ahorraste nada".
+      ...(r["baseline_input_tokens"] != null
+        ? {
+            baselineInputTokens: Number(r["baseline_input_tokens"]),
+            actualInputTokens: Number(r["actual_input_tokens"] ?? 0),
+            baselineOutputTokens: Number(r["baseline_output_tokens"] ?? 0),
+            actualOutputTokens: Number(r["actual_output_tokens"] ?? 0),
+          }
+        : {}),
     }));
     return { rows, failed: false };
   } catch (err) {

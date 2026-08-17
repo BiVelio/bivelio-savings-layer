@@ -137,3 +137,71 @@ describe("esquema vs SDK — usage_daily_calls_add_up", () => {
     expect(checkNuevo({ requests: 2, avoided: 1, actual: 4 })).toBe(false); // mezcla imposible
   });
 });
+
+/**
+ * Los cuatro totales de tokens que añade la migración 0015, contra informes
+ * REALES del pipeline.
+ *
+ * La restricción que el cuerpo pide —«la capa nunca gasta más de lo que habría
+ * costado sin ella»— es FALSA, y aquí se demuestra con el mismo proveedor que ya
+ * reprodujo el 500 de producción. Si alguien la añade alguna vez, este test cae
+ * antes de que lo haga la ingesta de un cliente.
+ */
+const acumularTokens = (reports: SavingsReport[]) =>
+  reports.reduce(
+    (a, r) => ({
+      baselineInput: a.baselineInput + r.tokens.baselineInput,
+      actualInput: a.actualInput + r.tokens.actualInput,
+      baselineOutput: a.baselineOutput + r.tokens.baselineOutput,
+      actualOutput: a.actualOutput + r.tokens.actualOutput,
+    }),
+    { baselineInput: 0, actualInput: 0, baselineOutput: 0, actualOutput: 0 },
+  );
+
+/** Lo único que 0015 SÍ afirma. */
+const sinNegativos = (f: Record<string, number>) => Object.values(f).every((v) => v >= 0);
+
+describe("esquema vs SDK — los totales de tokens de 0015", () => {
+  it("el camino NORMAL nunca produce un contador negativo", async () => {
+    const capa = createSavingsLayer({ provider: new Normal(), costModels: MODELOS });
+    const f = acumularTokens([(await capa.generate(conContrato())).report]);
+    expect(sinNegativos(f)).toBe(true);
+    expect(f.actualInput).toBeGreaterThan(0);
+  });
+
+  it("LA REPARACIÓN GASTA MÁS QUE EL BASELINE — por eso 0015 no restringe eso", async () => {
+    const capa = createSavingsLayer({ provider: new ObligaAReparar(), costModels: MODELOS });
+    const res = await capa.generate(conContrato());
+    expect(res.report.calls.actualLlm).toBe(2);
+
+    const f = acumularTokens([res.report]);
+    // La segunda llamada suma a `actual` y se DESCUENTA del baseline para que el
+    // reintento no se pague a sí mismo. Resultado: actual > baseline.
+    expect(f.actualInput).toBeGreaterThan(f.baselineInput);
+    // O sea que un CHECK `actual_input_tokens <= baseline_input_tokens` habría
+    // reventado la transacción del lote entero, devuelto 500 y dejado a la org
+    // sin reportar — el defecto de 0008, repetido.
+    expect(f.actualInput <= f.baselineInput).toBe(false);
+    // Y lo que 0015 sí afirma se sigue cumpliendo.
+    expect(sinNegativos(f)).toBe(true);
+  });
+
+  it("el ahorro de tokens puede salir NEGATIVO, y es un dato válido", async () => {
+    const capa = createSavingsLayer({ provider: new ObligaAReparar(), costModels: MODELOS });
+    const f = acumularTokens([(await capa.generate(conContrato())).report]);
+    const ahorro =
+      f.baselineInput - f.actualInput + (f.baselineOutput - f.actualOutput);
+    expect(ahorro).toBeLessThan(0);
+  });
+
+  it("un día mixto (normales + reparación) sigue sin negativos", async () => {
+    const normal = createSavingsLayer({ provider: new Normal(), costModels: MODELOS });
+    const roto = createSavingsLayer({ provider: new ObligaAReparar(), costModels: MODELOS });
+    const reports = [
+      (await normal.generate(conContrato())).report,
+      (await normal.generate(conContrato())).report,
+      (await roto.generate(conContrato())).report,
+    ];
+    expect(sinNegativos(acumularTokens(reports))).toBe(true);
+  });
+});

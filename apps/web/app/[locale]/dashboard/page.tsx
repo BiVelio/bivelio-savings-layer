@@ -6,6 +6,7 @@ import { loadDashboard } from "./load";
 import { BillingStateBanner } from "./components/BillingStateBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
+import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
 import { SavingsTrendChart } from "./components/SavingsTrendChart";
 import { TrafficModelMix } from "./components/TrafficModelMix";
 import { VerdictHero } from "./components/VerdictHero";
@@ -51,6 +52,10 @@ export default async function OverviewPage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} />
+          {/* Los TOTALES antes que la atribución por libro: "cuántos tokens he
+              gastado" es la pregunta que se hace primero, y los cuatro libros de
+              abajo la responden por partes que NO se pueden sumar entre sí. */}
+          <TokenTotalsTiles usage={usage} />
           <LiveLedgerTiles usage={usage} ab={ab} />
           <div className="cards" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
             <div className="card" style={{ padding: "16px" }}>

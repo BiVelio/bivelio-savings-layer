@@ -95,6 +95,72 @@ export interface FilaUso {
   measuredRequests?: number;
   measuredBaselineCost?: number;
   measuredActualCost?: number;
+  baselineInputTokens?: number;
+  actualInputTokens?: number;
+  baselineOutputTokens?: number;
+  actualOutputTokens?: number;
+}
+
+/**
+ * Cuántos tokens se gastaron y cuántos se ahorraron.
+ *
+ *   "unavailable" — la base no trae los contadores (proyecto por detrás de la
+ *                   migración 0015). NO es cero: es que no se sabe, y decir cero
+ *                   sería afirmar "no ahorraste nada" sobre datos que no tenemos.
+ *   "empty"       — no hay tráfico. Cero legítimo.
+ *   "ok"          — hay cifras.
+ */
+export type TokenTotals =
+  | { kind: "unavailable" }
+  | { kind: "empty" }
+  | {
+      kind: "ok";
+      /** Lo que el cliente pagó de verdad, entrada + salida. */
+      spent: number;
+      /** baseline − actual, sumando los dos ejes. Puede salir NEGATIVO. */
+      saved: number;
+      /** Desglose, porque el ahorro de salida casi siempre es 0 y hay que poder verlo. */
+      savedInput: number;
+      savedOutput: number;
+      /** Fracción sobre el baseline, para acompañar al valor absoluto. */
+      fraction: number;
+      tone: "pos" | "neg";
+    };
+
+export function deriveTokens(usage: FilaUso[]): TokenTotals {
+  // Basta con que UNA fila traiga los contadores: las columnas son de la tabla,
+  // así que o están para todas o no están para ninguna. Se comprueba con `some`
+  // y no con la primera fila por si la ventana arranca en un día sin tráfico.
+  const hay = usage.some((r) => r.baselineInputTokens !== undefined);
+  if (!hay) return { kind: "unavailable" };
+  if (usage.length === 0) return { kind: "empty" };
+
+  const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
+  const bIn = suma((r) => r.baselineInputTokens ?? 0);
+  const aIn = suma((r) => r.actualInputTokens ?? 0);
+  const bOut = suma((r) => r.baselineOutputTokens ?? 0);
+  const aOut = suma((r) => r.actualOutputTokens ?? 0);
+
+  const spent = aIn + aOut;
+  const baseline = bIn + bOut;
+  // Sin baseline no hay con qué comparar: es tráfico que el proveedor no tarifó
+  // o filas de un SDK anterior. Se trata como vacío en vez de publicar un 100%.
+  if (!(baseline > 0) && spent === 0) return { kind: "empty" };
+
+  const savedInput = bIn - aIn;
+  const savedOutput = bOut - aOut;
+  const saved = savedInput + savedOutput;
+
+  return {
+    kind: "ok",
+    spent,
+    saved,
+    savedInput,
+    savedOutput,
+    fraction: baseline > 0 ? saved / baseline : 0,
+    // Mismo criterio que `deriveVerdict`: una pérdida no se pinta en verde.
+    tone: saved < 0 ? "neg" : "pos",
+  };
 }
 
 /**

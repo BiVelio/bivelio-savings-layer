@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Diesen Namen sehen alle, die Sie einladen.",
       "guardar": "Speichern",
       "guardado": "Gespeichert."
+    },
+    "tokenTotals": {
+      "spentLabel": "Verbrauchte Tokens",
+      "spentWhat": "Eingabe + Ausgabe, was dein Provider berechnet hat",
+      "savedLabel": "Gesparte Tokens",
+      "savedWhat": "gegenüber ohne die Schicht",
+      "savedBreakdown": "{fraction} · Eingabe {input} · Ausgabe {output}",
+      "unavailable": "noch nicht verfügbar: Migration 0015 wurde nicht angewendet",
+      "footnote": "Die <b>Ausgabe-Ersparnis ist fast immer null</b>, und das ist kein Fehler: bei einem tatsächlich ausgeführten Aufruf verkleinert die Schicht die Antwort nicht, also ist ihr Ausgabe-Baseline die gemessene Ausgabe. Token-Ersparnis liegt in der Eingabe und in vermiedenen Aufrufen. Ein NEGATIVER Gesamtwert ist ebenfalls kein Fehler: er bedeutet, dass die Schicht mehr gekostet hat als ohne sie — und wir zeigen ihn."
     }
   },
   "landing": {

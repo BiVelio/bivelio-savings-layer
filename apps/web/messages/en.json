@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "This is the name anyone you invite will see.",
       "guardar": "Save",
       "guardado": "Saved."
+    },
+    "tokenTotals": {
+      "spentLabel": "Tokens spent",
+      "spentWhat": "input + output, what your provider billed",
+      "savedLabel": "Tokens saved",
+      "savedWhat": "versus not using the layer",
+      "savedBreakdown": "{fraction} · input {input} · output {output}",
+      "unavailable": "not available yet: migration 0015 has not been applied",
+      "footnote": "<b>Output saving is almost always zero</b>, and that is not a bug: on a call that actually ran the layer does not shrink the answer, so its output baseline is the measured output. Token savings live in the input and in avoided calls. A NEGATIVE total is not an error either: it means the layer spent more than it would have cost without it, and we show it."
     }
   },
   "landing": {

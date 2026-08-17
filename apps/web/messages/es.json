@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Es el nombre que verá quien reciba una invitación.",
       "guardar": "Guardar",
       "guardado": "Guardado."
+    },
+    "tokenTotals": {
+      "spentLabel": "Tokens gastados",
+      "spentWhat": "entrada + salida, lo que facturó tu proveedor",
+      "savedLabel": "Tokens ahorrados",
+      "savedWhat": "frente a no usar la capa",
+      "savedBreakdown": "{fraction} · entrada {input} · salida {output}",
+      "unavailable": "aún no disponible: falta aplicar la migración 0015",
+      "footnote": "El <b>ahorro de salida es casi siempre cero</b>, y no es un fallo: en una llamada que SÍ se ejecutó la capa no encoge la respuesta, así que su baseline de salida es la salida medida. El ahorro de tokens vive en la entrada y en las llamadas evitadas. Un total NEGATIVO tampoco es un error: significa que la capa gastó más de lo que habría costado sin ella, y se enseña."
     }
   },
   "landing": {

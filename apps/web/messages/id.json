@@ -351,6 +351,15 @@
       "nombreOrgAyuda": "Ini nama yang akan dilihat orang yang Anda undang.",
       "guardar": "Simpan",
       "guardado": "Tersimpan."
+    },
+    "tokenTotals": {
+      "spentLabel": "Token terpakai",
+      "spentWhat": "masukan + keluaran, yang ditagihkan penyediamu",
+      "savedLabel": "Token terhemat",
+      "savedWhat": "dibanding tanpa lapisan",
+      "savedBreakdown": "{fraction} · masukan {input} · keluaran {output}",
+      "unavailable": "belum tersedia: migrasi 0015 belum diterapkan",
+      "footnote": "<b>Penghematan keluaran hampir selalu nol</b>, dan itu bukan bug: pada panggilan yang benar-benar berjalan lapisan tidak memperkecil jawaban, jadi baseline keluarannya adalah keluaran terukur. Penghematan token ada di masukan dan pada panggilan yang dihindari. Total NEGATIF juga bukan kesalahan: artinya lapisan menghabiskan lebih banyak daripada tanpanya, dan kami menampilkannya."
     }
   },
   "landing": {
