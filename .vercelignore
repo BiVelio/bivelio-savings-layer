@@ -1,0 +1,30 @@
+# Vercel sube el directorio desde el que se lanza el deploy, y este proyecto tiene
+# `Root Directory = apps/web`, así que hay que lanzarlo DESDE LA RAÍZ del repo —
+# desde `apps/web` buscaría `apps/web/apps/web`.
+#
+# El problema es lo que arrastra esa raíz. Sin este fichero, un `vercel deploy`
+# intenta empaquetar 15 GB y 461.908 ficheros y se queda subiendo para siempre:
+# dos horas sin una sola línea de salida y el despliegue en UNKNOWN. No falla,
+# que es lo peor — no hay error que leer.
+#
+# La lista es DELIBERADAMENTE CORTA. `pnpm-workspace.yaml` declara `packages/*` y
+# `services/*` como miembros del workspace, así que excluirlos rompería el
+# install por miembros que el lockfile referencia y que no estarían. Todo lo que
+# queda fuera de aquí pesa unos pocos MB: no vale la pena arriesgar el build por
+# ahorrarlos.
+
+# LOS 15 GB. Worktrees de sesiones de agente: cada uno es un checkout completo
+# con su propio node_modules.
+.claude/
+
+# Artefactos regenerables, y ninguno lo usa el build de Next.
+.next/
+apps/web/.next/
+dist/
+benchmarks/out/
+coverage/
+
+# Entornos locales.
+.env
+.env.*
+!.env.example
