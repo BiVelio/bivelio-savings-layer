@@ -28,3 +28,13 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# Claves de firma de licencias. NUNCA suben al deploy. `.vercelignore` es el ÚNICO
+# filtro del upload —el CLI NO aplica las reglas de `.gitignore`, solo excluye el
+# propio fichero—, así que sin esta línea un `vercel deploy` desde la raíz arrastra
+# `keys/license.key.pem`, la privada Ed25519 que firma TODAS las licencias. La web
+# no necesita nada de aquí: firma con la variable `LICENSE_PRIVATE_KEY_B64` de
+# Vercel, y la mitad pública viaja duplicada como constante en
+# `apps/web/lib/license/clave-esperada.ts` (el build tiene su raíz en apps/web y no
+# alcanza este directorio). Atado por `test/vercelignore-cubre-los-secretos.test.ts`.
+keys/
