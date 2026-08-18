@@ -4,12 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useTranslations, useLocale } from "next-intl";
 
+import { CARGA_DE_EJEMPLO, FORMATOS_MOSTRADOS } from "./formatos-verificador";
+
 type Cand = { fmt: string; tokens: number };
-const SAMPLE = JSON.stringify(
-  { users: Array.from({ length: 24 }, (_, i) => ({ id: 1000 + i, name: `user_${i}`, role: i % 3 ? "member" : "admin", active: i % 4 !== 0 })) },
-  null,
-  2,
-);
 
 /** Verify-locally island: the REAL BV-SALA optimizer + a bill projector. Every
  *  output is a heuristic ESTIMATE, never a provider-metered measurement. */
@@ -19,7 +16,7 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
   const t = useTranslations("dashboard");
   const locale = useLocale();
   const [selector, setSelector] = useState<Selector | null>(null);
-  const [payload, setPayload] = useState(SAMPLE);
+  const [payload, setPayload] = useState(CARGA_DE_EJEMPLO);
   const [err, setErr] = useState("");
   const [cands, setCands] = useState<Cand[]>([]);
   const [chosen, setChosen] = useState("json-compact");
@@ -51,8 +48,7 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
     let parsed: unknown;
     try { parsed = JSON.parse(payload); setErr(""); } catch (e) { setErr(t("projectorVerifier.errInvalidData", { message: (e as Error).message })); return; }
     const choice = selector.choose(parsed, { model: "openai/gpt-4o-mini" });
-    const order = ["json-compact", "toon", "csv"];
-    setCands(order.filter((f) => choice.candidateTokens[f] != null).map((f) => ({ fmt: f, tokens: choice.candidateTokens[f]! })));
+    setCands(FORMATOS_MOSTRADOS.filter((f) => choice.candidateTokens[f] != null).map((f) => ({ fmt: f, tokens: choice.candidateTokens[f]! })));
     setChosen(choice.chosen);
   }, [selector, payload]);
 

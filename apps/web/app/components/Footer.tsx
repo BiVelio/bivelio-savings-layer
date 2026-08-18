@@ -100,11 +100,15 @@ export default async function Footer() {
     [t("footer.measured"), "#measured"],
     [t("footer.pricing"), "#pricing"],
   ];
+  // `docs.bivelio.com` y `status.bivelio.com` NO resuelven en DNS: un enlace muerto
+  // a «Estado» en un producto fail-closed con call-home es un golpe de confianza
+  // para el comprador que verifica. «Documentación» apunta a la página del paquete
+  // en npm (README completo) hasta que exista un /docs propio; «Estado» se retira
+  // hasta que haya una página real que enlazar.
   const bivelio: string[][] = [
     [t("footer.home"), corporateUrl("", locale)],
-    [t("footer.docs"), "https://docs.bivelio.com"],
+    [t("footer.docs"), "https://www.npmjs.com/package/@bivelio/savings-layer"],
     [t("footer.security"), corporateUrl("/security", locale)],
-    [t("footer.status"), "https://status.bivelio.com"],
   ];
   // El corpus legal COMPLETO de bivelio.com, no un extracto: seis documentos
   // más el centro legal que los agrupa.

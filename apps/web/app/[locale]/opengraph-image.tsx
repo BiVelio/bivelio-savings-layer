@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 
 import { locales } from "@/i18n/config";
+import { preciosDelPlan } from "@/lib/stripe/pricing";
+import { formatearPrecio } from "@/lib/format/precio";
 
 /**
  * Tarjeta social de la landing, una por idioma. Antes no existía ninguna: cada
@@ -35,6 +37,13 @@ const LINE = "#DEE4E7";
 export default async function Image({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "landing" });
+  // El precio se RELLENA, no se pinta como plantilla. `pricing.amount` es el
+  // marcador ICU `{amount}` (el precio vive en el Price de Stripe, no en los
+  // mensajes), así que llamarlo sin argumento imprimía «{amount} / seat / month»
+  // literal en la tarjeta social de los 12 idiomas. La landing ya lo hace bien
+  // en page.tsx; esto lo espeja.
+  const precios = await preciosDelPlan();
+  const precioMensual = formatearPrecio(locale, precios.monthly);
 
   return new ImageResponse(
     (
@@ -94,7 +103,7 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
               borderRadius: 999,
             }}
           >
-            {t("pricing.amount")} {t("pricing.per")}
+            {t("pricing.amount", { amount: precioMensual })} {t("pricing.per")}
           </div>
         </div>
       </div>
