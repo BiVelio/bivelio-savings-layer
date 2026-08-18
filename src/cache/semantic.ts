@@ -1,4 +1,5 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import { CarryoverPorHash } from "./carryover.js";
 import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
 
@@ -232,7 +233,32 @@ export class InMemorySemanticCache {
     // Sin `embed`, el local. Es lo que convierte esta caché en algo que se puede
     // construir —y por tanto medir— sin traerse un proveedor de embeddings.
     const propio = opts.embed == null;
-    this.embed = opts.embed ?? embebedorLocal;
+    const traido = opts.embed;
+    if (traido == null || traido === embebedorLocal) {
+      // La verja es de IDENTIDAD, no de procedencia: pasar `embebedorLocal`
+      // explícito en las opciones tiene que recibir el mismo trato que
+      // omitirlo — el local cuesta microsegundos y cero dinero, y memorizarlo
+      // pagaría un sha256 por llamada y megas de memoria a cambio de nada.
+      this.embed = embebedorLocal;
+    } else {
+      // Un embed traído por el cliente cuesta red y dinero POR LLAMADA, y hoy
+      // un miss lo pagaba DOS veces con el mismo texto: `find()` embebe la
+      // consulta y, si no hay acierto, `store()` vuelve a embeber ese mismo
+      // `normalizedText`. El carry-over por content-hash lo deja en una, y de
+      // paso coalesce lecturas concurrentes del mismo texto. Se asume `embed`
+      // determinista (mismo texto → mismo vector) — la misma suposición sobre
+      // la que ya descansa comparar la consulta contra vectores almacenados en
+      // peticiones anteriores.
+      const memo = new CarryoverPorHash<number[]>({ maxEntradas: 2048 });
+      // Veto de memoización: un embedder degradado que devuelve [] o un vector
+      // de ceros EN VEZ de lanzar (fallback común en SDKs) no puede quedar
+      // fijado en el memo — fijado, ese texto no acertaría ni sería encontrable
+      // hasta la expulsión LRU, sin un error en ningún sitio. Sin memo, el daño
+      // de una degradación transitoria es una petición, no una temporada.
+      const utilizable = (v: number[]) =>
+        Array.isArray(v) && v.length > 0 && v.some((x) => x !== 0);
+      this.embed = (texto) => memo.obtener(texto, traido, utilizable);
+    }
     this.verify = opts.verify;
     // EL UMBRAL SIGUE AL EMBEBEDOR, y no hacerlo dejaba la palanca muerta igual.
     //

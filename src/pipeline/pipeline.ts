@@ -45,7 +45,8 @@ import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/ba
 import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
-import { shouldCompress } from "../compression/compression.js";
+import { shouldCompress, type Compressor } from "../compression/compression.js";
+import { compresorConCarryover } from "../cache/carryover.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -329,6 +330,28 @@ export class SavingsPipeline {
    * lleva el aviso. Vive en la instancia, no en el módulo.
    */
   private readonly contratosQueIncumplen: Set<string>;
+
+  /**
+   * El compresor del cliente envuelto en carry-over por content-hash — UNO POR
+   * TENANT, creados perezosamente la primera vez que cada tenant comprime.
+   *
+   * Viven en la instancia porque su valor ES acumular entre peticiones: la
+   * misma evidencia o la misma prosa repetida se comprime una vez y se
+   * re-sirve, en lugar de pagar el sidecar en cada petición.
+   *
+   * POR TENANT y no compartido, y no es cortesía: un memo común sería un
+   * oráculo lateral — un acierto a ~0 ms (o coalescer sobre el vuelo de otro)
+   * le diría a un tenant si OTRO envió recientemente contenido byte-idéntico.
+   * El mismo aislamiento duro que ya imponen las claves de la caché exacta y
+   * los filtros de la semántica, aplicado aquí por instancias separadas.
+   *
+   * Memoria acotada por tres topes: 64 entradas y 256 KB por entrada por
+   * tenant (los del envoltorio), y como mucho 32 tenants con memo vivo — al
+   * llegar el 33º cae el más antiguo. El ahorro es gasto auxiliar de la capa
+   * (cómputo/latencia del compresor), no tokens del cliente: no toca ningún
+   * libro.
+   */
+  private readonly compresoresPorTenant = new Map<string, Compressor>();
 
   /**
    * Verja de la caché de prefijo del proveedor.
@@ -1484,7 +1507,23 @@ export class SavingsPipeline {
             continue;
           }
           const before = this.tokensFor(m.content, request);
-          const result = await this.config.compressor.compress({ text: m.content });
+          // El mismo contenido comprimido en una petición anterior no vuelve a
+          // pagar el sidecar: la compresión es función pura del texto, así que
+          // re-servir el resultado ante una entrada idéntica es correcto por
+          // construcción (solo se recuerdan resultados con fidelidad pasada).
+          // El memo es DEL TENANT de esta petición — ver compresoresPorTenant.
+          let compresor = this.compresoresPorTenant.get(canonical.tenantId);
+          if (!compresor) {
+            if (this.compresoresPorTenant.size >= 32) {
+              const masViejo = this.compresoresPorTenant.keys().next().value;
+              if (masViejo != null) this.compresoresPorTenant.delete(masViejo);
+            }
+            compresor = compresorConCarryover(this.config.compressor, {
+              maxEntradas: 64,
+            });
+            this.compresoresPorTenant.set(canonical.tenantId, compresor);
+          }
+          const result = await compresor.compress({ text: m.content });
           const applies = !result.skipped && result.fidelityPassed;
           const after = applies ? this.tokensFor(result.compressed, request) : before;
           if (applies && after < before) {
