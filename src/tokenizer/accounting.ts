@@ -51,6 +51,19 @@ export class SavingsLedger {
   eliminatedOutput = 0;
   providerCachedInput = 0; // Ledger 4
 
+  /**
+   * Tokens the provider billed as prefix-cache WRITES (Anthropic bills these at
+   * 1.25x). The full count is already in `actualInput` at the normal rate; what is
+   * missing is the PREMIUM — the extra 0.25x — a cost the layer PROVOKES by marking
+   * `cache_control`, which nothing in the baseline paid (the unmarked variant was
+   * never run). It is charged to `actual` only, like `extraCostUsd`. Without it, a
+   * request marked cold reported `netSavings 0` with `basis:"measured"` while the
+   * real bill rose ~12.5%.
+   */
+  cacheWriteInputTokens = 0;
+  /** The provider tier's cache-write multiplier (1 = no premium; Anthropic 1.25). */
+  cacheWriteMultiplier = 1;
+
   // --- Regla de una sola regla (single ruler) -------------------------------
   // `baselineInput` se contaba con el estimador LOCAL y `actualInput` con el
   // contador del PROVEEDOR, y estimateCost dividía uno entre otro. Son dos reglas
@@ -160,14 +173,36 @@ export class SavingsLedger {
    * the reader that count.
    */
   cascadeAttempt(
-    usage: { inputTokens: number; outputTokens: number },
+    usage: { inputTokens: number; outputTokens: number; cachedInputTokens?: number },
     cheapPrice: CostModel,
   ): void {
-    this.cascadeInput += Math.max(0, usage.inputTokens);
-    this.cascadeOutput += Math.max(0, usage.outputTokens);
+    const inTot = Math.max(0, usage.inputTokens);
+    const out = Math.max(0, usage.outputTokens);
+    this.cascadeInput += inTot;
+    this.cascadeOutput += out;
+    // Los tokens que el intento barato sirvió de la caché de prefijo se cobran a
+    // la tarifa cacheada, no a la plena: tarifarlos todos a `inputPer1k`
+    // sobreestimaba `actual` en una escalada con prefijo caliente (el descuento
+    // del proveedor es real, lo pagara la capa o no).
+    const cachedRate = cheapPrice.cachedInputPer1k ?? cheapPrice.inputPer1k;
+    const cached = Math.min(Math.max(0, usage.cachedInputTokens ?? 0), inTot);
     this.extraCostUsd +=
-      (Math.max(0, usage.inputTokens) / 1000) * cheapPrice.inputPer1k +
-      (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k;
+      (Math.max(0, inTot - cached) / 1000) * cheapPrice.inputPer1k +
+      (cached / 1000) * cachedRate +
+      (out / 1000) * cheapPrice.outputPer1k;
+  }
+
+  /**
+   * The layer marked `cache_control` and the provider billed `tokens` as cache
+   * writes at `multiplier`x. Records the supplement (the part above the normal
+   * rate, already counted in `actualInput`). Charged to `actual` only, never to
+   * the baseline: the naive path did not mark.
+   */
+  cacheWritePremium(tokens: number, multiplier: number): void {
+    this.cacheWriteInputTokens += Math.max(0, tokens);
+    // Una petición se sirve por un solo modelo: el multiplicador es constante.
+    // Se queda el mayor visto, para no perder la prima si algún camino lo pasa a 1.
+    if (multiplier > this.cacheWriteMultiplier) this.cacheWriteMultiplier = multiplier;
   }
   /**
    * Lo que de verdad hizo la compresión, para publicarlo en
@@ -352,10 +387,19 @@ export class SavingsLedger {
     // estar en `actual`; y es una llamada que puso la capa, así que no puede
     // estar en aquello contra lo que se compara. Una petición que escaló sale con
     // ahorro NEGATIVO, que es exactamente lo que le pasó a su factura.
+    // La PRIMA de escritura de caché: los `cacheWriteInputTokens` ya están en
+    // `actualInput` a tarifa normal (1x); aquí se añade el suplemento hasta la
+    // tarifa real del proveedor (Anthropic 1,25x → +0,25x). Es coste que la capa
+    // provocó al marcar, así que va en `actual` y NO en el baseline — como
+    // `extraCostUsd`. Con multiplicador 1 (OpenAI, proveedor desconocido) el
+    // término es 0 y no toca nada.
+    const primaEscrituraCache =
+      (this.cacheWriteInputTokens / 1000) * model.inputPer1k * Math.max(0, this.cacheWriteMultiplier - 1);
     const actual =
       precioEntrada(this.actualInput) +
       (this.actualOutput / 1000) * model.outputPer1k +
-      this.extraCostUsd;
+      this.extraCostUsd +
+      primaEscrituraCache;
 
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;
