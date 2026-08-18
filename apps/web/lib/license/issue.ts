@@ -198,3 +198,28 @@ export async function revokeAllLicenses(
   for (const jti of ids) await revokeLicense(admin, jti, reason);
   return ids;
 }
+
+/**
+ * Revoca solo las licencias vivas atadas a UNA suscripción, no las de toda la org.
+ *
+ * Cancelar una suscripción no debe apagar el producto de la org si le queda otra
+ * activa: revocar por org (revokeAllLicenses) al cancelar una suscripción
+ * duplicada mataba la flota entera mientras la otra seguía cobrando. Las licencias
+ * llevan `subscription_id` (issueLicense lo escribe), así que se puede acotar.
+ */
+export async function revokeLicensesForSubscription(
+  admin: AdminClient,
+  subscriptionId: string,
+  reason: string,
+): Promise<string[]> {
+  const { data } = await admin
+    .from("licenses")
+    .select("id")
+    .eq("subscription_id", subscriptionId)
+    .eq("revoked", false);
+  const ids = ((data as { id?: string }[] | null) ?? [])
+    .map((r) => r.id)
+    .filter((x): x is string => Boolean(x));
+  for (const jti of ids) await revokeLicense(admin, jti, reason);
+  return ids;
+}

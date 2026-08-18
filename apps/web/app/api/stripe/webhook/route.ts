@@ -14,7 +14,9 @@ import {
   currentLicense,
   currentLicenseJti,
   revokeAllLicenses,
+  revokeLicensesForSubscription,
 } from "@/lib/license/issue";
+import { hasActiveSubscription } from "@/lib/metering/entitlement";
 
 /**
  * Stripe webhook — the ONLY path that issues/re-issues/revokes paid licenses.
@@ -297,6 +299,24 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
     return;
   }
   const f = subFacts(sub);
+  // DOBLE SUSCRIPCIÓN. La guardia del checkout es leer-luego-crear y las sesiones
+  // viven ~24 h, así que una pestaña rezagada o dos compradores pueden crear DOS
+  // suscripciones reales para la misma org. Si al llegar este pago la org YA tiene
+  // otra suscripción activa distinta, es un doble cobro: no se activa un segundo
+  // estado en paralelo (que además rompería la revocación y el true-up). Se alerta
+  // para que un humano cancele+reembolse una en Stripe; NO se resuelve solo, porque
+  // cancelar automáticamente una suscripción pagada es peor que un aviso. Va ANTES
+  // de ensureOrg/upsertSub para no escribir una segunda fila activa (que el índice
+  // único de 0016 rechazaría con un 500).
+  if (await otraSuscripcionActiva(admin, orgId, subId)) {
+    await alertar({
+      nivel: "critico",
+      asunto: "Doble suscripción: la org ya tiene una suscripción activa; segundo pago NO aplicado",
+      detalle: { orgId, subId, eventId },
+    });
+    await audit(admin, orgId, eventId, "doble_suscripcion_rechazada", { subId, origen: "checkout" });
+    return;
+  }
   if (!compradorId) {
     // Sin saber QUIÉN compra no se puede escribir la pertenencia, y sin ella el
     // que acaba de pagar ve "Sin plan activo" y se le reofrece comprar. Antes esto
@@ -347,6 +367,20 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
       asunto: "Cambio de suscripcion SIN org_id: ni asientos ni periodo se han aplicado",
       detalle: { subId: sub.id, status: sub.status, seats: f.quantity, eventId, esActualizacion: isUpdate },
     });
+    return;
+  }
+  // DOBLE SUSCRIPCIÓN, misma regla que el checkout (una org = una suscripción). Un
+  // segundo sub que se ACTIVA mientras la org ya tiene otra activa es un doble
+  // cobro: no se activa en paralelo. Un cambio de asientos de la ÚNICA suscripción
+  // de la org no dispara esto (se excluye por su propio id). Va ANTES de upsertSub
+  // para no escribir la segunda fila activa que el índice único de 0016 rechazaría.
+  if (planForStatus(sub.status) === "pro" && (await otraSuscripcionActiva(admin, f.orgId, sub.id))) {
+    await alertar({
+      nivel: "critico",
+      asunto: "Doble suscripción: la org ya tiene una suscripción activa; la segunda NO se activa",
+      detalle: { orgId: f.orgId, subId: sub.id, eventId, esActualizacion: isUpdate },
+    });
+    await audit(admin, f.orgId, eventId, "doble_suscripcion_rechazada", { subId: sub.id, origen: "sub_upsert" });
     return;
   }
   const { id: subRowId, stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
@@ -408,6 +442,29 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
   }
 }
 
+/**
+ * ¿Le queda a la org OTRA suscripción activa distinta de `exceptoStripeId`?
+ *
+ * Sostiene dos decisiones: al cancelar una suscripción NO se apaga la org si le
+ * queda otra que paga, y al activar una NUEVA no se crea un segundo estado activo
+ * en paralelo. Lee todas las filas de la org y reutiliza el mismo predicado de
+ * vigencia que el candado de ingest (`hasActiveSubscription`), para que no haya
+ * dos criterios de «activa».
+ */
+async function otraSuscripcionActiva(
+  admin: Admin,
+  orgId: string,
+  exceptoStripeId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("subscriptions")
+    .select("stripe_subscription_id, status, current_period_end")
+    .eq("org_id", orgId);
+  const otras = ((data as { stripe_subscription_id?: string; status: string; current_period_end: string | null }[] | null) ?? [])
+    .filter((s) => s.stripe_subscription_id !== exceptoStripeId);
+  return hasActiveSubscription(otras, Date.now());
+}
+
 async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId: string, eventCreated: number) {
   const f = subFacts(sub);
   if (!f.orgId) {
@@ -421,18 +478,30 @@ async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId:
     });
     return;
   }
-  const { stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
+  const { id: subRowId, stale } = await upsertSub(admin, sub, f.orgId, eventCreated);
   // Un `deleted` viejo que reentra tras un evento más nuevo no debe revocar: la
   // suscripción podría haberse recreado. La guardia de orden lo frena.
   if (stale) {
     await audit(admin, f.orgId, eventId, "sub_deleted_stale_ignored", { subId: sub.id, created: eventCreated });
     return;
   }
-  await setOrgPlan(admin, f.orgId, "free");
-  // Revoke EVERY live token (re-issues leave superseded predecessors unrevoked),
-  // not just the newest — else a canceled org keeps PRO on an older license.
-  const revoked = await revokeAllLicenses(admin, f.orgId, "subscription canceled");
-  await audit(admin, f.orgId, eventId, "sub_deleted", { subId: sub.id, revokedJtis: revoked });
+  // REVOCACIÓN POR SUSCRIPCIÓN, no por org. Revocar todas las licencias de la org
+  // al cancelar UNA suscripción mataba la flota entera aunque le quedara otra
+  // activa (el caso de la doble suscripción: cancelas la duplicada para arreglar
+  // el doble cobro y apagas tu propio servicio). Se acota a las licencias de ESTA
+  // suscripción; si no se pudo resolver su fila interna, se cae al comportamiento
+  // conservador (revocar por org) para no dejar viva una licencia de algo cancelado.
+  const revoked = subRowId
+    ? await revokeLicensesForSubscription(admin, subRowId, "subscription canceled")
+    : await revokeAllLicenses(admin, f.orgId, "subscription canceled (no sub row)");
+  // El plan baja a `free` SOLO si a la org no le queda otra suscripción que pague.
+  const quedaOtra = await otraSuscripcionActiva(admin, f.orgId, sub.id);
+  if (!quedaOtra) await setOrgPlan(admin, f.orgId, "free");
+  await audit(admin, f.orgId, eventId, "sub_deleted", {
+    subId: sub.id,
+    revokedJtis: revoked,
+    planBajadoAFree: !quedaOtra,
+  });
 }
 
 async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.Invoice, eventId: string, eventCreated: number) {

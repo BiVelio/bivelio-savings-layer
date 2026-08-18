@@ -45,9 +45,8 @@ export function hasValidLicense(licenses: LicenseRow[], nowMs: number): boolean 
   });
 }
 
-/** ¿La suscripción de Stripe cubre a la org ahora mismo? */
-function hasActiveSubscription(sub: SubscriptionRow | null, nowMs: number): boolean {
-  if (!sub) return false;
+/** ¿Una suscripción concreta cubre a la org ahora mismo? */
+function subscriptionActiva(sub: SubscriptionRow, nowMs: number): boolean {
   // 'trialing' y 'past_due' siguen cubriendo (Stripe da margen antes de cancelar);
   // 'canceled', 'incomplete', 'unpaid', 'incomplete_expired' no.
   if (!["active", "trialing", "past_due"].includes(sub.status)) return false;
@@ -57,6 +56,19 @@ function hasActiveSubscription(sub: SubscriptionRow | null, nowMs: number): bool
   // Un pequeño margen sobre el fin de periodo para no cortar por desfase de reloj
   // con Stripe mientras se procesa la renovación.
   return nowMs <= fin + 3 * DAY_MS;
+}
+
+/**
+ * ¿CUALQUIERA de las suscripciones de la org cubre ahora mismo?
+ *
+ * Recibe TODAS las suscripciones, no la más nueva. El candado leía antes una sola
+ * fila (`order created_at desc limit 1`), así que una suscripción cancelada más
+ * RECIENTE hacía sombra a una activa más vieja: al cancelar una suscripción
+ * duplicada, la org perdía el ingest pese a seguir pagando la otra. Con todas a la
+ * vista, basta una activa para dar derecho.
+ */
+export function hasActiveSubscription(subs: readonly SubscriptionRow[], nowMs: number): boolean {
+  return subs.some((s) => subscriptionActiva(s, nowMs));
 }
 
 export interface EntitlementDecision {
@@ -74,11 +86,11 @@ export interface EntitlementDecision {
  */
 export function decideEntitlement(
   licenses: LicenseRow[],
-  subscription: SubscriptionRow | null,
+  subscriptions: readonly SubscriptionRow[],
   nowMs: number,
 ): EntitlementDecision {
   if (hasValidLicense(licenses, nowMs)) return { blocked: false, reason: "valid-license" };
-  if (hasActiveSubscription(subscription, nowMs)) return { blocked: false, reason: "active-subscription" };
+  if (hasActiveSubscription(subscriptions, nowMs)) return { blocked: false, reason: "active-subscription" };
 
   // Sin licencia válida ni suscripción. ¿Hay señal negativa explícita?
   const tuvoLicencia = licenses.length > 0;

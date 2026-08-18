@@ -27,6 +27,12 @@ interface Escenario {
   pertenencias: { org_id: string; role?: string }[];
   licencia: Record<string, unknown> | null;
   suscripcionActiva: Record<string, unknown> | null;
+  /** Lista de suscripciones de la org, para las consultas de LISTA (doble
+   *  suscripción y revocación por suscripción). Distinta de `suscripcionActiva`,
+   *  que sirve el `.maybeSingle()`. */
+  suscripciones?: Record<string, unknown>[];
+  /** Licencias que devuelve la consulta de lista de `revokeLicensesForSubscription`. */
+  licenciasDeSub?: Record<string, unknown>[];
   serviceAccount: Record<string, unknown> | null;
   errorLicencia?: unknown;
   errorSuscripcion?: unknown;
@@ -100,9 +106,17 @@ function tabla(nombre: string) {
     if (nombre === "organizations") return { data: null, error: null };
     return { data: null, error: null };
   };
-  // `org_members` sin `.maybeSingle()` devuelve una lista (así lo usa la ruta).
-  (q as { then?: unknown }).then = (resolve: (v: unknown) => unknown) =>
-    resolve({ data: nombre === "org_members" ? esc.pertenencias : [], error: null });
+  // Las consultas de LISTA (sin `.maybeSingle()`) resuelven vía `.then`. Aplican
+  // los filtros registrados, para que `.eq("org_id", …)` sobre `subscriptions`
+  // funcione de verdad (lo usan la revocación por suscripción y la detección de
+  // doble suscripción). `org_members` mantiene su comportamiento previo.
+  (q as { then?: unknown }).then = (resolve: (v: unknown) => unknown) => {
+    let data: unknown[] = [];
+    if (nombre === "org_members") data = esc.pertenencias;
+    else if (nombre === "subscriptions") data = (esc.suscripciones ?? []).filter(pasa);
+    else if (nombre === "licenses") data = (esc.licenciasDeSub ?? []).filter(pasa);
+    return resolve({ data, error: null });
+  };
   return q;
 }
 
@@ -165,12 +179,15 @@ const emitirLicencia = vi.fn(async () => ({ jti: "jti-1", token: "bvl.t", expire
 /** Lo que ve el webhook al preguntar "¿esta org ya tiene licencia viva?" — es lo
  *  que decide si la red de seguridad de la PRIMERA licencia entra o no. */
 let licenciaVigente: { jti: string; seats: number } | null = null;
+const revocarPorSuscripcion = vi.fn(async () => [] as string[]);
+const revocarTodas = vi.fn(async () => [] as string[]);
 vi.mock("@/lib/license/issue", () => ({
   issueLicense: (...a: unknown[]) => emitirLicencia(...(a as [])),
   supersedeLicense: async () => {},
   currentLicense: async () => licenciaVigente,
   currentLicenseJti: async () => licenciaVigente?.jti ?? null,
-  revokeAllLicenses: async () => [],
+  revokeAllLicenses: (...a: unknown[]) => revocarTodas(...(a as [])),
+  revokeLicensesForSubscription: (...a: unknown[]) => revocarPorSuscripcion(...(a as [])),
 }));
 
 beforeEach(() => {
@@ -185,9 +202,13 @@ beforeEach(() => {
   esc.pertenencias = [{ org_id: ORG_DEL_CLIENTE, role: "owner" }];
   esc.licencia = null;
   esc.suscripcionActiva = null;
+  esc.suscripciones = [];
+  esc.licenciasDeSub = [];
   esc.serviceAccount = null;
   esc.errorLicencia = undefined;
   esc.errorSuscripcion = undefined;
+  revocarPorSuscripcion.mockClear();
+  revocarTodas.mockClear();
   upserts.length = 0;
   crearSesion.mockClear();
   emitirLicencia.mockClear();
@@ -482,6 +503,77 @@ describe("POST /api/stripe/webhook — B2: la pertenencia se crea al pagar", () 
     // rinde, y el cliente se queda pagando sin licencia para siempre.
     expect(pertenencia!.fila).toMatchObject({ org_id: orgId, user_id: compradorId, role: "owner" });
     expect((pertenencia!.fila as Record<string, unknown>).user_id, "jamás el org id").not.toBe(orgId);
+  });
+});
+
+// --- doble suscripción: un segundo pago no abre un segundo estado activo --------
+
+describe("POST /api/stripe/webhook — un segundo checkout sobre una org que ya paga NO abre otra suscripción", () => {
+  it("rechaza el doble cobro: ni licencia, ni pertenencia, y alerta", async () => {
+    const orgId = "44444444-4444-4444-8444-444444444444";
+    suscripcionStripe.status = "active";
+    // La org YA tiene una suscripción activa DISTINTA (sub_OTRA). Este es el
+    // estado que crea una pestaña de checkout rezagada o dos compradores.
+    esc.suscripciones = [
+      { org_id: orgId, stripe_subscription_id: "sub_OTRA", status: "active", current_period_end: "2099-01-01T00:00:00.000Z" },
+    ];
+    construirEvento.mockReturnValueOnce({
+      id: "evt_doble",
+      type: "checkout.session.completed",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          mode: "subscription",
+          metadata: { org_id: orgId, email: "cliente@example.com", user_id: "cccccccc-1111-4111-8111-cccccccccccc" },
+          client_reference_id: "cccccccc-1111-4111-8111-cccccccccccc",
+          subscription: "sub_123", // distinta de sub_OTRA
+        },
+      },
+    });
+
+    const { POST } = await import("./stripe/webhook/route.js");
+    const res = await POST(
+      new Request("https://savings.bivelio.com/api/stripe/webhook", {
+        method: "POST",
+        body: "{}",
+        headers: { "stripe-signature": "t=1,v1=x" },
+      }),
+    );
+    // Reconocido (200, no reintentos) pero SIN efectos de un segundo activo.
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).not.toHaveBeenCalled();
+    expect(upserts.find((u) => u.tabla === "org_members")).toBeFalsy();
+    // Ni se escribió una segunda fila de suscripción activa.
+    expect(upserts.find((u) => u.tabla === "subscriptions")).toBeFalsy();
+  });
+
+  it("el primer y único checkout SÍ pasa (no rechazamos el caso normal)", async () => {
+    const orgId = "55555555-5555-4555-8555-555555555555";
+    suscripcionStripe.status = "active";
+    esc.suscripciones = []; // la org no tiene ninguna otra
+    construirEvento.mockReturnValueOnce({
+      id: "evt_normal",
+      type: "checkout.session.completed",
+      created: 1_700_000_000,
+      data: {
+        object: {
+          mode: "subscription",
+          metadata: { org_id: orgId, email: "cliente@example.com", user_id: "dddddddd-1111-4111-8111-dddddddddddd" },
+          client_reference_id: "dddddddd-1111-4111-8111-dddddddddddd",
+          subscription: "sub_123",
+        },
+      },
+    });
+    const { POST } = await import("./stripe/webhook/route.js");
+    const res = await POST(
+      new Request("https://savings.bivelio.com/api/stripe/webhook", {
+        method: "POST",
+        body: "{}",
+        headers: { "stripe-signature": "t=1,v1=x" },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalled();
   });
 });
 
