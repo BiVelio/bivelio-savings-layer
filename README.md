@@ -14,6 +14,20 @@ the first.
 > Use is governed by the [LICENSE](./LICENSE) and the BiVelio Terms. Not affiliated
 > with, and not a wrapper around, any third‑party library.
 
+## Requirements
+
+- **ESM-only.** The package is `"type": "module"`. Add `"type": "module"` to your
+  own `package.json`, or use `.mjs` files. From CommonJS, `require()` works on
+  **Node ≥ 22** (native `require(esm)`); on older Node, import it instead.
+- **Node ≥ 20.**
+- To run the `.ts` snippets below **as-is**: Node ≥ 23.6 (native type-stripping) or
+  `npx tsx file.ts`. On Node 20, compile with `tsc` first or use `tsx`. The
+  JavaScript equivalents (below each TS snippet) run on any supported Node.
+- For `tsc --noEmit` against your own code: install `@types/node` and make sure
+  `"types": ["node"]` is in your `tsconfig` if you don't already pull it in.
+- Optional peer `gpt-tokenizer`: install it for exact OpenAI token counts; without
+  it the layer uses a built-in estimator — not required to get started.
+
 ## Install
 
 ```bash
@@ -55,10 +69,34 @@ console.log(report.cost.netSavings);  // → verified savings, per request
 ```
 
 Ask for a **structured contract** and you also get `data`, validated against your
-schema — the JSON-repair and output contracts levers switch on here:
+schema — the JSON-repair and output contracts levers switch on here.
+
+**TypeScript** (the generic types `data`):
 
 ```ts
 const { data, text } = await layer.generate<{ answer: number }>({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+  response: {
+    contractId: "answer:v1",
+    schema: {
+      type: "object",
+      properties: { answer: { type: "number" } },
+      required: ["answer"],
+      additionalProperties: false,
+    },
+    maxOutputTokens: 220,
+  },
+});
+
+console.log(data.answer); // 8
+```
+
+**JavaScript** — identical, just drop the `<{ answer: number }>` type argument (a
+TS-only construct; in plain JS it throws `ReferenceError: number is not defined`):
+
+```js
+const { data, text } = await layer.generate({
   model: "openai/gpt-4o-mini",
   messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
   response: {

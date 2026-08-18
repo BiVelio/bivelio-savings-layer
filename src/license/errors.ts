@@ -22,5 +22,12 @@ export class LicenseError extends Error {
     super(message);
     this.name = "LicenseError";
     if (status) this.status = status;
+    // Omite el frame del propio constructor de la traza: el lector quiere ver
+    // DÓNDE se pidió la licencia (su `generate()`), no la mecánica interna. La
+    // traza corta se apoya además en que el bundle ya no colapsa a una línea
+    // gigante (ver tsup.config.ts).
+    if (typeof Error.captureStackTrace === "function") {
+      Error.captureStackTrace(this, LicenseError);
+    }
   }
 }
