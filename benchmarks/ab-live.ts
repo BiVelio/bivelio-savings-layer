@@ -48,6 +48,8 @@
  *      coste de la tirada lo supera), and optionally a judge endpoint
  *      BVSALA_JUDGE_BASE_URL / _API_KEY / _MODEL for LIVE answer-vs-answer QA.
  */
+import { execSync } from "node:child_process";
+
 import {
   createSavingsLayer,
   OpenAICompatibleProvider,
@@ -88,6 +90,15 @@ import { validateAgainstSchema } from "../src/constraints/validate.js";
 
 function tryParseJson(s: string): unknown {
   try { return JSON.parse(s); } catch { return undefined; }
+}
+
+/** Commit corto del árbol que produjo esta tirada, o "unknown" fuera de git. */
+function gitCommitCorto(): string {
+  try {
+    return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim() || "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 // ── Real per-model price table (USD per 1K tokens). Public list pricing; the
@@ -1211,6 +1222,14 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   const artefacto: Record<string, unknown> = {
     mode,
     ...(modelo ? { model: modelo } : {}),
+    // SELLO DE PROCEDENCIA. Sin él, un artefacto publicado no dice de qué tirada
+    // salió, así que era imposible detectar a posteriori que el JSON y el CSV de
+    // ensayos venían de corridas distintas (el fallo que la auditoría encontró:
+    // el CSV recomputaba 27,1% junto a un JSON que titulaba ≥24,1%). Con la fecha
+    // y el commit, JSON y CSV de la MISMA tirada quedan atados y una desincronía
+    // futura se ve. `pnpm ab:publish` copia los dos del mismo `out/`.
+    generatedAt: new Date().toISOString(),
+    commit: gitCommitCorto(),
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
     pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
     methodology:
