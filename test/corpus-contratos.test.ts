@@ -404,22 +404,22 @@ describe("corpus de contratos · lo que el corpus afirma sobre ESTE código", ()
     expect(normalizeText("99,95 %")).not.toBe(normalizeText("99,5 %"));
   });
 
-  it("la paridad de negación de la caché semántica NO ve «sense» ni «sin»", () => {
-    // TRIPWIRE, no bendición. `NEGATIONS` en src/cache/semantic.ts está escrita
-    // en inglés; el castellano cuela de rebote porque «no» coincide, pero
-    // «sin», «sense», «cap» y «ni» no están. Las notas de ct-ca-003 y ct-ca-013
-    // lo dicen, y quien escriba F6 no debe suponer que ese guardarraíl existe en
-    // catalán. El día que alguien amplíe la lista, esta prueba fallará: la
-    // acción correcta entonces es actualizar esas dos notas, no relajar esto.
+  it("la paridad de negación de la caché semántica YA ve «sense», «sin», «cap» y «ni»", () => {
+    // Antes esto era un TRIPWIRE que documentaba un agujero: `NEGATIONS` estaba
+    // solo en inglés, y «sin»/«sense»/«cap»/«ni» no contaban como negación, así
+    // que «sense cap obligació» ↔ «amb obligació» PASABA el guardarraíl (una
+    // respuesta invertida en es/ca). Las guardas se centralizaron en
+    // `canonicalization/guardas-de-texto.ts` con en/es/ca, y el agujero está
+    // cerrado: el par ahora se SEPARA.
     const conSense = normalizeText(
       "la informacio que el receptor ja tenia abans de la signatura sense cap obligacio de secret",
     );
     const senseSense = normalizeText(
       "la informacio que el receptor ja tenia abans de la signatura amb obligacio de secret",
     );
-    expect(keyTokensMatch(conSense, senseSense)).toBe(true);
+    expect(keyTokensMatch(conSense, senseSense)).toBe(false);
 
-    // El contraste: lo que la lista SÍ separa hoy es la negación inglesa.
+    // Y la negación inglesa se sigue separando, como siempre.
     expect(
       keyTokensMatch(
         normalizeText("the insurance covers water damage in the leased warehouse"),

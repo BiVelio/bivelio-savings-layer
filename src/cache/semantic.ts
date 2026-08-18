@@ -1,4 +1,10 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import {
+  contarNegaciones,
+  multisetIgual,
+  palabras,
+  tokensNumericos,
+} from "../canonicalization/guardas-de-texto.js";
 import { CarryoverPorHash } from "./carryover.js";
 import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
@@ -119,31 +125,14 @@ export function cosine(a: number[], b: number[]): number {
 // is rejected unless the two (already normalized/lowercased) queries agree on the
 // multiset of numeric/date tokens, on negation parity, and on a content-token
 // overlap floor. A rejection only forgoes a cache hit (we make the real call) —
-// it can never produce a wrong answer. (Negation/stopword lists are English-first;
-// the numeric and overlap checks are language-agnostic.)
-const NEGATIONS = new Set([
-  "no", "not", "never", "none", "cannot", "cant", "without", "nor", "nt", "isnt",
-  "arent", "wasnt", "werent", "dont", "doesnt", "didnt", "wont", "cant", "shouldnt",
-]);
-// LA LISTA ERA SOLO INGLESA, Y ESO NO ERA UNA LAGUNA COSMÉTICA: hacía que la
-// MISMA paráfrasis pasara o se cortara según el idioma. Medido con el guard:
+// it can never produce a wrong answer.
 //
-//     "summarize this report" ↔ "please summarize this report"   → PASA
-//     "resume este informe"   ↔ "por favor resume este informe"  → CORTA
-//
-// Idéntica semántica, resultado opuesto, y el producto es español-primero: en
-// castellano y catalán la cortesía y los artículos contaban como tokens de
-// CONTENIDO, así que dos palabras de relleno bastaban para hundir el Jaccard por
-// debajo del 0,75 y negar el acierto. La caché semántica no es que ahorrase
-// poco en esos idiomas: es que no podía acertar.
-//
-// Añadir stopwords NO toca la parte de seguridad. Los números y la paridad de
-// negación se comprueban ANTES y por separado; esto solo iguala el trato del
-// suelo de solapamiento entre idiomas, que es lo que el inglés ya tenía.
-//
-// Se cubren es/ca porque son los idiomas con tráfico y con corpus (el golden set
-// de 150 casos es es/ca). Los otros nueve locales siguen con el trato inglés:
-// conservador, o sea que pierden aciertos, nunca que sirvan de más.
+// Los números y la paridad de negación (en/es/ca) viven ahora en
+// `canonicalization/guardas-de-texto.ts`, compartidos con la fidelidad de la
+// compresión: la lista de negaciones era SOLO inglesa, y como `sin`/`sense`
+// estaban en STOPWORDS y no en negaciones, «factura sin IVA» ↔ «factura con IVA»
+// PASABA. Al centralizar con es/ca eso se corta. STOPWORDS se queda aquí: es
+// específica del suelo de solapamiento de la caché, no de los datos críticos.
 const STOPWORDS = new Set([
   // inglés
   "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are", "was",
@@ -171,35 +160,33 @@ const STOPWORDS = new Set([
 // fresco. El inglés tampoco los tiene, así que dejarlos fuera es lo que iguala
 // las listas en vez de volver el castellano MÁS permisivo que el inglés.
 
-function numericTokens(s: string): string[] {
-  return (s.match(/\d[\d.,:/-]*/g) ?? []).map((t) => t.replace(/[.,:/-]+$/, ""));
-}
-function multisetEqual(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const counts = new Map<string, number>();
-  for (const x of a) counts.set(x, (counts.get(x) ?? 0) + 1);
-  for (const y of b) {
-    const c = counts.get(y);
-    if (!c) return false;
-    counts.set(y, c - 1);
-  }
-  return true;
-}
-function words(s: string): string[] {
-  return s.split(/\s+/).filter(Boolean);
-}
-function negationCount(tokens: string[]): number {
-  return tokens.filter((t) => NEGATIONS.has(t.replace(/'/g, "")) || t.endsWith("n't")).length;
+/**
+ * Quita el prefijo de rol que `canonicalize` fusiona con la primera palabra de
+ * cada turno.
+ *
+ * `normalizedText` es `${role}:${texto}` por turno (canonicalize.ts), así que el
+ * primer token de cada turno llega FUNDIDO: `user:resume`, `user:por`. Al partir
+ * por espacios, ese token nunca casa con su forma pelada y una cortesía inicial
+ * («por»/«please») deja de ser stopword al quedar pegada. Medido: «por favor
+ * resume este informe» ↔ «resume este informe» daba `keyTokensMatch=false` por
+ * este camino aunque el test con cadenas peladas pasara — cortaba en producción
+ * justo el caso que el arreglo es/ca del #87 celebraba. El prefijo lo añade
+ * canonicalize DESPUÉS de normalizar, así que es literal y seguro de quitar.
+ */
+function quitarPrefijosDeRol(s: string): string {
+  return s.replace(/(^|\s)(user|assistant|system|tool):/g, "$1");
 }
 
 /** True when two normalized queries agree on the facts an embedding tends to blur. */
-export function keyTokensMatch(a: string, b: string): boolean {
+export function keyTokensMatch(aRaw: string, bRaw: string): boolean {
+  const a = quitarPrefijosDeRol(aRaw);
+  const b = quitarPrefijosDeRol(bRaw);
   // 1. Numbers/dates must match exactly, as a multiset (100 vs 200; Jul 20 vs 21).
-  if (!multisetEqual(numericTokens(a), numericTokens(b))) return false;
-  const ta = words(a);
-  const tb = words(b);
-  // 2. Negation parity ("aspirin safe" vs "aspirin not safe").
-  if (negationCount(ta) !== negationCount(tb)) return false;
+  if (!multisetIgual(tokensNumericos(a), tokensNumericos(b))) return false;
+  const ta = palabras(a);
+  const tb = palabras(b);
+  // 2. Negation parity ("aspirin safe" vs "aspirin not safe"); en/es/ca.
+  if (contarNegaciones(ta) !== contarNegaciones(tb)) return false;
   // 3. Content-token (non-stopword, non-numeric) overlap floor via Jaccard, which
   //    catches a single swapped entity (north/south) while letting true paraphrases
   //    through ("capital of france" vs "france capital" -> 1.0).

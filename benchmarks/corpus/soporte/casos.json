@@ -76,9 +76,9 @@
       "gemelo": {
         "caso": "sop-es-003",
         "porQueDifiere": "La única diferencia en la consulta es «con el embalaje original» frente a «sin el embalaje original». El reembolso pasa de 100 % a 80 %.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
-      "nota": "Trampa de negación en la CONSULTA, no en la evidencia. «sin» no está en la lista NEGATIONS de src/cache/semantic.ts (que es anglocéntrica: tiene «without», no «sin»), así que la paridad de negación no lo ve. Verificado: esta consulta y la de sop-es-003 colisionan hoy bajo keyTokensMatch. E2 es la MISMA unidad que en el gemelo cambia de papel: aquí es distractora (la 4.1 basta para responder) y allí es necesaria. Es la distractora más dura posible, porque es la cláusula contigua del mismo documento y contesta a la misma pregunta con otra cifra.",
+      "nota": "Trampa de negación en la CONSULTA, no en la evidencia. Antes «sin» no estaba en la lista de negaciones (anglocéntrica: tenía «without», no «sin»), así que la paridad no lo veía y este par COLISIONABA. Las guardas se centralizaron en canonicalization/guardas-de-texto.ts con en/es/ca: «sin» ya cuenta como negación y el par ya NO colisiona bajo keyTokensMatch. E2 es la MISMA unidad que en el gemelo cambia de papel: aquí es distractora (la 4.1 basta para responder) y allí es necesaria. Es la distractora más dura posible, porque es la cláusula contigua del mismo documento y contesta a la misma pregunta con otra cifra.",
       "presupuesto": { "unidades_max": 2 }
     },
     {
@@ -116,9 +116,9 @@
       "gemelo": {
         "caso": "sop-es-002",
         "porQueDifiere": "Una preposición de tres letras invierte qué cláusula aplica. El campo procede coincide (true en ambos); lo que cambia es el importe.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
-      "nota": "El par 002/003 es el peor escenario comercial: procede=true en los dos, así que una respuesta cacheada de forma cruzada PARECE correcta y solo está mal en la cifra. Un juez que compare «¿se admite la devolución?» no detecta el error; solo lo detecta comparar porcentaje_reembolso.",
+      "nota": "El par 002/003 era el peor escenario comercial: procede=true en los dos, así que una respuesta cacheada de forma cruzada PARECÍA correcta y solo estaba mal en la cifra, y «sin» no contaba como negación (lista anglocéntrica), así que colisionaban. Con las guardas centralizadas en en/es/ca, «sin» ya es negación y el par ya NO colisiona bajo keyTokensMatch. Un juez que compare «¿se admite la devolución?» seguiría sin detectar un cruce; ahora es la guarda de negación la que lo impide antes.",
       "presupuesto": { "unidades_max": 2 }
     },
     {
@@ -1026,9 +1026,9 @@
       "gemelo": {
         "caso": "sop-ca-003",
         "porQueDifiere": "«amb l'embalatge» davant de «sense l'embalatge». El reembossament passa del 100 % al 80 %.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
-      "nota": "«sense» tampoc és a la llista NEGATIONS de src/cache/semantic.ts, que només té «without». Comprovat: en consulta CURTA aquest parell se separa per poc (Jaccard 0,714 < 0,75), però en consulta llarga i cortès —la real— COL·LISIONA. La protecció depèn de la longitud de la consulta, no del risc.",
+      "nota": "Abans «sense» no era a la llista de negacions (només «without»), així que en consulta llarga i cortès aquest parell COL·LISIONAVA i la protecció depenia de la longitud de la consulta, no del risc. Amb les guardes centralitzades en/es/ca, «sense» ja compta com a negació i el parell JA NO col·lisiona sota keyTokensMatch, curta o llarga.",
       "presupuesto": { "unidades_max": 2 }
     },
     {
@@ -1066,9 +1066,9 @@
       "gemelo": {
         "caso": "sop-ca-002",
         "porQueDifiere": "Una preposició inverteix quina clàusula s'aplica; procede segueix sent true als dos i només canvia l'import.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
-      "nota": "Parell bessó del castellà 002/003, en català. Que la mateixa trampa funcioni en les dues llengües és el que permet mesurar si el knapsack degrada per idioma, que és exactament el criteri d'acceptació de F6 al pla.",
+      "nota": "Parell bessó del castellà 002/003, en català. Que la mateixa trampa es tanqui en les dues llengües alhora —«sin» i «sense» ara compten com a negació— és el que permet mesurar que la guarda no degrada per idioma, que és exactament el criteri d'acceptació de F6 al pla.",
       "presupuesto": { "unidades_max": 2 }
     },
     {

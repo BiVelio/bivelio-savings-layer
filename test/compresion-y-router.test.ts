@@ -9,9 +9,12 @@ import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
 /** Compresor con PÉRDIDA, del estilo de los que se usan de verdad: poda léxica. */
 const compresorConPerdida = {
   async compress({ text }: { text: string }) {
+    // Poda palabras de relleno NEUTRAS. Antes incluía «never», que es una
+    // negación: quitarla cambia la paridad de negación, y `compresorFiel` (con
+    // razón) rechazaría la reescritura. El relleno del test se cambió a «lorem».
     const podado = text
       .split(/\s+/)
-      .filter((p) => !/^(never|reveal|internal|the|to|user|under|any|circumstance|rules|pricing)$/i.test(p))
+      .filter((p) => !/^(lorem|reveal|internal|the|to|user|under|any|circumstance|rules|pricing)$/i.test(p))
       .join(" ");
     return {
       compressed: podado,
@@ -52,7 +55,7 @@ describe("la compresión no toca los mensajes de sistema", () => {
    * por debajo del tramo cacheable de 1024, la capa se abstendría por dinero y
    * volveríamos a comprobar el prompt de sistema de una compresión que no ocurrió.
    */
-  const podable = Array.from({ length: 200 }, () => "never the to user rules pricing").join(" ");
+  const podable = Array.from({ length: 200 }, () => "lorem the to user rules pricing").join(" ");
   const intocable = Array.from({ length: 250 }, () => "contexto adicional que no se toca").join(" ");
   const peticion = (): SavingsRequest => ({
     model: "openai/gpt-4o-mini",
