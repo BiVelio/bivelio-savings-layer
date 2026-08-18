@@ -45,7 +45,7 @@ import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/ba
 import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
-import { shouldCompress } from "../compression/compression.js";
+import { shouldCompress, compresorFiel } from "../compression/compression.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -1349,18 +1349,68 @@ export class SavingsPipeline {
           formatChoice.encoded + formatChoice.instruction,
           request,
         );
-        ledger.compress(jsonTokens, chosenTokens);
-        insertarAntesDeLaPregunta(messages, {
+        const bloqueJson: ChatMessage = { role: "system", content: jsonEncoded };
+        const bloqueCompacto: ChatMessage = {
           role: "system",
           content:
             (formatChoice.instruction ? formatChoice.instruction + "\n" : "") +
             formatChoice.encoded,
-        });
-        trace.record("serialization", formatChoice.chosen, {
-          reason: formatChoice.reason,
-          jsonTokens,
-          chosenTokens,
-        });
+        };
+
+        // VERJA DE DINERO, PERO SOLO CON UN PREFIJO DECLARADO. Cambiar JSON por un
+        // formato tabular quita tokens SIEMPRE. El único caso en que eso cuesta
+        // dinero es el de la cabecera de `cache-tier.ts`: la reducción saca el
+        // prompt entero del tramo cacheable y el cliente tiene un prefijo estable
+        // que SÍ se estaba cacheando (system + tools). A diferencia de la
+        // compresión —que reescribe el historial y rompe el prefijo byte a byte—,
+        // re-serializar el PAYLOAD no toca la identidad del prefijo (el payload es
+        // dato por-petición, nunca cacheable), así que sin un prefijo medido no
+        // hay caché real que proteger y renunciar al ahorro de tokens saldría
+        // peor. Por eso la verja SOLO corre cuando el cliente declaró su prefijo;
+        // sin él, gana menos-tokens, como hasta ahora.
+        //
+        // El re-encoding es determinista y local: `compressorCostTokens` = 0.
+        const econSer = this.config.compressionEconomics ?? {};
+        let aplicarFormato = true;
+        let razonSerial = "";
+        if (econSer.prefix) {
+          const tramoSer = tramoDeCache(request.model, econSer);
+          const conJson = messages.slice();
+          insertarAntesDeLaPregunta(conJson, bloqueJson);
+          const conCompacto = messages.slice();
+          insertarAntesDeLaPregunta(conCompacto, bloqueCompacto);
+          const dineroSer = politicaDeCompresion({
+            originalTokens: this.tokensFor(this.assemblePromptText(conJson, toolSelection.tools), request),
+            compressedTokens: this.tokensFor(this.assemblePromptText(conCompacto, toolSelection.tools), request),
+            tier: tramoSer,
+            prefix: econSer.prefix,
+            compressorCostTokens: 0,
+          });
+          aplicarFormato = dineroSer.comprimir;
+          razonSerial = dineroSer.razon;
+        }
+
+        if (aplicarFormato) {
+          ledger.compress(jsonTokens, chosenTokens);
+          insertarAntesDeLaPregunta(messages, bloqueCompacto);
+          trace.record("serialization", formatChoice.chosen, {
+            reason: formatChoice.reason,
+            jsonTokens,
+            chosenTokens,
+          });
+        } else {
+          // El formato más barato en tokens saldría más caro en dinero: se manda
+          // JSON y NO se acredita nada. El motivo va a la traza para que el cliente
+          // vea que la capa protegió su caché de prefijo, no que se olvidó. El
+          // informe refleja JSON (el fallback), no el formato descartado.
+          formatChoice = jsonFallbackChoice();
+          insertarAntesDeLaPregunta(messages, bloqueJson);
+          trace.record("serialization", "json-compact", {
+            reason: razonSerial,
+            jsonTokens,
+            chosenTokens,
+          });
+        }
       } else {
         insertarAntesDeLaPregunta(messages, { role: "system", content: jsonEncoded });
         trace.record("serialization", "json-compact", {
@@ -1457,6 +1507,7 @@ export class SavingsPipeline {
       let compressedBefore = 0;
       let compressedAfter = 0;
       let aplicada = false;
+      let spansFidelidadOk = 0;
       let motivo = previa.reason;
 
       if (previa.compress) {
@@ -1484,8 +1535,17 @@ export class SavingsPipeline {
             continue;
           }
           const before = this.tokensFor(m.content, request);
-          const result = await this.config.compressor.compress({ text: m.content });
+          // FIDELIDAD REAL, no vacua. Antes se llamaba a compress() sin
+          // `protectedSpans` y `withProtectedSpans` con lista vacía devolvía
+          // `fidelityPassed:true` incondicional: el único filtro era «¿es más
+          // corto?», y una compresión que invertía una negación se enviaba y se
+          // certificaba como fiel. `compresorFiel` verifica el resultado
+          // (mismos números/fechas y misma paridad de negación en/es/ca) y
+          // descarta la reescritura que cambió un dato crítico — independiente
+          // de lo que haga el compresor del cliente.
+          const result = await compresorFiel(this.config.compressor).compress({ text: m.content });
           const applies = !result.skipped && result.fidelityPassed;
+          if (applies) spansFidelidadOk += 1;
           const after = applies ? this.tokensFor(result.compressed, request) : before;
           if (applies && after < before) {
             rewritten.push({ ...m, content: result.compressed });
@@ -1576,8 +1636,14 @@ export class SavingsPipeline {
       ledger.compressionReport = {
         originalTokens: compressedBefore,
         compressedTokens: compressedAfter,
-        protectedSpans: protegidos,
-        fidelityPassed: true, // solo se aplica lo que pasó la comprobación
+        // Mensajes cuya compresión se aplicó Y pasó la verja de fidelidad
+        // (`compresorFiel`). Antes se publicaba aquí el número de mensajes SYSTEM
+        // intocados —un dato sin relación con la fidelidad—; el recuento de
+        // system va aparte en la traza (`protectedSystemMessages`).
+        protectedSpans: spansFidelidadOk,
+        // Ahora sí lo respalda una comprobación: solo se aplica lo que pasó
+        // `compresorFiel`, así que cuando `aplicada`, la fidelidad se verificó.
+        fidelityPassed: aplicada,
       };
     }
 

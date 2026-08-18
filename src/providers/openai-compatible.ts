@@ -195,7 +195,39 @@ export class OpenAICompatibleProvider implements Provider {
     req: ProviderRequest,
     nativo: boolean,
   ): Promise<Response> {
-    const mensajes = req.messages.map((m) => ({ role: m.role, content: m.content }));
+    // EL CICLO DE HERRAMIENTAS TIENE QUE PODER VOLVER. Chat Completions exige que
+    // un mensaje `role:"tool"` lleve `tool_call_id` y siga a un `assistant` con
+    // `tool_calls`; sin las dos cosas responde 400 y la petición del cliente
+    // revienta —justo en el flujo que el propio SDK documenta (SavingsResult
+    // .toolCalls: «treat an empty text together with a populated toolCalls as a
+    // tool invocation to execute»)—. El mapeo a `{role, content}` a secas
+    // descartaba `toolCallId` y no emitía `tool_calls`, así que el turno de vuelta
+    // no atravesaba este adaptador.
+    const mensajes = req.messages.map((m): Record<string, unknown> => {
+      if (m.role === "tool") {
+        return {
+          role: "tool",
+          content: m.content,
+          // El id que el modelo pidió ejecutar. Se acepta también desde `metadata`
+          // por compatibilidad con llamantes que lo pasaban ahí.
+          tool_call_id: m.toolCallId ?? (m.metadata?.["tool_call_id"] as string | undefined),
+          ...(m.name ? { name: m.name } : {}),
+        };
+      }
+      if (m.role === "assistant" && m.toolCalls && m.toolCalls.length > 0) {
+        return {
+          // Con `tool_calls`, `content` puede ir vacío o null; se manda tal cual.
+          role: "assistant",
+          content: m.content || null,
+          tool_calls: m.toolCalls.map((tc, i) => ({
+            id: tc.id ?? `call_${i}`,
+            type: "function",
+            function: { name: tc.name, arguments: tc.arguments },
+          })),
+        };
+      }
+      return { role: m.role, content: m.content };
+    });
     if (req.schema && !nativo) {
       mensajes.push({ role: "system", content: instruccionDeJsonPorPrompt(req.schema) });
     }
