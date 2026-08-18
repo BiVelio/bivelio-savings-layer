@@ -87,8 +87,8 @@
     "verify": {
       "metaTitle": "Xác minh · BiVelio Savings Layer",
       "eyebrow": "Xác minh cục bộ · không có gì rời khỏi trang này",
-      "title": "Mô phỏng payload của riêng bạn",
-      "intro": "Chạy trình token hóa thực trong trình duyệt của bạn — dán một payload và theo dõi phần hạch toán."
+      "title": "Bạn sẽ tiết kiệm được bao nhiêu?",
+      "intro": "Kiểm tra trong một phút: chọn một ví dụ (hoặc dán dữ liệu của bạn), cho biết mức dùng API và xem khoản tiết kiệm dự kiến. Mọi thứ chạy ngay trong trình duyệt của bạn."
     },
     "install": {
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
@@ -157,7 +157,6 @@
       "errBundle": "Không thể tải gói trình tối ưu.",
       "errInvalidData": "Đang chờ dữ liệu hợp lệ… {message}",
       "yourData": "Dữ liệu của bạn",
-      "trims": "BV‑SALA cắt bớt {tokens} token mỗi lần gửi.",
       "alreadyOptimal": "Đã tối ưu ở đây — BV‑SALA không bao giờ làm nó tệ hơn.",
       "projectorTitle": "Trình dự phóng hóa đơn",
       "estimate": "ƯỚC TÍNH",
@@ -168,7 +167,26 @@
       "inputCut": "Cắt giảm đầu vào",
       "outputCut": "Cắt giảm đầu ra",
       "projectedSaving": "tiết kiệm dự phóng / tháng · theo giá {model}",
-      "projLower": "{baseline} → {opt} · thấp hơn {pct}%"
+      "tryExample": "Thử một ví dụ",
+      "sample_users": "Danh sách người dùng",
+      "sample_orders": "Đơn hàng cửa hàng",
+      "sample_tickets": "Ticket hỗ trợ",
+      "pasteHint": "…hoặc dán JSON của bạn vào đây. Không có gì rời khỏi trình duyệt của bạn.",
+      "savedPct": "−{pct}% token",
+      "trimsFriendly": "Từ {before} xuống {after} token mỗi lần gửi. BV‑SALA chỉ chọn định dạng rẻ nhất — không cần đổi mã của bạn.",
+      "profileLabel": "Bạn đang xây dựng gì?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Trích xuất dữ liệu",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Mức tối ưu hóa",
+      "scenario_cautious": "Thận trọng",
+      "scenario_typical": "Điển hình",
+      "scenario_bold": "Táo bạo",
+      "advanced": "Cài đặt nâng cao",
+      "projFriendly": "Hóa đơn của bạn sẽ giảm từ {baseline} xuống {opt} — ít hơn {pct}%.",
+      "onlyChatTitle": "Bạn chỉ dùng ChatGPT hoặc Claude?",
+      "onlyChatBody": "Vậy thì không có gì để cài đặt: các sản phẩm đó thu phí thuê bao cố định nên không có hóa đơn theo token để cắt giảm. BV‑SALA được cài trong mã của một ứng dụng gọi API OpenAI hoặc Anthropic bằng khóa riêng — chính ở đó nó đo và giảm chi phí thực.",
+      "onlyChatCta": "Bạn đang phát triển ứng dụng? Đến trang Cài đặt"
     },
     "copyButton": {
       "copied": "Đã sao chép",

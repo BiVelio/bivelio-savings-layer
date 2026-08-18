@@ -87,8 +87,8 @@
     "verify": {
       "metaTitle": "Doğrula · BiVelio Savings Layer",
       "eyebrow": "Yerel olarak doğrulayın · bu sayfadan hiçbir şey çıkmaz",
-      "title": "Kendi veri yüklerinizi modelleyin",
-      "intro": "Gerçek tokenleştiriciyi tarayıcınızda çalıştırır — bir veri yükü yapıştırın ve hesaplamayı izleyin."
+      "title": "Sen ne kadar tasarruf ederdin?",
+      "intro": "Bir dakikada gör: bir örnek seç (veya kendi verini yapıştır), API'yi ne kadar kullandığını söyle ve öngörülen tasarrufu gör. Her şey tarayıcında hesaplanır."
     },
     "install": {
       "metaTitle": "Kur · BiVelio Savings Layer",
@@ -157,7 +157,6 @@
       "errBundle": "Optimize edici paketi yüklenemedi.",
       "errInvalidData": "Geçerli veri bekleniyor… {message}",
       "yourData": "Verileriniz",
-      "trims": "BV‑SALA, her gönderimde {tokens} token kırpar.",
       "alreadyOptimal": "Burada zaten en uygun durumda — BV‑SALA asla kötüleştirmez.",
       "projectorTitle": "Fatura tahmincisi",
       "estimate": "TAHMİN",
@@ -168,7 +167,26 @@
       "inputCut": "Girdi kesintisi",
       "outputCut": "Çıktı kesintisi",
       "projectedSaving": "öngörülen tasarruf / ay · {model} fiyatlarıyla",
-      "projLower": "{baseline} → {opt} · %{pct} daha düşük"
+      "tryExample": "Bir örnek dene",
+      "sample_users": "Kullanıcı listesi",
+      "sample_orders": "Mağaza siparişleri",
+      "sample_tickets": "Destek talepleri",
+      "pasteHint": "…veya kendi JSON'unu buraya yapıştır. Hiçbir şey tarayıcından çıkmaz.",
+      "savedPct": "−%{pct} token",
+      "trimsFriendly": "Gönderi başına {before} tokendan {after} tokena. BV‑SALA yalnızca en ucuz formatı seçer — kodunu değiştirmeden.",
+      "profileLabel": "Ne inşa ediyorsun?",
+      "profile_chat": "Sohbet botu",
+      "profile_extract": "Veri çıkarma",
+      "profile_agent": "Ajan / RAG",
+      "scenarioLabel": "Optimizasyon düzeyi",
+      "scenario_cautious": "Temkinli",
+      "scenario_typical": "Tipik",
+      "scenario_bold": "İddialı",
+      "advanced": "Gelişmiş ayarlar",
+      "projFriendly": "Faturan {baseline} yerine {opt} olurdu — %{pct} daha az.",
+      "onlyChatTitle": "Yalnızca ChatGPT veya Claude mu kullanıyorsun?",
+      "onlyChatBody": "O zaman kurulacak bir şey yok: bu ürünler sabit abonelikle çalışır, azaltılacak token faturası yoktur. BV‑SALA, OpenAI veya Anthropic API'sini kendi anahtarıyla çağıran bir uygulamanın koduna kurulur — gerçek harcamayı orada ölçer ve azaltır.",
+      "onlyChatCta": "Uygulama mı geliştiriyorsun? Kuruluma git"
     },
     "copyButton": {
       "copied": "Kopyalandı",
