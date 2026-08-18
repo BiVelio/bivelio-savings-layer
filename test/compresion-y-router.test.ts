@@ -97,6 +97,41 @@ describe("la compresión no toca los mensajes de sistema", () => {
     expect(res.report.compression!.protectedSpans).toBeGreaterThan(0);
     expect(res.report.compression!.originalTokens).toBeGreaterThan(0);
   });
+
+  it("una compresión que INVIERTE una negación se rechaza en el pipeline (fidelidad end-to-end)", async () => {
+    // El pipeline envuelve el compresor del cliente en `compresorFiel`: una
+    // reescritura que se come un «no»/«not» cambia la paridad de negación y se
+    // descarta, mandando el ORIGINAL. Sin ese envoltorio (mutación probada), esto
+    // pasaría desapercibido: es la garantía que hace no-vacua la comprobación de
+    // fidelidad, comprobada a través de `generate()`, no solo en la unidad.
+    const comeNegaciones = {
+      async compress({ text }: { text: string }) {
+        const podado = text.split(/\s+/).filter((p) => p !== "no").join(" ");
+        return {
+          compressed: podado,
+          skipped: false,
+          fidelityPassed: true, // el compresor MIENTE; el pipeline no debe creerle
+          originalTokens: text.length,
+          compressedTokens: podado.length,
+          protectedSpans: 0,
+          reason: "quita negaciones (corrupto)",
+        };
+      },
+    };
+    const proveedor = new ProveedorEspia();
+    const capa = createSavingsLayer({
+      provider: proveedor,
+      compressor: comeNegaciones,
+      costModels: { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } },
+    });
+    const res = await capa.generate(peticion());
+
+    // No se acredita compresión: la reescritura corrupta se descartó.
+    expect(res.report.tokens.compressedInput).toBe(0);
+    // Y el «no» del contexto llega INTACTO al proveedor (sentido preservado).
+    const enviado = (proveedor.ultima?.messages ?? []).map((m) => m.content).join(" ");
+    expect(enviado).toContain("que no se toca");
+  });
 });
 
 /**
