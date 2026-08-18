@@ -250,7 +250,14 @@ describe("⛔ lo que lee el texto normalizado no se queda mudo", () => {
   });
 
   it("un intent que al plegarse se queda vacío no casa con todo", () => {
-    const vacio: ToolDescriptor = { id: "comodin", intents: ["¿?"], risk: "write" };
+    // La guarda vive en la PODA POR RELEVANCIA, que ahora solo aplica a las de
+    // LECTURA: una write en TOOL_ACTION se conserva incondicionalmente (es la
+    // acción de la petición, y su intent casa pocas veces — ver
+    // tool-selector-no-poda-writes.test.ts). Así que el «intent vacío no casa con
+    // todo» se prueba donde la puntuación sigue decidiendo: una read con intent
+    // que se pliega a vacío no debe casar con `includes("")` y colarse en cada
+    // petición, sino quedar podada.
+    const vacio: ToolDescriptor = { id: "comodin", intents: ["¿?"], risk: "read" };
     const seleccion = new ToolSelector().select(
       normalizeText("¿cuál es el total?"),
       [vacio],

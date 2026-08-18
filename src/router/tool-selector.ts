@@ -86,12 +86,42 @@ export class ToolSelector {
     // A non-TOOL_ACTION request never receives write/destructive tools.
     const allowWrites = execution === "TOOL_ACTION";
     const eligible = tools.filter((t) => allowWrites || t.risk === "read");
+    const isWrite = (t: ToolDescriptor) => allowWrites && t.risk !== "read";
 
-    const scored = eligible
+    // LAS DE ESCRITURA EN UNA RUTA TOOL_ACTION SON EL PROPÓSITO DE LA PETICIÓN,
+    // y no se podan por puntuación léxica.
+    //
+    // El router acaba de clasificar esto como «imperativo + hay una herramienta
+    // de escritura»: el modelo TIENE que poder llamarla. Pero el intent de una
+    // write casa con el verbo del usuario pocas veces —`intents:["facturación
+    // saliente"]` contra «envía la factura» da score 0—, así que el viejo
+    // `.filter(score > 0)` la descartaba, el proveedor no veía la capacidad, el
+    // modelo contestaba «claro, la envío» y no se enviaba nada; encima el libro 2
+    // acreditaba sus tokens como ahorro. Es el «peor fallo posible» que el repo ya
+    // cerró para `retrieval:"off"` y `router:false`, aquí abierto por la tercera
+    // puerta. Es la misma regla «LAS DE ESCRITURA VAN SIEMPRE» que schema-on-demand
+    // aplica una etapa después (sobre lo que este selector ya haya podado): sin
+    // esto, no llega a alcanzarlas.
+    //
+    // La poda por relevancia se conserva SOLO para las de lectura: una read cuyo
+    // intent no casa es ahorro legítimo (el proveedor no la necesita) y sigue en
+    // `droppedIds`. Como las writes dejan de estar en `droppedIds`, dejan de
+    // acreditarse como ahorro: el arreglo de contabilidad sale gratis.
+    //
+    // Presupuesto: las writes van PRIMERO (son la acción), y el resto del techo
+    // `maxTools` se llena con las reads de mayor puntuación. Bajo presión de
+    // presupuesto se sacrifica una read, nunca la capacidad de actuar.
+    const reads = eligible.filter((t) => !isWrite(t));
+    const writes = eligible.filter((t) => isWrite(t));
+    const readsRelevantes = reads
       .map((tool) => ({ tool, score: this.scoreIntentMatch(text, tool) }))
       .filter((s) => s.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, this.maxTools);
+      .map((s) => s.tool);
+    const scored = [
+      ...writes.slice(0, this.maxTools),
+      ...readsRelevantes.slice(0, Math.max(0, this.maxTools - writes.length)),
+    ].map((tool) => ({ tool }));
 
     // EL ORDEN QUE SE EMITE NO ES EL ORDEN EN QUE SE ELIGE.
     //
