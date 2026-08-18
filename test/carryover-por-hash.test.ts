@@ -132,6 +132,34 @@ describe("CarryoverPorHash.obtener", () => {
     expect(memo.obtener("x", fn)).toBe("v2");
     expect(memo.inspeccionar("x")).toEqual({ estado: "ready", valor: "v2" });
   });
+
+  it("invalidar alcanza a un cálculo EN VUELO: aterriza como pista, no como valor vivo", async () => {
+    let resolver!: (v: string) => void;
+    let llamadas = 0;
+    const fn = () =>
+      new Promise<string>((res) => {
+        llamadas += 1;
+        resolver = res;
+      });
+    const memo = new CarryoverPorHash<string>();
+
+    const p = memo.obtener("doc", fn);
+    // La única computación está en el aire: invalidar TIENE que verla (antes
+    // devolvía false y el vuelo aterrizaba como ready, perdiendo la invalidación).
+    expect(memo.invalidar("doc")).toBe(true);
+    resolver("pre-invalidacion");
+    await expect(p).resolves.toBe("pre-invalidacion");
+    expect(memo.inspeccionar("doc")).toEqual({
+      estado: "stale",
+      valor: "pre-invalidacion",
+    });
+    // Y el siguiente lector recomputa en limpio.
+    const q = memo.obtener("doc", fn);
+    resolver("fresco");
+    await expect(q).resolves.toBe("fresco");
+    expect(llamadas).toBe(2);
+    expect(memo.inspeccionar("doc")).toEqual({ estado: "ready", valor: "fresco" });
+  });
 });
 
 describe("carryoverEnLote — N contenidos, una llamada, y solo con los sucios", () => {
@@ -161,6 +189,31 @@ describe("carryoverEnLote — N contenidos, una llamada, y solo con los sucios",
     ).rejects.toThrow(/1 resultados para 2 contenidos/);
     // Y no dejó nada a medias que un lector posterior pudiera confundir.
     expect(memo.size).toBe(0);
+  });
+
+  it("un lote mayor que el tope devuelve TODO: la caché es memo, no el canal de retorno", async () => {
+    const memo = new CarryoverPorHash<string>({ maxEntradas: 2 });
+    let lotes = 0;
+    const resultado = await carryoverEnLote(
+      ["a", "b", "c", "d"],
+      (sucios) => {
+        lotes += 1;
+        return sucios.map((s) => s.toUpperCase());
+      },
+      memo,
+    );
+    // Antes: la relectura final pasaba por la LRU, que ya había expulsado a los
+    // primeros miembros del propio lote → error tras PAGAR la llamada entera.
+    expect(resultado).toEqual(["A", "B", "C", "D"]);
+    expect(lotes).toBe(1);
+    expect(memo.size).toBeLessThanOrEqual(2);
+  });
+
+  it("maxEntradas 0 se clampa en vez de convertir cada lote en un error", async () => {
+    const memo = new CarryoverPorHash<string>({ maxEntradas: 0 });
+    const resultado = await carryoverEnLote(["a"], (s) => s.map((x) => `${x}!`), memo);
+    expect(resultado).toEqual(["a!"]);
+    expect(memo.size).toBe(1);
   });
 });
 
@@ -226,6 +279,35 @@ describe("compresorConCarryover", () => {
     await envuelto.compress({ text: "c", protectedSpans: [{ id: "x", text: "a b" }] });
     await envuelto.compress({ text: "b c", protectedSpans: [{ id: "x", text: "a" }] });
     expect(estado.llamadas).toBe(4);
+  });
+
+  it("un span con comillas y corchetes no fabrica la clave de otra petición (inyectividad)", async () => {
+    const { estado, compresor } = compresorContador();
+    const envuelto = compresorConCarryover(compresor);
+    // El intento de inyección contra un concatenador ingenuo: el texto del span
+    // imita la codificación de dos spans. stableStringify escapa y no colisiona.
+    await envuelto.compress({
+      text: "t",
+      protectedSpans: [{ id: "x", text: 'a"],["y","b' }],
+    });
+    await envuelto.compress({
+      text: "t",
+      protectedSpans: [
+        { id: "x", text: "a" },
+        { id: "y", text: "b" },
+      ],
+    });
+    expect(estado.llamadas).toBe(2);
+  });
+
+  it("un resultado que excede el tope de bytes se sirve pero NO se recuerda", async () => {
+    const { estado, compresor } = compresorContador();
+    const envuelto = compresorConCarryover(compresor, { maxBytesPorEntrada: 4 });
+    const req = { text: "RUIDO contenido bastante mas largo que cuatro bytes" };
+    await envuelto.compress(req);
+    await envuelto.compress(req);
+    // Se pagó dos veces: el resultado era demasiado grande para quedarse.
+    expect(estado.llamadas).toBe(2);
   });
 });
 
@@ -295,6 +377,31 @@ describe("caché semántica — un embed traído se paga una vez por texto", () 
     // Identidad, no comportamiento: si alguien envuelve el local, esto cae.
     expect((cache as unknown as { embed: unknown }).embed).toBe(embebedorLocal);
   });
+
+  it("embebedorLocal pasado EXPLÍCITO tampoco se envuelve: la verja es de identidad", () => {
+    // embebedorLocal es export público: una capa de config que siempre rellena
+    // `embed` lo pasa explícito, y tiene que recibir el mismo trato que omitirlo.
+    const cache = new InMemorySemanticCache({ embed: embebedorLocal });
+    expect((cache as unknown as { embed: unknown }).embed).toBe(embebedorLocal);
+  });
+
+  it("un embedding vacío o de ceros NO queda fijado en el memo", async () => {
+    let llamadas = 0;
+    const embed = async (texto: string) => {
+      llamadas += 1;
+      // Primer intento degradado (fallback vacío de un SDK), después el real.
+      return llamadas === 1 ? [] : [texto.length, 1, 2];
+    };
+    const cache = new InMemorySemanticCache({ embed });
+    const c = canonica("consulta con embedder degradado");
+
+    await cache.store(c, { text: "42", storedAtMs: 0 }); // 1ª llamada: []
+    // Sin veto, el [] quedaría memoizado y este find lo reutilizaría para
+    // siempre (miss silencioso permanente); con veto, se re-paga el embed y
+    // llega el vector bueno.
+    await cache.find(c);
+    expect(llamadas).toBe(2);
+  });
 });
 
 // ─── Consumidor 2b: el pipeline entero ───────────────────────────────────────
@@ -338,5 +445,29 @@ describe("pipeline — el compresor no se paga dos veces por el mismo contenido"
     expect(estado.llamadas).toBe(trasLaPrimera);
     // Y la decisión económica sale idéntica con el resultado re-servido.
     expect(res2.report.tokens.compressedInput).toBe(res1.report.tokens.compressedInput);
+  });
+
+  it("el memo de compresión NO cruza tenants: mismo texto, tenants distintos, dos pagos", async () => {
+    const { estado, compresor } = compresorContador();
+    const proveedor = new ProveedorFijo();
+    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const texto = `${repetir("RUIDO", 700)} ${repetir("texto", 350)}`;
+    const peticion = (tenantId: string): SavingsRequest => ({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: texto }],
+      context: { tenantId },
+      savings: { compression: true, exactCache: false },
+    });
+
+    await capa.generate(peticion("tenant-a"));
+    const trasA = estado.llamadas;
+    expect(trasA).toBeGreaterThan(0);
+    // Otro tenant, mismo contenido: un memo compartido le serviría a coste ~0 y
+    // delataría que otro tenant envió ese mismo contenido. Paga su propio pase.
+    await capa.generate(peticion("tenant-b"));
+    expect(estado.llamadas).toBe(trasA * 2);
+    // Y el mismo tenant repitiendo sí re-sirve del suyo.
+    await capa.generate(peticion("tenant-b"));
+    expect(estado.llamadas).toBe(trasA * 2);
   });
 });

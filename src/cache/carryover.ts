@@ -1,4 +1,5 @@
 import { sha256 } from "../util/hash.js";
+import { stableStringify } from "../canonicalization/canonicalize.js";
 import type {
   CompressionResult,
   Compressor,
@@ -22,6 +23,12 @@ import type {
  * texto inyectado por la capa). Los contadores de `stats()` existen para
  * observar el mecanismo, no para reclamarlo.
  *
+ * MÓDULO INTERNO A PROPÓSITO: no se re-exporta desde el barrel de src/cache ni
+ * desde src/index.ts, así que HOY no es API de clientes. La superficie pública
+ * (envolver un compresor propio, el lote de F6, stats() enchufado a
+ * telemetría) se abre cuando llegue su consumidor real — F4/F6 — con JSDoc en
+ * inglés y documentación; hasta entonces los contratos los fijan los tests.
+ *
  * Origen del patrón: due diligence de NanoNets/Graft (2026-08-18) — su idea
  * más valiosa era exactamente esta (resúmenes LLM clavados a un content-hash
  * con carry-over de lo no cambiado). Reimplementado desde cero como patrón,
@@ -39,6 +46,16 @@ type EstadoDeEntrada = "ready" | "stale";
 interface Entrada<T> {
   valor: T;
   estado: EstadoDeEntrada;
+}
+
+/**
+ * An in-flight computation. `invalidado` is flipped by invalidar() so a result
+ * that was computed BEFORE the invalidation can only land as a stale hint,
+ * never as a live value.
+ */
+interface Vuelo<T> {
+  promesa: Promise<T>;
+  invalidado: boolean;
 }
 
 export interface CarryoverStats {
@@ -62,7 +79,7 @@ export interface CarryoverStats {
  */
 export class CarryoverPorHash<T> {
   private readonly entradas = new Map<string, Entrada<T>>();
-  private readonly enVuelo = new Map<string, Promise<T>>();
+  private readonly enVuelo = new Map<string, Vuelo<T>>();
   private readonly maxEntradas: number;
   private readonly version: string;
   private aciertos = 0;
@@ -72,18 +89,25 @@ export class CarryoverPorHash<T> {
   constructor(opts: { maxEntradas?: number; version?: string } = {}) {
     // El tope no es decorativo: un embedding son ~2 KB y un texto comprimido
     // puede ser grande. Sin tope, "memoizar" se convierte en "fugar memoria a
-    // ritmo de tráfico".
-    this.maxEntradas = opts.maxEntradas ?? 2048;
+    // ritmo de tráfico". Y el mínimo es 1: un tope de 0 sobrevivía al `??` y
+    // hacía que guardar expulsara lo recién guardado — pie de escopeta, no
+    // configuración.
+    this.maxEntradas = Math.max(1, opts.maxEntradas ?? 2048);
     this.version = opts.version ?? "";
   }
 
   private clave(contenido: string): string {
-    return sha256(`${this.version}\u0000${contenido}`);
+    // Prefijo de LONGITUD, no separador: hace la frontera versión/contenido
+    // inyectiva con solo caracteres imprimibles. Un separador elegido a mano
+    // puede aparecer dentro de la versión y fabricar la clave de otra entrada
+    // (y los bytes de control crudos en el fuente ya mordieron una vez en este
+    // repo).
+    return sha256(`${this.version.length}:${this.version}${contenido}`);
   }
 
-  /** Current entry for a content, or null. A hit refreshes LRU recency. */
-  inspeccionar(contenido: string): { estado: EstadoDeEntrada; valor: T } | null {
-    const clave = this.clave(contenido);
+  private inspeccionarPorClave(
+    clave: string,
+  ): { estado: EstadoDeEntrada; valor: T } | null {
     const entrada = this.entradas.get(clave);
     if (!entrada) return null;
     if (entrada.estado === "ready") {
@@ -94,11 +118,18 @@ export class CarryoverPorHash<T> {
     return { estado: entrada.estado, valor: entrada.valor };
   }
 
-  /** Store a live value for a content, evicting the oldest entry over the cap. */
-  guardar(contenido: string, valor: T): void {
-    const clave = this.clave(contenido);
+  /** Current entry for a content, or null. A hit refreshes LRU recency. */
+  inspeccionar(contenido: string): { estado: EstadoDeEntrada; valor: T } | null {
+    return this.inspeccionarPorClave(this.clave(contenido));
+  }
+
+  private guardarPorClave(
+    clave: string,
+    valor: T,
+    estado: EstadoDeEntrada = "ready",
+  ): void {
     this.entradas.delete(clave);
-    this.entradas.set(clave, { valor, estado: "ready" });
+    this.entradas.set(clave, { valor, estado });
     while (this.entradas.size > this.maxEntradas) {
       const masVieja = this.entradas.keys().next().value;
       if (masVieja == null) break;
@@ -106,15 +137,31 @@ export class CarryoverPorHash<T> {
     }
   }
 
+  /** Store a live value for a content, evicting the oldest entry over the cap. */
+  guardar(contenido: string, valor: T): void {
+    this.guardarPorClave(this.clave(contenido), valor);
+  }
+
   /**
    * Mark a content's entry stale, keeping the old value as a hint. Returns
-   * whether there was anything to invalidate.
+   * whether there was anything to invalidate — an in-flight computation counts.
+   *
+   * Un cálculo EN VUELO también se invalida: se marca y se suelta del mapa, de
+   * forma que (a) su resultado, que es pre-invalidación, solo puede aterrizar
+   * como pista stale y nunca pisa un valor fresco posterior, y (b) un lector
+   * nuevo arranca un cálculo limpio en vez de coalescer sobre el viejo. Sin
+   * esto, una invalidación que llegara en pleno vuelo se perdía en silencio.
    */
   invalidar(contenido: string): boolean {
-    const entrada = this.entradas.get(this.clave(contenido));
-    if (!entrada) return false;
-    entrada.estado = "stale";
-    return true;
+    const clave = this.clave(contenido);
+    const vuelo = this.enVuelo.get(clave);
+    if (vuelo) {
+      vuelo.invalidado = true;
+      this.enVuelo.delete(clave);
+    }
+    const entrada = this.entradas.get(clave);
+    if (entrada) entrada.estado = "stale";
+    return entrada != null || vuelo != null;
   }
 
   /**
@@ -131,42 +178,59 @@ export class CarryoverPorHash<T> {
    *    lector vuelve a intentar.
    *
    * `cacheable` deja al llamante vetar el guardado de un resultado (p. ej. una
-   * compresión que salió `skipped`): se devuelve igual, pero no se recuerda.
+   * compresión que salió `skipped`, o un embedding vacío de un proveedor
+   * degradado): se devuelve igual, pero no se recuerda.
    */
   obtener(
     contenido: string,
     calcula: (contenido: string) => Promise<T> | T,
     cacheable?: (valor: T) => boolean,
   ): Promise<T> | T {
-    const previa = this.inspeccionar(contenido);
+    // La clave se computa UNA sola vez. Importa: sobre textos de cientos de KB
+    // el sha256 en JS puro es el coste dominante de este camino, y computarla
+    // en inspeccionar, aquí y en guardar eran dos pases de más por miss.
+    const clave = this.clave(contenido);
+    const previa = this.inspeccionarPorClave(clave);
     if (previa?.estado === "ready") {
       this.aciertos += 1;
       return previa.valor;
     }
-    const clave = this.clave(contenido);
     const volando = this.enVuelo.get(clave);
     if (volando) {
       this.coalescidas += 1;
-      return volando;
+      return volando.promesa;
     }
     this.fallos += 1;
     const resultado = calcula(contenido);
     if (!esPromesa(resultado)) {
-      if (cacheable?.(resultado) !== false) this.guardar(contenido, resultado);
+      if (cacheable?.(resultado) !== false) this.guardarPorClave(clave, resultado);
       return resultado;
     }
+    const vuelo: Vuelo<T> = { promesa: resultado, invalidado: false };
     const compartida = resultado.then(
       (valor) => {
-        this.enVuelo.delete(clave);
-        if (cacheable?.(valor) !== false) this.guardar(contenido, valor);
+        if (this.enVuelo.get(clave) === vuelo) this.enVuelo.delete(clave);
+        if (cacheable?.(valor) !== false) {
+          if (vuelo.invalidado) {
+            // Aterrizaje pre-invalidación: como mucho refresca la PISTA. Si un
+            // cálculo posterior ya dejó un valor fresco, no se toca.
+            const actual = this.entradas.get(clave);
+            if (!actual || actual.estado !== "ready") {
+              this.guardarPorClave(clave, valor, "stale");
+            }
+          } else {
+            this.guardarPorClave(clave, valor);
+          }
+        }
         return valor;
       },
       (error: unknown) => {
-        this.enVuelo.delete(clave);
+        if (this.enVuelo.get(clave) === vuelo) this.enVuelo.delete(clave);
         throw error;
       },
     );
-    this.enVuelo.set(clave, compartida);
+    vuelo.promesa = compartida;
+    this.enVuelo.set(clave, vuelo);
     return compartida;
   }
 
@@ -204,18 +268,28 @@ function esPromesa<T>(x: Promise<T> | T): x is Promise<T> {
  * orden de primera aparición, y tiene que devolver exactamente un resultado
  * por sucio. Un desajuste de longitud es un error del transformador y se
  * lanza — memorizar resultados desalineados corrompería la caché en silencio.
+ *
+ * Los valores del lote viajan por un mapa LOCAL y nunca se releen de la caché:
+ * la LRU puede expulsar miembros del propio lote (un lote mayor que el tope —
+ * exactamente el caso F6 de cientos de fragmentos) y un invalidar concurrente
+ * puede dejarlos stale, y ninguna de las dos cosas puede costar resultados ya
+ * pagados ni colar una pista stale como resultado vivo. La caché es un memo
+ * del que este lote se BENEFICIA, no el canal por el que devuelve.
  */
 export async function carryoverEnLote<T>(
   contenidos: readonly string[],
   procesa: (sucios: readonly string[]) => Promise<readonly T[]> | readonly T[],
   cache: CarryoverPorHash<T>,
 ): Promise<T[]> {
+  const valores = new Map<string, T>();
   const sucios: string[] = [];
   const vistos = new Set<string>();
   for (const contenido of contenidos) {
     if (vistos.has(contenido)) continue;
     vistos.add(contenido);
-    if (cache.inspeccionar(contenido)?.estado !== "ready") sucios.push(contenido);
+    const entrada = cache.inspeccionar(contenido);
+    if (entrada?.estado === "ready") valores.set(contenido, entrada.valor);
+    else sucios.push(contenido);
   }
   if (sucios.length > 0) {
     const resultados = await procesa(sucios);
@@ -224,17 +298,13 @@ export async function carryoverEnLote<T>(
         `carryoverEnLote: el transformador devolvió ${resultados.length} resultados para ${sucios.length} contenidos`,
       );
     }
-    sucios.forEach((contenido, i) => cache.guardar(contenido, resultados[i]!));
+    sucios.forEach((contenido, i) => {
+      const valor = resultados[i]!;
+      cache.guardar(contenido, valor);
+      valores.set(contenido, valor);
+    });
   }
-  return contenidos.map((contenido) => {
-    const entrada = cache.inspeccionar(contenido);
-    if (entrada == null) {
-      // Solo alcanzable si `procesa` tocó la caché por debajo; mejor un error
-      // claro que un `undefined` disfrazado de resultado.
-      throw new Error("carryoverEnLote: contenido sin resultado tras procesar");
-    }
-    return entrada.valor;
-  });
+  return contenidos.map((contenido) => valores.get(contenido)!);
 }
 
 /**
@@ -242,34 +312,44 @@ export async function carryoverEnLote<T>(
  *
  * La compresión es función pura del texto (más ratio y spans protegidos), así
  * que servir el resultado anterior ante una entrada IDÉNTICA es correcto por
- * construcción — también entre peticiones y tenants distintos: los dos ya
- * tienen el texto entero en la mano, aquí no viaja nada que no trajeran.
+ * construcción. El AISLAMIENTO entre tenants no se resuelve aquí: el pipeline
+ * mantiene un envoltorio POR TENANT — un memo compartido sería un oráculo
+ * lateral (un acierto a ~0 ms delata que otro tenant envió el mismo contenido).
  *
- * Solo se recuerdan resultados útiles (`fidelityPassed` y no `skipped`): un
- * `skipped` puede deberse a política transitoria y un fallo de fidelidad no
- * merece quedarse. El tope es más bajo que el del memo genérico porque cada
- * entrada carga un texto comprimido entero, no un vector.
+ * Solo se recuerdan resultados útiles (`fidelityPassed`, no `skipped`) y que
+ * quepan en el tope de BYTES por entrada: el memo guarda textos comprimidos
+ * enteros, y sin ese tope 256 entradas de ~400 KB serían ~100 MB en una
+ * instancia longeva. Un resultado enorme se devuelve igual — solo no se
+ * recuerda.
  */
 export function compresorConCarryover(
   inner: Compressor,
-  opts: { maxEntradas?: number } = {},
+  opts: { maxEntradas?: number; maxBytesPorEntrada?: number } = {},
 ): Compressor {
   const cache = new CarryoverPorHash<CompressionResult>({
     maxEntradas: opts.maxEntradas ?? 256,
   });
+  const maxBytes = opts.maxBytesPorEntrada ?? 256 * 1024;
   return {
     async compress(req) {
-      const material = [
-        String(req.targetRatio ?? ""),
-        (req.protectedSpans ?? [])
-          .map((s) => `${s.id}\u0001${s.text}`)
-          .join("\u0002"),
-        req.text,
-      ].join("\u0000");
+      // Codificación INYECTIVA de la identidad completa de la petición vía
+      // stableStringify — el mismo patrón que usan las claves de caché del
+      // resto del producto. Los separadores centinela elegidos a mano eran
+      // colisionables por construcción: un span cuyo texto contuviera el
+      // separador fabricaba la clave de OTRA petición y arrastraba su
+      // fidelityPassed a un conjunto de spans distinto.
+      const material = stableStringify({
+        ratio: req.targetRatio ?? null,
+        spans: (req.protectedSpans ?? []).map((s) => [s.id, s.text]),
+        text: req.text,
+      });
       return cache.obtener(
         material,
         () => inner.compress(req),
-        (valor) => valor.fidelityPassed && !valor.skipped,
+        (valor) =>
+          valor.fidelityPassed &&
+          !valor.skipped &&
+          valor.compressed.length <= maxBytes,
       );
     },
   };
