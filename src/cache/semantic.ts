@@ -1,4 +1,5 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import { CarryoverPorHash } from "./carryover.js";
 import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
 
@@ -232,7 +233,24 @@ export class InMemorySemanticCache {
     // Sin `embed`, el local. Es lo que convierte esta caché en algo que se puede
     // construir —y por tanto medir— sin traerse un proveedor de embeddings.
     const propio = opts.embed == null;
-    this.embed = opts.embed ?? embebedorLocal;
+    const traido = opts.embed;
+    if (traido == null) {
+      this.embed = embebedorLocal;
+    } else {
+      // Un embed traído por el cliente cuesta red y dinero POR LLAMADA, y hoy
+      // un miss lo pagaba DOS veces con el mismo texto: `find()` embebe la
+      // consulta y, si no hay acierto, `store()` vuelve a embeber ese mismo
+      // `normalizedText`. El carry-over por content-hash lo deja en una, y de
+      // paso coalesce lecturas concurrentes del mismo texto.
+      //
+      // El LOCAL no se envuelve, y es a propósito: cuesta microsegundos y cero
+      // dinero, así que memorizar sus vectores (~2 KB cada uno) compraría nada
+      // a cambio de megas. Se asume `embed` determinista (mismo texto → mismo
+      // vector) — la misma suposición sobre la que ya descansa comparar la
+      // consulta contra vectores almacenados en peticiones anteriores.
+      const memo = new CarryoverPorHash<number[]>({ maxEntradas: 2048 });
+      this.embed = (texto) => memo.obtener(texto, traido);
+    }
     this.verify = opts.verify;
     // EL UMBRAL SIGUE AL EMBEBEDOR, y no hacerlo dejaba la palanca muerta igual.
     //

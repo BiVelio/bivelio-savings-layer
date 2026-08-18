@@ -45,7 +45,8 @@ import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/ba
 import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
-import { shouldCompress } from "../compression/compression.js";
+import { shouldCompress, type Compressor } from "../compression/compression.js";
+import { compresorConCarryover } from "../cache/carryover.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -329,6 +330,18 @@ export class SavingsPipeline {
    * lleva el aviso. Vive en la instancia, no en el módulo.
    */
   private readonly contratosQueIncumplen: Set<string>;
+
+  /**
+   * El compresor del cliente envuelto en carry-over por content-hash, creado
+   * perezosamente la primera vez que la etapa de compresión lo necesita.
+   *
+   * Vive en la instancia porque su valor ES acumular entre peticiones: la misma
+   * evidencia o la misma prosa repetida en peticiones sucesivas se comprime una
+   * vez y se re-sirve, en lugar de pagar el sidecar en cada una. El ahorro es
+   * gasto auxiliar de la capa (cómputo/latencia del compresor), no tokens del
+   * cliente: no toca ningún libro.
+   */
+  private compresorEnvuelto: Compressor | null = null;
 
   /**
    * Verja de la caché de prefijo del proveedor.
@@ -1484,7 +1497,14 @@ export class SavingsPipeline {
             continue;
           }
           const before = this.tokensFor(m.content, request);
-          const result = await this.config.compressor.compress({ text: m.content });
+          // El mismo contenido comprimido en una petición anterior no vuelve a
+          // pagar el sidecar: la compresión es función pura del texto, así que
+          // re-servir el resultado ante una entrada idéntica es correcto por
+          // construcción (solo se recuerdan resultados con fidelidad pasada).
+          const compresor = (this.compresorEnvuelto ??= compresorConCarryover(
+            this.config.compressor,
+          ));
+          const result = await compresor.compress({ text: m.content });
           const applies = !result.skipped && result.fidelityPassed;
           const after = applies ? this.tokensFor(result.compressed, request) : before;
           if (applies && after < before) {
