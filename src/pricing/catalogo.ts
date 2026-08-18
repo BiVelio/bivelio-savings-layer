@@ -48,7 +48,14 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
 
   // ── Anthropic ─────────────────────────────────────────────────────────────
   // Anthropic bills a cache read at 10% of the input rate.
+  // La familia 4.5 va con SU precio, no heredado de la 4: cada versión menor es
+  // otro modelo (Opus 4.5 cuesta 5/25 por MTok, no 15/75). Sonnet 4.5 y Haiku 4.5
+  // coinciden en precio con sus 4, pero se listan explícitas para que una
+  // instantánea fechada (`claude-sonnet-4-5-20250929`) herede de la 4.5 y no de la
+  // 4 — la herencia laxa acertaba por casualidad donde el precio coincidía.
+  "claude-opus-4-5":   { inputPer1k: 0.005,  outputPer1k: 0.025, cachedInputPer1k: 0.0005  },
   "claude-opus-4":     { inputPer1k: 0.015,  outputPer1k: 0.075, cachedInputPer1k: 0.0015  },
+  "claude-sonnet-4-5": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-sonnet-4":   { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-haiku-4-5":  { inputPer1k: 0.001,  outputPer1k: 0.005, cachedInputPer1k: 0.0001  },
   "claude-3-5-sonnet": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
@@ -88,16 +95,21 @@ export function buscarPorModelo<T>(
   const porNombre = catalogo[desnudo];
   if (porNombre) return porNombre;
 
-  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. The next
-  // character must be a separator, or `gpt-4` would match `gpt-4o` — which costs
-  // twelve times less — and nobody would notice.
+  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. Dos cortes,
+  // no uno. (1) El siguiente carácter debe ser un separador, o `gpt-4` casaría
+  // `gpt-4o`, que cuesta doce veces menos. (2) Tras el separador tiene que empezar
+  // un AÑO de cuatro dígitos: eso es una instantánea fechada y hereda; cualquier
+  // otra cosa es una VERSIÓN MENOR —`claude-opus-4-5`, `gpt-4.5-preview`,
+  // `gpt-4-32k`— que es OTRO modelo con otro precio y NO hereda. Sin el segundo
+  // corte, `claude-opus-4-5` heredaba el precio de `claude-opus-4` (el triple del
+  // real) en silencio, que es justo el «precio presente y equivocado» que la
+  // cabecera declara peor que estar ausente. Es la misma regla que `porInstantanea`
+  // en `economics/cascada-de-modelos.ts`, que ya la aplicaba para la cascada.
   for (const clave of clavesPorLongitud) {
-    if (desnudo.startsWith(clave)) {
-      const siguiente = desnudo.charAt(clave.length);
-      if (siguiente === "" || siguiente === "-" || siguiente === "." || siguiente === "_") {
-        return catalogo[clave];
-      }
-    }
+    if (!desnudo.startsWith(clave)) continue;
+    const siguiente = desnudo.charAt(clave.length);
+    if (siguiente !== "-" && siguiente !== "." && siguiente !== "_") continue;
+    if (/^\d{4}/.test(desnudo.slice(clave.length + 1))) return catalogo[clave];
   }
   return undefined;
 }
