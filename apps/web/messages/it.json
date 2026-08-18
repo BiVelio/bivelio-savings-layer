@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
-    "metaDescription": "Verifica i tuoi risparmi sugli LLM con BV-SALA: incolla i tuoi dati e osserva il calcolo reale dei token stimare i risparmi in diretta nel tuo browser.",
+    "metaDescription": "Verifica il risparmio sugli LLM con BV‑SALA: ogni cifra misurata sul contatore del provider, con intervallo di confidenza al 95%, mai una stima. Si installa a monte.",
     "hero": {
       "eyebrow": "Il layer di costo LLM che chiunque può installare — con licenza per l'esecuzione",
       "title": "Dimostra i risparmi sui",
       "titleAccent": "tuoi dati.",
-      "lede": "BV‑SALA si posiziona davanti a qualsiasi provider LLM e, per ogni richiesta, sceglie l'esecuzione più economica che rispetta comunque il tuo standard di qualità. Non fidarti solo delle nostre parole: incolla i tuoi dati qui sotto e osserva il contatore muoversi.",
-      "ctaRun": "Esegui il verificatore",
+      "lede": "BV‑SALA si colloca davanti al tuo provider e, a ogni richiesta, sceglie l'esecuzione più economica che rispetta comunque il tuo standard di qualità. Ogni cifra di questa pagina è misurata rispetto al contatore stesso del provider, con l'intervallo di confidenza a fianco — mai una stima.",
+      "ctaRun": "Vedi le cifre misurate",
       "ctaPricing": "Vedi i prezzi",
-      "note": "Funziona interamente nel tuo browser. Nessuna registrazione, niente esce da questa pagina.",
+      "note": "Installazione in cinque righe. La licenza si attiva dal tuo pannello.",
       "proofTitle": "Misurato contro un provider reale",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Ogni passo cade in UN registro diverso, quindi queste cifre non si sommano tra loro. Un passo il cui registro non supera lo zero non compare qui: la restrizione dell'output è stata misurata e non fa risparmiare, quindi non viene annunciata."
     },
     "step2": {
-      "eyebrow": "Passo 2 · Come si misurano i risparmi — riproducibile",
+      "eyebrow": "Come si misurano i risparmi — riproducibile",
       "title": "Entrambi i rami misurati dal tokenizer del provider stesso — nessuna baseline modellata.",
       "body": "Questo è l'output del benchmark A/B (<code>pnpm ab</code>): per ogni scenario invia una richiesta <b>ingenua</b> <i>e</i> la richiesta BV‑SALA allo <b>stesso</b> modello, calcola il prezzo di entrambe dall'utilizzo di token del provider stesso e riporta il <b>limite inferiore di confidenza al 95%</b> — mai la lusinghiera stima puntuale. Nulla è modellato."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Un unico piano, con prezzo per postazione",
       "title": "Pochi centesimi per eseguirlo. Molto di più da risparmiare.",
-      "body": "Nessun piano gratuito, nessuna prova — prova BV‑SALA proprio qui nel tuo browser, poi abbonati per eseguirlo nella tua app. Prezzo per postazione, in {currency}.",
+      "body": "Nessun piano gratuito — guarda il risparmio misurato qui sotto, con il suo intervallo di confidenza a fianco, poi abbonati per eseguirlo nella tua app. Prezzo per postazione, in {currency}.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",

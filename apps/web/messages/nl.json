@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "Verifieer je LLM-besparingen met BV-SALA — plak je eigen gegevens en zie hoe echte tokenboekhouding de besparingen live in je browser berekent.",
+    "metaDescription": "Verifieer je LLM-besparing met BV‑SALA: elk cijfer gemeten tegen de tokenteller van de provider, 95%-betrouwbaarheidsinterval, geen schatting. Staat vóór je provider.",
     "hero": {
       "eyebrow": "De LLM-kostenlaag die iedereen kan installeren — met licentie om te draaien",
       "title": "Bewijs de besparingen op",
       "titleAccent": "je eigen gegevens.",
-      "lede": "BV‑SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Neem niet zomaar ons woord aan — plak hieronder je gegevens en zie de meter bewegen.",
-      "ctaRun": "Start de verificatie",
+      "lede": "BV‑SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Elk cijfer op deze pagina is gemeten tegen de eigen teller van de provider, met het betrouwbaarheidsinterval ernaast — nooit een schatting.",
+      "ctaRun": "Bekijk de metingen",
       "ctaPricing": "Bekijk prijzen",
-      "note": "Draait volledig in je browser. Geen registratie, niets verlaat deze pagina.",
+      "note": "Installatie in vijf regels. Je licentie activeer je vanuit je dashboard.",
       "proofTitle": "Gemeten tegen een echte provider",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Elke stap valt in ÉÉN ander ledger, dus deze cijfers tellen niet bij elkaar op. Een stap waarvan het ledger niet boven nul komt, staat hier niet: de uitvoerbeperking is gemeten en bespaart niet, dus we adverteren die niet."
     },
     "step2": {
-      "eyebrow": "Stap 2 · Hoe besparingen worden gemeten — reproduceerbaar",
+      "eyebrow": "Hoe besparingen worden gemeten — reproduceerbaar",
       "title": "Beide takken gemeten door de tokenizer van de provider zelf — geen gemodelleerde baseline.",
       "body": "Dit is de uitvoer van de A/B-benchmark (<code>pnpm ab</code>): voor elk scenario stuurt hij een <b>naïef</b> verzoek <i>en</i> het BV‑SALA-verzoek naar <b>hetzelfde</b> model, prijst beide op basis van het eigen tokengebruik van de provider en rapporteert de <b>95%-betrouwbaarheidsondergrens</b> — nooit de vleiende puntschatting. Niets is gemodelleerd."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
       "title": "Centen om te draaien. Veelvouden om te besparen.",
-      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in {currency}.",
+      "body": "Geen gratis versie — bekijk hieronder de gemeten besparing, met het betrouwbaarheidsinterval erbij, en abonneer je dan om het in je app te draaien. Geprijsd per seat, in {currency}.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",

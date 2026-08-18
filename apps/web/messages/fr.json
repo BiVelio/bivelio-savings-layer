@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
-    "metaDescription": "Vérifiez vos économies LLM avec BV-SALA — collez vos propres données et regardez la comptabilité réelle des tokens calculer les économies en direct dans votre navigateur.",
+    "metaDescription": "Vérifiez vos économies LLM avec BV‑SALA : chaque chiffre mesuré au compteur du fournisseur, intervalle de confiance à 95 %, jamais une estimation. S'installe devant votre fournisseur.",
     "hero": {
       "eyebrow": "La couche de coût LLM que tout le monde peut installer — sous licence pour s'exécuter",
       "title": "Prouvez les économies sur",
       "titleAccent": "vos propres données.",
-      "lede": "BV‑SALA se place devant n'importe quel fournisseur de LLM et, pour chaque requête, choisit l'exécution la moins chère qui respecte encore votre exigence de qualité. Ne nous croyez pas sur parole — collez vos données ci-dessous et regardez le compteur bouger.",
-      "ctaRun": "Lancer le vérificateur",
+      "lede": "BV‑SALA se place devant votre fournisseur et, à chaque requête, choisit l'exécution la moins chère qui respecte encore votre exigence de qualité. Chaque chiffre de cette page est mesuré face au compteur même du fournisseur, avec son intervalle de confiance juste à côté — jamais une estimation.",
+      "ctaRun": "Voir ce qui est mesuré",
       "ctaPricing": "Voir les tarifs",
-      "note": "S'exécute entièrement dans votre navigateur. Sans inscription, rien ne quitte cette page.",
+      "note": "Installation en cinq lignes. La licence s'active depuis votre tableau de bord.",
       "proofTitle": "Mesuré contre un fournisseur réel",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Chaque étape tombe dans UN registre différent, donc ces chiffres ne s'additionnent pas entre eux. Une étape dont le registre ne dépasse pas zéro n'apparaît pas ici : la restriction de sortie a été mesurée et ne fait pas économiser, donc elle n'est pas annoncée."
     },
     "step2": {
-      "eyebrow": "Étape 2 · Comment les économies sont mesurées — reproductible",
+      "eyebrow": "Comment les économies sont mesurées — reproductible",
       "title": "Les deux bras mesurés par le tokenizer du fournisseur lui-même — sans référence modélisée.",
       "body": "Voici le résultat du benchmark A/B (<code>pnpm ab</code>) : pour chaque scénario, il envoie une requête <b>naïve</b> <i>et</i> la requête BV‑SALA au <b>même</b> modèle, tarife les deux à partir de l'utilisation de tokens du fournisseur, et rapporte la <b>borne inférieure de confiance à 95%</b> — jamais l'estimation ponctuelle flatteuse. Rien n'est modélisé."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Un seul forfait, facturé par siège",
       "title": "Des centimes pour l'exécuter. Des multiples d'économies.",
-      "body": "Pas de version gratuite, pas d'essai — testez BV‑SALA ici même dans votre navigateur, puis abonnez-vous pour l'exécuter dans votre application. Facturé par siège, en {currency}.",
+      "body": "Pas de version gratuite — voyez les économies mesurées ci-dessous, intervalle de confiance à l'appui, puis abonnez-vous pour l'exécuter dans votre application. Tarif par siège, en {currency}.",
       "amount": "{amount}",
       "per": "/ siège / mois",
       "proNote": "<b>PRO</b> — facturé par siège. Ou <b>{yearly} / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",

@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
-    "metaDescription": "Verifica a tua poupança em LLM com o BV-SALA — cola os teus próprios dados e observa a contabilidade real de tokens a calcular a poupança em direto no teu navegador.",
+    "metaDescription": "Verifica a tua poupança em LLM com o BV‑SALA: cada número medido face ao contador do fornecedor, com intervalo de confiança de 95% — nunca uma estimativa.",
     "hero": {
       "eyebrow": "A camada de custo de LLM que qualquer um pode instalar — licenciada para executar",
       "title": "Prova a poupança com",
       "titleAccent": "os teus próprios dados.",
-      "lede": "O BV‑SALA coloca-se à frente de qualquer fornecedor de LLM e, em cada pedido, escolhe a execução mais barata que ainda cumpre o teu limiar de qualidade. Não acredites só na nossa palavra — cola os teus dados abaixo e observa o medidor a mover-se.",
-      "ctaRun": "Executar o verificador",
+      "lede": "O BV‑SALA coloca-se à frente do teu fornecedor e, em cada pedido, escolhe a execução mais barata que ainda cumpre o teu limiar de qualidade. Cada número desta página está medido face ao próprio contador do fornecedor, com o respetivo intervalo de confiança ao lado — nunca uma estimativa.",
+      "ctaRun": "Vê os números medidos",
       "ctaPricing": "Ver preços",
-      "note": "Executa-se inteiramente no teu navegador. Sem registo, nada sai desta página.",
+      "note": "Instalação em cinco linhas. A licença ativa-se a partir do teu painel.",
       "proofTitle": "Medido contra fornecedor real",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Cada passo cai num livro contabilístico DIFERENTE, por isso estes números não se somam entre si. Um passo cujo livro não ultrapassa o zero não aparece aqui: a restrição de saída foi medida e não poupa, por isso não é anunciada."
     },
     "step2": {
-      "eyebrow": "Passo 2 · Como as economias são medidas — reproduzível",
+      "eyebrow": "Como as economias são medidas — reproduzível",
       "title": "Ambos os braços medidos pelo tokenizador do próprio provedor — sem linha de base modelada.",
       "body": "Este é o resultado do benchmark A/B (<code>pnpm ab</code>): para cada cenário envia um pedido <b>ingénuo</b> <i>e</i> o pedido do BV‑SALA ao <b>mesmo</b> modelo, calcula o preço de ambos a partir da própria utilização de tokens do fornecedor e reporta o <b>limite inferior do intervalo de confiança de 95%</b> — nunca a estimativa pontual lisonjeira. Nada é modelado."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
       "title": "Cêntimos para executar. Múltiplos para poupar.",
-      "body": "Sem plano gratuito, sem teste — experimenta o BV‑SALA aqui mesmo no teu navegador e depois subscreve para o executar na tua app. Preço por lugar, em {currency}.",
+      "body": "Sem plano gratuito — vê a poupança medida aqui em baixo, com o respetivo intervalo de confiança ao lado, e subscreve para o executares na tua app. Preço por lugar, em {currency}.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",

@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
-    "metaDescription": "Verifiziere deine LLM-Einsparungen mit BV-SALA — füge deine eigenen Daten ein und beobachte, wie echte Token-Abrechnung die Einsparungen live in deinem Browser berechnet.",
+    "metaDescription": "LLM-Einsparungen mit BV‑SALA verifizieren: jede Zahl am Zähler des Providers gemessen, mit 95%-Konfidenzintervall — keine Schätzung. Sitzt vor deinem Provider.",
     "hero": {
       "eyebrow": "Die LLM-Kostenschicht, die jeder installieren kann — lizenziert zum Ausführen",
       "title": "Beweise die Einsparungen mit",
       "titleAccent": "deinen eigenen Daten.",
-      "lede": "BV‑SALA sitzt vor jedem LLM-Provider und wählt für jede Anfrage die günstigste Ausführung, die trotzdem deine Qualitätsschwelle erfüllt. Verlass dich nicht auf unser Wort — füge unten deine Daten ein und beobachte, wie sich der Zähler bewegt.",
-      "ctaRun": "Verifizierer ausführen",
+      "lede": "BV‑SALA sitzt vor deinem Provider und wählt bei jeder Anfrage die günstigste Ausführung, die deine Qualitätsvorgabe trotzdem erfüllt. Jede Zahl auf dieser Seite ist am providereigenen Zähler gemessen, das Konfidenzintervall gleich daneben — niemals eine Schätzung.",
+      "ctaRun": "Messwerte ansehen",
       "ctaPricing": "Preise ansehen",
-      "note": "Läuft vollständig in deinem Browser. Keine Anmeldung, nichts verlässt diese Seite.",
+      "note": "Installation in fünf Zeilen. Deine Lizenz aktivierst du im Dashboard.",
       "proofTitle": "Gegen echten Provider gemessen",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Jeder Schritt fällt in EIN anderes Ledger, deshalb addieren sich diese Zahlen nicht. Ein Schritt, dessen Ledger die Null nicht übersteigt, erscheint hier nicht: die Ausgabebeschränkung wurde gemessen und spart nicht, also wird sie nicht beworben."
     },
     "step2": {
-      "eyebrow": "Schritt 2 · Wie die Einsparungen gemessen werden — reproduzierbar",
+      "eyebrow": "Wie die Einsparungen gemessen werden — reproduzierbar",
       "title": "Beide Arme durch den Tokenizer des Anbieters selbst gemessen — keine modellierte Baseline.",
       "body": "Dies ist die Ausgabe des A/B-Benchmarks (<code>pnpm ab</code>): für jedes Szenario sendet er eine <b>naive</b> Anfrage <i>und</i> die BV‑SALA-Anfrage an das <b>gleiche</b> Modell, berechnet beide anhand der tatsächlichen Token-Nutzung des Providers und meldet die <b>untere 95%-Konfidenzgrenze</b> — niemals die schmeichelhafte Punktschätzung. Nichts wird modelliert."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Ein Plan, Preis pro Seat",
       "title": "Cent zum Ausführen. Ein Vielfaches beim Sparen.",
-      "body": "Kein Gratis-Tarif, keine Testphase — teste BV‑SALA direkt hier in deinem Browser und abonniere dann, um es in deiner App auszuführen. Preis pro Seat, in {currency}.",
+      "body": "Kein Gratis-Tarif — sieh dir unten die gemessenen Einsparungen an, samt Konfidenzintervall, und abonniere, um es in deiner App auszuführen. Preis pro Seat, in {currency}.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
       "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",

@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
-    "metaDescription": "Verifikasi penghematan LLM Anda dengan BV-SALA — tempel data Anda sendiri dan amati penghitungan token nyata menghitung penghematan secara langsung di browser Anda.",
+    "metaDescription": "Verifikasi penghematan LLM dengan BV‑SALA: tiap angka diukur terhadap penghitung token penyedia, interval kepercayaan 95% — bukan estimasi. Terpasang di depan penyedia.",
     "hero": {
       "eyebrow": "Lapisan biaya LLM yang bisa dipasang siapa saja — berlisensi untuk berjalan",
       "title": "Buktikan penghematan pada",
       "titleAccent": "data Anda sendiri.",
-      "lede": "BV‑SALA berada di depan penyedia LLM mana pun dan, untuk setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Jangan hanya percaya kata kami — tempel data Anda di bawah dan amati meteran bergerak.",
-      "ctaRun": "Jalankan verifikator",
+      "lede": "BV‑SALA berada di depan penyedia Anda dan, pada setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Setiap angka di halaman ini diukur terhadap penghitung milik penyedia itu sendiri, dengan interval kepercayaannya tepat di sebelahnya — bukan estimasi.",
+      "ctaRun": "Lihat yang terukur",
       "ctaPricing": "Lihat harga",
-      "note": "Berjalan sepenuhnya di browser Anda. Tanpa pendaftaran, tidak ada yang keluar dari halaman ini.",
+      "note": "Pasang dalam lima baris. Lisensi diaktifkan dari dasbor Anda.",
       "proofTitle": "Diukur terhadap penyedia nyata",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Setiap langkah jatuh ke SATU buku yang berbeda, jadi angka-angka ini tidak saling dijumlahkan. Langkah yang bukunya tidak melewati nol tidak muncul di sini: pembatasan keluaran sudah diukur dan tidak menghemat, jadi tidak diiklankan."
     },
     "step2": {
-      "eyebrow": "Langkah 2 · Bagaimana penghematan diukur — dapat direproduksi",
+      "eyebrow": "Bagaimana penghematan diukur — dapat direproduksi",
       "title": "Kedua sisi diukur oleh tokenizer penyedia itu sendiri — tanpa baseline yang dimodelkan.",
       "body": "Ini adalah keluaran dari benchmark A/B (<code>pnpm ab</code>): untuk setiap skenario, ia mengirim permintaan <b>naif</b> <i>dan</i> permintaan BV‑SALA ke model yang <b>sama</b>, menetapkan harga keduanya dari penggunaan token milik penyedia sendiri, dan melaporkan <b>batas bawah tingkat keyakinan 95%</b> — bukan estimasi titik yang menyanjung. Tidak ada yang dimodelkan."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Satu paket, dihargai per kursi",
       "title": "Recehan untuk menjalankan. Berlipat untuk menghemat.",
-      "body": "Tanpa tier gratis, tanpa uji coba — uji BV‑SALA langsung di browser Anda, lalu berlangganan untuk menjalankannya di aplikasi Anda. Dihargai per kursi, dalam {currency}.",
+      "body": "Tanpa tier gratis — lihat penghematan terukur di bawah ini, lengkap dengan interval kepercayaannya, lalu berlangganan untuk menjalankannya di aplikasi Anda. Dihargai per kursi, dalam {currency}.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",

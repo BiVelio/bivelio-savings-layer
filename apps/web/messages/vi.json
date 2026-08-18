@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
-    "metaDescription": "Xác minh mức tiết kiệm LLM của bạn với BV-SALA — dán dữ liệu của chính bạn và theo dõi cách hạch toán token thực tính toán mức tiết kiệm trực tiếp trong trình duyệt của bạn.",
+    "metaDescription": "Xác minh mức tiết kiệm LLM với BV‑SALA: mỗi con số đo đối chiếu bộ đếm của nhà cung cấp, kèm khoảng tin cậy 95%, không phải ước tính. Cài trước nhà cung cấp.",
     "hero": {
       "eyebrow": "Lớp chi phí LLM mà ai cũng có thể cài đặt — được cấp phép để chạy",
       "title": "Chứng minh mức tiết kiệm trên",
       "titleAccent": "dữ liệu của chính bạn.",
-      "lede": "BV‑SALA đứng trước bất kỳ nhà cung cấp LLM nào và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Đừng chỉ tin lời chúng tôi — dán dữ liệu của bạn bên dưới và xem đồng hồ đo chuyển động.",
-      "ctaRun": "Chạy trình xác minh",
+      "lede": "BV‑SALA đứng trước nhà cung cấp của bạn và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Mọi con số trên trang này đều được đo đối chiếu với bộ đếm của chính nhà cung cấp, kèm khoảng tin cậy ngay bên cạnh — không bao giờ là ước tính.",
+      "ctaRun": "Xem số liệu đã đo",
       "ctaPricing": "Xem bảng giá",
-      "note": "Chạy hoàn toàn trong trình duyệt của bạn. Không cần đăng ký, không có gì rời khỏi trang này.",
+      "note": "Cài đặt trong năm dòng. Giấy phép được kích hoạt từ bảng điều khiển của bạn.",
       "proofTitle": "Đo với nhà cung cấp thật",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Mỗi bước rơi vào MỘT sổ khác nhau, nên các con số này không cộng dồn với nhau. Một bước mà sổ của nó không vượt qua số không sẽ không xuất hiện ở đây: việc hạn chế đầu ra đã được đo và không tiết kiệm, nên chúng tôi không quảng bá nó."
     },
     "step2": {
-      "eyebrow": "Bước 2 · Cách đo lường mức tiết kiệm — có thể tái lập",
+      "eyebrow": "Cách đo lường mức tiết kiệm — có thể tái lập",
       "title": "Cả hai nhánh được đo bằng chính tokenizer của nhà cung cấp — không có đường cơ sở mô hình hóa.",
       "body": "Đây là kết quả của benchmark A/B (<code>pnpm ab</code>): với mỗi kịch bản, nó gửi một yêu cầu <b>ngây thơ</b> <i>và</i> yêu cầu BV‑SALA đến <b>cùng một</b> mô hình, định giá cả hai từ chính mức sử dụng token của nhà cung cấp, và báo cáo <b>giới hạn dưới của khoảng tin cậy 95%</b> — không bao giờ là ước tính điểm hào nhoáng. Không có gì được mô hình hóa."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Một gói, tính giá theo ghế",
       "title": "Vài xu để chạy. Gấp nhiều lần để tiết kiệm.",
-      "body": "Không có gói miễn phí, không dùng thử — kiểm tra BV‑SALA ngay tại đây trong trình duyệt của bạn, rồi đăng ký để chạy nó trong ứng dụng của bạn. Tính giá theo ghế, bằng {currency}.",
+      "body": "Không có gói miễn phí — hãy xem mức tiết kiệm đã đo ở bên dưới, kèm khoảng tin cậy ngay bên cạnh, rồi đăng ký để chạy nó trong ứng dụng của bạn. Tính giá theo ghế, bằng {currency}.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",

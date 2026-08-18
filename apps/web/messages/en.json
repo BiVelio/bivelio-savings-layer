@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verify Your LLM Savings",
-    "metaDescription": "Verify your LLM savings with BV-SALA — paste your own data and watch real token accounting compute the savings live in your browser.",
+    "metaDescription": "Verify your LLM savings with BV‑SALA: every figure measured against the provider's own token counter, with a 95% confidence interval — never an estimate. Drops in front of your provider.",
     "hero": {
       "eyebrow": "The LLM cost layer anyone can install — licensed to run",
       "title": "Prove the savings on",
       "titleAccent": "your own data.",
-      "lede": "BV‑SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Don't take our word for it — paste your data below and watch the meter move.",
-      "ctaRun": "Run the verifier",
+      "lede": "BV‑SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Every figure on this page is measured against the provider's own counter, confidence interval beside it — never an estimate.",
+      "ctaRun": "See what's measured",
       "ctaPricing": "See pricing",
-      "note": "Runs entirely in your browser. No signup, nothing leaves this page.",
+      "note": "Five lines to install. Your licence activates from your dashboard.",
       "proofTitle": "Measured against a real provider",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Each step falls into ONE different ledger, so these figures do not add up to each other. A step whose ledger does not clear zero does not appear here: output restriction was measured and does not save, so it is not advertised."
     },
     "step2": {
-      "eyebrow": "Step 2 · How savings are measured — reproducible",
+      "eyebrow": "How savings are measured — reproducible",
       "title": "Both arms metered by the provider's own tokenizer — no modeled baseline.",
       "body": "This is the output of the A/B benchmark (<code>pnpm ab</code>): for every scenario it sends a <b>naive</b> request <i>and</i> the BV‑SALA request to the <b>same</b> model, prices both from the provider's own token usage, and reports the <b>95% confidence lower bound</b> — never the flattering point estimate. Nothing is modeled."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "One plan, priced per seat",
       "title": "Pennies to run. Multiples to save.",
-      "body": "No free tier, no trial — test BV‑SALA right here in your browser, then subscribe to run it in your app. Priced per seat, in {currency}.",
+      "body": "No free tier — see the measured savings below, confidence interval and all, then subscribe to run it in your app. Priced per seat, in {currency}.",
       "amount": "{amount}",
       "per": "/ seat / month",
       "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",

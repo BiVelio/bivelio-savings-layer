@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
-    "metaDescription": "LLM tasarrufunuzu BV-SALA ile doğrulayın — kendi verilerinizi yapıştırın ve gerçek token hesaplamasının tasarrufu tarayıcınızda canlı olarak hesaplamasını izleyin.",
+    "metaDescription": "LLM tasarrufunuzu BV‑SALA ile doğrulayın: her rakam sağlayıcının kendi sayacına karşı ölçülür, %95 güven aralığıyla — tahmin değil. Sağlayıcınızın önüne kurulur.",
     "hero": {
       "eyebrow": "Herkesin kurabileceği LLM maliyet katmanı — çalıştırmak için lisanslı",
       "title": "Tasarrufu kanıtlayın",
       "titleAccent": "kendi verilerinizle.",
-      "lede": "BV‑SALA, herhangi bir LLM sağlayıcısının önünde yer alır ve her istek için kalite eşiğinizi hâlâ karşılayan en ucuz yürütmeyi seçer. Bize öylece inanmayın — verilerinizi aşağıya yapıştırın ve sayacın hareketini izleyin.",
-      "ctaRun": "Doğrulayıcıyı çalıştır",
+      "lede": "BV‑SALA sağlayıcınızın önünde konumlanır ve her istekte, kalite sözleşmenizi yine de karşılayan en ucuz çalıştırmayı seçer. Bu sayfadaki her rakam, sağlayıcının kendi sayacına karşı ölçülür; güven aralığı da hemen yanında — asla bir tahmin değil.",
+      "ctaRun": "Ölçülenleri görün",
       "ctaPricing": "Fiyatları gör",
-      "note": "Tamamen tarayıcınızda çalışır. Kayıt yok, bu sayfadan hiçbir şey çıkmaz.",
+      "note": "Beş satırda kurulum. Lisansınız panelinizden etkinleşir.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Her adım FARKLI bir deftere düşer, bu yüzden bu rakamlar birbirine eklenmez. Defteri sıfırı geçmeyen bir adım burada görünmez: çıktı kısıtlaması ölçüldü ve tasarruf ettirmiyor, bu yüzden duyurulmuyor."
     },
     "step2": {
-      "eyebrow": "Adım 2 · Tasarruflar nasıl ölçülür — yinelenebilir",
+      "eyebrow": "Tasarruflar nasıl ölçülür — yinelenebilir",
       "title": "Her iki kol da sağlayıcının kendi tokenizer'ıyla ölçülür — modellenmiş temel yok.",
       "body": "Bu, A/B kıyaslamasının (<code>pnpm ab</code>) çıktısıdır: her senaryo için <b>saf</b> bir istek <i>ve</i> BV‑SALA isteğini <b>aynı</b> modele gönderir, ikisini de sağlayıcının kendi token kullanımına göre fiyatlandırır ve <b>%95 güven alt sınırını</b> raporlar — asla göz boyayan nokta tahminini değil. Hiçbir şey modellenmez."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
       "title": "Çalıştırmak kuruşluk. Tasarruf ise katlarca.",
-      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, {currency} cinsinden fiyatlandırılır.",
+      "body": "Ücretsiz plan yok — ölçülmüş tasarrufu, yanındaki güven aralığıyla birlikte aşağıda görün; ardından kendi uygulamanızda çalıştırmak için abone olun. Koltuk başına, {currency} cinsinden fiyatlandırılır.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",

@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Verifica el teu estalvi en LLM amb BV-SALA: enganxa les teves pròpies dades i observa com la comptabilitat real de tokens calcula l'estalvi en viu al teu navegador.",
+    "metaDescription": "Verifica el teu estalvi en LLM amb BV‑SALA: cada xifra mesurada contra el comptador del proveïdor, amb interval de confiança del 95 %, mai una estimació. S'instal·la davant del teu proveïdor.",
     "hero": {
       "eyebrow": "La capa de cost de LLM que qualsevol pot instal·lar — amb llicència per executar",
       "title": "Demostra l'estalvi amb",
       "titleAccent": "les teves pròpies dades.",
-      "lede": "BV‑SALA se situa davant de qualsevol proveïdor de LLM i, en cada sol·licitud, tria l'execució més barata que encara compleix el teu llindar de qualitat. No ens creguis sense més: enganxa les teves dades a sota i observa com es mou el mesurador.",
-      "ctaRun": "Executa el verificador",
+      "lede": "BV‑SALA se situa davant del teu proveïdor i, a cada petició, tria l'execució més barata que encara compleix el teu contracte de qualitat. Cada xifra d'aquesta pàgina està mesurada contra el comptador del mateix proveïdor, amb el seu interval de confiança al costat — mai una estimació.",
+      "ctaRun": "Veure el mesurat",
       "ctaPricing": "Veure els preus",
-      "note": "S'executa completament al teu navegador. Sense registre, res no surt d'aquesta pàgina.",
+      "note": "Instal·lació en cinc línies. La llicència s'activa des del teu tauler.",
       "proofTitle": "Mesurat contra proveïdor real",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Cada pas cau en UN llibre comptable diferent, així que aquestes xifres no se sumen entre si. Un pas el llibre del qual no supera el zero no apareix aquí: la restricció de sortida es va mesurar i no estalvia, així que no s'anuncia."
     },
     "step2": {
-      "eyebrow": "Pas 2 · Com es mesuren els estalvis — reproduïble",
+      "eyebrow": "Com es mesuren els estalvis — reproduïble",
       "title": "Tots dos braços mesurats pel tokenitzador del mateix proveïdor — sense línia base modelada.",
       "body": "Aquest és el resultat del benchmark A/B (<code>pnpm ab</code>): per a cada escenari envia una sol·licitud <b>ingènua</b> <i>i</i> la sol·licitud de BV‑SALA al <b>mateix</b> model, calcula el preu de totes dues a partir del propi ús de tokens del proveïdor i informa del <b>límit inferior de confiança del 95%</b> — mai l'afalagadora estimació puntual. No hi ha res modelat."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Un sol pla, amb preu per seient",
       "title": "Cèntims per executar. Múltiples per estalviar.",
-      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en {currency}.",
+      "body": "Sense pla gratuït — mira l'estalvi mesurat aquí sota, amb el seu interval de confiança al costat, i subscriu-te per executar-lo a la teva app. Preu per seient, en {currency}.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",

@@ -364,15 +364,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
-    "metaDescription": "Zweryfikuj swoje oszczędności na LLM z BV-SALA — wklej własne dane i patrz, jak prawdziwe rozliczanie tokenów oblicza oszczędności na żywo w Twojej przeglądarce.",
+    "metaDescription": "Zweryfikuj oszczędności na LLM z BV‑SALA: każda liczba mierzona licznikiem dostawcy, z 95% przedziałem ufności — nie szacunek. Wpina się przed Twojego dostawcę.",
     "hero": {
       "eyebrow": "Warstwa kosztów LLM, którą każdy może zainstalować — licencjonowana do uruchamiania",
       "title": "Udowodnij oszczędności na",
       "titleAccent": "własnych danych.",
-      "lede": "BV‑SALA stoi przed dowolnym dostawcą LLM i dla każdego żądania wybiera najtańszą realizację, która wciąż spełnia Twój próg jakości. Nie wierz nam na słowo — wklej swoje dane poniżej i patrz, jak licznik się porusza.",
-      "ctaRun": "Uruchom weryfikator",
+      "lede": "BV‑SALA stoi przed Twoim dostawcą i przy każdym żądaniu wybiera najtańszy sposób wykonania, który wciąż spełnia Twój próg jakości. Każda liczba na tej stronie jest zmierzona względem licznika samego dostawcy, z przedziałem ufności obok — nigdy nie jest szacunkiem.",
+      "ctaRun": "Zobacz, co zmierzono",
       "ctaPricing": "Zobacz cennik",
-      "note": "Działa w całości w Twojej przeglądarce. Bez rejestracji, nic nie opuszcza tej strony.",
+      "note": "Instalacja w pięciu linijkach. Licencję aktywujesz w swoim panelu.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "proofs": [
         {
@@ -418,7 +418,7 @@
       "footnote": "Każdy krok trafia do INNEJ księgi, więc te liczby nie sumują się ze sobą. Krok, którego księga nie przekracza zera, nie pojawia się tutaj: ograniczenie wyjścia zostało zmierzone i nie oszczędza, więc go nie reklamujemy."
     },
     "step2": {
-      "eyebrow": "Krok 2 · Jak mierzone są oszczędności — powtarzalne",
+      "eyebrow": "Jak mierzone są oszczędności — powtarzalne",
       "title": "Obie gałęzie mierzone tokenizerem samego dostawcy — bez modelowanej linii bazowej.",
       "body": "To wynik benchmarku A/B (<code>pnpm ab</code>): dla każdego scenariusza wysyła żądanie <b>naiwne</b> <i>oraz</i> żądanie BV‑SALA do <b>tego samego</b> modelu, wycenia oba na podstawie własnego zużycia tokenów dostawcy i raportuje <b>dolną granicę 95% przedziału ufności</b> — nigdy pochlebnej estymacji punktowej. Nic nie jest modelowane."
     },
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
       "title": "Grosze za uruchomienie. Wielokrotności do zaoszczędzenia.",
-      "body": "Bez darmowego planu, bez okresu próbnego — przetestuj BV‑SALA właśnie tutaj, w przeglądarce, a następnie wykup subskrypcję, aby uruchomić to w swojej aplikacji. Cena za stanowisko, w {currency}.",
+      "body": "Bez darmowego planu — zobacz zmierzone oszczędności poniżej, wraz z przedziałem ufności, i wykup subskrypcję, aby uruchomić to we własnej aplikacji. Cena za stanowisko, w {currency}.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",

@@ -364,7 +364,7 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
-    "metaDescription": "Verifica tu ahorro en LLM con BV-SALA: pega tus propios datos y observa cómo la contabilidad real de tokens calcula el ahorro en vivo en tu navegador.",
+    "metaDescription": "Verifica tu ahorro en LLM con BV‑SALA: cada cifra medida contra el contador del proveedor, con intervalo de confianza al 95 %, no una estimación. Se instala delante de tu proveedor.",
     "hero": {
       "eyebrow": "Capa de coste para LLM · SDK con licencia",
       "title": "Tu factura de LLM,",
@@ -482,7 +482,7 @@
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
       "title": "Céntimos para ejecutar. Múltiplos para ahorrar.",
-      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en {currency}.",
+      "body": "Sin plan gratuito — mira el ahorro medido aquí abajo, con su intervalo de confianza al lado, y suscríbete para ejecutarlo en tu app. Precio por asiento, en {currency}.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
