@@ -491,8 +491,8 @@ export class SavingsPipeline {
     descubrimientoActivo: boolean,
     mensajesDePrefijo: number,
     trace: TraceCollector,
-  ): { marcar: boolean; huella: string; mensajesDePrefijo: number } {
-    const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0 };
+  ): { marcar: boolean; huella: string; mensajesDePrefijo: number; cacheWriteMultiplier: number } {
+    const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0, cacheWriteMultiplier: 1 };
 
     const tier = tramoDelModelo(modeloServido, this.config.compressionEconomics);
     if (!tier) {
@@ -559,7 +559,7 @@ export class SavingsPipeline {
       observedHitRate: decision.observada,
     });
     return decision.marcar
-      ? { marcar: true, huella, mensajesDePrefijo }
+      ? { marcar: true, huella, mensajesDePrefijo, cacheWriteMultiplier: tier.cacheWriteMultiplier }
       : nada;
   }
 
@@ -1941,6 +1941,14 @@ export class SavingsPipeline {
     // ocasión de acertar, y la verja se apagaría por una medición que no es
     // sobre ella.
     if (marcado.marcar) {
+      // La PRIMA de escritura (1,25x en Anthropic) es un coste que ESTA marca
+      // provoca. Ya no se queda solo en la traza: se carga en `actual` para que
+      // `netSavings` refleje que marcar costó dinero. El recuento entero está en
+      // `actualInput` a tarifa normal; esto añade el suplemento.
+      ledger.cacheWritePremium(
+        usoDeLaLlamadaMarcada.cacheWriteInputTokens ?? 0,
+        marcado.cacheWriteMultiplier,
+      );
       // LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE, no de dos expresiones
       // equivalentes. Con dos, una mutación de la que alimenta a la VERJA —la que
       // decide el dinero— deja la traza intacta, y un test que mire la traza sigue
