@@ -53,7 +53,20 @@ export default defineConfig([
     //
     // Los tipos (dts) SIGUEN legibles a propósito: son la API pública y el
     // cliente tiene que poder leerlos.
+    //
+    // MINIFICADO COMPLETO (nombres mangleados, comentarios fuera: el mapa del
+    // ataque sigue escondido) PERO CON LÍNEAS ACOTADAS. El `minify: true` a secas
+    // colapsaba todo a líneas de ~52 KB, así que un LicenseError sin capturar
+    // volcaba 50 KB de una sola línea minificada ANTES del mensaje (Node imprime
+    // el marco de código del punto de throw): el mensaje de licencia quedaba
+    // enterrado y parecía que el paquete había reventado. `lineLimit` parte las
+    // líneas sin dejar de minificar, así que la traza apunta a una línea corta y
+    // NO se re-filtran los comentarios (que es lo que pasaba al conservar el
+    // whitespace, y lo que `sala-limpia-del-tarball` caza).
     minify: true,
+    esbuildOptions(options) {
+      options.lineLimit = 200;
+    },
     define: defineNpm,
     outDir: "dist",
   },
