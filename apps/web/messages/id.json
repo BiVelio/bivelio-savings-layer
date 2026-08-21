@@ -89,8 +89,8 @@
     "verify": {
       "metaTitle": "Verifikasi · BiVelio Savings Layer",
       "eyebrow": "Verifikasi secara lokal · tidak ada yang keluar dari halaman ini",
-      "title": "Modelkan payload Anda sendiri",
-      "intro": "Menjalankan tokenizer asli di browser Anda — tempel payload dan amati penghitungannya."
+      "title": "Berapa yang bisa kamu hemat?",
+      "intro": "Cek dalam satu menit: pilih contoh (atau tempel data kamu sendiri), beri tahu seberapa banyak kamu memakai API, dan lihat proyeksi penghematannya. Semua dihitung di browser kamu."
     },
     "install": {
       "metaTitle": "Pasang · BiVelio Savings Layer",
@@ -159,7 +159,6 @@
       "errBundle": "Tidak dapat memuat bundel pengoptimal.",
       "errInvalidData": "Menunggu data yang valid… {message}",
       "yourData": "Data Anda",
-      "trims": "BV‑SALA memangkas {tokens} token per pengiriman.",
       "alreadyOptimal": "Sudah optimal di sini — BV‑SALA tidak pernah memperburuknya.",
       "projectorTitle": "Proyektor tagihan",
       "estimate": "ESTIMASI",
@@ -170,7 +169,26 @@
       "inputCut": "Pemangkasan input",
       "outputCut": "Pemangkasan output",
       "projectedSaving": "penghematan proyeksi / bulan · pada harga {model}",
-      "projLower": "{baseline} → {opt} · {pct}% lebih rendah"
+      "tryExample": "Coba sebuah contoh",
+      "sample_users": "Daftar pengguna",
+      "sample_orders": "Pesanan toko",
+      "sample_tickets": "Tiket dukungan",
+      "pasteHint": "…atau tempel JSON kamu di sini. Tidak ada yang keluar dari browser kamu.",
+      "savedPct": "−{pct}% token",
+      "trimsFriendly": "Dari {before} menjadi {after} token per kiriman. BV‑SALA hanya memilih format termurah — tanpa mengubah kode kamu.",
+      "profileLabel": "Apa yang sedang kamu bangun?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Ekstraksi data",
+      "profile_agent": "Agen / RAG",
+      "scenarioLabel": "Tingkat optimasi",
+      "scenario_cautious": "Hati-hati",
+      "scenario_typical": "Tipikal",
+      "scenario_bold": "Ambisius",
+      "advanced": "Pengaturan lanjutan",
+      "projFriendly": "Tagihan kamu akan turun dari {baseline} menjadi {opt} — {pct}% lebih rendah.",
+      "onlyChatTitle": "Hanya pakai ChatGPT atau Claude?",
+      "onlyChatBody": "Kalau begitu tidak ada yang perlu dipasang: produk itu berlangganan tarif tetap, jadi tidak ada tagihan per token yang bisa dipangkas. BV‑SALA dipasang di dalam kode aplikasi yang memanggil API OpenAI atau Anthropic dengan kuncinya sendiri — di situlah ia mengukur dan memangkas biaya nyata.",
+      "onlyChatCta": "Sedang membangun aplikasi? Buka Instal"
     },
     "copyButton": {
       "copied": "Tersalin",

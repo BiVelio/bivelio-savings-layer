@@ -89,8 +89,8 @@
     "verify": {
       "metaTitle": "Vérifier · BiVelio Savings Layer",
       "eyebrow": "Vérifiez localement · rien ne quitte cette page",
-      "title": "Modélisez vos propres charges utiles",
-      "intro": "Exécute le vrai tokeniseur dans votre navigateur — collez une charge utile et observez le calcul."
+      "title": "Combien économiseriez-vous ?",
+      "intro": "Vérifiez-le en une minute : choisissez un exemple (ou collez vos propres données), indiquez votre usage de l'API et regardez l'économie projetée. Tout se calcule dans votre navigateur."
     },
     "install": {
       "metaTitle": "Installer · BiVelio Savings Layer",
@@ -159,7 +159,6 @@
       "errBundle": "Impossible de charger le bundle de l'optimiseur.",
       "errInvalidData": "En attente de données valides… {message}",
       "yourData": "Vos données",
-      "trims": "BV‑SALA supprime {tokens} tokens par envoi.",
       "alreadyOptimal": "Déjà optimal ici — BV‑SALA n'aggrave jamais les choses.",
       "projectorTitle": "Projecteur de facture",
       "estimate": "ESTIMATION",
@@ -170,7 +169,26 @@
       "inputCut": "Réduction d'entrée",
       "outputCut": "Réduction de sortie",
       "projectedSaving": "économies projetées / mois · aux prix de {model}",
-      "projLower": "{baseline} → {opt} · {pct}% de moins"
+      "tryExample": "Essayez un exemple",
+      "sample_users": "Liste d'utilisateurs",
+      "sample_orders": "Commandes de boutique",
+      "sample_tickets": "Tickets de support",
+      "pasteHint": "…ou collez ici votre propre JSON. Rien ne quitte votre navigateur.",
+      "savedPct": "−{pct}% de tokens",
+      "trimsFriendly": "De {before} à {after} tokens par envoi. BV‑SALA choisit simplement le format le moins cher — sans changer votre code.",
+      "profileLabel": "Que construisez-vous ?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Extraction de données",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Niveau d'optimisation",
+      "scenario_cautious": "Prudent",
+      "scenario_typical": "Typique",
+      "scenario_bold": "Ambitieux",
+      "advanced": "Réglages avancés",
+      "projFriendly": "Votre facture passerait de {baseline} à {opt} — {pct}% de moins.",
+      "onlyChatTitle": "Vous n'utilisez que ChatGPT ou Claude ?",
+      "onlyChatBody": "Alors il n'y a rien à installer : ces produits se paient par abonnement fixe, il n'y a donc pas de facture au token à réduire. BV‑SALA s'installe dans le code d'une application qui appelle l'API d'OpenAI ou d'Anthropic avec sa propre clé — c'est là qu'il mesure et réduit la dépense réelle.",
+      "onlyChatCta": "Vous développez une app ? Voir Installer"
     },
     "copyButton": {
       "copied": "Copié",

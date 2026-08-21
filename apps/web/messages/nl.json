@@ -89,8 +89,8 @@
     "verify": {
       "metaTitle": "Verifiëren · BiVelio Savings Layer",
       "eyebrow": "Verifieer lokaal · niets verlaat deze pagina",
-      "title": "Modelleer je eigen payloads",
-      "intro": "Voert de echte tokenizer uit in je browser — plak een payload en volg de berekening."
+      "title": "Hoeveel zou jij besparen?",
+      "intro": "Check het in een minuut: kies een voorbeeld (of plak je eigen data), geef aan hoeveel je de API gebruikt en zie de verwachte besparing. Alles draait in je browser."
     },
     "install": {
       "metaTitle": "Installeren · BiVelio Savings Layer",
@@ -159,7 +159,6 @@
       "errBundle": "Kon de optimizer-bundle niet laden.",
       "errInvalidData": "Wachten op geldige gegevens… {message}",
       "yourData": "Jouw gegevens",
-      "trims": "BV‑SALA schrapt {tokens} tokens per verzending.",
       "alreadyOptimal": "Hier al optimaal — BV‑SALA maakt het nooit slechter.",
       "projectorTitle": "Factuurprojectie",
       "estimate": "SCHATTING",
@@ -170,7 +169,26 @@
       "inputCut": "Invoerreductie",
       "outputCut": "Uitvoerreductie",
       "projectedSaving": "verwachte besparing / maand · tegen {model}-prijzen",
-      "projLower": "{baseline} → {opt} · {pct}% lager"
+      "tryExample": "Probeer een voorbeeld",
+      "sample_users": "Gebruikerslijst",
+      "sample_orders": "Winkelbestellingen",
+      "sample_tickets": "Supporttickets",
+      "pasteHint": "…of plak hier je eigen JSON. Niets verlaat je browser.",
+      "savedPct": "−{pct}% tokens",
+      "trimsFriendly": "Van {before} naar {after} tokens per verzoek. BV‑SALA kiest gewoon het goedkoopste formaat — zonder je code te wijzigen.",
+      "profileLabel": "Wat bouw je?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Data-extractie",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Optimalisatieniveau",
+      "scenario_cautious": "Voorzichtig",
+      "scenario_typical": "Typisch",
+      "scenario_bold": "Ambitieus",
+      "advanced": "Geavanceerde instellingen",
+      "projFriendly": "Je rekening zou van {baseline} naar {opt} gaan — {pct}% minder.",
+      "onlyChatTitle": "Gebruik je alleen ChatGPT of Claude?",
+      "onlyChatBody": "Dan valt er niets te installeren: die producten hebben een vast abonnement, dus er is geen tokenrekening om te verlagen. BV‑SALA installeer je in de code van een applicatie die de OpenAI- of Anthropic-API met een eigen sleutel aanroept — dáár meet en verlaagt het de echte kosten.",
+      "onlyChatCta": "Bouw je een app? Ga naar Installeren"
     },
     "copyButton": {
       "copied": "Gekopieerd",

@@ -89,8 +89,8 @@
     "verify": {
       "metaTitle": "Verify · BiVelio Savings Layer",
       "eyebrow": "Verify locally · nothing leaves this page",
-      "title": "Model your own payloads",
-      "intro": "Runs the real tokenizer in your browser — paste a payload and watch the accounting."
+      "title": "How much would you save?",
+      "intro": "Find out in a minute: pick an example (or paste your own data), tell us how much you use the API, and see the projected saving. Everything runs in your browser."
     },
     "install": {
       "metaTitle": "Install · BiVelio Savings Layer",
@@ -159,7 +159,6 @@
       "errBundle": "Could not load the optimizer bundle.",
       "errInvalidData": "Waiting for valid data… {message}",
       "yourData": "Your data",
-      "trims": "BV‑SALA trims {tokens} tokens per send.",
       "alreadyOptimal": "Already optimal here — BV‑SALA never makes it worse.",
       "projectorTitle": "Bill projector",
       "estimate": "ESTIMATE",
@@ -170,7 +169,26 @@
       "inputCut": "Input cut",
       "outputCut": "Output cut",
       "projectedSaving": "projected saving / month · at {model} prices",
-      "projLower": "{baseline} → {opt} · {pct}% lower"
+      "tryExample": "Try an example",
+      "sample_users": "User list",
+      "sample_orders": "Store orders",
+      "sample_tickets": "Support tickets",
+      "pasteHint": "…or paste your own JSON here. Nothing leaves your browser.",
+      "savedPct": "−{pct}% tokens",
+      "trimsFriendly": "From {before} to {after} tokens per request. BV‑SALA just picks the cheapest format — no changes to your code.",
+      "profileLabel": "What are you building?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Data extraction",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Optimization level",
+      "scenario_cautious": "Cautious",
+      "scenario_typical": "Typical",
+      "scenario_bold": "Ambitious",
+      "advanced": "Advanced settings",
+      "projFriendly": "Your bill would go from {baseline} to {opt} — {pct}% less.",
+      "onlyChatTitle": "Only use ChatGPT or Claude?",
+      "onlyChatBody": "Then there is nothing to install: those products charge a flat subscription, so there is no per-token bill to cut. BV‑SALA installs inside the code of an application that calls the OpenAI or Anthropic API with its own key — that is where it measures and reduces real spend.",
+      "onlyChatCta": "Building an app? Go to Install"
     },
     "copyButton": {
       "copied": "Copied",
