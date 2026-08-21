@@ -11,7 +11,8 @@
     "pricing": "Prijzen",
     "signIn": "Inloggen",
     "dashboard": "Dashboard",
-    "signOut": "Uitloggen"
+    "signOut": "Uitloggen",
+    "howItWorks": "Hoe het werkt"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Verifiëren",
       "integrate": "Integreren",
       "install": "Installeren",
-      "account": "Account"
+      "account": "Account",
+      "howItWorks": "Hoe het werkt"
     }
   },
   "auth": {
@@ -561,7 +563,8 @@
       "copyright": "© 2026 BiVelio Inc. Alle rechten voorbehouden.",
       "andorra": "Van Andorra naar de wereld 🇦🇩",
       "bottomPrivacy": "Privacy",
-      "bottomTerms": "Voorwaarden"
+      "bottomTerms": "Voorwaarden",
+      "howItWorks": "Hoe het werkt"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -607,5 +610,56 @@
     "sesionActual": "U bent momenteel aangemeld als <b>{email}</b>.",
     "cerrarYContinuar": "Afmelden en ander account gebruiken",
     "cerrando": "Afmelden…"
+  },
+  "howItWorks": {
+    "metaTitle": "Waar wordt de besparing geïnstalleerd? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA is een laag die je installeert in de code van je applicatie, waar de API wordt aangeroepen. Wat het kan besparen, waar het niet geldt en hoe er echt gemeten wordt.",
+    "eyebrow": "De laag, uitgelegd · zonder jargon",
+    "title": "Waar wordt de besparing geïnstalleerd?",
+    "lede": "BV‑SALA is geen app, geen extensie en geen ChatGPT-instelling. Het is een stuk code dat een ontwikkelaar in de eigen applicatie plaatst, precies waar die applicatie de OpenAI- of Anthropic-API aanroept. Het kan alleen besparen waar een tokenrekening bestaat — en alleen meten waar het elk verzoek voorbij ziet komen.",
+    "s1Title": "De laag leeft in je code",
+    "s1Sub": "Dezelfde aanroep, met en zonder de laag. Het verkeer reist altijd rechtstreeks van je applicatie naar de provider — BV‑SALA is geen tussenserver en ziet je data nooit van buitenaf.",
+    "flowWithout": "Zonder BV‑SALA",
+    "flowWith": "Met BV‑SALA",
+    "nodeApp": "Jouw applicatie",
+    "nodeAppSubBefore": "elk verzoek gaat er heel uit",
+    "nodeAppSubAfter": "zelfde businesscode",
+    "nodeLayerSub": "vermijdt aanroepen · kort invoer en uitvoer in",
+    "nodeApi": "Provider-API",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "ontvangt minder tokens",
+    "billMonth": "rekening / maand",
+    "billReport": "+ SavingsReport",
+    "s1Note": "Dat groene vak is een npm-pakket in de code van de applicatie. Daarom is de sleutelvraag nooit “wat installeer ik?” maar <b>“wie schreef de code die de API aanroept?”</b> — die persoon kan het installeren.",
+    "s2Title": "Jouw geval, in 10 seconden",
+    "s2Sub": "Vier manieren om AI te gebruiken, en wat BV‑SALA in elk ervan kan doen.",
+    "caseChatSub": "app of web, gratis of betaald",
+    "caseChatBody": "Je betaalt een vast bedrag (of niets): er is geen tokenrekening om te verlagen, en het is een gesloten product waar niemand software tussen de app en de modellen kan plaatsen. De besparing van BV‑SALA geldt hier simpelweg niet — en geen enkel product kan haar daar eerlijk beloven.",
+    "caseClaudeSub": "claude.ai, gratis of betaald",
+    "caseClaudeBody": "Precies hetzelfde geval: vast abonnement en gesloten product. Gebruik Claude met een gerust hart — er zijn geen tokenuitgaven om van buitenaf te optimaliseren.",
+    "caseCodeSub": "terminal, met API-sleutel",
+    "caseCodeBody": "Het enige geval met nuance. Met een abonnement, zoals hierboven: vast bedrag, niets te installeren. Met een API-sleutel bestaat er wél een echte tokenrekening, maar BV‑SALA is een bibliotheek, geen proxy: het kan vandaag niet vóór een al gecompileerde tool als Claude Code staan.",
+    "caseAppName": "Jouw applicatie",
+    "caseAppSub": "jouw code + jouw API-sleutel",
+    "caseAppBody": "Het geval waarvoor BV‑SALA bestaat. Je app roept de API aan met jouw sleutel, de provider rekent elke token af, en de laag installeer je in drie stappen: pakket, licentie en de aanroep omhullen. Vanaf het eerste verzoek levert het een <b>SavingsReport</b> met de geverifieerde besparing.",
+    "verdictNothing": "Niets te installeren",
+    "verdictNotYet": "Nog niet",
+    "verdictYes": "Hier wel",
+    "s3Title": "Schatting vs. meting",
+    "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
+    "mBeforeK": "Vóór installatie",
+    "mBeforeV": "Schatting",
+    "mBeforeBody": "De verificator draait de echte optimizer in je browser met je voorbeelddata. Een eerlijke projectie — daarom draagt ze het label “schatting”.",
+    "mAfterK": "Na installatie",
+    "mAfterV": "Echte meting",
+    "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
+    "s4Title": "De volledige installatie, als je een app bouwt",
+    "snip1": "het pakket",
+    "snip2": "de licentie (uit je dashboard)",
+    "snip3": "de aanroep omhullen — dit is de hele codewijziging",
+    "snipResult": "de besparing, gemeten",
+    "ctaVerify": "Probeer het met je data in de verificator",
+    "ctaSignup": "Account aanmaken",
+    "ctaInstall": "Naar de installatiegids"
   }
 }

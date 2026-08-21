@@ -24,55 +24,32 @@ const ab = abData as unknown as AbArtifact;
 const mini = (ab.pricing.table["gpt-4o-mini"] ?? {}) as { inputPer1k?: number; outputPer1k?: number };
 const prices = { inPer1k: mini.inputPer1k ?? 0.00015, outPer1k: mini.outputPer1k ?? 0.0006 };
 
-// The "integrate" SDK snippet stays verbatim English (brand/code tokens), only
-// the surrounding heading/paragraph are localized. Tokens carry a highlight class.
-const CODE: { cls?: "c" | "k" | "s"; v: string }[][] = [
-  [{ cls: "c", v: "// your app — the data plane. LLM traffic goes straight to your provider." }],
-  [
-    { cls: "k", v: "import" },
-    { v: " { createSavingsLayer } " },
-    { cls: "k", v: "from" },
-    { v: " " },
-    { cls: "s", v: '"@bivelio/savings-layer"' },
-    { v: ";" },
-  ],
-  [],
-  [{ cls: "k", v: "const" }, { v: " layer = createSavingsLayer({" }],
-  [{ v: "  provider: yourProvider," }],
-  [
-    { v: "  licenseKey: process.env." },
-    { cls: "s", v: "BIVELIO_LICENSE_KEY" },
-    { v: ",       " },
-    { cls: "c", v: "// from your dashboard" },
-  ],
-  [
-    { v: "  licenseServerUrl: " },
-    { cls: "s", v: '"https://savings.bivelio.com"' },
-    { v: ",   " },
-    { cls: "c", v: "// license check + kill-switch" },
-  ],
-  [{ v: "});" }],
-  [],
-  [
-    { cls: "k", v: "const" },
-    { v: " { data, report } = " },
-    { cls: "k", v: "await" },
-    { v: " layer.generate({" },
-  ],
-  [{ v: "  model: " }, { cls: "s", v: '"openai/gpt-4o-mini"' }, { v: "," }],
-  [{ v: "  messages," }],
-  [
-    { v: "  response: { contractId: " },
-    { cls: "s", v: '"answer:v1"' },
-    { v: ", schema, maxOutputTokens: " },
-    { cls: "s", v: "220" },
-    { v: " }," },
-  ],
-  [{ v: "});" }],
-  [],
-  [{ v: "report.cost.netSavings;   " }, { cls: "c", v: "// → your net savings on this request" }],
-  [{ v: "report.calls.avoidedLlm;  " }, { cls: "c", v: "// → whole calls you never paid for" }],
-];
+// The "integrate" snippet: the same 3-step story as /how-it-works (package →
+// license → wrap the call), with its step headers localized via the shared
+// `howItWorks.snip*` keys. Code tokens stay verbatim; each carries a color
+// class: n = paso (brand, bold), k = keyword (brand), s = string (ámbar),
+// c = comentario (soft), g = resultado (menta).
+type TokenCls = "c" | "k" | "s" | "n" | "g";
+function lineasDelSnippet(th: (k: string) => string): { cls?: TokenCls; v: string }[][] {
+  return [
+    [{ cls: "n", v: `# 1 · ${th("snip1")}` }],
+    [{ v: "pnpm add " }, { cls: "s", v: "@bivelio/savings-layer" }],
+    [],
+    [{ cls: "n", v: `# 2 · ${th("snip2")}` }],
+    [{ v: "export " }, { cls: "s", v: "BIVELIO_LICENSE_KEY" }, { v: "=…" }],
+    [],
+    [{ cls: "n", v: `# 3 · ${th("snip3")}` }],
+    [{ cls: "k", v: "const" }, { v: " layer = createSavingsLayer({ provider, licenseKey, … });" }],
+    [
+      { cls: "k", v: "const" },
+      { v: " { text, report } = " },
+      { cls: "k", v: "await" },
+      { v: " layer.generate({ model, messages });" },
+    ],
+    [],
+    [{ v: "console.log(report.cost.netSavings)  " }, { cls: "g", v: `// ← ${th("snipResult")}` }],
+  ];
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -112,6 +89,8 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("landing");
+  const th = await getTranslations("howItWorks");
+  const CODE = lineasDelSnippet(th);
 
   const cascadeSteps = t.raw("cascade.steps") as {
     n: string;

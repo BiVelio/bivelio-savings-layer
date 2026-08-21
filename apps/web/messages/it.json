@@ -11,7 +11,8 @@
     "pricing": "Prezzi",
     "signIn": "Accedi",
     "dashboard": "Dashboard",
-    "signOut": "Esci"
+    "signOut": "Esci",
+    "howItWorks": "Come funziona"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Verifica",
       "integrate": "Integra",
       "install": "Installa",
-      "account": "Account"
+      "account": "Account",
+      "howItWorks": "Come funziona"
     }
   },
   "auth": {
@@ -561,7 +563,8 @@
       "copyright": "© 2026 BiVelio Inc. Tutti i diritti riservati.",
       "andorra": "Da Andorra al mondo 🇦🇩",
       "bottomPrivacy": "Privacy",
-      "bottomTerms": "Termini"
+      "bottomTerms": "Termini",
+      "howItWorks": "Come funziona"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -607,5 +610,56 @@
     "sesionActual": "Al momento ha effettuato l'accesso come <b>{email}</b>.",
     "cerrarYContinuar": "Esci e usa un altro account",
     "cerrando": "Disconnessione…"
+  },
+  "howItWorks": {
+    "metaTitle": "Dove si installa il risparmio? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA è uno strato che si installa nel codice della tua applicazione, dove viene chiamata l'API. Cosa può risparmiare, dove non si applica e come si misura davvero.",
+    "eyebrow": "Lo strato, spiegato · senza gergo",
+    "title": "Dove si installa il risparmio?",
+    "lede": "BV‑SALA non è un'app, né un'estensione, né un'impostazione di ChatGPT. È un pezzo di codice che uno sviluppatore colloca dentro la propria applicazione, esattamente dove quell'applicazione chiama l'API di OpenAI o Anthropic. Può risparmiare solo dove esiste una fattura a token — e può misurarlo solo dove vede passare ogni richiesta.",
+    "s1Title": "Lo strato vive dentro il tuo codice",
+    "s1Sub": "La stessa chiamata, con e senza lo strato. Il traffico viaggia sempre diretto dalla tua applicazione al provider — BV‑SALA non è un server intermedio e non vede mai i tuoi dati dall'esterno.",
+    "flowWithout": "Senza BV‑SALA",
+    "flowWith": "Con BV‑SALA",
+    "nodeApp": "La tua applicazione",
+    "nodeAppSubBefore": "ogni richiesta esce intera",
+    "nodeAppSubAfter": "stesso codice di business",
+    "nodeLayerSub": "evita chiamate · riduce input e output",
+    "nodeApi": "API del provider",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "riceve meno token",
+    "billMonth": "fattura / mese",
+    "billReport": "+ SavingsReport",
+    "s1Note": "Quel riquadro verde è un pacchetto npm dentro il codice dell'applicazione. Per questo la domanda chiave non è mai «cosa installo?» ma <b>«chi ha scritto il codice che chiama l'API?»</b> — quella persona è chi può installarlo.",
+    "s2Title": "Il tuo caso, in 10 secondi",
+    "s2Sub": "Quattro modi di usare l'IA, e cosa può fare BV‑SALA in ciascuno.",
+    "caseChatSub": "app o web, gratis o a pagamento",
+    "caseChatBody": "Paghi una quota fissa (o niente): non esiste una fattura a token da ridurre, ed è un prodotto chiuso in cui nessuno può inserire software tra l'app e i suoi modelli. Il risparmio di BV‑SALA non si applica qui — e nessun prodotto può prometterlo lì con onestà.",
+    "caseClaudeSub": "claude.ai, gratis o a pagamento",
+    "caseClaudeBody": "Esattamente lo stesso caso: abbonamento fisso e prodotto chiuso. Usa Claude con tranquillità — non c'è spesa a token da ottimizzare dall'esterno.",
+    "caseCodeSub": "terminale, con chiave API",
+    "caseCodeBody": "L'unico caso con una sfumatura. In abbonamento, come sopra: quota fissa e niente da installare. Con la chiave API esiste una vera fattura a token, ma BV‑SALA è una libreria, non un proxy: oggi non può mettersi davanti a uno strumento già compilato come Claude Code.",
+    "caseAppName": "La tua applicazione",
+    "caseAppSub": "il tuo codice + la tua chiave API",
+    "caseAppBody": "Il caso per cui esiste BV‑SALA. La tua app chiama l'API con la tua chiave, il provider fattura ogni token, e lo strato si installa in tre passi: pacchetto, licenza e avvolgere la chiamata. Dalla prima richiesta restituisce un <b>SavingsReport</b> con il risparmio verificato.",
+    "verdictNothing": "Niente da installare",
+    "verdictNotYet": "Non ancora",
+    "verdictYes": "Qui sì",
+    "s3Title": "Stima vs. misurazione",
+    "s3Sub": "Il prodotto ha due numeri diversi ed è meglio non mescolarli.",
+    "mBeforeK": "Prima di installare",
+    "mBeforeV": "Stima",
+    "mBeforeBody": "Il verificatore esegue il vero ottimizzatore nel tuo browser con i tuoi dati di esempio. È una proiezione onesta — per questo porta l'etichetta «stima».",
+    "mAfterK": "Dopo l'installazione",
+    "mAfterV": "Misurazione reale",
+    "mAfterBody": "Ogni chiamata restituisce un SavingsReport: le chiamate che non hai mai pagato e il risparmio netto per richiesta. Verificabile, richiesta per richiesta, sulla tua infrastruttura.",
+    "s4Title": "L'installazione completa, se sviluppi un'app",
+    "snip1": "il pacchetto",
+    "snip2": "la licenza (dalla tua dashboard)",
+    "snip3": "avvolgere la chiamata — questo è tutto il cambio di codice",
+    "snipResult": "il risparmio, misurato",
+    "ctaVerify": "Provalo con i tuoi dati nel verificatore",
+    "ctaSignup": "Crea account",
+    "ctaInstall": "Vai alla guida di installazione"
   }
 }

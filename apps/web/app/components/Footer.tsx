@@ -44,6 +44,9 @@ function Column({ head, links }: { head: string; links: string[][] }) {
               <a href={href} target="_blank" rel="noopener noreferrer">
                 {label}
               </a>
+            ) : href.startsWith("/") ? (
+              // Internal route — the locale-prefixing Link, so it works from any page.
+              <Link href={href}>{label}</Link>
             ) : (
               // In-page hash anchor — plain <a>, never the locale-prefixing Link.
               <a href={href}>{label}</a>
@@ -95,10 +98,13 @@ export default async function Footer() {
   const t = await getTranslations("landing");
   const locale = await getLocale();
 
+  // Rutas con hash (Link), no anclas peladas: este footer ya no vive solo en la
+  // landing, y un `#verify` suelto en /how-it-works no llevaría a ninguna parte.
   const savings: string[][] = [
-    [t("footer.verify"), "#verify"],
-    [t("footer.measured"), "#measured"],
-    [t("footer.pricing"), "#pricing"],
+    [t("footer.howItWorks"), "/how-it-works"],
+    [t("footer.verify"), "/#verify"],
+    [t("footer.measured"), "/#measured"],
+    [t("footer.pricing"), "/#pricing"],
   ];
   const bivelio: string[][] = [
     [t("footer.home"), corporateUrl("", locale)],
@@ -121,9 +127,9 @@ export default async function Footer() {
             <p className="ftr-cta-sub">{t("footer.ctaSub")}</p>
           </div>
           <div className="ftr-cta-actions">
-            <a className="btn btn-ghost" href="#verify">
+            <Link className="btn btn-ghost" href="/#verify">
               {t("hero.ctaRun")}
-            </a>
+            </Link>
             <Link className="btn btn-primary" href="/signup">
               {t("footer.ctaStart")}
               <ArrowRightIcon />

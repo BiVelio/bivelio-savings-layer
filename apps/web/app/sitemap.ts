@@ -14,10 +14,21 @@ import { absolute, languageAlternates } from "@/i18n/site";
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const languages = languageAlternates();
-  return locales.map((locale) => ({
-    url: absolute(`/${locale}`),
-    changeFrequency: "weekly" as const,
-    priority: 1,
-    alternates: { languages },
-  }));
+  const hiwLanguages = languageAlternates("how-it-works");
+  return [
+    ...locales.map((locale) => ({
+      url: absolute(`/${locale}`),
+      changeFrequency: "weekly" as const,
+      priority: 1,
+      alternates: { languages },
+    })),
+    // La página explicativa pública («¿Dónde se instala el ahorro?») también
+    // se indexa: es la respuesta de marca a la búsqueda de quien no es técnico.
+    ...locales.map((locale) => ({
+      url: absolute(`/${locale}/how-it-works`),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+      alternates: { languages: hiwLanguages },
+    })),
+  ];
 }

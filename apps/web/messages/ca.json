@@ -11,7 +11,8 @@
     "pricing": "Preus",
     "signIn": "Inicia la sessió",
     "dashboard": "Tauler",
-    "signOut": "Tanca la sessió"
+    "signOut": "Tanca la sessió",
+    "howItWorks": "Com funciona"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Verifica",
       "integrate": "Integra",
       "install": "Instal·la",
-      "account": "Compte"
+      "account": "Compte",
+      "howItWorks": "Com funciona"
     }
   },
   "auth": {
@@ -561,7 +563,8 @@
       "copyright": "© 2026 BiVelio Inc. Tots els drets reservats.",
       "andorra": "D'Andorra al món 🇦🇩",
       "bottomPrivacy": "Privadesa",
-      "bottomTerms": "Termes"
+      "bottomTerms": "Termes",
+      "howItWorks": "Com funciona"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -607,5 +610,56 @@
     "sesionActual": "Ara mateix heu iniciat la sessió com a <b>{email}</b>.",
     "cerrarYContinuar": "Tancar la sessió i usar un altre compte",
     "cerrando": "Tancant la sessió…"
+  },
+  "howItWorks": {
+    "metaTitle": "On s'instal·la l'estalvi? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA és una capa que s'instal·la al codi de la teva aplicació, on es crida l'API. Què pot estalviar, on no aplica i com es mesura de veritat.",
+    "eyebrow": "La capa, explicada · sense argot",
+    "title": "On s'instal·la l'estalvi?",
+    "lede": "BV‑SALA no és una app, ni una extensió, ni un ajust de ChatGPT. És una peça de codi que un desenvolupador col·loca dins de la seva pròpia aplicació, just on aquesta aplicació crida l'API d'OpenAI o Anthropic. Només pot estalviar on existeix una factura per tokens — i només pot mesurar-ho on veu passar cada petició.",
+    "s1Title": "La capa viu dins del teu codi",
+    "s1Sub": "La mateixa crida, amb la capa i sense. El trànsit sempre viatja directe de la teva aplicació al proveïdor — BV‑SALA no és un servidor intermedi ni veu les teves dades des de fora.",
+    "flowWithout": "Sense BV‑SALA",
+    "flowWith": "Amb BV‑SALA",
+    "nodeApp": "La teva aplicació",
+    "nodeAppSubBefore": "cada petició surt sencera",
+    "nodeAppSubAfter": "mateix codi de negoci",
+    "nodeLayerSub": "evita crides · retalla entrada i sortida",
+    "nodeApi": "API del proveïdor",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "rep menys tokens",
+    "billMonth": "factura / mes",
+    "billReport": "+ SavingsReport",
+    "s1Note": "Aquest requadre verd és un paquet npm dins del codi de l'aplicació. Per això la pregunta clau mai no és «què instal·lo?» sinó <b>«qui va escriure el codi que crida l'API?»</b> — aquesta persona és qui pot instal·lar-lo.",
+    "s2Title": "El teu cas, en 10 segons",
+    "s2Sub": "Quatre maneres d'usar IA, i què pot fer BV‑SALA en cadascuna.",
+    "caseChatSub": "app o web, gratis o de pagament",
+    "caseChatBody": "Pagues una quota fixa (o res): no existeix una factura per tokens a reduir, i és un producte tancat on ningú no pot col·locar programari entre l'app i els seus models. L'estalvi de BV‑SALA no aplica aquí — i cap producte pot prometre-ho allà amb honestedat.",
+    "caseClaudeSub": "claude.ai, gratis o de pagament",
+    "caseClaudeBody": "Exactament el mateix cas: subscripció fixa i producte tancat. Fes servir Claude amb tranquil·litat — no hi ha despesa per tokens a optimitzar des de fora.",
+    "caseCodeSub": "terminal, amb clau d'API",
+    "caseCodeBody": "L'únic cas amb matís. Amb subscripció, igual que a dalt: quota fixa i res a instal·lar. Amb clau d'API sí que existeix una factura per tokens real, però BV‑SALA és una llibreria, no un proxy: avui no pot col·locar-se davant d'una eina ja compilada com Claude Code.",
+    "caseAppName": "La teva aplicació",
+    "caseAppSub": "el teu codi + la teva clau d'API",
+    "caseAppBody": "El cas per al qual existeix BV‑SALA. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en tres passos: paquet, llicència i embolcallar la crida. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi verificat.",
+    "verdictNothing": "Res a instal·lar",
+    "verdictNotYet": "Encara no",
+    "verdictYes": "Aquí sí",
+    "s3Title": "Estimació vs. mesurament",
+    "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
+    "mBeforeK": "Abans d'instal·lar",
+    "mBeforeV": "Estimació",
+    "mBeforeBody": "El verificador executa l'optimitzador real al teu navegador amb les teves dades d'exemple. És una projecció honesta — per això porta l'etiqueta «estimació».",
+    "mAfterK": "Després d'instal·lar",
+    "mAfterV": "Mesurament real",
+    "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
+    "s4Title": "La instal·lació completa, si desenvolupes una app",
+    "snip1": "el paquet",
+    "snip2": "la llicència (del teu tauler)",
+    "snip3": "embolcallar la crida — aquest és tot el canvi de codi",
+    "snipResult": "l'estalvi, mesurat",
+    "ctaVerify": "Prova-ho amb les teves dades al verificador",
+    "ctaSignup": "Crear compte",
+    "ctaInstall": "Anar a la guia d'instal·lació"
   }
 }
