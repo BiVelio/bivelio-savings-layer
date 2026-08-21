@@ -119,13 +119,13 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
       <section className="hiw-sec">
         <h2 className="hiw-h2">{t("s4Title")}</h2>
         <pre className="hiw-pre">
-          <span className="c"># 1 · {t("snip1")}</span>{"\n"}
-          {"pnpm add @bivelio/savings-layer\n\n"}
-          <span className="c"># 2 · {t("snip2")}</span>{"\n"}
-          {"export BIVELIO_LICENSE_KEY=…\n\n"}
-          <span className="c"># 3 · {t("snip3")}</span>{"\n"}
-          {"const layer = createSavingsLayer({ provider, licenseKey, … });\n"}
-          {"const { text, report } = await layer.generate({ model, messages });\n\n"}
+          <span className="n"># 1 · {t("snip1")}</span>{"\n"}
+          {"pnpm add "}<span className="s">@bivelio/savings-layer</span>{"\n\n"}
+          <span className="n"># 2 · {t("snip2")}</span>{"\n"}
+          {"export "}<span className="s">BIVELIO_LICENSE_KEY</span>{"=…\n\n"}
+          <span className="n"># 3 · {t("snip3")}</span>{"\n"}
+          <span className="k">const</span>{" layer = createSavingsLayer({ provider, licenseKey, … });\n"}
+          <span className="k">const</span>{" { text, report } = "}<span className="k">await</span>{" layer.generate({ model, messages });\n\n"}
           {"console.log(report.cost.netSavings)  "}
           <span className="g">{"// ← "}{t("snipResult")}</span>
         </pre>
