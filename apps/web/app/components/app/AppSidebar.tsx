@@ -11,7 +11,13 @@ const GROUPS: { label?: string; items: { href: string; label: string; icon: stri
       { href: "/dashboard/verify", label: "verify", icon: "verify" },
     ],
   },
-  { label: "integrate", items: [{ href: "/dashboard/install", label: "install", icon: "install" }] },
+  {
+    label: "integrate",
+    items: [
+      { href: "/dashboard/how-it-works", label: "howItWorks", icon: "how" },
+      { href: "/dashboard/install", label: "install", icon: "install" },
+    ],
+  },
   { label: "account", items: [{ href: "/dashboard/account", label: "account", icon: "account" }] },
 ];
 

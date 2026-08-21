@@ -11,7 +11,8 @@
     "pricing": "Pricing",
     "signIn": "Sign in",
     "dashboard": "Dashboard",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "howItWorks": "How it works"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Verify",
       "integrate": "Integrate",
       "install": "Install",
-      "account": "Account"
+      "account": "Account",
+      "howItWorks": "How it works"
     }
   },
   "auth": {
@@ -87,8 +89,8 @@
     "verify": {
       "metaTitle": "Verify · BiVelio Savings Layer",
       "eyebrow": "Verify locally · nothing leaves this page",
-      "title": "Model your own payloads",
-      "intro": "Runs the real tokenizer in your browser — paste a payload and watch the accounting."
+      "title": "How much would you save?",
+      "intro": "Find out in a minute: pick an example (or paste your own data), tell us how much you use the API, and see the projected saving. Everything runs in your browser."
     },
     "install": {
       "metaTitle": "Install · BiVelio Savings Layer",
@@ -157,7 +159,6 @@
       "errBundle": "Could not load the optimizer bundle.",
       "errInvalidData": "Waiting for valid data… {message}",
       "yourData": "Your data",
-      "trims": "BV‑SALA trims {tokens} tokens per send.",
       "alreadyOptimal": "Already optimal here — BV‑SALA never makes it worse.",
       "projectorTitle": "Bill projector",
       "estimate": "ESTIMATE",
@@ -168,7 +169,26 @@
       "inputCut": "Input cut",
       "outputCut": "Output cut",
       "projectedSaving": "projected saving / month · at {model} prices",
-      "projLower": "{baseline} → {opt} · {pct}% lower"
+      "tryExample": "Try an example",
+      "sample_users": "User list",
+      "sample_orders": "Store orders",
+      "sample_tickets": "Support tickets",
+      "pasteHint": "…or paste your own JSON here. Nothing leaves your browser.",
+      "savedPct": "−{pct}% tokens",
+      "trimsFriendly": "From {before} to {after} tokens per request. BV‑SALA just picks the cheapest format — no changes to your code.",
+      "profileLabel": "What are you building?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Data extraction",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Optimization level",
+      "scenario_cautious": "Cautious",
+      "scenario_typical": "Typical",
+      "scenario_bold": "Ambitious",
+      "advanced": "Advanced settings",
+      "projFriendly": "Your bill would go from {baseline} to {opt} — {pct}% less.",
+      "onlyChatTitle": "Only use ChatGPT or Claude?",
+      "onlyChatBody": "Then there is nothing to install: those products charge a flat subscription, so there is no per-token bill to cut. BV‑SALA installs inside the code of an application that calls the OpenAI or Anthropic API with its own key — that is where it measures and reduces real spend.",
+      "onlyChatCta": "Building an app? Go to Install"
     },
     "copyButton": {
       "copied": "Copied",
@@ -543,7 +563,8 @@
       "copyright": "© 2026 BiVelio Inc. All rights reserved.",
       "andorra": "From Andorra to the world 🇦🇩",
       "bottomPrivacy": "Privacy",
-      "bottomTerms": "Terms"
+      "bottomTerms": "Terms",
+      "howItWorks": "How it works"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -589,5 +610,56 @@
     "sesionActual": "You're currently signed in as <b>{email}</b>.",
     "cerrarYContinuar": "Sign out and use another account",
     "cerrando": "Signing out…"
+  },
+  "howItWorks": {
+    "metaTitle": "Where does the saving install? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA is a layer that installs in your application's code, where the API is called. What it can save, where it doesn't apply, and how it's truly measured.",
+    "eyebrow": "The layer, explained · no jargon",
+    "title": "Where does the saving install?",
+    "lede": "BV‑SALA is not an app, not an extension, not a ChatGPT setting. It's a piece of code a developer places inside their own application, right where that application calls the OpenAI or Anthropic API. It can only save where a per-token bill exists — and can only measure it where it sees every request go by.",
+    "s1Title": "The layer lives inside your code",
+    "s1Sub": "The same call, with and without the layer. Traffic always travels straight from your application to the provider — BV‑SALA is not a middleman server and never sees your data from outside.",
+    "flowWithout": "Without BV‑SALA",
+    "flowWith": "With BV‑SALA",
+    "nodeApp": "Your application",
+    "nodeAppSubBefore": "every request goes out whole",
+    "nodeAppSubAfter": "same business code",
+    "nodeLayerSub": "avoids calls · trims input and output",
+    "nodeApi": "Provider API",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "receives fewer tokens",
+    "billMonth": "bill / month",
+    "billReport": "+ SavingsReport",
+    "s1Note": "That green box is an npm package inside the application's code. That's why the key question is never “what do I install?” but <b>“who wrote the code that calls the API?”</b> — that person is who can install it.",
+    "s2Title": "Your case, in 10 seconds",
+    "s2Sub": "Four ways of using AI, and what BV‑SALA can do in each one.",
+    "caseChatSub": "app or web, free or paid",
+    "caseChatBody": "You pay a flat fee (or nothing): there is no per-token bill to reduce, and it's a closed product where nobody can place software between the app and its models. BV‑SALA's saving simply doesn't apply here — and no product can honestly promise it there.",
+    "caseClaudeSub": "claude.ai, free or paid",
+    "caseClaudeBody": "Exactly the same case: flat subscription and closed product. Use Claude with peace of mind — there is no token spend to optimize from outside.",
+    "caseCodeSub": "terminal, with an API key",
+    "caseCodeBody": "The one case with nuance. On a subscription, same as above: flat fee, nothing to install. With an API key a real per-token bill does exist, but BV‑SALA is a library, not a proxy: today it cannot sit in front of an already-compiled tool like Claude Code.",
+    "caseAppName": "Your application",
+    "caseAppSub": "your code + your API key",
+    "caseAppBody": "The case BV‑SALA exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in three steps: package, license, and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the verified saving.",
+    "verdictNothing": "Nothing to install",
+    "verdictNotYet": "Not yet",
+    "verdictYes": "This is it",
+    "s3Title": "Estimate vs. measurement",
+    "s3Sub": "The product has two different numbers, and they shouldn't be mixed.",
+    "mBeforeK": "Before installing",
+    "mBeforeV": "Estimate",
+    "mBeforeBody": "The verifier runs the real optimizer in your browser with your sample data. It's an honest projection — that's why it carries the “estimate” tag.",
+    "mAfterK": "After installing",
+    "mAfterV": "Real measurement",
+    "mAfterBody": "Every call returns a SavingsReport: the calls you never paid for and the net saving per request. Auditable, request by request, on your own infrastructure.",
+    "s4Title": "The full install, if you build an app",
+    "snip1": "the package",
+    "snip2": "the license (from your dashboard)",
+    "snip3": "wrap the call — this is the entire code change",
+    "snipResult": "the saving, measured",
+    "ctaVerify": "Try it with your data in the verifier",
+    "ctaSignup": "Create account",
+    "ctaInstall": "Go to the install guide"
   }
 }

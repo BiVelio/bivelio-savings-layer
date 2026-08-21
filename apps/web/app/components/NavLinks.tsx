@@ -14,16 +14,20 @@ import { ArrowRightIcon } from "./icons";
 export function NavSections() {
   const t = useTranslations("nav");
   const pathname = usePathname();
-  if (pathname !== "/") return null;
+  // También en /how-it-works: la página explicativa comparte el nav de marketing.
+  if (pathname !== "/" && pathname !== "/how-it-works") return null;
 
   return (
     <div className="nav-menu">
-      <a className="nav-link" href="#verify">
+      <Link className="nav-link" href="/how-it-works">
+        {t("howItWorks")}
+      </Link>
+      <Link className="nav-link" href="/#verify">
         {t("verifier")}
-      </a>
-      <a className="nav-link" href="#pricing">
+      </Link>
+      <Link className="nav-link" href="/#pricing">
         {t("pricing")}
-      </a>
+      </Link>
     </div>
   );
 }

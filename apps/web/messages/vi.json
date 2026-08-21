@@ -11,7 +11,8 @@
     "pricing": "Giá",
     "signIn": "Đăng nhập",
     "dashboard": "Bảng điều khiển",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "howItWorks": "Cách hoạt động"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Xác minh",
       "integrate": "Tích hợp",
       "install": "Cài đặt",
-      "account": "Tài khoản"
+      "account": "Tài khoản",
+      "howItWorks": "Cách hoạt động"
     }
   },
   "auth": {
@@ -87,8 +89,8 @@
     "verify": {
       "metaTitle": "Xác minh · BiVelio Savings Layer",
       "eyebrow": "Xác minh cục bộ · không có gì rời khỏi trang này",
-      "title": "Mô phỏng payload của riêng bạn",
-      "intro": "Chạy trình token hóa thực trong trình duyệt của bạn — dán một payload và theo dõi phần hạch toán."
+      "title": "Bạn sẽ tiết kiệm được bao nhiêu?",
+      "intro": "Kiểm tra trong một phút: chọn một ví dụ (hoặc dán dữ liệu của bạn), cho biết mức dùng API và xem khoản tiết kiệm dự kiến. Mọi thứ chạy ngay trong trình duyệt của bạn."
     },
     "install": {
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
@@ -157,7 +159,6 @@
       "errBundle": "Không thể tải gói trình tối ưu.",
       "errInvalidData": "Đang chờ dữ liệu hợp lệ… {message}",
       "yourData": "Dữ liệu của bạn",
-      "trims": "BV‑SALA cắt bớt {tokens} token mỗi lần gửi.",
       "alreadyOptimal": "Đã tối ưu ở đây — BV‑SALA không bao giờ làm nó tệ hơn.",
       "projectorTitle": "Trình dự phóng hóa đơn",
       "estimate": "ƯỚC TÍNH",
@@ -168,7 +169,26 @@
       "inputCut": "Cắt giảm đầu vào",
       "outputCut": "Cắt giảm đầu ra",
       "projectedSaving": "tiết kiệm dự phóng / tháng · theo giá {model}",
-      "projLower": "{baseline} → {opt} · thấp hơn {pct}%"
+      "tryExample": "Thử một ví dụ",
+      "sample_users": "Danh sách người dùng",
+      "sample_orders": "Đơn hàng cửa hàng",
+      "sample_tickets": "Ticket hỗ trợ",
+      "pasteHint": "…hoặc dán JSON của bạn vào đây. Không có gì rời khỏi trình duyệt của bạn.",
+      "savedPct": "−{pct}% token",
+      "trimsFriendly": "Từ {before} xuống {after} token mỗi lần gửi. BV‑SALA chỉ chọn định dạng rẻ nhất — không cần đổi mã của bạn.",
+      "profileLabel": "Bạn đang xây dựng gì?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Trích xuất dữ liệu",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Mức tối ưu hóa",
+      "scenario_cautious": "Thận trọng",
+      "scenario_typical": "Điển hình",
+      "scenario_bold": "Táo bạo",
+      "advanced": "Cài đặt nâng cao",
+      "projFriendly": "Hóa đơn của bạn sẽ giảm từ {baseline} xuống {opt} — ít hơn {pct}%.",
+      "onlyChatTitle": "Bạn chỉ dùng ChatGPT hoặc Claude?",
+      "onlyChatBody": "Vậy thì không có gì để cài đặt: các sản phẩm đó thu phí thuê bao cố định nên không có hóa đơn theo token để cắt giảm. BV‑SALA được cài trong mã của một ứng dụng gọi API OpenAI hoặc Anthropic bằng khóa riêng — chính ở đó nó đo và giảm chi phí thực.",
+      "onlyChatCta": "Bạn đang phát triển ứng dụng? Đến trang Cài đặt"
     },
     "copyButton": {
       "copied": "Đã sao chép",
@@ -543,7 +563,8 @@
       "copyright": "© 2026 BiVelio Inc. Bảo lưu mọi quyền.",
       "andorra": "Từ Andorra ra thế giới 🇦🇩",
       "bottomPrivacy": "Quyền riêng tư",
-      "bottomTerms": "Điều khoản"
+      "bottomTerms": "Điều khoản",
+      "howItWorks": "Cách hoạt động"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -589,5 +610,56 @@
     "sesionActual": "Hiện quý vị đang đăng nhập với <b>{email}</b>.",
     "cerrarYContinuar": "Đăng xuất và dùng tài khoản khác",
     "cerrando": "Đang đăng xuất…"
+  },
+  "howItWorks": {
+    "metaTitle": "Khoản tiết kiệm được cài ở đâu? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA là một lớp được cài vào mã của ứng dụng của bạn, nơi API được gọi. Nó tiết kiệm được gì, ở đâu không áp dụng và cách đo lường thực sự.",
+    "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
+    "title": "Khoản tiết kiệm được cài ở đâu?",
+    "lede": "BV‑SALA không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của OpenAI hoặc Anthropic. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",
+    "s1Title": "Lớp này sống bên trong mã của bạn",
+    "s1Sub": "Cùng một lệnh gọi, có và không có lớp. Lưu lượng luôn đi thẳng từ ứng dụng của bạn đến nhà cung cấp — BV‑SALA không phải máy chủ trung gian và không bao giờ thấy dữ liệu của bạn từ bên ngoài.",
+    "flowWithout": "Không có BV‑SALA",
+    "flowWith": "Có BV‑SALA",
+    "nodeApp": "Ứng dụng của bạn",
+    "nodeAppSubBefore": "mỗi yêu cầu đi ra nguyên vẹn",
+    "nodeAppSubAfter": "cùng mã nghiệp vụ",
+    "nodeLayerSub": "tránh lệnh gọi · cắt gọn đầu vào và đầu ra",
+    "nodeApi": "API nhà cung cấp",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "nhận ít token hơn",
+    "billMonth": "hóa đơn / tháng",
+    "billReport": "+ SavingsReport",
+    "s1Note": "Ô màu xanh lá đó là một gói npm bên trong mã của ứng dụng. Vì vậy câu hỏi then chốt không bao giờ là «tôi cài gì?» mà là <b>«ai đã viết đoạn mã gọi API?»</b> — người đó chính là người có thể cài nó.",
+    "s2Title": "Trường hợp của bạn, trong 10 giây",
+    "s2Sub": "Bốn cách dùng AI, và BV‑SALA có thể làm gì trong từng trường hợp.",
+    "caseChatSub": "ứng dụng hoặc web, miễn phí hoặc trả phí",
+    "caseChatBody": "Bạn trả phí cố định (hoặc không trả gì): không có hóa đơn theo token để giảm, và đây là sản phẩm đóng — không ai có thể đặt phần mềm vào giữa ứng dụng và các mô hình của nó. Khoản tiết kiệm của BV‑SALA đơn giản là không áp dụng ở đây — và không sản phẩm nào có thể hứa điều đó một cách trung thực.",
+    "caseClaudeSub": "claude.ai, miễn phí hoặc trả phí",
+    "caseClaudeBody": "Chính xác cùng một trường hợp: thuê bao cố định và sản phẩm đóng. Cứ yên tâm dùng Claude — không có chi tiêu token nào để tối ưu từ bên ngoài.",
+    "caseCodeSub": "terminal, với khóa API",
+    "caseCodeBody": "Trường hợp duy nhất có sắc thái. Với thuê bao, giống như trên: phí cố định, không có gì để cài. Với khóa API thì đúng là có hóa đơn token thật, nhưng BV‑SALA là một thư viện, không phải proxy: hôm nay nó không thể đứng trước một công cụ đã biên dịch sẵn như Claude Code.",
+    "caseAppName": "Ứng dụng của bạn",
+    "caseAppSub": "mã của bạn + khóa API của bạn",
+    "caseAppBody": "Trường hợp mà BV‑SALA sinh ra để phục vụ. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính tiền từng token, và lớp này được cài trong ba bước: gói, giấy phép và bọc lệnh gọi. Từ yêu cầu đầu tiên nó trả về một <b>SavingsReport</b> với khoản tiết kiệm đã xác minh.",
+    "verdictNothing": "Không có gì để cài",
+    "verdictNotYet": "Chưa",
+    "verdictYes": "Ở đây thì có",
+    "s3Title": "Ước tính vs. đo lường",
+    "s3Sub": "Sản phẩm có hai con số khác nhau và không nên trộn lẫn chúng.",
+    "mBeforeK": "Trước khi cài",
+    "mBeforeV": "Ước tính",
+    "mBeforeBody": "Trình xác minh chạy bộ tối ưu thật ngay trong trình duyệt của bạn với dữ liệu mẫu của bạn. Một phép chiếu trung thực — vì thế nó mang nhãn «ước tính».",
+    "mAfterK": "Sau khi cài",
+    "mAfterV": "Đo lường thực",
+    "mAfterBody": "Mỗi lệnh gọi trả về một SavingsReport: những lệnh gọi bạn không bao giờ phải trả và khoản tiết kiệm ròng trên mỗi yêu cầu. Kiểm toán được, từng yêu cầu một, trên hạ tầng của chính bạn.",
+    "s4Title": "Cài đặt đầy đủ, nếu bạn phát triển ứng dụng",
+    "snip1": "gói",
+    "snip2": "giấy phép (từ bảng điều khiển của bạn)",
+    "snip3": "bọc lệnh gọi — đây là toàn bộ thay đổi mã",
+    "snipResult": "khoản tiết kiệm, đã đo",
+    "ctaVerify": "Thử với dữ liệu của bạn trong trình xác minh",
+    "ctaSignup": "Tạo tài khoản",
+    "ctaInstall": "Đến hướng dẫn cài đặt"
   }
 }

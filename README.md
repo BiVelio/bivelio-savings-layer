@@ -1,45 +1,61 @@
-# @bivelio/savings-layer — BV‑SALA
+# BV‑SALA — the savings layer for your LLM bill
 
-**A provider‑neutral LLM execution optimizer.** BV‑SALA sits in front of any LLM
-provider and, for every request, picks the **cheapest execution that still meets
-your quality bar** — then hands you a full, auditable `SavingsReport`.
+<p align="center">
+  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. The bill drops from $330 to $160 a month, measured." width="720">
+</p>
 
-It is **not** a prompt compressor. Compression is the *fourth* thing it tries, not
-the first.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@bivelio/savings-layer"><img src="https://img.shields.io/npm/v/%40bivelio%2Fsavings-layer?color=2F63D8&label=npm" alt="npm version"></a>
+  <img src="https://img.shields.io/badge/node-%E2%89%A520-14A06F" alt="Node ≥ 20">
+  <img src="https://img.shields.io/badge/license-commercial-0F1218" alt="Commercial license">
+</p>
+
+**One layer inside your code, right where your app calls the OpenAI or Anthropic API.**
+For every request it picks the cheapest execution that still meets your quality bar —
+avoiding calls that don't need to happen and trimming what must be sent — and hands
+you an auditable `SavingsReport`. Your bill drops, and you can verify why.
 
 > **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to run**:
-> BV‑SALA is **fail‑closed** and executes only with a valid, active BiVelio license
-> key. Verification is **offline** (no phone‑home to answer a request) and **your
-> prompts never leave your infrastructure** — only counts and cost are ever reported.
-> Use is governed by the [LICENSE](./LICENSE) and the BiVelio Terms. Not affiliated
-> with, and not a wrapper around, any third‑party library.
+> BV‑SALA is fail‑closed and executes only with an active BiVelio license key.
+> License checks are **offline** and **your prompts never leave your infrastructure** —
+> only counts and cost are ever reported. Use is governed by the [LICENSE](./LICENSE)
+> and the BiVelio Terms. Not a wrapper around any third‑party library.
 
-## Requirements
+## Where it installs
 
-- **ESM-only.** The package is `"type": "module"`. Add `"type": "module"` to your
-  own `package.json`, or use `.mjs` files. From CommonJS, `require()` works on
-  **Node ≥ 22** (native `require(esm)`); on older Node, import it instead.
-- **Node ≥ 20.**
-- To run the `.ts` snippets below **as-is**: Node ≥ 23.6 (native type-stripping) or
-  `npx tsx file.ts`. On Node 20, compile with `tsc` first or use `tsx`. The
-  JavaScript equivalents (below each TS snippet) run on any supported Node.
-- For `tsc --noEmit` against your own code: install `@types/node` and make sure
-  `"types": ["node"]` is in your `tsconfig` if you don't already pull it in.
-- Optional peer `gpt-tokenizer`: install it for exact OpenAI token counts; without
-  it the layer uses a built-in estimator — not required to get started.
+Your application → **BV‑SALA** → provider API. Traffic always goes straight from
+your app to your provider — BV‑SALA is a library inside your code, never a
+middleman server, and it works with any OpenAI‑compatible endpoint (OpenAI, Azure,
+vLLM, SGLang, a gateway) as well as Anthropic.
 
-## Install
+**Only use ChatGPT or Claude?** Then there is nothing to install: those products
+charge a flat subscription, so there is no per‑token bill to cut. BV‑SALA is for
+applications that call the API with their own key. The whole story, in plain words:
+**[Where does the saving install?](https://savings.bivelio.com/en/how-it-works)**
+
+## Try it before you install
+
+Run the real optimizer **free in your browser** — pick an example or paste your own
+data and watch the meter — at **[savings.bivelio.com](https://savings.bivelio.com)**.
+
+## Install in three steps
+
+**1 · The package**
 
 ```bash
 pnpm add @bivelio/savings-layer
 # or: npm i @bivelio/savings-layer  ·  yarn add @bivelio/savings-layer
 ```
 
-You also need a **license key**. Try the optimizer **free in your browser** — paste
-your own data and watch the meter — at **[savings.bivelio.com](https://savings.bivelio.com)**,
-then subscribe (**€4 / seat / month** or **€39 / seat / year**, EUR) to get your key.
+**2 · The license** — from your [dashboard](https://savings.bivelio.com/dashboard/install)
+(**€4 / seat / month** or **€39 / seat / year**, EUR)
 
-## Quick start
+```bash
+export BIVELIO_LICENSE_KEY=…   # your license key
+export BIVELIO_SERVICE_KEY=…   # service-account key: auto-renewal + seat metering
+```
+
+**3 · Wrap the call** — this is the entire code change:
 
 ```ts
 import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
@@ -68,10 +84,30 @@ console.log(report.calls.avoidedLlm); // → whole calls you never paid for
 console.log(report.cost.netSavings);  // → verified savings, per request
 ```
 
-Ask for a **structured contract** and you also get `data`, validated against your
-schema — the JSON-repair and output contracts levers switch on here.
+That's it. From the first request, `report` carries the saving — measured, not
+estimated.
 
-**TypeScript** (the generic types `data`):
+## What you get on every request
+
+A `SavingsReport` with the numbers behind every claim, kept in **four separate
+ledgers** that are never summed into one flattering figure:
+
+| Ledger | Meaning |
+| --- | --- |
+| `avoided_calls` | LLM / retrieval / tool calls that never executed |
+| `eliminated_tokens` | information dropped because it was not needed |
+| `compressed_tokens` | information kept, but encoded with fewer tokens |
+| `provider_cached_tokens` | tokens still in the prompt, billed/processed more cheaply |
+
+And a promise you can hold it to: **never worse than your JSON.** Payload encodings
+are chosen by counting real tokens with the destination model's own tokenizer, and
+BV‑SALA only moves away from plain JSON when the saving clearly clears the bar —
+`report.serialization` shows what was chosen and what each candidate would have cost.
+
+<details>
+<summary><b>Structured output — validated <code>data</code>, not just text</b></summary>
+
+Ask for a response contract and you also get `data`, validated against your schema:
 
 ```ts
 const { data, text } = await layer.generate<{ answer: number }>({
@@ -92,8 +128,8 @@ const { data, text } = await layer.generate<{ answer: number }>({
 console.log(data.answer); // 8
 ```
 
-**JavaScript** — identical, just drop the `<{ answer: number }>` type argument (a
-TS-only construct; in plain JS it throws `ReferenceError: number is not defined`):
+**Plain JavaScript** — identical, just drop the `<{ answer: number }>` type argument
+(a TS-only construct; in plain JS it throws `ReferenceError: number is not defined`):
 
 ```js
 const { data, text } = await layer.generate({
@@ -114,42 +150,10 @@ const { data, text } = await layer.generate({
 console.log(data.answer); // 8
 ```
 
-The hard requirements are a `provider` and a valid `licenseKey`: BV‑SALA is a paid
-product and **refuses to run unlicensed, expired, or tampered** (it throws
-`LicenseError` at the `generate()` entry, carrying a `status` of `none`,
-`invalid`, `expired`, `grace`, `revoked` or `stale`). Your key — and this snippet
-with the key already filled in — is at
-[savings.bivelio.com/dashboard/install](https://savings.bivelio.com/dashboard/install).
+</details>
 
-> **Set `serviceAccountKey` on every long‑running deployment.** Your licence token
-> expires at the end of the billing period; each renewal mints a **new** token. With
-> a service‑account key (`bvk_…`, same dashboard) the SDK picks the renewed token up
-> by itself and swaps it in without a restart. **Without it there is no machine
-> pickup**, so somebody has to paste the new token by hand every cycle — and if
-> nobody does, the deployment stops with `LicenseError` once the grace period ends,
-> while the subscription is paid and current. The key also enables seat metering
-> (counts only — never prompts or completions).
-
-### Seats (how you are billed)
-
-A **seat is a machine**, never a person. The SDK derives a stable, opaque id per
-machine + service-account key and reports it with the counts; the control plane
-bills a seat only once it has been seen on **3 separate days**.
-
-**Set `BVSALA_SEAT_ID` (one value per replica or service) whenever the machine
-identity can't be deduced** — Kubernetes, or any fleet where the hostname is
-assigned dynamically. Without it, every pod of a deployment shares one fingerprint
-and the whole deployment counts as a **single** seat. It is also the way to keep
-seat ids stable across an SDK upgrade: the fingerprint changed in v0.1.x, so a
-fleet that never set it may be counted twice in the month it upgrades.
-
-```bash
-BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
-```
-
-CI runners are auto-detected and excluded from billable seats.
-
-### Tool calls
+<details>
+<summary><b>Tool calls</b></summary>
 
 When you pass `tools` and the model asks to invoke one, the reply is not the final
 answer: `text` is empty by design and the request is in `toolCalls`. Execute it,
@@ -193,92 +197,45 @@ if (res.toolCalls?.length) {
 A tool‑call turn is never served from cache and never counted as an avoided call:
 an action that has not run yet cannot be a saving.
 
-> The `devUnlicensed` flag and `BVSALA_DEV_OPEN=1` are development‑only, honored
-> **only when building from source** (this repo's tests and benchmarks). They are
-> **disabled in this published package** — a valid `licenseKey` is the only way to
-> run it. They are not a way to use the product for free.
+</details>
 
-Every component ships with an in‑memory default and is independently swappable:
-plug in your own cache, vector store, tokenizer, compressor or constraint backend
-behind the same interfaces.
+<details>
+<summary><b>Running a fleet? Seats and renewals</b></summary>
 
-## The optimization order (cheapest first)
+- **A seat is a machine, never a person.** A seat is billed only once it has been
+  seen on 3 separate days, and CI runners are auto‑detected and excluded.
+- **Set `serviceAccountKey` on every long‑running deployment.** Renewals mint a new
+  license token each billing period; with the service‑account key (`bvk_…`, same
+  dashboard) the SDK picks the renewed token up by itself, without a restart.
+- **Set `BVSALA_SEAT_ID` (one stable value per replica) on Kubernetes or any fleet
+  with dynamic hostnames**, so each replica counts as what it is:
 
-1. **Avoid the call entirely** when the answer can be produced or reused safely.
-2. **Avoid auxiliary calls** — the retrievals, tool hops and retries around it.
-3. **Eliminate unnecessary context** before trying to shrink what remains.
-4. **Shrink** the tokens that genuinely must be sent.
-5. **Constrain generation** to emit only the structure and length required.
-
-The order is the point: work removed at step 1 costs nothing to compress at step 4.
-
-Provider prompt/KV caching is treated as a cost/latency saving — **never** as a
-reduction of the logical prompt size.
-
-## Four separate ledgers (never summed)
-
-Mixing these produces misleading metrics, so BV‑SALA keeps them apart:
-
-| Ledger | Meaning |
-| --- | --- |
-| `avoided_calls` | LLM / retrieval / tool calls that never executed |
-| `eliminated_tokens` | information dropped because it was not needed |
-| `compressed_tokens` | information kept, but encoded with fewer tokens |
-| `provider_cached_tokens` | tokens still in the prompt, billed/processed more cheaply |
-
-A cache hit removes a whole call. A re‑encode makes a payload smaller. Compression
-drops redundant words. A prefix cache makes tokens cheaper without removing them.
-Four different things — summing them would lie to you, so the report never does.
-
-## The decision cascade
-
-```
-Request
-  → Canonicalize + Policy (risk & freshness)
-  → Deterministic resolvers ─────────────► answer (0 calls)
-  → Exact cache ─────────────────────────► answer (0 calls)
-  → Concurrent duplicates coalesced ─────► answer (0 calls)
-      → Near-duplicate reuse ────────────► answer (0 calls)
-      → Execution planning (how much work this really needs)
-      → Context reduction (only when it pays for itself)
-      → Payload encoding chosen by measurement, not by default
-      → Output contract enforced
-      → ONE primary LLM call
-      → Structural + semantic validation (+ ≤1 repair)
-      → Local render / transcode / cache write
-  → SavingsReport + traces
+```bash
+BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 ```
 
-## Why formats are chosen, not assumed
+</details>
 
-A compact encoding can be *larger* than plain JSON on nested or non‑uniform data,
-so BV‑SALA never assumes one. It counts the candidates with the destination
-model's own tokenizer — including the cost of explaining the encoding to the
-model — and only moves away from JSON when the saving clears a margin worth the
-change.
+<details>
+<summary><b>Requirements</b></summary>
 
-On a wide, uniform table that is a large reduction. On a small nested object it
-leaves JSON alone. Whichever it picks, `report.serialization` tells you what was
-chosen and what each candidate would have cost, so the decision is auditable
-rather than promised.
+- **Node ≥ 20.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
+  `require()` works on Node ≥ 22.
+- Optional peer `gpt-tokenizer` for exact OpenAI token counts — without it a
+  built‑in estimator is used, so it is not required to get started.
+- Every component (cache, vector store, tokenizer, compressor, constraint backend)
+  ships with an in‑memory default and is independently swappable behind the same
+  interfaces.
 
-## What's inside
-
-Safe cache keys and a risk/freshness policy · several independent ways to answer
-without spending a call · execution planning · context reduction that must pay for
-itself · measured payload encoding · output contracts with validation · a
-provider‑neutral adapter · and a trace collector that builds the `SavingsReport`.
-
-Every piece is pluggable, and every saving it claims is reported per request with
-the token counts behind it.
+</details>
 
 ## Licensing & privacy
 
 BV‑SALA is commercial, per‑seat software (**€4 / seat / month** or **€39 / seat /
 year**, EUR). The license is a signed token your SDK verifies **offline**; the
-managed control plane (semantic cache, learned thresholds, dashboards) and the
-revocation kill‑switch are served from BiVelio. Your LLM traffic goes **straight to
-your provider** — BiVelio sees counts and cost, never prompts or completions.
+managed control plane and the revocation kill‑switch are served from BiVelio. Your
+LLM traffic goes **straight to your provider** — BiVelio sees counts and cost,
+never prompts or completions.
 
 Get a key and read the terms at **[savings.bivelio.com](https://savings.bivelio.com)**.
 Onboarding & general questions: **support@bivelio.com** · licensing & compliance:
