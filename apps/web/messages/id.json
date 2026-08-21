@@ -11,7 +11,8 @@
     "pricing": "Harga",
     "signIn": "Masuk",
     "dashboard": "Dasbor",
-    "signOut": "Keluar"
+    "signOut": "Keluar",
+    "howItWorks": "Cara kerjanya"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Verifikasi",
       "integrate": "Integrasikan",
       "install": "Pasang",
-      "account": "Akun"
+      "account": "Akun",
+      "howItWorks": "Cara kerjanya"
     }
   },
   "auth": {
@@ -543,7 +545,8 @@
       "copyright": "© 2026 BiVelio Inc. Semua hak dilindungi.",
       "andorra": "Dari Andorra untuk dunia 🇦🇩",
       "bottomPrivacy": "Privasi",
-      "bottomTerms": "Ketentuan"
+      "bottomTerms": "Ketentuan",
+      "howItWorks": "Cara kerjanya"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -589,5 +592,56 @@
     "sesionActual": "Saat ini Anda masuk sebagai <b>{email}</b>.",
     "cerrarYContinuar": "Keluar dan gunakan akun lain",
     "cerrando": "Keluar…"
+  },
+  "howItWorks": {
+    "metaTitle": "Di mana penghematan dipasang? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA adalah lapisan yang dipasang di dalam kode aplikasi kamu, tempat API dipanggil. Apa yang bisa dihemat, di mana tidak berlaku, dan bagaimana pengukurannya yang sebenarnya.",
+    "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
+    "title": "Di mana penghematan dipasang?",
+    "lede": "BV‑SALA bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API OpenAI atau Anthropic. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",
+    "s1Title": "Lapisan ini hidup di dalam kode kamu",
+    "s1Sub": "Panggilan yang sama, dengan dan tanpa lapisan. Lalu lintas selalu berjalan langsung dari aplikasi kamu ke penyedia — BV‑SALA bukan server perantara dan tidak pernah melihat datamu dari luar.",
+    "flowWithout": "Tanpa BV‑SALA",
+    "flowWith": "Dengan BV‑SALA",
+    "nodeApp": "Aplikasi kamu",
+    "nodeAppSubBefore": "setiap permintaan keluar utuh",
+    "nodeAppSubAfter": "kode bisnis yang sama",
+    "nodeLayerSub": "menghindari panggilan · memangkas input dan output",
+    "nodeApi": "API penyedia",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "menerima lebih sedikit token",
+    "billMonth": "tagihan / bulan",
+    "billReport": "+ SavingsReport",
+    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya.",
+    "s2Title": "Kasus kamu, dalam 10 detik",
+    "s2Sub": "Empat cara memakai AI, dan apa yang bisa dilakukan BV‑SALA di masing-masing.",
+    "caseChatSub": "aplikasi atau web, gratis atau berbayar",
+    "caseChatBody": "Kamu membayar tarif tetap (atau tidak sama sekali): tidak ada tagihan per token yang bisa dikurangi, dan ini produk tertutup — tidak ada yang bisa menaruh perangkat lunak di antara aplikasi dan modelnya. Penghematan BV‑SALA memang tidak berlaku di sini — dan tidak ada produk yang bisa menjanjikannya di sana dengan jujur.",
+    "caseClaudeSub": "claude.ai, gratis atau berbayar",
+    "caseClaudeBody": "Kasus yang persis sama: langganan tetap dan produk tertutup. Pakai Claude dengan tenang — tidak ada pengeluaran token yang bisa dioptimalkan dari luar.",
+    "caseCodeSub": "terminal, dengan kunci API",
+    "caseCodeBody": "Satu-satunya kasus dengan nuansa. Dengan langganan, sama seperti di atas: tarif tetap, tidak ada yang dipasang. Dengan kunci API memang ada tagihan per token yang nyata, tetapi BV‑SALA adalah pustaka, bukan proxy: hari ini ia tidak bisa berdiri di depan alat yang sudah terkompilasi seperti Claude Code.",
+    "caseAppName": "Aplikasi kamu",
+    "caseAppSub": "kode kamu + kunci API kamu",
+    "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasimu memanggil API dengan kuncimu, penyedia menagih setiap token, dan lapisan ini dipasang dalam tiga langkah: paket, lisensi, dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan terverifikasi.",
+    "verdictNothing": "Tidak ada yang dipasang",
+    "verdictNotYet": "Belum",
+    "verdictYes": "Di sini ya",
+    "s3Title": "Estimasi vs. pengukuran",
+    "s3Sub": "Produk ini punya dua angka berbeda dan sebaiknya tidak dicampur.",
+    "mBeforeK": "Sebelum memasang",
+    "mBeforeV": "Estimasi",
+    "mBeforeBody": "Verifikator menjalankan optimizer sungguhan di browser kamu dengan data contohmu. Proyeksi yang jujur — karena itu ia memakai label «estimasi».",
+    "mAfterK": "Setelah memasang",
+    "mAfterV": "Pengukuran nyata",
+    "mAfterBody": "Setiap panggilan mengembalikan SavingsReport: panggilan yang tidak pernah kamu bayar dan penghematan bersih per permintaan. Dapat diaudit, permintaan demi permintaan, di infrastrukturmu sendiri.",
+    "s4Title": "Pemasangan lengkap, jika kamu membangun aplikasi",
+    "snip1": "paketnya",
+    "snip2": "lisensinya (dari dasbor kamu)",
+    "snip3": "membungkus panggilan — ini seluruh perubahan kodenya",
+    "snipResult": "penghematan, terukur",
+    "ctaVerify": "Coba dengan datamu di verifikator",
+    "ctaSignup": "Buat akun",
+    "ctaInstall": "Ke panduan pemasangan"
   }
 }

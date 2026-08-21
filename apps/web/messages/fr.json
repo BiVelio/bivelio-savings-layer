@@ -11,7 +11,8 @@
     "pricing": "Tarifs",
     "signIn": "Se connecter",
     "dashboard": "Tableau de bord",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "howItWorks": "Comment ça marche"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Vérifier",
       "integrate": "Intégrer",
       "install": "Installer",
-      "account": "Compte"
+      "account": "Compte",
+      "howItWorks": "Comment ça marche"
     }
   },
   "auth": {
@@ -543,7 +545,8 @@
       "copyright": "© 2026 BiVelio Inc. Tous droits réservés.",
       "andorra": "De l'Andorre au monde entier 🇦🇩",
       "bottomPrivacy": "Confidentialité",
-      "bottomTerms": "Conditions"
+      "bottomTerms": "Conditions",
+      "howItWorks": "Comment ça marche"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -589,5 +592,56 @@
     "sesionActual": "Vous êtes actuellement connecté en tant que <b>{email}</b>.",
     "cerrarYContinuar": "Se déconnecter et utiliser un autre compte",
     "cerrando": "Déconnexion…"
+  },
+  "howItWorks": {
+    "metaTitle": "Où s'installe l'économie ? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA est une couche qui s'installe dans le code de votre application, là où l'API est appelée. Ce qu'elle peut économiser, où elle ne s'applique pas et comment on mesure vraiment.",
+    "eyebrow": "La couche, expliquée · sans jargon",
+    "title": "Où s'installe l'économie ?",
+    "lede": "BV‑SALA n'est ni une app, ni une extension, ni un réglage de ChatGPT. C'est un morceau de code qu'un développeur place dans sa propre application, exactement là où cette application appelle l'API d'OpenAI ou d'Anthropic. Elle ne peut économiser que là où existe une facture au token — et ne peut le mesurer que là où elle voit passer chaque requête.",
+    "s1Title": "La couche vit dans votre code",
+    "s1Sub": "Le même appel, avec et sans la couche. Le trafic voyage toujours directement de votre application au fournisseur — BV‑SALA n'est pas un serveur intermédiaire et ne voit jamais vos données de l'extérieur.",
+    "flowWithout": "Sans BV‑SALA",
+    "flowWith": "Avec BV‑SALA",
+    "nodeApp": "Votre application",
+    "nodeAppSubBefore": "chaque requête part entière",
+    "nodeAppSubAfter": "même code métier",
+    "nodeLayerSub": "évite des appels · réduit entrée et sortie",
+    "nodeApi": "API du fournisseur",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "reçoit moins de tokens",
+    "billMonth": "facture / mois",
+    "billReport": "+ SavingsReport",
+    "s1Note": "Cette case verte est un paquet npm dans le code de l'application. C'est pourquoi la question clé n'est jamais « qu'est-ce que j'installe ? » mais <b>« qui a écrit le code qui appelle l'API ? »</b> — cette personne est celle qui peut l'installer.",
+    "s2Title": "Votre cas, en 10 secondes",
+    "s2Sub": "Quatre façons d'utiliser l'IA, et ce que BV‑SALA peut faire dans chacune.",
+    "caseChatSub": "app ou web, gratuit ou payant",
+    "caseChatBody": "Vous payez un forfait fixe (ou rien) : il n'existe pas de facture au token à réduire, et c'est un produit fermé où personne ne peut placer de logiciel entre l'app et ses modèles. L'économie de BV‑SALA ne s'applique pas ici — et aucun produit ne peut honnêtement la promettre là.",
+    "caseClaudeSub": "claude.ai, gratuit ou payant",
+    "caseClaudeBody": "Exactement le même cas : abonnement fixe et produit fermé. Utilisez Claude en toute tranquillité — il n'y a pas de dépense au token à optimiser de l'extérieur.",
+    "caseCodeSub": "terminal, avec clé d'API",
+    "caseCodeBody": "Le seul cas avec nuance. En abonnement, comme ci-dessus : forfait fixe, rien à installer. Avec une clé d'API, une vraie facture au token existe, mais BV‑SALA est une bibliothèque, pas un proxy : elle ne peut pas aujourd'hui se placer devant un outil déjà compilé comme Claude Code.",
+    "caseAppName": "Votre application",
+    "caseAppSub": "votre code + votre clé d'API",
+    "caseAppBody": "Le cas pour lequel BV‑SALA existe. Votre app appelle l'API avec votre clé, le fournisseur facture chaque token, et la couche s'installe en trois étapes : paquet, licence et envelopper l'appel. Dès la première requête, elle renvoie un <b>SavingsReport</b> avec l'économie vérifiée.",
+    "verdictNothing": "Rien à installer",
+    "verdictNotYet": "Pas encore",
+    "verdictYes": "Ici oui",
+    "s3Title": "Estimation vs. mesure",
+    "s3Sub": "Le produit a deux chiffres différents, et mieux vaut ne pas les mélanger.",
+    "mBeforeK": "Avant d'installer",
+    "mBeforeV": "Estimation",
+    "mBeforeBody": "Le vérificateur exécute le vrai optimiseur dans votre navigateur avec vos données d'exemple. C'est une projection honnête — c'est pourquoi elle porte l'étiquette « estimation ».",
+    "mAfterK": "Après l'installation",
+    "mAfterV": "Mesure réelle",
+    "mAfterBody": "Chaque appel renvoie un SavingsReport : les appels que vous n'avez jamais payés et l'économie nette par requête. Auditable, requête par requête, sur votre propre infrastructure.",
+    "s4Title": "L'installation complète, si vous développez une app",
+    "snip1": "le paquet",
+    "snip2": "la licence (depuis votre tableau de bord)",
+    "snip3": "envelopper l'appel — c'est tout le changement de code",
+    "snipResult": "l'économie, mesurée",
+    "ctaVerify": "Essayez avec vos données dans le vérificateur",
+    "ctaSignup": "Créer un compte",
+    "ctaInstall": "Voir le guide d'installation"
   }
 }

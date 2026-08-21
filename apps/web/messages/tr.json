@@ -11,7 +11,8 @@
     "pricing": "Fiyatlandırma",
     "signIn": "Giriş yap",
     "dashboard": "Panel",
-    "signOut": "Çıkış yap"
+    "signOut": "Çıkış yap",
+    "howItWorks": "Nasıl çalışır"
   },
   "app": {
     "sidebar": {
@@ -21,7 +22,8 @@
       "verify": "Doğrula",
       "integrate": "Entegre et",
       "install": "Kur",
-      "account": "Hesap"
+      "account": "Hesap",
+      "howItWorks": "Nasıl çalışır"
     }
   },
   "auth": {
@@ -543,7 +545,8 @@
       "copyright": "© 2026 BiVelio Inc. Tüm hakları saklıdır.",
       "andorra": "Andorra'dan tüm dünyaya 🇦🇩",
       "bottomPrivacy": "Gizlilik",
-      "bottomTerms": "Şartlar"
+      "bottomTerms": "Şartlar",
+      "howItWorks": "Nasıl çalışır"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -589,5 +592,56 @@
     "sesionActual": "Şu anda <b>{email}</b> olarak oturum açtınız.",
     "cerrarYContinuar": "Oturumu kapat ve başka hesap kullan",
     "cerrando": "Oturum kapatılıyor…"
+  },
+  "howItWorks": {
+    "metaTitle": "Tasarruf nereye kurulur? · BiVelio Savings Layer",
+    "metaDescription": "BV‑SALA, uygulamanın kodunun içine — API'nin çağrıldığı yere — kurulan bir katmandır. Neyi tasarruf edebilir, nerede geçerli değildir ve gerçekte nasıl ölçülür.",
+    "eyebrow": "Katman, açıklandı · jargonsuz",
+    "title": "Tasarruf nereye kurulur?",
+    "lede": "BV‑SALA bir uygulama, bir eklenti veya bir ChatGPT ayarı değildir. Bir geliştiricinin kendi uygulamasının içine — o uygulamanın OpenAI veya Anthropic API'sini çağırdığı yere — yerleştirdiği bir kod parçasıdır. Yalnızca token faturasının var olduğu yerde tasarruf edebilir — ve yalnızca her isteğin geçtiğini gördüğü yerde ölçebilir.",
+    "s1Title": "Katman senin kodunun içinde yaşar",
+    "s1Sub": "Aynı çağrı, katmanla ve katmansız. Trafik her zaman uygulamandan sağlayıcıya doğrudan gider — BV‑SALA aracı bir sunucu değildir ve verini asla dışarıdan görmez.",
+    "flowWithout": "BV‑SALA olmadan",
+    "flowWith": "BV‑SALA ile",
+    "nodeApp": "Senin uygulaman",
+    "nodeAppSubBefore": "her istek olduğu gibi çıkar",
+    "nodeAppSubAfter": "aynı iş kodu",
+    "nodeLayerSub": "çağrılardan kaçınır · girişi ve çıkışı kısaltır",
+    "nodeApi": "Sağlayıcı API'si",
+    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubAfter": "daha az token alır",
+    "billMonth": "fatura / ay",
+    "billReport": "+ SavingsReport",
+    "s1Note": "O yeşil kutu, uygulamanın kodundaki bir npm paketidir. Bu yüzden kilit soru asla «ne kurayım?» değil, <b>«API'yi çağıran kodu kim yazdı?»</b> sorusudur — onu kurabilecek kişi o kişidir.",
+    "s2Title": "Senin durumun, 10 saniyede",
+    "s2Sub": "Yapay zekâyı kullanmanın dört yolu ve BV‑SALA'nın her birinde ne yapabileceği.",
+    "caseChatSub": "uygulama veya web, ücretsiz ya da ücretli",
+    "caseChatBody": "Sabit bir ücret ödersin (ya da hiç): azaltılacak bir token faturası yoktur ve kimsenin uygulama ile modelleri arasına yazılım koyamayacağı kapalı bir üründür. BV‑SALA'nın tasarrufu burada geçerli değildir — ve hiçbir ürün bunu orada dürüstçe vaat edemez.",
+    "caseClaudeSub": "claude.ai, ücretsiz ya da ücretli",
+    "caseClaudeBody": "Tam olarak aynı durum: sabit abonelik ve kapalı ürün. Claude'u gönül rahatlığıyla kullan — dışarıdan optimize edilecek bir token harcaması yok.",
+    "caseCodeSub": "terminal, API anahtarıyla",
+    "caseCodeBody": "Nüansı olan tek durum. Abonelikte, yukarıdaki gibi: sabit ücret, kurulacak bir şey yok. API anahtarıyla gerçek bir token faturası vardır, ama BV‑SALA bir kütüphanedir, proxy değil: bugün Claude Code gibi derlenmiş bir aracın önüne yerleşemez.",
+    "caseAppName": "Senin uygulaman",
+    "caseAppSub": "senin kodun + senin API anahtarın",
+    "caseAppBody": "BV‑SALA'nın var olduğu durum. Uygulaman API'yi senin anahtarınla çağırır, sağlayıcı her tokenı faturalar ve katman üç adımda kurulur: paket, lisans ve çağrıyı sarmak. İlk istekten itibaren doğrulanmış tasarrufla bir <b>SavingsReport</b> döndürür.",
+    "verdictNothing": "Kurulacak bir şey yok",
+    "verdictNotYet": "Henüz değil",
+    "verdictYes": "Burada evet",
+    "s3Title": "Tahmin vs. ölçüm",
+    "s3Sub": "Ürünün iki farklı rakamı var ve bunları karıştırmamak gerekir.",
+    "mBeforeK": "Kurulumdan önce",
+    "mBeforeV": "Tahmin",
+    "mBeforeBody": "Doğrulayıcı, gerçek optimize ediciyi tarayıcında örnek verilerinle çalıştırır. Dürüst bir projeksiyondur — bu yüzden «tahmin» etiketi taşır.",
+    "mAfterK": "Kurulumdan sonra",
+    "mAfterV": "Gerçek ölçüm",
+    "mAfterBody": "Her çağrı bir SavingsReport döndürür: hiç ödemediğin çağrılar ve istek başına net tasarruf. Denetlenebilir, istek istek, kendi altyapında.",
+    "s4Title": "Tam kurulum — bir uygulama geliştiriyorsan",
+    "snip1": "paket",
+    "snip2": "lisans (panelinden)",
+    "snip3": "çağrıyı sarmak — kod değişikliğinin tamamı bu",
+    "snipResult": "tasarruf, ölçülmüş",
+    "ctaVerify": "Doğrulayıcıda kendi verinle dene",
+    "ctaSignup": "Hesap oluştur",
+    "ctaInstall": "Kurulum rehberine git"
   }
 }

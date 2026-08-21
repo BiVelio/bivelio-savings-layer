@@ -1,0 +1,148 @@
+import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/i18n/navigation";
+
+/**
+ * «¿Dónde se instala el ahorro?» — la explicación sin jerga de dónde actúa la
+ * capa (y dónde no aplica: ChatGPT, claude.ai, Claude Code). Un solo contenido
+ * para dos superficies: la página pública de la landing y la pantalla del
+ * dashboard. `variant` solo cambia los destinos de los CTA — el argumento es
+ * exactamente el mismo dentro y fuera.
+ *
+ * La honestidad aquí es parte del producto: los casos «Nada que instalar» se
+ * dicen tal cual, y el caso Claude Code no promete un modo pasarela que hoy no
+ * existe.
+ */
+export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
+  const t = await getTranslations("howItWorks");
+  const b = (chunks: React.ReactNode) => <b>{chunks}</b>;
+
+  const cases: { name: string; sub: string; body: React.ReactNode[]; verdict: "no" | "casi" | "si" }[] = [
+    { name: "ChatGPT", sub: t("caseChatSub"), body: [t("caseChatBody")], verdict: "no" },
+    { name: "Claude", sub: t("caseClaudeSub"), body: [t("caseClaudeBody")], verdict: "no" },
+    { name: "Claude Code", sub: t("caseCodeSub"), body: [t("caseCodeBody")], verdict: "casi" },
+    { name: t("caseAppName"), sub: t("caseAppSub"), body: [t.rich("caseAppBody", { b })], verdict: "si" },
+  ];
+  const verdictLabel = { no: t("verdictNothing"), casi: t("verdictNotYet"), si: t("verdictYes") } as const;
+
+  return (
+    <>
+      <section className="hiw-sec">
+        <h2 className="hiw-h2">{t("s1Title")}</h2>
+        <p className="hiw-sub">{t("s1Sub")}</p>
+        <div className="hiw-diagram">
+          <div className="hiw-flow-row">
+            <span className="hiw-flow-label">{t("flowWithout")}</span>
+            <div className="hiw-flow">
+              <div className="hiw-node">
+                <div className="t">{t("nodeApp")}</div>
+                <div className="s">{t("nodeAppSubBefore")}</div>
+              </div>
+              <span className="hiw-arrow" aria-hidden />
+              <div className="hiw-node">
+                <div className="t">{t("nodeApi")}</div>
+                <div className="s">{t("nodeApiSubBefore")}</div>
+              </div>
+            </div>
+            <div className="hiw-bill">
+              <div className="amt">$330</div>
+              <div className="cap">{t("billMonth")}</div>
+            </div>
+          </div>
+          <div className="hiw-flow-row">
+            <span className="hiw-flow-label">{t("flowWith")}</span>
+            <div className="hiw-flow">
+              <div className="hiw-node">
+                <div className="t">{t("nodeApp")}</div>
+                <div className="s">{t("nodeAppSubAfter")}</div>
+              </div>
+              <span className="hiw-arrow" aria-hidden />
+              <div className="hiw-node layer">
+                <div className="t">BV-SALA</div>
+                <div className="s">{t("nodeLayerSub")}</div>
+              </div>
+              <span className="hiw-arrow" aria-hidden />
+              <div className="hiw-node">
+                <div className="t">{t("nodeApi")}</div>
+                <div className="s">{t("nodeApiSubAfter")}</div>
+              </div>
+            </div>
+            <div className="hiw-bill">
+              <div className="amt less">$160</div>
+              <div className="cap">{t("billReport")}</div>
+            </div>
+          </div>
+          <p className="hiw-note">{t.rich("s1Note", { b })}</p>
+        </div>
+      </section>
+
+      <section className="hiw-sec">
+        <h2 className="hiw-h2">{t("s2Title")}</h2>
+        <p className="hiw-sub">{t("s2Sub")}</p>
+        <div className="hiw-cases">
+          {cases.map((c) => (
+            <div key={c.name} className="hiw-case">
+              <div>
+                <div className="who">
+                  {c.name}
+                  <small>{c.sub}</small>
+                </div>
+                <span className={`hiw-verdict ${c.verdict}`}>{verdictLabel[c.verdict]}</span>
+              </div>
+              <div>
+                {c.body.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="hiw-sec">
+        <h2 className="hiw-h2">{t("s3Title")}</h2>
+        <p className="hiw-sub">{t("s3Sub")}</p>
+        <div className="hiw-two">
+          <div className="hiw-mcard">
+            <span className="k">{t("mBeforeK")}</span>
+            <div className="v est">{t("mBeforeV")}</div>
+            <p>{t("mBeforeBody")}</p>
+          </div>
+          <div className="hiw-mcard">
+            <span className="k">{t("mAfterK")}</span>
+            <div className="v real">{t("mAfterV")}</div>
+            <p>{t("mAfterBody")}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="hiw-sec">
+        <h2 className="hiw-h2">{t("s4Title")}</h2>
+        <pre className="hiw-pre">
+          <span className="c"># 1 · {t("snip1")}</span>{"\n"}
+          {"pnpm add @bivelio/savings-layer\n\n"}
+          <span className="c"># 2 · {t("snip2")}</span>{"\n"}
+          {"export BIVELIO_LICENSE_KEY=…\n\n"}
+          <span className="c"># 3 · {t("snip3")}</span>{"\n"}
+          {"const layer = createSavingsLayer({ provider, licenseKey, … });\n"}
+          {"const { text, report } = await layer.generate({ model, messages });\n\n"}
+          {"console.log(report.cost.netSavings)  "}
+          <span className="g">{"// ← "}{t("snipResult")}</span>
+        </pre>
+        <div className="hiw-cta">
+          {variant === "landing" ? (
+            <>
+              <Link className="btn btn-primary" href="/#verify">{t("ctaVerify")}</Link>
+              <Link className="btn btn-ghost" href="/signup">{t("ctaSignup")}</Link>
+            </>
+          ) : (
+            <>
+              <Link className="btn btn-primary" href="/dashboard/install">{t("ctaInstall")}</Link>
+              <Link className="btn btn-ghost" href="/dashboard/verify">{t("ctaVerify")}</Link>
+            </>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
