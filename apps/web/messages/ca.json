@@ -87,8 +87,8 @@
     "verify": {
       "metaTitle": "Verifica · BiVelio Savings Layer",
       "eyebrow": "Verifica localment · res no surt d'aquesta pàgina",
-      "title": "Modela les teves pròpies càrregues útils",
-      "intro": "Executa el tokenitzador real al teu navegador: enganxa una càrrega útil i observa el càlcul."
+      "title": "Quant estalviaries tu?",
+      "intro": "Comprova-ho en un minut: tria un exemple (o enganxa les teves dades), digues quant fas servir l'API i mira l'estalvi projectat. Tot es calcula al teu navegador."
     },
     "install": {
       "metaTitle": "Instal·la · BiVelio Savings Layer",
@@ -157,7 +157,6 @@
       "errBundle": "No s'ha pogut carregar el paquet de l'optimitzador.",
       "errInvalidData": "Esperant dades vàlides… {message}",
       "yourData": "Les teves dades",
-      "trims": "BV‑SALA retalla {tokens} tokens per enviament.",
       "alreadyOptimal": "Ja és òptim aquí — BV‑SALA mai no ho empitjora.",
       "projectorTitle": "Projector de factura",
       "estimate": "ESTIMACIÓ",
@@ -168,7 +167,26 @@
       "inputCut": "Retall d'entrada",
       "outputCut": "Retall de sortida",
       "projectedSaving": "estalvi projectat / mes · a preus de {model}",
-      "projLower": "{baseline} → {opt} · {pct}% menys"
+      "tryExample": "Prova amb un exemple",
+      "sample_users": "Llista d'usuaris",
+      "sample_orders": "Comandes de botiga",
+      "sample_tickets": "Tiquets de suport",
+      "pasteHint": "…o enganxa aquí el teu propi JSON. Res no surt del teu navegador.",
+      "savedPct": "−{pct}% de tokens",
+      "trimsFriendly": "De {before} a {after} tokens per enviament. BV‑SALA només tria el format més barat — sense canviar el teu codi.",
+      "profileLabel": "Què estàs construint?",
+      "profile_chat": "Chatbot",
+      "profile_extract": "Extracció de dades",
+      "profile_agent": "Agent / RAG",
+      "scenarioLabel": "Nivell d'optimització",
+      "scenario_cautious": "Prudent",
+      "scenario_typical": "Típic",
+      "scenario_bold": "Ambiciós",
+      "advanced": "Configuració avançada",
+      "projFriendly": "La teva factura passaria de {baseline} a {opt} — un {pct}% menys.",
+      "onlyChatTitle": "Només fas servir ChatGPT o Claude?",
+      "onlyChatBody": "Doncs no hi ha res a instal·lar: aquests productes es paguen amb una quota fixa i no tenen factura per tokens a retallar. BV‑SALA s'instal·la dins del codi d'una aplicació que crida l'API d'OpenAI o Anthropic amb la seva pròpia clau — allà és on mesura i redueix la despesa real.",
+      "onlyChatCta": "Desenvolupes una app? Ves a Instal·lar"
     },
     "copyButton": {
       "copied": "Copiat",
