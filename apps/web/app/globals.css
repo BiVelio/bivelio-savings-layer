@@ -557,6 +557,14 @@ input[type="range"] { accent-color: var(--brand); }
   overflow-x: auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
 }
 .code2 .c { color: var(--ink-soft); }
+/* Fragmento multilínea dentro de .code2: un <span> plano colapsaba los saltos
+   de línea y el código salía como un párrafo corrido. El <pre> conserva el
+   formato; los tokens comparten paleta con .lp .code y .hiw-pre. */
+.code2 pre.code-multi { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; white-space: pre; }
+.code-multi .c { color: var(--ink-soft); }
+.code-multi .n { color: var(--brand); font-weight: 600; }
+.code-multi .k { color: var(--brand); }
+.code-multi .s { color: var(--amber); }
 .copybtn {
   flex-shrink: 0; cursor: pointer;
   background: var(--surface-2); color: var(--ink-soft);

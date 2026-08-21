@@ -1,6 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import abData from "@/public/data/ab-live.json";
-import { type AbArtifact } from "../data";
 import { loadDashboard } from "../load";
 import { InstallLicensePanel } from "../components/InstallLicensePanel";
 
@@ -12,8 +10,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("install.metaTitle") };
 }
 
-const ab = abData as unknown as AbArtifact;
-
 export default async function InstallPage() {
   const t = await getTranslations("dashboard");
   const { ctx } = await loadDashboard();
@@ -24,7 +20,7 @@ export default async function InstallPage() {
         <h1>{t("install.title")}</h1>
         <p>{t("install.intro")}</p>
       </div>
-      <InstallLicensePanel ab={ab} ctx={ctx} />
+      <InstallLicensePanel ctx={ctx} />
     </>
   );
 }
