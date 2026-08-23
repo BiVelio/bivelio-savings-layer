@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
-import { ObservadorSse, costeMedido, informeMedido } from "./medidor.js";
+import { ObservadorSse, costeMedido, informeMedido, informeCoalescido } from "./medidor.js";
+import { Coalescedor, claveDePeticion } from "./coalescencia.js";
 
 /**
  * F1 · EL GATEWAY — un proxy local delante de la API de Anthropic que MIDE.
@@ -39,6 +40,12 @@ export interface OpcionesGateway {
   meteringUrl?: string;
   /** Identidad de asiento explícita (BVSALA_SEAT_ID); si falta se deriva. */
   seatId?: string;
+  /**
+   * F2 · coalescencia de duplicados en vuelo. APAGADA por defecto: se enciende
+   * con BVSALA_GATEWAY_COALESCE=1 y solo entrará por defecto cuando el arnés
+   * demuestre cero degradación (plan maestro).
+   */
+  coalescer?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -83,6 +90,31 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     );
   }
 
+  const coalescedor = opts.coalescer ? new Coalescedor() : null;
+
+  /** Mide y emite el uso de una respuesta ya servida (o replicada). */
+  const medir = (requestId: string, cuerpo: Buffer, uso: ReturnType<ObservadorSse["usage"]>, coalescida: boolean, path: string): void => {
+    if (!emisor || !uso) return;
+    let model = "";
+    try {
+      model = (JSON.parse(cuerpo.toString("utf8")) as { model?: string }).model ?? "";
+    } catch {}
+    const medido = model ? costeMedido(model, uso) : null;
+    if (medido) {
+      emisor.record(coalescida ? informeCoalescido(requestId, model, medido) : informeMedido(requestId, model, medido));
+      log(
+        `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
+          `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita} ` +
+          `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
+      );
+    } else if (model) {
+      avisarUnaVez(
+        `gateway-sin-precio:${model}`,
+        `[bvsala gateway] el modelo "${model}" no está en el catálogo de precios; su uso se reenvía pero no se mide.`,
+      );
+    }
+  };
+
   const server = createServer(async (req, res) => {
     const requestId = randomUUID();
     const chunks: Buffer[] = [];
@@ -90,6 +122,32 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     const cuerpo = Buffer.concat(chunks);
 
     const url = new URL(req.url ?? "/", upstreamBase);
+
+    // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
+    const coalescible = coalescedor !== null && req.method === "POST" && cuerpo.length > 0;
+    const clave = coalescible ? claveDePeticion("POST", url.pathname + url.search, cuerpo) : "";
+    let captura: ReturnType<Coalescedor["registrar"]> = null;
+    if (coalescible) {
+      if (coalescedor.tieneEnVuelo(clave)) {
+        const replica = await coalescedor.esperar(clave);
+        if (replica) {
+          // La gemela recibe la réplica íntegra de la primaria — cero viaje.
+          res.writeHead(replica.status, replica.headers);
+          const obs = new ObservadorSse();
+          for (const ch of replica.chunks) {
+            res.write(ch);
+            obs.observar(ch);
+          }
+          res.end();
+          medir(requestId, cuerpo, obs.usage(), true, url.pathname);
+          return;
+        }
+        // Primaria fallida o desbordada: la gemela viaja por su cuenta.
+      } else {
+        captura = coalescedor.registrar(clave);
+      }
+    }
+
     let upstream: Response;
     try {
       const h: Record<string, string> = {};
@@ -104,6 +162,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         redirect: "manual",
       });
     } catch (err) {
+      captura?.abortar();
       res.writeHead(502, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
       log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${String(err)}`);
@@ -119,35 +178,18 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
     if (upstream.body) {
       for await (const chunk of upstream.body) {
-        res.write(chunk);
-        observador?.observar(Buffer.from(chunk));
+        const b = Buffer.from(chunk);
+        res.write(b);
+        observador?.observar(b);
+        captura?.capturar(b);
       }
     }
     res.end();
+    captura?.terminar(upstream.status, cabeceras);
 
     // Medición tras servir la respuesta — jamás en el camino caliente.
-    if (emisor && observador && upstream.ok) {
-      const uso = observador.usage();
-      if (uso) {
-        let model = "";
-        try {
-          model = (JSON.parse(cuerpo.toString("utf8")) as { model?: string }).model ?? "";
-        } catch {}
-        const medido = model ? costeMedido(model, uso) : null;
-        if (medido) {
-          emisor.record(informeMedido(requestId, model, medido));
-          log(
-            `[gateway] ${req.method} ${url.pathname} → ${upstream.status} · ${model} · ` +
-              `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita} ` +
-              `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
-          );
-        } else if (model) {
-          avisarUnaVez(
-            `gateway-sin-precio:${model}`,
-            `[bvsala gateway] el modelo "${model}" no está en el catálogo de precios; su uso se reenvía pero no se mide.`,
-          );
-        }
-      }
+    if (observador && upstream.ok) {
+      medir(requestId, cuerpo, observador.usage(), false, url.pathname);
     } else if (!esSse) {
       log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
     }
