@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/invariantes",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/cierre-extractos",
+      "schedule": "0 5 1 * *"
     }
   ]
 }

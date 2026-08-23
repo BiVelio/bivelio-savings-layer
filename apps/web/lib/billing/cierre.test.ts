@@ -1,0 +1,91 @@
+import { describe, it, expect } from "vitest";
+
+import { cerrarPeriodo, periodoAnterior, type UsoDeOrg } from "./cierre";
+import type { FilaDiaria } from "./extracto";
+
+function fila(day: string, medidoBase: number, medidoActual: number): FilaDiaria {
+  return {
+    day,
+    baseline_cost: medidoBase,
+    actual_cost: medidoActual,
+    requests: 10,
+    measured_requests: 10,
+    measured_baseline_cost: medidoBase,
+    measured_actual_cost: medidoActual,
+  };
+}
+
+function org(orgId: string, primerPeriodoConUso: string, filas: FilaDiaria[]): UsoDeOrg {
+  return { orgId, filas, primerPeriodoConUso };
+}
+
+describe("periodoAnterior — el mes que el cron del día 1 cierra", () => {
+  it("un 1 de octubre cierra septiembre", () => {
+    expect(periodoAnterior(new Date("2026-10-01T05:00:00Z"))).toBe("2026-09");
+  });
+  it("un 1 de enero cierra diciembre del año anterior", () => {
+    expect(periodoAnterior(new Date("2027-01-01T05:00:00Z"))).toBe("2026-12");
+  });
+});
+
+describe("cerrarPeriodo — la calibración REAL, por primer período con uso", () => {
+  it("primer período con uso == período cerrado → calibración: cargo 0, comisión fijada como habría-sido", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-09", [fila("2026-09-10", 2000, 1100)])], "2026-09");
+    expect(c!.es_calibracion).toBe(true);
+    expect(c!.cargo_eur).toBe(0);
+    expect(c!.comision_eur).toBeGreaterThan(0);
+  });
+
+  it("con historia anterior → ya no es calibración y el cargo ES la comisión", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09");
+    expect(c!.es_calibracion).toBe(false);
+    expect(c!.cargo_eur).toBe(c!.comision_eur);
+    // 900 USD × 0,9 = 810 € de ahorro, ratio 45% → rampa 1, primer tramo → 81 €.
+    expect(c!.cargo_eur).toBeCloseTo(81, 10);
+  });
+
+  it("bajo el umbral, el cargo es 0 también fuera de calibración", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 1000, 780)])], "2026-09");
+    expect(c!.es_calibracion).toBe(false);
+    expect(c!.comision_eur).toBe(0);
+    expect(c!.cargo_eur).toBe(0);
+  });
+
+  it("cada organización se cierra por separado, con sus propias filas", () => {
+    const cierre = cerrarPeriodo(
+      [
+        org("a", "2026-09", [fila("2026-09-01", 100, 50)]),
+        org("b", "2026-07", [fila("2026-09-01", 2000, 1100)]),
+      ],
+      "2026-09",
+    );
+    expect(cierre.map((c) => [c.org_id, c.es_calibracion])).toEqual([
+      ["a", true],
+      ["b", false],
+    ]);
+  });
+
+  it("las filas JSON de tramos no llevan Infinity (el último tramo cierra con null)", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 60000, 10000)])], "2026-09");
+    // 50.000 USD ahorro → 45.000 € : cruza los cuatro tramos.
+    expect(c!.tramos.length).toBe(4);
+    expect(c!.tramos.at(-1)!.hastaEur).toBeNull();
+    expect(JSON.stringify(c!.tramos)).not.toContain("Infinity");
+  });
+
+  it("las restricciones de la tabla se cumplen por construcción (calibración → cargo 0; cargo ≤ comisión)", () => {
+    for (const primer of ["2026-09", "2026-01"]) {
+      for (const [base, actual] of [
+        [2000, 1100],
+        [1000, 780],
+        [0, 0],
+        [100, 130],
+      ] as const) {
+        const [c] = cerrarPeriodo([org("a", primer, [fila("2026-09-10", base, actual)])], "2026-09");
+        if (c!.es_calibracion) expect(c!.cargo_eur).toBe(0);
+        expect(c!.cargo_eur).toBeLessThanOrEqual(c!.comision_eur);
+        expect(c!.ahorro_medido_usd).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+});
