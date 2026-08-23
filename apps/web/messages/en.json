@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Your first month: seat only.",
       "notaPrimerMes": "We measure everything, calibrate on your real load, and you'll see the exact statement of what it would have cost — without being charged.",
       "version": "SDK catalog prices, version {fecha}. An estimate: your statement will use your measured usage.",
-      "cargando": "Loading the price catalog…"
+      "cargando": "Loading the price catalog…",
+      "badge": "Estimate",
+      "asientos": "Seats ({precio} each)",
+      "resumenTotal": "The full truth, at the {pct} scenario: our total would be {total} (seats: {asientosCoste} + the commission above) and you would keep {neto} — {pctNeto} of your bill."
+    },
+    "formula": {
+      "title": "How what you pay us is calculated",
+      "mes1": "<b>Your first month: only {precioMes} per seat.</b> We measure everything and charge no commission — at close you'll see the exact statement of what it would have cost.",
+      "medido": "After that, commission only on <b>measured savings</b>: the kind you can reconcile against your provider's invoice. Estimated savings are never billed.",
+      "umbral": "And <b>only if your savings exceed {umbral}</b>. Between {umbral} and {fin} the commission phases in gradually: your net savings after commission never drop below {umbral}.",
+      "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
+      "permanencia": "A month below the threshold? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
     }
   },
   "invitacion": {

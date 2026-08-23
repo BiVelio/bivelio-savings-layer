@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CalculadoraComision } from "@/app/components/CalculadoraComision";
+import { FIN_RAMPA_RATIO, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
@@ -129,6 +130,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const precioMensual = formatearPrecio(locale, precios.monthly);
   const precioAnual = formatearPrecio(locale, precios.yearly);
   const moneda = precios.monthly.currency.toUpperCase();
+
+  // Los números de la fórmula pública, formateados AQUÍ: los mensajes no
+  // llevan ni un dígito de tarifa (tarifa-en-parametros.test.ts).
+  const pctLocal = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 0 }) + "%";
+  const moneyLocal = (n: number) =>
+    n.toLocaleString(locale, { style: "currency", currency: moneda, maximumFractionDigits: 0 });
+  const tramosLocal = TRAMOS.map((tr) =>
+    Number.isFinite(tr.hastaEur) ? `${pctLocal(tr.tipo)} ≤ ${moneyLocal(tr.hastaEur)}` : `${pctLocal(tr.tipo)} +`,
+  ).join(" · ");
 
   return (
     <div className="lp">
@@ -399,7 +409,29 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             {/* La tarjeta estática de confianza dejó paso a la calculadora de
                 comisión (2026-08-23): que el visitante JUEGUE y vea nuestro
                 extra y su neto, con los precios del SDK y la tarifa real. */}
-            <CalculadoraComision />
+            <CalculadoraComision asiento={{ cents: precios.monthly.amount, currency: precios.monthly.currency }} />
+          </div>
+
+          {/* LA FÓRMULA, PÚBLICA — el borrador del plan maestro, publicado.
+              Regla de anclaje llevada al límite: en los mensajes NO HAY NI UN
+              DÍGITO (lo vigila tarifa-en-parametros.test.ts); cada número llega
+              como parámetro desde lib/billing/tarifa y desde el Price de
+              Stripe. Cambiar la tarifa real cambia esta sección sola. */}
+          <div className="formula-publica">
+            <h3>{t("formula.title")}</h3>
+            <ul>
+              <li>{t.rich("formula.mes1", { b: (c) => <b>{c}</b>, precioMes: precioMensual })}</li>
+              <li>{t.rich("formula.medido", { b: (c) => <b>{c}</b> })}</li>
+              <li>
+                {t.rich("formula.umbral", {
+                  b: (c) => <b>{c}</b>,
+                  umbral: pctLocal(UMBRAL_RATIO),
+                  fin: pctLocal(FIN_RAMPA_RATIO),
+                })}
+              </li>
+              <li>{t.rich("formula.tramos", { b: (c) => <b>{c}</b>, tramos: tramosLocal })}</li>
+              <li>{t.rich("formula.permanencia", { b: (c) => <b>{c}</b>, cero: moneyLocal(0) })}</li>
+            </ul>
           </div>
         </section>
       </main>

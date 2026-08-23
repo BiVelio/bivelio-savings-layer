@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Je eerste maand: alleen de seat.",
       "notaPrimerMes": "We meten alles, kalibreren op je echte belasting, en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
       "version": "SDK-catalogusprijzen, versie {fecha}. Een schatting: je afschrift gebruikt je gemeten gebruik.",
-      "cargando": "Prijscatalogus laden…"
+      "cargando": "Prijscatalogus laden…",
+      "badge": "Schatting",
+      "asientos": "Seats ({precio} per stuk)",
+      "resumenTotal": "De volledige waarheid, bij het {pct}-scenario: ons totaal zou {total} zijn (seats: {asientosCoste} + de commissie hierboven) en jij houdt {neto} over — {pctNeto} van je rekening."
+    },
+    "formula": {
+      "title": "Hoe wat je ons betaalt wordt berekend",
+      "mes1": "<b>Je eerste maand: alleen {precioMes} per seat.</b> We meten alles en rekenen geen commissie — bij afsluiting zie je het exacte afschrift van wat het gekost zou hebben.",
+      "medido": "Daarna commissie alleen over de <b>gemeten besparing</b>: die je kunt afstemmen met de factuur van je provider. Geschat wordt nooit gefactureerd.",
+      "umbral": "En <b>alleen als je besparing {umbral} overschrijdt</b>. Tussen {umbral} en {fin} treedt de commissie geleidelijk in: je nettobesparing na commissie zakt nooit onder {umbral}.",
+      "tramos": "<b>In schijven, elk tegen zijn eigen tarief</b> — {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
+      "permanencia": "Een maand onder de drempel? Commissie: {cero}. <b>Geen verplichtingen</b> — en je eerste variabele factuur bevat alleen cijfers die je al op je afschrift zag."
     }
   },
   "invitacion": {

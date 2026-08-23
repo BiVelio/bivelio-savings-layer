@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "El teu primer mes: només el seient.",
       "notaPrimerMes": "Ho mesurem tot, calibrem amb la teva càrrega real i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
       "version": "Preus del catàleg de l'SDK, versió {fecha}. Estimació: el teu extracte usarà el teu ús mesurat.",
-      "cargando": "Carregant el catàleg de preus…"
+      "cargando": "Carregant el catàleg de preus…",
+      "badge": "Estimació",
+      "asientos": "Seients ({precio} cadascun)",
+      "resumenTotal": "La veritat completa, amb l'escenari del {pct}: el nostre total seria {total} (seients: {asientosCoste} + la comissió de dalt) i et quedaries {neto} — el {pctNeto} de la teva factura."
+    },
+    "formula": {
+      "title": "Com es calcula el que ens pagues",
+      "mes1": "<b>El teu primer mes: només {precioMes} per seient.</b> Ho mesurem tot i no cobrem comissió — al tancament veuràs l'extracte exacte del que hauria costat.",
+      "medido": "Després, comissió només sobre l'<b>estalvi mesurat</b>: el que pots contrastar amb la factura del teu proveïdor. L'estimat mai no es factura.",
+      "umbral": "I <b>només si el teu estalvi supera el {umbral}</b>. Entre el {umbral} i el {fin} la comissió entra gradualment: el teu estalvi net després de la comissió mai no baixa del {umbral}.",
+      "tramos": "<b>Per trams, i cada tram al seu tipus</b> — {tramos}. Com més estalvies, menor és el nostre percentatge.",
+      "permanencia": "Un mes no superes el llindar? Comissió: {cero}. <b>Sense permanència</b> — i la teva primera factura variable només conté números que ja vas veure al teu extracte."
     }
   },
   "invitacion": {

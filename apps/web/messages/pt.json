@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Seu primeiro mês: só o assento.",
       "notaPrimerMes": "Medimos tudo, calibramos com a sua carga real e você verá o extrato exato do que teria custado — sem cobrança.",
       "version": "Preços do catálogo do SDK, versão {fecha}. Uma estimativa: seu extrato usará o seu uso medido.",
-      "cargando": "Carregando o catálogo de preços…"
+      "cargando": "Carregando o catálogo de preços…",
+      "badge": "Estimativa",
+      "asientos": "Assentos ({precio} cada)",
+      "resumenTotal": "A verdade completa, no cenário de {pct}: nosso total seria {total} (assentos: {asientosCoste} + a comissão acima) e ficariam com você {neto} — {pctNeto} da sua fatura."
+    },
+    "formula": {
+      "title": "Como se calcula o que você nos paga",
+      "mes1": "<b>Seu primeiro mês: só {precioMes} por assento.</b> Medimos tudo e não cobramos comissão — no fechamento você verá o extrato exato do que teria custado.",
+      "medido": "Depois, comissão só sobre a <b>economia medida</b>: a que você pode conciliar com a fatura do seu provedor. O estimado nunca é faturado.",
+      "umbral": "E <b>só se a sua economia superar {umbral}</b>. Entre {umbral} e {fin} a comissão entra gradualmente: sua economia líquida após a comissão nunca cai abaixo de {umbral}.",
+      "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
+      "permanencia": "Um mês abaixo do limiar? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
     }
   },
   "invitacion": {

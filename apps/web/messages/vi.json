@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Tháng đầu của bạn: chỉ phí chỗ.",
       "notaPrimerMes": "Chúng tôi đo tất cả, hiệu chuẩn theo tải thực của bạn, và bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả — mà không bị thu.",
       "version": "Giá danh mục SDK, phiên bản {fecha}. Ước tính: sao kê của bạn sẽ dùng mức dùng đã đo.",
-      "cargando": "Đang tải danh mục giá…"
+      "cargando": "Đang tải danh mục giá…",
+      "badge": "Ước tính",
+      "asientos": "Chỗ ({precio} mỗi chỗ)",
+      "resumenTotal": "Toàn bộ sự thật, ở kịch bản {pct}: tổng của chúng tôi là {total} (chỗ: {asientosCoste} + hoa hồng ở trên) và bạn giữ lại {neto} — {pctNeto} hóa đơn của bạn."
+    },
+    "formula": {
+      "title": "Cách tính số tiền bạn trả cho chúng tôi",
+      "mes1": "<b>Tháng đầu của bạn: chỉ {precioMes} mỗi chỗ.</b> Chúng tôi đo tất cả và không thu hoa hồng — khi chốt kỳ bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả.",
+      "medido": "Sau đó, hoa hồng chỉ trên <b>khoản tiết kiệm đã đo</b>: khoản bạn có thể đối chiếu với hóa đơn nhà cung cấp. Ước tính không bao giờ bị tính phí.",
+      "umbral": "Và <b>chỉ khi tiết kiệm của bạn vượt {umbral}</b>. Giữa {umbral} và {fin}, hoa hồng vào dần: tiết kiệm ròng sau hoa hồng không bao giờ xuống dưới {umbral}.",
+      "tramos": "<b>Theo bậc, mỗi bậc theo mức riêng</b> — {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
+      "permanencia": "Một tháng dưới ngưỡng? Hoa hồng: {cero}. <b>Không ràng buộc</b> — và hóa đơn biến đổi đầu tiên chỉ chứa những con số bạn đã thấy trong sao kê."
     }
   },
   "invitacion": {
