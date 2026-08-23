@@ -630,7 +630,9 @@
       "cargando": "Caricamento del catalogo prezzi…",
       "badge": "Stima",
       "asientos": "Posti ({precio} ciascuno)",
-      "resumenTotal": "La verità completa, nello scenario del {pct}: il nostro totale sarebbe {total} (posti: {asientosCoste} + la commissione qui sopra) e ti resterebbero {neto} — il {pctNeto} della tua fattura."
+      "resumenTotal": "La verità completa, nello scenario del {pct}: il nostro totale sarebbe {total} (posti: {asientosCoste} + la commissione qui sopra) e ti resterebbero {neto} — il {pctNeto} della tua fattura.",
+      "precios": "Prezzo esatto di {modelo}: input {inM} · output {outM} · input in cache {cacheM}, per milione di token.",
+      "fuente": "Fonte: <a>la pagina ufficiale dei prezzi di {proveedor}</a>, verificata nel nostro catalogo il {fecha} (e sorvegliata automaticamente ogni settimana)."
     },
     "formula": {
       "title": "Come si calcola quello che ci paghi",

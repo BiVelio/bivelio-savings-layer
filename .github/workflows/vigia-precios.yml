@@ -1,0 +1,21 @@
+name: vigia-precios
+
+# El vigía semanal del catálogo de precios (scripts/vigia-precios.mjs): compara
+# nuestros precios de facturación contra la referencia pública y se pone ROJO
+# —con el diff exacto y las líneas listas para pegar— cuando un proveedor
+# cambia tarifas. La actualización sigue siendo humana y fechada (doctrina del
+# catálogo auditable); la DETECCIÓN es lo que queda automatizado.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # lunes, 06:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  vigia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/vigia-precios.mjs

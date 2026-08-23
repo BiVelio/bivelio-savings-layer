@@ -630,7 +630,9 @@
       "cargando": "Preiskatalog wird geladen…",
       "badge": "Schätzung",
       "asientos": "Sitze ({precio} pro Sitz)",
-      "resumenTotal": "Die ganze Wahrheit, im {pct}-Szenario: unser Gesamtbetrag wäre {total} (Sitze: {asientosCoste} + die Provision oben) und dir blieben {neto} — {pctNeto} deiner Rechnung."
+      "resumenTotal": "Die ganze Wahrheit, im {pct}-Szenario: unser Gesamtbetrag wäre {total} (Sitze: {asientosCoste} + die Provision oben) und dir blieben {neto} — {pctNeto} deiner Rechnung.",
+      "precios": "Exakter Preis von {modelo}: Eingabe {inM} · Ausgabe {outM} · gecachte Eingabe {cacheM}, pro Million Tokens.",
+      "fuente": "Quelle: <a>die offizielle Preisseite von {proveedor}</a>, in unserem Katalog verifiziert am {fecha} (und wöchentlich automatisch überwacht)."
     },
     "formula": {
       "title": "Wie sich das berechnet, was du uns zahlst",

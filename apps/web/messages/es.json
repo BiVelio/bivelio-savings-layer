@@ -630,7 +630,9 @@
       "cargando": "Cargando el catálogo de precios…",
       "badge": "Estimación",
       "asientos": "Asientos ({precio} cada uno)",
-      "resumenTotal": "La verdad completa, con el escenario del {pct}: nuestro total sería {total} (asientos: {asientosCoste} + la comisión de arriba) y te quedarías {neto} — el {pctNeto} de tu factura."
+      "resumenTotal": "La verdad completa, con el escenario del {pct}: nuestro total sería {total} (asientos: {asientosCoste} + la comisión de arriba) y te quedarías {neto} — el {pctNeto} de tu factura.",
+      "precios": "Precio exacto de {modelo}: entrada {inM} · salida {outM} · entrada cacheada {cacheM}, por millón de tokens.",
+      "fuente": "Fuente: <a>la página oficial de precios de {proveedor}</a>, verificada en nuestro catálogo el {fecha} (y vigilada cada semana en automático)."
     },
     "formula": {
       "title": "Cómo se calcula lo que nos pagas",

@@ -630,7 +630,9 @@
       "cargando": "Memuat katalog harga…",
       "badge": "Perkiraan",
       "asientos": "Seat ({precio} per seat)",
-      "resumenTotal": "Kebenaran seutuhnya, pada skenario {pct}: total kami {total} (seat: {asientosCoste} + komisi di atas) dan kamu menyimpan {neto} — {pctNeto} dari tagihanmu."
+      "resumenTotal": "Kebenaran seutuhnya, pada skenario {pct}: total kami {total} (seat: {asientosCoste} + komisi di atas) dan kamu menyimpan {neto} — {pctNeto} dari tagihanmu.",
+      "precios": "Harga persis {modelo}: masukan {inM} · keluaran {outM} · masukan ter-cache {cacheM}, per juta token.",
+      "fuente": "Sumber: <a>halaman harga resmi {proveedor}</a>, diverifikasi di katalog kami pada {fecha} (dan diawasi otomatis setiap minggu)."
     },
     "formula": {
       "title": "Bagaimana yang kamu bayar ke kami dihitung",

@@ -902,7 +902,10 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .code .g { color: var(--mint); font-weight: 500; }
 
 /* Precio / confianza */
-.lp .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: stretch; }
+/* La calculadora es la pieza densa: se lleva la columna ancha, y `start` deja
+   que la tarjeta de precio conserve su altura natural en vez de estirarse con
+   un vacío enorme debajo (se veía desproporcionado — 2026-08-23). */
+.lp .split { display: grid; grid-template-columns: .85fr 1.15fr; gap: 26px; align-items: start; }
 .lp .price-card { background: var(--ink); color: #fff; border-radius: var(--radius-2xl); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
 .lp .price-card .amt { font-size: 3rem; font-weight: 600; letter-spacing: -.04em; }
 .lp .price-card .amt small { font-size: 1rem; opacity: .7; font-weight: 500; }
@@ -930,6 +933,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .calc-grid select, .lp .calc-grid input { font-family: var(--mono); font-size: .8rem; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
 .lp .calc-grid select:focus, .lp .calc-grid input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
 .lp .calc-base { font-size: .82rem; color: var(--ink-soft); margin: 14px 0 8px; }
+/* El precio exacto del modelo elegido + su fuente oficial, bajo los controles. */
+.lp .calc-precios { font-family: var(--mono); font-size: .7rem; color: var(--ink-soft); margin: 12px 0 0; line-height: 1.6; }
+.lp .calc-precios a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
 .lp .calc-tblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); }
 .lp .calc table { border-collapse: collapse; width: 100%; font-size: .82rem; min-width: 420px; }
 .lp .calc th { font-family: var(--mono); font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); text-align: left; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }

@@ -630,7 +630,9 @@
       "cargando": "Chargement du catalogue de prix…",
       "badge": "Estimation",
       "asientos": "Sièges ({precio} chacun)",
-      "resumenTotal": "La vérité complète, au scénario de {pct} : notre total serait {total} (sièges : {asientosCoste} + la commission ci-dessus) et il vous resterait {neto} — {pctNeto} de votre facture."
+      "resumenTotal": "La vérité complète, au scénario de {pct} : notre total serait {total} (sièges : {asientosCoste} + la commission ci-dessus) et il vous resterait {neto} — {pctNeto} de votre facture.",
+      "precios": "Prix exact de {modelo} : entrée {inM} · sortie {outM} · entrée en cache {cacheM}, par million de tokens.",
+      "fuente": "Source : <a>la page officielle des prix de {proveedor}</a>, vérifiée dans notre catalogue le {fecha} (et surveillée automatiquement chaque semaine)."
     },
     "formula": {
       "title": "Comment se calcule ce que vous nous payez",

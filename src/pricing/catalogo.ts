@@ -23,7 +23,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
  */
 
 /** When these prices were last checked against the providers' public rates. */
-export const PRECIOS_AL_DIA = "2026-08-13";
+export const PRECIOS_AL_DIA = "2026-08-23";
 
 /**
  * Key = the model id as the provider publishes it, without a vendor prefix.
@@ -54,7 +54,10 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "claude-3-5-sonnet": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-3-5-haiku":  { inputPer1k: 0.0008, outputPer1k: 0.004, cachedInputPer1k: 0.00008 },
   "claude-3-opus":     { inputPer1k: 0.015,  outputPer1k: 0.075, cachedInputPer1k: 0.0015  },
-  "claude-3-haiku":    { inputPer1k: 0.00025, outputPer1k: 0.00125, cachedInputPer1k: 0.000025 },
+  // Caché a 0.00003 y NO al 10% de la entrada: Claude 3 Haiku era la excepción
+  // documentada de Anthropic ($0.03/MTok). La cazó el vigía en su primera
+  // corrida (2026-08-23) y se verificó contra la referencia histórica oficial.
+  "claude-3-haiku":    { inputPer1k: 0.00025, outputPer1k: 0.00125, cachedInputPer1k: 0.00003 },
 
   // Models whose published price is NOT known with certainty stay out on purpose:
   // they fall back to the illustrative default and warn, which is the honest answer.

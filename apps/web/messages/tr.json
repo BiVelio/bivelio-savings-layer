@@ -630,7 +630,9 @@
       "cargando": "Fiyat kataloğu yükleniyor…",
       "badge": "Tahmin",
       "asientos": "Koltuk (her biri {precio})",
-      "resumenTotal": "Tüm gerçek, {pct} senaryosunda: toplamımız {total} olurdu (koltuklar: {asientosCoste} + yukarıdaki komisyon) ve sana {neto} kalırdı — faturanın {pctNeto} kadarı."
+      "resumenTotal": "Tüm gerçek, {pct} senaryosunda: toplamımız {total} olurdu (koltuklar: {asientosCoste} + yukarıdaki komisyon) ve sana {neto} kalırdı — faturanın {pctNeto} kadarı.",
+      "precios": "{modelo} için kesin fiyat: giriş {inM} · çıkış {outM} · önbellekli giriş {cacheM}, milyon token başına.",
+      "fuente": "Kaynak: <a>{proveedor} resmi fiyat sayfası</a>, kataloğumuzda {fecha} tarihinde doğrulandı (ve her hafta otomatik izleniyor)."
     },
     "formula": {
       "title": "Bize ödediğin nasıl hesaplanır",

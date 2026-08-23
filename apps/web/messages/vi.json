@@ -630,7 +630,9 @@
       "cargando": "Đang tải danh mục giá…",
       "badge": "Ước tính",
       "asientos": "Chỗ ({precio} mỗi chỗ)",
-      "resumenTotal": "Toàn bộ sự thật, ở kịch bản {pct}: tổng của chúng tôi là {total} (chỗ: {asientosCoste} + hoa hồng ở trên) và bạn giữ lại {neto} — {pctNeto} hóa đơn của bạn."
+      "resumenTotal": "Toàn bộ sự thật, ở kịch bản {pct}: tổng của chúng tôi là {total} (chỗ: {asientosCoste} + hoa hồng ở trên) và bạn giữ lại {neto} — {pctNeto} hóa đơn của bạn.",
+      "precios": "Giá chính xác của {modelo}: đầu vào {inM} · đầu ra {outM} · đầu vào cache {cacheM}, mỗi triệu token.",
+      "fuente": "Nguồn: <a>trang giá chính thức của {proveedor}</a>, được xác minh trong danh mục của chúng tôi ngày {fecha} (và được theo dõi tự động hằng tuần)."
     },
     "formula": {
       "title": "Cách tính số tiền bạn trả cho chúng tôi",
