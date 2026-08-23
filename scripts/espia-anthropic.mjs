@@ -155,9 +155,11 @@ const server = createServer(async (req, res) => {
             } catch {}
           }
         }
-      } else if (respuestaBytes <= 1_000_000) {
-        cuerpoRespuesta.push(chunk);
       }
+      // El cuerpo COMPLETO (también el SSE) se guarda para el arnés de F2
+      // (scripts/arnes-pasarela.mjs): sin cuerpos grabados no hay replay.
+      // Solo local, con tope para no crecer sin límite.
+      if (respuestaBytes <= 4_000_000) cuerpoRespuesta.push(chunk);
     }
   }
   res.end();
@@ -166,6 +168,10 @@ const server = createServer(async (req, res) => {
   registro.responseBytes = respuestaBytes;
   if (esSse) {
     registro.sse = { eventos, usage: usos };
+    if (respuestaBytes <= 4_000_000) {
+      registro.responseBodyBase64 = Buffer.concat(cuerpoRespuesta).toString("base64");
+      registro.responseStatus = upstream.status;
+    }
   } else if (cuerpoRespuesta.length) {
     try {
       registro.responseShape = forma(JSON.parse(Buffer.concat(cuerpoRespuesta).toString("utf8")));

@@ -75,3 +75,23 @@ ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude -p "Responde solo OK"
 Sesiones más ricas (con herramientas, ficheros, subagentes) ampliarán el
 catálogo; el formato JSONL está pensado para diffearlas. Ese corpus es también
 el arnés de evaluación de F2.
+
+## El arnés F2 (`scripts/arnes-pasarela.mjs`)
+
+La puerta que una palanca cruza antes de encenderse por defecto: repite el
+corpus contra el **binario real** de `dist/` (lanzado como proceso, no
+importado) con la palanca apagada y encendida — incluida una pasada de
+duplicados concurrentes — y solo PASA si cada respuesta, gemelas incluidas,
+es **byte a byte idéntica** a la referencia. Todo en 127.0.0.1.
+
+```bash
+npm run build
+node scripts/espia-anthropic.mjs 8402          # graba (ya con cuerpos de respuesta)
+ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude
+node scripts/arnes-pasarela.mjs                 # veredicto sobre la última captura
+```
+
+Primer veredicto (2026-08-23, corpus de 1 sesión): **PASA** — la coalescencia
+no cambia ni un byte. La regla del plan sigue en pie: se enciende por defecto
+cuando el corpus sea representativo (sesiones con herramientas y subagentes),
+no antes.
