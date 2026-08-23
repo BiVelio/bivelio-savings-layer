@@ -23,7 +23,8 @@
       "integrate": "Tích hợp",
       "install": "Cài đặt",
       "account": "Tài khoản",
-      "howItWorks": "Cách hoạt động"
+      "howItWorks": "Cách hoạt động",
+      "extracto": "Sao kê"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · đầu vào {input} · đầu ra {output}",
       "unavailable": "chưa có: chưa áp dụng bản di trú 0015",
       "footnote": "<b>Tiết kiệm đầu ra gần như luôn bằng không</b>, và đó không phải lỗi: với lệnh gọi thực sự chạy, lớp này không rút ngắn câu trả lời, nên mốc đầu ra của nó chính là đầu ra đo được. Tiết kiệm token nằm ở đầu vào và ở các lệnh gọi được tránh. Tổng ÂM cũng không phải lỗi: nghĩa là lớp này tốn hơn so với khi không dùng, và chúng tôi hiển thị điều đó."
+    },
+    "extracto": {
+      "metaTitle": "Sao kê · BiVelio Savings Layer",
+      "eyebrow": "Chế độ bóng · không có khoản thu nào ở đây",
+      "title": "Sao kê của bạn, trước khi hóa đơn tồn tại",
+      "intro": "Chính xác tài liệu mà hóa đơn biến đổi trong tương lai sẽ tạo ra: chỉ khoản tiết kiệm đã đo, với biểu phí bậc thang và đoạn dốc 30%. Trong thời gian hiệu chuẩn, khoản thu luôn là {cero}.",
+      "periodo": "Kỳ {periodo}",
+      "badgeCalibracion": "KỲ HIỆU CHUẨN — THU BẰNG KHÔNG",
+      "badgeSombra": "BÓNG — KHÔNG THU THẬT",
+      "lecturaFallo": "Không đọc được mức dùng của kỳ này. Sao kê bên dưới có thể chưa đầy đủ.",
+      "kpiTitulo": "khoản thu của kỳ",
+      "notaCalibracion": "Tháng hiệu chuẩn: hoa hồng lẽ ra là {habria} — và không bị thu.",
+      "notaSombra": "Con số trong bóng: hoa hồng tính được là {comision}. Chưa hóa đơn nào bao gồm nó.",
+      "baseMedida": "Cơ sở đã đo",
+      "enUsd": "{usd} theo giá nhà cung cấp",
+      "requests": "{n} yêu cầu đã đo",
+      "ahorroMedido": "Tiết kiệm đã đo",
+      "ratio": "tỷ lệ {pct}",
+      "rampa": "dốc áp dụng: {pct}",
+      "tramosTitulo": "Hoa hồng, theo từng bậc",
+      "sinAhorro": "Không có tiết kiệm đã đo trong kỳ này — không tiết kiệm thì không hoa hồng. Không bao giờ.",
+      "colTramo": "Bậc",
+      "colTipo": "Mức",
+      "colBase": "Cơ sở bậc",
+      "colComision": "Hoa hồng",
+      "estimadoExcluido": "Tiết kiệm ước tính bị loại khỏi cơ sở (bối cảnh, không bao giờ tính phí): {usd}.",
+      "parametros": "Tham số sao kê — danh mục giá {version} · tỷ giá {fx} · ngưỡng {umbral}.",
+      "mismaFacturaTitulo": "Tài liệu này CHÍNH LÀ hóa đơn tương lai.",
+      "mismaFactura": "Sao kê bóng và sao kê tính phí được tính bởi cùng một bộ máy: khi hoa hồng kích hoạt, hóa đơn đầu tiên của bạn chỉ chứa những con số bạn đã thấy ở đây."
     }
   },
   "landing": {

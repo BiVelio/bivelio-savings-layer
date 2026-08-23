@@ -18,7 +18,13 @@ const GROUPS: { label?: string; items: { href: string; label: string; icon: stri
       { href: "/dashboard/install", label: "install", icon: "install" },
     ],
   },
-  { label: "account", items: [{ href: "/dashboard/account", label: "account", icon: "account" }] },
+  {
+    label: "account",
+    items: [
+      { href: "/dashboard/extracto", label: "extracto", icon: "extracto" },
+      { href: "/dashboard/account", label: "account", icon: "account" },
+    ],
+  },
 ];
 
 /** Barra lateral del dashboard — navegación agrupada, con los mismos

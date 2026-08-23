@@ -23,7 +23,8 @@
       "integrate": "Integrar",
       "install": "Instalar",
       "account": "Cuenta",
-      "howItWorks": "Cómo funciona"
+      "howItWorks": "Cómo funciona",
+      "extracto": "Extracto"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · entrada {input} · salida {output}",
       "unavailable": "aún no disponible: falta aplicar la migración 0015",
       "footnote": "El <b>ahorro de salida es casi siempre cero</b>, y no es un fallo: en una llamada que SÍ se ejecutó la capa no encoge la respuesta, así que su baseline de salida es la salida medida. El ahorro de tokens vive en la entrada y en las llamadas evitadas. Un total NEGATIVO tampoco es un error: significa que la capa gastó más de lo que habría costado sin ella, y se enseña."
+    },
+    "extracto": {
+      "metaTitle": "Extracto · BiVelio Savings Layer",
+      "eyebrow": "Modo sombra · aquí no se cobra nada",
+      "title": "Tu extracto, antes de que exista la factura",
+      "intro": "El documento exacto que producirá la futura factura variable: solo ahorro medido, con la tarifa por tramos y la rampa del 30%. Durante la calibración, el cargo es siempre {cero}.",
+      "periodo": "Período {periodo}",
+      "badgeCalibracion": "PERÍODO DE CALIBRACIÓN — CARGO CERO",
+      "badgeSombra": "SOMBRA — SIN CARGO REAL",
+      "lecturaFallo": "No se pudo leer el uso de este período. El extracto de abajo puede estar incompleto.",
+      "kpiTitulo": "cargo del período",
+      "notaCalibracion": "Mes de calibración: la comisión habría sido {habria} — y no se cobra.",
+      "notaSombra": "Cifra en sombra: la comisión calculada es {comision}. Ninguna factura la incluye todavía.",
+      "baseMedida": "Base medida",
+      "enUsd": "{usd} a precios del proveedor",
+      "requests": "{n} peticiones medidas",
+      "ahorroMedido": "Ahorro medido",
+      "ratio": "ratio {pct}",
+      "rampa": "rampa aplicada: {pct}",
+      "tramosTitulo": "La comisión, tramo a tramo",
+      "sinAhorro": "Sin ahorro medido este período — sin ahorro no hay comisión, nunca.",
+      "colTramo": "Tramo",
+      "colTipo": "Tipo",
+      "colBase": "Base del tramo",
+      "colComision": "Comisión",
+      "estimadoExcluido": "Ahorro estimado excluido de la base (contexto, jamás facturable): {usd}.",
+      "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx} · umbral {umbral}.",
+      "mismaFacturaTitulo": "Este documento ES la futura factura.",
+      "mismaFactura": "El extracto en sombra y el facturable se calculan con la misma máquina: cuando la comisión se active, la primera factura solo contendrá números que ya has visto aquí."
     }
   },
   "landing": {

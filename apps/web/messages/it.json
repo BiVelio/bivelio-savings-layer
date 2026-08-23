@@ -23,7 +23,8 @@
       "integrate": "Integra",
       "install": "Installa",
       "account": "Account",
-      "howItWorks": "Come funziona"
+      "howItWorks": "Come funziona",
+      "extracto": "Estratto"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · input {input} · output {output}",
       "unavailable": "non ancora disponibile: manca la migrazione 0015",
       "footnote": "Il <b>risparmio sull'output è quasi sempre zero</b>, e non è un difetto: su una chiamata realmente eseguita il layer non accorcia la risposta, quindi il suo baseline di output è l'output misurato. Il risparmio di token sta nell'input e nelle chiamate evitate. Anche un totale NEGATIVO non è un errore: significa che il layer è costato più di quanto sarebbe costato senza, e lo mostriamo."
+    },
+    "extracto": {
+      "metaTitle": "Estratto · BiVelio Savings Layer",
+      "eyebrow": "Modalità ombra · qui non si addebita nulla",
+      "title": "Il tuo estratto, prima che la fattura esista",
+      "intro": "Il documento esatto che produrrà la futura fattura variabile: solo risparmio misurato, con la tariffa a scaglioni e la rampa del 30%. Durante la calibrazione l'addebito è sempre {cero}.",
+      "periodo": "Periodo {periodo}",
+      "badgeCalibracion": "PERIODO DI CALIBRAZIONE — ADDEBITO ZERO",
+      "badgeSombra": "OMBRA — NESSUN ADDEBITO REALE",
+      "lecturaFallo": "Impossibile leggere l'uso di questo periodo. L'estratto qui sotto può essere incompleto.",
+      "kpiTitulo": "addebito del periodo",
+      "notaCalibracion": "Mese di calibrazione: la commissione sarebbe stata {habria} — e non si addebita.",
+      "notaSombra": "Cifra in ombra: la commissione calcolata è {comision}. Nessuna fattura la include ancora.",
+      "baseMedida": "Base misurata",
+      "enUsd": "{usd} a prezzi del provider",
+      "requests": "{n} richieste misurate",
+      "ahorroMedido": "Risparmio misurato",
+      "ratio": "rapporto {pct}",
+      "rampa": "rampa applicata: {pct}",
+      "tramosTitulo": "La commissione, scaglione per scaglione",
+      "sinAhorro": "Nessun risparmio misurato in questo periodo — senza risparmio niente commissione, mai.",
+      "colTramo": "Scaglione",
+      "colTipo": "Aliquota",
+      "colBase": "Base dello scaglione",
+      "colComision": "Commissione",
+      "estimadoExcluido": "Risparmio stimato escluso dalla base (contesto, mai fatturabile): {usd}.",
+      "parametros": "Parametri dell'estratto — catalogo prezzi {version} · cambio {fx} · soglia {umbral}.",
+      "mismaFacturaTitulo": "Questo documento È la futura fattura.",
+      "mismaFactura": "L'estratto in ombra e quello fatturabile sono calcolati dalla stessa macchina: quando la commissione si attiverà, la prima fattura conterrà solo numeri che hai già visto qui."
     }
   },
   "landing": {
