@@ -630,7 +630,9 @@
       "cargando": "Prijscatalogus laden…",
       "badge": "Schatting",
       "asientos": "Seats ({precio} per stuk)",
-      "resumenTotal": "De volledige waarheid, bij het {pct}-scenario: ons totaal zou {total} zijn (seats: {asientosCoste} + de commissie hierboven) en jij houdt {neto} over — {pctNeto} van je rekening."
+      "resumenTotal": "De volledige waarheid, bij het {pct}-scenario: ons totaal zou {total} zijn (seats: {asientosCoste} + de commissie hierboven) en jij houdt {neto} over — {pctNeto} van je rekening.",
+      "precios": "Exacte prijs van {modelo}: invoer {inM} · uitvoer {outM} · gecachte invoer {cacheM}, per miljoen tokens.",
+      "fuente": "Bron: <a>de officiële prijzenpagina van {proveedor}</a>, geverifieerd in onze catalogus op {fecha} (en wekelijks automatisch bewaakt)."
     },
     "formula": {
       "title": "Hoe wat je ons betaalt wordt berekend",

@@ -630,7 +630,9 @@
       "cargando": "Loading the price catalog…",
       "badge": "Estimate",
       "asientos": "Seats ({precio} each)",
-      "resumenTotal": "The full truth, at the {pct} scenario: our total would be {total} (seats: {asientosCoste} + the commission above) and you would keep {neto} — {pctNeto} of your bill."
+      "resumenTotal": "The full truth, at the {pct} scenario: our total would be {total} (seats: {asientosCoste} + the commission above) and you would keep {neto} — {pctNeto} of your bill.",
+      "precios": "Exact price of {modelo}: input {inM} · output {outM} · cached input {cacheM}, per million tokens.",
+      "fuente": "Source: <a>{proveedor}'s official pricing page</a>, verified in our catalog on {fecha} (and watched automatically every week)."
     },
     "formula": {
       "title": "How what you pay us is calculated",

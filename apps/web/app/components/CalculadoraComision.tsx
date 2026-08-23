@@ -26,8 +26,19 @@ type SdkModule = { CATALOGO: Record<string, Precio>; PRECIOS_AL_DIA: string };
 const HORQUILLAS = [0.25, 0.32, 0.45, 0.6] as const;
 
 const PROVEEDORES = [
-  { id: "anthropic", nombre: "Anthropic", filtro: (k: string) => k.startsWith("claude") },
-  { id: "openai", nombre: "OpenAI", filtro: (k: string) => k.startsWith("gpt") },
+  {
+    id: "anthropic",
+    nombre: "Anthropic",
+    filtro: (k: string) => k.startsWith("claude"),
+    /** La fuente original de los precios: la página pública oficial. */
+    urlPrecios: "https://www.anthropic.com/pricing",
+  },
+  {
+    id: "openai",
+    nombre: "OpenAI",
+    filtro: (k: string) => k.startsWith("gpt"),
+    urlPrecios: "https://openai.com/api/pricing/",
+  },
 ] as const;
 
 export function CalculadoraComision({ asiento }: { asiento: { cents: number; currency: string } }) {
@@ -136,6 +147,31 @@ export function CalculadoraComision({ asiento }: { asiento: { cents: number; cur
           <input type="number" min={1} step={1} value={asientos} onChange={(e) => setAsientos(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
         </label>
       </div>
+
+      {precio ? (
+        <p className="calc-precios">
+          {t("precios", {
+            modelo: modeloActivo,
+            // Por millón de tokens, el estándar del sector; sale del mismo
+            // catálogo (per 1k × mil) — sin redondeos propios.
+            inM: (precio.inputPer1k * 1000).toLocaleString(locale, { style: "currency", currency: "USD", maximumFractionDigits: 2 }),
+            outM: (precio.outputPer1k * 1000).toLocaleString(locale, { style: "currency", currency: "USD", maximumFractionDigits: 2 }),
+            cacheM:
+              (precio as { cachedInputPer1k?: number }).cachedInputPer1k != null
+                ? ((precio as { cachedInputPer1k?: number }).cachedInputPer1k! * 1000).toLocaleString(locale, { style: "currency", currency: "USD", maximumFractionDigits: 3 })
+                : "—",
+          })}{" "}
+          {t.rich("fuente", {
+            a: (chunks) => (
+              <a href={prov.urlPrecios} target="_blank" rel="noopener noreferrer">
+                {chunks}
+              </a>
+            ),
+            proveedor: prov.nombre,
+            fecha: catalogo?.PRECIOS_AL_DIA ?? "",
+          })}
+        </p>
+      ) : null}
 
       {filas.length > 0 ? (
         <>

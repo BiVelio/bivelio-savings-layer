@@ -630,7 +630,9 @@
       "cargando": "Ładowanie katalogu cen…",
       "badge": "Szacunek",
       "asientos": "Miejsca (po {precio})",
-      "resumenTotal": "Cała prawda, w scenariuszu {pct}: nasza suma wyniosłaby {total} (miejsca: {asientosCoste} + prowizja powyżej), a Tobie zostałoby {neto} — {pctNeto} Twojego rachunku."
+      "resumenTotal": "Cała prawda, w scenariuszu {pct}: nasza suma wyniosłaby {total} (miejsca: {asientosCoste} + prowizja powyżej), a Tobie zostałoby {neto} — {pctNeto} Twojego rachunku.",
+      "precios": "Dokładna cena {modelo}: wejście {inM} · wyjście {outM} · wejście z pamięci podręcznej {cacheM}, za milion tokenów.",
+      "fuente": "Źródło: <a>oficjalna strona cen {proveedor}</a>, zweryfikowana w naszym katalogu {fecha} (i co tydzień automatycznie monitorowana)."
     },
     "formula": {
       "title": "Jak liczy się to, co nam płacisz",

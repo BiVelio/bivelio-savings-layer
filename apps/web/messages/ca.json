@@ -630,7 +630,9 @@
       "cargando": "Carregant el catàleg de preus…",
       "badge": "Estimació",
       "asientos": "Seients ({precio} cadascun)",
-      "resumenTotal": "La veritat completa, amb l'escenari del {pct}: el nostre total seria {total} (seients: {asientosCoste} + la comissió de dalt) i et quedaries {neto} — el {pctNeto} de la teva factura."
+      "resumenTotal": "La veritat completa, amb l'escenari del {pct}: el nostre total seria {total} (seients: {asientosCoste} + la comissió de dalt) i et quedaries {neto} — el {pctNeto} de la teva factura.",
+      "precios": "Preu exacte de {modelo}: entrada {inM} · sortida {outM} · entrada en memòria cau {cacheM}, per milió de tokens.",
+      "fuente": "Font: <a>la pàgina oficial de preus de {proveedor}</a>, verificada al nostre catàleg el {fecha} (i vigilada cada setmana automàticament)."
     },
     "formula": {
       "title": "Com es calcula el que ens pagues",
