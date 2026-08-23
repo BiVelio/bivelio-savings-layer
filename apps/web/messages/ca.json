@@ -23,7 +23,8 @@
       "integrate": "Integra",
       "install": "Instal·la",
       "account": "Compte",
-      "howItWorks": "Com funciona"
+      "howItWorks": "Com funciona",
+      "extracto": "Extracte"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · entrada {input} · sortida {output}",
       "unavailable": "encara no disponible: falta aplicar la migració 0015",
       "footnote": "L'<b>estalvi de sortida és gairebé sempre zero</b>, i no és cap error: en una crida que SÍ s'ha executat la capa no encongeix la resposta, així que el seu baseline de sortida és la sortida mesurada. L'estalvi de tokens viu a l'entrada i a les crides evitades. Un total NEGATIU tampoc és un error: vol dir que la capa va gastar més del que hauria costat sense ella, i es mostra."
+    },
+    "extracto": {
+      "metaTitle": "Extracte · BiVelio Savings Layer",
+      "eyebrow": "Mode ombra · aquí no es cobra res",
+      "title": "El teu extracte, abans que existeixi la factura",
+      "intro": "El document exacte que produirà la futura factura variable: només estalvi mesurat, amb la tarifa per trams i la rampa del 30%. Durant la calibració, el càrrec és sempre {cero}.",
+      "periodo": "Període {periodo}",
+      "badgeCalibracion": "PERÍODE DE CALIBRACIÓ — CÀRREC ZERO",
+      "badgeSombra": "OMBRA — SENSE CÀRREC REAL",
+      "lecturaFallo": "No s'ha pogut llegir l'ús d'aquest període. L'extracte de sota pot estar incomplet.",
+      "kpiTitulo": "càrrec del període",
+      "notaCalibracion": "Mes de calibració: la comissió hauria estat {habria} — i no es cobra.",
+      "notaSombra": "Xifra en ombra: la comissió calculada és {comision}. Cap factura no la inclou encara.",
+      "baseMedida": "Base mesurada",
+      "enUsd": "{usd} a preus del proveïdor",
+      "requests": "{n} peticions mesurades",
+      "ahorroMedido": "Estalvi mesurat",
+      "ratio": "ràtio {pct}",
+      "rampa": "rampa aplicada: {pct}",
+      "tramosTitulo": "La comissió, tram a tram",
+      "sinAhorro": "Sense estalvi mesurat aquest període — sense estalvi no hi ha comissió, mai.",
+      "colTramo": "Tram",
+      "colTipo": "Tipus",
+      "colBase": "Base del tram",
+      "colComision": "Comissió",
+      "estimadoExcluido": "Estalvi estimat exclòs de la base (context, mai facturable): {usd}.",
+      "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx} · llindar {umbral}.",
+      "mismaFacturaTitulo": "Aquest document ÉS la futura factura.",
+      "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí."
     }
   },
   "landing": {

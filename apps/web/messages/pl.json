@@ -23,7 +23,8 @@
       "integrate": "Zintegruj",
       "install": "Zainstaluj",
       "account": "Konto",
-      "howItWorks": "Jak to działa"
+      "howItWorks": "Jak to działa",
+      "extracto": "Wyciąg"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · wejście {input} · wyjście {output}",
       "unavailable": "jeszcze niedostępne: nie zastosowano migracji 0015",
       "footnote": "<b>Oszczędność na wyjściu jest prawie zawsze zerowa</b> i nie jest to błąd: przy wywołaniu, które faktycznie się wykonało, warstwa nie skraca odpowiedzi, więc jej baseline wyjścia to zmierzone wyjście. Oszczędność tokenów leży w wejściu i w uniknietych wywołaniach. Wynik UJEMNY też nie jest błędem: oznacza, że warstwa kosztowała więcej niż bez niej — i to pokazujemy."
+    },
+    "extracto": {
+      "metaTitle": "Wyciąg · BiVelio Savings Layer",
+      "eyebrow": "Tryb cienia · tu nic nie jest pobierane",
+      "title": "Twój wyciąg, zanim powstanie faktura",
+      "intro": "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową i rampą 30%. Podczas kalibracji opłata zawsze wynosi {cero}.",
+      "periodo": "Okres {periodo}",
+      "badgeCalibracion": "OKRES KALIBRACJI — OPŁATA ZERO",
+      "badgeSombra": "CIEŃ — BEZ RZECZYWISTEJ OPŁATY",
+      "lecturaFallo": "Nie udało się odczytać użycia z tego okresu. Wyciąg poniżej może być niekompletny.",
+      "kpiTitulo": "opłata za okres",
+      "notaCalibracion": "Miesiąc kalibracji: prowizja wyniosłaby {habria} — i nie jest pobierana.",
+      "notaSombra": "Liczba w cieniu: obliczona prowizja to {comision}. Żadna faktura jeszcze jej nie zawiera.",
+      "baseMedida": "Zmierzona baza",
+      "enUsd": "{usd} po cenach dostawcy",
+      "requests": "{n} zmierzonych żądań",
+      "ahorroMedido": "Zmierzone oszczędności",
+      "ratio": "wskaźnik {pct}",
+      "rampa": "zastosowana rampa: {pct}",
+      "tramosTitulo": "Prowizja, próg po progu",
+      "sinAhorro": "Brak zmierzonych oszczędności w tym okresie — bez oszczędności nie ma prowizji. Nigdy.",
+      "colTramo": "Próg",
+      "colTipo": "Stawka",
+      "colBase": "Baza progu",
+      "colComision": "Prowizja",
+      "estimadoExcluido": "Szacowane oszczędności wyłączone z bazy (kontekst, nigdy do rozliczenia): {usd}.",
+      "parametros": "Parametry wyciągu — katalog cen {version} · kurs {fx} · próg {umbral}.",
+      "mismaFacturaTitulo": "Ten dokument JEST przyszłą fakturą.",
+      "mismaFactura": "Wyciąg w cieniu i ten rozliczeniowy liczy ta sama maszyneria: gdy prowizja się włączy, pierwsza faktura będzie zawierać tylko liczby, które już tu widziałeś."
     }
   },
   "landing": {

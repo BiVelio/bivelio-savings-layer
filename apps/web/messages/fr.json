@@ -23,7 +23,8 @@
       "integrate": "Intégrer",
       "install": "Installer",
       "account": "Compte",
-      "howItWorks": "Comment ça marche"
+      "howItWorks": "Comment ça marche",
+      "extracto": "Relevé"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · entrée {input} · sortie {output}",
       "unavailable": "pas encore disponible : la migration 0015 n'est pas appliquée",
       "footnote": "L'<b>économie de sortie est presque toujours nulle</b>, et ce n'est pas un bug : sur un appel réellement exécuté la couche ne réduit pas la réponse, donc son baseline de sortie est la sortie mesurée. L'économie de tokens se trouve dans l'entrée et dans les appels évités. Un total NÉGATIF n'est pas non plus une erreur : il signifie que la couche a coûté plus cher que sans elle, et nous l'affichons."
+    },
+    "extracto": {
+      "metaTitle": "Relevé · BiVelio Savings Layer",
+      "eyebrow": "Mode ombre · rien n'est facturé ici",
+      "title": "Votre relevé, avant que la facture n'existe",
+      "intro": "Le document exact que produira la future facture variable : uniquement l'économie mesurée, avec le tarif par tranches et la rampe des 30 %. Pendant la calibration, le montant est toujours {cero}.",
+      "periodo": "Période {periodo}",
+      "badgeCalibracion": "PÉRIODE DE CALIBRATION — MONTANT ZÉRO",
+      "badgeSombra": "OMBRE — AUCUN DÉBIT RÉEL",
+      "lecturaFallo": "Impossible de lire l'usage de cette période. Le relevé ci-dessous peut être incomplet.",
+      "kpiTitulo": "montant de la période",
+      "notaCalibracion": "Mois de calibration : la commission aurait été de {habria} — et elle n'est pas facturée.",
+      "notaSombra": "Chiffre en ombre : la commission calculée est de {comision}. Aucune facture ne l'inclut encore.",
+      "baseMedida": "Base mesurée",
+      "enUsd": "{usd} aux prix du fournisseur",
+      "requests": "{n} requêtes mesurées",
+      "ahorroMedido": "Économie mesurée",
+      "ratio": "ratio {pct}",
+      "rampa": "rampe appliquée : {pct}",
+      "tramosTitulo": "La commission, tranche par tranche",
+      "sinAhorro": "Aucune économie mesurée cette période — sans économie, pas de commission. Jamais.",
+      "colTramo": "Tranche",
+      "colTipo": "Taux",
+      "colBase": "Base de la tranche",
+      "colComision": "Commission",
+      "estimadoExcluido": "Économie estimée exclue de la base (contexte, jamais facturable) : {usd}.",
+      "parametros": "Paramètres du relevé — catalogue de prix {version} · taux de change {fx} · seuil {umbral}.",
+      "mismaFacturaTitulo": "Ce document EST la future facture.",
+      "mismaFactura": "Le relevé en ombre et le relevé facturable sont calculés par la même machinerie : quand la commission s'activera, votre première facture ne contiendra que des chiffres déjà vus ici."
     }
   },
   "landing": {

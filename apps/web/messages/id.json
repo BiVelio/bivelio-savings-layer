@@ -23,7 +23,8 @@
       "integrate": "Integrasikan",
       "install": "Pasang",
       "account": "Akun",
-      "howItWorks": "Cara kerjanya"
+      "howItWorks": "Cara kerjanya",
+      "extracto": "Rekening"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · masukan {input} · keluaran {output}",
       "unavailable": "belum tersedia: migrasi 0015 belum diterapkan",
       "footnote": "<b>Penghematan keluaran hampir selalu nol</b>, dan itu bukan bug: pada panggilan yang benar-benar berjalan lapisan tidak memperkecil jawaban, jadi baseline keluarannya adalah keluaran terukur. Penghematan token ada di masukan dan pada panggilan yang dihindari. Total NEGATIF juga bukan kesalahan: artinya lapisan menghabiskan lebih banyak daripada tanpanya, dan kami menampilkannya."
+    },
+    "extracto": {
+      "metaTitle": "Rekening · BiVelio Savings Layer",
+      "eyebrow": "Mode bayangan · tidak ada tagihan di sini",
+      "title": "Rekening kamu, sebelum fakturnya ada",
+      "intro": "Dokumen persis yang akan dihasilkan faktur variabel nanti: hanya penghematan terukur, dengan tarif berjenjang dan rampa 30%. Selama kalibrasi, tagihannya selalu {cero}.",
+      "periodo": "Periode {periodo}",
+      "badgeCalibracion": "PERIODE KALIBRASI — TAGIHAN NOL",
+      "badgeSombra": "BAYANGAN — TANPA TAGIHAN NYATA",
+      "lecturaFallo": "Tidak bisa membaca pemakaian periode ini. Rekening di bawah mungkin tidak lengkap.",
+      "kpiTitulo": "tagihan periode",
+      "notaCalibracion": "Bulan kalibrasi: komisinya akan sebesar {habria} — dan tidak ditagih.",
+      "notaSombra": "Angka bayangan: komisi yang dihitung adalah {comision}. Belum ada faktur yang memuatnya.",
+      "baseMedida": "Basis terukur",
+      "enUsd": "{usd} dengan harga penyedia",
+      "requests": "{n} permintaan terukur",
+      "ahorroMedido": "Penghematan terukur",
+      "ratio": "rasio {pct}",
+      "rampa": "rampa diterapkan: {pct}",
+      "tramosTitulo": "Komisi, jenjang demi jenjang",
+      "sinAhorro": "Tidak ada penghematan terukur periode ini — tanpa penghematan tidak ada komisi. Tidak pernah.",
+      "colTramo": "Jenjang",
+      "colTipo": "Tarif",
+      "colBase": "Basis jenjang",
+      "colComision": "Komisi",
+      "estimadoExcluido": "Penghematan estimasi dikecualikan dari basis (konteks, tak pernah ditagih): {usd}.",
+      "parametros": "Parameter rekening — katalog harga {version} · kurs {fx} · ambang {umbral}.",
+      "mismaFacturaTitulo": "Dokumen ini ADALAH faktur yang akan datang.",
+      "mismaFactura": "Rekening bayangan dan yang ditagihkan dihitung mesin yang sama: saat komisi aktif, faktur pertamamu hanya berisi angka yang sudah kamu lihat di sini."
     }
   },
   "landing": {
