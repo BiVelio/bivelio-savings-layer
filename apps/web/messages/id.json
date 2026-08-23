@@ -606,6 +606,28 @@
       "errorCorreo": "Email itu sepertinya tidak valid.",
       "errorEnvio": "Kami tidak dapat mengirimnya.",
       "alterna": "Kirim email"
+    },
+    "calculadora": {
+      "title": "Dan berapa kamu akan membayar kami?",
+      "sub": "Mainkan angkamu: pilih penyedia dan model, lalu lihat penghematanmu, tambahan kami, dan yang tersisa untukmu — dengan harga katalog asli dan tarif asli.",
+      "proveedor": "Penyedia",
+      "modelo": "Model",
+      "reqs": "Permintaan / bulan",
+      "inTok": "Rata-rata token masuk",
+      "outTok": "Rata-rata token keluar",
+      "fx": "Kurs ({par})",
+      "factura": "Perkiraan tagihanmu tanpa optimasi: {usd} per bulan ({eur}).",
+      "colAhorro": "Jika kamu hemat",
+      "colTuAhorro": "Penghematanmu",
+      "colExtra": "Tambahan kami",
+      "colTeQuedas": "Milikmu",
+      "extraCero": "tidak ada",
+      "notaUmbral": "Di bawah penghematan {umbral} kami tidak memungut komisi — tidak pernah.",
+      "notaTramos": "Berjenjang, tiap jenjang dengan tarifnya sendiri: {tramos}. Makin besar hematmu, makin kecil persentase kami.",
+      "notaPrimerMesLead": "Bulan pertamamu: hanya seat.",
+      "notaPrimerMes": "Kami mengukur semuanya, mengkalibrasi dengan beban nyatamu, dan kamu akan melihat rekening persis dari biaya yang seharusnya — tanpa ditagih.",
+      "version": "Harga katalog SDK, versi {fecha}. Perkiraan: rekeningmu akan memakai pemakaian terukurmu.",
+      "cargando": "Memuat katalog harga…"
     }
   },
   "invitacion": {

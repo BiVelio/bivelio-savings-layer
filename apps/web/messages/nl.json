@@ -606,6 +606,28 @@
       "errorCorreo": "Dat e-mailadres lijkt niet geldig.",
       "errorEnvio": "We konden het niet versturen.",
       "alterna": "Mail ons"
+    },
+    "calculadora": {
+      "title": "En hoeveel zou jij ons betalen?",
+      "sub": "Speel met je cijfers: kies provider en model, en zie je besparing, ons extra en wat je overhoudt — met de echte catalogusprijzen en het echte tarief.",
+      "proveedor": "Provider",
+      "modelo": "Model",
+      "reqs": "Verzoeken / maand",
+      "inTok": "Gem. invoertokens",
+      "outTok": "Gem. uitvoertokens",
+      "fx": "Wisselkoers ({par})",
+      "factura": "Je geschatte rekening zonder optimalisatie: {usd} per maand ({eur}).",
+      "colAhorro": "Als je bespaart",
+      "colTuAhorro": "Jouw besparing",
+      "colExtra": "Ons extra",
+      "colTeQuedas": "Jij houdt",
+      "extraCero": "niets",
+      "notaUmbral": "Onder {umbral} besparing rekenen we geen commissie — nooit.",
+      "notaTramos": "In schijven, elk tegen zijn eigen tarief: {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
+      "notaPrimerMesLead": "Je eerste maand: alleen de seat.",
+      "notaPrimerMes": "We meten alles, kalibreren op je echte belasting, en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
+      "version": "SDK-catalogusprijzen, versie {fecha}. Een schatting: je afschrift gebruikt je gemeten gebruik.",
+      "cargando": "Prijscatalogus laden…"
     }
   },
   "invitacion": {

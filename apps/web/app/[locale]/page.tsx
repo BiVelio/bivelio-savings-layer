@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
+import { CalculadoraComision } from "@/app/components/CalculadoraComision";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
@@ -119,7 +120,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     (ab.ledgers ?? []).map((l) => [l.ledger, l]),
   );
   const features = t.raw("pricing.features") as string[];
-  const trust = t.raw("pricing.trust") as { lead: string; rest: string }[];
 
   // El precio sale del Price de Stripe, que es lo que de verdad se cobra, y se
   // formatea AQUÍ (servidor) para el idioma de la página. Antes estaba escrito a
@@ -396,16 +396,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 {t("pricing.cta")}
               </Link>
             </div>
-            <div className="trust">
-              <h3>{t("pricing.trustTitle")}</h3>
-              <ul>
-                {trust.map((it) => (
-                  <li key={it.lead}>
-                    <b>{it.lead}</b> {it.rest}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* La tarjeta estática de confianza dejó paso a la calculadora de
+                comisión (2026-08-23): que el visitante JUEGUE y vea nuestro
+                extra y su neto, con los precios del SDK y la tarifa real. */}
+            <CalculadoraComision />
           </div>
         </section>
       </main>

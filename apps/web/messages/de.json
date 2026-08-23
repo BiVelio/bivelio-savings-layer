@@ -606,6 +606,28 @@
       "errorCorreo": "Diese E-Mail sieht nicht gültig aus.",
       "errorEnvio": "Wir konnten es nicht senden.",
       "alterna": "Schreib uns"
+    },
+    "calculadora": {
+      "title": "Und wie viel würdest du uns zahlen?",
+      "sub": "Spiel mit deinen Zahlen: wähle Anbieter und Modell und sieh deine Ersparnis, unser Extra und was dir bleibt — mit den echten Katalogpreisen und dem echten Tarif.",
+      "proveedor": "Anbieter",
+      "modelo": "Modell",
+      "reqs": "Anfragen / Monat",
+      "inTok": "Ø Eingabe-Tokens",
+      "outTok": "Ø Ausgabe-Tokens",
+      "fx": "Wechselkurs ({par})",
+      "factura": "Deine geschätzte Rechnung ohne Optimierung: {usd} pro Monat ({eur}).",
+      "colAhorro": "Wenn du sparst",
+      "colTuAhorro": "Deine Ersparnis",
+      "colExtra": "Unser Extra",
+      "colTeQuedas": "Dir bleibt",
+      "extraCero": "nichts",
+      "notaUmbral": "Unter {umbral} Ersparnis berechnen wir keine Provision — niemals.",
+      "notaTramos": "Gestuft, jede Stufe zu ihrem Satz: {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
+      "notaPrimerMesLead": "Dein erster Monat: nur der Sitz.",
+      "notaPrimerMes": "Wir messen alles, kalibrieren auf deiner echten Last, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
+      "version": "SDK-Katalogpreise, Version {fecha}. Eine Schätzung: deine Abrechnung nutzt deine gemessene Nutzung.",
+      "cargando": "Preiskatalog wird geladen…"
     }
   },
   "invitacion": {

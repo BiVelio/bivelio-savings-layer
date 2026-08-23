@@ -606,6 +606,28 @@
       "errorCorreo": "Aquest correu no sembla vàlid.",
       "errorEnvio": "No hem pogut enviar-ho.",
       "alterna": "Escriu-nos"
+    },
+    "calculadora": {
+      "title": "I quant ens pagaries tu?",
+      "sub": "Juga amb els teus números: tria proveïdor i model, i mira el teu estalvi, el nostre extra i el que et queda — amb els preus reals del catàleg i la tarifa real.",
+      "proveedor": "Proveïdor",
+      "modelo": "Model",
+      "reqs": "Sol·licituds / mes",
+      "inTok": "Tokens d'entrada mitj.",
+      "outTok": "Tokens de sortida mitj.",
+      "fx": "Tipus de canvi ({par})",
+      "factura": "La teva factura estimada sense optimitzar: {usd} al mes ({eur}).",
+      "colAhorro": "Si estalvies",
+      "colTuAhorro": "El teu estalvi",
+      "colExtra": "El nostre extra",
+      "colTeQuedas": "Et queda",
+      "extraCero": "res",
+      "notaUmbral": "Per sota del {umbral} d'estalvi no cobrem comissió — mai.",
+      "notaTramos": "Per trams, i cada tram al seu tipus: {tramos}. Com més estalvies, menor és el nostre percentatge.",
+      "notaPrimerMesLead": "El teu primer mes: només el seient.",
+      "notaPrimerMes": "Ho mesurem tot, calibrem amb la teva càrrega real i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
+      "version": "Preus del catàleg de l'SDK, versió {fecha}. Estimació: el teu extracte usarà el teu ús mesurat.",
+      "cargando": "Carregant el catàleg de preus…"
     }
   },
   "invitacion": {

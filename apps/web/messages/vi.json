@@ -606,6 +606,28 @@
       "errorCorreo": "Email đó có vẻ không hợp lệ.",
       "errorEnvio": "Chúng tôi không gửi được.",
       "alterna": "Gửi email cho chúng tôi"
+    },
+    "calculadora": {
+      "title": "Và bạn sẽ trả chúng tôi bao nhiêu?",
+      "sub": "Chơi với con số của bạn: chọn nhà cung cấp và mô hình, rồi xem khoản tiết kiệm, phần thêm của chúng tôi và phần bạn giữ lại — với giá danh mục thật và biểu phí thật.",
+      "proveedor": "Nhà cung cấp",
+      "modelo": "Mô hình",
+      "reqs": "Yêu cầu / tháng",
+      "inTok": "Token đầu vào TB",
+      "outTok": "Token đầu ra TB",
+      "fx": "Tỷ giá ({par})",
+      "factura": "Hóa đơn ước tính chưa tối ưu của bạn: {usd} mỗi tháng ({eur}).",
+      "colAhorro": "Nếu bạn tiết kiệm",
+      "colTuAhorro": "Tiết kiệm của bạn",
+      "colExtra": "Phần thêm của chúng tôi",
+      "colTeQuedas": "Bạn giữ lại",
+      "extraCero": "không gì cả",
+      "notaUmbral": "Dưới mức tiết kiệm {umbral}, chúng tôi không thu hoa hồng — không bao giờ.",
+      "notaTramos": "Theo bậc, mỗi bậc theo mức riêng: {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
+      "notaPrimerMesLead": "Tháng đầu của bạn: chỉ phí chỗ.",
+      "notaPrimerMes": "Chúng tôi đo tất cả, hiệu chuẩn theo tải thực của bạn, và bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả — mà không bị thu.",
+      "version": "Giá danh mục SDK, phiên bản {fecha}. Ước tính: sao kê của bạn sẽ dùng mức dùng đã đo.",
+      "cargando": "Đang tải danh mục giá…"
     }
   },
   "invitacion": {

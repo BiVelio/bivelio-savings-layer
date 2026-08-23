@@ -606,6 +606,28 @@
       "errorCorreo": "Bu e-posta geçerli görünmüyor.",
       "errorEnvio": "Gönderemedik.",
       "alterna": "Bize yaz"
+    },
+    "calculadora": {
+      "title": "Peki sen bize ne kadar öderdin?",
+      "sub": "Rakamlarınla oyna: sağlayıcıyı ve modeli seç; tasarrufunu, bizim payımızı ve sana kalanı gör — gerçek katalog fiyatları ve gerçek tarifeyle.",
+      "proveedor": "Sağlayıcı",
+      "modelo": "Model",
+      "reqs": "İstek / ay",
+      "inTok": "Ort. giriş tokenı",
+      "outTok": "Ort. çıkış tokenı",
+      "fx": "Döviz kuru ({par})",
+      "factura": "Optimizasyonsuz tahmini faturan: ayda {usd} ({eur}).",
+      "colAhorro": "Tasarruf edersen",
+      "colTuAhorro": "Senin tasarrufun",
+      "colExtra": "Bizim payımız",
+      "colTeQuedas": "Sana kalan",
+      "extraCero": "hiçbir şey",
+      "notaUmbral": "{umbral} tasarrufun altında komisyon almayız — asla.",
+      "notaTramos": "Kademeli, her kademe kendi oranında: {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
+      "notaPrimerMesLead": "İlk ayın: yalnızca koltuk.",
+      "notaPrimerMes": "Her şeyi ölçer, gerçek yükünle kalibre ederiz; neye mal olacağının birebir ekstresini görürsün — tahsil edilmeden.",
+      "version": "SDK katalog fiyatları, sürüm {fecha}. Bir tahmin: ekstren ölçülen kullanımını esas alacak.",
+      "cargando": "Fiyat kataloğu yükleniyor…"
     }
   },
   "invitacion": {

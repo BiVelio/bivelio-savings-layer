@@ -606,6 +606,28 @@
       "errorCorreo": "Ese correo no parece válido.",
       "errorEnvio": "No hemos podido enviarlo.",
       "alterna": "Escríbenos"
+    },
+    "calculadora": {
+      "title": "¿Y cuánto nos pagarías tú?",
+      "sub": "Juega con tus números: elige proveedor y modelo, y mira tu ahorro, nuestro extra y lo que te queda — con los precios reales del catálogo y la tarifa real.",
+      "proveedor": "Proveedor",
+      "modelo": "Modelo",
+      "reqs": "Solicitudes / mes",
+      "inTok": "Tokens de entrada prom.",
+      "outTok": "Tokens de salida prom.",
+      "fx": "Tipo de cambio ({par})",
+      "factura": "Tu factura estimada sin optimizar: {usd} al mes ({eur}).",
+      "colAhorro": "Si ahorras",
+      "colTuAhorro": "Tu ahorro",
+      "colExtra": "Nuestro extra",
+      "colTeQuedas": "Te quedas",
+      "extraCero": "nada",
+      "notaUmbral": "Por debajo del {umbral} de ahorro no cobramos comisión — nunca.",
+      "notaTramos": "Por tramos, y cada tramo a su tipo: {tramos}. Cuanto más ahorras, menor es nuestro porcentaje.",
+      "notaPrimerMesLead": "Tu primer mes: solo el asiento.",
+      "notaPrimerMes": "Lo medimos todo, calibramos con tu carga real y verás el extracto exacto de lo que habría costado — sin cobrarlo.",
+      "version": "Precios del catálogo del SDK, versión {fecha}. Estimación: tu extracto usará tu uso medido.",
+      "cargando": "Cargando el catálogo de precios…"
     }
   },
   "invitacion": {

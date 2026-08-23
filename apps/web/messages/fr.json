@@ -606,6 +606,28 @@
       "errorCorreo": "Cet e-mail ne semble pas valide.",
       "errorEnvio": "Nous n'avons pas pu l'envoyer.",
       "alterna": "Écrivez-nous"
+    },
+    "calculadora": {
+      "title": "Et combien nous paieriez-vous ?",
+      "sub": "Jouez avec vos chiffres : choisissez fournisseur et modèle, et voyez votre économie, notre extra et ce qui vous reste — avec les vrais prix du catalogue et le vrai tarif.",
+      "proveedor": "Fournisseur",
+      "modelo": "Modèle",
+      "reqs": "Requêtes / mois",
+      "inTok": "Tokens d'entrée moy.",
+      "outTok": "Tokens de sortie moy.",
+      "fx": "Taux de change ({par})",
+      "factura": "Votre facture estimée sans optimisation : {usd} par mois ({eur}).",
+      "colAhorro": "Si vous économisez",
+      "colTuAhorro": "Votre économie",
+      "colExtra": "Notre extra",
+      "colTeQuedas": "Il vous reste",
+      "extraCero": "rien",
+      "notaUmbral": "Sous {umbral} d'économie, aucune commission — jamais.",
+      "notaTramos": "Par tranches, chacune à son taux : {tramos}. Plus vous économisez, plus notre pourcentage baisse.",
+      "notaPrimerMesLead": "Votre premier mois : le siège seulement.",
+      "notaPrimerMes": "Nous mesurons tout, calibrons sur votre charge réelle, et vous verrez le relevé exact de ce que cela aurait coûté — sans être facturé.",
+      "version": "Prix du catalogue du SDK, version {fecha}. Une estimation : votre relevé utilisera votre usage mesuré.",
+      "cargando": "Chargement du catalogue de prix…"
     }
   },
   "invitacion": {
