@@ -23,7 +23,8 @@
       "integrate": "Integreren",
       "install": "Installeren",
       "account": "Account",
-      "howItWorks": "Hoe het werkt"
+      "howItWorks": "Hoe het werkt",
+      "extracto": "Afschrift"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · invoer {input} · uitvoer {output}",
       "unavailable": "nog niet beschikbaar: migratie 0015 is niet toegepast",
       "footnote": "De <b>uitvoerbesparing is bijna altijd nul</b>, en dat is geen bug: bij een aanroep die daadwerkelijk liep verkleint de laag het antwoord niet, dus is de uitvoerbaseline de gemeten uitvoer. Tokenbesparing zit in de invoer en in vermeden aanroepen. Een NEGATIEF totaal is evenmin een fout: het betekent dat de laag meer kostte dan zonder, en we tonen het."
+    },
+    "extracto": {
+      "metaTitle": "Afschrift · BiVelio Savings Layer",
+      "eyebrow": "Schaduwmodus · hier wordt niets afgeschreven",
+      "title": "Je afschrift, voordat de factuur bestaat",
+      "intro": "Het exacte document dat de toekomstige variabele factuur zal produceren: alleen gemeten besparing, met het schijventarief en de 30%-helling. Tijdens de kalibratie is het bedrag altijd {cero}.",
+      "periodo": "Periode {periodo}",
+      "badgeCalibracion": "KALIBRATIEPERIODE — NUL BEDRAG",
+      "badgeSombra": "SCHADUW — GEEN ECHTE AFSCHRIJVING",
+      "lecturaFallo": "Het gebruik van deze periode kon niet worden gelezen. Het afschrift hieronder kan onvolledig zijn.",
+      "kpiTitulo": "bedrag van de periode",
+      "notaCalibracion": "Kalibratiemaand: de commissie zou {habria} zijn geweest — en wordt niet afgeschreven.",
+      "notaSombra": "Schaduwcijfer: de berekende commissie is {comision}. Nog geen enkele factuur bevat haar.",
+      "baseMedida": "Gemeten basis",
+      "enUsd": "{usd} tegen providerprijzen",
+      "requests": "{n} gemeten verzoeken",
+      "ahorroMedido": "Gemeten besparing",
+      "ratio": "ratio {pct}",
+      "rampa": "toegepaste helling: {pct}",
+      "tramosTitulo": "De commissie, schijf voor schijf",
+      "sinAhorro": "Geen gemeten besparing deze periode — zonder besparing geen commissie. Nooit.",
+      "colTramo": "Schijf",
+      "colTipo": "Tarief",
+      "colBase": "Schijfbasis",
+      "colComision": "Commissie",
+      "estimadoExcluido": "Geschatte besparing uitgesloten van de basis (context, nooit factureerbaar): {usd}.",
+      "parametros": "Parameters van het afschrift — prijscatalogus {version} · wisselkoers {fx} · drempel {umbral}.",
+      "mismaFacturaTitulo": "Dit document IS de toekomstige factuur.",
+      "mismaFactura": "Het schaduwafschrift en het factureerbare worden door dezelfde machinerie berekend: wanneer de commissie actief wordt, bevat je eerste factuur alleen cijfers die je hier al zag."
     }
   },
   "landing": {

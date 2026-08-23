@@ -23,7 +23,8 @@
       "integrate": "Integrate",
       "install": "Install",
       "account": "Account",
-      "howItWorks": "How it works"
+      "howItWorks": "How it works",
+      "extracto": "Statement"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · input {input} · output {output}",
       "unavailable": "not available yet: migration 0015 has not been applied",
       "footnote": "<b>Output saving is almost always zero</b>, and that is not a bug: on a call that actually ran the layer does not shrink the answer, so its output baseline is the measured output. Token savings live in the input and in avoided calls. A NEGATIVE total is not an error either: it means the layer spent more than it would have cost without it, and we show it."
+    },
+    "extracto": {
+      "metaTitle": "Statement · BiVelio Savings Layer",
+      "eyebrow": "Shadow mode · nothing is charged here",
+      "title": "Your statement, before the invoice exists",
+      "intro": "The exact document the future variable invoice will produce: measured savings only, with the tiered rate and the 30% ramp. During calibration the charge is always {cero}.",
+      "periodo": "Period {periodo}",
+      "badgeCalibracion": "CALIBRATION PERIOD — ZERO CHARGE",
+      "badgeSombra": "SHADOW — NO REAL CHARGE",
+      "lecturaFallo": "Could not read this period's usage. The statement below may be incomplete.",
+      "kpiTitulo": "charge for the period",
+      "notaCalibracion": "Calibration month: the commission would have been {habria} — and it is not charged.",
+      "notaSombra": "Shadow figure: the computed commission is {comision}. No invoice includes it yet.",
+      "baseMedida": "Measured base",
+      "enUsd": "{usd} at provider prices",
+      "requests": "{n} measured requests",
+      "ahorroMedido": "Measured savings",
+      "ratio": "ratio {pct}",
+      "rampa": "ramp applied: {pct}",
+      "tramosTitulo": "The commission, bracket by bracket",
+      "sinAhorro": "No measured savings this period — no savings, no fee. Ever.",
+      "colTramo": "Bracket",
+      "colTipo": "Rate",
+      "colBase": "Bracket base",
+      "colComision": "Commission",
+      "estimadoExcluido": "Estimated savings excluded from the base (context, never billable): {usd}.",
+      "parametros": "Statement parameters — price catalog {version} · exchange rate {fx} · threshold {umbral}.",
+      "mismaFacturaTitulo": "This document IS the future invoice.",
+      "mismaFactura": "The shadow statement and the billable one are computed by the same machinery: when the commission activates, your first invoice will only contain numbers you have already seen here."
     }
   },
   "landing": {

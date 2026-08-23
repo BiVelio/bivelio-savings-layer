@@ -23,7 +23,8 @@
       "integrate": "Integrieren",
       "install": "Installieren",
       "account": "Konto",
-      "howItWorks": "So funktioniert es"
+      "howItWorks": "So funktioniert es",
+      "extracto": "Abrechnung"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · Eingabe {input} · Ausgabe {output}",
       "unavailable": "noch nicht verfügbar: Migration 0015 wurde nicht angewendet",
       "footnote": "Die <b>Ausgabe-Ersparnis ist fast immer null</b>, und das ist kein Fehler: bei einem tatsächlich ausgeführten Aufruf verkleinert die Schicht die Antwort nicht, also ist ihr Ausgabe-Baseline die gemessene Ausgabe. Token-Ersparnis liegt in der Eingabe und in vermiedenen Aufrufen. Ein NEGATIVER Gesamtwert ist ebenfalls kein Fehler: er bedeutet, dass die Schicht mehr gekostet hat als ohne sie — und wir zeigen ihn."
+    },
+    "extracto": {
+      "metaTitle": "Abrechnung · BiVelio Savings Layer",
+      "eyebrow": "Schattenmodus · hier wird nichts berechnet",
+      "title": "Deine Abrechnung, bevor die Rechnung existiert",
+      "intro": "Das exakte Dokument, das die künftige variable Rechnung erzeugen wird: nur gemessene Ersparnis, mit Stufentarif und der 30%-Rampe. Während der Kalibrierung beträgt die Belastung immer {cero}.",
+      "periodo": "Zeitraum {periodo}",
+      "badgeCalibracion": "KALIBRIERUNGSZEITRAUM — NULL BELASTUNG",
+      "badgeSombra": "SCHATTEN — KEINE ECHTE BELASTUNG",
+      "lecturaFallo": "Die Nutzung dieses Zeitraums konnte nicht gelesen werden. Die Abrechnung unten kann unvollständig sein.",
+      "kpiTitulo": "Belastung des Zeitraums",
+      "notaCalibracion": "Kalibrierungsmonat: die Provision wäre {habria} gewesen — und wird nicht berechnet.",
+      "notaSombra": "Schattenzahl: die berechnete Provision beträgt {comision}. Noch enthält sie keine Rechnung.",
+      "baseMedida": "Gemessene Basis",
+      "enUsd": "{usd} zu Anbieterpreisen",
+      "requests": "{n} gemessene Anfragen",
+      "ahorroMedido": "Gemessene Ersparnis",
+      "ratio": "Quote {pct}",
+      "rampa": "angewandte Rampe: {pct}",
+      "tramosTitulo": "Die Provision, Stufe für Stufe",
+      "sinAhorro": "Keine gemessene Ersparnis in diesem Zeitraum — ohne Ersparnis keine Gebühr. Niemals.",
+      "colTramo": "Stufe",
+      "colTipo": "Satz",
+      "colBase": "Stufenbasis",
+      "colComision": "Provision",
+      "estimadoExcluido": "Geschätzte Ersparnis, von der Basis ausgeschlossen (Kontext, nie abrechenbar): {usd}.",
+      "parametros": "Parameter der Abrechnung — Preiskatalog {version} · Wechselkurs {fx} · Schwelle {umbral}.",
+      "mismaFacturaTitulo": "Dieses Dokument IST die künftige Rechnung.",
+      "mismaFactura": "Schatten- und abrechenbare Version werden von derselben Maschinerie berechnet: wenn die Provision aktiv wird, enthält deine erste Rechnung nur Zahlen, die du hier schon gesehen hast."
     }
   },
   "landing": {

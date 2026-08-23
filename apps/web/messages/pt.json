@@ -23,7 +23,8 @@
       "integrate": "Integrar",
       "install": "Instalar",
       "account": "Conta",
-      "howItWorks": "Como funciona"
+      "howItWorks": "Como funciona",
+      "extracto": "Extrato"
     }
   },
   "auth": {
@@ -380,6 +381,35 @@
       "savedBreakdown": "{fraction} · entrada {input} · saída {output}",
       "unavailable": "ainda não disponível: falta aplicar a migração 0015",
       "footnote": "A <b>poupança de saída é quase sempre zero</b>, e não é um defeito: numa chamada que foi mesmo executada a camada não encolhe a resposta, por isso o seu baseline de saída é a saída medida. A poupança de tokens vive na entrada e nas chamadas evitadas. Um total NEGATIVO também não é um erro: significa que a camada custou mais do que teria custado sem ela, e mostramo-lo."
+    },
+    "extracto": {
+      "metaTitle": "Extrato · BiVelio Savings Layer",
+      "eyebrow": "Modo sombra · aqui nada é cobrado",
+      "title": "O seu extrato, antes de a fatura existir",
+      "intro": "O documento exato que a futura fatura variável produzirá: só economia medida, com a tarifa por faixas e a rampa dos 30%. Durante a calibração, a cobrança é sempre {cero}.",
+      "periodo": "Período {periodo}",
+      "badgeCalibracion": "PERÍODO DE CALIBRAÇÃO — COBRANÇA ZERO",
+      "badgeSombra": "SOMBRA — SEM COBRANÇA REAL",
+      "lecturaFallo": "Não foi possível ler o uso deste período. O extrato abaixo pode estar incompleto.",
+      "kpiTitulo": "cobrança do período",
+      "notaCalibracion": "Mês de calibração: a comissão teria sido {habria} — e não é cobrada.",
+      "notaSombra": "Número em sombra: a comissão calculada é {comision}. Nenhuma fatura a inclui ainda.",
+      "baseMedida": "Base medida",
+      "enUsd": "{usd} a preços do provedor",
+      "requests": "{n} requisições medidas",
+      "ahorroMedido": "Economia medida",
+      "ratio": "razão {pct}",
+      "rampa": "rampa aplicada: {pct}",
+      "tramosTitulo": "A comissão, faixa a faixa",
+      "sinAhorro": "Sem economia medida neste período — sem economia não há comissão, nunca.",
+      "colTramo": "Faixa",
+      "colTipo": "Taxa",
+      "colBase": "Base da faixa",
+      "colComision": "Comissão",
+      "estimadoExcluido": "Economia estimada excluída da base (contexto, nunca faturável): {usd}.",
+      "parametros": "Parâmetros do extrato — catálogo de preços {version} · câmbio {fx} · limiar {umbral}.",
+      "mismaFacturaTitulo": "Este documento É a futura fatura.",
+      "mismaFactura": "O extrato em sombra e o faturável são calculados pela mesma máquina: quando a comissão ativar, a primeira fatura só terá números que você já viu aqui."
     }
   },
   "landing": {
