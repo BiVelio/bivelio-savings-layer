@@ -96,27 +96,48 @@ export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
  * en un gateway sin palancas no tienen valor que reportar.
  */
 export function informeMedido(requestId: string, model: string, medido: RegistroMedido): SavingsReport {
+  return construirInforme(requestId, model, medido, false);
+}
+
+/**
+ * El informe de una GEMELA coalescida: la llamada nunca viajó, así que es una
+ * llamada evitada con el coste de su primaria como baseline. `basis` queda en
+ * "estimated" a propósito — ver la doctrina en gateway/coalescencia.ts — y por
+ * tanto NUNCA entra en la base de la comisión.
+ */
+export function informeCoalescido(requestId: string, model: string, medidoPrimaria: RegistroMedido): SavingsReport {
+  return construirInforme(requestId, model, medidoPrimaria, true);
+}
+
+function construirInforme(requestId: string, model: string, medido: RegistroMedido, coalescida: boolean): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   const informe = {
     requestId,
     model,
-    calls: { avoidedLlm: 0, actualLlm: 1 },
+    calls: coalescida ? { avoidedLlm: 1, actualLlm: 0 } : { avoidedLlm: 0, actualLlm: 1 },
     tokens: {
       baselineInput: entradaTotal,
-      actualInput: entradaTotal,
+      actualInput: coalescida ? 0 : entradaTotal,
       eliminatedInput: 0,
       compressedInput: 0,
       baselineOutput: medido.tokens.salida,
-      actualOutput: medido.tokens.salida,
-      providerCachedInput: medido.tokens.cacheLeida,
+      actualOutput: coalescida ? 0 : medido.tokens.salida,
+      providerCachedInput: coalescida ? 0 : medido.tokens.cacheLeida,
     },
-    cache: { result: "miss" as const },
-    cost: {
-      baselineEstimate: medido.costeUsd,
-      actual: medido.costeUsd,
-      netSavings: 0,
-      basis: "measured" as const,
-    },
+    cache: { result: coalescida ? ("singleflight" as const) : ("miss" as const) },
+    cost: coalescida
+      ? {
+          baselineEstimate: medido.costeUsd,
+          actual: 0,
+          netSavings: medido.costeUsd,
+          basis: "estimated" as const,
+        }
+      : {
+          baselineEstimate: medido.costeUsd,
+          actual: medido.costeUsd,
+          netSavings: 0,
+          basis: "measured" as const,
+        },
   };
   return informe as unknown as SavingsReport;
 }
