@@ -606,6 +606,28 @@
       "errorCorreo": "That email doesn't look valid.",
       "errorEnvio": "We couldn't send it.",
       "alterna": "Email us"
+    },
+    "calculadora": {
+      "title": "And how much would you pay us?",
+      "sub": "Play with your numbers: pick provider and model, and see your savings, our extra and what you keep — with the real catalog prices and the real rate.",
+      "proveedor": "Provider",
+      "modelo": "Model",
+      "reqs": "Requests / month",
+      "inTok": "Avg. input tokens",
+      "outTok": "Avg. output tokens",
+      "fx": "Exchange rate ({par})",
+      "factura": "Your estimated unoptimized bill: {usd} per month ({eur}).",
+      "colAhorro": "If you save",
+      "colTuAhorro": "Your savings",
+      "colExtra": "Our extra",
+      "colTeQuedas": "You keep",
+      "extraCero": "nothing",
+      "notaUmbral": "Below {umbral} savings we charge no commission — ever.",
+      "notaTramos": "Tiered, each bracket at its own rate: {tramos}. The more you save, the lower our percentage.",
+      "notaPrimerMesLead": "Your first month: seat only.",
+      "notaPrimerMes": "We measure everything, calibrate on your real load, and you'll see the exact statement of what it would have cost — without being charged.",
+      "version": "SDK catalog prices, version {fecha}. An estimate: your statement will use your measured usage.",
+      "cargando": "Loading the price catalog…"
     }
   },
   "invitacion": {

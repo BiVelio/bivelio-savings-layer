@@ -606,6 +606,28 @@
       "errorCorreo": "Ten e-mail nie wygląda na poprawny.",
       "errorEnvio": "Nie udało się wysłać.",
       "alterna": "Napisz do nas"
+    },
+    "calculadora": {
+      "title": "A ile Ty byś nam płacił?",
+      "sub": "Pobaw się swoimi liczbami: wybierz dostawcę i model, i zobacz swoje oszczędności, naszą dopłatę i to, co Ci zostaje — z prawdziwymi cenami katalogu i prawdziwą taryfą.",
+      "proveedor": "Dostawca",
+      "modelo": "Model",
+      "reqs": "Żądania / mies.",
+      "inTok": "Śr. tokeny wejścia",
+      "outTok": "Śr. tokeny wyjścia",
+      "fx": "Kurs wymiany ({par})",
+      "factura": "Twój szacowany rachunek bez optymalizacji: {usd} miesięcznie ({eur}).",
+      "colAhorro": "Jeśli oszczędzasz",
+      "colTuAhorro": "Twoje oszczędności",
+      "colExtra": "Nasza dopłata",
+      "colTeQuedas": "Zostaje Ci",
+      "extraCero": "nic",
+      "notaUmbral": "Poniżej {umbral} oszczędności nie pobieramy prowizji — nigdy.",
+      "notaTramos": "Progowo, każdy próg według własnej stawki: {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
+      "notaPrimerMesLead": "Twój pierwszy miesiąc: tylko miejsce.",
+      "notaPrimerMes": "Mierzymy wszystko, kalibrujemy na Twoim rzeczywistym obciążeniu, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
+      "version": "Ceny katalogu SDK, wersja {fecha}. Szacunek: Twój wyciąg użyje Twojego zmierzonego użycia.",
+      "cargando": "Ładowanie katalogu cen…"
     }
   },
   "invitacion": {
