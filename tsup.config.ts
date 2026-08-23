@@ -29,7 +29,10 @@ export default defineConfig([
   // 1. The distributable package (data plane SDK). Paid/closed source: no
   //    sourcemap in the published tarball (it would ship the full source).
   {
-    entry: ["src/index.ts"],
+    // `gateway/bin` es el CLI (`bvsala gateway`, F1 de la pasarela Claude
+    // Code): entra en el MISMO bundle de pago, con el mismo minificado y las
+    // mismas defines — comparte catálogo de precios y metering con el SDK.
+    entry: { index: "src/index.ts", "gateway/bin": "gateway/bin.ts" },
     format: ["esm"],
     target: "es2022",
     dts: true,
