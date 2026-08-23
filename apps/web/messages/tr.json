@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "İlk ayın: yalnızca koltuk.",
       "notaPrimerMes": "Her şeyi ölçer, gerçek yükünle kalibre ederiz; neye mal olacağının birebir ekstresini görürsün — tahsil edilmeden.",
       "version": "SDK katalog fiyatları, sürüm {fecha}. Bir tahmin: ekstren ölçülen kullanımını esas alacak.",
-      "cargando": "Fiyat kataloğu yükleniyor…"
+      "cargando": "Fiyat kataloğu yükleniyor…",
+      "badge": "Tahmin",
+      "asientos": "Koltuk (her biri {precio})",
+      "resumenTotal": "Tüm gerçek, {pct} senaryosunda: toplamımız {total} olurdu (koltuklar: {asientosCoste} + yukarıdaki komisyon) ve sana {neto} kalırdı — faturanın {pctNeto} kadarı."
+    },
+    "formula": {
+      "title": "Bize ödediğin nasıl hesaplanır",
+      "mes1": "<b>İlk ayın: koltuk başına yalnızca {precioMes}.</b> Her şeyi ölçeriz ve komisyon almayız — kapanışta neye mal olacağının birebir ekstresini görürsün.",
+      "medido": "Sonrasında komisyon yalnızca <b>ölçülmüş tasarruf</b> üzerinden: sağlayıcının faturasıyla karşılaştırabileceğin tasarruf. Tahmini olan asla faturalanmaz.",
+      "umbral": "Ve <b>yalnızca tasarrufun {umbral} eşiğini aşarsa</b>. {umbral} ile {fin} arasında komisyon kademeli girer: komisyon sonrası net tasarrufun asla {umbral} altına inmez.",
+      "tramos": "<b>Kademeli, her kademe kendi oranında</b> — {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
+      "permanencia": "Bir ay eşiğin altında mı? Komisyon: {cero}. <b>Taahhüt yok</b> — ve ilk değişken faturan yalnızca ekstrende zaten gördüğün sayıları içerir."
     }
   },
   "invitacion": {

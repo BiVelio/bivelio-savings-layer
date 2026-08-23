@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Twój pierwszy miesiąc: tylko miejsce.",
       "notaPrimerMes": "Mierzymy wszystko, kalibrujemy na Twoim rzeczywistym obciążeniu, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
       "version": "Ceny katalogu SDK, wersja {fecha}. Szacunek: Twój wyciąg użyje Twojego zmierzonego użycia.",
-      "cargando": "Ładowanie katalogu cen…"
+      "cargando": "Ładowanie katalogu cen…",
+      "badge": "Szacunek",
+      "asientos": "Miejsca (po {precio})",
+      "resumenTotal": "Cała prawda, w scenariuszu {pct}: nasza suma wyniosłaby {total} (miejsca: {asientosCoste} + prowizja powyżej), a Tobie zostałoby {neto} — {pctNeto} Twojego rachunku."
+    },
+    "formula": {
+      "title": "Jak liczy się to, co nam płacisz",
+      "mes1": "<b>Twój pierwszy miesiąc: tylko {precioMes} za miejsce.</b> Mierzymy wszystko i nie pobieramy prowizji — na zamknięciu zobaczysz dokładny wyciąg tego, ile by to kosztowało.",
+      "medido": "Potem prowizja tylko od <b>zmierzonych oszczędności</b>: takich, które możesz uzgodnić z fakturą dostawcy. Szacowane nigdy nie są rozliczane.",
+      "umbral": "I <b>tylko jeśli Twoje oszczędności przekraczają {umbral}</b>. Między {umbral} a {fin} prowizja wchodzi stopniowo: Twoje oszczędności netto po prowizji nigdy nie spadają poniżej {umbral}.",
+      "tramos": "<b>Progowo, każdy próg według własnej stawki</b> — {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
+      "permanencia": "Miesiąc poniżej progu? Prowizja: {cero}. <b>Bez zobowiązań</b> — a Twoja pierwsza zmienna faktura zawiera tylko liczby, które już widziałeś na wyciągu."
     }
   },
   "invitacion": {

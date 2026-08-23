@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Bulan pertamamu: hanya seat.",
       "notaPrimerMes": "Kami mengukur semuanya, mengkalibrasi dengan beban nyatamu, dan kamu akan melihat rekening persis dari biaya yang seharusnya — tanpa ditagih.",
       "version": "Harga katalog SDK, versi {fecha}. Perkiraan: rekeningmu akan memakai pemakaian terukurmu.",
-      "cargando": "Memuat katalog harga…"
+      "cargando": "Memuat katalog harga…",
+      "badge": "Perkiraan",
+      "asientos": "Seat ({precio} per seat)",
+      "resumenTotal": "Kebenaran seutuhnya, pada skenario {pct}: total kami {total} (seat: {asientosCoste} + komisi di atas) dan kamu menyimpan {neto} — {pctNeto} dari tagihanmu."
+    },
+    "formula": {
+      "title": "Bagaimana yang kamu bayar ke kami dihitung",
+      "mes1": "<b>Bulan pertamamu: hanya {precioMes} per seat.</b> Kami mengukur semuanya dan tidak memungut komisi — saat penutupan kamu akan melihat rekening persis dari biaya yang seharusnya.",
+      "medido": "Setelah itu, komisi hanya atas <b>penghematan terukur</b>: yang bisa kamu cocokkan dengan faktur penyedia. Estimasi tidak pernah ditagih.",
+      "umbral": "Dan <b>hanya jika penghematanmu melebihi {umbral}</b>. Antara {umbral} dan {fin} komisi masuk bertahap: penghematan bersihmu setelah komisi tak pernah turun di bawah {umbral}.",
+      "tramos": "<b>Berjenjang, tiap jenjang dengan tarifnya</b> — {tramos}. Makin besar hematmu, makin kecil persentase kami.",
+      "permanencia": "Sebulan di bawah ambang? Komisi: {cero}. <b>Tanpa kontrak</b> — dan faktur variabel pertamamu hanya berisi angka yang sudah kamu lihat di rekeningmu."
     }
   },
   "invitacion": {

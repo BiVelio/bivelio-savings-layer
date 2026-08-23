@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Dein erster Monat: nur der Sitz.",
       "notaPrimerMes": "Wir messen alles, kalibrieren auf deiner echten Last, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
       "version": "SDK-Katalogpreise, Version {fecha}. Eine Schätzung: deine Abrechnung nutzt deine gemessene Nutzung.",
-      "cargando": "Preiskatalog wird geladen…"
+      "cargando": "Preiskatalog wird geladen…",
+      "badge": "Schätzung",
+      "asientos": "Sitze ({precio} pro Sitz)",
+      "resumenTotal": "Die ganze Wahrheit, im {pct}-Szenario: unser Gesamtbetrag wäre {total} (Sitze: {asientosCoste} + die Provision oben) und dir blieben {neto} — {pctNeto} deiner Rechnung."
+    },
+    "formula": {
+      "title": "Wie sich das berechnet, was du uns zahlst",
+      "mes1": "<b>Dein erster Monat: nur {precioMes} pro Sitz.</b> Wir messen alles und berechnen keine Provision — zum Abschluss siehst du die exakte Abrechnung dessen, was es gekostet hätte.",
+      "medido": "Danach Provision nur auf die <b>gemessene Ersparnis</b>: die, die du mit der Rechnung deines Anbieters abgleichen kannst. Geschätztes wird nie berechnet.",
+      "umbral": "Und <b>nur wenn deine Ersparnis {umbral} übersteigt</b>. Zwischen {umbral} und {fin} greift die Provision stufenlos: deine Nettoersparnis nach Provision fällt nie unter {umbral}.",
+      "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
+      "permanencia": "Ein Monat unter der Schwelle? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
     }
   },
   "invitacion": {

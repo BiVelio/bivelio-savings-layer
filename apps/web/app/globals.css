@@ -941,6 +941,17 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .calc-nota { font-size: .74rem; color: var(--ink-soft); margin: 8px 0 0; }
 .lp .calc-nota b { color: var(--ink); }
 .lp .calc-version { font-family: var(--mono); font-size: .64rem; opacity: .75; }
+.lp .calc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.lp .calc-total { font-size: .84rem; color: var(--ink); background: var(--mint-soft); border: 1px solid var(--mint); border-radius: var(--radius-lg); padding: 10px 14px; margin: 12px 0 0; }
+
+/* La fórmula pública: el borrador del plan maestro, a ancho completo bajo el
+   pricing. Ni un dígito vive en los mensajes — todo llega por parámetro. */
+.lp .formula-publica { margin-top: 24px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-2xl); padding: 28px 32px; }
+.lp .formula-publica h3 { margin: 0 0 12px; letter-spacing: -.025em; }
+.lp .formula-publica ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.lp .formula-publica li { font-size: .9rem; color: var(--ink-soft); max-width: 88ch; padding-left: 26px; position: relative; }
+.lp .formula-publica li b { color: var(--ink); }
+.lp .formula-publica li::before { content: ""; position: absolute; left: 0; top: 7px; width: 12px; height: 12px; border-radius: 3px; background: var(--mint-soft); border: 1px solid var(--mint); }
 
 /* Footer — la tarjeta anidada de bivelio.com (40px fuera, 32px dentro) */
 .lp .ftr { position: relative; overflow: hidden; padding: 0; margin-top: 0; color: var(--ink-soft); font-size: .8rem; }

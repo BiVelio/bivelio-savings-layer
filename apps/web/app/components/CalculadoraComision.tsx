@@ -21,17 +21,19 @@ import { calcularComision, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
 type Precio = { inputPer1k: number; outputPer1k: number };
 type SdkModule = { CATALOGO: Record<string, Precio>; PRECIOS_AL_DIA: string };
 
-/** Las horquillas de ahorro que se enseñan: bajo el umbral, en la rampa y plena. */
-const HORQUILLAS = [0.25, 0.35, 0.5] as const;
+/** Las horquillas: bajo el umbral, DENTRO de la rampa (32%: se ve la entrada
+ *  gradual), plena y alta. La verdad incluye enseñar la rampa funcionando. */
+const HORQUILLAS = [0.25, 0.32, 0.45, 0.6] as const;
 
 const PROVEEDORES = [
   { id: "anthropic", nombre: "Anthropic", filtro: (k: string) => k.startsWith("claude") },
   { id: "openai", nombre: "OpenAI", filtro: (k: string) => k.startsWith("gpt") },
 ] as const;
 
-export function CalculadoraComision() {
+export function CalculadoraComision({ asiento }: { asiento: { cents: number; currency: string } }) {
   const t = useTranslations("landing.calculadora");
   const locale = useLocale();
+  const [asientos, setAsientos] = useState(1);
   const [catalogo, setCatalogo] = useState<SdkModule | null>(null);
   const [proveedor, setProveedor] = useState<(typeof PROVEEDORES)[number]["id"]>("anthropic");
   const [modelo, setModelo] = useState("claude-haiku-4-5");
@@ -83,9 +85,15 @@ export function CalculadoraComision() {
     });
   }, [precio, reqs, inTok, outTok, fx]);
 
+  const eurStripe = (cents: number) =>
+    (cents / 100).toLocaleString(locale, { style: "currency", currency: asiento.currency.toUpperCase(), maximumFractionDigits: 0 });
+
   return (
     <div className="calc">
-      <h3>{t("title")}</h3>
+      <div className="calc-head">
+        <h3>{t("title")}</h3>
+        <span className="est-tag">{t("badge")}</span>
+      </div>
       <p className="calc-sub">{t("sub")}</p>
 
       <div className="calc-grid">
@@ -123,6 +131,10 @@ export function CalculadoraComision() {
           <span>{t("fx", { par: "EUR/USD" })}</span>
           <input type="number" min={0.01} max={10} step={0.01} value={fx} onChange={(e) => setFx(Math.min(10, Math.max(0.01, Number(e.target.value) || 0.9)))} />
         </label>
+        <label>
+          <span>{t("asientos", { precio: eurStripe(asiento.cents) })}</span>
+          <input type="number" min={1} step={1} value={asientos} onChange={(e) => setAsientos(Math.max(1, Math.round(Number(e.target.value) || 1)))} />
+        </label>
       </div>
 
       {filas.length > 0 ? (
@@ -152,6 +164,26 @@ export function CalculadoraComision() {
               </tbody>
             </table>
           </div>
+          {/* LA VERDAD COMPLETA: el total nuestro incluye también los asientos.
+              Se enseña con el escenario del 45% como referencia. */}
+          {(() => {
+            const ref = filas.find((f) => f.ratio === 0.45) ?? filas[filas.length - 1]!;
+            const costeAsientosEur = (asientos * asiento.cents) / 100;
+            const totalNuestro = ref.extraEur + costeAsientosEur;
+            const netoTotal = ref.ahorroEur - totalNuestro;
+            const baseEur = ref.baseUsd * fx;
+            return (
+              <p className="calc-total">
+                {t("resumenTotal", {
+                  pct: pct(ref.ratio),
+                  asientosCoste: eur(costeAsientosEur),
+                  total: eur(totalNuestro),
+                  neto: eur(netoTotal),
+                  pctNeto: pct(baseEur > 0 ? netoTotal / baseEur : 0),
+                })}
+              </p>
+            );
+          })()}
           <p className="calc-nota">{t("notaUmbral", { umbral: pct(UMBRAL_RATIO) })}</p>
           <p className="calc-nota">
             {t("notaTramos", {

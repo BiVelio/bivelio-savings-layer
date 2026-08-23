@@ -627,7 +627,18 @@
       "notaPrimerMesLead": "Il tuo primo mese: solo il posto.",
       "notaPrimerMes": "Misuriamo tutto, calibriamo sul tuo carico reale e vedrai l'estratto esatto di quanto sarebbe costato — senza addebitarlo.",
       "version": "Prezzi del catalogo dell'SDK, versione {fecha}. Una stima: il tuo estratto userà il tuo uso misurato.",
-      "cargando": "Caricamento del catalogo prezzi…"
+      "cargando": "Caricamento del catalogo prezzi…",
+      "badge": "Stima",
+      "asientos": "Posti ({precio} ciascuno)",
+      "resumenTotal": "La verità completa, nello scenario del {pct}: il nostro totale sarebbe {total} (posti: {asientosCoste} + la commissione qui sopra) e ti resterebbero {neto} — il {pctNeto} della tua fattura."
+    },
+    "formula": {
+      "title": "Come si calcola quello che ci paghi",
+      "mes1": "<b>Il tuo primo mese: solo {precioMes} per posto.</b> Misuriamo tutto e non addebitiamo commissioni — alla chiusura vedrai l'estratto esatto di quanto sarebbe costato.",
+      "medido": "Dopo, commissione solo sul <b>risparmio misurato</b>: quello che puoi riscontrare con la fattura del tuo provider. Lo stimato non si fattura mai.",
+      "umbral": "E <b>solo se il tuo risparmio supera il {umbral}</b>. Tra il {umbral} e il {fin} la commissione entra gradualmente: il tuo risparmio netto dopo la commissione non scende mai sotto il {umbral}.",
+      "tramos": "<b>A scaglioni, ciascuno alla sua aliquota</b> — {tramos}. Più risparmi, più basso è il nostro percentuale.",
+      "permanencia": "Un mese sotto la soglia? Commissione: {cero}. <b>Senza vincoli</b> — e la tua prima fattura variabile contiene solo numeri che hai già visto nel tuo estratto."
     }
   },
   "invitacion": {
