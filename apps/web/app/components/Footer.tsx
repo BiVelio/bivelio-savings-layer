@@ -118,8 +118,9 @@ export default async function Footer() {
 
   return (
     <footer className="ftr">
-      {/* Banda CTA — la pieza que abre el footer de bivelio.com. El fantasma
-          lleva a la oferta gratuita (el verificador) y el de tinta al alta. */}
+      {/* Banda CTA — la pieza que abre el footer de bivelio.com. Un solo botón,
+          el del alta (decisión del dueño 2026-08-24): el verificador ya tiene su
+          CTA en el héroe y aquí solo repartía el clic del cierre. */}
       <div className="ftr-cta">
         <div className="ftr-cta-inner">
           <div>
@@ -127,9 +128,6 @@ export default async function Footer() {
             <p className="ftr-cta-sub">{t("footer.ctaSub")}</p>
           </div>
           <div className="ftr-cta-actions">
-            <Link className="btn btn-ghost" href="/#verify">
-              {t("hero.ctaRun")}
-            </Link>
             <Link className="btn btn-primary" href="/signup">
               {t("footer.ctaStart")}
               <ArrowRightIcon />
