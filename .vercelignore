@@ -28,3 +28,10 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# La PRIVADA de firma de licencias. Con .vercelignore presente, Vercel deja de
+# mirar .gitignore, así que la exclusión de git NO protege el deploy: sin esta
+# línea, `vercel --prod` sube la clave al source del deployment (crítico de la
+# auditoría 2026-08, re-confirmado el 2026-08-24). La pública sí puede viajar,
+# pero nada del build la lee: fuera el directorio entero.
+keys/
