@@ -89,7 +89,8 @@ export function proveedorDelBanco(model: string | null, cfg: ConfigDeTransporte)
         ...(cfg.apiKey ? { apiKey: cfg.apiKey } : {}),
         stripProviderPrefix: !cfg.keepPrefix,
         requireUsage: true,
-        ...(cfg.fetchImpl ? { fetchImpl: cfg.fetchImpl } : {}),
+        // La verja inyecta su fetch de mentira; en red, SIEMPRE con plazo.
+        fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
       });
   }
 }
@@ -114,13 +115,38 @@ const PAUSAS_DE_REINTENTO_MS: readonly number[] = [2_000, 8_000];
 
 function esFalloTransitorioDeRed(err: unknown): boolean {
   for (let e: unknown = err; e; e = (e as { cause?: unknown }).cause) {
-    const code = (e as { code?: string }).code ?? "";
+    // `String(...)`: el `code` de una DOMException es un NÚMERO (TimeoutError
+    // trae 23) y `startsWith` sobre él revienta — cazado por la propia verja.
+    const code = String((e as { code?: unknown }).code ?? "");
     if (code.startsWith("UND_ERR")) return true;
     if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN"].includes(code)) return true;
+    // El TimeoutError de `fetchConPlazo`: la petición se cortó SIN respuesta,
+    // así que reintentarla no puede contar nada dos veces.
+    if ((e as { name?: string }).name === "TimeoutError") return true;
     const msg = e instanceof Error ? e.message : "";
     if (/fetch failed|socket hang up|headers timeout/i.test(msg)) return true;
   }
   return false;
+}
+
+/**
+ * EL PLAZO DURO POR PETICIÓN — el agujero que los reintentos no tapan.
+ *
+ * Segundo incidente del 2026-08-24: una petición a gemini se quedó COLGADA sin
+ * socket abierto, sin CPU y sin error — 23 minutos parada hasta que se mató el
+ * proceso a mano, con tres modelos medidos y sin escribir. `conReintentos` no
+ * pudo hacer nada: no reintenta un `await` que nunca resuelve.
+ *
+ * `AbortSignal.timeout` corta la petición ENTERA (cabeceras y cuerpo) y el
+ * `TimeoutError` resultante es transitorio-de-red para los reintentos. 300s por
+ * llamada: el peor escenario legítimo del banco responde en <2 min.
+ */
+export function fetchConPlazo(plazoMs = 300_000, base: typeof fetch = fetch): typeof fetch {
+  return (input, init) => {
+    const plazo = AbortSignal.timeout(plazoMs);
+    const señal = init?.signal ? AbortSignal.any([init.signal, plazo]) : plazo;
+    return base(input, { ...init, signal: señal });
+  };
 }
 
 export function conReintentos(
@@ -161,7 +187,7 @@ function proveedorAnthropicNativo(cfg: ConfigDeTransporte): Provider {
     baseUrl: cfg.anthropicBaseUrl!,
     ...(cfg.anthropicApiKey ? { apiKey: cfg.anthropicApiKey } : {}),
     requireUsage: true,
-    ...(cfg.fetchImpl ? { fetchImpl: cfg.fetchImpl } : {}),
+    fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
   });
   return {
     id: nativo.id,

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import {
   conReintentos,
+  fetchConPlazo,
   proveedorDelBanco,
   transporteDeModelo,
   type ConfigDeTransporte,
@@ -326,5 +327,43 @@ describe("los reintentos: un estornudo de red no puede tirar una tirada pagada",
     const conRed = conReintentos(p, [1, 1], () => Promise.resolve());
     await expect(conRed.generate(peticion)).rejects.toThrow("429");
     expect(llamadas()).toBe(1);
+  });
+});
+
+describe("el plazo duro: una petición colgada se corta y se reintenta, no se espera para siempre", () => {
+  // Segundo incidente del 2026-08-24: un fetch sin socket, sin CPU y sin error
+  // dejó la tirada 23 minutos parada con tres modelos medidos y sin escribir.
+  it("fetchConPlazo corta con TimeoutError y conReintentos lo trata como transitorio", async () => {
+    const colgado: typeof fetch = (_i, init) =>
+      new Promise((_res, rej) => {
+        init?.signal?.addEventListener("abort", () => rej(init.signal!.reason as Error));
+      });
+    const conPlazo = fetchConPlazo(20, colgado);
+    await expect(conPlazo("https://x.invalido/")).rejects.toMatchObject({ name: "TimeoutError" });
+
+    let llamadas = 0;
+    const p: Provider = {
+      id: "de-mentira",
+      generate: async () => {
+        llamadas += 1;
+        if (llamadas === 1) await conPlazo("https://x.invalido/");
+        return { text: "ok", usage: { inputTokens: 1, outputTokens: 1 } };
+      },
+    };
+    const conRed = conReintentos(p, [1], () => Promise.resolve());
+    await expect(conRed.generate({ model: "m", messages: [] })).resolves.toMatchObject({ text: "ok" });
+    expect(llamadas).toBe(2);
+  });
+
+  it("la señal del llamante se respeta: abortar de fuera no cuenta como plazo", async () => {
+    const colgado: typeof fetch = (_i, init) =>
+      new Promise((_res, rej) => {
+        // Una señal YA abortada no vuelve a emitir "abort": se mira primero.
+        if (init?.signal?.aborted) return rej(init.signal.reason as Error);
+        init?.signal?.addEventListener("abort", () => rej(init.signal!.reason as Error));
+      });
+    const conPlazo = fetchConPlazo(60_000, colgado);
+    const mia = AbortSignal.abort(new Error("cancelada por el llamante"));
+    await expect(conPlazo("https://x.invalido/", { signal: mia })).rejects.toThrow("cancelada por el llamante");
   });
 });
