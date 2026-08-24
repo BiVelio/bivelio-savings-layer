@@ -89,9 +89,88 @@ export function proveedorDelBanco(model: string | null, cfg: ConfigDeTransporte)
         ...(cfg.apiKey ? { apiKey: cfg.apiKey } : {}),
         stripProviderPrefix: !cfg.keepPrefix,
         requireUsage: true,
-        ...(cfg.fetchImpl ? { fetchImpl: cfg.fetchImpl } : {}),
+        // La verja inyecta su fetch de mentira; en red, SIEMPRE con plazo.
+        fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
       });
   }
+}
+
+/**
+ * REINTENTOS ANTE FALLOS TRANSITORIOS DE RED — y solo ante esos.
+ *
+ * El incidente que cierra (2026-08-24): una llamada a gemini-3.7-flash se
+ * quedó >5 minutos sin cabeceras (`UND_ERR_HEADERS_TIMEOUT` de undici), la
+ * excepción subió hasta `main()` y mató la tirada ENTERA en el cuarto modelo
+ * de cuatro — con ~2 horas de llamadas pagadas y los artefactos sin escribir,
+ * porque se escriben al final. Un banco que gasta dinero real no puede morir
+ * por un estornudo de red.
+ *
+ * Solo se reintenta lo que se LANZÓ sin respuesta (fetch failed, timeouts,
+ * conexión cortada): ahí no hay `usage`, así que no hay doble conteo posible.
+ * Una respuesta HTTP con error NO se reintenta aquí: el adaptador ya la
+ * convirtió en su propio error tipado, y reintentar una llamada que pudo
+ * facturarse es una decisión del banco, no de la fontanería.
+ */
+const PAUSAS_DE_REINTENTO_MS: readonly number[] = [2_000, 8_000];
+
+function esFalloTransitorioDeRed(err: unknown): boolean {
+  for (let e: unknown = err; e; e = (e as { cause?: unknown }).cause) {
+    // `String(...)`: el `code` de una DOMException es un NÚMERO (TimeoutError
+    // trae 23) y `startsWith` sobre él revienta — cazado por la propia verja.
+    const code = String((e as { code?: unknown }).code ?? "");
+    if (code.startsWith("UND_ERR")) return true;
+    if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN"].includes(code)) return true;
+    // El TimeoutError de `fetchConPlazo`: la petición se cortó SIN respuesta,
+    // así que reintentarla no puede contar nada dos veces.
+    if ((e as { name?: string }).name === "TimeoutError") return true;
+    const msg = e instanceof Error ? e.message : "";
+    if (/fetch failed|socket hang up|headers timeout/i.test(msg)) return true;
+  }
+  return false;
+}
+
+/**
+ * EL PLAZO DURO POR PETICIÓN — el agujero que los reintentos no tapan.
+ *
+ * Segundo incidente del 2026-08-24: una petición a gemini se quedó COLGADA sin
+ * socket abierto, sin CPU y sin error — 23 minutos parada hasta que se mató el
+ * proceso a mano, con tres modelos medidos y sin escribir. `conReintentos` no
+ * pudo hacer nada: no reintenta un `await` que nunca resuelve.
+ *
+ * `AbortSignal.timeout` corta la petición ENTERA (cabeceras y cuerpo) y el
+ * `TimeoutError` resultante es transitorio-de-red para los reintentos. 300s por
+ * llamada: el peor escenario legítimo del banco responde en <2 min.
+ */
+export function fetchConPlazo(plazoMs = 300_000, base: typeof fetch = fetch): typeof fetch {
+  return (input, init) => {
+    const plazo = AbortSignal.timeout(plazoMs);
+    const señal = init?.signal ? AbortSignal.any([init.signal, plazo]) : plazo;
+    return base(input, { ...init, signal: señal });
+  };
+}
+
+export function conReintentos(
+  p: Provider,
+  pausasMs: readonly number[] = PAUSAS_DE_REINTENTO_MS,
+  dormir: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+): Provider {
+  return {
+    id: p.id,
+    async generate(req) {
+      for (let intento = 0; ; intento++) {
+        try {
+          return await p.generate(req);
+        } catch (err) {
+          if (intento >= pausasMs.length || !esFalloTransitorioDeRed(err)) throw err;
+          console.error(
+            `[banco] fallo transitorio de red con ${req.model}: ${err instanceof Error ? err.message : String(err)}` +
+              ` — reintento ${intento + 1}/${pausasMs.length} en ${pausasMs[intento]! / 1000}s`,
+          );
+          await dormir(pausasMs[intento]!);
+        }
+      }
+    },
+  };
 }
 
 /**
@@ -108,7 +187,7 @@ function proveedorAnthropicNativo(cfg: ConfigDeTransporte): Provider {
     baseUrl: cfg.anthropicBaseUrl!,
     ...(cfg.anthropicApiKey ? { apiKey: cfg.anthropicApiKey } : {}),
     requireUsage: true,
-    ...(cfg.fetchImpl ? { fetchImpl: cfg.fetchImpl } : {}),
+    fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
   });
   return {
     id: nativo.id,

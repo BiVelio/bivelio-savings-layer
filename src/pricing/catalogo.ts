@@ -23,7 +23,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
  */
 
 /** When these prices were last checked against the providers' public rates. */
-export const PRECIOS_AL_DIA = "2026-08-23";
+export const PRECIOS_AL_DIA = "2026-08-24";
 
 /**
  * Key = the model id as the provider publishes it, without a vendor prefix.
@@ -46,9 +46,52 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gpt-4":         { inputPer1k: 0.03,    outputPer1k: 0.06 },
   "gpt-3.5-turbo": { inputPer1k: 0.0005,  outputPer1k: 0.0015 },
 
+  // La familia gpt-5 (checked 2026-08-24 against the AI Gateway's `/models`).
+  // Cache reads bill at 10% of input here — not the 50% of the 4o family.
+  // EVERY visible `gpt-5.x` is listed explicitly on purpose: the separator
+  // guard treats `.` as a separator, so a missing `gpt-5.7` would silently
+  // inherit `gpt-5`'s price instead of warning — and 5.2/5.4/5.5 already
+  // proved the price MOVES between minor versions.
+  "gpt-5":              { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
+  "gpt-5-codex":        { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
+  "gpt-5-mini":         { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.000025  },
+  "gpt-5-nano":         { inputPer1k: 0.00005,  outputPer1k: 0.0004,   cachedInputPer1k: 0.000005  },
+  "gpt-5.1-codex":      { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
+  "gpt-5.1-codex-max":  { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
+  "gpt-5.1-codex-mini": { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.000025  },
+  "gpt-5.1-thinking":   { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
+  "gpt-5.2":            { inputPer1k: 0.00175,  outputPer1k: 0.014,    cachedInputPer1k: 0.000175  },
+  "gpt-5.2-codex":      { inputPer1k: 0.00175,  outputPer1k: 0.014,    cachedInputPer1k: 0.000175  },
+  "gpt-5.3-codex":      { inputPer1k: 0.00175,  outputPer1k: 0.014,    cachedInputPer1k: 0.000175  },
+  "gpt-5.4":            { inputPer1k: 0.0025,   outputPer1k: 0.015,    cachedInputPer1k: 0.00025   },
+  "gpt-5.4-mini":       { inputPer1k: 0.00075,  outputPer1k: 0.0045,   cachedInputPer1k: 0.000075  },
+  "gpt-5.4-nano":       { inputPer1k: 0.0002,   outputPer1k: 0.00125,  cachedInputPer1k: 0.00002   },
+  "gpt-5.5":            { inputPer1k: 0.005,    outputPer1k: 0.03,     cachedInputPer1k: 0.0005    },
+  "gpt-5.6-luna":       { inputPer1k: 0.0002,   outputPer1k: 0.0012,   cachedInputPer1k: 0.00002   },
+  // sol: la pasarela servía $2/$10 y la página oficial de OpenAI dice $4/$20 —
+  // el vigía cazó el 2x en su segunda corrida (2026-08-24) y manda la oficial.
+  "gpt-5.6-sol":        { inputPer1k: 0.004,    outputPer1k: 0.02,     cachedInputPer1k: 0.0004    },
+  "gpt-5.6-terra":      { inputPer1k: 0.002,    outputPer1k: 0.012,    cachedInputPer1k: 0.0002    },
+
   // ── Anthropic ─────────────────────────────────────────────────────────────
   // Anthropic bills a cache read at 10% of the input rate.
+  //
+  // The 4.5+ Opus generation is listed EXPLICITLY because prefix inheritance
+  // here is a 3x LIE: `claude-opus-4-5` would inherit `claude-opus-4`'s
+  // $15/$75 while the whole 4.5–5 generation bills $5/$25 (checked 2026-08-24
+  // against the AI Gateway's `/models`; matches Anthropic's published cut).
+  // This is exactly the traffic a `bvsala claude` gateway meters, so the
+  // wrong price would land straight on a customer's panel.
+  "claude-opus-4-5":   { inputPer1k: 0.005,  outputPer1k: 0.025, cachedInputPer1k: 0.0005  },
+  "claude-opus-4-6":   { inputPer1k: 0.005,  outputPer1k: 0.025, cachedInputPer1k: 0.0005  },
+  "claude-opus-4-7":   { inputPer1k: 0.005,  outputPer1k: 0.025, cachedInputPer1k: 0.0005  },
+  "claude-opus-4-8":   { inputPer1k: 0.005,  outputPer1k: 0.025, cachedInputPer1k: 0.0005  },
+  "claude-opus-5":     { inputPer1k: 0.005,  outputPer1k: 0.025, cachedInputPer1k: 0.0005  },
   "claude-opus-4":     { inputPer1k: 0.015,  outputPer1k: 0.075, cachedInputPer1k: 0.0015  },
+  "claude-sonnet-4-5": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
+  "claude-sonnet-4-6": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
+  "claude-sonnet-5":   { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0002  },
+  "claude-fable-5":    { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
   "claude-sonnet-4":   { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-haiku-4-5":  { inputPer1k: 0.001,  outputPer1k: 0.005, cachedInputPer1k: 0.0001  },
   "claude-3-5-sonnet": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
@@ -58,6 +101,19 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // documentada de Anthropic ($0.03/MTok). La cazó el vigía en su primera
   // corrida (2026-08-23) y se verificó contra la referencia histórica oficial.
   "claude-3-haiku":    { inputPer1k: 0.00025, outputPer1k: 0.00125, cachedInputPer1k: 0.00003 },
+
+  // ── Google (Gemini) ───────────────────────────────────────────────────────
+  // Gemini bills an implicit-cache read at 10% of the input rate, with no write
+  // premium — checked 2026-08-24 against the AI Gateway's `/models` metadata
+  // (`input_cache_read` = input/10 across the whole family). Prices are the
+  // ≤200k-context tier; the long-context surcharge is out of scope here, same
+  // as OpenAI's priority tiers.
+  "gemini-3.7-flash":       { inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 },
+  "gemini-3.5-flash":       { inputPer1k: 0.0015,  outputPer1k: 0.009,   cachedInputPer1k: 0.00015  },
+  "gemini-3.5-flash-lite":  { inputPer1k: 0.0003,  outputPer1k: 0.0025,  cachedInputPer1k: 0.00003  },
+  "gemini-3.1-pro-preview": { inputPer1k: 0.002,   outputPer1k: 0.012,   cachedInputPer1k: 0.0002   },
+  "gemini-2.5-pro":         { inputPer1k: 0.00125, outputPer1k: 0.01,    cachedInputPer1k: 0.000125 },
+  "gemini-2.5-flash":       { inputPer1k: 0.0003,  outputPer1k: 0.0025,  cachedInputPer1k: 0.00003  },
 
   // Models whose published price is NOT known with certainty stay out on purpose:
   // they fall back to the illustrative default and warn, which is the honest answer.

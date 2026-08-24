@@ -29,6 +29,11 @@
         "inputPer1k": 0.003,
         "outputPer1k": 0.015,
         "cachedInputPer1k": 0.0003
+      },
+      "gemini-3.7-flash": {
+        "inputPer1k": 0.00075,
+        "outputPer1k": 0.00375,
+        "cachedInputPer1k": 0.000075
       }
     },
     "fallback": {
@@ -36,7 +41,7 @@
       "outputPer1k": 0.0006,
       "cachedInputPer1k": 0.000075
     },
-    "catalogueDated": "2026-08-13",
+    "catalogueDated": "2026-08-24",
     "listPriceKnown": true
   },
   "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
@@ -94,16 +99,20 @@
         "valid": 0,
         "total": 0
       },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
       "proven": true,
       "modelStable": true,
       "servedModels": [
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_l63gpzahbh",
-        "fp_ac49zk0oqu",
-        "fp_wcwrhspqhk",
-        "fp_vsuwmd3d2u"
+        "fp_2pzvopox6u",
+        "fp_igz0179q0p",
+        "fp_8bp9u6szvd",
+        "fp_6voznq5yqa"
       ],
       "attribution": {
         "avoidedCall": true,
@@ -119,20 +128,20 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "ran",
-      "reps": 9,
+      "reps": 11,
       "armA": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.333333333333332,
-        "meanCost": 0.000021799999999999995
+        "meanOutputTokens": 18.818181818181817,
+        "meanCost": 0.000022090909090909085
       },
       "armB": {
         "meanInputTokens": 72,
-        "meanOutputTokens": 18.666666666666668,
-        "meanCost": 0.000022
+        "meanOutputTokens": 18.545454545454547,
+        "meanCost": 0.00002192727272727272
       },
       "formaFactura": {
-        "entrada": 0.4954128440366972,
-        "salida": 0.5045871559633028
+        "entrada": 0.48888888888888893,
+        "salida": 0.5111111111111112
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -140,22 +149,26 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -0.3333333333333357,
+        "outputTokenDeltaMean": 0.2727272727272698,
         "savings": {
-          "point": -0.009174311926605672,
-          "lower": -0.0370370370370372,
-          "upper": 0.0181818181818183
+          "point": 0.007407407407407529,
+          "lower": -0.022727272727272707,
+          "upper": 0.03649635036496368
         },
-        "wilcoxonP": 0.8067619259389414
+        "wilcoxonP": 0.3827973100865816
       },
       "quality": {
         "gate": "judge",
-        "passed": 9,
-        "total": 9
+        "passed": 11,
+        "total": 11
       },
       "naiveContractValid": {
-        "valid": 9,
-        "total": 9
+        "valid": 11,
+        "total": 11
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": false,
       "modelStable": true,
@@ -163,15 +176,17 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_qxgmy96mc9",
-        "fp_nablsxbgan",
-        "fp_jffyd5vy42",
-        "fp_k7lz5lmguo",
-        "fp_zv9wr4sbqv",
-        "fp_cw7jttqwxf",
-        "fp_tufdaniqrg",
-        "fp_82zzsm5qdj",
-        "fp_u50cxkrtb9"
+        "fp_yyc68vgrdf",
+        "fp_lbare2gfuk",
+        "fp_ajsa3n433l",
+        "fp_qa214scnuq",
+        "fp_qgy7pmyj5g",
+        "fp_4b1co4u4vw",
+        "fp_jt5xtc7qrl",
+        "fp_h1z45grpmv",
+        "fp_6635wys7e1",
+        "fp_xy0c2b1y1r",
+        "fp_c7fq4hwr2j"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -187,20 +202,20 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "cache",
-      "reps": 4,
+      "reps": 6,
       "armA": {
-        "meanInputTokens": 72,
-        "meanOutputTokens": 18.75,
-        "meanCost": 0.000022049999999999997
-      },
-      "armB": {
         "meanInputTokens": 72,
         "meanOutputTokens": 18,
         "meanCost": 0.000021599999999999996
       },
+      "armB": {
+        "meanInputTokens": 72,
+        "meanOutputTokens": 19,
+        "meanCost": 0.000022199999999999998
+      },
       "formaFactura": {
-        "entrada": 0.4897959183673469,
-        "salida": 0.5102040816326531
+        "entrada": 0.5,
+        "salida": 0.5
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -208,22 +223,26 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.75,
+        "outputTokenDeltaMean": -1,
         "savings": {
-          "point": 0.020408163265306145,
-          "lower": 0,
-          "upper": 0.05882352941176483
+          "point": -0.0277777777777779,
+          "lower": -0.05555555555555558,
+          "upper": 0
         },
-        "wilcoxonP": 0.49999999949999996
+        "wilcoxonP": 0.9703268451875493
       },
       "quality": {
         "gate": "judge",
-        "passed": 4,
-        "total": 4
+        "passed": 6,
+        "total": 6
       },
       "naiveContractValid": {
-        "valid": 4,
-        "total": 4
+        "valid": 6,
+        "total": 6
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": false,
       "modelStable": true,
@@ -231,10 +250,12 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_g4ihd0ox0h",
-        "fp_rau1fp62j6",
-        "fp_v014haljkj",
-        "fp_3a0ukszeuz"
+        "fp_k8dcuuyxw9",
+        "fp_hq97gm693p",
+        "fp_bgvss7pvwj",
+        "fp_ti62ajjf3",
+        "fp_fpgfarle2i",
+        "fp_3l7dtilqoz"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -245,7 +266,7 @@
       "amortization": {
         "coldMissCost": 0.000021599999999999996,
         "hitCost": 0,
-        "breakEvenK": 1
+        "breakEvenK": 2
       }
     },
     {
@@ -258,17 +279,17 @@
       "reps": 8,
       "armA": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25,
-        "meanCost": 0.000024900000000000002
+        "meanOutputTokens": 25.25,
+        "meanCost": 0.00002505
       },
       "armB": {
         "meanInputTokens": 66,
-        "meanOutputTokens": 25.5,
-        "meanCost": 0.0000252
+        "meanOutputTokens": 25.375,
+        "meanCost": 0.000025125
       },
       "formaFactura": {
-        "entrada": 0.39759036144578314,
-        "salida": 0.6024096385542168
+        "entrada": 0.39520958083832336,
+        "salida": 0.6047904191616766
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -276,13 +297,13 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -0.5,
+        "outputTokenDeltaMean": -0.125,
         "savings": {
-          "point": -0.012048192771084265,
-          "lower": -0.02108433734939741,
-          "upper": -0.003012048192771122
+          "point": -0.0029940119760478723,
+          "lower": -0.015060240963855165,
+          "upper": 0.008928571428571508
         },
-        "wilcoxonP": 0.9860966005513429
+        "wilcoxonP": 0.7245075528576992
       },
       "quality": {
         "gate": "ground-truth",
@@ -293,20 +314,24 @@
         "valid": 8,
         "total": 8
       },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
       "proven": false,
       "modelStable": true,
       "servedModels": [
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_l5gosulzad",
-        "fp_pbunjyjml8",
-        "fp_b43lvjd884",
-        "fp_24ad0mql1d",
-        "fp_zclscjxbir",
-        "fp_t9jo7uorjy",
-        "fp_757s6btlqi",
-        "fp_c5fglun22y"
+        "fp_onnt7cyqan",
+        "fp_p5y55cvog8",
+        "fp_v1q2a2q57t",
+        "fp_1yhsfu7uvf",
+        "fp_r43shke2cw",
+        "fp_8o9f45l92k",
+        "fp_fxndwbnk3d",
+        "fp_f5i4k27rgz"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -322,7 +347,7 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "ran",
-      "reps": 10,
+      "reps": 11,
       "armA": {
         "meanInputTokens": 300,
         "meanOutputTokens": 30,
@@ -330,8 +355,8 @@
       },
       "armB": {
         "meanInputTokens": 121,
-        "meanOutputTokens": 33.3,
-        "meanCost": 0.000038129999999999996
+        "meanOutputTokens": 35.54545454545455,
+        "meanCost": 0.00003947727272727272
       },
       "formaFactura": {
         "entrada": 0.7142857142857144,
@@ -343,22 +368,26 @@
       },
       "measured": {
         "inputTokenDeltaMean": 179,
-        "outputTokenDeltaMean": -3.299999999999997,
+        "outputTokenDeltaMean": -5.545454545454547,
         "savings": {
-          "point": 0.39476190476190487,
-          "lower": 0.3633333333333335,
-          "upper": 0.41666666666666685
+          "point": 0.3733766233766236,
+          "lower": 0.3439393939393941,
+          "upper": 0.40281385281385296
         },
-        "wilcoxonP": 0.002131780416693152
+        "wilcoxonP": 0.001676378074673801
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 10,
-        "total": 10
+        "passed": 11,
+        "total": 11
       },
       "naiveContractValid": {
         "valid": 0,
-        "total": 10
+        "total": 11
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": true,
       "modelStable": true,
@@ -366,16 +395,17 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_sv8yyu14wg",
-        "fp_p4y916pnpn",
-        "fp_wgmt6ctqpb",
-        "fp_m6fckdbnov",
-        "fp_5bnwlx5ozo",
-        "fp_o2pmeh9krv",
-        "fp_quiy0f3sm9",
-        "fp_iznya08lhd",
-        "fp_hsxhmkccpx",
-        "fp_1ao3fndjct"
+        "fp_enh26zp00x",
+        "fp_y172hyozym",
+        "fp_7z6o3llhgv",
+        "fp_cx83dedjjw",
+        "fp_yyv5v9rqo6",
+        "fp_8bdr836u78",
+        "fp_l91418r517",
+        "fp_fx80n7iu1p",
+        "fp_ng94yychl1",
+        "fp_0tix7drbf5",
+        "fp_ajgjjho1dk"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -391,43 +421,47 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "ran",
-      "reps": 24,
+      "reps": 9,
       "armA": {
         "meanInputTokens": 1212,
-        "meanOutputTokens": 343.5416666666667,
-        "meanCost": 0.00036872500000000003
+        "meanOutputTokens": 318.77777777777777,
+        "meanCost": 0.00035599999999999987
       },
       "armB": {
         "meanInputTokens": 781,
-        "meanOutputTokens": 139.08333333333334,
-        "meanCost": 0.00020059999999999997
+        "meanOutputTokens": 115.88888888888889,
+        "meanCost": 0.00018668333333333334
       },
       "formaFactura": {
-        "entrada": 0.4686472900689566,
-        "salida": 0.5313527099310433
+        "entrada": 0.48731236597569694,
+        "salida": 0.5126876340243031
       },
       "cacheDePrefijo": {
-        "naive": 6144,
+        "naive": 2048,
         "optimizado": 0
       },
       "measured": {
         "inputTokenDeltaMean": 431,
-        "outputTokenDeltaMean": 204.45833333333334,
+        "outputTokenDeltaMean": 202.88888888888889,
         "savings": {
-          "point": 0.4559631161434675,
-          "lower": 0.4102724059055939,
-          "upper": 0.4938149103658136
+          "point": 0.47560861423220957,
+          "lower": 0.4464596633778294,
+          "upper": 0.5020367563471011
         },
-        "wilcoxonP": 0.000009708440066535928
+        "wilcoxonP": 0.004575879476874878
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 24,
-        "total": 24
+        "passed": 9,
+        "total": 9
       },
       "naiveContractValid": {
-        "valid": 23,
-        "total": 24
+        "valid": 9,
+        "total": 9
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": true,
       "modelStable": true,
@@ -435,30 +469,15 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_kc4413ime5",
-        "fp_r6wlck51e2",
-        "fp_zknvnvqxtm",
-        "fp_98qegs1sw6",
-        "fp_psk3hbynir",
-        "fp_25mlrmy58g",
-        "fp_5h6szjrpc8",
-        "fp_cpjotx7mny",
-        "fp_0er2czg2my",
-        "fp_pkbnmufa1v",
-        "fp_ovv7xpcl6a",
-        "fp_hm7nx4x9x8",
-        "fp_d7ihucrykz",
-        "fp_o4kpllu258",
-        "fp_0czgql3k9w",
-        "fp_gp52ib8ino",
-        "fp_oajdi9bp5n",
-        "fp_8uzeyapzog",
-        "fp_vpukrbi9qc",
-        "fp_zd106vjyof",
-        "fp_nu32u04zvv",
-        "fp_xn9fom8kh3",
-        "fp_07eer1a2fz",
-        "fp_wmmhvjgk6m"
+        "fp_d0xbpabwsq",
+        "fp_in63woy6qq",
+        "fp_0irfl6rc16",
+        "fp_927kuzx7kz",
+        "fp_9nc2gi2ycs",
+        "fp_cdz3el6kno",
+        "fp_b88z9mpa64",
+        "fp_xsb1vto5xt",
+        "fp_mfmec8wyx7"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -477,17 +496,17 @@
       "reps": 24,
       "armA": {
         "meanInputTokens": 60,
-        "meanOutputTokens": 66.875,
-        "meanCost": 0.00004912499999999999
+        "meanOutputTokens": 71.08333333333333,
+        "meanCost": 0.00005164999999999999
       },
       "armB": {
         "meanInputTokens": 60,
-        "meanOutputTokens": 65.45833333333333,
-        "meanCost": 0.000048274999999999994
+        "meanOutputTokens": 70.25,
+        "meanCost": 0.000051149999999999996
       },
       "formaFactura": {
-        "entrada": 0.18320610687022898,
-        "salida": 0.8167938931297709
+        "entrada": 0.17424975798644723,
+        "salida": 0.8257502420135527
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -495,13 +514,13 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 1.4166666666666714,
+        "outputTokenDeltaMean": 0.8333333333333286,
         "savings": {
-          "point": 0.017302798982188117,
-          "lower": -0.10386740331491717,
-          "upper": 0.12284894837476112
+          "point": 0.00968054211035807,
+          "lower": -0.09105018106570095,
+          "upper": 0.09959623149394359
         },
-        "wilcoxonP": 0.38136114785835007
+        "wilcoxonP": 0.4439725915277688
       },
       "quality": {
         "gate": "ground-truth",
@@ -509,8 +528,12 @@
         "total": 24
       },
       "naiveContractValid": {
-        "valid": 24,
+        "valid": 23,
         "total": 24
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": false,
       "modelStable": true,
@@ -518,30 +541,30 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_m6flhrhjg5",
-        "fp_uzss3b60ic",
-        "fp_mgxgq235v9",
-        "fp_k8ofbhopph",
-        "fp_jf35ftgy5b",
-        "fp_pbdr51v1el",
-        "fp_t7x7ujhzvz",
-        "fp_owttt1kv88",
-        "fp_xsabdapink",
-        "fp_47tkvhvhy6",
-        "fp_bvnc361sn3",
-        "fp_kx5odxpl7m",
-        "fp_u6msc9kyac",
-        "fp_jlfvvzcw7k",
-        "fp_mb1rqtnjrz",
-        "fp_8e3qc4g3rd",
-        "fp_hi1mp3hnsq",
-        "fp_hif5nja67m",
-        "fp_r3udbftrgu",
-        "fp_ugnobk0p8b",
-        "fp_x4cys9zz8y",
-        "fp_h4g90w1uce",
-        "fp_u02x4z6bil",
-        "fp_f5goy858r1"
+        "fp_1txeww82r0",
+        "fp_itl8ufjga4",
+        "fp_hbgli241gf",
+        "fp_maavgoc9st",
+        "fp_hl1m8ngusq",
+        "fp_mfql7lfpks",
+        "fp_wgdqupqn",
+        "fp_refbvio3c1",
+        "fp_dq7fltd9vb",
+        "fp_euwhzv321d",
+        "fp_hh42ke3ev8",
+        "fp_n1c19u8sb0",
+        "fp_n1taa82ryk",
+        "fp_3y9kgzbkqs",
+        "fp_3pax71e6sf",
+        "fp_8k3wxvtkea",
+        "fp_j5xttydwmx",
+        "fp_z0n3cvu9wn",
+        "fp_20s909hikd",
+        "fp_v4oigr0l14",
+        "fp_c71tt1uc59",
+        "fp_6uhb3i4k1y",
+        "fp_13d1ol5rc7",
+        "fp_m6ultpf68i"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -564,31 +587,31 @@
       "reps": 24,
       "armA": {
         "meanInputTokens": 5307,
-        "meanOutputTokens": 59.458333333333336,
-        "meanCost": 0.0006397250000000001
+        "meanOutputTokens": 58.416666666666664,
+        "meanCost": 0.0006551
       },
       "armB": {
         "meanInputTokens": 5307,
-        "meanOutputTokens": 58.625,
-        "meanCost": 0.000591225
+        "meanOutputTokens": 58.416666666666664,
+        "meanCost": 0.0006231
       },
       "formaFactura": {
-        "entrada": 0.9571072169286724,
-        "salida": 0.04289278307132766
+        "entrada": 0.9578269762964745,
+        "salida": 0.04217302370352545
       },
       "cacheDePrefijo": {
-        "naive": 61440,
-        "optimizado": 76800
+        "naive": 56320,
+        "optimizado": 66560
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.8333333333333357,
+        "outputTokenDeltaMean": 0,
         "savings": {
-          "point": 0.07581382625346833,
-          "lower": -0.08765068556179223,
-          "upper": 0.21463941323206337
+          "point": 0.04884750419783235,
+          "lower": -0.13981908323910552,
+          "upper": 0.20957648086159175
         },
-        "wilcoxonP": 0.13448967359533148
+        "wilcoxonP": 0.3317294822811274
       },
       "quality": {
         "gate": "ground-truth",
@@ -599,36 +622,40 @@
         "valid": 24,
         "total": 24
       },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
       "proven": false,
       "modelStable": true,
       "servedModels": [
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_bp0ugt8gnh",
-        "fp_rf7y5uticr",
-        "fp_84kcdu5cz4",
-        "fp_bca5xt3rfj",
-        "fp_bbppa05nac",
-        "fp_m6gte5h7dk",
-        "fp_c050w10dy8",
-        "fp_hcuh8qb1s9",
-        "fp_zmj6xd87v2",
-        "fp_ph05j738xj",
-        "fp_poxeygsoca",
-        "fp_fyund4g9ep",
-        "fp_9lnf2cbxno",
-        "fp_wcmae8b70s",
-        "fp_984t0kuo9c",
-        "fp_lofttru7ta",
-        "fp_2aouhu98fm",
-        "fp_sfuy3mnp29",
-        "fp_fynslejo84",
-        "fp_g0p8y2co57",
-        "fp_eateoq43cg",
-        "fp_v09dzs8aos",
-        "fp_bqugsbwb53",
-        "fp_sjdav4nnlx"
+        "fp_7qqvmycy0n",
+        "fp_4c9b4isp5d",
+        "fp_0h4z5raru9",
+        "fp_4cyhee0gdt",
+        "fp_9fwtzfnja3",
+        "fp_p10ud32lck",
+        "fp_pedlw9d81e",
+        "fp_uytge0co7",
+        "fp_aar7eq3hio",
+        "fp_fsm5smrff0",
+        "fp_z5aj1fhryi",
+        "fp_s8ouxy4dbu",
+        "fp_uj7sp91uve",
+        "fp_jwck1e72ls",
+        "fp_zqfa5wyikl",
+        "fp_2cyikwf731",
+        "fp_tjaoz0kw17",
+        "fp_q6yqgdcoyf",
+        "fp_zngzh4zltm",
+        "fp_jm8cx87yxw",
+        "fp_b663qnwyrw",
+        "fp_l1lrg5955h",
+        "fp_o7kd1cpa4n",
+        "fp_ey7h5abcae"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -651,8 +678,8 @@
       "reps": 8,
       "armA": {
         "meanInputTokens": 184,
-        "meanOutputTokens": 71.875,
-        "meanCost": 0.00007072499999999998
+        "meanOutputTokens": 72,
+        "meanCost": 0.00007079999999999999
       },
       "armB": {
         "meanInputTokens": 184,
@@ -660,8 +687,8 @@
         "meanCost": 0.00007079999999999999
       },
       "formaFactura": {
-        "entrada": 0.3902439024390244,
-        "salida": 0.6097560975609756
+        "entrada": 0.3898305084745763,
+        "salida": 0.6101694915254238
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -669,13 +696,13 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -0.125,
+        "outputTokenDeltaMean": 0,
         "savings": {
-          "point": -0.0010604453870626251,
-          "lower": -0.0031880977683316214,
+          "point": 0,
+          "lower": 0,
           "upper": 0
         },
-        "wilcoxonP": 0.9772499371127437
+        "wilcoxonP": 1
       },
       "quality": {
         "gate": "ground-truth",
@@ -686,20 +713,24 @@
         "valid": 8,
         "total": 8
       },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
       "proven": false,
       "modelStable": true,
       "servedModels": [
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_9rrjkd3ouf",
-        "fp_nsx0f3i0a1",
-        "fp_go3we26cen",
-        "fp_zu17synccp",
-        "fp_6mekrypfbk",
-        "fp_f13ardqba5",
-        "fp_kb1lrlrih1",
-        "fp_fp1rrcs25v"
+        "fp_oppnnb0x6l",
+        "fp_6bg060kh94",
+        "fp_wtv55rkn2k",
+        "fp_ztqdut9tu7",
+        "fp_oqua7wtz02",
+        "fp_c71olnk3yr",
+        "fp_bjag9mxfc2",
+        "fp_2fseonsmrd"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -719,43 +750,47 @@
         "motivo": "applied (two provider calls)"
       },
       "kind": "ran",
-      "reps": 24,
+      "reps": 12,
       "armA": {
         "meanInputTokens": 3091,
         "meanOutputTokens": 216,
-        "meanCost": 0.00051045
+        "meanCost": 0.0005748499999999999
       },
       "armB": {
         "meanInputTokens": 1062,
-        "meanOutputTokens": 262.7916666666667,
-        "meanCost": 0.0003169749999999999
+        "meanOutputTokens": 262.8333333333333,
+        "meanCost": 0.0003169999999999999
       },
       "formaFactura": {
         "entrada": 0.781542351453856,
         "salida": 0.2184576485461441
       },
       "cacheDePrefijo": {
-        "naive": 26496,
+        "naive": 2944,
         "optimizado": 0
       },
       "measured": {
         "inputTokenDeltaMean": 2029,
-        "outputTokenDeltaMean": -46.791666666666686,
+        "outputTokenDeltaMean": -46.833333333333314,
         "savings": {
-          "point": 0.3790283083553728,
-          "lower": 0.3175261061470558,
-          "upper": 0.42101416171767947
+          "point": 0.44855179612072726,
+          "lower": 0.4109283523836076,
+          "upper": 0.4657395701643491
         },
-        "wilcoxonP": 0.000007079460836889595
+        "wilcoxonP": 0.000614114686619649
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 24,
-        "total": 24
+        "passed": 12,
+        "total": 12
       },
       "naiveContractValid": {
         "valid": 0,
         "total": 0
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": true,
       "modelStable": true,
@@ -763,30 +798,18 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_1wyxmj2bwn",
-        "fp_o2ggpv8sy6",
-        "fp_9o4g8561nh",
-        "fp_e3b8e87ok3",
-        "fp_6a478u7tjo",
-        "fp_diul51v3u4",
-        "fp_dq4eenon9y",
-        "fp_flt2xf0jyu",
-        "fp_gvccqonr5k",
-        "fp_5kjqjtoc4",
-        "fp_sqwa5i3uco",
-        "fp_12xcosfd3q",
-        "fp_7lk04daxnb",
-        "fp_vzkklq26xk",
-        "fp_au2t7py1d3",
-        "fp_p6p761zyw4",
-        "fp_xuhqplj5kz",
-        "fp_14zmammtyh",
-        "fp_izvevdn2rb",
-        "fp_4861nkjlwn",
-        "fp_ac8pagpafj",
-        "fp_or45aymgjx",
-        "fp_z3c8w5101o",
-        "fp_5gakradnmr"
+        "fp_ok1o188l03",
+        "fp_cuyhkeza9h",
+        "fp_b6lrb154hu",
+        "fp_dn4hy33dwb",
+        "fp_qu2khmueb4",
+        "fp_ffdxxrlrwy",
+        "fp_wqygcyq7k5",
+        "fp_nmqfpiznr3",
+        "fp_wmthvavmje",
+        "fp_o080bfihzz",
+        "fp_myyns0lnbo",
+        "fp_ihfk6cw4jf"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -806,43 +829,47 @@
         "motivo": "applied: pays off and does not touch the cache tier"
       },
       "kind": "ran",
-      "reps": 12,
+      "reps": 24,
       "armA": {
         "meanInputTokens": 3838,
-        "meanOutputTokens": 356.8333333333333,
-        "meanCost": 0.0007666
+        "meanOutputTokens": 367.5,
+        "meanCost": 0.0007034
       },
       "armB": {
         "meanInputTokens": 1861,
-        "meanOutputTokens": 200.41666666666666,
-        "meanCost": 0.0003786
+        "meanOutputTokens": 194.08333333333334,
+        "meanCost": 0.000354
       },
       "formaFactura": {
-        "entrada": 0.7289187135983793,
-        "salida": 0.27108128640162066
+        "entrada": 0.7230595327807083,
+        "salida": 0.2769404672192916
       },
       "cacheDePrefijo": {
-        "naive": 3712,
-        "optimizado": 3328
+        "naive": 29696,
+        "optimizado": 13312
       },
       "measured": {
         "inputTokenDeltaMean": 1977,
-        "outputTokenDeltaMean": 156.41666666666666,
+        "outputTokenDeltaMean": 173.41666666666666,
         "savings": {
-          "point": 0.506130967910253,
-          "lower": 0.482811306340718,
-          "upper": 0.5400235048315487
+          "point": 0.4967301677566107,
+          "lower": 0.4473165642749507,
+          "upper": 0.5407767317879677
         },
-        "wilcoxonP": 0.0012631564030984865
+        "wilcoxonP": 0.000009717932876185387
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 12,
-        "total": 12
+        "passed": 24,
+        "total": 24
       },
       "naiveContractValid": {
         "valid": 0,
-        "total": 12
+        "total": 24
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
       },
       "proven": true,
       "modelStable": true,
@@ -850,18 +877,30 @@
         "gpt-4o-mini"
       ],
       "fingerprints": [
-        "fp_t7v76rmlli",
-        "fp_hnzuldds9b",
-        "fp_cgt1d968h5",
-        "fp_60j2rghiw2",
-        "fp_34qcz3c0pl",
-        "fp_a5d622hnqa",
-        "fp_5fuyx3dhlw",
-        "fp_dp91qmubsc",
-        "fp_4nkh5mmqw1",
-        "fp_c9ojfzxbvl",
-        "fp_gaw6bm7mke",
-        "fp_x935acczcl"
+        "fp_4q7mxj5p5k",
+        "fp_lbj6ix0dr0",
+        "fp_yayqe2ur4z",
+        "fp_b23kmes3tw",
+        "fp_2ocdux8kpu",
+        "fp_cs7fus3whi",
+        "fp_bc0ap3ns9r",
+        "fp_of678x07yr",
+        "fp_n7kvl918h4",
+        "fp_5kr845gesk",
+        "fp_a27pt92xpt",
+        "fp_zz60jmk1k6",
+        "fp_75zc3nc25",
+        "fp_bk9syacha9",
+        "fp_noy6oagxpf",
+        "fp_aygetzqp54",
+        "fp_f3ukxhehmz",
+        "fp_9qeo8a1xlr",
+        "fp_28fc9mzpqr",
+        "fp_aihgt7cmc9",
+        "fp_2w5n98zjxy",
+        "fp_jkoe69rq3q",
+        "fp_effv9k14f8",
+        "fp_34z6oi5yq9"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -877,6 +916,12 @@
       "lever": "provider prefix cache (explicit cache_control over a stable system prefix)",
       "causa": "familia",
       "motivo": "el escenario mide una palanca de la familia anthropic y openai/gpt-4o-mini es de la familia openai"
+    },
+    {
+      "name": "Gemini stable-prefix agent turn",
+      "lever": "provider prefix cache (implicit caching over a stable system prefix)",
+      "causa": "familia",
+      "motivo": "el escenario mide una palanca de la familia google y openai/gpt-4o-mini es de la familia openai"
     }
   ],
   "levers": {
@@ -926,11 +971,11 @@
         "FAQ (repeat ask)"
       ],
       "savings": {
-        "point": 0.6962025316455697,
-        "lower": 0.2582781456953642,
-        "upper": 0.9408138101109741
+        "point": 0.5911602209944751,
+        "lower": 0.1792975970425138,
+        "upper": 0.8368246968026462
       },
-      "deltaCost": 0.000198,
+      "deltaCost": 0.0001925999999999999,
       "proven": true
     },
     {
@@ -941,11 +986,11 @@
         "Big tool catalogue (schema-on-demand)"
       ],
       "savings": {
-        "point": 0.37383027522935797,
-        "lower": 0.31898536367568475,
-        "upper": 0.41793082345741495
+        "point": 0.43025180964115217,
+        "lower": 0.38584335679840387,
+        "upper": 0.4528268499129974
       },
-      "deltaCost": 0.004889700000000002,
+      "deltaCost": 0.0033523500000000013,
       "proven": true
     },
     {
@@ -955,11 +1000,11 @@
         "Forwarded support thread (compression)"
       ],
       "savings": {
-        "point": 0.48153319371031555,
-        "lower": 0.4534724271406504,
-        "upper": 0.50786810316683
+        "point": 0.4933609152825904,
+        "lower": 0.4508056301509399,
+        "upper": 0.5312917341516779
       },
-      "deltaCost": 0.008691,
+      "deltaCost": 0.009909449999999997,
       "proven": true
     },
     {
@@ -979,11 +1024,11 @@
         "Constrained structured answer"
       ],
       "savings": {
-        "point": 0.017302798982188117,
-        "lower": -0.10386740331491717,
-        "upper": 0.12284894837476112
+        "point": 0.00968054211035807,
+        "lower": -0.09105018106570095,
+        "upper": 0.09959623149394359
       },
-      "deltaCost": 0.000020399999999999845,
+      "deltaCost": 0.000011999999999999858,
       "proven": false
     },
     {
@@ -992,36 +1037,37 @@
         "Triage decision (output codebook)"
       ],
       "savings": {
-        "point": -0.0010604453870626251,
-        "lower": -0.0031880977683316214,
+        "point": 0,
+        "lower": 0,
         "upper": 0
       },
-      "deltaCost": -6.000000000000146e-7,
+      "deltaCost": 0,
       "proven": false
     }
   ],
   "reconciliation": {
-    "totalDelta": 0.014960699999999987,
-    "ledgerSum": 0.014960700000000004,
-    "residual": -1.734723475976807e-17,
+    "totalDelta": 0.01423619999999997,
+    "ledgerSum": 0.0142362,
+    "residual": -2.949029909160572e-17,
     "reconciled": true
   },
   "modelStable": true,
   "aggregate": {
     "savings": {
-      "point": 0.30715455967676353,
-      "lower": 0.24092208618675381,
-      "upper": 0.3627718533560105
+      "point": 0.3096549384005006,
+      "lower": 0.23130080815081133,
+      "upper": 0.3807600221008034
     },
-    "wilcoxonP": 1.7763568394002505e-14,
+    "wilcoxonP": 5.447287065862838e-11,
     "qualityPassRate": 1,
     "proven": true,
-    "headline": "verified ≥ 24.1% (95% CI lower bound)"
+    "headline": "verified ≥ 23.1% (95% CI lower bound)"
   },
   "honesty": [
     "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
     "The headline is the 95% CI lower bound, never the point estimate.",
     "A saving is voided if its answer fails the quality gate.",
+    "Una respuesta cortada por el tope (`finish_reason: \"length\"`) SUSPENDE la verja aunque el escenario no tenga contrato de salida: media respuesta con longitud > 0 aprobaba y publicaba su ahorro. `scenarios[].truncated` cuenta los cortes de cada brazo, porque un corte en LOS DOS no lo causó la capa — lo causó un contrato que no cabe.",
     "Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).",
     "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
     "El modelo SERVIDO se compara entre los dos brazos; si difiere, la afirmación no vale. (system_fingerprint se registra pero no se usa como verja: a través de una pasarela es un id por petición.)",

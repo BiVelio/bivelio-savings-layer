@@ -1,6 +1,7 @@
 import {
   decidirCompresion,
   ANTHROPIC_CACHE_TIER,
+  GOOGLE_CACHE_TIER,
   OPENAI_CACHE_TIER,
   UNKNOWN_PROVIDER_CACHE_TIER,
   type CacheTier,
@@ -71,10 +72,10 @@ export interface CompressionEconomics {
 /**
  * El tramo de caché que le corresponde a un modelo.
  *
- * Los multiplicadores de las dos familias conocidas no son inventados: son los
+ * Los multiplicadores de las familias conocidas no son inventados: son los
  * mismos que ya factura el catálogo de precios (`pricing/catalogo.ts`), donde
  * `cachedInputPer1k` de `gpt-4o` es la mitad de su `inputPer1k` y el de
- * `claude-sonnet-4` es la décima parte. Lo que no se reconoce cae en
+ * `claude-sonnet-4` y `gemini-*` es la décima parte. Lo que no se reconoce cae en
  * {@link UNKNOWN_PROVIDER_CACHE_TIER}, que no reclama descuento ninguno.
  */
 export function tramoDeCache(model: string, econ?: CompressionEconomics): CacheTier {
@@ -87,12 +88,14 @@ export function tramoDeCache(model: string, econ?: CompressionEconomics): CacheT
 
   if (proveedor === "openai" || proveedor === "azure-openai") return OPENAI_CACHE_TIER;
   if (proveedor === "anthropic") return ANTHROPIC_CACHE_TIER;
-  // Sin prefijo de proveedor se mira el nombre, que en estas dos familias es
+  if (proveedor === "google" || proveedor === "google-vertex") return GOOGLE_CACHE_TIER;
+  // Sin prefijo de proveedor se mira el nombre, que en estas familias es
   // inconfundible. Un modelo servido por un tercero (OpenRouter, Bedrock…) con
   // el nombre del original hereda el tramo del original, que es lo correcto:
   // el que decide si hay caché de prefijo es el modelo, no quien lo revende.
   if (/^(gpt-|o[1-9](-|$)|chatgpt)/.test(desnudo)) return OPENAI_CACHE_TIER;
   if (desnudo.startsWith("claude")) return ANTHROPIC_CACHE_TIER;
+  if (desnudo.startsWith("gemini")) return GOOGLE_CACHE_TIER;
 
   return UNKNOWN_PROVIDER_CACHE_TIER;
 }

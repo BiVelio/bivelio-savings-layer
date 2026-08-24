@@ -7,6 +7,7 @@ import {
 } from "../src/economics/politica-compresion.js";
 import {
   ANTHROPIC_CACHE_TIER,
+  GOOGLE_CACHE_TIER,
   OPENAI_CACHE_TIER,
   NO_CACHE_TIER,
   UNKNOWN_PROVIDER_CACHE_TIER,
@@ -234,11 +235,22 @@ describe("cuando sale a cuenta, se comprime — las verjas no apagan la palanca"
 });
 
 describe("qué tramo de caché se le supone a cada modelo", () => {
-  it("las dos familias conocidas salen del prefijo o del nombre", () => {
+  it("las familias conocidas salen del prefijo o del nombre", () => {
     expect(tramoDeCache("openai/gpt-4o-mini")).toBe(OPENAI_CACHE_TIER);
     expect(tramoDeCache("gpt-4.1-mini")).toBe(OPENAI_CACHE_TIER);
     expect(tramoDeCache("anthropic/claude-sonnet-4")).toBe(ANTHROPIC_CACHE_TIER);
     expect(tramoDeCache("claude-3-5-haiku")).toBe(ANTHROPIC_CACHE_TIER);
+    expect(tramoDeCache("google/gemini-3.7-flash")).toBe(GOOGLE_CACHE_TIER);
+    expect(tramoDeCache("gemini-2.5-pro")).toBe(GOOGLE_CACHE_TIER);
+  });
+
+  it("el tramo de Gemini refleja su caché implícita: lectura al 10%, sin prima de escritura", () => {
+    // Verificado 2026-08-24 contra el `/models` de la pasarela:
+    // `input_cache_read` = input/10 en toda la familia, y la caché implícita
+    // no cobra escritura (a diferencia del 1,25x de Anthropic).
+    expect(GOOGLE_CACHE_TIER.cacheReadMultiplier).toBe(0.1);
+    expect(GOOGLE_CACHE_TIER.cacheWriteMultiplier).toBe(1);
+    expect(GOOGLE_CACHE_TIER.minimumCacheTokens).toBe(1024);
   });
 
   it("lo desconocido no reclama descuento pero tampoco se deja romper la caché", () => {

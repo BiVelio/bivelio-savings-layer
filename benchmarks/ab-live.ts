@@ -76,6 +76,7 @@ import {
   type TransporteDelBanco,
 } from "./scenarios.js";
 import {
+  conReintentos,
   proveedorDelBanco,
   transporteDeModelo,
   type ConfigDeTransporte,
@@ -106,6 +107,10 @@ const PRICES: Record<string, CostModel> = {
   // caro de lo que este precio sugiere. La verja económica del layer es quien
   // vigila eso; aquí sólo se tarifa lo que el proveedor reporte.
   "claude-sonnet-4-5": { inputPer1k: 0.003, outputPer1k: 0.015, cachedInputPer1k: 0.0003 },
+  // Google. Caché IMPLÍCITA con lectura al 10% de la entrada y sin prima de
+  // escritura (verificado 2026-08-24 contra el /models de la pasarela); el resto
+  // de la familia gemini se tarifa desde `pricing/catalogo.ts` vía `precioDeLista`.
+  "gemini-3.7-flash": { inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 },
 };
 const PRICING_NOTE =
   "USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. " +
@@ -230,8 +235,11 @@ function intEnv(name: string, def: number): number {
  * pasarela con un modelo de Anthropic — no dependen del dialecto — y eso es lo
  * que permite seguir teniendo una cifra por modelo.
  */
+// `conReintentos`: una tirada LIVE son cientos de llamadas secuenciales y los
+// artefactos se escriben al final — sin esto, un solo timeout de red tira horas
+// de llamadas pagadas (pasó el 2026-08-24, en el cuarto modelo de cuatro).
 const makeProvider = (model: string | null): Provider =>
-  proveedorDelBanco(model, CONFIG_DE_TRANSPORTE);
+  conReintentos(proveedorDelBanco(model, CONFIG_DE_TRANSPORTE));
 
 const modelId = (r: SavingsRequest, forzado: string | null): string => forzado ?? r.model;
 
@@ -703,12 +711,14 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
 // ── Quality gate ────────────────────────────────────────────────────────────
 const judgeBase = process.env.BVSALA_JUDGE_BASE_URL;
 const judgeProvider: Provider | null = judgeBase
-  ? new OpenAICompatibleProvider({
-      baseUrl: judgeBase,
-      ...(process.env.BVSALA_JUDGE_API_KEY ? { apiKey: process.env.BVSALA_JUDGE_API_KEY } : {}),
-      stripProviderPrefix: !keepPrefix,
-      requireUsage: false,
-    })
+  ? conReintentos(
+      new OpenAICompatibleProvider({
+        baseUrl: judgeBase,
+        ...(process.env.BVSALA_JUDGE_API_KEY ? { apiKey: process.env.BVSALA_JUDGE_API_KEY } : {}),
+        stripProviderPrefix: !keepPrefix,
+        requireUsage: false,
+      }),
+    )
   : null;
 
 async function qualityGate(
@@ -1328,8 +1338,29 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Un modelo que revienta se DESCARTA ÉL, no la tirada: los artefactos se
+  // escriben al final, así que dejar subir la excepción convertía el fallo del
+  // cuarto modelo en la pérdida de los tres anteriores — llamadas pagadas
+  // incluidas (2026-08-24). El fallo queda en el artefacto y en el exit code.
   const tiradas: Tirada[] = [];
-  for (const modelo of modelosAMedir) tiradas.push(await medirModelo(modelo));
+  const modelosFallidos: { modelo: string; error: string }[] = [];
+  for (const modelo of modelosAMedir) {
+    try {
+      tiradas.push(await medirModelo(modelo));
+    } catch (err) {
+      modelosFallidos.push({ modelo: modelo ?? "(el de cada escenario)", error: String(err) });
+      console.error(
+        `\n✗ la medición de ${modelo ?? "(el de cada escenario)"} FALLÓ y se descarta este modelo` +
+          ` (los demás siguen): ${String(err)}\n`,
+      );
+    }
+  }
+  if (tiradas.length === 0) {
+    console.error("✗ ningún modelo completó la medición; no hay nada que escribir.");
+    process.exitCode = 1;
+    return;
+  }
+  if (modelosFallidos.length > 0) process.exitCode = 1;
 
   // ── La tabla comparable entre modelos ────────────────────────────────────
   if (tiradas.length > 1) {
@@ -1370,7 +1401,9 @@ async function main(): Promise<void> {
 
   // ── Artefactos ───────────────────────────────────────────────────────────
   const rutas: string[] = [];
-  if (tiradas.length === 1) {
+  // La ruta mono-modelo exige que se PIDIERA un solo modelo: una tirada de
+  // cuatro con tres caídos no puede disfrazarse del titular que publica la web.
+  if (modelosAMedir.length === 1 && tiradas.length === 1) {
     // UN solo modelo: el artefacto de siempre, en su ruta de siempre. Es la que
     // lee `pnpm ab:publish`, y cambiarla rompería la publicación.
     const t = tiradas[0]!;
@@ -1410,6 +1443,9 @@ async function main(): Promise<void> {
             ? "real provider tokens & cost, quality-gated, one run per model"
             : "ESTIMATED — mock provider, not a savings claim",
         models: tiradas.map((t) => t.etiqueta),
+        // Un modelo caído se DECLARA: su ausencia de la tabla no es un cero ni
+        // un olvido, y quien lea el artefacto tiene que poder distinguirlo.
+        ...(modelosFallidos.length > 0 ? { modelsFailed: modelosFallidos } : {}),
         costEstimate: estimacion,
         comparison: tiradas.map((t) => ({
           model: t.etiqueta,
