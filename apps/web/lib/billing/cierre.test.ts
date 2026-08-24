@@ -44,6 +44,28 @@ describe("cerrarPeriodo — la calibración REAL, por primer período con uso", 
     expect(c!.cargo_eur).toBeCloseTo(81, 10);
   });
 
+  it("una organización que EMPIEZA el 15: su mes parcial es calibración y el siguiente se cobra entero", () => {
+    // Pregunta del dueño (2026-08-24): ¿los 15 días sueltos cuentan como mes?
+    // ¿se prorratea? NO HAY NADA QUE PRORRATEAR: la comisión es % del ahorro
+    // MEDIDO del período, así que 15 días generan el ahorro de 15 días — la
+    // proporcionalidad viene de la medición, no de un prorrateo. Y además ese
+    // primer mes parcial ES la calibración: cargo 0 por diseño.
+    const filasAgosto = [fila("2026-08-15", 1000, 550), fila("2026-08-28", 1000, 550)];
+    const [agosto] = cerrarPeriodo([org("a", "2026-08", filasAgosto)], "2026-08");
+    expect(agosto!.dias).toBe(2); // días CON uso, no días del calendario
+    expect(agosto!.es_calibracion).toBe(true);
+    expect(agosto!.cargo_eur).toBe(0);
+    // La cifra «que habría sido» queda fijada igualmente, para que el cliente
+    // vea en el panel lo que la calibración le regaló.
+    expect(agosto!.comision_eur).toBeGreaterThan(0);
+
+    // Septiembre: mismo primer-uso (agosto), ya NO es calibración; el mes se
+    // cobra por su ahorro medido — completo o parcial, la regla es la misma.
+    const [sept] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09");
+    expect(sept!.es_calibracion).toBe(false);
+    expect(sept!.cargo_eur).toBe(sept!.comision_eur);
+  });
+
   it("bajo el umbral, el cargo es 0 también fuera de calibración", () => {
     const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 1000, 780)])], "2026-09");
     expect(c!.es_calibracion).toBe(false);
