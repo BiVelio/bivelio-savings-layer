@@ -95,6 +95,59 @@ export function proveedorDelBanco(model: string | null, cfg: ConfigDeTransporte)
 }
 
 /**
+ * REINTENTOS ANTE FALLOS TRANSITORIOS DE RED — y solo ante esos.
+ *
+ * El incidente que cierra (2026-08-24): una llamada a gemini-3.7-flash se
+ * quedó >5 minutos sin cabeceras (`UND_ERR_HEADERS_TIMEOUT` de undici), la
+ * excepción subió hasta `main()` y mató la tirada ENTERA en el cuarto modelo
+ * de cuatro — con ~2 horas de llamadas pagadas y los artefactos sin escribir,
+ * porque se escriben al final. Un banco que gasta dinero real no puede morir
+ * por un estornudo de red.
+ *
+ * Solo se reintenta lo que se LANZÓ sin respuesta (fetch failed, timeouts,
+ * conexión cortada): ahí no hay `usage`, así que no hay doble conteo posible.
+ * Una respuesta HTTP con error NO se reintenta aquí: el adaptador ya la
+ * convirtió en su propio error tipado, y reintentar una llamada que pudo
+ * facturarse es una decisión del banco, no de la fontanería.
+ */
+const PAUSAS_DE_REINTENTO_MS: readonly number[] = [2_000, 8_000];
+
+function esFalloTransitorioDeRed(err: unknown): boolean {
+  for (let e: unknown = err; e; e = (e as { cause?: unknown }).cause) {
+    const code = (e as { code?: string }).code ?? "";
+    if (code.startsWith("UND_ERR")) return true;
+    if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN"].includes(code)) return true;
+    const msg = e instanceof Error ? e.message : "";
+    if (/fetch failed|socket hang up|headers timeout/i.test(msg)) return true;
+  }
+  return false;
+}
+
+export function conReintentos(
+  p: Provider,
+  pausasMs: readonly number[] = PAUSAS_DE_REINTENTO_MS,
+  dormir: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+): Provider {
+  return {
+    id: p.id,
+    async generate(req) {
+      for (let intento = 0; ; intento++) {
+        try {
+          return await p.generate(req);
+        } catch (err) {
+          if (intento >= pausasMs.length || !esFalloTransitorioDeRed(err)) throw err;
+          console.error(
+            `[banco] fallo transitorio de red con ${req.model}: ${err instanceof Error ? err.message : String(err)}` +
+              ` — reintento ${intento + 1}/${pausasMs.length} en ${pausasMs[intento]! / 1000}s`,
+          );
+          await dormir(pausasMs[intento]!);
+        }
+      }
+    },
+  };
+}
+
+/**
  * El adaptador nativo, con el prefijo de proveedor quitado SIEMPRE.
  *
  * `BVSALA_DEMO_KEEP_PREFIX` es una propiedad de la PASARELA —que enruta por

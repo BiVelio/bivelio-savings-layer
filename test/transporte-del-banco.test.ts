@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
 
 import {
+  conReintentos,
   proveedorDelBanco,
   transporteDeModelo,
   type ConfigDeTransporte,
 } from "../benchmarks/transporte.js";
+import type { Provider } from "../src/providers/types.js";
 import {
   estadoDePalanca,
   noMedibleEnTransporte,
@@ -273,5 +275,56 @@ describe("un cero de la caché de prefijo llega con su diagnóstico", () => {
     );
     expect(e?.ejercitada).toBe(true);
     expect(e?.motivo).toMatch(/7000 tokens desde su caché de prefijo/);
+  });
+});
+
+describe("los reintentos: un estornudo de red no puede tirar una tirada pagada", () => {
+  // El incidente del 2026-08-24: un UND_ERR_HEADERS_TIMEOUT en UNA llamada del
+  // cuarto modelo mató el proceso entero con ~2 horas de llamadas pagadas y los
+  // artefactos sin escribir. Solo se reintenta lo lanzado SIN respuesta: ahí no
+  // hay `usage`, así que reintentar no puede contar nada dos veces.
+  const respuesta = { text: "ok", usage: { inputTokens: 1, outputTokens: 1 } };
+  const peticion = { model: "google/gemini-3.7-flash", messages: [] };
+
+  function proveedorQueFalla(fallos: unknown[]): { p: Provider; llamadas: () => number } {
+    let n = 0;
+    const p: Provider = {
+      id: "de-mentira",
+      generate: () => {
+        n += 1;
+        const fallo = fallos.shift();
+        if (fallo !== undefined) return Promise.reject(fallo);
+        return Promise.resolve(respuesta);
+      },
+    };
+    return { p, llamadas: () => n };
+  }
+
+  const timeoutDeCabeceras = () =>
+    new TypeError("fetch failed", { cause: Object.assign(new Error("Headers Timeout Error"), { code: "UND_ERR_HEADERS_TIMEOUT" }) });
+
+  it("un fallo transitorio se reintenta tras la pausa y la respuesta llega", async () => {
+    const { p, llamadas } = proveedorQueFalla([timeoutDeCabeceras()]);
+    const pausas: number[] = [];
+    const conRed = conReintentos(p, [2_000, 8_000], (ms) => { pausas.push(ms); return Promise.resolve(); });
+    await expect(conRed.generate(peticion)).resolves.toEqual(respuesta);
+    expect(llamadas()).toBe(2);
+    expect(pausas).toEqual([2_000]);
+  });
+
+  it("agotadas las pausas, el error original sube — no se insiste para siempre", async () => {
+    const { p, llamadas } = proveedorQueFalla([timeoutDeCabeceras(), timeoutDeCabeceras(), timeoutDeCabeceras()]);
+    const conRed = conReintentos(p, [1, 1], () => Promise.resolve());
+    await expect(conRed.generate(peticion)).rejects.toThrow("fetch failed");
+    expect(llamadas()).toBe(3);
+  });
+
+  it("⛔ un error que NO es de red no se reintenta: pudo haberse facturado", async () => {
+    // Un 4xx/5xx del adaptador, o un error de contrato, ya tuvo respuesta.
+    // Reintentarlo aquí sería pagar dos veces por decisión de la fontanería.
+    const { p, llamadas } = proveedorQueFalla([new Error("Anthropic API error 429: rate limited")]);
+    const conRed = conReintentos(p, [1, 1], () => Promise.resolve());
+    await expect(conRed.generate(peticion)).rejects.toThrow("429");
+    expect(llamadas()).toBe(1);
   });
 });
