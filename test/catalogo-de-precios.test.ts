@@ -38,6 +38,30 @@ describe("el lookup", () => {
     expect(precioDeLista("gemini-3.5-flash-preview-0715")).toEqual(CATALOGO["gemini-3.5-flash"]);
   });
 
+  it("`claude-opus-4` no se traga a la generación 4.5+, que cuesta un TERCIO", () => {
+    // La herencia por prefijo aquí es una mentira de 3x: toda la generación
+    // opus-4-5…opus-5 factura $5/$25 y el prefijo `claude-opus-4` la tarifaría
+    // a $15/$75 — justo en el tráfico que un gateway `bvsala claude` mide.
+    for (const m of ["claude-opus-4-5", "claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8"]) {
+      expect(precioDeLista(m), m).toEqual(CATALOGO[m]);
+      expect(precioDeLista(m), m).not.toEqual(CATALOGO["claude-opus-4"]);
+    }
+    // Y la instantánea fechada hereda de SU versión, no de la vieja.
+    expect(precioDeLista("claude-opus-4-8-20260115")).toEqual(CATALOGO["claude-opus-4-8"]);
+    expect(precioDeLista("anthropic/claude-opus-5")).toEqual(CATALOGO["claude-opus-5"]);
+  });
+
+  it("las versiones menores de gpt-5 no se heredan entre sí: el precio SE MUEVE", () => {
+    // `.` cuenta como separador, así que sin entrada propia `gpt-5.2` heredaría
+    // el precio de `gpt-5` — y cuesta un 40% más. Cada 5.x visible va explícito.
+    expect(precioDeLista("gpt-5.2")).toEqual(CATALOGO["gpt-5.2"]);
+    expect(precioDeLista("gpt-5.2")).not.toEqual(CATALOGO["gpt-5"]);
+    expect(precioDeLista("gpt-5.4")).not.toEqual(CATALOGO["gpt-5"]);
+    // Los ids que usa Codex hoy resuelven a su entrada exacta.
+    expect(precioDeLista("openai/gpt-5.3-codex")).toEqual(CATALOGO["gpt-5.3-codex"]);
+    expect(precioDeLista("gpt-5.1-codex-mini")).toEqual(CATALOGO["gpt-5.1-codex-mini"]);
+  });
+
   it("`gemini-3.5-flash` no se traga a `gemini-3.5-flash-lite`, que cuesta cinco veces menos", () => {
     // Mismo peligro que gpt-4/gpt-4o: la clave corta es prefijo de la larga y
     // solo el orden por longitud impide tarifar el lite a precio del grande.
