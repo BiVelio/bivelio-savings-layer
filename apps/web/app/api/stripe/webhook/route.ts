@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { selloDeImpago } from "@/lib/billing/dunning";
+import { esFacturaDeComision } from "@/lib/billing/facturacion";
 import { motivoDeReemision } from "@/lib/billing/reemision";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { atribuirPorPrecio, type Atribucion } from "@/lib/stripe/atribucion";
@@ -435,6 +436,51 @@ async function handleSubDeleted(admin: Admin, sub: Stripe.Subscription, eventId:
   await audit(admin, f.orgId, eventId, "sub_deleted", { subId: sub.id, revokedJtis: revoked });
 }
 
+/**
+ * El ciclo de vida del cargo de comisión (bvsala.cargos). A diferencia de la
+ * suscripción de asientos, aquí NO hay licencia que emitir ni plan que tocar:
+ * solo el estado del cobro. Un fallo de pago alerta — la comisión es dinero ya
+ * ganado por el cliente (su ahorro), y un impago aquí es rarísimo y grave.
+ */
+async function handleComisionResuelta(
+  admin: Admin,
+  invoice: Stripe.Invoice,
+  eventId: string,
+  estado: "pagado" | "fallido",
+) {
+  const orgId = invoice.metadata?.["bvsala_org_id"] ?? null;
+  const periodo = invoice.metadata?.["bvsala_periodo"] ?? null;
+  if (!orgId || !periodo) {
+    await alertar({
+      nivel: "aviso",
+      asunto: "Factura de comisión sin (org, período) en metadata",
+      detalle: { invoiceId: invoice.id, eventId, estado },
+    });
+    return;
+  }
+  const { error } = await admin
+    .from("cargos")
+    .update({ estado, detalle: { eventId, invoiceId: invoice.id }, actualizado_en: new Date().toISOString() })
+    .eq("org_id", orgId)
+    .eq("periodo", periodo);
+  if (error) {
+    await alertar({
+      nivel: "critico",
+      asunto: "El estado del cargo de comisión no se pudo actualizar",
+      detalle: { orgId, periodo, estado, invoiceId: invoice.id, motivo: error.message },
+    });
+    return;
+  }
+  if (estado === "fallido") {
+    await alertar({
+      nivel: "critico",
+      asunto: "Cobro de la comisión FALLIDO",
+      detalle: { orgId, periodo, invoiceId: invoice.id },
+    });
+  }
+  await audit(admin, orgId, eventId, `comision_${estado}`, { periodo, invoiceId: invoice.id });
+}
+
 async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.Invoice, eventId: string, eventCreated: number) {
   const subId = invoiceSubId(invoice);
   if (!subId) return;
@@ -665,12 +711,21 @@ export async function POST(req: Request): Promise<NextResponse> {
       case "customer.subscription.deleted":
         await handleSubDeleted(admin, event.data.object as Stripe.Subscription, event.id, event.created);
         break;
-      case "invoice.paid":
-        await handleInvoicePaid(admin, stripe, event.data.object as Stripe.Invoice, event.id, event.created);
+      case "invoice.paid": {
+        const inv = event.data.object as Stripe.Invoice;
+        // Las facturas de la COMISIÓN no llevan suscripción: sin esta rama caían
+        // en el `return` mudo de subId nulo y el cargo se quedaba en "facturado"
+        // para siempre, pagado o no.
+        if (esFacturaDeComision(inv.metadata)) await handleComisionResuelta(admin, inv, event.id, "pagado");
+        else await handleInvoicePaid(admin, stripe, inv, event.id, event.created);
         break;
-      case "invoice.payment_failed":
-        await handleInvoiceFailed(admin, event.data.object as Stripe.Invoice, event.id);
+      }
+      case "invoice.payment_failed": {
+        const inv = event.data.object as Stripe.Invoice;
+        if (esFacturaDeComision(inv.metadata)) await handleComisionResuelta(admin, inv, event.id, "fallido");
+        else await handleInvoiceFailed(admin, inv, event.id);
         break;
+      }
       default:
         break; // ignore other event types
     }
