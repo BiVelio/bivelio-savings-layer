@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CalculadoraComision } from "@/app/components/CalculadoraComision";
+import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { FIN_RAMPA_RATIO, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
@@ -172,6 +173,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 {(t.raw("hero.proofs") as { marca: string; modelo: string; cifra: string; que: string }[]).map((p) => (
                   <div className="hp" key={p.marca}>
                     <div className="hp-marca">
+                      <LogoProveedor marca={p.marca} />
                       <b>{p.marca}</b>
                       <code>{p.modelo}</code>
                     </div>
