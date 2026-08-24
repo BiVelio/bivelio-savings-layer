@@ -409,7 +409,26 @@
       "estimadoExcluido": "Tabandan hariç tutulan tahmini tasarruf (bağlam, asla faturalanmaz): {usd}.",
       "parametros": "Ekstre parametreleri — fiyat kataloğu {version} · kur {fx} · eşik {umbral}.",
       "mismaFacturaTitulo": "Bu belge gelecekteki faturanın TA KENDİSİDİR.",
-      "mismaFactura": "Gölge ekstre ile faturalanabilir olan aynı makineyle hesaplanır: komisyon devreye girdiğinde ilk faturan yalnızca burada zaten gördüğün sayıları içerecek."
+      "mismaFactura": "Gölge ekstre ile faturalanabilir olan aynı makineyle hesaplanır: komisyon devreye girdiğinde ilk faturan yalnızca burada zaten gördüğün sayıları içerecek.",
+      "historialTitulo": "Kapatılmış ekstreler",
+      "historialIntro": "Kapatılan her dönem ayın ilk günü değiştirilemez şekilde sabitlenir — faturanızın atıfta bulunduğu belgenin ta kendisi.",
+      "historialVacio": "Henüz kapatılmış ekstre yok: ilki gelecek ayın ilk günü sabitlenecek.",
+      "hcolPeriodo": "Dönem",
+      "hcolBase": "Ölçülen taban",
+      "hcolAhorro": "Ölçülen tasarruf",
+      "hcolRatio": "Oran",
+      "hcolCargo": "Ücret",
+      "hcolCobro": "Tahsilat",
+      "hcolFactura": "Fatura",
+      "estadoPagado": "ödendi",
+      "estadoFacturado": "faturalandı",
+      "estadoFallido": "başarısız",
+      "estadoOmitidoSinCliente": "atlandı — ödeme yöntemi yok",
+      "estadoOmitidoBajoMinimo": "atlandı — asgari tutarın altında",
+      "estadoCalibracion": "kalibrasyon",
+      "estadoSinCargo": "ücret yok",
+      "estadoPendiente": "beklemede",
+      "verFactura": "görüntüle"
     }
   },
   "landing": {

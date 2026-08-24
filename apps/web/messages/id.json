@@ -409,7 +409,26 @@
       "estimadoExcluido": "Penghematan estimasi dikecualikan dari basis (konteks, tak pernah ditagih): {usd}.",
       "parametros": "Parameter rekening — katalog harga {version} · kurs {fx} · ambang {umbral}.",
       "mismaFacturaTitulo": "Dokumen ini ADALAH faktur yang akan datang.",
-      "mismaFactura": "Rekening bayangan dan yang ditagihkan dihitung mesin yang sama: saat komisi aktif, faktur pertamamu hanya berisi angka yang sudah kamu lihat di sini."
+      "mismaFactura": "Rekening bayangan dan yang ditagihkan dihitung mesin yang sama: saat komisi aktif, faktur pertamamu hanya berisi angka yang sudah kamu lihat di sini.",
+      "historialTitulo": "Laporan tertutup",
+      "historialIntro": "Setiap periode yang ditutup difiksasi secara permanen pada tanggal satu — dokumen persis yang dikutip faktur Anda.",
+      "historialVacio": "Belum ada laporan tertutup: yang pertama akan difiksasi pada tanggal satu bulan depan.",
+      "hcolPeriodo": "Periode",
+      "hcolBase": "Basis terukur",
+      "hcolAhorro": "Penghematan terukur",
+      "hcolRatio": "Rasio",
+      "hcolCargo": "Biaya",
+      "hcolCobro": "Penagihan",
+      "hcolFactura": "Faktur",
+      "estadoPagado": "dibayar",
+      "estadoFacturado": "difakturkan",
+      "estadoFallido": "gagal",
+      "estadoOmitidoSinCliente": "dilewati — tanpa metode pembayaran",
+      "estadoOmitidoBajoMinimo": "dilewati — di bawah minimum",
+      "estadoCalibracion": "kalibrasi",
+      "estadoSinCargo": "tanpa biaya",
+      "estadoPendiente": "tertunda",
+      "verFactura": "lihat"
     }
   },
   "landing": {

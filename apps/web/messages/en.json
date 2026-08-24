@@ -409,7 +409,26 @@
       "estimadoExcluido": "Estimated savings excluded from the base (context, never billable): {usd}.",
       "parametros": "Statement parameters — price catalog {version} · exchange rate {fx} · threshold {umbral}.",
       "mismaFacturaTitulo": "This document IS the future invoice.",
-      "mismaFactura": "The shadow statement and the billable one are computed by the same machinery: when the commission activates, your first invoice will only contain numbers you have already seen here."
+      "mismaFactura": "The shadow statement and the billable one are computed by the same machinery: when the commission activates, your first invoice will only contain numbers you have already seen here.",
+      "historialTitulo": "Closed statements",
+      "historialIntro": "Each closed period is fixed immutably on day one — the exact document your invoice cites.",
+      "historialVacio": "No closed statements yet: the first one is fixed on day one of next month.",
+      "hcolPeriodo": "Period",
+      "hcolBase": "Measured baseline",
+      "hcolAhorro": "Measured savings",
+      "hcolRatio": "Ratio",
+      "hcolCargo": "Charge",
+      "hcolCobro": "Collection",
+      "hcolFactura": "Invoice",
+      "estadoPagado": "paid",
+      "estadoFacturado": "invoiced",
+      "estadoFallido": "failed",
+      "estadoOmitidoSinCliente": "skipped — no payment method",
+      "estadoOmitidoBajoMinimo": "skipped — below the charge minimum",
+      "estadoCalibracion": "calibration",
+      "estadoSinCargo": "no charge",
+      "estadoPendiente": "pending",
+      "verFactura": "view"
     }
   },
   "landing": {

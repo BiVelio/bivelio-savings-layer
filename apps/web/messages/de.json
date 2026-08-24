@@ -409,7 +409,26 @@
       "estimadoExcluido": "Geschätzte Ersparnis, von der Basis ausgeschlossen (Kontext, nie abrechenbar): {usd}.",
       "parametros": "Parameter der Abrechnung — Preiskatalog {version} · Wechselkurs {fx} · Schwelle {umbral}.",
       "mismaFacturaTitulo": "Dieses Dokument IST die künftige Rechnung.",
-      "mismaFactura": "Schatten- und abrechenbare Version werden von derselben Maschinerie berechnet: wenn die Provision aktiv wird, enthält deine erste Rechnung nur Zahlen, die du hier schon gesehen hast."
+      "mismaFactura": "Schatten- und abrechenbare Version werden von derselben Maschinerie berechnet: wenn die Provision aktiv wird, enthält deine erste Rechnung nur Zahlen, die du hier schon gesehen hast.",
+      "historialTitulo": "Abgeschlossene Abrechnungen",
+      "historialIntro": "Jede abgeschlossene Periode wird am Monatsersten unveränderlich fixiert — genau das Dokument, das deine Rechnung zitiert.",
+      "historialVacio": "Noch keine abgeschlossenen Abrechnungen: die erste wird am Ersten des nächsten Monats fixiert.",
+      "hcolPeriodo": "Zeitraum",
+      "hcolBase": "Gemessene Basis",
+      "hcolAhorro": "Gemessene Ersparnis",
+      "hcolRatio": "Quote",
+      "hcolCargo": "Gebühr",
+      "hcolCobro": "Einzug",
+      "hcolFactura": "Rechnung",
+      "estadoPagado": "bezahlt",
+      "estadoFacturado": "in Rechnung gestellt",
+      "estadoFallido": "fehlgeschlagen",
+      "estadoOmitidoSinCliente": "übersprungen — kein Zahlungsmittel",
+      "estadoOmitidoBajoMinimo": "übersprungen — unter dem Mindestbetrag",
+      "estadoCalibracion": "Kalibrierung",
+      "estadoSinCargo": "keine Gebühr",
+      "estadoPendiente": "ausstehend",
+      "verFactura": "ansehen"
     }
   },
   "landing": {

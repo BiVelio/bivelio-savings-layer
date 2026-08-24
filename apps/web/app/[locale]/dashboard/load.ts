@@ -28,6 +28,12 @@ export interface DashboardData {
    * vivían en `ctx.seats`, más si hubo rotación de clave (que infla el recuento).
    */
   asientos: MedidaDeAsientos;
+  /**
+   * La organización del panel, para las páginas que consultan tablas con RLS
+   * de miembro (extractos, cargos): un usuario en varias organizaciones vería
+   * mezcladas las filas de todas sin este filtro explícito.
+   */
+  orgId: string | null;
 }
 
 const EMPTY_CTX: OrgContext = {
@@ -47,7 +53,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Without Supabase env (e.g. local without .env), createClient() would throw —
   // degrade to a signed-out shell instead of a 500.
   const SIN_MEDIDA = { usados: null, rotacionEsteMes: false };
-  const VACIO = { usage: [], usageFailed: false, visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA };
+  const VACIO = { usage: [], usageFailed: false, visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA, orgId: null };
   if (!authConfigured) return { user: null, ctx: EMPTY_CTX, ...VACIO };
   const supabase = await createReadOnlyClient();
   const {
@@ -105,6 +111,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     usageFailed: usage.failed,
     visibilidad,
     asientos,
+    orgId,
   };
 });
 

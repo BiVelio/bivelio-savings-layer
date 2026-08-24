@@ -409,7 +409,26 @@
       "estimadoExcluido": "Ahorro estimado excluido de la base (contexto, jamás facturable): {usd}.",
       "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx} · umbral {umbral}.",
       "mismaFacturaTitulo": "Este documento ES la futura factura.",
-      "mismaFactura": "El extracto en sombra y el facturable se calculan con la misma máquina: cuando la comisión se active, la primera factura solo contendrá números que ya has visto aquí."
+      "mismaFactura": "El extracto en sombra y el facturable se calculan con la misma máquina: cuando la comisión se active, la primera factura solo contendrá números que ya has visto aquí.",
+      "historialTitulo": "Extractos cerrados",
+      "historialIntro": "Cada período cerrado queda fijado inmutable el día uno — el documento exacto que cita tu factura.",
+      "historialVacio": "Aún no hay extractos cerrados: el primero se fija el día uno del mes que viene.",
+      "hcolPeriodo": "Período",
+      "hcolBase": "Base medida",
+      "hcolAhorro": "Ahorro medido",
+      "hcolRatio": "Ratio",
+      "hcolCargo": "Cargo",
+      "hcolCobro": "Cobro",
+      "hcolFactura": "Factura",
+      "estadoPagado": "pagado",
+      "estadoFacturado": "facturado",
+      "estadoFallido": "fallido",
+      "estadoOmitidoSinCliente": "omitido — sin medio de pago",
+      "estadoOmitidoBajoMinimo": "omitido — bajo el mínimo cobrable",
+      "estadoCalibracion": "calibración",
+      "estadoSinCargo": "sin cargo",
+      "estadoPendiente": "pendiente",
+      "verFactura": "ver"
     }
   },
   "landing": {

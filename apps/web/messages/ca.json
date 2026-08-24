@@ -409,7 +409,26 @@
       "estimadoExcluido": "Estalvi estimat exclòs de la base (context, mai facturable): {usd}.",
       "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx} · llindar {umbral}.",
       "mismaFacturaTitulo": "Aquest document ÉS la futura factura.",
-      "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí."
+      "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí.",
+      "historialTitulo": "Extractes tancats",
+      "historialIntro": "Cada període tancat queda fixat immutable el dia u — el document exacte que cita la teva factura.",
+      "historialVacio": "Encara no hi ha extractes tancats: el primer es fixa el dia u del mes vinent.",
+      "hcolPeriodo": "Període",
+      "hcolBase": "Base mesurada",
+      "hcolAhorro": "Estalvi mesurat",
+      "hcolRatio": "Ràtio",
+      "hcolCargo": "Càrrec",
+      "hcolCobro": "Cobrament",
+      "hcolFactura": "Factura",
+      "estadoPagado": "pagat",
+      "estadoFacturado": "facturat",
+      "estadoFallido": "fallit",
+      "estadoOmitidoSinCliente": "omès — sense mitjà de pagament",
+      "estadoOmitidoBajoMinimo": "omès — sota el mínim cobrable",
+      "estadoCalibracion": "calibratge",
+      "estadoSinCargo": "sense càrrec",
+      "estadoPendiente": "pendent",
+      "verFactura": "veure"
     }
   },
   "landing": {
