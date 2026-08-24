@@ -53,12 +53,12 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // inherit `gpt-5`'s price instead of warning — and 5.2/5.4/5.5 already
   // proved the price MOVES between minor versions.
   "gpt-5":              { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
-  "gpt-5-codex":        { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.00013   },
+  "gpt-5-codex":        { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5-mini":         { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.000025  },
   "gpt-5-nano":         { inputPer1k: 0.00005,  outputPer1k: 0.0004,   cachedInputPer1k: 0.000005  },
-  "gpt-5.1-codex":      { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.00013   },
+  "gpt-5.1-codex":      { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5.1-codex-max":  { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
-  "gpt-5.1-codex-mini": { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.00003   },
+  "gpt-5.1-codex-mini": { inputPer1k: 0.00025,  outputPer1k: 0.002,    cachedInputPer1k: 0.000025  },
   "gpt-5.1-thinking":   { inputPer1k: 0.00125,  outputPer1k: 0.01,     cachedInputPer1k: 0.000125  },
   "gpt-5.2":            { inputPer1k: 0.00175,  outputPer1k: 0.014,    cachedInputPer1k: 0.000175  },
   "gpt-5.2-codex":      { inputPer1k: 0.00175,  outputPer1k: 0.014,    cachedInputPer1k: 0.000175  },
@@ -68,7 +68,9 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "gpt-5.4-nano":       { inputPer1k: 0.0002,   outputPer1k: 0.00125,  cachedInputPer1k: 0.00002   },
   "gpt-5.5":            { inputPer1k: 0.005,    outputPer1k: 0.03,     cachedInputPer1k: 0.0005    },
   "gpt-5.6-luna":       { inputPer1k: 0.0002,   outputPer1k: 0.0012,   cachedInputPer1k: 0.00002   },
-  "gpt-5.6-sol":        { inputPer1k: 0.002,    outputPer1k: 0.01,     cachedInputPer1k: 0.0002    },
+  // sol: la pasarela servía $2/$10 y la página oficial de OpenAI dice $4/$20 —
+  // el vigía cazó el 2x en su segunda corrida (2026-08-24) y manda la oficial.
+  "gpt-5.6-sol":        { inputPer1k: 0.004,    outputPer1k: 0.02,     cachedInputPer1k: 0.0004    },
   "gpt-5.6-terra":      { inputPer1k: 0.002,    outputPer1k: 0.012,    cachedInputPer1k: 0.0002    },
 
   // ── Anthropic ─────────────────────────────────────────────────────────────
