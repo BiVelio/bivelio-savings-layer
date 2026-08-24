@@ -1169,6 +1169,12 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
 .cascade-nota { margin-top: 14px; font-size: .85rem; color: var(--ink-soft); max-width: 68ch; line-height: 1.6; }
 
+/* Las tres marcas medidas, en tinta suave: identifican, no afirman. */
+.hero-marcas { display: flex; align-items: center; gap: 22px; margin-top: 18px; flex-wrap: wrap; }
+.hero-marcas .hm { display: inline-flex; align-items: center; gap: 7px;
+  font-size: .86rem; font-weight: 550; color: var(--ink-soft); letter-spacing: -.01em; }
+.hero-marcas svg { color: var(--ink-soft); }
+
 /* ── Héroe: la prueba a la vista ───────────────────────────────────────────
    Este producto no vende una promesa, vende una medición contra el contador
    del proveedor. Ponerla arriba es el argumento; esconderla sería desperdiciar

@@ -164,6 +164,19 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <span className="pulse" /> {t("hero.note")}
             </div>
 
+            {/* Las tres marcas que la capa mide. Nombres propios: no se traducen,
+                y por eso esta franja no toca los 12 ficheros de mensajes. Una
+                marca aquí NO es una cifra: las cifras viven en hero-prueba y
+                solo entran con una medición defendible detrás. */}
+            <div className="hero-marcas" aria-label="OpenAI, Anthropic, Google">
+              {["OpenAI", "Anthropic", "Google"].map((marca) => (
+                <span className="hm" key={marca}>
+                  <LogoProveedor marca={marca} size={15} />
+                  {marca}
+                </span>
+              ))}
+            </div>
+
             {/* La prueba, en el heroe. Este producto no vende una promesa: vende
                 una medicion contra el contador del proveedor. Enseñarla arriba es
                 el argumento, no un adorno. */}
