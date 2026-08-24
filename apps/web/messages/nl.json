@@ -409,7 +409,26 @@
       "estimadoExcluido": "Geschatte besparing uitgesloten van de basis (context, nooit factureerbaar): {usd}.",
       "parametros": "Parameters van het afschrift — prijscatalogus {version} · wisselkoers {fx} · drempel {umbral}.",
       "mismaFacturaTitulo": "Dit document IS de toekomstige factuur.",
-      "mismaFactura": "Het schaduwafschrift en het factureerbare worden door dezelfde machinerie berekend: wanneer de commissie actief wordt, bevat je eerste factuur alleen cijfers die je hier al zag."
+      "mismaFactura": "Het schaduwafschrift en het factureerbare worden door dezelfde machinerie berekend: wanneer de commissie actief wordt, bevat je eerste factuur alleen cijfers die je hier al zag.",
+      "historialTitulo": "Afgesloten afschriften",
+      "historialIntro": "Elke afgesloten periode wordt op de eerste van de maand onveranderlijk vastgelegd — precies het document dat je factuur citeert.",
+      "historialVacio": "Nog geen afgesloten afschriften: het eerste wordt op de eerste van volgende maand vastgelegd.",
+      "hcolPeriodo": "Periode",
+      "hcolBase": "Gemeten basis",
+      "hcolAhorro": "Gemeten besparing",
+      "hcolRatio": "Ratio",
+      "hcolCargo": "Kosten",
+      "hcolCobro": "Incasso",
+      "hcolFactura": "Factuur",
+      "estadoPagado": "betaald",
+      "estadoFacturado": "gefactureerd",
+      "estadoFallido": "mislukt",
+      "estadoOmitidoSinCliente": "overgeslagen — geen betaalmethode",
+      "estadoOmitidoBajoMinimo": "overgeslagen — onder het minimum",
+      "estadoCalibracion": "kalibratie",
+      "estadoSinCargo": "geen kosten",
+      "estadoPendiente": "in behandeling",
+      "verFactura": "bekijken"
     }
   },
   "landing": {

@@ -172,7 +172,14 @@ export async function GET(req: Request): Promise<NextResponse> {
           importe_eur: e.cargo_eur,
           estado: "facturado",
           stripe_invoice_id: final.id,
-          detalle: { numero: final.number ?? null, centimos: decision.centimos },
+          // La URL alojada y el PDF van al detalle porque el panel los enlaza:
+          // el cliente audita su factura desde el historial, sin pedirla a nadie.
+          detalle: {
+            numero: final.number ?? null,
+            centimos: decision.centimos,
+            hosted_invoice_url: final.hosted_invoice_url ?? null,
+            invoice_pdf: final.invoice_pdf ?? null,
+          },
         },
         { onConflict: "org_id,periodo", ignoreDuplicates: true },
       );

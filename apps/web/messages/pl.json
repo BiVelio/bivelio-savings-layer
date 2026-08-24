@@ -409,7 +409,26 @@
       "estimadoExcluido": "Szacowane oszczędności wyłączone z bazy (kontekst, nigdy do rozliczenia): {usd}.",
       "parametros": "Parametry wyciągu — katalog cen {version} · kurs {fx} · próg {umbral}.",
       "mismaFacturaTitulo": "Ten dokument JEST przyszłą fakturą.",
-      "mismaFactura": "Wyciąg w cieniu i ten rozliczeniowy liczy ta sama maszyneria: gdy prowizja się włączy, pierwsza faktura będzie zawierać tylko liczby, które już tu widziałeś."
+      "mismaFactura": "Wyciąg w cieniu i ten rozliczeniowy liczy ta sama maszyneria: gdy prowizja się włączy, pierwsza faktura będzie zawierać tylko liczby, które już tu widziałeś.",
+      "historialTitulo": "Zamknięte zestawienia",
+      "historialIntro": "Każdy zamknięty okres zostaje nieodwracalnie utrwalony pierwszego dnia miesiąca — dokładnie ten dokument, który cytuje Twoja faktura.",
+      "historialVacio": "Nie ma jeszcze zamkniętych zestawień: pierwsze zostanie utrwalone pierwszego dnia przyszłego miesiąca.",
+      "hcolPeriodo": "Okres",
+      "hcolBase": "Zmierzona baza",
+      "hcolAhorro": "Zmierzone oszczędności",
+      "hcolRatio": "Wskaźnik",
+      "hcolCargo": "Opłata",
+      "hcolCobro": "Pobranie",
+      "hcolFactura": "Faktura",
+      "estadoPagado": "opłacona",
+      "estadoFacturado": "wystawiona",
+      "estadoFallido": "nieudana",
+      "estadoOmitidoSinCliente": "pominięta — brak metody płatności",
+      "estadoOmitidoBajoMinimo": "pominięta — poniżej minimum",
+      "estadoCalibracion": "kalibracja",
+      "estadoSinCargo": "bez opłaty",
+      "estadoPendiente": "oczekująca",
+      "verFactura": "zobacz"
     }
   },
   "landing": {

@@ -1,7 +1,77 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { extractoEnSombra, periodoDe } from "@/lib/billing/extracto-sombra";
+import { createReadOnlyClient } from "@/lib/supabase/server";
 import { loadDashboard } from "../load";
+
+/** Una fila del historial: el extracto cerrado con el estado de su cobro. */
+interface PeriodoCerrado {
+  periodo: string;
+  es_calibracion: boolean;
+  base_medida_eur: number;
+  ahorro_medido_eur: number;
+  ratio: number;
+  cargo_eur: number;
+  cobro: { estado: string; url: string | null; numero: string | null } | null;
+}
+
+/**
+ * Los períodos cerrados de la organización, con su cobro. Se filtra por
+ * `org_id` EXPLÍCITAMENTE: la RLS de miembro devuelve las filas de todas las
+ * organizaciones del usuario, y mezclarlas pintaría extractos ajenos.
+ */
+async function periodosCerrados(orgId: string): Promise<PeriodoCerrado[] | null> {
+  const supabase = await createReadOnlyClient();
+  const [{ data: extractos, error: e1 }, { data: cargos, error: e2 }] = await Promise.all([
+    supabase
+      .schema("bvsala")
+      .from("extractos")
+      .select("periodo, es_calibracion, base_medida_eur, ahorro_medido_eur, ratio, cargo_eur")
+      .eq("org_id", orgId)
+      .order("periodo", { ascending: false })
+      .limit(24),
+    supabase.schema("bvsala").from("cargos").select("periodo, estado, detalle").eq("org_id", orgId),
+  ]);
+  if (e1 || e2) return null; // el fallo de lectura se pinta como tal, no como "sin historial"
+  const cobroPorPeriodo = new Map(
+    (cargos ?? []).map((c) => {
+      const detalle = (c.detalle ?? {}) as { hosted_invoice_url?: string | null; numero?: string | null };
+      return [String(c.periodo), {
+        estado: String(c.estado),
+        url: detalle.hosted_invoice_url ?? null,
+        numero: detalle.numero ?? null,
+      }] as const;
+    }),
+  );
+  return (extractos ?? []).map((x) => ({
+    periodo: String(x.periodo),
+    es_calibracion: Boolean(x.es_calibracion),
+    base_medida_eur: Number(x.base_medida_eur ?? 0),
+    ahorro_medido_eur: Number(x.ahorro_medido_eur ?? 0),
+    ratio: Number(x.ratio ?? 0),
+    cargo_eur: Number(x.cargo_eur ?? 0),
+    cobro: cobroPorPeriodo.get(String(x.periodo)) ?? null,
+  }));
+}
+
+/** La clave i18n del estado del cobro de un período cerrado. */
+function claveDeEstado(p: PeriodoCerrado): string {
+  if (p.cobro) {
+    const porEstado: Record<string, string> = {
+      pagado: "estadoPagado",
+      facturado: "estadoFacturado",
+      fallido: "estadoFallido",
+      omitido_sin_cliente: "estadoOmitidoSinCliente",
+      omitido_bajo_minimo: "estadoOmitidoBajoMinimo",
+    };
+    return porEstado[p.cobro.estado] ?? "estadoPendiente";
+  }
+  if (p.es_calibracion) return "estadoCalibracion";
+  if (p.cargo_eur <= 0) return "estadoSinCargo";
+  // Cargo sin fila de cobro: el cron del día uno aún no ha pasado (o falló y
+  // alertó). "Pendiente" es la verdad — nunca se pinta como pagado ni omitido.
+  return "estadoPendiente";
+}
 
 /**
  * EL EXTRACTO EN SOMBRA — la pantalla del mes de calibración del plan maestro.
@@ -21,10 +91,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function ExtractoPage() {
   const t = await getTranslations("dashboard");
   const locale = await getLocale();
-  const { usage, usageFailed } = await loadDashboard();
+  const { usage, usageFailed, orgId } = await loadDashboard();
 
   const periodo = periodoDe(new Date());
   const e = extractoEnSombra("panel", usage, periodo);
+  const cerrados = orgId ? await periodosCerrados(orgId) : [];
 
   const eur = (n: number) => n.toLocaleString(locale, { style: "currency", currency: "EUR" });
   const usd = (n: number) => n.toLocaleString(locale, { style: "currency", currency: "USD" });
@@ -122,6 +193,61 @@ export default async function ExtractoPage() {
         <p className="ck-note">
           <b>{t("extracto.mismaFacturaTitulo")}</b> {t("extracto.mismaFactura")}
         </p>
+      </section>
+
+      {/* EL HISTORIAL AUDITABLE: cada período cerrado (documento inmutable) con
+          el estado de su cobro y el enlace a la factura de Stripe que lo cita.
+          El dinero que este producto cobra tiene que poder rastrearse desde
+          aquí hasta la factura sin pedirle nada a nadie. */}
+      <section className="ck-sec">
+        <div className="ck-head">
+          <div>
+            <h2>{t("extracto.historialTitulo")}</h2>
+            <p className="ck-note">{t("extracto.historialIntro")}</p>
+          </div>
+        </div>
+        {cerrados === null ? (
+          <p className="ck-note" style={{ color: "var(--danger)" }}>{t("extracto.lecturaFallo")}</p>
+        ) : cerrados.length === 0 ? (
+          <p className="ck-note">{t("extracto.historialVacio")}</p>
+        ) : (
+          <div className="tbl-scroll">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>{t("extracto.hcolPeriodo")}</th>
+                  <th>{t("extracto.hcolBase")}</th>
+                  <th>{t("extracto.hcolAhorro")}</th>
+                  <th>{t("extracto.hcolRatio")}</th>
+                  <th>{t("extracto.hcolCargo")}</th>
+                  <th>{t("extracto.hcolCobro")}</th>
+                  <th>{t("extracto.hcolFactura")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cerrados.map((p) => (
+                  <tr key={p.periodo}>
+                    <td className="ck-num">{p.periodo}</td>
+                    <td className="ck-num">{eur(p.base_medida_eur)}</td>
+                    <td className="ck-num">{eur(p.ahorro_medido_eur)}</td>
+                    <td className="ck-num">{pct(p.ratio)}</td>
+                    <td className="ck-num">{eur(p.cargo_eur)}</td>
+                    <td>{t(`extracto.${claveDeEstado(p)}`)}</td>
+                    <td>
+                      {p.cobro?.url ? (
+                        <a href={p.cobro.url} target="_blank" rel="noreferrer">
+                          {p.cobro.numero ?? t("extracto.verFactura")}
+                        </a>
+                      ) : (
+                        p.cobro?.numero ?? "—"
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </>
   );

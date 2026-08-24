@@ -409,7 +409,26 @@
       "estimadoExcluido": "Économie estimée exclue de la base (contexte, jamais facturable) : {usd}.",
       "parametros": "Paramètres du relevé — catalogue de prix {version} · taux de change {fx} · seuil {umbral}.",
       "mismaFacturaTitulo": "Ce document EST la future facture.",
-      "mismaFactura": "Le relevé en ombre et le relevé facturable sont calculés par la même machinerie : quand la commission s'activera, votre première facture ne contiendra que des chiffres déjà vus ici."
+      "mismaFactura": "Le relevé en ombre et le relevé facturable sont calculés par la même machinerie : quand la commission s'activera, votre première facture ne contiendra que des chiffres déjà vus ici.",
+      "historialTitulo": "Relevés clôturés",
+      "historialIntro": "Chaque période clôturée est figée de façon immuable le premier du mois — le document exact que cite votre facture.",
+      "historialVacio": "Pas encore de relevé clôturé : le premier sera figé le premier du mois prochain.",
+      "hcolPeriodo": "Période",
+      "hcolBase": "Base mesurée",
+      "hcolAhorro": "Économie mesurée",
+      "hcolRatio": "Ratio",
+      "hcolCargo": "Frais",
+      "hcolCobro": "Encaissement",
+      "hcolFactura": "Facture",
+      "estadoPagado": "payé",
+      "estadoFacturado": "facturé",
+      "estadoFallido": "échoué",
+      "estadoOmitidoSinCliente": "ignoré — sans moyen de paiement",
+      "estadoOmitidoBajoMinimo": "ignoré — sous le minimum facturable",
+      "estadoCalibracion": "calibration",
+      "estadoSinCargo": "sans frais",
+      "estadoPendiente": "en attente",
+      "verFactura": "voir"
     }
   },
   "landing": {
