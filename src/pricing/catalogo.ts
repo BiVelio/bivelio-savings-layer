@@ -23,7 +23,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
  */
 
 /** When these prices were last checked against the providers' public rates. */
-export const PRECIOS_AL_DIA = "2026-08-23";
+export const PRECIOS_AL_DIA = "2026-08-24";
 
 /**
  * Key = the model id as the provider publishes it, without a vendor prefix.
@@ -58,6 +58,19 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // documentada de Anthropic ($0.03/MTok). La cazó el vigía en su primera
   // corrida (2026-08-23) y se verificó contra la referencia histórica oficial.
   "claude-3-haiku":    { inputPer1k: 0.00025, outputPer1k: 0.00125, cachedInputPer1k: 0.00003 },
+
+  // ── Google (Gemini) ───────────────────────────────────────────────────────
+  // Gemini bills an implicit-cache read at 10% of the input rate, with no write
+  // premium — checked 2026-08-24 against the AI Gateway's `/models` metadata
+  // (`input_cache_read` = input/10 across the whole family). Prices are the
+  // ≤200k-context tier; the long-context surcharge is out of scope here, same
+  // as OpenAI's priority tiers.
+  "gemini-3.7-flash":       { inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 },
+  "gemini-3.5-flash":       { inputPer1k: 0.0015,  outputPer1k: 0.009,   cachedInputPer1k: 0.00015  },
+  "gemini-3.5-flash-lite":  { inputPer1k: 0.0003,  outputPer1k: 0.0025,  cachedInputPer1k: 0.00003  },
+  "gemini-3.1-pro-preview": { inputPer1k: 0.002,   outputPer1k: 0.012,   cachedInputPer1k: 0.0002   },
+  "gemini-2.5-pro":         { inputPer1k: 0.00125, outputPer1k: 0.01,    cachedInputPer1k: 0.000125 },
+  "gemini-2.5-flash":       { inputPer1k: 0.0003,  outputPer1k: 0.0025,  cachedInputPer1k: 0.00003  },
 
   // Models whose published price is NOT known with certainty stay out on purpose:
   // they fall back to the illustrative default and warn, which is the honest answer.

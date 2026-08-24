@@ -27,6 +27,7 @@ describe("el lookup", () => {
     // precios del proveedor usa el nombre desnudo. Los dos tienen que funcionar.
     expect(precioDeLista("openai/gpt-4o-mini")).toEqual(CATALOGO["gpt-4o-mini"]);
     expect(precioDeLista("anthropic/claude-haiku-4-5")).toEqual(CATALOGO["claude-haiku-4-5"]);
+    expect(precioDeLista("google/gemini-3.7-flash")).toEqual(CATALOGO["gemini-3.7-flash"]);
   });
 
   it("una instantánea fechada hereda el precio de su familia", () => {
@@ -34,6 +35,14 @@ describe("el lookup", () => {
     expect(precioDeLista("gpt-4o-2024-08-06")).toEqual(CATALOGO["gpt-4o"]);
     expect(precioDeLista("claude-haiku-4-5-20251001")).toEqual(CATALOGO["claude-haiku-4-5"]);
     expect(precioDeLista("claude-sonnet-4-5-20250929")).toEqual(CATALOGO["claude-sonnet-4"]);
+    expect(precioDeLista("gemini-3.5-flash-preview-0715")).toEqual(CATALOGO["gemini-3.5-flash"]);
+  });
+
+  it("`gemini-3.5-flash` no se traga a `gemini-3.5-flash-lite`, que cuesta cinco veces menos", () => {
+    // Mismo peligro que gpt-4/gpt-4o: la clave corta es prefijo de la larga y
+    // solo el orden por longitud impide tarifar el lite a precio del grande.
+    expect(precioDeLista("gemini-3.5-flash-lite")).toEqual(CATALOGO["gemini-3.5-flash-lite"]);
+    expect(precioDeLista("gemini-3.5-flash-lite")).not.toEqual(CATALOGO["gemini-3.5-flash"]);
   });
 
   it("`gpt-4` no se traga a `gpt-4o`, que cuesta doce veces menos", () => {

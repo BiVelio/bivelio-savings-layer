@@ -80,7 +80,7 @@ export type Palanca = (typeof PALANCAS)[number];
  * si un escenario del BANCO tiene sentido contra un modelo dado. Son dos
  * preguntas distintas y atarlas obligaría a exportar identificadores internos.
  */
-export type FamiliaDeModelo = "openai" | "anthropic" | "desconocida";
+export type FamiliaDeModelo = "openai" | "anthropic" | "google" | "desconocida";
 
 export function familiaDeModelo(model: string): FamiliaDeModelo {
   const id = model.toLowerCase();
@@ -89,8 +89,10 @@ export function familiaDeModelo(model: string): FamiliaDeModelo {
   const desnudo = barra >= 0 ? id.slice(barra + 1) : id;
   if (proveedor === "openai" || proveedor === "azure-openai") return "openai";
   if (proveedor === "anthropic") return "anthropic";
+  if (proveedor === "google" || proveedor === "google-vertex") return "google";
   if (/^(gpt-|o[1-9](-|$)|chatgpt)/.test(desnudo)) return "openai";
   if (desnudo.startsWith("claude")) return "anthropic";
+  if (desnudo.startsWith("gemini")) return "google";
   return "desconocida";
 }
 
@@ -1078,6 +1080,35 @@ export const scenarios: Scenario[] = [
       messages: [
         { role: "system", content: politicaDeSoporte() },
         { role: "user", content: "El pedido 40218 llegó con la caja abollada. ¿Qué le respondo?" },
+      ],
+      response: answerContract,
+    },
+    expect: (r) => r.report.constraints.structurallyValid === true && r.text.trim().length > 0,
+  },
+  {
+    // El equivalente de "Stable-prefix agent turn" para la familia GEMINI.
+    //
+    // Gemini está en el lado de OpenAI del reparto: caché IMPLÍCITA, sin marca
+    // en la petición, así que lo que este escenario ve es el descuento que el
+    // cliente ya tendría sin nosotros — y `accounting.ts` tarifa los tokens
+    // cacheados a tarifa cacheada en LOS DOS brazos por esa razón. La economía
+    // sí es distinta en tamaño: la lectura vale el 10% de la entrada (como
+    // Anthropic, no como el 50% de OpenAI), verificado 2026-08-24 contra el
+    // `/models` de la pasarela.
+    //
+    // Va en escenario propio y no como segunda familia del de OpenAI porque
+    // `familia` es una verja, no una etiqueta: cada uno se salta y se declara
+    // por separado, con su modelo y su motivo.
+    name: "Gemini stable-prefix agent turn",
+    lever: "provider prefix cache (implicit caching over a stable system prefix)",
+    ledger: "none",
+    palanca: "providerPrefixCache",
+    familia: "google",
+    request: {
+      model: "google/gemini-3.7-flash",
+      messages: [
+        { role: "system", content: politicaEstable },
+        { role: "user", content: "El pedido 40218 llegó con una caja abollada. ¿Qué le respondo al cliente?" },
       ],
       response: answerContract,
     },

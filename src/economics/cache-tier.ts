@@ -64,6 +64,19 @@ export const ANTHROPIC_CACHE_TIER: CacheTier = {
   cacheWriteMultiplier: 1.25,
 };
 
+// Gemini: caché IMPLÍCITA (activada por defecto, sin `cache_control` ni campo
+// alguno en la petición) con lectura al 10% de la entrada y SIN prima de
+// escritura — verificado el 2026-08-24 contra el `/models` de la pasarela
+// (`input_cache_read` = input/10 en toda la familia gemini-2.5…3.7). El mínimo
+// documentado varía por modelo (1024 en los flash); se usa 1024 por la misma
+// razón que en las otras dos familias: el valor bajo protege una caché que
+// podría existir, y ese es el error barato.
+export const GOOGLE_CACHE_TIER: CacheTier = {
+  minimumCacheTokens: 1024,
+  cacheReadMultiplier: 0.1,
+  cacheWriteMultiplier: 1,
+};
+
 /** Ni cachea ni descuenta: la decisión se reduce a "menos tokens es mejor". */
 export const NO_CACHE_TIER: CacheTier = {
   minimumCacheTokens: null,

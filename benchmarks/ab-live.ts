@@ -106,6 +106,10 @@ const PRICES: Record<string, CostModel> = {
   // caro de lo que este precio sugiere. La verja económica del layer es quien
   // vigila eso; aquí sólo se tarifa lo que el proveedor reporte.
   "claude-sonnet-4-5": { inputPer1k: 0.003, outputPer1k: 0.015, cachedInputPer1k: 0.0003 },
+  // Google. Caché IMPLÍCITA con lectura al 10% de la entrada y sin prima de
+  // escritura (verificado 2026-08-24 contra el /models de la pasarela); el resto
+  // de la familia gemini se tarifa desde `pricing/catalogo.ts` vía `precioDeLista`.
+  "gemini-3.7-flash": { inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 },
 };
 const PRICING_NOTE =
   "USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. " +

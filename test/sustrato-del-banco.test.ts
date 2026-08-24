@@ -315,8 +315,11 @@ describe("las palancas opt-in de la 0.3.0 se ejercitan de verdad", () => {
     // nuestra.
     expect(escenario("Anthropic stable-prefix agent turn").familia).toBe("anthropic");
     expect(escenario("Stable-prefix agent turn").familia).toBe("openai");
+    expect(escenario("Gemini stable-prefix agent turn").familia).toBe("google");
     expect(familiaDeModelo("anthropic/claude-sonnet-4-5")).toBe("anthropic");
     expect(familiaDeModelo("gpt-4o-mini")).toBe("openai");
+    expect(familiaDeModelo("google/gemini-3.7-flash")).toBe("google");
+    expect(familiaDeModelo("gemini-2.5-pro")).toBe("google");
     expect(familiaDeModelo("mistral-large")).toBe("desconocida");
   });
 });
