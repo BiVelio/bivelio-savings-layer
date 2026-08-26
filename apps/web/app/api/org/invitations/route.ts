@@ -100,6 +100,32 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "That's you — you're already in." }, { status: 409 });
   }
 
+  // …y el resto del equipo, no solo quien invita. El correo de un miembro vive
+  // en auth, no en org_members, así que se resuelve como en GET /api/org/members:
+  // una consulta por miembro — una organización es tamaño equipo, no multitud.
+  // Un correo ilegible NO bloquea: fallar hacia «se pudo invitar» cuesta un
+  // correo redundante; fallar hacia 503 pararía invitaciones legítimas.
+  const { data: equipo, error: equipoErr } = await admin
+    .from("org_members")
+    .select("user_id")
+    .eq("org_id", g.orgId);
+  if (equipoErr) {
+    console.error("[org/invitations] no se pudo leer el equipo:", equipoErr);
+    return NextResponse.json({ error: "Could not create the invitation." }, { status: 503 });
+  }
+  for (const fila of (equipo ?? []) as { user_id: string }[]) {
+    let suyo: string | null = null;
+    try {
+      const { data: u } = await admin.auth.admin.getUserById(fila.user_id);
+      suyo = normalizarCorreo(u?.user?.email);
+    } catch {
+      /* ilegible → ver arriba */
+    }
+    if (suyo && suyo === email) {
+      return NextResponse.json({ error: "Already a member of this organization." }, { status: 409 });
+    }
+  }
+
   const nuevo = acunarToken();
 
   // Una invitación viva por dirección (índice único parcial de 0013). Reinvitar
