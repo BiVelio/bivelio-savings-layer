@@ -12,7 +12,8 @@
     "signIn": "Masuk",
     "dashboard": "Dasbor",
     "signOut": "Keluar",
-    "howItWorks": "Cara kerjanya"
+    "howItWorks": "Cara kerjanya",
+    "menu": "Menu"
   },
   "app": {
     "sidebar": {

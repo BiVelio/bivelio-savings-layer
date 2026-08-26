@@ -34,6 +34,24 @@ export const CloseIcon = () => (
   </Icon>
 );
 
+/** Hamburguesa del menú móvil (lucide Menu), como el del <SiteNav> corporativo. */
+export const MenuIcon = () => (
+  <Icon strokeWidth="2">
+    <path d="M4 6h16" />
+    <path d="M4 12h16" />
+    <path d="M4 18h16" />
+  </Icon>
+);
+
+/** El sitio corporativo (lucide Globe). */
+export const GlobeIcon = () => (
+  <Icon>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+    <path d="M2 12h20" />
+  </Icon>
+);
+
 /** Overview — la rejilla de paneles (lucide LayoutDashboard). */
 export const DashboardIcon = () => (
   <Icon>

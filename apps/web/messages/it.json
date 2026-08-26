@@ -12,7 +12,8 @@
     "signIn": "Accedi",
     "dashboard": "Dashboard",
     "signOut": "Esci",
-    "howItWorks": "Come funziona"
+    "howItWorks": "Come funziona",
+    "menu": "Menu"
   },
   "app": {
     "sidebar": {
