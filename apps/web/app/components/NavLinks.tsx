@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
 
-import { ArrowRightIcon } from "./icons";
+import { ArrowRightIcon, CloseIcon, GlobeIcon, HowIcon, MenuIcon, ReceiptIcon, VerifyIcon } from "./icons";
 
 /**
  * Enlaces de sección junto a la marca, al modo de los menús de bivelio.com.
@@ -47,5 +48,66 @@ export function NavCta({ authed }: { authed: boolean }) {
       {authed ? t("dashboard") : t("signIn")}
       <ArrowRightIcon />
     </Link>
+  );
+}
+
+/**
+ * Menú móvil, clon del hamburguesa del <SiteNav> de bivelio.com: disparador en
+ * la cabecera y panel a todo el ancho con cada destino como fila de tesela
+ * (icono en caja de 32px con hairline) y el CTA tinta al pie. Mismas rutas que
+ * las secciones de escritorio, así que también solo en landing / how-it-works.
+ */
+export function MobileMenu({ authed }: { authed: boolean }) {
+  const t = useTranslations("nav");
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  if (pathname !== "/" && pathname !== "/how-it-works") return null;
+
+  const cerrar = () => setOpen(false);
+  const items = [
+    { href: "/how-it-works", label: t("howItWorks"), icon: <HowIcon /> },
+    { href: "/#verify", label: t("verifier"), icon: <VerifyIcon /> },
+    { href: "/#pricing", label: t("pricing"), icon: <ReceiptIcon /> },
+  ] as const;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={t("menu")}
+        aria-expanded={open}
+        className="nav-burger"
+      >
+        {open ? <CloseIcon /> : <MenuIcon />}
+      </button>
+
+      {open && (
+        <div className="nav-mobile">
+          <div className="nav-mobile-inner">
+            {items.map((it) => (
+              <Link key={it.href} href={it.href} onClick={cerrar} className="nav-mobile-item">
+                <span className="nav-mobile-tile">{it.icon}</span>
+                {it.label}
+              </Link>
+            ))}
+            <a href="https://bivelio.com" onClick={cerrar} className="nav-mobile-item">
+              <span className="nav-mobile-tile">
+                <GlobeIcon />
+              </span>
+              bivelio.com
+            </a>
+            <Link
+              href={authed ? "/dashboard" : "/login"}
+              onClick={cerrar}
+              className="btn btn-primary nav-mobile-cta"
+            >
+              {authed ? t("dashboard") : t("signIn")}
+              <ArrowRightIcon />
+            </Link>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

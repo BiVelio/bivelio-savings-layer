@@ -331,7 +331,7 @@ input[type="range"] { accent-color: var(--brand); }
 .nav-left { display: flex; align-items: center; gap: 32px; min-width: 0; }
 .nav-brand { display: inline-flex; align-items: center; gap: 10px; }
 .nav-brand:hover { text-decoration: none; }
-.nav-menu { display: none; align-items: center; gap: 20px; }
+.nav-menu { display: none; align-items: center; gap: 24px; } /* gap-6, como bivelio.com */
 @media (min-width: 640px) { .nav-menu { display: flex; } }
 /* Por debajo de 640px la píldora del producto libera ~112px para los enlaces. */
 @media (max-width: 639px) { .nav-brand .tag { display: none; } }
@@ -339,9 +339,49 @@ input[type="range"] { accent-color: var(--brand); }
 .nav-link:hover { color: var(--ink); text-decoration: none; }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
 .nav-cta { padding: 8px 16px; font-size: 14px; }
-/* En pantallas estrechas el CTA se queda, pero sin la flecha: es la única vía
-   de entrada a la cuenta y aquí no hay menú hamburguesa donde esconderla. */
+/* En pantallas estrechas el CTA se queda, pero sin la flecha: sigue siendo la
+   vía directa a la cuenta aunque exista el menú hamburguesa. */
 @media (max-width: 480px) { .nav-cta { padding: 8px 13px; } .nav-cta svg { display: none; } }
+
+/* Puente al sitio corporativo: en móvil vive dentro del panel hamburguesa. */
+.nav-corp { display: none; padding: 8px 16px; font-size: 14px; }
+@media (min-width: 640px) { .nav-corp { display: inline-flex; } }
+
+/* ── Menú móvil (clon del hamburguesa del <SiteNav> de bivelio.com) ─────── */
+.nav-burger {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;                 /* h-11 w-11: área táctil */
+  background: none; border: 0; padding: 0; cursor: pointer;
+  border-radius: var(--radius-md); color: var(--ink-soft);
+  transition: color .15s;
+}
+.nav-burger:hover { color: var(--ink); }
+.nav-burger svg { width: 20px; height: 20px; }
+@media (min-width: 640px) { .nav-burger { display: none; } }
+
+/* Panel a todo el ancho, colgado de la cabecera pegajosa. */
+.nav-mobile {
+  position: absolute; top: 100%; inset-inline: 0;
+  background: #fff;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+@media (min-width: 640px) { .nav-mobile { display: none; } }
+.nav-mobile-inner { padding: 16px; display: grid; gap: 2px; }
+.nav-mobile-item {
+  display: flex; align-items: center; gap: 12px;
+  border-radius: var(--radius-lg); padding: 10px;
+  font-size: 15px; color: var(--ink);
+  transition: background-color .15s;
+}
+.nav-mobile-item:hover { background: var(--surface-3); text-decoration: none; }
+/* La tesela del icono: caja de 32px con hairline, como en el menú de origen. */
+.nav-mobile-tile {
+  display: grid; place-items: center; flex: none;
+  width: 32px; height: 32px;
+  border-radius: var(--radius-md); border: 1px solid var(--line); background: #fff;
+}
+.nav-mobile-tile svg { width: 16px; height: 16px; color: var(--ink); }
+.nav-mobile-cta { margin-top: 12px; padding: 12px 16px; font-size: 15px; }
 
 /* Disparador del selector de idioma: botón fantasma, como el de bivelio.com. */
 .toggle {

@@ -12,7 +12,8 @@
     "signIn": "Iniciar sesión",
     "dashboard": "Panel",
     "signOut": "Cerrar sesión",
-    "howItWorks": "Cómo funciona"
+    "howItWorks": "Cómo funciona",
+    "menu": "Menú"
   },
   "app": {
     "sidebar": {

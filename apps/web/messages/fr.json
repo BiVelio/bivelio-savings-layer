@@ -12,7 +12,8 @@
     "signIn": "Se connecter",
     "dashboard": "Tableau de bord",
     "signOut": "Se déconnecter",
-    "howItWorks": "Comment ça marche"
+    "howItWorks": "Comment ça marche",
+    "menu": "Menu"
   },
   "app": {
     "sidebar": {

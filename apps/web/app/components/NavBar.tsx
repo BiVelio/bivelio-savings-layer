@@ -6,7 +6,7 @@ import { createReadOnlyClient } from "@/lib/supabase/server";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { BrandMark } from "./BrandMark";
 import { LocaleSwitcher } from "./LocaleSwitcher";
-import { NavCta, NavSections } from "./NavLinks";
+import { MobileMenu, NavCta, NavSections } from "./NavLinks";
 
 /**
  * Chrome superior de las superficies públicas (landing / login / signup) —
@@ -41,7 +41,14 @@ export async function NavBar() {
           </div>
           <div className="nav-actions">
             <LocaleSwitcher />
+            {/* Puente al sitio corporativo: el secundario canónico (ghost) junto
+                al primario tinta, la misma pareja de botones que usa bivelio.com.
+                En <640px vive dentro del menú móvil. */}
+            <a className="btn btn-ghost nav-corp" href="https://bivelio.com">
+              bivelio.com
+            </a>
             <NavCta authed={authed} />
+            <MobileMenu authed={authed} />
           </div>
         </div>
       </header>
