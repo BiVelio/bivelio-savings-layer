@@ -328,6 +328,19 @@ describe("POST /api/org/invitations — invitar", () => {
     expect(correo).toBeNull();
   });
 
+  it("⛔ invitar a quien YA es miembro no crea nada ni manda correo", async () => {
+    // Cazado en el E2E de producción del 2026-08-26: la verja solo cubría la
+    // autoinvitación, y a un miembro existente le llegaba un correo real cuya
+    // aceptación no cambia nada — quien invita se queda creyendo lo contrario.
+    e.miembros.push({ org_id: ORG, user_id: OTRO, role: "member", created_at: "2026-02-01" });
+    const { POST } = await import("./org/invitations/route");
+    // Con mayúsculas: la comparación es sobre el correo normalizado.
+    const res = await POST(pet("POST", { email: `${OTRO.toUpperCase()}@X.com`, role: "admin" }));
+    expect(res.status).toBe(409);
+    expect(correo).toBeNull();
+    expect(e.escrituras.find((x) => x.tabla === "org_invitations")).toBeUndefined();
+  });
+
   it("⛔ el listado NUNCA devuelve el hash del token", async () => {
     e.invitaciones = [invViva()];
     const { GET } = await import("./org/invitations/route");
