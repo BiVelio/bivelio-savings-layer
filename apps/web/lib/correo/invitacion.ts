@@ -195,9 +195,9 @@ export function componerInvitacion(d: DatosInvitacion): CorreoCompuesto {
     `<p>${cuerpo}</p>`,
     `<p><a href="${escapar(d.enlace)}" style="display:inline-block;background:#111;color:#fff;`,
     `padding:10px 18px;border-radius:6px;text-decoration:none">${escapar(t.boton)}</a></p>`,
-    // El enlace también en texto: hay clientes de correo que no pintan el botón, y
-    // hay quien no pincha en botones de un remitente que no conoce.
-    `<p style="font-size:13px;color:#555;word-break:break-all">${escapar(d.enlace)}</p>`,
+    // El enlace solo en el botón (pedido del dueño, 2026-08-27): la URL desnuda
+    // afeaba el correo. El respaldo para clientes sin HTML es la versión en
+    // texto plano, que la lleva entera.
     `<p style="font-size:13px;color:#555">${escapar(caduca)}</p>`,
     `<p style="font-size:13px;color:#555">${escapar(t.ignorar)}</p>`,
     `<p style="font-size:12px;color:#999">BiVelio · savings.bivelio.com</p>`,
