@@ -152,17 +152,22 @@ export class UsageEmitter {
   // Antes `stop()` disparaba el flush sin esperarlo y el exit del gateway mataba
   // el POST en vuelo: el último lote de CADA sesión de `bvsala claude` se perdía
   // (caza del 27-08). Acotado: si un 5xx re-encola y no se avanza, se corta.
-  async stopAndDrain(maxIntentos = 10): Promise<void> {
+  async stopAndDrain(maxIntentos?: number): Promise<void> {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = undefined;
     }
+    // Por defecto, suficientes vueltas para drenar el buffer LLENO (un lote por
+    // vuelta) más un margen para las iteraciones que solo esperan un flush en
+    // vuelo: si no, con el buffer cerca del tope un cierre grácil dejaría la
+    // mitad sin enviar. Sigue acotado: el break por 2 sin-avance corta un 5xx.
+    const tope = maxIntentos ?? Math.ceil(this.maxBuffer / this.maxBatch) + 4;
     // Se corta tras DOS iteraciones seguidas sin avance (un 5xx que re-encola),
     // no tras una: la primera puede limitarse a esperar un flush YA en vuelo que
     // drenó otro lote, y el buffer actual aún no ha bajado — la siguiente sí lo
     // envía. Así no se cuelga con el control plane caído ni se corta a medias.
     let sinAvance = 0;
-    for (let i = 0; i < maxIntentos && this.buffer.length > 0; i++) {
+    for (let i = 0; i < tope && this.buffer.length > 0; i++) {
       const antes = this.buffer.length;
       await this.flush();
       sinAvance = this.buffer.length >= antes ? sinAvance + 1 : 0;

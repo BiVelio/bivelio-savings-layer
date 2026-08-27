@@ -71,7 +71,9 @@ export async function GET(req: Request): Promise<NextResponse> {
         .from("extractos")
         .select("org_id, periodo, es_calibracion, cargo_eur, ahorro_medido_eur, base_medida_eur, ratio")
         .eq("periodo", periodo)
-        .gt("cargo_eur", 0),
+        .gt("cargo_eur", 0)
+        // Orden estable para la paginación por OFFSET (ver cierre-extractos).
+        .order("org_id", { ascending: true }),
     );
   } catch (error) {
     console.error("[facturar-extractos] lectura de extractos falló:", error);
@@ -83,7 +85,12 @@ export async function GET(req: Request): Promise<NextResponse> {
   let yaRegistrados: { org_id: unknown }[];
   try {
     yaRegistrados = await leerTodo<{ org_id: unknown }>(() =>
-      supabase.schema("bvsala").from("cargos").select("org_id").eq("periodo", periodo),
+      supabase
+        .schema("bvsala")
+        .from("cargos")
+        .select("org_id")
+        .eq("periodo", periodo)
+        .order("org_id", { ascending: true }),
     );
   } catch (errCargos) {
     console.error("[facturar-extractos] lectura de cargos falló:", errCargos);

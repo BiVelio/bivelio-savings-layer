@@ -67,7 +67,12 @@ export async function GET(req: Request): Promise<NextResponse> {
         .from("usage_daily")
         .select("org_id, day, requests, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost")
         .gte("day", desde)
-        .lt("day", hasta),
+        .lt("day", hasta)
+        // Orden estable: `.range()` pagina por OFFSET y sin ORDER BY el SQL no
+        // garantiza el mismo orden entre páginas (riesgo teórico de saltar o
+        // duplicar filas). (org_id, day) es la granularidad de usage_daily.
+        .order("org_id", { ascending: true })
+        .order("day", { ascending: true }),
     );
   } catch (error) {
     console.error("[cierre-extractos] lectura de uso falló:", error);
@@ -76,8 +81,12 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (filas.length === 0) return NextResponse.json({ periodo, orgs: 0, cerrados: 0 });
 
   // EL CAMBIO DEL BCE, antes de tocar nada. Si no está disponible se ABORTA el
-  // cierre (501, se reintenta): sellar la fila inmutable con un FX inventado es
-  // justo el bug que esto arregla. La sombra usa un FX fijo; el cierre real, no.
+  // cierre (503) en vez de sellar la fila inmutable con un FX inventado, que es
+  // el bug que esto arregla. La recuperación NO es automática: el cron es
+  // mensual y Vercel no reintenta una invocación fallida, así que se ALERTA y se
+  // relanza a mano con `?periodo=YYYY-MM` (idempotente). En la práctica el XML
+  // diario del BCE sirve siempre el último día publicado, así que la caída total
+  // es poco probable. La sombra usa un FX fijo; el cierre real, no.
   let fx: Fx;
   try {
     fx = await obtenerFxCierre();
