@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
 import { ObservadorSse, costeMedido, informeMedido, informeCoalescido } from "./medidor.js";
-import { Coalescedor, claveDePeticion } from "./coalescencia.js";
+import { Coalescedor, claveDePeticion, materialDeCabeceras } from "./coalescencia.js";
 
 /**
  * F1 · EL GATEWAY — un proxy local delante de la API de Anthropic que MIDE.
@@ -117,81 +117,123 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
   const server = createServer(async (req, res) => {
     const requestId = randomUUID();
-    const chunks: Buffer[] = [];
-    for await (const c of req) chunks.push(c as Buffer);
-    const cuerpo = Buffer.concat(chunks);
+    // La petición está viva solo mientras el cliente la escucha. Si se va —Esc en
+    // Claude Code, cierra la pestaña— se ABORTA el upstream: antes seguía
+    // generando la completion entera y facturándola sin que nadie la leyera. El
+    // guard `writableEnded` distingue «el cliente se fue» del `close` normal que
+    // llega tras un res.end() correcto.
+    const ac = new AbortController();
+    res.on("close", () => {
+      if (!res.writableEnded) ac.abort();
+    });
 
-    const url = new URL(req.url ?? "/", upstreamBase);
-
-    // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
-    const coalescible = coalescedor !== null && req.method === "POST" && cuerpo.length > 0;
-    const clave = coalescible ? claveDePeticion("POST", url.pathname + url.search, cuerpo) : "";
     let captura: ReturnType<Coalescedor["registrar"]> = null;
-    if (coalescible) {
-      if (coalescedor.tieneEnVuelo(clave)) {
-        const replica = await coalescedor.esperar(clave);
-        if (replica) {
-          // La gemela recibe la réplica íntegra de la primaria — cero viaje.
-          res.writeHead(replica.status, replica.headers);
-          const obs = new ObservadorSse();
-          for (const ch of replica.chunks) {
-            res.write(ch);
-            obs.observar(ch);
-          }
-          res.end();
-          medir(requestId, cuerpo, obs.usage(), true, url.pathname);
-          return;
-        }
-        // Primaria fallida o desbordada: la gemela viaja por su cuenta.
-      } else {
-        captura = coalescedor.registrar(clave);
-      }
-    }
-
-    let upstream: Response;
+    let url = new URL(req.url ?? "/", upstreamBase);
     try {
+      const chunks: Buffer[] = [];
+      for await (const c of req) chunks.push(c as Buffer);
+      const cuerpo = Buffer.concat(chunks);
+      url = new URL(req.url ?? "/", upstreamBase);
+
+      // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
+      const coalescible = coalescedor !== null && req.method === "POST" && cuerpo.length > 0;
+      // La clave lleva ahora las cabeceras de identidad (credencial, versión,
+      // betas): sin ellas, una gemela con OTRA credencial recibía la respuesta
+      // de la primaria.
+      const material = materialDeCabeceras((n) => {
+        const v = req.headers[n];
+        return Array.isArray(v) ? v.join(", ") : v;
+      });
+      const clave = coalescible ? claveDePeticion("POST", url.pathname + url.search, cuerpo, material) : "";
+      if (coalescible) {
+        if (coalescedor.tieneEnVuelo(clave)) {
+          const replica = await coalescedor.esperar(clave);
+          if (replica) {
+            // La gemela recibe la réplica íntegra de la primaria — cero viaje.
+            res.writeHead(replica.status, replica.headers);
+            const obs = new ObservadorSse();
+            for (const ch of replica.chunks) {
+              res.write(ch);
+              obs.observar(ch);
+            }
+            res.end();
+            medir(requestId, cuerpo, obs.usage(), true, url.pathname);
+            return;
+          }
+          // Primaria fallida o desbordada: la gemela viaja por su cuenta.
+        } else {
+          captura = coalescedor.registrar(clave);
+        }
+      }
+
       const h: Record<string, string> = {};
       for (const [k, v] of Object.entries(req.headers)) {
         if (k === "host" || k === "content-length" || v === undefined) continue;
         h[k] = Array.isArray(v) ? v.join(", ") : v;
       }
-      upstream = await fetchImpl(url, {
-        method: req.method,
-        headers: h,
-        body: ["GET", "HEAD"].includes(req.method ?? "") ? undefined : cuerpo,
-        redirect: "manual",
-      });
-    } catch (err) {
-      captura?.abortar();
-      res.writeHead(502, { "content-type": "application/json" });
-      res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
-      log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${String(err)}`);
-      return;
-    }
-
-    const cabeceras = Object.fromEntries(upstream.headers.entries());
-    for (const c of CABECERAS_TRANSPORTE) delete cabeceras[c];
-    res.writeHead(upstream.status, cabeceras);
-
-    const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
-    const observador = esSse ? new ObservadorSse() : null;
-
-    if (upstream.body) {
-      for await (const chunk of upstream.body) {
-        const b = Buffer.from(chunk);
-        res.write(b);
-        observador?.observar(b);
-        captura?.capturar(b);
+      let upstream: Response;
+      try {
+        upstream = await fetchImpl(url, {
+          method: req.method,
+          headers: h,
+          body: ["GET", "HEAD"].includes(req.method ?? "") ? undefined : cuerpo,
+          redirect: "manual",
+          signal: ac.signal,
+        });
+      } catch (err) {
+        // El upstream ni siquiera respondió (DNS/conexión) — distinto de un
+        // corte a mitad de stream, que cae en el catch de fuera.
+        captura?.abortar();
+        if (!res.headersSent) {
+          res.writeHead(502, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
+        }
+        log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${String(err)}`);
+        return;
       }
-    }
-    res.end();
-    captura?.terminar(upstream.status, cabeceras);
 
-    // Medición tras servir la respuesta — jamás en el camino caliente.
-    if (observador && upstream.ok) {
-      medir(requestId, cuerpo, observador.usage(), false, url.pathname);
-    } else if (!esSse) {
-      log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
+      const cabeceras = Object.fromEntries(upstream.headers.entries());
+      for (const c of CABECERAS_TRANSPORTE) delete cabeceras[c];
+      res.writeHead(upstream.status, cabeceras);
+
+      const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
+      const observador = esSse ? new ObservadorSse() : null;
+
+      if (upstream.body) {
+        for await (const chunk of upstream.body) {
+          const b = Buffer.from(chunk);
+          res.write(b);
+          observador?.observar(b);
+          captura?.capturar(b);
+        }
+      }
+      res.end();
+      captura?.terminar(upstream.status, cabeceras);
+
+      // Medición tras servir la respuesta — jamás en el camino caliente.
+      if (observador && upstream.ok) {
+        medir(requestId, cuerpo, observador.usage(), false, url.pathname);
+      } else if (!esSse) {
+        log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
+      }
+    } catch (err) {
+      // UN CORTE A MITAD DE STREAM YA NO TUMBA EL PROCESO. Antes, un reset del
+      // upstream (o del cliente subiendo el cuerpo) escapaba del handler async
+      // como rechazo no manejado y mataba TODO el gateway — y con coalescencia,
+      // la clave quedaba en vuelo para siempre colgando a las gemelas. Se libera
+      // la captura SIEMPRE y se cierra la respuesta como se pueda.
+      captura?.abortar();
+      if (ac.signal.aborted) {
+        log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
+      } else {
+        log(`[gateway] ${req.method} ${url.pathname} → error sirviendo: ${String(err)}`);
+        if (!res.headersSent) {
+          res.writeHead(502, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: String(err) }));
+          return;
+        }
+      }
+      if (!res.writableEnded) res.end();
     }
   });
 
