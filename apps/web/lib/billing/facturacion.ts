@@ -100,3 +100,24 @@ export function metadataDeFactura(e: ExtractoFacturable): Record<string, string>
     bvsala_periodo: e.periodo,
   };
 }
+
+/**
+ * LA DECISIÓN de la guardia de orden de la comisión, en puro. Stripe reentrega
+ * eventos días y sin orden: un `invoice.payment_failed` reentregado tarde podía
+ * llegar DESPUÉS de un `invoice.paid` ya aplicado. `pagado` es TERMINAL para ese
+ * cobro (un retry que prospera emite `paid`), así que un `fallido` solo se
+ * aplica si el cargo no está ya pagado (el update lleva `.neq(estado,'pagado')`).
+ * `aplicado` = si ese update tocó alguna fila. Sin esto, un `fallido` frenado por
+ * la verja seguía disparando la alerta crítica de «cobro fallido» por un cargo
+ * que SÍ se cobró.
+ */
+export function decisionDeComision(
+  estado: "pagado" | "fallido",
+  aplicado: boolean,
+): { alertarFallo: boolean; auditKind: string } {
+  if (estado === "fallido" && !aplicado) {
+    return { alertarFallo: false, auditKind: "comision_fallido_ignorado_ya_pagado" };
+  }
+  if (estado === "fallido") return { alertarFallo: true, auditKind: "comision_fallido" };
+  return { alertarFallo: false, auditKind: "comision_pagado" };
+}

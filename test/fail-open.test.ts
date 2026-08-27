@@ -84,6 +84,52 @@ describe("SDK reliability contract — fail open to the raw provider", () => {
     expect(res.report.traces.some((t) => t.stage === "cache-write")).toBe(true);
   });
 
+  it("⛔ el fail-open NO pierde structuredData: el proveedor recibe el payload", async () => {
+    // Caza del 27-08: failOpenDirect mandaba request.messages a secas, sin el
+    // structuredData que el camino optimizado inserta. Durante una caída del
+    // sidecar, el modelo contestaba SIN los datos (a ciegas), se cobraba
+    // "measured" y no había señal. El proveedor espía comprueba que el payload
+    // viaja de verdad.
+    const vistos: string[] = [];
+    const layer = createSavingsLayer({
+      provider: {
+        id: "espia",
+        async generate(req) {
+          vistos.push(...req.messages.map((m) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content))));
+          return { text: "ok", usage: { inputTokens: 10, outputTokens: 2 } };
+        },
+      },
+      exactCache: explodingCache, // fuerza el fail-open (error interno pre-proveedor)
+    });
+    const tabla = { filas: [{ id: 42, nombre: "acme" }] };
+    await layer.generate({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "resume la tabla" }],
+      structuredData: tabla,
+    });
+    // El JSON del payload tiene que aparecer en ALGÚN mensaje que vio el proveedor.
+    const todo = vistos.join("\n");
+    expect(todo).toContain('"id":42');
+    expect(todo).toContain("acme");
+  });
+
+  it("el fail-open sin structuredData no inventa un bloque de datos", async () => {
+    const vistos: unknown[] = [];
+    const layer = createSavingsLayer({
+      provider: {
+        id: "espia2",
+        async generate(req) {
+          vistos.push(req.messages);
+          return { text: "ok", usage: { inputTokens: 5, outputTokens: 1 } };
+        },
+      },
+      exactCache: explodingCache,
+    });
+    await layer.generate({ model: "openai/gpt-4o-mini", messages: [{ role: "user", content: "hola" }] });
+    // Un solo mensaje (el del usuario): no se añadió ningún bloque de datos.
+    expect((vistos[0] as unknown[]).length).toBe(1);
+  });
+
   it("a genuine provider failure still propagates (not masked by fail-open)", async () => {
     const layer = createSavingsLayer({
       provider: {

@@ -13,13 +13,18 @@ import type { SavingsLayerConfig } from "./config.js";
 
 declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
 
-/**
- * Default online-staleness ceiling for the LIVE gate (6h). Well above the poll
- * cadence + backoff (max ~1h) so a transient CP/network outage never trips it,
- * but bounded so blocking egress can't keep a revoked license alive for its full
- * remaining term. Override via `licenseRevocation.maxStalenessSeconds`.
- */
-const DEFAULT_MAX_STALENESS_SECONDS = 6 * 3600;
+// Techo de frescura de la verja LIVE (72 h). Es un COMPROMISO puro: un cliente
+// no distingue «un adversario me bloquea la salida para mantener viva una
+// revocación» de «el control plane está caído», así que el único lever es el
+// tiempo. Más corto cierra antes la ventana del egress bloqueado, pero apaga a
+// clientes que PAGAN si NUESTRO control plane cae más de ese rato; más largo
+// sobrevive a nuestras caídas a cambio de una ventana de evasión mayor. 72 h
+// sobrevive a cualquier incidente realista y sigue muy por debajo de la
+// caducidad natural (mensual = 30 d + 14 d de gracia), cuyo `expires_at` es el
+// backstop último. Este comentario va en `//` a propósito: un JSDoc sobre el
+// export viajaría al `dist/index.d.ts` público. Override:
+// `licenseRevocation.maxStalenessSeconds`.
+export const DEFAULT_MAX_STALENESS_SECONDS = 72 * 3600;
 
 /** The public handle returned by {@link createSavingsLayer}. */
 export interface SavingsLayer {
