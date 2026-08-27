@@ -354,10 +354,12 @@ export interface DatosCorreoAuth {
 /** Carcasa clara de la casa (savings y privacy): la misma familia visual que
  *  los correos de invitación. */
 function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
+  // El enlace SOLO en el botón (pedido del dueño, 2026-08-27): la URL desnuda
+  // afeaba el correo. El respaldo para clientes sin HTML es la versión en
+  // texto plano, que la lleva entera.
   const accionHtml = d.enlace
     ? `<p><a href="${escapar(d.enlace)}" style="display:inline-block;background:#111;color:#fff;` +
-      `padding:10px 18px;border-radius:6px;text-decoration:none">${escapar(t.boton)}</a></p>` +
-      `<p style="font-size:13px;color:#555;word-break:break-all">${escapar(d.enlace)}</p>`
+      `padding:10px 18px;border-radius:6px;text-decoration:none">${escapar(t.boton)}</a></p>`
     : `<p style="font-size:22px;letter-spacing:0.2em;font-weight:700">${escapar(d.codigo ?? "")}</p>`;
   return [
     `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;color:#111">`,
@@ -374,13 +376,13 @@ function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
 /** Carcasa oscura de GPOS, portada de la plantilla que vivía en Supabase para
  *  que sus usuarios no noten el cambio de remitente técnico. */
 function carcasaOscura(t: CopyAuth, d: DatosCorreoAuth): string {
+  // Solo botón, como en la carcasa clara: el respaldo es el texto plano.
   const accionHtml = d.enlace
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px auto"><tr>` +
       `<td align="center" style="border-radius:10px;background:linear-gradient(135deg,#6B85EB 0%,#8E7BF0 100%)">` +
       `<a href="${escapar(d.enlace)}" target="_blank" style="display:inline-block;padding:14px 32px;` +
       `font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:10px">${escapar(t.boton)}</a>` +
-      `</td></tr></table>` +
-      `<p style="margin:0;word-break:break-all"><a href="${escapar(d.enlace)}" style="color:#8FA4F2;font-size:12px">${escapar(d.enlace)}</a></p>`
+      `</td></tr></table>`
     : `<p style="color:#F4F6FB;font-size:26px;letter-spacing:0.25em;font-weight:700;text-align:center">${escapar(d.codigo ?? "")}</p>`;
   return [
     `<div style="margin:0;padding:32px 16px;background-color:#070B14;font-family:'Segoe UI',Helvetica,Arial,sans-serif">`,
