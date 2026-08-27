@@ -32,8 +32,44 @@ export interface RespuestaCapturada {
 /** Por encima de esto la primaria deja de capturarse y sus gemelas van solas. */
 export const MAX_CAPTURA_BYTES = 5 * 1024 * 1024;
 
-export function claveDePeticion(method: string, path: string, cuerpo: Buffer): string {
-  return createHash("sha256").update(method).update("\n").update(path).update("\n").update(cuerpo).digest("hex");
+/**
+ * Las cabeceras que IDENTIFICAN la respuesta y por tanto tienen que entrar en la
+ * clave: si dos peticiones difieren en cualquiera de ellas, su respuesta puede
+ * diferir y NO se pueden coalescer. La credencial es la crítica —jamás servir la
+ * respuesta de una credencial a otra— junto a la versión y los betas de la API,
+ * que cambian el formato del cuerpo. En minúsculas: las cabeceras HTTP no
+ * distinguen mayúsculas.
+ */
+export const CABECERAS_DE_IDENTIDAD = [
+  "authorization",
+  "x-api-key",
+  "anthropic-version",
+  "anthropic-beta",
+] as const;
+
+/**
+ * La clave de coalescencia. Incluye el método, la ruta, el CUERPO y las
+ * cabeceras de identidad: antes solo miraba método+ruta+cuerpo, así que dos
+ * peticiones idénticas de cuerpo pero con OTRA credencial (u otra
+ * anthropic-version / anthropic-beta) compartían clave y la gemela recibía la
+ * respuesta de la primaria — una fuga entre credenciales. `cabeceras` lo aporta
+ * quien llama, ya normalizado (ver `materialDeCabeceras`).
+ */
+export function claveDePeticion(method: string, path: string, cuerpo: Buffer, cabeceras = ""): string {
+  return createHash("sha256")
+    .update(method)
+    .update("\n")
+    .update(path)
+    .update("\n")
+    .update(cabeceras)
+    .update("\n")
+    .update(cuerpo)
+    .digest("hex");
+}
+
+/** El material de las cabeceras de identidad para la clave, en orden estable. */
+export function materialDeCabeceras(get: (nombre: string) => string | undefined): string {
+  return CABECERAS_DE_IDENTIDAD.map((n) => `${n}=${get(n) ?? ""}`).join("\n");
 }
 
 interface EnVuelo {
