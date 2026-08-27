@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { ObservadorSse, costeMedido, informeMedido, PRIMA_ESCRITURA_CACHE } from "../gateway/medidor.js";
+import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, PRIMA_ESCRITURA_CACHE } from "../gateway/medidor.js";
 
 /** Un stream SSE como el del catálogo F0 (docs/PASARELA-F0.md). */
 function streamF0(): string {
@@ -95,5 +95,26 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
     expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
     expect(r.cost.netSavings).toBe(0);
     expect(r.cost.basis).toBe("measured");
+  });
+});
+
+describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () => {
+  it("⛔ una primaria cara (> $1) reporta netSavings 1, no su coste en USD", () => {
+    // El bug (27-08): netSavings iba en dólares; el ingest lo valida como ratio
+    // [-100,1] y rechazaba el LOTE entero cuando la primaria costaba > $1.
+    const medido = costeMedido("claude-opus-4", { input_tokens: 400000, output_tokens: 4000 })!;
+    expect(medido.costeUsd).toBeGreaterThan(1); // la petición cara que dispara el bug
+    const r = informeCoalescido("req-c", "claude-opus-4", medido) as unknown as {
+      calls: { avoidedLlm: number; actualLlm: number };
+      cache: { result: string };
+      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+    };
+    expect(r.calls).toEqual({ avoidedLlm: 1, actualLlm: 0 });
+    expect(r.cache.result).toBe("singleflight");
+    expect(r.cost.actual).toBe(0);
+    expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
+    expect(r.cost.netSavings).toBe(1); // 100 % evitado, dentro de [-100, 1]
+    expect(r.cost.netSavings).toBeLessThanOrEqual(1); // la verja del ingest ya no lo rechaza
+    expect(r.cost.basis).toBe("estimated");
   });
 });

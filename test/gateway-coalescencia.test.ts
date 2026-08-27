@@ -149,7 +149,11 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     expect(evitada["avoidedLlm"]).toBe(1);
     expect(evitada["basis"]).toBe("estimated");
     expect(evitada["actualCost"]).toBe(0);
-    expect(evitada["netSavings"]).toBe(medida["actualCost"]);
+    // netSavings es una PROPORCIÓN [-100,1], no dólares: una coalescencia evita
+    // la llamada entera → 1 (100 %). Este test afirmaba antes `== actualCost`
+    // (dólares), que era EL bug: con una primaria > $1 el ingest rechazaba el
+    // lote entero por `> 1`.
+    expect(evitada["netSavings"]).toBe(1);
   });
 
   it("dos DISTINTAS concurrentes → dos viajes", async () => {

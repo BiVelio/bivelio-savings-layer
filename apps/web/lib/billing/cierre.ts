@@ -1,5 +1,6 @@
 import { construirExtracto, type Extracto, type FilaDiaria } from "./extracto";
-import { FX_SOMBRA, VERSION_PRECIOS_CATALOGO } from "./extracto-sombra";
+import { VERSION_PRECIOS_CATALOGO } from "./extracto-sombra";
+import type { Fx } from "./fx";
 
 /**
  * EL CIERRE MENSUAL — la lógica pura que el cron ejecuta el día 1.
@@ -50,7 +51,13 @@ export function periodoAnterior(ahora: Date): string {
   return d.toISOString().slice(0, 7);
 }
 
-export function cerrarPeriodo(usoPorOrg: UsoDeOrg[], periodo: string): FilaDeCierre[] {
+/**
+ * El cierre facturable. El `fx` es OBLIGATORIO y lo aporta quien llama (el cron,
+ * con el cambio del BCE del día): antes se usaba FX_SOMBRA (0,9 fijo) y esa cifra
+ * de mentira acababa sellada en la fila inmutable y cobrada en Stripe. La sombra
+ * (una estimación en pantalla) sigue usando FX_SOMBRA; el cierre real, no.
+ */
+export function cerrarPeriodo(usoPorOrg: UsoDeOrg[], periodo: string, fx: Fx): FilaDeCierre[] {
   return usoPorOrg.map((org) => {
     const e = construirExtracto({
       orgId: org.orgId,
@@ -58,7 +65,7 @@ export function cerrarPeriodo(usoPorOrg: UsoDeOrg[], periodo: string): FilaDeCie
       filas: org.filas,
       esCalibracion: org.primerPeriodoConUso >= periodo,
       versionPrecios: VERSION_PRECIOS_CATALOGO,
-      fx: FX_SOMBRA,
+      fx,
     });
     return aFilaDeCierre(e);
   });

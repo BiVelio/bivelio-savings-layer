@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 
 import { cerrarPeriodo, periodoAnterior, type UsoDeOrg } from "@/lib/billing/cierre";
 import type { FilaDiaria } from "@/lib/billing/extracto";
+import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { leerTodo } from "@/lib/supabase/leer-todo";
 
 /**
  * Cierre mensual de extractos (día 1, ver apps/web/vercel.json): fija en
@@ -55,20 +57,42 @@ export async function GET(req: Request): Promise<NextResponse> {
   const [y, m] = periodo.split("-").map(Number);
   const hasta = new Date(Date.UTC(y!, m!, 1)).toISOString().slice(0, 10);
 
-  const { data: filas, error } = await supabase
-    .schema("bvsala")
-    .from("usage_daily")
-    .select("org_id, day, requests, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost")
-    .gte("day", desde)
-    .lt("day", hasta);
-  if (error) {
+  // PAGINADO: PostgREST corta a 1000 filas sin error, y con ≥34 orgs activas el
+  // mes rebasa ese corte — el cierre sellaba extractos truncados e inmutables.
+  let filas: FilaUso[];
+  try {
+    filas = await leerTodo<FilaUso>(() =>
+      supabase
+        .schema("bvsala")
+        .from("usage_daily")
+        .select("org_id, day, requests, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost")
+        .gte("day", desde)
+        .lt("day", hasta),
+    );
+  } catch (error) {
     console.error("[cierre-extractos] lectura de uso falló:", error);
     return NextResponse.json({ error: "usage read failed" }, { status: 500 });
   }
-  if (!filas || filas.length === 0) return NextResponse.json({ periodo, orgs: 0, cerrados: 0 });
+  if (filas.length === 0) return NextResponse.json({ periodo, orgs: 0, cerrados: 0 });
+
+  // EL CAMBIO DEL BCE, antes de tocar nada. Si no está disponible se ABORTA el
+  // cierre (501, se reintenta): sellar la fila inmutable con un FX inventado es
+  // justo el bug que esto arregla. La sombra usa un FX fijo; el cierre real, no.
+  let fx: Fx;
+  try {
+    fx = await obtenerFxCierre();
+  } catch (error) {
+    console.error("[cierre-extractos] FX del BCE no disponible, cierre aplazado:", error);
+    await alertar({
+      nivel: "aviso",
+      asunto: "Cierre de extractos aplazado: el FX del BCE no está disponible",
+      detalle: { periodo, motivo: error instanceof Error ? error.message : String(error) },
+    });
+    return NextResponse.json({ error: "fx unavailable", periodo }, { status: 503 });
+  }
 
   const porOrg = new Map<string, FilaDiaria[]>();
-  for (const f of filas as unknown as FilaUso[]) {
+  for (const f of filas) {
     const lista = porOrg.get(f.org_id) ?? [];
     lista.push({
       day: String(f.day),
@@ -104,7 +128,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     });
   }
 
-  const cierre = cerrarPeriodo(usoPorOrg, periodo);
+  const cierre = cerrarPeriodo(usoPorOrg, periodo, fx);
   // ignoreDuplicates: un extracto cerrado JAMÁS se reescribe (inmutabilidad).
   const { error: errInsert, count } = await supabase
     .schema("bvsala")

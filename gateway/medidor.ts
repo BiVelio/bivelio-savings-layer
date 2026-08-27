@@ -129,7 +129,12 @@ function construirInforme(requestId: string, model: string, medido: RegistroMedi
       ? {
           baselineEstimate: medido.costeUsd,
           actual: 0,
-          netSavings: medido.costeUsd,
+          // netSavings es una PROPORCIÓN [-100,1], no dólares: una coalescencia
+          // evita la llamada entera, así que es 1 (100 %). Antes iba `costeUsd`,
+          // y si la primaria costó > $1 (opus caro) el ingest rechazaba el LOTE
+          // completo por `> 1` — se perdían hasta 50 registros. Ver el contrato
+          // en src/tokenizer/accounting.ts y la verja en lib/metering/usage.ts.
+          netSavings: 1,
           basis: "estimated" as const,
         }
       : {
