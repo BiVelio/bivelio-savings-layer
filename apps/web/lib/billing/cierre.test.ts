@@ -49,6 +49,21 @@ describe("cerrarPeriodo — la calibración REAL, por primer período con uso", 
     expect(c!.cargo_eur).toBeCloseTo(81, 10);
   });
 
+  it("HONRA el fx que recibe (no un 0,9 fijo): con fx distinto, el EUR y la fuente cambian", () => {
+    // Este caso distingue «usa el parámetro» de «sigue hardcodeando 0,9», que el
+    // resto de tests (todos a 0,9) no podían: mismo uso, fx del BCE de mentira.
+    const [c] = cerrarConFx(
+      [org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])],
+      "2026-09",
+      { eurPorUsd: 0.8, fuente: "BCE 2026-08-31" },
+    );
+    // 900 USD × 0,8 = 720 € de ahorro (no 810), primer tramo 10% → 72 € (no 81).
+    expect(c!.ahorro_medido_eur).toBeCloseTo(720, 10);
+    expect(c!.cargo_eur).toBeCloseTo(72, 10);
+    expect(c!.fx_eur_por_usd).toBe(0.8);
+    expect(c!.fx_fuente).toContain("BCE");
+  });
+
   it("una organización que EMPIEZA el 15: su mes parcial es calibración y el siguiente se cobra entero", () => {
     // Pregunta del dueño (2026-08-24): ¿los 15 días sueltos cuentan como mes?
     // ¿se prorratea? NO HAY NADA QUE PRORRATEAR: la comisión es % del ahorro
