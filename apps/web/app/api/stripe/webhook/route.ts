@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { selloDeImpago } from "@/lib/billing/dunning";
-import { esFacturaDeComision } from "@/lib/billing/facturacion";
+import { esFacturaDeComision, decisionDeComision } from "@/lib/billing/facturacion";
 import { motivoDeReemision } from "@/lib/billing/reemision";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { atribuirPorPrecio, type Atribucion } from "@/lib/stripe/atribucion";
@@ -476,11 +476,23 @@ async function handleComisionResuelta(
     });
     return;
   }
-  const { error } = await admin
+  // GUARDIA DE ORDEN: `pagado` es PEGAJOSO. Stripe reentrega eventos durante días
+  // y sin orden, así que un `payment_failed` reentregado tarde puede llegar
+  // DESPUÉS de un `invoice.paid` ya aplicado; sin esta verja pisaría `pagado` con
+  // `fallido` y dispararía una alerta crítica de cobro fallido por un cargo que
+  // SÍ se cobró. Una factura pagada es terminal para ese cobro (un retry que
+  // prospera emite `paid`), así que `pagado` gana: el `fallido` solo se aplica si
+  // el cargo no está ya pagado. El `paid` se aplica siempre.
+  let q = admin
     .from("cargos")
     .update({ estado, detalle: { eventId, invoiceId: invoice.id }, actualizado_en: new Date().toISOString() })
     .eq("org_id", orgId)
     .eq("periodo", periodo);
+  if (estado === "fallido") q = q.neq("estado", "pagado");
+  // `.select()` para saber si el update REALMENTE se aplicó: un `fallido`
+  // frenado por la verja (el cargo ya estaba pagado) devuelve 0 filas, y en ese
+  // caso NO se alerta de cobro fallido — lo estaría por un cobro que sí entró.
+  const { data, error } = await q.select("org_id");
   if (error) {
     await alertar({
       nivel: "critico",
@@ -489,14 +501,16 @@ async function handleComisionResuelta(
     });
     return;
   }
-  if (estado === "fallido") {
+  const aplicado = ((data ?? []) as unknown[]).length > 0;
+  const decision = decisionDeComision(estado, aplicado);
+  if (decision.alertarFallo) {
     await alertar({
       nivel: "critico",
       asunto: "Cobro de la comisión FALLIDO",
       detalle: { orgId, periodo, invoiceId: invoice.id },
     });
   }
-  await audit(admin, orgId, eventId, `comision_${estado}`, { periodo, invoiceId: invoice.id });
+  await audit(admin, orgId, eventId, decision.auditKind, { periodo, invoiceId: invoice.id });
 }
 
 async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.Invoice, eventId: string, eventCreated: number) {

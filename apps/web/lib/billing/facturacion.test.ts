@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import {
   claveIdempotencia,
   decidirCargo,
+  decisionDeComision,
   descripcionDeLinea,
   esFacturaDeComision,
   metadataDeFactura,
@@ -147,5 +148,25 @@ describe("de punta a punta con la máquina real del extracto", () => {
     const esperada = calcularComision(e.baseMedidaEur, e.ahorroMedidoEur).comisionEur;
     expect(e.cargoEur).toBe(esperada);
     expect(d).toMatchObject({ accion: "facturar", centimos: Math.round(esperada * 100) });
+  });
+});
+
+describe("decisionDeComision — pagado es pegajoso (guardia de orden)", () => {
+  it("un `fallido` que YA estaba pagado (0 filas) NO alerta y deja rastro de ignorado", () => {
+    const d = decisionDeComision("fallido", false);
+    expect(d.alertarFallo).toBe(false);
+    expect(d.auditKind).toBe("comision_fallido_ignorado_ya_pagado");
+  });
+
+  it("un `fallido` que SÍ se aplica alerta en crítico", () => {
+    const d = decisionDeComision("fallido", true);
+    expect(d.alertarFallo).toBe(true);
+    expect(d.auditKind).toBe("comision_fallido");
+  });
+
+  it("un `pagado` no alerta y su audit es comision_pagado", () => {
+    const d = decisionDeComision("pagado", true);
+    expect(d.alertarFallo).toBe(false);
+    expect(d.auditKind).toBe("comision_pagado");
   });
 });

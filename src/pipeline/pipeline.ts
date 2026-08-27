@@ -1076,6 +1076,13 @@ export class SavingsPipeline {
     const inflightKey = buildInflightKey(canonical, {
       servedModel: cascada.modeloServido,
       deferrable: toggles.deferrable === true,
+      // toolDiscovery recorta la vista de herramientas y maxOutputTokens corta la
+      // respuesta: un seguidor que difiera en cualquiera de los dos NO puede
+      // recibir la respuesta (recortada/truncada) del líder. Ver buildInflightKey.
+      toolDiscovery: toggles.toolDiscovery === true,
+      ...(request.response?.maxOutputTokens != null
+        ? { maxOutputTokens: request.response.maxOutputTokens }
+        : {}),
     });
     const runExpensive = async (): Promise<SavingsResult<T>> => {
       try {
@@ -3123,10 +3130,25 @@ export class SavingsPipeline {
     }
 
     const schema = request.response?.schema;
+    // EL PAYLOAD NO SE PIERDE, tampoco por el camino de último recurso. El
+    // camino optimizado inserta `structuredData` antes de la pregunta (línea
+    // ~1340); si aquí se mandara `request.messages` a secas, durante una caída
+    // del sidecar TODO el tráfico con datos se degradaría —el modelo contesta
+    // sin ver la tabla, puede pasar el esquema, se cobra "measured"— sin una
+    // sola señal de que faltó el dato (caza del 2026-08-27). Se usa una COPIA
+    // (no se muta la del llamante) y JSON compacto: el fail-open no optimiza
+    // formato, solo garantiza que el dato viaje ("never drop the data").
+    const messages = [...request.messages];
+    if (request.structuredData !== undefined) {
+      insertarAntesDeLaPregunta(messages, {
+        role: "system",
+        content: JSON.stringify(request.structuredData),
+      });
+    }
     const providerStart = this.now();
     const response = await this.config.provider.generate({
       model: request.model,
-      messages: request.messages,
+      messages,
       ...(request.tools?.length ? { tools: request.tools } : {}),
       ...(schema ? { schema } : {}),
       ...(request.response?.maxOutputTokens != null

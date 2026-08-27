@@ -274,6 +274,22 @@ const CAMPOS_QUE_SEPARAN: Array<{
     a: peticion({ seed: 1 }),
     b: peticion({ seed: 2 }),
   },
+  {
+    // toolDiscovery sondea y RECORTA la vista de herramientas del líder: un
+    // seguidor sin la palanca no puede recibir esa respuesta recortada. (Caza
+    // del 27-08: la clave ignoraba este eje y lo servía con 100 % de ahorro.)
+    campo: "toolDiscovery (líder recorta la vista de herramientas)",
+    a: peticion({ tools: [HERRAMIENTA("buscar")], savings: { toolDiscovery: true } }),
+    b: peticion({ tools: [HERRAMIENTA("buscar")] }),
+  },
+  {
+    // maxOutputTokens corta la respuesta del líder (finishReason "length"): un
+    // seguidor que pidió más tokens no puede recibir la respuesta truncada.
+    campo: "maxOutputTokens (líder trunca la respuesta)",
+    a: peticion({ response: { contractId: "c", schema: ESQUEMA, maxOutputTokens: 64 } }),
+    b: peticion({ response: { contractId: "c", schema: ESQUEMA, maxOutputTokens: 4096 } }),
+    texto: JSON_VALIDO,
+  },
 ];
 
 describe("el singleflight NO colapsa peticiones que solo parecen iguales", () => {

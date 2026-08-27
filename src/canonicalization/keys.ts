@@ -106,7 +106,20 @@ export function buildExactKey(
  */
 export function buildInflightKey(
   c: CanonicalRequest,
-  opciones: { servedModel?: string; deferrable?: boolean } = {},
+  opciones: {
+    servedModel?: string;
+    deferrable?: boolean;
+    // Dos ejes MÁS que cambian la respuesta y no están en CanonicalRequest, así
+    // que se pasan aquí (misma clase que `servedModel`/`deferrable`):
+    //  · toolDiscovery sondea y RECORTA la vista de herramientas del líder, que
+    //    puede contestar «no tengo una herramienta para eso»;
+    //  · maxOutputTokens corta la respuesta del líder (finishReason "length").
+    // Sin ellos en la clave, un seguidor SIN la palanca (o con otro tope) recibía
+    // esa respuesta recortada del líder con 100 % de ahorro acreditado — la misma
+    // fuga que ya se cerró para servedModel y deferrable (caza del 2026-08-27).
+    toolDiscovery?: boolean;
+    maxOutputTokens?: number;
+  } = {},
 ): string {
   // MEDIDO, y por eso `deferrable` esta en el material. Con el proveedor
   // simulado: lider con `savings.deferrable: true` (tier `flex`, 300 ms) y
@@ -137,6 +150,8 @@ export function buildInflightKey(
     temperature: c.temperature,
     seed: c.seed,
     deferrable: opciones.deferrable === true,
+    toolDiscovery: opciones.toolDiscovery === true,
+    maxOut: opciones.maxOutputTokens ?? null,
   });
   return `bvsala:inflight:${GENERACION}:${sha256(material)}`;
 }
