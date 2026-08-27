@@ -205,10 +205,12 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
   return {
     puerto,
-    cerrar: () =>
-      new Promise<void>((resolve) => {
-        emisor?.stop();
-        server.close(() => resolve());
-      }),
+    cerrar: async () => {
+      // Se DRENA el uso antes de cerrar y ANTES del process.exit() de bin.ts:
+      // stop() disparaba el flush sin esperarlo y el último lote de cada sesión
+      // de `bvsala claude` se perdía (caza del 27-08).
+      await emisor?.stopAndDrain();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    },
   };
 }

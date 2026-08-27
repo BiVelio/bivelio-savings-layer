@@ -1,7 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { cerrarPeriodo, periodoAnterior, type UsoDeOrg } from "./cierre";
+import { cerrarPeriodo as cerrarConFx, periodoAnterior, type UsoDeOrg } from "./cierre";
 import type { FilaDiaria } from "./extracto";
+
+// FX de prueba = 0,9 (el que antes estaba fijo dentro de cerrarPeriodo): mantiene
+// intactas las cifras esperadas de estos tests, ahora que el FX es un parámetro.
+const FX_PRUEBA = { eurPorUsd: 0.9, fuente: "test" };
+const cerrarPeriodo = (uso: UsoDeOrg[], periodo: string) => cerrarConFx(uso, periodo, FX_PRUEBA);
 
 function fila(day: string, medidoBase: number, medidoActual: number): FilaDiaria {
   return {

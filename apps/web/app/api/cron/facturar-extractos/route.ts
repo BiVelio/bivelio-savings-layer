@@ -12,6 +12,7 @@ import { alertar } from "@/lib/observabilidad/alerta";
 import { getStripe } from "@/lib/stripe/client";
 import { billingConfigured } from "@/lib/stripe/env";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { leerTodo } from "@/lib/supabase/leer-todo";
 
 /**
  * Facturación de la comisión (día 1, una hora después del cierre — ver
@@ -59,36 +60,42 @@ export async function GET(req: Request): Promise<NextResponse> {
   const periodo = pedido && /^\d{4}-\d{2}$/.test(pedido) ? pedido : periodoAnterior(new Date());
 
   // Los extractos del período. Se leen TODOS los de cargo > 0 aunque luego se
-  // omitan: la omisión con causa también se registra.
-  const { data: extractos, error } = await supabase
-    .schema("bvsala")
-    .from("extractos")
-    .select("org_id, periodo, es_calibracion, cargo_eur, ahorro_medido_eur, base_medida_eur, ratio")
-    .eq("periodo", periodo)
-    .gt("cargo_eur", 0);
-  if (error) {
+  // omitan: la omisión con causa también se registra. PAGINADO: con >1000
+  // extractos con cargo, un select a secas se dejaría orgs SIN facturar en
+  // silencio (PostgREST corta a 1000). Igual para cargos, abajo.
+  let extractos: ExtractoFacturable[];
+  try {
+    extractos = await leerTodo<ExtractoFacturable>(() =>
+      supabase
+        .schema("bvsala")
+        .from("extractos")
+        .select("org_id, periodo, es_calibracion, cargo_eur, ahorro_medido_eur, base_medida_eur, ratio")
+        .eq("periodo", periodo)
+        .gt("cargo_eur", 0),
+    );
+  } catch (error) {
     console.error("[facturar-extractos] lectura de extractos falló:", error);
     return NextResponse.json({ error: "extractos read failed" }, { status: 500 });
   }
-  if (!extractos || extractos.length === 0) return NextResponse.json({ periodo, facturadas: 0, omitidas: 0 });
+  if (extractos.length === 0) return NextResponse.json({ periodo, facturadas: 0, omitidas: 0 });
 
   // El candado local: cargos ya registrados de este período.
-  const { data: yaRegistrados, error: errCargos } = await supabase
-    .schema("bvsala")
-    .from("cargos")
-    .select("org_id")
-    .eq("periodo", periodo);
-  if (errCargos) {
+  let yaRegistrados: { org_id: unknown }[];
+  try {
+    yaRegistrados = await leerTodo<{ org_id: unknown }>(() =>
+      supabase.schema("bvsala").from("cargos").select("org_id").eq("periodo", periodo),
+    );
+  } catch (errCargos) {
     console.error("[facturar-extractos] lectura de cargos falló:", errCargos);
     return NextResponse.json({ error: "cargos read failed" }, { status: 500 });
   }
-  const conCargo = new Set((yaRegistrados ?? []).map((c) => String((c as { org_id: unknown }).org_id)));
+  const conCargo = new Set(yaRegistrados.map((c) => String(c.org_id)));
 
   let facturadas = 0;
   let omitidas = 0;
   const fallos: string[] = [];
 
-  for (const fila of extractos as unknown as ExtractoFacturable[]) {
+  for (const fila of extractos) {
     const e: ExtractoFacturable = {
       org_id: String(fila.org_id),
       periodo: String(fila.periodo),

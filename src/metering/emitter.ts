@@ -89,7 +89,11 @@ export class UsageEmitter {
   private seatId: string | undefined;
   private ci: boolean;
   private timer: ReturnType<typeof setInterval> | undefined;
-  private flushing = false;
+  // La promesa del flush EN VUELO (null si no hay ninguno). Antes era un booleano
+  // `flushing` y flush() salía en seco si estaba puesto; eso hacía que un cierre
+  // limpio (stopAndDrain) que caía sobre un auto-flush en curso creyera que no
+  // avanzaba y cortara. Ahora un flush concurrente se ESPERA en vez de saltarse.
+  private inflight: Promise<void> | null = null;
   /**
    * CONSECUTIVE failed flushes. Warn on the third and then every twelfth: one
    * lost batch is normal, a whole hour is not. Same cadence as the revocation
@@ -130,7 +134,9 @@ export class UsageEmitter {
     (this.timer as unknown as { unref?: () => void }).unref?.();
   }
 
-  /** Stop the timer and attempt a final flush. Safe to call more than once. */
+  /** Stop the timer and attempt a final flush. Safe to call more than once.
+   *  Fire-and-forget: for a CLEAN shutdown that must not lose the last batch,
+   *  use `stopAndDrain` and await it. */
   stop(): void {
     if (this.timer) {
       clearInterval(this.timer);
@@ -139,16 +145,52 @@ export class UsageEmitter {
     void this.flush();
   }
 
+  /** Clean shutdown: stop the timer and DRAIN the buffer, awaiting each POST.
+   *  Unlike `stop()` (fire-and-forget), this resolves only once the final batch
+   *  has actually been sent, so a graceful exit doesn't lose the last session's
+   *  usage. Bounded, so an unreachable control plane can't block shutdown. */
+  // Antes `stop()` disparaba el flush sin esperarlo y el exit del gateway mataba
+  // el POST en vuelo: el último lote de CADA sesión de `bvsala claude` se perdía
+  // (caza del 27-08). Acotado: si un 5xx re-encola y no se avanza, se corta.
+  async stopAndDrain(maxIntentos = 10): Promise<void> {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+    // Se corta tras DOS iteraciones seguidas sin avance (un 5xx que re-encola),
+    // no tras una: la primera puede limitarse a esperar un flush YA en vuelo que
+    // drenó otro lote, y el buffer actual aún no ha bajado — la siguiente sí lo
+    // envía. Así no se cuelga con el control plane caído ni se corta a medias.
+    let sinAvance = 0;
+    for (let i = 0; i < maxIntentos && this.buffer.length > 0; i++) {
+      const antes = this.buffer.length;
+      await this.flush();
+      sinAvance = this.buffer.length >= antes ? sinAvance + 1 : 0;
+      if (sinAvance >= 2) break;
+    }
+  }
+
   /**
    * Flush one batch. Never throws. A transient server error (5xx) or network
    * failure re-queues the batch (capped); a 4xx (bad request / bad key) drops it,
    * since retrying a rejected payload would loop forever.
    */
   async flush(): Promise<void> {
-    if (this.flushing || this.buffer.length === 0) return;
+    // Un flush ya en curso se ESPERA (no se salta): así el drenaje del cierre no
+    // lo confunde con "no hay nada que enviar".
+    if (this.inflight) return this.inflight;
+    if (this.buffer.length === 0) return;
+    this.inflight = this.hacerFlush();
+    try {
+      await this.inflight;
+    } finally {
+      this.inflight = null;
+    }
+  }
+
+  private async hacerFlush(): Promise<void> {
     const doFetch = this.options.fetchImpl ?? (globalThis as { fetch?: typeof fetch }).fetch;
     if (!doFetch) return; // no fetch → cannot emit; never throw
-    this.flushing = true;
     const batch = this.buffer.splice(0, this.maxBatch);
     try {
       const records: UsageWire[] = batch.map((e) => this.toWire(e));
@@ -202,8 +244,6 @@ export class UsageEmitter {
       this.fallosSeguidos++;
       this.requeue(batch);
       this.avisarDeFallo(err instanceof Error ? err.message : "error de red");
-    } finally {
-      this.flushing = false;
     }
   }
 

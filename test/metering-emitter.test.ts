@@ -123,4 +123,31 @@ describe("UsageEmitter", () => {
     const ids = JSON.parse(calls[0]!.init.body as string).map((r: { requestId: string }) => r.requestId);
     expect(ids).toEqual(["mid", "newest"]); // "oldest" dropped
   });
+
+  it("stopAndDrain ESPERA el envío del último lote (el que `bvsala claude` perdía al salir)", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport("ultimo"));
+    await em.stopAndDrain();
+    // La promesa resolvió SOLO tras el POST: el lote ya salió, no se perdió.
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(calls[0]!.init.body as string)[0].requestId).toBe("ultimo");
+  });
+
+  it("stopAndDrain vacía un buffer mayor que un lote, en varias tandas", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, maxBatch: 2 });
+    for (let i = 0; i < 5; i++) em.record(mkReport(`r${i}`));
+    await em.stopAndDrain();
+    const enviados = calls.flatMap((c) => JSON.parse(c.init.body as string).length);
+    expect(enviados.reduce((a, b) => a + b, 0)).toBe(5); // los 5, ninguno perdido
+  });
+
+  it("stopAndDrain no se cuelga si el control plane devuelve 5xx (apagado acotado)", async () => {
+    const fn = (() => Promise.resolve({ ok: false, status: 503 } as Response)) as unknown as typeof fetch;
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport("atascado"));
+    await em.stopAndDrain(); // resuelve pese al 5xx que re-encola
+    expect(true).toBe(true);
+  });
 });
