@@ -95,9 +95,42 @@ export async function issueLicense(
     subscription_id: input.subscriptionId ?? null,
     stripe_invoice_id: input.stripeInvoiceId ?? null,
   });
-  if (error) throw error;
+  if (error) {
+    // EL CANDADO DE 0018 (única viva por org+caducidad+asientos) convierte la
+    // carrera de webhooks —varios manejadores emitiendo la primera licencia a
+    // la vez— en un conflicto de unicidad. El perdedor NO falla: devuelve la
+    // licencia que ganó, que otorga exactamente lo mismo. Así la emisión es
+    // idempotente y el reintento de Stripe tras un 5xx tampoco duplica.
+    if ((error as { code?: string }).code === "23505") {
+      const existente = await licenciaViva(admin, input.orgId, expiresAt, input.seats);
+      if (existente) return existente;
+    }
+    throw error;
+  }
 
   return { jti, token, expiresAt };
+}
+
+/** La licencia viva que ya cubre (org, caducidad, asientos) — la que ganó la carrera. */
+async function licenciaViva(
+  admin: AdminClient,
+  orgId: string,
+  expiresAtUnix: number,
+  seats: number,
+): Promise<IssuedLicense | null> {
+  const { data } = await admin
+    .from("licenses")
+    .select("id, token")
+    .eq("org_id", orgId)
+    .eq("expires_at", new Date(expiresAtUnix * 1000).toISOString())
+    .eq("seats", seats)
+    .eq("revoked", false)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const fila = data as { id?: string; token?: string } | null;
+  if (!fila?.id || !fila.token) return null;
+  return { jti: fila.id, token: fila.token, expiresAt: expiresAtUnix };
 }
 
 /**

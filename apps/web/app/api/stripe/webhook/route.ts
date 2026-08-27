@@ -9,6 +9,7 @@ import { atribuirPorPrecio, type Atribucion } from "@/lib/stripe/atribucion";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
+import { esStale, condicionEscritura } from "@/lib/stripe/guardia-orden";
 import {
   issueLicense,
   supersedeLicense,
@@ -182,13 +183,14 @@ async function upsertSub(
   const existingId = (existing as { id?: string } | null)?.id ?? null;
   const selloPrevio = (existing as { past_due_since?: string | null } | null)?.past_due_since ?? null;
 
-  // GUARDIA DE ORDEN. Stripe no garantiza orden y reintenta durante días lo que
-  // respondió 5xx, así que un evento viejo puede reentrar DESPUÉS de uno nuevo.
-  // Si el que llega es anterior al último aplicado, no se toca la fila: aplicarlo
-  // des-cancelaría una org o revertiría un cambio de asientos. `event.created` es
-  // del ORIGEN, inmutable entre reintentos.
+  // GUARDIA DE ORDEN, primera línea. Stripe no garantiza orden y reintenta
+  // durante días lo que respondió 5xx, así que un evento viejo puede reentrar
+  // DESPUÉS de uno nuevo. Si el que llega es anterior al último aplicado, no se
+  // toca la fila. `event.created` es del ORIGEN, inmutable entre reintentos.
+  // La segunda línea —contra la RÁFAGA CONCURRENTE que esta lectura no ve—
+  // está en el WHERE del UPDATE de abajo (ver lib/stripe/guardia-orden.ts).
   const lastEventAt = (existing as { last_event_at?: string | null } | null)?.last_event_at ?? null;
-  if (lastEventAt && eventCreated * 1000 < new Date(lastEventAt).getTime()) {
+  if (esStale(eventCreated, lastEventAt)) {
     return { id: existingId, prevSeats, stale: true };
   }
 
@@ -213,13 +215,29 @@ async function upsertSub(
     past_due_since: selloDeImpago(sub.status, selloPrevio, new Date().toISOString()),
     updated_at: new Date().toISOString(),
   };
-  const { data, error } = await admin
+  // Fila NUEVA: insert plano. Si otra entrega concurrente la creó entre nuestra
+  // lectura y aquí, el 23505 nos manda al camino del UPDATE guardado — un upsert
+  // ciego aquí PISARÍA lo que esa entrega escribió, saltándose la guardia.
+  if (!existingId) {
+    const { data, error } = await admin.from("subscriptions").insert(row).select("id").maybeSingle();
+    if (!error) return { id: (data as { id?: string } | null)?.id ?? null, prevSeats: null, stale: false };
+    if ((error as { code?: string }).code !== "23505") throw error;
+  }
+
+  // Fila EXISTENTE (o carrera de inserts): comparar-y-escribir en la MISMA
+  // instrucción. La condición de frescura viaja en el WHERE; perder la carrera
+  // afecta 0 filas y se reporta stale, en vez de pisar al ganador (el caso
+  // `past_due` sobre una fila ya `canceled` del banco de pruebas del 27-08).
+  const { data: escrito, error: errorUpdate } = await admin
     .from("subscriptions")
-    .upsert(row, { onConflict: "stripe_subscription_id" })
-    .select("id")
-    .maybeSingle();
-  if (error) throw error;
-  return { id: (data as { id?: string } | null)?.id ?? existingId, prevSeats, stale: false };
+    .update(row)
+    .eq("stripe_subscription_id", sub.id)
+    .or(condicionEscritura(iso(eventCreated)!))
+    .select("id");
+  if (errorUpdate) throw errorUpdate;
+  const filas = (escrito ?? []) as { id?: string }[];
+  if (filas.length === 0) return { id: existingId, prevSeats, stale: true };
+  return { id: filas[0]?.id ?? existingId, prevSeats, stale: false };
 }
 
 // ---------------------------------------------------------------------------
