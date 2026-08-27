@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { RateLimiter, ipDe } from "@/lib/rate-limit";
+
 /**
  * Petición de llamada de 15 minutos desde la landing.
  *
@@ -24,7 +26,18 @@ const limpio = (s: string): string => s.replace(/[\r\n]/g, " ").slice(0, MAX).tr
 /** Suficiente para descartar un dedazo, sin pretender validar el RFC entero. */
 const pareceCorreo = (s: string): boolean => /^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(s);
 
+// LÍMITE, para que este endpoint público no agote la cuota de Resend que
+// comparte con los correos de auth (fail-closed). Ventana de 10 min: 3 por IP y
+// 60 en total — un abusador no pasa de 3, y pase lo que pase este formulario no
+// consume más de 60 correos por ventana, dejando el resto para lo esencial.
+const LIMITE = new RateLimiter(10 * 60_000, 3, 60);
+
 export async function POST(req: Request): Promise<NextResponse> {
+  const permiso = LIMITE.permitir(ipDe(req));
+  if (!permiso.ok) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   let cuerpo: unknown;
   try {
     cuerpo = await req.json();

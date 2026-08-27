@@ -170,15 +170,26 @@ export async function revokeLicense(
     .from("revocations")
     .upsert({ jti, reason }, { onConflict: "jti", ignoreDuplicates: true });
   if (error) throw error;
-  const { error: updErr } = await admin
-    .from("licenses")
-    .update({ revoked: true, superseded_at: new Date().toISOString() })
-    .eq("id", jti);
-  if (updErr) {
-    // Enforcement is already correct (jti is in the ledger); this only affects the
-    // dashboard's revoked flag. A later revoke/reconcile pass fixes the row.
-    console.error("[license] revoke: ledgered but licenses.update failed for", jti, updErr);
+  // LA COLUMNA NO ES SOLO COSMÉTICA, y por eso su fallo NO se traga. El SDK del
+  // cliente se para por el LEDGER (ya escrito arriba), sí; pero los DOS candados
+  // de SERVIDOR leen esta columna, no el ledger: `/api/license/current` filtra
+  // `.eq("revoked", false)` (re-entregaría la credencial revocada) y la ingesta
+  // de metering la lee para bloquear (`decideEntitlement`). Si el UPDATE falla y
+  // se traga, el operador recibe un 200 mientras el servidor SIGUE sirviendo, y
+  // no hay ningún pase que sane la fila. Se reintenta y, si persiste, se LANZA:
+  // la ruta manual devuelve 500 (el operador reintenta) y el webhook 5xx (Stripe
+  // reintenta). El ledger es idempotente, así que reintentar todo es inocuo.
+  let updErr: unknown = null;
+  for (let intento = 0; intento < 3; intento++) {
+    const { error } = await admin
+      .from("licenses")
+      .update({ revoked: true, superseded_at: new Date().toISOString() })
+      .eq("id", jti);
+    if (!error) return;
+    updErr = error;
   }
+  console.error("[license] revoke: ledgered pero licenses.update falló tras reintentos para", jti, updErr);
+  throw new Error(`revoke: no se pudo marcar revoked=true en la fila ${jti}`);
 }
 
 /** Mark a license superseded WITHOUT revoking it (seat increase → old token

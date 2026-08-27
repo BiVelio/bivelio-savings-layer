@@ -91,6 +91,13 @@ export async function GET(): Promise<NextResponse> {
   const admin = createAdminClient();
   const org = await resolverOrgSiExiste(admin, user.id);
   if (!org) return NextResponse.json({ keys: [] });
+  // MISMA LLAVE QUE ACUÑAR Y REVOCAR. Listar expone prefijo y uso de las claves
+  // que descargan la licencia COMPLETA de la organización; la tabla de permisos
+  // reserva la gestión de claves a owner/admin, y hasta ahora el GET era el único
+  // de los tres verbos que no lo comprobaba: un member o billing podía enumerarlas.
+  if (!puede(org.role, "gestionar_claves")) {
+    return NextResponse.json({ error: NO_AUTORIZADO }, { status: 403 });
+  }
   const { data, error } = await admin
     .from("service_accounts")
     .select("id, label, key_prefix, last_used_at, created_at")

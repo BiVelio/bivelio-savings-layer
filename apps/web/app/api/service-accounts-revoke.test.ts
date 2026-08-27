@@ -128,3 +128,39 @@ describe("DELETE /api/service-accounts — no se puede revocar la clave de otro"
     expect(insertados[0]).toMatchObject({ org_id: ORG, kind: "service_account_revoked" });
   });
 });
+
+describe("GET /api/service-accounts — LISTAR también exige gestionar_claves", () => {
+  beforeEach(() => {
+    filtros.length = 0;
+    filasBorradas = [{ id: "clave-1", key_prefix: "bvk_abcd1234" }]; // el doble sirve estas al select
+  });
+
+  it("owner y admin SÍ pueden listar (200 con las claves)", async () => {
+    const { GET } = await import("./service-accounts/route");
+    for (const role of ["owner", "admin"]) {
+      pertenencias = [{ org_id: ORG, role, created_at: "2026-01-01" }];
+      const res = await GET();
+      expect(res.status).toBe(200);
+      expect((await res.json()).keys).toHaveLength(1);
+    }
+  });
+
+  it("⛔ un member o billing NO pueden enumerar las claves de la org: 403", async () => {
+    const { GET } = await import("./service-accounts/route");
+    for (const role of ["member", "billing"]) {
+      pertenencias = [{ org_id: ORG, role, created_at: "2026-01-01" }];
+      const res = await GET();
+      expect(res.status).toBe(403);
+      // Y no se llega a consultar service_accounts: nada de fuga por el filtro.
+      expect(filtros).not.toContainEqual(["service_accounts", "org_id", ORG]);
+    }
+  });
+
+  it("sin organización devuelve lista vacía, no 403", async () => {
+    pertenencias = [];
+    const { GET } = await import("./service-accounts/route");
+    const res = await GET();
+    expect(res.status).toBe(200);
+    expect((await res.json()).keys).toEqual([]);
+  });
+});
