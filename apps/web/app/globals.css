@@ -203,14 +203,8 @@ h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -.02em; font-weig
 /* Los controles de rango heredaban el azul del sistema operativo. */
 input[type="range"] { accent-color: var(--brand); }
 
-/* ── Marca (logo + wordmark "BiVelio." con los tres puntos) ────────────── */
+/* ── Marca: contenedor del logo en el chrome (nav público y topbar). ───── */
 .brand { display: inline-flex; align-items: center; gap: 10px; }
-.brand-logo { width: 28px; height: 28px; border-radius: var(--radius-md); display: block; }
-.bv-word { font-family: var(--font-heading); font-weight: 700; letter-spacing: -.025em; font-size: 1.125rem; color: var(--ink); }
-.bv-i { position: relative; display: inline-block; }
-.bv-i .tit { position: absolute; left: 50%; top: .38em; width: .17em; height: .17em; transform: translateX(-50%); border-radius: 50%; }
-.bv-period { display: inline-block; width: .19em; height: .19em; margin-left: .04em; border-radius: 50%; vertical-align: .02em; }
-.bv-c1 { background: #00B3FC; } .bv-c2 { background: #0073FF; } .bv-c3 { background: #00CBF2; }
 
 /* ── Badges: la única familia de píldoras del sistema. Es la traducción de
       lib/attio/badge.ts (11px, 600, tonos done/wait/trig) al CSS plano. ──── */
@@ -491,6 +485,8 @@ input[type="range"] { accent-color: var(--brand); }
 .auth-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); box-shadow: var(--shadow-elevated); padding: 32px; }
 .auth-card h1 { font-size: 1.5rem; letter-spacing: -.03em; margin: 4px 0 6px; }
 .auth-card .sub { color: var(--ink-soft); font-size: .9rem; margin: 0 0 22px; }
+/* Logo oficial en la cabecera de las tarjetas de auth (login/signup/reset). */
+.auth-brand { margin-bottom: 22px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .field label { font-size: 14px; color: var(--ink-soft); font-weight: 500; }
 .field input {

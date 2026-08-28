@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 import AuthForm from "@/app/components/AuthForm";
-import { BrandMark } from "@/app/components/BrandMark";
+import { SavingsLogo } from "@/app/components/SavingsLogo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -31,8 +31,8 @@ export default async function LoginPage({
   return (
     <main className="auth-wrap">
       <div className="auth-card">
-        <div className="brand" style={{ marginBottom: "22px", gap: "10px" }}>
-          <BrandMark size={24} /> <span className="tag">Savings Layer</span>
+        <div className="auth-brand">
+          <SavingsLogo variant="full" height={40} />
         </div>
         <h1>{t("welcomeBack")}</h1>
         <p className="sub">{t("loginSubtitle")}</p>
