@@ -4,8 +4,8 @@ import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
 
-import { BrandMark } from "./BrandMark";
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
+import { SavingsLogo } from "./SavingsLogo";
 
 // Cuentas propiedad de BiVelio, las mismas que publica el SocialDock de
 // bivelio.com. No hay cuenta de X (x.com/bivelio es un 404), así que X no está
@@ -141,7 +141,9 @@ export default async function Footer() {
           <div className="ftr-inner">
             <div className="ftr-grid">
               <div className="ftr-brand">
-                <BrandMark size={36} />
+                <Link href="/" className="ftr-logo" aria-label="Savings by BiVelio">
+                  <SavingsLogo variant="full" height={52} />
+                </Link>
                 <p>{t.rich("footer.tagline", { b: (c) => <b>{c}</b> })}</p>
                 <span className="ftr-badge">
                   <span className="bar" /> {t("footer.badge")}
