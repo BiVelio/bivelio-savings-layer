@@ -4,15 +4,16 @@ import { Link } from "@/i18n/navigation";
 // rotado, asi que tampoco debe provocar la rotacion — ver server.ts.
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { AnnouncementBar } from "./AnnouncementBar";
-import { BrandMark } from "./BrandMark";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu, NavCta, NavSections } from "./NavLinks";
+import { SavingsLogo } from "./SavingsLogo";
 
 /**
  * Chrome superior de las superficies públicas (landing / login / signup) —
  * mismo montaje que el <SiteNav> de bivelio.com: franja de anuncio negra,
- * cabecera pegajosa de 64px translúcida con blur, marca a la izquierda con sus
- * secciones, y a la derecha el idioma y un único CTA tinta.
+ * cabecera pegajosa de 64px translúcida con blur, el logo oficial de Savings a
+ * la izquierda con sus secciones (el logotipo completo en escritorio, solo el
+ * isotipo «S» en móvil), y a la derecha el idioma y un único CTA tinta.
  * El dashboard tiene su propio shell (topbar + sidebar).
  */
 export async function NavBar() {
@@ -33,9 +34,9 @@ export async function NavBar() {
       <header className="site-nav">
         <div className="site-nav-inner">
           <div className="nav-left">
-            <Link href="/" className="nav-brand" aria-label="BiVelio Savings Layer">
-              <BrandMark size={28} />
-              <span className="tag">Savings Layer</span>
+            <Link href="/" className="nav-brand" aria-label="Savings by BiVelio">
+              <SavingsLogo variant="full" height={36} className="nav-logo-full" />
+              <SavingsLogo variant="mark" height={32} className="nav-logo-mark" />
             </Link>
             <NavSections />
           </div>
