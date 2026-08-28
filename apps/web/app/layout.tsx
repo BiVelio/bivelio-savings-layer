@@ -16,7 +16,15 @@ export const metadata: Metadata = {
   // encuentran" sino "prohíbo indexarme y seguir mis enlaces". El bloqueo se
   // aplica ahora SOLO donde toca — el shell del dashboard y las tres pantallas
   // de auth lo declaran en su propio metadata.
-  icons: { icon: "/logo-bivelio.png", apple: "/logo-bivelio.png" },
+  // Isotipo «S» oficial de Savings (ver public/brand/). El de Apple lleva fondo
+  // blanco porque iOS pinta la transparencia de negro.
+  icons: {
+    icon: [
+      { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/favicon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: { url: "/brand/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+  },
 };
 
 // Color con el que se tiñe la barra de direcciones del móvil. Un solo valor:
