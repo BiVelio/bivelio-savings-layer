@@ -51,20 +51,17 @@ export async function POST(req: Request): Promise<NextResponse> {
   // entitlement no debe descartar el uso de un cliente que paga. La revocación
   // la refuerzan también el gate del SDK y el poller; una ventana breve durante
   // una caída de BD es aceptable, tirar el uso legítimo no.
-  const [{ data: licenses, error: licErr }, { data: sub, error: subErr }] = await Promise.all([
+  // TODAS las suscripciones de la org, no solo la más nueva. Con `limit(1)` una
+  // fila NO vigente más reciente hacía sombra a la vigente más antigua y el
+  // ingest devolvía 402 a un cliente que paga. Ver `hasActiveSubscription`.
+  const [{ data: licenses, error: licErr }, { data: subs, error: subErr }] = await Promise.all([
     supabase.from("licenses").select("revoked, expires_at, grace_days").eq("org_id", orgId),
-    supabase
-      .from("subscriptions")
-      .select("status, current_period_end")
-      .eq("org_id", orgId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    supabase.from("subscriptions").select("status, current_period_end").eq("org_id", orgId),
   ]);
   if (licErr || subErr) {
     console.error("[metering/usage] entitlement lookup failed (fail-open):", licErr ?? subErr);
   } else {
-    const decision = decideEntitlement(licenses ?? [], sub ?? null, Date.now());
+    const decision = decideEntitlement(licenses ?? [], subs ?? [], Date.now());
     if (decision.blocked) {
       return NextResponse.json(
         {
