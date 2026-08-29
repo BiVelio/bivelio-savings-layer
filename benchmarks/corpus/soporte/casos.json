@@ -76,9 +76,9 @@
       "gemelo": {
         "caso": "sop-es-003",
         "porQueDifiere": "La única diferencia en la consulta es «con el embalaje original» frente a «sin el embalaje original». El reembolso pasa de 100 % a 80 %.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
-      "nota": "Trampa de negación en la CONSULTA, no en la evidencia. «sin» no está en la lista NEGATIONS de src/cache/semantic.ts (que es anglocéntrica: tiene «without», no «sin»), así que la paridad de negación no lo ve. Verificado: esta consulta y la de sop-es-003 colisionan hoy bajo keyTokensMatch. E2 es la MISMA unidad que en el gemelo cambia de papel: aquí es distractora (la 4.1 basta para responder) y allí es necesaria. Es la distractora más dura posible, porque es la cláusula contigua del mismo documento y contesta a la misma pregunta con otra cifra.",
+      "nota": "Trampa de negación en la CONSULTA, no en la evidencia. CERRADA el 2026-08-29: «sin» ya está en la lista NEGATIONS de src/cache/semantic.ts, que dejó de ser anglocéntrica y cubre es/ca. Antes tenía «without» y no «sin», así que la paridad de negación no veía la trampa y este par colisionaba bajo keyTokensMatch — sirviendo el 100 % de reembolso a quien preguntaba SIN embalaje, que cobra el 80 %. El test test/negaciones-es-ca.test.ts lo sujeta. E2 es la MISMA unidad que en el gemelo cambia de papel: aquí es distractora (la 4.1 basta para responder) y allí es necesaria. Es la distractora más dura posible, porque es la cláusula contigua del mismo documento y contesta a la misma pregunta con otra cifra.",
       "presupuesto": { "unidades_max": 2 }
     },
     {
@@ -116,7 +116,7 @@
       "gemelo": {
         "caso": "sop-es-002",
         "porQueDifiere": "Una preposición de tres letras invierte qué cláusula aplica. El campo procede coincide (true en ambos); lo que cambia es el importe.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
       "nota": "El par 002/003 es el peor escenario comercial: procede=true en los dos, así que una respuesta cacheada de forma cruzada PARECE correcta y solo está mal en la cifra. Un juez que compare «¿se admite la devolución?» no detecta el error; solo lo detecta comparar porcentaje_reembolso.",
       "presupuesto": { "unidades_max": 2 }
@@ -1026,9 +1026,9 @@
       "gemelo": {
         "caso": "sop-ca-003",
         "porQueDifiere": "«amb l'embalatge» davant de «sense l'embalatge». El reembossament passa del 100 % al 80 %.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
-      "nota": "«sense» tampoc és a la llista NEGATIONS de src/cache/semantic.ts, que només té «without». Comprovat: en consulta CURTA aquest parell se separa per poc (Jaccard 0,714 < 0,75), però en consulta llarga i cortès —la real— COL·LISIONA. La protecció depèn de la longitud de la consulta, no del risc.",
+      "nota": "TANCAT el 2026-08-29: «sense» ja és a la llista NEGATIONS de src/cache/semantic.ts, que ha deixat de ser només anglesa. Abans només tenia «without», i comprovat: en consulta CURTA aquest parell se separava per poc (Jaccard 0,714 < 0,75), però en consulta llarga i cortesa —la real— COL·LISIONAVA, o sia que la protecció depenia de la longitud de la consulta i no del risc. Ara la paritat de negació el talla sempre, abans del Jaccard.",
       "presupuesto": { "unidades_max": 2 }
     },
     {
@@ -1066,7 +1066,7 @@
       "gemelo": {
         "caso": "sop-ca-002",
         "porQueDifiere": "Una preposició inverteix quina clàusula s'aplica; procede segueix sent true als dos i només canvia l'import.",
-        "colisionaEnCache": true
+        "colisionaEnCache": false
       },
       "nota": "Parell bessó del castellà 002/003, en català. Que la mateixa trampa funcioni en les dues llengües és el que permet mesurar si el knapsack degrada per idioma, que és exactament el criteri d'acceptació de F6 al pla.",
       "presupuesto": { "unidades_max": 2 }
