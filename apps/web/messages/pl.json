@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
-    "metaDescription": "Zweryfikuj swoje oszczędności na LLM z BV-SALA — wklej własne dane i patrz, jak prawdziwe rozliczanie tokenów oblicza oszczędności na żywo w Twojej przeglądarce.",
+    "metaDescription": "Licencjonowana warstwa kosztów LLM. Staje przed Twoim dostawcą i tnie rachunek; oszczędność zmierzona jego własnym licznikiem, z przedziałem ufności 95%.",
     "hero": {
       "eyebrow": "Warstwa kosztów LLM, którą każdy może zainstalować — licencjonowana do uruchamiania",
       "title": "Udowodnij oszczędności na",
       "titleAccent": "własnych danych.",
-      "lede": "BV‑SALA stoi przed dowolnym dostawcą LLM i dla każdego żądania wybiera najtańszą realizację, która wciąż spełnia Twój próg jakości. Nie wierz nam na słowo — wklej swoje dane poniżej i patrz, jak licznik się porusza.",
-      "ctaRun": "Uruchom weryfikator",
+      "lede": "BV-SALA stoi przed dowolnym dostawcą LLM i dla każdego żądania wybiera najtańszą realizację, która wciąż spełnia Twój próg jakości. Każdy wynik oszczędności, jaki publikujemy, jest mierzony względem licznika tokenów samego dostawcy i podawany z przedziałem ufności — to pomiar, nigdy szacunek.",
+      "ctaRun": "Zobacz zmierzone wyniki",
       "ctaPricing": "Zobacz cennik",
-      "note": "Działa w całości w Twojej przeglądarce. Bez rejestracji, nic nie opuszcza tej strony.",
+      "note": "Instalacja w pięciu linijkach. Licencję aktywujesz w swoim panelu.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "proofs": [
         {

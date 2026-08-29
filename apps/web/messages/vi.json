@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
-    "metaDescription": "Xác minh mức tiết kiệm LLM của bạn với BV-SALA — dán dữ liệu của chính bạn và theo dõi cách hạch toán token thực tính toán mức tiết kiệm trực tiếp trong trình duyệt của bạn.",
+    "metaDescription": "Lớp chi phí LLM có cấp phép. Cài đặt trước nhà cung cấp của bạn và cắt giảm hóa đơn; mức tiết kiệm đo theo chính bộ đếm của họ, kèm khoảng tin cậy 95%.",
     "hero": {
       "eyebrow": "Lớp chi phí LLM mà ai cũng có thể cài đặt — được cấp phép để chạy",
       "title": "Chứng minh mức tiết kiệm trên",
       "titleAccent": "dữ liệu của chính bạn.",
-      "lede": "BV‑SALA đứng trước bất kỳ nhà cung cấp LLM nào và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Đừng chỉ tin lời chúng tôi — dán dữ liệu của bạn bên dưới và xem đồng hồ đo chuyển động.",
-      "ctaRun": "Chạy trình xác minh",
+      "lede": "BV-SALA đứng trước bất kỳ nhà cung cấp LLM nào và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Mọi con số tiết kiệm mà chúng tôi công bố đều được đo bằng chính bộ đếm token của nhà cung cấp và luôn đi kèm khoảng tin cậy — không bao giờ là ước tính.",
+      "ctaRun": "Xem kết quả đo",
       "ctaPricing": "Xem bảng giá",
-      "note": "Chạy hoàn toàn trong trình duyệt của bạn. Không cần đăng ký, không có gì rời khỏi trang này.",
+      "note": "Cài đặt trong năm dòng. Giấy phép được kích hoạt từ bảng điều khiển của bạn.",
       "proofTitle": "Đo với nhà cung cấp thật",
       "proofs": [
         {

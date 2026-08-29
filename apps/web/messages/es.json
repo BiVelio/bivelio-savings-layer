@@ -434,12 +434,12 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
-    "metaDescription": "Verifica tu ahorro en LLM con BV-SALA: pega tus propios datos y observa cómo la contabilidad real de tokens calcula el ahorro en vivo en tu navegador.",
+    "metaDescription": "Capa de coste para LLM con licencia. Se instala delante de tu proveedor y recorta la factura; el ahorro va medido contra su contador, con intervalo al 95 %.",
     "hero": {
       "eyebrow": "Capa de coste para LLM · SDK con licencia",
       "title": "Tu factura de LLM,",
       "titleAccent": "medida y recortada.",
-      "lede": "BV‑SALA se sitúa delante de tu proveedor y, en cada petición, elige la ejecución más barata que aún cumple tu contrato de calidad. Cada cifra de esta página está medida contra el contador del propio proveedor, con su intervalo de confianza al lado — nunca una estimación.",
+      "lede": "BV‑SALA se sitúa delante de tu proveedor y, en cada petición, elige la ejecución más barata que aún cumple tu contrato de calidad. Cada cifra de ahorro que publicamos está medida contra el contador del propio proveedor, con su intervalo de confianza al lado — nunca una estimación.",
       "ctaRun": "Ver lo medido",
       "ctaPricing": "Precios",
       "note": "Instalación en cinco líneas. La licencia se activa desde tu panel.",

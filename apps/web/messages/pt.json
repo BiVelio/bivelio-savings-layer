@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
-    "metaDescription": "Verifica a tua poupança em LLM com o BV-SALA — cola os teus próprios dados e observa a contabilidade real de tokens a calcular a poupança em direto no teu navegador.",
+    "metaDescription": "Camada de custo para LLM, licenciada. Instala-se à frente do teu fornecedor e corta a fatura; a poupança é medida contra o contador dele, com intervalo de 95%.",
     "hero": {
       "eyebrow": "A camada de custo de LLM que qualquer um pode instalar — licenciada para executar",
       "title": "Prova a poupança com",
       "titleAccent": "os teus próprios dados.",
-      "lede": "O BV‑SALA coloca-se à frente de qualquer fornecedor de LLM e, em cada pedido, escolhe a execução mais barata que ainda cumpre o teu limiar de qualidade. Não acredites só na nossa palavra — cola os teus dados abaixo e observa o medidor a mover-se.",
-      "ctaRun": "Executar o verificador",
+      "lede": "O BV-SALA coloca-se à frente do teu fornecedor e, em cada pedido, escolhe a execução mais barata que ainda cumpre o teu contrato de qualidade. Cada número desta página está medido contra o contador do próprio fornecedor, com o seu intervalo de confiança ao lado — nunca uma estimativa.",
+      "ctaRun": "Ver o que medimos",
       "ctaPricing": "Ver preços",
-      "note": "Executa-se inteiramente no teu navegador. Sem registo, nada sai desta página.",
+      "note": "Instalação em cinco linhas. A licença ativa-se no teu painel.",
       "proofTitle": "Medido contra fornecedor real",
       "proofs": [
         {

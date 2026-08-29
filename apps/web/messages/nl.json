@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "Verifieer je LLM-besparingen met BV-SALA — plak je eigen gegevens en zie hoe echte tokenboekhouding de besparingen live in je browser berekent.",
+    "metaDescription": "LLM-kostenlaag met licentie. Installeer hem vóór je provider en verlaag je factuur; de besparing is gemeten tegen de teller van de provider, met 95%-interval.",
     "hero": {
       "eyebrow": "De LLM-kostenlaag die iedereen kan installeren — met licentie om te draaien",
       "title": "Bewijs de besparingen op",
       "titleAccent": "je eigen gegevens.",
-      "lede": "BV‑SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Neem niet zomaar ons woord aan — plak hieronder je gegevens en zie de meter bewegen.",
-      "ctaRun": "Start de verificatie",
+      "lede": "BV-SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Elk besparingscijfer dat we publiceren is gemeten tegen de tokenteller van de provider zelf, met het betrouwbaarheidsinterval erbij — nooit een schatting.",
+      "ctaRun": "Bekijk de metingen",
       "ctaPricing": "Bekijk prijzen",
-      "note": "Draait volledig in je browser. Geen registratie, niets verlaat deze pagina.",
+      "note": "Installatie in vijf regels code. De licentie activeer je in je dashboard.",
       "proofTitle": "Gemeten tegen een echte provider",
       "proofs": [
         {

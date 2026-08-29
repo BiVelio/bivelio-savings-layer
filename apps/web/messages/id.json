@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
-    "metaDescription": "Verifikasi penghematan LLM Anda dengan BV-SALA — tempel data Anda sendiri dan amati penghitungan token nyata menghitung penghematan secara langsung di browser Anda.",
+    "metaDescription": "Lapisan biaya LLM berlisensi. Dipasang di depan penyedia Anda dan memangkas tagihan; penghematan diukur terhadap penghitung penyedia, interval keyakinan 95%.",
     "hero": {
       "eyebrow": "Lapisan biaya LLM yang bisa dipasang siapa saja — berlisensi untuk berjalan",
       "title": "Buktikan penghematan pada",
       "titleAccent": "data Anda sendiri.",
-      "lede": "BV‑SALA berada di depan penyedia LLM mana pun dan, untuk setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Jangan hanya percaya kata kami — tempel data Anda di bawah dan amati meteran bergerak.",
-      "ctaRun": "Jalankan verifikator",
+      "lede": "BV-SALA berada di depan penyedia LLM mana pun dan, untuk setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Setiap angka penghematan yang kami publikasikan diukur terhadap penghitung token milik penyedia sendiri dan disertai interval keyakinannya — sama sekali bukan estimasi.",
+      "ctaRun": "Lihat hasil terukur",
       "ctaPricing": "Lihat harga",
-      "note": "Berjalan sepenuhnya di browser Anda. Tanpa pendaftaran, tidak ada yang keluar dari halaman ini.",
+      "note": "Pemasangan dalam lima baris. Lisensi diaktifkan dari dasbor Anda.",
       "proofTitle": "Diukur terhadap penyedia nyata",
       "proofs": [
         {

@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
-    "metaDescription": "LLM tasarrufunuzu BV-SALA ile doğrulayın — kendi verilerinizi yapıştırın ve gerçek token hesaplamasının tasarrufu tarayıcınızda canlı olarak hesaplamasını izleyin.",
+    "metaDescription": "Lisanslı LLM maliyet katmanı. Sağlayıcınızın önüne kurulur ve faturanızı kısar; tasarruf, sağlayıcının kendi sayacına karşı %95 güven aralığıyla ölçülür.",
     "hero": {
       "eyebrow": "Herkesin kurabileceği LLM maliyet katmanı — çalıştırmak için lisanslı",
       "title": "Tasarrufu kanıtlayın",
       "titleAccent": "kendi verilerinizle.",
-      "lede": "BV‑SALA, herhangi bir LLM sağlayıcısının önünde yer alır ve her istek için kalite eşiğinizi hâlâ karşılayan en ucuz yürütmeyi seçer. Bize öylece inanmayın — verilerinizi aşağıya yapıştırın ve sayacın hareketini izleyin.",
-      "ctaRun": "Doğrulayıcıyı çalıştır",
+      "lede": "BV-SALA, sağlayıcınızın önünde yer alır ve her istekte kalite eşiğinizi hâlâ karşılayan en ucuz yürütmeyi seçer. Bu sayfadaki her rakam, sağlayıcının kendi sayacına karşı ölçülmüştür ve güven aralığıyla birlikte verilir — hiçbiri tahmin değil.",
+      "ctaRun": "Ölçülen sonuçları gör",
       "ctaPricing": "Fiyatları gör",
-      "note": "Tamamen tarayıcınızda çalışır. Kayıt yok, bu sayfadan hiçbir şey çıkmaz.",
+      "note": "Kurulum beş satır. Lisans, panelinizden etkinleştirilir.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
       "proofs": [
         {

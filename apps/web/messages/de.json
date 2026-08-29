@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
-    "metaDescription": "Verifiziere deine LLM-Einsparungen mit BV-SALA — füge deine eigenen Daten ein und beobachte, wie echte Token-Abrechnung die Einsparungen live in deinem Browser berechnet.",
+    "metaDescription": "Lizenzierte Kostenschicht für LLMs. Sie sitzt vor deinem Provider und senkt die Rechnung; die Ersparnis ist an dessen Zähler gemessen, mit 95-%-Intervall.",
     "hero": {
       "eyebrow": "Die LLM-Kostenschicht, die jeder installieren kann — lizenziert zum Ausführen",
       "title": "Beweise die Einsparungen mit",
       "titleAccent": "deinen eigenen Daten.",
-      "lede": "BV‑SALA sitzt vor jedem LLM-Provider und wählt für jede Anfrage die günstigste Ausführung, die trotzdem deine Qualitätsschwelle erfüllt. Verlass dich nicht auf unser Wort — füge unten deine Daten ein und beobachte, wie sich der Zähler bewegt.",
-      "ctaRun": "Verifizierer ausführen",
+      "lede": "BV-SALA sitzt vor jedem LLM-Provider und wählt für jede Anfrage die günstigste Ausführung, die trotzdem deine Qualitätsschwelle erfüllt. Jede Einsparungszahl, die wir veröffentlichen, ist am Token-Zähler des Providers selbst gemessen und kommt mit ihrem Konfidenzintervall — niemals eine Schätzung.",
+      "ctaRun": "Zu den Messungen",
       "ctaPricing": "Preise ansehen",
-      "note": "Läuft vollständig in deinem Browser. Keine Anmeldung, nichts verlässt diese Seite.",
+      "note": "Installation in fünf Zeilen. Die Lizenz aktivierst du in deinem Dashboard.",
       "proofTitle": "Gegen echten Provider gemessen",
       "proofs": [
         {

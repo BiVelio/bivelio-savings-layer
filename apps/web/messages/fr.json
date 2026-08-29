@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
-    "metaDescription": "Vérifiez vos économies LLM avec BV-SALA — collez vos propres données et regardez la comptabilité réelle des tokens calculer les économies en direct dans votre navigateur.",
+    "metaDescription": "Couche de coût LLM sous licence. Elle se place devant votre fournisseur et réduit la facture ; l'économie est mesurée contre son compteur, intervalle à 95 %.",
     "hero": {
       "eyebrow": "La couche de coût LLM que tout le monde peut installer — sous licence pour s'exécuter",
       "title": "Prouvez les économies sur",
       "titleAccent": "vos propres données.",
-      "lede": "BV‑SALA se place devant n'importe quel fournisseur de LLM et, pour chaque requête, choisit l'exécution la moins chère qui respecte encore votre exigence de qualité. Ne nous croyez pas sur parole — collez vos données ci-dessous et regardez le compteur bouger.",
-      "ctaRun": "Lancer le vérificateur",
+      "lede": "BV-SALA se place devant votre fournisseur et, à chaque requête, choisit l'exécution la moins chère qui respecte encore votre exigence de qualité. Chaque chiffre de cette page est mesuré contre le compteur du fournisseur lui-même, avec son intervalle de confiance à côté — jamais une estimation.",
+      "ctaRun": "Voir les résultats mesurés",
       "ctaPricing": "Voir les tarifs",
-      "note": "S'exécute entièrement dans votre navigateur. Sans inscription, rien ne quitte cette page.",
+      "note": "Installation en cinq lignes. La licence s'active depuis votre tableau de bord.",
       "proofTitle": "Mesuré contre un fournisseur réel",
       "proofs": [
         {
