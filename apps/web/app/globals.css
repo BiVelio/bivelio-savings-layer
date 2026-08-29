@@ -187,21 +187,38 @@ h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -.02em; font-weig
 }
 
 /* ── Raíles con scroll: barra fina teñida de marca, nunca la del sistema ── */
-.tbl-scroll, .code2, .lp .code, .lang-grid, .app-nav {
+.tbl-scroll, .code2, .lp .code, .lang-grid, .app-nav, .lp .calc-tblwrap {
   scrollbar-width: thin;
   scrollbar-color: rgba(119, 140, 227, .3) transparent;
 }
 .tbl-scroll::-webkit-scrollbar, .code2::-webkit-scrollbar, .lp .code::-webkit-scrollbar,
-.lang-grid::-webkit-scrollbar, .app-nav::-webkit-scrollbar { width: 4px; height: 4px; }
+.lang-grid::-webkit-scrollbar, .app-nav::-webkit-scrollbar,
+.lp .calc-tblwrap::-webkit-scrollbar { width: 4px; height: 4px; }
 .tbl-scroll::-webkit-scrollbar-track, .code2::-webkit-scrollbar-track, .lp .code::-webkit-scrollbar-track,
-.lang-grid::-webkit-scrollbar-track, .app-nav::-webkit-scrollbar-track { background: transparent; }
+.lang-grid::-webkit-scrollbar-track, .app-nav::-webkit-scrollbar-track,
+.lp .calc-tblwrap::-webkit-scrollbar-track { background: transparent; }
 .tbl-scroll::-webkit-scrollbar-thumb, .code2::-webkit-scrollbar-thumb, .lp .code::-webkit-scrollbar-thumb,
-.lang-grid::-webkit-scrollbar-thumb, .app-nav::-webkit-scrollbar-thumb { background: rgba(119, 140, 227, .3); border-radius: 4px; }
+.lang-grid::-webkit-scrollbar-thumb, .app-nav::-webkit-scrollbar-thumb,
+.lp .calc-tblwrap::-webkit-scrollbar-thumb { background: rgba(119, 140, 227, .3); border-radius: 4px; }
 .tbl-scroll::-webkit-scrollbar-thumb:hover, .code2::-webkit-scrollbar-thumb:hover, .lp .code::-webkit-scrollbar-thumb:hover,
 .lang-grid::-webkit-scrollbar-thumb:hover, .app-nav::-webkit-scrollbar-thumb:hover { background: rgba(119, 140, 227, .5); }
 
 /* Los controles de rango heredaban el azul del sistema operativo. */
 input[type="range"] { accent-color: var(--brand); }
+
+/* ── Campos en pantalla táctil ────────────────────────────────────────────
+   iOS Safari hace ZOOM sobre la página al enfocar cualquier campo cuya letra
+   mida menos de 16px — y al volver del zoom la maquetación queda descuadrada.
+   `.field input` ya lo resolvía a mano con un comentario que dice justo esto;
+   aquí se aplica la misma regla al resto de campos, y solo donde importa: bajo
+   `pointer: coarse` el escritorio no cambia ni un píxel. */
+@media (pointer: coarse) {
+  .kt-input, .lang-search, .equipo-select,
+  .lp .calc-grid select, .lp .calc-grid input,
+  .cta15-fila input, .field2 input, textarea.proj-ta { font-size: 16px; }
+  /* Con la letra a 16px el control crece solo hasta un objetivo táctil digno. */
+  .lp .calc-grid select, .lp .calc-grid input { padding: 9px 11px; }
+}
 
 /* ── Marca: contenedor del logo en el chrome (nav público y topbar). ───── */
 .brand { display: inline-flex; align-items: center; gap: 10px; }
@@ -322,8 +339,15 @@ input[type="range"] { accent-color: var(--brand); }
 .savings-logo { display: block; max-width: 100%; height: auto; object-fit: contain; }
 .nav-logo-mark { display: none; }
 @media (max-width: 639px) { .nav-logo-full { display: none; } .nav-logo-mark { display: block; } }
-.nav-menu { display: none; align-items: center; gap: 24px; } /* gap-6, como bivelio.com */
-@media (min-width: 640px) { .nav-menu { display: flex; } }
+/* El menú de secciones sale desde 700px, no desde 640px: es el ajuste MÍNIMO
+   que hace que la fila entre en los doce idiomas. Medido con el botón de
+   bivelio.com ya retirado, a 640px seguían recortándose el francés (9px), el
+   alemán (22px), el neerlandés (11px), el turco (7px) y el catalán (7px). La
+   banda que cambia es 640-700px —un móvil en horizontal, donde el hamburguesa
+   es lo normal—; de 700px para arriba, tablets incluidas, el nav se ve
+   EXACTAMENTE igual que antes. */
+.nav-menu { display: none; align-items: center; gap: 24px; min-width: 0; } /* gap-6, como bivelio.com */
+@media (min-width: 700px) { .nav-menu { display: flex; } }
 .nav-link { font-size: 14px; font-weight: 500; color: var(--ink-soft); transition: color .15s; }
 .nav-link:hover { color: var(--ink); text-decoration: none; }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
@@ -332,9 +356,17 @@ input[type="range"] { accent-color: var(--brand); }
    vía directa a la cuenta aunque exista el menú hamburguesa. */
 @media (max-width: 480px) { .nav-cta { padding: 8px 13px; } .nav-cta svg { display: none; } }
 
-/* Puente al sitio corporativo: en móvil vive dentro del panel hamburguesa. */
+/* Puente al sitio corporativo: en móvil vive dentro del panel hamburguesa.
+   Entre 640 y 960px NO se pinta, y es la única pieza del nav que cede: medido,
+   la fila entera pide 854px en francés y 811px en alemán, así que a 768px se
+   salía 51px por la derecha y el `overflow-x: clip` del <html> la cortaba en
+   silencio. Sin este botón secundario —127px con su hueco— la fila entra con
+   holgura en los doce idiomas y el menú de secciones se queda donde estaba,
+   desde 640px. El destino no se pierde: bivelio.com es el primer enlace de la
+   columna «BiVelio» del pie, y sigue en el panel del hamburguesa por debajo de
+   640px. */
 .nav-corp { display: none; padding: 8px 16px; font-size: 14px; }
-@media (min-width: 640px) { .nav-corp { display: inline-flex; } }
+@media (min-width: 960px) { .nav-corp { display: inline-flex; } }
 
 /* ── Menú móvil (clon del hamburguesa del <SiteNav> de bivelio.com) ─────── */
 .nav-burger {
@@ -346,7 +378,7 @@ input[type="range"] { accent-color: var(--brand); }
 }
 .nav-burger:hover { color: var(--ink); }
 .nav-burger svg { width: 20px; height: 20px; }
-@media (min-width: 640px) { .nav-burger { display: none; } }
+@media (min-width: 700px) { .nav-burger { display: none; } }
 
 /* Panel a todo el ancho, colgado de la cabecera pegajosa. */
 .nav-mobile {
@@ -354,7 +386,7 @@ input[type="range"] { accent-color: var(--brand); }
   background: #fff;
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
 }
-@media (min-width: 640px) { .nav-mobile { display: none; } }
+@media (min-width: 700px) { .nav-mobile { display: none; } }
 .nav-mobile-inner { padding: 16px; display: grid; gap: 2px; }
 .nav-mobile-item {
   display: flex; align-items: center; gap: 12px;
@@ -414,7 +446,7 @@ input[type="range"] { accent-color: var(--brand); }
 @media (max-width: 640px) { .app-account .email { display: none; } }
 @media (max-width: 520px) { .app-plan { display: none; } }
 
-.app-body { display: grid; grid-template-columns: 240px 1fr; flex: 1; min-height: 0; }
+.app-body { display: grid; grid-template-columns: 240px minmax(0, 1fr); flex: 1; min-height: 0; }
 .app-sidebar { border-right: 1px solid var(--line); background: var(--bg); padding: 20px 14px; }
 .app-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(var(--nav-h) + 20px); }
 .app-nav-sep {
@@ -453,7 +485,11 @@ input[type="range"] { accent-color: var(--brand); }
   /* `auto 1fr`: en una sola columna las filas automáticas se estiraban a partes
      iguales y la barra de navegación se comía media pantalla antes de que
      empezara el contenido. */
-  .app-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  /* `minmax(0, …)` también aquí: apilada, la única pista seguía siendo
+     `minmax(auto, 1fr)` y se plantaba en el min-content de `.app-main`. Medido
+     en un banco estático con el CSS real: a 414px la columna salía a 560px, o
+     sea 146px de dashboard recortados en silencio. */
+  .app-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
   .app-sidebar { border-right: none; border-bottom: 1px solid var(--line); padding: 8px 12px; position: sticky; top: var(--nav-h); z-index: 40; background: var(--surface); }
   .app-nav { flex-direction: row; gap: 6px; overflow-x: auto; position: static; padding-bottom: 2px; }
   .app-nav-item { white-space: nowrap; padding: 7px 12px; }
@@ -527,14 +563,22 @@ input[type="range"] { accent-color: var(--brand); }
   background: var(--mint); display: inline-block;
 }
 
-.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* `minmax(0, …)` en TODA pista que deba poder encoger: un `1fr` pelado es
+   `minmax(auto, 1fr)` y se planta en el min-content de lo que lleve dentro.
+   Los modificadores `.wide` y `.plan` sustituyen a dos `style={{gridTemplate
+   Columns}}` en línea que ganaban a la media query y dejaban el dashboard en
+   dos columnas a 360px. */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.cards.wide { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.cards.plan { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.cards > * { min-width: 0; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 20px; box-shadow: var(--shadow-card); }
 .lp .ledger, .lp .cascade { transition: transform .2s, box-shadow .2s, border-color .2s; }
 .lp .ledger:hover { transform: translateY(-2px); box-shadow: var(--shadow-brand); border-color: color-mix(in srgb, var(--brand) 22%, var(--line)); }
 .card .n { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); }
 .card h3 { margin: 8px 0 4px; font-size: 1.05rem; letter-spacing: -.02em; }
 .card p { margin: 0; color: var(--ink-soft); font-size: .86rem; }
-@media (max-width: 560px) { .cards { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .cards, .cards.wide, .cards.plan { grid-template-columns: minmax(0, 1fr); } }
 
 /* ============================================================================
    THE METER — cockpit de ahorro (savings.bivelio.com/dashboard)
@@ -569,7 +613,7 @@ input[type="range"] { accent-color: var(--brand); }
 .chip2.warn b { color: var(--danger); }
 
 /* Espina de instrumentación */
-.spine { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-card); }
+.spine { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-card); }
 .spine-node { padding: 14px; border-right: 1px solid var(--line); position: relative; }
 .spine-node:last-child { border-right: none; }
 .spine-node .idx { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-family: var(--mono); font-size: .66rem; margin-bottom: 8px; }
@@ -581,7 +625,7 @@ input[type="range"] { accent-color: var(--brand); }
 .spine-node .st { font-size: .66rem; color: var(--ink-soft); margin-top: 2px; }
 .spine-task { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 14px 16px; box-shadow: var(--shadow-card); }
 .spine-task .t { font-size: .84rem; font-weight: 600; margin: 0 0 8px; }
-@media (max-width: 720px) { .spine { grid-template-columns: 1fr 1fr; } .spine-node:nth-child(2n) { border-right: none; } }
+@media (max-width: 720px) { .spine { grid-template-columns: repeat(2, minmax(0, 1fr)); } .spine-node:nth-child(2n) { border-right: none; } }
 
 /* Código + copiar. bivelio.com renderiza el código en CLARO (shiki con tema
    `github-light` sobre `<pre class="rounded-xl border border-border bg-card">`),
@@ -611,8 +655,8 @@ input[type="range"] { accent-color: var(--brand); }
 .copybtn:hover { background: var(--surface-3); color: var(--ink); border-color: var(--btn-ghost-line-hover); }
 
 /* Rejilla de KPIs (raíl vivo + referencia) */
-.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 16px; box-shadow: var(--shadow-card); position: relative; min-height: 118px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 16px; box-shadow: var(--shadow-card); position: relative; min-height: 118px; min-width: 0; }
 .kpi .n { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
 .kpi .v { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 600; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin: 8px 0 2px; }
 .kpi .v.pos { color: var(--mint); } .kpi .v.neg { color: var(--danger); } .kpi .v.empty { color: var(--ink-soft); }
@@ -621,10 +665,18 @@ input[type="range"] { accent-color: var(--brand); }
 .kpi .lo { font-size: .68rem; color: var(--ink-soft); font-family: var(--mono); }
 .kpi .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; margin-top: 6px; word-break: break-all; }
 .footnote { font-size: .74rem; color: var(--ink-soft); margin-top: 10px; }
-@media (max-width: 640px) { .kpis { grid-template-columns: 1fr 1fr; } }
+/* El min-content de una tarjeta de libro es su etiqueta mono SIN espacios
+   (`ELIMINATED_TOKENS`, `PROVIDER_CACHED`) más la cifra a 1.5rem. Medido: a
+   390px la rejilla se iba 37px fuera de la tarjeta y cada `.kpi` 62px fuera de
+   la pantalla a 320px. `minmax(0, …)` deja encoger la pista, `overflow-wrap`
+   parte la única palabra que no cabe, y por debajo de 430px va a una columna:
+   dos tarjetas de 130px no caben con la cifra dentro. */
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 430px) { .kpis { grid-template-columns: minmax(0, 1fr); } }
+.kpi .n, .kpi .sub, .kpi .lo, .kpi .ghost, .kpi .src, .card .n { overflow-wrap: anywhere; }
 
 /* Veredicto */
-.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: 26px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 24px; align-items: center; }
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: 26px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 24px; align-items: center; }
 .verdict .big { font-family: var(--font-heading); font-size: 3rem; font-weight: 600; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
 .verdict .big.empty { color: var(--ink-soft); }
 .verdict .big.pos { color: var(--mint); }
@@ -635,7 +687,18 @@ input[type="range"] { accent-color: var(--brand); }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
 .seg button { background: var(--surface); border: none; padding: 6px 12px; font-size: .76rem; color: var(--ink-soft); font-family: var(--sans); cursor: default; }
 .seg button[disabled] { opacity: .5; }
-@media (max-width: 680px) { .verdict { grid-template-columns: 1fr; } .verdict .big { font-size: 2.4rem; } }
+/* `.band` es el reparto que la banda de intervalo pedía con un
+   `style={{gridTemplateColumns: "minmax(220px,1fr) 1.3fr"}}` EN LÍNEA. Un
+   estilo en línea gana a cualquier regla de hoja sin `!important`, así que esta
+   media query no llegaba a aplicarse nunca y el veredicto seguía en dos
+   columnas a 320px, con la banda 72px fuera de la pantalla. */
+.verdict > * { min-width: 0; }
+.verdict.band { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+@media (max-width: 680px) {
+  .verdict, .verdict.band { grid-template-columns: minmax(0, 1fr); }
+  .verdict .big { font-size: 2.4rem; }
+  .verdict { padding: 20px; }
+}
 
 /* Banda de intervalo de confianza */
 .ci-track2 { position: relative; height: 34px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
@@ -643,11 +706,15 @@ input[type="range"] { accent-color: var(--brand); }
 .ci-lo { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--mint); }
 .ci-pt { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); opacity: .6; }
 .ci-zero2 { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--danger); opacity: .5; }
-.ci-legend2 { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .66rem; color: var(--ink-soft); margin-top: 6px; }
+/* Las tres marcas de la escala («−5,0%», «0%», «60,0%») se tocaban entre sí en
+   pantallas estrechas hasta solaparse. Envuelven en vez de comprimirse, y cada
+   una se mantiene entera. */
+.ci-legend2 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; font-family: var(--mono); font-size: .66rem; color: var(--ink-soft); margin-top: 6px; }
+.ci-legend2 span { white-space: nowrap; }
 
 /* Banco de referencia — tono ámbar (el "wait" del sistema de badges) */
 .bench { border: 1px solid color-mix(in srgb, var(--amber) 22%, var(--line)); border-radius: var(--radius-xl); padding: 20px; background: color-mix(in srgb, var(--amber) 3%, var(--surface)); }
-.bench-badge { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--ink-soft); background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 25%, transparent); border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 16px; }
+.bench-badge { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .82rem; color: var(--ink-soft); background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 25%, transparent); border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 16px; }
 .bench-badge b { color: var(--amber); font-weight: 600; }
 
 /* Tabla de escenarios */
@@ -679,9 +746,9 @@ input[type="range"] { accent-color: var(--brand); }
 .seatpick .kt-input { flex: 0 0 auto; text-align: right; }
 
 /* Proyector (reutilizado por la landing) */
-.proj { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-@media (max-width: 780px) { .proj { grid-template-columns: 1fr; } }
-.fmt-row2 { display: grid; grid-template-columns: 74px 1fr 70px; align-items: center; gap: 10px; margin-bottom: 8px; }
+.proj { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 780px) { .proj { grid-template-columns: minmax(0, 1fr); } }
+.fmt-row2 { display: grid; grid-template-columns: 74px minmax(0, 1fr) 70px; align-items: center; gap: 10px; margin-bottom: 8px; }
 .fmt-name2 { font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
 .fmt-name2.win { color: var(--mint); font-weight: 600; }
 .track2 { height: 11px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
@@ -690,7 +757,7 @@ input[type="range"] { accent-color: var(--brand); }
 .fill2 { display: block; height: 100%; border-radius: 6px; background: var(--baseline); }
 .fill2.win { background: var(--mint); }
 .fmt-tok2 { font-family: var(--mono); font-size: .8rem; text-align: right; font-variant-numeric: tabular-nums; }
-.field2 { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; margin-bottom: 8px; }
+.field2 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; margin-bottom: 8px; }
 .field2 label { font-size: .78rem; color: var(--ink-soft); }
 .field2 input { font-family: var(--mono); font-size: .8rem; width: 110px; padding: 6px 9px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); text-align: right; transition: border-color .15s, box-shadow .15s; }
 .field2 input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
@@ -805,8 +872,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .hiw-note { font-size: .84rem; color: var(--ink-soft); max-width: 72ch; margin: 2px 0 0; }
 .hiw-note b { color: var(--ink); }
 .hiw-cases { display: grid; gap: 12px; }
-.hiw-case { display: grid; grid-template-columns: 150px 1fr; gap: 6px 20px; border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 18px 20px; background: var(--surface); }
-@media (max-width: 640px) { .hiw-case { grid-template-columns: 1fr; } }
+.hiw-case { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 6px 20px; border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 18px 20px; background: var(--surface); }
+@media (max-width: 640px) { .hiw-case { grid-template-columns: minmax(0, 1fr); } }
 .hiw-case .who { font-weight: 600; font-size: .95rem; letter-spacing: -.01em; }
 .hiw-case .who small { display: block; font-weight: 400; font-size: .74rem; color: var(--ink-soft); margin-top: 2px; }
 .hiw-verdict { display: inline-flex; align-items: center; width: fit-content; font-family: var(--mono); font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; padding: 4px 10px; border-radius: 999px; margin-top: 8px; }
@@ -816,8 +883,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .hiw-case p { font-size: .88rem; color: var(--ink-soft); max-width: 62ch; margin: 0; line-height: 1.55; }
 .hiw-case p b { color: var(--ink); }
 .hiw-case p + p { margin-top: 8px; }
-.hiw-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 720px) { .hiw-two { grid-template-columns: 1fr; } }
+.hiw-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 720px) { .hiw-two { grid-template-columns: minmax(0, 1fr); } }
 .hiw-mcard { border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 18px 20px; background: var(--surface-2); }
 .hiw-mcard .k { font-family: var(--mono); font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
 .hiw-mcard .v { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 650; letter-spacing: -.02em; margin: 6px 0 4px; }
@@ -866,7 +933,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* Hero. La retícula de puntos y el hairline de cierre van a sangre completa,
    como la banda del hero de bivelio.com — se pintan con un ::before de 100vw
    para no tener que sacar la sección fuera del <main> centrado. */
-.lp .hero { position: relative; padding: clamp(64px, 7vw, 96px) 0; display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
+.lp .hero { position: relative; padding: clamp(64px, 7vw, 96px) 0; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 52px; align-items: center; }
+.lp .hero > * { min-width: 0; }
 .lp .hero::before {
   content: ""; position: absolute; z-index: -1;
   top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%);
@@ -921,7 +989,8 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .sec-head code { font-family: var(--mono); font-size: .92em; }
 
 /* Libros mayores */
-.lp .ledgers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.lp .ledgers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.lp .ledger { min-width: 0; }
 .lp .ledger { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 20px; box-shadow: var(--shadow-card); }
 .lp .ledger .idx { font-family: var(--mono); font-size: .7rem; color: var(--brand); }
 .lp .ledger h4 { margin: 8px 0 6px; font-size: .96rem; letter-spacing: -.015em; font-family: var(--font-heading); font-weight: 600; }
@@ -941,7 +1010,14 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* La calculadora es la pieza densa: se lleva la columna ancha, y `start` deja
    que la tarjeta de precio conserve su altura natural en vez de estirarse con
    un vacío enorme debajo (se veía desproporcionado — 2026-08-23). */
-.lp .split { display: grid; grid-template-columns: .85fr 1.15fr; gap: 26px; align-items: start; }
+/* La pista `1fr` es `minmax(auto, 1fr)`: se planta en el min-content de su
+   contenido y NO encoge. Medido a 390px: `.calc-grid` resolvía a `204px 204px`
+   —204px es el tamaño intrínseco de un <input type=number>, no una anchura que
+   nadie pidiera— y eso empujaba la pista a 488px dentro de un contenedor de
+   342px. Como las dos tarjetas comparten pista, la de precio salía TAMBIÉN a
+   488px: se cortaba una tarjeta por culpa de los campos de la otra. */
+.lp .split { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 26px; align-items: start; }
+.lp .price-card, .lp .calc, .lp .trust { min-width: 0; }
 .lp .price-card { background: var(--ink); color: #fff; border-radius: var(--radius-2xl); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
 .lp .price-card .amt { font-size: 3rem; font-weight: 600; letter-spacing: -.04em; }
 .lp .price-card .amt small { font-size: 1rem; opacity: .7; font-weight: 500; }
@@ -964,9 +1040,13 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .calc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-2xl); padding: 32px; box-shadow: var(--shadow-card); }
 .lp .calc h3 { margin: 0 0 6px; letter-spacing: -.025em; }
 .lp .calc-sub { font-size: .85rem; color: var(--ink-soft); margin: 0 0 16px; }
-.lp .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
-.lp .calc-grid label { display: flex; flex-direction: column; gap: 4px; font-size: .74rem; color: var(--ink-soft); }
-.lp .calc-grid select, .lp .calc-grid input { font-family: var(--mono); font-size: .8rem; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
+.lp .calc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+/* Una sola columna en el móvil: con dos, cada campo se queda en ~130px y las
+   etiquetas largas (y las de los otros once idiomas) parten en dos líneas,
+   dejando los controles desalineados entre sí. */
+@media (max-width: 560px) { .lp .calc-grid { grid-template-columns: minmax(0, 1fr); } }
+.lp .calc-grid label { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: .74rem; color: var(--ink-soft); }
+.lp .calc-grid select, .lp .calc-grid input { width: 100%; min-width: 0; font-family: var(--mono); font-size: .8rem; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); transition: border-color .15s, box-shadow .15s; }
 .lp .calc-grid select:focus, .lp .calc-grid input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
 .lp .calc-base { font-size: .82rem; color: var(--ink-soft); margin: 14px 0 8px; }
 /* El precio exacto del modelo elegido + su fuente oficial, bajo los controles. */
@@ -1039,17 +1119,24 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 }
 .lp .ftr-card { overflow: hidden; border: 1px solid var(--line); border-radius: 40px; background: var(--surface-2); box-shadow: var(--shadow-card); margin: 48px 0; }
 .lp .ftr-inner { margin: 8px; border: 1px solid color-mix(in srgb, var(--line) 60%, transparent); border-radius: 32px; background: var(--surface); padding: clamp(28px, 4vw, 48px); }
-.lp .ftr-grid { display: grid; grid-template-columns: 4fr 8fr; gap: 48px; }
-@media (max-width: 860px) { .lp .ftr-grid { grid-template-columns: 1fr; } }
+/* Las dos columnas se apilaban ya a 860px, pero seguían desbordando 109px por
+   debajo: apiladas heredaban `min-width: auto`, y dentro hay un párrafo con
+   `max-width: 340px` fijo y tres columnas de enlaces cuyas etiquetas alemanas
+   no parten. Se arregla en los tres sitios: la pista cede, la caja cede y la
+   palabra parte. */
+.lp .ftr-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; }
+@media (max-width: 860px) { .lp .ftr-grid { grid-template-columns: minmax(0, 1fr); } }
+.lp .ftr-brand, .lp .ftr-cols, .lp .ftr-col { min-width: 0; }
+.lp .ftr-col a, .lp .ftr-col h3 { overflow-wrap: anywhere; }
 .lp .ftr-brand { display: flex; flex-direction: column; gap: 32px; }
-.lp .ftr-brand > p { max-width: 340px; margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
+.lp .ftr-brand > p { max-width: min(340px, 100%); margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
 .lp .ftr-logo { display: inline-flex; align-self: flex-start; }
 .lp .ftr-logo:hover { text-decoration: none; }
 .lp .ftr-badge { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 5px 10px; }
 .lp .ftr-badge .bar { display: inline-block; width: 18px; height: 11px; background: var(--ink); border-radius: 3px; position: relative; }
 .lp .ftr-badge .bar::after { content: ""; position: absolute; inset: 2px 3px; background: var(--brand); border-radius: 1px; }
-.lp .ftr-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-@media (max-width: 560px) { .lp .ftr-cols { grid-template-columns: repeat(2, 1fr); } }
+.lp .ftr-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+@media (max-width: 560px) { .lp .ftr-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Cabeceras de columna en sans, no en mono: bivelio.com usa
    `text-[13px] font-semibold uppercase tracking-[0.12em]`. */
 /* Sin font-family: los <h3> caen en la regla global y salen en Space Grotesk,
@@ -1065,7 +1152,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .ftr-entity { font-size: 11px; color: var(--ink-soft); opacity: .8; }
 .lp .ftr-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 18px clamp(20px, 3vw, 40px); font-size: 13px; }
 .lp .ftr-bottom > p { margin: 0; font-weight: 500; color: var(--ink-soft); }
-.lp .ftr-bottom-links { display: flex; align-items: center; gap: 18px; font-weight: 500; color: var(--ink-soft); }
+.lp .ftr-bottom-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; min-width: 0; font-weight: 500; color: var(--ink-soft); }
 .lp .ftr-bottom-links a { text-decoration: none; color: var(--ink-soft); }
 .lp .ftr-bottom-links a:hover { color: var(--ink); text-decoration: none; }
 .lp .ftr-bottom-links .sep { width: 1px; height: 14px; background: var(--line); }
@@ -1077,11 +1164,17 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 /* Responsive de la landing */
 @media (max-width: 900px) {
-  .lp .hero { grid-template-columns: 1fr; gap: 34px; }
-  .lp .ledgers { grid-template-columns: 1fr 1fr; }
-  .lp .split { grid-template-columns: 1fr; }
+  .lp .hero { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  .lp .ledgers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp .split { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 520px) { .lp .ledgers { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .lp .ledgers { grid-template-columns: minmax(0, 1fr); } }
+/* Las dos tarjetas del pricing son las más acolchadas de la página (32px por
+   lado). En un móvil eso es un quinto del ancho útil gastado en aire. */
+@media (max-width: 560px) {
+  .lp .price-card, .lp .calc { padding: 24px 20px; }
+  .lp .price-card .amt { font-size: 2.4rem; }
+}
 
 /* ── Equipo (miembros e invitaciones) ──────────────────────────────────────
    La sección se pintaba con clases que NO existían (`ck-card`, `ck-btn`,
@@ -1183,7 +1276,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
   color: var(--brand); font-variant-numeric: tabular-nums; }
 .ancache-cifra .nota { font-size: .82rem; color: var(--ink-soft); line-height: 1.5; }
 
-.ancache-notas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 16px; margin-top: 16px; }
+.ancache-notas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px; margin-top: 16px; }
 .ancache-notas > div { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 18px; background: var(--surface); }
 .ancache-notas h4 { margin: 0 0 6px; font-size: .9rem; }
 .ancache-notas p { margin: 0; color: var(--ink-soft); font-size: .88rem; line-height: 1.6; }
@@ -1219,7 +1312,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .hero-prueba { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
 .hero-prueba-t { display: block; font-size: .72rem; letter-spacing: .13em; text-transform: uppercase;
   color: var(--ink-soft); margin-bottom: 14px; }
-.hero-prueba-filas { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.hero-prueba-filas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); gap: 12px; }
 
 .hp { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;
   border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface);
@@ -1318,14 +1411,18 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
    entera, es el ultimo sitio visible sin bajar. Tinta sobre el resto en claro:
    es el unico bloque oscuro de la primera pantalla, asi que atrae sin competir
    con las cifras. */
-.cta15 { margin-top: 14px; padding: 18px 20px; border-radius: var(--radius-xl);
+.cta15 { margin-top: 14px; padding: 18px 20px; border-radius: var(--radius-xl); min-width: 0;
   background: var(--ink); color: #fff; display: grid; gap: 12px;
   box-shadow: 0 1px 2px rgba(15,18,24,.08), 0 18px 40px -24px rgba(15,18,24,.55); }
-.cta15-txt { display: grid; gap: 3px; }
+/* Los hijos de una rejilla nacen con `min-width: auto`, así que el titular no
+   podía encoger por debajo de su palabra más larga: en alemán
+   («15-Minuten-Gespräch») eso sacaba la tarjeta 63px fuera de la pantalla. */
+.cta15-txt { display: grid; gap: 3px; min-width: 0; }
+.cta15-txt strong, .cta15-txt span { overflow-wrap: anywhere; }
 .cta15-txt strong { font-size: 1.02rem; font-weight: 650; letter-spacing: -.01em; }
 .cta15-txt span { font-size: .82rem; color: rgba(255,255,255,.72); line-height: 1.45; }
 
-.cta15-fila { display: flex; gap: 8px; }
+.cta15-fila { display: flex; gap: 8px; min-width: 0; }
 .cta15-fila input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: .88rem;
   padding: 10px 13px; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,.22);
   background: rgba(255,255,255,.08); color: #fff; }
@@ -1339,6 +1436,21 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .cta15-fila button:hover:not(:disabled) { transform: translateY(-1px); }
 .cta15-fila button:disabled { opacity: .55; cursor: default; }
 .cta15-fila button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* El botón es `flex: 0 0 auto` + `nowrap` —tiene que serlo, su etiqueta no se
+   parte— así que en cuanto el campo llega a su mínimo, lo que sobra sale por la
+   derecha y el `overflow-x: clip` del <html> lo recorta: en la captura del
+   dueño el botón blanco aparece cortado por la mitad. Por debajo de 430px el
+   botón baja a su propia línea a ancho completo, que además es el objetivo
+   táctil que merece un CTA. */
+@media (max-width: 430px) {
+  .cta15-fila { flex-wrap: wrap; }
+  /* Ya a ancho completo, el botón puede permitirse dos líneas: el `nowrap` de
+     la regla base solo tiene sentido mientras comparte fila con el campo. Hoy
+     la etiqueta va en inglés en los doce idiomas; el día que se traduzca,
+     «15-Minuten-Gespräch vereinbaren» mide 266px y a 320px NO cabe en una. */
+  .cta15-fila button { flex: 1 1 100%; white-space: normal; }
+}
 
 .cta15-err { margin: 0; font-size: .8rem; color: #FFC9BC; }
 .cta15-err a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
