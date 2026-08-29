@@ -51,6 +51,32 @@ export class SavingsLedger {
   eliminatedOutput = 0;
   providerCachedInput = 0; // Ledger 4
 
+  /**
+   * Tokens que el proveedor facturó como ESCRITURA de caché de prefijo. Se
+   * publican en la traza; el dinero va aparte, en `cacheWritePremiumUsd`.
+   */
+  cacheWriteInputTokens = 0;
+  /**
+   * La PRIMA de esa escritura, YA TARIFADA EN DÓLARES.
+   *
+   * El recuento entero está en `actualInput` a tarifa normal (1x); lo que falta
+   * es el suplemento —Anthropic factura las escrituras a 1,25x, o sea +0,25x—, y
+   * es un coste que la capa PROVOCA al marcar `cache_control`. El camino ingenuo
+   * nunca marcó, así que no puede estar en el baseline: va solo a `actual`, como
+   * `extraCostUsd`. Sin esto, una petición marcada en frío publicaba
+   * `netSavings 0` con `basis:"measured"` mientras la factura real subía ~12,5 %.
+   *
+   * SE GUARDA EN DÓLARES, NO EN TOKENS, y esa es la diferencia que importa.
+   * `estimateCost` recibe UN SOLO `CostModel` —el del modelo que acabó
+   * contestando—, así que guardar tokens y tarifarlos allí los cobraría al precio
+   * equivocado en cuanto la cascada escala: la marca la puso la llamada BARATA
+   * (el código no marca la escalada, a propósito), pero el precio que llega a
+   * `estimateCost` es el del FUERTE. Medido al provocarlo con barato 0,001 y
+   * fuerte 0,015: la prima salía 15x. Es la misma doctrina que ya declara este
+   * fichero para `cascadeAttempt` — tarifar donde se conoce el precio correcto.
+   */
+  cacheWritePremiumUsd = 0;
+
   // --- Regla de una sola regla (single ruler) -------------------------------
   // `baselineInput` se contaba con el estimador LOCAL y `actualInput` con el
   // contador del PROVEEDOR, y estimateCost dividía uno entre otro. Son dos reglas
@@ -169,6 +195,20 @@ export class SavingsLedger {
       (Math.max(0, usage.inputTokens) / 1000) * cheapPrice.inputPer1k +
       (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k;
   }
+  /**
+   * La capa marcó `cache_control` y el proveedor facturó `tokens` como escritura
+   * a `multiplicador`x. Se apunta el SUPLEMENTO —la parte por encima de la tarifa
+   * normal, que ya está contada en `actualInput`— tarifado con el precio del
+   * modelo QUE MARCÓ, que es el único que lo conoce. Va a `actual` y nunca al
+   * baseline.
+   */
+  cacheWritePremium(tokens: number, multiplicador: number, precioDelQueMarco: CostModel): void {
+    const t = Math.max(0, tokens);
+    this.cacheWriteInputTokens += t;
+    this.cacheWritePremiumUsd +=
+      (t / 1000) * precioDelQueMarco.inputPer1k * Math.max(0, multiplicador - 1);
+  }
+
   /**
    * Lo que de verdad hizo la compresión, para publicarlo en
    * `SavingsReport.compression`. El campo estaba declarado en el contrato y no lo
@@ -355,7 +395,11 @@ export class SavingsLedger {
     const actual =
       precioEntrada(this.actualInput) +
       (this.actualOutput / 1000) * model.outputPer1k +
-      this.extraCostUsd;
+      this.extraCostUsd +
+      // Ya viene en dólares, tarifada con el precio del modelo que marcó — ver
+      // `cacheWritePremiumUsd`. Con multiplicador 1 (OpenAI, proveedor
+      // desconocido) el término es 0 y no toca nada.
+      this.cacheWritePremiumUsd;
 
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;

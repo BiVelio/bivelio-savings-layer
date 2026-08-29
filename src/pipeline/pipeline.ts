@@ -491,8 +491,8 @@ export class SavingsPipeline {
     descubrimientoActivo: boolean,
     mensajesDePrefijo: number,
     trace: TraceCollector,
-  ): { marcar: boolean; huella: string; mensajesDePrefijo: number } {
-    const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0 };
+  ): { marcar: boolean; huella: string; mensajesDePrefijo: number; cacheWriteMultiplier: number } {
+    const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0, cacheWriteMultiplier: 1 };
 
     const tier = tramoDelModelo(modeloServido, this.config.compressionEconomics);
     if (!tier) {
@@ -559,7 +559,7 @@ export class SavingsPipeline {
       observedHitRate: decision.observada,
     });
     return decision.marcar
-      ? { marcar: true, huella, mensajesDePrefijo }
+      ? { marcar: true, huella, mensajesDePrefijo, cacheWriteMultiplier: tier.cacheWriteMultiplier }
       : nada;
   }
 
@@ -1948,6 +1948,23 @@ export class SavingsPipeline {
     // ocasión de acertar, y la verja se apagaría por una medición que no es
     // sobre ella.
     if (marcado.marcar) {
+      // LA PRIMA DE ESCRITURA (1,25x en Anthropic) es un coste que ESTA marca
+      // provoca, así que deja de quedarse solo en la traza y se carga en
+      // `actual`: sin ella, marcar en frío publicaba `netSavings 0` mientras la
+      // factura subía ~12,5 %.
+      //
+      // Se tarifa con `cascada.precioBarato ?? costModel` —el precio del modelo
+      // QUE MARCÓ—, no con `precioServido`. Es la misma expresión que usa
+      // `cascadeAttempt` doce líneas más arriba, y por la misma razón: quien
+      // llevaba la marca es la llamada capturada en `usoDeLaLlamadaMarcada`,
+      // ANTES de que una escalada pudiera reemplazar `response`; la escalada sale
+      // sin marcar a propósito. Tarifarla con el fuerte multiplicaba la prima por
+      // 15 en una escalada barato→fuerte.
+      ledger.cacheWritePremium(
+        usoDeLaLlamadaMarcada.cacheWriteInputTokens ?? 0,
+        marcado.cacheWriteMultiplier,
+        cascada.precioBarato ?? costModel,
+      );
       // LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE, no de dos expresiones
       // equivalentes. Con dos, una mutación de la que alimenta a la VERJA —la que
       // decide el dinero— deja la traza intacta, y un test que mire la traza sigue
