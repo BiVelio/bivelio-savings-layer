@@ -221,8 +221,58 @@ function negationCount(tokens: string[]): number {
   return tokens.filter((t) => NEGATIONS.has(t.replace(/'/g, "")) || t.endsWith("n't")).length;
 }
 
+// EL PREFIJO DE ROL CEGABA LA VERJA, y por el lado que sirve respuestas.
+//
+// `canonicalize` escribe un turno por línea como `${rol}:${texto}`
+// (canonicalize.ts:236), así que la PRIMERA palabra de cada turno llega FUNDIDA
+// con el rol: `user:nunca`, `user:por`. Partir por espacios no la separa, y
+// entonces `user:nunca` no está en NEGATIONS y la negación NO SE CUENTA.
+//
+// MEDIDO contra el main de hoy, y con la misma pareja en las dos formas:
+//
+//   «user:es seguro tomar aspirina en el embarazo con anticoagulantes orales…»
+//   vs la misma con «nunca» delante            → daba TRUE  (la caché servía
+//                                                 «sí, es seguro»)
+//   la MISMA pareja sin el prefijo `user:`      → daba FALSE (cortaba bien)
+//
+// Los tests usan cadenas peladas y producción usa `rol:texto`: por eso el
+// arreglo es/ca de la lista de negaciones (#144) pasaba en verde sin llegar a
+// morder donde importa. Con textos cortos el Jaccard lo tapaba por accidente;
+// con un texto realista, una palabra más apenas lo mueve y la verja abre.
+//
+// El mismo prefijo estropea el otro lado: `user:por` tampoco está en STOPWORDS,
+// así que la cortesía inicial cuenta como token de CONTENIDO y hunde el Jaccard
+// — «por favor resume este informe» ↔ «resume este informe» se cortaba, que es
+// un acierto de caché perdido en cada petición cortés.
+//
+// La verja se aplica ahora TURNO A TURNO con el rol fuera del texto. Comparar
+// además el ROL es lo que impide que al quitar el prefijo se confunda «lo dijo
+// el usuario» con «lo dijo el asistente»; y un número distinto de turnos no
+// casa. Con una sola cadena sin prefijo —como la llaman los tests— el
+// comportamiento es EXACTAMENTE el de antes.
+const PREFIJO_DE_ROL = /^(system|user|assistant|tool):/;
+
+function turnos(s: string): { rol: string; texto: string }[] {
+  return s.split("\n").map((linea) => {
+    const m = PREFIJO_DE_ROL.exec(linea);
+    return m ? { rol: m[1]!, texto: linea.slice(m[0].length) } : { rol: "", texto: linea };
+  });
+}
+
 /** True when two normalized queries agree on the facts an embedding tends to blur. */
 export function keyTokensMatch(a: string, b: string): boolean {
+  const va = turnos(a);
+  const vb = turnos(b);
+  if (va.length !== vb.length) return false;
+  for (let i = 0; i < va.length; i++) {
+    if (va[i]!.rol !== vb[i]!.rol) return false;
+    if (!hechosCoinciden(va[i]!.texto, vb[i]!.texto)) return false;
+  }
+  return true;
+}
+
+/** Las mismas tres comprobaciones, sobre el texto de UN turno ya sin su rol. */
+function hechosCoinciden(a: string, b: string): boolean {
   // 1. Numbers/dates must match exactly, as a multiset (100 vs 200; Jul 20 vs 21).
   if (!multisetEqual(numericTokens(a), numericTokens(b))) return false;
   const ta = words(a);
