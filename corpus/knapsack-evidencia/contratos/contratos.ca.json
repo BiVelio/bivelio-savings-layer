@@ -133,7 +133,7 @@
       "valorErroneo": true,
       "siSeCae": ["u2"]
     },
-    "nota": "Parella de ct-es-004, i el motiu de la parella és una limitació REAL del repositori: la llista `NEGATIONS` de `src/cache/semantic.ts` està escrita en anglès (no, not, never, without, nor…). El castellà cola de rebot perquè «no» hi és, però les negacions catalanes «sense», «cap» i «ni» —les tres apareixen en aquesta unitat— no hi figuren, així que la paritat de negació de `keyTokensMatch` no les compta. Aquest cas no arregla res: documenta el forat perquè qui escrigui F6 no doni per fet un guardarail que en català no existeix."
+    "nota": "Parella de ct-es-004, i el motiu de la parella era una limitació REAL del repositori, TANCADA el 2026-08-29: la llista `NEGATIONS` de `src/cache/semantic.ts` estava escrita només en anglès (no, not, never, without, nor…). El castellà colava de rebot perquè «no» hi és, però les negacions catalanes «sense», «cap» i «ni» —les tres apareixen en aquesta unitat— no hi figuren, així que la paritat de negació de `keyTokensMatch` no les compta. Aquest cas no arregla res: documenta el forat perquè qui escrigui F6 no doni per fet un guardarail que en català no existeix."
   },
   {
     "id": "ct-ca-004",
@@ -651,7 +651,7 @@
       "valorErroneo": false,
       "siSeCae": ["u2", "u3"]
     },
-    "nota": "Parella simètrica de ct-es-019. Aquí «sense límit temporal» torna a portar la negació catalana «sense», que cap llista de negacions del repositori reconeix; i la unitat que qualifica l'objecte com a secret empresarial (u3) no conté ni «confidencialitat» ni «deure» ni cap data, o sigui que no s'assembla gens a la consulta tot i ser imprescindible."
+    "nota": "Parella simètrica de ct-es-019. Aquí «sense límit temporal» torna a portar la negació catalana «sense», que cap llista de negacions del repositori reconeixia fins al 2026-08-29 (ara `NEGATIONS` de `src/cache/semantic.ts` cobreix es/ca); i la unitat que qualifica l'objecte com a secret empresarial (u3) no conté ni «confidencialitat» ni «deure» ni cap data, o sigui que no s'assembla gens a la consulta tot i ser imprescindible."
   },
   {
     "id": "ct-ca-014",

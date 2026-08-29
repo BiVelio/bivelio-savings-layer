@@ -118,11 +118,37 @@ export function cosine(a: number[], b: number[]): number {
 // is rejected unless the two (already normalized/lowercased) queries agree on the
 // multiset of numeric/date tokens, on negation parity, and on a content-token
 // overlap floor. A rejection only forgoes a cache hit (we make the real call) —
-// it can never produce a wrong answer. (Negation/stopword lists are English-first;
-// the numeric and overlap checks are language-agnostic.)
+// it can never produce a wrong answer. (The stopword list is English/es/ca; the
+// numeric and overlap checks are language-agnostic.)
+// LA LISTA ERA SOLO INGLESA, Y ESO SÍ ERA UN AGUJERO DE CORRECCIÓN — no de ahorro.
+// Con la paridad de negación ciega al castellano y al catalán, dos preguntas de
+// significado OPUESTO contaban ambas 0 negaciones, pasaban la verja y la caché
+// podía servir la respuesta contraria. Medido ejecutando `keyTokensMatch` contra
+// este mismo fichero antes del arreglo (2026-08-29):
+//
+//     «resume el informe SIN los datos personales» ≡ «… CON los datos personales» → PASABA
+//     «es seguro tomar aspirina» ≡ «NUNCA es seguro tomar aspirina»               → PASABA
+//     «is aspirin safe» ≡ «is aspirin not safe»                                    → cortaba
+//
+// El inglés estaba cubierto y el castellano no; funcionaba con «no» por PURA
+// CASUALIDAD, porque la palabra coincide con la inglesa. Y lo agravaba el bloque
+// de STOPWORDS de aquí abajo: mete `sin` y `sense` —que son NEGACIONES— entre las
+// palabras vacías, así que además de no contarlas, las DESCARTA del solapamiento.
+// «factura sin IVA» y «factura con IVA» quedaban idénticas a ojos de la verja.
+//
+// Sobra por el lado seguro a propósito: una negación de más solo renuncia a un
+// acierto de caché (se hace la llamada real), mientras que una de menos sirve una
+// respuesta invertida. Por eso entran palabras polisémicas como `cap` («ninguno»,
+// pero también «cabeza») o `res` («nada»): el coste de equivocarse es asimétrico.
 const NEGATIONS = new Set([
+  // inglés
   "no", "not", "never", "none", "cannot", "cant", "without", "nor", "nt", "isnt",
-  "arent", "wasnt", "werent", "dont", "doesnt", "didnt", "wont", "cant", "shouldnt",
+  "arent", "wasnt", "werent", "dont", "doesnt", "didnt", "wont", "shouldnt",
+  // castellano
+  "sin", "nunca", "jamas", "jamás", "tampoco", "ni", "ningun", "ningún",
+  "ninguna", "ninguno", "nada", "nadie",
+  // catalán
+  "sense", "mai", "tampoc", "cap", "gens", "ningu", "ningú", "res",
 ]);
 // LA LISTA ERA SOLO INGLESA, Y ESO NO ERA UNA LAGUNA COSMÉTICA: hacía que la
 // MISMA paráfrasis pasara o se cortara según el idioma. Medido con el guard:
@@ -136,9 +162,13 @@ const NEGATIONS = new Set([
 // debajo del 0,75 y negar el acierto. La caché semántica no es que ahorrase
 // poco en esos idiomas: es que no podía acertar.
 //
-// Añadir stopwords NO toca la parte de seguridad. Los números y la paridad de
-// negación se comprueban ANTES y por separado; esto solo iguala el trato del
-// suelo de solapamiento entre idiomas, que es lo que el inglés ya tenía.
+// Añadir stopwords no toca la parte de seguridad SIEMPRE QUE la paridad de
+// negación cubra el mismo idioma — y eso es exactamente lo que faltaba. Los
+// números y la negación se comprueban ANTES y por separado, sí, pero `sin` y
+// `sense` entraron aquí como relleno mientras la lista de negaciones seguía en
+// inglés: descartadas del solapamiento Y sin contar como negación, o sea
+// invisibles por los dos lados. Arreglado arriba. Si algún día se añaden
+// stopwords de otro idioma, hay que añadir SUS negaciones en el mismo commit.
 //
 // Se cubren es/ca porque son los idiomas con tráfico y con corpus (el golden set
 // de 150 casos es es/ca). Los otros nueve locales siguen con el trato inglés:
