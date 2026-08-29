@@ -35,9 +35,9 @@
     "loginSubtitle": "Inicia la sessió amb el teu compte de BiVelio, el mateix que fas servir a tota la suite.",
     "newToBivelio": "Nou a BiVelio?",
     "createAnAccount": "Crea un compte",
-    "backToVerifier": "← Torna al verificador",
+    "backToVerifier": "← Torna a l'inici",
     "createYourAccount": "Crea el teu compte",
-    "signupSubtitle": "Un sol compte de BiVelio per a tota la suite. Verifica el teu estalvi de manera gratuïta al navegador; crea un compte per subscriure't i obtenir la teva clau de llicència.",
+    "signupSubtitle": "Un sol compte de BiVelio per a tota la suite. Crea'l per subscriure't i obtenir la teva clau de llicència.",
     "alreadyHaveAccount": "Ja tens un compte de BiVelio?",
     "signIn": "Inicia la sessió",
     "workEmail": "Correu de la feina",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Un sol pla, amb preu per seient",
       "title": "Cèntims per executar. Múltiples per estalviar.",
-      "body": "Sense pla gratuït, sense prova — prova BV‑SALA aquí mateix al teu navegador i després subscriu-te per executar-lo a la teva app. Preu per seient, en {currency}.",
+      "body": "Sense pla gratuït i sense prova: el que pots comprovar abans de pagar és l'estalvi MESURAT d'aquí dalt, amb el seu interval al costat. Et subscrius i executes BV-SALA a la teva app. Preu per seient, en {currency}.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
@@ -734,7 +734,7 @@
     "s3Sub": "El producte té dues xifres diferents i convé no barrejar-les.",
     "mBeforeK": "Abans d'instal·lar",
     "mBeforeV": "Estimació",
-    "mBeforeBody": "El verificador executa l'optimitzador real al teu navegador amb les teves dades d'exemple. És una projecció honesta — per això porta l'etiqueta «estimació».",
+    "mBeforeBody": "La calculadora de la secció de preus projecta el teu estalvi amb els teus propis números: sol·licituds, tokens i model. És una projecció honesta — per això porta l'etiqueta «estimació».",
     "mAfterK": "Després d'instal·lar",
     "mAfterV": "Mesurament real",
     "mAfterBody": "Cada crida retorna un SavingsReport: les crides que mai no vas pagar i l'estalvi net per petició. Auditable, petició a petició, a la teva pròpia infraestructura.",
@@ -743,7 +743,7 @@
     "snip2": "la llicència (del teu tauler)",
     "snip3": "embolcallar la crida — aquest és tot el canvi de codi",
     "snipResult": "l'estalvi, mesurat",
-    "ctaVerify": "Prova-ho amb les teves dades al verificador",
+    "ctaVerify": "Veure l'estalvi mesurat",
     "ctaSignup": "Crear compte",
     "ctaInstall": "Anar a la guia d'instal·lació"
   }

@@ -35,9 +35,9 @@
     "loginSubtitle": "Zaloguj się kontem BiVelio — tym samym, którego używasz w całym pakiecie.",
     "newToBivelio": "Pierwszy raz w BiVelio?",
     "createAnAccount": "Załóż konto",
-    "backToVerifier": "← Wróć do weryfikatora",
+    "backToVerifier": "← Powrót na stronę główną",
     "createYourAccount": "Załóż konto",
-    "signupSubtitle": "Jedno konto BiVelio w całym pakiecie. Zweryfikuj oszczędności za darmo w przeglądarce — załóż konto, aby wykupić subskrypcję i otrzymać klucz licencyjny.",
+    "signupSubtitle": "Jedno konto BiVelio w całym pakiecie. Załóż je, aby wykupić subskrypcję i otrzymać klucz licencyjny.",
     "alreadyHaveAccount": "Masz już konto BiVelio?",
     "signIn": "Zaloguj się",
     "workEmail": "Służbowy e-mail",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
       "title": "Grosze za uruchomienie. Wielokrotności do zaoszczędzenia.",
-      "body": "Bez darmowego planu, bez okresu próbnego — przetestuj BV‑SALA właśnie tutaj, w przeglądarce, a następnie wykup subskrypcję, aby uruchomić to w swojej aplikacji. Cena za stanowisko, w {currency}.",
+      "body": "Bez darmowego planu i bez okresu próbnego: zanim zapłacisz, możesz sprawdzić ZMIERZONE oszczędności powyżej, razem z ich przedziałem ufności. Wykupujesz subskrypcję i uruchamiasz warstwę w swojej aplikacji. Cena za stanowisko, w {currency}.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
@@ -734,7 +734,7 @@
     "s3Sub": "Produkt ma dwie różne liczby i lepiej ich nie mieszać.",
     "mBeforeK": "Przed instalacją",
     "mBeforeV": "Szacunek",
-    "mBeforeBody": "Weryfikator uruchamia prawdziwy optymalizator w Twojej przeglądarce na Twoich przykładowych danych. To uczciwa projekcja — dlatego nosi etykietę „szacunek”.",
+    "mBeforeBody": "Kalkulator w cenniku prognozuje Twoje oszczędności na podstawie Twoich własnych liczb: żądań, tokenów i modelu. To uczciwa projekcja — dlatego nosi etykietę „szacunek”.",
     "mAfterK": "Po instalacji",
     "mAfterV": "Prawdziwy pomiar",
     "mAfterBody": "Każde wywołanie zwraca SavingsReport: wywołania, za które nigdy nie zapłaciłeś, i oszczędność netto na żądanie. Audytowalne, żądanie po żądaniu, na Twojej własnej infrastrukturze.",
@@ -743,7 +743,7 @@
     "snip2": "licencja (z Twojego panelu)",
     "snip3": "owinięcie wywołania — to cała zmiana kodu",
     "snipResult": "oszczędność, zmierzona",
-    "ctaVerify": "Wypróbuj na swoich danych w weryfikatorze",
+    "ctaVerify": "Zobacz zmierzone oszczędności",
     "ctaSignup": "Utwórz konto",
     "ctaInstall": "Przejdź do instrukcji instalacji"
   }

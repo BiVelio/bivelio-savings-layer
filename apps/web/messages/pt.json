@@ -35,9 +35,9 @@
     "loginSubtitle": "Inicia sessão com a tua conta BiVelio — a mesma que usas em toda a suite.",
     "newToBivelio": "Novo na BiVelio?",
     "createAnAccount": "Criar uma conta",
-    "backToVerifier": "← Voltar ao verificador",
+    "backToVerifier": "← Voltar ao início",
     "createYourAccount": "Cria a tua conta",
-    "signupSubtitle": "Uma só conta BiVelio para toda a suite. Verifica a tua poupança gratuitamente no navegador — cria uma conta para subscrever e obter a tua chave de licença.",
+    "signupSubtitle": "Uma só conta BiVelio para toda a suite. Cria-a para subscreveres e obteres a tua chave de licença.",
     "alreadyHaveAccount": "Já tens uma conta BiVelio?",
     "signIn": "Iniciar sessão",
     "workEmail": "Email profissional",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
       "title": "Cêntimos para executar. Múltiplos para poupar.",
-      "body": "Sem plano gratuito, sem teste — experimenta o BV‑SALA aqui mesmo no teu navegador e depois subscreve para o executar na tua app. Preço por lugar, em {currency}.",
+      "body": "Sem plano gratuito e sem período experimental: o que podes comprovar antes de pagar é a poupança MEDIDA aqui acima, com o respetivo intervalo ao lado. Subscreves e executas o BV-SALA na tua app. Preço por lugar, em {currency}.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
@@ -734,7 +734,7 @@
     "s3Sub": "O produto tem dois números diferentes e é melhor não misturá-los.",
     "mBeforeK": "Antes de instalar",
     "mBeforeV": "Estimativa",
-    "mBeforeBody": "O verificador executa o otimizador real no seu navegador com os seus dados de exemplo. É uma projeção honesta — por isso carrega a etiqueta «estimativa».",
+    "mBeforeBody": "A calculadora da secção de preços projeta a tua poupança com os teus próprios números: pedidos, tokens e modelo. É uma projeção honesta — por isso carrega a etiqueta «estimativa».",
     "mAfterK": "Depois de instalar",
     "mAfterV": "Medição real",
     "mAfterBody": "Cada chamada devolve um SavingsReport: as chamadas que você nunca pagou e a economia líquida por requisição. Auditável, requisição a requisição, na sua própria infraestrutura.",
@@ -743,7 +743,7 @@
     "snip2": "a licença (do seu painel)",
     "snip3": "envolver a chamada — essa é toda a mudança de código",
     "snipResult": "a economia, medida",
-    "ctaVerify": "Experimente com seus dados no verificador",
+    "ctaVerify": "Ver a poupança medida",
     "ctaSignup": "Criar conta",
     "ctaInstall": "Ir para o guia de instalação"
   }

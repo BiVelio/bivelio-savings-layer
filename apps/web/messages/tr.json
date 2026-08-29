@@ -35,9 +35,9 @@
     "loginSubtitle": "BiVelio hesabınızla giriş yapın — tüm pakette kullandığınız hesabın aynısı.",
     "newToBivelio": "BiVelio'da yeni misiniz?",
     "createAnAccount": "Hesap oluştur",
-    "backToVerifier": "← Doğrulayıcıya dön",
+    "backToVerifier": "← Ana sayfaya dön",
     "createYourAccount": "Hesabınızı oluşturun",
-    "signupSubtitle": "Tüm paket için tek bir BiVelio hesabı. Tasarrufunuzu tarayıcıda ücretsiz doğrulayın — abone olmak ve lisans anahtarınızı almak için bir hesap oluşturun.",
+    "signupSubtitle": "Tüm paket için tek bir BiVelio hesabı. Abone olmak ve lisans anahtarınızı almak için hesabınızı oluşturun.",
     "alreadyHaveAccount": "Zaten bir BiVelio hesabınız var mı?",
     "signIn": "Giriş yap",
     "workEmail": "İş e-postası",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
       "title": "Çalıştırmak kuruşluk. Tasarruf ise katlarca.",
-      "body": "Ücretsiz katman yok, deneme yok — BV‑SALA'yı tam burada, tarayıcınızda test edin, ardından uygulamanızda çalıştırmak için abone olun. Koltuk başına, {currency} cinsinden fiyatlandırılır.",
+      "body": "Ücretsiz katman yok, deneme de yok: ödemeden önce inceleyebileceğiniz şey, yukarıdaki ÖLÇÜLEN tasarruf ve yanındaki güven aralığıdır. Abone olup BV-SALA'yı kendi uygulamanızda çalıştırırsınız. Koltuk başına, {currency} cinsinden fiyatlandırılır.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
@@ -734,7 +734,7 @@
     "s3Sub": "Ürünün iki farklı rakamı var ve bunları karıştırmamak gerekir.",
     "mBeforeK": "Kurulumdan önce",
     "mBeforeV": "Tahmin",
-    "mBeforeBody": "Doğrulayıcı, gerçek optimize ediciyi tarayıcında örnek verilerinle çalıştırır. Dürüst bir projeksiyondur — bu yüzden «tahmin» etiketi taşır.",
+    "mBeforeBody": "Fiyatlandırma bölümündeki hesaplayıcı, tasarrufunu kendi rakamlarınla öngörür: istek sayısı, token ve model. Dürüst bir projeksiyondur — bu yüzden «tahmin» etiketi taşır.",
     "mAfterK": "Kurulumdan sonra",
     "mAfterV": "Gerçek ölçüm",
     "mAfterBody": "Her çağrı bir SavingsReport döndürür: hiç ödemediğin çağrılar ve istek başına net tasarruf. Denetlenebilir, istek istek, kendi altyapında.",
@@ -743,7 +743,7 @@
     "snip2": "lisans (panelinden)",
     "snip3": "çağrıyı sarmak — kod değişikliğinin tamamı bu",
     "snipResult": "tasarruf, ölçülmüş",
-    "ctaVerify": "Doğrulayıcıda kendi verinle dene",
+    "ctaVerify": "Ölçülen tasarrufu gör",
     "ctaSignup": "Hesap oluştur",
     "ctaInstall": "Kurulum rehberine git"
   }

@@ -35,9 +35,9 @@
     "loginSubtitle": "Inicia sesión con tu cuenta de BiVelio, la misma que usas en toda la suite.",
     "newToBivelio": "¿Nuevo en BiVelio?",
     "createAnAccount": "Crear una cuenta",
-    "backToVerifier": "← Volver al verificador",
+    "backToVerifier": "← Volver al inicio",
     "createYourAccount": "Crea tu cuenta",
-    "signupSubtitle": "Una sola cuenta de BiVelio para toda la suite. Verifica tu ahorro gratis en el navegador; crea una cuenta para suscribirte y obtener tu clave de licencia.",
+    "signupSubtitle": "Una sola cuenta de BiVelio para toda la suite. Créala para suscribirte y obtener tu clave de licencia.",
     "alreadyHaveAccount": "¿Ya tienes una cuenta de BiVelio?",
     "signIn": "Iniciar sesión",
     "workEmail": "Correo de trabajo",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
       "title": "Céntimos para ejecutar. Múltiplos para ahorrar.",
-      "body": "Sin plan gratuito, sin prueba — prueba BV‑SALA aquí mismo en tu navegador y luego suscríbete para ejecutarlo en tu app. Precio por asiento, en {currency}.",
+      "body": "Sin plan gratuito y sin prueba: lo que puedes comprobar antes de pagar es el ahorro MEDIDO de aquí arriba, con su intervalo al lado. Te suscribes y lo ejecutas en tu app. Precio por asiento, en {currency}.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
@@ -734,7 +734,7 @@
     "s3Sub": "El producto tiene dos cifras distintas y conviene no mezclarlas.",
     "mBeforeK": "Antes de instalar",
     "mBeforeV": "Estimación",
-    "mBeforeBody": "El verificador ejecuta el optimizador real en tu navegador con tus datos de ejemplo. Es una proyección honesta — por eso lleva la etiqueta «estimación».",
+    "mBeforeBody": "La calculadora del pricing proyecta tu ahorro con tus propios números: peticiones, tokens y modelo. Es una proyección honesta — por eso lleva la etiqueta «estimación».",
     "mAfterK": "Después de instalar",
     "mAfterV": "Medición real",
     "mAfterBody": "Cada llamada devuelve un SavingsReport: las llamadas que nunca pagaste y el ahorro neto por petición. Auditable, petición a petición, en tu propia infraestructura.",
@@ -743,7 +743,7 @@
     "snip2": "la licencia (de tu dashboard)",
     "snip3": "envolver la llamada — esto es todo el cambio de código",
     "snipResult": "el ahorro, medido",
-    "ctaVerify": "Pruébalo con tus datos en el verificador",
+    "ctaVerify": "Ver el ahorro medido",
     "ctaSignup": "Crear cuenta",
     "ctaInstall": "Ir a la guía de instalación"
   }
