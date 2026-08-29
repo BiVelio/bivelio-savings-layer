@@ -45,9 +45,8 @@ export function hasValidLicense(licenses: LicenseRow[], nowMs: number): boolean 
   });
 }
 
-/** ¿La suscripción de Stripe cubre a la org ahora mismo? */
-function hasActiveSubscription(sub: SubscriptionRow | null, nowMs: number): boolean {
-  if (!sub) return false;
+/** ¿ESTA suscripción concreta cubre a la org ahora mismo? */
+function suscripcionCubre(sub: SubscriptionRow, nowMs: number): boolean {
   // 'trialing' y 'past_due' siguen cubriendo (Stripe da margen antes de cancelar);
   // 'canceled', 'incomplete', 'unpaid', 'incomplete_expired' no.
   if (!["active", "trialing", "past_due"].includes(sub.status)) return false;
@@ -57,6 +56,27 @@ function hasActiveSubscription(sub: SubscriptionRow | null, nowMs: number): bool
   // Un pequeño margen sobre el fin de periodo para no cortar por desfase de reloj
   // con Stripe mientras se procesa la renovación.
   return nowMs <= fin + 3 * DAY_MS;
+}
+
+/**
+ * ¿CUALQUIERA de las suscripciones de la org la cubre ahora mismo?
+ *
+ * Recibe TODAS las filas, no solo la más nueva. El candado leía una sola
+ * (`order created_at desc / limit(1)`), así que una fila NO vigente más reciente
+ * —la duplicada que se acaba de cancelar, la de cortesía que se retiró— hacía
+ * sombra a una vigente más antigua: el cliente seguía pagando y el ingest le
+ * devolvía 402. Y ese 402 NO se recupera, porque el SDK solo reencola los 5xx:
+ * el lote se pierde para siempre, con él los datos que alimentan `usage_daily` →
+ * asientos facturables y el extracto, y el panel se le queda a cero.
+ *
+ * Basta UNA vigente para dar derecho. Que esto no abra la puerta para siempre lo
+ * garantiza `suscripcionCubre`, que caduca sola en `current_period_end + 3 días`.
+ */
+export function hasActiveSubscription(
+  subscriptions: readonly SubscriptionRow[],
+  nowMs: number,
+): boolean {
+  return subscriptions.some((s) => suscripcionCubre(s, nowMs));
 }
 
 export interface EntitlementDecision {
@@ -74,11 +94,11 @@ export interface EntitlementDecision {
  */
 export function decideEntitlement(
   licenses: LicenseRow[],
-  subscription: SubscriptionRow | null,
+  subscriptions: readonly SubscriptionRow[],
   nowMs: number,
 ): EntitlementDecision {
   if (hasValidLicense(licenses, nowMs)) return { blocked: false, reason: "valid-license" };
-  if (hasActiveSubscription(subscription, nowMs)) return { blocked: false, reason: "active-subscription" };
+  if (hasActiveSubscription(subscriptions, nowMs)) return { blocked: false, reason: "active-subscription" };
 
   // Sin licencia válida ni suscripción. ¿Hay señal negativa explícita?
   const tuvoLicencia = licenses.length > 0;
