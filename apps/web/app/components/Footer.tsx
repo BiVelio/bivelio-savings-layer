@@ -99,10 +99,11 @@ export default async function Footer() {
   const locale = await getLocale();
 
   // Rutas con hash (Link), no anclas peladas: este footer ya no vive solo en la
-  // landing, y un `#verify` suelto en /how-it-works no llevaría a ninguna parte.
+  // landing, y un ancla suelta en /how-it-works no llevaría a ninguna parte.
+  // Y el destino es #measured: `#verify` NO existe en [locale]/page.tsx.
   const savings: string[][] = [
     [t("footer.howItWorks"), "/how-it-works"],
-    [t("footer.verify"), "/#verify"],
+    [t("footer.verify"), "/#measured"],
     [t("footer.measured"), "/#measured"],
     [t("footer.pricing"), "/#pricing"],
   ];

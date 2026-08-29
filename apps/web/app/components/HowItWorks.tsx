@@ -132,7 +132,8 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
         <div className="hiw-cta">
           {variant === "landing" ? (
             <>
-              <Link className="btn btn-primary" href="/#verify">{t("ctaVerify")}</Link>
+              {/* `/#verify` no existe en la landing — el ancla de la medición es #measured. */}
+              <Link className="btn btn-primary" href="/#measured">{t("ctaVerify")}</Link>
               <Link className="btn btn-ghost" href="/signup">{t("ctaSignup")}</Link>
             </>
           ) : (

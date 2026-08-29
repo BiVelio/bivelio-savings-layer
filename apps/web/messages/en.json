@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verify Your LLM Savings",
-    "metaDescription": "Verify your LLM savings with BV-SALA — paste your own data and watch real token accounting compute the savings live in your browser.",
+    "metaDescription": "Licensed LLM cost layer. Installs in front of your provider and cuts the bill — savings measured against the provider's own counter, with a 95% interval.",
     "hero": {
       "eyebrow": "The LLM cost layer anyone can install — licensed to run",
       "title": "Prove the savings on",
       "titleAccent": "your own data.",
-      "lede": "BV‑SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Don't take our word for it — paste your data below and watch the meter move.",
-      "ctaRun": "Run the verifier",
+      "lede": "BV-SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Every savings figure we publish is measured against the provider's own token counter and carries its confidence interval — never an estimate.",
+      "ctaRun": "See what we measured",
       "ctaPricing": "See pricing",
-      "note": "Runs entirely in your browser. No signup, nothing leaves this page.",
+      "note": "Five lines to install. The license activates from your dashboard.",
       "proofTitle": "Measured against a real provider",
       "proofs": [
         {

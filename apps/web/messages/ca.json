@@ -434,15 +434,15 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Verifica el teu estalvi en LLM amb BV-SALA: enganxa les teves pròpies dades i observa com la comptabilitat real de tokens calcula l'estalvi en viu al teu navegador.",
+    "metaDescription": "Capa de cost per a LLM amb llicència. Es posa davant del teu proveïdor i retalla la factura; l'estalvi es mesura contra el seu comptador, amb interval al 95 %.",
     "hero": {
       "eyebrow": "La capa de cost de LLM que qualsevol pot instal·lar — amb llicència per executar",
       "title": "Demostra l'estalvi amb",
       "titleAccent": "les teves pròpies dades.",
-      "lede": "BV‑SALA se situa davant de qualsevol proveïdor de LLM i, en cada sol·licitud, tria l'execució més barata que encara compleix el teu llindar de qualitat. No ens creguis sense més: enganxa les teves dades a sota i observa com es mou el mesurador.",
-      "ctaRun": "Executa el verificador",
+      "lede": "BV-SALA se situa davant de qualsevol proveïdor de LLM i, en cada sol·licitud, tria l'execució més barata que encara compleix el teu llindar de qualitat. Cada xifra d'estalvi que publiquem està mesurada contra el comptador de tokens del proveïdor mateix, amb el seu interval de confiança al costat — mai una estimació.",
+      "ctaRun": "Veure els resultats mesurats",
       "ctaPricing": "Veure els preus",
-      "note": "S'executa completament al teu navegador. Sense registre, res no surt d'aquesta pàgina.",
+      "note": "Instal·lació en cinc línies. La llicència s'activa des del teu tauler.",
       "proofTitle": "Mesurat contra proveïdor real",
       "proofs": [
         {
