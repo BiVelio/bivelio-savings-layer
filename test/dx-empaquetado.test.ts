@@ -1,0 +1,65 @@
+import { readFileSync, existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+import { describe, it, expect } from "vitest";
+
+/**
+ * LA DX DEL PAQUETE PUBLICADO: lo primero que toca quien instala desde npm, y lo
+ * último que mira un test. Dos fallos medidos contra el tarball de la 0.4.3.
+ *
+ * 1. `require("@bivelio/savings-layer")` desde CommonJS moría con
+ *    `ERR_PACKAGE_PATH_NOT_EXPORTED: No "exports" main defined` — un error que no
+ *    menciona ESM, ni Node, ni nada que ayude. `exports["."]` declaraba `import`
+ *    pero no `default`, así que la resolución bajo la condición `require` no
+ *    encontraba NINGUNA rama. Con `default`, Node ≥22 lo carga de verdad
+ *    (require(esm)) y un Node viejo da `ERR_REQUIRE_ESM`, que sí dice qué pasa.
+ *
+ * 2. Un `LicenseError` sin capturar imprimía 54.652 bytes en la terminal. Node
+ *    imprime el MARCO DE CÓDIGO de la línea del throw, y `minify: true` a secas
+ *    colapsaba el bundle a UNA línea de 52.564 caracteres: el mensaje de licencia
+ *    —el único texto útil— aparecía tras 53,6 KB de bundle. Y ese error es la
+ *    pantalla de bienvenida del producto, porque el SDK es fail-closed.
+ *
+ * Esta verja mira el ARTEFACTO, no el fuente, que es donde vivían los dos.
+ */
+const DIST = fileURLToPath(new URL("../dist/index.js", import.meta.url));
+
+describe("el paquete publicado", () => {
+  it("declara `default` en exports, para que require() desde CJS dé un error que se entienda", () => {
+    const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+      exports: Record<string, Record<string, string> | undefined>;
+    };
+    const punto = pkg.exports["."];
+    expect(punto, 'falta el subpath "." en exports').toBeDefined();
+    expect(
+      punto?.default,
+      "sin `default`, require() desde CommonJS muere con ERR_PACKAGE_PATH_NOT_EXPORTED",
+    ).toBe("./dist/index.js");
+    // El ORDEN no es cosmético: Node resuelve la PRIMERA condición que encaja, así
+    // que `default` tapa todo lo que vaya detrás y `types` tiene que ir delante o
+    // TypeScript resolvería por otra rama.
+    const claves = Object.keys(punto ?? {});
+    expect(claves[0], "`types` va el PRIMERO").toBe("types");
+    expect(claves[claves.length - 1], "`default` va el ÚLTIMO: tapa lo que venga detrás").toBe("default");
+  });
+
+  it("no tiene líneas gigantes: un LicenseError no vuelca el bundle en la terminal", () => {
+    // Se FALLA si no hay artefacto, no se salta. `ci.yml` corre `build:all` antes
+    // que `test`, así que en CI existe siempre: un skip solo puede dispararse en
+    // local y convertiría la verja en decorativa. Mismo trato que le da
+    // `superficie-publica-limpia.test.ts` al `.d.ts`.
+    expect(existsSync(DIST), "no hay dist/index.js — corre `pnpm build` antes").toBe(true);
+    const lineas = readFileSync(DIST, "utf8").split("\n");
+    const masLarga = Math.max(...lineas.map((l) => l.length));
+    // 200 es el `lineLimit` de tsup.config.ts; el margen absorbe un token que no
+    // se pueda partir. Sin `lineLimit` esto mide ~52.500 y el test cae.
+    expect(masLarga, `la línea más larga mide ${masLarga} caracteres`).toBeLessThan(4_000);
+  });
+
+  it("sigue estando minificado: acotar la línea no afloja lo que esconde el bundle", () => {
+    const src = readFileSync(DIST, "utf8");
+    // Si el minificado se cayera, volverían los comentarios del código fuente.
+    expect(src).not.toContain("LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE");
+    expect(src.length).toBeLessThan(400_000);
+  });
+});
