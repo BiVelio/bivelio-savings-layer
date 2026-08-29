@@ -24,6 +24,24 @@ export interface ChatMessage {
   content: string;
   /** Optional name (e.g. tool name for role: "tool"). */
   name?: string;
+  /**
+   * For `role: "tool"`: the id of the tool call this message answers.
+   *
+   * The provider tool loop needs it: OpenAI's Chat Completions rejects a
+   * `role: "tool"` message that does not carry `tool_call_id` and does not follow
+   * an assistant turn with `tool_calls` (a 400). Pass the `id` from the
+   * {@link ToolCallRequest} the model asked for. Ignored by providers that model
+   * tool results differently.
+   */
+  toolCallId?: string;
+  /**
+   * For `role: "assistant"`: the tool calls the model requested on that turn.
+   *
+   * Send it back with the assistant turn when you continue a tool conversation,
+   * so the following `role: "tool"` messages are valid. These are the same
+   * {@link ToolCallRequest}s that came back in {@link SavingsResult.toolCalls}.
+   */
+  toolCalls?: ToolCallRequest[];
   /** Opaque provider metadata; never used for the exact-cache key. */
   metadata?: Record<string, unknown>;
 }
