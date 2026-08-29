@@ -147,16 +147,39 @@ export function buscarPorModelo<T>(
   const porNombre = catalogo[desnudo];
   if (porNombre) return porNombre;
 
-  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. The next
-  // character must be a separator, or `gpt-4` would match `gpt-4o` — which costs
-  // twelve times less — and nobody would notice.
+  // Dated snapshots: `gpt-4o-2024-08-06`, `claude-sonnet-4-5-20250929`. DOS
+  // cortes, no uno.
+  //
+  // (1) El siguiente carácter debe ser un separador, o `gpt-4` casaría `gpt-4o`,
+  //     que cuesta doce veces menos, y nadie se enteraría.
+  //
+  // (2) Y lo que viene DESPUÉS del separador decide si esto es una instantánea
+  //     de ESTE modelo o directamente OTRO modelo:
+  //       · empieza por LETRA  → alias o variante (`-latest`, `-preview`): es el
+  //         mismo modelo con otro nombre, hereda.
+  //       · empieza por DÍGITO → o es una FECHA (cuatro o más dígitos seguidos:
+  //         `20250929`, `2024-08-06`), que hereda, o es una VERSIÓN MENOR
+  //         (`-4-9`, `.5-preview`, `-32k`), que es otro modelo con otro precio y
+  //         NO puede heredar.
+  //
+  // Sin el corte (2), un `claude-opus-4-9` que Anthropic saque mañana heredaría
+  // en silencio el 0,015/0,075 de `claude-opus-4` — el TRIPLE del precio real de
+  // la familia 4.5 (0,005/0,025). Y un precio inflado no se cancela en el
+  // cociente: el ahorro en euros sale 3x, y la comisión se calcula sobre euros.
+  // Medido contra el catálogo de hoy: `claude-opus-4-9` → 0,015 antes de esto.
+  //
+  // Enumerar modelos (lo que hizo #116) tapa los que ya existen; esto tapa los
+  // que aún no. La regla del PR #95 original exigía año SIEMPRE, y por eso
+  // rompía `claude-3-5-sonnet-latest` y `gpt-5-chat-latest`, que hoy heredan
+  // BIEN. Un modelo sin precio cae al respaldo ilustrativo, que se declara; un
+  // modelo con precio EQUIVOCADO no se declara, y es lo que hay que evitar.
   for (const clave of clavesPorLongitud) {
-    if (desnudo.startsWith(clave)) {
-      const siguiente = desnudo.charAt(clave.length);
-      if (siguiente === "" || siguiente === "-" || siguiente === "." || siguiente === "_") {
-        return catalogo[clave];
-      }
-    }
+    if (!desnudo.startsWith(clave)) continue;
+    const siguiente = desnudo.charAt(clave.length);
+    if (siguiente !== "" && siguiente !== "-" && siguiente !== "." && siguiente !== "_") continue;
+    const resto = desnudo.slice(clave.length + 1);
+    if (/^\d/.test(resto) && !/^\d{4}/.test(resto)) continue;
+    return catalogo[clave];
   }
   return undefined;
 }
