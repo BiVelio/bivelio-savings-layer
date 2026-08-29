@@ -357,6 +357,13 @@ input[type="range"] { accent-color: var(--brand); }
    óptico que usa bivelio.com en su propia barra. El color lo hereda del botón
    (tinta), y solo los tres puntos llevan color propio. */
 .nav-corp-logo { font-size: 15px; font-weight: 600; letter-spacing: -.02em; line-height: 1; }
+/* Dentro del panel del hamburguesa el logotipo convive con etiquetas de 15px en
+   Inter, y ahí 15px se queda corto: Space Grotesk tiene menos altura de
+   mayúscula por em, así que la misma cifra lee más pequeña. Medido, la caja del
+   logotipo salía de 50×19,5px contra los 88-169px de las otras filas — se veía
+   encogido. A 19px la altura de mayúscula empareja con la de las etiquetas y el
+   logotipo recupera la presencia que le toca. */
+.nav-mobile-item .nav-corp-logo { font-size: 19px; }
 
 /* Puente al sitio corporativo: en móvil vive dentro del panel hamburguesa.
    Entre 640 y 960px NO se pinta, y es la única pieza del nav que cede: medido,
