@@ -22,23 +22,33 @@ function Punto(style: React.CSSProperties) {
   return <span aria-hidden style={{ borderRadius: "50%", ...style }} />;
 }
 
-/** Una «ı» sin punto con nuestro propio punto de color encima. */
+/** Una «ı» sin punto con nuestro propio punto de color encima.
+ *
+ *  La geometría NO es a ojo, está medida sobre Space Grotesk 600 (2026-08-29):
+ *  con `line-height: 1` la línea base cae a 0.845em del borde superior de la
+ *  caja, y la tinta de la «ı» sube 0.494em sobre la base — o sea que el asta
+ *  empieza en 0.351em. El punto ocupa de `top` a `top + 0.17em`, así que:
+ *
+ *      hueco = 0.351 − (top + 0.17)
+ *
+ *  El original de bivelio.com usa `top: 0.38em`, que da hueco NEGATIVO: el
+ *  punto se mete dentro del asta. Con 0.22em sigue solapando (−0.039em). A
+ *  0.08em quedan 0.101em de aire — 1,9px a 19px, 1,5px a 15px— que es el hueco
+ *  que el logotipo oficial sí tiene.
+ *
+ *  El `lineHeight: 1` del envoltorio NO es decorativo: sin él la posición de la
+ *  línea base depende del interlineado que herede de fuera, y el mismo valor de
+ *  `top` cae en sitios distintos. Con 1.25 heredado, por ejemplo, 0.22em parecía
+ *  correcto y en el nav real se solapaba. Fijarlo hace la geometría
+ *  determinista a cualquier tamaño y en cualquier contenedor. */
 function IConPunto({ color }: { color: string }) {
   return (
-    <span style={{ position: "relative", display: "inline-block" }}>
+    <span style={{ position: "relative", display: "inline-block", lineHeight: 1 }}>
       {"ı"}
       {Punto({
         position: "absolute",
         left: "50%",
-        // 0.22em, no los 0.38em del original: a 0.38em el punto BAJA hasta
-        // apoyarse en el asta de la «ı» y los dos SE TOCAN — se ve a simple
-        // vista ampliando el logotipo, y es un hueco que el logo oficial sí
-        // tiene. 0.22em es el valor que eligió el dueño comparando variantes
-        // ampliadas contra el logotipo de referencia (2026-08-29).
-        // OJO: bivelio.com arrastra hoy el mismo 0.38em en su propio
-        // <BvWordmark> (bivelio-site, components/brand-mark.tsx), así que ahí
-        // los puntos también se tocan.
-        top: "0.22em",
+        top: "0.08em",
         width: "0.17em",
         height: "0.17em",
         transform: "translateX(-50%)",
@@ -52,7 +62,7 @@ export function BivelioWordmark({ className, style }: { className?: string; styl
   return (
     <span
       className={className}
-      style={{ fontFamily: "var(--font-heading)", ...style }}
+      style={{ fontFamily: "var(--font-heading)", lineHeight: 1, ...style }}
       aria-label="BiVelio"
     >
       <span aria-hidden>
