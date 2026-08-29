@@ -103,7 +103,9 @@ export default async function Footer() {
   // Y el destino es #measured: `#verify` NO existe en [locale]/page.tsx.
   const savings: string[][] = [
     [t("footer.howItWorks"), "/how-it-works"],
-    [t("footer.verify"), "/#measured"],
+    // `footer.verify` («Verifica tu ahorro») apuntaba también a /#measured: dos
+    // enlaces distintos de la misma columna al MISMO sitio, y el primero además
+    // prometía un verificador que ya no existe. Se queda el honesto.
     [t("footer.measured"), "/#measured"],
     [t("footer.pricing"), "/#pricing"],
   ];
