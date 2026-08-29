@@ -21,6 +21,13 @@ export interface ArtifactShape {
   mode?: unknown;
   model?: unknown;
   modelStable?: unknown;
+  /** Sello de procedencia que escribe `pnpm ab`: fecha, commit del árbol y
+   *  número de ensayos. `trials` es el lazo que ata el JSON con su CSV — el
+   *  publicador se niega si no cuadran. Opcionales porque un artefacto anterior
+   *  al sello no los trae y debe poder republicarse. */
+  generatedAt?: unknown;
+  commit?: unknown;
+  trials?: unknown;
   reconciliation?: { reconciled?: unknown; residual?: unknown };
   aggregate?: {
     savings?: Partial<CI>;
