@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 
 import { locales } from "@/i18n/config";
+import { formatearPrecio } from "@/lib/format/precio";
+import { preciosDelPlan } from "@/lib/stripe/pricing";
 
 /**
  * Tarjeta social de la landing, una por idioma. Antes no existía ninguna: cada
@@ -35,6 +37,17 @@ const LINE = "#DEE4E7";
 export default async function Image({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "landing" });
+  // `pricing.amount` es la cadena ICU `"{amount}"`: SIN el parámetro, la píldora
+  // de esta tarjeta publicaba el marcador literal — «{amount} / seat / month» en
+  // los doce idiomas, en cada vez que alguien comparte el enlace en LinkedIn, X,
+  // Slack o WhatsApp. Y es una primera impresión que no se gana dos veces: las
+  // cachés de OG de las redes congelan la imagen durante días.
+  //
+  // El precio sale del Price de Stripe, igual que en la landing (page.tsx:130),
+  // que es lo que de verdad se cobra. Sin esto la tarjeta y la página podrían
+  // desincronizarse, que es justo lo que este fichero dice evitar.
+  const precios = await preciosDelPlan();
+  const precioMensual = formatearPrecio(locale, precios.monthly);
 
   return new ImageResponse(
     (
@@ -94,7 +107,7 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
               borderRadius: 999,
             }}
           >
-            {t("pricing.amount")} {t("pricing.per")}
+            {t("pricing.amount", { amount: precioMensual })} {t("pricing.per")}
           </div>
         </div>
       </div>
