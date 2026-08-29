@@ -51,30 +51,32 @@ export class SavingsLedger {
   eliminatedOutput = 0;
   providerCachedInput = 0; // Ledger 4
 
-  /**
-   * Tokens que el proveedor facturó como ESCRITURA de caché de prefijo. Se
-   * publican en la traza; el dinero va aparte, en `cacheWritePremiumUsd`.
-   */
+  // COMENTARIOS EN `//` Y NO JSDOC, a propósito: `SavingsLedger` es superficie
+  // PÚBLICA y todo JSDoc de aquí viaja al `.d.ts` que se publica en npm. El
+  // porqué es para quien lee ESTE fichero, no para el autocompletado del
+  // cliente; `test/superficie-publica-limpia.test.ts` es el trinquete que lo
+  // vigila. Misma convención que `canonicalization/guardas-de-texto.ts`.
+  //
+  // El recuento entero de escrituras ya está en `actualInput` a tarifa normal
+  // (1x); lo que falta es el SUPLEMENTO —Anthropic las factura a 1,25x, o sea
+  // +0,25x—, y es un coste que la capa PROVOCA al marcar `cache_control`. El
+  // camino ingenuo nunca marcó, así que no puede estar en el baseline: va solo a
+  // `actual`, como `extraCostUsd`. Sin esto, una petición marcada en frío
+  // publicaba `netSavings 0` con `basis:"measured"` mientras la factura real
+  // subía ~12,5 %.
+  //
+  // Y SE GUARDA EN DÓLARES, NO EN TOKENS, que es la diferencia que importa.
+  // `estimateCost` recibe UN SOLO `CostModel` —el del modelo que acabó
+  // contestando—, así que guardar tokens y tarifarlos allí los cobraría al precio
+  // equivocado en cuanto la cascada escala: la marca la puso la llamada BARATA
+  // (el código no marca la escalada, a propósito), pero el precio que llega a
+  // `estimateCost` es el del FUERTE. Medido al provocarlo con barato 0,001 y
+  // fuerte 0,015: la prima salía 15x. Misma doctrina que este fichero ya declara
+  // para `cascadeAttempt`: tarifar donde se conoce el precio correcto.
+
+  /** Tokens the provider billed as prefix-cache writes. */
   cacheWriteInputTokens = 0;
-  /**
-   * La PRIMA de esa escritura, YA TARIFADA EN DÓLARES.
-   *
-   * El recuento entero está en `actualInput` a tarifa normal (1x); lo que falta
-   * es el suplemento —Anthropic factura las escrituras a 1,25x, o sea +0,25x—, y
-   * es un coste que la capa PROVOCA al marcar `cache_control`. El camino ingenuo
-   * nunca marcó, así que no puede estar en el baseline: va solo a `actual`, como
-   * `extraCostUsd`. Sin esto, una petición marcada en frío publicaba
-   * `netSavings 0` con `basis:"measured"` mientras la factura real subía ~12,5 %.
-   *
-   * SE GUARDA EN DÓLARES, NO EN TOKENS, y esa es la diferencia que importa.
-   * `estimateCost` recibe UN SOLO `CostModel` —el del modelo que acabó
-   * contestando—, así que guardar tokens y tarifarlos allí los cobraría al precio
-   * equivocado en cuanto la cascada escala: la marca la puso la llamada BARATA
-   * (el código no marca la escalada, a propósito), pero el precio que llega a
-   * `estimateCost` es el del FUERTE. Medido al provocarlo con barato 0,001 y
-   * fuerte 0,015: la prima salía 15x. Es la misma doctrina que ya declara este
-   * fichero para `cascadeAttempt` — tarifar donde se conoce el precio correcto.
-   */
+  /** The premium on those writes, already priced in USD. Adds to `actual` only. */
   cacheWritePremiumUsd = 0;
 
   // --- Regla de una sola regla (single ruler) -------------------------------
@@ -195,13 +197,9 @@ export class SavingsLedger {
       (Math.max(0, usage.inputTokens) / 1000) * cheapPrice.inputPer1k +
       (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k;
   }
-  /**
-   * La capa marcó `cache_control` y el proveedor facturó `tokens` como escritura
-   * a `multiplicador`x. Se apunta el SUPLEMENTO —la parte por encima de la tarifa
-   * normal, que ya está contada en `actualInput`— tarifado con el precio del
-   * modelo QUE MARCÓ, que es el único que lo conoce. Va a `actual` y nunca al
-   * baseline.
-   */
+  // El suplemento se tarifa con el precio del modelo QUE MARCÓ, que es el único
+  // que lo conoce — ver el bloque de arriba. Va a `actual` y nunca al baseline.
+  /** Record the premium for `tokens` of cache write billed at `multiplicador`x. */
   cacheWritePremium(tokens: number, multiplicador: number, precioDelQueMarco: CostModel): void {
     const t = Math.max(0, tokens);
     this.cacheWriteInputTokens += t;
