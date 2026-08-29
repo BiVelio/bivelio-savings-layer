@@ -56,7 +56,24 @@ export default defineConfig([
     //
     // Los tipos (dts) SIGUEN legibles a propósito: son la API pública y el
     // cliente tiene que poder leerlos.
+    //
+    // MINIFICADO COMPLETO —nombres mangleados y comentarios fuera, así que el
+    // mapa del algoritmo sigue escondido— PERO CON LÍNEAS ACOTADAS. Con
+    // `minify: true` a secas el bundle colapsa a UNA línea de 52.564 caracteres,
+    // y Node imprime el MARCO DE CÓDIGO del punto del throw: un `LicenseError`
+    // sin capturar volcaba 54.652 bytes en la terminal, de los que 53.646 eran
+    // bundle antes del mensaje. Y ese error es LA PANTALLA DE BIENVENIDA del
+    // producto, porque el SDK es fail-closed: el cliente que acaba de pagar ve
+    // 53 KB de ruido y piensa que el paquete ha reventado, no que le falta la
+    // licencia. Con `lineLimit`: 1.600 bytes y un marco de 202 caracteres.
+    // Cuesta 934 bytes de tarball (+0,55 %), medido.
+    //
+    // El bundle de la WEB (más abajo) no lo lleva a propósito: en el navegador
+    // nadie ve un marco de código, y son 934 bytes servidos a cada visitante.
     minify: true,
+    esbuildOptions(options) {
+      options.lineLimit = 200;
+    },
     define: defineNpm,
     outDir: "dist",
   },
