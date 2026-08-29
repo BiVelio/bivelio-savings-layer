@@ -6,12 +6,20 @@ import { canonicalize } from "../src/canonicalization/canonicalize.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
 
-/** Compresor con PÉRDIDA, del estilo de los que se usan de verdad: poda léxica. */
+/** Compresor con PÉRDIDA, del estilo de los que se usan de verdad: poda léxica.
+ *
+ *  La lista NO incluye «never», y no es un detalle: este fichero prueba que los
+ *  mensajes de SISTEMA no se comprimen, no la verja de negación. Podar «never»
+ *  se come una negación e invierte el sentido, así que desde que
+ *  `compresionFiel` comprueba el resultado —y no la palabra del compresor— esa
+ *  reescritura se rechaza, con razón, y el mensaje del usuario tampoco se
+ *  comprimiría: el test dejaría de probar lo suyo por un motivo ajeno. Con
+ *  relleno de verdad, la poda es fiel y la protección del sistema se ve sola. */
 const compresorConPerdida = {
   async compress({ text }: { text: string }) {
     const podado = text
       .split(/\s+/)
-      .filter((p) => !/^(never|reveal|internal|the|to|user|under|any|circumstance|rules|pricing)$/i.test(p))
+      .filter((p) => !/^(reveal|internal|the|to|user|under|any|circumstance|rules|pricing)$/i.test(p))
       .join(" ");
     return {
       compressed: podado,
