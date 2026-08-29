@@ -47,7 +47,7 @@ export async function AccountPlanStrip({
   });
   const planLabel = isActive ? plan.charAt(0).toUpperCase() + plan.slice(1) : t("accountPlanStrip.noActivePlan");
   return (
-    <div className="cards" style={{ gridTemplateColumns: "1.4fr 1fr", marginTop: "6px" }}>
+    <div className="cards plan" style={{ marginTop: "6px" }}>
       <div className="card">
         <div className="n">{t("accountPlanStrip.signedInAs")}</div>
         <h3 style={{ wordBreak: "break-all" }}>{email}</h3>

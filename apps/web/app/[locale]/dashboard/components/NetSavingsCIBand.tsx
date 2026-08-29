@@ -10,7 +10,7 @@ export async function NetSavingsCIBand({ savings, mode }: { savings: CI; mode: "
   const dmax = Math.max(0.6, savings.upper + 0.05);
   const xp = (v: number) => Math.max(0, Math.min(100, ((v - dmin) / (dmax - dmin)) * 100));
   return (
-    <div className="verdict" style={{ gridTemplateColumns: "minmax(220px,1fr) 1.3fr" }}>
+    <div className="verdict band">
       <div>
         <div className="big pos ck-num">≥ {pct(savings.lower)}</div>
         <div className="cap">

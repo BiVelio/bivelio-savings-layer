@@ -57,7 +57,7 @@ export default async function OverviewPage() {
               abajo la responden por partes que NO se pueden sumar entre sí. */}
           <TokenTotalsTiles usage={usage} />
           <LiveLedgerTiles usage={usage} ab={ab} />
-          <div className="cards" style={{ gridTemplateColumns: "1.6fr 1fr" }}>
+          <div className="cards wide">
             <div className="card" style={{ padding: "16px" }}>
               <div className="n" style={{ marginBottom: "10px" }}>{t("overview.savingsTrend")}</div>
               <SavingsTrendChart usage={usage} />
