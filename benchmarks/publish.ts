@@ -61,6 +61,40 @@ if (dryRun) {
   process.exit(0);
 }
 
+// EL CSV Y EL JSON TIENEN QUE SER DE LA MISMA TIRADA, y se comprueba ANTES de
+// escribir nada. Antes esto era un copy incondicional al final, y por ahí entró
+// el fallo que encontró la auditoría: se publicó un CSV rezagado de una corrida
+// anterior —que recomputaba 27,1 %— junto a un JSON que titulaba ≥24,1 %. Los
+// dos ficheros se sirven a la vez y el README invita a recalcular el intervalo
+// con el CSV, así que una desincronía no es un detalle interno: es que la prueba
+// contradice al titular en la misma página que la publica.
+//
+// Que la comprobación vaya ANTES no es cosmético. Rechazar después de haber
+// escrito el JSON dejaría el destino a medias —titular nuevo, ensayos viejos—,
+// que es peor que no comprobar nada.
+//
+// El lazo es el recuento de ensayos que `pnpm ab` sella en el artefacto. Un
+// artefacto anterior al sello no trae `trials`: entonces no se puede comprobar y
+// se avisa, pero no se bloquea — bloquear ahí impediría republicar lo que ya
+// está publicado.
+const csvCrudo = existsSync(ORIGEN_CSV) ? readFileSync(ORIGEN_CSV, "utf8") : null;
+const filasCsv = csvCrudo === null ? null : csvCrudo.split("\n").filter((l) => l.trim().length > 0).length - 1;
+const ensayosDeclarados = typeof entrante.trials === "number" ? entrante.trials : null;
+if (csvCrudo !== null && ensayosDeclarados !== null && filasCsv !== ensayosDeclarados) {
+  console.error(
+    `\n✗ NO publicado: el CSV no es de esta tirada.\n` +
+      `  el artefacto declara ${ensayosDeclarados} ensayos y el CSV trae ${filasCsv} filas.\n` +
+      `  Vuelve a ejecutar \`pnpm ab\` para que JSON y CSV salgan de la misma corrida.\n`,
+  );
+  process.exit(1);
+}
+if (csvCrudo !== null && ensayosDeclarados === null) {
+  console.warn(
+    "AVISO: el artefacto no declara `trials` (es anterior al sello de procedencia), " +
+      "así que no se puede comprobar que el CSV sea de esta tirada.",
+  );
+}
+
 mkdirSync(dirname(DESTINO), { recursive: true });
 writeFileSync(DESTINO, JSON.stringify(entrante, null, 2) + "\n");
 console.log(`\nPublicado en ${DESTINO}`);
@@ -70,13 +104,19 @@ console.log(`\nPublicado en ${DESTINO}`);
 // `benchmarks/out/` está en .gitignore, así que el CSV nunca salía de la máquina
 // donde se ejecutó. Un producto que se vende como "verify-don't-trust" no puede
 // pedir que le crean el intervalo de confianza sin enseñar los datos.
-if (existsSync(ORIGEN_CSV)) {
-  writeFileSync(DESTINO_CSV, readFileSync(ORIGEN_CSV, "utf8"));
-  console.log(`Ensayos crudos en ${DESTINO_CSV}`);
+if (csvCrudo !== null) {
+  writeFileSync(DESTINO_CSV, csvCrudo);
+  console.log(`Ensayos crudos en ${DESTINO_CSV}${ensayosDeclarados !== null ? `  (${filasCsv} ensayos, cuadran)` : ""}`);
 } else {
   console.warn(
     "AVISO: no hay ab-live-trials.csv. El artefacto se publica sin los ensayos " +
       "crudos, así que nadie podrá recalcular el intervalo.",
   );
 }
+
+// Los ENSAYOS CRUDOS viajan con el artefacto. El README promete que cualquiera
+// pueda recalcular el intervalo por su cuenta, y esa promesa era falsa:
+// `benchmarks/out/` está en .gitignore, así que el CSV nunca salía de la máquina
+// donde se ejecutó. Un producto que se vende como "verify-don't-trust" no puede
+// pedir que le crean el intervalo de confianza sin enseñar los datos.
 console.log("");
