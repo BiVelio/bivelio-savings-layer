@@ -45,7 +45,7 @@ import { resolveConstraintBackend, type ConstraintPlan } from "../constraints/ba
 import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
-import { shouldCompress } from "../compression/compression.js";
+import { compresionFiel, shouldCompress } from "../compression/compression.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -1492,7 +1492,23 @@ export class SavingsPipeline {
           }
           const before = this.tokensFor(m.content, request);
           const result = await this.config.compressor.compress({ text: m.content });
-          const applies = !result.skipped && result.fidelityPassed;
+          // LA FIDELIDAD SE COMPRUEBA, NO SE CREE. `result.fidelityPassed` lo
+          // declara el propio compresor, y la palanca es INYECTABLE: ese `true`
+          // puede venir de cualquier parte. El camino por defecto tampoco lo
+          // respalda —`withProtectedSpans` con la lista vacía no itera y devuelve
+          // `true` incondicionalmente—, así que el comentario de arriba que dice
+          // «solo se aplica lo que pasó la comprobación» describía una
+          // comprobación que no existía.
+          //
+          // Reproducido: «No, nunca cobres dos veces al cliente» comprimido a
+          // «cobres dos veces al cliente» —sentido INVERTIDO— y certificado como
+          // fiel. `compresionFiel` verifica el RESULTADO: mismos números y misma
+          // paridad de negación. No compara el contenido, que es justo lo que una
+          // compresión legítima cambia.
+          const applies =
+            !result.skipped &&
+            result.fidelityPassed &&
+            compresionFiel(m.content, result.compressed);
           const after = applies ? this.tokensFor(result.compressed, request) : before;
           if (applies && after < before) {
             rewritten.push({ ...m, content: result.compressed });
@@ -1584,7 +1600,11 @@ export class SavingsPipeline {
         originalTokens: compressedBefore,
         compressedTokens: compressedAfter,
         protectedSpans: protegidos,
-        fidelityPassed: true, // solo se aplica lo que pasó la comprobación
+        // Ahora es verdad: `applies` incluye `compresionFiel(...)`, así que lo
+        // aplicado pasó una comprobación real del RESULTADO, no la palabra del
+        // compresor. Sigue siendo `true` porque lo que no pasa no se aplica —lo
+        // que cambió es que antes eso no lo respaldaba nadie.
+        fidelityPassed: true,
       };
     }
 

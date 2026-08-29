@@ -200,10 +200,16 @@ const STOPWORDS = new Set([
 // fresco. El inglés tampoco los tiene, así que dejarlos fuera es lo que iguala
 // las listas en vez de volver el castellano MÁS permisivo que el inglés.
 
-function numericTokens(s: string): string[] {
+// LOS AYUDANTES SE EXPORTAN PARA QUE LA LISTA DE NEGACIONES VIVA EN UN SOLO
+// SITIO. La verja de fidelidad de la compresión (`compression/compression.ts`)
+// necesita exactamente los mismos hechos —números y paridad de negación—, y
+// mantener una segunda copia de `NEGATIONS` es justo lo que el comentario de
+// arriba prohíbe: la copia se queda sin las tildes, o sin es/ca, y entonces una
+// de las dos verjas deja pasar lo que la otra corta.
+export function numericTokens(s: string): string[] {
   return (s.match(/\d[\d.,:/-]*/g) ?? []).map((t) => t.replace(/[.,:/-]+$/, ""));
 }
-function multisetEqual(a: string[], b: string[]): boolean {
+export function multisetEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false;
   const counts = new Map<string, number>();
   for (const x of a) counts.set(x, (counts.get(x) ?? 0) + 1);
@@ -214,10 +220,10 @@ function multisetEqual(a: string[], b: string[]): boolean {
   }
   return true;
 }
-function words(s: string): string[] {
+export function words(s: string): string[] {
   return s.split(/\s+/).filter(Boolean);
 }
-function negationCount(tokens: string[]): number {
+export function negationCount(tokens: string[]): number {
   return tokens.filter((t) => NEGATIONS.has(t.replace(/'/g, "")) || t.endsWith("n't")).length;
 }
 
