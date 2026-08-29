@@ -86,12 +86,56 @@ export class ToolSelector {
     // A non-TOOL_ACTION request never receives write/destructive tools.
     const allowWrites = execution === "TOOL_ACTION";
     const eligible = tools.filter((t) => allowWrites || t.risk === "read");
+    const esEscritura = (t: ToolDescriptor) => allowWrites && t.risk !== "read";
 
-    const scored = eligible
+    // LAS DE ESCRITURA EN UNA RUTA TOOL_ACTION SON EL PROPÓSITO DE LA PETICIÓN,
+    // y no se podan por puntuación léxica.
+    //
+    // El router acaba de clasificar esto como «imperativo + hay una herramienta
+    // de escritura»: el modelo TIENE que poder llamarla. Pero el intent de una
+    // write casa con el verbo del usuario pocas veces —`intents: ["facturación
+    // saliente"]` contra «envía la factura» puntúa 0—, así que el viejo
+    // `.filter(score > 0)` la descartaba: el proveedor no veía la capacidad, el
+    // modelo contestaba «claro, la envío» y NO SE ENVIABA NADA. Y encima el libro
+    // 2 acreditaba sus tokens como ahorro, o sea que cobrábamos comisión por
+    // haberle roto la función al cliente. Es el «peor fallo posible» que el repo
+    // ya cerró para `retrieval:"off"` y para `router:false`; esta era la tercera
+    // puerta. Misma regla «LAS DE ESCRITURA VAN SIEMPRE» que aplica
+    // schema-on-demand una etapa después — sobre lo que este selector ya haya
+    // podado, así que sin esto no llega a alcanzarlas.
+    //
+    // La poda por relevancia se conserva SOLO para las de lectura: una read cuyo
+    // intent no casa es ahorro legítimo. Como las writes dejan de estar en
+    // `droppedIds`, dejan de acreditarse como ahorro: el arreglo de contabilidad
+    // sale gratis.
+    const reads = eligible.filter((t) => !esEscritura(t));
+    const writes = eligible.filter((t) => esEscritura(t));
+
+    // Y CUANDO NO CABEN TODAS, SE ELIGE POR PUNTUACIÓN, NUNCA POR ORDEN DE
+    // DECLARACIÓN. Sin este `sort` el corte se lleva por delante justo la write
+    // que sí casaba: con `maxTools: 2` y tres writes de las que solo
+    // `send_invoice` case con «envía la factura», cortar por declaración emite
+    // las dos irrelevantes y descarta la buena — que es EXACTAMENTE el fallo que
+    // esta función viene a cerrar, reaparecido en la frontera del presupuesto y
+    // peor que antes. Se puntúan pero NO se filtran por `score > 0`: una write
+    // sin coincidencia sigue entrando si hay hueco; la puntuación solo decide el
+    // orden de preferencia. `Array.prototype.sort` es estable, así que a igual
+    // puntuación manda el orden del llamante y el resultado es determinista.
+    const writesPorRelevancia = writes
+      .map((tool) => ({ tool, score: this.scoreIntentMatch(text, tool) }))
+      .sort((a, b) => b.score - a.score)
+      .map((s) => s.tool);
+    const readsRelevantes = reads
       .map((tool) => ({ tool, score: this.scoreIntentMatch(text, tool) }))
       .filter((s) => s.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, this.maxTools);
+      .map((s) => s.tool);
+    // Las writes primero (son la acción) y el techo restante para las reads: bajo
+    // presión de presupuesto se sacrifica una lectura, nunca la capacidad de actuar.
+    const scored = [
+      ...writesPorRelevancia.slice(0, this.maxTools),
+      ...readsRelevantes.slice(0, Math.max(0, this.maxTools - writes.length)),
+    ].map((tool) => ({ tool }));
 
     // EL ORDEN QUE SE EMITE NO ES EL ORDEN EN QUE SE ELIGE.
     //
