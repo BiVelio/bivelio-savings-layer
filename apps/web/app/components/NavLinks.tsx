@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
 
+import { BivelioWordmark } from "./BivelioWordmark";
+
 import { ArrowRightIcon, CloseIcon, GlobeIcon, HowIcon, MenuIcon, ReceiptIcon, VerifyIcon } from "./icons";
 
 /**
@@ -95,7 +97,7 @@ export function MobileMenu({ authed }: { authed: boolean }) {
               <span className="nav-mobile-tile">
                 <GlobeIcon />
               </span>
-              bivelio.com
+              <BivelioWordmark className="nav-corp-logo" />
             </a>
             <Link
               href={authed ? "/dashboard" : "/login"}

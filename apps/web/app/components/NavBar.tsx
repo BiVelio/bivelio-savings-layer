@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { BivelioWordmark } from "./BivelioWordmark";
 import { MobileMenu, NavCta, NavSections } from "./NavLinks";
 import { SavingsLogo } from "./SavingsLogo";
 
@@ -46,7 +47,7 @@ export async function NavBar() {
                 al primario tinta, la misma pareja de botones que usa bivelio.com.
                 En <640px vive dentro del menú móvil. */}
             <a className="btn btn-ghost nav-corp" href="https://bivelio.com">
-              bivelio.com
+              <BivelioWordmark className="nav-corp-logo" />
             </a>
             <NavCta authed={authed} />
             <MobileMenu authed={authed} />

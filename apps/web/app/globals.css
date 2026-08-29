@@ -296,6 +296,14 @@ input[type="range"] { accent-color: var(--brand); }
 }
 .announce-close:hover { color: #fff; }
 .announce-close svg { width: 16px; height: 16px; }
+/* El botón de cerrar es absoluto: ocupa los últimos 52px de la franja (44 de
+   caja + 8 de inset) pero NO reserva sitio, así que el texto centrado se le
+   mete debajo. Con las cadenas largas —«Savings Layer forma parte de la
+   plataforma BiVelio», y peor en catalán— la flecha final acaba tapada por la
+   ✕ en un móvil. Se abre el pasillo por los DOS lados para no descentrar la
+   franja. Ningún elemento cruzaba el borde del visor, así que la auditoría de
+   desbordamiento no podía verlo: es un solape, no un desborde. */
+@media (max-width: 700px) { .announce { padding-inline: 56px; } }
 
 /* ── Nav superior (landing / login / signup) ───────────────────────────── */
 .site-nav {
@@ -342,6 +350,13 @@ input[type="range"] { accent-color: var(--brand); }
 /* En pantallas estrechas el CTA se queda, pero sin la flecha: sigue siendo la
    vía directa a la cuenta aunque exista el menú hamburguesa. */
 @media (max-width: 480px) { .nav-cta { padding: 8px 13px; } .nav-cta svg { display: none; } }
+
+/* El logotipo «BiVelio.» dentro del botón puente y de la fila del menú móvil.
+   Va un pelín más grande y más apretado que el texto que sustituye porque es
+   una display, no una etiqueta de interfaz: 15px con -.02em es el mismo ajuste
+   óptico que usa bivelio.com en su propia barra. El color lo hereda del botón
+   (tinta), y solo los tres puntos llevan color propio. */
+.nav-corp-logo { font-size: 15px; font-weight: 600; letter-spacing: -.02em; line-height: 1; }
 
 /* Puente al sitio corporativo: en móvil vive dentro del panel hamburguesa.
    Entre 640 y 960px NO se pinta, y es la única pieza del nav que cede: medido,
