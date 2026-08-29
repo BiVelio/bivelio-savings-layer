@@ -35,9 +35,9 @@
     "loginSubtitle": "Connectez-vous avec votre compte BiVelio — le même que vous utilisez dans toute la suite.",
     "newToBivelio": "Nouveau sur BiVelio ?",
     "createAnAccount": "Créer un compte",
-    "backToVerifier": "← Retour au vérificateur",
+    "backToVerifier": "← Retour à l'accueil",
     "createYourAccount": "Créez votre compte",
-    "signupSubtitle": "Un seul compte BiVelio pour toute la suite. Vérifiez vos économies gratuitement dans le navigateur — créez un compte pour vous abonner et obtenir votre clé de licence.",
+    "signupSubtitle": "Un seul compte BiVelio pour toute la suite. Créez-le pour vous abonner et obtenir votre clé de licence.",
     "alreadyHaveAccount": "Vous avez déjà un compte BiVelio ?",
     "signIn": "Se connecter",
     "workEmail": "E-mail professionnel",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Un seul forfait, facturé par siège",
       "title": "Des centimes pour l'exécuter. Des multiples d'économies.",
-      "body": "Pas de version gratuite, pas d'essai — testez BV‑SALA ici même dans votre navigateur, puis abonnez-vous pour l'exécuter dans votre application. Facturé par siège, en {currency}.",
+      "body": "Pas de version gratuite, pas d'essai : ce que vous pouvez vérifier avant de payer, ce sont les économies MESURÉES ci-dessus, avec leur intervalle à côté. Vous vous abonnez, puis vous exécutez BV-SALA dans votre application. Facturé par siège, en {currency}.",
       "amount": "{amount}",
       "per": "/ siège / mois",
       "proNote": "<b>PRO</b> — facturé par siège. Ou <b>{yearly} / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",
@@ -734,7 +734,7 @@
     "s3Sub": "Le produit a deux chiffres différents, et mieux vaut ne pas les mélanger.",
     "mBeforeK": "Avant d'installer",
     "mBeforeV": "Estimation",
-    "mBeforeBody": "Le vérificateur exécute le vrai optimiseur dans votre navigateur avec vos données d'exemple. C'est une projection honnête — c'est pourquoi elle porte l'étiquette « estimation ».",
+    "mBeforeBody": "Le simulateur de la section Tarifs projette vos économies à partir de vos propres chiffres : requêtes, tokens et modèle. C'est une projection honnête — c'est pourquoi elle porte l'étiquette « estimation ».",
     "mAfterK": "Après l'installation",
     "mAfterV": "Mesure réelle",
     "mAfterBody": "Chaque appel renvoie un SavingsReport : les appels que vous n'avez jamais payés et l'économie nette par requête. Auditable, requête par requête, sur votre propre infrastructure.",
@@ -743,7 +743,7 @@
     "snip2": "la licence (depuis votre tableau de bord)",
     "snip3": "envelopper l'appel — c'est tout le changement de code",
     "snipResult": "l'économie, mesurée",
-    "ctaVerify": "Essayez avec vos données dans le vérificateur",
+    "ctaVerify": "Voir les économies mesurées",
     "ctaSignup": "Créer un compte",
     "ctaInstall": "Voir le guide d'installation"
   }

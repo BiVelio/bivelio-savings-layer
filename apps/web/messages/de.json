@@ -35,9 +35,9 @@
     "loginSubtitle": "Melde dich mit deinem BiVelio-Konto an — demselben, das du in der gesamten Suite verwendest.",
     "newToBivelio": "Neu bei BiVelio?",
     "createAnAccount": "Konto erstellen",
-    "backToVerifier": "← Zurück zum Verifizierer",
+    "backToVerifier": "← Zurück zur Startseite",
     "createYourAccount": "Erstelle dein Konto",
-    "signupSubtitle": "Ein BiVelio-Konto für die gesamte Suite. Verifiziere deine Einsparungen kostenlos im Browser — erstelle ein Konto, um zu abonnieren und deinen Lizenzschlüssel zu erhalten.",
+    "signupSubtitle": "Ein einziges BiVelio-Konto für die gesamte Suite. Erstelle es, um zu abonnieren und deinen Lizenzschlüssel zu erhalten.",
     "alreadyHaveAccount": "Du hast bereits ein BiVelio-Konto?",
     "signIn": "Anmelden",
     "workEmail": "Geschäftliche E-Mail",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Ein Plan, Preis pro Seat",
       "title": "Cent zum Ausführen. Ein Vielfaches beim Sparen.",
-      "body": "Kein Gratis-Tarif, keine Testphase — teste BV‑SALA direkt hier in deinem Browser und abonniere dann, um es in deiner App auszuführen. Preis pro Seat, in {currency}.",
+      "body": "Kein Gratis-Tarif, keine Testphase: Was du prüfen kannst, bevor du zahlst, ist die gemessene Ersparnis weiter oben — mit dem Konfidenzintervall direkt daneben. Du abonnierst und führst BV-SALA in deiner eigenen App aus. Preis pro Seat, in {currency}.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
       "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
@@ -734,7 +734,7 @@
     "s3Sub": "Das Produkt hat zwei verschiedene Zahlen, die man nicht vermischen sollte.",
     "mBeforeK": "Vor der Installation",
     "mBeforeV": "Schätzung",
-    "mBeforeBody": "Der Prüfer führt den echten Optimierer in deinem Browser mit deinen Beispieldaten aus. Eine ehrliche Projektion — deshalb trägt sie das Etikett „Schätzung“.",
+    "mBeforeBody": "Der Rechner im Preisbereich der Startseite rechnet deine Ersparnis mit deinen eigenen Zahlen hoch: Anfragen, Tokens und Modell. Eine ehrliche Hochrechnung — deshalb trägt sie das Etikett „Schätzung“.",
     "mAfterK": "Nach der Installation",
     "mAfterV": "Echte Messung",
     "mAfterBody": "Jeder Aufruf liefert einen SavingsReport: die Aufrufe, die du nie bezahlt hast, und die Nettoersparnis pro Anfrage. Prüfbar, Anfrage für Anfrage, auf deiner eigenen Infrastruktur.",
@@ -743,7 +743,7 @@
     "snip2": "die Lizenz (aus deinem Dashboard)",
     "snip3": "den Aufruf umhüllen — das ist die ganze Code-Änderung",
     "snipResult": "die Ersparnis, gemessen",
-    "ctaVerify": "Probier es mit deinen Daten im Prüfer",
+    "ctaVerify": "Gemessene Ersparnis ansehen",
     "ctaSignup": "Konto erstellen",
     "ctaInstall": "Zur Installationsanleitung"
   }

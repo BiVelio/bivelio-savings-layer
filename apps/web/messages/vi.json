@@ -35,9 +35,9 @@
     "loginSubtitle": "Đăng nhập bằng tài khoản BiVelio của bạn — cùng tài khoản bạn dùng trên toàn bộ bộ sản phẩm.",
     "newToBivelio": "Mới đến với BiVelio?",
     "createAnAccount": "Tạo tài khoản",
-    "backToVerifier": "← Quay lại trình xác minh",
+    "backToVerifier": "← Quay lại trang chủ",
     "createYourAccount": "Tạo tài khoản của bạn",
-    "signupSubtitle": "Một tài khoản BiVelio dùng chung cho cả bộ sản phẩm. Xác minh mức tiết kiệm của bạn miễn phí ngay trong trình duyệt — tạo tài khoản để đăng ký và nhận khóa cấp phép.",
+    "signupSubtitle": "Một tài khoản BiVelio dùng chung cho cả bộ sản phẩm. Hãy tạo tài khoản để đăng ký thuê bao và nhận khóa cấp phép của bạn.",
     "alreadyHaveAccount": "Đã có tài khoản BiVelio?",
     "signIn": "Đăng nhập",
     "workEmail": "Email công việc",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Một gói, tính giá theo ghế",
       "title": "Vài xu để chạy. Gấp nhiều lần để tiết kiệm.",
-      "body": "Không có gói miễn phí, không dùng thử — kiểm tra BV‑SALA ngay tại đây trong trình duyệt của bạn, rồi đăng ký để chạy nó trong ứng dụng của bạn. Tính giá theo ghế, bằng {currency}.",
+      "body": "Không có gói miễn phí, không có bản dùng thử: thứ bạn kiểm chứng được trước khi trả tiền là khoản tiết kiệm ĐÃ ĐO ở ngay phía trên, có khoảng tin cậy đi kèm. Bạn đăng ký thuê bao rồi chạy nó trong ứng dụng của mình. Tính giá theo ghế, bằng {currency}.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
@@ -734,7 +734,7 @@
     "s3Sub": "Sản phẩm có hai con số khác nhau và không nên trộn lẫn chúng.",
     "mBeforeK": "Trước khi cài",
     "mBeforeV": "Ước tính",
-    "mBeforeBody": "Trình xác minh chạy bộ tối ưu thật ngay trong trình duyệt của bạn với dữ liệu mẫu của bạn. Một phép chiếu trung thực — vì thế nó mang nhãn «ước tính».",
+    "mBeforeBody": "Công cụ tính ở phần bảng giá dự phóng khoản tiết kiệm với chính những con số của bạn: số yêu cầu, số token và mô hình. Đó là một phép chiếu trung thực — vì thế nó mang nhãn «ước tính».",
     "mAfterK": "Sau khi cài",
     "mAfterV": "Đo lường thực",
     "mAfterBody": "Mỗi lệnh gọi trả về một SavingsReport: những lệnh gọi bạn không bao giờ phải trả và khoản tiết kiệm ròng trên mỗi yêu cầu. Kiểm toán được, từng yêu cầu một, trên hạ tầng của chính bạn.",
@@ -743,7 +743,7 @@
     "snip2": "giấy phép (từ bảng điều khiển của bạn)",
     "snip3": "bọc lệnh gọi — đây là toàn bộ thay đổi mã",
     "snipResult": "khoản tiết kiệm, đã đo",
-    "ctaVerify": "Thử với dữ liệu của bạn trong trình xác minh",
+    "ctaVerify": "Xem mức tiết kiệm đã đo",
     "ctaSignup": "Tạo tài khoản",
     "ctaInstall": "Đến hướng dẫn cài đặt"
   }

@@ -35,9 +35,9 @@
     "loginSubtitle": "Log in met je BiVelio-account — hetzelfde account dat je in de hele suite gebruikt.",
     "newToBivelio": "Nieuw bij BiVelio?",
     "createAnAccount": "Een account aanmaken",
-    "backToVerifier": "← Terug naar de verificatie",
+    "backToVerifier": "← Terug naar de startpagina",
     "createYourAccount": "Maak je account aan",
-    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Verifieer je besparingen gratis in de browser — maak een account aan om je te abonneren en je licentiesleutel te krijgen.",
+    "signupSubtitle": "Eén BiVelio-account voor de hele suite. Maak er een aan om je te abonneren en je licentiesleutel te krijgen.",
     "alreadyHaveAccount": "Heb je al een BiVelio-account?",
     "signIn": "Inloggen",
     "workEmail": "Zakelijk e-mailadres",
@@ -552,7 +552,7 @@
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
       "title": "Centen om te draaien. Veelvouden om te besparen.",
-      "body": "Geen gratis versie, geen proefperiode — test BV‑SALA hier direct in je browser en abonneer je dan om het in je app te draaien. Geprijsd per seat, in {currency}.",
+      "body": "Geen gratis versie en geen proefperiode: wat je vóór betaling kunt controleren, is de GEMETEN besparing hierboven, met het interval erbij. Je abonneert je en draait het in je eigen app. Geprijsd per seat, in {currency}.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
@@ -734,7 +734,7 @@
     "s3Sub": "Het product heeft twee verschillende cijfers, en die kun je beter niet mengen.",
     "mBeforeK": "Vóór installatie",
     "mBeforeV": "Schatting",
-    "mBeforeBody": "De verificator draait de echte optimizer in je browser met je voorbeelddata. Een eerlijke projectie — daarom draagt ze het label “schatting”.",
+    "mBeforeBody": "De calculator bij de prijzen rekent je besparing door met je eigen cijfers: verzoeken, tokens en model. Een eerlijke projectie — daarom draagt ze het label “schatting”.",
     "mAfterK": "Na installatie",
     "mAfterV": "Echte meting",
     "mAfterBody": "Elke aanroep levert een SavingsReport: de aanroepen die je nooit betaalde en de nettobesparing per verzoek. Controleerbaar, verzoek voor verzoek, op je eigen infrastructuur.",
@@ -743,7 +743,7 @@
     "snip2": "de licentie (uit je dashboard)",
     "snip3": "de aanroep omhullen — dit is de hele codewijziging",
     "snipResult": "de besparing, gemeten",
-    "ctaVerify": "Probeer het met je data in de verificator",
+    "ctaVerify": "Bekijk de gemeten besparing",
     "ctaSignup": "Account aanmaken",
     "ctaInstall": "Naar de installatiegids"
   }
