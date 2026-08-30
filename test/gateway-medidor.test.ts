@@ -1,9 +1,12 @@
+import * as zlib from "node:zlib";
+import { brotliCompressSync, deflateSync, gzipSync } from "node:zlib";
 import { describe, it, expect } from "vitest";
 
 import {
   ObservadorSse,
   ObservadorResponses,
   costeMedido,
+  modeloDelCuerpo,
   informeMedido,
   informeCoalescido,
   usoDeJson,
@@ -218,6 +221,32 @@ describe("costeMedido — la escritura 1h se tarifa a 2×, no a 1,25×", () => {
     expect(m.tokens.cacheEscrita).toBe(1000);
     expect(m.tokens.cacheEscrita1h).toBe(500);
     expect(m.costeUsd).toBeCloseTo(0.5 * 0.001 * PRIMA_ESCRITURA_CACHE + 0.5 * 0.001 * PRIMA_ESCRITURA_CACHE_1H, 10);
+  });
+});
+
+describe("modeloDelCuerpo — lee el model a través del content-encoding (Codex manda zstd)", () => {
+  const cuerpo = Buffer.from(JSON.stringify({ model: "gpt-5.5", input: "hola", stream: true }));
+
+  it("sin codificación, gzip, deflate y br", () => {
+    expect(modeloDelCuerpo(cuerpo)).toBe("gpt-5.5");
+    expect(modeloDelCuerpo(gzipSync(cuerpo), "gzip")).toBe("gpt-5.5");
+    expect(modeloDelCuerpo(deflateSync(cuerpo), "deflate")).toBe("gpt-5.5");
+    expect(modeloDelCuerpo(brotliCompressSync(cuerpo), "br")).toBe("gpt-5.5");
+  });
+
+  it("zstd (lo que manda Codex CLI) cuando el Node lo trae; si no, «» y nunca se inventa", () => {
+    const z = zlib as unknown as { zstdCompressSync?: (b: Buffer) => Buffer };
+    if (typeof z.zstdCompressSync === "function") {
+      expect(modeloDelCuerpo(z.zstdCompressSync(cuerpo), "zstd")).toBe("gpt-5.5");
+    } else {
+      expect(modeloDelCuerpo(cuerpo, "zstd")).toBe("");
+    }
+  });
+
+  it("cuerpo ilegible o codificación que no casa → «» (se reenvía, no se mide)", () => {
+    expect(modeloDelCuerpo(Buffer.from("no json"))).toBe("");
+    expect(modeloDelCuerpo(cuerpo, "gzip")).toBe(""); // dice gzip pero no lo es
+    expect(modeloDelCuerpo(Buffer.from("{}"))).toBe("");
   });
 });
 

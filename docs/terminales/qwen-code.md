@@ -28,16 +28,16 @@ Conserva el resto de tu `settings.json`; la clave verificada en S3 es
 `selectedType`. Sin ella, Qwen Code no lee `ANTHROPIC_BASE_URL` y el gateway no
 verá nada.
 
-## Envoltorio: `bvsala qwen` (previsto en S3)
+## Envoltorio: `bvsala qwen`
 
 ```bash
 export BIVELIO_SERVICE_KEY=bvk_…
 bvsala qwen
 ```
 
-Espejo de `bvsala claude` con `ANTHROPIC_BASE_URL`; el `doctor` previsto
-comprueba `selectedType` antes de lanzar. Si tu `bvsala --help` aún no lo lista,
-la receta manual es lo mismo.
+Espejo de `bvsala claude` con `ANTHROPIC_BASE_URL`. El envoltorio **no lee**
+`settings.json`: comprueba tú que `selectedType` sea `anthropic` (`bvsala
+doctor` te recuerda la ruta). La receta manual de abajo es lo mismo.
 
 ## Manual: `ANTHROPIC_BASE_URL`
 

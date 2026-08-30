@@ -130,13 +130,14 @@ precios [V]; cuatro slugs viejos del catálogo —`gpt-5-codex`, `5.1-codex`,
 verja del ingest acepta `gpt-*`, extracción del modelo del cuerpo funciona
 (`model` en la raíz de `ResponsesApiRequest` [V]).
 
-**Validaciones en mano (horas, antes de anunciar):** (a) sesión `bvsala codex`
-real con API key: 1 GET de prewarm con 426 y después solo POSTs SSE, sin
-«Reconnecting…»; (b) **modo suscripción ChatGPT** con prefijo
-`/backend-api/codex`: 200, stream íntegro, `usage` presente en
-`response.completed` (existe el error `usage_not_included` → registro no
-producido, tolerado por doctrina); (c) plausibilidad `cached + writes ≤ input`
-en un prompt repetido > 1.024 tokens. **Postura de cumplimiento idéntica a
+**Validaciones en mano:** ✅ (b) **modo suscripción ChatGPT** validado el
+30-08 (Codex v0.134: 426 → fallback HTTP inmediato, 200, stream íntegro,
+`usage` presente en `response.completed`, registro `measured` en la ingesta —
+y tres hallazgos que el código ya contempla: Codex cierra la conexión nada más
+recibir `response.completed`, el backend de ChatGPT sirve el SSE **sin
+`content-type`**, y el cuerpo de la petición viaja **comprimido con zstd**);
+⏳ (a) sesión con API key (`/v1/responses`); ⏳ (c) plausibilidad
+`cached + writes ≤ input` en un prompt repetido > 1.024 tokens. **Postura de cumplimiento idéntica a
 Claude Code:** OpenAI ni bendice ni prohíbe el proxy de suscripción (silencio
 del staff, a diferencia de Anthropic que lo documenta): cero persistencia de
 `Authorization`/`ChatGPT-Account-ID`, binario sin modificar, y no promocionar

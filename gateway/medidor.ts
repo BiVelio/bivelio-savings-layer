@@ -1,3 +1,5 @@
+import * as zlib from "node:zlib";
+
 import { precioDeLista } from "../src/pricing/catalogo.js";
 import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
@@ -197,6 +199,44 @@ export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
     (cacheEscrita1h / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE_1H +
     (salida / 1_000) * precio.outputPer1k;
   return { costeUsd, precio, tokens: { entrada, salida, cacheLeida, cacheEscrita, cacheEscrita1h } };
+}
+
+/**
+ * El `model` del cuerpo de una petición, leyendo a través de su
+ * `content-encoding`: Codex CLI manda el cuerpo comprimido con zstd (validado
+ * en mano el 30-08), y un JSON.parse a ciegas devolvía «sin modelo» — la
+ * petición pasaba, pero jamás se medía. El passthrough no toca los bytes: esto
+ * es solo lectura lateral. Devuelve "" si no se puede leer (nunca se inventa).
+ */
+export function modeloDelCuerpo(cuerpo: Buffer, codificacion?: string): string {
+  try {
+    let bytes = cuerpo;
+    switch ((codificacion ?? "").trim().toLowerCase()) {
+      case "gzip":
+      case "x-gzip":
+        bytes = zlib.gunzipSync(cuerpo);
+        break;
+      case "deflate":
+        bytes = zlib.inflateSync(cuerpo);
+        break;
+      case "br":
+        bytes = zlib.brotliDecompressSync(cuerpo);
+        break;
+      case "zstd": {
+        // Acceso dinámico: en Node < 22.15 no existe y un import nominal
+        // reventaría el gateway entero al cargar.
+        const zstd = (zlib as unknown as { zstdDecompressSync?: (b: Buffer) => Buffer }).zstdDecompressSync;
+        if (typeof zstd !== "function") return "";
+        bytes = zstd(cuerpo);
+        break;
+      }
+      default:
+        break;
+    }
+    return (JSON.parse(bytes.toString("utf8")) as { model?: unknown }).model?.toString() ?? "";
+  } catch {
+    return "";
+  }
 }
 
 /** El `usage` de una respuesta JSON no-SSE (`stream: false`). */

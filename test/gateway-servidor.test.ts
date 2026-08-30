@@ -342,6 +342,140 @@ describe("arrancarGateway — passthrough que mide", () => {
     expect(reg["actualCost"]).toBeCloseTo(0.0016 + 0.00024 + 0.001, 10);
   });
 
+  it("⛔ SSE SIN content-type en …/responses (el backend de ChatGPT lo sirve así) → se mide igual", async () => {
+    // Validado en mano el 30-08 con el espía: chatgpt.com/backend-api/codex
+    // responde el stream sin cabecera content-type y el gateway no creaba
+    // observador — Codex imprimía «tokens used» y el panel no veía nada.
+    const lotes: unknown[][] = [];
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const sse =
+      'event: response.created\ndata: {"type":"response.created"}\n\n' +
+      'event: response.completed\ndata: {"type":"response.completed","response":{"usage":{"input_tokens":200,"input_tokens_details":{"cached_tokens":50,"cache_write_tokens":0},"output_tokens":3}}}\n\n';
+    const upstream = await new Promise<number>((resolve) => {
+      const s = createServer(async (req, res) => {
+        for await (const _ of req) void _;
+        res.writeHead(200); // sin content-type, como el backend real
+        res.end(sse);
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/backend-api/codex/responses`, {
+      method: "POST",
+      body: JSON.stringify({ model: "gpt-5.5", stream: true }),
+    });
+    expect(await r.text()).toBe(sse);
+
+    await gw.cerrar();
+    await esperar(() => lotes.length > 0);
+    const reg = (lotes[0]![0] ?? {}) as Record<string, unknown>;
+    expect(reg["model"]).toBe("gpt-5.5");
+    expect(reg["actualInputTokens"]).toBe(200);
+    expect(reg["providerCachedInputTokens"]).toBe(50);
+    expect(reg["actualOutputTokens"]).toBe(3);
+  });
+
+  it("⛔ cuerpo de petición comprimido (Codex manda zstd; aquí gzip) → los bytes pasan intactos y el modelo se lee igual", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const lotes: unknown[][] = [];
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const sse = 'event: response.completed\ndata: {"type":"response.completed","response":{"usage":{"input_tokens":10,"output_tokens":2}}}\n\n';
+    const upstream = await new Promise<number>((resolve) => {
+      const s = createServer(async (req, res) => {
+        const chunks: Buffer[] = [];
+        for await (const c of req) chunks.push(c as Buffer);
+        recibidas.push({ path: req.url ?? "", headers: { ...req.headers }, body: Buffer.concat(chunks).toString("base64") });
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        res.end(sse);
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const { gzipSync } = await import("node:zlib");
+    const comprimido = gzipSync(Buffer.from(JSON.stringify({ model: "gpt-5.5", stream: true })));
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/responses`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "content-encoding": "gzip" },
+      body: comprimido,
+    }).then((r) => r.text());
+
+    expect(Buffer.from(recibidas[0]!.body, "base64").equals(comprimido)).toBe(true); // byte a byte
+    expect(recibidas[0]!.headers["content-encoding"]).toBe("gzip");
+
+    await gw.cerrar();
+    await esperar(() => lotes.length > 0);
+    expect(((lotes[0]![0] ?? {}) as Record<string, unknown>)["model"]).toBe("gpt-5.5");
+  });
+
+  it("⛔ el cliente cierra nada más recibir el usage (Codex CLI lo hace) → se mide igual", async () => {
+    // Cazado en la validación en mano de `bvsala codex`: Codex corta la conexión
+    // al ver response.completed; el upstream sigue abierto, el gateway lo
+    // trataba como «cliente abortó» y la medición nunca corría.
+    const lotes: unknown[][] = [];
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const completado =
+      'event: response.completed\ndata: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":7}}}\n\n';
+    const upstream = await new Promise<number>((resolve) => {
+      const s = createServer(async (req, res) => {
+        for await (const _ of req) void _;
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        res.write(completado);
+        // …y el upstream se queda abierto: el cliente no va a esperar.
+        setTimeout(() => res.end(), 5000);
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const ac = new AbortController();
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/responses`, {
+      method: "POST",
+      body: JSON.stringify({ model: "gpt-5.6-sol", stream: true }),
+      signal: ac.signal,
+    });
+    const lector = r.body!.getReader();
+    let recibido = "";
+    while (!recibido.includes("response.completed")) recibido += new TextDecoder().decode((await lector.read()).value);
+    ac.abort(); // el cliente se va con el usage ya en la mano
+
+    await esperar(() => lotes.length > 0, 4000).catch(() => {});
+    await gw.cerrar();
+    await esperar(() => lotes.length > 0);
+    const reg = (lotes[0]![0] ?? {}) as Record<string, unknown>;
+    expect(reg["model"]).toBe("gpt-5.6-sol");
+    expect(reg["actualInputTokens"]).toBe(100);
+    expect(reg["actualOutputTokens"]).toBe(7);
+  });
+
   it("HEAD /api/hello (la comprobación de vida de Claude Code) pasa limpia", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);

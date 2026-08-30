@@ -11,18 +11,16 @@ forma del URL.
 - `ANTHROPIC_API_KEY` exportada (Goose es solo BYOK).
 - `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
 
-## Envoltorio: `bvsala goose` (previsto en S3)
+## Envoltorio: `bvsala goose`
 
 ```bash
 export BIVELIO_SERVICE_KEY=bvk_…
 bvsala goose                       # espejo exacto de `bvsala claude`
 ```
 
-Está previsto como espejo exacto de `bvsala claude`: gateway efímero, `goose`
-lanzado con `ANTHROPIC_HOST=http://127.0.0.1:<puerto>`, todo muere al salir.
-Sale de generalizar el `switch` de `bin.ts` a una tabla `{comando → variable de
-entorno}`. Si tu `bvsala --help` aún no lo lista, la receta manual es
-literalmente lo mismo.
+Espejo exacto de `bvsala claude`: gateway efímero, `goose` lanzado con
+`ANTHROPIC_HOST=http://127.0.0.1:<puerto>`, todo muere al salir. La tabla vive
+en `gateway/envoltorios.ts`. La receta manual de abajo es literalmente lo mismo.
 
 ## Manual: `ANTHROPIC_HOST`
 

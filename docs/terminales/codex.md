@@ -1,27 +1,31 @@
 # Codex CLI a través del gateway
 
 **Fuente:** `docs/PASARELA-S3-TERMINALES.md` §2 (código de `openai/codex`,
-`openai-node` y docs de OpenAI, 2026-08-30). **Estado: en construcción hoy.**
-Esta guía describe el uso previsto del envoltorio y la receta manual que ya
-enruta; lee «Qué mide hoy» antes de esperar cifras.
+`openai-node` y docs de OpenAI, 2026-08-30). **Estado: envoltorio en el
+paquete y validado en mano el 30-08** (sesión real de Codex v0.134 con auth
+ChatGPT: 426 → fallback HTTP, stream íntegro, registro `measured` en la
+ingesta). Lee «Qué mide» y las validaciones pendientes antes de anunciar
+cifras.
 
 ## Qué necesitas
 
 - `codex` en el PATH.
-- **Login por API key de OpenAI** en Codex. El modo suscripción ChatGPT está
-  **pendiente de validar en mano y no anunciado** (más abajo).
+- Login en Codex: **API key de OpenAI** (el caso que se monetiza) o
+  suscripción ChatGPT (se enruta y se mide, pero **no se monetiza**: no hay
+  factura por tokens; ver más abajo).
 - `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
 
-## Envoltorio: `bvsala codex [args…]` (uso previsto — pieza P4 de S3)
+## Envoltorio: `bvsala codex [args…]`
 
 ```bash
 export BIVELIO_SERVICE_KEY=bvk_…
 bvsala codex                       # cualquier argumento pasa tal cual a codex
 ```
 
-Lo que hará, espejo de `bvsala claude`: gateway efímero contra
-`https://api.openai.com` + `spawn("codex", ["-c", "openai_base_url=http://127.0.0.1:<puerto>/v1", ...resto])`.
-Por qué así y no por variable de entorno:
+Espejo de `bvsala claude`: gateway efímero con el upstream que toque +
+`spawn("codex", ["-c", 'openai_base_url="http://127.0.0.1:<puerto><prefijo>"', ...resto])`
+(cadena TOML entrecomillada: «values are parsed as TOML», doc oficial). Por qué
+así y no por variable de entorno:
 
 - `-c` es flag global de **máxima precedencia** [V]; **no existe** una env
   `OPENAI_BASE_URL` en Codex (cero referencias en su código de config) [V].
@@ -31,7 +35,7 @@ Por qué así y no por variable de entorno:
   `ApiKey` → upstream `https://api.openai.com`, prefijo `/v1`; toda la familia
   ChatGPT → upstream `https://chatgpt.com`, prefijo `/backend-api/codex`. El
   envoltorio lee `auth_mode` de `~/.codex/auth.json` **por existencia/valor del
-  enum, jamás imprime tokens**.
+  enum, jamás imprime tokens**; `BVSALA_CODEX_AUTH=api-key|chatgpt` lo fuerza.
 
 ## Manual (API key): `-c openai_base_url=…`
 
@@ -50,55 +54,70 @@ cada vez que el gateway no esté corriendo. El `-c` por sesión es la forma.
 
 ## Comprobar que funciona
 
-En el log del gateway, la ruta que verás es la de Responses:
+En el log del gateway verás, en este orden, la sesión real (30-08):
 
 ```
-[gateway] POST /v1/responses → 200
+[gateway] GET /backend-api/codex/models → 200
+[gateway] GET /backend-api/codex/responses → 426 (WebSocket no soportado; el cliente cae a HTTP)
+[gateway] POST /backend-api/codex/responses → el cliente cerró tras el usage; se mide igual
+[gateway] POST /backend-api/codex/responses  · gpt-5.5 · $0.210766 (in 41880, cache↑0 cache↓2432, out 5)
 ```
 
-**Qué mide hoy:** el medidor actual solo entiende el stream de `/v1/messages`
-(dialecto Anthropic). Para Codex faltan tres piezas de S3 §2 — el
-`ObservadorResponses` (P1: lee `usage` en `event: response.completed`), el
-dialecto por ruta (P2: `…/responses` → ese observador) y la respuesta `426` al
-handshake WebSocket (P3). Hasta que entren, verás la línea `→ 200` **sin `$`**:
-el tráfico pasa, no se mide. El catálogo gpt-5.x y la verja del ingest (`gpt-*`)
-ya están listos [V], y la fórmula de coste es la oficial de OpenAI:
-`ordinaryInputTokens = inputTokens − cachedTokens − cacheWriteTokens` [V].
+(Con API key la ruta es `/v1/responses`.) La línea con `$` es la medición.
+
+**Qué mide:** el `usage` de `event: response.completed` con la fórmula oficial
+de OpenAI (`entrada = input − cached − writes`; `cached` a la tarifa cacheada
+del catálogo; `writes` a 1,25×, la prima oficial de gpt-5.6+) [V]. Tres cosas
+que el tráfico real enseñó y el gateway ya contempla:
+
+- Codex **cierra la conexión nada más recibir `response.completed`**; el
+  gateway mide igual con el usage ya observado («se mide igual» en el log).
+- El backend de ChatGPT sirve el SSE **sin cabecera `content-type`**; en las
+  rutas `…/responses` el gateway asume SSE si falta.
+- Codex manda el cuerpo de la petición **comprimido con zstd**; el gateway lo
+  reenvía intacto y lee el `model` a través del `content-encoding` (Node ≥ 22.15
+  para zstd; en un Node sin zstd la petición pasa y no se mide).
 
 ## La trampa típica
 
 1. **El prefijo.** Con API key es `/v1` **exacto**. Con la familia ChatGPT el
    base_url tiene que terminar **exactamente** en `/backend-api/codex` o
    `supports_codex_backend_routes()` se apaga [V]. Mezclarlos = 404 silencioso.
-2. **«Reconnecting…» al arrancar.** Codex intenta WebSocket primero
-   (`supports_websockets: true` está hardcodeado en el provider integrado y no
-   se apaga por config [V]). Hoy el gateway responde a ese GET con `Upgrade` un
-   **502**, que Codex trata como error genérico: quema `stream_max_retries`
-   intentos visibles antes de caer a HTTP. Con el `426 Upgrade Required` de P3
-   el fallback será inmediato, silencioso y pegajoso por sesión [V test
-   `websocket_fallback.rs`]. Mientras tanto: es ruido, no fallo; espera al
-   fallback.
-3. **Barra final.** `…/v1/` no.
+2. **Una línea `failed to connect to websocket: HTTP error: 426`** al arrancar
+   es normal: Codex intenta WebSocket primero (`supports_websockets: true` está
+   hardcodeado y no se apaga por config [V]); el gateway responde `426 Upgrade
+   Required` y el fallback a HTTP es inmediato y pegajoso por sesión [V test
+   `websocket_fallback.rs`]. Sin «Reconnecting…».
+3. **`failed to refresh available models: unknown variant …`** es de tu versión
+   de Codex frente a su backend: aparece igual **sin** gateway (comprobado).
+4. **Barra final.** `…/v1/` no.
 
-## Modo suscripción ChatGPT — pendiente de validar en mano, no anunciado
+## Modo suscripción ChatGPT — validado, medido, NO monetizado
 
-El enrutado técnico existe (prefijo `/backend-api/codex`, upstream
-`https://chatgpt.com`), pero **no está validado**: hace falta comprobar 200,
-stream íntegro y `usage` presente en `response.completed` (existe el error
-`usage_not_included` → registro no producido, tolerado por doctrina). OpenAI ni
-bendice ni prohíbe el proxy de suscripción (silencio del staff, a diferencia de
-Anthropic, que lo documenta). Postura idéntica a Claude Code: cero persistencia
-de `Authorization` / `ChatGPT-Account-ID`, binario sin modificar, y **no se
-promociona hasta validarlo**.
+Validado en mano el 30-08 (prefijo `/backend-api/codex`, upstream
+`https://chatgpt.com`): 200, stream íntegro, `usage` presente en
+`response.completed` y registro `measured` en la ingesta. **Pero un suscriptor
+no paga por tokens**: la cifra que ve es el equivalente a precio de lista por
+API key, no una factura; y como la comisión de BV-SALA solo toca ahorro medido
+sobre gasto real, este tráfico **no se monetiza** — igual que el OAuth de
+suscripción en Claude Code (`docs/PASARELA-F0.md`: «el caso que NO
+facturamos»). OpenAI ni bendice ni prohíbe el proxy de suscripción (silencio
+del staff, a diferencia de Anthropic, que lo documenta). Postura idéntica a
+Claude Code: cero persistencia de `Authorization` / `ChatGPT-Account-ID`,
+binario sin modificar, y no se promociona como modo de ahorro.
 
-## Validaciones en mano pendientes (antes de anunciar)
+## Validaciones en mano
 
-- (a) Sesión `bvsala codex` real con API key: 1 GET de prewarm con 426 y después
-  solo POSTs SSE, sin «Reconnecting…».
-- (b) Modo suscripción ChatGPT con prefijo `/backend-api/codex`: 200, stream
-  íntegro, `usage` presente.
-- (c) Plausibilidad `cached + writes ≤ input` en un prompt repetido > 1.024
-  tokens (OpenAI reconoció contadores mal en el arranque de 5.6).
+- ✅ (b) Suscripción ChatGPT: 426 → fallback, 200, stream íntegro, `usage`
+  presente, registro `measured` (30-08).
+- ⏳ (a) Sesión con **API key** (ruta `/v1/responses` contra api.openai.com):
+  misma mecánica, pendiente de una cuenta con API key.
+- ⏳ (c) Plausibilidad `cached + writes ≤ input` en un prompt repetido > 1.024
+  tokens (OpenAI reconoció contadores mal en el arranque de 5.6). El gateway
+  ya recorta al lado que infra-mide si no cuadra.
+- ⏳ Contrastar la cifra del gateway con la consola del proveedor en una sesión
+  larga (Codex imprime su propio «tokens used»; la fuente de BV-SALA es el
+  `usage` del proveedor, no ese contador).
 
 ## Nota BYOK
 

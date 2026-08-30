@@ -23,9 +23,9 @@ lo que su terminal manda por fuera.
 | Guía | Base URL exacto | `/v1` | Enrutado [V] | Envoltorio | Estado |
 |---|---|---|---|---|---|
 | [Claude Code](claude-code.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` | `bvsala claude` ✅ | [V] en producción |
-| [Codex CLI](codex.md) | `http://127.0.0.1:8402/v1` | **con** | `codex -c openai_base_url=…` | `bvsala codex` — en construcción hoy | API key [V]; suscripción ChatGPT pendiente de validar en mano |
-| [Goose](goose.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_HOST` | `bvsala goose` — previsto en S3 | [V] |
-| [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` | `bvsala qwen` — previsto en S3 | [V] |
+| [Codex CLI](codex.md) | `http://127.0.0.1:8402/v1` (API key) · `…/backend-api/codex` (ChatGPT) | **con** | `codex -c openai_base_url=…` | `bvsala codex` ✅ | [V] validado en mano el 30-08 (426 → fallback HTTP, stream íntegro) |
+| [Goose](goose.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_HOST` | `bvsala goose` ✅ | [V] |
+| [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` | `bvsala qwen` ✅ | [V] |
 | [opencode](opencode.md) | `http://127.0.0.1:8402/v1` | **con** | `~/.config/opencode/opencode.json` | — (config de usuario) | [V] |
 | [Crush](crush.md) | `http://127.0.0.1:8402/v1` | **con**, sin barra final | `~/.config/crush/crushrc` | — (config de usuario) | [V] |
 | [Droid](droid.md) | `http://127.0.0.1:8402` | sin **[I]** | `~/.factory/settings.json` | — (config de usuario) | validar en mano |
@@ -37,12 +37,11 @@ Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones*
 en vez de seguirlo). Y nunca copies el URL de un terminal a otro: cada SDK añade
 su propio tramo de ruta y el error es silencioso (§ «Comprobar que mide»).
 
-Claude Code y Codex tienen **envoltorio propio** (`bvsala claude`, `bvsala
-codex`): arrancan un gateway en puerto efímero, lanzan el terminal apuntándole
-y lo apagan al salir. Cero configuración persistente. Los envoltorios `bvsala
-goose` y `bvsala qwen` están previstos en S3 como espejo exacto de `bvsala
-claude`; mientras tu `bvsala --help` no los liste, la receta manual de cada
-guía hace exactamente lo mismo.
+Claude Code, Codex, Goose y Qwen Code tienen **envoltorio propio** (`bvsala
+claude|codex|goose|qwen`): arrancan un gateway en puerto efímero, lanzan el
+terminal apuntándole y lo apagan al salir. Cero configuración persistente. La
+receta manual de cada guía hace exactamente lo mismo. Para el resto,
+`bvsala doctor` imprime el bloque exacto de cada terminal instalado.
 
 ## Lo común a todas las guías
 
@@ -67,7 +66,8 @@ pero nada llega a tu panel.
 
 Un gateway habla con **un** upstream (`BVSALA_GATEWAY_UPSTREAM`, por defecto
 `https://api.anthropic.com`). Los terminales del dialecto Anthropic comparten
-instancia; Codex necesita la suya contra `https://api.openai.com` (ver su guía).
+instancia; Codex necesita la suya contra OpenAI — `bvsala codex` la arranca
+sola con el upstream correcto según tu modo de auth (ver su guía).
 
 ### 2 · Comprobar que mide: el log del gateway
 
@@ -91,9 +91,9 @@ las otras líneas:
 Claude Code manda además un `HEAD /api/hello` antes de la primera llamada: es
 la sonda de vida, no una inferencia.
 
-`bvsala doctor` (previsto en S3): sondea el PATH y las configs de usuario,
-imprime el bloque exacto por terminal con el puerto vivo, y detecta en el log
-el síntoma `POST /v1/v1/messages`. Hasta que exista, esta tabla es el doctor.
+`bvsala doctor [--puerto N]`: sondea el PATH y la existencia de las configs de
+usuario (nunca lee su contenido) e imprime el bloque exacto por terminal con el
+puerto indicado. Solo imprime: no escribe ninguna configuración.
 
 ### 3 · Regla BYOK, sin excepción
 
