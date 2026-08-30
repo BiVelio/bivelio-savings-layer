@@ -133,9 +133,14 @@ cliente que opte, visible en su panel.
 > **implementado el mismo día** (rama `feat/s3-terminales-hoy`): `ObservadorResponses`
 > + dialecto por ruta + 426 al handshake WebSocket + `bvsala codex|goose|qwen`
 > (tabla pura en `gateway/envoltorios.ts`) + `bvsala doctor` + `docs/terminales/`
-> + test de `GET /v1/models`. Pendientes de **validación en mano** antes de anunciar:
-> sesión real de Codex con API key (426 → fallback limpio) y el modo suscripción
-> ChatGPT; Droid y Kilo contra el log del gateway.
+> + test de `GET /v1/models`. **Validado en mano el 30-08:** `bvsala codex` con
+> suscripción ChatGPT (426 → fallback limpio, stream íntegro, registro `measured`).
+> Pendientes: sesión de Codex con **API key** (`/v1/responses`); Droid y Kilo
+> contra el log del gateway. **Laguna conocida, a cerrar en S2 antes de S4:** el
+> registro de un usuario de suscripción (Claude Code OAuth, Codex ChatGPT) es
+> hoy indistinguible del de API key en el wire — «no se monetiza» es cierto por
+> ausencia de comisión, no por diseño; cuando S2 toque el esquema, etiquetar la
+> auth de suscripción para que jamás entre en la base de S4.
 
 Prioridades del catálogo (TERMINALES-DE-CODIFICACION.md:160-172), solo la parte
 API key:

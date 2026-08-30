@@ -7,6 +7,8 @@ import {
   ObservadorResponses,
   costeMedido,
   modeloDelCuerpo,
+  primaDeEscritura,
+  MAX_CUERPO_DESCOMPRIMIDO,
   informeMedido,
   informeCoalescido,
   usoDeJson,
@@ -224,6 +226,39 @@ describe("costeMedido — la escritura 1h se tarifa a 2×, no a 1,25×", () => {
   });
 });
 
+describe("primaDeEscritura — 1,25× solo donde el proveedor la cobra", () => {
+  it("Anthropic 1,25×; gpt-5.6+ 1,25×; gpt anteriores y Gemini 1× (jamás inventar de más)", () => {
+    expect(primaDeEscritura("claude-haiku-4-5")).toBe(PRIMA_ESCRITURA_CACHE);
+    expect(primaDeEscritura("gpt-5.6-sol")).toBe(PRIMA_ESCRITURA_CACHE);
+    expect(primaDeEscritura("gpt-5.5")).toBe(1);
+    expect(primaDeEscritura("gpt-4o")).toBe(1);
+    expect(primaDeEscritura("gemini-2.5-pro")).toBe(1);
+  });
+
+  it("y costeMedido la aplica: cache_write_tokens de gpt-5.5 a 1×, no a 1,25×", () => {
+    const m = costeMedido("gpt-5.5", { input_tokens: 0, cache_creation_input_tokens: 1000 })!;
+    expect(m.costeUsd).toBeCloseTo(0.005, 10); // gpt-5.5: in 0.005/1k
+  });
+});
+
+describe("usageFinal — solo con el evento terminal del proveedor", () => {
+  it("Anthropic: null tras message_start, usage tras message_delta", () => {
+    const o = new ObservadorSse();
+    o.observar('event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"output_tokens":1}}}\n\n');
+    expect(o.usage()).not.toBeNull();
+    expect(o.usageFinal()).toBeNull();
+    o.observar('event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":42}}\n\n');
+    expect(o.usageFinal()?.output_tokens).toBe(42);
+  });
+
+  it("Responses: el usage solo existe en response.completed, así que es el mismo", () => {
+    const o = new ObservadorResponses();
+    expect(o.usageFinal()).toBeNull();
+    o.observar(streamResponses({ input_tokens: 5, output_tokens: 2 }));
+    expect(o.usageFinal()).toEqual(o.usage());
+  });
+});
+
 describe("modeloDelCuerpo — lee el model a través del content-encoding (Codex manda zstd)", () => {
   const cuerpo = Buffer.from(JSON.stringify({ model: "gpt-5.5", input: "hola", stream: true }));
 
@@ -243,10 +278,18 @@ describe("modeloDelCuerpo — lee el model a través del content-encoding (Codex
     }
   });
 
-  it("cuerpo ilegible o codificación que no casa → «» (se reenvía, no se mide)", () => {
+  it("cuerpo ilegible, codificación que no casa o model no-string → «» (se reenvía, no se mide)", () => {
     expect(modeloDelCuerpo(Buffer.from("no json"))).toBe("");
     expect(modeloDelCuerpo(cuerpo, "gzip")).toBe(""); // dice gzip pero no lo es
     expect(modeloDelCuerpo(Buffer.from("{}"))).toBe("");
+    expect(modeloDelCuerpo(Buffer.from('{"model":{"x":1}}'))).toBe("");
+    expect(modeloDelCuerpo(Buffer.from('{"model":5}'))).toBe("");
+  });
+
+  it("⛔ bomba de descompresión: un cuerpo pequeño que expande por encima del tope no se lee (ni bloquea)", () => {
+    const bomba = brotliCompressSync(Buffer.alloc(MAX_CUERPO_DESCOMPRIMIDO + 1024, 0));
+    expect(bomba.length).toBeLessThan(10_000);
+    expect(modeloDelCuerpo(bomba, "br")).toBe("");
   });
 });
 

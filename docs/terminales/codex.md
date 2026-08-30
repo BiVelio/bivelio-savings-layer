@@ -106,6 +106,13 @@ del staff, a diferencia de Anthropic, que lo documenta). Postura idéntica a
 Claude Code: cero persistencia de `Authorization` / `ChatGPT-Account-ID`,
 binario sin modificar, y no se promociona como modo de ahorro.
 
+**Laguna conocida:** el registro que emite el gateway para un suscriptor es hoy
+**idéntico** al de una API key (`basis: measured`, coste a precio de lista) —
+el panel no puede distinguirlos. Mientras la comisión sea 0 no hay efecto; antes
+de que S4 calcule comisión sobre ahorro medido, S2 etiquetará la auth de
+suscripción en el wire para que ese tráfico jamás entre en la base. Está en el
+plan (`docs/PLAN-PASARELA-API-KEY.md`, S3).
+
 ## Validaciones en mano
 
 - ✅ (b) Suscripción ChatGPT: 426 → fallback, 200, stream íntegro, `usage`

@@ -66,8 +66,9 @@ contengan «claude»/«anthropic» [V]. El passthrough lo sirve por construcció
 (api.anthropic.com responde `{data:[{id,display_name}]}`) y en `/model` debería
 aparecer «From gateway».
 
-Honestidad sobre el estado: **no hay test** de `GET /v1/models` y la validación
-en mano con API key está pendiente (S3 §1.2). Y las únicas fuentes de credencial
+Honestidad sobre el estado: el passthrough de `GET /v1/models` **tiene test**
+(pasa íntegro y no factura); la validación en mano con API key está pendiente
+(S3 §1.2). Y las únicas fuentes de credencial
 del discovery son `ANTHROPIC_AUTH_TOKEN`/`apiKeyHelper` y `ANTHROPIC_API_KEY`: un
 login claude.ai **no** es fuente, así que en suscripción pura el cliente escribe
 `[gatewayDiscovery] skipped` y ni pregunta.

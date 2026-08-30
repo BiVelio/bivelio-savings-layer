@@ -297,6 +297,69 @@ describe("arrancarGateway — passthrough que mide", () => {
     expect(recibidas).toHaveLength(0); // el upstream ni se entera
   });
 
+  it("⛔ un RST del cliente tras el 426 NO tumba el proceso (Node retira sus manejadores del socket en 'upgrade')", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    recursos.push(gw);
+
+    const { createConnection } = await import("node:net");
+    await new Promise<void>((resolve, reject) => {
+      const s = createConnection({ host: "127.0.0.1", port: gw.puerto }, () => {
+        s.write("GET /v1/responses HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\n");
+      });
+      s.once("data", () => {
+        s.resetAndDestroy(); // RST, no FIN: lo que hace tokio al soltar el TcpStream con bytes sin leer
+        resolve();
+      });
+      s.on("error", reject);
+    });
+    await new Promise((r) => setTimeout(r, 100));
+    // Si el proceso hubiera muerto no estaríamos aquí; y el gateway sigue sirviendo:
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: JSON.stringify({ model: "claude-haiku-4-5", stream: true }) });
+    expect(r.status).toBe(200);
+  });
+
+  it("⛔ un Esc de Claude Code a mitad de generación NO emite registro: el usage de message_start es provisional", async () => {
+    const lotes: unknown[][] = [];
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const inicio = 'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":100,"cache_read_input_tokens":4000,"output_tokens":1}}}\n\n';
+    const upstream = await new Promise<number>((resolve) => {
+      const s = createServer(async (req, res) => {
+        for await (const _ of req) void _;
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        res.write(inicio);
+        setTimeout(() => res.end('event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":900}}\n\n'), 5000);
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const ac = new AbortController();
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      body: JSON.stringify({ model: "claude-haiku-4-5", stream: true }),
+      signal: ac.signal,
+    });
+    const lector = r.body!.getReader();
+    let recibido = "";
+    while (!recibido.includes("message_start")) recibido += new TextDecoder().decode((await lector.read()).value);
+    ac.abort(); // Esc
+
+    await new Promise((res) => setTimeout(res, 300));
+    await gw.cerrar();
+    expect(lotes.flat()).toEqual([]);
+  });
+
   it("dialecto por ruta: un POST …/responses (Codex) se mide con el observador de la Responses API", async () => {
     const lotes: unknown[][] = [];
     const ingesta = await arrancarIngestaFalsa(lotes);

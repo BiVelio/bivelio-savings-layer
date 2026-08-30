@@ -231,9 +231,10 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
   }
 
   lineas.push(
-    "Regla BYOK, sin excepción: todas las recetas salvo `bvsala claude` son para API key. Nunca enrutes por",
-    "el gateway el OAuth de una suscripción (Claude Pro/Max) desde un harness de terceros — Anthropic lo",
-    "prohíbe; el gateway reenviaría el Bearer sin inmutarse, y eso no se promociona.",
+    "Regla BYOK: las recetas del anillo Anthropic (Goose, Qwen Code, opencode, Crush, Droid, Cline, Kilo) son",
+    "para API key. Nunca enrutes por el gateway el OAuth de una suscripción Claude Pro/Max desde un harness",
+    "de terceros — Anthropic lo prohíbe. Claude Code y Codex con suscripción se enrutan y se miden, pero no",
+    "se monetizan: no hay factura por tokens.",
     "Detalle por terminal: docs/terminales/<terminal>.md",
   );
 

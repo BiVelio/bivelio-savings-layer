@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { doctor } from "./doctor.js";
+import { soportaZstd } from "./medidor.js";
 import { BV_SALA_VERSION } from "../src/index.js";
 
 /**
@@ -32,7 +33,7 @@ Comandos:
                          respetan un base URL: Claude Code, opencode, Goose, Crush…
   claude [args…]         Lanza Claude Code a través del gateway, sin configurar nada.
   codex [args…]          Lanza Codex CLI a través del gateway (API key: api.openai.com;
-                         auth ChatGPT: chatgpt.com/backend-api/codex, en validación).
+                         auth ChatGPT: chatgpt.com/backend-api/codex — se mide, no se monetiza).
   goose [args…]          Lanza Goose (ANTHROPIC_HOST) a través del gateway.
   qwen [args…]           Lanza Qwen Code (ANTHROPIC_BASE_URL) a través del gateway.
   doctor [--puerto N]    Detecta terminales instalados e imprime su configuración exacta.
@@ -55,15 +56,19 @@ if (comando !== "gateway" && comando !== "doctor" && !esEnvoltorio) {
   process.exit(comando === undefined || comando === "help" || comando === "--help" ? 0 : 1);
 }
 
-// Envoltorios: puerto efímero; `gateway`/`doctor`: 8402 o --puerto.
+// Envoltorios: puerto efímero; `gateway`/`doctor`: 8402 o --puerto (1–65535).
 const idx = resto.indexOf("--puerto");
 const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
-if (!Number.isInteger(puerto) || puerto < 0 || puerto > 65535) {
+if (!Number.isInteger(puerto) || (esEnvoltorio ? puerto < 0 : puerto < 1) || puerto > 65535) {
   console.error(`[bvsala ${comando}] puerto inválido: ${resto[idx + 1]}`);
   process.exit(1);
 }
 
 if (comando === "doctor") {
+  if (resto.includes("--write")) {
+    console.error("[bvsala doctor] --write todavía no existe: el doctor solo imprime; copia el bloque a mano.");
+    process.exit(1);
+  }
   const informe = await doctor(puerto);
   console.log(informe.texto);
   process.exit(0);
@@ -96,8 +101,23 @@ const arranque = await arrancarGateway({
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
 });
 
-console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto}`);
+const upstreamEfectivo = process.env.BVSALA_GATEWAY_UPSTREAM ?? envoltorio?.upstream ?? "https://api.anthropic.com";
+console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
 console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de servicio presente)" : "APAGADA (falta BIVELIO_SERVICE_KEY)"}`);
+if (process.env.BVSALA_GATEWAY_UPSTREAM && envoltorio?.upstream && process.env.BVSALA_GATEWAY_UPSTREAM !== envoltorio.upstream) {
+  // Un BVSALA_GATEWAY_UPSTREAM heredado del .zshrc (p.ej. el de Claude Code)
+  // mandaría el tráfico de Codex a un host que no habla su protocolo.
+  console.error(
+    `[bvsala ${comando}] AVISO: BVSALA_GATEWAY_UPSTREAM=${process.env.BVSALA_GATEWAY_UPSTREAM} pisa el upstream de este terminal ` +
+      `(${envoltorio.upstream}). Si no es lo que quieres, quita la variable.`,
+  );
+}
+if (comando === "codex" && !soportaZstd()) {
+  console.error(
+    `[bvsala codex] AVISO: este Node (${process.version}) no descomprime zstd y Codex manda el cuerpo en zstd: ` +
+      "el tráfico pasa pero NO se mide. Usa Node ≥ 22.15.",
+  );
+}
 
 if (envoltorio && esEnvoltorio) {
   // La tabla se calculó con puerto 0 (aún no había gateway): se recalcula con

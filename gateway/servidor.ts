@@ -292,9 +292,12 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // la captura SIEMPRE y se cierra la respuesta como se pueda.
       captura?.abortar();
       if (ac.signal.aborted) {
-        const uso = !medida && observador ? observador.usage() : null;
+        // Solo con el usage FINAL del proveedor (message_delta / response.completed):
+        // el de message_start trae output_tokens:1 de marcador, y un Esc a mitad
+        // de generación no puede convertirse en un registro «medido».
+        const uso = !medida && observador ? observador.usageFinal() : null;
         if (uso) {
-          log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage; se mide igual`);
+          log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
           medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
@@ -319,7 +322,14 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // fallback a HTTP+SSE inmediato, silencioso y pegajoso por sesión (test
   // websocket_fallback.rs de codex). El passthrough sirve el SSE como siempre.
   server.on("upgrade", (req, socket) => {
-    log(`[gateway] ${req.method} ${req.url} → 426 (WebSocket no soportado; el cliente cae a HTTP)`);
+    log(`[gateway] ${req.method} ${new URL(req.url ?? "/", "http://x").pathname} → 426 (WebSocket no soportado; el cliente cae a HTTP)`);
+    // Node retira SUS manejadores del socket antes de emitir 'upgrade': un RST
+    // del cliente (tokio suelta el TcpStream con bytes sin leer) llegaría como
+    // 'error' sin oyente y tumbaría el proceso entero. Y el socket es
+    // allowHalfOpen: tras el end() hay que destruirlo, o queda medio abierto y
+    // fuera del rastreo de server.close(). Es lo que hace ws.abortHandshake.
+    socket.once("error", () => {});
+    socket.once("finish", () => socket.destroy());
     socket.end("HTTP/1.1 426 Upgrade Required\r\nconnection: close\r\ncontent-length: 0\r\n\r\n");
   });
 

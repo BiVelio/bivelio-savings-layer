@@ -103,7 +103,7 @@ export function envoltorioDe(
         upstream: destino.upstream,
         nota:
           modo === "chatgpt"
-            ? "Auth ChatGPT detectada: el gateway enruta a chatgpt.com/backend-api/codex. Modo pendiente de validación en mano; el tráfico de suscripción se mide pero no se monetiza."
+            ? "Auth ChatGPT detectada: el gateway enruta a chatgpt.com/backend-api/codex. El tráfico de suscripción se mide (equivalente a precio de lista) pero no se monetiza: no hay factura por tokens."
             : "Auth por API key: el gateway enruta a api.openai.com/v1.",
       };
     }
