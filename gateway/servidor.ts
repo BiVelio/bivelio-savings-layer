@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
-import { ObservadorSse, costeMedido, informeMedido, informeCoalescido } from "./medidor.js";
+import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, usoDeJson } from "./medidor.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras } from "./coalescencia.js";
 
 /**
@@ -104,7 +104,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       emisor.record(coalescida ? informeCoalescido(requestId, model, medido) : informeMedido(requestId, model, medido));
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
-          `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita} ` +
+          `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
+          `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
       );
     } else if (model) {
@@ -151,13 +152,17 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           if (replica) {
             // La gemela recibe la réplica íntegra de la primaria — cero viaje.
             res.writeHead(replica.status, replica.headers);
-            const obs = new ObservadorSse();
+            const replicaSse = (replica.headers["content-type"] ?? "").includes("text/event-stream");
+            const obs = replicaSse ? new ObservadorSse() : null;
             for (const ch of replica.chunks) {
               res.write(ch);
-              obs.observar(ch);
+              obs?.observar(ch);
             }
             res.end();
-            medir(requestId, cuerpo, obs.usage(), true, url.pathname);
+            // Una réplica JSON (stream:false) trae el usage en el cuerpo, no en
+            // eventos — mismo hueco que el camino primario (S0.2 del plan).
+            const usoReplica = obs ? obs.usage() : usoDeJson(Buffer.concat(replica.chunks));
+            medir(requestId, cuerpo, usoReplica, true, url.pathname);
             return;
           }
           // Primaria fallida o desbordada: la gemela viaja por su cuenta.
@@ -198,12 +203,22 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
       const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
       const observador = esSse ? new ObservadorSse() : null;
+      // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
+      // Solo /v1/messages: count_tokens también responde JSON pero no factura.
+      const esJsonMedible =
+        !esSse &&
+        upstream.ok &&
+        req.method === "POST" &&
+        url.pathname === "/v1/messages" &&
+        (upstream.headers.get("content-type") ?? "").includes("application/json");
+      const cuerpoJson: Buffer[] | null = esJsonMedible ? [] : null;
 
       if (upstream.body) {
         for await (const chunk of upstream.body) {
           const b = Buffer.from(chunk);
           res.write(b);
           observador?.observar(b);
+          cuerpoJson?.push(b);
           captura?.capturar(b);
         }
       }
@@ -213,6 +228,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medir(requestId, cuerpo, observador.usage(), false, url.pathname);
+      } else if (cuerpoJson) {
+        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }

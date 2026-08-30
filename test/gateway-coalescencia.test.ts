@@ -156,6 +156,60 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     expect(evitada["netSavings"]).toBe(1);
   });
 
+  it("réplica stream:false — la gemela de una respuesta JSON también reporta su ahorro (S0.2)", async () => {
+    const contador = { hits: 0 };
+    const lotes: unknown[][] = [];
+    const respuestaJson = JSON.stringify({
+      id: "msg_1",
+      usage: { input_tokens: 100, output_tokens: 42 },
+    });
+    const upstream = await new Promise<number>((resolve) => {
+      const s = createServer(async (req, res) => {
+        for await (const _ of req) void _;
+        contador.hits += 1;
+        setTimeout(() => {
+          res.writeHead(200, { "content-type": "application/json" });
+          res.end(respuestaJson);
+        }, 150);
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+    const ingesta = await ingestaFalsa(lotes);
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      coalescer: true,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "t",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const cuerpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [{ role: "user", content: "hola" }], stream: false });
+    const pedir = () =>
+      fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: cuerpo }).then((r) => r.text());
+    const p1 = pedir();
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir();
+    const [r1, r2] = await Promise.all([p1, p2]);
+
+    expect(contador.hits).toBe(1);
+    expect(r1).toBe(respuestaJson);
+    expect(r2).toBe(respuestaJson);
+
+    await gw.cerrar();
+    await esperar(() => lotes.flat().length >= 2);
+    const regs = lotes.flat() as Record<string, unknown>[];
+    const medida = regs.find((r) => r["basis"] === "measured")!;
+    const evitada = regs.find((r) => r["cacheResult"] === "singleflight")!;
+    expect(medida["actualLlm"]).toBe(1);
+    expect(evitada["avoidedLlm"]).toBe(1);
+    expect(evitada["basis"]).toBe("estimated");
+    expect(evitada["netSavings"]).toBe(1);
+  });
+
   it("dos DISTINTAS concurrentes → dos viajes", async () => {
     const contador = { hits: 0 };
     const upstream = await upstreamLento(contador, 100);
