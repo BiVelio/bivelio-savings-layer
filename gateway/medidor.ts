@@ -76,6 +76,75 @@ export class ObservadorSse {
   }
 }
 
+/** El `usage` de la Responses API de OpenAI (evento `response.completed`). */
+interface UsoResponses {
+  input_tokens?: number;
+  output_tokens?: number;
+  input_tokens_details?: { cached_tokens?: number; cache_write_tokens?: number };
+  output_tokens_details?: { reasoning_tokens?: number };
+}
+
+/**
+ * Observa un stream SSE de la Responses API (Codex CLI) SIN tocarlo y entrega
+ * el `usage` YA MAPEADO a `UsoSse`, para que `costeMedido` lo tarife sin saber
+ * de qué proveedor viene. Clase hermana de `ObservadorSse`, no parametrización:
+ * ni los eventos ni la forma del usage coinciden.
+ *
+ * Mapeo (fórmula OFICIAL de la guía de prompt caching de OpenAI:
+ * `ordinaryInputTokens = inputTokens − cachedTokens − cacheWriteTokens`):
+ *   · input_tokens ← input − cached − writes
+ *   · cache_read_input_tokens ← cached_tokens (tarifa `cachedInputPer1k`)
+ *   · cache_creation_input_tokens ← cache_write_tokens: cae en la rama 5m de
+ *     `costeMedido` a 1,25×, que ES la prima oficial de OpenAI (gpt-5.6+).
+ *     Jamás al bucket 1h — la prima 2× es exclusiva de Anthropic.
+ *   · reasoning_tokens ya van dentro de output_tokens: no se suman.
+ * Plausibilidad: si cached + writes > input (OpenAI reconoció contadores mal
+ * en el arranque de 5.6), se recorta al lado que infra-mide — quedarse corto,
+ * jamás inventar de más.
+ */
+export class ObservadorResponses {
+  private resto = "";
+  private uso: UsoSse | null = null;
+  readonly eventos: Record<string, number> = {};
+
+  observar(chunk: Buffer | string): void {
+    this.resto += typeof chunk === "string" ? chunk : chunk.toString("utf8");
+    let idx: number;
+    while ((idx = this.resto.indexOf("\n\n")) >= 0) {
+      const bloque = this.resto.slice(0, idx);
+      this.resto = this.resto.slice(idx + 2);
+      const ev = /^event: (.+)$/m.exec(bloque)?.[1];
+      if (ev) this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
+      const data = /^data: (.+)$/m.exec(bloque)?.[1];
+      if (!data) continue;
+      try {
+        const d = JSON.parse(data) as { type?: string; response?: { usage?: UsoResponses } };
+        if ((ev ?? d.type) !== "response.completed") continue;
+        const u = d.response?.usage;
+        if (u) this.uso = mapearUsoResponses(u);
+      } catch {
+        /* un data ilegible no puede tumbar el passthrough */
+      }
+    }
+  }
+
+  usage(): UsoSse | null {
+    return this.uso;
+  }
+}
+
+function mapearUsoResponses(u: UsoResponses): UsoSse {
+  const input = Math.max(0, u.input_tokens ?? 0);
+  const cached = Math.min(Math.max(0, u.input_tokens_details?.cached_tokens ?? 0), input);
+  const writes = Math.min(Math.max(0, u.input_tokens_details?.cache_write_tokens ?? 0), input - cached);
+  return {
+    input_tokens: input - cached - writes,
+    output_tokens: Math.max(0, u.output_tokens ?? 0),
+    cache_read_input_tokens: cached,
+    cache_creation_input_tokens: writes,
+  };
+}
+
 /**
  * Prima de ESCRITURA de caché de Anthropic (TTL 5m, el defecto): crear una
  * entrada de prompt cache se factura a 1,25× el precio de entrada (precio

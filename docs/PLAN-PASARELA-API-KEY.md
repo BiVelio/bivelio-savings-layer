@@ -129,6 +129,14 @@ cliente que opte, visible en su panel.
 
 ### S3 · Más tráfico API-key medible (en paralelo a S2) — terminales
 
+> **Estado 2026-08-30:** investigado y verificado en `docs/PASARELA-S3-TERMINALES.md`;
+> **implementado el mismo día** (rama `feat/s3-terminales-hoy`): `ObservadorResponses`
+> + dialecto por ruta + 426 al handshake WebSocket + `bvsala codex|goose|qwen`
+> (tabla pura en `gateway/envoltorios.ts`) + `bvsala doctor` + `docs/terminales/`
+> + test de `GET /v1/models`. Pendientes de **validación en mano** antes de anunciar:
+> sesión real de Codex con API key (426 → fallback limpio) y el modo suscripción
+> ChatGPT; Droid y Kilo contra el log del gateway.
+
 Prioridades del catálogo (TERMINALES-DE-CODIFICACION.md:160-172), solo la parte
 API key:
 

@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
-import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, usoDeJson } from "./medidor.js";
+import { ObservadorSse, ObservadorResponses, costeMedido, informeMedido, informeCoalescido, usoDeJson } from "./medidor.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -92,6 +92,18 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
   const coalescedor = opts.coalescer ? new Coalescedor() : null;
 
+  /**
+   * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
+   * cualquier `…/responses` (`/v1/responses` con API key, `/backend-api/codex/
+   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI). Otras
+   * rutas SSE no se miden.
+   */
+  const observadorPara = (pathname: string): ObservadorSse | ObservadorResponses | null => {
+    if (pathname === "/v1/messages") return new ObservadorSse();
+    if (pathname.endsWith("/responses")) return new ObservadorResponses();
+    return null;
+  };
+
   /** Mide y emite el uso de una respuesta ya servida (o replicada). */
   const medir = (requestId: string, cuerpo: Buffer, uso: ReturnType<ObservadorSse["usage"]>, coalescida: boolean, path: string): void => {
     if (!emisor || !uso) return;
@@ -152,7 +164,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           if (replica) {
             // La gemela recibe la réplica íntegra de la primaria — cero viaje.
             res.writeHead(replica.status, replica.headers);
-            const obs = new ObservadorSse();
+            const obs = observadorPara(url.pathname) ?? new ObservadorSse();
             for (const ch of replica.chunks) {
               res.write(ch);
               obs.observar(ch);
@@ -205,7 +217,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       res.writeHead(upstream.status, cabeceras);
 
       const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
-      const observador = esSse ? new ObservadorSse() : null;
+      const observador = esSse ? observadorPara(url.pathname) : null;
       // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
       // Solo /v1/messages (count_tokens también responde JSON pero no factura),
       // solo con emisor (sin clave no hay nada que medir: ni bufferizar ni
@@ -264,6 +276,18 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       }
       if (!res.writableEnded) res.end();
     }
+  });
+
+  // Codex CLI intenta WebSocket en CADA sesión (supports_websockets está
+  // hardcodeado en su proveedor integrado y no se apaga por config). Sin este
+  // listener, el handshake entraba en el handler normal, undici fallaba con
+  // «invalid connection header» y respondíamos 502 — que Codex trata como error
+  // genérico y quema reintentos visibles («Reconnecting…»). Un 426 fuerza el
+  // fallback a HTTP+SSE inmediato, silencioso y pegajoso por sesión (test
+  // websocket_fallback.rs de codex). El passthrough sirve el SSE como siempre.
+  server.on("upgrade", (req, socket) => {
+    log(`[gateway] ${req.method} ${req.url} → 426 (WebSocket no soportado; el cliente cae a HTTP)`);
+    socket.end("HTTP/1.1 426 Upgrade Required\r\nconnection: close\r\ncontent-length: 0\r\n\r\n");
   });
 
   await new Promise<void>((resolve, reject) => {

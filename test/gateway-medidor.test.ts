@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import {
   ObservadorSse,
+  ObservadorResponses,
   costeMedido,
   informeMedido,
   informeCoalescido,
@@ -83,6 +84,74 @@ describe("ObservadorSse — observa sin tocar", () => {
       cache_creation: { ephemeral_5m_input_tokens: 1000, ephemeral_1h_input_tokens: 2000 },
       output_tokens: 42,
     });
+  });
+});
+
+/** Un stream de la Responses API como el que emite Codex CLI (usage en response.completed). */
+function streamResponses(usage: Record<string, unknown>): string {
+  return [
+    'event: response.created\ndata: {"type":"response.created","response":{"id":"resp_1"}}\n\n',
+    'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"OK"}\n\n',
+    `event: response.completed\ndata: ${JSON.stringify({ type: "response.completed", response: { id: "resp_1", usage } })}\n\n`,
+  ].join("");
+}
+
+describe("ObservadorResponses — el dialecto de Codex CLI, mapeado a UsoSse", () => {
+  it("mapea con la fórmula OFICIAL de OpenAI: entrada = input − cached − writes; reasoning no se suma", () => {
+    const o = new ObservadorResponses();
+    o.observar(
+      streamResponses({
+        input_tokens: 10_000,
+        input_tokens_details: { cached_tokens: 6_000, cache_write_tokens: 1_000 },
+        output_tokens: 500,
+        output_tokens_details: { reasoning_tokens: 300 },
+        total_tokens: 10_500,
+      }),
+    );
+    expect(o.usage()).toEqual({
+      input_tokens: 3_000,
+      output_tokens: 500,
+      cache_read_input_tokens: 6_000,
+      cache_creation_input_tokens: 1_000,
+    });
+    expect(o.eventos["response.completed"]).toBe(1);
+  });
+
+  it("y costeMedido lo tarifa: cached a cachedInputPer1k, writes a 1,25× (la prima oficial de OpenAI), jamás al bucket 1h", () => {
+    const o = new ObservadorResponses();
+    o.observar(streamResponses({ input_tokens: 10_000, input_tokens_details: { cached_tokens: 6_000, cache_write_tokens: 1_000 }, output_tokens: 500 }));
+    const m = costeMedido("gpt-5.6-sol", o.usage()!)!;
+    // gpt-5.6-sol: in 0.004, out 0.020, cacheIn 0.0004 (catálogo)
+    expect(m.costeUsd).toBeCloseTo(3 * 0.004 + 6 * 0.0004 + 1 * 0.004 * PRIMA_ESCRITURA_CACHE + 0.5 * 0.02, 10);
+    expect(m.tokens.cacheEscrita1h).toBe(0);
+  });
+
+  it("aguanta chunks cortados en cualquier punto", () => {
+    const s = streamResponses({ input_tokens: 100, output_tokens: 7 });
+    for (const corte of [1, 5, 64, 200]) {
+      const o = new ObservadorResponses();
+      for (let i = 0; i < s.length; i += corte) o.observar(s.slice(i, i + corte));
+      expect(o.usage()?.output_tokens, `corte=${corte}`).toBe(7);
+    }
+  });
+
+  it("plausibilidad: cached + writes > input se recorta al lado que infra-mide, nunca negativo", () => {
+    const o = new ObservadorResponses();
+    o.observar(streamResponses({ input_tokens: 1_000, input_tokens_details: { cached_tokens: 900, cache_write_tokens: 500 }, output_tokens: 1 }));
+    expect(o.usage()).toEqual({ input_tokens: 0, output_tokens: 1, cache_read_input_tokens: 900, cache_creation_input_tokens: 100 });
+  });
+
+  it("sin response.completed (usage_not_included, corte) devuelve null: nada se inventa", () => {
+    const o = new ObservadorResponses();
+    o.observar('event: response.created\ndata: {"type":"response.created"}\n\n');
+    o.observar('event: error\ndata: {"type":"error","code":"usage_not_included"}\n\n');
+    expect(o.usage()).toBeNull();
+  });
+
+  it("reconoce response.completed también por data.type cuando no hay línea event:", () => {
+    const o = new ObservadorResponses();
+    o.observar('data: {"type":"response.completed","response":{"usage":{"input_tokens":5,"output_tokens":2}}}\n\n');
+    expect(o.usage()).toEqual({ input_tokens: 5, output_tokens: 2, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 });
   });
 });
 
