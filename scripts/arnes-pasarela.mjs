@@ -85,13 +85,16 @@ if (!registros.length) {
 console.log(`[arnes] corpus: ${fichero} — ${registros.length} peticiones con respuesta grabada`);
 
 // ── upstream de replay: sirve la respuesta grabada de cada petición ──
-const porClave = new Map(registros.map((r) => [JSON.stringify(r.requestBody), r]));
+// La clave lleva la RUTA además del cuerpo: sin ella, un mismo cuerpo contra
+// /v1/messages y /v1/messages/count_tokens serviría la respuesta equivocada.
+const porClave = new Map(registros.map((r) => [`${r.path}\n${JSON.stringify(r.requestBody)}`, r]));
 const upstream = createServer(async (req, res) => {
   const chunks = [];
   for await (const c of req) chunks.push(c);
   const clave = (() => {
     try {
-      return JSON.stringify(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+      const ruta = new URL(req.url ?? "/", "http://x").pathname;
+      return `${ruta}\n${JSON.stringify(JSON.parse(Buffer.concat(chunks).toString("utf8")))}`;
     } catch {
       return "";
     }
@@ -102,7 +105,13 @@ const upstream = createServer(async (req, res) => {
     res.end('{"error":"peticion fuera del corpus"}');
     return;
   }
-  res.writeHead(r.responseStatus ?? 200, { "content-type": "text/event-stream" });
+  // El content-type ORIGINAL de la captura: con el espía v2 el corpus trae
+  // también respuestas no-SSE (stream:false, count_tokens), y servirlas
+  // etiquetadas como SSE haría que el gateway recorriera la rama equivocada —
+  // el arnés certificaría un camino que nunca ejercitó.
+  res.writeHead(r.responseStatus ?? 200, {
+    "content-type": r.responseHeaders?.["content-type"] ?? "text/event-stream",
+  });
   // Troceado en fragmentos pequeños para ejercitar el ensamblado SSE real.
   const cuerpo = Buffer.from(r.responseBodyBase64, "base64");
   for (let i = 0; i < cuerpo.length; i += 512) res.write(cuerpo.subarray(i, i + 512));

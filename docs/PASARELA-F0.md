@@ -95,3 +95,58 @@ Primer veredicto (2026-08-23, corpus de 1 sesión): **PASA** — la coalescencia
 no cambia ni un byte. La regla del plan sigue en pie: se enciende por defecto
 cuando el corpus sea representativo (sesiones con herramientas y subagentes),
 no antes.
+
+## S1 · El espía v2 y el análisis del denominador (2026-08-30)
+
+El plan de la pasarela (`docs/PLAN-PASARELA-API-KEY.md`, fase S1) necesita
+cuatro cifras del tráfico real. El espía v2 las hace medibles:
+
+- **Cuerpos también en respuestas no-SSE** (`stream:false`, `count_tokens`):
+  en v1 caían del corpus del arnés y su `usage` era invisible.
+- **Tope parametrizable** (`BVSALA_ESPIA_MAX_CUERPO`, 4 MB por defecto) y
+  explícito: por encima, `responseBodyOmitted` lo dice en vez de callar.
+- **Correlación de sesión/subagente**, por orden de robustez: la cabecera
+  `x-claude-code-session-id` (verificada en tráfico real) → hash del primer
+  mensaje de la conversación → `clientPort` (débil: el keep-alive recicla
+  puertos; el espía ahora mantiene los sockets vivos, `keepAliveTimeout = 0`).
+- **`bloques`**: índice por petición de bytes por tipo de bloque
+  (`tool_result`, `text`, `system`, `tools`…) — la materia prima de S1.
+- **El arnés F2 replayea con el content-type ORIGINAL** de cada respuesta
+  grabada (y casa por ruta+cuerpo): con cuerpos no-SSE en el corpus, servirlo
+  todo como SSE habría hecho que el gateway recorriera siempre la rama SSE y
+  el arnés certificara un camino JSON que nunca ejercitó.
+
+`scripts/analisis-corpus-f0.mjs` produce el informe agregado (solo conteos,
+bytes y tokens — ningún contenido sale de la captura, ni siquiera en errores:
+una línea ilegible se cuenta y se salta): fracción de la entrada que son
+`tool_result` **calibrada contra el contador real del proveedor** (proporción
+de bytes × tokens reales por petición — método declarado; sustituye al
+HeuristicEstimator que citaba el plan porque calibra cada petición con SU
+contador), el recorte de contexto en **dos libros separados** — lo que recorta
+el proveedor (`context_management.applied_edits` leídos de la RESPUESTA
+grabada: el recorte pasa en el servidor, el request no lo enseña) y lo que
+poda el cliente (podas in situ y compactaciones del historial enviado) — y la
+mezcla de caché lectura / escritura 5m / escritura 1h. La cuarta cifra (la
+fuga de fast-mode y del safety-check de WebFetch) **no es computable desde la
+captura** — ese tráfico no pasa por el proxy — y el informe lo declara en vez
+de inventarla.
+
+### Primera pasada (humo, 2026-08-30 — 1 sesión corta, 2 Read, NO representativa)
+
+| Cifra | Valor | Lectura |
+| --- | ---: | --- |
+| Escritura de caché **TTL 1h** | **53,1 %** de la entrada (49.268 tk) | Claude Code escribe caché a 1h, no a 5m (0 %): el arreglo de la prima 2× (S0.1, #161) afecta a MÁS DE LA MITAD del tráfico de entrada de esta sesión — el medidor viejo infra-medía un 37,5 % de ese tramo |
+| Lectura de caché | 46,8 % (43.430 tk) | coherente con F0 (el prefijo compartido es masivo) |
+| `tool_result` | 4,8 % de la entrada | sesión trivial de 2 herramientas; la cifra que decide S2 exige sesiones largas reales |
+| `context_management` | config presente en 2/2 peticiones; 0 `applied_edits` del proveedor; 0 podas del cliente | en sesiones cortas nadie recorta nada; medirlo en sesiones largas |
+
+**Cómo grabar el corpus real** (sesiones de trabajo normales del dueño):
+
+```bash
+node scripts/espia-anthropic.mjs 8402
+ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude   # y trabajar normal
+node scripts/analisis-corpus-f0.mjs                # cifras de TODAS las capturas
+```
+
+La puerta de decisión de S2 (masa elidible neta ≥ ~10 % de la entrada) se
+evalúa sobre ese corpus, no sobre el humo.

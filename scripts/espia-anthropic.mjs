@@ -18,6 +18,11 @@
  *   node scripts/espia-anthropic.mjs [puerto]            # por defecto 8402
  *   ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude -p "Responde solo OK"
  *
+ * Entorno:
+ *   BVSALA_ESPIA_UPSTREAM     upstream (por defecto https://api.anthropic.com)
+ *   BVSALA_ESPIA_MAX_CUERPO   tope de cuerpo grabado por respuesta, en bytes
+ *                             (por defecto 4000000; inválido → se ignora y avisa)
+ *
  * Las capturas quedan en ~/.bvsala-f0/captura-<timestamp>.jsonl — SOLO en la
  * máquina local. Contienen los prompts de la sesión grabada (son tuyos y no
  * salen de aquí); las credenciales (authorization, x-api-key, cookies) se
@@ -30,6 +35,18 @@ import { join } from "node:path";
 
 const PUERTO = Number(process.argv[2] ?? 8402);
 const UPSTREAM = process.env.BVSALA_ESPIA_UPSTREAM ?? "https://api.anthropic.com";
+/**
+ * Tope de cuerpo grabado por respuesta (v2: parametrizable). Por encima, el
+ * cuerpo NO se guarda (un cuerpo truncado no sirve para el replay del arnés)
+ * pero el registro lo dice con `responseBodyOmitted` en vez de callar — en v1
+ * el registro simplemente dejaba de ser replayable sin rastro.
+ */
+const MAX_CUERPO = (() => {
+  const bruto = Number(process.env.BVSALA_ESPIA_MAX_CUERPO || 4_000_000);
+  if (Number.isFinite(bruto) && bruto > 0) return bruto;
+  console.error(`[espia] BVSALA_ESPIA_MAX_CUERPO inválido («${process.env.BVSALA_ESPIA_MAX_CUERPO}»); uso 4000000`);
+  return 4_000_000;
+})();
 
 const DIR = join(homedir(), ".bvsala-f0");
 mkdirSync(DIR, { recursive: true });
@@ -62,6 +79,38 @@ function forma(valor, profundidad = 0) {
   return typeof valor;
 }
 
+/**
+ * v2 · Resumen por tipo de bloque del cuerpo de /v1/messages: cuántos bloques
+ * y cuántos bytes serializados pesa cada tipo (tool_result, text, tool_use…),
+ * más el peso de system y tools. Solo conteos y tamaños — el contenido ya está
+ * en requestBody, esto es el índice para el análisis de S1.
+ */
+function resumenDeBloques(json) {
+  const porTipo = {};
+  const anota = (tipo, valor) => {
+    const bytes = Buffer.byteLength(typeof valor === "string" ? valor : JSON.stringify(valor ?? ""));
+    const t = (porTipo[tipo] ??= { n: 0, bytes: 0 });
+    t.n += 1;
+    t.bytes += bytes;
+  };
+  for (const m of json.messages) {
+    if (!m || typeof m !== "object") {
+      anota("?:invalido", m);
+      continue;
+    }
+    if (typeof m.content === "string") anota(`${m.role}:text`, m.content);
+    else if (Array.isArray(m.content)) for (const b of m.content) anota(`${m.role}:${b?.type ?? "?"}`, b);
+  }
+  if (json.system !== undefined) anota("system", json.system);
+  if (Array.isArray(json.tools)) for (const t of json.tools) anota("tools", t);
+  return {
+    mensajes: json.messages.length,
+    porTipo,
+    totalBytes: Object.values(porTipo).reduce((s, t) => s + t.bytes, 0),
+    context_management: json.context_management !== undefined ? forma(json.context_management) : undefined,
+  };
+}
+
 let n = 0;
 
 const server = createServer(async (req, res) => {
@@ -78,16 +127,32 @@ const server = createServer(async (req, res) => {
     method: req.method,
     path: url.pathname,
     query: url.search || undefined,
+    // v2 · correlación de sesión/subagente: el puerto del socket del cliente
+    // distingue procesos concurrentes (agente principal vs subagentes) que en
+    // v1 se entremezclaban sin nada que los separase salvo el contenido.
+    clientPort: req.socket.remotePort,
     requestHeaders: redactar(req.headers),
     requestBytes: cuerpo.length,
   };
   // El cuerpo completo va aparte (es local y es tuyo); la forma va SIEMPRE.
+  let json;
   try {
-    const json = JSON.parse(cuerpo.toString("utf8"));
+    json = JSON.parse(cuerpo.toString("utf8"));
     registro.requestShape = forma(json);
     registro.requestBody = json;
+    // v2 · metadata del cliente (p.ej. user_id de Claude Code) a mano para
+    // correlacionar sin bucear en el cuerpo.
+    if (json && typeof json === "object" && json.metadata) registro.requestMeta = json.metadata;
   } catch {
     registro.requestShape = cuerpo.length ? `raw(${cuerpo.length}B)` : "empty";
+  }
+  // v2 · resumen de bloques por tipo (la cifra clave de S1: ¿cuánto pesan los
+  // tool_result?). En su PROPIO try: un cuerpo con messages malformados no
+  // puede desdecir el requestShape ya calculado ni tocar el passthrough.
+  if (Array.isArray(json?.messages)) {
+    try {
+      registro.bloques = resumenDeBloques(json);
+    } catch {}
   }
 
   let upstream;
@@ -158,24 +223,28 @@ const server = createServer(async (req, res) => {
       }
       // El cuerpo COMPLETO (también el SSE) se guarda para el arnés de F2
       // (scripts/arnes-pasarela.mjs): sin cuerpos grabados no hay replay.
-      // Solo local, con tope para no crecer sin límite.
-      if (respuestaBytes <= 4_000_000) cuerpoRespuesta.push(chunk);
+      // Solo local, con tope parametrizable (BVSALA_ESPIA_MAX_CUERPO).
+      if (respuestaBytes <= MAX_CUERPO) cuerpoRespuesta.push(chunk);
     }
   }
   res.end();
 
   registro.ms = Date.now() - t0;
   registro.responseBytes = respuestaBytes;
-  if (esSse) {
-    registro.sse = { eventos, usage: usos };
-    if (respuestaBytes <= 4_000_000) {
-      registro.responseBodyBase64 = Buffer.concat(cuerpoRespuesta).toString("base64");
-      registro.responseStatus = upstream.status;
+  if (esSse) registro.sse = { eventos, usage: usos };
+  // v2 · el cuerpo se guarda también para respuestas NO-SSE (stream:false,
+  // count_tokens…): en v1 caían del corpus del arnés, que filtra por
+  // responseBodyBase64, y el análisis de S1 no veía su usage.
+  if (respuestaBytes <= MAX_CUERPO) {
+    registro.responseBodyBase64 = Buffer.concat(cuerpoRespuesta).toString("base64");
+    registro.responseStatus = upstream.status;
+    if (!esSse) {
+      try {
+        registro.responseShape = forma(JSON.parse(Buffer.concat(cuerpoRespuesta).toString("utf8")));
+      } catch {}
     }
-  } else if (cuerpoRespuesta.length) {
-    try {
-      registro.responseShape = forma(JSON.parse(Buffer.concat(cuerpoRespuesta).toString("utf8")));
-    } catch {}
+  } else {
+    registro.responseBodyOmitted = `supera BVSALA_ESPIA_MAX_CUERPO (${MAX_CUERPO} B); el registro no es replayable`;
   }
   salida.write(JSON.stringify(registro) + "\n");
   console.log(
@@ -183,6 +252,11 @@ const server = createServer(async (req, res) => {
   );
 });
 
+// Sin timeout de keep-alive: con el defecto (5 s) cada pausa humana cerraba la
+// conexión y undici reconectaba con OTRO puerto efímero — el clientPort dejaba
+// de correlacionar turnos de una misma conversación (hallazgo de la revisión
+// de S1). Es un proxy local de grabación: mantener sockets vivos no cuesta.
+server.keepAliveTimeout = 0;
 server.listen(PUERTO, "127.0.0.1", () => {
   console.log(`[espia] escuchando en http://127.0.0.1:${PUERTO} → ${UPSTREAM}`);
   console.log(`[espia] captura: ${fichero}`);
