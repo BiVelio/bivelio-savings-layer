@@ -95,3 +95,45 @@ Primer veredicto (2026-08-23, corpus de 1 sesión): **PASA** — la coalescencia
 no cambia ni un byte. La regla del plan sigue en pie: se enciende por defecto
 cuando el corpus sea representativo (sesiones con herramientas y subagentes),
 no antes.
+
+## S1 · El espía v2 y el análisis del denominador (2026-08-30)
+
+El plan de la pasarela (`docs/PLAN-PASARELA-API-KEY.md`, fase S1) necesita
+cuatro cifras del tráfico real. El espía v2 las hace medibles:
+
+- **Cuerpos también en respuestas no-SSE** (`stream:false`, `count_tokens`):
+  en v1 caían del corpus del arnés y su `usage` era invisible.
+- **Tope parametrizable** (`BVSALA_ESPIA_MAX_CUERPO`, 4 MB por defecto) y
+  explícito: por encima, `responseBodyOmitted` lo dice en vez de callar.
+- **Correlación de sesión/subagente**: `clientPort` + `requestMeta` — en v1
+  los subagentes se entremezclaban sin nada que los separase.
+- **`bloques`**: índice por petición de bytes por tipo de bloque
+  (`tool_result`, `text`, `system`, `tools`…) — la materia prima de S1.
+
+`scripts/analisis-corpus-f0.mjs` produce el informe agregado (solo conteos,
+bytes y tokens — ningún contenido sale de la captura): fracción de la entrada
+que son `tool_result` **calibrada contra el contador real del proveedor**,
+presencia y encogimientos de `context_management`, y mezcla de caché
+lectura / escritura 5m / escritura 1h. La cuarta cifra (la fuga de fast-mode y
+del safety-check de WebFetch) **no es computable desde la captura** — ese
+tráfico no pasa por el proxy — y el informe lo declara en vez de inventarla.
+
+### Primera pasada (humo, 2026-08-30 — 1 sesión corta, 2 Read, NO representativa)
+
+| Cifra | Valor | Lectura |
+| --- | ---: | --- |
+| Escritura de caché **TTL 1h** | **53,1 %** de la entrada (49.268 tk) | Claude Code escribe caché a 1h, no a 5m (0 %): el arreglo de la prima 2× (S0.1, #161) afecta a MÁS DE LA MITAD del tráfico de entrada de esta sesión — el medidor viejo infra-medía un 37,5 % de ese tramo |
+| Lectura de caché | 46,8 % (43.430 tk) | coherente con F0 (el prefijo compartido es masivo) |
+| `tool_result` | 4,8 % de la entrada | sesión trivial de 2 herramientas; la cifra que decide S2 exige sesiones largas reales |
+| `context_management` | config presente en 2/2 peticiones; 0 encogimientos | en sesiones cortas no recorta nada; medirlo en sesiones largas |
+
+**Cómo grabar el corpus real** (sesiones de trabajo normales del dueño):
+
+```bash
+node scripts/espia-anthropic.mjs 8402
+ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude   # y trabajar normal
+node scripts/analisis-corpus-f0.mjs                # cifras de TODAS las capturas
+```
+
+La puerta de decisión de S2 (masa elidible neta ≥ ~10 % de la entrada) se
+evalúa sobre ese corpus, no sobre el humo.
