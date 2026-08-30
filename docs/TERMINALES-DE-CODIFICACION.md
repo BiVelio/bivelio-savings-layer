@@ -51,7 +51,7 @@ La documentación se reestructuró en 2026 en un conjunto completo sobre gateway
 - Endpoint a igualar: `POST /v1/messages?beta=true`; opcional `/v1/messages/count_tokens`; sonda `HEAD /api/hello`.
 - «Forward `anthropic-version` and `anthropic-beta` unchanged… don't allowlist individual values» — cabeceras y campos como listas abiertas.
 - **Cabeceras de atribución para contabilidad sin abrir cuerpos**: `x-claude-code-session-id`, `x-claude-code-agent-id`, `x-claude-code-parent-agent-id` — ofrecidas explícitamente para atribución de coste por sesión/agente.
-- Las respuestas **deben fluir** (watchdog de bytes: 180 s directo, 300 s vía gateway); un proxy que bufferice aborta al cliente. Reenviar cuerpos de error **sin modificar**.
+- Las respuestas **deben fluir** (watchdog de bytes: 300 s por defecto en conexiones `ANTHROPIC_BASE_URL`; la cifra «180 s directo» ya no figura en la doc oficial — verificado 2026-08-30); un proxy que bufferice aborta al cliente. Reenviar cuerpos de error **sin modificar**.
 - Bloque de atribución del system prompt estable por conversación desde **v2.1.181** (antes rompía cachés por cuerpo).
 - **Suscripciones por gateway, sancionadas** ([V], sección «Subscriptions and gateways» de /llm-gateway): fijar solo `ANTHROPIC_BASE_URL` sin credencial de gateway mantiene el login de claude.ai como credencial activa («its usage limits and billing apply»), y «Gateways that pass this traffic on to Anthropic **must forward the OAuth capability in `anthropic-beta`**» (si se elimina → 401). **Es exactamente el modo de operación de BV-SALA, ahora documentado como configuración soportada del binario sin modificar.**
 - Fugas: el chequeo de fast-mode y el safety-check de WebFetch van directos a `api.anthropic.com` saltándose `ANTHROPIC_BASE_URL` — un proxy local no ve el 100 % del tráfico ([V]).
@@ -87,7 +87,7 @@ La documentación se reestructuró en 2026 en un conjunto completo sobre gateway
 | **Goose** (Block/LF) | Sí — el más limpio por env | **`ANTHROPIC_HOST`**, **`OPENAI_HOST`**+`OPENAI_BASE_PATH` (https://goose-docs.ai/docs/getting-started/providers) | Sí | 53.343 ★; solo BYOK |
 | **Aider** | Sí | `OPENAI_API_BASE` / `--openai-api-base`; `ANTHROPIC_API_BASE` vía `--set-env` [I] | Sí [I] | 48.441 ★ pero **estancado** (último release ago-2025) |
 | **Qwen Code** | Sí | env **`OPENAI_BASE_URL`** y **`ANTHROPIC_BASE_URL`** + `modelProviders[].baseUrl` | Sí | 27.325 ★; BYOK desde abr-2026 |
-| **Crush** (Charm) | Sí | `crush.json` → `providers.<id>.base_url` + `type: "anthropic"` | Sí | 27.626 ★; OAuth Claude retirado ene-2026 |
+| **Crush** (Charm) | Sí | `crushrc` (Bash, en `~/.config/crush/`) → `provider add <id> --type anthropic --base-url …/v1` — `crush.json` está DEPRECADO (verificado 2026-08-30) | Sí | 27.626 ★; OAuth Claude retirado ene-2026 |
 | **Kilo Code** | Sí | UI «OpenAI Compatible»: Base URL + Headers (https://kilo.ai/docs/providers/openai-compatible) | [I] probable | 26.994 ★; 1,45M instalaciones |
 | **Droid** (Factory) | Sí (BYOK) | `~/.factory/settings.json` → `customModels[].baseUrl` + `provider: "anthropic"` (https://docs.factory.ai/cli/byok/overview) | Sí | Cerrado; Series B $50M |
 | **Cursor CLI** | **No** | El tráfico termina en el backend de Cursor | No | Adquirido por SpaceX ~$60B (cierre 2026-08-14) |
