@@ -33,6 +33,11 @@ charge a flat subscription, so there is no per‑token bill to cut. BV‑SALA is
 applications that call the API with their own key. The whole story, in plain words:
 **[Where does the saving install?](https://savings.bivelio.com/en/how-it-works)**
 
+**Claude Code with an API key?** The package also ships a local measuring
+gateway: `bvsala claude` launches Claude Code through it and your real spend
+shows up in your dashboard, token by token. Today it measures; it does not
+optimize yet.
+
 ## Try it before you install
 
 Run the real optimizer **free in your browser** — pick an example or paste your own
@@ -60,7 +65,7 @@ export BIVELIO_SERVICE_KEY=…   # service-account key: auto-renewal + seat mete
 ```ts
 import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
 
-// Your provider. LLM traffic goes straight to it — BV-SALA never proxies it.
+// Your provider. LLM traffic goes straight to it — the SDK never proxies it.
 // Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
 const provider = new OpenAICompatibleProvider({
   baseUrl: "https://api.openai.com/v1",

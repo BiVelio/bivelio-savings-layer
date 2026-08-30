@@ -22,7 +22,7 @@ import { TrialKeyButton } from "./TrialKeyButton";
  */
 const WRAP = `import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
 
-// 1 · your provider. LLM traffic goes straight to it — BV-SALA never proxies it.
+// 1 · your provider. LLM traffic goes straight to it — the SDK never proxies it.
 //     Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, a gateway.
 const provider = new OpenAICompatibleProvider({
   baseUrl: "https://api.openai.com/v1",

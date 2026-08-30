@@ -10,8 +10,10 @@ import { Link } from "@/i18n/navigation";
  * exactamente el mismo dentro y fuera.
  *
  * La honestidad aquí es parte del producto: los casos «Nada que instalar» se
- * dicen tal cual, y el caso Claude Code no promete un modo pasarela que hoy no
- * existe.
+ * dicen tal cual, y el caso Claude Code cuenta la verdad de hoy — el gateway
+ * `bvsala claude` (publicado en npm) ya se pone delante y MIDE, pero todavía no
+ * ahorra, así que el veredicto sigue en «Aún no» hasta que la primera palanca
+ * lo cambie (docs/PLAN-PASARELA-API-KEY.md).
  */
 export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
   const t = await getTranslations("howItWorks");
