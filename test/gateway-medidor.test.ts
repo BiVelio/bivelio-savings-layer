@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
 
-import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, PRIMA_ESCRITURA_CACHE } from "../gateway/medidor.js";
+import {
+  ObservadorSse,
+  costeMedido,
+  informeMedido,
+  informeCoalescido,
+  usoDeJson,
+  PRIMA_ESCRITURA_CACHE,
+  PRIMA_ESCRITURA_CACHE_1H,
+} from "../gateway/medidor.js";
 
 /** Un stream SSE como el del catálogo F0 (docs/PASARELA-F0.md). */
 function streamF0(): string {
@@ -48,6 +56,34 @@ describe("ObservadorSse — observa sin tocar", () => {
     o.observar("event: ping\ndata: {}\n\n");
     expect(o.usage()).toBeNull();
   });
+
+  it("⛔ un delta con cache_creation PARCIAL se fusiona, no pisa: el desglose 1h sobrevive", () => {
+    // Si la API hiciera acumulativos los campos de caché en los deltas (como ya
+    // hizo con input_tokens), un spread superficial borraba ephemeral_1h y la
+    // escritura 1h volvía a tarifarse a 1,25× — la infra-medición de siempre.
+    const o = new ObservadorSse();
+    o.observar(
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"cache_creation_input_tokens":3000,"cache_creation":{"ephemeral_5m_input_tokens":1000,"ephemeral_1h_input_tokens":2000}}}}\n\n',
+    );
+    o.observar(
+      'event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":5,"cache_creation":{"ephemeral_5m_input_tokens":1000}}}\n\n',
+    );
+    expect(o.usage()?.cache_creation).toEqual({ ephemeral_5m_input_tokens: 1000, ephemeral_1h_input_tokens: 2000 });
+  });
+
+  it("conserva el desglose cache_creation de message_start cuando el delta no lo trae", () => {
+    const o = new ObservadorSse();
+    o.observar(
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"cache_creation_input_tokens":3000,"cache_creation":{"ephemeral_5m_input_tokens":1000,"ephemeral_1h_input_tokens":2000}}}}\n\n',
+    );
+    o.observar('event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":42}}\n\n');
+    expect(o.usage()).toEqual({
+      input_tokens: 10,
+      cache_creation_input_tokens: 3000,
+      cache_creation: { ephemeral_5m_input_tokens: 1000, ephemeral_1h_input_tokens: 2000 },
+      output_tokens: 42,
+    });
+  });
 });
 
 describe("costeMedido — a precio de lista, con la caché bien contada", () => {
@@ -70,6 +106,74 @@ describe("costeMedido — a precio de lista, con la caché bien contada", () => 
 
   it("modelo desconocido → null: se reenvía pero no se mide (nunca se inventa precio)", () => {
     expect(costeMedido("modelo-inexistente-9000", { input_tokens: 5 })).toBeNull();
+  });
+});
+
+describe("costeMedido — la escritura 1h se tarifa a 2×, no a 1,25×", () => {
+  // haiku-4-5: in 0.001, out 0.005, cacheIn 0.0001 (catálogo)
+  it("⛔ con desglose por TTL, la parte 1h va a 2× (antes TODO iba a 1,25× y el gateway infra-medía)", () => {
+    const m = costeMedido("claude-haiku-4-5-20251001", {
+      input_tokens: 1000,
+      output_tokens: 1000,
+      cache_read_input_tokens: 10_000,
+      cache_creation_input_tokens: 3000,
+      cache_creation: { ephemeral_5m_input_tokens: 1000, ephemeral_1h_input_tokens: 2000 },
+    })!;
+    const esperado =
+      0.001 + 10 * 0.0001 + 0.001 * PRIMA_ESCRITURA_CACHE + 2 * 0.001 * PRIMA_ESCRITURA_CACHE_1H + 0.005;
+    expect(m.costeUsd).toBeCloseTo(esperado, 10);
+    expect(m.tokens.cacheEscrita).toBe(3000); // el total sigue siendo la cifra del informe
+    expect(m.tokens.cacheEscrita1h).toBe(2000);
+  });
+
+  it("sin desglose (usage legacy): todo a 1,25× y cacheEscrita1h = 0", () => {
+    const m = costeMedido("claude-haiku-4-5", { cache_creation_input_tokens: 1000 })!;
+    expect(m.costeUsd).toBeCloseTo(0.001 * PRIMA_ESCRITURA_CACHE, 10);
+    expect(m.tokens.cacheEscrita1h).toBe(0);
+  });
+
+  it("desglose incompleto: lo que no cubre se tarifa a 1,25× (quedarse corto por defecto, jamás inventar)", () => {
+    const m = costeMedido("claude-haiku-4-5", {
+      cache_creation_input_tokens: 3000,
+      cache_creation: { ephemeral_1h_input_tokens: 1000 },
+    })!;
+    expect(m.costeUsd).toBeCloseTo(2 * 0.001 * PRIMA_ESCRITURA_CACHE + 0.001 * PRIMA_ESCRITURA_CACHE_1H, 10);
+    expect(m.tokens.cacheEscrita).toBe(3000);
+    expect(m.tokens.cacheEscrita1h).toBe(1000);
+  });
+
+  it("sin total pero con desglose, el total se reconstruye del desglose", () => {
+    const m = costeMedido("claude-haiku-4-5", {
+      cache_creation: { ephemeral_5m_input_tokens: 500, ephemeral_1h_input_tokens: 500 },
+    })!;
+    expect(m.tokens.cacheEscrita).toBe(1000);
+    expect(m.tokens.cacheEscrita1h).toBe(500);
+    expect(m.costeUsd).toBeCloseTo(0.5 * 0.001 * PRIMA_ESCRITURA_CACHE + 0.5 * 0.001 * PRIMA_ESCRITURA_CACHE_1H, 10);
+  });
+});
+
+describe("usoDeJson — el usage de una respuesta stream:false", () => {
+  it("extrae usage del JSON, desglose por TTL incluido", () => {
+    const cuerpo = JSON.stringify({
+      id: "msg_1",
+      usage: {
+        input_tokens: 100,
+        output_tokens: 42,
+        cache_creation_input_tokens: 1000,
+        cache_creation: { ephemeral_1h_input_tokens: 1000 },
+      },
+    });
+    expect(usoDeJson(Buffer.from(cuerpo))).toEqual({
+      input_tokens: 100,
+      output_tokens: 42,
+      cache_creation_input_tokens: 1000,
+      cache_creation: { ephemeral_1h_input_tokens: 1000 },
+    });
+  });
+
+  it("sin usage, o con un cuerpo ilegible, devuelve null (nada se inventa)", () => {
+    expect(usoDeJson('{"input_tokens":2095}')).toBeNull(); // count_tokens: sin `usage`, no factura
+    expect(usoDeJson("esto no es json")).toBeNull();
   });
 });
 

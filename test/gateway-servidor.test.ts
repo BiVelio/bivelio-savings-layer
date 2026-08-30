@@ -53,6 +53,18 @@ function arrancarUpstreamFalso(recibidas: { path: string; headers: Record<string
   });
 }
 
+function arrancarUpstreamJson(respuesta: unknown): Promise<number> {
+  return new Promise((resolve) => {
+    const s = createServer(async (req, res) => {
+      for await (const _ of req) void _;
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(respuesta));
+    });
+    recursos.push(s);
+    s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+  });
+}
+
 function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
@@ -159,6 +171,72 @@ describe("arrancarGateway — passthrough que mide", () => {
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: "{}" });
     expect(r.status).toBe(502);
     expect(((await r.json()) as { error: string }).error).toContain("upstream unreachable");
+  });
+
+  it("stream:false — la respuesta JSON con usage también se mide (S0.2: antes se reenviaba sin registrarse)", async () => {
+    const lotes: unknown[][] = [];
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const upstream = await arrancarUpstreamJson({
+      id: "msg_1",
+      usage: {
+        input_tokens: 100,
+        output_tokens: 42,
+        cache_read_input_tokens: 4000,
+        cache_creation_input_tokens: 1000,
+        cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 1000 },
+      },
+    });
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", stream: false }),
+    }).then((r) => r.text());
+
+    await gw.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    const reg = (lotes[0]![0] ?? {}) as Record<string, unknown>;
+    expect(reg["basis"]).toBe("measured");
+    expect(reg["actualLlm"]).toBe(1);
+    expect(reg["actualInputTokens"]).toBe(100 + 4000 + 1000);
+    expect(reg["actualOutputTokens"]).toBe(42);
+    // haiku-4-5: 0.1k in + 4k cache↓ (0.0001/1k) + 1k escritura 1h a 2× + 42 out
+    expect(reg["actualCost"]).toBeCloseTo(0.0001 + 0.0004 + 0.002 + 0.00021, 10);
+  });
+
+  it("count_tokens responde JSON pero NO factura: cero registros", async () => {
+    const lotes: unknown[][] = [];
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const upstream = await arrancarUpstreamJson({ input_tokens: 2095 });
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages/count_tokens`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [] }),
+    });
+    expect(((await r.json()) as { input_tokens: number }).input_tokens).toBe(2095);
+
+    await gw.cerrar(); // drena: si hubiera algo que emitir, saldría aquí
+    expect(lotes.length).toBe(0);
   });
 
   it("HEAD /api/hello (la comprobación de vida de Claude Code) pasa limpia", async () => {

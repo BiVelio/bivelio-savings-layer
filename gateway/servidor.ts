@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
-import { ObservadorSse, costeMedido, informeMedido, informeCoalescido } from "./medidor.js";
-import { Coalescedor, claveDePeticion, materialDeCabeceras } from "./coalescencia.js";
+import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, usoDeJson } from "./medidor.js";
+import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
  * F1 · EL GATEWAY — un proxy local delante de la API de Anthropic que MIDE.
@@ -104,7 +104,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       emisor.record(coalescida ? informeCoalescido(requestId, model, medido) : informeMedido(requestId, model, medido));
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
-          `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita} ` +
+          `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
+          `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
       );
     } else if (model) {
@@ -157,7 +158,14 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
               obs.observar(ch);
             }
             res.end();
-            medir(requestId, cuerpo, obs.usage(), true, url.pathname);
+            // Una réplica JSON (stream:false) trae el usage en el cuerpo, no en
+            // eventos — mismo hueco que el camino primario (S0.2 del plan). La
+            // MISMA verja de ruta que la primaria: sin ella, cualquier réplica
+            // JSON con una clave `usage` de otra forma (p.ej. /v1/chat/completions,
+            // prompt_tokens) emitía un registro fantasma de 0 tokens.
+            const usoReplica =
+              obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
+            medir(requestId, cuerpo, usoReplica, true, url.pathname);
             return;
           }
           // Primaria fallida o desbordada: la gemela viaja por su cuenta.
@@ -198,12 +206,31 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
       const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
       const observador = esSse ? new ObservadorSse() : null;
+      // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
+      // Solo /v1/messages (count_tokens también responde JSON pero no factura),
+      // solo con emisor (sin clave no hay nada que medir: ni bufferizar ni
+      // parsear), y con el mismo tope de captura que la coalescencia — un
+      // upstream configurable con un cuerpo desmesurado no puede comerse el heap.
+      const esJsonMedible =
+        !esSse &&
+        upstream.ok &&
+        emisor !== undefined &&
+        req.method === "POST" &&
+        url.pathname === "/v1/messages" &&
+        (upstream.headers.get("content-type") ?? "").includes("application/json");
+      let cuerpoJson: Buffer[] | null = esJsonMedible ? [] : null;
+      let cuerpoJsonBytes = 0;
 
       if (upstream.body) {
         for await (const chunk of upstream.body) {
           const b = Buffer.from(chunk);
           res.write(b);
           observador?.observar(b);
+          if (cuerpoJson) {
+            cuerpoJsonBytes += b.length;
+            if (cuerpoJsonBytes > MAX_CAPTURA_BYTES) cuerpoJson = null;
+            else cuerpoJson.push(b);
+          }
           captura?.capturar(b);
         }
       }
@@ -213,6 +240,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medir(requestId, cuerpo, observador.usage(), false, url.pathname);
+      } else if (cuerpoJson) {
+        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }

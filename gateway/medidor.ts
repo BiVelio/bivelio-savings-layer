@@ -3,8 +3,9 @@ import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 
 /**
- * F1 · EL MEDIDOR — convierte los eventos `usage` del stream SSE de Anthropic
- * en un registro de uso con `basis: "measured"`.
+ * F1 · EL MEDIDOR — convierte el `usage` del proveedor (los eventos del stream
+ * SSE, o el JSON de una respuesta `stream: false`) en un registro de uso con
+ * `basis: "measured"`.
  *
  * Doctrina de la v1 (plan maestro): el gateway TODAVÍA no optimiza nada, así
  * que el baseline ES el coste real — netSavings 0, visibilidad 100%. Cuando en
@@ -18,6 +19,16 @@ export interface UsoSse {
   output_tokens?: number;
   cache_read_input_tokens?: number;
   cache_creation_input_tokens?: number;
+  /**
+   * Desglose de la escritura de caché por TTL (catálogo F0: viene en
+   * message_start). La 1h se factura a 2×, no a 1,25× — sin este desglose el
+   * gateway infra-mide el tráfico de Claude Code, que negocia
+   * `extended-cache-ttl-2025-04-11`.
+   */
+  cache_creation?: {
+    ephemeral_5m_input_tokens?: number;
+    ephemeral_1h_input_tokens?: number;
+  };
 }
 
 /**
@@ -44,7 +55,16 @@ export class ObservadorSse {
       try {
         const d = JSON.parse(data) as { usage?: UsoSse; message?: { usage?: UsoSse } };
         const usage = d.usage ?? d.message?.usage;
-        if (usage) this.uso = { ...this.uso, ...usage };
+        if (usage) {
+          // El objeto anidado se FUSIONA, no se pisa: un delta que trajera un
+          // cache_creation parcial (o null) borraría el desglose 1h de
+          // message_start y la escritura 1h volvería a tarifarse a 1,25×.
+          const cache_creation =
+            usage.cache_creation || this.uso?.cache_creation
+              ? { ...this.uso?.cache_creation, ...usage.cache_creation }
+              : undefined;
+          this.uso = { ...this.uso, ...usage, ...(cache_creation ? { cache_creation } : {}) };
+        }
       } catch {
         /* un data ilegible no puede tumbar el passthrough */
       }
@@ -57,16 +77,31 @@ export class ObservadorSse {
 }
 
 /**
- * Prima de ESCRITURA de caché de Anthropic: crear una entrada de prompt cache
- * se factura a 1,25× el precio de entrada (precio público). La LECTURA usa
- * `cachedInputPer1k` del catálogo.
+ * Prima de ESCRITURA de caché de Anthropic (TTL 5m, el defecto): crear una
+ * entrada de prompt cache se factura a 1,25× el precio de entrada (precio
+ * público). La LECTURA usa `cachedInputPer1k` del catálogo.
  */
 export const PRIMA_ESCRITURA_CACHE = 1.25;
+
+/**
+ * Prima de escritura con TTL 1h: 2× el precio de entrada (precio público).
+ * Claude Code la negocia vía `extended-cache-ttl-2025-04-11`; tarifarla a
+ * 1,25× infra-medía el coste real.
+ */
+export const PRIMA_ESCRITURA_CACHE_1H = 2;
 
 export interface RegistroMedido {
   costeUsd: number;
   precio: CostModel;
-  tokens: { entrada: number; salida: number; cacheLeida: number; cacheEscrita: number };
+  tokens: {
+    entrada: number;
+    salida: number;
+    cacheLeida: number;
+    /** Escritura de caché TOTAL (5m + 1h): es la cifra que viaja en el informe. */
+    cacheEscrita: number;
+    /** La parte de la escritura con TTL 1h (0 si el usage no trae desglose). */
+    cacheEscrita1h: number;
+  };
 }
 
 /** El coste real de una respuesta, a precio de lista del modelo. */
@@ -76,14 +111,33 @@ export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
   const entrada = uso.input_tokens ?? 0;
   const salida = uso.output_tokens ?? 0;
   const cacheLeida = uso.cache_read_input_tokens ?? 0;
-  const cacheEscrita = uso.cache_creation_input_tokens ?? 0;
+  // El total manda; el desglose solo reparte. Sin `cache_creation_input_tokens`
+  // (no debería pasar) el total se reconstruye del desglose. Cualquier token
+  // que el desglose no cubra se tarifa a 1,25× — quedarse corto por defecto,
+  // jamás inventar de más.
+  const desglose = uso.cache_creation;
+  const cacheEscrita =
+    uso.cache_creation_input_tokens ??
+    (desglose?.ephemeral_5m_input_tokens ?? 0) + (desglose?.ephemeral_1h_input_tokens ?? 0);
+  const cacheEscrita1h = Math.min(desglose?.ephemeral_1h_input_tokens ?? 0, cacheEscrita);
   const porCacheLeida = precio.cachedInputPer1k ?? precio.inputPer1k;
   const costeUsd =
     (entrada / 1_000) * precio.inputPer1k +
     (cacheLeida / 1_000) * porCacheLeida +
-    (cacheEscrita / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE +
+    ((cacheEscrita - cacheEscrita1h) / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE +
+    (cacheEscrita1h / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE_1H +
     (salida / 1_000) * precio.outputPer1k;
-  return { costeUsd, precio, tokens: { entrada, salida, cacheLeida, cacheEscrita } };
+  return { costeUsd, precio, tokens: { entrada, salida, cacheLeida, cacheEscrita, cacheEscrita1h } };
+}
+
+/** El `usage` de una respuesta JSON no-SSE (`stream: false`). */
+export function usoDeJson(cuerpo: Buffer | string): UsoSse | null {
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as { usage?: UsoSse };
+    return d.usage ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**
