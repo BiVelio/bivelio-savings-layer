@@ -210,6 +210,47 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     expect(evitada["netSavings"]).toBe(1);
   });
 
+  it("⛔ una réplica JSON de OTRA ruta no emite registro fantasma (la verja de /v1/messages aplica también a la gemela)", async () => {
+    // Cazado en la revisión adversarial de S0.2: la réplica medía con usoDeJson
+    // SIN la verja de ruta del camino primario, y un `usage` de otra forma
+    // (/v1/chat/completions, prompt_tokens) emitía un registro de 0 tokens con
+    // avoidedLlm:1 que inflaba el contador de llamadas evitadas del panel.
+    const lotes: unknown[][] = [];
+    const upstream = await new Promise<number>((resolve) => {
+      const s = createServer(async (req, res) => {
+        for await (const _ of req) void _;
+        setTimeout(() => {
+          res.writeHead(200, { "content-type": "application/json" });
+          res.end(JSON.stringify({ usage: { prompt_tokens: 100, completion_tokens: 50 } }));
+        }, 150);
+      });
+      recursos.push(s);
+      s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+    });
+    const ingesta = await ingestaFalsa(lotes);
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      coalescer: true,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "t",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    const cuerpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [] });
+    const pedir = () =>
+      fetch(`http://127.0.0.1:${gw.puerto}/v1/chat/completions`, { method: "POST", body: cuerpo }).then((r) => r.text());
+    const p1 = pedir();
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir();
+    await Promise.all([p1, p2]);
+
+    await gw.cerrar(); // drena: si hubiera un registro (fantasma), saldría aquí
+    expect(lotes.flat()).toEqual([]);
+  });
+
   it("dos DISTINTAS concurrentes → dos viajes", async () => {
     const contador = { hits: 0 };
     const upstream = await upstreamLento(contador, 100);

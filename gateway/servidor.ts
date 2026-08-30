@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
 import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, usoDeJson } from "./medidor.js";
-import { Coalescedor, claveDePeticion, materialDeCabeceras } from "./coalescencia.js";
+import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
  * F1 · EL GATEWAY — un proxy local delante de la API de Anthropic que MIDE.
@@ -152,16 +152,19 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           if (replica) {
             // La gemela recibe la réplica íntegra de la primaria — cero viaje.
             res.writeHead(replica.status, replica.headers);
-            const replicaSse = (replica.headers["content-type"] ?? "").includes("text/event-stream");
-            const obs = replicaSse ? new ObservadorSse() : null;
+            const obs = new ObservadorSse();
             for (const ch of replica.chunks) {
               res.write(ch);
-              obs?.observar(ch);
+              obs.observar(ch);
             }
             res.end();
             // Una réplica JSON (stream:false) trae el usage en el cuerpo, no en
-            // eventos — mismo hueco que el camino primario (S0.2 del plan).
-            const usoReplica = obs ? obs.usage() : usoDeJson(Buffer.concat(replica.chunks));
+            // eventos — mismo hueco que el camino primario (S0.2 del plan). La
+            // MISMA verja de ruta que la primaria: sin ella, cualquier réplica
+            // JSON con una clave `usage` de otra forma (p.ej. /v1/chat/completions,
+            // prompt_tokens) emitía un registro fantasma de 0 tokens.
+            const usoReplica =
+              obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
             medir(requestId, cuerpo, usoReplica, true, url.pathname);
             return;
           }
@@ -204,21 +207,30 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
       const observador = esSse ? new ObservadorSse() : null;
       // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
-      // Solo /v1/messages: count_tokens también responde JSON pero no factura.
+      // Solo /v1/messages (count_tokens también responde JSON pero no factura),
+      // solo con emisor (sin clave no hay nada que medir: ni bufferizar ni
+      // parsear), y con el mismo tope de captura que la coalescencia — un
+      // upstream configurable con un cuerpo desmesurado no puede comerse el heap.
       const esJsonMedible =
         !esSse &&
         upstream.ok &&
+        emisor !== undefined &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
         (upstream.headers.get("content-type") ?? "").includes("application/json");
-      const cuerpoJson: Buffer[] | null = esJsonMedible ? [] : null;
+      let cuerpoJson: Buffer[] | null = esJsonMedible ? [] : null;
+      let cuerpoJsonBytes = 0;
 
       if (upstream.body) {
         for await (const chunk of upstream.body) {
           const b = Buffer.from(chunk);
           res.write(b);
           observador?.observar(b);
-          cuerpoJson?.push(b);
+          if (cuerpoJson) {
+            cuerpoJsonBytes += b.length;
+            if (cuerpoJsonBytes > MAX_CAPTURA_BYTES) cuerpoJson = null;
+            else cuerpoJson.push(b);
+          }
           captura?.capturar(b);
         }
       }

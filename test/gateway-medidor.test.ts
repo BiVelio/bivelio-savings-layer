@@ -57,6 +57,20 @@ describe("ObservadorSse — observa sin tocar", () => {
     expect(o.usage()).toBeNull();
   });
 
+  it("⛔ un delta con cache_creation PARCIAL se fusiona, no pisa: el desglose 1h sobrevive", () => {
+    // Si la API hiciera acumulativos los campos de caché en los deltas (como ya
+    // hizo con input_tokens), un spread superficial borraba ephemeral_1h y la
+    // escritura 1h volvía a tarifarse a 1,25× — la infra-medición de siempre.
+    const o = new ObservadorSse();
+    o.observar(
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"cache_creation_input_tokens":3000,"cache_creation":{"ephemeral_5m_input_tokens":1000,"ephemeral_1h_input_tokens":2000}}}}\n\n',
+    );
+    o.observar(
+      'event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":5,"cache_creation":{"ephemeral_5m_input_tokens":1000}}}\n\n',
+    );
+    expect(o.usage()?.cache_creation).toEqual({ ephemeral_5m_input_tokens: 1000, ephemeral_1h_input_tokens: 2000 });
+  });
+
   it("conserva el desglose cache_creation de message_start cuando el delta no lo trae", () => {
     const o = new ObservadorSse();
     o.observar(

@@ -3,8 +3,9 @@ import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 
 /**
- * F1 · EL MEDIDOR — convierte los eventos `usage` del stream SSE de Anthropic
- * en un registro de uso con `basis: "measured"`.
+ * F1 · EL MEDIDOR — convierte el `usage` del proveedor (los eventos del stream
+ * SSE, o el JSON de una respuesta `stream: false`) en un registro de uso con
+ * `basis: "measured"`.
  *
  * Doctrina de la v1 (plan maestro): el gateway TODAVÍA no optimiza nada, así
  * que el baseline ES el coste real — netSavings 0, visibilidad 100%. Cuando en
@@ -54,7 +55,16 @@ export class ObservadorSse {
       try {
         const d = JSON.parse(data) as { usage?: UsoSse; message?: { usage?: UsoSse } };
         const usage = d.usage ?? d.message?.usage;
-        if (usage) this.uso = { ...this.uso, ...usage };
+        if (usage) {
+          // El objeto anidado se FUSIONA, no se pisa: un delta que trajera un
+          // cache_creation parcial (o null) borraría el desglose 1h de
+          // message_start y la escritura 1h volvería a tarifarse a 1,25×.
+          const cache_creation =
+            usage.cache_creation || this.uso?.cache_creation
+              ? { ...this.uso?.cache_creation, ...usage.cache_creation }
+              : undefined;
+          this.uso = { ...this.uso, ...usage, ...(cache_creation ? { cache_creation } : {}) };
+        }
       } catch {
         /* un data ilegible no puede tumbar el passthrough */
       }
