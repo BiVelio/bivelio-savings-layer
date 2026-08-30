@@ -5,24 +5,40 @@
  * (docs/PLAN-PASARELA-API-KEY.md, fase S1):
  *
  *   1. Qué fracción de la entrada son salidas de herramientas (tool_result).
- *   2. Cuánto recorta ya el context_management de Anthropic (presencia +
- *      eventos de encogimiento observados entre turnos).
+ *   2. Cuánto recorta el contexto — en DOS libros que no se mezclan: lo que
+ *      recorta EL PROVEEDOR (context_management: `applied_edits` declarados en
+ *      la RESPUESTA — el cliente sigue enviando el historial entero, el
+ *      recorte pasa en el servidor) y lo que poda EL CLIENTE (el historial
+ *      enviado encoge entre turnos: poda in situ o compactación/resumen).
  *   3. La mezcla real de caché: lectura vs escritura 5m vs escritura 1h.
  *   4. La fuga (fast-mode, safety-check de WebFetch): NO computable desde la
  *      captura — ese tráfico no pasa por el proxy; se declara, no se inventa.
  *
  * La salida son SOLO agregados (conteos, bytes, tokens): ningún contenido de
- * prompt sale de la captura. La fracción de tokens se estima calibrando contra
- * el contador REAL del proveedor: tokens_tool_result ≈ tokens_entrada_reales ×
- * (bytes_tool_result / bytes_prompt_total) por petición, sumado sobre todas.
+ * prompt sale de la captura — ni siquiera en errores (una línea ilegible se
+ * cuenta y se salta; jamás se imprime su contenido ni el mensaje del parser).
+ *
+ * La fracción de tokens se estima calibrando contra el contador REAL del
+ * proveedor: tokens_tool_result ≈ tokens_entrada_reales × (bytes_tool_result /
+ * bytes_prompt_total) por petición, sumado sobre todas. (El plan citaba el
+ * HeuristicEstimator; esta calibración por bytes contra el usage real es más
+ * directa — cada petición se calibra con SU contador — y queda declarada aquí
+ * y en el plan.)
+ *
+ * La sesión se correlaciona, por orden de robustez: cabecera
+ * `x-claude-code-session-id` (verificada en tráfico real de Claude Code) →
+ * hash del primer mensaje de la conversación → clientPort (heurístico débil:
+ * los puertos efímeros se reciclan).
  *
  * Uso:
  *   node scripts/analisis-corpus-f0.mjs [captura.jsonl ...]
  *   (sin argumentos: todas las capturas de ~/.bvsala-f0/)
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
+import { pathToFileURL } from "node:url";
 
 /** Bytes serializados de un valor (la misma vara para todos los bloques). */
 function bytesDe(valor) {
@@ -31,8 +47,8 @@ function bytesDe(valor) {
 
 /**
  * Resumen por tipo de bloque de un cuerpo de /v1/messages. Réplica local del
- * `resumenDeBloques` del espía v2, para poder analizar también capturas v1
- * (que no traen `registro.bloques`).
+ * `resumenDeBloques` del espía v2 (mismo blindaje ante entradas malformadas),
+ * para poder analizar también capturas v1 que no traen `registro.bloques`.
  */
 export function bloquesDe(json) {
   const porTipo = {};
@@ -41,14 +57,18 @@ export function bloquesDe(json) {
     t.n += 1;
     t.bytes += bytesDe(valor);
   };
-  for (const m of json.messages ?? []) {
+  for (const m of Array.isArray(json.messages) ? json.messages : []) {
+    if (!m || typeof m !== "object") {
+      anota("?:invalido", m);
+      continue;
+    }
     if (typeof m.content === "string") anota(`${m.role}:text`, m.content);
     else if (Array.isArray(m.content)) for (const b of m.content) anota(`${m.role}:${b?.type ?? "?"}`, b);
   }
   if (json.system !== undefined) anota("system", json.system);
   if (Array.isArray(json.tools)) for (const t of json.tools) anota("tools", t);
   return {
-    mensajes: (json.messages ?? []).length,
+    mensajes: Array.isArray(json.messages) ? json.messages.length : 0,
     porTipo,
     totalBytes: Object.values(porTipo).reduce((s, t) => s + t.bytes, 0),
   };
@@ -87,13 +107,71 @@ function entradaReal(uso) {
 }
 
 /**
+ * Clave de sesión de un registro, por orden de robustez: la cabecera de sesión
+ * de Claude Code (+ agent-id si existe: separa subagentes) → hash del primer
+ * mensaje (una conversación conserva su primer mensaje; un auto-compact que lo
+ * sustituya parte el grupo, limitación declarada) → clientPort.
+ */
+export function claveDeSesion(registro) {
+  const fichero = registro.fichero ?? "?";
+  const h = registro.requestHeaders ?? {};
+  const sid = h["x-claude-code-session-id"];
+  if (sid) return `${fichero}·s:${sid}·a:${h["x-claude-code-agent-id"] ?? ""}`;
+  const primero = Array.isArray(registro.requestBody?.messages) ? registro.requestBody.messages[0] : undefined;
+  if (primero !== undefined) {
+    return `${fichero}·m:${createHash("sha256").update(JSON.stringify(primero)).digest("hex").slice(0, 16)}`;
+  }
+  return `${fichero}·p:${registro.clientPort ?? "?"}`;
+}
+
+/**
+ * Ediciones de contexto aplicadas POR EL PROVEEDOR, declaradas en la respuesta
+ * (`context_management.applied_edits`, en el JSON de stream:false o en los
+ * eventos del SSE grabado). Devuelve null si el registro no trae cuerpo.
+ */
+export function edicionesDelProveedor(registro) {
+  if (!registro.responseBodyBase64) return null;
+  const cuerpo = Buffer.from(registro.responseBodyBase64, "base64").toString("utf8");
+  const candidatos = [];
+  if (registro.sse) {
+    for (const linea of cuerpo.split("\n")) {
+      if (!linea.startsWith("data: ")) continue;
+      try {
+        const d = JSON.parse(linea.slice(6));
+        const cm = d.context_management ?? d.message?.context_management;
+        if (cm) candidatos.push(cm);
+      } catch {}
+    }
+  } else {
+    try {
+      const d = JSON.parse(cuerpo);
+      if (d.context_management) candidatos.push(d.context_management);
+    } catch {}
+  }
+  let edits = 0;
+  let clearedInputTokens = 0;
+  let clearedToolUses = 0;
+  for (const cm of candidatos) {
+    for (const e of Array.isArray(cm.applied_edits) ? cm.applied_edits : []) {
+      edits += 1;
+      for (const [k, v] of Object.entries(e ?? {})) {
+        if (typeof v !== "number") continue;
+        if (/cleared.*input_tokens/.test(k)) clearedInputTokens += v;
+        else if (/cleared.*tool/.test(k)) clearedToolUses += v;
+      }
+    }
+  }
+  return { edits, clearedInputTokens, clearedToolUses };
+}
+
+/**
  * El análisis entero sobre una lista de registros (de una o varias capturas).
- * Cada registro puede llevar `fichero` (añadido por el lector) para agrupar
- * sesiones: la sesión es (fichero, clientPort); las capturas v1 sin clientPort
- * caen en un solo grupo por fichero.
+ * Cada registro puede llevar `fichero` (añadido por el lector) para agrupar.
  */
 export function analizar(registros) {
-  const mensajes = registros.filter((r) => r.method === "POST" && r.path === "/v1/messages" && r.requestBody?.messages);
+  const mensajes = registros.filter(
+    (r) => r.method === "POST" && r.path === "/v1/messages" && Array.isArray(r.requestBody?.messages),
+  );
 
   // ── 1 · fracción tool_result ──
   let bytesToolResult = 0;
@@ -117,26 +195,41 @@ export function analizar(registros) {
     }
   }
 
-  // ── 2 · context_management ──
+  // ── 2 · contexto: el proveedor y el cliente, en libros separados ──
   const conConfig = mensajes.filter((r) => r.requestBody.context_management !== undefined).length;
+  let respuestasConEdits = 0;
+  let editsAplicados = 0;
+  let clearedInputTokens = 0;
+  let clearedToolUses = 0;
+  for (const r of mensajes) {
+    const e = edicionesDelProveedor(r);
+    if (e && e.edits > 0) {
+      respuestasConEdits += 1;
+      editsAplicados += e.edits;
+      clearedInputTokens += e.clearedInputTokens;
+      clearedToolUses += e.clearedToolUses;
+    }
+  }
+
   const sesiones = new Map();
   for (const r of mensajes) {
-    const clave = `${r.fichero ?? "?"}·${r.clientPort ?? "?"}`;
+    const clave = claveDeSesion(r);
     (sesiones.get(clave) ?? sesiones.set(clave, []).get(clave)).push(r);
   }
-  let encogimientos = 0;
+  let podasInSitu = 0;
+  let compactaciones = 0;
   let bytesRecortados = 0;
   for (const grupo of sesiones.values()) {
     grupo.sort((a, b) => a.id - b.id);
     for (let i = 1; i < grupo.length; i++) {
       const prev = grupo[i - 1].bloques ?? bloquesDe(grupo[i - 1].requestBody);
       const cur = grupo[i].bloques ?? bloquesDe(grupo[i].requestBody);
-      // La conversación creció en turnos pero encogió en bytes → algo recortó
-      // historial (context_management u otra poda del cliente).
-      if (cur.mensajes >= prev.mensajes && cur.totalBytes < prev.totalBytes) {
-        encogimientos += 1;
-        bytesRecortados += prev.totalBytes - cur.totalBytes;
-      }
+      if (cur.totalBytes >= prev.totalBytes) continue;
+      // El historial ENVIADO encogió: poda del cliente. Con menos mensajes es
+      // una compactación (resumen); con los mismos o más, poda in situ.
+      if (cur.mensajes < prev.mensajes) compactaciones += 1;
+      else podasInSitu += 1;
+      bytesRecortados += prev.totalBytes - cur.totalBytes;
     }
   }
 
@@ -176,10 +269,10 @@ export function analizar(registros) {
       tokensEstimados: Math.round(tokensToolResultEst),
       fraccionTokensPct: pct(tokensToolResultEst, tokensEntrada),
     },
-    contextManagement: {
+    contexto: {
       peticionesConConfig: conConfig,
-      encogimientosObservados: encogimientos,
-      bytesRecortados,
+      proveedor: { respuestasConEdits, editsAplicados, clearedInputTokens, clearedToolUses },
+      podaDelCliente: { podasInSitu, compactaciones, bytesRecortados },
     },
     mezclaCache: {
       tokens: cache,
@@ -193,15 +286,32 @@ export function analizar(registros) {
   };
 }
 
-/** Lee una captura .jsonl y devuelve sus registros con `fichero` anotado. */
+/**
+ * Lee una captura .jsonl con tolerancia: una línea ilegible (espía cortado a
+ * mitad de flush) se CUENTA y se salta — jamás tumba el análisis ni se imprime
+ * su contenido (ni el mensaje del parser, que incluye fragmentos literales).
+ */
 export function leerCaptura(ruta) {
-  return readFileSync(ruta, "utf8")
-    .split("\n")
-    .filter(Boolean)
-    .map((l) => ({ ...JSON.parse(l), fichero: ruta }));
+  const registros = [];
+  let ilegibles = 0;
+  for (const linea of readFileSync(ruta, "utf8").split("\n")) {
+    if (!linea) continue;
+    try {
+      registros.push({ ...JSON.parse(linea), fichero: ruta });
+    } catch {
+      ilegibles += 1;
+    }
+  }
+  return { registros, ilegibles };
 }
 
-const esMain = process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href;
+const esMain = (() => {
+  try {
+    return Boolean(process.argv[1]) && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    return false;
+  }
+})();
 if (esMain) {
   const DIR = join(homedir(), ".bvsala-f0");
   const ficheros = process.argv.slice(2).length
@@ -213,7 +323,16 @@ if (esMain) {
     console.error("[analisis] no hay capturas; graba una con scripts/espia-anthropic.mjs");
     process.exit(1);
   }
-  const registros = ficheros.flatMap((f) => leerCaptura(f));
-  console.log(`[analisis] ${ficheros.length} captura(s), ${registros.length} peticiones`);
+  const registros = [];
+  let ilegibles = 0;
+  for (const f of ficheros) {
+    const r = leerCaptura(f);
+    registros.push(...r.registros);
+    ilegibles += r.ilegibles;
+  }
+  console.log(
+    `[analisis] ${ficheros.length} captura(s), ${registros.length} peticiones` +
+      (ilegibles ? ` (${ilegibles} línea(s) ilegible(s) saltada(s))` : ""),
+  );
   console.log(JSON.stringify(analizar(registros), null, 2));
 }

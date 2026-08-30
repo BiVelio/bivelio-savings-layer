@@ -18,6 +18,11 @@
  *   node scripts/espia-anthropic.mjs [puerto]            # por defecto 8402
  *   ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude -p "Responde solo OK"
  *
+ * Entorno:
+ *   BVSALA_ESPIA_UPSTREAM     upstream (por defecto https://api.anthropic.com)
+ *   BVSALA_ESPIA_MAX_CUERPO   tope de cuerpo grabado por respuesta, en bytes
+ *                             (por defecto 4000000; inválido → se ignora y avisa)
+ *
  * Las capturas quedan en ~/.bvsala-f0/captura-<timestamp>.jsonl — SOLO en la
  * máquina local. Contienen los prompts de la sesión grabada (son tuyos y no
  * salen de aquí); las credenciales (authorization, x-api-key, cookies) se
@@ -36,7 +41,12 @@ const UPSTREAM = process.env.BVSALA_ESPIA_UPSTREAM ?? "https://api.anthropic.com
  * pero el registro lo dice con `responseBodyOmitted` en vez de callar — en v1
  * el registro simplemente dejaba de ser replayable sin rastro.
  */
-const MAX_CUERPO = Number(process.env.BVSALA_ESPIA_MAX_CUERPO ?? 4_000_000);
+const MAX_CUERPO = (() => {
+  const bruto = Number(process.env.BVSALA_ESPIA_MAX_CUERPO || 4_000_000);
+  if (Number.isFinite(bruto) && bruto > 0) return bruto;
+  console.error(`[espia] BVSALA_ESPIA_MAX_CUERPO inválido («${process.env.BVSALA_ESPIA_MAX_CUERPO}»); uso 4000000`);
+  return 4_000_000;
+})();
 
 const DIR = join(homedir(), ".bvsala-f0");
 mkdirSync(DIR, { recursive: true });
@@ -84,6 +94,10 @@ function resumenDeBloques(json) {
     t.bytes += bytes;
   };
   for (const m of json.messages) {
+    if (!m || typeof m !== "object") {
+      anota("?:invalido", m);
+      continue;
+    }
     if (typeof m.content === "string") anota(`${m.role}:text`, m.content);
     else if (Array.isArray(m.content)) for (const b of m.content) anota(`${m.role}:${b?.type ?? "?"}`, b);
   }
@@ -121,18 +135,24 @@ const server = createServer(async (req, res) => {
     requestBytes: cuerpo.length,
   };
   // El cuerpo completo va aparte (es local y es tuyo); la forma va SIEMPRE.
+  let json;
   try {
-    const json = JSON.parse(cuerpo.toString("utf8"));
+    json = JSON.parse(cuerpo.toString("utf8"));
     registro.requestShape = forma(json);
     registro.requestBody = json;
     // v2 · metadata del cliente (p.ej. user_id de Claude Code) a mano para
-    // correlacionar sin bucear en el cuerpo, y resumen de bloques por tipo:
-    // la cifra clave de S1 (¿cuánto pesan los tool_result?) sin depender de
-    // análisis posterior.
+    // correlacionar sin bucear en el cuerpo.
     if (json && typeof json === "object" && json.metadata) registro.requestMeta = json.metadata;
-    if (Array.isArray(json?.messages)) registro.bloques = resumenDeBloques(json);
   } catch {
     registro.requestShape = cuerpo.length ? `raw(${cuerpo.length}B)` : "empty";
+  }
+  // v2 · resumen de bloques por tipo (la cifra clave de S1: ¿cuánto pesan los
+  // tool_result?). En su PROPIO try: un cuerpo con messages malformados no
+  // puede desdecir el requestShape ya calculado ni tocar el passthrough.
+  if (Array.isArray(json?.messages)) {
+    try {
+      registro.bloques = resumenDeBloques(json);
+    } catch {}
   }
 
   let upstream;
@@ -232,6 +252,11 @@ const server = createServer(async (req, res) => {
   );
 });
 
+// Sin timeout de keep-alive: con el defecto (5 s) cada pausa humana cerraba la
+// conexión y undici reconectaba con OTRO puerto efímero — el clientPort dejaba
+// de correlacionar turnos de una misma conversación (hallazgo de la revisión
+// de S1). Es un proxy local de grabación: mantener sockets vivos no cuesta.
+server.keepAliveTimeout = 0;
 server.listen(PUERTO, "127.0.0.1", () => {
   console.log(`[espia] escuchando en http://127.0.0.1:${PUERTO} → ${UPSTREAM}`);
   console.log(`[espia] captura: ${fichero}`);

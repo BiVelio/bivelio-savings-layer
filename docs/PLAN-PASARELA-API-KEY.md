@@ -74,16 +74,23 @@ y el SSE entero en base64). Tres retoques y a grabar:
    subagentes; al menos una sesión de un terminal del anillo 2 (Goose u
    opencode, vía Anthropic). La captura completa queda **solo local**
    (`~/.bvsala-f0/`), como en F0.
-3. **`scripts/analisis-corpus-f0.mjs` (nuevo):** reconstruye sesiones, y calcula
-   con el `HeuristicEstimator` (src/tokenizer/estimator.ts) calibrado contra el
-   `usage` real por turno (`registro.sse.usage`, espia:170):
-   - **fracción de tokens de entrada que son `tool_result`** (la masa bruta);
-   - **efecto de `context_management`** (encogimiento de `messages` entre turnos
-     vs deltas de `input_tokens`/`cache_read`) — la masa que Anthropic ya quita;
+3. **`scripts/analisis-corpus-f0.mjs`** (✅ hecho; el método final DIFIERE del
+   previsto aquí y queda declarado): reconstruye sesiones (cabecera
+   `x-claude-code-session-id` → hash del primer mensaje → `clientPort`) y
+   calcula:
+   - **fracción de tokens de entrada que son `tool_result`** — calibración por
+     proporción de bytes × tokens REALES del proveedor por petición (no el
+     `HeuristicEstimator` que preveía este plan: cada petición se calibra con
+     su propio contador, que es más directo);
+   - **efecto de `context_management`** — en dos libros: `applied_edits`
+     declarados por el proveedor en la RESPUESTA (el recorte pasa en el
+     servidor; medir encogimiento del request no puede verlo) y poda del
+     CLIENTE (in situ / compactación del historial enviado);
    - **mezcla real de caché 5m/1h** (con el desglose de S0.1);
-   - **fuga cuantificada** (fast-mode y safety-check de WebFetch van directos a
-     api.anthropic.com, TERMINALES-DE-CODIFICACION.md:57 — qué % del gasto no ve
-     el gateway).
+   - **fuga** (fast-mode y safety-check de WebFetch van directos a
+     api.anthropic.com, TERMINALES-DE-CODIFICACION.md:57): **no computable
+     desde la captura** — se cuantifica comparando contra la consola del
+     proveedor, y el informe lo declara así.
 
 **Aceptación:** PASARELA-F0.md ampliado con las cuatro cifras. **Puerta de
 decisión:** si la masa elidible neta (tool_results − lo que ya recorta
