@@ -1,3 +1,5 @@
+import * as zlib from "node:zlib";
+
 import { precioDeLista } from "../src/pricing/catalogo.js";
 import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
@@ -74,6 +76,85 @@ export class ObservadorSse {
   usage(): UsoSse | null {
     return this.uso;
   }
+
+  /** El usage solo si el proveedor emitió su evento FINAL (message_delta). */
+  usageFinal(): UsoSse | null {
+    return (this.eventos["message_delta"] ?? 0) > 0 ? this.uso : null;
+  }
+}
+
+/** El `usage` de la Responses API de OpenAI (evento `response.completed`). */
+interface UsoResponses {
+  input_tokens?: number;
+  output_tokens?: number;
+  input_tokens_details?: { cached_tokens?: number; cache_write_tokens?: number };
+  output_tokens_details?: { reasoning_tokens?: number };
+}
+
+/**
+ * Observa un stream SSE de la Responses API (Codex CLI) SIN tocarlo y entrega
+ * el `usage` YA MAPEADO a `UsoSse`, para que `costeMedido` lo tarife sin saber
+ * de qué proveedor viene. Clase hermana de `ObservadorSse`, no parametrización:
+ * ni los eventos ni la forma del usage coinciden.
+ *
+ * Mapeo (fórmula OFICIAL de la guía de prompt caching de OpenAI:
+ * `ordinaryInputTokens = inputTokens − cachedTokens − cacheWriteTokens`):
+ *   · input_tokens ← input − cached − writes
+ *   · cache_read_input_tokens ← cached_tokens (tarifa `cachedInputPer1k`)
+ *   · cache_creation_input_tokens ← cache_write_tokens: cae en la rama 5m de
+ *     `costeMedido` a 1,25×, que ES la prima oficial de OpenAI (gpt-5.6+).
+ *     Jamás al bucket 1h — la prima 2× es exclusiva de Anthropic.
+ *   · reasoning_tokens ya van dentro de output_tokens: no se suman.
+ * Plausibilidad: si cached + writes > input (OpenAI reconoció contadores mal
+ * en el arranque de 5.6), se recorta al lado que infra-mide — quedarse corto,
+ * jamás inventar de más.
+ */
+export class ObservadorResponses {
+  private resto = "";
+  private uso: UsoSse | null = null;
+  readonly eventos: Record<string, number> = {};
+
+  observar(chunk: Buffer | string): void {
+    this.resto += typeof chunk === "string" ? chunk : chunk.toString("utf8");
+    let idx: number;
+    while ((idx = this.resto.indexOf("\n\n")) >= 0) {
+      const bloque = this.resto.slice(0, idx);
+      this.resto = this.resto.slice(idx + 2);
+      const ev = /^event: (.+)$/m.exec(bloque)?.[1];
+      if (ev) this.eventos[ev] = (this.eventos[ev] ?? 0) + 1;
+      const data = /^data: (.+)$/m.exec(bloque)?.[1];
+      if (!data) continue;
+      try {
+        const d = JSON.parse(data) as { type?: string; response?: { usage?: UsoResponses } };
+        if ((ev ?? d.type) !== "response.completed") continue;
+        const u = d.response?.usage;
+        if (u) this.uso = mapearUsoResponses(u);
+      } catch {
+        /* un data ilegible no puede tumbar el passthrough */
+      }
+    }
+  }
+
+  usage(): UsoSse | null {
+    return this.uso;
+  }
+
+  /** En Responses el usage solo existe en el evento final: es el mismo. */
+  usageFinal(): UsoSse | null {
+    return this.uso;
+  }
+}
+
+function mapearUsoResponses(u: UsoResponses): UsoSse {
+  const input = Math.max(0, u.input_tokens ?? 0);
+  const cached = Math.min(Math.max(0, u.input_tokens_details?.cached_tokens ?? 0), input);
+  const writes = Math.min(Math.max(0, u.input_tokens_details?.cache_write_tokens ?? 0), input - cached);
+  return {
+    input_tokens: input - cached - writes,
+    output_tokens: Math.max(0, u.output_tokens ?? 0),
+    cache_read_input_tokens: cached,
+    cache_creation_input_tokens: writes,
+  };
 }
 
 /**
@@ -124,10 +205,75 @@ export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
   const costeUsd =
     (entrada / 1_000) * precio.inputPer1k +
     (cacheLeida / 1_000) * porCacheLeida +
-    ((cacheEscrita - cacheEscrita1h) / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE +
+    ((cacheEscrita - cacheEscrita1h) / 1_000) * precio.inputPer1k * primaDeEscritura(model) +
     (cacheEscrita1h / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE_1H +
     (salida / 1_000) * precio.outputPer1k;
   return { costeUsd, precio, tokens: { entrada, salida, cacheLeida, cacheEscrita, cacheEscrita1h } };
+}
+
+/**
+ * El `model` del cuerpo de una petición, leyendo a través de su
+ * `content-encoding`: Codex CLI manda el cuerpo comprimido con zstd (validado
+ * en mano el 30-08), y un JSON.parse a ciegas devolvía «sin modelo» — la
+ * petición pasaba, pero jamás se medía. El passthrough no toca los bytes: esto
+ * es solo lectura lateral. Devuelve "" si no se puede leer (nunca se inventa).
+ */
+export function modeloDelCuerpo(cuerpo: Buffer, codificacion?: string): string {
+  try {
+    let bytes = cuerpo;
+    // Tope de salida: un cuerpo de 1 KB puede expandir a GB (bomba de
+    // descompresión) y esto corre en el hilo del gateway. Mismo tope que la
+    // captura; por encima, zlib lanza y no se mide.
+    const opciones = { maxOutputLength: MAX_CUERPO_DESCOMPRIMIDO };
+    switch ((codificacion ?? "").trim().toLowerCase()) {
+      case "gzip":
+      case "x-gzip":
+        bytes = zlib.gunzipSync(cuerpo, opciones);
+        break;
+      case "deflate":
+        bytes = zlib.inflateSync(cuerpo, opciones);
+        break;
+      case "br":
+        bytes = zlib.brotliDecompressSync(cuerpo, opciones);
+        break;
+      case "zstd": {
+        // Acceso dinámico: en Node < 22.15 no existe y un import nominal
+        // reventaría el gateway entero al cargar.
+        const zstd = (zlib as unknown as { zstdDecompressSync?: (b: Buffer, o: typeof opciones) => Buffer }).zstdDecompressSync;
+        if (typeof zstd !== "function") return "";
+        bytes = zstd(cuerpo, opciones);
+        break;
+      }
+      default:
+        break;
+    }
+    const model = (JSON.parse(bytes.toString("utf8")) as { model?: unknown }).model;
+    return typeof model === "string" ? model : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Tope del cuerpo descomprimido solo para leer el `model` (5 MB, como la captura). */
+export const MAX_CUERPO_DESCOMPRIMIDO = 5 * 1024 * 1024;
+
+/** ¿El gateway puede leer cuerpos zstd (los de Codex CLI) en este Node? */
+export function soportaZstd(): boolean {
+  return typeof (zlib as unknown as { zstdDecompressSync?: unknown }).zstdDecompressSync === "function";
+}
+
+/**
+ * Prima de escritura de caché (TTL corto) según el proveedor del modelo:
+ * Anthropic 1,25×; OpenAI solo la cobra en gpt-5.6+ (1,25×, la misma cifra);
+ * el resto (gpt anteriores, Gemini) no tiene prima — cobrar 1,25× sería
+ * inventar de más. La 1h (2×) es exclusiva de Anthropic: solo Anthropic emite
+ * ese desglose.
+ */
+export function primaDeEscritura(model: string): number {
+  const m = model.toLowerCase();
+  if (m.startsWith("gpt-") || m.startsWith("o1") || m.startsWith("o3") || m.startsWith("o4")) return /^gpt-5\.6/.test(m) ? PRIMA_ESCRITURA_CACHE : 1;
+  if (m.startsWith("gemini")) return 1;
+  return PRIMA_ESCRITURA_CACHE;
 }
 
 /** El `usage` de una respuesta JSON no-SSE (`stream: false`). */

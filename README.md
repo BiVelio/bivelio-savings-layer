@@ -33,10 +33,13 @@ charge a flat subscription, so there is no per‑token bill to cut. BV‑SALA is
 applications that call the API with their own key. The whole story, in plain words:
 **[Where does the saving install?](https://savings.bivelio.com/en/how-it-works)**
 
-**Claude Code with an API key?** The package also ships a local measuring
-gateway: `bvsala claude` launches Claude Code through it and your real spend
-shows up in your dashboard, token by token. Today it measures; it does not
-optimize yet.
+**Claude Code, Codex CLI, Goose or Qwen Code with an API key?** The package also
+ships a local measuring gateway: `bvsala claude` (or `bvsala codex`, `bvsala
+goose`, `bvsala qwen`) launches the terminal through it and your real spend
+shows up in your dashboard, token by token — nothing to configure, nothing
+persisted. For opencode, Crush, Droid, Cline or Kilo Code, `bvsala doctor`
+prints the exact config block for each one you have installed. Today it
+measures; it does not optimize yet.
 
 ## Try it before you install
 

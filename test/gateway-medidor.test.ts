@@ -1,8 +1,14 @@
+import * as zlib from "node:zlib";
+import { brotliCompressSync, deflateSync, gzipSync } from "node:zlib";
 import { describe, it, expect } from "vitest";
 
 import {
   ObservadorSse,
+  ObservadorResponses,
   costeMedido,
+  modeloDelCuerpo,
+  primaDeEscritura,
+  MAX_CUERPO_DESCOMPRIMIDO,
   informeMedido,
   informeCoalescido,
   usoDeJson,
@@ -86,6 +92,74 @@ describe("ObservadorSse — observa sin tocar", () => {
   });
 });
 
+/** Un stream de la Responses API como el que emite Codex CLI (usage en response.completed). */
+function streamResponses(usage: Record<string, unknown>): string {
+  return [
+    'event: response.created\ndata: {"type":"response.created","response":{"id":"resp_1"}}\n\n',
+    'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"OK"}\n\n',
+    `event: response.completed\ndata: ${JSON.stringify({ type: "response.completed", response: { id: "resp_1", usage } })}\n\n`,
+  ].join("");
+}
+
+describe("ObservadorResponses — el dialecto de Codex CLI, mapeado a UsoSse", () => {
+  it("mapea con la fórmula OFICIAL de OpenAI: entrada = input − cached − writes; reasoning no se suma", () => {
+    const o = new ObservadorResponses();
+    o.observar(
+      streamResponses({
+        input_tokens: 10_000,
+        input_tokens_details: { cached_tokens: 6_000, cache_write_tokens: 1_000 },
+        output_tokens: 500,
+        output_tokens_details: { reasoning_tokens: 300 },
+        total_tokens: 10_500,
+      }),
+    );
+    expect(o.usage()).toEqual({
+      input_tokens: 3_000,
+      output_tokens: 500,
+      cache_read_input_tokens: 6_000,
+      cache_creation_input_tokens: 1_000,
+    });
+    expect(o.eventos["response.completed"]).toBe(1);
+  });
+
+  it("y costeMedido lo tarifa: cached a cachedInputPer1k, writes a 1,25× (la prima oficial de OpenAI), jamás al bucket 1h", () => {
+    const o = new ObservadorResponses();
+    o.observar(streamResponses({ input_tokens: 10_000, input_tokens_details: { cached_tokens: 6_000, cache_write_tokens: 1_000 }, output_tokens: 500 }));
+    const m = costeMedido("gpt-5.6-sol", o.usage()!)!;
+    // gpt-5.6-sol: in 0.004, out 0.020, cacheIn 0.0004 (catálogo)
+    expect(m.costeUsd).toBeCloseTo(3 * 0.004 + 6 * 0.0004 + 1 * 0.004 * PRIMA_ESCRITURA_CACHE + 0.5 * 0.02, 10);
+    expect(m.tokens.cacheEscrita1h).toBe(0);
+  });
+
+  it("aguanta chunks cortados en cualquier punto", () => {
+    const s = streamResponses({ input_tokens: 100, output_tokens: 7 });
+    for (const corte of [1, 5, 64, 200]) {
+      const o = new ObservadorResponses();
+      for (let i = 0; i < s.length; i += corte) o.observar(s.slice(i, i + corte));
+      expect(o.usage()?.output_tokens, `corte=${corte}`).toBe(7);
+    }
+  });
+
+  it("plausibilidad: cached + writes > input se recorta al lado que infra-mide, nunca negativo", () => {
+    const o = new ObservadorResponses();
+    o.observar(streamResponses({ input_tokens: 1_000, input_tokens_details: { cached_tokens: 900, cache_write_tokens: 500 }, output_tokens: 1 }));
+    expect(o.usage()).toEqual({ input_tokens: 0, output_tokens: 1, cache_read_input_tokens: 900, cache_creation_input_tokens: 100 });
+  });
+
+  it("sin response.completed (usage_not_included, corte) devuelve null: nada se inventa", () => {
+    const o = new ObservadorResponses();
+    o.observar('event: response.created\ndata: {"type":"response.created"}\n\n');
+    o.observar('event: error\ndata: {"type":"error","code":"usage_not_included"}\n\n');
+    expect(o.usage()).toBeNull();
+  });
+
+  it("reconoce response.completed también por data.type cuando no hay línea event:", () => {
+    const o = new ObservadorResponses();
+    o.observar('data: {"type":"response.completed","response":{"usage":{"input_tokens":5,"output_tokens":2}}}\n\n');
+    expect(o.usage()).toEqual({ input_tokens: 5, output_tokens: 2, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 });
+  });
+});
+
 describe("costeMedido — a precio de lista, con la caché bien contada", () => {
   it("separa entrada, lectura de caché (tarifa cacheada) y escritura (prima 1,25×)", () => {
     const m = costeMedido("claude-haiku-4-5-20251001", {
@@ -149,6 +223,73 @@ describe("costeMedido — la escritura 1h se tarifa a 2×, no a 1,25×", () => {
     expect(m.tokens.cacheEscrita).toBe(1000);
     expect(m.tokens.cacheEscrita1h).toBe(500);
     expect(m.costeUsd).toBeCloseTo(0.5 * 0.001 * PRIMA_ESCRITURA_CACHE + 0.5 * 0.001 * PRIMA_ESCRITURA_CACHE_1H, 10);
+  });
+});
+
+describe("primaDeEscritura — 1,25× solo donde el proveedor la cobra", () => {
+  it("Anthropic 1,25×; gpt-5.6+ 1,25×; gpt anteriores y Gemini 1× (jamás inventar de más)", () => {
+    expect(primaDeEscritura("claude-haiku-4-5")).toBe(PRIMA_ESCRITURA_CACHE);
+    expect(primaDeEscritura("gpt-5.6-sol")).toBe(PRIMA_ESCRITURA_CACHE);
+    expect(primaDeEscritura("gpt-5.5")).toBe(1);
+    expect(primaDeEscritura("gpt-4o")).toBe(1);
+    expect(primaDeEscritura("gemini-2.5-pro")).toBe(1);
+  });
+
+  it("y costeMedido la aplica: cache_write_tokens de gpt-5.5 a 1×, no a 1,25×", () => {
+    const m = costeMedido("gpt-5.5", { input_tokens: 0, cache_creation_input_tokens: 1000 })!;
+    expect(m.costeUsd).toBeCloseTo(0.005, 10); // gpt-5.5: in 0.005/1k
+  });
+});
+
+describe("usageFinal — solo con el evento terminal del proveedor", () => {
+  it("Anthropic: null tras message_start, usage tras message_delta", () => {
+    const o = new ObservadorSse();
+    o.observar('event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"output_tokens":1}}}\n\n');
+    expect(o.usage()).not.toBeNull();
+    expect(o.usageFinal()).toBeNull();
+    o.observar('event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":42}}\n\n');
+    expect(o.usageFinal()?.output_tokens).toBe(42);
+  });
+
+  it("Responses: el usage solo existe en response.completed, así que es el mismo", () => {
+    const o = new ObservadorResponses();
+    expect(o.usageFinal()).toBeNull();
+    o.observar(streamResponses({ input_tokens: 5, output_tokens: 2 }));
+    expect(o.usageFinal()).toEqual(o.usage());
+  });
+});
+
+describe("modeloDelCuerpo — lee el model a través del content-encoding (Codex manda zstd)", () => {
+  const cuerpo = Buffer.from(JSON.stringify({ model: "gpt-5.5", input: "hola", stream: true }));
+
+  it("sin codificación, gzip, deflate y br", () => {
+    expect(modeloDelCuerpo(cuerpo)).toBe("gpt-5.5");
+    expect(modeloDelCuerpo(gzipSync(cuerpo), "gzip")).toBe("gpt-5.5");
+    expect(modeloDelCuerpo(deflateSync(cuerpo), "deflate")).toBe("gpt-5.5");
+    expect(modeloDelCuerpo(brotliCompressSync(cuerpo), "br")).toBe("gpt-5.5");
+  });
+
+  it("zstd (lo que manda Codex CLI) cuando el Node lo trae; si no, «» y nunca se inventa", () => {
+    const z = zlib as unknown as { zstdCompressSync?: (b: Buffer) => Buffer };
+    if (typeof z.zstdCompressSync === "function") {
+      expect(modeloDelCuerpo(z.zstdCompressSync(cuerpo), "zstd")).toBe("gpt-5.5");
+    } else {
+      expect(modeloDelCuerpo(cuerpo, "zstd")).toBe("");
+    }
+  });
+
+  it("cuerpo ilegible, codificación que no casa o model no-string → «» (se reenvía, no se mide)", () => {
+    expect(modeloDelCuerpo(Buffer.from("no json"))).toBe("");
+    expect(modeloDelCuerpo(cuerpo, "gzip")).toBe(""); // dice gzip pero no lo es
+    expect(modeloDelCuerpo(Buffer.from("{}"))).toBe("");
+    expect(modeloDelCuerpo(Buffer.from('{"model":{"x":1}}'))).toBe("");
+    expect(modeloDelCuerpo(Buffer.from('{"model":5}'))).toBe("");
+  });
+
+  it("⛔ bomba de descompresión: un cuerpo pequeño que expande por encima del tope no se lee (ni bloquea)", () => {
+    const bomba = brotliCompressSync(Buffer.alloc(MAX_CUERPO_DESCOMPRIMIDO + 1024, 0));
+    expect(bomba.length).toBeLessThan(10_000);
+    expect(modeloDelCuerpo(bomba, "br")).toBe("");
   });
 });
 

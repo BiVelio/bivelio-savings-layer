@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
-import { ObservadorSse, costeMedido, informeMedido, informeCoalescido, usoDeJson } from "./medidor.js";
+import { ObservadorSse, ObservadorResponses, costeMedido, informeMedido, informeCoalescido, usoDeJson, modeloDelCuerpo } from "./medidor.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -92,14 +92,37 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
   const coalescedor = opts.coalescer ? new Coalescedor() : null;
 
+  /**
+   * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
+   * cualquier `…/responses` (`/v1/responses` con API key, `/backend-api/codex/
+   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI). Otras
+   * rutas SSE no se miden.
+   */
+  const observadorPara = (pathname: string): ObservadorSse | ObservadorResponses | null => {
+    if (pathname === "/v1/messages") return new ObservadorSse();
+    if (pathname.endsWith("/responses")) return new ObservadorResponses();
+    return null;
+  };
+
   /** Mide y emite el uso de una respuesta ya servida (o replicada). */
-  const medir = (requestId: string, cuerpo: Buffer, uso: ReturnType<ObservadorSse["usage"]>, coalescida: boolean, path: string): void => {
+  const medir = (
+    requestId: string,
+    cuerpo: Buffer,
+    uso: ReturnType<ObservadorSse["usage"]>,
+    coalescida: boolean,
+    path: string,
+    codificacion?: string,
+  ): void => {
     if (!emisor || !uso) return;
-    let model = "";
-    try {
-      model = (JSON.parse(cuerpo.toString("utf8")) as { model?: string }).model ?? "";
-    } catch {}
-    const medido = model ? costeMedido(model, uso) : null;
+    const model = modeloDelCuerpo(cuerpo, codificacion);
+    if (!model) {
+      avisarUnaVez(
+        `gateway-sin-modelo:${path}`,
+        `[bvsala gateway] no se pudo leer el modelo del cuerpo de ${path} (content-encoding: ${codificacion ?? "ninguno"}); su uso se reenvía pero no se mide.`,
+      );
+      return;
+    }
+    const medido = costeMedido(model, uso);
     if (medido) {
       emisor.record(coalescida ? informeCoalescido(requestId, model, medido) : informeMedido(requestId, model, medido));
       log(
@@ -108,7 +131,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
       );
-    } else if (model) {
+    } else {
       avisarUnaVez(
         `gateway-sin-precio:${model}`,
         `[bvsala gateway] el modelo "${model}" no está en el catálogo de precios; su uso se reenvía pero no se mide.`,
@@ -130,10 +153,20 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
     let captura: ReturnType<Coalescedor["registrar"]> = null;
     let url = new URL(req.url ?? "/", upstreamBase);
+    // Fuera del try: si el cliente cierra la conexión ANTES de que el upstream
+    // termine (Codex CLI lo hace nada más recibir `response.completed`), la
+    // medición del camino normal no se alcanza, pero el usage YA observado es
+    // del proveedor y se mide igual — el corte del cliente no lo desdice.
+    let observador: ObservadorSse | ObservadorResponses | null = null;
+    let cuerpoPeticion: Buffer = Buffer.alloc(0);
+    let medida = false;
+    const ce = req.headers["content-encoding"];
+    const codificacion = Array.isArray(ce) ? ce[0] : ce;
     try {
       const chunks: Buffer[] = [];
       for await (const c of req) chunks.push(c as Buffer);
       const cuerpo = Buffer.concat(chunks);
+      cuerpoPeticion = cuerpo;
       url = new URL(req.url ?? "/", upstreamBase);
 
       // ── F2 · coalescencia (solo bajo bandera, solo POST con cuerpo) ──
@@ -152,7 +185,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           if (replica) {
             // La gemela recibe la réplica íntegra de la primaria — cero viaje.
             res.writeHead(replica.status, replica.headers);
-            const obs = new ObservadorSse();
+            const obs = observadorPara(url.pathname) ?? new ObservadorSse();
             for (const ch of replica.chunks) {
               res.write(ch);
               obs.observar(ch);
@@ -165,7 +198,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             // prompt_tokens) emitía un registro fantasma de 0 tokens.
             const usoReplica =
               obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
-            medir(requestId, cuerpo, usoReplica, true, url.pathname);
+            medir(requestId, cuerpo, usoReplica, true, url.pathname, codificacion);
             return;
           }
           // Primaria fallida o desbordada: la gemela viaja por su cuenta.
@@ -204,8 +237,13 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       for (const c of CABECERAS_TRANSPORTE) delete cabeceras[c];
       res.writeHead(upstream.status, cabeceras);
 
-      const esSse = (upstream.headers.get("content-type") ?? "").includes("text/event-stream");
-      const observador = esSse ? new ObservadorSse() : null;
+      // chatgpt.com/backend-api/codex (Codex con auth ChatGPT) sirve el SSE SIN
+      // cabecera content-type (validado en mano el 30-08): en una ruta con
+      // dialecto conocido, sin content-type se asume SSE — si no lo fuera, el
+      // observador no vería eventos y no se mediría nada (nunca de más).
+      const tipo = upstream.headers.get("content-type") ?? "";
+      const esSse = tipo.includes("text/event-stream") || (tipo === "" && upstream.ok && observadorPara(url.pathname) !== null);
+      observador = esSse ? observadorPara(url.pathname) : null;
       // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
       // Solo /v1/messages (count_tokens también responde JSON pero no factura),
       // solo con emisor (sin clave no hay nada que medir: ni bufferizar ni
@@ -239,9 +277,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
-        medir(requestId, cuerpo, observador.usage(), false, url.pathname);
+        medida = true;
+        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion);
       } else if (cuerpoJson) {
-        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname);
+        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname, codificacion);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -253,7 +292,16 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // la captura SIEMPRE y se cierra la respuesta como se pueda.
       captura?.abortar();
       if (ac.signal.aborted) {
-        log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
+        // Solo con el usage FINAL del proveedor (message_delta / response.completed):
+        // el de message_start trae output_tokens:1 de marcador, y un Esc a mitad
+        // de generación no puede convertirse en un registro «medido».
+        const uso = !medida && observador ? observador.usageFinal() : null;
+        if (uso) {
+          log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion);
+        } else {
+          log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
+        }
       } else {
         log(`[gateway] ${req.method} ${url.pathname} → error sirviendo: ${String(err)}`);
         if (!res.headersSent) {
@@ -264,6 +312,25 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       }
       if (!res.writableEnded) res.end();
     }
+  });
+
+  // Codex CLI intenta WebSocket en CADA sesión (supports_websockets está
+  // hardcodeado en su proveedor integrado y no se apaga por config). Sin este
+  // listener, el handshake entraba en el handler normal, undici fallaba con
+  // «invalid connection header» y respondíamos 502 — que Codex trata como error
+  // genérico y quema reintentos visibles («Reconnecting…»). Un 426 fuerza el
+  // fallback a HTTP+SSE inmediato, silencioso y pegajoso por sesión (test
+  // websocket_fallback.rs de codex). El passthrough sirve el SSE como siempre.
+  server.on("upgrade", (req, socket) => {
+    log(`[gateway] ${req.method} ${new URL(req.url ?? "/", "http://x").pathname} → 426 (WebSocket no soportado; el cliente cae a HTTP)`);
+    // Node retira SUS manejadores del socket antes de emitir 'upgrade': un RST
+    // del cliente (tokio suelta el TcpStream con bytes sin leer) llegaría como
+    // 'error' sin oyente y tumbaría el proceso entero. Y el socket es
+    // allowHalfOpen: tras el end() hay que destruirlo, o queda medio abierto y
+    // fuera del rastreo de server.close(). Es lo que hace ws.abortHandshake.
+    socket.once("error", () => {});
+    socket.once("finish", () => socket.destroy());
+    socket.end("HTTP/1.1 426 Upgrade Required\r\nconnection: close\r\ncontent-length: 0\r\n\r\n");
   });
 
   await new Promise<void>((resolve, reject) => {

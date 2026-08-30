@@ -34,7 +34,7 @@ siendo la credencial activa [V] («its usage limits and billing apply»).
 | Pares beta-header + campo-de-cuerpo viajan **juntos** (`context_management`, `output_config`, thinking…) | ✅ | idem — y es la lista de lo que S4 **no** puede separar |
 | Errores del upstream **sin modificar** (el cliente casa el texto para desactivar capabilities) | ✅ | `writeHead(upstream.status)` + cuerpo tal cual; los 502 propios solo cuando no hay error del upstream [I] |
 | Sin redirects en el base URL (cualquier 3xx = fallo de discovery, por diseño) | ✅ | `redirect: "manual"` — verificado empíricamente que reenvía el 3xx en vez de seguirlo con la credencial |
-| `GET /v1/models` — model discovery, opt-in `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` [V nombre] | 🟡 sin test | §1.2 |
+| `GET /v1/models` — model discovery, opt-in `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` [V nombre] | ✅ + test (30-08) · 🟡 validación en mano con API key | §1.2 |
 | `x-claude-code-session-id` / `agent-id` / `parent-agent-id` | ✅ reenviadas · 🟡 no consumidas | §1.3 |
 
 **Corrección al repo (aplicada en este PR):** la cifra «180 s directo» de
@@ -58,7 +58,8 @@ coalescencia por defecto, no antes.*
 Con la bandera, Claude Code pide `GET /v1/models?limit=1000` con timeout de
 3 s, credencial en `Authorization` **y** `x-api-key`, y filtra ids que
 contengan «claude»/«anthropic» [V]. El passthrough lo sirve por construcción
-(api.anthropic.com responde `{data:[{id,display_name}]}`), pero **no hay test**.
+(api.anthropic.com responde `{data:[{id,display_name}]}`); **test añadido el
+30-08** (passthrough íntegro, cero registros).
 Refinamiento del refutador [V]: las únicas fuentes de credencial del discovery
 son `ANTHROPIC_AUTH_TOKEN`/`apiKeyHelper` y `ANTHROPIC_API_KEY` — **un login
 claude.ai NO es fuente**, así que en suscripción pura el cliente escribe
@@ -130,13 +131,14 @@ precios [V]; cuatro slugs viejos del catálogo —`gpt-5-codex`, `5.1-codex`,
 verja del ingest acepta `gpt-*`, extracción del modelo del cuerpo funciona
 (`model` en la raíz de `ResponsesApiRequest` [V]).
 
-**Validaciones en mano (horas, antes de anunciar):** (a) sesión `bvsala codex`
-real con API key: 1 GET de prewarm con 426 y después solo POSTs SSE, sin
-«Reconnecting…»; (b) **modo suscripción ChatGPT** con prefijo
-`/backend-api/codex`: 200, stream íntegro, `usage` presente en
-`response.completed` (existe el error `usage_not_included` → registro no
-producido, tolerado por doctrina); (c) plausibilidad `cached + writes ≤ input`
-en un prompt repetido > 1.024 tokens. **Postura de cumplimiento idéntica a
+**Validaciones en mano:** ✅ (b) **modo suscripción ChatGPT** validado el
+30-08 (Codex v0.134: 426 → fallback HTTP inmediato, 200, stream íntegro,
+`usage` presente en `response.completed`, registro `measured` en la ingesta —
+y tres hallazgos que el código ya contempla: Codex cierra la conexión nada más
+recibir `response.completed`, el backend de ChatGPT sirve el SSE **sin
+`content-type`**, y el cuerpo de la petición viaja **comprimido con zstd**);
+⏳ (a) sesión con API key (`/v1/responses`); ⏳ (c) plausibilidad
+`cached + writes ≤ input` en un prompt repetido > 1.024 tokens. **Postura de cumplimiento idéntica a
 Claude Code:** OpenAI ni bendice ni prohíbe el proxy de suscripción (silencio
 del staff, a diferencia de Anthropic que lo documenta): cero persistencia de
 `Authorization`/`ChatGPT-Account-ID`, binario sin modificar, y no promocionar
@@ -155,7 +157,7 @@ en silencio (`/v1/v1/messages` → 404 sin medir):
 | Terminal | Enrutado [V] | Forma exacta del base URL | Envoltorio | Trabajo |
 |---|---|---|---|---|
 | **Goose** | env `ANTHROPIC_HOST` (pisa `config.yaml`) + `ANTHROPIC_API_KEY` | `http://127.0.0.1:8402` (**sin** `/v1`) | ✅ `bvsala goose` — espejo exacto de `bvsala claude` | horas |
-| **Qwen Code** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` con `selectedType: anthropic` | **sin** `/v1` (SDK TS oficial añade `/v1/messages`) | ✅ `bvsala qwen` (el doctor comprueba `selectedType`) | horas |
+| **Qwen Code** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` con `selectedType: anthropic` | **sin** `/v1` (SDK TS oficial añade `/v1/messages`) | ✅ `bvsala qwen` (el doctor **no** lee `settings.json`: recuerda la ruta y el usuario comprueba `selectedType`) | horas |
 | **opencode** | `~/.config/opencode/opencode.json` → `provider.anthropic.options.baseURL` (el de proyecto pisa al global) | **con** `/v1` (su capa `packages/llm` añade `/messages`) | ✗ config → instalador con merge JSON de config de USUARIO; alternativa [V]: `"baseURL": "{env:BVSALA_BASE_URL}"` escrito una vez habilita envoltorio puro-env (trampa: sin la variable, baseURL vacío) | horas |
 | **Crush** | `~/.config/crush/crushrc` (Bash): `provider add bvsala --type anthropic --base-url http://127.0.0.1:8402/v1 --api-key "$ANTHROPIC_API_KEY"`; `crush.json` **deprecado** | **con** `/v1`, **sin barra final** (el SDK Go resuelve relativo: `/v1/` → `/v1/v1/messages`) | ✗ config | horas |
 | **Droid** (Factory, cerrado) | `~/.factory/settings.json` → `customModels[]{provider:"anthropic", baseUrl, apiKey}` | sin `/v1` [I] | ✗ config → merge JSON | validar en mano contra el log del gateway |
