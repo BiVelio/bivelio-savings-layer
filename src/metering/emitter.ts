@@ -29,6 +29,9 @@ interface UsageWire {
   actualCost: number;
   netSavings: number;
   basis?: string;
+  /** Atribución de sesión/subagente del gateway (identidades opacas, nunca una persona). */
+  sessionId?: string;
+  agentId?: string;
 }
 
 export interface UsageEmitterOptions {
@@ -316,6 +319,10 @@ export class UsageEmitter {
       netSavings: r.cost.netSavings,
       // Viaja para que el panel agregue el dinero MEDIDO aparte del estimado.
       ...(r.cost.basis ? { basis: r.cost.basis } : {}),
+      // Atribución del gateway (0019): el servidor ya la acepta — el orden
+      // servidor-primero del comentario de arriba se cumplió antes de emitirla.
+      ...(r.attribution?.sessionId ? { sessionId: r.attribution.sessionId } : {}),
+      ...(r.attribution?.agentId ? { agentId: r.attribution.agentId } : {}),
     };
   }
 }

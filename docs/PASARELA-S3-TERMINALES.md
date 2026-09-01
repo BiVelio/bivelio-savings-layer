@@ -71,7 +71,16 @@ clientes API key: exactamente nuestro segmento.
 - Validación en mano con API key: `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1
   bvsala claude` → «From gateway» en `/model`. *Horas.*
 
-### 1.3 · Atribución por sesión y subagente — oportunidad de producto
+### 1.3 · Atribución por sesión y subagente — ✅ HECHA (adelantada de S2, 01-09)
+
+> Implementada suelta a petición del dueño por su valor de flota: migración
+> `0019_atribucion_por_sesion.sql` (tabla `usage_sessions` por org/día/sesión/
+> agente + RPC reproducida entera), verja del ingest en sus DOS copias, campo
+> `attribution` en `SavingsReport`, wire del emisor, captura saneada en el
+> gateway (solo ids que pasan la verja — un valor raro no puede tirar un lote),
+> y tarjeta «coste por sesión» en el panel (solo aparece con filas; tolera la
+> tabla ausente). Llega a clientes con la 0.4.7. `parentAgentId` queda fuera de
+> v1 a propósito.
 
 Las tres cabeceras llegan en el tráfico real (verificado en la captura de humo
 de S1: `x-claude-code-session-id` presente en cada `POST /v1/messages`). Hoy se

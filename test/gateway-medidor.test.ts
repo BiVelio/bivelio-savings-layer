@@ -343,6 +343,18 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
   });
 });
 
+describe("atribución — la sesión y el subagente viajan en el informe, o no existen", () => {
+  it("con atribución el informe lleva attribution; sin ella, el campo NO existe (nada de objetos vacíos)", () => {
+    const medido = costeMedido("claude-haiku-4-5", { input_tokens: 1 })!;
+    const con = informeMedido("r", "m", medido, { sessionId: "s-1", agentId: "a-2" }) as unknown as { attribution?: unknown };
+    expect(con.attribution).toEqual({ sessionId: "s-1", agentId: "a-2" });
+    const sin = informeMedido("r", "m", medido) as unknown as { attribution?: unknown };
+    expect("attribution" in sin).toBe(false);
+    const coal = informeCoalescido("r", "m", medido, { sessionId: "s-1" }) as unknown as { attribution?: { sessionId?: string } };
+    expect(coal.attribution).toEqual({ sessionId: "s-1" });
+  });
+});
+
 describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () => {
   it("⛔ una primaria cara (> $1) reporta netSavings 1, no su coste en USD", () => {
     // El bug (27-08): netSavings iba en dólares; el ingest lo valida como ratio

@@ -602,6 +602,17 @@ export interface SavingsReport {
    */
   model: string;
 
+  /**
+   * Optional terminal attribution (gateway): the session and subagent that
+   * originated this request, taken from the `x-claude-code-session-id` /
+   * `x-claude-code-agent-id` headers Claude Code already sends. These are
+   * OPAQUE session/agent identities — they must never be treated as a user
+   * identifier (Anthropic's gateway docs forbid it) — and they travel under
+   * the same identity charset gate as `seatId`: counts and ids only, never
+   * content.
+   */
+  attribution?: { sessionId?: string; agentId?: string };
+
   calls: {
     baselineLlm: number;
     actualLlm: number;

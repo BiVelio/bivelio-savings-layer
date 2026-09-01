@@ -40,7 +40,7 @@ const USAGE_NUMBER_FIELDS = [
 const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured"]);
 
 const USAGE_ALLOWED_FIELDS = new Set<string>([
-  "orgId", "seatId", "ci", "cacheResult", "basis",
+  "orgId", "seatId", "ci", "cacheResult", "basis", "sessionId", "agentId",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
 ]);
@@ -119,6 +119,18 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
     }
     rec["seatId"] = s;
+  }
+  // Atribución de sesión/subagente (las cabeceras x-claude-code-* del gateway):
+  // identidades OPACAS de sesión/agente — jamás de una persona — con el mismo
+  // cierre de canal que seatId: charset estricto, nunca texto libre.
+  for (const f of ["sessionId", "agentId"] as const) {
+    if (input[f] !== undefined) {
+      const v = input[f];
+      if (typeof v !== "string" || !USAGE_ID_PATTERN.test(v)) {
+        throw new UsageValidationError(`field "${f}" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
+      }
+      rec[f] = v;
+    }
   }
   if (input["basis"] !== undefined) {
     const b = input["basis"];

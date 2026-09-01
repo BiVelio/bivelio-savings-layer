@@ -247,6 +247,8 @@ const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "ci",
   "cacheResult",
   "basis",
+  "sessionId",
+  "agentId",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
 ]);
@@ -325,6 +327,17 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "seatId" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
     }
     rec["seatId"] = s;
+  }
+  // Espejo de apps/web/lib/metering/usage.ts: atribución de sesión/subagente,
+  // identidad opaca con charset estricto — jamás texto libre ni una persona.
+  for (const f of ["sessionId", "agentId"] as const) {
+    if (input[f] !== undefined) {
+      const v = input[f];
+      if (typeof v !== "string" || !USAGE_ID_PATTERN.test(v)) {
+        throw new UsageValidationError(`field "${f}" must match ${USAGE_ID_PATTERN} (identity, not free text)`);
+      }
+      rec[f] = v;
+    }
   }
   if (input["basis"] !== undefined) {
     const b = input["basis"];

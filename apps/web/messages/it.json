@@ -237,6 +237,15 @@
       "revokeYesAria": "Conferma la revoca della chiave {prefix}",
       "errList": "Non è stato possibile caricare le tue chiavi — ricarica per gestirle o revocarle."
     },
+    "sesiones": {
+      "title": "costo per sessione (7 giorni)",
+      "colSession": "Sessione",
+      "colAgents": "Subagenti",
+      "colRequests": "Richieste",
+      "colTokens": "Token",
+      "colCost": "Costo",
+      "hint": "Sessioni e subagenti dei tuoi terminali di codice (id opachi — mai una persona). Richiede il gateway dalla 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Inizia",
       "heading": "Quattro passi. I tuoi prompt non toccano mai i nostri server.",

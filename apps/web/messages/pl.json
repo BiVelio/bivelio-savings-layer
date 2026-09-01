@@ -237,6 +237,15 @@
       "revokeYesAria": "Potwierdź unieważnienie klucza {prefix}",
       "errList": "Nie udało się wczytać kluczy — odśwież, aby nimi zarządzać lub je unieważnić."
     },
+    "sesiones": {
+      "title": "koszt na sesję (7 dni)",
+      "colSession": "Sesja",
+      "colAgents": "Subagenci",
+      "colRequests": "Żądania",
+      "colTokens": "Tokeny",
+      "colCost": "Koszt",
+      "hint": "Sesje i subagenci Twoich terminali programistycznych (nieprzejrzyste id — nigdy osoba). Wymaga bramy od wersji 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
       "heading": "Cztery kroki. Twoje prompty nigdy nie dotykają naszych serwerów.",

@@ -336,6 +336,62 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
   }
 }
 
+// ---- Sesiones (0019): coste por sesión y subagente, últimos 7 días ----
+
+export interface SesionRollup {
+  day: string;
+  sessionId: string;
+  /** '' = el agente principal; cada subagente trae su propio id. */
+  agentId: string;
+  requests: number;
+  actualInputTokens: number;
+  actualOutputTokens: number;
+  actualCost: number;
+}
+
+/**
+ * ¿El error de PostgREST es «esa tabla no existe»? El despliegue puede adelantar
+ * a la migración 0019 (misma lección que `esColumnaInexistente`): sin la tabla,
+ * la tarjeta de sesiones se esconde y el resto del panel ni se entera.
+ */
+function esTablaInexistente(error: { code?: string; message?: string }): boolean {
+  if (error.code === "42P01" || error.code === "PGRST205") return true;
+  const m = (error.message ?? "").toLowerCase();
+  return m.includes("does not exist") || m.includes("could not find");
+}
+
+export async function getSesiones(supabase: SupabaseClient, orgId: string): Promise<{ rows: SesionRollup[]; failed: boolean }> {
+  try {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .schema("bvsala")
+      .from("usage_sessions")
+      .select("day, session_id, agent_id, requests, actual_input_tokens, actual_output_tokens, actual_cost")
+      .eq("org_id", orgId)
+      .gte("day", since)
+      .order("actual_cost", { ascending: false })
+      .limit(50);
+    if (error) {
+      if (esTablaInexistente(error)) return { rows: [], failed: false };
+      console.error("[dashboard] usage_sessions read failed:", error.code, error.message);
+      return { rows: [], failed: true };
+    }
+    const rows = ((data ?? []) as unknown as Record<string, number | string>[]).map((r) => ({
+      day: String(r["day"]),
+      sessionId: String(r["session_id"] ?? ""),
+      agentId: String(r["agent_id"] ?? ""),
+      requests: Number(r["requests"] ?? 0),
+      actualInputTokens: Number(r["actual_input_tokens"] ?? 0),
+      actualOutputTokens: Number(r["actual_output_tokens"] ?? 0),
+      actualCost: Number(r["actual_cost"] ?? 0),
+    }));
+    return { rows, failed: false };
+  } catch (err) {
+    console.error("[dashboard] usage_sessions read threw:", err);
+    return { rows: [], failed: true };
+  }
+}
+
 // ---- Derived connection / activation state ----
 export type Metering = "awaiting" | "live";
 export function meteringState(usage: UsageRollup[]): Metering {

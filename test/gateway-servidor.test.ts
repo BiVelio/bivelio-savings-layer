@@ -131,7 +131,11 @@ describe("arrancarGateway — passthrough que mide", () => {
 
     await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages?beta=true`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "x-claude-code-session-id": "sesion-abc-123",
+        "x-claude-code-agent-id": "agente-7",
+      },
       body: JSON.stringify({ model: "claude-haiku-4-5-20251001", stream: true }),
     }).then((r) => r.text());
 
@@ -141,6 +145,9 @@ describe("arrancarGateway — passthrough que mide", () => {
 
     const reg = (lotes[0]![0] ?? {}) as Record<string, unknown>;
     expect(reg["model"]).toBe("claude-haiku-4-5-20251001");
+    // Atribución de sesión/subagente (0019): viaja tal cual en el wire.
+    expect(reg["sessionId"]).toBe("sesion-abc-123");
+    expect(reg["agentId"]).toBe("agente-7");
     expect(reg["basis"]).toBe("measured");
     expect(reg["actualLlm"]).toBe(1);
     expect(reg["providerCachedInputTokens"]).toBe(4000);
@@ -150,6 +157,42 @@ describe("arrancarGateway — passthrough que mide", () => {
     expect(reg["seatId"]).toBe("test-01");
     // v1: el baseline ES el actual — nada estimado.
     expect(reg["baselineCost"]).toBe(reg["actualCost"]);
+  });
+
+  it("atribución: sin cabeceras el campo NO viaja, y una cabecera con texto libre se descarta (no tira el lote)", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const ingesta = await arrancarIngestaFalsa(lotes);
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    // 1 · sin cabeceras de atribución
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      body: JSON.stringify({ model: "claude-haiku-4-5", stream: true }),
+    }).then((r) => r.text());
+    // 2 · cabecera con espacios (texto libre): la verja del ingest la rechazaría
+    //     con un 400 de LOTE entero — el gateway la descarta antes de emitir.
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "x-claude-code-session-id": "esto no es un id" },
+      body: JSON.stringify({ model: "claude-haiku-4-5", stream: true }),
+    }).then((r) => r.text());
+
+    await gw.cerrar();
+    await esperar(() => lotes.flat().length >= 2);
+    for (const reg of lotes.flat() as Record<string, unknown>[]) {
+      expect("sessionId" in reg).toBe(false);
+      expect("agentId" in reg).toBe(false);
+    }
   });
 
   it("sin clave de servicio: mismo passthrough, cero metering (avisar, nunca romper)", async () => {

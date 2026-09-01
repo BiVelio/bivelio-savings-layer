@@ -237,6 +237,15 @@
       "revokeYesAria": "Konfirmasi pencabutan kunci {prefix}",
       "errList": "Tidak dapat memuat kunci Anda — muat ulang untuk mengelola atau mencabutnya."
     },
+    "sesiones": {
+      "title": "biaya per sesi (7 hari)",
+      "colSession": "Sesi",
+      "colAgents": "Subagen",
+      "colRequests": "Permintaan",
+      "colTokens": "Token",
+      "colCost": "Biaya",
+      "hint": "Sesi dan subagen dari terminal pemrogramanmu (id buram — tidak pernah seseorang). Memerlukan gateway mulai 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Mulai",
       "heading": "Empat langkah. Prompt Anda tidak pernah menyentuh server kami.",

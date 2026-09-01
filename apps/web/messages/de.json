@@ -237,6 +237,15 @@
       "revokeYesAria": "Widerruf des Schlüssels {prefix} bestätigen",
       "errList": "Deine Schlüssel konnten nicht geladen werden — lade neu, um sie zu verwalten oder zu widerrufen."
     },
+    "sesiones": {
+      "title": "Kosten pro Sitzung (7 Tage)",
+      "colSession": "Sitzung",
+      "colAgents": "Subagenten",
+      "colRequests": "Anfragen",
+      "colTokens": "Tokens",
+      "colCost": "Kosten",
+      "hint": "Sitzungen und Subagenten deiner Coding-Terminals (opake Ids — nie eine Person). Erfordert das Gateway ab 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Erste Schritte",
       "heading": "Vier Schritte. Deine Prompts berühren niemals unsere Server.",
