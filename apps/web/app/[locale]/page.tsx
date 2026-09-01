@@ -389,6 +389,17 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               </Fragment>
             ))}
           </pre>
+          {/* Sistemas donde ya viven las automatizaciones del cliente: logos
+              oficiales a color (decisión del dueño). El texto mantiene la
+              afirmación honesta: se mide lo que llama a la API con su clave. */}
+          <div className="sys-strip">
+            {["Salesforce", "HubSpot", "Odoo", "Zapier", "n8n", "UiPath"].map((s) => (
+              <span className="sys" key={s}>
+                <LogoProveedor marca={s} size={16} /> {s}
+              </span>
+            ))}
+          </div>
+          <p className="sys-note">{t("systems.caption")}</p>
         </section>
 
         {/* GATEWAY — el medidor de terminales (S3): Claude Code/Codex sin tocar código.

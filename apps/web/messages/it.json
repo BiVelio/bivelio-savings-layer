@@ -554,6 +554,9 @@
         "desc": "Ancora nel prompt, ma fatturate o elaborate a costo inferiore."
       }
     ],
+    "systems": {
+      "caption": "Dove già vivono le tue automazioni. Se chiama l'API di OpenAI o Anthropic con la tua chiave, si misura — l'SDK avvolge la chiamata; il gateway si mette davanti."
+    },
     "gateway": {
       "eyebrow": "Novità · terminali di codice",
       "title": "Claude Code con chiave API? Guarda la spesa reale, token per token.",

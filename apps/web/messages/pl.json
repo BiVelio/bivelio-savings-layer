@@ -554,6 +554,9 @@
         "desc": "Wciąż w promptcie, ale naliczane lub przetwarzane taniej."
       }
     ],
+    "systems": {
+      "caption": "Tam, gdzie już żyją Twoje automatyzacje. Jeśli wywołuje API OpenAI lub Anthropic Twoim kluczem, jest mierzone — SDK opakowuje wywołanie; brama staje z przodu."
+    },
     "gateway": {
       "eyebrow": "Nowość · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
