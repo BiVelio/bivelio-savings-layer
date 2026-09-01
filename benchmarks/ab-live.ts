@@ -65,6 +65,7 @@ import {
 import type { ProviderRequest } from "../src/providers/types.js";
 import {
   scenarios,
+  conSalDeFrio,
   estadoDePalanca,
   familiaDeModelo,
   noMedibleEnTransporte,
@@ -189,6 +190,12 @@ const modelosAMedir: (string | null)[] = modelosPedidos.length
     ? [modeloUnico]
     : [null];
 const SEED = intEnv("BVSALA_AB_SEED", 1234567);
+/**
+ * Nonce de TIRADA para la sal de frío: la caché de prefijo del proveedor vive
+ * minutos, así que sin él la rep N de esta tirada pegaría con la rep N de la
+ * anterior. Aleatorio a propósito — no participa en ninguna estadística.
+ */
+const NONCE_DE_TIRADA = Math.random().toString(36).slice(2, 8);
 const REPS = intEnv("BVSALA_AB_REPS", mode === "LIVE" ? 8 : 4);
 // Adaptive sampling (LIVE only): keep drawing paired reps for a noisy scenario
 // until its savings CI is tight enough, or a hard cap is reached. Deterministic
@@ -522,11 +529,25 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   };
   const model = modelId(req, forzado);
 
+  // FRÍO POR CONSTRUCCIÓN. Contra un endpoint que cachea prefijos solo (OpenAI,
+  // con cualquier prompt ≥1024 tokens), repetir el prompt idéntico calienta los
+  // dos brazos a partir de la rep 2 — y la sonda de clasificación ya calienta el
+  // del brazo B antes de la rep 1. El titular «por llamada fría» pasaba a medir
+  // una mezcla mayormente caliente (2026-09-01, api.openai.com: 43,9 % la rep
+  // fría, 14,4 % las calientes, 12,8 % el agregado publicado como «frío»). La
+  // sal por repetición viaja idéntica en los dos brazos, así que la comparación
+  // sigue siendo pareada; el nonce de tirada evita que una tirada pegue con la
+  // caché aún viva de la anterior. Los escenarios cuyo VALOR es el prefijo
+  // estable (warm, prefijoEstable, palanca providerPrefixCache) no se salan.
+  const salar = !s.warm && s.prefijoEstable !== true && s.palanca !== "providerPrefixCache";
+  const reqDeRep = (marca: string): SavingsRequest =>
+    salar ? conSalDeFrio(req, `${NONCE_DE_TIRADA}-${marca}`) : req;
+
   // Probe the optimized arm once (fresh layer) to classify the scenario.
   // `warm` scenarios demonstrate caching (their value is repeat-traffic, shown
   // in the amortization pass); the COLD headline treats their first call like
   // any ran call so caches honestly read ~0% per single call.
-  const probe = await nuevaCapa(provider, model).generate(req);
+  const probe = await nuevaCapa(provider, model).generate(reqDeRep("sonda"));
   const kind: Kind = s.warm
     ? "cache"
     : probe.report.calls.actualLlm === 0
@@ -577,8 +598,10 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   let palanca = estadoDePalanca(s, probe, probe.report.tokens.providerCachedInput ?? 0, transporte);
 
   async function sampleOnce(t: number): Promise<void> {
+    // La MISMA sal para los dos brazos de esta repetición: pareado de verdad.
+    const reqRep = reqDeRep(String(t));
     // Arm A: naive baseline — a real call, measured.
-    const respA = await provider.generate(buildNaive(req, forzado));
+    const respA = await provider.generate(buildNaive(reqRep, forzado));
     const fp = (respA.raw as { system_fingerprint?: string } | undefined)?.system_fingerprint;
     if (fp) fingerprints.add(fp);
     modelosServidos.add(modeloDe(respA.raw) ?? "(sin declarar)");
@@ -609,7 +632,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
 
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
-    const resB = await nuevaCapa(espia, model).generate(req);
+    const resB = await nuevaCapa(espia, model).generate(reqRep);
     const uB = usageOf(resB);
     cacheOptimizado += uB.cachedInputTokens ?? 0;
     const ran = resB.report.calls.actualLlm > 0;

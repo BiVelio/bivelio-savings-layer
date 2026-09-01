@@ -297,6 +297,18 @@ export interface Scenario {
   /** Run once before measuring, to populate the cache (for cache-hit demos). */
   warm?: boolean;
   /**
+   * Este escenario NECESITA el prompt byte-a-byte idéntico entre repeticiones
+   * (p. ej. los dos FAQ comparten prompt para que la caché exacta acierte), así
+   * que el banco NO le inyecta la sal de frío. Todo escenario sin esta marca —y
+   * sin `warm`, y sin `palanca: "providerPrefixCache"`— recibe una sal única por
+   * repetición: contra un endpoint que cachea prefijos automáticamente (OpenAI
+   * lo hace con cualquier prompt ≥1024 tokens), repetir el prompt idéntico deja
+   * frías solo la rep 1 de cada brazo y el titular «por llamada fría» pasa a
+   * medir una mezcla mayormente caliente. Medido el 2026-09-01 contra
+   * api.openai.com: 43,9 % en la rep fría, 14,4 % en las calientes.
+   */
+  prefijoEstable?: boolean;
+  /**
    * La palanca opt-in que este escenario enciende, si enciende alguna. El banco
    * comprueba después si de verdad DISPARÓ y lo publica; ver {@link PALANCAS}.
    */
@@ -864,6 +876,27 @@ function construirHiloDeSoporte(): string {
 
 export const hiloDeSoporte = construirHiloDeSoporte();
 
+/**
+ * LA SAL DE FRÍO: un mensaje `system` propio en la posición 0 con una marca
+ * única por repetición.
+ *
+ * Por qué un mensaje aparte y no un prefijo en el contenido: el resolver de
+ * «Local arithmetic» (y cualquier palanca que lea el contenido del usuario)
+ * debe ver el mensaje intacto — un prefijo dentro del contenido cambiaría lo
+ * que se mide. Y por qué en la posición 0: la caché de prefijo del proveedor
+ * casa desde el primer byte del prompt renderizado, así que divergir ahí
+ * garantiza que NINGUNA repetición pega con la anterior y cada llamada es fría
+ * de verdad, en los dos brazos por igual (la sal viaja idéntica en ambos).
+ *
+ * Puro a propósito: no muta la petición original.
+ */
+export function conSalDeFrio(req: SavingsRequest, marca: string): SavingsRequest {
+  return {
+    ...req,
+    messages: [{ role: "system", content: `[medicion-fria ${marca}]` }, ...req.messages],
+  };
+}
+
 export const scenarios: Scenario[] = [
   {
     name: "Local arithmetic",
@@ -879,6 +912,8 @@ export const scenarios: Scenario[] = [
     name: "FAQ (first ask)",
     lever: "baseline (populates cache)",
     ledger: "none",
+    // Byte-a-byte con «FAQ (repeat ask)»: la sal de frío rompería el acierto.
+    prefijoEstable: true,
     request: {
       model: "openai/gpt-4o-mini",
       // CON el dato en el prompt. Sin él la pregunta no tiene respuesta
