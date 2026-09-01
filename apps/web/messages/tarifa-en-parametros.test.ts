@@ -20,8 +20,19 @@ import { describe, it, expect } from "vitest";
  */
 
 const LOCALES = ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id", "vi"];
-const NAMESPACES = ["calculadora", "formula"] as const;
+/**
+ * Rutas de namespace completas. `dashboard.extracto` entró el 2026-09-01: su
+ * intro anunciaba «la rampa del 30%» escrita a mano y sobrevivió a la retirada
+ * del mínimo porque esta verja solo miraba la landing — el dueño la cazó en el
+ * panel. El extracto enseña sus cifras por parámetro ({cero}, {pct}, {usd}),
+ * así que le aplica la misma regla: ni un dígito en los textos.
+ */
+const NAMESPACES = ["landing.calculadora", "landing.formula", "dashboard.extracto"] as const;
 const DIR = new URL(".", import.meta.url).pathname;
+
+function porRuta(data: Record<string, unknown>, ruta: string): unknown {
+  return ruta.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], data);
+}
 
 function aplanar(o: unknown, p = ""): [string, string][] {
   if (typeof o === "string") return [[p, o]];
@@ -33,13 +44,11 @@ function aplanar(o: unknown, p = ""): [string, string][] {
 
 describe("la tarifa pública viaja SIEMPRE por parámetro, nunca escrita a mano", () => {
   for (const loc of LOCALES) {
-    it(`${loc}: ni un dígito en landing.calculadora ni landing.formula`, () => {
-      const data = JSON.parse(readFileSync(join(DIR, `${loc}.json`), "utf8")) as {
-        landing: Record<string, unknown>;
-      };
+    it(`${loc}: ni un dígito en ${NAMESPACES.join(", ")}`, () => {
+      const data = JSON.parse(readFileSync(join(DIR, `${loc}.json`), "utf8")) as Record<string, unknown>;
       const infractores: string[] = [];
       for (const ns of NAMESPACES) {
-        for (const [clave, valor] of aplanar(data.landing[ns], ns)) {
+        for (const [clave, valor] of aplanar(porRuta(data, ns), ns)) {
           if (/[0-9]/.test(valor)) infractores.push(`${clave}: "${valor}"`);
         }
       }
@@ -47,9 +56,10 @@ describe("la tarifa pública viaja SIEMPRE por parámetro, nunca escrita a mano"
     });
   }
 
-  it("los dos namespaces existen (si desaparecen, este test no protege nada)", () => {
-    const es = JSON.parse(readFileSync(join(DIR, "es.json"), "utf8")) as { landing: Record<string, unknown> };
-    expect(es.landing["calculadora"]).toBeTruthy();
-    expect(es.landing["formula"]).toBeTruthy();
+  it("los namespaces vigilados existen (si desaparecen, este test no protege nada)", () => {
+    const es = JSON.parse(readFileSync(join(DIR, "es.json"), "utf8")) as Record<string, unknown>;
+    for (const ns of NAMESPACES) {
+      expect(porRuta(es, ns), ns).toBeTruthy();
+    }
   });
 });
