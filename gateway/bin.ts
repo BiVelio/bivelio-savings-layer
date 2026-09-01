@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { doctor } from "./doctor.js";
+import { instalarSkill } from "./skill.js";
 import { soportaZstd } from "./medidor.js";
 import { BV_SALA_VERSION } from "../src/index.js";
 
@@ -37,6 +39,11 @@ Comandos:
   goose [args…]          Lanza Goose (ANTHROPIC_HOST) a través del gateway.
   qwen [args…]           Lanza Qwen Code (ANTHROPIC_BASE_URL) a través del gateway.
   doctor [--puerto N]    Detecta terminales instalados e imprime su configuración exacta.
+  skill [--proyecto] [--forzar]
+                         Instala el skill «savings-mode» de Claude Code (~/.claude/skills;
+                         con --proyecto, en .claude/skills del directorio actual): salida
+                         tersa + herramientas quirúrgicas para estirar los topes de
+                         suscripción. Su efecto se mide con el gateway, no se promete.
 
 Entorno:
   BIVELIO_SERVICE_KEY    Clave de servicio (bvk_…): habilita metering + asiento.
@@ -53,9 +60,31 @@ Tus prompts jamás salen de tu máquina — solo cuentas y coste. Más: savings.
 }
 
 const esEnvoltorio = esTerminalConEnvoltorio(comando);
-if (comando !== "gateway" && comando !== "doctor" && !esEnvoltorio) {
+if (comando !== "gateway" && comando !== "doctor" && comando !== "skill" && !esEnvoltorio) {
   ayuda();
   process.exit(comando === undefined || comando === "help" || comando === "--help" ? 0 : 1);
+}
+
+if (comando === "skill") {
+  // El SKILL.md empaquetado vive en <raíz>/skills/; desde dist/gateway/bin.js
+  // la raíz es ../../, y ejecutado con tsx desde gateway/ es ../ — se prueban
+  // ambas por existencia en vez de adivinar el layout.
+  const aqui = dirname(fileURLToPath(import.meta.url));
+  const r = instalarSkill({
+    origenes: [join(aqui, "..", ".."), join(aqui, "..")],
+    home: homedir(),
+    cwd: process.cwd(),
+    proyecto: resto.includes("--proyecto"),
+    forzar: resto.includes("--forzar"),
+    fs: {
+      existe: existsSync,
+      leer: (ruta) => readFileSync(ruta, "utf8"),
+      escribir: (ruta, contenido) => writeFileSync(ruta, contenido),
+      crearDir: (ruta) => mkdirSync(ruta, { recursive: true }),
+    },
+  });
+  console.log(r.mensaje);
+  process.exit(r.ok ? 0 : 1);
 }
 
 // Envoltorios: puerto efímero; `gateway`: 8402 o --puerto (0 = efímero, lo usa
