@@ -679,7 +679,7 @@
       "medido": "After that, commission only on <b>measured savings</b>: the kind you can reconcile against your provider's invoice. Estimated savings are never billed.",
       "garantia": "And <b>you always keep {garantia} or more</b> of every euro saved: the commission only exists when your measured savings exist.",
       "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
-      "permanencia": "A month below the threshold? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
+      "permanencia": "A month with no savings? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
     }
   },
   "invitacion": {

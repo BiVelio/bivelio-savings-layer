@@ -679,7 +679,7 @@
       "medido": "Després, comissió només sobre l'<b>estalvi mesurat</b>: el que pots contrastar amb la factura del teu proveïdor. L'estimat mai no es factura.",
       "garantia": "I <b>sempre et quedes amb el {garantia} o més</b> de cada euro estalviat: la comissió només existeix quan existeix el teu estalvi mesurat.",
       "tramos": "<b>Per trams, i cada tram al seu tipus</b> — {tramos}. Com més estalvies, menor és el nostre percentatge.",
-      "permanencia": "Un mes no superes el llindar? Comissió: {cero}. <b>Sense permanència</b> — i la teva primera factura variable només conté números que ja vas veure al teu extracte."
+      "permanencia": "Un mes sense estalvi? Comissió: {cero}. <b>Sense permanència</b> — i la teva primera factura variable només conté números que ja vas veure al teu extracte."
     }
   },
   "invitacion": {

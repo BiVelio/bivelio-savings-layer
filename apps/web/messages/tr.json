@@ -679,7 +679,7 @@
       "medido": "Sonrasında komisyon yalnızca <b>ölçülmüş tasarruf</b> üzerinden: sağlayıcının faturasıyla karşılaştırabileceğin tasarruf. Tahmini olan asla faturalanmaz.",
       "garantia": "Ve <b>tasarruf edilen her euronun {garantia} veya fazlası her zaman sende kalır</b>: komisyon yalnızca ölçülen tasarrufun varsa vardır.",
       "tramos": "<b>Kademeli, her kademe kendi oranında</b> — {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
-      "permanencia": "Bir ay eşiğin altında mı? Komisyon: {cero}. <b>Taahhüt yok</b> — ve ilk değişken faturan yalnızca ekstrende zaten gördüğün sayıları içerir."
+      "permanencia": "Tasarrufsuz bir ay mı? Komisyon: {cero}. <b>Taahhüt yok</b> — ve ilk değişken faturan yalnızca ekstrende zaten gördüğün sayıları içerir."
     }
   },
   "invitacion": {

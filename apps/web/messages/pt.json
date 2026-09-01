@@ -679,7 +679,7 @@
       "medido": "Depois, comissão só sobre a <b>economia medida</b>: a que você pode conciliar com a fatura do seu provedor. O estimado nunca é faturado.",
       "garantia": "E <b>ficas sempre com {garantia} ou mais</b> de cada euro poupado: a comissão só existe quando existe a tua poupança medida.",
       "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "permanencia": "Um mês abaixo do limiar? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
+      "permanencia": "Um mês sem poupança? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
     }
   },
   "invitacion": {

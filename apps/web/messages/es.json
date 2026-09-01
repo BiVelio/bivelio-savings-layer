@@ -679,7 +679,7 @@
       "medido": "Después, comisión solo sobre el <b>ahorro medido</b>: el que puedes contrastar con la factura de tu proveedor. Lo estimado nunca se factura.",
       "garantia": "Y <b>siempre te quedas con el {garantia} o más</b> de cada euro ahorrado: la comisión solo existe cuando existe tu ahorro medido.",
       "tramos": "<b>Por tramos, y cada tramo a su tipo</b> — {tramos}. Cuanto más ahorras, menor es nuestro porcentaje.",
-      "permanencia": "¿Un mes no superas el umbral? Comisión: {cero}. <b>Sin permanencia</b> — y tu primera factura variable solo contiene números que ya viste en tu extracto."
+      "permanencia": "¿Un mes sin ahorro? Comisión: {cero}. <b>Sin permanencia</b> — y tu primera factura variable solo contiene números que ya viste en tu extracto."
     }
   },
   "invitacion": {

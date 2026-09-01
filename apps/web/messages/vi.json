@@ -679,7 +679,7 @@
       "medido": "Sau đó, hoa hồng chỉ trên <b>khoản tiết kiệm đã đo</b>: khoản bạn có thể đối chiếu với hóa đơn nhà cung cấp. Ước tính không bao giờ bị tính phí.",
       "garantia": "Và <b>bạn luôn giữ lại {garantia} trở lên</b> của mỗi euro tiết kiệm được: hoa hồng chỉ tồn tại khi khoản tiết kiệm đo được của bạn tồn tại.",
       "tramos": "<b>Theo bậc, mỗi bậc theo mức riêng</b> — {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
-      "permanencia": "Một tháng dưới ngưỡng? Hoa hồng: {cero}. <b>Không ràng buộc</b> — và hóa đơn biến đổi đầu tiên chỉ chứa những con số bạn đã thấy trong sao kê."
+      "permanencia": "Một tháng không có tiết kiệm? Hoa hồng: {cero}. <b>Không ràng buộc</b> — và hóa đơn biến đổi đầu tiên chỉ chứa những con số bạn đã thấy trong sao kê."
     }
   },
   "invitacion": {
