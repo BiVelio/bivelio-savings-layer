@@ -508,18 +508,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   </div>
                 ),
               },
-              {
-                id: "chatgpt",
-                etiqueta: "ChatGPT",
-                panel: (
-                  <div>
-                    <p style={{ marginTop: 4, opacity: 0.85 }}>{t("skill.gptNota")}</p>
-                    <pre className="code" style={{ marginTop: 10, whiteSpace: "pre-wrap" }}>
-                      {"Answer first — no preamble, no recap. Never restate content I just saw. One line for routine confirmations. Prose only where it adds information. Never trade correctness for brevity."}
-                    </pre>
-                  </div>
-                ),
-              },
+              // ChatGPT fuera por decisión del dueño (01-09): sus topes cuentan
+              // mensajes, no tokens — allí el skill no puede ahorrar nada
+              // medible, y esta sección no enseña nada que no ahorre.
             ]}
           />
         </section>

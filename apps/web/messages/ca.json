@@ -570,8 +570,7 @@
       "aiDescargar": "Descarregar savings-mode.zip",
       "aiCuenta": "La descàrrega demana el teu compte de Savings (gratuït): així l'adopció és una mètrica real, amb identitat — l'skill en si no porta cap telemetria.",
       "aiPaso1": "A claude.ai activa «Code execution and file creation» (Settings → Capabilities).",
-      "aiPaso2": "Després puja el zip a Customize → Skills: apareix amb el seu interruptor, privat al teu compte.",
-      "gptNota": "Honestedat primer: ChatGPT no té skills i els seus topalls compten missatges, no tokens — la brevetat no estira el límit. Si vols l'estil igualment, enganxa això a Custom Instructions:"
+      "aiPaso2": "Després puja el zip a Customize → Skills: apareix amb el seu interruptor, privat al teu compte."
     },
     "systems": {
       "caption": "On ja viuen les teves automatitzacions. Si crida l'API d'OpenAI o Anthropic amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."

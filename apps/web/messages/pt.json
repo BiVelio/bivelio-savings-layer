@@ -570,8 +570,7 @@
       "aiDescargar": "Descarregar savings-mode.zip",
       "aiCuenta": "A descarga pede a tua conta Savings (gratuita): assim a adoção é uma métrica real, com identidade — a skill em si não leva telemetria nenhuma.",
       "aiPaso1": "No claude.ai ativa «Code execution and file creation» (Settings → Capabilities).",
-      "aiPaso2": "Depois carrega o zip em Customize → Skills: aparece com o seu interruptor, privado na tua conta.",
-      "gptNota": "Honestidade primeiro: o ChatGPT não tem skills e os seus limites contam mensagens, não tokens — a brevidade não estica o limite. Se quiseres o estilo na mesma, cola isto em Custom Instructions:"
+      "aiPaso2": "Depois carrega o zip em Customize → Skills: aparece com o seu interruptor, privado na tua conta."
     },
     "systems": {
       "caption": "Onde as tuas automações já vivem. Se chama a API da OpenAI ou da Anthropic com a tua chave, mede-se — o SDK envolve a chamada; o gateway fica à frente."

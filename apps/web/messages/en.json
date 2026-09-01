@@ -570,8 +570,7 @@
       "aiDescargar": "Download savings-mode.zip",
       "aiCuenta": "The download asks for your (free) Savings account: adoption becomes a real metric, with identity — the skill itself carries no telemetry at all.",
       "aiPaso1": "On claude.ai enable “Code execution and file creation” (Settings → Capabilities).",
-      "aiPaso2": "Then upload the zip under Customize → Skills: it appears with its own toggle, private to your account.",
-      "gptNota": "Honesty first: ChatGPT has no skills and its caps count messages, not tokens — brevity won't stretch the limit. If you want the style anyway, paste this into Custom Instructions:"
+      "aiPaso2": "Then upload the zip under Customize → Skills: it appears with its own toggle, private to your account."
     },
     "systems": {
       "caption": "Where your automations already live. If it calls the OpenAI or Anthropic API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
