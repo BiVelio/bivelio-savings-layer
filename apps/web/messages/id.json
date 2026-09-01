@@ -398,7 +398,7 @@
       "metaTitle": "Rekening · BiVelio Savings Layer",
       "eyebrow": "Mode bayangan · tidak ada tagihan di sini",
       "title": "Rekening kamu, sebelum fakturnya ada",
-      "intro": "Dokumen persis yang akan dihasilkan faktur variabel nanti: hanya penghematan terukur, dengan tarif berjenjang dan rampa 30%. Selama kalibrasi, tagihannya selalu {cero}.",
+      "intro": "Dokumen persis yang akan dihasilkan faktur variabel nanti: hanya penghematan terukur, dengan tarif berjenjang — tanpa minimum, hanya ditagih jika Anda berhemat. Selama kalibrasi, tagihan selalu {cero}.",
       "periodo": "Periode {periodo}",
       "badgeCalibracion": "PERIODE KALIBRASI — TAGIHAN NOL",
       "badgeSombra": "BAYANGAN — TANPA TAGIHAN NYATA",

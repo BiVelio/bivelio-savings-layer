@@ -398,7 +398,7 @@
       "metaTitle": "Afschrift · BiVelio Savings Layer",
       "eyebrow": "Schaduwmodus · hier wordt niets afgeschreven",
       "title": "Je afschrift, voordat de factuur bestaat",
-      "intro": "Het exacte document dat de toekomstige variabele factuur zal produceren: alleen gemeten besparing, met het schijventarief en de 30%-helling. Tijdens de kalibratie is het bedrag altijd {cero}.",
+      "intro": "Het exacte document dat de toekomstige variabele factuur zal produceren: alleen gemeten besparing, met het schijventarief — zonder minimum, je betaalt alleen als je bespaart. Tijdens de kalibratie is het bedrag altijd {cero}.",
       "periodo": "Periode {periodo}",
       "badgeCalibracion": "KALIBRATIEPERIODE — NUL BEDRAG",
       "badgeSombra": "SCHADUW — GEEN ECHTE AFSCHRIJVING",

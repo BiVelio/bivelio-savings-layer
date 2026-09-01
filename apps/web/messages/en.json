@@ -398,7 +398,7 @@
       "metaTitle": "Statement · BiVelio Savings Layer",
       "eyebrow": "Shadow mode · nothing is charged here",
       "title": "Your statement, before the invoice exists",
-      "intro": "The exact document the future variable invoice will produce: measured savings only, with the tiered rate and the 30% ramp. During calibration the charge is always {cero}.",
+      "intro": "The exact document the future variable invoice will produce: measured savings only, with the tiered rate — no minimum, you are only charged if you save. During calibration, the charge is always {cero}.",
       "periodo": "Period {periodo}",
       "badgeCalibracion": "CALIBRATION PERIOD — ZERO CHARGE",
       "badgeSombra": "SHADOW — NO REAL CHARGE",

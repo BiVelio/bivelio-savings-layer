@@ -398,7 +398,7 @@
       "metaTitle": "Wyciąg · BiVelio Savings Layer",
       "eyebrow": "Tryb cienia · tu nic nie jest pobierane",
       "title": "Twój wyciąg, zanim powstanie faktura",
-      "intro": "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową i rampą 30%. Podczas kalibracji opłata zawsze wynosi {cero}.",
+      "intro": "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową — bez minimum, płacisz tylko wtedy, gdy oszczędzasz. Podczas kalibracji opłata wynosi zawsze {cero}.",
       "periodo": "Okres {periodo}",
       "badgeCalibracion": "OKRES KALIBRACJI — OPŁATA ZERO",
       "badgeSombra": "CIEŃ — BEZ RZECZYWISTEJ OPŁATY",
