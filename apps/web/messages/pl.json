@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "udowodnione",
       "notProven": "nieudowodnione",
+      "notExercised": "niewykorzystana w tym przebiegu — jej zero nie jest pomiarem",
       "estimatedMock": "szacunkowe (mock)",
       "footnoteMain": "Cztery księgi, <b>nigdy nie sumowane</b> — każda to osobno mierzona dźwignia, więc dolara nie da się policzyć dwa razy.",
       "reconciledNote": "Reszta uzgodnienia ≈ 0 to potwierdza.",

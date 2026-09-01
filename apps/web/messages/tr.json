@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
       "notProven": "kanıtlanmadı",
+      "notExercised": "bu turda devreye girmedi — sıfırı bir ölçüm değil",
       "estimatedMock": "tahmini (sahte)",
       "footnoteMain": "Dört defter, <b>asla toplanmaz</b> — her biri ayrı ayrı ölçülen bir kaldıraçtır, dolayısıyla bir dolar iki kez sayılamaz.",
       "reconciledNote": "Mutabakat kalıntısı ≈ 0 bunu kanıtlar.",

@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "comprovat",
       "notProven": "no comprovat",
+      "notExercised": "no exercitada en aquesta tirada — el seu zero no és una mesura",
       "estimatedMock": "estimat (simulat)",
       "footnoteMain": "Quatre llibres comptables, <b>mai sumats</b>: cadascun és una palanca mesurada per separat, de manera que un dòlar no es pot comptar dues vegades.",
       "reconciledNote": "El residu de conciliació ≈ 0 ho demostra.",

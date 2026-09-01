@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
       "notProven": "chưa chứng minh",
+      "notExercised": "chưa được kích hoạt trong lần chạy này — số 0 không phải là một phép đo",
       "estimatedMock": "ước tính (mô phỏng)",
       "footnoteMain": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — mỗi cái là một đòn bẩy được đo riêng biệt, nên một đô la không thể bị đếm hai lần.",
       "reconciledNote": "Phần dư đối chiếu ≈ 0 chứng minh điều đó.",

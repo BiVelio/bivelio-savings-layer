@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "prouvé",
       "notProven": "non prouvé",
+      "notExercised": "non exercée dans cette série — son zéro n'est pas une mesure",
       "estimatedMock": "estimé (simulé)",
       "footnoteMain": "Quatre registres, <b>jamais additionnés</b> — chacun est un levier mesuré séparément, un dollar ne peut donc pas être compté deux fois.",
       "reconciledNote": "Le résidu de réconciliation ≈ 0 le prouve.",

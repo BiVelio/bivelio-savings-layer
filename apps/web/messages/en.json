@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "proven",
       "notProven": "not proven",
+      "notExercised": "not exercised in this run — its zero is not a measurement",
       "estimatedMock": "estimated (mock)",
       "footnoteMain": "Four ledgers, <b>never summed</b> — each is a separately measured lever, so a dollar can't be double-counted.",
       "reconciledNote": "Reconciliation residual ≈ 0 proves it.",

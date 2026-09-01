@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "comprovado",
       "notProven": "não comprovado",
+      "notExercised": "não exercitada nesta execução — o seu zero não é uma medição",
       "estimatedMock": "estimado (simulado)",
       "footnoteMain": "Quatro livros-razão, <b>nunca somados</b> — cada um é uma alavanca medida separadamente, por isso um dólar não pode ser contado duas vezes.",
       "reconciledNote": "O resíduo de reconciliação ≈ 0 prova-o.",
