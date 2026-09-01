@@ -5,7 +5,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { arrancarGateway } from "./servidor.js";
-import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
+import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { doctor } from "./doctor.js";
 import { soportaZstd } from "./medidor.js";
 import { BV_SALA_VERSION } from "../src/index.js";
@@ -127,7 +127,25 @@ if (envoltorio && esEnvoltorio) {
     ...(envoltorio.upstream ? { modoCodex: envoltorio.upstream.includes("chatgpt.com") ? "chatgpt" : "api-key" } : {}),
   });
   if (final.nota) console.log(`[bvsala ${comando}] ${final.nota}`);
-  const hijo = spawn(final.bin, final.args, { stdio: "inherit", env: { ...process.env, ...final.env } });
+  // Windows: spawn no resuelve shims .cmd/.bat y lanzarlos con args no es
+  // seguro (ver resolverBinarioWindows). El .exe se ejecuta por ruta directa;
+  // con solo-shim nos negamos con guía en vez de fallar con un ENOENT mudo.
+  let binAEjecutar = final.bin;
+  if (process.platform === "win32") {
+    const resuelto = resolverBinarioWindows(final.bin);
+    if (resuelto.tipo === "exe") {
+      binAEjecutar = resuelto.ruta;
+    } else if (resuelto.tipo === "solo-shim") {
+      console.error(
+        `[bvsala ${comando}] \`${final.bin}\` está instalado como shim de npm (${resuelto.ruta}) y Windows no puede ` +
+          "lanzarlo de forma segura con argumentos (CVE-2024-27980). Instálalo con su instalador nativo " +
+          `(deja un ${final.bin}.exe en el PATH) o usa la receta manual de docs/terminales/.`,
+      );
+      await arranque.cerrar();
+      process.exit(127);
+    }
+  }
+  const hijo = spawn(binAEjecutar, final.args, { stdio: "inherit", env: { ...process.env, ...final.env } });
   hijo.on("error", (err) => {
     console.error(`[bvsala ${comando}] no se pudo lanzar \`${final.bin}\`: ${String(err)}. ¿Está instalado y en el PATH?`);
     void arranque.cerrar().then(() => process.exit(127));

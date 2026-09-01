@@ -5,6 +5,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { preciosDelPlan } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
 
+import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
+
 import type { OrgContext } from "../data";
 import { CopyButton } from "./CopyButton";
 import { ServiceAccountKeySection } from "./ServiceAccountKeySection";
@@ -179,9 +181,35 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
         <span>npm i -g @bivelio/savings-layer</span>
         <CopyButton text="npm i -g @bivelio/savings-layer" />
       </div>
-      <div className="code2" style={{ marginTop: 8 }}>
-        <span>bvsala claude</span>
-        <CopyButton text="bvsala claude" />
+      {/* La línea de la clave difiere por sistema: `export` es POSIX y en
+          Windows (PowerShell) es `$env:VAR = "…"`. Pestañas con detección. */}
+      <div style={{ marginTop: 8 }}>
+        <SnippetPorSistema
+          unix={
+            <>
+              <div className="code2">
+                <span>export BIVELIO_SERVICE_KEY=bvk_…</span>
+                <CopyButton text="export BIVELIO_SERVICE_KEY=" />
+              </div>
+              <div className="code2" style={{ marginTop: 8 }}>
+                <span>bvsala claude</span>
+                <CopyButton text="bvsala claude" />
+              </div>
+            </>
+          }
+          windows={
+            <>
+              <div className="code2">
+                <span>{'$env:BIVELIO_SERVICE_KEY = "bvk_…"'}</span>
+                <CopyButton text={'$env:BIVELIO_SERVICE_KEY = ""'} />
+              </div>
+              <div className="code2" style={{ marginTop: 8 }}>
+                <span>bvsala claude</span>
+                <CopyButton text="bvsala claude" />
+              </div>
+            </>
+          }
+        />
       </div>
     </section>
   );

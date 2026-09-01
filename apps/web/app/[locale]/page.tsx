@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CalculadoraComision } from "@/app/components/CalculadoraComision";
+import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { FIN_RAMPA_RATIO, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
@@ -399,14 +400,29 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <h2>{t("gateway.title")}</h2>
             <p>{t("gateway.body")}</p>
           </div>
-          <pre className="code">
-            {"npm i -g @bivelio/savings-layer\n"}
-            {"export "}
-            <span className="s">BIVELIO_SERVICE_KEY</span>
-            {"=bvk_…\n\n"}
-            <span className="k">bvsala</span>
-            {" claude"}
-          </pre>
+          {/* Los comandos NO son iguales por sistema: `export` es POSIX; en
+              Windows (PowerShell) es `$env:VAR = "…"`. Pestañas con detección. */}
+          <SnippetPorSistema
+            unix={
+              <pre className="code">
+                {"npm i -g @bivelio/savings-layer\n"}
+                {"export "}
+                <span className="s">BIVELIO_SERVICE_KEY</span>
+                {"=bvk_…\n\n"}
+                <span className="k">bvsala</span>
+                {" claude"}
+              </pre>
+            }
+            windows={
+              <pre className="code">
+                {"npm i -g @bivelio/savings-layer\n"}
+                <span className="s">$env:BIVELIO_SERVICE_KEY</span>
+                {' = "bvk_…"\n\n'}
+                <span className="k">bvsala</span>
+                {" claude"}
+              </pre>
+            }
+          />
           <p style={{ marginTop: 12, opacity: 0.85 }}>
             {t("gateway.note")} <Link href="/how-it-works">{t("gateway.cta")}</Link>
           </p>

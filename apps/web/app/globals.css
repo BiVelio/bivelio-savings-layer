@@ -903,6 +903,13 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* «Ya mide»: azul de marca — ni el ámbar del "aún no" ni el verde del ahorro
    real; mide es verdad hoy, ahorrar ahí todavía no. */
 .hiw-verdict.mide { background: var(--brand-soft); color: var(--brand); }
+
+/* Pestañas por sistema operativo de los bloques de comandos (SnippetPorSistema):
+   `export VAR=…` es POSIX; en Windows la sesión se fija con `$env:VAR = "…"`. */
+.so-tabs { display: inline-flex; gap: 4px; margin-bottom: 8px; }
+.so-tabs button { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink-soft); cursor: pointer; }
+.so-tabs button.on { background: var(--surface-2); color: var(--ink); border-color: var(--ink-soft); }
+.so-snippet > pre, .so-snippet > .code2 { margin-top: 0; }
 .hiw-verdict.si { background: var(--mint-soft); color: var(--mint); }
 .hiw-case p { font-size: .88rem; color: var(--ink-soft); max-width: 62ch; margin: 0; line-height: 1.55; }
 .hiw-case p b { color: var(--ink); }

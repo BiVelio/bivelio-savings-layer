@@ -95,7 +95,28 @@ la sonda de vida, no una inferencia.
 usuario (nunca lee su contenido) e imprime el bloque exacto por terminal con el
 puerto indicado. Solo imprime: no escribe ninguna configuración.
 
-### 3 · Regla BYOK, sin excepción
+### 3 · Windows
+
+`npm i -g @bivelio/savings-layer` y `bvsala claude` son idénticos en los tres
+sistemas. Lo que cambia es cómo se fija la clave en la sesión — el `export` de
+estas guías es POSIX; en PowerShell:
+
+```powershell
+$env:BIVELIO_SERVICE_KEY = "bvk_…"
+bvsala claude
+```
+
+(En `cmd`: `set BIVELIO_SERVICE_KEY=bvk_…`.) El prefijo `VAR=valor comando` de
+las recetas manuales también es POSIX: en Windows, fija la variable primero y
+lanza después.
+
+Y una condición dura: el terminal debe estar instalado con su **instalador
+nativo** (un `claude.exe` / `codex.exe` en el PATH — Claude Code, Codex, Goose
+y Qwen Code lo tienen [V]). El shim `.cmd` que deja `npm i -g <terminal>` no
+puede lanzarse de forma segura con argumentos (CVE-2024-27980) y `bvsala` se
+niega con una guía en vez de fallar con un ENOENT mudo.
+
+### 4 · Regla BYOK, sin excepción
 
 Todas las recetas del anillo 2 (Goose, Qwen Code, opencode, Crush, Droid, Cline,
 Kilo) son **API key exclusivamente**. Anthropic prohíbe usar el OAuth de Claude
@@ -103,7 +124,7 @@ Pro/Max en harnesses de terceros (opencode lo documenta; Crush retiró su OAuth 
 ene-2026). El gateway reenviaría un Bearer de suscripción sin inmutarse — y eso
 no se promociona ni se documenta como receta.
 
-### 4 · Wording honesto
+### 5 · Wording honesto
 
 «Anthropic doesn't endorse, maintain, or audit third-party gateway products»
 [V]. El modo BV-SALA es **configuración soportada del binario sin modificar**:
