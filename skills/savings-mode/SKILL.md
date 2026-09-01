@@ -1,6 +1,6 @@
 ---
 name: savings-mode
-description: Stretch Claude subscription usage limits (5-hour and weekly caps) by cutting token burn — terse output, surgical tool calls, lean context — without sacrificing correctness. Use when the user mentions usage limits, running out of quota, or asks to save tokens.
+description: Stretch Claude subscription usage limits (5-hour and weekly caps): terse output, surgical tool calls, lean context — never at the cost of correctness. Use when limits, quota or saving tokens come up.
 ---
 
 # Savings Mode — by BiVelio
