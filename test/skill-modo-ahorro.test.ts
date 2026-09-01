@@ -26,7 +26,7 @@ describe("el SKILL.md empaquetado", () => {
     // claude.ai rechaza descripciones de más de 200 caracteres al subir el
     // zip (Claude Code no protesta, y por eso este límite necesita verja: el
     // mismo SKILL.md sirve a las dos superficies).
-    const desc = fm![1].match(/^description: (.*)$/m)![1]!;
+    const desc = fm![1]!.match(/^description: (.*)$/m)![1]!;
     expect(desc.length).toBeLessThanOrEqual(200);
   });
 
