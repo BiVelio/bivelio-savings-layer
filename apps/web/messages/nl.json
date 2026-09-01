@@ -567,6 +567,7 @@
       "medidaPie": "van de gemeten uitgaven",
       "anatomiaNota": "Gemeten met de meter over {peticiones} echte Claude Code-verzoeken, tegen de tellers van de provider ({fecha}). Het effect van de skill zelf wordt gepubliceerd zodra het in A/B gemeten is — nooit eerder.",
       "ccNota": "Eén commando: installeert in ~/.claude/skills en activeert zichzelf zodra het gesprek over limieten of tokens besparen gaat.",
+      "cxNota": "Codex heeft geen skills: dezelfde discipline reist als gemarkeerd blok in je AGENTS.md (~/.codex) — altijd actief; verwijder het blok om het uit te zetten. Je AGENTS.md buiten de markeringen wordt nooit aangeraakt. Werkt met ChatGPT-account en API-sleutel, en onder bvsala codex wordt het effect gemeten.",
       "aiDescargar": "Download savings-mode.zip",
       "aiCuenta": "De download vraagt om je (gratis) Savings-account: zo wordt adoptie een echte metriek, met identiteit — de skill zelf bevat geen enkele telemetrie.",
       "aiPaso1": "Zet op claude.ai “Code execution and file creation” aan (Settings → Capabilities).",

@@ -567,6 +567,7 @@
       "medidaPie": "der gemessenen Ausgaben",
       "anatomiaNota": "Gemessen mit dem Meter über {peticiones} echte Claude-Code-Anfragen, gegen die Zähler des Providers ({fecha}). Die Wirkung des Skills selbst wird veröffentlicht, sobald sie im A/B gemessen ist — nie vorher.",
       "ccNota": "Ein Befehl: installiert nach ~/.claude/skills und aktiviert sich von selbst, wenn es um Limits oder Token-Sparen geht.",
+      "cxNota": "Codex hat keine Skills: dieselbe Disziplin reist als markierter Block in deiner AGENTS.md (~/.codex) — immer aktiv; lösche den Block zum Abschalten. Deine AGENTS.md außerhalb der Marken wird nie angerührt. Funktioniert mit ChatGPT-Konto und API-Key, und unter bvsala codex wird die Wirkung gemessen.",
       "aiDescargar": "savings-mode.zip herunterladen",
       "aiCuenta": "Der Download verlangt dein (kostenloses) Savings-Konto: so wird Adoption eine echte Metrik, mit Identität — der Skill selbst enthält keinerlei Telemetrie.",
       "aiPaso1": "Auf claude.ai „Code execution and file creation“ aktivieren (Settings → Capabilities).",

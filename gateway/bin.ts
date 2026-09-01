@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { doctor } from "./doctor.js";
-import { instalarSkill } from "./skill.js";
+import { instalarAgentsMd, instalarSkill } from "./skill.js";
 import { soportaZstd } from "./medidor.js";
 import { BV_SALA_VERSION } from "../src/index.js";
 
@@ -39,11 +39,14 @@ Comandos:
   goose [args…]          Lanza Goose (ANTHROPIC_HOST) a través del gateway.
   qwen [args…]           Lanza Qwen Code (ANTHROPIC_BASE_URL) a través del gateway.
   doctor [--puerto N]    Detecta terminales instalados e imprime su configuración exacta.
-  skill [--proyecto] [--forzar]
+  skill [--codex] [--proyecto] [--forzar]
                          Instala el skill «savings-mode» de Claude Code (~/.claude/skills;
                          con --proyecto, en .claude/skills del directorio actual): salida
                          tersa + herramientas quirúrgicas para estirar los topes de
-                         suscripción. Su efecto se mide con el gateway, no se promete.
+                         suscripción. Con --codex, la misma disciplina como bloque marcado
+                         de AGENTS.md (~/.codex; con --proyecto, ./AGENTS.md) — Codex no
+                         tiene skills y AGENTS.md va siempre activo. Su efecto se mide con
+                         el gateway, no se promete.
 
 Entorno:
   BIVELIO_SERVICE_KEY    Clave de servicio (bvk_…): habilita metering + asiento.
@@ -70,7 +73,7 @@ if (comando === "skill") {
   // la raíz es ../../, y ejecutado con tsx desde gateway/ es ../ — se prueban
   // ambas por existencia en vez de adivinar el layout.
   const aqui = dirname(fileURLToPath(import.meta.url));
-  const r = instalarSkill({
+  const opciones = {
     origenes: [join(aqui, "..", ".."), join(aqui, "..")],
     home: homedir(),
     cwd: process.cwd(),
@@ -78,11 +81,14 @@ if (comando === "skill") {
     forzar: resto.includes("--forzar"),
     fs: {
       existe: existsSync,
-      leer: (ruta) => readFileSync(ruta, "utf8"),
-      escribir: (ruta, contenido) => writeFileSync(ruta, contenido),
-      crearDir: (ruta) => mkdirSync(ruta, { recursive: true }),
+      leer: (ruta: string) => readFileSync(ruta, "utf8"),
+      escribir: (ruta: string, contenido: string) => writeFileSync(ruta, contenido),
+      crearDir: (ruta: string) => mkdirSync(ruta, { recursive: true }),
     },
-  });
+  };
+  // --codex: la misma disciplina como bloque marcado de AGENTS.md (Codex no
+  // tiene skills); sin él, el skill de Claude Code de siempre.
+  const r = resto.includes("--codex") ? instalarAgentsMd(opciones) : instalarSkill(opciones);
   console.log(r.mensaje);
   process.exit(r.ok ? 0 : 1);
 }
