@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, CODEX_DESTINO } from "../gateway/envoltorios.js";
+import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, CODEX_DESTINO } from "../gateway/envoltorios.js";
 
 /**
  * La tabla de envoltorios es pura: aquí se afirma la FORMA exacta del base URL
@@ -44,6 +44,38 @@ describe("envoltorioDe — la forma exacta del base URL por terminal", () => {
     expect(esTerminalConEnvoltorio("goose")).toBe(true);
     expect(esTerminalConEnvoltorio("opencode")).toBe(false);
     expect(esTerminalConEnvoltorio(undefined)).toBe(false);
+  });
+});
+
+describe("resolverBinarioWindows — .exe directo; el shim .cmd de npm se detecta para negarse con guía", () => {
+  // En macOS path.join usa «/»: el matcher normaliza separadores para que el
+  // test valga en cualquier plataforma (en Windows real, join produce «\»).
+  const existeDe = (rutas: string[]) => (ruta: string) =>
+    rutas.some((r) => ruta.replaceAll("\\", "/").endsWith(r.replaceAll("\\", "/")));
+
+  it("un .exe en el PATH gana aunque un shim .cmd esté en un directorio anterior", () => {
+    const r = resolverBinarioWindows("claude", {
+      path: "C:\\npm;C:\\bin",
+      existe: existeDe(["npm/claude.cmd", "bin/claude.exe"]),
+    });
+    expect(r.tipo).toBe("exe");
+    expect((r as { ruta: string }).ruta.endsWith("claude.exe")).toBe(true);
+  });
+
+  it("solo shim .cmd (instalación npm global) → solo-shim con la ruta, para el mensaje", () => {
+    const r = resolverBinarioWindows("codex", { path: "C:\\npm", existe: existeDe(["npm/codex.cmd"]) });
+    expect(r.tipo).toBe("solo-shim");
+    expect((r as { ruta: string }).ruta.endsWith("codex.cmd")).toBe(true);
+  });
+
+  it(".com cuenta como ejecutable (semántica de libuv); .ps1 no cuenta como nada", () => {
+    expect(resolverBinarioWindows("goose", { path: "C:\\x", existe: existeDe(["goose.com"]) }).tipo).toBe("exe");
+    expect(resolverBinarioWindows("qwen", { path: "C:\\x", existe: existeDe(["qwen.ps1"]) }).tipo).toBe("no-encontrado");
+  });
+
+  it("PATH vacío o binario ausente → no-encontrado", () => {
+    expect(resolverBinarioWindows("claude", { path: "", existe: () => true }).tipo).toBe("no-encontrado");
+    expect(resolverBinarioWindows("claude", { path: "C:\\x;C:\\y", existe: () => false }).tipo).toBe("no-encontrado");
   });
 });
 

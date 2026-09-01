@@ -13,6 +13,9 @@
  * `/v1/messages`); Codex lo quiere con el prefijo de su backend.
  */
 
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
 export type ModoAuthCodex = "api-key" | "chatgpt";
 
 export interface Envoltorio {
@@ -29,6 +32,51 @@ export type TerminalConEnvoltorio = (typeof TERMINALES_CON_ENVOLTORIO)[number];
 
 export function esTerminalConEnvoltorio(comando: string | undefined): comando is TerminalConEnvoltorio {
   return (TERMINALES_CON_ENVOLTORIO as readonly string[]).includes(comando ?? "");
+}
+
+export type BinarioResuelto =
+  | { tipo: "exe"; ruta: string }
+  | { tipo: "solo-shim"; ruta: string }
+  | { tipo: "no-encontrado" };
+
+/**
+ * Resolución de binarios en WINDOWS, a mano, porque spawn no puede:
+ *
+ *   · libuv solo prueba `.com`/`.exe` al buscar en el PATH (jamás consulta
+ *     PATHEXT): un `claude.exe` se encuentra sin extensión; un `claude.cmd`
+ *     (el shim que deja `npm i -g`) termina en ENOENT.
+ *   · Y lanzar un `.cmd`/`.bat` no es una opción segura: Node lo rechaza con
+ *     EINVAL desde CVE-2024-27980 porque sus argumentos «a veces no pueden
+ *     escaparse sin ambigüedad», y la vía `shell: true` concatena los args sin
+ *     escape alguno (inyección; deprecada en runtime, DEP0190).
+ *
+ * Así que: `.exe`/`.com` → ruta directa (dir del PATH con prioridad, como
+ * libuv); solo shim → se informa para negarse con guía. Pura e inyectable
+ * para los tests.
+ */
+export function resolverBinarioWindows(
+  bin: string,
+  opts: { path?: string; existe?: (ruta: string) => boolean } = {},
+): BinarioResuelto {
+  const path = opts.path ?? process.env.PATH ?? "";
+  const existe = opts.existe ?? existsSync;
+  let shim: string | null = null;
+  for (const dir of path.split(";").filter((d) => d.length > 0)) {
+    for (const ext of [".exe", ".com"]) {
+      const ruta = join(dir, bin + ext);
+      if (existe(ruta)) return { tipo: "exe", ruta };
+    }
+    if (shim === null) {
+      for (const ext of [".cmd", ".bat"]) {
+        const ruta = join(dir, bin + ext);
+        if (existe(ruta)) {
+          shim = ruta;
+          break;
+        }
+      }
+    }
+  }
+  return shim !== null ? { tipo: "solo-shim", ruta: shim } : { tipo: "no-encontrado" };
 }
 
 /**
