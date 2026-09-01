@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useLocale, useTranslations } from "next-intl";
 
-import { calcularComision, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
+import { calcularComision, GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 
 /**
  * LA CALCULADORA DE COMISIÓN — sustituye a la tarjeta estática de confianza
@@ -21,9 +21,10 @@ import { calcularComision, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
 type Precio = { inputPer1k: number; outputPer1k: number };
 type SdkModule = { CATALOGO: Record<string, Precio>; PRECIOS_AL_DIA: string };
 
-/** Las horquillas: bajo el umbral, DENTRO de la rampa (32%: se ve la entrada
- *  gradual), plena y alta. La verdad incluye enseñar la rampa funcionando. */
-const HORQUILLAS = [0.25, 0.32, 0.45, 0.6] as const;
+/** Las horquillas, de modesta a alta. Sin mínimo (2026-09-01) ya no hay umbral
+ *  ni rampa que enseñar: la fila baja existe para que se vea que un ahorro
+ *  pequeño paga comisión pequeña — y que el cliente se queda casi todo. */
+const HORQUILLAS = [0.1, 0.25, 0.45, 0.6] as const;
 
 const PROVEEDORES = [
   {
@@ -220,7 +221,7 @@ export function CalculadoraComision({ asiento }: { asiento: { cents: number; cur
               </p>
             );
           })()}
-          <p className="calc-nota">{t("notaUmbral", { umbral: pct(UMBRAL_RATIO) })}</p>
+          <p className="calc-nota">{t("notaGarantia", { garantia: pct(GARANTIA_NETA_RATIO) })}</p>
           <p className="calc-nota">
             {t("notaTramos", {
               tramos: TRAMOS.map((tr) =>

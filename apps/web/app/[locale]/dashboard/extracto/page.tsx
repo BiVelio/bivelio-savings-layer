@@ -143,7 +143,7 @@ export default async function ExtractoPage() {
             <span className="k">{t("extracto.ahorroMedido")}</span>
             <div className="v real">{eur(e.ahorroMedidoEur)}</div>
             <p>
-              {t("extracto.ratio", { pct: pct(e.comision.ratio) })} · {t("extracto.rampa", { pct: pct(e.comision.factorRampa) })}
+              {t("extracto.ratio", { pct: pct(e.comision.ratio) })}
             </p>
           </div>
         </div>
@@ -187,7 +187,6 @@ export default async function ExtractoPage() {
             // La unidad y la fuente van construidas AQUÍ: los ficheros de
             // mensajes tienen prohibido llevar EUR/USD a mano (parity.test.ts).
             fx: `${e.parametros.fx.eurPorUsd.toLocaleString(locale)} EUR/USD — ${e.parametros.fx.fuente}`,
-            umbral: pct(e.parametros.umbralRatio),
           })}
         </p>
         <p className="ck-note">

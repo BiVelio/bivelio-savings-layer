@@ -62,17 +62,19 @@ describe("construirExtracto — el documento único sombra/factura", () => {
     expect(real.cargoEur).toBe(90);
   });
 
-  it("bajo el umbral el cargo es 0 también fuera de calibración", () => {
+  it("SIN MÍNIMO (2026-09-01): un ratio modesto ya comisiona por tramos", () => {
     const e = construirExtracto({
       orgId: "o",
       periodo: "2026-09",
-      filas: [fila("2026-09-01", 1_000, 780)], // 22%
+      filas: [fila("2026-09-01", 1_000, 780)], // 22% — bajo la tarifa vieja: 0
       esCalibracion: false,
       versionPrecios: "v",
       fx: FX,
     });
-    expect(e.cargoEur).toBe(0);
-    expect(e.comision.factorRampa).toBe(0);
+    expect(e.comision.comisionEur).toBe(22); // 220 € × 10% (primer tramo)
+    expect(e.cargoEur).toBe(22);
+    // La garantía nueva: el cliente se queda con ≥90% de lo ahorrado.
+    expect(e.comision.netoClienteEur).toBe(198);
   });
 
   it("el FX convierte la base ANTES de los tramos (los cortes son en EUR)", () => {
@@ -86,10 +88,10 @@ describe("construirExtracto — el documento único sombra/factura", () => {
       fx: { eurPorUsd: 0.5, fuente: "test" },
     });
     expect(e.ahorroMedidoEur).toBe(600);
-    expect(e.comision.comisionEur).toBe(60); // 10% liso, ratio 50% → rampa 1
+    expect(e.comision.comisionEur).toBe(60); // 10% liso (primer tramo)
   });
 
-  it("el extracto es auto-contenido: fija precios, fx, umbral y tramos", () => {
+  it("el extracto es auto-contenido: fija precios, fx y tramos", () => {
     const e = construirExtracto({
       orgId: "o",
       periodo: "2026-09",
@@ -100,7 +102,6 @@ describe("construirExtracto — el documento único sombra/factura", () => {
     });
     expect(e.parametros.versionPrecios).toBe("2026-08-13");
     expect(e.parametros.fx.fuente).toContain("BCE");
-    expect(e.parametros.umbralRatio).toBe(0.3);
     expect(e.parametros.tramos.length).toBe(4);
   });
 

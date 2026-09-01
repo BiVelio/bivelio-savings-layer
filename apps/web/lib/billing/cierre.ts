@@ -83,7 +83,10 @@ function aFilaDeCierre(e: Extracto): FilaDeCierre {
     base_medida_eur: e.baseMedidaEur,
     ahorro_medido_eur: e.ahorroMedidoEur,
     ratio: redondear6(e.comision.ratio),
-    factor_rampa: redondear6(e.comision.factorRampa),
+    // La rampa 30→35% se retiró el 2026-09-01 (sin mínimo): desde entonces la
+    // comisión aplica entera y este factor es constante. La columna (0016, not
+    // null) se conserva para que las filas históricas sigan siendo legibles.
+    factor_rampa: 1,
     comision_eur: e.comision.comisionEur,
     cargo_eur: e.cargoEur,
     ahorro_estimado_excluido_usd: e.ahorroEstimadoExcluidoUsd,
