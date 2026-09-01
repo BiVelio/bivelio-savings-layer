@@ -44,6 +44,8 @@ Entorno:
   BVSALA_GATEWAY_UPSTREAM  Upstream alternativo (por defecto el del terminal).
   BVSALA_GATEWAY_COALESCE  =1 enciende la coalescencia de duplicados (F2, experimental).
   BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
+  BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
+                         (por defecto va silenciado para no pisar el TUI; mira el panel).
   CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, solo API key) tus modelos en /model.
 
 El gateway nunca corta el tráfico: sin clave o con la ingesta caída, reenvía y avisa.
@@ -87,8 +89,15 @@ const envoltorio = esEnvoltorio
   : null;
 
 const serviceAccountKey = process.env.BIVELIO_SERVICE_KEY;
+// En modo envoltorio el hijo ES un TUI dueño de la terminal: el log por
+// petición del gateway se imprimía encima y se pisaban las palabras (visto en
+// vivo con el diálogo de confianza de Claude Code). Silencio por defecto —
+// el sitio para mirar es el panel — y BVSALA_GATEWAY_LOG=1 lo recupera para
+// depurar. `bvsala gateway` a secas sigue logueando: ahí el log es el producto.
+const silencioso = esEnvoltorio && process.env.BVSALA_GATEWAY_LOG !== "1";
 const arranque = await arrancarGateway({
   puerto,
+  ...(silencioso ? { log: () => {} } : {}),
   ...(serviceAccountKey ? { serviceAccountKey } : {}),
   ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
   ...(process.env.BVSALA_GATEWAY_UPSTREAM

@@ -42,7 +42,13 @@ Claude Code añade `/v1/messages` por su cuenta. Sin barra final.
 
 ## Comprobar que funciona
 
-En el log del gateway, en este orden:
+**Con `bvsala claude` (el envoltorio), la comprobación es tu dashboard**: el
+log por petición va silenciado por defecto desde la 0.4.8 — imprimirlo pisaba
+el TUI de Claude Code (las palabras se montaban sobre los diálogos). Si lo
+quieres ver igualmente, `BVSALA_GATEWAY_LOG=1 bvsala claude`.
+
+Con `bvsala gateway` a secas (dos terminales), el log sí es la comprobación,
+en este orden:
 
 ```
 [gateway] HEAD /api/hello → 200
