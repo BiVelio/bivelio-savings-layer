@@ -398,7 +398,7 @@
       "metaTitle": "Extracte · BiVelio Savings Layer",
       "eyebrow": "Mode ombra · aquí no es cobra res",
       "title": "El teu extracte, abans que existeixi la factura",
-      "intro": "El document exacte que produirà la futura factura variable: només estalvi mesurat, amb la tarifa per trams i la rampa del 30%. Durant la calibració, el càrrec és sempre {cero}.",
+      "intro": "El document exacte que produirà la futura factura variable: només estalvi mesurat, amb la tarifa per trams — sense mínim, només es cobra si estalvies. Durant la calibració, el càrrec és sempre {cero}.",
       "periodo": "Període {periodo}",
       "badgeCalibracion": "PERÍODE DE CALIBRACIÓ — CÀRREC ZERO",
       "badgeSombra": "OMBRA — SENSE CÀRREC REAL",

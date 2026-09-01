@@ -398,7 +398,7 @@
       "metaTitle": "Abrechnung · BiVelio Savings Layer",
       "eyebrow": "Schattenmodus · hier wird nichts berechnet",
       "title": "Deine Abrechnung, bevor die Rechnung existiert",
-      "intro": "Das exakte Dokument, das die künftige variable Rechnung erzeugen wird: nur gemessene Ersparnis, mit Stufentarif und der 30%-Rampe. Während der Kalibrierung beträgt die Belastung immer {cero}.",
+      "intro": "Das exakte Dokument, das die künftige variable Rechnung erzeugen wird: nur gemessene Ersparnis, mit Stufentarif — ohne Minimum, berechnet wird nur, wenn du sparst. Während der Kalibrierung ist der Betrag immer {cero}.",
       "periodo": "Zeitraum {periodo}",
       "badgeCalibracion": "KALIBRIERUNGSZEITRAUM — NULL BELASTUNG",
       "badgeSombra": "SCHATTEN — KEINE ECHTE BELASTUNG",

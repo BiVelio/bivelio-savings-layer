@@ -398,7 +398,7 @@
       "metaTitle": "Extracto · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aquí no se cobra nada",
       "title": "Tu extracto, antes de que exista la factura",
-      "intro": "El documento exacto que producirá la futura factura variable: solo ahorro medido, con la tarifa por tramos y la rampa del 30%. Durante la calibración, el cargo es siempre {cero}.",
+      "intro": "El documento exacto que producirá la futura factura variable: solo ahorro medido, con la tarifa por tramos — sin mínimo, solo se cobra si ahorras. Durante la calibración, el cargo es siempre {cero}.",
       "periodo": "Período {periodo}",
       "badgeCalibracion": "PERÍODO DE CALIBRACIÓN — CARGO CERO",
       "badgeSombra": "SOMBRA — SIN CARGO REAL",

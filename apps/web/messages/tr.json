@@ -398,7 +398,7 @@
       "metaTitle": "Ekstre · BiVelio Savings Layer",
       "eyebrow": "Gölge modu · burada hiçbir şey tahsil edilmez",
       "title": "Fatura var olmadan önce ekstren",
-      "intro": "Gelecekteki değişken faturanın üreteceği belgenin ta kendisi: yalnızca ölçülmüş tasarruf, kademeli tarife ve %30 rampasıyla. Kalibrasyon sırasında tutar her zaman {cero}.",
+      "intro": "Gelecekteki değişken faturanın üreteceği belgenin ta kendisi: yalnızca ölçülmüş tasarruf, kademeli tarifeyle — asgari yok, yalnızca tasarruf edersen ücret alınır. Kalibrasyon sırasında tutar her zaman {cero} olur.",
       "periodo": "Dönem {periodo}",
       "badgeCalibracion": "KALİBRASYON DÖNEMİ — SIFIR TUTAR",
       "badgeSombra": "GÖLGE — GERÇEK TAHSİLAT YOK",

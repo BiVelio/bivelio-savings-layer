@@ -398,7 +398,7 @@
       "metaTitle": "Relevé · BiVelio Savings Layer",
       "eyebrow": "Mode ombre · rien n'est facturé ici",
       "title": "Votre relevé, avant que la facture n'existe",
-      "intro": "Le document exact que produira la future facture variable : uniquement l'économie mesurée, avec le tarif par tranches et la rampe des 30 %. Pendant la calibration, le montant est toujours {cero}.",
+      "intro": "Le document exact que produira la future facture variable : uniquement l'économie mesurée, avec le tarif par tranches — sans minimum, vous ne payez que si vous économisez. Pendant le calibrage, le montant est toujours {cero}.",
       "periodo": "Période {periodo}",
       "badgeCalibracion": "PÉRIODE DE CALIBRATION — MONTANT ZÉRO",
       "badgeSombra": "OMBRE — AUCUN DÉBIT RÉEL",

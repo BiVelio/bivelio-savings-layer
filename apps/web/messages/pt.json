@@ -398,7 +398,7 @@
       "metaTitle": "Extrato · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aqui nada é cobrado",
       "title": "O seu extrato, antes de a fatura existir",
-      "intro": "O documento exato que a futura fatura variável produzirá: só economia medida, com a tarifa por faixas e a rampa dos 30%. Durante a calibração, a cobrança é sempre {cero}.",
+      "intro": "O documento exato que a futura fatura variável produzirá: só economia medida, com a tarifa por faixas — sem mínimo, só se cobra se poupares. Durante a calibração, a cobrança é sempre {cero}.",
       "periodo": "Período {periodo}",
       "badgeCalibracion": "PERÍODO DE CALIBRAÇÃO — COBRANÇA ZERO",
       "badgeSombra": "SOMBRA — SEM COBRANÇA REAL",

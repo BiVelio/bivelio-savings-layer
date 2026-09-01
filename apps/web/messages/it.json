@@ -398,7 +398,7 @@
       "metaTitle": "Estratto · BiVelio Savings Layer",
       "eyebrow": "Modalità ombra · qui non si addebita nulla",
       "title": "Il tuo estratto, prima che la fattura esista",
-      "intro": "Il documento esatto che produrrà la futura fattura variabile: solo risparmio misurato, con la tariffa a scaglioni e la rampa del 30%. Durante la calibrazione l'addebito è sempre {cero}.",
+      "intro": "Il documento esatto che produrrà la futura fattura variabile: solo risparmio misurato, con la tariffa a scaglioni — senza minimo, si paga solo se risparmi. Durante la calibrazione, l'addebito è sempre {cero}.",
       "periodo": "Periodo {periodo}",
       "badgeCalibracion": "PERIODO DI CALIBRAZIONE — ADDEBITO ZERO",
       "badgeSombra": "OMBRA — NESSUN ADDEBITO REALE",
