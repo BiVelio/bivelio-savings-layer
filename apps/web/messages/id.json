@@ -570,8 +570,7 @@
       "aiDescargar": "Unduh savings-mode.zip",
       "aiCuenta": "Unduhan meminta akun Savings (gratis) Anda: dengan begitu adopsi menjadi metrik nyata, dengan identitas — skill itu sendiri tidak membawa telemetri apa pun.",
       "aiPaso1": "Di claude.ai aktifkan “Code execution and file creation” (Settings → Capabilities).",
-      "aiPaso2": "Lalu unggah zip di Customize → Skills: muncul dengan sakelarnya sendiri, privat di akunmu.",
-      "gptNota": "Kejujuran dulu: ChatGPT tidak punya skill dan batasnya menghitung pesan, bukan token — keringkasan tidak merenggangkan batas. Jika tetap ingin gayanya, tempel ini di Custom Instructions:"
+      "aiPaso2": "Lalu unggah zip di Customize → Skills: muncul dengan sakelarnya sendiri, privat di akunmu."
     },
     "systems": {
       "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API OpenAI atau Anthropic dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."

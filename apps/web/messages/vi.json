@@ -570,8 +570,7 @@
       "aiDescargar": "Tải savings-mode.zip",
       "aiCuenta": "Việc tải xuống yêu cầu tài khoản Savings (miễn phí) của bạn: nhờ đó mức độ sử dụng là một chỉ số thật, có danh tính — bản thân skill không chứa bất kỳ telemetry nào.",
       "aiPaso1": "Trên claude.ai, bật “Code execution and file creation” (Settings → Capabilities).",
-      "aiPaso2": "Sau đó tải zip lên trong Customize → Skills: nó xuất hiện với công tắc riêng, riêng tư trong tài khoản của bạn.",
-      "gptNota": "Trung thực trước tiên: ChatGPT không có skill và giới hạn của nó đếm tin nhắn, không phải token — ngắn gọn không kéo giãn được giới hạn. Nếu vẫn muốn phong cách này, dán đoạn sau vào Custom Instructions:"
+      "aiPaso2": "Sau đó tải zip lên trong Customize → Skills: nó xuất hiện với công tắc riêng, riêng tư trong tài khoản của bạn."
     },
     "systems": {
       "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của OpenAI hay Anthropic bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."

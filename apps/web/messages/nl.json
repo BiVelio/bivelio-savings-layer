@@ -570,8 +570,7 @@
       "aiDescargar": "Download savings-mode.zip",
       "aiCuenta": "De download vraagt om je (gratis) Savings-account: zo wordt adoptie een echte metriek, met identiteit — de skill zelf bevat geen enkele telemetrie.",
       "aiPaso1": "Zet op claude.ai “Code execution and file creation” aan (Settings → Capabilities).",
-      "aiPaso2": "Upload daarna de zip onder Customize → Skills: hij verschijnt met zijn eigen schakelaar, privé in je account.",
-      "gptNota": "Eerlijkheid eerst: ChatGPT heeft geen skills en zijn limieten tellen berichten, geen tokens — beknoptheid rekt de limiet niet op. Wil je de stijl toch, plak dit in Custom Instructions:"
+      "aiPaso2": "Upload daarna de zip onder Customize → Skills: hij verschijnt met zijn eigen schakelaar, privé in je account."
     },
     "systems": {
       "caption": "Waar je automatiseringen al leven. Roept het de OpenAI- of Anthropic-API aan met jouw sleutel, dan wordt het gemeten — de SDK omhult de aanroep; de gateway staat ervoor."

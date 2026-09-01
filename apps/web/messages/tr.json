@@ -570,8 +570,7 @@
       "aiDescargar": "savings-mode.zip'i indir",
       "aiCuenta": "İndirme (ücretsiz) Savings hesabını ister: böylece benimseme, kimlikli gerçek bir metrik olur — skill'in kendisinde hiçbir telemetri yoktur.",
       "aiPaso1": "claude.ai'de “Code execution and file creation” özelliğini aç (Settings → Capabilities).",
-      "aiPaso2": "Sonra zip'i Customize → Skills altında yükle: kendi anahtarıyla, hesabında özel olarak görünür.",
-      "gptNota": "Önce dürüstlük: ChatGPT'de skill yok ve limitleri token değil mesaj sayar — kısalık limiti esnetmez. Yine de bu tarzı istiyorsan şunu Custom Instructions'a yapıştır:"
+      "aiPaso2": "Sonra zip'i Customize → Skills altında yükle: kendi anahtarıyla, hesabında özel olarak görünür."
     },
     "systems": {
       "caption": "Otomasyonlarının zaten yaşadığı yerde. OpenAI veya Anthropic API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
