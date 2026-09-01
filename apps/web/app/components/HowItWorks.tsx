@@ -10,22 +10,25 @@ import { Link } from "@/i18n/navigation";
  * exactamente el mismo dentro y fuera.
  *
  * La honestidad aquí es parte del producto: los casos «Nada que instalar» se
- * dicen tal cual, y el caso Claude Code cuenta la verdad de hoy — el gateway
- * `bvsala claude` (publicado en npm) ya se pone delante y MIDE, pero todavía no
- * ahorra, así que el veredicto sigue en «Aún no» hasta que la primera palanca
- * lo cambie (docs/PLAN-PASARELA-API-KEY.md).
+ * dicen tal cual, y el caso Claude Code lleva la insignia «Ya mide» — el
+ * gateway `bvsala claude` está validado de punta a punta (gateway → ingesta →
+ * panel, 2026-09-01) — mientras el cuerpo deja claro que el AHORRO ahí es la
+ * siguiente fase (docs/PLAN-PASARELA-API-KEY.md).
  */
 export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
   const t = await getTranslations("howItWorks");
   const b = (chunks: React.ReactNode) => <b>{chunks}</b>;
 
-  const cases: { name: string; sub: string; body: React.ReactNode[]; verdict: "no" | "casi" | "si" }[] = [
+  const cases: { name: string; sub: string; body: React.ReactNode[]; verdict: "no" | "casi" | "mide" | "si" }[] = [
     { name: "ChatGPT", sub: t("caseChatSub"), body: [t("caseChatBody")], verdict: "no" },
     { name: "Claude", sub: t("caseClaudeSub"), body: [t("caseClaudeBody")], verdict: "no" },
-    { name: "Claude Code", sub: t("caseCodeSub"), body: [t("caseCodeBody")], verdict: "casi" },
+    // «Ya mide», no «Aún no»: desde la 0.4.5 el medidor está validado de punta a
+    // punta (gateway → ingesta → panel, 01-09). Lo que sigue sin haber ahí es
+    // AHORRO, y el cuerpo lo dice tal cual — la insignia no promete más.
+    { name: "Claude Code", sub: t("caseCodeSub"), body: [t("caseCodeBody")], verdict: "mide" },
     { name: t("caseAppName"), sub: t("caseAppSub"), body: [t.rich("caseAppBody", { b })], verdict: "si" },
   ];
-  const verdictLabel = { no: t("verdictNothing"), casi: t("verdictNotYet"), si: t("verdictYes") } as const;
+  const verdictLabel = { no: t("verdictNothing"), casi: t("verdictNotYet"), mide: t("verdictMeasures"), si: t("verdictYes") } as const;
 
   return (
     <>
