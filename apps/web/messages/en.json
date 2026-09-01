@@ -554,6 +554,9 @@
         "desc": "Still in the prompt, but billed or processed more cheaply."
       }
     ],
+    "systems": {
+      "caption": "Where your automations already live. If it calls the OpenAI or Anthropic API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
+    },
     "gateway": {
       "eyebrow": "New · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",

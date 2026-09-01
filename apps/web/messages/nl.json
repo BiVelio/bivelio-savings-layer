@@ -554,6 +554,9 @@
         "desc": "Nog in de prompt, maar goedkoper gefactureerd of verwerkt."
       }
     ],
+    "systems": {
+      "caption": "Waar je automatiseringen al leven. Roept het de OpenAI- of Anthropic-API aan met jouw sleutel, dan wordt het gemeten — de SDK omhult de aanroep; de gateway staat ervoor."
+    },
     "gateway": {
       "eyebrow": "Nieuw · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",

@@ -554,6 +554,9 @@
         "desc": "Vẫn nằm trong prompt, nhưng được tính phí hoặc xử lý rẻ hơn."
       }
     ],
+    "systems": {
+      "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của OpenAI hay Anthropic bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."
+    },
     "gateway": {
       "eyebrow": "Mới · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",

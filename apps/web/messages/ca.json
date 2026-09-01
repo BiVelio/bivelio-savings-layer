@@ -554,6 +554,9 @@
         "desc": "Encara al prompt, però facturada o processada de manera més barata."
       }
     ],
+    "systems": {
+      "caption": "On ja viuen les teves automatitzacions. Si crida l'API d'OpenAI o Anthropic amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."
+    },
     "gateway": {
       "eyebrow": "Nou · terminals de codi",
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",

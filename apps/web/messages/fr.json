@@ -554,6 +554,9 @@
         "desc": "Toujours dans le prompt, mais facturée ou traitée à moindre coût."
       }
     ],
+    "systems": {
+      "caption": "Là où vivent déjà vos automatisations. Si ça appelle l'API OpenAI ou Anthropic avec votre clé, c'est mesuré — le SDK enveloppe l'appel ; la passerelle se place devant."
+    },
     "gateway": {
       "eyebrow": "Nouveau · terminaux de code",
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",

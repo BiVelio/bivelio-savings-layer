@@ -554,6 +554,9 @@
         "desc": "Masih ada dalam prompt, tetapi ditagih atau diproses lebih murah."
       }
     ],
+    "systems": {
+      "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API OpenAI atau Anthropic dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
+    },
     "gateway": {
       "eyebrow": "Baru · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",

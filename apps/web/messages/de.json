@@ -554,6 +554,9 @@
         "desc": "Noch im Prompt, aber günstiger abgerechnet oder verarbeitet."
       }
     ],
+    "systems": {
+      "caption": "Wo deine Automatisierungen schon leben. Ruft es die OpenAI- oder Anthropic-API mit deinem Schlüssel auf, wird es gemessen — das SDK umhüllt den Aufruf; das Gateway setzt sich davor."
+    },
     "gateway": {
       "eyebrow": "Neu · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",

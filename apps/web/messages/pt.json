@@ -554,6 +554,9 @@
         "desc": "Ainda no prompt, mas faturada ou processada de forma mais barata."
       }
     ],
+    "systems": {
+      "caption": "Onde as tuas automações já vivem. Se chama a API da OpenAI ou da Anthropic com a tua chave, mede-se — o SDK envolve a chamada; o gateway fica à frente."
+    },
     "gateway": {
       "eyebrow": "Novo · terminais de código",
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
