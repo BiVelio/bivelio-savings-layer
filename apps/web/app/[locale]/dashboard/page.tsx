@@ -1,14 +1,16 @@
 import { getTranslations } from "next-intl/server";
 import { authConfigured } from "@/lib/supabase/env";
 import abData from "@/public/data/ab-live.json";
-import { activationSteps, type AbArtifact } from "./data";
+import { activationSteps, getSesiones, type AbArtifact } from "./data";
 import { loadDashboard } from "./load";
+import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
 import { SavingsTrendChart } from "./components/SavingsTrendChart";
 import { TrafficModelMix } from "./components/TrafficModelMix";
+import { SesionesCard } from "./components/SesionesCard";
 import { VerdictHero } from "./components/VerdictHero";
 
 export const dynamic = "force-dynamic";
@@ -26,8 +28,11 @@ export default async function OverviewPage() {
   if (!authConfigured) {
     return <p className="ck-note">{t("overview.authNotWired")}</p>;
   }
-  const { ctx, usage, usageFailed, visibilidad } = await loadDashboard();
+  const { ctx, usage, usageFailed, visibilidad, orgId } = await loadDashboard();
   const steps = await activationSteps(true, ctx, usage);
+  // Coste por sesión (0019): lectura aparte y tolerante — sin tabla (migración
+  // por detrás del deploy) o sin filas, la tarjeta no existe y el panel sigue.
+  const sesiones = orgId ? (await getSesiones(await createReadOnlyClient(), orgId)).rows : [];
 
   return (
     <>
@@ -67,6 +72,7 @@ export default async function OverviewPage() {
               <TrafficModelMix usage={usage} />
             </div>
           </div>
+          <SesionesCard sesiones={sesiones} />
         </div>
       </section>
     </>

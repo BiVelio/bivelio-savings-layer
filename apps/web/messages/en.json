@@ -237,6 +237,15 @@
       "revokeYesAria": "Confirm revoking key {prefix}",
       "errList": "Couldn't load your keys — reload to manage or revoke them."
     },
+    "sesiones": {
+      "title": "cost per session (7 days)",
+      "colSession": "Session",
+      "colAgents": "Subagents",
+      "colRequests": "Requests",
+      "colTokens": "Tokens",
+      "colCost": "Cost",
+      "hint": "Sessions and subagents from your coding terminals (opaque ids — never a person). Requires the gateway from 0.4.7 onwards."
+    },
     "installLicensePanel": {
       "eyebrow": "Get started",
       "heading": "Four steps. Your prompts never touch our servers.",

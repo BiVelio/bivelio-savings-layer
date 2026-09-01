@@ -237,6 +237,15 @@
       "revokeYesAria": "Intrekken van sleutel {prefix} bevestigen",
       "errList": "Kon je sleutels niet laden — herlaad om ze te beheren of in te trekken."
     },
+    "sesiones": {
+      "title": "kosten per sessie (7 dagen)",
+      "colSession": "Sessie",
+      "colAgents": "Subagenten",
+      "colRequests": "Verzoeken",
+      "colTokens": "Tokens",
+      "colCost": "Kosten",
+      "hint": "Sessies en subagenten van je codeterminals (opake ids — nooit een persoon). Vereist de gateway vanaf 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Aan de slag",
       "heading": "Vier stappen. Je prompts raken nooit onze servers.",

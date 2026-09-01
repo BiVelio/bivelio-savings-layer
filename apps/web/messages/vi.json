@@ -237,6 +237,15 @@
       "revokeYesAria": "Xác nhận thu hồi khoá {prefix}",
       "errList": "Không tải được danh sách khoá — hãy tải lại để quản lý hoặc thu hồi."
     },
+    "sesiones": {
+      "title": "chi phí theo phiên (7 ngày)",
+      "colSession": "Phiên",
+      "colAgents": "Agent con",
+      "colRequests": "Yêu cầu",
+      "colTokens": "Token",
+      "colCost": "Chi phí",
+      "hint": "Các phiên và agent con từ terminal lập trình của bạn (id ẩn danh — không bao giờ là một người). Cần gateway từ bản 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
       "heading": "Bốn bước. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",

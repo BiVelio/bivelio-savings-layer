@@ -237,6 +237,15 @@
       "revokeYesAria": "Confirmar la revocación de la clave {prefix}",
       "errList": "No se han podido cargar tus claves. Recarga para gestionarlas o revocarlas."
     },
+    "sesiones": {
+      "title": "coste por sesión (7 días)",
+      "colSession": "Sesión",
+      "colAgents": "Subagentes",
+      "colRequests": "Peticiones",
+      "colTokens": "Tokens",
+      "colCost": "Coste",
+      "hint": "Sesiones y subagentes de tus terminales de código (ids opacos — jamás una persona). Requiere el gateway desde la 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Empezar",
       "heading": "Cuatro pasos. Tus prompts nunca pasan por nuestros servidores.",

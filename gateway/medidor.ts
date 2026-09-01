@@ -295,8 +295,14 @@ export function usoDeJson(cuerpo: Buffer | string): UsoSse | null {
  * porque `SavingsReport` documenta muchos más campos (los de las palancas) que
  * en un gateway sin palancas no tienen valor que reportar.
  */
-export function informeMedido(requestId: string, model: string, medido: RegistroMedido): SavingsReport {
-  return construirInforme(requestId, model, medido, false);
+/** Atribución de terminal: identidades opacas de sesión/subagente, jamás una persona. */
+export interface Atribucion {
+  sessionId?: string;
+  agentId?: string;
+}
+
+export function informeMedido(requestId: string, model: string, medido: RegistroMedido, atribucion?: Atribucion): SavingsReport {
+  return construirInforme(requestId, model, medido, false, atribucion);
 }
 
 /**
@@ -305,15 +311,22 @@ export function informeMedido(requestId: string, model: string, medido: Registro
  * "estimated" a propósito — ver la doctrina en gateway/coalescencia.ts — y por
  * tanto NUNCA entra en la base de la comisión.
  */
-export function informeCoalescido(requestId: string, model: string, medidoPrimaria: RegistroMedido): SavingsReport {
-  return construirInforme(requestId, model, medidoPrimaria, true);
+export function informeCoalescido(requestId: string, model: string, medidoPrimaria: RegistroMedido, atribucion?: Atribucion): SavingsReport {
+  return construirInforme(requestId, model, medidoPrimaria, true, atribucion);
 }
 
-function construirInforme(requestId: string, model: string, medido: RegistroMedido, coalescida: boolean): SavingsReport {
+function construirInforme(
+  requestId: string,
+  model: string,
+  medido: RegistroMedido,
+  coalescida: boolean,
+  atribucion?: Atribucion,
+): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   const informe = {
     requestId,
     model,
+    ...(atribucion && (atribucion.sessionId || atribucion.agentId) ? { attribution: atribucion } : {}),
     calls: coalescida ? { avoidedLlm: 1, actualLlm: 0 } : { avoidedLlm: 0, actualLlm: 1 },
     tokens: {
       baselineInput: entradaTotal,

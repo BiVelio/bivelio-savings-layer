@@ -3,7 +3,16 @@ import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
-import { ObservadorSse, ObservadorResponses, costeMedido, informeMedido, informeCoalescido, usoDeJson, modeloDelCuerpo } from "./medidor.js";
+import {
+  ObservadorSse,
+  ObservadorResponses,
+  costeMedido,
+  informeMedido,
+  informeCoalescido,
+  usoDeJson,
+  modeloDelCuerpo,
+  type Atribucion,
+} from "./medidor.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -112,6 +121,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     coalescida: boolean,
     path: string,
     codificacion?: string,
+    atribucion?: Atribucion,
   ): void => {
     if (!emisor || !uso) return;
     const model = modeloDelCuerpo(cuerpo, codificacion);
@@ -124,7 +134,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     }
     const medido = costeMedido(model, uso);
     if (medido) {
-      emisor.record(coalescida ? informeCoalescido(requestId, model, medido) : informeMedido(requestId, model, medido));
+      emisor.record(
+        coalescida ? informeCoalescido(requestId, model, medido, atribucion) : informeMedido(requestId, model, medido, atribucion),
+      );
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
@@ -162,6 +174,20 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     let medida = false;
     const ce = req.headers["content-encoding"];
     const codificacion = Array.isArray(ce) ? ce[0] : ce;
+    // Atribución de sesión/subagente: Claude Code manda x-claude-code-session-id
+    // (y agent-id en subagentes). Solo pasan identidades que la verja del ingest
+    // aceptaría — un valor raro aquí tiraría el LOTE entero con un 400. Son ids
+    // opacos de sesión, jamás de usuario (la doc de Anthropic lo prohíbe).
+    const idSeguro = (v: string | string[] | undefined): string | undefined => {
+      const s = Array.isArray(v) ? v[0] : v;
+      return s !== undefined && /^[A-Za-z0-9._:/-]{1,128}$/.test(s) ? s : undefined;
+    };
+    const sesionId = idSeguro(req.headers["x-claude-code-session-id"]);
+    const agenteId = idSeguro(req.headers["x-claude-code-agent-id"]);
+    const atribucion: Atribucion | undefined =
+      sesionId !== undefined || agenteId !== undefined
+        ? { ...(sesionId !== undefined ? { sessionId: sesionId } : {}), ...(agenteId !== undefined ? { agentId: agenteId } : {}) }
+        : undefined;
     try {
       const chunks: Buffer[] = [];
       for await (const c of req) chunks.push(c as Buffer);
@@ -198,7 +224,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             // prompt_tokens) emitía un registro fantasma de 0 tokens.
             const usoReplica =
               obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
-            medir(requestId, cuerpo, usoReplica, true, url.pathname, codificacion);
+            medir(requestId, cuerpo, usoReplica, true, url.pathname, codificacion, atribucion);
             return;
           }
           // Primaria fallida o desbordada: la gemela viaja por su cuenta.
@@ -278,9 +304,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medida = true;
-        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion);
+        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion);
       } else if (cuerpoJson) {
-        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname, codificacion);
+        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname, codificacion, atribucion);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -298,7 +324,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         const uso = !medida && observador ? observador.usageFinal() : null;
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion);
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
         }

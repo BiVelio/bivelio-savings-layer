@@ -237,6 +237,15 @@
       "revokeYesAria": "Confirma la revocació de la clau {prefix}",
       "errList": "No s'han pogut carregar les teves claus. Torna a carregar per gestionar-les o revocar-les."
     },
+    "sesiones": {
+      "title": "cost per sessió (7 dies)",
+      "colSession": "Sessió",
+      "colAgents": "Subagents",
+      "colRequests": "Peticions",
+      "colTokens": "Tokens",
+      "colCost": "Cost",
+      "hint": "Sessions i subagents dels teus terminals de codi (ids opacs — mai una persona). Requereix el gateway des de la 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Comença",
       "heading": "Quatre passos. Els teus prompts mai no toquen els nostres servidors.",

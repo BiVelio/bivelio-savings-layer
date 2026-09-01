@@ -237,6 +237,15 @@
       "revokeYesAria": "{prefix} anahtarının iptalini onayla",
       "errList": "Anahtarlarınız yüklenemedi — yönetmek veya iptal etmek için sayfayı yenileyin."
     },
+    "sesiones": {
+      "title": "oturum başına maliyet (7 gün)",
+      "colSession": "Oturum",
+      "colAgents": "Alt ajanlar",
+      "colRequests": "İstekler",
+      "colTokens": "Token",
+      "colCost": "Maliyet",
+      "hint": "Kod terminallerinin oturumları ve alt ajanları (opak kimlikler — asla bir kişi değil). 0.4.7 ve sonrası ağ geçidi gerektirir."
+    },
     "installLicensePanel": {
       "eyebrow": "Başlayın",
       "heading": "Dört adım. Prompt'larınız sunucularımıza asla dokunmaz.",

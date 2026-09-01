@@ -237,6 +237,15 @@
       "revokeYesAria": "Confirmar a revogação da chave {prefix}",
       "errList": "Não foi possível carregar as tuas chaves — recarrega para as gerires ou revogares."
     },
+    "sesiones": {
+      "title": "custo por sessão (7 dias)",
+      "colSession": "Sessão",
+      "colAgents": "Subagentes",
+      "colRequests": "Pedidos",
+      "colTokens": "Tokens",
+      "colCost": "Custo",
+      "hint": "Sessões e subagentes dos teus terminais de código (ids opacos — nunca uma pessoa). Requer o gateway a partir da 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Começar",
       "heading": "Quatro passos. Os teus prompts nunca tocam nos nossos servidores.",

@@ -237,6 +237,15 @@
       "revokeYesAria": "Confirmer la révocation de la clé {prefix}",
       "errList": "Impossible de charger vos clés — rechargez pour les gérer ou les révoquer."
     },
+    "sesiones": {
+      "title": "coût par session (7 jours)",
+      "colSession": "Session",
+      "colAgents": "Sous-agents",
+      "colRequests": "Requêtes",
+      "colTokens": "Tokens",
+      "colCost": "Coût",
+      "hint": "Sessions et sous-agents de vos terminaux de code (ids opaques — jamais une personne). Nécessite la passerelle à partir de la 0.4.7."
+    },
     "installLicensePanel": {
       "eyebrow": "Commencer",
       "heading": "Quatre étapes. Vos prompts ne touchent jamais nos serveurs.",

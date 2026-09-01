@@ -69,6 +69,15 @@ describe("privacy backstop — parseUsageRecord", () => {
     expect(() => parseUsageRecord(validBody({ model: "anthropic/claude-sonnet-5" }), "org")).not.toThrow();
   });
 
+  it("session/agent attribution (0019): opaque ids pass, free text does not, and both are optional", () => {
+    const rec = parseUsageRecord(validBody({ sessionId: "ses_01:abc", agentId: "ag-7" }), "org");
+    expect(rec["sessionId"]).toBe("ses_01:abc");
+    expect(rec["agentId"]).toBe("ag-7");
+    expect("sessionId" in parseUsageRecord(validBody(), "org")).toBe(false);
+    expect(() => parseUsageRecord(validBody({ sessionId: "the user asked …" }), "org")).toThrow(/sessionId/);
+    expect(() => parseUsageRecord(validBody({ agentId: "x".repeat(129) }), "org")).toThrow(/agentId/);
+  });
+
   it("rejects type mismatches (numbers must be finite numbers)", () => {
     expect(() => parseUsageRecord(validBody({ actualInputTokens: "60" }), "org")).toThrow(UsageValidationError);
     expect(() => parseUsageRecord(validBody({ netSavings: Infinity }), "org")).toThrow(UsageValidationError);
