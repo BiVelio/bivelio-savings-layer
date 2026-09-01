@@ -1,8 +1,6 @@
 import {
   calcularComision,
   redondearCentimos,
-  UMBRAL_RATIO,
-  FIN_RAMPA_RATIO,
   TRAMOS,
   type ComisionCalculada,
 } from "./tarifa";
@@ -75,8 +73,6 @@ export interface Extracto {
   parametros: {
     versionPrecios: string;
     fx: { eurPorUsd: number; fuente: string };
-    umbralRatio: number;
-    finRampaRatio: number;
     tramos: readonly { hastaEur: number; tipo: number }[];
   };
 }
@@ -130,8 +126,8 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     parametros: {
       versionPrecios: opts.versionPrecios,
       fx: opts.fx,
-      umbralRatio: UMBRAL_RATIO,
-      finRampaRatio: FIN_RAMPA_RATIO,
+      // Sin umbral ni rampa desde el 2026-09-01 (decisión del dueño): un
+      // extracto anterior a esa fecha sí trae umbralRatio/finRampaRatio.
       tramos: TRAMOS,
     },
   };

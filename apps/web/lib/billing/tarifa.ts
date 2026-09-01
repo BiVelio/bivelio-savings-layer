@@ -1,14 +1,18 @@
 /**
  * LA TARIFA VARIABLE — única fuente de verdad.
  *
- * Decidida por el dueño el 2026-08-23 (plan maestro «La medición manda»):
+ * Decidida por el dueño el 2026-08-23 (plan maestro «La medición manda») y
+ * revisada por el dueño el 2026-09-01: SIN MÍNIMO.
  *
  *   · Se comisiona SOLO el ahorro MEDIDO (basis=measured): el que el cliente
  *     puede contrastar con la factura de su proveedor. Lo estimado nunca.
- *   · Umbral: solo si el ratio de ahorro medido supera el 30%.
- *   · Rampa 30→35%: la comisión entra linealmente entre ambos, sin acantilado.
- *     Propiedad garantizada (y testeada): el ahorro NETO del cliente nunca
- *     baja del 30% de su base medida.
+ *   · SIN umbral ni rampa: la comisión por tramos aplica desde el primer euro
+ *     medido. (Hasta el 2026-09-01 existía un umbral del 30% con rampa hasta
+ *     el 35%; los clientes con ratio ≥35% no notan el cambio — la franja
+ *     0–35% pasa de comisión 0 a comisión por tramos.)
+ *   · La garantía que lo sustituye, testeada y por construcción: el cliente
+ *     se queda SIEMPRE con GARANTIA_NETA_RATIO o más de cada euro ahorrado,
+ *     porque ningún tramo supera el tipo máximo. Solo cobramos si ahorra.
  *   · Escalado A — marginal por volumen, cada tramo a su tipo (como el IRPF):
  *     10% / 8% / 6% / 4% con cortes en 1.000 / 5.000 / 20.000 €.
  *   · Mes de calibración: el primer período de cada organización no se cobra;
@@ -18,12 +22,6 @@
  * ESTAS constantes — nunca duplicarlas. Patrón `precio-publicado.test.ts`.
  */
 
-/** Ratio de ahorro medido por debajo del cual la comisión es siempre 0. */
-export const UMBRAL_RATIO = 0.3;
-
-/** Fin de la rampa: a partir de aquí la comisión aplica al 100%. */
-export const FIN_RAMPA_RATIO = 0.35;
-
 /** Tramos marginales sobre el ahorro medido del período, en EUR. */
 export const TRAMOS: readonly { hastaEur: number; tipo: number }[] = [
   { hastaEur: 1_000, tipo: 0.1 },
@@ -32,11 +30,12 @@ export const TRAMOS: readonly { hastaEur: number; tipo: number }[] = [
   { hastaEur: Number.POSITIVE_INFINITY, tipo: 0.04 },
 ];
 
-/** Factor de entrada gradual: 0 en el umbral, 1 al final de la rampa. */
-export function factorDeRampa(ratio: number): number {
-  if (!Number.isFinite(ratio) || ratio <= UMBRAL_RATIO) return 0;
-  return Math.min(1, (ratio - UMBRAL_RATIO) / (FIN_RAMPA_RATIO - UMBRAL_RATIO));
-}
+/**
+ * La fracción de cada euro ahorrado que el cliente conserva COMO MÍNIMO.
+ * Derivada del tramo más caro — no es una constante aparte que pueda divergir:
+ * si la tarifa cambia, la garantía publicada cambia con ella, sola.
+ */
+export const GARANTIA_NETA_RATIO = 1 - Math.max(...TRAMOS.map((t) => t.tipo));
 
 export interface TramoAplicado {
   desdeEur: number;
@@ -70,34 +69,31 @@ export interface ComisionCalculada {
   baseMedidaEur: number;
   /** Ahorro medido del período, EUR. */
   ahorroMedidoEur: number;
-  /** ahorroMedido / baseMedida, o 0 si la base es 0. */
+  /** ahorroMedido / baseMedida, o 0 si la base es 0. Informativo. */
   ratio: number;
-  /** Factor de la rampa 30→35% ya aplicado a la cifra final. */
-  factorRampa: number;
-  /** Desglose marginal ANTES de la rampa (lo que enseña el extracto). */
+  /** Desglose marginal (lo que enseña el extracto). */
   tramos: TramoAplicado[];
-  /** La comisión del período: tramos × rampa. 0 bajo el umbral. */
+  /** La comisión del período: los tramos, sin más. 0 solo si el ahorro es 0. */
   comisionEur: number;
   /** Ahorro que le queda al cliente tras la comisión, EUR. */
   netoClienteEur: number;
 }
 
 /**
- * La comisión de un período: tramos marginales sobre el ahorro medido, por la
- * rampa. Redondeada a céntimos (half-up), porque es una cifra de factura.
+ * La comisión de un período: tramos marginales sobre el ahorro medido, desde
+ * el primer euro. Redondeada a céntimos (half-up), porque es una cifra de
+ * factura.
  */
 export function calcularComision(baseMedidaEur: number, ahorroMedidoEur: number): ComisionCalculada {
   const base = Math.max(0, baseMedidaEur);
   const ahorro = Math.max(0, ahorroMedidoEur);
   const ratio = base > 0 ? ahorro / base : 0;
-  const factor = factorDeRampa(ratio);
   const { totalEur, tramos } = comisionPorTramos(ahorro);
-  const comision = redondearCentimos(totalEur * factor);
+  const comision = redondearCentimos(totalEur);
   return {
     baseMedidaEur: base,
     ahorroMedidoEur: ahorro,
     ratio,
-    factorRampa: factor,
     tramos,
     comisionEur: comision,
     netoClienteEur: redondearCentimos(ahorro - comision),

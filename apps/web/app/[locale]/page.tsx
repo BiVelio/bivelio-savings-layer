@@ -7,7 +7,7 @@ import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CalculadoraComision } from "@/app/components/CalculadoraComision";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { FIN_RAMPA_RATIO, TRAMOS, UMBRAL_RATIO } from "@/lib/billing/tarifa";
+import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
@@ -487,10 +487,12 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <li>{t.rich("formula.mes1", { b: (c) => <b>{c}</b>, precioMes: precioMensual })}</li>
               <li>{t.rich("formula.medido", { b: (c) => <b>{c}</b> })}</li>
               <li>
-                {t.rich("formula.umbral", {
+                {/* Sin mínimo desde el 2026-09-01: la promesa pasa de «bajo el
+                    umbral no cobramos» a «te quedas siempre con ≥{garantia} de
+                    lo ahorrado» — derivada del tramo más caro, no escrita. */}
+                {t.rich("formula.garantia", {
                   b: (c) => <b>{c}</b>,
-                  umbral: pctLocal(UMBRAL_RATIO),
-                  fin: pctLocal(FIN_RAMPA_RATIO),
+                  garantia: pctLocal(GARANTIA_NETA_RATIO),
                 })}
               </li>
               <li>{t.rich("formula.tramos", { b: (c) => <b>{c}</b>, tramos: tramosLocal })}</li>

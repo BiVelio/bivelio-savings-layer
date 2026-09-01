@@ -86,11 +86,15 @@ describe("cerrarPeriodo — la calibración REAL, por primer período con uso", 
     expect(sept!.cargo_eur).toBe(sept!.comision_eur);
   });
 
-  it("bajo el umbral, el cargo es 0 también fuera de calibración", () => {
+  it("SIN MÍNIMO (2026-09-01): un ratio modesto comisiona y se carga fuera de calibración", () => {
+    // 220 USD de ahorro (22%) × fx → primer tramo al 10%. Bajo la tarifa
+    // vieja (umbral 30%) esto era 0; la revisión del dueño lo convierte en
+    // cargo real. El factor_rampa de la fila queda fijado a 1 desde entonces.
     const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 1000, 780)])], "2026-09");
     expect(c!.es_calibracion).toBe(false);
-    expect(c!.comision_eur).toBe(0);
-    expect(c!.cargo_eur).toBe(0);
+    expect(c!.comision_eur).toBeGreaterThan(0);
+    expect(c!.cargo_eur).toBe(c!.comision_eur);
+    expect(c!.factor_rampa).toBe(1);
   });
 
   it("cada organización se cierra por separado, con sus propias filas", () => {

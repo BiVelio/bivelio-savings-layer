@@ -1,26 +1,21 @@
 import { describe, it, expect } from "vitest";
 
 import {
-  UMBRAL_RATIO,
-  FIN_RAMPA_RATIO,
   TRAMOS,
-  factorDeRampa,
+  GARANTIA_NETA_RATIO,
   comisionPorTramos,
   calcularComision,
 } from "./tarifa";
 
 /**
- * La tarifa variable decidida el 2026-08-23. Estos tests son el ANCLA de los
- * números: los ejemplos del plan maestro, la propiedad garantista de la rampa
- * y la marginalidad de los tramos. Si alguien toca una constante, esto es lo
- * que le obliga a tocar también el plan (y, en F3, la web publicada).
+ * La tarifa variable decidida el 2026-08-23 y revisada el 2026-09-01 (decisión
+ * del dueño: SIN MÍNIMO — el umbral del 30% y la rampa 30→35% se retiran; la
+ * comisión por tramos aplica desde el primer euro medido). Estos tests son el
+ * ANCLA de los números y de la garantía que sustituye a la vieja: el cliente
+ * se queda SIEMPRE con GARANTIA_NETA_RATIO o más de cada euro ahorrado.
  */
 
 describe("las constantes decididas", () => {
-  it("umbral 30%, rampa hasta 35%", () => {
-    expect(UMBRAL_RATIO).toBe(0.3);
-    expect(FIN_RAMPA_RATIO).toBe(0.35);
-  });
   it("tramos 10/8/6/4 con cortes en 1.000/5.000/20.000 €", () => {
     expect(TRAMOS.map((t) => [t.hastaEur, t.tipo])).toEqual([
       [1_000, 0.1],
@@ -34,19 +29,9 @@ describe("las constantes decididas", () => {
       expect(TRAMOS[i]!.tipo).toBeLessThan(TRAMOS[i - 1]!.tipo);
     }
   });
-});
-
-describe("la rampa 30→35%", () => {
-  it("bajo el umbral no hay comisión, exactamente en él tampoco", () => {
-    expect(factorDeRampa(0)).toBe(0);
-    expect(factorDeRampa(0.299)).toBe(0);
-    expect(factorDeRampa(0.3)).toBe(0);
-  });
-  it("entra linealmente y satura en el 35%", () => {
-    expect(factorDeRampa(0.31)).toBeCloseTo(0.2, 10);
-    expect(factorDeRampa(0.325)).toBeCloseTo(0.5, 10);
-    expect(factorDeRampa(0.35)).toBe(1);
-    expect(factorDeRampa(0.9)).toBe(1);
+  it("la garantía se DERIVA del tramo más caro — no puede divergir de la tarifa", () => {
+    expect(GARANTIA_NETA_RATIO).toBe(0.9);
+    expect(GARANTIA_NETA_RATIO).toBe(1 - Math.max(...TRAMOS.map((t) => t.tipo)));
   });
 });
 
@@ -71,25 +56,32 @@ describe("los tramos son marginales (como el IRPF), nunca por el total", () => {
   });
 });
 
-describe("calcularComision — los ejemplos literales del plan maestro", () => {
+describe("calcularComision — sin mínimo (2026-09-01)", () => {
   it("caso típico: 900 de ahorro sobre 2.000 (45%) → 90", () => {
     const c = calcularComision(2_000, 900);
-    expect(c.factorRampa).toBe(1);
     expect(c.comisionEur).toBe(90);
     expect(c.netoClienteEur).toBe(810);
   });
-  it("en el filo: 3.100 sobre 10.000 (31%) → 53,60 (el «~54» del plan)", () => {
-    const c = calcularComision(10_000, 3_100);
-    expect(c.factorRampa).toBeCloseTo(0.2, 10);
-    expect(c.comisionEur).toBeCloseTo(53.6, 10);
+  it("SIN UMBRAL: 110 sobre 500 (22%) ya comisiona — 11, y el cliente neta 99", () => {
+    // Bajo la tarifa anterior esto era 0 (umbral 30%). La franja 0–35% es
+    // exactamente lo que la revisión del 2026-09-01 convierte en ingresos.
+    const c = calcularComision(500, 110);
+    expect(c.comisionEur).toBe(11);
+    expect(c.netoClienteEur).toBe(99);
   });
-  it("flota grande: 15.600 sobre 30.000 (52%) → 1.056", () => {
+  it("SIN RAMPA: 3.100 sobre 10.000 (31%) paga los tramos enteros — 268", () => {
+    // Antes: 53,60 (factor 0,2 de la rampa). Ahora los tramos, sin factor:
+    // 1.000×10% + 2.100×8% = 268.
+    const c = calcularComision(10_000, 3_100);
+    expect(c.comisionEur).toBeCloseTo(268, 10);
+  });
+  it("≥35% no nota el cambio: flota grande 15.600 sobre 30.000 (52%) → 1.056", () => {
     expect(calcularComision(30_000, 15_600).comisionEur).toBe(1_056);
   });
-  it("bajo el umbral: 110 sobre 500 (22%) → 0, siempre 0", () => {
-    const c = calcularComision(500, 110);
+  it("ahorro cero → comisión cero: solo cobramos si ahorra", () => {
+    const c = calcularComision(10_000, 0);
     expect(c.comisionEur).toBe(0);
-    expect(c.netoClienteEur).toBe(110);
+    expect(c.netoClienteEur).toBe(0);
   });
   it("base cero no divide por cero ni comisiona nada", () => {
     const c = calcularComision(0, 0);
@@ -98,20 +90,22 @@ describe("calcularComision — los ejemplos literales del plan maestro", () => {
   });
 });
 
-describe("LA GARANTÍA: el ahorro neto del cliente nunca baja del 30% de su base", () => {
-  it("se cumple en una rejilla densa de ratios y bases", () => {
+describe("LA GARANTÍA: el cliente se queda con ≥ GARANTIA_NETA_RATIO de cada euro ahorrado", () => {
+  it("se cumple en una rejilla densa de ratios y bases — incluida la franja sin umbral", () => {
     for (const base of [100, 1_000, 3_333.33, 10_000, 50_000, 250_000]) {
-      for (let ratio = 0.301; ratio <= 0.99; ratio += 0.007) {
+      for (let ratio = 0.01; ratio <= 0.99; ratio += 0.007) {
         const c = calcularComision(base, base * ratio);
-        expect(c.netoClienteEur / base, `base=${base} ratio=${ratio.toFixed(3)}`).toBeGreaterThanOrEqual(
-          UMBRAL_RATIO - 1e-9,
-        );
+        if (c.ahorroMedidoEur === 0) continue;
+        expect(
+          c.netoClienteEur / c.ahorroMedidoEur,
+          `base=${base} ratio=${ratio.toFixed(3)}`,
+        ).toBeGreaterThanOrEqual(GARANTIA_NETA_RATIO - 1e-6);
       }
     }
   });
-  it("y en el peor punto teórico de la rampa (35%) queda margen real", () => {
-    const c = calcularComision(100_000, 35_000);
-    // Neto = 35% − 10%·max sobre los primeros tramos → ≥ 31,5% aquí.
-    expect(c.netoClienteEur / 100_000).toBeGreaterThan(0.31);
+  it("el peor caso es exactamente el primer tramo: 10% de comisión, 90% para el cliente", () => {
+    const c = calcularComision(10_000, 1_000);
+    expect(c.comisionEur).toBe(100);
+    expect(c.netoClienteEur / c.ahorroMedidoEur).toBeCloseTo(GARANTIA_NETA_RATIO, 10);
   });
 });
