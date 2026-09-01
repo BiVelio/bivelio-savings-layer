@@ -554,6 +554,25 @@
         "desc": "Vẫn nằm trong prompt, nhưng được tính phí hoặc xử lý rẻ hơn."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · skill miễn phí",
+      "title": "Skill kéo giãn giới hạn gói thuê bao của bạn",
+      "body": "Không có hóa đơn không có nghĩa là không đau: cửa sổ năm giờ và giới hạn tuần. savings-mode là một skill thuần chỉ dẫn — không proxy, lưu lượng của bạn nguyên vẹn — cắt hai khối thực sự đốt giới hạn: đầu ra của mô hình và kết quả công cụ. Nó miễn phí; điều bạn trả cho Savings là biết nó tiết kiệm cho bạn bao nhiêu.",
+      "mLectura": "đọc bộ đệm",
+      "mLecturaDesc": "Toàn bộ ngữ cảnh được đọc lại mỗi lượt — vì thế giữ nó gọn rất quan trọng.",
+      "mEscritura": "ghi bộ đệm (một giờ)",
+      "mEscrituraDesc": "Mỗi kết quả công cụ được ghi vào bộ đệm với phụ phí trước khi được đọc lại.",
+      "mSalida": "đầu ra của mô hình",
+      "mSalidaDesc": "Dưới một phần trăm số token; skill tấn công trực tiếp vào đó.",
+      "medidaPie": "của chi tiêu đo được",
+      "anatomiaNota": "Đo bằng bộ đo trên {peticiones} yêu cầu Claude Code thực, so với bộ đếm của nhà cung cấp ({fecha}). Hiệu quả của chính skill sẽ được công bố khi đo xong bằng A/B — không bao giờ trước đó.",
+      "ccNota": "Một lệnh duy nhất: cài vào ~/.claude/skills và tự kích hoạt khi cuộc trò chuyện nói về giới hạn hoặc tiết kiệm token.",
+      "aiDescargar": "Tải savings-mode.zip",
+      "aiCuenta": "Việc tải xuống yêu cầu tài khoản Savings (miễn phí) của bạn: nhờ đó mức độ sử dụng là một chỉ số thật, có danh tính — bản thân skill không chứa bất kỳ telemetry nào.",
+      "aiPaso1": "Trên claude.ai, bật “Code execution and file creation” (Settings → Capabilities).",
+      "aiPaso2": "Sau đó tải zip lên trong Customize → Skills: nó xuất hiện với công tắc riêng, riêng tư trong tài khoản của bạn.",
+      "gptNota": "Trung thực trước tiên: ChatGPT không có skill và giới hạn của nó đếm tin nhắn, không phải token — ngắn gọn không kéo giãn được giới hạn. Nếu vẫn muốn phong cách này, dán đoạn sau vào Custom Instructions:"
+    },
     "systems": {
       "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của OpenAI hay Anthropic bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."
     },

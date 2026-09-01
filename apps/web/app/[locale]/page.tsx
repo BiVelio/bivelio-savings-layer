@@ -6,6 +6,8 @@ import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
 import { CalculadoraComision } from "@/app/components/CalculadoraComision";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
+import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
+import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
@@ -437,6 +439,89 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <p style={{ marginTop: 12, opacity: 0.85 }}>
             {t("gateway.note")} <Link href="/how-it-works">{t("gateway.cta")}</Link>
           </p>
+        </section>
+
+        {/* SKILL SAVINGS-MODE — el segmento SUSCRIPCIÓN (sin factura, con topes).
+            Gratis a propósito: el embudo. Las tres cifras salen de
+            lib/skill/anatomia (medidas, con verja) y el efecto del propio skill
+            NO lleva cifra hasta que el A/B lo mida — la doctrina de la casa. */}
+        <section>
+          <div className="sec-head">
+            <span className="eyebrow">{t("skill.eyebrow")}</span>
+            <h2>{t("skill.title")}</h2>
+            <p>{t("skill.body")}</p>
+          </div>
+          <div className="ledgers">
+            {(
+              [
+                ["lecturaCache", "mLectura", "mLecturaDesc"],
+                ["escritura1h", "mEscritura", "mEscrituraDesc"],
+                ["salida", "mSalida", "mSalidaDesc"],
+              ] as const
+            ).map(([campo, nombre, desc], i) => (
+              <div className="ledger" key={campo}>
+                <div className="idx">{String(i + 1).padStart(2, "0")}</div>
+                <h4>{t(`skill.${nombre}`)}</h4>
+                <p>{t(`skill.${desc}`)}</p>
+                <div className="mval">{(ANATOMIA_MEDIDA[campo] * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%</div>
+                <div className="munit">{t("skill.medidaPie")}</div>
+              </div>
+            ))}
+          </div>
+          <p className="ledgers-modelo">
+            {t("skill.anatomiaNota", {
+              peticiones: ANATOMIA_MEDIDA.peticiones.toLocaleString(locale),
+              fecha: ANATOMIA_MEDIDA.fecha,
+            })}
+          </p>
+          <SkillPorSuperficie
+            pestanas={[
+              {
+                id: "claude-code",
+                etiqueta: "Claude Code",
+                panel: (
+                  <div>
+                    <pre className="code">
+                      <span className="k">npx</span>
+                      {" -y @bivelio/savings-layer skill"}
+                    </pre>
+                    <p style={{ marginTop: 10, opacity: 0.85 }}>{t("skill.ccNota")}</p>
+                  </div>
+                ),
+              },
+              {
+                id: "claude-ai",
+                etiqueta: "claude.ai",
+                panel: (
+                  <div>
+                    <p style={{ marginTop: 4 }}>
+                      {/* Sin atributo `download`: sin sesión la ruta redirige a
+                          /login y un download-attr guardaría el HTML del login
+                          como fichero. El Content-Disposition ya hace el resto. */}
+                      <a className="btn" href="/api/skill/descargar">
+                        {t("skill.aiDescargar")}
+                      </a>
+                    </p>
+                    <p style={{ marginTop: 10, opacity: 0.85 }}>
+                      {t("skill.aiCuenta")} {t("skill.aiPaso1")} {t("skill.aiPaso2")}
+                    </p>
+                  </div>
+                ),
+              },
+              {
+                id: "chatgpt",
+                etiqueta: "ChatGPT",
+                panel: (
+                  <div>
+                    <p style={{ marginTop: 4, opacity: 0.85 }}>{t("skill.gptNota")}</p>
+                    <pre className="code" style={{ marginTop: 10, whiteSpace: "pre-wrap" }}>
+                      {"Answer first — no preamble, no recap. Never restate content I just saw. One line for routine confirmations. Prose only where it adds information. Never trade correctness for brevity."}
+                    </pre>
+                  </div>
+                ),
+              },
+            ]}
+          />
         </section>
 
         {/* PRICING */}

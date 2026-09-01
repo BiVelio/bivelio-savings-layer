@@ -554,6 +554,25 @@
         "desc": "Ancora nel prompt, ma fatturate o elaborate a costo inferiore."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · skill gratuita",
+      "title": "La skill che allunga i tuoi limiti di abbonamento",
+      "body": "Niente fattura non significa niente dolore: la finestra di cinque ore e il tetto settimanale. savings-mode è una skill di sole istruzioni — nessun proxy, il tuo traffico intatto — che taglia le due masse che davvero bruciano il tetto: l'output del modello e i risultati degli strumenti. È gratuita; ciò che si paga con Savings è sapere quanto ti fa risparmiare.",
+      "mLectura": "letture di cache",
+      "mLecturaDesc": "L'intero contesto viene riletto a ogni turno — per questo tenerlo snello conta.",
+      "mEscritura": "scrittura di cache (un'ora)",
+      "mEscrituraDesc": "Ogni risultato di strumento viene scritto in cache con sovrapprezzo prima di essere riletto.",
+      "mSalida": "output del modello",
+      "mSalidaDesc": "Meno dell'uno per cento dei token; la skill lo attacca direttamente.",
+      "medidaPie": "della spesa misurata",
+      "anatomiaNota": "Misurato con il misuratore su {peticiones} richieste reali di Claude Code, contro i contatori del provider ({fecha}). L'effetto della skill stessa sarà pubblicato quando sarà misurato in A/B — mai prima.",
+      "ccNota": "Un solo comando: si installa in ~/.claude/skills e si attiva da sola quando la conversazione parla di limiti o di risparmiare token.",
+      "aiDescargar": "Scarica savings-mode.zip",
+      "aiCuenta": "Il download richiede il tuo account Savings (gratuito): così l'adozione è una metrica reale, con identità — la skill in sé non contiene alcuna telemetria.",
+      "aiPaso1": "Su claude.ai attiva «Code execution and file creation» (Settings → Capabilities).",
+      "aiPaso2": "Poi carica lo zip in Customize → Skills: appare con il suo interruttore, privato nel tuo account.",
+      "gptNota": "Onestà prima di tutto: ChatGPT non ha skills e i suoi limiti contano i messaggi, non i token — la brevità non allunga il limite. Se vuoi comunque lo stile, incolla questo in Custom Instructions:"
+    },
     "systems": {
       "caption": "Dove già vivono le tue automazioni. Se chiama l'API di OpenAI o Anthropic con la tua chiave, si misura — l'SDK avvolge la chiamata; il gateway si mette davanti."
     },

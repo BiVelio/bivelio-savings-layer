@@ -554,6 +554,25 @@
         "desc": "Toujours dans le prompt, mais facturée ou traitée à moindre coût."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · skill gratuit",
+      "title": "Le skill qui étire vos plafonds d'abonnement",
+      "body": "Pas de facture ne veut pas dire pas de douleur : la fenêtre de cinq heures et le plafond hebdomadaire. savings-mode est un skill d'instructions pures — sans proxy, votre trafic intact — qui coupe les deux masses qui brûlent vraiment le plafond : la sortie du modèle et les résultats d'outils. Il est gratuit ; ce que l'on paie avec Savings, c'est savoir combien il vous économise.",
+      "mLectura": "lectures de cache",
+      "mLecturaDesc": "Tout le contexte est relu à chaque tour — d'où l'importance de le garder maigre.",
+      "mEscritura": "écriture de cache (une heure)",
+      "mEscrituraDesc": "Chaque résultat d'outil est écrit en cache avec surcoût avant d'être relu.",
+      "mSalida": "sortie du modèle",
+      "mSalidaDesc": "Moins d'un pour cent des tokens ; le skill l'attaque directement.",
+      "medidaPie": "de la dépense mesurée",
+      "anatomiaNota": "Mesuré avec le compteur sur {peticiones} requêtes réelles de Claude Code, contre les compteurs du fournisseur ({fecha}). L'effet du skill lui-même sera publié une fois mesuré en A/B — jamais avant.",
+      "ccNota": "Une seule commande : s'installe dans ~/.claude/skills et s'active seul quand la conversation parle de limites ou d'économiser des tokens.",
+      "aiDescargar": "Télécharger savings-mode.zip",
+      "aiCuenta": "Le téléchargement demande votre compte Savings (gratuit) : l'adoption devient une métrique réelle, avec identité — le skill lui-même n'embarque aucune télémétrie.",
+      "aiPaso1": "Sur claude.ai, activez « Code execution and file creation » (Settings → Capabilities).",
+      "aiPaso2": "Puis téléversez le zip dans Customize → Skills : il apparaît avec son interrupteur, privé sur votre compte.",
+      "gptNota": "Honnêteté d'abord : ChatGPT n'a pas de skills et ses plafonds comptent des messages, pas des tokens — la concision n'étire pas la limite. Si vous voulez le style malgré tout, collez ceci dans Custom Instructions :"
+    },
     "systems": {
       "caption": "Là où vivent déjà vos automatisations. Si ça appelle l'API OpenAI ou Anthropic avec votre clé, c'est mesuré — le SDK enveloppe l'appel ; la passerelle se place devant."
     },

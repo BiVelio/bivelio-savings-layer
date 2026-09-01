@@ -554,6 +554,25 @@
         "desc": "Wciąż w promptcie, ale naliczane lub przetwarzane taniej."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · darmowy skill",
+      "title": "Skill, który rozciąga limity Twojej subskrypcji",
+      "body": "Brak faktury nie znaczy brak bólu: pięciogodzinne okno i tygodniowy limit. savings-mode to skill z samych instrukcji — bez proxy, Twój ruch nietknięty — który tnie dwie masy naprawdę spalające limit: wyjście modelu i wyniki narzędzi. Jest darmowy; w Savings płaci się za wiedzę, ile Ci oszczędza.",
+      "mLectura": "odczyty cache",
+      "mLecturaDesc": "Cały kontekst jest odczytywany ponownie w każdej turze — dlatego liczy się jego szczupłość.",
+      "mEscritura": "zapisy cache (jedna godzina)",
+      "mEscrituraDesc": "Każdy wynik narzędzia jest zapisywany do cache z narzutem, zanim zostanie ponownie odczytany.",
+      "mSalida": "wyjście modelu",
+      "mSalidaDesc": "Poniżej jednego procenta tokenów; skill atakuje je bezpośrednio.",
+      "medidaPie": "zmierzonych wydatków",
+      "anatomiaNota": "Zmierzone miernikiem na {peticiones} prawdziwych żądaniach Claude Code, wobec liczników dostawcy ({fecha}). Efekt samego skilla zostanie opublikowany po zmierzeniu w A/B — nigdy wcześniej.",
+      "ccNota": "Jedno polecenie: instaluje się w ~/.claude/skills i aktywuje sam, gdy rozmowa schodzi na limity lub oszczędzanie tokenów.",
+      "aiDescargar": "Pobierz savings-mode.zip",
+      "aiCuenta": "Pobranie wymaga (darmowego) konta Savings: dzięki temu adopcja jest prawdziwą metryką, z tożsamością — sam skill nie zawiera żadnej telemetrii.",
+      "aiPaso1": "Na claude.ai włącz „Code execution and file creation” (Settings → Capabilities).",
+      "aiPaso2": "Następnie wgraj zip w Customize → Skills: pojawi się z własnym przełącznikiem, prywatny na Twoim koncie.",
+      "gptNota": "Najpierw uczciwość: ChatGPT nie ma skilli, a jego limity liczą wiadomości, nie tokeny — zwięzłość nie rozciągnie limitu. Jeśli mimo to chcesz ten styl, wklej to w Custom Instructions:"
+    },
     "systems": {
       "caption": "Tam, gdzie już żyją Twoje automatyzacje. Jeśli wywołuje API OpenAI lub Anthropic Twoim kluczem, jest mierzone — SDK opakowuje wywołanie; brama staje z przodu."
     },

@@ -554,6 +554,25 @@
         "desc": "Hâlâ prompt'ta, ama daha ucuza faturalandırılan ya da işlenen."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · ücretsiz skill",
+      "title": "Abonelik limitlerini esneten skill",
+      "body": "Fatura yok diye acı da yok değil: beş saatlik pencere ve haftalık limit. savings-mode saf talimatlardan oluşan bir skill — proxy yok, trafiğin el değmeden kalır — limiti gerçekten yakan iki kütleyi keser: model çıktısı ve araç sonuçları. Ücretsizdir; Savings ile ödediğin şey, sana ne kadar kazandırdığını bilmektir.",
+      "mLectura": "önbellek okumaları",
+      "mLecturaDesc": "Bağlamın tamamı her turda yeniden okunur — bu yüzden onu yalın tutmak önemlidir.",
+      "mEscritura": "önbellek yazmaları (bir saat)",
+      "mEscrituraDesc": "Her araç sonucu, yeniden okunmadan önce primli olarak önbelleğe yazılır.",
+      "mSalida": "model çıktısı",
+      "mSalidaDesc": "Tokenların yüzde birinden azı; skill onu doğrudan hedefler.",
+      "medidaPie": "ölçülen harcamanın",
+      "anatomiaNota": "Sağlayıcının kendi sayaçlarına karşı, {peticiones} gerçek Claude Code isteği üzerinde ölçüldü ({fecha}). Skill'in kendi etkisi A/B ile ölçüldüğünde yayımlanacak — asla öncesinde değil.",
+      "ccNota": "Tek komut: ~/.claude/skills içine kurulur ve konuşma limitlerden veya token tasarrufundan bahsedince kendiliğinden devreye girer.",
+      "aiDescargar": "savings-mode.zip'i indir",
+      "aiCuenta": "İndirme (ücretsiz) Savings hesabını ister: böylece benimseme, kimlikli gerçek bir metrik olur — skill'in kendisinde hiçbir telemetri yoktur.",
+      "aiPaso1": "claude.ai'de “Code execution and file creation” özelliğini aç (Settings → Capabilities).",
+      "aiPaso2": "Sonra zip'i Customize → Skills altında yükle: kendi anahtarıyla, hesabında özel olarak görünür.",
+      "gptNota": "Önce dürüstlük: ChatGPT'de skill yok ve limitleri token değil mesaj sayar — kısalık limiti esnetmez. Yine de bu tarzı istiyorsan şunu Custom Instructions'a yapıştır:"
+    },
     "systems": {
       "caption": "Otomasyonlarının zaten yaşadığı yerde. OpenAI veya Anthropic API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
     },

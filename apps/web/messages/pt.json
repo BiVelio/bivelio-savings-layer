@@ -554,6 +554,25 @@
         "desc": "Ainda no prompt, mas faturada ou processada de forma mais barata."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · skill gratuita",
+      "title": "A skill que estica os teus limites de subscrição",
+      "body": "Sem fatura não quer dizer sem dor: a janela de cinco horas e o teto semanal. savings-mode é uma skill de instruções puras — sem proxy, o teu tráfego intacto — que corta as duas massas que realmente queimam o teto: a saída do modelo e os resultados de ferramentas. É gratuita; o que se paga com o Savings é saber quanto te poupa.",
+      "mLectura": "leituras de cache",
+      "mLecturaDesc": "O contexto inteiro é relido a cada turno — por isso mantê-lo magro importa.",
+      "mEscritura": "escrita de cache (uma hora)",
+      "mEscrituraDesc": "Cada resultado de ferramenta é escrito em cache com sobretaxa antes de ser relido.",
+      "mSalida": "saída do modelo",
+      "mSalidaDesc": "Menos de um por cento dos tokens; a skill ataca-a diretamente.",
+      "medidaPie": "do gasto medido",
+      "anatomiaNota": "Medido com o medidor sobre {peticiones} pedidos reais do Claude Code, contra os contadores do fornecedor ({fecha}). O efeito da própria skill será publicado quando estiver medido em A/B — nunca antes.",
+      "ccNota": "Um único comando: instala-se em ~/.claude/skills e ativa-se sozinho quando a conversa fala de limites ou de poupar tokens.",
+      "aiDescargar": "Descarregar savings-mode.zip",
+      "aiCuenta": "A descarga pede a tua conta Savings (gratuita): assim a adoção é uma métrica real, com identidade — a skill em si não leva telemetria nenhuma.",
+      "aiPaso1": "No claude.ai ativa «Code execution and file creation» (Settings → Capabilities).",
+      "aiPaso2": "Depois carrega o zip em Customize → Skills: aparece com o seu interruptor, privado na tua conta.",
+      "gptNota": "Honestidade primeiro: o ChatGPT não tem skills e os seus limites contam mensagens, não tokens — a brevidade não estica o limite. Se quiseres o estilo na mesma, cola isto em Custom Instructions:"
+    },
     "systems": {
       "caption": "Onde as tuas automações já vivem. Se chama a API da OpenAI ou da Anthropic com a tua chave, mede-se — o SDK envolve a chamada; o gateway fica à frente."
     },

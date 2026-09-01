@@ -554,6 +554,25 @@
         "desc": "Still in the prompt, but billed or processed more cheaply."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · free skill",
+      "title": "The skill that stretches your subscription caps",
+      "body": "No invoice doesn't mean no pain: the five-hour window and the weekly cap. savings-mode is a pure-instructions skill — no proxy, your traffic untouched — that cuts the two masses that actually burn cap: model output and tool results. It's free; what you pay Savings for is knowing how much it saves you.",
+      "mLectura": "cache reads",
+      "mLecturaDesc": "The whole context is re-read every turn — which is why keeping it lean matters.",
+      "mEscritura": "cache writes (one hour)",
+      "mEscrituraDesc": "Every tool result is cache-written at a premium before being re-read.",
+      "mSalida": "model output",
+      "mSalidaDesc": "Under one percent of the tokens; the skill attacks it directly.",
+      "medidaPie": "of measured spend",
+      "anatomiaNota": "Measured with the meter over {peticiones} real Claude Code requests, against the provider's own counters ({fecha}). The skill's own effect will be published once A/B-measured — never before.",
+      "ccNota": "One command: installs into ~/.claude/skills and activates by itself when the conversation turns to limits or saving tokens.",
+      "aiDescargar": "Download savings-mode.zip",
+      "aiCuenta": "The download asks for your (free) Savings account: adoption becomes a real metric, with identity — the skill itself carries no telemetry at all.",
+      "aiPaso1": "On claude.ai enable “Code execution and file creation” (Settings → Capabilities).",
+      "aiPaso2": "Then upload the zip under Customize → Skills: it appears with its own toggle, private to your account.",
+      "gptNota": "Honesty first: ChatGPT has no skills and its caps count messages, not tokens — brevity won't stretch the limit. If you want the style anyway, paste this into Custom Instructions:"
+    },
     "systems": {
       "caption": "Where your automations already live. If it calls the OpenAI or Anthropic API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
     },
