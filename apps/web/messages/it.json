@@ -248,6 +248,7 @@
       "renewalNote": "<b>Tieni questa chiave nel tuo deploy.</b> La tua licenza scade alla fine di ogni periodo di fatturazione e il rinnovo ne emette una nuova. Con questa chiave l'SDK la ritira e la sostituisce a quella scaduta, senza riavvii. Senza di essa nessuno la ritira, quindi qualcuno deve incollare a mano la nuova chiave a ogni periodo — e se nessuno lo fa, l'SDK si ferma alla fine del periodo di tolleranza, anche se l'abbonamento è pagato e in regola.",
       "step3": "<b>3 · Installa</b> — pubblico su npm, senza token, senza configurazione.",
       "step4": "<b>4 · Collega il tuo provider e leggi il SavingsReport</b>",
+      "gatewayNote": "<b>Terminale di codice invece di un'app?</b> Lo stesso pacchetto include un gateway di misura locale: <code>bvsala claude</code> avvia Claude Code attraverso di esso e questo pannello mostra la spesa, token per token. Anche <code>bvsala codex</code>, <code>bvsala goose</code> e <code>bvsala qwen</code>; <code>bvsala doctor</code> stampa il blocco esatto del resto. Usa la stessa chiave di servizio del passo 2 — per misurare non serve la chiave di licenza.",
       "finalNote": "Tutto qui. Nessuna licenza valida → <code>generate()</code> si rifiuta. Se il tuo piano viene annullato, l'SDK si ferma entro ~15 min tramite <code>licenseServerUrl</code> — senza riavvii, e non blocca mai la tua produzione se non siamo raggiungibili."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Ancora nel prompt, ma fatturate o elaborate a costo inferiore."
       }
     ],
+    "gateway": {
+      "eyebrow": "Novità · terminali di codice",
+      "title": "Claude Code con chiave API? Guarda la spesa reale, token per token.",
+      "body": "Un solo comando mette un contatore locale davanti al tuo terminale. Niente codice da toccare, niente da configurare — e i tuoi prompt non lasciano mai la tua macchina: a questo pannello arrivano solo conteggi e costo.",
+      "note": "Oggi misura; lì non ottimizza ancora. Funziona anche con Codex CLI, Goose e Qwen Code — e bvsala doctor stampa la configurazione esatta del resto.",
+      "cta": "Guarda come funziona →"
+    },
     "integrate": {
       "eyebrow": "Cinque righe per iniziare",
       "title": "Eseguilo nella tua app. I tuoi prompt non toccano mai i nostri server.",

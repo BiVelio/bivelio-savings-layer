@@ -248,6 +248,7 @@
       "renewalNote": "<b>Simpan kunci ini di deployment Anda.</b> Lisensi Anda kedaluwarsa pada akhir setiap periode penagihan, dan perpanjangan menerbitkan lisensi baru. Dengan kunci ini, SDK mengambilnya dan menggantinya tanpa restart. Tanpa kunci ini, tidak ada yang mengambilnya, sehingga seseorang harus menempelkan kunci baru secara manual setiap periode — dan jika tidak ada yang melakukannya, SDK berhenti begitu masa tenggang berakhir, meskipun langganan Anda sudah dibayar dan tidak menunggak.",
       "step3": "<b>3 · Pasang</b> — publik di npm, tanpa token, tanpa konfigurasi.",
       "step4": "<b>4 · Sambungkan penyedia Anda & baca SavingsReport</b>",
+      "gatewayNote": "<b>Terminal pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Juga <code>bvsala codex</code>, <code>bvsala goose</code>, dan <code>bvsala qwen</code>; <code>bvsala doctor</code> mencetak blok persis untuk sisanya. Ia memakai kunci layanan yang sama dari langkah 2 — mengukur tidak butuh kunci lisensi.",
       "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Masih ada dalam prompt, tetapi ditagih atau diproses lebih murah."
       }
     ],
+    "gateway": {
+      "eyebrow": "Baru · terminal pemrograman",
+      "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
+      "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
+      "note": "Hari ini ia mengukur; di sana ia belum mengoptimalkan. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "cta": "Lihat cara kerjanya →"
+    },
     "integrate": {
       "eyebrow": "Lima baris untuk memulai",
       "title": "Jalankan di aplikasi Anda sendiri. Prompt Anda tidak pernah menyentuh server kami.",

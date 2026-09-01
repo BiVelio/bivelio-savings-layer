@@ -248,6 +248,7 @@
       "renewalNote": "<b>Mantém esta chave no teu deploy.</b> A tua licença expira no final de cada período de faturação e a renovação emite uma nova. Com esta chave, o SDK recolhe-a e passa a usá-la sem reiniciar. Sem ela, ninguém a recolhe: alguém tem de colar a chave nova à mão em cada período — e, se ninguém o fizer, o SDK para assim que terminar o período de tolerância, mesmo com a subscrição paga e em dia.",
       "step3": "<b>3 · Instala</b> — público no npm, sem token, sem configuração.",
       "step4": "<b>4 · Liga o teu fornecedor e lê o SavingsReport</b>",
+      "gatewayNote": "<b>Terminal de código em vez de uma app?</b> O mesmo pacote traz um gateway medidor local: <code>bvsala claude</code> lança o Claude Code através dele e este painel mostra o gasto, token a token. Também <code>bvsala codex</code>, <code>bvsala goose</code> e <code>bvsala qwen</code>; o <code>bvsala doctor</code> imprime o bloco exato do resto. Usa a mesma chave de serviço do passo 2 — para medir não é precisa chave de licença.",
       "finalNote": "É tudo. Sem licença válida → <code>generate()</code> recusa. Se o teu plano for cancelado, o SDK para em ~15 min através de <code>licenseServerUrl</code> — sem reiniciar, e nunca inutiliza a tua produção se estivermos inacessíveis."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Ainda no prompt, mas faturada ou processada de forma mais barata."
       }
     ],
+    "gateway": {
+      "eyebrow": "Novo · terminais de código",
+      "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
+      "body": "Um único comando põe um medidor local à frente do teu terminal. Sem tocar em código, sem configurar nada — e os teus prompts nunca saem da tua máquina: a este painel só chegam contagens e custo.",
+      "note": "Hoje mede; ali ainda não otimiza. Também funciona com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata do resto.",
+      "cta": "Vê como funciona →"
+    },
     "integrate": {
       "eyebrow": "Cinco linhas para começar",
       "title": "Executa-o na tua própria app. Os teus prompts nunca tocam nos nossos servidores.",

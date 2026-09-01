@@ -248,6 +248,7 @@
       "renewalNote": "<b>Lass diesen Schlüssel in deinem Deployment.</b> Deine Lizenz läuft am Ende jedes Abrechnungszeitraums ab, und die Verlängerung stellt eine neue aus. Mit diesem Schlüssel holt das SDK sie ab und tauscht sie ohne Neustart aus. Ohne ihn holt sie niemand ab — dann muss jemand den neuen Schlüssel in jedem Zeitraum von Hand einfügen, und tut es niemand, stoppt das SDK nach Ablauf der Karenzzeit, obwohl das Abonnement bezahlt und aktuell ist.",
       "step3": "<b>3 · Installieren</b> — öffentlich auf npm, kein Token, keine Konfiguration.",
       "step4": "<b>4 · Provider einbinden und den SavingsReport lesen</b>",
+      "gatewayNote": "<b>Coding-Terminal statt App?</b> Dasselbe Paket bringt ein lokales Mess-Gateway mit: <code>bvsala claude</code> startet Claude Code hindurch und dieses Panel zeigt die Ausgaben, Token für Token. Auch <code>bvsala codex</code>, <code>bvsala goose</code> und <code>bvsala qwen</code>; <code>bvsala doctor</code> druckt den exakten Block für den Rest. Es nutzt denselben Service-Schlüssel aus Schritt 2 — zum Messen ist kein Lizenzschlüssel nötig.",
       "finalNote": "Das war's. Keine gültige Lizenz → <code>generate()</code> verweigert. Wenn dein Plan gekündigt wird, stoppt das SDK innerhalb von ~15 Min über <code>licenseServerUrl</code> — ohne Neustart, und es legt niemals deine Produktion lahm, falls wir nicht erreichbar sind."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Noch im Prompt, aber günstiger abgerechnet oder verarbeitet."
       }
     ],
+    "gateway": {
+      "eyebrow": "Neu · Coding-Terminals",
+      "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
+      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal. Kein Code, keine Konfiguration — und deine Prompts verlassen nie deine Maschine: in dieses Panel gelangen nur Zählwerte und Kosten.",
+      "note": "Heute misst es; dort optimiert es noch nicht. Funktioniert auch mit Codex CLI, Goose und Qwen Code — und bvsala doctor druckt die exakte Konfiguration für den Rest.",
+      "cta": "So funktioniert es →"
+    },
     "integrate": {
       "eyebrow": "Fünf Zeilen zum Starten",
       "title": "Führe es in deiner eigenen App aus. Deine Prompts berühren niemals unsere Server.",

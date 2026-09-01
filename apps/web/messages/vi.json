@@ -248,6 +248,7 @@
       "renewalNote": "<b>Hãy giữ khóa này trong bản triển khai của bạn.</b> Giấy phép của bạn hết hạn vào cuối mỗi kỳ thanh toán và lần gia hạn sẽ cấp một giấy phép mới. Với khóa này, SDK sẽ tự lấy giấy phép mới và thay nó vào mà không cần khởi động lại. Không có nó thì không ai lấy giấy phép mới cả, nên mỗi kỳ phải có người dán khóa mới bằng tay — và nếu không ai làm, SDK sẽ dừng ngay khi thời gian ân hạn kết thúc, dù gói đăng ký đã được thanh toán đầy đủ và vẫn còn hiệu lực.",
       "step3": "<b>3 · Cài đặt</b> — công khai trên npm, không token, không cấu hình.",
       "step4": "<b>4 · Kết nối nhà cung cấp của bạn và đọc SavingsReport</b>",
+      "gatewayNote": "<b>Terminal lập trình thay vì một ứng dụng?</b> Cùng gói này có sẵn một gateway đo cục bộ: <code>bvsala claude</code> chạy Claude Code qua nó và bảng điều khiển này hiển thị chi tiêu, từng token một. Còn có <code>bvsala codex</code>, <code>bvsala goose</code> và <code>bvsala qwen</code>; <code>bvsala doctor</code> in ra khối chính xác cho phần còn lại. Nó dùng cùng khóa dịch vụ ở bước 2 — đo không cần khóa giấy phép.",
       "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Vẫn nằm trong prompt, nhưng được tính phí hoặc xử lý rẻ hơn."
       }
     ],
+    "gateway": {
+      "eyebrow": "Mới · terminal lập trình",
+      "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
+      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn. Không sửa mã, không cấu hình — và prompt của bạn không bao giờ rời khỏi máy: bảng điều khiển này chỉ nhận số đếm và chi phí.",
+      "note": "Hôm nay nó đo; ở đó nó chưa tối ưu. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
+      "cta": "Xem cách hoạt động →"
+    },
     "integrate": {
       "eyebrow": "Năm dòng để bắt đầu",
       "title": "Chạy nó trong ứng dụng của riêng bạn. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",

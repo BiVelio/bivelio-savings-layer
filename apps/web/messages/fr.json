@@ -248,6 +248,7 @@
       "renewalNote": "<b>Gardez cette clé dans votre déploiement.</b> Votre licence expire à la fin de chaque période de facturation et le renouvellement en émet une nouvelle. Avec cette clé, le SDK la récupère et la remplace sans redémarrage. Sans elle, personne ne la récupère : quelqu'un doit alors coller la nouvelle clé à la main à chaque période — et si personne ne le fait, le SDK s'arrête dès la fin de la période de grâce, alors même que l'abonnement est payé et à jour.",
       "step3": "<b>3 · Installez</b> — public sur npm, sans token, sans configuration.",
       "step4": "<b>4 · Connectez votre fournisseur et lisez le SavingsReport</b>",
+      "gatewayNote": "<b>Terminal de code plutôt qu'une app ?</b> Le même paquet embarque une passerelle de mesure locale : <code>bvsala claude</code> lance Claude Code à travers elle et ce panneau affiche la dépense, token par token. Aussi <code>bvsala codex</code>, <code>bvsala goose</code> et <code>bvsala qwen</code> ; <code>bvsala doctor</code> imprime le bloc exact du reste. Elle utilise la même clé de service de l'étape 2 — mesurer ne demande pas de clé de licence.",
       "finalNote": "C'est tout. Pas de licence valide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Toujours dans le prompt, mais facturée ou traitée à moindre coût."
       }
     ],
+    "gateway": {
+      "eyebrow": "Nouveau · terminaux de code",
+      "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
+      "body": "Une seule commande place un compteur local devant votre terminal. Aucun code à toucher, rien à configurer — et vos prompts ne quittent jamais votre machine : seuls les comptages et le coût arrivent dans ce panneau.",
+      "note": "Aujourd'hui il mesure ; il n'optimise pas encore là. Fonctionne aussi avec Codex CLI, Goose et Qwen Code — et bvsala doctor imprime la configuration exacte du reste.",
+      "cta": "Voir comment ça marche →"
+    },
     "integrate": {
       "eyebrow": "Cinq lignes pour commencer",
       "title": "Exécutez-le dans votre propre application. Vos prompts ne touchent jamais nos serveurs.",

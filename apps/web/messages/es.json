@@ -248,6 +248,7 @@
       "renewalNote": "<b>Mantén esta clave en tu despliegue.</b> Tu licencia caduca al final de cada período de facturación y la renovación emite una nueva. Con esta clave el SDK la recoge y la sustituye sin reiniciar. Sin ella nadie la recoge, así que alguien tendrá que pegar la clave nueva a mano cada período — y si nadie lo hace, el SDK se detiene al acabar el período de gracia, aunque la suscripción esté pagada y al día.",
       "step3": "<b>3 · Instala</b>: público en npm, sin token, sin configuración.",
       "step4": "<b>4 · Conecta tu proveedor y lee el SavingsReport</b>",
+      "gatewayNote": "<b>¿Terminal de código en vez de una app?</b> El mismo paquete trae un gateway medidor local: <code>bvsala claude</code> lanza Claude Code a través de él y este panel enseña el gasto, token a token. También <code>bvsala codex</code>, <code>bvsala goose</code> y <code>bvsala qwen</code>; <code>bvsala doctor</code> imprime el bloque exacto del resto. Usa la misma clave de servicio del paso 2 — para medir no hace falta clave de licencia.",
       "finalNote": "Eso es todo. Sin licencia válida → <code>generate()</code> se rechaza. Si cancelas tu plan, el SDK se detiene en ~15 min mediante <code>licenseServerUrl</code>: sin reiniciar, y nunca inutiliza tu producción si no podemos conectarnos."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Todavía en el prompt, pero facturada o procesada de forma más barata."
       }
     ],
+    "gateway": {
+      "eyebrow": "Nuevo · terminales de código",
+      "title": "¿Claude Code con API key? Mira su gasto real, token a token.",
+      "body": "Un solo comando pone un medidor local delante de tu terminal. Sin tocar código y sin configurar nada — y tus prompts jamás salen de tu máquina: a este panel solo llegan conteos y coste.",
+      "note": "Hoy mide; todavía no optimiza ahí. Funciona también con Codex CLI, Goose y Qwen Code — y bvsala doctor imprime la configuración exacta del resto.",
+      "cta": "Ver cómo funciona →"
+    },
     "integrate": {
       "eyebrow": "Cinco líneas para empezar",
       "title": "Ejecútalo en tu propia app. Tus prompts nunca tocan nuestros servidores.",

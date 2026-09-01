@@ -248,6 +248,7 @@
       "renewalNote": "<b>Bu anahtarı dağıtımınızda tutun.</b> Lisansınızın süresi her faturalandırma döneminin sonunda dolar ve yenileme yeni bir lisans üretir. Bu anahtar varsa SDK yenisini kendisi alır ve yeniden başlatmadan devreye sokar. Yoksa kimse almaz; yeni anahtarı her dönem birinin elle yapıştırması gerekir — ve kimse yapmazsa, abonelik ödenmiş ve güncel olsa bile ek süre bittiğinde SDK durur.",
       "step3": "<b>3 · Kurun</b> — npm'de herkese açık, token yok, yapılandırma yok.",
       "step4": "<b>4 · Sağlayıcınızı bağlayın ve SavingsReport'u okuyun</b>",
+      "gatewayNote": "<b>Uygulama yerine kod terminali mi?</b> Aynı paket yerel bir ölçüm ağ geçidi getirir: <code>bvsala claude</code> Claude Code'u onun üzerinden başlatır ve bu panel harcamayı token token gösterir. Ayrıca <code>bvsala codex</code>, <code>bvsala goose</code> ve <code>bvsala qwen</code>; geri kalanı için <code>bvsala doctor</code> tam bloğu yazdırır. 2. adımdaki aynı servis anahtarını kullanır — ölçmek için lisans anahtarı gerekmez.",
       "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Hâlâ prompt'ta, ama daha ucuza faturalandırılan ya da işlenen."
       }
     ],
+    "gateway": {
+      "eyebrow": "Yeni · kod terminalleri",
+      "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
+      "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
+      "note": "Bugün ölçüyor; orada henüz optimize etmiyor. Codex CLI, Goose ve Qwen Code ile de çalışır — geri kalanı için bvsala doctor tam yapılandırmayı yazdırır.",
+      "cta": "Nasıl çalıştığını gör →"
+    },
     "integrate": {
       "eyebrow": "Başlamak için beş satır",
       "title": "Kendi uygulamanızda çalıştırın. Prompt'larınız sunucularımıza asla dokunmaz.",

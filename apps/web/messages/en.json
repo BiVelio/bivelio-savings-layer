@@ -248,6 +248,7 @@
       "renewalNote": "<b>Keep this key in your deployment.</b> Your license expires at the end of each billing period and the renewal mints a new one. With this key the SDK collects it and swaps it in without a restart. Without it nobody collects it, so someone has to paste the new key by hand every period — and if nobody does, the SDK stops once the grace period ends, even though the subscription is paid and up to date.",
       "step3": "<b>3 · Install</b> — public on npm, no token, no config.",
       "step4": "<b>4 · Wire your provider & read the SavingsReport</b>",
+      "gatewayNote": "<b>Coding terminal instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. Also <code>bvsala codex</code>, <code>bvsala goose</code> and <code>bvsala qwen</code>; <code>bvsala doctor</code> prints the exact block for the rest. It uses the same service key from step 2 — measuring needs no license key.",
       "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Still in the prompt, but billed or processed more cheaply."
       }
     ],
+    "gateway": {
+      "eyebrow": "New · coding terminals",
+      "title": "Claude Code on an API key? See its real spend, token by token.",
+      "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
+      "note": "Today it measures; it does not optimize there yet. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact setup for the rest.",
+      "cta": "See how it works →"
+    },
     "integrate": {
       "eyebrow": "Five lines to start",
       "title": "Run it in your own app. Your prompts never touch our servers.",
