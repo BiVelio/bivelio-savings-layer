@@ -56,10 +56,11 @@ if (comando !== "gateway" && comando !== "doctor" && !esEnvoltorio) {
   process.exit(comando === undefined || comando === "help" || comando === "--help" ? 0 : 1);
 }
 
-// Envoltorios: puerto efímero; `gateway`/`doctor`: 8402 o --puerto (1–65535).
+// Envoltorios: puerto efímero; `gateway`: 8402 o --puerto (0 = efímero, lo usa
+// el arnés F2); `doctor`: 1–65535 (imprime URLs — un puerto 0 no señala nada).
 const idx = resto.indexOf("--puerto");
 const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
-if (!Number.isInteger(puerto) || (esEnvoltorio ? puerto < 0 : puerto < 1) || puerto > 65535) {
+if (!Number.isInteger(puerto) || (comando === "doctor" ? puerto < 1 : puerto < 0) || puerto > 65535) {
   console.error(`[bvsala ${comando}] puerto inválido: ${resto[idx + 1]}`);
   process.exit(1);
 }
