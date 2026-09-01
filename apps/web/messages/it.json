@@ -679,7 +679,7 @@
       "medido": "Dopo, commissione solo sul <b>risparmio misurato</b>: quello che puoi riscontrare con la fattura del tuo provider. Lo stimato non si fattura mai.",
       "garantia": "E <b>ti tieni sempre il {garantia} o più</b> di ogni euro risparmiato: la commissione esiste solo quando esiste il tuo risparmio misurato.",
       "tramos": "<b>A scaglioni, ciascuno alla sua aliquota</b> — {tramos}. Più risparmi, più basso è il nostro percentuale.",
-      "permanencia": "Un mese sotto la soglia? Commissione: {cero}. <b>Senza vincoli</b> — e la tua prima fattura variabile contiene solo numeri che hai già visto nel tuo estratto."
+      "permanencia": "Un mese senza risparmio? Commissione: {cero}. <b>Senza vincoli</b> — e la tua prima fattura variabile contiene solo numeri che hai già visto nel tuo estratto."
     }
   },
   "invitacion": {

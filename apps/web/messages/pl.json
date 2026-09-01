@@ -679,7 +679,7 @@
       "medido": "Potem prowizja tylko od <b>zmierzonych oszczędności</b>: takich, które możesz uzgodnić z fakturą dostawcy. Szacowane nigdy nie są rozliczane.",
       "garantia": "I <b>zawsze zatrzymujesz {garantia} lub więcej</b> z każdego zaoszczędzonego euro: prowizja istnieje tylko wtedy, gdy istnieją Twoje zmierzone oszczędności.",
       "tramos": "<b>Progowo, każdy próg według własnej stawki</b> — {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
-      "permanencia": "Miesiąc poniżej progu? Prowizja: {cero}. <b>Bez zobowiązań</b> — a Twoja pierwsza zmienna faktura zawiera tylko liczby, które już widziałeś na wyciągu."
+      "permanencia": "Miesiąc bez oszczędności? Prowizja: {cero}. <b>Bez zobowiązań</b> — a Twoja pierwsza zmienna faktura zawiera tylko liczby, które już widziałeś na wyciągu."
     }
   },
   "invitacion": {

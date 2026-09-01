@@ -679,7 +679,7 @@
       "medido": "Danach Provision nur auf die <b>gemessene Ersparnis</b>: die, die du mit der Rechnung deines Anbieters abgleichen kannst. Geschätztes wird nie berechnet.",
       "garantia": "Und <b>dir bleiben immer {garantia} oder mehr</b> jedes gesparten Euros: die Provision existiert nur, wenn deine gemessene Ersparnis existiert.",
       "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
-      "permanencia": "Ein Monat unter der Schwelle? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
+      "permanencia": "Ein Monat ohne Ersparnis? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
     }
   },
   "invitacion": {

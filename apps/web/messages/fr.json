@@ -679,7 +679,7 @@
       "medido": "Ensuite, commission uniquement sur l'<b>économie mesurée</b> : celle que vous pouvez rapprocher de la facture de votre fournisseur. L'estimé n'est jamais facturé.",
       "garantia": "Et <b>vous gardez toujours {garantia} ou plus</b> de chaque euro économisé : la commission n'existe que si votre économie mesurée existe.",
       "tramos": "<b>Par tranches, chacune à son taux</b> — {tramos}. Plus vous économisez, plus notre pourcentage baisse.",
-      "permanencia": "Un mois sous le seuil ? Commission : {cero}. <b>Sans engagement</b> — et votre première facture variable ne contient que des chiffres déjà vus sur votre relevé."
+      "permanencia": "Un mois sans économie ? Commission : {cero}. <b>Sans engagement</b> — et votre première facture variable ne contient que des chiffres déjà vus sur votre relevé."
     }
   },
   "invitacion": {

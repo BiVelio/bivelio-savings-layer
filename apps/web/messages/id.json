@@ -679,7 +679,7 @@
       "medido": "Setelah itu, komisi hanya atas <b>penghematan terukur</b>: yang bisa kamu cocokkan dengan faktur penyedia. Estimasi tidak pernah ditagih.",
       "garantia": "Dan <b>Anda selalu menyimpan {garantia} atau lebih</b> dari setiap euro yang dihemat: komisi hanya ada jika penghematan terukur Anda ada.",
       "tramos": "<b>Berjenjang, tiap jenjang dengan tarifnya</b> — {tramos}. Makin besar hematmu, makin kecil persentase kami.",
-      "permanencia": "Sebulan di bawah ambang? Komisi: {cero}. <b>Tanpa kontrak</b> — dan faktur variabel pertamamu hanya berisi angka yang sudah kamu lihat di rekeningmu."
+      "permanencia": "Sebulan tanpa penghematan? Komisi: {cero}. <b>Tanpa kontrak</b> — dan faktur variabel pertamamu hanya berisi angka yang sudah kamu lihat di rekeningmu."
     }
   },
   "invitacion": {
