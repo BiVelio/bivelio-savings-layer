@@ -248,6 +248,7 @@
       "renewalNote": "<b>Mantén aquesta clau al teu desplegament.</b> La teva llicència caduca al final de cada període de facturació i la renovació n'emet una de nova. Amb aquesta clau, el SDK la recull i la substitueix sense reiniciar. Sense la clau no la recull ningú, i algú haurà d'enganxar la clau nova a mà cada període — i si no ho fa ningú, el SDK s'atura quan s'acaba el període de gràcia, encara que la subscripció estigui pagada i al dia.",
       "step3": "<b>3 · Instal·la</b> — públic a npm, sense token, sense configuració.",
       "step4": "<b>4 · Connecta el teu proveïdor i llegeix el SavingsReport</b>",
+      "gatewayNote": "<b>Terminal de codi en comptes d'una app?</b> El mateix paquet porta un gateway mesurador local: <code>bvsala claude</code> llança Claude Code a través seu i aquest tauler mostra la despesa, token a token. També <code>bvsala codex</code>, <code>bvsala goose</code> i <code>bvsala qwen</code>; <code>bvsala doctor</code> imprimeix el bloc exacte de la resta. Fa servir la mateixa clau de servei del pas 2 — per mesurar no cal clau de llicència.",
       "finalNote": "Això és tot. Sense llicència vàlida → <code>generate()</code> es rebutja. Si cancel·les el teu pla, el SDK s'atura en uns 15 min mitjançant <code>licenseServerUrl</code> — sense reiniciar, i mai no inutilitza la teva producció si no ens podem connectar."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Encara al prompt, però facturada o processada de manera més barata."
       }
     ],
+    "gateway": {
+      "eyebrow": "Nou · terminals de codi",
+      "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
+      "body": "Una sola ordre posa un mesurador local davant del teu terminal. Sense tocar codi ni configurar res — i els teus prompts mai no surten de la teva màquina: a aquest tauler només arriben recomptes i cost.",
+      "note": "Avui mesura; encara no hi optimitza. També funciona amb Codex CLI, Goose i Qwen Code — i bvsala doctor imprimeix la configuració exacta de la resta.",
+      "cta": "Mira com funciona →"
+    },
     "integrate": {
       "eyebrow": "Cinc línies per començar",
       "title": "Executa'l a la teva pròpia app. Els teus prompts mai no toquen els nostres servidors.",

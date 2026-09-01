@@ -248,6 +248,7 @@
       "renewalNote": "<b>Zostaw ten klucz w swoim wdrożeniu.</b> Twoja licencja wygasa na koniec każdego okresu rozliczeniowego, a odnowienie wydaje nową. Z tym kluczem SDK sam ją pobiera i podmienia bez restartu. Bez niego nikt jej nie pobierze, więc ktoś musi ręcznie wklejać nowy klucz w każdym okresie — a jeśli nikt tego nie zrobi, SDK zatrzyma się po zakończeniu okresu karencji, mimo że subskrypcja jest opłacona i aktualna.",
       "step3": "<b>3 · Zainstaluj</b> — publicznie na npm, bez tokena, bez konfiguracji.",
       "step4": "<b>4 · Podłącz swojego dostawcę i odczytaj SavingsReport</b>",
+      "gatewayNote": "<b>Terminal programistyczny zamiast aplikacji?</b> Ten sam pakiet zawiera lokalną bramę pomiarową: <code>bvsala claude</code> uruchamia przez nią Claude Code, a ten panel pokazuje wydatek, token po tokenie. Także <code>bvsala codex</code>, <code>bvsala goose</code> i <code>bvsala qwen</code>; <code>bvsala doctor</code> drukuje dokładny blok dla reszty. Używa tego samego klucza serwisowego z kroku 2 — do mierzenia nie trzeba klucza licencji.",
       "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Wciąż w promptcie, ale naliczane lub przetwarzane taniej."
       }
     ],
+    "gateway": {
+      "eyebrow": "Nowość · terminale programistyczne",
+      "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
+      "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem. Bez zmian w kodzie i bez konfiguracji — a Twoje prompty nigdy nie opuszczają Twojej maszyny: do tego panelu trafiają tylko liczby i koszt.",
+      "note": "Dziś mierzy; tam jeszcze nie optymalizuje. Działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor drukuje dokładną konfigurację reszty.",
+      "cta": "Zobacz, jak to działa →"
+    },
     "integrate": {
       "eyebrow": "Pięć linijek na start",
       "title": "Uruchom to w swojej własnej aplikacji. Twoje prompty nigdy nie dotykają naszych serwerów.",

@@ -390,6 +390,28 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </pre>
         </section>
 
+        {/* GATEWAY — el medidor de terminales (S3): Claude Code/Codex sin tocar código.
+            Honestidad: aquí solo se promete MEDIR; el veredicto de ahorro en
+            terminales sigue siendo «Aún no» en /how-it-works. */}
+        <section>
+          <div className="sec-head">
+            <span className="eyebrow">{t("gateway.eyebrow")}</span>
+            <h2>{t("gateway.title")}</h2>
+            <p>{t("gateway.body")}</p>
+          </div>
+          <pre className="code">
+            {"npm i -g @bivelio/savings-layer\n"}
+            {"export "}
+            <span className="s">BIVELIO_SERVICE_KEY</span>
+            {"=bvk_…\n\n"}
+            <span className="k">bvsala</span>
+            {" claude"}
+          </pre>
+          <p style={{ marginTop: 12, opacity: 0.85 }}>
+            {t("gateway.note")} <Link href="/how-it-works">{t("gateway.cta")}</Link>
+          </p>
+        </section>
+
         {/* PRICING */}
         <section id="pricing">
           <div className="sec-head">

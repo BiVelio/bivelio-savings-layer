@@ -166,6 +166,23 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
           code: (chunks) => <code>{chunks}</code>,
         })}
       </p>
+
+      {/* 5 · terminal (gateway) — la vía sin código: medir Claude Code/Codex.
+          Solo mide; la clave de servicio del paso 2 es la única credencial. */}
+      <p className="ck-note" style={{ marginTop: 16 }}>
+        {t.rich("installLicensePanel.gatewayNote", {
+          b: (chunks) => <b>{chunks}</b>,
+          code: (chunks) => <code>{chunks}</code>,
+        })}
+      </p>
+      <div className="code2">
+        <span>npm i -g @bivelio/savings-layer</span>
+        <CopyButton text="npm i -g @bivelio/savings-layer" />
+      </div>
+      <div className="code2" style={{ marginTop: 8 }}>
+        <span>bvsala claude</span>
+        <CopyButton text="bvsala claude" />
+      </div>
     </section>
   );
 }

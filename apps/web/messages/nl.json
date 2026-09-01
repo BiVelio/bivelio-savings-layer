@@ -248,6 +248,7 @@
       "renewalNote": "<b>Houd deze sleutel in je deployment.</b> Je licentie verloopt aan het einde van elke facturatieperiode en bij de verlenging wordt er een nieuwe uitgegeven. Met deze sleutel haalt de SDK die op en zet hem zelf in, zonder herstart. Zonder die sleutel haalt niemand hem op, dus moet iemand elke periode de nieuwe sleutel met de hand plakken — en doet niemand dat, dan stopt de SDK zodra de respijtperiode afloopt, ook al is het abonnement betaald en loopt er niets achter.",
       "step3": "<b>3 · Installeren</b> — publiek op npm, geen token, geen configuratie.",
       "step4": "<b>4 · Koppel je provider en lees het SavingsReport</b>",
+      "gatewayNote": "<b>Codeterminal in plaats van een app?</b> Hetzelfde pakket bevat een lokale meet-gateway: <code>bvsala claude</code> start Claude Code erdoorheen en dit paneel toont de uitgaven, token voor token. Ook <code>bvsala codex</code>, <code>bvsala goose</code> en <code>bvsala qwen</code>; <code>bvsala doctor</code> drukt het exacte blok voor de rest af. Hij gebruikt dezelfde service-sleutel uit stap 2 — meten vereist geen licentiesleutel.",
       "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn."
     },
     "accountPlanStrip": {
@@ -544,6 +545,13 @@
         "desc": "Nog in de prompt, maar goedkoper gefactureerd of verwerkt."
       }
     ],
+    "gateway": {
+      "eyebrow": "Nieuw · codeterminals",
+      "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
+      "body": "Eén commando zet een lokale meter vóór je terminal. Geen code aanpassen, niets configureren — en je prompts verlaten nooit je machine: alleen aantallen en kosten bereiken dit paneel.",
+      "note": "Vandaag meet hij; daar optimaliseert hij nog niet. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
+      "cta": "Zo werkt het →"
+    },
     "integrate": {
       "eyebrow": "Vijf regels om te beginnen",
       "title": "Draai het in je eigen app. Je prompts raken nooit onze servers.",
