@@ -99,6 +99,7 @@ function lineaColoreada(linea: string, key: number) {
 
 export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
   const t = await getTranslations("dashboard");
+  const tSkill = await getTranslations("landing.skill");
   // El precio, del Price de Stripe y formateado aquí (servidor) para bajarlo ya
   // hecho al botón, que es de cliente.
   const locale = await getLocale();
@@ -211,6 +212,13 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
           }
         />
       </div>
+      {/* El skill savings-mode, también aquí: el login no honra `next`, así que
+          quien vino de la landing a por el zip aterriza en el panel — y lo
+          encuentra sin volver atrás. Claves REUTILIZADAS de landing.skill: el
+          panel y la landing no pueden contar dos historias del mismo skill. */}
+      <p className="ck-note" style={{ marginTop: 14 }}>
+        <a href="/api/skill/descargar">{tSkill("aiDescargar")}</a> · {tSkill("ccNota")}
+      </p>
     </section>
   );
 }

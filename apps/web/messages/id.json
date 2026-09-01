@@ -554,6 +554,25 @@
         "desc": "Masih ada dalam prompt, tetapi ditagih atau diproses lebih murah."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · skill gratis",
+      "title": "Skill yang merenggangkan batas langgananmu",
+      "body": "Tanpa tagihan bukan berarti tanpa sakit: jendela lima jam dan batas mingguan. savings-mode adalah skill berisi instruksi murni — tanpa proxy, lalu lintasmu tak tersentuh — yang memangkas dua massa yang benar-benar membakar batas: keluaran model dan hasil alat. Gratis; yang dibayar ke Savings adalah mengetahui berapa banyak ia menghematmu.",
+      "mLectura": "pembacaan cache",
+      "mLecturaDesc": "Seluruh konteks dibaca ulang setiap giliran — karena itu menjaganya ramping penting.",
+      "mEscritura": "penulisan cache (satu jam)",
+      "mEscrituraDesc": "Setiap hasil alat ditulis ke cache dengan premi sebelum dibaca ulang.",
+      "mSalida": "keluaran model",
+      "mSalidaDesc": "Kurang dari satu persen token; skill menyerangnya langsung.",
+      "medidaPie": "dari pengeluaran terukur",
+      "anatomiaNota": "Diukur dengan meteran pada {peticiones} permintaan Claude Code nyata, terhadap penghitung penyedia ({fecha}). Efek skill itu sendiri akan dipublikasikan setelah diukur secara A/B — tidak pernah sebelumnya.",
+      "ccNota": "Satu perintah: terpasang di ~/.claude/skills dan aktif sendiri saat percakapan menyinggung batas atau menghemat token.",
+      "aiDescargar": "Unduh savings-mode.zip",
+      "aiCuenta": "Unduhan meminta akun Savings (gratis) Anda: dengan begitu adopsi menjadi metrik nyata, dengan identitas — skill itu sendiri tidak membawa telemetri apa pun.",
+      "aiPaso1": "Di claude.ai aktifkan “Code execution and file creation” (Settings → Capabilities).",
+      "aiPaso2": "Lalu unggah zip di Customize → Skills: muncul dengan sakelarnya sendiri, privat di akunmu.",
+      "gptNota": "Kejujuran dulu: ChatGPT tidak punya skill dan batasnya menghitung pesan, bukan token — keringkasan tidak merenggangkan batas. Jika tetap ingin gayanya, tempel ini di Custom Instructions:"
+    },
     "systems": {
       "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API OpenAI atau Anthropic dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
     },

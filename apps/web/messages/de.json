@@ -554,6 +554,25 @@
         "desc": "Noch im Prompt, aber günstiger abgerechnet oder verarbeitet."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · kostenloser Skill",
+      "title": "Der Skill, der deine Abo-Limits dehnt",
+      "body": "Keine Rechnung heißt nicht kein Schmerz: das Fünf-Stunden-Fenster und das Wochenlimit. savings-mode ist ein Skill aus reinen Anweisungen — kein Proxy, dein Traffic bleibt unberührt — der die zwei Massen kürzt, die wirklich Limit verbrennen: Modellausgabe und Tool-Ergebnisse. Er ist kostenlos; wofür man Savings bezahlt, ist zu wissen, wie viel er dir spart.",
+      "mLectura": "Cache-Lesevorgänge",
+      "mLecturaDesc": "Der gesamte Kontext wird in jedem Zug neu gelesen — deshalb zählt, ihn schlank zu halten.",
+      "mEscritura": "Cache-Schreiben (eine Stunde)",
+      "mEscrituraDesc": "Jedes Tool-Ergebnis wird mit Aufschlag in den Cache geschrieben, bevor es neu gelesen wird.",
+      "mSalida": "Modellausgabe",
+      "mSalidaDesc": "Unter einem Prozent der Tokens; der Skill greift sie direkt an.",
+      "medidaPie": "der gemessenen Ausgaben",
+      "anatomiaNota": "Gemessen mit dem Meter über {peticiones} echte Claude-Code-Anfragen, gegen die Zähler des Providers ({fecha}). Die Wirkung des Skills selbst wird veröffentlicht, sobald sie im A/B gemessen ist — nie vorher.",
+      "ccNota": "Ein Befehl: installiert nach ~/.claude/skills und aktiviert sich von selbst, wenn es um Limits oder Token-Sparen geht.",
+      "aiDescargar": "savings-mode.zip herunterladen",
+      "aiCuenta": "Der Download verlangt dein (kostenloses) Savings-Konto: so wird Adoption eine echte Metrik, mit Identität — der Skill selbst enthält keinerlei Telemetrie.",
+      "aiPaso1": "Auf claude.ai „Code execution and file creation“ aktivieren (Settings → Capabilities).",
+      "aiPaso2": "Dann das Zip unter Customize → Skills hochladen: es erscheint mit eigenem Schalter, privat in deinem Konto.",
+      "gptNota": "Ehrlichkeit zuerst: ChatGPT hat keine Skills und seine Limits zählen Nachrichten, nicht Tokens — Kürze dehnt das Limit nicht. Wenn du den Stil trotzdem willst, füge das in Custom Instructions ein:"
+    },
     "systems": {
       "caption": "Wo deine Automatisierungen schon leben. Ruft es die OpenAI- oder Anthropic-API mit deinem Schlüssel auf, wird es gemessen — das SDK umhüllt den Aufruf; das Gateway setzt sich davor."
     },

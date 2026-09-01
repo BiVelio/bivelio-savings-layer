@@ -554,6 +554,25 @@
         "desc": "Nog in de prompt, maar goedkoper gefactureerd of verwerkt."
       }
     ],
+    "skill": {
+      "eyebrow": "savings-mode · gratis skill",
+      "title": "De skill die je abonnementslimieten oprekt",
+      "body": "Geen factuur betekent niet geen pijn: het venster van vijf uur en de weeklimiet. savings-mode is een skill van pure instructies — geen proxy, je verkeer onaangeraakt — die de twee massa's snijdt die echt limiet verbranden: modeloutput en toolresultaten. Hij is gratis; waar je Savings voor betaalt is weten hoeveel hij je bespaart.",
+      "mLectura": "cache-lezingen",
+      "mLecturaDesc": "De hele context wordt elke beurt opnieuw gelezen — daarom telt hem slank houden.",
+      "mEscritura": "cache-schrijven (één uur)",
+      "mEscrituraDesc": "Elk toolresultaat wordt met toeslag in de cache geschreven voordat het opnieuw wordt gelezen.",
+      "mSalida": "modeloutput",
+      "mSalidaDesc": "Minder dan één procent van de tokens; de skill pakt hem direct aan.",
+      "medidaPie": "van de gemeten uitgaven",
+      "anatomiaNota": "Gemeten met de meter over {peticiones} echte Claude Code-verzoeken, tegen de tellers van de provider ({fecha}). Het effect van de skill zelf wordt gepubliceerd zodra het in A/B gemeten is — nooit eerder.",
+      "ccNota": "Eén commando: installeert in ~/.claude/skills en activeert zichzelf zodra het gesprek over limieten of tokens besparen gaat.",
+      "aiDescargar": "Download savings-mode.zip",
+      "aiCuenta": "De download vraagt om je (gratis) Savings-account: zo wordt adoptie een echte metriek, met identiteit — de skill zelf bevat geen enkele telemetrie.",
+      "aiPaso1": "Zet op claude.ai “Code execution and file creation” aan (Settings → Capabilities).",
+      "aiPaso2": "Upload daarna de zip onder Customize → Skills: hij verschijnt met zijn eigen schakelaar, privé in je account.",
+      "gptNota": "Eerlijkheid eerst: ChatGPT heeft geen skills en zijn limieten tellen berichten, geen tokens — beknoptheid rekt de limiet niet op. Wil je de stijl toch, plak dit in Custom Instructions:"
+    },
     "systems": {
       "caption": "Waar je automatiseringen al leven. Roept het de OpenAI- of Anthropic-API aan met jouw sleutel, dan wordt het gemeten — de SDK omhult de aanroep; de gateway staat ervoor."
     },
