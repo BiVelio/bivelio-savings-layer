@@ -567,6 +567,7 @@
       "medidaPie": "của chi tiêu đo được",
       "anatomiaNota": "Đo bằng bộ đo trên {peticiones} yêu cầu Claude Code thực, so với bộ đếm của nhà cung cấp ({fecha}). Hiệu quả của chính skill sẽ được công bố khi đo xong bằng A/B — không bao giờ trước đó.",
       "ccNota": "Một lệnh duy nhất: cài vào ~/.claude/skills và tự kích hoạt khi cuộc trò chuyện nói về giới hạn hoặc tiết kiệm token.",
+      "cxNota": "Codex không có skill: cùng kỷ luật đó đi dưới dạng khối được đánh dấu trong AGENTS.md của bạn (~/.codex) — luôn bật; xóa khối để tắt. AGENTS.md của bạn ngoài các dấu không bao giờ bị đụng tới. Hoạt động với tài khoản ChatGPT và API key, và dưới bvsala codex hiệu quả của nó được đo.",
       "aiDescargar": "Tải savings-mode.zip",
       "aiCuenta": "Việc tải xuống yêu cầu tài khoản Savings (miễn phí) của bạn: nhờ đó mức độ sử dụng là một chỉ số thật, có danh tính — bản thân skill không chứa bất kỳ telemetry nào.",
       "aiPaso1": "Trên claude.ai, bật “Code execution and file creation” (Settings → Capabilities).",

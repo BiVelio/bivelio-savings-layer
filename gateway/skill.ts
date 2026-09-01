@@ -52,6 +52,79 @@ export function origenDelSkill(origenes: string[], fs: Pick<FsDeSkill, "existe">
   return null;
 }
 
+/**
+ * LA PUERTA CODEX: Codex CLI no tiene skills — tiene `AGENTS.md` (global en
+ * ~/.codex/, o del repo), SIEMPRE activo. La misma disciplina del skill viaja
+ * como BLOQUE MARCADO dentro de ese fichero: se genera del propio SKILL.md
+ * (una sola fuente, cero deriva), y el instalador solo toca lo que hay entre
+ * sus marcas — el resto del AGENTS.md del usuario es sagrado.
+ */
+export const MARCA_INICIO = "<!-- bvsala:savings-mode:inicio -->";
+export const MARCA_FIN = "<!-- bvsala:savings-mode:fin -->";
+
+export function bloqueAgentsMd(skillMd: string): string {
+  const cuerpo = skillMd.replace(/^---\n[\s\S]*?\n---\n*/, "").trim();
+  return (
+    `${MARCA_INICIO}\n${cuerpo}\n\n` +
+    // AGENTS.md no tiene activación por descripción: esto va SIEMPRE. Decirlo
+    // y dar la salida es parte del contrato.
+    `_Always on (AGENTS.md has no activation step). Delete this block to turn it off; \`bvsala skill --codex --forzar\` restores it._\n` +
+    `${MARCA_FIN}`
+  );
+}
+
+export function instalarAgentsMd(o: OpcionesInstalarSkill): ResultadoInstalarSkill {
+  const origen = origenDelSkill(o.origenes, o.fs);
+  if (!origen) {
+    return {
+      ok: false,
+      destino: "",
+      mensaje: `[bvsala skill] no encuentro el SKILL.md empaquetado (raíces probadas: ${o.origenes.join(", ")})`,
+    };
+  }
+  const bloque = bloqueAgentsMd(o.fs.leer(origen));
+  const dir = o.proyecto ? o.cwd : join(o.home, ".codex");
+  const destino = join(dir, "AGENTS.md");
+
+  if (!o.fs.existe(destino)) {
+    o.fs.crearDir(dir);
+    o.fs.escribir(destino, bloque + "\n");
+    return { ok: true, destino, mensaje: mensajeCodex(destino, "instalado") };
+  }
+
+  const actual = o.fs.leer(destino);
+  const ini = actual.indexOf(MARCA_INICIO);
+  const fin = actual.indexOf(MARCA_FIN);
+
+  if (ini === -1 || fin === -1 || fin < ini) {
+    // Sin bloque nuestro: se AÑADE al final; ni un byte ajeno se toca.
+    o.fs.escribir(destino, actual.trimEnd() + "\n\n" + bloque + "\n");
+    return { ok: true, destino, mensaje: mensajeCodex(destino, "añadido al AGENTS.md existente") };
+  }
+
+  const existente = actual.slice(ini, fin + MARCA_FIN.length);
+  if (existente === bloque) {
+    return { ok: true, destino, mensaje: `[bvsala skill] ya instalado y al día: ${destino}` };
+  }
+  if (!o.forzar) {
+    return {
+      ok: false,
+      destino,
+      mensaje: `[bvsala skill] el bloque savings-mode de ${destino} tiene contenido DISTINTO — no lo piso; usa --forzar para actualizarlo`,
+    };
+  }
+  o.fs.escribir(destino, actual.slice(0, ini) + bloque + actual.slice(fin + MARCA_FIN.length));
+  return { ok: true, destino, mensaje: mensajeCodex(destino, "bloque actualizado") };
+}
+
+function mensajeCodex(destino: string, que: string): string {
+  return (
+    `[bvsala skill] ${que}: ${destino}\n` +
+    `[bvsala skill] AGENTS.md va SIEMPRE activo en Codex (no hay paso de activación); borra el bloque para apagarlo.\n` +
+    `[bvsala skill] para medir su efecto: trabaja unos días con él y otros sin él bajo \`bvsala codex\`, y compara en el panel.`
+  );
+}
+
 export function instalarSkill(o: OpcionesInstalarSkill): ResultadoInstalarSkill {
   const origen = origenDelSkill(o.origenes, o.fs);
   if (!origen) {

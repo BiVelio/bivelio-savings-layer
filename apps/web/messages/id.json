@@ -567,6 +567,7 @@
       "medidaPie": "dari pengeluaran terukur",
       "anatomiaNota": "Diukur dengan meteran pada {peticiones} permintaan Claude Code nyata, terhadap penghitung penyedia ({fecha}). Efek skill itu sendiri akan dipublikasikan setelah diukur secara A/B — tidak pernah sebelumnya.",
       "ccNota": "Satu perintah: terpasang di ~/.claude/skills dan aktif sendiri saat percakapan menyinggung batas atau menghemat token.",
+      "cxNota": "Codex tidak punya skill: disiplin yang sama dikirim sebagai blok bertanda di AGENTS.md Anda (~/.codex) — selalu aktif; hapus bloknya untuk mematikan. AGENTS.md Anda di luar tanda tidak pernah disentuh. Bekerja dengan akun ChatGPT maupun API key, dan di bawah bvsala codex efeknya diukur.",
       "aiDescargar": "Unduh savings-mode.zip",
       "aiCuenta": "Unduhan meminta akun Savings (gratis) Anda: dengan begitu adopsi menjadi metrik nyata, dengan identitas — skill itu sendiri tidak membawa telemetri apa pun.",
       "aiPaso1": "Di claude.ai aktifkan “Code execution and file creation” (Settings → Capabilities).",

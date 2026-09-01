@@ -567,6 +567,7 @@
       "medidaPie": "do gasto medido",
       "anatomiaNota": "Medido com o medidor sobre {peticiones} pedidos reais do Claude Code, contra os contadores do fornecedor ({fecha}). O efeito da própria skill será publicado quando estiver medido em A/B — nunca antes.",
       "ccNota": "Um único comando: instala-se em ~/.claude/skills e ativa-se sozinho quando a conversa fala de limites ou de poupar tokens.",
+      "cxNota": "O Codex não tem skills: a mesma disciplina viaja como bloco marcado no teu AGENTS.md (~/.codex) — sempre ativa; apaga o bloco para a desligar. O teu AGENTS.md fora das marcas nunca é tocado. Funciona com conta ChatGPT e com chave API, e sob bvsala codex o seu efeito mede-se.",
       "aiDescargar": "Descarregar savings-mode.zip",
       "aiCuenta": "A descarga pede a tua conta Savings (gratuita): assim a adoção é uma métrica real, com identidade — a skill em si não leva telemetria nenhuma.",
       "aiPaso1": "No claude.ai ativa «Code execution and file creation» (Settings → Capabilities).",

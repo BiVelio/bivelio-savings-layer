@@ -490,6 +490,19 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 ),
               },
               {
+                id: "codex",
+                etiqueta: "Codex CLI",
+                panel: (
+                  <div>
+                    <pre className="code">
+                      <span className="k">npx</span>
+                      {" -y @bivelio/savings-layer skill --codex"}
+                    </pre>
+                    <p style={{ marginTop: 10, opacity: 0.85 }}>{t("skill.cxNota")}</p>
+                  </div>
+                ),
+              },
+              {
                 id: "claude-ai",
                 etiqueta: "claude.ai",
                 panel: (

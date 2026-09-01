@@ -24,7 +24,17 @@ ahorra tokens no puede costar mil por turno, que es lo que hacen otros.
 npx @bivelio/savings-layer skill          # → ~/.claude/skills/savings-mode
 bvsala skill --proyecto                   # → .claude/skills del repo actual
 bvsala skill --forzar                     # sobrescribir una copia local editada
+bvsala skill --codex                      # → bloque marcado en ~/.codex/AGENTS.md
 ```
+
+**La puerta Codex** (`--codex`): Codex CLI no tiene skills — tiene `AGENTS.md`,
+siempre activo. La misma disciplina viaja como **bloque marcado**
+(`<!-- bvsala:savings-mode:inicio/fin -->`) generado del propio SKILL.md (una
+sola fuente); lo que el usuario tenga fuera de las marcas no se toca jamás, un
+bloque editado no se pisa sin `--forzar`, y borrar el bloque lo apaga. Vale
+para cuenta ChatGPT y para API key, y bajo `bvsala codex` su efecto se mide
+igual que el de Claude Code. Cautela honesta: la ponderación exacta de los
+topes de Codex no está publicada — la primera medición A/B la revelará.
 
 Reinicia Claude Code y pídele «savings mode» — o se activa solo cuando la
 conversación menciona límites/cuota (la `description` del frontmatter decide).

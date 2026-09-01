@@ -567,6 +567,7 @@
       "medidaPie": "ölçülen harcamanın",
       "anatomiaNota": "Sağlayıcının kendi sayaçlarına karşı, {peticiones} gerçek Claude Code isteği üzerinde ölçüldü ({fecha}). Skill'in kendi etkisi A/B ile ölçüldüğünde yayımlanacak — asla öncesinde değil.",
       "ccNota": "Tek komut: ~/.claude/skills içine kurulur ve konuşma limitlerden veya token tasarrufundan bahsedince kendiliğinden devreye girer.",
+      "cxNota": "Codex'te skill yok: aynı disiplin AGENTS.md dosyanda (~/.codex) işaretli blok olarak taşınır — her zaman etkin; kapatmak için bloğu sil. İşaretlerin dışındaki AGENTS.md'ine asla dokunulmaz. ChatGPT hesabıyla ve API anahtarıyla çalışır; bvsala codex altında etkisi ölçülür.",
       "aiDescargar": "savings-mode.zip'i indir",
       "aiCuenta": "İndirme (ücretsiz) Savings hesabını ister: böylece benimseme, kimlikli gerçek bir metrik olur — skill'in kendisinde hiçbir telemetri yoktur.",
       "aiPaso1": "claude.ai'de “Code execution and file creation” özelliğini aç (Settings → Capabilities).",
