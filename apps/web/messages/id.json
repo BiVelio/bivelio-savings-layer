@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "terbukti",
       "notProven": "tidak terbukti",
+      "notExercised": "tidak diaktifkan pada eksekusi ini — angka nolnya bukan pengukuran",
       "estimatedMock": "diperkirakan (tiruan)",
       "footnoteMain": "Empat ledger, <b>tidak pernah dijumlahkan</b> — masing-masing adalah tuas yang diukur terpisah, sehingga satu dolar tidak bisa dihitung dua kali.",
       "reconciledNote": "Residual rekonsiliasi ≈ 0 membuktikannya.",

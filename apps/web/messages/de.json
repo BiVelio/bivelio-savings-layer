@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "bewiesen",
       "notProven": "nicht bewiesen",
+      "notExercised": "in diesem Lauf nicht ausgeübt — ihre Null ist keine Messung",
       "estimatedMock": "geschätzt (Mock)",
       "footnoteMain": "Vier Ledger, <b>niemals summiert</b> — jeder ist ein separat gemessener Hebel, sodass ein Dollar nicht doppelt gezählt werden kann.",
       "reconciledNote": "Der Abstimmungsrest ≈ 0 beweist es.",

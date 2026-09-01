@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "bewezen",
       "notProven": "niet bewezen",
+      "notExercised": "niet uitgeoefend in deze run — de nul is geen meting",
       "estimatedMock": "geschat (mock)",
       "footnoteMain": "Vier grootboeken, <b>nooit opgeteld</b> — elk is een afzonderlijk gemeten hefboom, dus een dollar kan niet dubbel geteld worden.",
       "reconciledNote": "Het reconciliatierestant ≈ 0 bewijst het.",

@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "comprobado",
       "notProven": "no comprobado",
+      "notExercised": "no ejercitada en esta tirada — su cero no es una medición",
       "estimatedMock": "estimado (simulado)",
       "footnoteMain": "Cuatro libros, <b>nunca sumados</b>: cada uno es una palanca medida por separado, así que un dólar no se puede contar dos veces.",
       "reconciledNote": "El residual de conciliación ≈ 0 lo demuestra.",

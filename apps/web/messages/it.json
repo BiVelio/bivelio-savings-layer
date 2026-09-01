@@ -283,6 +283,7 @@
     "referenceLedgerCards": {
       "proven": "comprovato",
       "notProven": "non comprovato",
+      "notExercised": "non esercitata in questa esecuzione — il suo zero non è una misurazione",
       "estimatedMock": "stimato (simulato)",
       "footnoteMain": "Quattro registri, <b>mai sommati</b> — ognuno è una leva misurata separatamente, così un dollaro non può essere contato due volte.",
       "reconciledNote": "Il residuo di riconciliazione ≈ 0 lo dimostra.",

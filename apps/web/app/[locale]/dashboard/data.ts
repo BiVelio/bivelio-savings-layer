@@ -52,6 +52,20 @@ export interface AbArtifact {
   modelStable: boolean;
   aggregate: { savings: CI; wilcoxonP: number; qualityPassRate: number; proven: boolean; headline: string };
   honesty: string[];
+  /**
+   * La declaración del propio banco sobre qué palancas llegaron a ejecutarse.
+   * El artefacto la trae desde siempre y el panel la tiraba: por eso una
+   * palanca NO ejercitada (su aviso literal: «produce las mismas cifras que
+   * una que no ahorra») se pintaba como un 0% medido. Opcional porque un
+   * artefacto viejo puede no traerla — sin ella, las tarjetas caen al
+   * comportamiento anterior en vez de romper el panel.
+   */
+  levers?: {
+    exercised?: { palanca: string; escenario?: string | null; motivo?: string }[];
+    notExercised?: { palanca: string; escenario?: string | null; motivo?: string }[];
+    notMeasurable?: { palanca: string; motivo?: string }[];
+    warning?: string;
+  };
 }
 
 // ---- Account / org context (best-effort) ----
