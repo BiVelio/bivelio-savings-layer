@@ -351,25 +351,50 @@ export interface DatosCorreoAuth {
   destinatario: string;
 }
 
-/** Carcasa clara de la casa (savings y privacy): la misma familia visual que
- *  los correos de invitación. */
+/** La marca de cabecera de cada producto claro. Wordmark en TEXTO a propósito:
+ *  la mayoría de clientes de correo bloquean imágenes por defecto, así que un
+ *  logo <img> llega roto justo en la primera impresión — el texto llega
+ *  siempre. El punto en azul de marca es la firma visual del sitio. */
+const MARCA_CLARA: Record<Exclude<Producto, "gpos">, { nombre: string; dominio: string }> = {
+  savings: { nombre: "Savings", dominio: "savings.bivelio.com" },
+  privacy: { nombre: "Privacy", dominio: "privacy.bivelio.com" },
+};
+
+/**
+ * Carcasa clara de la casa (savings y privacy), vestida de marca — el dueño
+ * cazó la versión anterior en su registro de prueba (02-09): párrafos pelados
+ * y botón negro, «extremadamente soso», mientras GPOS sí tenía tarjeta.
+ * Ahora: tarjeta blanca sobre fondo gris de la paleta «Attio ink» del sitio
+ * (#F4F6F9 / #DEE4E7 / tinta #0F1218 / azul #2F63D8), wordmark de texto
+ * «Savings. BY BIVELIO», el asunto como titular y el botón tinta del sitio.
+ * Todo estilos inline y sin imágenes: es un correo, no una página.
+ */
 function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
+  const marca = MARCA_CLARA[d.producto === "privacy" ? "privacy" : "savings"];
   // El enlace SOLO en el botón (pedido del dueño, 2026-08-27): la URL desnuda
   // afeaba el correo. El respaldo para clientes sin HTML es la versión en
   // texto plano, que la lleva entera.
   const accionHtml = d.enlace
-    ? `<p><a href="${escapar(d.enlace)}" style="display:inline-block;background:#111;color:#fff;` +
-      `padding:10px 18px;border-radius:6px;text-decoration:none">${escapar(t.boton)}</a></p>`
-    : `<p style="font-size:22px;letter-spacing:0.2em;font-weight:700">${escapar(d.codigo ?? "")}</p>`;
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0"><tr>` +
+      `<td style="border-radius:8px;background:#0F1218">` +
+      `<a href="${escapar(d.enlace)}" target="_blank" style="display:inline-block;padding:12px 24px;` +
+      `font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px">${escapar(t.boton)}</a>` +
+      `</td></tr></table>`
+    : `<p style="margin:24px 0;font-size:26px;letter-spacing:0.25em;font-weight:700;color:#0F1218">${escapar(d.codigo ?? "")}</p>`;
   return [
-    `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;color:#111">`,
-    `<p>${escapar(t.saludo)}</p>`,
-    `<p>${escapar(t.cuerpo)}</p>`,
+    `<div style="margin:0;padding:32px 16px;background-color:#F4F6F9;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">`,
+    `<div style="max-width:560px;margin:0 auto;background-color:#FFFFFF;border:1px solid #DEE4E7;border-radius:16px;padding:36px 40px">`,
+    `<p style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#0F1218">` +
+      `${escapar(marca.nombre)}<span style="color:#2F63D8">.</span>` +
+      `<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:#5A6070;margin-left:8px">BY BIVELIO</span></p>`,
+    `<h1 style="margin:26px 0 10px 0;color:#0F1218;font-size:23px;line-height:1.25;font-weight:700">${escapar(t.asunto)}</h1>`,
+    `<p style="margin:0 0 4px 0;color:#5A6070;font-size:15px;line-height:1.6">${escapar(t.saludo)}</p>`,
+    `<p style="margin:0;color:#5A6070;font-size:15px;line-height:1.6">${escapar(t.cuerpo)}</p>`,
     accionHtml,
-    `<p style="font-size:13px;color:#555">${escapar(t.seguridad)}</p>`,
-    `<p style="font-size:13px;color:#555">${escapar(t.ignorar)}</p>`,
-    `<p style="font-size:12px;color:#999">${escapar(PIE[d.producto])}</p>`,
-    `</div>`,
+    `<p style="margin:0;color:#8A93A6;font-size:12.5px;line-height:1.6">${escapar(t.seguridad)} ${escapar(t.ignorar)}</p>`,
+    `<p style="margin:24px 0 0 0;padding-top:16px;border-top:1px solid #EEF1F5;color:#8A93A6;font-size:12px">` +
+      `${escapar(PIE[d.producto])} · <a href="https://${marca.dominio}" style="color:#2F63D8;text-decoration:none">${escapar(marca.dominio)}</a></p>`,
+    `</div></div>`,
   ].join("");
 }
 
