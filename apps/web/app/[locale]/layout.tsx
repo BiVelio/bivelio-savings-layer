@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -43,6 +44,17 @@ export default async function LocaleLayout({
         <link rel="preload" href="/fonts/space-grotesk-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
+        {/* Google tag (gtag.js) — seguimiento de conversiones de Google Ads
+            (pedido del dueño, 02-09). `afterInteractive` para no competir con
+            el LCP; los hosts van declarados en la CSP (next.config.mjs) o el
+            navegador lo bloquearía en silencio. */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=AW-18425303387" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'AW-18425303387');
+        `}</Script>
         <NextIntlClientProvider messages={messages}>
           <SiteNavGate>
             <NavBar />
