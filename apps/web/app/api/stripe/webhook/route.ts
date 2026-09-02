@@ -9,7 +9,7 @@ import { atribuirPorPrecio, type Atribucion } from "@/lib/stripe/atribucion";
 import { createAdminClient, type AdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/env";
-import { esStale, condicionEscritura } from "@/lib/stripe/guardia-orden";
+import { esStale, condicionEscritura, puedeAplicarImpago, fallbackVencimientoUnix } from "@/lib/stripe/guardia-orden";
 import {
   issueLicense,
   supersedeLicense,
@@ -282,7 +282,7 @@ async function ensurePrimeraLicencia(
   const issued = await issueLicense(admin, {
     orgId,
     seats: f.quantity,
-    periodEndUnix: f.periodEnd ?? nowUnix() + 31 * 86400,
+    periodEndUnix: f.periodEnd ?? fallbackVencimientoUnix(nowUnix()),
     subscriptionId: subRowId,
   });
   await audit(admin, orgId, eventId, "primera_licencia", { motivo, seats: f.quantity, jti: issued.jti });
@@ -349,7 +349,7 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
   const issued = await issueLicense(admin, {
     orgId,
     seats: f.quantity,
-    periodEndUnix: f.periodEnd ?? nowUnix() + 31 * 86400,
+    periodEndUnix: f.periodEnd ?? fallbackVencimientoUnix(nowUnix()),
     subscriptionId: subRowId,
   });
   await audit(admin, orgId, eventId, "checkout", { subId, seats: f.quantity, jti: issued.jti });
@@ -412,7 +412,7 @@ async function handleSubUpsert(admin: Admin, sub: Stripe.Subscription, eventId: 
     const issued = await issueLicense(admin, {
       orgId: f.orgId,
       seats: f.quantity,
-      periodEndUnix: f.periodEnd ?? nowUnix() + 31 * 86400,
+      periodEndUnix: f.periodEnd ?? fallbackVencimientoUnix(nowUnix()),
       subscriptionId: subRowId,
     });
     await audit(admin, f.orgId, eventId, "reissue", {
@@ -563,14 +563,14 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
   const issued = await issueLicense(admin, {
     orgId: f.orgId,
     seats: f.quantity,
-    periodEndUnix: f.periodEnd ?? nowUnix() + 31 * 86400,
+    periodEndUnix: f.periodEnd ?? fallbackVencimientoUnix(nowUnix()),
     subscriptionId: subRowId,
     stripeInvoiceId: invId,
   });
   await audit(admin, f.orgId, eventId, "invoice_paid", { subId, jti: issued.jti });
 }
 
-async function handleInvoiceFailed(admin: Admin, invoice: Stripe.Invoice, eventId: string) {
+async function handleInvoiceFailed(admin: Admin, invoice: Stripe.Invoice, eventId: string, eventCreated: number) {
   const subId = invoiceSubId(invoice);
   if (!subId) return;
   // past_due + sello; NO se revoca. La gracia la cuenta el barrido diario
@@ -581,20 +581,48 @@ async function handleInvoiceFailed(admin: Admin, invoice: Stripe.Invoice, eventI
   // toda normalidad. Los días de gracia salen de `lib/billing/gracia.ts`.
   const { data } = await admin
     .from("subscriptions")
-    .select("id, org_id, past_due_since")
+    .select("id, org_id, status, last_event_at, past_due_since")
     .eq("stripe_subscription_id", subId)
     .maybeSingle();
-  const row = data as { id?: string; org_id?: string; past_due_since?: string | null } | null;
+  const row = data as {
+    id?: string;
+    org_id?: string;
+    status?: string | null;
+    last_event_at?: string | null;
+    past_due_since?: string | null;
+  } | null;
   if (!row?.id) return;
-  await admin
+  // Este handler era el ÚNICO que escribía estado sin la guardia de orden: un
+  // `payment_failed` reentregado tras el `deleted` resucitaba la fila a
+  // `past_due` y reabría ingest y reconcile de una org cancelada (hallazgo VIVO
+  // de la re-verificación del 02-09). `canceled` es terminal para esa
+  // suscripción; la regla vive en puedeAplicarImpago (primera línea, en
+  // memoria) y en el WHERE del UPDATE (segunda línea, contra la ráfaga).
+  if (!puedeAplicarImpago(row.status ?? null, row.last_event_at ?? null, eventCreated)) {
+    await audit(admin, row.org_id ?? null, eventId, "invoice_failed_ignorado", {
+      subId,
+      status: row.status ?? null,
+      created: eventCreated,
+    });
+    return;
+  }
+  const { data: escrito } = await admin
     .from("subscriptions")
     .update({
       status: "past_due",
       past_due_since: row.past_due_since ?? new Date().toISOString(),
+      last_event_at: iso(eventCreated),
       updated_at: new Date().toISOString(),
     })
-    .eq("id", row.id);
-  await audit(admin, row.org_id ?? null, eventId, "invoice_failed", { subId });
+    .eq("id", row.id)
+    .neq("status", "canceled")
+    .or(condicionEscritura(iso(eventCreated)!))
+    .select("id");
+  const aplicado = ((escrito ?? []) as { id?: string }[]).length > 0;
+  await audit(admin, row.org_id ?? null, eventId, aplicado ? "invoice_failed" : "invoice_failed_ignorado", {
+    subId,
+    ...(aplicado ? {} : { status: "carrera", created: eventCreated }),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -755,7 +783,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       case "invoice.payment_failed": {
         const inv = event.data.object as Stripe.Invoice;
         if (esFacturaDeComision(inv.metadata)) await handleComisionResuelta(admin, inv, event.id, "fallido");
-        else await handleInvoiceFailed(admin, inv, event.id);
+        else await handleInvoiceFailed(admin, inv, event.id, event.created);
         break;
       }
       default:

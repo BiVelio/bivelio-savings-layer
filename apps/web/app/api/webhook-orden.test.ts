@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { esStale, condicionEscritura, ganaLaEscritura } from "@/lib/stripe/guardia-orden";
+import { esStale, condicionEscritura, ganaLaEscritura, puedeAplicarImpago, fallbackVencimientoUnix } from "@/lib/stripe/guardia-orden";
 
 /**
  * Guardia de orden del webhook de Stripe, en sus DOS líneas.
@@ -69,5 +69,42 @@ describe("segunda línea — la ráfaga concurrente y el desempate", () => {
         `last_event_at.lt."${ULTIMO}",` +
         `and(last_event_at.eq."${ULTIMO}",status.neq.canceled)`,
     );
+  });
+});
+
+describe("puedeAplicarImpago — el hallazgo VIVO de la re-verificación del 02-09", () => {
+  it("⛔ canceled es TERMINAL: ni siquiera un payment_failed MÁS NUEVO lo resucita", () => {
+    // Stripe puede emitir el fallo de la última factura DESPUÉS de cancelar; si
+    // esto pasara, la fila volvía a past_due, el entitlement reabría el ingest
+    // de la org cancelada y el reconcile le contaba asientos otra vez.
+    expect(puedeAplicarImpago("canceled", ULTIMO, unix("2026-08-10T12:05:00.000Z"))).toBe(false);
+  });
+
+  it("⛔ y un payment_failed VIEJO reentregado tampoco pisa nada (esStale)", () => {
+    expect(puedeAplicarImpago("active", ULTIMO, unix("2026-08-10T11:00:00.000Z"))).toBe(false);
+  });
+
+  it("el caso legítimo sigue pasando: impago nuevo sobre suscripción activa", () => {
+    expect(puedeAplicarImpago("active", ULTIMO, unix("2026-08-10T12:05:00.000Z"))).toBe(true);
+    expect(puedeAplicarImpago(null, null, unix("2026-08-10T12:05:00.000Z"))).toBe(true);
+  });
+});
+
+describe("fallbackVencimientoUnix — el residuo de la carrera de licencias (0018)", () => {
+  it("dos handlers concurrentes del MISMO día calculan el MISMO vencimiento", () => {
+    // El índice único (org_id, expires_at, seats) solo frena la emisión doble
+    // si los corredores colisionan: con nowUnix() a segundos distintos no lo
+    // hacían. Anclado al día, chocan — y el 23505 entrega la licencia ganadora.
+    const a = fallbackVencimientoUnix(unix("2026-09-02T10:15:07.000Z"));
+    const b = fallbackVencimientoUnix(unix("2026-09-02T10:15:09.000Z"));
+    const c = fallbackVencimientoUnix(unix("2026-09-02T23:59:59.000Z"));
+    expect(a).toBe(b);
+    expect(a).toBe(c);
+  });
+
+  it("y vence a 31 días, en frontera de día exacta", () => {
+    const v = fallbackVencimientoUnix(unix("2026-09-02T10:15:07.000Z"));
+    expect(v).toBe(unix("2026-10-03T00:00:00.000Z"));
+    expect(v % 86400).toBe(0);
   });
 });
