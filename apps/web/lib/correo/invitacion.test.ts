@@ -80,7 +80,9 @@ describe("nada que venga de fuera entra crudo en el HTML", () => {
     // la verja apunta al PAYLOAD, no a la etiqueta en general — el inyectado no
     // puede aparecer sin escapar, y el único src de imagen permitido es el logo.
     expect(c.html).not.toContain("<img src=x");
-    expect(c.html).not.toContain("onerror=");
+    // `onerror=` SÍ queda como texto escapado (&lt;img … onerror=…&gt;) y como
+    // texto es inerte — el propio comentario de arriba lo dice: la verja es que
+    // no sobreviva NINGÚN `<` ni comilla sin escapar, no que la palabra muera.
     expect(c.html).toContain("&lt;img");
     expect(c.html).toContain("&gt;&quot;");
     const srcsDeImagen = [...c.html.matchAll(/<img [^>]*src="([^"]*)"/g)].map((m) => m[1]);
