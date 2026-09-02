@@ -16,6 +16,8 @@
  * reenvía, y el destinatario todavía no ha aceptado nada.
  */
 
+import { botonTinta, escapar, tarjetaClara } from "./carcasa";
+
 export type Idioma =
   | "es" | "en" | "ca" | "de" | "fr" | "id" | "it" | "nl" | "pl" | "pt" | "tr" | "vi";
 
@@ -150,15 +152,9 @@ export function idiomaValido(x: string | null | undefined): Idioma {
   return (IDIOMAS as string[]).includes(x ?? "") ? (x as Idioma) : "es";
 }
 
-/** Todo lo que entra en la plantilla viene de fuera: nombre de organización que
- *  escribe el cliente, correo de quien invita. Se escapa SIEMPRE. */
-export function escapar(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+/** El escape vive ahora en la carcasa compartida (carcasa.ts); se re-exporta
+ *  desde aquí para no mover a los importadores existentes. */
+export { escapar };
 
 export interface DatosInvitacion {
   org: string;
@@ -189,20 +185,20 @@ export function componerInvitacion(d: DatosInvitacion): CorreoCompuesto {
   const cuerpo = t.cuerpo.replace("{quien}", quien).replace("{org}", org).replace("{rol}", rol);
   const caduca = t.caduca.replace("{dias}", String(d.dias));
 
-  const html = [
-    `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;color:#111">`,
-    `<p>${escapar(t.saludo)}</p>`,
-    `<p>${cuerpo}</p>`,
-    `<p><a href="${escapar(d.enlace)}" style="display:inline-block;background:#111;color:#fff;`,
-    `padding:10px 18px;border-radius:6px;text-decoration:none">${escapar(t.boton)}</a></p>`,
-    // El enlace solo en el botón (pedido del dueño, 2026-08-27): la URL desnuda
-    // afeaba el correo. El respaldo para clientes sin HTML es la versión en
-    // texto plano, que la lleva entera.
-    `<p style="font-size:13px;color:#555">${escapar(caduca)}</p>`,
-    `<p style="font-size:13px;color:#555">${escapar(t.ignorar)}</p>`,
-    `<p style="font-size:12px;color:#999">BiVelio · savings.bivelio.com</p>`,
-    `</div>`,
-  ].join("");
+  // La tarjeta de marca compartida (carcasa.ts): el dueño cazó esta plantilla
+  // desnuda el mismo día que la de auth (02-09). El enlace solo en el botón
+  // (pedido del 2026-08-27): el respaldo para clientes sin HTML es el texto
+  // plano, que lleva la URL entera.
+  const html = tarjetaClara({
+    nombreMarca: "Savings",
+    dominio: "savings.bivelio.com",
+    titulo: asunto,
+    saludo: t.saludo,
+    cuerpoHtml: cuerpo,
+    accionHtml: botonTinta(d.enlace, t.boton),
+    letraPequena: [caduca, t.ignorar],
+    pie: "BiVelio",
+  });
 
   const texto = [
     t.saludo,

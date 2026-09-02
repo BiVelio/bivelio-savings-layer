@@ -8,7 +8,9 @@ const GROUPS: { label?: string; items: { href: string; label: string; icon: stri
     label: "savings",
     items: [
       { href: "/dashboard/proof", label: "proof", icon: "proof" },
-      { href: "/dashboard/verify", label: "verify", icon: "verify" },
+      // «Verificar» fuera de la barra (decisión del dueño, 02-09: «lía más que
+      // otra cosa»). La página /dashboard/verify sigue existiendo por URL para
+      // quien la tenga guardada; simplemente deja de anunciarse.
     ],
   },
   {

@@ -1,4 +1,5 @@
-import { escapar, type Idioma, type CorreoCompuesto } from "./invitacion";
+import { botonTinta, escapar, tarjetaClara } from "./carcasa";
+import { type Idioma, type CorreoCompuesto } from "./invitacion";
 import type { AccionAuth, Producto } from "./auth-hook";
 
 /**
@@ -362,12 +363,10 @@ const MARCA_CLARA: Record<Exclude<Producto, "gpos">, { nombre: string; dominio: 
 
 /**
  * Carcasa clara de la casa (savings y privacy), vestida de marca — el dueño
- * cazó la versión anterior en su registro de prueba (02-09): párrafos pelados
- * y botón negro, «extremadamente soso», mientras GPOS sí tenía tarjeta.
- * Ahora: tarjeta blanca sobre fondo gris de la paleta «Attio ink» del sitio
- * (#F4F6F9 / #DEE4E7 / tinta #0F1218 / azul #2F63D8), wordmark de texto
- * «Savings. BY BIVELIO», el asunto como titular y el botón tinta del sitio.
- * Todo estilos inline y sin imágenes: es un correo, no una página.
+ * cazó la versión anterior en su registro de prueba (02-09). El diseño vive
+ * en la carcasa COMPARTIDA (carcasa.ts, la misma de las invitaciones): una
+ * sola tarjeta para todos los correos claros. De paso, el pie deja de
+ * duplicar el dominio (PIE ya lo llevaba y la tarjeta lo añade enlazado).
  */
 function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
   const marca = MARCA_CLARA[d.producto === "privacy" ? "privacy" : "savings"];
@@ -375,27 +374,18 @@ function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
   // afeaba el correo. El respaldo para clientes sin HTML es la versión en
   // texto plano, que la lleva entera.
   const accionHtml = d.enlace
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0"><tr>` +
-      `<td style="border-radius:8px;background:#0F1218">` +
-      `<a href="${escapar(d.enlace)}" target="_blank" style="display:inline-block;padding:12px 24px;` +
-      `font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px">${escapar(t.boton)}</a>` +
-      `</td></tr></table>`
+    ? botonTinta(d.enlace, t.boton)
     : `<p style="margin:24px 0;font-size:26px;letter-spacing:0.25em;font-weight:700;color:#0F1218">${escapar(d.codigo ?? "")}</p>`;
-  return [
-    `<div style="margin:0;padding:32px 16px;background-color:#F4F6F9;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">`,
-    `<div style="max-width:560px;margin:0 auto;background-color:#FFFFFF;border:1px solid #DEE4E7;border-radius:16px;padding:36px 40px">`,
-    `<p style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#0F1218">` +
-      `${escapar(marca.nombre)}<span style="color:#2F63D8">.</span>` +
-      `<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:#5A6070;margin-left:8px">BY BIVELIO</span></p>`,
-    `<h1 style="margin:26px 0 10px 0;color:#0F1218;font-size:23px;line-height:1.25;font-weight:700">${escapar(t.asunto)}</h1>`,
-    `<p style="margin:0 0 4px 0;color:#5A6070;font-size:15px;line-height:1.6">${escapar(t.saludo)}</p>`,
-    `<p style="margin:0;color:#5A6070;font-size:15px;line-height:1.6">${escapar(t.cuerpo)}</p>`,
+  return tarjetaClara({
+    nombreMarca: marca.nombre,
+    dominio: marca.dominio,
+    titulo: t.asunto,
+    saludo: t.saludo,
+    cuerpoHtml: escapar(t.cuerpo),
     accionHtml,
-    `<p style="margin:0;color:#8A93A6;font-size:12.5px;line-height:1.6">${escapar(t.seguridad)} ${escapar(t.ignorar)}</p>`,
-    `<p style="margin:24px 0 0 0;padding-top:16px;border-top:1px solid #EEF1F5;color:#8A93A6;font-size:12px">` +
-      `${escapar(PIE[d.producto])} · <a href="https://${marca.dominio}" style="color:#2F63D8;text-decoration:none">${escapar(marca.dominio)}</a></p>`,
-    `</div></div>`,
-  ].join("");
+    letraPequena: [t.seguridad, t.ignorar],
+    pie: "BiVelio",
+  });
 }
 
 /** Carcasa oscura de GPOS, portada de la plantilla que vivía en Supabase para
