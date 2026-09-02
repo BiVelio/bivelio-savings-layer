@@ -189,7 +189,7 @@
       "advanced": "Gelişmiş ayarlar",
       "projFriendly": "Faturan {baseline} yerine {opt} olurdu — %{pct} daha az.",
       "onlyChatTitle": "Yalnızca ChatGPT veya Claude mu kullanıyorsun?",
-      "onlyChatBody": "O zaman kurulacak bir şey yok: bu ürünler sabit abonelikle çalışır, azaltılacak token faturası yoktur. BV‑SALA, OpenAI veya Anthropic API'sini kendi anahtarıyla çağıran bir uygulamanın koduna kurulur — gerçek harcamayı orada ölçer ve azaltır.",
+      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir ve “bvsala claude” terminaldeki gerçek tüketimini ölçer. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
       "onlyChatCta": "Uygulama mı geliştiriyorsun? Kuruluma git"
     },
     "copyButton": {
@@ -580,7 +580,7 @@
       "eyebrow": "Yeni · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
       "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
-      "note": "Bugün ölçüyor; orada henüz optimize etmiyor. Codex CLI, Goose ve Qwen Code ile de çalışır — geri kalanı için bvsala doctor tam yapılandırmayı yazdırır.",
+      "note": "Bugün gateway ölçüyor; oradaki otomatik optimizasyon kolu gölgeyle gelecek — bu arada savings-mode skill'i limitlerine şimdiden saldırıyor. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor gerisinin tam yapılandırmasını yazdırır.",
       "cta": "Nasıl çalıştığını gör →"
     },
     "integrate": {

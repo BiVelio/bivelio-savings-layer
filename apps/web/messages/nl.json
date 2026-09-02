@@ -189,7 +189,7 @@
       "advanced": "Geavanceerde instellingen",
       "projFriendly": "Je rekening zou van {baseline} naar {opt} gaan — {pct}% minder.",
       "onlyChatTitle": "Gebruik je alleen ChatGPT of Claude?",
-      "onlyChatBody": "Dan valt er niets te installeren: die producten hebben een vast abonnement, dus er is geen tokenrekening om te verlagen. BV‑SALA installeer je in de code van een applicatie die de OpenAI- of Anthropic-API met een eigen sleutel aanroept — dáár meet en verlaagt het de echte kosten.",
+      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op, en “bvsala claude” meet je echte verbruik in de terminal. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
       "onlyChatCta": "Bouw je een app? Ga naar Installeren"
     },
     "copyButton": {
@@ -580,7 +580,7 @@
       "eyebrow": "Nieuw · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
       "body": "Eén commando zet een lokale meter vóór je terminal. Geen code aanpassen, niets configureren — en je prompts verlaten nooit je machine: alleen aantallen en kosten bereiken dit paneel.",
-      "note": "Vandaag meet hij; daar optimaliseert hij nog niet. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
+      "note": "Vandaag meet de gateway; de automatische optimalisatiehendel daar komt met de schaduw — en intussen pakt de savings-mode-skill je limieten al aan. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
       "cta": "Zo werkt het →"
     },
     "integrate": {
