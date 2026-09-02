@@ -219,7 +219,9 @@ export function EquipoPanel() {
           {enviando ? t("invitando") : t("invitarBoton")}
         </button>
       </form>
-      <p className="ck-note">{t("ayudaRoles")}</p>
+      {/* Aire entre el formulario y su letra pequeña (matiz del dueño, 02-09:
+          el texto nacía pegado a la caja del correo). */}
+      <p className="ck-note" style={{ marginTop: 14 }}>{t("ayudaRoles")}</p>
       {/* Se dice explícitamente para que nadie deduzca que invitar cuesta dinero:
           un asiento es una MÁQUINA, no una persona. */}
       <p className="ck-note">{t("asientosNota")}</p>
