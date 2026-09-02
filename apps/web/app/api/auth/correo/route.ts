@@ -8,6 +8,7 @@ import {
   type CargaHook,
 } from "@/lib/correo/auth-hook";
 import { componerCorreoAuth } from "@/lib/correo/auth-plantillas";
+import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
  * EL DESTINO DEL «SEND EMAIL HOOK» DE SUPABASE. Cuando el hook está activado en
@@ -84,6 +85,9 @@ export async function POST(req: Request): Promise<NextResponse> {
   const clave = process.env.RESEND_API_KEY;
   if (!clave) {
     console.error("[auth/correo] RESEND_API_KEY ausente: no se puede mandar el correo de", accion);
+    // Sin proveedor de correo NADIE puede registrarse ni recuperar contraseña:
+    // eso es crítico y tiene que sonar, no dormir en un log.
+    await alertar({ nivel: "critico", asunto: "auth/correo sin RESEND_API_KEY: correos de auth caídos", detalle: { accion, producto } });
     return NextResponse.json({ error: "Email provider not configured." }, { status: 500 });
   }
 
@@ -104,10 +108,24 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (!res.ok) {
       // Sin destinatario ni token en el log: basta el tipo y el estado para operar.
       console.error(`[auth/correo] Resend devolvió ${res.status} para ${accion} (${producto}/${idioma})`);
+      // «Habrá que controlarlo» (dueño, 02-09, tras el día en que el límite de
+      // 2 correos/hora dejó registros sin correo EN SILENCIO): un fallo de
+      // envío es un cliente que no puede entrar — alerta, no solo log. Un 429
+      // de Resend además huele a tope de plan: la alerta lo dice.
+      await alertar({
+        nivel: res.status === 429 ? "critico" : "aviso",
+        asunto: `auth/correo: Resend devolvió ${res.status} (${accion})${res.status === 429 ? " — ¿tope del plan de Resend?" : ""}`,
+        detalle: { accion, producto, idioma, status: res.status },
+      });
       return NextResponse.json({ error: "Could not send the email." }, { status: 500 });
     }
   } catch (err) {
     console.error("[auth/correo] envío falló:", err instanceof Error ? err.name : err);
+    await alertar({
+      nivel: "aviso",
+      asunto: "auth/correo: envío a Resend falló (red/timeout)",
+      detalle: { accion, producto, error: err instanceof Error ? err.name : String(err) },
+    });
     return NextResponse.json({ error: "Could not send the email." }, { status: 500 });
   }
 
