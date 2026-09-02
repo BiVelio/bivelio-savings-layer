@@ -92,7 +92,12 @@ export function CalculadoraComision({ asiento }: { asiento: { cents: number; cur
         ahorroEur,
         extraEur: c.comisionEur,
         netoEur: c.netoClienteEur,
-        netoPct: baseEur > 0 ? c.netoClienteEur / baseEur : 0,
+        // % DEL AHORRO que el cliente conserva (~garantía), no % de la factura:
+        // con el denominador en la factura, la fila «ahorras 10%» enseñaba
+        // «(9%)» junto a la garantía del 90% y se leía invertido — cazado por
+        // el dueño en la web (02-09). El resumen de abajo sí habla de factura
+        // y lo dice con esas palabras.
+        netoPct: ahorroEur > 0 ? c.netoClienteEur / ahorroEur : 0,
       };
     });
   }, [precio, reqs, inTok, outTok, fx]);

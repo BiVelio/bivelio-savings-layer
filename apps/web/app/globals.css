@@ -903,6 +903,9 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* «Ya mide»: azul de marca — ni el ámbar del "aún no" ni el verde del ahorro
    real; mide es verdad hoy, ahorrar ahí todavía no. */
 .hiw-verdict.mide { background: var(--brand-soft); color: var(--brand); }
+/* «Skill disponible»: el mismo azul que «ya mide» y por la misma razón — el
+   skill existe hoy (verdad), su ahorro aún no está medido (no verde). */
+.hiw-verdict.skill { background: var(--brand-soft); color: var(--brand); }
 
 /* Franja de sistemas (landing · integrate): logos oficiales a color de las
    plataformas donde viven las automatizaciones del cliente. */
