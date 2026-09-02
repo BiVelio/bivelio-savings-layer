@@ -38,6 +38,48 @@ export function condicionEscritura(eventCreatedIso: string): string {
 }
 
 /**
+ * ¿Puede un `invoice.payment_failed` marcar impago esta fila? Dos vetos:
+ *
+ * 1. `canceled` es TERMINAL para esa suscripción de Stripe — una recreación
+ *    llega como fila nueva. Un `payment_failed` posterior al `deleted` (Stripe
+ *    puede emitir el fallo de la última factura DESPUÉS de cancelar, y además
+ *    reintenta entregas durante días) no debe resucitarla: el hallazgo VIVO de
+ *    la re-verificación del 02-09 — la fila volvía a `past_due`, el ingest de
+ *    la org cancelada se reabría (entitlement cubre past_due + gracia) y el
+ *    reconcile le volvía a contar asientos, aunque todas las licencias
+ *    estuvieran ya revocadas.
+ * 2. La guardia de orden de siempre (esStale), que este handler era el único
+ *    en no aplicar.
+ *
+ * Primera línea en memoria; la segunda viaja en el WHERE del UPDATE (status
+ * neq canceled + condicionEscritura), porque leída-y-escrita en dos pasos no
+ * frena la ráfaga concurrente — la lección reproducida del 27-08.
+ */
+export function puedeAplicarImpago(
+  filaStatus: string | null,
+  filaLastEventAt: string | null,
+  eventCreatedUnix: number,
+): boolean {
+  if (filaStatus === "canceled") return false;
+  return !esStale(eventCreatedUnix, filaLastEventAt);
+}
+
+/**
+ * Vencimiento de RESPALDO cuando Stripe no trae `current_period_end`:
+ * «31 días» anclados al DÍA, no al segundo. El índice único de 0018
+ * (org_id, expires_at, seats) frena la carrera de emisión solo si los
+ * corredores calculan el MISMO expires_at — y `nowUnix() + 31d` se evaluaba
+ * por handler, con segundos distintos, así que dos webhooks concurrentes de
+ * la misma suscripción no colisionaban y emitían dos licencias vivas (el
+ * residuo de la re-verificación del 02-09). Truncar al día los hace chocar;
+ * la ventana restante (dos handlers a caballo de medianoche UTC con un
+ * periodEnd nulo) es despreciable y la emisión sigue siendo idempotente.
+ */
+export function fallbackVencimientoUnix(nowUnix: number): number {
+  return Math.floor(nowUnix / 86400) * 86400 + 31 * 86400;
+}
+
+/**
  * Referencia ejecutable de la MISMA regla que condicionEscritura expresa en
  * PostgREST — es lo que prueban los tests de orden, mutación mediante.
  */
