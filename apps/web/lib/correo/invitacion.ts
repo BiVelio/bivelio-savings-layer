@@ -191,6 +191,7 @@ export function componerInvitacion(d: DatosInvitacion): CorreoCompuesto {
   // plano, que lleva la URL entera.
   const html = tarjetaClara({
     nombreMarca: "Savings",
+    logoUrl: "https://savings.bivelio.com/correo/logo-savings.png",
     dominio: "savings.bivelio.com",
     titulo: asunto,
     saludo: t.saludo,

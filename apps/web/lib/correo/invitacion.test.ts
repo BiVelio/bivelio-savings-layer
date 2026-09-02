@@ -75,10 +75,16 @@ describe("nada que venga de fuera entra crudo en el HTML", () => {
     const c = componerInvitacion({ ...base, org: '<img src=x onerror=alert(1)>"' });
     // Lo que importa no es que la cadena `onerror` desaparezca —como TEXTO es
     // inerte— sino que no quede ni un `<` ni una comilla sin escapar que permita
-    // salirse de donde está y abrir una etiqueta o un atributo.
-    expect(c.html).not.toContain("<img");
+    // salirse de donde está y abrir una etiqueta o un atributo. Desde el 02-09
+    // la carcasa lleva UN <img> legítimo (el logo, con src fijo de la casa):
+    // la verja apunta al PAYLOAD, no a la etiqueta en general — el inyectado no
+    // puede aparecer sin escapar, y el único src de imagen permitido es el logo.
+    expect(c.html).not.toContain("<img src=x");
+    expect(c.html).not.toContain("onerror=");
     expect(c.html).toContain("&lt;img");
     expect(c.html).toContain("&gt;&quot;");
+    const srcsDeImagen = [...c.html.matchAll(/<img [^>]*src="([^"]*)"/g)].map((m) => m[1]);
+    expect(srcsDeImagen).toEqual(["https://savings.bivelio.com/correo/logo-savings.png"]);
   });
 
   it("⛔ quien invita también se escapa", () => {

@@ -378,6 +378,8 @@ function carcasaClara(t: CopyAuth, d: DatosCorreoAuth): string {
     : `<p style="margin:24px 0;font-size:26px;letter-spacing:0.25em;font-weight:700;color:#0F1218">${escapar(d.codigo ?? "")}</p>`;
   return tarjetaClara({
     nombreMarca: marca.nombre,
+    // Solo savings tiene su PNG publicado; privacy cae al wordmark de texto.
+    ...(d.producto !== "privacy" ? { logoUrl: "https://savings.bivelio.com/correo/logo-savings.png" } : {}),
     dominio: marca.dominio,
     titulo: t.asunto,
     saludo: t.saludo,
