@@ -189,7 +189,7 @@
       "advanced": "Pengaturan lanjutan",
       "projFriendly": "Tagihan kamu akan turun dari {baseline} menjadi {opt} — {pct}% lebih rendah.",
       "onlyChatTitle": "Hanya pakai ChatGPT atau Claude?",
-      "onlyChatBody": "Kalau begitu tidak ada yang perlu dipasang: produk itu berlangganan tarif tetap, jadi tidak ada tagihan per token yang bisa dipangkas. BV‑SALA dipasang di dalam kode aplikasi yang memanggil API OpenAI atau Anthropic dengan kuncinya sendiri — di situlah ia mengukur dan memangkas biaya nyata.",
+      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda, dan “bvsala claude” mengukur pemakaian nyata Anda di terminal. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
       "onlyChatCta": "Sedang membangun aplikasi? Buka Instal"
     },
     "copyButton": {
@@ -580,7 +580,7 @@
       "eyebrow": "Baru · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
-      "note": "Hari ini ia mengukur; di sana ia belum mengoptimalkan. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "note": "Hari ini gateway mengukur; tuas optimasi otomatis di sana datang bersama bayangan — sementara itu skill savings-mode sudah menyerang batas Anda. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
       "cta": "Lihat cara kerjanya →"
     },
     "integrate": {

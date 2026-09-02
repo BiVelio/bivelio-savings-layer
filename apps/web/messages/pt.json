@@ -189,7 +189,7 @@
       "advanced": "Ajustes avançados",
       "projFriendly": "Sua fatura passaria de {baseline} para {opt} — {pct}% a menos.",
       "onlyChatTitle": "Só usa ChatGPT ou Claude?",
-      "onlyChatBody": "Então não há nada para instalar: esses produtos têm assinatura fixa e não têm fatura por token para cortar. O BV‑SALA se instala no código de uma aplicação que chama a API da OpenAI ou da Anthropic com a própria chave — é aí que ele mede e reduz o gasto real.",
+      "onlyChatBody": "O ChatGPT é mesmo fechado: mensalidade fixa, sem fatura nem tetos de tokens para cortar. Mas se usas Claude, já te ajudamos a poupar: a skill savings-mode (gratuita, na página inicial) estica os teus tetos de subscrição, e «bvsala claude» mede o teu consumo real no terminal. E se desenvolves uma app com chave de API, é aí que o BV-SALA mede e reduz gasto a sério.",
       "onlyChatCta": "Desenvolve um app? Vá para Instalar"
     },
     "copyButton": {
@@ -580,7 +580,7 @@
       "eyebrow": "Novo · terminais de código",
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
       "body": "Um único comando põe um medidor local à frente do teu terminal. Sem tocar em código, sem configurar nada — e os teus prompts nunca saem da tua máquina: a este painel só chegam contagens e custo.",
-      "note": "Hoje mede; ali ainda não otimiza. Também funciona com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata do resto.",
+      "note": "Hoje o gateway mede; a alavanca de otimização automática aí chega com a sombra — e entretanto a skill savings-mode já ataca os teus tetos. Funciona também com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata do resto.",
       "cta": "Vê como funciona →"
     },
     "integrate": {

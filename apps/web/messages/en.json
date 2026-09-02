@@ -189,7 +189,7 @@
       "advanced": "Advanced settings",
       "projFriendly": "Your bill would go from {baseline} to {opt} — {pct}% less.",
       "onlyChatTitle": "Only use ChatGPT or Claude?",
-      "onlyChatBody": "Then there is nothing to install: those products charge a flat subscription, so there is no per-token bill to cut. BV‑SALA installs inside the code of an application that calls the OpenAI or Anthropic API with its own key — that is where it measures and reduces real spend.",
+      "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps, and “bvsala claude” meters your real usage in the terminal. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
       "onlyChatCta": "Building an app? Go to Install"
     },
     "copyButton": {
@@ -580,7 +580,7 @@
       "eyebrow": "New · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
       "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
-      "note": "Today it measures; it does not optimize there yet. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact setup for the rest.",
+      "note": "Today the gateway meters; the automatic optimization lever there arrives with the shadow — and meanwhile the savings-mode skill already attacks your caps. Also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
       "cta": "See how it works →"
     },
     "integrate": {
