@@ -38,6 +38,15 @@ export function botonTinta(enlace: string, etiqueta: string): string {
 export interface TarjetaClara {
   /** «Savings» o «Privacy» — el punto azul lo pone la carcasa. */
   nombreMarca: string;
+  /**
+   * El logo REAL alojado en nuestro dominio (pedido del dueño, 02-09: el
+   * wordmark de texto se quedaba corto frente a la marca de verdad). Con
+   * `alt` de respaldo: Gmail y Apple Mail cargan imágenes por defecto y ven
+   * el logo; un cliente que las bloquee ve el texto del alt — nunca un hueco
+   * roto. Sin URL (privacy aún no tiene su PNG), la carcasa cae al wordmark
+   * de texto de siempre.
+   */
+  logoUrl?: string;
   /** Dominio del pie, enlazado en azul de marca. */
   dominio: string;
   /** Titular de la tarjeta (texto plano: la carcasa escapa). */
@@ -59,9 +68,12 @@ export function tarjetaClara(t: TarjetaClara): string {
   return [
     `<div style="margin:0;padding:32px 16px;background-color:#F4F6F9;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">`,
     `<div style="max-width:560px;margin:0 auto;background-color:#FFFFFF;border:1px solid #DEE4E7;border-radius:16px;padding:36px 40px">`,
-    `<p style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#0F1218">` +
-      `${escapar(t.nombreMarca)}<span style="color:#2F63D8">.</span>` +
-      `<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:#5A6070;margin-left:8px">BY BIVELIO</span></p>`,
+    t.logoUrl
+      ? `<img src="${escapar(t.logoUrl)}" width="190" alt="${escapar(t.nombreMarca)}. by BiVelio" ` +
+        `style="display:block;width:190px;height:auto;border:0;font-size:20px;font-weight:800;color:#0F1218" />`
+      : `<p style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#0F1218">` +
+        `${escapar(t.nombreMarca)}<span style="color:#2F63D8">.</span>` +
+        `<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:#5A6070;margin-left:8px">BY BIVELIO</span></p>`,
     `<h1 style="margin:26px 0 10px 0;color:#0F1218;font-size:23px;line-height:1.25;font-weight:700">${escapar(t.titulo)}</h1>`,
     ...(t.saludo ? [`<p style="margin:0 0 4px 0;color:#5A6070;font-size:15px;line-height:1.6">${escapar(t.saludo)}</p>`] : []),
     `<p style="margin:0;color:#5A6070;font-size:15px;line-height:1.6">${t.cuerpoHtml}</p>`,
