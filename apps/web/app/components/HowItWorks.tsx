@@ -19,16 +19,19 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
   const t = await getTranslations("howItWorks");
   const b = (chunks: React.ReactNode) => <b>{chunks}</b>;
 
-  const cases: { name: string; sub: string; body: React.ReactNode[]; verdict: "no" | "casi" | "mide" | "si" }[] = [
+  const cases: { name: string; sub: string; body: React.ReactNode[]; verdict: "no" | "casi" | "mide" | "si" | "skill" }[] = [
     { name: "ChatGPT", sub: t("caseChatSub"), body: [t("caseChatBody")], verdict: "no" },
-    { name: "Claude", sub: t("caseClaudeSub"), body: [t("caseClaudeBody")], verdict: "no" },
+    // «Skill disponible» desde el 02-09: claude.ai no tiene factura que medir,
+    // pero sí topes — y el skill savings-mode existe justo para eso. La
+    // insignia dice lo que hay (un skill), no lo que aún no se ha medido.
+    { name: "Claude", sub: t("caseClaudeSub"), body: [t("caseClaudeBody")], verdict: "skill" },
     // «Ya mide», no «Aún no»: desde la 0.4.5 el medidor está validado de punta a
     // punta (gateway → ingesta → panel, 01-09). Lo que sigue sin haber ahí es
     // AHORRO, y el cuerpo lo dice tal cual — la insignia no promete más.
     { name: "Claude Code", sub: t("caseCodeSub"), body: [t("caseCodeBody")], verdict: "mide" },
     { name: t("caseAppName"), sub: t("caseAppSub"), body: [t.rich("caseAppBody", { b })], verdict: "si" },
   ];
-  const verdictLabel = { no: t("verdictNothing"), casi: t("verdictNotYet"), mide: t("verdictMeasures"), si: t("verdictYes") } as const;
+  const verdictLabel = { no: t("verdictNothing"), casi: t("verdictNotYet"), mide: t("verdictMeasures"), si: t("verdictYes"), skill: t("verdictSkill") } as const;
 
   return (
     <>
