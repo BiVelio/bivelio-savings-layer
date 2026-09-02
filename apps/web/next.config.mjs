@@ -41,13 +41,23 @@ const authOrigins = supabaseOrigin
   ? [supabaseOrigin]
   : ["https://rsxebsvguppssbociwiu.supabase.co", "https://auth.bivelio.com"];
 
+// La etiqueta de Google Ads (gtag, pedida por el dueño el 02-09 para el
+// seguimiento de conversiones) necesita sus hosts en la CSP o se bloquea en
+// silencio: el script vive en googletagmanager.com y los pings de conversión
+// salen hacia google.com / googleadservices / doubleclick (por script, imagen
+// o fetch según el navegador). Limitación aceptada: los dominios google.<tld>
+// por país no caben en una CSP sin comodín de TLD; el ping moderno usa los de
+// abajo.
+const gtagScript = ["https://www.googletagmanager.com", "https://www.googleadservices.com", "https://googleads.g.doubleclick.net"];
+const gtagPing = [...gtagScript, "https://www.google.com"];
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline' ${gtagScript.join(" ")}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  `img-src 'self' data: ${gtagPing.join(" ")}`,
   "font-src 'self'",
-  `connect-src 'self' ${authOrigins.join(" ")}`,
+  `connect-src 'self' ${authOrigins.join(" ")} ${gtagPing.join(" ")}`,
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
