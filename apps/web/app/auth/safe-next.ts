@@ -14,6 +14,18 @@
 // Ported from bivelio-privacy-gateway (app/auth/callback/safe-next.ts), which
 // already carried this guard and its test. Here it lives one level up because
 // BOTH /auth/callback and /auth/refresh take a `next`.
+/**
+ * El locale con el que llegó el `next` (p.ej. "/es/dashboard" → "es"), o null
+ * si el primer segmento no es un locale conocido. Lo usa el callback para
+ * aterrizar la confirmación de registro en /{locale}/signup/success sin
+ * perder el idioma del usuario — la lista de locales viene del llamante para
+ * que este fichero siga sin depender de i18n.
+ */
+export function localeDelNext(next: string, locales: readonly string[]): string | null {
+  const seg = next.split("/")[1] ?? "";
+  return locales.includes(seg) ? seg : null;
+}
+
 export function safeNextPath(next: string | null): string {
   if (typeof next !== "string" || !next.startsWith("/")) return "/dashboard";
   // Reject control chars (incl. tab/LF/CR) the URL parser would strip away.
