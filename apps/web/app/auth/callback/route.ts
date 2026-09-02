@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
-import { safeNextPath } from "../safe-next";
+import { localeDelNext, safeNextPath } from "../safe-next";
+import { routing } from "@/i18n/routing";
 
 // Tipos de OTP de email que acepta supabase.auth.verifyOtp. Se valida el `type`
 // del query contra este conjunto antes de usarlo (llega de fuera).
@@ -43,7 +44,21 @@ export async function GET(request: Request) {
       type: type as EmailOtpType,
       token_hash: tokenHash,
     });
-    if (!error) return NextResponse.redirect(new URL(next, origin));
+    if (!error) {
+      // SOLO el registro confirmado pasa por la página exclusiva de éxito —
+      // ahí (y solo ahí) se dispara la conversión de Google Ads. La regla del
+      // dueño (02-09): «registro enviado ≠ conversión; cuenta verificada =
+      // conversión». Un `invite`, `magiclink` o `recovery` no es un registro
+      // captado por un anuncio, así que sigue directo a su `next` de siempre.
+      // El token_hash es de un solo uso: reentrar por el enlace no re-dispara.
+      if (type === "signup") {
+        const locale = localeDelNext(next, routing.locales) ?? routing.defaultLocale;
+        const exito = new URL(`/${locale}/signup/success`, origin);
+        exito.searchParams.set("next", next);
+        return NextResponse.redirect(exito);
+      }
+      return NextResponse.redirect(new URL(next, origin));
+    }
     return NextResponse.redirect(`${origin}/login?error=auth_callback`);
   }
 
