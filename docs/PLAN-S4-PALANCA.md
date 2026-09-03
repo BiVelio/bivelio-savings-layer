@@ -171,6 +171,21 @@ petición, calculado por el proveedor, sin enviar nada al modelo. El gateway (o
 un replay del corpus contra `count_tokens`) lo mide en muestreo y publica la
 cifra ANTES de encender nada. Es el equivalente S4a del carril sombra de S2.
 
+> **✅ EJECUTADO (03-09-2026)** — `pnpm sombra:diales`
+> (benchmarks/sombra-diales.ts; diales en gateway/diales.ts): 120 llamadas a
+> `count_tokens` (0 fallos), muestreo uniforme sobre las 1.498 candidatas
+> ≥ trigger del corpus (13 sesiones). Resultado, del contador del PROVEEDOR:
+> **el 95,8 % de las muestras borra, y el borrado es el 22,9 % de la entrada**
+> (9,97 M de 43,6 M tokens; mediana 95K por turno con borrado; fable 22,7 %,
+> opus 37,2 %). Las 120 muestras traían la config del cliente — la que en vivo
+> borró CERO en 1.952 peticiones — así que **todo el 22,9 % es atribuible al
+> cambio de diales**. Convergencia: 22,9 % (contador del proveedor, S4a) ≈
+> +20,6 % (nuestro simulador, replay v0) — dos métodos independientes, misma
+> zona. Cautela declarada: es % de TOKENS de entrada en turnos disparados, no
+> % de la factura — la proyección a dinero (lecturas a 0,1×, reescritura de
+> caché tras cada borrado) es del anillo 2. Artefacto:
+> `benchmarks/out/sombra-diales-2026-09-03.json`.
+
 **Anillo 1 · arnés con éxito de tarea (carril 2, la pieza nueva).** Lo que el
 plan ya exigía y la exploración confirmó que no existe: hoy el arnés casa por
 byte-igualdad y `benchmarks/scenarios.ts` tiene CERO escenarios con
