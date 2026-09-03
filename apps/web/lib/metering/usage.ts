@@ -36,8 +36,10 @@ const USAGE_NUMBER_FIELDS = [
 ] as const;
 // orgId is server-derived (never trusted from the body). seatId is the machine
 // identity; ci flags CI/ephemeral seats (excluded from billable seats).
-/** Valores admitidos en `basis` (espejo de CostBasis del SDK). */
-const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured"]);
+/** Valores admitidos en `basis` (espejo de CostBasis del SDK). "shadow" es el
+ *  carril hipotético de S2 (migración 0021): la RPC lo acumula SOLO en las
+ *  columnas shadow_* — jamás en la base de la comisión ni en measured. */
+const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
 
 const USAGE_ALLOWED_FIELDS = new Set<string>([
   "orgId", "seatId", "ci", "cacheResult", "basis", "sessionId", "agentId",

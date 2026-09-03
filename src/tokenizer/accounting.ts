@@ -8,18 +8,23 @@
  * increment is driven by an explicit pipeline decision.
  */
 /**
- * De dónde sale el baseline con el que se compara el coste.
+ * Where the baseline being compared against comes from.
  *
- * - `measured`   — reconstruido desde el contador del proveedor. Es dinero.
- * - `estimated`  — llamada EVITADA: nunca se ejecutó, así que no hay contador
- *                  del proveedor y el baseline es del estimador local. Sigue
- *                  siendo la mejor cifra disponible, pero no está medida.
- * - `unmeasured` — el proveedor no reportó uso. No se reclama nada.
+ * - `measured`   — reconstructed from this request's provider counter. Real money.
+ * - `estimated`  — the call was AVOIDED: it never ran, so there is no provider
+ *                  counter and the baseline comes from the local estimator. Still
+ *                  the best figure available, but not measured.
+ * - `unmeasured` — the provider reported no usage. Nothing is claimed.
+ * - `shadow`     — HYPOTHETICAL: what would have happened with a lever turned on
+ *                  (the shadow lane). Never enters the commission base, never
+ *                  added to measured or to any total; shadow reports are built
+ *                  separately and `estimateCost` must never produce this value.
  *
- * Sumar `measured` y `estimated` en una misma cifra de "dinero ahorrado" es
- * exactamente lo que un producto verify-don't-trust no puede hacer.
+ * Summing `measured` and `estimated` into a single "money saved" figure is
+ * exactly what a verify-don't-trust product cannot do — and adding `shadow` to
+ * either would be making the savings up.
  */
-export type CostBasis = "measured" | "estimated" | "unmeasured";
+export type CostBasis = "measured" | "estimated" | "unmeasured" | "shadow";
 
 export interface CostModel {
   /** Cost per 1K input tokens, in the caller's currency unit. */
