@@ -124,7 +124,9 @@ export interface UsageRecord {
   netSavings: number;
   /**
    * De dónde sale el baseline de ESTE registro: "measured" (contador del
-   * proveedor), "estimated" (llamada evitada, sin contador) o "unmeasured".
+   * proveedor), "estimated" (llamada evitada, sin contador), "unmeasured" o
+   * "shadow" (el carril hipotético de S2: qué HABRÍA pasado con la elisión
+   * encendida — jamás en la base de comisión, jamás sumado a measured).
    * Viaja hasta el panel para que el dinero medido y el estimado se puedan
    * agregar POR SEPARADO — sumarlos en una sola cifra de "ahorrado" es lo que
    * este producto promete no hacer.
@@ -238,8 +240,9 @@ const USAGE_NUMBER_FIELDS = [
 ] as const;
 /** `orgId` is intentionally NOT accepted from the client — the server derives it
  * from the authenticated service account. `seatId` and `ci` are the optional fields. */
-/** Valores admitidos en `basis` (espejo de CostBasis del SDK). */
-const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured"]);
+/** Valores admitidos en `basis` (espejo de CostBasis del SDK). "shadow" es el
+ *  carril hipotético de S2 — solo columnas shadow_*, jamás comisión. */
+const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
 
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",

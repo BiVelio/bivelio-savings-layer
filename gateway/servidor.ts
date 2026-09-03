@@ -9,10 +9,14 @@ import {
   costeMedido,
   informeMedido,
   informeCoalescido,
+  informeSombra,
   usoDeJson,
   modeloDelCuerpo,
+  jsonDelCuerpo,
   type Atribucion,
+  type UsoSse,
 } from "./medidor.js";
+import { CarrilSombra } from "./sombra-vivo.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -55,6 +59,13 @@ export interface OpcionesGateway {
    * demuestre cero degradación (plan maestro).
    */
   coalescer?: boolean;
+  /**
+   * S2 · el carril SOMBRA de la elisión (política v0, la ganadora del replay
+   * del corpus). APAGADO por defecto: se enciende con BVSALA_GATEWAY_SHADOW=1.
+   * No toca un byte del tráfico — calcula en asíncrono qué habría costado el
+   * turno con la elisión encendida y lo emite como `basis:"shadow"`.
+   */
+  sombra?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -100,6 +111,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   }
 
   const coalescedor = opts.coalescer ? new Coalescedor() : null;
+  // El carril sombra solo existe con emisor: sin clave de servicio no hay
+  // dónde reportar y simular sería gastar CPU del cliente para nada.
+  const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
 
   /**
    * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
@@ -124,6 +138,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     atribucion?: Atribucion,
   ): void => {
     if (!emisor || !uso) return;
+    const em = emisor;
+    const usoFinal: UsoSse = uso;
     const model = modeloDelCuerpo(cuerpo, codificacion);
     if (!model) {
       avisarUnaVez(
@@ -143,6 +159,34 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
       );
+      // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la
+      // petición (ya está servida y medida). Solo peticiones que viajaron de
+      // verdad (una gemela coalescida repite el prompt de su primaria y
+      // duplicaría el turno de la cadena) y solo /v1/messages (la política
+      // conoce los bloques de Anthropic). Un fallo aquí no puede romper NADA.
+      if (carrilSombra && !coalescida && path === "/v1/messages") {
+        setImmediate(() => {
+          try {
+            const json = jsonDelCuerpo(cuerpo, codificacion);
+            if (!json || typeof json !== "object") return;
+            const paso = carrilSombra.observar({
+              cuerpo: json as { model?: unknown; messages?: unknown; system?: unknown; tools?: unknown },
+              uso: usoFinal,
+              model,
+              at: Date.now(),
+              ...(atribucion?.sessionId !== undefined ? { sessionId: atribucion.sessionId } : {}),
+              ...(atribucion?.agentId !== undefined ? { agentId: atribucion.agentId } : {}),
+            });
+            if (!paso) return;
+            em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
+            log(
+              `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`,
+            );
+          } catch {
+            /* la sombra jamás rompe el gateway ni el metering */
+          }
+        });
+      }
     } else {
       avisarUnaVez(
         `gateway-sin-precio:${model}`,

@@ -15,11 +15,17 @@
  *                  del proveedor y el baseline es del estimador local. Sigue
  *                  siendo la mejor cifra disponible, pero no está medida.
  * - `unmeasured` — el proveedor no reportó uso. No se reclama nada.
+ * - `shadow`     — HIPOTÉTICO: qué habría pasado con una palanca encendida
+ *                  (el carril sombra de S2). Jamás entra en la base de la
+ *                  comisión, jamás se suma a measured ni a ningún total; el
+ *                  informe sombra se construye aparte y `estimateCost` no
+ *                  debe producirlo nunca.
  *
  * Sumar `measured` y `estimated` en una misma cifra de "dinero ahorrado" es
- * exactamente lo que un producto verify-don't-trust no puede hacer.
+ * exactamente lo que un producto verify-don't-trust no puede hacer — y sumar
+ * `shadow` a cualquiera de las dos sería directamente inventarse el ahorro.
  */
-export type CostBasis = "measured" | "estimated" | "unmeasured";
+export type CostBasis = "measured" | "estimated" | "unmeasured" | "shadow";
 
 export interface CostModel {
   /** Cost per 1K input tokens, in the caller's currency unit. */

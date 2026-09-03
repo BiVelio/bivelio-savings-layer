@@ -219,6 +219,18 @@ export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
  * es solo lectura lateral. Devuelve "" si no se puede leer (nunca se inventa).
  */
 export function modeloDelCuerpo(cuerpo: Buffer, codificacion?: string): string {
+  const json = jsonDelCuerpo(cuerpo, codificacion);
+  const model = (json as { model?: unknown } | null)?.model;
+  return typeof model === "string" ? model : "";
+}
+
+/**
+ * El JSON completo del cuerpo, a través de su `content-encoding` (misma
+ * lectura lateral que `modeloDelCuerpo`, que delega aquí). Lo usa también el
+ * carril sombra, que necesita los bloques del prompt y no solo el `model`.
+ * Devuelve null si no se puede leer (nunca se inventa).
+ */
+export function jsonDelCuerpo(cuerpo: Buffer, codificacion?: string): unknown {
   try {
     let bytes = cuerpo;
     // Tope de salida: un cuerpo de 1 KB puede expandir a GB (bomba de
@@ -240,17 +252,16 @@ export function modeloDelCuerpo(cuerpo: Buffer, codificacion?: string): string {
         // Acceso dinámico: en Node < 22.15 no existe y un import nominal
         // reventaría el gateway entero al cargar.
         const zstd = (zlib as unknown as { zstdDecompressSync?: (b: Buffer, o: typeof opciones) => Buffer }).zstdDecompressSync;
-        if (typeof zstd !== "function") return "";
+        if (typeof zstd !== "function") return null;
         bytes = zstd(cuerpo, opciones);
         break;
       }
       default:
         break;
     }
-    const model = (JSON.parse(bytes.toString("utf8")) as { model?: unknown }).model;
-    return typeof model === "string" ? model : "";
+    return JSON.parse(bytes.toString("utf8")) as unknown;
   } catch {
-    return "";
+    return null;
   }
 }
 
@@ -313,6 +324,52 @@ export function informeMedido(requestId: string, model: string, medido: Registro
  */
 export function informeCoalescido(requestId: string, model: string, medidoPrimaria: RegistroMedido, atribucion?: Atribucion): SavingsReport {
   return construirInforme(requestId, model, medidoPrimaria, true, atribucion);
+}
+
+/**
+ * El informe del CARRIL SOMBRA (S2): qué habría costado este turno con la
+ * política de elisión encendida, contra el baseline del MISMO simulador.
+ * `basis: "shadow"` — hipotético por construcción: la RPC 0021 lo acumula solo
+ * en shadow_*, jamás en la base de la comisión ni en measured. Los contadores
+ * de llamadas y tokens van a CERO a propósito: la sombra no evita ni ejecuta
+ * nada. El requestId DEBE llegar ya sufijado con `:shadow` — sin el sufijo, la
+ * idempotencia por (org, requestId) se tragaría en silencio este registro o el
+ * medido de la misma petición.
+ */
+export function informeSombra(
+  requestIdConSufijo: string,
+  model: string,
+  baselineUsd: number,
+  politicaUsd: number,
+  atribucion?: Atribucion,
+): SavingsReport {
+  const informe = {
+    requestId: requestIdConSufijo,
+    model,
+    ...(atribucion && (atribucion.sessionId || atribucion.agentId) ? { attribution: atribucion } : {}),
+    calls: { avoidedLlm: 0, actualLlm: 0 },
+    tokens: {
+      baselineInput: 0,
+      actualInput: 0,
+      eliminatedInput: 0,
+      compressedInput: 0,
+      baselineOutput: 0,
+      actualOutput: 0,
+      providerCachedInput: 0,
+    },
+    cache: { result: "miss" as const },
+    cost: {
+      baselineEstimate: baselineUsd,
+      actual: politicaUsd,
+      // PROPORCIÓN en [-100,1], jamás dólares (la cicatriz de la coalescencia:
+      // un valor > 1 tumba el LOTE entero en la verja del ingest). Una política
+      // puede PERDER dinero — v2 lo demostró — así que el negativo es legítimo,
+      // pero acotado.
+      netSavings: baselineUsd > 0 ? Math.max(-100, Math.min(1, (baselineUsd - politicaUsd) / baselineUsd)) : 0,
+      basis: "shadow" as const,
+    },
+  };
+  return informe as unknown as SavingsReport;
 }
 
 function construirInforme(

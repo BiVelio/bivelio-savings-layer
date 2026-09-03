@@ -352,50 +352,58 @@ function costeVacio(): CosteSimulado {
 const TTL_MS = { "1h": 3_600_000, "5m": 300_000 } as const;
 
 /**
- * EL SIMULADOR: una sesión entera (turnos en orden), una transformación por
- * variante, y el mismo modelo de caché de prefijo para todas — así la
- * comparación es de manzanas con manzanas y el sesgo del simulador se anula al
- * dividir. Modelo: el prefijo común (a nivel de bloque) con el turno anterior
- * se lee a precio de lectura; el resto se ESCRIBE a la prima del TTL real del
- * turno; si el hueco entre turnos supera el TTL, el prefijo caduca y se
- * reescribe entero — igual que la caché real.
+ * EL SIMULADOR, en forma INCREMENTAL: una cadena por (sesión, modelo) y
+ * variante, alimentada turno a turno. Es la misma pieza para el replay del
+ * corpus (que la recorre entera) y para el carril sombra vivo del gateway
+ * (que le da el turno recién servido y usa el coste de ESE paso).
  *
- * Los tokens por bloque se calibran contra el contador REAL del proveedor:
- * tokens_bloque = entradaReal × bytes_bloque / bytes_turno (la misma
- * calibración por bytes del análisis S1).
+ * Modelo: el prefijo común (a nivel de bloque) con el turno anterior se lee a
+ * precio de lectura; el resto se ESCRIBE a la prima del TTL real del turno; si
+ * el hueco entre turnos supera el TTL, el prefijo caduca y se reescribe entero
+ * — igual que la caché real. Los tokens por bloque se calibran contra el
+ * contador REAL del proveedor: tokens_bloque = entradaReal × bytes_bloque /
+ * bytes_turno (la misma calibración por bytes del análisis S1).
  */
-export function simularSesion(
-  turnos: TurnoSombra[],
-  transformar: (bloques: BloqueSombra[], estado: EstadoSesion, turno: number) => { clave: string; bytes: number }[],
-): CosteSimulado {
-  const acumulado = costeVacio();
-  const estado = estadoNuevo();
-  let previo: { clave: string; bytes: number }[] = [];
-  let hayPrevio = false;
-  let atPrevio = 0;
-  for (const t of turnos) {
-    const turno = avanzarEstado(estado, t.bloques);
+export class CadenaDeSimulacion {
+  private readonly estado = estadoNuevo();
+  private previo: { clave: string; bytes: number }[] = [];
+  private hayPrevio = false;
+  private atPrevio = 0;
+  readonly acumulado = costeVacio();
+
+  constructor(
+    private readonly transformar: (
+      bloques: BloqueSombra[],
+      estado: EstadoSesion,
+      turno: number,
+    ) => { clave: string; bytes: number }[],
+  ) {}
+
+  /** Procesa un turno y devuelve el coste de ESE paso (además de acumular). */
+  paso(t: TurnoSombra): CosteSimulado {
+    const delPaso = costeVacio();
+    const turno = avanzarEstado(this.estado, t.bloques);
     const precios = preciosPara(t.model);
-    const trans = transformar(t.bloques, estado, turno);
+    const trans = this.transformar(t.bloques, this.estado, turno);
     if (!precios || t.entradaReal <= 0) {
-      previo = trans;
-      hayPrevio = true;
-      atPrevio = t.at;
-      continue;
+      this.previo = trans;
+      this.hayPrevio = true;
+      this.atPrevio = t.at;
+      return delPaso;
     }
     const bytesOriginales = t.bloques.reduce((s, b) => s + b.bytes, 0);
     const tokensPorByte = bytesOriginales > 0 ? t.entradaReal / bytesOriginales : 0;
     const ttl = TTL_MS[t.escritura1h ? "1h" : "5m"];
-    const caducado = hayPrevio && t.at - atPrevio > ttl;
+    const caducado = this.hayPrevio && t.at - this.atPrevio > ttl;
 
     // Prefijo común con el turno anterior, a nivel de bloque.
     let prefijo = 0;
     if (!caducado) {
       while (
         prefijo < trans.length &&
-        prefijo < previo.length &&
-        trans[prefijo]!.clave === previo[prefijo]!.clave &&
-        trans[prefijo]!.bytes === previo[prefijo]!.bytes
+        prefijo < this.previo.length &&
+        trans[prefijo]!.clave === this.previo[prefijo]!.clave &&
+        trans[prefijo]!.bytes === this.previo[prefijo]!.bytes
       ) {
         prefijo += 1;
       }
@@ -404,19 +412,19 @@ export function simularSesion(
     // Invalidación: bloques escritos que existían IDÉNTICOS en el turno
     // anterior más allá del punto de rotura — se reescriben solo porque algo
     // anterior cambió. Emparejamiento en orden (subsecuencia).
-    const previoRestante = previo.slice(prefijo);
+    const previoRestante = this.previo.slice(prefijo);
     let cursor = 0;
     const precioEscritura = t.escritura1h ? precios.escritura1hPer1k : precios.escrituraPer1k;
     for (let i = 0; i < trans.length; i++) {
       const bloque = trans[i]!;
       const tokens = bloque.bytes * tokensPorByte;
       if (i < prefijo) {
-        acumulado.tokensLeidos += tokens;
-        acumulado.lecturaUsd += (tokens / 1_000) * precios.lecturaPer1k;
+        delPaso.tokensLeidos += tokens;
+        delPaso.lecturaUsd += (tokens / 1_000) * precios.lecturaPer1k;
         continue;
       }
-      acumulado.tokensEscritos += tokens;
-      acumulado.escrituraUsd += (tokens / 1_000) * precioEscritura;
+      delPaso.tokensEscritos += tokens;
+      delPaso.escrituraUsd += (tokens / 1_000) * precioEscritura;
       if (!caducado) {
         // Mirar hacia delante SIN consumir: si este bloque no está en el resto
         // del turno previo, el cursor se queda donde estaba — consumirlo en el
@@ -426,19 +434,37 @@ export function simularSesion(
         while (j < previoRestante.length && previoRestante[j]!.clave !== bloque.clave) j += 1;
         if (j < previoRestante.length) {
           if (previoRestante[j]!.bytes === bloque.bytes) {
-            acumulado.tokensInvalidados += tokens;
-            acumulado.invalidacionUsd += (tokens / 1_000) * (precioEscritura - precios.lecturaPer1k);
+            delPaso.tokensInvalidados += tokens;
+            delPaso.invalidacionUsd += (tokens / 1_000) * (precioEscritura - precios.lecturaPer1k);
           }
           cursor = j + 1;
         }
       }
     }
-    previo = trans;
-    hayPrevio = true;
-    atPrevio = t.at;
+    this.previo = trans;
+    this.hayPrevio = true;
+    this.atPrevio = t.at;
+
+    delPaso.totalUsd = delPaso.lecturaUsd + delPaso.escrituraUsd;
+    this.acumulado.lecturaUsd += delPaso.lecturaUsd;
+    this.acumulado.escrituraUsd += delPaso.escrituraUsd;
+    this.acumulado.totalUsd += delPaso.totalUsd;
+    this.acumulado.tokensLeidos += delPaso.tokensLeidos;
+    this.acumulado.tokensEscritos += delPaso.tokensEscritos;
+    this.acumulado.tokensInvalidados += delPaso.tokensInvalidados;
+    this.acumulado.invalidacionUsd += delPaso.invalidacionUsd;
+    return delPaso;
   }
-  acumulado.totalUsd = acumulado.lecturaUsd + acumulado.escrituraUsd;
-  return acumulado;
+}
+
+/** Una sesión entera de una tacada (el replay del corpus). */
+export function simularSesion(
+  turnos: TurnoSombra[],
+  transformar: (bloques: BloqueSombra[], estado: EstadoSesion, turno: number) => { clave: string; bytes: number }[],
+): CosteSimulado {
+  const cadena = new CadenaDeSimulacion(transformar);
+  for (const t of turnos) cadena.paso(t);
+  return cadena.acumulado;
 }
 
 /** La transformación identidad: el baseline del simulador. */

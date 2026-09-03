@@ -731,9 +731,15 @@ export interface SavingsReport {
      *                  proveedor y el baseline sale del estimador local. Es la
      *                  mejor cifra disponible, pero no está medida.
      * - `unmeasured` — el proveedor no reportó uso. No se reclama nada.
+     * - `shadow`     — HIPOTÉTICO: el carril sombra de S2 (qué habría pasado
+     *                  con la elisión encendida). Jamás en la base de la
+     *                  comisión, jamás sumado a `measured` ni a totales; el
+     *                  informe sombra se construye aparte, nunca lo produce
+     *                  `estimateCost`.
      *
      * Un panel que sume `measured` y `estimated` en una sola cifra de "dinero
-     * ahorrado" está haciendo justo lo que este producto promete no hacer.
+     * ahorrado" está haciendo justo lo que este producto promete no hacer —
+     * y sumar `shadow` a cualquiera de las dos sería inventarse el ahorro.
      */
     basis: import("../tokenizer/accounting.js").CostBasis;
   };

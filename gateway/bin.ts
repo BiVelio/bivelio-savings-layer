@@ -53,6 +53,9 @@ Entorno:
   BVSALA_SEAT_ID         Identidad de asiento estable por réplica (opcional).
   BVSALA_GATEWAY_UPSTREAM  Upstream alternativo (por defecto el del terminal).
   BVSALA_GATEWAY_COALESCE  =1 enciende la coalescencia de duplicados (F2, experimental).
+  BVSALA_GATEWAY_SHADOW  =1 enciende el carril sombra de la elisión (S2): calcula qué
+                         habría ahorrado la política v0 SIN tocar el tráfico y lo
+                         reporta aparte (jamás entra en la comisión).
   BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
   BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
                          (por defecto va silenciado para no pisar el TUI; mira el panel).
@@ -141,6 +144,7 @@ const arranque = await arrancarGateway({
       ? { upstream: envoltorio.upstream }
       : {}),
   ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
+  ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
