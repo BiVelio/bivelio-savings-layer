@@ -54,6 +54,15 @@ function aFila(r: UsageRollup): FilaDiaria {
     measured_requests: r.measuredRequests,
     measured_baseline_cost: r.measuredBaselineCost,
     measured_actual_cost: r.measuredActualCost,
+    // El carril sombra (0021), si el panel lo trae: contexto del extracto,
+    // jamás base. Sin columnas, undefined — la línea no se pinta.
+    ...(r.shadowRequests !== undefined
+      ? {
+          shadow_requests: r.shadowRequests,
+          shadow_baseline_cost: r.shadowBaselineCost ?? 0,
+          shadow_actual_cost: r.shadowActualCost ?? 0,
+        }
+      : {}),
   };
 }
 

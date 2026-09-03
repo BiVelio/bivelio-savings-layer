@@ -397,6 +397,12 @@
       "unavailable": "ainda não disponível: falta aplicar a migração 0015",
       "footnote": "A <b>poupança de saída é quase sempre zero</b>, e não é um defeito: numa chamada que foi mesmo executada a camada não encolhe a resposta, por isso o seu baseline de saída é a saída medida. A poupança de tokens vive na entrada e nas chamadas evitadas. Um total NEGATIVO também não é um erro: significa que a camada custou mais do que teria custado sem ela, e mostramo-lo."
     },
+    "sombraElision": {
+      "title": "Elisão em sombra (hipotético)",
+      "detalle": "≈{usd} em {requests} pedidos simulados",
+      "nota": "O que a elisão de contexto teria poupado no seu tráfego real, calculado pelo gateway sem tocar num único byte. Nunca se soma ao título nem entra na comissão: a alavanca só liga quando este número o justificar.",
+      "notaNegativa": "No seu tráfego, a elisão teria custado dinheiro: reescrever blocos invalida a cache de prefixo do fornecedor. Esta via existe exatamente para ver isto antes de ligar o que quer que seja — e por isso continua desligada."
+    },
     "extracto": {
       "metaTitle": "Extrato · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aqui nada é cobrado",
@@ -421,6 +427,8 @@
       "colBase": "Base da faixa",
       "colComision": "Comissão",
       "estimadoExcluido": "Economia estimada excluída da base (contexto, nunca faturável): {usd}.",
+      "sombraElision": "Via sombra: a elisão teria poupado {usd} em {requests} pedidos simulados. Hipotético — nunca entra na base nem na comissão.",
+      "sombraElisionNegativa": "Via sombra: a elisão teria custado {usd} a mais em {requests} pedidos simulados. Por isso está desligada: só se liga o que poupa de verdade.",
       "parametros": "Parâmetros do extrato — catálogo de preços {version} · taxa de câmbio {fx}.",
       "mismaFacturaTitulo": "Este documento É a futura fatura.",
       "mismaFactura": "O extrato em sombra e o faturável são calculados pela mesma máquina: quando a comissão ativar, a primeira fatura só terá números que você já viu aqui.",

@@ -125,6 +125,27 @@ el conteo hipotético).
 > calidad — el efecto de elidir sobre las respuestas del modelo lo mide el arnés
 > de S4, jamás este replay. Artefactos: `benchmarks/out/sombra-corpus-2026-09-03*.json`.
 
+> **✅ CARRIL VIVO CONSTRUIDO (03-09-2026)**, en el orden obligatorio:
+> **S2.1** ✅ como migración **0021** (0019 ya era de atribución) — aplicada en
+> prod y verificada (columnas + rama shadow en la RPC + grant intacto).
+> **S2.2** ✅ `shadow` en las dos copias de USAGE_BASIS, desplegado en prod.
+> **S2.3** ✅ `CostBasis` gana `"shadow"` (doctrina traducida al inglés: la
+> superficie pública se publica en npm y el trinquete del español bajó 91→81).
+> **S2.4-vivo** ✅ `gateway/sombra-vivo.ts` (CarrilSombra: cadenas por
+> sesión·agente·modelo, tope LRU; `CadenaDeSimulacion` incremental con verja de
+> equivalencia exacta contra el replay) + `informeSombra` + cableado asíncrono
+> en `medir()` — solo /v1/messages no coalescidas, requestId `:shadow`.
+> **S2.5** ⏭ APLAZADA a S4 con motivo: en el replay el futuro de cada sesión ya
+> pasó y se CUENTA (mejor que predecir); la aritmética amortizada solo hace
+> falta como condición de emisión cuando la palanca corte de verdad — S4.
+> **S2.6** ✅ `BVSALA_GATEWAY_SHADOW=1`, apagada por defecto.
+> **S2.7** ✅ panel (tarjeta propia, solo con datos, rojo si pierde) + extracto
+> (línea de contexto `sombra`, nunca en la base) + escalera de fallback
+> 0021→0015→base en data.ts + i18n ×12. El **cierre SELLADO no cambia**
+> (decisión declarada, desviación del plan): un contexto hipotético no entra en
+> la fila inmutable de facturación hasta que la palanca sea real (S4).
+> **ACTIVACIÓN pendiente**: npm 0.4.11 (dueño) + la bandera en su montaje.
+
 **Orden de despliegue OBLIGATORIO** (doctrina de src/metering/emitter.ts:304-315:
 un 4xx del ingest **descarta el lote sin reintento**, y npm es inmutable):
 **1º migración BD → 2º verja del servidor → 3º panel/extracto → 4º SDK/gateway.**

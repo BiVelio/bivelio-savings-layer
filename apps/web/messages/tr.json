@@ -397,6 +397,12 @@
       "unavailable": "henüz yok: 0015 taşıması uygulanmadı",
       "footnote": "<b>Çıktı tasarrufu neredeyse her zaman sıfırdır</b> ve bu bir hata değil: gerçekten çalışan bir çağrıda katman yanıtı küçültmez, dolayısıyla çıktı taban çizgisi ölçülen çıktıdır. Token tasarrufu girdide ve önlenen çağrılarda yaşar. NEGATİF bir toplam da hata değildir: katmanın, o olmadan olacağından daha pahalıya mal olduğu anlamına gelir ve bunu gösteririz."
     },
+    "sombraElision": {
+      "title": "Gölge eksiltme (varsayımsal)",
+      "detalle": "{requests} simüle edilmiş istekte ≈{usd}",
+      "nota": "Bağlam eksiltmenin gerçek trafiğinizde ne kadar tasarruf sağlayacağı, ağ geçidi tarafından tek bir bayta dokunulmadan hesaplanır. Asla başlığa eklenmez ve asla komisyona girmez: kol ancak bu rakam bunu haklı çıkardığında açılır.",
+      "notaNegativa": "Trafiğinizde eksiltme paraya mal olurdu: blokları yeniden yazmak sağlayıcının önek önbelleğini geçersiz kılar. Bu şerit tam da bunu bir şey açılmadan önce görmek için var — bu yüzden kapalı kalıyor."
+    },
     "extracto": {
       "metaTitle": "Ekstre · BiVelio Savings Layer",
       "eyebrow": "Gölge modu · burada hiçbir şey tahsil edilmez",
@@ -421,6 +427,8 @@
       "colBase": "Kademe tabanı",
       "colComision": "Komisyon",
       "estimadoExcluido": "Tabandan hariç tutulan tahmini tasarruf (bağlam, asla faturalanmaz): {usd}.",
+      "sombraElision": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} tasarruf sağlardı. Varsayımsal — asla tabana veya komisyona girmez.",
+      "sombraElisionNegativa": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} fazladan maliyete yol açardı. Bu yüzden kapalı: yalnızca gerçekten tasarruf ettiren açılır.",
       "parametros": "Ekstre parametreleri — fiyat kataloğu {version} · döviz kuru {fx}.",
       "mismaFacturaTitulo": "Bu belge gelecekteki faturanın TA KENDİSİDİR.",
       "mismaFactura": "Gölge ekstre ile faturalanabilir olan aynı makineyle hesaplanır: komisyon devreye girdiğinde ilk faturan yalnızca burada zaten gördüğün sayıları içerecek.",

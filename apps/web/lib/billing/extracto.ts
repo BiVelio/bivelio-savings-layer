@@ -33,6 +33,11 @@ export interface FilaDiaria {
   measured_requests: number;
   measured_baseline_cost: number;
   measured_actual_cost: number;
+  /** El carril SOMBRA (0021) — hipotético: SOLO contexto, jamás en la base.
+   *  Opcionales: el cierre sellado no los lee y la vista puede no tenerlos. */
+  shadow_requests?: number;
+  shadow_baseline_cost?: number;
+  shadow_actual_cost?: number;
 }
 
 export interface OpcionesExtracto {
@@ -69,6 +74,13 @@ export interface Extracto {
   cargoEur: number;
   /** Ahorro estimado excluido de la base (contexto, nunca facturable). */
   ahorroEstimadoExcluidoUsd: number;
+  /**
+   * El carril sombra del período (contexto, nunca facturable): qué habría
+   * ahorrado la elisión v0 según el gateway. `null` sin datos de sombra — la
+   * línea no se pinta. El ahorro PUEDE ser negativo y se enseña tal cual: este
+   * carril existe para decir la verdad antes de encender la palanca.
+   */
+  sombra: { requests: number; ahorroUsd: number } | null;
   /** Los parámetros que hacen el extracto auto-contenido y auditable. */
   parametros: {
     versionPrecios: string;
@@ -92,12 +104,18 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
   let requestsMedidas = 0;
   let baselineTotalUsd = 0;
   let actualTotalUsd = 0;
+  let sombraRequests = 0;
+  let sombraBaseUsd = 0;
+  let sombraActualUsd = 0;
   for (const f of enPeriodo) {
     baseUsd += f.measured_baseline_cost;
     actualUsd += f.measured_actual_cost;
     requestsMedidas += f.measured_requests;
     baselineTotalUsd += f.baseline_cost;
     actualTotalUsd += f.actual_cost;
+    sombraRequests += f.shadow_requests ?? 0;
+    sombraBaseUsd += f.shadow_baseline_cost ?? 0;
+    sombraActualUsd += f.shadow_actual_cost ?? 0;
   }
   const ahorroUsd = Math.max(0, baseUsd - actualUsd);
   // El ahorro total (medido+estimado) menos el medido = lo estimado, que se
@@ -123,6 +141,10 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     comision,
     cargoEur: opts.esCalibracion ? 0 : comision.comisionEur,
     ahorroEstimadoExcluidoUsd: redondearCentimos(ahorroEstimadoExcluidoUsd),
+    sombra:
+      sombraRequests > 0 && sombraBaseUsd > 0
+        ? { requests: sombraRequests, ahorroUsd: redondearCentimos(sombraBaseUsd - sombraActualUsd) }
+        : null,
     parametros: {
       versionPrecios: opts.versionPrecios,
       fx: opts.fx,
