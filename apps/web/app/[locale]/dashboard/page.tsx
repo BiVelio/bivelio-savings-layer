@@ -11,6 +11,7 @@ import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
 import { SavingsTrendChart } from "./components/SavingsTrendChart";
 import { TrafficModelMix } from "./components/TrafficModelMix";
 import { SesionesCard } from "./components/SesionesCard";
+import { SombraElisionCard } from "./components/SombraElisionCard";
 import { VerdictHero } from "./components/VerdictHero";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +74,9 @@ export default async function OverviewPage() {
             </div>
           </div>
           <SesionesCard sesiones={sesiones} />
+          {/* La sombra al final y en tarjeta PROPIA: hipotética por doctrina,
+              jamás mezclada con el titular ni con los libros medidos. */}
+          <SombraElisionCard usage={usage} />
         </div>
       </section>
     </>

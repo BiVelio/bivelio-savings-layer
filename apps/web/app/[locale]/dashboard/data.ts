@@ -239,6 +239,15 @@ export interface UsageRollup {
   actualInputTokens?: number;
   baselineOutputTokens?: number;
   actualOutputTokens?: number;
+  /**
+   * El carril SOMBRA (migración 0021): qué habría pasado con la elisión
+   * encendida. HIPOTÉTICO por doctrina — jamás se suma a nada de lo de arriba.
+   * Opcionales por la misma razón que los tokens: sin la columna, la respuesta
+   * es "no disponible", no 0.
+   */
+  shadowRequests?: number;
+  shadowBaselineCost?: number;
+  shadowActualCost?: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -274,6 +283,8 @@ const COLUMNAS_BASE =
 /** Los cuatro totales de tokens que añade 0015. */
 const COLUMNAS_TOKENS =
   "baseline_input_tokens, actual_input_tokens, baseline_output_tokens, actual_output_tokens";
+/** El carril sombra que añade 0021. */
+const COLUMNAS_SOMBRA = "shadow_requests, shadow_baseline_cost, shadow_actual_cost";
 
 export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageResult> {
   try {
@@ -289,16 +300,23 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
         .gte("day", since)
         .order("day", { ascending: true });
 
-    let { data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}`);
+    let { data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}`);
     // EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN, y sin esto eso tumbaba el
     // panel ENTERO. PostgREST responde 42703 cuando una columna no existe; si
-    // pedimos las de 0015 contra un proyecto que aún no la tiene, el `failed`
-    // de abajo le pinta "la lectura falló" a un cliente cuyos datos están
-    // intactos — y no solo en la tarjeta nueva, sino en todo lo demás.
+    // pedimos las de 0015/0021 contra un proyecto que aún no las tiene, el
+    // `failed` de abajo le pinta "la lectura falló" a un cliente cuyos datos
+    // están intactos — y no solo en la tarjeta nueva, sino en todo lo demás.
     //
-    // Se reintenta sin ellas. Las filas salen sin los totales de tokens, que es
-    // exactamente lo que son: no disponibles todavía. La tarjeta lo dirá así, y
-    // el resto del panel sigue funcionando.
+    // Se reintenta en escalera (0021 → 0015 → base). Las filas salen sin las
+    // columnas que falten, que es exactamente lo que son: no disponibles
+    // todavía. Las tarjetas lo dirán así, y el resto del panel sigue.
+    if (error && esColumnaInexistente(error)) {
+      console.warn(
+        "[dashboard] usage_daily sin las columnas del carril sombra (¿falta la migración 0021?); " +
+          "se lee sin ellas y la tarjeta de sombra no saldrá",
+      );
+      ({ data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}`));
+    }
     if (error && esColumnaInexistente(error)) {
       console.warn(
         "[dashboard] usage_daily sin las columnas de tokens (¿falta la migración 0015?); " +
@@ -340,6 +358,13 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
             actualInputTokens: Number(r["actual_input_tokens"] ?? 0),
             baselineOutputTokens: Number(r["baseline_output_tokens"] ?? 0),
             actualOutputTokens: Number(r["actual_output_tokens"] ?? 0),
+          }
+        : {}),
+      ...(r["shadow_requests"] != null
+        ? {
+            shadowRequests: Number(r["shadow_requests"]),
+            shadowBaselineCost: Number(r["shadow_baseline_cost"] ?? 0),
+            shadowActualCost: Number(r["shadow_actual_cost"] ?? 0),
           }
         : {}),
     }));

@@ -397,6 +397,12 @@
       "unavailable": "noch nicht verfügbar: Migration 0015 wurde nicht angewendet",
       "footnote": "Die <b>Ausgabe-Ersparnis ist fast immer null</b>, und das ist kein Fehler: bei einem tatsächlich ausgeführten Aufruf verkleinert die Schicht die Antwort nicht, also ist ihr Ausgabe-Baseline die gemessene Ausgabe. Token-Ersparnis liegt in der Eingabe und in vermiedenen Aufrufen. Ein NEGATIVER Gesamtwert ist ebenfalls kein Fehler: er bedeutet, dass die Schicht mehr gekostet hat als ohne sie — und wir zeigen ihn."
     },
+    "sombraElision": {
+      "title": "Schatten-Elision (hypothetisch)",
+      "detalle": "≈{usd} über {requests} simulierte Anfragen",
+      "nota": "Was Kontext-Elision bei Ihrem echten Traffic gespart hätte, vom Gateway berechnet, ohne ein einziges Byte anzufassen. Wird nie zur Schlagzeile addiert und fließt nie in die Provision ein: der Hebel wird erst aktiviert, wenn diese Zahl es rechtfertigt.",
+      "notaNegativa": "Bei Ihrem Traffic hätte Elision Geld gekostet: das Umschreiben von Blöcken invalidiert den Prefix-Cache des Anbieters. Genau dafür existiert diese Spur — um das zu sehen, bevor irgendetwas aktiviert wird. Deshalb bleibt sie aus."
+    },
     "extracto": {
       "metaTitle": "Abrechnung · BiVelio Savings Layer",
       "eyebrow": "Schattenmodus · hier wird nichts berechnet",
@@ -421,6 +427,8 @@
       "colBase": "Stufenbasis",
       "colComision": "Provision",
       "estimadoExcluido": "Geschätzte Ersparnis, von der Basis ausgeschlossen (Kontext, nie abrechenbar): {usd}.",
+      "sombraElision": "Schattenspur: Elision hätte {usd} über {requests} simulierte Anfragen gespart. Hypothetisch — fließt nie in die Basis oder die Provision ein.",
+      "sombraElisionNegativa": "Schattenspur: Elision hätte {usd} zusätzlich über {requests} simulierte Anfragen gekostet. Deshalb bleibt sie aus: aktiviert wird nur, was wirklich spart.",
       "parametros": "Parameter des Auszugs — Preiskatalog {version} · Wechselkurs {fx}.",
       "mismaFacturaTitulo": "Dieses Dokument IST die künftige Rechnung.",
       "mismaFactura": "Schatten- und abrechenbare Version werden von derselben Maschinerie berechnet: wenn die Provision aktiv wird, enthält deine erste Rechnung nur Zahlen, die du hier schon gesehen hast.",

@@ -397,6 +397,12 @@
       "unavailable": "aún no disponible: falta aplicar la migración 0015",
       "footnote": "El <b>ahorro de salida es casi siempre cero</b>, y no es un fallo: en una llamada que SÍ se ejecutó la capa no encoge la respuesta, así que su baseline de salida es la salida medida. El ahorro de tokens vive en la entrada y en las llamadas evitadas. Un total NEGATIVO tampoco es un error: significa que la capa gastó más de lo que habría costado sin ella, y se enseña."
     },
+    "sombraElision": {
+      "title": "Elisión en sombra (hipotético)",
+      "detalle": "≈{usd} en {requests} peticiones simuladas",
+      "nota": "Lo que habría ahorrado la elisión de contexto con tu tráfico real, calculado por el gateway sin tocar un solo byte. No se suma al titular y jamás entra en la comisión: la palanca solo se encenderá cuando esta cifra lo justifique.",
+      "notaNegativa": "Con tu tráfico, la elisión habría costado dinero: reescribir bloques invalida la caché de prefijo del proveedor. Este carril existe exactamente para ver esto antes de encender nada — y por eso sigue apagada."
+    },
     "extracto": {
       "metaTitle": "Extracto · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aquí no se cobra nada",
@@ -421,6 +427,8 @@
       "colBase": "Base del tramo",
       "colComision": "Comisión",
       "estimadoExcluido": "Ahorro estimado excluido de la base (contexto, jamás facturable): {usd}.",
+      "sombraElision": "Carril sombra: la elisión habría ahorrado {usd} en {requests} peticiones simuladas. Hipotético — jamás entra en la base ni en la comisión.",
+      "sombraElisionNegativa": "Carril sombra: la elisión habría costado {usd} de más en {requests} peticiones simuladas. Por eso está apagada: solo se enciende lo que ahorra de verdad.",
       "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx}.",
       "mismaFacturaTitulo": "Este documento ES la futura factura.",
       "mismaFactura": "El extracto en sombra y el facturable se calculan con la misma máquina: cuando la comisión se active, la primera factura solo contendrá números que ya has visto aquí.",

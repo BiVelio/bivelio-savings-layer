@@ -397,6 +397,12 @@
       "unavailable": "jeszcze niedostępne: nie zastosowano migracji 0015",
       "footnote": "<b>Oszczędność na wyjściu jest prawie zawsze zerowa</b> i nie jest to błąd: przy wywołaniu, które faktycznie się wykonało, warstwa nie skraca odpowiedzi, więc jej baseline wyjścia to zmierzone wyjście. Oszczędność tokenów leży w wejściu i w uniknietych wywołaniach. Wynik UJEMNY też nie jest błędem: oznacza, że warstwa kosztowała więcej niż bez niej — i to pokazujemy."
     },
+    "sombraElision": {
+      "title": "Elizja w cieniu (hipotetyczna)",
+      "detalle": "≈{usd} w {requests} symulowanych żądaniach",
+      "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie wchodzi do prowizji: dźwignia włączy się dopiero, gdy ta liczba to uzasadni.",
+      "notaNegativa": "Na Twoim ruchu elizja kosztowałaby pieniądze: przepisywanie bloków unieważnia cache prefiksu dostawcy. Ten tor istnieje właśnie po to, by to zobaczyć, zanim cokolwiek się włączy — dlatego pozostaje wyłączona."
+    },
     "extracto": {
       "metaTitle": "Wyciąg · BiVelio Savings Layer",
       "eyebrow": "Tryb cienia · tu nic nie jest pobierane",
@@ -421,6 +427,8 @@
       "colBase": "Baza progu",
       "colComision": "Prowizja",
       "estimadoExcluido": "Szacowane oszczędności wyłączone z bazy (kontekst, nigdy do rozliczenia): {usd}.",
+      "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy ani do prowizji.",
+      "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Dlatego jest wyłączona: włącza się tylko to, co naprawdę oszczędza.",
       "parametros": "Parametry zestawienia — cennik {version} · kurs wymiany {fx}.",
       "mismaFacturaTitulo": "Ten dokument JEST przyszłą fakturą.",
       "mismaFactura": "Wyciąg w cieniu i ten rozliczeniowy liczy ta sama maszyneria: gdy prowizja się włączy, pierwsza faktura będzie zawierać tylko liczby, które już tu widziałeś.",

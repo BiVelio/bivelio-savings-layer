@@ -397,6 +397,12 @@
       "unavailable": "encara no disponible: falta aplicar la migració 0015",
       "footnote": "L'<b>estalvi de sortida és gairebé sempre zero</b>, i no és cap error: en una crida que SÍ s'ha executat la capa no encongeix la resposta, així que el seu baseline de sortida és la sortida mesurada. L'estalvi de tokens viu a l'entrada i a les crides evitades. Un total NEGATIU tampoc és un error: vol dir que la capa va gastar més del que hauria costat sense ella, i es mostra."
     },
+    "sombraElision": {
+      "title": "Elisió en ombra (hipotètic)",
+      "detalle": "≈{usd} en {requests} peticions simulades",
+      "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni entra a la comissió: la palanca només s'encendrà quan aquesta xifra ho justifiqui.",
+      "notaNegativa": "Amb el teu trànsit, l'elisió hauria costat diners: reescriure blocs invalida la memòria cau de prefix del proveïdor. Aquest carril existeix exactament per veure això abans d'encendre res — i per això segueix apagada."
+    },
     "extracto": {
       "metaTitle": "Extracte · BiVelio Savings Layer",
       "eyebrow": "Mode ombra · aquí no es cobra res",
@@ -421,6 +427,8 @@
       "colBase": "Base del tram",
       "colComision": "Comissió",
       "estimadoExcluido": "Estalvi estimat exclòs de la base (context, mai facturable): {usd}.",
+      "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base ni a la comissió.",
+      "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Per això està apagada: només s'encén el que estalvia de veritat.",
       "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx}.",
       "mismaFacturaTitulo": "Aquest document ÉS la futura factura.",
       "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí.",

@@ -99,6 +99,10 @@ export interface FilaUso {
   actualInputTokens?: number;
   baselineOutputTokens?: number;
   actualOutputTokens?: number;
+  /** El carril sombra (0021). Hipotético: jamás entra en el Verdict ni en los tokens. */
+  shadowRequests?: number;
+  shadowBaselineCost?: number;
+  shadowActualCost?: number;
 }
 
 /**
@@ -169,6 +173,33 @@ export function deriveTokens(usage: FilaUso[]): TokenTotals {
  * baseline 0 salía "0.0%" en verde —un cero fabricado— y una pérdida real
  * (actual > baseline) también salía en verde.
  */
+/**
+ * El carril SOMBRA, con derivador PROPIO — a propósito fuera de `deriveVerdict`
+ * y de `deriveTokens`: la sombra es hipotética (qué habría ahorrado la elisión
+ * v0, medido en sombra por el gateway) y mezclarla con el titular sería
+ * inventarse el ahorro. La doctrina completa vive en la migración 0021.
+ *
+ *   "none" — sin datos de sombra (gateway sin la bandera, o columnas ausentes).
+ *            No se pinta nada: una tarjeta vacía prometería una palanca que el
+ *            cliente no tiene encendida.
+ *   "ok"   — hay turnos simulados. `net` puede ser NEGATIVO (una política puede
+ *            perder dinero; v2 lo demostró) y entonces va en rojo — este carril
+ *            existe para decir la verdad ANTES de encender nada.
+ */
+export type Sombra =
+  | { kind: "none" }
+  | { kind: "ok"; net: number; savedUsd: number; requests: number; tone: "pos" | "neg" };
+
+export function deriveSombra(usage: FilaUso[]): Sombra {
+  const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
+  const requests = suma((r) => r.shadowRequests ?? 0);
+  const base = suma((r) => r.shadowBaselineCost ?? 0);
+  const actual = suma((r) => r.shadowActualCost ?? 0);
+  if (requests <= 0 || !(base > 0)) return { kind: "none" };
+  const savedUsd = base - actual;
+  return { kind: "ok", net: savedUsd / base, savedUsd, requests, tone: savedUsd < 0 ? "neg" : "pos" };
+}
+
 export function deriveVerdict(usage: FilaUso[]): Verdict {
   if (usage.length === 0) return { kind: "empty" };
   const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);

@@ -181,6 +181,16 @@ export default async function ExtractoPage() {
         <p className="ck-note" style={{ marginTop: 14 }}>
           {t("extracto.estimadoExcluido", { usd: usd(e.ahorroEstimadoExcluidoUsd) })}
         </p>
+        {/* El carril sombra (0021): contexto hipotético, jamás en la base — y
+            solo cuando hay datos. Con ahorro negativo, la clave lo dice claro. */}
+        {e.sombra && (
+          <p className="ck-note">
+            {t(e.sombra.ahorroUsd < 0 ? "extracto.sombraElisionNegativa" : "extracto.sombraElision", {
+              usd: usd(Math.abs(e.sombra.ahorroUsd)),
+              requests: e.sombra.requests.toLocaleString(locale),
+            })}
+          </p>
+        )}
         <p className="ck-note">
           {t("extracto.parametros", {
             version: e.parametros.versionPrecios,

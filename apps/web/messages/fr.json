@@ -397,6 +397,12 @@
       "unavailable": "pas encore disponible : la migration 0015 n'est pas appliquée",
       "footnote": "L'<b>économie de sortie est presque toujours nulle</b>, et ce n'est pas un bug : sur un appel réellement exécuté la couche ne réduit pas la réponse, donc son baseline de sortie est la sortie mesurée. L'économie de tokens se trouve dans l'entrée et dans les appels évités. Un total NÉGATIF n'est pas non plus une erreur : il signifie que la couche a coûté plus cher que sans elle, et nous l'affichons."
     },
+    "sombraElision": {
+      "title": "Élision en ombre (hypothétique)",
+      "detalle": "≈{usd} sur {requests} requêtes simulées",
+      "nota": "Ce que l'élision de contexte aurait économisé sur votre trafic réel, calculé par la passerelle sans toucher un seul octet. Jamais ajouté au titre, jamais compté dans la commission : le levier ne s'allumera que lorsque ce chiffre le justifiera.",
+      "notaNegativa": "Sur votre trafic, l'élision aurait coûté de l'argent : réécrire des blocs invalide le cache de préfixe du fournisseur. Cette voie existe précisément pour voir cela avant d'allumer quoi que ce soit — c'est pourquoi elle reste éteinte."
+    },
     "extracto": {
       "metaTitle": "Relevé · BiVelio Savings Layer",
       "eyebrow": "Mode ombre · rien n'est facturé ici",
@@ -421,6 +427,8 @@
       "colBase": "Base de la tranche",
       "colComision": "Commission",
       "estimadoExcluido": "Économie estimée exclue de la base (contexte, jamais facturable) : {usd}.",
+      "sombraElision": "Voie ombre : l'élision aurait économisé {usd} sur {requests} requêtes simulées. Hypothétique — n'entre jamais dans la base ni dans la commission.",
+      "sombraElisionNegativa": "Voie ombre : l'élision aurait coûté {usd} de plus sur {requests} requêtes simulées. Voilà pourquoi elle reste éteinte : on n'allume que ce qui économise vraiment.",
       "parametros": "Paramètres du relevé — catalogue de prix {version} · taux de change {fx}.",
       "mismaFacturaTitulo": "Ce document EST la future facture.",
       "mismaFactura": "Le relevé en ombre et le relevé facturable sont calculés par la même machinerie : quand la commission s'activera, votre première facture ne contiendra que des chiffres déjà vus ici.",

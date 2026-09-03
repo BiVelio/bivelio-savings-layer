@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { deriveLicenseStatus, deriveVerdict, elegirLicencia } from "./derive";
+import { deriveLicenseStatus, deriveSombra, deriveVerdict, elegirLicencia } from "./derive";
 
 /**
  * El panel de un producto que se vende como "verify-don't-trust" no puede
@@ -151,5 +151,33 @@ describe("dinero medido vs estimado", () => {
     if (v.kind !== "measured") throw new Error("esperaba measured");
     expect(v.net).toBeCloseTo(0.6, 6);
     expect(v.measured).toBeNull();
+  });
+});
+
+describe("el carril sombra (0021) — hipotético, con derivador propio", () => {
+  it("⛔ la sombra NO toca el Verdict: mismo titular con y sin columnas de sombra", () => {
+    const fila = { requests: 2, baselineCost: 0.2, actualCost: 0.1, measuredRequests: 2, measuredBaselineCost: 0.2, measuredActualCost: 0.1 };
+    const sin = deriveVerdict([fila]);
+    const con = deriveVerdict([{ ...fila, shadowRequests: 99, shadowBaselineCost: 5, shadowActualCost: 1 }]);
+    expect(con).toEqual(sin);
+  });
+
+  it("agrega el carril y el neto puede salir NEGATIVO (v2 lo demostró)", () => {
+    const s = deriveSombra([
+      { requests: 1, baselineCost: 1, actualCost: 1, shadowRequests: 3, shadowBaselineCost: 10, shadowActualCost: 8 },
+      { requests: 1, baselineCost: 1, actualCost: 1, shadowRequests: 2, shadowBaselineCost: 10, shadowActualCost: 16 },
+    ]);
+    if (s.kind !== "ok") throw new Error("esperaba ok");
+    expect(s.requests).toBe(5);
+    expect(s.savedUsd).toBeCloseTo(-4, 6);
+    expect(s.net).toBeCloseTo(-0.2, 6);
+    expect(s.tone).toBe("neg");
+  });
+
+  it("sin datos de sombra, 'none' — la tarjeta no existe (nada de ceros fabricados)", () => {
+    expect(deriveSombra([{ requests: 1, baselineCost: 1, actualCost: 1 }]).kind).toBe("none");
+    expect(deriveSombra([]).kind).toBe("none");
+    // Peticiones sin base simulada tampoco pintan nada.
+    expect(deriveSombra([{ requests: 1, baselineCost: 1, actualCost: 1, shadowRequests: 2, shadowBaselineCost: 0, shadowActualCost: 0 }]).kind).toBe("none");
   });
 });
