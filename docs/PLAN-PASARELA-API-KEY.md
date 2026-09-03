@@ -198,6 +198,18 @@ verificar): candidato a doc de onboarding solo si alguien lo valida en mano.
 
 ### S4 · La palanca (solo si la sombra la justifica) — **DECISIÓN DEL DUEÑO**
 
+> **📋 Plan de implementación detallado (03-09-2026): `PLAN-S4-PALANCA.md`.**
+> Hallazgo que lo reordena: el proveedor ya elide tool_results EN EL SERVIDOR
+> (`clear_tool_uses_20250919`, tras la consulta de caché, con
+> `cleared_input_tokens` declarado = ahorro `measured` sin contrafactual), el
+> 75,2 % de nuestro corpus ya lleva la config **con 0 borrados en 1.952
+> peticiones** (los umbrales de fábrica no saltan), y el agente ya re-lee el
+> 144 % de sus tool_results viejos (la reparación es un camino que recorre a
+> diario). Propuesta: **S4a** = afinar los diales del proveedor (opt-in,
+> superficie mínima, dinero measured) → **S4b** = elisión propia v0 después,
+> con arnés carril 2 y verja de fidelidad delante. Las puertas de esta sección
+> siguen vigentes.
+
 No se escribe una línea de la elisión real hasta que:
 
 1. **La sombra lo pague:** ≥ N puntos netos amortizados sostenidos sobre ≥ M
