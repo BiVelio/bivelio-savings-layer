@@ -77,7 +77,8 @@
     "ab:publish": "tsx benchmarks/publish.ts",
     "corpus:arnes": "tsx corpus/arnes/informe.ts",
     "corpus:auditar": "tsx corpus/auditoria/auditar.ts",
-    "sombra:corpus": "tsx benchmarks/sombra-corpus.ts"
+    "sombra:corpus": "tsx benchmarks/sombra-corpus.ts",
+    "sombra:diales": "tsx --env-file-if-exists=.env.bench benchmarks/sombra-diales.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
