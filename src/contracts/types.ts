@@ -723,23 +723,24 @@ export interface SavingsReport {
     actual: number;
     netSavings: number;
     /**
-     * De dónde sale el baseline. Es lo que separa el dinero medido del estimado.
+     * Where the baseline comes from. It is what separates measured money from
+     * estimated money.
      *
-     * - `measured`   — reconstruido desde el contador del proveedor de ESTA
-     *                  petición. Es dinero, y se puede contrastar con la factura.
-     * - `estimated`  — la llamada se EVITÓ, así que nunca hubo contador del
-     *                  proveedor y el baseline sale del estimador local. Es la
-     *                  mejor cifra disponible, pero no está medida.
-     * - `unmeasured` — el proveedor no reportó uso. No se reclama nada.
-     * - `shadow`     — HIPOTÉTICO: el carril sombra de S2 (qué habría pasado
-     *                  con la elisión encendida). Jamás en la base de la
-     *                  comisión, jamás sumado a `measured` ni a totales; el
-     *                  informe sombra se construye aparte, nunca lo produce
-     *                  `estimateCost`.
+     * - `measured`   — reconstructed from THIS request's provider counter. Real
+     *                  money, checkable against the provider invoice.
+     * - `estimated`  — the call was AVOIDED, so there never was a provider
+     *                  counter and the baseline comes from the local estimator.
+     *                  The best figure available, but not measured.
+     * - `unmeasured` — the provider reported no usage. Nothing is claimed.
+     * - `shadow`     — HYPOTHETICAL: the shadow lane (what would have happened
+     *                  with a lever turned on). Never in the commission base,
+     *                  never added to `measured` or to totals; shadow reports
+     *                  are built separately and `estimateCost` never produces
+     *                  this value.
      *
-     * Un panel que sume `measured` y `estimated` en una sola cifra de "dinero
-     * ahorrado" está haciendo justo lo que este producto promete no hacer —
-     * y sumar `shadow` a cualquiera de las dos sería inventarse el ahorro.
+     * A dashboard that sums `measured` and `estimated` into a single "money
+     * saved" figure is doing exactly what this product promises not to do —
+     * and adding `shadow` to either would be making the savings up.
      */
     basis: import("../tokenizer/accounting.js").CostBasis;
   };

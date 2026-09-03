@@ -170,7 +170,9 @@ describe("la superficie pública del paquete", () => {
    * Un trinquete que solo puede apretarse.
    */
   it("el español en los comentarios no crece", () => {
-    const TECHO = 91;
+    // 2026-09-03: bajó de 91 a 81 al traducir los bloques de CostBasis y
+    // cost.basis (la doctrina del carril sombra nació ya en inglés).
+    const TECHO = 81;
     const cuantas = lineas.filter((l) => /[áéíóúñ¿¡]/.test(l)).length;
     expect(
       cuantas,
