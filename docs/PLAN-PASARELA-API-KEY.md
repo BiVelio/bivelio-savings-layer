@@ -105,6 +105,26 @@ un byte del tráfico reenviado**. Riesgo cero: la defensa ToS del passthrough
 queda intacta, y la privacidad también (el cuerpo se analiza en local; solo sube
 el conteo hipotético).
 
+> **✅ S2.4-replay EJECUTADO (03-09-2026)** sobre el corpus del espía (1.652
+> turnos medibles, 15 sesiones, 659 $ reales a contador del proveedor). Motor en
+> `gateway/sombra.ts` + replay en `benchmarks/sombra-corpus.ts`
+> (`pnpm sombra:corpus`); simulador de caché de prefijo por (sesión, modelo) con
+> la invalidación restada SIEMPRE y reportada aparte; calibración
+> baseline-simulado/real = 1,14. Resultados (ahorro NETO de invalidación, sobre
+> el baseline simulado con la misma vara):
+>
+> | Política | Ahorro neto | Invalidación pagada | Veredicto |
+> |---|---|---|---|
+> | **v0** edad×tamaño | **+20,6 %** (≈125 $ sobre la entrada real) | 59 $ | **GANADORA** — monótona por construcción (la edad solo crece: nadie resucita) |
+> | v1 por tipo | +0,5 % | 36 $ | descartada como palanca de dinero: el 48 % del prompt es tool_result clase «otro» que sus reductores no saben leer (y no leer = no tocar, por doctrina) |
+> | v2 presupuesto | −38,9 % (256 KB) · −0,6 % (1 MB) · −4,9 % (4 MB) | hasta 441 $ | **la trampa del plan, confirmada en dinero**: repuntuar cada turno baila a las víctimas y tritura el prefijo |
+> | v2m presupuesto monótono | −32,7 % (256 KB) · **+12,3 % (1 MB)** · −1,5 % (4 MB) | 46–399 $ | solo positiva afinando el dial, y aun así muy por debajo de v0 |
+>
+> Decisión: **el carril sombra vivo (S2.4-vivo/S2.6) arranca con v0**; v2m@1MB
+> queda como candidata de reserva. Límite declarado del replay: mide DINERO, no
+> calidad — el efecto de elidir sobre las respuestas del modelo lo mide el arnés
+> de S4, jamás este replay. Artefactos: `benchmarks/out/sombra-corpus-2026-09-03*.json`.
+
 **Orden de despliegue OBLIGATORIO** (doctrina de src/metering/emitter.ts:304-315:
 un 4xx del ingest **descarta el lote sin reintento**, y npm es inmutable):
 **1º migración BD → 2º verja del servidor → 3º panel/extracto → 4º SDK/gateway.**
