@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
     "metaDescription": "Camada de custo para LLM, licenciada. Instala-se à frente do teu fornecedor e corta a fatura; a poupança é medida contra o contador dele, com intervalo de 95%.",
     "hero": {
-      "eyebrow": "A camada de custo de LLM que qualquer um pode instalar — licenciada para executar",
-      "title": "Prova a poupança com",
-      "titleAccent": "os teus próprios dados.",
-      "lede": "O BV-SALA coloca-se à frente do teu fornecedor e, em cada pedido, escolhe a execução mais barata que ainda cumpre o teu contrato de qualidade. Cada número desta página está medido contra o contador do próprio fornecedor, com o seu intervalo de confiança ao lado — nunca uma estimativa.",
+      "eyebrow": "Poupança em IA, medida a sério",
+      "title": "Pague menos pela IA.",
+      "titleAccent": "E confira na sua fatura.",
+      "lede": "ChatGPT, Claude, Gemini… cada pergunta que a sua empresa faz a uma IA é cobrada pelo texto que entra e sai. O Savings fica entre a sua empresa e o fornecedor, corta o que não era preciso pagar e mostra a poupança num recibo que pode conferir com a fatura.",
       "ctaRun": "Ver o que medimos",
       "ctaPricing": "Ver preços",
-      "note": "Instalação em cinco linhas. A licença ativa-se no teu painel.",
+      "note": "Instala-se em minutos. As suas mensagens nunca passam pelos nossos servidores.",
       "proofTitle": "Medido contra fornecedor real",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Cada passo cai num livro contabilístico DIFERENTE, por isso estes números não se somam entre si. Um passo cujo livro não ultrapassa o zero não aparece aqui: a restrição de saída foi medida e não poupa, por isso não é anunciada."
     },
+    "explica": {
+      "eyebrow": "Em palavras simples",
+      "title": "O que faz o Savings, exatamente?",
+      "sub": "Quatro ideias, quatro animações de oito segundos. Isto é o produto inteiro.",
+      "pasos": [
+        {
+          "title": "A IA cobra por palavras",
+          "body": "Cada pedido a uma IA paga-se pelo texto que entra e sai. O Savings põe-se no meio do caminho e deixa passar só o necessário: o que não era preciso pagar cai no seu pote."
+        },
+        {
+          "title": "Não paga duas vezes pelo mesmo",
+          "body": "Uma IA relê a cada turno tudo o que você já lhe tinha enviado — e o fornecedor cobra outra vez. O Savings lembra-se do que já foi enviado e prepara cada pedido para que as repetições saiam ao preço com desconto."
+        },
+        {
+          "title": "Um recibo que pode conferir",
+          "body": "Não pedimos fé. Cada poupança é medida com o contador oficial do fornecedor — o mesmo com que ele o fatura — e aparece no seu recibo. O que não se pode conferir com a fatura nunca é anunciado."
+        },
+        {
+          "title": "Só ganhamos se você poupar",
+          "body": "A nossa comissão sai da poupança medida, nunca do seu bolso: a maior parte do que poupa fica sempre consigo. Um mês sem poupança? Comissão zero."
+        }
+      ],
+      "nota": "As animações ilustram a ideia. Os números a sério — medidos contra fornecedores reais — estão logo abaixo."
+    },
     "step2": {
-      "eyebrow": "Passo 2 · Como as economias são medidas — reproduzível",
-      "title": "Ambos os braços medidos pelo tokenizador do próprio provedor — sem linha de base modelada.",
-      "body": "Este é o resultado do benchmark A/B (<code>pnpm ab</code>): para cada cenário envia um pedido <b>ingénuo</b> <i>e</i> o pedido do BV‑SALA ao <b>mesmo</b> modelo, calcula o preço de ambos a partir da própria utilização de tokens do fornecedor e reporta o <b>limite inferior do intervalo de confiança de 95%</b> — nunca a estimativa pontual lisonjeira. Nada é modelado."
+      "eyebrow": "Sem promessas: medições",
+      "title": "Como sabemos que poupa? Medimos — e você pode repetir a medição.",
+      "body": "Cada cenário corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois resultados são contados com o contador do próprio fornecedor — o mesmo que dá preço à sua fatura. Foi isto que saiu, com a sua margem de erro:",
+      "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
+      "plainTitle": "Tradução, sem jargão",
+      "plain": "Neste teste, a fatura baixou quase de certeza pelo menos {piso}. O mais provável é que tenha baixado {punto}.",
+      "plainNote": "Quando há um intervalo, anunciamos sempre o número pequeno — o que a estatística garante —, nunca o bonito."
     },
     "anthropicCache": {
       "eyebrow": "Medido · cache de prefixo da Anthropic",
-      "title": "A Anthropic não faz cache sozinha. A tua integração não pede; a nossa pede.",
-      "body": "A OpenAI aplica o seu cache de prefixo automaticamente: esse desconto já o tens connosco ou sem nós. <b>A Anthropic não.</b> Exige marcar o ponto de corte em cada pedido, e quem não o marca paga a entrada inteira, sempre.",
+      "title": "A Anthropic dá desconto no texto repetido — mas é preciso pedir. Nós pedimos por si.",
+      "body": "Quando uma conversa repete o que já foi enviado (instruções, documentos, histórico), a Anthropic pode cobrá-lo muito mais barato — mas só se cada pedido chegar preparado para esse desconto. <b>A maioria das integrações nunca pede e paga o preço inteiro. O Savings pede em cada pedido.</b>",
       "evidenceTitle": "O que foi medido",
       "evidenceLede": "Turno de agente com contexto de sistema longo e repetido — um assistente de suporte, um extrator documental. Oito pares, mesmo modelo nos dois braços, tarifados com o contador da própria Anthropic.",
       "rowNaiveLabel": "Sem a camada",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Contabilidade honesta",
-      "title": "Quatro livros-razão separados. Nunca somados numa única cifra de vaidade.",
-      "body": "Um acerto de cache remove uma chamada inteira. O BV‑SALA recodifica dados estruturados de forma mais compacta. A compressão elimina palavras redundantes. Uma cache de prefixo do fornecedor torna os tokens mais baratos sem os remover. Misturá-los mente-te — por isso não o fazemos.",
+      "title": "Cada tipo de poupança, contado à parte — para nenhuma cifra inchar.",
+      "body": "O Savings poupa de várias maneiras: evita chamadas inteiras, tira texto a mais, empacota melhor o que é enviado e ativa os descontos do fornecedor. Cada maneira tem o seu próprio registo com a sua própria cifra medida — e nunca as somamos num numerão de marketing.",
       "runToMeasure": "executa o otimizador para medir",
       "measuredFloor": "medido · piso de 95%",
       "notProven": "medido · não ultrapassa o zero",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
-      "title": "Cêntimos para executar. Múltiplos para poupar.",
-      "body": "Sem plano gratuito e sem período experimental: o que podes comprovar antes de pagar é a poupança MEDIDA aqui acima, com o respetivo intervalo ao lado. Subscreves e executas o BV-SALA na tua app. Preço por lugar, em {currency}.",
+      "title": "Uma taxa pequena por lugar. E comissão só sobre o que poupa.",
+      "body": "Sem plano gratuito e sem período de teste: o que pode verificar antes de pagar são as medições públicas desta página. A taxa é por lugar, em {currency}, e a comissão sai da poupança medida — nunca do seu bolso.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",

@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
     "metaDescription": "Licencjonowana warstwa kosztów LLM. Staje przed Twoim dostawcą i tnie rachunek; oszczędność zmierzona jego własnym licznikiem, z przedziałem ufności 95%.",
     "hero": {
-      "eyebrow": "Warstwa kosztów LLM, którą każdy może zainstalować — licencjonowana do uruchamiania",
-      "title": "Udowodnij oszczędności na",
-      "titleAccent": "własnych danych.",
-      "lede": "BV-SALA stoi przed dowolnym dostawcą LLM i dla każdego żądania wybiera najtańszą realizację, która wciąż spełnia Twój próg jakości. Każdy wynik oszczędności, jaki publikujemy, jest mierzony względem licznika tokenów samego dostawcy i podawany z przedziałem ufności — to pomiar, nigdy szacunek.",
+      "eyebrow": "Oszczędności na AI, naprawdę zmierzone",
+      "title": "Płać mniej za AI.",
+      "titleAccent": "I sprawdź to na swojej fakturze.",
+      "lede": "ChatGPT, Claude, Gemini… każde pytanie, które Twoja firma zadaje AI, jest rozliczane za tekst, który wchodzi i wychodzi. Savings staje między Twoją firmą a dostawcą, przycina to, za co nie trzeba było płacić, i pokazuje oszczędność na rachunku, który możesz porównać z fakturą.",
       "ctaRun": "Zobacz zmierzone wyniki",
       "ctaPricing": "Zobacz cennik",
-      "note": "Instalacja w pięciu linijkach. Licencję aktywujesz w swoim panelu.",
+      "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Każdy krok trafia do INNEJ księgi, więc te liczby nie sumują się ze sobą. Krok, którego księga nie przekracza zera, nie pojawia się tutaj: ograniczenie wyjścia zostało zmierzone i nie oszczędza, więc go nie reklamujemy."
     },
+    "explica": {
+      "eyebrow": "Prostymi słowami",
+      "title": "Co właściwie robi Savings?",
+      "sub": "Cztery pomysły, cztery ośmiosekundowe animacje. To cały produkt.",
+      "pasos": [
+        {
+          "title": "AI liczy sobie za słowa",
+          "body": "Każde zapytanie do AI opłaca się za tekst, który wchodzi i wychodzi. Savings staje na środku tej drogi i przepuszcza tylko to, co potrzebne: to, za co nie trzeba było płacić, wpada do Twojego słoika."
+        },
+        {
+          "title": "Nie płacisz dwa razy za to samo",
+          "body": "AI w każdej turze czyta od nowa wszystko, co już jej wysłano — a dostawca liczy za to ponownie. Savings pamięta, co już wysłano, i przygotowuje każde zapytanie tak, by powtórzenia szły po obniżonej cenie."
+        },
+        {
+          "title": "Rachunek, który możesz sprawdzić",
+          "body": "Nie prosimy o wiarę. Każdą oszczędność mierzy oficjalny licznik dostawcy — ten sam, którym wystawia Ci faktury — i trafia ona na Twój rachunek. Czego nie da się porównać z fakturą, tego nigdy nie ogłaszamy."
+        },
+        {
+          "title": "Zarabiamy tylko wtedy, gdy Ty oszczędzasz",
+          "body": "Nasza prowizja pochodzi ze zmierzonej oszczędności, nigdy z Twojej kieszeni: większość tego, co zaoszczędzisz, zawsze zostaje u Ciebie. Miesiąc bez oszczędności? Zero prowizji."
+        }
+      ],
+      "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
+    },
     "step2": {
-      "eyebrow": "Krok 2 · Jak mierzone są oszczędności — powtarzalne",
-      "title": "Obie gałęzie mierzone tokenizerem samego dostawcy — bez modelowanej linii bazowej.",
-      "body": "To wynik benchmarku A/B (<code>pnpm ab</code>): dla każdego scenariusza wysyła żądanie <b>naiwne</b> <i>oraz</i> żądanie BV‑SALA do <b>tego samego</b> modelu, wycenia oba na podstawie własnego zużycia tokenów dostawcy i raportuje <b>dolną granicę 95% przedziału ufności</b> — nigdy pochlebnej estymacji punktowej. Nic nie jest modelowane."
+      "eyebrow": "Bez obietnic: pomiary",
+      "title": "Skąd wiemy, że oszczędza? Mierzymy to — a Ty możesz powtórzyć pomiar.",
+      "body": "Każdy scenariusz uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba wyniki liczy licznik samego dostawcy — ten sam, który wycenia Twoją fakturę. Oto co wyszło, z marginesem błędu:",
+      "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
+      "plainTitle": "Tłumaczenie, bez żargonu",
+      "plain": "W tym teście rachunek spadł niemal na pewno o co najmniej {piso}. Najprawdopodobniej spadł o {punto}.",
+      "plainNote": "Gdy są widełki, zawsze ogłaszamy mniejszą liczbę — tę, którą gwarantuje statystyka — nigdy tę ładniejszą."
     },
     "anthropicCache": {
       "eyebrow": "Zmierzone · cache prefiksu Anthropic",
-      "title": "Anthropic nie cache'uje sam z siebie. Twoja integracja o to nie prosi; nasza tak.",
-      "body": "OpenAI stosuje swój cache prefiksu automatycznie: ten rabat masz z nami albo bez nas. <b>Anthropic nie.</b> Wymaga oznaczenia punktu odcięcia w każdym żądaniu, a kto go nie oznaczy, zawsze płaci za całe wejście.",
+      "title": "Anthropic daje rabat na powtórzony tekst — ale trzeba o niego poprosić. My prosimy za Ciebie.",
+      "body": "Gdy rozmowa powtarza to, co już wysłano (instrukcje, dokumenty, historię), Anthropic może policzyć to znacznie taniej — ale tylko jeśli każde zapytanie przyjdzie przygotowane pod ten rabat. <b>Większość integracji nigdy nie prosi i płaci pełną cenę. Savings prosi przy każdym zapytaniu.</b>",
       "evidenceTitle": "Co zostało zmierzone",
       "evidenceLede": "Tura agenta z długim, powtarzanym kontekstem systemowym — asystent wsparcia, ekstraktor dokumentów. Osiem par, ten sam model w obu ramionach, rozliczone licznikiem samego Anthropic.",
       "rowNaiveLabel": "Bez warstwy",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Uczciwe rozliczanie",
-      "title": "Cztery osobne księgi. Nigdy nie sumowane w jedną próżną liczbę.",
-      "body": "Trafienie w cache usuwa całe wywołanie. BV‑SALA przekodowuje dane strukturalne w bardziej zwarty sposób. Kompresja odrzuca zbędne słowa. Cache prefiksu dostawcy potania tokeny bez ich usuwania. Mieszanie ich Cię okłamuje — więc tego nie robimy.",
+      "title": "Każdy rodzaj oszczędności liczony osobno — żeby żadna liczba nie była zawyżona.",
+      "body": "Savings oszczędza na kilka sposobów: unika całych wywołań, usuwa zbędny tekst, ciaśniej pakuje to, co wysyłane, i włącza rabaty dostawcy. Każdy sposób prowadzi własny rejestr z własną zmierzoną liczbą — i nigdy nie sumujemy ich w jedną marketingową liczbę.",
       "runToMeasure": "uruchom optymalizator, aby zmierzyć",
       "measuredFloor": "zmierzone · próg 95%",
       "notProven": "zmierzone · nie przekracza zera",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
-      "title": "Grosze za uruchomienie. Wielokrotności do zaoszczędzenia.",
-      "body": "Bez darmowego planu i bez okresu próbnego: zanim zapłacisz, możesz sprawdzić ZMIERZONE oszczędności powyżej, razem z ich przedziałem ufności. Wykupujesz subskrypcję i uruchamiasz warstwę w swojej aplikacji. Cena za stanowisko, w {currency}.",
+      "title": "Mała opłata za stanowisko. I prowizja tylko od tego, co zaoszczędzisz.",
+      "body": "Bez darmowego planu i bez okresu próbnego: przed zapłatą możesz sprawdzić publiczne pomiary na tej stronie. Opłata jest za stanowisko, w {currency}, a prowizja pochodzi ze zmierzonej oszczędności — nigdy z Twojej kieszeni.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",

@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
     "metaDescription": "Lớp chi phí LLM có cấp phép. Cài đặt trước nhà cung cấp của bạn và cắt giảm hóa đơn; mức tiết kiệm đo theo chính bộ đếm của họ, kèm khoảng tin cậy 95%.",
     "hero": {
-      "eyebrow": "Lớp chi phí LLM mà ai cũng có thể cài đặt — được cấp phép để chạy",
-      "title": "Chứng minh mức tiết kiệm trên",
-      "titleAccent": "dữ liệu của chính bạn.",
-      "lede": "BV-SALA đứng trước bất kỳ nhà cung cấp LLM nào và, với mỗi yêu cầu, chọn phương án thực thi rẻ nhất mà vẫn đáp ứng ngưỡng chất lượng của bạn. Mọi con số tiết kiệm mà chúng tôi công bố đều được đo bằng chính bộ đếm token của nhà cung cấp và luôn đi kèm khoảng tin cậy — không bao giờ là ước tính.",
+      "eyebrow": "Tiết kiệm AI, đo lường thật",
+      "title": "Trả ít tiền hơn cho AI.",
+      "titleAccent": "Và kiểm chứng ngay trên hóa đơn của bạn.",
+      "lede": "ChatGPT, Claude, Gemini… mỗi câu hỏi công ty bạn gửi cho AI đều được tính tiền theo phần văn bản đi vào và đi ra. Savings đứng giữa công ty bạn và nhà cung cấp, cắt bớt phần không cần trả và cho bạn xem khoản tiết kiệm trên một biên lai có thể đối chiếu với hóa đơn.",
       "ctaRun": "Xem kết quả đo",
       "ctaPricing": "Xem bảng giá",
-      "note": "Cài đặt trong năm dòng. Giấy phép được kích hoạt từ bảng điều khiển của bạn.",
+      "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Mỗi bước rơi vào MỘT sổ khác nhau, nên các con số này không cộng dồn với nhau. Một bước mà sổ của nó không vượt qua số không sẽ không xuất hiện ở đây: việc hạn chế đầu ra đã được đo và không tiết kiệm, nên chúng tôi không quảng bá nó."
     },
+    "explica": {
+      "eyebrow": "Nói một cách dễ hiểu",
+      "title": "Savings thực sự làm gì?",
+      "sub": "Bốn ý tưởng, bốn đoạn hoạt hình tám giây. Đó là toàn bộ sản phẩm.",
+      "pasos": [
+        {
+          "title": "AI tính tiền theo từng chữ",
+          "body": "Mỗi yêu cầu gửi đến AI được trả tiền theo phần văn bản đi vào và đi ra. Savings đứng giữa con đường đó và chỉ cho qua những gì cần thiết: phần không cần trả rơi vào chiếc lọ của bạn."
+        },
+        {
+          "title": "Bạn không trả hai lần cho cùng một thứ",
+          "body": "AI đọc lại mọi thứ bạn đã gửi ở mỗi lượt — và nhà cung cấp lại tính tiền lần nữa. Savings ghi nhớ những gì đã gửi và chuẩn bị mỗi yêu cầu để phần lặp lại đi với giá đã giảm."
+        },
+        {
+          "title": "Một biên lai bạn có thể kiểm chứng",
+          "body": "Chúng tôi không xin niềm tin. Mỗi khoản tiết kiệm được đo bằng bộ đếm chính thức của nhà cung cấp — chính bộ đếm dùng để tính tiền bạn — và hiện trên biên lai của bạn. Điều gì không đối chiếu được với hóa đơn thì không bao giờ được công bố."
+        },
+        {
+          "title": "Chúng tôi chỉ có lời khi bạn tiết kiệm",
+          "body": "Hoa hồng của chúng tôi lấy từ khoản tiết kiệm đo được, không bao giờ từ túi bạn: phần lớn số tiền tiết kiệm luôn ở lại với bạn. Một tháng không tiết kiệm? Hoa hồng bằng không."
+        }
+      ],
+      "nota": "Các đoạn hoạt hình minh họa ý tưởng. Những con số thật — đo với nhà cung cấp thật — nằm ngay bên dưới."
+    },
     "step2": {
-      "eyebrow": "Bước 2 · Cách đo lường mức tiết kiệm — có thể tái lập",
-      "title": "Cả hai nhánh được đo bằng chính tokenizer của nhà cung cấp — không có đường cơ sở mô hình hóa.",
-      "body": "Đây là kết quả của benchmark A/B (<code>pnpm ab</code>): với mỗi kịch bản, nó gửi một yêu cầu <b>ngây thơ</b> <i>và</i> yêu cầu BV‑SALA đến <b>cùng một</b> mô hình, định giá cả hai từ chính mức sử dụng token của nhà cung cấp, và báo cáo <b>giới hạn dưới của khoảng tin cậy 95%</b> — không bao giờ là ước tính điểm hào nhoáng. Không có gì được mô hình hóa."
+      "eyebrow": "Không hứa hẹn: đo lường",
+      "title": "Làm sao chúng tôi biết nó tiết kiệm? Chúng tôi đo — và bạn có thể lặp lại phép đo.",
+      "body": "Mỗi kịch bản chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai kết quả được đếm bằng chính bộ đếm của nhà cung cấp — bộ đếm định giá hóa đơn của bạn. Đây là kết quả, kèm biên độ sai số:",
+      "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
+      "plainTitle": "Diễn giải, không thuật ngữ",
+      "plain": "Trong bài kiểm tra này, hóa đơn gần như chắc chắn giảm ít nhất {piso}. Nhiều khả năng nhất là giảm {punto}.",
+      "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp."
     },
     "anthropicCache": {
       "eyebrow": "Đã đo · bộ nhớ đệm tiền tố của Anthropic",
-      "title": "Anthropic không tự lưu đệm. Tích hợp của bạn không yêu cầu điều đó; của chúng tôi thì có.",
-      "body": "OpenAI áp dụng bộ nhớ đệm tiền tố tự động: khoản giảm giá đó bạn có dù có chúng tôi hay không. <b>Anthropic thì không.</b> Nó đòi hỏi đánh dấu điểm cắt ở mỗi yêu cầu, và ai không đánh dấu sẽ luôn trả tiền cho toàn bộ đầu vào.",
+      "title": "Anthropic giảm giá cho văn bản lặp lại — nhưng phải yêu cầu. Chúng tôi yêu cầu thay bạn.",
+      "body": "Khi cuộc trò chuyện lặp lại những gì đã gửi (hướng dẫn, tài liệu, lịch sử), Anthropic có thể tính rẻ hơn nhiều — nhưng chỉ khi mỗi yêu cầu đến nơi đã được chuẩn bị cho khoản giảm giá đó. <b>Phần lớn các tích hợp không bao giờ yêu cầu và trả nguyên giá. Savings yêu cầu trong mọi yêu cầu.</b>",
       "evidenceTitle": "Những gì đã được đo",
       "evidenceLede": "Một lượt tác tử với ngữ cảnh hệ thống dài và lặp lại — một trợ lý hỗ trợ, một bộ trích xuất tài liệu. Tám cặp, cùng một mô hình ở cả hai nhánh, tính giá bằng chính bộ đếm của Anthropic.",
       "rowNaiveLabel": "Không có lớp",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Hạch toán trung thực",
-      "title": "Bốn sổ cái riêng biệt. Không bao giờ cộng gộp thành một con số phù phiếm.",
-      "body": "Một lần trúng bộ đệm loại bỏ nguyên một lệnh gọi. BV‑SALA mã hóa lại dữ liệu có cấu trúc gọn gàng hơn. Nén loại bỏ những từ ngữ dư thừa. Bộ đệm tiền tố của nhà cung cấp làm token rẻ hơn mà không loại bỏ chúng. Trộn lẫn chúng là dối gạt bạn — nên chúng tôi không làm vậy.",
+      "title": "Mỗi loại tiết kiệm được đếm riêng — để không con số nào bị thổi phồng.",
+      "body": "Savings tiết kiệm theo nhiều cách: tránh nguyên cả lượt gọi, bỏ văn bản thừa, đóng gói phần gửi đi gọn hơn và bật các khoản giảm giá của nhà cung cấp. Mỗi cách có sổ riêng với con số đo được riêng — và chúng tôi không bao giờ cộng chúng thành một con số tiếp thị.",
       "runToMeasure": "chạy trình tối ưu để đo",
       "measuredFloor": "đã đo · sàn 95%",
       "notProven": "đã đo · không vượt qua số không",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Một gói, tính giá theo ghế",
-      "title": "Vài xu để chạy. Gấp nhiều lần để tiết kiệm.",
-      "body": "Không có gói miễn phí, không có bản dùng thử: thứ bạn kiểm chứng được trước khi trả tiền là khoản tiết kiệm ĐÃ ĐO ở ngay phía trên, có khoảng tin cậy đi kèm. Bạn đăng ký thuê bao rồi chạy nó trong ứng dụng của mình. Tính giá theo ghế, bằng {currency}.",
+      "title": "Một khoản phí nhỏ cho mỗi chỗ ngồi. Và hoa hồng chỉ trên phần bạn tiết kiệm.",
+      "body": "Không gói miễn phí, không dùng thử: điều bạn có thể kiểm chứng trước khi trả tiền là các phép đo công khai trên trang này. Phí tính theo chỗ ngồi, bằng {currency}, và hoa hồng lấy từ khoản tiết kiệm đo được — không bao giờ từ túi của bạn.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",

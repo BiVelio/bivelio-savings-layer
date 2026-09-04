@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
     "metaDescription": "Layer di costo LLM con licenza. Si installa davanti al tuo provider e taglia la fattura; il risparmio è misurato con il suo contatore, intervallo al 95%.",
     "hero": {
-      "eyebrow": "Il layer di costo LLM che chiunque può installare — con licenza per l'esecuzione",
-      "title": "Dimostra i risparmi sui",
-      "titleAccent": "tuoi dati.",
-      "lede": "BV-SALA si posiziona davanti al tuo provider e, per ogni richiesta, sceglie l'esecuzione più economica che rispetta comunque il tuo standard di qualità. Ogni cifra di questa pagina è misurata con il contatore del provider stesso, con accanto il suo intervallo di confidenza — mai una stima.",
+      "eyebrow": "Risparmio sull'IA, misurato davvero",
+      "title": "Paga meno per l'IA.",
+      "titleAccent": "E verificalo sulla tua fattura.",
+      "lede": "ChatGPT, Claude, Gemini… ogni domanda che la tua azienda fa a un'IA viene fatturata in base al testo che entra ed esce. Savings si mette tra la tua azienda e il fornitore, taglia ciò che non serviva pagare e ti mostra il risparmio su una ricevuta che puoi confrontare con la fattura.",
       "ctaRun": "Vedi i dati misurati",
       "ctaPricing": "Vedi i prezzi",
-      "note": "Installazione in cinque righe. La licenza si attiva dalla tua dashboard.",
+      "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Ogni passo cade in UN registro diverso, quindi queste cifre non si sommano tra loro. Un passo il cui registro non supera lo zero non compare qui: la restrizione dell'output è stata misurata e non fa risparmiare, quindi non viene annunciata."
     },
+    "explica": {
+      "eyebrow": "In parole semplici",
+      "title": "Cosa fa Savings, esattamente?",
+      "sub": "Quattro idee, quattro animazioni da otto secondi. Questo è tutto il prodotto.",
+      "pasos": [
+        {
+          "title": "L'IA si paga a parole",
+          "body": "Ogni richiesta a un'IA si paga in base al testo che entra ed esce. Savings si mette in mezzo al percorso e lascia passare solo il necessario: ciò che non serviva pagare cade nel tuo barattolo."
+        },
+        {
+          "title": "Non paghi due volte la stessa cosa",
+          "body": "Un'IA rilegge a ogni turno tutto ciò che le avevi già inviato — e il fornitore lo fattura di nuovo. Savings ricorda ciò che è già stato inviato e prepara ogni richiesta perché le ripetizioni partano al prezzo scontato."
+        },
+        {
+          "title": "Una ricevuta che puoi verificare",
+          "body": "Non ti chiediamo fede. Ogni risparmio si misura con il contatore ufficiale del fornitore — lo stesso con cui ti fattura — e compare sulla tua ricevuta. Ciò che non si può confrontare con la fattura non viene mai annunciato."
+        },
+        {
+          "title": "Guadagniamo solo se tu risparmi",
+          "body": "La nostra commissione esce dal risparmio misurato, mai dalla tua tasca: la maggior parte di ciò che risparmi resta sempre a te. Un mese senza risparmio? Commissione zero."
+        }
+      ],
+      "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
+    },
     "step2": {
-      "eyebrow": "Passo 2 · Come si misurano i risparmi — riproducibile",
-      "title": "Entrambi i rami misurati dal tokenizer del provider stesso — nessuna baseline modellata.",
-      "body": "Questo è l'output del benchmark A/B (<code>pnpm ab</code>): per ogni scenario invia una richiesta <b>ingenua</b> <i>e</i> la richiesta BV‑SALA allo <b>stesso</b> modello, calcola il prezzo di entrambe dall'utilizzo di token del provider stesso e riporta il <b>limite inferiore di confidenza al 95%</b> — mai la lusinghiera stima puntuale. Nulla è modellato."
+      "eyebrow": "Niente promesse: misurazioni",
+      "title": "Come sappiamo che fa risparmiare? Lo misuriamo — e tu puoi ripetere la misurazione.",
+      "body": "Ogni scenario viene eseguito due volte contro il fornitore reale: così com'è, e con Savings davanti. Entrambi i risultati si contano con il contatore del fornitore stesso — lo stesso che dà il prezzo alla tua fattura. Ecco cosa è uscito, con il suo margine di errore:",
+      "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
+      "plainTitle": "Traduzione, senza gergo",
+      "plain": "In questo test la fattura è scesa quasi con certezza di almeno {piso}. Molto probabilmente è scesa del {punto}.",
+      "plainNote": "Quando c'è una forchetta, annunciamo sempre il numero piccolo — quello che la statistica garantisce —, mai quello lusinghiero."
     },
     "anthropicCache": {
       "eyebrow": "Misurato · cache di prefisso di Anthropic",
-      "title": "Anthropic non fa cache da sola. La tua integrazione non gliela chiede; la nostra sì.",
-      "body": "OpenAI applica la sua cache di prefisso automaticamente: quello sconto ce l'hai con noi o senza di noi. <b>Anthropic no.</b> Richiede di marcare il punto di taglio a ogni richiesta, e chi non lo marca paga l'input intero, sempre.",
+      "title": "Anthropic fa lo sconto sul testo ripetuto — ma bisogna chiederlo. Noi lo chiediamo per te.",
+      "body": "Quando una conversazione ripete ciò che è già stato inviato (istruzioni, documenti, cronologia), Anthropic può fatturarlo molto meno — ma solo se ogni richiesta arriva preparata per quello sconto. <b>La maggior parte delle integrazioni non lo chiede e paga il prezzo pieno. Savings lo chiede a ogni richiesta.</b>",
       "evidenceTitle": "Cosa è stato misurato",
       "evidenceLede": "Un turno di agente con contesto di sistema lungo e ripetuto — un assistente di supporto, un estrattore documentale. Otto coppie, stesso modello in entrambi i bracci, tariffati con il contatore di Anthropic stessa.",
       "rowNaiveLabel": "Senza il layer",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Contabilità onesta",
-      "title": "Quattro registri separati. Mai sommati in un'unica cifra di facciata.",
-      "body": "Un hit della cache elimina un'intera chiamata. BV‑SALA ricodifica i dati strutturati in modo più compatto. La compressione elimina le parole ridondanti. Una cache di prefisso del provider rende i token più economici senza eliminarli. Mescolarli ti inganna — quindi non lo facciamo.",
+      "title": "Ogni tipo di risparmio, contato a parte — perché nessuna cifra si gonfi.",
+      "body": "Savings risparmia in vari modi: evita chiamate intere, toglie testo superfluo, impacchetta meglio ciò che viene inviato e attiva gli sconti del fornitore. Ogni modo tiene il proprio registro con la propria cifra misurata — e non le sommiamo mai in un numerone di marketing.",
       "runToMeasure": "esegui l'ottimizzatore per misurare",
       "measuredFloor": "misurato · soglia del 95%",
       "notProven": "misurato · non supera lo zero",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Un unico piano, con prezzo per postazione",
-      "title": "Pochi centesimi per eseguirlo. Molto di più da risparmiare.",
-      "body": "Nessun piano gratuito e nessuna prova: quello che puoi verificare prima di pagare è il risparmio MISURATO qui sopra, con accanto il suo intervallo. Ti abboni e lo esegui nella tua app. Prezzo per postazione, in {currency}.",
+      "title": "Un piccolo canone per postazione. E commissione solo su ciò che risparmi.",
+      "body": "Nessun piano gratuito e nessuna prova: ciò che puoi verificare prima di pagare sono le misurazioni pubbliche di questa pagina. Il canone è per postazione, in {currency}, e la commissione esce dal risparmio misurato — mai dalla tua tasca.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",

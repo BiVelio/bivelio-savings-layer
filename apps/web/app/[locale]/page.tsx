@@ -9,6 +9,7 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
+import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
@@ -138,6 +139,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // Los números de la fórmula pública, formateados AQUÍ: los mensajes no
   // llevan ni un dígito de tarifa (tarifa-en-parametros.test.ts).
   const pctLocal = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 0 }) + "%";
+  // La traducción llana enseña el decimal: es la misma cota que publica el
+  // héroe (23,1%), y redondearla aquí haría que las dos cifras no cuadrasen.
+  const pctLocal1 = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 1 }) + "%";
   const moneyLocal = (n: number) =>
     n.toLocaleString(locale, { style: "currency", currency: moneda, maximumFractionDigits: 0 });
   const tramosLocal = TRAMOS.map((tr) =>
@@ -245,6 +249,37 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
+        {/* EN PALABRAS NORMALES — la explicación para todo el mundo (petición
+            del dueño, 2026-09-04): cuatro ideas en lenguaje llano, cada una con
+            su animación de 8 s. Los vídeos son mudos y sin texto en pantalla a
+            propósito: la página se sirve en 12 idiomas y lo que se lee vive en
+            los mensajes. Las CIFRAS siguen viviendo solo en las secciones
+            medidas de más abajo — aquí no se promete ningún número. */}
+        <section id="explica">
+          <div className="sec-head">
+            <span className="eyebrow">{t("explica.eyebrow")}</span>
+            <h2>{t("explica.title")}</h2>
+            <p>{t("explica.sub")}</p>
+          </div>
+          <div className="explica-grid">
+            {(t.raw("explica.pasos") as { title: string; body: string }[]).map((p, i) => (
+              <div className="explica-card" key={p.title}>
+                <VideoExplicativo
+                  src={`/videos/explica-${i + 1}.mp4`}
+                  poster={`/videos/explica-${i + 1}.jpg`}
+                  etiqueta={p.title}
+                />
+                <div className="explica-texto">
+                  <span className="idx">{String(i + 1).padStart(2, "0")}</span>
+                  <h4>{p.title}</h4>
+                  <p>{p.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="explica-nota">{t("explica.nota")}</p>
+        </section>
+
         <section id="measured">
           <div className="sec-head">
             <span className="eyebrow">{t("step2.eyebrow")}</span>
@@ -256,6 +291,32 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 code: (c) => <code>{c}</code>,
               })}
             </p>
+          </div>
+          {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
+              del experimento justo + las dos cifras del artefacto dichas en
+              lenguaje llano. Los números llegan como PARÁMETROS desde el
+              artefacto publicado — aquí no se escribe ni un dígito a mano. */}
+          <div className="medido-llano">
+            <div className="explica-card">
+              <VideoExplicativo
+                src="/videos/explica-5.mp4"
+                poster="/videos/explica-5.jpg"
+                etiqueta={t("step2.plainTitle")}
+              />
+              <div className="explica-texto">
+                <p>{t("step2.videoCaption")}</p>
+              </div>
+            </div>
+            <div className="medido-llano-texto">
+              <h3>{t("step2.plainTitle")}</h3>
+              <p className="grande">
+                {t("step2.plain", {
+                  piso: pctLocal1(ab.aggregate.savings.lower),
+                  punto: pctLocal1(ab.aggregate.savings.point),
+                })}
+              </p>
+              <p className="nota">{t("step2.plainNote")}</p>
+            </div>
           </div>
           <div className="bench">
             <ReferenceModeBadge ab={ab} />

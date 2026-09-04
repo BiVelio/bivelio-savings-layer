@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
     "metaDescription": "Lisanslı LLM maliyet katmanı. Sağlayıcınızın önüne kurulur ve faturanızı kısar; tasarruf, sağlayıcının kendi sayacına karşı %95 güven aralığıyla ölçülür.",
     "hero": {
-      "eyebrow": "Herkesin kurabileceği LLM maliyet katmanı — çalıştırmak için lisanslı",
-      "title": "Tasarrufu kanıtlayın",
-      "titleAccent": "kendi verilerinizle.",
-      "lede": "BV-SALA, sağlayıcınızın önünde yer alır ve her istekte kalite eşiğinizi hâlâ karşılayan en ucuz yürütmeyi seçer. Bu sayfadaki her rakam, sağlayıcının kendi sayacına karşı ölçülmüştür ve güven aralığıyla birlikte verilir — hiçbiri tahmin değil.",
+      "eyebrow": "Yapay zekâ tasarrufu, gerçekten ölçülür",
+      "title": "Yapay zekâya daha az ödeyin.",
+      "titleAccent": "Ve bunu faturanızda doğrulayın.",
+      "lede": "ChatGPT, Claude, Gemini… şirketinizin yapay zekâya sorduğu her soru, giren ve çıkan metne göre ücretlendirilir. Savings, şirketinizle sağlayıcının arasına girer, ödemeniz gerekmeyeni kırpar ve tasarrufu faturayla karşılaştırabileceğiniz bir makbuzda gösterir.",
       "ctaRun": "Ölçülen sonuçları gör",
       "ctaPricing": "Fiyatları gör",
-      "note": "Kurulum beş satır. Lisans, panelinizden etkinleştirilir.",
+      "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Her adım FARKLI bir deftere düşer, bu yüzden bu rakamlar birbirine eklenmez. Defteri sıfırı geçmeyen bir adım burada görünmez: çıktı kısıtlaması ölçüldü ve tasarruf ettirmiyor, bu yüzden duyurulmuyor."
     },
+    "explica": {
+      "eyebrow": "Sade bir dille",
+      "title": "Savings tam olarak ne yapar?",
+      "sub": "Dört fikir, dört adet sekiz saniyelik animasyon. Ürünün tamamı bu.",
+      "pasos": [
+        {
+          "title": "Yapay zekâ kelime başına ücret alır",
+          "body": "Yapay zekâya yapılan her istek, giren ve çıkan metne göre ödenir. Savings bu yolun ortasında durur ve yalnızca gerekli olanı geçirir: ödemeniz gerekmeyen, sizin kavanozunuza düşer."
+        },
+        {
+          "title": "Aynı şey için iki kez ödemezsiniz",
+          "body": "Yapay zekâ her turda ona zaten gönderdiğiniz her şeyi yeniden okur — ve sağlayıcı bunu yeniden ücretlendirir. Savings zaten gönderileni hatırlar ve her isteği, tekrarlar indirimli fiyattan gidecek şekilde hazırlar."
+        },
+        {
+          "title": "Doğrulayabileceğiniz bir makbuz",
+          "body": "İnanç istemiyoruz. Her tasarruf, sağlayıcının resmî sayacıyla ölçülür — size fatura kestiği sayaçla — ve makbuzunuza işlenir. Faturayla karşılaştırılamayan hiçbir şey duyurulmaz."
+        },
+        {
+          "title": "Yalnızca siz tasarruf ederseniz kazanırız",
+          "body": "Komisyonumuz ölçülen tasarruftan çıkar, asla cebinizden değil: tasarrufunuzun büyük kısmı her zaman sizde kalır. Tasarrufsuz bir ay mı? Komisyon sıfır."
+        }
+      ],
+      "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
+    },
     "step2": {
-      "eyebrow": "Adım 2 · Tasarruflar nasıl ölçülür — yinelenebilir",
-      "title": "Her iki kol da sağlayıcının kendi tokenizer'ıyla ölçülür — modellenmiş temel yok.",
-      "body": "Bu, A/B kıyaslamasının (<code>pnpm ab</code>) çıktısıdır: her senaryo için <b>saf</b> bir istek <i>ve</i> BV‑SALA isteğini <b>aynı</b> modele gönderir, ikisini de sağlayıcının kendi token kullanımına göre fiyatlandırır ve <b>%95 güven alt sınırını</b> raporlar — asla göz boyayan nokta tahminini değil. Hiçbir şey modellenmez."
+      "eyebrow": "Vaat yok: ölçümler",
+      "title": "Tasarruf ettirdiğini nereden biliyoruz? Ölçüyoruz — ve ölçümü siz de tekrarlayabilirsiniz.",
+      "body": "Her senaryo gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki sonuç da sağlayıcının kendi sayacıyla sayılır — faturanızı fiyatlandıran sayaçla. İşte hata payıyla birlikte çıkan sonuç:",
+      "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
+      "plainTitle": "Jargonsuz çevirisi",
+      "plain": "Bu testte fatura neredeyse kesin olarak en az {piso} düştü. Büyük olasılıkla {punto} düştü.",
+      "plainNote": "Bir aralık olduğunda her zaman küçük sayıyı duyururuz — istatistiğin garanti ettiğini — asla gösterişli olanı değil."
     },
     "anthropicCache": {
       "eyebrow": "Ölçüldü · Anthropic önek önbelleği",
-      "title": "Anthropic kendiliğinden önbelleğe almaz. Senin entegrasyonun bunu istemiyor; bizimki istiyor.",
-      "body": "OpenAI önek önbelleğini otomatik uygular: o indirimi bizimle de bizsiz de alırsın. <b>Anthropic almaz.</b> Her istekte kesme noktasının işaretlenmesini şart koşar ve işaretlemeyen, girdinin tamamını her seferinde öder.",
+      "title": "Anthropic tekrarlanan metne indirim yapar — ama istemek gerekir. Sizin için biz istiyoruz.",
+      "body": "Bir konuşma zaten gönderilmiş olanı (talimatlar, belgeler, geçmiş) tekrarladığında Anthropic bunu çok daha ucuza ücretlendirebilir — ama yalnızca her istek bu indirime hazırlanmış gelirse. <b>Çoğu entegrasyon bunu hiç istemez ve tam fiyat öder. Savings her istekte ister.</b>",
       "evidenceTitle": "Ne ölçüldü",
       "evidenceLede": "Uzun ve tekrar eden sistem bağlamına sahip bir ajan turu — bir destek asistanı, bir belge çıkarıcı. Sekiz çift, iki kolda da aynı model, Anthropic'in kendi sayacıyla ücretlendirildi.",
       "rowNaiveLabel": "Katman olmadan",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Dürüst muhasebe",
-      "title": "Dört ayrı defter. Asla tek bir gösteriş rakamına toplanmaz.",
-      "body": "Bir önbellek isabeti, koca bir çağrıyı ortadan kaldırır. BV‑SALA, yapılandırılmış verileri daha kompakt biçimde yeniden kodlar. Sıkıştırma, gereksiz sözcükleri atar. Bir sağlayıcı önek önbelleği, token'ları kaldırmadan daha ucuz hale getirir. Bunları karıştırmak size yalan söyler — bu yüzden yapmayız.",
+      "title": "Her tasarruf türü ayrı sayılır — hiçbir rakam şişirilmesin diye.",
+      "body": "Savings birkaç şekilde tasarruf eder: çağrıları bütünüyle önler, gereksiz metni çıkarır, gönderileni daha sıkı paketler ve sağlayıcının indirimlerini açar. Her yol, kendi ölçülmüş rakamıyla kendi defterini tutar — ve bunları asla tek bir pazarlama rakamında toplamayız.",
       "runToMeasure": "ölçmek için optimize ediciyi çalıştırın",
       "measuredFloor": "ölçüldü · %95 tabanı",
       "notProven": "ölçüldü · sıfırı geçmiyor",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
-      "title": "Çalıştırmak kuruşluk. Tasarruf ise katlarca.",
-      "body": "Ücretsiz katman yok, deneme de yok: ödemeden önce inceleyebileceğiniz şey, yukarıdaki ÖLÇÜLEN tasarruf ve yanındaki güven aralığıdır. Abone olup BV-SALA'yı kendi uygulamanızda çalıştırırsınız. Koltuk başına, {currency} cinsinden fiyatlandırılır.",
+      "title": "Koltuk başına küçük bir ücret. Ve yalnızca tasarruf ettiğiniz üzerinden komisyon.",
+      "body": "Ücretsiz plan ve deneme yok: ödemeden önce doğrulayabileceğiniz şey, bu sayfadaki herkese açık ölçümlerdir. Ücret koltuk başınadır, {currency} cinsindendir ve komisyon ölçülen tasarruftan çıkar — asla cebinizden değil.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",

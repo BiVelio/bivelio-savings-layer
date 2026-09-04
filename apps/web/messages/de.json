@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
     "metaDescription": "Lizenzierte Kostenschicht für LLMs. Sie sitzt vor deinem Provider und senkt die Rechnung; die Ersparnis ist an dessen Zähler gemessen, mit 95-%-Intervall.",
     "hero": {
-      "eyebrow": "Die LLM-Kostenschicht, die jeder installieren kann — lizenziert zum Ausführen",
-      "title": "Beweise die Einsparungen mit",
-      "titleAccent": "deinen eigenen Daten.",
-      "lede": "BV-SALA sitzt vor jedem LLM-Provider und wählt für jede Anfrage die günstigste Ausführung, die trotzdem deine Qualitätsschwelle erfüllt. Jede Einsparungszahl, die wir veröffentlichen, ist am Token-Zähler des Providers selbst gemessen und kommt mit ihrem Konfidenzintervall — niemals eine Schätzung.",
+      "eyebrow": "KI-Ersparnis, wirklich gemessen",
+      "title": "Zahl weniger für KI.",
+      "titleAccent": "Und prüf es auf deiner Rechnung.",
+      "lede": "ChatGPT, Claude, Gemini… jede Frage, die dein Unternehmen einer KI stellt, wird nach dem Text abgerechnet, der hinein- und hinausgeht. Savings sitzt zwischen deinem Unternehmen und dem Anbieter, kürzt, was du nicht bezahlen musstest, und zeigt dir die Ersparnis auf einem Beleg, den du mit der Rechnung abgleichen kannst.",
       "ctaRun": "Zu den Messungen",
       "ctaPricing": "Preise ansehen",
-      "note": "Installation in fünf Zeilen. Die Lizenz aktivierst du in deinem Dashboard.",
+      "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Jeder Schritt fällt in EIN anderes Ledger, deshalb addieren sich diese Zahlen nicht. Ein Schritt, dessen Ledger die Null nicht übersteigt, erscheint hier nicht: die Ausgabebeschränkung wurde gemessen und spart nicht, also wird sie nicht beworben."
     },
+    "explica": {
+      "eyebrow": "In normalen Worten",
+      "title": "Was macht Savings eigentlich?",
+      "sub": "Vier Ideen, vier Animationen von acht Sekunden. Das ist das ganze Produkt.",
+      "pasos": [
+        {
+          "title": "KI wird pro Wort abgerechnet",
+          "body": "Jede Anfrage an eine KI wird nach dem Text bezahlt, der hinein- und hinausgeht. Savings stellt sich mitten auf diesen Weg und lässt nur durch, was nötig ist: Was du nicht bezahlen musstest, fällt in dein Glas."
+        },
+        {
+          "title": "Du zahlst nicht zweimal für dasselbe",
+          "body": "Eine KI liest bei jedem Zug alles neu, was du ihr schon geschickt hast — und der Anbieter berechnet es erneut. Savings merkt sich, was schon gesendet wurde, und bereitet jede Anfrage so vor, dass Wiederholungen zum rabattierten Preis rausgehen."
+        },
+        {
+          "title": "Ein Beleg, den du prüfen kannst",
+          "body": "Wir bitten nicht um Vertrauen. Jede Ersparnis wird mit dem offiziellen Zähler des Anbieters gemessen — demselben, mit dem er dir Rechnungen stellt — und landet auf deinem Beleg. Was sich nicht mit der Rechnung abgleichen lässt, wird nie verkündet."
+        },
+        {
+          "title": "Wir verdienen nur, wenn du sparst",
+          "body": "Unsere Provision kommt aus der gemessenen Ersparnis, nie aus deiner Tasche: Der Großteil des Gesparten bleibt immer bei dir. Ein Monat ohne Ersparnis? Null Provision."
+        }
+      ],
+      "nota": "Die Animationen veranschaulichen die Idee. Die echten Zahlen — gemessen gegen echte Anbieter — stehen direkt darunter."
+    },
     "step2": {
-      "eyebrow": "Schritt 2 · Wie die Einsparungen gemessen werden — reproduzierbar",
-      "title": "Beide Arme durch den Tokenizer des Anbieters selbst gemessen — keine modellierte Baseline.",
-      "body": "Dies ist die Ausgabe des A/B-Benchmarks (<code>pnpm ab</code>): für jedes Szenario sendet er eine <b>naive</b> Anfrage <i>und</i> die BV‑SALA-Anfrage an das <b>gleiche</b> Modell, berechnet beide anhand der tatsächlichen Token-Nutzung des Providers und meldet die <b>untere 95%-Konfidenzgrenze</b> — niemals die schmeichelhafte Punktschätzung. Nichts wird modelliert."
+      "eyebrow": "Keine Versprechen: Messungen",
+      "title": "Woher wissen wir, dass es spart? Wir messen es — und du kannst die Messung wiederholen.",
+      "body": "Jedes Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Ergebnisse werden mit dem Zähler des Anbieters selbst gezählt — demselben, der deine Rechnung bepreist. Das kam heraus, samt Fehlermarge:",
+      "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
+      "plainTitle": "Übersetzung, ohne Fachjargon",
+      "plain": "In diesem Test sank die Rechnung mit an Sicherheit grenzender Wahrscheinlichkeit um mindestens {piso}. Am wahrscheinlichsten sank sie um {punto}.",
+      "plainNote": "Gibt es eine Spanne, verkünden wir immer die kleine Zahl — die, die die Statistik garantiert —, nie die schöne."
     },
     "anthropicCache": {
       "eyebrow": "Gemessen · Prefix-Cache von Anthropic",
-      "title": "Anthropic cacht nicht von selbst. Deine Integration bittet nicht darum; unsere schon.",
-      "body": "OpenAI wendet seinen Prefix-Cache automatisch an: diesen Rabatt bekommst du mit uns oder ohne uns. <b>Anthropic nicht.</b> Dort muss der Schnittpunkt bei jeder Anfrage markiert werden, und wer ihn nicht markiert, zahlt immer die volle Eingabe.",
+      "title": "Anthropic gibt Rabatt auf wiederholten Text — aber man muss danach fragen. Wir fragen für dich.",
+      "body": "Wenn ein Gespräch wiederholt, was schon gesendet wurde (Anweisungen, Dokumente, Verlauf), kann Anthropic das deutlich günstiger abrechnen — aber nur, wenn jede Anfrage für diesen Rabatt vorbereitet ankommt. <b>Die meisten Integrationen fragen nie und zahlen den vollen Preis. Savings fragt bei jeder Anfrage.</b>",
       "evidenceTitle": "Was gemessen wurde",
       "evidenceLede": "Agenten-Turn mit langem, wiederholtem System-Kontext — ein Support-Assistent, ein Dokumenten-Extraktor. Acht Paare, dasselbe Modell in beiden Armen, abgerechnet mit Anthropics eigenem Zähler.",
       "rowNaiveLabel": "Ohne die Schicht",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Ehrliche Abrechnung",
-      "title": "Vier separate Ledger. Niemals zu einer einzigen Schönfärbe-Zahl summiert.",
-      "body": "Ein Cache-Hit entfernt einen ganzen Aufruf. BV‑SALA kodiert strukturierte Daten kompakter neu. Die Komprimierung verwirft redundante Wörter. Ein Prefix-Cache des Providers macht Tokens günstiger, ohne sie zu entfernen. Sie zu vermischen belügt dich — also tun wir es nicht.",
+      "title": "Jede Art von Ersparnis, getrennt gezählt — damit keine Zahl aufgebläht wird.",
+      "body": "Savings spart auf mehrere Arten: Es vermeidet ganze Aufrufe, entfernt überflüssigen Text, verpackt das Gesendete kompakter und schaltet die Rabatte des Anbieters ein. Jede Art führt ihr eigenes Konto mit ihrer eigenen gemessenen Zahl — und wir addieren sie nie zu einer Marketingzahl.",
       "runToMeasure": "führe den Optimierer aus, um zu messen",
       "measuredFloor": "gemessen · 95-%-Untergrenze",
       "notProven": "gemessen · übersteigt die Null nicht",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Ein Plan, Preis pro Seat",
-      "title": "Cent zum Ausführen. Ein Vielfaches beim Sparen.",
-      "body": "Kein Gratis-Tarif, keine Testphase: Was du prüfen kannst, bevor du zahlst, ist die gemessene Ersparnis weiter oben — mit dem Konfidenzintervall direkt daneben. Du abonnierst und führst BV-SALA in deiner eigenen App aus. Preis pro Seat, in {currency}.",
+      "title": "Eine kleine Gebühr pro Sitz. Und Provision nur auf das, was du sparst.",
+      "body": "Kein Gratisplan, kein Test: Was du vor dem Zahlen prüfen kannst, sind die öffentlichen Messungen auf dieser Seite. Die Gebühr gilt pro Sitz, in {currency}, und die Provision kommt aus der gemessenen Ersparnis — nie aus deiner Tasche.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
       "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",

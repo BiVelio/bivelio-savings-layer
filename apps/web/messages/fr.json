@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
     "metaDescription": "Couche de coût LLM sous licence. Elle se place devant votre fournisseur et réduit la facture ; l'économie est mesurée contre son compteur, intervalle à 95 %.",
     "hero": {
-      "eyebrow": "La couche de coût LLM que tout le monde peut installer — sous licence pour s'exécuter",
-      "title": "Prouvez les économies sur",
-      "titleAccent": "vos propres données.",
-      "lede": "BV-SALA se place devant votre fournisseur et, à chaque requête, choisit l'exécution la moins chère qui respecte encore votre exigence de qualité. Chaque chiffre de cette page est mesuré contre le compteur du fournisseur lui-même, avec son intervalle de confiance à côté — jamais une estimation.",
+      "eyebrow": "Économies d'IA, vraiment mesurées",
+      "title": "Payez moins pour l'IA.",
+      "titleAccent": "Et vérifiez-le sur votre facture.",
+      "lede": "ChatGPT, Claude, Gemini… chaque question que votre entreprise pose à une IA est facturée au texte qui entre et qui sort. Savings se place entre votre entreprise et le fournisseur, retire ce qu'il n'était pas nécessaire de payer et vous montre l'économie sur un reçu que vous pouvez confronter à la facture.",
       "ctaRun": "Voir les résultats mesurés",
       "ctaPricing": "Voir les tarifs",
-      "note": "Installation en cinq lignes. La licence s'active depuis votre tableau de bord.",
+      "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",
       "proofTitle": "Mesuré contre un fournisseur réel",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Chaque étape tombe dans UN registre différent, donc ces chiffres ne s'additionnent pas entre eux. Une étape dont le registre ne dépasse pas zéro n'apparaît pas ici : la restriction de sortie a été mesurée et ne fait pas économiser, donc elle n'est pas annoncée."
     },
+    "explica": {
+      "eyebrow": "En mots simples",
+      "title": "Que fait Savings, exactement ?",
+      "sub": "Quatre idées, quatre animations de huit secondes. C'est tout le produit.",
+      "pasos": [
+        {
+          "title": "L'IA se facture au mot",
+          "body": "Chaque requête à une IA se paie au texte qui entre et qui sort. Savings se met au milieu du chemin et ne laisse passer que le nécessaire : ce qu'il ne fallait pas payer tombe dans votre bocal."
+        },
+        {
+          "title": "Vous ne payez pas deux fois la même chose",
+          "body": "Une IA relit à chaque tour tout ce que vous lui aviez déjà envoyé — et le fournisseur le facture à nouveau. Savings se souvient de ce qui a déjà été envoyé et prépare chaque requête pour que les répétitions partent au tarif réduit."
+        },
+        {
+          "title": "Un reçu que vous pouvez vérifier",
+          "body": "Nous ne demandons pas la foi. Chaque économie est mesurée avec le compteur officiel du fournisseur — le même qui vous facture — et figure sur votre reçu. Ce qui ne peut pas être confronté à la facture n'est jamais annoncé."
+        },
+        {
+          "title": "Nous ne gagnons que si vous économisez",
+          "body": "Notre commission sort de l'économie mesurée, jamais de votre poche : l'essentiel de ce que vous économisez reste toujours chez vous. Un mois sans économie ? Commission zéro."
+        }
+      ],
+      "nota": "Les animations illustrent l'idée. Les vrais chiffres — mesurés contre de vrais fournisseurs — sont juste en dessous."
+    },
     "step2": {
-      "eyebrow": "Étape 2 · Comment les économies sont mesurées — reproductible",
-      "title": "Les deux bras mesurés par le tokenizer du fournisseur lui-même — sans référence modélisée.",
-      "body": "Voici le résultat du benchmark A/B (<code>pnpm ab</code>) : pour chaque scénario, il envoie une requête <b>naïve</b> <i>et</i> la requête BV‑SALA au <b>même</b> modèle, tarife les deux à partir de l'utilisation de tokens du fournisseur, et rapporte la <b>borne inférieure de confiance à 95%</b> — jamais l'estimation ponctuelle flatteuse. Rien n'est modélisé."
+      "eyebrow": "Pas de promesses : des mesures",
+      "title": "Comment savons-nous que ça économise ? Nous le mesurons — et vous pouvez répéter la mesure.",
+      "body": "Chaque scénario s'exécute deux fois contre le vrai fournisseur : tel quel, puis avec Savings devant. Les deux résultats sont comptés avec le compteur du fournisseur lui-même — celui qui fixe le prix de votre facture. Voici ce qui en est sorti, marge d'erreur comprise :",
+      "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
+      "plainTitle": "Traduction, sans jargon",
+      "plain": "Dans ce test, la facture a baissé avec une quasi-certitude d'au moins {piso}. Le plus probable est qu'elle ait baissé de {punto}.",
+      "plainNote": "Quand il y a une fourchette, nous annonçons toujours le petit chiffre — celui que la statistique garantit —, jamais le plus flatteur."
     },
     "anthropicCache": {
       "eyebrow": "Mesuré · cache de préfixe d'Anthropic",
-      "title": "Anthropic ne met pas en cache tout seul. Votre intégration ne le demande pas ; la nôtre si.",
-      "body": "OpenAI applique son cache de préfixe automatiquement : cette remise, vous l'avez avec nous ou sans nous. <b>Anthropic non.</b> Il exige de marquer le point de coupure à chaque requête, et qui ne le marque pas paie l'entrée entière, à chaque fois.",
+      "title": "Anthropic accorde une remise sur le texte répété — mais il faut la demander. Nous la demandons pour vous.",
+      "body": "Quand une conversation répète ce qui a déjà été envoyé (instructions, documents, historique), Anthropic peut le facturer bien moins cher — mais seulement si chaque requête arrive préparée pour cette remise. <b>La plupart des intégrations ne la demandent jamais et paient plein tarif. Savings la demande à chaque requête.</b>",
       "evidenceTitle": "Ce qui a été mesuré",
       "evidenceLede": "Un tour d'agent avec un contexte système long et répété — un assistant support, un extracteur documentaire. Huit paires, même modèle dans les deux bras, facturés avec le compteur d'Anthropic lui-même.",
       "rowNaiveLabel": "Sans la couche",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Comptabilité honnête",
-      "title": "Quatre registres distincts. Jamais additionnés en un seul chiffre de vanité.",
-      "body": "Un succès de cache supprime un appel entier. BV‑SALA réencode les données structurées de façon plus compacte. La compression élimine les mots redondants. Un cache de préfixe du fournisseur rend les tokens moins chers sans les supprimer. Les mélanger vous ment — nous ne le faisons donc pas.",
+      "title": "Chaque type d'économie, compté à part — pour qu'aucun chiffre ne soit gonflé.",
+      "body": "Savings économise de plusieurs façons : il évite des appels entiers, retire le texte superflu, emballe mieux ce qui est envoyé et active les remises du fournisseur. Chaque façon tient son propre registre avec son propre chiffre mesuré — et nous ne les additionnons jamais en un gros chiffre marketing.",
       "runToMeasure": "exécutez l'optimiseur pour mesurer",
       "measuredFloor": "mesuré · plancher à 95 %",
       "notProven": "mesuré · ne dépasse pas zéro",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Un seul forfait, facturé par siège",
-      "title": "Des centimes pour l'exécuter. Des multiples d'économies.",
-      "body": "Pas de version gratuite, pas d'essai : ce que vous pouvez vérifier avant de payer, ce sont les économies MESURÉES ci-dessus, avec leur intervalle à côté. Vous vous abonnez, puis vous exécutez BV-SALA dans votre application. Facturé par siège, en {currency}.",
+      "title": "Un petit forfait par siège. Et une commission uniquement sur ce que vous économisez.",
+      "body": "Pas d'offre gratuite ni d'essai : ce que vous pouvez vérifier avant de payer, ce sont les mesures publiques de cette page. Le forfait est par siège, en {currency}, et la commission sort de l'économie mesurée — jamais de votre poche.",
       "amount": "{amount}",
       "per": "/ siège / mois",
       "proNote": "<b>PRO</b> — facturé par siège. Ou <b>{yearly} / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",
