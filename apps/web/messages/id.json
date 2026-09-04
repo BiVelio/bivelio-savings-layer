@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
     "metaDescription": "Lapisan biaya LLM berlisensi. Dipasang di depan penyedia Anda dan memangkas tagihan; penghematan diukur terhadap penghitung penyedia, interval keyakinan 95%.",
     "hero": {
-      "eyebrow": "Lapisan biaya LLM yang bisa dipasang siapa saja — berlisensi untuk berjalan",
-      "title": "Buktikan penghematan pada",
-      "titleAccent": "data Anda sendiri.",
-      "lede": "BV-SALA berada di depan penyedia LLM mana pun dan, untuk setiap permintaan, memilih eksekusi termurah yang tetap memenuhi standar kualitas Anda. Setiap angka penghematan yang kami publikasikan diukur terhadap penghitung token milik penyedia sendiri dan disertai interval keyakinannya — sama sekali bukan estimasi.",
+      "eyebrow": "Penghematan AI, benar-benar terukur",
+      "title": "Bayar lebih sedikit untuk AI.",
+      "titleAccent": "Dan buktikan di tagihan Anda.",
+      "lede": "ChatGPT, Claude, Gemini… setiap pertanyaan yang perusahaan Anda ajukan ke AI ditagih berdasarkan teks yang masuk dan keluar. Savings berdiri di antara perusahaan Anda dan penyedia, memangkas yang tidak perlu dibayar, dan menunjukkan penghematan pada struk yang bisa Anda cocokkan dengan tagihan.",
       "ctaRun": "Lihat hasil terukur",
       "ctaPricing": "Lihat harga",
-      "note": "Pemasangan dalam lima baris. Lisensi diaktifkan dari dasbor Anda.",
+      "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
       "proofTitle": "Diukur terhadap penyedia nyata",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Setiap langkah jatuh ke SATU buku yang berbeda, jadi angka-angka ini tidak saling dijumlahkan. Langkah yang bukunya tidak melewati nol tidak muncul di sini: pembatasan keluaran sudah diukur dan tidak menghemat, jadi tidak diiklankan."
     },
+    "explica": {
+      "eyebrow": "Dengan bahasa sehari-hari",
+      "title": "Sebenarnya apa yang dilakukan Savings?",
+      "sub": "Empat ide, empat animasi delapan detik. Itulah seluruh produknya.",
+      "pasos": [
+        {
+          "title": "AI menagih per kata",
+          "body": "Setiap permintaan ke AI dibayar berdasarkan teks yang masuk dan keluar. Savings berdiri di tengah jalur itu dan hanya meloloskan yang diperlukan: yang tak perlu dibayar jatuh ke toples Anda."
+        },
+        {
+          "title": "Anda tidak membayar dua kali untuk hal yang sama",
+          "body": "AI membaca ulang semua yang sudah Anda kirim di setiap giliran — dan penyedia menagihnya lagi. Savings mengingat yang sudah terkirim dan menyiapkan setiap permintaan agar pengulangan berangkat dengan harga diskon."
+        },
+        {
+          "title": "Struk yang bisa Anda periksa",
+          "body": "Kami tidak meminta kepercayaan buta. Setiap penghematan diukur dengan meteran resmi penyedia — meteran yang sama untuk menagih Anda — dan muncul di struk Anda. Yang tidak bisa dicocokkan dengan tagihan tidak pernah diumumkan."
+        },
+        {
+          "title": "Kami hanya untung jika Anda hemat",
+          "body": "Komisi kami diambil dari penghematan terukur, tidak pernah dari kantong Anda: sebagian besar dari yang Anda hemat selalu tetap milik Anda. Sebulan tanpa penghematan? Komisi nol."
+        }
+      ],
+      "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
+    },
     "step2": {
-      "eyebrow": "Langkah 2 · Bagaimana penghematan diukur — dapat direproduksi",
-      "title": "Kedua sisi diukur oleh tokenizer penyedia itu sendiri — tanpa baseline yang dimodelkan.",
-      "body": "Ini adalah keluaran dari benchmark A/B (<code>pnpm ab</code>): untuk setiap skenario, ia mengirim permintaan <b>naif</b> <i>dan</i> permintaan BV‑SALA ke model yang <b>sama</b>, menetapkan harga keduanya dari penggunaan token milik penyedia sendiri, dan melaporkan <b>batas bawah tingkat keyakinan 95%</b> — bukan estimasi titik yang menyanjung. Tidak ada yang dimodelkan."
+      "eyebrow": "Tanpa janji: pengukuran",
+      "title": "Dari mana kami tahu ini menghemat? Kami mengukurnya — dan Anda bisa mengulangi pengukurannya.",
+      "body": "Setiap skenario dijalankan dua kali terhadap penyedia sungguhan: apa adanya, dan dengan Savings di depan. Kedua hasil dihitung dengan meteran milik penyedia sendiri — meteran yang menentukan harga tagihan Anda. Inilah hasilnya, lengkap dengan margin galat:",
+      "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
+      "plainTitle": "Terjemahan, tanpa jargon",
+      "plain": "Dalam pengujian ini, tagihan hampir pasti turun setidaknya {piso}. Kemungkinan besar turun {punto}.",
+      "plainNote": "Saat ada rentang, kami selalu mengumumkan angka yang kecil — yang dijamin statistik — tidak pernah yang menyanjung."
     },
     "anthropicCache": {
       "eyebrow": "Terukur · cache prefiks Anthropic",
-      "title": "Anthropic tidak melakukan cache sendiri. Integrasimu tidak memintanya; milik kami meminta.",
-      "body": "OpenAI menerapkan cache prefiksnya secara otomatis: diskon itu kamu dapat dengan atau tanpa kami. <b>Anthropic tidak.</b> Ia menuntut penandaan titik potong pada setiap permintaan, dan yang tidak menandainya membayar seluruh input, selalu.",
+      "title": "Anthropic memberi diskon untuk teks berulang — tapi harus diminta. Kami memintanya untuk Anda.",
+      "body": "Saat percakapan mengulang yang sudah terkirim (instruksi, dokumen, riwayat), Anthropic bisa menagihnya jauh lebih murah — tapi hanya jika setiap permintaan tiba sudah disiapkan untuk diskon itu. <b>Kebanyakan integrasi tidak pernah meminta dan membayar harga penuh. Savings memintanya di setiap permintaan.</b>",
       "evidenceTitle": "Apa yang diukur",
       "evidenceLede": "Giliran agen dengan konteks sistem yang panjang dan berulang — asisten dukungan, pengekstrak dokumen. Delapan pasang, model yang sama di kedua lengan, ditarifkan dengan penghitung milik Anthropic sendiri.",
       "rowNaiveLabel": "Tanpa lapisan",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Penghitungan yang jujur",
-      "title": "Empat ledger terpisah. Tidak pernah dijumlahkan menjadi satu angka gengsi.",
-      "body": "Cache hit menghapus satu panggilan penuh. BV‑SALA mengodekan ulang data terstruktur secara lebih ringkas. Kompresi membuang kata-kata yang berlebihan. Cache prefix penyedia membuat token lebih murah tanpa menghapusnya. Mencampurnya berarti membohongi Anda — jadi kami tidak melakukannya.",
+      "title": "Setiap jenis penghematan dihitung terpisah — agar tak ada angka yang digelembungkan.",
+      "body": "Savings menghemat dengan beberapa cara: menghindari panggilan utuh, membuang teks berlebih, mengemas kiriman lebih rapat, dan menyalakan diskon penyedia. Setiap cara punya buku catatannya sendiri dengan angka terukurnya sendiri — dan kami tidak pernah menjumlahkannya menjadi satu angka pemasaran.",
       "runToMeasure": "jalankan pengoptimal untuk mengukur",
       "measuredFloor": "terukur · batas bawah 95%",
       "notProven": "terukur · tidak melewati nol",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Satu paket, dihargai per kursi",
-      "title": "Recehan untuk menjalankan. Berlipat untuk menghemat.",
-      "body": "Tanpa paket gratis, tanpa uji coba: yang bisa Anda periksa sebelum membayar adalah penghematan TERUKUR di atas, lengkap dengan intervalnya. Anda berlangganan, lalu menjalankannya di aplikasi Anda. Dihargai per kursi, dalam {currency}.",
+      "title": "Biaya kecil per kursi. Dan komisi hanya atas yang Anda hemat.",
+      "body": "Tanpa paket gratis dan tanpa uji coba: yang bisa Anda periksa sebelum membayar adalah pengukuran publik di halaman ini. Biayanya per kursi, dalam {currency}, dan komisi diambil dari penghematan terukur — tidak pernah dari kantong Anda.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",

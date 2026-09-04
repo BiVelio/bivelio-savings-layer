@@ -1028,6 +1028,26 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .sec-head p { color: var(--ink-soft); margin: 0; font-size: 16px; }
 .lp .sec-head code { font-family: var(--mono); font-size: .92em; }
 
+/* «En palabras normales» — cuatro ideas con su animación. Tarjetas hermanas de
+   .ledger; el vídeo va arriba a sangre, recortado por el radio de la tarjeta. */
+.lp .explica-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.lp .explica-card { min-width: 0; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); }
+.lp .explica-video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-bottom: 1px solid var(--line); background: var(--surface); }
+.lp .explica-texto { padding: 18px 20px 20px; }
+.lp .explica-texto .idx { font-family: var(--mono); font-size: .7rem; color: var(--brand); }
+.lp .explica-texto h4 { margin: 8px 0 6px; font-size: 1.05rem; letter-spacing: -.015em; font-family: var(--font-heading); font-weight: 600; }
+.lp .explica-texto p { margin: 0; font-size: .88rem; color: var(--ink-soft); line-height: 1.55; }
+.lp .explica-nota { margin: 14px 0 0; font-size: .78rem; color: var(--ink-soft); }
+@media (max-width: 720px) { .lp .explica-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* La traducción sin jerga de la sección medida: vídeo del experimento a la
+   izquierda, las dos cifras del artefacto dichas en llano a la derecha. */
+.lp .medido-llano { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; margin-bottom: 32px; }
+.lp .medido-llano-texto h3 { margin: 0 0 10px; font-size: 1.2rem; letter-spacing: -.02em; font-family: var(--font-heading); font-weight: 600; }
+.lp .medido-llano-texto .grande { margin: 0 0 10px; font-size: 1.15rem; line-height: 1.5; color: var(--ink); }
+.lp .medido-llano-texto .nota { margin: 0; font-size: .85rem; color: var(--ink-soft); }
+@media (max-width: 860px) { .lp .medido-llano { grid-template-columns: minmax(0, 1fr); } }
+
 /* Libros mayores */
 .lp .ledgers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .lp .ledger { min-width: 0; }

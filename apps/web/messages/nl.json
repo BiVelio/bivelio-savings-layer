@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
     "metaDescription": "LLM-kostenlaag met licentie. Installeer hem vóór je provider en verlaag je factuur; de besparing is gemeten tegen de teller van de provider, met 95%-interval.",
     "hero": {
-      "eyebrow": "De LLM-kostenlaag die iedereen kan installeren — met licentie om te draaien",
-      "title": "Bewijs de besparingen op",
-      "titleAccent": "je eigen gegevens.",
-      "lede": "BV-SALA staat vóór elke LLM-provider en kiest voor elk verzoek de goedkoopste uitvoering die nog aan je kwaliteitsnorm voldoet. Elk besparingscijfer dat we publiceren is gemeten tegen de tokenteller van de provider zelf, met het betrouwbaarheidsinterval erbij — nooit een schatting.",
+      "eyebrow": "AI-besparing, echt gemeten",
+      "title": "Betaal minder voor AI.",
+      "titleAccent": "En controleer het op je factuur.",
+      "lede": "ChatGPT, Claude, Gemini… elke vraag die je bedrijf aan een AI stelt wordt afgerekend op de tekst die erin en eruit gaat. Savings staat tussen je bedrijf en de aanbieder, snijdt weg wat je niet hoefde te betalen en toont de besparing op een bon die je naast de factuur kunt leggen.",
       "ctaRun": "Bekijk de metingen",
       "ctaPricing": "Bekijk prijzen",
-      "note": "Installatie in vijf regels code. De licentie activeer je in je dashboard.",
+      "note": "In minuten geïnstalleerd. Je berichten gaan nooit via onze servers.",
       "proofTitle": "Gemeten tegen een echte provider",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Elke stap valt in ÉÉN ander ledger, dus deze cijfers tellen niet bij elkaar op. Een stap waarvan het ledger niet boven nul komt, staat hier niet: de uitvoerbeperking is gemeten en bespaart niet, dus we adverteren die niet."
     },
+    "explica": {
+      "eyebrow": "In gewone taal",
+      "title": "Wat doet Savings nu eigenlijk?",
+      "sub": "Vier ideeën, vier animaties van acht seconden. Dat is het hele product.",
+      "pasos": [
+        {
+          "title": "AI rekent per woord",
+          "body": "Elk verzoek aan een AI wordt betaald per tekst die erin en eruit gaat. Savings gaat midden op dat pad staan en laat alleen door wat nodig is: wat je niet hoefde te betalen valt in jouw pot."
+        },
+        {
+          "title": "Je betaalt niet twee keer voor hetzelfde",
+          "body": "Een AI leest elke beurt alles opnieuw wat je al had gestuurd — en de aanbieder rekent het opnieuw aan. Savings onthoudt wat al verzonden is en bereidt elk verzoek zo voor dat herhalingen tegen het kortingstarief vertrekken."
+        },
+        {
+          "title": "Een bon die je kunt controleren",
+          "body": "We vragen geen blind vertrouwen. Elke besparing wordt gemeten met de officiële teller van de aanbieder — dezelfde waarmee hij je factureert — en komt op je bon. Wat niet naast de factuur te leggen valt, wordt nooit aangekondigd."
+        },
+        {
+          "title": "Wij verdienen alleen als jij bespaart",
+          "body": "Onze commissie komt uit de gemeten besparing, nooit uit jouw zak: het grootste deel van wat je bespaart blijft altijd bij jou. Een maand zonder besparing? Nul commissie."
+        }
+      ],
+      "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
+    },
     "step2": {
-      "eyebrow": "Stap 2 · Hoe besparingen worden gemeten — reproduceerbaar",
-      "title": "Beide takken gemeten door de tokenizer van de provider zelf — geen gemodelleerde baseline.",
-      "body": "Dit is de uitvoer van de A/B-benchmark (<code>pnpm ab</code>): voor elk scenario stuurt hij een <b>naïef</b> verzoek <i>en</i> het BV‑SALA-verzoek naar <b>hetzelfde</b> model, prijst beide op basis van het eigen tokengebruik van de provider en rapporteert de <b>95%-betrouwbaarheidsondergrens</b> — nooit de vleiende puntschatting. Niets is gemodelleerd."
+      "eyebrow": "Geen beloftes: metingen",
+      "title": "Hoe weten we dat het bespaart? We meten het — en jij kunt de meting herhalen.",
+      "body": "Elk scenario draait twee keer tegen de echte aanbieder: zoals het is, en met Savings ervoor. Beide resultaten worden geteld met de teller van de aanbieder zelf — dezelfde die je factuur prijst. Dit kwam eruit, inclusief foutmarge:",
+      "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
+      "plainTitle": "Vertaling, zonder jargon",
+      "plain": "In deze test daalde de factuur vrijwel zeker met minstens {piso}. Waarschijnlijk daalde hij met {punto}.",
+      "plainNote": "Bij een marge noemen we altijd het kleine getal — het getal dat de statistiek garandeert — nooit het mooiste."
     },
     "anthropicCache": {
       "eyebrow": "Gemeten · prefix-cache van Anthropic",
-      "title": "Anthropic cachet niet uit zichzelf. Jouw integratie vraagt er niet om; de onze wel.",
-      "body": "OpenAI past zijn prefix-cache automatisch toe: die korting krijg je met ons of zonder ons. <b>Anthropic niet.</b> Daar moet je het afkappunt bij elke aanvraag markeren, en wie dat niet doet betaalt altijd de volledige invoer.",
+      "title": "Anthropic geeft korting op herhaalde tekst — maar je moet erom vragen. Wij vragen het voor je.",
+      "body": "Wanneer een gesprek herhaalt wat al is verzonden (instructies, documenten, geschiedenis), kan Anthropic dat veel goedkoper rekenen — maar alleen als elk verzoek voorbereid op die korting aankomt. <b>De meeste integraties vragen er nooit om en betalen de volle prijs. Savings vraagt het bij elk verzoek.</b>",
       "evidenceTitle": "Wat er gemeten is",
       "evidenceLede": "Een agent-beurt met lange, herhaalde systeemcontext — een supportassistent, een documentextractor. Acht paren, hetzelfde model in beide armen, afgerekend met Anthropics eigen teller.",
       "rowNaiveLabel": "Zonder de laag",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Eerlijke boekhouding",
-      "title": "Vier afzonderlijke grootboeken. Nooit opgeteld tot één ijdel getal.",
-      "body": "Een cachetreffer verwijdert een hele aanroep. BV‑SALA hercodeert gestructureerde gegevens compacter. Compressie schrapt overbodige woorden. Een prefixcache van de provider maakt tokens goedkoper zonder ze te verwijderen. Ze door elkaar halen liegt tegen je — dus dat doen we niet.",
+      "title": "Elke soort besparing apart geteld — zodat geen cijfer wordt opgeblazen.",
+      "body": "Savings bespaart op meerdere manieren: het vermijdt hele aanroepen, haalt overbodige tekst weg, verpakt wat verzonden wordt compacter en zet de kortingen van de aanbieder aan. Elke manier houdt zijn eigen boekhouding met zijn eigen gemeten cijfer — en we tellen ze nooit op tot één marketingcijfer.",
       "runToMeasure": "voer de optimizer uit om te meten",
       "measuredFloor": "gemeten · 95%-ondergrens",
       "notProven": "gemeten · komt niet boven nul",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
-      "title": "Centen om te draaien. Veelvouden om te besparen.",
-      "body": "Geen gratis versie en geen proefperiode: wat je vóór betaling kunt controleren, is de GEMETEN besparing hierboven, met het interval erbij. Je abonneert je en draait het in je eigen app. Geprijsd per seat, in {currency}.",
+      "title": "Een kleine vergoeding per seat. En commissie alleen over wat je bespaart.",
+      "body": "Geen gratis plan en geen proefperiode: wat je vóór het betalen kunt controleren, zijn de publieke metingen op deze pagina. De vergoeding is per seat, in {currency}, en de commissie komt uit de gemeten besparing — nooit uit je zak.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",

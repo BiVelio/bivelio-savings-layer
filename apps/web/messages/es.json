@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
     "metaDescription": "Capa de coste para LLM con licencia. Se instala delante de tu proveedor y recorta la factura; el ahorro va medido contra su contador, con intervalo al 95 %.",
     "hero": {
-      "eyebrow": "Capa de coste para LLM · SDK con licencia",
-      "title": "Tu factura de LLM,",
-      "titleAccent": "medida y recortada.",
-      "lede": "BV‑SALA se sitúa delante de tu proveedor y, en cada petición, elige la ejecución más barata que aún cumple tu contrato de calidad. Cada cifra de ahorro que publicamos está medida contra el contador del propio proveedor, con su intervalo de confianza al lado — nunca una estimación.",
+      "eyebrow": "Ahorro en IA, medido de verdad",
+      "title": "Paga menos por la IA.",
+      "titleAccent": "Y compruébalo en tu factura.",
+      "lede": "ChatGPT, Claude, Gemini… cada pregunta que tu empresa hace a la IA se cobra por el texto que entra y sale. Savings se coloca entre tu empresa y el proveedor, recorta lo que no hace falta pagar y te enseña el ahorro en un recibo que puedes contrastar con la factura.",
       "ctaRun": "Ver lo medido",
       "ctaPricing": "Precios",
-      "note": "Instalación en cinco líneas. La licencia se activa desde tu panel.",
+      "note": "Se instala en minutos. Tus mensajes no pasan por nuestros servidores.",
       "proofTitle": "Medido contra proveedor real",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Cada paso cae en UN libro contable distinto, así que estas cifras no se suman entre sí. Un paso cuyo libro no despeja el cero no aparece aquí: la restricción de salida se midió y no ahorra, así que no se anuncia."
     },
+    "explica": {
+      "eyebrow": "En palabras normales",
+      "title": "¿Qué hace Savings, exactamente?",
+      "sub": "Cuatro ideas, cuatro animaciones de ocho segundos. Esto es todo el producto.",
+      "pasos": [
+        {
+          "title": "La IA se cobra por palabras",
+          "body": "Cada petición a la IA se paga por el texto que entra y sale. Savings se pone en medio del camino y deja pasar solo lo necesario: lo que no hacía falta pagar, cae en tu tarro."
+        },
+        {
+          "title": "No pagas dos veces por lo mismo",
+          "body": "La IA relee en cada turno todo lo que ya le habías enviado — y el proveedor lo cobra otra vez. Savings recuerda lo ya enviado y prepara cada petición para que lo repetido salga al precio rebajado."
+        },
+        {
+          "title": "Un recibo que puedes comprobar",
+          "body": "No te pedimos fe. Cada ahorro se mide con el contador oficial del proveedor — el mismo con el que te factura — y aparece en tu recibo. Lo que no se puede contrastar con la factura, no se anuncia."
+        },
+        {
+          "title": "Solo ganamos si tú ahorras",
+          "body": "Nuestra comisión sale del ahorro medido, nunca de tu bolsillo: la mayor parte de lo ahorrado se queda siempre contigo. ¿Un mes sin ahorro? Comisión cero."
+        }
+      ],
+      "nota": "Las animaciones ilustran la idea. Las cifras de verdad — medidas contra proveedores reales — están justo debajo."
+    },
     "step2": {
-      "eyebrow": "Cómo se miden los ahorros — reproducible",
-      "title": "Ambos brazos medidos por el tokenizador del propio proveedor — sin línea base modelada.",
-      "body": "Este es el resultado del benchmark A/B (<code>pnpm ab</code>): para cada escenario envía una solicitud <b>ingenua</b> <i>y</i> la solicitud de BV‑SALA al <b>mismo</b> modelo, cotiza ambas a partir del propio uso de tokens del proveedor e informa el <b>límite inferior del intervalo de confianza del 95%</b> — nunca la estimación puntual halagadora. Nada está modelado."
+      "eyebrow": "Sin promesas: mediciones",
+      "title": "¿Cómo sabemos que ahorra? Lo medimos — y tú puedes repetir la medición.",
+      "body": "Cada escenario se ejecuta dos veces contra el proveedor real: tal cual, y con Savings delante. Los dos resultados se cuentan con el contador del propio proveedor — el mismo que pone el precio en tu factura. Esto es lo que salió, con su margen de error:",
+      "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings y con Savings — y el mismo contador del proveedor midiendo las dos.",
+      "plainTitle": "Traducción, sin jerga",
+      "plain": "En esta prueba, la factura bajó con casi total seguridad al menos un {piso}. Lo más probable es que bajara un {punto}.",
+      "plainNote": "Cuando hay una horquilla, anunciamos siempre el número pequeño — el que la estadística garantiza —, nunca el bonito."
     },
     "anthropicCache": {
       "eyebrow": "Medido · caché de prefijo de Anthropic",
-      "title": "Anthropic no cachea sola. Tu integración no se lo pide; la nuestra sí.",
-      "body": "OpenAI aplica su caché de prefijo automáticamente: ese descuento ya lo tienes con nosotros o sin nosotros. <b>Anthropic no.</b> Exige marcar el punto de corte en cada petición, y quien no lo marca paga la entrada entera, siempre.",
+      "title": "Anthropic hace descuento por texto repetido — pero hay que pedírselo. Nosotros lo pedimos por ti.",
+      "body": "Cuando una conversación repite lo ya enviado (instrucciones, documentos, historial), Anthropic puede cobrarlo mucho más barato — pero solo si cada petición llega preparada para ese descuento. <b>La mayoría de integraciones no lo piden y pagan el precio entero. Savings lo pide en cada petición.</b>",
       "evidenceTitle": "Lo que se midió",
       "evidenceLede": "Turno de agente con contexto de sistema largo y repetido — un asistente de soporte, un extractor documental. Ocho pares, mismo modelo en los dos brazos, tarifados con el contador del propio Anthropic.",
       "rowNaiveLabel": "Sin la capa",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Contabilidad honesta",
-      "title": "Cuatro libros contables separados. Nunca sumados en una sola cifra de vanidad.",
-      "body": "Un acierto de caché elimina una llamada entera. BV‑SALA recodifica los datos estructurados de forma más compacta. La compresión descarta palabras redundantes. Una caché de prefijo del proveedor abarata los tokens sin eliminarlos. Mezclarlos te miente — así que no lo hacemos.",
+      "title": "Cada tipo de ahorro, contado aparte — para que ninguna cifra se infle.",
+      "body": "Savings ahorra de varias maneras: evita llamadas enteras, quita texto que sobra, empaqueta mejor lo que se envía y activa los descuentos del proveedor. Cada manera lleva su propia cuenta y su propia cifra medida — y nunca las sumamos en un numerote de marketing.",
       "runToMeasure": "ejecuta el optimizador para medir",
       "measuredFloor": "medido · suelo del 95 %",
       "notProven": "medido · no despeja el cero",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
-      "title": "Céntimos para ejecutar. Múltiplos para ahorrar.",
-      "body": "Sin plan gratuito y sin prueba: lo que puedes comprobar antes de pagar es el ahorro MEDIDO de aquí arriba, con su intervalo al lado. Te suscribes y lo ejecutas en tu app. Precio por asiento, en {currency}.",
+      "title": "Una cuota pequeña por asiento. Y comisión solo sobre lo que ahorras.",
+      "body": "Sin plan gratuito y sin prueba: lo que puedes comprobar antes de pagar son las mediciones públicas de esta página. La cuota va por asiento, en {currency}, y la comisión sale del ahorro medido — nunca de tu bolsillo.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",

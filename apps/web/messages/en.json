@@ -457,13 +457,13 @@
     "metaTitle": "BiVelio — Verify Your LLM Savings",
     "metaDescription": "Licensed LLM cost layer. Installs in front of your provider and cuts the bill — savings measured against the provider's own counter, with a 95% interval.",
     "hero": {
-      "eyebrow": "The LLM cost layer anyone can install — licensed to run",
-      "title": "Prove the savings on",
-      "titleAccent": "your own data.",
-      "lede": "BV-SALA sits in front of any LLM provider and, for every request, picks the cheapest execution that still meets your quality bar. Every savings figure we publish is measured against the provider's own token counter and carries its confidence interval — never an estimate.",
+      "eyebrow": "AI savings, actually measured",
+      "title": "Pay less for AI.",
+      "titleAccent": "And check it on your bill.",
+      "lede": "ChatGPT, Claude, Gemini… every question your company asks an AI is billed for the text that goes in and out. Savings sits between your company and the provider, trims what you didn't need to pay for, and shows the saving on a receipt you can check against the bill.",
       "ctaRun": "See what we measured",
       "ctaPricing": "See pricing",
-      "note": "Five lines to install. The license activates from your dashboard.",
+      "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
       "proofs": [
         {
@@ -508,15 +508,43 @@
       ],
       "footnote": "Each step falls into ONE different ledger, so these figures do not add up to each other. A step whose ledger does not clear zero does not appear here: output restriction was measured and does not save, so it is not advertised."
     },
+    "explica": {
+      "eyebrow": "In plain words",
+      "title": "What does Savings actually do?",
+      "sub": "Four ideas, four eight-second animations. That's the whole product.",
+      "pasos": [
+        {
+          "title": "AI charges you per word",
+          "body": "Every request to an AI is paid for by the text going in and out. Savings stands in the middle of that path and lets through only what's needed: whatever you didn't have to pay for drops into your jar."
+        },
+        {
+          "title": "You don't pay twice for the same thing",
+          "body": "An AI re-reads everything you already sent it, turn after turn — and the provider charges for it again. Savings remembers what was already sent and prepares every request so the repeats go out at the discounted price."
+        },
+        {
+          "title": "A receipt you can verify",
+          "body": "We don't ask for faith. Every saving is measured with the provider's official meter — the same one they bill you with — and lands on your receipt. Anything that can't be checked against the bill is never announced."
+        },
+        {
+          "title": "We only earn when you save",
+          "body": "Our commission comes out of the measured saving, never out of your pocket: most of what you save always stays with you. A month with no savings? Zero commission."
+        }
+      ],
+      "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
+    },
     "step2": {
-      "eyebrow": "Step 2 · How savings are measured — reproducible",
-      "title": "Both arms metered by the provider's own tokenizer — no modeled baseline.",
-      "body": "This is the output of the A/B benchmark (<code>pnpm ab</code>): for every scenario it sends a <b>naive</b> request <i>and</i> the BV‑SALA request to the <b>same</b> model, prices both from the provider's own token usage, and reports the <b>95% confidence lower bound</b> — never the flattering point estimate. Nothing is modeled."
+      "eyebrow": "No promises: measurements",
+      "title": "How do we know it saves? We measure it — and you can repeat the measurement.",
+      "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
+      "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
+      "plainTitle": "Translation, no jargon",
+      "plain": "In this test, the bill went down by at least {piso}, with near certainty. Most likely it went down by {punto}.",
+      "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one."
     },
     "anthropicCache": {
       "eyebrow": "Measured · Anthropic prefix cache",
-      "title": "Anthropic doesn't cache on its own. Your integration doesn't ask; ours does.",
-      "body": "OpenAI applies its prefix cache automatically: you get that discount with us or without us. <b>Anthropic doesn't.</b> It requires marking the cut-off point on every request, and whoever doesn't mark it pays for the whole input, every time.",
+      "title": "Anthropic gives a discount on repeated text — but you have to ask. We ask for you.",
+      "body": "When a conversation repeats what was already sent (instructions, documents, history), Anthropic can charge it far cheaper — but only if each request arrives prepared for that discount. <b>Most integrations never ask and pay full price. Savings asks on every request.</b>",
       "evidenceTitle": "What was measured",
       "evidenceLede": "An agent turn with long, repeated system context — a support assistant, a document extractor. Eight pairs, same model in both arms, priced with Anthropic's own counter.",
       "rowNaiveLabel": "Without the layer",
@@ -534,8 +562,8 @@
     },
     "ledgersHead": {
       "eyebrow": "Honest accounting",
-      "title": "Four separate ledgers. Never summed into one vanity number.",
-      "body": "A cache hit removes a whole call. BV‑SALA re‑encodes structured data more compactly. Compression drops redundant words. A provider prefix cache makes tokens cheaper without removing them. Mixing them lies to you — so we don't.",
+      "title": "Every kind of saving, counted separately — so no number gets inflated.",
+      "body": "Savings saves in several ways: it avoids whole calls, removes text you didn't need, packs what's sent more tightly, and switches on the provider's discounts. Each way keeps its own ledger with its own measured figure — and we never add them up into one marketing number.",
       "runToMeasure": "run the optimizer to measure",
       "measuredFloor": "measured · 95% floor",
       "notProven": "measured · does not clear zero",
@@ -601,8 +629,8 @@
     },
     "pricing": {
       "eyebrow": "One plan, priced per seat",
-      "title": "Pennies to run. Multiples to save.",
-      "body": "No free tier, no trial: what you can check before paying is the measured savings above, confidence interval and all. Subscribe, then run it in your own app. Priced per seat, in {currency}.",
+      "title": "A small fee per seat. And commission only on what you save.",
+      "body": "No free tier, no trial: what you can check before paying are the public measurements on this page. The fee is per seat, in {currency}, and the commission comes out of the measured saving — never out of your pocket.",
       "amount": "{amount}",
       "per": "/ seat / month",
       "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
