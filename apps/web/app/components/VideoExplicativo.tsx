@@ -42,6 +42,11 @@ export function VideoExplicativo({ src, poster, etiqueta }: { src: string; poste
       className="explica-video"
       src={src}
       poster={poster}
+      // `autoPlay` además del observer: el primer play() programático de la
+      // página puede rechazarse en silencio (visto en prod); el autoplay nativo
+      // de vídeo silenciado no depende de él, y el observer sigue pausando lo
+      // que no está a la vista.
+      autoPlay
       muted
       loop
       playsInline
