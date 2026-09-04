@@ -283,3 +283,41 @@ describe("CanalDeEntitlements — fail-closed de verdad", () => {
     expect(canal.tiene("context_elision")).toBe(false);
   });
 });
+
+describe("captura de la elisión aplicada — la forma sondeada en vivo (04-09)", async () => {
+  const { ObservadorSse, elisionDeJson, elisionDeContextManagement } = await import("../gateway/medidor.js");
+
+  it("SSE: los applied_edits viajan en message_delta y el observador los captura", () => {
+    const obs = new ObservadorSse();
+    obs.observar(
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":43250,"output_tokens":2}}}\n\n',
+    );
+    expect(obs.elision()).toBeNull(); // en message_start va a null (sondeado)
+    obs.observar(
+      'event: message_delta\ndata: {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"input_tokens":43250,"output_tokens":35},"context_management":{"applied_edits":[{"type":"clear_tool_uses_20250919","cleared_input_tokens":28543,"cleared_tool_uses":2}]}}\n\n',
+    );
+    expect(obs.elision()).toEqual({ borrados: 1, tokensLimpiados: 28543 });
+    expect(obs.usage()?.input_tokens).toBe(43250);
+  });
+
+  it("JSON (stream:false): el bloque top-level", () => {
+    const cuerpo = JSON.stringify({
+      id: "msg_1",
+      usage: { input_tokens: 43250, output_tokens: 47 },
+      context_management: { applied_edits: [{ type: "clear_tool_uses_20250919", cleared_input_tokens: 28543, cleared_tool_uses: 2 }] },
+    });
+    expect(elisionDeJson(cuerpo)).toEqual({ borrados: 1, tokensLimpiados: 28543 });
+    expect(elisionDeJson('{"usage":{"input_tokens":1}}')).toBeNull();
+    expect(elisionDeJson("no-json")).toBeNull();
+  });
+
+  it("formas raras → null, jamás throw", () => {
+    expect(elisionDeContextManagement(null)).toBeNull();
+    expect(elisionDeContextManagement({ applied_edits: [] })).toBeNull();
+    expect(elisionDeContextManagement({ applied_edits: "x" })).toBeNull();
+    expect(elisionDeContextManagement({ applied_edits: [{ cleared_input_tokens: "mil" }] })).toEqual({
+      borrados: 1,
+      tokensLimpiados: 0,
+    });
+  });
+});

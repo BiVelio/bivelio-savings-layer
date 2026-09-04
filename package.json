@@ -1,6 +1,6 @@
 {
   "name": "@bivelio/savings-layer",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "description": "BV-SALA — provider-neutral LLM execution optimizer. A decision layer in front of any LLM provider that cuts the cost of every request while preserving required quality, and reports the saving per call with token-level accounting you can check against your bill. Proprietary and confidential — property of BiVelio Inc.",
   "keywords": [
     "llm",
@@ -78,7 +78,8 @@
     "corpus:arnes": "tsx corpus/arnes/informe.ts",
     "corpus:auditar": "tsx corpus/auditoria/auditar.ts",
     "sombra:corpus": "tsx benchmarks/sombra-corpus.ts",
-    "sombra:diales": "tsx --env-file-if-exists=.env.bench benchmarks/sombra-diales.ts"
+    "sombra:diales": "tsx --env-file-if-exists=.env.bench benchmarks/sombra-diales.ts",
+    "anillo1": "tsx --env-file-if-exists=.env.bench benchmarks/anillo1/arnes.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",

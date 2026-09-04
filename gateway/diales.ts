@@ -14,13 +14,18 @@ export const BETA_CONTEXT_MANAGEMENT = "context-management-2025-06-27";
 
 /** Umbral de disparo, en tokens de entrada. Los umbrales de fábrica no se
  *  dispararon NI UNA VEZ en 1.952 peticiones del corpus: este dial es EL
- *  cambio. 30K = el punto donde la masa tool_result de las sesiones reales
- *  amortiza de sobra la reescritura de caché posterior al borrado. */
-export const DIAL_TRIGGER_INPUT_TOKENS = 30_000;
+ *  cambio. 30K fue el punto de partida del anillo 0; el anillo 1 (04-09)
+ *  subió el listón a 50K junto con keep=8 — ver abajo. */
+export const DIAL_TRIGGER_INPUT_TOKENS = 50_000;
 
 /** Resultados de herramienta que SIEMPRE se conservan (los más recientes).
- *  La venda de v0 —no tocar lo recién nacido— que el replay validó. */
-export const DIAL_KEEP_TOOL_USES = 3;
+ *  Empezó en 3 (la venda de v0 que el replay validó); el ANILLO 1 lo subió a
+ *  8: con keep=3, una tarea de síntesis que retiene 6 resultados gordos a la
+ *  vez entró en bucle de relecturas (el proveedor borraba lo que el modelo
+ *  aún necesitaba — 21 relecturas, coste ×5 en esa rep). Con 8 se cubre el
+ *  span de síntesis típico y las sesiones largas de Claude Code (decenas de
+ *  tool_uses) siguen limpiando de sobra. */
+export const DIAL_KEEP_TOOL_USES = 8;
 
 /** Mínimo de tokens a borrar por pasada. Borrar 100 tokens no paga romper el
  *  prefijo en el punto del borrado; borrar en lotes grandes sí — es la

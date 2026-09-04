@@ -25,7 +25,7 @@ export async function SombraElisionCard({ usage }: { usage: UsageRollup[] }) {
   const t = await getTranslations("dashboard");
 
   return (
-    <div className="card" style={{ padding: "16px" }}>
+    <div className="card sombra-elision" style={{ padding: "16px" }}>
       <div className="n" style={{ marginBottom: "6px" }}>{t("sombraElision.title")}</div>
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap" }}>
         <div className={`big ${sombra.tone} ck-num`} style={{ fontSize: 28 }}>{pct(sombra.net)}</div>

@@ -13,7 +13,9 @@ import {
   usoDeJson,
   modeloDelCuerpo,
   jsonDelCuerpo,
+  elisionDeJson,
   type Atribucion,
+  type ElisionAplicada,
   type UsoSse,
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
@@ -163,6 +165,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     path: string,
     codificacion?: string,
     atribucion?: Atribucion,
+    elision?: ElisionAplicada | null,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -184,7 +187,12 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
-          `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})`,
+          `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
+          // S4a · el borrado que el PROVEEDOR declaró para esta respuesta. De
+          // momento solo se ENSEÑA (log): al hilo del panel llegará con la
+          // regla servidor-primero (el ingest valida con lista blanca y un
+          // campo desconocido tira el lote entero — ver toWire).
+          (elision ? ` · elisión: ${elision.borrados} borrado(s), ${elision.tokensLimpiados} tok limpiados por el proveedor` : ""),
       );
       // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la
       // petición (ya está servida y medida). Solo peticiones que viajaron de
@@ -400,9 +408,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medida = true;
-        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion);
+        const elision = observador instanceof ObservadorSse ? observador.elision() : null;
+        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision);
       } else if (cuerpoJson) {
-        medir(requestId, cuerpo, usoDeJson(Buffer.concat(cuerpoJson)), false, url.pathname, codificacion, atribucion);
+        const respuesta = Buffer.concat(cuerpoJson);
+        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, elisionDeJson(respuesta));
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -420,7 +430,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         const uso = !medida && observador ? observador.usageFinal() : null;
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion);
+          const elision = observador instanceof ObservadorSse ? observador.elision() : null;
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
         }
