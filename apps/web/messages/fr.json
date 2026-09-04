@@ -121,6 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "appels LLM/récupération/outil qui n'ont jamais été exécutés",
       "whatEliminatedTokens": "tokens d'entrée supprimés car inutiles",
+      "elisionNota": "Un simple décompte — sa valeur en argent est estimée dans l'élision en ombre ci-dessous, et n'entre jamais dans ta commission.",
       "whatCompressedTokens": "tokens d'entrée réencodés plus compacts",
       "whatProviderCachedTokens": "tokens d'entrée facturés moins cher (cache de préfixe)",
       "ghostAwaiting": "{ref} · en attente du premier rapport",

@@ -121,6 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
       "whatEliminatedTokens": "token input yang dibuang karena tidak perlu",
+      "elisionNota": "Hanya hitungan — nilai uangnya diperkirakan di elisi bayangan di bawah, dan tidak pernah masuk ke komisimu.",
       "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
       "whatProviderCachedTokens": "token input yang ditagih lebih murah (cache prefix)",
       "ghostAwaiting": "{ref} · menunggu laporan pertama",

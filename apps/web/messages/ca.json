@@ -121,6 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
       "whatEliminatedTokens": "tokens d'entrada descartats per innecessaris",
+      "elisionNota": "Només un recompte — el seu valor en diner s'estima a l'elisió en ombra de sota, i mai no entra a la teva comissió.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
       "whatProviderCachedTokens": "tokens d'entrada facturats més barats (memòria cau de prefix)",
       "ghostAwaiting": "{ref} · esperant el primer informe",
