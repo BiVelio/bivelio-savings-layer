@@ -121,6 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
       "whatEliminatedTokens": "invoertokens die als overbodig zijn geschrapt",
+      "elisionNota": "Alleen een telling — de geldwaarde wordt hieronder in de schaduw-elisie geschat en telt nooit mee in je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens die goedkoper worden gefactureerd (prefixcache)",
       "ghostAwaiting": "{ref} · wacht op eerste rapport",

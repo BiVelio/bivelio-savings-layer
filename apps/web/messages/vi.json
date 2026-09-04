@@ -121,6 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
       "whatEliminatedTokens": "token đầu vào bị loại bỏ vì không cần thiết",
+      "elisionNota": "Chỉ là số đếm — giá trị tiền của nó được ước tính ở phần lược bỏ trong bóng bên dưới, và không bao giờ tính vào hoa hồng của bạn.",
       "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
       "whatProviderCachedTokens": "token đầu vào được tính phí rẻ hơn (bộ đệm tiền tố)",
       "ghostAwaiting": "{ref} · đang chờ báo cáo đầu tiên",

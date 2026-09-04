@@ -121,6 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens dropped as unnecessary",
+      "elisionNota": "A count only — its value in money is estimated in shadow elision below, and never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed cheaper (prefix cache)",
       "ghostAwaiting": "{ref} · awaiting first report",
