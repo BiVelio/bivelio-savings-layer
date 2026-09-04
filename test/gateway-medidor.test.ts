@@ -343,6 +343,39 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
   });
 });
 
+describe("elisión S4a — el conteo del proveedor viaja por eliminatedInput (solo en la rama medida)", () => {
+  const medido = costeMedido("claude-haiku-4-5", { input_tokens: 10, output_tokens: 5 })!;
+
+  it("con elisión, eliminatedInput = tokensLimpiados y el basis sigue measured", () => {
+    const r = informeMedido("req-e", "claude-haiku-4-5", medido, undefined, {
+      borrados: 2,
+      tokensLimpiados: 9000,
+    }) as unknown as { tokens: { eliminatedInput: number }; cost: { basis: string } };
+    expect(r.tokens.eliminatedInput).toBe(9000);
+    expect(r.cost.basis).toBe("measured");
+  });
+
+  it("sin elisión, eliminatedInput = 0 (nada se inventa)", () => {
+    const r = informeMedido("req-0", "claude-haiku-4-5", medido) as unknown as {
+      tokens: { eliminatedInput: number };
+    };
+    expect(r.tokens.eliminatedInput).toBe(0);
+    const nulo = informeMedido("req-n", "claude-haiku-4-5", medido, undefined, null) as unknown as {
+      tokens: { eliminatedInput: number };
+    };
+    expect(nulo.tokens.eliminatedInput).toBe(0);
+  });
+
+  it("⛔ una gemela COALESCIDA jamás reporta borrado: no viajó, no elidió (aunque llegue elisión)", () => {
+    // informeCoalescido no acepta elisión por firma; y aunque la aceptara por la
+    // vía de construirInforme, la rama coalescida clava eliminatedInput a 0.
+    const r = informeCoalescido("req-c", "claude-haiku-4-5", medido) as unknown as {
+      tokens: { eliminatedInput: number };
+    };
+    expect(r.tokens.eliminatedInput).toBe(0);
+  });
+});
+
 describe("atribución — la sesión y el subagente viajan en el informe, o no existen", () => {
   it("con atribución el informe lleva attribution; sin ella, el campo NO existe (nada de objetos vacíos)", () => {
     const medido = costeMedido("claude-haiku-4-5", { input_tokens: 1 })!;
