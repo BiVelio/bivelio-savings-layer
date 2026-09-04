@@ -738,6 +738,13 @@
       "garantia": "Und <b>dir bleiben immer {garantia} oder mehr</b> jedes gesparten Euros: die Provision existiert nur, wenn deine gemessene Ersparnis existiert.",
       "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
       "permanencia": "Ein Monat ohne Ersparnis? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
+    },
+    "trabajos": {
+      "pajaTitle": "Trägt die Sendung Füllung…",
+      "pajaBody": "…entfernt das Tor sie vor dem Bezahlen: Das Paket erreicht die Cloud viel kleiner, und die Differenz fällt in dein Glas.",
+      "magroTitle": "Ist sie schon schlank…",
+      "magroBody": "…passiert sie unberührt. Dort gibt es nichts zu entfernen — und wir versprechen keine Ersparnis, wo keine ist.",
+      "caption": "Nicht jede Sendung trägt dieselbe Füllung: In diesem Lauf reichte der gemessene Zuschnitt je Szenario von {min} bis {max}. Auch die, die nichts sparen, werden veröffentlicht."
     }
   },
   "invitacion": {

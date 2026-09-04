@@ -738,6 +738,13 @@
       "garantia": "Ve <b>tasarruf edilen her euronun {garantia} veya fazlası her zaman sende kalır</b>: komisyon yalnızca ölçülen tasarrufun varsa vardır.",
       "tramos": "<b>Kademeli, her kademe kendi oranında</b> — {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
       "permanencia": "Tasarrufsuz bir ay mı? Komisyon: {cero}. <b>Taahhüt yok</b> — ve ilk değişken faturan yalnızca ekstrende zaten gördüğün sayıları içerir."
+    },
+    "trabajos": {
+      "pajaTitle": "Gönderi dolgu taşıyorsa…",
+      "pajaBody": "…kapı ödemeden önce onu çıkarır: paket buluta çok daha küçük ulaşır ve aradaki fark kavanozunuza düşer.",
+      "magroTitle": "Zaten yalınsa…",
+      "magroBody": "…dokunulmadan geçer. Orada çıkarılacak bir şey yok — olmayan yerde tasarruf vadetmeyiz.",
+      "caption": "Her gönderi aynı dolguyu taşımaz: bu turda senaryo başına ölçülen kesinti {min} ile {max} arasındaydı. Tasarruf etmeyenler de yayımlanır."
     }
   },
   "invitacion": {

@@ -738,6 +738,13 @@
       "garantia": "E <b>ficas sempre com {garantia} ou mais</b> de cada euro poupado: a comissão só existe quando existe a tua poupança medida.",
       "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
       "permanencia": "Um mês sem poupança? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
+    },
+    "trabajos": {
+      "pajaTitle": "Se o envio leva palha…",
+      "pajaBody": "…o portão tira-a antes de pagar: o pacote chega à nuvem muito mais pequeno e a diferença cai no seu pote.",
+      "magroTitle": "Se já vai magro…",
+      "magroBody": "…passa intacto. Ali não há nada a tirar — e não prometemos poupança onde não existe.",
+      "caption": "Nem todos os envios levam a mesma palha: nesta ronda, o corte medido por cenário foi de {min} a {max}. Os que não poupam também são publicados."
     }
   },
   "invitacion": {

@@ -738,6 +738,13 @@
       "garantia": "I <b>sempre et quedes amb el {garantia} o més</b> de cada euro estalviat: la comissió només existeix quan existeix el teu estalvi mesurat.",
       "tramos": "<b>Per trams, i cada tram al seu tipus</b> — {tramos}. Com més estalvies, menor és el nostre percentatge.",
       "permanencia": "Un mes sense estalvi? Comissió: {cero}. <b>Sense permanència</b> — i la teva primera factura variable només conté números que ja vas veure al teu extracte."
+    },
+    "trabajos": {
+      "pajaTitle": "Si l'enviament porta palla…",
+      "pajaBody": "…la porta la treu abans de pagar: el paquet arriba al núvol molt més petit i la diferència cau al teu pot.",
+      "magroTitle": "Si ja va magre…",
+      "magroBody": "…passa intacte. Allà no hi ha res a treure — i no es promet estalvi on no n'hi ha.",
+      "caption": "No tots els enviaments porten la mateixa palla: en aquesta tirada, la retallada mesurada per escenari va anar des de {min} fins a {max}. Els que no estalvien també es publiquen."
     }
   },
   "invitacion": {
