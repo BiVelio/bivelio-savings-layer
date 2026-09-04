@@ -740,7 +740,10 @@
       "permanencia": "Um mês sem poupança? Comissão: {cero}. <b>Sem fidelização</b> — e sua primeira fatura variável só contém números que você já viu no seu extrato."
     },
     "trabajos": {
-      "title": "Cada trabalho, o seu corte",
+      "pajaTitle": "Se o envio leva palha…",
+      "pajaBody": "…o portão tira-a antes de pagar: o pacote chega à nuvem muito mais pequeno e a diferença cai no seu pote.",
+      "magroTitle": "Se já vai magro…",
+      "magroBody": "…passa intacto. Ali não há nada a tirar — e não prometemos poupança onde não existe.",
       "caption": "Nem todos os envios levam a mesma palha: nesta ronda, o corte medido por cenário foi de {min} a {max}. Os que não poupam também são publicados."
     }
   },

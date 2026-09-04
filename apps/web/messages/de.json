@@ -740,7 +740,10 @@
       "permanencia": "Ein Monat ohne Ersparnis? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
     },
     "trabajos": {
-      "title": "Jede Aufgabe, ihr eigener Zuschnitt",
+      "pajaTitle": "Trägt die Sendung Füllung…",
+      "pajaBody": "…entfernt das Tor sie vor dem Bezahlen: Das Paket erreicht die Cloud viel kleiner, und die Differenz fällt in dein Glas.",
+      "magroTitle": "Ist sie schon schlank…",
+      "magroBody": "…passiert sie unberührt. Dort gibt es nichts zu entfernen — und wir versprechen keine Ersparnis, wo keine ist.",
       "caption": "Nicht jede Sendung trägt dieselbe Füllung: In diesem Lauf reichte der gemessene Zuschnitt je Szenario von {min} bis {max}. Auch die, die nichts sparen, werden veröffentlicht."
     }
   },

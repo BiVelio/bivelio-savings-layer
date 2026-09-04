@@ -740,7 +740,10 @@
       "permanencia": "Miesiąc bez oszczędności? Prowizja: {cero}. <b>Bez zobowiązań</b> — a Twoja pierwsza zmienna faktura zawiera tylko liczby, które już widziałeś na wyciągu."
     },
     "trabajos": {
-      "title": "Każde zadanie ma własne cięcie",
+      "pajaTitle": "Jeśli przesyłka niesie wypełniacz…",
+      "pajaBody": "…bramka usuwa go przed zapłatą: paczka dociera do chmury znacznie mniejsza, a różnica wpada do Twojego słoika.",
+      "magroTitle": "Jeśli już jest szczupła…",
+      "magroBody": "…przechodzi nietknięta. Nie ma tam czego usuwać — i nie obiecujemy oszczędności tam, gdzie ich nie ma.",
       "caption": "Nie każda przesyłka niesie tyle samo wypełniacza: w tym przebiegu zmierzone cięcie na scenariusz wyniosło od {min} do {max}. Te, które nie oszczędzają, też publikujemy."
     }
   },

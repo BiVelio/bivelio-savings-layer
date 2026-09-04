@@ -740,7 +740,10 @@
       "permanencia": "Een maand zonder besparing? Commissie: {cero}. <b>Geen verplichtingen</b> — en je eerste variabele factuur bevat alleen cijfers die je al op je afschrift zag."
     },
     "trabajos": {
-      "title": "Elke klus, zijn eigen besparing",
+      "pajaTitle": "Draagt de zending opvulling…",
+      "pajaBody": "…dan haalt de poort die eruit vóór je betaalt: het pakket bereikt de cloud veel kleiner en het verschil valt in jouw pot.",
+      "magroTitle": "Is hij al slank…",
+      "magroBody": "…dan passeert hij onaangeroerd. Daar valt niets te verwijderen — en we beloven geen besparing waar die er niet is.",
       "caption": "Niet elke zending draagt dezelfde opvulling: in deze run liep de gemeten besparing per scenario van {min} tot {max}. Ook de scenario's die niets besparen worden gepubliceerd."
     }
   },

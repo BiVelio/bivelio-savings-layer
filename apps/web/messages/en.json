@@ -740,7 +740,10 @@
       "permanencia": "A month with no savings? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
     },
     "trabajos": {
-      "title": "Each job, its own trim",
+      "pajaTitle": "If the shipment carries padding…",
+      "pajaBody": "…the gate removes it before you pay: the parcel reaches the cloud much smaller and the difference drops into your jar.",
+      "magroTitle": "If it's already lean…",
+      "magroBody": "…it passes untouched. There's nothing to remove there — and we don't promise savings where there are none.",
       "caption": "Not every shipment carries the same padding: in this run, the measured trim per scenario ranged from {min} to {max}. The ones that don't save get published too."
     }
   },

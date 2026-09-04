@@ -740,7 +740,10 @@
       "permanencia": "Un mese senza risparmio? Commissione: {cero}. <b>Senza vincoli</b> — e la tua prima fattura variabile contiene solo numeri che hai già visto nel tuo estratto."
     },
     "trabajos": {
-      "title": "Ogni lavoro, il suo taglio",
+      "pajaTitle": "Se la spedizione porta paglia…",
+      "pajaBody": "…il varco la toglie prima di pagare: il pacco arriva al cloud molto più piccolo e la differenza cade nel tuo barattolo.",
+      "magroTitle": "Se è già magra…",
+      "magroBody": "…passa intatta. Lì non c'è nulla da togliere — e non promettiamo risparmi dove non ce ne sono.",
       "caption": "Non tutte le spedizioni portano la stessa paglia: in questa tornata, il taglio misurato per scenario è andato da {min} a {max}. Anche quelli che non risparmiano vengono pubblicati."
     }
   },

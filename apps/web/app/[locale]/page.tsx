@@ -332,22 +332,37 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
           {/* La tabla de escenarios, los chips y la nota de caché eran
               «demasiado concreto y científico» para la landing (dueño,
-              04-09): viven en el panel. Aquí, la misma verdad en una
-              animación — cada trabajo lleva una paja distinta y se recorta
-              en su medida — y UNA línea con el rango real de la tirada,
-              con las cifras llegando del artefacto. */}
+              04-09): viven en el panel. La cinta única tampoco se entendía
+              (dueño, misma tarde), así que la idea va PARTIDA EN DOS
+              animaciones de una sola caja — con paja se recorta mucho,
+              magra pasa intacta — y UNA línea con el rango real de la
+              tirada, con las cifras llegando del artefacto. */}
           <div className="trabajos">
-            <div className="explica-card">
-              <VideoExplicativo
-                src="/videos/explica-6.mp4"
-                poster="/videos/explica-6.jpg"
-                etiqueta={t("trabajos.title")}
-              />
-              <div className="explica-texto">
-                <h4>{t("trabajos.title")}</h4>
-                <p>{t("trabajos.caption", { min: rangoMin, max: rangoMax })}</p>
+            <div className="explica-grid">
+              <div className="explica-card">
+                <VideoExplicativo
+                  src="/videos/trabajos-paja.mp4"
+                  poster="/videos/trabajos-paja.jpg"
+                  etiqueta={t("trabajos.pajaTitle")}
+                />
+                <div className="explica-texto">
+                  <h4>{t("trabajos.pajaTitle")}</h4>
+                  <p>{t("trabajos.pajaBody")}</p>
+                </div>
+              </div>
+              <div className="explica-card">
+                <VideoExplicativo
+                  src="/videos/trabajos-magro.mp4"
+                  poster="/videos/trabajos-magro.jpg"
+                  etiqueta={t("trabajos.magroTitle")}
+                />
+                <div className="explica-texto">
+                  <h4>{t("trabajos.magroTitle")}</h4>
+                  <p>{t("trabajos.magroBody")}</p>
+                </div>
               </div>
             </div>
+            <p className="explica-nota">{t("trabajos.caption", { min: rangoMin, max: rangoMax })}</p>
           </div>
         </section>
 

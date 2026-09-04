@@ -740,7 +740,10 @@
       "permanencia": "Un mois sans économie ? Commission : {cero}. <b>Sans engagement</b> — et votre première facture variable ne contient que des chiffres déjà vus sur votre relevé."
     },
     "trabajos": {
-      "title": "Chaque tâche, sa propre coupe",
+      "pajaTitle": "Si l'envoi porte du rembourrage…",
+      "pajaBody": "…le portique le retire avant de payer : le colis arrive au nuage bien plus petit et la différence tombe dans votre bocal.",
+      "magroTitle": "S'il est déjà maigre…",
+      "magroBody": "…il passe intact. Il n'y a rien à retirer — et nous ne promettons pas d'économies là où il n'y en a pas.",
       "caption": "Tous les envois ne portent pas le même rembourrage : dans cette série, la coupe mesurée par scénario est allée de {min} à {max}. Ceux qui n'économisent rien sont publiés aussi."
     }
   },

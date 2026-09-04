@@ -740,7 +740,10 @@
       "permanencia": "Sebulan tanpa penghematan? Komisi: {cero}. <b>Tanpa kontrak</b> — dan faktur variabel pertamamu hanya berisi angka yang sudah kamu lihat di rekeningmu."
     },
     "trabajos": {
-      "title": "Setiap pekerjaan, potongannya sendiri",
+      "pajaTitle": "Jika kiriman membawa isian…",
+      "pajaBody": "…gerbang membuangnya sebelum Anda membayar: paket tiba di cloud jauh lebih kecil dan selisihnya jatuh ke toples Anda.",
+      "magroTitle": "Jika sudah ramping…",
+      "magroBody": "…lewat tanpa disentuh. Tak ada yang perlu dibuang — dan kami tidak menjanjikan penghematan yang tidak ada.",
       "caption": "Tidak semua kiriman membawa isian yang sama: pada putaran ini, pemangkasan terukur per skenario berkisar dari {min} sampai {max}. Yang tidak menghemat pun tetap dipublikasikan."
     }
   },
