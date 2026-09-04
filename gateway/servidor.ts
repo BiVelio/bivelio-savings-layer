@@ -181,17 +181,20 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     const medido = costeMedido(model, uso);
     if (medido) {
       emisor.record(
-        coalescida ? informeCoalescido(requestId, model, medido, atribucion) : informeMedido(requestId, model, medido, atribucion),
+        coalescida
+          ? informeCoalescido(requestId, model, medido, atribucion)
+          : informeMedido(requestId, model, medido, atribucion, elision),
       );
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
-          // S4a · el borrado que el PROVEEDOR declaró para esta respuesta. De
-          // momento solo se ENSEÑA (log): al hilo del panel llegará con la
-          // regla servidor-primero (el ingest valida con lista blanca y un
-          // campo desconocido tira el lote entero — ver toWire).
+          // S4a · el borrado que el PROVEEDOR declaró para esta respuesta. El
+          // CONTEO de tokensLimpiados ya viaja al panel por eliminatedInput (campo
+          // wire eliminatedInputTokens, ya en la lista blanca — sin migración). El
+          // conteo de borrados y el DINERO de la elisión llegarán en Fase 2 con la
+          // regla servidor-primero (el ingest tira el lote ante un campo nuevo).
           (elision ? ` · elisión: ${elision.borrados} borrado(s), ${elision.tokensLimpiados} tok limpiados por el proveedor` : ""),
       );
       // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la

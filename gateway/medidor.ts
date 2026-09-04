@@ -357,8 +357,14 @@ export interface Atribucion {
   agentId?: string;
 }
 
-export function informeMedido(requestId: string, model: string, medido: RegistroMedido, atribucion?: Atribucion): SavingsReport {
-  return construirInforme(requestId, model, medido, false, atribucion);
+export function informeMedido(
+  requestId: string,
+  model: string,
+  medido: RegistroMedido,
+  atribucion?: Atribucion,
+  elision?: ElisionAplicada | null,
+): SavingsReport {
+  return construirInforme(requestId, model, medido, false, atribucion, elision);
 }
 
 /**
@@ -423,6 +429,7 @@ function construirInforme(
   medido: RegistroMedido,
   coalescida: boolean,
   atribucion?: Atribucion,
+  elision?: ElisionAplicada | null,
 ): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   const informe = {
@@ -433,7 +440,11 @@ function construirInforme(
     tokens: {
       baselineInput: entradaTotal,
       actualInput: coalescida ? 0 : entradaTotal,
-      eliminatedInput: 0,
+      // S4a · los tokens que el PROVEEDOR declaró borrados (su contador). Solo en
+      // la rama medida: una gemela coalescida no viajó, así que no elidió nada.
+      // Es un CONTEO (viaja por el campo wire eliminatedInputTokens, ya en la
+      // lista blanca del ingest); el dinero de la elisión es harina de otro costal.
+      eliminatedInput: coalescida ? 0 : elision?.tokensLimpiados ?? 0,
       compressedInput: 0,
       baselineOutput: medido.tokens.salida,
       actualOutput: coalescida ? 0 : medido.tokens.salida,
