@@ -21,7 +21,25 @@ export type Feature =
   | "dashboards"
   | "cross_tenant_optimization"
   | "long_context_compression"
-  | "priority_support";
+  | "priority_support"
+  | "context_elision";
+
+/**
+ * Runtime mirror of the `Feature` union, for gates and parity tests. The
+ * `_exhaustiva` check makes forgetting a literal here a COMPILE error, so the
+ * union and this array cannot drift apart.
+ */
+export const FEATURES = [
+  "semantic_cache",
+  "learned_thresholds",
+  "dashboards",
+  "cross_tenant_optimization",
+  "long_context_compression",
+  "priority_support",
+  "context_elision",
+] as const satisfies readonly Feature[];
+const _exhaustiva: [Exclude<Feature, (typeof FEATURES)[number]>] extends [never] ? true : never = true;
+void _exhaustiva;
 
 /** The signed payload embedded in a license token. */
 export interface LicensePayload {

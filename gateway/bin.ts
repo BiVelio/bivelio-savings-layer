@@ -56,6 +56,12 @@ Entorno:
   BVSALA_GATEWAY_SHADOW  =1 enciende el carril sombra de la elisión (S2): calcula qué
                          habría ahorrado la política v0 SIN tocar el tráfico y lo
                          reporta aparte (jamás entra en la comisión).
+  BVSALA_GATEWAY_ELISION =1 arma la palanca de diales del proveedor (S4a). Solo se
+                         enciende de verdad si además la licencia de tu organización
+                         trae el feature context_elision (consulta fail-closed): ajusta
+                         SOLO el bloque context_management de cada petición /v1/messages
+                         y el borrado lo hace el propio proveedor. Ante cualquier duda,
+                         la petición viaja intacta.
   BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
   BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
                          (por defecto va silenciado para no pisar el TUI; mira el panel).
@@ -145,6 +151,10 @@ const arranque = await arrancarGateway({
       : {}),
   ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
   ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
+  // S4a · la palanca de diales del proveedor. La bandera local es la mitad del
+  // doble opt-in: sin el feature `context_elision` en la licencia de la org
+  // (canal de entitlements, fail-closed) sigue sin encenderse nada.
+  ...(process.env.BVSALA_GATEWAY_ELISION === "1" ? { elision: true } : {}),
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),

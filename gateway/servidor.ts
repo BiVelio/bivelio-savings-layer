@@ -17,6 +17,8 @@ import {
   type UsoSse,
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
+import { CanalDeEntitlements } from "./entitlements.js";
+import { ajustarDiales, conBetaDeElision } from "./palanca.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -66,6 +68,14 @@ export interface OpcionesGateway {
    * turno con la elisión encendida y lo emite como `basis:"shadow"`.
    */
   sombra?: boolean;
+  /**
+   * S4a · la PALANCA de diales del proveedor. APAGADA por defecto: el
+   * encendido efectivo es un doble opt-in — esta bandera local
+   * (BVSALA_GATEWAY_ELISION=1) Y el feature `context_elision` en la licencia
+   * de la org, consultado por el canal de entitlements (fail-closed a
+   * apagado). Ante cualquier duda la petición viaja intacta.
+   */
+  elision?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -114,6 +124,23 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // El carril sombra solo existe con emisor: sin clave de servicio no hay
   // dónde reportar y simular sería gastar CPU del cliente para nada.
   const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
+
+  // S4a · el canal de entitlements solo existe con la bandera local Y clave de
+  // servicio: sin clave no hay org que consultar. La URL sale del mismo origen
+  // que la ingesta (meteringUrl), así que dev y tests apuntan a su plataforma
+  // falsa sin opciones nuevas.
+  const canalElision =
+    opts.elision && opts.serviceAccountKey
+      ? new CanalDeEntitlements({
+          url: new URL(
+            "/api/org/entitlements",
+            opts.meteringUrl ?? "https://savings.bivelio.com/api/metering/usage",
+          ).toString(),
+          serviceAccountKey: opts.serviceAccountKey,
+          ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
+          log,
+        })
+      : null;
 
   /**
    * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
@@ -282,12 +309,37 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (k === "host" || k === "content-length" || v === undefined) continue;
         h[k] = Array.isArray(v) ? v.join(", ") : v;
       }
+
+      // ── S4a · la palanca de diales (doble opt-in, passthrough ante la duda) ──
+      // Se ajusta SOLO context_management + la beta; la MEDICIÓN (los medir()
+      // de abajo) y la clave de coalescencia siguen usando el cuerpo ORIGINAL
+      // del cliente. Tres interruptores: la bandera local (canalElision existe),
+      // el feature per-org (fail-closed), y este try — cualquier anomalía
+      // reenvía el cuerpo intacto, jamás un error.
+      let cuerpoSaliente = cuerpo;
+      if (
+        canalElision !== null &&
+        req.method === "POST" &&
+        url.pathname === "/v1/messages" &&
+        canalElision.tiene("context_elision")
+      ) {
+        try {
+          const ajustado = ajustarDiales(cuerpo, codificacion);
+          if (ajustado !== null) {
+            cuerpoSaliente = ajustado;
+            h["anthropic-beta"] = conBetaDeElision(h["anthropic-beta"]);
+          }
+        } catch {
+          /* passthrough */
+        }
+      }
+
       let upstream: Response;
       try {
         upstream = await fetchImpl(url, {
           method: req.method,
           headers: h,
-          body: ["GET", "HEAD"].includes(req.method ?? "") ? undefined : cuerpo,
+          body: ["GET", "HEAD"].includes(req.method ?? "") ? undefined : cuerpoSaliente,
           redirect: "manual",
           signal: ac.signal,
         });
