@@ -15,9 +15,6 @@ import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
 import { NetSavingsCIBand } from "@/app/[locale]/dashboard/components/NetSavingsCIBand";
 import { ReferenceLedgerCards } from "@/app/[locale]/dashboard/components/ReferenceLedgerCards";
-import { IntegrityQualityChips } from "@/app/[locale]/dashboard/components/IntegrityQualityChips";
-import { ScenarioTable } from "@/app/[locale]/dashboard/components/ScenarioTable";
-import { CacheBreakEven } from "@/app/[locale]/dashboard/components/CacheBreakEven";
 import Footer from "@/app/components/Footer";
 import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
@@ -142,6 +139,14 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   // La traducción llana enseña el decimal: es la misma cota que publica el
   // héroe (23,1%), y redondearla aquí haría que las dos cifras no cuadrasen.
   const pctLocal1 = (n: number) => (n * 100).toLocaleString(locale, { maximumFractionDigits: 1 }) + "%";
+
+  // El rango real de la tirada, escenario a escenario — sustituye a la tabla
+  // en la landing sin inventar nada: mínimo y máximo medidos del artefacto.
+  const puntosEscenario = ab.scenarios
+    .map((s) => s.measured?.savings?.point)
+    .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+  const rangoMin = pctLocal1(Math.min(...puntosEscenario));
+  const rangoMax = pctLocal1(Math.max(...puntosEscenario));
   const moneyLocal = (n: number) =>
     n.toLocaleString(locale, { style: "currency", currency: moneda, maximumFractionDigits: 0 });
   const tramosLocal = TRAMOS.map((tr) =>
@@ -324,14 +329,24 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div style={{ marginTop: "16px" }}>
               <ReferenceLedgerCards ab={ab} />
             </div>
-            <div style={{ marginTop: "16px" }}>
-              <IntegrityQualityChips ab={ab} />
-            </div>
-            <div style={{ marginTop: "16px" }}>
-              <ScenarioTable scenarios={ab.scenarios} />
-            </div>
-            <div style={{ marginTop: "16px" }}>
-              <CacheBreakEven ab={ab} />
+          </div>
+          {/* La tabla de escenarios, los chips y la nota de caché eran
+              «demasiado concreto y científico» para la landing (dueño,
+              04-09): viven en el panel. Aquí, la misma verdad en una
+              animación — cada trabajo lleva una paja distinta y se recorta
+              en su medida — y UNA línea con el rango real de la tirada,
+              con las cifras llegando del artefacto. */}
+          <div className="trabajos">
+            <div className="explica-card">
+              <VideoExplicativo
+                src="/videos/explica-6.mp4"
+                poster="/videos/explica-6.jpg"
+                etiqueta={t("trabajos.title")}
+              />
+              <div className="explica-texto">
+                <h4>{t("trabajos.title")}</h4>
+                <p>{t("trabajos.caption", { min: rangoMin, max: rangoMax })}</p>
+              </div>
             </div>
           </div>
         </section>

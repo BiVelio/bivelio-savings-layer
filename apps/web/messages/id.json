@@ -738,6 +738,10 @@
       "garantia": "Dan <b>Anda selalu menyimpan {garantia} atau lebih</b> dari setiap euro yang dihemat: komisi hanya ada jika penghematan terukur Anda ada.",
       "tramos": "<b>Berjenjang, tiap jenjang dengan tarifnya</b> — {tramos}. Makin besar hematmu, makin kecil persentase kami.",
       "permanencia": "Sebulan tanpa penghematan? Komisi: {cero}. <b>Tanpa kontrak</b> — dan faktur variabel pertamamu hanya berisi angka yang sudah kamu lihat di rekeningmu."
+    },
+    "trabajos": {
+      "title": "Setiap pekerjaan, potongannya sendiri",
+      "caption": "Tidak semua kiriman membawa isian yang sama: pada putaran ini, pemangkasan terukur per skenario berkisar dari {min} sampai {max}. Yang tidak menghemat pun tetap dipublikasikan."
     }
   },
   "invitacion": {

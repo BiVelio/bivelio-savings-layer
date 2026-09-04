@@ -738,6 +738,10 @@
       "garantia": "I <b>zawsze zatrzymujesz {garantia} lub więcej</b> z każdego zaoszczędzonego euro: prowizja istnieje tylko wtedy, gdy istnieją Twoje zmierzone oszczędności.",
       "tramos": "<b>Progowo, każdy próg według własnej stawki</b> — {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
       "permanencia": "Miesiąc bez oszczędności? Prowizja: {cero}. <b>Bez zobowiązań</b> — a Twoja pierwsza zmienna faktura zawiera tylko liczby, które już widziałeś na wyciągu."
+    },
+    "trabajos": {
+      "title": "Każde zadanie ma własne cięcie",
+      "caption": "Nie każda przesyłka niesie tyle samo wypełniacza: w tym przebiegu zmierzone cięcie na scenariusz wyniosło od {min} do {max}. Te, które nie oszczędzają, też publikujemy."
     }
   },
   "invitacion": {

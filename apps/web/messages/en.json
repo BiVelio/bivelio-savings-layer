@@ -738,6 +738,10 @@
       "garantia": "And <b>you always keep {garantia} or more</b> of every euro saved: the commission only exists when your measured savings exist.",
       "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
       "permanencia": "A month with no savings? Commission: {cero}. <b>No lock-in</b> — and your first variable invoice only contains numbers you already saw on your statement."
+    },
+    "trabajos": {
+      "title": "Each job, its own trim",
+      "caption": "Not every shipment carries the same padding: in this run, the measured trim per scenario ranged from {min} to {max}. The ones that don't save get published too."
     }
   },
   "invitacion": {

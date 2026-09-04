@@ -738,6 +738,10 @@
       "garantia": "Và <b>bạn luôn giữ lại {garantia} trở lên</b> của mỗi euro tiết kiệm được: hoa hồng chỉ tồn tại khi khoản tiết kiệm đo được của bạn tồn tại.",
       "tramos": "<b>Theo bậc, mỗi bậc theo mức riêng</b> — {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
       "permanencia": "Một tháng không có tiết kiệm? Hoa hồng: {cero}. <b>Không ràng buộc</b> — và hóa đơn biến đổi đầu tiên chỉ chứa những con số bạn đã thấy trong sao kê."
+    },
+    "trabajos": {
+      "title": "Mỗi công việc, một mức cắt riêng",
+      "caption": "Không phải gói gửi nào cũng độn nhiều như nhau: trong đợt chạy này, mức cắt đo được theo từng kịch bản dao động từ {min} đến {max}. Những kịch bản không tiết kiệm cũng được công bố."
     }
   },
   "invitacion": {

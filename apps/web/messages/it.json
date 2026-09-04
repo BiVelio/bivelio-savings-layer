@@ -738,6 +738,10 @@
       "garantia": "E <b>ti tieni sempre il {garantia} o più</b> di ogni euro risparmiato: la commissione esiste solo quando esiste il tuo risparmio misurato.",
       "tramos": "<b>A scaglioni, ciascuno alla sua aliquota</b> — {tramos}. Più risparmi, più basso è il nostro percentuale.",
       "permanencia": "Un mese senza risparmio? Commissione: {cero}. <b>Senza vincoli</b> — e la tua prima fattura variabile contiene solo numeri che hai già visto nel tuo estratto."
+    },
+    "trabajos": {
+      "title": "Ogni lavoro, il suo taglio",
+      "caption": "Non tutte le spedizioni portano la stessa paglia: in questa tornata, il taglio misurato per scenario è andato da {min} a {max}. Anche quelli che non risparmiano vengono pubblicati."
     }
   },
   "invitacion": {

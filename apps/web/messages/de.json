@@ -738,6 +738,10 @@
       "garantia": "Und <b>dir bleiben immer {garantia} oder mehr</b> jedes gesparten Euros: die Provision existiert nur, wenn deine gemessene Ersparnis existiert.",
       "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
       "permanencia": "Ein Monat ohne Ersparnis? Provision: {cero}. <b>Keine Bindung</b> — und deine erste variable Rechnung enthält nur Zahlen, die du schon auf deiner Abrechnung gesehen hast."
+    },
+    "trabajos": {
+      "title": "Jede Aufgabe, ihr eigener Zuschnitt",
+      "caption": "Nicht jede Sendung trägt dieselbe Füllung: In diesem Lauf reichte der gemessene Zuschnitt je Szenario von {min} bis {max}. Auch die, die nichts sparen, werden veröffentlicht."
     }
   },
   "invitacion": {
