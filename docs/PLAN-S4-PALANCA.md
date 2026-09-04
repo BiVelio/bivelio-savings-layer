@@ -261,7 +261,7 @@ gratis, porque la sombra corre sobre el tráfico ya ajustado):
 | Días | Trabajo | Sale |
 |---|---|---|
 | 1–2 | Anillo 0: replay de diales contra `count_tokens` sobre el corpus + módulo de diales con parámetros nombrados | La cifra «X %/mes con estos diales», del contador del proveedor, sin tocar tráfico |
-| 2–4 | Gate per-org (`context_elision` + canal de entitlements al gateway, fail-closed) + palanca en servidor.ts (pura, degradante, testeada con upstream falso que rechaza la beta) | Palanca construida, apagada, con sus tres interruptores |
+| 2–4 | ✅ **HECHO (04-09)** — Gate per-org (`context_elision` en la unión `Feature` + `GET /api/org/entitlements` autenticado por bvk\_ + `CanalDeEntitlements` fail-closed en la pasarela) + palanca (`gateway/palanca.ts`: pura, sustituye solo `context_management` y fusiona la beta sin pisar las del cliente; cableada en servidor.ts tras la coalescencia; medición y clave de coalescencia sobre el cuerpo ORIGINAL). Interruptores: bandera local `BVSALA_GATEWAY_ELISION=1` (apagada por defecto) · feature per-org retirable (propaga ≤ 5 min, fail-closed) · passthrough ante cualquier anomalía. Verjas: test/gateway-palanca.test.ts (12) + org-entitlements (5) + features-en-paridad (3, ata las TRES listas de features que vivían sueltas) | Palanca construida, apagada, con sus tres interruptores |
 | 4–7 | Anillo 1: corpus de 10–15 tareas con verificador + carril 2 mínimo (pares, sal de frío, éxito de tarea, QUALITY_FLOOR) | La verja que S4b también necesitará |
 | 7–8 | Medición: applied_edits → informe measured de palanca propia + panel/extracto (carril medido; la sombra sigue aparte) | El ahorro S4a visible y facturable |
 | 8–14 | Anillo 2: org propia, días alternos, barrido de diales si hace falta | La evidencia para el opt-in de clientes |
@@ -286,8 +286,15 @@ S4b arranca solo después, con sus prerequisitos y su propia decisión.
 
 ## 6. Qué se decide hoy (dueño)
 
+> **✅ LAS TRES APROBADAS por el dueño el 2026-09-04, tal como estaban
+> propuestas** (literal: «1) Sí … 2) Variante b … 3) ≥ 8 puntos sostenidos …
+> así que sabiéndolo todo a tope!»). Los días 2–4 del cronograma quedan
+> desbloqueados.
+
 1. **La partición S4a/S4b y el orden** (este plan). Sin esto no hay quincena.
+   — **APROBADA.**
 2. **Postura ToS para S4a**: variante (b) con superficie mínima — ajustar SOLO
    `context_management`. (S4b tendrá su propia decisión más adelante.)
+   — **APROBADA.**
 3. **El umbral del opt-in de clientes** (propuesta del plan maestro: sombra
-   propia ≥ 8 puntos sostenidos; aquí no cambia).
+   propia ≥ 8 puntos sostenidos; aquí no cambia). — **APROBADA.**
