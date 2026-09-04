@@ -704,6 +704,15 @@ input[type="range"] { accent-color: var(--brand); }
 /* Una pérdida no se pinta de verde. La clase existía sin regla, así que un
    ahorro negativo heredaba el color del texto normal. */
 .verdict .big.neg { color: var(--danger); }
+
+/* La tarjeta de sombra usaba `big`/`sub`/`src` con ámbito .verdict/.kpi y su
+   letra salía por defecto, distinta del resto del panel (dueño, 04-09): el
+   mismo tratamiento tipográfico que sus tarjetas hermanas, con ámbito propio. */
+.sombra-elision .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.sombra-elision .big.pos { color: var(--mint); }
+.sombra-elision .big.neg { color: var(--danger); }
+.sombra-elision .sub { font-size: .78rem; color: var(--ink-soft); }
+.sombra-elision .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
 .verdict .cap { font-size: .82rem; color: var(--ink-soft); margin-top: 10px; max-width: 40ch; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
 .seg button { background: var(--surface); border: none; padding: 6px 12px; font-size: .76rem; color: var(--ink-soft); font-family: var(--sans); cursor: default; }

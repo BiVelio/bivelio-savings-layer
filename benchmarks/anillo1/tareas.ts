@@ -110,8 +110,8 @@ function tareaAguja500(): Tarea {
     turnosMax: 8,
     construir() {
       const r = prng(semilla);
-      const objetivo = entero(r, 400, 900);
-      const log = logDeApp(r, 1100, (i) =>
+      const objetivo = entero(r, 900, 2100);
+      const log = logDeApp(r, 2600, (i) =>
         i === objetivo ? `{ts} ERROR [pagos] POST /api/facturas rid=${ridBueno} status=500 dur=1204ms` : null,
       );
       return { ficheros: new Map([["logs/app.log", log]]) };
@@ -135,8 +135,8 @@ function tareaReintentos(): Tarea {
       const r = prng(semilla);
       let puestos = 0;
       const posiciones = new Set<number>();
-      while (posiciones.size < cuantos) posiciones.add(entero(r, 10, 1180));
-      const log = logDeApp(r, 1200, (i) => {
+      while (posiciones.size < cuantos) posiciones.add(entero(r, 10, 2500));
+      const log = logDeApp(r, 2600, (i) => {
         if (posiciones.has(i)) {
           puestos++;
           return `{ts} WARN  [worker-7] retry attempt ${puestos} job=job_${hex(r, 6)}`;
@@ -174,7 +174,7 @@ function tareaCommitRoto(): Tarea {
         .join("\n");
       const bloques = hashes.map((h, i) => {
         const verde = i < idxRoto;
-        const detalle = logDeApp(r, 22);
+        const detalle = logDeApp(r, 60);
         return `=== CI commit ${h} ===\n${detalle}resultado: ${verde ? "PASSED 214/214" : "FAILED 209/214 (5 rojos en facturas)"}\n`;
       });
       return {
@@ -445,7 +445,7 @@ function tareaMigrarJson(): Tarea {
     const r = prng(semilla);
     const fs: Workspace = new Map();
     for (const ruta of rutas) {
-      const filas = Array.from({ length: entero(r, 20, 40) }, (_, i) => ({
+      const filas = Array.from({ length: entero(r, 150, 240) }, (_, i) => ({
         concepto: `linea-${i}-${hex(r, 4)}`,
         precio: entero(r, 1, 500) + entero(r, 0, 99) / 100,
       }));
@@ -496,7 +496,7 @@ function tareaAuditoriaTodos(): Tarea {
     for (let n = 0; n < 8; n++) {
       const ruta = `src/modulo-${n}.ts`;
       const lineas: string[] = [];
-      const total = entero(r, 30, 70);
+      const total = entero(r, 320, 480);
       for (let i = 0; i < total; i++) {
         if (r() < 0.06) {
           lineas.push(`// TODO ${hex(r, 6)}: pendiente`);
@@ -569,12 +569,53 @@ function tareaEndpointLento(): Tarea {
     construir() {
       const r = prng(semilla);
       const lento = "/api/informes/anual";
-      const log = logDeApp(r, 1000, (i) =>
+      const log = logDeApp(r, 2400, (i) =>
         i % 37 === 0 ? `{ts} INFO  [informes] GET ${lento} rid=req_${hex(r, 8)} status=200 dur=${entero(r, 5200, 9800)}ms` : null,
       );
       return { ficheros: new Map([["logs/acceso.log", log]]) };
     },
     verificar: (_e, respuesta) => respuesta.includes("/api/informes/anual"),
+  };
+}
+
+function tareaCadenaDePartes(): Tarea {
+  const semilla = 89;
+  let totalErrores = 0;
+  const construir = (): EstadoDeTarea => {
+    const r = prng(semilla);
+    const fs: Workspace = new Map();
+    totalErrores = 0;
+    for (let parte = 1; parte <= 6; parte++) {
+      let deEsta = 0;
+      const log = logDeApp(r, 520, (i) => {
+        // ~55-65 errores por parte → >300 en total: el tope de 200 de `buscar`
+        // hace IMPOSIBLE contarlos sin leer las partes enteras.
+        if (i % 9 === 3) {
+          deEsta++;
+          return `{ts} ERROR [${eleccion(r, SERVICIOS)}] fallo transitorio codigo=${entero(r, 1000, 9999)}`;
+        }
+        return null;
+      });
+      totalErrores += deEsta;
+      const cola = parte < 6 ? `\n--- continúa en logs/parte-${parte + 1}.log ---\n` : "\n--- fin de la rotación ---\n";
+      fs.set(`logs/parte-${parte}.log`, log + cola);
+    }
+    return { ficheros: fs };
+  };
+  return {
+    id: "log-cadena-de-partes",
+    clase: "log",
+    sistema: SISTEMA_BASE,
+    enunciado:
+      "El log rotado vive en logs/parte-1.log … parte-6.log. Cuenta cuántas líneas ERROR hay EN TOTAL " +
+      "entre las seis partes y entrega solo el número. Ojo: buscar está capado a 200 coincidencias y aquí hay más — " +
+      "lee cada parte entera con leer_fichero.",
+    turnosMax: 14,
+    construir,
+    verificar: (_e, respuesta) => {
+      const numeros: string[] = respuesta.match(/\d+/g) ?? [];
+      return totalErrores > 200 && numeros.includes(String(totalErrores));
+    },
   };
 }
 
@@ -585,6 +626,7 @@ export function tareasDelAnillo1(): Tarea[] {
     tareaReintentos(),
     tareaCommitRoto(),
     tareaEndpointLento(),
+    tareaCadenaDePartes(),
     tareaOffByOne(),
     tareaRenombrar(),
     tareaQuienLlama(),

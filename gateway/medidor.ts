@@ -41,6 +41,7 @@ export interface UsoSse {
 export class ObservadorSse {
   private resto = "";
   private uso: UsoSse | null = null;
+  private elisionObservada: ElisionAplicada | null = null;
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
@@ -55,7 +56,15 @@ export class ObservadorSse {
       const data = /^data: (.+)$/m.exec(bloque)?.[1];
       if (!data) continue;
       try {
-        const d = JSON.parse(data) as { usage?: UsoSse; message?: { usage?: UsoSse } };
+        const d = JSON.parse(data) as {
+          usage?: UsoSse;
+          message?: { usage?: UsoSse };
+          context_management?: unknown;
+        };
+        // S4a · el borrado del proveedor viaja en el evento message_delta
+        // (sondeado en vivo el 04-09: en message_start va a null).
+        const elision = elisionDeContextManagement(d.context_management);
+        if (elision) this.elisionObservada = elision;
         const usage = d.usage ?? d.message?.usage;
         if (usage) {
           // El objeto anidado se FUSIONA, no se pisa: un delta que trajera un
@@ -80,6 +89,42 @@ export class ObservadorSse {
   /** El usage solo si el proveedor emitió su evento FINAL (message_delta). */
   usageFinal(): UsoSse | null {
     return (this.eventos["message_delta"] ?? 0) > 0 ? this.uso : null;
+  }
+
+  /** Los borrados que el PROVEEDOR declaró para esta respuesta (S4a), si hubo. */
+  elision(): ElisionAplicada | null {
+    return this.elisionObservada;
+  }
+}
+
+/** Lo que el proveedor declara haber borrado en una respuesta (su contador, no el nuestro). */
+export interface ElisionAplicada {
+  borrados: number;
+  tokensLimpiados: number;
+}
+
+/** Extrae los applied_edits de un bloque context_management (forma sondeada en vivo). */
+export function elisionDeContextManagement(cm: unknown): ElisionAplicada | null {
+  if (cm === null || typeof cm !== "object") return null;
+  const edits = (cm as { applied_edits?: unknown }).applied_edits;
+  if (!Array.isArray(edits) || edits.length === 0) return null;
+  let tokens = 0;
+  for (const e of edits) {
+    const t = (e as { cleared_input_tokens?: unknown }).cleared_input_tokens;
+    if (typeof t === "number" && Number.isFinite(t) && t > 0) tokens += t;
+  }
+  return { borrados: edits.length, tokensLimpiados: tokens };
+}
+
+/** La elisión declarada en una respuesta JSON (stream:false): bloque top-level. */
+export function elisionDeJson(cuerpo: Buffer | string): ElisionAplicada | null {
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as {
+      context_management?: unknown;
+    };
+    return elisionDeContextManagement(d.context_management);
+  } catch {
+    return null;
   }
 }
 
