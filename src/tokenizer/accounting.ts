@@ -125,16 +125,16 @@ export class SavingsLedger {
   /** Tokens que la capa quitó de ese prompt, en cuenta LOCAL. */
   removedInputLocal = 0;
   /**
-   * Tokens (regla LOCAL) que la ELISIÓN de tool_results borró del prompt
-   * enviado. Existen para RESTARSE de `removedInputLocal`: el borrado real baja
-   * `sentInputLocal`, así que sin esta corrección el ahorro de elisión entraría
-   * en el baseline reconstruido y en la comisión, etiquetado "estimated". La
-   * doctrina es la contraria —«conteo vivo + dinero por sombra»—: la elisión es
-   * CONTEO (ledger 2 `eliminatedInput`), su dólar lo mide el carril sombra fuera
-   * de comisión, y el `basis` no se mueve de "measured". Se distingue a propósito
-   * del drop del tool-selector, que SÍ cuenta en el baseline (una herramienta
-   * declarada que no se envía es ahorro atribuible; un tool_result superado es
-   * redundancia que aún no se cobra como comprobable contra factura).
+   * Tokens (LOCAL ruler) that tool_result ELISION removed from the sent prompt.
+   * They exist to be SUBTRACTED from `removedInputLocal`: live deletion really
+   * lowers `sentInputLocal`, so without this correction the elision saving would
+   * enter the reconstructed baseline and the commission, labelled "estimated".
+   * The doctrine is the opposite — "live count, shadow money": elision is a COUNT
+   * (ledger 2 `eliminatedInput`), its dollar is measured by the shadow lane out
+   * of commission, and `basis` stays "measured". Deliberately distinct from the
+   * tool-selector drop, which DOES count in the baseline (a declared tool that is
+   * not sent is an attributable saving; a superseded tool_result is redundancy
+   * not yet billed as verifiable against the invoice).
    */
   elididoLocal = 0;
   /**
