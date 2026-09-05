@@ -126,7 +126,14 @@ export async function POST() {
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const features = ["semantic_cache", "dashboards", "long_context_compression"];
+  // ANILLO-0. `tool_result_elision` vive AQUÍ —la ruta interna, cerrada a la
+  // allow-list del dueño— y NO en `PRO_FEATURES` (lib/license/issue.ts), la lista
+  // que firma Stripe. Así el borrado en vivo de tool_results del SDK (la
+  // supersesión: `pipeline.ts` exige este feature en el token, verificado offline)
+  // se enciende SOLO para nosotros al re-emitir por esta ruta; el tráfico de los
+  // clientes de pago no cambia. Ampliar el anillo = mover el feature a PRO_FEATURES,
+  // decisión deliberada y aparte, nunca un efecto colateral de tocar esta lista.
+  const features = ["semantic_cache", "dashboards", "long_context_compression", "tool_result_elision"];
   // Bare-uuid jti so it doubles as the `bvsala.licenses.id` (the table's id == jti
   // invariant). `iss: "bivelio-internal"` — not a jti prefix — is what marks it
   // internal, and the SDK matches jti by exact string, so this verifies/revokes
