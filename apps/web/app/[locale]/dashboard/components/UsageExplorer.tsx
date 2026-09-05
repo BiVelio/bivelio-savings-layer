@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { UsageRollup, ModelDia } from "../data";
-import { money, intfmt } from "../format";
+import { money, intfmt, compact, pct0 } from "../format";
 import {
   cortarPorPeriodo,
   serieDiaria,
@@ -38,7 +38,12 @@ export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porM
   const [metrica, setMetrica] = useState<Metrica>("neto");
   const [vista, setVista] = useState<Vista>("dia");
 
-  const fmt = (v: number): string => (metrica === "neto" ? money(v) : intfmt(v));
+  // Etiqueta de barra: dinero para el ahorro neto, exacto para peticiones (un
+  // recuento pequeño se quiere entero), compacto para tokens (millones). El
+  // número EXACTO viaja en el tooltip vía `fmtExact`, nunca se pierde.
+  const fmt = (v: number): string =>
+    metrica === "neto" ? money(v) : metrica === "peticiones" ? intfmt(v) : compact(v);
+  const fmtExact = (v: number): string => (metrica === "neto" ? money(v) : intfmt(v));
 
   const usageCortado = useMemo(() => cortarPorPeriodo(usage, periodo), [usage, periodo]);
   const modeloCortado = useMemo(() => cortarPorPeriodo(porModelo, periodo), [porModelo, periodo]);
@@ -109,11 +114,18 @@ export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porM
       </div>
 
       {vista === "modelo" ? (
-        <VistaModelo barras={barras} totalModelos={modelosTodos.length} fmt={fmt} t={t} />
+        <VistaModelo
+          barras={barras}
+          totalModelos={modelosTodos.length}
+          metrica={metrica}
+          fmt={fmt}
+          fmtExact={fmtExact}
+          t={t}
+        />
       ) : vista === "acumulado" ? (
-        <VistaAcumulada puntos={acumulada} fmt={fmt} t={t} />
+        <VistaAcumulada puntos={acumulada} metrica={metrica} fmt={fmt} t={t} />
       ) : (
-        <VistaDiaria puntos={diaria} metrica={metrica} fmt={fmt} t={t} />
+        <VistaDiaria puntos={diaria} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} />
       )}
     </div>
   );
@@ -126,11 +138,13 @@ function VistaDiaria({
   puntos,
   metrica,
   fmt,
+  fmtExact,
   t,
 }: {
   puntos: { day: string; valor: number }[];
   metrica: Metrica;
   fmt: (v: number) => string;
+  fmtExact: (v: number) => string;
   t: T;
 }) {
   if (puntos.length === 0) return <p className="ck-note">{t("usageExplorer.emptyPeriod")}</p>;
@@ -163,11 +177,19 @@ function VistaDiaria({
               rx={bw > 3 ? 1.5 : 0}
               fill={fill}
             >
-              <title>{`${p.day} · ${fmt(p.valor)}`}</title>
+              <title>{`${p.day} · ${fmtExact(p.valor)}`}</title>
             </rect>
           );
         })}
       </svg>
+      {puntos.length >= 2 && (
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>{puntos[0]!.day}</span>
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
+            {puntos[puntos.length - 1]!.day}
+          </span>
+        </div>
+      )}
       <p className="ck-note">{t("usageExplorer.summaryDays", { value: fmt(total), days: puntos.length })}</p>
     </div>
   );
@@ -176,10 +198,12 @@ function VistaDiaria({
 /** Línea acumulada — hereda la vista de SavingsTrendChart, ahora por métrica. */
 function VistaAcumulada({
   puntos,
+  metrica,
   fmt,
   t,
 }: {
   puntos: { day: string; acumulado: number }[];
+  metrica: Metrica;
   fmt: (v: number) => string;
   t: T;
 }) {
@@ -195,12 +219,21 @@ function VistaAcumulada({
   const line = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
   const area = `${line} L${pts[pts.length - 1]!.x.toFixed(1)},${H - P} L${pts[0]!.x.toFixed(1)},${H - P} Z`;
   const final = puntos[puntos.length - 1]!.acumulado;
+  // Verde solo para el ahorro neto acumulado (un "win"); azul de marca para
+  // peticiones y tokens acumulados, que son consumo, no ahorro.
+  const color = metrica === "neto" ? "var(--success)" : "var(--brand)";
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={t("savingsTrendChart.chartAria")}>
-        <path d={area} fill="color-mix(in srgb, var(--success) 14%, transparent)" />
-        <path d={line} fill="none" stroke="var(--success)" strokeWidth="2" />
+        <path d={area} fill={`color-mix(in srgb, ${color} 14%, transparent)`} />
+        <path d={line} fill="none" stroke={color} strokeWidth="2" />
       </svg>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>{puntos[0]!.day}</span>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
+          {puntos[puntos.length - 1]!.day}
+        </span>
+      </div>
       <p className="ck-note">{t("usageExplorer.summaryDays", { value: fmt(final), days: puntos.length })}</p>
     </div>
   );
@@ -210,38 +243,55 @@ function VistaAcumulada({
 function VistaModelo({
   barras,
   totalModelos,
+  metrica,
   fmt,
+  fmtExact,
   t,
 }: {
   barras: { model: string; valor: number }[];
   totalModelos: number;
+  metrica: Metrica;
   fmt: (v: number) => string;
+  fmtExact: (v: number) => string;
   t: T;
 }) {
   if (barras.length === 0) return <p className="ck-note">{t("usageExplorer.modelEmpty")}</p>;
   const max = Math.max(...barras.map((b) => b.valor), 1);
   const total = barras.reduce((s, b) => s + b.valor, 0);
+  // Color semántico, no decorativo: verde solo cuando la métrica ES ahorro; azul
+  // de marca para peticiones y tokens (consumo). Antes todas las barras eran
+  // verdes ("win"), lo que hacía leer el consumo de tokens como si fuera ahorro.
+  const color = metrica === "neto" ? "var(--success)" : "var(--brand)";
   return (
     <div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {barras.map((b) => (
-          <div
-            key={b.model}
-            style={{ display: "grid", gridTemplateColumns: "minmax(0,150px) 1fr auto", gap: 10, alignItems: "center" }}
-          >
-            <span
-              className="mono"
-              title={b.model}
-              style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12 }}
+        {barras.map((b) => {
+          const cuota = total > 0 ? b.valor / total : 0;
+          return (
+            <div
+              key={b.model}
+              style={{ display: "grid", gridTemplateColumns: "minmax(0,150px) 1fr auto", gap: 10, alignItems: "center" }}
             >
-              {b.model}
-            </span>
-            <div className="track2">
-              <div className="fill2 win" style={{ width: `${Math.max(2, (b.valor / max) * 100)}%` }} />
+              <span
+                className="mono"
+                title={b.model}
+                style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12 }}
+              >
+                {b.model}
+              </span>
+              <div className="track2" title={`${b.model} · ${fmtExact(b.valor)}`}>
+                <div className="fill2" style={{ width: `${Math.max(2, (b.valor / max) * 100)}%`, background: color }} />
+              </div>
+              <span
+                className="mono"
+                style={{ fontSize: 12, display: "flex", gap: 7, alignItems: "baseline", justifyContent: "flex-end", whiteSpace: "nowrap" }}
+              >
+                <span>{fmt(b.valor)}</span>
+                <span style={{ color: "var(--muted)", fontSize: 11 }}>{pct0(cuota)}</span>
+              </span>
             </div>
-            <span className="mono" style={{ fontSize: 12 }}>{fmt(b.valor)}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <p className="ck-note">{t("usageExplorer.summaryModels", { value: fmt(total), n: totalModelos })}</p>
     </div>
