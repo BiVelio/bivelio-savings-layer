@@ -46,7 +46,7 @@ import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { compresionFiel, shouldCompress } from "../compression/compression.js";
-import { seleccionarElisionV0, aplicarElision, MUNON_ELISION } from "./elision.js";
+import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -88,16 +88,24 @@ declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
 declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
 
 /**
- * FIDELIDAD PRIMERO. La elisión v0 en vivo BORRA tráfico real (reescribe el
- * cuerpo de tool_results viejos por un muñón antes de reenviar), y el segmento
- * genérico donde actúa NO tiene guardián del proveedor como sí lo tiene S4a. Por
- * eso arranca APAGADA: mientras esto sea `false`, la etapa solo TRAZA lo que
- * HABRÍA elidido (para comparar contra el carril sombra), no toca `messages` ni
- * acredita nada. Se pone en `true` SOLO cuando la verja de fidelidad
- * (`benchmarks/fidelidad-elision.ts`) demuestre ≥0,999 sobre v0, y primero sobre
- * el tráfico del propio dueño (anillo-0). No cablear a `true` sin esa verja verde.
+ * FIDELIDAD PRIMERO. La elisión en vivo BORRA tráfico real (reescribe el cuerpo
+ * de tool_results superados por un muñón antes de reenviar). La política en vivo
+ * es la SUPERSESIÓN (`seleccionarSupersesion`): solo borra un resultado cuando
+ * uno estrictamente más nuevo vuelve a pedir el MISMO recurso — redundancia
+ * DEMOSTRABLE, no una apuesta de edad×tamaño como v0.
+ *
+ * Se enciende (`true`) SOLO con la verja de fidelidad en verde. Verja pasada el
+ * 2026-09-05 sobre `gpt-4o-mini`, juez `gpt-4o`, 5 reps, suelo 0,999: piso real
+ * 100,0 % sobre los casos con elisión (1 y 2 recursos supersedidos); los casos de
+ * recursos distintos declinan y no tocan nada (los que rompían v0).
+ *
+ * Encender esto NO cambia el tráfico de NINGÚN cliente actual: el borrado exige
+ * además el entitlement `tool_result_elision` (abajo, `this.entitled`), que NO
+ * lleva ninguna licencia PRO firmada todavía. Es el anillo-0: la máquina queda
+ * armada y verificada; conceder el feature a una org (re-emitir su token) es la
+ * válvula deliberada, separada de este flag.
  */
-const ELISION_EN_VIVO: boolean = false;
+const ELISION_EN_VIVO: boolean = true;
 
 /**
  * The BV-SALA execution pipeline.
@@ -1621,25 +1629,32 @@ export class SavingsPipeline {
       };
     }
 
-    // --- Etapa 9-bis: elisión v0 de tool_results (opt-in, license-gated, fidelidad primero). ---
+    // --- Etapa 9-bis: elisión por SUPERSESIÓN de tool_results (opt-in, license-gated, fidelidad primero). ---
     //
-    // Reescribe el cuerpo de los tool_results VIEJOS Y GORDOS por un muñón estable
-    // antes de reenviar —la política v0 (edad×tamaño) que el carril sombra mide en
-    // modo medir-solo—, sobre el segmento genérico «otro» que ninguna otra etapa
-    // toca. Va DESPUÉS de la compresión: la compresión reescribe prosa de usuario,
-    // esto quita salidas de herramienta enteras; son ortogonales y se acumulan
-    // sobre el mismo `let messages`.
+    // Reescribe por un muñón estable el cuerpo de un tool_result SOLO cuando un
+    // tool_result ESTRICTAMENTE MÁS NUEVO vuelve a pedir el MISMO recurso (misma
+    // herramienta + mismos argumentos): la relectura vigente vive en un bloque
+    // reciente, así que la copia vieja es peso muerto demostrable. Sirve a las
+    // apps que consumen la API por el SDK (el bucle de agente reenvía todo el
+    // historial cada turno); el carril terminal es medir-solo por doctrina.
+    //
+    // Es MÁS conservadora que la v0 (edad×tamaño) que el carril sombra mide: v0
+    // borraba también síntesis y búsquedas viejas, y la verja de fidelidad la
+    // cazaba degradando la síntesis. La supersesión DECLINA esos casos —deja
+    // ahorro seguro sobre la mesa— pero cada byte que borra es provablemente
+    // redundante. Va DESPUÉS de la compresión: son ortogonales sobre `messages`.
     //
     // FIDELIDAD PRIMERO (ver `ELISION_EN_VIVO`). Con el flag apagado, esta etapa NO
-    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido, para poder
-    // compararlo contra el carril sombra sin arriesgar la calidad. El borrado real
-    // arranca solo con la verja de fidelidad en verde y primero en el anillo-0.
+    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido. El borrado
+    // real arranca solo con la verja de fidelidad en verde (`pnpm fidelidad`) y,
+    // por entitlement `tool_result_elision`, primero en el anillo-0 (ninguna
+    // licencia PRO lo lleva todavía: encenderlo no cambia nada del tráfico actual).
     if (
       toggles.elision === true &&
       policy.allowElision &&
       this.entitled("tool_result_elision")
     ) {
-      const eleccion = seleccionarElisionV0(messages);
+      const eleccion = seleccionarSupersesion(messages);
       if (eleccion.indices.length > 0) {
         // Se cuenta con el MISMO ensamblador que el baseline (`tokensFor`), byte a
         // byte, igual que el drop del tool-selector (libro 2): medir el muñón de
@@ -1661,14 +1676,21 @@ export class SavingsPipeline {
           // append-only, después del prefijo, así que normalmente es `false`.
           if (eleccion.indices.some((i) => i < finDelPrefijo)) comprimioElPrefijo = true;
           messages = aplicarElision(messages, eleccion.indices);
-          // LIBRO 2, SOLO CONTEO. `eliminate()` escribe únicamente en
-          // `eliminatedInput`; jamás toca `removedInputLocal` ni `estimateCost`, así
-          // que `basis` sigue "measured" y el DINERO de la elisión NO entra en la
-          // comisión: al bajar `actualInput` de verdad, el baseline se reconstruye
-          // desde esa cifra ya menor y el ahorro medido de la elisión ≈ 0. El dólar
-          // hipotético lo mide el carril sombra, fuera de comisión. Es la doctrina
-          // «conteo vivo + dinero por sombra», impuesta por el modelo de coste.
+          // LIBRO 2 (CONTEO) + CORRECCIÓN DE BASELINE. `eliminate()` apunta el
+          // conteo vivo en `eliminatedInput`. Pero el borrado es REAL: baja de
+          // verdad `sentInputLocal` (el muñón pesa menos que el cuerpo), y sin más
+          // eso inflaría `removedInputLocal = baselineInput − sentInputLocal` y el
+          // baseline reconstruido, metiendo el dinero de la elisión en la comisión
+          // con etiqueta "estimated". La doctrina es la contraria —«conteo vivo +
+          // dinero por sombra»—: se anota lo mismo en `elididoLocal` para RESTARLO
+          // de `removedInputLocal` (ver el cálculo de la regla más abajo), de modo
+          // que el `basis` no se mueve de "measured", la comisión no cobra la
+          // elisión, y su dólar hipotético lo mide el carril sombra fuera de
+          // comisión. El cliente SÍ paga menos al proveedor (menos tokens en el
+          // cable); simplemente no se le cobra comisión por un contrafactual que no
+          // se puede medir contra su factura.
           ledger.eliminate(tokensElididos);
+          ledger.elididoLocal += tokensElididos;
         }
         trace.record("elision", ELISION_EN_VIVO ? "applied" : "shadow", {
           elided: eleccion.indices.length,
@@ -2023,7 +2045,17 @@ export class SavingsPipeline {
       this.assemblePromptText(messages, herramientasAEnviar),
       request,
     );
-    ledger.removedInputLocal = Math.max(0, baselineInput - ledger.sentInputLocal);
+    // Se descuenta `elididoLocal`: la elisión de tool_results bajó `sentInputLocal`
+    // de verdad, pero su ahorro es CONTEO (ledger 2), no comisión —«conteo vivo +
+    // dinero por sombra»—, así que no debe inflar el baseline reconstruido ni mover
+    // el `basis` de "measured". El drop del tool-selector NO se descuenta: ese sí
+    // cuenta en el baseline (ver su nota en la etapa 6). `sentInputLocal` se deja
+    // casado con el cable para que `k = actualInput/sentInputLocal` siga siendo una
+    // razón de reglas limpia; solo se corrige `removedInputLocal`.
+    ledger.removedInputLocal = Math.max(
+      0,
+      baselineInput - ledger.sentInputLocal - ledger.elididoLocal,
+    );
     // El prompt del sondeo entra en la lectura local DESPUÉS de calcular lo
     // quitado, exactamente como el de la reparación: `removedInputLocal` compara
     // el baseline contra la llamada del CLIENTE, y meter ahí una llamada que puso

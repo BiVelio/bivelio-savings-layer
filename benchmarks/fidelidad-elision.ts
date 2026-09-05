@@ -1,8 +1,13 @@
 /**
- * VERJA DE FIDELIDAD DE LA ELISIÓN v0. Run: pnpm fidelidad
+ * VERJA DE FIDELIDAD DE LA ELISIÓN POR SUPERSESIÓN. Run: pnpm fidelidad
  * ---------------------------------------------------------------------------
- * La elisión v0 (edad×tamaño) BORRA salidas de herramienta viejas y gordas antes
- * de reenviarlas. Bajar la factura del cliente no vale NADA si degrada la
+ * La elisión por supersesión BORRA una salida de herramienta vieja SOLO cuando
+ * una más nueva vuelve a pedir el MISMO recurso (misma herramienta + mismos
+ * argumentos) — la única redundancia demostrable sin adivinar la pregunta. Es lo
+ * que corre EN VIVO (`ELISION_EN_VIVO`); reemplaza a la v0 (edad×tamaño), que el
+ * carril sombra sigue midiendo como referencia pero que esta verja probó insegura
+ * (borraba síntesis y el juez la cazaba). Bajar la factura del cliente no vale
+ * NADA si degrada la
  * respuesta —«los clientes lo notan a final de factura»—, y hoy no había ninguna
  * red que lo comprobara: el banco de corpus (`sombra-corpus.ts`) es CIEGO a la
  * salida (no llama al modelo, tira el contenido por privacidad) y el único sitio
@@ -45,7 +50,7 @@ import {
   type ChatMessage,
 } from "../src/index.js";
 import {
-  seleccionarElisionV0,
+  seleccionarSupersesion,
   aplicarElision,
   KEEP_TOOL_RESULTS,
   MUNON_ELISION,
@@ -112,98 +117,135 @@ interface CasoFidelidad {
   pregunta: string;
 }
 
-/** Ronda de agente: un assistant con tool_call + su tool_result. */
-function ronda(j: number, cuerpo: string): ChatMessage[] {
+/** Una ronda de agente: la herramienta que se llamó (con SUS argumentos reales
+ *  — el `path` leído, el `pattern` buscado) y el cuerpo que devolvió. Los
+ *  argumentos son la identidad de recurso: dos rondas con la MISMA herramienta y
+ *  los MISMOS argumentos hablan del mismo recurso, y la supersesión elide la
+ *  vieja. Por defecto `read_file` de un `path` propio de la ronda. */
+interface Ronda {
+  cuerpo: string;
+  tool?: string;
+  args?: Record<string, unknown>;
+}
+
+/** Un assistant con tool_call (nombre + argumentos JSON) + su tool_result. */
+function ronda(j: number, r: Ronda): ChatMessage[] {
+  const tool = r.tool ?? "read_file";
+  const args = JSON.stringify(r.args ?? { path: `archivo-${j}.ts` });
   return [
-    { role: "assistant", content: "", toolCalls: [{ id: `c${j}`, name: "read_file", arguments: "{}" }] },
-    { role: "tool", content: cuerpo, toolCallId: `c${j}`, name: "read_file" },
+    { role: "assistant", content: "", toolCalls: [{ id: `c${j}`, name: tool, arguments: args }] },
+    { role: "tool", content: r.cuerpo, toolCallId: `c${j}`, name: tool },
   ];
 }
 
 /** Arma una transcripción: intro de usuario + N rondas + pregunta final. */
-function transcripcion(intro: string, cuerpos: string[], pregunta: string): ChatMessage[] {
+function transcripcion(intro: string, rondas: Ronda[], pregunta: string): ChatMessage[] {
   const m: ChatMessage[] = [{ role: "user", content: intro }];
-  cuerpos.forEach((c, j) => m.push(...ronda(j, c)));
+  rondas.forEach((r, j) => m.push(...ronda(j, r)));
   m.push({ role: "user", content: pregunta });
   return m;
 }
+/** Azúcar: una ronda `read_file` de un `path` dado. */
+const leer = (path: string, cuerpo: string): Ronda => ({ cuerpo, tool: "read_file", args: { path } });
 
 const CASOS: CasoFidelidad[] = [
-  // 1. REALISTA (esperado PASA). Lecturas viejas SUPERSEDIDAS: el primer read de
-  //    config queda obsoleto tras un re-read más nuevo; la pregunta va sobre el
-  //    estado ACTUAL, que vive en un bloque reciente y protegido. Elidir la lectura
-  //    vieja no debería cambiar la respuesta. Este es el caso que DEBE llegar al suelo.
+  // 1. POSITIVO (DEBE llegar al suelo). Misma lectura SUPERSEDIDA: `config.ts` se
+  //    lee dos veces (mismo `path`), y la lectura vieja queda obsoleta tras la
+  //    reciente. La pregunta va sobre el estado ACTUAL. La supersesión elide SOLO
+  //    la lectura vieja de `config.ts` —recurso probadamente re-pedido—; los
+  //    módulos (paths distintos) y la relectura vigente se conservan.
   {
     name: "superseded-read",
-    nota: "lecturas viejas supersedidas por un re-read reciente; la pregunta va sobre el estado actual",
+    nota: "config.ts releído (mismo path); la lectura vieja está superada y la pregunta va sobre el estado actual",
     messages: transcripcion(
       "Estoy refactorizando el módulo de configuración. Ayúdame a revisarlo.",
       [
-        cuerpoGordo("config.ts (v1, OBSOLETA)", "export const TIMEOUT_MS = 1000; // valor viejo, ya cambiado", 3),
-        cuerpoGordo("notas-viejas.md", "TODO antiguo ya resuelto: subir el timeout", 3),
+        leer("config.ts", cuerpoGordo("config.ts (v1, OBSOLETA)", "export const TIMEOUT_MS = 1000; // valor viejo, ya cambiado", 3)),
+        leer("notas-viejas.md", cuerpoGordo("notas-viejas.md", "TODO antiguo ya resuelto: subir el timeout", 3)),
         ...Array.from({ length: 6 }, (_, i) =>
-          cuerpoGordo(`modulo-${i}.ts`, `// módulo auxiliar ${i}, sin relación con el timeout`, 3),
+          leer(`modulo-${i}.ts`, cuerpoGordo(`modulo-${i}.ts`, `// módulo auxiliar ${i}, sin relación con el timeout`, 3)),
         ),
-        cuerpoGordo("config.ts (v2, ACTUAL)", "export const TIMEOUT_MS = 5000; // valor ACTUAL tras el cambio", 3),
-        cuerpoGordo("config.test.ts", "expect(TIMEOUT_MS).toBe(5000); // confirma el valor actual", 3),
+        leer("config.ts", cuerpoGordo("config.ts (v2, ACTUAL)", "export const TIMEOUT_MS = 5000; // valor ACTUAL tras el cambio", 3)),
+        leer("config.test.ts", cuerpoGordo("config.test.ts", "expect(TIMEOUT_MS).toBe(5000); // confirma el valor actual", 3)),
       ],
       "¿Cuál es el valor ACTUAL de TIMEOUT_MS en config.ts? Responde solo el número.",
     ),
     pregunta: "¿Cuál es el valor ACTUAL de TIMEOUT_MS en config.ts? Responde solo el número.",
   },
 
-  // 2. REALISTA (esperado PASA). Volcados de búsqueda viejos superados por uno
-  //    nuevo; la pregunta va sobre el resultado más reciente.
+  // 2. POSITIVO (DEBE llegar al suelo). DOS recursos, cada uno releído: `a.ts` y
+  //    `b.ts` se leen dos veces con estado cambiado. La supersesión elide las DOS
+  //    lecturas viejas y conserva las dos vigentes. La pregunta necesita el estado
+  //    actual de ambos → elidir lo superado no debería cambiar la respuesta.
   {
-    name: "stale-search-dumps",
-    nota: "grep dumps viejos superados por una búsqueda más nueva; la pregunta va sobre el hallazgo reciente",
+    name: "multi-recurso-supersedido",
+    nota: "dos archivos releídos (a.ts, b.ts); las dos lecturas viejas están superadas; la pregunta va sobre el estado actual de ambos",
+    messages: transcripcion(
+      "Revisa el estado de estos dos ficheros mientras itero sobre ellos.",
+      [
+        leer("a.ts", cuerpoGordo("a.ts (v1)", "export const RETRIES = 1; // viejo", 3)),
+        leer("b.ts", cuerpoGordo("b.ts (v1)", "export const BUFFER = 64; // viejo", 3)),
+        ...Array.from({ length: 4 }, (_, i) =>
+          leer(`ruido-${i}.ts`, cuerpoGordo(`ruido-${i}.ts`, `// sin relación ${i}`, 3)),
+        ),
+        leer("a.ts", cuerpoGordo("a.ts (v2, ACTUAL)", "export const RETRIES = 7; // ACTUAL", 3)),
+        leer("b.ts", cuerpoGordo("b.ts (v2, ACTUAL)", "export const BUFFER = 512; // ACTUAL", 3)),
+      ],
+      "Da los valores ACTUALES de RETRIES (a.ts) y BUFFER (b.ts). Responde 'RETRIES=<n>, BUFFER=<n>'.",
+    ),
+    pregunta: "Da los valores ACTUALES de RETRIES (a.ts) y BUFFER (b.ts). Responde 'RETRIES=<n>, BUFFER=<n>'.",
+  },
+
+  // 3. DECLINADO POR DISEÑO (elididos=0 → fuera del veredicto). Búsquedas viejas
+  //    con consultas DISTINTAS (`error`, `catch`) superadas por una definitiva
+  //    (`handleNetworkError`). v0 las borraba; la supersesión NO —consultas
+  //    distintas no son el mismo recurso, no hay redundancia demostrable—, así que
+  //    deja ese ahorro seguro sobre la mesa. Aquí se mide que NO toca nada.
+  {
+    name: "stale-search-distinta-consulta",
+    nota: "grep con consultas distintas: NO es supersesión (recursos distintos); la política declina y no elide → ahorro seguro no capturado",
     messages: transcripcion(
       "Busca dónde se define el manejador de errores de red.",
       [
-        cuerpoGordo("grep 'error' (parcial, viejo)", "// muchos falsos positivos, búsqueda demasiado amplia", 3),
-        cuerpoGordo("grep 'catch' (viejo)", "// ruido, no es lo que buscábamos", 3),
+        { tool: "grep", args: { pattern: "error" }, cuerpo: cuerpoGordo("grep 'error' (viejo)", "// muchos falsos positivos", 3) },
+        { tool: "grep", args: { pattern: "catch" }, cuerpo: cuerpoGordo("grep 'catch' (viejo)", "// ruido", 3) },
         ...Array.from({ length: 6 }, (_, i) =>
-          cuerpoGordo(`archivo-irrelevante-${i}.ts`, `// contenido no relacionado ${i}`, 3),
+          leer(`archivo-irrelevante-${i}.ts`, cuerpoGordo(`archivo-irrelevante-${i}.ts`, `// no relacionado ${i}`, 3)),
         ),
-        cuerpoGordo(
-          "grep 'handleNetworkError' (DEFINITIVO)",
-          "src/net/retry.ts:42 → export function handleNetworkError(e) { ... }",
-          3,
-        ),
+        { tool: "grep", args: { pattern: "handleNetworkError" }, cuerpo: cuerpoGordo("grep 'handleNetworkError' (DEFINITIVO)", "src/net/retry.ts:42 → export function handleNetworkError(e) { ... }", 3) },
       ],
       "¿En qué archivo y línea se define handleNetworkError? Responde archivo:línea.",
     ),
     pregunta: "¿En qué archivo y línea se define handleNetworkError? Responde archivo:línea.",
   },
 
-  // 3. ADVERSARIAL (puede FALLAR — es la FRONTERA que hace fiable la verja). La
-  //    respuesta necesita un hecho de CADA resultado. v0 elide los 2 más viejos, así
-  //    que si el modelo no puede recuperar sus hechos, el juez lo caza y la fidelidad
-  //    cae por debajo del suelo → ESTE caso se excluye del borrado (o sube el
-  //    keep-floor). Que exista aquí es lo que impide encender un borrado que degrade.
+  // 4. LA FRONTERA QUE ROMPÍA v0, AHORA INTACTA (elididos=0 → fuera del veredicto,
+  //    y ese es el punto). Síntesis que necesita un dato de CADA resultado, todos
+  //    de recursos DISTINTOS. v0 borraba los más viejos y la verja lo cazaba con
+  //    fidelidad 0. La supersesión NO elide nada aquí (ningún recurso se re-pidió),
+  //    así que el caso que hacía inseguro el borrado queda demostradamente sin tocar.
   {
-    name: "synthesis-todos-los-resultados",
-    nota: "FRONTERA: síntesis que necesita un dato de cada resultado; si v0 borra los 2 viejos y el modelo no los recupera, la verja lo caza",
+    name: "sintesis-recursos-distintos",
+    nota: "síntesis sobre recursos distintos (ninguno re-pedido): la supersesión NO elide → el caso que rompía v0 queda intacto",
     messages: transcripcion(
       "Recopila las métricas de latencia de cada servicio que vaya leyendo.",
       Array.from({ length: KEEP_TOOL_RESULTS + 2 }, (_, i) =>
-        cuerpoGordo(`servicio-${i}/metrics.json`, `LATENCIA_${i}_MS = ${100 + i * 10}`, 3),
+        leer(`servicio-${i}/metrics.json`, cuerpoGordo(`servicio-${i}/metrics.json`, `LATENCIA_${i}_MS = ${100 + i * 10}`, 3)),
       ),
       `Suma LATENCIA_0_MS … LATENCIA_${KEEP_TOOL_RESULTS + 1}_MS de los ${KEEP_TOOL_RESULTS + 2} servicios y da el total. Responde solo el número.`,
     ),
     pregunta: `Suma LATENCIA_0_MS … LATENCIA_${KEEP_TOOL_RESULTS + 1}_MS de los ${KEEP_TOOL_RESULTS + 2} servicios y da el total. Responde solo el número.`,
   },
 
-  // 4. CONTROL (PASA por construcción). Sesión corta: con ≤ KEEP_TOOL_RESULTS
-  //    tool_results el suelo de fidelidad no elide nada → contexto idéntico → la
-  //    respuesta no puede cambiar. Prueba que el suelo protege las sesiones cortas.
+  // 5. CONTROL (elididos=0). Sesión corta de recursos distintos: nada se re-pide →
+  //    la supersesión no elide → contexto idéntico → la respuesta no puede cambiar.
   {
     name: "sesion-corta-control",
-    nota: "control: ≤ KEEP_TOOL_RESULTS resultados → el suelo no elide nada → contexto idéntico",
+    nota: "control: recursos distintos, ninguno re-pedido → no elide nada → contexto idéntico",
     messages: transcripcion(
       "Lee estos pocos archivos y dime qué hacen.",
       Array.from({ length: KEEP_TOOL_RESULTS - 2 }, (_, i) =>
-        cuerpoGordo(`util-${i}.ts`, `// utilidad ${i}: función pura de formateo`, 3),
+        leer(`util-${i}.ts`, cuerpoGordo(`util-${i}.ts`, `// utilidad ${i}: función pura de formateo`, 3)),
       ),
       "¿Qué tipo de funciones son las utilidades que has leído? Una frase.",
     ),
@@ -259,7 +301,7 @@ interface ResultadoCaso {
 }
 
 async function correrCaso(c: CasoFidelidad): Promise<ResultadoCaso> {
-  const eleccion = seleccionarElisionV0(c.messages); // keepUltimos por defecto = suelo
+  const eleccion = seleccionarSupersesion(c.messages); // elide solo recursos re-pedidos
   const tratado = aplicarElision(c.messages, eleccion.indices);
   const detalle: string[] = [];
   let pasan = 0;
@@ -330,7 +372,7 @@ function gitCommitCorto(): string {
 }
 
 async function main(): Promise<void> {
-  console.log(`\n═══ VERJA DE FIDELIDAD — elisión v0 ═══`);
+  console.log(`\n═══ VERJA DE FIDELIDAD — elisión por supersesión ═══`);
   console.log(`modo=${MODE}  modelo=${MODEL}  juez=${judge ? judgeModel : "(ninguno)"}  reps=${REPS}  suelo=${FLOOR}`);
   if (MODE === "MOCK") {
     console.log(
@@ -354,8 +396,8 @@ async function main(): Promise<void> {
   }
 
   // Solo los casos que la elisión REALMENTE toca cuentan para el veredicto de
-  // encender la Fase 2. Un caso sin elisión (control) pasa trivialmente y no
-  // demuestra nada sobre el borrado.
+  // encender el borrado en vivo. Un caso sin elisión (control) pasa trivialmente
+  // y no demuestra nada sobre el borrado.
   const conElision = resultados.filter((r) => r.elididos > 0);
   const pisoReal = conElision.length ? Math.min(...conElision.map((r) => r.fidelidad)) : 1;
   const verde = MODE === "LIVE" && conElision.length > 0 && pisoReal >= FLOOR;
@@ -374,7 +416,7 @@ async function main(): Promise<void> {
   } else if (verde) {
     console.log(
       `\n✅ VERDE: piso de fidelidad de los casos con elisión = ${(pisoReal * 100).toFixed(2)}% ≥ ${(FLOOR * 100).toFixed(1)}%.` +
-        `\n   La Fase 2 (ELISION_EN_VIVO) puede encenderse en anillo-0 para las formas probadas aquí.`,
+        `\n   El borrado en vivo (ELISION_EN_VIVO) puede encenderse en anillo-0 para las formas probadas aquí.`,
     );
   } else {
     console.log(

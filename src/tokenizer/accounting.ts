@@ -125,6 +125,19 @@ export class SavingsLedger {
   /** Tokens que la capa quitó de ese prompt, en cuenta LOCAL. */
   removedInputLocal = 0;
   /**
+   * Tokens (regla LOCAL) que la ELISIÓN de tool_results borró del prompt
+   * enviado. Existen para RESTARSE de `removedInputLocal`: el borrado real baja
+   * `sentInputLocal`, así que sin esta corrección el ahorro de elisión entraría
+   * en el baseline reconstruido y en la comisión, etiquetado "estimated". La
+   * doctrina es la contraria —«conteo vivo + dinero por sombra»—: la elisión es
+   * CONTEO (ledger 2 `eliminatedInput`), su dólar lo mide el carril sombra fuera
+   * de comisión, y el `basis` no se mueve de "measured". Se distingue a propósito
+   * del drop del tool-selector, que SÍ cuenta en el baseline (una herramienta
+   * declarada que no se envía es ahorro atribuible; un tool_result superado es
+   * redundancia que aún no se cobra como comprobable contra factura).
+   */
+  elididoLocal = 0;
+  /**
    * ¿El estimador que produjo las dos cifras anteriores cuenta con la regla del
    * proveedor? Lo fija el pipeline al resolver el tokenizador del modelo.
    * Defaults to NO: exactness is claimed only once it has been verified.
