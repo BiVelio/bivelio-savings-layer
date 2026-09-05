@@ -1,7 +1,11 @@
-# BV‑SALA — the savings layer for your LLM bill
+<p align="center">
+  <img src="https://savings.bivelio.com/brand/savings-logo.png" alt="Savings. by BiVelio" width="360">
+</p>
+
+<h1 align="center">The savings layer for your LLM bill</h1>
 
 <p align="center">
-  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. The bill drops from $330 to $160 a month, measured." width="720">
+  <em>Cut your AI bill — and see exactly why, measured on the same meter your provider bills you with.</em>
 </p>
 
 <p align="center">
@@ -10,10 +14,26 @@
   <img src="https://img.shields.io/badge/license-commercial-0F1218" alt="Commercial license">
 </p>
 
-**One layer inside your code, right where your app calls the OpenAI or Anthropic API.**
-For every request it picks the cheapest execution that still meets your quality bar —
-avoiding calls that don't need to happen and trimming what must be sent — and hands
-you an auditable `SavingsReport`. Your bill drops, and you can verify why.
+### In plain words
+
+Every request your app sends to an AI is paid for by the text going in and out.
+**Savings** sits on that path and lets through only what's needed — skipping calls
+that don't have to happen, and trimming what does — so you pay for less. It is not a
+promise you take on faith: **every saving is measured with the provider's official
+meter, the same one on your bill**, and handed back to you request by request.
+
+**We only earn when you save.** Our commission comes out of the measured saving,
+never out of your pocket — most of what you save stays with you, and a month with no
+saving is zero commission. And your prompts **never leave your infrastructure**:
+BiVelio only ever sees counts and cost, never your content.
+
+### For engineers, in one line
+
+`@bivelio/savings-layer` (**BV‑SALA**) is one layer you add inside your code, right
+where your app calls the OpenAI‑compatible or Anthropic API. For every request it
+picks the cheapest execution that still meets your quality bar and hands you an
+auditable `SavingsReport` — the same numbers your dashboard reads. Traffic still
+goes straight from your app to your provider; the SDK is never a middleman server.
 
 > **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to run**:
 > BV‑SALA is fail‑closed and executes only with an active BiVelio license key.
@@ -23,14 +43,20 @@ you an auditable `SavingsReport`. Your bill drops, and you can verify why.
 
 ## Where it installs
 
+<p align="center">
+  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. The bill drops from $330 to $160 a month, measured." width="720">
+</p>
+
 Your application → **BV‑SALA** → provider API. Traffic always goes straight from
 your app to your provider — BV‑SALA is a library inside your code, never a
 middleman server, and it works with any OpenAI‑compatible endpoint (OpenAI, Azure,
 vLLM, SGLang, a gateway) as well as Anthropic.
 
-**Only use ChatGPT or Claude?** Then there is nothing to install: those products
-charge a flat subscription, so there is no per‑token bill to cut. BV‑SALA is for
-applications that call the API with their own key. The whole story, in plain words:
+**Is this for me?** If your product or automation calls the AI **with its own API
+key** — and pays a per‑token bill for it — yes: this is exactly where the saving
+installs. **Only use ChatGPT or Claude?** Then there is nothing to install: those
+products charge a flat subscription, so there is no per‑token bill to cut. The whole
+story, in plain words:
 **[Where does the saving install?](https://savings.bivelio.com/en/how-it-works)**
 
 **Claude Code, Codex CLI, Goose or Qwen Code with an API key?** The package also
