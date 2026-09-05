@@ -22,7 +22,8 @@ export type Feature =
   | "cross_tenant_optimization"
   | "long_context_compression"
   | "priority_support"
-  | "context_elision";
+  | "context_elision"
+  | "tool_result_elision";
 
 /**
  * Runtime mirror of the `Feature` union, for gates and parity tests. The
@@ -37,6 +38,7 @@ export const FEATURES = [
   "long_context_compression",
   "priority_support",
   "context_elision",
+  "tool_result_elision",
 ] as const satisfies readonly Feature[];
 const _exhaustiva: [Exclude<Feature, (typeof FEATURES)[number]>] extends [never] ? true : never = true;
 void _exhaustiva;
