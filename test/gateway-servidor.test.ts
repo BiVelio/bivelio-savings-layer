@@ -70,6 +70,18 @@ function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
     const s = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
       for await (const c of req) chunks.push(c as Buffer);
+      // La elisión del gateway está ARMADA por defecto (`elision !== false`), así que
+      // con clave de servicio el canal de entitlements dispara un GET a
+      // `/api/org/entitlements` sobre el MISMO origen que la ingesta. En la plataforma
+      // real son dos rutas distintas; aquí la plataforma falsa las sirve las dos.
+      // Estos tests NO ejercitan la elisión: se responde fail-closed (features vacío),
+      // y ese GET sin cuerpo NO se trata como un lote de metering (parsear "" tiraba
+      // una promesa sin manejar en el handler del mock).
+      if (req.method === "GET" && (req.url ?? "").startsWith("/api/org/entitlements")) {
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end('{"features":[]}');
+        return;
+      }
       lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
       res.writeHead(202, { "content-type": "application/json" });
       res.end('{"ingested":1}');

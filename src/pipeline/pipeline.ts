@@ -1649,8 +1649,18 @@ export class SavingsPipeline {
     // real arranca solo con la verja de fidelidad en verde (`pnpm fidelidad`) y,
     // por entitlement `tool_result_elision`, primero en el anillo-0 (ninguna
     // licencia PRO lo lleva todavía: encenderlo no cambia nada del tráfico actual).
+    //
+    // AUTOMÁTICA POR DEFECTO (`!== false`, no `=== true`). El ahorro de entrada tiene
+    // que funcionar SOLO, sin opt-in por petición: en cuanto un token entitled llega,
+    // la elisión corre sin que la app pida nada. Sigue triplemente gateada —
+    // `policy.allowElision` (declina con herramientas de escritura, datos frescos,
+    // personalizado, estocástico o frescura de día), el entitlement `tool_result_elision`
+    // (que NINGÚN token PRO/Stripe lleva: fuera de PRO_FEATURES, solo lo firma la ruta
+    // interna del anillo-0), y `ELISION_EN_VIVO`. El opt-out explícito es por petición:
+    // `savings:{elision:false}`. Como el entitlement no viaja en tráfico de clientes,
+    // este default-on no cambia nada de lo que ven hoy los clientes de pago.
     if (
-      toggles.elision === true &&
+      toggles.elision !== false &&
       policy.allowElision &&
       this.entitled("tool_result_elision")
     ) {

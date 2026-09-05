@@ -57,6 +57,16 @@ function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
     const s = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
       for await (const c of req) chunks.push(c as Buffer);
+      // La elisión del gateway está ARMADA por defecto: con clave de servicio, el canal
+      // de entitlements dispara un GET a `/api/org/entitlements` sobre el mismo origen
+      // que la ingesta. Estos tests no ejercitan la elisión → fail-closed (features
+      // vacío) y ese GET sin cuerpo no se trata como lote (parsear "" tiraba una
+      // promesa sin manejar).
+      if (req.method === "GET" && (req.url ?? "").startsWith("/api/org/entitlements")) {
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end('{"features":[]}');
+        return;
+      }
       lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
       res.writeHead(202, { "content-type": "application/json" });
       res.end('{"ingested":1}');

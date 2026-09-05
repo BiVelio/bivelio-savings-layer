@@ -179,11 +179,27 @@ describe("conBetaDeElision — añade sin pisar", () => {
 });
 
 describe("la palanca de punta a punta", () => {
-  it("APAGADA por defecto: cuerpo byte a byte y sin beta añadida", async () => {
+  it("ARMADA por defecto (sin pasar elision) cuando la licencia trae context_elision", async () => {
+    // El nuevo default es opt-out: sin bandera, con clave de servicio y el feature en
+    // la licencia, S4a se arma sola. El gate real es el entitlement, no una bandera.
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test" }); // sin elision:true
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test" }); // sin elision → default-on
+    await esperarCanal();
+
+    const res = await pedir(g.puerto, CUERPO, { "anthropic-beta": "oauth-2025-04-20" });
+    expect(res.status).toBe(200);
+    const json = JSON.parse(recibidas[0]!.body);
+    expect(json.context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe(`oauth-2025-04-20,${BETA_CONTEXT_MANAGEMENT}`);
+  });
+
+  it("APAGADA con el freno explícito (elision:false, desde BVSALA_GATEWAY_ELISION=0): passthrough aunque haya entitlement", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: false });
     await esperarCanal();
 
     const res = await pedir(g.puerto, CUERPO, { "anthropic-beta": "oauth-2025-04-20" });
