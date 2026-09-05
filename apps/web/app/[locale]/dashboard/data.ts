@@ -431,6 +431,60 @@ export async function getSesiones(supabase: SupabaseClient, orgId: string): Prom
   }
 }
 
+// ---- Uso por modelo (0022): desglose por (día, modelo) ----
+
+export interface ModelDia {
+  day: string;
+  model: string;
+  requests: number;
+  baselineCost: number;
+  actualCost: number;
+  actualInputTokens: number;
+  actualOutputTokens: number;
+}
+
+/**
+ * Lee usage_daily_by_model, misma ventana de 120 días que getUsageRollups.
+ * TOLERANTE como getSesiones: si la migración 0022 aún no está en prod (el
+ * despliegue puede adelantarla), la tabla no existe y se degrada a
+ * `{ rows: [], failed: false }` — el explorador muestra "acumulando por modelo",
+ * nunca filas inventadas. Sin historial: el modelo nunca se guardó antes de
+ * 0022, así que el desglose empieza vacío y crece con el tráfico nuevo.
+ */
+export async function getUsageByModel(
+  supabase: SupabaseClient,
+  orgId: string,
+): Promise<{ rows: ModelDia[]; failed: boolean }> {
+  try {
+    const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .schema("bvsala")
+      .from("usage_daily_by_model")
+      .select("day, model, requests, baseline_cost, actual_cost, actual_input_tokens, actual_output_tokens")
+      .eq("org_id", orgId)
+      .gte("day", since)
+      .order("day", { ascending: true });
+    if (error) {
+      if (esTablaInexistente(error)) return { rows: [], failed: false };
+      console.error("[dashboard] usage_daily_by_model read failed:", error.code, error.message);
+      return { rows: [], failed: true };
+    }
+    const rows = ((data ?? []) as unknown as Record<string, number | string>[]).map((r) => ({
+      day: String(r["day"]),
+      model: String(r["model"] ?? "unknown"),
+      requests: Number(r["requests"] ?? 0),
+      baselineCost: Number(r["baseline_cost"] ?? 0),
+      actualCost: Number(r["actual_cost"] ?? 0),
+      actualInputTokens: Number(r["actual_input_tokens"] ?? 0),
+      actualOutputTokens: Number(r["actual_output_tokens"] ?? 0),
+    }));
+    return { rows, failed: false };
+  } catch (err) {
+    console.error("[dashboard] usage_daily_by_model read threw:", err);
+    return { rows: [], failed: true };
+  }
+}
+
 // ---- Derived connection / activation state ----
 export type Metering = "awaiting" | "live";
 export function meteringState(usage: UsageRollup[]): Metering {

@@ -452,6 +452,25 @@
       "estadoSinCargo": "geen kosten",
       "estadoPendiente": "in behandeling",
       "verFactura": "bekijken"
+    },
+    "usageExplorer": {
+      "title": "Gebruiksverkenner",
+      "period": "Periode (dagen)",
+      "metric": "Metriek",
+      "view": "Weergave",
+      "metricNet": "Netto besparing",
+      "metricRequests": "Verzoeken",
+      "metricInputTokens": "Invoertokens",
+      "viewDaily": "Per dag",
+      "viewCumulative": "Cumulatief",
+      "viewModel": "Per model",
+      "emptyPeriod": "Nog geen gebruik in deze periode.",
+      "modelEmpty": "De uitsplitsing per model bouwt zich op naarmate er nieuw verkeer binnenkomt — nog niets te tonen.",
+      "modelOther": "overige",
+      "dailyAria": "Gebruik per dag",
+      "modelAria": "Gebruik per model",
+      "summaryDays": "{value} · {days} dagen met gebruik",
+      "summaryModels": "{value} · {n} modellen"
     }
   },
   "landing": {

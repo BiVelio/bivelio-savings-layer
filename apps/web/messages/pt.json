@@ -452,6 +452,25 @@
       "estadoSinCargo": "sem cobrança",
       "estadoPendiente": "pendente",
       "verFactura": "ver"
+    },
+    "usageExplorer": {
+      "title": "Explorador de uso",
+      "period": "Período (dias)",
+      "metric": "Métrica",
+      "view": "Vista",
+      "metricNet": "Poupança líquida",
+      "metricRequests": "Pedidos",
+      "metricInputTokens": "Tokens de entrada",
+      "viewDaily": "Por dia",
+      "viewCumulative": "Acumulado",
+      "viewModel": "Por modelo",
+      "emptyPeriod": "Ainda sem uso neste período.",
+      "modelEmpty": "A divisão por modelo acumula-se à medida que chega tráfego novo — ainda não há nada para mostrar.",
+      "modelOther": "outros",
+      "dailyAria": "Uso por dia",
+      "modelAria": "Uso por modelo",
+      "summaryDays": "{value} · {days} dias com uso",
+      "summaryModels": "{value} · {n} modelos"
     }
   },
   "landing": {

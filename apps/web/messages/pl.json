@@ -452,6 +452,25 @@
       "estadoSinCargo": "bez opłaty",
       "estadoPendiente": "oczekująca",
       "verFactura": "zobacz"
+    },
+    "usageExplorer": {
+      "title": "Eksplorator użycia",
+      "period": "Okres (dni)",
+      "metric": "Metryka",
+      "view": "Widok",
+      "metricNet": "Oszczędność netto",
+      "metricRequests": "Żądania",
+      "metricInputTokens": "Tokeny wejściowe",
+      "viewDaily": "Dziennie",
+      "viewCumulative": "Skumulowane",
+      "viewModel": "Wg modelu",
+      "emptyPeriod": "Brak użycia w tym okresie.",
+      "modelEmpty": "Podział na modele buduje się w miarę napływu nowego ruchu — na razie nie ma nic do pokazania.",
+      "modelOther": "inne",
+      "dailyAria": "Użycie dziennie",
+      "modelAria": "Użycie wg modelu",
+      "summaryDays": "{value} · {days} dni z użyciem",
+      "summaryModels": "{value} · {n} modeli"
     }
   },
   "landing": {

@@ -8,7 +8,7 @@ import { BillingStateBanner } from "./components/BillingStateBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
-import { SavingsTrendChart } from "./components/SavingsTrendChart";
+import { UsageExplorer } from "./components/UsageExplorer";
 import { TrafficModelMix } from "./components/TrafficModelMix";
 import { SesionesCard } from "./components/SesionesCard";
 import { SombraElisionCard } from "./components/SombraElisionCard";
@@ -29,7 +29,7 @@ export default async function OverviewPage() {
   if (!authConfigured) {
     return <p className="ck-note">{t("overview.authNotWired")}</p>;
   }
-  const { ctx, usage, usageFailed, visibilidad, orgId } = await loadDashboard();
+  const { ctx, usage, usageFailed, porModelo, visibilidad, orgId } = await loadDashboard();
   const steps = await activationSteps(true, ctx, usage);
   // Coste por sesión (0019): lectura aparte y tolerante — sin tabla (migración
   // por detrás del deploy) o sin filas, la tarjeta no existe y el panel sigue.
@@ -63,15 +63,15 @@ export default async function OverviewPage() {
               abajo la responden por partes que NO se pueden sumar entre sí. */}
           <TokenTotalsTiles usage={usage} />
           <LiveLedgerTiles usage={usage} ab={ab} />
-          <div className="cards wide">
-            <div className="card" style={{ padding: "16px" }}>
-              <div className="n" style={{ marginBottom: "10px" }}>{t("overview.savingsTrend")}</div>
-              <SavingsTrendChart usage={usage} />
-            </div>
-            <div className="card" style={{ padding: "16px" }}>
-              <div className="n" style={{ marginBottom: "10px" }}>{t("overview.traffic")}</div>
-              <TrafficModelMix usage={usage} />
-            </div>
+          {/* El explorador configurable (por día · periodo · modelo) a lo ancho:
+              necesita sitio para los controles y las barras. */}
+          <div className="card" style={{ padding: "16px" }}>
+            <div className="n" style={{ marginBottom: "10px" }}>{t("usageExplorer.title")}</div>
+            <UsageExplorer usage={usage} porModelo={porModelo} />
+          </div>
+          <div className="card" style={{ padding: "16px" }}>
+            <div className="n" style={{ marginBottom: "10px" }}>{t("overview.traffic")}</div>
+            <TrafficModelMix usage={usage} />
           </div>
           <SesionesCard sesiones={sesiones} />
           {/* La sombra al final y en tarjeta PROPIA: hipotética por doctrina,

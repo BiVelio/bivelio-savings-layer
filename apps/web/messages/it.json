@@ -452,6 +452,25 @@
       "estadoSinCargo": "nessun addebito",
       "estadoPendiente": "in attesa",
       "verFactura": "vedi"
+    },
+    "usageExplorer": {
+      "title": "Esploratore dell'uso",
+      "period": "Periodo (giorni)",
+      "metric": "Metrica",
+      "view": "Vista",
+      "metricNet": "Risparmio netto",
+      "metricRequests": "Richieste",
+      "metricInputTokens": "Token di input",
+      "viewDaily": "Per giorno",
+      "viewCumulative": "Cumulativo",
+      "viewModel": "Per modello",
+      "emptyPeriod": "Ancora nessun uso in questo periodo.",
+      "modelEmpty": "La ripartizione per modello si accumula con l'arrivo di nuovo traffico — ancora niente da mostrare.",
+      "modelOther": "altri",
+      "dailyAria": "Uso per giorno",
+      "modelAria": "Uso per modello",
+      "summaryDays": "{value} · {days} giorni con uso",
+      "summaryModels": "{value} · {n} modelli"
     }
   },
   "landing": {

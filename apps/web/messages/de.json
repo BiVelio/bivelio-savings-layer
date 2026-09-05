@@ -452,6 +452,25 @@
       "estadoSinCargo": "keine Gebühr",
       "estadoPendiente": "ausstehend",
       "verFactura": "ansehen"
+    },
+    "usageExplorer": {
+      "title": "Nutzungs-Explorer",
+      "period": "Zeitraum (Tage)",
+      "metric": "Metrik",
+      "view": "Ansicht",
+      "metricNet": "Nettoersparnis",
+      "metricRequests": "Anfragen",
+      "metricInputTokens": "Eingabe-Tokens",
+      "viewDaily": "Pro Tag",
+      "viewCumulative": "Kumuliert",
+      "viewModel": "Pro Modell",
+      "emptyPeriod": "In diesem Zeitraum noch keine Nutzung.",
+      "modelEmpty": "Die Aufschlüsselung pro Modell baut sich mit neuem Traffic auf — noch nichts anzuzeigen.",
+      "modelOther": "andere",
+      "dailyAria": "Nutzung pro Tag",
+      "modelAria": "Nutzung pro Modell",
+      "summaryDays": "{value} · {days} Tage mit Nutzung",
+      "summaryModels": "{value} · {n} Modelle"
     }
   },
   "landing": {

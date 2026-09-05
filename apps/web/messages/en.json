@@ -452,6 +452,25 @@
       "estadoSinCargo": "no charge",
       "estadoPendiente": "pending",
       "verFactura": "view"
+    },
+    "usageExplorer": {
+      "title": "Usage explorer",
+      "period": "Period (days)",
+      "metric": "Metric",
+      "view": "View",
+      "metricNet": "Net savings",
+      "metricRequests": "Requests",
+      "metricInputTokens": "Input tokens",
+      "viewDaily": "By day",
+      "viewCumulative": "Cumulative",
+      "viewModel": "By model",
+      "emptyPeriod": "No usage in this period yet.",
+      "modelEmpty": "The per-model breakdown builds up as new traffic arrives — nothing to show yet.",
+      "modelOther": "other",
+      "dailyAria": "Usage per day",
+      "modelAria": "Usage by model",
+      "summaryDays": "{value} · {days} days with usage",
+      "summaryModels": "{value} · {n} models"
     }
   },
   "landing": {

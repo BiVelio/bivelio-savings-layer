@@ -452,6 +452,25 @@
       "estadoSinCargo": "không có phí",
       "estadoPendiente": "đang chờ",
       "verFactura": "xem"
+    },
+    "usageExplorer": {
+      "title": "Trình khám phá mức dùng",
+      "period": "Kỳ (ngày)",
+      "metric": "Chỉ số",
+      "view": "Chế độ xem",
+      "metricNet": "Tiết kiệm ròng",
+      "metricRequests": "Yêu cầu",
+      "metricInputTokens": "Token đầu vào",
+      "viewDaily": "Theo ngày",
+      "viewCumulative": "Lũy kế",
+      "viewModel": "Theo mô hình",
+      "emptyPeriod": "Chưa có mức dùng trong kỳ này.",
+      "modelEmpty": "Phân tích theo mô hình sẽ tích lũy khi có lưu lượng mới — chưa có gì để hiển thị.",
+      "modelOther": "khác",
+      "dailyAria": "Mức dùng theo ngày",
+      "modelAria": "Mức dùng theo mô hình",
+      "summaryDays": "{value} · {days} ngày có dùng",
+      "summaryModels": "{value} · {n} mô hình"
     }
   },
   "landing": {

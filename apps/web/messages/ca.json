@@ -452,6 +452,25 @@
       "estadoSinCargo": "sense càrrec",
       "estadoPendiente": "pendent",
       "verFactura": "veure"
+    },
+    "usageExplorer": {
+      "title": "Explorador d'ús",
+      "period": "Període (dies)",
+      "metric": "Mètrica",
+      "view": "Vista",
+      "metricNet": "Estalvi net",
+      "metricRequests": "Peticions",
+      "metricInputTokens": "Tokens d'entrada",
+      "viewDaily": "Per dia",
+      "viewCumulative": "Acumulat",
+      "viewModel": "Per model",
+      "emptyPeriod": "Encara no hi ha ús en aquest període.",
+      "modelEmpty": "El desglossament per model s'acumula a mesura que entra trànsit nou — encara no hi ha res a mostrar.",
+      "modelOther": "altres",
+      "dailyAria": "Ús per dia",
+      "modelAria": "Ús per model",
+      "summaryDays": "{value} · {days} dies amb ús",
+      "summaryModels": "{value} · {n} models"
     }
   },
   "landing": {

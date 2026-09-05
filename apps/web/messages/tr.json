@@ -452,6 +452,25 @@
       "estadoSinCargo": "ücret yok",
       "estadoPendiente": "beklemede",
       "verFactura": "görüntüle"
+    },
+    "usageExplorer": {
+      "title": "Kullanım gezgini",
+      "period": "Dönem (gün)",
+      "metric": "Metrik",
+      "view": "Görünüm",
+      "metricNet": "Net tasarruf",
+      "metricRequests": "İstekler",
+      "metricInputTokens": "Girdi token'ları",
+      "viewDaily": "Güne göre",
+      "viewCumulative": "Kümülatif",
+      "viewModel": "Modele göre",
+      "emptyPeriod": "Bu dönemde henüz kullanım yok.",
+      "modelEmpty": "Modele göre dağılım yeni trafik geldikçe oluşur — henüz gösterilecek bir şey yok.",
+      "modelOther": "diğer",
+      "dailyAria": "Güne göre kullanım",
+      "modelAria": "Modele göre kullanım",
+      "summaryDays": "{value} · {days} gün kullanım",
+      "summaryModels": "{value} · {n} model"
     }
   },
   "landing": {
