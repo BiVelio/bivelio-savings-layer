@@ -19,10 +19,10 @@ export interface Policy {
   /** May we run natural-language compression on the context? */
   allowCompression: boolean;
   /**
-   * ¿Puede el SDK elidir tool_results viejos y gordos antes de reenviar?
-   * COMPUTADO (no cableado como `allowCompression`): la elisión borra salidas de
-   * herramienta enteras, así que honra los mismos vetos que la caché semántica —
-   * escritura, frescura, personalización, muestreo estocástico y `day`.
+   * May the SDK elide old, large tool_results before resending? Computed, not
+   * hardcoded like `allowCompression`: eliding drops whole tool outputs, so it
+   * honors the same vetoes as the semantic cache — write tools, freshness,
+   * personalization, stochastic sampling and `day`.
    */
   allowElision: boolean;
   /** Does the request demand current/live data? */
