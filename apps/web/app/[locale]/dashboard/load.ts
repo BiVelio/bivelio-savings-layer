@@ -9,7 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolverOrgSiExiste, orgParaElPanel } from "@/lib/org/resolver";
 import { contarFilasReales, diagnosticar, type Visibilidad } from "@/lib/org/visibilidad";
 import { alertar } from "@/lib/observabilidad/alerta";
-import { getOrgContext, getUsageRollups, type OrgContext, type UsageRollup } from "./data";
+import { getOrgContext, getUsageRollups, getUsageByModel, type OrgContext, type UsageRollup, type ModelDia } from "./data";
 
 export interface DashboardData {
   user: { id: string; email: string | null } | null;
@@ -17,6 +17,12 @@ export interface DashboardData {
   usage: UsageRollup[];
   /** La lectura de uso falló (503/RLS/columna ausente), distinto de "sin tráfico". */
   usageFailed: boolean;
+  /**
+   * Uso por modelo (0022). Vacío hasta que la migración esté en prod y entre
+   * tráfico nuevo — sin historial, el modelo nunca se guardó antes. El
+   * explorador degrada honesto: "acumulando por modelo", nunca filas inventadas.
+   */
+  porModelo: ModelDia[];
   /**
    * POR QUÉ está vacío, cuando lo está. `sin_trafico` es normal el primer día;
    * `oculto` significa que las filas EXISTEN y este usuario no las ve, que es un
@@ -53,7 +59,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Without Supabase env (e.g. local without .env), createClient() would throw —
   // degrade to a signed-out shell instead of a 500.
   const SIN_MEDIDA = { usados: null, rotacionEsteMes: false };
-  const VACIO = { usage: [], usageFailed: false, visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA, orgId: null };
+  const VACIO = { usage: [], usageFailed: false, porModelo: [], visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA, orgId: null };
   if (!authConfigured) return { user: null, ctx: EMPTY_CTX, ...VACIO };
   const supabase = await createReadOnlyClient();
   const {
@@ -78,9 +84,10 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   if (!orgId) {
     return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, ...VACIO };
   }
-  const [ctx, usage, asientos] = await Promise.all([
+  const [ctx, usage, porModelo, asientos] = await Promise.all([
     getOrgContext(supabase, orgId, user.id),
     getUsageRollups(supabase, orgId),
+    getUsageByModel(supabase, orgId),
     medirAsientos(orgId),
   ]);
   // POR QUÉ ESTÁ VACÍO. Solo se pregunta cuando el usuario ha visto CERO filas y
@@ -109,6 +116,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     ctx,
     usage: usage.rows,
     usageFailed: usage.failed,
+    porModelo: porModelo.rows,
     visibilidad,
     asientos,
     orgId,

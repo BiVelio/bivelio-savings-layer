@@ -452,6 +452,25 @@
       "estadoSinCargo": "tanpa biaya",
       "estadoPendiente": "tertunda",
       "verFactura": "lihat"
+    },
+    "usageExplorer": {
+      "title": "Penjelajah penggunaan",
+      "period": "Periode (hari)",
+      "metric": "Metrik",
+      "view": "Tampilan",
+      "metricNet": "Penghematan bersih",
+      "metricRequests": "Permintaan",
+      "metricInputTokens": "Token masukan",
+      "viewDaily": "Per hari",
+      "viewCumulative": "Kumulatif",
+      "viewModel": "Per model",
+      "emptyPeriod": "Belum ada penggunaan pada periode ini.",
+      "modelEmpty": "Rincian per model terbentuk seiring datangnya trafik baru — belum ada yang bisa ditampilkan.",
+      "modelOther": "lainnya",
+      "dailyAria": "Penggunaan per hari",
+      "modelAria": "Penggunaan per model",
+      "summaryDays": "{value} · {days} hari dengan penggunaan",
+      "summaryModels": "{value} · {n} model"
     }
   },
   "landing": {
