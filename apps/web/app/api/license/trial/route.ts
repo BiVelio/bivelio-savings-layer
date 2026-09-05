@@ -126,14 +126,25 @@ export async function POST() {
   }
 
   const now = Math.floor(Date.now() / 1000);
-  // ANILLO-0. `tool_result_elision` vive AQUÍ —la ruta interna, cerrada a la
-  // allow-list del dueño— y NO en `PRO_FEATURES` (lib/license/issue.ts), la lista
-  // que firma Stripe. Así el borrado en vivo de tool_results del SDK (la
-  // supersesión: `pipeline.ts` exige este feature en el token, verificado offline)
-  // se enciende SOLO para nosotros al re-emitir por esta ruta; el tráfico de los
-  // clientes de pago no cambia. Ampliar el anillo = mover el feature a PRO_FEATURES,
-  // decisión deliberada y aparte, nunca un efecto colateral de tocar esta lista.
-  const features = ["semantic_cache", "dashboards", "long_context_compression", "tool_result_elision"];
+  // ANILLO-0. LOS DOS features de elisión viven AQUÍ —la ruta interna, cerrada a la
+  // allow-list del dueño— y NO en `PRO_FEATURES` (lib/license/issue.ts), la lista que
+  // firma Stripe. Son canales distintos para los dos caminos de elisión:
+  //   · `tool_result_elision` → supersesión EN VIVO del SDK (`pipeline.ts` lo exige en
+  //     el token, verificado offline). Sirve a las apps que consumen la API.
+  //   · `context_elision` → dial S4a del gateway del terminal (`bvsala`), que lo lee de
+  //     la fila `licenses` por el endpoint `/api/org/entitlements`.
+  // Una sola re-emisión por esta ruta arma AMBOS: el token firma `tool_result_elision`
+  // y la fila persistida (abajo) gana `context_elision`. Como ninguno está en
+  // PRO_FEATURES, el tráfico de los clientes de pago no cambia. Ampliar el anillo =
+  // mover un feature a PRO_FEATURES: decisión deliberada y aparte, nunca un efecto
+  // colateral de tocar esta lista.
+  const features = [
+    "semantic_cache",
+    "dashboards",
+    "long_context_compression",
+    "tool_result_elision",
+    "context_elision",
+  ];
   // Bare-uuid jti so it doubles as the `bvsala.licenses.id` (the table's id == jti
   // invariant). `iss: "bivelio-internal"` — not a jti prefix — is what marks it
   // internal, and the SDK matches jti by exact string, so this verifies/revokes

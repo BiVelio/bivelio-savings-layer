@@ -151,10 +151,14 @@ const arranque = await arrancarGateway({
       : {}),
   ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
   ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
-  // S4a · la palanca de diales del proveedor. La bandera local es la mitad del
-  // doble opt-in: sin el feature `context_elision` en la licencia de la org
-  // (canal de entitlements, fail-closed) sigue sin encenderse nada.
-  ...(process.env.BVSALA_GATEWAY_ELISION === "1" ? { elision: true } : {}),
+  // S4a · la palanca de diales del proveedor. ARMADA POR DEFECTO: el ahorro de
+  // entrada en el terminal tiene que funcionar SOLO. El gate REAL es el feature
+  // `context_elision` en la licencia de la org (canal de entitlements, fail-closed),
+  // que ningún token PRO/Stripe lleva — así que armarla por defecto no enciende nada
+  // en el tráfico de clientes. La bandera pasa de ENCENDER a APAGAR: `BVSALA_GATEWAY_ELISION=0`
+  // es el freno de emergencia. `serviceAccountKey` sigue siendo estructuralmente
+  // necesaria (identidad de org para el entitlement), no un paso extra de la elisión.
+  elision: process.env.BVSALA_GATEWAY_ELISION !== "0",
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),

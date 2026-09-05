@@ -216,13 +216,26 @@ describe("integración: con el flag encendido la etapa ELIDE de verdad, sin move
     expect(res.report.cost.basis).toBe("measured");
   });
 
-  it("sin el toggle elision, la etapa ni siquiera corre (no hay traza)", async () => {
+  it("SIN el toggle elision (default-on), la etapa CORRE igual: el ahorro es automático", async () => {
+    // El nuevo default es opt-out (`!== false`): con un token entitled y una petición
+    // segura, la elisión corre sin que la app pida `savings.elision`. Es el corazón
+    // del ahorro-de-entrada-automático.
+    const proveedor = new ProveedorEspia();
+    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, devUnlicensed: true });
+    const res = await capa.generate(peticionConMaterial()); // sin savings.elision
+    const traza = res.report.traces.find((t) => t.stage === "elision");
+    expect(traza).toBeDefined();
+    expect(traza!.outcome).toBe("applied");
+    expect(res.report.cost.basis).toBe("measured");
+  });
+
+  it("con el opt-out explícito `savings:{elision:false}`, la etapa NO corre (kill-switch por petición)", async () => {
     const capa = createSavingsLayer({
       provider: new ProveedorEspia(),
       costModels: PRECIOS,
       devUnlicensed: true,
     });
-    const res = await capa.generate(peticionConMaterial()); // sin savings.elision
+    const res = await capa.generate(peticionConMaterial({ savings: { elision: false } }));
     expect(res.report.traces.some((t) => t.stage === "elision")).toBe(false);
   });
 

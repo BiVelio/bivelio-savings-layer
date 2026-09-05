@@ -127,12 +127,14 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // dónde reportar y simular sería gastar CPU del cliente para nada.
   const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
 
-  // S4a · el canal de entitlements solo existe con la bandera local Y clave de
-  // servicio: sin clave no hay org que consultar. La URL sale del mismo origen
-  // que la ingesta (meteringUrl), así que dev y tests apuntan a su plataforma
+  // S4a · el canal de entitlements existe por defecto (`elision !== false`) siempre
+  // que haya clave de servicio: sin clave no hay org que consultar. El gate REAL es
+  // el feature `context_elision` (fail-closed), no la bandera — que solo APAGA
+  // (`opts.elision === false`, desde `BVSALA_GATEWAY_ELISION=0`). La URL sale del mismo
+  // origen que la ingesta (meteringUrl), así que dev y tests apuntan a su plataforma
   // falsa sin opciones nuevas.
   const canalElision =
-    opts.elision && opts.serviceAccountKey
+    opts.elision !== false && opts.serviceAccountKey
       ? new CanalDeEntitlements({
           url: new URL(
             "/api/org/entitlements",
