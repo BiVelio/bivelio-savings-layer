@@ -122,6 +122,27 @@ export interface SavingsToggles {
   exactCache?: boolean;
   semanticCache?: boolean | "safe-only";
   compression?: boolean | "auto";
+  /**
+   * OPT-IN. Elide old, large tool_results from a multi-turn context before the
+   * request is sent, replacing each one's body with a short stable stub while
+   * keeping its `role:"tool"`, `toolCallId` and position. This is the v0
+   * (age × size) policy the shadow lane measures — productionized to actually
+   * shorten the outgoing prompt, on the generic tool_result segment nothing else
+   * in the pipeline touches.
+   *
+   * IT ONLY RUNS WHEN THE POLICY ALLOWS IT. Like the semantic cache, elision is
+   * disabled for write/destructive tools, freshness-sensitive, personalized or
+   * stochastic requests, and for `freshnessBucket: "day"` — dropping the output
+   * of a past action, or old context a fresh answer still needs, is exactly the
+   * degradation the layer must not cause.
+   *
+   * FIDELITY FLOOR. The newest tool_results are never elided (a keep-floor of at
+   * least 8, imported from the provider dial S4a); v0's own age≥2 rule is weaker
+   * than that floor, so the floor wins. What it removes is a COUNT on the panel
+   * (`eliminated_tokens`); its money value is estimated only in the shadow lane
+   * and never enters your commission — your invoice stays the source of truth.
+   */
+  elision?: boolean;
   serialization?: boolean | "auto";
   singleflight?: boolean;
   deterministicResolvers?: boolean;

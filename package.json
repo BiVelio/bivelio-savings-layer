@@ -71,6 +71,7 @@
     "demo": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/run.ts",
     "ablation": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/ablation.ts",
     "ab": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/ab-live.ts",
+    "fidelidad": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/fidelidad-elision.ts",
     "web:build": "tsup",
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build",
