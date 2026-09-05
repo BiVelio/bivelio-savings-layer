@@ -46,6 +46,7 @@ import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { compresionFiel, shouldCompress } from "../compression/compression.js";
+import { seleccionarElisionV0, aplicarElision, MUNON_ELISION } from "./elision.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
@@ -85,6 +86,18 @@ declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
  * funcionando. `undefined` desde el fuente (tests, benchmarks) → sin restricción.
  */
 declare const __BV_SALA_DEMO_ONLY__: boolean | undefined;
+
+/**
+ * FIDELIDAD PRIMERO. La elisión v0 en vivo BORRA tráfico real (reescribe el
+ * cuerpo de tool_results viejos por un muñón antes de reenviar), y el segmento
+ * genérico donde actúa NO tiene guardián del proveedor como sí lo tiene S4a. Por
+ * eso arranca APAGADA: mientras esto sea `false`, la etapa solo TRAZA lo que
+ * HABRÍA elidido (para comparar contra el carril sombra), no toca `messages` ni
+ * acredita nada. Se pone en `true` SOLO cuando la verja de fidelidad
+ * (`benchmarks/fidelidad-elision.ts`) demuestre ≥0,999 sobre v0, y primero sobre
+ * el tráfico del propio dueño (anillo-0). No cablear a `true` sin esa verja verde.
+ */
+const ELISION_EN_VIVO: boolean = false;
 
 /**
  * The BV-SALA execution pipeline.
@@ -1606,6 +1619,68 @@ export class SavingsPipeline {
         // que cambió es que antes eso no lo respaldaba nadie.
         fidelityPassed: true,
       };
+    }
+
+    // --- Etapa 9-bis: elisión v0 de tool_results (opt-in, license-gated, fidelidad primero). ---
+    //
+    // Reescribe el cuerpo de los tool_results VIEJOS Y GORDOS por un muñón estable
+    // antes de reenviar —la política v0 (edad×tamaño) que el carril sombra mide en
+    // modo medir-solo—, sobre el segmento genérico «otro» que ninguna otra etapa
+    // toca. Va DESPUÉS de la compresión: la compresión reescribe prosa de usuario,
+    // esto quita salidas de herramienta enteras; son ortogonales y se acumulan
+    // sobre el mismo `let messages`.
+    //
+    // FIDELIDAD PRIMERO (ver `ELISION_EN_VIVO`). Con el flag apagado, esta etapa NO
+    // toca `messages` ni acredita: solo TRAZA lo que HABRÍA elidido, para poder
+    // compararlo contra el carril sombra sin arriesgar la calidad. El borrado real
+    // arranca solo con la verja de fidelidad en verde y primero en el anillo-0.
+    if (
+      toggles.elision === true &&
+      policy.allowElision &&
+      this.entitled("tool_result_elision")
+    ) {
+      const eleccion = seleccionarElisionV0(messages);
+      if (eleccion.indices.length > 0) {
+        // Se cuenta con el MISMO ensamblador que el baseline (`tokensFor`), byte a
+        // byte, igual que el drop del tool-selector (libro 2): medir el muñón de
+        // otra forma reintroduciría el sesgo del envoltorio que documenta
+        // `assemblePromptText`. El crédito es lo que el proveedor DEJA de ver:
+        // tokens del cuerpo original menos los del muñón, por cada bloque elidido.
+        const tokensMunon = this.tokensFor(MUNON_ELISION, request);
+        let tokensElididos = 0;
+        for (const i of eleccion.indices) {
+          const antes = this.tokensFor(messages[i]!.content, request);
+          tokensElididos += Math.max(0, antes - tokensMunon);
+        }
+
+        if (ELISION_EN_VIVO) {
+          // ¿Se elidió algo DENTRO del prefijo? Igual que la compresión: si toca el
+          // prefijo, la caché de prefijo se recorta esta petición y la verja de
+          // marcado tiene que saberlo (`comprimioElPrefijo` alimenta el límite
+          // estable en `decidirMarcadoDeCache`). Los tool_results viven en el tramo
+          // append-only, después del prefijo, así que normalmente es `false`.
+          if (eleccion.indices.some((i) => i < finDelPrefijo)) comprimioElPrefijo = true;
+          messages = aplicarElision(messages, eleccion.indices);
+          // LIBRO 2, SOLO CONTEO. `eliminate()` escribe únicamente en
+          // `eliminatedInput`; jamás toca `removedInputLocal` ni `estimateCost`, así
+          // que `basis` sigue "measured" y el DINERO de la elisión NO entra en la
+          // comisión: al bajar `actualInput` de verdad, el baseline se reconstruye
+          // desde esa cifra ya menor y el ahorro medido de la elisión ≈ 0. El dólar
+          // hipotético lo mide el carril sombra, fuera de comisión. Es la doctrina
+          // «conteo vivo + dinero por sombra», impuesta por el modelo de coste.
+          ledger.eliminate(tokensElididos);
+        }
+        trace.record("elision", ELISION_EN_VIVO ? "applied" : "shadow", {
+          elided: eleccion.indices.length,
+          eliminatedTokens: tokensElididos,
+          grossBytes: eleccion.bytesOriginales,
+          live: ELISION_EN_VIVO,
+        });
+      } else {
+        trace.record("elision", "skipped", {
+          reason: "no old/large tool_result over the age×size threshold",
+        });
+      }
     }
 
     // --- Stage 10: constrained decoding + the single primary LLM call. ---

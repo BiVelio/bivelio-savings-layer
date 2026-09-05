@@ -18,6 +18,13 @@ export interface Policy {
   allowSingleflight: boolean;
   /** May we run natural-language compression on the context? */
   allowCompression: boolean;
+  /**
+   * May the SDK elide old, large tool_results before resending? Computed, not
+   * hardcoded like `allowCompression`: eliding drops whole tool outputs, so it
+   * honors the same vetoes as the semantic cache — write tools, freshness,
+   * personalization, stochastic sampling and `day`.
+   */
+  allowElision: boolean;
   /** Does the request demand current/live data? */
   requiresFreshData: boolean;
   /** Does the request have (or request) side effects? */
@@ -205,9 +212,24 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     !stochastic &&
     c.freshnessBucket !== "day";
 
+  // Elisión de tool_results: se calcula IGUAL que la caché semántica, y por la
+  // misma razón. Borrar la salida de una herramienta vieja de una conversación
+  // con escritura/estado puede esconderle al modelo el resultado de una acción;
+  // en una petición fresca o personalizada, el contexto viejo puede ser justo lo
+  // que hace falta. NO se copia el `allowCompression: true` cableado de abajo: la
+  // elisión quita información entera, no la reescribe más corta, así que debe
+  // honrar los vetos por turno, no ignorarlos.
+  const allowElision =
+    !hasWriteTools &&
+    !requiresFreshData &&
+    !isPersonalized &&
+    !stochastic &&
+    c.freshnessBucket !== "day";
+
   return {
     allowExactCache,
     allowSemanticCache,
+    allowElision,
     // Singleflight fusiona dos peticiones idénticas concurrentes y le da a las
     // DOS la misma respuesta. Con una petición personalizada sin principal, eso
     // es la misma fuga que la caché exacta: el segundo usuario recibe la
