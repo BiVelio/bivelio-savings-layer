@@ -125,6 +125,19 @@ export class SavingsLedger {
   /** Tokens que la capa quitó de ese prompt, en cuenta LOCAL. */
   removedInputLocal = 0;
   /**
+   * Tokens (LOCAL ruler) that tool_result ELISION removed from the sent prompt.
+   * They exist to be SUBTRACTED from `removedInputLocal`: live deletion really
+   * lowers `sentInputLocal`, so without this correction the elision saving would
+   * enter the reconstructed baseline and the commission, labelled "estimated".
+   * The doctrine is the opposite — "live count, shadow money": elision is a COUNT
+   * (ledger 2 `eliminatedInput`), its dollar is measured by the shadow lane out
+   * of commission, and `basis` stays "measured". Deliberately distinct from the
+   * tool-selector drop, which DOES count in the baseline (a declared tool that is
+   * not sent is an attributable saving; a superseded tool_result is redundancy
+   * not yet billed as verifiable against the invoice).
+   */
+  elididoLocal = 0;
+  /**
    * ¿El estimador que produjo las dos cifras anteriores cuenta con la regla del
    * proveedor? Lo fija el pipeline al resolver el tokenizador del modelo.
    * Defaults to NO: exactness is claimed only once it has been verified.

@@ -114,6 +114,127 @@ export function seleccionarElisionV0(
 }
 
 /**
+ * IDENTIDAD DE RECURSO de una llamada de herramienta: `nombre + argumentos
+ * canónicos`. Es la clave que dice si dos tool_results hablan del MISMO recurso
+ * (el mismo `read_file` del mismo `path`, el mismo `grep` del mismo patrón).
+ *
+ * Devuelve `null` cuando NO se puede probar identidad —sin nombre, o con
+ * argumentos triviales (`undefined`, `""`, `"{}"`, objeto vacío)—. Ese es el
+ * caso honesto por defecto: sin un argumento que identifique el recurso no hay
+ * forma de demostrar que un bloque supersede a otro, así que NO se elide. (El
+ * arnés viejo mandaba todo con `arguments:"{}"`; bajo esta regla eso no elide
+ * nada, que es lo correcto: no hay evidencia de recurso.)
+ *
+ * Canoniza el JSON de argumentos (claves ordenadas, recursivo) para que
+ * `{"a":1,"b":2}` y `{"b":2,"a":1}` sean el MISMO recurso. Si el argumento no es
+ * JSON, usa la cadena cruda recortada (sigue siendo una identidad estable).
+ */
+export function identidadRecurso(nombre: string | undefined, argumentos: string | undefined): string | null {
+  if (!nombre) return null;
+  const bruto = (argumentos ?? "").trim();
+  if (bruto === "" || bruto === "{}" || bruto === "[]") return null;
+  let canon: string;
+  try {
+    const v = JSON.parse(bruto);
+    if (v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) return null;
+    canon = canonizar(v);
+  } catch {
+    canon = bruto;
+  }
+  return `${nombre} ${canon}`;
+}
+
+/** Serializa un valor JSON con las claves de objeto ordenadas, recursivamente,
+ *  para que la identidad no dependa del orden en que el modelo escribió el JSON. */
+function canonizar(v: unknown): string {
+  if (v === null || typeof v !== "object") return JSON.stringify(v) ?? "null";
+  if (Array.isArray(v)) return `[${v.map(canonizar).join(",")}]`;
+  const claves = Object.keys(v as Record<string, unknown>).sort();
+  return `{${claves.map((k) => `${JSON.stringify(k)}:${canonizar((v as Record<string, unknown>)[k])}`).join(",")}}`;
+}
+
+/**
+ * Selección por SUPERSESIÓN sobre los mensajes de UNA petición. Pura y
+ * determinista. Es la política que corre EN VIVO (la que la verja de fidelidad
+ * prueba y `pipeline.ts` aplica cuando `ELISION_EN_VIVO`), más conservadora y
+ * más honesta que v0 (edad×tamaño):
+ *
+ *   Un tool_result se elide SOLO si un tool_result ESTRICTAMENTE MÁS NUEVO
+ *   vuelve a pedir el MISMO recurso (misma herramienta + mismos argumentos).
+ *
+ * Esa es la única redundancia DEMOSTRABLE sin adivinar la pregunta futura: si el
+ * agente releyó `config.ts`, la lectura vieja de `config.ts` es peso muerto —su
+ * estado vive en la relectura—. NO elide búsquedas viejas con consultas
+ * distintas (no son el mismo recurso) ni lecturas de recursos distintos (una
+ * síntesis las necesita todas): esos casos se DECLINAN, que es exactamente lo
+ * que impedía que v0 fuera seguro (v0 borraba la síntesis y la verja lo cazaba).
+ *
+ * Frente a v0 esto deja ahorro seguro sobre la mesa (una búsqueda superada por
+ * otra con distinta consulta NO se toca), pero cada byte que borra es
+ * provablemente redundante. Es el suelo honesto; mejorar el algoritmo —recuperar
+ * ese ahorro sin degradar— es el trabajo siguiente.
+ *
+ * Nunca elide el ÚLTIMO tool_result (el del turno en curso) ni bloques por
+ * debajo de `MINIMO_BYTES_CANDIDATO` (el muñón no paga su reescritura, y tocar
+ * bloques pequeños solo agita la caché de prefijo). El error de un recurso que
+ * luego se releyó con éxito SÍ queda superado: no se protege por ser error.
+ */
+export function seleccionarSupersesion(messages: ChatMessage[]): EleccionElision {
+  // toolCallId → argumentos de la llamada que lo generó (el `assistant` lleva el
+  // nombre y los argumentos; el `role:"tool"` solo lleva `toolCallId` y `name`).
+  const argsPorId = new Map<string, string | undefined>();
+  const nombrePorId = new Map<string, string>();
+  for (const m of messages) {
+    if (m.role === "assistant" && m.toolCalls) {
+      for (const tc of m.toolCalls) {
+        if (!tc.id) continue; // sin id no se puede casar con su tool_result
+        argsPorId.set(tc.id, tc.arguments);
+        nombrePorId.set(tc.id, tc.name);
+      }
+    }
+  }
+
+  // Índices de tool_result + su identidad de recurso (o null si no demostrable).
+  const idxTool: number[] = [];
+  const ridPorIdx = new Map<number, string>();
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i]!;
+    if (m.role !== "tool") continue;
+    idxTool.push(i);
+    const nombre = (m.toolCallId ? nombrePorId.get(m.toolCallId) : undefined) ?? m.name;
+    const args = m.toolCallId ? argsPorId.get(m.toolCallId) : undefined;
+    const rid = identidadRecurso(nombre, args);
+    if (rid !== null) ridPorIdx.set(i, rid);
+  }
+
+  const ultimoTool = idxTool.length ? idxTool[idxTool.length - 1]! : -1;
+
+  // Por recurso, el índice MÁS NUEVO (máximo) es el vigente; los anteriores con
+  // esa misma identidad quedan superados.
+  const masNuevoPorRid = new Map<string, number>();
+  for (const i of idxTool) {
+    const rid = ridPorIdx.get(i);
+    if (rid === undefined) continue;
+    const prev = masNuevoPorRid.get(rid);
+    if (prev === undefined || i > prev) masNuevoPorRid.set(rid, i);
+  }
+
+  const indices: number[] = [];
+  let bytesOriginales = 0;
+  for (const i of idxTool) {
+    if (i === ultimoTool) continue; // el turno en curso jamás
+    const rid = ridPorIdx.get(i);
+    if (rid === undefined) continue; // sin identidad demostrable → se conserva
+    if (masNuevoPorRid.get(rid) === i) continue; // este ES el vigente del recurso
+    const bytes = bytesDe(messages[i]!.content);
+    if (bytes < MINIMO_BYTES_CANDIDATO) continue;
+    indices.push(i);
+    bytesOriginales += bytes;
+  }
+  return { indices, bytesOriginales };
+}
+
+/**
  * Reescribe el cuerpo de los tool_result elididos con el muñón estable,
  * conservando `role`, `toolCallId`, `name`, `toolCalls`, `metadata` y el orden.
  * Devuelve un array NUEVO; el original no se muta. Sin índices, devuelve el

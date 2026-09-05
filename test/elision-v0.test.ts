@@ -13,14 +13,21 @@ import type { Provider, ProviderRequest, ProviderResponse } from "../src/provide
 import type { ChatMessage, SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
 
 /**
- * Elisión v0 en vivo — FASE 1 (fidelidad primero). La maquinaria está montada
- * pero el borrado real vive apagado (`ELISION_EN_VIVO=false` en pipeline.ts):
- * la etapa solo TRAZA lo que HABRÍA elidido, sin tocar `messages` ni acreditar.
- * Estos tests fijan las cuatro invariantes del plan:
- *   1. suelo de fidelidad ≥ KEEP_TOOL_RESULTS (nunca borrar los más nuevos);
+ * Elisión del lado del SDK — fidelidad primero. Dos políticas conviven:
+ *   • v0 (edad × tamaño): la que corre el carril SOMBRA del gateway en modo
+ *     medir-solo, y contra la que compara la verja de paridad. Los tests del
+ *     bloque 1 fijan su selección pura (`seleccionarElisionV0`).
+ *   • SUPERSESIÓN: la que corre EN VIVO en el pipeline (etapa 9-bis) — más
+ *     conservadora y demostrable; su selección pura vive en
+ *     `test/elision-supersesion.test.ts` y aquí se prueba su INTEGRACIÓN.
+ *
+ * Con `ELISION_EN_VIVO=false` (pipeline.ts) la etapa solo TRAZA lo que HABRÍA
+ * elidido, sin tocar `messages` ni acreditar. Estos tests fijan las invariantes:
+ *   1. suelo de fidelidad de v0 ≥ KEEP_TOOL_RESULTS (nunca borrar los más nuevos);
  *   2. `allowElision` honra los vetos por turno (escritura/fresco/personalizado/
  *      estocástico) — no es un `true` cableado como la compresión;
- *   3. la etapa NO altera el tráfico ni la comisión con el flag apagado;
+ *   3. la etapa en vivo (supersesión) NO altera el tráfico ni la comisión con el
+ *      flag apagado;
  *   4. cero dinero de elisión en la comisión (`eliminatedInput` es conteo puro;
  *      `basis` sigue "measured").
  */
@@ -136,48 +143,76 @@ class ProveedorEspia implements Provider {
 
 const lectura: ToolDescriptor = { id: "read_file", intents: ["read a file"], risk: "read" };
 
-/** Petición con KEEP_TOOL_RESULTS+2 tool_results gordos y viejos: hay material
- *  para elidir, así que la etapa 9-bis dispara su rama "shadow". Sin descriptor
- *  de herramienta a propósito: los tool_result son mensajes de la conversación,
- *  no necesitan un `tools[]`, y así el tool-selector no deja caer ningún esquema
- *  (que estimaría `basis` por su cuenta) — el baseline queda LIMPIO y medido, y
- *  cualquier crédito o cambio de `basis` sería atribuible SOLO a la elisión. */
+/** Transcripción donde DOS recursos (`a.ts`, `b.ts`) se releen al final: sus
+ *  lecturas viejas quedan SUPERSEDIDAS y son las únicas candidatas de la política
+ *  en vivo. Entre medias, lecturas de recursos DISTINTOS que la supersesión
+ *  DECLINA (una síntesis las necesita todas). Con el flag apagado todo viaja
+ *  intacto; la etapa solo traza los 2 superados. Total de tool_results gordos =
+ *  KEEP_TOOL_RESULTS + 4 (2 viejos + relleno + 2 vigentes). */
+function transcripcionSupersedida(bytes: number): ChatMessage[] {
+  const messages: ChatMessage[] = [{ role: "user", content: "revisa el repositorio y resume" }];
+  const leer = (id: string, path: string) => {
+    messages.push({
+      role: "assistant",
+      content: "",
+      toolCalls: [{ id, name: "read_file", arguments: JSON.stringify({ path }) }],
+    });
+    messages.push({ role: "tool", content: cuerpo(bytes), toolCallId: id, name: "read_file" });
+  };
+  leer("a1", "a.ts"); // viejo → superseded por a2
+  leer("b1", "b.ts"); // viejo → superseded por b2
+  for (let j = 0; j < KEEP_TOOL_RESULTS; j++) leer(`f${j}`, `filler-${j}.ts`); // distintos → declinados
+  leer("a2", "a.ts"); // vigente de a
+  leer("b2", "b.ts"); // vigente de b (además último tool_result → jamás)
+  messages.push({ role: "assistant", content: "resumen final" });
+  return messages;
+}
+
+/** Petición con material SUPERSEDIDO: hay 2 lecturas viejas re-pedidas, así que
+ *  la etapa 9-bis (supersesión) elide DOS bloques. Sin descriptor de herramienta
+ *  a propósito: los tool_result son mensajes de la conversación, no necesitan un
+ *  `tools[]`, y así el tool-selector no deja caer ningún esquema (que estimaría
+ *  `basis` por su cuenta) — el baseline queda LIMPIO y medido, y cualquier
+ *  crédito o cambio de `basis` sería atribuible SOLO a la elisión. */
 function peticionConMaterial(extra: Partial<SavingsRequest> = {}): SavingsRequest {
   return {
     model: "openai/gpt-4o-mini",
-    messages: transcripcion(KEEP_TOOL_RESULTS + 2, 4000),
+    messages: transcripcionSupersedida(4000),
     ...extra,
   };
 }
 
-describe("integración: con el flag apagado la etapa TRAZA pero no toca nada", () => {
-  it("traza «shadow» con el conteo, sin reescribir el tráfico ni mover la comisión", async () => {
+describe("integración: con el flag encendido la etapa ELIDE de verdad, sin mover la comisión", () => {
+  it("aplica el muñón a los 2 supersedidos y NO acredita dinero de elisión (basis measured)", async () => {
     const proveedor = new ProveedorEspia();
     const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, devUnlicensed: true });
     const res = await capa.generate(peticionConMaterial({ savings: { elision: true } }));
 
     const traza = res.report.traces.find((t) => t.stage === "elision");
     expect(traza).toBeDefined();
-    expect(traza!.outcome).toBe("shadow");
+    expect(traza!.outcome).toBe("applied");
     const detalle = traza!.detail as { elided: number; eliminatedTokens: number; live: boolean };
-    expect(detalle.elided).toBe(2); // los 2 más viejos
+    expect(detalle.elided).toBe(2); // las 2 lecturas viejas supersedidas (a1, b1)
     expect(detalle.eliminatedTokens).toBeGreaterThan(0);
-    expect(detalle.live).toBe(false);
+    expect(detalle.live).toBe(true);
 
-    // El proveedor recibió el tráfico SIN TOCAR: ningún cuerpo es el muñón.
+    // El proveedor recibió EXACTAMENTE 2 muñones (a1, b1); el resto del tráfico
+    // intacto. Las lecturas VIGENTES (a2, b2) y los rellenos distintos viajan
+    // enteros: la síntesis del estado actual conserva todo lo que necesita.
     const enviadas = proveedor.llamadas[0]!.messages;
-    expect(enviadas.some((m) => m.content === MUNON_ELISION)).toBe(false);
-    // Y siguen estando los tool_results grandes originales.
+    expect(enviadas.filter((m) => m.content === MUNON_ELISION).length).toBe(2);
     expect(enviadas.filter((m) => m.role === "tool" && m.content.length >= 4000).length).toBe(
-      KEEP_TOOL_RESULTS + 2,
+      KEEP_TOOL_RESULTS + 2, // los KEEP_TOOL_RESULTS+4 originales menos los 2 elididos
     );
 
-    // CONTABILIDAD. El baseline es LIMPIO (sin descriptor de herramienta que
-    // estime por su cuenta), así que estas cifras son atribuibles solo a la
-    // elisión: con el flag apagado no acredita NADA (`eliminatedInput` es conteo
-    // puro y sigue en 0) y no mueve `basis` de "measured" — el sello «verificado
-    // contra tu factura» intacto, cero dinero de elisión en la comisión.
-    expect(res.report.tokens.eliminatedInput).toBe(0);
+    // CONTABILIDAD. El baseline es LIMPIO, así que estas cifras son atribuibles
+    // solo a la elisión: `eliminatedInput` es CONTEO puro (ahora > 0 porque el
+    // borrado es real) pero `basis` NO se mueve de "measured". El borrado baja de
+    // verdad `sentInputLocal`; para que eso NO infle `removedInputLocal` ni el
+    // baseline reconstruido, la etapa anota los mismos tokens en `elididoLocal` y
+    // el cálculo de la regla los RESTA. Resultado: cero dinero de elisión en la
+    // comisión; el dólar hipotético lo mide el carril sombra, fuera de comisión.
+    expect(res.report.tokens.eliminatedInput).toBeGreaterThan(0);
     expect(res.report.cost.basis).toBe("measured");
   });
 
