@@ -52,7 +52,7 @@ export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
         <>
           <div style={{ marginTop: "10px" }}>
             <div className="sub">{t("ritmo.proyeccionTitulo", { periodo })}</div>
-            <div className={`big ${p.ahorroEur >= 0 ? "pos" : "neg"} ck-num`} style={{ fontSize: 30 }}>
+            <div className={`big ${p.ahorroEur >= 0 ? "pos" : "neg"} ck-num`}>
               {eur(p.ahorroEur)}
             </div>
             <div className="sub">
