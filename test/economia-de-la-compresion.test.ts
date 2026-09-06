@@ -239,7 +239,10 @@ describe("qué tramo de caché se le supone a cada modelo", () => {
     expect(tramoDeCache("openai/gpt-4o-mini")).toBe(OPENAI_CACHE_TIER);
     expect(tramoDeCache("gpt-4.1-mini")).toBe(OPENAI_CACHE_TIER);
     expect(tramoDeCache("anthropic/claude-sonnet-4")).toBe(ANTHROPIC_CACHE_TIER);
-    expect(tramoDeCache("claude-3-5-haiku")).toBe(ANTHROPIC_CACHE_TIER);
+    // haiku 3.5 lleva su mínimo cacheable PUBLICADO (2048, oficial 2026-09-06);
+    // los multiplicadores siguen siendo los de la casa. Detalle por modelo en
+    // test/f5-cache-automatica.test.ts.
+    expect(tramoDeCache("claude-3-5-haiku")).toEqual({ ...ANTHROPIC_CACHE_TIER, minimumCacheTokens: 2048 });
     expect(tramoDeCache("google/gemini-3.7-flash")).toBe(GOOGLE_CACHE_TIER);
     expect(tramoDeCache("gemini-2.5-pro")).toBe(GOOGLE_CACHE_TIER);
   });
