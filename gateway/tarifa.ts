@@ -1,32 +1,47 @@
+import { createHash } from "node:crypto";
+
 /**
  * LA PALANCA DE TARIFA — el dinero que se ahorra sin tocar un solo token.
  *
- * El corpus del espía (3.305 peticiones reales, $279,23, 921 M de tokens,
- * 30-08 → 06-09) dice dónde está de verdad la factura:
+ * El corpus del espía (3.305 peticiones reales, 921 M de tokens, 23-08 → 06-09)
+ * valorado con el catálogo del producto (src/pricing/catalogo.ts, verificado
+ * el 06-09 contra la página oficial) cuesta $1.232,91 y se reparte así:
  *
- *     lectura de caché   $137,23   49,1 %  ·  897,3 M tok  (97,4 %)
- *     escritura 1h        $68,05   24,4 %  ·   14,9 M tok   (1,6 %)
- *     salida              $46,36   16,6 %  ·    3,3 M tok   (0,4 %)
- *     escritura 5m        $24,31    8,7 %  ·    5,0 M tok   (0,5 %)
- *     entrada sin caché    $3,28    1,2 %  ·    0,8 M tok   (0,1 %)
+ *     lectura de caché   $819,27   66,4 %  ·  897,3 M tok  (97,4 %)
+ *     escritura 1h       $242,35   19,7 %  ·   14,9 M tok   (1,6 %)
+ *     salida             $126,86   10,3 %  ·    3,3 M tok   (0,4 %)
+ *     escritura 5m        $39,39    3,2 %  ·    5,0 M tok   (0,5 %)
+ *     entrada sin caché    $5,04    0,4 %  ·    0,8 M tok   (0,1 %)
  *
- * La ESCRITURA de caché se lleva un TERCIO del dinero con el 2 % de los
- * tokens, y casi toda es a TTL 1h — que Anthropic factura a 2× el precio de
- * entrada frente al 1,25× del TTL de 5 minutos. Claude Code pide 1h SIEMPRE
- * (12.580 apariciones de `"ttl":"1h"` en el corpus, CERO de `"5m"`).
+ * Claude Code pide TTL 1h SIEMPRE (12.580 marcas `"ttl":"1h"`, cero de `"5m"`),
+ * y Anthropic factura esa escritura a 2× el precio de entrada frente al 1,25×
+ * de los 5 minutos. La prima de la hora vale $90,88 en el corpus: el 7,4 % de
+ * la factura. Y el hueco hasta el turno siguiente, medido POR HILO (sesión +
+ * system: el agente principal y sus subagentes comparten id de sesión pero no
+ * prefijo), es menor de 5 minutos el 97,5 % de las veces.
  *
- * ¿Compra algo esa hora? Casi nunca. Medido sobre el mismo corpus, el hueco
- * hasta el turno siguiente es:
+ * LA TRAMPA, medida antes de caer en ella dos veces: decidir por el reloj.
  *
- *     < 1 min   90,5 %      5-15 min   0,5 %
- *     1-3 min    5,9 %     15-60 min   0,4 %
- *     3-5 min    2,7 %        > 1 h    0,0 %
- *     ────────────────
- *     < 5 min   99,1 %
+ * La prima se ahorra sobre lo que se ESCRIBE en el turno —en un turno
+ * encadenado, unos pocos K de mensaje nuevo— pero el fallo se paga sobre lo
+ * que se LEE, que es el prefijo entero: mediana 199K tokens, p90 587K. Un
+ * acierto ahorra 0,75× sobre lo pequeño; un fallo cuesta 1,15× sobre lo gordo.
+ * Rebajar todos los turnos «calientes» (la política de #229, hueco previo
+ * < 4 min) sale a −$77,68 sobre el corpus: PIERDE el 6,3 % de la factura, con
+ * 40 fallos que cuestan $140 para ahorrar $63. «Siempre 5m» es aún peor.
  *
- * En el 99,1 % de los turnos una entrada de 5 minutos habría bastado. Pagar
- * 2× por una hora de vida que se consume en menos de sesenta segundos es
- * dinero tirado: $22,37 de los $279,23 del corpus — el 8,0 % de la factura.
+ * LA REGLA: se rebaja solo cuando lo que se va a escribir es una parte GRANDE
+ * de lo que se va a leer — arranque de sesión, compactación, historial
+ * reescrito. Ahí la prima es gorda y el riesgo, el mismo. Con el umbral en el
+ * 30 % del cuerpo (`UMBRAL_REESCRITURA`) el corpus da +$61,00 (+4,9 %) con 4
+ * fallos que cuestan $0,87; al 10 % da +$64,72. El punto de equilibrio con un
+ * 2 % de fallos está en el 3 % del cuerpo: el umbral lleva un margen de 10×.
+ *
+ * Por qué la ventana de riesgo dura UN turno y no toda la sesión: la entrada
+ * de 5m cubre el prefijo entero, sí, pero el turno encadenado siguiente (no
+ * rebajado) lleva sus marcas de 1h y crea una entrada de 1h para ese mismo
+ * prefijo pagando solo el delta — es la aritmética A/B/C de la página oficial
+ * de caché de prompts. A partir de ahí, la hora protege otra vez.
  *
  * Por qué esta palanca es DISTINTA de la elisión, y por qué importa tanto:
  *
@@ -38,13 +53,6 @@
  *    la elisión como `estimated` (ver src/tokenizer/accounting.ts). Esta se
  *    cobra como `measured` con la cara bien alta.
  *
- * El riesgo real y su tamaño: si el hueco SÍ supera los 5 minutos, la entrada
- * caduca y el turno siguiente paga escritura (1,25×) donde habría pagado
- * lectura (0,1×). Un fallo cuesta 1,15× lo que un acierto ahorra 0,75× — es
- * decir, 1,53 aciertos pagan un fallo. Con 99,1 % de aciertos la esperanza es
- * +0,73× por unidad escrita. Aun así no se apuesta a ciegas: `decidirRebaja`
- * mantiene la 1h en cuanto la sesión demuestra que se enfría.
- *
  * Todo aquí es PURO y determinista, como la palanca de diales: ante cualquier
  * duda se devuelve null y el cuerpo original viaja intacto.
  */
@@ -55,12 +63,11 @@ export const PRIMA_5M = 1.25;
 export const PRIMA_1H = 2;
 
 /**
- * Cuánto tiene que llevar callada una sesión para que NO se le rebaje el TTL.
- * Cuatro minutos, no cinco: si el turno anterior llegó a 4:30 el siguiente
- * cae peligrosamente cerca del borde de los 5, y el fallo cuesta más que el
- * acierto. Se cede el margen al lado seguro.
+ * Qué parte del cuerpo tiene que ser NUEVA respecto al turno anterior del
+ * hilo para que compense rebajar. 30 %: diez veces el punto de equilibrio con
+ * un 2 % de fallos, y muy lejos del 1-3 % de un turno encadenado normal.
  */
-export const UMBRAL_FRIO_MS = 4 * 60 * 1000;
+export const UMBRAL_REESCRITURA = 0.3;
 
 /** Lo que la rebaja encontró y cambió en un cuerpo. */
 export interface RebajaTtl {
@@ -75,6 +82,105 @@ export interface RebajaTtl {
    * la misma doctrina que la prima de escritura del medidor.
    */
   yaEran5m: number;
+}
+
+/**
+ * La HUELLA de un cuerpo: lo justo para saber, en el turno siguiente, qué
+ * parte del prefijo sigue siendo la misma. Hashes sin las marcas de caché —
+ * la marca se mueve de mensaje cada turno y no cambia lo que hay cacheado.
+ */
+export interface Huella {
+  system: string;
+  tools: string;
+  /** Hash de cada mensaje, en orden. */
+  mensajes: string[];
+  /** Bytes JSON de cada mensaje, en el mismo orden. */
+  bytes: number[];
+  /** Bytes JSON de system + tools. */
+  bytesFijos: number;
+}
+
+/** Tope de mensajes que se recuerdan por hilo: más allá, el resto cuenta como nuevo. */
+const MAX_MENSAJES_EN_HUELLA = 4_096;
+
+const sinMarcas = (clave: string, valor: unknown): unknown => (clave === "cache_control" ? undefined : valor);
+
+function serieDe(nodo: unknown): string {
+  return nodo === undefined ? "" : (JSON.stringify(nodo, sinMarcas) ?? "");
+}
+
+function hashDe(serie: string): string {
+  return createHash("sha1").update(serie).digest("base64url").slice(0, 16);
+}
+
+/**
+ * Parsea un cuerpo /v1/messages, o devuelve null — «no tocar, reenviar
+ * intacto» — si llega comprimido, no es JSON o no tiene forma de mensajes.
+ */
+export function parsearMensajes(cuerpo: Buffer, codificacion?: string): Record<string, unknown> | null {
+  if (codificacion !== undefined && codificacion !== "" && codificacion !== "identity") return null;
+  try {
+    const json = JSON.parse(cuerpo.toString("utf8")) as unknown;
+    if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
+    const obj = json as Record<string, unknown>;
+    if (typeof obj.model !== "string" || !Array.isArray(obj.messages)) return null;
+    return obj;
+  } catch {
+    return null;
+  }
+}
+
+/** La huella de un cuerpo ya parseado. Pura. */
+export function huellaDe(json: Record<string, unknown>): Huella {
+  const sistema = serieDe(json.system);
+  const herramientas = serieDe(json.tools);
+  const lista = Array.isArray(json.messages) ? json.messages.slice(0, MAX_MENSAJES_EN_HUELLA) : [];
+  const mensajes: string[] = [];
+  const bytes: number[] = [];
+  for (const m of lista) {
+    const s = serieDe(m);
+    mensajes.push(hashDe(s));
+    bytes.push(Buffer.byteLength(s, "utf8"));
+  }
+  return {
+    system: hashDe(sistema),
+    tools: hashDe(herramientas),
+    mensajes,
+    bytes,
+    bytesFijos: Buffer.byteLength(sistema, "utf8") + Buffer.byteLength(herramientas, "utf8"),
+  };
+}
+
+/**
+ * Qué fracción del cuerpo actual (en bytes) NO estaba en el prefijo que dejó
+ * cacheado el turno anterior del hilo. 1 si no hay turno anterior o si
+ * cambiaron system o tools (el prefijo se rompe en el primer byte).
+ *
+ * El turno anterior dejó cacheado hasta su último mensaje; todo lo que en el
+ * cuerpo actual va después del primer mensaje que difiere es nuevo.
+ */
+export function fraccionNueva(anterior: Huella | undefined, actual: Huella): number {
+  if (anterior === undefined) return 1;
+  if (anterior.system !== actual.system || anterior.tools !== actual.tools) return 1;
+  let total = actual.bytesFijos;
+  for (const b of actual.bytes) total += b;
+  if (total <= 0) return 1;
+  let k = 0;
+  while (k < anterior.mensajes.length && k < actual.mensajes.length && anterior.mensajes[k] === actual.mensajes[k]) k++;
+  let nuevos = 0;
+  for (let i = k; i < actual.bytes.length; i++) nuevos += actual.bytes[i] ?? 0;
+  return nuevos / total;
+}
+
+/**
+ * ¿Se rebaja el TTL de ESTA petición? Pura: solo mira qué parte del cuerpo es
+ * nueva. Arranque en frío (todo nuevo) → sí. Compactación o historial
+ * reescrito (la mayor parte nueva) → sí. Turno encadenado (unos K sobre
+ * cientos de K) → NO: ahí la prima es calderilla y el fallo, el prefijo entero.
+ */
+export function decidirRebaja(entrada: { fraccionNueva: number; umbral?: number }): boolean {
+  const { fraccionNueva: fraccion, umbral = UMBRAL_REESCRITURA } = entrada;
+  return fraccion >= umbral;
 }
 
 /** Dónde puede vivir una marca `cache_control` en un cuerpo /v1/messages. */
@@ -105,7 +211,9 @@ function marcarEn(nodo: unknown, cuenta: { rebajadas: number; yaEran5m: number }
 }
 
 /**
- * Reescribe a 5m los `cache_control.ttl === "1h"` del cuerpo.
+ * Reescribe a 5m los `cache_control.ttl === "1h"` del cuerpo. Acepta el
+ * cuerpo crudo o ya parseado (el servidor lo parsea una vez para la huella y
+ * lo reutiliza aquí; si es un objeto, se modifica en sitio).
  *
  * Devuelve `null` — «no tocar, reenviar intacto» — si:
  *  · el cuerpo llega comprimido (no se construye el camino de recompresión),
@@ -113,12 +221,13 @@ function marcarEn(nodo: unknown, cuenta: { rebajadas: number; yaEran5m: number }
  *  · no hay ni una sola marca de 1h que rebajar (no cambiar nada > cambiar
  *    para nada: así la coalescencia y el espía ven el cuerpo original).
  */
-export function rebajarTtlDeCache(cuerpo: Buffer, codificacion?: string): RebajaTtl | null {
-  if (codificacion !== undefined && codificacion !== "" && codificacion !== "identity") return null;
+export function rebajarTtlDeCache(
+  cuerpo: Buffer | Record<string, unknown>,
+  codificacion?: string,
+): RebajaTtl | null {
+  const json = Buffer.isBuffer(cuerpo) ? parsearMensajes(cuerpo, codificacion) : cuerpo;
+  if (json === null) return null;
   try {
-    const json = JSON.parse(cuerpo.toString("utf8")) as Record<string, unknown>;
-    if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
-    if (typeof json.model !== "string" || !Array.isArray(json.messages)) return null;
     const cuenta = { rebajadas: 0, yaEran5m: 0 };
     for (const clave of ["system", "messages", "tools"]) marcarEn(json[clave], cuenta);
     if (cuenta.rebajadas === 0) return null;
@@ -126,25 +235,6 @@ export function rebajarTtlDeCache(cuerpo: Buffer, codificacion?: string): Rebaja
   } catch {
     return null;
   }
-}
-
-/**
- * ¿Se rebaja el TTL de ESTA petición? Pura: el reloj y la memoria entran por
- * parámetro.
- *
- * · Sesión nueva (sin turno anterior): SÍ. Es la apuesta con mejor esperanza
- *   —el 99,1 % de los turnos encadena en menos de 5 min— y además la primera
- *   escritura de una sesión es la GORDA: dejarla a 1h por prudencia tiraría
- *   por la borda la mayor parte del premio.
- * · Sesión caliente (el turno anterior llegó hace menos de UMBRAL_FRIO_MS):
- *   SÍ. Es exactamente el caso que el corpus mide.
- * · Sesión que se demostró FRÍA (el hueco anterior pasó del umbral): NO. Aquí
- *   la hora sí compra vida y se paga con gusto.
- */
-export function decidirRebaja(entrada: { ultimoTurnoMs?: number; ahoraMs: number; umbralMs?: number }): boolean {
-  const { ultimoTurnoMs, ahoraMs, umbralMs = UMBRAL_FRIO_MS } = entrada;
-  if (ultimoTurnoMs === undefined) return true;
-  return ahoraMs - ultimoTurnoMs < umbralMs;
 }
 
 /**
@@ -169,34 +259,34 @@ export function ahorroDeRebaja(entrada: {
 }
 
 /**
- * El RITMO de cada sesión: cuándo se vio su último turno. Acotado por tamaño
- * —un gateway de escritorio no puede crecer sin techo— y por edad: una entrada
- * más vieja que la ventana ya no informa de nada (la caché que describía
- * caducó hace rato).
+ * La MEMORIA de prefijos: la huella del último turno de cada hilo. Acotada
+ * por tamaño —un gateway de escritorio no puede crecer sin techo— y por edad:
+ * pasada una hora la caché que describía caducó, y el turno siguiente es un
+ * arranque en frío se mire como se mire.
  */
-export class RitmoDeSesiones {
-  private readonly visto = new Map<string, number>();
+export class MemoriaDePrefijos {
+  private readonly visto = new Map<string, { huella: Huella; vistoMs: number }>();
 
   constructor(
     private readonly maxEntradas = 512,
     private readonly maxEdadMs = 60 * 60 * 1000,
   ) {}
 
-  /** El último turno visto de esta sesión, o undefined si no hay o caducó. */
-  ultimo(clave: string, ahoraMs: number): number | undefined {
-    const t = this.visto.get(clave);
-    if (t === undefined) return undefined;
-    if (ahoraMs - t > this.maxEdadMs) {
+  /** La huella del último turno de este hilo, o undefined si no hay o caducó. */
+  ultima(clave: string, ahoraMs: number): Huella | undefined {
+    const e = this.visto.get(clave);
+    if (e === undefined) return undefined;
+    if (ahoraMs - e.vistoMs > this.maxEdadMs) {
       this.visto.delete(clave);
       return undefined;
     }
-    return t;
+    return e.huella;
   }
 
   /** Anota este turno. Reinserta para que el orden del Map sea LRU real. */
-  anotar(clave: string, ahoraMs: number): void {
+  anotar(clave: string, huella: Huella, ahoraMs: number): void {
     this.visto.delete(clave);
-    this.visto.set(clave, ahoraMs);
+    this.visto.set(clave, { huella, vistoMs: ahoraMs });
     while (this.visto.size > this.maxEntradas) {
       const masViejo = this.visto.keys().next();
       if (masViejo.done === true) break;
