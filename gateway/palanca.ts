@@ -16,8 +16,8 @@
 import { BETA_CONTEXT_MANAGEMENT, configDeDiales } from "./diales.js";
 
 /**
- * Ajusta el cuerpo de una petición /v1/messages: sustituye (o añade) su
- * `context_management` por el de nuestros diales.
+ * Ajusta el cuerpo de una petición /v1/messages: fusiona nuestros diales en su
+ * `context_management` (o lo crea si no lo trae) — ver fusionarDiales.
  *
  * Devuelve `null` — «no ajustar, reenviar intacto» — si:
  *  · el cuerpo llega comprimido (S4a no construye el camino de recompresión;
@@ -35,14 +35,75 @@ export function ajustarDiales(cuerpo: Buffer, codificacion?: string): Buffer<Arr
     const json = JSON.parse(cuerpo.toString("utf8")) as Record<string, unknown>;
     if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
     if (typeof json.model !== "string" || !Array.isArray(json.messages)) return null;
-    // Se SUSTITUYE la config del cliente: el anillo 0 midió exactamente ese
-    // cambio (las muestras traían la config de fábrica, que borró CERO en
-    // 1.952 peticiones reales) — todo el 22,9 % es atribuible a los diales.
-    json.context_management = configDeDiales();
+    // Se FUSIONA con la config del cliente (fusionarDiales): su estrategia de
+    // tool_uses se sustituye por la nuestra (el anillo 0 midió exactamente ese
+    // cambio) y sus OTRAS estrategias se conservan tal cual.
+    json.context_management = fusionarDiales(json.context_management);
     return Buffer.from(JSON.stringify(json), "utf8");
   } catch {
     return null;
   }
+}
+
+/** La estrategia que la palanca sustituye. */
+const ESTRATEGIA_TOOL_USES = "clear_tool_uses_20250919";
+/** La estrategia que la API exige en PRIMERA posición de `edits` cuando se
+ *  combina con otras (doc oficial de context editing). */
+const ESTRATEGIA_THINKING = "clear_thinking_20251015";
+
+/**
+ * Fusiona nuestros diales con el `context_management` del cliente en vez de
+ * pisarlo entero (regla del plan § 2.1: «si trae una estrategia que no
+ * conocemos, NO se toca»):
+ *
+ *  · sus edits `clear_tool_uses_20250919` (los de fábrica, que no disparan
+ *    jamás) se SUSTITUYEN por el nuestro — es el único cambio que la palanca
+ *    hace y el único que el anillo 0 midió;
+ *  · `clear_thinking_20251015` del cliente se CONSERVA y va en posición 0,
+ *    como exige la API. Claude Code lo manda de fábrica con keep:"all"
+ *    (corpus 09-2026, claude-cli ≥ 2.1.252); borrarlo cambiaría el thinking
+ *    retenido — y con él la caché — en los modelos cuyo default no es «todo»;
+ *  · cualquier otra estrategia del cliente se conserva en su orden relativo;
+ *  · las claves del bloque distintas de `edits` se conservan.
+ *
+ * Idempotente: aplicarla sobre un cuerpo ya ajustado devuelve lo mismo (la
+ * firma de brazo del anillo 2 sigue siendo «lleva nuestro edit exacto»).
+ */
+export function fusionarDiales(cm: unknown): { edits: unknown[] } & Record<string, unknown> {
+  const nuestro = configDeDiales().edits[0]!;
+  const base: Record<string, unknown> =
+    cm !== null && typeof cm === "object" && !Array.isArray(cm) ? { ...(cm as Record<string, unknown>) } : {};
+  const ajenos = (Array.isArray(base.edits) ? base.edits : []).filter(
+    (e): e is Record<string, unknown> =>
+      e !== null && typeof e === "object" && !Array.isArray(e) && (e as { type?: unknown }).type !== ESTRATEGIA_TOOL_USES,
+  );
+  const thinking = ajenos.filter((e) => e.type === ESTRATEGIA_THINKING);
+  const otros = ajenos.filter((e) => e.type !== ESTRATEGIA_THINKING);
+  return { ...base, edits: [...thinking, ...otros, nuestro] };
+}
+
+/**
+ * La línea de arranque que dice en qué BRAZO está este proceso y por qué —
+ * el A/B del anillo 2 se operó un día entero con la bandera puesta en un
+ * terminal SIN clave de servicio, y sin clave la palanca ni se arma (no hay
+ * org que consultar): el brazo «palanca» fue control en silencio. Pura;
+ * `aviso` marca los casos que merecen stderr (la intención del operador no
+ * se cumple).
+ */
+export function describirEstadoDeElision(bandera: string | undefined, hayClave: boolean): { linea: string; aviso: boolean } {
+  const cola = " (se enciende solo si la licencia de la org trae context_elision; fail-closed)";
+  if (bandera === "0") return { linea: "elisión S4a: APAGADA (BVSALA_GATEWAY_ELISION=0) — brazo CONTROL", aviso: false };
+  if (!hayClave) {
+    return {
+      linea:
+        "elisión S4a: NO SE ARMA — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar); este proceso es brazo CONTROL" +
+        (bandera === "1" ? " AUNQUE la bandera diga =1. Abre un terminal nuevo o exporta la clave y relanza" : ""),
+      aviso: bandera === "1",
+    };
+  }
+  return bandera === "1"
+    ? { linea: "elisión S4a: ARMADA (BVSALA_GATEWAY_ELISION=1) — brazo PALANCA" + cola, aviso: false }
+    : { linea: "elisión S4a: ARMADA por defecto (sin bandera; =0 la apaga) — brazo PALANCA" + cola, aviso: false };
 }
 
 /**

@@ -36,11 +36,48 @@ export type Brazo = "palanca" | "control";
 export const MIN_DIAS_POR_BRAZO = 3;
 
 /**
- * ¿Este `context_management` es EL NUESTRO? La palanca S4a SUSTITUYE el bloque
- * entero por configDeDiales() (gateway/palanca.ts), así que la firma son los
- * tres diales exactos — el de fábrica de Claude Code lleva otros valores (en
- * 1.952 peticiones del corpus no disparó ni una vez). Si el barrido del anillo
- * 2 cambia los diales, esta detección lo sigue: lee del módulo, no de copias.
+ * El protocolo del dueño (06-09-2026): el día natural UTC PAR es de palanca y
+ * el IMPAR de control. La auditoría de paridad compara lo que este protocolo
+ * esperaba con lo que el cuerpo de cada petición dice, y lista las fisuras.
+ */
+export const PROTOCOLO_PARIDAD = "día natural UTC par = palanca, impar = control";
+
+export function brazoEsperado(dia: string): Brazo {
+  return Number(dia.slice(8, 10)) % 2 === 0 ? "palanca" : "control";
+}
+
+/**
+ * Qué `context_management` traía el CLIENTE, aparte de nuestro edit: la
+ * palanca fusiona (conserva clear_thinking y cualquier estrategia ajena), así
+ * que un cuerpo de palanca lleva el nuestro Y lo del cliente. Se devuelve un
+ * conjunto ordenado de clases («clear_thinking», «clear_tool_uses_ajeno»,
+ * «otra») unido por «+», o «ninguna».
+ */
+export function configDelCliente(cm: unknown): string {
+  if (cm === null || typeof cm !== "object") return "ninguna";
+  const edits = (cm as { edits?: unknown }).edits;
+  if (!Array.isArray(edits)) return "ninguna";
+  const clases = new Set<string>();
+  for (const e of edits) {
+    if (e === null || typeof e !== "object") continue;
+    if (esDialNuestro({ edits: [e] })) continue;
+    const tipo = (e as { type?: unknown }).type;
+    if (tipo === "clear_thinking_20251015") clases.add("clear_thinking");
+    else if (tipo === "clear_tool_uses_20250919") clases.add("clear_tool_uses_ajeno");
+    else clases.add("otra");
+  }
+  return clases.size ? [...clases].sort().join("+") : "ninguna";
+}
+
+/**
+ * ¿Este `context_management` lleva EL NUESTRO? La palanca S4a FUSIONA su edit
+ * de tool_uses con la config del cliente (gateway/palanca.ts: conserva su
+ * clear_thinking en posición 0 y sustituye/añade el nuestro), así que la firma
+ * es «algún edit con los tres diales exactos» — el de fábrica de Claude Code
+ * no lleva trigger (hoy manda clear_thinking keep:"all"; el clear_tool_uses de
+ * fábrica de otras versiones traía otros valores y no disparó ni una vez en
+ * 1.952 peticiones). Si el barrido del anillo 2 cambia los diales, esta
+ * detección lo sigue: lee del módulo, no de copias.
  */
 export function esDialNuestro(cm: unknown): boolean {
   if (cm === null || typeof cm !== "object") return false;
@@ -135,7 +172,29 @@ export interface TurnoAnillo2 {
   /** true si el cuerpo de respuesta superó el tope del espía: los applied_edits
    *  de ese turno son irrecuperables y el saneamiento lo cuenta. */
   respuestaOmitida: boolean;
+  /** Cliente que envió el turno (primer token del user-agent, p.ej.
+   *  «claude-cli/2.1.260»): una versión que cambia a mitad del A/B es un
+   *  confundidor que la auditoría debe enseñar. Opcional: los tests viejos
+   *  no lo traen. */
+  cliente?: string;
+  /** Lo que traía el cliente en context_management aparte de nuestro edit
+   *  (configDelCliente). Opcional por la misma razón. */
+  configCliente?: string;
 }
+
+/** PRNG sembrado (mulberry32): el mismo de todo el banco, determinista. */
+function azarSembrado(semilla: number): () => number {
+  let estado = semilla >>> 0;
+  return () => {
+    estado |= 0;
+    estado = (estado + 0x6d2b79f5) | 0;
+    let t = Math.imul(estado ^ (estado >>> 15), 1 | estado);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const mediaDe = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
 /** Bootstrap de DOS MUESTRAS (una por brazo) sobre la métrica por día:
  *  IC 95 % de media(control) − media(palanca). PRNG sembrado (determinista). */
@@ -145,15 +204,7 @@ export function bootstrapDosMuestras(
   reps = 10_000,
   semilla = 20260906,
 ): { media: number; inferior: number; superior: number } {
-  const mediaDe = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-  let estado = semilla >>> 0;
-  const azar = () => {
-    estado |= 0;
-    estado = (estado + 0x6d2b79f5) | 0;
-    let t = Math.imul(estado ^ (estado >>> 15), 1 | estado);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+  const azar = azarSembrado(semilla);
   const remuestra = (xs: number[]) => {
     let suma = 0;
     for (let i = 0; i < xs.length; i++) suma += xs[Math.floor(azar() * xs.length)]!;
@@ -166,6 +217,56 @@ export function bootstrapDosMuestras(
     media: mediaDe(control) - mediaDe(palanca),
     inferior: medias[Math.floor(reps * 0.025)]!,
     superior: medias[Math.floor(reps * 0.975)]!,
+  };
+}
+
+/** Un estrato del bootstrap estratificado: un modelo, con su peso (gasto de
+ *  entrada del control, en USD) y sus métricas por día en cada brazo. */
+export interface Estrato {
+  peso: number;
+  control: number[];
+  palanca: number[];
+}
+
+/**
+ * Bootstrap ESTRATIFICADO por modelo: en cada réplica se remuestrean los días
+ * de cada brazo DENTRO de cada modelo y se agrega el ahorro como
+ *   Σ_m peso_m · (media_c,m − media_p,m) / Σ_m peso_m · media_c,m
+ * — el % de la factura de entrada del control que la palanca habría ahorrado,
+ * ponderado por lo que cada modelo pesa en esa factura. Así la mezcla de
+ * modelos de cada día (que mueve la métrica por día ×10 entre opus-4-8 y
+ * sonnet-5) no puede fabricar ni esconder un efecto. Devuelve % (0–100) con
+ * IC 95 %. Determinista.
+ */
+export function bootstrapEstratificado(
+  estratos: Estrato[],
+  reps = 10_000,
+  semilla = 20260906,
+): { ahorroPct: number; inferior: number; superior: number } {
+  const azar = azarSembrado(semilla);
+  const remuestra = (xs: number[]) => {
+    let suma = 0;
+    for (let i = 0; i < xs.length; i++) suma += xs[Math.floor(azar() * xs.length)]!;
+    return suma / xs.length;
+  };
+  const agrega = (mc: (e: Estrato) => number, mp: (e: Estrato) => number): number => {
+    let num = 0;
+    let den = 0;
+    for (const e of estratos) {
+      const c = mc(e);
+      num += e.peso * (c - mp(e));
+      den += e.peso * c;
+    }
+    return den > 0 ? (num / den) * 100 : 0;
+  };
+  const punto = agrega((e) => mediaDe(e.control), (e) => mediaDe(e.palanca));
+  const replicas: number[] = [];
+  for (let i = 0; i < reps; i++) replicas.push(agrega((e) => remuestra(e.control), (e) => remuestra(e.palanca)));
+  replicas.sort((a, b) => a - b);
+  return {
+    ahorroPct: punto,
+    inferior: replicas[Math.floor(reps * 0.025)]!,
+    superior: replicas[Math.floor(reps * 0.975)]!,
   };
 }
 
@@ -225,6 +326,138 @@ function publica(a: Acumulado) {
   };
 }
 
+/** Métrica primaria de un acumulado: € de entrada por kTok de salida (null sin denominador). */
+const metricaDe = (a: Acumulado | undefined): number | null =>
+  a && a.salidaTokens > 0 ? a.entradaUsd / (a.salidaTokens / 1000) : null;
+
+/** Cuenta ocurrencias en un mapa. */
+function cuenta<K>(m: Map<K, number>, k: K, n = 1): void {
+  m.set(k, (m.get(k) ?? 0) + n);
+}
+
+const objetoOrdenado = <V>(m: Map<string, V>): Record<string, V> =>
+  Object.fromEntries([...m.entries()].sort(([a], [b]) => (a < b ? -1 : 1)));
+
+/**
+ * AUDITORÍA DE PARIDAD: por día, lo que el protocolo esperaba frente a lo que
+ * el cuerpo de cada petición dice, más los confundidores (cliente, config,
+ * modelos, sesiones) y las fisuras en texto llano. Un día es LIMPIO si solo
+ * tiene un brazo y es el esperado.
+ */
+export interface DiaAuditado {
+  dia: string;
+  esperado: Brazo;
+  observado: { control: number; palanca: number };
+  limpio: boolean;
+  sesiones: number;
+  borradosPalanca: number;
+  tokensLimpiadosPalancaM: number;
+  clientes: Record<string, number>;
+  configCliente: Record<string, number>;
+  modelos: Record<string, number>;
+  fisuras: string[];
+}
+
+export function auditarParidad(turnos: TurnoAnillo2[]): { protocolo: string; dias: DiaAuditado[]; fisuras: string[] } {
+  interface Acc {
+    control: number;
+    palanca: number;
+    sesiones: Set<string>;
+    borrados: number;
+    limpiados: number;
+    clientes: Map<string, number>;
+    config: Map<string, number>;
+    modelos: Map<string, number>;
+  }
+  const porDia = new Map<string, Acc>();
+  for (const t of turnos) {
+    const a =
+      porDia.get(t.dia) ??
+      porDia
+        .set(t.dia, {
+          control: 0,
+          palanca: 0,
+          sesiones: new Set(),
+          borrados: 0,
+          limpiados: 0,
+          clientes: new Map(),
+          config: new Map(),
+          modelos: new Map(),
+        })
+        .get(t.dia)!;
+    a[t.brazo] += 1;
+    a.sesiones.add(t.sesion);
+    if (t.brazo === "palanca") {
+      a.borrados += t.borrados;
+      a.limpiados += t.tokensLimpiados;
+    }
+    cuenta(a.clientes, t.cliente ?? "?");
+    cuenta(a.config, t.configCliente ?? "?");
+    cuenta(a.modelos, t.model);
+  }
+
+  const dias: DiaAuditado[] = [];
+  const globales: string[] = [];
+  const ordenados = [...porDia.keys()].sort();
+  for (const dia of ordenados) {
+    const a = porDia.get(dia)!;
+    const esperado = brazoEsperado(dia);
+    const fisuras: string[] = [];
+    const mezclado = a.control > 0 && a.palanca > 0;
+    if (mezclado)
+      fisuras.push(
+        `día mezclado: ${a.control} turnos control + ${a.palanca} palanca — la unidad «día» no es limpia (¿bandera cambiada a mitad de día?)`,
+      );
+    if (esperado === "palanca" && a.palanca === 0)
+      fisuras.push(
+        "día PAR sin palanca: ninguna petición ajustada — bandera apagada, sesión sin encadenar al espía, o entitlement context_elision caído (fail-closed)",
+      );
+    if (esperado === "control" && a.palanca > 0)
+      fisuras.push(`día IMPAR con ${a.palanca} turnos de palanca: bandera encendida en día de control`);
+    if (a.palanca > 0 && a.borrados === 0)
+      fisuras.push("palanca sin disparos: peticiones ajustadas pero el proveedor no declaró ningún borrado (sesiones bajo el trigger o applied_edits irrecuperables)");
+    if (a.clientes.size > 1)
+      fisuras.push(`${a.clientes.size} versiones de cliente en el mismo día: ${[...a.clientes.keys()].sort().join(", ")}`);
+    const limpio = !mezclado && (esperado === "palanca" ? a.palanca > 0 : a.control > 0);
+    dias.push({
+      dia,
+      esperado,
+      observado: { control: a.control, palanca: a.palanca },
+      limpio,
+      sesiones: a.sesiones.size,
+      borradosPalanca: a.borrados,
+      tokensLimpiadosPalancaM: Math.round(a.limpiados / 1e5) / 10,
+      clientes: objetoOrdenado(a.clientes),
+      configCliente: objetoOrdenado(a.config),
+      modelos: objetoOrdenado(a.modelos),
+      fisuras,
+    });
+  }
+
+  // Huecos del calendario entre el primer y el último día con tráfico.
+  if (ordenados.length >= 2) {
+    const primero = new Date(`${ordenados[0]}T00:00:00Z`).getTime();
+    const ultimo = new Date(`${ordenados[ordenados.length - 1]}T00:00:00Z`).getTime();
+    const huecos: string[] = [];
+    for (let t = primero; t <= ultimo; t += 86_400_000) {
+      const d = new Date(t).toISOString().slice(0, 10);
+      if (!porDia.has(d)) huecos.push(d);
+    }
+    if (huecos.length) globales.push(`días sin tráfico en la ventana: ${huecos.join(", ")}`);
+  }
+  const limpiosPalanca = dias.filter((d) => d.limpio && d.esperado === "palanca").length;
+  const limpiosControl = dias.filter((d) => d.limpio && d.esperado === "control").length;
+  if (limpiosPalanca < MIN_DIAS_POR_BRAZO)
+    globales.push(`solo ${limpiosPalanca} días limpios de palanca (mínimo ${MIN_DIAS_POR_BRAZO})`);
+  if (limpiosControl < MIN_DIAS_POR_BRAZO)
+    globales.push(`solo ${limpiosControl} días limpios de control (mínimo ${MIN_DIAS_POR_BRAZO})`);
+  const clientes = new Set(dias.flatMap((d) => Object.keys(d.clientes)));
+  if (clientes.size > 1)
+    globales.push(`el cliente cambió de versión dentro de la ventana (${[...clientes].sort().join(", ")}): confundidor a declarar`);
+
+  return { protocolo: PROTOCOLO_PARIDAD, dias, fisuras: globales };
+}
+
 /** El informe entero a partir de los turnos ya clasificados. */
 export function resumir(turnos: TurnoAnillo2[]) {
   const porBrazo = new Map<Brazo, Acumulado>([
@@ -233,25 +466,30 @@ export function resumir(turnos: TurnoAnillo2[]) {
   ]);
   const porDia = new Map<string, Map<Brazo, Acumulado>>();
   const porModelo = new Map<string, Map<Brazo, Acumulado>>();
+  /** modelo → día → brazo: la unidad del veredicto estratificado. */
+  const porModeloDia = new Map<string, Map<string, Map<Brazo, Acumulado>>>();
   for (const t of turnos) {
     suma(porBrazo.get(t.brazo)!, t);
     const d = porDia.get(t.dia) ?? porDia.set(t.dia, new Map()).get(t.dia)!;
     suma(d.get(t.brazo) ?? d.set(t.brazo, vacio()).get(t.brazo)!, t);
     const m = porModelo.get(t.model) ?? porModelo.set(t.model, new Map()).get(t.model)!;
     suma(m.get(t.brazo) ?? m.set(t.brazo, vacio()).get(t.brazo)!, t);
+    const md = porModeloDia.get(t.model) ?? porModeloDia.set(t.model, new Map()).get(t.model)!;
+    const mdd = md.get(t.dia) ?? md.set(t.dia, new Map()).get(t.dia)!;
+    suma(mdd.get(t.brazo) ?? mdd.set(t.brazo, vacio()).get(t.brazo)!, t);
   }
 
   // Métrica por día y brazo (solo días con salida — sin denominador no hay dato).
-  const metricaPorDia = (brazo: Brazo): number[] =>
-    [...porDia.values()]
-      .map((d) => d.get(brazo))
-      .filter((a): a is Acumulado => !!a && a.salidaTokens > 0)
-      .map((a) => a.entradaUsd / (a.salidaTokens / 1000));
+  const metricaPorDia = (dias: Map<string, Map<Brazo, Acumulado>>, brazo: Brazo): number[] =>
+    [...dias.values()]
+      .map((d) => metricaDe(d.get(brazo)))
+      .filter((x): x is number => x !== null);
 
-  const control = metricaPorDia("control");
-  const palanca = metricaPorDia("palanca");
+  const control = metricaPorDia(porDia, "control");
+  const palanca = metricaPorDia(porDia, "palanca");
   const brazoP = porBrazo.get("palanca")!;
 
+  // ── Veredicto GLOBAL por día (secundario: la mezcla de modelos del día lo mueve) ──
   let veredicto:
     | { estado: "insuficiente"; diasControl: number; diasPalanca: number; minimo: number }
     | { estado: "palanca-sin-disparos"; nota: string }
@@ -277,7 +515,7 @@ export function resumir(turnos: TurnoAnillo2[]) {
     };
   } else {
     const b = bootstrapDosMuestras(control, palanca);
-    const mediaControl = control.reduce((a, x) => a + x, 0) / control.length;
+    const mediaControl = mediaDe(control);
     veredicto = {
       estado: "ok",
       diasControl: control.length,
@@ -294,27 +532,87 @@ export function resumir(turnos: TurnoAnillo2[]) {
     };
   }
 
-  // Verja por modelo: dónde la palanca sale PEOR que el control (misma métrica).
+  // ── Veredicto ESTRATIFICADO por modelo (primario) ──
+  const estratos: Estrato[] = [];
+  const modelosIncluidos: string[] = [];
+  const modelosExcluidos: { modelo: string; motivo: string }[] = [];
   const modelos = Object.fromEntries(
     [...porModelo.entries()].map(([modelo, brazos]) => {
       const c = brazos.get("control");
       const p = brazos.get("palanca");
-      const mc = c && c.salidaTokens > 0 ? c.entradaUsd / (c.salidaTokens / 1000) : null;
-      const mp = p && p.salidaTokens > 0 ? p.entradaUsd / (p.salidaTokens / 1000) : null;
+      const mc = metricaDe(c);
+      const mp = metricaDe(p);
+      const dias = porModeloDia.get(modelo)!;
+      const diasC = metricaPorDia(dias, "control");
+      const diasP = metricaPorDia(dias, "palanca");
+      let ic: { ahorroPct: number; ci95Pct: { inferior: number; superior: number }; significativo: boolean } | null = null;
+      if (diasC.length >= MIN_DIAS_POR_BRAZO && diasP.length >= MIN_DIAS_POR_BRAZO && c && c.entradaUsd > 0) {
+        const b = bootstrapEstratificado([{ peso: c.entradaUsd, control: diasC, palanca: diasP }]);
+        ic = {
+          ahorroPct: Math.round(b.ahorroPct * 10) / 10,
+          ci95Pct: { inferior: Math.round(b.inferior * 10) / 10, superior: Math.round(b.superior * 10) / 10 },
+          significativo: b.inferior > 0,
+        };
+        estratos.push({ peso: c.entradaUsd, control: diasC, palanca: diasP });
+        modelosIncluidos.push(modelo);
+      } else {
+        modelosExcluidos.push({
+          modelo,
+          motivo: `${diasC.length} días control / ${diasP.length} días palanca (mínimo ${MIN_DIAS_POR_BRAZO} cada uno)`,
+        });
+      }
       return [
         modelo,
         {
           control: c ? publica(c) : null,
           palanca: p ? publica(p) : null,
+          diasControl: diasC.length,
+          diasPalanca: diasP.length,
           ahorroPct: mc !== null && mp !== null && mc > 0 ? Math.round(((mc - mp) / mc) * 1000) / 10 : null,
           peorConPalanca: mc !== null && mp !== null ? mp > mc : null,
+          ...(ic ?? {}),
         },
       ];
     }),
   );
+  let veredictoPorModelo:
+    | { estado: "insuficiente"; modelosIncluidos: string[]; modelosExcluidos: typeof modelosExcluidos }
+    | { estado: "palanca-sin-disparos"; nota: string }
+    | {
+        estado: "ok";
+        ahorroPctFactura: number;
+        ci95Pct: { inferior: number; superior: number };
+        significativo: boolean;
+        pesoUsdControlIncluido: number;
+        pesoUsdControlTotal: number;
+        modelosIncluidos: string[];
+        modelosExcluidos: typeof modelosExcluidos;
+      };
+  if (!estratos.length) {
+    veredictoPorModelo = { estado: "insuficiente", modelosIncluidos, modelosExcluidos };
+  } else if (brazoP.tokensLimpiados === 0) {
+    veredictoPorModelo = {
+      estado: "palanca-sin-disparos",
+      nota: "hay días de palanca por modelo pero el proveedor no declaró NINGÚN borrado; el A/B no compara nada",
+    };
+  } else {
+    const b = bootstrapEstratificado(estratos);
+    veredictoPorModelo = {
+      estado: "ok",
+      ahorroPctFactura: Math.round(b.ahorroPct * 10) / 10,
+      ci95Pct: { inferior: Math.round(b.inferior * 10) / 10, superior: Math.round(b.superior * 10) / 10 },
+      significativo: b.inferior > 0,
+      pesoUsdControlIncluido: r2(estratos.reduce((s, e) => s + e.peso, 0)),
+      pesoUsdControlTotal: r2(porBrazo.get("control")!.entradaUsd),
+      modelosIncluidos,
+      modelosExcluidos,
+    };
+  }
 
   return {
     veredicto,
+    veredictoPorModelo,
+    paridad: auditarParidad(turnos),
     porBrazo: {
       control: publica(porBrazo.get("control")!),
       palanca: publica(brazoP),
@@ -327,8 +625,22 @@ export function resumir(turnos: TurnoAnillo2[]) {
           Object.fromEntries([...brazos.entries()].map(([brazo, a]) => [brazo, publica(a)])),
         ]),
     ),
+    porDiaModelo: Object.fromEntries(
+      [...porDia.keys()].sort().map((dia) => [
+        dia,
+        Object.fromEntries(
+          [...porModeloDia.entries()]
+            .filter(([, dias]) => dias.has(dia))
+            .sort(([a], [b]) => (a < b ? -1 : 1))
+            .map(([modelo, dias]) => [
+              modelo,
+              Object.fromEntries([...dias.get(dia)!.entries()].map(([brazo, a]) => [brazo, publica(a)])),
+            ]),
+        ),
+      ]),
+    ),
     porModelo: modelos,
     doctrina:
-      "anillo 2: DESCRIPTIVO — días no pareados por carga (el IC bootstrap trata cada día como unidad); normalizador primario €/kTok de salida porque la elisión no toca la salida; jamás base de comisión, jamás sumado a measured",
+      "anillo 2: DESCRIPTIVO — días no pareados por carga (el IC bootstrap trata cada día como unidad); PRIMARIO el veredicto estratificado por modelo (la mezcla de modelos mueve la métrica por día ×10: ponderado por gasto de entrada del control, modelos con <3 días por brazo excluidos y declarados); el veredicto global por día queda como secundario; normalizador €/kTok de salida porque la elisión no toca la salida; jamás base de comisión, jamás sumado a measured",
   };
 }

@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { describirEstadoDeElision } from "./palanca.js";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { doctor } from "./doctor.js";
@@ -56,12 +57,14 @@ Entorno:
   BVSALA_GATEWAY_SHADOW  =1 enciende el carril sombra de la elisión (S2): calcula qué
                          habría ahorrado la política v0 SIN tocar el tráfico y lo
                          reporta aparte (jamás entra en la comisión).
-  BVSALA_GATEWAY_ELISION =1 arma la palanca de diales del proveedor (S4a). Solo se
-                         enciende de verdad si además la licencia de tu organización
-                         trae el feature context_elision (consulta fail-closed): ajusta
-                         SOLO el bloque context_management de cada petición /v1/messages
-                         y el borrado lo hace el propio proveedor. Ante cualquier duda,
-                         la petición viaja intacta.
+  BVSALA_GATEWAY_ELISION =0 APAGA la palanca de diales del proveedor (S4a), que va
+                         armada por defecto. Solo se enciende de verdad si la licencia
+                         de tu organización trae el feature context_elision (consulta
+                         fail-closed): ajusta SOLO el bloque context_management de cada
+                         petición /v1/messages y el borrado lo hace el propio proveedor.
+                         Ante cualquier duda, la petición viaja intacta. (Hasta 0.4.13
+                         la bandera era al revés: «=1 arma»; en un A/B pásala SIEMPRE
+                         explícita, =1 o =0, y no dependerás de la versión instalada.)
   BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
   BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
                          (por defecto va silenciado para no pisar el TUI; mira el panel).
@@ -167,6 +170,12 @@ const arranque = await arrancarGateway({
 const upstreamEfectivo = process.env.BVSALA_GATEWAY_UPSTREAM ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
 console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de servicio presente)" : "APAGADA (falta BIVELIO_SERVICE_KEY)"}`);
+{
+  // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
+  // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
+  const estado = describirEstadoDeElision(process.env.BVSALA_GATEWAY_ELISION, serviceAccountKey !== undefined);
+  (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
+}
 if (process.env.BVSALA_GATEWAY_UPSTREAM && envoltorio?.upstream && process.env.BVSALA_GATEWAY_UPSTREAM !== envoltorio.upstream) {
   // Un BVSALA_GATEWAY_UPSTREAM heredado del .zshrc (p.ej. el de Claude Code)
   // mandaría el tráfico de Codex a un host que no habla su protocolo.
