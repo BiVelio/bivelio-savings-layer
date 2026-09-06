@@ -250,6 +250,26 @@ una semana antes de ofrecerla a nadie.
 >    - tras lanzar, las dos líneas de arranque del gateway: `medición: ACTIVA` y
 >      `elisión S4a: ARMADA … brazo PALANCA` (pares) o `APAGADA … brazo CONTROL`
 >      (impares). Un «NO SE ARMA» en día par es abortar y relanzar.
+> 8. **Cada noche:** `pnpm anillo2:conciliar --dia <hoy UTC>` → `fugas` debe
+>    ser 0. Cruza los transcripts de Claude Code (`~/.claude/projects/**`,
+>    que ven TODAS las sesiones de la máquina) con las capturas del espía por
+>    `requestId` = `request-id` del proveedor. Una sesión «sin-encadenar» es un
+>    día CONTAMINADO — sus turnos no están en ningún brazo — y se anota con su
+>    dinero fuera del A/B; «parcial» también. Dos modos de fuga, con su firma
+>    en `ps`: (a) `claude` A PELO — sin `ANTHROPIC_BASE_URL` en su entorno,
+>    padre `-zsh`; pasa cuando la pestaña no tiene el alias `claude='bvsala
+>    claude'` (pestañas abiertas antes de añadirlo al .zshrc), y exportar
+>    `BVSALA_GATEWAY_*` en esa pestaña no encadena nada; (b) `bvsala claude`
+>    SIN `BVSALA_GATEWAY_UPSTREAM` — hay gateway y medición pero el espía no
+>    lo ve. Además, «espía mudo desde X» en las fisuras dice desde cuándo no
+>    entra nada. Por qué: el 06-09 el 95 % de los turnos de la org (7
+>    sesiones, ~$430) corrieron fuera del corpus por (a) y (b) juntas, incluida
+>    la sesión que construía el propio anillo 2. La cifra «$ fuera del A/B» es
+>    COTA INFERIOR: sale del usage del transcript (definitivo en el 99,6 % de
+>    los turnos) y no incluye las peticiones laterales del cliente (títulos,
+>    compactaciones: 11–14 % del dinero de una sesión encadenada) que una
+>    sesión sin encadenar no deja en ninguna fuente. El artefacto solo lleva
+>    ids, timestamps, modelo, versión de cliente, usage y nombre de proyecto.
 >
 > Estado 06-09: 8 días de corpus, TODOS control (0 peticiones ajustadas en
 > 8,4 GB); ninguna respuesta con `applied_edits`. El brazo impar existente es
