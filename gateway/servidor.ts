@@ -16,11 +16,13 @@ import {
   elisionDeJson,
   type Atribucion,
   type ElisionAplicada,
+  type RebajaAplicada,
   type UsoSse,
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
+import { decidirRebaja, rebajarTtlDeCache, RitmoDeSesiones } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -133,6 +135,12 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // (`opts.elision === false`, desde `BVSALA_GATEWAY_ELISION=0`). La URL sale del mismo
   // origen que la ingesta (meteringUrl), así que dev y tests apuntan a su plataforma
   // falsa sin opciones nuevas.
+  // El ritmo por sesión que gobierna la rebaja de TTL: vive en el proceso del
+  // gateway (no persiste, no viaja, no se mide) y solo responde a una pregunta
+  // —«¿cuándo se vio el turno anterior de esta sesión?»— para no rebajar a 5m
+  // una sesión que ya demostró enfriarse.
+  const ritmo = new RitmoDeSesiones();
+
   const canalElision =
     opts.elision !== false && opts.serviceAccountKey
       ? new CanalDeEntitlements({
@@ -168,6 +176,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     codificacion?: string,
     atribucion?: Atribucion,
     elision?: ElisionAplicada | null,
+    rebaja?: RebajaAplicada | null,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -185,7 +194,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       emisor.record(
         coalescida
           ? informeCoalescido(requestId, model, medido, atribucion)
-          : informeMedido(requestId, model, medido, atribucion, elision),
+          : informeMedido(requestId, model, medido, atribucion, elision, rebaja),
       );
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
@@ -347,6 +356,44 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         }
       }
 
+      // ── LA PALANCA DE TARIFA · TTL de escritura 1h → 5m ─────────────────
+      // Misma disciplina que la de arriba: bandera local implícita (hay canal),
+      // feature per-org fail-closed, y un try que ante cualquier anomalía
+      // reenvía lo que ya llevara `cuerpoSaliente`. Se aplica DESPUÉS de los
+      // diales para que ambas palancas compongan sin pisarse: la de diales
+      // añade `context_management`, esta reescribe `cache_control.ttl`.
+      //
+      // Y va sobre `cuerpoSaliente`, no sobre `cuerpo`: la MEDICIÓN y la clave
+      // de coalescencia siguen usando el cuerpo original del cliente.
+      let rebaja: { rebajadas: number; yaEran5m: number } | null = null;
+      if (
+        canalElision !== null &&
+        req.method === "POST" &&
+        url.pathname === "/v1/messages" &&
+        canalElision.tiene("cache_ttl_tuning")
+      ) {
+        try {
+          const clave = atribucion?.sessionId ?? "sin-sesion";
+          const ahoraMs = Date.now();
+          const anterior = ritmo.ultimo(clave, ahoraMs);
+          ritmo.anotar(clave, ahoraMs);
+          const decision = decidirRebaja(anterior === undefined ? { ahoraMs } : { ultimoTurnoMs: anterior, ahoraMs });
+          if (decision) {
+            // La rebaja solo sabe leer cuerpos SIN comprimir; si los diales ya
+            // reescribieron, `cuerpoSaliente` es JSON plano y `codificacion`
+            // dejó de describirlo — de ahí el "identity" en ese caso.
+            const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
+            const rebajado = rebajarTtlDeCache(cuerpoSaliente, cod);
+            if (rebajado !== null) {
+              cuerpoSaliente = rebajado.cuerpo;
+              rebaja = { rebajadas: rebajado.rebajadas, yaEran5m: rebajado.yaEran5m };
+            }
+          }
+        } catch {
+          /* passthrough */
+        }
+      }
+
       let upstream: Response;
       try {
         upstream = await fetchImpl(url, {
@@ -414,10 +461,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       if (observador && upstream.ok) {
         medida = true;
         const elision = observador instanceof ObservadorSse ? observador.elision() : null;
-        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision);
+        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision, rebaja);
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
-        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, elisionDeJson(respuesta));
+        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, elisionDeJson(respuesta), rebaja);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
