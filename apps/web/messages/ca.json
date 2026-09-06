@@ -404,6 +404,23 @@
       "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni entra a la comissió: la palanca només s'encendrà quan aquesta xifra ho justifiqui.",
       "notaNegativa": "Amb el teu trànsit, l'elisió hauria costat diners: reescriure blocs invalida la memòria cau de prefix del proveïdor. Aquest carril existeix exactament per veure això abans d'encendre res — i per això segueix apagada."
     },
+    "ritmo": {
+      "title": "Ritme i projecció",
+      "badgeEstimacion": "Estimació",
+      "badgeMedido": "Mesurat",
+      "proyeccionTitulo": "Estalvi projectat per a {periodo}",
+      "proyeccionNota": "El que s'ha mesurat fins ara més el teu ritme dels últims {dias} dies pels {restantes} dies que queden. És una estimació, no una factura.",
+      "comision": "Comissió projectada",
+      "comisionNota": "El {pct} del que estalvies. Un mes sense estalvi és un mes sense comissió.",
+      "comisionCalibracion": "Mes de calibratge: no es cobra res. La xifra és la comissió que hi hauria.",
+      "cerrado": "Període tancat: això és el que va ser, no cap on va.",
+      "pocosDias": "Encara és aviat per traçar la recta: calen {min} dies complets i en portes {n}. El que s'ha mesurat ja és real.",
+      "medido": "Estalviat fins ara (mesurat)",
+      "diaDeMes": "Dia {n} de {total}",
+      "ritmoLabel": "Ritme, últims {dias} dies",
+      "porDia": "{importe} / dia",
+      "diasRestantes": "{n} dies per endavant"
+    },
     "extracto": {
       "metaTitle": "Extracte · BiVelio Savings Layer",
       "eyebrow": "Mode ombra · aquí no es cobra res",

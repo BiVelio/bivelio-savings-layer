@@ -404,6 +404,23 @@
       "nota": "O que a elisão de contexto teria poupado no seu tráfego real, calculado pelo gateway sem tocar num único byte. Nunca se soma ao título nem entra na comissão: a alavanca só liga quando este número o justificar.",
       "notaNegativa": "No seu tráfego, a elisão teria custado dinheiro: reescrever blocos invalida a cache de prefixo do fornecedor. Esta via existe exatamente para ver isto antes de ligar o que quer que seja — e por isso continua desligada."
     },
+    "ritmo": {
+      "title": "Ritmo e projeção",
+      "badgeEstimacion": "Estimativa",
+      "badgeMedido": "Medido",
+      "proyeccionTitulo": "Poupança projetada para {periodo}",
+      "proyeccionNota": "O que foi medido até agora mais o teu ritmo dos últimos {dias} dias pelos {restantes} dias que faltam. É uma estimativa, não uma fatura.",
+      "comision": "Comissão projetada",
+      "comisionNota": "{pct} do que poupas. Um mês sem poupança é um mês sem comissão.",
+      "comisionCalibracion": "Mês de calibração: não se cobra nada. O valor é a comissão que haveria.",
+      "cerrado": "Período fechado: isto é o que foi, não para onde vai.",
+      "pocosDias": "Ainda é cedo para traçar a reta: são precisos {min} dias completos e há {n}. O que está medido já é real.",
+      "medido": "Poupado até à data (medido)",
+      "diaDeMes": "Dia {n} de {total}",
+      "ritmoLabel": "Ritmo, últimos {dias} dias",
+      "porDia": "{importe} / dia",
+      "diasRestantes": "{n} dias pela frente"
+    },
     "extracto": {
       "metaTitle": "Extrato · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aqui nada é cobrado",

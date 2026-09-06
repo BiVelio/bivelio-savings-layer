@@ -404,6 +404,23 @@
       "nota": "Bağlam eksiltmenin gerçek trafiğinizde ne kadar tasarruf sağlayacağı, ağ geçidi tarafından tek bir bayta dokunulmadan hesaplanır. Asla başlığa eklenmez ve asla komisyona girmez: kol ancak bu rakam bunu haklı çıkardığında açılır.",
       "notaNegativa": "Trafiğinizde eksiltme paraya mal olurdu: blokları yeniden yazmak sağlayıcının önek önbelleğini geçersiz kılar. Bu şerit tam da bunu bir şey açılmadan önce görmek için var — bu yüzden kapalı kalıyor."
     },
+    "ritmo": {
+      "title": "Tempo ve projeksiyon",
+      "badgeEstimacion": "Tahmin",
+      "badgeMedido": "Ölçülen",
+      "proyeccionTitulo": "{periodo} için öngörülen tasarruf",
+      "proyeccionNota": "Şimdiye kadar ölçülenler, artı son {dias} günlük temponuz ile kalan {restantes} gün. Bu bir tahmindir, fatura değil.",
+      "comision": "Öngörülen komisyon",
+      "comisionNota": "Tasarruf ettiğinizin {pct} kadarı. Tasarrufsuz bir ay, komisyonsuz bir aydır.",
+      "comisionCalibracion": "Kalibrasyon ayı: hiçbir ücret alınmaz. Bu rakam, oluşacak komisyondur.",
+      "cerrado": "Kapanmış dönem: bu, olanı gösterir; nereye gittiğini değil.",
+      "pocosDias": "Doğruyu çizmek için henüz erken: {min} tam gün gerekiyor, {n} gün var. Ölçülen zaten gerçek.",
+      "medido": "Bugüne kadar biriken tasarruf (ölçülen)",
+      "diaDeMes": "{total} günün {n}. günü",
+      "ritmoLabel": "Tempo, son {dias} gün",
+      "porDia": "{importe} / gün",
+      "diasRestantes": "Kalan gün: {n}"
+    },
     "extracto": {
       "metaTitle": "Ekstre · BiVelio Savings Layer",
       "eyebrow": "Gölge modu · burada hiçbir şey tahsil edilmez",

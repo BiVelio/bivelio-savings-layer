@@ -404,6 +404,23 @@
       "nota": "Ce que l'élision de contexte aurait économisé sur votre trafic réel, calculé par la passerelle sans toucher un seul octet. Jamais ajouté au titre, jamais compté dans la commission : le levier ne s'allumera que lorsque ce chiffre le justifiera.",
       "notaNegativa": "Sur votre trafic, l'élision aurait coûté de l'argent : réécrire des blocs invalide le cache de préfixe du fournisseur. Cette voie existe précisément pour voir cela avant d'allumer quoi que ce soit — c'est pourquoi elle reste éteinte."
     },
+    "ritmo": {
+      "title": "Rythme et projection",
+      "badgeEstimacion": "Estimation",
+      "badgeMedido": "Mesuré",
+      "proyeccionTitulo": "Économie projetée pour {periodo}",
+      "proyeccionNota": "Ce qui est mesuré à ce jour, plus votre rythme des {dias} derniers jours sur les {restantes} jours restants. Une estimation, pas une facture.",
+      "comision": "Commission projetée",
+      "comisionNota": "{pct} de ce que vous économisez. Un mois sans économie est un mois sans commission.",
+      "comisionCalibracion": "Mois de calibrage : rien n'est facturé. Le chiffre correspond à la commission qui s'appliquerait.",
+      "cerrado": "Période clôturée : voici ce qui a été, pas où cela va.",
+      "pocosDias": "Trop tôt pour tracer la droite : il faut {min} jours complets et il y en a {n}. Ce qui est mesuré est déjà réel.",
+      "medido": "Économisé à ce jour (mesuré)",
+      "diaDeMes": "Jour {n} sur {total}",
+      "ritmoLabel": "Rythme, {dias} derniers jours",
+      "porDia": "{importe} / jour",
+      "diasRestantes": "{n} jours restants"
+    },
     "extracto": {
       "metaTitle": "Relevé · BiVelio Savings Layer",
       "eyebrow": "Mode ombre · rien n'est facturé ici",

@@ -404,6 +404,23 @@
       "nota": "Wat context-elisie op uw echte verkeer zou hebben bespaard, berekend door de gateway zonder één byte aan te raken. Wordt nooit bij de kop opgeteld en telt nooit mee in de commissie: de hendel gaat pas aan wanneer dit cijfer het rechtvaardigt.",
       "notaNegativa": "Op uw verkeer zou elisie geld hebben gekost: blokken herschrijven maakt de prefix-cache van de provider ongeldig. Precies daarvoor bestaat dit spoor — om dat te zien vóór er iets aangaat. Daarom blijft het uit."
     },
+    "ritmo": {
+      "title": "Tempo en prognose",
+      "badgeEstimacion": "Schatting",
+      "badgeMedido": "Gemeten",
+      "proyeccionTitulo": "Verwachte besparing voor {periodo}",
+      "proyeccionNota": "Wat tot nu toe is gemeten, plus je tempo van de afgelopen {dias} dagen over de {restantes} resterende dagen. Een schatting, geen factuur.",
+      "comision": "Verwachte commissie",
+      "comisionNota": "{pct} van wat je bespaart. Een maand zonder besparing is een maand zonder commissie.",
+      "comisionCalibracion": "Kalibratiemaand: er wordt niets in rekening gebracht. Het bedrag is de commissie die er zou zijn.",
+      "cerrado": "Afgesloten periode: dit is wat het was, niet waar het heen gaat.",
+      "pocosDias": "Nog te vroeg om een lijn te trekken: er zijn {min} volledige dagen nodig en er zijn er {n}. Wat gemeten is, is al echt.",
+      "medido": "Tot nu toe bespaard (gemeten)",
+      "diaDeMes": "Dag {n} van {total}",
+      "ritmoLabel": "Tempo, laatste {dias} dagen",
+      "porDia": "{importe} / dag",
+      "diasRestantes": "{n} dagen te gaan"
+    },
     "extracto": {
       "metaTitle": "Afschrift · BiVelio Savings Layer",
       "eyebrow": "Schaduwmodus · hier wordt niets afgeschreven",

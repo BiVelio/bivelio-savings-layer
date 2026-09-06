@@ -404,6 +404,23 @@
       "nota": "Was Kontext-Elision bei Ihrem echten Traffic gespart hätte, vom Gateway berechnet, ohne ein einziges Byte anzufassen. Wird nie zur Schlagzeile addiert und fließt nie in die Provision ein: der Hebel wird erst aktiviert, wenn diese Zahl es rechtfertigt.",
       "notaNegativa": "Bei Ihrem Traffic hätte Elision Geld gekostet: das Umschreiben von Blöcken invalidiert den Prefix-Cache des Anbieters. Genau dafür existiert diese Spur — um das zu sehen, bevor irgendetwas aktiviert wird. Deshalb bleibt sie aus."
     },
+    "ritmo": {
+      "title": "Tempo und Prognose",
+      "badgeEstimacion": "Schätzung",
+      "badgeMedido": "Gemessen",
+      "proyeccionTitulo": "Prognostizierte Ersparnis für {periodo}",
+      "proyeccionNota": "Das bisher Gemessene plus dein Tempo der letzten {dias} Tage über die {restantes} verbleibenden Tage. Eine Schätzung, keine Rechnung.",
+      "comision": "Prognostizierte Provision",
+      "comisionNota": "{pct} dessen, was du sparst. Ein Monat ohne Ersparnis ist ein Monat ohne Provision.",
+      "comisionCalibracion": "Kalibrierungsmonat: Es wird nichts berechnet. Die Zahl ist die Provision, die anfallen würde.",
+      "cerrado": "Abgeschlossener Zeitraum: Das ist, was war, nicht wohin es geht.",
+      "pocosDias": "Noch zu früh für eine Gerade: {min} vollständige Tage sind nötig, vorhanden sind {n}. Das Gemessene ist bereits real.",
+      "medido": "Bisher gespart (gemessen)",
+      "diaDeMes": "Tag {n} von {total}",
+      "ritmoLabel": "Tempo, letzte {dias} Tage",
+      "porDia": "{importe} / Tag",
+      "diasRestantes": "{n} Tage verbleiben"
+    },
     "extracto": {
       "metaTitle": "Abrechnung · BiVelio Savings Layer",
       "eyebrow": "Schattenmodus · hier wird nichts berechnet",

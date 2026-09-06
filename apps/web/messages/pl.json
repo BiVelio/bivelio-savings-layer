@@ -404,6 +404,23 @@
       "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie wchodzi do prowizji: dźwignia włączy się dopiero, gdy ta liczba to uzasadni.",
       "notaNegativa": "Na Twoim ruchu elizja kosztowałaby pieniądze: przepisywanie bloków unieważnia cache prefiksu dostawcy. Ten tor istnieje właśnie po to, by to zobaczyć, zanim cokolwiek się włączy — dlatego pozostaje wyłączona."
     },
+    "ritmo": {
+      "title": "Tempo i prognoza",
+      "badgeEstimacion": "Szacunek",
+      "badgeMedido": "Zmierzone",
+      "proyeccionTitulo": "Prognozowana oszczędność za {periodo}",
+      "proyeccionNota": "To, co zmierzono do tej pory, plus Twoje tempo z ostatnich {dias} dni pomnożone przez {restantes} pozostałych dni. To szacunek, nie faktura.",
+      "comision": "Prognozowana prowizja",
+      "comisionNota": "{pct} tego, co oszczędzasz. Miesiąc bez oszczędności to miesiąc bez prowizji.",
+      "comisionCalibracion": "Miesiąc kalibracji: nic nie jest naliczane. Ta kwota to prowizja, która by wypadła.",
+      "cerrado": "Okres zamknięty: to jest to, co było, a nie dokąd zmierza.",
+      "pocosDias": "Za wcześnie, by kreślić prostą: potrzeba {min} pełnych dni, a jest {n}. To, co zmierzone, jest już realne.",
+      "medido": "Zaoszczędzone do tej pory (zmierzone)",
+      "diaDeMes": "Dzień {n} z {total}",
+      "ritmoLabel": "Tempo, ostatnie {dias} dni",
+      "porDia": "{importe} / dzień",
+      "diasRestantes": "Pozostało dni: {n}"
+    },
     "extracto": {
       "metaTitle": "Wyciąg · BiVelio Savings Layer",
       "eyebrow": "Tryb cienia · tu nic nie jest pobierane",
