@@ -1,0 +1,2267 @@
+{
+  "version": 1,
+  "banco": "salida-anillo0",
+  "fecha": "2026-09-06T16:50:20.485Z",
+  "tirada": "65674708",
+  "modelo": "claude-sonnet-4-5",
+  "reps": 2,
+  "humo": false,
+  "abortada": false,
+  "estilos": [
+    "base",
+    "savings-mode",
+    "caveman"
+  ],
+  "tareas": [
+    "log-aguja-500",
+    "log-reintentos",
+    "log-commit-roto",
+    "log-endpoint-lento",
+    "log-cadena-de-partes",
+    "codigo-off-by-one",
+    "codigo-renombrar",
+    "codigo-quien-llama",
+    "codigo-cabecera-csp",
+    "otro-mayor-gasto",
+    "otro-top-margen",
+    "otro-iva-malo",
+    "mixta-cron-parado",
+    "mixta-migrar-json",
+    "mixta-auditoria-todos"
+  ],
+  "textosChars": {
+    "savings-mode": 1628,
+    "caveman": 6559
+  },
+  "costeTotalUsd": 24.257337,
+  "presupuestoUsd": 40,
+  "ejecuciones": [
+    {
+      "tarea": "log-aguja-500",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 6,
+      "llamadas": 6,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 594520,
+        "salida": 1053,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1053,
+      "costeSalidaUsd": 0.015795000000000003,
+      "costeTotalUsd": 1.799355,
+      "charsEntrega": 12,
+      "charsTexto": 1911
+    },
+    {
+      "tarea": "log-aguja-500",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 8,
+      "llamadas": 8,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 249494,
+        "salida": 498,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 498,
+      "costeSalidaUsd": 0.007469999999999999,
+      "costeTotalUsd": 0.755952,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-aguja-500",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 363358,
+        "salida": 246,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 246,
+      "costeSalidaUsd": 0.0036899999999999997,
+      "costeTotalUsd": 1.093764,
+      "charsEntrega": 12,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-aguja-500",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 6,
+      "llamadas": 6,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 594649,
+        "salida": 902,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 902,
+      "costeSalidaUsd": 0.01353,
+      "costeTotalUsd": 1.797477,
+      "charsEntrega": 12,
+      "charsTexto": 1491
+    },
+    {
+      "tarea": "log-aguja-500",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 7,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 597910,
+        "salida": 417,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 417,
+      "costeSalidaUsd": 0.006255000000000001,
+      "costeTotalUsd": 1.799985,
+      "charsEntrega": 12,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-aguja-500",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 483708,
+        "salida": 316,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 316,
+      "costeSalidaUsd": 0.004739999999999999,
+      "costeTotalUsd": 1.455864,
+      "charsEntrega": 12,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-reintentos",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 237532,
+        "salida": 255,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 255,
+      "costeSalidaUsd": 0.0038250000000000003,
+      "costeTotalUsd": 0.716421,
+      "charsEntrega": 2,
+      "charsTexto": 270
+    },
+    {
+      "tarea": "log-reintentos",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 3393,
+        "salida": 110,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 110,
+      "costeSalidaUsd": 0.00165,
+      "costeTotalUsd": 0.011829,
+      "charsEntrega": 2,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-reintentos",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 242764,
+        "salida": 173,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 173,
+      "costeSalidaUsd": 0.002595,
+      "costeTotalUsd": 0.7308870000000001,
+      "charsEntrega": 2,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-reintentos",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 237523,
+        "salida": 245,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 245,
+      "costeSalidaUsd": 0.003675,
+      "costeTotalUsd": 0.7162440000000001,
+      "charsEntrega": 2,
+      "charsTexto": 236
+    },
+    {
+      "tarea": "log-reintentos",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 3393,
+        "salida": 110,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 110,
+      "costeSalidaUsd": 0.00165,
+      "costeTotalUsd": 0.011829,
+      "charsEntrega": 2,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-reintentos",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 242761,
+        "salida": 170,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 170,
+      "costeSalidaUsd": 0.00255,
+      "costeTotalUsd": 0.7308330000000001,
+      "charsEntrega": 2,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-commit-roto",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 112163,
+        "salida": 411,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 411,
+      "costeSalidaUsd": 0.0061649999999999995,
+      "costeTotalUsd": 0.342654,
+      "charsEntrega": 10,
+      "charsTexto": 693
+    },
+    {
+      "tarea": "log-commit-roto",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 112896,
+        "salida": 234,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 234,
+      "costeSalidaUsd": 0.00351,
+      "costeTotalUsd": 0.342198,
+      "charsEntrega": 10,
+      "charsTexto": 235
+    },
+    {
+      "tarea": "log-commit-roto",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 115662,
+        "salida": 233,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 233,
+      "costeSalidaUsd": 0.003495,
+      "costeTotalUsd": 0.350481,
+      "charsEntrega": 10,
+      "charsTexto": 208
+    },
+    {
+      "tarea": "log-commit-roto",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 112153,
+        "salida": 509,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 509,
+      "costeSalidaUsd": 0.007634999999999999,
+      "costeTotalUsd": 0.344094,
+      "charsEntrega": 10,
+      "charsTexto": 918
+    },
+    {
+      "tarea": "log-commit-roto",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 112896,
+        "salida": 287,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 287,
+      "costeSalidaUsd": 0.004305,
+      "costeTotalUsd": 0.342993,
+      "charsEntrega": 10,
+      "charsTexto": 328
+    },
+    {
+      "tarea": "log-commit-roto",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 115662,
+        "salida": 219,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 219,
+      "costeSalidaUsd": 0.0032849999999999997,
+      "costeTotalUsd": 0.350271,
+      "charsEntrega": 10,
+      "charsTexto": 163
+    },
+    {
+      "tarea": "log-endpoint-lento",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 334211,
+        "salida": 432,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 432,
+      "costeSalidaUsd": 0.00648,
+      "costeTotalUsd": 1.0091130000000001,
+      "charsEntrega": 23,
+      "charsTexto": 660
+    },
+    {
+      "tarea": "log-endpoint-lento",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 111403,
+        "salida": 203,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 203,
+      "costeSalidaUsd": 0.0030449999999999995,
+      "costeTotalUsd": 0.33725400000000005,
+      "charsEntrega": 19,
+      "charsTexto": 268
+    },
+    {
+      "tarea": "log-endpoint-lento",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 229556,
+        "salida": 184,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 184,
+      "costeSalidaUsd": 0.00276,
+      "costeTotalUsd": 0.6914279999999999,
+      "charsEntrega": 19,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "log-endpoint-lento",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 225583,
+        "salida": 749,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 749,
+      "costeSalidaUsd": 0.011234999999999998,
+      "costeTotalUsd": 0.687984,
+      "charsEntrega": 23,
+      "charsTexto": 1262
+    },
+    {
+      "tarea": "log-endpoint-lento",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 225447,
+        "salida": 270,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 270,
+      "costeSalidaUsd": 0.00405,
+      "costeTotalUsd": 0.680391,
+      "charsEntrega": 19,
+      "charsTexto": 203
+    },
+    {
+      "tarea": "log-endpoint-lento",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 229584,
+        "salida": 245,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 245,
+      "costeSalidaUsd": 0.003675,
+      "costeTotalUsd": 0.6924270000000001,
+      "charsEntrega": 19,
+      "charsTexto": 179
+    },
+    {
+      "tarea": "log-cadena-de-partes",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 137555,
+        "salida": 501,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 501,
+      "costeSalidaUsd": 0.007514999999999999,
+      "costeTotalUsd": 0.42018,
+      "charsEntrega": 3,
+      "charsTexto": 378
+    },
+    {
+      "tarea": "log-cadena-de-partes",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 138294,
+        "salida": 414,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 414,
+      "costeSalidaUsd": 0.00621,
+      "costeTotalUsd": 0.42109199999999997,
+      "charsEntrega": 3,
+      "charsTexto": 174
+    },
+    {
+      "tarea": "log-cadena-de-partes",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 141060,
+        "salida": 444,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 444,
+      "costeSalidaUsd": 0.006659999999999999,
+      "costeTotalUsd": 0.42984,
+      "charsEntrega": 3,
+      "charsTexto": 254
+    },
+    {
+      "tarea": "log-cadena-de-partes",
+      "clase": "log",
+      "estilo": "base",
+      "rep": 1,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 137554,
+        "salida": 899,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 899,
+      "costeSalidaUsd": 0.013485,
+      "costeTotalUsd": 0.42614700000000005,
+      "charsEntrega": 3,
+      "charsTexto": 1314
+    },
+    {
+      "tarea": "log-cadena-de-partes",
+      "clase": "log",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 138294,
+        "salida": 471,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 471,
+      "costeSalidaUsd": 0.007065,
+      "costeTotalUsd": 0.42194699999999996,
+      "charsEntrega": 3,
+      "charsTexto": 317
+    },
+    {
+      "tarea": "log-cadena-de-partes",
+      "clase": "log",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": false,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 141060,
+        "salida": 399,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 399,
+      "costeSalidaUsd": 0.005985,
+      "costeTotalUsd": 0.429165,
+      "charsEntrega": 3,
+      "charsTexto": 119
+    },
+    {
+      "tarea": "codigo-off-by-one",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 14302,
+        "salida": 651,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 651,
+      "costeSalidaUsd": 0.009765,
+      "costeTotalUsd": 0.052670999999999996,
+      "charsEntrega": 9,
+      "charsTexto": 701
+    },
+    {
+      "tarea": "codigo-off-by-one",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 14609,
+        "salida": 468,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 468,
+      "costeSalidaUsd": 0.00702,
+      "costeTotalUsd": 0.050847,
+      "charsEntrega": 9,
+      "charsTexto": 86
+    },
+    {
+      "tarea": "codigo-off-by-one",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 19810,
+        "salida": 409,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 409,
+      "costeSalidaUsd": 0.006135,
+      "costeTotalUsd": 0.06556500000000001,
+      "charsEntrega": 9,
+      "charsTexto": 60
+    },
+    {
+      "tarea": "codigo-off-by-one",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 6,
+      "llamadas": 6,
+      "relecturas": 1,
+      "tokens": {
+        "entrada": 37956,
+        "salida": 811,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 811,
+      "costeSalidaUsd": 0.012165,
+      "costeTotalUsd": 0.126033,
+      "charsEntrega": 9,
+      "charsTexto": 1109
+    },
+    {
+      "tarea": "codigo-off-by-one",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 14625,
+        "salida": 476,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 476,
+      "costeSalidaUsd": 0.0071400000000000005,
+      "costeTotalUsd": 0.051015000000000005,
+      "charsEntrega": 9,
+      "charsTexto": 103
+    },
+    {
+      "tarea": "codigo-off-by-one",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 19818,
+        "salida": 413,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 413,
+      "costeSalidaUsd": 0.006195000000000001,
+      "costeTotalUsd": 0.065649,
+      "charsEntrega": 9,
+      "charsTexto": 77
+    },
+    {
+      "tarea": "codigo-renombrar",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 12,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 7086,
+        "salida": 1349,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1349,
+      "costeSalidaUsd": 0.020235,
+      "costeTotalUsd": 0.041493,
+      "charsEntrega": 5,
+      "charsTexto": 760
+    },
+    {
+      "tarea": "codigo-renombrar",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 13,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 10909,
+        "salida": 1148,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1148,
+      "costeSalidaUsd": 0.01722,
+      "costeTotalUsd": 0.04994699999999999,
+      "charsEntrega": 5,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-renombrar",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 13,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 17824,
+        "salida": 1148,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1148,
+      "costeSalidaUsd": 0.01722,
+      "costeTotalUsd": 0.070692,
+      "charsEntrega": 5,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-renombrar",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 13,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 9329,
+        "salida": 1404,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1404,
+      "costeSalidaUsd": 0.021060000000000002,
+      "costeTotalUsd": 0.04904700000000001,
+      "charsEntrega": 5,
+      "charsTexto": 733
+    },
+    {
+      "tarea": "codigo-renombrar",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 13,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 10909,
+        "salida": 1148,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1148,
+      "costeSalidaUsd": 0.01722,
+      "costeTotalUsd": 0.04994699999999999,
+      "charsEntrega": 5,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-renombrar",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 5,
+      "llamadas": 13,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 17824,
+        "salida": 1148,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1148,
+      "costeSalidaUsd": 0.01722,
+      "costeTotalUsd": 0.070692,
+      "charsEntrega": 5,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-quien-llama",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 3482,
+        "salida": 312,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 312,
+      "costeSalidaUsd": 0.00468,
+      "costeTotalUsd": 0.015126,
+      "charsEntrega": 13,
+      "charsTexto": 458
+    },
+    {
+      "tarea": "codigo-quien-llama",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 2957,
+        "salida": 115,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 115,
+      "costeSalidaUsd": 0.001725,
+      "costeTotalUsd": 0.010596000000000001,
+      "charsEntrega": 13,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-quien-llama",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 5723,
+        "salida": 115,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 115,
+      "costeSalidaUsd": 0.001725,
+      "costeTotalUsd": 0.018894,
+      "charsEntrega": 13,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-quien-llama",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 3464,
+        "salida": 421,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 421,
+      "costeSalidaUsd": 0.006314999999999999,
+      "costeTotalUsd": 0.016707,
+      "charsEntrega": 13,
+      "charsTexto": 674
+    },
+    {
+      "tarea": "codigo-quien-llama",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 2957,
+        "salida": 115,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 115,
+      "costeSalidaUsd": 0.001725,
+      "costeTotalUsd": 0.010596000000000001,
+      "charsEntrega": 13,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-quien-llama",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 5723,
+        "salida": 115,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 115,
+      "costeSalidaUsd": 0.001725,
+      "costeTotalUsd": 0.018894,
+      "charsEntrega": 13,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-cabecera-csp",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 5124,
+        "salida": 866,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 866,
+      "costeSalidaUsd": 0.012989999999999998,
+      "costeTotalUsd": 0.028362,
+      "charsEntrega": 7,
+      "charsTexto": 265
+    },
+    {
+      "tarea": "codigo-cabecera-csp",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 6124,
+        "salida": 769,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 769,
+      "costeSalidaUsd": 0.011534999999999998,
+      "costeTotalUsd": 0.029907,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-cabecera-csp",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 10273,
+        "salida": 769,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 769,
+      "costeSalidaUsd": 0.011534999999999998,
+      "costeTotalUsd": 0.042353999999999996,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-cabecera-csp",
+      "clase": "codigo",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 5078,
+        "salida": 843,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 843,
+      "costeSalidaUsd": 0.012644999999999998,
+      "costeTotalUsd": 0.027878999999999998,
+      "charsEntrega": 7,
+      "charsTexto": 203
+    },
+    {
+      "tarea": "codigo-cabecera-csp",
+      "clase": "codigo",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 6124,
+        "salida": 769,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 769,
+      "costeSalidaUsd": 0.011534999999999998,
+      "costeTotalUsd": 0.029907,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "codigo-cabecera-csp",
+      "clase": "codigo",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 10273,
+        "salida": 769,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 769,
+      "costeSalidaUsd": 0.011534999999999998,
+      "costeTotalUsd": 0.042353999999999996,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-mayor-gasto",
+      "clase": "otro",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 21409,
+        "salida": 225,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 225,
+      "costeSalidaUsd": 0.0033750000000000004,
+      "costeTotalUsd": 0.06760200000000001,
+      "charsEntrega": 10,
+      "charsTexto": 318
+    },
+    {
+      "tarea": "otro-mayor-gasto",
+      "clase": "otro",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 22154,
+        "salida": 121,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 121,
+      "costeSalidaUsd": 0.0018149999999999998,
+      "costeTotalUsd": 0.06827699999999999,
+      "charsEntrega": 10,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-mayor-gasto",
+      "clase": "otro",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 24920,
+        "salida": 121,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 121,
+      "costeSalidaUsd": 0.0018149999999999998,
+      "costeTotalUsd": 0.076575,
+      "charsEntrega": 10,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-mayor-gasto",
+      "clase": "otro",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 21409,
+        "salida": 313,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 313,
+      "costeSalidaUsd": 0.0046949999999999995,
+      "costeTotalUsd": 0.06892200000000001,
+      "charsEntrega": 10,
+      "charsTexto": 486
+    },
+    {
+      "tarea": "otro-mayor-gasto",
+      "clase": "otro",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 22154,
+        "salida": 121,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 121,
+      "costeSalidaUsd": 0.0018149999999999998,
+      "costeTotalUsd": 0.06827699999999999,
+      "charsEntrega": 10,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-mayor-gasto",
+      "clase": "otro",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 24920,
+        "salida": 139,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 139,
+      "costeSalidaUsd": 0.002085,
+      "costeTotalUsd": 0.07684500000000001,
+      "charsEntrega": 10,
+      "charsTexto": 40
+    },
+    {
+      "tarea": "otro-top-margen",
+      "clase": "otro",
+      "estilo": "base",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 23896,
+        "salida": 856,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 856,
+      "costeSalidaUsd": 0.01284,
+      "costeTotalUsd": 0.08452799999999999,
+      "charsEntrega": 7,
+      "charsTexto": 1226
+    },
+    {
+      "tarea": "otro-top-margen",
+      "clase": "otro",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 23215,
+        "salida": 215,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 215,
+      "costeSalidaUsd": 0.003225,
+      "costeTotalUsd": 0.07287,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-top-margen",
+      "clase": "otro",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": false,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 27364,
+        "salida": 215,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 215,
+      "costeSalidaUsd": 0.003225,
+      "costeTotalUsd": 0.085317,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-top-margen",
+      "clase": "otro",
+      "estilo": "base",
+      "rep": 1,
+      "exito": false,
+      "entregado": true,
+      "turnos": 4,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 23568,
+        "salida": 532,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 532,
+      "costeSalidaUsd": 0.00798,
+      "costeTotalUsd": 0.07868399999999999,
+      "charsEntrega": 7,
+      "charsTexto": 688
+    },
+    {
+      "tarea": "otro-top-margen",
+      "clase": "otro",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": false,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 23215,
+        "salida": 215,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 215,
+      "costeSalidaUsd": 0.003225,
+      "costeTotalUsd": 0.07287,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-top-margen",
+      "clase": "otro",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": false,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 27365,
+        "salida": 216,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 216,
+      "costeSalidaUsd": 0.00324,
+      "costeTotalUsd": 0.085335,
+      "charsEntrega": 7,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "otro-iva-malo",
+      "clase": "otro",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 4778,
+        "salida": 1206,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 1206,
+      "costeSalidaUsd": 0.018090000000000002,
+      "costeTotalUsd": 0.032424,
+      "charsEntrega": 22,
+      "charsTexto": 1821
+    },
+    {
+      "tarea": "otro-iva-malo",
+      "clase": "otro",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 5856,
+        "salida": 611,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 611,
+      "costeSalidaUsd": 0.009165,
+      "costeTotalUsd": 0.026733,
+      "charsEntrega": 22,
+      "charsTexto": 477
+    },
+    {
+      "tarea": "otro-iva-malo",
+      "clase": "otro",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 10005,
+        "salida": 526,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 526,
+      "costeSalidaUsd": 0.00789,
+      "costeTotalUsd": 0.037905,
+      "charsEntrega": 22,
+      "charsTexto": 262
+    },
+    {
+      "tarea": "otro-iva-malo",
+      "clase": "otro",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 4783,
+        "salida": 852,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 852,
+      "costeSalidaUsd": 0.01278,
+      "costeTotalUsd": 0.027129,
+      "charsEntrega": 22,
+      "charsTexto": 1026
+    },
+    {
+      "tarea": "otro-iva-malo",
+      "clase": "otro",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 5856,
+        "salida": 516,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 516,
+      "costeSalidaUsd": 0.00774,
+      "costeTotalUsd": 0.025308,
+      "charsEntrega": 22,
+      "charsTexto": 271
+    },
+    {
+      "tarea": "otro-iva-malo",
+      "clase": "otro",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 7,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 10005,
+        "salida": 645,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 645,
+      "costeSalidaUsd": 0.009675,
+      "costeTotalUsd": 0.03969,
+      "charsEntrega": 22,
+      "charsTexto": 461
+    },
+    {
+      "tarea": "mixta-cron-parado",
+      "clase": "mixta",
+      "estilo": "base",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 33701,
+        "salida": 455,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 455,
+      "costeSalidaUsd": 0.006825,
+      "costeTotalUsd": 0.10792800000000001,
+      "charsEntrega": 34,
+      "charsTexto": 849
+    },
+    {
+      "tarea": "mixta-cron-parado",
+      "clase": "mixta",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 35952,
+        "salida": 323,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 323,
+      "costeSalidaUsd": 0.004845,
+      "costeTotalUsd": 0.11270100000000001,
+      "charsEntrega": 34,
+      "charsTexto": 323
+    },
+    {
+      "tarea": "mixta-cron-parado",
+      "clase": "mixta",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 40101,
+        "salida": 282,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 282,
+      "costeSalidaUsd": 0.004229999999999999,
+      "costeTotalUsd": 0.12453299999999999,
+      "charsEntrega": 22,
+      "charsTexto": 223
+    },
+    {
+      "tarea": "mixta-cron-parado",
+      "clase": "mixta",
+      "estilo": "base",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 3,
+      "llamadas": 4,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 34923,
+        "salida": 534,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 534,
+      "costeSalidaUsd": 0.00801,
+      "costeTotalUsd": 0.112779,
+      "charsEntrega": 22,
+      "charsTexto": 998
+    },
+    {
+      "tarea": "mixta-cron-parado",
+      "clase": "mixta",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 34449,
+        "salida": 243,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 243,
+      "costeSalidaUsd": 0.003645,
+      "costeTotalUsd": 0.106992,
+      "charsEntrega": 34,
+      "charsTexto": 231
+    },
+    {
+      "tarea": "mixta-cron-parado",
+      "clase": "mixta",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": true,
+      "entregado": true,
+      "turnos": 2,
+      "llamadas": 3,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 37215,
+        "salida": 225,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 225,
+      "costeSalidaUsd": 0.0033749999999999995,
+      "costeTotalUsd": 0.11502000000000001,
+      "charsEntrega": 22,
+      "charsTexto": 146
+    },
+    {
+      "tarea": "mixta-migrar-json",
+      "clase": "mixta",
+      "estilo": "base",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 27999,
+        "salida": 2337,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2337,
+      "costeSalidaUsd": 0.035055,
+      "costeTotalUsd": 0.11905199999999999,
+      "charsEntrega": 0,
+      "charsTexto": 408
+    },
+    {
+      "tarea": "mixta-migrar-json",
+      "clase": "mixta",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 29067,
+        "salida": 2284,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2284,
+      "costeSalidaUsd": 0.03426,
+      "costeTotalUsd": 0.121461,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-migrar-json",
+      "clase": "mixta",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 33216,
+        "salida": 2284,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2284,
+      "costeSalidaUsd": 0.03426,
+      "costeTotalUsd": 0.133908,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-migrar-json",
+      "clase": "mixta",
+      "estilo": "base",
+      "rep": 1,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 28016,
+        "salida": 2354,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2354,
+      "costeSalidaUsd": 0.03531,
+      "costeTotalUsd": 0.11935799999999999,
+      "charsEntrega": 0,
+      "charsTexto": 559
+    },
+    {
+      "tarea": "mixta-migrar-json",
+      "clase": "mixta",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 29067,
+        "salida": 2284,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2284,
+      "costeSalidaUsd": 0.03426,
+      "costeTotalUsd": 0.121461,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-migrar-json",
+      "clase": "mixta",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 5,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 33216,
+        "salida": 2284,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2284,
+      "costeSalidaUsd": 0.03426,
+      "costeTotalUsd": 0.133908,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-auditoria-todos",
+      "clase": "mixta",
+      "estilo": "base",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 7611,
+        "salida": 2153,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2153,
+      "costeSalidaUsd": 0.032295000000000004,
+      "costeTotalUsd": 0.055127999999999996,
+      "charsEntrega": 0,
+      "charsTexto": 214
+    },
+    {
+      "tarea": "mixta-auditoria-todos",
+      "clase": "mixta",
+      "estilo": "savings-mode",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 2,
+      "llamadas": 1,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 7111,
+        "salida": 2100,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2100,
+      "costeSalidaUsd": 0.0315,
+      "costeTotalUsd": 0.052833000000000005,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-auditoria-todos",
+      "clase": "mixta",
+      "estilo": "caveman",
+      "rep": 0,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 12878,
+        "salida": 2135,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2135,
+      "costeSalidaUsd": 0.032025,
+      "costeTotalUsd": 0.070659,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-auditoria-todos",
+      "clase": "mixta",
+      "estilo": "base",
+      "rep": 1,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 7628,
+        "salida": 2170,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2170,
+      "costeSalidaUsd": 0.03255,
+      "costeTotalUsd": 0.05543400000000001,
+      "charsEntrega": 0,
+      "charsTexto": 271
+    },
+    {
+      "tarea": "mixta-auditoria-todos",
+      "clase": "mixta",
+      "estilo": "savings-mode",
+      "rep": 1,
+      "exito": false,
+      "entregado": false,
+      "turnos": 2,
+      "llamadas": 1,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 7118,
+        "salida": 2107,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2107,
+      "costeSalidaUsd": 0.031605,
+      "costeTotalUsd": 0.052959,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    },
+    {
+      "tarea": "mixta-auditoria-todos",
+      "clase": "mixta",
+      "estilo": "caveman",
+      "rep": 1,
+      "exito": false,
+      "entregado": false,
+      "turnos": 3,
+      "llamadas": 2,
+      "relecturas": 0,
+      "tokens": {
+        "entrada": 12878,
+        "salida": 2135,
+        "cacheLeida": 0,
+        "cacheEscrita": 0
+      },
+      "tokensSalida": 2135,
+      "costeSalidaUsd": 0.032025,
+      "costeTotalUsd": 0.070659,
+      "charsEntrega": 0,
+      "charsTexto": 0
+    }
+  ],
+  "veredicto": {
+    "base": {
+      "ejecuciones": 30,
+      "exitos": 21,
+      "tokensSalida": 26600,
+      "costeTotalUsd": 9.545955000000003
+    },
+    "estilos": [
+      {
+        "estilo": "savings-mode",
+        "pares": 30,
+        "paresDeExito": 30,
+        "tokensSalida": {
+          "base": 26600,
+          "estilo": 19162,
+          "reduccionPct": {
+            "media": 27.962406015037587,
+            "inferior": 16.035554069492044,
+            "superior": 45.415535035306895
+          },
+          "reduccionPctPorPares": {
+            "media": 27.962406015037587,
+            "inferior": 18.882112617680146,
+            "superior": 39.92819758640079
+          }
+        },
+        "tokensSalidaDobleExito": {
+          "base": 13334,
+          "estilo": 8340,
+          "reduccionPct": {
+            "media": 37.45312734363282,
+            "inferior": 26.355598167678707,
+            "superior": 51.99265234406197
+          },
+          "reduccionPctPorPares": {
+            "media": 37.45312734363282,
+            "inferior": 28.920472692430533,
+            "superior": 47.63072541729294
+          },
+          "pares": 20
+        },
+        "costeSalida": {
+          "base": 0.39900000000000013,
+          "estilo": 0.28743,
+          "reduccionPct": {
+            "media": 27.96240601503761,
+            "inferior": 16.035554069492054,
+            "superior": 45.41553503530689
+          },
+          "reduccionPctPorPares": {
+            "media": 27.96240601503761,
+            "inferior": 18.882112617680136,
+            "superior": 39.92819758640081
+          }
+        },
+        "costeTotal": {
+          "base": 9.545955000000003,
+          "estilo": 6.310974,
+          "reduccionPct": {
+            "media": 33.88850041719243,
+            "inferior": 5.273780337429079,
+            "superior": 59.03683928987089
+          },
+          "reduccionPctPorPares": {
+            "media": 33.88850041719243,
+            "inferior": 9.925494270688183,
+            "superior": 55.46353607222954
+          },
+          "empeora": false
+        },
+        "tokensEntrada": {
+          "base": 3048985,
+          "estilo": 2007848
+        },
+        "descomposicionAhorroUsd": {
+          "salida": 0.11157000000000011,
+          "entrada": 3.123411000000003
+        },
+        "truncados": {
+          "base": 0,
+          "estilo": 0
+        },
+        "paresConError": 0,
+        "tareasSinSenal": [
+          "log-cadena-de-partes",
+          "mixta-auditoria-todos",
+          "mixta-migrar-json",
+          "otro-top-margen"
+        ],
+        "exito": {
+          "base": 21,
+          "estilo": 21,
+          "total": 30,
+          "diferencia": {
+            "media": 0,
+            "inferior": -0.1,
+            "superior": 0.1
+          },
+          "puerta": true
+        },
+        "relecturasPorLlamada": {
+          "base": 0.0070921985815602835,
+          "estilo": 0
+        },
+        "turnosMedios": {
+          "base": 3.3666666666666667,
+          "estilo": 3.033333333333333
+        },
+        "charsEntregaMedios": {
+          "base": 10.066666666666666,
+          "estilo": 9.8
+        },
+        "charsTextoMedios": {
+          "base": 763.3333333333334,
+          "estilo": 100.53333333333333
+        },
+        "thinkingTokens": null,
+        "publicable": true,
+        "notas": [
+          "el 97 % del ahorro TOTAL es ENTRADA (menos lecturas), en régimen SIN caché: no transferible a producción, donde la entrada va a precio de caché",
+          "sin señal de calidad en log-cadena-de-partes, mixta-auditoria-todos, mixta-migrar-json, otro-top-margen: ningún brazo las resuelve"
+        ]
+      },
+      {
+        "estilo": "caveman",
+        "pares": 30,
+        "paresDeExito": 30,
+        "tokensSalida": {
+          "base": 26600,
+          "estilo": 18722,
+          "reduccionPct": {
+            "media": 29.616541353383464,
+            "inferior": 16.375963540201433,
+            "superior": 49.2708743877034
+          },
+          "reduccionPctPorPares": {
+            "media": 29.616541353383464,
+            "inferior": 19.27817921867151,
+            "superior": 43.19673668417104
+          }
+        },
+        "tokensSalidaDobleExito": {
+          "base": 14387,
+          "estilo": 8377,
+          "reduccionPct": {
+            "media": 41.77382359074164,
+            "inferior": 28.195085309582566,
+            "superior": 57.99658930822274
+          },
+          "reduccionPctPorPares": {
+            "media": 41.77382359074164,
+            "inferior": 31.140412400056107,
+            "superior": 53.61213969360343
+          },
+          "pares": 21
+        },
+        "costeSalida": {
+          "base": 0.39900000000000013,
+          "estilo": 0.28083,
+          "reduccionPct": {
+            "media": 29.616541353383475,
+            "inferior": 16.3759635402014,
+            "superior": 49.270874387703415
+          },
+          "reduccionPctPorPares": {
+            "media": 29.616541353383475,
+            "inferior": 19.278179218671532,
+            "superior": 43.19673668417106
+          }
+        },
+        "costeTotal": {
+          "base": 9.545955000000003,
+          "estilo": 8.400408000000002,
+          "reduccionPct": {
+            "media": 12.000339410776606,
+            "inferior": -7.18918565404445,
+            "superior": 21.801002549931603
+          },
+          "reduccionPctPorPares": {
+            "media": 12.000339410776606,
+            "inferior": -4.174964371290324,
+            "superior": 22.012959555447964
+          },
+          "empeora": false
+        },
+        "tokensEntrada": {
+          "base": 3048985,
+          "estilo": 2706526
+        },
+        "descomposicionAhorroUsd": {
+          "salida": 0.11817000000000011,
+          "entrada": 1.0273770000000004
+        },
+        "truncados": {
+          "base": 0,
+          "estilo": 0
+        },
+        "paresConError": 0,
+        "tareasSinSenal": [
+          "log-cadena-de-partes",
+          "mixta-auditoria-todos",
+          "mixta-migrar-json",
+          "otro-top-margen"
+        ],
+        "exito": {
+          "base": 21,
+          "estilo": 21,
+          "total": 30,
+          "diferencia": {
+            "media": 0,
+            "inferior": 0,
+            "superior": 0
+          },
+          "puerta": true
+        },
+        "relecturasPorLlamada": {
+          "base": 0.0070921985815602835,
+          "estilo": 0
+        },
+        "turnosMedios": {
+          "base": 3.3666666666666667,
+          "estilo": 3
+        },
+        "charsEntregaMedios": {
+          "base": 10.066666666666666,
+          "estilo": 9.4
+        },
+        "charsTextoMedios": {
+          "base": 763.3333333333334,
+          "estilo": 73.06666666666666
+        },
+        "thinkingTokens": null,
+        "publicable": true,
+        "notas": [
+          "el 90 % del ahorro TOTAL es ENTRADA (menos lecturas), en régimen SIN caché: no transferible a producción, donde la entrada va a precio de caché",
+          "sin señal de calidad en log-cadena-de-partes, mixta-auditoria-todos, mixta-migrar-json, otro-top-margen: ningún brazo las resuelve"
+        ]
+      }
+    ]
+  },
+  "veredictoVersion": 2,
+  "condiciones": {
+    "thinking": "ausente",
+    "cache": "ninguna",
+    "temperature": "por defecto",
+    "maxTokens": 2048
+  }
+}
