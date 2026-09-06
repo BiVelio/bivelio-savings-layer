@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   MIN_DIAS_POR_BRAZO,
+  PROTOCOLO_PARIDAD,
+  auditarParidad,
   bootstrapDosMuestras,
+  bootstrapEstratificado,
+  brazoEsperado,
+  configDelCliente,
   diaDe,
   elisionDeCuerpoSse,
   esDialNuestro,
@@ -184,5 +189,162 @@ describe("resumir — el veredicto del A/B de días", () => {
     expect(r.veredicto.estado).toBe("ok");
     if (r.veredicto.estado !== "ok") return;
     expect(r.veredicto.diasPalanca).toBe(3);
+  });
+});
+
+describe("auditoría de paridad — el protocolo frente al cuerpo", () => {
+  it("brazoEsperado: día natural UTC par = palanca, impar = control", () => {
+    expect(brazoEsperado("2026-09-06")).toBe("palanca");
+    expect(brazoEsperado("2026-09-07")).toBe("control");
+    expect(brazoEsperado("2026-09-30")).toBe("palanca");
+    expect(brazoEsperado("2026-10-01")).toBe("control");
+  });
+
+  it("configDelCliente: lo que trae el cliente aparte de nuestro edit", () => {
+    expect(configDelCliente({ edits: [{ type: "clear_thinking_20251015", keep: "all" }] })).toBe("clear_thinking");
+    // Un cuerpo de PALANCA fusionado: nuestro edit no cuenta como «del cliente».
+    expect(
+      configDelCliente({ edits: [{ type: "clear_thinking_20251015", keep: "all" }, ...configDeDiales().edits] }),
+    ).toBe("clear_thinking");
+    expect(configDelCliente(configDeDiales())).toBe("ninguna");
+    expect(configDelCliente({ edits: [{ type: "clear_tool_uses_20250919", trigger: { value: 100_000 } }] })).toBe(
+      "clear_tool_uses_ajeno",
+    );
+    expect(
+      configDelCliente({ edits: [{ type: "futura" }, { type: "clear_thinking_20251015" }] }),
+    ).toBe("clear_thinking+otra");
+    expect(configDelCliente(undefined)).toBe("ninguna");
+    expect(configDelCliente({ edits: "no" })).toBe("ninguna");
+  });
+
+  it("lista las fisuras: par sin palanca, impar con palanca, día mezclado, palanca sin disparos, cliente cambiado, hueco", () => {
+    const ts: TurnoAnillo2[] = [
+      turno({ dia: "2026-09-07", brazo: "control", cliente: "claude-cli/2.1.260" }), // impar limpio
+      turno({ dia: "2026-09-08", brazo: "control", cliente: "claude-cli/2.1.260" }), // par SIN palanca
+      turno({ dia: "2026-09-09", brazo: "palanca", borrados: 1, tokensLimpiados: 10, cliente: "claude-cli/2.1.260" }), // impar CON palanca
+      turno({ dia: "2026-09-10", brazo: "control", cliente: "claude-cli/2.1.260" }),
+      turno({ dia: "2026-09-10", brazo: "palanca", cliente: "claude-cli/2.1.261" }), // mezclado + sin disparos + 2 clientes
+      turno({ dia: "2026-09-12", brazo: "palanca", borrados: 2, tokensLimpiados: 40_000, cliente: "claude-cli/2.1.261" }), // par limpio; el 11 falta
+    ];
+    const p = auditarParidad(ts);
+    expect(p.protocolo).toBe(PROTOCOLO_PARIDAD);
+    const por = Object.fromEntries(p.dias.map((d) => [d.dia, d]));
+    expect(por["2026-09-07"]!.limpio).toBe(true);
+    expect(por["2026-09-07"]!.fisuras).toEqual([]);
+    expect(por["2026-09-08"]!.limpio).toBe(false);
+    expect(por["2026-09-08"]!.fisuras.join(" ")).toMatch(/día PAR sin palanca/);
+    expect(por["2026-09-09"]!.limpio).toBe(false);
+    expect(por["2026-09-09"]!.fisuras.join(" ")).toMatch(/día IMPAR con 1 turnos de palanca/);
+    const mezclado = por["2026-09-10"]!;
+    expect(mezclado.limpio).toBe(false);
+    expect(mezclado.observado).toEqual({ control: 1, palanca: 1 });
+    expect(mezclado.fisuras.join(" | ")).toMatch(/día mezclado/);
+    expect(mezclado.fisuras.join(" | ")).toMatch(/palanca sin disparos/);
+    expect(mezclado.fisuras.join(" | ")).toMatch(/2 versiones de cliente/);
+    expect(por["2026-09-12"]!.limpio).toBe(true);
+    expect(por["2026-09-12"]!.tokensLimpiadosPalancaM).toBeCloseTo(0, 5);
+    expect(por["2026-09-12"]!.configCliente).toEqual({ "?": 1 });
+    expect(p.fisuras.join(" | ")).toMatch(/días sin tráfico en la ventana: 2026-09-11/);
+    expect(p.fisuras.join(" | ")).toMatch(/solo 1 días limpios de palanca/);
+    expect(p.fisuras.join(" | ")).toMatch(/solo 1 días limpios de control/);
+    expect(p.fisuras.join(" | ")).toMatch(/el cliente cambió de versión/);
+  });
+
+  it("el informe entero lleva la auditoría y el corpus real de hoy (todo control) sale como «par sin palanca»", () => {
+    const r = resumir([turno({ dia: "2026-09-06", brazo: "control" }), turno({ dia: "2026-09-05", brazo: "control" })]);
+    expect(r.paridad.dias.map((d) => [d.dia, d.esperado, d.limpio])).toEqual([
+      ["2026-09-05", "control", true],
+      ["2026-09-06", "palanca", false],
+    ]);
+  });
+});
+
+describe("veredicto estratificado por modelo — la mezcla de modelos no fabrica efecto", () => {
+  const diasC = ["2026-09-07", "2026-09-09", "2026-09-11"];
+  const diasP = ["2026-09-08", "2026-09-10", "2026-09-12"];
+
+  /** Dos modelos con métricas ×10 distintas; la palanca ahorra el 20 % en los dos. */
+  function corpusDosModelos(ahorroPct = 20): TurnoAnillo2[] {
+    const ts: TurnoAnillo2[] = [];
+    const f = 1 - ahorroPct / 100;
+    for (const dia of diasC) {
+      ts.push(turno({ dia, brazo: "control", model: "caro", entradaUsd: 10, salidaTokens: 1_000, sesion: `c1-${dia}` }));
+      ts.push(turno({ dia, brazo: "control", model: "barato", entradaUsd: 1, salidaTokens: 1_000, sesion: `c2-${dia}` }));
+    }
+    for (const dia of diasP) {
+      ts.push(
+        turno({ dia, brazo: "palanca", model: "caro", entradaUsd: 10 * f, salidaTokens: 1_000, sesion: `p1-${dia}`, borrados: 1, tokensLimpiados: 5_000 }),
+      );
+      ts.push(
+        turno({ dia, brazo: "palanca", model: "barato", entradaUsd: 1 * f, salidaTokens: 1_000, sesion: `p2-${dia}`, borrados: 1, tokensLimpiados: 500 }),
+      );
+    }
+    return ts;
+  }
+
+  it("bootstrapEstratificado es determinista y pondera por el peso de cada estrato", () => {
+    const a = bootstrapEstratificado([
+      { peso: 30, control: [10, 10, 10], palanca: [8, 8, 8] }, // 20 %
+      { peso: 3, control: [1, 1, 1], palanca: [1, 1, 1] }, // 0 %
+    ]);
+    const b = bootstrapEstratificado([
+      { peso: 30, control: [10, 10, 10], palanca: [8, 8, 8] },
+      { peso: 3, control: [1, 1, 1], palanca: [1, 1, 1] },
+    ]);
+    expect(a).toEqual(b);
+    // (30·2 + 3·0) / (30·10 + 3·1) = 60 / 303 = 19,8 %
+    expect(a.ahorroPct).toBeCloseTo(19.8, 1);
+    expect(a.inferior).toBeCloseTo(19.8, 1);
+    expect(a.superior).toBeCloseTo(19.8, 1);
+  });
+
+  it("con el mismo 20 % en cada modelo, el titular estratificado dice 20 % con IC", () => {
+    const r = resumir(corpusDosModelos(20));
+    expect(r.veredictoPorModelo.estado).toBe("ok");
+    if (r.veredictoPorModelo.estado !== "ok") return;
+    expect(r.veredictoPorModelo.ahorroPctFactura).toBeCloseTo(20, 1);
+    expect(r.veredictoPorModelo.significativo).toBe(true);
+    expect(r.veredictoPorModelo.modelosIncluidos.sort()).toEqual(["barato", "caro"]);
+    expect(r.veredictoPorModelo.modelosExcluidos).toEqual([]);
+    expect(r.veredictoPorModelo.pesoUsdControlIncluido).toBe(r.veredictoPorModelo.pesoUsdControlTotal);
+    expect(r.porModelo["caro"]!.ahorroPct).toBeCloseTo(20, 1);
+    expect(r.porModelo["caro"]!.significativo).toBe(true);
+    expect(r.porModelo["barato"]!.diasControl).toBe(3);
+  });
+
+  it("⛔ la mezcla de modelos por día NO puede fabricar un ahorro: mismo precio por modelo, días de control caros y de palanca baratos", () => {
+    // Control: solo el modelo caro; palanca: solo el barato. Ningún modelo
+    // cambia de precio → el estratificado no puede comparar (0 modelos con
+    // ambos brazos) y lo dice; el global por día mentiría (10 → 1 = «90 %»).
+    const ts: TurnoAnillo2[] = [];
+    for (const dia of diasC) ts.push(turno({ dia, brazo: "control", model: "caro", entradaUsd: 10, sesion: `c-${dia}` }));
+    for (const dia of diasP)
+      ts.push(turno({ dia, brazo: "palanca", model: "barato", entradaUsd: 1, sesion: `p-${dia}`, borrados: 1, tokensLimpiados: 1 }));
+    const r = resumir(ts);
+    expect(r.veredictoPorModelo.estado).toBe("insuficiente");
+    if (r.veredictoPorModelo.estado !== "insuficiente") return;
+    expect(r.veredictoPorModelo.modelosExcluidos.map((m) => m.modelo).sort()).toEqual(["barato", "caro"]);
+    // El global por día sí «ve» un 90 % — por eso es secundario.
+    expect(r.veredicto.estado).toBe("ok");
+    if (r.veredicto.estado === "ok") expect(r.veredicto.ahorroPctFactura).toBeCloseTo(90, 0);
+  });
+
+  it("un modelo con pocos días se excluye del titular y se declara, con su peso", () => {
+    const ts = corpusDosModelos(20).filter((t) => !(t.model === "barato" && t.brazo === "palanca" && t.dia === "2026-09-12"));
+    const r = resumir(ts);
+    expect(r.veredictoPorModelo.estado).toBe("ok");
+    if (r.veredictoPorModelo.estado !== "ok") return;
+    expect(r.veredictoPorModelo.modelosIncluidos).toEqual(["caro"]);
+    expect(r.veredictoPorModelo.modelosExcluidos).toEqual([
+      { modelo: "barato", motivo: "3 días control / 2 días palanca (mínimo 3 cada uno)" },
+    ]);
+    expect(r.veredictoPorModelo.pesoUsdControlIncluido).toBe(30);
+    expect(r.veredictoPorModelo.pesoUsdControlTotal).toBe(33);
+    expect(r.porDiaModelo["2026-09-07"]!["caro"]!.control!.turnos).toBe(1);
+  });
+
+  it("⛔ días de palanca por modelo con cero borrados → palanca-sin-disparos también en el estratificado", () => {
+    const ts = corpusDosModelos(20).map((t) => (t.brazo === "palanca" ? { ...t, borrados: 0, tokensLimpiados: 0 } : t));
+    expect(resumir(ts).veredictoPorModelo.estado).toBe("palanca-sin-disparos");
   });
 });

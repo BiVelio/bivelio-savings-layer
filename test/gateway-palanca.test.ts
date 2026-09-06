@@ -3,7 +3,7 @@ import { gzipSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
-import { ajustarDiales, conBetaDeElision } from "../gateway/palanca.js";
+import { ajustarDiales, conBetaDeElision, fusionarDiales } from "../gateway/palanca.js";
 import { CanalDeEntitlements } from "../gateway/entitlements.js";
 import {
   BETA_CONTEXT_MANAGEMENT,
@@ -124,25 +124,70 @@ async function esperarCanal(): Promise<void> {
   await new Promise((r) => setTimeout(r, 150));
 }
 
+const NUESTRO_EDIT = {
+  type: "clear_tool_uses_20250919",
+  trigger: { type: "input_tokens", value: DIAL_TRIGGER_INPUT_TOKENS },
+  keep: { type: "tool_uses", value: DIAL_KEEP_TOOL_USES },
+  clear_at_least: { type: "input_tokens", value: DIAL_CLEAR_AT_LEAST_INPUT_TOKENS },
+};
+
 describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
-  it("sustituye la config del cliente por nuestros diales", () => {
+  it("sustituye el clear_tool_uses del cliente por nuestros diales", () => {
     const salida = ajustarDiales(Buffer.from(CUERPO));
     expect(salida).not.toBeNull();
     const json = JSON.parse(salida!.toString("utf8"));
-    expect(json.context_management).toEqual({
-      edits: [
-        {
-          type: "clear_tool_uses_20250919",
-          trigger: { type: "input_tokens", value: DIAL_TRIGGER_INPUT_TOKENS },
-          keep: { type: "tool_uses", value: DIAL_KEEP_TOOL_USES },
-          clear_at_least: { type: "input_tokens", value: DIAL_CLEAR_AT_LEAST_INPUT_TOKENS },
-        },
-      ],
-    });
+    expect(json.context_management).toEqual({ edits: [NUESTRO_EDIT] });
     // El contenido del cliente no se toca (superficie mínima).
     expect(json.model).toBe("claude-sonnet-4-5");
     expect(json.messages).toEqual([{ role: "user", content: "hola" }]);
     expect(json.max_tokens).toBe(64);
+  });
+
+  it("CONSERVA el clear_thinking del cliente, en posición 0 (lo que Claude Code manda de fábrica)", () => {
+    // Corpus 09-2026 (claude-cli ≥ 2.1.252): {edits:[{type:"clear_thinking_20251015",keep:"all"}]}.
+    // Pisarlo cambiaría el thinking retenido (y la caché) en los modelos cuyo
+    // default no es «todo»; la API exige clear_thinking en primera posición.
+    const cuerpo = JSON.stringify({
+      ...JSON.parse(CUERPO),
+      context_management: { edits: [{ type: "clear_thinking_20251015", keep: "all" }] },
+    });
+    const json = JSON.parse(ajustarDiales(Buffer.from(cuerpo))!.toString("utf8"));
+    expect(json.context_management).toEqual({
+      edits: [{ type: "clear_thinking_20251015", keep: "all" }, NUESTRO_EDIT],
+    });
+  });
+
+  it("sin context_management → solo el nuestro", () => {
+    const { context_management: _fuera, ...sinCm } = JSON.parse(CUERPO);
+    const json = JSON.parse(ajustarDiales(Buffer.from(JSON.stringify(sinCm)))!.toString("utf8"));
+    expect(json.context_management).toEqual({ edits: [NUESTRO_EDIT] });
+  });
+
+  it("fusionarDiales: estrategias desconocidas y claves ajenas se conservan; idempotente", () => {
+    const cliente = {
+      edits: [
+        { type: "clear_tool_uses_20250919", trigger: { type: "input_tokens", value: 100_000 } },
+        { type: "estrategia_futura_2027", foo: 1 },
+        { type: "clear_thinking_20251015", keep: { type: "thinking_turns", value: 2 } },
+        { type: "clear_tool_uses_20250919" },
+      ],
+      otra_clave: true,
+    };
+    const una = fusionarDiales(cliente);
+    expect(una).toEqual({
+      otra_clave: true,
+      edits: [
+        { type: "clear_thinking_20251015", keep: { type: "thinking_turns", value: 2 } },
+        { type: "estrategia_futura_2027", foo: 1 },
+        NUESTRO_EDIT,
+      ],
+    });
+    expect(fusionarDiales(una)).toEqual(una);
+    // Formas raras → solo el nuestro, jamás throw.
+    expect(fusionarDiales(null)).toEqual({ edits: [NUESTRO_EDIT] });
+    expect(fusionarDiales("basura")).toEqual({ edits: [NUESTRO_EDIT] });
+    expect(fusionarDiales({ edits: "no" })).toEqual({ edits: [NUESTRO_EDIT] });
+    expect(fusionarDiales({ edits: [null, 3, "x"] })).toEqual({ edits: [NUESTRO_EDIT] });
   });
 
   it("es determinista: mismo cuerpo, mismo ajuste byte a byte", () => {

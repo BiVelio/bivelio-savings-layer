@@ -3,13 +3,23 @@
  * cada turno por brazo (palanca = nuestro dial presente en el cuerpo; control =
  * lo demás) y emite el A/B de días alternos en DINERO (nucleo.ts).
  *
- * Cómo se opera el experimento (el arnés solo LEE, jamás cambia tráfico):
- *   días de palanca:  BVSALA_GATEWAY_ELISION=1 bvsala claude   (0.4.13)
- *   días de control:  bvsala claude sin la bandera
- * con el modo encadenado medidor→espía de siempre, para que la captura vea el
- * cuerpo AJUSTADO. La clasificación se hace por el cuerpo real de cada
- * petición, no por fechas apuntadas a mano: un despiste de bandera no
- * contamina el brazo, se clasifica solo.
+ * Cómo se opera el experimento (el arnés solo LEE, jamás cambia tráfico).
+ * Protocolo del dueño (06-09-2026): día natural UTC PAR = palanca, IMPAR =
+ * control. La bandera va SIEMPRE explícita — su sentido cambió en 0.4.14
+ * («=1 arma» hasta 0.4.13; «=0 apaga», armada por defecto, desde 0.4.14) y
+ * sin bandera el brazo dependería de la versión instalada:
+ *   días PARES  (palanca):  BVSALA_GATEWAY_ELISION=1 BVSALA_GATEWAY_UPSTREAM=http://127.0.0.1:8402 bvsala claude
+ *   días IMPARES (control): BVSALA_GATEWAY_ELISION=0 BVSALA_GATEWAY_UPSTREAM=http://127.0.0.1:8402 bvsala claude
+ * con el espía (scripts/espia-anthropic.mjs 8402) vivo y ENCADENADO por
+ * BVSALA_GATEWAY_UPSTREAM: sin él la sesión va directa al proveedor y no entra
+ * en el corpus (ni en un brazo ni en otro). La palanca exige además el feature
+ * `context_elision` en una licencia VIVA de la org (fail-closed): si caduca a
+ * mitad del A/B, los días pares se vuelven control en silencio — la auditoría
+ * de paridad del informe lo delata como «día par sin palanca».
+ * La clasificación se hace por el cuerpo real de cada petición, no por fechas
+ * apuntadas a mano: un despiste de bandera no contamina el brazo, se
+ * clasifica solo; la auditoría de paridad compara lo observado con lo que el
+ * protocolo esperaba y lista las fisuras.
  *
  * PRIVACIDAD: misma doctrina que sombra-corpus — del contenido no sale NADA;
  * cada registro se reduce a números en cuanto se lee. MEMORIA: streaming línea
@@ -25,6 +35,7 @@ import { createInterface } from "node:readline";
 
 import { costeMedido, elisionDeJson, type UsoSse } from "../../gateway/medidor.js";
 import {
+  configDelCliente,
   diaDe,
   elisionDeCuerpoSse,
   esDialNuestro,
@@ -113,6 +124,11 @@ async function leer(
       borrados: elision?.borrados ?? 0,
       tokensLimpiados: elision?.tokensLimpiados ?? 0,
       respuestaOmitida: r.responseBodyOmitted !== undefined,
+      // Confundidores para la auditoría de paridad: versión del cliente
+      // (primer token del user-agent, sin el resto) y lo que traía él en
+      // context_management aparte de nuestro edit.
+      cliente: (r.requestHeaders?.["user-agent"] ?? "?").split(" ")[0] ?? "?",
+      configCliente: configDelCliente(r.requestBody?.context_management),
     });
   }
 }

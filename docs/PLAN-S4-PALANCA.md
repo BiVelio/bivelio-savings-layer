@@ -208,6 +208,45 @@ org propia (la misma disciplina del skill): días alternos con/sin diales, y el
 panel compara coste por sesión, éxito percibido y señales de fricción. Mínimo
 una semana antes de ofrecerla a nadie.
 
+> **Runbook del anillo 2 (06-09-2026, tras la revisión del brazo impar).**
+> Protocolo del dueño: día natural **UTC** par = palanca, impar = control.
+> Arnés: `pnpm anillo2` (benchmarks/anillo2) lee las capturas del espía,
+> clasifica cada turno por el CUERPO y emite veredicto + auditoría de paridad.
+>
+> 1. **La bandera va SIEMPRE explícita.** Su sentido cambió en 0.4.14 (#217):
+>    hasta 0.4.13 `=1` arma; desde 0.4.14 va armada y `=0` apaga. Sin bandera,
+>    el brazo depende de la versión instalada — la grieta que hoy tenía el
+>    protocolo «impares sin bandera».
+>    - pares: `BVSALA_GATEWAY_ELISION=1 BVSALA_GATEWAY_UPSTREAM=http://127.0.0.1:8402 claude`
+>    - impares: `BVSALA_GATEWAY_ELISION=0 BVSALA_GATEWAY_UPSTREAM=http://127.0.0.1:8402 claude`
+> 2. **Encadenado o no cuenta.** Sin `BVSALA_GATEWAY_UPSTREAM` hacia el espía
+>    (scripts/espia-anthropic.mjs 8402, que debe estar vivo) la sesión va
+>    directa al proveedor y no entra en ningún brazo. Comprobación: `lsof -nP
+>    -p <pid del gateway> | grep 8402`.
+> 3. **El entitlement manda.** La palanca solo actúa con `context_elision` en
+>    una licencia VIVA de la org (fail-closed). Hoy lo lleva la licencia de la
+>    org propia (caduca 12-09-2026 con 21 días de gracia): un día par sin
+>    peticiones ajustadas es «palanca mal armada», y la auditoría lo lista.
+> 4. **La palanca fusiona, no pisa.** Claude Code manda de fábrica
+>    `clear_thinking_20251015 keep:"all"` (corpus 09-2026; ya no manda
+>    `clear_tool_uses`): la palanca conserva ese edit en posición 0 y solo
+>    sustituye/añade el de tool_uses (`fusionarDiales`). El único delta entre
+>    brazos es nuestro dial.
+> 5. **Por modelo, no por día mezclado.** La métrica primaria por día (€ de
+>    entrada por kTok de salida) va de 0,09 a 1,07 según el modelo; un día
+>    dominado por opus-4-8 y otro por fable-5 no se comparan. El veredicto se
+>    estratifica por modelo y el titular pondera por gasto del control.
+> 6. **Cada mañana:** `pnpm anillo2` → sección `paridad`: brazo esperado vs
+>    observado por día, config del cliente, versión de claude-cli, mezcla de
+>    modelos y la lista de fisuras (día perdido, día mezclado, par sin
+>    palanca). Con `insuficiente` no hay cifra; con menos de 3 días limpios por
+>    brazo y modelo, tampoco.
+>
+> Estado 06-09: 8 días de corpus, TODOS control (0 peticiones ajustadas en
+> 8,4 GB); ninguna respuesta con `applied_edits`. El brazo impar existente es
+> limpio como control, pero el par aún no ha empezado: la sesión de hoy corrió
+> sin bandera y sin encadenar.
+
 **Interruptores de apagado, en tres niveles:** bandera local
 (`BVSALA_GATEWAY_CONTEXT_DIALS=0` mata la palanca en el proceso), revocación
 per-org (retirar la feature de la licencia; el gate es fail-closed), y la
