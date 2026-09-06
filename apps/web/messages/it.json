@@ -404,6 +404,23 @@
       "nota": "Quanto avrebbe risparmiato l'elisione del contesto sul tuo traffico reale, calcolato dal gateway senza toccare un solo byte. Non si somma mai al titolo e non entra mai nella commissione: la leva si accenderà solo quando questa cifra lo giustificherà.",
       "notaNegativa": "Sul tuo traffico, l'elisione avrebbe fatto spendere di più: riscrivere blocchi invalida la cache di prefisso del provider. Questa corsia esiste esattamente per vederlo prima di accendere qualcosa — ed è per questo che resta spenta."
     },
+    "ritmo": {
+      "title": "Ritmo e proiezione",
+      "badgeEstimacion": "Stima",
+      "badgeMedido": "Misurato",
+      "proyeccionTitulo": "Risparmio proiettato per {periodo}",
+      "proyeccionNota": "Quanto misurato finora più il tuo ritmo degli ultimi {dias} giorni per i {restantes} giorni che restano. È una stima, non una fattura.",
+      "comision": "Commissione proiettata",
+      "comisionNota": "Il {pct} di quanto risparmi. Un mese senza risparmio è un mese senza commissione.",
+      "comisionCalibracion": "Mese di calibrazione: non si addebita nulla. La cifra è la commissione che ci sarebbe.",
+      "cerrado": "Periodo chiuso: questo è ciò che è stato, non dove sta andando.",
+      "pocosDias": "È ancora presto per tracciare la retta: servono {min} giorni completi e ce ne sono {n}. Ciò che è misurato è già reale.",
+      "medido": "Risparmiato finora (misurato)",
+      "diaDeMes": "Giorno {n} di {total}",
+      "ritmoLabel": "Ritmo, ultimi {dias} giorni",
+      "porDia": "{importe} / giorno",
+      "diasRestantes": "{n} giorni davanti"
+    },
     "extracto": {
       "metaTitle": "Estratto · BiVelio Savings Layer",
       "eyebrow": "Modalità ombra · qui non si addebita nulla",

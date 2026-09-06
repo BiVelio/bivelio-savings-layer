@@ -7,6 +7,7 @@ import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
+import { RitmoCard } from "./components/RitmoCard";
 import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
 import { UsageExplorer } from "./components/UsageExplorer";
 import { TrafficModelMix } from "./components/TrafficModelMix";
@@ -58,6 +59,10 @@ export default async function OverviewPage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
           <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} />
+          {/* Justo detrás del titular: a qué velocidad va y dónde acaba el mes.
+              La pregunta que sigue a "cuánto llevo ahorrado" es siempre "¿y a
+              este paso?" — y hasta ahora el panel no la contestaba. */}
+          <RitmoCard usage={usage} />
           {/* Los TOTALES antes que la atribución por libro: "cuántos tokens he
               gastado" es la pregunta que se hace primero, y los cuatro libros de
               abajo la responden por partes que NO se pueden sumar entre sí. */}

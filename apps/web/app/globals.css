@@ -710,6 +710,9 @@ input[type="range"] { accent-color: var(--brand); }
    mismo tratamiento tipográfico que sus tarjetas hermanas, con ámbito propio. */
 .sombra-elision .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
 .sombra-elision .big.pos { color: var(--mint); }
+/* Ritmo y proyección: el verde/rojo del titular vive scoped, como en la sombra. */
+.ritmo .big.pos { color: var(--mint); }
+.ritmo .big.neg { color: var(--danger); }
 .sombra-elision .big.neg { color: var(--danger); }
 .sombra-elision .sub { font-size: .78rem; color: var(--ink-soft); }
 .sombra-elision .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }

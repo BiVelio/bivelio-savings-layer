@@ -404,6 +404,23 @@
       "nota": "Số tiền mà việc lược bỏ ngữ cảnh lẽ ra đã tiết kiệm trên lưu lượng thực của bạn, do gateway tính toán mà không chạm vào một byte nào. Không bao giờ được cộng vào tiêu đề và không bao giờ vào hoa hồng: đòn bẩy chỉ được bật khi con số này chứng minh điều đó.",
       "notaNegativa": "Trên lưu lượng của bạn, việc lược bỏ lẽ ra đã tốn tiền: viết lại các khối làm mất hiệu lực bộ nhớ đệm tiền tố của nhà cung cấp. Làn này tồn tại chính xác để thấy điều đó trước khi bật bất cứ thứ gì — vì vậy nó vẫn tắt."
     },
+    "ritmo": {
+      "title": "Nhịp độ và dự phóng",
+      "badgeEstimacion": "Ước tính",
+      "badgeMedido": "Đã đo",
+      "proyeccionTitulo": "Tiết kiệm dự phóng cho {periodo}",
+      "proyeccionNota": "Phần đã đo đến nay cộng với nhịp độ {dias} ngày gần nhất của bạn nhân cho {restantes} ngày còn lại. Đây là ước tính, không phải hóa đơn.",
+      "comision": "Hoa hồng dự phóng",
+      "comisionNota": "{pct} của phần bạn tiết kiệm được. Một tháng không tiết kiệm là một tháng không hoa hồng.",
+      "comisionCalibracion": "Tháng hiệu chuẩn: không thu phí. Con số này là mức hoa hồng sẽ có.",
+      "cerrado": "Kỳ đã đóng: đây là những gì đã diễn ra, không phải hướng đi tiếp theo.",
+      "pocosDias": "Còn quá sớm để vẽ đường thẳng: cần {min} ngày trọn vẹn và mới có {n}. Phần đã đo thì đã là thật.",
+      "medido": "Đã tiết kiệm đến nay (đã đo)",
+      "diaDeMes": "Ngày {n} trên {total}",
+      "ritmoLabel": "Nhịp độ, {dias} ngày gần nhất",
+      "porDia": "{importe} / ngày",
+      "diasRestantes": "Còn lại: {n} ngày"
+    },
     "extracto": {
       "metaTitle": "Sao kê · BiVelio Savings Layer",
       "eyebrow": "Chế độ bóng · không có khoản thu nào ở đây",

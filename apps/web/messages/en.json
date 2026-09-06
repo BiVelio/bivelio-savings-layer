@@ -404,6 +404,23 @@
       "nota": "What context elision would have saved on your real traffic, computed by the gateway without touching a single byte. It is never added to the headline and never enters the commission: the lever only turns on when this figure justifies it.",
       "notaNegativa": "On your traffic, elision would have cost money: rewriting blocks invalidates the provider's prefix cache. This lane exists precisely to see that before turning anything on — which is why it stays off."
     },
+    "ritmo": {
+      "title": "Pace and projection",
+      "badgeEstimacion": "Estimate",
+      "badgeMedido": "Measured",
+      "proyeccionTitulo": "Projected saving for {periodo}",
+      "proyeccionNota": "What is measured so far, plus your last {dias} days of pace across the {restantes} days still to come. An estimate, not an invoice.",
+      "comision": "Projected commission",
+      "comisionNota": "{pct} of what you save. A month with no saving is a month with no commission.",
+      "comisionCalibracion": "Calibration month: nothing is charged. The figure is the commission there would be.",
+      "cerrado": "Closed period: this is what it was, not where it is heading.",
+      "pocosDias": "Too early to draw the line: {min} complete days are needed and there are {n}. What is measured is already real.",
+      "medido": "Saved so far (measured)",
+      "diaDeMes": "Day {n} of {total}",
+      "ritmoLabel": "Pace, last {dias} days",
+      "porDia": "{importe} / day",
+      "diasRestantes": "{n} days still to come"
+    },
     "extracto": {
       "metaTitle": "Statement · BiVelio Savings Layer",
       "eyebrow": "Shadow mode · nothing is charged here",

@@ -404,6 +404,23 @@
       "nota": "Berapa yang akan dihemat elisi konteks pada trafik nyata Anda, dihitung oleh gateway tanpa menyentuh satu byte pun. Tidak pernah ditambahkan ke tajuk dan tidak pernah masuk komisi: tuas hanya dinyalakan bila angka ini membenarkannya.",
       "notaNegativa": "Pada trafik Anda, elisi justru akan menambah biaya: menulis ulang blok membatalkan cache prefiks penyedia. Jalur ini ada persis untuk melihat hal itu sebelum menyalakan apa pun — karena itulah tetap mati."
     },
+    "ritmo": {
+      "title": "Laju dan proyeksi",
+      "badgeEstimacion": "Perkiraan",
+      "badgeMedido": "Terukur",
+      "proyeccionTitulo": "Penghematan proyeksi untuk {periodo}",
+      "proyeccionNota": "Yang terukur sampai sekarang ditambah laju {dias} hari terakhir Anda dikalikan {restantes} hari tersisa. Ini perkiraan, bukan tagihan.",
+      "comision": "Komisi proyeksi",
+      "comisionNota": "{pct} dari yang Anda hemat. Bulan tanpa penghematan adalah bulan tanpa komisi.",
+      "comisionCalibracion": "Bulan kalibrasi: tidak ada yang ditagih. Angka ini adalah komisi yang akan berlaku.",
+      "cerrado": "Periode tertutup: ini yang sudah terjadi, bukan ke mana arahnya.",
+      "pocosDias": "Masih terlalu awal untuk menarik garis: dibutuhkan {min} hari penuh dan baru ada {n}. Yang terukur sudah nyata.",
+      "medido": "Dihemat sampai kini (terukur)",
+      "diaDeMes": "Hari {n} dari {total}",
+      "ritmoLabel": "Laju, {dias} hari terakhir",
+      "porDia": "{importe} / hari",
+      "diasRestantes": "Sisa hari: {n}"
+    },
     "extracto": {
       "metaTitle": "Rekening · BiVelio Savings Layer",
       "eyebrow": "Mode bayangan · tidak ada tagihan di sini",
