@@ -6,6 +6,11 @@
 #
 #     source ~/bivelio-savings-layer/scripts/anillo2-ab.zsh
 #
+# OJO: esto solo alcanza a las sesiones nacidas de una zsh INTERACTIVA. El
+# encadenado de verdad —el que cubre la app, el IDE y `command bvsala claude`—
+# vive en ~/.bvsala/anillo2.json y lo lee el propio gateway (gateway/anillo2.ts).
+# Este fichero sigue mandando cuando está: lo explícito del entorno gana.
+#
 # Qué hace `claude` a partir de ahí (docs/PLAN-S4-PALANCA.md § 2.5, runbook):
 #   1. deriva el BRAZO del día natural UTC: par = palanca (=1), impar = control (=0)
 #      — la bandera va SIEMPRE explícita, su sentido cambió en 0.4.14;

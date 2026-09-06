@@ -8,6 +8,26 @@ import { fileURLToPath } from "node:url";
 import { describirEstadoDeElision } from "./palanca.js";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
+import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
+import { connect } from "node:net";
+
+/**
+ * ¿Hay alguien escuchando en ese puerto de loopback? Se pregunta ANTES de
+ * encadenar: mandar el tráfico a un espía muerto son 502 en cada turno y el
+ * dueño se queda sin terminal por un fichero que olvidó borrar.
+ */
+function puertoEscucha(puerto: number, msTope = 300): Promise<boolean> {
+  return new Promise((resolver) => {
+    const socket = connect({ port: puerto, host: "127.0.0.1" });
+    const cerrar = (vivo: boolean) => {
+      socket.destroy();
+      resolver(vivo);
+    };
+    socket.setTimeout(msTope, () => cerrar(false));
+    socket.once("connect", () => cerrar(true));
+    socket.once("error", () => cerrar(false));
+  });
+}
 import { doctor } from "./doctor.js";
 import { instalarAgentsMd, instalarSkill } from "./skill.js";
 import { soportaZstd } from "./medidor.js";
@@ -142,13 +162,33 @@ const serviceAccountKey = process.env.BIVELIO_SERVICE_KEY;
 // el sitio para mirar es el panel — y BVSALA_GATEWAY_LOG=1 lo recupera para
 // depurar. `bvsala gateway` a secas sigue logueando: ahí el log es el producto.
 const silencioso = esEnvoltorio && process.env.BVSALA_GATEWAY_LOG !== "1";
+// Anillo 2 · el encadenado al espía NO puede depender de cómo se lanzó la
+// sesión: vivía en una función del .zshrc y toda sesión nacida por otro camino
+// se medía pero no entraba en el corpus (2026-09-06: las dos sesiones vivas,
+// sin encadenar). El fichero lo hereda cualquier arranque. Solo la casa lo
+// tiene. Codex queda fuera: su upstream no habla el protocolo del espía.
+const enrolamientoAnillo2 = envoltorio?.upstream
+  ? null
+  : leerEnrolamiento(() =>
+      readFileSync(process.env.BVSALA_ANILLO2_FICHERO ?? join(homedir(), ".bvsala", "anillo2.json"), "utf8"),
+    );
+const planAnillo2 = planDeAnillo2({
+  enrolamiento: enrolamientoAnillo2,
+  espiaVivo: enrolamientoAnillo2 !== null && (await puertoEscucha(enrolamientoAnillo2.espia)),
+  upstreamEnv: process.env.BVSALA_GATEWAY_UPSTREAM,
+  elisionEnv: process.env.BVSALA_GATEWAY_ELISION,
+  hoyUtcIso: new Date().toISOString().slice(0, 10),
+});
+const upstreamPedido = process.env.BVSALA_GATEWAY_UPSTREAM ?? planAnillo2.upstream;
+const elisionPedida = process.env.BVSALA_GATEWAY_ELISION ?? planAnillo2.elision;
+
 const arranque = await arrancarGateway({
   puerto,
   ...(silencioso ? { log: () => {} } : {}),
   ...(serviceAccountKey ? { serviceAccountKey } : {}),
   ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
-  ...(process.env.BVSALA_GATEWAY_UPSTREAM
-    ? { upstream: process.env.BVSALA_GATEWAY_UPSTREAM }
+  ...(upstreamPedido
+    ? { upstream: upstreamPedido }
     : envoltorio?.upstream
       ? { upstream: envoltorio.upstream }
       : {}),
@@ -161,20 +201,23 @@ const arranque = await arrancarGateway({
   // en el tráfico de clientes. La bandera pasa de ENCENDER a APAGAR: `BVSALA_GATEWAY_ELISION=0`
   // es el freno de emergencia. `serviceAccountKey` sigue siendo estructuralmente
   // necesaria (identidad de org para el entitlement), no un paso extra de la elisión.
-  elision: process.env.BVSALA_GATEWAY_ELISION !== "0",
+  elision: elisionPedida !== "0",
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
 });
 
-const upstreamEfectivo = process.env.BVSALA_GATEWAY_UPSTREAM ?? envoltorio?.upstream ?? "https://api.anthropic.com";
+const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
 console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de servicio presente)" : "APAGADA (falta BIVELIO_SERVICE_KEY)"}`);
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
-  const estado = describirEstadoDeElision(process.env.BVSALA_GATEWAY_ELISION, serviceAccountKey !== undefined);
+  const estado = describirEstadoDeElision(elisionPedida, serviceAccountKey !== undefined);
   (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
+  if (planAnillo2.linea) {
+    (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);
+  }
 }
 if (process.env.BVSALA_GATEWAY_UPSTREAM && envoltorio?.upstream && process.env.BVSALA_GATEWAY_UPSTREAM !== envoltorio.upstream) {
   // Un BVSALA_GATEWAY_UPSTREAM heredado del .zshrc (p.ej. el de Claude Code)
