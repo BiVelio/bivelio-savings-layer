@@ -14,12 +14,29 @@ import { loadPrivateKey, signCompact } from "./sign";
  */
 const LICENSE_HEADER = { alg: "EdDSA", typ: "BVL", v: 1 } as const;
 
-/** Features unlocked by the paid PRO plan (subset of the SDK's Feature enum). */
+/**
+ * Features unlocked by the paid PRO plan (subset of the SDK's Feature enum).
+ *
+ * `context_elision` NACIÓ FUERA de esta lista a propósito: en S4a era el dial
+ * del gateway recién montado y solo el anillo interno (la allow-list del trial)
+ * lo llevaba. La consecuencia era una trampa silenciosa — el canal de
+ * entitlements es FAIL-CLOSED, así que el cliente que PAGA veía la palanca
+ * apagada sin un solo error en ningún log: `tiene("context_elision")` devolvía
+ * false y el gateway reenviaba el cuerpo intacto. Aquí se cierra: la palanca de
+ * elisión es producto de pago y entra en el plan PRO.
+ *
+ * Ojo al carril: el gateway NO lee el token firmado, lee la fila —
+ * `/api/org/entitlements` sirve `licenses.features` en vivo. Añadir el literal
+ * aquí solo cubre las licencias NUEVAS; las ya emitidas llevan el array viejo
+ * congelado en su columna y necesitan el relleno de `0023_features_pro_palancas.sql`.
+ */
 export const PRO_FEATURES = [
   "semantic_cache",
   "learned_thresholds",
   "dashboards",
   "long_context_compression",
+  "context_elision",
+  "cache_ttl_tuning",
   "priority_support",
 ] as const;
 

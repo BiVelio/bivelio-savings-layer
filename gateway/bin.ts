@@ -77,11 +77,17 @@ Entorno:
   BVSALA_GATEWAY_SHADOW  =1 enciende el carril sombra de la elisión (S2): calcula qué
                          habría ahorrado la política v0 SIN tocar el tráfico y lo
                          reporta aparte (jamás entra en la comisión).
-  BVSALA_GATEWAY_ELISION =0 APAGA la palanca de diales del proveedor (S4a), que va
-                         armada por defecto. Solo se enciende de verdad si la licencia
-                         de tu organización trae el feature context_elision (consulta
-                         fail-closed): ajusta SOLO el bloque context_management de cada
-                         petición /v1/messages y el borrado lo hace el propio proveedor.
+  BVSALA_GATEWAY_ELISION =0 APAGA las palancas del proveedor (S4a), armadas por
+                         defecto. Cada una se enciende de verdad solo si la licencia de
+                         tu organización trae su feature (consulta fail-closed):
+                           · context_elision  — ajusta SOLO el bloque context_management
+                             de cada /v1/messages; el borrado lo hace el proveedor.
+                           · cache_ttl_tuning — rebaja el TTL de escritura de caché de
+                             1h (2x el precio de entrada) a 5m (1,25x) mientras la sesión
+                             siga caliente. NO toca un solo token que el modelo lea:
+                             cambia la tarifa, no el contenido. En el corpus del espía
+                             el 99,1 % de los turnos encadena en menos de 5 minutos, y
+                             ese sobreprecio era el 8,0 % de la factura.
                          Ante cualquier duda, la petición viaja intacta. (Hasta 0.4.13
                          la bandera era al revés: «=1 arma»; en un A/B pásala SIEMPRE
                          explícita, =1 o =0, y no dependerás de la versión instalada.)
@@ -194,11 +200,13 @@ const arranque = await arrancarGateway({
       : {}),
   ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
   ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
-  // S4a · la palanca de diales del proveedor. ARMADA POR DEFECTO: el ahorro de
-  // entrada en el terminal tiene que funcionar SOLO. El gate REAL es el feature
-  // `context_elision` en la licencia de la org (canal de entitlements, fail-closed),
-  // que ningún token PRO/Stripe lleva — así que armarla por defecto no enciende nada
-  // en el tráfico de clientes. La bandera pasa de ENCENDER a APAGAR: `BVSALA_GATEWAY_ELISION=0`
+  // S4a · las palancas del proveedor (diales de elisión + rebaja de TTL de
+  // caché). ARMADAS POR DEFECTO: el ahorro en el terminal tiene que funcionar
+  // SOLO. El gate REAL son los features `context_elision` y `cache_ttl_tuning`
+  // en la licencia de la org (canal de entitlements, fail-closed). Desde 0023
+  // el plan PRO SÍ los lleva: hasta entonces armarlas por defecto no encendía
+  // nada en tráfico de clientes —la trampa muda que ese PR cierra—, y ahora
+  // encienden exactamente para quien paga. La bandera APAGA: `BVSALA_GATEWAY_ELISION=0`
   // es el freno de emergencia. `serviceAccountKey` sigue siendo estructuralmente
   // necesaria (identidad de org para el entitlement), no un paso extra de la elisión.
   elision: elisionPedida !== "0",

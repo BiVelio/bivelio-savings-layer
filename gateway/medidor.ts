@@ -97,6 +97,18 @@ export class ObservadorSse {
   }
 }
 
+/**
+ * Lo que la palanca de TARIFA hizo en el cuerpo saliente de esta petición.
+ * Solo cuenta marcas: los TOKENS los declara el proveedor en el usage, y es
+ * ese conteo —no una estimación nuestra— el que se tarifa a dos precios.
+ */
+export interface RebajaAplicada {
+  /** Marcas `cache_control` de TTL 1h reescritas a 5m. */
+  rebajadas: number;
+  /** Marcas que YA pedían 5m: si hay alguna, la atribución no es limpia y no se cobra. */
+  yaEran5m: number;
+}
+
 /** Lo que el proveedor declara haber borrado en una respuesta (su contador, no el nuestro). */
 export interface ElisionAplicada {
   borrados: number;
@@ -363,8 +375,9 @@ export function informeMedido(
   medido: RegistroMedido,
   atribucion?: Atribucion,
   elision?: ElisionAplicada | null,
+  rebaja?: RebajaAplicada | null,
 ): SavingsReport {
-  return construirInforme(requestId, model, medido, false, atribucion, elision);
+  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja);
 }
 
 /**
@@ -430,8 +443,28 @@ function construirInforme(
   coalescida: boolean,
   atribucion?: Atribucion,
   elision?: ElisionAplicada | null,
+  rebaja?: RebajaAplicada | null,
 ): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
+  // ── LA PALANCA DE TARIFA · el primer euro MEDIDO de verdad ──────────────
+  //
+  // Hasta aquí la rama medida escribía baseline == actual y netSavings 0. No
+  // era un descuido: `accounting.ts` lo razona entero — el único baseline
+  // medido de una llamada que se ejecutó es otra que se haya ejecutado
+  // también (un A/B), así que cualquier ahorro de TOKENS solo cabe estimarlo.
+  //
+  // La rebaja de TTL escapa a ese nudo porque no cambia ni un token: cambia la
+  // TARIFA de la misma escritura. El baseline es el usage que el proveedor YA
+  // declaró, tarifado a la prima que el cliente había pedido (1h, 2×); el
+  // actual es ese mismo usage a la prima que pagó (5m, 1,25×). No hay
+  // contrafactual que imaginar — es una resta entre dos precios públicos sobre
+  // el mismo conteo. Por eso, y solo por eso, esto se cobra como `measured`.
+  const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
+  const sobrecosteEvitado =
+    !coalescida && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && escrita5m > 0
+      ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
+      : 0;
+  const baselineMedido = medido.costeUsd + sobrecosteEvitado;
   const informe = {
     requestId,
     model,
@@ -464,9 +497,12 @@ function construirInforme(
           basis: "estimated" as const,
         }
       : {
-          baselineEstimate: medido.costeUsd,
+          baselineEstimate: baselineMedido,
           actual: medido.costeUsd,
-          netSavings: 0,
+          // PROPORCIÓN en [-100,1], como el resto del contrato (ver la cicatriz
+          // de la coalescencia más arriba). Sin rebaja vale 0 y la doctrina de
+          // siempre se mantiene intacta: sin palanca no hay ahorro que enseñar.
+          netSavings: baselineMedido > 0 ? Math.max(-100, Math.min(1, sobrecosteEvitado / baselineMedido)) : 0,
           basis: "measured" as const,
         },
   };

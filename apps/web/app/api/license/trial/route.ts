@@ -134,16 +134,21 @@ export async function POST() {
   //   · `context_elision` → dial S4a del gateway del terminal (`bvsala`), que lo lee de
   //     la fila `licenses` por el endpoint `/api/org/entitlements`.
   // Una sola re-emisión por esta ruta arma AMBOS: el token firma `tool_result_elision`
-  // y la fila persistida (abajo) gana `context_elision`. Como ninguno está en
-  // PRO_FEATURES, el tráfico de los clientes de pago no cambia. Ampliar el anillo =
-  // mover un feature a PRO_FEATURES: decisión deliberada y aparte, nunca un efecto
-  // colateral de tocar esta lista.
+  // y la fila persistida (abajo) gana `context_elision`.
+  //
+  // ACTUALIZACIÓN (0023): la decisión deliberada que este comentario reclamaba YA SE
+  // TOMÓ. `context_elision` y `cache_ttl_tuning` están ahora TAMBIÉN en PRO_FEATURES —
+  // eran palancas de producto vendidas y estructuralmente inalcanzables, porque el
+  // canal de entitlements es fail-closed y el cliente de pago no las llevaba en su
+  // fila. `tool_result_elision` SIGUE siendo solo del anillo interno: vive en la
+  // verificación offline del SDK, no en el gateway, y su superficie es otra.
   const features = [
     "semantic_cache",
     "dashboards",
     "long_context_compression",
     "tool_result_elision",
     "context_elision",
+    "cache_ttl_tuning",
   ];
   // Bare-uuid jti so it doubles as the `bvsala.licenses.id` (the table's id == jti
   // invariant). `iss: "bivelio-internal"` — not a jti prefix — is what marks it

@@ -23,7 +23,15 @@ export type Feature =
   | "long_context_compression"
   | "priority_support"
   | "context_elision"
-  | "tool_result_elision";
+  | "tool_result_elision"
+  /**
+   * Rebaja del TTL de escritura de caché (1h → 5m) cuando la sesión está
+   * CALIENTE. No toca un solo token que el modelo lea: cambia la TARIFA de la
+   * misma escritura (2× → 1,25× el precio de entrada). Por eso su ahorro es
+   * aritmética sobre el usage que el proveedor ya declaró — `measured`, sin
+   * necesidad de A/B.
+   */
+  | "cache_ttl_tuning";
 
 /**
  * Runtime mirror of the `Feature` union, for gates and parity tests. The
@@ -39,6 +47,7 @@ export const FEATURES = [
   "priority_support",
   "context_elision",
   "tool_result_elision",
+  "cache_ttl_tuning",
 ] as const satisfies readonly Feature[];
 const _exhaustiva: [Exclude<Feature, (typeof FEATURES)[number]>] extends [never] ? true : never = true;
 void _exhaustiva;
