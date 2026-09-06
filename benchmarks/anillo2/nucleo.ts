@@ -480,9 +480,13 @@ export function resumir(turnos: TurnoAnillo2[]) {
   }
 
   // Métrica por día y brazo (solo días con salida — sin denominador no hay dato).
+  // Los días van ORDENADOS antes de tocar el PRNG: el orden de inserción de un
+  // Map es el de lectura de las capturas, y con él bailaban los límites del IC
+  // (cazado el 06-09: −26,1 vs −25,8 con la misma entrada invertida).
   const metricaPorDia = (dias: Map<string, Map<Brazo, Acumulado>>, brazo: Brazo): number[] =>
-    [...dias.values()]
-      .map((d) => metricaDe(d.get(brazo)))
+    [...dias.entries()]
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([, d]) => metricaDe(d.get(brazo)))
       .filter((x): x is number => x !== null);
 
   const control = metricaPorDia(porDia, "control");
@@ -537,7 +541,8 @@ export function resumir(turnos: TurnoAnillo2[]) {
   const modelosIncluidos: string[] = [];
   const modelosExcluidos: { modelo: string; motivo: string }[] = [];
   const modelos = Object.fromEntries(
-    [...porModelo.entries()].map(([modelo, brazos]) => {
+    // Mismo motivo: los estratos alimentan el PRNG en este orden.
+    [...porModelo.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([modelo, brazos]) => {
       const c = brazos.get("control");
       const p = brazos.get("palanca");
       const mc = metricaDe(c);

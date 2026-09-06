@@ -348,3 +348,32 @@ describe("veredicto estratificado por modelo — la mezcla de modelos no fabrica
     expect(resumir(ts).veredictoPorModelo.estado).toBe("palanca-sin-disparos");
   });
 });
+
+describe("determinismo frente al orden de entrada", () => {
+  it("el informe es byte a byte el mismo con los turnos en orden inverso (los Maps no mandan al PRNG)", () => {
+    // Dispersión REAL por día y por modelo, con un PRNG propio: los fixtures
+    // idénticos colapsan el bootstrap y no prueban nada.
+    let x = 7;
+    const rnd = () => (x = (x * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const ts: TurnoAnillo2[] = [];
+    for (const dia of ["2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12"])
+      for (const model of ["zeta", "alfa"])
+        for (let i = 0; i < 4; i++)
+          ts.push(
+            turno({
+              dia,
+              brazo: Number(dia.slice(8)) % 2 ? "control" : "palanca",
+              model,
+              sesion: `${dia}-${model}-${i}`,
+              entradaUsd: 1 + rnd() * (model === "zeta" ? 10 : 1),
+              salidaTokens: 500 + Math.floor(rnd() * 1000),
+              borrados: 1,
+              tokensLimpiados: 100,
+            }),
+          );
+    const directo = resumir(ts);
+    const inverso = resumir([...ts].reverse());
+    expect(JSON.stringify(inverso)).toBe(JSON.stringify(directo));
+    expect(directo.veredictoPorModelo.estado).toBe("ok");
+  });
+});
