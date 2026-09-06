@@ -3,8 +3,6 @@ import { join } from "node:path";
 
 import { describe, it, expect } from "vitest";
 
-import { PRO_FEATURES } from "../apps/web/lib/license/issue.js";
-
 /**
  * LA VERJA CONTRA LA TRAMPA MUDA.
  *
@@ -21,6 +19,12 @@ import { PRO_FEATURES } from "../apps/web/lib/license/issue.js";
  *
  * La lista de EXENTOS es la vía de escape, y es explícita a propósito: dejar
  * un feature fuera de PRO debe costar escribir por qué.
+ *
+ * Las DOS mitades se leen del fuente, no se importan: `apps/web` tiene su
+ * propio `tsconfig` con el alias `@/`, y un `import` desde aquí arrastraría ese
+ * árbol al programa de la raíz (donde no resuelve). Leyendo texto, la verja
+ * sigue en pie aunque la web no compile desde la raíz — que es justamente
+ * cuando más falta hace.
  */
 
 /** Features que el gateway gatea a sabiendas SIN venderlos en el plan PRO. */
@@ -37,20 +41,39 @@ function literalesGateados(rutaRelativa: string): string[] {
   const fuente = readFileSync(join(raiz, rutaRelativa), "utf8");
   // `canal.tiene("x")` / `canalElision.tiene('x')` — la única forma en que el
   // gateway consulta el canal de entitlements.
-  const encontrados = [...fuente.matchAll(/\.tiene\(\s*["'`]([a-z0-9_]+)["'`]\s*\)/g)].map((m) => m[1]);
+  const encontrados = [...fuente.matchAll(/\.tiene\(\s*["'`]([a-z0-9_]+)["'`]\s*\)/g)]
+    .map((m) => m[1])
+    .filter((x): x is string => x !== undefined);
   return [...new Set(encontrados)];
+}
+
+/** Los literales de `PRO_FEATURES`, leídos del fuente de la web. */
+function proFeatures(): string[] {
+  const fuente = readFileSync(join(raiz, "apps/web/lib/license/issue.ts"), "utf8");
+  const bloque = /export const PRO_FEATURES\s*=\s*\[([\s\S]*?)\]\s*as const/.exec(fuente);
+  if (bloque === null || bloque[1] === undefined) {
+    throw new Error("No se encuentra el literal PRO_FEATURES en apps/web/lib/license/issue.ts");
+  }
+  return [...bloque[1].matchAll(/["'`]([a-z0-9_]+)["'`]/g)]
+    .map((m) => m[1])
+    .filter((x): x is string => x !== undefined);
 }
 
 describe("toda palanca gateada es alcanzable por quien paga", () => {
   const gateados = literalesGateados("gateway/servidor.ts");
+  const PRO_FEATURES = proFeatures();
 
-  it("el escáner encuentra de verdad los gates (si no, la verja sería un placebo)", () => {
+  it("los dos escáneres encuentran de verdad (si no, la verja sería un placebo)", () => {
     expect(gateados.length).toBeGreaterThan(0);
     expect(gateados).toContain("context_elision");
+    // Y la lista PRO se lee entera: `priority_support` es el centinela, lleva
+    // ahí desde el principio y no lo toca este PR.
+    expect(PRO_FEATURES).toContain("priority_support");
+    expect(PRO_FEATURES.length).toBeGreaterThan(4);
   });
 
   it.each(gateados)("«%s» está en PRO_FEATURES o exento con motivo escrito", (feature) => {
-    const enPro = (PRO_FEATURES as readonly string[]).includes(feature);
+    const enPro = PRO_FEATURES.includes(feature);
     const exento = Object.hasOwn(EXENTOS, feature);
     expect(
       enPro || exento,
