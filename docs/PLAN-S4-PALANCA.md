@@ -257,7 +257,8 @@ una semana antes de ofrecerla a nadie.
 > sin bandera y sin encadenar.
 
 **Interruptores de apagado, en tres niveles:** bandera local
-(`BVSALA_GATEWAY_CONTEXT_DIALS=0` mata la palanca en el proceso), revocación
+(`BVSALA_GATEWAY_ELISION=0` mata la palanca en el proceso; el nombre
+`BVSALA_GATEWAY_CONTEXT_DIALS` de la primera redacción no existe), revocación
 per-org (retirar la feature de la licencia; el gate es fail-closed), y la
 degradación automática a passthrough ante cualquier error o ante un upstream
 que rechace la beta (un 400 con mención a `context_management` en una petición
