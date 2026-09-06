@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { UsageRollup, ModelDia } from "../data";
@@ -8,7 +8,6 @@ import { money, intfmt, compact, pct0 } from "../format";
 import {
   cortarPorPeriodo,
   serieDiaria,
-  serieAcumulada,
   agregarPorModelo,
   topConResto,
   PERIODOS,
@@ -16,21 +15,58 @@ import {
   type Vista,
   type Periodo,
 } from "../explorer-datos";
+import {
+  escalaBonita,
+  marcasEjeX,
+  mediaMovil,
+  rellenarCalendario,
+  resumirSerie,
+  type Ranura,
+  type Resumen,
+} from "../explorer-estadisticas";
 
 /**
- * Explorador de uso configurable (pedido del dueño, 04-09): uso segregado POR
- * DÍA, periodo elegible, y desglose por MODELO. Todo en el cliente sobre las
- * ≤120 filas que el servidor ya trae — el corte de periodo, el toggle de métrica
- * y la vista por modelo son instantáneos, sin navegación ni refetch.
+ * EXPLORADOR DE USO — uso por día, periodo elegible y desglose por modelo, todo
+ * en el cliente sobre las ≤120 filas que el servidor ya trae.
  *
- * Honestidad: los "días de uso" son solo días con fila (no se rellenan huecos);
- * el desglose por modelo sale vacío ("acumulando") hasta que la migración 0022
- * esté en prod y entre tráfico nuevo — jamás una fila de modelo inventada.
+ * Reescrito el 06-09 a petición del dueño («más cuantitativo, es para empresas
+ * profesionales»). Lo que había eran barras sin eje: se veía la forma y no se
+ * podía leer una sola magnitud. Lo que cambia:
+ *
+ * · EJE Y con marcas redondas, rejilla y el cero SIEMPRE dentro. Una escala que
+ *   arranca en el mínimo observado exagera cualquier diferencia; es el truco de
+ *   gráfico más viejo que hay y en un panel que factura no se usa.
+ * · EJE X con fechas repartidas, no solo los dos extremos.
+ * · CALENDARIO COMPLETO: los huecos se rellenan con ceros MARCADOS. Antes seis
+ *   días sueltos de un mes se repartían a lo ancho y se leían como seis días
+ *   seguidos.
+ * · ESTADÍSTICOS de la distribución (media, σ, mediana, p95, máximo, mínimo) y
+ *   una tendencia con su ventana escrita al lado, para que nadie tenga que
+ *   adivinar contra qué se compara.
+ * · MEDIA MÓVIL de 7 días y línea de media, que es como se mira una serie
+ *   ruidosa sin engañarse con el último pico.
+ * · TOOLTIP con el valor exacto, el salto contra el día anterior y la cuota del
+ *   periodo; navegable con el teclado.
+ *
+ * Y un fallo de bulto que se va con esto: el SVG tenía `viewBox="0 0 640 170"`
+ * con `width="100%"`, así que el navegador lo encajaba POR ALTURA y lo
+ * centraba — el gráfico se dibujaba en una franja estrecha con aire muerto a
+ * los lados. Ahora el ancho se mide de verdad (ResizeObserver) y una unidad de
+ * usuario es un píxel: sin deformación y sin franjas.
+ *
+ * Honestidad que se mantiene: el desglose por modelo sale vacío («acumulando»)
+ * hasta que entre tráfico con modelo — jamás una fila inventada.
  */
-const W = 640;
-const H = 170;
-const P = 8;
+
+const ALTO = 210;
+const MARGEN = { arriba: 14, derecha: 16, abajo: 26, izquierda: 62 };
+/** Ancho del primer render. IDÉNTICO en servidor y cliente: si no, hidratación rota. */
+const ANCHO_BASE = 760;
+const MM_VENTANA = 7;
 const TOP_MODELOS = 6;
+
+type T = ReturnType<typeof useTranslations>;
+type Fmt = (v: number) => string;
 
 export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porModelo: ModelDia[] }) {
   const t = useTranslations("dashboard");
@@ -38,69 +74,49 @@ export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porM
   const [metrica, setMetrica] = useState<Metrica>("neto");
   const [vista, setVista] = useState<Vista>("dia");
 
-  // Etiqueta de barra: dinero para el ahorro neto, exacto para peticiones (un
-  // recuento pequeño se quiere entero), compacto para tokens (millones). El
-  // número EXACTO viaja en el tooltip vía `fmtExact`, nunca se pierde.
-  const fmt = (v: number): string =>
-    metrica === "neto" ? money(v) : metrica === "peticiones" ? intfmt(v) : compact(v);
-  const fmtExact = (v: number): string => (metrica === "neto" ? money(v) : intfmt(v));
+  // Dinero para el ahorro neto, entero para peticiones (un recuento pequeño se
+  // quiere exacto), compacto para tokens (millones). El valor EXACTO viaja en
+  // el tooltip vía `fmtExact`, así que la abreviatura nunca pierde información.
+  const fmt: Fmt = (v) => (metrica === "neto" ? money(v) : metrica === "peticiones" ? intfmt(v) : compact(v));
+  const fmtExact: Fmt = (v) => (metrica === "neto" ? money(v) : intfmt(v));
 
   const usageCortado = useMemo(() => cortarPorPeriodo(usage, periodo), [usage, periodo]);
   const modeloCortado = useMemo(() => cortarPorPeriodo(porModelo, periodo), [porModelo, periodo]);
 
   const diaria = useMemo(() => serieDiaria(usageCortado, metrica), [usageCortado, metrica]);
-  const acumulada = useMemo(() => serieAcumulada(usageCortado, metrica), [usageCortado, metrica]);
+  const ranuras = useMemo(() => rellenarCalendario(diaria), [diaria]);
+  const resumen = useMemo(() => resumirSerie(ranuras, MM_VENTANA), [ranuras]);
+
   const modelosTodos = useMemo(() => agregarPorModelo(modeloCortado, metrica), [modeloCortado, metrica]);
   const barras = useMemo(
     () => topConResto(modelosTodos, TOP_MODELOS, t("usageExplorer.modelOther")),
     [modelosTodos, t],
   );
 
-  const seg = <T extends string | number>(
+  const seg = <V extends string | number>(
     grupo: string,
-    valor: T,
-    set: (v: T) => void,
-    opciones: { v: T; label: string }[],
+    valor: V,
+    set: (v: V) => void,
+    opciones: { v: V; label: string }[],
   ) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span className="ck-eyebrow" style={{ fontSize: 11 }}>{grupo}</span>
-      <div role="group" aria-label={grupo} style={{ display: "inline-flex", flexWrap: "wrap", gap: 4 }}>
-        {opciones.map((o) => {
-          const activo = o.v === valor;
-          return (
-            <button
-              key={o.v}
-              type="button"
-              aria-pressed={activo}
-              onClick={() => set(o.v)}
-              style={{
-                padding: "4px 10px",
-                fontSize: 12,
-                borderRadius: 7,
-                cursor: "pointer",
-                border: "1px solid var(--border)",
-                background: activo ? "var(--brand)" : "transparent",
-                color: activo ? "#fff" : "var(--muted)",
-                fontWeight: activo ? 600 : 500,
-              }}
-            >
-              {o.label}
-            </button>
-          );
-        })}
+    <div className="ux-seg">
+      <span className="ck-eyebrow">{grupo}</span>
+      <div className="opts" role="group" aria-label={grupo}>
+        {opciones.map((o) => (
+          <button key={o.v} type="button" aria-pressed={o.v === valor} onClick={() => set(o.v)}>
+            {o.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 
+  const esModelo = vista === "modelo";
+
   return (
     <div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 18, marginBottom: 14 }}>
-        {seg<Periodo>(
-          t("usageExplorer.period"),
-          periodo,
-          setPeriodo,
-          PERIODOS.map((p) => ({ v: p, label: String(p) })),
-        )}
+      <div className="ux-controls">
+        {seg<Periodo>(t("usageExplorer.period"), periodo, setPeriodo, PERIODOS.map((p) => ({ v: p, label: String(p) })))}
         {seg<Metrica>(t("usageExplorer.metric"), metrica, setMetrica, [
           { v: "neto", label: t("usageExplorer.metricNet") },
           { v: "peticiones", label: t("usageExplorer.metricRequests") },
@@ -113,133 +129,369 @@ export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porM
         ])}
       </div>
 
-      {vista === "modelo" ? (
-        <VistaModelo
-          barras={barras}
-          totalModelos={modelosTodos.length}
-          metrica={metrica}
-          fmt={fmt}
-          fmtExact={fmtExact}
-          t={t}
-        />
-      ) : vista === "acumulado" ? (
-        <VistaAcumulada puntos={acumulada} metrica={metrica} fmt={fmt} t={t} />
+      {esModelo ? (
+        <VistaModelo barras={barras} totalModelos={modelosTodos.length} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} />
+      ) : ranuras.length === 0 ? (
+        <p className="ck-note">{t("usageExplorer.emptyPeriod")}</p>
       ) : (
-        <VistaDiaria puntos={diaria} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} />
+        <>
+          <TiraEstadisticas resumen={resumen} metrica={metrica} fmt={fmt} t={t} />
+          <Grafico
+            ranuras={ranuras}
+            modo={vista === "acumulado" ? "acumulado" : "dia"}
+            metrica={metrica}
+            fmt={fmt}
+            fmtExact={fmtExact}
+            t={t}
+            aria={vista === "acumulado" ? t("savingsTrendChart.chartAria") : t("usageExplorer.dailyAria")}
+          />
+          <p className="ux-foot">
+            {ranuras[0]!.day} → {ranuras[ranuras.length - 1]!.day} ·{" "}
+            {t("usageExplorer.coverage", { conUso: resumen.diasConUso, total: resumen.diasTotales })}
+          </p>
+        </>
       )}
     </div>
   );
 }
 
-type T = ReturnType<typeof useTranslations>;
+/* ── Estadísticos ───────────────────────────────────────────────────────── */
 
-/** Barras por día — solo días con fila (no se rellenan huecos). */
-function VistaDiaria({
-  puntos,
+function Casilla({ k, v, s, cls }: { k: string; v: string; s: string; cls?: string }) {
+  return (
+    <div className="ux-stat">
+      <span className="k">{k}</span>
+      <div className={`v ${cls ?? ""}`.trim()}>{v}</div>
+      <span className="s">{s}</span>
+    </div>
+  );
+}
+
+/** «+38 %» / «−12 %». Con el signo menos de verdad, que es un número, no un guion. */
+const pctFirmado = (x: number) => `${x > 0 ? "+" : x < 0 ? "−" : ""}${pct0(Math.abs(x))}`;
+
+function TiraEstadisticas({ resumen, metrica, fmt, t }: { resumen: Resumen; metrica: Metrica; fmt: Fmt; t: T }) {
+  // El color solo significa algo cuando la métrica ES dinero ahorrado. Teñir de
+  // rojo «más peticiones» diría que consumir es malo, y este producto no vende
+  // eso: vende que lo que consumes cueste menos.
+  const tono = (v: number) => (metrica !== "neto" ? "" : v > 0 ? "pos" : v < 0 ? "neg" : "");
+  const tend = resumen.tendencia;
+  const etiquetaVentana = tend
+    ? tend.modo === "ventana"
+      ? t("usageExplorer.trendWindow", { n: tend.ventana })
+      : t("usageExplorer.trendHalves")
+    : "—";
+
+  return (
+    <div className="ux-stats">
+      <Casilla
+        k={t("usageExplorer.statTotal")}
+        v={fmt(resumen.total)}
+        cls={tono(resumen.total)}
+        s={t("usageExplorer.coverage", { conUso: resumen.diasConUso, total: resumen.diasTotales })}
+      />
+      <Casilla k={t("usageExplorer.statMean")} v={fmt(resumen.media)} s={`σ ${fmt(resumen.desviacion)}`} />
+      <Casilla k={t("usageExplorer.statMedian")} v={fmt(resumen.mediana)} s={`p95 ${fmt(resumen.p95)}`} />
+      <Casilla k={t("usageExplorer.statMax")} v={fmt(resumen.max?.valor ?? 0)} s={resumen.max?.day ?? "—"} />
+      <Casilla k={t("usageExplorer.statMin")} v={fmt(resumen.min?.valor ?? 0)} s={resumen.min?.day ?? "—"} />
+      <Casilla
+        k={t("usageExplorer.statTrend")}
+        v={tend?.delta != null ? pctFirmado(tend.delta) : "—"}
+        cls={tend?.delta != null ? tono(tend.delta) : ""}
+        s={tend ? (tend.delta == null ? t("usageExplorer.trendNoBase") : etiquetaVentana) : "—"}
+      />
+    </div>
+  );
+}
+
+/* ── El gráfico ─────────────────────────────────────────────────────────── */
+
+/** Etiqueta compacta de fecha para el eje: MM-DD, que ordena y no depende del idioma. */
+const etiquetaDia = (iso: string) => iso.slice(5);
+
+function Grafico({
+  ranuras,
+  modo,
   metrica,
   fmt,
   fmtExact,
   t,
+  aria,
 }: {
-  puntos: { day: string; valor: number }[];
+  ranuras: Ranura[];
+  modo: "dia" | "acumulado";
   metrica: Metrica;
-  fmt: (v: number) => string;
-  fmtExact: (v: number) => string;
+  fmt: Fmt;
+  fmtExact: Fmt;
   t: T;
+  aria: string;
 }) {
-  if (puntos.length === 0) return <p className="ck-note">{t("usageExplorer.emptyPeriod")}</p>;
-  const vals = puntos.map((p) => p.valor);
-  const domMax = Math.max(...vals, 0);
-  const domMin = Math.min(...vals, 0);
-  const span = domMax - domMin || 1;
-  const y = (v: number) => H - P - ((v - domMin) / span) * (H - 2 * P);
-  const zeroY = y(0);
-  const slot = (W - 2 * P) / puntos.length;
-  const bw = Math.max(1, slot * 0.7);
-  const total = vals.reduce((s, v) => s + v, 0);
+  const cajaRef = useRef<HTMLDivElement | null>(null);
+  const [ancho, setAncho] = useState(ANCHO_BASE);
+  const [foco, setFoco] = useState<number | null>(null);
+
+  // El ancho se MIDE. Con `viewBox` fijo y `width="100%"` el navegador encajaba
+  // el dibujo por altura y lo centraba, dejando franjas muertas a los lados.
+  useEffect(() => {
+    const el = cajaRef.current;
+    if (!el) return;
+    const medir = () => {
+      const w = Math.round(el.getBoundingClientRect().width);
+      if (w > 0) setAncho(w);
+    };
+    medir();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", medir);
+      return () => window.removeEventListener("resize", medir);
+    }
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const n = ranuras.length;
+
+  const serie = useMemo(() => {
+    if (modo === "dia") return ranuras.map((r) => r.valor);
+    let acc = 0;
+    return ranuras.map((r) => (acc += r.valor));
+  }, [ranuras, modo]);
+
+  const mm = useMemo(() => (modo === "dia" ? mediaMovil(ranuras, MM_VENTANA) : []), [ranuras, modo]);
+  const esc = useMemo(
+    () => escalaBonita(Math.min(0, ...serie), Math.max(0, ...serie), 4),
+    [serie],
+  );
+
+  const anchoInterior = Math.max(60, ancho - MARGEN.izquierda - MARGEN.derecha);
+  const altoInterior = ALTO - MARGEN.arriba - MARGEN.abajo;
+  const slot = anchoInterior / Math.max(1, n);
+  const xc = (i: number) => MARGEN.izquierda + i * slot + slot / 2;
+  const rango = esc.max - esc.min || 1;
+  const y = (v: number) => MARGEN.arriba + altoInterior * (1 - (v - esc.min) / rango);
+  /** Media línea de desfase: sin esto un hairline de 1px sale gris y borroso. */
+  const yNitido = (v: number) => Math.round(y(v)) + 0.5;
+  const yCero = y(0);
+  const anchoBarra = Math.max(1, Math.min(30, slot * 0.66));
+
+  const media = n > 0 ? serie.reduce((s, v) => s + v, 0) / n : 0;
+  const totalSerie = modo === "dia" ? serie.reduce((s, v) => s + v, 0) : (serie[n - 1] ?? 0);
+  const hayHuecos = ranuras.some((r) => !r.conDatos);
+
+  const marcas = useMemo(
+    () => marcasEjeX(n, Math.max(2, Math.min(8, Math.floor(anchoInterior / 88)))),
+    [n, anchoInterior],
+  );
+
+  const colorSerie = metrica === "neto" ? "var(--mint)" : "var(--ink)";
+  const rellenoBarra = (v: number) =>
+    metrica === "neto" ? (v >= 0 ? "var(--mint)" : "var(--danger)") : "var(--ink)";
+
+  const puntosMM = mm
+    .map((v, i) => (v === null ? null : ([xc(i), y(v)] as const)))
+    .filter((p): p is readonly [number, number] => p !== null);
+  const dMM =
+    puntosMM.length >= 2
+      ? puntosMM.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ")
+      : null;
+
+  const dLinea = serie.map((v, i) => `${i ? "L" : "M"}${xc(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const dArea =
+    n >= 2
+      ? `${dLinea} L${xc(n - 1).toFixed(1)},${yCero.toFixed(1)} L${xc(0).toFixed(1)},${yCero.toFixed(1)} Z`
+      : null;
+
+  const mover = (paso: number) =>
+    setFoco((f) => Math.max(0, Math.min(n - 1, (f ?? (paso > 0 ? -1 : n)) + paso)));
+
+  const r = foco !== null ? ranuras[foco] : undefined;
+  const salto =
+    foco !== null && foco > 0 ? (modo === "dia" ? serie[foco]! - serie[foco - 1]! : ranuras[foco]!.valor) : null;
+  const saltoRel =
+    foco !== null && foco > 0 && serie[foco - 1] !== 0 && modo === "dia"
+      ? (serie[foco]! - serie[foco - 1]!) / Math.abs(serie[foco - 1]!)
+      : null;
+
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={t("usageExplorer.dailyAria")}>
-        <line x1={P} y1={zeroY} x2={W - P} y2={zeroY} stroke="var(--border)" strokeWidth="1" />
-        {puntos.map((p, i) => {
-          const yv = y(p.valor);
-          const top = Math.min(yv, zeroY);
-          const alto = Math.max(1, Math.abs(yv - zeroY));
-          const positivo = p.valor >= 0;
-          const fill = metrica === "neto" ? (positivo ? "var(--success)" : "var(--amber)") : "var(--brand)";
-          return (
+      <div
+        className="ux-plot"
+        ref={cajaRef}
+        tabIndex={0}
+        role="group"
+        aria-label={aria}
+        onMouseMove={(e) => {
+          const caja = e.currentTarget.getBoundingClientRect();
+          const rel = e.clientX - caja.left - MARGEN.izquierda;
+          const i = Math.floor(rel / slot);
+          setFoco(rel >= 0 && i >= 0 && i < n ? i : null);
+        }}
+        onMouseLeave={() => setFoco(null)}
+        onBlur={() => setFoco(null)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") { e.preventDefault(); mover(1); }
+          else if (e.key === "ArrowLeft") { e.preventDefault(); mover(-1); }
+          else if (e.key === "Home") { e.preventDefault(); setFoco(0); }
+          else if (e.key === "End") { e.preventDefault(); setFoco(n - 1); }
+          else if (e.key === "Escape") setFoco(null);
+        }}
+      >
+        <svg width={ancho} height={ALTO} viewBox={`0 0 ${ancho} ${ALTO}`} role="img" aria-label={aria}>
+          {/* Rejilla y eje Y. El cero se marca más fuerte: es la referencia. */}
+          {esc.ticks.map((tk) => (
+            <g key={tk}>
+              <line
+                x1={MARGEN.izquierda}
+                x2={ancho - MARGEN.derecha}
+                y1={yNitido(tk)}
+                y2={yNitido(tk)}
+                stroke={tk === 0 ? "var(--ink-soft)" : "var(--line)"}
+                strokeOpacity={tk === 0 ? 0.45 : 1}
+                shapeRendering="crispEdges"
+              />
+              <text
+                x={MARGEN.izquierda - 9}
+                y={y(tk)}
+                textAnchor="end"
+                dominantBaseline="middle"
+                fontFamily="var(--mono)"
+                fontSize="9.5"
+                fill="var(--ink-soft)"
+              >
+                {fmt(tk)}
+              </text>
+            </g>
+          ))}
+
+          {/* Columna resaltada por debajo de los datos, nunca encima. */}
+          {foco !== null && (
             <rect
-              key={p.day}
-              x={(P + i * slot + (slot - bw) / 2).toFixed(1)}
-              y={top.toFixed(1)}
-              width={bw.toFixed(1)}
-              height={alto.toFixed(1)}
-              rx={bw > 3 ? 1.5 : 0}
-              fill={fill}
+              x={MARGEN.izquierda + foco * slot}
+              y={MARGEN.arriba}
+              width={slot}
+              height={altoInterior}
+              fill="var(--ink)"
+              fillOpacity="0.05"
+            />
+          )}
+
+          {modo === "dia" ? (
+            <>
+              {ranuras.map((rr, i) => {
+                const x = MARGEN.izquierda + i * slot + (slot - anchoBarra) / 2;
+                if (!rr.conDatos) {
+                  // Día sin fila: cero real, pero cero SIN MEDIR. Se marca aparte
+                  // para que un fin de semana o una caída del gateway se vean.
+                  return (
+                    <rect key={rr.day} x={x} y={yCero - 1} width={anchoBarra} height={2} fill="var(--muted)" fillOpacity="0.5" />
+                  );
+                }
+                const yv = y(rr.valor);
+                const alto = Math.max(1.5, Math.abs(yv - yCero));
+                return (
+                  <rect
+                    key={rr.day}
+                    x={x.toFixed(1)}
+                    y={Math.min(yv, yCero).toFixed(1)}
+                    width={anchoBarra.toFixed(1)}
+                    height={alto.toFixed(1)}
+                    rx={anchoBarra > 4 ? 1.5 : 0}
+                    fill={rellenoBarra(rr.valor)}
+                    fillOpacity={foco === null || foco === i ? 0.92 : 0.5}
+                  />
+                );
+              })}
+              {n >= 2 && (
+                <line
+                  x1={MARGEN.izquierda}
+                  x2={ancho - MARGEN.derecha}
+                  y1={yNitido(media)}
+                  y2={yNitido(media)}
+                  stroke="var(--ink-soft)"
+                  strokeWidth="1"
+                  strokeDasharray="4 4"
+                  strokeOpacity="0.75"
+                />
+              )}
+              {dMM && <path d={dMM} fill="none" stroke="var(--brand)" strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />}
+            </>
+          ) : (
+            <>
+              {dArea && <path d={dArea} fill={`color-mix(in srgb, ${colorSerie} 13%, transparent)`} />}
+              <path d={dLinea} fill="none" stroke={colorSerie} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+              {n >= 1 && <circle cx={xc(n - 1)} cy={y(serie[n - 1]!)} r="3" fill={colorSerie} />}
+            </>
+          )}
+
+          {/* Marca del punto enfocado: el mismo gesto en las dos vistas. */}
+          {foco !== null && (
+            <circle cx={xc(foco)} cy={y(serie[foco]!)} r="3.5" fill="var(--surface)" stroke={colorSerie} strokeWidth="2" />
+          )}
+
+          {/* Eje X. Los extremos se anclan al borde para que no se recorten. */}
+          {marcas.map((i) => (
+            <text
+              key={i}
+              x={i === 0 ? MARGEN.izquierda : i === n - 1 ? ancho - MARGEN.derecha : xc(i)}
+              y={ALTO - 8}
+              textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
+              fontFamily="var(--mono)"
+              fontSize="9.5"
+              fill="var(--ink-soft)"
             >
-              <title>{`${p.day} · ${fmtExact(p.valor)}`}</title>
-            </rect>
-          );
-        })}
-      </svg>
-      {puntos.length >= 2 && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>{puntos[0]!.day}</span>
-          <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-            {puntos[puntos.length - 1]!.day}
-          </span>
-        </div>
-      )}
-      <p className="ck-note">{t("usageExplorer.summaryDays", { value: fmt(total), days: puntos.length })}</p>
-    </div>
-  );
-}
+              {etiquetaDia(ranuras[i]!.day)}
+            </text>
+          ))}
+        </svg>
 
-/** Línea acumulada — hereda la vista de SavingsTrendChart, ahora por métrica. */
-function VistaAcumulada({
-  puntos,
-  metrica,
-  fmt,
-  t,
-}: {
-  puntos: { day: string; acumulado: number }[];
-  metrica: Metrica;
-  fmt: (v: number) => string;
-  t: T;
-}) {
-  if (puntos.length < 2) return <p className="ck-note">{t("usageExplorer.emptyPeriod")}</p>;
-  const pts = puntos.map((p, i) => ({
-    x: (i / (puntos.length - 1)) * (W - 2 * P) + P,
-    v: p.acumulado,
-  }));
-  const max = Math.max(...pts.map((p) => p.v), 1);
-  const min = Math.min(...pts.map((p) => p.v), 0);
-  const span = max - min || 1;
-  const y = (v: number) => H - P - ((v - min) / span) * (H - 2 * P);
-  const line = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
-  const area = `${line} L${pts[pts.length - 1]!.x.toFixed(1)},${H - P} L${pts[0]!.x.toFixed(1)},${H - P} Z`;
-  const final = puntos[puntos.length - 1]!.acumulado;
-  // Verde solo para el ahorro neto acumulado (un "win"); azul de marca para
-  // peticiones y tokens acumulados, que son consumo, no ahorro.
-  const color = metrica === "neto" ? "var(--success)" : "var(--brand)";
-  return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={t("savingsTrendChart.chartAria")}>
-        <path d={area} fill={`color-mix(in srgb, ${color} 14%, transparent)`} />
-        <path d={line} fill="none" stroke={color} strokeWidth="2" />
-      </svg>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>{puntos[0]!.day}</span>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--muted)" }}>
-          {puntos[puntos.length - 1]!.day}
-        </span>
+        {r && (
+          <div className="ux-tip" style={{ left: Math.max(84, Math.min(ancho - 84, xc(foco!))), top: 2 }}>
+            <div className="d">
+              {r.day}
+              {!r.conDatos && ` · ${t("usageExplorer.noTraffic")}`}
+            </div>
+            <div className={`v ${metrica === "neto" ? (serie[foco!]! >= 0 ? "pos" : "neg") : ""}`.trim()}>
+              {fmtExact(serie[foco!]!)}
+            </div>
+            {salto !== null && (
+              <div className="r">
+                <span>{t("usageExplorer.tipDelta")}</span>
+                <b className={salto > 0 ? "pos" : salto < 0 ? "neg" : ""}>
+                  {salto > 0 ? "+" : salto < 0 ? "−" : ""}
+                  {fmtExact(Math.abs(salto))}
+                  {saltoRel !== null && ` (${pctFirmado(saltoRel)})`}
+                </b>
+              </div>
+            )}
+            {totalSerie !== 0 && (
+              <div className="r">
+                <span>{t("usageExplorer.tipShare")}</span>
+                <b>{pct0(Math.abs((modo === "dia" ? r.valor : serie[foco!]!) / totalSerie))}</b>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <p className="ck-note">{t("usageExplorer.summaryDays", { value: fmt(final), days: puntos.length })}</p>
+
+      <div className="ux-legend">
+        {modo === "dia" && dMM && (
+          <span><i className="mm" />{t("usageExplorer.movingAvg", { n: MM_VENTANA })}</span>
+        )}
+        {modo === "dia" && n >= 2 && (
+          <span><i className="med" />{t("usageExplorer.meanLine")} {fmt(media)}</span>
+        )}
+        {modo === "dia" && hayHuecos && (
+          <span><i className="gap" />{t("usageExplorer.noTraffic")}</span>
+        )}
+      </div>
     </div>
   );
 }
 
-/** Barras horizontales por modelo — vacío honesto hasta acumular tráfico. */
+/* ── Por modelo ─────────────────────────────────────────────────────────── */
+
+/** Tabla de Pareto por modelo: cuota y cuota ACUMULADA, que es la que dice
+ *  cuántos modelos hay que tocar para mover la factura de verdad. */
 function VistaModelo({
   barras,
   totalModelos,
@@ -251,49 +503,69 @@ function VistaModelo({
   barras: { model: string; valor: number }[];
   totalModelos: number;
   metrica: Metrica;
-  fmt: (v: number) => string;
-  fmtExact: (v: number) => string;
+  fmt: Fmt;
+  fmtExact: Fmt;
   t: T;
 }) {
   if (barras.length === 0) return <p className="ck-note">{t("usageExplorer.modelEmpty")}</p>;
-  const max = Math.max(...barras.map((b) => b.valor), 1);
+
   const total = barras.reduce((s, b) => s + b.valor, 0);
-  // Color semántico, no decorativo: verde solo cuando la métrica ES ahorro; azul
-  // de marca para peticiones y tokens (consumo). Antes todas las barras eran
-  // verdes ("win"), lo que hacía leer el consumo de tokens como si fuera ahorro.
-  const color = metrica === "neto" ? "var(--success)" : "var(--brand)";
+  const max = Math.max(...barras.map((b) => Math.abs(b.valor)), 1);
+  const cuota = (v: number) => (total !== 0 ? v / total : 0);
+  let acc = 0;
+  const filas = barras.map((b) => {
+    acc += b.valor;
+    return { ...b, cuota: cuota(b.valor), acumulada: cuota(acc) };
+  });
+  const top3 = cuota(barras.slice(0, 3).reduce((s, b) => s + b.valor, 0));
+  const color = metrica === "neto" ? "var(--mint)" : "var(--ink)";
+
   return (
     <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {barras.map((b) => {
-          const cuota = total > 0 ? b.valor / total : 0;
-          return (
-            <div
-              key={b.model}
-              style={{ display: "grid", gridTemplateColumns: "minmax(0,150px) 1fr auto", gap: 10, alignItems: "center" }}
-            >
-              <span
-                className="mono"
-                title={b.model}
-                style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12 }}
-              >
-                {b.model}
-              </span>
-              <div className="track2" title={`${b.model} · ${fmtExact(b.valor)}`}>
-                <div className="fill2" style={{ width: `${Math.max(2, (b.valor / max) * 100)}%`, background: color }} />
-              </div>
-              <span
-                className="mono"
-                style={{ fontSize: 12, display: "flex", gap: 7, alignItems: "baseline", justifyContent: "flex-end", whiteSpace: "nowrap" }}
-              >
-                <span>{fmt(b.valor)}</span>
-                <span style={{ color: "var(--muted)", fontSize: 11 }}>{pct0(cuota)}</span>
-              </span>
-            </div>
-          );
-        })}
+      <div className="ux-stats c4">
+        <Casilla k={t("usageExplorer.statModels")} v={intfmt(totalModelos)} s={t("usageExplorer.colModel")} />
+        <Casilla k={t("usageExplorer.statTop1")} v={pct0(Math.abs(filas[0]!.cuota))} s={filas[0]!.model} />
+        <Casilla k={t("usageExplorer.statTop3")} v={pct0(Math.abs(top3))} s={fmt(barras.slice(0, 3).reduce((s, b) => s + b.valor, 0))} />
+        <Casilla k={t("usageExplorer.statTotal")} v={fmt(total)} s={t("usageExplorer.rowTotal")} />
       </div>
-      <p className="ck-note">{t("usageExplorer.summaryModels", { value: fmt(total), n: totalModelos })}</p>
+
+      <table className="ux-tbl">
+        <thead>
+          <tr>
+            <th scope="col">{t("usageExplorer.colModel")}</th>
+            <th scope="col" className="b" aria-hidden />
+            <th scope="col">{t("usageExplorer.colValue")}</th>
+            <th scope="col">{t("usageExplorer.colShare")}</th>
+            <th scope="col">{t("usageExplorer.colCumulative")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((f) => (
+            <tr key={f.model}>
+              <td className="m" title={f.model}>{f.model}</td>
+              <td className="b">
+                <div className="track2" title={`${f.model} · ${fmtExact(f.valor)}`}>
+                  <div className="fill2" style={{ width: `${Math.max(2, (Math.abs(f.valor) / max) * 100)}%`, background: color }} />
+                </div>
+              </td>
+              <td>{fmt(f.valor)}</td>
+              <td className="q">{pct0(Math.abs(f.cuota))}</td>
+              <td className="q">{pct0(Math.abs(f.acumulada))}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>{t("usageExplorer.rowTotal")}</td>
+            <td className="b" />
+            <td>{fmt(total)}</td>
+            <td className="q">{pct0(total !== 0 ? 1 : 0)}</td>
+            <td className="q" />
+          </tr>
+        </tfoot>
+      </table>
+
+      <p className="ux-foot">{t("usageExplorer.summaryModels", { value: fmt(total), n: totalModelos })}</p>
     </div>
   );
 }
