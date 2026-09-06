@@ -51,3 +51,71 @@ describe.skipIf(!hayZsh)("anillo2-ab.zsh — el A/B automático", () => {
     expect(r.stdout).toMatch(/exit=1/);
   });
 });
+
+describe.skipIf(!hayZsh)("anillo2-ab.zsh — lo que cazó la revisión del 06-09", () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync, chmodSync, rmSync } = require("node:fs") as typeof import("node:fs");
+  const { tmpdir } = require("node:os") as typeof import("node:os");
+  const { join } = require("node:path") as typeof import("node:path");
+
+  /** Un «clon» de mentira con el arnés presente y un pnpm que revienta. */
+  function laboratorio(): { repo: string; bin: string; limpiar: () => void } {
+    const raiz = mkdtempSync(join(tmpdir(), "anillo2-ab-"));
+    const repo = join(raiz, "repo");
+    mkdirSync(join(repo, "benchmarks", "anillo2"), { recursive: true });
+    writeFileSync(join(repo, "package.json"), "{}");
+    writeFileSync(join(repo, "benchmarks", "anillo2", "arnes.ts"), "");
+    const bin = join(raiz, "bin");
+    mkdirSync(bin);
+    writeFileSync(join(bin, "pnpm"), "#!/bin/sh\necho 'OOM de mentira' >&2\nexit 1\n");
+    chmodSync(join(bin, "pnpm"), 0o755);
+    writeFileSync(join(bin, "bvsala"), '#!/bin/sh\necho "bvsala-falso $*"\n');
+    chmodSync(join(bin, "bvsala"), 0o755);
+    return { repo, bin, limpiar: () => rmSync(raiz, { recursive: true, force: true }) };
+  }
+
+  it("⛔ sin el clon con el arnés se niega (BVSALA_AB_REPO movido o rama sin anillo 2)", () => {
+    const r = zsh("BVSALA_AB_SECO=1 claude; echo exit=$?", { BIVELIO_SERVICE_KEY: "bvk_falsa", BVSALA_AB_REPO: "/no/existe" });
+    expect(r.stderr).toMatch(/no es el clon con el arnés/);
+    expect(r.stdout).toMatch(/exit=1/);
+  });
+
+  it("⛔ un informe que FALLA no se guarda como bueno: queda .fallo con la causa y se reintenta", async () => {
+    const lab = laboratorio();
+    try {
+      const env = { BVSALA_AB_REPO: lab.repo, PATH: `${lab.bin}:${process.env.PATH ?? ""}` };
+      const r1 = zsh("bvsala-ab-informes 2026-09-01; echo exit=$?", env);
+      expect(r1.stderr + r1.stdout).toMatch(/lanzados en segundo plano/);
+      const fallo = join(lab.repo, "benchmarks", "out", "anillo2-noche-2026-09-01.fallo");
+      const txt = join(lab.repo, "benchmarks", "out", "anillo2-noche-2026-09-01.txt");
+      for (let i = 0; i < 100 && !existsSync(fallo); i++) await new Promise((res) => setTimeout(res, 50));
+      expect(existsSync(fallo)).toBe(true);
+      expect(existsSync(txt)).toBe(false);
+      expect(readFileSync(fallo, "utf8")).toMatch(/rc=[1-9]/);
+      expect(readFileSync(fallo, "utf8")).toMatch(/OOM de mentira/);
+      // El candado se ha ido: la siguiente sesión avisa del fallo y RELANZA.
+      const r2 = zsh("bvsala-ab-informes 2026-09-01", env);
+      expect(r2.stderr).toMatch(/FALLARON la última vez: rc=/);
+      expect(r2.stderr + r2.stdout).toMatch(/lanzados en segundo plano/);
+    } finally {
+      await new Promise((res) => setTimeout(res, 300));
+      lab.limpiar();
+    }
+  });
+
+  it("`claude --version` / `--help` / `mcp` pasan de largo sin preflight (ni clave, ni espía)", () => {
+    const lab = laboratorio();
+    try {
+      const r = zsh("claude --version; claude mcp list", { BIVELIO_SERVICE_KEY: "", PATH: `${lab.bin}:${process.env.PATH ?? ""}` });
+      expect(r.stdout.trim().split("\n")).toEqual(["bvsala-falso claude --version", "bvsala-falso claude mcp list"]);
+      expect(r.stderr).not.toMatch(/falta BIVELIO_SERVICE_KEY/);
+    } finally {
+      lab.limpiar();
+    }
+  });
+
+  it("los mensajes [anillo2] no entran en una tubería: con stdout que no es terminal van a stderr", () => {
+    const r = zsh("bvsala-ab-di hola-tuberia; echo fin", {});
+    expect(r.stdout.trim()).toBe("fin");
+    expect(r.stderr.trim()).toBe("hola-tuberia");
+  });
+});

@@ -214,14 +214,22 @@ una semana antes de ofrecerla a nadie.
 > clasifica cada turno por el CUERPO y emite veredicto + auditoría de paridad.
 >
 > 0. **Todo lo de abajo, SOLO.** `scripts/anillo2-ab.zsh`, cargado desde
->    `~/.zshrc` después del alias (`source
+>    `~/.zshrc` como ÚLTIMA línea, después del alias (`source
 >    ~/bivelio-savings-layer/scripts/anillo2-ab.zsh`), redefine `claude`: deriva
->    el brazo del día UTC, exige la clave en la shell, levanta el espía si no
->    escucha, encadena el gateway, lanza en segundo plano los informes de ayer
->    (`pnpm anillo2` + `pnpm anillo2:conciliar`) si faltan y enseña su resumen
->    al abrir sesión (`benchmarks/out/anillo2-noche-<día>.txt`). Los puntos
->    1–8 describen lo que hace; a mano solo hacen falta en una máquina sin el
->    fichero cargado. Verjas en test/anillo2-ab-zsh.test.ts.
+>    el brazo del día UTC, exige la clave en la shell y el clon con el arnés,
+>    levanta el espía si nadie escucha (sonda zsh pura, sin lsof), encadena el
+>    gateway, lanza en segundo plano los informes de ayer (`pnpm anillo2` +
+>    `pnpm anillo2:conciliar`) si faltan y enseña su resumen al abrir sesión
+>    (`benchmarks/out/anillo2-noche-<día>.txt`; un informe que falla deja un
+>    `.fallo` con la causa y se reintenta, nunca se guarda como bueno). Avisa
+>    si faltan menos de 90 min para las 00:00 UTC (la sesión cruzaría de brazo)
+>    y un vigía avisa al primer prompt si algún instalador añadió un alias
+>    `claude` detrás del source (eso anularía el A/B en silencio). Alcance:
+>    `claude` desde una zsh interactiva de Terminal; IDE, app de escritorio,
+>    `zsh -c` y cron quedan fuera y aparecen como «sin encadenar» en la
+>    conciliación. Los puntos 1–8 describen lo que hace; a mano solo hacen
+>    falta en una máquina sin el fichero cargado. Verjas en
+>    test/anillo2-ab-zsh.test.ts.
 > 1. **La bandera va SIEMPRE explícita.** Su sentido cambió en 0.4.14 (#217):
 >    hasta 0.4.13 `=1` arma; desde 0.4.14 va armada y `=0` apaga. Sin bandera,
 >    el brazo depende de la versión instalada — la grieta que hoy tenía el
