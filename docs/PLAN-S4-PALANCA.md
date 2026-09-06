@@ -241,6 +241,15 @@ una semana antes de ofrecerla a nadie.
 >    modelos y la lista de fisuras (día perdido, día mezclado, par sin
 >    palanca). Con `insuficiente` no hay cifra; con menos de 3 días limpios por
 >    brazo y modelo, tampoco.
+> 7. **Preflight antes de lanzar (30 segundos, cada sesión).** El 06-09 el
+>    brazo par corrió un día entero en una pestaña de terminal abierta en
+>    agosto, SIN la clave de servicio en su entorno: la palanca no se armó, no
+>    midió, no se capturó — control en silencio.
+>    - pestaña NUEVA de terminal (o `source ~/.zshrc`): `echo ${BIVELIO_SERVICE_KEY:+clave presente}` debe imprimir «clave presente» (jamás el valor);
+>    - espía vivo: `lsof -nP -iTCP:8402 -sTCP:LISTEN` devuelve una línea;
+>    - tras lanzar, las dos líneas de arranque del gateway: `medición: ACTIVA` y
+>      `elisión S4a: ARMADA … brazo PALANCA` (pares) o `APAGADA … brazo CONTROL`
+>      (impares). Un «NO SE ARMA» en día par es abortar y relanzar.
 >
 > Estado 06-09: 8 días de corpus, TODOS control (0 peticiones ajustadas en
 > 8,4 GB); ninguna respuesta con `applied_edits`. El brazo impar existente es

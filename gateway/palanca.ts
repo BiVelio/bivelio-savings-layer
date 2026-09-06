@@ -83,6 +83,30 @@ export function fusionarDiales(cm: unknown): { edits: unknown[] } & Record<strin
 }
 
 /**
+ * La línea de arranque que dice en qué BRAZO está este proceso y por qué —
+ * el A/B del anillo 2 se operó un día entero con la bandera puesta en un
+ * terminal SIN clave de servicio, y sin clave la palanca ni se arma (no hay
+ * org que consultar): el brazo «palanca» fue control en silencio. Pura;
+ * `aviso` marca los casos que merecen stderr (la intención del operador no
+ * se cumple).
+ */
+export function describirEstadoDeElision(bandera: string | undefined, hayClave: boolean): { linea: string; aviso: boolean } {
+  const cola = " (se enciende solo si la licencia de la org trae context_elision; fail-closed)";
+  if (bandera === "0") return { linea: "elisión S4a: APAGADA (BVSALA_GATEWAY_ELISION=0) — brazo CONTROL", aviso: false };
+  if (!hayClave) {
+    return {
+      linea:
+        "elisión S4a: NO SE ARMA — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar); este proceso es brazo CONTROL" +
+        (bandera === "1" ? " AUNQUE la bandera diga =1. Abre un terminal nuevo o exporta la clave y relanza" : ""),
+      aviso: bandera === "1",
+    };
+  }
+  return bandera === "1"
+    ? { linea: "elisión S4a: ARMADA (BVSALA_GATEWAY_ELISION=1) — brazo PALANCA" + cola, aviso: false }
+    : { linea: "elisión S4a: ARMADA por defecto (sin bandera; =0 la apaga) — brazo PALANCA" + cola, aviso: false };
+}
+
+/**
  * Añade la beta de context management a una cabecera `anthropic-beta` sin
  * pisar las existentes (Claude Code manda varias: oauth, extended-cache-ttl —
  * esta última la usa el medidor para tarifar la escritura 1h).

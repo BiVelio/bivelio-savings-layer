@@ -3,7 +3,7 @@ import { gzipSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
-import { ajustarDiales, conBetaDeElision, fusionarDiales } from "../gateway/palanca.js";
+import { ajustarDiales, conBetaDeElision, describirEstadoDeElision, fusionarDiales } from "../gateway/palanca.js";
 import { CanalDeEntitlements } from "../gateway/entitlements.js";
 import {
   BETA_CONTEXT_MANAGEMENT,
@@ -205,6 +205,24 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
     expect(ajustarDiales(Buffer.from('{"model":"x"}'))).toBeNull();
     expect(ajustarDiales(Buffer.from('{"messages":[]}'))).toBeNull();
     expect(ajustarDiales(Buffer.from("[1,2,3]"))).toBeNull();
+  });
+});
+
+describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
+  it("con clave: =1 y sin bandera son PALANCA; =0 es CONTROL", () => {
+    expect(describirEstadoDeElision("1", true).linea).toMatch(/ARMADA \(BVSALA_GATEWAY_ELISION=1\).*brazo PALANCA/);
+    expect(describirEstadoDeElision(undefined, true).linea).toMatch(/ARMADA por defecto.*brazo PALANCA/);
+    expect(describirEstadoDeElision("0", true).linea).toMatch(/APAGADA.*brazo CONTROL/);
+    expect(describirEstadoDeElision("1", true).aviso).toBe(false);
+  });
+
+  it("⛔ sin clave la palanca NO se arma y, si la bandera decía =1, es un AVISO (la intención no se cumple)", () => {
+    const conBandera = describirEstadoDeElision("1", false);
+    expect(conBandera.linea).toMatch(/NO SE ARMA.*falta BIVELIO_SERVICE_KEY.*brazo CONTROL AUNQUE la bandera diga =1/);
+    expect(conBandera.aviso).toBe(true);
+    const sinBandera = describirEstadoDeElision(undefined, false);
+    expect(sinBandera.linea).toMatch(/NO SE ARMA.*brazo CONTROL$/);
+    expect(sinBandera.aviso).toBe(false);
   });
 });
 

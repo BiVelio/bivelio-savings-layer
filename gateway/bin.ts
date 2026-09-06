@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { describirEstadoDeElision } from "./palanca.js";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { doctor } from "./doctor.js";
@@ -169,6 +170,12 @@ const arranque = await arrancarGateway({
 const upstreamEfectivo = process.env.BVSALA_GATEWAY_UPSTREAM ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
 console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de servicio presente)" : "APAGADA (falta BIVELIO_SERVICE_KEY)"}`);
+{
+  // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
+  // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
+  const estado = describirEstadoDeElision(process.env.BVSALA_GATEWAY_ELISION, serviceAccountKey !== undefined);
+  (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
+}
 if (process.env.BVSALA_GATEWAY_UPSTREAM && envoltorio?.upstream && process.env.BVSALA_GATEWAY_UPSTREAM !== envoltorio.upstream) {
   // Un BVSALA_GATEWAY_UPSTREAM heredado del .zshrc (p.ej. el de Claude Code)
   // mandaría el tráfico de Codex a un host que no habla su protocolo.
