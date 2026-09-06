@@ -1,0 +1,1044 @@
+{
+  "fecha": "2026-09-06T16:38:12.116Z",
+  "version": "salida-anatomia-v1",
+  "nota": [
+    "Caracteres = String.length (UTF-16). proxyTokens = chars/4 es un PROXY que en este corpus NO vale: chars.calibracion trae los chars/token MEDIDOS en respuestas casi puras de prosa y de JSON (sondeado 06-09: ~2,3 y ~1,7). dinero.porMasa reparte lo visible por caracteres (infla el texto); dinero.porMasaCalibrado lo corrige con esos ratios — es la cifra a citar.",
+    "repeticion = fracción de shingles distintos de 40 chars del texto para el humano (bloques text) presentes en el último tool_result de la petición; repeticionCuerpo = la misma contra todo el texto previo del cuerpo (usuario+asistente+tool_results); 'ponderada' pesa por shingles.",
+    "thinking: el contenido NO viaja en el stream (thinking_delta con thinking:'' + estimated_tokens); se mide en tokens (usage.output_tokens_details.thinking_tokens). chars.firma = signature_delta, ni legible ni salida facturada.",
+    "Dinero: outputPer1k del catálogo × output_tokens; entradaUsd = costeMedido − salida (primas de caché incluidas). Descriptivo: jamás base de comisión.",
+    "Solo cifras: del contenido del corpus no sale nada."
+  ],
+  "capturas": [
+    "captura-2026-08-23T10-39-58-652Z.jsonl",
+    "captura-2026-08-23T10-40-56-149Z.jsonl",
+    "captura-2026-08-23T11-26-58-032Z.jsonl",
+    "captura-2026-08-30T08-46-43-317Z.jsonl",
+    "captura-2026-08-30T09-08-31-045Z.jsonl",
+    "captura-2026-08-30T09-58-57-318Z.jsonl",
+    "captura-2026-09-01T13-08-40-562Z.jsonl"
+  ],
+  "rango": {
+    "desde": "2026-08-23T10:40:21.362Z",
+    "hasta": "2026-09-06T12:10:37.296Z"
+  },
+  "descartes": {
+    "lineas": 4457,
+    "candidatas": 4204,
+    "ilegibles": 0,
+    "sinUsage": 17,
+    "sinPrecio": 0,
+    "cuerpoOmitido": 2,
+    "cuerpoIlegible": 0
+  },
+  "global": {
+    "peticiones": 4187,
+    "conCuerpo": 4185,
+    "tokensSalida": {
+      "total": 3358802,
+      "media": 802.2,
+      "p50": 305,
+      "p95": 3218,
+      "max": 21576
+    },
+    "thinking": {
+      "tokens": 1179508,
+      "shareDeSalida": 0.3512,
+      "tokensEstimadosEnDeltas": 1133200
+    },
+    "chars": {
+      "total": 4475443,
+      "porTipo": {
+        "text": 1901411,
+        "tool_use": 2573511,
+        "thinking": 0,
+        "otros": 521
+      },
+      "share": {
+        "text": 0.4249,
+        "tool_use": 0.575,
+        "thinking": 0,
+        "otros": 0.0001
+      },
+      "charsPorTokenVisible": 2.05,
+      "proxyTokens": {
+        "text": 475353,
+        "tool_use": 643378,
+        "thinking": 0,
+        "otros": 130
+      },
+      "firma": 4972836,
+      "calibracion": {
+        "prosaCharsPorToken": 2.38,
+        "nProsa": 358,
+        "jsonCharsPorToken": 1.98,
+        "nJson": 1372
+      }
+    },
+    "bloques": {
+      "text": 2691,
+      "tool_use": 3264,
+      "thinking": 2010,
+      "otros": 14
+    },
+    "tiposOtros": {
+      "server_tool_use": 7,
+      "web_search_tool_result": 7
+    },
+    "herramientas": {
+      "Bash": {
+        "llamadas": 2033,
+        "chars": 1086809,
+        "shareDeToolUse": 0.4223
+      },
+      "Write": {
+        "llamadas": 95,
+        "chars": 804034,
+        "shareDeToolUse": 0.3124
+      },
+      "Edit": {
+        "llamadas": 425,
+        "chars": 515111,
+        "shareDeToolUse": 0.2002
+      },
+      "Agent": {
+        "llamadas": 27,
+        "chars": 67374,
+        "shareDeToolUse": 0.0262
+      },
+      "Read": {
+        "llamadas": 511,
+        "chars": 51453,
+        "shareDeToolUse": 0.02
+      },
+      "AskUserQuestion": {
+        "llamadas": 12,
+        "chars": 14911,
+        "shareDeToolUse": 0.0058
+      },
+      "mcp__claude-in-chrome__browser_batch": {
+        "llamadas": 26,
+        "chars": 11611,
+        "shareDeToolUse": 0.0045
+      },
+      "Monitor": {
+        "llamadas": 16,
+        "chars": 6186,
+        "shareDeToolUse": 0.0024
+      },
+      "mcp__claude-in-chrome__javascript_tool": {
+        "llamadas": 8,
+        "chars": 3345,
+        "shareDeToolUse": 0.0013
+      },
+      "Artifact": {
+        "llamadas": 12,
+        "chars": 3039,
+        "shareDeToolUse": 0.0012
+      },
+      "TaskOutput": {
+        "llamadas": 52,
+        "chars": 3032,
+        "shareDeToolUse": 0.0012
+      },
+      "SendFeedback": {
+        "llamadas": 2,
+        "chars": 2529,
+        "shareDeToolUse": 0.001
+      },
+      "PushNotification": {
+        "llamadas": 6,
+        "chars": 1347,
+        "shareDeToolUse": 0.0005
+      },
+      "WebFetch": {
+        "llamadas": 2,
+        "chars": 926,
+        "shareDeToolUse": 0.0004
+      },
+      "CronCreate": {
+        "llamadas": 1,
+        "chars": 729,
+        "shareDeToolUse": 0.0003
+      },
+      "WebSearch": {
+        "llamadas": 4,
+        "chars": 468,
+        "shareDeToolUse": 0.0002
+      },
+      "mcp__claude-in-chrome__tabs_context_mcp": {
+        "llamadas": 8,
+        "chars": 186,
+        "shareDeToolUse": 0.0001
+      },
+      "Skill": {
+        "llamadas": 6,
+        "chars": 149,
+        "shareDeToolUse": 0.0001
+      },
+      "mcp__claude-in-chrome__read_console_messages": {
+        "llamadas": 2,
+        "chars": 141,
+        "shareDeToolUse": 0.0001
+      },
+      "mcp__claude-in-chrome__find": {
+        "llamadas": 1,
+        "chars": 61,
+        "shareDeToolUse": 0
+      },
+      "mcp__claude-in-chrome__select_browser": {
+        "llamadas": 1,
+        "chars": 52,
+        "shareDeToolUse": 0
+      },
+      "CronDelete": {
+        "llamadas": 1,
+        "chars": 18,
+        "shareDeToolUse": 0
+      },
+      "mcp__claude-in-chrome__list_connected_browsers": {
+        "llamadas": 2,
+        "chars": 0,
+        "shareDeToolUse": 0
+      },
+      "EnterPlanMode": {
+        "llamadas": 5,
+        "chars": 0,
+        "shareDeToolUse": 0
+      },
+      "ExitPlanMode": {
+        "llamadas": 5,
+        "chars": 0,
+        "shareDeToolUse": 0
+      },
+      "mcp__claude-in-chrome__tabs_create_mcp": {
+        "llamadas": 1,
+        "chars": 0,
+        "shareDeToolUse": 0
+      }
+    },
+    "stopReason": {
+      "end_turn": 549,
+      "tool_use": 2774,
+      "stop_sequence": 860,
+      "refusal": 2
+    },
+    "truncadas": {
+      "peticiones": 0,
+      "share": 0,
+      "tokensSalida": 0
+    },
+    "dinero": {
+      "salidaUsd": 127.2027,
+      "entradaUsd": 1142.3316,
+      "shareSalida": 0.1002,
+      "porMasa": {
+        "thinking": 44.8587,
+        "text": 24.5069,
+        "tool_use": 57.811,
+        "otros": 0.0253,
+        "sinCuerpo": 0.0007
+      },
+      "shareDeSalidaPorMasa": {
+        "thinking": 0.3527,
+        "text": 0.1927,
+        "tool_use": 0.4545,
+        "otros": 0.0002,
+        "sinCuerpo": 0
+      },
+      "porMasaCalibrado": {
+        "thinking": 44.8588,
+        "text": 24.6155,
+        "tool_use": 57.7141,
+        "otros": 0.0137,
+        "sinCuerpo": 0.0007,
+        "calibrado": true
+      },
+      "shareDeSalidaPorMasaCalibrado": {
+        "thinking": 0.3527,
+        "text": 0.1935,
+        "tool_use": 0.4537,
+        "otros": 0.0001,
+        "sinCuerpo": 0
+      }
+    },
+    "repeticion": {
+      "n": 1083,
+      "media": 0.0003,
+      "ponderada": 0.0008,
+      "p50": 0,
+      "p95": 0
+    },
+    "repeticionCuerpo": {
+      "n": 1598,
+      "media": 0.0091,
+      "ponderada": 0.1042,
+      "p50": 0,
+      "p95": 0.0404
+    }
+  },
+  "porModelo": {
+    "claude-fable-5": {
+      "peticiones": 1922,
+      "conCuerpo": 1922,
+      "tokensSalida": {
+        "total": 1750087,
+        "media": 910.6,
+        "p50": 452,
+        "p95": 2922,
+        "max": 21576
+      },
+      "thinking": {
+        "tokens": 615171,
+        "shareDeSalida": 0.3515,
+        "tokensEstimadosEnDeltas": 593100
+      },
+      "chars": {
+        "total": 2210961,
+        "porTipo": {
+          "text": 379996,
+          "tool_use": 1830444,
+          "thinking": 0,
+          "otros": 521
+        },
+        "share": {
+          "text": 0.1719,
+          "tool_use": 0.8279,
+          "thinking": 0,
+          "otros": 0.0002
+        },
+        "charsPorTokenVisible": 1.95,
+        "proxyTokens": {
+          "text": 94999,
+          "tool_use": 457611,
+          "thinking": 0,
+          "otros": 130
+        },
+        "firma": 2592308,
+        "calibracion": {
+          "prosaCharsPorToken": 2.29,
+          "nProsa": 185,
+          "jsonCharsPorToken": 1.97,
+          "nJson": 1001
+        }
+      },
+      "bloques": {
+        "text": 858,
+        "tool_use": 1833,
+        "thinking": 1111,
+        "otros": 14
+      },
+      "tiposOtros": {
+        "server_tool_use": 7,
+        "web_search_tool_result": 7
+      },
+      "herramientas": {
+        "Bash": {
+          "llamadas": 1172,
+          "chars": 786341,
+          "shareDeToolUse": 0.4296
+        },
+        "Write": {
+          "llamadas": 75,
+          "chars": 637660,
+          "shareDeToolUse": 0.3484
+        },
+        "Edit": {
+          "llamadas": 321,
+          "chars": 349182,
+          "shareDeToolUse": 0.1908
+        },
+        "Read": {
+          "llamadas": 130,
+          "chars": 15068,
+          "shareDeToolUse": 0.0082
+        },
+        "Agent": {
+          "llamadas": 7,
+          "chars": 13231,
+          "shareDeToolUse": 0.0072
+        },
+        "mcp__claude-in-chrome__browser_batch": {
+          "llamadas": 24,
+          "chars": 11262,
+          "shareDeToolUse": 0.0062
+        },
+        "mcp__claude-in-chrome__javascript_tool": {
+          "llamadas": 7,
+          "chars": 3122,
+          "shareDeToolUse": 0.0017
+        },
+        "TaskOutput": {
+          "llamadas": 52,
+          "chars": 3032,
+          "shareDeToolUse": 0.0017
+        },
+        "SendFeedback": {
+          "llamadas": 2,
+          "chars": 2529,
+          "shareDeToolUse": 0.0014
+        },
+        "Artifact": {
+          "llamadas": 10,
+          "chars": 2509,
+          "shareDeToolUse": 0.0014
+        },
+        "AskUserQuestion": {
+          "llamadas": 2,
+          "chars": 1922,
+          "shareDeToolUse": 0.0011
+        },
+        "PushNotification": {
+          "llamadas": 6,
+          "chars": 1347,
+          "shareDeToolUse": 0.0007
+        },
+        "WebFetch": {
+          "llamadas": 2,
+          "chars": 926,
+          "shareDeToolUse": 0.0005
+        },
+        "CronCreate": {
+          "llamadas": 1,
+          "chars": 729,
+          "shareDeToolUse": 0.0004
+        },
+        "Monitor": {
+          "llamadas": 2,
+          "chars": 669,
+          "shareDeToolUse": 0.0004
+        },
+        "WebSearch": {
+          "llamadas": 4,
+          "chars": 468,
+          "shareDeToolUse": 0.0003
+        },
+        "Skill": {
+          "llamadas": 6,
+          "chars": 149,
+          "shareDeToolUse": 0.0001
+        },
+        "mcp__claude-in-chrome__read_console_messages": {
+          "llamadas": 2,
+          "chars": 141,
+          "shareDeToolUse": 0.0001
+        },
+        "mcp__claude-in-chrome__tabs_context_mcp": {
+          "llamadas": 6,
+          "chars": 139,
+          "shareDeToolUse": 0.0001
+        },
+        "CronDelete": {
+          "llamadas": 1,
+          "chars": 18,
+          "shareDeToolUse": 0
+        },
+        "mcp__claude-in-chrome__list_connected_browsers": {
+          "llamadas": 1,
+          "chars": 0,
+          "shareDeToolUse": 0
+        }
+      },
+      "stopReason": {
+        "end_turn": 248,
+        "tool_use": 1672,
+        "refusal": 2
+      },
+      "truncadas": {
+        "peticiones": 0,
+        "share": 0,
+        "tokensSalida": 0
+      },
+      "dinero": {
+        "salidaUsd": 87.5044,
+        "entradaUsd": 949.0774,
+        "shareSalida": 0.0844,
+        "porMasa": {
+          "thinking": 30.7586,
+          "text": 8.7181,
+          "tool_use": 48.0032,
+          "otros": 0.0245,
+          "sinCuerpo": 0
+        },
+        "shareDeSalidaPorMasa": {
+          "thinking": 0.3515,
+          "text": 0.0996,
+          "tool_use": 0.5486,
+          "otros": 0.0003,
+          "sinCuerpo": 0
+        },
+        "porMasaCalibrado": {
+          "thinking": 30.7586,
+          "text": 8.6081,
+          "tool_use": 48.124,
+          "otros": 0.0137,
+          "sinCuerpo": 0,
+          "calibrado": true
+        },
+        "shareDeSalidaPorMasaCalibrado": {
+          "thinking": 0.3515,
+          "text": 0.0984,
+          "tool_use": 0.55,
+          "otros": 0.0002,
+          "sinCuerpo": 0
+        }
+      },
+      "repeticion": {
+        "n": 458,
+        "media": 0.0001,
+        "ponderada": 0.0006,
+        "p50": 0,
+        "p95": 0
+      },
+      "repeticionCuerpo": {
+        "n": 706,
+        "media": 0.003,
+        "ponderada": 0.0249,
+        "p50": 0,
+        "p95": 0.0158
+      }
+    },
+    "claude-opus-4-8": {
+      "peticiones": 1193,
+      "conCuerpo": 1193,
+      "tokensSalida": {
+        "total": 1463664,
+        "media": 1226.9,
+        "p50": 440,
+        "p95": 6716,
+        "max": 17337
+      },
+      "thinking": {
+        "tokens": 545584,
+        "shareDeSalida": 0.3728,
+        "tokensEstimadosEnDeltas": 523450
+      },
+      "chars": {
+        "total": 2008284,
+        "porTipo": {
+          "text": 1324943,
+          "tool_use": 683341,
+          "thinking": 0,
+          "otros": 0
+        },
+        "share": {
+          "text": 0.6597,
+          "tool_use": 0.3403,
+          "thinking": 0,
+          "otros": 0
+        },
+        "charsPorTokenVisible": 2.19,
+        "proxyTokens": {
+          "text": 331236,
+          "tool_use": 170835,
+          "thinking": 0,
+          "otros": 0
+        },
+        "firma": 2270820,
+        "calibracion": {
+          "prosaCharsPorToken": 2.4,
+          "nProsa": 144,
+          "jsonCharsPorToken": 2.08,
+          "nJson": 259
+        }
+      },
+      "bloques": {
+        "text": 892,
+        "tool_use": 1155,
+        "thinking": 776,
+        "otros": 0
+      },
+      "tiposOtros": {},
+      "herramientas": {
+        "Bash": {
+          "llamadas": 624,
+          "chars": 244144,
+          "shareDeToolUse": 0.3573
+        },
+        "Write": {
+          "llamadas": 20,
+          "chars": 166374,
+          "shareDeToolUse": 0.2435
+        },
+        "Edit": {
+          "llamadas": 104,
+          "chars": 165929,
+          "shareDeToolUse": 0.2428
+        },
+        "Agent": {
+          "llamadas": 20,
+          "chars": 54143,
+          "shareDeToolUse": 0.0792
+        },
+        "Read": {
+          "llamadas": 342,
+          "chars": 32983,
+          "shareDeToolUse": 0.0483
+        },
+        "AskUserQuestion": {
+          "llamadas": 10,
+          "chars": 12989,
+          "shareDeToolUse": 0.019
+        },
+        "Monitor": {
+          "llamadas": 14,
+          "chars": 5517,
+          "shareDeToolUse": 0.0081
+        },
+        "Artifact": {
+          "llamadas": 2,
+          "chars": 530,
+          "shareDeToolUse": 0.0008
+        },
+        "mcp__claude-in-chrome__browser_batch": {
+          "llamadas": 2,
+          "chars": 349,
+          "shareDeToolUse": 0.0005
+        },
+        "mcp__claude-in-chrome__javascript_tool": {
+          "llamadas": 1,
+          "chars": 223,
+          "shareDeToolUse": 0.0003
+        },
+        "mcp__claude-in-chrome__find": {
+          "llamadas": 1,
+          "chars": 61,
+          "shareDeToolUse": 0.0001
+        },
+        "mcp__claude-in-chrome__select_browser": {
+          "llamadas": 1,
+          "chars": 52,
+          "shareDeToolUse": 0.0001
+        },
+        "mcp__claude-in-chrome__tabs_context_mcp": {
+          "llamadas": 2,
+          "chars": 47,
+          "shareDeToolUse": 0.0001
+        },
+        "EnterPlanMode": {
+          "llamadas": 5,
+          "chars": 0,
+          "shareDeToolUse": 0
+        },
+        "ExitPlanMode": {
+          "llamadas": 5,
+          "chars": 0,
+          "shareDeToolUse": 0
+        },
+        "mcp__claude-in-chrome__list_connected_browsers": {
+          "llamadas": 1,
+          "chars": 0,
+          "shareDeToolUse": 0
+        },
+        "mcp__claude-in-chrome__tabs_create_mcp": {
+          "llamadas": 1,
+          "chars": 0,
+          "shareDeToolUse": 0
+        }
+      },
+      "stopReason": {
+        "end_turn": 239,
+        "tool_use": 954
+      },
+      "truncadas": {
+        "peticiones": 0,
+        "share": 0,
+        "tokensSalida": 0
+      },
+      "dinero": {
+        "salidaUsd": 36.5916,
+        "entradaUsd": 140.1699,
+        "shareSalida": 0.207,
+        "porMasa": {
+          "thinking": 13.6396,
+          "text": 14.1676,
+          "tool_use": 8.7837,
+          "otros": 0.0008,
+          "sinCuerpo": 0
+        },
+        "shareDeSalidaPorMasa": {
+          "thinking": 0.3728,
+          "text": 0.3872,
+          "tool_use": 0.24,
+          "otros": 0,
+          "sinCuerpo": 0
+        },
+        "porMasaCalibrado": {
+          "thinking": 13.6396,
+          "text": 14.3823,
+          "tool_use": 8.5697,
+          "otros": 0,
+          "sinCuerpo": 0,
+          "calibrado": true
+        },
+        "shareDeSalidaPorMasaCalibrado": {
+          "thinking": 0.3728,
+          "text": 0.393,
+          "tool_use": 0.2342,
+          "otros": 0,
+          "sinCuerpo": 0
+        }
+      },
+      "repeticion": {
+        "n": 594,
+        "media": 0.0005,
+        "ponderada": 0.001,
+        "p50": 0,
+        "p95": 0
+      },
+      "repeticionCuerpo": {
+        "n": 828,
+        "media": 0.014,
+        "ponderada": 0.1376,
+        "p50": 0,
+        "p95": 0.0925
+      }
+    },
+    "claude-opus-5": {
+      "peticiones": 185,
+      "conCuerpo": 185,
+      "tokensSalida": {
+        "total": 110599,
+        "media": 597.8,
+        "p50": 362,
+        "p95": 724,
+        "max": 13248
+      },
+      "thinking": {
+        "tokens": 18371,
+        "shareDeSalida": 0.1661,
+        "tokensEstimadosEnDeltas": 16500
+      },
+      "chars": {
+        "total": 165617,
+        "porTipo": {
+          "text": 106040,
+          "tool_use": 59577,
+          "thinking": 0,
+          "otros": 0
+        },
+        "share": {
+          "text": 0.6403,
+          "tool_use": 0.3597,
+          "thinking": 0,
+          "otros": 0
+        },
+        "charsPorTokenVisible": 1.8,
+        "proxyTokens": {
+          "text": 26510,
+          "tool_use": 14894,
+          "thinking": 0,
+          "otros": 0
+        },
+        "firma": 107444,
+        "calibracion": {
+          "prosaCharsPorToken": 2.08,
+          "nProsa": 7,
+          "jsonCharsPorToken": 1.47,
+          "nJson": 112
+        }
+      },
+      "bloques": {
+        "text": 57,
+        "tool_use": 274,
+        "thinking": 120,
+        "otros": 0
+      },
+      "tiposOtros": {},
+      "herramientas": {
+        "Bash": {
+          "llamadas": 237,
+          "chars": 56324,
+          "shareDeToolUse": 0.9454
+        },
+        "Read": {
+          "llamadas": 37,
+          "chars": 3253,
+          "shareDeToolUse": 0.0546
+        }
+      },
+      "stopReason": {
+        "tool_use": 147,
+        "end_turn": 38
+      },
+      "truncadas": {
+        "peticiones": 0,
+        "share": 0,
+        "tokensSalida": 0
+      },
+      "dinero": {
+        "salidaUsd": 2.765,
+        "entradaUsd": 16.5639,
+        "shareSalida": 0.143,
+        "porMasa": {
+          "thinking": 0.4593,
+          "text": 1.2822,
+          "tool_use": 1.0235,
+          "otros": 0,
+          "sinCuerpo": 0
+        },
+        "shareDeSalidaPorMasa": {
+          "thinking": 0.1661,
+          "text": 0.4637,
+          "tool_use": 0.3702,
+          "otros": 0,
+          "sinCuerpo": 0
+        },
+        "porMasaCalibrado": {
+          "thinking": 0.4593,
+          "text": 1.286,
+          "tool_use": 1.0197,
+          "otros": 0,
+          "sinCuerpo": 0,
+          "calibrado": true
+        },
+        "shareDeSalidaPorMasaCalibrado": {
+          "thinking": 0.1661,
+          "text": 0.4651,
+          "tool_use": 0.3688,
+          "otros": 0,
+          "sinCuerpo": 0
+        }
+      },
+      "repeticion": {
+        "n": 31,
+        "media": 0,
+        "ponderada": 0,
+        "p50": 0,
+        "p95": 0
+      },
+      "repeticionCuerpo": {
+        "n": 42,
+        "media": 0.0027,
+        "ponderada": 0.02,
+        "p50": 0,
+        "p95": 0.0117
+      }
+    },
+    "claude-sonnet-5": {
+      "peticiones": 882,
+      "conCuerpo": 882,
+      "tokensSalida": {
+        "total": 33895,
+        "media": 38.4,
+        "p50": 9,
+        "p95": 9,
+        "max": 3310
+      },
+      "thinking": {
+        "tokens": 0,
+        "shareDeSalida": 0,
+        "tokensEstimadosEnDeltas": 0
+      },
+      "chars": {
+        "total": 90394,
+        "porTipo": {
+          "text": 90394,
+          "tool_use": 0,
+          "thinking": 0,
+          "otros": 0
+        },
+        "share": {
+          "text": 1,
+          "tool_use": 0,
+          "thinking": 0,
+          "otros": 0
+        },
+        "charsPorTokenVisible": 2.67,
+        "proxyTokens": {
+          "text": 22599,
+          "tool_use": 0,
+          "thinking": 0,
+          "otros": 0
+        },
+        "firma": 0,
+        "calibracion": {
+          "prosaCharsPorToken": 3.07,
+          "nProsa": 22,
+          "jsonCharsPorToken": 0,
+          "nJson": 0
+        }
+      },
+      "bloques": {
+        "text": 882,
+        "tool_use": 0,
+        "thinking": 0,
+        "otros": 0
+      },
+      "tiposOtros": {},
+      "herramientas": {},
+      "stopReason": {
+        "stop_sequence": 860,
+        "end_turn": 22
+      },
+      "truncadas": {
+        "peticiones": 0,
+        "share": 0,
+        "tokensSalida": 0
+      },
+      "dinero": {
+        "salidaUsd": 0.339,
+        "entradaUsd": 36.2839,
+        "shareSalida": 0.0093,
+        "porMasa": {
+          "thinking": 0,
+          "text": 0.339,
+          "tool_use": 0,
+          "otros": 0,
+          "sinCuerpo": 0
+        },
+        "shareDeSalidaPorMasa": {
+          "thinking": 0,
+          "text": 1,
+          "tool_use": 0,
+          "otros": 0,
+          "sinCuerpo": 0
+        },
+        "porMasaCalibrado": {
+          "thinking": 0,
+          "text": 0.339,
+          "tool_use": 0,
+          "otros": 0,
+          "sinCuerpo": 0,
+          "calibrado": false
+        },
+        "shareDeSalidaPorMasaCalibrado": {
+          "thinking": 0,
+          "text": 1,
+          "tool_use": 0,
+          "otros": 0,
+          "sinCuerpo": 0
+        }
+      },
+      "repeticion": {
+        "n": 0,
+        "media": 0,
+        "ponderada": 0,
+        "p50": 0,
+        "p95": 0
+      },
+      "repeticionCuerpo": {
+        "n": 22,
+        "media": 0.029,
+        "ponderada": 0.0217,
+        "p50": 0.0109,
+        "p95": 0.1318
+      }
+    },
+    "claude-haiku-4-5-20251001": {
+      "peticiones": 5,
+      "conCuerpo": 3,
+      "tokensSalida": {
+        "total": 557,
+        "media": 111.4,
+        "p50": 91,
+        "p95": 242,
+        "max": 242
+      },
+      "thinking": {
+        "tokens": 382,
+        "shareDeSalida": 0.6858,
+        "tokensEstimadosEnDeltas": 150
+      },
+      "chars": {
+        "total": 187,
+        "porTipo": {
+          "text": 38,
+          "tool_use": 149,
+          "thinking": 0,
+          "otros": 0
+        },
+        "share": {
+          "text": 0.2032,
+          "tool_use": 0.7968,
+          "thinking": 0,
+          "otros": 0
+        },
+        "charsPorTokenVisible": 1.07,
+        "proxyTokens": {
+          "text": 10,
+          "tool_use": 37,
+          "thinking": 0,
+          "otros": 0
+        },
+        "firma": 2264,
+        "calibracion": {
+          "prosaCharsPorToken": 0,
+          "nProsa": 0,
+          "jsonCharsPorToken": 0,
+          "nJson": 0
+        }
+      },
+      "bloques": {
+        "text": 2,
+        "tool_use": 2,
+        "thinking": 3,
+        "otros": 0
+      },
+      "tiposOtros": {},
+      "herramientas": {
+        "Read": {
+          "llamadas": 2,
+          "chars": 149,
+          "shareDeToolUse": 1
+        }
+      },
+      "stopReason": {
+        "end_turn": 2,
+        "tool_use": 1
+      },
+      "truncadas": {
+        "peticiones": 0,
+        "share": 0,
+        "tokensSalida": 0
+      },
+      "dinero": {
+        "salidaUsd": 0.0028,
+        "entradaUsd": 0.2366,
+        "shareSalida": 0.0116,
+        "porMasa": {
+          "thinking": 0.0013,
+          "text": 0.0001,
+          "tool_use": 0.0007,
+          "otros": 0,
+          "sinCuerpo": 0.0007
+        },
+        "shareDeSalidaPorMasa": {
+          "thinking": 0.4668,
+          "text": 0.0521,
+          "tool_use": 0.2388,
+          "otros": 0,
+          "sinCuerpo": 0.2424
+        },
+        "porMasaCalibrado": {
+          "thinking": 0.0013,
+          "text": 0.0001,
+          "tool_use": 0.0007,
+          "otros": 0,
+          "sinCuerpo": 0.0007,
+          "calibrado": false
+        },
+        "shareDeSalidaPorMasaCalibrado": {
+          "thinking": 0.4668,
+          "text": 0.0521,
+          "tool_use": 0.2388,
+          "otros": 0,
+          "sinCuerpo": 0.2424
+        }
+      },
+      "repeticion": {
+        "n": 0,
+        "media": 0,
+        "ponderada": 0,
+        "p50": 0,
+        "p95": 0
+      },
+      "repeticionCuerpo": {
+        "n": 0,
+        "media": 0,
+        "ponderada": 0,
+        "p50": 0,
+        "p95": 0
+      }
+    }
+  }
+}
