@@ -1,9 +1,9 @@
 import {
   decidirCompresion,
-  ANTHROPIC_CACHE_TIER,
   GOOGLE_CACHE_TIER,
   OPENAI_CACHE_TIER,
   UNKNOWN_PROVIDER_CACHE_TIER,
+  tramoAnthropicDelModelo,
   type CacheTier,
   type Decision,
 } from "./cache-tier.js";
@@ -87,14 +87,14 @@ export function tramoDeCache(model: string, econ?: CompressionEconomics): CacheT
   const desnudo = barra >= 0 ? id.slice(barra + 1) : id;
 
   if (proveedor === "openai" || proveedor === "azure-openai") return OPENAI_CACHE_TIER;
-  if (proveedor === "anthropic") return ANTHROPIC_CACHE_TIER;
+  if (proveedor === "anthropic") return tramoAnthropicDelModelo(desnudo);
   if (proveedor === "google" || proveedor === "google-vertex") return GOOGLE_CACHE_TIER;
   // Sin prefijo de proveedor se mira el nombre, que en estas familias es
   // inconfundible. Un modelo servido por un tercero (OpenRouter, Bedrock…) con
   // el nombre del original hereda el tramo del original, que es lo correcto:
   // el que decide si hay caché de prefijo es el modelo, no quien lo revende.
   if (/^(gpt-|o[1-9](-|$)|chatgpt)/.test(desnudo)) return OPENAI_CACHE_TIER;
-  if (desnudo.startsWith("claude")) return ANTHROPIC_CACHE_TIER;
+  if (desnudo.startsWith("claude")) return tramoAnthropicDelModelo(desnudo);
   if (desnudo.startsWith("gemini")) return GOOGLE_CACHE_TIER;
 
   return UNKNOWN_PROVIDER_CACHE_TIER;

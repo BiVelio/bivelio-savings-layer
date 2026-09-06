@@ -57,6 +57,22 @@ export interface AnthropicOptions {
    */
   maxCacheBreakpoints?: number;
   /**
+   * When true, requests that the pipeline decided to mark also carry the
+   * request-level `cache_control` (Anthropic's automatic caching): the provider
+   * places one extra breakpoint on the last cacheable block and moves it
+   * forward as the conversation grows, so the history beyond the declared
+   * stable prefix is cached incrementally too. It spends one of the four
+   * breakpoint slots and never fires when the economic gate declined to mark.
+   *
+   * Off by default, and deliberately so: the moving breakpoint writes the
+   * volatile tail of EVERY marked request at the 1.25x write premium. That
+   * pays for itself on conversational or agentic traffic — the next turn reads
+   * the whole history at 0.1x — and loses money on one-shot traffic where
+   * nothing ever reads it back. It is also rejected by legacy Bedrock
+   * deployments. Turn it on when your traffic is multi-turn.
+   */
+  automaticCache?: boolean;
+  /**
    * Whether a request carrying BOTH the caller's tools and an output contract
    * may send `tool_choice: {type: "any"}`, which obliges the model to answer
    * through SOME tool — its pick — instead of writing prose.
@@ -393,7 +409,32 @@ export class AnthropicProvider implements Provider {
       );
     }
 
-    this.marcarCache(req, system, messages, prefijoEnMensajes, prefijoEnSystem);
+    const puntosGastados = this.marcarCache(req, system, messages, prefijoEnMensajes, prefijoEnSystem);
+
+    // CACHÉ AUTOMÁTICA (opt-in): el `cache_control` a NIVEL DE PETICIÓN hace
+    // que el proveedor coloque UN punto de ruptura más en el último bloque
+    // cacheable y lo MUEVA hacia delante conforme crece la conversación — el
+    // historial por detrás del prefijo estable declarado también se cachea, con
+    // escrituras incrementales (cada turno paga solo el tramo nuevo).
+    //
+    // Tres condiciones, y las tres son deliberadas:
+    //  1. `automaticCache` encendida — es una apuesta sobre la FORMA del
+    //     tráfico (ver el JSDoc de la opción), no una mejora universal.
+    //  2. El pipeline decidió marcar (`stablePrefixMessages` presente): la
+    //     verja económica sigue mandando. Si dijo que marcar pierde dinero,
+    //     el punto móvil también lo perdería.
+    //  3. Queda presupuesto: el punto automático consume uno de los 4 slots de
+    //     la API, y pisar el tope es un 400, no un aviso.
+    // Caso borde documentado por el proveedor: si el último bloque ya lleva un
+    // `cache_control` explícito con el mismo TTL (prefijo estable == prompt
+    // entero), el automático es un no-op — inofensivo, no un error.
+    if (
+      this.opts.automaticCache === true &&
+      req.stablePrefixMessages != null &&
+      puntosGastados < Math.min(this.opts.maxCacheBreakpoints ?? TOPE_DE_PUNTOS_DE_RUPTURA, TOPE_DE_PUNTOS_DE_RUPTURA)
+    ) {
+      body["cache_control"] = { type: "ephemeral" };
+    }
 
     return { body, contratoNativo };
   }
@@ -422,20 +463,21 @@ export class AnthropicProvider implements Provider {
     messages: MensajeAnthropic[],
     prefijoEnMensajes: number,
     prefijoEnSystem: number,
-  ): void {
+  ): number {
     if (req.promptCacheKey != null) {
       // La API de Anthropic no tiene un campo equivalente: el emparejamiento es
       // por bytes del prefijo, no por clave. Se ignora en vez de fallar — es una
       // pista de enrutado de OTRO proveedor, y una petición portable no debe
       // reventar por llevarla.
     }
-    if (req.stablePrefixMessages == null) return;
+    if (req.stablePrefixMessages == null) return 0;
 
     let presupuesto = Math.min(
       this.opts.maxCacheBreakpoints ?? TOPE_DE_PUNTOS_DE_RUPTURA,
       TOPE_DE_PUNTOS_DE_RUPTURA,
     );
-    if (presupuesto <= 0) return;
+    if (presupuesto <= 0) return 0;
+    const presupuestoInicial = presupuesto;
 
     // EL PUNTO VA AL FINAL DEL `system` QUE ESTA DENTRO DEL PREFIJO, no al final
     // del array. Son cosas distintas en cuanto queda un bloque de sistema fuera
@@ -457,8 +499,12 @@ export class AnthropicProvider implements Provider {
     if (presupuesto > 0 && prefijoEnMensajes > 0) {
       const mensaje = messages[Math.min(prefijoEnMensajes, messages.length) - 1];
       const bloque = mensaje?.content[mensaje.content.length - 1];
-      if (bloque) bloque.cache_control = { type: "ephemeral" };
+      if (bloque) {
+        bloque.cache_control = { type: "ephemeral" };
+        presupuesto -= 1;
+      }
     }
+    return presupuestoInicial - presupuesto;
   }
 
   /** Traduce una respuesta 2xx a la forma neutra del layer. */

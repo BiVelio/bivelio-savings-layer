@@ -64,6 +64,41 @@ export const ANTHROPIC_CACHE_TIER: CacheTier = {
   cacheWriteMultiplier: 1.25,
 };
 
+// Mínimos cacheables REALES por modelo de Anthropic — la página oficial de
+// prompt caching los publica por modelo (leída 2026-09-06) y dejan de ser el
+// supuesto de 1024 de arriba. La cifra importa en las dos direcciones que
+// documenta el comentario de `minimumCacheTokens`: con 512 real y 1024 supuesto,
+// un prompt de 780 se creía fuera del tramo (el fallo medido de la cabecera:
+// capturábamos 18,5% del dinero quitando 35,6% de los tokens); con 4096 real y
+// 1024 supuesto, se protegía una caché que no existía. El emparejamiento es por
+// prefijo MÁS LARGO primero, para que la instantánea fechada herede de su
+// modelo y `claude-fable-5-1` no caiga en la fila de `claude-fable-5` (la misma
+// trampa de herencia que el catálogo de precios ya paga en su propio test).
+const MINIMOS_ANTHROPIC: [prefijo: string, minimo: number][] = [
+  ["claude-fable-5-1", 512],
+  ["claude-mythos-5-1", 512],
+  ["claude-fable-5", 512],
+  ["claude-mythos-5", 512],
+  ["claude-opus-5", 512],
+  ["claude-opus-4-7", 2048],
+  ["claude-opus-4-6", 4096],
+  ["claude-opus-4-5", 4096],
+  ["claude-haiku-4-5", 4096],
+  ["claude-3-5-haiku", 2048],
+];
+
+/** The Anthropic cache tier with the model's PUBLISHED minimum cacheable size
+ *  (per-model figures from the official prompt-caching page, 2026-09-06);
+ *  models without a published figure keep the conservative 1024 default. */
+export function tramoAnthropicDelModelo(desnudo: string): CacheTier {
+  for (const [prefijo, minimo] of MINIMOS_ANTHROPIC) {
+    if (desnudo === prefijo || desnudo.startsWith(`${prefijo}-`)) {
+      return { ...ANTHROPIC_CACHE_TIER, minimumCacheTokens: minimo };
+    }
+  }
+  return ANTHROPIC_CACHE_TIER;
+}
+
 // Gemini: caché IMPLÍCITA (activada por defecto, sin `cache_control` ni campo
 // alguno en la petición) con lectura al 10% de la entrada y SIN prima de
 // escritura — verificado el 2026-08-24 contra el `/models` de la pasarela
