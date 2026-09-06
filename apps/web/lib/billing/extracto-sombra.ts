@@ -17,7 +17,7 @@ import { construirExtracto, type Extracto, type FilaDiaria } from "./extracto";
  * catálogo se actualiza sin tocar esto, el build se pone rojo (mismo patrón
  * que precio-publicado.test.ts).
  */
-export const VERSION_PRECIOS_CATALOGO = "2026-08-24";
+export const VERSION_PRECIOS_CATALOGO = "2026-09-06";
 
 /**
  * FX de la SOMBRA: una referencia fija y declarada, no un tipo de mercado.

@@ -137,6 +137,19 @@ describe("la forma del catálogo", () => {
     }
   });
 
+  it("la generación 5.1 de Fable/Mythos lee la caché a 0.025x, no al 10%", () => {
+    // La excepción oficial de Anthropic (2026-09-06): $0.25/MTok de lectura con
+    // entrada a $10. Si alguien «normaliza» estas filas al 10% de la casa, la
+    // lectura —la masa mayor del tráfico de terminales— se mide 4x más cara.
+    for (const m of ["claude-fable-5-1", "claude-mythos-5-1"]) {
+      expect(CATALOGO[m]?.cachedInputPer1k, m).toBe(0.00025);
+      expect(CATALOGO[m]?.inputPer1k, m).toBe(0.01);
+    }
+    // Y la generación 5 sin punto sigue al 10%: la excepción es SOLO de la 5.1.
+    expect(CATALOGO["claude-fable-5"]!.cachedInputPer1k).toBe(0.001);
+    expect(CATALOGO["claude-mythos-5"]!.cachedInputPer1k).toBe(0.001);
+  });
+
   it("deja por escrito de cuándo son los precios", () => {
     // Sin fecha, dentro de un año nadie sabe si revisarlos o fiarse.
     expect(PRECIOS_AL_DIA).toMatch(/^\d{4}-\d{2}-\d{2}$/);
