@@ -23,7 +23,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
  */
 
 /** When these prices were last checked against the providers' public rates. */
-export const PRECIOS_AL_DIA = "2026-08-24";
+export const PRECIOS_AL_DIA = "2026-09-06";
 
 /**
  * Key = the model id as the provider publishes it, without a vendor prefix.
@@ -92,6 +92,16 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   "claude-sonnet-4-6": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-sonnet-5":   { inputPer1k: 0.002,  outputPer1k: 0.01,  cachedInputPer1k: 0.0002  },
   "claude-fable-5":    { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
+  // La generación 5.1 de Fable/Mythos factura la LECTURA de caché a 0.025x de
+  // la entrada, no al 10% de la casa ($0.25/MTok con entrada a $10) — verificado
+  // 2026-09-06 contra la página oficial de prompt caching de Anthropic. Sin
+  // estas filas el tráfico 5.1 caería al respaldo ilustrativo (la herencia por
+  // versión menor corta a propósito), y con una fila «heredada» del 10% se
+  // mediría la lectura 4x más cara de lo real — directo al panel del cliente.
+  "claude-fable-5-1":  { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.00025 },
+  "claude-mythos-5-1": { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.00025 },
+  // Mythos 5 comparte lista con Fable 5 (misma tabla oficial): lectura al 10%.
+  "claude-mythos-5":   { inputPer1k: 0.01,   outputPer1k: 0.05,  cachedInputPer1k: 0.001   },
   "claude-sonnet-4":   { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
   "claude-haiku-4-5":  { inputPer1k: 0.001,  outputPer1k: 0.005, cachedInputPer1k: 0.0001  },
   "claude-3-5-sonnet": { inputPer1k: 0.003,  outputPer1k: 0.015, cachedInputPer1k: 0.0003  },
