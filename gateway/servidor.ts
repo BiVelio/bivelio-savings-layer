@@ -22,7 +22,7 @@ import {
 import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
-import { decidirRebaja, rebajarTtlDeCache, RitmoDeSesiones } from "./tarifa.js";
+import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -135,11 +135,13 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // (`opts.elision === false`, desde `BVSALA_GATEWAY_ELISION=0`). La URL sale del mismo
   // origen que la ingesta (meteringUrl), así que dev y tests apuntan a su plataforma
   // falsa sin opciones nuevas.
-  // El ritmo por sesión que gobierna la rebaja de TTL: vive en el proceso del
-  // gateway (no persiste, no viaja, no se mide) y solo responde a una pregunta
-  // —«¿cuándo se vio el turno anterior de esta sesión?»— para no rebajar a 5m
-  // una sesión que ya demostró enfriarse.
-  const ritmo = new RitmoDeSesiones();
+  // La memoria de prefijos que gobierna la rebaja de TTL: vive en el proceso
+  // del gateway (no persiste, no viaja, no se mide) y solo responde a una
+  // pregunta —«¿qué parte de este cuerpo NO estaba ya cacheada por el turno
+  // anterior del hilo?»— para rebajar a 5m solo las escrituras gordas
+  // (arranque, compactación) y nunca el turno encadenado, donde la prima es
+  // calderilla y el fallo cuesta el prefijo entero.
+  const memoria = new MemoriaDePrefijos();
 
   const canalElision =
     opts.elision !== false && opts.serviceAccountKey
@@ -373,20 +375,26 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         canalElision.tiene("cache_ttl_tuning")
       ) {
         try {
-          const clave = atribucion?.sessionId ?? "sin-sesion";
-          const ahoraMs = Date.now();
-          const anterior = ritmo.ultimo(clave, ahoraMs);
-          ritmo.anotar(clave, ahoraMs);
-          const decision = decidirRebaja(anterior === undefined ? { ahoraMs } : { ultimoTurnoMs: anterior, ahoraMs });
-          if (decision) {
-            // La rebaja solo sabe leer cuerpos SIN comprimir; si los diales ya
-            // reescribieron, `cuerpoSaliente` es JSON plano y `codificacion`
-            // dejó de describirlo — de ahí el "identity" en ese caso.
-            const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
-            const rebajado = rebajarTtlDeCache(cuerpoSaliente, cod);
-            if (rebajado !== null) {
-              cuerpoSaliente = rebajado.cuerpo;
-              rebaja = { rebajadas: rebajado.rebajadas, yaEran5m: rebajado.yaEran5m };
+          // La rebaja solo sabe leer cuerpos SIN comprimir; si los diales ya
+          // reescribieron, `cuerpoSaliente` es JSON plano y `codificacion`
+          // dejó de describirlo — de ahí el "identity" en ese caso.
+          const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
+          const json = parsearMensajes(cuerpoSaliente, cod);
+          if (json !== null) {
+            const huella = huellaDe(json);
+            // Sesión + system: el agente principal y sus subagentes comparten
+            // el id de sesión de Claude Code pero no el prefijo — cada uno es
+            // su propio hilo de caché.
+            const clave = `${atribucion?.sessionId ?? "sin-sesion"}:${huella.system}`;
+            const ahoraMs = Date.now();
+            const anterior = memoria.ultima(clave, ahoraMs);
+            memoria.anotar(clave, huella, ahoraMs);
+            if (decidirRebaja({ fraccionNueva: fraccionNueva(anterior, huella) })) {
+              const rebajado = rebajarTtlDeCache(json);
+              if (rebajado !== null) {
+                cuerpoSaliente = rebajado.cuerpo;
+                rebaja = { rebajadas: rebajado.rebajadas, yaEran5m: rebajado.yaEran5m };
+              }
             }
           }
         } catch {

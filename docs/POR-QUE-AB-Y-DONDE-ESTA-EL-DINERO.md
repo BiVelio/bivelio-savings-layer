@@ -1,7 +1,16 @@
 # Por qué el A/B, y dónde está el dinero de verdad
 
 > Dos preguntas del dueño, contestadas con los números del corpus real
-> (3.305 peticiones, $279,23, 921,2 M de tokens, 30-08 → 06-09).
+> (3.305 peticiones, **$1.232,91**, 921,3 M de tokens, 23-08 → 06-09, valoradas
+> con `src/pricing/catalogo.ts`).
+>
+> **Fe de erratas (06-09, tarde).** La primera versión de este documento y el PR
+> #229 valoraban el corpus en $279,23 porque el script de análisis tenía
+> `claude-fable-5` al precio de Haiku 3.5 ($0,0008/1k en vez de $0,01/1k). El
+> catálogo del producto estaba bien; el análisis, no. Fable-5 es el 84 % del
+> dinero, así que TODAS las cifras de la Parte 2 cambian — y una conclusión se
+> invierte: la política de rebaja de TTL de #229 **perdía** dinero. Está
+> corregida en este mismo documento y en `gateway/tarifa.ts`.
 
 ---
 
@@ -95,94 +104,126 @@ llave física.
 
 Aquí está la parte que cambia la estrategia. Descompuse el corpus real con la
 misma aritmética que usa el medidor (entrada 1× · lectura de caché 0,1× ·
-escritura 5m 1,25× · escritura 1h 2× · salida 5×):
+escritura 5m 1,25× · escritura 1h 2× · salida 5×) y los precios del catálogo:
 
 | Clase | Dinero | % factura | Tokens | % tokens |
 |---|---:|---:|---:|---:|
-| Lectura de caché | $137,23 | **49,1 %** | 897,3 M | 97,4 % |
-| **Escritura de caché 1h** | **$68,05** | **24,4 %** | 14,9 M | 1,6 % |
-| Salida | $46,36 | **16,6 %** | 3,3 M | 0,4 % |
-| Escritura de caché 5m | $24,31 | 8,7 % | 5,0 M | 0,5 % |
-| Entrada sin caché | $3,28 | 1,2 % | 0,8 M | 0,1 % |
+| **Lectura de caché** | **$819,27** | **66,4 %** | 897,3 M | 97,4 % |
+| **Escritura de caché 1h** | **$242,35** | **19,7 %** | 14,9 M | 1,6 % |
+| Salida | $126,86 | 10,3 % | 3,3 M | 0,4 % |
+| Escritura de caché 5m | $39,39 | 3,2 % | 5,0 M | 0,5 % |
+| Entrada sin caché | $5,04 | 0,4 % | 0,8 M | 0,1 % |
+
+Por modelo: **fable-5 $1.036,58 (84,1 %)** en 1.922 peticiones · opus-4-8
+$176,76 (14,3 %) · opus-5 $19,33 · haiku $0,24. El dueño corre con
+`"model": "fable"` en `~/.claude/settings.json`, que resuelve a `claude-fable-5`.
 
 Tres cosas saltan a la cara:
 
-1. **La escritura de caché se lleva un tercio del dinero (33,1 %) con el 2 % de
-   los tokens.** Nunca la habíamos mirado: llevábamos meses optimizando la
-   entrada, que es el 1,2 %.
-2. **La salida cuesta 16,6 % con el 0,4 % de los tokens** — cada token de salida
-   vale 50 lecturas de caché.
-3. **La elisión de entrada ataca la lectura de caché**, que es el 49 % del
-   dinero pero el token más barato del catálogo. Y hay que restarle la
-   invalidación que provoca. Su premio real medido en el día 06-09: ≈ $9,76 de
-   $178,63, un **5,5 %** — y eso *antes* de descontar el coste de reescribir el
-   prefijo.
+1. **Dos tercios del dinero es LEER la caché** — el token más barato del
+   catálogo, multiplicado por 897 millones. Cualquier palanca que no toque la
+   lectura no puede pasar del 34 %.
+2. **La escritura de caché se lleva el 23 % con el 2 % de los tokens.** Nunca la
+   habíamos mirado: llevábamos meses optimizando la entrada sin caché, que es el
+   0,4 %.
+3. **La salida cuesta 10,3 % con el 0,4 % de los tokens**, y el `usage` real
+   trae `output_tokens_details.thinking_tokens`: el razonamiento son **$44,86**,
+   el 35,4 % de la salida y el **3,6 % de la factura** — medido, no del banco.
 
-### La palanca que nadie había mirado
+### La palanca de tarifa, y la trampa en la que cayó #229
 
 Anthropic cobra la escritura de caché a dos tarifas: **TTL de 5 minutos = 1,25×**
 el precio de entrada, **TTL de 1 hora = 2×**. Claude Code pide **siempre** la de
 una hora: 12.580 apariciones de `"ttl":"1h"` en el corpus, **cero** de `"5m"`.
+La prima de la hora vale **$90,88 (7,4 %)**.
 
-¿Compra algo esa hora? Medí el hueco hasta el turno siguiente:
+¿Compra algo esa hora? Medí el hueco hasta el turno siguiente **por hilo**
+(sesión + system: el agente principal y sus subagentes comparten el id de sesión
+de Claude Code pero no el prefijo — mezclarlos, como hacía la primera versión,
+esconde huecos):
 
 ```
-< 1 min    90,5 %  ████████████████████████████████████████████████████████
-1-3 min     5,9 %  ███
-3-5 min     2,7 %  ██
-5-15 min    0,5 %
-15-60 min   0,4 %
-> 1 h       0,0 %
+< 1 min    87,9 %  ████████████████████████████████████████████████████
+1-3 min     6,3 %  ████
+3-5 min     3,3 %  ██
+5-15 min    1,1 %  █
+15-60 min   0,8 %
+> 1 h       0,5 %
 ──────────────────
-< 5 min    99,1 %
+< 5 min    97,5 %
 ```
 
-**En el 99,1 % de los turnos una entrada de 5 minutos habría bastado.** Estamos
-pagando el doble por una hora de vida que se consume en menos de sesenta
-segundos.
+**El 97,5 % de los turnos encadena en menos de 5 minutos.** Parece un chollo.
+No lo es, y esta es la trampa: **la prima se ahorra sobre lo que se ESCRIBE y el
+fallo se paga sobre lo que se LEE.** En un turno encadenado se escriben unos
+pocos K de mensaje nuevo (mediana 0, porque casi todo es lectura) y se lee el
+prefijo entero — **mediana 199K tokens, p90 587K**. Un acierto ahorra 0,75×
+sobre lo pequeño; un fallo cuesta 1,15× sobre lo gordo. Simulado petición a
+petición, decidiendo solo con lo que el gateway sabe en ese momento:
 
-Dinero recuperable, medido sobre el corpus: **$22,37 de $279,23 = 8,0 % de la
-factura.** Casi el doble que la elisión de entrada, con dos propiedades que la
-elisión no tiene ni puede tener:
+| Política | Rebajas | Gana | Pierde | Fallos | **Neto** |
+|---|---:|---:|---:|---:|---:|
+| Siempre 5m | 2.697 | $90,88 | $158,51 | 44 | **−$67,63 (−5,5 %)** |
+| **#229: hueco previo < 4 min** | 2.628 | $62,72 | $140,40 | 40 | **−$77,68 (−6,3 %)** |
+| Solo si lo nuevo ≥ 10 % del cuerpo | 85 | $65,59 | $0,87 | 4 | **+$64,72 (+5,2 %)** |
+| **Solo si lo nuevo ≥ 30 % del cuerpo** | 56 | $61,83 | $0,87 | 4 | **+$60,96 (+4,9 %)** |
+| Solo arranques (lectura = 0) | 25 | $43,75 | $0,87 | 3 | +$42,88 (+3,5 %) |
 
-- **Riesgo de calidad CERO por construcción.** No entra, sale ni se mueve un
-  solo token. El modelo lee exactamente lo mismo. No hay nada que un A/B pueda
-  descubrir, porque no hay nada que pueda salir distinto.
-- **Su ahorro es aritmética, no contrafactual.** Los mismos tokens que el
-  proveedor ya declaró en el `usage`, tarifados a dos precios públicos. No hay
-  que imaginar el mundo que no ocurrió: la escritura ocurrió, sabemos cuántos
-  tokens fue, y sabemos las dos tarifas.
+La política que salió en #229 **perdía el 6,3 % de la factura**. La corregida
+(`gateway/tarifa.ts`, `UMBRAL_REESCRITURA = 0.3`) mira el **prefijo**, no el
+reloj: guarda la huella (hash por mensaje, sin las marcas de caché) del último
+turno de cada hilo y rebaja solo cuando lo que se va a escribir es una parte
+grande de lo que se va a leer — arranque, compactación, historial reescrito.
+El 60 % de la prima vive ahí (arranques $54,44 de $90,88). El punto de
+equilibrio con un 2 % de fallos está en el 3 % del cuerpo: el umbral lleva un
+margen de 10×.
 
-Es decir: **se cobra como `measured`, con la cara bien alta, y sin A/B.** Es el
-primer euro medido de verdad del producto.
+Por qué la ventana de riesgo dura UN turno: la entrada de 5m cubre el prefijo
+entero, pero el turno encadenado siguiente (no rebajado) lleva marcas de 1h y
+crea una entrada de 1h para ese mismo prefijo pagando solo el delta — es la
+aritmética A/B/C de la página oficial de caché de prompts.
 
-### El riesgo, y su tamaño exacto
+Lo que **no** cambia: riesgo de calidad **cero** por construcción (ni un token
+entra, sale o se mueve) y ahorro por **aritmética** sobre el `usage` que el
+proveedor ya declaró, a dos tarifas públicas. **Se cobra como `measured`, sin
+A/B.** Sigue siendo el primer euro medido de verdad del producto — ahora con el
+signo correcto.
 
-Si el hueco **sí** pasa de 5 minutos, la entrada caduca y el turno siguiente paga
-escritura (1,25×) donde habría pagado lectura (0,1×). Un fallo cuesta 1,15× lo
-que un acierto ahorra 0,75×: **hacen falta 1,53 aciertos para pagar un fallo.**
-Con 99,1 % de aciertos la esperanza es **+0,73× por unidad escrita**.
+### Lo que el corpus dice que NO es palanca
 
-Y no se apuesta a ciegas. `decidirRebaja` mantiene la hora en cuanto la sesión
-demuestra que se enfría (`gateway/tarifa.ts`): sesión nueva o caliente → 5m;
-sesión que ya dejó pasar más de 4 minutos → se le paga la hora con gusto.
+Busqué caché pagada dos veces — prefijo que estaba cacheado y se reescribió sin
+motivo de tiempo. **Cero casos sin causa.** Las reescrituras grandes ($99,93,
+8,1 %) son pausas de más de una hora: Claude Code dispara su «recap» a los 3
+minutos de irse el usuario y el turno real llega 2-14 horas después. La caché
+expiró legítimamente; ningún TTL lo cubre. Los arranques de subagentes ($85,
+6,9 %) son inevitables. La maquinaria de caché de Claude Code funciona bien.
 
 ---
 
-## Parte 3 — El orden de las palancas, por dinero medido
+## Parte 3 — El orden de las palancas, por dinero medido a precio real
 
 | # | Palanca | % factura | Riesgo calidad | ¿Necesita A/B? | Estado |
 |---|---|---:|---|---|---|
-| 1 | **TTL de escritura 1h → 5m** | **8,0 %** | **cero** | **no** | ✅ en este PR |
-| 2 | Salida: presupuesto de thinking | ~5,8 % | medio | sí | siguiente |
-| 3 | Elisión de entrada | ~5,5 % bruto | bajo-medio | **sí** | bloqueada en #226 |
-| 4 | Enrutado a modelo barato | grande | alto (cambia el producto) | sí | no propuesta |
+| 1 | **Modelo: fable-5 → fable-5-1** (lee la caché a 0,025× en vez de 0,1×) | **45,1 %** ($556,01) | cambia de modelo — al más nuevo de la misma familia | no en la lectura (mismos tokens, dos precios públicos) | **decisión de producto: política opt-in del cliente** |
+| 2 | **TTL de escritura, rebaja por prefijo** | **+4,9 %** | **cero** | **no** | ✅ corregida en este PR |
+| 3 | Elisión de entrada (ataca la lectura) | hasta 21,6 % bruto hoy · **~7 %** tras la #1 | bajo-medio | **sí** | bloqueada en #226 |
+| 4 | Razonamiento (`thinking_tokens`) | 3,6 % en juego | medio | sí | siguiente |
 
-La #2 merece una nota: la salida son $46,36 (16,6 %) en solo 3,3 M de tokens, y
-el banco de estilos del anillo 0 (#225) ya midió su anatomía — **thinking 35 % ·
-JSON de tool_use 45 % · prosa 19 %**. El skill `savings-mode` solo toca la prosa,
-o sea **~0,3 % de la factura**. La palanca gorda de la salida es el **presupuesto
-de thinking**, no el estilo. Ese es el siguiente frente.
+La #1 es la única que llega sola al 20 %: `catalogo.ts:95-99` recoge, verificado
+el 06-09 contra la página oficial, que **Fable 5.1 lee la caché a 0,025×** frente
+al 0,1× de Fable 5, con la misma entrada y salida. Sobre este corpus la lectura
+pasa de $741,34 a $185,34. No es una palanca silenciosa del gateway: cambia el
+modelo que responde, y eso lo decide el cliente. Pero es medible en la lectura
+sin contrafactual y **es la primera cifra que no depende de ningún A/B para
+superar el 20 %**.
+
+Las palancas **interaccionan**: la #1 abarata la lectura 4×, así que la #3, que
+recorta lectura, pasa de valer 21,6 % a ~7 % de la factura original. Sumarlas a
+pelo es mentir.
+
+**Sin cambiar de modelo**, el techo honesto hoy es #2 (+4,9 %, medido) + #4
+(≤3,6 %, sin medir) + #3 (≤21,6 %, sin A/B): el 20 % **solo** llega con el A/B de
+la elisión, que sigue bloqueado por publicar #226 en npm.
 
 ---
 
@@ -191,9 +232,9 @@ de thinking**, no el estilo. Ese es el siguiente frente.
 1. El 0 € no era un fallo del panel: era la doctrina de honestidad del repo
    llevada al final — sin A/B no hay baseline medido, y sin baseline medido no
    hay euros que enseñar.
-2. El A/B (anillo 2) es la única salida para las palancas que **cambian lo que el
-   modelo lee**, y está montado y automático — bloqueado solo por publicar #226
-   en npm.
-3. Pero la palanca más gorda que teníamos delante **no cambia lo que el modelo
-   lee**: cambia la tarifa. Y por eso no necesita A/B, no tiene riesgo de calidad,
-   vale el 8 % de la factura y se cobra como medida desde el primer día.
+2. A precio real, dos tercios de la factura es leer la caché. La palanca de
+   tarifa se cobra como medida sin A/B, pero solo con la regla correcta — por
+   prefijo, no por reloj — vale +4,9 %; con la de #229 valía −6,3 %.
+3. La única palanca que pasa sola del 20 % es dejar que Fable 5.1 lea la caché
+   (45,1 %). Es una decisión del cliente, no del gateway — y por eso hay que
+   ofrecérsela como política, con la cifra medida sobre su propio tráfico.

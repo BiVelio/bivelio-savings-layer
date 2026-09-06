@@ -4,11 +4,14 @@ import { costeMedido, informeMedido } from "../gateway/medidor.js";
 import {
   ahorroDeRebaja,
   decidirRebaja,
+  fraccionNueva,
+  huellaDe,
+  MemoriaDePrefijos,
+  parsearMensajes,
   PRIMA_1H,
   PRIMA_5M,
   rebajarTtlDeCache,
-  RitmoDeSesiones,
-  UMBRAL_FRIO_MS,
+  UMBRAL_REESCRITURA,
 } from "../gateway/tarifa.js";
 
 /**
@@ -78,16 +81,85 @@ describe("rebajarTtlDeCache", () => {
   });
 });
 
-describe("decidirRebaja", () => {
-  it("sesión nueva: rebaja (la primera escritura es la gorda y el 99,1 % encadena)", () => {
-    expect(decidirRebaja({ ahoraMs: 1_000_000 })).toBe(true);
+describe("la decisión mira el PREFIJO, no el reloj", () => {
+  const MARCA = { cache_control: { type: "ephemeral", ttl: "1h" } };
+  const sistema = [{ type: "text", text: "sistema ".repeat(2_000), ...MARCA }];
+  const tools = [{ name: "leer", description: "d ".repeat(4_000) }];
+  const msg = (role: string, text: string, marca = false) => ({
+    role,
+    content: [{ type: "text", text, ...(marca ? MARCA : {}) }],
   });
-  it("sesión caliente: rebaja", () => {
-    expect(decidirRebaja({ ultimoTurnoMs: 1_000_000, ahoraMs: 1_000_000 + 30_000 })).toBe(true);
+  const cuerpo = (messages: unknown[], extra: Record<string, unknown> = {}) => ({
+    model: "claude-opus-5",
+    system: sistema,
+    tools,
+    messages,
+    ...extra,
   });
-  it("sesión que se demostró fría: NO rebaja — ahí la hora sí compra vida", () => {
-    expect(decidirRebaja({ ultimoTurnoMs: 1_000_000, ahoraMs: 1_000_000 + UMBRAL_FRIO_MS })).toBe(false);
-    expect(decidirRebaja({ ultimoTurnoMs: 1_000_000, ahoraMs: 1_000_000 + 10 * 60_000 })).toBe(false);
+  const gordo = "x".repeat(40_000);
+  // Diez turnos ya cacheados: el prefijo de un hilo a media sesión.
+  const historial: unknown[] = [];
+  for (let i = 0; i < 10; i++) historial.push(msg("user", gordo + i), msg("assistant", gordo + "r" + i));
+  const anterior = huellaDe(cuerpo([...historial, msg("user", "última pregunta", true)]));
+
+  it("sin turno anterior: todo es nuevo → arranque en frío → rebaja", () => {
+    expect(fraccionNueva(undefined, anterior)).toBe(1);
+    expect(decidirRebaja({ fraccionNueva: 1 })).toBe(true);
+  });
+
+  it("turno encadenado: solo el delta es nuevo, muy por debajo del umbral → NO rebaja", () => {
+    const actual = huellaDe(
+      cuerpo([...historial, msg("user", "última pregunta"), msg("assistant", "respuesta"), msg("user", "siguiente", true)]),
+    );
+    const f = fraccionNueva(anterior, actual);
+    expect(f).toBeGreaterThan(0);
+    expect(f).toBeLessThan(0.02);
+    expect(decidirRebaja({ fraccionNueva: f })).toBe(false);
+  });
+
+  it("la marca de caché que se mueve de mensaje NO rompe el prefijo", () => {
+    // Mismo historial, la marca pasa del mensaje 20 al 22: el hash sin marcas
+    // es idéntico, así que solo cuentan como nuevos los dos mensajes de cola.
+    const conMarcaMovida = huellaDe(
+      cuerpo([...historial, msg("user", "última pregunta"), msg("assistant", "r"), msg("user", "s", true)]),
+    );
+    const sinMarcaMovida = huellaDe(
+      cuerpo([...historial, msg("user", "última pregunta", true), msg("assistant", "r"), msg("user", "s")]),
+    );
+    expect(fraccionNueva(anterior, conMarcaMovida)).toBeCloseTo(fraccionNueva(anterior, sinMarcaMovida), 12);
+  });
+
+  it("compactación / historial reescrito: la mayor parte es nueva → rebaja", () => {
+    const compactado = huellaDe(cuerpo([msg("user", "resumen de lo anterior " + gordo), msg("user", "sigue", true)]));
+    const f = fraccionNueva(anterior, compactado);
+    expect(f).toBeGreaterThan(UMBRAL_REESCRITURA);
+    expect(decidirRebaja({ fraccionNueva: f })).toBe(true);
+  });
+
+  it("cambio de system o de tools: el prefijo se rompe en el primer byte → todo nuevo", () => {
+    const otroSystem = huellaDe(cuerpo(anterior === undefined ? [] : [...historial], { system: "otro" }));
+    expect(fraccionNueva(anterior, otroSystem)).toBe(1);
+    const otrasTools = huellaDe(cuerpo([...historial], { tools: [{ name: "escribir" }] }));
+    expect(fraccionNueva(anterior, otrasTools)).toBe(1);
+  });
+
+  it("el umbral tiene margen: el equilibrio con un 2 % de fallos está en el 3 % del cuerpo", () => {
+    // Ganancia por rebajar = fracción escrita × 0,75; pérdida esperada = p(fallo)
+    // × fracción leída × 1,15. Un turno encadenado (2 % nuevo) pierde; una
+    // escritura del 30 % gana con holgura incluso con un 20 % de fallos.
+    const esperanza = (f: number, p: number) => f * (PRIMA_1H - PRIMA_5M) - p * (1 - f) * (PRIMA_5M - 0.1);
+    expect(esperanza(0.02, 0.02)).toBeLessThan(0);
+    expect(esperanza(UMBRAL_REESCRITURA, 0.02)).toBeGreaterThan(0);
+    expect(esperanza(UMBRAL_REESCRITURA, 0.2)).toBeGreaterThan(0);
+    expect(decidirRebaja({ fraccionNueva: 0.02 })).toBe(false);
+    expect(decidirRebaja({ fraccionNueva: UMBRAL_REESCRITURA })).toBe(true);
+  });
+
+  it("parsearMensajes devuelve null ante comprimido, JSON roto o forma ajena", () => {
+    expect(parsearMensajes(cuerpoDe(PETICION), "gzip")).toBeNull();
+    expect(parsearMensajes(Buffer.from("{no", "utf8"))).toBeNull();
+    expect(parsearMensajes(cuerpoDe({ model: "m" }))).toBeNull();
+    expect(parsearMensajes(cuerpoDe(PETICION))).not.toBeNull();
   });
 });
 
@@ -109,21 +181,22 @@ describe("ahorroDeRebaja", () => {
   });
 });
 
-describe("RitmoDeSesiones", () => {
-  it("recuerda el último turno y olvida lo que ya no informa", () => {
-    const r = new RitmoDeSesiones(3, 60_000);
-    r.anotar("a", 1_000);
-    expect(r.ultimo("a", 2_000)).toBe(1_000);
-    expect(r.ultimo("a", 1_000 + 60_001)).toBeUndefined();
-    expect(r.ultimo("desconocida", 2_000)).toBeUndefined();
+describe("MemoriaDePrefijos", () => {
+  const h = huellaDe({ model: "m", messages: [{ role: "user", content: "hola" }] });
+  it("recuerda la última huella y olvida lo que ya caducó (una hora: la caché también)", () => {
+    const m = new MemoriaDePrefijos(3, 60_000);
+    m.anotar("a", h, 1_000);
+    expect(m.ultima("a", 2_000)).toBe(h);
+    expect(m.ultima("a", 1_000 + 60_001)).toBeUndefined();
+    expect(m.ultima("desconocida", 2_000)).toBeUndefined();
   });
 
   it("está ACOTADA: un gateway de escritorio no crece sin techo", () => {
-    const r = new RitmoDeSesiones(3, 60_000);
-    for (const k of ["a", "b", "c", "d", "e"]) r.anotar(k, 1_000);
-    expect(r.tamano).toBe(3);
-    expect(r.ultimo("a", 1_000)).toBeUndefined();
-    expect(r.ultimo("e", 1_000)).toBe(1_000);
+    const m = new MemoriaDePrefijos(3, 60_000);
+    for (const k of ["a", "b", "c", "d", "e"]) m.anotar(k, h, 1_000);
+    expect(m.tamano).toBe(3);
+    expect(m.ultima("a", 1_000)).toBeUndefined();
+    expect(m.ultima("e", 1_000)).toBe(h);
   });
 });
 
