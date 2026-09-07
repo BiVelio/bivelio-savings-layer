@@ -195,11 +195,13 @@ palanca y el gateway ajustó/inyectó los diales en esa petición):
 > (2) los diales que traía NO habrían disparado por sí solos — su trigger
 > efectivo (`triggerDelCliente`; 100K de la API si no lo declara) contra la
 > entrada del prompt ORIGINAL (medida + borrada). Si habrían disparado, se
-> cuenta y no se acredita. Bordes conocidos que SOBRE-acreditan (aceptados,
-> no facturados): diales nuestros de una versión anterior; un edit igual al
-> nuestro más una clave con el valor por defecto de la API. Bordes que
-> INFRA-acreditan: cliente con trigger propio más bajo que el nuestro que
-> además borraría menos (no hay contrafactual; ante la duda, no se acredita).
+> cuenta y no se acredita. La segunda mitad cierra sola los bordes de la
+> primera (diales nuestros de una versión anterior, un edit igual al nuestro
+> más una clave con el valor por defecto de la API): todo borrado atribuible
+> implica entrada ≥ 50K ≥ su trigger, así que quedan como «suyo». El único
+> borde que queda INFRA-acredita: cliente con trigger propio más bajo que el
+> nuestro que además borraría menos (no hay contrafactual; ante la duda, no
+> se acredita).
 > El emisor lo manda como campo OPCIONAL
 > solo si es > 0 con conteo (`src/metering/emitter.ts`). B2-4 también: con
 > borrado atribuible de tool_uses la sombra NO emite registro, pero su cadena

@@ -308,8 +308,14 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       uso: ReturnType<ObservadorSse["usage"]>,
     ): ElisionAplicada | null => {
       if (e === null || diales === null || !diales.nuestros) return e;
-      const entradaAntes =
-        (uso?.input_tokens ?? 0) + (uso?.cache_read_input_tokens ?? 0) + (uso?.cache_creation_input_tokens ?? 0) + e.tokensLimpiados;
+      // La escritura de caché como la lee costeMedido: el total manda y, si
+      // faltara, se reconstruye del desglose por TTL (quedarse corto aquí
+      // sobre-acreditaría: la entrada parecería menor que el trigger del cliente).
+      const desglose = uso?.cache_creation;
+      const cacheEscrita =
+        uso?.cache_creation_input_tokens ??
+        (desglose?.ephemeral_5m_input_tokens ?? 0) + (desglose?.ephemeral_1h_input_tokens ?? 0);
+      const entradaAntes = (uso?.input_tokens ?? 0) + (uso?.cache_read_input_tokens ?? 0) + cacheEscrita + e.tokensLimpiados;
       const suyo = diales.triggerDelCliente !== null && entradaAntes >= diales.triggerDelCliente;
       return { ...e, atribuible: !suyo };
     };
