@@ -6,7 +6,7 @@
  * on the customer's machine. `test/version-declarada.test.ts` ties this
  * constant to package.json so the two can never drift.
  */
-export const BV_SALA_VERSION = "0.4.16";
+export const BV_SALA_VERSION = "0.4.17";
 
 // ---------------------------------------------------------------------------
 // Lo de abajo es INTERNO: no sale por src/index.ts (la superficie pública solo
@@ -17,7 +17,7 @@ export const BV_SALA_VERSION = "0.4.16";
 
 /**
  * La cabecera HTTP con la que el emisor de uso declara la versión del PROCESO
- * («gateway/0.4.16» o «sdk/0.4.16»). Cabecera y no campo del cuerpo: un campo
+ * («gateway/0.4.17» o «sdk/0.4.17»). Cabecera y no campo del cuerpo: un campo
  * nuevo en el cuerpo tumba el lote entero contra un servidor que no lo conozca
  * (lista blanca del ingest → 400 → sin reintento); una cabecera la ignora.
  * Espejo en la web (apps/web/lib/metering/version.ts), atado por test que lee
