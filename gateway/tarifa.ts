@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H } from "../src/pricing/primas.js";
 
 /**
  * LA PALANCA DE TARIFA — el dinero que se ahorra sin tocar un solo token.
@@ -57,10 +58,11 @@ import { createHash } from "node:crypto";
  * duda se devuelve null y el cuerpo original viaja intacto.
  */
 
-/** Prima de escritura con TTL 5m (el defecto de Anthropic): 1,25× la entrada. */
-export const PRIMA_5M = 1.25;
-/** Prima de escritura con TTL 1h: 2× la entrada. */
-export const PRIMA_1H = 2;
+/** Prima de escritura con TTL 5m (el defecto de Anthropic): 1,25× la entrada.
+ *  Alias del único domicilio: src/pricing/primas.ts. */
+export const PRIMA_5M = PRIMA_ESCRITURA_CACHE;
+/** Prima de escritura con TTL 1h: 2× la entrada. Mismo domicilio. */
+export const PRIMA_1H = PRIMA_ESCRITURA_CACHE_1H;
 
 /**
  * Qué parte del cuerpo tiene que ser NUEVA respecto al turno anterior del

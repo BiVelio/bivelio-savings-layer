@@ -3,6 +3,7 @@ import * as zlib from "node:zlib";
 import { precioDeLista } from "../src/pricing/catalogo.js";
 import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
+import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
 
 /**
  * F1 · EL MEDIDOR — convierte el `usage` del proveedor (los eventos del stream
@@ -219,14 +220,14 @@ function mapearUsoResponses(u: UsoResponses): UsoSse {
  * entrada de prompt cache se factura a 1,25× el precio de entrada (precio
  * público). La LECTURA usa `cachedInputPer1k` del catálogo.
  */
-export const PRIMA_ESCRITURA_CACHE = 1.25;
+export { PRIMA_ESCRITURA_CACHE } from "../src/pricing/primas.js";
 
 /**
  * Prima de escritura con TTL 1h: 2× el precio de entrada (precio público).
  * Claude Code la negocia vía `extended-cache-ttl-2025-04-11`; tarifarla a
  * 1,25× infra-medía el coste real.
  */
-export const PRIMA_ESCRITURA_CACHE_1H = 2;
+export { PRIMA_ESCRITURA_CACHE_1H } from "../src/pricing/primas.js";
 
 export interface RegistroMedido {
   costeUsd: number;
@@ -337,12 +338,7 @@ export function soportaZstd(): boolean {
  * inventar de más. La 1h (2×) es exclusiva de Anthropic: solo Anthropic emite
  * ese desglose.
  */
-export function primaDeEscritura(model: string): number {
-  const m = model.toLowerCase();
-  if (m.startsWith("gpt-") || m.startsWith("o1") || m.startsWith("o3") || m.startsWith("o4")) return /^gpt-5\.6/.test(m) ? PRIMA_ESCRITURA_CACHE : 1;
-  if (m.startsWith("gemini")) return 1;
-  return PRIMA_ESCRITURA_CACHE;
-}
+export { primaDeEscritura, primaDeEscritura1h } from "../src/pricing/primas.js";
 
 /** El `usage` de una respuesta JSON no-SSE (`stream: false`). */
 export function usoDeJson(cuerpo: Buffer | string): UsoSse | null {
