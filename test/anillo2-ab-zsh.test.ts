@@ -57,8 +57,30 @@ describe.skipIf(!hayZsh)("anillo2-ab.zsh — lo que cazó la revisión del 06-09
   const { tmpdir } = require("node:os") as typeof import("node:os");
   const { join } = require("node:path") as typeof import("node:path");
 
-  /** Un «clon» de mentira con el arnés presente y un pnpm que revienta. */
-  function laboratorio(): { repo: string; bin: string; limpiar: () => void } {
+  /**
+   * Un pnpm de mentira que se comporta como el de verdad cuando todo VA BIEN:
+   * `anillo2` escribe el JSON por stdout; `anillo2:conciliar` escribe TODO por
+   * stderr (progreso, GLOBAL y FISURA) y sale con 0 — exactamente lo que hace
+   * benchmarks/anillo2/conciliar.ts (console.error en cada línea).
+   */
+  const PNPM_QUE_VA_BIEN = [
+    "#!/bin/sh",
+    'case "$*" in',
+    "  *anillo2:conciliar*)",
+    "    echo '[conciliar] leyendo captura-x.jsonl (1 MB) …' >&2",
+    "    echo '[conciliar] GLOBAL 2026-09-02: 1 sesiones, 3 turnos, 3 vistos, 0 fugas (0 %)' >&2",
+    "    echo '[conciliar] FISURA: día con fugas: 0 % (de mentira)' >&2",
+    "    exit 0 ;;",
+    "  *anillo2*)",
+    '    echo \'{"veredicto":{"estado":"insuficiente"},"veredictoPorModelo":{"estado":"insuficiente"},"paridad":{"dias":[]}}\'',
+    "    exit 0 ;;",
+    "esac",
+    "exit 1",
+    "",
+  ].join("\n");
+
+  /** Un «clon» de mentira con el arnés presente y un pnpm que revienta (o el que se pase). */
+  function laboratorio(pnpmFalso = "#!/bin/sh\necho 'OOM de mentira' >&2\nexit 1\n"): { repo: string; bin: string; limpiar: () => void } {
     const raiz = mkdtempSync(join(tmpdir(), "anillo2-ab-"));
     const repo = join(raiz, "repo");
     mkdirSync(join(repo, "benchmarks", "anillo2"), { recursive: true });
@@ -66,7 +88,7 @@ describe.skipIf(!hayZsh)("anillo2-ab.zsh — lo que cazó la revisión del 06-09
     writeFileSync(join(repo, "benchmarks", "anillo2", "arnes.ts"), "");
     const bin = join(raiz, "bin");
     mkdirSync(bin);
-    writeFileSync(join(bin, "pnpm"), "#!/bin/sh\necho 'OOM de mentira' >&2\nexit 1\n");
+    writeFileSync(join(bin, "pnpm"), pnpmFalso);
     chmodSync(join(bin, "pnpm"), 0o755);
     writeFileSync(join(bin, "bvsala"), '#!/bin/sh\necho "bvsala-falso $*"\n');
     chmodSync(join(bin, "bvsala"), 0o755);
@@ -77,6 +99,29 @@ describe.skipIf(!hayZsh)("anillo2-ab.zsh — lo que cazó la revisión del 06-09
     const r = zsh("BVSALA_AB_SECO=1 claude; echo exit=$?", { BIVELIO_SERVICE_KEY: "bvk_falsa", BVSALA_AB_REPO: "/no/existe" });
     expect(r.stderr).toMatch(/no es el clon con el arnés/);
     expect(r.stdout).toMatch(/exit=1/);
+  });
+
+  it("un informe que VA BIEN se guarda: la conciliación habla por stderr y el resumen la recoge (antes moría con rc=1 cada noche)", async () => {
+    const lab = laboratorio(PNPM_QUE_VA_BIEN);
+    try {
+      const env = { BVSALA_AB_REPO: lab.repo, PATH: `${lab.bin}:${process.env.PATH ?? ""}` };
+      const r1 = zsh("bvsala-ab-informes 2026-09-02; echo exit=$?", env);
+      expect(r1.stderr + r1.stdout).toMatch(/lanzados en segundo plano/);
+      const txt = join(lab.repo, "benchmarks", "out", "anillo2-noche-2026-09-02.txt");
+      const fallo = join(lab.repo, "benchmarks", "out", "anillo2-noche-2026-09-02.fallo");
+      for (let i = 0; i < 100 && !existsSync(txt) && !existsSync(fallo); i++) await new Promise((res) => setTimeout(res, 50));
+      expect(existsSync(fallo)).toBe(false);
+      expect(existsSync(txt)).toBe(true);
+      const resumen = readFileSync(txt, "utf8");
+      expect(resumen).toMatch(/veredicto global: insuficiente/);
+      // Las líneas de la conciliación (stderr) están, sin el prefijo y sin el progreso.
+      expect(resumen).toMatch(/^GLOBAL 2026-09-02/m);
+      expect(resumen).toMatch(/^FISURA: día con fugas/m);
+      expect(resumen).not.toMatch(/leyendo captura|\[conciliar\]/);
+    } finally {
+      await new Promise((res) => setTimeout(res, 300));
+      lab.limpiar();
+    }
   });
 
   it("⛔ un informe que FALLA no se guarda como bueno: queda .fallo con la causa y se reintenta", async () => {

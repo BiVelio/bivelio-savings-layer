@@ -144,7 +144,12 @@ bvsala-ab-informes() {
         if (p) console.log(`paridad ${dia}: esperado ${p.esperado}, observado control ${p.observado.control} / palanca ${p.observado.palanca}, ${p.limpio ? "LIMPIO" : "FISURA: " + p.fisuras.join(" | ")}`);
         else console.log(`paridad ${dia}: sin turnos en el corpus`);
       ' "$dia" &&
-      pnpm -s anillo2:conciliar --dia "$dia" 2>>"$err" | grep -E 'GLOBAL|FISURA|COMPLETO' | sed 's/^\[conciliar\] //'
+      # La conciliación escribe TODO por stderr (su stdout queda para el
+      # artefacto): filtrar stdout dejaba el grep sin nada, y con pipefail
+      # el bloque entero moría con rc=1 cada noche aunque la conciliación
+      # hubiera ido bien. Se fusiona, se guarda entero en el err.log (como
+      # antes) y el resumen recoge las líneas que importan.
+      pnpm -s anillo2:conciliar --dia "$dia" 2>&1 | tee -a "$err" | grep -E 'GLOBAL|FISURA|COMPLETO' | sed 's/^\[conciliar\] //'
     } > "$tmp" 2>>"$err"
     rc=$?
     if (( rc == 0 )) && [[ -s "$tmp" ]]; then
