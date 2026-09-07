@@ -29,7 +29,7 @@
 // inspeccionarlo, extenderlo o comprobar qué modelos cubre.
 export { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "./pricing/catalogo.js";
 
-export const BV_SALA_VERSION = "0.4.15";
+export const BV_SALA_VERSION = "0.4.16";
 
 export * from "./util/index.js";
 export * from "./contracts/index.js";
