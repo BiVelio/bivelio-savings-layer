@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { after, NextResponse } from "next/server";
 
 import { parseUsageRecords, UsageValidationError } from "@/lib/metering/usage";
+import { CABECERA_VERSION, sellarVersion, versionDeclarada } from "@/lib/metering/version";
 import { decideEntitlement } from "@/lib/metering/entitlement";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -82,6 +83,14 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
   if (records.length === 0) return NextResponse.json({ ingested: 0 }, { status: 202 });
+
+  // La versión del proceso (0024) viene en CABECERA, no en el cuerpo, y se sella
+  // SIEMPRE sobre los registros ya validados — nunca sobre el JSON crudo, para
+  // que la lista blanca ya haya rechazado cualquier `clientVersion` del cliente.
+  // Una cabecera rara es «sin declarar» (null), jamás un 400; una RPC anterior a
+  // 0024 ignora la clave porque lee por nombre. Se sella también en los registros
+  // sombra: inocuo, la RPC sale de ese carril antes del upsert de seat_activity.
+  sellarVersion(records, versionDeclarada(req.headers.get(CABECERA_VERSION)));
 
   const { data, error } = await supabase.rpc("ingest_usage_batch", { p_org: orgId, records });
   if (error) {

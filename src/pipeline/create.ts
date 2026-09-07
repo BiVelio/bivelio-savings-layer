@@ -205,6 +205,7 @@ export function createSavingsLayer(
       emitter = new UsageEmitter({
         url: meteringUrl,
         serviceAccountKey: config.serviceAccountKey,
+        surface: "sdk",
         ...(config.metering?.orgId ? { orgId: config.metering.orgId } : {}),
         ...(config.metering?.flushIntervalMs != null
           ? { flushIntervalMs: config.metering.flushIntervalMs }
