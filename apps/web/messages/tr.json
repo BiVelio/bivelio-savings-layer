@@ -427,6 +427,11 @@
       "nota": "Bağlam eksiltmenin gerçek trafiğinizde ne kadar tasarruf sağlayacağı, ağ geçidi tarafından tek bir bayta dokunulmadan hesaplanır. Asla başlığa eklenmez ve asla komisyona girmez: kol ancak bu rakam bunu haklı çıkardığında açılır.",
       "notaNegativa": "Trafiğinizde eksiltme paraya mal olurdu: blokları yeniden yazmak sağlayıcının önek önbelleğini geçersiz kılar. Bu şerit tam da bunu bir şey açılmadan önce görmek için var — bu yüzden kapalı kalıyor."
     },
+    "elisionProveedor": {
+      "title": "Ayarlarımızın yol açtığı sağlayıcı temizlemesi",
+      "detalle": "{requests} alacaklandırılan istek",
+      "nota": "Sayım sağlayıcıya aittir (applied_edits). Ölçülmüş bir tasarruf değildir ve komisyonuna asla dâhil edilmez; para, model başına net ölçüldüğünde gelecek — temizleme önek önbelleğini yeniden yazar ve bazı modellerde net negatiftir."
+    },
     "ritmo": {
       "title": "Tempo ve projeksiyon",
       "badgeEstimacion": "Tahmin",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Tabandan hariç tutulan tahmini tasarruf (bağlam, asla faturalanmaz): {usd}.",
       "sombraElision": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} tasarruf sağlardı. Varsayımsal — asla tabana veya komisyona girmez.",
       "sombraElisionNegativa": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} fazladan maliyete yol açardı. Bu yüzden kapalı: yalnızca gerçekten tasarruf ettiren açılır.",
+      "elisionProveedor": "Sağlayıcı temizlemesi hattı: ayarlarımızın sağlayıcıya bağlam temizlettiği {requests} istek. Bir sayım, tasarruf değil — tabana da komisyona da asla girmez.",
       "parametros": "Ekstre parametreleri — fiyat kataloğu {version} · döviz kuru {fx}.",
       "mismaFacturaTitulo": "Bu belge gelecekteki faturanın TA KENDİSİDİR.",
       "mismaFactura": "Gölge ekstre ile faturalanabilir olan aynı makineyle hesaplanır: komisyon devreye girdiğinde ilk faturan yalnızca burada zaten gördüğün sayıları içerecek.",

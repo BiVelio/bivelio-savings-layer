@@ -427,6 +427,11 @@
       "nota": "El que hauria estalviat l'elisió de context amb el teu trànsit real, calculat pel gateway sense tocar ni un byte. No se suma mai al titular ni entra a la comissió: la palanca només s'encendrà quan aquesta xifra ho justifiqui.",
       "notaNegativa": "Amb el teu trànsit, l'elisió hauria costat diners: reescriure blocs invalida la memòria cau de prefix del proveïdor. Aquest carril existeix exactament per veure això abans d'encendre res — i per això segueix apagada."
     },
+    "elisionProveedor": {
+      "title": "Esborrat del proveïdor causat pels nostres dials",
+      "detalle": "{requests} peticions acreditades",
+      "nota": "El recompte és del proveïdor (applied_edits). No és un estalvi mesurat i mai no entra a la teva comissió; el diner arribarà quan el net per model estigui mesurat — esborrar reescriu la memòria cau de prefix, i en alguns models el net surt negatiu."
+    },
     "ritmo": {
       "title": "Ritme i projecció",
       "badgeEstimacion": "Estimació",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Estalvi estimat exclòs de la base (context, mai facturable): {usd}.",
       "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base ni a la comissió.",
       "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Per això està apagada: només s'encén el que estalvia de veritat.",
+      "elisionProveedor": "Carril de l'esborrat del proveïdor: {requests} peticions en què els nostres dials van fer que el proveïdor esborrés context. Un recompte, no un estalvi — mai no entra a la base ni a la comissió.",
       "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx}.",
       "mismaFacturaTitulo": "Aquest document ÉS la futura factura.",
       "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí.",

@@ -151,6 +151,8 @@ export interface UsageRecord {
   baselineCost: number;
   actualCost: number;
   netSavings: number;
+  /** Optional (0025): provider-cleared input tokens valued at the cache READ floor price. Capped server-side; never part of measured. */
+  eliminatedInputFloorCost?: number;
   /**
    * De dónde sale el baseline de ESTE registro: "measured" (contador del
    * proveedor), "estimated" (llamada evitada, sin contador), "unmeasured" o
@@ -273,6 +275,22 @@ const USAGE_NUMBER_FIELDS = [
  *  carril hipotético de S2 — solo columnas shadow_*, jamás comisión. */
 const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
 
+/**
+ * Optional money field of the provider-clearing lane (migration 0025):
+ * `eliminatedInputFloorCost` = the tokens the provider cleared, valued at the
+ * model's cache-READ price (the floor). Optional on purpose and NEVER part of
+ * USAGE_NUMBER_FIELDS (those are mandatory: making it one would turn every
+ * batch from a gateway <= 0.4.16 into a 400). Mirror of apps/web/lib/metering/usage.ts.
+ */
+const USAGE_OPTIONAL_MONEY_FIELDS = ["eliminatedInputFloorCost"] as const;
+/**
+ * Ceiling for that floor, USD per 1k tokens: >= the largest `cachedInputPer1k`
+ * in the catalog. A floor priced at INPUT rate (x10-x40) is clipped, never
+ * rejected — a throw here drops the client's whole batch. Mirror of
+ * apps/web/lib/metering/techo-precio-lectura.ts (a test pins both equal).
+ */
+const TECHO_PRECIO_LECTURA_PER_1K = 0.002;
+
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",
   "seatId",
@@ -283,6 +301,7 @@ const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "agentId",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
+  ...USAGE_OPTIONAL_MONEY_FIELDS,
 ]);
 
 export class UsageValidationError extends Error {
@@ -352,6 +371,16 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
       throw new UsageValidationError(`field "${f}" must be >= 0, got ${n}`);
     }
     rec[f] = n;
+  }
+  if (input["eliminatedInputFloorCost"] !== undefined) {
+    const v = input["eliminatedInputFloorCost"];
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) {
+      throw new UsageValidationError(`field "eliminatedInputFloorCost" must be a finite number >= 0`);
+    }
+    // Clip, never reject: money without a count -> 0; above tokens x ceiling -> ceiling.
+    const tokens = rec["eliminatedInputTokens"] as number;
+    const techo = tokens > 0 ? (tokens / 1_000) * TECHO_PRECIO_LECTURA_PER_1K : 0;
+    rec["eliminatedInputFloorCost"] = Math.min(v, techo);
   }
   if (input["seatId"] !== undefined) {
     const s = input["seatId"];

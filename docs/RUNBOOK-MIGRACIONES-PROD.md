@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción
+# Runbook — migraciones 0007–0017 en producción (+ anexo 0024/0025)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -225,6 +225,48 @@ en la MISMA máquina sube `requests_sin_version` en la MISMA fila sin borrar el
 min/max (un NULL nunca pisa un valor guardado); `ahorro_medido > 0` solo si la
 rebaja de TTL actuó ese día. En los logs de Vercel de `/api/metering/usage`
 durante la ventana: 0 × 400 y 0 × 500.
+
+## Anexo — 0024 y 0025 (septiembre de 2026): dos versiones de la RPC, en orden
+
+Las dos llevan **cada una su versión** de `bvsala.ingest_usage_batch`
+(regla 1). 0025 se escribió copiando el cuerpo ENTERO de 0024 (no el de 0022):
+`test/migracion-0025.test.ts` lo compara línea a línea. Consecuencias:
+
+- **Orden:** 0024 → 0025, en la misma sesión de Management API, ascendente.
+  Las dos llevan guard de precondición y ABORTAN si falta la base (0022 para
+  0024; 0024 para 0025) — ese aborto es el resultado *bueno*.
+- **Regla 1, literal:** re-ejecutar 0024 DESPUÉS de 0025 **regresa la RPC** en
+  silencio: dejan de acumularse `eliminated_floor_cost` y
+  `eliminated_credited_requests`, la tarjeta «Borrado del proveedor» desaparece
+  del panel y nadie ve un error. Si pasa, re-aplicar **solo** el bloque de
+  función de 0025.
+- **Diagnóstico (solo lectura)** — las TRES deben salir `true`; la última exige
+  a la vez la pieza de 0024 y la de 0025 en la RPC viva:
+
+```sql
+select exists(select 1 from information_schema.columns
+              where table_schema='bvsala' and table_name='seat_activity'
+                and column_name='client_version_min')                      as columna_0024,
+       exists(select 1 from information_schema.columns
+              where table_schema='bvsala' and table_name='usage_daily'
+                and column_name='eliminated_floor_cost')                   as columna_0025,
+       exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+              where n.nspname='bvsala' and p.proname='ingest_usage_batch'
+                and p.prosrc like '%clientVersion%'
+                and p.prosrc like '%eliminatedInputFloorCost%')            as rpc_0024_y_0025;
+```
+
+- **Despliegue (doctrina de emitter.ts: un 4xx del ingest descarta el lote sin
+  reintento):** migraciones → `vercel --prod` desde la raíz (la lista blanca
+  acepta `eliminatedInputFloorCost` como OPCIONAL; un gateway 0.4.16 sigue en
+  202) → SOLO ENTONCES `npm publish` de un gateway que emita el campo (B2).
+  Migración antes que web no es obligatorio para no romper (la RPC de 0022/0024
+  ignora la clave: solo se PIERDE el dólar hasta aplicarla); **web antes que
+  npm SÍ**.
+- **Verificación post-deploy sin gateway nuevo:** los lotes de los gateways
+  0.4.16 siguen en 202 (ningún 400/500 en los logs de Vercel); la tarjeta
+  «Borrado del proveedor» NO aparece (0 acreditadas); VerdictHero y extracto
+  idénticos a antes.
 
 ---
 

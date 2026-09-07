@@ -141,22 +141,47 @@ observador lo puede extraer del `message_start`). Por cada respuesta con
 `cleared_input_tokens > 0` **causada por nuestra config** (la org tiene la
 palanca y el gateway ajustó/inyectó los diales en esa petición):
 
-- `ahorroUsd = cleared_input_tokens × precioEntrada(model)` — conservador a
-  propósito: los tokens borrados se habrían pagado como MÍNIMO a precio de
-  lectura de caché y en cada turno futuro; tarifarlos una vez a precio de
-  entrada es quedarse corto, jamás inventar de más. (Refinamiento posterior:
-  amortizar por turnos restantes observados, con la CadenaDeSimulacion.)
-- Viaja en el informe como palanca propia (`eliminatedInput` +
-  `baselineCost = actual + ahorro`, `netSavings` proporción) con
-  `basis:"measured"`: el contador es del proveedor y es contrastable con su
-  factura. **Entra en la base de la comisión** — es la primera palanca de
-  elisión facturable.
+> **Reescrito el 2026-09-07 (B1, migración 0025).** La versión anterior de
+> este apartado decía `precioEntrada(model)` y «entra en la base de la
+> comisión». Las dos cosas eran falsas y peligrosas: a precio de ENTRADA se
+> sobrevalora ×10 (opus/sonnet/fable-5) y ×40 (fable-5-1), y cobrarlo sería
+> cobrar sobre un dólar que la consola del cliente puede desmentir.
+
+- `sueloUsd = cleared_input_tokens × precioLectura(model)` — el precio de
+  LECTURA de caché (`cachedInputPer1k` del catálogo, `src/pricing/catalogo.ts`),
+  **jamás `inputPer1k`** ni el fallback `?? precio.inputPer1k` de
+  `medidor.ts`. Es un SUELO: los tokens borrados se habrían pagado como MÍNIMO
+  a precio de lectura en cada turno siguiente; tarifarlos una vez a ese precio
+  es quedarse corto, nunca inventar de más. El ingest lo acota además
+  server-side con `TECHO_PRECIO_LECTURA_PER_1K` (≥ el mayor `cachedInputPer1k`
+  del catálogo, atado por test): un gateway que tarife a entrada queda
+  RECORTADO al techo, no rechazado (un rechazo pierde el lote entero).
+- Viaja en el registro como campo OPCIONAL propio, `eliminatedInputFloorCost`
+  (lista blanca de `apps/web/lib/metering/usage.ts` y `packages/protocol`;
+  NUNCA en `USAGE_NUMBER_FIELDS`, que son obligatorios y darían 400 a todo
+  gateway ≤ 0.4.16). Solo es > 0 cuando el borrado es ATRIBUIBLE a nuestros
+  diales (regla del delta, abajo). La RPC (0025) lo acumula en
+  `usage_daily.eliminated_floor_cost` + `eliminated_credited_requests` y, por
+  modelo, en `usage_daily_by_model` — **carril PROPIO, fuera de `measured_*`**,
+  como `shadow_*` en 0021. `basis` sigue siendo lo que era por la rebaja de
+  TTL; el suelo no cambia `baselineCost` ni `netSavings`.
+- **NO entra en la base de la comisión hasta `COMISIONAR_ELISION_SUELO`**
+  (`apps/web/lib/billing/tarifa.ts`, hoy `false`, anclado por test). Motivo: el
+  suelo es el BRUTO del turno (lectura evitada) sin restar la invalidación de
+  prefijo que el MISMO corte provoca; la evidencia congelada da opus-4-8 NETO
+  negativo (`benchmarks/evidencia/sombra-corpus-2026-09-07.json`). Encenderlo
+  es decisión del dueño y exige el NETO por modelo medido con el mecanismo
+  real (condición de salida de `aptitud-de-elision.ts`).
 - Si el cliente YA enviaba una config que dispara borrados sin nuestro ajuste:
   ese ahorro es SUYO, no nuestro — no se acredita. Regla: solo se acredita el
   delta en peticiones donde nuestros diales difieren de los que traía.
-- Panel/extracto: el ahorro S4a aparece en el carril MEDIDO (el de siempre);
-  la tarjeta sombra sigue enseñando lo que la elisión propia v0 añadiría
-  encima.
+- Panel/extracto: el CONTEO se enseña (tarjeta «Borrado del proveedor»:
+  peticiones acreditadas y tokens borrados; línea propia en el extracto,
+  `elisionProveedor`, jamás sumada a `measured`); el DÓLAR se guarda y no se
+  pinta hasta que el neto por modelo esté medido. La tarjeta sombra sigue
+  enseñando lo que la elisión propia v0 añadiría encima — SUPRIMIDA en las
+  peticiones con borrado atribuible (B2-4, §5), para no enseñar el mismo
+  borrado dos veces.
 
 Nota de segmento: en tráfico OAuth/suscripción no hay dólares por petición —
 el mismo mecanismo ahorra TOKENS contra los topes (valor real para el cliente,
@@ -365,7 +390,7 @@ S4b arranca solo después, con sus prerequisitos y su propia decisión.
 | El cliente ya traía config y nuestros diales la empeoran para SU caso | Solo se ajustan estrategias que entendemos; `exclude_tools` respetado; el delta se mide por petición y el A/B de días lo vigila; opt-in doble |
 | Acreditarnos ahorro que no es nuestro | Regla del delta (2.4): solo peticiones donde nuestros diales difieren de los del cliente; verja en tests |
 | `clear_tool_uses` borra algo que el agente necesitaba | Evidencia previa: el agente ya re-lee (144 %); el proveedor deja marcador de borrado y el agente re-ejecuta la herramienta; el anillo 1 lo cuantifica y el coste de re-lectura se resta del ahorro reportado si el A/B lo enseña material |
-| El servidor borra y la SOMBRA v0 cuenta doble (elide lo ya borrado) | La sombra corre sobre el cuerpo que VIAJA (post-ajuste): el doble conteo es imposible por construcción; test que lo fije |
+| El servidor borra y la SOMBRA v0 cuenta doble (elide lo ya borrado) | **Estado real (07-09):** la sombra corre hoy sobre el cuerpo ORIGINAL (`medir(requestId, cuerpo…)`, no `cuerpoSaliente`), así que con la palanca encendida SÍ simula elidir los mismos `tool_result` que el proveedor ya borró. Cura (B2-4): en las peticiones con borrado ATRIBUIBLE a nuestros diales (`dialesNuestros && tokensLimpiadosToolUses > 0`) el registro sombra se SUPRIME — la sombra mide solo donde el proveedor no actuó; test de no-solapamiento que lo fije. Hasta B2-4, la SombraElisionCard y la tarjeta «Borrado del proveedor» pueden enseñar el mismo borrado; por eso esta última pinta CONTEO y no dólar |
 | Sobre-ajuste de diales a nuestra org | Los diales son per-org a futuro; el opt-in de clientes exige SU sombra propia ≥ umbral, no la nuestra |
 
 ---

@@ -714,6 +714,13 @@ input[type="range"] { accent-color: var(--brand); }
 .sombra-elision .sub { font-size: .78rem; color: var(--ink-soft); }
 .sombra-elision .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
 
+/* Borrado del proveedor (0025): misma tipografía que sus tarjetas hermanas, con
+   ámbito propio. El titular es un CONTEO (peticiones acreditadas), no un dinero:
+   va en tinta neutra, sin pos/neg — no hay nada que pintar de verde ni de rojo. */
+.elision-proveedor .big { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); }
+.elision-proveedor .sub { font-size: .78rem; color: var(--ink-soft); }
+.elision-proveedor .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
+
 /* Ritmo y proyección: MISMA tipografía que sus tarjetas hermanas. `big`, `sub` y
    `src` solo existían con ámbito .verdict/.kpi/.sombra-elision, así que esta
    tarjeta heredaba la letra del cuerpo y desentonaba con todo el cockpit

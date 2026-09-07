@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { deriveLicenseStatus, deriveSombra, deriveVerdict, elegirLicencia } from "./derive";
+import { deriveElisionProveedor, deriveLicenseStatus, deriveSombra, deriveTokens, deriveVerdict, elegirLicencia } from "./derive";
 
 /**
  * El panel de un producto que se vende como "verify-don't-trust" no puede
@@ -179,5 +179,42 @@ describe("el carril sombra (0021) — hipotético, con derivador propio", () => 
     expect(deriveSombra([]).kind).toBe("none");
     // Peticiones sin base simulada tampoco pintan nada.
     expect(deriveSombra([{ requests: 1, baselineCost: 1, actualCost: 1, shadowRequests: 2, shadowBaselineCost: 0, shadowActualCost: 0 }]).kind).toBe("none");
+  });
+});
+
+describe("el carril del borrado del proveedor (0025) — conteo del proveedor, con derivador propio", () => {
+  const fila = {
+    requests: 2, baselineCost: 0.2, actualCost: 0.1,
+    measuredRequests: 2, measuredBaselineCost: 0.2, measuredActualCost: 0.1,
+    baselineInputTokens: 1_000, actualInputTokens: 800, baselineOutputTokens: 10, actualOutputTokens: 10,
+  };
+  const conCarril = { ...fila, eliminatedInputTokens: 50_000, eliminatedFloorCost: 0.0125, eliminatedCreditedRequests: 1 };
+
+  it("⛔ NO toca el Verdict: mismo titular con y sin las columnas de 0025", () => {
+    expect(deriveVerdict([conCarril])).toEqual(deriveVerdict([fila]));
+  });
+
+  it("⛔ NO toca los tokens ni la sombra", () => {
+    expect(deriveTokens([conCarril])).toEqual(deriveTokens([fila]));
+    expect(deriveSombra([conCarril])).toEqual(deriveSombra([fila]));
+  });
+
+  it("agrega acreditadas y el suelo (que viaja pero no se pinta); NO expone tokens: columna compartida SDK+gateway", () => {
+    const e = deriveElisionProveedor([
+      conCarril,
+      { ...conCarril, eliminatedInputTokens: 10_000, eliminatedFloorCost: 0.0025, eliminatedCreditedRequests: 3 },
+    ]);
+    if (e.kind !== "ok") throw new Error("esperaba ok");
+    expect(e.requests).toBe(4);
+    expect("tokens" in e).toBe(false);
+    expect(e.floorUsd).toBeCloseTo(0.015, 9);
+  });
+
+  it("sin acreditadas, 'none' — la tarjeta no existe (columnas ausentes, o presentes a cero)", () => {
+    expect(deriveElisionProveedor([fila]).kind).toBe("none");
+    expect(deriveElisionProveedor([]).kind).toBe("none");
+    // Tokens borrados por el proveedor SIN acreditadas (diales del cliente, no
+    // los nuestros): no es nuestro y no se pinta.
+    expect(deriveElisionProveedor([{ ...fila, eliminatedInputTokens: 9_999, eliminatedFloorCost: 0, eliminatedCreditedRequests: 0 }]).kind).toBe("none");
   });
 });

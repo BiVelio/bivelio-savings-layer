@@ -250,6 +250,17 @@ export interface UsageRollup {
   shadowRequests?: number;
   shadowBaselineCost?: number;
   shadowActualCost?: number;
+  /**
+   * El carril del BORRADO DEL PROVEEDOR (migración 0025): registros en los que
+   * nuestros diales cambiaron la petición y el proveedor borró (acreditadas), y
+   * su valor al precio SUELO de lectura de caché. Carril propio, como la
+   * sombra: jamás se suma a measured_* ni entra en la comisión
+   * (COMISIONAR_ELISION_SUELO). El dólar se GUARDA pero el panel enseña solo el
+   * conteo (derive.ts explica por qué). Opcionales: sin la columna, «no
+   * disponible», no 0.
+   */
+  eliminatedFloorCost?: number;
+  eliminatedCreditedRequests?: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -287,6 +298,8 @@ const COLUMNAS_TOKENS =
   "baseline_input_tokens, actual_input_tokens, baseline_output_tokens, actual_output_tokens";
 /** El carril sombra que añade 0021. */
 const COLUMNAS_SOMBRA = "shadow_requests, shadow_baseline_cost, shadow_actual_cost";
+/** El carril del borrado del proveedor que añade 0025. */
+const COLUMNAS_ELISION = "eliminated_floor_cost, eliminated_credited_requests";
 
 export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageResult> {
   try {
@@ -302,16 +315,23 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
         .gte("day", since)
         .order("day", { ascending: true });
 
-    let { data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}`);
+    let { data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}`);
     // EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN, y sin esto eso tumbaba el
     // panel ENTERO. PostgREST responde 42703 cuando una columna no existe; si
-    // pedimos las de 0015/0021 contra un proyecto que aún no las tiene, el
+    // pedimos las de 0015/0021/0025 contra un proyecto que aún no las tiene, el
     // `failed` de abajo le pinta "la lectura falló" a un cliente cuyos datos
     // están intactos — y no solo en la tarjeta nueva, sino en todo lo demás.
     //
-    // Se reintenta en escalera (0021 → 0015 → base). Las filas salen sin las
-    // columnas que falten, que es exactamente lo que son: no disponibles
+    // Se reintenta en escalera (0025 → 0021 → 0015 → base). Las filas salen sin
+    // las columnas que falten, que es exactamente lo que son: no disponibles
     // todavía. Las tarjetas lo dirán así, y el resto del panel sigue.
+    if (error && esColumnaInexistente(error)) {
+      console.warn(
+        "[dashboard] usage_daily sin las columnas del borrado del proveedor (¿falta la migración 0025?); " +
+          "se lee sin ellas y la tarjeta de borrado del proveedor no saldrá",
+      );
+      ({ data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}`));
+    }
     if (error && esColumnaInexistente(error)) {
       console.warn(
         "[dashboard] usage_daily sin las columnas del carril sombra (¿falta la migración 0021?); " +
@@ -367,6 +387,12 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
             shadowRequests: Number(r["shadow_requests"]),
             shadowBaselineCost: Number(r["shadow_baseline_cost"] ?? 0),
             shadowActualCost: Number(r["shadow_actual_cost"] ?? 0),
+          }
+        : {}),
+      ...(r["eliminated_credited_requests"] != null
+        ? {
+            eliminatedCreditedRequests: Number(r["eliminated_credited_requests"]),
+            eliminatedFloorCost: Number(r["eliminated_floor_cost"] ?? 0),
           }
         : {}),
     }));

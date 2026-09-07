@@ -427,6 +427,11 @@
       "nota": "Lo que habría ahorrado la elisión de contexto con tu tráfico real, calculado por el gateway sin tocar un solo byte. No se suma al titular y jamás entra en la comisión: la palanca solo se encenderá cuando esta cifra lo justifique.",
       "notaNegativa": "Con tu tráfico, la elisión habría costado dinero: reescribir bloques invalida la caché de prefijo del proveedor. Este carril existe exactamente para ver esto antes de encender nada — y por eso sigue apagada."
     },
+    "elisionProveedor": {
+      "title": "Borrado del proveedor causado por nuestros diales",
+      "detalle": "{requests} peticiones acreditadas",
+      "nota": "El conteo es del proveedor (applied_edits). No es un ahorro medido y nunca entra en tu comisión; el dinero llegará cuando el neto por modelo esté medido — borrar reescribe la caché de prefijo, y en algunos modelos el neto sale negativo."
+    },
     "ritmo": {
       "title": "Ritmo y proyección",
       "badgeEstimacion": "Estimación",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Ahorro estimado excluido de la base (contexto, jamás facturable): {usd}.",
       "sombraElision": "Carril sombra: la elisión habría ahorrado {usd} en {requests} peticiones simuladas. Hipotético — jamás entra en la base ni en la comisión.",
       "sombraElisionNegativa": "Carril sombra: la elisión habría costado {usd} de más en {requests} peticiones simuladas. Por eso está apagada: solo se enciende lo que ahorra de verdad.",
+      "elisionProveedor": "Carril del borrado del proveedor: {requests} peticiones en las que nuestros diales hicieron que el proveedor borrara contexto. Un conteo, no un ahorro — jamás entra en la base ni en la comisión.",
       "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx}.",
       "mismaFacturaTitulo": "Este documento ES la futura factura.",
       "mismaFactura": "El extracto en sombra y el facturable se calculan con la misma máquina: cuando la comisión se active, la primera factura solo contendrá números que ya has visto aquí.",

@@ -427,6 +427,11 @@
       "nota": "Was Kontext-Elision bei Ihrem echten Traffic gespart hätte, vom Gateway berechnet, ohne ein einziges Byte anzufassen. Wird nie zur Schlagzeile addiert und fließt nie in die Provision ein: der Hebel wird erst aktiviert, wenn diese Zahl es rechtfertigt.",
       "notaNegativa": "Bei Ihrem Traffic hätte Elision Geld gekostet: das Umschreiben von Blöcken invalidiert den Prefix-Cache des Anbieters. Genau dafür existiert diese Spur — um das zu sehen, bevor irgendetwas aktiviert wird. Deshalb bleibt sie aus."
     },
+    "elisionProveedor": {
+      "title": "Löschung durch den Anbieter, ausgelöst durch unsere Regler",
+      "detalle": "{requests} angerechnete Anfragen",
+      "nota": "Die Zählung stammt vom Anbieter (applied_edits). Sie ist keine gemessene Ersparnis und fließt nie in deine Provision ein; der Geldwert folgt, sobald das Netto pro Modell gemessen ist — Löschen schreibt den Prefix-Cache neu, und bei manchen Modellen ist das Netto negativ."
+    },
     "ritmo": {
       "title": "Tempo und Prognose",
       "badgeEstimacion": "Schätzung",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Geschätzte Ersparnis, von der Basis ausgeschlossen (Kontext, nie abrechenbar): {usd}.",
       "sombraElision": "Schattenspur: Elision hätte {usd} über {requests} simulierte Anfragen gespart. Hypothetisch — fließt nie in die Basis oder die Provision ein.",
       "sombraElisionNegativa": "Schattenspur: Elision hätte {usd} zusätzlich über {requests} simulierte Anfragen gekostet. Deshalb bleibt sie aus: aktiviert wird nur, was wirklich spart.",
+      "elisionProveedor": "Spur der Anbieter-Löschung: {requests} Anfragen, bei denen unsere Regler den Anbieter Kontext löschen ließen. Eine Zählung, keine Ersparnis — sie fließt nie in die Basis oder die Provision ein.",
       "parametros": "Parameter des Auszugs — Preiskatalog {version} · Wechselkurs {fx}.",
       "mismaFacturaTitulo": "Dieses Dokument IST die künftige Rechnung.",
       "mismaFactura": "Schatten- und abrechenbare Version werden von derselben Maschinerie berechnet: wenn die Provision aktiv wird, enthält deine erste Rechnung nur Zahlen, die du hier schon gesehen hast.",

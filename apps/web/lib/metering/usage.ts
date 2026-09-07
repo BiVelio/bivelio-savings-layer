@@ -10,6 +10,8 @@
  * service account. Identity fields are charset-constrained so a free-text string
  * cannot become a value channel for content.
  */
+import { recortarSuelo } from "./techo-precio-lectura";
+
 export class UsageValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -41,14 +43,27 @@ const USAGE_NUMBER_FIELDS = [
  *  columnas shadow_* — jamás en la base de la comisión ni en measured. */
 const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
 
+/**
+ * Dinero OPCIONAL del carril de la elisión del proveedor (migración 0025):
+ * `eliminatedInputFloorCost` = los tokens que el proveedor borró valorados al
+ * precio de LECTURA de caché (suelo). OPCIONAL a propósito, y JAMÁS en
+ * USAGE_NUMBER_FIELDS: esos son obligatorios y convertirían en 400 el lote de
+ * todo gateway ≤ 0.4.16, que no lo emite. Va a su columna propia; nunca a
+ * measured_* ni a la comisión (COMISIONAR_ELISION_SUELO en lib/billing/tarifa.ts).
+ */
+const USAGE_OPTIONAL_MONEY_FIELDS = ["eliminatedInputFloorCost"] as const;
+
 const USAGE_ALLOWED_FIELDS = new Set<string>([
   "orgId", "seatId", "ci", "cacheResult", "basis", "sessionId", "agentId",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
+  ...USAGE_OPTIONAL_MONEY_FIELDS,
 ]);
 
 export interface UsageRecord {
   orgId: string;
+  /** Opcional (0025): tokens borrados por el proveedor valorados a precio SUELO de lectura. Recortado al techo; jamás en measured. */
+  eliminatedInputFloorCost?: number;
   seatId?: string;
   ci?: boolean;
   requestId: string;
@@ -63,7 +78,9 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 }
 
 /** Validate one untrusted usage record; orgId is server-supplied, never from the body. */
-export function parseUsageRecord(input: unknown, authorizedOrgId: string): UsageRecord {
+type Recorte = { recibido: number; tokens: number; guardado: number };
+
+export function parseUsageRecord(input: unknown, authorizedOrgId: string, recortes: Recorte[] = []): UsageRecord {
   if (!isPlainObject(input)) throw new UsageValidationError("usage record must be an object");
   for (const key of Object.keys(input)) {
     if (!USAGE_ALLOWED_FIELDS.has(key)) {
@@ -115,6 +132,23 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     }
     rec[f] = num;
   }
+  if (input["eliminatedInputFloorCost"] !== undefined) {
+    const v = input["eliminatedInputFloorCost"];
+    // Tipo y signo SÍ se rechazan: un payload malformado es un bug del emisor.
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) {
+      throw new UsageValidationError(`field "eliminatedInputFloorCost" must be a finite number >= 0`);
+    }
+    // Dominio: RECORTE, no rechazo. «Dinero sin conteo» (suelo > 0 con
+    // eliminatedInputTokens = 0) baja a 0 y un suelo por encima de
+    // tokens × TECHO_PRECIO_LECTURA_PER_1K baja al techo. Un throw aquí tumba
+    // el LOTE ENTERO del cliente (parseUsageRecords → 400 → el emisor descarta
+    // sin reintento): un gateway con un precio mal puesto dejaría de reportar
+    // TODO su uso. Se guarda lo defendible y se avisa.
+    const tokens = rec["eliminatedInputTokens"] as number;
+    const recortado = recortarSuelo(v, tokens);
+    if (recortado !== v) recortes.push({ recibido: v, tokens, guardado: recortado });
+    rec["eliminatedInputFloorCost"] = recortado;
+  }
   if (input["seatId"] !== undefined) {
     const s = input["seatId"];
     if (typeof s !== "string" || !USAGE_ID_PATTERN.test(s)) {
@@ -152,5 +186,16 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
 export function parseUsageRecords(input: unknown, authorizedOrgId: string): UsageRecord[] {
   const arr = Array.isArray(input) ? input : [input];
   if (arr.length > 1000) throw new UsageValidationError("batch too large (max 1000 records)");
-  return arr.map((r) => parseUsageRecord(r, authorizedOrgId));
+  // Un aviso POR LOTE, no por registro: un gateway con el precio mal puesto
+  // generaría hasta 1.000 líneas por lote y ahogaría la alerta útil.
+  const recortes: Recorte[] = [];
+  const out = arr.map((r) => parseUsageRecord(r, authorizedOrgId, recortes));
+  if (recortes.length > 0) {
+    console.warn("[metering/usage] eliminatedInputFloorCost recortado", {
+      registros: arr.length,
+      recortados: recortes.length,
+      maxRecibido: Math.max(...recortes.map((x) => x.recibido)),
+    });
+  }
+  return out;
 }

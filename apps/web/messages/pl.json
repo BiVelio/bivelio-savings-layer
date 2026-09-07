@@ -427,6 +427,11 @@
       "nota": "Ile elizja kontekstu zaoszczędziłaby na Twoim prawdziwym ruchu, obliczone przez bramę bez dotykania ani jednego bajta. Nigdy nie dodaje się do nagłówka i nigdy nie wchodzi do prowizji: dźwignia włączy się dopiero, gdy ta liczba to uzasadni.",
       "notaNegativa": "Na Twoim ruchu elizja kosztowałaby pieniądze: przepisywanie bloków unieważnia cache prefiksu dostawcy. Ten tor istnieje właśnie po to, by to zobaczyć, zanim cokolwiek się włączy — dlatego pozostaje wyłączona."
     },
+    "elisionProveedor": {
+      "title": "Czyszczenie przez dostawcę wywołane naszymi ustawieniami",
+      "detalle": "{requests} uznanych żądań",
+      "nota": "Licznik pochodzi od dostawcy (applied_edits). To nie jest zmierzona oszczędność i nigdy nie wchodzi do twojej prowizji; pieniądze pojawią się, gdy zmierzymy netto na model — czyszczenie przepisuje pamięć podręczną prefiksu, a w niektórych modelach netto jest ujemne."
+    },
     "ritmo": {
       "title": "Tempo i prognoza",
       "badgeEstimacion": "Szacunek",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Szacowane oszczędności wyłączone z bazy (kontekst, nigdy do rozliczenia): {usd}.",
       "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy ani do prowizji.",
       "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Dlatego jest wyłączona: włącza się tylko to, co naprawdę oszczędza.",
+      "elisionProveedor": "Tor czyszczenia przez dostawcę: {requests} żądań, w których nasze ustawienia sprawiły, że dostawca wyczyścił kontekst. Licznik, nie oszczędność — nigdy nie wchodzi do bazy ani do prowizji.",
       "parametros": "Parametry zestawienia — cennik {version} · kurs wymiany {fx}.",
       "mismaFacturaTitulo": "Ten dokument JEST przyszłą fakturą.",
       "mismaFactura": "Wyciąg w cieniu i ten rozliczeniowy liczy ta sama maszyneria: gdy prowizja się włączy, pierwsza faktura będzie zawierać tylko liczby, które już tu widziałeś.",
