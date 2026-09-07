@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens dropped as unnecessary",
-      "elisionNota": "A count only — its value in money is estimated in shadow elision below, and never enters your commission.",
+      "elisionNota": "A count from the provider only. The requests where OUR dials caused it are in the “Provider clearing” card below; its value in money is not shown until the net per model is measured, and it never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed cheaper (prefix cache)",
       "ghostAwaiting": "{ref} · awaiting first report",
@@ -427,6 +427,11 @@
       "nota": "What context elision would have saved on your real traffic, computed by the gateway without touching a single byte. It is never added to the headline and never enters the commission: the lever only turns on when this figure justifies it.",
       "notaNegativa": "On your traffic, elision would have cost money: rewriting blocks invalidates the provider's prefix cache. This lane exists precisely to see that before turning anything on — which is why it stays off."
     },
+    "elisionProveedor": {
+      "title": "Provider clearing caused by our dials",
+      "detalle": "{requests} credited requests · {tokens} tokens cleared by the provider this period",
+      "nota": "The count is the provider's (applied_edits). It is not a measured saving and never enters your commission; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
+    },
     "ritmo": {
       "title": "Pace and projection",
       "badgeEstimacion": "Estimate",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Estimated savings excluded from the base (context, never billable): {usd}.",
       "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base or the commission.",
       "sombraElisionNegativa": "Shadow lane: elision would have cost an extra {usd} across {requests} simulated requests. That is why it stays off: only what truly saves gets turned on.",
+      "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base or the commission.",
       "parametros": "Statement parameters — price catalog {version} · exchange rate {fx}.",
       "mismaFacturaTitulo": "This document IS the future invoice.",
       "mismaFactura": "The shadow statement and the billable one are computed by the same machinery: when the commission activates, your first invoice will only contain numbers you have already seen here.",

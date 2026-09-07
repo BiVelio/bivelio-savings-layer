@@ -191,6 +191,14 @@ export default async function ExtractoPage() {
             })}
           </p>
         )}
+        {/* El borrado del proveedor (0025): solo el CONTEO de acreditadas. El
+            dólar suelo viaja en `e.elisionProveedor.floorUsd` pero NO se pinta
+            hasta medir el neto por modelo — y jamás entra en la base. */}
+        {e.elisionProveedor && (
+          <p className="ck-note">
+            {t("extracto.elisionProveedor", { requests: e.elisionProveedor.requests.toLocaleString(locale) })}
+          </p>
+        )}
         <p className="ck-note">
           {t("extracto.parametros", {
             version: e.parametros.versionPrecios,

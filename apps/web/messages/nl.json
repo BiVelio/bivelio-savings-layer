@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
       "whatEliminatedTokens": "invoertokens die als overbodig zijn geschrapt",
-      "elisionNota": "Alleen een telling — de geldwaarde wordt hieronder in de schaduw-elisie geschat en telt nooit mee in je commissie.",
+      "elisionNota": "Alleen een telling van de provider. De verzoeken waarbij ONZE instellingen het veroorzaakten staan hieronder in de kaart “Wissen door de provider”; de geldwaarde wordt pas getoond als het netto per model is gemeten, en telt nooit mee in je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens die goedkoper worden gefactureerd (prefixcache)",
       "ghostAwaiting": "{ref} · wacht op eerste rapport",
@@ -427,6 +427,11 @@
       "nota": "Wat context-elisie op uw echte verkeer zou hebben bespaard, berekend door de gateway zonder één byte aan te raken. Wordt nooit bij de kop opgeteld en telt nooit mee in de commissie: de hendel gaat pas aan wanneer dit cijfer het rechtvaardigt.",
       "notaNegativa": "Op uw verkeer zou elisie geld hebben gekost: blokken herschrijven maakt de prefix-cache van de provider ongeldig. Precies daarvoor bestaat dit spoor — om dat te zien vóór er iets aangaat. Daarom blijft het uit."
     },
+    "elisionProveedor": {
+      "title": "Wissen door de provider, veroorzaakt door onze instellingen",
+      "detalle": "{requests} gecrediteerde verzoeken · {tokens} tokens gewist door de provider in deze periode",
+      "nota": "De telling is van de provider (applied_edits). Het is geen gemeten besparing en telt nooit mee in je commissie; het geld volgt zodra het netto per model is gemeten — wissen herschrijft de prefix-cache, en bij sommige modellen is het netto negatief."
+    },
     "ritmo": {
       "title": "Tempo en prognose",
       "badgeEstimacion": "Schatting",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Geschatte besparing uitgesloten van de basis (context, nooit factureerbaar): {usd}.",
       "sombraElision": "Schaduwspoor: elisie zou {usd} hebben bespaard over {requests} gesimuleerde verzoeken. Hypothetisch — telt nooit mee in de basis of de commissie.",
       "sombraElisionNegativa": "Schaduwspoor: elisie zou {usd} extra hebben gekost over {requests} gesimuleerde verzoeken. Daarom blijft het uit: alleen wat echt bespaart gaat aan.",
+      "elisionProveedor": "Baan van het wissen door de provider: {requests} verzoeken waarbij onze instellingen de provider context lieten wissen. Een telling, geen besparing — telt nooit mee in de basis of de commissie.",
       "parametros": "Parameters van het overzicht — prijscatalogus {version} · wisselkoers {fx}.",
       "mismaFacturaTitulo": "Dit document IS de toekomstige factuur.",
       "mismaFactura": "Het schaduwafschrift en het factureerbare worden door dezelfde machinerie berekend: wanneer de commissie actief wordt, bevat je eerste factuur alleen cijfers die je hier al zag.",

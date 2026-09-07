@@ -14,6 +14,7 @@ import { UsageExplorer } from "./components/UsageExplorer";
 import { TrafficModelMix } from "./components/TrafficModelMix";
 import { MaquinasCard } from "./components/MaquinasCard";
 import { SesionesCard } from "./components/SesionesCard";
+import { ElisionProveedorCard } from "./components/ElisionProveedorCard";
 import { SombraElisionCard } from "./components/SombraElisionCard";
 import { VerdictHero } from "./components/VerdictHero";
 
@@ -89,6 +90,10 @@ export default async function OverviewPage() {
           </div>
           <SesionesCard sesiones={sesiones} />
           <MaquinasCard asientos={asientos} />
+          {/* El borrado del proveedor (0025): conteo del proveedor, precio suelo
+              nuestro. Solo el CONTEO se pinta; el dólar se guarda y no entra en
+              la comisión. Tarjeta propia, como la sombra. */}
+          <ElisionProveedorCard usage={usage} />
           {/* La sombra al final y en tarjeta PROPIA: hipotética por doctrina,
               jamás mezclada con el titular ni con los libros medidos. */}
           <SombraElisionCard usage={usage} />

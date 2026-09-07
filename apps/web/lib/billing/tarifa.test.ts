@@ -1,8 +1,12 @@
 import { describe, it, expect } from "vitest";
 
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+
 import {
   TRAMOS,
   GARANTIA_NETA_RATIO,
+  COMISIONAR_ELISION_SUELO,
   comisionPorTramos,
   calcularComision,
 } from "./tarifa";
@@ -107,5 +111,52 @@ describe("LA GARANTÍA: el cliente se queda con ≥ GARANTIA_NETA_RATIO de cada 
     const c = calcularComision(10_000, 1_000);
     expect(c.comisionEur).toBe(100);
     expect(c.netoClienteEur / c.ahorroMedidoEur).toBeCloseTo(GARANTIA_NETA_RATIO, 10);
+  });
+});
+
+describe("COMISIONAR_ELISION_SUELO — el interruptor del suelo de la elisión (0025)", () => {
+  it("está APAGADO: el suelo se guarda y se enseña como conteo, jamás entra en la comisión", () => {
+    // Encenderlo es decisión del dueño y obliga a reescribir los seis puntos
+    // listados en tarifa.ts. Este test es el ancla: nadie lo cambia de tapadillo.
+    expect(COMISIONAR_ELISION_SUELO).toBe(false);
+  });
+});
+
+/**
+ * TEST NEGATIVO: ningún camino del DINERO de apps/web tarifa nada a
+ * `inputPer1k`. El suelo de la elisión se valora en el gateway a precio de
+ * LECTURA de caché (cachedInputPer1k) y el servidor solo lo acota
+ * (techo-precio-lectura.ts); si alguien trae a la facturación, al ingest, al
+ * panel o al extracto un cálculo a precio de entrada (×10-40), este test lo
+ * caza por el nombre del campo. Fuera del alcance, a propósito: la calculadora
+ * de la landing y la página `verify`, que valoran el artefacto A/B de
+ * referencia (gpt-4o-mini) y no tienen nada que ver con el suelo.
+ */
+describe("ningún camino del dinero de apps/web tarifa a inputPer1k", () => {
+  const WEB = join(new URL(".", import.meta.url).pathname, "..", "..");
+  const ALCANCE = ["lib/billing", "lib/metering", "app/api", "app/[locale]/dashboard"];
+  function fuentes(dir: string, acc: string[] = []): string[] {
+    for (const e of readdirSync(dir)) {
+      if (e === "node_modules" || e === ".next" || e === "verify") continue;
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) fuentes(p, acc);
+      else if ((e.endsWith(".ts") || e.endsWith(".tsx")) && !e.includes(".test.")) acc.push(p);
+    }
+    return acc;
+  }
+  /** Sin comentarios: la doctrina puede NOMBRAR el precio de entrada para prohibirlo. */
+  const sinComentarios = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const todos = ALCANCE.flatMap((d) => fuentes(join(WEB, d)));
+
+  it("ningún fichero del dinero menciona inputPer1k en código (cachedInputPer1k sí puede)", () => {
+    const culpables = todos
+      .filter((f) => /\binputPer1k\b/.test(sinComentarios(readFileSync(f, "utf8"))))
+      .map((f) => f.replace(WEB, "apps/web"));
+    expect(culpables).toEqual([]);
+  });
+  it("el comprobador no está vacío: recorre ficheros de verdad y ve cachedInputPer1k donde toca", () => {
+    expect(todos.length).toBeGreaterThan(40);
+    expect(todos.some((f) => f.endsWith("techo-precio-lectura.ts"))).toBe(true);
+    expect(todos.some((f) => f.endsWith("extracto.ts"))).toBe(true);
   });
 });

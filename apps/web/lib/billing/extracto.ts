@@ -1,5 +1,6 @@
 import {
   calcularComision,
+  COMISIONAR_ELISION_SUELO,
   redondearCentimos,
   TRAMOS,
   type ComisionCalculada,
@@ -38,6 +39,10 @@ export interface FilaDiaria {
   shadow_requests?: number;
   shadow_baseline_cost?: number;
   shadow_actual_cost?: number;
+  /** El carril del BORRADO DEL PROVEEDOR (0025) — contexto; entra en la base
+   *  SOLO bajo COMISIONAR_ELISION_SUELO (hoy false). Opcionales como shadow_*. */
+  eliminated_floor_cost?: number;
+  eliminated_credited_requests?: number;
 }
 
 export interface OpcionesExtracto {
@@ -81,6 +86,14 @@ export interface Extracto {
    * carril existe para decir la verdad antes de encender la palanca.
    */
   sombra: { requests: number; ahorroUsd: number } | null;
+  /**
+   * El carril del borrado del proveedor del período (0025): peticiones
+   * acreditadas y su suelo en USD. CONTEXTO en su línea propia — jamás sumado a
+   * `ahorroMedidoUsd` ni a la base mientras COMISIONAR_ELISION_SUELO sea false.
+   * La vista enseña solo `requests`; el dólar viaja para auditoría. `null` sin
+   * acreditadas — la línea no se pinta.
+   */
+  elisionProveedor: { requests: number; floorUsd: number } | null;
   /** Los parámetros que hacen el extracto auto-contenido y auditable. */
   parametros: {
     versionPrecios: string;
@@ -107,6 +120,8 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
   let sombraRequests = 0;
   let sombraBaseUsd = 0;
   let sombraActualUsd = 0;
+  let elisionRequests = 0;
+  let elisionFloorUsd = 0;
   for (const f of enPeriodo) {
     baseUsd += f.measured_baseline_cost;
     actualUsd += f.measured_actual_cost;
@@ -116,7 +131,14 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     sombraRequests += f.shadow_requests ?? 0;
     sombraBaseUsd += f.shadow_baseline_cost ?? 0;
     sombraActualUsd += f.shadow_actual_cost ?? 0;
+    elisionRequests += f.eliminated_credited_requests ?? 0;
+    elisionFloorUsd += f.eliminated_floor_cost ?? 0;
   }
+  // EL INTERRUPTOR (tarifa.ts): el suelo de la elisión solo entra en la base
+  // medida si el dueño lo enciende. Hoy es 0 por construcción y el carril viaja
+  // como contexto en `elisionProveedor`.
+  const extraSuelo = COMISIONAR_ELISION_SUELO ? elisionFloorUsd : 0;
+  baseUsd += extraSuelo;
   const ahorroUsd = Math.max(0, baseUsd - actualUsd);
   // El ahorro total (medido+estimado) menos el medido = lo estimado, que se
   // enseña como contexto. Nunca negativo: una reparación cara puede dejar el
@@ -145,6 +167,8 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
       sombraRequests > 0 && sombraBaseUsd > 0
         ? { requests: sombraRequests, ahorroUsd: redondearCentimos(sombraBaseUsd - sombraActualUsd) }
         : null,
+    elisionProveedor:
+      elisionRequests > 0 ? { requests: elisionRequests, floorUsd: redondearCentimos(elisionFloorUsd) } : null,
     parametros: {
       versionPrecios: opts.versionPrecios,
       fx: opts.fx,

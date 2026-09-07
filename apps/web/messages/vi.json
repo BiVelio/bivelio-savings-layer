@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
       "whatEliminatedTokens": "token đầu vào bị loại bỏ vì không cần thiết",
-      "elisionNota": "Chỉ là số đếm — giá trị tiền của nó được ước tính ở phần lược bỏ trong bóng bên dưới, và không bao giờ tính vào hoa hồng của bạn.",
+      "elisionNota": "Chỉ là số đếm của nhà cung cấp. Các yêu cầu mà cấu hình CỦA CHÚNG TÔI gây ra nằm ở thẻ “Xóa bởi nhà cung cấp” bên dưới; giá trị tiền của nó không được hiển thị cho đến khi đo được phần ròng theo từng mô hình, và không bao giờ tính vào hoa hồng của bạn.",
       "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
       "whatProviderCachedTokens": "token đầu vào được tính phí rẻ hơn (bộ đệm tiền tố)",
       "ghostAwaiting": "{ref} · đang chờ báo cáo đầu tiên",
@@ -427,6 +427,11 @@
       "nota": "Số tiền mà việc lược bỏ ngữ cảnh lẽ ra đã tiết kiệm trên lưu lượng thực của bạn, do gateway tính toán mà không chạm vào một byte nào. Không bao giờ được cộng vào tiêu đề và không bao giờ vào hoa hồng: đòn bẩy chỉ được bật khi con số này chứng minh điều đó.",
       "notaNegativa": "Trên lưu lượng của bạn, việc lược bỏ lẽ ra đã tốn tiền: viết lại các khối làm mất hiệu lực bộ nhớ đệm tiền tố của nhà cung cấp. Làn này tồn tại chính xác để thấy điều đó trước khi bật bất cứ thứ gì — vì vậy nó vẫn tắt."
     },
+    "elisionProveedor": {
+      "title": "Xóa bởi nhà cung cấp do cấu hình của chúng tôi gây ra",
+      "detalle": "{requests} yêu cầu được ghi nhận · {tokens} token bị nhà cung cấp xóa trong kỳ",
+      "nota": "Số đếm là của nhà cung cấp (applied_edits). Đây không phải khoản tiết kiệm đã đo và không bao giờ tính vào hoa hồng của bạn; tiền sẽ đến khi phần ròng theo từng mô hình được đo — việc xóa ghi lại bộ nhớ đệm tiền tố, và ở một số mô hình phần ròng là âm."
+    },
     "ritmo": {
       "title": "Nhịp độ và dự phóng",
       "badgeEstimacion": "Ước tính",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Tiết kiệm ước tính bị loại khỏi cơ sở (bối cảnh, không bao giờ tính phí): {usd}.",
       "sombraElision": "Làn bóng: việc lược bỏ lẽ ra đã tiết kiệm {usd} trên {requests} yêu cầu mô phỏng. Giả định — không bao giờ vào cơ sở hay hoa hồng.",
       "sombraElisionNegativa": "Làn bóng: việc lược bỏ lẽ ra đã tốn thêm {usd} trên {requests} yêu cầu mô phỏng. Vì thế nó vẫn tắt: chỉ bật những gì thực sự tiết kiệm.",
+      "elisionProveedor": "Làn xóa bởi nhà cung cấp: {requests} yêu cầu mà cấu hình của chúng tôi khiến nhà cung cấp xóa ngữ cảnh. Một số đếm, không phải tiết kiệm — không bao giờ tính vào cơ sở hay hoa hồng.",
       "parametros": "Tham số sao kê — bảng giá {version} · tỷ giá {fx}.",
       "mismaFacturaTitulo": "Tài liệu này CHÍNH LÀ hóa đơn tương lai.",
       "mismaFactura": "Sao kê bóng và sao kê tính phí được tính bởi cùng một bộ máy: khi hoa hồng kích hoạt, hóa đơn đầu tiên của bạn chỉ chứa những con số bạn đã thấy ở đây.",

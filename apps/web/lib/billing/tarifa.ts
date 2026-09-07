@@ -22,6 +22,40 @@
  * ESTAS constantes — nunca duplicarlas. Patrón `precio-publicado.test.ts`.
  */
 
+/**
+ * EL INTERRUPTOR del suelo de la elisión del proveedor (migración 0025).
+ *
+ * `usage_daily.eliminated_floor_cost` guarda, por día, los tokens que el
+ * proveedor borró (`applied_edits`, cuando NUESTROS diales cambiaron la
+ * petición) valorados al precio de LECTURA de caché. Ese dólar se GUARDA y se
+ * enseña como CONTEO — pero NO entra en la base de la comisión mientras esto
+ * sea `false`, por la doctrina de arriba: se comisiona SOLO el ahorro MEDIDO,
+ * el que el cliente puede contrastar con la factura de su proveedor. El suelo
+ * no lo es todavía: es el BRUTO del turno (lectura evitada) sin restar la
+ * invalidación de prefijo del mismo corte, y la evidencia congelada da
+ * opus-4-8 NETO negativo. Cobrar sobre eso sería cobrar sobre un dólar que su
+ * consola puede desmentir.
+ *
+ * Ponerlo a `true` es DECISIÓN DEL DUEÑO y obliga a reescribir, como mínimo:
+ *   1. apps/web/lib/billing/extracto.ts — hoy solo suma el carril bajo este
+ *      interruptor (`extraSuelo`); la base y el ahorro medidos NO lo llevan.
+ *   2. apps/web/lib/billing/types.ts / el cierre sellado (cierre.ts + el cron
+ *      cierre-extractos, que selecciona columnas explícitas y no lee las nuevas).
+ *   3. gateway/recibo.ts — «DEL PROVEEDOR: se enseña, no se cobra».
+ *   4. src/pricing/aptitud-de-elision.ts — la condición de salida: NETO por
+ *      modelo medido con el mecanismo real (lectura evitada − invalidación).
+ *   5. apps/web/lib/billing/accounting.ts — `basis` medido/estimado excluyentes.
+ *   6. liveLedgerTiles.elisionNota y elisionProveedor.nota ×12 idiomas, que hoy
+ *      prometen «nunca entra en tu comisión».
+ * Precondición técnica ya desplegada: el techo server-side del ingest
+ * (apps/web/lib/metering/techo-precio-lectura.ts) — sin él, un gateway rezagado
+ * que tarifara a precio de entrada se cobraría ×10-40.
+ *
+ * Tipado como `boolean` (no literal) a propósito: el código que lo consulta
+ * tiene que compilar en las dos posiciones. tarifa.test.ts lo ancla en `false`.
+ */
+export const COMISIONAR_ELISION_SUELO: boolean = false;
+
 /** Tramos marginales sobre el ahorro medido del período, en EUR. */
 export const TRAMOS: readonly { hastaEur: number; tipo: number }[] = [
   { hastaEur: 1_000, tipo: 0.1 },

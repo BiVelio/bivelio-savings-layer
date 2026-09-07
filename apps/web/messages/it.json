@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",
       "whatEliminatedTokens": "token di input eliminati perché non necessari",
-      "elisionNota": "Solo un conteggio — il suo valore in denaro è stimato nell'elisione in ombra qui sotto, e non entra mai nella tua commissione.",
+      "elisionNota": "Solo un conteggio del provider. Le richieste in cui l'hanno causato i NOSTRI parametri sono nella scheda «Cancellazione del provider» qui sotto; il suo valore in denaro non viene mostrato finché il netto per modello non è misurato, e non entra mai nella tua commissione.",
       "whatCompressedTokens": "token di input ricodificati in modo più compatto",
       "whatProviderCachedTokens": "token di input fatturati a meno (cache di prefisso)",
       "ghostAwaiting": "{ref} · in attesa del primo report",
@@ -427,6 +427,11 @@
       "nota": "Quanto avrebbe risparmiato l'elisione del contesto sul tuo traffico reale, calcolato dal gateway senza toccare un solo byte. Non si somma mai al titolo e non entra mai nella commissione: la leva si accenderà solo quando questa cifra lo giustificherà.",
       "notaNegativa": "Sul tuo traffico, l'elisione avrebbe fatto spendere di più: riscrivere blocchi invalida la cache di prefisso del provider. Questa corsia esiste esattamente per vederlo prima di accendere qualcosa — ed è per questo che resta spenta."
     },
+    "elisionProveedor": {
+      "title": "Cancellazione del provider causata dai nostri parametri",
+      "detalle": "{requests} richieste accreditate · {tokens} token cancellati dal provider nel periodo",
+      "nota": "Il conteggio è del provider (applied_edits). Non è un risparmio misurato e non entra mai nella tua commissione; il denaro arriverà quando il netto per modello sarà misurato — cancellare riscrive la cache di prefisso, e su alcuni modelli il netto è negativo."
+    },
     "ritmo": {
       "title": "Ritmo e proiezione",
       "badgeEstimacion": "Stima",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Risparmio stimato escluso dalla base (contesto, mai fatturabile): {usd}.",
       "sombraElision": "Corsia ombra: l'elisione avrebbe risparmiato {usd} su {requests} richieste simulate. Ipotetico — non entra mai nella base né nella commissione.",
       "sombraElisionNegativa": "Corsia ombra: l'elisione avrebbe fatto spendere {usd} in più su {requests} richieste simulate. Per questo resta spenta: si accende solo ciò che fa risparmiare davvero.",
+      "elisionProveedor": "Corsia della cancellazione del provider: {requests} richieste in cui i nostri parametri hanno fatto cancellare contesto al provider. Un conteggio, non un risparmio — non entra mai nella base né nella commissione.",
       "parametros": "Parametri dell'estratto — listino prezzi {version} · tasso di cambio {fx}.",
       "mismaFacturaTitulo": "Questo documento È la futura fattura.",
       "mismaFactura": "L'estratto in ombra e quello fatturabile sono calcolati dalla stessa macchina: quando la commissione si attiverà, la prima fattura conterrà solo numeri che hai già visto qui.",

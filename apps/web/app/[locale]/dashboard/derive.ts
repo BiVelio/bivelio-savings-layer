@@ -103,6 +103,13 @@ export interface FilaUso {
   shadowRequests?: number;
   shadowBaselineCost?: number;
   shadowActualCost?: number;
+  /**
+   * El carril del borrado del proveedor (0025). Conteo del proveedor, precio
+   * suelo nuestro: jamás entra en el Verdict ni en los tokens.
+   */
+  eliminatedInputTokens?: number;
+  eliminatedFloorCost?: number;
+  eliminatedCreditedRequests?: number;
 }
 
 /**
@@ -198,6 +205,40 @@ export function deriveSombra(usage: FilaUso[]): Sombra {
   if (requests <= 0 || !(base > 0)) return { kind: "none" };
   const savedUsd = base - actual;
   return { kind: "ok", net: savedUsd / base, savedUsd, requests, tone: savedUsd < 0 ? "neg" : "pos" };
+}
+
+/**
+ * El carril del BORRADO DEL PROVEEDOR (0025), con derivador PROPIO — fuera de
+ * `deriveVerdict`, de `deriveTokens` y de `deriveSombra`. Es el conteo que el
+ * proveedor devuelve en `applied_edits` cuando NUESTROS diales cambiaron la
+ * petición, valorado al precio SUELO de lectura de caché.
+ *
+ *   "none" — ninguna petición acreditada (gateway sin la palanca, columnas
+ *            ausentes, o tráfico donde nuestros diales no borraron nada). No se
+ *            pinta: una tarjeta vacía prometería una palanca que no ha actuado.
+ *   "ok"   — hay acreditadas. `floorUsd` VIAJA al componente pero NO SE PINTA:
+ *            el suelo es el BRUTO del turno (lectura evitada) sin restar la
+ *            invalidación de prefijo del mismo corte, y la evidencia congelada
+ *            da opus-4-8 NETO negativo. Un dólar que el cliente no puede
+ *            contrastar contra su factura no se enseña (doctrina del recibo).
+ *            Condición de salida para pintarlo: el NETO por modelo medido con
+ *            el mecanismo real. `tokens` es el conteo del proveedor del período
+ *            (eliminated_input_tokens, 0015): no hay grano «tokens acreditados».
+ */
+export type ElisionProveedor =
+  | { kind: "none" }
+  | { kind: "ok"; requests: number; tokens: number; floorUsd: number };
+
+export function deriveElisionProveedor(usage: FilaUso[]): ElisionProveedor {
+  const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
+  const requests = suma((r) => r.eliminatedCreditedRequests ?? 0);
+  if (requests <= 0) return { kind: "none" };
+  return {
+    kind: "ok",
+    requests,
+    tokens: suma((r) => r.eliminatedInputTokens ?? 0),
+    floorUsd: suma((r) => r.eliminatedFloorCost ?? 0),
+  };
 }
 
 export function deriveVerdict(usage: FilaUso[]): Verdict {

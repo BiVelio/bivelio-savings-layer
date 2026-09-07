@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "appels LLM/récupération/outil qui n'ont jamais été exécutés",
       "whatEliminatedTokens": "tokens d'entrée supprimés car inutiles",
-      "elisionNota": "Un simple décompte — sa valeur en argent est estimée dans l'élision en ombre ci-dessous, et n'entre jamais dans ta commission.",
+      "elisionNota": "Un simple décompte du fournisseur. Les requêtes où NOS réglages l'ont provoqué sont dans la carte « Effacement par le fournisseur » ci-dessous ; sa valeur en argent n'est pas affichée tant que le net par modèle n'est pas mesuré, et elle n'entre jamais dans ta commission.",
       "whatCompressedTokens": "tokens d'entrée réencodés plus compacts",
       "whatProviderCachedTokens": "tokens d'entrée facturés moins cher (cache de préfixe)",
       "ghostAwaiting": "{ref} · en attente du premier rapport",
@@ -427,6 +427,11 @@
       "nota": "Ce que l'élision de contexte aurait économisé sur votre trafic réel, calculé par la passerelle sans toucher un seul octet. Jamais ajouté au titre, jamais compté dans la commission : le levier ne s'allumera que lorsque ce chiffre le justifiera.",
       "notaNegativa": "Sur votre trafic, l'élision aurait coûté de l'argent : réécrire des blocs invalide le cache de préfixe du fournisseur. Cette voie existe précisément pour voir cela avant d'allumer quoi que ce soit — c'est pourquoi elle reste éteinte."
     },
+    "elisionProveedor": {
+      "title": "Effacement par le fournisseur provoqué par nos réglages",
+      "detalle": "{requests} requêtes créditées · {tokens} tokens effacés par le fournisseur sur la période",
+      "nota": "Le décompte est celui du fournisseur (applied_edits). Ce n'est pas une économie mesurée et cela n'entre jamais dans ta commission ; l'argent suivra quand le net par modèle sera mesuré — effacer réécrit le cache de préfixe, et sur certains modèles le net est négatif."
+    },
     "ritmo": {
       "title": "Rythme et projection",
       "badgeEstimacion": "Estimation",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Économie estimée exclue de la base (contexte, jamais facturable) : {usd}.",
       "sombraElision": "Voie ombre : l'élision aurait économisé {usd} sur {requests} requêtes simulées. Hypothétique — n'entre jamais dans la base ni dans la commission.",
       "sombraElisionNegativa": "Voie ombre : l'élision aurait coûté {usd} de plus sur {requests} requêtes simulées. Voilà pourquoi elle reste éteinte : on n'allume que ce qui économise vraiment.",
+      "elisionProveedor": "Voie de l'effacement par le fournisseur : {requests} requêtes où nos réglages ont fait effacer du contexte au fournisseur. Un décompte, pas une économie — il n'entre jamais dans la base ni dans la commission.",
       "parametros": "Paramètres du relevé — catalogue de prix {version} · taux de change {fx}.",
       "mismaFacturaTitulo": "Ce document EST la future facture.",
       "mismaFactura": "Le relevé en ombre et le relevé facturable sont calculés par la même machinerie : quand la commission s'activera, votre première facture ne contiendra que des chiffres déjà vus ici.",

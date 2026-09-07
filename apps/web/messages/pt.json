@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chamadas a LLM/recuperação/ferramentas que nunca chegaram a correr",
       "whatEliminatedTokens": "tokens de entrada descartados por serem desnecessários",
-      "elisionNota": "Apenas uma contagem — o seu valor em dinheiro é estimado na elisão em sombra abaixo, e nunca entra na tua comissão.",
+      "elisionNota": "Apenas uma contagem do fornecedor. Os pedidos em que a causaram os NOSSOS ajustes estão no cartão «Apagamento do fornecedor» abaixo; o seu valor em dinheiro não se mostra até medir o líquido por modelo, e nunca entra na tua comissão.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma mais compacta",
       "whatProviderCachedTokens": "tokens de entrada faturados mais baratos (cache de prefixo)",
       "ghostAwaiting": "{ref} · à espera do primeiro relatório",
@@ -427,6 +427,11 @@
       "nota": "O que a elisão de contexto teria poupado no seu tráfego real, calculado pelo gateway sem tocar num único byte. Nunca se soma ao título nem entra na comissão: a alavanca só liga quando este número o justificar.",
       "notaNegativa": "No seu tráfego, a elisão teria custado dinheiro: reescrever blocos invalida a cache de prefixo do fornecedor. Esta via existe exatamente para ver isto antes de ligar o que quer que seja — e por isso continua desligada."
     },
+    "elisionProveedor": {
+      "title": "Apagamento do fornecedor causado pelos nossos ajustes",
+      "detalle": "{requests} pedidos creditados · {tokens} tokens apagados pelo fornecedor no período",
+      "nota": "A contagem é do fornecedor (applied_edits). Não é uma poupança medida e nunca entra na tua comissão; o dinheiro chegará quando o líquido por modelo estiver medido — apagar reescreve a cache de prefixo, e em alguns modelos o líquido sai negativo."
+    },
     "ritmo": {
       "title": "Ritmo e projeção",
       "badgeEstimacion": "Estimativa",
@@ -470,6 +475,7 @@
       "estimadoExcluido": "Economia estimada excluída da base (contexto, nunca faturável): {usd}.",
       "sombraElision": "Via sombra: a elisão teria poupado {usd} em {requests} pedidos simulados. Hipotético — nunca entra na base nem na comissão.",
       "sombraElisionNegativa": "Via sombra: a elisão teria custado {usd} a mais em {requests} pedidos simulados. Por isso está desligada: só se liga o que poupa de verdade.",
+      "elisionProveedor": "Faixa do apagamento do fornecedor: {requests} pedidos em que os nossos ajustes fizeram o fornecedor apagar contexto. Uma contagem, não uma poupança — nunca entra na base nem na comissão.",
       "parametros": "Parâmetros do extrato — catálogo de preços {version} · taxa de câmbio {fx}.",
       "mismaFacturaTitulo": "Este documento É a futura fatura.",
       "mismaFactura": "O extrato em sombra e o faturável são calculados pela mesma máquina: quando a comissão ativar, a primeira fatura só terá números que você já viu aqui.",

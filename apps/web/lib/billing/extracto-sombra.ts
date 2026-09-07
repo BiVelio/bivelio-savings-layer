@@ -63,6 +63,14 @@ function aFila(r: UsageRollup): FilaDiaria {
           shadow_actual_cost: r.shadowActualCost ?? 0,
         }
       : {}),
+    // El carril del borrado del proveedor (0025): misma regla que la sombra —
+    // contexto, jamás base (salvo COMISIONAR_ELISION_SUELO). Sin columnas, nada.
+    ...(r.eliminatedCreditedRequests !== undefined
+      ? {
+          eliminated_credited_requests: r.eliminatedCreditedRequests,
+          eliminated_floor_cost: r.eliminatedFloorCost ?? 0,
+        }
+      : {}),
   };
 }
 
