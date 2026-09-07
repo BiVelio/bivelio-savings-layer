@@ -9,6 +9,15 @@
  * un bloque, se cuenta. La aritmética amortizada queda para el carril vivo,
  * donde el futuro no existe todavía.
  *
+ * EL REPARTO — la verja de honestidad del artefacto: por modelo, el baseline
+ * simulado frente al contador del PROVEEDOR (leídos, escritos y entrada sin
+ * caché, en tokens). Un baseline que no reproduce la factura no puede medir
+ * ahorros sobre ella: el del 07-09 inflaba la escritura 2,6× en opus-4-8
+ * (21,2 M simulados frente a 8,09 M reales) porque el hash de bloque llevaba
+ * el `cache_control` dentro y Claude Code lo mueve al último mensaje en cada
+ * turno. `--verja-reparto=<pct>` hace fallar el replay cuando un modelo con
+ * más del 1 % del coste real supera ese error de escritura.
+ *
  * PRIVACIDAD (la misma doctrina que el análisis S1): del contenido de las
  * capturas no sale NADA — cada petición se compacta a metadatos por bloque en
  * cuanto se lee y el cuerpo se suelta; la salida son solo agregados. Una línea
@@ -18,21 +27,22 @@
  * el fichero se lee en STREAMING línea a línea (readFileSync entero revienta
  * el tope de string de Node con la captura de 3+ GB).
  *
- * Uso:  pnpm sombra:corpus [captura.jsonl ...]
+ * Uso:  pnpm sombra:corpus [captura.jsonl ...] [--salida=<ruta.json>] [--verja-reparto=<pct>]
  */
 import { createHash } from "node:crypto";
 import { createReadStream, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
 
 import {
+  CacheDePrefijos,
+  CadenaDeSimulacion,
   POLITICAS,
   V2_PRESUPUESTO_BYTES,
   aplicarPolitica,
   compactarCuerpo,
   identidad,
-  simularSesion,
   type CosteSimulado,
   type Politica,
   type TurnoSombra,
@@ -80,11 +90,12 @@ function usageDe(r: Registro): UsoSse | null {
   return null;
 }
 
-function entradaReal(uso: UsoSse): number {
-  const escritura =
+/** Los tres contadores de entrada del proveedor, tal cual los factura. */
+function contadores(uso: UsoSse): { entrada: number; leidos: number; escritos: number } {
+  const escritos =
     uso.cache_creation_input_tokens ??
     (uso.cache_creation?.ephemeral_5m_input_tokens ?? 0) + (uso.cache_creation?.ephemeral_1h_input_tokens ?? 0);
-  return (uso.input_tokens ?? 0) + (uso.cache_read_input_tokens ?? 0) + escritura;
+  return { entrada: uso.input_tokens ?? 0, leidos: uso.cache_read_input_tokens ?? 0, escritos };
 }
 
 /** Clave de sesión: cabecera de Claude Code → hash del primer mensaje → puerto
@@ -107,6 +118,8 @@ interface TurnoConSesion extends TurnoSombra {
    *  denominador «sobre el coste total»). */
   realEntradaUsd: number;
   realSalidaUsd: number;
+  /** El contador del PROVEEDOR en tokens: la vara del reparto. */
+  prov: { entrada: number; leidos: number; escritos: number };
 }
 
 async function leer(ruta: string, turnos: TurnoConSesion[], cuenta: { lineas: number; ilegibles: number; sinUsage: number; sinCuerpo: number }) {
@@ -139,6 +152,7 @@ async function leer(ruta: string, turnos: TurnoConSesion[], cuenta: { lineas: nu
       continue;
     }
     const salidaUsd = (medido.tokens.salida / 1_000) * medido.precio.outputPer1k;
+    const prov = contadores(uso);
     turnos.push({
       id: r.id ?? cuenta.lineas,
       // La cadena de prefijos es por (sesión, MODELO): una sesión de Claude
@@ -148,12 +162,15 @@ async function leer(ruta: string, turnos: TurnoConSesion[], cuenta: { lineas: nu
       // que la caché real (que es un árbol, no un «último turno») nunca cobró.
       sesion: `${claveDeSesion(r, fichero)}·${model}`,
       bloques: compactarCuerpo(r.requestBody!),
+      // El `at` del espía es el INICIO de la petición: desde ahí mide el
+      // proveedor el TTL de cada entrada de caché.
       at: r.at ? Date.parse(r.at) : 0,
       model,
-      entradaReal: entradaReal(uso),
+      entradaReal: prov.entrada + prov.leidos + prov.escritos,
       escritura1h: (uso.cache_creation?.ephemeral_1h_input_tokens ?? 0) > 0,
       realEntradaUsd: medido.costeUsd - salidaUsd,
       realSalidaUsd: salidaUsd,
+      prov,
     });
   }
 }
@@ -162,9 +179,11 @@ function sumar(a: CosteSimulado, b: CosteSimulado): CosteSimulado {
   return {
     lecturaUsd: a.lecturaUsd + b.lecturaUsd,
     escrituraUsd: a.escrituraUsd + b.escrituraUsd,
+    entradaUsd: a.entradaUsd + b.entradaUsd,
     totalUsd: a.totalUsd + b.totalUsd,
     tokensLeidos: a.tokensLeidos + b.tokensLeidos,
     tokensEscritos: a.tokensEscritos + b.tokensEscritos,
+    tokensEntrada: a.tokensEntrada + b.tokensEntrada,
     tokensInvalidados: a.tokensInvalidados + b.tokensInvalidados,
     invalidacionUsd: a.invalidacionUsd + b.invalidacionUsd,
   };
@@ -173,17 +192,34 @@ function sumar(a: CosteSimulado, b: CosteSimulado): CosteSimulado {
 const vacio = (): CosteSimulado => ({
   lecturaUsd: 0,
   escrituraUsd: 0,
+  entradaUsd: 0,
   totalUsd: 0,
   tokensLeidos: 0,
   tokensEscritos: 0,
+  tokensEntrada: 0,
   tokensInvalidados: 0,
   invalidacionUsd: 0,
 });
 
+/** Un modelo cuenta para la verja de reparto si pesa más de esto en el coste real. */
+const MASA_MINIMA_VERJA_PCT = 1;
+
+/** Error relativo (sim − real) / real, en % con un decimal; null sin denominador. */
+const errorPct = (sim: number, real: number): number | null => (real > 0 ? Math.round(((sim - real) / real) * 1000) / 10 : null);
+
 async function main() {
   const DIR = join(homedir(), ".bvsala-f0");
-  const ficheros = process.argv.slice(2).length
-    ? process.argv.slice(2)
+  const args = process.argv.slice(2);
+  const opcion = (nombre: string): string | undefined => args.find((a) => a.startsWith(`--${nombre}=`))?.slice(nombre.length + 3);
+  const salidaPedida = opcion("salida");
+  const verjaReparto = opcion("verja-reparto") !== undefined ? Number(opcion("verja-reparto")) : null;
+  if (verjaReparto !== null && !(verjaReparto > 0)) {
+    console.error("[sombra] --verja-reparto necesita un porcentaje > 0");
+    process.exit(1);
+  }
+  const posicionales = args.filter((a) => !a.startsWith("--"));
+  const ficheros = posicionales.length
+    ? posicionales
     : readdirSync(DIR)
         .filter((f) => f.startsWith("captura-") && f.endsWith(".jsonl"))
         .map((f) => join(DIR, f));
@@ -217,9 +253,13 @@ async function main() {
   }
   console.error(`[sombra] ${turnos.length} turnos medibles de ${cuenta.lineas} líneas (ilegibles ${cuenta.ilegibles}, sin usage ${cuenta.sinUsage}, sin cuerpo ${cuenta.sinCuerpo})`);
 
-  const sesiones = new Map<string, TurnoConSesion[]>();
-  for (const t of turnos) (sesiones.get(t.sesion) ?? sesiones.set(t.sesion, []).get(t.sesion)!).push(t);
-  for (const grupo of sesiones.values()) grupo.sort((a, b) => a.id - b.id);
+  // Las cadenas son por (sesión, modelo), pero la CACHÉ de prefijos es de la
+  // organización: se comparte por modelo y variante. Para que vea los aciertos
+  // cruzados (un subagente que lee el prefijo tools+system que su padre
+  // escribió) el replay alimenta TODAS las sesiones en orden temporal global,
+  // no sesión a sesión.
+  const sesiones = new Set(turnos.map((t) => t.sesion));
+  turnos.sort((a, b) => a.at - b.at || a.id - b.id);
 
   // ── el replay: baseline + tres políticas, misma vara ──
   type Variante = "baseline" | Politica;
@@ -229,23 +269,69 @@ async function main() {
 
   let realEntradaUsd = 0;
   let realSalidaUsd = 0;
-  for (const grupo of sesiones.values()) {
-    for (const t of grupo) {
-      realEntradaUsd += t.realEntradaUsd;
-      realSalidaUsd += t.realSalidaUsd;
-    }
-    const modelo = grupo[0]!.model;
-    const deModelo = porModelo.get(modelo) ?? porModelo.set(modelo, new Map()).get(modelo)!;
-    const corre = (variante: Variante, transformar: Parameters<typeof simularSesion>[1]) => {
-      const c = simularSesion(grupo, transformar);
-      porVariante.set(variante, sumar(porVariante.get(variante) ?? vacio(), c));
-      deModelo.set(variante, sumar(deModelo.get(variante) ?? vacio(), c));
-    };
-    corre("baseline", (b) => identidad(b));
-    for (const p of POLITICAS) corre(p, (b, estado, turno) => aplicarPolitica(p, b, estado, turno, presupuestoV2));
+  const realPorModelo = new Map<string, { usd: number; entrada: number; leidos: number; escritos: number }>();
+  for (const t of turnos) {
+    realEntradaUsd += t.realEntradaUsd;
+    realSalidaUsd += t.realSalidaUsd;
+    const r = realPorModelo.get(t.model) ?? realPorModelo.set(t.model, { usd: 0, entrada: 0, leidos: 0, escritos: 0 }).get(t.model)!;
+    r.usd += t.realEntradaUsd + t.realSalidaUsd;
+    r.entrada += t.prov.entrada;
+    r.leidos += t.prov.leidos;
+    r.escritos += t.prov.escritos;
   }
 
+  const corre = (variante: Variante, transformar: ConstructorParameters<typeof CadenaDeSimulacion>[0]) => {
+    const cachesPorModelo = new Map<string, CacheDePrefijos>();
+    const cadenas = new Map<string, CadenaDeSimulacion>();
+    for (const t of turnos) {
+      let cadena = cadenas.get(t.sesion);
+      if (!cadena) {
+        const cache = cachesPorModelo.get(t.model) ?? cachesPorModelo.set(t.model, new CacheDePrefijos()).get(t.model)!;
+        cadena = new CadenaDeSimulacion(transformar, cache);
+        cadenas.set(t.sesion, cadena);
+      }
+      const c = cadena.paso(t);
+      porVariante.set(variante, sumar(porVariante.get(variante) ?? vacio(), c));
+      const deModelo = porModelo.get(t.model) ?? porModelo.set(t.model, new Map()).get(t.model)!;
+      deModelo.set(variante, sumar(deModelo.get(variante) ?? vacio(), c));
+    }
+  };
+  corre("baseline", (b) => identidad(b));
+  for (const p of POLITICAS) corre(p, (b, estado, turno) => aplicarPolitica(p, b, estado, turno, presupuestoV2));
+
   const base = porVariante.get("baseline")!;
+
+  // ── el reparto: baseline simulado vs contador del proveedor, por modelo ──
+  const realTotalUsd = realEntradaUsd + realSalidaUsd;
+  const reparto = Object.fromEntries(
+    [...realPorModelo.entries()].map(([modelo, r]) => {
+      const b = porModelo.get(modelo)?.get("baseline") ?? vacio();
+      return [
+        modelo,
+        {
+          pctDelCoste: realTotalUsd > 0 ? Math.round((r.usd / realTotalUsd) * 1000) / 10 : null,
+          leidosProv: r.leidos,
+          escritosProv: r.escritos,
+          entradaProv: r.entrada,
+          leidosSim: Math.round(b.tokensLeidos),
+          escritosSim: Math.round(b.tokensEscritos),
+          entradaSim: Math.round(b.tokensEntrada),
+          errorLecturaPct: errorPct(b.tokensLeidos, r.leidos),
+          errorEscrituraPct: errorPct(b.tokensEscritos, r.escritos),
+          errorEntradaPct: errorPct(b.tokensEntrada, r.entrada),
+        },
+      ];
+    }),
+  );
+  // Solo los modelos con MASA deciden: un modelo con 5 turnos y un 0,03 % del
+  // coste puede dar un error enorme sin que signifique nada.
+  const enRojo =
+    verjaReparto === null
+      ? []
+      : Object.entries(reparto)
+          .filter(([, r]) => (r.pctDelCoste ?? 0) > MASA_MINIMA_VERJA_PCT && r.errorEscrituraPct !== null && Math.abs(r.errorEscrituraPct) > verjaReparto)
+          .map(([modelo, r]) => `${modelo}: ${r.errorEscrituraPct} % (masa ${r.pctDelCoste} %)`);
+
   const resumen = (c: CosteSimulado) => ({
     simUsd: Math.round(c.totalUsd * 100) / 100,
     ahorroSimUsd: Math.round((base.totalUsd - c.totalUsd) * 100) / 100,
@@ -272,6 +358,13 @@ async function main() {
       simBaselineUsd: Math.round(base.totalUsd * 100) / 100,
       nota: "baseline simulado vs entrada real medida — el ahorro se compara SIEMPRE dentro del simulador (misma vara) y el % se aplica al dinero real de entrada",
       ratioSimSobreReal: realEntradaUsd > 0 ? Math.round((base.totalUsd / realEntradaUsd) * 1000) / 1000 : null,
+    },
+    reparto: {
+      nota: "baseline simulado vs contador del proveedor, en TOKENS por modelo; error = (sim − real) / real. Es la verja de honestidad del artefacto: un baseline que no reproduce la factura no puede medir ahorros sobre ella. La verja solo mira la ESCRITURA de los modelos con masa (> masaMinimaPct del coste real).",
+      verjaPct: verjaReparto,
+      masaMinimaPct: MASA_MINIMA_VERJA_PCT,
+      enRojo,
+      porModelo: reparto,
     },
     masaToolResult: Object.fromEntries(
       [...porClase.entries()].map(([clase, c]) => [
@@ -312,11 +405,18 @@ async function main() {
   };
 
   const sufijo = presupuestoV2 ? `-v2-${Math.round(presupuestoV2 / 1024)}k` : "";
-  const salida = join("benchmarks", "out", `sombra-corpus-${new Date().toISOString().slice(0, 10)}${sufijo}.json`);
-  mkdirSync(join("benchmarks", "out"), { recursive: true });
+  const salida = salidaPedida ?? join("benchmarks", "out", `sombra-corpus-${new Date().toISOString().slice(0, 10)}${sufijo}.json`);
+  mkdirSync(dirname(salida), { recursive: true });
   writeFileSync(salida, JSON.stringify(informe, null, 2));
   console.error(`[sombra] artefacto: ${salida}`);
   console.log(JSON.stringify(informe, null, 2));
+  if (verjaReparto !== null) {
+    if (enRojo.length) {
+      console.error(`[sombra] VERJA DE REPARTO ROJA (> ${verjaReparto} %): ${enRojo.join(" · ")}`);
+      process.exit(1);
+    }
+    console.error(`[sombra] verja de reparto en verde (≤ ${verjaReparto} % de error de escritura en todos los modelos con masa)`);
+  }
 }
 
 main().catch((e) => {
