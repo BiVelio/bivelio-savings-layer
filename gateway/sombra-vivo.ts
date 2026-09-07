@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import {
+  CacheDePrefijos,
   CadenaDeSimulacion,
   aplicarPolitica,
   compactarCuerpo,
@@ -11,7 +12,8 @@ import type { UsoSse } from "./medidor.js";
 
 /**
  * S2.4-vivo · EL CARRIL SOMBRA del gateway — la política GANADORA del replay
- * (v0, +20,6 % neto; PR #194) corriendo contra el tráfico real, EN ASÍNCRONO
+ * (v0; la cifra vigente es la del artefacto benchmarks/evidencia/sombra-corpus-*
+ * más reciente) corriendo contra el tráfico real, EN ASÍNCRONO
  * tras servir la respuesta y sin tocar un byte de lo reenviado. Por petición
  * medible mantiene dos cadenas del mismo simulador (baseline y v0) y emite la
  * diferencia de ESE turno como registro `basis:"shadow"`.
@@ -22,9 +24,11 @@ import type { UsoSse } from "./medidor.js";
  * idempotencia con el registro medido de la misma petición.
  *
  * MEMORIA ACOTADA: las cadenas viven en un mapa con tope; al superarlo cae la
- * más antigua por último uso. Una cadena que se pierde y vuelve arranca de
- * cero (su primer turno simula escritura completa en AMBAS variantes — el
- * sesgo se anula al comparar).
+ * más antigua por último uso. La caché de PREFIJOS no vive en la cadena sino
+ * en un mapa por modelo (una por variante: base y v0 no comparten hashes),
+ * como la del proveedor, que es de la organización: una cadena que se pierde
+ * y vuelve, o una sesión nueva, sigue acertando en el prefijo que otra
+ * escribió. Cada caché poda sus entradas caducadas y tiene su propio tope.
  */
 
 /** Tope de cadenas vivas (sesión×modelo×agente). Claude Code típico: 2-6. */
@@ -44,6 +48,7 @@ export interface PasoSombra {
 
 export class CarrilSombra {
   private readonly cadenas = new Map<string, Cadena>();
+  private readonly cachesPorModelo = new Map<string, { base: CacheDePrefijos; v0: CacheDePrefijos }>();
 
   /**
    * Alimenta el carril con una petición YA medida. `cuerpo` es el JSON parseado
@@ -73,7 +78,7 @@ export class CarrilSombra {
     };
     if (turno.bloques.length === 0) return null;
 
-    const cadena = this.cadenaPara(this.clave(entrada));
+    const cadena = this.cadenaPara(this.clave(entrada), entrada.model);
     const base = cadena.base.paso(turno);
     const v0 = cadena.v0.paso(turno);
     if (base.totalUsd <= 0 && v0.totalUsd <= 0) return null;
@@ -92,12 +97,22 @@ export class CarrilSombra {
     return `m:${hash}·${e.model}`;
   }
 
-  private cadenaPara(clave: string): Cadena {
+  private cachesDe(model: string): { base: CacheDePrefijos; v0: CacheDePrefijos } {
+    let c = this.cachesPorModelo.get(model);
+    if (!c) {
+      c = { base: new CacheDePrefijos(), v0: new CacheDePrefijos() };
+      this.cachesPorModelo.set(model, c);
+    }
+    return c;
+  }
+
+  private cadenaPara(clave: string, model: string): Cadena {
     let c = this.cadenas.get(clave);
     if (!c) {
+      const caches = this.cachesDe(model);
       c = {
-        base: new CadenaDeSimulacion((b) => identidad(b)),
-        v0: new CadenaDeSimulacion((b, estado, turno) => aplicarPolitica("v0", b, estado, turno)),
+        base: new CadenaDeSimulacion((b) => identidad(b), caches.base),
+        v0: new CadenaDeSimulacion((b, estado, turno) => aplicarPolitica("v0", b, estado, turno), caches.v0),
         ultimoUso: 0,
       };
       this.cadenas.set(clave, c);

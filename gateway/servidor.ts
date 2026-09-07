@@ -180,6 +180,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     atribucion?: Atribucion,
     elision?: ElisionAplicada | null,
     rebaja?: RebajaAplicada | null,
+    /** Instante de INICIO de la petición: la caché de prefijos del proveedor
+     *  mide sus TTL desde ahí, no desde el fin de la respuesta. */
+    inicioMs?: number,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -225,7 +228,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
               cuerpo: json as { model?: unknown; messages?: unknown; system?: unknown; tools?: unknown },
               uso: usoFinal,
               model,
-              at: Date.now(),
+              at: inicioMs ?? Date.now(),
               ...(atribucion?.sessionId !== undefined ? { sessionId: atribucion.sessionId } : {}),
               ...(atribucion?.agentId !== undefined ? { agentId: atribucion.agentId } : {}),
             });
@@ -249,6 +252,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
   const server = createServer(async (req, res) => {
     const requestId = randomUUID();
+    const inicioMs = Date.now();
     // La petición está viva solo mientras el cliente la escucha. Si se va —Esc en
     // Claude Code, cierra la pestaña— se ABORTA el upstream: antes seguía
     // generando la completion entera y facturándola sin que nadie la leyera. El
@@ -470,10 +474,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       if (observador && upstream.ok) {
         medida = true;
         const elision = observador instanceof ObservadorSse ? observador.elision() : null;
-        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision, rebaja);
+        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs);
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
-        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, elisionDeJson(respuesta), rebaja);
+        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, elisionDeJson(respuesta), rebaja, inicioMs);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -492,7 +496,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
           const elision = observador instanceof ObservadorSse ? observador.elision() : null;
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision);
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
         }
