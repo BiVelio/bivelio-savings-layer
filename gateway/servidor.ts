@@ -20,6 +20,10 @@ import {
   type UsoSse,
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
+import { renderizarRecibo, type AcumuladoPorModelo } from "./recibo.js";
+import { PRECIOS_AL_DIA } from "../src/pricing/catalogo.js";
+import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H } from "../src/pricing/primas.js";
+import { BV_SALA_VERSION } from "../src/index.js";
 import { decidirElision, type VeredictoDeElision } from "../src/pricing/aptitud-de-elision.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
@@ -130,6 +134,23 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // dónde reportar y simular sería gastar CPU del cliente para nada.
   const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
 
+  // EL RECIBO · lo que se le enseña a quien todavía no paga. Se acumula SIEMPRE
+  // (cuesta un Map en memoria) porque es la pieza comercial: un cliente que
+  // prueba la pasarela tiene que poder ver su propia cifra al cerrar la sesión,
+  // sin cuenta, sin panel y sin esperar a un cierre mensual. No viaja a ningún
+  // sitio: se imprime aquí y muere con el proceso.
+  const arrancadoEn = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const recibo = new Map<string, AcumuladoPorModelo>();
+  const anotar = (model: string): AcumuladoPorModelo => {
+    let a = recibo.get(model);
+    if (!a) {
+      a = { peticiones: 0, costeUsd: 0, tokensEntrada: 0, tokensSalida: 0,
+            ahorroMedidoUsd: 0, tokensElididos: 0, ahorroSombraUsd: 0, verja: "—" };
+      recibo.set(model, a);
+    }
+    return a;
+  };
+
   // S4a · el canal de entitlements existe por defecto (`elision !== false`) siempre
   // que haya clave de servicio: sin clave no hay org que consultar. El gate REAL es
   // el feature `context_elision` (fail-closed), no la bandera — que solo APAGA
@@ -199,6 +220,23 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           ? informeCoalescido(requestId, model, medido, atribucion)
           : informeMedido(requestId, model, medido, atribucion, elision, rebaja),
       );
+      // EL RECIBO · se anota lo MISMO que se acaba de emitir, en los tres
+      // carriles separados. `sobrecosteEvitado` es lo único facturable.
+      {
+        const a = anotar(model);
+        a.peticiones += 1;
+        a.costeUsd += medido.costeUsd;
+        a.tokensEntrada += medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
+        a.tokensSalida += medido.tokens.salida;
+        if (rebaja && rebaja.rebajadas > 0) {
+          const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
+          if (rebaja.yaEran5m === 0 && escrita5m > 0) {
+            a.ahorroMedidoUsd +=
+              (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE);
+          }
+        }
+        if (elision) a.tokensElididos += elision.tokensLimpiados;
+      }
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
@@ -231,6 +269,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             });
             if (!paso) return;
             em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
+            {
+              const a = anotar(model);
+              a.ahorroSombraUsd += paso.baselineUsd - paso.politicaUsd;
+              a.verja = paso.verja;
+            }
             log(
               paso.verja === "aplica"
                 ? `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`
@@ -558,6 +601,21 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   return {
     puerto,
     cerrar: async () => {
+      // EL RECIBO al cerrar: si hubo tráfico, el cliente se lleva su cifra sin
+      // haber creado cuenta ni esperado a un cierre mensual. Va por `log`, así
+      // que en un envoltorio silencioso no ensucia el TUI.
+      if (recibo.size > 0) {
+        log(
+          "\n" +
+            renderizarRecibo({
+              desde: arrancadoEn,
+              hasta: new Date().toISOString().slice(0, 19).replace("T", " "),
+              porModelo: Object.fromEntries(recibo),
+              versionPrecios: PRECIOS_AL_DIA,
+              version: BV_SALA_VERSION,
+            }),
+        );
+      }
       // Se DRENA el uso antes de cerrar y ANTES del process.exit() de bin.ts:
       // stop() disparaba el flush sin esperarlo y el último lote de cada sesión
       // de `bvsala claude` se perdía (caza del 27-08).
