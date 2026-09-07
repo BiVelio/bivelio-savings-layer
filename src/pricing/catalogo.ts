@@ -211,3 +211,31 @@ const CLAVES_POR_LONGITUD = clavesPorLongitud(CATALOGO);
 export function precioDeLista(model: string): CostModel | undefined {
   return buscarPorModelo(CATALOGO, CLAVES_POR_LONGITUD, model);
 }
+
+/** Catálogo de identidad: cada clave apuntando a sí misma. Se calcula UNA vez. */
+const CLAVES_IDENTIDAD: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.keys(CATALOGO).map((k) => [k, k]),
+);
+
+/**
+ * La CLAVE de catálogo de un modelo — no su precio.
+ *
+ * Existe para que cualquier tabla indexada POR MODELO (hoy la aptitud de
+ * elisión, `pricing/aptitud-de-elision.ts`) use el mismo emparejador que los
+ * precios en vez de escribir el suyo. Ya hay tres copias a mano de esta
+ * búsqueda en el repo, y la cabecera de `buscarPorModelo` explica por qué la
+ * cuarta sería cara: el corte por separador es lo único que impide que
+ * `gpt-4` case con `gpt-4o`, que cuesta doce veces menos.
+ *
+ * Comportamiento que importa, y que los tests fijan:
+ *   claveDeCatalogo("claude-haiku-4-5-20251001") === "claude-haiku-4-5"
+ *   claveDeCatalogo("claude-fable-5-1")          === "claude-fable-5-1"  (NUNCA "claude-fable-5")
+ *   claveDeCatalogo("claude-fable-6")            === undefined
+ *
+ * Ese segundo caso es el que evita repetir el error que ya costó dinero aquí:
+ * las dos generaciones de la familia leen la caché a precios distintos
+ * (0,001 frente a 0,00025) y confundirlas mueve el veredicto de una palanca.
+ */
+export function claveDeCatalogo(model: string): string | undefined {
+  return buscarPorModelo(CLAVES_IDENTIDAD, CLAVES_POR_LONGITUD, model);
+}

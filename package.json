@@ -83,6 +83,7 @@
     "anillo1": "tsx --env-file-if-exists=.env.bench benchmarks/anillo1/arnes.ts",
     "anillo2": "tsx benchmarks/anillo2/arnes.ts",
     "anillo2:conciliar": "tsx benchmarks/anillo2/conciliar.ts",
+    "anillo2:fugas": "zsh scripts/anillo2-vigia-fugas.zsh",
     "salida": "tsx --env-file-if-exists=.env.bench benchmarks/salida/arnes.ts",
     "salida:anatomia": "tsx benchmarks/salida/anatomia.ts"
   },
