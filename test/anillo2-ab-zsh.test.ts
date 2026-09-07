@@ -1,5 +1,4 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -108,6 +107,7 @@ describe.skipIf(!hayZsh)("anillo2-ab.zsh — lo que cazó la revisión del 06-09
     // limpio. Con un `exec zsh -l` a media sesión queda huérfano y cada
     // movimiento del puntero se vuelca como `^[[<35;44;22M` en la entrada
     // (07-09). El saneado se ejecuta antes y después de `command bvsala claude`.
+    const { readFileSync } = require("node:fs") as typeof import("node:fs");
     const src = readFileSync(SCRIPT, "utf8");
     const cuerpo = src.slice(src.indexOf("function claude {"));
     const lanza = cuerpo.indexOf('command bvsala claude "$@"\n  local rc=$?');
