@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Sommige machines hebben de laatste 7 dagen geen gemeten besparing opgeleverd",
-      "summary": "{n} van {total} gateway-machines die de laatste 7 dagen actief waren.",
+      "summary": "{n} van {total} gateway-machines (of niet-gedeclareerd) die de laatste 7 dagen actief waren, hebben geen gemeten besparing opgeleverd.",
       "outdated": "{n, plural, one {# machine draait} other {# machines draaien}} een gateway ouder dan {minima}, de eerste versie met de tariefhefboom: werk die bij.",
       "undeclared": "{n, plural, one {# machine meldt} other {# machines melden}} geen versie (gateway ouder dan het versiekanaal). Is die ouder dan {minima}, dan heeft die geen tariefhefboom.",
       "noLever": "{n, plural, one {# machine is up-to-date} other {# machines zijn up-to-date}}, maar de hefboom heeft daar niet gewerkt: controleer de feature cache_ttl_tuning van je licentie, BVSALA_GATEWAY_ELISION op die machine en of het verkeer 1h-cache schrijft.",

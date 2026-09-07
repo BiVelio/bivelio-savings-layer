@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Certaines machines n'ont produit aucune économie mesurée ces 7 derniers jours",
-      "summary": "{n} machines sur {total} avec gateway actives ces 7 derniers jours.",
+      "summary": "{n} des {total} machines avec gateway (ou non déclarées) actives ces 7 derniers jours n'ont produit aucune économie mesurée.",
       "outdated": "{n, plural, one {# machine exécute} other {# machines exécutent}} un gateway antérieur à {minima}, la première version dotée du levier tarifaire : mettez-le à jour.",
       "undeclared": "{n, plural, one {# machine ne déclare} other {# machines ne déclarent}} pas de version (gateway antérieur au canal de version). Si elle est antérieure à {minima}, elle n'a pas de levier tarifaire.",
       "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi : vérifiez la feature cache_ttl_tuning de votre licence, BVSALA_GATEWAY_ELISION sur cette machine et si son trafic écrit du cache 1h.",

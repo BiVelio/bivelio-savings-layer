@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Some machines produced no measured savings in the last 7 days",
-      "summary": "{n} of {total} gateway machines active in the last 7 days.",
+      "summary": "{n} of {total} gateway machines (or undeclared) active in the last 7 days have produced no measured savings.",
       "outdated": "{n, plural, one {# machine runs} other {# machines run}} a gateway older than {minima}, the first version with the rate lever: update it.",
       "undeclared": "{n, plural, one {# machine does} other {# machines do}} not declare a version (gateway older than the version channel). If it is older than {minima}, it has no rate lever.",
       "noLever": "{n, plural, one {# machine is} other {# machines are}} up to date, but the lever did not act there: check the cache_ttl_tuning feature on your licence, BVSALA_GATEWAY_ELISION on that machine, and whether its traffic writes 1h cache.",

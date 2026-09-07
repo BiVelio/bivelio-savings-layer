@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Niektóre maszyny nie wygenerowały zmierzonych oszczędności w ciągu ostatnich 7 dni",
-      "summary": "{n} z {total} maszyn z gatewayem aktywnych w ciągu ostatnich 7 dni.",
+      "summary": "{n} z {total} maszyn z gatewayem (lub niezadeklarowanych) aktywnych w ostatnich 7 dniach nie wygenerowało zmierzonych oszczędności.",
       "outdated": "{n, plural, one {# maszyna działa} few {# maszyny działają} many {# maszyn działa} other {# maszyny działa}} na gatewayu starszym niż {minima}, pierwszej wersji z dźwignią taryfową: zaktualizuj go.",
       "undeclared": "{n, plural, one {# maszyna nie deklaruje} few {# maszyny nie deklarują} many {# maszyn nie deklaruje} other {# maszyny nie deklaruje}} wersji (gateway starszy niż kanał wersji). Jeśli jest starszy niż {minima}, nie ma dźwigni taryfowej.",
       "noLever": "{n, plural, one {# maszyna jest aktualna} few {# maszyny są aktualne} many {# maszyn jest aktualnych} other {# maszyny jest aktualnej}}, ale dźwignia tam nie zadziałała: sprawdź funkcję cache_ttl_tuning w licencji, BVSALA_GATEWAY_ELISION na tej maszynie i czy jej ruch zapisuje cache 1h.",

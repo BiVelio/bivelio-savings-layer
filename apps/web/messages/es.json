@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Algunas máquinas no han producido ahorro medido en los últimos 7 días",
-      "summary": "{n} de {total} máquinas con gateway activas en los últimos 7 días.",
+      "summary": "{n} de {total} máquinas con gateway (o sin declarar) activas en 7 días no han producido ahorro medido.",
       "outdated": "{n, plural, one {# máquina corre} other {# máquinas corren}} un gateway anterior a {minima}, la primera versión con la palanca de tarifa: actualízalo.",
       "undeclared": "{n, plural, one {# máquina no declara} other {# máquinas no declaran}} versión (gateway anterior al canal de versión). Si es anterior a {minima}, no lleva la palanca de tarifa.",
       "noLever": "{n, plural, one {# máquina está al día} other {# máquinas están al día}}, pero la palanca no ha actuado ahí: comprueba el feature cache_ttl_tuning de tu licencia, BVSALA_GATEWAY_ELISION en esa máquina y si su tráfico escribe caché de 1h.",

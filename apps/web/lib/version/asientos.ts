@@ -56,6 +56,7 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
     min30: string | null;
     max30: string | null;
     sinVersion7d: boolean;
+    conDatos7d: boolean;
     ahorro7d: number;
   }
   const porAsiento = new Map<string, Acum>();
@@ -70,6 +71,7 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
       min30: null,
       max30: null,
       sinVersion7d: false,
+      conDatos7d: false,
       ahorro7d: 0,
     };
     // Un asiento es CI si CUALQUIER fila lo marcó: un job puede haber corrido
@@ -88,10 +90,18 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
     const diaMs = Date.parse(`${f.day}T00:00:00Z`);
     const en7d = !Number.isNaN(diaMs) && diaMs + DIA_MS > desde7d;
     if (en7d) {
-      acum.min7 = menor(acum.min7, f.versionMin);
-      acum.max7 = mayor(acum.max7, f.versionMax);
-      if (f.requestsSinVersion > 0) acum.sinVersion7d = true;
-      acum.ahorro7d += f.measuredBaselineCost - f.measuredActualCost;
+      // Una fila ANTERIOR a 0024 no trae versión ni contador de sin-versión: sus
+      // measured_* son los defaults (0). Sumarla como «0 € medidos en 7 días»
+      // encendería el banner ámbar en todas las máquinas el día de la migración,
+      // sin que ninguna haya dejado de ahorrar. No aporta dato: se salta.
+      const preCanal = f.versionMin === null && f.versionMax === null && f.requestsSinVersion === 0;
+      if (!preCanal) {
+        acum.conDatos7d = true;
+        acum.min7 = menor(acum.min7, f.versionMin);
+        acum.max7 = mayor(acum.max7, f.versionMax);
+        if (f.requestsSinVersion > 0) acum.sinVersion7d = true;
+        acum.ahorro7d += f.measuredBaselineCost - f.measuredActualCost;
+      }
     }
     porAsiento.set(f.seatId, acum);
   }
@@ -108,6 +118,7 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
       sinVersion7d: a.sinVersion7d,
       lastSeenAt: a.lastSeenAt,
       ahorroMedido7dUsd: a.ahorro7d,
+      conDatos7d: a.conDatos7d,
     });
   }
   // Los más recientes primero; la tarjeta corta por arriba.

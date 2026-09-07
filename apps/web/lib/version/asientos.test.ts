@@ -44,6 +44,7 @@ describe("agregarAsientos", () => {
         sinVersion7d: false,
         lastSeenAt: visto(1),
         ahorroMedido7dUsd: 0.5,
+        conDatos7d: true,
       },
     ]);
   });
@@ -131,5 +132,38 @@ describe("agregarAsientos", () => {
       AHORA,
     );
     expect(out.map((a) => a.seatId)).toEqual(["m-nuevo", "m-viejo"]);
+  });
+});
+
+/**
+ * EL FALSO POSITIVO DEL DÍA DE LA MIGRACIÓN. Las filas de seat_activity anteriores a
+ * 0024 no traen versión ni contador de sin-versión, y sus measured_* son los defaults
+ * (0). Sumarlas como «0 € medidos en 7 días» encendería el banner ámbar en TODAS las
+ * máquinas el día que se aplica 0024, sin que ninguna haya dejado de ahorrar.
+ */
+describe("agregarAsientos · filas anteriores a 0024 no cuentan como «sin ahorro»", () => {
+  it("un asiento con solo filas pre-canal sale con conDatos7d=false y ahorro 0", () => {
+    const [a] = agregarAsientos([fila({ versionMin: null, versionMax: null, requestsSinVersion: 0, measuredBaselineCost: 0, measuredActualCost: 0 })], AHORA);
+    expect(a!.conDatos7d).toBe(false);
+    expect(a!.ahorroMedido7dUsd).toBe(0);
+  });
+
+  it("en cuanto una fila de 7 días trae versión O contador de sin-versión, hay datos", () => {
+    const [conVersion] = agregarAsientos([fila({ versionMin: "gateway/0.4.16", versionMax: "gateway/0.4.16" })], AHORA);
+    expect(conVersion!.conDatos7d).toBe(true);
+    const [sinDeclarar] = agregarAsientos([fila({ versionMin: null, versionMax: null, requestsSinVersion: 3 })], AHORA);
+    expect(sinDeclarar!.conDatos7d).toBe(true);
+  });
+
+  it("las filas pre-canal NO diluyen el ahorro de las filas con datos del mismo asiento", () => {
+    const [a] = agregarAsientos(
+      [
+        fila({ day: dia(1), versionMin: null, versionMax: null, requestsSinVersion: 0, measuredBaselineCost: 0, measuredActualCost: 0 }),
+        fila({ day: dia(2), versionMin: "gateway/0.4.16", versionMax: "gateway/0.4.16", measuredBaselineCost: 2, measuredActualCost: 1.5 }),
+      ],
+      AHORA,
+    );
+    expect(a!.conDatos7d).toBe(true);
+    expect(a!.ahorroMedido7dUsd).toBeCloseTo(0.5, 9);
   });
 });

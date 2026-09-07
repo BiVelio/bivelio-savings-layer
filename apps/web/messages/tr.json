@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Bazı makineler son 7 günde ölçülen tasarruf üretmedi",
-      "summary": "Son 7 günde etkin {total} gateway makinesinden {n} tanesi.",
+      "summary": "Son 7 günde etkin olan {total} gateway makinesinden (veya bildirilmemiş) {n} tanesi ölçülmüş tasarruf üretmedi.",
       "outdated": "{n, plural, other {# makine}}, tarife kolunu taşıyan ilk sürüm olan {minima} sürümünden eski bir gateway çalıştırıyor: güncelleyin.",
       "undeclared": "{n, plural, other {# makine}} sürüm bildirmiyor (sürüm kanalından eski gateway). {minima} sürümünden eskiyse tarife kolu yoktur.",
       "noLever": "{n, plural, other {# makine}} güncel, ancak kol orada çalışmadı: lisansınızdaki cache_ttl_tuning özelliğini, o makinedeki BVSALA_GATEWAY_ELISION değerini ve trafiğinin 1 saatlik önbellek yazıp yazmadığını kontrol edin.",

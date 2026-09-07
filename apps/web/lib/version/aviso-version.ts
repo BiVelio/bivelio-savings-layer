@@ -50,6 +50,9 @@ export interface AsientoVisto {
   lastSeenAt: string;
   /** Σ(measured_baseline_cost − measured_actual_cost) en los últimos 7 días. */
   ahorroMedido7dUsd: number;
+  /** Alguna fila de los 7 días trae datos del canal (versión o contador de sin-versión). Las
+   *  anteriores a 0024 no: sus measured_* son defaults y no dicen que el asiento no ahorre. */
+  conDatos7d: boolean;
 }
 
 export interface AvisoVersion {
@@ -84,7 +87,9 @@ export function decidirAvisoVersion(
   });
   // `> 0` y no `>= 0`: un NaN o un negativo (no debería, pero la BD manda) cae
   // del lado de «no produce», que es el lado que avisa.
-  const sinEuro = activas.filter((a) => !(a.ahorroMedido7dUsd > 0));
+  // Un asiento cuyas filas de 7 días son todas anteriores a 0024 no tiene medida:
+  // no cuenta como «no produce» (falso positivo el día de la migración).
+  const sinEuro = activas.filter((a) => a.conDatos7d && !(a.ahorroMedido7dUsd > 0));
   if (sinEuro.length === 0) return null;
 
   let desactualizadas = 0;

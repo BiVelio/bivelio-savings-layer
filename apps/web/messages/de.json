@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Einige Maschinen haben in den letzten 7 Tagen keine gemessene Ersparnis erzeugt",
-      "summary": "{n} von {total} in den letzten 7 Tagen aktiven Gateway-Maschinen.",
+      "summary": "{n} von {total} Gateway-Maschinen (oder ohne Angabe), die in den letzten 7 Tagen aktiv waren, haben keine gemessene Ersparnis erzeugt.",
       "outdated": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem Gateway älter als {minima}, der ersten Version mit dem Tarifhebel: aktualisiere es.",
       "undeclared": "{n, plural, one {# Maschine meldet} other {# Maschinen melden}} keine Version (Gateway älter als der Versionskanal). Ist sie älter als {minima}, hat sie keinen Tarifhebel.",
       "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gewirkt: prüfe das Feature cache_ttl_tuning deiner Lizenz, BVSALA_GATEWAY_ELISION auf dieser Maschine und ob ihr Traffic 1h-Cache schreibt.",

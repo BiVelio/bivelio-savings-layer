@@ -22,6 +22,7 @@ function asiento(p: Partial<AsientoVisto> = {}): AsientoVisto {
     sinVersion7d: false,
     lastSeenAt: hace(1),
     ahorroMedido7dUsd: 0,
+    conDatos7d: true,
     ...p,
   };
 }
@@ -130,5 +131,15 @@ describe("estadoVersion — el chip de la tarjeta, sin decir nada del dinero", (
     expect(estadoVersion({ versionMin: null, sinVersion7d: false }, MINIMA)).toBe("desconocida");
     expect(estadoVersion({ versionMin: "gateway/0.4.17", sinVersion7d: true }, MINIMA)).toBe("desconocida");
     expect(estadoVersion({ versionMin: "basura", sinVersion7d: false }, MINIMA)).toBe("desconocida");
+  });
+});
+
+describe("decidirAvisoVersion · el falso positivo del día de la migración", () => {
+  it("un asiento SIN datos en 7 días (filas anteriores a 0024) no enciende el banner aunque su ahorro sea 0", () => {
+    expect(decidirAvisoVersion([asiento({ conDatos7d: false, ahorroMedido7dUsd: 0 })], AHORA, MINIMA)).toBeNull();
+  });
+
+  it("con datos y 0 € sigue avisando — la verja solo excluye lo que no tiene medida", () => {
+    expect(decidirAvisoVersion([asiento({ conDatos7d: true, ahorroMedido7dUsd: 0 })], AHORA, MINIMA)).not.toBeNull();
   });
 });

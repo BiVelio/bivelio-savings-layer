@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Alcune macchine non hanno prodotto risparmio misurato negli ultimi 7 giorni",
-      "summary": "{n} su {total} macchine con gateway attive negli ultimi 7 giorni.",
+      "summary": "{n} di {total} macchine con gateway (o non dichiarate) attive negli ultimi 7 giorni non hanno prodotto risparmio misurato.",
       "outdated": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un gateway precedente a {minima}, la prima versione con la leva tariffaria: aggiornalo.",
       "undeclared": "{n, plural, one {# macchina non dichiara} other {# macchine non dichiarano}} la versione (gateway precedente al canale di versione). Se è precedente a {minima}, non ha la leva tariffaria.",
       "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva lì non ha agito: controlla la feature cache_ttl_tuning della tua licenza, BVSALA_GATEWAY_ELISION su quella macchina e se il suo traffico scrive cache da 1h.",

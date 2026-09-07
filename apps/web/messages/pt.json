@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Algumas máquinas não produziram poupança medida nos últimos 7 dias",
-      "summary": "{n} de {total} máquinas com gateway ativas nos últimos 7 dias.",
+      "summary": "{n} de {total} máquinas com gateway (ou sem declarar) ativas nos últimos 7 dias não produziram poupança medida.",
       "outdated": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior a {minima}, a primeira versão com a alavanca de tarifa: atualiza-o.",
       "undeclared": "{n, plural, one {# máquina não declara} other {# máquinas não declaram}} versão (gateway anterior ao canal de versão). Se for anterior a {minima}, não tem alavanca de tarifa.",
       "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí: verifica a feature cache_ttl_tuning da tua licença, BVSALA_GATEWAY_ELISION nessa máquina e se o seu tráfego escreve cache de 1h.",

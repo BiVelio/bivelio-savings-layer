@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Một số máy không tạo ra tiết kiệm đo được trong 7 ngày qua",
-      "summary": "{n} trong {total} máy gateway hoạt động trong 7 ngày qua.",
+      "summary": "{n} trong {total} máy có gateway (hoặc chưa khai báo) hoạt động trong 7 ngày qua không tạo ra khoản tiết kiệm đã đo.",
       "outdated": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima}, phiên bản đầu tiên có đòn bẩy biểu phí: hãy cập nhật.",
       "undeclared": "{n, plural, other {# máy không khai báo}} phiên bản (gateway cũ hơn kênh phiên bản). Nếu cũ hơn {minima}, máy đó không có đòn bẩy biểu phí.",
       "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy không hoạt động ở đó: hãy kiểm tra tính năng cache_ttl_tuning trong giấy phép của bạn, BVSALA_GATEWAY_ELISION trên máy đó và liệu lưu lượng của nó có ghi cache 1 giờ hay không.",

@@ -252,7 +252,7 @@
     },
     "gatewayVersion": {
       "title": "Beberapa mesin tidak menghasilkan penghematan terukur dalam 7 hari terakhir",
-      "summary": "{n} dari {total} mesin gateway yang aktif dalam 7 hari terakhir.",
+      "summary": "{n} dari {total} mesin gateway (atau tidak dideklarasikan) yang aktif dalam 7 hari terakhir tidak menghasilkan penghematan terukur.",
       "outdated": "{n, plural, other {# mesin menjalankan}} gateway yang lebih lama dari {minima}, versi pertama dengan tuas tarif: perbarui.",
       "undeclared": "{n, plural, other {# mesin tidak mendeklarasikan}} versi (gateway lebih lama dari kanal versi). Jika lebih lama dari {minima}, mesin itu tidak punya tuas tarif.",
       "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana: periksa fitur cache_ttl_tuning pada lisensi Anda, BVSALA_GATEWAY_ELISION di mesin itu, dan apakah lalu lintasnya menulis cache 1 jam.",
