@@ -141,5 +141,92 @@ done
 
 ---
 
+## Añadido 2026-09-07 — 0024, el canal de versión (con 0021–0023 delante)
+
+0024 añade a `bvsala.seat_activity` cinco columnas (`client_version_min`,
+`client_version_max`, `requests_sin_version`, `measured_baseline_cost`,
+`measured_actual_cost`), el helper `bvsala.semver_key(text)` y **otra versión
+de `ingest_usage_batch`**: el cuerpo de 0022 entero con un solo upsert distinto.
+Lo que se juega aquí es la RPC, no las columnas, así que las reglas que pesan:
+
+- **Regla 1, explícita para 0024:** lleva versión de la RPC. Re-ejecutar 0022
+  (o 0015/0010/0009) DESPUÉS de 0024 la regresa **en silencio**: dejan de
+  sellarse versiones y de acumularse el dinero por asiento, y el panel lo pinta
+  como «sin declarar» — indistinguible de «nadie ha actualizado el gateway».
+  La siguiente migración que toque la RPC (0025) copia el cuerpo de **0024**,
+  no el de 0022.
+- **Regla 6:** anota la hora antes (PITR). 0024 es aditiva (sin DROP ni CHECK
+  nuevo: un CHECK que fallase revertiría el lote entero, lección de 0011), pero
+  la RPC se sustituye entera.
+- **0024 ABORTA sola** si no encuentra la base 0021/0022 (guard al principio
+  del fichero, antes de tocar nada): ese aborto es el resultado *bueno*.
+  Aplicar 0021/0022 en orden y volver a lanzar 0024.
+- **0023 no deja objeto**: es un `update bvsala.licenses` (relleno de
+  `context_elision` y `cache_ttl_tuning` en las licencias pro vivas). No se
+  detecta por esquema; se comprueba por DATOS (fila «0023» de abajo) y es
+  idempotente: relanzarla no cambia nada la segunda vez.
+
+### Diagnóstico (solo lectura)
+
+```bash
+cat > /tmp/diagnostico-0024.sql <<'SQL'
+select m.mig, m.aplicada from (values
+  ('0021 carril sombra',   exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='usage_daily' and column_name='shadow_requests')),
+  ('0022 uso por modelo',  to_regclass('bvsala.usage_daily_by_model') is not null),
+  ('0023 features pro (por datos: 0 licencias pro vivas sin cache_ttl_tuning)',
+                           not exists (select 1 from bvsala.licenses
+                                        where plan = 'pro' and not revoked
+                                          and expires_at + make_interval(days => coalesce(grace_days, 0)) >= now()
+                                          and not (coalesce(features, array[]::text[]) @> array['context_elision', 'cache_ttl_tuning']))),
+  ('0024 columnas',        exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='client_version_min')),
+  ('0024 semver_key',      to_regprocedure('bvsala.semver_key(text)') is not null),
+  ('RPC en versión 0024',  exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%clientVersion%')),
+  ('RPC conserva 0022',    exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%usage_daily_by_model%'))
+) as m(mig, aplicada) order by 1;
+SQL
+
+jq -Rs '{query:.}' < /tmp/diagnostico-0024.sql | curl -sf \
+  -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+  -H "Authorization: Bearer $(cat "$TOKEN_FICHERO")" \
+  -H "Content-Type: application/json" -d @- | jq -r '.[] | "\(.aplicada)\t\(.mig)"'
+```
+
+| Fila | Qué significa |
+|---|---|
+| 0021 / 0022 `false` | Falta la base: aplicar en orden ANTES de 0024 (y 0024 abortaría igual por el guard) |
+| 0023 `false` | Hay licencias pro vivas sin los dos features: relanzar 0023 (idempotente) |
+| 0024 columnas `true` pero RPC 0024 `false` | Alguien regresó la RPC (regla 1): re-aplicar **solo** el bloque `create or replace function bvsala.ingest_usage_batch` de 0024 |
+| RPC 0024 `true` y RPC conserva 0022 `false` | Imposible si 0024 se aplicó del fichero (su cuerpo incluye el fold por modelo): parar y comparar el fuente de la función con el fichero |
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0024"` (o `"0021 0022 0023 0024"`, según el
+diagnóstico), tras anotar la hora. Orden de despliegue completo del canal: esta
+migración → `vercel --prod` desde la raíz del repo (la web sella
+`clientVersion` y el panel lee las columnas) → npm con la cabecera. Ninguna
+permutación rompe (cabecera ignorada por una web vieja; clave ignorada por la
+RPC 0022; columnas ausentes toleradas por el lector del panel), pero este orden
+evita ventanas de «sin declarar».
+
+### Verificar tras el deploy, con el primer lote real
+
+```sql
+select seat_id, day, client_version_min, client_version_max, requests_sin_version,
+       measured_baseline_cost - measured_actual_cost as ahorro_medido
+  from bvsala.seat_activity
+ where org_id = '<org>'
+ order by day desc, last_seen_at desc
+ limit 5;
+```
+
+Lo esperable: un gateway con la cabecera deja `client_version_min = client_version_max
+= 'gateway/x.y.z'` y `requests_sin_version = 0`; un gateway anterior al canal
+en la MISMA máquina sube `requests_sin_version` en la MISMA fila sin borrar el
+min/max (un NULL nunca pisa un valor guardado); `ahorro_medido > 0` solo si la
+rebaja de TTL actuó ese día. En los logs de Vercel de `/api/metering/usage`
+durante la ventana: 0 × 400 y 0 × 500.
+
+---
+
 *Relacionado: `db/README.md` (esquema y aislamiento), `docs/RUNBOOK-ALERTAS.md`
 (qué hacer cuando `invariantes` habla), PR #112 y #119 (origen de 0016/0017).*

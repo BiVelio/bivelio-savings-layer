@@ -250,6 +250,29 @@
       "colCost": "Cost",
       "hint": "Sessions i subagents dels teus terminals de codi (ids opacs — mai una persona). Requereix el gateway des de la 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Algunes màquines no han produït estalvi mesurat en els últims 7 dies",
+      "summary": "{n} de {total} màquines amb gateway (o sense declarar) actives en 7 dies no han produït estalvi mesurat.",
+      "outdated": "{n, plural, one {# màquina executa} other {# màquines executen}} un gateway anterior a {minima}, la primera versió amb la palanca de tarifa: actualitza'l.",
+      "undeclared": "{n, plural, one {# màquina no declara} other {# màquines no declaren}} versió (gateway anterior al canal de versió). Si és anterior a {minima}, no porta la palanca de tarifa.",
+      "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat: comprova la feature cache_ttl_tuning de la teva llicència, BVSALA_GATEWAY_ELISION en aquella màquina i si el seu trànsit escriu memòria cau d'1h.",
+      "action": "Actualitza @bivelio/savings-layer en aquella màquina i reinicia el terminal; la taula de màquines de sota mostra què declara cadascuna."
+    },
+    "maquinas": {
+      "title": "màquines (30 dies)",
+      "colSeat": "Màquina",
+      "colSurface": "Superfície",
+      "colVersion": "Versió",
+      "colState": "Estat",
+      "colLastSeen": "Última activitat",
+      "colSavings7d": "Estalvi mesurat (7 d)",
+      "ciRow": "CI ({n, plural, one {# seient efímer} other {# seients efímers}})",
+      "undeclared": "sense declarar",
+      "chipOutdated": "actualitza",
+      "chipOk": "al dia",
+      "chipMixed": "part sense declarar",
+      "hint": "Una fila per màquina que reporta ús, identificada pel seu id de seient opac (mai una persona). El que viatja és un número de versió —gateway/x.y.z o sdk/x.y.z—, mai contingut. Una màquina amb un gateway anterior al canal de versió surt com a «sense declarar»."
+    },
     "installLicensePanel": {
       "eyebrow": "Comença",
       "heading": "Quatre passos. Els teus prompts mai no toquen els nostres servidors.",

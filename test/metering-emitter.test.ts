@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { UsageEmitter } from "../src/metering/emitter.js";
 import type { SavingsReport } from "../src/contracts/types.js";
+import { BV_SALA_VERSION, CABECERA_VERSION } from "../src/version.js";
 
 function mkReport(requestId = "req-abc"): SavingsReport {
   return {
@@ -49,6 +50,46 @@ describe("UsageEmitter", () => {
     expect(body[0].ci).toBe(true);
     expect(body[0].requestId).toBe("req-1");
     expect(body[0].actualInputTokens).toBe(40);
+  });
+
+  /**
+   * EL CONJUNTO DE CABECERAS ES EXACTO, no «contiene». La versión viaja en una
+   * cabecera precisamente porque una cabecera esquiva la lista blanca del
+   * ingest (un servidor viejo la ignora): ese mismo argumento serviría para
+   * colar cualquier campo futuro sin pasar por el cortafuegos de contenido. La
+   * excepción es UNA y este test la ata: quien quiera otra cabecera tiene que
+   * venir aquí a declararla.
+   */
+  it("el POST lleva EXACTAMENTE content-type, authorization y x-bvsala-version (sdk/ por defecto)", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    em.record(mkReport());
+    await em.flush();
+    const headers = calls[0]!.init.headers as Record<string, string>;
+    expect(Object.keys(headers).sort()).toEqual(["authorization", "content-type", "x-bvsala-version"]);
+    expect(CABECERA_VERSION).toBe("x-bvsala-version");
+    expect(headers[CABECERA_VERSION]).toBe(`sdk/${BV_SALA_VERSION}`);
+    // El valor casa el patrón cerrado que valida el servidor: superficie/semver.
+    expect(headers[CABECERA_VERSION]).toMatch(/^(gateway|sdk)\/\d{1,4}\.\d{1,4}\.\d{1,4}(-[0-9A-Za-z.-]{1,16})?$/);
+  });
+
+  it("con surface: \"gateway\" la cabecera declara gateway/<versión>", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, surface: "gateway" });
+    em.record(mkReport());
+    await em.flush();
+    const headers = calls[0]!.init.headers as Record<string, string>;
+    expect(headers[CABECERA_VERSION]).toBe(`gateway/${BV_SALA_VERSION}`);
+    expect(Object.keys(headers).sort()).toEqual(["authorization", "content-type", "x-bvsala-version"]);
+  });
+
+  it("la versión NO viaja en el cuerpo: el wire sigue sin ningún campo de versión", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn, surface: "gateway" });
+    em.record(mkReport());
+    await em.flush();
+    const rec = JSON.parse(calls[0]!.init.body as string)[0];
+    for (const k of ["clientVersion", "version", "sdkVersion", "surface"]) expect(rec[k]).toBeUndefined();
   });
 
   it("PRIVACY: the wire body carries only counts/metadata — never content", async () => {

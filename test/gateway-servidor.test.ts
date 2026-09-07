@@ -3,6 +3,7 @@ import { brotliCompressSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { BV_SALA_VERSION } from "../src/version.js";
 
 /**
  * El gateway contra un upstream FALSO local: passthrough byte a byte, retirada
@@ -65,7 +66,7 @@ function arrancarUpstreamJson(respuesta: unknown): Promise<number> {
   });
 }
 
-function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
+function arrancarIngestaFalsa(lotes: unknown[][], cabeceras: Record<string, unknown>[] = []): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
@@ -83,6 +84,7 @@ function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
         return;
       }
       lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
+      cabeceras.push({ ...req.headers });
       res.writeHead(202, { "content-type": "application/json" });
       res.end('{"ingested":1}');
     });
@@ -169,6 +171,43 @@ describe("arrancarGateway — passthrough que mide", () => {
     expect(reg["seatId"]).toBe("test-01");
     // v1: el baseline ES el actual — nada estimado.
     expect(reg["baselineCost"]).toBe(reg["actualCost"]);
+  });
+
+  it("el lote a la ingesta declara la versión del gateway en la cabecera x-bvsala-version, y solo ahí", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const lotes: unknown[][] = [];
+    const cabeceras: Record<string, unknown>[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const ingesta = await arrancarIngestaFalsa(lotes, cabeceras);
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      log: () => {},
+    });
+    recursos.push(gw);
+
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", stream: true }),
+    }).then((r) => r.text());
+    await gw.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    // El gateway es la superficie con la palanca de tarifa: declara gateway/, no sdk/.
+    expect(cabeceras[0]!["x-bvsala-version"]).toBe(`gateway/${BV_SALA_VERSION}`);
+    // Conjunto EXACTO de cabeceras propias del emisor (las demás las pone Node:
+    // host, connection, content-length, accept*, user-agent…). Ninguna otra
+    // cabecera x-bvsala-* ni x-claude-code-* se cuela hacia la ingesta.
+    const propias = Object.keys(cabeceras[0]!).filter((k) => k.startsWith("x-") || k === "authorization" || k === "content-type").sort();
+    expect(propias).toEqual(["authorization", "content-type", "x-bvsala-version"]);
+    // Y en el CUERPO no va ninguna versión: el canal cerrado sigue cerrado.
+    const reg = (lotes[0]![0] ?? {}) as Record<string, unknown>;
+    expect(reg["clientVersion"]).toBeUndefined();
+    expect(reg["version"]).toBeUndefined();
   });
 
   it("atribución: sin cabeceras el campo NO viaja, y una cabecera con texto libre se descarta (no tira el lote)", async () => {

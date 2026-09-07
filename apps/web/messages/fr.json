@@ -250,6 +250,29 @@
       "colCost": "Coût",
       "hint": "Sessions et sous-agents de vos terminaux de code (ids opaques — jamais une personne). Nécessite la passerelle à partir de la 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Certaines machines n'ont produit aucune économie mesurée ces 7 derniers jours",
+      "summary": "{n} des {total} machines avec gateway (ou non déclarées) actives ces 7 derniers jours n'ont produit aucune économie mesurée.",
+      "outdated": "{n, plural, one {# machine exécute} other {# machines exécutent}} un gateway antérieur à {minima}, la première version dotée du levier tarifaire : mettez-le à jour.",
+      "undeclared": "{n, plural, one {# machine ne déclare} other {# machines ne déclarent}} pas de version (gateway antérieur au canal de version). Si elle est antérieure à {minima}, elle n'a pas de levier tarifaire.",
+      "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi : vérifiez la feature cache_ttl_tuning de votre licence, BVSALA_GATEWAY_ELISION sur cette machine et si son trafic écrit du cache 1h.",
+      "action": "Mettez à jour @bivelio/savings-layer sur cette machine et relancez le terminal ; le tableau des machines ci-dessous montre ce que chacune déclare."
+    },
+    "maquinas": {
+      "title": "machines (30 jours)",
+      "colSeat": "Machine",
+      "colSurface": "Surface",
+      "colVersion": "Version",
+      "colState": "État",
+      "colLastSeen": "Dernière activité",
+      "colSavings7d": "Économie mesurée (7 j)",
+      "ciRow": "CI ({n, plural, one {# siège éphémère} other {# sièges éphémères}})",
+      "undeclared": "non déclarée",
+      "chipOutdated": "à mettre à jour",
+      "chipOk": "à jour",
+      "chipMixed": "en partie non déclarée",
+      "hint": "Une ligne par machine qui rapporte de l'usage, identifiée par son id de siège opaque (jamais une personne). Ce qui circule est un numéro de version — gateway/x.y.z ou sdk/x.y.z —, jamais du contenu. Une machine avec un gateway antérieur au canal de version apparaît comme « non déclarée »."
+    },
     "installLicensePanel": {
       "eyebrow": "Commencer",
       "heading": "Quatre étapes. Vos prompts ne touchent jamais nos serveurs.",

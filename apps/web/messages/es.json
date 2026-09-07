@@ -250,6 +250,29 @@
       "colCost": "Coste",
       "hint": "Sesiones y subagentes de tus terminales de código (ids opacos — jamás una persona). Requiere el gateway desde la 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Algunas máquinas no han producido ahorro medido en los últimos 7 días",
+      "summary": "{n} de {total} máquinas con gateway (o sin declarar) activas en 7 días no han producido ahorro medido.",
+      "outdated": "{n, plural, one {# máquina corre} other {# máquinas corren}} un gateway anterior a {minima}, la primera versión con la palanca de tarifa: actualízalo.",
+      "undeclared": "{n, plural, one {# máquina no declara} other {# máquinas no declaran}} versión (gateway anterior al canal de versión). Si es anterior a {minima}, no lleva la palanca de tarifa.",
+      "noLever": "{n, plural, one {# máquina está al día} other {# máquinas están al día}}, pero la palanca no ha actuado ahí: comprueba el feature cache_ttl_tuning de tu licencia, BVSALA_GATEWAY_ELISION en esa máquina y si su tráfico escribe caché de 1h.",
+      "action": "Actualiza @bivelio/savings-layer en esa máquina y reinicia el terminal; la tabla de máquinas de abajo enseña qué declara cada una."
+    },
+    "maquinas": {
+      "title": "máquinas (30 días)",
+      "colSeat": "Máquina",
+      "colSurface": "Superficie",
+      "colVersion": "Versión",
+      "colState": "Estado",
+      "colLastSeen": "Última actividad",
+      "colSavings7d": "Ahorro medido (7 d)",
+      "ciRow": "CI ({n, plural, one {# asiento efímero} other {# asientos efímeros}})",
+      "undeclared": "sin declarar",
+      "chipOutdated": "actualiza",
+      "chipOk": "al día",
+      "chipMixed": "parte sin declarar",
+      "hint": "Una fila por máquina que reporta uso, identificada por su id de asiento opaco (jamás una persona). Lo que viaja es un número de versión —gateway/x.y.z o sdk/x.y.z—, nunca contenido. Una máquina con un gateway anterior al canal de versión sale como «sin declarar»."
+    },
     "installLicensePanel": {
       "eyebrow": "Empezar",
       "heading": "Cuatro pasos. Tus prompts nunca pasan por nuestros servidores.",

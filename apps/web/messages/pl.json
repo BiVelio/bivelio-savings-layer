@@ -250,6 +250,29 @@
       "colCost": "Koszt",
       "hint": "Sesje i subagenci Twoich terminali programistycznych (nieprzejrzyste id — nigdy osoba). Wymaga bramy od wersji 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Niektóre maszyny nie wygenerowały zmierzonych oszczędności w ciągu ostatnich 7 dni",
+      "summary": "{n} z {total} maszyn z gatewayem (lub niezadeklarowanych) aktywnych w ostatnich 7 dniach nie wygenerowało zmierzonych oszczędności.",
+      "outdated": "{n, plural, one {# maszyna działa} few {# maszyny działają} many {# maszyn działa} other {# maszyny działa}} na gatewayu starszym niż {minima}, pierwszej wersji z dźwignią taryfową: zaktualizuj go.",
+      "undeclared": "{n, plural, one {# maszyna nie deklaruje} few {# maszyny nie deklarują} many {# maszyn nie deklaruje} other {# maszyny nie deklaruje}} wersji (gateway starszy niż kanał wersji). Jeśli jest starszy niż {minima}, nie ma dźwigni taryfowej.",
+      "noLever": "{n, plural, one {# maszyna jest aktualna} few {# maszyny są aktualne} many {# maszyn jest aktualnych} other {# maszyny jest aktualnej}}, ale dźwignia tam nie zadziałała: sprawdź funkcję cache_ttl_tuning w licencji, BVSALA_GATEWAY_ELISION na tej maszynie i czy jej ruch zapisuje cache 1h.",
+      "action": "Zaktualizuj @bivelio/savings-layer na tej maszynie i uruchom terminal ponownie; tabela maszyn poniżej pokazuje, co deklaruje każda z nich."
+    },
+    "maquinas": {
+      "title": "maszyny (30 dni)",
+      "colSeat": "Maszyna",
+      "colSurface": "Powierzchnia",
+      "colVersion": "Wersja",
+      "colState": "Stan",
+      "colLastSeen": "Ostatnia aktywność",
+      "colSavings7d": "Zmierzone oszczędności (7 dni)",
+      "ciRow": "CI ({n, plural, one {# ulotne miejsce} few {# ulotne miejsca} many {# ulotnych miejsc} other {# ulotnego miejsca}})",
+      "undeclared": "niezadeklarowana",
+      "chipOutdated": "zaktualizuj",
+      "chipOk": "aktualna",
+      "chipMixed": "częściowo niezadeklarowana",
+      "hint": "Jeden wiersz na maszynę raportującą użycie, rozpoznawaną po nieprzejrzystym id miejsca (nigdy osoba). Przesyłany jest numer wersji — gateway/x.y.z lub sdk/x.y.z — nigdy treść. Maszyna z gatewayem starszym niż kanał wersji pojawia się jako „niezadeklarowana”."
+    },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
       "heading": "Cztery kroki. Twoje prompty nigdy nie dotykają naszych serwerów.",

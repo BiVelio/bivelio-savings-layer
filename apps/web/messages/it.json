@@ -250,6 +250,29 @@
       "colCost": "Costo",
       "hint": "Sessioni e subagenti dei tuoi terminali di codice (id opachi — mai una persona). Richiede il gateway dalla 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Alcune macchine non hanno prodotto risparmio misurato negli ultimi 7 giorni",
+      "summary": "{n} di {total} macchine con gateway (o non dichiarate) attive negli ultimi 7 giorni non hanno prodotto risparmio misurato.",
+      "outdated": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un gateway precedente a {minima}, la prima versione con la leva tariffaria: aggiornalo.",
+      "undeclared": "{n, plural, one {# macchina non dichiara} other {# macchine non dichiarano}} la versione (gateway precedente al canale di versione). Se è precedente a {minima}, non ha la leva tariffaria.",
+      "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva lì non ha agito: controlla la feature cache_ttl_tuning della tua licenza, BVSALA_GATEWAY_ELISION su quella macchina e se il suo traffico scrive cache da 1h.",
+      "action": "Aggiorna @bivelio/savings-layer su quella macchina e riavvia il terminale; la tabella delle macchine qui sotto mostra cosa dichiara ciascuna."
+    },
+    "maquinas": {
+      "title": "macchine (30 giorni)",
+      "colSeat": "Macchina",
+      "colSurface": "Superficie",
+      "colVersion": "Versione",
+      "colState": "Stato",
+      "colLastSeen": "Ultima attività",
+      "colSavings7d": "Risparmio misurato (7 g)",
+      "ciRow": "CI ({n, plural, one {# postazione effimera} other {# postazioni effimere}})",
+      "undeclared": "non dichiarata",
+      "chipOutdated": "aggiorna",
+      "chipOk": "aggiornata",
+      "chipMixed": "in parte non dichiarata",
+      "hint": "Una riga per macchina che riporta utilizzo, identificata dal suo id di postazione opaco (mai una persona). Viaggia solo un numero di versione — gateway/x.y.z o sdk/x.y.z —, mai contenuto. Una macchina con un gateway precedente al canale di versione compare come «non dichiarata»."
+    },
     "installLicensePanel": {
       "eyebrow": "Inizia",
       "heading": "Quattro passi. I tuoi prompt non toccano mai i nostri server.",

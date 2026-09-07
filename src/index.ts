@@ -17,19 +17,14 @@
  * misleading metrics.
  */
 
-/**
- * The version the SDK reports for itself.
- *
- * Written by hand and deliberately NOT read from package.json: the published
- * bundle does not ship package.json, so a `require` here would fail at runtime
- * on the customer's machine. `test/version-declarada.test.ts` ties this
- * constant to package.json so the two can never drift.
- */
 // El catálogo de precios de lista, exportado para que un cliente pueda
 // inspeccionarlo, extenderlo o comprobar qué modelos cubre.
 export { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "./pricing/catalogo.js";
 
-export const BV_SALA_VERSION = "0.4.16";
+// La versión vive en src/version.ts junto a las constantes INTERNAS del canal
+// de versión (cabecera y mínima de la palanca), que NO se reexportan: nada
+// nuevo sale a la superficie pública por aquí.
+export { BV_SALA_VERSION } from "./version.js";
 
 export * from "./util/index.js";
 export * from "./contracts/index.js";

@@ -1,5 +1,6 @@
 import type { SavingsReport } from "../contracts/types.js";
 import { avisarUnaVez } from "../util/warn-once.js";
+import { BV_SALA_VERSION, CABECERA_VERSION } from "../version.js";
 
 /**
  * A counts-only usage record on the wire. Mirrors `@bivelio/protocol`'s
@@ -53,6 +54,14 @@ export interface UsageEmitterOptions {
   now?: () => number;
   /** Whether this process is a CI/ephemeral runner (excluded from billable seats). */
   ci?: boolean;
+  /**
+   * Which surface owns this process: the local gateway (`bvsala claude` and
+   * friends) or the in-process SDK. Sent with the version in the batch's
+   * `x-bvsala-version` header (`gateway/0.4.16`, `sdk/0.4.16`) so the control
+   * plane can tell a gateway that lacks a lever from an SDK that never had it.
+   * Defaults to `"sdk"`; the gateway sets `"gateway"`.
+   */
+  surface?: "gateway" | "sdk";
   /**
    * Se llama cuando el ingest rechaza la credencial (401/403). Existe para que un
    * despliegue con observabilidad pueda ENTERARSE: el aviso por consola sirve en
@@ -207,6 +216,15 @@ export class UsageEmitter {
         headers: {
           "content-type": "application/json",
           authorization: `Bearer ${this.options.serviceAccountKey}`,
+          // Versión del PROCESO, no de la petición: CABECERA del lote a
+          // propósito. Un campo nuevo en el cuerpo tumba el lote entero en un
+          // servidor que no lo conozca (lista blanca → 400 → sin reintento, ver
+          // toWire); una cabecera la ignora. El servidor la valida y la sella
+          // por asiento (seat_activity, 0024). Es la ÚNICA excepción al canal
+          // cerrado, y test/metering-emitter.test.ts fija el conjunto EXACTO de
+          // cabeceras (nunca «contiene»): la siguiente que alguien quiera
+          // añadir tiene que venir a discutirla aquí.
+          [CABECERA_VERSION]: `${this.options.surface ?? "sdk"}/${BV_SALA_VERSION}`,
         },
         body: JSON.stringify(records),
       });
@@ -314,6 +332,17 @@ export class UsageEmitter {
       // sea que no habría vuelta atrás. El orden obligatorio es SERVIDOR
       // PRIMERO, SDK DESPUÉS; hasta entonces la etiqueta vive en el informe por
       // petición, que es donde el cliente ya puede leerla.
+      //
+      // LA EXCEPCIÓN, declarada: la versión del proceso NO va en el cuerpo sino
+      // en la cabecera `x-bvsala-version` del POST (hacerFlush). Una cabecera
+      // no pasa por la lista blanca —un servidor viejo la ignora y nada se
+      // rompe—, y ESO es precisamente lo que la hace peligrosa como precedente:
+      // el mismo argumento valdría para colar cualquier campo futuro esquivando
+      // el cortafuegos. Por eso la excepción es una sola, lleva un valor con
+      // patrón cerrado (superficie/semver, validado en el servidor, jamás texto
+      // libre) y el conjunto de cabeceras queda atado por test EXACTO. Lo que
+      // describa una PETICIÓN sigue yendo en el cuerpo y sigue esperando al
+      // servidor.
       baselineCost: r.cost.baselineEstimate,
       actualCost: r.cost.actual,
       netSavings: r.cost.netSavings,

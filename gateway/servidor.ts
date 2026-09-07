@@ -103,6 +103,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     emisor = new UsageEmitter({
       url: opts.meteringUrl ?? "https://savings.bivelio.com/api/metering/usage",
       serviceAccountKey: opts.serviceAccountKey,
+      surface: "gateway",
       ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
       onAuthError: (status) =>
         avisarUnaVez(

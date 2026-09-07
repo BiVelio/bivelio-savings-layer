@@ -250,6 +250,29 @@
       "colCost": "Chi phí",
       "hint": "Các phiên và agent con từ terminal lập trình của bạn (id ẩn danh — không bao giờ là một người). Cần gateway từ bản 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Một số máy không tạo ra tiết kiệm đo được trong 7 ngày qua",
+      "summary": "{n} trong {total} máy có gateway (hoặc chưa khai báo) hoạt động trong 7 ngày qua không tạo ra khoản tiết kiệm đã đo.",
+      "outdated": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima}, phiên bản đầu tiên có đòn bẩy biểu phí: hãy cập nhật.",
+      "undeclared": "{n, plural, other {# máy không khai báo}} phiên bản (gateway cũ hơn kênh phiên bản). Nếu cũ hơn {minima}, máy đó không có đòn bẩy biểu phí.",
+      "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy không hoạt động ở đó: hãy kiểm tra tính năng cache_ttl_tuning trong giấy phép của bạn, BVSALA_GATEWAY_ELISION trên máy đó và liệu lưu lượng của nó có ghi cache 1 giờ hay không.",
+      "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
+    },
+    "maquinas": {
+      "title": "máy (30 ngày)",
+      "colSeat": "Máy",
+      "colSurface": "Bề mặt",
+      "colVersion": "Phiên bản",
+      "colState": "Trạng thái",
+      "colLastSeen": "Hoạt động gần nhất",
+      "colSavings7d": "Tiết kiệm đo được (7 ngày)",
+      "ciRow": "CI ({n, plural, other {# chỗ ngồi tạm thời}})",
+      "undeclared": "chưa khai báo",
+      "chipOutdated": "cập nhật",
+      "chipOk": "đã cập nhật",
+      "chipMixed": "một phần chưa khai báo",
+      "hint": "Mỗi máy báo cáo mức sử dụng là một hàng, nhận diện bằng id chỗ ngồi ẩn danh (không bao giờ là một người). Thứ được gửi đi là một số phiên bản — gateway/x.y.z hoặc sdk/x.y.z —, không bao giờ là nội dung. Máy chạy gateway cũ hơn kênh phiên bản hiển thị là “chưa khai báo”."
+    },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
       "heading": "Bốn bước. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
