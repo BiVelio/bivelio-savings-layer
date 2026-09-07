@@ -30,6 +30,14 @@ interface UsageWire {
   actualCost: number;
   netSavings: number;
   basis?: string;
+  /**
+   * B2 (0.4.17) · el suelo de la elisión del proveedor: tokens borrados por su
+   * contador a precio de LECTURA de caché. OPCIONAL y solo cuando es > 0 con
+   * conteo: el servidor lo acepta desde el 2026-09-07 (lista blanca opcional +
+   * migración 0025), ANTES de que este emisor lo mandara — el orden servidor-
+   * primero del bloque de toWire, cumplido.
+   */
+  eliminatedInputFloorCost?: number;
   /** Atribución de sesión/subagente del gateway (identidades opacas, nunca una persona). */
   sessionId?: string;
   agentId?: string;
@@ -322,6 +330,15 @@ export class UsageEmitter {
       actualOutputTokens: r.tokens.actualOutput,
       providerCachedInputTokens: r.tokens.providerCachedInput ?? 0,
       cacheResult: r.cache.result,
+      // B2 · el suelo de la elisión del proveedor, SOLO con dinero y con conteo
+      // (el ingest recorta «dinero sin conteo» a 0 de todas formas). Ausente en
+      // el resto: un gateway que nunca borra manda el wire de siempre.
+      ...(r.cost.eliminatedInputFloorCost !== undefined &&
+      Number.isFinite(r.cost.eliminatedInputFloorCost) &&
+      r.cost.eliminatedInputFloorCost > 0 &&
+      r.tokens.eliminatedInput > 0
+        ? { eliminatedInputFloorCost: r.cost.eliminatedInputFloorCost }
+        : {}),
       // `report.qualityStatus` NO viaja todavía, y es a propósito. El ingest
       // valida con LISTA BLANCA y rechaza el registro entero ante un campo
       // desconocido —ese rechazo es el cortafuegos que impide que se cuele
@@ -342,7 +359,9 @@ export class UsageEmitter {
       // patrón cerrado (superficie/semver, validado en el servidor, jamás texto
       // libre) y el conjunto de cabeceras queda atado por test EXACTO. Lo que
       // describa una PETICIÓN sigue yendo en el cuerpo y sigue esperando al
-      // servidor.
+      // servidor. `eliminatedInputFloorCost` (arriba) es la regla cumplida al
+      // pie de la letra: lista blanca + migración 0025 desplegadas el 07-09,
+      // emisor en 0.4.17 — y aun así OPCIONAL y solo cuando hay dinero.
       baselineCost: r.cost.baselineEstimate,
       actualCost: r.cost.actual,
       netSavings: r.cost.netSavings,

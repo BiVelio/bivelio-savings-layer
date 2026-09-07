@@ -110,6 +110,7 @@ export function esDialNuestro(cm: unknown): boolean {
 export function elisionDeCuerpoSse(utf8: string): ElisionAplicada | null {
   let borrados = 0;
   let tokens = 0;
+  let deToolUses = 0;
   for (const bloque of utf8.split("\n\n")) {
     const ev = /^event: (.+)$/m.exec(bloque)?.[1];
     if (ev !== "message_start" && ev !== "message_delta") continue;
@@ -125,9 +126,10 @@ export function elisionDeCuerpoSse(utf8: string): ElisionAplicada | null {
     if (e) {
       borrados += e.borrados;
       tokens += e.tokensLimpiados;
+      deToolUses += e.tokensLimpiadosToolUses;
     }
   }
-  return borrados > 0 ? { borrados, tokensLimpiados: tokens } : null;
+  return borrados > 0 ? { borrados, tokensLimpiados: tokens, tokensLimpiadosToolUses: deToolUses } : null;
 }
 
 /**

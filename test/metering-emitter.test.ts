@@ -104,11 +104,52 @@ describe("UsageEmitter", () => {
       "eliminatedInputTokens", "compressedInputTokens", "baselineOutputTokens",
       "actualOutputTokens", "providerCachedInputTokens", "cacheResult",
       "baselineCost", "actualCost", "netSavings",
+      "eliminatedInputFloorCost", // B2 (0.4.17): opcional, solo con dinero y conteo
     ]);
     for (const k of Object.keys(rec)) expect(ALLOWED.has(k)).toBe(true);
     for (const forbidden of ["prompt", "completion", "messages", "text", "content", "data"]) {
       expect(rec[forbidden]).toBeUndefined();
     }
+  });
+
+  /**
+   * B2 · el suelo de la elisión del proveedor en el wire. Es el campo que
+   * cumple al pie de la letra la regla «servidor primero»: la lista blanca y
+   * la migración 0025 se desplegaron ANTES de que el emisor lo mandara, y aun
+   * así viaja solo cuando hay dinero y conteo.
+   */
+  describe("eliminatedInputFloorCost (B2)", () => {
+    async function wireDe(report: SavingsReport): Promise<Record<string, unknown>> {
+      const { fn, calls } = okFetch();
+      const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+      em.record(report);
+      await em.flush();
+      return (JSON.parse(calls[0]!.init.body as string) as Record<string, unknown>[])[0]!;
+    }
+    function conSuelo(suelo: number | undefined, eliminatedInput = 60): SavingsReport {
+      const r = mkReport() as unknown as { tokens: { eliminatedInput: number }; cost: Record<string, unknown> };
+      r.tokens.eliminatedInput = eliminatedInput;
+      if (suelo !== undefined) r.cost["eliminatedInputFloorCost"] = suelo;
+      return r as unknown as SavingsReport;
+    }
+
+    it("un informe sin suelo manda el wire de siempre: la clave NO existe", async () => {
+      expect("eliminatedInputFloorCost" in (await wireDe(mkReport()))).toBe(false);
+    });
+
+    it("con suelo > 0 y conteo > 0 viaja tal cual", async () => {
+      expect((await wireDe(conSuelo(0.0009)))["eliminatedInputFloorCost"]).toBe(0.0009);
+    });
+
+    it("⛔ «dinero sin conteo» no sale de aquí (el ingest lo recortaría a 0 de todas formas)", async () => {
+      expect("eliminatedInputFloorCost" in (await wireDe(conSuelo(0.5, 0)))).toBe(false);
+    });
+
+    it("⛔ ni 0, ni negativo, ni NaN", async () => {
+      for (const malo of [0, -0.1, Number.NaN, Number.POSITIVE_INFINITY]) {
+        expect("eliminatedInputFloorCost" in (await wireDe(conSuelo(malo))), String(malo)).toBe(false);
+      }
+    });
   });
 
   it("stamps the seat resolved AFTER records were buffered (none lost)", async () => {

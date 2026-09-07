@@ -764,6 +764,20 @@ export interface SavingsReport {
      * and adding `shadow` to either would be making the savings up.
      */
     basis: import("../tokenizer/accounting.js").CostBasis;
+    /**
+     * Provider-side context clearing, priced at the FLOOR: the input tokens the
+     * provider itself reported as cleared, valued at this model's cached-input
+     * read rate — never at the input rate. Present only when the clearing is
+     * attributable to this layer's context-management settings (the request
+     * did not already carry them) and the model has a cached-input price.
+     *
+     * A separate lane on purpose: it is not part of `baselineEstimate`,
+     * `actual` or `netSavings`, it is never folded into measured money, and it
+     * is not part of the commission base. It is a lower bound of what those
+     * tokens would have cost to keep reading, not a claim about the net effect
+     * of clearing them.
+     */
+    eliminatedInputFloorCost?: number;
   };
 
   latencyMs: {

@@ -183,6 +183,36 @@ palanca y el gateway ajustó/inyectó los diales en esa petición):
   peticiones con borrado atribuible (B2-4, §5), para no enseñar el mismo
   borrado dos veces.
 
+> **Hecho el 2026-09-07 (B2, gateway 0.4.17).** `gateway/medidor.ts`
+> (`sueloDeElision`) tarifa `cleared_input_tokens × cachedInputPer1k` — sin
+> precio de lectura, 0; jamás `inputPer1k` — y lo pone en
+> `cost.eliminatedInputFloorCost` SOLO cuando el borrado es atribuible, y
+> SOLO los tokens de `clear_tool_uses` (`tokensLimpiadosToolUses`): el thinking
+> que el proveedor borre (`clear_thinking`, de fábrica en Claude Code, la
+> palanca lo conserva) es del cliente. Regla del delta en dos mitades
+> (`gateway/palanca.ts` + `servidor.ts`): (1) el `clear_tool_uses` saliente
+> difiere del que traía el cliente (`dialesSonNuestros`, forma canónica) y
+> (2) los diales que traía NO habrían disparado por sí solos — su trigger
+> efectivo (`triggerDelCliente`; 100K de la API si no lo declara) contra la
+> entrada del prompt ORIGINAL (medida + borrada). Si habrían disparado, se
+> cuenta y no se acredita. La segunda mitad cierra sola los bordes de la
+> primera (diales nuestros de una versión anterior, un edit igual al nuestro
+> más una clave con el valor por defecto de la API): todo borrado atribuible
+> implica entrada ≥ 50K ≥ su trigger, así que quedan como «suyo». El único
+> borde que queda INFRA-acredita: cliente con trigger propio más bajo que el
+> nuestro que además borraría menos (no hay contrafactual; ante la duda, no
+> se acredita).
+> El emisor lo manda como campo OPCIONAL
+> solo si es > 0 con conteo (`src/metering/emitter.ts`). B2-4 también: con
+> borrado atribuible de tool_uses la sombra NO emite registro, pero su cadena
+> de simulación sí avanza (`gateway/servidor.ts`). Consecuencia de producto:
+> en una org con la palanca, pasado el trigger casi todos los turnos traen
+> borrado y la tarjeta sombra tiende a 0 — es lo correcto (la sombra mide
+> solo donde el proveedor no actuó). El dólar sigue sin pintarse y sin
+> comisionarse (`COMISIONAR_ELISION_SUELO`). Pendiente fuera de B2:
+> `fusionarDiales` tira el `exclude_tools` del cliente al sustituir su edit
+> (§ 5 promete respetarlo).
+
 Nota de segmento: en tráfico OAuth/suscripción no hay dólares por petición —
 el mismo mecanismo ahorra TOKENS contra los topes (valor real para el cliente,
 medible en tokens), pero solo el tráfico API-key entra en base de comisión.

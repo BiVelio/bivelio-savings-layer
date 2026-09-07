@@ -33,6 +33,16 @@ export const DIAL_KEEP_TOOL_USES = 8;
  *  el propio proveedor ofrece para eso. */
 export const DIAL_CLEAR_AT_LEAST_INPUT_TOKENS = 5_000;
 
+/**
+ * El trigger que la API aplica a un `clear_tool_uses_20250919` que no lo
+ * declara (doc oficial de context editing: «default 100,000 input tokens»).
+ * Es el de FÁBRICA de Claude Code (`{type:"clear_tool_uses_20250919"}` a
+ * secas). B2 lo usa para la segunda mitad de la regla del delta: si los diales
+ * que TRAÍA el cliente habrían disparado sobre el prompt original, el borrado
+ * es suyo y no se acredita.
+ */
+export const TRIGGER_POR_DEFECTO_DE_LA_API = 100_000;
+
 /** La config con la forma EXACTA de la API (se envía tal cual). */
 export function configDeDiales(): {
   edits: {

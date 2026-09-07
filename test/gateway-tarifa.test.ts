@@ -253,7 +253,7 @@ describe("la costura entre las dos palancas", () => {
     expect(conDiales).not.toBeNull();
     // El cuerpo que sale de los diales es JSON plano: la codificación original
     // dejó de describirlo, por eso el servidor pasa "identity" a partir de aquí.
-    const conAmbas = rebajarTtlDeCache(conDiales!, "identity");
+    const conAmbas = rebajarTtlDeCache(conDiales!.cuerpo, "identity");
     expect(conAmbas).not.toBeNull();
     const salida = JSON.parse(conAmbas!.cuerpo.toString("utf8"));
     expect(salida.context_management).toBeDefined();

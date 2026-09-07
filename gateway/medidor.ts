@@ -113,7 +113,56 @@ export interface RebajaAplicada {
 /** Lo que el proveedor declara haber borrado en una respuesta (su contador, no el nuestro). */
 export interface ElisionAplicada {
   borrados: number;
+  /** Tokens borrados por TODOS los applied_edits (el contador del proveedor, tal cual). */
   tokensLimpiados: number;
+  /**
+   * B2 · solo los de `clear_tool_uses_20250919`. El proveedor también borra
+   * thinking (`clear_thinking_20251015`, que Claude Code manda de fábrica y la
+   * palanca CONSERVA), y ese borrado es del cliente aunque nuestros diales
+   * viajen en la misma petición. El dinero y B2-4 salen de ESTA cifra; el
+   * conteo que viaja al panel sigue siendo el total.
+   */
+  tokensLimpiadosToolUses: number;
+  /**
+   * B2 · true cuando el borrado es ATRIBUIBLE a nuestros diales: la palanca
+   * cambió el `clear_tool_uses` que traía el cliente (regla del delta). Lo pone
+   * el SERVIDOR, no el observador — la respuesta del proveedor no sabe quién
+   * puso los diales. Sin él no hay suelo: el conteo se reporta igual, el
+   * dinero no.
+   */
+  atribuible?: boolean;
+}
+
+/**
+ * B2 · EL SUELO DE LA ELISIÓN DEL PROVEEDOR, en USD: los tokens que su contador
+ * declara borrados, a precio de LECTURA de caché del modelo. Tres reglas, y las
+ * tres son de dinero:
+ *
+ *  · `cachedInputPer1k` y SOLO ese. Jamás `inputPer1k` ni el fallback
+ *    `?? inputPer1k`: a precio de entrada se sobrevalora ×10 (opus/sonnet/
+ *    fable-5) y ×40 (fable-5-1). Sin precio de lectura en el catálogo → 0.
+ *    Es un SUELO: esos tokens se habrían pagado COMO MÍNIMO a precio de
+ *    lectura en cada turno siguiente; tarifarlos una vez a ese precio se queda
+ *    corto, nunca inventa de más. El ingest lo acota además con
+ *    TECHO_PRECIO_LECTURA_PER_1K (apps/web/lib/metering/techo-precio-lectura.ts).
+ *  · Solo si el borrado es ATRIBUIBLE (elision.atribuible): si el cliente ya
+ *    mandaba nuestros diales, o los suyos habrían disparado igual sobre el
+ *    prompt original, ese ahorro es suyo (regla del delta, palanca.ts y
+ *    servidor.ts). Y solo los tokens de `clear_tool_uses`: el thinking que el
+ *    proveedor borre es por la config del cliente.
+ *  · Carril PROPIO (cost.eliminatedInputFloorCost → wire eliminatedInputFloorCost
+ *    → usage_daily.eliminated_floor_cost, migración 0025): nunca toca
+ *    baselineCost, netSavings ni measured_*, y no entra en la comisión hasta
+ *    COMISIONAR_ELISION_SUELO (apps/web/lib/billing/tarifa.ts).
+ */
+export function sueloDeElision(precio: CostModel, elision: ElisionAplicada | null | undefined): number {
+  if (!elision || elision.atribuible !== true) return 0;
+  // SOLO tool_uses: el thinking que el proveedor borre lo borra por la config
+  // del cliente (la palanca no la toca), así que jamás se tarifa como nuestro.
+  if (!(elision.tokensLimpiadosToolUses > 0)) return 0;
+  const lectura = precio.cachedInputPer1k;
+  if (typeof lectura !== "number" || !Number.isFinite(lectura) || lectura <= 0) return 0;
+  return (elision.tokensLimpiadosToolUses / 1_000) * lectura;
 }
 
 /** Extrae los applied_edits de un bloque context_management (forma sondeada en vivo). */
@@ -122,11 +171,15 @@ export function elisionDeContextManagement(cm: unknown): ElisionAplicada | null 
   const edits = (cm as { applied_edits?: unknown }).applied_edits;
   if (!Array.isArray(edits) || edits.length === 0) return null;
   let tokens = 0;
+  let deToolUses = 0;
   for (const e of edits) {
     const t = (e as { cleared_input_tokens?: unknown }).cleared_input_tokens;
-    if (typeof t === "number" && Number.isFinite(t) && t > 0) tokens += t;
+    if (typeof t === "number" && Number.isFinite(t) && t > 0) {
+      tokens += t;
+      if ((e as { type?: unknown }).type === "clear_tool_uses_20250919") deToolUses += t;
+    }
   }
-  return { borrados: edits.length, tokensLimpiados: tokens };
+  return { borrados: edits.length, tokensLimpiados: tokens, tokensLimpiadosToolUses: deToolUses };
 }
 
 /** La elisión declarada en una respuesta JSON (stream:false): bloque top-level. */
@@ -461,6 +514,9 @@ function construirInforme(
       ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
       : 0;
   const baselineMedido = medido.costeUsd + sobrecosteEvitado;
+  // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela
+  // coalescida no viajó: no elidió nada y no tiene suelo.
+  const sueloElision = coalescida ? 0 : sueloDeElision(medido.precio, elision);
   const informe = {
     requestId,
     model,
@@ -471,8 +527,8 @@ function construirInforme(
       actualInput: coalescida ? 0 : entradaTotal,
       // S4a · los tokens que el PROVEEDOR declaró borrados (su contador). Solo en
       // la rama medida: una gemela coalescida no viajó, así que no elidió nada.
-      // Es un CONTEO (viaja por el campo wire eliminatedInputTokens, ya en la
-      // lista blanca del ingest); el dinero de la elisión es harina de otro costal.
+      // Es un CONTEO (viaja por el campo wire eliminatedInputTokens); el DINERO
+      // va aparte y a precio suelo: cost.eliminatedInputFloorCost (B2, abajo).
       eliminatedInput: coalescida ? 0 : elision?.tokensLimpiados ?? 0,
       compressedInput: 0,
       baselineOutput: medido.tokens.salida,
@@ -500,6 +556,9 @@ function construirInforme(
           // siempre se mantiene intacta: sin palanca no hay ahorro que enseñar.
           netSavings: baselineMedido > 0 ? Math.max(-100, Math.min(1, sobrecosteEvitado / baselineMedido)) : 0,
           basis: "measured" as const,
+          // B2 · solo cuando hay dinero: el campo AUSENTE es «no hubo borrado
+          // atribuible», y un 0 explícito no añadiría nada.
+          ...(sueloElision > 0 ? { eliminatedInputFloorCost: sueloElision } : {}),
         },
   };
   return informe as unknown as SavingsReport;
