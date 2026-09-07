@@ -231,7 +231,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             if (!paso) return;
             em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
             log(
-              `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`,
+              paso.verja === "apto"
+                ? `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`
+                : `[gateway] sombra · ${model} · verja CERRADA (${paso.verja}): no se declara ahorro; v0 sin verja habría dado $${paso.politicaSinVerjaUsd.toFixed(6)} sobre $${paso.baselineUsd.toFixed(6)}`,
             );
           } catch {
             /* la sombra jamás rompe el gateway ni el metering */

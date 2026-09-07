@@ -8,6 +8,7 @@ import {
   type TurnoSombra,
 } from "./sombra.js";
 import type { UsoSse } from "./medidor.js";
+import { veredictoDeVerja, type MotivoVerja } from "./aptitud.js";
 
 /**
  * S2.4-vivo · EL CARRIL SOMBRA del gateway — la política GANADORA del replay
@@ -39,7 +40,16 @@ interface Cadena {
 /** Lo que el carril devuelve para UN turno: los dos costes simulados del paso. */
 export interface PasoSombra {
   baselineUsd: number;
+  /**
+   * El coste que se DECLARA como sombra. Con la verja cerrada para este modelo
+   * es igual a `baselineUsd`: no se afirma ahorro donde no lo habríamos aplicado.
+   */
   politicaUsd: number;
+  /** Lo que v0 habría costado SIN verja. El instrumento no se ciega: esta cifra
+   *  es la que alimenta la próxima medición de aptitud por modelo. */
+  politicaSinVerjaUsd: number;
+  /** Si la verja dejó aplicar la política en este modelo, y por qué. */
+  verja: MotivoVerja;
 }
 
 export class CarrilSombra {
@@ -77,7 +87,19 @@ export class CarrilSombra {
     const base = cadena.base.paso(turno);
     const v0 = cadena.v0.paso(turno);
     if (base.totalUsd <= 0 && v0.totalUsd <= 0) return null;
-    return { baselineUsd: base.totalUsd, politicaUsd: v0.totalUsd };
+
+    // LA VERJA. Las dos cadenas avanzan SIEMPRE —cegar el instrumento en los
+    // modelos sin medir haría imposible volver a medirlos— pero lo que se
+    // declara como sombra es lo que la política habría hecho DE VERDAD: en un
+    // modelo sin evidencia positiva y fresca no se aplica, así que su coste
+    // declarado es el baseline y el ahorro de ese turno es exactamente cero.
+    const verja = veredictoDeVerja(entrada.model, new Date(entrada.at).toISOString().slice(0, 10));
+    return {
+      baselineUsd: base.totalUsd,
+      politicaUsd: verja.aplica ? v0.totalUsd : base.totalUsd,
+      politicaSinVerjaUsd: v0.totalUsd,
+      verja: verja.motivo,
+    };
   }
 
   /** La cadena es por (sesión, agente, MODELO): una sesión de Claude Code
