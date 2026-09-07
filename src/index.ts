@@ -27,7 +27,14 @@
  */
 // El catálogo de precios de lista, exportado para que un cliente pueda
 // inspeccionarlo, extenderlo o comprobar qué modelos cubre.
-export { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "./pricing/catalogo.js";
+export { CATALOGO, precioDeLista, PRECIOS_AL_DIA, claveDeCatalogo } from "./pricing/catalogo.js";
+export {
+  VEREDICTOS_AL_DIA,
+  FORMA_DE_TRAFICO_MEDIDA,
+  decidirElision,
+  puntoDeEquilibrio,
+  type VeredictoDeElision,
+} from "./pricing/aptitud-de-elision.js";
 
 export const BV_SALA_VERSION = "0.4.16";
 

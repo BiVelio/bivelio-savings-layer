@@ -14,6 +14,7 @@
  */
 
 import { BETA_CONTEXT_MANAGEMENT, configDeDiales } from "./diales.js";
+import type { VeredictoDeElision } from "../src/pricing/aptitud-de-elision.js";
 
 /**
  * Ajusta el cuerpo de una petición /v1/messages: fusiona nuestros diales en su
@@ -29,12 +30,22 @@ import { BETA_CONTEXT_MANAGEMENT, configDeDiales } from "./diales.js";
  * coalescencia (cuya clave usa el cuerpo ORIGINAL) sigue siendo válida — dos
  * gemelas byte-iguales producen el mismo cuerpo ajustado.
  */
-export function ajustarDiales(cuerpo: Buffer, codificacion?: string): Buffer<ArrayBuffer> | null {
+export function ajustarDiales(
+  cuerpo: Buffer,
+  codificacion?: string,
+  verja?: (model: string) => VeredictoDeElision,
+): Buffer<ArrayBuffer> | null {
   if (codificacion !== undefined && codificacion !== "" && codificacion !== "identity") return null;
   try {
     const json = JSON.parse(cuerpo.toString("utf8")) as Record<string, unknown>;
     if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
     if (typeof json.model !== "string" || !Array.isArray(json.messages)) return null;
+    // LA VERJA DE APTITUD, aquí y no en el servidor: el modelo ya está parseado
+    // y validado y el JSON.parse ya está pagado, así que el coste en el camino
+    // caliente es CERO. Leerlo fuera obligaría a un tercer parse de cuerpos de
+    // varios MB en una sesión larga. Verja cerrada = null = passthrough, que es
+    // el contrato que esta función ya documenta arriba.
+    if (verja !== undefined && !verja(json.model).aplicar) return null;
     // Se FUSIONA con la config del cliente (fusionarDiales): su estrategia de
     // tool_uses se sustituye por la nuestra (el anillo 0 midió exactamente ese
     // cambio) y sus OTRAS estrategias se conservan tal cual.

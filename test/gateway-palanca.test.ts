@@ -26,8 +26,12 @@ import {
  *  5. Cuerpo comprimido → intacto (S4a no recomprime).
  */
 
+// `claude-fable-5` y no otro: es el único modelo con medición POSITIVA en
+// src/pricing/aptitud-de-elision.ts, así que la verja de aptitud lo deja
+// pasar y estos casos siguen probando LA PALANCA. Con un modelo sin medir
+// probarían la verja, que tiene sus propios tests.
 const CUERPO = JSON.stringify({
-  model: "claude-sonnet-4-5",
+  model: "claude-fable-5",
   max_tokens: 64,
   messages: [{ role: "user", content: "hola" }],
   context_management: { edits: [{ type: "clear_tool_uses_20250919" }] }, // la de fábrica del cliente
@@ -138,9 +142,28 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
     const json = JSON.parse(salida!.toString("utf8"));
     expect(json.context_management).toEqual({ edits: [NUESTRO_EDIT] });
     // El contenido del cliente no se toca (superficie mínima).
-    expect(json.model).toBe("claude-sonnet-4-5");
+    expect(json.model).toBe("claude-fable-5");
     expect(json.messages).toEqual([{ role: "user", content: "hola" }]);
     expect(json.max_tokens).toBe(64);
+  });
+
+  it("LA VERJA DE APTITUD: con la verja cerrada devuelve null y el cuerpo viaja intacto", () => {
+    // Un modelo sin medición no se elide (doctrina de la duda). El contrato de
+    // la función ya era «null = passthrough», así que la verja no añade un
+    // camino de error nuevo: reutiliza el que existía.
+    const cerrada = ajustarDiales(Buffer.from(CUERPO, "utf8"), undefined, () => ({
+      aplicar: false,
+      motivo: "sin-medicion" as const,
+    }));
+    expect(cerrada).toBeNull();
+
+    // Y con la verja abierta se comporta exactamente igual que sin verja.
+    const abierta = ajustarDiales(Buffer.from(CUERPO, "utf8"), undefined, () => ({
+      aplicar: true,
+      motivo: "aplica" as const,
+    }));
+    expect(abierta).not.toBeNull();
+    expect(abierta!.toString("utf8")).toBe(ajustarDiales(Buffer.from(CUERPO, "utf8"))!.toString("utf8"));
   });
 
   it("CONSERVA el clear_thinking del cliente, en posición 0 (lo que Claude Code manda de fábrica)", () => {

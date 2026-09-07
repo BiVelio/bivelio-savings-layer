@@ -20,6 +20,7 @@ import {
   type UsoSse,
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
+import { decidirElision, type VeredictoDeElision } from "../src/pricing/aptitud-de-elision.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
@@ -231,7 +232,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             if (!paso) return;
             em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
             log(
-              paso.verja === "apto"
+              paso.verja === "aplica"
                 ? `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`
                 : `[gateway] sombra · ${model} · verja CERRADA (${paso.verja}): no se declara ahorro; v0 sin verja habría dado $${paso.politicaSinVerjaUsd.toFixed(6)} sobre $${paso.baselineUsd.toFixed(6)}`,
             );
@@ -350,10 +351,28 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         canalElision.tiene("context_elision")
       ) {
         try {
-          const ajustado = ajustarDiales(cuerpo, codificacion);
+          // La VERJA DE APTITUD viaja como callback: `ajustarDiales` ya tiene el
+          // modelo parseado y validado, así que decidir ahí cuesta cero — leerlo
+          // aquí obligaría a un tercer parse de un cuerpo de varios MB. El
+          // callback devuelve el veredicto Y lo deja anotado para poder DECIRLO.
+          const cerrada: { model: string; motivo: VeredictoDeElision["motivo"] }[] = [];
+          const ajustado = ajustarDiales(cuerpo, codificacion, (m) => {
+            const v = decidirElision(m, new Date().toISOString().slice(0, 10));
+            if (!v.aplicar) cerrada.push({ model: m, motivo: v.motivo });
+            return v;
+          });
           if (ajustado !== null) {
             cuerpoSaliente = ajustado;
             h["anthropic-beta"] = conBetaDeElision(h["anthropic-beta"]);
+          }
+          // Una vez POR MODELO, nunca por petición: una sesión larga que alterna
+          // dos modelos avisa dos veces, no diez mil.
+          for (const c of cerrada) {
+            avisarUnaVez(
+              `verja-elision:${c.model}`,
+              `[bvsala gateway] elisión: verja cerrada para ${c.model} (${c.motivo}) — el tráfico viaja intacto. ` +
+                "La política solo se aplica donde está medido que ahorra: ver src/pricing/aptitud-de-elision.ts.",
+            );
           }
         } catch {
           /* passthrough */

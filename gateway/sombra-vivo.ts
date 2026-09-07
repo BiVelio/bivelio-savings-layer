@@ -8,7 +8,7 @@ import {
   type TurnoSombra,
 } from "./sombra.js";
 import type { UsoSse } from "./medidor.js";
-import { veredictoDeVerja, type MotivoVerja } from "./aptitud.js";
+import { decidirElision, type MotivoDeVerja } from "../src/pricing/aptitud-de-elision.js";
 
 /**
  * S2.4-vivo · EL CARRIL SOMBRA del gateway — la política GANADORA del replay
@@ -49,7 +49,7 @@ export interface PasoSombra {
    *  es la que alimenta la próxima medición de aptitud por modelo. */
   politicaSinVerjaUsd: number;
   /** Si la verja dejó aplicar la política en este modelo, y por qué. */
-  verja: MotivoVerja;
+  verja: MotivoDeVerja;
 }
 
 export class CarrilSombra {
@@ -93,10 +93,10 @@ export class CarrilSombra {
     // declara como sombra es lo que la política habría hecho DE VERDAD: en un
     // modelo sin evidencia positiva y fresca no se aplica, así que su coste
     // declarado es el baseline y el ahorro de ese turno es exactamente cero.
-    const verja = veredictoDeVerja(entrada.model, new Date(entrada.at).toISOString().slice(0, 10));
+    const verja = decidirElision(entrada.model, new Date(entrada.at).toISOString().slice(0, 10));
     return {
       baselineUsd: base.totalUsd,
-      politicaUsd: verja.aplica ? v0.totalUsd : base.totalUsd,
+      politicaUsd: verja.aplicar ? v0.totalUsd : base.totalUsd,
       politicaSinVerjaUsd: v0.totalUsd,
       verja: verja.motivo,
     };
