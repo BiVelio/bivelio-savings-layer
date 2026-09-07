@@ -1,6 +1,12 @@
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:net";
 import { describe, it, expect } from "vitest";
+
+/** El vigía es zsh + lsof (macOS, la máquina del dueño). El runner de CI es
+ *  Ubuntu sin zsh: ahí las pruebas que EJECUTAN se saltan con motivo, y la
+ *  que lee el fuente corre en todas partes. */
+const HAY_ZSH = spawnSync("zsh", ["-c", "true"]).status === 0;
+const HAY_LSOF = spawnSync("lsof", ["-v"]).status !== null && spawnSync("lsof", ["-v"]).error === undefined;
 
 /**
  * EL VIGÍA DE FUGAS mira SOCKETS, no shells ni entorno: una pestaña abierta
@@ -11,7 +17,7 @@ import { describe, it, expect } from "vitest";
 const VIGIA = new URL("../scripts/anillo2-vigia-fugas.zsh", import.meta.url).pathname;
 
 describe("anillo 2 · vigía de fugas", () => {
-  it("es zsh válido", () => {
+  it.skipIf(!HAY_ZSH)("es zsh válido", () => {
     execFileSync("zsh", ["-n", VIGIA]);
   });
 
@@ -23,7 +29,7 @@ describe("anillo 2 · vigía de fugas", () => {
     expect(src).not.toMatch(/BIVELIO_SERVICE_KEY|ANTHROPIC_API_KEY|Authorization/);
   });
 
-  it("la pieza que decide: un socket a 127.0.0.1 cuenta como gateway; a :443 externo, como fuga", async () => {
+  it.skipIf(!HAY_ZSH || !HAY_LSOF)("la pieza que decide: un socket a 127.0.0.1 cuenta como gateway; a :443 externo, como fuga", async () => {
     // Un servidor local + un cliente conectado = "va por gateway".
     const srv = createServer(() => {});
     await new Promise<void>((r) => srv.listen(0, "127.0.0.1", () => r()));
