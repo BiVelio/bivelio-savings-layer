@@ -102,6 +102,29 @@ describe.skipIf(!hayZsh)("anillo2-ab.zsh — lo que cazó la revisión del 06-09
     }
   });
 
+  it("⛔ el ratón huérfano: al lanzar y al salir, la función apaga el seguimiento del ratón del terminal", () => {
+    // Claude Code activa DECSET 1000/1006 para su TUI y solo lo apaga si sale
+    // limpio. Con un `exec zsh -l` a media sesión queda huérfano y cada
+    // movimiento del puntero se vuelca como `^[[<35;44;22M` en la entrada
+    // (07-09). El saneado se ejecuta antes y después de `command bvsala claude`.
+    const { readFileSync } = require("node:fs") as typeof import("node:fs");
+    const src = readFileSync(SCRIPT, "utf8");
+    const cuerpo = src.slice(src.indexOf("function claude {"));
+    const lanza = cuerpo.indexOf('command bvsala claude "$@"\n  local rc=$?');
+    expect(lanza).toBeGreaterThan(0);
+    const antes = cuerpo.slice(0, lanza);
+    const despues = cuerpo.slice(lanza);
+    expect(antes).toContain("bvsala-ab-sanear-terminal");
+    expect(despues).toContain("bvsala-ab-sanear-terminal");
+    // y la secuencia apaga los CUATRO modos de ratón, no solo uno
+    for (const modo of ["1000", "1002", "1003", "1006"]) expect(src).toContain(`?${modo}l`);
+  });
+
+  it("el saneado no escribe nada si stdout NO es una terminal (una tubería no recibe escapes)", () => {
+    const r = zsh("bvsala-ab-sanear-terminal; echo rc=$?");
+    expect(r.stdout).toBe("rc=0\n");
+  });
+
   it("`claude --version` / `--help` / `mcp` pasan de largo sin preflight (ni clave, ni espía)", () => {
     const lab = laboratorio();
     try {
