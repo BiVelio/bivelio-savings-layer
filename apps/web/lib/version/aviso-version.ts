@@ -1,0 +1,107 @@
+/**
+ * ¿Hay máquinas con gateway que llevan una semana sin producir un euro MEDIDO?
+ * Decisión PURA, con tests.
+ *
+ * DOCTRINA (refutación 5 del diseño): el aviso se decide por DINERO, y la
+ * versión solo EXPLICA. Decidir por versión era falso en los dos sentidos: un
+ * gateway 0.4.16 que no declara versión pero mide dinero desde #229/#230 salía
+ * «pendiente» al lado de un titular con ahorro > 0; y un proceso 0.4.17 sin la
+ * palanca (SDK sin gateway, org sin `cache_ttl_tuning`, BVSALA_GATEWAY_ELISION=0,
+ * tráfico Codex) salía «al día» con 0 €. Por eso:
+ *
+ *   · Solo cuentan asientos NO CI (cada job de CI es un asiento nuevo: hostnames
+ *     efímeros), de superficie gateway o sin declarar (un SDK no tiene palanca
+ *     de tarifa: no se le puede pedir), vistos en los últimos 7 días.
+ *   · Un asiento con ahorro medido > 0 en 7 días NUNCA entra en el aviso, sea
+ *     cual sea su versión: jamás un falso positivo sobre un 0.4.16 que mide.
+ *   · Entre los que no producen, la versión reparte la explicación:
+ *       desactualizada  → versión < mínima: «esta versión no lleva la palanca».
+ *       sinDeclarar     → sin versión (gateway anterior al canal) o con algún
+ *                         registro sin versión en 7 días (réplica vieja al lado
+ *                         de una nueva): «si es < mínima no lleva la palanca»,
+ *                         SIN afirmar el 0.
+ *       sinPalanca      → ≥ mínima y 0 €: causas comprobables (feature
+ *                         cache_ttl_tuning en la licencia, BVSALA_GATEWAY_ELISION,
+ *                         tipo de tráfico: escritura de caché 1h).
+ *   · Si todo produce dinero, null: un panel que grita sin motivo enseña a
+ *     ignorarlo (misma regla que BillingStateBanner).
+ */
+
+import { VERSION_MINIMA_PALANCA_TARIFA } from "./minima";
+import { compararVersiones, parsearVersion } from "./semver";
+
+export const DIA_MS = 86_400_000;
+export const VENTANA_AVISO_DIAS = 7;
+
+export type EstadoVersion = "alDia" | "desactualizada" | "desconocida";
+
+/** Un asiento tal y como lo agrega `agregarAsientos` (seat_activity, 0024). */
+export interface AsientoVisto {
+  seatId: string;
+  isCi: boolean;
+  /** Prefijo de la mayor versión declarada; null si nunca declaró. */
+  surface: "gateway" | "sdk" | null;
+  /** Menor y mayor versión declaradas (orden semver), o null. */
+  versionMin: string | null;
+  versionMax: string | null;
+  /** Algún registro de los últimos 7 días llegó SIN versión. */
+  sinVersion7d: boolean;
+  /** ISO de la última actividad. */
+  lastSeenAt: string;
+  /** Σ(measured_baseline_cost − measured_actual_cost) en los últimos 7 días. */
+  ahorroMedido7dUsd: number;
+}
+
+export interface AvisoVersion {
+  tipo: "gatewaySinAhorro";
+  /** Asientos gateway/sin declarar, no CI, vistos en 7 días. */
+  activas: number;
+  desactualizadas: number;
+  sinDeclarar: number;
+  sinPalanca: number;
+  minima: string;
+}
+
+/** Estado de la versión de UN asiento, para el chip de la tarjeta. No dice nada del dinero. */
+export function estadoVersion(a: Pick<AsientoVisto, "versionMin" | "sinVersion7d">, minima = VERSION_MINIMA_PALANCA_TARIFA): EstadoVersion {
+  if (a.versionMin === null || a.sinVersion7d) return "desconocida";
+  if (!parsearVersion(a.versionMin)) return "desconocida";
+  return compararVersiones(a.versionMin, minima) < 0 ? "desactualizada" : "alDia";
+}
+
+export function decidirAvisoVersion(
+  asientos: readonly AsientoVisto[],
+  nowMs: number,
+  minima = VERSION_MINIMA_PALANCA_TARIFA,
+): AvisoVersion | null {
+  const activas = asientos.filter((a) => {
+    if (a.isCi) return false;
+    if (a.surface === "sdk") return false;
+    const visto = Date.parse(a.lastSeenAt);
+    if (Number.isNaN(visto)) return false;
+    const hace = nowMs - visto;
+    return hace >= 0 && hace <= VENTANA_AVISO_DIAS * DIA_MS;
+  });
+  // `> 0` y no `>= 0`: un NaN o un negativo (no debería, pero la BD manda) cae
+  // del lado de «no produce», que es el lado que avisa.
+  const sinEuro = activas.filter((a) => !(a.ahorroMedido7dUsd > 0));
+  if (sinEuro.length === 0) return null;
+
+  let desactualizadas = 0;
+  let sinDeclarar = 0;
+  let sinPalanca = 0;
+  for (const a of sinEuro) {
+    switch (estadoVersion(a, minima)) {
+      case "desconocida":
+        sinDeclarar++;
+        break;
+      case "desactualizada":
+        desactualizadas++;
+        break;
+      case "alDia":
+        sinPalanca++;
+        break;
+    }
+  }
+  return { tipo: "gatewaySinAhorro", activas: activas.length, desactualizadas, sinDeclarar, sinPalanca, minima };
+}

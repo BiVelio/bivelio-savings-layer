@@ -250,6 +250,29 @@
       "colCost": "Biaya",
       "hint": "Sesi dan subagen dari terminal pemrogramanmu (id buram — tidak pernah seseorang). Memerlukan gateway mulai 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Beberapa mesin tidak menghasilkan penghematan terukur dalam 7 hari terakhir",
+      "summary": "{n} dari {total} mesin gateway yang aktif dalam 7 hari terakhir.",
+      "outdated": "{n, plural, other {# mesin menjalankan}} gateway yang lebih lama dari {minima}, versi pertama dengan tuas tarif: perbarui.",
+      "undeclared": "{n, plural, other {# mesin tidak mendeklarasikan}} versi (gateway lebih lama dari kanal versi). Jika lebih lama dari {minima}, mesin itu tidak punya tuas tarif.",
+      "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana: periksa fitur cache_ttl_tuning pada lisensi Anda, BVSALA_GATEWAY_ELISION di mesin itu, dan apakah lalu lintasnya menulis cache 1 jam.",
+      "action": "Perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
+    },
+    "maquinas": {
+      "title": "mesin (30 hari)",
+      "colSeat": "Mesin",
+      "colSurface": "Permukaan",
+      "colVersion": "Versi",
+      "colState": "Status",
+      "colLastSeen": "Aktivitas terakhir",
+      "colSavings7d": "Penghematan terukur (7 hari)",
+      "ciRow": "CI ({n, plural, other {# kursi sementara}})",
+      "undeclared": "tidak dideklarasikan",
+      "chipOutdated": "perbarui",
+      "chipOk": "mutakhir",
+      "chipMixed": "sebagian tidak dideklarasikan",
+      "hint": "Satu baris per mesin yang melaporkan pemakaian, dikenali lewat id kursi opak (tidak pernah seseorang). Yang dikirim hanyalah nomor versi — gateway/x.y.z atau sdk/x.y.z —, tidak pernah konten. Mesin dengan gateway yang lebih lama dari kanal versi tampil sebagai “tidak dideklarasikan”."
+    },
     "installLicensePanel": {
       "eyebrow": "Mulai",
       "heading": "Empat langkah. Prompt Anda tidak pernah menyentuh server kami.",

@@ -250,6 +250,29 @@
       "colCost": "Kosten",
       "hint": "Sessies en subagenten van je codeterminals (opake ids — nooit een persoon). Vereist de gateway vanaf 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Sommige machines hebben de laatste 7 dagen geen gemeten besparing opgeleverd",
+      "summary": "{n} van {total} gateway-machines die de laatste 7 dagen actief waren.",
+      "outdated": "{n, plural, one {# machine draait} other {# machines draaien}} een gateway ouder dan {minima}, de eerste versie met de tariefhefboom: werk die bij.",
+      "undeclared": "{n, plural, one {# machine meldt} other {# machines melden}} geen versie (gateway ouder dan het versiekanaal). Is die ouder dan {minima}, dan heeft die geen tariefhefboom.",
+      "noLever": "{n, plural, one {# machine is up-to-date} other {# machines zijn up-to-date}}, maar de hefboom heeft daar niet gewerkt: controleer de feature cache_ttl_tuning van je licentie, BVSALA_GATEWAY_ELISION op die machine en of het verkeer 1h-cache schrijft.",
+      "action": "Werk @bivelio/savings-layer op die machine bij en herstart de terminal; de machinetabel hieronder toont wat elke machine meldt."
+    },
+    "maquinas": {
+      "title": "machines (30 dagen)",
+      "colSeat": "Machine",
+      "colSurface": "Oppervlak",
+      "colVersion": "Versie",
+      "colState": "Status",
+      "colLastSeen": "Laatste activiteit",
+      "colSavings7d": "Gemeten besparing (7 d)",
+      "ciRow": "CI ({n, plural, one {# tijdelijke seat} other {# tijdelijke seats}})",
+      "undeclared": "niet gemeld",
+      "chipOutdated": "bijwerken",
+      "chipOk": "up-to-date",
+      "chipMixed": "deels niet gemeld",
+      "hint": "Eén rij per machine die gebruik rapporteert, herkend aan een ondoorzichtige seat-id (nooit een persoon). Wat verstuurd wordt is een versienummer — gateway/x.y.z of sdk/x.y.z —, nooit inhoud. Een machine met een gateway ouder dan het versiekanaal verschijnt als „niet gemeld”."
+    },
     "installLicensePanel": {
       "eyebrow": "Aan de slag",
       "heading": "Vier stappen. Je prompts raken nooit onze servers.",

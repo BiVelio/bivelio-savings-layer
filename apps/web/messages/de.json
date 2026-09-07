@@ -250,6 +250,29 @@
       "colCost": "Kosten",
       "hint": "Sitzungen und Subagenten deiner Coding-Terminals (opake Ids — nie eine Person). Erfordert das Gateway ab 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Einige Maschinen haben in den letzten 7 Tagen keine gemessene Ersparnis erzeugt",
+      "summary": "{n} von {total} in den letzten 7 Tagen aktiven Gateway-Maschinen.",
+      "outdated": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem Gateway älter als {minima}, der ersten Version mit dem Tarifhebel: aktualisiere es.",
+      "undeclared": "{n, plural, one {# Maschine meldet} other {# Maschinen melden}} keine Version (Gateway älter als der Versionskanal). Ist sie älter als {minima}, hat sie keinen Tarifhebel.",
+      "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gewirkt: prüfe das Feature cache_ttl_tuning deiner Lizenz, BVSALA_GATEWAY_ELISION auf dieser Maschine und ob ihr Traffic 1h-Cache schreibt.",
+      "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
+    },
+    "maquinas": {
+      "title": "Maschinen (30 Tage)",
+      "colSeat": "Maschine",
+      "colSurface": "Oberfläche",
+      "colVersion": "Version",
+      "colState": "Status",
+      "colLastSeen": "Letzte Aktivität",
+      "colSavings7d": "Gemessene Ersparnis (7 T)",
+      "ciRow": "CI ({n, plural, one {# flüchtiger Sitz} other {# flüchtige Sitze}})",
+      "undeclared": "nicht gemeldet",
+      "chipOutdated": "aktualisieren",
+      "chipOk": "aktuell",
+      "chipMixed": "teilweise nicht gemeldet",
+      "hint": "Eine Zeile pro Maschine, die Nutzung meldet, identifiziert über ihre opake Sitz-ID (nie eine Person). Übertragen wird eine Versionsnummer — gateway/x.y.z oder sdk/x.y.z —, nie Inhalt. Eine Maschine mit einem Gateway älter als der Versionskanal erscheint als „nicht gemeldet“."
+    },
     "installLicensePanel": {
       "eyebrow": "Erste Schritte",
       "heading": "Vier Schritte. Deine Prompts berühren niemals unsere Server.",

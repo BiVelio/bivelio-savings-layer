@@ -250,6 +250,29 @@
       "colCost": "Cost",
       "hint": "Sessions and subagents from your coding terminals (opaque ids — never a person). Requires the gateway from 0.4.7 onwards."
     },
+    "gatewayVersion": {
+      "title": "Some machines produced no measured savings in the last 7 days",
+      "summary": "{n} of {total} gateway machines active in the last 7 days.",
+      "outdated": "{n, plural, one {# machine runs} other {# machines run}} a gateway older than {minima}, the first version with the rate lever: update it.",
+      "undeclared": "{n, plural, one {# machine does} other {# machines do}} not declare a version (gateway older than the version channel). If it is older than {minima}, it has no rate lever.",
+      "noLever": "{n, plural, one {# machine is} other {# machines are}} up to date, but the lever did not act there: check the cache_ttl_tuning feature on your licence, BVSALA_GATEWAY_ELISION on that machine, and whether its traffic writes 1h cache.",
+      "action": "Update @bivelio/savings-layer on that machine and restart the terminal; the machines table below shows what each one declares."
+    },
+    "maquinas": {
+      "title": "machines (30 days)",
+      "colSeat": "Machine",
+      "colSurface": "Surface",
+      "colVersion": "Version",
+      "colState": "State",
+      "colLastSeen": "Last activity",
+      "colSavings7d": "Measured savings (7 d)",
+      "ciRow": "CI ({n, plural, one {# ephemeral seat} other {# ephemeral seats}})",
+      "undeclared": "not declared",
+      "chipOutdated": "update",
+      "chipOk": "up to date",
+      "chipMixed": "partly undeclared",
+      "hint": "One row per machine that reports usage, identified by its opaque seat id (never a person). What travels is a version number — gateway/x.y.z or sdk/x.y.z — never content. A machine on a gateway older than the version channel shows as “not declared”."
+    },
     "installLicensePanel": {
       "eyebrow": "Get started",
       "heading": "Four steps. Your prompts never touch our servers.",

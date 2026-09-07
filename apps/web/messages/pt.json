@@ -250,6 +250,29 @@
       "colCost": "Custo",
       "hint": "Sessões e subagentes dos teus terminais de código (ids opacos — nunca uma pessoa). Requer o gateway a partir da 0.4.7."
     },
+    "gatewayVersion": {
+      "title": "Algumas máquinas não produziram poupança medida nos últimos 7 dias",
+      "summary": "{n} de {total} máquinas com gateway ativas nos últimos 7 dias.",
+      "outdated": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior a {minima}, a primeira versão com a alavanca de tarifa: atualiza-o.",
+      "undeclared": "{n, plural, one {# máquina não declara} other {# máquinas não declaram}} versão (gateway anterior ao canal de versão). Se for anterior a {minima}, não tem alavanca de tarifa.",
+      "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí: verifica a feature cache_ttl_tuning da tua licença, BVSALA_GATEWAY_ELISION nessa máquina e se o seu tráfego escreve cache de 1h.",
+      "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
+    },
+    "maquinas": {
+      "title": "máquinas (30 dias)",
+      "colSeat": "Máquina",
+      "colSurface": "Superfície",
+      "colVersion": "Versão",
+      "colState": "Estado",
+      "colLastSeen": "Última atividade",
+      "colSavings7d": "Poupança medida (7 d)",
+      "ciRow": "CI ({n, plural, one {# lugar efémero} other {# lugares efémeros}})",
+      "undeclared": "não declarada",
+      "chipOutdated": "atualiza",
+      "chipOk": "atualizada",
+      "chipMixed": "parte não declarada",
+      "hint": "Uma linha por máquina que reporta uso, identificada pelo seu id de lugar opaco (nunca uma pessoa). O que viaja é um número de versão — gateway/x.y.z ou sdk/x.y.z —, nunca conteúdo. Uma máquina com um gateway anterior ao canal de versão aparece como «não declarada»."
+    },
     "installLicensePanel": {
       "eyebrow": "Começar",
       "heading": "Quatro passos. Os teus prompts nunca tocam nos nossos servidores.",

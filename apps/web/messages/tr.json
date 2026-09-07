@@ -250,6 +250,29 @@
       "colCost": "Maliyet",
       "hint": "Kod terminallerinin oturumları ve alt ajanları (opak kimlikler — asla bir kişi değil). 0.4.7 ve sonrası ağ geçidi gerektirir."
     },
+    "gatewayVersion": {
+      "title": "Bazı makineler son 7 günde ölçülen tasarruf üretmedi",
+      "summary": "Son 7 günde etkin {total} gateway makinesinden {n} tanesi.",
+      "outdated": "{n, plural, other {# makine}}, tarife kolunu taşıyan ilk sürüm olan {minima} sürümünden eski bir gateway çalıştırıyor: güncelleyin.",
+      "undeclared": "{n, plural, other {# makine}} sürüm bildirmiyor (sürüm kanalından eski gateway). {minima} sürümünden eskiyse tarife kolu yoktur.",
+      "noLever": "{n, plural, other {# makine}} güncel, ancak kol orada çalışmadı: lisansınızdaki cache_ttl_tuning özelliğini, o makinedeki BVSALA_GATEWAY_ELISION değerini ve trafiğinin 1 saatlik önbellek yazıp yazmadığını kontrol edin.",
+      "action": "O makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
+    },
+    "maquinas": {
+      "title": "makineler (30 gün)",
+      "colSeat": "Makine",
+      "colSurface": "Yüzey",
+      "colVersion": "Sürüm",
+      "colState": "Durum",
+      "colLastSeen": "Son etkinlik",
+      "colSavings7d": "Ölçülen tasarruf (7 g)",
+      "ciRow": "CI ({n, plural, other {# geçici koltuk}})",
+      "undeclared": "bildirilmedi",
+      "chipOutdated": "güncelle",
+      "chipOk": "güncel",
+      "chipMixed": "kısmen bildirilmedi",
+      "hint": "Kullanım bildiren her makine için bir satır; makine, opak koltuk kimliğiyle tanınır (asla bir kişi). Gönderilen şey yalnızca bir sürüm numarasıdır — gateway/x.y.z veya sdk/x.y.z —, asla içerik değil. Sürüm kanalından eski bir gateway çalıştıran makine “bildirilmedi” olarak görünür."
+    },
     "installLicensePanel": {
       "eyebrow": "Başlayın",
       "heading": "Dört adım. Prompt'larınız sunucularımıza asla dokunmaz.",

@@ -1,16 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { authConfigured } from "@/lib/supabase/env";
 import abData from "@/public/data/ab-live.json";
-import { activationSteps, getSesiones, type AbArtifact } from "./data";
+import { activationSteps, getAsientos, getSesiones, type AbArtifact } from "./data";
 import { loadDashboard } from "./load";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
+import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
 import { InstrumentationSpine } from "./components/InstrumentationSpine";
 import { LiveLedgerTiles } from "./components/LiveLedgerTiles";
 import { RitmoCard } from "./components/RitmoCard";
 import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
 import { UsageExplorer } from "./components/UsageExplorer";
 import { TrafficModelMix } from "./components/TrafficModelMix";
+import { MaquinasCard } from "./components/MaquinasCard";
 import { SesionesCard } from "./components/SesionesCard";
 import { SombraElisionCard } from "./components/SombraElisionCard";
 import { VerdictHero } from "./components/VerdictHero";
@@ -32,9 +34,13 @@ export default async function OverviewPage() {
   }
   const { ctx, usage, usageFailed, porModelo, visibilidad, orgId } = await loadDashboard();
   const steps = await activationSteps(true, ctx, usage);
-  // Coste por sesión (0019): lectura aparte y tolerante — sin tabla (migración
-  // por detrás del deploy) o sin filas, la tarjeta no existe y el panel sigue.
-  const sesiones = orgId ? (await getSesiones(await createReadOnlyClient(), orgId)).rows : [];
+  // Coste por sesión (0019) y máquinas (0024): lecturas aparte y tolerantes —
+  // sin tabla o sin columnas (migración por detrás del deploy) o sin filas, la
+  // tarjeta no existe y el panel sigue. Un solo cliente de solo lectura para las dos.
+  const lector = orgId ? await createReadOnlyClient() : null;
+  const [sesiones, asientos] = lector && orgId
+    ? await Promise.all([getSesiones(lector, orgId).then((r) => r.rows), getAsientos(lector, orgId).then((r) => r.rows)])
+    : [[], []];
 
   return (
     <>
@@ -47,6 +53,9 @@ export default async function OverviewPage() {
       {/* Lo primero de la primera pantalla: si el cobro va mal, se entera aquí
           y no cuando el SDK se le pare. */}
       <BillingStateBanner ctx={ctx} />
+      {/* Y justo detrás, si alguna máquina con gateway lleva una semana sin un
+          euro MEDIDO: decide el dinero por asiento, la versión solo explica. */}
+      <GatewayVersionBanner asientos={asientos} />
 
       <InstrumentationSpine steps={steps} />
 
@@ -79,6 +88,7 @@ export default async function OverviewPage() {
             <TrafficModelMix usage={usage} />
           </div>
           <SesionesCard sesiones={sesiones} />
+          <MaquinasCard asientos={asientos} />
           {/* La sombra al final y en tarjeta PROPIA: hipotética por doctrina,
               jamás mezclada con el titular ni con los libros medidos. */}
           <SombraElisionCard usage={usage} />

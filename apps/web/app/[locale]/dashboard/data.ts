@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { elegirLicencia } from "./derive";
+import { agregarAsientos, type FilaAsiento } from "@/lib/version/asientos";
+import { DIA_MS, type AsientoVisto } from "@/lib/version/aviso-version";
 
 /**
  * Server data layer for the dashboard. Every query is best-effort: the bound
@@ -432,6 +434,58 @@ export async function getSesiones(supabase: SupabaseClient, orgId: string): Prom
 }
 
 // ---- Uso por modelo (0022): desglose por (día, modelo) ----
+
+export type { AsientoVisto };
+
+/**
+ * Máquinas (0024): una fila de seat_activity por asiento-día en 30 días,
+ * agregada POR ASIENTO en memoria (`agregarAsientos`, pura y con tests). El
+ * panel decide el aviso por el dinero medido de 7 días y explica con la versión.
+ *
+ * Tolerante en las dos direcciones del despliegue: si la migración 0024 va por
+ * detrás de la web faltan las columnas (42703/PGRST204 → `esColumnaInexistente`)
+ * y si faltara la tabla entera (`esTablaInexistente`), la tarjeta se esconde y
+ * el panel sigue. Cualquier otro error sí es un fallo (failed) con traza.
+ *
+ * limit 2000 y no 500: cada job de CI es un asiento nuevo (hostnames efímeros),
+ * y ordenado por día descendente para que, si se corta, se corte por lo viejo.
+ */
+export async function getAsientos(supabase: SupabaseClient, orgId: string): Promise<{ rows: AsientoVisto[]; failed: boolean }> {
+  try {
+    const nowMs = Date.now();
+    const since = new Date(nowMs - 30 * DIA_MS).toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .schema("bvsala")
+      .from("seat_activity")
+      .select(
+        "seat_id, is_ci, day, last_seen_at, client_version_min, client_version_max, requests_sin_version, measured_baseline_cost, measured_actual_cost",
+      )
+      .eq("org_id", orgId)
+      .gte("day", since)
+      .order("day", { ascending: false })
+      .limit(2000);
+    if (error) {
+      if (esColumnaInexistente(error) || esTablaInexistente(error)) return { rows: [], failed: false };
+      console.error("[dashboard] seat_activity read failed:", error.code, error.message);
+      return { rows: [], failed: true };
+    }
+    const filas: FilaAsiento[] = ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
+      seatId: String(r["seat_id"] ?? "unknown"),
+      isCi: Boolean(r["is_ci"]),
+      day: String(r["day"] ?? ""),
+      lastSeenAt: String(r["last_seen_at"] ?? ""),
+      versionMin: r["client_version_min"] == null ? null : String(r["client_version_min"]),
+      versionMax: r["client_version_max"] == null ? null : String(r["client_version_max"]),
+      requestsSinVersion: Number(r["requests_sin_version"] ?? 0),
+      measuredBaselineCost: Number(r["measured_baseline_cost"] ?? 0),
+      measuredActualCost: Number(r["measured_actual_cost"] ?? 0),
+    }));
+    return { rows: agregarAsientos(filas, nowMs), failed: false };
+  } catch (err) {
+    console.error("[dashboard] seat_activity read threw:", err);
+    return { rows: [], failed: true };
+  }
+}
 
 export interface ModelDia {
   day: string;
