@@ -13,7 +13,7 @@
  * y el cuerpo original viaja intacto — passthrough, jamás error.
  */
 
-import { BETA_CONTEXT_MANAGEMENT, configDeDiales } from "./diales.js";
+import { BETA_CONTEXT_MANAGEMENT, TRIGGER_POR_DEFECTO_DE_LA_API, configDeDiales } from "./diales.js";
 
 /**
  * Ajusta el cuerpo de una petición /v1/messages: fusiona nuestros diales en su
@@ -41,6 +41,14 @@ export interface AjusteDeDiales {
    * era suyo: se CUENTA (el contador es del proveedor) pero no se acredita.
    */
   nuestros: boolean;
+  /**
+   * B2 · la segunda mitad de la regla del delta: el trigger EFECTIVO del
+   * `clear_tool_uses` que traía el cliente (el suyo, o el de la API si no lo
+   * declaraba), o null si no traía ninguno. El servidor lo compara con la
+   * entrada del prompt ORIGINAL (entrada medida + tokens borrados): si sus
+   * diales habrían disparado igual, el borrado es suyo y no se acredita.
+   */
+  triggerDelCliente: number | null;
 }
 
 export function ajustarDiales(cuerpo: Buffer, codificacion?: string): AjusteDeDiales | null {
@@ -52,11 +60,12 @@ export function ajustarDiales(cuerpo: Buffer, codificacion?: string): AjusteDeDi
     // La atribución se decide ANTES de fusionar: compara lo que traía el
     // cliente con lo que va a salir.
     const nuestros = dialesSonNuestros(json.context_management);
+    const trigger = triggerDelCliente(json.context_management);
     // Se FUSIONA con la config del cliente (fusionarDiales): su estrategia de
     // tool_uses se sustituye por la nuestra (el anillo 0 midió exactamente ese
     // cambio) y sus OTRAS estrategias se conservan tal cual.
     json.context_management = fusionarDiales(json.context_management);
-    return { cuerpo: Buffer.from(JSON.stringify(json), "utf8"), nuestros };
+    return { cuerpo: Buffer.from(JSON.stringify(json), "utf8"), nuestros, triggerDelCliente: trigger };
   } catch {
     return null;
   }
@@ -79,6 +88,32 @@ export function dialesSonNuestros(cm: unknown): boolean {
     (e) => e !== null && typeof e === "object" && !Array.isArray(e) && (e as { type?: unknown }).type === ESTRATEGIA_TOOL_USES,
   );
   return canonico(delCliente) !== canonico([configDeDiales().edits[0]]);
+}
+
+/**
+ * B2 · El trigger efectivo de los `clear_tool_uses` que TRAÍA el cliente: el
+ * menor de los que declaren (`trigger: {type:"input_tokens", value}`), con el
+ * de la API para los que no lo declaren (el de fábrica de Claude Code). Null
+ * si no traía ninguno. Ante una forma rara (valor no numérico, otro tipo de
+ * trigger) se asume el de la API: mejor no acreditar que acreditar de más.
+ */
+export function triggerDelCliente(cm: unknown): number | null {
+  const edits = cm !== null && typeof cm === "object" && !Array.isArray(cm) ? (cm as { edits?: unknown }).edits : undefined;
+  const delCliente = (Array.isArray(edits) ? edits : []).filter(
+    (e): e is Record<string, unknown> =>
+      e !== null && typeof e === "object" && !Array.isArray(e) && (e as { type?: unknown }).type === ESTRATEGIA_TOOL_USES,
+  );
+  if (delCliente.length === 0) return null;
+  let minimo = Number.POSITIVE_INFINITY;
+  for (const e of delCliente) {
+    const t = e.trigger as { type?: unknown; value?: unknown } | undefined;
+    const v =
+      t !== null && typeof t === "object" && t.type === "input_tokens" && typeof t.value === "number" && Number.isFinite(t.value) && t.value > 0
+        ? t.value
+        : TRIGGER_POR_DEFECTO_DE_LA_API;
+    if (v < minimo) minimo = v;
+  }
+  return minimo;
 }
 
 /** JSON con las claves de cada objeto ordenadas: igualdad estructural, no textual. */

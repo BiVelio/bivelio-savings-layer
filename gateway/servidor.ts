@@ -217,11 +217,13 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             ? ` · elisión: ${elision.borrados} borrado(s), ${elision.tokensLimpiados} tok limpiados por el proveedor` +
               (suelo !== undefined
                 ? ` · suelo $${suelo.toFixed(6)} (lectura de caché)`
-                : elision.tokensLimpiados > 0
+                : elision.tokensLimpiadosToolUses > 0
                   ? elision.atribuible
                     ? " · sin precio de lectura en el catálogo: sin suelo"
                     : " · diales del cliente: se cuenta, no se acredita"
-                  : "")
+                  : elision.tokensLimpiados > 0
+                    ? " · solo thinking (config del cliente): se cuenta, no se acredita"
+                    : "")
             : ""),
       );
       // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la
@@ -229,11 +231,13 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // verdad (una gemela coalescida repite el prompt de su primaria y
       // duplicaría el turno de la cadena) y solo /v1/messages (la política
       // conoce los bloques de Anthropic). Un fallo aquí no puede romper NADA.
-      // B2-4 · donde el proveedor YA borró por NUESTROS diales, la sombra no
-      // mide: simularía elidir los mismos tool_result que el proveedor limpió y
-      // el panel enseñaría el mismo borrado dos veces (plan S4 § 5).
-      const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiados > 0;
-      if (carrilSombra && !coalescida && path === "/v1/messages" && !borradoNuestro) {
+      // B2-4 · donde el proveedor YA borró tool_uses por NUESTROS diales, la
+      // sombra no EMITE: simularía elidir los mismos tool_result que el
+      // proveedor limpió y el panel enseñaría el mismo borrado dos veces (plan
+      // S4 § 5). La cadena de simulación sí AVANZA (observar) — si no, el turno
+      // siguiente compararía contra un previo viejo y su cifra saldría inflada.
+      const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiadosToolUses > 0;
+      if (carrilSombra && !coalescida && path === "/v1/messages") {
         setImmediate(() => {
           try {
             const json = jsonDelCuerpo(cuerpo, codificacion);
@@ -247,6 +251,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
               ...(atribucion?.agentId !== undefined ? { agentId: atribucion.agentId } : {}),
             });
             if (!paso) return;
+            if (borradoNuestro) {
+              log(`[gateway] sombra · ${model} · el proveedor ya borró por nuestros diales: la cadena avanza, no se emite`);
+              return;
+            }
             em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
             log(
               `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`,
@@ -287,12 +295,24 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     let cuerpoPeticion: Buffer = Buffer.alloc(0);
     let medida = false;
     // B2 · ¿un borrado que declare el proveedor será ATRIBUIBLE a nuestros
-    // diales? Solo si la palanca cambió el clear_tool_uses que traía el cliente
-    // (regla del delta, plan § 2.4). Fuera del try: el camino del cliente que
-    // cierra a mitad (catch) también mide, y también acredita.
-    let dialesNuestros = false;
-    const atribuir = (e: ElisionAplicada | null): ElisionAplicada | null =>
-      e !== null && dialesNuestros ? { ...e, atribuible: true } : e;
+    // diales? La regla del delta (plan § 2.4) en dos mitades: (1) la palanca
+    // cambió el clear_tool_uses que traía el cliente, y (2) los diales que
+    // traía NO habrían disparado por sí solos sobre el prompt ORIGINAL — la
+    // entrada que el proveedor midió MÁS lo que borró, contra su trigger
+    // efectivo. Si habrían disparado, el ahorro es suyo: se cuenta, no se
+    // acredita. Fuera del try: el camino del cliente que cierra a mitad
+    // (catch) también mide, y también acredita.
+    let diales: { nuestros: boolean; triggerDelCliente: number | null } | null = null;
+    const atribuir = (
+      e: ElisionAplicada | null,
+      uso: ReturnType<ObservadorSse["usage"]>,
+    ): ElisionAplicada | null => {
+      if (e === null || diales === null || !diales.nuestros) return e;
+      const entradaAntes =
+        (uso?.input_tokens ?? 0) + (uso?.cache_read_input_tokens ?? 0) + (uso?.cache_creation_input_tokens ?? 0) + e.tokensLimpiados;
+      const suyo = diales.triggerDelCliente !== null && entradaAntes >= diales.triggerDelCliente;
+      return { ...e, atribuible: !suyo };
+    };
     const ce = req.headers["content-encoding"];
     const codificacion = Array.isArray(ce) ? ce[0] : ce;
     // Atribución de sesión/subagente: Claude Code manda x-claude-code-session-id
@@ -377,7 +397,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           const ajustado = ajustarDiales(cuerpo, codificacion);
           if (ajustado !== null) {
             cuerpoSaliente = ajustado.cuerpo;
-            dialesNuestros = ajustado.nuestros;
+            diales = { nuestros: ajustado.nuestros, triggerDelCliente: ajustado.triggerDelCliente };
             h["anthropic-beta"] = conBetaDeElision(h["anthropic-beta"]);
           }
         } catch {
@@ -495,11 +515,13 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medida = true;
-        const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null);
-        medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs);
+        const uso = observador.usage();
+        const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs);
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
-        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta)), rebaja, inicioMs);
+        const uso = usoDeJson(respuesta);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -517,7 +539,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         const uso = !medida && observador ? observador.usageFinal() : null;
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
-          const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null);
+          const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
           medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);

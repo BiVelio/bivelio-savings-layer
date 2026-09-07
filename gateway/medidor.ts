@@ -113,7 +113,16 @@ export interface RebajaAplicada {
 /** Lo que el proveedor declara haber borrado en una respuesta (su contador, no el nuestro). */
 export interface ElisionAplicada {
   borrados: number;
+  /** Tokens borrados por TODOS los applied_edits (el contador del proveedor, tal cual). */
   tokensLimpiados: number;
+  /**
+   * B2 · solo los de `clear_tool_uses_20250919`. El proveedor también borra
+   * thinking (`clear_thinking_20251015`, que Claude Code manda de fábrica y la
+   * palanca CONSERVA), y ese borrado es del cliente aunque nuestros diales
+   * viajen en la misma petición. El dinero y B2-4 salen de ESTA cifra; el
+   * conteo que viaja al panel sigue siendo el total.
+   */
+  tokensLimpiadosToolUses: number;
   /**
    * B2 · true cuando el borrado es ATRIBUIBLE a nuestros diales: la palanca
    * cambió el `clear_tool_uses` que traía el cliente (regla del delta). Lo pone
@@ -137,7 +146,10 @@ export interface ElisionAplicada {
  *    corto, nunca inventa de más. El ingest lo acota además con
  *    TECHO_PRECIO_LECTURA_PER_1K (apps/web/lib/metering/techo-precio-lectura.ts).
  *  · Solo si el borrado es ATRIBUIBLE (elision.atribuible): si el cliente ya
- *    mandaba nuestros diales, ese ahorro es suyo.
+ *    mandaba nuestros diales, o los suyos habrían disparado igual sobre el
+ *    prompt original, ese ahorro es suyo (regla del delta, palanca.ts y
+ *    servidor.ts). Y solo los tokens de `clear_tool_uses`: el thinking que el
+ *    proveedor borre es por la config del cliente.
  *  · Carril PROPIO (cost.eliminatedInputFloorCost → wire eliminatedInputFloorCost
  *    → usage_daily.eliminated_floor_cost, migración 0025): nunca toca
  *    baselineCost, netSavings ni measured_*, y no entra en la comisión hasta
@@ -145,10 +157,12 @@ export interface ElisionAplicada {
  */
 export function sueloDeElision(precio: CostModel, elision: ElisionAplicada | null | undefined): number {
   if (!elision || elision.atribuible !== true) return 0;
-  if (!(elision.tokensLimpiados > 0)) return 0;
+  // SOLO tool_uses: el thinking que el proveedor borre lo borra por la config
+  // del cliente (la palanca no la toca), así que jamás se tarifa como nuestro.
+  if (!(elision.tokensLimpiadosToolUses > 0)) return 0;
   const lectura = precio.cachedInputPer1k;
   if (typeof lectura !== "number" || !Number.isFinite(lectura) || lectura <= 0) return 0;
-  return (elision.tokensLimpiados / 1_000) * lectura;
+  return (elision.tokensLimpiadosToolUses / 1_000) * lectura;
 }
 
 /** Extrae los applied_edits de un bloque context_management (forma sondeada en vivo). */
@@ -157,11 +171,15 @@ export function elisionDeContextManagement(cm: unknown): ElisionAplicada | null 
   const edits = (cm as { applied_edits?: unknown }).applied_edits;
   if (!Array.isArray(edits) || edits.length === 0) return null;
   let tokens = 0;
+  let deToolUses = 0;
   for (const e of edits) {
     const t = (e as { cleared_input_tokens?: unknown }).cleared_input_tokens;
-    if (typeof t === "number" && Number.isFinite(t) && t > 0) tokens += t;
+    if (typeof t === "number" && Number.isFinite(t) && t > 0) {
+      tokens += t;
+      if ((e as { type?: unknown }).type === "clear_tool_uses_20250919") deToolUses += t;
+    }
   }
-  return { borrados: edits.length, tokensLimpiados: tokens };
+  return { borrados: edits.length, tokensLimpiados: tokens, tokensLimpiadosToolUses: deToolUses };
 }
 
 /** La elisión declarada en una respuesta JSON (stream:false): bloque top-level. */

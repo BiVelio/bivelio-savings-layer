@@ -773,8 +773,9 @@ export interface SavingsReport {
      *
      * A separate lane on purpose: it is not part of `baselineEstimate`,
      * `actual` or `netSavings`, it is never folded into measured money, and it
-     * is never billed. It is a lower bound of what those tokens would have
-     * cost to keep reading, not a claim about the net effect of clearing them.
+     * is not part of the commission base. It is a lower bound of what those
+     * tokens would have cost to keep reading, not a claim about the net effect
+     * of clearing them.
      */
     eliminatedInputFloorCost?: number;
   };

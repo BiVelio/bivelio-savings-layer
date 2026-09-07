@@ -240,9 +240,9 @@ describe("el gateway con BVSALA_GATEWAY_SHADOW", () => {
 describe("B2-4 · sombra y borrado del proveedor no se solapan", () => {
   const CM_NUESTRO = { edits: [configDeDiales().edits[0]] };
 
-  async function correr(cuerpoExtra: Record<string, unknown>): Promise<Record<string, unknown>[]> {
+  async function correr(cuerpoExtra: Record<string, unknown>, sse = SSE_CON_BORRADO): Promise<Record<string, unknown>[]> {
     const lotes: unknown[][] = [];
-    const upstream = await arrancarUpstreamSse(SSE_CON_BORRADO);
+    const upstream = await arrancarUpstreamSse(sse);
     const ingesta = await arrancarIngestaFalsa(lotes, ["context_elision"]);
     const gw = await arrancarGateway({
       puerto: 0 as never,
@@ -275,6 +275,20 @@ describe("B2-4 · sombra y borrado del proveedor no se solapan", () => {
     expect(medidos[0]!["eliminatedInputTokens"]).toBe(TOKENS_BORRADOS);
     expect(medidos[0]!["eliminatedInputFloorCost"]).toBeGreaterThan(0);
     expect(registros.some((r) => r["basis"] === "shadow")).toBe(false);
+  });
+
+  it("borrado solo de THINKING (config del cliente, no tool_uses) → la sombra sigue midiendo", async () => {
+    const soloThinking = SSE_CON_BORRADO.replace(
+      `{"type":"clear_tool_uses_20250919","cleared_input_tokens":${TOKENS_BORRADOS},"cleared_tool_uses":2}`,
+      '{"type":"clear_thinking_20251015","cleared_input_tokens":40000}',
+    );
+    expect(soloThinking).not.toBe(SSE_CON_BORRADO);
+    const registros = await correr({}, soloThinking);
+    const medidos = registros.filter((r) => r["basis"] === "measured");
+    expect(medidos).toHaveLength(1);
+    expect(medidos[0]!["eliminatedInputTokens"]).toBe(40_000);
+    expect("eliminatedInputFloorCost" in medidos[0]!).toBe(false);
+    expect(registros.filter((r) => r["basis"] === "shadow")).toHaveLength(1);
   });
 
   it("borrado DEL CLIENTE (ya mandaba nuestros diales) → conteo sin suelo, y la sombra sigue midiendo", async () => {

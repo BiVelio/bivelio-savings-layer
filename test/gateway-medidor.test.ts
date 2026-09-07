@@ -359,6 +359,7 @@ describe("el suelo de la elisión del proveedor (B2)", () => {
     const r = informeMedido("req-s", "claude-haiku-4-5", medido, undefined, {
       borrados: 2,
       tokensLimpiados: TOKENS,
+      tokensLimpiadosToolUses: TOKENS,
       atribuible: true,
     }) as unknown as { tokens: { eliminatedInput: number }; cost: Cost };
     expect(r.tokens.eliminatedInput).toBe(TOKENS);
@@ -372,6 +373,7 @@ describe("el suelo de la elisión del proveedor (B2)", () => {
     const con = informeMedido("req-b", "claude-haiku-4-5", medido, undefined, {
       borrados: 1,
       tokensLimpiados: TOKENS,
+      tokensLimpiadosToolUses: TOKENS,
       atribuible: true,
     }) as unknown as { cost: Cost };
     expect(con.cost.baselineEstimate).toBe(sin.cost.baselineEstimate);
@@ -382,8 +384,8 @@ describe("el suelo de la elisión del proveedor (B2)", () => {
 
   it("⛔ NO atribuible (el cliente ya traía nuestros diales, o nadie lo dijo) → el conteo viaja y el suelo NO existe", () => {
     for (const elision of [
-      { borrados: 1, tokensLimpiados: TOKENS },
-      { borrados: 1, tokensLimpiados: TOKENS, atribuible: false },
+      { borrados: 1, tokensLimpiados: TOKENS, tokensLimpiadosToolUses: TOKENS },
+      { borrados: 1, tokensLimpiados: TOKENS, tokensLimpiadosToolUses: TOKENS, atribuible: false },
     ]) {
       const r = informeMedido("req-n", "claude-haiku-4-5", medido, undefined, elision) as unknown as {
         tokens: { eliminatedInput: number };
@@ -398,6 +400,7 @@ describe("el suelo de la elisión del proveedor (B2)", () => {
     const cero = informeMedido("req-0", "claude-haiku-4-5", medido, undefined, {
       borrados: 1,
       tokensLimpiados: 0,
+      tokensLimpiadosToolUses: 0,
       atribuible: true,
     }) as unknown as { cost: Cost };
     expect("eliminatedInputFloorCost" in cero.cost).toBe(false);
@@ -405,8 +408,27 @@ describe("el suelo de la elisión del proveedor (B2)", () => {
     expect("eliminatedInputFloorCost" in gemela.cost).toBe(false);
   });
 
+  it("⛔ el THINKING borrado (config del cliente) jamás se tarifa: solo los tool_uses", () => {
+    const soloThinking = informeMedido("req-t", "claude-haiku-4-5", medido, undefined, {
+      borrados: 1,
+      tokensLimpiados: 40_000,
+      tokensLimpiadosToolUses: 0,
+      atribuible: true,
+    }) as unknown as { tokens: { eliminatedInput: number }; cost: Cost };
+    expect(soloThinking.tokens.eliminatedInput).toBe(40_000); // el conteo del proveedor, tal cual
+    expect("eliminatedInputFloorCost" in soloThinking.cost).toBe(false);
+    const mixto = informeMedido("req-m", "claude-haiku-4-5", medido, undefined, {
+      borrados: 2,
+      tokensLimpiados: 48_000,
+      tokensLimpiadosToolUses: 8_000,
+      atribuible: true,
+    }) as unknown as { tokens: { eliminatedInput: number }; cost: Cost };
+    expect(mixto.tokens.eliminatedInput).toBe(48_000);
+    expect(mixto.cost.eliminatedInputFloorCost).toBeCloseTo((8_000 / 1_000) * medido.precio.cachedInputPer1k!, 12);
+  });
+
   it("⛔ sin precio de LECTURA en el catálogo → 0: jamás el fallback a precio de entrada", () => {
-    const elision = { borrados: 1, tokensLimpiados: TOKENS, atribuible: true };
+    const elision = { borrados: 1, tokensLimpiados: TOKENS, tokensLimpiadosToolUses: TOKENS, atribuible: true };
     expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005 }, elision)).toBe(0);
     expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: 0 }, elision)).toBe(0);
     expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: Number.NaN }, elision)).toBe(0);
@@ -423,6 +445,7 @@ describe("elisión S4a — el conteo del proveedor viaja por eliminatedInput (so
     const r = informeMedido("req-e", "claude-haiku-4-5", medido, undefined, {
       borrados: 2,
       tokensLimpiados: 9000,
+      tokensLimpiadosToolUses: 9000,
     }) as unknown as { tokens: { eliminatedInput: number }; cost: { basis: string } };
     expect(r.tokens.eliminatedInput).toBe(9000);
     expect(r.cost.basis).toBe("measured");

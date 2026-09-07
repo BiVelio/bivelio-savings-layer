@@ -72,7 +72,7 @@ describe("elisionDeCuerpoSse — applied_edits del cuerpo crudo", () => {
       `event: message_delta\ndata: {"usage":{"output_tokens":4},"context_management":{"applied_edits":[{"type":"clear_tool_uses_20250919","cleared_input_tokens":28543}]}}`,
       `event: message_stop\ndata: {}`,
     ].join("\n\n");
-    expect(elisionDeCuerpoSse(sse)).toEqual({ borrados: 1, tokensLimpiados: 28543 });
+    expect(elisionDeCuerpoSse(sse)).toEqual({ borrados: 1, tokensLimpiados: 28543, tokensLimpiadosToolUses: 28543 });
   });
 
   it("sin applied_edits (la respuesta típica) → null, no un cero fantasma", () => {
