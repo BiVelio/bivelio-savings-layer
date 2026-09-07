@@ -11,9 +11,10 @@ import {
 import type { UsoSse } from "./medidor.js";
 
 /**
- * S2.4-vivo · EL CARRIL SOMBRA del gateway — la política GANADORA del replay
- * (v0; la cifra vigente es la del artefacto benchmarks/evidencia/sombra-corpus-*
- * más reciente) corriendo contra el tráfico real, EN ASÍNCRONO
+ * S2.4-vivo · EL CARRIL SOMBRA del gateway — la política v0 del replay como
+ * INSTRUMENTO de medición (no «ganadora»: con el simulador que reproduce al
+ * proveedor pierde dinero; la cifra vigente es la del artefacto
+ * benchmarks/evidencia/sombra-corpus-*-reparto.json más reciente) corriendo contra el tráfico real, EN ASÍNCRONO
  * tras servir la respuesta y sin tocar un byte de lo reenviado. Por petición
  * medible mantiene dos cadenas del mismo simulador (baseline y v0) y emite la
  * diferencia de ESE turno como registro `basis:"shadow"`.

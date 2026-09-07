@@ -432,10 +432,16 @@ export const VENTANA_DE_BUSQUEDA = 20;
 
 /** Peso máximo, en bytes, de un bloque de imagen en el reparto bytes→tokens:
  *  una imagen tokeniza por píxeles (~1,6 K tokens), no por sus 200 KB de
- *  base64. Ajuste empírico sobre el corpus, no la fórmula del proveedor. */
+ *  base64. AJUSTE EMPÍRICO y NO determinado: el arnés da el mismo error con
+ *  2.000 B que con 6.000 B (2,7 % frente a 2,8 % en fable-5, el único modelo con
+ *  imágenes). La fórmula del proveedor es (ancho × alto) / 750 tokens y exige
+ *  leer el contenido, que este simulador no retiene. */
 export const BYTES_PESO_IMAGEN = 6_000;
 
-/** Tope de entradas vivas por caché de prefijos (memoria acotada). */
+/** Tope de entradas vivas por caché de prefijos: memoria acotada, no doctrina.
+ *  Cada entrada es un hash de 24 chars + dos números; 20.000 × 2 variantes ×
+ *  modelos vivos cabe holgado en una sesión larga. Al superarlo caen las
+ *  expiradas y, si no basta, las más viejas. */
 export const MAX_ENTRADAS_CACHE = 20_000;
 
 interface EntradaDeCache {
@@ -548,9 +554,9 @@ function pesoDe(tipo: string, bytes: number): number {
  *   · cada entrada caduca por su propio TTL, medido desde el inicio de la
  *     petición que la escribió o la leyó por última vez (la lectura refresca
  *     TODO el prefijo leído).
- * Un turno sin ningún marcador lleva un breakpoint implícito en su último
- * bloque (la doc dice que sin marcador no hay caché; son 15 de 4.232 turnos
- * del corpus y así un cliente sin marcadores sigue teniendo simulación).
+ * Un turno sin ningún marcador NO toca la caché: todo su prompt es entrada a
+ * precio de lista (la doc dice que sin marcador no hay caché, y el contador del
+ * proveedor lo confirma en los 15 turnos del corpus sin marca: cw = cr = 0).
  * Los tokens por bloque se calibran contra el contador REAL del proveedor:
  * tokens_bloque = entradaReal × peso_bloque / peso_turno.
  */
@@ -589,7 +595,12 @@ export class CadenaDeSimulacion {
     // breakpoint del bloque que sustituye).
     const trans = this.transformar(t.bloques, this.estado, turno);
     if (!precios || t.entradaReal <= 0 || trans.length === 0) {
+      // Sin precio o sin entrada no hay nada que simular, pero el turno SIGUIENTE
+      // empareja su invalidación contra `previo` con el corte de ESTE: se reinicia
+      // el corte para no arrastrar el del turno anterior sobre un previo nuevo.
       this.previo = trans;
+      this.previoUltimoBp = -1;
+      this.previoTtl = "5m";
       this.hayPrevio = true;
       this.atPrevio = t.at;
       return delPaso;
@@ -606,8 +617,26 @@ export class CadenaDeSimulacion {
     const posiciones = posicionesDe(tipos);
     let bps = marcas.map((m, i) => (m ? i : -1)).filter((i) => i >= 0);
     if (bps.length === 0) {
-      bps = [trans.length - 1];
-      marcas[trans.length - 1] = t.escritura1h ? "1h" : "5m";
+      // SIN MARCADOR NO HAY CACHÉ. La doc lo dice y el contador del proveedor lo
+      // confirma: en los 15 turnos del corpus sin ningún cache_control, cw = 0 y
+      // cr = 0 — todo input_tokens. Un breakpoint implícito los escribía a prima y
+      // dejaba en la caché compartida entradas que el proveedor nunca creó (+1,4 %
+      // de escritura en fable-5 frente al oráculo). Se cobra todo a ENTRADA y el
+      // turno no toca la caché; el prefijo para invalidación se reinicia.
+      for (let i = 0; i < trans.length; i++) {
+        delPaso.tokensEntrada += tokensDe[i]!;
+        delPaso.entradaUsd += (tokensDe[i]! / 1_000) * precios.inputPer1k;
+      }
+      delPaso.totalUsd = delPaso.entradaUsd;
+      this.previo = trans;
+      this.previoUltimoBp = -1;
+      this.previoTtl = "5m";
+      this.hayPrevio = true;
+      this.atPrevio = t.at;
+      this.acumulado.tokensEntrada += delPaso.tokensEntrada;
+      this.acumulado.entradaUsd += delPaso.entradaUsd;
+      this.acumulado.totalUsd += delPaso.totalUsd;
+      return delPaso;
     }
 
     // Acierto: el límite de bloque más lejano con entrada viva, buscando

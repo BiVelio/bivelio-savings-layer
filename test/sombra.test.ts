@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { precioDeLista } from "../src/pricing/catalogo.js";
+import { primaDeEscritura1h } from "../src/pricing/primas.js";
+
 import {
   BYTES_DEL_MUNON,
   BYTES_PESO_IMAGEN,
@@ -206,8 +209,13 @@ describe("políticas sobre un turno", () => {
 describe("el simulador de caché de prefijo", () => {
   const MODELO = "claude-sonnet-4-5";
 
+  /** Contrato explícito: si ningún bloque lleva marca, el ÚLTIMO va a 1h — igual
+   *  que hace Claude Code. Sin marca no hay caché (y hay un test que lo fija). */
   function turno(bloques: BloqueSombra[], at: number, entradaReal: number): TurnoSombra {
-    return { bloques, at, model: MODELO, entradaReal, escritura1h: true };
+    const conMarca = bloques.some((b) => b.marca !== null)
+      ? bloques
+      : bloques.map((b, i) => (i === bloques.length - 1 ? { ...b, marca: "1h" as const } : b));
+    return { bloques: conMarca, at, model: MODELO, entradaReal, escritura1h: true };
   }
 
   function bloque(clave: string, bytes: number, marca: MarcaDeCache = null, tipo = "user:text"): BloqueSombra {
@@ -394,6 +402,12 @@ describe("el simulador según la doc: breakpoints, ventana y caché compartida",
     expect(paso.tokensLeidos).toBe(0);
     expect(paso.entradaUsd).toBeGreaterThan(0);
     expect(paso.totalUsd).toBeCloseTo(paso.lecturaUsd + paso.escrituraUsd + paso.entradaUsd, 10);
+    // El PRECIO, no solo el signo: la entrada se cobra a inputPer1k del catálogo,
+    // y la escritura a la prima de 1h del modelo. Sin esto el test no distingue
+    // «entrada» de «lectura barata» o de «escritura».
+    const precio = precioDeLista(MODELO)!;
+    expect(paso.entradaUsd).toBeCloseTo((paso.tokensEntrada / 1_000) * precio.inputPer1k, 8);
+    expect(paso.escrituraUsd).toBeCloseTo((paso.tokensEscritos / 1_000) * precio.inputPer1k * primaDeEscritura1h(MODELO), 8);
     // Y al repetir el turno tampoco se lee: nadie lo escribió.
     const paso2 = cadena.paso(turno([b("a", 4000, "1h"), b("b", 4000), b("c", 4000)], 2000));
     expect(paso2.tokensLeidos).toBeCloseTo(4000, 0);
@@ -454,5 +468,20 @@ describe("el simulador según la doc: breakpoints, ventana y caché compartida",
     expect(paso.tokensEscritos).toBeCloseTo(2000, 0);
     // Y no es invalidación: nada cambió, solo caducó.
     expect(paso.tokensInvalidados).toBe(0);
+  });
+});
+
+describe("sin marcador no hay caché — lo dice la doc y lo confirma el proveedor (15 turnos del corpus: cw = cr = 0)", () => {
+  const MODELO = "claude-sonnet-4-5";
+  const sinMarca = (clave: string, bytes: number): BloqueSombra => ({ clave, tipo: "user:text", marca: null, bytes, bytesV1: bytes, clase: "otro", esError: false });
+
+  it("un turno sin marca cobra TODO a entrada, no escribe ni lee, y el siguiente idéntico tampoco lee nada", () => {
+    const bloques = [sinMarca("a", 4000), sinMarca("b", 4000)];
+    const t = (at: number): TurnoSombra => ({ bloques, at, model: MODELO, entradaReal: 8000, escritura1h: true });
+    const c = simularSesion([t(1000), t(2000)], (b) => identidad(b));
+    expect(c.tokensEscritos).toBe(0);
+    expect(c.tokensLeidos).toBe(0);
+    expect(c.tokensEntrada).toBeCloseTo(16000, 0);
+    expect(c.totalUsd).toBeCloseTo((16000 / 1_000) * precioDeLista(MODELO)!.inputPer1k, 8);
   });
 });

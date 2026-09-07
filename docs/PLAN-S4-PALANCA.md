@@ -67,7 +67,7 @@ efecto) calibran gratis el diseño de S4b.
 
 | Puerta | Estado 03-09 |
 |---|---|
-| Sombra ≥ 8 puntos netos sostenidos en ≥ 50 sesiones de ≥ 2 clientes | ⏳ carril vivo encendido HOY; el replay certificó +20,6 % sobre 15 sesiones de 1 cliente. La puerta de clientes la fija el dueño; para S4a sobre la org propia basta la sombra propia |
+| Sombra ≥ 8 puntos netos sostenidos en ≥ 50 sesiones de ≥ 2 clientes | ⏳ carril vivo encendido HOY; el replay certificó ~~+20,6 %~~ sobre 15 sesiones de 1 cliente —⚠️ **SUSTITUIDA el 07-09-2026**: esa cifra salía de un simulador que inflaba la escritura de caché (2,6× en opus-4-8). Con el baseline que reproduce al proveedor (PR #236, `benchmarks/evidencia/sombra-corpus-2026-09-07-reparto.json`) v0 da **−16,7 %** global (fable-5 −10,1 %, opus-4-8 −62,2 %); la única política que no pierde es v1 (+0,4 %).—. La puerta de clientes la fija el dueño; para S4a sobre la org propia basta la sombra propia |
 | Arnés carril 2 | ❌ no existe (byte-igualdad hoy); OBLIGATORIO antes de S4b, recomendado antes del opt-in de clientes en S4a |
 | Verja de fidelidad sobre tool_results | ❌ no existe; obligatoria para S4b. Para S4a la fidelidad la da el mecanismo del proveedor + anillo 2 (abajo) |
 | Postura ToS decidida | Propuesta de este plan: **variante (b) con superficie mínima** — S4a solo toca `context_management` (config documentada), jamás `messages`, `system`, cabeceras o credenciales. La decisión sigue siendo del dueño |
@@ -205,7 +205,7 @@ cifra ANTES de encender nada. Es el equivalente S4a del carril sombra de S2.
 > opus 37,2 %). Las 120 muestras traían la config del cliente — la que en vivo
 > borró CERO en 1.952 peticiones — así que **todo el 22,9 % es atribuible al
 > cambio de diales**. Convergencia: 22,9 % (contador del proveedor, S4a) ≈
-> +20,6 % (nuestro simulador, replay v0) — dos métodos independientes, misma
+> ~~+20,6 %~~ (nuestro simulador, replay v0; SUSTITUIDA: ver PR #236, v0 −16,7 %) — ~~dos métodos independientes~~ (NO eran independientes: el replay y el carril vivo comparten `CadenaDeSimulacion`), misma
 > zona. Cautela declarada: es % de TOKENS de entrada en turnos disparados, no
 > % de la factura — la proyección a dinero (lecturas a 0,1×, reescritura de
 > caché tras cada borrado) es del anillo 2. Artefacto:
@@ -409,3 +409,9 @@ S4b arranca solo después, con sus prerequisitos y su propia decisión.
    — **APROBADA.**
 3. **El umbral del opt-in de clientes** (propuesta del plan maestro: sombra
    propia ≥ 8 puntos sostenidos; aquí no cambia). — **APROBADA.**
+
+## Consecuencias del arreglo del simulador (PR #236, 07-09-2026)
+
+1. **El carril vivo (`sombra-vivo.ts`) queda como INSTRUMENTO de medición, no como palanca ganadora.** Sigue emitiendo `basis:"shadow"` con v0 para poder medir; su cifra es negativa con el simulador honesto y así se enseña.
+2. **El «18,15 %» del panel no se publicita** hasta re-medir con un gateway que lleve el simulador arreglado (npm 0.4.16 aún simula con el modelo roto).
+3. **Decisión pendiente del dueño**: v1 (por tipo de bloque) es la única política que no pierde dinero y vale +0,4 %. O se rediseña la elisión con la invalidación de prefijo como restricción de primer orden, o la palanca de elisión propia se retira del catálogo comercial y queda solo la del proveedor (S4a) y la rebaja de TTL.

@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-09-07T16:08:34.322Z",
+  "fecha": "2026-09-07T16:22:51.515Z",
   "capturas": [
     "captura-2026-08-23T10-39-58-652Z.jsonl",
     "captura-2026-08-23T10-40-56-149Z.jsonl",
@@ -24,7 +24,7 @@
     "totalUsd": 1276.81
   },
   "calibracion": {
-    "simBaselineUsd": 1154.26,
+    "simBaselineUsd": 1153.88,
     "nota": "baseline simulado vs entrada real medida — el ahorro se compara SIEMPRE dentro del simulador (misma vara) y el % se aplica al dinero real de entrada",
     "ratioSimSobreReal": 1.005
   },
@@ -52,11 +52,11 @@
         "escritosProv": 10784148,
         "entradaProv": 188405,
         "leidosSim": 741045260,
-        "escritosSim": 11240518,
-        "entradaSim": 30654,
+        "escritosSim": 11091264,
+        "entradaSim": 179908,
         "errorLecturaPct": 0,
-        "errorEscrituraPct": 4.2,
-        "errorEntradaPct": -83.7
+        "errorEscrituraPct": 2.8,
+        "errorEntradaPct": -4.5
       },
       "claude-sonnet-5": {
         "pctDelCoste": 2.9,
@@ -76,11 +76,11 @@
         "escritosProv": 1245842,
         "entradaProv": 77428,
         "leidosSim": 25444138,
-        "escritosSim": 1212575,
-        "entradaSim": 72895,
+        "escritosSim": 1211405,
+        "entradaSim": 74065,
         "errorLecturaPct": 0.1,
-        "errorEscrituraPct": -2.7,
-        "errorEntradaPct": -5.9
+        "errorEscrituraPct": -2.8,
+        "errorEntradaPct": -4.3
       },
       "claude-opus-4-8": {
         "pctDelCoste": 13.8,
@@ -88,11 +88,11 @@
         "escritosProv": 8093290,
         "entradaProv": 565741,
         "leidosSim": 134070729,
-        "escritosSim": 8026215,
-        "entradaSim": 578508,
+        "escritosSim": 8022115,
+        "entradaSim": 582608,
         "errorLecturaPct": 0,
-        "errorEscrituraPct": -0.8,
-        "errorEntradaPct": 2.3
+        "errorEscrituraPct": -0.9,
+        "errorEntradaPct": 3
       }
     }
   },
@@ -124,15 +124,15 @@
   },
   "politicas": {
     "v0": {
-      "simUsd": 1347.07,
+      "simUsd": 1346.69,
       "ahorroSimUsd": -192.81,
       "ahorroPct": -16.7,
       "invalidacionUsd": 611.08,
       "tokensInvalidadosM": 41.3,
-      "ahorroSobreRealEntradaUsd": -191.83
+      "ahorroSobreRealEntradaUsd": -191.9
     },
     "v1": {
-      "simUsd": 1149.83,
+      "simUsd": 1149.45,
       "ahorroSimUsd": 4.43,
       "ahorroPct": 0.4,
       "invalidacionUsd": 51.8,
@@ -140,20 +140,20 @@
       "ahorroSobreRealEntradaUsd": 4.41
     },
     "v2": {
-      "simUsd": 1371.46,
+      "simUsd": 1371.08,
       "ahorroSimUsd": -217.2,
       "ahorroPct": -18.8,
       "invalidacionUsd": 569.81,
       "tokensInvalidadosM": 31.7,
-      "ahorroSobreRealEntradaUsd": -216.1
+      "ahorroSobreRealEntradaUsd": -216.17
     },
     "v2m": {
-      "simUsd": 1298.74,
+      "simUsd": 1298.36,
       "ahorroSimUsd": -144.48,
       "ahorroPct": -12.5,
       "invalidacionUsd": 499.74,
       "tokensInvalidadosM": 28.1,
-      "ahorroSobreRealEntradaUsd": -143.75
+      "ahorroSobreRealEntradaUsd": -143.8
     }
   },
   "porModelo": {
@@ -185,26 +185,26 @@
     },
     "claude-fable-5": {
       "v0": {
-        "simBaselineUsd": 955.21,
-        "simUsd": 1051.43,
+        "simBaselineUsd": 954.84,
+        "simUsd": 1051.06,
         "ahorroPct": -10.1,
         "invalidacionUsd": 491.8
       },
       "v1": {
-        "simBaselineUsd": 955.21,
-        "simUsd": 950.56,
+        "simBaselineUsd": 954.84,
+        "simUsd": 950.19,
         "ahorroPct": 0.5,
         "invalidacionUsd": 35.08
       },
       "v2": {
-        "simBaselineUsd": 955.21,
-        "simUsd": 1179.85,
+        "simBaselineUsd": 954.84,
+        "simUsd": 1179.47,
         "ahorroPct": -23.5,
         "invalidacionUsd": 556.01
       },
       "v2m": {
-        "simBaselineUsd": 955.21,
-        "simUsd": 1107.1,
+        "simBaselineUsd": 954.84,
+        "simUsd": 1106.73,
         "ahorroPct": -15.9,
         "invalidacionUsd": 485.83
       }
@@ -237,51 +237,51 @@
     },
     "claude-opus-5": {
       "v0": {
-        "simBaselineUsd": 22.05,
+        "simBaselineUsd": 22.04,
         "simUsd": 31.92,
         "ahorroPct": -44.8,
         "invalidacionUsd": 13.27
       },
       "v1": {
-        "simBaselineUsd": 22.05,
-        "simUsd": 21.75,
+        "simBaselineUsd": 22.04,
+        "simUsd": 21.74,
         "ahorroPct": 1.4,
         "invalidacionUsd": 1.48
       },
       "v2": {
-        "simBaselineUsd": 22.05,
-        "simUsd": 22.05,
+        "simBaselineUsd": 22.04,
+        "simUsd": 22.04,
         "ahorroPct": 0,
         "invalidacionUsd": 1.39
       },
       "v2m": {
-        "simBaselineUsd": 22.05,
-        "simUsd": 22.05,
+        "simBaselineUsd": 22.04,
+        "simUsd": 22.04,
         "ahorroPct": 0,
         "invalidacionUsd": 1.39
       }
     },
     "claude-opus-4-8": {
       "v0": {
-        "simBaselineUsd": 139.36,
+        "simBaselineUsd": 139.35,
         "simUsd": 226.07,
         "ahorroPct": -62.2,
         "invalidacionUsd": 105.14
       },
       "v1": {
-        "simBaselineUsd": 139.36,
-        "simUsd": 139.88,
+        "simBaselineUsd": 139.35,
+        "simUsd": 139.87,
         "ahorroPct": -0.4,
         "invalidacionUsd": 14.37
       },
       "v2": {
-        "simBaselineUsd": 139.36,
+        "simBaselineUsd": 139.35,
         "simUsd": 131.92,
         "ahorroPct": 5.3,
         "invalidacionUsd": 11.55
       },
       "v2m": {
-        "simBaselineUsd": 139.36,
+        "simBaselineUsd": 139.35,
         "simUsd": 131.95,
         "ahorroPct": 5.3,
         "invalidacionUsd": 11.66
