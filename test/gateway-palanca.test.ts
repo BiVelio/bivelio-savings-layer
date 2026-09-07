@@ -3,7 +3,8 @@ import { gzipSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
-import { ajustarDiales, conBetaDeElision, describirEstadoDeElision, fusionarDiales } from "../gateway/palanca.js";
+import { ajustarDiales, conBetaDeElision, describirEstadoDeElision, dialesSonNuestros, fusionarDiales } from "../gateway/palanca.js";
+import { precioDeLista } from "../src/pricing/catalogo.js";
 import { CanalDeEntitlements } from "../gateway/entitlements.js";
 import {
   BETA_CONTEXT_MANAGEMENT,
@@ -68,11 +69,44 @@ function arrancarUpstreamFalso(recibidas: Recibida[]): Promise<number> {
   });
 }
 
-/** Plataforma falsa: ingesta (202) + entitlements con las features indicadas. */
-function arrancarPlataformaFalsa(opciones: { features?: string[]; estado?: number }): Promise<number> {
+/** Upstream que, además del usage, declara un borrado del proveedor (forma sondeada en vivo, stream:false). */
+function arrancarUpstreamConBorrado(recibidas: Recibida[], clearedInputTokens: number): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
-      for await (const _ of req) void _;
+      const chunks: Buffer[] = [];
+      for await (const c of req) chunks.push(c as Buffer);
+      recibidas.push({ path: req.url ?? "", headers: { ...req.headers }, body: Buffer.concat(chunks).toString("utf8") });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(
+        JSON.stringify({
+          id: "msg_1",
+          type: "message",
+          usage: { input_tokens: 10, output_tokens: 2 },
+          context_management: {
+            applied_edits: [{ type: "clear_tool_uses_20250919", cleared_input_tokens: clearedInputTokens, cleared_tool_uses: 2 }],
+          },
+        }),
+      );
+    });
+    recursos.push(s);
+    s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+  });
+}
+
+async function esperar(cond: () => boolean, ms = 3000): Promise<void> {
+  const t0 = Date.now();
+  while (!cond()) {
+    if (Date.now() - t0 > ms) throw new Error("timeout esperando la condición");
+    await new Promise((r) => setTimeout(r, 20));
+  }
+}
+
+/** Plataforma falsa: ingesta (202, y captura los lotes si se pide) + entitlements con las features indicadas. */
+function arrancarPlataformaFalsa(opciones: { features?: string[]; estado?: number; lotes?: unknown[][] }): Promise<number> {
+  return new Promise((resolve) => {
+    const s = createServer(async (req, res) => {
+      const chunks: Buffer[] = [];
+      for await (const c of req) chunks.push(c as Buffer);
       if (req.url === "/api/org/entitlements") {
         if (opciones.estado !== undefined && opciones.estado !== 200) {
           res.writeHead(opciones.estado, { "content-type": "application/json" });
@@ -82,6 +116,9 @@ function arrancarPlataformaFalsa(opciones: { features?: string[]; estado?: numbe
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({ features: opciones.features ?? [], refreshAfterSeconds: 300 }));
         return;
+      }
+      if (opciones.lotes && chunks.length > 0) {
+        opciones.lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
       }
       res.writeHead(202, { "content-type": "application/json" });
       res.end(JSON.stringify({ ingested: 0 }));
@@ -135,7 +172,7 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
   it("sustituye el clear_tool_uses del cliente por nuestros diales", () => {
     const salida = ajustarDiales(Buffer.from(CUERPO));
     expect(salida).not.toBeNull();
-    const json = JSON.parse(salida!.toString("utf8"));
+    const json = JSON.parse(salida!.cuerpo.toString("utf8"));
     expect(json.context_management).toEqual({ edits: [NUESTRO_EDIT] });
     // El contenido del cliente no se toca (superficie mínima).
     expect(json.model).toBe("claude-sonnet-4-5");
@@ -151,7 +188,7 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
       ...JSON.parse(CUERPO),
       context_management: { edits: [{ type: "clear_thinking_20251015", keep: "all" }] },
     });
-    const json = JSON.parse(ajustarDiales(Buffer.from(cuerpo))!.toString("utf8"));
+    const json = JSON.parse(ajustarDiales(Buffer.from(cuerpo))!.cuerpo.toString("utf8"));
     expect(json.context_management).toEqual({
       edits: [{ type: "clear_thinking_20251015", keep: "all" }, NUESTRO_EDIT],
     });
@@ -159,7 +196,7 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
 
   it("sin context_management → solo el nuestro", () => {
     const { context_management: _fuera, ...sinCm } = JSON.parse(CUERPO);
-    const json = JSON.parse(ajustarDiales(Buffer.from(JSON.stringify(sinCm)))!.toString("utf8"));
+    const json = JSON.parse(ajustarDiales(Buffer.from(JSON.stringify(sinCm)))!.cuerpo.toString("utf8"));
     expect(json.context_management).toEqual({ edits: [NUESTRO_EDIT] });
   });
 
@@ -193,7 +230,8 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
   it("es determinista: mismo cuerpo, mismo ajuste byte a byte", () => {
     const a = ajustarDiales(Buffer.from(CUERPO));
     const b = ajustarDiales(Buffer.from(CUERPO));
-    expect(a!.equals(b!)).toBe(true);
+    expect(a!.cuerpo.equals(b!.cuerpo)).toBe(true);
+    expect(a!.nuestros).toBe(b!.nuestros);
   });
 
   it("cuerpo comprimido → null (no se construye recompresión en S4a)", () => {
@@ -205,6 +243,142 @@ describe("ajustarDiales — pura y con la duda hacia el passthrough", () => {
     expect(ajustarDiales(Buffer.from('{"model":"x"}'))).toBeNull();
     expect(ajustarDiales(Buffer.from('{"messages":[]}'))).toBeNull();
     expect(ajustarDiales(Buffer.from("[1,2,3]"))).toBeNull();
+  });
+});
+
+/**
+ * B2 · LA REGLA DEL DELTA (plan S4 § 2.4): el borrado del proveedor se
+ * acredita SOLO en las peticiones donde nuestros diales cambian algo. Si el
+ * cliente ya mandaba exactamente nuestro edit, ese ahorro es suyo.
+ */
+describe("dialesSonNuestros — la regla del delta (B2)", () => {
+  it("sin context_management, o con el clear_tool_uses de fábrica → nuestros", () => {
+    expect(dialesSonNuestros(undefined)).toBe(true);
+    expect(dialesSonNuestros(null)).toBe(true);
+    expect(dialesSonNuestros({})).toBe(true);
+    expect(dialesSonNuestros({ edits: [] })).toBe(true);
+    expect(dialesSonNuestros({ edits: [{ type: "clear_tool_uses_20250919" }] })).toBe(true);
+    expect(dialesSonNuestros({ edits: [{ type: "clear_thinking_20251015", keep: "all" }] })).toBe(true);
+  });
+
+  it("⛔ con EXACTAMENTE nuestro edit → del cliente (aunque las claves vengan en otro orden)", () => {
+    expect(dialesSonNuestros({ edits: [NUESTRO_EDIT] })).toBe(false);
+    expect(dialesSonNuestros({ edits: [{ type: "clear_thinking_20251015", keep: "all" }, NUESTRO_EDIT] })).toBe(false);
+    const desordenado = {
+      clear_at_least: { value: DIAL_CLEAR_AT_LEAST_INPUT_TOKENS, type: "input_tokens" },
+      keep: { value: DIAL_KEEP_TOOL_USES, type: "tool_uses" },
+      trigger: { value: DIAL_TRIGGER_INPUT_TOKENS, type: "input_tokens" },
+      type: "clear_tool_uses_20250919",
+    };
+    expect(dialesSonNuestros({ edits: [desordenado] })).toBe(false);
+  });
+
+  it("un dial distinto en cualquier valor, o dos edits de tool_uses → nuestros", () => {
+    expect(dialesSonNuestros({ edits: [{ ...NUESTRO_EDIT, keep: { type: "tool_uses", value: DIAL_KEEP_TOOL_USES + 1 } }] })).toBe(true);
+    expect(dialesSonNuestros({ edits: [NUESTRO_EDIT, { type: "clear_tool_uses_20250919" }] })).toBe(true);
+  });
+
+  it("ajustarDiales lo declara en la salida, y el cuerpo ajustado es el mismo en ambos casos", () => {
+    const deFabrica = ajustarDiales(Buffer.from(CUERPO))!;
+    expect(deFabrica.nuestros).toBe(true);
+    const yaNuestro = ajustarDiales(
+      Buffer.from(JSON.stringify({ ...JSON.parse(CUERPO), context_management: { edits: [NUESTRO_EDIT] } })),
+    )!;
+    expect(yaNuestro.nuestros).toBe(false);
+    expect(JSON.parse(yaNuestro.cuerpo.toString("utf8")).context_management).toEqual({ edits: [NUESTRO_EDIT] });
+    expect(JSON.parse(deFabrica.cuerpo.toString("utf8")).context_management).toEqual({ edits: [NUESTRO_EDIT] });
+  });
+});
+
+/**
+ * B2 de punta a punta: el proveedor declara un borrado, y lo que llega a la
+ * ingesta es el CONTEO siempre y el SUELO solo cuando el borrado es nuestro —
+ * a precio de LECTURA de caché, nunca de entrada.
+ */
+describe("el suelo de la elisión, de punta a punta (B2)", () => {
+  const TOKENS_BORRADOS = 28_543;
+  const precio = precioDeLista("claude-sonnet-4-5")!;
+
+  it("el precio de lectura de caché del modelo del test es 10× más barato que el de entrada (si no, el test no distingue)", () => {
+    expect(precio.cachedInputPer1k).toBeGreaterThan(0);
+    expect(precio.cachedInputPer1k!).toBeLessThan(precio.inputPer1k / 5);
+  });
+
+  it("ENCENDIDA y borrado del proveedor → eliminatedInputTokens = conteo y eliminatedInputFloorCost = tokens × precio de LECTURA", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    await esperarCanal();
+
+    const res = await pedir(g.puerto, CUERPO);
+    expect(res.status).toBe(200);
+    await g.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    const reg = lotes.flat()[0] as Record<string, unknown>;
+    expect(reg["basis"]).toBe("measured");
+    expect(reg["eliminatedInputTokens"]).toBe(TOKENS_BORRADOS);
+    const suelo = reg["eliminatedInputFloorCost"] as number;
+    expect(suelo).toBeCloseTo((TOKENS_BORRADOS / 1_000) * precio.cachedInputPer1k!, 12);
+    // Y jamás a precio de entrada: la cifra falsa sería 10× esta.
+    expect(suelo).toBeLessThan((TOKENS_BORRADOS / 1_000) * precio.inputPer1k / 5);
+    // El suelo es carril PROPIO: el dinero medido no se mueve.
+    expect(reg["baselineCost"]).toBe(reg["actualCost"]);
+    expect(reg["netSavings"]).toBe(0);
+  });
+
+  it("⛔ el cliente YA mandaba nuestros diales → el conteo viaja, el suelo NO (ese ahorro es suyo)", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    await esperarCanal();
+
+    await pedir(g.puerto, JSON.stringify({ ...JSON.parse(CUERPO), context_management: { edits: [NUESTRO_EDIT] } }));
+    await g.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    const reg = lotes.flat()[0] as Record<string, unknown>;
+    expect(reg["eliminatedInputTokens"]).toBe(TOKENS_BORRADOS);
+    expect("eliminatedInputFloorCost" in reg).toBe(false);
+  });
+
+  it("⛔ palanca APAGADA y el proveedor borra igual (diales del cliente) → conteo sí, suelo no", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: false });
+    await esperarCanal();
+
+    await pedir(g.puerto, CUERPO);
+    await g.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    const reg = lotes.flat()[0] as Record<string, unknown>;
+    expect(recibidas[0]!.body).toBe(CUERPO);
+    expect(reg["eliminatedInputTokens"]).toBe(TOKENS_BORRADOS);
+    expect("eliminatedInputFloorCost" in reg).toBe(false);
+  });
+
+  it("sin borrado del proveedor, el campo no existe en el wire (el de siempre)", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    await esperarCanal();
+
+    await pedir(g.puerto, CUERPO);
+    await g.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    const reg = lotes.flat()[0] as Record<string, unknown>;
+    expect(reg["eliminatedInputTokens"]).toBe(0);
+    expect("eliminatedInputFloorCost" in reg).toBe(false);
   });
 });
 

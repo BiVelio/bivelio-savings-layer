@@ -3,6 +3,7 @@ import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
 import { CarrilSombra, MAX_CADENAS } from "../gateway/sombra-vivo.js";
+import { configDeDiales } from "../gateway/diales.js";
 import {
   CadenaDeSimulacion,
   aplicarPolitica,
@@ -40,19 +41,27 @@ afterEach(async () => {
   recursos = [];
 });
 
-function arrancarUpstreamSse(): Promise<number> {
+function arrancarUpstreamSse(sse = SSE): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
       for await (const _ of req) void _;
       res.writeHead(200, { "content-type": "text/event-stream" });
-      res.end(SSE);
+      res.end(sse);
     });
     recursos.push(s);
     s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
   });
 }
 
-function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
+/** El mismo SSE, pero el proveedor declara en message_delta que borró (forma sondeada en vivo el 04-09). */
+const TOKENS_BORRADOS = 28_543;
+const SSE_CON_BORRADO = SSE.replace(
+  '"usage":{"input_tokens":100,"cache_read_input_tokens":4000,"output_tokens":42}}',
+  '"usage":{"input_tokens":100,"cache_read_input_tokens":4000,"output_tokens":42},' +
+    `"context_management":{"applied_edits":[{"type":"clear_tool_uses_20250919","cleared_input_tokens":${TOKENS_BORRADOS},"cleared_tool_uses":2}]}}`,
+);
+
+function arrancarIngestaFalsa(lotes: unknown[][], features: string[] = []): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
@@ -64,7 +73,7 @@ function arrancarIngestaFalsa(lotes: unknown[][]): Promise<number> {
       // promesa sin manejar).
       if (req.method === "GET" && (req.url ?? "").startsWith("/api/org/entitlements")) {
         res.writeHead(200, { "content-type": "application/json" });
-        res.end('{"features":[]}');
+        res.end(JSON.stringify({ features, refreshAfterSeconds: 300 }));
         return;
       }
       lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
@@ -219,5 +228,61 @@ describe("el gateway con BVSALA_GATEWAY_SHADOW", () => {
     const registros = lotes.flat() as Record<string, unknown>[];
     expect(registros.some((r) => r["basis"] === "shadow")).toBe(false);
     expect(registros.some((r) => r["basis"] === "measured")).toBe(true);
+  });
+});
+
+/**
+ * B2-4 · La sombra calla donde el proveedor YA borró por NUESTROS diales: si
+ * midiera, simularía elidir los mismos tool_result que el proveedor limpió y el
+ * panel enseñaría el mismo borrado dos veces (plan S4 § 5). Donde el borrado
+ * es del cliente (ya traía nuestros diales), la sombra sigue midiendo.
+ */
+describe("B2-4 · sombra y borrado del proveedor no se solapan", () => {
+  const CM_NUESTRO = { edits: [configDeDiales().edits[0]] };
+
+  async function correr(cuerpoExtra: Record<string, unknown>): Promise<Record<string, unknown>[]> {
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamSse(SSE_CON_BORRADO);
+    const ingesta = await arrancarIngestaFalsa(lotes, ["context_elision"]);
+    const gw = await arrancarGateway({
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "test-01",
+      sombra: true,
+      log: () => {},
+    });
+    recursos.push(gw);
+    // El canal de entitlements refresca en el arranque; se le deja asentar.
+    await new Promise((r) => setTimeout(r, 150));
+
+    await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-claude-code-session-id": "ses-b2-4" },
+      body: JSON.stringify({ ...cuerpoTurno(3), ...cuerpoExtra }),
+    }).then((r) => r.text());
+
+    await gw.cerrar();
+    await esperar(() => lotes.length > 0);
+    return lotes.flat() as Record<string, unknown>[];
+  }
+
+  it("⛔ borrado ATRIBUIBLE (el cliente no traía nuestros diales) → medido con suelo, y NINGÚN registro sombra", async () => {
+    const registros = await correr({});
+    const medidos = registros.filter((r) => r["basis"] === "measured");
+    expect(medidos).toHaveLength(1);
+    expect(medidos[0]!["eliminatedInputTokens"]).toBe(TOKENS_BORRADOS);
+    expect(medidos[0]!["eliminatedInputFloorCost"]).toBeGreaterThan(0);
+    expect(registros.some((r) => r["basis"] === "shadow")).toBe(false);
+  });
+
+  it("borrado DEL CLIENTE (ya mandaba nuestros diales) → conteo sin suelo, y la sombra sigue midiendo", async () => {
+    const registros = await correr({ context_management: CM_NUESTRO });
+    const medidos = registros.filter((r) => r["basis"] === "measured");
+    expect(medidos).toHaveLength(1);
+    expect(medidos[0]!["eliminatedInputTokens"]).toBe(TOKENS_BORRADOS);
+    expect("eliminatedInputFloorCost" in medidos[0]!).toBe(false);
+    expect(registros.filter((r) => r["basis"] === "shadow")).toHaveLength(1);
   });
 });

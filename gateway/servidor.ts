@@ -197,29 +197,43 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     }
     const medido = costeMedido(model, uso);
     if (medido) {
-      emisor.record(
-        coalescida
-          ? informeCoalescido(requestId, model, medido, atribucion)
-          : informeMedido(requestId, model, medido, atribucion, elision, rebaja),
-      );
+      const informe = coalescida
+        ? informeCoalescido(requestId, model, medido, atribucion)
+        : informeMedido(requestId, model, medido, atribucion, elision, rebaja);
+      emisor.record(informe);
+      // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
+      // es atribuible a nuestros diales y el modelo tiene precio de lectura.
+      const suelo = informe.cost.eliminatedInputFloorCost;
       log(
         `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
           // S4a · el borrado que el PROVEEDOR declaró para esta respuesta. El
-          // CONTEO de tokensLimpiados ya viaja al panel por eliminatedInput (campo
-          // wire eliminatedInputTokens, ya en la lista blanca — sin migración). El
-          // conteo de borrados y el DINERO de la elisión llegarán en Fase 2 con la
-          // regla servidor-primero (el ingest tira el lote ante un campo nuevo).
-          (elision ? ` · elisión: ${elision.borrados} borrado(s), ${elision.tokensLimpiados} tok limpiados por el proveedor` : ""),
+          // CONTEO viaja por eliminatedInputTokens; el DINERO (B2, 0.4.17) por
+          // eliminatedInputFloorCost, a precio de LECTURA de caché y solo cuando
+          // el borrado es atribuible a nuestros diales (regla del delta).
+          (elision
+            ? ` · elisión: ${elision.borrados} borrado(s), ${elision.tokensLimpiados} tok limpiados por el proveedor` +
+              (suelo !== undefined
+                ? ` · suelo $${suelo.toFixed(6)} (lectura de caché)`
+                : elision.tokensLimpiados > 0
+                  ? elision.atribuible
+                    ? " · sin precio de lectura en el catálogo: sin suelo"
+                    : " · diales del cliente: se cuenta, no se acredita"
+                  : "")
+            : ""),
       );
       // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la
       // petición (ya está servida y medida). Solo peticiones que viajaron de
       // verdad (una gemela coalescida repite el prompt de su primaria y
       // duplicaría el turno de la cadena) y solo /v1/messages (la política
       // conoce los bloques de Anthropic). Un fallo aquí no puede romper NADA.
-      if (carrilSombra && !coalescida && path === "/v1/messages") {
+      // B2-4 · donde el proveedor YA borró por NUESTROS diales, la sombra no
+      // mide: simularía elidir los mismos tool_result que el proveedor limpió y
+      // el panel enseñaría el mismo borrado dos veces (plan S4 § 5).
+      const borradoNuestro = elision?.atribuible === true && elision.tokensLimpiados > 0;
+      if (carrilSombra && !coalescida && path === "/v1/messages" && !borradoNuestro) {
         setImmediate(() => {
           try {
             const json = jsonDelCuerpo(cuerpo, codificacion);
@@ -272,6 +286,13 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     let observador: ObservadorSse | ObservadorResponses | null = null;
     let cuerpoPeticion: Buffer = Buffer.alloc(0);
     let medida = false;
+    // B2 · ¿un borrado que declare el proveedor será ATRIBUIBLE a nuestros
+    // diales? Solo si la palanca cambió el clear_tool_uses que traía el cliente
+    // (regla del delta, plan § 2.4). Fuera del try: el camino del cliente que
+    // cierra a mitad (catch) también mide, y también acredita.
+    let dialesNuestros = false;
+    const atribuir = (e: ElisionAplicada | null): ElisionAplicada | null =>
+      e !== null && dialesNuestros ? { ...e, atribuible: true } : e;
     const ce = req.headers["content-encoding"];
     const codificacion = Array.isArray(ce) ? ce[0] : ce;
     // Atribución de sesión/subagente: Claude Code manda x-claude-code-session-id
@@ -355,7 +376,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         try {
           const ajustado = ajustarDiales(cuerpo, codificacion);
           if (ajustado !== null) {
-            cuerpoSaliente = ajustado;
+            cuerpoSaliente = ajustado.cuerpo;
+            dialesNuestros = ajustado.nuestros;
             h["anthropic-beta"] = conBetaDeElision(h["anthropic-beta"]);
           }
         } catch {
@@ -473,11 +495,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medida = true;
-        const elision = observador instanceof ObservadorSse ? observador.elision() : null;
+        const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null);
         medir(requestId, cuerpo, observador.usage(), false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs);
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
-        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, elisionDeJson(respuesta), rebaja, inicioMs);
+        medir(requestId, cuerpo, usoDeJson(respuesta), false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta)), rebaja, inicioMs);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -495,7 +517,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         const uso = !medida && observador ? observador.usageFinal() : null;
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
-          const elision = observador instanceof ObservadorSse ? observador.elision() : null;
+          const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null);
           medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);

@@ -1,7 +1,7 @@
 /**
  * EL TECHO del suelo de la elisión, en USD por 1.000 tokens.
  *
- * El gateway (B2, posterior a 0.4.16) manda por registro `eliminatedInputFloorCost`:
+ * El gateway (B2, desde 0.4.17) manda por registro `eliminatedInputFloorCost`:
  * los tokens que el proveedor borró (`applied_edits`) valorados al precio de
  * LECTURA de caché del modelo (`cachedInputPer1k` del catálogo, src/pricing/
  * catalogo.ts) — jamás a `inputPer1k`. El servidor no conoce precios y no puede

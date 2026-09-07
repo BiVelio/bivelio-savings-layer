@@ -183,6 +183,17 @@ palanca y el gateway ajustó/inyectó los diales en esa petición):
   peticiones con borrado atribuible (B2-4, §5), para no enseñar el mismo
   borrado dos veces.
 
+> **Hecho el 2026-09-07 (B2, gateway 0.4.17).** `gateway/medidor.ts`
+> (`sueloDeElision`) tarifa `cleared_input_tokens × cachedInputPer1k` — sin
+> precio de lectura, 0; jamás `inputPer1k` — y lo pone en
+> `cost.eliminatedInputFloorCost` SOLO cuando el borrado es atribuible:
+> `gateway/palanca.ts` (`dialesSonNuestros`, regla del delta en forma
+> canónica) marca `elision.atribuible` cuando el `clear_tool_uses` saliente
+> difiere del que traía el cliente. El emisor lo manda como campo OPCIONAL
+> solo si es > 0 con conteo (`src/metering/emitter.ts`). B2-4 también: con
+> borrado atribuible la sombra NO emite registro (`gateway/servidor.ts`). El
+> dólar sigue sin pintarse y sin comisionarse (`COMISIONAR_ELISION_SUELO`).
+
 Nota de segmento: en tráfico OAuth/suscripción no hay dólares por petición —
 el mismo mecanismo ahorra TOKENS contra los topes (valor real para el cliente,
 medible en tokens), pero solo el tráfico API-key entra en base de comisión.

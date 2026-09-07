@@ -14,6 +14,7 @@ import {
   usoDeJson,
   PRIMA_ESCRITURA_CACHE,
   PRIMA_ESCRITURA_CACHE_1H,
+  sueloDeElision,
 } from "../gateway/medidor.js";
 
 /** Un stream SSE como el del catálogo F0 (docs/PASARELA-F0.md). */
@@ -340,6 +341,78 @@ describe("informeMedido — v1: baseline = actual, basis measured, ahorro 0", ()
     expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
     expect(r.cost.netSavings).toBe(0);
     expect(r.cost.basis).toBe("measured");
+  });
+});
+
+/**
+ * B2 · EL SUELO DE LA ELISIÓN. Lo que protegen estas pruebas es dinero: que el
+ * borrado del proveedor se tarife a precio de LECTURA de caché (nunca de
+ * entrada, que lo infla ×10), solo cuando es atribuible a nuestros diales, y
+ * en un carril propio que no toca el dinero medido.
+ */
+describe("el suelo de la elisión del proveedor (B2)", () => {
+  const medido = costeMedido("claude-haiku-4-5", { input_tokens: 10, output_tokens: 5 })!;
+  const TOKENS = 9_000;
+  type Cost = { baselineEstimate: number; actual: number; netSavings: number; basis: string; eliminatedInputFloorCost?: number };
+
+  it("atribuible + conteo → cost.eliminatedInputFloorCost = tokens × cachedInputPer1k, y es 10× menos que a precio de entrada", () => {
+    const r = informeMedido("req-s", "claude-haiku-4-5", medido, undefined, {
+      borrados: 2,
+      tokensLimpiados: TOKENS,
+      atribuible: true,
+    }) as unknown as { tokens: { eliminatedInput: number }; cost: Cost };
+    expect(r.tokens.eliminatedInput).toBe(TOKENS);
+    const esperado = (TOKENS / 1_000) * medido.precio.cachedInputPer1k!;
+    expect(r.cost.eliminatedInputFloorCost).toBeCloseTo(esperado, 12);
+    expect(r.cost.eliminatedInputFloorCost!).toBeLessThan((TOKENS / 1_000) * medido.precio.inputPer1k / 5);
+  });
+
+  it("el suelo es carril PROPIO: baseline, actual, netSavings y basis no se mueven", () => {
+    const sin = informeMedido("req-a", "claude-haiku-4-5", medido) as unknown as { cost: Cost };
+    const con = informeMedido("req-b", "claude-haiku-4-5", medido, undefined, {
+      borrados: 1,
+      tokensLimpiados: TOKENS,
+      atribuible: true,
+    }) as unknown as { cost: Cost };
+    expect(con.cost.baselineEstimate).toBe(sin.cost.baselineEstimate);
+    expect(con.cost.actual).toBe(sin.cost.actual);
+    expect(con.cost.netSavings).toBe(sin.cost.netSavings);
+    expect(con.cost.basis).toBe("measured");
+  });
+
+  it("⛔ NO atribuible (el cliente ya traía nuestros diales, o nadie lo dijo) → el conteo viaja y el suelo NO existe", () => {
+    for (const elision of [
+      { borrados: 1, tokensLimpiados: TOKENS },
+      { borrados: 1, tokensLimpiados: TOKENS, atribuible: false },
+    ]) {
+      const r = informeMedido("req-n", "claude-haiku-4-5", medido, undefined, elision) as unknown as {
+        tokens: { eliminatedInput: number };
+        cost: Cost;
+      };
+      expect(r.tokens.eliminatedInput).toBe(TOKENS);
+      expect("eliminatedInputFloorCost" in r.cost).toBe(false);
+    }
+  });
+
+  it("⛔ sin conteo no hay dinero, y una gemela coalescida no tiene suelo (no viajó)", () => {
+    const cero = informeMedido("req-0", "claude-haiku-4-5", medido, undefined, {
+      borrados: 1,
+      tokensLimpiados: 0,
+      atribuible: true,
+    }) as unknown as { cost: Cost };
+    expect("eliminatedInputFloorCost" in cero.cost).toBe(false);
+    const gemela = informeCoalescido("req-c", "claude-haiku-4-5", medido) as unknown as { cost: Cost };
+    expect("eliminatedInputFloorCost" in gemela.cost).toBe(false);
+  });
+
+  it("⛔ sin precio de LECTURA en el catálogo → 0: jamás el fallback a precio de entrada", () => {
+    const elision = { borrados: 1, tokensLimpiados: TOKENS, atribuible: true };
+    expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005 }, elision)).toBe(0);
+    expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: 0 }, elision)).toBe(0);
+    expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: Number.NaN }, elision)).toBe(0);
+    expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: 0.0001 }, elision)).toBeCloseTo(0.0009, 12);
+    expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: 0.0001 }, null)).toBe(0);
+    expect(sueloDeElision({ inputPer1k: 0.001, outputPer1k: 0.005, cachedInputPer1k: 0.0001 }, undefined)).toBe(0);
   });
 });
 
