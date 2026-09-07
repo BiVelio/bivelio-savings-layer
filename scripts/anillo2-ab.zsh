@@ -164,6 +164,18 @@ bvsala-ab-informes() {
   ) >/dev/null 2>&1 &!
 }
 
+# El terminal que claude deja atrás. Claude Code activa el seguimiento del ratón
+# (DECSET 1000/1006) para su TUI y lo apaga al salir LIMPIO; si muere a lo bruto
+# —un `exec zsh -l` con claude abierto, un kill, una pestaña cerrada— el modo
+# queda huérfano y cada movimiento del puntero se vuelca como `^[[<35;44;22M`
+# en la línea de entrada. Pasó el 07-09. Aquí se apaga SIEMPRE, antes (por si
+# la shell hereda un terminal roto) y después (por si claude no restauró).
+bvsala-ab-sanear-terminal() {
+  [[ -t 1 ]] || return 0
+  printf '\e[?1000l\e[?1002l\e[?1003l\e[?1006l\e[?2004l\e[?25h' 2>/dev/null
+  stty sane 2>/dev/null
+}
+
 # `claude` = el A/B entero, solo. `command bvsala` evita cualquier alias.
 unalias claude 2>/dev/null
 function claude {
@@ -175,7 +187,7 @@ function claude {
   brazo="$(bvsala-ab-brazo "$dia")"
   bandera="$(bvsala-ab-bandera "$dia")"
   if [[ -z "${BIVELIO_SERVICE_KEY:-}" ]]; then
-    bvsala-ab-error "[anillo2] falta BIVELIO_SERVICE_KEY en esta shell: sin clave la palanca NO se arma (brazo control en silencio). Abre una ventana NUEVA de Terminal."
+    bvsala-ab-error "[anillo2] falta BIVELIO_SERVICE_KEY en esta shell: sin clave la palanca NO se arma (brazo control en silencio). Haz `exec zsh -l` con claude CERRADO (una pestaña nueva de Terminal puede ser una restaurada de hace semanas: compruébalo con `whence -w claude`)."
     return 1
   fi
   bvsala-ab-clon || return 1
@@ -190,7 +202,11 @@ function claude {
     bvsala-ab-di "[anillo2] (seco) no lanzo claude"
     return 0
   fi
+  bvsala-ab-sanear-terminal
   BVSALA_GATEWAY_ELISION="$bandera" BVSALA_GATEWAY_UPSTREAM="http://127.0.0.1:$p" BVSALA_GATEWAY_SHADOW="$sombra" command bvsala claude "$@"
+  local rc=$?
+  bvsala-ab-sanear-terminal
+  return $rc
 }
 
 # Vigía: al primer prompt (cuando ~/.zshrc ya se ha leído entero) comprueba que
