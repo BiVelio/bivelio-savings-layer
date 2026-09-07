@@ -115,7 +115,7 @@ el conteo hipotético).
 >
 > | Política | Ahorro neto | Invalidación pagada | Veredicto |
 > |---|---|---|---|
-> | **v0** edad×tamaño | **+20,6 %** (≈125 $ sobre la entrada real) | 59 $ | **GANADORA** — monótona por construcción (la edad solo crece: nadie resucita) |
+> | **v0** edad×tamaño | ~~+20,6 %~~ → **−16,7 %** (artefacto -reparto) | 611 $ | ~~GANADORA~~ **PIERDE** ⚠️ **SUSTITUIDA el 07-09-2026**: esa cifra salía de un simulador que inflaba la escritura de caché (2,6× en opus-4-8). Con el baseline que reproduce al proveedor (PR #236, `benchmarks/evidencia/sombra-corpus-2026-09-07-reparto.json`) v0 da **−16,7 %** global (fable-5 −10,1 %, opus-4-8 −62,2 %); la única política que no pierde es v1 (+0,4 %). — monótona por construcción (la edad solo crece: nadie resucita) |
 > | v1 por tipo | +0,5 % | 36 $ | descartada como palanca de dinero: el 48 % del prompt es tool_result clase «otro» que sus reductores no saben leer (y no leer = no tocar, por doctrina) |
 > | v2 presupuesto | −38,9 % (256 KB) · −0,6 % (1 MB) · −4,9 % (4 MB) | hasta 441 $ | **la trampa del plan, confirmada en dinero**: repuntuar cada turno baila a las víctimas y tritura el prefijo |
 > | v2m presupuesto monótono | −32,7 % (256 KB) · **+12,3 % (1 MB)** · −1,5 % (4 MB) | 46–399 $ | solo positiva afinando el dial, y aun así muy por debajo de v0 |

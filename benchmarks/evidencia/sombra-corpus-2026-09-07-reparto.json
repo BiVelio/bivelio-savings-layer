@@ -1,0 +1,292 @@
+{
+  "fecha": "2026-09-07T16:22:51.515Z",
+  "capturas": [
+    "captura-2026-08-23T10-39-58-652Z.jsonl",
+    "captura-2026-08-23T10-40-56-149Z.jsonl",
+    "captura-2026-08-23T11-26-58-032Z.jsonl",
+    "captura-2026-08-30T08-46-43-317Z.jsonl",
+    "captura-2026-08-30T09-08-31-045Z.jsonl",
+    "captura-2026-08-30T09-58-57-318Z.jsonl",
+    "captura-2026-09-01T13-08-40-562Z.jsonl"
+  ],
+  "turnos": 4232,
+  "sesiones": 45,
+  "presupuestoV2Bytes": 262144,
+  "descartes": {
+    "lineas": 4513,
+    "ilegibles": 0,
+    "sinUsage": 21,
+    "sinCuerpo": 0
+  },
+  "dineroReal": {
+    "entradaUsd": 1148.41,
+    "salidaUsd": 128.4,
+    "totalUsd": 1276.81
+  },
+  "calibracion": {
+    "simBaselineUsd": 1153.88,
+    "nota": "baseline simulado vs entrada real medida — el ahorro se compara SIEMPRE dentro del simulador (misma vara) y el % se aplica al dinero real de entrada",
+    "ratioSimSobreReal": 1.005
+  },
+  "reparto": {
+    "nota": "baseline simulado vs contador del proveedor, en TOKENS por modelo; error = (sim − real) / real. Es la verja de honestidad del artefacto: un baseline que no reproduce la factura no puede medir ahorros sobre ella. La verja solo mira la ESCRITURA de los modelos con masa (> masaMinimaPct del coste real).",
+    "verjaPct": 10,
+    "masaMinimaPct": 1,
+    "enRojo": [],
+    "porModelo": {
+      "claude-haiku-4-5-20251001": {
+        "pctDelCoste": 0,
+        "leidosProv": 120868,
+        "escritosProv": 112211,
+        "entradaProv": 48,
+        "leidosSim": 121278,
+        "escritosSim": 111849,
+        "entradaSim": 0,
+        "errorLecturaPct": 0.3,
+        "errorEscrituraPct": -0.3,
+        "errorEntradaPct": -100
+      },
+      "claude-fable-5": {
+        "pctDelCoste": 81.2,
+        "leidosProv": 741343878,
+        "escritosProv": 10784148,
+        "entradaProv": 188405,
+        "leidosSim": 741045260,
+        "escritosSim": 11091264,
+        "entradaSim": 179908,
+        "errorLecturaPct": 0,
+        "errorEscrituraPct": 2.8,
+        "errorEntradaPct": -4.5
+      },
+      "claude-sonnet-5": {
+        "pctDelCoste": 2.9,
+        "leidosProv": 105120785,
+        "escritosProv": 3849071,
+        "entradaProv": 82498,
+        "leidosSim": 104898673,
+        "escritosSim": 4059765,
+        "entradaSim": 93917,
+        "errorLecturaPct": -0.2,
+        "errorEscrituraPct": 5.5,
+        "errorEntradaPct": 13.8
+      },
+      "claude-opus-5": {
+        "pctDelCoste": 2.1,
+        "leidosProv": 25406338,
+        "escritosProv": 1245842,
+        "entradaProv": 77428,
+        "leidosSim": 25444138,
+        "escritosSim": 1211405,
+        "entradaSim": 74065,
+        "errorLecturaPct": 0.1,
+        "errorEscrituraPct": -2.8,
+        "errorEntradaPct": -4.3
+      },
+      "claude-opus-4-8": {
+        "pctDelCoste": 13.8,
+        "leidosProv": 134016420,
+        "escritosProv": 8093290,
+        "entradaProv": 565741,
+        "leidosSim": 134070729,
+        "escritosSim": 8022115,
+        "entradaSim": 582608,
+        "errorLecturaPct": 0,
+        "errorEscrituraPct": -0.9,
+        "errorEntradaPct": 3
+      }
+    }
+  },
+  "masaToolResult": {
+    "otro": {
+      "bloques": 384250,
+      "bytesM": 4804.9,
+      "pctDelPrompt": 58.5,
+      "reduccionV1Pct": 0
+    },
+    "codigo": {
+      "bloques": 12178,
+      "bytesM": 31,
+      "pctDelPrompt": 0.4,
+      "reduccionV1Pct": 73.5
+    },
+    "diff": {
+      "bloques": 7038,
+      "bytesM": 14.7,
+      "pctDelPrompt": 0.2,
+      "reduccionV1Pct": 0
+    },
+    "log": {
+      "bloques": 2053,
+      "bytesM": 0.8,
+      "pctDelPrompt": 0,
+      "reduccionV1Pct": 6.4
+    }
+  },
+  "politicas": {
+    "v0": {
+      "simUsd": 1346.69,
+      "ahorroSimUsd": -192.81,
+      "ahorroPct": -16.7,
+      "invalidacionUsd": 611.08,
+      "tokensInvalidadosM": 41.3,
+      "ahorroSobreRealEntradaUsd": -191.9
+    },
+    "v1": {
+      "simUsd": 1149.45,
+      "ahorroSimUsd": 4.43,
+      "ahorroPct": 0.4,
+      "invalidacionUsd": 51.8,
+      "tokensInvalidadosM": 4.5,
+      "ahorroSobreRealEntradaUsd": 4.41
+    },
+    "v2": {
+      "simUsd": 1371.08,
+      "ahorroSimUsd": -217.2,
+      "ahorroPct": -18.8,
+      "invalidacionUsd": 569.81,
+      "tokensInvalidadosM": 31.7,
+      "ahorroSobreRealEntradaUsd": -216.17
+    },
+    "v2m": {
+      "simUsd": 1298.36,
+      "ahorroSimUsd": -144.48,
+      "ahorroPct": -12.5,
+      "invalidacionUsd": 499.74,
+      "tokensInvalidadosM": 28.1,
+      "ahorroSobreRealEntradaUsd": -143.8
+    }
+  },
+  "porModelo": {
+    "claude-haiku-4-5-20251001": {
+      "v0": {
+        "simBaselineUsd": 0.24,
+        "simUsd": 0.24,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0
+      },
+      "v1": {
+        "simBaselineUsd": 0.24,
+        "simUsd": 0.24,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0
+      },
+      "v2": {
+        "simBaselineUsd": 0.24,
+        "simUsd": 0.24,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0
+      },
+      "v2m": {
+        "simBaselineUsd": 0.24,
+        "simUsd": 0.24,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0
+      }
+    },
+    "claude-fable-5": {
+      "v0": {
+        "simBaselineUsd": 954.84,
+        "simUsd": 1051.06,
+        "ahorroPct": -10.1,
+        "invalidacionUsd": 491.8
+      },
+      "v1": {
+        "simBaselineUsd": 954.84,
+        "simUsd": 950.19,
+        "ahorroPct": 0.5,
+        "invalidacionUsd": 35.08
+      },
+      "v2": {
+        "simBaselineUsd": 954.84,
+        "simUsd": 1179.47,
+        "ahorroPct": -23.5,
+        "invalidacionUsd": 556.01
+      },
+      "v2m": {
+        "simBaselineUsd": 954.84,
+        "simUsd": 1106.73,
+        "ahorroPct": -15.9,
+        "invalidacionUsd": 485.83
+      }
+    },
+    "claude-sonnet-5": {
+      "v0": {
+        "simBaselineUsd": 37.41,
+        "simUsd": 37.41,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0.86
+      },
+      "v1": {
+        "simBaselineUsd": 37.41,
+        "simUsd": 37.41,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0.86
+      },
+      "v2": {
+        "simBaselineUsd": 37.41,
+        "simUsd": 37.41,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0.86
+      },
+      "v2m": {
+        "simBaselineUsd": 37.41,
+        "simUsd": 37.41,
+        "ahorroPct": 0,
+        "invalidacionUsd": 0.86
+      }
+    },
+    "claude-opus-5": {
+      "v0": {
+        "simBaselineUsd": 22.04,
+        "simUsd": 31.92,
+        "ahorroPct": -44.8,
+        "invalidacionUsd": 13.27
+      },
+      "v1": {
+        "simBaselineUsd": 22.04,
+        "simUsd": 21.74,
+        "ahorroPct": 1.4,
+        "invalidacionUsd": 1.48
+      },
+      "v2": {
+        "simBaselineUsd": 22.04,
+        "simUsd": 22.04,
+        "ahorroPct": 0,
+        "invalidacionUsd": 1.39
+      },
+      "v2m": {
+        "simBaselineUsd": 22.04,
+        "simUsd": 22.04,
+        "ahorroPct": 0,
+        "invalidacionUsd": 1.39
+      }
+    },
+    "claude-opus-4-8": {
+      "v0": {
+        "simBaselineUsd": 139.35,
+        "simUsd": 226.07,
+        "ahorroPct": -62.2,
+        "invalidacionUsd": 105.14
+      },
+      "v1": {
+        "simBaselineUsd": 139.35,
+        "simUsd": 139.87,
+        "ahorroPct": -0.4,
+        "invalidacionUsd": 14.37
+      },
+      "v2": {
+        "simBaselineUsd": 139.35,
+        "simUsd": 131.92,
+        "ahorroPct": 5.3,
+        "invalidacionUsd": 11.55
+      },
+      "v2m": {
+        "simBaselineUsd": 139.35,
+        "simUsd": 131.95,
+        "ahorroPct": 5.3,
+        "invalidacionUsd": 11.66
+      }
+    }
+  },
+  "doctrina": "sombra: hipotético por construcción — jamás base de comisión, jamás sumado a measured; la salida no cambia (la elisión solo toca la entrada) y el efecto de segundo orden sobre el comportamiento del modelo NO es medible en replay"
+}

@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
 
+import { precioDeLista } from "../src/pricing/catalogo.js";
+import { primaDeEscritura1h } from "../src/pricing/primas.js";
+
 import {
   BYTES_DEL_MUNON,
+  BYTES_PESO_IMAGEN,
+  CacheDePrefijos,
+  CadenaDeSimulacion,
   MINIMO_BYTES_CANDIDATO,
   V2_PRESUPUESTO_BYTES,
+  VENTANA_DE_BUSQUEDA,
   aplicarPolitica,
   avanzarEstado,
   bytesTrasReduccionV1,
@@ -13,6 +20,7 @@ import {
   identidad,
   simularSesion,
   type BloqueSombra,
+  type MarcaDeCache,
   type TurnoSombra,
 } from "../gateway/sombra.js";
 
@@ -201,12 +209,17 @@ describe("políticas sobre un turno", () => {
 describe("el simulador de caché de prefijo", () => {
   const MODELO = "claude-sonnet-4-5";
 
+  /** Contrato explícito: si ningún bloque lleva marca, el ÚLTIMO va a 1h — igual
+   *  que hace Claude Code. Sin marca no hay caché (y hay un test que lo fija). */
   function turno(bloques: BloqueSombra[], at: number, entradaReal: number): TurnoSombra {
-    return { bloques, at, model: MODELO, entradaReal, escritura1h: true };
+    const conMarca = bloques.some((b) => b.marca !== null)
+      ? bloques
+      : bloques.map((b, i) => (i === bloques.length - 1 ? { ...b, marca: "1h" as const } : b));
+    return { bloques: conMarca, at, model: MODELO, entradaReal, escritura1h: true };
   }
 
-  function bloque(clave: string, bytes: number): BloqueSombra {
-    return { clave, tipo: "user:text", bytes, bytesV1: bytes, clase: "otro", esError: false };
+  function bloque(clave: string, bytes: number, marca: MarcaDeCache = null, tipo = "user:text"): BloqueSombra {
+    return { clave, tipo, marca, bytes, bytesV1: bytes, clase: "otro", esError: false };
   }
 
   it("turno 1 escribe todo; repetir idéntico lo lee todo", () => {
@@ -276,5 +289,199 @@ describe("el simulador de caché de prefijo", () => {
     );
     // El turno 3 sigue leyendo el prefijo que dejó el 1 (vía el 2).
     expect(c.tokensLeidos).toBeCloseTo(4000, 0);
+  });
+});
+
+/**
+ * EL HASH DE IDENTIDAD NO LLEVA `cache_control`. Claude Code mueve la marca al
+ * último mensaje en CADA turno; con la marca dentro del hash, el bloque que
+ * ayer la llevaba cambia de clave hoy y el prefijo «rompe» ahí en todos los
+ * turnos (1.548 de 1.548 appends limpios del corpus del 07-09), reescribiendo
+ * el sufijo entero. El proveedor cachea por prefijo de TOKENS: mismo texto,
+ * misma caché. Este test fija que un bloque con y sin la marca es EL MISMO.
+ */
+describe("compactarCuerpo · la identidad ignora cache_control", () => {
+  const conMarca = { messages: [{ role: "user", content: [{ type: "text", text: "hola", cache_control: { type: "ephemeral", ttl: "1h" } }] }] };
+  const sinMarca = { messages: [{ role: "user", content: [{ type: "text", text: "hola" }] }] };
+
+  it("mismo texto con y sin cache_control → misma clave", () => {
+    expect(compactarCuerpo(conMarca)[0]!.clave).toBe(compactarCuerpo(sinMarca)[0]!.clave);
+  });
+
+  it("texto distinto → clave distinta (la marca no es lo único que se ignora)", () => {
+    const otro = { messages: [{ role: "user", content: [{ type: "text", text: "adiós" }] }] };
+    expect(compactarCuerpo(otro)[0]!.clave).not.toBe(compactarCuerpo(sinMarca)[0]!.clave);
+  });
+
+  it("mover la marca al último mensaje NO rompe el prefijo: el turno siguiente es append puro", () => {
+    // Turno 1: la marca en el único mensaje. Turno 2: el mismo mensaje sin marca + uno nuevo con marca.
+    const t1 = compactarCuerpo(conMarca);
+    const t2 = compactarCuerpo({
+      messages: [
+        { role: "user", content: [{ type: "text", text: "hola" }] },
+        { role: "assistant", content: [{ type: "text", text: "qué tal", cache_control: { type: "ephemeral", ttl: "1h" } }] },
+      ],
+    });
+    expect(t2[0]!.clave).toBe(t1[0]!.clave); // el prefijo casa
+    expect(t2.length).toBe(t1.length + 1); // y solo se añade
+  });
+});
+
+/**
+ * EL MODELO DE BREAKPOINTS de la doc del proveedor («how automatic prefix
+ * checking works»), reproducido sobre el corpus del 07-09 con 2,8 / −0,9 /
+ * −2,8 % de error de escritura en fable-5 / opus-4-8 / opus-5. Cada test fija
+ * una de las piezas que, faltando, devolvía el simulador a inflar la
+ * escritura 2,6×: la identidad canónica, la escritura SOLO del delta tras el
+ * breakpoint anterior, la entrada sin caché tras el último breakpoint, la
+ * caché compartida entre sesiones, la ventana de 20 posiciones con rachas y
+ * el tope de peso de las imágenes.
+ */
+describe("el simulador según la doc: breakpoints, ventana y caché compartida", () => {
+  const MODELO = "claude-sonnet-4-5";
+  const b = (clave: string, bytes: number, marca: MarcaDeCache = null, tipo = "user:text"): BloqueSombra => ({
+    clave,
+    tipo,
+    marca,
+    bytes,
+    bytesV1: bytes,
+    clase: "otro",
+    esError: false,
+  });
+  // entradaReal = Σ bytes → 1 token por byte, y las cifras se leen a ojo.
+  const turno = (bloques: BloqueSombra[], at: number, entradaReal = bloques.reduce((s, x) => s + x.bytes, 0)): TurnoSombra => ({
+    bloques,
+    at,
+    model: MODELO,
+    entradaReal,
+    escritura1h: true,
+  });
+
+  it("(1) `content:\"x\"` ≡ `[{type:\"text\",text:\"x\",cache_control}]`: la misma clave", () => {
+    const suelto = compactarCuerpo({ messages: [{ role: "user", content: "hola" }] });
+    const bloque = compactarCuerpo({
+      messages: [{ role: "user", content: [{ type: "text", text: "hola", cache_control: { type: "ephemeral", ttl: "1h" } }] }],
+    });
+    expect(suelto[0]!.clave).toBe(bloque[0]!.clave);
+    // La marca sí se lee: es el breakpoint.
+    expect(suelto[0]!.marca).toBeNull();
+    expect(bloque[0]!.marca).toBe("1h");
+    // Y `cache_control` sin ttl es 5m.
+    const cincoMin = compactarCuerpo({ messages: [{ role: "user", content: [{ type: "text", text: "hola", cache_control: { type: "ephemeral" } }] }] });
+    expect(cincoMin[0]!.marca).toBe("5m");
+    expect(cincoMin[0]!.clave).toBe(suelto[0]!.clave);
+  });
+
+  it("(1b) el orden del prefijo es tools → system → messages, y el system en lista se parte por elemento", () => {
+    const bloques = compactarCuerpo({
+      system: [
+        { type: "text", text: "eres útil" },
+        { type: "text", text: "y breve", cache_control: { type: "ephemeral", ttl: "1h" } },
+      ],
+      tools: [{ name: "bash", input_schema: {} }],
+      messages: [{ role: "user", content: "hola" }],
+    });
+    expect(bloques.map((x) => x.tipo)).toEqual(["tools", "system", "system", "user:text"]);
+    expect(bloques.map((x) => x.marca)).toEqual([null, null, "1h", null]);
+  });
+
+  it("(2) el breakpoint se mueve un turno: acierto en el anterior y escritura SOLO del delta", () => {
+    const cadena = new CadenaDeSimulacion((x) => identidad(x));
+    cadena.paso(turno([b("a", 4000), b("b", 4000, "1h")], 1000));
+    const paso2 = cadena.paso(turno([b("a", 4000), b("b", 4000), b("c", 4000, "1h")], 2000));
+    expect(paso2.tokensLeidos).toBeCloseTo(8000, 0);
+    expect(paso2.tokensEscritos).toBeCloseTo(4000, 0);
+    expect(paso2.tokensInvalidados).toBe(0);
+  });
+
+  it("(3) lo que va tras el último breakpoint es ENTRADA: ni se lee ni se escribe, y se cobra a precio de lista", () => {
+    const cadena = new CadenaDeSimulacion((x) => identidad(x));
+    const paso = cadena.paso(turno([b("a", 4000, "1h"), b("b", 4000), b("c", 4000)], 1000));
+    expect(paso.tokensEscritos).toBeCloseTo(4000, 0);
+    expect(paso.tokensEntrada).toBeCloseTo(8000, 0);
+    expect(paso.tokensLeidos).toBe(0);
+    expect(paso.entradaUsd).toBeGreaterThan(0);
+    expect(paso.totalUsd).toBeCloseTo(paso.lecturaUsd + paso.escrituraUsd + paso.entradaUsd, 10);
+    // El PRECIO, no solo el signo: la entrada se cobra a inputPer1k del catálogo,
+    // y la escritura a la prima de 1h del modelo. Sin esto el test no distingue
+    // «entrada» de «lectura barata» o de «escritura».
+    const precio = precioDeLista(MODELO)!;
+    expect(paso.entradaUsd).toBeCloseTo((paso.tokensEntrada / 1_000) * precio.inputPer1k, 8);
+    expect(paso.escrituraUsd).toBeCloseTo((paso.tokensEscritos / 1_000) * precio.inputPer1k * primaDeEscritura1h(MODELO), 8);
+    // Y al repetir el turno tampoco se lee: nadie lo escribió.
+    const paso2 = cadena.paso(turno([b("a", 4000, "1h"), b("b", 4000), b("c", 4000)], 2000));
+    expect(paso2.tokensLeidos).toBeCloseTo(4000, 0);
+    expect(paso2.tokensEntrada).toBeCloseTo(8000, 0);
+  });
+
+  it("(4) una sesión NUEVA acierta en el prefijo tools+system que otra escribió (la caché es de la organización)", () => {
+    const prefijo = () => [b("tools", 10000, null, "tools"), b("sys", 5000, "1h", "system")];
+    const compartida = new CacheDePrefijos();
+    const padre = new CadenaDeSimulacion((x) => identidad(x), compartida);
+    padre.paso(turno([...prefijo(), b("u1", 2000, "1h")], 1000));
+    const hijo = new CadenaDeSimulacion((x) => identidad(x), compartida);
+    const paso = hijo.paso(turno([...prefijo(), b("u2", 2000, "1h")], 2000));
+    expect(paso.tokensLeidos).toBeCloseTo(15000, 0);
+    expect(paso.tokensEscritos).toBeCloseTo(2000, 0);
+    // Sin caché compartida (cada cadena la suya) la sesión nueva lo escribe todo.
+    const aislado = new CadenaDeSimulacion((x) => identidad(x));
+    const pasoAislado = aislado.paso(turno([...prefijo(), b("u2", 2000, "1h")], 2000));
+    expect(pasoAislado.tokensLeidos).toBe(0);
+    expect(pasoAislado.tokensEscritos).toBeCloseTo(17000, 0);
+  });
+
+  it("(5) la ventana es de 20 POSICIONES y una racha de tool_result es UNA posición", () => {
+    const N = VENTANA_DE_BUSQUEDA + 5;
+    const cola = (tipo: string) => Array.from({ length: N }, (_, i) => b(`r${i}`, 100, i === N - 1 ? "1h" : null, tipo));
+    // Turno 1 deja escritos h(sys) y h(sys,u0).
+    const arranque = () => {
+      const c = new CadenaDeSimulacion((x) => identidad(x));
+      c.paso(turno([b("sys", 1000, "1h", "system"), b("u0", 1000, "1h")], 1000));
+      return c;
+    };
+    // 25 bloques de texto sueltos = 25 posiciones: desde el breakpoint final la
+    // ventana no alcanza h(sys,u0); solo el breakpoint del system acierta.
+    const textos = arranque().paso(turno([b("sys", 1000, "1h", "system"), b("u0", 1000), ...cola("user:text")], 2000));
+    expect(textos.tokensLeidos).toBeCloseTo(1000, 0);
+    expect(textos.tokensEscritos).toBeCloseTo(1000 + N * 100, 0);
+    // Los mismos 25 como racha de tool_result = 1 posición: la ventana llega y u0 se lee.
+    const racha = arranque().paso(turno([b("sys", 1000, "1h", "system"), b("u0", 1000), ...cola("user:tool_result")], 2000));
+    expect(racha.tokensLeidos).toBeCloseTo(2000, 0);
+    expect(racha.tokensEscritos).toBeCloseTo(N * 100, 0);
+  });
+
+  it("(6) una imagen pesa como mucho BYTES_PESO_IMAGEN en el reparto de tokens (tokeniza por píxeles, no por base64)", () => {
+    const cadena = new CadenaDeSimulacion((x) => identidad(x));
+    // 200 KB de base64 + 4 KB de texto; el proveedor contó 10.000 tokens.
+    const paso = cadena.paso(turno([b("img", 200_000, "1h", "user:image"), b("txt", 4000)], 1000, 10_000));
+    // Peso: min(200000, 6000) + 4000 = 10000 → la imagen son 6000 tokens, no 9804.
+    expect(paso.tokensEscritos).toBeCloseTo((10_000 * BYTES_PESO_IMAGEN) / (BYTES_PESO_IMAGEN + 4000), 0);
+    expect(paso.tokensEntrada).toBeCloseTo((10_000 * 4000) / (BYTES_PESO_IMAGEN + 4000), 0);
+  });
+
+  it("la caducidad es POR ENTRADA: un breakpoint de 5m caduca y el de 1h que lo precede sigue vivo", () => {
+    const cadena = new CadenaDeSimulacion((x) => identidad(x));
+    cadena.paso(turno([b("sys", 1000, "1h", "system"), b("u0", 1000, "5m")], 0));
+    // 10 minutos después: h(sys) vive (1h), h(sys,u0) caducó (5m).
+    const paso = cadena.paso(turno([b("sys", 1000, "1h", "system"), b("u0", 1000), b("u1", 1000, "5m")], 10 * 60_000));
+    expect(paso.tokensLeidos).toBeCloseTo(1000, 0);
+    expect(paso.tokensEscritos).toBeCloseTo(2000, 0);
+    // Y no es invalidación: nada cambió, solo caducó.
+    expect(paso.tokensInvalidados).toBe(0);
+  });
+});
+
+describe("sin marcador no hay caché — lo dice la doc y lo confirma el proveedor (15 turnos del corpus: cw = cr = 0)", () => {
+  const MODELO = "claude-sonnet-4-5";
+  const sinMarca = (clave: string, bytes: number): BloqueSombra => ({ clave, tipo: "user:text", marca: null, bytes, bytesV1: bytes, clase: "otro", esError: false });
+
+  it("un turno sin marca cobra TODO a entrada, no escribe ni lee, y el siguiente idéntico tampoco lee nada", () => {
+    const bloques = [sinMarca("a", 4000), sinMarca("b", 4000)];
+    const t = (at: number): TurnoSombra => ({ bloques, at, model: MODELO, entradaReal: 8000, escritura1h: true });
+    const c = simularSesion([t(1000), t(2000)], (b) => identidad(b));
+    expect(c.tokensEscritos).toBe(0);
+    expect(c.tokensLeidos).toBe(0);
+    expect(c.tokensEntrada).toBeCloseTo(16000, 0);
+    expect(c.totalUsd).toBeCloseTo((16000 / 1_000) * precioDeLista(MODELO)!.inputPer1k, 8);
   });
 });

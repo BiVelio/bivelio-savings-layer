@@ -52,7 +52,7 @@ function ladoSombra(bytes: number): { bloques: BloqueSombra[]; estado: ReturnTyp
   const T = 4;
   for (let j = 0; j < 4; j++) {
     const clave = `R${j}`;
-    bloques.push({ clave, tipo: "user:tool_result", bytes, bytesV1: bytes, clase: "otro", esError: false });
+    bloques.push({ clave, tipo: "user:tool_result", marca: null, bytes, bytesV1: bytes, clase: "otro", esError: false });
     estado.nacimiento.set(clave, j); // edad = T − j  → 4,3,2,1
   }
   return { bloques, estado, turno: T };

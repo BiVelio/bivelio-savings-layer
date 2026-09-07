@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { precioDeLista } from "../src/pricing/catalogo.js";
-import { PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "./medidor.js";
+import { primaDeEscritura, primaDeEscritura1h } from "../src/pricing/primas.js";
 
 /**
  * S2.4 · LA SOMBRA — el motor de las TRES políticas de elisión candidatas,
@@ -51,14 +51,28 @@ export type Politica = (typeof POLITICAS)[number];
 /** Clase de contenido de un tool_result, para la política v1. */
 export type ClaseDeBloque = "log" | "codigo" | "diff" | "otro";
 
+/** El marcador `cache_control` de un bloque: su TTL, o null si no lo lleva. */
+export type MarcaDeCache = "1h" | "5m" | null;
+
 /** Un bloque del prompt, compactado: SIN contenido. */
 export interface BloqueSombra {
-  /** Identidad estable del bloque: hash del contenido serializado. Un
-   *  tool_result que se reenvía idéntico turno tras turno conserva su clave —
-   *  así se le puede poner edad. */
+  /** Identidad CANÓNICA del bloque: hash de lo que el tokenizador del
+   *  proveedor ve. Un bloque de texto se identifica por su TEXTO (así
+   *  `content:"x"` ≡ `[{type:"text",text:"x"}]`, las dos formas en que Claude
+   *  Code manda el mismo mensaje según lleve o no el marcador) y cualquier
+   *  otro por su JSON SIN `cache_control` — el marcador se mueve de turno en
+   *  turno, el contenido no. Con el marcador dentro del hash, el bloque que
+   *  llevó el breakpoint «cambiaba» en cada turno y el simulador declaraba
+   *  una rotura de prefijo por turno: la escritura simulada del corpus salía
+   *  un 66 % por encima del contador del proveedor. Un tool_result que se
+   *  reenvía idéntico turno tras turno conserva su clave — así se le puede
+   *  poner edad. */
   clave: string;
   /** `rol:tipo` (p. ej. `user:tool_result`, `assistant:text`, `system`). */
   tipo: string;
+  /** Breakpoint de caché del bloque (doc del proveedor: se escribe UNA
+   *  entrada por marcador, con el hash del prefijo que acaba en él). */
+  marca: MarcaDeCache;
   bytes: number;
   /** Solo tool_result: bytes tras la reducción por contenido de v1. */
   bytesV1: number;
@@ -166,17 +180,56 @@ export function bytesTrasReduccionV1(texto: string, clase: ClaseDeBloque): numbe
   return Math.min(bytes, Buffer.byteLength(texto));
 }
 
+/** Quita el marcador de caché al serializar: es metadato de cacheo, no contenido. */
+const sinMarcas = (clave: string, valor: unknown): unknown => (clave === "cache_control" ? undefined : valor);
+
+/** Lo que el tokenizador del proveedor ve de un bloque: el texto, si es un
+ *  bloque de texto puro (cadena suelta o `{type:"text", text[, cache_control]}`);
+ *  el JSON sin marcador para cualquier otro. */
+function formaCanonica(valor: unknown): string {
+  if (typeof valor === "string") return `text:${valor}`;
+  if (!valor || typeof valor !== "object" || Array.isArray(valor)) return `json:${JSON.stringify(valor ?? "")}`;
+  const o = valor as Record<string, unknown>;
+  if (o["type"] === "text" && typeof o["text"] === "string" && Object.keys(o).every((k) => k === "type" || k === "text" || k === "cache_control")) {
+    return `text:${o["text"] as string}`;
+  }
+  return `json:${JSON.stringify(o, sinMarcas)}`;
+}
+
+/** La clave canónica de un bloque (ver `BloqueSombra.clave`). */
+export function claveCanonica(valor: unknown): string {
+  return createHash("sha256").update(formaCanonica(valor)).digest("hex").slice(0, 16);
+}
+
+/** El breakpoint de un bloque, leído de su `cache_control`: `ttl:"1h"` → 1h;
+ *  presente sin ttl (o con "5m") → 5m; ausente → null. */
+export function marcaDe(valor: unknown): MarcaDeCache {
+  if (!valor || typeof valor !== "object" || Array.isArray(valor)) return null;
+  const cc = (valor as { cache_control?: unknown }).cache_control;
+  if (!cc || typeof cc !== "object") return null;
+  return (cc as { ttl?: unknown }).ttl === "1h" ? "1h" : "5m";
+}
+
 /**
  * Compacta un cuerpo de /v1/messages a la lista de bloques que el motor
  * necesita. ÚNICO punto que ve contenido; lo que devuelve no lo lleva.
+ *
+ * El ORDEN es el del prefijo real del proveedor: tools → system → messages
+ * («cache prefixes are created in the following order: tools, system, then
+ * messages»). Un `system` en forma de lista se emite como un bloque por
+ * elemento, cada uno con su propio marcador (Claude Code marca dos
+ * sub-bloques a 1h). Los parámetros de la petición (thinking, betas,
+ * tool_choice…) NO forman parte de la identidad: el proveedor no invalida
+ * por ellos, y meterlos en el hash multiplicaba por 3 la escritura simulada.
  */
 export function compactarCuerpo(cuerpo: { messages?: unknown; system?: unknown; tools?: unknown }): BloqueSombra[] {
   const bloques: BloqueSombra[] = [];
   const anota = (tipo: string, valor: unknown) => {
     const bytes = bytesDe(valor);
     const b: BloqueSombra = {
-      clave: createHash("sha256").update(typeof valor === "string" ? valor : JSON.stringify(valor ?? "")).digest("hex").slice(0, 16),
+      clave: claveCanonica(valor),
       tipo,
+      marca: marcaDe(valor),
       bytes,
       bytesV1: bytes,
       clase: "otro",
@@ -193,8 +246,9 @@ export function compactarCuerpo(cuerpo: { messages?: unknown; system?: unknown; 
     }
     bloques.push(b);
   };
-  if ((cuerpo.system ?? undefined) !== undefined) anota("system", cuerpo.system);
   if (Array.isArray(cuerpo.tools)) for (const t of cuerpo.tools) anota("tools", t);
+  if (Array.isArray(cuerpo.system)) for (const s of cuerpo.system) anota("system", s);
+  else if ((cuerpo.system ?? undefined) !== undefined) anota("system", cuerpo.system);
   for (const m of Array.isArray(cuerpo.messages) ? cuerpo.messages : []) {
     if (!m || typeof m !== "object") {
       anota("?:invalido", m);
@@ -216,7 +270,9 @@ export interface TurnoSombra {
   model: string;
   /** Contador REAL del proveedor: entrada total (input+lectura+escritura). */
   entradaReal: number;
-  /** ¿La escritura real del turno fue con TTL 1h? (decide la prima simulada). */
+  /** ¿La escritura real del turno fue con TTL 1h? Solo decide la prima del
+   *  breakpoint IMPLÍCITO de un turno sin ningún marcador (el TTL de cada
+   *  entrada lo fija la marca del bloque que la escribe). */
   escritura1h: boolean;
 }
 
@@ -315,6 +371,8 @@ export function aplicarPolitica(
 
 /** Precios por millar para el simulador, derivados del catálogo real. */
 export interface PreciosSimulados {
+  /** Entrada sin caché (lo que va tras el último breakpoint). */
+  inputPer1k: number;
   lecturaPer1k: number;
   escrituraPer1k: number;
   escritura1hPer1k: number;
@@ -324,9 +382,10 @@ export function preciosPara(model: string): PreciosSimulados | null {
   const precio = precioDeLista(model);
   if (!precio) return null;
   return {
+    inputPer1k: precio.inputPer1k,
     lecturaPer1k: precio.cachedInputPer1k ?? precio.inputPer1k,
     escrituraPer1k: precio.inputPer1k * primaDeEscritura(model),
-    escritura1hPer1k: precio.inputPer1k * PRIMA_ESCRITURA_CACHE_1H,
+    escritura1hPer1k: precio.inputPer1k * primaDeEscritura1h(model),
   };
 }
 
@@ -334,9 +393,13 @@ export function preciosPara(model: string): PreciosSimulados | null {
 export interface CosteSimulado {
   lecturaUsd: number;
   escrituraUsd: number;
+  /** Entrada SIN caché: lo que va tras el último breakpoint del turno — el
+   *  proveedor lo cuenta como `input_tokens`, ni lectura ni escritura. */
+  entradaUsd: number;
   totalUsd: number;
   tokensLeidos: number;
   tokensEscritos: number;
+  tokensEntrada: number;
   /** Tokens reescritos SOLO porque un cambio anterior rompió el prefijo: el
    *  bloque existía idéntico en el turno previo más allá del punto de rotura.
    *  Este es el coste de invalidación que el plan obliga a restar SIEMPRE. */
@@ -345,11 +408,130 @@ export interface CosteSimulado {
 }
 
 function costeVacio(): CosteSimulado {
-  return { lecturaUsd: 0, escrituraUsd: 0, totalUsd: 0, tokensLeidos: 0, tokensEscritos: 0, tokensInvalidados: 0, invalidacionUsd: 0 };
+  return {
+    lecturaUsd: 0,
+    escrituraUsd: 0,
+    entradaUsd: 0,
+    totalUsd: 0,
+    tokensLeidos: 0,
+    tokensEscritos: 0,
+    tokensEntrada: 0,
+    tokensInvalidados: 0,
+    invalidacionUsd: 0,
+  };
 }
 
 /** TTLs de la caché de prefijo, en ms. */
 const TTL_MS = { "1h": 3_600_000, "5m": 300_000 } as const;
+
+/** Ventana de búsqueda hacia atrás desde un breakpoint, en POSICIONES
+ *  (doc: «the lookback window is 20 blocks… counting the breakpoint itself
+ *  as the first»; una racha de tool_use o de tool_result consecutivos cuenta
+ *  como una posición). */
+export const VENTANA_DE_BUSQUEDA = 20;
+
+/** Peso máximo, en bytes, de un bloque de imagen en el reparto bytes→tokens:
+ *  una imagen tokeniza por píxeles (~1,6 K tokens), no por sus 200 KB de
+ *  base64. AJUSTE EMPÍRICO y NO determinado: el arnés da el mismo error con
+ *  2.000 B que con 6.000 B (2,7 % frente a 2,8 % en fable-5, el único modelo con
+ *  imágenes). La fórmula del proveedor es (ancho × alto) / 750 tokens y exige
+ *  leer el contenido, que este simulador no retiene. */
+export const BYTES_PESO_IMAGEN = 6_000;
+
+/** Tope de entradas vivas por caché de prefijos: memoria acotada, no doctrina.
+ *  Cada entrada es un hash de 24 chars + dos números; 20.000 × 2 variantes ×
+ *  modelos vivos cabe holgado en una sesión larga. Al superarlo caen las
+ *  expiradas y, si no basta, las más viejas. */
+export const MAX_ENTRADAS_CACHE = 20_000;
+
+interface EntradaDeCache {
+  expira: number;
+  ttl: "1h" | "5m";
+}
+
+/**
+ * LA CACHÉ DE PREFIJOS SIMULADA: una entrada por breakpoint escrito, con el
+ * hash acumulado del prefijo que acaba en él y su caducidad. Es de la
+ * ORGANIZACIÓN, no de la sesión: la comparten todas las cadenas de un mismo
+ * modelo y variante (una sesión nueva o un subagente acierta en el prefijo
+ * tools+system que otra sesión escribió). Base y política NO pueden
+ * compartir una: la política cambia el contenido y, con él, los hashes.
+ */
+export class CacheDePrefijos {
+  private readonly entradas = new Map<string, EntradaDeCache>();
+
+  constructor(private readonly tope: number = MAX_ENTRADAS_CACHE) {}
+
+  get size(): number {
+    return this.entradas.size;
+  }
+
+  /** La entrada VIVA en `hash` en el instante `at`, o null. */
+  viva(hash: string, at: number): EntradaDeCache | null {
+    const e = this.entradas.get(hash);
+    return e && at <= e.expira ? e : null;
+  }
+
+  /** Escribe (o reescribe) la entrada; la caducidad se mide desde el INICIO
+   *  de la petición que la escribe. */
+  escribir(hash: string, at: number, ttl: "1h" | "5m"): void {
+    this.entradas.delete(hash);
+    this.entradas.set(hash, { expira: at + TTL_MS[ttl], ttl });
+    if (this.entradas.size > this.tope) this.podar(at);
+  }
+
+  /** Una lectura refresca la entrada sin coste, con su TTL original. */
+  refrescar(hash: string, at: number): void {
+    const e = this.entradas.get(hash);
+    if (!e) return;
+    // Reinsertar la mueve al final: la poda por tope cae sobre lo más viejo.
+    this.entradas.delete(hash);
+    this.entradas.set(hash, { expira: at + TTL_MS[e.ttl], ttl: e.ttl });
+  }
+
+  private podar(at: number): void {
+    for (const [h, e] of this.entradas) if (at > e.expira) this.entradas.delete(h);
+    while (this.entradas.size > this.tope) {
+      const masVieja = this.entradas.keys().next().value;
+      if (masVieja === undefined) break;
+      this.entradas.delete(masVieja);
+    }
+  }
+}
+
+/** Hash acumulado del prefijo hasta cada límite de bloque, encadenado sobre
+ *  el modelo: cambiar cualquier bloque cambia el hash de todo lo posterior. */
+function hashesDePrefijo(model: string, claves: string[]): string[] {
+  const hashes: string[] = new Array<string>(claves.length);
+  let h = createHash("sha256").update(`model:${model}`).digest("hex");
+  for (let i = 0; i < claves.length; i++) {
+    h = createHash("sha256").update(h).update("|").update(claves[i]!).digest("hex").slice(0, 32);
+    hashes[i] = h;
+  }
+  return hashes;
+}
+
+/** Posición de cada bloque para la ventana de búsqueda: una racha de
+ *  `*:tool_use` consecutivos es UNA posición, ídem `*:tool_result`. */
+function posicionesDe(tipos: string[]): number[] {
+  const pos: number[] = new Array<number>(tipos.length);
+  let p = -1;
+  let racha = "";
+  for (let i = 0; i < tipos.length; i++) {
+    const t = tipos[i]!;
+    const esRacha = t.endsWith(":tool_use") || t.endsWith(":tool_result");
+    if (!(esRacha && t === racha)) p += 1;
+    racha = esRacha ? t : "";
+    pos[i] = p;
+  }
+  return pos;
+}
+
+/** El peso de un bloque en el reparto de la entrada real: sus bytes, salvo
+ *  las imágenes, que se topan (ver BYTES_PESO_IMAGEN). */
+function pesoDe(tipo: string, bytes: number): number {
+  return tipo.endsWith(":image") ? Math.min(bytes, BYTES_PESO_IMAGEN) : bytes;
+}
 
 /**
  * EL SIMULADOR, en forma INCREMENTAL: una cadena por (sesión, modelo) y
@@ -357,16 +539,35 @@ const TTL_MS = { "1h": 3_600_000, "5m": 300_000 } as const;
  * corpus (que la recorre entera) y para el carril sombra vivo del gateway
  * (que le da el turno recién servido y usa el coste de ESE paso).
  *
- * Modelo: el prefijo común (a nivel de bloque) con el turno anterior se lee a
- * precio de lectura; el resto se ESCRIBE a la prima del TTL real del turno; si
- * el hueco entre turnos supera el TTL, el prefijo caduca y se reescribe entero
- * — igual que la caché real. Los tokens por bloque se calibran contra el
- * contador REAL del proveedor: tokens_bloque = entradaReal × bytes_bloque /
- * bytes_turno (la misma calibración por bytes del análisis S1).
+ * El modelo es el de la doc del proveedor («how automatic prefix checking
+ * works»), calibrado contra el contador real del corpus (error de escritura
+ * del baseline: 66 % → 3 % en el modelo principal):
+ *   · un breakpoint (`cache_control`) escribe UNA entrada: el hash acumulado
+ *     del prefijo que acaba en él; nada se escribe en posiciones anteriores;
+ *   · la lectura busca hacia atrás desde cada breakpoint, límite de bloque a
+ *     límite de bloque, hasta VENTANA_DE_BUSQUEDA posiciones, una entrada
+ *     VIVA que escribiera una petición anterior (de esta sesión o de otra:
+ *     la caché es de la organización);
+ *   · lo anterior al acierto se LEE; lo que va del acierto al último
+ *     breakpoint se ESCRIBE a la prima de la marca que lo cubre; lo que va
+ *     tras el último breakpoint es ENTRADA sin caché (`input_tokens`);
+ *   · cada entrada caduca por su propio TTL, medido desde el inicio de la
+ *     petición que la escribió o la leyó por última vez (la lectura refresca
+ *     TODO el prefijo leído).
+ * Un turno sin ningún marcador NO toca la caché: todo su prompt es entrada a
+ * precio de lista (la doc dice que sin marcador no hay caché, y el contador del
+ * proveedor lo confirma en los 15 turnos del corpus sin marca: cw = cr = 0).
+ * Los tokens por bloque se calibran contra el contador REAL del proveedor:
+ * tokens_bloque = entradaReal × peso_bloque / peso_turno.
  */
 export class CadenaDeSimulacion {
   private readonly estado = estadoNuevo();
+  private readonly cache: CacheDePrefijos;
+  /** El turno anterior, solo para atribuir la INVALIDACIÓN (qué se reescribe
+   *  porque algo anterior cambió); los aciertos salen de la caché. */
   private previo: { clave: string; bytes: number }[] = [];
+  private previoUltimoBp = -1;
+  private previoTtl: "1h" | "5m" = "5m";
   private hayPrevio = false;
   private atPrevio = 0;
   readonly acumulado = costeVacio();
@@ -377,80 +578,140 @@ export class CadenaDeSimulacion {
       estado: EstadoSesion,
       turno: number,
     ) => { clave: string; bytes: number }[],
-  ) {}
+    /** La caché de prefijos compartida entre las cadenas del mismo modelo y
+     *  variante; sin ella la cadena usa una propia (sesión aislada). */
+    cache?: CacheDePrefijos,
+  ) {
+    this.cache = cache ?? new CacheDePrefijos();
+  }
 
   /** Procesa un turno y devuelve el coste de ESE paso (además de acumular). */
   paso(t: TurnoSombra): CosteSimulado {
     const delPaso = costeVacio();
     const turno = avanzarEstado(this.estado, t.bloques);
     const precios = preciosPara(t.model);
+    // La transformación conserva número y orden de bloques: tipo y marca se
+    // toman del bloque original en la misma posición (un muñón hereda el
+    // breakpoint del bloque que sustituye).
     const trans = this.transformar(t.bloques, this.estado, turno);
-    if (!precios || t.entradaReal <= 0) {
+    if (!precios || t.entradaReal <= 0 || trans.length === 0) {
+      // Sin precio o sin entrada no hay nada que simular, pero el turno SIGUIENTE
+      // empareja su invalidación contra `previo` con el corte de ESTE: se reinicia
+      // el corte para no arrastrar el del turno anterior sobre un previo nuevo.
       this.previo = trans;
+      this.previoUltimoBp = -1;
+      this.previoTtl = "5m";
       this.hayPrevio = true;
       this.atPrevio = t.at;
       return delPaso;
     }
-    const bytesOriginales = t.bloques.reduce((s, b) => s + b.bytes, 0);
-    const tokensPorByte = bytesOriginales > 0 ? t.entradaReal / bytesOriginales : 0;
-    const ttl = TTL_MS[t.escritura1h ? "1h" : "5m"];
-    const caducado = this.hayPrevio && t.at - this.atPrevio > ttl;
+    const tipos = trans.map((_, i) => t.bloques[i]?.tipo ?? "");
+    const marcas: MarcaDeCache[] = trans.map((_, i) => t.bloques[i]?.marca ?? null);
 
-    // Prefijo común con el turno anterior, a nivel de bloque.
-    let prefijo = 0;
-    if (!caducado) {
-      while (
-        prefijo < trans.length &&
-        prefijo < this.previo.length &&
-        trans[prefijo]!.clave === this.previo[prefijo]!.clave &&
-        trans[prefijo]!.bytes === this.previo[prefijo]!.bytes
-      ) {
-        prefijo += 1;
+    // Reparto de la entrada real por peso (bytes, imágenes topadas).
+    const pesoOriginal = t.bloques.reduce((s, b) => s + pesoDe(b.tipo, b.bytes), 0);
+    const tokensPorPeso = pesoOriginal > 0 ? t.entradaReal / pesoOriginal : 0;
+    const tokensDe = trans.map((b, i) => pesoDe(tipos[i]!, b.bytes) * tokensPorPeso);
+
+    const hashes = hashesDePrefijo(t.model, trans.map((b) => b.clave));
+    const posiciones = posicionesDe(tipos);
+    let bps = marcas.map((m, i) => (m ? i : -1)).filter((i) => i >= 0);
+    if (bps.length === 0) {
+      // SIN MARCADOR NO HAY CACHÉ. La doc lo dice y el contador del proveedor lo
+      // confirma: en los 15 turnos del corpus sin ningún cache_control, cw = 0 y
+      // cr = 0 — todo input_tokens. Un breakpoint implícito los escribía a prima y
+      // dejaba en la caché compartida entradas que el proveedor nunca creó (+1,4 %
+      // de escritura en fable-5 frente al oráculo). Se cobra todo a ENTRADA y el
+      // turno no toca la caché; el prefijo para invalidación se reinicia.
+      for (let i = 0; i < trans.length; i++) {
+        delPaso.tokensEntrada += tokensDe[i]!;
+        delPaso.entradaUsd += (tokensDe[i]! / 1_000) * precios.inputPer1k;
       }
+      delPaso.totalUsd = delPaso.entradaUsd;
+      this.previo = trans;
+      this.previoUltimoBp = -1;
+      this.previoTtl = "5m";
+      this.hayPrevio = true;
+      this.atPrevio = t.at;
+      this.acumulado.tokensEntrada += delPaso.tokensEntrada;
+      this.acumulado.entradaUsd += delPaso.entradaUsd;
+      this.acumulado.totalUsd += delPaso.totalUsd;
+      return delPaso;
     }
 
+    // Acierto: el límite de bloque más lejano con entrada viva, buscando
+    // hacia atrás desde cada breakpoint dentro de su ventana.
+    let acierto = -1;
+    for (const bp of bps) {
+      const posMinima = posiciones[bp]! - (VENTANA_DE_BUSQUEDA - 1);
+      for (let i = bp; i >= 0 && posiciones[i]! >= posMinima; i--) {
+        if (this.cache.viva(hashes[i]!, t.at)) {
+          if (i > acierto) acierto = i;
+          break;
+        }
+      }
+    }
+    // Leer refresca TODO el prefijo leído; escribir crea las entradas de los
+    // breakpoints posteriores al acierto.
+    for (let i = 0; i <= acierto; i++) this.cache.refrescar(hashes[i]!, t.at);
+    const ultimoBp = bps[bps.length - 1]!;
+    for (const bp of bps) if (bp > acierto) this.cache.escribir(hashes[bp]!, t.at, marcas[bp]!);
+
+    // Contabilidad por bloque. La prima de escritura de un bloque es la de la
+    // marca del primer breakpoint que lo cubre.
+    let idxBp = 0;
     // Invalidación: bloques escritos que existían IDÉNTICOS en el turno
-    // anterior más allá del punto de rotura — se reescriben solo porque algo
-    // anterior cambió. Emparejamiento en orden (subsecuencia).
-    const previoRestante = this.previo.slice(prefijo);
+    // anterior, dentro de lo que aquel dejó cacheado y más allá del acierto —
+    // se reescriben solo porque algo anterior cambió. Una caducidad no es
+    // invalidación: si el prefijo del turno previo ya expiró, no se atribuye.
+    const caducado = this.hayPrevio && t.at - this.atPrevio > TTL_MS[this.previoTtl];
+    const previoRestante = caducado ? [] : this.previo.slice(acierto + 1, this.previoUltimoBp + 1);
     let cursor = 0;
-    const precioEscritura = t.escritura1h ? precios.escritura1hPer1k : precios.escrituraPer1k;
     for (let i = 0; i < trans.length; i++) {
       const bloque = trans[i]!;
-      const tokens = bloque.bytes * tokensPorByte;
-      if (i < prefijo) {
+      const tokens = tokensDe[i]!;
+      if (i <= acierto) {
         delPaso.tokensLeidos += tokens;
         delPaso.lecturaUsd += (tokens / 1_000) * precios.lecturaPer1k;
         continue;
       }
+      if (i > ultimoBp) {
+        delPaso.tokensEntrada += tokens;
+        delPaso.entradaUsd += (tokens / 1_000) * precios.inputPer1k;
+        continue;
+      }
+      while (bps[idxBp]! < i) idxBp += 1;
+      const precioEscritura = marcas[bps[idxBp]!] === "1h" ? precios.escritura1hPer1k : precios.escrituraPer1k;
       delPaso.tokensEscritos += tokens;
       delPaso.escrituraUsd += (tokens / 1_000) * precioEscritura;
-      if (!caducado) {
-        // Mirar hacia delante SIN consumir: si este bloque no está en el resto
-        // del turno previo, el cursor se queda donde estaba — consumirlo en el
-        // fallo dejaba sin emparejar (y sin cobrar como invalidación) todos
-        // los bloques idénticos que venían detrás.
-        let j = cursor;
-        while (j < previoRestante.length && previoRestante[j]!.clave !== bloque.clave) j += 1;
-        if (j < previoRestante.length) {
-          if (previoRestante[j]!.bytes === bloque.bytes) {
-            delPaso.tokensInvalidados += tokens;
-            delPaso.invalidacionUsd += (tokens / 1_000) * (precioEscritura - precios.lecturaPer1k);
-          }
-          cursor = j + 1;
+      // Mirar hacia delante SIN consumir: si este bloque no está en el resto
+      // del turno previo, el cursor se queda donde estaba — consumirlo en el
+      // fallo dejaba sin emparejar (y sin cobrar como invalidación) todos
+      // los bloques idénticos que venían detrás.
+      let j = cursor;
+      while (j < previoRestante.length && previoRestante[j]!.clave !== bloque.clave) j += 1;
+      if (j < previoRestante.length) {
+        if (previoRestante[j]!.bytes === bloque.bytes) {
+          delPaso.tokensInvalidados += tokens;
+          delPaso.invalidacionUsd += (tokens / 1_000) * (precioEscritura - precios.lecturaPer1k);
         }
+        cursor = j + 1;
       }
     }
     this.previo = trans;
+    this.previoUltimoBp = ultimoBp;
+    this.previoTtl = marcas[ultimoBp] ?? "5m";
     this.hayPrevio = true;
     this.atPrevio = t.at;
 
-    delPaso.totalUsd = delPaso.lecturaUsd + delPaso.escrituraUsd;
+    delPaso.totalUsd = delPaso.lecturaUsd + delPaso.escrituraUsd + delPaso.entradaUsd;
     this.acumulado.lecturaUsd += delPaso.lecturaUsd;
     this.acumulado.escrituraUsd += delPaso.escrituraUsd;
+    this.acumulado.entradaUsd += delPaso.entradaUsd;
     this.acumulado.totalUsd += delPaso.totalUsd;
     this.acumulado.tokensLeidos += delPaso.tokensLeidos;
     this.acumulado.tokensEscritos += delPaso.tokensEscritos;
+    this.acumulado.tokensEntrada += delPaso.tokensEntrada;
     this.acumulado.tokensInvalidados += delPaso.tokensInvalidados;
     this.acumulado.invalidacionUsd += delPaso.invalidacionUsd;
     return delPaso;
@@ -461,8 +722,9 @@ export class CadenaDeSimulacion {
 export function simularSesion(
   turnos: TurnoSombra[],
   transformar: (bloques: BloqueSombra[], estado: EstadoSesion, turno: number) => { clave: string; bytes: number }[],
+  cache?: CacheDePrefijos,
 ): CosteSimulado {
-  const cadena = new CadenaDeSimulacion(transformar);
+  const cadena = new CadenaDeSimulacion(transformar, cache);
   for (const t of turnos) cadena.paso(t);
   return cadena.acumulado;
 }

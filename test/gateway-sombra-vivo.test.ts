@@ -93,6 +93,11 @@ function cuerpoTurno(pasos: number): { model: string; messages: unknown[]; strea
       content: [{ type: "tool_result", tool_use_id: `tu_${i}`, content: `salida del paso ${i} ` + "x".repeat(4000) }],
     });
   }
+  // Como Claude Code: el ÚLTIMO mensaje lleva la marca de caché. Sin marcador no
+  // hay caché (doctrina del simulador, confirmada por el proveedor), así que un
+  // fixture sin marca no simularía nada.
+  const ultimo = messages[messages.length - 1] as { content: { cache_control?: unknown }[] };
+  ultimo.content[0]!.cache_control = { type: "ephemeral", ttl: "1h" };
   return { model: "claude-haiku-4-5-20251001", messages, stream: true };
 }
 
