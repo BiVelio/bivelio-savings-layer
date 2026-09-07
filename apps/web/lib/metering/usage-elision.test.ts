@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 
-import { parseUsageRecord, UsageValidationError } from "./usage";
+import { parseUsageRecord, parseUsageRecords, UsageValidationError } from "./usage";
 import { TECHO_PRECIO_LECTURA_PER_1K } from "./techo-precio-lectura";
 
 /**
@@ -63,22 +63,31 @@ describe("ingesta — el suelo de la elisión del proveedor (0025)", () => {
 
   it("dinero SIN conteo (suelo > 0 con eliminatedInputTokens 0) se recorta a 0 y avisa — no rompe el lote", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const rec = parseUsageRecord(cuerpoValido({ eliminatedInputTokens: 0, eliminatedInputFloorCost: 0.5 }), "org-1");
+    const [rec] = parseUsageRecords([cuerpoValido({ eliminatedInputTokens: 0, eliminatedInputFloorCost: 0.5 })], "org-1");
     expect(rec["eliminatedInputFloorCost"]).toBe(0);
     expect(warn).toHaveBeenCalledOnce();
   });
 
   it("⛔ tarifado a precio de ENTRADA (×40 en fable-5-1: $0,10) se recorta al techo, no se rechaza", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const rec = parseUsageRecord(cuerpoValido({ eliminatedInputFloorCost: 0.1 }), "org-1");
+    const [rec] = parseUsageRecords([cuerpoValido({ eliminatedInputFloorCost: 0.1 })], "org-1");
     expect(rec["eliminatedInputFloorCost"]).toBe((10_000 / 1_000) * TECHO_PRECIO_LECTURA_PER_1K);
     expect(warn).toHaveBeenCalledOnce();
   });
 
   it("dentro del techo no hay aviso: el camino normal es silencioso", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    parseUsageRecord(cuerpoValido({ eliminatedInputFloorCost: 0.0025 }), "org-1");
+    parseUsageRecords([cuerpoValido({ eliminatedInputFloorCost: 0.0025 })], "org-1");
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("un lote con MUCHOS recortes avisa UNA vez, con el recuento — no una línea por registro", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const lote = Array.from({ length: 50 }, () => cuerpoValido({ eliminatedInputFloorCost: 0.1 }));
+    const out = parseUsageRecords(lote, "org-1");
+    expect(out).toHaveLength(50);
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]![1]).toMatchObject({ registros: 50, recortados: 50 });
   });
 
   it("⛔ un campo desconocido sigue rechazado: la lista sigue cerrada", () => {

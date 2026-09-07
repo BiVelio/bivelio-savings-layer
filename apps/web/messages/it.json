@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",
       "whatEliminatedTokens": "token di input eliminati perché non necessari",
-      "elisionNota": "Solo un conteggio del provider. Le richieste in cui l'hanno causato i NOSTRI parametri sono nella scheda «Cancellazione del provider» qui sotto; il suo valore in denaro non viene mostrato finché il netto per modello non è misurato, e non entra mai nella tua commissione.",
+      "elisionNota": "Solo un conteggio — il suo valore in denaro è stimato nell'elisione in ombra qui sotto, e non entra mai nella tua commissione.",
       "whatCompressedTokens": "token di input ricodificati in modo più compatto",
       "whatProviderCachedTokens": "token di input fatturati a meno (cache di prefisso)",
       "ghostAwaiting": "{ref} · in attesa del primo report",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Cancellazione del provider causata dai nostri parametri",
-      "detalle": "{requests} richieste accreditate · {tokens} token cancellati dal provider nel periodo",
+      "detalle": "{requests} richieste accreditate",
       "nota": "Il conteggio è del provider (applied_edits). Non è un risparmio misurato e non entra mai nella tua commissione; il denaro arriverà quando il netto per modello sarà misurato — cancellare riscrive la cache di prefisso, e su alcuni modelli il netto è negativo."
     },
     "ritmo": {

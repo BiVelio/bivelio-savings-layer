@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",
       "whatEliminatedTokens": "tokeny wejściowe odrzucone jako zbędne",
-      "elisionNota": "Tylko licznik dostawcy. Żądania, w których spowodowały to NASZE ustawienia, są w karcie „Czyszczenie przez dostawcę” poniżej; jego wartość pieniężna nie jest pokazywana, dopóki nie zmierzymy netto na model, i nigdy nie wchodzi do twojej prowizji.",
+      "elisionNota": "Tylko licznik — jego wartość pieniężna jest szacowana w elizji w cieniu poniżej i nigdy nie wchodzi do twojej prowizji.",
       "whatCompressedTokens": "tokeny wejściowe przekodowane na mniejsze",
       "whatProviderCachedTokens": "tokeny wejściowe naliczone taniej (cache prefiksu)",
       "ghostAwaiting": "{ref} · oczekiwanie na pierwszy raport",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Czyszczenie przez dostawcę wywołane naszymi ustawieniami",
-      "detalle": "{requests} uznanych żądań · {tokens} tokenów wyczyszczonych przez dostawcę w tym okresie",
+      "detalle": "{requests} uznanych żądań",
       "nota": "Licznik pochodzi od dostawcy (applied_edits). To nie jest zmierzona oszczędność i nigdy nie wchodzi do twojej prowizji; pieniądze pojawią się, gdy zmierzymy netto na model — czyszczenie przepisuje pamięć podręczną prefiksu, a w niektórych modelach netto jest ujemne."
     },
     "ritmo": {

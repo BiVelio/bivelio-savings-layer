@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "appels LLM/récupération/outil qui n'ont jamais été exécutés",
       "whatEliminatedTokens": "tokens d'entrée supprimés car inutiles",
-      "elisionNota": "Un simple décompte du fournisseur. Les requêtes où NOS réglages l'ont provoqué sont dans la carte « Effacement par le fournisseur » ci-dessous ; sa valeur en argent n'est pas affichée tant que le net par modèle n'est pas mesuré, et elle n'entre jamais dans ta commission.",
+      "elisionNota": "Un simple décompte — sa valeur en argent est estimée dans l'élision en ombre ci-dessous, et n'entre jamais dans ta commission.",
       "whatCompressedTokens": "tokens d'entrée réencodés plus compacts",
       "whatProviderCachedTokens": "tokens d'entrée facturés moins cher (cache de préfixe)",
       "ghostAwaiting": "{ref} · en attente du premier rapport",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Effacement par le fournisseur provoqué par nos réglages",
-      "detalle": "{requests} requêtes créditées · {tokens} tokens effacés par le fournisseur sur la période",
+      "detalle": "{requests} requêtes créditées",
       "nota": "Le décompte est celui du fournisseur (applied_edits). Ce n'est pas une économie mesurée et cela n'entre jamais dans ta commission ; l'argent suivra quand le net par modèle sera mesuré — effacer réécrit le cache de préfixe, et sur certains modèles le net est négatif."
     },
     "ritmo": {

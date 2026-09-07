@@ -199,14 +199,14 @@ describe("el carril del borrado del proveedor (0025) — conteo del proveedor, c
     expect(deriveSombra([conCarril])).toEqual(deriveSombra([fila]));
   });
 
-  it("agrega acreditadas, tokens y el suelo (que viaja pero no se pinta)", () => {
+  it("agrega acreditadas y el suelo (que viaja pero no se pinta); NO expone tokens: columna compartida SDK+gateway", () => {
     const e = deriveElisionProveedor([
       conCarril,
       { ...conCarril, eliminatedInputTokens: 10_000, eliminatedFloorCost: 0.0025, eliminatedCreditedRequests: 3 },
     ]);
     if (e.kind !== "ok") throw new Error("esperaba ok");
     expect(e.requests).toBe(4);
-    expect(e.tokens).toBe(60_000);
+    expect("tokens" in e).toBe(false);
     expect(e.floorUsd).toBeCloseTo(0.015, 9);
   });
 

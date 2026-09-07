@@ -62,6 +62,8 @@ const USAGE_ALLOWED_FIELDS = new Set<string>([
 
 export interface UsageRecord {
   orgId: string;
+  /** Opcional (0025): tokens borrados por el proveedor valorados a precio SUELO de lectura. Recortado al techo; jamás en measured. */
+  eliminatedInputFloorCost?: number;
   seatId?: string;
   ci?: boolean;
   requestId: string;
@@ -76,7 +78,9 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 }
 
 /** Validate one untrusted usage record; orgId is server-supplied, never from the body. */
-export function parseUsageRecord(input: unknown, authorizedOrgId: string): UsageRecord {
+type Recorte = { recibido: number; tokens: number; guardado: number };
+
+export function parseUsageRecord(input: unknown, authorizedOrgId: string, recortes: Recorte[] = []): UsageRecord {
   if (!isPlainObject(input)) throw new UsageValidationError("usage record must be an object");
   for (const key of Object.keys(input)) {
     if (!USAGE_ALLOWED_FIELDS.has(key)) {
@@ -142,9 +146,7 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     // TODO su uso. Se guarda lo defendible y se avisa.
     const tokens = rec["eliminatedInputTokens"] as number;
     const recortado = recortarSuelo(v, tokens);
-    if (recortado !== v) {
-      console.warn("[metering/usage] eliminatedInputFloorCost recortado", { recibido: v, tokens, guardado: recortado });
-    }
+    if (recortado !== v) recortes.push({ recibido: v, tokens, guardado: recortado });
     rec["eliminatedInputFloorCost"] = recortado;
   }
   if (input["seatId"] !== undefined) {
@@ -184,5 +186,16 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
 export function parseUsageRecords(input: unknown, authorizedOrgId: string): UsageRecord[] {
   const arr = Array.isArray(input) ? input : [input];
   if (arr.length > 1000) throw new UsageValidationError("batch too large (max 1000 records)");
-  return arr.map((r) => parseUsageRecord(r, authorizedOrgId));
+  // Un aviso POR LOTE, no por registro: un gateway con el precio mal puesto
+  // generaría hasta 1.000 líneas por lote y ahogaría la alerta útil.
+  const recortes: Recorte[] = [];
+  const out = arr.map((r) => parseUsageRecord(r, authorizedOrgId, recortes));
+  if (recortes.length > 0) {
+    console.warn("[metering/usage] eliminatedInputFloorCost recortado", {
+      registros: arr.length,
+      recortados: recortes.length,
+      maxRecibido: Math.max(...recortes.map((x) => x.recibido)),
+    });
+  }
+  return out;
 }

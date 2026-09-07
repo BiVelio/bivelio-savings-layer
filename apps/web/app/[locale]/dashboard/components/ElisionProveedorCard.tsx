@@ -7,8 +7,11 @@ import { intfmt } from "../format";
 /**
  * El BORRADO DEL PROVEEDOR causado por nuestros diales (migración 0025): las
  * peticiones en las que el gateway cambió los diales de `context_management`
- * y el proveedor devolvió `applied_edits` (clear_tool_uses) — acreditadas — y
- * los tokens que borró en el período.
+ * y el proveedor devolvió `applied_edits` (clear_tool_uses) — acreditadas.
+ * NO se enseña el conteo de tokens: `eliminated_input_tokens` es una columna
+ * COMPARTIDA (el SDK escribe ahí su libro 2 —ToolSelector y elisión local— y el
+ * gateway el contador del proveedor), así que atribuirlo al proveedor mentiría
+ * con un cliente del SDK. El grano por petición llega con B2.
  *
  * Doctrina, y la tarjeta la dice en voz alta:
  *   · SOLO EL CONTEO. El dólar suelo (precio de lectura de caché) se GUARDA en
@@ -32,7 +35,7 @@ export async function ElisionProveedorCard({ usage }: { usage: UsageRollup[] }) 
       <div style={{ display: "flex", alignItems: "baseline", gap: "12px", flexWrap: "wrap" }}>
         <div className="big ck-num" style={{ fontSize: 28 }}>{intfmt(elision.requests)}</div>
         <div className="sub ck-num">
-          {t("elisionProveedor.detalle", { requests: intfmt(elision.requests), tokens: intfmt(elision.tokens) })}
+          {t("elisionProveedor.detalle", { requests: intfmt(elision.requests) })}
         </div>
       </div>
       <div className="sub" style={{ marginTop: "8px" }}>{t("elisionProveedor.nota")}</div>

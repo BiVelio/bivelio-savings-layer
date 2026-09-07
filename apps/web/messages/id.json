@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
       "whatEliminatedTokens": "token input yang dibuang karena tidak perlu",
-      "elisionNota": "Hanya hitungan dari penyedia. Permintaan yang disebabkan oleh pengaturan KAMI ada di kartu “Penghapusan oleh penyedia” di bawah; nilai uangnya tidak ditampilkan sampai neto per model terukur, dan tidak pernah masuk ke komisimu.",
+      "elisionNota": "Hanya hitungan — nilai uangnya diperkirakan di elisi bayangan di bawah, dan tidak pernah masuk ke komisimu.",
       "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
       "whatProviderCachedTokens": "token input yang ditagih lebih murah (cache prefix)",
       "ghostAwaiting": "{ref} · menunggu laporan pertama",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Penghapusan oleh penyedia akibat pengaturan kami",
-      "detalle": "{requests} permintaan dikreditkan · {tokens} token dihapus oleh penyedia pada periode ini",
+      "detalle": "{requests} permintaan dikreditkan",
       "nota": "Hitungan ini milik penyedia (applied_edits). Bukan penghematan terukur dan tidak pernah masuk ke komisimu; uangnya menyusul setelah neto per model terukur — penghapusan menulis ulang cache prefiks, dan pada beberapa model netonya negatif."
     },
     "ritmo": {

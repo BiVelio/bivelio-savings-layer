@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens dropped as unnecessary",
-      "elisionNota": "A count from the provider only. The requests where OUR dials caused it are in the “Provider clearing” card below; its value in money is not shown until the net per model is measured, and it never enters your commission.",
+      "elisionNota": "A count only — its value in money is estimated in shadow elision below, and never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed cheaper (prefix cache)",
       "ghostAwaiting": "{ref} · awaiting first report",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Provider clearing caused by our dials",
-      "detalle": "{requests} credited requests · {tokens} tokens cleared by the provider this period",
+      "detalle": "{requests} credited requests",
       "nota": "The count is the provider's (applied_edits). It is not a measured saving and never enters your commission; money will follow once the net per model is measured — clearing rewrites the prefix cache, and on some models the net is negative."
     },
     "ritmo": {

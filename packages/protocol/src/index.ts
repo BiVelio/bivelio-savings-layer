@@ -151,6 +151,8 @@ export interface UsageRecord {
   baselineCost: number;
   actualCost: number;
   netSavings: number;
+  /** Optional (0025): provider-cleared input tokens valued at the cache READ floor price. Capped server-side; never part of measured. */
+  eliminatedInputFloorCost?: number;
   /**
    * De dónde sale el baseline de ESTE registro: "measured" (contador del
    * proveedor), "estimated" (llamada evitada, sin contador), "unmeasured" o

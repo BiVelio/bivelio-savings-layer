@@ -24,6 +24,10 @@
 --     medido con el mecanismo real.
 --   · measured_requests / measured_baseline_cost / measured_actual_cost quedan
 --     LITERALES a 0022/0024 — test/migracion-0025.test.ts lo afirma línea a línea.
+--   · MATIZ DE REDONDEO: la acreditada se decide sobre el valor CRUDO (> 0) y el dólar
+--     se guarda en numeric(14,6). Un suelo minúsculo (3 tokens de fable-5-1 = 7,5e-7 USD)
+--     cuenta como acreditada y suma 0,000000: las dos columnas pueden no cuadrar en el
+--     último decimal. Es coherente con shadow_*/measured_* y no toca dinero facturable.
 --   · `eliminated_credited_requests`: registros con suelo > 0, es decir, en los
 --     que NUESTROS diales cambiaron la petición y el proveedor borró. El gateway
 --     solo manda suelo > 0 cuando el borrado es atribuible a nuestros diales.

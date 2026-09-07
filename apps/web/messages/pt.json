@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chamadas a LLM/recuperação/ferramentas que nunca chegaram a correr",
       "whatEliminatedTokens": "tokens de entrada descartados por serem desnecessários",
-      "elisionNota": "Apenas uma contagem do fornecedor. Os pedidos em que a causaram os NOSSOS ajustes estão no cartão «Apagamento do fornecedor» abaixo; o seu valor em dinheiro não se mostra até medir o líquido por modelo, e nunca entra na tua comissão.",
+      "elisionNota": "Apenas uma contagem — o seu valor em dinheiro é estimado na elisão em sombra abaixo, e nunca entra na tua comissão.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma mais compacta",
       "whatProviderCachedTokens": "tokens de entrada faturados mais baratos (cache de prefixo)",
       "ghostAwaiting": "{ref} · à espera do primeiro relatório",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Apagamento do fornecedor causado pelos nossos ajustes",
-      "detalle": "{requests} pedidos creditados · {tokens} tokens apagados pelo fornecedor no período",
+      "detalle": "{requests} pedidos creditados",
       "nota": "A contagem é do fornecedor (applied_edits). Não é uma poupança medida e nunca entra na tua comissão; o dinheiro chegará quando o líquido por modelo estiver medido — apagar reescreve a cache de prefixo, e em alguns modelos o líquido sai negativo."
     },
     "ritmo": {

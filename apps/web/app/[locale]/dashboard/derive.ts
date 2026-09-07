@@ -223,11 +223,12 @@ export function deriveSombra(usage: FilaUso[]): Sombra {
  *            contrastar contra su factura no se enseña (doctrina del recibo).
  *            Condición de salida para pintarlo: el NETO por modelo medido con
  *            el mecanismo real. `tokens` es el conteo del proveedor del período
- *            (eliminated_input_tokens, 0015): no hay grano «tokens acreditados».
+ *   `eliminated_input_tokens` NO se expone: es columna COMPARTIDA (libro 2 del SDK + contador
+ *   del proveedor en el gateway) y atribuirla al proveedor mentiría con un cliente del SDK.
  */
 export type ElisionProveedor =
   | { kind: "none" }
-  | { kind: "ok"; requests: number; tokens: number; floorUsd: number };
+  | { kind: "ok"; requests: number; floorUsd: number };
 
 export function deriveElisionProveedor(usage: FilaUso[]): ElisionProveedor {
   const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
@@ -236,7 +237,6 @@ export function deriveElisionProveedor(usage: FilaUso[]): ElisionProveedor {
   return {
     kind: "ok",
     requests,
-    tokens: suma((r) => r.eliminatedInputTokens ?? 0),
     floorUsd: suma((r) => r.eliminatedFloorCost ?? 0),
   };
 }

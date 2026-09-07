@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
       "whatEliminatedTokens": "invoertokens die als overbodig zijn geschrapt",
-      "elisionNota": "Alleen een telling van de provider. De verzoeken waarbij ONZE instellingen het veroorzaakten staan hieronder in de kaart “Wissen door de provider”; de geldwaarde wordt pas getoond als het netto per model is gemeten, en telt nooit mee in je commissie.",
+      "elisionNota": "Alleen een telling — de geldwaarde wordt hieronder in de schaduw-elisie geschat en telt nooit mee in je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens die goedkoper worden gefactureerd (prefixcache)",
       "ghostAwaiting": "{ref} · wacht op eerste rapport",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Wissen door de provider, veroorzaakt door onze instellingen",
-      "detalle": "{requests} gecrediteerde verzoeken · {tokens} tokens gewist door de provider in deze periode",
+      "detalle": "{requests} gecrediteerde verzoeken",
       "nota": "De telling is van de provider (applied_edits). Het is geen gemeten besparing en telt nooit mee in je commissie; het geld volgt zodra het netto per model is gemeten — wissen herschrijft de prefix-cache, en bij sommige modellen is het netto negatief."
     },
     "ritmo": {

@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
       "whatEliminatedTokens": "token đầu vào bị loại bỏ vì không cần thiết",
-      "elisionNota": "Chỉ là số đếm của nhà cung cấp. Các yêu cầu mà cấu hình CỦA CHÚNG TÔI gây ra nằm ở thẻ “Xóa bởi nhà cung cấp” bên dưới; giá trị tiền của nó không được hiển thị cho đến khi đo được phần ròng theo từng mô hình, và không bao giờ tính vào hoa hồng của bạn.",
+      "elisionNota": "Chỉ là số đếm — giá trị tiền của nó được ước tính ở phần lược bỏ trong bóng bên dưới, và không bao giờ tính vào hoa hồng của bạn.",
       "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
       "whatProviderCachedTokens": "token đầu vào được tính phí rẻ hơn (bộ đệm tiền tố)",
       "ghostAwaiting": "{ref} · đang chờ báo cáo đầu tiên",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Xóa bởi nhà cung cấp do cấu hình của chúng tôi gây ra",
-      "detalle": "{requests} yêu cầu được ghi nhận · {tokens} token bị nhà cung cấp xóa trong kỳ",
+      "detalle": "{requests} yêu cầu được ghi nhận",
       "nota": "Số đếm là của nhà cung cấp (applied_edits). Đây không phải khoản tiết kiệm đã đo và không bao giờ tính vào hoa hồng của bạn; tiền sẽ đến khi phần ròng theo từng mô hình được đo — việc xóa ghi lại bộ nhớ đệm tiền tố, và ở một số mô hình phần ròng là âm."
     },
     "ritmo": {

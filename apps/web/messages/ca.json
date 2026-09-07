@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
       "whatEliminatedTokens": "tokens d'entrada descartats per innecessaris",
-      "elisionNota": "Només un recompte del proveïdor. Les peticions en què ho van causar els NOSTRES dials són a la targeta «Esborrat del proveïdor» de sota; el seu valor en diner no s'ensenya fins a mesurar el net per model, i mai no entra a la teva comissió.",
+      "elisionNota": "Només un recompte — el seu valor en diner s'estima a l'elisió en ombra de sota, i mai no entra a la teva comissió.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
       "whatProviderCachedTokens": "tokens d'entrada facturats més barats (memòria cau de prefix)",
       "ghostAwaiting": "{ref} · esperant el primer informe",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Esborrat del proveïdor causat pels nostres dials",
-      "detalle": "{requests} peticions acreditades · {tokens} tokens esborrats pel proveïdor en el període",
+      "detalle": "{requests} peticions acreditades",
       "nota": "El recompte és del proveïdor (applied_edits). No és un estalvi mesurat i mai no entra a la teva comissió; el diner arribarà quan el net per model estigui mesurat — esborrar reescriu la memòria cau de prefix, i en alguns models el net surt negatiu."
     },
     "ritmo": {

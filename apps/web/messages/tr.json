@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
       "whatEliminatedTokens": "gereksiz olduğu için düşürülen girdi token'ları",
-      "elisionNota": "Yalnızca sağlayıcının sayımı. BİZİM ayarlarımızın buna yol açtığı istekler aşağıdaki «Sağlayıcı temizlemesi» kartındadır; parasal değeri model başına net ölçülene kadar gösterilmez ve komisyonuna asla dâhil edilmez.",
+      "elisionNota": "Yalnızca bir sayım — parasal değeri aşağıdaki gölge eksiltmede tahmin edilir ve komisyonuna asla dâhil edilmez.",
       "whatCompressedTokens": "daha küçük olarak yeniden kodlanan girdi token'ları",
       "whatProviderCachedTokens": "daha ucuza faturalandırılan girdi token'ları (önek önbelleği)",
       "ghostAwaiting": "{ref} · ilk rapor bekleniyor",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Ayarlarımızın yol açtığı sağlayıcı temizlemesi",
-      "detalle": "{requests} alacaklandırılan istek · bu dönemde sağlayıcının temizlediği {tokens} token",
+      "detalle": "{requests} alacaklandırılan istek",
       "nota": "Sayım sağlayıcıya aittir (applied_edits). Ölçülmüş bir tasarruf değildir ve komisyonuna asla dâhil edilmez; para, model başına net ölçüldüğünde gelecek — temizleme önek önbelleğini yeniden yazar ve bazı modellerde net negatiftir."
     },
     "ritmo": {

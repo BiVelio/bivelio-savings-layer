@@ -121,7 +121,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "llamadas a LLM/recuperación/herramientas que nunca se ejecutaron",
       "whatEliminatedTokens": "tokens de entrada descartados por innecesarios",
-      "elisionNota": "Solo un conteo del proveedor. Las peticiones en que lo causaron NUESTROS diales están en la tarjeta «Borrado del proveedor» de abajo; su valor en dinero no se enseña hasta medir el neto por modelo, y nunca entra en tu comisión.",
+      "elisionNota": "Solo un conteo — su valor en dinero se estima en la elisión en sombra de abajo, y nunca entra en tu comisión.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma más compacta",
       "whatProviderCachedTokens": "tokens de entrada facturados más baratos (caché de prefijo)",
       "ghostAwaiting": "{ref} · esperando el primer reporte",
@@ -429,7 +429,7 @@
     },
     "elisionProveedor": {
       "title": "Borrado del proveedor causado por nuestros diales",
-      "detalle": "{requests} peticiones acreditadas · {tokens} tokens borrados por el proveedor en el período",
+      "detalle": "{requests} peticiones acreditadas",
       "nota": "El conteo es del proveedor (applied_edits). No es un ahorro medido y nunca entra en tu comisión; el dinero llegará cuando el neto por modelo esté medido — borrar reescribe la caché de prefijo, y en algunos modelos el neto sale negativo."
     },
     "ritmo": {
