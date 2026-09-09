@@ -202,13 +202,18 @@ function claude {
   # «día mezclado» en la auditoría. Avisar antes, no después.
   local restante=$(( 24 * 60 - (10#$(date -u +%H) * 60 + 10#$(date -u +%M)) ))
   (( restante <= 90 )) && bvsala-ab-di "[anillo2] AVISO: faltan $restante min para las 00:00 UTC — esta sesión cruzará el cambio de brazo (día mezclado); mejor relanzarla después"
-  bvsala-ab-di "[anillo2] $dia UTC → brazo ${(U)brazo} (BVSALA_GATEWAY_ELISION=$bandera), gateway encadenado a :$p, sombra=$sombra"
+  bvsala-ab-di "[anillo2] $dia UTC → brazo ${(U)brazo} (informativo: los diales de elisión están APAGADOS desde el 09-09; el brazo ya no los arma), gateway encadenado a :$p, sombra=$sombra"
   if [[ -n "${BVSALA_AB_SECO:-}" ]]; then
     bvsala-ab-di "[anillo2] (seco) no lanzo claude"
     return 0
   fi
   bvsala-ab-sanear-terminal
-  BVSALA_GATEWAY_ELISION="$bandera" BVSALA_GATEWAY_UPSTREAM="http://127.0.0.1:$p" BVSALA_GATEWAY_SHADOW="$sombra" command bvsala claude "$@"
+  # 2026-09-09 · el brazo YA NO exporta BVSALA_GATEWAY_ELISION. Ese "0" de los
+  # días impares no apagaba los diales: cerraba el CANAL de entitlements entero
+  # y con él la rebaja de TTL, la única palanca con dinero medido. O sea que el
+  # brazo "control" del A/B de B llevaba media semana apagando A. Los diales
+  # tienen bandera propia (BVSALA_GATEWAY_DIALES_ELISION) y nacen apagados.
+  BVSALA_GATEWAY_UPSTREAM="http://127.0.0.1:$p" BVSALA_GATEWAY_SHADOW="$sombra" command bvsala claude "$@"
   local rc=$?
   bvsala-ab-sanear-terminal
   return $rc

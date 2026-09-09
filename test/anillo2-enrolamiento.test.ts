@@ -61,17 +61,22 @@ describe("anillo 2 · plan de arranque", () => {
     expect(plan).toEqual({ linea: "", aviso: false });
   });
 
-  it("día par: encadena al espía y arma la palanca", () => {
+  it("día par: encadena al espía y el brazo YA NO toca la bandera del canal (2026-09-09)", () => {
     const plan = planDeAnillo2({ ...base, enrolamiento: { activo: true, espia: 8402 } });
     expect(plan.upstream).toBe("http://127.0.0.1:8402");
-    expect(plan.elision).toBe("1");
+    // El brazo ya no devuelve `elision`: ese "0"/"1" abría y CERRABA el canal
+    // de entitlements entero, y al cerrarlo mataba la rebaja de TTL — la única
+    // palanca con dinero medido. Los diales tienen bandera propia y nacen
+    // apagados, así que el brazo se queda en etiqueta informativa.
+    expect(plan.elision).toBeUndefined();
     expect(plan.brazo).toBe("palanca");
+    expect(plan.linea).toContain("diales de elisión APAGADOS");
   });
 
-  it("día impar: encadena igual pero APAGA la palanca — el control también hay que capturarlo", () => {
+  it("día impar: encadena igual y TAMPOCO apaga el canal — apagarlo mataba la palanca A", () => {
     const plan = planDeAnillo2({ ...base, hoyUtcIso: "2026-09-05", enrolamiento: { activo: true, espia: 8402 } });
     expect(plan.upstream).toBe("http://127.0.0.1:8402");
-    expect(plan.elision).toBe("0");
+    expect(plan.elision).toBeUndefined();
     expect(plan.brazo).toBe("control");
   });
 

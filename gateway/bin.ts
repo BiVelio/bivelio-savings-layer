@@ -200,16 +200,23 @@ const arranque = await arrancarGateway({
       : {}),
   ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
   ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
-  // S4a · las palancas del proveedor (diales de elisión + rebaja de TTL de
-  // caché). ARMADAS POR DEFECTO: el ahorro en el terminal tiene que funcionar
-  // SOLO. El gate REAL son los features `context_elision` y `cache_ttl_tuning`
-  // en la licencia de la org (canal de entitlements, fail-closed). Desde 0023
-  // el plan PRO SÍ los lleva: hasta entonces armarlas por defecto no encendía
-  // nada en tráfico de clientes —la trampa muda que ese PR cierra—, y ahora
-  // encienden exactamente para quien paga. La bandera APAGA: `BVSALA_GATEWAY_ELISION=0`
-  // es el freno de emergencia. `serviceAccountKey` sigue siendo estructuralmente
-  // necesaria (identidad de org para el entitlement), no un paso extra de la elisión.
+  // S4a · el CANAL de entitlements, del que cuelgan las dos palancas. ARMADO
+  // POR DEFECTO: el ahorro en el terminal tiene que funcionar SOLO. El gate
+  // REAL son los features `context_elision` y `cache_ttl_tuning` en la licencia
+  // de la org (fail-closed). `BVSALA_GATEWAY_ELISION=0` sigue siendo el freno
+  // de emergencia que apaga las dos de golpe. `serviceAccountKey` es
+  // estructuralmente necesaria (identidad de org para el entitlement).
   elision: elisionPedida !== "0",
+  // S4a-B · los DIALES, APAGADOS desde el 2026-09-09. Hasta hoy iban en la
+  // misma bandera que la rebaja de TTL, así que no se podía apagar la palanca
+  // que pierde sin apagar la que gana. Medida en pérdida por tres vías
+  // independientes (simulador honesto +49 % de coste, carril sombra en
+  // producción los días 08 y 09, y R = 4,05 frente a R* = 0,0127 en
+  // fable-5-1). El brazo del anillo 2 ya NO las arma: mientras el A/B calcule
+  // el brazo una sola vez al arrancar el proceso, una sesión que cruza la
+  // medianoche corre con la bandera de ayer y no hay observación de control
+  // limpia. Se encienden a mano y a sabiendas.
+  ...(process.env.BVSALA_GATEWAY_DIALES_ELISION === "1" ? { dialesElision: true } : {}),
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
@@ -221,7 +228,11 @@ console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
-  const estado = describirEstadoDeElision(elisionPedida, serviceAccountKey !== undefined);
+  const estado = describirEstadoDeElision(
+    elisionPedida,
+    serviceAccountKey !== undefined,
+    process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
+  );
   (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);

@@ -114,10 +114,17 @@ export function planDeAnillo2(args: {
   partes.push(`anillo 2: ${hoyUtcIso} UTC → brazo ${brazo.toUpperCase()}`);
   partes.push(upstreamYaPuesto ? `upstream respetado del entorno (${upstreamEnv})` : `encadenado a :${enrolamiento.espia}`);
   if (elisionYaPuesta) partes.push(`elisión respetada del entorno (=${elisionEnv})`);
+  partes.push("diales de elisión APAGADOS (2026-09-09): el brazo ya no los arma");
 
   return {
     ...(upstreamYaPuesto ? {} : { upstream: upstreamEspia }),
-    ...(elisionYaPuesta ? {} : { elision: brazo === "palanca" ? ("1" as const) : ("0" as const) }),
+    // 2026-09-09 · el brazo YA NO toca esta bandera. Hasta hoy devolvía "0" en
+    // los días de control, y ese "0" no apagaba solo los diales: apagaba el
+    // CANAL de entitlements entero, y con él la rebaja de TTL — la única
+    // palanca con dinero medido. O sea que el brazo "control" del A/B de B
+    // estaba apagando A media semana. Los diales tienen ahora bandera propia
+    // (BVSALA_GATEWAY_DIALES_ELISION) y nacen apagados, así que el A/B de B se
+    // rearma explícitamente cuando se rediseñe por SESIÓN y no por día.
     brazo,
     linea: partes.join(", "),
     aviso: false,
