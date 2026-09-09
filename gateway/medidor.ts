@@ -4,6 +4,9 @@ import { precioDeLista } from "../src/pricing/catalogo.js";
 import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
+import type { CambioDeModelo } from "./hermano.js";
+
+export type { CambioDeModelo } from "./hermano.js";
 
 /**
  * F1 · EL MEDIDOR — convierte el `usage` del proveedor (los eventos del stream
@@ -296,6 +299,25 @@ export interface RegistroMedido {
   };
 }
 
+/**
+ * El coste de un conteo de tokens a un precio de lista dado. Es la fórmula de
+ * `costeMedido` sacada a una función PURA para que la palanca C pueda tarifar
+ * el MISMO conteo a dos precios de catálogo (el del modelo solicitado y el del
+ * servido): un solo sitio con la aritmética, imposible que diverjan.
+ *
+ * `model` solo decide la prima de escritura (Anthropic 1,25×, OpenAI/Gemini 1×).
+ */
+export function costeDeTokens(precio: CostModel, tokens: RegistroMedido["tokens"], model: string): number {
+  const porCacheLeida = precio.cachedInputPer1k ?? precio.inputPer1k;
+  return (
+    (tokens.entrada / 1_000) * precio.inputPer1k +
+    (tokens.cacheLeida / 1_000) * porCacheLeida +
+    ((tokens.cacheEscrita - tokens.cacheEscrita1h) / 1_000) * precio.inputPer1k * primaDeEscritura(model) +
+    (tokens.cacheEscrita1h / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE_1H +
+    (tokens.salida / 1_000) * precio.outputPer1k
+  );
+}
+
 /** El coste real de una respuesta, a precio de lista del modelo. */
 export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
   const precio = precioDeLista(model);
@@ -312,14 +334,8 @@ export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
     uso.cache_creation_input_tokens ??
     (desglose?.ephemeral_5m_input_tokens ?? 0) + (desglose?.ephemeral_1h_input_tokens ?? 0);
   const cacheEscrita1h = Math.min(desglose?.ephemeral_1h_input_tokens ?? 0, cacheEscrita);
-  const porCacheLeida = precio.cachedInputPer1k ?? precio.inputPer1k;
-  const costeUsd =
-    (entrada / 1_000) * precio.inputPer1k +
-    (cacheLeida / 1_000) * porCacheLeida +
-    ((cacheEscrita - cacheEscrita1h) / 1_000) * precio.inputPer1k * primaDeEscritura(model) +
-    (cacheEscrita1h / 1_000) * precio.inputPer1k * PRIMA_ESCRITURA_CACHE_1H +
-    (salida / 1_000) * precio.outputPer1k;
-  return { costeUsd, precio, tokens: { entrada, salida, cacheLeida, cacheEscrita, cacheEscrita1h } };
+  const tokens = { entrada, salida, cacheLeida, cacheEscrita, cacheEscrita1h };
+  return { costeUsd: costeDeTokens(precio, tokens, model), precio, tokens };
 }
 
 /**
@@ -425,8 +441,14 @@ export function informeMedido(
   atribucion?: Atribucion,
   elision?: ElisionAplicada | null,
   rebaja?: RebajaAplicada | null,
+  /**
+   * Palanca C · si la petición pidió un modelo y viajó con su hermano más
+   * barato en lectura de caché. `medido` ya está tarifado al SERVIDO; el
+   * baseline se recalcula al SOLICITADO sobre el mismo conteo.
+   */
+  hermano?: CambioDeModelo | null,
 ): SavingsReport {
-  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja);
+  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja, hermano);
 }
 
 /**
@@ -485,6 +507,22 @@ export function informeSombra(
   return informe as unknown as SavingsReport;
 }
 
+/**
+ * Palanca C · lo que el cliente habría pagado de MÁS si su petición hubiera
+ * viajado con el modelo que pidió, sobre el MISMO usage que el proveedor
+ * declaró. Con el catálogo de hoy es exactamente
+ * cacheLeida/1000 × (lectura del solicitado − lectura del servido) y CERO en
+ * entrada, salida y escrituras (precios idénticos; la verja de hermano.ts lo
+ * garantiza antes de reescribir). Nunca negativo: si el catálogo cambiara y el
+ * servido saliera más caro, se mide 0 y no se cobra nada — y el test de la
+ * verja de precios rompe en CI para avisar.
+ */
+export function ahorroDeHermano(hermano: CambioDeModelo, medido: RegistroMedido): number {
+  const precioSolicitado = precioDeLista(hermano.solicitado);
+  if (precioSolicitado === undefined) return 0;
+  return Math.max(0, costeDeTokens(precioSolicitado, medido.tokens, hermano.solicitado) - medido.costeUsd);
+}
+
 function construirInforme(
   requestId: string,
   model: string,
@@ -493,6 +531,7 @@ function construirInforme(
   atribucion?: Atribucion,
   elision?: ElisionAplicada | null,
   rebaja?: RebajaAplicada | null,
+  hermano?: CambioDeModelo | null,
 ): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   // ── LA PALANCA DE TARIFA · el primer euro MEDIDO de verdad ──────────────
@@ -508,12 +547,23 @@ function construirInforme(
   // actual es ese mismo usage a la prima que pagó (5m, 1,25×). No hay
   // contrafactual que imaginar — es una resta entre dos precios públicos sobre
   // el mismo conteo. Por eso, y solo por eso, esto se cobra como `measured`.
+  //
+  // La palanca C (modelo hermano, 2026-09-09) es la SEGUNDA excepción con la
+  // misma forma: dos precios de catálogo sobre el mismo usage. El cliente
+  // pidió fable-5 y el proveedor sirvió fable-5-1; entrada, salida y primas
+  // son idénticas y solo la lectura de caché es más barata (0,00025 frente a
+  // 0,001 por 1K, catalogo.ts). `medido` viene tarifado al SERVIDO (lo que se
+  // pagó) y el baseline se recalcula al SOLICITADO sobre el mismo conteo. La
+  // regla de accounting.ts (`basis = removed===0 ? measured : estimated`)
+  // sigue siendo cierta: C no quita un token, cambia su precio.
   const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
   const sobrecosteEvitado =
     !coalescida && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && escrita5m > 0
       ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
       : 0;
-  const baselineMedido = medido.costeUsd + sobrecosteEvitado;
+  const ahorroHermano = !coalescida && hermano ? ahorroDeHermano(hermano, medido) : 0;
+  const baselineMedido = medido.costeUsd + sobrecosteEvitado + ahorroHermano;
+  const ahorroMedido = sobrecosteEvitado + ahorroHermano;
   // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela
   // coalescida no viajó: no elidió nada y no tiene suelo.
   const sueloElision = coalescida ? 0 : sueloDeElision(medido.precio, elision);
@@ -552,9 +602,10 @@ function construirInforme(
           baselineEstimate: baselineMedido,
           actual: medido.costeUsd,
           // PROPORCIÓN en [-100,1], como el resto del contrato (ver la cicatriz
-          // de la coalescencia más arriba). Sin rebaja vale 0 y la doctrina de
-          // siempre se mantiene intacta: sin palanca no hay ahorro que enseñar.
-          netSavings: baselineMedido > 0 ? Math.max(-100, Math.min(1, sobrecosteEvitado / baselineMedido)) : 0,
+          // de la coalescencia más arriba). Sin rebaja ni hermano vale 0 y la
+          // doctrina de siempre se mantiene intacta: sin palanca no hay ahorro
+          // que enseñar.
+          netSavings: baselineMedido > 0 ? Math.max(-100, Math.min(1, ahorroMedido / baselineMedido)) : 0,
           basis: "measured" as const,
           // B2 · solo cuando hay dinero: el campo AUSENTE es «no hubo borrado
           // atribuible», y un 0 explícito no añadiría nada.

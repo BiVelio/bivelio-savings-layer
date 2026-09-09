@@ -37,6 +37,11 @@ export const PRO_FEATURES = [
   "long_context_compression",
   "context_elision",
   "cache_ttl_tuning",
+  // Palanca C (2026-09-09): igual que cache_ttl_tuning, la llevan las orgs de
+  // pago desde la PRÓXIMA licencia; las ya emitidas necesitan el relleno
+  // 0026_features_sibling_model_routing.sql (misma razón que 0023). El gateway
+  // sigue exigiendo el opt-in local del cliente.
+  "sibling_model_routing",
   "priority_support",
 ] as const;
 

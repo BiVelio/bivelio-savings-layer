@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describirEstadoDeElision } from "./palanca.js";
+import { describirEstadoDeHermano } from "./hermano.js";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
@@ -91,6 +92,17 @@ Entorno:
                          Ante cualquier duda, la petición viaja intacta. (Hasta 0.4.13
                          la bandera era al revés: «=1 arma»; en un A/B pásala SIEMPRE
                          explícita, =1 o =0, y no dependerás de la versión instalada.)
+  BVSALA_GATEWAY_MODELO_HERMANO
+                         =1 sirve claude-fable-5 con claude-fable-5-1 (palanca C): misma
+                         tarifa de entrada, salida y escritura de caché; la LECTURA de
+                         caché baja de 0,001 a 0,00025 por 1K tokens (catálogo). El
+                         ahorro es una resta de dos precios sobre el mismo usage:
+                         se mide sin A/B y entra en el titular medido del panel.
+                         Solo si la licencia trae sibling_model_routing (fail-closed).
+                         CAMBIA el model que ves en la respuesta (/cost, /status), y
+                         encenderlo a mitad de un hilo paga UNA escritura fría del
+                         prefijo (cada modelo tiene su caché): arráncalo con el terminal.
+                         Apagar = quitar la variable o =0.
   BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
   BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
                          (por defecto va silenciado para no pisar el TUI; mira el panel).
@@ -217,6 +229,12 @@ const arranque = await arrancarGateway({
   // medianoche corre con la bandera de ayer y no hay observación de control
   // limpia. Se encienden a mano y a sabiendas.
   ...(process.env.BVSALA_GATEWAY_DIALES_ELISION === "1" ? { dialesElision: true } : {}),
+  // Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
+  // Opt-in explícito del cliente porque cambia el `model` de la respuesta; el
+  // feature `sibling_model_routing` de la licencia sigue verjando (fail-closed)
+  // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
+  // el ahorro se mide sin contrafactual, no hay A/B que hacer.
+  ...(process.env.BVSALA_GATEWAY_MODELO_HERMANO === "1" ? { modeloHermano: true } : {}),
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
@@ -234,6 +252,14 @@ console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de
     process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
   );
   (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
+  // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
+  // terminal sin clave (o con el canal cerrado) es control en silencio.
+  const estadoHermano = describirEstadoDeHermano(
+    process.env.BVSALA_GATEWAY_MODELO_HERMANO,
+    serviceAccountKey !== undefined,
+    elisionPedida !== "0",
+  );
+  (estadoHermano.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoHermano.linea}`);
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);
   }

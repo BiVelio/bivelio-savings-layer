@@ -22,6 +22,7 @@ import {
 import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
+import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
@@ -98,6 +99,20 @@ export interface OpcionesGateway {
    * siendo fail-closed: esto es un tercer interruptor, no un sustituto.
    */
   dialesElision?: boolean;
+  /**
+   * Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
+   * Las peticiones que piden `claude-fable-5` viajan con `claude-fable-5-1`:
+   * misma entrada, salida y primas de escritura, lectura de caché a 0,00025
+   * en vez de 0,001 por 1K (catálogo). El ahorro se MIDE sin contrafactual —
+   * el mismo usage a dos precios de catálogo — y entra en `measured_*`.
+   *
+   * APAGADA por defecto: cambia el `model` que el cliente ve en la respuesta,
+   * así que la enciende el cliente con `BVSALA_GATEWAY_MODELO_HERMANO=1`. El
+   * feature `sibling_model_routing` de la licencia sigue siendo necesario y
+   * fail-closed por el mismo canal que las otras dos; `BVSALA_GATEWAY_ELISION=0`
+   * la apaga junto a ellas. NO la arma el anillo 2: no hay A/B que hacer.
+   */
+  modeloHermano?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -201,6 +216,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     /** Instante de INICIO de la petición: la caché de prefijos del proveedor
      *  mide sus TTL desde ahí, no desde el fin de la respuesta. */
     inicioMs?: number,
+    /** Palanca C · el modelo que pidió el cliente y el que viajó, si difieren. */
+    hermano?: CambioDeModelo | null,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -213,17 +230,24 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       );
       return;
     }
-    const medido = costeMedido(model, uso);
+    // Palanca C · `model` es el SOLICITADO (se lee del cuerpo ORIGINAL, no del
+    // saliente); el coste real se tarifa al SERVIDO, que es lo que se pagó. En
+    // el informe viaja el servido: el desglose por modelo del panel (0022)
+    // responde «¿qué modelo costó esto?» y debe cuadrar con la factura del
+    // proveedor. El solicitado queda en la línea de log de abajo.
+    const servido = !coalescida && hermano ? hermano.servido : model;
+    const medido = costeMedido(servido, uso);
     if (medido) {
       const informe = coalescida
         ? informeCoalescido(requestId, model, medido, atribucion)
-        : informeMedido(requestId, model, medido, atribucion, elision, rebaja);
+        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano);
       emisor.record(informe);
       // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
       // es atribuible a nuestros diales y el modelo tiene precio de lectura.
       const suelo = informe.cost.eliminatedInputFloorCost;
       log(
-        `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
+        `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ` +
+          `${servido !== model ? `${model}→${servido} (modelo hermano)` : model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
@@ -321,6 +345,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     // acredita. Fuera del try: el camino del cliente que cierra a mitad
     // (catch) también mide, y también acredita.
     let diales: { nuestros: boolean; triggerDelCliente: number | null } | null = null;
+    // Palanca C · fuera del try para que la ruta abortada (el cliente cerró tras
+    // el usage final) también tarife al modelo que de verdad viajó.
+    let hermano: CambioDeModelo | null = null;
     const atribuir = (
       e: ElisionAplicada | null,
       uso: ReturnType<ObservadorSse["usage"]>,
@@ -426,6 +453,36 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             cuerpoSaliente = ajustado.cuerpo;
             diales = { nuestros: ajustado.nuestros, triggerDelCliente: ajustado.triggerDelCliente };
             h["anthropic-beta"] = conBetaDeElision(h["anthropic-beta"]);
+          }
+        } catch {
+          /* passthrough */
+        }
+      }
+
+      // ── PALANCA C · el modelo hermano (fable-5 → fable-5-1) ─────────────
+      // Misma disciplina que los diales: bandera local EXPLÍCITA (`modeloHermano`,
+      // porque cambia el `model` que el cliente ve), feature per-org fail-closed
+      // y un try que ante cualquier anomalía reenvía lo que ya llevara
+      // `cuerpoSaliente`. Reescribe SOLO `model`, también en count_tokens —
+      // esa ruta no se mide (esJsonMedible), pero el cliente debe estimar
+      // contra el modelo que de verdad va a responderle. La MEDICIÓN sigue
+      // leyendo el modelo SOLICITADO del cuerpo original; el servido viaja en
+      // `hermano` y el ahorro es la resta de dos precios de catálogo sobre el
+      // mismo usage (ver construirInforme).
+      if (
+        canalElision !== null &&
+        opts.modeloHermano === true &&
+        req.method === "POST" &&
+        (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens") &&
+        canalElision.tiene("sibling_model_routing")
+      ) {
+        try {
+          // Si los diales ya reescribieron, `cuerpoSaliente` es JSON plano.
+          const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
+          const reescrito = reescribirModelo(cuerpoSaliente, cod, { betas: h["anthropic-beta"] });
+          if (reescrito !== null) {
+            cuerpoSaliente = reescrito.cuerpo;
+            hermano = reescrito.cambio;
           }
         } catch {
           /* passthrough */
@@ -544,11 +601,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         medida = true;
         const uso = observador.usage();
         const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
         const uso = usoDeJson(respuesta);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs, hermano);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -567,7 +624,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs);
+          // Sin rebaja (la atribución de A exige el camino completo) pero CON el
+          // hermano: el precio del modelo servido se pagó igual aunque el
+          // cliente cerrara.
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
         }
