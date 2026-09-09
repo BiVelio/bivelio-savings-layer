@@ -134,10 +134,26 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     elisionRequests += f.eliminated_credited_requests ?? 0;
     elisionFloorUsd += f.eliminated_floor_cost ?? 0;
   }
-  // EL INTERRUPTOR (tarifa.ts): el suelo de la elisión solo entra en la base
-  // medida si el dueño lo enciende. Hoy es 0 por construcción y el carril viaja
-  // como contexto en `elisionProveedor`.
-  const extraSuelo = COMISIONAR_ELISION_SUELO ? elisionFloorUsd : 0;
+  // SELLO (2026-09-09) · `eliminated_floor_cost` es un BRUTO: cuenta lo que el
+  // proveedor borró, a precio de lectura de caché, y JAMÁS resta la
+  // invalidación de prefijo que ese mismo corte provoca. Medido sobre el
+  // tráfico real del 08 y el 09 de septiembre, el NETO de esos días es
+  // NEGATIVO (entre −$55 y −$322 según el método de enlace de ramas; el signo
+  // no cambia con ninguno). Facturar este bruto sería cobrarle al cliente el
+  // daño que le hemos causado.
+  //
+  // Por eso el interruptor ya no basta: mientras no exista una columna de
+  // NETO medido (bruto − reescritura, por petición), encenderlo es un error de
+  // programa y no una decisión de negocio. Quien quiera cobrarlo tiene que
+  // borrar este guardia a mano, y eso se ve en el diff.
+  if (COMISIONAR_ELISION_SUELO) {
+    throw new Error(
+      "COMISIONAR_ELISION_SUELO está encendido, pero eliminated_floor_cost es un BRUTO " +
+        "sin restar la invalidación de prefijo: el neto medido del 2026-09-08/09 es NEGATIVO. " +
+        "No se puede facturar. Ver db/migrations/0025_dinero_de_la_elision_suelo.sql.",
+    );
+  }
+  const extraSuelo = 0;
   baseUsd += extraSuelo;
   const ahorroUsd = Math.max(0, baseUsd - actualUsd);
   // El ahorro total (medido+estimado) menos el medido = lo estimado, que se

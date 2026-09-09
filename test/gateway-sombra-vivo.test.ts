@@ -251,6 +251,10 @@ describe("B2-4 · sombra y borrado del proveedor no se solapan", () => {
       meteringUrl: `http://127.0.0.1:${ingesta}`,
       seatId: "test-01",
       sombra: true,
+      // 2026-09-09 · este bloque prueba la ATRIBUCIÓN del suelo (B2), que solo
+      // tiene sentido cuando los diales son nuestros. Desde que nacen apagados,
+      // hay que armarlos explícitamente para reproducir el escenario.
+      dialesElision: true,
       log: () => {},
     });
     recursos.push(gw);

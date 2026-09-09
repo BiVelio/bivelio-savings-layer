@@ -73,13 +73,31 @@ export interface OpcionesGateway {
    */
   sombra?: boolean;
   /**
-   * S4a · la PALANCA de diales del proveedor. APAGADA por defecto: el
-   * encendido efectivo es un doble opt-in — esta bandera local
-   * (BVSALA_GATEWAY_ELISION=1) Y el feature `context_elision` en la licencia
-   * de la org, consultado por el canal de entitlements (fail-closed a
-   * apagado). Ante cualquier duda la petición viaja intacta.
+   * S4a · el CANAL DE ENTITLEMENTS. Existe por defecto (`!== false`) siempre
+   * que haya clave de servicio, porque de él cuelgan LAS DOS palancas: los
+   * diales de elisión (`context_elision`) y la rebaja de TTL (`cache_ttl_tuning`).
+   * `BVSALA_GATEWAY_ELISION=0` sigue siendo el freno de emergencia que las
+   * apaga a las dos de golpe.
+   *
+   * OJO CON EL NOMBRE (2026-09-09): esta bandera NO enciende los diales. Hasta
+   * hoy armaba las dos palancas a la vez, y apagar la que pierde apagaba
+   * también la que gana. Para los diales, ver `dialesElision`.
    */
   elision?: boolean;
+  /**
+   * S4a-B · los DIALES de elisión del proveedor, la palanca que inyecta
+   * `context_management`. **APAGADA por defecto desde el 2026-09-09**, medida
+   * en pérdida por tres vías independientes: el simulador honesto la deja en
+   * +49 % de coste, el carril sombra lo confirma en producción los días 08 y
+   * 09, y la cadena mide R = 4,05 frente a un umbral R* = 0,0127 en
+   * fable-5-1 — 319× por encima. Reescribe el prefijo cacheado, y lo que
+   * ahorra en lecturas a 0,025× lo paga en escrituras a 2×.
+   *
+   * Se enciende solo con `BVSALA_GATEWAY_DIALES_ELISION=1` puesto a mano. El
+   * feature `context_elision` de la licencia sigue siendo necesario y sigue
+   * siendo fail-closed: esto es un tercer interruptor, no un sustituto.
+   */
+  dialesElision?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -395,6 +413,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       let cuerpoSaliente = cuerpo;
       if (
         canalElision !== null &&
+        // 2026-09-09 · cuarto interruptor, y el que manda: los diales quedan
+        // APAGADOS salvo que alguien los arme a mano. Ver `dialesElision`.
+        opts.dialesElision === true &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
         canalElision.tiene("context_elision")

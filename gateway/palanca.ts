@@ -174,20 +174,43 @@ export function fusionarDiales(cm: unknown): { edits: unknown[] } & Record<strin
  * `aviso` marca los casos que merecen stderr (la intención del operador no
  * se cumple).
  */
-export function describirEstadoDeElision(bandera: string | undefined, hayClave: boolean): { linea: string; aviso: boolean } {
-  const cola = " (se enciende solo si la licencia de la org trae context_elision; fail-closed)";
-  if (bandera === "0") return { linea: "elisión S4a: APAGADA (BVSALA_GATEWAY_ELISION=0) — brazo CONTROL", aviso: false };
+export function describirEstadoDeElision(
+  bandera: string | undefined,
+  hayClave: boolean,
+  dialesArmados = false,
+): { linea: string; aviso: boolean } {
+  // 2026-09-09 · el cartel distingue las DOS cosas que antes confundía. La
+  // bandera BVSALA_GATEWAY_ELISION abre el CANAL de entitlements, del que
+  // cuelgan la rebaja de TTL (A, la que gana) y los diales (B, la que pierde).
+  // Los diales tienen bandera propia y nacen apagados: decir "ARMADA" por
+  // tener el canal abierto era mentirle al dueño cada mañana.
+  const cola = " (rebaja de TTL activa si la licencia trae cache_ttl_tuning; fail-closed)";
+  const diales = dialesArmados
+    ? " · DIALES DE ELISIÓN ARMADOS A MANO (BVSALA_GATEWAY_DIALES_ELISION=1): miden pérdida, R=4,05 vs R*=0,0127"
+    : " · diales de elisión APAGADOS";
+  if (bandera === "0") {
+    return {
+      linea: "canal S4a: CERRADO (BVSALA_GATEWAY_ELISION=0) — sin rebaja de TTL y sin diales",
+      aviso: false,
+    };
+  }
   if (!hayClave) {
     return {
       linea:
-        "elisión S4a: NO SE ARMA — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar); este proceso es brazo CONTROL" +
-        (bandera === "1" ? " AUNQUE la bandera diga =1. Abre un terminal nuevo o exporta la clave y relanza" : ""),
+        "canal S4a: NO SE ABRE — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar); ni rebaja de TTL ni diales" +
+        (bandera === "1" ? ". Abre un terminal nuevo o exporta la clave y relanza" : ""),
       aviso: bandera === "1",
     };
   }
-  return bandera === "1"
-    ? { linea: "elisión S4a: ARMADA (BVSALA_GATEWAY_ELISION=1) — brazo PALANCA" + cola, aviso: false }
-    : { linea: "elisión S4a: ARMADA por defecto (sin bandera; =0 la apaga) — brazo PALANCA" + cola, aviso: false };
+  return {
+    linea:
+      (bandera === "1"
+        ? "canal S4a: ABIERTO (BVSALA_GATEWAY_ELISION=1)"
+        : "canal S4a: ABIERTO por defecto (=0 lo cierra)") +
+      cola +
+      diales,
+    aviso: dialesArmados,
+  };
 }
 
 /**

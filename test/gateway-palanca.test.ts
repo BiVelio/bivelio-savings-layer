@@ -147,6 +147,8 @@ async function gatewayCon(opciones: {
   upstream: number;
   plataforma?: number;
   elision?: boolean;
+  /** 2026-09-09 · los diales tienen bandera propia y nacen apagados. */
+  dialesElision?: boolean;
   clave?: string;
 }): Promise<GatewayArrancado> {
   const g = await arrancarGateway({
@@ -157,6 +159,7 @@ async function gatewayCon(opciones: {
       ? { meteringUrl: `http://127.0.0.1:${opciones.plataforma}/api/metering/usage` }
       : {}),
     ...(opciones.elision !== undefined ? { elision: opciones.elision } : {}),
+    ...(opciones.dialesElision !== undefined ? { dialesElision: opciones.dialesElision } : {}),
     log: () => {},
   });
   recursos.push(g);
@@ -337,7 +340,7 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
     const lotes: unknown[][] = [];
     const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     const res = await pedir(g.puerto, CUERPO);
@@ -362,7 +365,7 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
     const lotes: unknown[][] = [];
     const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     await pedir(g.puerto, JSON.stringify({ ...JSON.parse(CUERPO), context_management: { edits: [NUESTRO_EDIT] } }));
@@ -398,7 +401,7 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
     // Entrada medida 80K + 28,5K borrados = 108,5K ≥ trigger de la API (100K).
     const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS, { inputTokens: 80_000 });
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     await pedir(g.puerto, CUERPO); // CUERPO lleva el clear_tool_uses de fábrica (sin trigger)
@@ -415,7 +418,7 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
     const lotes: unknown[][] = [];
     const upstream = await arrancarUpstreamConBorrado(recibidas, TOKENS_BORRADOS); // 10 + 28,5K ≥ 20K
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     await pedir(
@@ -448,7 +451,7 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
       const lotes: unknown[][] = [];
       const upstream = await arrancarUpstreamConBorrado(recibidas, 0, { edits });
       const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
-      const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+      const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
       await esperarCanal();
 
       const { context_management: _fuera, ...sinCm } = JSON.parse(CUERPO);
@@ -468,7 +471,7 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
     const lotes: unknown[][] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"], lotes });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     await pedir(g.puerto, CUERPO);
@@ -482,19 +485,32 @@ describe("el suelo de la elisión, de punta a punta (B2)", () => {
 });
 
 describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
-  it("con clave: =1 y sin bandera son PALANCA; =0 es CONTROL", () => {
-    expect(describirEstadoDeElision("1", true).linea).toMatch(/ARMADA \(BVSALA_GATEWAY_ELISION=1\).*brazo PALANCA/);
-    expect(describirEstadoDeElision(undefined, true).linea).toMatch(/ARMADA por defecto.*brazo PALANCA/);
-    expect(describirEstadoDeElision("0", true).linea).toMatch(/APAGADA.*brazo CONTROL/);
+  it("la bandera abre el CANAL, no los diales: el cartel ya no dice ARMADA por tener canal (2026-09-09)", () => {
+    // El cartel mentía cada mañana: decía «ARMADA … brazo PALANCA» cuando lo
+    // único abierto era el canal de entitlements. Ahora nombra las dos cosas
+    // por separado, porque de ese canal cuelga la rebaja de TTL (la que gana)
+    // y los diales (la que pierde) tienen bandera propia.
+    expect(describirEstadoDeElision("1", true).linea).toMatch(/canal S4a: ABIERTO \(BVSALA_GATEWAY_ELISION=1\)/);
+    expect(describirEstadoDeElision(undefined, true).linea).toMatch(/canal S4a: ABIERTO por defecto/);
+    expect(describirEstadoDeElision("0", true).linea).toMatch(/canal S4a: CERRADO.*sin rebaja de TTL y sin diales/);
+    // Y jamás vuelve a anunciar la elisión como armada solo por tener canal.
+    expect(describirEstadoDeElision("1", true).linea).toContain("diales de elisión APAGADOS");
     expect(describirEstadoDeElision("1", true).aviso).toBe(false);
   });
 
-  it("⛔ sin clave la palanca NO se arma y, si la bandera decía =1, es un AVISO (la intención no se cumple)", () => {
+  it("los diales armados a mano SE ANUNCIAN y levantan aviso", () => {
+    const armados = describirEstadoDeElision("1", true, true);
+    expect(armados.linea).toMatch(/DIALES DE ELISIÓN ARMADOS A MANO/);
+    expect(armados.linea).toContain("R=4,05");
+    expect(armados.aviso).toBe(true);
+  });
+
+  it("⛔ sin clave el canal NO se abre y, si la bandera decía =1, es un AVISO (la intención no se cumple)", () => {
     const conBandera = describirEstadoDeElision("1", false);
-    expect(conBandera.linea).toMatch(/NO SE ARMA.*falta BIVELIO_SERVICE_KEY.*brazo CONTROL AUNQUE la bandera diga =1/);
+    expect(conBandera.linea).toMatch(/canal S4a: NO SE ABRE.*falta BIVELIO_SERVICE_KEY.*ni rebaja de TTL ni diales/);
     expect(conBandera.aviso).toBe(true);
     const sinBandera = describirEstadoDeElision(undefined, false);
-    expect(sinBandera.linea).toMatch(/NO SE ARMA.*brazo CONTROL$/);
+    expect(sinBandera.linea).toMatch(/canal S4a: NO SE ABRE.*ni rebaja de TTL ni diales$/);
     expect(sinBandera.aviso).toBe(false);
   });
 });
@@ -515,20 +531,52 @@ describe("conBetaDeElision — añade sin pisar", () => {
 });
 
 describe("la palanca de punta a punta", () => {
-  it("ARMADA por defecto (sin pasar elision) cuando la licencia trae context_elision", async () => {
-    // El nuevo default es opt-out: sin bandera, con clave de servicio y el feature en
-    // la licencia, S4a se arma sola. El gate real es el entitlement, no una bandera.
+  it("🔑 apagar B NO apaga A: sin diales, la REBAJA DE TTL sigue ocurriendo (2026-09-09)", async () => {
+    // La mitad que de verdad importa del cambio. Hasta hoy una sola bandera
+    // armaba las dos palancas, así que apagar la que pierde apagaba la que
+    // gana. Este test lo ancla: con el canal abierto, ambos entitlements en la
+    // licencia y `dialesElision` SIN poner, el upstream tiene que recibir el
+    // TTL rebajado a 5m y CERO context_management.
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({
+      features: ["context_elision", "cache_ttl_tuning"],
+    });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test" }); // sin dialesElision
+    await esperarCanal();
+
+    const cuerpo = JSON.stringify({
+      model: "claude-fable-5-1",
+      messages: [{ role: "user", content: "hola" }],
+      system: [{ type: "text", text: "sys", cache_control: { type: "ephemeral", ttl: "1h" } }],
+    });
+    const res = await pedir(g.puerto, cuerpo, { "anthropic-beta": "oauth-2025-04-20" });
+    expect(res.status).toBe(200);
+    const json = JSON.parse(recibidas[0]!.body);
+    // A SIGUE VIVA: el 1h del cliente viaja rebajado a 5m.
+    expect(json.system[0].cache_control.ttl).toBe("5m");
+    // B ESTÁ MUERTA: ni diales ni beta añadida.
+    expect(json.context_management).toBeUndefined();
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe("oauth-2025-04-20");
+  });
+
+  it("APAGADA por defecto aunque la licencia traiga context_elision (2026-09-09)", async () => {
+    // El default se INVIERTE. Hasta hoy los diales se armaban solos con el
+    // entitlement; medida la palanca en pérdida por tres vías independientes
+    // (simulador honesto +49 % de coste, carril sombra en producción, y
+    // R = 4,05 frente a R* = 0,0127 en fable-5-1), ahora hacen falta CUATRO
+    // interruptores y el cuarto se pone a mano: `dialesElision`.
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test" }); // sin elision → default-on
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test" }); // sin dialesElision
     await esperarCanal();
 
     const res = await pedir(g.puerto, CUERPO, { "anthropic-beta": "oauth-2025-04-20" });
     expect(res.status).toBe(200);
-    const json = JSON.parse(recibidas[0]!.body);
-    expect(json.context_management.edits[0].trigger.value).toBe(DIAL_TRIGGER_INPUT_TOKENS);
-    expect(recibidas[0]!.headers["anthropic-beta"]).toBe(`oauth-2025-04-20,${BETA_CONTEXT_MANAGEMENT}`);
+    // El cuerpo viaja INTACTO: ni context_management ni beta añadida.
+    expect(recibidas[0]!.body).toBe(CUERPO);
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe("oauth-2025-04-20");
   });
 
   it("APAGADA con el freno explícito (elision:false, desde BVSALA_GATEWAY_ELISION=0): passthrough aunque haya entitlement", async () => {
@@ -548,7 +596,7 @@ describe("la palanca de punta a punta", () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["semantic_cache"] });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     await pedir(g.puerto, CUERPO);
@@ -560,7 +608,7 @@ describe("la palanca de punta a punta", () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ estado: 500 });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     const res = await pedir(g.puerto, CUERPO);
@@ -568,11 +616,11 @@ describe("la palanca de punta a punta", () => {
     expect(recibidas[0]!.body).toBe(CUERPO);
   });
 
-  it("ENCENDIDA (doble opt-in): el upstream recibe nuestros diales y la beta fusionada", async () => {
+  it("ENCENDIDA (triple opt-in: canal + entitlement + dialesElision): el upstream recibe nuestros diales y la beta fusionada", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     const res = await pedir(g.puerto, CUERPO, { "anthropic-beta": "oauth-2025-04-20" });
@@ -589,7 +637,7 @@ describe("la palanca de punta a punta", () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["context_elision"] });
-    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, dialesElision: true });
     await esperarCanal();
 
     const comprimido = gzipSync(Buffer.from(CUERPO));
