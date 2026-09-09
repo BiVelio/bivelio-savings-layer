@@ -125,11 +125,26 @@ export function envoltorioDe(
   puerto: number,
   resto: string[],
   opts: { modoCodex?: ModoAuthCodex } = {},
+  /** Entorno del usuario (solo se LEE; nunca se imprime). Inyectable en tests. */
+  entorno: Record<string, string | undefined> = process.env,
 ): Envoltorio {
   const base = `http://127.0.0.1:${puerto}`;
   switch (comando) {
     case "claude":
-      return { bin: "claude", args: resto, env: { ANTHROPIC_BASE_URL: base } };
+      // Con un ANTHROPIC_BASE_URL que no es api.anthropic.com, Claude Code APAGA por
+      // defecto la búsqueda de herramientas y manda TODAS las definiciones (MCP incluidas)
+      // en el prefijo de cada petición (doc oficial env-vars: «When set to a non-first-party
+      // host, MCP tool search is disabled by default. Set ENABLE_TOOL_SEARCH=true if your
+      // proxy forwards tool_reference blocks»). Este gateway reenvía anthropic-beta y los
+      // bloques tool_reference intactos (servidor.ts), así que la activamos por defecto.
+      // Medido el 2026-09-09 en el corpus del dueño: 253 tools = 450 KB por petición, el
+      // 66 % de los bytes y el 25 % de la factura sombra del día. Si el usuario ya fijó
+      // ENABLE_TOOL_SEARCH (true/false/auto/auto:N), se respeta tal cual.
+      return {
+        bin: "claude",
+        args: resto,
+        env: { ANTHROPIC_BASE_URL: base, ENABLE_TOOL_SEARCH: entorno.ENABLE_TOOL_SEARCH ?? "true" },
+      };
     case "goose":
       return { bin: "goose", args: resto, env: { ANTHROPIC_HOST: base } };
     case "qwen":

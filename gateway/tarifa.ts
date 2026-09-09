@@ -111,6 +111,20 @@ function serieDe(nodo: unknown): string {
   return nodo === undefined ? "" : (JSON.stringify(nodo, sinMarcas) ?? "");
 }
 
+/**
+ * Las herramientas DIFERIDAS (`defer_loading: true`, búsqueda de herramientas de
+ * Claude Code) no forman parte del prefijo cacheado: el proveedor las carga en la
+ * posición del bloque `tool_reference` que las trajo, DESPUÉS del prefijo. Medido
+ * el 2026-09-09: al añadirse WebFetch diferida a `tools`, el turno siguiente leyó
+ * de caché el 100 % del prefijo anterior (35.677 = 13.418 + 22.259). Si entraran
+ * en la huella, cada carga diferida parecería «prefijo roto» y la rebaja de TTL
+ * se decidiría sobre una premisa falsa.
+ */
+function sinDiferidas(tools: unknown): unknown {
+  if (!Array.isArray(tools)) return tools;
+  return tools.filter((t) => !(t !== null && typeof t === "object" && (t as { defer_loading?: unknown }).defer_loading === true));
+}
+
 function hashDe(serie: string): string {
   return createHash("sha1").update(serie).digest("base64url").slice(0, 16);
 }
@@ -135,7 +149,7 @@ export function parsearMensajes(cuerpo: Buffer, codificacion?: string): Record<s
 /** La huella de un cuerpo ya parseado. Pura. */
 export function huellaDe(json: Record<string, unknown>): Huella {
   const sistema = serieDe(json.system);
-  const herramientas = serieDe(json.tools);
+  const herramientas = serieDe(sinDiferidas(json.tools));
   const lista = Array.isArray(json.messages) ? json.messages.slice(0, MAX_MENSAJES_EN_HUELLA) : [];
   const mensajes: string[] = [];
   const bytes: number[] = [];
