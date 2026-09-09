@@ -8,12 +8,28 @@ import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWi
  * Codex se decide sin tocar jamás un valor de credencial.
  */
 describe("envoltorioDe — la forma exacta del base URL por terminal", () => {
+  it("claude: activa la búsqueda de herramientas por defecto y respeta lo que ya fijó el usuario", () => {
+    // Sin la variable, Claude Code la apaga al ver un base URL ajeno y manda todas las
+    // definiciones de herramientas en cada petición: el envoltorio la enciende.
+    expect(envoltorioDe("claude", 8402, [], {}, {}).env.ENABLE_TOOL_SEARCH).toBe("true");
+    // El usuario puede apagarla o afinarla; el envoltorio nunca pisa su valor.
+    for (const v of ["false", "auto", "auto:5"]) {
+      expect(envoltorioDe("claude", 8402, [], {}, { ENABLE_TOOL_SEARCH: v }).env.ENABLE_TOOL_SEARCH).toBe(v);
+    }
+    // Solo claude: goose y qwen no leen esa variable.
+    expect(envoltorioDe("goose", 8402, [], {}, {}).env).not.toHaveProperty("ENABLE_TOOL_SEARCH");
+    expect(envoltorioDe("qwen", 8402, [], {}, {}).env).not.toHaveProperty("ENABLE_TOOL_SEARCH");
+  });
+
   it("claude, goose y qwen: base URL SIN /v1 y sin barra final, por la variable de cada uno", () => {
-    expect(envoltorioDe("claude", 8402, ["-p", "hola"]).env).toEqual({ ANTHROPIC_BASE_URL: "http://127.0.0.1:8402" });
+    expect(envoltorioDe("claude", 8402, ["-p", "hola"], {}, {}).env).toEqual({
+      ANTHROPIC_BASE_URL: "http://127.0.0.1:8402",
+      ENABLE_TOOL_SEARCH: "true",
+    });
     expect(envoltorioDe("goose", 8402, ["session"]).env).toEqual({ ANTHROPIC_HOST: "http://127.0.0.1:8402" });
     expect(envoltorioDe("qwen", 8402, []).env).toEqual({ ANTHROPIC_BASE_URL: "http://127.0.0.1:8402" });
     for (const t of ["claude", "goose", "qwen"] as const) {
-      const e = envoltorioDe(t, 8402, ["x"]);
+      const e = envoltorioDe(t, 8402, ["x"], {}, {});
       expect(e.bin).toBe(t);
       expect(e.args).toEqual(["x"]); // los args del usuario pasan intactos
       expect(e.upstream).toBeUndefined(); // dialecto Anthropic: upstream por defecto

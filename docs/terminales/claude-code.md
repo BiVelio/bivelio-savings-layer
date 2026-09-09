@@ -35,10 +35,20 @@ terminales a la vez):
 
 ```bash
 bvsala gateway                                       # ventana 1: http://127.0.0.1:8402
-ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude      # ventana 2 — SIN /v1
+ENABLE_TOOL_SEARCH=true ANTHROPIC_BASE_URL=http://127.0.0.1:8402 claude   # ventana 2 — SIN /v1
 ```
 
 Claude Code añade `/v1/messages` por su cuenta. Sin barra final.
+
+**`ENABLE_TOOL_SEARCH=true` no es opcional.** Al ver un `ANTHROPIC_BASE_URL`
+que no es el oficial, Claude Code apaga por defecto la búsqueda de herramientas
+y mete TODAS las definiciones (las de tus servidores MCP incluidas) en el
+prefijo cacheado de cada petición. Medido el 2026-09-09 en un montaje con 226
+herramientas MCP: 450 KB por petición, el 66 % de los bytes y el 25 % de la
+factura del día. El gateway reenvía la beta y los bloques `tool_reference`
+intactos, así que la búsqueda funciona a través de él. `bvsala claude` la
+activa solo; si ya tienes la variable fijada (`false`, `auto`, `auto:N`), se
+respeta tu valor.
 
 ## Comprobar que funciona
 

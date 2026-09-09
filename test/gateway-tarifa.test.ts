@@ -265,3 +265,35 @@ describe("la costura entre las dos palancas", () => {
     expect(rebajarTtlDeCache(cuerpoDe(PETICION), "gzip")).toBeNull();
   });
 });
+
+describe("herramientas diferidas (búsqueda de herramientas de Claude Code)", () => {
+  const base = { name: "Bash", description: "shell", input_schema: { type: "object", properties: {} } };
+  // Prefijo realista: en una sesión de Claude Code el historial pesa decenas de KB;
+  // el tool_result que trae la herramienta diferida es una fracción mínima.
+  const mensajes = [
+    { role: "user", content: [{ type: "text", text: "lee example.com ".repeat(2_000) }] },
+    { role: "assistant", content: [{ type: "tool_use", id: "t1", name: "ToolSearch", input: { query: "select:WebFetch" } }] },
+  ];
+  const antes = huellaDe({ model: "m", tools: [base], messages: mensajes });
+
+  it("una herramienta con defer_loading:true añadida a tools NO rompe el prefijo", () => {
+    const diferida = { name: "WebFetch", description: "fetch", input_schema: { type: "object", properties: {} }, defer_loading: true };
+    const despues = huellaDe({
+      model: "m",
+      tools: [base, diferida],
+      messages: [...mensajes, { role: "user", content: [{ type: "tool_result", tool_use_id: "t1", content: [{ type: "tool_reference", tool_name: "WebFetch" }] }] }],
+    });
+    expect(despues.tools).toBe(antes.tools);
+    const f = fraccionNueva(antes, despues);
+    expect(f).toBeGreaterThan(0);
+    expect(f).toBeLessThan(0.5); // solo el mensaje nuevo es nuevo
+    expect(decidirRebaja({ fraccionNueva: f })).toBe(false);
+  });
+
+  it("una herramienta NO diferida añadida a tools sí rompe el prefijo (como hasta ahora)", () => {
+    const normal = { name: "WebFetch", description: "fetch", input_schema: { type: "object", properties: {} } };
+    const despues = huellaDe({ model: "m", tools: [base, normal], messages: mensajes });
+    expect(despues.tools).not.toBe(antes.tools);
+    expect(fraccionNueva(antes, despues)).toBe(1);
+  });
+});
