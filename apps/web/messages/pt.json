@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1%",
+          "cifra": "≥ 15,0%",
           "que": "menos fatura, verificado a 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "menos custo com cache de prefixo"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Sem promessas: medições",
-      "title": "Como sabemos que poupa? Medimos — e você pode repetir a medição.",
+      "title": "Como sabemos que poupa? Medimos — e publicamos cada ensaio, um a um.",
       "body": "Cada cenário corre duas vezes contra o fornecedor real: tal como está, e com o Savings à frente. Os dois resultados são contados com o contador do próprio fornecedor — o mesmo que dá preço à sua fatura. Foi isto que saiu, com a sua margem de erro:",
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
       "plain": "Neste teste, a fatura baixou quase de certeza pelo menos {piso}. O mais provável é que tenha baixado {punto}.",
-      "plainNote": "Quando há um intervalo, anunciamos sempre o número pequeno — o que a estatística garante —, nunca o bonito."
+      "plainNote": "Quando há um intervalo, anunciamos sempre o número pequeno — o que a estatística garante —, nunca o bonito.",
+      "trialsLink": "Descarregar os ensaios em bruto (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Medido · cache de prefixo da Anthropic",

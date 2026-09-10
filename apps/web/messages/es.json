@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1 %",
+          "cifra": "≥ 15,0 %",
           "que": "menos factura, verificado al 95 %"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78 %",
-          "que": "menos coste con caché de prefijo"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Sin promesas: mediciones",
-      "title": "¿Cómo sabemos que ahorra? Lo medimos — y tú puedes repetir la medición.",
+      "title": "¿Cómo sabemos que ahorra? Lo medimos — y publicamos los ensayos, uno por uno.",
       "body": "Cada escenario se ejecuta dos veces contra el proveedor real: tal cual, y con Savings delante. Los dos resultados se cuentan con el contador del propio proveedor — el mismo que pone el precio en tu factura. Esto es lo que salió, con su margen de error:",
       "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings y con Savings — y el mismo contador del proveedor midiendo las dos.",
       "plainTitle": "Traducción, sin jerga",
       "plain": "En esta prueba, la factura bajó con casi total seguridad al menos un {piso}. Lo más probable es que bajara un {punto}.",
-      "plainNote": "Cuando hay una horquilla, anunciamos siempre el número pequeño — el que la estadística garantiza —, nunca el bonito."
+      "plainNote": "Cuando hay una horquilla, anunciamos siempre el número pequeño — el que la estadística garantiza —, nunca el bonito.",
+      "trialsLink": "Descargar los ensayos crudos (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Medido · caché de prefijo de Anthropic",

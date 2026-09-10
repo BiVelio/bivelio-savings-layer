@@ -44,7 +44,7 @@ goes straight from your app to your provider; the SDK is never a middleman serve
 ## Where it installs
 
 <p align="center">
-  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. The bill drops from $330 to $160 a month, measured." width="720">
+  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. On a $100 monthly bill, the measured floor of the published benchmark leaves $84." width="720">
 </p>
 
 Your application → **BV‑SALA** → provider API. Traffic always goes straight from

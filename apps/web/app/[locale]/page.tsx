@@ -296,6 +296,19 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 code: (c) => <code>{c}</code>,
               })}
             </p>
+            {/* EL FICHERO DE ENSAYOS CRUDOS, ENLAZADO DE VERDAD.
+                `ab:publish` lleva copiando `ab-live-trials.csv` a `public/data`
+                desde que existe, y NADIE lo enlazaba: el titular decía «puedes
+                repetir la medición» y no había por dónde empezar. Repetir el
+                banco sigue sin poder hacerlo un cliente (el repo es privado y
+                los bancos no viajan en el paquete de npm), pero comprobar la
+                aritmética de cada pareja sí — y eso es lo que ahora promete la
+                frase de arriba. */}
+            <p className="sec-head-link">
+              <a href="/data/ab-live-trials.csv" download>
+                {t("step2.trialsLink")}
+              </a>
+            </p>
           </div>
           {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
               del experimento justo + las dos cifras del artefacto dichas en

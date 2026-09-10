@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1%",
+          "cifra": "≥ 15,0%",
           "que": "minder factuur, geverifieerd op 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "minder kosten met prefix-cache"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Geen beloftes: metingen",
-      "title": "Hoe weten we dat het bespaart? We meten het — en jij kunt de meting herhalen.",
+      "title": "Hoe weten we dat het bespaart? We meten het — en we publiceren elke proef, stuk voor stuk.",
       "body": "Elk scenario draait twee keer tegen de echte aanbieder: zoals het is, en met Savings ervoor. Beide resultaten worden geteld met de teller van de aanbieder zelf — dezelfde die je factuur prijst. Dit kwam eruit, inclusief foutmarge:",
       "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
       "plainTitle": "Vertaling, zonder jargon",
       "plain": "In deze test daalde de factuur vrijwel zeker met minstens {piso}. Waarschijnlijk daalde hij met {punto}.",
-      "plainNote": "Bij een marge noemen we altijd het kleine getal — het getal dat de statistiek garandeert — nooit het mooiste."
+      "plainNote": "Bij een marge noemen we altijd het kleine getal — het getal dat de statistiek garandeert — nooit het mooiste.",
+      "trialsLink": "Download de ruwe proeven (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Gemeten · prefix-cache van Anthropic",

@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1%",
+          "cifra": "≥ 15,0%",
           "que": "hóa đơn thấp hơn, đã xác minh ở mức 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "chi phí thấp hơn nhờ bộ nhớ đệm tiền tố"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Không hứa hẹn: đo lường",
-      "title": "Làm sao chúng tôi biết nó tiết kiệm? Chúng tôi đo — và bạn có thể lặp lại phép đo.",
+      "title": "Làm sao chúng tôi biết nó tiết kiệm? Chúng tôi đo — và chúng tôi công bố từng lượt thử một.",
       "body": "Mỗi kịch bản chạy hai lần với nhà cung cấp thật: nguyên trạng, và có Savings đứng trước. Cả hai kết quả được đếm bằng chính bộ đếm của nhà cung cấp — bộ đếm định giá hóa đơn của bạn. Đây là kết quả, kèm biên độ sai số:",
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
       "plain": "Trong bài kiểm tra này, hóa đơn gần như chắc chắn giảm ít nhất {piso}. Nhiều khả năng nhất là giảm {punto}.",
-      "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp."
+      "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp.",
+      "trialsLink": "Tải dữ liệu thử nghiệm thô (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Đã đo · bộ nhớ đệm tiền tố của Anthropic",

@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1 %",
+          "cifra": "≥ 15,0 %",
           "que": "weniger Rechnung, zu 95 % verifiziert"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78 %",
-          "que": "weniger Kosten mit Prefix-Cache"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Keine Versprechen: Messungen",
-      "title": "Woher wissen wir, dass es spart? Wir messen es — und du kannst die Messung wiederholen.",
+      "title": "Woher wissen wir, dass es spart? Wir messen es — und wir veröffentlichen jeden einzelnen Versuch.",
       "body": "Jedes Szenario läuft zweimal gegen den echten Anbieter: unverändert und mit Savings davor. Beide Ergebnisse werden mit dem Zähler des Anbieters selbst gezählt — demselben, der deine Rechnung bepreist. Das kam heraus, samt Fehlermarge:",
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
       "plain": "In diesem Test sank die Rechnung mit an Sicherheit grenzender Wahrscheinlichkeit um mindestens {piso}. Am wahrscheinlichsten sank sie um {punto}.",
-      "plainNote": "Gibt es eine Spanne, verkünden wir immer die kleine Zahl — die, die die Statistik garantiert —, nie die schöne."
+      "plainNote": "Gibt es eine Spanne, verkünden wir immer die kleine Zahl — die, die die Statistik garantiert —, nie die schöne.",
+      "trialsLink": "Rohdaten der Versuche herunterladen (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Gemessen · Prefix-Cache von Anthropic",

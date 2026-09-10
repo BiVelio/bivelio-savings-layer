@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1 %",
+          "cifra": "≥ 15,0 %",
           "que": "de facture en moins, vérifié à 95 %"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78 %",
-          "que": "de coût en moins avec le cache de préfixe"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Pas de promesses : des mesures",
-      "title": "Comment savons-nous que ça économise ? Nous le mesurons — et vous pouvez répéter la mesure.",
+      "title": "Comment savons-nous que ça économise ? Nous le mesurons — et nous publions chaque essai, un par un.",
       "body": "Chaque scénario s'exécute deux fois contre le vrai fournisseur : tel quel, puis avec Savings devant. Les deux résultats sont comptés avec le compteur du fournisseur lui-même — celui qui fixe le prix de votre facture. Voici ce qui en est sorti, marge d'erreur comprise :",
       "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
       "plainTitle": "Traduction, sans jargon",
       "plain": "Dans ce test, la facture a baissé avec une quasi-certitude d'au moins {piso}. Le plus probable est qu'elle ait baissé de {punto}.",
-      "plainNote": "Quand il y a une fourchette, nous annonçons toujours le petit chiffre — celui que la statistique garantit —, jamais le plus flatteur."
+      "plainNote": "Quand il y a une fourchette, nous annonçons toujours le petit chiffre — celui que la statistique garantit —, jamais le plus flatteur.",
+      "trialsLink": "Télécharger les essais bruts (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Mesuré · cache de préfixe d'Anthropic",

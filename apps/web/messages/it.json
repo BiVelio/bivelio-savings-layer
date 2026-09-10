@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1%",
+          "cifra": "≥ 15,0%",
           "que": "di fattura in meno, verificato al 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "di costo in meno con la cache di prefisso"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Niente promesse: misurazioni",
-      "title": "Come sappiamo che fa risparmiare? Lo misuriamo — e tu puoi ripetere la misurazione.",
+      "title": "Come sappiamo che fa risparmiare? Lo misuriamo — e pubblichiamo ogni prova, una per una.",
       "body": "Ogni scenario viene eseguito due volte contro il fornitore reale: così com'è, e con Savings davanti. Entrambi i risultati si contano con il contatore del fornitore stesso — lo stesso che dà il prezzo alla tua fattura. Ecco cosa è uscito, con il suo margine di errore:",
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
       "plain": "In questo test la fattura è scesa quasi con certezza di almeno {piso}. Molto probabilmente è scesa del {punto}.",
-      "plainNote": "Quando c'è una forchetta, annunciamo sempre il numero piccolo — quello che la statistica garantisce —, mai quello lusinghiero."
+      "plainNote": "Quando c'è una forchetta, annunciamo sempre il numero piccolo — quello che la statistica garantisce —, mai quello lusinghiero.",
+      "trialsLink": "Scarica le prove grezze (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Misurato · cache di prefisso di Anthropic",

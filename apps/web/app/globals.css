@@ -1129,6 +1129,10 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 /* 20 / 20 / 56 — el ritmo exacto del bloque de cabecera de bivelio.com. El
    margen superior del titular es el que lo separa del eyebrow. */
 .lp .sec-head { max-width: 62ch; margin-bottom: 56px; }
+/* El enlace a los ensayos crudos, bajo el cuerpo de la sección medida. Hereda
+   el estilo de enlace de `.sec-head p a` (regla de arriba) y solo separa un
+   poco: no es una llamada a la acción, es una nota al pie con dientes. */
+.lp .sec-head .sec-head-link { margin-top: 14px; font-size: .95rem; }
 .lp .sec-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1.08; letter-spacing: -.03em; margin: 20px 0; font-weight: 600; text-wrap: balance; }
 .lp .sec-head p { color: var(--ink-soft); margin: 0; font-size: 16px; }
 .lp .sec-head code { font-family: var(--mono); font-size: .92em; }
