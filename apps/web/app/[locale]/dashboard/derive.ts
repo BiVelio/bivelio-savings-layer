@@ -66,26 +66,49 @@ export function elegirLicencia(
   return conEstado.find((x) => x.status === "revoked") ?? conEstado[0];
 }
 
-/** Lo que el titular de ahorro puede decir con lo que de verdad se ha medido. */
+/**
+ * Lo que el titular de ahorro puede decir.
+ *
+ * LA JERARQUÍA SE INVIRTIÓ EL 2026-09-10, y ese es el arreglo. Hasta entonces el
+ * campo grande era el TOTAL —medido más estimado más sin medir— y lo medido
+ * colgaba de un campo opcional. Encima de ese total el panel escribía «Tu ahorro
+ * · medido», que es falso por construcción: dos de los tres sumandos no están
+ * medidos. Es el mismo fallo que la portada tenía con su titular, y se arregló
+ * el mismo día.
+ *
+ * Ahora el titular ES lo medido: la parte reconstruida desde el contador del
+ * proveedor, la única que el cliente puede cotejar con su factura. El total pasa
+ * a `total`, como contexto, y solo cuando difiere de lo medido — si todo el
+ * tráfico está medido no hay nada que añadir y vale `null`.
+ *
+ * El momento se eligió a propósito: hoy las dos cifras coinciden al céntimo
+ * ($50,905003, el 1,1756 %) porque todo el tráfico entra por el gateway y el
+ * gateway nunca degrada a estimado (no quita tokens, cambia precios). Arreglar
+ * el rótulo cuando el número no se mueve evita que el primer cliente del SDK vea
+ * caer su titular sin que nada se lo explique.
+ */
 export type Verdict =
-  | { kind: "empty" }                          // no hay tráfico medido
+  | { kind: "empty" }                          // no hay tráfico
   | { kind: "unpriced" }                       // hay tráfico, pero sin baseline con el que comparar
   | {
+      /** Hay baseline pero NADA medido: el titular no puede caer al total. */
+      kind: "sin_medir";
+      requests: number;
+    }
+  | {
       kind: "measured";
+      /** LO MEDIDO. Comprobable contra la factura del proveedor. Es el titular. */
       net: number;
       saved: number;
       tone: "pos" | "neg";
+      /** Qué fracción de las peticiones está medida (1 = todas). */
+      share: number;
       /**
-       * La parte COMPROBABLE contra la factura del proveedor: solo peticiones
-       * cuyo baseline se reconstruyó desde su contador (basis "measured"). El
-       * resto son llamadas evitadas, donde el baseline es necesariamente
-       * estimado porque la llamada nunca ocurrió.
-       *
-       * `null` cuando no hay ninguna medida. Se expone aparte a propósito: el
-       * titular mezclaba las dos y enseñaba, por ejemplo, un 80% cuando lo
-       * verificable era un 40%.
+       * El TOTAL, que incluye lo estimado y lo no medido. Contexto, jamás el
+       * titular. `null` cuando coincide con lo medido, o sea cuando no hay nada
+       * extra que contar.
        */
-      measured: { net: number; saved: number; share: number } | null;
+      total: { net: number; saved: number } | null;
     };
 
 export interface FilaUso {
@@ -255,14 +278,21 @@ export function deriveVerdict(usage: FilaUso[]): Verdict {
   const peticiones = suma((r) => r.requests);
   const mReq = suma((r) => r.measuredRequests ?? 0);
 
+  // Sin nada medido el titular NO cae al total: eso es justo lo que se arregla.
+  if (!(mBase > 0)) return { kind: "sin_medir", requests: peticiones };
+
+  const mNet = 1 - mAct / mBase;
+  const share = peticiones > 0 ? mReq / peticiones : 0;
+  // El total solo se cuenta si aporta algo. Con todo medido, repetirlo sería
+  // ruido; y una diferencia de céntimos por redondeo tampoco es información.
+  const difiere = Math.abs(net - mNet) > 1e-9 || share < 1;
+
   return {
     kind: "measured",
-    net,
-    saved: baseline - actual,
-    tone: net < 0 ? "neg" : "pos",
-    measured:
-      mBase > 0
-        ? { net: 1 - mAct / mBase, saved: mBase - mAct, share: peticiones > 0 ? mReq / peticiones : 0 }
-        : null,
+    net: mNet,
+    saved: mBase - mAct,
+    tone: mNet < 0 ? "neg" : "pos",
+    share,
+    total: difiere ? { net, saved: baseline - actual } : null,
   };
 }

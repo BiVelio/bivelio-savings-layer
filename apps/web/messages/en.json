@@ -110,8 +110,9 @@
       "intro": "One account across the BiVelio suite."
     },
     "verdictHero": {
-      "eyebrow": "Your savings · metered by the SDK",
-      "measuredSplit": "Of which {pct} is measured against your provider’s own token counts ({share} of requests). The rest is from avoided calls, where no provider count exists.",
+      "eyebrow": "Your savings · measured against your bill",
+      "totalSplit": "The total, including the estimated part, is {pct}. Only {share} of requests carry a provider counter to check it against.",
+      "unmeasuredCap": "We see {count} priced requests, but none can be checked against your provider's counter yet. As soon as the first one arrives, your measured savings will appear here.",
       "savedLine": "of your LLM spend kept this period · <b>{money}</b> saved (baseline − actual, at your prices).",
       "emptyCap": "Not measuring your traffic yet — 0 requests seen. Install the SDK and your net savings appears here — your prices, your workload. Never a borrowed or fabricated number.",
       "errorCap": "We couldn't read your usage right now — this is a temporary error on our side, not lost data. Your reports are safe; refresh in a moment.",

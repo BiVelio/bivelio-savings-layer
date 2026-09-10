@@ -110,8 +110,9 @@
       "intro": "Jedno konto w całym pakiecie BiVelio."
     },
     "verdictHero": {
-      "eyebrow": "Twoje oszczędności · mierzone przez SDK",
-      "measuredSplit": "Z czego {pct} jest zmierzone względem liczników tokenów Twojego dostawcy ({share} zapytań). Reszta pochodzi z uniknietych wywołań, gdzie licznik nie istnieje.",
+      "eyebrow": "Twoja oszczędność · zmierzona względem Twojego rachunku",
+      "totalSplit": "Łącznie, wliczając część szacowaną, wychodzi {pct}. Tylko {share} zapytań ma licznik dostawcy, którym można to sprawdzić.",
+      "unmeasuredCap": "Widzimy {count} wycenionych zapytań, ale żadnego nie da się jeszcze sprawdzić licznikiem Twojego dostawcy. Gdy pojawi się pierwsze, zobaczysz tu swoją zmierzoną oszczędność.",
       "savedLine": "Twoich wydatków na LLM zatrzymanych w tym okresie · <b>{money}</b> zaoszczędzone (linia bazowa − rzeczywiste, w Twoich cenach).",
       "emptyCap": "Jeszcze nie mierzymy Twojego ruchu — 0 zaobserwowanych żądań. Zainstaluj SDK, a Twoje oszczędności netto pojawią się tutaj — Twoje ceny, Twoje obciążenie. Nigdy zapożyczona ani zmyślona liczba.",
       "errorCap": "Nie udało się teraz odczytać Twojego zużycia — to chwilowy błąd po naszej stronie, nie utracone dane. Twoje raporty są bezpieczne; odśwież za chwilę.",
