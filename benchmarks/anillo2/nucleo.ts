@@ -94,13 +94,28 @@ export interface SesionAuditada {
   limpia: boolean;
   dias: string[];
   turnos: number;
+  /** true si la sesión se sirvió ANTES del corte: se sirvió bajo el protocolo
+   *  de paridad de días, así que compararla con el hash no significa nada. */
+  protocoloAnterior: boolean;
 }
 
-export function auditarPorSesion(turnos: TurnoAnillo2[]): {
+/**
+ * El día en que la asignación pasó a ser por sesión. Todo lo anterior se
+ * recogió bajo la paridad del día: auditarlo contra el hash marcaría como
+ * fisura CADA sesión del corpus histórico y enterraría las de verdad en ruido.
+ */
+export const CORTE_PROTOCOLO_SESION = "2026-09-10";
+
+export function auditarPorSesion(
+  turnos: TurnoAnillo2[],
+  desde: string = CORTE_PROTOCOLO_SESION,
+): {
   protocolo: string;
+  desde: string;
   sesiones: SesionAuditada[];
   fisuras: string[];
   reparto: { control: number; palanca: number };
+  omitidasPorProtocoloAnterior: number;
 } {
   const porSesion = new Map<string, { control: number; palanca: number; dias: Set<string> }>();
   for (const t of turnos) {
@@ -111,21 +126,36 @@ export function auditarPorSesion(turnos: TurnoAnillo2[]): {
   const sesiones: SesionAuditada[] = [];
   const fisuras: string[] = [];
   const reparto = { control: 0, palanca: 0 };
+  let omitidasPorProtocoloAnterior = 0;
   for (const [sesion, a] of [...porSesion.entries()].sort(([x], [y]) => (x < y ? -1 : 1))) {
     const asignado = brazoDeSesion(sesion);
     const turnosTotales = a.control + a.palanca;
+    const dias = [...a.dias].sort();
+    // Una sesión pertenece al protocolo nuevo si su ÚLTIMO día llega al corte:
+    // la que cruza el corte se sirvió con el brazo viejo casi entera, así que
+    // se mide con el criterio nuevo desde el primer día en que ya aplicaba.
+    const protocoloAnterior = (dias[dias.length - 1] ?? "") < desde;
     // Limpia = todos los turnos de la sesión en el brazo que le tocaba.
     const limpia = a[asignado] === turnosTotales;
-    reparto[asignado] += turnosTotales;
-    sesiones.push({ sesion, asignado, observado: { control: a.control, palanca: a.palanca }, limpia, dias: [...a.dias].sort(), turnos: turnosTotales });
-    if (!limpia) {
+    if (protocoloAnterior) omitidasPorProtocoloAnterior += 1;
+    else reparto[asignado] += turnosTotales;
+    sesiones.push({
+      sesion,
+      asignado,
+      observado: { control: a.control, palanca: a.palanca },
+      limpia,
+      dias,
+      turnos: turnosTotales,
+      protocoloAnterior,
+    });
+    if (!limpia && !protocoloAnterior) {
       fisuras.push(
         `sesión ${sesion}: asignada a ${asignado} pero sirvió ${a.control} turnos de control y ${a.palanca} de palanca` +
-          (a.dias.size > 1 ? ` (cruza ${a.dias.size} días: ${[...a.dias].sort().join(", ")})` : ""),
+          (a.dias.size > 1 ? ` (cruza ${a.dias.size} días: ${dias.join(", ")})` : ""),
       );
     }
   }
-  return { protocolo: PROTOCOLO_SESION, sesiones, fisuras, reparto };
+  return { protocolo: PROTOCOLO_SESION, desde, sesiones, fisuras, reparto, omitidasPorProtocoloAnterior };
 }
 
 export function brazoEsperado(dia: string): Brazo {
