@@ -21,8 +21,12 @@ import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } fro
  *  1. La VERJA DE PRECIOS lee el catálogo, nunca cifras tecleadas: si Anthropic
  *     cambia la tarifa de 5.1 y alguien actualiza catalogo.ts, este fichero
  *     ROMPE en CI y obliga a revalidar el par antes de seguir cobrándolo.
- *  2. La reescritura toca SOLO `model`; ids con fecha heredan el par, ids con
- *     `[1m]` o desconocidos viajan intactos; idempotente sobre el hermano.
+ *  2. La reescritura toca SOLO `model` y solo el alias exacto; ids con fecha
+ *     (pin del cliente), con prefijo de proveedor, con `[1m]` o desconocidos
+ *     viajan intactos; idempotente sobre el hermano. `tool_choice` forzado
+ *     (any/tool, 400 en 5.1) también pasa intacto.
+ *  2b. Un 400 del upstream tras la reescritura se REINTENTA una vez con el
+ *     cuerpo y las cabeceras originales, y se mide lo que viajó.
  *  3. APAGADA por defecto y doble opt-in (bandera local + feature en la
  *     licencia); fail-closed por el mismo canal que S4a y A.
  *  4. Contabilidad: baseline al precio del SOLICITADO, actual al SERVIDO,
@@ -72,9 +76,9 @@ describe("la verja de precios del par (contra el catálogo, nunca tecleada)", ()
 });
 
 describe("hermanoDe — por clave de catálogo, con la duda hacia el passthrough", () => {
-  it("fable-5 → fable-5-1, y la instantánea con fecha hereda el par", () => {
+  it("fable-5 → fable-5-1; la instantánea con fecha es un pin del cliente y NO se toca", () => {
     expect(hermanoDe(SOLICITADO)).toEqual({ solicitado: SOLICITADO, servido: SERVIDO });
-    expect(hermanoDe("claude-fable-5-20260401")).toEqual({ solicitado: "claude-fable-5-20260401", servido: SERVIDO });
+    expect(hermanoDe("claude-fable-5-20260401")).toBeNull();
   });
 
   it("es idempotente: el hermano y sus instantáneas no se tocan", () => {
@@ -82,8 +86,8 @@ describe("hermanoDe — por clave de catálogo, con la duda hacia el passthrough
     expect(hermanoDe("claude-fable-5-1-20260901")).toBeNull();
   });
 
-  it("el prefijo de proveedor se desnuda y SÍ mapea", () => {
-    expect(hermanoDe("anthropic/claude-fable-5")?.servido).toBe(SERVIDO);
+  it("el prefijo de proveedor NO mapea: la reescritura lo perdería y el upstream vería otro id", () => {
+    expect(hermanoDe("anthropic/claude-fable-5")).toBeNull();
   });
 
   it("ids con [1m], otros modelos y vacíos → null", () => {
@@ -119,6 +123,15 @@ describe("reescribirModelo — solo `model`, determinista", () => {
     expect(reescribirModelo(cuerpoDe({ ...PETICION, model: "claude-opus-4-8" }))).toBeNull();
     expect(reescribirModelo(cuerpoDe({ ...PETICION, model: SERVIDO }))).toBeNull();
     expect(reescribirModelo(cuerpoDe({ ...PETICION, model: "claude-fable-5[1m]" }))).toBeNull();
+  });
+
+  it("null si la petición fuerza herramienta (`tool_choice` any/tool: 5.1 devuelve 400 donde 5 respondía)", () => {
+    for (const tc of [{ type: "any" }, { type: "tool", name: "leer" }]) {
+      expect(reescribirModelo(cuerpoDe({ ...PETICION, tool_choice: tc }))).toBeNull();
+    }
+    for (const tc of [{ type: "auto" }, { type: "none" }]) {
+      expect(reescribirModelo(cuerpoDe({ ...PETICION, tool_choice: tc }))).not.toBeNull();
+    }
   });
 
   it("null si la petición trae la beta de contexto 1M (sin validar en mano, no se toca)", () => {
@@ -237,6 +250,9 @@ const SSE = [
   "event: message_stop\ndata: {}\n\n",
 ].join("");
 
+/** El mismo SSE, pero declarando el modelo SOLICITADO (lo que sirve el reintento). */
+const SSE_SOLICITADO = SSE.replaceAll(SERVIDO, SOLICITADO);
+
 let recursos: (Server | GatewayArrancado)[] = [];
 afterEach(async () => {
   for (const r of recursos) {
@@ -266,6 +282,37 @@ function arrancarUpstreamFalso(recibidas: Recibida[]): Promise<number> {
       }
       res.writeHead(200, { "content-type": "text/event-stream" });
       res.end(SSE);
+    });
+    recursos.push(s);
+    s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
+  });
+}
+
+/**
+ * Upstream que devuelve 400 a CUALQUIER petición que pida el modelo servido
+ * (fable-5-1) y 200 al resto: la forma de un rechazo causado por la propia
+ * reescritura (thinking firmado por otro modelo, `tool_choice` forzado…).
+ */
+function arrancarUpstreamQueRechazaAlHermano(recibidas: Recibida[]): Promise<number> {
+  return new Promise((resolve) => {
+    const s = createServer(async (req, res) => {
+      const chunks: Buffer[] = [];
+      for await (const c of req) chunks.push(c as Buffer);
+      const body = Buffer.concat(chunks).toString("utf8");
+      recibidas.push({ path: req.url ?? "", headers: { ...req.headers }, body });
+      let model = "";
+      try {
+        model = (JSON.parse(body) as { model?: string }).model ?? "";
+      } catch {
+        /* cuerpo no JSON: se trata como aceptable */
+      }
+      if (model === SERVIDO) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ type: "error", error: { type: "invalid_request_error", message: "unsupported" } }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "text/event-stream" });
+      res.end(SSE_SOLICITADO);
     });
     recursos.push(s);
     s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
@@ -476,5 +523,57 @@ describe("palanca C de punta a punta", () => {
     const json = JSON.parse(recibidas[0]!.body);
     expect(json.model).toBe(SERVIDO);
     expect(json.context_management.edits.some((e: { trigger?: unknown }) => e.trigger !== undefined)).toBe(true);
+  });
+
+  it("REINTENTO INTACTO: un 400 tras la reescritura reenvía el cuerpo original y el cliente ve el 200", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamQueRechazaAlHermano(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["sibling_model_routing"] });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, modeloHermano: true });
+    await esperarCanal();
+
+    const res = await pedir(g.puerto, CUERPO);
+    expect(res.status).toBe(200);
+    await res.text();
+
+    // Dos viajes: el reescrito (400) y el original (200). Sin C el cliente
+    // habría tenido el segundo directamente; con C paga un viaje, no un fallo.
+    expect(recibidas).toHaveLength(2);
+    expect(JSON.parse(recibidas[0]!.body).model).toBe(SERVIDO);
+    expect(recibidas[1]!.body).toBe(CUERPO);
+    expect(JSON.parse(recibidas[1]!.body).model).toBe(SOLICITADO);
+  });
+
+  it("REINTENTO INTACTO: lo que se mide es lo que viajó — modelo solicitado y CERO ahorro de C", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamQueRechazaAlHermano(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["sibling_model_routing"], lotes });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, modeloHermano: true });
+    await esperarCanal();
+    await (await pedir(g.puerto, CUERPO)).text();
+    await g.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    const registros = lotes.flat() as Record<string, unknown>[];
+    expect(registros).toHaveLength(1);
+    // El upstream sirvió con el modelo SOLICITADO: cobrar el ahorro de C aquí
+    // sería inventarse dinero sobre una petición que C no llegó a servir.
+    expect(registros[0]!["baselineCost"]).toBe(registros[0]!["actualCost"]);
+    expect(registros[0]!["netSavings"]).toBe(0);
+  });
+
+  it("un 400 SIN palanca C no se reintenta: el cliente ve su propio 400, un solo viaje", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstreamQueRechazaAlHermano(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["sibling_model_routing"] });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true });
+    await esperarCanal();
+    // Sin C el cuerpo va con fable-5 y este upstream falso solo rechaza a 5.1,
+    // así que responde 200 al primer viaje: lo que se prueba es que NO hay dos.
+    const res = await pedir(g.puerto, CUERPO);
+    expect(res.status).toBe(200);
+    await res.text();
+    expect(recibidas).toHaveLength(1);
   });
 });

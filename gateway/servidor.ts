@@ -416,6 +416,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             // prompt_tokens) emitía un registro fantasma de 0 tokens.
             const usoReplica =
               obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
+            // Sin `hermano` A PROPÓSITO (revisión del 10-09): una llamada
+            // EVITADA se valora al precio del modelo SOLICITADO, que es lo que
+            // el cliente habría pagado sin la capa; su coste real es 0. Tarifarla
+            // al servido restaría a la baseline el ahorro de C sobre una
+            // petición que C no tocó porque nunca viajó.
             medir(requestId, cuerpo, usoReplica, true, url.pathname, codificacion, atribucion);
             return;
           }
@@ -430,6 +435,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (k === "host" || k === "content-length" || v === undefined) continue;
         h[k] = Array.isArray(v) ? v.join(", ") : v;
       }
+      // Foto de las cabeceras ANTES de que las palancas las toquen: el
+      // reintento intacto de C (abajo) reenvía exactamente lo que mandó el cliente.
+      const cabecerasOriginales: Record<string, string> = { ...h };
 
       // ── S4a · la palanca de diales (doble opt-in, passthrough ante la duda) ──
       // Se ajusta SOLO context_management + la beta; la MEDICIÓN (los medir()
@@ -469,13 +477,21 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // leyendo el modelo SOLICITADO del cuerpo original; el servido viaja en
       // `hermano` y el ahorro es la resta de dos precios de catálogo sobre el
       // mismo usage (ver construirInforme).
-      if (
+      const quiereHermano =
         canalElision !== null &&
         opts.modeloHermano === true &&
         req.method === "POST" &&
-        (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens") &&
-        canalElision.tiene("sibling_model_routing")
-      ) {
+        (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
+      // La bandera puesta y la licencia sin el feature se dice UNA vez: sin
+      // esto, quien paga y enciende C ve pasar el cuerpo intacto en silencio.
+      if (quiereHermano && !canalElision!.tiene("sibling_model_routing")) {
+        avisarUnaVez(
+          "gateway-hermano-sin-feature",
+          "[bvsala gateway] modelo hermano (C): la bandera está puesta pero la licencia de la org NO trae " +
+            "sibling_model_routing; la petición se reenvía intacta (fail-closed).",
+        );
+      }
+      if (quiereHermano && canalElision!.tiene("sibling_model_routing")) {
         try {
           // Si los diales ya reescribieron, `cuerpoSaliente` es JSON plano.
           const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
@@ -552,6 +568,45 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         }
         log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${String(err)}`);
         return;
+      }
+
+      // ── Palanca C · el REINTENTO INTACTO ──────────────────────────────
+      // Un 400 tras reescribir el modelo puede ser culpa de la reescritura:
+      // fable-5-1 rechaza cosas que fable-5 acepta (thinking firmado por otro
+      // modelo en un historial editado, parámetros que 5 tolera…). Se reenvía
+      // UNA vez el cuerpo y las cabeceras ORIGINALES del cliente — sin C, sin
+      // diales, sin rebaja — y se mide lo que de verdad viajó. Si el 400 era
+      // del cliente, ve el mismo 400 que habría visto sin la capa; cuesta un
+      // viaje extra en una petición que ya iba a fallar. Nunca en streaming a
+      // medias: aquí no se ha escrito ni una cabecera al cliente todavía.
+      if (hermano !== null && upstream.status === 400 && !ac.signal.aborted) {
+        let motivo = "";
+        try {
+          motivo = (await upstream.text()).slice(0, 300).replace(/\s+/g, " ");
+        } catch {
+          /* el motivo es solo para el log */
+        }
+        log(`[gateway] modelo hermano (C): el upstream rechazó (400) la petición reescrita a ${hermano.servido}; se reenvía intacta · ${motivo}`);
+        hermano = null;
+        rebaja = null;
+        diales = null;
+        try {
+          upstream = await fetchImpl(url, {
+            method: req.method,
+            headers: cabecerasOriginales,
+            body: cuerpo,
+            redirect: "manual",
+            signal: ac.signal,
+          });
+        } catch (err) {
+          captura?.abortar();
+          if (!res.headersSent) {
+            res.writeHead(502, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
+          }
+          log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable en el reintento: ${String(err)}`);
+          return;
+        }
       }
 
       const cabeceras = Object.fromEntries(upstream.headers.entries());

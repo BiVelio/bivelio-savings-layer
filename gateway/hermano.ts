@@ -21,6 +21,14 @@
  * Contrato de seguridad (el de gateway/palanca.ts): ante CUALQUIER duda se
  * devuelve null y el cuerpo original viaja intacto — passthrough, jamás error.
  * Ni un byte fuera de `model` se toca.
+ *
+ * Lo que 5.1 NO acepta y 5 sí (revisión adversarial del 10-09, contra la
+ * referencia oficial de migración): `tool_choice` forzado (`any`/`tool`)
+ * devuelve 400 en 5.1; los bloques de thinking van atados al modelo que los
+ * firmó (los de fable-5 se descartan al servir con 5.1 y el prefijo de caché
+ * cambia desde ahí, una vez por hilo); 5.1 no tiene Priority Tier. La primera
+ * se verja aquí; las otras dos las cubre el REINTENTO INTACTO del servidor
+ * (un 400 tras la reescritura reenvía el cuerpo original una vez).
  */
 
 import { claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
@@ -28,10 +36,10 @@ import { primaDeEscritura } from "../src/pricing/primas.js";
 import { parsearMensajes } from "./tarifa.js";
 
 /**
- * El mapa de hermanos, por CLAVE de catálogo (no por id crudo): así una
- * instantánea con fecha (`claude-fable-5-20260401`) hereda el par por el mismo
- * emparejador que hereda su precio, y `claude-fable-5-1` NUNCA cae aquí
- * (claveDeCatalogo la corta a propósito — ver su cabecera).
+ * El mapa de hermanos, por CLAVE de catálogo, y solo se aplica cuando el id
+ * crudo ES la clave (ver hermanoDe): una instantánea con fecha
+ * (`claude-fable-5-20260401`) es un pin deliberado del cliente y viaja intacta;
+ * `claude-fable-5-1` NUNCA cae aquí (claveDeCatalogo la corta a propósito).
  *
  * Solo un par hoy. Añadir otro exige que `esHermanoMasBarato` lo valide contra
  * el catálogo: el test de gateway-hermano.test.ts lo exige y ROMPE si alguna
@@ -70,15 +78,15 @@ export function esHermanoMasBarato(solicitado: string, servido: string): boolean
 /**
  * El hermano de un modelo, o null si no hay nada que sustituir:
  *  · sin clave de catálogo (ids con `[1m]`, desconocidos, vacíos) → null;
+ *  · el id crudo NO es exactamente la clave → null: una instantánea con fecha
+ *    es un pin deliberado, y un prefijo de proveedor (`anthropic/…`) se
+ *    perdería en la reescritura (el upstream recibiría un id sin prefijo);
  *  · ya es el hermano (idempotente) o no tiene par → null;
  *  · el par no pasa la verja de precios → null (el catálogo manda).
- *
- * El prefijo de proveedor (`anthropic/claude-fable-5`) lo desnuda el catálogo,
- * así que SÍ mapea: el upstream recibe la clave de catálogo del hermano.
  */
 export function hermanoDe(model: string): CambioDeModelo | null {
   const clave = claveDeCatalogo(model);
-  if (clave === undefined) return null;
+  if (clave === undefined || clave !== model) return null;
   const servido = HERMANOS[clave];
   if (servido === undefined || servido === clave) return null;
   if (!esHermanoMasBarato(clave, servido)) return null;
@@ -93,6 +101,19 @@ export function hermanoDe(model: string): CambioDeModelo | null {
  */
 const BETA_CONTEXTO_1M = /(^|,)\s*context-1m/i;
 
+/**
+ * `tool_choice: {type: "any" | "tool"}` — el modo forzado — devuelve 400 en
+ * fable-5-1 (la referencia de migración lo lista como cambio de ruptura;
+ * `auto` y `none` siguen valiendo). Con C, esa petición habría fallado donde
+ * sin C funcionaba: se deja pasar intacta.
+ */
+function fuerzaHerramienta(json: Record<string, unknown>): boolean {
+  const tc = json.tool_choice;
+  if (tc === null || typeof tc !== "object") return false;
+  const tipo = (tc as { type?: unknown }).type;
+  return tipo === "any" || tipo === "tool";
+}
+
 /** Lo que salió de la reescritura. */
 export interface ReescrituraDeModelo {
   /** El cuerpo con `model` sustituido, listo para el upstream (JSON plano). */
@@ -105,7 +126,8 @@ export interface ReescrituraDeModelo {
  *
  * Devuelve null — «no tocar, reenviar intacto» — si el cuerpo llega comprimido,
  * no es JSON, no tiene forma de mensajes (parsearMensajes), si el modelo no
- * tiene hermano, o si la petición trae la beta de contexto 1M.
+ * tiene hermano, si la petición trae la beta de contexto 1M, o si fuerza una
+ * herramienta (`tool_choice` any/tool, que 5.1 rechaza).
  *
  * Es pura y determinista: dos cuerpos byte-iguales dan salidas byte-iguales,
  * que es lo que la coalescencia (clave sobre el cuerpo ORIGINAL) necesita.
@@ -118,6 +140,7 @@ export function reescribirModelo(
   if (opciones.betas !== undefined && BETA_CONTEXTO_1M.test(opciones.betas)) return null;
   const json = parsearMensajes(cuerpo, codificacion);
   if (json === null) return null;
+  if (fuerzaHerramienta(json)) return null;
   const cambio = hermanoDe(json.model as string);
   if (cambio === null) return null;
   json.model = cambio.servido;
@@ -159,7 +182,8 @@ export function describirEstadoDeHermano(
     linea:
       `modelo hermano (C): ARMADO (${par}; activo si la licencia trae sibling_model_routing; fail-closed). ` +
       "Cambia el model que ves en la respuesta; lectura de caché a 0,025× en vez de 0,1× (catálogo). " +
-      "Encendido a mitad de un hilo paga una escritura fría del prefijo una vez",
+      "Encendido a mitad de un hilo paga una escritura fría del prefijo una vez. " +
+      "Si el proveedor rechaza (400) la petición reescrita, se reenvía intacta una vez",
     aviso: false,
   };
 }

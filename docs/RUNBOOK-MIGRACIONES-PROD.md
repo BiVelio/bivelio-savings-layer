@@ -300,10 +300,12 @@ paso 2 (`PENDIENTES="0026"`). Relanzarla no cambia nada la segunda vez.
 ### Verificar tras aplicar
 
 Un gateway con `BVSALA_GATEWAY_MODELO_HERMANO=1` de una org pro dice al
-arrancar `palanca C … ARMADA` (sin la fila, avisa que la licencia no la trae) y
-la primera petición con `model: claude-fable-5` llega al proveedor como
-`claude-fable-5-1`; en el panel el registro trae `basis = measured` y
-`baselineCost − actualCost` = lectura de caché × 0,00075/1K exactos.
+arrancar `modelo hermano (C): ARMADO` (sin la fila, la primera petición a
+fable-5 avisa una vez de que la licencia no trae `sibling_model_routing` y
+pasa intacta) y la primera petición con `model: claude-fable-5` llega al
+proveedor como `claude-fable-5-1`; en el panel el registro trae
+`basis = measured` y `baselineCost − actualCost` = lectura de caché ×
+(0,001 − 0,00025)/1K exactos, con los precios del catálogo del momento.
 
 ---
 
