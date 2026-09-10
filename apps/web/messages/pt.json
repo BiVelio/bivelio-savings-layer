@@ -110,8 +110,9 @@
       "intro": "Uma só conta para toda a suite BiVelio."
     },
     "verdictHero": {
-      "eyebrow": "A tua poupança · medida pelo SDK",
-      "measuredSplit": "Dos quais {pct} está medido face aos contadores de tokens do seu fornecedor ({share} dos pedidos). O resto vem de chamadas evitadas, onde não existe contador.",
+      "eyebrow": "A tua poupança · medida face à tua fatura",
+      "totalSplit": "O total, incluindo a parte estimada, é {pct}. Só {share} dos pedidos tem contador do fornecedor com que o verificar.",
+      "unmeasuredCap": "Vemos {count} pedidos com preço, mas nenhum pode ainda ser verificado face ao contador do teu fornecedor. Assim que chegar o primeiro, a tua poupança medida aparecerá aqui.",
       "savedLine": "do teu gasto em LLM conservado este período · <b>{money}</b> poupados (linha de base − real, aos teus preços).",
       "emptyCap": "Ainda não estamos a medir o teu tráfego — 0 pedidos vistos. Instala o SDK e a tua poupança líquida aparece aqui — os teus preços, a tua carga de trabalho. Nunca um número emprestado ou inventado.",
       "errorCap": "Não conseguimos ler o teu uso agora — é um erro temporário do nosso lado, não dados perdidos. Os teus relatórios estão seguros; recarrega daqui a pouco.",

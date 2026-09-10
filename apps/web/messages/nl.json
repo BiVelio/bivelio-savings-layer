@@ -110,8 +110,9 @@
       "intro": "Eén account voor de hele BiVelio-suite."
     },
     "verdictHero": {
-      "eyebrow": "Jouw besparingen · gemeten door de SDK",
-      "measuredSplit": "Waarvan {pct} is gemeten aan de tokentellers van je provider ({share} van de verzoeken). De rest komt uit vermeden aanroepen, waar geen teller bestaat.",
+      "eyebrow": "Jouw besparing · gemeten aan je factuur",
+      "totalSplit": "Het totaal, inclusief het geschatte deel, is {pct}. Slechts {share} van de verzoeken heeft een teller van de aanbieder om dat mee te controleren.",
+      "unmeasuredCap": "We zien {count} geprijsde verzoeken, maar nog geen enkele is te controleren aan de teller van je aanbieder. Zodra de eerste binnenkomt, verschijnt hier je gemeten besparing.",
       "savedLine": "van je LLM-uitgaven bespaard in deze periode · <b>{money}</b> bespaard (basislijn − werkelijk, tegen jouw prijzen).",
       "emptyCap": "Nog geen meting van je verkeer — 0 verzoeken gezien. Installeer de SDK en je netto besparingen verschijnen hier — jouw prijzen, jouw werklast. Nooit een geleend of verzonnen getal.",
       "errorCap": "We konden je gebruik nu niet lezen — een tijdelijke fout aan onze kant, geen verloren data. Je rapporten zijn veilig; ververs zo meteen.",

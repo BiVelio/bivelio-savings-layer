@@ -110,8 +110,9 @@
       "intro": "Ein Konto für die gesamte BiVelio-Suite."
     },
     "verdictHero": {
-      "eyebrow": "Deine Einsparungen · vom SDK gemessen",
-      "measuredSplit": "Davon sind {pct} an den Token-Zählern Ihres Anbieters gemessen ({share} der Anfragen). Der Rest stammt aus vermiedenen Aufrufen, für die es keinen Zähler gibt.",
+      "eyebrow": "Ihre Ersparnis · an Ihrer Rechnung gemessen",
+      "totalSplit": "Der Gesamtwert, inklusive des geschätzten Teils, liegt bei {pct}. Nur {share} der Anfragen haben einen Zähler des Anbieters, mit dem sich das prüfen lässt.",
+      "unmeasuredCap": "Wir sehen {count} bepreiste Anfragen, aber noch keine lässt sich am Zähler Ihres Anbieters prüfen. Sobald die erste eintrifft, erscheint hier Ihre gemessene Ersparnis.",
       "savedLine": "deiner LLM-Ausgaben in diesem Zeitraum behalten · <b>{money}</b> gespart (Baseline − Ist-Wert, zu deinen Preisen).",
       "emptyCap": "Dein Traffic wird noch nicht gemessen — 0 Anfragen gesehen. Installiere das SDK und deine Netto-Einsparungen erscheinen hier — deine Preise, deine Workload. Niemals eine geliehene oder erfundene Zahl.",
       "errorCap": "Wir konnten deine Nutzung gerade nicht lesen — ein vorübergehender Fehler auf unserer Seite, keine verlorenen Daten. Deine Berichte sind sicher; lade gleich neu.",

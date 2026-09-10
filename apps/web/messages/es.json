@@ -110,8 +110,9 @@
       "intro": "Una sola cuenta para toda la suite de BiVelio."
     },
     "verdictHero": {
-      "eyebrow": "Tu ahorro · medido por el SDK",
-      "measuredSplit": "De los cuales {pct} está medido contra los contadores de tokens de tu proveedor ({share} de las peticiones). El resto viene de llamadas evitadas, donde no existe contador del proveedor.",
+      "eyebrow": "Tu ahorro · medido contra tu factura",
+      "totalSplit": "El total, incluyendo lo estimado, es {pct}. Solo {share} de las peticiones tiene contador del proveedor con el que comprobarlo.",
+      "unmeasuredCap": "Vemos {count} solicitudes con precio, pero ninguna se ha podido comprobar todavía contra el contador de tu proveedor. En cuanto llegue la primera, tu ahorro medido aparecerá aquí.",
       "savedLine": "de tu gasto en LLM conservado este período · <b>{money}</b> ahorrados (línea base − real, a tus precios).",
       "emptyCap": "Aún no medimos tu tráfico — 0 solicitudes vistas. Instala el SDK y tu ahorro neto aparecerá aquí — tus precios, tu carga de trabajo. Nunca una cifra prestada ni inventada.",
       "errorCap": "No hemos podido leer tu uso ahora mismo — es un error temporal nuestro, no datos perdidos. Tus informes están a salvo; recarga en un momento.",
