@@ -1213,6 +1213,13 @@ export class SavingsPipeline {
           canonical.normalizedText,
           request.tools,
           route.executionClass,
+          // La CLAVE DE CONGELACIÓN. El hash del catálogo del llamante es, en la
+          // práctica, una clave por sesión: un agente declara su catálogo al
+          // empezar y no lo cambia. Con ella el selector deja de reelegir el
+          // conjunto en cada pregunta, que es lo que tiraba la caché de prefijo
+          // (medido: podar sin congelar multiplicaba por 6,1 la factura de
+          // entrada; congelando, la misma poda ahorra el 14,3 %).
+          canonical.toolsetHash,
         );
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
