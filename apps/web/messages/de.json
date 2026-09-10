@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "Eingabe-Tokens, die der Anbieter nie verarbeitet hat",
       "elisionNota": "Ein Zähler des Anbieters, keine Ersparnis von uns: Ausgelöst wird das heute von der Konfiguration Ihres eigenen Clients. Es fließt nie in Ihre Provision ein.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
-      "whatProviderCachedTokens": "Eingabe-Tokens, die günstiger abgerechnet wurden (Prefix-Cache)",
+      "whatProviderCachedTokens": "Eingabe-Tokens zum vergünstigten Präfix-Cache-Preis. Ihr Client fordert das an, nicht wir: Unser Hebel stellt nur die Dauer ein",
       "ghostAwaiting": "{ref} · wartet auf ersten Bericht",
       "footnote": "Vier Ledger, <b>niemals summiert</b> — wir können keinen Dollar doppelt zählen. Nur Zählwerte und Kosten, niemals deine Prompts. Der Bericht ist der Zähler."
     },

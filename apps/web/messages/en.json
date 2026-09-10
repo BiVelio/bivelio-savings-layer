@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "input tokens the provider never processed",
       "elisionNota": "A provider counter, not a saving of ours: today it is your own client's configuration that triggers it. It never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
-      "whatProviderCachedTokens": "input tokens billed cheaper (prefix cache)",
+      "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
       "ghostAwaiting": "{ref} · awaiting first report",
       "footnote": "Four ledgers, <b>never summed</b> — we can't double-count a dollar. Counts and cost only, never your prompts. The report is the meter."
     },

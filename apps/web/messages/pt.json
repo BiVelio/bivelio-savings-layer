@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "tokens de entrada que o fornecedor nunca chegou a processar",
       "elisionNota": "É uma contagem do fornecedor, não uma poupança nossa: hoje é a configuração do teu próprio cliente que a despoleta. Nunca entra na tua comissão.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma mais compacta",
-      "whatProviderCachedTokens": "tokens de entrada faturados mais baratos (cache de prefixo)",
+      "whatProviderCachedTokens": "tokens de entrada faturados ao preço reduzido da cache de prefixo. É o teu cliente que o pede, não nós: a nossa alavanca só ajusta a duração",
       "ghostAwaiting": "{ref} · à espera do primeiro relatório",
       "footnote": "Quatro livros-razão, <b>nunca somados</b> — não podemos contar um dólar duas vezes. Apenas contagens e custo, nunca os teus prompts. O relatório é o medidor."
     },

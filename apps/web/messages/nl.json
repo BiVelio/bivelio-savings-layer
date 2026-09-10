@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "invoertokens die de aanbieder nooit heeft verwerkt",
       "elisionNota": "Een teller van de aanbieder, geen besparing van ons: vandaag wordt dit door de configuratie van je eigen client veroorzaakt. Het telt nooit mee voor je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
-      "whatProviderCachedTokens": "invoertokens die goedkoper worden gefactureerd (prefixcache)",
+      "whatProviderCachedTokens": "invoertokens gefactureerd tegen de kortingsprijs van de prefix-cache. Je client vraagt erom, wij niet: onze hefboom stelt alleen de duur in",
       "ghostAwaiting": "{ref} · wacht op eerste rapport",
       "footnote": "Vier grootboeken, <b>nooit opgeteld</b> — we kunnen een dollar niet dubbel tellen. Alleen aantallen en kosten, nooit je prompts. Het rapport is de meter."
     },

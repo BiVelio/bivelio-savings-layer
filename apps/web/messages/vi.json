@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "token đầu vào mà nhà cung cấp chưa từng xử lý",
       "elisionNota": "Đây là bộ đếm của nhà cung cấp, không phải khoản tiết kiệm của chúng tôi: hôm nay chính cấu hình máy khách của bạn kích hoạt nó. Nó không bao giờ tính vào hoa hồng của bạn.",
       "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
-      "whatProviderCachedTokens": "token đầu vào được tính phí rẻ hơn (bộ đệm tiền tố)",
+      "whatProviderCachedTokens": "token đầu vào được tính theo giá ưu đãi của bộ nhớ đệm tiền tố. Máy khách của bạn yêu cầu điều đó, không phải chúng tôi: đòn bẩy của chúng tôi chỉ điều chỉnh thời lượng",
       "ghostAwaiting": "{ref} · đang chờ báo cáo đầu tiên",
       "footnote": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — chúng tôi không thể đếm một đô la hai lần. Chỉ số lượng và chi phí, không bao giờ là prompt của bạn. Báo cáo chính là đồng hồ đo."
     },

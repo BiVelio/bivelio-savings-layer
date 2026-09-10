@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "tokens d'entrada que el proveïdor no va arribar a processar",
       "elisionNota": "És un recompte del proveïdor, no un estalvi nostre: avui ho dispara la configuració del teu propi client. Mai no entra a la teva comissió.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
-      "whatProviderCachedTokens": "tokens d'entrada facturats més barats (memòria cau de prefix)",
+      "whatProviderCachedTokens": "tokens d'entrada facturats al preu rebaixat de la memòria cau de prefix. Ho demana el teu client, no nosaltres: la nostra palanca només n'ajusta la durada",
       "ghostAwaiting": "{ref} · esperant el primer informe",
       "footnote": "Quatre llibres comptables, <b>mai sumats</b>: no podem comptar un dòlar dues vegades. Només recomptes i cost, mai els teus prompts. L'informe és el mesurador."
     },
