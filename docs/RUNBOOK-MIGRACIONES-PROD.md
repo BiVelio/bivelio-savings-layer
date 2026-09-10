@@ -299,6 +299,17 @@ paso 2 (`PENDIENTES="0026"`). Relanzarla no cambia nada la segunda vez.
 
 ### Verificar tras aplicar
 
+**Encender y apagar C entre hilos, nunca a mitad de uno.** Los bloques de
+razonamiento van firmados por el modelo que los produjo y la atadura es de un
+solo sentido: fable-5-1 lee los de fable-5 (subir a C no pierde nada), pero
+fable-5 **no** lee los de 5.1. Si C deja de aplicarse a mitad de una
+conversación — la licencia caduca, se quita la bandera, o una petición cae por
+la verja de `tool_choice` o por el reintento intacto — el proveedor descarta los
+bloques de 5.1 de esa petición (sin cobrarlos y sin error) y el prefijo de caché
+cambia desde ahí: cuesta una escritura fría y el modelo replanifica sin ese
+razonamiento. Nada se rompe, pero es la razón de que la palanca se mueva entre
+sesiones.
+
 Un gateway con `BVSALA_GATEWAY_MODELO_HERMANO=1` de una org pro dice al
 arrancar `modelo hermano (C): ARMADO` (sin la fila, la primera petición a
 fable-5 avisa una vez de que la licencia no trae `sibling_model_routing` y

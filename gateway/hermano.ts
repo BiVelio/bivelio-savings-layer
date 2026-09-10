@@ -22,13 +22,32 @@
  * devuelve null y el cuerpo original viaja intacto — passthrough, jamás error.
  * Ni un byte fuera de `model` se toca.
  *
- * Lo que 5.1 NO acepta y 5 sí (revisión adversarial del 10-09, contra la
- * referencia oficial de migración): `tool_choice` forzado (`any`/`tool`)
- * devuelve 400 en 5.1; los bloques de thinking van atados al modelo que los
- * firmó (los de fable-5 se descartan al servir con 5.1 y el prefijo de caché
- * cambia desde ahí, una vez por hilo); 5.1 no tiene Priority Tier. La primera
- * se verja aquí; las otras dos las cubre el REINTENTO INTACTO del servidor
- * (un 400 tras la reescritura reenvía el cuerpo original una vez).
+ * Las tres diferencias de API entre 5 y 5.1 (verificadas el 10-09 contra la
+ * referencia de migración, no supuestas):
+ *
+ *  1. `tool_choice` FORZADO (`any` / `tool`) devuelve 400 en 5.1 — en
+ *     /v1/messages, en count_tokens y en lotes. Sin verja, C rompería
+ *     peticiones que sin C funcionaban: se dejan pasar intactas.
+ *  2. Los bloques de thinking van firmados por el modelo que los produjo, y la
+ *     atadura es de UN SOLO SENTIDO: 5.1 SÍ lee los de fable-5 (subir a C no
+ *     pierde razonamiento), pero fable-5 NO puede leer los de 5.1. O sea, el
+ *     peligro no es encender C, es CAER de C a mitad de hilo — la licencia
+ *     caduca, el operador quita la bandera, o una petición cae por la verja de
+ *     arriba o por el reintento intacto. En esa petición el proveedor descarta
+ *     los bloques de 5.1 (sin cobrarlos, sin error), el modelo replanifica sin
+ *     ese razonamiento y el prefijo de caché cambia desde ahí. No rompe nada;
+ *     cuesta una escritura fría y algo de calidad en ese turno. Por eso C se
+ *     enciende y se apaga entre hilos, no a mitad de uno (runbook).
+ *  3. 5.1 no tiene Priority Tier y comparte la cuota de la familia 5.x.
+ *
+ * Lo que NO cambia, y por eso el ahorro se puede medir sin contrafactual:
+ * mismo tokenizador (mismo conteo), mismo precio de entrada y salida, misma
+ * superficie de `refusal`, misma ventana de 1M. Solo baja la lectura de caché.
+ *
+ * El check de «preserved thinking» (editar turnos anteriores invalida los
+ * bloques posteriores) NO lo dispara esta palanca: el prefijo atado es
+ * `system` + `tools` + `messages`, y `model` queda fuera — igual que los
+ * marcadores `cache_control` que mueve la palanca A.
  */
 
 import { claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
@@ -103,9 +122,9 @@ const BETA_CONTEXTO_1M = /(^|,)\s*context-1m/i;
 
 /**
  * `tool_choice: {type: "any" | "tool"}` — el modo forzado — devuelve 400 en
- * fable-5-1 (la referencia de migración lo lista como cambio de ruptura;
- * `auto` y `none` siguen valiendo). Con C, esa petición habría fallado donde
- * sin C funcionaba: se deja pasar intacta.
+ * fable-5-1: «tool_choice: type "tool" and "any" are not supported for this
+ * model». `auto` y `none` siguen valiendo. Con C esa petición habría fallado
+ * donde sin C funcionaba, así que se deja pasar intacta (ver cabecera § 1).
  */
 function fuerzaHerramienta(json: Record<string, unknown>): boolean {
   const tc = json.tool_choice;

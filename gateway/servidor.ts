@@ -572,8 +572,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
 
       // ── Palanca C · el REINTENTO INTACTO ──────────────────────────────
       // Un 400 tras reescribir el modelo puede ser culpa de la reescritura:
-      // fable-5-1 rechaza cosas que fable-5 acepta (thinking firmado por otro
-      // modelo en un historial editado, parámetros que 5 tolera…). Se reenvía
+      // fable-5-1 rechaza cosas que fable-5 acepta (la verja de hermano.ts
+      // ataja las conocidas, pero no se pueden enumerar todas). Se reenvía
       // UNA vez el cuerpo y las cabeceras ORIGINALES del cliente — sin C, sin
       // diales, sin rebaja — y se mide lo que de verdad viajó. Si el 400 era
       // del cliente, ve el mismo 400 que habría visto sin la capa; cuesta un
