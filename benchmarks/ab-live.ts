@@ -43,7 +43,9 @@
  * separado, saltando los escenarios que no apliquen a ese modelo (ver
  * `Scenario.familia`) y publicando una tabla comparable entre modelos.
  *
- * ENV: BVSALA_AB_REPS (paired reps for generative scenarios), BVSALA_AB_SEED,
+ * ENV: BVSALA_AB_SIN_COMPRESOR=1 (mide el SDK TAL COMO SE INSTALA: sin el
+ *      compresor del banco, que no viaja en el paquete npm),
+ *      BVSALA_AB_REPS (paired reps for generative scenarios), BVSALA_AB_SEED,
  *      BVSALA_DEMO_KEEP_PREFIX, BVSALA_AB_BUDGET_USD (aborta si la estimación de
  *      coste de la tirada lo supera), and optionally a judge endpoint
  *      BVSALA_JUDGE_BASE_URL / _API_KEY / _MODEL for LIVE answer-vs-answer QA.
@@ -297,7 +299,14 @@ const nuevaCapa = (provider: Provider, model: string) =>
     //
     // Sin esto, el escenario de compresión no comprime NADA y el informe
     // publicaría un 0% que se lee como "la compresión no ahorra".
-    compressor: compresorDeRepeticionesLiterales,
+    // BVSALA_AB_SIN_COMPRESOR=1 lo omite, y entonces el banco mide EL SDK TAL
+    // COMO SE INSTALA. Es la tirada honesta para la web: `defaults.ts` no
+    // resuelve ningún compresor y el pipeline avisa por consola de que «se pidió
+    // compression pero esta capa no tiene compresor, así que NO se comprime
+    // nada» — o sea que el 0 % de ese escenario no es un defecto del banco, es
+    // lo que obtiene quien instala hoy. Publicar el titular CON un compresor que
+    // no viaja en el paquete es cobrar por una palanca que el cliente no tiene.
+    ...(process.env.BVSALA_AB_SIN_COMPRESOR === "1" ? {} : { compressor: compresorDeRepeticionesLiterales }),
     // `compressionEconomics.prefix` NO se declara a propósito. Es la tasa de
     // aciertos de prefijo del tráfico, y nadie la ha medido para este banco;
     // inventarla desbloquea la decisión completa a cambio de un número falso. Sin
