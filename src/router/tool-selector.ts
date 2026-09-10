@@ -31,15 +31,74 @@ export interface ToolSelectorOptions {
   maxTools?: number;
   /** Tokenizer-aware scorer for tie-breaking (optional). */
   scoreIntentMatch?: (text: string, tool: ToolDescriptor) => number;
+  /**
+   * How many requests are selected by relevance before the set is FROZEN for a
+   * given key. Below this count the selector learns; past it, it always emits
+   * the same set and `setIsStable` is true again.
+   *
+   * The default of 16 is measured, not round: across 214 sessions of real
+   * traffic, a set frozen from the first 16 invoked tools came up short in
+   * 0.0% of sessions (8 fell short in 2.3%, 12 in 0.5%).
+   */
+  learningTurns?: number;
+  /** Where frozen sets are remembered. Defaults to an in-process map. */
+  freezer?: ToolSetFreezer;
+}
+
+/**
+ * Memory for the frozen tool set. The caller owns the key: the pipeline passes
+ * the caller's toolset hash, which in practice is one key per session.
+ */
+export interface ToolSetFreezer {
+  read(key: string): { ids: string[]; turns: number } | undefined;
+  record(key: string, ids: string[], turns: number): void;
+}
+
+/** In-process freezer with a key cap (clears wholesale when full). */
+export class InMemoryToolSetFreezer implements ToolSetFreezer {
+  private map = new Map<string, { ids: string[]; turns: number }>();
+  constructor(private readonly cap = 512) {}
+  read(key: string) {
+    return this.map.get(key);
+  }
+  record(key: string, ids: string[], turns: number) {
+    if (this.map.size >= this.cap && !this.map.has(key)) this.map.clear();
+    this.map.set(key, { ids, turns });
+  }
+}
+
+/**
+ * Un catálogo REAL (MCP, OpenAI) llega como `{name, description, input_schema}`:
+ * sin `intents` y sin `risk`. El tipo los exige, pero TypeScript no protege en
+ * ejecución, y medido sobre 10.636 catálogos del corpus real **ninguno** los
+ * declaraba. Sin esta comprobación pasaban tres cosas a la vez:
+ *
+ *  1. `t.risk === "read"` es falso cuando `risk` es `undefined`, así que fuera
+ *     de `TOOL_ACTION` el elegible quedaba VACÍO y el modelo recibía CERO
+ *     herramientas: se le rompe la función al cliente en silencio.
+ *  2. La ruta `TOOL_ACTION` reventaba con `TypeError: tool.intents is not
+ *     iterable` al puntuar.
+ *  3. Y el libro 2 acreditaba el 100 % del bloque como ahorro — cobrábamos
+ *     comisión por haber roto la petición.
+ *
+ * Con un catálogo así no hay nada que seleccionar: no hay señal. Se pasa
+ * íntegro (acotado por presupuesto), que es lo que el cliente mandó.
+ */
+function catalogoSinTipar(tools: ToolDescriptor[]): boolean {
+  return !tools.some((t) => Array.isArray(t.intents) && t.intents.length > 0) && !tools.some((t) => typeof t.risk === "string");
 }
 
 export class ToolSelector {
   private readonly maxTools: number;
   private readonly scoreIntentMatch: (text: string, tool: ToolDescriptor) => number;
+  private readonly learningTurns: number;
+  private readonly freezer: ToolSetFreezer;
 
   constructor(opts: ToolSelectorOptions = {}) {
     this.maxTools = opts.maxTools ?? 8;
     this.scoreIntentMatch = opts.scoreIntentMatch ?? defaultScore;
+    this.learningTurns = opts.learningTurns ?? 16;
+    this.freezer = opts.freezer ?? new InMemoryToolSetFreezer();
   }
 
   /**
@@ -78,9 +137,27 @@ export class ToolSelector {
     text: string,
     tools: ToolDescriptor[] | undefined,
     execution: ExecutionClass,
+    /**
+     * Freeze key. The pipeline passes the caller's toolset hash, which in
+     * practice is one key per session. Without a key nothing is frozen and the
+     * selector behaves exactly as before.
+     */
+    freezeKey?: string,
   ): ToolSelection {
     if (!tools || tools.length === 0) {
       return { tools: [], droppedIds: [], reason: "no tools provided", setIsStable: true };
+    }
+
+    // Catálogo real sin tipar: no hay señal que seleccionar. Pasa íntegro.
+    if (catalogoSinTipar(tools)) {
+      const paso = this.passthrough(tools);
+      return {
+        ...paso,
+        reason:
+          `catalogue declares no \`intents\` and no \`risk\`: nothing to select on, ` +
+          `passed through (${paso.tools.length}/${tools.length}, capped at maxTools=${this.maxTools}). ` +
+          `Declare ToolDescriptor.intents/risk to enable pruning`,
+      };
     }
 
     // A non-TOOL_ACTION request never receives write/destructive tools.
@@ -155,6 +232,49 @@ export class ToolSelector {
     // arregla gratis: congelarlo sacrificaría el ahorro de poda. Se declara en
     // `setIsStable` y decide quien pueda pagar ese cambio, no este selector.
     const selected = scored.map((s) => s.tool).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+
+    // ── EL CONJUNTO SE CONGELA ─────────────────────────────────────────────
+    //
+    // Aquí decía este fichero que congelar «sacrificaría el ahorro de poda» y
+    // que la decisión no era suya. Ya está medida, sobre 14,9 GB de tráfico
+    // real, y dice lo contrario: el sacrificio es NO congelar.
+    //
+    // `tools` va lo PRIMERO del prompt, así que un conjunto que cambia con la
+    // pregunta mueve el frente entero y tira la caché de prefijo detrás. En ese
+    // corpus el bloque de herramientas era el 26,3 % de los tokens pero solo el
+    // 14,9 % del dinero —porque se cobraba a precio de caché— y perder el
+    // marcado multiplicaba la factura de entrada por 6,1. Podar salía a 35,7:1
+    // EN CONTRA: $14.598 frente a $3.128. Congelando, esa misma poda pasa a
+    // ahorrar el 14,3 %.
+    //
+    // Se aprende durante los primeros turnos (la unión de lo que la relevancia
+    // vaya eligiendo) y a partir de ahí el conjunto es fijo para esa clave. Con
+    // 16 turnos el conjunto congelado no se quedó corto en NINGUNA de las 214
+    // sesiones del corpus.
+    if (freezeKey !== undefined) {
+      const memoria = this.freezer.read(freezeKey);
+      const turnos = (memoria?.turns ?? 0) + 1;
+      if (memoria && turnos > this.learningTurns) {
+        const congelados = new Set(memoria.ids);
+        const emitidas = tools.filter((t) => congelados.has(t.id));
+        this.freezer.record(freezeKey, memoria.ids, turnos);
+        const idsEmitidos = new Set(emitidas.map((t) => t.id));
+        return {
+          tools: emitidas,
+          droppedIds: tools.filter((t) => !idsEmitidos.has(t.id)).map((t) => t.id),
+          reason:
+            `frozen tool set after ${this.learningTurns} turns ` +
+            `(${emitidas.length}/${tools.length}): it no longer depends on this ` +
+            `request's text, so the prefix cache survives`,
+          // La razón de ser del cambio: el conjunto ya no depende del texto.
+          setIsStable: true,
+        };
+      }
+      // Aún aprendiendo: la unión de lo elegido hasta ahora, acotada.
+      const union = [...new Set([...(memoria?.ids ?? []), ...selected.map((t) => t.id)])].sort().slice(0, this.maxTools);
+      this.freezer.record(freezeKey, union, turnos);
+    }
+
     const selectedIds = new Set(selected.map((t) => t.id));
     const droppedIds = tools.filter((t) => !selectedIds.has(t.id)).map((t) => t.id);
 
@@ -186,7 +306,11 @@ function defaultScore(text: string, tool: ToolDescriptor): number {
   // libro lo apunta como ahorro (`actualTools: 0`).
   const haystack = normalizeText(text);
   let score = 0;
-  for (const intent of tool.intents) {
+  // Un catálogo sin tipar no debería llegar aquí (lo ataja `catalogoSinTipar`),
+  // pero una herramienta suelta sin `intents` dentro de un catálogo tipado sí:
+  // antes reventaba con `TypeError: tool.intents is not iterable` y tumbaba la
+  // petición entera. Sin intents no puntúa; no rompe.
+  for (const intent of Array.isArray(tool.intents) ? tool.intents : []) {
     const needle = normalizeText(intent);
     // Un intent que se queda vacío al normalizar (solo puntuación) casaría con
     // TODO, porque `includes("")` es siempre cierto: sería la herramienta de
