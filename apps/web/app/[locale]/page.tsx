@@ -411,8 +411,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 </div>
               </dl>
             </div>
+            {/* La cifra grande sale solo si hay cifra. Aquí había un «78 %» que
+                era el descuento del PROVEEDOR, no nuestro —el brazo optimizado
+                manda 25 tokens MÁS y solo pide `cache_control`— y encima venía
+                de una tirada cuyo agregado no pasó su propia verja de calidad,
+                con el artefacto fuera de git: nadie podía comprobarlo. El
+                mecanismo (0 → 58.624 tokens servidos desde caché) SÍ se queda,
+                porque eso es lo que la capa hace y el cliente lo ve en su
+                factura. La nota explica por qué no ponemos porcentaje. */}
             <div className="ancache-cifra">
-              <span className="n">{t("anthropicCache.figure")}</span>
+              {t("anthropicCache.figure") ? <span className="n">{t("anthropicCache.figure")}</span> : null}
               <span className="nota">{t("anthropicCache.figureNote")}</span>
             </div>
           </div>
