@@ -268,6 +268,56 @@ select exists(select 1 from information_schema.columns
   «Borrado del proveedor» NO aparece (0 acreditadas); VerdictHero y extracto
   idénticos a antes.
 
+## Anexo — 0027 (septiembre de 2026): la palanca D (esfuerzo por turno) entra en el plan PRO
+
+Relleno calcado de **0023** y **0026**, misma razón y misma forma. El literal es
+`per_turn_effort` y ya viaja en `PRO_FEATURES`; las licencias pro YA EMITIDAS
+necesitan este `update` o quien paga y la enciende
+(`BVSALA_GATEWAY_ESFUERZO=low`) verá el cuerpo pasar intacto sin ningún error.
+
+**Qué hace la palanca.** Añade al FINAL de `messages` un mensaje `role: "system"`
+con `output_config.effort`, más la beta `mid-conversation-output-config-2026-07-01`.
+Es la primera que llega a la **salida**, que es lo único que paga precio de lista
+($486,06 de $3.959,73, con el pensamiento en el 37,7 %), y la primera que **no
+paga peaje de caché**: cambiar `output_config` en la RAÍZ invalidaría la caché de
+mensajes —la trampa que mató a la poda, a la elisión y al patrón de
+`context-mode`—, pero un mensaje añadido no reescribe nada anterior.
+
+- **No deja objeto**: se comprueba por DATOS, idempotente.
+- **Orden**: independiente de 0024/0025/0026 (no toca la RPC). Puede ir sola.
+- **Web antes que npm**: la palanca la ejerce el gateway; la web solo tiene que
+  servir el feature por `/api/org/entitlements`, que ya lo hace.
+
+### Diagnóstico (solo lectura)
+
+```sql
+select not exists (select 1 from bvsala.licenses
+                    where plan = 'pro' and not revoked
+                      and expires_at + make_interval(days => coalesce(grace_days, 0)) >= now()
+                      and not (coalesce(features, array[]::text[]) @> array['per_turn_effort']))
+       as "0027 aplicada (0 licencias pro vivas sin per_turn_effort)";
+```
+
+`false` → hay licencias pro vivas sin el feature: lanzar 0027 con el bucle del
+paso 2 (`PENDIENTES="0027"`). Relanzarla no cambia nada la segunda vez.
+
+### Verificar tras aplicar
+
+Un gateway con `BVSALA_GATEWAY_ESFUERZO=low` de una org pro dice al arrancar
+`esfuerzo por turno (D): ARMADO a "low"`. La primera petición a `claude-fable-5-1`,
+`claude-mythos-5-1` o `claude-opus-5` llega al proveedor con un mensaje
+`{"role":"system","content":[],"output_config":{"effort":"low"}}` al final y la
+beta en la cabecera. **Cualquier otro modelo pasa intacto**, `claude-fable-5`
+incluido: ahí es un 400.
+
+⚠️ **La beta podía estar en acceso limitado.** Si la org no lo tiene, el
+proveedor devuelve 400 — y el gateway **reenvía la petición intacta una vez**
+(el mismo reintento que protege a la palanca C), así que el cliente no ve el
+fallo. Si eso pasa, aparece en el log: «el upstream rechazó (400) la petición
+reescrita (esfuerzo por turno); se reenvía intacta».
+
+---
+
 ## Anexo — 0026 (septiembre de 2026): la palanca C entra en el plan PRO
 
 Relleno calcado de **0023**, misma razón y misma forma: la palanca C (servir

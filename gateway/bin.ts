@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describirEstadoDeElision } from "./palanca.js";
+import { describirEstadoDeEsfuerzo } from "./esfuerzo.js";
 import { describirEstadoDeHermano } from "./hermano.js";
 import { arrancarGateway } from "./servidor.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
@@ -235,6 +236,12 @@ const arranque = await arrancarGateway({
   // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
   // el ahorro se mide sin contrafactual, no hay A/B que hacer.
   ...(process.env.BVSALA_GATEWAY_MODELO_HERMANO === "1" ? { modeloHermano: true } : {}),
+  // Palanca D · el techo de esfuerzo por turno. Es del OPERADOR: la palanca no
+  // adivina qué turno merece pensar menos. Solo cambia la VÍA por la que se
+  // aplica —un mensaje añadido, que NO reinicia la caché de prefijo, en vez del
+  // campo de la raíz, que sí— y verja por modelo, porque fuera de fable-5-1,
+  // mythos-5-1 y opus-5 es un 400.
+  ...(process.env.BVSALA_GATEWAY_ESFUERZO ? { esfuerzo: process.env.BVSALA_GATEWAY_ESFUERZO } : {}),
   // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
   // producción no se toca y el gateway habla con savings.bivelio.com.
   ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
@@ -260,6 +267,14 @@ console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de
     elisionPedida !== "0",
   );
   (estadoHermano.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoHermano.linea}`);
+  // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
+  // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
+  const estadoEsfuerzo = describirEstadoDeEsfuerzo(
+    process.env.BVSALA_GATEWAY_ESFUERZO,
+    serviceAccountKey !== undefined,
+    elisionPedida !== "0",
+  );
+  (estadoEsfuerzo.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);
   }
