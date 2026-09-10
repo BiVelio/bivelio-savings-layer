@@ -268,6 +268,56 @@ select exists(select 1 from information_schema.columns
   «Borrado del proveedor» NO aparece (0 acreditadas); VerdictHero y extracto
   idénticos a antes.
 
+## Anexo — 0026 (septiembre de 2026): la palanca C entra en el plan PRO
+
+Relleno calcado de **0023**, misma razón y misma forma: la palanca C (servir
+`claude-fable-5` con `claude-fable-5-1`, misma entrada/salida/primas y la
+lectura de caché a 0,00025/1K en vez de 0,001/1K, catálogo) se cierra con el
+feature per-org `sibling_model_routing`. El literal ya viaja en PRO_FEATURES
+(`apps/web/lib/license/issue.ts`) para lo que se emita a partir de ahora; las
+licencias pro YA EMITIDAS necesitan este `update` o el cliente que paga y la
+enciende (`BVSALA_GATEWAY_MODELO_HERMANO=1`) verá el cuerpo pasar intacto sin
+ningún error (el canal es fail-closed a apagado).
+
+- **No deja objeto**: se comprueba por DATOS, idempotente.
+- **Orden**: independiente de 0024/0025 (no toca la RPC). Puede ir sola.
+- **Web antes que npm**: la palanca la ejerce el gateway; la web solo tiene que
+  servir el feature por `/api/org/entitlements`, que ya lo hace (lee la fila).
+
+### Diagnóstico (solo lectura)
+
+```sql
+select not exists (select 1 from bvsala.licenses
+                    where plan = 'pro' and not revoked
+                      and expires_at + make_interval(days => coalesce(grace_days, 0)) >= now()
+                      and not (coalesce(features, array[]::text[]) @> array['sibling_model_routing']))
+       as "0026 aplicada (0 licencias pro vivas sin sibling_model_routing)";
+```
+
+`false` → hay licencias pro vivas sin el feature: lanzar 0026 con el bucle del
+paso 2 (`PENDIENTES="0026"`). Relanzarla no cambia nada la segunda vez.
+
+### Verificar tras aplicar
+
+**Encender y apagar C entre hilos, nunca a mitad de uno.** Los bloques de
+razonamiento van firmados por el modelo que los produjo y la atadura es de un
+solo sentido: fable-5-1 lee los de fable-5 (subir a C no pierde nada), pero
+fable-5 **no** lee los de 5.1. Si C deja de aplicarse a mitad de una
+conversación — la licencia caduca, se quita la bandera, o una petición cae por
+la verja de `tool_choice` o por el reintento intacto — el proveedor descarta los
+bloques de 5.1 de esa petición (sin cobrarlos y sin error) y el prefijo de caché
+cambia desde ahí: cuesta una escritura fría y el modelo replanifica sin ese
+razonamiento. Nada se rompe, pero es la razón de que la palanca se mueva entre
+sesiones.
+
+Un gateway con `BVSALA_GATEWAY_MODELO_HERMANO=1` de una org pro dice al
+arrancar `modelo hermano (C): ARMADO` (sin la fila, la primera petición a
+fable-5 avisa una vez de que la licencia no trae `sibling_model_routing` y
+pasa intacta) y la primera petición con `model: claude-fable-5` llega al
+proveedor como `claude-fable-5-1`; en el panel el registro trae
+`basis = measured` y `baselineCost − actualCost` = lectura de caché ×
+(0,001 − 0,00025)/1K exactos, con los precios del catálogo del momento.
+
 ---
 
 *Relacionado: `db/README.md` (esquema y aislamiento), `docs/RUNBOOK-ALERTAS.md`

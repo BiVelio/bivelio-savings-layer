@@ -22,6 +22,7 @@ import {
 import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
+import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
@@ -98,6 +99,20 @@ export interface OpcionesGateway {
    * siendo fail-closed: esto es un tercer interruptor, no un sustituto.
    */
   dialesElision?: boolean;
+  /**
+   * Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
+   * Las peticiones que piden `claude-fable-5` viajan con `claude-fable-5-1`:
+   * misma entrada, salida y primas de escritura, lectura de caché a 0,00025
+   * en vez de 0,001 por 1K (catálogo). El ahorro se MIDE sin contrafactual —
+   * el mismo usage a dos precios de catálogo — y entra en `measured_*`.
+   *
+   * APAGADA por defecto: cambia el `model` que el cliente ve en la respuesta,
+   * así que la enciende el cliente con `BVSALA_GATEWAY_MODELO_HERMANO=1`. El
+   * feature `sibling_model_routing` de la licencia sigue siendo necesario y
+   * fail-closed por el mismo canal que las otras dos; `BVSALA_GATEWAY_ELISION=0`
+   * la apaga junto a ellas. NO la arma el anillo 2: no hay A/B que hacer.
+   */
+  modeloHermano?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -201,6 +216,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     /** Instante de INICIO de la petición: la caché de prefijos del proveedor
      *  mide sus TTL desde ahí, no desde el fin de la respuesta. */
     inicioMs?: number,
+    /** Palanca C · el modelo que pidió el cliente y el que viajó, si difieren. */
+    hermano?: CambioDeModelo | null,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -213,17 +230,24 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       );
       return;
     }
-    const medido = costeMedido(model, uso);
+    // Palanca C · `model` es el SOLICITADO (se lee del cuerpo ORIGINAL, no del
+    // saliente); el coste real se tarifa al SERVIDO, que es lo que se pagó. En
+    // el informe viaja el servido: el desglose por modelo del panel (0022)
+    // responde «¿qué modelo costó esto?» y debe cuadrar con la factura del
+    // proveedor. El solicitado queda en la línea de log de abajo.
+    const servido = !coalescida && hermano ? hermano.servido : model;
+    const medido = costeMedido(servido, uso);
     if (medido) {
       const informe = coalescida
         ? informeCoalescido(requestId, model, medido, atribucion)
-        : informeMedido(requestId, model, medido, atribucion, elision, rebaja);
+        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano);
       emisor.record(informe);
       // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
       // es atribuible a nuestros diales y el modelo tiene precio de lectura.
       const suelo = informe.cost.eliminatedInputFloorCost;
       log(
-        `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ${model} · ` +
+        `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ` +
+          `${servido !== model ? `${model}→${servido} (modelo hermano)` : model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
@@ -321,6 +345,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     // acredita. Fuera del try: el camino del cliente que cierra a mitad
     // (catch) también mide, y también acredita.
     let diales: { nuestros: boolean; triggerDelCliente: number | null } | null = null;
+    // Palanca C · fuera del try para que la ruta abortada (el cliente cerró tras
+    // el usage final) también tarife al modelo que de verdad viajó.
+    let hermano: CambioDeModelo | null = null;
     const atribuir = (
       e: ElisionAplicada | null,
       uso: ReturnType<ObservadorSse["usage"]>,
@@ -389,6 +416,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             // prompt_tokens) emitía un registro fantasma de 0 tokens.
             const usoReplica =
               obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
+            // Sin `hermano` A PROPÓSITO (revisión del 10-09): una llamada
+            // EVITADA se valora al precio del modelo SOLICITADO, que es lo que
+            // el cliente habría pagado sin la capa; su coste real es 0. Tarifarla
+            // al servido restaría a la baseline el ahorro de C sobre una
+            // petición que C no tocó porque nunca viajó.
             medir(requestId, cuerpo, usoReplica, true, url.pathname, codificacion, atribucion);
             return;
           }
@@ -403,6 +435,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (k === "host" || k === "content-length" || v === undefined) continue;
         h[k] = Array.isArray(v) ? v.join(", ") : v;
       }
+      // Foto de las cabeceras ANTES de que las palancas las toquen: el
+      // reintento intacto de C (abajo) reenvía exactamente lo que mandó el cliente.
+      const cabecerasOriginales: Record<string, string> = { ...h };
 
       // ── S4a · la palanca de diales (doble opt-in, passthrough ante la duda) ──
       // Se ajusta SOLO context_management + la beta; la MEDICIÓN (los medir()
@@ -426,6 +461,44 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             cuerpoSaliente = ajustado.cuerpo;
             diales = { nuestros: ajustado.nuestros, triggerDelCliente: ajustado.triggerDelCliente };
             h["anthropic-beta"] = conBetaDeElision(h["anthropic-beta"]);
+          }
+        } catch {
+          /* passthrough */
+        }
+      }
+
+      // ── PALANCA C · el modelo hermano (fable-5 → fable-5-1) ─────────────
+      // Misma disciplina que los diales: bandera local EXPLÍCITA (`modeloHermano`,
+      // porque cambia el `model` que el cliente ve), feature per-org fail-closed
+      // y un try que ante cualquier anomalía reenvía lo que ya llevara
+      // `cuerpoSaliente`. Reescribe SOLO `model`, también en count_tokens —
+      // esa ruta no se mide (esJsonMedible), pero el cliente debe estimar
+      // contra el modelo que de verdad va a responderle. La MEDICIÓN sigue
+      // leyendo el modelo SOLICITADO del cuerpo original; el servido viaja en
+      // `hermano` y el ahorro es la resta de dos precios de catálogo sobre el
+      // mismo usage (ver construirInforme).
+      const quiereHermano =
+        canalElision !== null &&
+        opts.modeloHermano === true &&
+        req.method === "POST" &&
+        (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
+      // La bandera puesta y la licencia sin el feature se dice UNA vez: sin
+      // esto, quien paga y enciende C ve pasar el cuerpo intacto en silencio.
+      if (quiereHermano && !canalElision!.tiene("sibling_model_routing")) {
+        avisarUnaVez(
+          "gateway-hermano-sin-feature",
+          "[bvsala gateway] modelo hermano (C): la bandera está puesta pero la licencia de la org NO trae " +
+            "sibling_model_routing; la petición se reenvía intacta (fail-closed).",
+        );
+      }
+      if (quiereHermano && canalElision!.tiene("sibling_model_routing")) {
+        try {
+          // Si los diales ya reescribieron, `cuerpoSaliente` es JSON plano.
+          const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
+          const reescrito = reescribirModelo(cuerpoSaliente, cod, { betas: h["anthropic-beta"] });
+          if (reescrito !== null) {
+            cuerpoSaliente = reescrito.cuerpo;
+            hermano = reescrito.cambio;
           }
         } catch {
           /* passthrough */
@@ -497,6 +570,45 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         return;
       }
 
+      // ── Palanca C · el REINTENTO INTACTO ──────────────────────────────
+      // Un 400 tras reescribir el modelo puede ser culpa de la reescritura:
+      // fable-5-1 rechaza cosas que fable-5 acepta (la verja de hermano.ts
+      // ataja las conocidas, pero no se pueden enumerar todas). Se reenvía
+      // UNA vez el cuerpo y las cabeceras ORIGINALES del cliente — sin C, sin
+      // diales, sin rebaja — y se mide lo que de verdad viajó. Si el 400 era
+      // del cliente, ve el mismo 400 que habría visto sin la capa; cuesta un
+      // viaje extra en una petición que ya iba a fallar. Nunca en streaming a
+      // medias: aquí no se ha escrito ni una cabecera al cliente todavía.
+      if (hermano !== null && upstream.status === 400 && !ac.signal.aborted) {
+        let motivo = "";
+        try {
+          motivo = (await upstream.text()).slice(0, 300).replace(/\s+/g, " ");
+        } catch {
+          /* el motivo es solo para el log */
+        }
+        log(`[gateway] modelo hermano (C): el upstream rechazó (400) la petición reescrita a ${hermano.servido}; se reenvía intacta · ${motivo}`);
+        hermano = null;
+        rebaja = null;
+        diales = null;
+        try {
+          upstream = await fetchImpl(url, {
+            method: req.method,
+            headers: cabecerasOriginales,
+            body: cuerpo,
+            redirect: "manual",
+            signal: ac.signal,
+          });
+        } catch (err) {
+          captura?.abortar();
+          if (!res.headersSent) {
+            res.writeHead(502, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
+          }
+          log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable en el reintento: ${String(err)}`);
+          return;
+        }
+      }
+
       const cabeceras = Object.fromEntries(upstream.headers.entries());
       for (const c of CABECERAS_TRANSPORTE) delete cabeceras[c];
       res.writeHead(upstream.status, cabeceras);
@@ -544,11 +656,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         medida = true;
         const uso = observador.usage();
         const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
         const uso = usoDeJson(respuesta);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs, hermano);
       } else if (!esSse) {
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
       }
@@ -567,7 +679,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (uso) {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs);
+          // Sin rebaja (la atribución de A exige el camino completo) pero CON el
+          // hermano: el precio del modelo servido se pagó igual aunque el
+          // cliente cerrara.
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
         }

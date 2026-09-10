@@ -9,6 +9,11 @@
  * borrado lo ejecuta el proveedor con su mecanismo oficial y su contador
  * (`applied_edits` / `cleared_input_tokens`) lo certifica.
  *
+ * Las otras dos palancas amplían esa superficie campo a campo y nada más: la
+ * A (tarifa.ts) reescribe el `ttl` de los `cache_control`, y la C (hermano.ts,
+ * 2026-09-09) reescribe `model` — esta última SOLO con opt-in explícito del
+ * cliente, porque cambia el modelo que ve en la respuesta.
+ *
  * Contrato de seguridad (§2.3 del plan): ante CUALQUIER duda se devuelve null
  * y el cuerpo original viaja intacto — passthrough, jamás error.
  */
