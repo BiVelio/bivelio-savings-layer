@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "tokeny wejściowe, których dostawca nigdy nie przetworzył",
       "elisionNota": "To licznik dostawcy, nie nasza oszczędność: dziś uruchamia go konfiguracja Twojego własnego klienta. Nigdy nie wchodzi do Twojej prowizji.",
       "whatCompressedTokens": "tokeny wejściowe przekodowane na mniejsze",
-      "whatProviderCachedTokens": "tokeny wejściowe naliczone taniej (cache prefiksu)",
+      "whatProviderCachedTokens": "tokeny wejściowe rozliczone po obniżonej cenie pamięci podręcznej prefiksu. Prosi o to Twój klient, nie my: nasza dźwignia reguluje tylko czas jej życia",
       "ghostAwaiting": "{ref} · oczekiwanie na pierwszy raport",
       "footnote": "Cztery księgi, <b>nigdy nie sumowane</b> — nie możemy policzyć dolara dwa razy. Tylko liczby i koszt, nigdy Twoje prompty. Raport jest licznikiem."
     },

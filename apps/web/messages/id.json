@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "token masukan yang tidak pernah diproses penyedia",
       "elisionNota": "Ini penghitung penyedia, bukan penghematan kami: hari ini yang memicunya adalah konfigurasi klien Anda sendiri. Tidak pernah masuk ke komisi Anda.",
       "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
-      "whatProviderCachedTokens": "token input yang ditagih lebih murah (cache prefix)",
+      "whatProviderCachedTokens": "token masukan yang ditagih dengan harga diskon cache prefiks. Klien Anda yang memintanya, bukan kami: tuas kami hanya mengatur durasinya",
       "ghostAwaiting": "{ref} · menunggu laporan pertama",
       "footnote": "Empat ledger, <b>tidak pernah dijumlahkan</b> — kami tidak bisa menghitung satu dolar dua kali. Hanya jumlah dan biaya, bukan prompt Anda. Laporan itulah meterannya."
     },

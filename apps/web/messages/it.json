@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "token di input che il fornitore non ha mai elaborato",
       "elisionNota": "È un contatore del fornitore, non un risparmio nostro: oggi lo attiva la configurazione del tuo stesso client. Non entra mai nella tua commissione.",
       "whatCompressedTokens": "token di input ricodificati in modo più compatto",
-      "whatProviderCachedTokens": "token di input fatturati a meno (cache di prefisso)",
+      "whatProviderCachedTokens": "token di input fatturati al prezzo scontato della cache di prefisso. Lo chiede il tuo client, non noi: la nostra leva ne regola solo la durata",
       "ghostAwaiting": "{ref} · in attesa del primo report",
       "footnote": "Quattro registri, <b>mai sommati</b>: non possiamo contare due volte un dollaro. Solo conteggi e costi, mai i tuoi prompt. Il report è il contatore."
     },

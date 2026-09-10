@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "tokens d'entrée que le fournisseur n'a jamais traités",
       "elisionNota": "Un compteur du fournisseur, pas une économie de notre part : c'est la configuration de votre propre client qui le déclenche aujourd'hui. Cela n'entre jamais dans votre commission.",
       "whatCompressedTokens": "tokens d'entrée réencodés plus compacts",
-      "whatProviderCachedTokens": "tokens d'entrée facturés moins cher (cache de préfixe)",
+      "whatProviderCachedTokens": "tokens d'entrée facturés au prix réduit du cache de préfixe. C'est votre client qui le demande, pas nous : notre levier n'en règle que la durée",
       "ghostAwaiting": "{ref} · en attente du premier rapport",
       "footnote": "Quatre registres, <b>jamais additionnés</b> — impossible de compter un dollar deux fois. Uniquement des décomptes et des coûts, jamais vos prompts. Le rapport est le compteur."
     },

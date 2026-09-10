@@ -124,7 +124,7 @@
       "whatEliminatedTokens": "sağlayıcının hiç işlemediği girdi belirteçleri",
       "elisionNota": "Bu sağlayıcının sayacı, bizim tasarrufumuz değil: bugün bunu tetikleyen kendi istemcinizin yapılandırması. Komisyonunuza asla girmez.",
       "whatCompressedTokens": "daha küçük olarak yeniden kodlanan girdi token'ları",
-      "whatProviderCachedTokens": "daha ucuza faturalandırılan girdi token'ları (önek önbelleği)",
+      "whatProviderCachedTokens": "önek önbelleğinin indirimli fiyatıyla faturalanan girdi belirteçleri. Bunu istemciniz talep ediyor, biz değil: bizim kolumuz yalnızca süresini ayarlıyor",
       "ghostAwaiting": "{ref} · ilk rapor bekleniyor",
       "footnote": "Dört defter, <b>asla toplanmaz</b> — bir doları iki kez sayamayız. Yalnızca sayımlar ve maliyet, asla prompt'larınız. Rapor, sayacın kendisidir."
     },
