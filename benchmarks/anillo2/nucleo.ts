@@ -42,6 +42,92 @@ export const MIN_DIAS_POR_BRAZO = 3;
  */
 export const PROTOCOLO_PARIDAD = "día natural UTC par = palanca, impar = control";
 
+/**
+ * El protocolo VIGENTE desde el 2026-09-10: el brazo se asigna por SESIÓN, con
+ * el mismo hash determinista que usa el gateway (gateway/anillo2.ts →
+ * `brazoDeSesion`). La unidad auditable pasa a ser la sesión, no el día.
+ */
+export const PROTOCOLO_SESION = "brazo por hash de sesión (FNV-1a), una sesión = un brazo entero";
+
+/** El mismo hash que `brazoDeSesion` del gateway. Los dos tienen que coincidir
+ *  o el auditor clasificaría en un brazo distinto del que se sirvió. */
+/**
+ * La mezcla final de murmur3 (fmix32). NO es adorno: sin ella, el bit 0 de
+ * FNV-1a es degenerado. Su último paso multiplica por un primo impar, así que
+ * el bit 0 del resultado es solo el XOR de los bits bajos de los caracteres —
+ * con identificadores secuenciales o con sufijo común reparte 0 % / 100 % en
+ * vez de mitad y mitad. Lo cazó el test de reparto antes de salir de aquí.
+ */
+function mezclar(h: number): number {
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b) >>> 0;
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+export function brazoDeSesion(sesion: string): Brazo {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < sesion.length; i++) {
+    h ^= sesion.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return (mezclar(h) & 1) === 0 ? "palanca" : "control";
+}
+
+/**
+ * AUDITORÍA POR SESIÓN — la que sustituye a la de paridad de días.
+ *
+ * Una sesión es la unidad de asignación, así que la única fisura posible es que
+ * los turnos de UNA sesión no compartan brazo. Un día con dos brazos ya no es
+ * una fisura: es lo normal, porque las sesiones se reparten al 50 %.
+ *
+ * `observado` sale del cuerpo de cada petición (lo que de verdad se sirvió) y
+ * `asignado` del hash. Cuando difieren, la palanca no hizo lo que el protocolo
+ * mandaba, y eso sí es una fisura que hay que ver.
+ */
+export interface SesionAuditada {
+  sesion: string;
+  asignado: Brazo;
+  observado: { control: number; palanca: number };
+  limpia: boolean;
+  dias: string[];
+  turnos: number;
+}
+
+export function auditarPorSesion(turnos: TurnoAnillo2[]): {
+  protocolo: string;
+  sesiones: SesionAuditada[];
+  fisuras: string[];
+  reparto: { control: number; palanca: number };
+} {
+  const porSesion = new Map<string, { control: number; palanca: number; dias: Set<string> }>();
+  for (const t of turnos) {
+    const a = porSesion.get(t.sesion) ?? porSesion.set(t.sesion, { control: 0, palanca: 0, dias: new Set() }).get(t.sesion)!;
+    a[t.brazo] += 1;
+    a.dias.add(t.dia);
+  }
+  const sesiones: SesionAuditada[] = [];
+  const fisuras: string[] = [];
+  const reparto = { control: 0, palanca: 0 };
+  for (const [sesion, a] of [...porSesion.entries()].sort(([x], [y]) => (x < y ? -1 : 1))) {
+    const asignado = brazoDeSesion(sesion);
+    const turnosTotales = a.control + a.palanca;
+    // Limpia = todos los turnos de la sesión en el brazo que le tocaba.
+    const limpia = a[asignado] === turnosTotales;
+    reparto[asignado] += turnosTotales;
+    sesiones.push({ sesion, asignado, observado: { control: a.control, palanca: a.palanca }, limpia, dias: [...a.dias].sort(), turnos: turnosTotales });
+    if (!limpia) {
+      fisuras.push(
+        `sesión ${sesion}: asignada a ${asignado} pero sirvió ${a.control} turnos de control y ${a.palanca} de palanca` +
+          (a.dias.size > 1 ? ` (cruza ${a.dias.size} días: ${[...a.dias].sort().join(", ")})` : ""),
+      );
+    }
+  }
+  return { protocolo: PROTOCOLO_SESION, sesiones, fisuras, reparto };
+}
+
 export function brazoEsperado(dia: string): Brazo {
   return Number(dia.slice(8, 10)) % 2 === 0 ? "palanca" : "control";
 }
@@ -341,10 +427,15 @@ const objetoOrdenado = <V>(m: Map<string, V>): Record<string, V> =>
   Object.fromEntries([...m.entries()].sort(([a], [b]) => (a < b ? -1 : 1)));
 
 /**
- * AUDITORÍA DE PARIDAD: por día, lo que el protocolo esperaba frente a lo que
- * el cuerpo de cada petición dice, más los confundidores (cliente, config,
- * modelos, sesiones) y las fisuras en texto llano. Un día es LIMPIO si solo
- * tiene un brazo y es el esperado.
+ * AUDITORÍA DE PARIDAD (protocolo HISTÓRICO, hasta el 2026-09-09): por día, lo
+ * que el protocolo esperaba frente a lo que el cuerpo de cada petición dice,
+ * más los confundidores (cliente, config, modelos, sesiones) y las fisuras en
+ * texto llano. Un día es LIMPIO si solo tiene un brazo y es el esperado.
+ *
+ * Se conserva para poder releer el corpus recogido bajo aquel protocolo. Para
+ * el tráfico nuevo la auditoría que vale es `auditarPorSesion`: la asignación
+ * por día se retiró porque una sesión que cruza la medianoche arrastra el brazo
+ * anterior y ensucia el día entero.
  */
 export interface DiaAuditado {
   dia: string;
@@ -619,7 +710,10 @@ export function resumir(turnos: TurnoAnillo2[]) {
   return {
     veredicto,
     veredictoPorModelo,
+    // La auditoría histórica (por día) se conserva para releer el corpus viejo;
+    // la que manda desde el 2026-09-10 es la de sesión.
     paridad: auditarParidad(turnos),
+    sesiones: auditarPorSesion(turnos),
     porBrazo: {
       control: publica(porBrazo.get("control")!),
       palanca: publica(brazoP),

@@ -141,8 +141,16 @@ bvsala-ab-informes() {
         console.log(`veredicto global: ${v.estado}` + (v.estado === "ok" ? ` ${v.ahorroPctFactura} % [${v.ci95Pct.inferior}, ${v.ci95Pct.superior}]` : ""));
         console.log(`veredicto por modelo: ${m.estado}` + (m.estado === "ok" ? ` ${m.ahorroPctFactura} % [${m.ci95Pct.inferior}, ${m.ci95Pct.superior}]` : ""));
         const p = (d.paridad?.dias ?? []).find((x) => x.dia === dia);
-        if (p) console.log(`paridad ${dia}: esperado ${p.esperado}, observado control ${p.observado.control} / palanca ${p.observado.palanca}, ${p.limpio ? "LIMPIO" : "FISURA: " + p.fisuras.join(" | ")}`);
+        if (p) console.log(`paridad ${dia} (protocolo VIEJO, por día): esperado ${p.esperado}, observado control ${p.observado.control} / palanca ${p.observado.palanca}, ${p.limpio ? "LIMPIO" : "FISURA: " + p.fisuras.join(" | ")}`);
         else console.log(`paridad ${dia}: sin turnos en el corpus`);
+        // La auditoría que manda desde el 2026-09-10: la unidad es la SESIÓN.
+        const ses = d.sesiones;
+        if (ses) {
+          const sucias = ses.sesiones.filter((x) => !x.limpia).length;
+          console.log(`sesiones: ${ses.sesiones.length} (${sucias} con fisura) · reparto turnos control ${ses.reparto.control} / palanca ${ses.reparto.palanca}`);
+          for (const f of ses.fisuras.slice(0, 3)) console.log(`  FISURA ${f}`);
+          if (ses.fisuras.length > 3) console.log(`  … y ${ses.fisuras.length - 3} fisuras más`);
+        }
       ' "$dia" &&
       # La conciliación escribe TODO por stderr (su stdout queda para el
       # artefacto): filtrar stdout dejaba el grep sin nada, y con pipefail

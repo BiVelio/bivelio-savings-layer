@@ -31,13 +31,60 @@ export type Enrolamiento = {
 export type Brazo = "control" | "palanca";
 
 /**
- * El brazo del día, EXACTAMENTE igual que `bvsala-ab-brazo` del .zshrc: día del
- * mes par = palanca. Los dos caminos tienen que decir lo mismo o el A/B mezcla
- * brazos dentro de un mismo día.
+ * El brazo del día: día del mes UTC par = palanca. **SUPERADO por
+ * `brazoDeSesion` el 2026-09-10**; se conserva porque el corpus de agosto y
+ * septiembre se recogió bajo este protocolo y auditarlo exige poder reproducir
+ * lo que se esperaba entonces.
+ *
+ * Por qué se retira: la unidad de asignación era el DÍA pero la unidad de
+ * arranque es la SESIÓN, y una sesión que cruza la medianoche arrastra el brazo
+ * del día anterior. No es teórico: el 09-09 era día de control y el informe
+ * contó 1.431 turnos de control contra 5.350 de palanca. Con la unidad rota, el
+ * veredicto que estaba previsto para el 13 no podía salir limpio.
  */
 export function brazoDelDia(diaUtcIso: string): Brazo {
   const dd = Number.parseInt(diaUtcIso.slice(8, 10), 10);
   return Number.isFinite(dd) && dd % 2 === 0 ? "palanca" : "control";
+}
+
+/**
+ * EL BRAZO DE UNA SESIÓN — la asignación vigente desde el 2026-09-10.
+ *
+ * Una sesión es atómica: nace, vive y muere entera dentro de un brazo, así que
+ * la medianoche deja de existir como problema. Y el número de unidades sube de
+ * «un día» a «una sesión», que es lo que el veredicto necesita para tener
+ * potencia sin esperar semanas.
+ *
+ * Es un hash determinista (FNV-1a de 32 bits, con la mezcla final de murmur3)
+ * del identificador de sesión: la misma sesión cae siempre en el mismo brazo,
+ * en el gateway y en el auditor, sin estado compartido, sin reloj y sin sorteo
+ * que reproducir. Medido sobre cinco formas de identificador — UUID real,
+ * secuencial, solo dígitos, prefijo común y sufijo común — reparte entre 48,6 %
+ * y 50,0 %.
+ */
+/**
+ * La mezcla final de murmur3 (fmix32). NO es adorno: sin ella, el bit 0 de
+ * FNV-1a es degenerado. Su último paso multiplica por un primo impar, así que
+ * el bit 0 del resultado es solo el XOR de los bits bajos de los caracteres —
+ * con identificadores secuenciales o con sufijo común reparte 0 % / 100 % en
+ * vez de mitad y mitad. Lo cazó el test de reparto antes de salir de aquí.
+ */
+function mezclar(h: number): number {
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b) >>> 0;
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+export function brazoDeSesion(sessionId: string): Brazo {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < sessionId.length; i++) {
+    h ^= sessionId.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return (mezclar(h) & 1) === 0 ? "palanca" : "control";
 }
 
 /**
@@ -105,6 +152,8 @@ export function planDeAnillo2(args: {
     };
   }
 
+  // El brazo del día ya no asigna nada (ver brazoDeSesion); se sigue calculando
+  // solo para que la línea de arranque diga bajo qué protocolo nació la sesión.
   const brazo = brazoDelDia(hoyUtcIso);
   const upstreamEspia = `http://127.0.0.1:${enrolamiento.espia}`;
   const upstreamYaPuesto = upstreamEnv !== undefined && upstreamEnv !== "";
@@ -115,6 +164,7 @@ export function planDeAnillo2(args: {
   partes.push(upstreamYaPuesto ? `upstream respetado del entorno (${upstreamEnv})` : `encadenado a :${enrolamiento.espia}`);
   if (elisionYaPuesta) partes.push(`elisión respetada del entorno (=${elisionEnv})`);
   partes.push("diales de elisión APAGADOS (2026-09-09): el brazo ya no los arma");
+  partes.push("asignación POR SESIÓN desde el 2026-09-10 (brazoDeSesion), no por paridad del día");
 
   return {
     ...(upstreamYaPuesto ? {} : { upstream: upstreamEspia }),

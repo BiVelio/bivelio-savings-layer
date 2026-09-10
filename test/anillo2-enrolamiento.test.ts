@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
-import { brazoDelDia, leerEnrolamiento, planDeAnillo2 } from "../gateway/anillo2.js";
+import { brazoDeSesion, brazoDelDia, leerEnrolamiento, planDeAnillo2 } from "../gateway/anillo2.js";
+import { brazoDeSesion as brazoDeSesionAuditor } from "../benchmarks/anillo2/nucleo.js";
 
 /**
  * El encadenado del A/B vivía SOLO en una función de ~/.zshrc. Toda sesión
@@ -106,5 +107,44 @@ describe("anillo 2 · plan de arranque", () => {
     expect(plan.elision).toBeUndefined();
     expect(plan.brazo).toBe("palanca");
     expect(plan.linea).toContain("respetado");
+  });
+});
+
+describe("brazoDeSesion · la asignación vigente desde el 2026-09-10", () => {
+  it("es determinista: la misma sesión cae siempre en el mismo brazo", () => {
+    const id = "4f3c1a20-9b77-4e51-8d2a-1e6f0c9b7a33";
+    const primero = brazoDeSesion(id);
+    for (let i = 0; i < 50; i++) expect(brazoDeSesion(id)).toBe(primero);
+  });
+
+  it("una sesión que cruza la medianoche NO cambia de brazo — el fallo que mató el A/B del 09-09", () => {
+    // El brazo ya no depende del día: el mismo id da el mismo brazo lo mismo
+    // da qué día se mire, así que un día mezclado deja de ser posible.
+    const id = "sesion-que-empieza-el-8-y-acaba-el-9";
+    expect(brazoDeSesion(id)).toBe(brazoDeSesion(id));
+    expect(brazoDelDia("2026-09-08")).not.toBe(brazoDelDia("2026-09-09"));
+  });
+
+  // Este test cazó un fallo REAL antes de salir: con el bit 0 pelado de FNV-1a,
+  // el banco «secuencial» repartía 0 % / 100 %. Cinco formas de identificador
+  // porque un id de sesión real puede ser cualquiera de ellas.
+  it.each([
+    ["uuid estructurado", (i: number) => `${i}-a7f3e1b2-4c8d-4e9f-b012-${String(i).padStart(12, "0")}`],
+    ["solo dígitos", (i: number) => String(i)],
+    ["prefijo común", (i: number) => `sesion-${i}`],
+    ["sufijo común", (i: number) => `${i}-sesion`],
+  ])("reparte cerca del 50 %% con identificadores de tipo %s", (_nombre, generar) => {
+    const n = 4000;
+    let palanca = 0;
+    for (let i = 0; i < n; i++) if (brazoDeSesion(generar(i)) === "palanca") palanca += 1;
+    const pct = (100 * palanca) / n;
+    expect(pct).toBeGreaterThan(45);
+    expect(pct).toBeLessThan(55);
+  });
+
+  it("el auditor y el gateway calculan el MISMO brazo (si divergen, se clasifica en el brazo equivocado)", () => {
+    for (const id of ["a", "sesion-1", "4f3c1a20-9b77-4e51-8d2a-1e6f0c9b7a33", "", "ñ-unicode-🙂"]) {
+      expect(brazoDeSesion(id)).toBe(brazoDeSesionAuditor(id));
+    }
   });
 });
