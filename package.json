@@ -87,6 +87,7 @@
     "salida": "tsx --env-file-if-exists=.env.bench benchmarks/salida/arnes.ts",
     "salida:anatomia": "tsx benchmarks/salida/anatomia.ts",
     "salida:por-clase": "tsx benchmarks/salida/por-clase.ts",
+    "salida:alcance": "tsx benchmarks/salida/alcance.ts",
     "luz-verde": "bash scripts/luz-verde.sh",
     "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts"
   },

@@ -1,0 +1,155 @@
+{
+  "fecha": "2026-09-10T14:38:32.520Z",
+  "version": "salida-alcance-v1",
+  "nota": [
+    "SUPERFICIE: un estilo de salida vive en el system prompt. No gobierna el `thinking` (interno del modelo) ni el CUERPO de fichero dentro del `tool_use` (el JSON ES el fichero). La superficie alcanzable es la PROSA; `toolUse` se lista aparte, sin sumar, para que se vea lo que queda fuera.",
+    "DESCOMPOSICIÓN: reparte el ahorro medido por el banco entre prosa y tool_use evaluando TODAS las calibraciones chars/token del corpus. Si el rango de `shareProsa` cruza el 1, la lectura es «la prosa explica el ahorro entero», nunca «el tool_use aporta X».",
+    "NETO: el texto del estilo se inyecta en cada petición y se paga en entrada a precio de LECTURA de caché. El bruto se toma del SUELO del IC, el coste del peor caso: un producto se vende a todos.",
+    "El IC remuestrea TAREAS, no pares — las reps de una tarea comparten fixture y remuestrear pares regala suelo.",
+    "Solo cifras: del contenido de los artefactos no sale nada."
+  ],
+  "fuentes": {
+    "banco": "benchmarks/salida/resultados/salida-banco-2026-09-06-sonnet-4-5.json",
+    "porClase": "benchmarks/salida/resultados/salida-por-clase-2026-09-10.json",
+    "modeloDelBanco": "claude-sonnet-4-5",
+    "dias": 12
+  },
+  "factura": {
+    "totalUsd": 3756.64,
+    "salidaUsd": 456.92,
+    "shareSalida": 0.1216,
+    "masaDeSalida": {
+      "thinking": 172.19,
+      "prosa": 53.2396,
+      "toolUse": 231.4655
+    }
+  },
+  "superficie": {
+    "alcanzable": 53.2396,
+    "fueraDeAlcance": 172.19,
+    "toolUse": 231.4655,
+    "shareAlcanzableDeFactura": 0.014172
+  },
+  "descomposiciones": {
+    "caveman": {
+      "charsProsaAhorrados": 20708,
+      "tokensAhorrados": 7878,
+      "shareProsa": {
+        "inferior": 0.8627,
+        "superior": 1.1479
+      },
+      "toolUseAhorrado": {
+        "inferior": -1165,
+        "superior": 1082
+      },
+      "calibraciones": [
+        2.29,
+        2.313,
+        2.386,
+        2.404,
+        3.047
+      ]
+    },
+    "savings-mode": {
+      "charsProsaAhorrados": 19884,
+      "tokensAhorrados": 7438,
+      "shareProsa": {
+        "inferior": 0.8774,
+        "superior": 1.1674
+      },
+      "toolUseAhorrado": {
+        "inferior": -1245,
+        "superior": 912
+      },
+      "calibraciones": [
+        2.29,
+        2.313,
+        2.386,
+        2.404,
+        3.047
+      ]
+    }
+  },
+  "alcances": [
+    {
+      "estilo": "caveman",
+      "pesoChars": 6559,
+      "tokensPorPeticion": 2864,
+      "reduccionProsaPct": {
+        "media": 90.42794759825328,
+        "inferior": 84.34159328281794,
+        "superior": 96.48609664235917
+      },
+      "brutoUsd": {
+        "media": 48.1435,
+        "suelo": 44.9031
+      },
+      "costePropioUsd": {
+        "claude-fable-5-1": 11.2119,
+        "claude-opus-5": 22.4238,
+        "claude-fable-5": 44.8475
+      },
+      "netoUsd": {
+        "claude-fable-5-1": 33.6912,
+        "claude-opus-5": 22.4793,
+        "claude-fable-5": 0.0556
+      },
+      "netoShareDeFactura": {
+        "claude-fable-5-1": 0.008968,
+        "claude-opus-5": 0.005984,
+        "claude-fable-5": 0.000015
+      }
+    },
+    {
+      "estilo": "savings-mode",
+      "pesoChars": 1628,
+      "tokensPorPeticion": 711,
+      "reduccionProsaPct": {
+        "media": 86.8296943231441,
+        "inferior": 79.05795528543521,
+        "superior": 94.70493304837092
+      },
+      "brutoUsd": {
+        "media": 46.2278,
+        "suelo": 42.0901
+      },
+      "costePropioUsd": {
+        "claude-fable-5-1": 2.7829,
+        "claude-opus-5": 5.5658,
+        "claude-fable-5": 11.1315
+      },
+      "netoUsd": {
+        "claude-fable-5-1": 39.3072,
+        "claude-opus-5": 36.5243,
+        "claude-fable-5": 30.9586
+      },
+      "netoShareDeFactura": {
+        "claude-fable-5-1": 0.010463,
+        "claude-opus-5": 0.009723,
+        "claude-fable-5": 0.008241
+      }
+    }
+  ],
+  "comparaciones": {
+    "savings-mode menos caveman": {
+      "diferenciaPct": {
+        "media": -2.3229667697648453,
+        "inferior": -5.866263107136452,
+        "superior": 0.5667076214005015
+      },
+      "seDistinguen": false
+    }
+  },
+  "veredicto": {
+    "caveman": {
+      "merece": false,
+      "peorShare": 0.000015,
+      "motivo": "el neto peor (0.002 %) no llega al 1 % de la factura"
+    },
+    "savings-mode": {
+      "merece": false,
+      "peorShare": 0.008241,
+      "motivo": "el neto peor (0.824 %) no llega al 1 % de la factura"
+    }
+  }
+}
