@@ -1,0 +1,1760 @@
+{
+  "fecha": "2026-09-10T10:05:33.494Z",
+  "version": "salida-por-clase-v1",
+  "nota": [
+    "TAXONOMÍA: el llamador (¿la petición declara `tools`?) × la familia de herramienta que DOMINA los caracteres de tool_use de la respuesta. Cada petición cae en una sola clase; `sin-cuerpo` es el residuo de respuestas sin cuerpo guardado. Las clases suman el total: lo verifica test/salida-por-clase.test.ts.",
+    "DINERO: reparto calibrado (chars/token medidos por tipo) sumado por (clase × modelo), nunca en agregado — el texto vive en el modelo barato y el JSON en el caro. El ratio chars/token se mide POR MODELO sobre el corpus entero y se presta a sus clases: medido dentro de una clase estrecha no hay muestra (agente-shell tiene 2 respuestas de prosa pura). Descriptivo: jamás base de comisión.",
+    "TECHO: aritmética sobre la masa medida, NO una promesa de ahorro. `siRecortaTodo` incluye el JSON de tool_use, que en `agente-escritura` ES el fichero: recortarlo es escribir peor, no ahorrar.",
+    "MIXTOS: `purezaFamiliaMedia` < 1 significa turnos que llaman a familias distintas a la vez; se clasifican por su masa mayor. Cuanto más baja, menos limpia es la clase.",
+    "Solo cifras y nombres de herramienta: del contenido del corpus no sale nada."
+  ],
+  "capturas": [
+    "captura-2026-08-23T10-39-58-652Z.jsonl",
+    "captura-2026-08-23T10-40-56-149Z.jsonl",
+    "captura-2026-08-23T11-26-58-032Z.jsonl",
+    "captura-2026-08-30T08-46-43-317Z.jsonl",
+    "captura-2026-08-30T09-08-31-045Z.jsonl",
+    "captura-2026-08-30T09-58-57-318Z.jsonl",
+    "captura-2026-09-01T13-08-40-562Z.jsonl"
+  ],
+  "rango": {
+    "desde": "2026-08-23T10:40:21.362Z",
+    "hasta": "2026-09-10T10:05:31.394Z"
+  },
+  "dias": 12,
+  "descartes": {
+    "lineas": 16212,
+    "candidatas": 15807,
+    "ilegibles": 0,
+    "sinUsage": 149,
+    "sinPrecio": 0,
+    "cuerpoOmitido": 2,
+    "cuerpoIlegible": 0
+  },
+  "familias": {
+    "escritura": [
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "NotebookEdit",
+      "ApplyPatch",
+      "StrReplace",
+      "str_replace_editor",
+      "create_file"
+    ],
+    "shell": [
+      "Bash",
+      "BashOutput",
+      "KillShell",
+      "KillBash",
+      "Monitor",
+      "Terminal"
+    ],
+    "estructurado": [
+      "StructuredOutput",
+      "Workflow"
+    ],
+    "lectura": [
+      "Read",
+      "Grep",
+      "Glob",
+      "LS",
+      "NotebookRead",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "orquestacion": [
+      "Agent",
+      "Task",
+      "TodoWrite",
+      "SendMessage",
+      "Skill",
+      "TaskOutput",
+      "TaskStop",
+      "AskUserQuestion",
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "PushNotification",
+      "SendFeedback",
+      "CronCreate",
+      "CronDelete",
+      "CronList"
+    ],
+    "otras": []
+  },
+  "calibracionPorModelo": {
+    "claude-haiku-4-5-20251001": {
+      "prosaCharsPorToken": null,
+      "nProsa": 0,
+      "jsonCharsPorToken": null,
+      "nJson": 0
+    },
+    "claude-fable-5": {
+      "prosaCharsPorToken": 2.29,
+      "nProsa": 185,
+      "jsonCharsPorToken": 1.973,
+      "nJson": 1001
+    },
+    "claude-sonnet-5": {
+      "prosaCharsPorToken": 3.047,
+      "nProsa": 150,
+      "jsonCharsPorToken": null,
+      "nJson": 0
+    },
+    "claude-opus-5": {
+      "prosaCharsPorToken": 2.313,
+      "nProsa": 235,
+      "jsonCharsPorToken": 1.922,
+      "nJson": 3084
+    },
+    "claude-opus-4-8": {
+      "prosaCharsPorToken": 2.404,
+      "nProsa": 144,
+      "jsonCharsPorToken": 2.081,
+      "nJson": 259
+    },
+    "claude-fable-5-1": {
+      "prosaCharsPorToken": 2.386,
+      "nProsa": 88,
+      "jsonCharsPorToken": 1.828,
+      "nJson": 1567
+    }
+  },
+  "global": {
+    "peticiones": 15658,
+    "salidaUsd": 456.9236,
+    "entradaUsd": 3299.7159,
+    "shareSalida": 0.1216,
+    "repartoCalibrado": {
+      "thinking": 172.19,
+      "text": 53.2396,
+      "tool_use": 231.4655,
+      "otros": 0.028,
+      "sinCuerpo": 0.0007,
+      "calibrado": true
+    },
+    "shareRepartoCalibrado": {
+      "thinking": 0.3768,
+      "text": 0.1165,
+      "tool_use": 0.5066,
+      "otros": 0.0001,
+      "sinCuerpo": 0
+    }
+  },
+  "porClase": {
+    "agente-shell": {
+      "peticiones": 8018,
+      "sharePeticiones": 0.5121,
+      "shareSalidaUsd": 0.6442,
+      "subagente": 4466,
+      "mixtos": 160,
+      "purezaFamiliaMedia": 0.9951,
+      "techo": {
+        "salidaUsd": 294.3592,
+        "usdPorDia": 24.5299,
+        "masaUsd": {
+          "thinking": 136.3868,
+          "prosa": 5.212,
+          "toolUse": 152.7604
+        },
+        "siRecortaTodo": {
+          "10%": 29.4359,
+          "20%": 58.8718,
+          "30%": 88.3078
+        },
+        "siRecortaThinking": {
+          "30%": 40.916,
+          "50%": 68.1934
+        },
+        "siRecortaProsa": {
+          "30%": 1.5636,
+          "50%": 2.606
+        }
+      },
+      "resumen": {
+        "peticiones": 8018,
+        "conCuerpo": 8018,
+        "tokensSalida": {
+          "total": 7884718,
+          "media": 983.4,
+          "p50": 558,
+          "p95": 3102,
+          "max": 26571
+        },
+        "thinking": {
+          "tokens": 3675791,
+          "shareDeSalida": 0.4662,
+          "tokensEstimadosEnDeltas": 3425550
+        },
+        "chars": {
+          "total": 7382990,
+          "porTipo": {
+            "text": 336253,
+            "tool_use": 7046737,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0.0455,
+            "tool_use": 0.9545,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 1.75,
+          "proxyTokens": {
+            "text": 84063,
+            "tool_use": 1761684,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 16056568,
+          "calibracion": {
+            "prosaCharsPorToken": 1.98,
+            "nProsa": 2,
+            "jsonCharsPorToken": 1.78,
+            "nJson": 5120
+          }
+        },
+        "bloques": {
+          "text": 2406,
+          "tool_use": 12287,
+          "thinking": 6466,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {
+          "Bash": {
+            "llamadas": 12062,
+            "chars": 6998137,
+            "shareDeToolUse": 0.9931
+          },
+          "WebFetch": {
+            "llamadas": 33,
+            "chars": 14559,
+            "shareDeToolUse": 0.0021
+          },
+          "Monitor": {
+            "llamadas": 34,
+            "chars": 13038,
+            "shareDeToolUse": 0.0019
+          },
+          "Read": {
+            "llamadas": 120,
+            "chars": 11972,
+            "shareDeToolUse": 0.0017
+          },
+          "CronCreate": {
+            "llamadas": 2,
+            "chars": 4223,
+            "shareDeToolUse": 0.0006
+          },
+          "Artifact": {
+            "llamadas": 11,
+            "chars": 2103,
+            "shareDeToolUse": 0.0003
+          },
+          "Edit": {
+            "llamadas": 5,
+            "chars": 1472,
+            "shareDeToolUse": 0.0002
+          },
+          "TaskOutput": {
+            "llamadas": 8,
+            "chars": 459,
+            "shareDeToolUse": 0.0001
+          },
+          "WebSearch": {
+            "llamadas": 4,
+            "chars": 389,
+            "shareDeToolUse": 0.0001
+          },
+          "Skill": {
+            "llamadas": 4,
+            "chars": 296,
+            "shareDeToolUse": 0
+          },
+          "mcp__claude-in-chrome__tabs_context_mcp": {
+            "llamadas": 2,
+            "chars": 47,
+            "shareDeToolUse": 0
+          },
+          "TaskStop": {
+            "llamadas": 1,
+            "chars": 24,
+            "shareDeToolUse": 0
+          },
+          "CronDelete": {
+            "llamadas": 1,
+            "chars": 18,
+            "shareDeToolUse": 0
+          }
+        },
+        "stopReason": {
+          "tool_use": 8015,
+          "end_turn": 1,
+          "desconocido": 2
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 294.3592,
+          "entradaUsd": 2320.667,
+          "shareSalida": 0.1126,
+          "porMasa": {
+            "thinking": 136.3868,
+            "text": 6.1661,
+            "tool_use": 151.8061,
+            "otros": 0.0002,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.4633,
+            "text": 0.0209,
+            "tool_use": 0.5157,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 136.3868,
+            "text": 5.212,
+            "tool_use": 152.7604,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.4633,
+            "text": 0.0177,
+            "tool_use": 0.519,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 1662,
+          "media": 0.0011,
+          "ponderada": 0.0022,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 11,
+          "sharePesoTop5pct": 0.2009,
+          "ponderadaTop5pct": 0.0066
+        },
+        "repeticionCuerpo": {
+          "n": 2370,
+          "media": 0.002,
+          "ponderada": 0.0078,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 45,
+          "sharePesoTop5pct": 0.2954,
+          "ponderadaTop5pct": 0.0216
+        }
+      }
+    },
+    "agente-prosa": {
+      "peticiones": 1189,
+      "sharePeticiones": 0.0759,
+      "shareSalidaUsd": 0.1056,
+      "subagente": 519,
+      "mixtos": 0,
+      "purezaFamiliaMedia": null,
+      "techo": {
+        "salidaUsd": 48.2477,
+        "usdPorDia": 4.0206,
+        "masaUsd": {
+          "thinking": 8.1803,
+          "prosa": 40.0392,
+          "toolUse": 0
+        },
+        "siRecortaTodo": {
+          "10%": 4.8248,
+          "20%": 9.6495,
+          "30%": 14.4743
+        },
+        "siRecortaThinking": {
+          "30%": 2.4541,
+          "50%": 4.0902
+        },
+        "siRecortaProsa": {
+          "30%": 12.0118,
+          "50%": 20.0196
+        }
+      },
+      "resumen": {
+        "peticiones": 1189,
+        "conCuerpo": 1189,
+        "tokensSalida": {
+          "total": 1664582,
+          "media": 1400,
+          "p50": 83,
+          "p95": 9346,
+          "max": 28009
+        },
+        "thinking": {
+          "tokens": 251462,
+          "shareDeSalida": 0.1511,
+          "tokensEstimadosEnDeltas": 243600
+        },
+        "chars": {
+          "total": 3299902,
+          "porTipo": {
+            "text": 3298754,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 1148
+          },
+          "share": {
+            "text": 0.9997,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0.0003
+          },
+          "charsPorTokenVisible": 2.34,
+          "proxyTokens": {
+            "text": 824689,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 287
+          },
+          "firma": 991380,
+          "calibracion": {
+            "prosaCharsPorToken": 2.34,
+            "nProsa": 585,
+            "jsonCharsPorToken": 0,
+            "nJson": 0
+          }
+        },
+        "bloques": {
+          "text": 1443,
+          "tool_use": 0,
+          "thinking": 284,
+          "otros": 28
+        },
+        "tiposOtros": {
+          "server_tool_use": 14,
+          "web_search_tool_result": 14
+        },
+        "herramientas": {},
+        "stopReason": {
+          "end_turn": 1185,
+          "refusal": 2,
+          "desconocido": 2
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 48.2477,
+          "entradaUsd": 370.8796,
+          "shareSalida": 0.1151,
+          "porMasa": {
+            "thinking": 8.1803,
+            "text": 40.033,
+            "tool_use": 0,
+            "otros": 0.0344,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.1695,
+            "text": 0.8297,
+            "tool_use": 0,
+            "otros": 0.0007,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 8.1803,
+            "text": 40.0392,
+            "tool_use": 0,
+            "otros": 0.0282,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.1695,
+            "text": 0.8299,
+            "tool_use": 0,
+            "otros": 0.0006,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 475,
+          "media": 0.0013,
+          "ponderada": 0.0038,
+          "p50": 0,
+          "p95": 0.0103,
+          "conRepeticion": 69,
+          "sharePesoTop5pct": 0.333,
+          "ponderadaTop5pct": 0.0087
+        },
+        "repeticionCuerpo": {
+          "n": 891,
+          "media": 0.0302,
+          "ponderada": 0.1488,
+          "p50": 0,
+          "p95": 0.1522,
+          "conRepeticion": 361,
+          "sharePesoTop5pct": 0.3904,
+          "ponderadaTop5pct": 0.2353
+        }
+      }
+    },
+    "agente-escritura": {
+      "peticiones": 532,
+      "sharePeticiones": 0.034,
+      "shareSalidaUsd": 0.0983,
+      "subagente": 68,
+      "mixtos": 26,
+      "purezaFamiliaMedia": 0.9901,
+      "techo": {
+        "salidaUsd": 44.9158,
+        "usdPorDia": 3.743,
+        "masaUsd": {
+          "thinking": 6.7988,
+          "prosa": 0.3928,
+          "toolUse": 37.7241
+        },
+        "siRecortaTodo": {
+          "10%": 4.4916,
+          "20%": 8.9832,
+          "30%": 13.4747
+        },
+        "siRecortaThinking": {
+          "30%": 2.0396,
+          "50%": 3.3994
+        },
+        "siRecortaProsa": {
+          "30%": 0.1178,
+          "50%": 0.1964
+        }
+      },
+      "resumen": {
+        "peticiones": 532,
+        "conCuerpo": 532,
+        "tokensSalida": {
+          "total": 1019803,
+          "media": 1916.9,
+          "p50": 957,
+          "p95": 6957,
+          "max": 21576
+        },
+        "thinking": {
+          "tokens": 161773,
+          "shareDeSalida": 0.1586,
+          "tokensEstimadosEnDeltas": 154600
+        },
+        "chars": {
+          "total": 1786729,
+          "porTipo": {
+            "text": 26706,
+            "tool_use": 1760023,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0.0149,
+            "tool_use": 0.9851,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 2.08,
+          "proxyTokens": {
+            "text": 6677,
+            "tool_use": 440006,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 670652,
+          "calibracion": {
+            "prosaCharsPorToken": 0,
+            "nProsa": 0,
+            "jsonCharsPorToken": 2.09,
+            "nJson": 475
+          }
+        },
+        "bloques": {
+          "text": 202,
+          "tool_use": 642,
+          "thinking": 263,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {
+          "Write": {
+            "llamadas": 135,
+            "chars": 1147309,
+            "shareDeToolUse": 0.6519
+          },
+          "Edit": {
+            "llamadas": 480,
+            "chars": 605490,
+            "shareDeToolUse": 0.344
+          },
+          "Bash": {
+            "llamadas": 27,
+            "chars": 7224,
+            "shareDeToolUse": 0.0041
+          }
+        },
+        "stopReason": {
+          "tool_use": 531,
+          "desconocido": 1
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 44.9158,
+          "entradaUsd": 166.549,
+          "shareSalida": 0.2124,
+          "porMasa": {
+            "thinking": 6.7988,
+            "text": 0.4836,
+            "tool_use": 37.6334,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.1514,
+            "text": 0.0108,
+            "tool_use": 0.8379,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 6.7988,
+            "text": 0.3928,
+            "tool_use": 37.7241,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.1514,
+            "text": 0.0087,
+            "tool_use": 0.8399,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 154,
+          "media": 0,
+          "ponderada": 0,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 0,
+          "sharePesoTop5pct": 0.2281,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 192,
+          "media": 0.0009,
+          "ponderada": 0.0017,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 3,
+          "sharePesoTop5pct": 0.2975,
+          "ponderadaTop5pct": 0.0012
+        }
+      }
+    },
+    "agente-estructurado": {
+      "peticiones": 144,
+      "sharePeticiones": 0.0092,
+      "shareSalidaUsd": 0.0983,
+      "subagente": 119,
+      "mixtos": 6,
+      "purezaFamiliaMedia": 0.9986,
+      "techo": {
+        "salidaUsd": 44.8949,
+        "usdPorDia": 3.7412,
+        "masaUsd": {
+          "thinking": 10.2298,
+          "prosa": 0.1359,
+          "toolUse": 34.5291
+        },
+        "siRecortaTodo": {
+          "10%": 4.4895,
+          "20%": 8.979,
+          "30%": 13.4685
+        },
+        "siRecortaThinking": {
+          "30%": 3.0689,
+          "50%": 5.1149
+        },
+        "siRecortaProsa": {
+          "30%": 0.0408,
+          "50%": 0.0679
+        }
+      },
+      "resumen": {
+        "peticiones": 144,
+        "conCuerpo": 144,
+        "tokensSalida": {
+          "total": 1256297,
+          "media": 8724.3,
+          "p50": 7961,
+          "p95": 15726,
+          "max": 25381
+        },
+        "thinking": {
+          "tokens": 256393,
+          "shareDeSalida": 0.2041,
+          "tokensEstimadosEnDeltas": 249550
+        },
+        "chars": {
+          "total": 2154345,
+          "porTipo": {
+            "text": 13623,
+            "tool_use": 2140722,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0.0063,
+            "tool_use": 0.9937,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 2.15,
+          "proxyTokens": {
+            "text": 3406,
+            "tool_use": 535181,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 914268,
+          "calibracion": {
+            "prosaCharsPorToken": 0,
+            "nProsa": 0,
+            "jsonCharsPorToken": 2.16,
+            "nJson": 139
+          }
+        },
+        "bloques": {
+          "text": 82,
+          "tool_use": 150,
+          "thinking": 143,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {
+          "StructuredOutput": {
+            "llamadas": 119,
+            "chars": 1841001,
+            "shareDeToolUse": 0.86
+          },
+          "Workflow": {
+            "llamadas": 25,
+            "chars": 297336,
+            "shareDeToolUse": 0.1389
+          },
+          "Bash": {
+            "llamadas": 5,
+            "chars": 2055,
+            "shareDeToolUse": 0.001
+          },
+          "WebFetch": {
+            "llamadas": 1,
+            "chars": 330,
+            "shareDeToolUse": 0.0002
+          }
+        },
+        "stopReason": {
+          "tool_use": 144
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 44.8949,
+          "entradaUsd": 58.643,
+          "shareSalida": 0.4336,
+          "porMasa": {
+            "thinking": 10.2298,
+            "text": 0.166,
+            "tool_use": 34.499,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.2279,
+            "text": 0.0037,
+            "tool_use": 0.7684,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 10.2298,
+            "text": 0.1359,
+            "tool_use": 34.5291,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.2279,
+            "text": 0.003,
+            "tool_use": 0.7691,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 61,
+          "media": 0.0002,
+          "ponderada": 0.0002,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 1,
+          "sharePesoTop5pct": 0.5254,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 75,
+          "media": 0.004,
+          "ponderada": 0.0145,
+          "p50": 0,
+          "p95": 0.018,
+          "conRepeticion": 5,
+          "sharePesoTop5pct": 0.4399,
+          "ponderadaTop5pct": 0.0235
+        }
+      }
+    },
+    "agente-orquestacion": {
+      "peticiones": 190,
+      "sharePeticiones": 0.0121,
+      "shareSalidaUsd": 0.018,
+      "subagente": 5,
+      "mixtos": 6,
+      "purezaFamiliaMedia": 0.9967,
+      "techo": {
+        "salidaUsd": 8.2441,
+        "usdPorDia": 0.687,
+        "masaUsd": {
+          "thinking": 3.7705,
+          "prosa": 0.4639,
+          "toolUse": 4.0096
+        },
+        "siRecortaTodo": {
+          "10%": 0.8244,
+          "20%": 1.6488,
+          "30%": 2.4732
+        },
+        "siRecortaThinking": {
+          "30%": 1.1312,
+          "50%": 1.8853
+        },
+        "siRecortaProsa": {
+          "30%": 0.1392,
+          "50%": 0.2319
+        }
+      },
+      "resumen": {
+        "peticiones": 190,
+        "conCuerpo": 190,
+        "tokensSalida": {
+          "total": 240256,
+          "media": 1264.5,
+          "p50": 309,
+          "p95": 5294,
+          "max": 9662
+        },
+        "thinking": {
+          "tokens": 116988,
+          "shareDeSalida": 0.4869,
+          "tokensEstimadosEnDeltas": 112350
+        },
+        "chars": {
+          "total": 244273,
+          "porTipo": {
+            "text": 35197,
+            "tool_use": 209076,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0.1441,
+            "tool_use": 0.8559,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 1.98,
+          "proxyTokens": {
+            "text": 8799,
+            "tool_use": 52269,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 499576,
+          "calibracion": {
+            "prosaCharsPorToken": 2.27,
+            "nProsa": 6,
+            "jsonCharsPorToken": 2.11,
+            "nJson": 48
+          }
+        },
+        "bloques": {
+          "text": 74,
+          "tool_use": 212,
+          "thinking": 119,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {
+          "Agent": {
+            "llamadas": 54,
+            "chars": 167280,
+            "shareDeToolUse": 0.8001
+          },
+          "AskUserQuestion": {
+            "llamadas": 18,
+            "chars": 23316,
+            "shareDeToolUse": 0.1115
+          },
+          "TaskOutput": {
+            "llamadas": 91,
+            "chars": 5430,
+            "shareDeToolUse": 0.026
+          },
+          "Bash": {
+            "llamadas": 6,
+            "chars": 3375,
+            "shareDeToolUse": 0.0161
+          },
+          "SendMessage": {
+            "llamadas": 4,
+            "chars": 2802,
+            "shareDeToolUse": 0.0134
+          },
+          "SendFeedback": {
+            "llamadas": 2,
+            "chars": 2529,
+            "shareDeToolUse": 0.0121
+          },
+          "CronCreate": {
+            "llamadas": 2,
+            "chars": 1950,
+            "shareDeToolUse": 0.0093
+          },
+          "PushNotification": {
+            "llamadas": 7,
+            "chars": 1520,
+            "shareDeToolUse": 0.0073
+          },
+          "Skill": {
+            "llamadas": 11,
+            "chars": 784,
+            "shareDeToolUse": 0.0037
+          },
+          "TaskStop": {
+            "llamadas": 3,
+            "chars": 72,
+            "shareDeToolUse": 0.0003
+          },
+          "CronDelete": {
+            "llamadas": 1,
+            "chars": 18,
+            "shareDeToolUse": 0.0001
+          },
+          "EnterPlanMode": {
+            "llamadas": 6,
+            "chars": 0,
+            "shareDeToolUse": 0
+          },
+          "ExitPlanMode": {
+            "llamadas": 6,
+            "chars": 0,
+            "shareDeToolUse": 0
+          },
+          "CronList": {
+            "llamadas": 1,
+            "chars": 0,
+            "shareDeToolUse": 0
+          }
+        },
+        "stopReason": {
+          "tool_use": 190
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 8.2441,
+          "entradaUsd": 79.585,
+          "shareSalida": 0.0939,
+          "porMasa": {
+            "thinking": 3.7705,
+            "text": 0.515,
+            "tool_use": 3.9533,
+            "otros": 0.0053,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.4574,
+            "text": 0.0625,
+            "tool_use": 0.4795,
+            "otros": 0.0006,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 3.7705,
+            "text": 0.4639,
+            "tool_use": 4.0096,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.4574,
+            "text": 0.0563,
+            "tool_use": 0.4864,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 32,
+          "media": 0,
+          "ponderada": 0,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 0,
+          "sharePesoTop5pct": 0.2579,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 73,
+          "media": 0.0059,
+          "ponderada": 0.0069,
+          "p50": 0,
+          "p95": 0.0312,
+          "conRepeticion": 11,
+          "sharePesoTop5pct": 0.3288,
+          "ponderadaTop5pct": 0.0081
+        }
+      }
+    },
+    "agente-lectura": {
+      "peticiones": 423,
+      "sharePeticiones": 0.027,
+      "shareSalidaUsd": 0.017,
+      "subagente": 164,
+      "mixtos": 22,
+      "purezaFamiliaMedia": 0.9812,
+      "techo": {
+        "salidaUsd": 7.7534,
+        "usdPorDia": 0.6461,
+        "masaUsd": {
+          "thinking": 4.9775,
+          "prosa": 0.6022,
+          "toolUse": 2.1736
+        },
+        "siRecortaTodo": {
+          "10%": 0.7753,
+          "20%": 1.5507,
+          "30%": 2.326
+        },
+        "siRecortaThinking": {
+          "30%": 1.4932,
+          "50%": 2.4888
+        },
+        "siRecortaProsa": {
+          "30%": 0.1807,
+          "50%": 0.3011
+        }
+      },
+      "resumen": {
+        "peticiones": 423,
+        "conCuerpo": 423,
+        "tokensSalida": {
+          "total": 242314,
+          "media": 572.8,
+          "p50": 252,
+          "p95": 2257,
+          "max": 10173
+        },
+        "thinking": {
+          "tokens": 157464,
+          "shareDeSalida": 0.6498,
+          "tokensEstimadosEnDeltas": 150150
+        },
+        "chars": {
+          "total": 111773,
+          "porTipo": {
+            "text": 32558,
+            "tool_use": 79215,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0.2913,
+            "tool_use": 0.7087,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 1.32,
+          "proxyTokens": {
+            "text": 8140,
+            "tool_use": 19804,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 678412,
+          "calibracion": {
+            "prosaCharsPorToken": 2.12,
+            "nProsa": 1,
+            "jsonCharsPorToken": 1.39,
+            "nJson": 58
+          }
+        },
+        "bloques": {
+          "text": 183,
+          "tool_use": 619,
+          "thinking": 269,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {
+          "Read": {
+            "llamadas": 551,
+            "chars": 57758,
+            "shareDeToolUse": 0.7291
+          },
+          "WebFetch": {
+            "llamadas": 37,
+            "chars": 14645,
+            "shareDeToolUse": 0.1849
+          },
+          "Bash": {
+            "llamadas": 21,
+            "chars": 5529,
+            "shareDeToolUse": 0.0698
+          },
+          "WebSearch": {
+            "llamadas": 6,
+            "chars": 745,
+            "shareDeToolUse": 0.0094
+          },
+          "Grep": {
+            "llamadas": 2,
+            "chars": 413,
+            "shareDeToolUse": 0.0052
+          },
+          "Artifact": {
+            "llamadas": 1,
+            "chars": 97,
+            "shareDeToolUse": 0.0012
+          },
+          "Skill": {
+            "llamadas": 1,
+            "chars": 28,
+            "shareDeToolUse": 0.0004
+          }
+        },
+        "stopReason": {
+          "tool_use": 423
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 7.7534,
+          "entradaUsd": 89.9001,
+          "shareSalida": 0.0794,
+          "porMasa": {
+            "thinking": 4.9775,
+            "text": 0.5414,
+            "tool_use": 2.2344,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.642,
+            "text": 0.0698,
+            "tool_use": 0.2882,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 4.9775,
+            "text": 0.6022,
+            "tool_use": 2.1736,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.642,
+            "text": 0.0777,
+            "tool_use": 0.2803,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 129,
+          "media": 0,
+          "ponderada": 0,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 0,
+          "sharePesoTop5pct": 0.3616,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 172,
+          "media": 0.0016,
+          "ponderada": 0.0096,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 7,
+          "sharePesoTop5pct": 0.3618,
+          "ponderadaTop5pct": 0.0257
+        }
+      }
+    },
+    "interno-sin-herramientas": {
+      "peticiones": 5013,
+      "sharePeticiones": 0.3202,
+      "shareSalidaUsd": 0.0141,
+      "subagente": 47,
+      "mixtos": 0,
+      "purezaFamiliaMedia": null,
+      "techo": {
+        "salidaUsd": 6.4531,
+        "usdPorDia": 0.5378,
+        "masaUsd": {
+          "thinking": 0.9641,
+          "prosa": 5.4891,
+          "toolUse": 0
+        },
+        "siRecortaTodo": {
+          "10%": 0.6453,
+          "20%": 1.2906,
+          "30%": 1.9359
+        },
+        "siRecortaThinking": {
+          "30%": 0.2892,
+          "50%": 0.482
+        },
+        "siRecortaProsa": {
+          "30%": 1.6467,
+          "50%": 2.7445
+        }
+      },
+      "resumen": {
+        "peticiones": 5013,
+        "conCuerpo": 5013,
+        "tokensSalida": {
+          "total": 333200,
+          "media": 66.5,
+          "p50": 9,
+          "p95": 9,
+          "max": 7302
+        },
+        "thinking": {
+          "tokens": 19280,
+          "shareDeSalida": 0.0579,
+          "tokensEstimadosEnDeltas": 17450
+        },
+        "chars": {
+          "total": 851256,
+          "porTipo": {
+            "text": 851256,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 1,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 2.71,
+          "proxyTokens": {
+            "text": 212814,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 95808,
+          "calibracion": {
+            "prosaCharsPorToken": 2.94,
+            "nProsa": 205,
+            "jsonCharsPorToken": 0,
+            "nJson": 0
+          }
+        },
+        "bloques": {
+          "text": 5013,
+          "tool_use": 0,
+          "thinking": 40,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {},
+        "stopReason": {
+          "end_turn": 223,
+          "stop_sequence": 4769,
+          "max_tokens": 21
+        },
+        "truncadas": {
+          "peticiones": 21,
+          "share": 0.0042,
+          "tokensSalida": 1344
+        },
+        "dinero": {
+          "salidaUsd": 6.4531,
+          "entradaUsd": 158.5194,
+          "shareSalida": 0.0391,
+          "porMasa": {
+            "thinking": 0.964,
+            "text": 5.4891,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.1494,
+            "text": 0.8506,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 0.9641,
+            "text": 5.4891,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": false
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.1494,
+            "text": 0.8506,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 0,
+          "media": 0,
+          "ponderada": 0,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 0,
+          "sharePesoTop5pct": 0,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 232,
+          "media": 0.0625,
+          "ponderada": 0.069,
+          "p50": 0.0162,
+          "p95": 0.4233,
+          "conRepeticion": 176,
+          "sharePesoTop5pct": 0.2,
+          "ponderadaTop5pct": 0.017
+        }
+      }
+    },
+    "agente-otras": {
+      "peticiones": 147,
+      "sharePeticiones": 0.0094,
+      "shareSalidaUsd": 0.0045,
+      "subagente": 0,
+      "mixtos": 2,
+      "purezaFamiliaMedia": 0.9968,
+      "techo": {
+        "salidaUsd": 2.0548,
+        "usdPorDia": 0.1712,
+        "masaUsd": {
+          "thinking": 0.8821,
+          "prosa": 0.1583,
+          "toolUse": 1.0143
+        },
+        "siRecortaTodo": {
+          "10%": 0.2055,
+          "20%": 0.411,
+          "30%": 0.6164
+        },
+        "siRecortaThinking": {
+          "30%": 0.2646,
+          "50%": 0.441
+        },
+        "siRecortaProsa": {
+          "30%": 0.0475,
+          "50%": 0.0791
+        }
+      },
+      "resumen": {
+        "peticiones": 147,
+        "conCuerpo": 147,
+        "tokensSalida": {
+          "total": 60980,
+          "media": 414.8,
+          "p50": 302,
+          "p95": 1073,
+          "max": 2157
+        },
+        "thinking": {
+          "tokens": 27750,
+          "shareDeSalida": 0.4551,
+          "tokensEstimadosEnDeltas": 25000
+        },
+        "chars": {
+          "total": 48843,
+          "porTipo": {
+            "text": 8562,
+            "tool_use": 40281,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0.1753,
+            "tool_use": 0.8247,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 1.47,
+          "proxyTokens": {
+            "text": 2141,
+            "tool_use": 10070,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 140276,
+          "calibracion": {
+            "prosaCharsPorToken": 1.91,
+            "nProsa": 3,
+            "jsonCharsPorToken": 1.52,
+            "nJson": 71
+          }
+        },
+        "bloques": {
+          "text": 56,
+          "tool_use": 151,
+          "thinking": 91,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {
+          "mcp__claude-in-chrome__browser_batch": {
+            "llamadas": 55,
+            "chars": 20800,
+            "shareDeToolUse": 0.5164
+          },
+          "Artifact": {
+            "llamadas": 48,
+            "chars": 11190,
+            "shareDeToolUse": 0.2778
+          },
+          "mcp__claude-in-chrome__javascript_tool": {
+            "llamadas": 15,
+            "chars": 6360,
+            "shareDeToolUse": 0.1579
+          },
+          "mcp__claude-in-chrome__find": {
+            "llamadas": 7,
+            "chars": 580,
+            "shareDeToolUse": 0.0144
+          },
+          "ScheduleWakeup": {
+            "llamadas": 2,
+            "chars": 522,
+            "shareDeToolUse": 0.013
+          },
+          "mcp__claude-in-chrome__tabs_context_mcp": {
+            "llamadas": 7,
+            "chars": 162,
+            "shareDeToolUse": 0.004
+          },
+          "mcp__claude-in-chrome__read_console_messages": {
+            "llamadas": 2,
+            "chars": 141,
+            "shareDeToolUse": 0.0035
+          },
+          "TaskOutput": {
+            "llamadas": 2,
+            "chars": 115,
+            "shareDeToolUse": 0.0029
+          },
+          "mcp__claude-in-chrome__form_input": {
+            "llamadas": 2,
+            "chars": 107,
+            "shareDeToolUse": 0.0027
+          },
+          "mcp__claude-in-chrome__select_browser": {
+            "llamadas": 2,
+            "chars": 104,
+            "shareDeToolUse": 0.0026
+          },
+          "ToolSearch": {
+            "llamadas": 2,
+            "chars": 92,
+            "shareDeToolUse": 0.0023
+          },
+          "mcp__claude-in-chrome__read_page": {
+            "llamadas": 1,
+            "chars": 64,
+            "shareDeToolUse": 0.0016
+          },
+          "mcp__claude-in-chrome__computer": {
+            "llamadas": 1,
+            "chars": 44,
+            "shareDeToolUse": 0.0011
+          },
+          "mcp__claude-in-chrome__list_connected_browsers": {
+            "llamadas": 3,
+            "chars": 0,
+            "shareDeToolUse": 0
+          },
+          "mcp__claude-in-chrome__tabs_create_mcp": {
+            "llamadas": 2,
+            "chars": 0,
+            "shareDeToolUse": 0
+          }
+        },
+        "stopReason": {
+          "tool_use": 147
+        },
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 2.0548,
+          "entradaUsd": 54.8745,
+          "shareSalida": 0.0361,
+          "porMasa": {
+            "thinking": 0.8821,
+            "text": 0.1711,
+            "tool_use": 0.9994,
+            "otros": 0.0023,
+            "sinCuerpo": 0
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0.4293,
+            "text": 0.0833,
+            "tool_use": 0.4864,
+            "otros": 0.0011,
+            "sinCuerpo": 0
+          },
+          "porMasaCalibrado": {
+            "thinking": 0.8821,
+            "text": 0.1583,
+            "tool_use": 1.0143,
+            "otros": 0,
+            "sinCuerpo": 0,
+            "calibrado": true
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0.4293,
+            "text": 0.077,
+            "tool_use": 0.4936,
+            "otros": 0,
+            "sinCuerpo": 0
+          }
+        },
+        "repeticion": {
+          "n": 36,
+          "media": 0.0091,
+          "ponderada": 0.0093,
+          "p50": 0,
+          "p95": 0.1325,
+          "conRepeticion": 2,
+          "sharePesoTop5pct": 0.1944,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 53,
+          "media": 0.0079,
+          "ponderada": 0.0114,
+          "p50": 0,
+          "p95": 0.0579,
+          "conRepeticion": 3,
+          "sharePesoTop5pct": 0.2579,
+          "ponderadaTop5pct": 0.0176
+        }
+      }
+    },
+    "sin-cuerpo": {
+      "peticiones": 2,
+      "sharePeticiones": 0.0001,
+      "shareSalidaUsd": 0,
+      "subagente": 0,
+      "mixtos": 0,
+      "purezaFamiliaMedia": null,
+      "techo": {
+        "salidaUsd": 0.0007,
+        "usdPorDia": 0.0001,
+        "masaUsd": {
+          "thinking": 0,
+          "prosa": 0,
+          "toolUse": 0
+        },
+        "siRecortaTodo": {
+          "10%": 0.0001,
+          "20%": 0.0001,
+          "30%": 0.0002
+        },
+        "siRecortaThinking": {
+          "30%": 0,
+          "50%": 0
+        },
+        "siRecortaProsa": {
+          "30%": 0,
+          "50%": 0
+        }
+      },
+      "resumen": {
+        "peticiones": 2,
+        "conCuerpo": 0,
+        "tokensSalida": {
+          "total": 135,
+          "media": 67.5,
+          "p50": 44,
+          "p95": 91,
+          "max": 91
+        },
+        "thinking": {
+          "tokens": 122,
+          "shareDeSalida": 0.9037,
+          "tokensEstimadosEnDeltas": 0
+        },
+        "chars": {
+          "total": 0,
+          "porTipo": {
+            "text": 0,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0
+          },
+          "share": {
+            "text": 0,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0
+          },
+          "charsPorTokenVisible": 0,
+          "proxyTokens": {
+            "text": 0,
+            "tool_use": 0,
+            "thinking": 0,
+            "otros": 0
+          },
+          "firma": 0,
+          "calibracion": {
+            "prosaCharsPorToken": 0,
+            "nProsa": 0,
+            "jsonCharsPorToken": 0,
+            "nJson": 0
+          }
+        },
+        "bloques": {
+          "text": 0,
+          "tool_use": 0,
+          "thinking": 0,
+          "otros": 0
+        },
+        "tiposOtros": {},
+        "herramientas": {},
+        "stopReason": {},
+        "truncadas": {
+          "peticiones": 0,
+          "share": 0,
+          "tokensSalida": 0
+        },
+        "dinero": {
+          "salidaUsd": 0.0007,
+          "entradaUsd": 0.0983,
+          "shareSalida": 0.0068,
+          "porMasa": {
+            "thinking": 0,
+            "text": 0,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 0.0007
+          },
+          "shareDeSalidaPorMasa": {
+            "thinking": 0,
+            "text": 0,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 1
+          },
+          "porMasaCalibrado": {
+            "thinking": 0,
+            "text": 0,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 0.0007,
+            "calibrado": false
+          },
+          "shareDeSalidaPorMasaCalibrado": {
+            "thinking": 0,
+            "text": 0,
+            "tool_use": 0,
+            "otros": 0,
+            "sinCuerpo": 1.037
+          }
+        },
+        "repeticion": {
+          "n": 0,
+          "media": 0,
+          "ponderada": 0,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 0,
+          "sharePesoTop5pct": 0,
+          "ponderadaTop5pct": 0
+        },
+        "repeticionCuerpo": {
+          "n": 0,
+          "media": 0,
+          "ponderada": 0,
+          "p50": 0,
+          "p95": 0,
+          "conRepeticion": 0,
+          "sharePesoTop5pct": 0,
+          "ponderadaTop5pct": 0
+        }
+      }
+    }
+  },
+  "maxTokensInternos": {
+    "64": 4790,
+    "8192": 143,
+    "64000": 80
+  },
+  "bashOrdenOCarga": {
+    "comandos": 12059,
+    "chars": 5971857,
+    "charsHeredoc": 2652513,
+    "conHeredoc": 1026,
+    "ilegibles": 2,
+    "shareHeredoc": 0.4442,
+    "charsPorComando": 495,
+    "nota": "chars del `command` de cada llamada a Bash en turnos agente-shell, y cuántos caen dentro del cuerpo de un heredoc (contenido de fichero viajando dentro de la orden). Recortar la ORDEN es posible; recortar el CUERPO es escribir peor."
+  }
+}
