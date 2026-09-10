@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1%",
+          "cifra": "≥ 15,0%",
           "que": "mniejszy rachunek, zweryfikowane na 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "mniejszy koszt dzięki cache'owi prefiksu"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Bez obietnic: pomiary",
-      "title": "Skąd wiemy, że oszczędza? Mierzymy to — a Ty możesz powtórzyć pomiar.",
+      "title": "Skąd wiemy, że oszczędza? Mierzymy to — i publikujemy każdą próbę, jedna po drugiej.",
       "body": "Każdy scenariusz uruchamiamy dwa razy u prawdziwego dostawcy: bez zmian i z Savings z przodu. Oba wyniki liczy licznik samego dostawcy — ten sam, który wycenia Twoją fakturę. Oto co wyszło, z marginesem błędu:",
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
       "plain": "W tym teście rachunek spadł niemal na pewno o co najmniej {piso}. Najprawdopodobniej spadł o {punto}.",
-      "plainNote": "Gdy są widełki, zawsze ogłaszamy mniejszą liczbę — tę, którą gwarantuje statystyka — nigdy tę ładniejszą."
+      "plainNote": "Gdy są widełki, zawsze ogłaszamy mniejszą liczbę — tę, którą gwarantuje statystyka — nigdy tę ładniejszą.",
+      "trialsLink": "Pobierz surowe próby (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Zmierzone · cache prefiksu Anthropic",

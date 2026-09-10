@@ -1,5 +1,26 @@
 import { getTranslations } from "next-intl/server";
 
+import abData from "@/public/data/ab-live.json";
+
+/**
+ * LA FACTURA DE EJEMPLO SALE DE LA MEDICIÓN, NO DE LA IMAGINACIÓN.
+ *
+ * Aquí había un «$330 → $160» escrito a mano: un 51,5 % que no respaldaba
+ * ningún banco, ningún artefacto ni ningún documento. Y no estaba solo en esta
+ * página — la misma pareja de números viajaba en la tarjeta social de los 12
+ * idiomas (que LinkedIn y X cachean durante días) y en el README que se publica
+ * en npm. Una cifra inventada en el escaparate es exactamente lo que esta capa
+ * dice combatir.
+ *
+ * Ahora es una regla de tres sobre el SUELO del intervalo del artefacto
+ * publicado: cien euros de factura y lo que quedaría al suelo medido. Si el
+ * banco se mueve, esto se mueve solo; si alguien publica un artefacto peor, la
+ * ilustración se vuelve más modesta sin que nadie tenga que acordarse.
+ */
+const SUELO_MEDIDO = abData.aggregate?.savings?.lower ?? 0;
+const FACTURA_EJEMPLO = 100;
+const FACTURA_CON_CAPA = Math.round(FACTURA_EJEMPLO * (1 - SUELO_MEDIDO));
+
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -53,7 +74,7 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
               </div>
             </div>
             <div className="hiw-bill">
-              <div className="amt">$330</div>
+              <div className="amt">${FACTURA_EJEMPLO}</div>
               <div className="cap">{t("billMonth")}</div>
             </div>
           </div>
@@ -76,7 +97,7 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
               </div>
             </div>
             <div className="hiw-bill">
-              <div className="amt less">$160</div>
+              <div className="amt less">${FACTURA_CON_CAPA}</div>
               <div className="cap">{t("billReport")}</div>
             </div>
           </div>

@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23.1%",
+          "cifra": "≥ 15.0%",
           "que": "less bill, verified at 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "less cost with prefix cache"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "No promises: measurements",
-      "title": "How do we know it saves? We measure it — and you can repeat the measurement.",
+      "title": "How do we know it saves? We measure it — and we publish every trial, one by one.",
       "body": "Every scenario runs twice against the real provider: as-is, and with Savings in front. Both results are counted with the provider's own meter — the same one that prices your bill. Here is what came out, error margin included:",
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
       "plain": "In this test, the bill went down by at least {piso}, with near certainty. Most likely it went down by {punto}.",
-      "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one."
+      "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one.",
+      "trialsLink": "Download the raw trials (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Measured · Anthropic prefix cache",

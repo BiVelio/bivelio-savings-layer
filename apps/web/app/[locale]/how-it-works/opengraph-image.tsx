@@ -1,6 +1,19 @@
 import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 
+import abData from "@/public/data/ab-live.json";
+
+/**
+ * La MISMA regla de tres que `HowItWorks.tsx`, y no por casualidad: esta
+ * tarjeta la cachean LinkedIn y X durante días, así que una cifra que aquí se
+ * quede vieja sigue circulando aunque la página ya diga otra cosa. Antes eran
+ * dos números escritos a mano ($330 → $160) sin ningún respaldo, copiados en
+ * tres sitios; ahora los tres salen del suelo del artefacto publicado.
+ */
+const SUELO_MEDIDO = abData.aggregate?.savings?.lower ?? 0;
+const FACTURA_EJEMPLO = 100;
+const FACTURA_CON_CAPA = Math.round(FACTURA_EJEMPLO * (1 - SUELO_MEDIDO));
+
 import { locales } from "@/i18n/config";
 
 /**
@@ -116,8 +129,8 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ display: "flex", fontSize: 30, color: INK_SOFT, textDecoration: "line-through" }}>$330</div>
-                <div style={{ display: "flex", fontSize: 40, fontWeight: 700, color: MINT }}>$160</div>
+                <div style={{ display: "flex", fontSize: 30, color: INK_SOFT, textDecoration: "line-through" }}>${FACTURA_EJEMPLO}</div>
+                <div style={{ display: "flex", fontSize: 40, fontWeight: 700, color: MINT }}>${FACTURA_CON_CAPA}</div>
               </div>
               <div style={{ display: "flex", fontSize: 17, color: INK_SOFT, letterSpacing: 1.5, textTransform: "uppercase" }}>
                 {t("billMonth")}

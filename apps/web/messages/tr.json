@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ %23,1",
+          "cifra": "≥ %15,0",
           "que": "daha az fatura, %95 güvenle doğrulandı"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "%78",
-          "que": "önek önbelleğiyle daha az maliyet"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Vaat yok: ölçümler",
-      "title": "Tasarruf ettirdiğini nereden biliyoruz? Ölçüyoruz — ve ölçümü siz de tekrarlayabilirsiniz.",
+      "title": "Tasarruf ettirdiğini nereden biliyoruz? Ölçüyoruz — ve her denemeyi tek tek yayımlıyoruz.",
       "body": "Her senaryo gerçek sağlayıcıya karşı iki kez çalışır: olduğu gibi ve önünde Savings ile. İki sonuç da sağlayıcının kendi sayacıyla sayılır — faturanızı fiyatlandıran sayaçla. İşte hata payıyla birlikte çıkan sonuç:",
       "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
       "plain": "Bu testte fatura neredeyse kesin olarak en az {piso} düştü. Büyük olasılıkla {punto} düştü.",
-      "plainNote": "Bir aralık olduğunda her zaman küçük sayıyı duyururuz — istatistiğin garanti ettiğini — asla gösterişli olanı değil."
+      "plainNote": "Bir aralık olduğunda her zaman küçük sayıyı duyururuz — istatistiğin garanti ettiğini — asla gösterişli olanı değil.",
+      "trialsLink": "Ham denemeleri indir (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Ölçüldü · Anthropic önek önbelleği",

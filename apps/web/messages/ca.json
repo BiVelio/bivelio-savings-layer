@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1 %",
+          "cifra": "≥ 15,0 %",
           "que": "menys factura, verificat al 95 %"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78 %",
-          "que": "menys cost amb memòria cau de prefix"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Sense promeses: mesuraments",
-      "title": "Com sabem que estalvia? Ho mesurem — i tu pots repetir el mesurament.",
+      "title": "Com sabem que estalvia? Ho mesurem — i publiquem els assaigs, un per un.",
       "body": "Cada escenari s'executa dues vegades contra el proveïdor real: tal qual, i amb Savings al davant. Els dos resultats es compten amb el comptador del mateix proveïdor — el mateix que posa el preu a la teva factura. Això és el que va sortir, amb el seu marge d'error:",
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
       "plain": "En aquesta prova, la factura va baixar amb gairebé total seguretat almenys un {piso}. El més probable és que baixés un {punto}.",
-      "plainNote": "Quan hi ha una forquilla, anunciem sempre el número petit — el que l'estadística garanteix —, mai el bonic."
+      "plainNote": "Quan hi ha una forquilla, anunciem sempre el número petit — el que l'estadística garanteix —, mai el bonic.",
+      "trialsLink": "Baixar els assaigs en cru (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Mesurat · memòria cau de prefix d'Anthropic",

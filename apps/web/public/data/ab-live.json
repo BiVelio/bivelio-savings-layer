@@ -1,6 +1,9 @@
 {
   "mode": "LIVE",
   "model": "openai/gpt-4o-mini",
+  "generatedAt": "2026-09-10T10:05:34.912Z",
+  "commit": "f2f2143",
+  "trials": 194,
   "generatedNote": "real provider tokens & cost, quality-gated",
   "pricing": {
     "note": "USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. Both arms share one price, so the savings % is insensitive to price level.",
@@ -41,14 +44,14 @@
       "outputPer1k": 0.0006,
       "cachedInputPer1k": 0.000075
     },
-    "catalogueDated": "2026-08-24",
+    "catalogueDated": "2026-09-06",
     "listPriceKnown": true
   },
   "methodology": "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
   "config": {
-    "reps": 8,
-    "minReps": 8,
-    "maxReps": 24,
+    "reps": 16,
+    "minReps": 16,
+    "maxReps": 48,
     "ciTarget": 0.03,
     "qualityFloor": 0.999,
     "seed": 1234567
@@ -61,11 +64,11 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "resolver",
-      "reps": 4,
+      "reps": 8,
       "armA": {
-        "meanInputTokens": 19,
-        "meanOutputTokens": 77,
-        "meanCost": 0.00004905
+        "meanInputTokens": 36,
+        "meanOutputTokens": 19,
+        "meanCost": 0.0000168
       },
       "armB": {
         "meanInputTokens": 0,
@@ -73,27 +76,27 @@
         "meanCost": 0
       },
       "formaFactura": {
-        "entrada": 0.05810397553516819,
-        "salida": 0.9418960244648318
+        "entrada": 0.3214285714285714,
+        "salida": 0.6785714285714286
       },
       "cacheDePrefijo": {
         "naive": 0,
         "optimizado": 0
       },
       "measured": {
-        "inputTokenDeltaMean": 19,
-        "outputTokenDeltaMean": 77,
+        "inputTokenDeltaMean": 36,
+        "outputTokenDeltaMean": 19,
         "savings": {
           "point": 1,
           "lower": 1,
           "upper": 1
         },
-        "wilcoxonP": 0.035930266797508215
+        "wilcoxonP": 0.0029810947287847167
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 4,
-        "total": 4
+        "passed": 8,
+        "total": 8
       },
       "naiveContractValid": {
         "valid": 0,
@@ -106,13 +109,17 @@
       "proven": true,
       "modelStable": true,
       "servedModels": [
-        "gpt-4o-mini"
+        "gpt-4o-mini-2024-07-18"
       ],
       "fingerprints": [
-        "fp_2pzvopox6u",
-        "fp_igz0179q0p",
-        "fp_8bp9u6szvd",
-        "fp_6voznq5yqa"
+        "fp_d2060853a2",
+        "fp_ae245680e8",
+        "fp_fa2b8a6d5b",
+        "fp_8156e398b1",
+        "fp_1d2403c701",
+        "fp_f27dcc7f03",
+        "fp_cdd4b75452",
+        "fp_28633199ae"
       ],
       "attribution": {
         "avoidedCall": true,
@@ -128,20 +135,20 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "ran",
-      "reps": 11,
+      "reps": 16,
       "armA": {
-        "meanInputTokens": 72,
-        "meanOutputTokens": 18.818181818181817,
-        "meanCost": 0.000022090909090909085
+        "meanInputTokens": 77,
+        "meanOutputTokens": 20,
+        "meanCost": 0.00002355
       },
       "armB": {
-        "meanInputTokens": 72,
-        "meanOutputTokens": 18.545454545454547,
-        "meanCost": 0.00002192727272727272
+        "meanInputTokens": 77,
+        "meanOutputTokens": 19.4375,
+        "meanCost": 0.000023212500000000002
       },
       "formaFactura": {
-        "entrada": 0.48888888888888893,
-        "salida": 0.5111111111111112
+        "entrada": 0.4904458598726115,
+        "salida": 0.5095541401273885
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -149,22 +156,22 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.2727272727272698,
+        "outputTokenDeltaMean": 0.5625,
         "savings": {
-          "point": 0.007407407407407529,
-          "lower": -0.022727272727272707,
-          "upper": 0.03649635036496368
+          "point": 0.014331210191082744,
+          "lower": 0,
+          "upper": 0.028662420382165488
         },
-        "wilcoxonP": 0.3827973100865816
+        "wilcoxonP": 0.07445738144101033
       },
       "quality": {
         "gate": "judge",
-        "passed": 11,
-        "total": 11
+        "passed": 16,
+        "total": 16
       },
       "naiveContractValid": {
-        "valid": 11,
-        "total": 11
+        "valid": 16,
+        "total": 16
       },
       "truncated": {
         "naive": 0,
@@ -173,20 +180,10 @@
       "proven": false,
       "modelStable": true,
       "servedModels": [
-        "gpt-4o-mini"
+        "gpt-4o-mini-2024-07-18"
       ],
       "fingerprints": [
-        "fp_yyc68vgrdf",
-        "fp_lbare2gfuk",
-        "fp_ajsa3n433l",
-        "fp_qa214scnuq",
-        "fp_qgy7pmyj5g",
-        "fp_4b1co4u4vw",
-        "fp_jt5xtc7qrl",
-        "fp_h1z45grpmv",
-        "fp_6635wys7e1",
-        "fp_xy0c2b1y1r",
-        "fp_c7fq4hwr2j"
+        "fp_360a1646cd"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -202,20 +199,20 @@
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "cache",
-      "reps": 6,
+      "reps": 8,
       "armA": {
-        "meanInputTokens": 72,
-        "meanOutputTokens": 18,
-        "meanCost": 0.000021599999999999996
+        "meanInputTokens": 77,
+        "meanOutputTokens": 20,
+        "meanCost": 0.00002355
       },
       "armB": {
-        "meanInputTokens": 72,
-        "meanOutputTokens": 19,
-        "meanCost": 0.000022199999999999998
+        "meanInputTokens": 77,
+        "meanOutputTokens": 20,
+        "meanCost": 0.00002355
       },
       "formaFactura": {
-        "entrada": 0.5,
-        "salida": 0.5
+        "entrada": 0.4904458598726115,
+        "salida": 0.5095541401273885
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -223,90 +220,16 @@
       },
       "measured": {
         "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -1,
+        "outputTokenDeltaMean": 0,
         "savings": {
-          "point": -0.0277777777777779,
-          "lower": -0.05555555555555558,
+          "point": 0,
+          "lower": 0,
           "upper": 0
         },
-        "wilcoxonP": 0.9703268451875493
+        "wilcoxonP": 1
       },
       "quality": {
         "gate": "judge",
-        "passed": 6,
-        "total": 6
-      },
-      "naiveContractValid": {
-        "valid": 6,
-        "total": 6
-      },
-      "truncated": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "proven": false,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_k8dcuuyxw9",
-        "fp_hq97gm693p",
-        "fp_bgvss7pvwj",
-        "fp_ti62ajjf3",
-        "fp_fpgfarle2i",
-        "fp_3l7dtilqoz"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 0,
-        "providerCachedInputTokens": 0
-      },
-      "amortization": {
-        "coldMissCost": 0.000021599999999999996,
-        "hitCost": 0,
-        "breakEvenK": 2
-      }
-    },
-    {
-      "name": "Summarize provided text",
-      "lever": "avoided retrieval (NO_RETRIEVAL routing)",
-      "ledger": "eliminated_tokens",
-      "model": "openai/gpt-4o-mini",
-      "palanca": null,
-      "kind": "ran",
-      "reps": 8,
-      "armA": {
-        "meanInputTokens": 66,
-        "meanOutputTokens": 25.25,
-        "meanCost": 0.00002505
-      },
-      "armB": {
-        "meanInputTokens": 66,
-        "meanOutputTokens": 25.375,
-        "meanCost": 0.000025125
-      },
-      "formaFactura": {
-        "entrada": 0.39520958083832336,
-        "salida": 0.6047904191616766
-      },
-      "cacheDePrefijo": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "measured": {
-        "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": -0.125,
-        "savings": {
-          "point": -0.0029940119760478723,
-          "lower": -0.015060240963855165,
-          "upper": 0.008928571428571508
-        },
-        "wilcoxonP": 0.7245075528576992
-      },
-      "quality": {
-        "gate": "ground-truth",
         "passed": 8,
         "total": 8
       },
@@ -321,374 +244,44 @@
       "proven": false,
       "modelStable": true,
       "servedModels": [
-        "gpt-4o-mini"
+        "gpt-4o-mini-2024-07-18"
       ],
       "fingerprints": [
-        "fp_onnt7cyqan",
-        "fp_p5y55cvog8",
-        "fp_v1q2a2q57t",
-        "fp_1yhsfu7uvf",
-        "fp_r43shke2cw",
-        "fp_8o9f45l92k",
-        "fp_fxndwbnk3d",
-        "fp_f5i4k27rgz"
+        "fp_360a1646cd"
       ],
       "attribution": {
         "avoidedCall": false,
         "eliminatedInputTokens": 0,
         "compressedInputTokens": 0,
         "providerCachedInputTokens": 0
+      },
+      "amortization": {
+        "coldMissCost": 0.000023549999999999996,
+        "hitCost": 0,
+        "breakEvenK": 1
       }
     },
     {
-      "name": "Tool-heavy request",
-      "lever": "fewer tool tokens (tool selector)",
+      "name": "Summarize provided text",
+      "lever": "avoided retrieval (NO_RETRIEVAL routing)",
       "ledger": "eliminated_tokens",
       "model": "openai/gpt-4o-mini",
       "palanca": null,
       "kind": "ran",
-      "reps": 11,
+      "reps": 16,
       "armA": {
-        "meanInputTokens": 300,
-        "meanOutputTokens": 30,
-        "meanCost": 0.000063
+        "meanInputTokens": 88,
+        "meanOutputTokens": 24,
+        "meanCost": 0.000027600000000000007
       },
       "armB": {
-        "meanInputTokens": 121,
-        "meanOutputTokens": 35.54545454545455,
-        "meanCost": 0.00003947727272727272
+        "meanInputTokens": 88,
+        "meanOutputTokens": 24,
+        "meanCost": 0.000027600000000000007
       },
       "formaFactura": {
-        "entrada": 0.7142857142857144,
-        "salida": 0.28571428571428575
-      },
-      "cacheDePrefijo": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "measured": {
-        "inputTokenDeltaMean": 179,
-        "outputTokenDeltaMean": -5.545454545454547,
-        "savings": {
-          "point": 0.3733766233766236,
-          "lower": 0.3439393939393941,
-          "upper": 0.40281385281385296
-        },
-        "wilcoxonP": 0.001676378074673801
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 11,
-        "total": 11
-      },
-      "naiveContractValid": {
-        "valid": 0,
-        "total": 11
-      },
-      "truncated": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "proven": true,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_enh26zp00x",
-        "fp_y172hyozym",
-        "fp_7z6o3llhgv",
-        "fp_cx83dedjjw",
-        "fp_yyv5v9rqo6",
-        "fp_8bdr836u78",
-        "fp_l91418r517",
-        "fp_fx80n7iu1p",
-        "fp_ng94yychl1",
-        "fp_0tix7drbf5",
-        "fp_ajgjjho1dk"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 302,
-        "compressedInputTokens": 0,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Large uniform table",
-      "lever": "compressed_tokens (TOON/CSV format selector)",
-      "ledger": "compressed_tokens",
-      "model": "openai/gpt-4o-mini",
-      "palanca": null,
-      "kind": "ran",
-      "reps": 9,
-      "armA": {
-        "meanInputTokens": 1212,
-        "meanOutputTokens": 318.77777777777777,
-        "meanCost": 0.00035599999999999987
-      },
-      "armB": {
-        "meanInputTokens": 781,
-        "meanOutputTokens": 115.88888888888889,
-        "meanCost": 0.00018668333333333334
-      },
-      "formaFactura": {
-        "entrada": 0.48731236597569694,
-        "salida": 0.5126876340243031
-      },
-      "cacheDePrefijo": {
-        "naive": 2048,
-        "optimizado": 0
-      },
-      "measured": {
-        "inputTokenDeltaMean": 431,
-        "outputTokenDeltaMean": 202.88888888888889,
-        "savings": {
-          "point": 0.47560861423220957,
-          "lower": 0.4464596633778294,
-          "upper": 0.5020367563471011
-        },
-        "wilcoxonP": 0.004575879476874878
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 9,
-        "total": 9
-      },
-      "naiveContractValid": {
-        "valid": 9,
-        "total": 9
-      },
-      "truncated": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "proven": true,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_d0xbpabwsq",
-        "fp_in63woy6qq",
-        "fp_0irfl6rc16",
-        "fp_927kuzx7kz",
-        "fp_9nc2gi2ycs",
-        "fp_cdz3el6kno",
-        "fp_b88z9mpa64",
-        "fp_xsb1vto5xt",
-        "fp_mfmec8wyx7"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 431,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Constrained structured answer",
-      "lever": "output restriction (schema + maxOutputTokens)",
-      "ledger": "output_restriction",
-      "model": "openai/gpt-4o-mini",
-      "palanca": null,
-      "kind": "ran",
-      "reps": 24,
-      "armA": {
-        "meanInputTokens": 60,
-        "meanOutputTokens": 71.08333333333333,
-        "meanCost": 0.00005164999999999999
-      },
-      "armB": {
-        "meanInputTokens": 60,
-        "meanOutputTokens": 70.25,
-        "meanCost": 0.000051149999999999996
-      },
-      "formaFactura": {
-        "entrada": 0.17424975798644723,
-        "salida": 0.8257502420135527
-      },
-      "cacheDePrefijo": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "measured": {
-        "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0.8333333333333286,
-        "savings": {
-          "point": 0.00968054211035807,
-          "lower": -0.09105018106570095,
-          "upper": 0.09959623149394359
-        },
-        "wilcoxonP": 0.4439725915277688
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 24,
-        "total": 24
-      },
-      "naiveContractValid": {
-        "valid": 23,
-        "total": 24
-      },
-      "truncated": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "proven": false,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_1txeww82r0",
-        "fp_itl8ufjga4",
-        "fp_hbgli241gf",
-        "fp_maavgoc9st",
-        "fp_hl1m8ngusq",
-        "fp_mfql7lfpks",
-        "fp_wgdqupqn",
-        "fp_refbvio3c1",
-        "fp_dq7fltd9vb",
-        "fp_euwhzv321d",
-        "fp_hh42ke3ev8",
-        "fp_n1c19u8sb0",
-        "fp_n1taa82ryk",
-        "fp_3y9kgzbkqs",
-        "fp_3pax71e6sf",
-        "fp_8k3wxvtkea",
-        "fp_j5xttydwmx",
-        "fp_z0n3cvu9wn",
-        "fp_20s909hikd",
-        "fp_v4oigr0l14",
-        "fp_c71tt1uc59",
-        "fp_6uhb3i4k1y",
-        "fp_13d1ol5rc7",
-        "fp_m6ultpf68i"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 0,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Stable-prefix agent turn",
-      "lever": "provider prefix cache (stable system prefix over the tier minimum)",
-      "ledger": "none",
-      "model": "openai/gpt-4o-mini",
-      "palanca": {
-        "palanca": "providerPrefixCache",
-        "ejercitada": false,
-        "motivo": "cached_tokens = 0 con un prompt de 5307 tokens, POR ENCIMA del mínimo de tramo (1024) y con el prefijo marcado: el tamaño del prompt NO explica este cero. Lo que queda no es que la palanca no ahorre, sino que el endpoint no reporte cached_tokens, o que las peticiones no aterricen en una instancia con el prefijo caliente — a través de una pasarela el enrutado no es nuestro. No lo leas como una medición"
-      },
-      "kind": "ran",
-      "reps": 24,
-      "armA": {
-        "meanInputTokens": 5307,
-        "meanOutputTokens": 58.416666666666664,
-        "meanCost": 0.0006551
-      },
-      "armB": {
-        "meanInputTokens": 5307,
-        "meanOutputTokens": 58.416666666666664,
-        "meanCost": 0.0006231
-      },
-      "formaFactura": {
-        "entrada": 0.9578269762964745,
-        "salida": 0.04217302370352545
-      },
-      "cacheDePrefijo": {
-        "naive": 56320,
-        "optimizado": 66560
-      },
-      "measured": {
-        "inputTokenDeltaMean": 0,
-        "outputTokenDeltaMean": 0,
-        "savings": {
-          "point": 0.04884750419783235,
-          "lower": -0.13981908323910552,
-          "upper": 0.20957648086159175
-        },
-        "wilcoxonP": 0.3317294822811274
-      },
-      "quality": {
-        "gate": "ground-truth",
-        "passed": 24,
-        "total": 24
-      },
-      "naiveContractValid": {
-        "valid": 24,
-        "total": 24
-      },
-      "truncated": {
-        "naive": 0,
-        "optimizado": 0
-      },
-      "proven": false,
-      "modelStable": true,
-      "servedModels": [
-        "gpt-4o-mini"
-      ],
-      "fingerprints": [
-        "fp_7qqvmycy0n",
-        "fp_4c9b4isp5d",
-        "fp_0h4z5raru9",
-        "fp_4cyhee0gdt",
-        "fp_9fwtzfnja3",
-        "fp_p10ud32lck",
-        "fp_pedlw9d81e",
-        "fp_uytge0co7",
-        "fp_aar7eq3hio",
-        "fp_fsm5smrff0",
-        "fp_z5aj1fhryi",
-        "fp_s8ouxy4dbu",
-        "fp_uj7sp91uve",
-        "fp_jwck1e72ls",
-        "fp_zqfa5wyikl",
-        "fp_2cyikwf731",
-        "fp_tjaoz0kw17",
-        "fp_q6yqgdcoyf",
-        "fp_zngzh4zltm",
-        "fp_jm8cx87yxw",
-        "fp_b663qnwyrw",
-        "fp_l1lrg5955h",
-        "fp_o7kd1cpa4n",
-        "fp_ey7h5abcae"
-      ],
-      "attribution": {
-        "avoidedCall": false,
-        "eliminatedInputTokens": 0,
-        "compressedInputTokens": 0,
-        "providerCachedInputTokens": 0
-      }
-    },
-    {
-      "name": "Triage decision (output codebook)",
-      "lever": "output codebook (compact contract to the provider, caller's shape back)",
-      "ledger": "output_codebook",
-      "model": "openai/gpt-4o-mini",
-      "palanca": {
-        "palanca": "outputCodebook",
-        "ejercitada": false,
-        "motivo": "skipped: the measured output delta is -16 tokens: this model writes MORE from a compact contract (measured by BiVelio on openai/gpt-4o-mini (2026-08-14, 8 paired reps, triage (6 fields, long enums), 72-token answers) — NOT measured on YOUR contract). The input win is capped by the size of the schema while the output loss grows with the answer and is billed 4.0x input, so no schema is big enough to buy it back"
-      },
-      "kind": "ran",
-      "reps": 8,
-      "armA": {
-        "meanInputTokens": 184,
-        "meanOutputTokens": 72,
-        "meanCost": 0.00007079999999999999
-      },
-      "armB": {
-        "meanInputTokens": 184,
-        "meanOutputTokens": 72,
-        "meanCost": 0.00007079999999999999
-      },
-      "formaFactura": {
-        "entrada": 0.3898305084745763,
-        "salida": 0.6101694915254238
+        "entrada": 0.47826086956521735,
+        "salida": 0.5217391304347826
       },
       "cacheDePrefijo": {
         "naive": 0,
@@ -706,12 +299,12 @@
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 8,
-        "total": 8
+        "passed": 16,
+        "total": 16
       },
       "naiveContractValid": {
-        "valid": 8,
-        "total": 8
+        "valid": 16,
+        "total": 16
       },
       "truncated": {
         "naive": 0,
@@ -720,17 +313,433 @@
       "proven": false,
       "modelStable": true,
       "servedModels": [
-        "gpt-4o-mini"
+        "gpt-4o-mini-2024-07-18"
       ],
       "fingerprints": [
-        "fp_oppnnb0x6l",
-        "fp_6bg060kh94",
-        "fp_wtv55rkn2k",
-        "fp_ztqdut9tu7",
-        "fp_oqua7wtz02",
-        "fp_c71olnk3yr",
-        "fp_bjag9mxfc2",
-        "fp_2fseonsmrd"
+        "fp_a0e4782cc9",
+        "fp_f56c486beb",
+        "fp_3ef52572f9",
+        "fp_c19ce61615",
+        "fp_9aeefbb7d1",
+        "fp_ae245680e8",
+        "fp_01e44b225d",
+        "fp_14f4ce979a",
+        "fp_1d2403c701",
+        "fp_4adbad45a5",
+        "fp_22b5580012",
+        "fp_11d07b7a95",
+        "fp_8b9bd3ab6c",
+        "fp_d48d865f86"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Tool-heavy request",
+      "lever": "fewer tool tokens (tool selector)",
+      "ledger": "eliminated_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
+      "kind": "ran",
+      "reps": 16,
+      "armA": {
+        "meanInputTokens": 319,
+        "meanOutputTokens": 24,
+        "meanCost": 0.00006225000000000001
+      },
+      "armB": {
+        "meanInputTokens": 140,
+        "meanOutputTokens": 39.6875,
+        "meanCost": 0.000044812500000000005
+      },
+      "formaFactura": {
+        "entrada": 0.7686746987951807,
+        "salida": 0.23132530120481928
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 179,
+        "outputTokenDeltaMean": -15.6875,
+        "savings": {
+          "point": 0.2801204819277109,
+          "lower": 0.27289156626506017,
+          "upper": 0.2897590361445782
+        },
+        "wilcoxonP": 0.00017474487907609415
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 16,
+        "total": 16
+      },
+      "naiveContractValid": {
+        "valid": 0,
+        "total": 16
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "proven": true,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini-2024-07-18"
+      ],
+      "fingerprints": [
+        "fp_cdd4b75452",
+        "fp_c4a619df1c",
+        "fp_1ba66c974f",
+        "fp_54ec6000d4",
+        "fp_70ce69f50d",
+        "fp_53c3b1e564",
+        "fp_d93a17fdc4",
+        "fp_48910857ee",
+        "fp_3aad0add9c",
+        "fp_1d2403c701",
+        "fp_4adbad45a5",
+        "fp_c19ce61615",
+        "fp_4ce87c02f6",
+        "fp_4f8a068d33",
+        "fp_eac509c072",
+        "fp_9aeefbb7d1"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 302,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Large uniform table",
+      "lever": "compressed_tokens (TOON/CSV format selector)",
+      "ledger": "compressed_tokens",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
+      "kind": "ran",
+      "reps": 18,
+      "armA": {
+        "meanInputTokens": 1234,
+        "meanOutputTokens": 336.72222222222223,
+        "meanCost": 0.0003871333333333332
+      },
+      "armB": {
+        "meanInputTokens": 803,
+        "meanOutputTokens": 183.05555555555554,
+        "meanCost": 0.0002302833333333333
+      },
+      "formaFactura": {
+        "entrada": 0.4781298432925779,
+        "salida": 0.5218701567074221
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 431,
+        "outputTokenDeltaMean": 153.66666666666669,
+        "savings": {
+          "point": 0.40515756845186834,
+          "lower": 0.37375429553264605,
+          "upper": 0.4296128922237382
+        },
+        "wilcoxonP": 0.00010689123264429057
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 18,
+        "total": 18
+      },
+      "naiveContractValid": {
+        "valid": 18,
+        "total": 18
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "proven": true,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini-2024-07-18"
+      ],
+      "fingerprints": [
+        "fp_700dba369c",
+        "fp_20370cf6b8",
+        "fp_b25ddc7e38",
+        "fp_8c8cb050a6",
+        "fp_8156e398b1",
+        "fp_3846d94df2",
+        "fp_4adbad45a5",
+        "fp_75a1a369d7",
+        "fp_99aafa7b8b",
+        "fp_4f8a068d33",
+        "fp_da56f7d23d",
+        "fp_360a1646cd",
+        "fp_d61be4f25a",
+        "fp_4120daab6b",
+        "fp_4abd59899c",
+        "fp_3aad0add9c",
+        "fp_617e1c99b5",
+        "fp_a0e4782cc9"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 431,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Constrained structured answer",
+      "lever": "output restriction (schema + maxOutputTokens)",
+      "ledger": "output_restriction",
+      "model": "openai/gpt-4o-mini",
+      "palanca": null,
+      "kind": "ran",
+      "reps": 48,
+      "armA": {
+        "meanInputTokens": 82,
+        "meanOutputTokens": 61.854166666666664,
+        "meanCost": 0.00004941249999999999
+      },
+      "armB": {
+        "meanInputTokens": 82,
+        "meanOutputTokens": 59.375,
+        "meanCost": 0.00004792499999999998
+      },
+      "formaFactura": {
+        "entrada": 0.24892486718947635,
+        "salida": 0.7510751328105236
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": 2.4791666666666643,
+        "savings": {
+          "point": 0.03010371869466255,
+          "lower": -0.019458322377071013,
+          "upper": 0.08005893909626749
+        },
+        "wilcoxonP": 0.24664802608908754
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 48,
+        "total": 48
+      },
+      "naiveContractValid": {
+        "valid": 47,
+        "total": 48
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "proven": false,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini-2024-07-18"
+      ],
+      "fingerprints": [
+        "fp_649d7ce167",
+        "fp_20370cf6b8",
+        "fp_eac509c072",
+        "fp_2d78c43f25",
+        "fp_9aeefbb7d1",
+        "fp_335dacabb2",
+        "fp_99aafa7b8b",
+        "fp_f27dcc7f03",
+        "fp_de1c131b15",
+        "fp_da56f7d23d",
+        "fp_8c012bb801",
+        "fp_de64dd5ae6",
+        "fp_af02af8afe",
+        "fp_f56c486beb",
+        "fp_9b48c9e51a",
+        "fp_d93a17fdc4",
+        "fp_a0e4782cc9",
+        "fp_8b9bd3ab6c",
+        "fp_7621869b31",
+        "fp_d48d865f86",
+        "fp_70cf485092",
+        "fp_b85f3645a5",
+        "fp_62666fb687",
+        "fp_e275773416",
+        "fp_fa2b8a6d5b",
+        "fp_c23e83d968",
+        "fp_1d2403c701",
+        "fp_4abd59899c",
+        "fp_3ef52572f9",
+        "fp_d2f20b69d0",
+        "fp_fdc0967d89",
+        "fp_4adbad45a5",
+        "fp_b25ddc7e38",
+        "fp_70ce69f50d",
+        "fp_5b6abc5941",
+        "fp_cdd4b75452"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 0
+      }
+    },
+    {
+      "name": "Stable-prefix agent turn",
+      "lever": "provider prefix cache (stable system prefix over the tier minimum)",
+      "ledger": "none",
+      "model": "openai/gpt-4o-mini",
+      "palanca": {
+        "palanca": "providerPrefixCache",
+        "ejercitada": true,
+        "motivo": "el proveedor sirvió 5248 tokens desde su caché de prefijo"
+      },
+      "kind": "ran",
+      "reps": 16,
+      "armA": {
+        "meanInputTokens": 5312,
+        "meanOutputTokens": 61.125,
+        "meanCost": 0.000439875
+      },
+      "armB": {
+        "meanInputTokens": 5323.6875,
+        "meanOutputTokens": 62.6875,
+        "meanCost": 0.0004425656250000001
+      },
+      "formaFactura": {
+        "entrada": 0.9559974804283272,
+        "salida": 0.04400251957167281
+      },
+      "cacheDePrefijo": {
+        "naive": 83968,
+        "optimizado": 83968
+      },
+      "measured": {
+        "inputTokenDeltaMean": -11.6875,
+        "outputTokenDeltaMean": -1.5625,
+        "savings": {
+          "point": -0.006116794543904902,
+          "lower": -0.021924974481116077,
+          "upper": 0.003933641183512582
+        },
+        "wilcoxonP": 0.3308539347468742
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 16,
+        "total": 16
+      },
+      "naiveContractValid": {
+        "valid": 8,
+        "total": 16
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "proven": false,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini-2024-07-18"
+      ],
+      "fingerprints": [
+        "fp_a0e4782cc9"
+      ],
+      "attribution": {
+        "avoidedCall": false,
+        "eliminatedInputTokens": 0,
+        "compressedInputTokens": 0,
+        "providerCachedInputTokens": 5248
+      }
+    },
+    {
+      "name": "Triage decision (output codebook)",
+      "lever": "output codebook (compact contract to the provider, caller's shape back)",
+      "ledger": "output_codebook",
+      "model": "openai/gpt-4o-mini",
+      "palanca": {
+        "palanca": "outputCodebook",
+        "ejercitada": false,
+        "motivo": "skipped: the measured output delta is -16 tokens: this model writes MORE from a compact contract (measured by BiVelio on openai/gpt-4o-mini (2026-08-14, 8 paired reps, triage (6 fields, long enums), 72-token answers) — NOT measured on YOUR contract). The input win is capped by the size of the schema while the output loss grows with the answer and is billed 4.0x input, so no schema is big enough to buy it back"
+      },
+      "kind": "ran",
+      "reps": 16,
+      "armA": {
+        "meanInputTokens": 206,
+        "meanOutputTokens": 70.8125,
+        "meanCost": 0.00007338749999999997
+      },
+      "armB": {
+        "meanInputTokens": 206,
+        "meanOutputTokens": 71.3125,
+        "meanCost": 0.00007368749999999998
+      },
+      "formaFactura": {
+        "entrada": 0.4210526315789474,
+        "salida": 0.5789473684210527
+      },
+      "cacheDePrefijo": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "measured": {
+        "inputTokenDeltaMean": 0,
+        "outputTokenDeltaMean": -0.5,
+        "savings": {
+          "point": -0.004087889626980257,
+          "lower": -0.02325581395348819,
+          "upper": 0.015928322548531826
+        },
+        "wilcoxonP": 0.5718442598701421
+      },
+      "quality": {
+        "gate": "ground-truth",
+        "passed": 16,
+        "total": 16
+      },
+      "naiveContractValid": {
+        "valid": 16,
+        "total": 16
+      },
+      "truncated": {
+        "naive": 0,
+        "optimizado": 0
+      },
+      "proven": false,
+      "modelStable": true,
+      "servedModels": [
+        "gpt-4o-mini-2024-07-18"
+      ],
+      "fingerprints": [
+        "fp_4adbad45a5",
+        "fp_9b48c9e51a",
+        "fp_9aeefbb7d1",
+        "fp_1ba66c974f",
+        "fp_f367f9dc44",
+        "fp_d48d865f86",
+        "fp_fdc0967d89",
+        "fp_f56c486beb",
+        "fp_335dacabb2",
+        "fp_99aafa7b8b",
+        "fp_360a1646cd",
+        "fp_54ec6000d4",
+        "fp_8c012bb801",
+        "fp_c19ce61615",
+        "fp_eac509c072",
+        "fp_7621869b31"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -750,39 +759,39 @@
         "motivo": "applied (two provider calls)"
       },
       "kind": "ran",
-      "reps": 12,
+      "reps": 16,
       "armA": {
-        "meanInputTokens": 3091,
-        "meanOutputTokens": 216,
-        "meanCost": 0.0005748499999999999
+        "meanInputTokens": 3110,
+        "meanOutputTokens": 135.0625,
+        "meanCost": 0.0005475375
       },
       "armB": {
-        "meanInputTokens": 1062,
-        "meanOutputTokens": 262.8333333333333,
-        "meanCost": 0.0003169999999999999
+        "meanInputTokens": 1100,
+        "meanOutputTokens": 170.75,
+        "meanCost": 0.0002674499999999999
       },
       "formaFactura": {
-        "entrada": 0.781542351453856,
-        "salida": 0.2184576485461441
+        "entrada": 0.8519964386000959,
+        "salida": 0.14800356139990414
       },
       "cacheDePrefijo": {
-        "naive": 2944,
+        "naive": 0,
         "optimizado": 0
       },
       "measured": {
-        "inputTokenDeltaMean": 2029,
-        "outputTokenDeltaMean": -46.833333333333314,
+        "inputTokenDeltaMean": 2010,
+        "outputTokenDeltaMean": -35.6875,
         "savings": {
-          "point": 0.44855179612072726,
-          "lower": 0.4109283523836076,
-          "upper": 0.4657395701643491
+          "point": 0.5115403054585304,
+          "lower": 0.5103075131840286,
+          "upper": 0.5125290976311105
         },
-        "wilcoxonP": 0.000614114686619649
+        "wilcoxonP": 0.00014203247236432848
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 12,
-        "total": 12
+        "passed": 16,
+        "total": 16
       },
       "naiveContractValid": {
         "valid": 0,
@@ -795,21 +804,22 @@
       "proven": true,
       "modelStable": true,
       "servedModels": [
-        "gpt-4o-mini"
+        "gpt-4o-mini-2024-07-18"
       ],
       "fingerprints": [
-        "fp_ok1o188l03",
-        "fp_cuyhkeza9h",
-        "fp_b6lrb154hu",
-        "fp_dn4hy33dwb",
-        "fp_qu2khmueb4",
-        "fp_ffdxxrlrwy",
-        "fp_wqygcyq7k5",
-        "fp_nmqfpiznr3",
-        "fp_wmthvavmje",
-        "fp_o080bfihzz",
-        "fp_myyns0lnbo",
-        "fp_ihfk6cw4jf"
+        "fp_f27dcc7f03",
+        "fp_c23e83d968",
+        "fp_4f8a068d33",
+        "fp_99aafa7b8b",
+        "fp_a2de2bff52",
+        "fp_2d78c43f25",
+        "fp_9aeefbb7d1",
+        "fp_b70318dca3",
+        "fp_28633199ae",
+        "fp_53c3b1e564",
+        "fp_4adbad45a5",
+        "fp_8156e398b1",
+        "fp_c411fd2591"
       ],
       "attribution": {
         "avoidedCall": false,
@@ -825,47 +835,47 @@
       "model": "openai/gpt-4o-mini",
       "palanca": {
         "palanca": "compression",
-        "ejercitada": true,
-        "motivo": "applied: pays off and does not touch the cache tier"
+        "ejercitada": false,
+        "motivo": "la capa no dejó traza de esta etapa"
       },
       "kind": "ran",
-      "reps": 24,
+      "reps": 16,
       "armA": {
-        "meanInputTokens": 3838,
-        "meanOutputTokens": 367.5,
-        "meanCost": 0.0007034
+        "meanInputTokens": 3860,
+        "meanOutputTokens": 250.875,
+        "meanCost": 0.000729525
       },
       "armB": {
-        "meanInputTokens": 1861,
-        "meanOutputTokens": 194.08333333333334,
-        "meanCost": 0.000354
+        "meanInputTokens": 3888,
+        "meanOutputTokens": 181.5625,
+        "meanCost": 0.0006921374999999998
       },
       "formaFactura": {
-        "entrada": 0.7230595327807083,
-        "salida": 0.2769404672192916
+        "entrada": 0.7936671121620232,
+        "salida": 0.20633288783797676
       },
       "cacheDePrefijo": {
-        "naive": 29696,
-        "optimizado": 13312
+        "naive": 0,
+        "optimizado": 0
       },
       "measured": {
-        "inputTokenDeltaMean": 1977,
-        "outputTokenDeltaMean": 173.41666666666666,
+        "inputTokenDeltaMean": -28,
+        "outputTokenDeltaMean": 69.3125,
         "savings": {
-          "point": 0.4967301677566107,
-          "lower": 0.4473165642749507,
-          "upper": 0.5407767317879677
+          "point": 0.05124910044206865,
+          "lower": 0.037709351919276046,
+          "upper": 0.06376914855717841
         },
-        "wilcoxonP": 0.000009717932876185387
+        "wilcoxonP": 0.0002407203460756957
       },
       "quality": {
         "gate": "ground-truth",
-        "passed": 24,
-        "total": 24
+        "passed": 16,
+        "total": 16
       },
       "naiveContractValid": {
         "valid": 0,
-        "total": 24
+        "total": 16
       },
       "truncated": {
         "naive": 0,
@@ -874,38 +884,29 @@
       "proven": true,
       "modelStable": true,
       "servedModels": [
-        "gpt-4o-mini"
+        "gpt-4o-mini-2024-07-18"
       ],
       "fingerprints": [
-        "fp_4q7mxj5p5k",
-        "fp_lbj6ix0dr0",
-        "fp_yayqe2ur4z",
-        "fp_b23kmes3tw",
-        "fp_2ocdux8kpu",
-        "fp_cs7fus3whi",
-        "fp_bc0ap3ns9r",
-        "fp_of678x07yr",
-        "fp_n7kvl918h4",
-        "fp_5kr845gesk",
-        "fp_a27pt92xpt",
-        "fp_zz60jmk1k6",
-        "fp_75zc3nc25",
-        "fp_bk9syacha9",
-        "fp_noy6oagxpf",
-        "fp_aygetzqp54",
-        "fp_f3ukxhehmz",
-        "fp_9qeo8a1xlr",
-        "fp_28fc9mzpqr",
-        "fp_aihgt7cmc9",
-        "fp_2w5n98zjxy",
-        "fp_jkoe69rq3q",
-        "fp_effv9k14f8",
-        "fp_34z6oi5yq9"
+        "fp_9b48c9e51a",
+        "fp_fa2b8a6d5b",
+        "fp_14f4ce979a",
+        "fp_1d2403c701",
+        "fp_c4a619df1c",
+        "fp_4adbad45a5",
+        "fp_649d7ce167",
+        "fp_99aafa7b8b",
+        "fp_54ec6000d4",
+        "fp_9aeefbb7d1",
+        "fp_b25ddc7e38",
+        "fp_22b5580012",
+        "fp_2d78c43f25",
+        "fp_28633199ae",
+        "fp_d48d865f86"
       ],
       "attribution": {
         "avoidedCall": false,
         "eliminatedInputTokens": 0,
-        "compressedInputTokens": 2005,
+        "compressedInputTokens": 0,
         "providerCachedInputTokens": 0
       }
     }
@@ -927,30 +928,30 @@
   "levers": {
     "exercised": [
       {
+        "palanca": "providerPrefixCache",
+        "ejercitada": true,
+        "motivo": "el proveedor sirvió 5248 tokens desde su caché de prefijo",
+        "escenario": "Stable-prefix agent turn"
+      },
+      {
         "palanca": "toolDiscovery",
         "ejercitada": true,
         "motivo": "applied (two provider calls)",
         "escenario": "Big tool catalogue (schema-on-demand)"
-      },
-      {
-        "palanca": "compression",
-        "ejercitada": true,
-        "motivo": "applied: pays off and does not touch the cache tier",
-        "escenario": "Forwarded support thread (compression)"
       }
     ],
     "notExercised": [
-      {
-        "palanca": "providerPrefixCache",
-        "ejercitada": false,
-        "motivo": "cached_tokens = 0 con un prompt de 5307 tokens, POR ENCIMA del mínimo de tramo (1024) y con el prefijo marcado: el tamaño del prompt NO explica este cero. Lo que queda no es que la palanca no ahorre, sino que el endpoint no reporte cached_tokens, o que las peticiones no aterricen en una instancia con el prefijo caliente — a través de una pasarela el enrutado no es nuestro. No lo leas como una medición",
-        "escenario": "Stable-prefix agent turn"
-      },
       {
         "palanca": "outputCodebook",
         "ejercitada": false,
         "motivo": "skipped: the measured output delta is -16 tokens: this model writes MORE from a compact contract (measured by BiVelio on openai/gpt-4o-mini (2026-08-14, 8 paired reps, triage (6 fields, long enums), 72-token answers) — NOT measured on YOUR contract). The input win is capped by the size of the schema while the output loss grows with the answer and is billed 4.0x input, so no schema is big enough to buy it back",
         "escenario": "Triage decision (output codebook)"
+      },
+      {
+        "palanca": "compression",
+        "ejercitada": false,
+        "motivo": "la capa no dejó traza de esta etapa",
+        "escenario": "Forwarded support thread (compression)"
       },
       {
         "palanca": "semanticCache",
@@ -971,11 +972,11 @@
         "FAQ (repeat ask)"
       ],
       "savings": {
-        "point": 0.5911602209944751,
-        "lower": 0.1792975970425138,
-        "upper": 0.8368246968026462
+        "point": 0.4163568773234201,
+        "lower": 0.1921097770154374,
+        "upper": 0.6815415821501014
       },
-      "deltaCost": 0.0001925999999999999,
+      "deltaCost": 0.0001344,
       "proven": true
     },
     {
@@ -986,11 +987,11 @@
         "Big tool catalogue (schema-on-demand)"
       ],
       "savings": {
-        "point": 0.43025180964115217,
-        "lower": 0.38584335679840387,
-        "upper": 0.4528268499129974
+        "point": 0.4667882567511914,
+        "lower": 0.43531315884745625,
+        "upper": 0.48424795597128156
       },
-      "deltaCost": 0.0033523500000000013,
+      "deltaCost": 0.004760399999999999,
       "proven": true
     },
     {
@@ -1000,11 +1001,11 @@
         "Forwarded support thread (compression)"
       ],
       "savings": {
-        "point": 0.4933609152825904,
-        "lower": 0.4508056301509399,
-        "upper": 0.5312917341516779
+        "point": 0.1835489893137633,
+        "lower": 0.1313484463842991,
+        "upper": 0.2470206640183683
       },
-      "deltaCost": 0.009909449999999997,
+      "deltaCost": 0.003421499999999999,
       "proven": true
     },
     {
@@ -1024,11 +1025,11 @@
         "Constrained structured answer"
       ],
       "savings": {
-        "point": 0.00968054211035807,
-        "lower": -0.09105018106570095,
-        "upper": 0.09959623149394359
+        "point": 0.03010371869466255,
+        "lower": -0.019458322377071013,
+        "upper": 0.08005893909626749
       },
-      "deltaCost": 0.000011999999999999858,
+      "deltaCost": 0.00007140000000000054,
       "proven": false
     },
     {
@@ -1037,31 +1038,31 @@
         "Triage decision (output codebook)"
       ],
       "savings": {
-        "point": 0,
-        "lower": 0,
-        "upper": 0
+        "point": -0.004087889626980257,
+        "lower": -0.02325581395348819,
+        "upper": 0.015928322548531826
       },
-      "deltaCost": 0,
+      "deltaCost": -0.000004800000000000117,
       "proven": false
     }
   ],
   "reconciliation": {
-    "totalDelta": 0.01423619999999997,
-    "ledgerSum": 0.0142362,
-    "residual": -2.949029909160572e-17,
+    "totalDelta": 0.008345249999999985,
+    "ledgerSum": 0.008345249999999999,
+    "residual": -1.3877787807814457e-17,
     "reconciled": true
   },
   "modelStable": true,
   "aggregate": {
     "savings": {
-      "point": 0.3096549384005006,
-      "lower": 0.23130080815081133,
-      "upper": 0.3807600221008034
+      "point": 0.20799374915882796,
+      "lower": 0.16114814709073244,
+      "upper": 0.2556593369672199
     },
-    "wilcoxonP": 5.447287065862838e-11,
+    "wilcoxonP": 6.661338147750939e-16,
     "qualityPassRate": 1,
     "proven": true,
-    "headline": "verified ≥ 23.1% (95% CI lower bound)"
+    "headline": "verified ≥ 16.1% (95% CI lower bound)"
   },
   "honesty": [
     "Both arms are metered by the provider's own tokenizer — no modeled baseline.",

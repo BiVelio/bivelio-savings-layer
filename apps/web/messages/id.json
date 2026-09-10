@@ -558,14 +558,8 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 23,1%",
+          "cifra": "≥ 15,0%",
           "que": "tagihan lebih rendah, terverifikasi 95%"
-        },
-        {
-          "marca": "Anthropic",
-          "modelo": "claude-sonnet-4-5",
-          "cifra": "78%",
-          "que": "biaya lebih rendah dengan cache prefiks"
         }
       ]
     },
@@ -623,12 +617,13 @@
     },
     "step2": {
       "eyebrow": "Tanpa janji: pengukuran",
-      "title": "Dari mana kami tahu ini menghemat? Kami mengukurnya — dan Anda bisa mengulangi pengukurannya.",
+      "title": "Dari mana kami tahu ini menghemat? Kami mengukurnya — dan kami menerbitkan setiap percobaan, satu per satu.",
       "body": "Setiap skenario dijalankan dua kali terhadap penyedia sungguhan: apa adanya, dan dengan Savings di depan. Kedua hasil dihitung dengan meteran milik penyedia sendiri — meteran yang menentukan harga tagihan Anda. Inilah hasilnya, lengkap dengan margin galat:",
       "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
       "plainTitle": "Terjemahan, tanpa jargon",
       "plain": "Dalam pengujian ini, tagihan hampir pasti turun setidaknya {piso}. Kemungkinan besar turun {punto}.",
-      "plainNote": "Saat ada rentang, kami selalu mengumumkan angka yang kecil — yang dijamin statistik — tidak pernah yang menyanjung."
+      "plainNote": "Saat ada rentang, kami selalu mengumumkan angka yang kecil — yang dijamin statistik — tidak pernah yang menyanjung.",
+      "trialsLink": "Unduh data percobaan mentah (CSV)"
     },
     "anthropicCache": {
       "eyebrow": "Terukur · cache prefiks Anthropic",
