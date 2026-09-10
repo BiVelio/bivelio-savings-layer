@@ -23,6 +23,7 @@ import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
 import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
+import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
@@ -67,6 +68,13 @@ export interface OpcionesGateway {
    * demuestre cero degradación (plan maestro).
    */
   coalescer?: boolean;
+  /**
+   * Palanca D · el techo de esfuerzo por turno. Nivel (`low`…`max`) o ausente.
+   * Es del OPERADOR, no se adivina: la palanca aplica lo que se le declara y
+   * solo cambia la VÍA (un mensaje añadido, que no reinicia la caché de
+   * prefijo, en vez del campo de la raíz, que sí la reinicia).
+   */
+  esfuerzo?: string;
   /**
    * S2 · el carril SOMBRA de la elisión (política v0, la ganadora del replay
    * del corpus). APAGADO por defecto: se enciende con BVSALA_GATEWAY_SHADOW=1.
@@ -519,6 +527,41 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         }
       }
 
+      // ── PALANCA D · EL ESFUERZO POR TURNO ───────────────────────────────
+      // La primera que llega a la SALIDA, que es lo único que paga precio de
+      // lista ($486,06 de $3.959,73) y donde el pensamiento es el 37,7 %.
+      //
+      // Y la primera que NO paga peaje de caché, que es su razón de ser: el dial
+      // se AÑADE al final de `messages` en vez de cambiar `output_config` en la
+      // raíz. Un cambio en la raíz invalida la caché de mensajes —la trampa que
+      // mató a la poda, a la elisión y al patrón de context-mode—; un mensaje
+      // añadido no reescribe nada anterior, así que el prefijo sigue casando y
+      // los bloques de pensamiento anteriores siguen siendo válidos.
+      //
+      // Misma disciplina triple que C: nivel declarado por el operador, feature
+      // per-org fail-closed, canal S4a, y un try que ante cualquier anomalía
+      // reenvía lo que ya llevara `cuerpoSaliente`.
+      let esfuerzoPuesto = false;
+      if (
+        canalElision !== null &&
+        esNivel(opts.esfuerzo) &&
+        req.method === "POST" &&
+        url.pathname === "/v1/messages" &&
+        canalElision.tiene("per_turn_effort")
+      ) {
+        try {
+          const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
+          const puesto = aplicarEsfuerzo(cuerpoSaliente, opts.esfuerzo, cod);
+          if (puesto !== null) {
+            cuerpoSaliente = puesto.cuerpo;
+            h["anthropic-beta"] = conBetaDeEsfuerzo(h["anthropic-beta"]);
+            esfuerzoPuesto = true;
+          }
+        } catch {
+          /* passthrough */
+        }
+      }
+
       // ── LA PALANCA DE TARIFA · TTL de escritura 1h → 5m ─────────────────
       // Misma disciplina que la de arriba: bandera local implícita (hay canal),
       // feature per-org fail-closed, y un try que ante cualquier anomalía
@@ -585,23 +628,29 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       }
 
       // ── Palanca C · el REINTENTO INTACTO ──────────────────────────────
-      // Un 400 tras reescribir el modelo puede ser culpa de la reescritura:
-      // fable-5-1 rechaza cosas que fable-5 acepta (la verja de hermano.ts
-      // ataja las conocidas, pero no se pueden enumerar todas). Se reenvía
+      // Un 400 tras tocar el cuerpo puede ser culpa nuestra. Con la palanca C,
+      // porque fable-5-1 rechaza cosas que fable-5 acepta. Con la D, porque la
+      // beta del esfuerzo por turno estaba abierta como beta limitada y una org
+      // sin acceso recibe un 400 de una petición que sin nosotros iba bien. Se reenvía
       // UNA vez el cuerpo y las cabeceras ORIGINALES del cliente — sin C, sin
       // diales, sin rebaja — y se mide lo que de verdad viajó. Si el 400 era
       // del cliente, ve el mismo 400 que habría visto sin la capa; cuesta un
       // viaje extra en una petición que ya iba a fallar. Nunca en streaming a
       // medias: aquí no se ha escrito ni una cabecera al cliente todavía.
-      if (hermano !== null && upstream.status === 400 && !ac.signal.aborted) {
+      if ((hermano !== null || esfuerzoPuesto) && upstream.status === 400 && !ac.signal.aborted) {
         let motivo = "";
         try {
           motivo = (await upstream.text()).slice(0, 300).replace(/\s+/g, " ");
         } catch {
           /* el motivo es solo para el log */
         }
-        log(`[gateway] modelo hermano (C): el upstream rechazó (400) la petición reescrita a ${hermano.servido}; se reenvía intacta · ${motivo}`);
+        log(
+          `[gateway] el upstream rechazó (400) la petición reescrita` +
+            `${hermano ? ` a ${hermano.servido}` : ""}${esfuerzoPuesto ? " (esfuerzo por turno)" : ""}` +
+            `; se reenvía intacta · ${motivo}`,
+        );
         hermano = null;
+        esfuerzoPuesto = false;
         rebaja = null;
         diales = null;
         try {

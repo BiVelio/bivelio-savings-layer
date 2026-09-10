@@ -40,7 +40,8 @@ export type Feature =
    * precios de catálogo — `measured`, sin A/B. Opt-in del cliente en el
    * gateway (BVSALA_GATEWAY_MODELO_HERMANO=1) además de este feature.
    */
-  | "sibling_model_routing";
+  | "sibling_model_routing"
+  | "per_turn_effort";
 
 /**
  * Runtime mirror of the `Feature` union, for gates and parity tests. The
@@ -58,6 +59,7 @@ export const FEATURES = [
   "tool_result_elision",
   "cache_ttl_tuning",
   "sibling_model_routing",
+  "per_turn_effort",
 ] as const satisfies readonly Feature[];
 const _exhaustiva: [Exclude<Feature, (typeof FEATURES)[number]>] extends [never] ? true : never = true;
 void _exhaustiva;

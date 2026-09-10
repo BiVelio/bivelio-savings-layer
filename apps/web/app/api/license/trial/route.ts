@@ -151,6 +151,7 @@ export async function POST() {
     "cache_ttl_tuning",
     // Palanca C · el anillo interno la lleva por la misma razón que las otras dos.
     "sibling_model_routing",
+    "per_turn_effort",
   ];
   // Bare-uuid jti so it doubles as the `bvsala.licenses.id` (the table's id == jti
   // invariant). `iss: "bivelio-internal"` — not a jti prefix — is what marks it

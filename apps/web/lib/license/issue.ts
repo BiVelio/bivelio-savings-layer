@@ -42,6 +42,7 @@ export const PRO_FEATURES = [
   // 0026_features_sibling_model_routing.sql (misma razón que 0023). El gateway
   // sigue exigiendo el opt-in local del cliente.
   "sibling_model_routing",
+  "per_turn_effort",
   "priority_support",
 ] as const;
 
