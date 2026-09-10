@@ -121,8 +121,8 @@
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
-      "whatEliminatedTokens": "invoertokens die als overbodig zijn geschrapt",
-      "elisionNota": "Alleen een telling — de geldwaarde wordt hieronder in de schaduw-elisie geschat en telt nooit mee in je commissie.",
+      "whatEliminatedTokens": "invoertokens die de aanbieder nooit heeft verwerkt",
+      "elisionNota": "Een teller van de aanbieder, geen besparing van ons: vandaag wordt dit door de configuratie van je eigen client veroorzaakt. Het telt nooit mee voor je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens die goedkoper worden gefactureerd (prefixcache)",
       "ghostAwaiting": "{ref} · wacht op eerste rapport",

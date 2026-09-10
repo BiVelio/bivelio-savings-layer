@@ -121,8 +121,8 @@
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
-      "whatEliminatedTokens": "gereksiz olduğu için düşürülen girdi token'ları",
-      "elisionNota": "Yalnızca bir sayım — parasal değeri aşağıdaki gölge eksiltmede tahmin edilir ve komisyonuna asla dâhil edilmez.",
+      "whatEliminatedTokens": "sağlayıcının hiç işlemediği girdi belirteçleri",
+      "elisionNota": "Bu sağlayıcının sayacı, bizim tasarrufumuz değil: bugün bunu tetikleyen kendi istemcinizin yapılandırması. Komisyonunuza asla girmez.",
       "whatCompressedTokens": "daha küçük olarak yeniden kodlanan girdi token'ları",
       "whatProviderCachedTokens": "daha ucuza faturalandırılan girdi token'ları (önek önbelleği)",
       "ghostAwaiting": "{ref} · ilk rapor bekleniyor",

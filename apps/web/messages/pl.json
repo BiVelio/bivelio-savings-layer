@@ -121,8 +121,8 @@
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",
-      "whatEliminatedTokens": "tokeny wejściowe odrzucone jako zbędne",
-      "elisionNota": "Tylko licznik — jego wartość pieniężna jest szacowana w elizji w cieniu poniżej i nigdy nie wchodzi do twojej prowizji.",
+      "whatEliminatedTokens": "tokeny wejściowe, których dostawca nigdy nie przetworzył",
+      "elisionNota": "To licznik dostawcy, nie nasza oszczędność: dziś uruchamia go konfiguracja Twojego własnego klienta. Nigdy nie wchodzi do Twojej prowizji.",
       "whatCompressedTokens": "tokeny wejściowe przekodowane na mniejsze",
       "whatProviderCachedTokens": "tokeny wejściowe naliczone taniej (cache prefiksu)",
       "ghostAwaiting": "{ref} · oczekiwanie na pierwszy raport",
