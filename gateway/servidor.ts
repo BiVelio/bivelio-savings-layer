@@ -22,6 +22,7 @@ import {
 import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
+import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
@@ -477,6 +478,19 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // leyendo el modelo SOLICITADO del cuerpo original; el servido viaja en
       // `hermano` y el ahorro es la resta de dos precios de catálogo sobre el
       // mismo usage (ver construirInforme).
+      // EL CATÁLOGO DE HERRAMIENTAS, DICHO EN VOZ ALTA UNA VEZ. No cambia la
+      // petición: solo avisa de que el cliente manda su catálogo entero pudiendo
+      // no hacerlo. Se mira sobre el cuerpo ORIGINAL y solo si viene sin
+      // comprimir, que es como viaja el tráfico de Claude Code.
+      if (req.method === "POST" && url.pathname === "/v1/messages" && (codificacion ?? "") === "") {
+        try {
+          const aviso = avisoDeBusquedaDeHerramientas(verHerramientas(cuerpo.toString("utf8")));
+          if (aviso) avisarUnaVez("gateway-busqueda-herramientas", aviso);
+        } catch {
+          /* un aviso jamás puede tumbar una petición */
+        }
+      }
+
       const quiereHermano =
         canalElision !== null &&
         opts.modeloHermano === true &&
