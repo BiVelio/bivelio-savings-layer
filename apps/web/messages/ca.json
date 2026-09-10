@@ -121,8 +121,8 @@
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
-      "whatEliminatedTokens": "tokens d'entrada descartats per innecessaris",
-      "elisionNota": "Només un recompte — el seu valor en diner s'estima a l'elisió en ombra de sota, i mai no entra a la teva comissió.",
+      "whatEliminatedTokens": "tokens d'entrada que el proveïdor no va arribar a processar",
+      "elisionNota": "És un recompte del proveïdor, no un estalvi nostre: avui ho dispara la configuració del teu propi client. Mai no entra a la teva comissió.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
       "whatProviderCachedTokens": "tokens d'entrada facturats més barats (memòria cau de prefix)",
       "ghostAwaiting": "{ref} · esperant el primer informe",

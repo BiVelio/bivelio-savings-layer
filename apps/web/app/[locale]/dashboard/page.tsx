@@ -14,8 +14,6 @@ import { UsageExplorer } from "./components/UsageExplorer";
 import { TrafficModelMix } from "./components/TrafficModelMix";
 import { MaquinasCard } from "./components/MaquinasCard";
 import { SesionesCard } from "./components/SesionesCard";
-import { ElisionProveedorCard } from "./components/ElisionProveedorCard";
-import { SombraElisionCard } from "./components/SombraElisionCard";
 import { VerdictHero } from "./components/VerdictHero";
 
 export const dynamic = "force-dynamic";
@@ -90,13 +88,20 @@ export default async function OverviewPage() {
           </div>
           <SesionesCard sesiones={sesiones} />
           <MaquinasCard asientos={asientos} />
-          {/* El borrado del proveedor (0025): conteo del proveedor, precio suelo
-              nuestro. Solo el CONTEO se pinta; el dólar se guarda y no entra en
-              la comisión. Tarjeta propia, como la sombra. */}
-          <ElisionProveedorCard usage={usage} />
-          {/* La sombra al final y en tarjeta PROPIA: hipotética por doctrina,
-              jamás mezclada con el titular ni con los libros medidos. */}
-          <SombraElisionCard usage={usage} />
+          {/* FUERA LAS DOS TARJETAS DE ELISIÓN (2026-09-10).
+              La elisión está muerta para el cliente: sus diales llevan apagados
+              desde el 09-09 y hoy se quitó `context_elision` de las tres
+              licencias pro vivas. Enseñar un −39,5 % en rojo grande sobre
+              $735,43 «simulados» de una palanca que el cliente NO PUEDE
+              encender no le informa de nada: le da un susto sobre algo que no
+              ha pasado y no va a pasar. Lo mismo la del borrado del proveedor,
+              que contaba peticiones acreditadas por unos diales apagados.
+              La medición NO se pierde: las columnas `shadow_*` y
+              `eliminated_*` se siguen escribiendo y son nuestras para
+              consultarlas. Lo que se quita es enseñarle al cliente nuestra
+              investigación y perdida como si fuera su cuenta. Si algún día la
+              palanca vuelve con neto positivo medido, las tarjetas vuelven —
+              los componentes siguen en el repo. */}
         </div>
       </section>
     </>

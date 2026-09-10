@@ -121,8 +121,8 @@
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/Retrieval-/Tool-Aufrufe, die nie ausgeführt wurden",
-      "whatEliminatedTokens": "Eingabe-Tokens, die als unnötig verworfen wurden",
-      "elisionNota": "Nur eine Zählung — ihr Geldwert wird unten in der Schatten-Elision geschätzt und fließt nie in deine Provision ein.",
+      "whatEliminatedTokens": "Eingabe-Tokens, die der Anbieter nie verarbeitet hat",
+      "elisionNota": "Ein Zähler des Anbieters, keine Ersparnis von uns: Ausgelöst wird das heute von der Konfiguration Ihres eigenen Clients. Es fließt nie in Ihre Provision ein.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
       "whatProviderCachedTokens": "Eingabe-Tokens, die günstiger abgerechnet wurden (Prefix-Cache)",
       "ghostAwaiting": "{ref} · wartet auf ersten Bericht",
