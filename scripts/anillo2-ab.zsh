@@ -146,8 +146,10 @@ bvsala-ab-informes() {
         // La auditoría que manda desde el 2026-09-10: la unidad es la SESIÓN.
         const ses = d.sesiones;
         if (ses) {
-          const sucias = ses.sesiones.filter((x) => !x.limpia).length;
-          console.log(`sesiones: ${ses.sesiones.length} (${sucias} con fisura) · reparto turnos control ${ses.reparto.control} / palanca ${ses.reparto.palanca}`);
+          const nuevas = ses.sesiones.filter((x) => !x.protocoloAnterior);
+          console.log(`sesiones (protocolo nuevo, desde ${ses.desde}): ${nuevas.length} de ${ses.sesiones.length}` +
+            ` · reparto turnos control ${ses.reparto.control} / palanca ${ses.reparto.palanca}` +
+            (ses.omitidasPorProtocoloAnterior ? ` · ${ses.omitidasPorProtocoloAnterior} anteriores al corte, no auditadas` : ""));
           for (const f of ses.fisuras.slice(0, 3)) console.log(`  FISURA ${f}`);
           if (ses.fisuras.length > 3) console.log(`  … y ${ses.fisuras.length - 3} fisuras más`);
         }

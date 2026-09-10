@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { brazoDeSesion, brazoDelDia, leerEnrolamiento, planDeAnillo2 } from "../gateway/anillo2.js";
-import { brazoDeSesion as brazoDeSesionAuditor } from "../benchmarks/anillo2/nucleo.js";
+import { auditarPorSesion, brazoDeSesion as brazoDeSesionAuditor } from "../benchmarks/anillo2/nucleo.js";
 
 /**
  * El encadenado del A/B vivía SOLO en una función de ~/.zshrc. Toda sesión
@@ -146,5 +146,46 @@ describe("brazoDeSesion · la asignación vigente desde el 2026-09-10", () => {
     for (const id of ["a", "sesion-1", "4f3c1a20-9b77-4e51-8d2a-1e6f0c9b7a33", "", "ñ-unicode-🙂"]) {
       expect(brazoDeSesion(id)).toBe(brazoDeSesionAuditor(id));
     }
+  });
+});
+
+describe("auditarPorSesion · el corte de protocolo", () => {
+  const turno = (sesion: string, dia: string, brazo: "control" | "palanca") => ({
+    dia,
+    brazo,
+    model: "claude-fable-5-1",
+    sesion,
+    entradaUsd: 1,
+    salidaUsd: 0.1,
+    entradaTokens: 1000,
+    salidaTokens: 100,
+    borrados: 0,
+    tokensLimpiados: 0,
+    respuestaOmitida: false,
+  });
+
+  it("no audita el corpus anterior al corte: si no, CADA sesión vieja sería una fisura y enterraría las de verdad", () => {
+    // Corpus viejo servido bajo paridad de días: el hash dirá otra cosa y da igual.
+    const viejos = ["s1", "s2", "s3"].flatMap((s) => [turno(s, "2026-09-08", "palanca"), turno(s, "2026-09-08", "control")]);
+    const a = auditarPorSesion(viejos);
+    expect(a.fisuras).toHaveLength(0);
+    expect(a.omitidasPorProtocoloAnterior).toBe(3);
+    expect(a.sesiones.every((s) => s.protocoloAnterior)).toBe(true);
+    // Y no cuentan para el reparto: el experimento nuevo no los incluye.
+    expect(a.reparto).toEqual({ control: 0, palanca: 0 });
+  });
+
+  it("una sesión posterior al corte que mezcla brazos SÍ es fisura", () => {
+    const mezclada = [turno("mixta", "2026-09-11", "palanca"), turno("mixta", "2026-09-11", "control")];
+    const a = auditarPorSesion(mezclada);
+    expect(a.fisuras).toHaveLength(1);
+    expect(a.fisuras[0]).toContain("mixta");
+    expect(a.omitidasPorProtocoloAnterior).toBe(0);
+  });
+
+  it("una sesión que cruza el corte se audita con el criterio nuevo (su último día ya aplicaba)", () => {
+    const cruza = [turno("cruza", "2026-09-09", "palanca"), turno("cruza", "2026-09-10", "palanca")];
+    const a = auditarPorSesion(cruza);
+    expect(a.sesiones[0]!.protocoloAnterior).toBe(false);
   });
 });
