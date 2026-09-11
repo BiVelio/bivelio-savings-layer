@@ -325,3 +325,57 @@ describe("la verja falla CERRADA", () => {
     expect(v.aceptada).toBe(true);
   });
 });
+
+describe("desempate — la contradicción RESUELTA sí se puede contestar", () => {
+  const CHOQUE: UnidadDeEvidencia[] = [
+    { id: "c1", papel: "contradictoria", texto: "El importe pactado es 1.000,00 €.", fuente: "anexo I", fecha: "2025-01-01" },
+    { id: "c2", papel: "contradictoria", texto: "El importe pactado es 2.000,00 €.", fuente: "anexo II", fecha: "2025-06-01" },
+  ];
+
+  it("acepta un valor cuando se declara la regla y la unidad ganadora", () => {
+    // Sin esto la verja era simplemente incorrecta: la calibración contra el
+    // golden set rechazaba 13 de 60 respuestas CORRECTAS por este motivo.
+    const v = verjaDeExtraccion(respuestaImporte("2000.00", ["c2"]), CHOQUE, {
+      regla: "fecha-posterior",
+      ganadora: "c2",
+    });
+    expect(v.aceptada).toBe(true);
+  });
+
+  it("sigue rechazando si la regla declarada es «ninguna»", () => {
+    const v = verjaDeExtraccion(respuestaImporte("2000.00", ["c2"]), CHOQUE, {
+      regla: "ninguna",
+      ganadora: null,
+    });
+    expect(v.reparos.map((m) => m.motivo)).toContain("contradiccion-no-resuelta");
+  });
+
+  it("sigue rechazando si no se declara desempate alguno", () => {
+    expect(verjaDeExtraccion(respuestaImporte("2000.00", ["c2"]), CHOQUE).aceptada).toBe(false);
+  });
+});
+
+describe("derivación — el valor calculado que ninguna unidad escribe", () => {
+  const FACTURA: UnidadDeEvidencia[] = [
+    { id: "b1", papel: "necesaria", texto: "Base imponible: 800,00 €.", fuente: "cabecera" },
+    { id: "b2", papel: "necesaria", texto: "IVA general del 21 %, que asciende a 168,00 €.", fuente: "desglose" },
+  ];
+
+  it("acepta el total, que es la suma y no está escrito en ninguna parte", () => {
+    // 800 + 168 = 968. Exigirlo literal no hacía la verja más estricta: la
+    // hacía inservible — 38 de 60 respuestas correctas caían por esto.
+    expect(verjaDeExtraccion(respuestaImporte("968.00", ["b1", "b2"]), FACTURA).aceptada).toBe(true);
+  });
+
+  it("acepta la cuota como porcentaje aplicado sobre la base", () => {
+    expect(verjaDeExtraccion(respuestaImporte("168.00", ["b1", "b2"]), FACTURA).aceptada).toBe(true);
+  });
+
+  it("NO deja pasar un número que no sale de ninguna operación de dos términos", () => {
+    expect(verjaDeExtraccion(respuestaImporte("1234.56", ["b1", "b2"]), FACTURA).aceptada).toBe(false);
+  });
+
+  it("con una sola unidad citada no hay derivación posible", () => {
+    expect(verjaDeExtraccion(respuestaImporte("968.00", ["b1"]), FACTURA).aceptada).toBe(false);
+  });
+});

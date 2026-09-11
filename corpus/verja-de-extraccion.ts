@@ -56,6 +56,57 @@
  * perfectamente rastreado y ser la respuesta a otra pregunta. Para eso hace
  * falta el golden set (`evaluar.ts`), que sí tiene la respuesta delante. Esta
  * verja acota el daño; no certifica el acierto.
+ *
+ * ─── LO QUE MIDE, MEDIDO (banco: `corpus/calibrar-la-verja.ts`) ─────────────
+ *
+ * 60 casos de facturación (32 es + 28 ca), 2026-09-11. Las dos cifras hay que
+ * leerlas juntas, porque mover una mueve la otra en sentido contrario:
+ *
+ *   FALSO RECHAZO   38,3 %  (23/60)  cuesta dinero: repetir tareas correctas
+ *   FALSO ACEPTADO   7,4 %  (15/202) entrega datos falsos: no se recupera
+ *
+ * El desglose importa mucho más que la media, porque los modos no son iguales
+ * de graves ni la verja los ve igual de bien:
+ *
+ *   cita-fantasma               0 escapes / 50   referencia inventada
+ *   sin-cita                    0 escapes / 50   afirmar sin señalar de dónde
+ *   fecha-invertida             0 escapes / 14   leer 12/03 como 3 de diciembre
+ *   importe-vecino              1 escape  / 28   el importe de la línea de al lado
+ *   cita-movida-a-distractora   7 escapes / 50   valor bueno, cita equivocada
+ *   contesta-en-vez-de-abstenerse  7 escapes / 10   ← el peor, y el que peor ve
+ *
+ * Ese único escape de `importe-vecino` NO estaba antes de abrir la puerta de
+ * derivación: era 0/28. Es el precio exacto de admitir el valor calculado, y se
+ * escribe aquí en vez de redondearlo a cero porque es la cifra que hay que
+ * vigilar si algún día se toca `seDeriva`.
+ *
+ * ⚠️ EL LÍMITE DURO, que no es un error a corregir sino una propiedad: la verja
+ * NO PUEDE VER que había que abstenerse cuando el motivo de abstención no deja
+ * huella en la evidencia. Una contradicción se ve (hay dos unidades que chocan);
+ * la evidencia INSUFICIENTE no se ve — por fuera es idéntica a la suficiente. De
+ * ahí el 70 % de escapes de ese modo. La consecuencia es de ENRUTADO, no de
+ * código: una tarea cuya respuesta correcta pueda ser una abstención no debe
+ * enviarse a sustitución local, porque su verja no la protege.
+ *
+ * ─── LOS 23 FALSOS RECHAZOS, Y POR QUÉ NO SE ARREGLAN ENSANCHANDO ───────────
+ *
+ * Todos son aritmética legítima de varios pasos: 13 son fechas calculadas
+ * («emisión 30/06/2024 + 60 días»), 8 importes de tres términos (base + IVA +
+ * recargo de equivalencia), 2 porcentajes encadenados y 2 enteros.
+ *
+ * Se probó a admitir tres términos y se midió el precio: el falso rechazo baja
+ * al 31,7 % (−6,6 puntos) pero los escapes de `importe-vecino` pasan del 3,6 %
+ * al 10,7 % — se TRIPLICA el fallo de la comprobación estrella. Es mal negocio y
+ * por eso la puerta se queda en dos términos.
+ *
+ * La lección de fondo: ADIVINAR la derivación no escala. Cada término nuevo
+ * amplía el espacio de forma combinatoria y la probabilidad de que un número
+ * inventado resulte derivable por casualidad crece más rápido que la
+ * recuperación de derivaciones legítimas. La salida no es una puerta más ancha:
+ * es que quien responde DECLARE la operación («total = base + cuota, sobre u5 y
+ * u4»), y entonces la verja comprueba UNA fórmula declarada en vez de buscar
+ * entre cientos. Es además lo que ya pide el contrato de resultado del plan del
+ * CTO, con su campo `operation`.
  */
 
 import {
@@ -276,15 +327,54 @@ function reparoDeForma(campo: CampoRespuesta): ReparoDeLaVerja | null {
   }
 }
 
-/** Si el valor del campo aparece en alguno de los textos citados. */
+/**
+ * Si un número se DERIVA de los que hay en los textos citados con una sola
+ * operación de factura.
+ *
+ * POR QUÉ EXISTE ESTA PUERTA, Y POR QUÉ ES ESTRECHA. La calibración contra el
+ * golden set (60 casos) rechazaba 38 respuestas CORRECTAS porque el valor no
+ * estaba escrito: «total con IVA 968,00» sale de sumar la base 800,00 y la
+ * cuota 168,00, y ninguna unidad escribe el 968. Un total, una diferencia o una
+ * cuota son la mitad de los campos de una factura; exigirlos literales no hacía
+ * la verja más estricta, la hacía inservible.
+ *
+ * La puerta admite SOLO lo que se puede comprobar con dos números y una
+ * operación: suma, resta y aplicación de un porcentaje. No es una calculadora
+ * simbólica y no debe serlo — cuanto más ancha sea esta puerta, más fácil es que
+ * un número inventado resulte derivable por casualidad. El precio exacto de
+ * abrirla está medido en el banco de calibración: lo que sube el falso aceptado
+ * frente a lo que baja el falso rechazo.
+ */
+function seDeriva(buscado: number, textos: string[]): boolean {
+  const ns = textos.flatMap(numerosDe);
+  if (ns.length < 2) return false;
+  const cerca = (x: number) => Math.abs(x - buscado) < 0.005;
+  for (let i = 0; i < ns.length; i += 1) {
+    for (let j = 0; j < ns.length; j += 1) {
+      if (i === j) continue;
+      const a = ns[i]!;
+      const b = ns[j]!;
+      if (cerca(a + b) || cerca(a - b)) return true;
+      // Un porcentaje aplicado: base × tipo / 100, y la base más su cuota.
+      if (cerca((a * b) / 100) || cerca(a + (a * b) / 100)) return true;
+    }
+  }
+  return false;
+}
+
+/** Si el valor del campo aparece —o se deriva— de alguno de los textos citados. */
 function seRastrea(v: ValorCampo, textos: string[]): boolean {
   switch (v.clase) {
-    case "importe":
-      return textos.some((t) => contieneNumero(t, Number(v.cantidad)));
-    case "porcentaje":
-      return textos.some((t) => contieneNumero(t, Number(v.valor)));
+    case "importe": {
+      const n = Number(v.cantidad);
+      return textos.some((t) => contieneNumero(t, n)) || seDeriva(n, textos);
+    }
+    case "porcentaje": {
+      const n = Number(v.valor);
+      return textos.some((t) => contieneNumero(t, n)) || seDeriva(n, textos);
+    }
     case "entero":
-      return textos.some((t) => contieneNumero(t, v.valor));
+      return textos.some((t) => contieneNumero(t, v.valor)) || seDeriva(v.valor, textos);
     case "fecha":
       return textos.some((t) => fechasDe(t).includes(v.iso));
     case "identificador": {
@@ -304,6 +394,22 @@ function seRastrea(v: ValorCampo, textos: string[]): boolean {
 export function verjaDeExtraccion(
   respuesta: Respuesta,
   evidencia: readonly UnidadDeEvidencia[],
+  /**
+   * La regla de desempate que el sistema que respondió declara haber aplicado.
+   *
+   * Sin esto la verja era simplemente incorrecta: exigía abstenerse en CUANTO
+   * veía dos unidades contradictorias, y el golden set está lleno de casos que
+   * traen la contradicción **y** la regla que la resuelve (una rectificativa
+   * manda sobre la factura que rectifica, lo posterior manda sobre lo anterior).
+   * La calibración lo cazó de golpe: 13 de 60 respuestas correctas rechazadas
+   * por este motivo. Lo que hay que exigir no es que no haya contradicción, sino
+   * que alguien la haya RESUELTO explícitamente.
+   *
+   * `"ninguna"` —o no pasar nada— significa que nadie desempató, y entonces sí:
+   * contestar con un valor ante evidencia que choca es el error más caro del
+   * dominio.
+   */
+  desempate?: { regla: string; ganadora: string | null },
 ): VeredictoDeLaVerja {
   const base = { version: VERSION_DE_LA_VERJA, alcance_omitido: [] as string[] };
   try {
@@ -400,14 +506,17 @@ export function verjaDeExtraccion(
       }
     }
 
-    // ── La contradicción sin resolver obliga a abstenerse ──
+    // ── La contradicción SIN RESOLVER obliga a abstenerse ──
+    // Con una regla declarada y una unidad ganadora, la contradicción está
+    // resuelta y contestar con un valor es lo correcto. Sin ella, no.
     const contradictorias = evidencia.filter((u) => u.papel === "contradictoria");
-    if (contradictorias.length >= 2) {
+    const resuelta = Boolean(desempate && desempate.regla !== "ninguna" && desempate.ganadora);
+    if (contradictorias.length >= 2 && !resuelta) {
       reparos.push({
         motivo: "contradiccion-no-resuelta",
         detalle:
-          `la evidencia trae ${contradictorias.length} unidades contradictorias y se contestó con un valor; ` +
-          "sin regla de desempate aplicada la única respuesta honesta es abstenerse",
+          `la evidencia trae ${contradictorias.length} unidades contradictorias y se contestó con un valor ` +
+          "sin declarar qué regla de desempate se aplicó; la única respuesta honesta es abstenerse",
       });
     }
 
