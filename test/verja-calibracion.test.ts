@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import casosEs from "../corpus/facturacion-y-cobros/casos-es.json";
 import casosCa from "../corpus/facturacion-y-cobros/casos-ca.json";
 import { verjaDeExtraccion } from "../corpus/verja-de-extraccion.js";
+import { declararLoQueHagaFalta } from "../corpus/declarar-la-derivacion.js";
 import type { CasoDelCorpus, Respuesta, UnidadDeEvidencia } from "../corpus/tipos.js";
 
 /**
@@ -23,6 +24,14 @@ import type { CasoDelCorpus, Respuesta, UnidadDeEvidencia } from "../corpus/tipo
  *   · el falso rechazo está en 38,3 % y se deja margen hasta 45 % para que un
  *     caso nuevo del corpus no rompa el CI por sí solo;
  *   · el falso aceptado global está en 7,4 % con techo en 10 %.
+ *
+ * Y DESDE LA 1.1.0, la cuenta declarada, con sus propios techos medidos el
+ * 2026-09-11 (último bloque de este fichero):
+ *   · falso rechazo 3,3 % con la cuenta declarada y la búsqueda ciega apagada;
+ *   · el adversario REALISTA —se equivoca en el valor y mantiene su declaración—
+ *     no escapa ni una vez en los dos modos numéricos;
+ *   · el adversario MÁXIMO —rebusca una cuenta que justifique el número falso—
+ *     escapa 1 de 28 y 1 de 14, y esos dos escapes son el precio de la palanca.
  *
  * Si una de estas suspende, la pregunta no es «cómo subo el techo» sino qué se
  * rompió: un escape nuevo en `importe-vecino` es un dato falso entregado como
@@ -169,5 +178,87 @@ describe("los modos que la verja ve MAL, fijados para que no empeoren en silenci
     });
     expect(r.aplicados).toBeGreaterThan(0);
     expect(r.escapes).toBeGreaterThan(0);
+  });
+});
+
+
+describe("★ la cuenta declarada (1.1.0): lo que gana y lo que cuesta", () => {
+  /** La misma respuesta del corpus, con su cuenta declarada por el declarador. */
+  const declarada = (c: CasoDelCorpus) => declararLoQueHagaFalta(c.respuesta, c.evidencia);
+  const SIN_CIEGA = { derivacionCiega: false } as const;
+
+  it("declarar derrumba el falso rechazo, y por eso existe la palanca", () => {
+    const rechazaCiega = TODOS.filter(
+      (c) => !verjaDeExtraccion(c.respuesta, c.evidencia as UnidadDeEvidencia[], desempateDe(c)).aceptada,
+    ).length;
+    const rechazaDeclarada = TODOS.filter(
+      (c) =>
+        !verjaDeExtraccion(declarada(c), c.evidencia as UnidadDeEvidencia[], desempateDe(c), SIN_CIEGA).aceptada,
+    ).length;
+    const tasa = (100 * rechazaDeclarada) / TODOS.length;
+    // Medido 3,3 % (2 de 60). El techo deja sitio a casos nuevos del corpus, pero
+    // no a una regresión: si esto sube de 8 %, el declarador dejó de encontrar
+    // cuentas que antes encontraba.
+    expect(tasa).toBeLessThanOrEqual(8);
+    // Y la comparación es el argumento entero: 23 rechazos contra 2.
+    expect(rechazaDeclarada).toBeLessThan(rechazaCiega - 15);
+  });
+
+  it("los dos que siguen rechazados son los del operando escrito EN PALABRAS", () => {
+    // «el tipo del BCE más OCHO puntos porcentuales»: no hay ningún «8» que
+    // copiar, así que no hay cuenta declarable. Se fija aquí para que, si alguien
+    // abre la puerta de los números en palabras, tenga que venir con su precio
+    // medido y cambiar esta prueba a conciencia.
+    const siguen = TODOS.filter(
+      (c) =>
+        !verjaDeExtraccion(declarada(c), c.evidencia as UnidadDeEvidencia[], desempateDe(c), SIN_CIEGA).aceptada,
+    ).map((c) => c.id);
+    expect(siguen).toEqual(["fac-es-013", "fac-ca-010"]);
+  });
+
+  it("ADVERSARIO REALISTA: se equivoca en el importe y mantiene su declaración → CERO escapes", () => {
+    let escapes = 0;
+    let aplicados = 0;
+    for (const c of TODOS) {
+      const resp = clona(declarada(c));
+      if (resp.tipo !== "valor") continue;
+      const campo = resp.campos.find((x) => x.valor.clase === "importe");
+      if (!campo || campo.valor.clase !== "importe") continue;
+      const nuevo = vecino(campo.valor.cantidad);
+      if (nuevo === campo.valor.cantidad) continue;
+      campo.valor.cantidad = nuevo;
+      aplicados += 1;
+      if (verjaDeExtraccion(resp, c.evidencia as UnidadDeEvidencia[], desempateDe(c), SIN_CIEGA).aceptada)
+        escapes += 1;
+    }
+    expect(aplicados).toBeGreaterThan(20);
+    // Con la búsqueda ciega encendida y sin declarar, este mismo mutante escapaba
+    // 1 de 28. Un modelo que lee mal un número no rehace su justificación, así
+    // que su propia cuenta lo delata.
+    expect(escapes).toBe(0);
+  });
+
+  it("ADVERSARIO MÁXIMO: rebusca una cuenta para el número falso → como mucho 1 de 28", () => {
+    let escapes = 0;
+    let aplicados = 0;
+    for (const c of TODOS) {
+      const resp = clona(c.respuesta);
+      if (resp.tipo !== "valor") continue;
+      const campo = resp.campos.find((x) => x.valor.clase === "importe");
+      if (!campo || campo.valor.clase !== "importe") continue;
+      const nuevo = vecino(campo.valor.cantidad);
+      if (nuevo === campo.valor.cantidad) continue;
+      campo.valor.cantidad = nuevo;
+      aplicados += 1;
+      // Declarar DESPUÉS de ensuciar: el adversario justifica el valor falso.
+      const conCuenta = declararLoQueHagaFalta(resp, c.evidencia);
+      if (verjaDeExtraccion(conCuenta, c.evidencia as UnidadDeEvidencia[], desempateDe(c), SIN_CIEGA).aceptada)
+        escapes += 1;
+    }
+    expect(aplicados).toBeGreaterThan(20);
+    // Este es el precio de la palanca y no hay que maquillarlo: la declaración no
+    // cierra la puerta al adversario que rebusca, se la estrecha. Un escape más
+    // significa que la lista de operaciones se ha ensanchado.
+    expect(escapes).toBeLessThanOrEqual(1);
   });
 });

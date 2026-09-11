@@ -207,6 +207,84 @@ export type ValorCampo =
   /** «La cláusula que aplica»: apunta a una unidad de evidencia del caso. */
   | { clase: "referencia"; unidad: string };
 
+/**
+ * LA OPERACIÓN DECLARADA. Qué cuenta hizo quien respondió para llegar a un valor
+ * que NO está escrito en ninguna unidad.
+ *
+ * POR QUÉ EXISTE, Y POR QUÉ ES UN CAMPO DEL CONTRATO Y NO UNA HEURÍSTICA DE LA
+ * VERJA. La verja de extracción (`verja-de-extraccion.ts`) tenía que decidir si
+ * «968,00» está sostenido por una evidencia que solo escribe «800,00» y
+ * «168,00». Mientras la respuesta no declaraba nada, la única salida era que la
+ * verja BUSCARA la cuenta, y eso está medido y es mal negocio: con dos términos
+ * recupera derivaciones legítimas pero deja escapar un importe inventado; con
+ * tres, el falso rechazo baja 6,6 puntos y los escapes del modo estrella se
+ * TRIPLICAN. Cada término nuevo amplía el espacio de forma combinatoria, y la
+ * probabilidad de que un número inventado resulte derivable por casualidad crece
+ * más rápido que la recuperación de derivaciones buenas.
+ *
+ * Declarar le da la vuelta al problema: quien responde ya sabe qué cuenta hizo,
+ * así que decirlo no le cuesta nada; y la verja pasa de buscar entre cientos de
+ * fórmulas a comprobar UNA. La asimetría es lo que lo hace valer: una cuenta
+ * declarada que no cuadra es un rechazo inmediato.
+ *
+ * Es el campo `operation` del contrato de resultado del plan del CTO.
+ */
+export type OperacionDeclarada =
+  /** Σ de todos los operandos. Un operando escrito en negativo («-450,00») resta. */
+  | "suma"
+  /** `operandos[0]` menos la suma de los demás. */
+  | "resta"
+  /** Π de todos los operandos: unidades × precio unitario. */
+  | "producto"
+  /** `operandos[0] × operandos[1] / 100`: la cuota de un tipo sobre una base. */
+  | "porcentaje"
+  /**
+   * `operandos[0] × (1 + Σ resto/100)`: la base con sus tipos encadenados —IVA y
+   * recargo de equivalencia sobre la misma base, que es el caso real que lo trae.
+   */
+  | "base-mas-porcentajes"
+  /**
+   * `principal × tipo/100 × dias / base_dias`, en ese orden y con los cuatro
+   * operandos. Es la única operación específica del dominio, y está aquí porque
+   * el interés de demora es un campo de verdad de dos casos del corpus; sin ella
+   * habría que admitir un producto de cuatro términos, que es mucha más puerta.
+   */
+  | "interes-por-dias"
+  /** `operandos[0]` (fecha) más la suma de los días que siguen. */
+  | "fecha-mas-dias"
+  /** Igual, pero los operandos que siguen son semanas: «8 semanas» de un SEPA CORE. */
+  | "fecha-mas-semanas"
+  /** Días naturales entre `operandos[0]` y `operandos[1]`, las dos fechas. */
+  | "dias-entre-fechas";
+
+/**
+ * De dónde sale UN operando. Las dos formas son excluyentes, y las dos son
+ * comprobables sin saber cuál era la respuesta correcta:
+ *
+ *   · `{ unidad, literal }` — el operando está COPIADO de una unidad citada. La
+ *     verja exige que `literal` aparezca en el texto de esa unidad tal y como se
+ *     escribe ahí («2.000,00», «30/06/2024», «21»). Copiar es comprobable;
+ *     «sale de la u3» no lo es.
+ *   · `{ campo }` — el operando es OTRO CAMPO de la misma respuesta, que a su
+ *     vez tiene que estar sostenido. Es lo que permite encadenar sin ensanchar:
+ *     los intereses de demora se calculan sobre unos días de mora que son, a su
+ *     vez, una resta de fechas. La verja resuelve las dependencias por pasadas y
+ *     un ciclo queda sin resolver, o sea RECHAZADO.
+ */
+export type OperandoDeclarado =
+  | { unidad: string; literal: string; campo?: never }
+  | { campo: string; unidad?: never; literal?: never };
+
+export interface DerivacionDeclarada {
+  operacion: OperacionDeclarada;
+  /**
+   * En ORDEN: para `resta`, `porcentaje`, `base-mas-porcentajes`,
+   * `interes-por-dias`, `fecha-mas-*` y `dias-entre-fechas` el orden es parte de
+   * la cuenta. Para `suma` y `producto` da igual.
+   */
+  operandos: OperandoDeclarado[];
+}
+
 export interface CampoRespuesta {
   /** Nombre estable en `snake_case`: `importe_total`, `fecha_vencimiento`. */
   nombre: string;
@@ -221,6 +299,13 @@ export interface CampoRespuesta {
    * se puede afirmar — aunque el modelo acierte por casualidad.
    */
   citas: string[];
+  /**
+   * LA CUENTA, cuando el valor no está escrito en ninguna unidad. Opcional y
+   * aditiva: un caso que no la trae se comporta exactamente como antes. Los
+   * casos del golden set NO la llevan —son la respuesta correcta escrita a
+   * mano—; la declara quien RESPONDE, y la verja la comprueba.
+   */
+  derivacion?: DerivacionDeclarada;
 }
 
 export type MotivoDeAbstencion =
