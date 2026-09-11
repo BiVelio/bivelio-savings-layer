@@ -22,7 +22,7 @@
  * aparece en ninguna unidad citada es una invención, y eso se ve sin saber cuál
  * era la respuesta buena.
  *
- * LAS CINCO COMPROBACIONES, de más barata a más valiosa:
+ * LAS SEIS COMPROBACIONES, de más barata a más valiosa:
  *
  *   1. FORMA. Importes con dos decimales y punto, fechas ISO, `opcion` dentro de
  *      su conjunto cerrado, todo importe con su `base`. Es la más barata y la
@@ -43,6 +43,11 @@
  *   5. ABSTENERSE TAMBIÉN SE DEMUESTRA. Una abstención sin citas que enseñen el
  *      hueco no es abstenerse, es callarse; y un «no lo sé» no puede pasar por
  *      una respuesta trabajada.
+ *   6. LA CUENTA DECLARADA CUADRA. ★★ (1.1.0) Si el valor no está escrito porque
+ *      se calculó, quien responde declara la operación y sus operandos, y la
+ *      verja comprueba ESA cuenta: los operandos copiados de unidades citadas y
+ *      el resultado igual al valor afirmado. Es lo que permite sostener un total,
+ *      un vencimiento a plazo o unos intereses sin tener que ADIVINAR nada.
  *
  * FALLA CERRADA, SIEMPRE. Ante un campo que no se sabe rastrear, un formato que
  * no se reconoce o cualquier excepción interna, el veredicto es RECHAZAR. El
@@ -59,8 +64,11 @@
  *
  * ─── LO QUE MIDE, MEDIDO (banco: `corpus/calibrar-la-verja.ts`) ─────────────
  *
- * 60 casos de facturación (32 es + 28 ca), 2026-09-11. Las dos cifras hay que
- * leerlas juntas, porque mover una mueve la otra en sentido contrario:
+ * 60 casos de facturación (32 es + 28 ca), 2026-09-11. Esto es lo que mide la
+ * verja CUANDO LA RESPUESTA NO DECLARA SU CUENTA y la búsqueda ciega está
+ * encendida, que es el defecto heredado de la 1.0.0. Con la cuenta declarada las
+ * cifras son otras y están más abajo. Las dos hay que leerlas juntas, porque
+ * mover una mueve la otra en sentido contrario:
  *
  *   FALSO RECHAZO   38,3 %  (23/60)  cuesta dinero: repetir tareas correctas
  *   FALSO ACEPTADO   7,4 %  (15/202) entrega datos falsos: no se recupera
@@ -88,29 +96,84 @@
  * código: una tarea cuya respuesta correcta pueda ser una abstención no debe
  * enviarse a sustitución local, porque su verja no la protege.
  *
- * ─── LOS 23 FALSOS RECHAZOS, Y POR QUÉ NO SE ARREGLAN ENSANCHANDO ───────────
+ * ─── LOS 23 FALSOS RECHAZOS DE LA 1.0.0, Y CÓMO SE ARREGLARON ───────────────
  *
- * Todos son aritmética legítima de varios pasos: 13 son fechas calculadas
- * («emisión 30/06/2024 + 60 días»), 8 importes de tres términos (base + IVA +
- * recargo de equivalencia), 2 porcentajes encadenados y 2 enteros.
+ * Todos eran aritmética legítima de varios pasos: 13 fechas calculadas («emisión
+ * 30/06/2024 + 60 días»), 4 productos de unidades por precio unitario, 2 bases
+ * con sus tipos encadenados, 2 intereses por días, 2 restas de fechas.
  *
- * Se probó a admitir tres términos y se midió el precio: el falso rechazo baja
- * al 31,7 % (−6,6 puntos) pero los escapes de `importe-vecino` pasan del 3,6 %
- * al 10,7 % — se TRIPLICA el fallo de la comprobación estrella. Es mal negocio y
- * por eso la puerta se queda en dos términos.
+ * Se probó a admitir tres términos EN LA BÚSQUEDA y se midió el precio: el falso
+ * rechazo bajaba al 31,7 % (−6,6 puntos) pero los escapes de `importe-vecino`
+ * pasaban del 3,6 % al 10,7 % — se TRIPLICA el fallo de la comprobación estrella.
+ * Mal negocio, y de ahí la lección: ADIVINAR la derivación no escala. Cada
+ * término amplía el espacio de forma combinatoria y la probabilidad de que un
+ * número inventado resulte derivable por casualidad crece más rápido que la
+ * recuperación de derivaciones legítimas.
  *
- * La lección de fondo: ADIVINAR la derivación no escala. Cada término nuevo
- * amplía el espacio de forma combinatoria y la probabilidad de que un número
- * inventado resulte derivable por casualidad crece más rápido que la
- * recuperación de derivaciones legítimas. La salida no es una puerta más ancha:
- * es que quien responde DECLARE la operación («total = base + cuota, sobre u5 y
- * u4»), y entonces la verja comprueba UNA fórmula declarada en vez de buscar
- * entre cientos. Es además lo que ya pide el contrato de resultado del plan del
- * CTO, con su campo `operation`.
+ * ─── LA CUENTA DECLARADA (1.1.0), MEDIDA EN EL MISMO BANCO ──────────────────
+ *
+ * 60 casos, 202 mutantes, tres posturas. La del medio es el adversario REALISTA
+ * (se equivoca en el valor y mantiene su declaración, que es lo que hace un
+ * modelo que lee mal un número); la de la derecha es el adversario MÁXIMO (tras
+ * equivocarse, REBUSCA una cuenta que justifique su número falso):
+ *
+ *                                   1.0.0 ciega   declarada   declarada
+ *                                    (adivinar)    heredada   oportunista
+ *   falso rechazo                        38,3 %       3,3 %       3,3 %
+ *   falso aceptado                        7,4 %       9,4 %      10,4 %
+ *   falso aceptado · campos visibles      4,8 %       4,2 %       5,4 %
+ *   en bruto                             15/202      19/202      21/202
+ *   ídem, campos visibles                 8/166       7/166       9/166
+ *
+ * CÓMO SE LEE, porque la segunda fila engaña y la tercera es la que compara:
+ *
+ *   · El falso rechazo se derrumba de 38,3 % a 3,3 %. Los 2 casos que quedan no
+ *     son aritmética que la verja no sepa comprobar: son operandos escritos EN
+ *     PALABRAS («el tipo del BCE más OCHO puntos porcentuales»), donde no hay
+ *     ningún «8» que copiar. Leer números en palabras es otra puerta y su precio
+ *     no está medido.
+ *   · El falso aceptado EN BRUTO sube, y TODO el aumento está en campos
+ *     `booleano` del modo `cita-movida-a-distractora`. Una verja determinista no
+ *     puede comprobar que un «sí/no» cite la unidad correcta —haría falta
+ *     entender la frase—, y la 1.0.0 esos casos los cazaba POR ACCIDENTE: los
+ *     tapaba su propio falso rechazo en OTRO campo del mismo caso. Al dejar de
+ *     rechazar de más, deja de tapar. El 4,8 % → 4,2 % de la tercera fila es la
+ *     comparación limpia: sobre lo que la verja puede juzgar, el adversario
+ *     realista escapa MENOS.
+ *   · Y el precio honesto de la palanca es la columna oportunista: un escape más
+ *     (8/166 → 9/166) frente a 35 puntos menos de falso rechazo. La declaración
+ *     no le cierra la puerta al que rebusca; se la estrecha a las cuentas que
+ *     puede construir copiando de las unidades que cita.
+ *
+ * DOS AGUJEROS MÍOS QUE CAZÓ EL BANCO, no las pruebas unitarias:
+ *   (a) se podía RECORTAR un operando de dentro de otro número: `suma(01, 07,
+ *       2,90) = 10,90` sobre una unidad que solo dice «vigente l'01/07/2025 és
+ *       del 2,90 %». Una fecha regala cuatro operandos pequeños y con operandos
+ *       pequeños se arma casi cualquier cifra. Cura: `literalEstaCopiado`, con
+ *       centinelas asimétricos —otra vez— porque excluir la coma por la derecha
+ *       rechazaba media docena de cuentas correctas.
+ *   (b) un operando de tipo `{ campo }` no exigía citas, así que un campo se
+ *       sostenía apoyándose en un hermano mientras su propia cita no sostenía
+ *       nada: `cita-movida-a-distractora` pasaba de 7 escapes a 12. Cura: si mi
+ *       número sale de otro campo, mi evidencia tiene que incluir la suya.
+ *
+ * ⚠️ EL LÍMITE DURO SIGUE EN PIE, y la cuenta declarada no lo toca: la verja NO
+ * PUEDE VER que había que abstenerse cuando el motivo de abstención no deja
+ * huella. Una contradicción se ve (hay dos unidades que chocan); la evidencia
+ * INSUFICIENTE no — por fuera es idéntica a la suficiente. De ahí el 70 % de
+ * escapes de ese modo, igual antes y después. La consecuencia es de ENRUTADO: una
+ * tarea cuya respuesta correcta pueda ser una abstención no debe enviarse a
+ * sustitución local, porque su verja no la protege.
+ *
+ * Y UN LÍMITE HERMANO, que esta medición dejó a la vista: un campo `booleano` o
+ * `referencia` cita una unidad y la verja no puede comprobar que sea la correcta.
+ * Un «sí/no» con la cita movida pasa. También es enrutado.
  */
 
 import {
   type CampoRespuesta,
+  type DerivacionDeclarada,
+  type OperandoDeclarado,
   type Respuesta,
   type UnidadDeEvidencia,
   type ValorCampo,
@@ -118,7 +181,7 @@ import {
 
 /** Versión de ESTA verja. Va en el veredicto: un perfil de validación que se
  * factura tiene que poder decir con qué reglas se aprobó. */
-export const VERSION_DE_LA_VERJA = "1.0.0";
+export const VERSION_DE_LA_VERJA = "1.1.0";
 
 /**
  * Por qué se rechazó. El motivo es el producto de la verja tanto como el sí o el
@@ -135,6 +198,12 @@ export type MotivoDeRechazo =
   | "valor-no-rastreable"
   /** Hay evidencia contradictoria y se contestó con un valor sin declarar desempate. */
   | "contradiccion-no-resuelta"
+  /** Un operando de la cuenta declarada no está copiado de una unidad citada. */
+  | "operando-no-copiado"
+  /** ★ La cuenta declarada no da el valor afirmado — o depende de un campo que no se sostiene. */
+  | "derivacion-no-cuadra"
+  /** Sin búsqueda ciega: el valor no está escrito y nadie declaró de dónde sale. */
+  | "derivacion-no-declarada"
   /** Una abstención sin citas, o sin decir qué falta. */
   | "abstencion-sin-prueba"
   /** La respuesta no tiene ningún campo. */
@@ -362,19 +431,340 @@ function seDeriva(buscado: number, textos: string[]): boolean {
   return false;
 }
 
-/** Si el valor del campo aparece —o se deriva— de alguno de los textos citados. */
-function seRastrea(v: ValorCampo, textos: string[]): boolean {
-  switch (v.clase) {
-    case "importe": {
-      const n = Number(v.cantidad);
-      return textos.some((t) => contieneNumero(t, n)) || seDeriva(n, textos);
+
+// ─────────────────── la cuenta DECLARADA (el campo `operation`) ───────────────────
+//
+// POR QUÉ ESTO ES MEJOR QUE BUSCAR, dicho con la aritmética a la vista. Buscar la
+// cuenta obliga a recorrer todas las combinaciones de números de las unidades
+// citadas: con n números y k términos son n^k fórmulas, y basta que UNA dé el
+// valor afirmado para aprobarlo. Un número inventado tiene por tanto n^k tiros.
+// Comprobar una cuenta declarada es UN tiro: la fórmula que dijo quien respondió,
+// con los operandos que dijo, copiados de las unidades que citó.
+//
+// Y el coste para quien responde es cero: ya hizo la cuenta.
+
+/** Un operando ya resuelto: o un número, o una fecha ISO. */
+type OperandoResuelto = { numero: number; iso?: never } | { iso: string; numero?: never };
+
+/** Los espacios exóticos que mete un PDF, plegados al espacio normal. */
+function espaciosNormales(s: string): string {
+  return s.replace(/[\s\u00a0\u202f\u2009]+/g, " ").trim();
+}
+
+/**
+ * Si un literal está COPIADO de un texto, y no recortado de dentro de otro
+ * número. Exige que la aparición tenga frontera por los dos lados: ni dígito, ni
+ * coma, ni punto, ni «/», ni «-» pegados.
+ *
+ * POR QUÉ, con el caso que lo trajo. La calibración de la cuenta declarada dejó
+ * pasar `suma(01, 07, 2,90) = 10,90` sobre una unidad que solo dice «vigente
+ * l'01/07/2025 és del 2,90 %»: el «01» y el «07» son el DÍA y el MES de la fecha.
+ * Sin frontera, cualquier fecha del texto regala cuatro operandos pequeños, y con
+ * operandos pequeños se construye casi cualquier cifra. Es el mismo error que el
+ * ISO «2025-03-12» casando como «25-03-12», y se arregla igual: con centinelas.
+ *
+ * El signo cuenta como parte del número: de «-450,00» se copia «-450,00», no
+ * «450,00». Declarar la mitad de un número no es copiarlo.
+ */
+export function literalEstaCopiado(texto: string, literal: string): boolean {
+  const t = espaciosNormales(texto);
+  const l = espaciosNormales(literal);
+  if (!l) return false;
+  const digito = (c: string | undefined) => c !== undefined && /\d/.test(c);
+
+  for (let i = t.indexOf(l); i >= 0; i = t.indexOf(l, i + 1)) {
+    const antes = t[i - 1];
+    const despues = t[i + l.length];
+    // Por la IZQUIERDA: no se puede empezar a mitad de un número («05» dentro de
+    // «10/05/2025»), ni después del signo que le pertenece («450,00» dentro de
+    // «-450,00» es otro número).
+    const empiezaAMedias =
+      digito(antes) ||
+      antes === "/" ||
+      antes === "-" ||
+      antes === "+" ||
+      ((antes === "." || antes === ",") && digito(t[i - 2]));
+    // Por la DERECHA la asimetría es la misma que en `fechasDe`, y por la misma
+    // razón: un separador solo forma parte del número SI LE SIGUE UN DÍGITO.
+    // «2.000» dentro de «2.000,00» se corta («,0»), pero «30/06/2024,» seguido de
+    // coma y espacio es una fecha entera bien copiada — y excluir la coma a secas
+    // rechazaba media docena de cuentas correctas.
+    const acabaAMedias =
+      digito(despues) ||
+      ((despues === "." || despues === "," || despues === "/" || despues === "-") &&
+        digito(t[i + l.length + 1]));
+    if (!empiezaAMedias && !acabaAMedias) return true;
+  }
+  return false;
+}
+
+/**
+ * Resuelve un operando declarado. Las dos formas se comprueban de forma distinta
+ * y ninguna admite un «confía en mí»:
+ *
+ *   · copiado de una unidad: la unidad tiene que estar CITADA por el campo (no
+ *     vale sacar un operando de evidencia que el campo no señala) y el literal
+ *     tiene que APARECER en su texto. Se exige aparición literal, no igualdad de
+ *     valor: «2.000,00» vale porque está escrito así; un «2000» que nadie
+ *     escribió, no. Copiar es comprobable; «sale de la u3» no lo es.
+ *   · otro campo: tiene que existir en la respuesta y estar ya sostenido. Si
+ *     todavía no lo está, se devuelve `pendiente` y el que llama lo reintenta en
+ *     la pasada siguiente; si nunca se resuelve (dependencia que no se sostiene,
+ *     o un ciclo), el campo se rechaza. Falla cerrada también aquí.
+ */
+function resuelveOperando(
+  op: OperandoDeclarado,
+  citas: readonly string[],
+  porId: ReadonlyMap<string, UnidadDeEvidencia>,
+  yaResueltos: ReadonlyMap<string, OperandoResuelto>,
+  camposPorNombre: ReadonlyMap<string, CampoRespuesta>,
+): { ok: OperandoResuelto } | { pendiente: true } | { fallo: string } {
+  if (op.campo !== undefined) {
+    const hermano = camposPorNombre.get(op.campo);
+    if (!hermano) return { fallo: `el operando apunta al campo «${op.campo}», que no está en la respuesta` };
+    // LA CITA NO SE LAVA POR EL CAMINO. Si mi número sale de otro campo, mi
+    // evidencia tiene que incluir la de ese campo: lo contrario deja sostener un
+    // valor sin que sus propias citas sostengan nada, y el banco lo cazó —el modo
+    // `cita-movida-a-distractora` pasó de 7 escapes a 12 en cuanto se admitieron
+    // operandos de tipo campo sin esta exigencia.
+    const sinCitar = hermano.citas.filter((c) => !citas.includes(c));
+    if (sinCitar.length)
+      return {
+        fallo:
+          `el operando sale del campo «${op.campo}», que se apoya en ${sinCitar.join(", ")}; ` +
+          "para usarlo hay que citar también esa evidencia",
+      };
+    const v = yaResueltos.get(op.campo);
+    return v ? { ok: v } : { pendiente: true };
+  }
+  if (op.unidad === undefined || op.literal === undefined) return { fallo: "operando sin `unidad`+`literal` ni `campo`" };
+  if (!citas.includes(op.unidad))
+    return { fallo: `el operando sale de «${op.unidad}», que el campo NO cita` };
+  const u = porId.get(op.unidad);
+  if (!u) return { fallo: `el operando sale de «${op.unidad}», que no se entregó` };
+  if (!literalEstaCopiado(u.texto, op.literal))
+    return {
+      fallo:
+        `«${op.literal}» no está escrito como tal en ${op.unidad}: un operando se COPIA entero, ` +
+        "no se recorta de dentro de otro número ni de una fecha",
+    };
+  const fechas = fechasDe(op.literal);
+  if (fechas.length === 1 && fechas[0]) return { ok: { iso: fechas[0] } };
+  const n = valorNumerico(op.literal);
+  if (n === null) return { fallo: `«${op.literal}» no es ni un número ni una fecha reconocible` };
+  return { ok: { numero: n } };
+}
+
+const DIA_EN_MS = 86_400_000;
+
+/**
+ * Cuántos operandos admite como mucho una cuenta declarada.
+ *
+ * ES EL TECHO DE LO MEDIDO, no una limitación técnica. Al comprobar una cuenta
+ * declarada los términos no multiplican los tiros del adversario —sigue teniendo
+ * uno— pero sí le dan libertad para CONSTRUIR una cuenta que cuadre con los
+ * números que tiene a mano: cuantos más términos, más fácil es acertar un número
+ * falso. Cuánto cuesta eso exactamente está medido en el banco hasta TRES
+ * términos, que es lo que el declarador explora. Admitir doce sería superficie
+ * cuyo precio nadie ha medido, y este repositorio tiene una lección sobre eso.
+ *
+ * Para subirlo: ensanchar primero el declarador del banco, volver a correr
+ * `pnpm verja:calibrar` y mirar la columna del oportunista.
+ */
+const MAX_OPERANDOS = 3;
+
+function aFecha(iso: string): number {
+  const [a, m, d] = iso.split("-");
+  return Date.UTC(Number(a), Number(m) - 1, Number(d));
+}
+
+function deFecha(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/**
+ * Aplica la operación declarada. Devuelve el resultado como número o como fecha
+ * ISO, o el motivo por el que la cuenta no se puede ni hacer (aridad equivocada,
+ * una fecha donde iba un número). Ninguna operación adivina nada: si los
+ * operandos no son del tipo que pide, es un fallo, no una interpretación.
+ */
+function aplicaOperacion(
+  d: DerivacionDeclarada,
+  ops: readonly OperandoResuelto[],
+): { numero: number } | { iso: string } | { fallo: string } {
+  const nums = ops.map((o) => o.numero);
+  const todosNumeros = (): number[] | null => (nums.every((n) => n !== undefined) ? (nums as number[]) : null);
+  const aridad = (min: number, max = min): string | null =>
+    ops.length < min || ops.length > max
+      ? `«${d.operacion}» necesita ${min === max ? min : `entre ${min} y ${max}`} operandos y le pasaron ${ops.length}`
+      : null;
+
+  switch (d.operacion) {
+    case "suma":
+    case "producto":
+    case "resta":
+    case "base-mas-porcentajes": {
+      const falta = aridad(2, MAX_OPERANDOS);
+      if (falta) return { fallo: falta };
+      const ns = todosNumeros();
+      if (!ns) return { fallo: `«${d.operacion}» no admite fechas como operandos` };
+      if (d.operacion === "suma") return { numero: ns.reduce((a, b) => a + b, 0) };
+      if (d.operacion === "producto") return { numero: ns.reduce((a, b) => a * b, 1) };
+      const [cabeza, ...resto] = ns as [number, ...number[]];
+      if (d.operacion === "resta") return { numero: resto.reduce((a, b) => a - b, cabeza) };
+      return { numero: cabeza * (1 + resto.reduce((a, b) => a + b, 0) / 100) };
     }
     case "porcentaje": {
-      const n = Number(v.valor);
-      return textos.some((t) => contieneNumero(t, n)) || seDeriva(n, textos);
+      const falta = aridad(2);
+      if (falta) return { fallo: falta };
+      const ns = todosNumeros();
+      if (!ns) return { fallo: "«porcentaje» no admite fechas como operandos" };
+      return { numero: (ns[0]! * ns[1]!) / 100 };
     }
+    case "interes-por-dias": {
+      const falta = aridad(4);
+      if (falta) return { fallo: falta };
+      const ns = todosNumeros();
+      if (!ns) return { fallo: "«interes-por-dias» no admite fechas como operandos" };
+      const [principal, tipo, dias, baseDias] = ns as [number, number, number, number];
+      if (baseDias === 0) return { fallo: "base de días 0" };
+      return { numero: (principal * (tipo / 100) * dias) / baseDias };
+    }
+    case "fecha-mas-dias":
+    case "fecha-mas-semanas": {
+      const falta = aridad(2, MAX_OPERANDOS);
+      if (falta) return { fallo: falta };
+      const cabeza = ops[0];
+      if (!cabeza?.iso) return { fallo: `«${d.operacion}» necesita una fecha como primer operando` };
+      const plazos = ops.slice(1).map((o) => o.numero);
+      if (plazos.some((n) => n === undefined)) return { fallo: "el plazo tiene que ser un número" };
+      const dias = (plazos as number[]).reduce((a, b) => a + b, 0) * (d.operacion === "fecha-mas-semanas" ? 7 : 1);
+      if (!Number.isInteger(dias)) return { fallo: `un plazo de ${dias} días no es un número entero de días` };
+      return { iso: deFecha(aFecha(cabeza.iso) + dias * DIA_EN_MS) };
+    }
+    case "dias-entre-fechas": {
+      const falta = aridad(2);
+      if (falta) return { fallo: falta };
+      const [a, b] = ops as [OperandoResuelto, OperandoResuelto];
+      if (!a.iso || !b.iso) return { fallo: "«dias-entre-fechas» necesita dos fechas" };
+      return { numero: Math.round((aFecha(b.iso) - aFecha(a.iso)) / DIA_EN_MS) };
+    }
+  }
+}
+
+/** El valor de un campo como número, si su clase lo tiene. */
+function numeroDelValor(v: ValorCampo): number | null {
+  switch (v.clase) {
+    case "importe":
+      return Number(v.cantidad);
+    case "porcentaje":
+      return Number(v.valor);
     case "entero":
-      return textos.some((t) => contieneNumero(t, v.valor)) || seDeriva(v.valor, textos);
+      return v.valor;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Comprueba LA cuenta declarada de un campo. Tres resultados posibles, y el del
+ * medio es el que permite encadenar campos sin ensanchar nada:
+ *
+ *   `{ cuadra: true }`  la cuenta da el valor afirmado
+ *   `{ pendiente: true }`  depende de otro campo que todavía no se ha resuelto
+ *   `{ reparo }`  no cuadra, y con el motivo exacto
+ */
+function comprobarDerivacion(
+  campo: CampoRespuesta,
+  porId: ReadonlyMap<string, UnidadDeEvidencia>,
+  yaResueltos: ReadonlyMap<string, OperandoResuelto>,
+  camposPorNombre: ReadonlyMap<string, CampoRespuesta>,
+): { cuadra: true } | { pendiente: true } | { reparo: ReparoDeLaVerja } {
+  const d = campo.derivacion;
+  if (!d) return { reparo: { motivo: "derivacion-no-cuadra", campo: campo.nombre, detalle: "sin derivación declarada" } };
+
+  const resueltos: OperandoResuelto[] = [];
+  for (const op of d.operandos) {
+    const r = resuelveOperando(op, campo.citas, porId, yaResueltos, camposPorNombre);
+    if ("pendiente" in r) return { pendiente: true };
+    if ("fallo" in r)
+      return {
+        reparo: {
+          motivo: op.campo !== undefined ? "derivacion-no-cuadra" : "operando-no-copiado",
+          campo: campo.nombre,
+          detalle: r.fallo,
+        },
+      };
+    resueltos.push(r.ok);
+  }
+
+  const salida = aplicaOperacion(d, resueltos);
+  if ("fallo" in salida)
+    return { reparo: { motivo: "derivacion-no-cuadra", campo: campo.nombre, detalle: salida.fallo } };
+
+  if (campo.valor.clase === "fecha") {
+    if (!("iso" in salida))
+      return {
+        reparo: {
+          motivo: "derivacion-no-cuadra",
+          campo: campo.nombre,
+          detalle: `«${d.operacion}» da un número y el campo es una fecha`,
+        },
+      };
+    return salida.iso === campo.valor.iso
+      ? { cuadra: true }
+      : {
+          reparo: {
+            motivo: "derivacion-no-cuadra",
+            campo: campo.nombre,
+            detalle: `la cuenta declarada (${d.operacion}) da ${salida.iso} y el campo afirma ${campo.valor.iso}`,
+          },
+        };
+  }
+
+  const esperado = numeroDelValor(campo.valor);
+  if (esperado === null)
+    return {
+      reparo: {
+        motivo: "derivacion-no-cuadra",
+        campo: campo.nombre,
+        detalle: `un valor de clase «${campo.valor.clase}» no se calcula`,
+      },
+    };
+  if (!("numero" in salida))
+    return {
+      reparo: {
+        motivo: "derivacion-no-cuadra",
+        campo: campo.nombre,
+        detalle: `«${d.operacion}» da una fecha y el campo es un número`,
+      },
+    };
+  // Medio céntimo, igual que el rastreo literal: un corpus que distinga
+  // 39,3198 de 39,32 rechaza por redondeo y no por contenido.
+  return Math.abs(salida.numero - esperado) < 0.005
+    ? { cuadra: true }
+    : {
+        reparo: {
+          motivo: "derivacion-no-cuadra",
+          campo: campo.nombre,
+          detalle: `la cuenta declarada (${d.operacion}) da ${salida.numero.toFixed(4)} y el campo afirma ${esperado}`,
+        },
+      };
+}
+
+/**
+ * Si el valor del campo está ESCRITO en alguno de los textos citados. Literal: sin
+ * cuentas, ni declaradas ni adivinadas. Es el camino barato y el único que no
+ * añade ninguna superficie.
+ */
+export function valorEstaEscrito(v: ValorCampo, textos: string[]): boolean {
+  switch (v.clase) {
+    case "importe":
+      return textos.some((t) => contieneNumero(t, Number(v.cantidad)));
+    case "porcentaje":
+      return textos.some((t) => contieneNumero(t, Number(v.valor)));
+    case "entero":
+      return textos.some((t) => contieneNumero(t, v.valor));
     case "fecha":
       return textos.some((t) => fechasDe(t).includes(v.iso));
     case "identificador": {
@@ -384,6 +774,17 @@ function seRastrea(v: ValorCampo, textos: string[]): boolean {
     default:
       return false;
   }
+}
+
+/**
+ * La BÚSQUEDA CIEGA de dos términos: el camino de antes, el que existe para las
+ * respuestas que no declaran su cuenta. Se queda porque quitarlo rompería a quien
+ * ya usa la verja sin declarar nada, y porque su precio está medido. Pero la
+ * salida buena es declarar: ver `comprobarDerivacion`.
+ */
+function seRastreaCiego(v: ValorCampo, textos: string[]): boolean {
+  const n = numeroDelValor(v);
+  return n !== null && seDeriva(n, textos);
 }
 
 /**
@@ -410,6 +811,18 @@ export function verjaDeExtraccion(
    * dominio.
    */
   desempate?: { regla: string; ganadora: string | null },
+  /**
+   * `derivacionCiega` (por defecto `true`): si la verja puede intentar ADIVINAR
+   * la cuenta cuando el valor no está escrito y la respuesta no la declara. Es
+   * el comportamiento de la 1.0.0 y se queda encendido por defecto para no
+   * romper a quien ya la usa.
+   *
+   * Apagarla es la postura que recomienda el banco de calibración: con la cuenta
+   * declarada no hace falta adivinar, y adivinar es justo lo que deja pasar un
+   * importe inventado que resulta derivable por casualidad. Las dos cifras de
+   * esa decisión están medidas en `corpus/calibrar-la-verja.ts`.
+   */
+  opciones?: { derivacionCiega?: boolean },
 ): VeredictoDeLaVerja {
   const base = { version: VERSION_DE_LA_VERJA, alcance_omitido: [] as string[] };
   try {
@@ -456,6 +869,7 @@ export function verjaDeExtraccion(
 
     let rastreables = 0;
     let rastreados = 0;
+    const porRastrear: Array<{ campo: CampoRespuesta; textos: string[] }> = [];
 
     for (const campo of respuesta.campos) {
       const deForma = reparoDeForma(campo);
@@ -494,16 +908,102 @@ export function verjaDeExtraccion(
         });
       }
 
-      if (esRastreable(campo.valor)) {
+      if (esRastreable(campo.valor) && textos.length) {
         rastreables += 1;
-        if (textos.length && seRastrea(campo.valor, textos)) rastreados += 1;
-        else if (textos.length)
-          reparos.push({
-            motivo: "valor-no-rastreable",
-            campo: campo.nombre,
-            detalle: `el valor afirmado no aparece en ninguna de sus unidades citadas (${campo.citas.join(", ")})`,
-          });
+        porRastrear.push({ campo, textos });
+      } else if (esRastreable(campo.valor)) {
+        rastreables += 1;
       }
+    }
+
+    // ── El rastreo, EN DOS FASES Y POR PASADAS ──
+    //
+    // Antes era una sola pasada porque un campo solo podía apoyarse en el texto.
+    // Con la cuenta declarada un campo puede apoyarse en OTRO CAMPO —los
+    // intereses de demora se calculan sobre unos días de mora que son a su vez
+    // una resta de fechas—, y eso obliga a resolver por pasadas: cada pasada
+    // resuelve lo que ya tiene sus dependencias resueltas. Cuando una pasada no
+    // avanza, lo que queda no se sostiene: o depende de algo que falló, o es un
+    // ciclo. En los dos casos se RECHAZA, que es lo que hace una verja que falla
+    // cerrada.
+    const resueltos = new Map<string, OperandoResuelto>();
+    const camposPorNombre = new Map(respuesta.campos.map((c) => [c.nombre, c]));
+    const registra = (campo: CampoRespuesta) => {
+      if (campo.valor.clase === "fecha") resueltos.set(campo.nombre, { iso: campo.valor.iso });
+      else {
+        const n = numeroDelValor(campo.valor);
+        if (n !== null) resueltos.set(campo.nombre, { numero: n });
+      }
+    };
+
+    // Fase 1 · lo que está ESCRITO. Un campo declarado se comprueba por su
+    // cuenta aunque además aparezca literal: una cuenta declarada que no cuadra
+    // es una mentira sobre la propia aritmética, y pasarla por alto porque el
+    // número esté escrito convertiría el campo `operation` en decoración.
+    const pendientes = porRastrear.filter(({ campo, textos }) => {
+      if (!campo.derivacion && valorEstaEscrito(campo.valor, textos)) {
+        rastreados += 1;
+        registra(campo);
+        return false;
+      }
+      return true;
+    });
+
+    // Fase 2 · las cuentas DECLARADAS, por pasadas.
+    let quedan = pendientes.filter(({ campo }) => campo.derivacion);
+    let avanza = true;
+    while (quedan.length && avanza) {
+      avanza = false;
+      const siguiente: typeof quedan = [];
+      for (const p of quedan) {
+        const r = comprobarDerivacion(p.campo, porId, resueltos, camposPorNombre);
+        if ("pendiente" in r) {
+          siguiente.push(p);
+          continue;
+        }
+        avanza = true;
+        if ("cuadra" in r) {
+          rastreados += 1;
+          registra(p.campo);
+        } else reparos.push(r.reparo);
+      }
+      quedan = siguiente;
+    }
+    for (const p of quedan)
+      reparos.push({
+        motivo: "derivacion-no-cuadra",
+        campo: p.campo.nombre,
+        detalle:
+          "la cuenta declarada depende de un campo que no se sostiene, o de sí misma: " +
+          "una dependencia circular no se resuelve y por eso se rechaza",
+      });
+
+    // Fase 3 · lo que no está escrito y nadie declaró. Aquí vive la búsqueda
+    // ciega de dos términos, con su precio medido; `derivacionCiega: false` la
+    // apaga y entonces la única forma de sostener un valor calculado es
+    // declararlo.
+    for (const { campo, textos } of pendientes) {
+      if (campo.derivacion) continue;
+      if (opciones?.derivacionCiega !== false && seRastreaCiego(campo.valor, textos)) {
+        rastreados += 1;
+        registra(campo);
+        continue;
+      }
+      reparos.push(
+        opciones?.derivacionCiega === false
+          ? {
+              motivo: "derivacion-no-declarada",
+              campo: campo.nombre,
+              detalle:
+                `el valor afirmado no está escrito en sus unidades citadas (${campo.citas.join(", ")}) ` +
+                "y la respuesta no declara de qué cuenta sale",
+            }
+          : {
+              motivo: "valor-no-rastreable",
+              campo: campo.nombre,
+              detalle: `el valor afirmado no aparece en ninguna de sus unidades citadas (${campo.citas.join(", ")})`,
+            },
+      );
     }
 
     // ── La contradicción SIN RESOLVER obliga a abstenerse ──

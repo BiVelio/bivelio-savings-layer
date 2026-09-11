@@ -76,6 +76,7 @@
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build",
     "ab:publish": "tsx benchmarks/publish.ts",
+    "verja:calibrar": "tsx corpus/calibrar-la-verja.ts",
     "corpus:arnes": "tsx corpus/arnes/informe.ts",
     "corpus:auditar": "tsx corpus/auditoria/auditar.ts",
     "sombra:corpus": "tsx benchmarks/sombra-corpus.ts",
