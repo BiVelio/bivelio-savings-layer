@@ -26,6 +26,8 @@ import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-he
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
+import { aplicarCapa, opcionesDeEntorno } from "./caveman.js";
+import { anotarQueLlega, partirCuerpo } from "./que-llega.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
 
 /**
@@ -603,6 +605,44 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           }
         } catch {
           /* passthrough */
+        }
+      }
+
+      // ── LA CAPA INTERMEDIA · caveman · toon · externalizado ──
+      //
+      // POR DEFECTO VA EN SOMBRA: calcula lo que HABRÍA enviado, lo anota y no
+      // toca la petición. Eso da el dato empírico sobre cuerpos reales con
+      // riesgo cero y coste cero, que es la única forma honesta de saber si la
+      // palanca vale algo antes de encenderla. Aplicar de verdad exige bandera.
+      //
+      // Y nunca puede tumbar el tráfico: todo va dentro de un try que, ante
+      // cualquier sorpresa, deja salir el cuerpo original.
+      const opcionesCapa = opcionesDeEntorno();
+      const registrarQueLlega = process.env.BVSALA_GATEWAY_QUE_LLEGA === "1";
+      const capaPedida = Boolean(opcionesCapa.caveman || opcionesCapa.toon || opcionesCapa.externalizarDesde);
+      // Solo se mira si el cuerpo viaja SIN comprimir: comprimido no es JSON y la
+      // capa no tiene nada que leer. Se anota igual, para saber cuántas veces pasa.
+      const codCapa = cuerpoSaliente === cuerpo ? codificacion : "identity";
+      if ((registrarQueLlega || capaPedida) && codCapa === "identity") {
+        try {
+          const textoSaliente = cuerpoSaliente.toString("utf8");
+          const { cuerpo: transformado, informe } = aplicarCapa(textoSaliente, capaPedida ? opcionesCapa : { caveman: true, toon: true });
+          if (registrarQueLlega) {
+            const partes = partirCuerpo(textoSaliente);
+            anotarQueLlega({
+              at: new Date().toISOString(),
+              ...(atribucion?.sessionId !== undefined ? { sesion: atribucion.sessionId } : {}),
+              ...(atribucion?.agentId !== undefined ? { agente: atribucion.agentId } : {}),
+              forma: informe.forma,
+              bytes: textoSaliente.length,
+              ...partes,
+              informe,
+              sombra: !capaPedida,
+            });
+          }
+          if (capaPedida && transformado !== textoSaliente) cuerpoSaliente = Buffer.from(transformado, "utf8");
+        } catch {
+          /* la capa calla y el tráfico sigue con el cuerpo original */
         }
       }
 
