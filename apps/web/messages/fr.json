@@ -654,7 +654,7 @@
       "notProven": "mesuré · ne dépasse pas zéro",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Quatre registres mesurés contre l'API d'OpenAI. Un pourcentage sans son modèle à côté ne veut rien dire : le même levier peut faire économiser sur un modèle et coûter sur un autre."
+      "providerNote": "Chaque registre est mesuré et publié séparément contre l'API d'OpenAI ; ceux qui ne dépassent pas zéro n'apparaissent pas. Un pourcentage sans son modèle à côté ne veut rien dire : le même levier peut faire économiser sur un modèle et coûter sur un autre."
     },
     "ledgers": [
       {

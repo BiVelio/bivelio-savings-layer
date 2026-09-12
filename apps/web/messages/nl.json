@@ -654,7 +654,7 @@
       "notProven": "gemeten · komt niet boven nul",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Vier ledgers gemeten tegen de OpenAI-API. Een percentage zonder zijn model ernaast betekent niets: dezelfde hefboom kan besparen op het ene model en geld kosten op het andere."
+      "providerNote": "Elk ledger wordt apart gemeten en gepubliceerd tegen de OpenAI-API; de ledgers die niet boven nul uitkomen, verschijnen niet. Een percentage zonder zijn model ernaast betekent niets: dezelfde hefboom kan besparen op het ene model en geld kosten op het andere."
     },
     "ledgers": [
       {

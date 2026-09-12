@@ -654,7 +654,7 @@
       "notProven": "zmierzone · nie przekracza zera",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Cztery księgi zmierzone względem API OpenAI. Procent bez modelu obok nic nie znaczy: ta sama dźwignia może oszczędzać na jednym modelu i kosztować na innym."
+      "providerNote": "Każda księga jest mierzona i publikowana osobno względem API OpenAI; te, które nie przekraczają zera, nie pojawiają się. Procent bez modelu obok nic nie znaczy: ta sama dźwignia może oszczędzać na jednym modelu i kosztować na innym."
     },
     "ledgers": [
       {

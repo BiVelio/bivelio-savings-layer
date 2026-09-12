@@ -654,7 +654,7 @@
       "notProven": "gemessen · übersteigt die Null nicht",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Vier Ledger, gemessen gegen die OpenAI-API. Ein Prozentsatz ohne sein Modell daneben bedeutet nichts: derselbe Hebel kann bei einem Modell sparen und bei einem anderen kosten."
+      "providerNote": "Jedes Ledger wird einzeln gegen die OpenAI-API gemessen und veröffentlicht; die, die nicht über null hinauskommen, erscheinen nicht. Ein Prozentsatz ohne sein Modell daneben bedeutet nichts: derselbe Hebel kann bei einem Modell sparen und bei einem anderen kosten."
     },
     "ledgers": [
       {

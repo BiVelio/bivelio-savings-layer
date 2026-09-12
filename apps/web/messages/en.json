@@ -654,7 +654,7 @@
       "notProven": "measured · does not clear zero",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Four ledgers measured against the OpenAI API. A percentage without its model next to it means nothing: the same lever can save on one model and cost on another."
+      "providerNote": "Each ledger is measured and published on its own against the OpenAI API; the ones that do not clear zero do not appear. A percentage without its model next to it means nothing: the same lever can save on one model and cost on another."
     },
     "ledgers": [
       {

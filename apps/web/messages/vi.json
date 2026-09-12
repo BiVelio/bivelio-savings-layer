@@ -654,7 +654,7 @@
       "notProven": "đã đo · không vượt qua số không",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Bốn sổ được đo với API của OpenAI. Một tỷ lệ phần trăm mà không có mô hình đi kèm thì chẳng có nghĩa gì: cùng một đòn bẩy có thể tiết kiệm trên mô hình này và tốn kém trên mô hình khác."
+      "providerNote": "Mỗi sổ được đo và công bố riêng với API của OpenAI; những sổ không vượt qua mức không thì không xuất hiện. Một tỷ lệ phần trăm mà không có mô hình đi kèm thì chẳng có nghĩa gì: cùng một đòn bẩy có thể tiết kiệm trên mô hình này và tốn kém trên mô hình khác."
     },
     "ledgers": [
       {
