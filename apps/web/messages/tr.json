@@ -516,7 +516,8 @@
       "estadoCalibracion": "kalibrasyon",
       "estadoSinCargo": "ücret yok",
       "estadoPendiente": "beklemede",
-      "verFactura": "görüntüle"
+      "verFactura": "görüntüle",
+      "estadoExento": "komisyondan muaf"
     },
     "usageExplorer": {
       "title": "Kullanım gezgini",

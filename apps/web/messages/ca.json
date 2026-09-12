@@ -516,7 +516,8 @@
       "estadoCalibracion": "calibratge",
       "estadoSinCargo": "sense càrrec",
       "estadoPendiente": "pendent",
-      "verFactura": "veure"
+      "verFactura": "veure",
+      "estadoExento": "exempt de comissió"
     },
     "usageExplorer": {
       "title": "Explorador d'ús",

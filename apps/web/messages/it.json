@@ -516,7 +516,8 @@
       "estadoCalibracion": "calibrazione",
       "estadoSinCargo": "nessun addebito",
       "estadoPendiente": "in attesa",
-      "verFactura": "vedi"
+      "verFactura": "vedi",
+      "estadoExento": "esente da commissione"
     },
     "usageExplorer": {
       "title": "Esploratore dell'uso",

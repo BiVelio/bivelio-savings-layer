@@ -75,9 +75,10 @@ function aFila(r: UsageRollup): FilaDiaria {
 }
 
 /** El extracto en sombra del período dado, desde las filas que ya carga el panel. */
-export function extractoEnSombra(orgId: string, rows: UsageRollup[], periodo: string): Extracto {
+export function extractoEnSombra(orgId: string, rows: UsageRollup[], periodo: string, esExento = false): Extracto {
   return construirExtracto({
     orgId,
+    esExento,
     periodo,
     filas: rows.map(aFila),
     esCalibracion: esPeriodoDeCalibracion(rows, periodo),

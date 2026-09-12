@@ -372,3 +372,32 @@ proveedor como `claude-fable-5-1`; en el panel el registro trae
 
 *Relacionado: `db/README.md` (esquema y aislamiento), `docs/RUNBOOK-ALERTAS.md`
 (qué hacer cuando `invariantes` habla), PR #112 y #119 (origen de 0016/0017).*
+
+## Anexo — 0028 (septiembre de 2026): exentos de comisión (probadores y cortesías)
+
+El webhook marca la exención SOLO con cupón «forever» al 100 %; un cupón del
+100 % de un solo mes deja el primer checkout a 0 € y ese cliente paga después.
+
+Añade `organizations.comision_exenta` + `exencion_nota` y `extractos.es_exento`
+(con el check `extractos_exento_cobra_cero`). El webhook marca la exención
+cuando un checkout termina a 0 € con descuento; el cierre del día 1 pone cargo 0
+a las marcadas. **Orden:** aplicar ANTES de desplegar el código que la usa (el
+cierre inserta `es_exento` y el webhook actualiza `comision_exenta`).
+
+### Diagnóstico (solo lectura)
+
+```sql
+select exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='organizations' and column_name='comision_exenta') as columna_org,
+       exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='extractos' and column_name='es_exento') as columna_extracto,
+       exists (select 1 from pg_constraint where conrelid='bvsala.extractos'::regclass and conname='extractos_exento_cobra_cero') as check_exento;
+```
+
+`false` en cualquiera → lanzar 0028 con el bucle del paso 2 (`PENDIENTES="0028"`).
+Idempotente.
+
+### Marcar una cortesía a mano
+
+```sql
+update bvsala.organizations set comision_exenta = true, exencion_nota = 'cortesía · <quién y por qué>' where id = '<org_id>';
+```
+

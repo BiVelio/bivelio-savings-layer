@@ -516,7 +516,8 @@
       "estadoCalibracion": "hiệu chuẩn",
       "estadoSinCargo": "không có phí",
       "estadoPendiente": "đang chờ",
-      "verFactura": "xem"
+      "verFactura": "xem",
+      "estadoExento": "miễn hoa hồng"
     },
     "usageExplorer": {
       "title": "Trình khám phá mức dùng",

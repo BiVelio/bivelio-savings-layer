@@ -516,7 +516,8 @@
       "estadoCalibracion": "calibración",
       "estadoSinCargo": "sin cargo",
       "estadoPendiente": "pendiente",
-      "verFactura": "ver"
+      "verFactura": "ver",
+      "estadoExento": "exento de comisión"
     },
     "usageExplorer": {
       "title": "Explorador de uso",

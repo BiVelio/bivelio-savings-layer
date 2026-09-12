@@ -516,7 +516,8 @@
       "estadoCalibracion": "Kalibrierung",
       "estadoSinCargo": "keine Gebühr",
       "estadoPendiente": "ausstehend",
-      "verFactura": "ansehen"
+      "verFactura": "ansehen",
+      "estadoExento": "von der Provision befreit"
     },
     "usageExplorer": {
       "title": "Nutzungs-Explorer",
