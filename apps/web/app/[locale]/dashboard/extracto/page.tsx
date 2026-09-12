@@ -8,6 +8,7 @@ import { loadDashboard } from "../load";
 interface PeriodoCerrado {
   periodo: string;
   es_calibracion: boolean;
+  es_exento: boolean;
   base_medida_eur: number;
   ahorro_medido_eur: number;
   ratio: number;
@@ -26,7 +27,7 @@ async function periodosCerrados(orgId: string): Promise<PeriodoCerrado[] | null>
     supabase
       .schema("bvsala")
       .from("extractos")
-      .select("periodo, es_calibracion, base_medida_eur, ahorro_medido_eur, ratio, cargo_eur")
+      .select("periodo, es_calibracion, es_exento, base_medida_eur, ahorro_medido_eur, ratio, cargo_eur")
       .eq("org_id", orgId)
       .order("periodo", { ascending: false })
       .limit(24),
@@ -46,6 +47,7 @@ async function periodosCerrados(orgId: string): Promise<PeriodoCerrado[] | null>
   return (extractos ?? []).map((x) => ({
     periodo: String(x.periodo),
     es_calibracion: Boolean(x.es_calibracion),
+    es_exento: Boolean((x as { es_exento?: boolean }).es_exento),
     base_medida_eur: Number(x.base_medida_eur ?? 0),
     ahorro_medido_eur: Number(x.ahorro_medido_eur ?? 0),
     ratio: Number(x.ratio ?? 0),
@@ -67,6 +69,8 @@ function claveDeEstado(p: PeriodoCerrado): string {
     return porEstado[p.cobro.estado] ?? "estadoPendiente";
   }
   if (p.es_calibracion) return "estadoCalibracion";
+  // Probadores y cortesías: la comisión se calcula, el cargo es cero, y se dice.
+  if (p.es_exento) return "estadoExento";
   if (p.cargo_eur <= 0) return "estadoSinCargo";
   // Cargo sin fila de cobro: el cron del día uno aún no ha pasado (o falló y
   // alertó). "Pendiente" es la verdad — nunca se pinta como pagado ni omitido.
@@ -94,7 +98,15 @@ export default async function ExtractoPage() {
   const { usage, usageFailed, orgId } = await loadDashboard();
 
   const periodo = periodoDe(new Date());
-  const e = extractoEnSombra("panel", usage, periodo);
+  // La marca de exención (0028) llega también a la sombra: sin esto la cabecera
+  // diría «cargo 12 €» y la tabla de abajo «exento de comisión».
+  let esExento = false;
+  if (orgId) {
+    const supabase = await createReadOnlyClient();
+    const { data: org } = await supabase.schema("bvsala").from("organizations").select("comision_exenta").eq("id", orgId).maybeSingle();
+    esExento = Boolean((org as { comision_exenta?: boolean } | null)?.comision_exenta);
+  }
+  const e = extractoEnSombra("panel", usage, periodo, esExento);
   const cerrados = orgId ? await periodosCerrados(orgId) : [];
 
   const eur = (n: number) => n.toLocaleString(locale, { style: "currency", currency: "EUR" });

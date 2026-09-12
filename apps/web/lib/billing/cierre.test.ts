@@ -135,3 +135,19 @@ describe("cerrarPeriodo — la calibración REAL, por primer período con uso", 
     }
   });
 });
+
+describe("cerrarPeriodo — exentos de comisión (probadores, cortesías; migración 0028)", () => {
+  it("una org exenta cierra con cargo 0, comisión calculada y la marca puesta", () => {
+    const [c] = cerrarPeriodo([{ ...org("a", "2026-08", [fila("2026-09-10", 2000, 1100)]), comisionExenta: true }], "2026-09");
+    expect(c!.es_exento).toBe(true);
+    expect(c!.es_calibracion).toBe(false);
+    expect(c!.cargo_eur).toBe(0);
+    expect(c!.comision_eur).toBeGreaterThan(0);
+  });
+  it("sin la marca, nada cambia: el cargo sigue siendo la comisión", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09");
+    expect(c!.es_exento).toBe(false);
+    expect(c!.cargo_eur).toBe(c!.comision_eur);
+  });
+});
+

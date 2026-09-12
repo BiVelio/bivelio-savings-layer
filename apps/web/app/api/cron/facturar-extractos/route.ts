@@ -123,10 +123,17 @@ export async function GET(req: Request): Promise<NextResponse> {
       const { data: org } = await supabase
         .schema("bvsala")
         .from("organizations")
-        .select("stripe_customer_id")
+        .select("stripe_customer_id, comision_exenta")
         .eq("id", e.org_id)
         .maybeSingle();
       const cliente = (org as { stripe_customer_id?: string | null } | null)?.stripe_customer_id ?? null;
+      // SEGUNDA VERJA de la exención (la primera es el cargo 0 del cierre): una
+      // cortesía marcada entre el cierre de las 05:00 y esta pasada de las 07:00
+      // no se factura. Como la calibración, dos verjas.
+      if ((org as { comision_exenta?: boolean } | null)?.comision_exenta) {
+        console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: organización exenta de comisión, no se factura`);
+        continue;
+      }
 
       const decision = decidirCargo(e, cliente, conCargo.has(e.org_id));
       if (decision.accion === "nada") continue;

@@ -514,7 +514,8 @@
       "estadoCalibracion": "kalibratie",
       "estadoSinCargo": "geen kosten",
       "estadoPendiente": "in behandeling",
-      "verFactura": "bekijken"
+      "verFactura": "bekijken",
+      "estadoExento": "vrijgesteld van commissie"
     },
     "usageExplorer": {
       "title": "Gebruiksverkenner",
