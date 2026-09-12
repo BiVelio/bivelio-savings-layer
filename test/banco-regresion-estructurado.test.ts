@@ -90,7 +90,9 @@ describe("el brazo B manda el MISMO muestreo que el brazo A", () => {
     expect(capturadas[0]!.seed).toBeUndefined();
   });
 
-  it("el muestreo del banco es el que el brazo naive llevó siempre, y `buildNaive` lo toma de la misma constante", () => {
+  // GUARDA DE TEXTO, a propósito: `buildNaive` no se exporta y la constante es
+  // lo único que garantiza que los dos brazos no vuelvan a divergir en silencio.
+  it("guarda de texto: `buildNaive` toma el muestreo de la misma constante que el brazo B", () => {
     expect(MUESTREO_PAREADO).toEqual({ temperature: 0, seed: 7 });
     const fuente = readFileSync(new URL("../benchmarks/ab-live.ts", import.meta.url), "utf8");
     const buildNaive = fuente.slice(fuente.indexOf("function buildNaive("), fuente.indexOf("type Kind ="));
@@ -141,16 +143,18 @@ describe("la pista de límites solo viaja tras un fallo de valor, y SOLO a quien
     expect(msgs[2]!.role).toBe("user");
   });
 
-  it("el banco NO comparte la memoria de contratos entre escenarios", () => {
+  // GUARDA DE TEXTO, a propósito: `runScenario` no se exporta. Lo que fija es
+  // que ninguna capa del banco vuelva a recibir una memoria compartida.
+  it("guarda de texto: cada capa medida del banco estrena su memoria de contratos", () => {
     const fuente = readFileSync(new URL("../benchmarks/ab-live.ts", import.meta.url), "utf8");
     // Antes: `const memoriaContratos = new Set<string>()` a nivel de módulo.
     expect(fuente).not.toMatch(/^const memoriaContratos\b/m);
     const runScenario = fuente.slice(fuente.indexOf("async function runScenario("), fuente.indexOf("// ── Quality gate"));
-    expect(runScenario).toContain("const memoriaDelEscenario = new Set<string>()");
-    // Y todas las capas del escenario (sondeo, brazo B, amortización) la reciben.
+    expect(runScenario).toContain("const memoriaNueva = (): Set<string> => new Set<string>()");
+    // Y todas las capas del escenario (sondeo, brazo B) la estrenan.
     const llamadas = runScenario.match(/nuevaCapa\([^)]*\)/g) ?? [];
-    expect(llamadas.length).toBeGreaterThanOrEqual(3);
-    for (const l of llamadas) expect(l).toContain("memoriaDelEscenario");
+    expect(llamadas.length).toBeGreaterThanOrEqual(2);
+    for (const l of llamadas) expect(l).toContain("memoriaNueva()");
     // Y cuenta las repeticiones que la llevaron: sin eso la fila mezcla dos peticiones sin decirlo.
     expect(runScenario).toContain("llevaPistaDeLimites(r.messages)");
     expect(runScenario).toContain("pistaDeLimites: { reps: repsConPista, total: reps }");

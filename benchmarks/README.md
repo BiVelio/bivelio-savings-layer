@@ -404,3 +404,17 @@ cost_per_successful_task = total_cost / tasks_that_pass_quality_gate
 
 The decision metric is `cost_per_successful_task`, so the suite never rewards
 answers that are cheap but wrong.
+
+## Muestreo pareado y memoria de contratos fría (2026-09-12)
+
+- **Both arms sample the same way**: `temperature: 0, seed: 7` (`MUESTREO_PAREADO` in
+  `scenarios.ts`; Anthropic ignores `seed`). Until 2026-09-12 only the naive arm did;
+  arm B went out with the provider's default sampling, so part of its output variance
+  was sampling, not the layer. Artefacts before that date are not comparable rep by rep.
+- **Fresh contract memory per measured call**, like the cold cache. The layer's limits
+  hint (`JSON limits (not API-enforced): …`, ~30 input tokens plus a longer answer, paid
+  only by arm B) can now only appear inside a within-call repair; `scenarios[].pistaDeLimites`
+  counts the reps where it travelled. Before, one module-level memory served the whole
+  run, and eight scenarios share the same contract, so when the hint switched on depended
+  on what the model had answered earlier in the run.
+
