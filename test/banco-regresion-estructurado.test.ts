@@ -95,9 +95,14 @@ describe("el brazo B manda el MISMO muestreo que el brazo A", () => {
   it("guarda de texto: `buildNaive` toma el muestreo de la misma constante que el brazo B", () => {
     expect(MUESTREO_PAREADO).toEqual({ temperature: 0, seed: 7 });
     const fuente = readFileSync(new URL("../benchmarks/ab-live.ts", import.meta.url), "utf8");
+    // `buildNaive` delega en `construirBrazoNaive` (brazos.ts), que es quien
+    // manda el muestreo; el brazo B1 se construye encima y lo hereda.
     const buildNaive = fuente.slice(fuente.indexOf("function buildNaive("), fuente.indexOf("type Kind ="));
-    expect(buildNaive).toContain("...MUESTREO_PAREADO");
-    expect(buildNaive).not.toMatch(/temperature:\s*0/);
+    expect(buildNaive).toContain("construirBrazoNaive(");
+    const brazos = readFileSync(new URL("../benchmarks/brazos.ts", import.meta.url), "utf8");
+    const naive = brazos.slice(brazos.indexOf("export function construirBrazoNaive("), brazos.indexOf("export function mensajesDePrefijoRazonable("));
+    expect(naive).toContain("...MUESTREO_PAREADO");
+    expect(naive).not.toMatch(/temperature:\s*0/);
     expect(fuente).toContain("conMuestreoPareado(");
   });
 });

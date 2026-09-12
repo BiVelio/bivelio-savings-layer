@@ -70,7 +70,6 @@ import {
   conSalDeFrio,
   conMuestreoPareado,
   llevaPistaDeLimites,
-  MUESTREO_PAREADO,
   estadoDePalanca,
   familiaDeModelo,
   noMedibleEnTransporte,
@@ -90,6 +89,7 @@ import {
   type ConfigDeTransporte,
 } from "./transporte.js";
 import { compresorDeRepeticionesLiterales } from "./compresor.js";
+import { construirBrazoNaive, construirBrazoRazonable, DEFINICION_DE_BRAZOS } from "./brazos.js";
 import { avisoDeTruncado, cortadaPorElTope, veredictoDeCalidad } from "./verja-de-calidad.js";
 import { bootstrapRatioCI, bootstrapRatioCIEstratificado, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
@@ -208,6 +208,15 @@ const REPS = intEnv("BVSALA_AB_REPS", mode === "LIVE" ? 8 : 4);
 const MAX_REPS = intEnv("BVSALA_AB_MAX_REPS", REPS * 3);
 const CI_TARGET = Number(process.env.BVSALA_AB_CI_TARGET ?? 0.03); // desired ± half-width on the savings fraction
 const QUALITY_FLOOR = Number(process.env.BVSALA_AB_QUALITY_FLOOR ?? 0.999);
+/**
+ * EL SEGUNDO BRAZO DE CONTROL (B1, «integración razonablemente optimizada»),
+ * encendido por defecto: la guía de investigación exige publicar el ahorro
+ * frente a B0 Y frente a B1, y sin el segundo no se sabe qué parte del titular
+ * es mérito del SDK y qué parte es el descuento del proveedor o el JSON compacto
+ * que un cliente razonable ya tendría. Cuesta una llamada más por repetición;
+ * BVSALA_AB_B1=0 vuelve al banco de dos brazos. Ver benchmarks/brazos.ts.
+ */
+const B1_ACTIVO = process.env.BVSALA_AB_B1 !== "0";
 
 /**
  * EL AVISO MÁS CARO DEL BANCO, y va junto a la cifra que desmiente — no en un
@@ -402,48 +411,12 @@ function cost(model: string, u: Usage): number {
 }
 
 /**
- * Arm A — the naive request an un-optimized team would send: full JSON payload
- * inline, all tools transmitted natively, NO schema, NO output cap.
+ * Arm A — the naive request an un-optimized team would send. La definición
+ * vive en benchmarks/brazos.ts junto a la del brazo A1, para que los tests
+ * puedan afirmar qué manda cada uno sin arrancar la tirada.
  */
 function buildNaive(req: SavingsRequest, forzado: string | null): ProviderRequest {
-  const messages = req.messages.map((m) => ({ role: m.role, content: m.content }));
-  if (req.structuredData !== undefined) {
-    messages.push({ role: "user", content: JSON.stringify(req.structuredData) });
-  }
-  return {
-    model: modelId(req, forzado),
-    messages,
-    ...(req.tools && req.tools.length ? { tools: req.tools } : {}),
-    // EL CONTRATO VA EN LOS DOS BRAZOS. Antes `buildNaive` descartaba
-    // `req.response` entero, así que el brazo A resolvía una tarea MÁS FÁCIL:
-    // respondía en texto libre mientras el B tenía que devolver JSON válido
-    // contra el contrato. El B pagaba el bloque `response_format` (+38 tokens de
-    // entrada, medidos) y la estructura JSON en la salida — que cuesta 4x por
-    // token — sin que el A pagara ninguno de los dos. Eso no mide la capa: mide
-    // la diferencia entre dos tareas distintas.
-    //
-    // El contrato lo pide QUIEN LLAMA (está en el request del escenario), no lo
-    // añade la capa. Un equipo sin BV-SALA que necesite JSON estructurado manda
-    // el mismo esquema. Así que el brazo A honesto lo manda también.
-    //
-    // Y el TOPE de salida también. Lo dejé fuera en su momento porque era el
-    // lever bajo medición (`output_restriction`), pero 210 ensayos después ese
-    // libro mide -2,8%: el tope NO ahorra. Así que la asimetría no estaba
-    // midiendo nada, solo distorsionando en las dos direcciones — nos penalizaba
-    // en calidad (nuestro brazo truncaba, el suyo no: 5 fallos de 210) y nos
-    // favorecía en coste (pagábamos menos salida por estar capados).
-    //
-    // El tope está en el contrato de QUIEN LLAMA, exactamente igual que el
-    // esquema. Un equipo sin BV-SALA que declare `maxOutputTokens` lo manda. Así
-    // que va en los dos brazos y la comparación queda simétrica.
-    ...(req.response?.schema ? { schema: req.response.schema } : {}),
-    ...(req.response?.maxOutputTokens != null
-      ? { maxOutputTokens: req.response.maxOutputTokens }
-      : {}),
-    // El MISMO muestreo que el brazo B (`conMuestreoPareado` en la petición que
-    // atraviesa la capa). Antes el A llevaba 0/7 y el B no llevaba nada.
-    ...MUESTREO_PAREADO,
-  };
+  return construirBrazoNaive(req, modelId(req, forzado));
 }
 
 type Kind = "resolver" | "cache" | "ran";
@@ -486,8 +459,21 @@ interface ScenarioResult {
   kind: Kind;
   reps: number;
   armA: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
+  /** Brazo A1 (B1, integración razonablemente optimizada). Ausente si BVSALA_AB_B1=0. */
+  armA1?: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   armB: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   measured: {
+    inputTokenDeltaMean: number;
+    outputTokenDeltaMean: number;
+    savings: CI;
+    wilcoxonP: number;
+  };
+  /**
+   * El ahorro de B frente a B1, con su propio intervalo. Es la cifra que la guía
+   * llama «el valor adicional de Savings»: lo que queda después de descontar lo
+   * que un cliente razonable ya tendría sin nosotros.
+   */
+  measuredB1?: {
     inputTokenDeltaMean: number;
     outputTokenDeltaMean: number;
     savings: CI;
@@ -516,7 +502,7 @@ interface ScenarioResult {
    * del tramo mínimo, le estamos QUITANDO dinero mientras el informe dice que se
    * lo ahorramos. `attribution` solo miraba el brazo optimizado.
    */
-  cacheDePrefijo: { naive: number; optimizado: number };
+  cacheDePrefijo: { naive: number; razonable?: number; optimizado: number };
   quality: { gate: string; passed: number; total: number };
   /** Cuántas respuestas del brazo NAIVE cumplían el contrato que se le pidió. */
   naiveContractValid: { valid: number; total: number };
@@ -527,7 +513,7 @@ interface ScenarioResult {
    * 0/8» ilegible en un diagnóstico: la tirada del 2026-08-16 obligó a deducirlo
    * comparando los tokens de salida con el tope, a mano y desde un CSV.
    */
-  truncated: { naive: number; optimizado: number };
+  truncated: { naive: number; razonable?: number; optimizado: number };
   /**
    * En cuántas repeticiones la petición del brazo B llevó la PISTA DE LÍMITES
    * de la capa (`JSON limits (not API-enforced): …`). Solo la lleva el B, y
@@ -558,7 +544,7 @@ interface ScenarioResult {
     compressedInputTokens: number;
     providerCachedInputTokens: number;
   };
-  paired: { costA: number; costB: number }[];
+  paired: { costA: number; costA1?: number; costB: number }[];
 }
 
 async function runScenario(s: Scenario, forzado: string | null): Promise<ScenarioResult> {
@@ -611,8 +597,9 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
 
   const minReps = kind === "ran" ? REPS : Math.max(2, Math.ceil(REPS / 2));
 
-  const paired: { costA: number; costB: number }[] = [];
+  const paired: { costA: number; costA1?: number; costB: number }[] = [];
   const aIn: number[] = [], aOut: number[] = [], bIn: number[] = [], bOut: number[] = [];
+  const a1In: number[] = [], a1Out: number[] = [];
   const fingerprints = new Set<string>();
   // Lo que de verdad hay que garantizar: que los DOS brazos hablaron con el
   // mismo modelo. La verja anterior solo recogía el fingerprint del brazo A y
@@ -625,6 +612,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   let naiveValid = 0;
   let naiveTotal = 0;
   let truncadasA = 0;
+  let truncadasA1 = 0;
   let truncadasB = 0;
   /**
    * Envuelve el proveedor para poder ver qué modelo sirvió al brazo B, y si la
@@ -647,6 +635,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   let gate = "structural";
   // Acumuladores de caché de prefijo, uno por brazo.
   let cacheNaive = 0;
+  let cacheRazonable = 0;
   let cacheOptimizado = 0;
   let attribution = {
     avoidedCall: probe.report.calls.avoidedLlm > 0,
@@ -692,6 +681,36 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     // hubiera roto una respuesta que el cliente tenía sana.
     if (cortadaPorElTope(respA.finishReason)) truncadasA++;
 
+    // Arm A1: la MISMA petición que un equipo razonable mandaría sin nosotros —
+    // caché nativa configurada donde el prefijo se repite de verdad y solo las
+    // herramientas que el escenario declara a mano (benchmarks/brazos.ts). Misma
+    // sal que A y B: sigue siendo un pareado de verdad, ahora de tres.
+    // SAL PROPIA PARA A1. Con la misma sal que A, el brazo A1 manda un prompt
+    // byte a byte idéntico al que A acaba de escribir en la caché automática del
+    // proveedor, y OpenAI se lo sirve cacheado: la primera tirada (2026-09-12)
+    // dio 26.496 tokens cacheados en A1 con 0 en A sobre la tabla uniforme, y
+    // −56 % «frente a B1» en el hilo de soporte. Eso no es la integración
+    // razonable, es la petición idéntica de un segundo antes. La sal distinta
+    // rompe ese prefijo y deja a A1 tan frío como a A y a B; la tarea es la
+    // misma (la sal no forma parte de ella), así que el pareado se mantiene.
+    // Los escenarios sin sal (prefijo estable, caché exacta) siguen sin sal en
+    // los tres brazos: ahí el prefijo repetido ES lo que se mide.
+    let costA1: number | undefined;
+    if (B1_ACTIVO) {
+      const reqRepB1 = reqDeRep(`${t}-b1`);
+      const respA1 = await provider.generate(construirBrazoRazonable(reqRepB1, model, { toolsB1: s.toolsB1 }));
+      modelosServidos.add(modeloDe(respA1.raw) ?? "(sin declarar)");
+      const uA1: Usage = {
+        inputTokens: respA1.usage.inputTokens,
+        outputTokens: respA1.usage.outputTokens,
+        ...(respA1.usage.cachedInputTokens != null ? { cachedInputTokens: respA1.usage.cachedInputTokens } : {}),
+      };
+      costA1 = cost(model, uA1);
+      cacheRazonable += uA1.cachedInputTokens ?? 0;
+      a1In.push(uA1.inputTokens); a1Out.push(uA1.outputTokens);
+      if (cortadaPorElTope(respA1.finishReason)) truncadasA1++;
+    }
+
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
     pistaEnEstaRep = false;
@@ -702,7 +721,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     const ran = resB.report.calls.actualLlm > 0;
     const costB = ran ? cost(model, uB) : 0;
 
-    paired.push({ costA, costB });
+    paired.push({ costA, ...(costA1 != null ? { costA1 } : {}), costB });
     aIn.push(uA.inputTokens); aOut.push(uA.outputTokens);
     bIn.push(uB.inputTokens); bOut.push(uB.outputTokens);
 
@@ -762,18 +781,31 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     kind,
     reps,
     armA: { meanInputTokens: mean(aIn), meanOutputTokens: mean(aOut), meanCost: mean(paired.map((p) => p.costA)) },
+    ...(B1_ACTIVO
+      ? { armA1: { meanInputTokens: mean(a1In), meanOutputTokens: mean(a1Out), meanCost: mean(paired.map((p) => p.costA1 ?? 0)) } }
+      : {}),
     armB: { meanInputTokens: mean(bIn), meanOutputTokens: mean(bOut), meanCost: mean(paired.map((p) => p.costB)) },
     formaFactura: repartoDeLaFactura(model, mean(aIn), mean(aOut)),
-    cacheDePrefijo: { naive: cacheNaive, optimizado: cacheOptimizado },
+    cacheDePrefijo: { naive: cacheNaive, ...(B1_ACTIVO ? { razonable: cacheRazonable } : {}), optimizado: cacheOptimizado },
     measured: {
       inputTokenDeltaMean: mean(aIn) - mean(bIn),
       outputTokenDeltaMean: mean(aOut) - mean(bOut),
       savings,
       wilcoxonP: wilcoxonSignedRankP(paired.map((p) => p.costA - p.costB)),
     },
+    ...(B1_ACTIVO
+      ? {
+          measuredB1: {
+            inputTokenDeltaMean: mean(a1In) - mean(bIn),
+            outputTokenDeltaMean: mean(a1Out) - mean(bOut),
+            savings: bootstrapRatioCI(paired.map((p) => p.costA1 ?? 0), paired.map((p) => p.costB), { seed: SEED }),
+            wilcoxonP: wilcoxonSignedRankP(paired.map((p) => (p.costA1 ?? 0) - p.costB)),
+          },
+        }
+      : {}),
     quality: { gate, passed: qPass, total: reps },
     naiveContractValid: { valid: naiveValid, total: naiveTotal },
-    truncated: { naive: truncadasA, optimizado: truncadasB },
+    truncated: { naive: truncadasA, ...(B1_ACTIVO ? { razonable: truncadasA1 } : {}), optimizado: truncadasB },
     pistaDeLimites: { reps: repsConPista, total: reps },
     proven: mode === "LIVE" && savings.lower > 0 && qualityOk && modelStable,
     modelStable,
@@ -1019,7 +1051,7 @@ function estimarEscenario(s: Scenario, model: string): EstimacionDeEscenario {
   // Llamadas: 1 sondeo de clasificación (brazo B) + por repetición un brazo A y
   // un brazo B; `toolDiscovery` puede partir el brazo B en dos; los escenarios de
   // caché añaden el par fallo-frío/acierto de la amortización.
-  const porRepeticion = 2 + (s.request.savings?.toolDiscovery === true ? 1 : 0);
+  const porRepeticion = 2 + (B1_ACTIVO ? 1 : 0) + (s.request.savings?.toolDiscovery === true ? 1 : 0);
   const extraCache = s.warm ? 2 : 0;
   // Los escenarios de caché tiran la mitad de repeticiones; los resolvers
   // también, pero eso no se sabe hasta ejecutarlos, así que se les cuenta la
@@ -1120,6 +1152,9 @@ interface Tirada {
   agg: CI;
   /** El agregado antiguo (todas las muestras juntas). Ya no es el titular; ver `aggregatePooled`. */
   aggPooled: CI;
+  /** El agregado frente a B1 (integración razonable). Ausente si BVSALA_AB_B1=0. */
+  aggB1?: CI;
+  provenB1?: boolean;
   wilcoxonP: number;
   qualityPassRate: number;
   proven: boolean;
@@ -1137,11 +1172,12 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
 
   console.log(`\n╭─ modelo: ${etiqueta}`);
   console.log(
-    pad("scenario", 26) + pad("kind", 9) + padL("A in/out tok", 16) + padL("B in/out tok", 16) +
-    padL("bill in/out", 14) + padL("cached A/B", 12) +
-    padL("savings (95% lo)", 20) + padL("qa", 8),
+    pad("scenario", 26) + pad("kind", 9) + padL("A in/out tok", 16) +
+    (B1_ACTIVO ? padL("A1 in/out tok", 16) : "") + padL("B in/out tok", 16) +
+    padL("bill in/out", 14) + padL(B1_ACTIVO ? "cached A/A1/B" : "cached A/B", 14) +
+    padL("vs B0 (95% lo)", 20) + (B1_ACTIVO ? padL("vs B1 (95% lo)", 20) : "") + padL("qa", 8),
   );
-  console.log("─".repeat(130));
+  console.log("─".repeat(B1_ACTIVO ? 166 : 132));
 
   const results: ScenarioResult[] = [];
   for (const s of aplican) results.push(await runScenario(s, modelo));
@@ -1151,14 +1187,21 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     console.log(
       pad(r.name, 26) + pad(r.kind, 9) +
       padL(`${r.armA.meanInputTokens.toFixed(0)}/${r.armA.meanOutputTokens.toFixed(0)}`, 16) +
+      (r.armA1 ? padL(`${r.armA1.meanInputTokens.toFixed(0)}/${r.armA1.meanOutputTokens.toFixed(0)}`, 16) : "") +
       padL(`${r.armB.meanInputTokens.toFixed(0)}/${r.armB.meanOutputTokens.toFixed(0)}`, 16) +
       padL(`${(r.formaFactura.entrada * 100).toFixed(0)}/${(r.formaFactura.salida * 100).toFixed(0)}`, 14) +
-      padL(`${r.cacheDePrefijo.naive}/${r.cacheDePrefijo.optimizado}`, 12) +
+      padL(
+        r.cacheDePrefijo.razonable != null
+          ? `${r.cacheDePrefijo.naive}/${r.cacheDePrefijo.razonable}/${r.cacheDePrefijo.optimizado}`
+          : `${r.cacheDePrefijo.naive}/${r.cacheDePrefijo.optimizado}`,
+        14,
+      ) +
       padL(`${pct(r.measured.savings.point)} (${pct(r.measured.savings.lower)})`, 20) +
+      (r.measuredB1 ? padL(`${pct(r.measuredB1.savings.point)} (${pct(r.measuredB1.savings.lower)})`, 20) : "") +
       padL(qa, 8),
     );
   }
-  console.log("─".repeat(130));
+  console.log("─".repeat(B1_ACTIVO ? 166 : 132));
 
   // LA SEÑAL QUE DECIDE SI ESTE BANCO PUEDE VER LA PALANCA MAYOR DE LA ENTRADA.
   // Si ningún escenario consigue que el proveedor devuelva `cached_tokens > 0`,
@@ -1210,6 +1253,25 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
 
   const proven = mode === "LIVE" && agg.lower > 0 && qualityPassRate >= QUALITY_FLOOR && allFpStable;
 
+  // EL MISMO TITULAR, FRENTE A B1. Mismas parejas, misma verja de calidad (las
+  // respuestas del brazo B son las mismas), mismo modelo servido: solo cambia el
+  // brazo de control. Lo que quede aquí es lo que un cliente razonable NO tenía
+  // ya sin nosotros — y es la única cifra que la guía acepta como «valor
+  // adicional de Savings».
+  const parejasB1 = results.flatMap((r) => r.paired).filter((p) => p.costA1 != null);
+  // El MISMO estimador que el titular: estratificado por escenario, peso 1.
+  const aggB1 = B1_ACTIVO && parejasB1.length
+    ? bootstrapRatioCIEstratificado(
+        results.map((r) => {
+          const conB1 = r.paired.filter((p) => p.costA1 != null);
+          return { costA: conB1.map((p) => p.costA1!), costB: conB1.map((p) => p.costB) };
+        }),
+        { seed: SEED },
+      )
+    : undefined;
+  const wPB1 = aggB1 ? wilcoxonSignedRankP(parejasB1.map((p) => p.costA1! - p.costB)) : undefined;
+  const provenB1 = aggB1 ? mode === "LIVE" && aggB1.lower > 0 && qualityPassRate >= QUALITY_FLOOR && allFpStable : undefined;
+
   // Per-ledger attribution. Each scenario maps to exactly ONE ledger, so the
   // ledger cost-deltas PARTITION the total delta — double-counting is impossible
   // by construction, and the reconciliation residual below proves it.
@@ -1227,6 +1289,23 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     };
   });
 
+  const ledgerRollupB1: FilaDeLibro[] | undefined = aggB1
+    ? LEDGERS.map((lg) => {
+        const rs = results.filter((r) => r.ledger === lg);
+        const ps = rs.flatMap((r) => r.paired).filter((p) => p.costA1 != null);
+        const a = ps.map((p) => p.costA1!);
+        const b = ps.map((p) => p.costB);
+        const ci = bootstrapRatioCI(a, b, { seed: SEED });
+        return {
+          ledger: lg,
+          scenarios: rs.map((r) => r.name),
+          savings: ci,
+          deltaCost: sumArr(a) - sumArr(b),
+          proven: mode === "LIVE" && ci.lower > 0 && rs.length > 0 && rs.every((r) => r.quality.passed === r.quality.total && r.modelStable),
+        };
+      })
+    : undefined;
+
   // Reconciliation: (Σ ledger deltas) + (the "none"/setup bucket) must equal the
   // total measured delta, to the cent. A non-zero residual means a bug.
   const totalDelta = sumArr(allA) - sumArr(allB);
@@ -1237,6 +1316,16 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   const ledgerSum = ledgerRollup.reduce((n, l) => n + l.deltaCost, 0) + noneDelta;
   const residual = totalDelta - ledgerSum;
   const reconciled = Math.abs(residual) < 1e-9;
+  // La misma partición, frente a B1: los libros también tienen que cuadrar ahí.
+  let reconciliationB1: { totalDelta: number; ledgerSum: number; residual: number; reconciled: boolean } | undefined;
+  if (ledgerRollupB1) {
+    const totalB1 = sumArr(parejasB1.map((p) => p.costA1!)) - sumArr(parejasB1.map((p) => p.costB));
+    const noneB1 = noneRs.flatMap((r) => r.paired).filter((p) => p.costA1 != null);
+    const noneDeltaB1 = sumArr(noneB1.map((p) => p.costA1!)) - sumArr(noneB1.map((p) => p.costB));
+    const sumaB1 = ledgerRollupB1.reduce((n, l) => n + l.deltaCost, 0) + noneDeltaB1;
+    const residualB1 = totalB1 - sumaB1;
+    reconciliationB1 = { totalDelta: totalB1, ledgerSum: sumaB1, residual: residualB1, reconciled: Math.abs(residualB1) < 1e-9 };
+  }
 
   console.log("\nHeadline (per cold single call, measured both sides; one effective rep per scenario)");
   if (mode === "LIVE") {
@@ -1245,8 +1334,13 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     console.log(`  Pooled (old):  point ${pct(aggPooled.point)}   95% CI [${pct(aggPooled.lower)}, ${pct(aggPooled.upper)}]   (all trials together — weighted by reps × cost; not the headline)`);
     console.log(`  Wilcoxon p:    ${wP.toExponential(2)}   (H1: median saving > 0)`);
     if (!allFpStable) console.log(`  ⚠ los dos brazos no hablaron con el mismo modelo: ${results.flatMap((r) => r.servedModels).join(", ")}`);
+    if (aggB1 && wPB1 != null) {
+      console.log(`  vs B1 (razonable): point ${pct(aggB1.point)}   95% CI [${pct(aggB1.lower)}, ${pct(aggB1.upper)}]   Wilcoxon p ${wPB1.toExponential(2)}`);
+      console.log(`  Claim vs B1:   ${provenB1 ? `VERIFIED ≥ ${pct(aggB1.lower)} beyond a reasonably optimized integration` : "NOT PROVEN vs B1 (CI lower ≤ 0, quality regressed, or model swapped)"}`);
+    }
   } else {
     console.log(`  Net savings:   ${pct(agg.point)}  — ESTIMATED (mock provider), NOT a real savings claim   (pooled: ${pct(aggPooled.point)})`);
+    if (aggB1) console.log(`  vs B1:         ${pct(aggB1.point)}  — ESTIMATED (mock provider), NOT a real savings claim`);
     console.log(`  Run LIVE (set BVSALA_DEMO_BASE_URL) for real provider tokens & dollars.`);
   }
   console.log(`  Quality:       ${qTotalPass}/${qTotal} answers passed the gate (${pct(qualityPassRate)})`);
@@ -1277,7 +1371,9 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   console.log("\nPer-ledger attribution (measured; a ledger is 'proven' only if its 95% CI clears 0)");
   for (const l of ledgerRollup) {
     const badge = l.scenarios.length === 0 ? "sin escenario" : mode !== "LIVE" ? "est" : l.proven ? "proven" : "not-proven";
-    console.log(`  ${pad(l.ledger, 20)} ${padL(pct(l.savings.point), 8)}  95%lo ${padL(pct(l.savings.lower), 8)}   ${badge}`);
+    const b1 = ledgerRollupB1?.find((x) => x.ledger === l.ledger);
+    const colB1 = b1 ? `   vs B1 ${padL(pct(b1.savings.point), 8)}  95%lo ${padL(pct(b1.savings.lower), 8)}` : "";
+    console.log(`  ${pad(l.ledger, 20)} ${padL(pct(l.savings.point), 8)}  95%lo ${padL(pct(l.savings.lower), 8)}   ${badge}${colB1}`);
   }
 
   // ── EL AVISO HONESTO: qué palancas NO se ejercitaron y por qué ────────────
@@ -1376,13 +1472,20 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
     pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
     methodology:
-      "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; " +
-      "Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% STRATIFIED bootstrap CI lower bound of " +
+      "Paired A/B: Arm A = naive request (B0: full compact JSON, all tools, no cache marks; same contract and cap as the caller) executed against the same provider; " +
+      (B1_ACTIVO ? "Arm A1 = the same integration reasonably optimized (B1: native provider cache configured on the stable prefix, hand-picked tools where the scenario declares them); " : "") +
+      "Arm B = BV-SALA optimized. All arms priced from provider usage. Headline = 95% STRATIFIED bootstrap CI lower bound of " +
       "1 − Σ_s mean(costB_s) / Σ_s mean(costA_s), one stratum per scenario with equal weight, resampled within each scenario " +
       "(so the headline does not move with how many reps the adaptive sampler gave each scenario; the interval is conditional " +
       "on this fixed scenario set and covers per-scenario sampling noise only). The pooled 1−ΣcostB/ΣcostA " +
-      "over all trials is kept in `aggregatePooled` for comparison with earlier artefacts; it is no longer the headline. " +
-      "Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
+      "over all trials is kept in `aggregatePooled` for comparison with earlier artefacts; it is no longer the headline" +
+      (B1_ACTIVO ? "; `aggregateB1` is the same stratified headline against Arm A1 — the research guide's «additional value of Savings»" : "") +
+      ". Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
+    arms: {
+      A: DEFINICION_DE_BRAZOS.A,
+      ...(B1_ACTIVO ? { A1: DEFINICION_DE_BRAZOS.A1 } : {}),
+      B: DEFINICION_DE_BRAZOS.B,
+    },
     config: { reps: REPS, minReps: REPS, maxReps: MAX_REPS, ciTarget: CI_TARGET, qualityFloor: QUALITY_FLOOR, seed: SEED },
     scenarios: results.map((r) => ({ ...r, paired: undefined })),
     // LOS ESCENARIOS QUE NO SE MIDIERON CONTRA ESTE MODELO, con su motivo. Sin
@@ -1411,6 +1514,8 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     },
     ledgers: ledgerRollup,
     reconciliation: { totalDelta, ledgerSum, residual, reconciled },
+    ...(ledgerRollupB1 ? { ledgersB1: ledgerRollupB1 } : {}),
+    ...(reconciliationB1 ? { reconciliationB1 } : {}),
     modelStable: allFpStable,
     aggregate: {
       savings: agg,
@@ -1436,6 +1541,20 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
         "rep split (20.8% → 16.5% → 19.1% across three runs of the same layer) while the stratified one " +
         "stayed put (21.3 / 19.4 / 20.5). Kept for comparison; it is NOT the headline.",
     },
+    ...(aggB1 && wPB1 != null
+      ? {
+          aggregateB1: {
+            savings: aggB1,
+            estimator: "stratified-by-scenario",
+            wilcoxonP: wPB1,
+            qualityPassRate,
+            proven: provenB1,
+            headline: mode === "LIVE"
+              ? (provenB1 ? `verified ≥ ${pct(aggB1.lower)} beyond a reasonably optimized integration (95% CI lower bound)` : "not proven vs B1")
+              : "ESTIMATED (mock) — not a savings claim",
+          },
+        }
+      : {}),
     honesty: [
       "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
       "Since 2026-09-12 BOTH arms are sampled the same way (temperature 0, seed 7; Anthropic ignores seed). " +
@@ -1464,6 +1583,11 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       "Una palanca opt-in que no llegó a dispararse se DECLARA en `levers.notExercised`: su cero no es una medición.",
       "Un escenario que no aplica a este modelo se SALTA y se declara en `scenariosNotApplicable`, en vez de medirse mal.",
       "Una palanca que el TRANSPORTE configurado no puede ejercitar (cache_control por una pasarela OpenAI) se declara en `levers.notMeasurable` con lo que hay que configurar, y su escenario NO se ejecuta: publicar su cero sería publicar un fracaso que nadie ha medido.",
+      ...(B1_ACTIVO
+        ? [
+            "Dos brazos de control, no uno: `aggregate` es el ahorro frente a B0 (la integración sin optimizar) y `aggregateB1` frente a B1 (la misma integración con la caché nativa configurada y las herramientas elegidas a mano). Solo la segunda cifra es mérito atribuible al SDK; la primera incluye lo que un cliente razonable ya tendría sin nosotros.",
+          ]
+        : []),
     ],
   };
 
@@ -1475,6 +1599,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     noMedibles,
     agg,
     aggPooled,
+    ...(aggB1 ? { aggB1, provenB1 } : {}),
     wilcoxonP: wP,
     qualityPassRate,
     proven,
@@ -1570,9 +1695,15 @@ async function main(): Promise<void> {
     }
     console.log(raya);
     console.log(
-      pad("AGREGADO", anchoNombre) +
+      pad("AGREGADO vs B0", anchoNombre) +
         tiradas.map((t) => celda(`${pct(t.agg.point)} (${pct(t.agg.lower)})`)).join(""),
     );
+    if (tiradas.some((t) => t.aggB1)) {
+      console.log(
+        pad("AGREGADO vs B1", anchoNombre) +
+          tiradas.map((t) => celda(t.aggB1 ? `${pct(t.aggB1.point)} (${pct(t.aggB1.lower)})` : "n/a")).join(""),
+      );
+    }
     console.log(
       pad("proven", anchoNombre) +
         tiradas.map((t) => celda(mode === "LIVE" ? String(t.proven) : "est")).join(""),
@@ -1595,9 +1726,9 @@ async function main(): Promise<void> {
     rutas.push(
       writeCsv(
         "ab-live-trials",
-        ["scenario", "kind", "rep", "costA", "costB", "savedFraction"],
+        ["scenario", "kind", "rep", "costA", "costA1", "costB", "savedFraction", "savedFractionB1"],
         t.results.flatMap((r) =>
-          r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0 })),
+          r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costA1: p.costA1 ?? "", costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0, savedFractionB1: p.costA1 != null ? (p.costA1 > 0 ? 1 - p.costB / p.costA1 : 0) : "" })),
         ),
       ),
     );
@@ -1612,9 +1743,9 @@ async function main(): Promise<void> {
       rutas.push(
         writeCsv(
           `ab-live-trials--${slug}`,
-          ["scenario", "kind", "rep", "costA", "costB", "savedFraction"],
+          ["scenario", "kind", "rep", "costA", "costA1", "costB", "savedFraction", "savedFractionB1"],
           t.results.flatMap((r) =>
-            r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0 })),
+            r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costA1: p.costA1 ?? "", costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0, savedFractionB1: p.costA1 != null ? (p.costA1 > 0 ? 1 - p.costB / p.costA1 : 0) : "" })),
           ),
         ),
       );
@@ -1635,6 +1766,7 @@ async function main(): Promise<void> {
           model: t.etiqueta,
           aggregate: { savings: t.agg, estimator: "stratified-by-scenario", proven: t.proven, qualityPassRate: t.qualityPassRate },
           aggregatePooled: { savings: t.aggPooled, estimator: "pooled-all-trials" },
+          ...(t.aggB1 ? { aggregateB1: { savings: t.aggB1, estimator: "stratified-by-scenario", proven: t.provenB1 } } : {}),
           ledgers: t.ledgerRollup.map((l) => ({ ledger: l.ledger, savings: l.savings, scenarios: l.scenarios.length })),
           levers: t.palancas,
           leversNotMeasurable: t.noMedibles,
