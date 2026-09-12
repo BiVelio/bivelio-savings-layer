@@ -62,7 +62,7 @@ function tabla(nombre: string) {
   const filtros: { col: string; op: "eq" | "in"; val: unknown }[] = [];
   const q: Record<string, unknown> = {};
   const self = () => q;
-  for (const m of ["select", "order", "limit", "not", "neq"]) q[m] = self;
+  for (const m of ["select", "order", "limit", "not", "neq", "like"]) q[m] = self;
   q.eq = (col: string, val: unknown) => {
     filtros.push({ col, op: "eq", val });
     return q;
@@ -163,6 +163,10 @@ vi.mock("@/lib/stripe/client", () => ({
     // el cliente; aquí Stripe no sabe nada, que es el caso que estos tests miran.
     customers: { list: async () => ({ data: [] }) },
     subscriptions: { retrieve: async () => suscripcionStripe, list: async () => ({ data: [] }) },
+    // Los cupones que el webhook resuelve para decidir la exención (0028).
+    coupons: {
+      retrieve: async (id: string) => ({ id, percent_off: 100, duration: id === "cup_once" ? "once" : "forever" }),
+    },
   }),
 }));
 
@@ -471,20 +475,26 @@ describe("POST /api/stripe/webhook — una compra a 0 € con cupón deja la org
     const { POST } = await import("./stripe/webhook/route.js");
     return POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));
   };
-  it("total 0 con descuento → organizations.update con comision_exenta", async () => {
-    const res = await enviar(checkout({ amount_total: 0, amount_subtotal: 400, total_details: { amount_discount: 400 } }));
+  it("total 0 con descuento de un cupón FOREVER al 100 % → organizations.update con comision_exenta", async () => {
+    const res = await enviar(checkout({ amount_total: 0, total_details: { amount_discount: 400 }, discounts: [{ coupon: "cup_forever" }] }));
     expect(res.status).toBe(200);
     const exenta = updates.find((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true);
     expect(exenta).toBeDefined();
     expect(String((exenta!.fila as { exencion_nota: string }).exencion_nota)).toContain("cs_test_0");
   });
-  it("una compra normal (total > 0) NO marca nada", async () => {
-    const res = await enviar(checkout({ amount_total: 400, amount_subtotal: 400, total_details: { amount_discount: 0 } }));
+  it("⛔ un cupón del 100 % de UN SOLO MES también deja el total a 0, y NO marca: ese cliente paga desde el segundo mes", async () => {
+    const res = await enviar(checkout({ amount_total: 0, total_details: { amount_discount: 400 }, discounts: [{ coupon: "cup_once" }] }));
     expect(res.status).toBe(200);
     expect(updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true)).toBe(false);
   });
+  it("una compra normal (total > 0) NO marca nada, y LEVANTA una exención puesta por una compra a 0 €", async () => {
+    const res = await enviar(checkout({ amount_total: 400, total_details: { amount_discount: 0 } }));
+    expect(res.status).toBe(200);
+    expect(updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true)).toBe(false);
+    expect(updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === false)).toBe(true);
+  });
   it("total 0 SIN descuento (precio 0 de verdad) tampoco marca: la exención es del cupón", async () => {
-    const res = await enviar(checkout({ amount_total: 0, amount_subtotal: 0, total_details: { amount_discount: 0 } }));
+    const res = await enviar(checkout({ amount_total: 0, total_details: { amount_discount: 0 } }));
     expect(res.status).toBe(200);
     expect(updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true)).toBe(false);
   });

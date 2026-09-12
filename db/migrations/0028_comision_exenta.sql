@@ -3,8 +3,8 @@
 -- EL FALLO QUE TAPA: la comisión se factura el día 1 en una factura de Stripe
 -- aparte, con cobro automático y un mínimo de 0,50 €. El cupón del 100 % del
 -- grupo de probadores solo cubre el asiento, y un probador con cupón no tiene
--- tarjeta: la factura de comisión fallaría, entraría en impagos y a los 14 días
--- de gracia se le revocaría la licencia. Un probador castigado por probar.
+-- tarjeta: la factura de comisión quedaría impagada, saltaría la alerta crítica
+-- y Stripe le mandaría recordatorios de cobro. Un probador castigado por probar.
 --
 -- QUÉ HACE: una marca por organización (`comision_exenta`) con su nota, y una
 -- marca por extracto (`es_exento`) que obliga a cargo 0, igual que hace

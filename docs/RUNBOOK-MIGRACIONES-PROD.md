@@ -375,6 +375,9 @@ proveedor como `claude-fable-5-1`; en el panel el registro trae
 
 ## Anexo — 0028 (septiembre de 2026): exentos de comisión (probadores y cortesías)
 
+El webhook marca la exención SOLO con cupón «forever» al 100 %; un cupón del
+100 % de un solo mes deja el primer checkout a 0 € y ese cliente paga después.
+
 Añade `organizations.comision_exenta` + `exencion_nota` y `extractos.es_exento`
 (con el check `extractos_exento_cobra_cero`). El webhook marca la exención
 cuando un checkout termina a 0 € con descuento; el cierre del día 1 pone cargo 0

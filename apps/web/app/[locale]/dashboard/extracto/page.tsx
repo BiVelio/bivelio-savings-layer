@@ -98,7 +98,15 @@ export default async function ExtractoPage() {
   const { usage, usageFailed, orgId } = await loadDashboard();
 
   const periodo = periodoDe(new Date());
-  const e = extractoEnSombra("panel", usage, periodo);
+  // La marca de exención (0028) llega también a la sombra: sin esto la cabecera
+  // diría «cargo 12 €» y la tabla de abajo «exento de comisión».
+  let esExento = false;
+  if (orgId) {
+    const supabase = await createReadOnlyClient();
+    const { data: org } = await supabase.schema("bvsala").from("organizations").select("comision_exenta").eq("id", orgId).maybeSingle();
+    esExento = Boolean((org as { comision_exenta?: boolean } | null)?.comision_exenta);
+  }
+  const e = extractoEnSombra("panel", usage, periodo, esExento);
   const cerrados = orgId ? await periodosCerrados(orgId) : [];
 
   const eur = (n: number) => n.toLocaleString(locale, { style: "currency", currency: "EUR" });

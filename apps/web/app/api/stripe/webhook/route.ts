@@ -329,30 +329,63 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
     return;
   }
   await ensureOrg(admin, orgId, compradorId, email, f.customerId, "pro");
-  // COMPRA A 0 € CON CUPÓN → EXENTA DE COMISIÓN. Un probador con el cupón del
-  // 100 % no tiene tarjeta: la factura de comisión del día 1 fallaría y a los
-  // 14 días de gracia se le revocaría la licencia por probar. La marca la pone
-  // el propio cobro, sin que nadie tenga que acordarse; el dueño la puede
-  // quitar (o poner a mano para una cortesía). Ver migración 0028.
+  // COMPRA A 0 € CON CUPÓN «PARA SIEMPRE» → EXENTA DE COMISIÓN. Un probador con
+  // el cupón del 100 % no tiene tarjeta: la factura de comisión del día 1
+  // quedaría impagada, saltaría la alerta crítica y Stripe le mandaría
+  // recordatorios de cobro por probar. La marca la pone el propio cobro, sin
+  // que nadie tenga que acordarse; el dueño la puede quitar (o poner a mano
+  // para una cortesía). Ver migración 0028.
+  //
+  // SOLO si el cupón es «forever» al 100 %: un cupón del 100 % «solo el primer
+  // mes» también deja `amount_total` en 0 en ese checkout, y ese cliente PAGA
+  // desde el segundo mes — marcarlo exento sería regalarle la comisión para
+  // siempre por la aritmética de una factura. Si el cupón no se puede leer,
+  // no se marca (mejor una cortesía a mano que una exención por error).
   const descuento = session.total_details?.amount_discount ?? 0;
   if (session.amount_total === 0 && descuento > 0) {
-    const { error: errExenta } = await admin
-      .from("organizations")
-      .update({
-        comision_exenta: true,
-        exencion_nota: `compra a 0 € con cupón · ${session.id} · ${new Date(eventCreated * 1000).toISOString().slice(0, 10)}`,
-      })
-      .eq("id", orgId);
-    if (errExenta) {
-      // No tumba el webhook (la licencia es lo primero), pero no se calla.
+    const cuponRef = session.discounts?.[0]?.coupon ?? null;
+    let cupon: Stripe.Coupon | null = null;
+    try {
+      cupon = typeof cuponRef === "string" ? await stripe.coupons.retrieve(cuponRef) : cuponRef;
+    } catch (err) {
       await alertar({
-        nivel: "critico",
-        asunto: "Compra a 0 € sin poder marcar la exención de comisión",
-        detalle: { orgId, sessionId: session.id, eventId, motivo: errExenta.message },
+        nivel: "aviso",
+        asunto: "Compra a 0 € sin poder leer el cupón: no se marca la exención",
+        detalle: { orgId, sessionId: session.id, eventId, motivo: err instanceof Error ? err.message : String(err) },
       });
-    } else {
-      await audit(admin, orgId, eventId, "comision_exenta_por_cupon", { sessionId: session.id, descuento });
     }
+    const paraSiempre = cupon?.duration === "forever" && cupon.percent_off === 100;
+    if (paraSiempre) {
+      const { error: errExenta } = await admin
+        .from("organizations")
+        .update({
+          comision_exenta: true,
+          exencion_nota: `compra a 0 € con cupón ${cupon!.id} · ${session.id} · ${new Date(eventCreated * 1000).toISOString().slice(0, 10)}`,
+        })
+        .eq("id", orgId);
+      if (errExenta) {
+        // No tumba el webhook (la licencia es lo primero), pero no se calla.
+        await alertar({
+          nivel: "critico",
+          asunto: "Compra a 0 € sin poder marcar la exención de comisión",
+          detalle: { orgId, sessionId: session.id, eventId, motivo: errExenta.message },
+        });
+      } else {
+        await audit(admin, orgId, eventId, "comision_exenta_por_cupon", { sessionId: session.id, cupon: cupon!.id, descuento });
+      }
+    } else if (cupon) {
+      await audit(admin, orgId, eventId, "compra_a_0_sin_exencion", { sessionId: session.id, cupon: cupon.id, duration: cupon.duration, percent_off: cupon.percent_off });
+    }
+  } else if ((session.amount_total ?? 0) > 0) {
+    // Un pago de verdad LEVANTA la exención que puso una compra a 0 € (un
+    // probador que vuelve como cliente). Las cortesías puestas a mano (otra
+    // nota) se respetan.
+    const { error: errLevantar } = await admin
+      .from("organizations")
+      .update({ comision_exenta: false, exencion_nota: null })
+      .eq("id", orgId)
+      .like("exencion_nota", "compra a 0 €%");
+    if (errLevantar) console.error("[stripe/webhook] no se pudo levantar la exención:", errLevantar);
   }
   const { id: subRowId, stale } = await upsertSub(admin, sub, orgId, eventCreated);
   // Fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA
