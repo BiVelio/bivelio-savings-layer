@@ -305,8 +305,9 @@ ask you to take its confidence interval on faith.
    trial, which weights a scenario by **reps × cost**; since the adaptive
    sampler pours reps into the noisy scenarios, the pooled headline
    moved with the rep split, not with the layer: 20.8% (REPS=16), 16.5% (REPS=8,
-   two low-saving scenarios at 24 reps), 19.1% (next run) — while the
-   equal-weight figure stayed at 21.3 / 19.4 / 20.5. The pooled number is still
+   two near-zero scenarios and one with a bimodal arm-B output at 24 reps), 19.1%
+   (next run) — while the equal-weight figure stayed within two points:
+   21.3 / 19.4 / 20.5. The pooled number is still
    written as `aggregatePooled` for comparison with older artefacts, but it is
    not the claim. Per-ledger CIs remain pooled over the ledger's trials, since a
    ledger's `deltaCost` is a sum by construction (reconciliation rule).

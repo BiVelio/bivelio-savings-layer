@@ -1123,10 +1123,11 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   // (1 − ΣcostB/ΣcostA), que pondera cada escenario por sus reps × su coste. El
   // muestreo adaptativo de abajo mete más reps en los escenarios RUIDOSOS, así
   // que el titular cambiaba con el reparto de reps y no con la capa: 20,8 % con
-  // REPS=16 (194 muestras); 16,5 % con REPS=8 cuando «Large uniform table» y
-  // «Stable-prefix agent turn» —que ahorran poco— llegaron a 24 reps; 19,1 % en
-  // la tirada siguiente. Con peso igual por escenario las mismas tres tiradas
-  // dan 21,3 / 19,4 / 20,5. El remuestreo se hace DENTRO de cada escenario, así
+  // REPS=16 (194 muestras); 16,5 % con REPS=8 cuando «Constrained structured
+  // answer» y «Stable-prefix agent turn» —que ahorran poco o nada— y «Large
+  // uniform table» —con una salida bimodal del brazo B— llegaron a 24 reps;
+  // 19,1 % en la tirada siguiente. Con peso igual por escenario las mismas tres
+  // tiradas quedan a menos de dos puntos: 21,3 / 19,4 / 20,5. El remuestreo se hace DENTRO de cada escenario, así
   // que el peso de un escenario no depende de cuánto tiempo corrió el muestreador.
   // Sigue siendo la llamada fría, una por escenario (la caché enseña aquí su
   // coste de fallo; la amortización por tráfico repetido va aparte).
