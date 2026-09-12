@@ -654,7 +654,7 @@
       "notProven": "ölçüldü · sıfırı geçmiyor",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "OpenAI API'sine karşı ölçülmüş dört defter. Yanında modeli olmayan bir yüzde hiçbir şey ifade etmez: aynı kaldıraç bir modelde tasarruf ettirirken başka bir modelde maliyet çıkarabilir."
+      "providerNote": "Her defter OpenAI API'sine karşı ayrı ayrı ölçülür ve ayrı ayrı yayımlanır; sıfırı aşamayanlar görünmez. Yanında modeli olmayan bir yüzde hiçbir şey ifade etmez: aynı kaldıraç bir modelde tasarruf ettirirken başka bir modelde maliyet çıkarabilir."
     },
     "ledgers": [
       {

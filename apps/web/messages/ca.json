@@ -654,7 +654,7 @@
       "notProven": "mesurat · no supera el zero",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Quatre llibres mesurats contra l'API d'OpenAI. Un percentatge sense el seu model al costat no significa res: la mateixa palanca pot estalviar en un model i costar en un altre."
+      "providerNote": "Cada llibre es mesura i es publica per separat contra l'API d'OpenAI; els que no superen el zero no apareixen. Un percentatge sense el seu model al costat no significa res: la mateixa palanca pot estalviar en un model i costar en un altre."
     },
     "ledgers": [
       {

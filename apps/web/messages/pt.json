@@ -654,7 +654,7 @@
       "notProven": "medido · não ultrapassa o zero",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Quatro livros medidos contra a API da OpenAI. Uma percentagem sem o seu modelo ao lado não significa nada: a mesma alavanca pode poupar num modelo e custar noutro."
+      "providerNote": "Cada livro é medido e publicado em separado contra a API da OpenAI; os que não superam o zero não aparecem. Uma percentagem sem o seu modelo ao lado não significa nada: a mesma alavanca pode poupar num modelo e custar noutro."
     },
     "ledgers": [
       {

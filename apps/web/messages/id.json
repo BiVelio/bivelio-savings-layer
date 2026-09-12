@@ -654,7 +654,7 @@
       "notProven": "terukur · tidak melewati nol",
       "providerTag": "OpenAI",
       "providerModel": "gpt-4o-mini",
-      "providerNote": "Empat buku diukur terhadap API OpenAI. Persentase tanpa modelnya di sebelahnya tidak berarti apa-apa: tuas yang sama bisa menghemat pada satu model dan justru memakan biaya pada model lain."
+      "providerNote": "Setiap buku diukur dan dipublikasikan secara terpisah terhadap API OpenAI; yang tidak melewati nol tidak ditampilkan. Persentase tanpa modelnya di sebelahnya tidak berarti apa-apa: tuas yang sama bisa menghemat pada satu model dan justru memakan biaya pada model lain."
     },
     "ledgers": [
       {
