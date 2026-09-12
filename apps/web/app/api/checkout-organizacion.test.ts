@@ -242,6 +242,13 @@ describe("la factura tiene que servirle al contable del cliente", () => {
     expect(sesion!.customer_update).toEqual({ address: "auto", name: "auto" });
   });
 
+  it("no se pide tarjeta cuando no hay nada que cobrar: un probador con código del 100 % entra sin tarjeta", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.payment_method_collection).toBe("if_required");
+    expect(sesion!.allow_promotion_codes).toBe(true);
+  });
+
   it("con cliente NUEVO no se manda customer_update (Stripe lo rechaza)", async () => {
     // `customer_update` solo es válido junto a `customer`. Mandarlo con
     // `customer_email` es un 400 de Stripe: checkout roto para todo cliente nuevo,
