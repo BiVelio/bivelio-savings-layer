@@ -321,7 +321,9 @@
       "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique.",
       "errYaSuscrito": "Ce compte a déjà un abonnement actif. Utilisez « Gérer le plan » pour modifier les sièges ou la facturation.",
       "errPagoEnCurso": "Votre paiement est encore en cours : un prélèvement bancaire peut mettre quelques jours à être confirmé. Vous aurez accès dès qu'il sera réglé. Ne démarrez pas un second abonnement.",
-      "errSuscripcionEnStripe": "Stripe a déjà un abonnement pour ce compte, mais il n'est pas encore activé ici. Ne rachetez pas : écrivez à support@bivelio.com et nous l'activerons à la main."
+      "errSuscripcionEnStripe": "Stripe a déjà un abonnement pour ce compte, mais il n'est pas encore activé ici. Ne rachetez pas : écrivez à support@bivelio.com et nous l'activerons à la main.",
+      "codigoAplicado": "Le code {codigo} sera appliqué au paiement.",
+      "errCodigoInvalido": "Ce code n'existe pas ou n'est plus actif. Vous pouvez continuer sans lui ou écrire à support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "prouvé",

@@ -99,6 +99,11 @@ vi.mock("@/lib/stripe/client", () => ({
         },
       },
     },
+    promotionCodes: {
+      list: async ({ code, active }: { code: string; active?: boolean }) => ({
+        data: code === "PROBADORES-SEPT" && active !== false ? [{ id: "promo_probadores", code, active: true }] : [],
+      }),
+    },
     customers: {
       list: async ({ email }: { email: string }) => {
         if (e.fallar === "stripe") throw new Error("stripe caído");
@@ -351,5 +356,40 @@ describe("la guardia contra el webhook muerto: se le pregunta también a Stripe"
     const { POST } = await import("./stripe/checkout/route");
     const res = await POST(peticion());
     expect(((await res.json()) as { code: string }).code).toBe("pago_en_curso");
+  });
+
+});
+
+describe("el enlace de los probadores: código PRE-APLICADO en la sesión", () => {
+  it("con `codigo` válido la sesión lleva el descuento y NO `allow_promotion_codes` (son excluyentes)", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, codigo: "probadores-sept" }));
+    expect(res.status).toBe(200);
+    expect(sesion!.discounts).toEqual([{ promotion_code: "promo_probadores" }]);
+    expect(sesion!.allow_promotion_codes).toBeUndefined();
+    expect(sesion!.payment_method_collection).toBe("if_required");
+  });
+
+  it("un código que no existe o está apagado es un 400 con `code: codigo_invalido`, sin sesión", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, codigo: "NO-EXISTE" }));
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { code: string }).code).toBe("codigo_invalido");
+    expect(sesion).toBeNull();
+  });
+
+  it("un `codigo` con forma rara se ignora en vez de mandarse a Stripe", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, codigo: "<script>alert(1)</script>" }));
+    expect(res.status).toBe(200);
+    expect(sesion!.allow_promotion_codes).toBe(true);
+    expect(sesion!.discounts).toBeUndefined();
+  });
+
+  it("sin `codigo`, todo sigue igual: el cliente puede teclear uno en Stripe", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    await POST(peticion());
+    expect(sesion!.allow_promotion_codes).toBe(true);
+    expect(sesion!.discounts).toBeUndefined();
   });
 });

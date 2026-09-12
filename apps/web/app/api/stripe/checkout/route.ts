@@ -46,8 +46,14 @@ export async function POST(req: Request): Promise<NextResponse> {
   let period: BillingPeriod = "monthly";
   let seats = 1;
   let locale = "es";
+  // Código de promoción PRE-APLICADO (enlace de los probadores, 2026-09-12).
+  // Tecleado en la página de Stripe, un código puede rechazarse; puesto aquí,
+  // el descuento ya viene en la sesión y el probador solo ve el total a 0 €.
+  // `allow_promotion_codes` y `discounts` son excluyentes en Checkout.
+  let codigo: string | null = null;
   try {
-    const body = (await req.json()) as { period?: string; seats?: number; locale?: string };
+    const body = (await req.json()) as { period?: string; seats?: number; locale?: string; codigo?: string };
+    if (typeof body.codigo === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
     if (body.period === "yearly") period = "yearly";
     // MISMA función que el campo del panel, no una copia del criterio. Y el tope
     // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
@@ -249,6 +255,29 @@ export async function POST(req: Request): Promise<NextResponse> {
     );
   }
 
+  // El código, resuelto ANTES de crear la sesión: uno inexistente o apagado es
+  // un 400 con su propio `code`, no una sesión sin descuento que sorprenda al
+  // probador con 4 € en la pantalla de pago.
+  let promotionCodeId: string | null = null;
+  if (codigo) {
+    try {
+      const encontrados = await getStripe().promotionCodes.list({ code: codigo, active: true, limit: 1 });
+      promotionCodeId = encontrados.data[0]?.id ?? null;
+    } catch (err) {
+      console.error("[stripe/checkout] promotion code lookup failed:", err);
+      return NextResponse.json(
+        { error: "Could not verify the promotion code. Try again in a moment." },
+        { status: 503 },
+      );
+    }
+    if (!promotionCodeId) {
+      return NextResponse.json(
+        { code: "codigo_invalido", error: "That promotion code does not exist or is no longer active." },
+        { status: 400 },
+      );
+    }
+  }
+
   const origin = new URL(req.url).origin;
   try {
     const session = await getStripe().checkout.sessions.create({
@@ -291,7 +320,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       // vuelo — un adeudo SEPA tarda días en liquidar.
       metadata: { org_id: orgId, user_id: user.id, email: user.email ?? "" },
       subscription_data: { metadata: { org_id: orgId, user_id: user.id } },
-      allow_promotion_codes: true,
+      ...(promotionCodeId ? { discounts: [{ promotion_code: promotionCodeId }] } : { allow_promotion_codes: true }),
       // SIN TARJETA CUANDO NO HACE FALTA. Con un código del 100 % (los
       // probadores, 2026-09-12) el total es 0 y Stripe, por defecto, sigue
       // pidiendo una tarjeta para una suscripción. `if_required` la pide solo

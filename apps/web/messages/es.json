@@ -321,7 +321,9 @@
       "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo.",
       "errYaSuscrito": "Esta cuenta ya tiene una suscripción activa. Usa «Gestionar plan» para cambiar asientos o facturación.",
       "errPagoEnCurso": "Tu pago todavía se está procesando: un adeudo bancario puede tardar unos días en liquidar. Tendrás acceso en cuanto liquide. No inicies una segunda suscripción.",
-      "errSuscripcionEnStripe": "Stripe ya tiene una suscripción para esta cuenta, pero aún no está activada aquí. No vuelvas a comprar: escríbenos a support@bivelio.com y la activamos a mano."
+      "errSuscripcionEnStripe": "Stripe ya tiene una suscripción para esta cuenta, pero aún no está activada aquí. No vuelvas a comprar: escríbenos a support@bivelio.com y la activamos a mano.",
+      "codigoAplicado": "Al pagar se aplicará el código {codigo}.",
+      "errCodigoInvalido": "Ese código no existe o ya no está activo. Puedes seguir sin él o escribirnos a support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "comprobado",

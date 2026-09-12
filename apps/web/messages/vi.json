@@ -321,7 +321,9 @@
       "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng.",
       "errYaSuscrito": "Tài khoản này đã có gói đăng ký đang hoạt động. Dùng «Quản lý gói» để đổi số ghế hoặc thanh toán.",
       "errPagoEnCurso": "Thanh toán của bạn vẫn đang được xử lý: ghi nợ ngân hàng có thể mất vài ngày. Bạn sẽ có quyền truy cập ngay khi hoàn tất. Đừng bắt đầu gói đăng ký thứ hai.",
-      "errSuscripcionEnStripe": "Stripe đã có gói đăng ký cho tài khoản này nhưng chưa được kích hoạt ở đây. Đừng mua lại: hãy viết cho support@bivelio.com và chúng tôi sẽ kích hoạt thủ công."
+      "errSuscripcionEnStripe": "Stripe đã có gói đăng ký cho tài khoản này nhưng chưa được kích hoạt ở đây. Đừng mua lại: hãy viết cho support@bivelio.com và chúng tôi sẽ kích hoạt thủ công.",
+      "codigoAplicado": "Mã {codigo} sẽ được áp dụng khi thanh toán.",
+      "errCodigoInvalido": "Mã này không tồn tại hoặc không còn hiệu lực. Bạn có thể tiếp tục mà không cần mã hoặc viết cho support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",
