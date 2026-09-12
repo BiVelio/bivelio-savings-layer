@@ -897,6 +897,44 @@ export function conSalDeFrio(req: SavingsRequest, marca: string): SavingsRequest
   };
 }
 
+/**
+ * EL MUESTREO DEL BANCO, UNA SOLA VEZ Y PARA LOS DOS BRAZOS.
+ *
+ * El brazo naive siempre mandó `temperature: 0, seed: 7`. El brazo B mandaba la
+ * petición del escenario TAL CUAL, y como ningún escenario declara muestreo, la
+ * capa no reenviaba nada y el proveedor aplicaba su valor por defecto (1.0 en
+ * OpenAI). O sea que el A/B comparaba una respuesta determinista con una
+ * muestreada: el brazo B tenía más varianza y salidas bimodales que no eran de la
+ * capa, eran del muestreo. Medido en la tirada del 2026-09-12 (v1): «Large
+ * uniform table» A 350 tokens de salida en 24 de 24 repeticiones; B 188 en 12 y
+ * 347 en las otras 12, con la MISMA entrada (803 tokens) en todas.
+ *
+ * La capa reenvía `temperature`/`seed` de la SavingsRequest al proveedor
+ * (pipeline.ts, `llamarProveedor`), así que basta con ponerlos en la petición
+ * del brazo B. Reproducido offline, sin proveedor: sin esto la ProviderRequest
+ * del brazo B llega con `temperature: undefined, seed: undefined`.
+ */
+export const MUESTREO_PAREADO = { temperature: 0, seed: 7 } as const;
+
+/** La petición del escenario con el muestreo del banco: lo que manda el brazo B. */
+export function conMuestreoPareado(req: SavingsRequest): SavingsRequest {
+  return { ...req, ...MUESTREO_PAREADO };
+}
+
+/**
+ * ¿Lleva esta petición la PISTA DE LÍMITES de la capa?
+ *
+ * La capa antepone `JSON limits (not API-enforced): …` a la pregunta cuando su
+ * memoria de contratos dice que ese contrato ya incumplió una restricción de
+ * valor (pipeline.ts, `contratosQueIncumplen`). Cuesta ~30 tokens de entrada en
+ * el cable y, medido por la propia capa, hace que el modelo escriba más. El
+ * banco tiene que poder VER en cuántas repeticiones viajó, porque sin verlo la
+ * fila del escenario mezcla dos peticiones distintas y nadie sabe cuál midió.
+ */
+export function llevaPistaDeLimites(messages: readonly { role: string; content: string }[]): boolean {
+  return messages.some((m) => m.role === "system" && /^JSON limits \(not API-enforced\): /.test(m.content));
+}
+
 export const scenarios: Scenario[] = [
   {
     name: "Local arithmetic",

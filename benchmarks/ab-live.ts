@@ -68,6 +68,9 @@ import type { ProviderRequest } from "../src/providers/types.js";
 import {
   scenarios,
   conSalDeFrio,
+  conMuestreoPareado,
+  llevaPistaDeLimites,
+  MUESTREO_PAREADO,
   estadoDePalanca,
   familiaDeModelo,
   noMedibleEnTransporte,
@@ -277,19 +280,46 @@ if (!tokenizadorExacto) {
   );
 }
 
-/** Todas las capas de la tirada comparten el mismo registro y el mismo proveedor. */
-// Lo aprendido sobre los contratos SÍ persiste entre repeticiones; las cachés
-// no. Es el modelo honesto de una capa desplegada: los aciertos de caché no se
-// precalientan para el titular, pero tampoco se finge que cada petición sea la
-// primera que ve ese contrato — en producción no lo es.
-const memoriaContratos = new Set<string>();
-
-const nuevaCapa = (provider: Provider, model: string) =>
+/**
+ * Todas las capas de la tirada comparten el mismo registro y el mismo proveedor.
+ *
+ * LA MEMORIA DE CONTRATOS SE ESTRENA EN CADA LLAMADA MEDIDA, igual que la caché.
+ * El titular es «por llamada fría»: el brazo B es una capa nueva por repetición
+ * para que ningún acierto de caché se precaliente. Hasta el 2026-09-12 la
+ * memoria de contratos era la excepción: un `Set` único a nivel de módulo para
+ * TODA la tirada. Cuando un contrato incumple una restricción de valor, la capa
+ * lo apunta y desde entonces antepone a cada petición de ese contrato la pista
+ * `JSON limits (not API-enforced): …` (~30 tokens de entrada en el cable y una
+ * salida más larga; solo la paga el brazo B). Eso es coste REAL de la capa y
+ * está bien medirlo — pero con una memoria compartida, cuándo se encendía
+ * dependía de lo que el modelo hubiera contestado antes en la misma tirada:
+ *
+ *   tirada publicada (f2f2143):  «Stable-prefix» B +12 tokens de entrada de media
+ *                                (la pista se encendió a mitad del escenario)
+ *   2026-09-12 v1 (0bd1d83):     «Stable-prefix» B +33 en las 24 repeticiones,
+ *                                salida 81 frente a 65 del A
+ *   2026-09-12 v2:               «Constrained» B +27 en 23 de 24 repeticiones,
+ *                                y una repetición con reparación de dos llamadas
+ *
+ * En esas tiradas el disparador fue casi siempre el propio escenario (su sondeo
+ * o una repetición suya); el contagio entre escenarios era POSIBLE —ocho
+ * escenarios comparten el contrato `answerContract` de scenarios.ts— y no se
+ * podía distinguir. Nada de eso cambió en la capa: la petición del brazo B es
+ * idéntica byte a byte entre esos commits (reproducido offline).
+ *
+ * Ahora cada llamada medida estrena su memoria: la repetición es reproducible,
+ * la reparación dentro de UNA llamada (dos llamadas al proveedor, ambas
+ * contadas) sigue siendo coste de la capa, y `pistaDeLimites` dice en cuántas
+ * repeticiones viajó la pista. Lo que ya no se mide es el estado «caliente» de
+ * una capa que aprendió de una llamada anterior: eso es tráfico repetido, y el
+ * tráfico repetido va en la amortización, no en el titular.
+ */
+const nuevaCapa = (provider: Provider, model: string, memoriaDeContratos: Set<string>) =>
   createSavingsLayer({
     provider,
     defaultCostModel: priceFor(model),
     tokenizer: registroTokens,
-    constraintMemory: memoriaContratos,
+    constraintMemory: memoriaDeContratos,
     // EL COMPRESOR VA EN TODAS LAS CAPAS, no solo en la del escenario que lo
     // usa: la palanca `compression` es opt-in POR PETICIÓN, así que quien decide
     // si corre es el escenario, y quien decide si vale la pena son las tres
@@ -410,8 +440,9 @@ function buildNaive(req: SavingsRequest, forzado: string | null): ProviderReques
     ...(req.response?.maxOutputTokens != null
       ? { maxOutputTokens: req.response.maxOutputTokens }
       : {}),
-    temperature: 0,
-    seed: 7,
+    // El MISMO muestreo que el brazo B (`conMuestreoPareado` en la petición que
+    // atraviesa la capa). Antes el A llevaba 0/7 y el B no llevaba nada.
+    ...MUESTREO_PAREADO,
   };
 }
 
@@ -497,6 +528,15 @@ interface ScenarioResult {
    * comparando los tokens de salida con el tope, a mano y desde un CSV.
    */
   truncated: { naive: number; optimizado: number };
+  /**
+   * En cuántas repeticiones la petición del brazo B llevó la PISTA DE LÍMITES
+   * de la capa (`JSON limits (not API-enforced): …`). Solo la lleva el B, y
+   * como cada llamada medida estrena su memoria, solo puede aparecer en la
+   * SEGUNDA llamada de una reparación dentro de esa misma repetición. Cuesta
+   * ~30 tokens de entrada más una salida más larga; se cuenta para que la fila
+   * diga cuántas repeticiones repararon.
+   */
+  pistaDeLimites: { reps: number; total: number };
   /** Provably positive savings at 95% AND every answer passed the gate. */
   proven: boolean;
   /**
@@ -549,14 +589,20 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   // caché aún viva de la anterior. Los escenarios cuyo VALOR es el prefijo
   // estable (warm, prefijoEstable, palanca providerPrefixCache) no se salan.
   const salar = !s.warm && s.prefijoEstable !== true && s.palanca !== "providerPrefixCache";
+  // Y el MISMO muestreo que el brazo A: `buildNaive` siempre mandó 0/7, y la
+  // petición del escenario no declara ninguno, así que el brazo B iba con el
+  // valor por defecto del proveedor. Ver `MUESTREO_PAREADO`.
   const reqDeRep = (marca: string): SavingsRequest =>
-    salar ? conSalDeFrio(req, `${NONCE_DE_TIRADA}-${marca}`) : req;
+    conMuestreoPareado(salar ? conSalDeFrio(req, `${NONCE_DE_TIRADA}-${marca}`) : req);
+
+  // Cada capa de este escenario estrena su memoria de contratos (ver `nuevaCapa`).
+  const memoriaNueva = (): Set<string> => new Set<string>();
 
   // Probe the optimized arm once (fresh layer) to classify the scenario.
   // `warm` scenarios demonstrate caching (their value is repeat-traffic, shown
   // in the amortization pass); the COLD headline treats their first call like
   // any ran call so caches honestly read ~0% per single call.
-  const probe = await nuevaCapa(provider, model).generate(reqDeRep("sonda"));
+  const probe = await nuevaCapa(provider, model, memoriaNueva()).generate(reqDeRep("sonda"));
   const kind: Kind = s.warm
     ? "cache"
     : probe.report.calls.actualLlm === 0
@@ -580,10 +626,17 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   let naiveTotal = 0;
   let truncadasA = 0;
   let truncadasB = 0;
-  /** Envuelve el proveedor para poder ver qué modelo sirvió al brazo B. */
+  /**
+   * Envuelve el proveedor para poder ver qué modelo sirvió al brazo B, y si la
+   * petición llevaba la pista de límites de la capa: es la única forma de saber
+   * cuántas repeticiones midieron la petición CON pista y cuántas SIN ella.
+   */
+  let pistaEnEstaRep = false;
+  let repsConPista = 0;
   const espia: Provider = {
     id: provider.id,
     generate: async (r) => {
+      if (llevaPistaDeLimites(r.messages)) pistaEnEstaRep = true;
       const resp = await provider.generate(r);
       const m = modeloDe(resp.raw);
       if (m) modelosServidos.add(m);
@@ -641,7 +694,9 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
 
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
-    const resB = await nuevaCapa(espia, model).generate(reqRep);
+    pistaEnEstaRep = false;
+    const resB = await nuevaCapa(espia, model, memoriaNueva()).generate(reqRep);
+    if (pistaEnEstaRep) repsConPista++;
     const uB = usageOf(resB);
     cacheOptimizado += uB.cachedInputTokens ?? 0;
     const ran = resB.report.calls.actualLlm > 0;
@@ -719,6 +774,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     quality: { gate, passed: qPass, total: reps },
     naiveContractValid: { valid: naiveValid, total: naiveTotal },
     truncated: { naive: truncadasA, optimizado: truncadasB },
+    pistaDeLimites: { reps: repsConPista, total: reps },
     proven: mode === "LIVE" && savings.lower > 0 && qualityOk && modelStable,
     modelStable,
     servedModels: [...modelosServidos],
@@ -729,10 +785,13 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
 
   // Cache amortization: repeat traffic pays the miss ONCE, then hits are $0.
   if (kind === "cache") {
-    const layer = nuevaCapa(provider, model);
-    const miss = await layer.generate(req); // cold miss (real optimized cost)
+    // Una capa para el par miss/hit (el valor de la caché ES el estado que
+    // sobrevive entre las dos llamadas), con el mismo muestreo que los brazos.
+    const layer = nuevaCapa(provider, model, memoriaNueva());
+    const reqAmortizacion = conMuestreoPareado(req);
+    const miss = await layer.generate(reqAmortizacion); // cold miss (real optimized cost)
     const coldMissCost = miss.report.calls.actualLlm > 0 ? cost(model, usageOf(miss)) : 0;
-    const hit = await layer.generate(req); // warmed → hit
+    const hit = await layer.generate(reqAmortizacion); // warmed → hit
     const hitCost = hit.report.calls.actualLlm > 0 ? cost(model, usageOf(hit)) : 0;
     // The hit must actually be a cache hit AND satisfy the scenario's own
     // correctness assertion — a saving on a stale/wrong cached answer is void.
@@ -1170,6 +1229,16 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     console.log(`  Naive valid:   ${nv}/${nt} respuestas del brazo SIN la capa cumplían el contrato (${pct(nv / nt)})`);
     console.log(`                 (la capa paga tokens por garantizarlo; el naive no, y hasta ahora nadie se lo exigía)`);
   }
+  // LA PISTA DE LÍMITES, ESCENARIO POR ESCENARIO. Es la petición extra que solo
+  // paga el brazo B y solo después de un fallo de valor en ese contrato; una fila
+  // con la pista en PARTE de sus repeticiones ha medido dos peticiones distintas.
+  const conPista = results.filter((r) => r.pistaDeLimites.reps > 0);
+  if (conPista.length) {
+    console.log(
+      `  Pista límites: ${conPista.map((r) => `${r.name} ${r.pistaDeLimites.reps}/${r.pistaDeLimites.total}`).join(", ")}`,
+    );
+    console.log(`                 (repeticiones cuyo brazo B llevó \`JSON limits (not API-enforced)\`: ~30 tokens de entrada y salida más larga)`);
+  }
   console.log(`  Reconciles:    ${reconciled ? "yes" : "NO — residual " + money(residual)}  (ledger deltas partition the total, no double-counting)`);
   // Va PEGADO al titular de calidad, no en una sección al final: es la diferencia
   // entre «la capa empeoró la respuesta» y «el tope cortó la respuesta», y quien
@@ -1323,6 +1392,12 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     },
     honesty: [
       "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
+      "Since 2026-09-12 BOTH arms are sampled the same way (temperature 0, seed 7; Anthropic ignores seed). " +
+        "Before, only the naive arm was: arm B went out with the provider's default sampling, so its outputs " +
+        "carried variance that was not the layer's. Earlier artefacts are not comparable rep by rep.",
+      "Since 2026-09-12 every measured call of arm B starts with a fresh contract memory, like it starts with a " +
+        "cold cache: the limits hint the layer adds after a value failure can only appear inside a within-call " +
+        "repair (both provider calls counted). `scenarios[].pistaDeLimites` counts the reps where it travelled.",
       "The headline is the 95% CI lower bound, never the point estimate.",
       "A saving is voided if its answer fails the quality gate.",
       "Una respuesta cortada por el tope (`finish_reason: \"length\"`) SUSPENDE la verja aunque el " +
