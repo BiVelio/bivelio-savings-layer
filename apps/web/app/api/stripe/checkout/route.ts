@@ -53,7 +53,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   let codigo: string | null = null;
   try {
     const body = (await req.json()) as { period?: string; seats?: number; locale?: string; codigo?: string };
-    if (typeof body.codigo === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
+    if (typeof body.codigo === "string" && /^[A-Za-z0-9-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
     if (body.period === "yearly") period = "yearly";
     // MISMA función que el campo del panel, no una copia del criterio. Y el tope
     // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
@@ -261,8 +261,26 @@ export async function POST(req: Request): Promise<NextResponse> {
   let promotionCodeId: string | null = null;
   if (codigo) {
     try {
-      const encontrados = await getStripe().promotionCodes.list({ code: codigo, active: true, limit: 1 });
-      promotionCodeId = encontrados.data[0]?.id ?? null;
+      const stripe = getStripe();
+      // La cuenta de Stripe es compartida con otros productos de la casa: un
+      // código de OTRO producto no puede descontar asientos de este. Solo vale
+      // un código cuyo cupón esté acotado (`applies_to.products`) al producto
+      // del precio que se va a comprar; y nunca uno restringido a otro cliente.
+      const encontrados = await stripe.promotionCodes.list({ code: codigo, active: true, limit: 5 });
+      const candidato = encontrados.data.find((pc) => {
+        const dueno = typeof pc.customer === "string" ? pc.customer : pc.customer?.id ?? null;
+        return dueno == null || dueno === customer;
+      });
+      if (candidato) {
+        const cuponRef = candidato.promotion?.coupon ?? null;
+        const cuponId = typeof cuponRef === "string" ? cuponRef : cuponRef?.id ?? null;
+        const [cupon, precio] = await Promise.all([
+          cuponId ? stripe.coupons.retrieve(cuponId) : Promise.resolve(null),
+          stripe.prices.retrieve(price),
+        ]);
+        const producto = typeof precio.product === "string" ? precio.product : precio.product.id;
+        if (cupon?.applies_to?.products?.includes(producto)) promotionCodeId = candidato.id;
+      }
     } catch (err) {
       console.error("[stripe/checkout] promotion code lookup failed:", err);
       return NextResponse.json(
@@ -272,7 +290,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
     if (!promotionCodeId) {
       return NextResponse.json(
-        { code: "codigo_invalido", error: "That promotion code does not exist or is no longer active." },
+        { code: "codigo_invalido", error: "That promotion code does not exist, is no longer active, or is not for this product." },
         { status: 400 },
       );
     }
@@ -323,11 +341,10 @@ export async function POST(req: Request): Promise<NextResponse> {
       ...(promotionCodeId ? { discounts: [{ promotion_code: promotionCodeId }] } : { allow_promotion_codes: true }),
       // SIN TARJETA CUANDO NO HACE FALTA. Con un código del 100 % (los
       // probadores, 2026-09-12) el total es 0 y Stripe, por defecto, sigue
-      // pidiendo una tarjeta para una suscripción. `if_required` la pide solo
-      // si hay algo que cobrar ahora o más adelante: con un cupón de duración
-      // limitada Stripe la sigue pidiendo (porque luego cobrará), y con uno
-      // «para siempre» no. Un probador con cupón no tiene que buscar la tarjeta
-      // de empresa para probar algo gratis.
+      // pidiendo una tarjeta para una suscripción. `if_required` no la pide
+      // cuando el total de la sesión es 0. Por eso el cupón de los probadores
+      // es «para siempre»: con uno de un solo mes la suscripción quedaría sin
+      // tarjeta y la factura del segundo mes fallaría.
       payment_method_collection: "if_required",
       success_url: `${origin}/${locale}/dashboard/account?checkout=success`,
       cancel_url: `${origin}/${locale}/dashboard/account?checkout=cancelled`,

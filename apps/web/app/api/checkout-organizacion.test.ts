@@ -100,10 +100,23 @@ vi.mock("@/lib/stripe/client", () => ({
       },
     },
     promotionCodes: {
-      list: async ({ code, active }: { code: string; active?: boolean }) => ({
-        data: code === "PROBADORES-SEPT" && active !== false ? [{ id: "promo_probadores", code, active: true }] : [],
+      list: async ({ code, active }: { code: string; active?: boolean }) => {
+        if (active === false) return { data: [] };
+        if (code === "PROBADORES-SEPT") return { data: [{ id: "promo_probadores", code, active: true, customer: null, promotion: { type: "coupon", coupon: "cup_savings" } }] };
+        if (code === "SHIELD-50") return { data: [{ id: "promo_shield", code, active: true, customer: null, promotion: { type: "coupon", coupon: "cup_shield" } }] };
+        if (code === "SOLO-OTRO") return { data: [{ id: "promo_ajeno", code, active: true, customer: "cus_otra_persona", promotion: { type: "coupon", coupon: "cup_savings" } }] };
+        return { data: [] };
+      },
+    },
+    coupons: {
+      retrieve: async (id: string) => ({
+        id,
+        percent_off: 100,
+        duration: "forever",
+        applies_to: { products: id === "cup_savings" ? ["prod_savings_mensual", "prod_savings_anual"] : ["prod_shield"] },
       }),
     },
+    prices: { retrieve: async (id: string) => ({ id, product: "prod_savings_mensual" }) },
     customers: {
       list: async ({ email }: { email: string }) => {
         if (e.fallar === "stripe") throw new Error("stripe caído");
@@ -384,6 +397,31 @@ describe("el enlace de los probadores: código PRE-APLICADO en la sesión", () =
     expect(res.status).toBe(200);
     expect(sesion!.allow_promotion_codes).toBe(true);
     expect(sesion!.discounts).toBeUndefined();
+  });
+
+  it("⛔ un código de OTRO producto de la cuenta compartida (Shield) es `codigo_invalido`: no descuenta asientos de Savings", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, codigo: "SHIELD-50" }));
+    expect(res.status).toBe(400);
+    expect(((await res.json()) as { code: string }).code).toBe("codigo_invalido");
+    expect(sesion).toBeNull();
+  });
+
+  it("un código restringido a OTRO cliente no se aplica", async () => {
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, codigo: "SOLO-OTRO" }));
+    expect(res.status).toBe(400);
+    expect(sesion).toBeNull();
+  });
+
+  it("quien ya paga recibe el 409 traducible aunque venga con `codigo`: las guardias van antes que el descuento", async () => {
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.subs = [{ org_id: ORG_REAL, status: "active", id: "fila-1" }];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion({ seats: 1, codigo: "PROBADORES-SEPT" }));
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { code: string }).code).toBe("ya_suscrito");
+    expect(sesion).toBeNull();
   });
 
   it("sin `codigo`, todo sigue igual: el cliente puede teclear uno en Stripe", async () => {
