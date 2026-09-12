@@ -108,7 +108,6 @@ export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
         </div>
       </div>
 
-      <div className="src" style={{ marginTop: "8px" }}>usage_daily · measured · {r.diasDeRitmo}d</div>
     </div>
   );
 }

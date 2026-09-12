@@ -64,7 +64,18 @@
     "passwordUpdated": "Contrasenya actualitzada. Iniciant sessió…",
     "passwordsDontMatch": "Les contrasenyes no coincideixen.",
     "resetLinkExpired": "Aquest enllaç no és vàlid o ha caducat. Sol·licita'n un de nou.",
-    "callbackFailed": "No hem pogut validar l'enllaç. Sol·licita'n un de nou."
+    "callbackFailed": "No hem pogut validar l'enllaç. Sol·licita'n un de nou.",
+    "errors": {
+      "userExists": "Ja existeix un compte amb aquest correu. Inicia la sessió o restableix la contrasenya.",
+      "weakPassword": "La contrasenya és massa feble: fes servir almenys 8 caràcters i barreja lletres i números.",
+      "rateLimit": "Massa intents seguits. Espera un minut i torna-ho a provar.",
+      "invalidCredentials": "Correu o contrasenya incorrectes.",
+      "emailNotConfirmed": "Encara no has confirmat el correu. Busca el missatge de BiVelio a la safata (i a spam).",
+      "samePassword": "La contrasenya nova ha de ser diferent de l'actual.",
+      "emailInvalid": "Aquest correu no sembla vàlid. Revisa'l.",
+      "signupDisabled": "El registre està tancat de moment. Escriu-nos a support@bivelio.com.",
+      "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "trànsit",
       "steps": {
         "accountCreated": "Compte creat",
-        "sdkInstalled": "SDK instal·lat",
+        "sdkInstalled": "Clau de servei creada",
         "licenseActive": "Llicència activa",
         "firstReport": "Primer informe",
         "liveMeter": "Mesurador en viu"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
       "whatEliminatedTokens": "tokens d'entrada que el proveïdor no va arribar a processar",
-      "elisionNota": "És un recompte del proveïdor, no un estalvi nostre: avui ho dispara la configuració del teu propi client. Mai no entra a la teva comissió.",
+      "elisionNota": "Si fas servir el gateway, part d'aquesta xifra és l'esborrat que aplica el teu proveïdor per la teva pròpia configuració: aquesta part no és mèrit nostre i mai no entra a la teva comissió.",
       "whatCompressedTokens": "tokens d'entrada recodificats de manera més compacta",
       "whatProviderCachedTokens": "tokens d'entrada facturats al preu rebaixat de la memòria cau de prefix. Ho demana el teu client, no nosaltres: la nostra palanca només n'ajusta la durada",
       "ghostAwaiting": "{ref} · esperant el primer informe",
@@ -256,7 +267,7 @@
       "summary": "{n} de {total} màquines amb gateway (o sense declarar) actives en 7 dies no han produït estalvi mesurat.",
       "outdated": "{n, plural, one {# màquina executa} other {# màquines executen}} un gateway anterior a {minima}, la primera versió amb la palanca de tarifa: actualitza'l.",
       "undeclared": "{n, plural, one {# màquina no declara} other {# màquines no declaren}} versió (gateway anterior al canal de versió). Si és anterior a {minima}, no porta la palanca de tarifa.",
-      "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat: comprova la feature cache_ttl_tuning de la teva llicència, BVSALA_GATEWAY_ELISION en aquella màquina i si el seu trànsit escriu memòria cau d'1h.",
+      "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat. Actualitza el paquet en aquesta màquina, reinicia el terminal i, si segueix igual, escriu-nos a support@bivelio.com.",
       "action": "Actualitza @bivelio/savings-layer en aquella màquina i reinicia el terminal; la taula de màquines de sota mostra què declara cadascuna."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Pagament rebut.</b> Estem activant la teva llicència — normalment triga uns segons i aquesta pàgina s'actualitza sola.",
       "successActive": "<b>La teva subscripció està activa.</b> El pas següent és recollir la teva clau de llicència.",
       "goToInstall": "Obtén la teva clau de llicència →",
-      "cancelled": "<b>No s'ha completat cap pagament</b> — no se t'ha cobrat res. Pots tornar a començar quan vulguis."
+      "cancelled": "<b>No s'ha completat cap pagament</b> — no se t'ha cobrat res. Pots tornar a començar quan vulguis.",
+      "successLate": "<b>Encara pendent.</b> Fa més de dos minuts i la llicència encara no apareix: no és el normal. No tornis a comprar. Escriu-nos a support@bivelio.com amb el correu amb què vas pagar i l'activem a mà."
     },
     "billingState": {
       "pastDueTitle": "El cobrament ha fallat",
@@ -419,7 +431,7 @@
       "savedLabel": "Tokens estalviats",
       "savedWhat": "enfront de no fer servir la capa",
       "savedBreakdown": "{fraction} · entrada {input} · sortida {output}",
-      "unavailable": "encara no disponible: falta aplicar la migració 0015",
+      "unavailable": "comptadors de tokens encara no disponibles en aquest compte; si ja tens trànsit i veus això, escriu-nos a support@bivelio.com",
       "footnote": "L'<b>estalvi de sortida és gairebé sempre zero</b>, i no és cap error: en una crida que SÍ s'ha executat la capa no encongeix la resposta, així que el seu baseline de sortida és la sortida mesurada. L'estalvi de tokens viu a l'entrada i a les crides evitades. Un total NEGATIU tampoc és un error: vol dir que la capa va gastar més del que hauria costat sense ella, i es mostra."
     },
     "sombraElision": {

@@ -64,7 +64,18 @@
     "passwordUpdated": "Đã cập nhật mật khẩu. Đang đăng nhập…",
     "passwordsDontMatch": "Mật khẩu không khớp.",
     "resetLinkExpired": "Liên kết này không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới.",
-    "callbackFailed": "Chúng tôi không thể xác thực liên kết này. Hãy yêu cầu liên kết mới."
+    "callbackFailed": "Chúng tôi không thể xác thực liên kết này. Hãy yêu cầu liên kết mới.",
+    "errors": {
+      "userExists": "Đã có tài khoản với email này. Hãy đăng nhập hoặc đặt lại mật khẩu.",
+      "weakPassword": "Mật khẩu quá yếu: dùng ít nhất 8 ký tự, kết hợp chữ và số.",
+      "rateLimit": "Quá nhiều lần thử liên tiếp. Đợi một phút rồi thử lại.",
+      "invalidCredentials": "Email hoặc mật khẩu không đúng.",
+      "emailNotConfirmed": "Bạn chưa xác nhận email. Tìm thư của BiVelio trong hộp thư đến (và thư rác).",
+      "samePassword": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+      "emailInvalid": "Email này có vẻ không hợp lệ. Hãy kiểm tra lại.",
+      "signupDisabled": "Đăng ký tạm thời đóng. Hãy viết cho support@bivelio.com.",
+      "network": "Không có kết nối. Kiểm tra mạng và thử lại."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "lưu lượng",
       "steps": {
         "accountCreated": "Đã tạo tài khoản",
-        "sdkInstalled": "Đã cài SDK",
+        "sdkInstalled": "Đã tạo khóa dịch vụ",
         "licenseActive": "Giấy phép đang hoạt động",
         "firstReport": "Báo cáo đầu tiên",
         "liveMeter": "Đồng hồ đo trực tiếp"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
       "whatEliminatedTokens": "token đầu vào mà nhà cung cấp chưa từng xử lý",
-      "elisionNota": "Đây là bộ đếm của nhà cung cấp, không phải khoản tiết kiệm của chúng tôi: hôm nay chính cấu hình máy khách của bạn kích hoạt nó. Nó không bao giờ tính vào hoa hồng của bạn.",
+      "elisionNota": "Nếu bạn dùng gateway, một phần con số này là phần xóa mà nhà cung cấp áp dụng từ chính cấu hình của bạn: phần đó không phải công của chúng tôi và không bao giờ tính vào hoa hồng của bạn.",
       "whatCompressedTokens": "token đầu vào được mã hóa lại nhỏ gọn hơn",
       "whatProviderCachedTokens": "token đầu vào được tính theo giá ưu đãi của bộ nhớ đệm tiền tố. Máy khách của bạn yêu cầu điều đó, không phải chúng tôi: đòn bẩy của chúng tôi chỉ điều chỉnh thời lượng",
       "ghostAwaiting": "{ref} · đang chờ báo cáo đầu tiên",
@@ -256,7 +267,7 @@
       "summary": "{n} trong {total} máy có gateway (hoặc chưa khai báo) hoạt động trong 7 ngày qua không tạo ra khoản tiết kiệm đã đo.",
       "outdated": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima}, phiên bản đầu tiên có đòn bẩy biểu phí: hãy cập nhật.",
       "undeclared": "{n, plural, other {# máy không khai báo}} phiên bản (gateway cũ hơn kênh phiên bản). Nếu cũ hơn {minima}, máy đó không có đòn bẩy biểu phí.",
-      "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy không hoạt động ở đó: hãy kiểm tra tính năng cache_ttl_tuning trong giấy phép của bạn, BVSALA_GATEWAY_ELISION trên máy đó và liệu lưu lượng của nó có ghi cache 1 giờ hay không.",
+      "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Hãy cập nhật gói trên máy đó, khởi động lại terminal và nếu vẫn vậy, viết cho support@bivelio.com.",
       "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Đã nhận được thanh toán.</b> Chúng tôi đang kích hoạt giấy phép của bạn — việc này thường mất vài giây và trang này sẽ tự làm mới.",
       "successActive": "<b>Gói đăng ký của bạn đang hoạt động.</b> Bước tiếp theo là nhận khóa cấp phép của bạn.",
       "goToInstall": "Nhận khóa cấp phép của bạn →",
-      "cancelled": "<b>Chưa có khoản thanh toán nào được hoàn tất</b> — bạn chưa bị tính phí gì cả. Bạn có thể bắt đầu lại bất cứ lúc nào."
+      "cancelled": "<b>Chưa có khoản thanh toán nào được hoàn tất</b> — bạn chưa bị tính phí gì cả. Bạn có thể bắt đầu lại bất cứ lúc nào.",
+      "successLate": "<b>Vẫn đang chờ.</b> Đã hơn hai phút mà giấy phép vẫn chưa xuất hiện: điều này không bình thường. Đừng mua lại. Hãy viết cho support@bivelio.com kèm email bạn đã dùng để thanh toán và chúng tôi sẽ kích hoạt thủ công."
     },
     "billingState": {
       "pastDueTitle": "Thanh toán thất bại",
@@ -419,7 +431,7 @@
       "savedLabel": "Token tiết kiệm",
       "savedWhat": "so với không dùng lớp này",
       "savedBreakdown": "{fraction} · đầu vào {input} · đầu ra {output}",
-      "unavailable": "chưa có: chưa áp dụng bản di trú 0015",
+      "unavailable": "bộ đếm token chưa khả dụng cho tài khoản này; nếu bạn đã có lưu lượng mà vẫn thấy thông báo này, hãy viết cho support@bivelio.com",
       "footnote": "<b>Tiết kiệm đầu ra gần như luôn bằng không</b>, và đó không phải lỗi: với lệnh gọi thực sự chạy, lớp này không rút ngắn câu trả lời, nên mốc đầu ra của nó chính là đầu ra đo được. Tiết kiệm token nằm ở đầu vào và ở các lệnh gọi được tránh. Tổng ÂM cũng không phải lỗi: nghĩa là lớp này tốn hơn so với khi không dùng, và chúng tôi hiển thị điều đó."
     },
     "sombraElision": {

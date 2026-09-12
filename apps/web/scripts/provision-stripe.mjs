@@ -66,7 +66,7 @@ async function main() {
 
   const product = await stripe.products.create({
     name: "BiVelio Savings Layer — Pro",
-    description: "Per-seat PRO — every BV-SALA optimization, managed semantic cache, dashboards.",
+    description: "Per-seat PRO — every BV-SALA optimization, per-request SavingsReport, savings dashboards. Commission only on measured savings.",
   });
   console.log("✓ Product:", product.id);
 

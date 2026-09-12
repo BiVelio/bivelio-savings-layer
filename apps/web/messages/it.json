@@ -64,7 +64,18 @@
     "passwordUpdated": "Password aggiornata. Accesso in corso…",
     "passwordsDontMatch": "Le password non coincidono.",
     "resetLinkExpired": "Questo link non è valido o è scaduto. Richiedine uno nuovo.",
-    "callbackFailed": "Non siamo riusciti a convalidare il link. Richiedine uno nuovo."
+    "callbackFailed": "Non siamo riusciti a convalidare il link. Richiedine uno nuovo.",
+    "errors": {
+      "userExists": "Esiste già un account con questa email. Accedi o reimposta la password.",
+      "weakPassword": "La password è troppo debole: usa almeno 8 caratteri, con lettere e numeri.",
+      "rateLimit": "Troppi tentativi di seguito. Aspetta un minuto e riprova.",
+      "invalidCredentials": "Email o password errati.",
+      "emailNotConfirmed": "Non hai ancora confermato l'email. Cerca il messaggio di BiVelio nella posta (e nello spam).",
+      "samePassword": "La nuova password deve essere diversa da quella attuale.",
+      "emailInvalid": "Questa email non sembra valida. Controllala.",
+      "signupDisabled": "La registrazione è chiusa per ora. Scrivi a support@bivelio.com.",
+      "network": "Nessuna connessione. Controlla la rete e riprova."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "traffico",
       "steps": {
         "accountCreated": "Account creato",
-        "sdkInstalled": "SDK installato",
+        "sdkInstalled": "Chiave di servizio creata",
         "licenseActive": "Licenza attiva",
         "firstReport": "Primo report",
         "liveMeter": "Contatore in tempo reale"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",
       "whatEliminatedTokens": "token di input che il fornitore non ha mai elaborato",
-      "elisionNota": "È un contatore del fornitore, non un risparmio nostro: oggi lo attiva la configurazione del tuo stesso client. Non entra mai nella tua commissione.",
+      "elisionNota": "Se usi il gateway, parte di questa cifra è la cancellazione che il tuo fornitore applica dalla tua stessa configurazione: quella parte non è merito nostro e non entra mai nella tua commissione.",
       "whatCompressedTokens": "token di input ricodificati in modo più compatto",
       "whatProviderCachedTokens": "token di input fatturati al prezzo scontato della cache di prefisso. Lo chiede il tuo client, non noi: la nostra leva ne regola solo la durata",
       "ghostAwaiting": "{ref} · in attesa del primo report",
@@ -256,7 +267,7 @@
       "summary": "{n} di {total} macchine con gateway (o non dichiarate) attive negli ultimi 7 giorni non hanno prodotto risparmio misurato.",
       "outdated": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un gateway precedente a {minima}, la prima versione con la leva tariffaria: aggiornalo.",
       "undeclared": "{n, plural, one {# macchina non dichiara} other {# macchine non dichiarano}} la versione (gateway precedente al canale di versione). Se è precedente a {minima}, non ha la leva tariffaria.",
-      "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva lì non ha agito: controlla la feature cache_ttl_tuning della tua licenza, BVSALA_GATEWAY_ELISION su quella macchina e se il suo traffico scrive cache da 1h.",
+      "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva non ha agito lì. Aggiorna il pacchetto su quella macchina, riavvia il terminale e, se resta uguale, scrivi a support@bivelio.com.",
       "action": "Aggiorna @bivelio/savings-layer su quella macchina e riavvia il terminale; la tabella delle macchine qui sotto mostra cosa dichiara ciascuna."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Pagamento ricevuto.</b> Stiamo attivando la tua licenza — di solito ci vogliono pochi secondi e questa pagina si aggiorna da sola.",
       "successActive": "<b>Il tuo abbonamento è attivo.</b> Il passo successivo è ritirare la tua chiave di licenza.",
       "goToInstall": "Ottieni la tua chiave di licenza →",
-      "cancelled": "<b>Nessun pagamento è stato completato</b> — non ti abbiamo addebitato nulla. Puoi ricominciare quando vuoi."
+      "cancelled": "<b>Nessun pagamento è stato completato</b> — non ti abbiamo addebitato nulla. Puoi ricominciare quando vuoi.",
+      "successLate": "<b>Ancora in attesa.</b> Sono passati più di due minuti e la licenza non compare ancora: non è normale. Non ricomprare. Scrivi a support@bivelio.com con l'email con cui hai pagato e la attiviamo a mano."
     },
     "billingState": {
       "pastDueTitle": "Pagamento non riuscito",
@@ -419,7 +431,7 @@
       "savedLabel": "Token risparmiati",
       "savedWhat": "rispetto a non usare il layer",
       "savedBreakdown": "{fraction} · input {input} · output {output}",
-      "unavailable": "non ancora disponibile: manca la migrazione 0015",
+      "unavailable": "contatori di token non ancora disponibili per questo account; se hai già traffico e vedi questo, scrivi a support@bivelio.com",
       "footnote": "Il <b>risparmio sull'output è quasi sempre zero</b>, e non è un difetto: su una chiamata realmente eseguita il layer non accorcia la risposta, quindi il suo baseline di output è l'output misurato. Il risparmio di token sta nell'input e nelle chiamate evitate. Anche un totale NEGATIVO non è un errore: significa che il layer è costato più di quanto sarebbe costato senza, e lo mostriamo."
     },
     "sombraElision": {

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 /**
@@ -28,6 +28,10 @@ export function CheckoutBanner({
   const t = useTranslations("dashboard");
   const router = useRouter();
   const pendiente = resultado === "success" && !activo;
+  // Pasados los dos minutos de sondeo el texto CAMBIA: «suele tardar unos
+  // segundos» deja de ser verdad y hay que decir qué hacer (y qué NO hacer:
+  // volver a comprar).
+  const [tardio, setTardio] = useState(false);
 
   useEffect(() => {
     if (!pendiente) return;
@@ -36,7 +40,10 @@ export function CheckoutBanner({
     // llegado, no es un retraso normal del webhook y el texto ya dice qué hacer.
     const t0 = Date.now();
     const id = setInterval(() => {
-      if (Date.now() - t0 > 120_000) return clearInterval(id);
+      if (Date.now() - t0 > 120_000) {
+        setTardio(true);
+        return clearInterval(id);
+      }
       router.refresh();
     }, 4_000);
     return () => clearInterval(id);
@@ -53,7 +60,7 @@ export function CheckoutBanner({
   return (
     <div className="ck-note" role="status" style={{ marginTop: 10 }}>
       {pendiente ? (
-        t.rich("checkoutBanner.successPending", { b: (c) => <b>{c}</b> })
+        t.rich(tardio ? "checkoutBanner.successLate" : "checkoutBanner.successPending", { b: (c) => <b>{c}</b> })
       ) : (
         <>
           {t.rich("checkoutBanner.successActive", { b: (c) => <b>{c}</b> })}{" "}

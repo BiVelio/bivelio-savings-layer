@@ -77,7 +77,6 @@ export async function LiveLedgerTiles({ usage, ab }: { usage: UsageRollup[]; ab:
               {l.key === "eliminated_tokens" ? (
                 <div className="sub">{t("liveLedgerTiles.elisionNota")}</div>
               ) : null}
-              <div className="src">usage_daily.{l.col}</div>
             </div>
           );
         })}

@@ -64,7 +64,18 @@
     "passwordUpdated": "Passwort aktualisiert. Anmeldung…",
     "passwordsDontMatch": "Die Passwörter stimmen nicht überein.",
     "resetLinkExpired": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an.",
-    "callbackFailed": "Wir konnten diesen Link nicht überprüfen. Fordere einen neuen an."
+    "callbackFailed": "Wir konnten diesen Link nicht überprüfen. Fordere einen neuen an.",
+    "errors": {
+      "userExists": "Mit dieser E-Mail gibt es bereits ein Konto. Melden Sie sich an oder setzen Sie das Passwort zurück.",
+      "weakPassword": "Das Passwort ist zu schwach: mindestens 8 Zeichen, mit Buchstaben und Zahlen.",
+      "rateLimit": "Zu viele Versuche hintereinander. Warten Sie eine Minute und versuchen Sie es erneut.",
+      "invalidCredentials": "E-Mail oder Passwort falsch.",
+      "emailNotConfirmed": "Sie haben Ihre E-Mail noch nicht bestätigt. Suchen Sie die Nachricht von BiVelio im Posteingang (und im Spam).",
+      "samePassword": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+      "emailInvalid": "Diese E-Mail sieht nicht gültig aus. Prüfen Sie sie.",
+      "signupDisabled": "Die Registrierung ist derzeit geschlossen. Schreiben Sie an support@bivelio.com.",
+      "network": "Keine Verbindung. Prüfen Sie Ihr Netzwerk und versuchen Sie es erneut."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "Traffic",
       "steps": {
         "accountCreated": "Konto erstellt",
-        "sdkInstalled": "SDK installiert",
+        "sdkInstalled": "Service-Schlüssel erstellt",
         "licenseActive": "Lizenz aktiv",
         "firstReport": "Erster Bericht",
         "liveMeter": "Live-Zähler"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/Retrieval-/Tool-Aufrufe, die nie ausgeführt wurden",
       "whatEliminatedTokens": "Eingabe-Tokens, die der Anbieter nie verarbeitet hat",
-      "elisionNota": "Ein Zähler des Anbieters, keine Ersparnis von uns: Ausgelöst wird das heute von der Konfiguration Ihres eigenen Clients. Es fließt nie in Ihre Provision ein.",
+      "elisionNota": "Wenn Sie das Gateway nutzen, ist ein Teil dieser Zahl das Löschen, das Ihr Anbieter aufgrund Ihrer eigenen Konfiguration anwendet: dieser Teil ist nicht unser Verdienst und geht nie in Ihre Provision ein.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
       "whatProviderCachedTokens": "Eingabe-Tokens zum vergünstigten Präfix-Cache-Preis. Ihr Client fordert das an, nicht wir: Unser Hebel stellt nur die Dauer ein",
       "ghostAwaiting": "{ref} · wartet auf ersten Bericht",
@@ -256,7 +267,7 @@
       "summary": "{n} von {total} Gateway-Maschinen (oder ohne Angabe), die in den letzten 7 Tagen aktiv waren, haben keine gemessene Ersparnis erzeugt.",
       "outdated": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem Gateway älter als {minima}, der ersten Version mit dem Tarifhebel: aktualisiere es.",
       "undeclared": "{n, plural, one {# Maschine meldet} other {# Maschinen melden}} keine Version (Gateway älter als der Versionskanal). Ist sie älter als {minima}, hat sie keinen Tarifhebel.",
-      "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gewirkt: prüfe das Feature cache_ttl_tuning deiner Lizenz, BVSALA_GATEWAY_ELISION auf dieser Maschine und ob ihr Traffic 1h-Cache schreibt.",
+      "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gegriffen. Aktualisieren Sie das Paket auf dieser Maschine, starten Sie das Terminal neu und schreiben Sie an support@bivelio.com, wenn es so bleibt.",
       "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Zahlung erhalten.</b> Wir aktivieren deine Lizenz — das dauert meist ein paar Sekunden, und diese Seite aktualisiert sich von selbst.",
       "successActive": "<b>Dein Abonnement ist aktiv.</b> Als Nächstes holst du dir deinen Lizenzschlüssel.",
       "goToInstall": "Hol dir deinen Lizenzschlüssel →",
-      "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten."
+      "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten.",
+      "successLate": "<b>Noch ausstehend.</b> Es sind mehr als zwei Minuten vergangen und die Lizenz ist noch nicht da: das ist nicht normal. Kaufen Sie nicht erneut. Schreiben Sie an support@bivelio.com mit der E-Mail, mit der Sie bezahlt haben, und wir schalten sie von Hand frei."
     },
     "billingState": {
       "pastDueTitle": "Zahlung fehlgeschlagen",
@@ -419,7 +431,7 @@
       "savedLabel": "Gesparte Tokens",
       "savedWhat": "gegenüber ohne die Schicht",
       "savedBreakdown": "{fraction} · Eingabe {input} · Ausgabe {output}",
-      "unavailable": "noch nicht verfügbar: Migration 0015 wurde nicht angewendet",
+      "unavailable": "Token-Zähler für dieses Konto noch nicht verfügbar; wenn Sie schon Traffic haben und das sehen, schreiben Sie an support@bivelio.com",
       "footnote": "Die <b>Ausgabe-Ersparnis ist fast immer null</b>, und das ist kein Fehler: bei einem tatsächlich ausgeführten Aufruf verkleinert die Schicht die Antwort nicht, also ist ihr Ausgabe-Baseline die gemessene Ausgabe. Token-Ersparnis liegt in der Eingabe und in vermiedenen Aufrufen. Ein NEGATIVER Gesamtwert ist ebenfalls kein Fehler: er bedeutet, dass die Schicht mehr gekostet hat als ohne sie — und wir zeigen ihn."
     },
     "sombraElision": {

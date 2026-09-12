@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { authConfigured } from "@/lib/supabase/env";
 import { safeNextPath } from "@/app/auth/safe-next";
+import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
@@ -95,7 +96,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         router.refresh();
       }
     } catch (err) {
-      setMsg({ type: "error", text: err instanceof Error ? err.message : t("somethingWrong") });
+      setMsg({ type: "error", text: textoDeErrorDeAuth(err, t) });
     } finally {
       setLoading(false);
     }

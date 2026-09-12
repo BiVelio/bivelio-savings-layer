@@ -184,14 +184,16 @@ describe("POST /api/license/trial — el org_id FIRMADO es el resuelto", () => {
     expect(e.insertados.filter((i) => i.tabla === "licenses")).toHaveLength(0);
   });
 
-  it("quien no está en la allow-list no emite, y sin pertenencias se le dice que espere", async () => {
-    // El hueco entre pagar y que el webhook escriba la organización. Decirle «no
-    // tienes suscripción» a quien acaba de pagar le invita a pagar dos veces.
+  it("quien no está en la allow-list no emite, y sin pertenencias se le dice que no tiene suscripción", async () => {
+    // Sin pertenencias = nunca abrió un checkout (el checkout crea la
+    // organización antes de ir a Stripe). Decirle a ése «tu pago se está
+    // confirmando» era lo que leía todo recién registrado; el que de verdad pagó
+    // y espera al webhook SÍ tiene pertenencia y lo cubre el caso siguiente.
     process.env.LICENSE_ISSUER_EMAILS = "otro@example.com";
     const { POST } = await import("./license/trial/route");
     const res = await POST();
     expect(res.status).toBe(402);
-    expect(await res.json()).toEqual({ code: "pago_en_curso" });
+    expect(await res.json()).toEqual({ code: "sin_suscripcion" });
     expect(e.insertados).toHaveLength(0); // ni siquiera se acuña organización
   });
 

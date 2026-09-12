@@ -33,6 +33,13 @@ describe("tokens gastados y ahorrados", () => {
     expect(r.kind).toBe("unavailable");
   });
 
+  it("cero filas es «sin tráfico», nunca «sin columnas»: lo primero que ve un cliente nuevo", () => {
+    // Antes `some` se evaluaba antes que `length === 0`, así que el array vacío
+    // caía en «unavailable» y el recién registrado leía «falta aplicar la
+    // migración 0015» sin haber hecho una sola petición.
+    expect(deriveTokens([])).toEqual({ kind: "empty" });
+  });
+
   it("con las columnas a cero y sin tráfico es VACÍO, que sí es un cero legítimo", () => {
     const r = deriveTokens([
       fila({

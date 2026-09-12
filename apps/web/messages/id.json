@@ -64,7 +64,18 @@
     "passwordUpdated": "Kata sandi diperbarui. Masuk…",
     "passwordsDontMatch": "Kata sandi tidak cocok.",
     "resetLinkExpired": "Tautan ini tidak valid atau kedaluwarsa. Minta yang baru.",
-    "callbackFailed": "Kami tidak dapat memvalidasi tautan ini. Minta yang baru."
+    "callbackFailed": "Kami tidak dapat memvalidasi tautan ini. Minta yang baru.",
+    "errors": {
+      "userExists": "Sudah ada akun dengan email itu. Masuk atau atur ulang kata sandi.",
+      "weakPassword": "Kata sandi terlalu lemah: gunakan minimal 8 karakter dengan huruf dan angka.",
+      "rateLimit": "Terlalu banyak percobaan berturut-turut. Tunggu satu menit lalu coba lagi.",
+      "invalidCredentials": "Email atau kata sandi salah.",
+      "emailNotConfirmed": "Anda belum mengonfirmasi email. Cari pesan dari BiVelio di kotak masuk (dan spam).",
+      "samePassword": "Kata sandi baru harus berbeda dari yang sekarang.",
+      "emailInvalid": "Email itu tampaknya tidak valid. Periksa lagi.",
+      "signupDisabled": "Pendaftaran ditutup untuk saat ini. Tulis ke support@bivelio.com.",
+      "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "lalu lintas",
       "steps": {
         "accountCreated": "Akun dibuat",
-        "sdkInstalled": "SDK terpasang",
+        "sdkInstalled": "Kunci layanan dibuat",
         "licenseActive": "Lisensi aktif",
         "firstReport": "Laporan pertama",
         "liveMeter": "Meteran langsung"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
       "whatEliminatedTokens": "token masukan yang tidak pernah diproses penyedia",
-      "elisionNota": "Ini penghitung penyedia, bukan penghematan kami: hari ini yang memicunya adalah konfigurasi klien Anda sendiri. Tidak pernah masuk ke komisi Anda.",
+      "elisionNota": "Jika Anda memakai gateway, sebagian angka ini adalah penghapusan yang diterapkan penyedia Anda dari konfigurasi Anda sendiri: bagian itu bukan jasa kami dan tidak pernah masuk komisi Anda.",
       "whatCompressedTokens": "token input yang dikodekan ulang lebih ringkas",
       "whatProviderCachedTokens": "token masukan yang ditagih dengan harga diskon cache prefiks. Klien Anda yang memintanya, bukan kami: tuas kami hanya mengatur durasinya",
       "ghostAwaiting": "{ref} · menunggu laporan pertama",
@@ -256,7 +267,7 @@
       "summary": "{n} dari {total} mesin gateway (atau tidak dideklarasikan) yang aktif dalam 7 hari terakhir tidak menghasilkan penghematan terukur.",
       "outdated": "{n, plural, other {# mesin menjalankan}} gateway yang lebih lama dari {minima}, versi pertama dengan tuas tarif: perbarui.",
       "undeclared": "{n, plural, other {# mesin tidak mendeklarasikan}} versi (gateway lebih lama dari kanal versi). Jika lebih lama dari {minima}, mesin itu tidak punya tuas tarif.",
-      "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana: periksa fitur cache_ttl_tuning pada lisensi Anda, BVSALA_GATEWAY_ELISION di mesin itu, dan apakah lalu lintasnya menulis cache 1 jam.",
+      "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana. Perbarui paket di mesin itu, mulai ulang terminal, dan jika tetap sama, tulis ke support@bivelio.com.",
       "action": "Perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Pembayaran diterima.</b> Kami sedang mengaktifkan lisensi Anda — biasanya hanya beberapa detik, dan halaman ini menyegarkan dirinya sendiri.",
       "successActive": "<b>Langganan Anda aktif.</b> Langkah berikutnya adalah mengambil kunci lisensi Anda.",
       "goToInstall": "Dapatkan kunci lisensi Anda →",
-      "cancelled": "<b>Tidak ada pembayaran yang diselesaikan</b> — Anda tidak dikenai biaya apa pun. Anda bisa mulai lagi kapan saja."
+      "cancelled": "<b>Tidak ada pembayaran yang diselesaikan</b> — Anda tidak dikenai biaya apa pun. Anda bisa mulai lagi kapan saja.",
+      "successLate": "<b>Masih tertunda.</b> Sudah lebih dari dua menit dan lisensi belum muncul: itu tidak normal. Jangan membeli lagi. Tulis ke support@bivelio.com dengan email yang Anda pakai membayar dan kami aktifkan secara manual."
     },
     "billingState": {
       "pastDueTitle": "Pembayaran gagal",
@@ -419,7 +431,7 @@
       "savedLabel": "Token terhemat",
       "savedWhat": "dibanding tanpa lapisan",
       "savedBreakdown": "{fraction} · masukan {input} · keluaran {output}",
-      "unavailable": "belum tersedia: migrasi 0015 belum diterapkan",
+      "unavailable": "penghitung token belum tersedia untuk akun ini; jika Anda sudah punya lalu lintas dan melihat ini, tulis ke support@bivelio.com",
       "footnote": "<b>Penghematan keluaran hampir selalu nol</b>, dan itu bukan bug: pada panggilan yang benar-benar berjalan lapisan tidak memperkecil jawaban, jadi baseline keluarannya adalah keluaran terukur. Penghematan token ada di masukan dan pada panggilan yang dihindari. Total NEGATIF juga bukan kesalahan: artinya lapisan menghabiskan lebih banyak daripada tanpanya, dan kami menampilkannya."
     },
     "sombraElision": {

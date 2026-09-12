@@ -64,7 +64,18 @@
     "passwordUpdated": "Password updated. Signing you in…",
     "passwordsDontMatch": "The passwords don't match.",
     "resetLinkExpired": "This reset link is invalid or has expired. Request a new one.",
-    "callbackFailed": "We couldn't validate that link. Request a new one."
+    "callbackFailed": "We couldn't validate that link. Request a new one.",
+    "errors": {
+      "userExists": "An account with that email already exists. Sign in or reset your password.",
+      "weakPassword": "That password is too weak: use at least 8 characters and mix letters and numbers.",
+      "rateLimit": "Too many attempts in a row. Wait a minute and try again.",
+      "invalidCredentials": "Wrong email or password.",
+      "emailNotConfirmed": "You haven't confirmed your email yet. Look for the BiVelio message in your inbox (and spam).",
+      "samePassword": "The new password must be different from the current one.",
+      "emailInvalid": "That email doesn't look valid. Check it.",
+      "signupDisabled": "Sign-up is closed for now. Write to support@bivelio.com.",
+      "network": "No connection. Check your network and try again."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "traffic",
       "steps": {
         "accountCreated": "Account created",
-        "sdkInstalled": "SDK installed",
+        "sdkInstalled": "Service key created",
         "licenseActive": "License active",
         "firstReport": "First report",
         "liveMeter": "Live meter"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens the provider never processed",
-      "elisionNota": "A provider counter, not a saving of ours: today it is your own client's configuration that triggers it. It never enters your commission.",
+      "elisionNota": "If you use the gateway, part of this figure is the clearing your provider applies from your own configuration: that part is not our merit and never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
       "ghostAwaiting": "{ref} · awaiting first report",
@@ -256,7 +267,7 @@
       "summary": "{n} of {total} gateway machines (or undeclared) active in the last 7 days have produced no measured savings.",
       "outdated": "{n, plural, one {# machine runs} other {# machines run}} a gateway older than {minima}, the first version with the rate lever: update it.",
       "undeclared": "{n, plural, one {# machine does} other {# machines do}} not declare a version (gateway older than the version channel). If it is older than {minima}, it has no rate lever.",
-      "noLever": "{n, plural, one {# machine is} other {# machines are}} up to date, but the lever did not act there: check the cache_ttl_tuning feature on your licence, BVSALA_GATEWAY_ELISION on that machine, and whether its traffic writes 1h cache.",
+      "noLever": "{n, plural, one {# machine is up to date} other {# machines are up to date}}, but the lever has not acted there. Update the package on that machine, restart the terminal and, if it stays the same, write to support@bivelio.com.",
       "action": "Update @bivelio/savings-layer on that machine and restart the terminal; the machines table below shows what each one declares."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Payment received.</b> We're activating your licence — this usually takes a few seconds and this page refreshes itself.",
       "successActive": "<b>Your subscription is active.</b> The next step is to collect your licence key.",
       "goToInstall": "Get your licence key →",
-      "cancelled": "<b>No payment was completed</b> — nothing has been charged to you. You can start again whenever you like."
+      "cancelled": "<b>No payment was completed</b> — nothing has been charged to you. You can start again whenever you like.",
+      "successLate": "<b>Still pending.</b> It's been more than two minutes and the licence hasn't appeared yet: that's not normal. Don't buy again. Write to support@bivelio.com with the email you paid with and we'll activate it by hand."
     },
     "billingState": {
       "pastDueTitle": "Payment failed",
@@ -419,7 +431,7 @@
       "savedLabel": "Tokens saved",
       "savedWhat": "versus not using the layer",
       "savedBreakdown": "{fraction} · input {input} · output {output}",
-      "unavailable": "not available yet: migration 0015 has not been applied",
+      "unavailable": "token counters not available yet for this account; if you already have traffic and see this, write to support@bivelio.com",
       "footnote": "<b>Output saving is almost always zero</b>, and that is not a bug: on a call that actually ran the layer does not shrink the answer, so its output baseline is the measured output. Token savings live in the input and in avoided calls. A NEGATIVE total is not an error either: it means the layer spent more than it would have cost without it, and we show it."
     },
     "sombraElision": {

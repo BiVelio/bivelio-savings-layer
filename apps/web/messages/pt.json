@@ -64,7 +64,18 @@
     "passwordUpdated": "Palavra-passe atualizada. A iniciar sessão…",
     "passwordsDontMatch": "As palavras-passe não coincidem.",
     "resetLinkExpired": "Este link é inválido ou expirou. Solicita um novo.",
-    "callbackFailed": "Não conseguimos validar este link. Solicita um novo."
+    "callbackFailed": "Não conseguimos validar este link. Solicita um novo.",
+    "errors": {
+      "userExists": "Já existe uma conta com esse email. Inicia sessão ou repõe a palavra-passe.",
+      "weakPassword": "A palavra-passe é demasiado fraca: usa pelo menos 8 caracteres, com letras e números.",
+      "rateLimit": "Demasiadas tentativas seguidas. Espera um minuto e tenta de novo.",
+      "invalidCredentials": "Email ou palavra-passe incorretos.",
+      "emailNotConfirmed": "Ainda não confirmaste o teu email. Procura a mensagem da BiVelio na caixa de entrada (e no spam).",
+      "samePassword": "A nova palavra-passe tem de ser diferente da atual.",
+      "emailInvalid": "Esse email não parece válido. Verifica-o.",
+      "signupDisabled": "O registo está fechado por agora. Escreve para support@bivelio.com.",
+      "network": "Sem ligação. Verifica a tua rede e tenta de novo."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +90,7 @@
       "traffic": "tráfego",
       "steps": {
         "accountCreated": "Conta criada",
-        "sdkInstalled": "SDK instalado",
+        "sdkInstalled": "Chave de serviço criada",
         "licenseActive": "Licença ativa",
         "firstReport": "Primeiro relatório",
         "liveMeter": "Medidor em direto"
@@ -122,7 +133,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chamadas a LLM/recuperação/ferramentas que nunca chegaram a correr",
       "whatEliminatedTokens": "tokens de entrada que o fornecedor nunca chegou a processar",
-      "elisionNota": "É uma contagem do fornecedor, não uma poupança nossa: hoje é a configuração do teu próprio cliente que a despoleta. Nunca entra na tua comissão.",
+      "elisionNota": "Se usas o gateway, parte deste valor é o apagamento que o teu fornecedor aplica pela tua própria configuração: essa parte não é mérito nosso e nunca entra na tua comissão.",
       "whatCompressedTokens": "tokens de entrada recodificados de forma mais compacta",
       "whatProviderCachedTokens": "tokens de entrada faturados ao preço reduzido da cache de prefixo. É o teu cliente que o pede, não nós: a nossa alavanca só ajusta a duração",
       "ghostAwaiting": "{ref} · à espera do primeiro relatório",
@@ -256,7 +267,7 @@
       "summary": "{n} de {total} máquinas com gateway (ou sem declarar) ativas nos últimos 7 dias não produziram poupança medida.",
       "outdated": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior a {minima}, a primeira versão com a alavanca de tarifa: atualiza-o.",
       "undeclared": "{n, plural, one {# máquina não declara} other {# máquinas não declaram}} versão (gateway anterior ao canal de versão). Se for anterior a {minima}, não tem alavanca de tarifa.",
-      "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí: verifica a feature cache_ttl_tuning da tua licença, BVSALA_GATEWAY_ELISION nessa máquina e se o seu tráfego escreve cache de 1h.",
+      "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Atualiza o pacote nessa máquina, reinicia o terminal e, se continuar igual, escreve para support@bivelio.com.",
       "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
     },
     "maquinas": {
@@ -354,7 +365,8 @@
       "successPending": "<b>Pagamento recebido.</b> Estamos a ativar a tua licença — normalmente demora alguns segundos e esta página atualiza-se sozinha.",
       "successActive": "<b>A tua subscrição está ativa.</b> O passo seguinte é obter a tua chave de licença.",
       "goToInstall": "Obtém a tua chave de licença →",
-      "cancelled": "<b>Não foi concluído nenhum pagamento</b> — não te foi cobrado nada. Podes começar de novo quando quiseres."
+      "cancelled": "<b>Não foi concluído nenhum pagamento</b> — não te foi cobrado nada. Podes começar de novo quando quiseres.",
+      "successLate": "<b>Ainda pendente.</b> Já passaram mais de dois minutos e a licença ainda não aparece: não é o normal. Não voltes a comprar. Escreve para support@bivelio.com com o email com que pagaste e ativamo-la à mão."
     },
     "billingState": {
       "pastDueTitle": "O pagamento falhou",
@@ -419,7 +431,7 @@
       "savedLabel": "Tokens poupados",
       "savedWhat": "face a não usar a camada",
       "savedBreakdown": "{fraction} · entrada {input} · saída {output}",
-      "unavailable": "ainda não disponível: falta aplicar a migração 0015",
+      "unavailable": "contadores de tokens ainda não disponíveis nesta conta; se já tens tráfego e vês isto, escreve para support@bivelio.com",
       "footnote": "A <b>poupança de saída é quase sempre zero</b>, e não é um defeito: numa chamada que foi mesmo executada a camada não encolhe a resposta, por isso o seu baseline de saída é a saída medida. A poupança de tokens vive na entrada e nas chamadas evitadas. Um total NEGATIVO também não é um erro: significa que a camada custou mais do que teria custado sem ela, e mostramo-lo."
     },
     "sombraElision": {

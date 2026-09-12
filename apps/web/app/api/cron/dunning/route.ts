@@ -5,6 +5,7 @@ import { decidirDunning } from "@/lib/billing/dunning";
 import { diasDeGracia } from "@/lib/billing/gracia";
 import { hasValidLicense, type LicenseRow } from "@/lib/metering/entitlement";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
  * Barrido diario de impagos: el cron que el webhook lleva prometiendo por escrito
@@ -46,6 +47,9 @@ interface FilaImpago {
 
 export async function GET(req: Request): Promise<NextResponse> {
   if (!process.env.CRON_SECRET) {
+    // FALLO CERRADO, PERO NO SILENCIOSO: sin esto el cron respondía 501 y nadie se
+    // enteraba salvo mirando el panel de Vercel (2026-09-12).
+    void alertar({ nivel: "critico", asunto: "cron dunning no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/dunning" } });
     return NextResponse.json({ error: "Cron isn't configured (CRON_SECRET unset)." }, { status: 501 });
   }
   if (!autorizado(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

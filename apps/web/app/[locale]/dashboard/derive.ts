@@ -162,12 +162,17 @@ export type TokenTotals =
     };
 
 export function deriveTokens(usage: FilaUso[]): TokenTotals {
+  // VACÍO ANTES QUE «SIN COLUMNAS». Con cero filas, `some` es false por
+  // definición, y durante semanas eso hizo que TODO cliente recién registrado
+  // —sin una sola petición— leyera «falta aplicar la migración 0015» en su
+  // primera pantalla (2026-09-12). Cero filas es «sin tráfico», que es un cero
+  // legítimo, y no dice nada de las columnas de la tabla.
+  if (usage.length === 0) return { kind: "empty" };
   // Basta con que UNA fila traiga los contadores: las columnas son de la tabla,
   // así que o están para todas o no están para ninguna. Se comprueba con `some`
   // y no con la primera fila por si la ventana arranca en un día sin tráfico.
   const hay = usage.some((r) => r.baselineInputTokens !== undefined);
   if (!hay) return { kind: "unavailable" };
-  if (usage.length === 0) return { kind: "empty" };
 
   const suma = (f: (r: FilaUso) => number) => usage.reduce((n, r) => n + f(r), 0);
   const bIn = suma((r) => r.baselineInputTokens ?? 0);
