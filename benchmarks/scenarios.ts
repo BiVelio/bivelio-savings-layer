@@ -1396,12 +1396,20 @@ export const scenarios: Scenario[] = [
   },
   // NO HAY ESCENARIO DE `semanticCache`, Y ES DELIBERADO.
   //
-  // La palanca exige un `EmbeddingFn` y en este repo no hay ninguna
-  // implementación. Se puede montar en diez líneas un "embedding" por hash de
-  // palabras, pero eso no mide una caché SEMÁNTICA: mide solapamiento léxico, que
-  // es justo lo que la verja determinista de `cache/semantic.ts` ya comprueba por
-  // debajo. El escenario saldría verde midiendo otra cosa, y un banco que mide
-  // otra cosa es peor que un banco que no mide.
+  // Ya no por falta de embebedor: `src/cache/embedder-local.ts` trae uno
+  // (`embebedorLocal`), determinista y sin red, escrito precisamente porque la
+  // caché salía de fábrica sin ninguno y así no acertaba nunca. El motivo es
+  // OTRO, y sobrevive intacto: ese vector es una bolsa de unigramas y bigramas,
+  // o sea cercanía LÉXICA declarada como tal por su propia documentación. Un
+  // escenario montado encima saldría verde midiendo solapamiento de palabras,
+  // que es justo lo que la verja determinista de `cache/semantic.ts` ya
+  // comprueba por debajo —números, fechas, paridad de negación, suelo de
+  // solapamiento—, y no similitud semántica. Un banco que mide otra cosa es
+  // peor que un banco que no mide.
+  //
+  // Medirla de verdad pide un embebedor semántico de verdad, que es red, clave
+  // y coste por llamada: una dependencia que el banco no puede tener si ha de
+  // correr igual en cualquier máquina.
   //
   // Así que no se finge: el informe la lista como NO EJERCITADA con el motivo, y
   // el que lea la cifra sabe que ahí no hay dato. Ver `PALANCAS_SIN_ESCENARIO`.
@@ -1417,10 +1425,12 @@ export const PALANCAS_SIN_ESCENARIO: { palanca: Palanca; motivo: string }[] = [
   {
     palanca: "semanticCache",
     motivo:
-      "exige un EmbeddingFn y no hay ninguna implementación en el repo. Un embedding " +
-      "por hash de palabras mediría solapamiento léxico —lo que la verja determinista " +
-      "ya comprueba— y no similitud semántica, así que el escenario saldría verde " +
-      "midiendo otra cosa.",
+      "el embebedor que trae el repo (`embebedorLocal`, en `cache/embedder-local.ts`) " +
+      "es léxico por diseño: bolsa de unigramas y bigramas, sin red ni coste. Mediría " +
+      "solapamiento de palabras —lo que la verja determinista de `cache/semantic.ts` ya " +
+      "comprueba por debajo— y no similitud semántica, así que el escenario saldría " +
+      "verde midiendo otra cosa. Medirla de verdad exige un embebedor semántico con " +
+      "red, clave y coste por llamada, que el banco no puede depender de tener.",
   },
 ];
 
