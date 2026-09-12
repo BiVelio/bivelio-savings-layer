@@ -46,7 +46,7 @@
     "signInCta": "Iniciar sesión →",
     "loadingEllipsis": "…",
     "notWired": "El inicio de sesión aún no está configurado: define NEXT_PUBLIC_SUPABASE_ANON_KEY en el despliegue.",
-    "checkEmail": "Revisa tu correo para confirmar tu cuenta y luego inicia sesión.",
+    "checkEmail": "Revisa tu correo para confirmar tu cuenta y luego inicia sesión. Si ya tenías cuenta con ese correo, no te llegará nada: inicia sesión o restablece la contraseña.",
     "successTitle": "Cuenta verificada",
     "successBody": "Tu correo está confirmado y tu cuenta de Savings queda lista. Bienvenido — el medidor te espera.",
     "successCta": "Ir al panel",
@@ -74,7 +74,8 @@
       "samePassword": "La nueva contraseña tiene que ser distinta de la actual.",
       "emailInvalid": "Ese correo no parece válido. Revísalo.",
       "signupDisabled": "El registro está cerrado por ahora. Escríbenos a support@bivelio.com.",
-      "network": "Sin conexión. Comprueba tu red y vuelve a intentarlo."
+      "network": "Sin conexión. Comprueba tu red y vuelve a intentarlo.",
+      "missingFields": "Escribe tu correo y tu contraseña."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "tráfico",
       "steps": {
         "accountCreated": "Cuenta creada",
-        "sdkInstalled": "Clave de servicio creada",
+        "sdkInstalled": "Clave de cuenta de servicio creada",
         "licenseActive": "Licencia activa",
         "firstReport": "Primer informe",
         "liveMeter": "Medidor en vivo"
@@ -267,7 +268,7 @@
       "summary": "{n} de {total} máquinas con gateway (o sin declarar) activas en 7 días no han producido ahorro medido.",
       "outdated": "{n, plural, one {# máquina corre} other {# máquinas corren}} un gateway anterior a {minima}, la primera versión con la palanca de tarifa: actualízalo.",
       "undeclared": "{n, plural, one {# máquina no declara} other {# máquinas no declaran}} versión (gateway anterior al canal de versión). Si es anterior a {minima}, no lleva la palanca de tarifa.",
-      "noLever": "{n, plural, one {# máquina está al día} other {# máquinas están al día}}, pero la palanca no ha actuado ahí. Actualiza el paquete en esa máquina, reinicia el terminal y, si sigue igual, escríbenos a support@bivelio.com.",
+      "noLever": "{n, plural, one {# máquina está al día} other {# máquinas están al día}}, pero la palanca no ha actuado ahí. Si sigue igual después de actualizar, escríbenos a support@bivelio.com.",
       "action": "Actualiza @bivelio/savings-layer en esa máquina y reinicia el terminal; la tabla de máquinas de abajo enseña qué declara cada una."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# asiento} other {# asientos}} en uso este mes.",
       "seatsOver": "⚠ {used, plural, one {# asiento} other {# asientos}} en uso y {paid, plural, one {# pagado} other {# pagados}}. Sube la cantidad desde «Gestionar plan» para que tu factura cuadre con lo que ejecutas.",
       "seatsRotated": "{used, plural, one {# asiento contado} other {# asientos contados}} este mes. Has revocado una clave de servicio, y al rotarla tus máquinas estrenan identidad de asiento, así que este mes se cuentan dos veces. Se corrige solo el mes que viene: no tienes que cambiar de plan.",
-      "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo."
+      "taxNote": "IVA no incluido. Si su empresa tiene NIF-IVA intracomunitario, se aplica la inversión del sujeto pasivo.",
+      "errYaSuscrito": "Esta cuenta ya tiene una suscripción activa. Usa «Gestionar plan» para cambiar asientos o facturación.",
+      "errPagoEnCurso": "Tu pago todavía se está procesando: un adeudo bancario puede tardar unos días en liquidar. Tendrás acceso en cuanto liquide. No inicies una segunda suscripción.",
+      "errSuscripcionEnStripe": "Stripe ya tiene una suscripción para esta cuenta, pero aún no está activada aquí. No vuelvas a comprar: escríbenos a support@bivelio.com y la activamos a mano."
     },
     "referenceLedgerCards": {
       "proven": "comprobado",

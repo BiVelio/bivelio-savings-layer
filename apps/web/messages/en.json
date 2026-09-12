@@ -46,7 +46,7 @@
     "signInCta": "Sign in →",
     "loadingEllipsis": "…",
     "notWired": "Sign-in isn't wired up yet — set NEXT_PUBLIC_SUPABASE_ANON_KEY in the deploy.",
-    "checkEmail": "Check your email to confirm your account, then sign in.",
+    "checkEmail": "Check your email to confirm your account, then sign in. If you already had an account with that email, nothing will arrive: sign in or reset your password.",
     "successTitle": "Account verified",
     "successBody": "Your email is confirmed and your Savings account is ready. Welcome — the meter is waiting.",
     "successCta": "Go to the dashboard",
@@ -74,7 +74,8 @@
       "samePassword": "The new password must be different from the current one.",
       "emailInvalid": "That email doesn't look valid. Check it.",
       "signupDisabled": "Sign-up is closed for now. Write to support@bivelio.com.",
-      "network": "No connection. Check your network and try again."
+      "network": "No connection. Check your network and try again.",
+      "missingFields": "Enter your email and password."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "traffic",
       "steps": {
         "accountCreated": "Account created",
-        "sdkInstalled": "Service key created",
+        "sdkInstalled": "Service account key created",
         "licenseActive": "License active",
         "firstReport": "First report",
         "liveMeter": "Live meter"
@@ -133,7 +134,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
       "whatEliminatedTokens": "input tokens the provider never processed",
-      "elisionNota": "If you use the gateway, part of this figure is the clearing your provider applies from your own configuration: that part is not our merit and never enters your commission.",
+      "elisionNota": "If you use the gateway, part of this figure is input your provider drops because of your own configuration: that part isn't ours to claim and never enters your commission.",
       "whatCompressedTokens": "input tokens re-encoded smaller",
       "whatProviderCachedTokens": "input tokens billed at the discounted prefix-cache price. Your client asks for it, not us: our lever only tunes how long it lasts",
       "ghostAwaiting": "{ref} · awaiting first report",
@@ -267,7 +268,7 @@
       "summary": "{n} of {total} gateway machines (or undeclared) active in the last 7 days have produced no measured savings.",
       "outdated": "{n, plural, one {# machine runs} other {# machines run}} a gateway older than {minima}, the first version with the rate lever: update it.",
       "undeclared": "{n, plural, one {# machine does} other {# machines do}} not declare a version (gateway older than the version channel). If it is older than {minima}, it has no rate lever.",
-      "noLever": "{n, plural, one {# machine is up to date} other {# machines are up to date}}, but the lever has not acted there. Update the package on that machine, restart the terminal and, if it stays the same, write to support@bivelio.com.",
+      "noLever": "{n, plural, one {# machine is up to date} other {# machines are up to date}}, but the lever has not acted there. If it stays that way after updating, write to support@bivelio.com.",
       "action": "Update @bivelio/savings-layer on that machine and restart the terminal; the machines table below shows what each one declares."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# seat} other {# seats}} in use this month.",
       "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in use, {paid, plural, one {# paid for} other {# paid for}}. Raise your seat count from “Manage plan” so your invoice matches what you run.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} counted this month. You revoked a service-account key, and machines get a new seat identity when the key rotates — so this month counts them twice. It settles next month; you don't need to change your plan.",
-      "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies."
+      "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies.",
+      "errYaSuscrito": "This account already has an active subscription. Use “Manage plan” to change seats or billing.",
+      "errPagoEnCurso": "Your payment is still being processed: a bank debit can take a few days to clear. You'll get access as soon as it settles. Don't start a second subscription.",
+      "errSuscripcionEnStripe": "Stripe already has a subscription for this account, but it isn't activated here yet. Don't buy again: write to support@bivelio.com and we'll activate it by hand."
     },
     "referenceLedgerCards": {
       "proven": "proven",

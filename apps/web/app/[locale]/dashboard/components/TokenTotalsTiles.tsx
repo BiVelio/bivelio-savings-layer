@@ -74,9 +74,13 @@ export async function TokenTotalsTiles({ usage }: { usage: UsageRollup[] }) {
           </div>
         </div>
       </div>
-      <p className="footnote">
-        {t.rich("tokenTotals.footnote", { b: (chunks) => <b>{chunks}</b> })}
-      </p>
+      {/* Sin tráfico no hay nada que explicar: la nota sobre el ahorro de salida
+          y los totales negativos habla de cifras que aún no existen. */}
+      {vacio ? null : (
+        <p className="footnote">
+          {t.rich("tokenTotals.footnote", { b: (chunks) => <b>{chunks}</b> })}
+        </p>
+      )}
     </>
   );
 }

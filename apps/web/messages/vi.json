@@ -46,7 +46,7 @@
     "signInCta": "Đăng nhập →",
     "loadingEllipsis": "…",
     "notWired": "Tính năng đăng nhập chưa được kết nối — hãy đặt NEXT_PUBLIC_SUPABASE_ANON_KEY trong bản triển khai.",
-    "checkEmail": "Kiểm tra email để xác nhận tài khoản, rồi đăng nhập.",
+    "checkEmail": "Kiểm tra email để xác nhận tài khoản, rồi đăng nhập. Nếu bạn đã có tài khoản với email này, sẽ không có thư nào đến: hãy đăng nhập hoặc đặt lại mật khẩu.",
     "successTitle": "Tài khoản đã xác minh",
     "successBody": "Email của bạn đã được xác nhận và tài khoản Savings đã sẵn sàng. Chào mừng — bộ đo đang chờ bạn.",
     "successCta": "Vào bảng điều khiển",
@@ -74,7 +74,8 @@
       "samePassword": "Mật khẩu mới phải khác mật khẩu hiện tại.",
       "emailInvalid": "Email này có vẻ không hợp lệ. Hãy kiểm tra lại.",
       "signupDisabled": "Đăng ký tạm thời đóng. Hãy viết cho support@bivelio.com.",
-      "network": "Không có kết nối. Kiểm tra mạng và thử lại."
+      "network": "Không có kết nối. Kiểm tra mạng và thử lại.",
+      "missingFields": "Nhập email và mật khẩu của bạn."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "lưu lượng",
       "steps": {
         "accountCreated": "Đã tạo tài khoản",
-        "sdkInstalled": "Đã tạo khóa dịch vụ",
+        "sdkInstalled": "Đã tạo khóa tài khoản dịch vụ",
         "licenseActive": "Giấy phép đang hoạt động",
         "firstReport": "Báo cáo đầu tiên",
         "liveMeter": "Đồng hồ đo trực tiếp"
@@ -267,7 +268,7 @@
       "summary": "{n} trong {total} máy có gateway (hoặc chưa khai báo) hoạt động trong 7 ngày qua không tạo ra khoản tiết kiệm đã đo.",
       "outdated": "{n, plural, other {# máy đang chạy}} gateway cũ hơn {minima}, phiên bản đầu tiên có đòn bẩy biểu phí: hãy cập nhật.",
       "undeclared": "{n, plural, other {# máy không khai báo}} phiên bản (gateway cũ hơn kênh phiên bản). Nếu cũ hơn {minima}, máy đó không có đòn bẩy biểu phí.",
-      "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Hãy cập nhật gói trên máy đó, khởi động lại terminal và nếu vẫn vậy, viết cho support@bivelio.com.",
+      "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Nếu vẫn vậy sau khi cập nhật, hãy viết cho support@bivelio.com.",
       "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, other {# ghế}} đang dùng trong tháng này.",
       "seatsOver": "⚠ {used, plural, other {# ghế}} đang dùng, {paid, plural, other {# ghế}} đã trả. Hãy tăng số lượng ở «Quản lý gói» để hoá đơn khớp với những gì bạn đang chạy.",
       "seatsRotated": "Tháng này đếm được {used, plural, other {# ghế}}. Bạn đã thu hồi một khoá tài khoản dịch vụ, và khi khoá được thay thì các máy nhận danh tính ghế mới — nên tháng này chúng bị đếm hai lần. Tháng sau sẽ trở lại bình thường; bạn không cần đổi gói.",
-      "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng."
+      "taxNote": "Chưa bao gồm VAT. Nếu công ty của quý vị có mã số VAT của EU, cơ chế reverse charge sẽ được áp dụng.",
+      "errYaSuscrito": "Tài khoản này đã có gói đăng ký đang hoạt động. Dùng «Quản lý gói» để đổi số ghế hoặc thanh toán.",
+      "errPagoEnCurso": "Thanh toán của bạn vẫn đang được xử lý: ghi nợ ngân hàng có thể mất vài ngày. Bạn sẽ có quyền truy cập ngay khi hoàn tất. Đừng bắt đầu gói đăng ký thứ hai.",
+      "errSuscripcionEnStripe": "Stripe đã có gói đăng ký cho tài khoản này nhưng chưa được kích hoạt ở đây. Đừng mua lại: hãy viết cho support@bivelio.com và chúng tôi sẽ kích hoạt thủ công."
     },
     "referenceLedgerCards": {
       "proven": "đã chứng minh",

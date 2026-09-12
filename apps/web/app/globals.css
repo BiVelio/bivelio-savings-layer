@@ -684,7 +684,6 @@ input[type="range"] { accent-color: var(--brand); }
 .kpi .sub { font-size: .72rem; color: var(--ink-soft); }
 .kpi .ghost { font-family: var(--mono); font-size: .64rem; color: var(--ink-soft); opacity: .6; margin-top: 6px; }
 .kpi .lo { font-size: .68rem; color: var(--ink-soft); font-family: var(--mono); }
-.kpi .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; margin-top: 6px; word-break: break-all; }
 .footnote { font-size: .74rem; color: var(--ink-soft); margin-top: 10px; }
 /* El min-content de una tarjeta de libro es su etiqueta mono SIN espacios
    (`ELIMINATED_TOKENS`, `PROVIDER_CACHED`) más la cifra a 1.5rem. Medido: a
@@ -694,7 +693,7 @@ input[type="range"] { accent-color: var(--brand); }
    dos tarjetas de 130px no caben con la cifra dentro. */
 @media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 430px) { .kpis { grid-template-columns: minmax(0, 1fr); } }
-.kpi .n, .kpi .sub, .kpi .lo, .kpi .ghost, .kpi .src, .card .n { overflow-wrap: anywhere; }
+.kpi .n, .kpi .sub, .kpi .lo, .kpi .ghost, .card .n { overflow-wrap: anywhere; }
 
 /* Veredicto */
 .verdict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-card); padding: 26px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 24px; align-items: center; }
@@ -730,7 +729,6 @@ input[type="range"] { accent-color: var(--brand); }
 .ritmo .big.pos { color: var(--mint); }
 .ritmo .big.neg { color: var(--danger); }
 .ritmo .sub { font-size: .78rem; color: var(--ink-soft); }
-.ritmo .src { font-family: var(--mono); font-size: .6rem; color: var(--ink-soft); opacity: .7; word-break: break-all; }
 @media (max-width: 430px) { .ritmo .big { font-size: 1.55rem; } }
 .verdict .cap { font-size: .82rem; color: var(--ink-soft); margin-top: 10px; max-width: 40ch; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }

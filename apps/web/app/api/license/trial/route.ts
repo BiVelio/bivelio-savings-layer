@@ -51,7 +51,10 @@ async function motivoSinLicencia(userId: string): Promise<"pago_en_curso" | "sin
     // nunca abrió un checkout. A ése, decirle «tu pago se está confirmando, no
     // vuelvas a pagar» era mentirle, y lo leía el 100 % de los recién registrados
     // (2026-09-12). El caso de verdad pendiente —pagó y el webhook aún no llegó—
-    // sí tiene pertenencia y cae más abajo, en la consulta de `subscriptions`.
+    // sí tiene pertenencia, pero tampoco tiene fila en `subscriptions` (la escribe
+    // el webhook), así que aquí también recibe «sin suscripción». Quien lo
+    // detecta es la guardia del checkout, que pregunta a Stripe: al segundo
+    // intento de compra recibe un 409 y salta la alerta crítica.
     //
     // La consulta de abajo no se hace con `[...orgIds]` vacío a propósito:
     // `.in("org_id", [])` genera `in.()`, que PostgREST rechaza con un 400.

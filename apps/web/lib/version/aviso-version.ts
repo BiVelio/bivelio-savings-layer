@@ -20,9 +20,11 @@
  *                         registro sin versión en 7 días (réplica vieja al lado
  *                         de una nueva): «si es < mínima no lleva la palanca»,
  *                         SIN afirmar el 0.
- *       sinPalanca      → ≥ mínima y 0 €: causas comprobables (feature
+ *       sinPalanca      → ≥ mínima y 0 €. Las causas comprobables (feature
  *                         cache_ttl_tuning en la licencia, BVSALA_GATEWAY_ELISION,
- *                         tipo de tráfico: escritura de caché 1h).
+ *                         tipo de tráfico: escritura de caché 1h) son cosa
+ *                         NUESTRA: al cliente el panel solo le dice que la
+ *                         palanca no ha actuado y a quién escribir (2026-09-12).
  *   · Si todo produce dinero, null: un panel que grita sin motivo enseña a
  *     ignorarlo (misma regla que BillingStateBanner).
  */

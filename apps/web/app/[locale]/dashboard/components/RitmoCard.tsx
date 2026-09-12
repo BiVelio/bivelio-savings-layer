@@ -107,7 +107,6 @@ export async function RitmoCard({ usage }: { usage: UsageRollup[] }) {
           <p>{t("ritmo.diasRestantes", { n: r.diasRestantes })}</p>
         </div>
       </div>
-
     </div>
   );
 }

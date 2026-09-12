@@ -47,7 +47,7 @@ interface FilaUso {
 export async function GET(req: Request): Promise<NextResponse> {
   if (!process.env.CRON_SECRET) {
     // FALLO CERRADO, PERO NO SILENCIOSO (2026-09-12).
-    void alertar({ nivel: "critico", asunto: "cron cierre-extractos no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/cierre-extractos" } });
+    await alertar({ nivel: "critico", asunto: "cron cierre-extractos no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/cierre-extractos" } });
     return NextResponse.json({ error: "cron sin configurar" }, { status: 501 });
   }
   if (!autorizado(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

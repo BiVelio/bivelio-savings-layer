@@ -46,7 +46,7 @@
     "signInCta": "Iniciar sessão →",
     "loadingEllipsis": "…",
     "notWired": "O início de sessão ainda não está configurado — define NEXT_PUBLIC_SUPABASE_ANON_KEY no deploy.",
-    "checkEmail": "Verifica o teu email para confirmar a conta e depois inicia sessão.",
+    "checkEmail": "Verifica o teu email para confirmar a conta e depois inicia sessão. Se já tinhas conta com esse email, não chegará nada: inicia sessão ou repõe a palavra-passe.",
     "successTitle": "Conta verificada",
     "successBody": "O teu e-mail está confirmado e a tua conta Savings está pronta. Bem-vindo — o medidor espera por ti.",
     "successCta": "Ir para o painel",
@@ -74,7 +74,8 @@
       "samePassword": "A nova palavra-passe tem de ser diferente da atual.",
       "emailInvalid": "Esse email não parece válido. Verifica-o.",
       "signupDisabled": "O registo está fechado por agora. Escreve para support@bivelio.com.",
-      "network": "Sem ligação. Verifica a tua rede e tenta de novo."
+      "network": "Sem ligação. Verifica a tua rede e tenta de novo.",
+      "missingFields": "Escreve o teu email e a palavra-passe."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "tráfego",
       "steps": {
         "accountCreated": "Conta criada",
-        "sdkInstalled": "Chave de serviço criada",
+        "sdkInstalled": "Chave de conta de serviço criada",
         "licenseActive": "Licença ativa",
         "firstReport": "Primeiro relatório",
         "liveMeter": "Medidor em direto"
@@ -267,7 +268,7 @@
       "summary": "{n} de {total} máquinas com gateway (ou sem declarar) ativas nos últimos 7 dias não produziram poupança medida.",
       "outdated": "{n, plural, one {# máquina corre} other {# máquinas correm}} um gateway anterior a {minima}, a primeira versão com a alavanca de tarifa: atualiza-o.",
       "undeclared": "{n, plural, one {# máquina não declara} other {# máquinas não declaram}} versão (gateway anterior ao canal de versão). Se for anterior a {minima}, não tem alavanca de tarifa.",
-      "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Atualiza o pacote nessa máquina, reinicia o terminal e, se continuar igual, escreve para support@bivelio.com.",
+      "noLever": "{n, plural, one {# máquina está atualizada} other {# máquinas estão atualizadas}}, mas a alavanca não atuou aí. Se continuar igual depois de atualizar, escreve para support@bivelio.com.",
       "action": "Atualiza @bivelio/savings-layer nessa máquina e reinicia o terminal; a tabela de máquinas abaixo mostra o que cada uma declara."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# lugar} other {# lugares}} em uso este mês.",
       "seatsOver": "⚠ {used, plural, one {# lugar} other {# lugares}} em uso e {paid, plural, one {# pago} other {# pagos}}. Aumenta a quantidade em «Gerir plano» para a fatura corresponder ao que executas.",
       "seatsRotated": "{used, plural, one {# lugar contado} other {# lugares contados}} este mês. Revogaste uma chave de serviço e, ao rodá-la, as tuas máquinas estreiam identidade de lugar — por isso este mês conta-as duas vezes. Corrige-se sozinho no mês seguinte: não precisas de mudar de plano.",
-      "taxNote": "IVA não incluído. Se a sua empresa tiver número de IVA intracomunitário, aplica-se a autoliquidação."
+      "taxNote": "IVA não incluído. Se a sua empresa tiver número de IVA intracomunitário, aplica-se a autoliquidação.",
+      "errYaSuscrito": "Esta conta já tem uma subscrição ativa. Usa «Gerir plano» para alterar lugares ou faturação.",
+      "errPagoEnCurso": "O teu pagamento ainda está a ser processado: um débito bancário pode demorar alguns dias a liquidar. Terás acesso assim que liquidar. Não inicies uma segunda subscrição.",
+      "errSuscripcionEnStripe": "O Stripe já tem uma subscrição para esta conta, mas ainda não está ativada aqui. Não voltes a comprar: escreve para support@bivelio.com e ativamo-la à mão."
     },
     "referenceLedgerCards": {
       "proven": "comprovado",
@@ -366,7 +370,7 @@
       "successActive": "<b>A tua subscrição está ativa.</b> O passo seguinte é obter a tua chave de licença.",
       "goToInstall": "Obtém a tua chave de licença →",
       "cancelled": "<b>Não foi concluído nenhum pagamento</b> — não te foi cobrado nada. Podes começar de novo quando quiseres.",
-      "successLate": "<b>Ainda pendente.</b> Já passaram mais de dois minutos e a licença ainda não aparece: não é o normal. Não voltes a comprar. Escreve para support@bivelio.com com o email com que pagaste e ativamo-la à mão."
+      "successLate": "<b>Ainda pendente.</b> Já passaram mais de dois minutos e a licença ainda não aparece: não é normal. Não voltes a comprar. Escreve para support@bivelio.com com o email com que pagaste e ativamo-la à mão."
     },
     "billingState": {
       "pastDueTitle": "O pagamento falhou",

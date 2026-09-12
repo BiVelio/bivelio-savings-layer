@@ -23,7 +23,8 @@ export type ClaveDeErrorDeAuth =
   | "samePassword"
   | "emailInvalid"
   | "signupDisabled"
-  | "network";
+  | "network"
+  | "missingFields";
 
 const POR_CODIGO: Record<string, ClaveDeErrorDeAuth> = {
   user_already_exists: "userExists",
@@ -36,7 +37,6 @@ const POR_CODIGO: Record<string, ClaveDeErrorDeAuth> = {
   email_not_confirmed: "emailNotConfirmed",
   same_password: "samePassword",
   email_address_invalid: "emailInvalid",
-  validation_failed: "emailInvalid",
   signup_disabled: "signupDisabled",
   email_provider_disabled: "signupDisabled",
 };
@@ -49,8 +49,11 @@ export function claveDeErrorDeAuth(err: unknown): ClaveDeErrorDeAuth | null {
   if (!err || typeof err !== "object") return null;
   const code = (err as { code?: unknown }).code;
   if (typeof code === "string" && code in POR_CODIGO) return POR_CODIGO[code];
-  // Sin red: `fetch` revienta con un TypeError antes de que Supabase conteste.
-  // No trae `code`, pero es el error más común en una demo con wifi de hotel.
+  // Sin red. supabase-js NO deja escapar el TypeError de `fetch`: lo envuelve
+  // en un `AuthRetryableFetchError` con `status: 0` y sin `code`. Es el error
+  // más común en una demo con wifi de hotel, y sin esto llegaba en inglés.
+  const { name, status } = err as { name?: unknown; status?: unknown };
+  if (name === "AuthRetryableFetchError" && status === 0) return "network";
   if (err instanceof TypeError && /fetch|network|load failed/i.test(err.message)) return "network";
   return null;
 }

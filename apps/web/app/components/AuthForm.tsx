@@ -52,6 +52,12 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
       setMsg({ type: "error", text: t("notWired") });
       return;
     }
+    // El formulario lleva `noValidate`, así que `required` no para nada: sin esto
+    // un envío vacío llegaba a Supabase como alta anónima y volvía en inglés.
+    if (!email.trim() || (view !== "reset" && !password)) {
+      setMsg({ type: "error", text: t(view === "reset" ? "errors.emailInvalid" : "errors.missingFields") });
+      return;
+    }
     setLoading(true);
     setMsg({ type: "idle", text: "" });
     const { createClient } = await import("@/lib/supabase/client");

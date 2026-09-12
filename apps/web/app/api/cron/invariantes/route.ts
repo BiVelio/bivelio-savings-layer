@@ -40,7 +40,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (!process.env.CRON_SECRET) {
     // FALLO CERRADO, PERO NO SILENCIOSO: sin esto el cron respondía 501 y nadie se
     // enteraba salvo mirando el panel de Vercel (2026-09-12).
-    void alertar({ nivel: "critico", asunto: "cron invariantes no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/invariantes" } });
+    await alertar({ nivel: "critico", asunto: "cron invariantes no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/invariantes" } });
     return NextResponse.json({ error: "Cron isn't configured (CRON_SECRET unset)." }, { status: 501 });
   }
   if (!autorizado(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

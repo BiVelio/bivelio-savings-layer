@@ -46,7 +46,7 @@
     "signInCta": "Inicia la sessió →",
     "loadingEllipsis": "…",
     "notWired": "L'inici de sessió encara no està configurat: defineix NEXT_PUBLIC_SUPABASE_ANON_KEY al desplegament.",
-    "checkEmail": "Revisa el teu correu per confirmar el compte i després inicia la sessió.",
+    "checkEmail": "Revisa el correu per confirmar el compte i després inicia la sessió. Si ja tenies compte amb aquest correu, no t'arribarà res: inicia la sessió o restableix la contrasenya.",
     "successTitle": "Compte verificat",
     "successBody": "El teu correu està confirmat i el teu compte de Savings queda llest. Benvingut — el mesurador t'espera.",
     "successCta": "Anar al panell",
@@ -74,7 +74,8 @@
       "samePassword": "La contrasenya nova ha de ser diferent de l'actual.",
       "emailInvalid": "Aquest correu no sembla vàlid. Revisa'l.",
       "signupDisabled": "El registre està tancat de moment. Escriu-nos a support@bivelio.com.",
-      "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar."
+      "network": "Sense connexió. Comprova la xarxa i torna-ho a intentar.",
+      "missingFields": "Escriu el teu correu i la contrasenya."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "trànsit",
       "steps": {
         "accountCreated": "Compte creat",
-        "sdkInstalled": "Clau de servei creada",
+        "sdkInstalled": "Clau de compte de servei creada",
         "licenseActive": "Llicència activa",
         "firstReport": "Primer informe",
         "liveMeter": "Mesurador en viu"
@@ -267,7 +268,7 @@
       "summary": "{n} de {total} màquines amb gateway (o sense declarar) actives en 7 dies no han produït estalvi mesurat.",
       "outdated": "{n, plural, one {# màquina executa} other {# màquines executen}} un gateway anterior a {minima}, la primera versió amb la palanca de tarifa: actualitza'l.",
       "undeclared": "{n, plural, one {# màquina no declara} other {# màquines no declaren}} versió (gateway anterior al canal de versió). Si és anterior a {minima}, no porta la palanca de tarifa.",
-      "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat. Actualitza el paquet en aquesta màquina, reinicia el terminal i, si segueix igual, escriu-nos a support@bivelio.com.",
+      "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat. Si segueix igual després d'actualitzar, escriu-nos a support@bivelio.com.",
       "action": "Actualitza @bivelio/savings-layer en aquella màquina i reinicia el terminal; la taula de màquines de sota mostra què declara cadascuna."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# seient} other {# seients}} en ús aquest mes.",
       "seatsOver": "⚠ {used, plural, one {# seient} other {# seients}} en ús i {paid, plural, one {# pagat} other {# pagats}}. Puja la quantitat des de «Gestiona el pla» perquè la factura quadri amb el que executes.",
       "seatsRotated": "{used, plural, one {# seient comptat} other {# seients comptats}} aquest mes. Has revocat una clau de servei i, en rotar-la, les teves màquines estrenen identitat de seient, així que aquest mes es compten dues vegades. Es corregeix sol el mes vinent: no has de canviar de pla.",
-      "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu."
+      "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu.",
+      "errYaSuscrito": "Aquest compte ja té una subscripció activa. Fes servir «Gestionar el pla» per canviar seients o facturació.",
+      "errPagoEnCurso": "El teu pagament encara s'està processant: un càrrec bancari pot trigar uns dies a liquidar-se. Tindràs accés tan bon punt es liquidi. No iniciïs una segona subscripció.",
+      "errSuscripcionEnStripe": "Stripe ja té una subscripció per a aquest compte, però encara no està activada aquí. No tornis a comprar: escriu-nos a support@bivelio.com i l'activem a mà."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",
@@ -366,7 +370,7 @@
       "successActive": "<b>La teva subscripció està activa.</b> El pas següent és recollir la teva clau de llicència.",
       "goToInstall": "Obtén la teva clau de llicència →",
       "cancelled": "<b>No s'ha completat cap pagament</b> — no se t'ha cobrat res. Pots tornar a començar quan vulguis.",
-      "successLate": "<b>Encara pendent.</b> Fa més de dos minuts i la llicència encara no apareix: no és el normal. No tornis a comprar. Escriu-nos a support@bivelio.com amb el correu amb què vas pagar i l'activem a mà."
+      "successLate": "<b>Encara pendent.</b> Fa més de dos minuts i la llicència encara no apareix: no és normal. No tornis a comprar. Escriu-nos a support@bivelio.com amb el correu amb què vas pagar i l'activem a mà."
     },
     "billingState": {
       "pastDueTitle": "El cobrament ha fallat",

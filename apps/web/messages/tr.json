@@ -46,7 +46,7 @@
     "signInCta": "Giriş yap →",
     "loadingEllipsis": "…",
     "notWired": "Giriş henüz yapılandırılmadı — dağıtımda NEXT_PUBLIC_SUPABASE_ANON_KEY değerini ayarlayın.",
-    "checkEmail": "Hesabınızı onaylamak için e-postanızı kontrol edin, ardından giriş yapın.",
+    "checkEmail": "Hesabınızı doğrulamak için e-postanızı kontrol edin, sonra giriş yapın. Bu e-postayla zaten hesabınız varsa hiçbir şey gelmez: giriş yapın veya şifrenizi sıfırlayın.",
     "successTitle": "Hesap doğrulandı",
     "successBody": "E-postan doğrulandı ve Savings hesabın hazır. Hoş geldin — sayaç seni bekliyor.",
     "successCta": "Panele git",
@@ -74,7 +74,8 @@
       "samePassword": "Yeni şifre mevcut şifreden farklı olmalı.",
       "emailInvalid": "Bu e-posta geçerli görünmüyor. Kontrol edin.",
       "signupDisabled": "Kayıt şimdilik kapalı. support@bivelio.com adresine yazın.",
-      "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin."
+      "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
+      "missingFields": "E-postanızı ve şifrenizi girin."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "trafik",
       "steps": {
         "accountCreated": "Hesap oluşturuldu",
-        "sdkInstalled": "Servis anahtarı oluşturuldu",
+        "sdkInstalled": "Servis hesabı anahtarı oluşturuldu",
         "licenseActive": "Lisans etkin",
         "firstReport": "İlk rapor",
         "liveMeter": "Canlı sayaç"
@@ -133,7 +134,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
       "whatEliminatedTokens": "sağlayıcının hiç işlemediği girdi belirteçleri",
-      "elisionNota": "Ağ geçidini kullanıyorsanız bu rakamın bir kısmı sağlayıcınızın kendi yapılandırmanızdan uyguladığı temizlemedir: o kısım bizim başarımız değildir ve asla komisyonunuza girmez.",
+      "elisionNota": "Ağ geçidini kullanıyorsanız bu rakamın bir kısmı, sağlayıcınızın kendi yapılandırmanız nedeniyle atladığı girdidir: o kısım bizim başarımız değildir ve asla komisyonunuza girmez.",
       "whatCompressedTokens": "daha küçük olarak yeniden kodlanan girdi token'ları",
       "whatProviderCachedTokens": "önek önbelleğinin indirimli fiyatıyla faturalanan girdi belirteçleri. Bunu istemciniz talep ediyor, biz değil: bizim kolumuz yalnızca süresini ayarlıyor",
       "ghostAwaiting": "{ref} · ilk rapor bekleniyor",
@@ -267,7 +268,7 @@
       "summary": "Son 7 günde etkin olan {total} gateway makinesinden (veya bildirilmemiş) {n} tanesi ölçülmüş tasarruf üretmedi.",
       "outdated": "{n, plural, other {# makine}}, tarife kolunu taşıyan ilk sürüm olan {minima} sürümünden eski bir gateway çalıştırıyor: güncelleyin.",
       "undeclared": "{n, plural, other {# makine}} sürüm bildirmiyor (sürüm kanalından eski gateway). {minima} sürümünden eskiyse tarife kolu yoktur.",
-      "noLever": "{n, plural, one {# makine güncel} other {# makine güncel}}, ancak kaldıraç orada devreye girmedi. O makinede paketi güncelleyin, terminali yeniden başlatın ve aynı kalırsa support@bivelio.com adresine yazın.",
+      "noLever": "{n, plural, one {# makine güncel} other {# makine güncel}}, ancak tarife kolu orada devreye girmedi. Güncellemeden sonra aynı kalırsa support@bivelio.com adresine yazın.",
       "action": "O makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "Bu ay {used, plural, other {# koltuk}} kullanımda.",
       "seatsOver": "⚠ {used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Faturanızın çalıştırdığınızla örtüşmesi için «Planı yönet»ten sayıyı artırın.",
       "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok.",
-      "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır."
+      "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır.",
+      "errYaSuscrito": "Bu hesabın zaten etkin bir aboneliği var. Koltukları veya faturalandırmayı değiştirmek için «Planı yönet»i kullanın.",
+      "errPagoEnCurso": "Ödemeniz hâlâ işleniyor: banka borçlandırması birkaç gün sürebilir. Tamamlanır tamamlanmaz erişim alacaksınız. İkinci bir abonelik başlatmayın.",
+      "errSuscripcionEnStripe": "Stripe'ta bu hesap için zaten bir abonelik var, ancak burada henüz etkinleştirilmedi. Tekrar satın almayın: support@bivelio.com adresine yazın, elle etkinleştirelim."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",

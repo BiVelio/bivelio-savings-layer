@@ -24,12 +24,18 @@ const ORG_NUEVA = "abcdabcd-abcd-4bcd-8bcd-abcdabcdabcd";
 
 interface Estado {
   pertenencias: { org_id: string; role: string; created_at: string; user_id: string }[];
-  subs: { org_id: string; status: string; id: string }[];
+  subs: { org_id: string; status: string; id: string; stripe_subscription_id?: string }[];
   orgs: { id: string; stripe_customer_id: string | null }[];
   insertados: { tabla: string; fila: Record<string, unknown> }[];
   /** Lo que STRIPE sabe, que no es lo mismo que lo que sabe nuestra tabla. */
   stripeClientes: { id: string; email: string }[];
-  stripeSubs: { id: string; customer: string; status: string }[];
+  stripeSubs: {
+    id: string;
+    customer: string;
+    status: string;
+    metadata?: Record<string, string>;
+    items?: { data: { price: { id: string } }[] };
+  }[];
   fallar?: string;
 }
 /** Alertas emitidas (mock de `alertar`). */
@@ -102,7 +108,13 @@ vi.mock("@/lib/stripe/client", () => ({
     subscriptions: {
       list: async ({ customer }: { customer: string }) => {
         if (e.fallar === "stripe") throw new Error("stripe caído");
-        return { data: e.stripeSubs.filter((s) => s.customer === customer) };
+        if (customer === "cus_fantasma") throw Object.assign(new Error("No such customer"), { code: "resource_missing" });
+        // Como en Stripe: sin `items` declarados, la suscripción es de nuestro precio.
+        return {
+          data: e.stripeSubs
+            .filter((s) => s.customer === customer)
+            .map((s) => ({ metadata: {}, items: { data: [{ price: { id: "price_mensual" } }] }, ...s })),
+        };
       },
     },
   }),
@@ -298,5 +310,39 @@ describe("la guardia contra el webhook muerto: se le pregunta también a Stripe"
     const { POST } = await import("./stripe/checkout/route");
     expect((await POST(peticion())).status).toBe(200);
     expect(sesion).not.toBeNull();
+  });
+
+  it("una suscripción viva de OTRO producto (otro precio, sin org_id) no bloquea ni alerta", async () => {
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [{ id: "sub_otro", customer: CLIENTE.id, status: "active", items: { data: [{ price: { id: "price_de_otro_producto" } }] } }];
+    const { POST } = await import("./stripe/checkout/route");
+    expect((await POST(peticion())).status).toBe(200);
+    expect(alertas).toHaveLength(0);
+  });
+
+  it("si nuestra tabla YA conoce esa suscripción (bajo otra organización), es «ya suscrito», sin alerta crítica", async () => {
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [{ id: "sub_conocida", customer: CLIENTE.id, status: "active" }];
+    e.subs = [{ org_id: "otra-org", status: "active", id: "fila-1", stripe_subscription_id: "sub_conocida" }];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { code: string }).code).toBe("ya_suscrito");
+    expect(alertas).toHaveLength(0);
+  });
+
+  it("un cliente apuntado que Stripe ya no conoce (resource_missing) se salta y se sigue por el correo", async () => {
+    e.pertenencias = [{ org_id: ORG_REAL, role: "owner", created_at: "2026-01-01", user_id: USUARIO }];
+    e.orgs = [{ id: ORG_REAL, stripe_customer_id: "cus_fantasma" }];
+    const { POST } = await import("./stripe/checkout/route");
+    expect((await POST(peticion())).status).toBe(200);
+  });
+
+  it("los 409 llevan un `code` que el panel traduce", async () => {
+    e.stripeClientes = [CLIENTE];
+    e.stripeSubs = [{ id: "sub_sepa", customer: CLIENTE.id, status: "incomplete" }];
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(((await res.json()) as { code: string }).code).toBe("pago_en_curso");
   });
 });

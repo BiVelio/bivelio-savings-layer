@@ -30,9 +30,17 @@ describe("del código de Supabase a nuestra clave de texto", () => {
     expect(textoDeErrorDeAuth(err, t)).toBe("Hook timed out");
   });
 
-  it("sin red (TypeError de fetch) se dice que no hay conexión", () => {
-    expect(claveDeErrorDeAuth(new TypeError("Failed to fetch"))).toBe("network");
+  it("sin red se dice que no hay conexión: supabase-js envuelve el fallo de fetch en AuthRetryableFetchError con status 0", () => {
+    const sinRed = Object.assign(new Error("Failed to fetch"), { name: "AuthRetryableFetchError", status: 0, code: undefined });
+    expect(claveDeErrorDeAuth(sinRed)).toBe("network");
+    // Y el TypeError desnudo también, por si algún día deja de envolverlo.
     expect(claveDeErrorDeAuth(new TypeError("Load failed"))).toBe("network");
+  });
+
+  it("validation_failed NO se traduce como «correo no válido»: Supabase lo usa para cualquier validación", () => {
+    const err = errorDeSupabase("validation_failed", "Password cannot be longer than 72 characters");
+    expect(claveDeErrorDeAuth(err)).toBeNull();
+    expect(textoDeErrorDeAuth(err, t)).toBe("Password cannot be longer than 72 characters");
   });
 
   it("lo que no es ni un Error cae al genérico", () => {

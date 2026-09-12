@@ -46,7 +46,7 @@
     "signInCta": "Se connecter →",
     "loadingEllipsis": "…",
     "notWired": "La connexion n'est pas encore configurée — définissez NEXT_PUBLIC_SUPABASE_ANON_KEY dans le déploiement.",
-    "checkEmail": "Consultez votre e-mail pour confirmer votre compte, puis connectez-vous.",
+    "checkEmail": "Consultez votre e-mail pour confirmer votre compte, puis connectez-vous. Si vous aviez déjà un compte avec cet e-mail, rien n'arrivera : connectez-vous ou réinitialisez le mot de passe.",
     "successTitle": "Compte vérifié",
     "successBody": "Votre e-mail est confirmé et votre compte Savings est prêt. Bienvenue — le compteur vous attend.",
     "successCta": "Aller au panneau",
@@ -74,7 +74,8 @@
       "samePassword": "Le nouveau mot de passe doit être différent de l'actuel.",
       "emailInvalid": "Cet e-mail ne semble pas valide. Vérifiez-le.",
       "signupDisabled": "Les inscriptions sont fermées pour le moment. Écrivez à support@bivelio.com.",
-      "network": "Pas de connexion. Vérifiez votre réseau et réessayez."
+      "network": "Pas de connexion. Vérifiez votre réseau et réessayez.",
+      "missingFields": "Saisissez votre e-mail et votre mot de passe."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "trafic",
       "steps": {
         "accountCreated": "Compte créé",
-        "sdkInstalled": "Clé de service créée",
+        "sdkInstalled": "Clé de compte de service créée",
         "licenseActive": "Licence active",
         "firstReport": "Premier rapport",
         "liveMeter": "Compteur en direct"
@@ -267,7 +268,7 @@
       "summary": "{n} des {total} machines avec gateway (ou non déclarées) actives ces 7 derniers jours n'ont produit aucune économie mesurée.",
       "outdated": "{n, plural, one {# machine exécute} other {# machines exécutent}} un gateway antérieur à {minima}, la première version dotée du levier tarifaire : mettez-le à jour.",
       "undeclared": "{n, plural, one {# machine ne déclare} other {# machines ne déclarent}} pas de version (gateway antérieur au canal de version). Si elle est antérieure à {minima}, elle n'a pas de levier tarifaire.",
-      "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi. Mettez à jour le paquet sur cette machine, redémarrez le terminal et, si rien ne change, écrivez à support@bivelio.com.",
+      "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi. Si rien ne change après la mise à jour, écrivez à support@bivelio.com.",
       "action": "Mettez à jour @bivelio/savings-layer sur cette machine et relancez le terminal ; le tableau des machines ci-dessous montre ce que chacune déclare."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# siège utilisé} other {# sièges utilisés}} ce mois-ci.",
       "seatsOver": "⚠ {used, plural, one {# siège utilisé} other {# sièges utilisés}}, {paid, plural, one {# payé} other {# payés}}. Augmentez la quantité depuis « Gérer le forfait » pour que votre facture corresponde à votre usage.",
       "seatsRotated": "{used, plural, one {# siège compté} other {# sièges comptés}} ce mois-ci. Vous avez révoqué une clé de compte de service : en la remplaçant, vos machines changent d'identité de siège, donc ce mois-ci elles sont comptées deux fois. Cela se règle tout seul le mois prochain — inutile de changer de forfait.",
-      "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique."
+      "taxNote": "TVA non comprise. Si votre entreprise a un numéro de TVA intracommunautaire, l'autoliquidation s'applique.",
+      "errYaSuscrito": "Ce compte a déjà un abonnement actif. Utilisez « Gérer le plan » pour modifier les sièges ou la facturation.",
+      "errPagoEnCurso": "Votre paiement est encore en cours : un prélèvement bancaire peut mettre quelques jours à être confirmé. Vous aurez accès dès qu'il sera réglé. Ne démarrez pas un second abonnement.",
+      "errSuscripcionEnStripe": "Stripe a déjà un abonnement pour ce compte, mais il n'est pas encore activé ici. Ne rachetez pas : écrivez à support@bivelio.com et nous l'activerons à la main."
     },
     "referenceLedgerCards": {
       "proven": "prouvé",

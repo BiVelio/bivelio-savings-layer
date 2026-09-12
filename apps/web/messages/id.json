@@ -46,7 +46,7 @@
     "signInCta": "Masuk →",
     "loadingEllipsis": "…",
     "notWired": "Fitur masuk belum tersambung — atur NEXT_PUBLIC_SUPABASE_ANON_KEY di deployment.",
-    "checkEmail": "Periksa email Anda untuk mengonfirmasi akun, lalu masuk.",
+    "checkEmail": "Periksa email Anda untuk mengonfirmasi akun, lalu masuk. Jika sudah ada akun dengan email itu, tidak akan ada yang datang: masuk atau atur ulang kata sandi.",
     "successTitle": "Akun terverifikasi",
     "successBody": "Email Anda terkonfirmasi dan akun Savings Anda siap. Selamat datang — meterannya menunggu.",
     "successCta": "Buka dasbor",
@@ -74,7 +74,8 @@
       "samePassword": "Kata sandi baru harus berbeda dari yang sekarang.",
       "emailInvalid": "Email itu tampaknya tidak valid. Periksa lagi.",
       "signupDisabled": "Pendaftaran ditutup untuk saat ini. Tulis ke support@bivelio.com.",
-      "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi."
+      "network": "Tidak ada koneksi. Periksa jaringan Anda dan coba lagi.",
+      "missingFields": "Masukkan email dan kata sandi Anda."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "lalu lintas",
       "steps": {
         "accountCreated": "Akun dibuat",
-        "sdkInstalled": "Kunci layanan dibuat",
+        "sdkInstalled": "Kunci akun layanan dibuat",
         "licenseActive": "Lisensi aktif",
         "firstReport": "Laporan pertama",
         "liveMeter": "Meteran langsung"
@@ -267,7 +268,7 @@
       "summary": "{n} dari {total} mesin gateway (atau tidak dideklarasikan) yang aktif dalam 7 hari terakhir tidak menghasilkan penghematan terukur.",
       "outdated": "{n, plural, other {# mesin menjalankan}} gateway yang lebih lama dari {minima}, versi pertama dengan tuas tarif: perbarui.",
       "undeclared": "{n, plural, other {# mesin tidak mendeklarasikan}} versi (gateway lebih lama dari kanal versi). Jika lebih lama dari {minima}, mesin itu tidak punya tuas tarif.",
-      "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana. Perbarui paket di mesin itu, mulai ulang terminal, dan jika tetap sama, tulis ke support@bivelio.com.",
+      "noLever": "{n, plural, other {# mesin sudah mutakhir}}, tetapi tuasnya tidak bekerja di sana. Jika tetap sama setelah memperbarui, tulis ke support@bivelio.com.",
       "action": "Perbarui @bivelio/savings-layer di mesin itu dan mulai ulang terminal; tabel mesin di bawah menunjukkan apa yang dideklarasikan masing-masing."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, other {# kursi}} terpakai bulan ini.",
       "seatsOver": "⚠ {used, plural, other {# kursi}} terpakai, {paid, plural, other {# kursi}} dibayar. Naikkan jumlahnya lewat «Kelola paket» agar tagihan sesuai dengan yang Anda jalankan.",
       "seatsRotated": "{used, plural, other {# kursi}} terhitung bulan ini. Anda mencabut kunci akun layanan, dan saat kunci diganti mesin-mesin Anda mendapat identitas kursi baru — jadi bulan ini terhitung dua kali. Bulan depan normal kembali; Anda tidak perlu mengubah paket.",
-      "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge."
+      "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge.",
+      "errYaSuscrito": "Akun ini sudah memiliki langganan aktif. Gunakan «Kelola paket» untuk mengubah kursi atau penagihan.",
+      "errPagoEnCurso": "Pembayaran Anda masih diproses: debit bank bisa memakan beberapa hari. Anda akan mendapat akses begitu selesai. Jangan memulai langganan kedua.",
+      "errSuscripcionEnStripe": "Stripe sudah memiliki langganan untuk akun ini, tetapi belum diaktifkan di sini. Jangan membeli lagi: tulis ke support@bivelio.com dan kami aktifkan secara manual."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",

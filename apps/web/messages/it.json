@@ -46,7 +46,7 @@
     "signInCta": "Accedi →",
     "loadingEllipsis": "…",
     "notWired": "L'accesso non è ancora configurato: imposta NEXT_PUBLIC_SUPABASE_ANON_KEY nel deploy.",
-    "checkEmail": "Controlla la tua email per confermare l'account, poi accedi.",
+    "checkEmail": "Controlla l'email per confermare l'account, poi accedi. Se avevi già un account con quell'email, non arriverà nulla: accedi o reimposta la password.",
     "successTitle": "Account verificato",
     "successBody": "La tua email è confermata e il tuo account Savings è pronto. Benvenuto — il misuratore ti aspetta.",
     "successCta": "Vai al pannello",
@@ -74,7 +74,8 @@
       "samePassword": "La nuova password deve essere diversa da quella attuale.",
       "emailInvalid": "Questa email non sembra valida. Controllala.",
       "signupDisabled": "La registrazione è chiusa per ora. Scrivi a support@bivelio.com.",
-      "network": "Nessuna connessione. Controlla la rete e riprova."
+      "network": "Nessuna connessione. Controlla la rete e riprova.",
+      "missingFields": "Inserisci email e password."
     }
   },
   "dashboard": {
@@ -90,7 +91,7 @@
       "traffic": "traffico",
       "steps": {
         "accountCreated": "Account creato",
-        "sdkInstalled": "Chiave di servizio creata",
+        "sdkInstalled": "Chiave dell'account di servizio creata",
         "licenseActive": "Licenza attiva",
         "firstReport": "Primo report",
         "liveMeter": "Contatore in tempo reale"
@@ -267,7 +268,7 @@
       "summary": "{n} di {total} macchine con gateway (o non dichiarate) attive negli ultimi 7 giorni non hanno prodotto risparmio misurato.",
       "outdated": "{n, plural, one {# macchina esegue} other {# macchine eseguono}} un gateway precedente a {minima}, la prima versione con la leva tariffaria: aggiornalo.",
       "undeclared": "{n, plural, one {# macchina non dichiara} other {# macchine non dichiarano}} la versione (gateway precedente al canale di versione). Se è precedente a {minima}, non ha la leva tariffaria.",
-      "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva non ha agito lì. Aggiorna il pacchetto su quella macchina, riavvia il terminale e, se resta uguale, scrivi a support@bivelio.com.",
+      "noLever": "{n, plural, one {# macchina è aggiornata} other {# macchine sono aggiornate}}, ma la leva non ha agito lì. Se resta così dopo l'aggiornamento, scrivi a support@bivelio.com.",
       "action": "Aggiorna @bivelio/savings-layer su quella macchina e riavvia il terminale; la tabella delle macchine qui sotto mostra cosa dichiara ciascuna."
     },
     "maquinas": {
@@ -317,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# postazione} other {# postazioni}} in uso questo mese.",
       "seatsOver": "⚠ {used, plural, one {# postazione} other {# postazioni}} in uso e {paid, plural, one {# pagata} other {# pagate}}. Aumenta la quantità da «Gestisci piano» così la fattura corrisponde a ciò che esegui.",
       "seatsRotated": "{used, plural, one {# postazione conteggiata} other {# postazioni conteggiate}} questo mese. Hai revocato una chiave di servizio e, ruotandola, le tue macchine cambiano identità di postazione: per questo il mese le conta due volte. Si sistema da solo il mese prossimo, non devi cambiare piano.",
-      "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile."
+      "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile.",
+      "errYaSuscrito": "Questo account ha già un abbonamento attivo. Usa «Gestisci piano» per cambiare posti o fatturazione.",
+      "errPagoEnCurso": "Il tuo pagamento è ancora in elaborazione: un addebito bancario può richiedere qualche giorno. Avrai accesso appena verrà regolato. Non avviare un secondo abbonamento.",
+      "errSuscripcionEnStripe": "Stripe ha già un abbonamento per questo account, ma qui non è ancora attivato. Non ricomprare: scrivi a support@bivelio.com e lo attiviamo a mano."
     },
     "referenceLedgerCards": {
       "proven": "comprovato",

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { billingFullyConfigured, priceIdFor, type BillingPeriod } from "@/lib/stripe/env";
+import type Stripe from "stripe";
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 import { resolverOrgDelUsuario } from "@/lib/org/resolver";
 import { puede, NO_AUTORIZADO } from "@/lib/org/permisos";
@@ -25,6 +26,10 @@ export const dynamic = "force-dynamic";
  * deja pasar lo que la otra bloquea. (`unpaid` fuera a propósito: ver abajo.)
  */
 const ESTADOS_QUE_BLOQUEAN: ReadonlySet<string> = new Set(["active", "trialing", "past_due", "incomplete"]);
+const MENSAJE_PAGO_EN_CURSO =
+  "Your payment is still being processed — bank debits can take a few days to clear. You'll get access as soon as it settles. Please don't start a second subscription.";
+const MENSAJE_YA_SUSCRITO =
+  "This account already has an active subscription. Use “Manage plan” to change seats or billing.";
 
 export async function POST(req: Request): Promise<NextResponse> {
   if (!billingFullyConfigured) {
@@ -136,11 +141,12 @@ export async function POST(req: Request): Promise<NextResponse> {
     // todavía. Lo que necesita es saber que su pago se está procesando y que NO
     // tiene que volver a comprar.
     const pendiente = (activa as { status?: string }).status === "incomplete";
+    // `code` es lo que el panel traduce; `error` es el respaldo en inglés para
+    // quien llame a la ruta a mano.
     return NextResponse.json(
       {
-        error: pendiente
-          ? "Your payment is still being processed — bank debits can take a few days to clear. You'll get access as soon as it settles. Please don't start a second subscription."
-          : "This account already has an active subscription. Use “Manage plan” to change seats or billing.",
+        code: pendiente ? "pago_en_curso" : "ya_suscrito",
+        error: pendiente ? MENSAJE_PAGO_EN_CURSO : MENSAJE_YA_SUSCRITO,
       },
       { status: 409 },
     );
@@ -181,19 +187,56 @@ export async function POST(req: Request): Promise<NextResponse> {
       const porCorreo = await stripe.customers.list({ email: user.email, limit: 5 });
       for (const c of porCorreo.data) clientes.add(c.id);
     }
+    // Solo cuentan las suscripciones de ESTE producto: la cuenta de Stripe puede
+    // compartirse con otros productos de la casa, y una suscripción viva de otro
+    // no es motivo para negarle a nadie la compra de este.
+    const nuestrosPrecios = new Set([priceIdFor("monthly"), priceIdFor("yearly")].filter(Boolean));
+    const esNuestra = (sub: Stripe.Subscription): boolean =>
+      Boolean(sub.metadata?.org_id) || sub.items.data.some((it) => nuestrosPrecios.has(it.price.id));
     for (const id of clientes) {
-      const subs = await stripe.subscriptions.list({ customer: id, status: "all", limit: 10 });
-      const viva = subs.data.find((s) => ESTADOS_QUE_BLOQUEAN.has(s.status));
+      let subs: Stripe.ApiList<Stripe.Subscription>;
+      try {
+        subs = await stripe.subscriptions.list({ customer: id, status: "all", limit: 10 });
+      } catch (err) {
+        // Un `stripe_customer_id` apuntado en la organización que Stripe ya no
+        // conoce (otra cuenta, otro modo, borrado) no puede dejar el checkout en
+        // un 503 «temporal» para siempre: se salta ese id y se sigue por el correo.
+        if ((err as { code?: string }).code === "resource_missing") continue;
+        throw err;
+      }
+      const viva = subs.data.find((sub) => ESTADOS_QUE_BLOQUEAN.has(sub.status) && esNuestra(sub));
       if (!viva) continue;
-      void alertar({
+      // ¿Nuestra tabla ya la conoce (bajo otra organización, p. ej.)? Entonces no
+      // es un webhook muerto: es «ya estás suscrito», sin alerta crítica.
+      const { data: conocida } = await admin
+        .from("subscriptions")
+        .select("org_id")
+        .eq("stripe_subscription_id", viva.id)
+        .maybeSingle();
+      const pendiente = viva.status === "incomplete";
+      if (conocida) {
+        return NextResponse.json(
+          {
+            code: pendiente ? "pago_en_curso" : "ya_suscrito",
+            error: pendiente ? MENSAJE_PAGO_EN_CURSO : MENSAJE_YA_SUSCRITO,
+          },
+          { status: 409 },
+        );
+      }
+      // `await`, no `void`: Vercel puede congelar la función en cuanto sale la
+      // respuesta, y esta es la alerta más importante que puede dar esta ruta.
+      // `alertar` nunca lanza y tiene sus propios cortes de tiempo.
+      await alertar({
         nivel: "critico",
         asunto: "checkout: Stripe tiene una suscripción viva que nuestra tabla no conoce",
         detalle: { org_id: orgId, user_id: user.id, customer: id, subscription: viva.id, status: viva.status },
       });
       return NextResponse.json(
         {
-          error:
-            "Stripe already has a subscription for this email, but it hasn't been activated on this account yet. Please don't buy again — write to support@bivelio.com and we'll activate it by hand.",
+          code: pendiente ? "pago_en_curso" : "suscripcion_en_stripe",
+          error: pendiente
+            ? MENSAJE_PAGO_EN_CURSO
+            : "Stripe already has a subscription for this account, but it hasn't been activated here yet. Please don't buy again — write to support@bivelio.com and we'll activate it by hand.",
         },
         { status: 409 },
       );
