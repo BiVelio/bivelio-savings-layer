@@ -6,6 +6,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
 
 /**
+ * Los 409 del checkout traen un `code`; el texto en inglés que los acompaña es
+ * el respaldo para quien llame a la ruta a mano. Aquí se traduce: es la
+ * pantalla exacta que ve quien intenta pagar dos veces, en doce idiomas.
+ */
+const ERRORES_DEL_CHECKOUT: Record<string, string> = {
+  ya_suscrito: "accountPlanStrip.errYaSuscrito",
+  pago_en_curso: "accountPlanStrip.errPagoEnCurso",
+  suscripcion_en_stripe: "accountPlanStrip.errSuscripcionEnStripe",
+};
+
+/**
  * Billing CTAs on the Account card. Signed-out-of-plan users get monthly/yearly
  * Checkout buttons; active subscribers get a Manage-plan button that opens the
  * Stripe Billing Portal. Each posts to the server route and redirects to the
@@ -50,9 +61,10 @@ export function BillingButtons({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ...body, locale }),
       });
-      const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string; code?: string };
       if (!res.ok || !json.url) {
-        setErr(json.error || t("accountPlanStrip.checkoutError"));
+        const clave = json.code ? ERRORES_DEL_CHECKOUT[json.code] : undefined;
+        setErr(clave ? t(clave) : json.error || t("accountPlanStrip.checkoutError"));
         setLoading(null);
         return;
       }

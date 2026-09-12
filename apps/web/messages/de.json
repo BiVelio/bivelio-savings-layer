@@ -46,7 +46,7 @@
     "signInCta": "Anmelden →",
     "loadingEllipsis": "…",
     "notWired": "Die Anmeldung ist noch nicht eingerichtet — setze NEXT_PUBLIC_SUPABASE_ANON_KEY im Deployment.",
-    "checkEmail": "Prüfe deine E-Mails, um dein Konto zu bestätigen, und melde dich dann an.",
+    "checkEmail": "Prüfe deine E-Mails, um dein Konto zu bestätigen, und melde dich dann an. Hattest du mit dieser E-Mail schon ein Konto, kommt nichts an: melde dich an oder setze dein Passwort zurück.",
     "successTitle": "Konto bestätigt",
     "successBody": "Deine E-Mail ist bestätigt und dein Savings-Konto ist bereit. Willkommen — der Meter wartet.",
     "successCta": "Zum Dashboard",
@@ -64,7 +64,19 @@
     "passwordUpdated": "Passwort aktualisiert. Anmeldung…",
     "passwordsDontMatch": "Die Passwörter stimmen nicht überein.",
     "resetLinkExpired": "Dieser Link ist ungültig oder abgelaufen. Fordere einen neuen an.",
-    "callbackFailed": "Wir konnten diesen Link nicht überprüfen. Fordere einen neuen an."
+    "callbackFailed": "Wir konnten diesen Link nicht überprüfen. Fordere einen neuen an.",
+    "errors": {
+      "userExists": "Mit dieser E-Mail gibt es schon ein Konto. Melde dich an oder setze dein Passwort zurück.",
+      "weakPassword": "Das Passwort ist zu schwach: mindestens 8 Zeichen, mit Buchstaben und Zahlen.",
+      "rateLimit": "Zu viele Versuche hintereinander. Warte eine Minute und versuch es noch mal.",
+      "invalidCredentials": "E-Mail oder Passwort falsch.",
+      "emailNotConfirmed": "Du hast deine E-Mail noch nicht bestätigt. Such die Nachricht von BiVelio in deinem Posteingang (und im Spam).",
+      "samePassword": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+      "emailInvalid": "Diese E-Mail sieht nicht gültig aus. Prüf sie noch mal.",
+      "signupDisabled": "Die Registrierung ist gerade geschlossen. Schreib an support@bivelio.com.",
+      "network": "Keine Verbindung. Prüf dein Netzwerk und versuch es noch mal.",
+      "missingFields": "Gib deine E-Mail und dein Passwort ein."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +91,7 @@
       "traffic": "Traffic",
       "steps": {
         "accountCreated": "Konto erstellt",
-        "sdkInstalled": "SDK installiert",
+        "sdkInstalled": "Service-Account-Schlüssel erstellt",
         "licenseActive": "Lizenz aktiv",
         "firstReport": "Erster Bericht",
         "liveMeter": "Live-Zähler"
@@ -122,7 +134,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/Retrieval-/Tool-Aufrufe, die nie ausgeführt wurden",
       "whatEliminatedTokens": "Eingabe-Tokens, die der Anbieter nie verarbeitet hat",
-      "elisionNota": "Ein Zähler des Anbieters, keine Ersparnis von uns: Ausgelöst wird das heute von der Konfiguration Ihres eigenen Clients. Es fließt nie in Ihre Provision ein.",
+      "elisionNota": "Wenn du das Gateway nutzt, ist ein Teil dieser Zahl Eingabe, die dein Anbieter wegen deiner eigenen Konfiguration verwirft: dieser Teil ist nicht unser Verdienst und geht nie in deine Provision ein.",
       "whatCompressedTokens": "Eingabe-Tokens, die kompakter neu kodiert wurden",
       "whatProviderCachedTokens": "Eingabe-Tokens zum vergünstigten Präfix-Cache-Preis. Ihr Client fordert das an, nicht wir: Unser Hebel stellt nur die Dauer ein",
       "ghostAwaiting": "{ref} · wartet auf ersten Bericht",
@@ -256,7 +268,7 @@
       "summary": "{n} von {total} Gateway-Maschinen (oder ohne Angabe), die in den letzten 7 Tagen aktiv waren, haben keine gemessene Ersparnis erzeugt.",
       "outdated": "{n, plural, one {# Maschine läuft} other {# Maschinen laufen}} mit einem Gateway älter als {minima}, der ersten Version mit dem Tarifhebel: aktualisiere es.",
       "undeclared": "{n, plural, one {# Maschine meldet} other {# Maschinen melden}} keine Version (Gateway älter als der Versionskanal). Ist sie älter als {minima}, hat sie keinen Tarifhebel.",
-      "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gewirkt: prüfe das Feature cache_ttl_tuning deiner Lizenz, BVSALA_GATEWAY_ELISION auf dieser Maschine und ob ihr Traffic 1h-Cache schreibt.",
+      "noLever": "{n, plural, one {# Maschine ist aktuell} other {# Maschinen sind aktuell}}, aber der Hebel hat dort nicht gegriffen. Bleibt es nach dem Update so, schreib an support@bivelio.com.",
       "action": "Aktualisiere @bivelio/savings-layer auf dieser Maschine und starte das Terminal neu; die Maschinentabelle unten zeigt, was jede meldet."
     },
     "maquinas": {
@@ -306,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# Seat} other {# Seats}} diesen Monat in Benutzung.",
       "seatsOver": "⚠ {used, plural, one {# Seat} other {# Seats}} in Benutzung, {paid, plural, one {# bezahlt} other {# bezahlt}}. Erhöhe die Anzahl unter „Plan verwalten“, damit deine Rechnung zu deinem Betrieb passt.",
       "seatsRotated": "{used, plural, one {# Seat} other {# Seats}} in diesem Monat gezählt. Du hast einen Service-Account-Schlüssel widerrufen, und beim Rotieren bekommen deine Maschinen eine neue Seat-Identität — deshalb zählt dieser Monat sie doppelt. Nächsten Monat ist es wieder normal; du musst deinen Plan nicht ändern.",
-      "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren."
+      "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren.",
+      "errYaSuscrito": "Dieses Konto hat schon ein aktives Abonnement. Nutze „Plan verwalten“, um Plätze oder Abrechnung zu ändern.",
+      "errPagoEnCurso": "Deine Zahlung wird noch verarbeitet: eine Lastschrift kann ein paar Tage brauchen. Du bekommst Zugang, sobald sie durch ist. Starte kein zweites Abonnement.",
+      "errSuscripcionEnStripe": "Stripe hat schon ein Abonnement für dieses Konto, aber es ist hier noch nicht aktiv. Kauf nicht noch mal: schreib an support@bivelio.com und wir schalten es von Hand frei."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",
@@ -354,7 +369,8 @@
       "successPending": "<b>Zahlung erhalten.</b> Wir aktivieren deine Lizenz — das dauert meist ein paar Sekunden, und diese Seite aktualisiert sich von selbst.",
       "successActive": "<b>Dein Abonnement ist aktiv.</b> Als Nächstes holst du dir deinen Lizenzschlüssel.",
       "goToInstall": "Hol dir deinen Lizenzschlüssel →",
-      "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten."
+      "cancelled": "<b>Es wurde keine Zahlung abgeschlossen</b> — dir wurde nichts berechnet. Du kannst den Vorgang jederzeit erneut starten.",
+      "successLate": "<b>Noch ausstehend.</b> Es sind mehr als zwei Minuten vergangen und die Lizenz ist noch nicht da: das ist nicht normal. Kauf nicht noch mal. Schreib an support@bivelio.com mit der E-Mail, mit der du bezahlt hast, und wir schalten sie von Hand frei."
     },
     "billingState": {
       "pastDueTitle": "Zahlung fehlgeschlagen",
@@ -419,7 +435,7 @@
       "savedLabel": "Gesparte Tokens",
       "savedWhat": "gegenüber ohne die Schicht",
       "savedBreakdown": "{fraction} · Eingabe {input} · Ausgabe {output}",
-      "unavailable": "noch nicht verfügbar: Migration 0015 wurde nicht angewendet",
+      "unavailable": "Token-Zähler sind in diesem Konto noch nicht verfügbar; wenn du schon Traffic hast und das hier siehst, schreib an support@bivelio.com.",
       "footnote": "Die <b>Ausgabe-Ersparnis ist fast immer null</b>, und das ist kein Fehler: bei einem tatsächlich ausgeführten Aufruf verkleinert die Schicht die Antwort nicht, also ist ihr Ausgabe-Baseline die gemessene Ausgabe. Token-Ersparnis liegt in der Eingabe und in vermiedenen Aufrufen. Ein NEGATIVER Gesamtwert ist ebenfalls kein Fehler: er bedeutet, dass die Schicht mehr gekostet hat als ohne sie — und wir zeigen ihn."
     },
     "sombraElision": {

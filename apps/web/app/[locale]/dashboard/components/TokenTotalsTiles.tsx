@@ -35,13 +35,11 @@ export async function TokenTotalsTiles({ usage }: { usage: UsageRollup[] }) {
           <div className="n">{t("tokenTotals.spentLabel")}</div>
           <div className="v empty ck-num">—</div>
           <div className="sub">{t("tokenTotals.unavailable")}</div>
-          <div className="src">usage_daily · 0015</div>
         </div>
         <div className="kpi">
           <div className="n">{t("tokenTotals.savedLabel")}</div>
           <div className="v empty ck-num">—</div>
           <div className="sub">{t("tokenTotals.unavailable")}</div>
-          <div className="src">usage_daily · 0015</div>
         </div>
       </div>
     );
@@ -58,7 +56,6 @@ export async function TokenTotalsTiles({ usage }: { usage: UsageRollup[] }) {
             {vacio ? "—" : intfmt(tok.spent)}
           </div>
           <div className="sub">{t("tokenTotals.spentWhat")}</div>
-          <div className="src">usage_daily.actual_input_tokens + actual_output_tokens</div>
         </div>
 
         <div className="kpi">
@@ -75,12 +72,15 @@ export async function TokenTotalsTiles({ usage }: { usage: UsageRollup[] }) {
                   output: intfmt(tok.savedOutput),
                 })}
           </div>
-          <div className="src">baseline_* − actual_*</div>
         </div>
       </div>
-      <p className="footnote">
-        {t.rich("tokenTotals.footnote", { b: (chunks) => <b>{chunks}</b> })}
-      </p>
+      {/* Sin tráfico no hay nada que explicar: la nota sobre el ahorro de salida
+          y los totales negativos habla de cifras que aún no existen. */}
+      {vacio ? null : (
+        <p className="footnote">
+          {t.rich("tokenTotals.footnote", { b: (chunks) => <b>{chunks}</b> })}
+        </p>
+      )}
     </>
   );
 }

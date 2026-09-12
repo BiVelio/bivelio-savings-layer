@@ -154,7 +154,10 @@ vi.mock("@/lib/stripe/client", () => ({
   getStripe: () => ({
     checkout: { sessions: { create: crearSesion } },
     webhooks: { constructEvent: (...a: unknown[]) => construirEvento(...a) },
-    subscriptions: { retrieve: async () => suscripcionStripe },
+    // La guardia contra el webhook muerto pregunta a Stripe por el correo y por
+    // el cliente; aquí Stripe no sabe nada, que es el caso que estos tests miran.
+    customers: { list: async () => ({ data: [] }) },
+    subscriptions: { retrieve: async () => suscripcionStripe, list: async () => ({ data: [] }) },
   }),
 }));
 

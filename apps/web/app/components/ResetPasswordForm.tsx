@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 
 import { authConfigured } from "@/lib/supabase/env";
+import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
@@ -55,7 +56,7 @@ export default function ResetPasswordForm() {
         router.refresh();
       }, 1200);
     } catch (err) {
-      setMsg({ type: "error", text: err instanceof Error ? err.message : t("somethingWrong") });
+      setMsg({ type: "error", text: textoDeErrorDeAuth(err, t) });
     } finally {
       setLoading(false);
     }

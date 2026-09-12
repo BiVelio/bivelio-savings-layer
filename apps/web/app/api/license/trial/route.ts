@@ -43,16 +43,22 @@ async function motivoSinLicencia(userId: string): Promise<"pago_en_curso" | "sin
     for (const fila of (miembro as { org_id?: string }[] | null) ?? []) {
       if (fila.org_id) orgIds.add(fila.org_id);
     }
-    // SIN PERTENENCIAS SE RESPONDE «pago en curso», Y ES DELIBERADO. Es justo el
-    // hueco entre pagar y que el webhook escriba la organización: quien acaba de
-    // comprar no tiene todavía ninguna, y decirle «no tienes suscripción» le
-    // invita a comprar dos veces. La respuesta correcta es que espere.
+    // SIN PERTENENCIAS SE RESPONDE «sin suscripción». Esta rama decía «pago en
+    // curso» para cubrir «el hueco entre pagar y que el webhook escriba la
+    // organización» — y ese hueco ya no existe: el checkout crea la organización
+    // y la pertenencia ANTES de mandar a Stripe (app/api/stripe/checkout/route.ts
+    // → lib/org/resolver.ts), así que quien no tiene ninguna pertenencia es quien
+    // nunca abrió un checkout. A ése, decirle «tu pago se está confirmando, no
+    // vuelvas a pagar» era mentirle, y lo leía el 100 % de los recién registrados
+    // (2026-09-12). El caso de verdad pendiente —pagó y el webhook aún no llegó—
+    // sí tiene pertenencia, pero tampoco tiene fila en `subscriptions` (la escribe
+    // el webhook), así que aquí también recibe «sin suscripción». Quien lo
+    // detecta es la guardia del checkout, que pregunta a Stripe: al segundo
+    // intento de compra recibe un 409 y salta la alerta crítica.
     //
-    // Antes esto salía bien POR ACCIDENTE: `.in("org_id", [])` genera `in.()`, que
-    // PostgREST rechaza con un 400, y el `error` caía en la misma rama. Un accidente
-    // no es una decisión — el día que PostgREST devolviese `[]` en vez de un error,
-    // la respuesta se habría dado la vuelta hacia el lado caro, en silencio.
-    if (orgIds.size === 0) return "pago_en_curso";
+    // La consulta de abajo no se hace con `[...orgIds]` vacío a propósito:
+    // `.in("org_id", [])` genera `in.()`, que PostgREST rechaza con un 400.
+    if (orgIds.size === 0) return "sin_suscripcion";
     const { data: sub, error } = await admin
       .from("subscriptions")
       .select("status")

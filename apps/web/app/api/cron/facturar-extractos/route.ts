@@ -50,7 +50,11 @@ function periodoAnterior(ahora: Date): string {
 }
 
 export async function GET(req: Request): Promise<NextResponse> {
-  if (!process.env.CRON_SECRET) return NextResponse.json({ error: "cron sin configurar" }, { status: 501 });
+  if (!process.env.CRON_SECRET) {
+    // FALLO CERRADO, PERO NO SILENCIOSO (2026-09-12).
+    await alertar({ nivel: "critico", asunto: "cron facturar-extractos no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/facturar-extractos" } });
+    return NextResponse.json({ error: "cron sin configurar" }, { status: 501 });
+  }
   if (!autorizado(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!billingConfigured) return NextResponse.json({ error: "stripe sin configurar" }, { status: 501 });
 

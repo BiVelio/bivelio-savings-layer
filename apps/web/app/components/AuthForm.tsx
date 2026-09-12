@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { authConfigured } from "@/lib/supabase/env";
 import { safeNextPath } from "@/app/auth/safe-next";
+import { textoDeErrorDeAuth } from "@/lib/auth/error-de-auth";
 
 type Msg = { type: "error" | "info" | "idle"; text: string };
 
@@ -49,6 +50,12 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
     const destino = destinoPedido();
     if (!authConfigured) {
       setMsg({ type: "error", text: t("notWired") });
+      return;
+    }
+    // El formulario lleva `noValidate`, así que `required` no para nada: sin esto
+    // un envío vacío llegaba a Supabase como alta anónima y volvía en inglés.
+    if (!email.trim() || (view !== "reset" && !password)) {
+      setMsg({ type: "error", text: t(view === "reset" ? "errors.emailInvalid" : "errors.missingFields") });
       return;
     }
     setLoading(true);
@@ -95,7 +102,7 @@ export default function AuthForm({ mode }: { mode: "signup" | "login" }) {
         router.refresh();
       }
     } catch (err) {
-      setMsg({ type: "error", text: err instanceof Error ? err.message : t("somethingWrong") });
+      setMsg({ type: "error", text: textoDeErrorDeAuth(err, t) });
     } finally {
       setLoading(false);
     }

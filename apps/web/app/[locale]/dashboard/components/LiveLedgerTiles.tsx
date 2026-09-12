@@ -3,14 +3,14 @@ import { getTranslations } from "next-intl/server";
 import type { AbArtifact, UsageRollup } from "../data";
 import { intfmt, LEDGER_COLOR } from "../format";
 
-// The LIVE ledger names (NOT the reference's output_restriction). Each maps to a
-// real usage_daily column; a faint reference "ghost" keeps the never-summed model
-// legible before any customer data exists.
+// The LIVE ledger names (NOT the reference's output_restriction). A faint
+// reference "ghost" keeps the never-summed model legible before any customer
+// data exists.
 const LIVE = [
-  { key: "avoided_calls", col: "avoided_llm", whatKey: "whatAvoidedCalls" },
-  { key: "eliminated_tokens", col: "eliminated_input_tokens", whatKey: "whatEliminatedTokens" },
-  { key: "compressed_tokens", col: "compressed_input_tokens", whatKey: "whatCompressedTokens" },
-  { key: "provider_cached_tokens", col: "provider_cached_input_tokens", whatKey: "whatProviderCachedTokens" },
+  { key: "avoided_calls", whatKey: "whatAvoidedCalls" },
+  { key: "eliminated_tokens", whatKey: "whatEliminatedTokens" },
+  { key: "compressed_tokens", whatKey: "whatCompressedTokens" },
+  { key: "provider_cached_tokens", whatKey: "whatProviderCachedTokens" },
 ] as const;
 
 /**
@@ -77,7 +77,6 @@ export async function LiveLedgerTiles({ usage, ab }: { usage: UsageRollup[]; ab:
               {l.key === "eliminated_tokens" ? (
                 <div className="sub">{t("liveLedgerTiles.elisionNota")}</div>
               ) : null}
-              <div className="src">usage_daily.{l.col}</div>
             </div>
           );
         })}

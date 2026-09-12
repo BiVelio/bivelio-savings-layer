@@ -46,7 +46,7 @@
     "signInCta": "Inloggen →",
     "loadingEllipsis": "…",
     "notWired": "Inloggen is nog niet gekoppeld — stel NEXT_PUBLIC_SUPABASE_ANON_KEY in bij de deploy.",
-    "checkEmail": "Controleer je e-mail om je account te bevestigen en log daarna in.",
+    "checkEmail": "Bekijk je e-mail om je account te bevestigen en log daarna in. Had je al een account met dit e-mailadres, dan komt er niets: log in of stel je wachtwoord opnieuw in.",
     "successTitle": "Account geverifieerd",
     "successBody": "Je e-mail is bevestigd en je Savings-account staat klaar. Welkom — de meter wacht op je.",
     "successCta": "Naar het dashboard",
@@ -64,7 +64,19 @@
     "passwordUpdated": "Wachtwoord bijgewerkt. Bezig met inloggen…",
     "passwordsDontMatch": "De wachtwoorden komen niet overeen.",
     "resetLinkExpired": "Deze link is ongeldig of verlopen. Vraag een nieuwe aan.",
-    "callbackFailed": "We konden deze link niet valideren. Vraag een nieuwe aan."
+    "callbackFailed": "We konden deze link niet valideren. Vraag een nieuwe aan.",
+    "errors": {
+      "userExists": "Er bestaat al een account met dit e-mailadres. Log in of stel je wachtwoord opnieuw in.",
+      "weakPassword": "Dat wachtwoord is te zwak: gebruik minstens 8 tekens, met letters en cijfers.",
+      "rateLimit": "Te veel pogingen achter elkaar. Wacht een minuut en probeer het opnieuw.",
+      "invalidCredentials": "Verkeerd e-mailadres of wachtwoord.",
+      "emailNotConfirmed": "Je hebt je e-mailadres nog niet bevestigd. Zoek het bericht van BiVelio in je inbox (en spam).",
+      "samePassword": "Het nieuwe wachtwoord moet verschillen van het huidige.",
+      "emailInvalid": "Dat e-mailadres lijkt niet geldig. Controleer het.",
+      "signupDisabled": "Registreren is voorlopig gesloten. Mail naar support@bivelio.com.",
+      "network": "Geen verbinding. Controleer je netwerk en probeer het opnieuw.",
+      "missingFields": "Vul je e-mailadres en wachtwoord in."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +91,7 @@
       "traffic": "verkeer",
       "steps": {
         "accountCreated": "Account aangemaakt",
-        "sdkInstalled": "SDK geïnstalleerd",
+        "sdkInstalled": "Serviceaccount-sleutel aangemaakt",
         "licenseActive": "Licentie actief",
         "firstReport": "Eerste rapport",
         "liveMeter": "Live meter"
@@ -122,7 +134,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
       "whatEliminatedTokens": "invoertokens die de aanbieder nooit heeft verwerkt",
-      "elisionNota": "Een teller van de aanbieder, geen besparing van ons: vandaag wordt dit door de configuratie van je eigen client veroorzaakt. Het telt nooit mee voor je commissie.",
+      "elisionNota": "Als je de gateway gebruikt, is een deel van dit cijfer invoer die je aanbieder laat vallen door je eigen configuratie: dat deel is niet onze verdienste en telt nooit mee voor je commissie.",
       "whatCompressedTokens": "invoertokens die compacter zijn gehercodeerd",
       "whatProviderCachedTokens": "invoertokens gefactureerd tegen de kortingsprijs van de prefix-cache. Je client vraagt erom, wij niet: onze hefboom stelt alleen de duur in",
       "ghostAwaiting": "{ref} · wacht op eerste rapport",
@@ -256,7 +268,7 @@
       "summary": "{n} van {total} gateway-machines (of niet-gedeclareerd) die de laatste 7 dagen actief waren, hebben geen gemeten besparing opgeleverd.",
       "outdated": "{n, plural, one {# machine draait} other {# machines draaien}} een gateway ouder dan {minima}, de eerste versie met de tariefhefboom: werk die bij.",
       "undeclared": "{n, plural, one {# machine meldt} other {# machines melden}} geen versie (gateway ouder dan het versiekanaal). Is die ouder dan {minima}, dan heeft die geen tariefhefboom.",
-      "noLever": "{n, plural, one {# machine is up-to-date} other {# machines zijn up-to-date}}, maar de hefboom heeft daar niet gewerkt: controleer de feature cache_ttl_tuning van je licentie, BVSALA_GATEWAY_ELISION op die machine en of het verkeer 1h-cache schrijft.",
+      "noLever": "{n, plural, one {# machine is bijgewerkt} other {# machines zijn bijgewerkt}}, maar de hefboom heeft daar niet gewerkt. Blijft het zo na het bijwerken, mail dan naar support@bivelio.com.",
       "action": "Werk @bivelio/savings-layer op die machine bij en herstart de terminal; de machinetabel hieronder toont wat elke machine meldt."
     },
     "maquinas": {
@@ -306,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# seat} other {# seats}} deze maand in gebruik.",
       "seatsOver": "⚠ {used, plural, one {# seat} other {# seats}} in gebruik, {paid, plural, one {# betaald} other {# betaald}}. Verhoog het aantal via “Abonnement beheren” zodat je factuur klopt met wat je draait.",
       "seatsRotated": "{used, plural, one {# seat} other {# seats}} deze maand geteld. Je hebt een service-account-sleutel ingetrokken, en bij het roteren krijgen je machines een nieuwe seat-identiteit — daardoor telt deze maand ze dubbel. Volgende maand klopt het weer; je hoeft je abonnement niet te wijzigen.",
-      "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling."
+      "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling.",
+      "errYaSuscrito": "Dit account heeft al een actief abonnement. Gebruik ‘Abonnement beheren’ om zetels of facturering te wijzigen.",
+      "errPagoEnCurso": "Je betaling wordt nog verwerkt: een bankincasso kan een paar dagen duren. Je krijgt toegang zodra hij is verwerkt. Start geen tweede abonnement.",
+      "errSuscripcionEnStripe": "Stripe heeft al een abonnement voor dit account, maar het is hier nog niet geactiveerd. Koop niet opnieuw: mail naar support@bivelio.com en we activeren het handmatig."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
@@ -354,7 +369,8 @@
       "successPending": "<b>Betaling ontvangen.</b> We activeren je licentie — dit duurt meestal een paar seconden en deze pagina ververst zichzelf.",
       "successActive": "<b>Je abonnement is actief.</b> De volgende stap is je licentiesleutel ophalen.",
       "goToInstall": "Haal je licentiesleutel op →",
-      "cancelled": "<b>Er is geen betaling voltooid</b> — er is niets bij je in rekening gebracht. Je kunt het opnieuw proberen wanneer je maar wilt."
+      "cancelled": "<b>Er is geen betaling voltooid</b> — er is niets bij je in rekening gebracht. Je kunt het opnieuw proberen wanneer je maar wilt.",
+      "successLate": "<b>Nog in behandeling.</b> Er zijn meer dan twee minuten verstreken en de licentie is er nog niet: dat is niet normaal. Koop niet opnieuw. Mail naar support@bivelio.com met het e-mailadres waarmee je betaalde en we activeren hem handmatig."
     },
     "billingState": {
       "pastDueTitle": "Betaling mislukt",
@@ -419,7 +435,7 @@
       "savedLabel": "Bespaarde tokens",
       "savedWhat": "ten opzichte van zonder de laag",
       "savedBreakdown": "{fraction} · invoer {input} · uitvoer {output}",
-      "unavailable": "nog niet beschikbaar: migratie 0015 is niet toegepast",
+      "unavailable": "tokentellers nog niet beschikbaar voor dit account; heb je al verkeer en zie je dit, mail dan naar support@bivelio.com",
       "footnote": "De <b>uitvoerbesparing is bijna altijd nul</b>, en dat is geen bug: bij een aanroep die daadwerkelijk liep verkleint de laag het antwoord niet, dus is de uitvoerbaseline de gemeten uitvoer. Tokenbesparing zit in de invoer en in vermeden aanroepen. Een NEGATIEF totaal is evenmin een fout: het betekent dat de laag meer kostte dan zonder, en we tonen het."
     },
     "sombraElision": {

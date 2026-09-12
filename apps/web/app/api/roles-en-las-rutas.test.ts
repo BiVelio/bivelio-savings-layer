@@ -89,6 +89,9 @@ const crearPortal = vi.fn(async () => ({ url: "https://billing.stripe.com/x" }))
 vi.mock("@/lib/stripe/client", () => ({
   getStripe: () => ({
     checkout: { sessions: { create: crearCheckout } },
+    // La guardia contra el webhook muerto pregunta a Stripe; aquí no sabe nada.
+    customers: { list: async () => ({ data: [] }) },
+    subscriptions: { list: async () => ({ data: [] }) },
     billingPortal: { sessions: { create: crearPortal }, configurations: { list: async () => ({ data: [] }) } },
   }),
 }));

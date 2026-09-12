@@ -46,7 +46,7 @@
     "signInCta": "Giriş yap →",
     "loadingEllipsis": "…",
     "notWired": "Giriş henüz yapılandırılmadı — dağıtımda NEXT_PUBLIC_SUPABASE_ANON_KEY değerini ayarlayın.",
-    "checkEmail": "Hesabınızı onaylamak için e-postanızı kontrol edin, ardından giriş yapın.",
+    "checkEmail": "Hesabınızı doğrulamak için e-postanızı kontrol edin, sonra giriş yapın. Bu e-postayla zaten hesabınız varsa hiçbir şey gelmez: giriş yapın veya şifrenizi sıfırlayın.",
     "successTitle": "Hesap doğrulandı",
     "successBody": "E-postan doğrulandı ve Savings hesabın hazır. Hoş geldin — sayaç seni bekliyor.",
     "successCta": "Panele git",
@@ -64,7 +64,19 @@
     "passwordUpdated": "Şifre güncellendi. Giriş yapılıyor…",
     "passwordsDontMatch": "Şifreler eşleşmiyor.",
     "resetLinkExpired": "Bu bağlantı geçersiz veya süresi dolmuş. Yenisini iste.",
-    "callbackFailed": "Bu bağlantıyı doğrulayamadık. Yenisini iste."
+    "callbackFailed": "Bu bağlantıyı doğrulayamadık. Yenisini iste.",
+    "errors": {
+      "userExists": "Bu e-postayla zaten bir hesap var. Giriş yapın veya şifrenizi sıfırlayın.",
+      "weakPassword": "Bu şifre çok zayıf: en az 8 karakter kullanın, harf ve rakam karıştırın.",
+      "rateLimit": "Art arda çok fazla deneme. Bir dakika bekleyip tekrar deneyin.",
+      "invalidCredentials": "E-posta veya şifre hatalı.",
+      "emailNotConfirmed": "E-postanızı henüz doğrulamadınız. BiVelio'nun mesajını gelen kutunuzda (ve spamda) arayın.",
+      "samePassword": "Yeni şifre mevcut şifreden farklı olmalı.",
+      "emailInvalid": "Bu e-posta geçerli görünmüyor. Kontrol edin.",
+      "signupDisabled": "Kayıt şimdilik kapalı. support@bivelio.com adresine yazın.",
+      "network": "Bağlantı yok. Ağınızı kontrol edip tekrar deneyin.",
+      "missingFields": "E-postanızı ve şifrenizi girin."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +91,7 @@
       "traffic": "trafik",
       "steps": {
         "accountCreated": "Hesap oluşturuldu",
-        "sdkInstalled": "SDK kuruldu",
+        "sdkInstalled": "Servis hesabı anahtarı oluşturuldu",
         "licenseActive": "Lisans etkin",
         "firstReport": "İlk rapor",
         "liveMeter": "Canlı sayaç"
@@ -122,7 +134,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
       "whatEliminatedTokens": "sağlayıcının hiç işlemediği girdi belirteçleri",
-      "elisionNota": "Bu sağlayıcının sayacı, bizim tasarrufumuz değil: bugün bunu tetikleyen kendi istemcinizin yapılandırması. Komisyonunuza asla girmez.",
+      "elisionNota": "Ağ geçidini kullanıyorsanız bu rakamın bir kısmı, sağlayıcınızın kendi yapılandırmanız nedeniyle atladığı girdidir: o kısım bizim başarımız değildir ve asla komisyonunuza girmez.",
       "whatCompressedTokens": "daha küçük olarak yeniden kodlanan girdi token'ları",
       "whatProviderCachedTokens": "önek önbelleğinin indirimli fiyatıyla faturalanan girdi belirteçleri. Bunu istemciniz talep ediyor, biz değil: bizim kolumuz yalnızca süresini ayarlıyor",
       "ghostAwaiting": "{ref} · ilk rapor bekleniyor",
@@ -256,7 +268,7 @@
       "summary": "Son 7 günde etkin olan {total} gateway makinesinden (veya bildirilmemiş) {n} tanesi ölçülmüş tasarruf üretmedi.",
       "outdated": "{n, plural, other {# makine}}, tarife kolunu taşıyan ilk sürüm olan {minima} sürümünden eski bir gateway çalıştırıyor: güncelleyin.",
       "undeclared": "{n, plural, other {# makine}} sürüm bildirmiyor (sürüm kanalından eski gateway). {minima} sürümünden eskiyse tarife kolu yoktur.",
-      "noLever": "{n, plural, other {# makine}} güncel, ancak kol orada çalışmadı: lisansınızdaki cache_ttl_tuning özelliğini, o makinedeki BVSALA_GATEWAY_ELISION değerini ve trafiğinin 1 saatlik önbellek yazıp yazmadığını kontrol edin.",
+      "noLever": "{n, plural, one {# makine güncel} other {# makine güncel}}, ancak tarife kolu orada devreye girmedi. Güncellemeden sonra aynı kalırsa support@bivelio.com adresine yazın.",
       "action": "O makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
     },
     "maquinas": {
@@ -306,7 +318,10 @@
       "seatsInUse": "Bu ay {used, plural, other {# koltuk}} kullanımda.",
       "seatsOver": "⚠ {used, plural, other {# koltuk}} kullanımda, {paid, plural, other {# koltuk}} ödenmiş. Faturanızın çalıştırdığınızla örtüşmesi için «Planı yönet»ten sayıyı artırın.",
       "seatsRotated": "Bu ay {used, plural, other {# koltuk}} sayıldı. Bir servis hesabı anahtarını iptal ettiniz; anahtar değişince makineleriniz yeni bir koltuk kimliği alır, bu yüzden bu ay iki kez sayılıyorlar. Gelecek ay kendiliğinden düzelir; planınızı değiştirmenize gerek yok.",
-      "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır."
+      "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır.",
+      "errYaSuscrito": "Bu hesabın zaten etkin bir aboneliği var. Koltukları veya faturalandırmayı değiştirmek için «Planı yönet»i kullanın.",
+      "errPagoEnCurso": "Ödemeniz hâlâ işleniyor: banka borçlandırması birkaç gün sürebilir. Tamamlanır tamamlanmaz erişim alacaksınız. İkinci bir abonelik başlatmayın.",
+      "errSuscripcionEnStripe": "Stripe'ta bu hesap için zaten bir abonelik var, ancak burada henüz etkinleştirilmedi. Tekrar satın almayın: support@bivelio.com adresine yazın, elle etkinleştirelim."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",
@@ -354,7 +369,8 @@
       "successPending": "<b>Ödemeniz alındı.</b> Lisansınızı etkinleştiriyoruz — bu genellikle birkaç saniye sürer ve bu sayfa kendi kendine yenilenir.",
       "successActive": "<b>Aboneliğiniz etkin.</b> Sıradaki adım: lisans anahtarınızı almak.",
       "goToInstall": "Lisans anahtarınızı alın →",
-      "cancelled": "<b>Ödeme tamamlanmadı</b> — sizden hiçbir ücret alınmadı. İstediğiniz zaman yeniden başlayabilirsiniz."
+      "cancelled": "<b>Ödeme tamamlanmadı</b> — sizden hiçbir ücret alınmadı. İstediğiniz zaman yeniden başlayabilirsiniz.",
+      "successLate": "<b>Hâlâ beklemede.</b> İki dakikadan fazla geçti ve lisans hâlâ görünmüyor: bu normal değil. Tekrar satın almayın. Ödeme yaptığınız e-postayla support@bivelio.com adresine yazın, elle etkinleştirelim."
     },
     "billingState": {
       "pastDueTitle": "Ödeme başarısız oldu",
@@ -419,7 +435,7 @@
       "savedLabel": "Kazanılan token",
       "savedWhat": "katmanı kullanmamaya kıyasla",
       "savedBreakdown": "{fraction} · girdi {input} · çıktı {output}",
-      "unavailable": "henüz yok: 0015 taşıması uygulanmadı",
+      "unavailable": "bu hesap için token sayaçları henüz kullanılamıyor; zaten trafiğiniz varsa ve bunu görüyorsanız support@bivelio.com adresine yazın",
       "footnote": "<b>Çıktı tasarrufu neredeyse her zaman sıfırdır</b> ve bu bir hata değil: gerçekten çalışan bir çağrıda katman yanıtı küçültmez, dolayısıyla çıktı taban çizgisi ölçülen çıktıdır. Token tasarrufu girdide ve önlenen çağrılarda yaşar. NEGATİF bir toplam da hata değildir: katmanın, o olmadan olacağından daha pahalıya mal olduğu anlamına gelir ve bunu gösteririz."
     },
     "sombraElision": {

@@ -46,7 +46,7 @@
     "signInCta": "Zaloguj się →",
     "loadingEllipsis": "…",
     "notWired": "Logowanie nie jest jeszcze skonfigurowane — ustaw NEXT_PUBLIC_SUPABASE_ANON_KEY we wdrożeniu.",
-    "checkEmail": "Sprawdź skrzynkę e-mail, aby potwierdzić konto, a następnie zaloguj się.",
+    "checkEmail": "Sprawdź pocztę, aby potwierdzić konto, a potem się zaloguj. Jeśli miałeś już konto z tym adresem, nic nie przyjdzie: zaloguj się lub zresetuj hasło.",
     "successTitle": "Konto zweryfikowane",
     "successBody": "Twój e-mail jest potwierdzony, a konto Savings gotowe. Witaj — miernik czeka.",
     "successCta": "Przejdź do panelu",
@@ -64,7 +64,19 @@
     "passwordUpdated": "Hasło zaktualizowane. Logowanie…",
     "passwordsDontMatch": "Hasła nie są zgodne.",
     "resetLinkExpired": "Ten link jest nieprawidłowy lub wygasł. Poproś o nowy.",
-    "callbackFailed": "Nie udało się zweryfikować tego linku. Poproś o nowy."
+    "callbackFailed": "Nie udało się zweryfikować tego linku. Poproś o nowy.",
+    "errors": {
+      "userExists": "Konto z tym adresem e-mail już istnieje. Zaloguj się lub zresetuj hasło.",
+      "weakPassword": "To hasło jest za słabe: użyj co najmniej 8 znaków, z literami i cyframi.",
+      "rateLimit": "Zbyt wiele prób z rzędu. Odczekaj minutę i spróbuj ponownie.",
+      "invalidCredentials": "Błędny e-mail lub hasło.",
+      "emailNotConfirmed": "Nie potwierdzono jeszcze adresu e-mail. Poszukaj wiadomości od BiVelio w skrzynce (i w spamie).",
+      "samePassword": "Nowe hasło musi różnić się od obecnego.",
+      "emailInvalid": "Ten e-mail nie wygląda na prawidłowy. Sprawdź go.",
+      "signupDisabled": "Rejestracja jest na razie zamknięta. Napisz na support@bivelio.com.",
+      "network": "Brak połączenia. Sprawdź sieć i spróbuj ponownie.",
+      "missingFields": "Wpisz e-mail i hasło."
+    }
   },
   "dashboard": {
     "overview": {
@@ -79,7 +91,7 @@
       "traffic": "ruch",
       "steps": {
         "accountCreated": "Konto utworzone",
-        "sdkInstalled": "SDK zainstalowany",
+        "sdkInstalled": "Klucz konta serwisowego utworzony",
         "licenseActive": "Licencja aktywna",
         "firstReport": "Pierwszy raport",
         "liveMeter": "Licznik na żywo"
@@ -122,7 +134,7 @@
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",
       "whatEliminatedTokens": "tokeny wejściowe, których dostawca nigdy nie przetworzył",
-      "elisionNota": "To licznik dostawcy, nie nasza oszczędność: dziś uruchamia go konfiguracja Twojego własnego klienta. Nigdy nie wchodzi do Twojej prowizji.",
+      "elisionNota": "Jeśli używasz bramy, część tej liczby to dane wejściowe, które Twój dostawca pomija z powodu Twojej własnej konfiguracji: ta część nie jest naszą zasługą i nigdy nie wchodzi do Twojej prowizji.",
       "whatCompressedTokens": "tokeny wejściowe przekodowane na mniejsze",
       "whatProviderCachedTokens": "tokeny wejściowe rozliczone po obniżonej cenie pamięci podręcznej prefiksu. Prosi o to Twój klient, nie my: nasza dźwignia reguluje tylko czas jej życia",
       "ghostAwaiting": "{ref} · oczekiwanie na pierwszy raport",
@@ -256,7 +268,7 @@
       "summary": "{n} z {total} maszyn z gatewayem (lub niezadeklarowanych) aktywnych w ostatnich 7 dniach nie wygenerowało zmierzonych oszczędności.",
       "outdated": "{n, plural, one {# maszyna działa} few {# maszyny działają} many {# maszyn działa} other {# maszyny działa}} na gatewayu starszym niż {minima}, pierwszej wersji z dźwignią taryfową: zaktualizuj go.",
       "undeclared": "{n, plural, one {# maszyna nie deklaruje} few {# maszyny nie deklarują} many {# maszyn nie deklaruje} other {# maszyny nie deklaruje}} wersji (gateway starszy niż kanał wersji). Jeśli jest starszy niż {minima}, nie ma dźwigni taryfowej.",
-      "noLever": "{n, plural, one {# maszyna jest aktualna} few {# maszyny są aktualne} many {# maszyn jest aktualnych} other {# maszyny jest aktualnej}}, ale dźwignia tam nie zadziałała: sprawdź funkcję cache_ttl_tuning w licencji, BVSALA_GATEWAY_ELISION na tej maszynie i czy jej ruch zapisuje cache 1h.",
+      "noLever": "{n, plural, one {# maszyna jest aktualna} few {# maszyny są aktualne} many {# maszyn jest aktualnych} other {# maszyny są aktualne}}, ale dźwignia tam nie zadziałała. Jeśli po aktualizacji nic się nie zmieni, napisz na support@bivelio.com.",
       "action": "Zaktualizuj @bivelio/savings-layer na tej maszynie i uruchom terminal ponownie; tabela maszyn poniżej pokazuje, co deklaruje każda z nich."
     },
     "maquinas": {
@@ -306,7 +318,10 @@
       "seatsInUse": "{used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}} w użyciu w tym miesiącu.",
       "seatsOver": "⚠ W użyciu {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}, opłacone {paid, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Zwiększ liczbę w „Zarządzaj planem”, aby faktura odpowiadała temu, co uruchamiasz.",
       "seatsRotated": "W tym miesiącu policzono {used, plural, one {# stanowisko} few {# stanowiska} many {# stanowisk} other {# stanowiska}}. Unieważniłeś klucz konta serwisowego, a po jego wymianie maszyny dostają nową tożsamość stanowiska — dlatego w tym miesiącu liczone są podwójnie. W następnym miesiącu wróci do normy; nie musisz zmieniać planu.",
-      "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie."
+      "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie.",
+      "errYaSuscrito": "To konto ma już aktywną subskrypcję. Użyj „Zarządzaj planem”, aby zmienić liczbę miejsc lub rozliczenia.",
+      "errPagoEnCurso": "Twoja płatność jest wciąż przetwarzana: polecenie zapłaty może potrzebować kilku dni. Dostęp otrzymasz, gdy tylko zostanie rozliczona. Nie rozpoczynaj drugiej subskrypcji.",
+      "errSuscripcionEnStripe": "Stripe ma już subskrypcję dla tego konta, ale nie jest tu jeszcze aktywowana. Nie kupuj ponownie: napisz na support@bivelio.com, a aktywujemy ją ręcznie."
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",
@@ -354,7 +369,8 @@
       "successPending": "<b>Płatność otrzymana.</b> Aktywujemy Twoją licencję — zwykle zajmuje to kilka sekund, a ta strona odświeży się sama.",
       "successActive": "<b>Twoja subskrypcja jest aktywna.</b> Następny krok to odebranie klucza licencyjnego.",
       "goToInstall": "Uzyskaj klucz licencyjny →",
-      "cancelled": "<b>Płatność nie została dokończona</b> — nie pobraliśmy żadnej opłaty. Możesz zacząć od nowa, kiedy tylko zechcesz."
+      "cancelled": "<b>Płatność nie została dokończona</b> — nie pobraliśmy żadnej opłaty. Możesz zacząć od nowa, kiedy tylko zechcesz.",
+      "successLate": "<b>Wciąż w toku.</b> Minęły ponad dwie minuty, a licencja jeszcze się nie pojawiła: to nie jest normalne. Nie kupuj ponownie. Napisz na support@bivelio.com z adresu, którym płaciłeś, a aktywujemy ją ręcznie."
     },
     "billingState": {
       "pastDueTitle": "Płatność nie powiodła się",
@@ -419,7 +435,7 @@
       "savedLabel": "Zaoszczędzone tokeny",
       "savedWhat": "w porównaniu z brakiem warstwy",
       "savedBreakdown": "{fraction} · wejście {input} · wyjście {output}",
-      "unavailable": "jeszcze niedostępne: nie zastosowano migracji 0015",
+      "unavailable": "liczniki tokenów jeszcze niedostępne dla tego konta; jeśli masz już ruch i to widzisz, napisz na support@bivelio.com",
       "footnote": "<b>Oszczędność na wyjściu jest prawie zawsze zerowa</b> i nie jest to błąd: przy wywołaniu, które faktycznie się wykonało, warstwa nie skraca odpowiedzi, więc jej baseline wyjścia to zmierzone wyjście. Oszczędność tokenów leży w wejściu i w uniknietych wywołaniach. Wynik UJEMNY też nie jest błędem: oznacza, że warstwa kosztowała więcej niż bez niej — i to pokazujemy."
     },
     "sombraElision": {
