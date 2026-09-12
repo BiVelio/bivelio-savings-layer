@@ -321,7 +321,9 @@
       "taxNote": "VAT not included. If your company has an EU VAT number, the reverse charge applies.",
       "errYaSuscrito": "This account already has an active subscription. Use “Manage plan” to change seats or billing.",
       "errPagoEnCurso": "Your payment is still being processed: a bank debit can take a few days to clear. You'll get access as soon as it settles. Don't start a second subscription.",
-      "errSuscripcionEnStripe": "Stripe already has a subscription for this account, but it isn't activated here yet. Don't buy again: write to support@bivelio.com and we'll activate it by hand."
+      "errSuscripcionEnStripe": "Stripe already has a subscription for this account, but it isn't activated here yet. Don't buy again: write to support@bivelio.com and we'll activate it by hand.",
+      "codigoAplicado": "The code {codigo} will be applied at checkout.",
+      "errCodigoInvalido": "That code does not exist or is no longer active. You can continue without it or write to support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "proven",

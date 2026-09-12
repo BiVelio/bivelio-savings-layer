@@ -321,7 +321,9 @@
       "taxNote": "IVA esclusa. Se la Sua azienda ha una partita IVA intracomunitaria, si applica l'inversione contabile.",
       "errYaSuscrito": "Questo account ha già un abbonamento attivo. Usa «Gestisci piano» per cambiare posti o fatturazione.",
       "errPagoEnCurso": "Il tuo pagamento è ancora in elaborazione: un addebito bancario può richiedere qualche giorno. Avrai accesso appena verrà regolato. Non avviare un secondo abbonamento.",
-      "errSuscripcionEnStripe": "Stripe ha già un abbonamento per questo account, ma qui non è ancora attivato. Non ricomprare: scrivi a support@bivelio.com e lo attiviamo a mano."
+      "errSuscripcionEnStripe": "Stripe ha già un abbonamento per questo account, ma qui non è ancora attivato. Non ricomprare: scrivi a support@bivelio.com e lo attiviamo a mano.",
+      "codigoAplicado": "Al pagamento verrà applicato il codice {codigo}.",
+      "errCodigoInvalido": "Quel codice non esiste o non è più attivo. Puoi continuare senza oppure scrivere a support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "comprovato",

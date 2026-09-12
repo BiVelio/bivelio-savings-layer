@@ -22,11 +22,14 @@ export async function AccountPlanStrip({
   // compra. Reofrecérselos en ese momento es la vía directa al doble cobro, y la
   // guardia del servidor no lo frena mientras la suscripción está `incomplete`.
   ocultarCompra = false,
+  codigo = null,
 }: {
   email: string;
   ctx: OrgContext;
   asientos?: { usados: number | null; rotacionEsteMes: boolean };
   ocultarCompra?: boolean;
+  /** Código de promoción que se pre-aplica al pagar (enlace de los probadores). */
+  codigo?: string | null;
 }) {
   const t = await getTranslations("dashboard");
   // El precio se formatea en SERVIDOR y baja como cadena a los botones, que son de
@@ -101,7 +104,7 @@ export async function AccountPlanStrip({
           </p>
         ) : null}
         {ocultarCompra ? null : (
-          <BillingButtons isActive={isActive} monthly={precioMensual} yearly={precioAnual} />
+          <BillingButtons codigo={codigo} isActive={isActive} monthly={precioMensual} yearly={precioAnual} />
         )}
       </div>
     </div>

@@ -321,7 +321,9 @@
       "taxNote": "Zzgl. MwSt. Bei Unternehmen mit EU-USt-IdNr. gilt das Reverse-Charge-Verfahren.",
       "errYaSuscrito": "Dieses Konto hat schon ein aktives Abonnement. Nutze „Plan verwalten“, um Plätze oder Abrechnung zu ändern.",
       "errPagoEnCurso": "Deine Zahlung wird noch verarbeitet: eine Lastschrift kann ein paar Tage brauchen. Du bekommst Zugang, sobald sie durch ist. Starte kein zweites Abonnement.",
-      "errSuscripcionEnStripe": "Stripe hat schon ein Abonnement für dieses Konto, aber es ist hier noch nicht aktiv. Kauf nicht noch mal: schreib an support@bivelio.com und wir schalten es von Hand frei."
+      "errSuscripcionEnStripe": "Stripe hat schon ein Abonnement für dieses Konto, aber es ist hier noch nicht aktiv. Kauf nicht noch mal: schreib an support@bivelio.com und wir schalten es von Hand frei.",
+      "codigoAplicado": "Beim Bezahlen wird der Code {codigo} angewendet.",
+      "errCodigoInvalido": "Dieser Code existiert nicht oder ist nicht mehr aktiv. Du kannst ohne ihn weitermachen oder an support@bivelio.com schreiben."
     },
     "referenceLedgerCards": {
       "proven": "bewiesen",

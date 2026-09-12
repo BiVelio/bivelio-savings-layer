@@ -321,7 +321,9 @@
       "taxNote": "IVA no inclòs. Si la vostra empresa té NIF-IVA intracomunitari, s'aplica la inversió del subjecte passiu.",
       "errYaSuscrito": "Aquest compte ja té una subscripció activa. Fes servir «Gestionar el pla» per canviar seients o facturació.",
       "errPagoEnCurso": "El teu pagament encara s'està processant: un càrrec bancari pot trigar uns dies a liquidar-se. Tindràs accés tan bon punt es liquidi. No iniciïs una segona subscripció.",
-      "errSuscripcionEnStripe": "Stripe ja té una subscripció per a aquest compte, però encara no està activada aquí. No tornis a comprar: escriu-nos a support@bivelio.com i l'activem a mà."
+      "errSuscripcionEnStripe": "Stripe ja té una subscripció per a aquest compte, però encara no està activada aquí. No tornis a comprar: escriu-nos a support@bivelio.com i l'activem a mà.",
+      "codigoAplicado": "En pagar s'aplicarà el codi {codigo}.",
+      "errCodigoInvalido": "Aquest codi no existeix o ja no està actiu. Pots continuar sense ell o escriure'ns a support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "comprovat",

@@ -321,7 +321,9 @@
       "taxNote": "Belum termasuk PPN. Jika perusahaan Anda memiliki nomor PPN Uni Eropa, berlaku mekanisme reverse charge.",
       "errYaSuscrito": "Akun ini sudah memiliki langganan aktif. Gunakan «Kelola paket» untuk mengubah kursi atau penagihan.",
       "errPagoEnCurso": "Pembayaran Anda masih diproses: debit bank bisa memakan beberapa hari. Anda akan mendapat akses begitu selesai. Jangan memulai langganan kedua.",
-      "errSuscripcionEnStripe": "Stripe sudah memiliki langganan untuk akun ini, tetapi belum diaktifkan di sini. Jangan membeli lagi: tulis ke support@bivelio.com dan kami aktifkan secara manual."
+      "errSuscripcionEnStripe": "Stripe sudah memiliki langganan untuk akun ini, tetapi belum diaktifkan di sini. Jangan membeli lagi: tulis ke support@bivelio.com dan kami aktifkan secara manual.",
+      "codigoAplicado": "Kode {codigo} akan diterapkan saat membayar.",
+      "errCodigoInvalido": "Kode itu tidak ada atau sudah tidak aktif. Anda bisa melanjutkan tanpanya atau menulis ke support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "terbukti",

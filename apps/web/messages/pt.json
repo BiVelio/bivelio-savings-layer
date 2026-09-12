@@ -321,7 +321,9 @@
       "taxNote": "IVA não incluído. Se a sua empresa tiver número de IVA intracomunitário, aplica-se a autoliquidação.",
       "errYaSuscrito": "Esta conta já tem uma subscrição ativa. Usa «Gerir plano» para alterar lugares ou faturação.",
       "errPagoEnCurso": "O teu pagamento ainda está a ser processado: um débito bancário pode demorar alguns dias a liquidar. Terás acesso assim que liquidar. Não inicies uma segunda subscrição.",
-      "errSuscripcionEnStripe": "O Stripe já tem uma subscrição para esta conta, mas ainda não está ativada aqui. Não voltes a comprar: escreve para support@bivelio.com e ativamo-la à mão."
+      "errSuscripcionEnStripe": "O Stripe já tem uma subscrição para esta conta, mas ainda não está ativada aqui. Não voltes a comprar: escreve para support@bivelio.com e ativamo-la à mão.",
+      "codigoAplicado": "Ao pagar será aplicado o código {codigo}.",
+      "errCodigoInvalido": "Esse código não existe ou já não está ativo. Podes continuar sem ele ou escrever para support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "comprovado",

@@ -11,6 +11,7 @@ import { MAX_ASIENTOS, normalizarAsientos } from "@/lib/billing/asientos";
  * pantalla exacta que ve quien intenta pagar dos veces, en doce idiomas.
  */
 const ERRORES_DEL_CHECKOUT: Record<string, string> = {
+  codigo_invalido: "accountPlanStrip.errCodigoInvalido",
   ya_suscrito: "accountPlanStrip.errYaSuscrito",
   pago_en_curso: "accountPlanStrip.errPagoEnCurso",
   suscripcion_en_stripe: "accountPlanStrip.errSuscripcionEnStripe",
@@ -29,10 +30,13 @@ export function BillingButtons({
   // diferencia de texto es la que rompe la hidratación (error #418).
   monthly,
   yearly,
+  codigo = null,
 }: {
   isActive: boolean;
   monthly: string;
   yearly: string;
+  /** Código de promoción pre-aplicado al pagar (enlace de los probadores). */
+  codigo?: string | null;
 }) {
   const t = useTranslations("dashboard");
   const locale = useLocale();
@@ -59,7 +63,7 @@ export function BillingButtons({
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...body, locale }),
+        body: JSON.stringify({ ...body, locale, ...(codigo ? { codigo } : {}) }),
       });
       const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string; code?: string };
       if (!res.ok || !json.url) {
@@ -110,6 +114,11 @@ export function BillingButtons({
           <p id="bv-seats-hint" className="ck-note" style={{ margin: "4px 0 8px", width: "100%" }}>
             {t("accountPlanStrip.seatsHint")}
           </p>
+          {codigo ? (
+            <p className="ck-note" style={{ margin: "0 0 8px", width: "100%" }}>
+              {t("accountPlanStrip.codigoAplicado", { codigo })}
+            </p>
+          ) : null}
           <button
             type="button"
             className="btn btn-primary"

@@ -321,7 +321,9 @@
       "taxNote": "KDV hariçtir. Şirketinizin AB KDV numarası varsa tersine ödeme (reverse charge) uygulanır.",
       "errYaSuscrito": "Bu hesabın zaten etkin bir aboneliği var. Koltukları veya faturalandırmayı değiştirmek için «Planı yönet»i kullanın.",
       "errPagoEnCurso": "Ödemeniz hâlâ işleniyor: banka borçlandırması birkaç gün sürebilir. Tamamlanır tamamlanmaz erişim alacaksınız. İkinci bir abonelik başlatmayın.",
-      "errSuscripcionEnStripe": "Stripe'ta bu hesap için zaten bir abonelik var, ancak burada henüz etkinleştirilmedi. Tekrar satın almayın: support@bivelio.com adresine yazın, elle etkinleştirelim."
+      "errSuscripcionEnStripe": "Stripe'ta bu hesap için zaten bir abonelik var, ancak burada henüz etkinleştirilmedi. Tekrar satın almayın: support@bivelio.com adresine yazın, elle etkinleştirelim.",
+      "codigoAplicado": "Ödemede {codigo} kodu uygulanacak.",
+      "errCodigoInvalido": "Bu kod mevcut değil veya artık etkin değil. Kodsuz devam edebilir veya support@bivelio.com adresine yazabilirsiniz."
     },
     "referenceLedgerCards": {
       "proven": "kanıtlandı",

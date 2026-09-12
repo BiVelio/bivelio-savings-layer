@@ -321,7 +321,9 @@
       "taxNote": "Bez VAT. Jeśli Państwa firma ma unijny numer VAT, stosuje się odwrotne obciążenie.",
       "errYaSuscrito": "To konto ma już aktywną subskrypcję. Użyj „Zarządzaj planem”, aby zmienić liczbę miejsc lub rozliczenia.",
       "errPagoEnCurso": "Twoja płatność jest wciąż przetwarzana: polecenie zapłaty może potrzebować kilku dni. Dostęp otrzymasz, gdy tylko zostanie rozliczona. Nie rozpoczynaj drugiej subskrypcji.",
-      "errSuscripcionEnStripe": "Stripe ma już subskrypcję dla tego konta, ale nie jest tu jeszcze aktywowana. Nie kupuj ponownie: napisz na support@bivelio.com, a aktywujemy ją ręcznie."
+      "errSuscripcionEnStripe": "Stripe ma już subskrypcję dla tego konta, ale nie jest tu jeszcze aktywowana. Nie kupuj ponownie: napisz na support@bivelio.com, a aktywujemy ją ręcznie.",
+      "codigoAplicado": "Przy płatności zostanie zastosowany kod {codigo}.",
+      "errCodigoInvalido": "Ten kod nie istnieje lub nie jest już aktywny. Możesz kontynuować bez niego lub napisać na support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "udowodnione",

@@ -321,7 +321,9 @@
       "taxNote": "Exclusief btw. Heeft uw bedrijf een EU-btw-nummer, dan geldt de verleggingsregeling.",
       "errYaSuscrito": "Dit account heeft al een actief abonnement. Gebruik ‘Abonnement beheren’ om zetels of facturering te wijzigen.",
       "errPagoEnCurso": "Je betaling wordt nog verwerkt: een bankincasso kan een paar dagen duren. Je krijgt toegang zodra hij is verwerkt. Start geen tweede abonnement.",
-      "errSuscripcionEnStripe": "Stripe heeft al een abonnement voor dit account, maar het is hier nog niet geactiveerd. Koop niet opnieuw: mail naar support@bivelio.com en we activeren het handmatig."
+      "errSuscripcionEnStripe": "Stripe heeft al een abonnement voor dit account, maar het is hier nog niet geactiveerd. Koop niet opnieuw: mail naar support@bivelio.com en we activeren het handmatig.",
+      "codigoAplicado": "Bij het afrekenen wordt de code {codigo} toegepast.",
+      "errCodigoInvalido": "Die code bestaat niet of is niet meer actief. Je kunt doorgaan zonder code of mailen naar support@bivelio.com."
     },
     "referenceLedgerCards": {
       "proven": "bewezen",
