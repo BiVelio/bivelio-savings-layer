@@ -52,6 +52,8 @@ export interface OpcionesExtracto {
   filas: FilaDiaria[];
   /** true → mes de calibración: comisión hipotética, cargo 0 €. */
   esCalibracion: boolean;
+  /** Organización exenta de comisión (probadores, cortesía): cargo 0, comisión calculada igual. */
+  esExento?: boolean;
   /** Versión del catálogo de precios con que se valoró el uso (PRECIOS_AL_DIA o la del cliente). */
   versionPrecios: string;
   /** Conversión USD→EUR del cierre: cuánto EUR es 1 USD, y su fuente. */
@@ -62,6 +64,7 @@ export interface Extracto {
   orgId: string;
   periodo: string;
   esCalibracion: boolean;
+  esExento: boolean;
   dias: number;
   requestsMedidas: number;
   /** Base y ahorro medidos en USD (la moneda de los precios de proveedor). */
@@ -170,6 +173,7 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     orgId: opts.orgId,
     periodo: opts.periodo,
     esCalibracion: opts.esCalibracion,
+    esExento: opts.esExento === true,
     dias: enPeriodo.length,
     requestsMedidas,
     baseMedidaUsd: redondearCentimos(baseUsd),
@@ -177,7 +181,9 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     baseMedidaEur: baseEur,
     ahorroMedidoEur: ahorroEur,
     comision,
-    cargoEur: opts.esCalibracion ? 0 : comision.comisionEur,
+    // Calibración y exención cobran CERO; la comisión se calcula igual para que
+    // el extracto diga lo que habría sido.
+    cargoEur: opts.esCalibracion || opts.esExento === true ? 0 : comision.comisionEur,
     ahorroEstimadoExcluidoUsd: redondearCentimos(ahorroEstimadoExcluidoUsd),
     sombra:
       sombraRequests > 0 && sombraBaseUsd > 0

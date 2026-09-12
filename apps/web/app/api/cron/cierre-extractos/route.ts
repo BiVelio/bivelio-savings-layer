@@ -120,6 +120,27 @@ export async function GET(req: Request): Promise<NextResponse> {
   }
 
   // La calibración REAL: el primer día con uso de toda la historia de cada org.
+  // LAS EXENTAS DE COMISIÓN (probadores, cortesías): cargo 0 en su extracto.
+  // Falla CERRADA: si no se puede leer la marca, el cierre se aplaza y se
+  // relanza, porque cerrar sin ella facturaría a quien no debe pagar.
+  const exentas = new Set<string>();
+  {
+    const { data: orgs, error: errOrgs } = await supabase
+      .schema("bvsala")
+      .from("organizations")
+      .select("id, comision_exenta")
+      .in("id", [...porOrg.keys()]);
+    if (errOrgs) {
+      console.error("[cierre-extractos] la exención de comisión no se pudo leer:", errOrgs);
+      await alertar({
+        nivel: "critico",
+        asunto: "Cierre de extractos aplazado: no se pudo leer la exención de comisión",
+        detalle: { periodo, motivo: errOrgs.message ?? String(errOrgs) },
+      });
+      return NextResponse.json({ error: "orgs read failed", periodo }, { status: 500 });
+    }
+    for (const o of orgs ?? []) if ((o as { comision_exenta?: boolean }).comision_exenta) exentas.add(String((o as { id: string }).id));
+  }
   const usoPorOrg: UsoDeOrg[] = [];
   for (const [orgId, filasOrg] of porOrg) {
     const { data: primera, error: errPrimera } = await supabase
@@ -138,6 +159,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       orgId,
       filas: filasOrg,
       primerPeriodoConUso: String(primera?.day ?? `${periodo}-01`).slice(0, 7),
+      comisionExenta: exentas.has(orgId),
     });
   }
 

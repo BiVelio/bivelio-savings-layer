@@ -514,7 +514,8 @@
       "estadoCalibracion": "kalibrasi",
       "estadoSinCargo": "tanpa biaya",
       "estadoPendiente": "tertunda",
-      "verFactura": "lihat"
+      "verFactura": "lihat",
+      "estadoExento": "bebas komisi"
     },
     "usageExplorer": {
       "title": "Penjelajah penggunaan",

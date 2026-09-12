@@ -514,7 +514,8 @@
       "estadoCalibracion": "kalibracja",
       "estadoSinCargo": "bez opłaty",
       "estadoPendiente": "oczekująca",
-      "verFactura": "zobacz"
+      "verFactura": "zobacz",
+      "estadoExento": "zwolniony z prowizji"
     },
     "usageExplorer": {
       "title": "Eksplorator użycia",

@@ -46,6 +46,8 @@ const hashDe = (clave: string) => createHash("sha256").update(clave).digest("hex
 const peticionSesion = () => new Request("https://savings.bivelio.com/api/license/current");
 /** Registra cada upsert para poder afirmar que la pertenencia SÍ se escribe. */
 const upserts: { tabla: string; fila: unknown }[] = [];
+/** Y cada update (la exención de comisión se escribe con uno). */
+const updates: { tabla: string; fila: unknown }[] = [];
 
 /** Constructor de consultas encadenable: cada método devuelve `this` y el
  *  terminal resuelve según la tabla que se pidió. */
@@ -84,7 +86,10 @@ function tabla(nombre: string) {
     upserts.push({ tabla: nombre, fila });
     return { ...q, error: null };
   };
-  q.update = self;
+  q.update = (fila: unknown) => {
+    updates.push({ tabla: nombre, fila });
+    return q;
+  };
   q.maybeSingle = async () => {
     if (nombre === "licenses") {
       if (esc.errorLicencia) return { data: null, error: esc.errorLicencia };
@@ -441,6 +446,49 @@ describe("POST /api/stripe/checkout — B2: guardia anti-doble-cobro", () => {
 });
 
 // --- B2 (otra mitad): el que paga consta como miembro de su organización -------
+
+describe("POST /api/stripe/webhook — una compra a 0 € con cupón deja la org EXENTA de comisión (0028)", () => {
+  const orgId = "22222222-2222-4222-8222-222222222222";
+  const compradorId = "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa";
+  const checkout = (extra: Record<string, unknown>) => ({
+    id: "evt_exenta",
+    type: "checkout.session.completed",
+    created: 1_800_000_000,
+    data: {
+      object: {
+        id: "cs_test_0",
+        mode: "subscription",
+        metadata: { org_id: orgId, email: "probador@example.com", user_id: compradorId },
+        client_reference_id: compradorId,
+        subscription: "sub_123",
+        ...extra,
+      },
+    },
+  });
+  const enviar = async (evento: unknown) => {
+    updates.length = 0;
+    construirEvento.mockReturnValueOnce(evento);
+    const { POST } = await import("./stripe/webhook/route.js");
+    return POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));
+  };
+  it("total 0 con descuento → organizations.update con comision_exenta", async () => {
+    const res = await enviar(checkout({ amount_total: 0, amount_subtotal: 400, total_details: { amount_discount: 400 } }));
+    expect(res.status).toBe(200);
+    const exenta = updates.find((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true);
+    expect(exenta).toBeDefined();
+    expect(String((exenta!.fila as { exencion_nota: string }).exencion_nota)).toContain("cs_test_0");
+  });
+  it("una compra normal (total > 0) NO marca nada", async () => {
+    const res = await enviar(checkout({ amount_total: 400, amount_subtotal: 400, total_details: { amount_discount: 0 } }));
+    expect(res.status).toBe(200);
+    expect(updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true)).toBe(false);
+  });
+  it("total 0 SIN descuento (precio 0 de verdad) tampoco marca: la exención es del cupón", async () => {
+    const res = await enviar(checkout({ amount_total: 0, amount_subtotal: 0, total_details: { amount_discount: 0 } }));
+    expect(res.status).toBe(200);
+    expect(updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === true)).toBe(false);
+  });
+});
 
 describe("POST /api/stripe/webhook — B2: la pertenencia se crea al pagar", () => {
   it("un checkout completado escribe la fila de org_members", async () => {

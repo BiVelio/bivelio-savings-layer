@@ -20,12 +20,15 @@ export interface UsoDeOrg {
   filas: FilaDiaria[];
   /** El período (YYYY-MM) del primer día con uso en TODA la historia de la org. */
   primerPeriodoConUso: string;
+  /** `organizations.comision_exenta`: probadores y cortesías. Cargo 0. */
+  comisionExenta?: boolean;
 }
 
 export interface FilaDeCierre {
   org_id: string;
   periodo: string;
   es_calibracion: boolean;
+  es_exento: boolean;
   dias: number;
   requests_medidas: number;
   base_medida_usd: number;
@@ -64,6 +67,7 @@ export function cerrarPeriodo(usoPorOrg: UsoDeOrg[], periodo: string, fx: Fx): F
       periodo,
       filas: org.filas,
       esCalibracion: org.primerPeriodoConUso >= periodo,
+      esExento: org.comisionExenta === true,
       versionPrecios: VERSION_PRECIOS_CATALOGO,
       fx,
     });
@@ -76,6 +80,7 @@ function aFilaDeCierre(e: Extracto): FilaDeCierre {
     org_id: e.orgId,
     periodo: e.periodo,
     es_calibracion: e.esCalibracion,
+    es_exento: e.esExento,
     dias: e.dias,
     requests_medidas: e.requestsMedidas,
     base_medida_usd: e.baseMedidaUsd,

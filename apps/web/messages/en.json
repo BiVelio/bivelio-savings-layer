@@ -514,7 +514,8 @@
       "estadoCalibracion": "calibration",
       "estadoSinCargo": "no charge",
       "estadoPendiente": "pending",
-      "verFactura": "view"
+      "verFactura": "view",
+      "estadoExento": "commission-exempt"
     },
     "usageExplorer": {
       "title": "Usage explorer",

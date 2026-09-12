@@ -329,6 +329,31 @@ async function handleCheckout(admin: Admin, stripe: Stripe, session: Stripe.Chec
     return;
   }
   await ensureOrg(admin, orgId, compradorId, email, f.customerId, "pro");
+  // COMPRA A 0 € CON CUPÓN → EXENTA DE COMISIÓN. Un probador con el cupón del
+  // 100 % no tiene tarjeta: la factura de comisión del día 1 fallaría y a los
+  // 14 días de gracia se le revocaría la licencia por probar. La marca la pone
+  // el propio cobro, sin que nadie tenga que acordarse; el dueño la puede
+  // quitar (o poner a mano para una cortesía). Ver migración 0028.
+  const descuento = session.total_details?.amount_discount ?? 0;
+  if (session.amount_total === 0 && descuento > 0) {
+    const { error: errExenta } = await admin
+      .from("organizations")
+      .update({
+        comision_exenta: true,
+        exencion_nota: `compra a 0 € con cupón · ${session.id} · ${new Date(eventCreated * 1000).toISOString().slice(0, 10)}`,
+      })
+      .eq("id", orgId);
+    if (errExenta) {
+      // No tumba el webhook (la licencia es lo primero), pero no se calla.
+      await alertar({
+        nivel: "critico",
+        asunto: "Compra a 0 € sin poder marcar la exención de comisión",
+        detalle: { orgId, sessionId: session.id, eventId, motivo: errExenta.message },
+      });
+    } else {
+      await audit(admin, orgId, eventId, "comision_exenta_por_cupon", { sessionId: session.id, descuento });
+    }
+  }
   const { id: subRowId, stale } = await upsertSub(admin, sub, orgId, eventCreated);
   // Fuera de orden (la fila ya refleja un evento más nuevo): no se emite OTRA
   // licencia — la que corresponde al estado actual ya la emitió el evento nuevo.
