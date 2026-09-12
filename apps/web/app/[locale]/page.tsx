@@ -202,44 +202,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <span className="pulse" /> {t("hero.note")}
             </div>
 
-            {/* Las tres marcas que la capa mide. Nombres propios: no se traducen,
-                y por eso esta franja no toca los 12 ficheros de mensajes. Una
-                marca aquí NO es una cifra: las cifras viven en hero-prueba y
-                solo entran con una medición defendible detrás. */}
-            <div className="hero-marcas" aria-label={t("hero.medidoEn")}>
-              <span className="hm-k">{t("hero.medidoEn")}</span>
-              <span className="hm">
-                <LogoProveedor marca="OpenAI" size={15} />
-                OpenAI
-                <code>{abData.model.split("/").pop()}</code>
-              </span>
-            </div>
-
-            {/* La prueba, en el heroe. Este producto no vende una promesa: vende
-                una medicion contra el contador del proveedor. Enseñarla arriba es
-                el argumento, no un adorno. */}
-            <div className="hero-prueba">
-              <span className="hero-prueba-t">{t("hero.proofTitle")}</span>
-              <div className="hero-prueba-filas">
-                {(t.raw("hero.proofs") as { marca: string; modelo: string; cifra: string; que: string }[]).map((p) => (
-                  <div className="hp" key={p.marca}>
-                    <div className="hp-marca">
-                      <LogoProveedor marca={p.marca} />
-                      <b>{p.marca}</b>
-                      <code>{p.modelo}</code>
-                    </div>
-                    <div className="hp-dato">
-                      <span className="hp-n">{p.cifra}</span>
-                      <span className="hp-q">{p.que}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* «Compatible con» ≠ «Medido en». La franja dice dónde CORRE el SDK
-                (cualquier endpoint OpenAI-compatible o el adaptador nativo);
-                la cifra vive solo en la fila de arriba, con su modelo. */}
+            {/* HÉROE LIMPIO (petición del dueño, 2026-09-12): aquí solo el
+                titular, la entradilla, los botones y el carrusel de marcas. La
+                cifra medida vive en el recibo de la derecha y, con su tarjeta
+                «Medido contra proveedor real», en la sección de lo medido.
+                «Compatible con» ≠ «Medido en»: la franja dice dónde CORRE el SDK
+                (cualquier endpoint OpenAI-compatible o el adaptador nativo); la
+                nota de debajo dice con qué modelo hay cifra publicada. */}
             <div className="hero-compat">
               <span className="hm-k">{t("hero.compatibleCon")}</span>
               <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
@@ -289,7 +258,6 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 alterna: t("cta15.alterna"),
               }}
             />
-            <p className="cascade-nota">{t("cascade.footnote")}</p>
           </div>
         </section>
 
@@ -368,6 +336,30 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 {t("step2.trialsLink")}
               </a>
             </p>
+          </div>
+
+          {/* La prueba, con su modelo. Estaba en el héroe; el dueño pidió un
+              héroe limpio y aquí es donde se explica lo medido. Sigue siendo la
+              ÚNICA cifra prometida de la web y sigue pasando por la verja
+              «prometido ≤ medido» (cifra-del-heroe.test.ts). */}
+          <div className="hero-prueba medido-prueba rv">
+            <span className="hero-prueba-t">{t("hero.proofTitle")}</span>
+            <div className="hero-prueba-filas">
+              {(t.raw("hero.proofs") as { marca: string; modelo: string; cifra: string; que: string }[]).map((p) => (
+                <div className="hp" key={p.marca}>
+                  <div className="hp-marca">
+                    <LogoProveedor marca={p.marca} />
+                    <b>{p.marca}</b>
+                    <code>{p.modelo}</code>
+                  </div>
+                  <div className="hp-dato">
+                    <span className="hp-n">{p.cifra}</span>
+                    <span className="hp-q">{p.que}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="cascade-nota">{t("cascade.footnote")}</p>
           </div>
           {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
               del experimento justo + las dos cifras del artefacto dichas en

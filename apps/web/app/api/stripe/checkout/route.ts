@@ -292,6 +292,14 @@ export async function POST(req: Request): Promise<NextResponse> {
       metadata: { org_id: orgId, user_id: user.id, email: user.email ?? "" },
       subscription_data: { metadata: { org_id: orgId, user_id: user.id } },
       allow_promotion_codes: true,
+      // SIN TARJETA CUANDO NO HACE FALTA. Con un código del 100 % (los
+      // probadores, 2026-09-12) el total es 0 y Stripe, por defecto, sigue
+      // pidiendo una tarjeta para una suscripción. `if_required` la pide solo
+      // si hay algo que cobrar ahora o más adelante: con un cupón de duración
+      // limitada Stripe la sigue pidiendo (porque luego cobrará), y con uno
+      // «para siempre» no. Un probador con cupón no tiene que buscar la tarjeta
+      // de empresa para probar algo gratis.
+      payment_method_collection: "if_required",
       success_url: `${origin}/${locale}/dashboard/account?checkout=success`,
       cancel_url: `${origin}/${locale}/dashboard/account?checkout=cancelled`,
     });
