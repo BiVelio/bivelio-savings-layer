@@ -109,6 +109,79 @@ function sum(xs: number[]): number {
   return s;
 }
 
+/** Paired per-scenario samples: `costA[i]` and `costB[i]` are the same rep. */
+export interface EstratoPareado {
+  costA: number[];
+  costB: number[];
+}
+
+/**
+ * STRATIFIED percentile bootstrap CI for the savings fraction, one stratum per
+ * scenario and EVERY scenario weighted the same:
+ *
+ *   f = 1 − Σ_s mean(costB_s) / Σ_s mean(costA_s)
+ *
+ * Why this exists. The pooled estimator (`bootstrapRatioCI` over every trial of
+ * every scenario together) weights a scenario by its rep count × its cost. The
+ * adaptive sampler pours extra reps into the NOISY scenarios, so the pooled
+ * headline moved with the rep split, not with the layer: 20.8 % with REPS=16,
+ * 16.5 % with REPS=8 when two low-saving scenarios reached 24 reps, 19.1 % the
+ * next run — while the equal-weight figure stayed at 21.3 / 19.4 / 20.5. A
+ * headline that depends on how long the sampler ran is not a measurement.
+ *
+ * Resampling is done WITHIN each stratum (n_s draws with replacement out of the
+ * stratum's own n_s pairs), so a stratum's weight never changes across
+ * resamples and the interval reflects per-scenario noise only — it is
+ * CONDITIONAL on this scenario set (no between-scenario mix variance), which
+ * is why it comes out much narrower than the pooled one. Seeded via
+ * mulberry32 for reproducibility. Strata with no samples are skipped; a stratum
+ * with one sample contributes a constant. With equal reps everywhere the point
+ * equals the pooled point exactly (Σ n·mean = n·Σ mean).
+ */
+export function bootstrapRatioCIEstratificado(
+  porEscenario: EstratoPareado[],
+  opts: { resamples?: number; alpha?: number; seed?: number } = {},
+): CI {
+  const fraction = (aSum: number, bSum: number): number => (aSum <= 0 ? 0 : 1 - bSum / aSum);
+  const estratos = porEscenario
+    .map((e) => {
+      const n = Math.min(e.costA.length, e.costB.length);
+      return { n, costA: e.costA.slice(0, n), costB: e.costB.slice(0, n) };
+    })
+    .filter((e) => e.n > 0);
+  if (estratos.length === 0) return { point: 0, lower: 0, upper: 0 };
+
+  let aPoint = 0, bPoint = 0;
+  for (const e of estratos) {
+    aPoint += sum(e.costA) / e.n;
+    bPoint += sum(e.costB) / e.n;
+  }
+  const point = fraction(aPoint, bPoint);
+  // No stratum can vary under resampling → the interval is degenerate.
+  if (!estratos.some((e) => e.n >= 2)) return { point, lower: point, upper: point };
+
+  const resamples = opts.resamples ?? 10000;
+  const alpha = opts.alpha ?? 0.05;
+  const rng = mulberry32(opts.seed ?? 0x1234567);
+  const fs: number[] = new Array(resamples);
+  for (let r = 0; r < resamples; r++) {
+    let aTotal = 0, bTotal = 0;
+    for (const e of estratos) {
+      let aSum = 0, bSum = 0;
+      for (let i = 0; i < e.n; i++) {
+        const j = (rng() * e.n) | 0;
+        aSum += e.costA[j]!;
+        bSum += e.costB[j]!;
+      }
+      aTotal += aSum / e.n;
+      bTotal += bSum / e.n;
+    }
+    fs[r] = fraction(aTotal, bTotal);
+  }
+  fs.sort((a, b) => a - b);
+  return { point, lower: percentile(fs, alpha / 2), upper: percentile(fs, 1 - alpha / 2) };
+}
+
 /**
  * One-sided Wilcoxon signed-rank test (normal approximation with tie &
  * continuity correction) for H0: median(delta) = 0 vs H1: median > 0. Returns a
