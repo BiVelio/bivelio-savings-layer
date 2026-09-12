@@ -31,8 +31,12 @@ export interface AbScenario {
   kind: string;
   reps: number;
   armA: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
+  /** Brazo A1 (B1, integración razonablemente optimizada). Opcional: un artefacto anterior al 12-09 no lo trae. */
+  armA1?: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   armB: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   measured: { savings: CI; wilcoxonP: number; inputTokenDeltaMean: number; outputTokenDeltaMean: number };
+  /** El ahorro de B frente a B1, con su propio intervalo. Opcional, como `armA1`. */
+  measuredB1?: { savings: CI; wilcoxonP: number; inputTokenDeltaMean: number; outputTokenDeltaMean: number };
   quality: { gate: string; passed: number; total: number };
   amortization?: { coldMissCost: number; hitCost: number; breakEvenK: number | null };
 }
@@ -53,6 +57,14 @@ export interface AbArtifact {
    */
   modelStable: boolean;
   aggregate: { savings: CI; wilcoxonP: number; qualityPassRate: number; proven: boolean; headline: string };
+  /**
+   * El MISMO titular frente a B1 (la integración razonablemente optimizada):
+   * lo que queda después de descontar lo que un cliente razonable ya tendría
+   * sin nosotros. Opcional porque los artefactos anteriores al 12-09 no lo
+   * traen; la web aún no lo pinta.
+   */
+  aggregateB1?: { savings: CI; wilcoxonP: number; qualityPassRate: number; proven: boolean; headline: string };
+  ledgersB1?: AbLedger[];
   honesty: string[];
   /**
    * La declaración del propio banco sobre qué palancas llegaron a ejecutarse.

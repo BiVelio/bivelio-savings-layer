@@ -324,6 +324,15 @@ export interface Scenario {
    * descuento del proveedor y lo apuntaría como aportación nuestra.
    */
   familia?: FamiliaDeModelo;
+  /**
+   * Las herramientas que un integrador DILIGENTE pasaría para esta petición sin
+   * ninguna capa: es la mitad «herramientas» del brazo B1 (integración
+   * razonablemente optimizada, benchmarks/brazos.ts). Se declara A MANO y solo
+   * donde es inequívoco; sin declaración B1 manda todas, como B0, porque
+   * elegirlas por el cliente sería inventarle un selector que no tiene. Un id
+   * que no exista en `request.tools` hace reventar el banco antes de gastar.
+   */
+  toolsB1?: readonly string[];
 }
 
 // Real argument schemas: a tool's JSON schema travels in the prompt, so the
@@ -1011,6 +1020,11 @@ export const scenarios: Scenario[] = [
       tools,
       response: answerContract,
     },
+    // B1: una pregunta por el tiempo con cinco herramientas declaradas; un
+    // integrador que lea sus logs pasa la del tiempo y ninguna otra. Es la
+    // única declaración inequívoca del banco; el catálogo grande NO la lleva
+    // porque «qué subconjunto es razonable» ahí ya es una opinión.
+    toolsB1: ["get_weather"],
     expect: (r) => r.report.calls.actualTools <= 1,
   },
   {

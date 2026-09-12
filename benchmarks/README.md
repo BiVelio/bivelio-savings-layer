@@ -61,9 +61,24 @@ claim. For every scenario it sends **two real requests to the same provider/mode
   would be solving an easier task. Arm A's answers are validated against that
   contract too — the layer pays tokens to guarantee validity, so it only counts if
   the same is asked of the baseline.
+- **Arm A1 (reasonably optimized, "B1")** — the *same* integration a diligent
+  team would run **without** BV-SALA after reading its provider's docs: identical
+  to Arm A except that (1) the native prompt cache is configured on the stable
+  prefix (`cache_control` on Anthropic through `stablePrefixMessages`, a
+  `prompt_cache_key` hint on OpenAI-compatible endpoints) **only where that prefix
+  really repeats** — cold-salted scenarios are never marked, because a client
+  would pay the 1.25× write premium for a hit that cannot happen — and (2) only
+  the tools a diligent integrator would send, **when the scenario declares them
+  by hand** (`toolsB1`; without a declaration it sends all tools, like Arm A).
+  This is the research guide's second baseline: the headline against Arm A says
+  what the layer saves versus an unoptimized integration; the headline against
+  Arm A1 (`aggregateB1`) says what is *genuinely attributable to the layer*, once
+  the provider's own discount and compact JSON are taken out. Both are published.
+  `BVSALA_AB_B1=0` runs the old two-arm bench. Definitions live in
+  `benchmarks/brazos.ts`, pinned by `test/brazos-del-banco.test.ts`.
 - **Arm B (BV-SALA)** — the same task through the layer.
 
-**Both** arms are priced from the provider's own `usage` — so no modeled baseline
+**All** arms are priced from the provider's own `usage` — so no modeled baseline
 can enter, and both are counted by the *same* tokenizer. Savings = the measured
 paired dollar delta.
 
