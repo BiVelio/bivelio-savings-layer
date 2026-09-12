@@ -88,7 +88,7 @@ import {
 } from "./transporte.js";
 import { compresorDeRepeticionesLiterales } from "./compresor.js";
 import { avisoDeTruncado, cortadaPorElTope, veredictoDeCalidad } from "./verja-de-calidad.js";
-import { bootstrapRatioCI, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
+import { bootstrapRatioCI, bootstrapRatioCIEstratificado, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
 import { validateAgainstSchema } from "../src/constraints/validate.js";
 
@@ -1057,7 +1057,10 @@ interface Tirada {
   noAplican: EscenarioNoMedido[];
   /** Palancas que este transporte no puede ejercitar, con cómo configurarlo. */
   noMedibles: PalancaNoMedible[];
+  /** El titular: estratificado por escenario, peso 1 por escenario. */
   agg: CI;
+  /** El agregado antiguo (todas las muestras juntas). Ya no es el titular; ver `aggregatePooled`. */
+  aggPooled: CI;
   wilcoxonP: number;
   qualityPassRate: number;
   proven: boolean;
@@ -1112,11 +1115,33 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     );
   }
 
-  // Aggregate over ALL scenarios' cold single-call paired costs (honest: cache
-  // shows its cold-miss cost here; repeat-traffic amortization is separate).
+  // EL TITULAR: estratificado por escenario, con PESO 1 por escenario.
+  //
+  //   f = 1 − Σ_s mean(costB_s) / Σ_s mean(costA_s)
+  //
+  // Hasta el 2026-09-12 el titular era el agregado de TODAS las muestras juntas
+  // (1 − ΣcostB/ΣcostA), que pondera cada escenario por sus reps × su coste. El
+  // muestreo adaptativo de abajo mete más reps en los escenarios RUIDOSOS, así
+  // que el titular cambiaba con el reparto de reps y no con la capa: 20,8 % con
+  // REPS=16 (194 muestras); 16,5 % con REPS=8 cuando «Large uniform table» y
+  // «Stable-prefix agent turn» —que ahorran poco— llegaron a 24 reps; 19,1 % en
+  // la tirada siguiente. Con peso igual por escenario las mismas tres tiradas
+  // dan 21,3 / 19,4 / 20,5. El remuestreo se hace DENTRO de cada escenario, así
+  // que el peso de un escenario no depende de cuánto tiempo corrió el muestreador.
+  // Sigue siendo la llamada fría, una por escenario (la caché enseña aquí su
+  // coste de fallo; la amortización por tráfico repetido va aparte).
+  const porEscenario = results.map((r) => ({
+    costA: r.paired.map((p) => p.costA),
+    costB: r.paired.map((p) => p.costB),
+  }));
+  const agg = bootstrapRatioCIEstratificado(porEscenario, { seed: SEED });
+  // El agregado ANTIGUO se conserva como `aggregatePooled` para poder comparar
+  // con los artefactos publicados antes de este cambio — pero ya no titula.
   const allA = results.flatMap((r) => r.paired.map((p) => p.costA));
   const allB = results.flatMap((r) => r.paired.map((p) => p.costB));
-  const agg = bootstrapRatioCI(allA, allB, { seed: SEED });
+  const aggPooled = bootstrapRatioCI(allA, allB, { seed: SEED });
+  // El Wilcoxon sigue sobre las muestras pareadas: contesta «¿la mediana del
+  // ahorro por llamada es > 0?», que no depende del peso de cada escenario.
   const wP = wilcoxonSignedRankP(results.flatMap((r) => r.paired.map((p) => p.costA - p.costB)));
   const qTotalPass = results.reduce((n, r) => n + r.quality.passed, 0);
   const qTotal = results.reduce((n, r) => n + r.quality.total, 0);
@@ -1153,14 +1178,15 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   const residual = totalDelta - ledgerSum;
   const reconciled = Math.abs(residual) < 1e-9;
 
-  console.log("\nHeadline (per cold single call, measured both sides)");
+  console.log("\nHeadline (per cold single call, measured both sides; one effective rep per scenario)");
   if (mode === "LIVE") {
-    console.log(`  Net savings:   point ${pct(agg.point)}   95% CI [${pct(agg.lower)}, ${pct(agg.upper)}]`);
+    console.log(`  Net savings:   point ${pct(agg.point)}   95% CI [${pct(agg.lower)}, ${pct(agg.upper)}]   (stratified by scenario, equal weight)`);
     console.log(`  Claim:         ${proven ? `VERIFIED ≥ ${pct(agg.lower)} at 95% confidence` : "NOT PROVEN (CI lower ≤ 0, quality regressed, or model swapped)"}`);
+    console.log(`  Pooled (old):  point ${pct(aggPooled.point)}   95% CI [${pct(aggPooled.lower)}, ${pct(aggPooled.upper)}]   (all trials together — weighted by reps × cost; not the headline)`);
     console.log(`  Wilcoxon p:    ${wP.toExponential(2)}   (H1: median saving > 0)`);
     if (!allFpStable) console.log(`  ⚠ los dos brazos no hablaron con el mismo modelo: ${results.flatMap((r) => r.servedModels).join(", ")}`);
   } else {
-    console.log(`  Net savings:   ${pct(agg.point)}  — ESTIMATED (mock provider), NOT a real savings claim`);
+    console.log(`  Net savings:   ${pct(agg.point)}  — ESTIMATED (mock provider), NOT a real savings claim   (pooled: ${pct(aggPooled.point)})`);
     console.log(`  Run LIVE (set BVSALA_DEMO_BASE_URL) for real provider tokens & dollars.`);
   }
   console.log(`  Quality:       ${qTotalPass}/${qTotal} answers passed the gate (${pct(qualityPassRate)})`);
@@ -1281,7 +1307,11 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
     methodology:
       "Paired A/B: Arm A = naive request (full JSON, all tools, no cap, no schema) executed against the same provider; " +
-      "Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% bootstrap CI lower bound of 1−ΣcostB/ΣcostA. " +
+      "Arm B = BV-SALA optimized. Both priced from provider usage. Headline = 95% STRATIFIED bootstrap CI lower bound of " +
+      "1 − Σ_s mean(costB_s) / Σ_s mean(costA_s), one stratum per scenario with equal weight, resampled within each scenario " +
+      "(so the headline does not move with how many reps the adaptive sampler gave each scenario; the interval is conditional " +
+      "on this fixed scenario set and covers per-scenario sampling noise only). The pooled 1−ΣcostB/ΣcostA " +
+      "over all trials is kept in `aggregatePooled` for comparison with earlier artefacts; it is no longer the headline. " +
       "Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
     config: { reps: REPS, minReps: REPS, maxReps: MAX_REPS, ciTarget: CI_TARGET, qualityFloor: QUALITY_FLOOR, seed: SEED },
     scenarios: results.map((r) => ({ ...r, paired: undefined })),
@@ -1314,6 +1344,9 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     modelStable: allFpStable,
     aggregate: {
       savings: agg,
+      estimator: "stratified-by-scenario",
+      scenarioWeight: "equal (one effective rep per scenario; bootstrap resamples within each scenario)",
+      strata: results.length,
       wilcoxonP: wP,
       qualityPassRate,
       proven,
@@ -1321,16 +1354,34 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
         ? (proven ? `verified ≥ ${pct(agg.lower)} (95% CI lower bound)` : "not proven")
         : "ESTIMATED (mock) — not a savings claim",
     },
+    // EL AGREGADO ANTIGUO, ya no el titular. Se conserva para poder comparar con
+    // los artefactos publicados antes del 2026-09-12 y para que se vea cuánto
+    // mueve la ponderación por reps.
+    aggregatePooled: {
+      savings: aggPooled,
+      estimator: "pooled-all-trials",
+      note:
+        "1 − ΣcostB/ΣcostA over every trial of every scenario. Weights each scenario by reps × cost, " +
+        "and the adaptive sampler gives more reps to the noisy scenarios, so this figure moved with the " +
+        "rep split (20.8% → 16.5% → 19.1% across three runs of the same layer) while the stratified one " +
+        "stayed put (21.3 / 19.4 / 20.5). Kept for comparison; it is NOT the headline.",
+    },
     honesty: [
       "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
       "The headline is the 95% CI lower bound, never the point estimate.",
+      "The headline is STRATIFIED by scenario with equal weight: f = 1 − Σ_s mean(costB_s)/Σ_s mean(costA_s), resampled " +
+        "within each scenario. Pooling every trial let the adaptive sampler's rep split move the headline by 4 points " +
+        "between runs of the same layer; the pooled figure is kept as `aggregatePooled` and is not the claim.",
+      "The stratified interval is CONDITIONAL on this fixed set of scenarios: it covers per-scenario sampling noise only, " +
+        "not the uncertainty of which scenarios stand for a customer's traffic. That is why it is narrower than the pooled " +
+        "one — it answers a narrower question, not a more confident one. A traffic mix unlike these scenarios is not covered.",
       "A saving is voided if its answer fails the quality gate.",
       "Una respuesta cortada por el tope (`finish_reason: \"length\"`) SUSPENDE la verja aunque el " +
         "escenario no tenga contrato de salida: media respuesta con longitud > 0 aprobaba y publicaba " +
         "su ahorro. `scenarios[].truncated` cuenta los cortes de cada brazo, porque un corte en LOS DOS " +
         "no lo causó la capa — lo causó un contrato que no cabe.",
       "Each scenario maps to one ledger, so ledger deltas partition the total (reconciliation residual proves no double-counting).",
-      "Adaptive sampling adds reps only where variance is high, up to a hard cap.",
+      "Adaptive sampling adds reps only where variance is high, up to a hard cap — and because the headline is stratified, those extra reps tighten a scenario's estimate without changing its weight.",
       "El modelo SERVIDO se compara entre los dos brazos; si difiere, la afirmación no vale. (system_fingerprint se registra pero no se usa como verja: a través de una pasarela es un id por petición.)",
       "Cache savings are shown as repeat-traffic amortization with a break-even K, not a single-call number.",
       "Missing provider usage is a hard error (requireUsage), never a silent 0 → 100% saving.",
@@ -1347,6 +1398,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     noAplican,
     noMedibles,
     agg,
+    aggPooled,
     wilcoxonP: wP,
     qualityPassRate,
     proven,
@@ -1505,7 +1557,8 @@ async function main(): Promise<void> {
         costEstimate: estimacion,
         comparison: tiradas.map((t) => ({
           model: t.etiqueta,
-          aggregate: { savings: t.agg, proven: t.proven, qualityPassRate: t.qualityPassRate },
+          aggregate: { savings: t.agg, estimator: "stratified-by-scenario", proven: t.proven, qualityPassRate: t.qualityPassRate },
+          aggregatePooled: { savings: t.aggPooled, estimator: "pooled-all-trials" },
           ledgers: t.ledgerRollup.map((l) => ({ ledger: l.ledger, savings: l.savings, scenarios: l.scenarios.length })),
           levers: t.palancas,
           leversNotMeasurable: t.noMedibles,

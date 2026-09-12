@@ -298,6 +298,23 @@ ask you to take its confidence interval on faith.
    (“verified ≥ X%”), never the flattering point estimate; a Wilcoxon signed-rank
    p-value is a secondary check. Raw paired trials export to
    `ab-live-trials.csv` so anyone can recompute the interval.
+2b. **Stratified by scenario, equal weight.** The headline is
+   `f = 1 − Σ_s mean(costB_s) / Σ_s mean(costA_s)` — one stratum per scenario,
+   bootstrap resampled *within* each scenario (`bootstrapRatioCIEstratificado`
+   in `stats.ts`). It used to be the pooled `1 − ΣcostB/ΣcostA` over every
+   trial, which weights a scenario by **reps × cost**; since the adaptive
+   sampler pours reps into the noisy scenarios, the pooled headline
+   moved with the rep split, not with the layer: 20.8% (REPS=16), 16.5% (REPS=8,
+   two low-saving scenarios at 24 reps), 19.1% (next run) — while the
+   equal-weight figure stayed at 21.3 / 19.4 / 20.5. The pooled number is still
+   written as `aggregatePooled` for comparison with older artefacts, but it is
+   not the claim. Per-ledger CIs remain pooled over the ledger's trials, since a
+   ledger's `deltaCost` is a sum by construction (reconciliation rule).
+   **Read the interval for what it is:** it is conditional on this fixed set of
+   scenarios and covers per-scenario sampling noise only — which is why it is
+   much narrower than the pooled one (≈ ±0.7 pt vs ≈ ±5 pt on the same trials).
+   It does not cover the uncertainty of which scenarios stand for a customer's
+   traffic; the pooled interval did, but weighted by the sampler's rep split.
 3. **Quality-gated.** A saving is **void** if its answer fails the gate
    (ground-truth where known; structural; or a blind LLM judge in LIVE). A cached
    answer must byte-match a verified miss answer.
