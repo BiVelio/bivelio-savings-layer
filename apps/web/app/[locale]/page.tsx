@@ -4,6 +4,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import abData from "@/public/data/ab-live.json";
 import { ReservarLlamada } from "./components/ReservarLlamada";
+import { CursorGrid } from "@/app/components/CursorGrid";
+import { RevealObserver } from "@/app/components/RevealObserver";
+import { KineticTitle } from "@/app/components/KineticTitle";
+import { ReciboMedido } from "@/app/components/ReciboMedido";
 import { CalculadoraComision } from "@/app/components/CalculadoraComision";
 import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
@@ -20,6 +24,25 @@ import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 import { preciosDelPlan } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
+
+// Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
+// Anthropic, tienen adaptador nativo). Es una lista de COMPATIBILIDAD, no de
+// mediciones: la única cifra publicada vive en `hero.proofs`.
+const LLMS = [
+  { marca: "openai", label: "OpenAI" },
+  { marca: "anthropic", label: "Anthropic" },
+  { marca: "gemini", label: "Gemini" },
+  { marca: "mistral", label: "Mistral" },
+  { marca: "meta", label: "Llama" },
+  { marca: "deepseek", label: "DeepSeek" },
+  { marca: "perplexity", label: "Perplexity" },
+  { marca: "huggingface", label: "Hugging Face" },
+  { marca: "nvidia", label: "NVIDIA NIM" },
+  { marca: "azure", label: "Azure OpenAI" },
+  { marca: "aws", label: "Bedrock" },
+  { marca: "ollama", label: "Ollama" },
+  { marca: "vllm", label: "vLLM" },
+] as const;
 
 // The measured A/B artifact powers Step 2 (the reference bench) and the price
 // used by the Step-1 projector — exactly like the dashboard verify/proof pages.
@@ -155,13 +178,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="lp">
+      <CursorGrid />
+      <RevealObserver />
       <main className="wrap">
         {/* HERO */}
         <section className="hero">
           <div>
             <span className="eyebrow">{t("hero.eyebrow")}</span>
             <h1>
-              {t("hero.title")} <span className="u">{t("hero.titleAccent")}</span>
+              <KineticTitle text={t("hero.title")} />{" "}
+              <KineticTitle text={t("hero.titleAccent")} className="u" start={220} />
             </h1>
             <p className="lede">{t("hero.lede")}</p>
             <div className="hero-cta">
@@ -180,13 +206,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 y por eso esta franja no toca los 12 ficheros de mensajes. Una
                 marca aquí NO es una cifra: las cifras viven en hero-prueba y
                 solo entran con una medición defendible detrás. */}
-            <div className="hero-marcas" aria-label="OpenAI, Anthropic, Google">
-              {["OpenAI", "Anthropic", "Google"].map((marca) => (
-                <span className="hm" key={marca}>
-                  <LogoProveedor marca={marca} size={15} />
-                  {marca}
-                </span>
-              ))}
+            <div className="hero-marcas" aria-label={t("hero.medidoEn")}>
+              <span className="hm-k">{t("hero.medidoEn")}</span>
+              <span className="hm">
+                <LogoProveedor marca="OpenAI" size={15} />
+                OpenAI
+                <code>{abData.model.split("/").pop()}</code>
+              </span>
             </div>
 
             {/* La prueba, en el heroe. Este producto no vende una promesa: vende
@@ -210,32 +236,45 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 ))}
               </div>
             </div>
+
+            {/* «Compatible con» ≠ «Medido en». La franja dice dónde CORRE el SDK
+                (cualquier endpoint OpenAI-compatible o el adaptador nativo);
+                la cifra vive solo en la fila de arriba, con su modelo. */}
+            <div className="hero-compat">
+              <span className="hm-k">{t("hero.compatibleCon")}</span>
+              <div className="compat-marquee" aria-label={LLMS.map((l) => l.label).join(", ")}>
+                <div className="compat-track">
+                  {[0, 1].map((copia) =>
+                    LLMS.map((l) => (
+                      <span className="cm" key={`${copia}-${l.marca}`} aria-hidden={copia === 1}>
+                        <LogoProveedor marca={l.marca} size={15} />
+                        {l.label}
+                      </span>
+                    )),
+                  )}
+                </div>
+              </div>
+              <p className="compat-nota">{t("hero.compatibleNota", { modelo: abData.model.split("/").pop() ?? "" })}</p>
+            </div>
           </div>
 
           <div className="hero-col">
-          <div className="cascade" aria-label={t("cascade.title")}>
-            <div className="cascade-h">
-              <span className="t">{t("cascade.title")}</span>
-              <span className="k">{t("cascade.per")}</span>
-            </div>
-            {cascadeSteps.map((s) => {
-              // La etiqueta era cualitativa («−tokens») sobre un artefacto que
-              // ya traía la cifra medida de ese libro. Es lo primero que ve un
-              // cliente: o lleva un número que se puede defender, o no va.
-              const m = medidoPorLibro.get(s.ledger);
-              if (!m || !m.proven) return null;
-              return (
-                <div className="step" key={s.n}>
-                  <span className="n">{s.n}</span>
-                  <span className="s">
-                    {s.title}
-                    <span>{s.sub}</span>
-                  </span>
-                  <span className="tag">{`${(m.savings.lower * 100).toFixed(1)}%`}</span>
-                </div>
-              );
-            })}
-          </div>
+          <ReciboMedido
+            ab={ab}
+            locale={locale}
+            labels={{
+              title: t("recibo.title"),
+              modelo: t("recibo.modelo"),
+              parejas: t("recibo.parejas"),
+              calidad: t("recibo.calidad"),
+              suelo: t("recibo.suelo"),
+              punto: t("recibo.punto"),
+              libros: t("recibo.libros"),
+              pie: t("recibo.pie"),
+              fecha: t("recibo.fecha"),
+            }}
+            filas={cascadeSteps.map((st) => ({ ledger: st.ledger, title: st.title }))}
+          />
 
             <ReservarLlamada
               t={{
@@ -254,6 +293,26 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
+        {/* HECHO PARA DESARROLLADORES — tres hechos del paquete, ninguno una
+            promesa: cero dependencias, un SavingsReport por llamada, tráfico
+            directo. Sin cifras: aquí no hay nada que medir, solo describir. */}
+        <section id="devs">
+          <div className="sec-head rv">
+            <span className="eyebrow">{t("devs.eyebrow")}</span>
+            <h2>{t("devs.title")}</h2>
+            <p>{t("devs.sub")}</p>
+          </div>
+          <div className="devs-grid">
+            {(t.raw("devs.cards") as { title: string; body: string; mono: string }[]).map((c) => (
+              <div className="dev-card rv" key={c.title}>
+                <span className="mono">{c.mono}</span>
+                <h4>{c.title}</h4>
+                <p>{c.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* EN PALABRAS NORMALES — la explicación para todo el mundo (petición
             del dueño, 2026-09-04): cuatro ideas en lenguaje llano, cada una con
             su animación de 8 s. Los vídeos son mudos y sin texto en pantalla a
@@ -261,14 +320,14 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             los mensajes. Las CIFRAS siguen viviendo solo en las secciones
             medidas de más abajo — aquí no se promete ningún número. */}
         <section id="explica">
-          <div className="sec-head">
+          <div className="sec-head rv">
             <span className="eyebrow">{t("explica.eyebrow")}</span>
             <h2>{t("explica.title")}</h2>
             <p>{t("explica.sub")}</p>
           </div>
           <div className="explica-grid">
             {(t.raw("explica.pasos") as { title: string; body: string }[]).map((p, i) => (
-              <div className="explica-card" key={p.title}>
+              <div className="explica-card rv" key={p.title}>
                 <VideoExplicativo
                   src={`/videos/explica-${i + 1}.mp4`}
                   poster={`/videos/explica-${i + 1}.jpg`}
@@ -286,7 +345,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         </section>
 
         <section id="measured">
-          <div className="sec-head">
+          <div className="sec-head rv">
             <span className="eyebrow">{t("step2.eyebrow")}</span>
             <h2>{t("step2.title")}</h2>
             <p>
@@ -315,7 +374,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               lenguaje llano. Los números llegan como PARÁMETROS desde el
               artefacto publicado — aquí no se escribe ni un dígito a mano. */}
           <div className="medido-llano">
-            <div className="explica-card">
+            <div className="explica-card rv">
               <VideoExplicativo
                 src="/videos/explica-5.mp4"
                 poster="/videos/explica-5.jpg"
@@ -336,7 +395,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <p className="nota">{t("step2.plainNote")}</p>
             </div>
           </div>
-          <div className="bench">
+          <div className="bench rv">
             <ReferenceModeBadge ab={ab} />
             <NetSavingsCIBand savings={ab.aggregate.savings} mode={ab.mode} />
             <div style={{ marginTop: "16px" }}>
@@ -352,7 +411,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               tirada, con las cifras llegando del artefacto. */}
           <div className="trabajos">
             <div className="explica-grid">
-              <div className="explica-card">
+              <div className="explica-card rv">
                 <VideoExplicativo
                   src="/videos/trabajos-paja.mp4"
                   poster="/videos/trabajos-paja.jpg"
@@ -363,7 +422,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   <p>{t("trabajos.pajaBody")}</p>
                 </div>
               </div>
-              <div className="explica-card">
+              <div className="explica-card rv">
                 <VideoExplicativo
                   src="/videos/trabajos-magro.mp4"
                   poster="/videos/trabajos-magro.jpg"
@@ -379,67 +438,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
-        {/* CACHÉ DE PREFIJO DE ANTHROPIC — el mecanismo, no un titular */}
-        <section id="anthropic-cache">
-          <div className="sec-head">
-            <div className="prov">
-              <span className="prov-marca">{t("anthropicCache.providerTag")}</span>
-              <code className="prov-modelo">{t("anthropicCache.providerModel")}</code>
-            </div>
-            <span className="eyebrow">{t("anthropicCache.eyebrow")}</span>
-            <h2>{t("anthropicCache.title")}</h2>
-            <p>
-              {t.rich("anthropicCache.body", {
-                b: (c) => <b>{c}</b>,
-                code: (c) => <code>{c}</code>,
-              })}
-            </p>
-          </div>
-
-          <div className="ancache">
-            <div className="ancache-medida">
-              <h4>{t("anthropicCache.evidenceTitle")}</h4>
-              <p className="ancache-lede">{t("anthropicCache.evidenceLede")}</p>
-              <dl className="ancache-filas">
-                <div>
-                  <dt>{t("anthropicCache.rowNaiveLabel")}</dt>
-                  <dd>{t("anthropicCache.rowNaiveValue")}</dd>
-                </div>
-                <div className="es-nuestra">
-                  <dt>{t("anthropicCache.rowOursLabel")}</dt>
-                  <dd>{t("anthropicCache.rowOursValue")}</dd>
-                </div>
-              </dl>
-            </div>
-            {/* La cifra grande sale solo si hay cifra. Aquí había un «78 %» que
-                era el descuento del PROVEEDOR, no nuestro —el brazo optimizado
-                manda 25 tokens MÁS y solo pide `cache_control`— y encima venía
-                de una tirada cuyo agregado no pasó su propia verja de calidad,
-                con el artefacto fuera de git: nadie podía comprobarlo. El
-                mecanismo (0 → 58.624 tokens servidos desde caché) SÍ se queda,
-                porque eso es lo que la capa hace y el cliente lo ve en su
-                factura. La nota explica por qué no ponemos porcentaje. */}
-            <div className="ancache-cifra">
-              {t("anthropicCache.figure") ? <span className="n">{t("anthropicCache.figure")}</span> : null}
-              <span className="nota">{t("anthropicCache.figureNote")}</span>
-            </div>
-          </div>
-
-          <div className="ancache-notas">
-            <div>
-              <h4>{t("anthropicCache.scopeTitle")}</h4>
-              <p>{t.rich("anthropicCache.scope", { b: (c) => <b>{c}</b> })}</p>
-            </div>
-            <div>
-              <h4>{t("anthropicCache.verifyTitle")}</h4>
-              <p>{t.rich("anthropicCache.verify", { code: (c) => <code>{c}</code> })}</p>
-            </div>
-          </div>
-        </section>
-
         {/* LEDGERS — four separate ledgers, never summed */}
         <section>
-          <div className="sec-head">
+          <div className="sec-head rv">
             <div className="prov">
               <span className="prov-marca">{t("ledgersHead.providerTag")}</span>
               <code className="prov-modelo">{t("ledgersHead.providerModel")}</code>
@@ -468,11 +469,17 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               const cifra = `${(m!.savings.lower * 100).toFixed(1)}%`;
               const pie = t("ledgersHead.measuredFloor");
               return (
-                <div className="ledger" key={l.idx}>
+                <div className="ledger rv" key={l.idx}>
                   <div className="idx">{l.idx}</div>
                   <h4>{l.name}</h4>
                   <p>{l.desc}</p>
                   <div className="mval">{cifra}</div>
+                  {/* El intervalo entero, dibujado: suelo→techo en menta y el
+                      punto en tinta, sobre la misma escala en las cuatro. */}
+                  <div className="ledger-ci" aria-hidden="true">
+                    <i className="f" style={{ left: `${(m!.savings.lower / 0.75) * 100}%`, width: `${((m!.savings.upper - m!.savings.lower) / 0.75) * 100}%` }} />
+                    <i className="p" style={{ left: `${(m!.savings.point / 0.75) * 100}%` }} />
+                  </div>
                   <div className="munit">{pie}</div>
                 </div>
               );
@@ -482,7 +489,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
         {/* INTEGRATE — five lines to start */}
         <section>
-          <div className="sec-head">
+          <div className="sec-head rv">
             <span className="eyebrow">{t("integrate.eyebrow")}</span>
             <h2>{t("integrate.title")}</h2>
             <p>{t("integrate.body")}</p>
@@ -506,12 +513,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           {/* Sistemas donde ya viven las automatizaciones del cliente: logos
               oficiales a color (decisión del dueño). El texto mantiene la
               afirmación honesta: se mide lo que llama a la API con su clave. */}
-          <div className="sys-strip">
-            {["Salesforce", "HubSpot", "Odoo", "Zapier", "n8n", "UiPath"].map((s) => (
-              <span className="sys" key={s}>
-                <LogoProveedor marca={s} size={16} /> {s}
-              </span>
-            ))}
+          <div className="sys-marquee" aria-label="Salesforce, HubSpot, Odoo, Zapier, n8n, UiPath">
+            <div className="sys-track">
+              {[0, 1].map((copia) =>
+                ["Salesforce", "HubSpot", "Odoo", "Zapier", "n8n", "UiPath"].map((sys) => (
+                  <span className="sys" key={`${copia}-${sys}`} aria-hidden={copia === 1}>
+                    <LogoProveedor marca={sys} size={16} /> {sys}
+                  </span>
+                )),
+              )}
+            </div>
           </div>
           <p className="sys-note">{t("systems.caption")}</p>
         </section>
@@ -520,7 +531,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             Honestidad: aquí solo se promete MEDIR; el veredicto de ahorro en
             terminales sigue siendo «Aún no» en /how-it-works. */}
         <section>
-          <div className="sec-head">
+          <div className="sec-head rv">
             <span className="eyebrow">{t("gateway.eyebrow")}</span>
             <h2>{t("gateway.title")}</h2>
             <p>{t("gateway.body")}</p>
@@ -558,7 +569,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             lib/skill/anatomia (medidas, con verja) y el efecto del propio skill
             NO lleva cifra hasta que el A/B lo mida — la doctrina de la casa. */}
         <section>
-          <div className="sec-head">
+          <div className="sec-head rv">
             <span className="eyebrow">{t("skill.eyebrow")}</span>
             <h2>{t("skill.title")}</h2>
             <p>{t("skill.body")}</p>
@@ -642,13 +653,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
         {/* PRICING */}
         <section id="pricing">
-          <div className="sec-head">
+          <div className="sec-head rv">
             <span className="eyebrow">{t("pricing.eyebrow")}</span>
             <h2>{t("pricing.title")}</h2>
             <p>{t("pricing.body", { currency: moneda })}</p>
           </div>
           <div className="split">
-            <div className="price-card">
+            <div className="price-card rv">
               <div className="amt">
                 {t("pricing.amount", { amount: precioMensual })}
                 <small> {t("pricing.per")}</small>
@@ -682,7 +693,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               DÍGITO (lo vigila tarifa-en-parametros.test.ts); cada número llega
               como parámetro desde lib/billing/tarifa y desde el Price de
               Stripe. Cambiar la tarifa real cambia esta sección sola. */}
-          <div className="formula-publica">
+          <div className="formula-publica rv">
             <h3>{t("formula.title")}</h3>
             <ul>
               <li>{t.rich("formula.mes1", { b: (c) => <b>{c}</b>, precioMes: precioMensual })}</li>

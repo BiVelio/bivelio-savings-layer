@@ -547,10 +547,10 @@
     "metaTitle": "BiVelio — Vérifiez vos économies LLM",
     "metaDescription": "Couche de coût LLM sous licence. Elle se place devant votre fournisseur et réduit la facture ; l'économie est mesurée contre son compteur, intervalle à 95 %.",
     "hero": {
-      "eyebrow": "Économies d'IA, vraiment mesurées",
-      "title": "Payez moins pour l'IA.",
-      "titleAccent": "Et vérifiez-le sur votre facture.",
-      "lede": "ChatGPT, Claude, Gemini… chaque question que votre entreprise pose à une IA est facturée au texte qui entre et qui sort. Savings se place entre votre entreprise et le fournisseur, retire ce qu'il n'était pas nécessaire de payer et vous montre l'économie sur un reçu que vous pouvez confronter à la facture.",
+      "eyebrow": "Pour les équipes qui paient l'API LLM au token",
+      "title": "Votre facture LLM, sous contrôle.",
+      "titleAccent": "Mesurée à chaque appel.",
+      "lede": "Un SDK qui s'installe dans votre code, ne laisse passer que ce qui doit être payé et renvoie un SavingsReport par appel : mesuré et estimé séparés, comptés avec le compteur de votre fournisseur. Nous ne publions que ce que nous avons mesuré.",
       "ctaRun": "Voir les résultats mesurés",
       "ctaPricing": "Voir les tarifs",
       "note": "Installé en quelques minutes. Vos messages ne passent jamais par nos serveurs.",
@@ -560,18 +560,21 @@
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
           "cifra": "≥ 15,0 %",
-          "que": "de facture en moins, vérifié à 95 %"
+          "que": "de facture en moins, vérifié à 95 % · face à une intégration non optimisée, sans streaming"
         }
-      ]
+      ],
+      "medidoEn": "Mesuré sur",
+      "compatibleCon": "Compatible avec",
+      "compatibleNota": "Tout endpoint compatible avec l'API OpenAI, plus l'adaptateur natif Anthropic. Avec un chiffre publié, aujourd'hui, seulement OpenAI {modelo}."
     },
     "cascade": {
       "title": "L'exécution la moins chère l'emporte",
-      "per": "mesuré · plancher à 95 %",
+      "per": "mesuré sur gpt-4o-mini · plancher à 95 %",
       "steps": [
         {
           "n": "01",
           "title": "Éviter l'appel entièrement",
-          "sub": "résolveurs · cache exact · singleflight",
+          "sub": "résolveurs · singleflight",
           "ledger": "avoided_calls",
           "grey": false
         },
@@ -590,7 +593,7 @@
           "grey": false
         }
       ],
-      "footnote": "Chaque étape tombe dans UN registre différent, donc ces chiffres ne s'additionnent pas entre eux. Une étape dont le registre ne dépasse pas zéro n'apparaît pas ici : la restriction de sortie a été mesurée et ne fait pas économiser, donc elle n'est pas annoncée."
+      "footnote": "Chaque étape tombe dans UN registre différent, donc ces chiffres ne s'additionnent pas entre eux. Une étape dont le registre ne dépasse pas zéro n'apparaît pas ici : la restriction de sortie a été mesurée et ne fait pas économiser, donc elle n'est pas annoncée. Tous les chiffres de cette série viennent de gpt-4o-mini : le même levier peut coûter de l'argent sur un autre modèle, et cela se publie aussi."
     },
     "explica": {
       "eyebrow": "En mots simples",
@@ -603,7 +606,7 @@
         },
         {
           "title": "Vous ne payez pas deux fois la même chose",
-          "body": "Une IA relit à chaque tour tout ce que vous lui aviez déjà envoyé — et le fournisseur le facture à nouveau. Savings se souvient de ce qui a déjà été envoyé et prépare chaque requête pour que les répétitions partent au tarif réduit."
+          "body": "L'IA relit à chaque tour tout ce que vous lui aviez déjà envoyé — et le fournisseur le facture à nouveau. Savings prépare chaque requête pour que le fournisseur applique son tarif réduit aux répétitions. La remise vient du fournisseur ; notre rôle est de la demander correctement."
         },
         {
           "title": "Un reçu que vous pouvez vérifier",
@@ -625,25 +628,6 @@
       "plain": "Dans ce test, la facture a baissé avec une quasi-certitude d'au moins {piso}. Le plus probable est qu'elle ait baissé de {punto}.",
       "plainNote": "Quand il y a une fourchette, nous annonçons toujours le petit chiffre — celui que la statistique garantit —, jamais le plus flatteur.",
       "trialsLink": "Télécharger les essais bruts (CSV)"
-    },
-    "anthropicCache": {
-      "eyebrow": "Mesuré · cache de préfixe d'Anthropic",
-      "title": "Anthropic accorde une remise sur le texte répété — mais il faut la demander. Nous la demandons pour vous.",
-      "body": "Quand une conversation répète ce qui a déjà été envoyé (instructions, documents, historique), Anthropic peut le facturer bien moins cher — mais seulement si chaque requête arrive préparée pour cette remise. <b>La plupart des intégrations ne la demandent jamais et paient plein tarif. Savings la demande à chaque requête.</b>",
-      "evidenceTitle": "Ce qui a été mesuré",
-      "evidenceLede": "Un tour d'agent avec un contexte système long et répété — un assistant support, un extracteur documentaire. Huit paires, même modèle dans les deux bras, facturés avec le compteur d'Anthropic lui-même.",
-      "rowNaiveLabel": "Sans la couche",
-      "rowNaiveValue": "0 token servi depuis le cache",
-      "rowOursLabel": "Avec la couche",
-      "rowOursValue": "58 624 tokens servis depuis le cache",
-      "figure": "",
-      "figureNote": "La remise vient d'Anthropic, pas de nous : notre part est de la demander à chaque requête. C'est pourquoi vous ne verrez pas de pourcentage ici — celui que nous avions provenait d'une série qui n'a pas passé son propre contrôle qualité.",
-      "scopeTitle": "Ce que ce chiffre ne dit PAS",
-      "scope": "C'est l'économie de <b>ce</b> levier sur <b>ce</b> trafic, pas celle de votre facture entière. Elle vient du scénario à préfixe stable, là où se trouve l'argent du cache ; sur un trafic sans contexte répété, ce levier vaut zéro. Le chiffre global de la campagne est mesuré à part, et nous le publions avec son intervalle, plus haut.",
-      "verifyTitle": "Et vous n'avez pas à nous croire",
-      "verify": "C'est vérifiable sur votre propre facture sans rien installer : regardez si vos appels à Claude portent <code>cache_read_input_tokens</code>. S'ils sortent à zéro, cette remise, vous la laissez sur la table aujourd'hui.",
-      "providerTag": "Anthropic",
-      "providerModel": "claude-sonnet-4-5"
     },
     "ledgersHead": {
       "eyebrow": "Comptabilité honnête",
@@ -698,13 +682,13 @@
       "aiPaso2": "Puis téléversez le zip dans Customize → Skills : il apparaît avec son interrupteur, privé sur votre compte."
     },
     "systems": {
-      "caption": "Là où vivent déjà vos automatisations. Si ça appelle l'API OpenAI ou Anthropic avec votre clé, c'est mesuré — le SDK enveloppe l'appel ; la passerelle se place devant."
+      "caption": "Là où vivent déjà vos automatisations. Si ça appelle l'API de votre fournisseur avec votre clé, c'est mesuré — le SDK enveloppe l'appel ; la passerelle se place devant."
     },
     "gateway": {
       "eyebrow": "Nouveau · terminaux de code",
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
       "body": "Une seule commande place un compteur local devant votre terminal. Aucun code à toucher, rien à configurer — et vos prompts ne quittent jamais votre machine : seuls les comptages et le coût arrivent dans ce panneau.",
-      "note": "Aujourd'hui la passerelle mesure ; le levier d'optimisation automatique y arrive avec l'ombre — et en attendant le skill savings-mode attaque déjà vos plafonds. Fonctionne aussi avec Codex CLI, Goose et Qwen Code — et bvsala doctor imprime la configuration exacte du reste.",
+      "note": "Aujourd'hui la passerelle mesure ; le levier d'optimisation automatique y arrive avec le mode ombre. En attendant, le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. Il fonctionne aussi avec Codex CLI, Goose et Qwen Code — et bvsala doctor imprime la configuration exacte des autres.",
       "cta": "Voir comment ça marche →"
     },
     "integrate": {
@@ -722,7 +706,7 @@
       "seatNote": "Un siège est une <b>machine ou identité de service</b> active, pas une personne — facturé uniquement s'il est actif 3 jours ou plus dans un mois. Les exécuteurs CI et éphémères ne comptent pas.",
       "features": [
         "Chaque optimisation BV‑SALA, sans plafond",
-        "Cache sémantique géré et seuils appris",
+        "Un reçu par requête : SavingsReport avec quatre registres, mesuré et estimé séparés",
         "Tableaux de bord d'économies et analyses d'équipe",
         "Vos prompts ne quittent jamais votre infrastructure"
       ],
@@ -750,9 +734,9 @@
     },
     "footer": {
       "ctaTitle": "Mesurez-le sur votre propre trafic",
-      "ctaSub": "Une fois installé, chaque appel renvoie son économie mesurée contre le compteur de votre fournisseur. La licence, c'est ce qui vous permet d'exécuter BV-SALA dans votre application.",
+      "ctaSub": "Une fois installé, chaque appel renvoie son SavingsReport : mesuré et estimé séparés ; seul le mesuré entre dans la commission. La licence est ce qui vous permet d'exécuter BV‑SALA dans votre app.",
       "ctaStart": "Commencer",
-      "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV-SALA</b>, l'optimiseur de coût LLM de BiVelio, neutre vis-à-vis du fournisseur — chaque chiffre d'économie mesuré contre le compteur du fournisseur lui-même, jamais estimé.",
+      "tagline": "Le système d'exploitation de votre entreprise. Voici <b>BV‑SALA</b>, l'optimiseur de coût LLM neutre vis-à-vis du fournisseur de BiVelio — chaque chiffre publié est mesuré contre le compteur du fournisseur ; les estimations sont montrées à part et jamais facturées.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -830,6 +814,39 @@
       "magroTitle": "S'il est déjà maigre…",
       "magroBody": "…il passe intact. Il n'y a rien à retirer — et nous ne promettons pas d'économies là où il n'y en a pas.",
       "caption": "Tous les envois ne portent pas le même rembourrage : dans cette série, la coupe mesurée par scénario est allée de {min} à {max}. Ceux qui n'économisent rien sont publiés aussi."
+    },
+    "recibo": {
+      "title": "SavingsReport · série publiée",
+      "modelo": "modèle",
+      "parejas": "paires mesurées",
+      "calidad": "qualité",
+      "punto": "estimation ponctuelle",
+      "suelo": "Le titre est le plancher de l'intervalle à 95 %, jamais le point.",
+      "libros": "par registre",
+      "pie": "Chaque registre est publié avec son propre intervalle ; ceux qui ne dépassent pas zéro ne sont pas annoncés.",
+      "fecha": "série"
+    },
+    "devs": {
+      "eyebrow": "Conçu pour les développeurs",
+      "title": "Moins de maux de tête avec la facture. Sans changer de fournisseur.",
+      "sub": "Trois faits sur le paquet. Aucun n'est une promesse.",
+      "cards": [
+        {
+          "title": "Zéro dépendance à l'exécution",
+          "body": "Un seul bundle ESM. Rien ne s'installe à côté de votre code que nous n'ayons écrit ; le tokenizer exact est un peer optionnel.",
+          "mono": "dependencies: {}"
+        },
+        {
+          "title": "Un SavingsReport par appel",
+          "body": "Quatre registres jamais additionnés, le coût avec sa base (mesuré ou estimé) et des traces par étape. C'est exactement ce que lit votre tableau de bord.",
+          "mono": "report.cost.basis"
+        },
+        {
+          "title": "Votre trafic reste direct",
+          "body": "Le SDK encapsule l'appel dans votre processus. Vos prompts ne passent jamais par BiVelio : nous ne recevons que des comptages et des coûts.",
+          "mono": "app → provider api"
+        }
+      ]
     }
   },
   "invitacion": {
@@ -870,7 +887,7 @@
     "metaDescription": "BV‑SALA est une couche qui s'installe dans le code de votre application, là où l'API est appelée. Ce qu'elle peut économiser, où elle ne s'applique pas et comment on mesure vraiment.",
     "eyebrow": "La couche, expliquée · sans jargon",
     "title": "Où s'installe l'économie ?",
-    "lede": "BV‑SALA n'est ni une app, ni une extension, ni un réglage de ChatGPT. C'est un morceau de code qu'un développeur place dans sa propre application, exactement là où cette application appelle l'API d'OpenAI ou d'Anthropic. Elle ne peut économiser que là où existe une facture au token — et ne peut le mesurer que là où elle voit passer chaque requête.",
+    "lede": "BV‑SALA n'est ni une app, ni une extension, ni un réglage de ChatGPT. C'est un morceau de code qu'un développeur place dans sa propre application, exactement là où cette application appelle l'API de votre fournisseur. Elle ne peut économiser que là où existe une facture au token — et ne peut le mesurer que là où elle voit passer chaque requête.",
     "s1Title": "La couche vit dans votre code",
     "s1Sub": "Le même appel, avec et sans la couche. Le trafic voyage toujours directement de votre application au fournisseur — BV‑SALA n'est pas un serveur intermédiaire et ne voit jamais vos données de l'extérieur.",
     "flowWithout": "Sans BV‑SALA",
@@ -878,9 +895,9 @@
     "nodeApp": "Votre application",
     "nodeAppSubBefore": "chaque requête part entière",
     "nodeAppSubAfter": "même code métier",
-    "nodeLayerSub": "évite des appels · réduit entrée et sortie",
+    "nodeLayerSub": "évite des appels · réduit l'entrée",
     "nodeApi": "API du fournisseur",
-    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubBefore": "OpenAI · endpoints compatibles",
     "nodeApiSubAfter": "reçoit moins de tokens",
     "billMonth": "facture / mois",
     "billReport": "+ SavingsReport",
@@ -895,7 +912,7 @@
     "caseCodeBody": "Avec l'abonnement, la mensualité est fixe — mais plafonnée : le même skill s'installe en une seule commande et étire le même plafond hebdomadaire. Avec une clé API, il y a une vraie facture de tokens — et le compteur tourne déjà : « bvsala claude » lance Claude Code via la passerelle locale et votre dépense apparaît dans le panneau, token par token, sans toucher une ligne de code. L'économie, là, est la phase suivante — d'abord on mesure pour de vrai.",
     "caseAppName": "Votre application",
     "caseAppSub": "votre code + votre clé d'API",
-    "caseAppBody": "Le cas pour lequel BV‑SALA existe. Votre app appelle l'API avec votre clé, le fournisseur facture chaque token, et la couche s'installe en trois étapes : paquet, licence et envelopper l'appel. Dès la première requête, elle renvoie un <b>SavingsReport</b> avec l'économie vérifiée.",
+    "caseAppBody": "Le cas pour lequel BV‑SALA existe. Votre app appelle l'API avec votre clé, le fournisseur facture chaque token, et la couche s'installe en trois étapes : paquet, licence et encapsulation de l'appel. Dès la première requête, elle renvoie un <b>SavingsReport</b> avec l'économie, séparée en mesuré et estimé.",
     "verdictNothing": "Rien à installer",
     "verdictSkill": "Skill disponible",
     "verdictMeasures": "Mesure déjà",

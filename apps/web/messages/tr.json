@@ -547,10 +547,10 @@
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
     "metaDescription": "Lisanslı LLM maliyet katmanı. Sağlayıcınızın önüne kurulur ve faturanızı kısar; tasarruf, sağlayıcının kendi sayacına karşı %95 güven aralığıyla ölçülür.",
     "hero": {
-      "eyebrow": "Yapay zekâ tasarrufu, gerçekten ölçülür",
-      "title": "Yapay zekâya daha az ödeyin.",
-      "titleAccent": "Ve bunu faturanızda doğrulayın.",
-      "lede": "ChatGPT, Claude, Gemini… şirketinizin yapay zekâya sorduğu her soru, giren ve çıkan metne göre ücretlendirilir. Savings, şirketinizle sağlayıcının arasına girer, ödemeniz gerekmeyeni kırpar ve tasarrufu faturayla karşılaştırabileceğiniz bir makbuzda gösterir.",
+      "eyebrow": "LLM API'lerine token başına ödeyen ekipler için",
+      "title": "LLM faturanız, kontrol altında.",
+      "titleAccent": "Her çağrıda ölçülür.",
+      "lede": "Kodunuzun içine kurulan, yalnızca ödenmesi gerekeni geçiren ve her çağrıda bir SavingsReport döndüren bir SDK: ölçülen ve tahmini ayrı, sağlayıcınızın kendi sayacıyla sayılmış. Yalnızca ölçtüğümüzü yayımlarız.",
       "ctaRun": "Ölçülen sonuçları gör",
       "ctaPricing": "Fiyatları gör",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
@@ -560,18 +560,21 @@
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
           "cifra": "≥ %15,0",
-          "que": "daha az fatura, %95 güvenle doğrulandı"
+          "que": "daha az fatura, %95'te doğrulandı · optimize edilmemiş bir entegrasyona kıyasla, akış olmadan"
         }
-      ]
+      ],
+      "medidoEn": "Ölçüldüğü yer",
+      "compatibleCon": "Uyumlu",
+      "compatibleNota": "OpenAI API'siyle uyumlu her uç nokta ve yerel Anthropic adaptörü. Yayımlanmış rakamla, bugün, yalnızca OpenAI {modelo}."
     },
     "cascade": {
       "title": "En ucuz yürütme kazanır",
-      "per": "ölçüldü · %95 tabanı",
+      "per": "gpt-4o-mini üzerinde ölçüldü · %95 taban",
       "steps": [
         {
           "n": "01",
           "title": "Çağrıyı tamamen önle",
-          "sub": "çözücüler · tam önbellek · singleflight",
+          "sub": "çözücüler · singleflight",
           "ledger": "avoided_calls",
           "grey": false
         },
@@ -590,7 +593,7 @@
           "grey": false
         }
       ],
-      "footnote": "Her adım FARKLI bir deftere düşer, bu yüzden bu rakamlar birbirine eklenmez. Defteri sıfırı geçmeyen bir adım burada görünmez: çıktı kısıtlaması ölçüldü ve tasarruf ettirmiyor, bu yüzden duyurulmuyor."
+      "footnote": "Her adım FARKLI bir deftere düşer, bu yüzden bu rakamlar birbirine eklenmez. Defteri sıfırı geçmeyen bir adım burada görünmez: çıktı kısıtlaması ölçüldü ve tasarruf ettirmiyor, bu yüzden duyurulmuyor. Bu çalıştırmadaki tüm rakamlar gpt-4o-mini'dendir: aynı kaldıraç başka bir modelde paraya mal olabilir ve bu da yayımlanır."
     },
     "explica": {
       "eyebrow": "Sade bir dille",
@@ -603,7 +606,7 @@
         },
         {
           "title": "Aynı şey için iki kez ödemezsiniz",
-          "body": "Yapay zekâ her turda ona zaten gönderdiğiniz her şeyi yeniden okur — ve sağlayıcı bunu yeniden ücretlendirir. Savings zaten gönderileni hatırlar ve her isteği, tekrarlar indirimli fiyattan gidecek şekilde hazırlar."
+          "body": "Yapay zeka her turda ona daha önce gönderdiğiniz her şeyi yeniden okur — ve sağlayıcı bunu yeniden ücretlendirir. Savings her isteği, sağlayıcının tekrarlara indirimli fiyatını uygulayacağı şekilde hazırlar. İndirim sağlayıcınındır; bizim payımız onu doğru istemektir."
         },
         {
           "title": "Doğrulayabileceğiniz bir makbuz",
@@ -625,25 +628,6 @@
       "plain": "Bu testte fatura neredeyse kesin olarak en az {piso} düştü. Büyük olasılıkla {punto} düştü.",
       "plainNote": "Bir aralık olduğunda her zaman küçük sayıyı duyururuz — istatistiğin garanti ettiğini — asla gösterişli olanı değil.",
       "trialsLink": "Ham denemeleri indir (CSV)"
-    },
-    "anthropicCache": {
-      "eyebrow": "Ölçüldü · Anthropic önek önbelleği",
-      "title": "Anthropic tekrarlanan metne indirim yapar — ama istemek gerekir. Sizin için biz istiyoruz.",
-      "body": "Bir konuşma zaten gönderilmiş olanı (talimatlar, belgeler, geçmiş) tekrarladığında Anthropic bunu çok daha ucuza ücretlendirebilir — ama yalnızca her istek bu indirime hazırlanmış gelirse. <b>Çoğu entegrasyon bunu hiç istemez ve tam fiyat öder. Savings her istekte ister.</b>",
-      "evidenceTitle": "Ne ölçüldü",
-      "evidenceLede": "Uzun ve tekrar eden sistem bağlamına sahip bir ajan turu — bir destek asistanı, bir belge çıkarıcı. Sekiz çift, iki kolda da aynı model, Anthropic'in kendi sayacıyla ücretlendirildi.",
-      "rowNaiveLabel": "Katman olmadan",
-      "rowNaiveValue": "önbellekten sunulan 0 token",
-      "rowOursLabel": "Katman ile",
-      "rowOursValue": "önbellekten sunulan 58.624 token",
-      "figure": "",
-      "figureNote": "İndirimi Anthropic veriyor, biz değil: bizim payımıza düşen onu her istekte talep etmek. Bu yüzden burada bir yüzde görmeyeceksiniz — elimizdeki, kendi kalite eşiğini geçemeyen bir turdan geliyordu.",
-      "scopeTitle": "Bu rakamın söyleMEdiği şey",
-      "scope": "Bu, <b>o</b> kaldıracın <b>o</b> trafik üzerindeki tasarrufudur; faturanın tamamının değil. Önbellek parasının bulunduğu kararlı önek senaryosundan gelir; tekrar eden bağlamı olmayan trafikte bu kaldıraç sıfır değerindedir. Tam turun manşet rakamı ayrıca ölçülür ve onu aralığıyla birlikte yukarıda yayımlıyoruz.",
-      "verifyTitle": "Ve bize inanmak zorunda değilsin",
-      "verify": "Hiçbir şey kurmadan kendi faturanda doğrulanabilir: Claude çağrılarının <code>cache_read_input_tokens</code> taşıyıp taşımadığına bak. Sıfır çıkıyorsa, o indirimi bugün masada bırakıyorsun.",
-      "providerTag": "Anthropic",
-      "providerModel": "claude-sonnet-4-5"
     },
     "ledgersHead": {
       "eyebrow": "Dürüst muhasebe",
@@ -698,13 +682,13 @@
       "aiPaso2": "Sonra zip'i Customize → Skills altında yükle: kendi anahtarıyla, hesabında özel olarak görünür."
     },
     "systems": {
-      "caption": "Otomasyonlarının zaten yaşadığı yerde. OpenAI veya Anthropic API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
+      "caption": "Otomasyonlarının zaten yaşadığı yerde. sağlayıcınızın API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
     },
     "gateway": {
       "eyebrow": "Yeni · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
       "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
-      "note": "Bugün gateway ölçüyor; oradaki otomatik optimizasyon kolu gölgeyle gelecek — bu arada savings-mode skill'i limitlerine şimdiden saldırıyor. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor gerisinin tam yapılandırmasını yazdırır.",
+      "note": "Bugün ağ geçidi ölçüyor; otomatik optimizasyon kaldıracı oraya gölge moduyla gelecek. Bu arada savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
       "cta": "Nasıl çalıştığını gör →"
     },
     "integrate": {
@@ -722,7 +706,7 @@
       "seatNote": "Bir koltuk, bir kişi değil, etkin bir <b>makine ya da servis kimliğidir</b> — yalnızca bir ayda 3+ gün etkinse faturalandırılır. CI ve geçici çalıştırıcılar sayılmaz.",
       "features": [
         "Her BV‑SALA optimizasyonu, sınırsız",
-        "Yönetilen anlamsal önbellek ve öğrenilmiş eşikler",
+        "İstek başına makbuz: dört defterli SavingsReport, ölçülen ve tahmini ayrı tutulur",
         "Tasarruf panelleri ve ekip analitiği",
         "Prompt'larınız altyapınızdan asla çıkmaz"
       ],
@@ -750,9 +734,9 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı, sağlayıcınızın kendi sayacına karşı ölçülmüş tasarrufuyla birlikte döner. BV-SALA'yı kendi uygulamanızda çalıştırmanızı sağlayan şey lisanstır.",
+      "ctaSub": "Kurulduktan sonra her çağrı kendi SavingsReport'unu döndürür: ölçülen ve tahmini ayrı; komisyona yalnızca ölçülen girer. Lisans, BV‑SALA'yı uygulamanızın içinde çalıştırmanızı sağlayan şeydir.",
       "ctaStart": "Başla",
-      "tagline": "İşletmeniz için işletim sistemi. Karşınızda <b>BV-SALA</b>: BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimize edicisi — her tasarruf rakamı sağlayıcının kendi sayacına karşı ölçülür, tahmin edilmez.",
+      "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — yayımlanan her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ayrı gösterilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -830,6 +814,39 @@
       "magroTitle": "Zaten yalınsa…",
       "magroBody": "…dokunulmadan geçer. Orada çıkarılacak bir şey yok — olmayan yerde tasarruf vadetmeyiz.",
       "caption": "Her gönderi aynı dolguyu taşımaz: bu turda senaryo başına ölçülen kesinti {min} ile {max} arasındaydı. Tasarruf etmeyenler de yayımlanır."
+    },
+    "recibo": {
+      "title": "SavingsReport · yayımlanan çalıştırma",
+      "modelo": "model",
+      "parejas": "ölçülen çift",
+      "calidad": "kalite",
+      "punto": "nokta tahmini",
+      "suelo": "Başlık %95 aralığının tabanıdır, asla nokta değil.",
+      "libros": "defter başına",
+      "pie": "Her defter kendi aralığıyla yayımlanır; sıfırı aşmayanlar duyurulmaz.",
+      "fecha": "çalıştırma"
+    },
+    "devs": {
+      "eyebrow": "Geliştiriciler için yapıldı",
+      "title": "Faturayla daha az baş ağrısı. Sağlayıcı değiştirmeden.",
+      "sub": "Paket hakkında üç gerçek. Hiçbiri bir vaat değil.",
+      "cards": [
+        {
+          "title": "Sıfır çalışma zamanı bağımlılığı",
+          "body": "Tek bir ESM paketi. Kodunuzun yanına bizim yazmadığımız hiçbir şey kurulmaz; kesin tokenizer isteğe bağlı bir peer'dır.",
+          "mono": "dependencies: {}"
+        },
+        {
+          "title": "Çağrı başına bir SavingsReport",
+          "body": "Asla toplanmayan dört defter, temeliyle birlikte maliyet (ölçülen veya tahmini) ve aşama başına izler. Panonuzun okuduğu şeyin aynısı.",
+          "mono": "report.cost.basis"
+        },
+        {
+          "title": "Trafiğiniz doğrudan gitmeye devam eder",
+          "body": "SDK çağrıyı sürecinizin içinde sarmalar. Promptlarınız BiVelio'dan geçmez: bize yalnızca sayımlar ve maliyet ulaşır.",
+          "mono": "app → provider api"
+        }
+      ]
     }
   },
   "invitacion": {
@@ -870,7 +887,7 @@
     "metaDescription": "BV‑SALA, uygulamanın kodunun içine — API'nin çağrıldığı yere — kurulan bir katmandır. Neyi tasarruf edebilir, nerede geçerli değildir ve gerçekte nasıl ölçülür.",
     "eyebrow": "Katman, açıklandı · jargonsuz",
     "title": "Tasarruf nereye kurulur?",
-    "lede": "BV‑SALA bir uygulama, bir eklenti veya bir ChatGPT ayarı değildir. Bir geliştiricinin kendi uygulamasının içine — o uygulamanın OpenAI veya Anthropic API'sini çağırdığı yere — yerleştirdiği bir kod parçasıdır. Yalnızca token faturasının var olduğu yerde tasarruf edebilir — ve yalnızca her isteğin geçtiğini gördüğü yerde ölçebilir.",
+    "lede": "BV‑SALA bir uygulama, bir eklenti veya bir ChatGPT ayarı değildir. Bir geliştiricinin kendi uygulamasının içine — o uygulamanın sağlayıcınızın API'sini çağırdığı yere — yerleştirdiği bir kod parçasıdır. Yalnızca token faturasının var olduğu yerde tasarruf edebilir — ve yalnızca her isteğin geçtiğini gördüğü yerde ölçebilir.",
     "s1Title": "Katman senin kodunun içinde yaşar",
     "s1Sub": "Aynı çağrı, katmanla ve katmansız. Trafik her zaman uygulamandan sağlayıcıya doğrudan gider — BV‑SALA aracı bir sunucu değildir ve verini asla dışarıdan görmez.",
     "flowWithout": "BV‑SALA olmadan",
@@ -878,9 +895,9 @@
     "nodeApp": "Senin uygulaman",
     "nodeAppSubBefore": "her istek olduğu gibi çıkar",
     "nodeAppSubAfter": "aynı iş kodu",
-    "nodeLayerSub": "çağrılardan kaçınır · girişi ve çıkışı kısaltır",
+    "nodeLayerSub": "çağrılardan kaçınır · girdiyi kırpar",
     "nodeApi": "Sağlayıcı API'si",
-    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubBefore": "OpenAI · uyumlu uç noktalar",
     "nodeApiSubAfter": "daha az token alır",
     "billMonth": "fatura / ay",
     "billReport": "+ SavingsReport",
@@ -895,7 +912,7 @@
     "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: “bvsala claude” Claude Code'u yerel gateway üzerinden başlatır ve harcaman panelde token token görünür, tek satır koda dokunmadan. Oradaki tasarruf bir sonraki aşama — önce gerçekten ölçüyoruz.",
     "caseAppName": "Senin uygulaman",
     "caseAppSub": "senin kodun + senin API anahtarın",
-    "caseAppBody": "BV‑SALA'nın var olduğu durum. Uygulaman API'yi senin anahtarınla çağırır, sağlayıcı her tokenı faturalar ve katman üç adımda kurulur: paket, lisans ve çağrıyı sarmak. İlk istekten itibaren doğrulanmış tasarrufla bir <b>SavingsReport</b> döndürür.",
+    "caseAppBody": "BV‑SALA'nın var olma nedeni olan durum. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman üç adımda kurulur: paket, lisans ve çağrıyı sarmalama. İlk istekten itibaren, ölçülen ve tahmini olarak ayrılmış tasarrufla bir <b>SavingsReport</b> döndürür.",
     "verdictNothing": "Kurulacak bir şey yok",
     "verdictSkill": "Skill mevcut",
     "verdictMeasures": "Artık ölçüyor",

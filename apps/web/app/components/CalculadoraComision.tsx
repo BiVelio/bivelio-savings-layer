@@ -26,18 +26,16 @@ type SdkModule = { CATALOGO: Record<string, Precio>; PRECIOS_AL_DIA: string };
  *  pequeño paga comisión pequeña — y que el cliente se queda casi todo. */
 const HORQUILLAS = [0.1, 0.25, 0.45, 0.6] as const;
 
+/* Solo proveedores con ahorro MEDIDO en el banco público (decisión del dueño,
+   2026-09-12): una proyección sobre precios de un proveedor sin tirada
+   sellada es una promesa sin medición, y aquí no se publica. Anthropic
+   vuelve a la lista cuando su tirada pase la verja de calidad. */
 const PROVEEDORES = [
-  {
-    id: "anthropic",
-    nombre: "Anthropic",
-    filtro: (k: string) => k.startsWith("claude"),
-    /** La fuente original de los precios: la página pública oficial. */
-    urlPrecios: "https://www.anthropic.com/pricing",
-  },
   {
     id: "openai",
     nombre: "OpenAI",
     filtro: (k: string) => k.startsWith("gpt"),
+    /** La fuente original de los precios: la página pública oficial. */
     urlPrecios: "https://openai.com/api/pricing/",
   },
 ] as const;
@@ -47,8 +45,8 @@ export function CalculadoraComision({ asiento }: { asiento: { cents: number; cur
   const locale = useLocale();
   const [asientos, setAsientos] = useState(1);
   const [catalogo, setCatalogo] = useState<SdkModule | null>(null);
-  const [proveedor, setProveedor] = useState<(typeof PROVEEDORES)[number]["id"]>("anthropic");
-  const [modelo, setModelo] = useState("claude-haiku-4-5");
+  const [proveedor, setProveedor] = useState<(typeof PROVEEDORES)[number]["id"]>("openai");
+  const [modelo, setModelo] = useState("gpt-4o-mini");
   const [reqs, setReqs] = useState(1_000_000);
   const [inTok, setInTok] = useState(1_200);
   const [outTok, setOutTok] = useState(250);

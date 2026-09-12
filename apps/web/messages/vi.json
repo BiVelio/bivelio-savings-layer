@@ -547,10 +547,10 @@
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
     "metaDescription": "Lớp chi phí LLM có cấp phép. Cài đặt trước nhà cung cấp của bạn và cắt giảm hóa đơn; mức tiết kiệm đo theo chính bộ đếm của họ, kèm khoảng tin cậy 95%.",
     "hero": {
-      "eyebrow": "Tiết kiệm AI, đo lường thật",
-      "title": "Trả ít tiền hơn cho AI.",
-      "titleAccent": "Và kiểm chứng ngay trên hóa đơn của bạn.",
-      "lede": "ChatGPT, Claude, Gemini… mỗi câu hỏi công ty bạn gửi cho AI đều được tính tiền theo phần văn bản đi vào và đi ra. Savings đứng giữa công ty bạn và nhà cung cấp, cắt bớt phần không cần trả và cho bạn xem khoản tiết kiệm trên một biên lai có thể đối chiếu với hóa đơn.",
+      "eyebrow": "Dành cho các đội trả phí API LLM theo token",
+      "title": "Hóa đơn LLM của bạn, trong tầm kiểm soát.",
+      "titleAccent": "Được đo ở mỗi lời gọi.",
+      "lede": "Một SDK cài trong mã của bạn, chỉ cho qua những gì phải trả và trả về một SavingsReport cho mỗi lời gọi: đo được và ước tính tách riêng, đếm bằng chính bộ đếm của nhà cung cấp. Chúng tôi chỉ công bố những gì đã đo.",
       "ctaRun": "Xem kết quả đo",
       "ctaPricing": "Xem bảng giá",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
@@ -560,18 +560,21 @@
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
           "cifra": "≥ 15,0%",
-          "que": "hóa đơn thấp hơn, đã xác minh ở mức 95%"
+          "que": "hóa đơn giảm, xác minh ở mức 95% · so với tích hợp chưa tối ưu, không streaming"
         }
-      ]
+      ],
+      "medidoEn": "Đo trên",
+      "compatibleCon": "Tương thích với",
+      "compatibleNota": "Mọi endpoint tương thích với API của OpenAI, cùng bộ điều hợp gốc cho Anthropic. Có con số đã công bố, hiện nay, chỉ OpenAI {modelo}."
     },
     "cascade": {
       "title": "Phương án thực thi rẻ nhất thắng",
-      "per": "đã đo · sàn 95%",
+      "per": "đo trên gpt-4o-mini · cận dưới 95%",
       "steps": [
         {
           "n": "01",
           "title": "Tránh hoàn toàn lệnh gọi",
-          "sub": "bộ giải · bộ nhớ đệm chính xác · singleflight",
+          "sub": "bộ giải · singleflight",
           "ledger": "avoided_calls",
           "grey": false
         },
@@ -590,7 +593,7 @@
           "grey": false
         }
       ],
-      "footnote": "Mỗi bước rơi vào MỘT sổ khác nhau, nên các con số này không cộng dồn với nhau. Một bước mà sổ của nó không vượt qua số không sẽ không xuất hiện ở đây: việc hạn chế đầu ra đã được đo và không tiết kiệm, nên chúng tôi không quảng bá nó."
+      "footnote": "Mỗi bước rơi vào MỘT sổ khác nhau, nên các con số này không cộng dồn với nhau. Một bước mà sổ của nó không vượt qua số không sẽ không xuất hiện ở đây: việc hạn chế đầu ra đã được đo và không tiết kiệm, nên chúng tôi không quảng bá nó. Mọi con số trong đợt chạy này đều từ gpt-4o-mini: cùng một đòn bẩy có thể tốn tiền trên mô hình khác, và điều đó cũng được công bố."
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
@@ -603,7 +606,7 @@
         },
         {
           "title": "Bạn không trả hai lần cho cùng một thứ",
-          "body": "AI đọc lại mọi thứ bạn đã gửi ở mỗi lượt — và nhà cung cấp lại tính tiền lần nữa. Savings ghi nhớ những gì đã gửi và chuẩn bị mỗi yêu cầu để phần lặp lại đi với giá đã giảm."
+          "body": "AI đọc lại ở mỗi lượt mọi thứ bạn đã gửi — và nhà cung cấp tính phí lần nữa. Savings chuẩn bị từng yêu cầu để nhà cung cấp áp dụng giá ưu đãi cho phần lặp lại. Khoản giảm giá là của nhà cung cấp; phần của chúng tôi là yêu cầu nó đúng cách."
         },
         {
           "title": "Một biên lai bạn có thể kiểm chứng",
@@ -625,25 +628,6 @@
       "plain": "Trong bài kiểm tra này, hóa đơn gần như chắc chắn giảm ít nhất {piso}. Nhiều khả năng nhất là giảm {punto}.",
       "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp.",
       "trialsLink": "Tải dữ liệu thử nghiệm thô (CSV)"
-    },
-    "anthropicCache": {
-      "eyebrow": "Đã đo · bộ nhớ đệm tiền tố của Anthropic",
-      "title": "Anthropic giảm giá cho văn bản lặp lại — nhưng phải yêu cầu. Chúng tôi yêu cầu thay bạn.",
-      "body": "Khi cuộc trò chuyện lặp lại những gì đã gửi (hướng dẫn, tài liệu, lịch sử), Anthropic có thể tính rẻ hơn nhiều — nhưng chỉ khi mỗi yêu cầu đến nơi đã được chuẩn bị cho khoản giảm giá đó. <b>Phần lớn các tích hợp không bao giờ yêu cầu và trả nguyên giá. Savings yêu cầu trong mọi yêu cầu.</b>",
-      "evidenceTitle": "Những gì đã được đo",
-      "evidenceLede": "Một lượt tác tử với ngữ cảnh hệ thống dài và lặp lại — một trợ lý hỗ trợ, một bộ trích xuất tài liệu. Tám cặp, cùng một mô hình ở cả hai nhánh, tính giá bằng chính bộ đếm của Anthropic.",
-      "rowNaiveLabel": "Không có lớp",
-      "rowNaiveValue": "0 token được phục vụ từ bộ nhớ đệm",
-      "rowOursLabel": "Có lớp",
-      "rowOursValue": "58.624 token được phục vụ từ bộ nhớ đệm",
-      "figure": "",
-      "figureNote": "Khoản giảm giá là của Anthropic, không phải của chúng tôi: phần việc của chúng tôi là yêu cầu nó ở mỗi lượt gọi. Vì vậy bạn sẽ không thấy tỷ lệ phần trăm ở đây — con số trước đây đến từ một đợt chạy không vượt qua chính ngưỡng chất lượng của nó.",
-      "scopeTitle": "Điều con số này KHÔNG nói",
-      "scope": "Đây là khoản tiết kiệm của <b>đòn bẩy đó</b> trên <b>lưu lượng đó</b>, không phải của toàn bộ hóa đơn. Nó đến từ kịch bản tiền tố ổn định, nơi có tiền của bộ nhớ đệm; với lưu lượng không có ngữ cảnh lặp lại, đòn bẩy này bằng không. Con số tổng của toàn bộ đợt chạy được đo riêng, và chúng tôi công bố kèm khoảng tin cậy, ở phía trên.",
-      "verifyTitle": "Và bạn không cần tin lời chúng tôi",
-      "verify": "Bạn có thể kiểm tra trên chính hóa đơn của mình mà không cần cài gì: xem các lệnh gọi Claude của bạn có mang <code>cache_read_input_tokens</code> hay không. Nếu chúng bằng không, hôm nay bạn đang bỏ lại khoản giảm giá đó trên bàn.",
-      "providerTag": "Anthropic",
-      "providerModel": "claude-sonnet-4-5"
     },
     "ledgersHead": {
       "eyebrow": "Hạch toán trung thực",
@@ -698,13 +682,13 @@
       "aiPaso2": "Sau đó tải zip lên trong Customize → Skills: nó xuất hiện với công tắc riêng, riêng tư trong tài khoản của bạn."
     },
     "systems": {
-      "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của OpenAI hay Anthropic bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."
+      "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của nhà cung cấp bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."
     },
     "gateway": {
       "eyebrow": "Mới · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn. Không sửa mã, không cấu hình — và prompt của bạn không bao giờ rời khỏi máy: bảng điều khiển này chỉ nhận số đếm và chi phí.",
-      "note": "Hôm nay gateway đo; cần gạt tối ưu tự động ở đó sẽ đến cùng bản bóng — trong lúc chờ, skill savings-mode đã tấn công giới hạn của bạn. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
+      "note": "Hiện gateway đo lường; đòn bẩy tối ưu tự động ở đó sẽ đến cùng chế độ bóng. Trong lúc chờ, skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
       "cta": "Xem cách hoạt động →"
     },
     "integrate": {
@@ -722,7 +706,7 @@
       "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> đang hoạt động, không phải một người — chỉ tính phí nếu hoạt động từ 3 ngày trở lên trong một tháng. CI và các trình chạy tạm thời không được tính.",
       "features": [
         "Mọi tối ưu hóa của BV‑SALA, không giới hạn",
-        "Bộ đệm ngữ nghĩa được quản lý & ngưỡng được học",
+        "Biên lai cho mỗi yêu cầu: SavingsReport với bốn sổ cái, đo được và ước tính tách riêng",
         "Bảng điều khiển tiết kiệm & phân tích cho nhóm",
         "Prompt của bạn không bao giờ rời khỏi hạ tầng của bạn"
       ],
@@ -750,9 +734,9 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài đặt, mỗi lệnh gọi đều trả về khoản tiết kiệm của chính nó, đo theo bộ đếm của nhà cung cấp bạn đang dùng. Giấy phép là thứ cho phép bạn chạy BV-SALA bên trong ứng dụng của mình.",
+      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport của nó: đo được và ước tính tách riêng; chỉ phần đo được mới tính vào hoa hồng. Giấy phép là thứ cho phép bạn chạy BV‑SALA trong ứng dụng của mình.",
       "ctaStart": "Bắt đầu",
-      "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV-SALA</b>, trình tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số tiết kiệm đều được đo bằng chính bộ đếm của nhà cung cấp, không phải ước tính.",
+      "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số công bố đều được đo theo bộ đếm của chính nhà cung cấp; ước tính được hiển thị riêng và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -830,6 +814,39 @@
       "magroTitle": "Nếu vốn đã gọn…",
       "magroBody": "…nó đi qua nguyên vẹn. Không có gì để bỏ — và chúng tôi không hứa khoản tiết kiệm không tồn tại.",
       "caption": "Không phải gói gửi nào cũng độn nhiều như nhau: trong đợt chạy này, mức cắt đo được theo từng kịch bản dao động từ {min} đến {max}. Những kịch bản không tiết kiệm cũng được công bố."
+    },
+    "recibo": {
+      "title": "SavingsReport · đợt chạy đã công bố",
+      "modelo": "mô hình",
+      "parejas": "cặp đã đo",
+      "calidad": "chất lượng",
+      "punto": "ước lượng điểm",
+      "suelo": "Con số tiêu đề là cận dưới của khoảng 95%, không bao giờ là điểm.",
+      "libros": "theo từng sổ cái",
+      "pie": "Mỗi sổ cái được công bố với khoảng riêng; sổ nào không vượt qua số không thì không được quảng bá.",
+      "fecha": "đợt chạy"
+    },
+    "devs": {
+      "eyebrow": "Xây dựng cho lập trình viên",
+      "title": "Bớt đau đầu vì hóa đơn. Không cần đổi nhà cung cấp.",
+      "sub": "Ba sự thật về gói này. Không có điều nào là lời hứa.",
+      "cards": [
+        {
+          "title": "Không phụ thuộc lúc chạy",
+          "body": "Một bundle ESM duy nhất. Không có gì được cài cạnh mã của bạn mà không do chúng tôi viết; tokenizer chính xác là peer tùy chọn.",
+          "mono": "dependencies: {}"
+        },
+        {
+          "title": "Một SavingsReport cho mỗi lời gọi",
+          "body": "Bốn sổ cái không bao giờ được cộng gộp, chi phí kèm cơ sở (đo được hay ước tính) và dấu vết theo từng giai đoạn. Đúng thứ bảng điều khiển của bạn đọc.",
+          "mono": "report.cost.basis"
+        },
+        {
+          "title": "Lưu lượng của bạn vẫn đi thẳng",
+          "body": "SDK bọc lời gọi ngay trong tiến trình của bạn. Prompt của bạn không đi qua BiVelio: chúng tôi chỉ nhận số đếm và chi phí.",
+          "mono": "app → provider api"
+        }
+      ]
     }
   },
   "invitacion": {
@@ -870,7 +887,7 @@
     "metaDescription": "BV‑SALA là một lớp được cài vào mã của ứng dụng của bạn, nơi API được gọi. Nó tiết kiệm được gì, ở đâu không áp dụng và cách đo lường thực sự.",
     "eyebrow": "Lớp tiết kiệm, giải thích · không thuật ngữ",
     "title": "Khoản tiết kiệm được cài ở đâu?",
-    "lede": "BV‑SALA không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của OpenAI hoặc Anthropic. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",
+    "lede": "BV‑SALA không phải là ứng dụng, không phải tiện ích mở rộng, cũng không phải một cài đặt của ChatGPT. Nó là một đoạn mã mà lập trình viên đặt vào bên trong ứng dụng của chính họ, ngay tại nơi ứng dụng đó gọi API của nhà cung cấp. Nó chỉ có thể tiết kiệm ở nơi tồn tại hóa đơn theo token — và chỉ có thể đo ở nơi nó thấy từng yêu cầu đi qua.",
     "s1Title": "Lớp này sống bên trong mã của bạn",
     "s1Sub": "Cùng một lệnh gọi, có và không có lớp. Lưu lượng luôn đi thẳng từ ứng dụng của bạn đến nhà cung cấp — BV‑SALA không phải máy chủ trung gian và không bao giờ thấy dữ liệu của bạn từ bên ngoài.",
     "flowWithout": "Không có BV‑SALA",
@@ -878,9 +895,9 @@
     "nodeApp": "Ứng dụng của bạn",
     "nodeAppSubBefore": "mỗi yêu cầu đi ra nguyên vẹn",
     "nodeAppSubAfter": "cùng mã nghiệp vụ",
-    "nodeLayerSub": "tránh lệnh gọi · cắt gọn đầu vào và đầu ra",
+    "nodeLayerSub": "tránh lời gọi · cắt gọn đầu vào",
     "nodeApi": "API nhà cung cấp",
-    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubBefore": "OpenAI · các endpoint tương thích",
     "nodeApiSubAfter": "nhận ít token hơn",
     "billMonth": "hóa đơn / tháng",
     "billReport": "+ SavingsReport",
@@ -895,7 +912,7 @@
     "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: «bvsala claude» khởi chạy Claude Code qua gateway cục bộ và chi tiêu của bạn hiện trong bảng điều khiển, từng token một, không đụng một dòng mã. Tiết kiệm ở đó là giai đoạn tiếp theo — trước hết chúng tôi đo thật.",
     "caseAppName": "Ứng dụng của bạn",
     "caseAppSub": "mã của bạn + khóa API của bạn",
-    "caseAppBody": "Trường hợp mà BV‑SALA sinh ra để phục vụ. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính tiền từng token, và lớp này được cài trong ba bước: gói, giấy phép và bọc lệnh gọi. Từ yêu cầu đầu tiên nó trả về một <b>SavingsReport</b> với khoản tiết kiệm đã xác minh.",
+    "caseAppBody": "Trường hợp mà BV‑SALA tồn tại để phục vụ. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và lớp này cài đặt trong ba bước: gói, giấy phép và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về một <b>SavingsReport</b> với khoản tiết kiệm, tách thành đo được và ước tính.",
     "verdictNothing": "Không có gì để cài",
     "verdictSkill": "Có skill",
     "verdictMeasures": "Đã đo",
