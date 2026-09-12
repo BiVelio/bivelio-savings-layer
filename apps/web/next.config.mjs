@@ -51,9 +51,16 @@ const authOrigins = supabaseOrigin
 const gtagScript = ["https://www.googletagmanager.com", "https://www.googleadservices.com", "https://googleads.g.doubleclick.net"];
 const gtagPing = [...gtagScript, "https://www.google.com"];
 
+// Solo en desarrollo: el runtime de `next dev` (React Refresh y los source
+// maps) evalúa cadenas y, con la CSP de producción, el navegador lo bloqueaba
+// en silencio — ningún componente de cliente llegaba a hidratarse en
+// localhost (calculadora en «Cargando…», revelado al hacer scroll sin
+// disparar). En producción no se compila con eval y la directiva no sale.
+const evalEnDesarrollo = process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : "";
+
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' ${gtagScript.join(" ")}`,
+  `script-src 'self' 'unsafe-inline'${evalEnDesarrollo} ${gtagScript.join(" ")}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: ${gtagPing.join(" ")}`,
   "font-src 'self'",

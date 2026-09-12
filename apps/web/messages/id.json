@@ -547,10 +547,10 @@
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
     "metaDescription": "Lapisan biaya LLM berlisensi. Dipasang di depan penyedia Anda dan memangkas tagihan; penghematan diukur terhadap penghitung penyedia, interval keyakinan 95%.",
     "hero": {
-      "eyebrow": "Penghematan AI, benar-benar terukur",
-      "title": "Bayar lebih sedikit untuk AI.",
-      "titleAccent": "Dan buktikan di tagihan Anda.",
-      "lede": "ChatGPT, Claude, Gemini… setiap pertanyaan yang perusahaan Anda ajukan ke AI ditagih berdasarkan teks yang masuk dan keluar. Savings berdiri di antara perusahaan Anda dan penyedia, memangkas yang tidak perlu dibayar, dan menunjukkan penghematan pada struk yang bisa Anda cocokkan dengan tagihan.",
+      "eyebrow": "Untuk tim yang membayar API LLM per token",
+      "title": "Tagihan LLM Anda, terkendali.",
+      "titleAccent": "Diukur di setiap panggilan.",
+      "lede": "SDK yang dipasang di dalam kode Anda, hanya meloloskan yang memang harus dibayar, dan mengembalikan SavingsReport per panggilan: terukur dan estimasi dipisah, dihitung dengan penghitung penyedia Anda. Kami hanya mempublikasikan yang sudah kami ukur.",
       "ctaRun": "Lihat hasil terukur",
       "ctaPricing": "Lihat harga",
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
@@ -560,18 +560,21 @@
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
           "cifra": "≥ 15,0%",
-          "que": "tagihan lebih rendah, terverifikasi 95%"
+          "que": "tagihan lebih rendah, terverifikasi 95% · dibanding integrasi tanpa optimasi, tanpa streaming"
         }
-      ]
+      ],
+      "medidoEn": "Diukur pada",
+      "compatibleCon": "Kompatibel dengan",
+      "compatibleNota": "Endpoint apa pun yang kompatibel dengan API OpenAI, plus adaptor asli Anthropic. Dengan angka yang dipublikasikan, saat ini, hanya OpenAI {modelo}."
     },
     "cascade": {
       "title": "Eksekusi termurah menang",
-      "per": "terukur · batas bawah 95%",
+      "per": "diukur pada gpt-4o-mini · batas bawah 95%",
       "steps": [
         {
           "n": "01",
           "title": "Hindari panggilan sepenuhnya",
-          "sub": "resolver · cache persis · singleflight",
+          "sub": "resolver · singleflight",
           "ledger": "avoided_calls",
           "grey": false
         },
@@ -590,7 +593,7 @@
           "grey": false
         }
       ],
-      "footnote": "Setiap langkah jatuh ke SATU buku yang berbeda, jadi angka-angka ini tidak saling dijumlahkan. Langkah yang bukunya tidak melewati nol tidak muncul di sini: pembatasan keluaran sudah diukur dan tidak menghemat, jadi tidak diiklankan."
+      "footnote": "Setiap langkah jatuh ke SATU buku yang berbeda, jadi angka-angka ini tidak saling dijumlahkan. Langkah yang bukunya tidak melewati nol tidak muncul di sini: pembatasan keluaran sudah diukur dan tidak menghemat, jadi tidak diiklankan. Semua angka dalam putaran ini berasal dari gpt-4o-mini: tuas yang sama bisa merugikan pada model lain, dan itu pun dipublikasikan."
     },
     "explica": {
       "eyebrow": "Dengan bahasa sehari-hari",
@@ -603,7 +606,7 @@
         },
         {
           "title": "Anda tidak membayar dua kali untuk hal yang sama",
-          "body": "AI membaca ulang semua yang sudah Anda kirim di setiap giliran — dan penyedia menagihnya lagi. Savings mengingat yang sudah terkirim dan menyiapkan setiap permintaan agar pengulangan berangkat dengan harga diskon."
+          "body": "AI membaca ulang setiap giliran semua yang sudah Anda kirim — dan penyedia menagihnya lagi. Savings menyiapkan setiap permintaan agar penyedia menerapkan harga diskonnya pada pengulangan. Diskonnya milik penyedia; bagian kami adalah memintanya dengan benar."
         },
         {
           "title": "Struk yang bisa Anda periksa",
@@ -625,25 +628,6 @@
       "plain": "Dalam pengujian ini, tagihan hampir pasti turun setidaknya {piso}. Kemungkinan besar turun {punto}.",
       "plainNote": "Saat ada rentang, kami selalu mengumumkan angka yang kecil — yang dijamin statistik — tidak pernah yang menyanjung.",
       "trialsLink": "Unduh data percobaan mentah (CSV)"
-    },
-    "anthropicCache": {
-      "eyebrow": "Terukur · cache prefiks Anthropic",
-      "title": "Anthropic memberi diskon untuk teks berulang — tapi harus diminta. Kami memintanya untuk Anda.",
-      "body": "Saat percakapan mengulang yang sudah terkirim (instruksi, dokumen, riwayat), Anthropic bisa menagihnya jauh lebih murah — tapi hanya jika setiap permintaan tiba sudah disiapkan untuk diskon itu. <b>Kebanyakan integrasi tidak pernah meminta dan membayar harga penuh. Savings memintanya di setiap permintaan.</b>",
-      "evidenceTitle": "Apa yang diukur",
-      "evidenceLede": "Giliran agen dengan konteks sistem yang panjang dan berulang — asisten dukungan, pengekstrak dokumen. Delapan pasang, model yang sama di kedua lengan, ditarifkan dengan penghitung milik Anthropic sendiri.",
-      "rowNaiveLabel": "Tanpa lapisan",
-      "rowNaiveValue": "0 token dilayani dari cache",
-      "rowOursLabel": "Dengan lapisan",
-      "rowOursValue": "58.624 token dilayani dari cache",
-      "figure": "",
-      "figureNote": "Diskon itu milik Anthropic, bukan kami: bagian kami adalah memintanya di setiap permintaan. Karena itu Anda tidak akan melihat persentase di sini — angka sebelumnya berasal dari uji coba yang gagal melewati gerbang kualitasnya sendiri.",
-      "scopeTitle": "Apa yang TIDAK dikatakan angka ini",
-      "scope": "Ini penghematan dari <b>tuas itu</b> pada <b>trafik itu</b>, bukan pada seluruh tagihanmu. Angkanya berasal dari skenario prefiks stabil, tempat uang cache berada; pada trafik tanpa konteks berulang tuas ini bernilai nol. Angka utama dari uji penuh diukur terpisah, dan kami publikasikan dengan intervalnya, di atas.",
-      "verifyTitle": "Dan kamu tidak perlu percaya begitu saja",
-      "verify": "Bisa kamu periksa di tagihanmu sendiri tanpa memasang apa pun: lihat apakah panggilan Claude-mu membawa <code>cache_read_input_tokens</code>. Kalau hasilnya nol, diskon itu kamu tinggalkan begitu saja hari ini.",
-      "providerTag": "Anthropic",
-      "providerModel": "claude-sonnet-4-5"
     },
     "ledgersHead": {
       "eyebrow": "Penghitungan yang jujur",
@@ -698,13 +682,13 @@
       "aiPaso2": "Lalu unggah zip di Customize → Skills: muncul dengan sakelarnya sendiri, privat di akunmu."
     },
     "systems": {
-      "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API OpenAI atau Anthropic dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
+      "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API penyedia Anda dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
     },
     "gateway": {
       "eyebrow": "Baru · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
-      "note": "Hari ini gateway mengukur; tuas optimasi otomatis di sana datang bersama bayangan — sementara itu skill savings-mode sudah menyerang batas Anda. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "note": "Saat ini gateway mengukur; tuas optimasi otomatis di sana hadir bersama mode bayangan. Sementara itu skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
       "cta": "Lihat cara kerjanya →"
     },
     "integrate": {
@@ -722,7 +706,7 @@
       "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> aktif, bukan orang — ditagih hanya jika aktif pada 3+ hari dalam sebulan. CI dan runner sementara tidak dihitung.",
       "features": [
         "Setiap optimasi BV‑SALA, tanpa batas",
-        "Cache semantik terkelola & ambang batas yang dipelajari",
+        "Tanda terima per permintaan: SavingsReport dengan empat buku besar, terukur dan estimasi dipisah",
         "Dasbor penghematan & analitik tim",
         "Prompt Anda tidak pernah keluar dari infrastruktur Anda"
       ],
@@ -750,9 +734,9 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan penghematannya sendiri, diukur terhadap penghitung penyedia Anda. Lisensilah yang memungkinkan Anda menjalankan BV-SALA di dalam aplikasi sendiri.",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya: terukur dan estimasi dipisah; hanya yang terukur masuk ke komisi. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA di dalam aplikasi Anda.",
       "ctaStart": "Mulai",
-      "tagline": "Sistem operasi untuk bisnis Anda. Ini adalah <b>BV-SALA</b>, pengoptimal biaya LLM netral-penyedia dari BiVelio — setiap angka penghematan diukur terhadap penghitung penyedia, bukan estimasi.",
+      "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka yang dipublikasikan diukur terhadap penghitung penyedia; estimasi ditampilkan terpisah dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -830,6 +814,39 @@
       "magroTitle": "Jika sudah ramping…",
       "magroBody": "…lewat tanpa disentuh. Tak ada yang perlu dibuang — dan kami tidak menjanjikan penghematan yang tidak ada.",
       "caption": "Tidak semua kiriman membawa isian yang sama: pada putaran ini, pemangkasan terukur per skenario berkisar dari {min} sampai {max}. Yang tidak menghemat pun tetap dipublikasikan."
+    },
+    "recibo": {
+      "title": "SavingsReport · putaran yang dipublikasikan",
+      "modelo": "model",
+      "parejas": "pasangan terukur",
+      "calidad": "kualitas",
+      "punto": "estimasi titik",
+      "suelo": "Angka utama adalah batas bawah interval 95%, bukan titiknya.",
+      "libros": "per buku besar",
+      "pie": "Setiap buku besar dipublikasikan dengan intervalnya sendiri; yang tidak melewati nol tidak diiklankan.",
+      "fecha": "putaran"
+    },
+    "devs": {
+      "eyebrow": "Dibuat untuk pengembang",
+      "title": "Lebih sedikit sakit kepala soal tagihan. Tanpa ganti penyedia.",
+      "sub": "Tiga fakta tentang paket ini. Tidak satu pun berupa janji.",
+      "cards": [
+        {
+          "title": "Nol dependensi runtime",
+          "body": "Satu bundel ESM saja. Tidak ada yang terpasang di samping kode Anda selain yang kami tulis sendiri; tokenizer eksak adalah peer opsional.",
+          "mono": "dependencies: {}"
+        },
+        {
+          "title": "Satu SavingsReport per panggilan",
+          "body": "Empat buku besar yang tidak pernah dijumlahkan, biaya dengan dasarnya (terukur atau estimasi), dan jejak per tahap. Sama persis dengan yang dibaca dasbor Anda.",
+          "mono": "report.cost.basis"
+        },
+        {
+          "title": "Lalu lintas Anda tetap langsung",
+          "body": "SDK membungkus panggilan di dalam proses Anda. Prompt Anda tidak pernah lewat BiVelio: kami hanya menerima hitungan dan biaya.",
+          "mono": "app → provider api"
+        }
+      ]
     }
   },
   "invitacion": {
@@ -870,7 +887,7 @@
     "metaDescription": "BV‑SALA adalah lapisan yang dipasang di dalam kode aplikasi kamu, tempat API dipanggil. Apa yang bisa dihemat, di mana tidak berlaku, dan bagaimana pengukurannya yang sebenarnya.",
     "eyebrow": "Lapisannya, dijelaskan · tanpa jargon",
     "title": "Di mana penghematan dipasang?",
-    "lede": "BV‑SALA bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API OpenAI atau Anthropic. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",
+    "lede": "BV‑SALA bukan aplikasi, bukan ekstensi, bukan pula pengaturan ChatGPT. Ia adalah sepotong kode yang ditempatkan developer di dalam aplikasinya sendiri, tepat di tempat aplikasi itu memanggil API penyedia Anda. Ia hanya bisa menghemat di tempat ada tagihan per token — dan hanya bisa mengukurnya di tempat ia melihat setiap permintaan lewat.",
     "s1Title": "Lapisan ini hidup di dalam kode kamu",
     "s1Sub": "Panggilan yang sama, dengan dan tanpa lapisan. Lalu lintas selalu berjalan langsung dari aplikasi kamu ke penyedia — BV‑SALA bukan server perantara dan tidak pernah melihat datamu dari luar.",
     "flowWithout": "Tanpa BV‑SALA",
@@ -878,9 +895,9 @@
     "nodeApp": "Aplikasi kamu",
     "nodeAppSubBefore": "setiap permintaan keluar utuh",
     "nodeAppSubAfter": "kode bisnis yang sama",
-    "nodeLayerSub": "menghindari panggilan · memangkas input dan output",
+    "nodeLayerSub": "menghindari panggilan · memangkas input",
     "nodeApi": "API penyedia",
-    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubBefore": "OpenAI · endpoint yang kompatibel",
     "nodeApiSubAfter": "menerima lebih sedikit token",
     "billMonth": "tagihan / bulan",
     "billReport": "+ SavingsReport",
@@ -895,7 +912,7 @@
     "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: “bvsala claude” meluncurkan Claude Code lewat gateway lokal dan pengeluaranmu muncul di panel, token demi token, tanpa menyentuh satu baris kode. Penghematan di sana adalah fase berikutnya — pertama kami mengukur sungguhan.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
-    "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasimu memanggil API dengan kuncimu, penyedia menagih setiap token, dan lapisan ini dipasang dalam tiga langkah: paket, lisensi, dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan terverifikasi.",
+    "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan ini dipasang dalam tiga langkah: paket, lisensi, dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, dipisah menjadi terukur dan estimasi.",
     "verdictNothing": "Tidak ada yang dipasang",
     "verdictSkill": "Skill tersedia",
     "verdictMeasures": "Sudah mengukur",

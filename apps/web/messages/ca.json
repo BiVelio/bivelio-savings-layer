@@ -547,10 +547,10 @@
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
     "metaDescription": "Capa de cost per a LLM amb llicència. Es posa davant del teu proveïdor i retalla la factura; l'estalvi es mesura contra el seu comptador, amb interval al 95 %.",
     "hero": {
-      "eyebrow": "Estalvi en IA, mesurat de debò",
-      "title": "Paga menys per la IA.",
-      "titleAccent": "I comprova-ho a la teva factura.",
-      "lede": "ChatGPT, Claude, Gemini… cada pregunta que la teva empresa fa a la IA es cobra pel text que entra i surt. Savings se situa entre la teva empresa i el proveïdor, retalla el que no calia pagar i t'ensenya l'estalvi en un rebut que pots contrastar amb la factura.",
+      "eyebrow": "Per a equips que paguen l'API de LLM per tokens",
+      "title": "La teva factura de LLM, sota control.",
+      "titleAccent": "Mesurada a cada crida.",
+      "lede": "Un SDK que s'instal·la al teu codi, deixa passar només el que cal pagar i retorna un SavingsReport per crida: el mesurat i l'estimat per separat, comptats amb el comptador del teu proveïdor. Publiquem només el que hem mesurat.",
       "ctaRun": "Veure els resultats mesurats",
       "ctaPricing": "Veure els preus",
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",
@@ -560,18 +560,21 @@
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
           "cifra": "≥ 15,0 %",
-          "que": "menys factura, verificat al 95 %"
+          "que": "menys factura, verificat al 95 % · davant d'una integració sense optimitzar, sense streaming"
         }
-      ]
+      ],
+      "medidoEn": "Mesurat a",
+      "compatibleCon": "Compatible amb",
+      "compatibleNota": "Qualsevol endpoint compatible amb l'API d'OpenAI, i l'adaptador natiu d'Anthropic. Amb xifra publicada, avui, només OpenAI {modelo}."
     },
     "cascade": {
       "title": "Guanya l'execució més barata",
-      "per": "mesurat · sòl del 95 %",
+      "per": "mesurat a gpt-4o-mini · sòl del 95 %",
       "steps": [
         {
           "n": "01",
           "title": "Evita la crida del tot",
-          "sub": "resolutors · memòria cau exacta · singleflight",
+          "sub": "resolutors · singleflight",
           "ledger": "avoided_calls",
           "grey": false
         },
@@ -590,7 +593,7 @@
           "grey": false
         }
       ],
-      "footnote": "Cada pas cau en UN llibre comptable diferent, així que aquestes xifres no se sumen entre si. Un pas el llibre del qual no supera el zero no apareix aquí: la restricció de sortida es va mesurar i no estalvia, així que no s'anuncia."
+      "footnote": "Cada pas cau en UN llibre comptable diferent, així que aquestes xifres no se sumen entre si. Un pas el llibre del qual no supera el zero no apareix aquí: la restricció de sortida es va mesurar i no estalvia, així que no s'anuncia. Totes les xifres d'aquesta tirada són de gpt-4o-mini: la mateixa palanca pot costar diners en un altre model, i així es publica."
     },
     "explica": {
       "eyebrow": "En paraules normals",
@@ -603,7 +606,7 @@
         },
         {
           "title": "No pagues dues vegades pel mateix",
-          "body": "La IA rellegeix a cada torn tot el que ja li havies enviat — i el proveïdor ho torna a cobrar. Savings recorda el que ja s'ha enviat i prepara cada petició perquè allò repetit surti al preu rebaixat."
+          "body": "La IA rellegeix a cada torn tot el que ja li havies enviat — i el proveïdor ho cobra un altre cop. Savings prepara cada petició perquè el proveïdor apliqui el seu preu rebaixat al que es repeteix. El descompte el posa el proveïdor; la nostra part és demanar-lo bé."
         },
         {
           "title": "Un rebut que pots comprovar",
@@ -625,25 +628,6 @@
       "plain": "En aquesta prova, la factura va baixar amb gairebé total seguretat almenys un {piso}. El més probable és que baixés un {punto}.",
       "plainNote": "Quan hi ha una forquilla, anunciem sempre el número petit — el que l'estadística garanteix —, mai el bonic.",
       "trialsLink": "Baixar els assaigs en cru (CSV)"
-    },
-    "anthropicCache": {
-      "eyebrow": "Mesurat · memòria cau de prefix d'Anthropic",
-      "title": "Anthropic fa descompte pel text repetit — però cal demanar-l'hi. Nosaltres el demanem per tu.",
-      "body": "Quan una conversa repeteix el que ja s'ha enviat (instruccions, documents, historial), Anthropic pot cobrar-ho molt més barat — però només si cada petició arriba preparada per a aquest descompte. <b>La majoria d'integracions no el demanen i paguen el preu sencer. Savings el demana a cada petició.</b>",
-      "evidenceTitle": "Què es va mesurar",
-      "evidenceLede": "Torn d'agent amb context de sistema llarg i repetit — un assistent de suport, un extractor documental. Vuit parells, mateix model als dos braços, tarifats amb el comptador del mateix Anthropic.",
-      "rowNaiveLabel": "Sense la capa",
-      "rowNaiveValue": "0 tokens servits des de la memòria cau",
-      "rowOursLabel": "Amb la capa",
-      "rowOursValue": "58.624 tokens servits des de la memòria cau",
-      "figure": "",
-      "figureNote": "El descompte el posa Anthropic, no nosaltres: la nostra part és demanar-lo a cada petició. Per això aquí no hi veuràs cap percentatge — el que teníem sortia d'una tirada que no va passar la seva pròpia verificació de qualitat.",
-      "scopeTitle": "Què NO diu aquesta xifra",
-      "scope": "És l'estalvi d'<b>aquella</b> palanca sobre <b>aquell</b> trànsit, no el de tota la teva factura. Surt de l'escenari de prefix estable, on viuen els diners de la memòria cau; en trànsit sense context repetit aquesta palanca val zero. El titular de la tirada completa es mesura a part, i el publiquem amb el seu interval, a dalt.",
-      "verifyTitle": "I no cal que ens creguis",
-      "verify": "És comprovable a la teva pròpia factura sense instal·lar res: mira si les teves crides a Claude porten <code>cache_read_input_tokens</code>. Si surten a zero, aquest descompte l'estàs deixant sobre la taula avui.",
-      "providerTag": "Anthropic",
-      "providerModel": "claude-sonnet-4-5"
     },
     "ledgersHead": {
       "eyebrow": "Comptabilitat honesta",
@@ -698,13 +682,13 @@
       "aiPaso2": "Després puja el zip a Customize → Skills: apareix amb el seu interruptor, privat al teu compte."
     },
     "systems": {
-      "caption": "On ja viuen les teves automatitzacions. Si crida l'API d'OpenAI o Anthropic amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."
+      "caption": "On ja viuen les teves automatitzacions. Si crida l'API del teu proveïdor amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."
     },
     "gateway": {
       "eyebrow": "Nou · terminals de codi",
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
       "body": "Una sola ordre posa un mesurador local davant del teu terminal. Sense tocar codi ni configurar res — i els teus prompts mai no surten de la teva màquina: a aquest tauler només arriben recomptes i cost.",
-      "note": "Avui el gateway mesura; la palanca d'optimització automàtica allà arriba amb l'ombra — i mentrestant l'skill savings-mode ja ataca els teus topalls. Funciona també amb Codex CLI, Goose i Qwen Code — i bvsala doctor imprimeix la configuració exacta de la resta.",
+      "note": "Avui el gateway mesura; la palanca d'optimització automàtica hi arriba amb l'ombra. Mentrestant, l'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. Funciona també amb Codex CLI, Goose i Qwen Code — i bvsala doctor imprimeix la configuració exacta de la resta.",
       "cta": "Mira com funciona →"
     },
     "integrate": {
@@ -722,7 +706,7 @@
       "seatNote": "Un seient és una <b>màquina o identitat de servei</b> activa, no una persona — facturat només si està actiu 3 dies o més en un mes. La CI i els executors efímers no compten.",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",
-        "Memòria cau semàntica gestionada i llindars apresos",
+        "Rebut per petició: SavingsReport amb quatre llibres comptables, mesurat i estimat per separat",
         "Taulers d'estalvi i analítiques d'equip",
         "Els teus prompts mai no surten de la teva infraestructura"
       ],
@@ -750,9 +734,9 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Un cop instal·lat, cada crida retorna el seu estalvi mesurat contra el comptador del teu proveïdor. La llicència és el que et permet executar BV-SALA dins la teva app.",
+      "ctaSub": "Instal·lat, cada crida retorna el seu SavingsReport: el mesurat i l'estimat, per separat; només el mesurat entra a la comissió. La llicència és el que et deixa executar BV‑SALA dins de la teva app.",
       "ctaStart": "Comença",
-      "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV-SALA</b>, l'optimitzador de cost de LLM de BiVelio neutral respecte al proveïdor — cada xifra d'estalvi mesurada contra el comptador del proveïdor, no pas estimada.",
+      "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra publicada, mesurada contra el comptador del proveïdor; l'estimat es mostra a part i mai no es factura.",
       "badge": "BV‑SALA · Savings Layer",
       "colSavings": "Savings Layer",
       "colBivelio": "BiVelio",
@@ -830,6 +814,39 @@
       "magroTitle": "Si ja va magre…",
       "magroBody": "…passa intacte. Allà no hi ha res a treure — i no es promet estalvi on no n'hi ha.",
       "caption": "No tots els enviaments porten la mateixa palla: en aquesta tirada, la retallada mesurada per escenari va anar des de {min} fins a {max}. Els que no estalvien també es publiquen."
+    },
+    "recibo": {
+      "title": "SavingsReport · tirada publicada",
+      "modelo": "model",
+      "parejas": "parelles mesurades",
+      "calidad": "qualitat",
+      "punto": "estimació puntual",
+      "suelo": "El titular és el sòl de l'interval del 95 %, mai el punt.",
+      "libros": "per llibre comptable",
+      "pie": "Cada llibre es publica amb el seu propi interval; els que no superen el zero no s'anuncien.",
+      "fecha": "tirada"
+    },
+    "devs": {
+      "eyebrow": "Fet per a desenvolupadors",
+      "title": "Menys maldecaps amb la factura. Sense canviar de proveïdor.",
+      "sub": "Tres fets sobre el paquet. Cap és una promesa.",
+      "cards": [
+        {
+          "title": "Zero dependències de runtime",
+          "body": "Un sol bundle ESM. Res s'instal·la al costat del teu codi que no hàgim escrit nosaltres; el tokenitzador exacte és un peer opcional.",
+          "mono": "dependencies: {}"
+        },
+        {
+          "title": "Un SavingsReport per crida",
+          "body": "Quatre llibres comptables que mai se sumen, el cost amb la seva base (mesurat o estimat) i traces per etapa. És el mateix que llegeix el teu panell.",
+          "mono": "report.cost.basis"
+        },
+        {
+          "title": "El teu trànsit continua anant directe",
+          "body": "L'SDK embolcalla la crida dins del teu procés. Els teus prompts no passen per BiVelio: a nosaltres només ens arriben recomptes i cost.",
+          "mono": "app → provider api"
+        }
+      ]
     }
   },
   "invitacion": {
@@ -870,7 +887,7 @@
     "metaDescription": "BV‑SALA és una capa que s'instal·la al codi de la teva aplicació, on es crida l'API. Què pot estalviar, on no aplica i com es mesura de veritat.",
     "eyebrow": "La capa, explicada · sense argot",
     "title": "On s'instal·la l'estalvi?",
-    "lede": "BV‑SALA no és una app, ni una extensió, ni un ajust de ChatGPT. És una peça de codi que un desenvolupador col·loca dins de la seva pròpia aplicació, just on aquesta aplicació crida l'API d'OpenAI o Anthropic. Només pot estalviar on existeix una factura per tokens — i només pot mesurar-ho on veu passar cada petició.",
+    "lede": "BV‑SALA no és una app, ni una extensió, ni un ajust de ChatGPT. És una peça de codi que un desenvolupador col·loca dins de la seva pròpia aplicació, just on aquesta aplicació crida l'API del teu proveïdor. Només pot estalviar on existeix una factura per tokens — i només pot mesurar-ho on veu passar cada petició.",
     "s1Title": "La capa viu dins del teu codi",
     "s1Sub": "La mateixa crida, amb la capa i sense. El trànsit sempre viatja directe de la teva aplicació al proveïdor — BV‑SALA no és un servidor intermedi ni veu les teves dades des de fora.",
     "flowWithout": "Sense BV‑SALA",
@@ -878,9 +895,9 @@
     "nodeApp": "La teva aplicació",
     "nodeAppSubBefore": "cada petició surt sencera",
     "nodeAppSubAfter": "mateix codi de negoci",
-    "nodeLayerSub": "evita crides · retalla entrada i sortida",
+    "nodeLayerSub": "evita crides · retalla l'entrada",
     "nodeApi": "API del proveïdor",
-    "nodeApiSubBefore": "OpenAI · Anthropic · vLLM…",
+    "nodeApiSubBefore": "OpenAI · endpoints compatibles",
     "nodeApiSubAfter": "rep menys tokens",
     "billMonth": "factura / mes",
     "billReport": "+ SavingsReport",
@@ -895,7 +912,7 @@
     "caseCodeBody": "Amb subscripció la quota és fixa — però amb topalls: el mateix skill s'instal·la amb una sola ordre i estira el mateix topall setmanal. Amb clau d'API hi ha una factura per tokens real — i el mesurador ja està en marxa: «bvsala claude» llança Claude Code a través del gateway local i la teva despesa apareix al panell, token a token, sense tocar una línia de codi. L'estalvi allà és la fase següent — primer mesurem de debò.",
     "caseAppName": "La teva aplicació",
     "caseAppSub": "el teu codi + la teva clau d'API",
-    "caseAppBody": "El cas per al qual existeix BV‑SALA. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en tres passos: paquet, llicència i embolcallar la crida. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi verificat.",
+    "caseAppBody": "El cas per al qual existeix BV‑SALA. La teva app crida l'API amb la teva clau, el proveïdor factura cada token, i la capa s'instal·la en tres passos: paquet, llicència i embolcallar la crida. Des de la primera petició retorna un <b>SavingsReport</b> amb l'estalvi, separat en mesurat i estimat.",
     "verdictNothing": "Res a instal·lar",
     "verdictSkill": "Skill disponible",
     "verdictMeasures": "Ja mesura",
