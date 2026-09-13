@@ -134,6 +134,14 @@ vi.mock("@/lib/stripe/env", () => ({
   STRIPE_PRICE_ID_YEARLY: "price_test_anual",
 }));
 
+/** Alertas emitidas (doble de `alertar`): un manejador que revienta tiene que avisar. */
+const alertas: { nivel: string; asunto: string; detalle?: Record<string, unknown> }[] = [];
+vi.mock("@/lib/observabilidad/alerta", () => ({
+  alertar: async (a: { nivel: string; asunto: string; detalle?: Record<string, unknown> }) => {
+    alertas.push(a);
+  },
+}));
+
 const crearSesion = vi.fn(async () => ({ url: "https://checkout.stripe.com/c/test" }));
 const construirEvento = vi.fn();
 const suscripcionStripe = {
@@ -201,6 +209,7 @@ beforeEach(() => {
   esc.errorLicencia = undefined;
   esc.errorSuscripcion = undefined;
   upserts.length = 0;
+  alertas.length = 0;
   crearSesion.mockClear();
   emitirLicencia.mockClear();
   licenciaVigente = null;
@@ -722,5 +731,33 @@ describe("POST /api/stripe/webhook — un evento de OTRO producto no se procesa 
     const res = await dispara("customer.subscription.created", "price_test_123");
     expect(res.status).toBe(200);
     expect(await res.json()).not.toMatchObject({ ignored: "otro producto" });
+  });
+});
+
+describe("POST /api/stripe/webhook — un manejador que revienta AVISA, no solo devuelve 503", () => {
+  it("⛔ si la emisión de la licencia lanza: 503 (Stripe reintenta) y alerta CRÍTICA con el id y el tipo del evento", async () => {
+    emitirLicencia.mockRejectedValueOnce(new Error("kms caído"));
+    construirEvento.mockReturnValueOnce({
+      id: "evt_revienta",
+      type: "checkout.session.completed",
+      created: 1_800_000_000,
+      data: {
+        object: {
+          id: "cs_revienta",
+          mode: "subscription",
+          metadata: { org_id: "22222222-2222-4222-8222-222222222222", email: "cliente@example.com", user_id: "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa" },
+          client_reference_id: "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa",
+          subscription: "sub_123",
+          amount_total: 400,
+          total_details: { amount_discount: 0 },
+        },
+      },
+    });
+    const { POST } = await import("./stripe/webhook/route.js");
+    const res = await POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));
+    expect(res.status).toBe(503);
+    const alerta = alertas.find((a) => a.nivel === "critico" && /webhook de Stripe falló/.test(a.asunto));
+    expect(alerta).toBeDefined();
+    expect(alerta!.detalle).toMatchObject({ eventId: "evt_revienta", tipo: "checkout.session.completed" });
   });
 });

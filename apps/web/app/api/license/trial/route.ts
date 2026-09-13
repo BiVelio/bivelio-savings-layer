@@ -5,6 +5,7 @@ import { loadPrivateKey, signCompact } from "@/lib/license/sign";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolverOrgDelUsuario } from "@/lib/org/resolver";
+import { alertar } from "@/lib/observabilidad/alerta";
 
 /**
  * Internal / pilot license issuance. BV-SALA is PAID: there is NO free tier and NO
@@ -209,6 +210,13 @@ export async function POST() {
     });
   } catch (err) {
     console.error("[license/issue] issue failed:", err);
+    // Un cliente que ya paga no consigue su licencia: fail-closed significa que
+    // su producción no arranca. Se avisa; hasta hoy solo lo veía el log.
+    await alertar({
+      nivel: "critico",
+      asunto: "No se pudo emitir una licencia a una organización que la pide",
+      detalle: { motivo: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json({ error: "Could not issue the license." }, { status: 500 });
   }
 }

@@ -94,6 +94,7 @@ vi.mock("@/lib/stripe/client", () => ({
     checkout: {
       sessions: {
         create: async (args: Record<string, unknown>) => {
+          if (e.fallar === "checkout") throw new Error("stripe caído al crear la sesión");
           sesion = args;
           return { url: "https://checkout.stripe.com/x" };
         },
@@ -429,5 +430,15 @@ describe("el enlace de los probadores: código PRE-APLICADO en la sesión", () =
     await POST(peticion());
     expect(sesion!.allow_promotion_codes).toBe(true);
     expect(sesion!.discounts).toBeUndefined();
+  });
+});
+
+describe("POST /api/stripe/checkout — si Stripe no abre la sesión, alguien se entera", () => {
+  it("⛔ 502 y alerta CRÍTICA cuando checkout.sessions.create falla: es una venta perdida en silencio", async () => {
+    e.fallar = "checkout";
+    const { POST } = await import("./stripe/checkout/route");
+    const res = await POST(peticion());
+    expect(res.status).toBe(502);
+    expect(alertas.some((a) => a.nivel === "critico" && /Checkout/.test(a.asunto))).toBe(true);
   });
 });
