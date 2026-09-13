@@ -109,11 +109,15 @@ export default async function Footer() {
     [t("footer.measured"), "/#measured"],
     [t("footer.pricing"), "/#pricing"],
   ];
+  // «Documentación» apuntaba a docs.bivelio.com y «Estado» a status.bivelio.com,
+  // y ninguno de los dos dominios resuelve (2026-09-13): dos enlaces muertos en
+  // el pie de cada página, en 12 idiomas. La documentación que existe es el
+  // README del paquete (la página de npm); la de estado no existe todavía y no
+  // se enlaza hasta que exista.
   const bivelio: string[][] = [
     [t("footer.home"), corporateUrl("", locale)],
-    [t("footer.docs"), "https://docs.bivelio.com"],
+    [t("footer.docs"), "https://www.npmjs.com/package/@bivelio/savings-layer"],
     [t("footer.security"), corporateUrl("/security", locale)],
-    [t("footer.status"), "https://status.bivelio.com"],
   ];
   // El corpus legal COMPLETO de bivelio.com, no un extracto: seis documentos
   // más el centro legal que los agrupa.

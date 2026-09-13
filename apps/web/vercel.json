@@ -16,6 +16,10 @@
     {
       "path": "/api/cron/facturar-extractos",
       "schedule": "0 7 1 * *"
+    },
+    {
+      "path": "/api/cron/retencion",
+      "schedule": "45 3 * * *"
     }
   ]
 }

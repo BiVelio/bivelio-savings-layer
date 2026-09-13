@@ -560,6 +560,12 @@
       "statModels": "Modellen",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Dashboard laden…",
+      "errorTitulo": "Er ging iets mis bij het laden van het dashboard",
+      "errorCuerpo": "Je gegevens zijn veilig: dit is een fout bij het tekenen van de pagina. Probeer het opnieuw; blijft het gebeuren, mail dan naar support@bivelio.com vanaf het e-mailadres waarmee je je hebt aangemeld.",
+      "reintentar": "Opnieuw proberen"
     }
   },
   "landing": {
