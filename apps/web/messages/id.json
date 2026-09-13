@@ -560,6 +560,12 @@
       "statModels": "Model",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Memuat dasbor…",
+      "errorTitulo": "Terjadi kesalahan saat memuat dasbor",
+      "errorCuerpo": "Data Anda aman: ini adalah kesalahan saat menampilkan halaman. Coba lagi; jika terus terjadi, tulis ke support@bivelio.com dari email yang Anda gunakan untuk mendaftar.",
+      "reintentar": "Coba lagi"
     }
   },
   "landing": {

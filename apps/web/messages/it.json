@@ -560,6 +560,12 @@
       "statModels": "Modelli",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Caricamento del pannello…",
+      "errorTitulo": "Qualcosa è andato storto nel caricare il pannello",
+      "errorCuerpo": "I tuoi dati sono al sicuro: è un errore nel disegnare la pagina. Riprova; se si ripete, scrivi a support@bivelio.com dall'email con cui ti sei registrato.",
+      "reintentar": "Riprova"
     }
   },
   "landing": {
