@@ -134,6 +134,14 @@ vi.mock("@/lib/stripe/env", () => ({
   STRIPE_PRICE_ID_YEARLY: "price_test_anual",
 }));
 
+/** Alertas emitidas (doble de `alertar`): un manejador que revienta tiene que avisar. */
+const alertas: { nivel: string; asunto: string; detalle?: Record<string, unknown> }[] = [];
+vi.mock("@/lib/observabilidad/alerta", () => ({
+  alertar: async (a: { nivel: string; asunto: string; detalle?: Record<string, unknown> }) => {
+    alertas.push(a);
+  },
+}));
+
 const crearSesion = vi.fn(async () => ({ url: "https://checkout.stripe.com/c/test" }));
 const construirEvento = vi.fn();
 const suscripcionStripe = {
@@ -201,6 +209,7 @@ beforeEach(() => {
   esc.errorLicencia = undefined;
   esc.errorSuscripcion = undefined;
   upserts.length = 0;
+  alertas.length = 0;
   crearSesion.mockClear();
   emitirLicencia.mockClear();
   licenciaVigente = null;
@@ -722,5 +731,63 @@ describe("POST /api/stripe/webhook — un evento de OTRO producto no se procesa 
     const res = await dispara("customer.subscription.created", "price_test_123");
     expect(res.status).toBe(200);
     expect(await res.json()).not.toMatchObject({ ignored: "otro producto" });
+  });
+});
+
+describe("POST /api/stripe/webhook — un manejador que revienta AVISA, no solo devuelve 503", () => {
+  it("⛔ si la emisión de la licencia lanza: 503 (Stripe reintenta) y alerta CRÍTICA con el id y el tipo del evento", async () => {
+    emitirLicencia.mockRejectedValueOnce(new Error("kms caído"));
+    construirEvento.mockReturnValueOnce({
+      id: "evt_revienta",
+      type: "checkout.session.completed",
+      created: 1_800_000_000,
+      data: {
+        object: {
+          id: "cs_revienta",
+          mode: "subscription",
+          metadata: { org_id: "22222222-2222-4222-8222-222222222222", email: "cliente@example.com", user_id: "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa" },
+          client_reference_id: "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa",
+          subscription: "sub_123",
+          amount_total: 400,
+          total_details: { amount_discount: 0 },
+        },
+      },
+    });
+    const { POST } = await import("./stripe/webhook/route.js");
+    const res = await POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));
+    expect(res.status).toBe(503);
+    const alerta = alertas.find((a) => a.nivel === "critico" && /webhook de Stripe falló/.test(a.asunto));
+    expect(alerta).toBeDefined();
+    expect(alerta!.detalle).toMatchObject({ eventId: "evt_revienta", tipo: "checkout.session.completed" });
+  });
+});
+
+describe("POST /api/stripe/webhook — una renovación COBRADA levanta la exención de comisión del cupón", () => {
+  const orgId = "22222222-2222-4222-8222-222222222222";
+  const factura = (amount_paid: number) => ({
+    id: "evt_renovacion",
+    type: "invoice.paid",
+    created: 1_800_000_000,
+    data: { object: { id: "in_1", subscription: "sub_123", amount_paid, billing_reason: "subscription_cycle", metadata: {} } },
+  });
+  const enviar = async (evento: unknown) => {
+    updates.length = 0;
+    suscripcionStripe.metadata = { org_id: orgId };
+    construirEvento.mockReturnValueOnce(evento);
+    const { POST } = await import("./stripe/webhook/route.js");
+    const res = await POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));
+    suscripcionStripe.metadata = {};
+    return res;
+  };
+  const levanta = () => updates.some((u) => u.tabla === "organizations" && (u.fila as { comision_exenta?: boolean }).comision_exenta === false);
+  it("amount_paid > 0 en un ciclo → organizations.update con comision_exenta=false (solo si la nota era «compra a 0 €»)", async () => {
+    const res = await enviar(factura(400));
+    expect(res.status).toBe(200);
+    expect(levanta()).toBe(true);
+  });
+  it("una factura a 0 € (el cupón sigue vivo) NO toca la exención", async () => {
+    const res = await enviar(factura(0));
+    expect(res.status).toBe(200);
+    expect(levanta()).toBe(false);
   });
 });

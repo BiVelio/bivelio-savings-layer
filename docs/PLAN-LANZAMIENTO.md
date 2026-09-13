@@ -102,7 +102,7 @@ Los siete escenarios, y qué arreglo verifica cada uno:
 | Eventos fuera de orden | La guardia `stale` y que aun así se emita la PRIMERA licencia |
 | Renovación (Test Clock de Stripe) | Que el SDK recoja el token nuevo con `bvk_` y no muera el día 45 |
 | Cancelación → revocación | Que el ingest devuelva 402 y el SDK se pare |
-| Impago → `past_due` → gracia | Los 14 días de *dunning* |
+| Impago → `past_due` → gracia | Los 21 días de *dunning* (`lib/billing/gracia.ts`) |
 | Redes de tarjeta + 3D Secure | SCA es obligatorio en la UE: sin ello se pierden cobros legítimos |
 
 ---

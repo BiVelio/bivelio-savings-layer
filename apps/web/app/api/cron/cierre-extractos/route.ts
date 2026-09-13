@@ -86,6 +86,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     );
   } catch (error) {
     console.error("[cierre-extractos] lectura de uso falló:", error);
+    await alertar({
+      nivel: "critico",
+      asunto: "Cierre de extractos NO ejecutado: no se pudo leer usage_daily",
+      detalle: { periodo, motivo: error instanceof Error ? error.message : String(error) },
+    });
     return NextResponse.json({ error: "usage read failed" }, { status: 500 });
   }
   if (filas.length === 0) return NextResponse.json({ periodo, seco, orgs: 0, cerrados: 0 });
@@ -102,9 +107,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     fx = await obtenerFxCierre();
   } catch (error) {
     console.error("[cierre-extractos] FX del BCE no disponible, cierre aplazado:", error);
+    // CRÍTICO, no aviso (2026-09-13): solo lo crítico llega por correo, y un
+    // cierre mensual aplazado que nadie relanza es un mes sin facturar.
     await alertar({
-      nivel: "aviso",
-      asunto: "Cierre de extractos aplazado: el FX del BCE no está disponible",
+      nivel: "critico",
+      asunto: "Cierre de extractos aplazado: el FX del BCE no está disponible — relanzar a mano",
       detalle: { periodo, motivo: error instanceof Error ? error.message : String(error) },
     });
     return NextResponse.json({ error: "fx unavailable", periodo }, { status: 503 });

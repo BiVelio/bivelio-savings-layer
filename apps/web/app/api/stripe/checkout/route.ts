@@ -53,7 +53,9 @@ export async function POST(req: Request): Promise<NextResponse> {
   let codigo: string | null = null;
   try {
     const body = (await req.json()) as { period?: string; seats?: number; locale?: string; codigo?: string };
-    if (typeof body.codigo === "string" && /^[A-Za-z0-9-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
+    // Mismo alfabeto que account/page.tsx: un código con guion bajo pasaba la
+    // página de cuenta y aquí se descartaba en silencio (sin 400).
+    if (typeof body.codigo === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
     if (body.period === "yearly") period = "yearly";
     // MISMA función que el campo del panel, no una copia del criterio. Y el tope
     // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
@@ -353,6 +355,13 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ url: session.url });
   } catch (err) {
     console.error("[stripe/checkout] create session failed:", err);
+    // Un cliente ha pulsado «comprar» y no ha podido pagar. Es la venta que se
+    // pierde en silencio: hasta hoy, solo el log lo sabía.
+    await alertar({
+      nivel: "critico",
+      asunto: "No se pudo crear la sesión de Checkout: un cliente no ha podido comprar",
+      detalle: { orgId, seats, period, motivo: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
   }
 }

@@ -75,6 +75,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       .range(desde, desde + PAGINA - 1);
     if (error) {
       console.error("[cron/dunning] lectura de subscriptions falló:", error);
+      await alertar({ nivel: "critico", asunto: "Cron de impago no pudo leer subscriptions: el barrido NO se ha hecho", detalle: { motivo: error.message } });
       return NextResponse.json({ error: "store unavailable" }, { status: 503 });
     }
     const lote = (data ?? []) as FilaImpago[];

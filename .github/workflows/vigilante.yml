@@ -73,4 +73,6 @@ jobs:
           comprobar "metering sin clave" https://savings.bivelio.com/api/metering/usage POST 401
           comprobar "cron de impago"     https://savings.bivelio.com/api/cron/dunning     GET  401
           comprobar "cron de invariante" https://savings.bivelio.com/api/cron/invariantes GET  401
+          comprobar "cron de cierre"     https://savings.bivelio.com/api/cron/cierre-extractos   GET  401
+          comprobar "cron de facturación" https://savings.bivelio.com/api/cron/facturar-extractos GET  401
           exit $fallos

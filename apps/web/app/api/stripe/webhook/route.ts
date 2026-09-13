@@ -26,7 +26,7 @@ import {
  *   - subscription.updated (seat change) → RE-ISSUE, never revoke (a running
  *     fleet keeps working; the old license is only marked superseded).
  *   - invoice.paid (renewal) → re-issue so expiry tracks the new period.
- *   - invoice.payment_failed → past_due, NO revoke (14-day dunning grace).
+ *   - invoice.payment_failed → past_due, NO revoke (21-day dunning grace, lib/billing/gracia.ts).
  *   - subscription.deleted → plan=free + REVOKE the current license.
  */
 export const runtime = "nodejs";
@@ -599,6 +599,20 @@ async function handleInvoicePaid(admin: Admin, stripe: Stripe, invoice: Stripe.I
   }
   await setOrgPlan(admin, f.orgId, "pro");
 
+  // Un cobro de verdad LEVANTA la exención que puso una compra a 0 € (#273 solo
+  // lo hacía en un checkout NUEVO; un probador que pasa a pagar no vuelve por
+  // checkout: su cupón caduca y la siguiente renovación se cobra por aquí). Las
+  // cortesías puestas a mano (otra nota) se respetan. Una factura a 0 € (cupón
+  // vivo) no toca nada.
+  if ((invoice.amount_paid ?? 0) > 0) {
+    const { error: errLevantar } = await admin
+      .from("organizations")
+      .update({ comision_exenta: false, exencion_nota: null })
+      .eq("id", f.orgId)
+      .like("exencion_nota", "compra a 0 €%");
+    if (errLevantar) console.error("[stripe/webhook] no se pudo levantar la exención en invoice.paid:", errLevantar);
+  }
+
   // La primera factura (`subscription_create`) no renueva nada, así que no
   // supersede ni re-emite. Pero SÍ es la confirmación de cobro de un pago
   // asíncrono, y para entonces el checkout puede haber decidido no emitir por
@@ -849,6 +863,14 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
   } catch (err) {
     console.error(`[stripe/webhook] handler failed for ${event.type}:`, err);
+    // Stripe reintenta ~3 días y luego DESHABILITA el endpoint; hasta hoy este
+    // 503 solo dejaba una línea en el log. Un manejador que falla es un cobro
+    // sin licencia, una renovación sin token o una cancelación sin revocar.
+    await alertar({
+      nivel: "critico",
+      asunto: `El webhook de Stripe falló al procesar ${event.type}`,
+      detalle: { eventId: event.id, tipo: event.type, motivo: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json({ error: "handler failed" }, { status: 503 });
   }
 
