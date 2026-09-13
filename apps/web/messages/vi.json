@@ -560,6 +560,12 @@
       "statModels": "Mô hình",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Đang tải bảng điều khiển…",
+      "errorTitulo": "Đã xảy ra lỗi khi tải bảng điều khiển",
+      "errorCuerpo": "Dữ liệu của bạn vẫn an toàn: đây là lỗi khi hiển thị trang. Hãy thử lại; nếu vẫn lặp lại, hãy viết thư tới support@bivelio.com từ email bạn đã dùng để đăng ký.",
+      "reintentar": "Thử lại"
     }
   },
   "landing": {
