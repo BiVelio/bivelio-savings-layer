@@ -5,7 +5,9 @@ import {
   decidirCargo,
   decisionDeComision,
   descripcionDeLinea,
+  ensayoDeCargo,
   esFacturaDeComision,
+  medioDePagoParaLaFactura,
   metadataDeFactura,
   MINIMO_FACTURABLE_EUR,
   type ExtractoFacturable,
@@ -168,5 +170,38 @@ describe("decisionDeComision — pagado es pegajoso (guardia de orden)", () => {
     const d = decisionDeComision("pagado", true);
     expect(d.alertarFallo).toBe(false);
     expect(d.auditKind).toBe("comision_pagado");
+  });
+});
+
+describe("medioDePagoParaLaFactura — la factura suelta no hereda el medio de pago de Checkout", () => {
+  it("el de la suscripción de asientos manda, venga como id o como objeto expandido", () => {
+    expect(medioDePagoParaLaFactura({ suscripcion: { default_payment_method: "pm_sub" }, cliente: { invoice_settings: { default_payment_method: "pm_cus" } } }))
+      .toEqual({ id: "pm_sub", origen: "suscripcion" });
+    expect(medioDePagoParaLaFactura({ suscripcion: { default_payment_method: { id: "pm_obj" } } })).toEqual({ id: "pm_obj", origen: "suscripcion" });
+  });
+  it("sin medio en la suscripción, el predeterminado para facturas del cliente", () => {
+    expect(medioDePagoParaLaFactura({ suscripcion: { default_payment_method: null }, cliente: { invoice_settings: { default_payment_method: "pm_cus" } } }))
+      .toEqual({ id: "pm_cus", origen: "cliente" });
+  });
+  it("⛔ sin ninguno, null — y el cron lo grita antes de emitir, no lo calla", () => {
+    expect(medioDePagoParaLaFactura({ suscripcion: null, cliente: { invoice_settings: { default_payment_method: null } } })).toBeNull();
+    expect(medioDePagoParaLaFactura({})).toBeNull();
+  });
+});
+
+describe("ensayoDeCargo — el ensayo en seco dice exactamente lo que haría", () => {
+  it("facturar: céntimos, cliente y de dónde saldría el cobro", () => {
+    const ensayo = ensayoDeCargo(base, decidirCargo(base, CLIENTE, false), { id: "pm_sub", origen: "suscripcion" });
+    expect(ensayo).toMatchObject({ accion: "facturar", centimos: 12345, cliente: CLIENTE, medio_de_pago: "suscripcion" });
+  });
+  it("facturar sin medio de pago lo dice en voz alta", () => {
+    const ensayo = ensayoDeCargo(base, decidirCargo(base, CLIENTE, false), null);
+    expect(ensayo.medio_de_pago).toBe("ninguno");
+    expect(ensayo.detalle).toMatch(/SIN medio de pago/);
+  });
+  it("exenta, omitida y nada llevan su causa y ningún importe", () => {
+    expect(ensayoDeCargo(base, "exenta", undefined)).toMatchObject({ accion: "exenta", centimos: null });
+    expect(ensayoDeCargo(base, decidirCargo(base, null, false), undefined)).toMatchObject({ accion: "omitir", detalle: "omitido_sin_cliente" });
+    expect(ensayoDeCargo(base, decidirCargo(base, CLIENTE, true), undefined)).toMatchObject({ accion: "nada", detalle: "ya_facturado" });
   });
 });

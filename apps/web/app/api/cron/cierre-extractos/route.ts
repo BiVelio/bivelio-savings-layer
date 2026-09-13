@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
-import { cerrarPeriodo, periodoAnterior, type UsoDeOrg } from "@/lib/billing/cierre";
+import { cerrarPeriodo, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "@/lib/billing/cierre";
 import type { FilaDiaria } from "@/lib/billing/extracto";
 import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
 import { alertar } from "@/lib/observabilidad/alerta";
@@ -16,6 +16,10 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  * relanzar a mano con el mismo Bearer sin miedo.
  *
  * FALLA CERRADO, como el resto de crons: sin CRON_SECRET, 501 y no toca nada.
+ *
+ * ENSAYO EN SECO (`?seco=1`, mismo Bearer): calcula el cierre y lo DEVUELVE
+ * sin fijarlo. Es la única forma de ver el primer cierre real antes del día 1:
+ * el extracto es inmutable y un cron mensual no tiene segunda oportunidad.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,8 +58,10 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   const supabase = createAdminClient();
   // `?periodo=YYYY-MM` permite cerrar un mes concreto a mano; por defecto, el anterior.
-  const pedido = new URL(req.url).searchParams.get("periodo");
+  const params = new URL(req.url).searchParams;
+  const pedido = params.get("periodo");
   const periodo = pedido && /^\d{4}-\d{2}$/.test(pedido) ? pedido : periodoAnterior(new Date());
+  const seco = params.get("seco") === "1";
   const desde = `${periodo}-01`;
   // Cota superior sin aritmética de meses: el primer día del período siguiente.
   const [y, m] = periodo.split("-").map(Number);
@@ -82,7 +88,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     console.error("[cierre-extractos] lectura de uso falló:", error);
     return NextResponse.json({ error: "usage read failed" }, { status: 500 });
   }
-  if (filas.length === 0) return NextResponse.json({ periodo, orgs: 0, cerrados: 0 });
+  if (filas.length === 0) return NextResponse.json({ periodo, seco, orgs: 0, cerrados: 0 });
 
   // EL CAMBIO DEL BCE, antes de tocar nada. Si no está disponible se ABORTA el
   // cierre (503) en vez de sellar la fila inmutable con un FX inventado, que es
@@ -161,6 +167,9 @@ export async function GET(req: Request): Promise<NextResponse> {
   }
 
   const cierre = cerrarPeriodo(usoPorOrg, periodo, fx);
+  if (seco) {
+    return NextResponse.json({ periodo, seco: true, fx, orgs: porOrg.size, extractos: resumenDelCierre(cierre) });
+  }
   // ignoreDuplicates: un extracto cerrado JAMÁS se reescribe (inmutabilidad).
   const { error: errInsert, count } = await supabase
     .schema("bvsala")
