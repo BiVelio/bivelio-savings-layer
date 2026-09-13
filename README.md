@@ -44,7 +44,7 @@ goes straight from your app to your provider; the SDK is never a middleman serve
 ## Where it installs
 
 <p align="center">
-  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. On a $100 monthly bill, the measured floor of the published benchmark leaves $84." width="720">
+  <img src="https://savings.bivelio.com/en/how-it-works/opengraph-image" alt="Your application → BV-SALA → provider API. Traffic goes straight from your app to your provider; the layer runs inside your code." width="720">
 </p>
 
 Your application → **BV‑SALA** → provider API. Traffic always goes straight from
@@ -64,13 +64,20 @@ ships a local measuring gateway: `bvsala claude` (or `bvsala codex`, `bvsala
 goose`, `bvsala qwen`) launches the terminal through it and your real spend
 shows up in your dashboard, token by token — nothing to configure, nothing
 persisted. For opencode, Crush, Droid, Cline or Kilo Code, `bvsala doctor`
-prints the exact config block for each one you have installed. Today it
-measures; it does not optimize yet.
+prints the exact config block for each one you have installed. It measures every
+request. With a PRO license it also applies one saving by default: it shortens the
+cache-write TTL while your session stays hot, which changes the price, never the
+content the model reads. The other levers (sibling model, per-turn effort) stay off
+until you switch them on.
 
-## Try it before you install
+## Check it before you install
 
-Run the real optimizer **free in your browser** — pick an example or paste your own
-data and watch the meter — at **[savings.bivelio.com](https://savings.bivelio.com)**.
+What you can check before paying is what we have measured: the published benchmark,
+trial by trial, with the raw CSV linked, at
+**[savings.bivelio.com/en/how-it-works](https://savings.bivelio.com/en/how-it-works)**,
+and the commission calculator on the front page, which runs on the same price
+catalogue that bills you. The verifier that replays the optimizer on your own data
+lives in your dashboard once you sign in.
 
 ## Install in three steps
 

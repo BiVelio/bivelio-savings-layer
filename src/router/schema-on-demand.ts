@@ -153,7 +153,10 @@ export function decidirDescubrimiento(e: EntradaDelDescubrimiento): DecisionDelD
  * y esos tokens los cuenta la verja como cualquier otro — no se esconden.
  */
 export function descriptorLigero(tool: ToolDescriptor): ToolDescriptor {
-  const texto = (tool.description ?? tool.intents.join("; ")).trim();
+  // Un catálogo real (MCP: id + description, a veces ni eso) no declara
+  // `intents`; `tool.intents.join` reventaba con TypeError, la misma clase de
+  // fallo que #250 quitó del selector. Sin nada que decir, línea vacía.
+  const texto = (tool.description ?? (Array.isArray(tool.intents) ? tool.intents.join("; ") : "")).trim();
   // Una línea: un `description` de tres párrafos con ejemplos vuelve a ser el
   // volumen que este patrón viene a quitar.
   const unaLinea = texto.split(/\r?\n/, 1)[0] ?? "";

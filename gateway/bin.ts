@@ -104,6 +104,15 @@ Entorno:
                          encenderlo a mitad de un hilo paga UNA escritura fría del
                          prefijo (cada modelo tiene su caché): arráncalo con el terminal.
                          Apagar = quitar la variable o =0.
+  BVSALA_GATEWAY_ESFUERZO
+                         =low|medium|high|xhigh|max arma el esfuerzo por turno (palanca D):
+                         añade al final de cada /v1/messages un mensaje con
+                         output_config.effort, sin tocar la raíz (no reinicia la caché de
+                         prefijo). Solo si la licencia trae per_turn_effort (fail-closed)
+                         y solo con claude-fable-5-1, claude-mythos-5-1 y claude-opus-5;
+                         con otro modelo la petición viaja intacta. Es la única palanca
+                         que puede tocar la calidad de la respuesta: va APAGADA por
+                         defecto y aún no está medida contra la verja de calidad.
   BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
   BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
                          (por defecto va silenciado para no pisar el TUI; mira el panel).
