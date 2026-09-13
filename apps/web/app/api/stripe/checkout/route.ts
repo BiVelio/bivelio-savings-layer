@@ -353,6 +353,13 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ url: session.url });
   } catch (err) {
     console.error("[stripe/checkout] create session failed:", err);
+    // Un cliente ha pulsado «comprar» y no ha podido pagar. Es la venta que se
+    // pierde en silencio: hasta hoy, solo el log lo sabía.
+    await alertar({
+      nivel: "critico",
+      asunto: "No se pudo crear la sesión de Checkout: un cliente no ha podido comprar",
+      detalle: { orgId, seats, period, motivo: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
   }
 }
