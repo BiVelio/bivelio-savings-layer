@@ -560,6 +560,12 @@
       "statModels": "Modèles",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Chargement du tableau de bord…",
+      "errorTitulo": "Une erreur est survenue lors du chargement du tableau de bord",
+      "errorCuerpo": "Vos données sont en sécurité : c'est une erreur d'affichage de la page. Réessayez ; si cela se reproduit, écrivez à support@bivelio.com depuis l'adresse avec laquelle vous vous êtes inscrit.",
+      "reintentar": "Réessayer"
     }
   },
   "landing": {

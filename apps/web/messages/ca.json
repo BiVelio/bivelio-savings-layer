@@ -560,6 +560,12 @@
       "statModels": "Models",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Carregant el tauler…",
+      "errorTitulo": "Alguna cosa ha fallat en carregar el tauler",
+      "errorCuerpo": "Les teves dades estan segures: és un error en pintar la pàgina. Prova-ho una altra vegada; si es repeteix, escriu a support@bivelio.com amb el correu amb què et vas registrar.",
+      "reintentar": "Provar-ho una altra vegada"
     }
   },
   "landing": {

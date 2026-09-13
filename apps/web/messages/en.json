@@ -560,6 +560,12 @@
       "statModels": "Models",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Loading your dashboard…",
+      "errorTitulo": "Something went wrong loading the dashboard",
+      "errorCuerpo": "Your data is safe: this is an error rendering the page. Try again; if it keeps happening, write to support@bivelio.com from the email you signed up with.",
+      "reintentar": "Try again"
     }
   },
   "landing": {

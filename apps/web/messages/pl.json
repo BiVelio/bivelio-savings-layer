@@ -560,6 +560,12 @@
       "statModels": "Modele",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Ładowanie panelu…",
+      "errorTitulo": "Coś poszło nie tak podczas ładowania panelu",
+      "errorCuerpo": "Twoje dane są bezpieczne: to błąd podczas rysowania strony. Spróbuj ponownie; jeśli się powtórzy, napisz na support@bivelio.com z adresu e-mail, którym się rejestrowałeś.",
+      "reintentar": "Spróbuj ponownie"
     }
   },
   "landing": {
