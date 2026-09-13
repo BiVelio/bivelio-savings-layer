@@ -1250,7 +1250,11 @@ export class SavingsPipeline {
     }
 
     // --- Stage 7: retrieval plan. ---
-    ledger.baselineRetrieval = route.rounds;
+    // La línea base de recuperación es lo que el camino ingenuo habría hecho:
+    // sin retriever configurado no hay recuperación que evitar, y publicar
+    // `route.rounds` ahí inventaba rondas evitadas de la nada (hallazgo
+    // «medio» de la auditoría de agosto, CIERRE.md § 2.3).
+    ledger.baselineRetrieval = this.config.retriever ? route.rounds : 0;
     const retrieval = await executeRetrievalPlan(
       {
         execution: route.executionClass,
