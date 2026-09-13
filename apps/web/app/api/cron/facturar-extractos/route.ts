@@ -1,12 +1,18 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 
 import {
   claveIdempotencia,
   decidirCargo,
   descripcionDeLinea,
+  ensayoDeCargo,
+  medioDePagoParaLaFactura,
   metadataDeFactura,
+  type EnsayoDeCargo,
   type ExtractoFacturable,
+  type FuentesDeMedioDePago,
+  type MedioDePago,
 } from "@/lib/billing/facturacion";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { getStripe } from "@/lib/stripe/client";
@@ -19,7 +25,10 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  * apps/web/vercel.json): convierte en factura de Stripe el `cargo_eur` de cada
  * extracto cerrado del período. La factura se GENERA desde el extracto (línea,
  * importe y metadata salen de él); Stripe pone numeración, PDF, impuestos y el
- * cobro automático al medio de pago de la suscripción de asientos.
+ * cobro automático. EL MEDIO DE PAGO SE PASA EXPLÍCITAMENTE (el de la
+ * suscripción de asientos, si no el predeterminado del cliente): una factura
+ * suelta no lo hereda de Checkout, y sin él quedaba abierta (ver
+ * medioDePagoDeLaOrg y lib/billing/facturacion.ts).
  *
  * IDEMPOTENTE POR DOS CANDADOS: la fila (org, período) de bvsala.cargos —
  * quien ya la tiene no se refactura — y las claves de idempotencia de Stripe,
@@ -28,6 +37,10 @@ import { leerTodo } from "@/lib/supabase/leer-todo";
  *
  * FALLA CERRADO: sin CRON_SECRET o sin Stripe configurado, 501 y no toca nada.
  * Un fallo con UNA org no bloquea a las demás: se alerta y se sigue.
+ *
+ * ENSAYO EN SECO (`?seco=1`, mismo Bearer): devuelve, por extracto, qué haría
+ * (facturar/omitir/nada/exenta, céntimos, cliente y de dónde saldría el cobro)
+ * sin crear nada en Stripe ni escribir en cargos. Solo LECTURAS de Stripe.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +55,46 @@ function autorizado(req: Request): boolean {
     createHash("sha256").update(presentado).digest(),
     createHash("sha256").update(secreto).digest(),
   );
+}
+
+/**
+ * El medio de pago con el que se cobra la factura de comisión: el de la
+ * suscripción de asientos (la más reciente con id de Stripe), si no el
+ * predeterminado para facturas del cliente. Solo lecturas; cualquier fallo de
+ * lectura cuenta como «sin medio» y el llamante lo grita.
+ */
+async function medioDePagoDeLaOrg(
+  supabase: ReturnType<typeof createAdminClient>,
+  stripe: Stripe,
+  orgId: string,
+  clienteStripe: string,
+): Promise<MedioDePago> {
+  let suscripcion: FuentesDeMedioDePago["suscripcion"] = null;
+  const { data: fila } = await supabase
+    .schema("bvsala")
+    .from("subscriptions")
+    .select("stripe_subscription_id, current_period_end")
+    .eq("org_id", orgId)
+    .not("stripe_subscription_id", "is", null)
+    .order("current_period_end", { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+  const subId = (fila as { stripe_subscription_id?: string | null } | null)?.stripe_subscription_id ?? null;
+  if (subId) {
+    try {
+      suscripcion = await stripe.subscriptions.retrieve(subId);
+    } catch (err) {
+      console.error(`[facturar-extractos] suscripción ${subId} ilegible en Stripe:`, err);
+    }
+  }
+  let cliente: FuentesDeMedioDePago["cliente"] = null;
+  try {
+    const c = await stripe.customers.retrieve(clienteStripe);
+    cliente = c.deleted ? null : (c as Stripe.Customer);
+  } catch (err) {
+    console.error(`[facturar-extractos] cliente ${clienteStripe} ilegible en Stripe:`, err);
+  }
+  return medioDePagoParaLaFactura({ suscripcion, cliente });
 }
 
 /** El período anterior al actual (el que cerró el cron de las 5:00). */
@@ -60,8 +113,10 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   const supabase = createAdminClient();
   const stripe = getStripe();
-  const pedido = new URL(req.url).searchParams.get("periodo");
+  const params = new URL(req.url).searchParams;
+  const pedido = params.get("periodo");
   const periodo = pedido && /^\d{4}-\d{2}$/.test(pedido) ? pedido : periodoAnterior(new Date());
+  const seco = params.get("seco") === "1";
 
   // Los extractos del período. Se leen TODOS los de cargo > 0 aunque luego se
   // omitan: la omisión con causa también se registra. PAGINADO: con >1000
@@ -83,7 +138,7 @@ export async function GET(req: Request): Promise<NextResponse> {
     console.error("[facturar-extractos] lectura de extractos falló:", error);
     return NextResponse.json({ error: "extractos read failed" }, { status: 500 });
   }
-  if (extractos.length === 0) return NextResponse.json({ periodo, facturadas: 0, omitidas: 0 });
+  if (extractos.length === 0) return NextResponse.json({ periodo, seco, facturadas: 0, omitidas: 0 });
 
   // El candado local: cargos ya registrados de este período.
   let yaRegistrados: { org_id: unknown }[];
@@ -105,6 +160,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   let facturadas = 0;
   let omitidas = 0;
   const fallos: string[] = [];
+  const ensayo: EnsayoDeCargo[] = [];
 
   for (const fila of extractos) {
     const e: ExtractoFacturable = {
@@ -131,11 +187,17 @@ export async function GET(req: Request): Promise<NextResponse> {
       // cortesía marcada entre el cierre de las 05:00 y esta pasada de las 07:00
       // no se factura. Como la calibración, dos verjas.
       if ((org as { comision_exenta?: boolean } | null)?.comision_exenta) {
-        console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: organización exenta de comisión, no se factura`);
+        if (seco) ensayo.push(ensayoDeCargo(e, "exenta", undefined));
+        else console.warn(`[facturar-extractos] ${e.org_id} ${e.periodo}: organización exenta de comisión, no se factura`);
         continue;
       }
 
       const decision = decidirCargo(e, cliente, conCargo.has(e.org_id));
+      if (seco) {
+        const medio = decision.accion === "facturar" ? await medioDePagoDeLaOrg(supabase, stripe, e.org_id, decision.clienteStripe) : undefined;
+        ensayo.push(ensayoDeCargo(e, decision, medio));
+        continue;
+      }
       if (decision.accion === "nada") continue;
 
       if (decision.accion === "omitir") {
@@ -160,12 +222,24 @@ export async function GET(req: Request): Promise<NextResponse> {
         continue;
       }
 
+      // 0) El medio de pago, explícito: una factura suelta no hereda el de
+      //    Checkout. Sin ninguno se emite igual (el cliente puede pagarla desde el
+      //    enlace alojado) pero se GRITA antes, no en la alerta de impago.
+      const medio = await medioDePagoDeLaOrg(supabase, stripe, e.org_id, decision.clienteStripe);
+      if (!medio) {
+        await alertar({
+          nivel: "critico",
+          asunto: "Factura de comisión SIN medio de pago: quedará abierta y el cobro automático fallará",
+          detalle: { orgId: e.org_id, periodo: e.periodo, cliente: decision.clienteStripe, centimos: decision.centimos },
+        });
+      }
       // 1) Borrador de factura con cobro automático. `pending_invoice_items_behavior:
       //    "exclude"`: SOLO lleva la línea que se le añade abajo — jamás arrastra
       //    items pendientes ajenos a este cargo.
       const factura = await stripe.invoices.create(
         {
           customer: decision.clienteStripe,
+          ...(medio ? { default_payment_method: medio.id } : {}),
           currency: "eur",
           collection_method: "charge_automatically",
           auto_advance: true,
@@ -229,5 +303,6 @@ export async function GET(req: Request): Promise<NextResponse> {
     }
   }
 
+  if (seco) return NextResponse.json({ periodo, seco: true, ensayo });
   return NextResponse.json({ periodo, facturadas, omitidas, fallos: fallos.length });
 }

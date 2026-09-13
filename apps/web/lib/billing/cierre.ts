@@ -112,3 +112,41 @@ function aFilaDeCierre(e: Extracto): FilaDeCierre {
 function redondear6(n: number): number {
   return Math.round(n * 1e6) / 1e6;
 }
+
+/**
+ * Lo que el ensayo en seco del cierre (`?seco=1`) devuelve por organización:
+ * las cifras que deciden el dinero, sin los tramos ni las columnas en USD.
+ */
+export interface ResumenDeCierre {
+  org_id: string;
+  periodo: string;
+  es_calibracion: boolean;
+  es_exento: boolean;
+  dias: number;
+  requests_medidas: number;
+  base_medida_eur: number;
+  ahorro_medido_eur: number;
+  ratio: number;
+  comision_eur: number;
+  cargo_eur: number;
+  fx_eur_por_usd: number;
+  fx_fuente: string;
+}
+
+export function resumenDelCierre(cierre: FilaDeCierre[]): ResumenDeCierre[] {
+  return cierre.map((c) => ({
+    org_id: c.org_id,
+    periodo: c.periodo,
+    es_calibracion: c.es_calibracion,
+    es_exento: c.es_exento,
+    dias: c.dias,
+    requests_medidas: c.requests_medidas,
+    base_medida_eur: c.base_medida_eur,
+    ahorro_medido_eur: c.ahorro_medido_eur,
+    ratio: c.ratio,
+    comision_eur: c.comision_eur,
+    cargo_eur: c.cargo_eur,
+    fx_eur_por_usd: c.fx_eur_por_usd,
+    fx_fuente: c.fx_fuente,
+  }));
+}

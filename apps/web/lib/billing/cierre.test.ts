@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { cerrarPeriodo as cerrarConFx, periodoAnterior, type UsoDeOrg } from "./cierre";
+import { cerrarPeriodo as cerrarConFx, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "./cierre";
 import type { FilaDiaria } from "./extracto";
 
 // FX de prueba = 0,9 (el que antes estaba fijo dentro de cerrarPeriodo): mantiene
@@ -151,3 +151,13 @@ describe("cerrarPeriodo — exentos de comisión (probadores, cortesías; migrac
   });
 });
 
+
+describe("resumenDelCierre — lo que el ensayo en seco enseña por organización", () => {
+  it("las cifras que deciden el dinero, sin los tramos ni las columnas en USD", () => {
+    const cierre = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09");
+    const [r] = resumenDelCierre(cierre);
+    expect(r).toMatchObject({ org_id: "a", periodo: "2026-09", es_calibracion: false, cargo_eur: cierre[0]!.cargo_eur, fx_fuente: "test" });
+    expect(r).not.toHaveProperty("tramos");
+    expect(r).not.toHaveProperty("base_medida_usd");
+  });
+});
