@@ -113,7 +113,8 @@
       "metaTitle": "Install · BiVelio Savings Layer",
       "eyebrow": "Integrate",
       "title": "Install & wire the SDK",
-      "intro": "Drop BV-SALA in front of your provider — your prompts never leave your infra."
+      "intro": "Drop BV-SALA in front of your provider — your prompts never leave your infra.",
+      "irACuenta": "No plan yet, or need to change your seats? That happens in Account →"
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",

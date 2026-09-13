@@ -113,7 +113,8 @@
       "metaTitle": "Installieren · BiVelio Savings Layer",
       "eyebrow": "Integrieren",
       "title": "SDK installieren und einbinden",
-      "intro": "Setze BV-SALA vor deinen Provider — deine Prompts verlassen niemals deine Infrastruktur."
+      "intro": "Setze BV-SALA vor deinen Provider — deine Prompts verlassen niemals deine Infrastruktur.",
+      "irACuenta": "Noch kein Plan, oder möchten Sie die Sitze ändern? Das geht unter Konto →"
     },
     "account": {
       "metaTitle": "Konto · BiVelio Savings Layer",
