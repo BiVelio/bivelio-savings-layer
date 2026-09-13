@@ -707,7 +707,7 @@
       "eyebrow": "New · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
       "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
-      "note": "Today the gateway measures; the automatic optimization lever there arrives with shadow mode. Meanwhile the savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
+      "note": "The gateway measures every request. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
       "cta": "See how it works →"
     },
     "integrate": {

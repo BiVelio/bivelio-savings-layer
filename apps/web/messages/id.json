@@ -707,7 +707,7 @@
       "eyebrow": "Baru · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
-      "note": "Saat ini gateway mengukur; tuas optimasi otomatis di sana hadir bersama mode bayangan. Sementara itu skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "note": "Gateway mengukur setiap permintaan. Dengan lisensi PRO, gateway juga menerapkan satu tuas secara default: memperpendek TTL penulisan cache selama sesi Anda masih hangat — ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
       "cta": "Lihat cara kerjanya →"
     },
     "integrate": {

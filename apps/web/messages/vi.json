@@ -707,7 +707,7 @@
       "eyebrow": "Mới · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn. Không sửa mã, không cấu hình — và prompt của bạn không bao giờ rời khỏi máy: bảng điều khiển này chỉ nhận số đếm và chi phí.",
-      "note": "Hiện gateway đo lường; đòn bẩy tối ưu tự động ở đó sẽ đến cùng chế độ bóng. Trong lúc chờ, skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
+      "note": "Gateway đo lường mọi yêu cầu. Với giấy phép PRO, nó còn áp dụng mặc định một đòn bẩy: rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn vẫn còn nóng — điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
       "cta": "Xem cách hoạt động →"
     },
     "integrate": {

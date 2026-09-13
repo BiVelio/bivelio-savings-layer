@@ -707,7 +707,7 @@
       "eyebrow": "Nieuw · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
       "body": "Eén commando zet een lokale meter vóór je terminal. Geen code aanpassen, niets configureren — en je prompts verlaten nooit je machine: alleen aantallen en kosten bereiken dit paneel.",
-      "note": "Vandaag meet de gateway; de automatische optimalisatiehefboom komt daar met de schaduwmodus. Intussen is de skill savings-mode beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
+      "note": "De gateway meet elk verzoek. Met een PRO-licentie past hij standaard ook één hefboom toe: hij verkort de cache-schrijf-TTL zolang je sessie warm blijft — dat verandert de prijs, nooit de inhoud die het model leest. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
       "cta": "Zo werkt het →"
     },
     "integrate": {
