@@ -121,3 +121,75 @@ export function decisionDeComision(
   if (estado === "fallido") return { alertarFallo: true, auditKind: "comision_fallido" };
   return { alertarFallo: false, auditKind: "comision_pagado" };
 }
+
+/**
+ * EL MEDIO DE PAGO DE LA FACTURA DE COMISIÓN. Una factura suelta (sin
+ * `subscription`) se cobra contra el medio de pago predeterminado PARA
+ * FACTURAS del cliente, y Checkout en modo suscripción NO lo fija: fija el de
+ * la SUSCRIPCIÓN. Sin pasarlo explícitamente, la primera factura del día 1
+ * salía sin medio de pago, quedaba `open`, el cobro fallaba y saltaba la
+ * alerta de cobro fallido por un cliente que sí había dado su tarjeta.
+ *
+ * Orden: el de la suscripción de asientos (lo que el cliente dio en Checkout),
+ * si no el predeterminado del cliente, si no ninguno — y «ninguno» se GRITA
+ * antes de emitir, no se descubre en la alerta de impago.
+ */
+export type MedioDePago = { id: string; origen: "suscripcion" | "cliente" } | null;
+
+/** Lo que Stripe devuelve para un medio de pago: un id, el objeto expandido, o nada. */
+type RefDeMedio = string | { id: string } | null | undefined;
+
+export interface FuentesDeMedioDePago {
+  suscripcion?: { default_payment_method?: RefDeMedio } | null;
+  cliente?: { invoice_settings?: { default_payment_method?: RefDeMedio } | null } | null;
+}
+
+function idDeMedio(ref: RefDeMedio): string | null {
+  if (!ref) return null;
+  return typeof ref === "string" ? ref : ref.id;
+}
+
+export function medioDePagoParaLaFactura(f: FuentesDeMedioDePago): MedioDePago {
+  const deSuscripcion = idDeMedio(f.suscripcion?.default_payment_method);
+  if (deSuscripcion) return { id: deSuscripcion, origen: "suscripcion" };
+  const deCliente = idDeMedio(f.cliente?.invoice_settings?.default_payment_method);
+  if (deCliente) return { id: deCliente, origen: "cliente" };
+  return null;
+}
+
+/**
+ * EL ENSAYO EN SECO de un cargo (`?seco=1` en el cron): lo que se haría con
+ * este extracto, sin hacerlo. Es lo que se lee a finales de mes para saber si
+ * el primer día 1 real va a salir bien, en vez de descubrirlo esa mañana.
+ */
+export interface EnsayoDeCargo {
+  org_id: string;
+  periodo: string;
+  cargo_eur: number;
+  accion: "facturar" | "omitir" | "nada" | "exenta";
+  detalle: string;
+  centimos: number | null;
+  cliente: string | null;
+  medio_de_pago: "suscripcion" | "cliente" | "ninguno" | null;
+}
+
+export function ensayoDeCargo(
+  e: ExtractoFacturable,
+  decision: DecisionDeCargo | "exenta",
+  medio: MedioDePago | undefined,
+): EnsayoDeCargo {
+  const base = { org_id: e.org_id, periodo: e.periodo, cargo_eur: e.cargo_eur };
+  if (decision === "exenta") {
+    return { ...base, accion: "exenta", detalle: "organización exenta de comisión", centimos: null, cliente: null, medio_de_pago: null };
+  }
+  if (decision.accion === "nada") return { ...base, accion: "nada", detalle: decision.motivo, centimos: null, cliente: null, medio_de_pago: null };
+  if (decision.accion === "omitir") return { ...base, accion: "omitir", detalle: decision.estado, centimos: null, cliente: null, medio_de_pago: null };
+  return {
+    ...base,
+    accion: "facturar",
+    detalle: medio ? `se cobraría al medio de pago de la ${medio.origen}` : "SIN medio de pago: la factura quedaría abierta",
+    centimos: decision.centimos,
+    cliente: decision.clienteStripe,
+    medio_de_pago: medio ? medio.origen : "ninguno",
+  };
+}
