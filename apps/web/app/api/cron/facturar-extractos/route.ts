@@ -136,6 +136,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     );
   } catch (error) {
     console.error("[facturar-extractos] lectura de extractos falló:", error);
+    await alertar({
+      nivel: "critico",
+      asunto: "Facturación de la comisión NO ejecutada: no se pudieron leer los extractos",
+      detalle: { periodo, motivo: error instanceof Error ? error.message : String(error) },
+    });
     return NextResponse.json({ error: "extractos read failed" }, { status: 500 });
   }
   if (extractos.length === 0) return NextResponse.json({ periodo, seco, facturadas: 0, omitidas: 0 });
@@ -153,6 +158,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     );
   } catch (errCargos) {
     console.error("[facturar-extractos] lectura de cargos falló:", errCargos);
+    await alertar({
+      nivel: "critico",
+      asunto: "Facturación de la comisión NO ejecutada: no se pudo leer el candado de cargos",
+      detalle: { periodo, motivo: errCargos instanceof Error ? errCargos.message : String(errCargos) },
+    });
     return NextResponse.json({ error: "cargos read failed" }, { status: 500 });
   }
   const conCargo = new Set(yaRegistrados.map((c) => String(c.org_id)));
@@ -213,8 +223,10 @@ export async function GET(req: Request): Promise<NextResponse> {
         );
         omitidas += 1;
         if (decision.estado === "omitido_sin_cliente") {
+          // CRÍTICO (2026-09-13): un cargo con dinero que no se factura y solo
+          // deja un aviso en el log es dinero que nadie va a reclamar.
           await alertar({
-            nivel: "aviso",
+            nivel: "critico",
             asunto: "Cargo de comisión SIN cliente de Stripe: no se ha facturado",
             detalle: { orgId: e.org_id, periodo: e.periodo, cargoEur: e.cargo_eur },
           });

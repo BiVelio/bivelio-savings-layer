@@ -849,6 +849,14 @@ export async function POST(req: Request): Promise<NextResponse> {
     }
   } catch (err) {
     console.error(`[stripe/webhook] handler failed for ${event.type}:`, err);
+    // Stripe reintenta ~3 días y luego DESHABILITA el endpoint; hasta hoy este
+    // 503 solo dejaba una línea en el log. Un manejador que falla es un cobro
+    // sin licencia, una renovación sin token o una cancelación sin revocar.
+    await alertar({
+      nivel: "critico",
+      asunto: `El webhook de Stripe falló al procesar ${event.type}`,
+      detalle: { eventId: event.id, tipo: event.type, motivo: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json({ error: "handler failed" }, { status: 503 });
   }
 

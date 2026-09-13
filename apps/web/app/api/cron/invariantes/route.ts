@@ -63,6 +63,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       .range(desde, desde + PAGINA - 1);
     if (error) {
       console.error("[cron/invariantes] lectura de subscriptions falló:", error);
+      await alertar({ nivel: "critico", asunto: "Cron invariantes no pudo leer subscriptions: el invariante NO se ha comprobado", detalle: { motivo: error.message } });
       return NextResponse.json({ error: "store unavailable" }, { status: 503 });
     }
     const lote = (data ?? []) as SubscriptionParaInvariante[];
@@ -81,6 +82,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       .in("org_id", trozo);
     if (error) {
       console.error("[cron/invariantes] lectura de licenses falló:", error);
+      await alertar({ nivel: "critico", asunto: "Cron invariantes no pudo leer licenses: el invariante NO se ha comprobado", detalle: { motivo: error.message } });
       return NextResponse.json({ error: "store unavailable" }, { status: 503 });
     }
     for (const fila of (data ?? []) as (LicenseRow & { org_id: string })[]) {
