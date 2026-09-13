@@ -113,7 +113,8 @@
       "metaTitle": "Installeren · BiVelio Savings Layer",
       "eyebrow": "Integreren",
       "title": "Installeer en koppel de SDK",
-      "intro": "Plaats BV-SALA vóór je provider — je prompts verlaten nooit je eigen infrastructuur."
+      "intro": "Plaats BV-SALA vóór je provider — je prompts verlaten nooit je eigen infrastructuur.",
+      "irACuenta": "Nog geen plan, of wil je je seats aanpassen? Dat doe je bij Account →"
     },
     "account": {
       "metaTitle": "Account · BiVelio Savings Layer",

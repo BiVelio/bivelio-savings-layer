@@ -113,7 +113,8 @@
       "metaTitle": "Instal·la · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instal·la i connecta el SDK",
-      "intro": "Col·loca BV-SALA davant del teu proveïdor: els teus prompts mai no surten de la teva infraestructura."
+      "intro": "Col·loca BV-SALA davant del teu proveïdor: els teus prompts mai no surten de la teva infraestructura.",
+      "irACuenta": "Encara sense pla, o vols canviar els seients? Es fa a Compte →"
     },
     "account": {
       "metaTitle": "Compte · BiVelio Savings Layer",
