@@ -953,3 +953,13 @@ describe("descubrimiento + caché de prefijo (#71): con la palanca puesta no se 
     }
   });
 });
+
+describe("descriptorLigero con un catálogo real", () => {
+  it("una herramienta sin intents ni description no revienta: descriptor vacío, no TypeError", () => {
+    // Un catálogo MCP de verdad declara id y parameters, y a veces ni description.
+    const cruda = { id: "read_file", parameters: esquemaGordo("file") } as unknown as ToolDescriptor;
+    const ligero = descriptorLigero(cruda);
+    expect(ligero.id).toBe("read_file");
+    expect(ligero.parameters).toBeUndefined();
+  });
+});
