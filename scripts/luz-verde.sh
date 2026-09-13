@@ -64,7 +64,10 @@ area "3 · Las cifras de la web resisten a un escéptico"
 node --input-type=module -e '
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 const art = JSON.parse(readFileSync("apps/web/public/data/ab-live.json","utf8"));
-const suelo = (art.aggregate?.savings?.lower ?? 0) * 100;
+// Los DOS suelos del artefacto (frente a B0 y frente a B1): lo prometido tiene que caber en el menor.
+const sueloB0 = (art.aggregate?.savings?.lower ?? 0) * 100;
+const sueloB1 = art.aggregateB1?.savings?.lower != null ? art.aggregateB1.savings.lower * 100 : sueloB0;
+const suelo = Math.min(sueloB0, sueloB1);
 const sellado = !!(art.generatedAt && art.commit && art.trials);
 const dir = "apps/web/messages/";
 const idiomas = readdirSync(dir).filter(f=>f.endsWith(".json"));
@@ -87,7 +90,7 @@ if [[ -s /tmp/lv-cifras.json ]]; then
   read -r SUELO PROM SELL CSV UNA IDI PARES MODO CAL <<<"$(node -p "const d=require('/tmp/lv-cifras.json');[d.suelo,d.prometido,d.sellado,d.csv,d.unaSola,d.idiomas,d.pares,d.modo,d.calidad].join(' ')")"
   if [[ "$MODO" == "LIVE" ]]; then ok "el artefacto es una medición real contra proveedor ($PARES parejas, calidad $CAL)"; else mal "el artefacto publicado NO es LIVE (es $MODO)"; fi
   if [[ "$SELL" == "true" ]]; then ok "el artefacto lleva sello de procedencia (fecha, commit y nº de parejas)"; else mal "el artefacto no lleva sello: no se sabe de qué tirada salió"; fi
-  if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO %"; fi
+  if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %, el menor de los suelos frente a B0 y B1)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO % (menor suelo B0/B1)"; fi
   if [[ "$UNA" == "true" ]]; then ok "los $IDI idiomas prometen la misma cifra"; else mal "los idiomas no dicen lo mismo"; fi
   if [[ "$CSV" == "true" ]]; then ok "los ensayos crudos están publicados y enlazados"; else mal "no se publican los ensayos: la promesa de verificable es falsa"; fi
 else
