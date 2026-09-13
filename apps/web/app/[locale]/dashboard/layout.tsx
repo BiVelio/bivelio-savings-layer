@@ -1,7 +1,9 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
+import { destinoDeLaPeticion } from "@/lib/auth/destino";
 import { authConfigured } from "@/lib/supabase/env";
 import { loadDashboard, planLabel } from "./load";
 
@@ -16,10 +18,16 @@ export const metadata = { robots: { index: false, follow: false } };
  * Dashboard shell: sticky topbar + left sidebar + main content, wrapping every
  * /dashboard/* route. Single auth gate — an expired token bounces through
  * /auth/refresh (a Route Handler that can rewrite cookies), never a redirect loop.
+ * El `next` es la URL pedida, con su consulta (cabecera del middleware, ver
+ * lib/auth/destino.ts): sin ella, el enlace de compra con ?codigo= perdía el
+ * código en cuanto no había sesión.
  */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, ctx } = await loadDashboard();
-  if (authConfigured && !user) redirect("/auth/refresh?next=/dashboard");
+  if (authConfigured && !user) {
+    const destino = destinoDeLaPeticion(await headers());
+    redirect(`/auth/refresh?next=${encodeURIComponent(destino)}`);
+  }
 
   return (
     <div className="app">

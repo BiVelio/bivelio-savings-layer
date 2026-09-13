@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { rutaDeAccesoSinSesion } from "@/lib/auth/destino";
+
 import { safeNextPath } from "../safe-next";
 
 /**
@@ -23,5 +25,6 @@ export async function GET(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return NextResponse.redirect(new URL(user ? dest : "/login", origin));
+  // Sin sesión, el destino viaja al acceso en ?next= (antes se perdía aquí).
+  return NextResponse.redirect(new URL(user ? dest : rutaDeAccesoSinSesion(dest), origin));
 }
