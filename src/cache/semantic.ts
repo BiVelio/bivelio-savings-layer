@@ -93,7 +93,13 @@ export interface SemanticCacheOptions {
 }
 
 export function cosine(a: number[], b: number[]): number {
-  const n = Math.min(a.length, b.length);
+  // Dos vectores de dimensiones distintas vienen de dos embebedores distintos
+  // (o de un modelo cambiado a mitad de vida de la caché): compararlos
+  // truncando al más corto daba similitudes altas entre cosas que no tienen
+  // nada que ver, y eso es un acierto de caché falso. No hay similitud: 0.
+  // Hallazgo «medio» de la auditoría de agosto (CIERRE.md § 2.3).
+  if (a.length !== b.length) return 0;
+  const n = a.length;
   let dot = 0;
   let na = 0;
   let nb = 0;

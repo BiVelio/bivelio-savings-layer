@@ -56,7 +56,11 @@ export class InMemoryExactCache implements ExactCache {
     // Refresh recency.
     this.store.delete(key);
     this.store.set(key, entry);
-    return entry.value as CachedAnswer<T>;
+    // COPIA, nunca la referencia: el llamante puede mutar lo que recibe (la
+    // capa lo hace al reparar o al añadir metadatos) y, por referencia, esa
+    // mutación corrompía la entrada para todo el proceso. Hallazgo «medio» de
+    // la auditoría de agosto (CIERRE.md § 2.3), cerrado el 2026-09-13.
+    return copiaDe(entry.value) as CachedAnswer<T>;
   }
 
   async set<T = unknown>(
@@ -69,7 +73,9 @@ export class InMemoryExactCache implements ExactCache {
       if (oldest !== undefined) this.store.delete(oldest);
     }
     this.store.set(key, {
-      value: value as CachedAnswer,
+      // Copia también al guardar: lo que el llamante siga tocando después de
+      // `set` no puede cambiar lo que la caché sirve.
+      value: copiaDe(value) as CachedAnswer,
       expiresAtMs: ttlMs != null ? this.now() + ttlMs : null,
     });
   }
@@ -80,5 +86,19 @@ export class InMemoryExactCache implements ExactCache {
 
   get size(): number {
     return this.store.size;
+  }
+}
+
+/**
+ * Copia profunda de una respuesta cacheada. `structuredClone` (Node ≥ 17)
+ * cubre todo lo que una CachedAnswer lleva (texto, datos, usage, fechas); si
+ * algún llamante colara algo no clonable (una función), se devuelve la
+ * referencia antes que romper una lectura de caché.
+ */
+function copiaDe<T>(valor: T): T {
+  try {
+    return structuredClone(valor);
+  } catch {
+    return valor;
   }
 }
