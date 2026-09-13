@@ -14,7 +14,10 @@ convierte en coste. Tus prompts jamás salen de tu máquina hacia BiVelio — so
 cuentas y coste. Nunca corta el tráfico: sin clave o con la ingesta caída,
 reenvía y avisa.
 
-Hoy **mide**; no optimiza todavía. Y mide **todo el tráfico de inferencia**
+Mide cada petición. Con licencia PRO aplica por defecto **una sola palanca**:
+rebaja el TTL de escritura de caché mientras la sesión sigue caliente — cambia la
+tarifa, nunca el contenido que lee el modelo. Las demás (modelo hermano, esfuerzo
+por turno) van apagadas hasta que las enciendes. Y mide **todo el tráfico de inferencia**
 que el terminal enruta por el base URL — no «todo el tráfico»: cada guía dice
 lo que su terminal manda por fuera.
 
