@@ -560,6 +560,12 @@
       "statModels": "Modelos",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Cargando el panel…",
+      "errorTitulo": "Algo ha fallado al cargar el panel",
+      "errorCuerpo": "Tus datos están a salvo: es un error al pintar la página. Prueba otra vez; si se repite, escribe a support@bivelio.com con el correo con el que te diste de alta.",
+      "reintentar": "Probar otra vez"
     }
   },
   "landing": {

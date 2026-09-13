@@ -560,6 +560,12 @@
       "statModels": "Modelle",
       "statTop1": "Top 1",
       "statTop3": "Top 3"
+    },
+    "estado": {
+      "cargando": "Dashboard wird geladen…",
+      "errorTitulo": "Beim Laden des Dashboards ist etwas schiefgelaufen",
+      "errorCuerpo": "Ihre Daten sind sicher: es ist ein Fehler beim Darstellen der Seite. Versuchen Sie es erneut; wenn es wieder passiert, schreiben Sie an support@bivelio.com von der E-Mail-Adresse, mit der Sie sich registriert haben.",
+      "reintentar": "Erneut versuchen"
     }
   },
   "landing": {
