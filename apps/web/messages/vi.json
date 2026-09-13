@@ -113,7 +113,8 @@
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
       "eyebrow": "Tích hợp",
       "title": "Cài đặt và kết nối SDK",
-      "intro": "Đặt BV-SALA trước nhà cung cấp của bạn — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn."
+      "intro": "Đặt BV-SALA trước nhà cung cấp của bạn — prompt của bạn không bao giờ rời khỏi hạ tầng của bạn.",
+      "irACuenta": "Chưa có gói, hoặc muốn thay đổi số ghế? Bạn làm việc đó trong Tài khoản →"
     },
     "account": {
       "metaTitle": "Tài khoản · BiVelio Savings Layer",

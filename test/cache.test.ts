@@ -117,3 +117,32 @@ describe("keyTokensMatch — semantic-cache precision guard", () => {
     expect(keyTokensMatch("capital of north dakota", "capital of south dakota")).toBe(false);
   });
 });
+
+describe("InMemoryExactCache — sirve copias, no referencias", () => {
+  it("mutar lo que devuelve `get` no cambia la entrada para la siguiente lectura", async () => {
+    const cache = new InMemoryExactCache();
+    await cache.set("k", { text: "hola", data: { n: 1 } } as never);
+    const primera = (await cache.get("k")) as unknown as { text: string; data: { n: number } };
+    primera.text = "adiós";
+    primera.data.n = 99;
+    const segunda = (await cache.get("k")) as unknown as { text: string; data: { n: number } };
+    expect(segunda.text).toBe("hola");
+    expect(segunda.data.n).toBe(1);
+  });
+  it("mutar el objeto DESPUÉS de `set` tampoco cambia lo que la caché sirve", async () => {
+    const cache = new InMemoryExactCache();
+    const original = { text: "hola", data: { n: 1 } };
+    await cache.set("k", original as never);
+    original.text = "adiós";
+    expect(((await cache.get("k")) as unknown as { text: string }).text).toBe("hola");
+  });
+});
+
+describe("cosine — dimensiones distintas", () => {
+  it("dos embebedores distintos no se comparan: similitud 0, nunca un acierto falso por truncado", () => {
+    // Truncando al más corto, [1,0,0,0] contra [1,0] daba 1: idénticos.
+    expect(cosine([1, 0, 0, 0], [1, 0])).toBe(0);
+    expect(cosine([0.3, 0.4], [0.3, 0.4, 0.5])).toBe(0);
+    expect(cosine([1, 0], [1, 0])).toBe(1);
+  });
+});

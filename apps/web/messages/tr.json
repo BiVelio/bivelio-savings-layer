@@ -113,7 +113,8 @@
       "metaTitle": "Kur · BiVelio Savings Layer",
       "eyebrow": "Entegre et",
       "title": "SDK'yı kurun ve bağlayın",
-      "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin — prompt'larınız altyapınızdan asla çıkmaz."
+      "intro": "BV-SALA'yı sağlayıcınızın önüne yerleştirin — prompt'larınız altyapınızdan asla çıkmaz.",
+      "irACuenta": "Henüz planınız yok mu ya da koltukları değiştirmek mi istiyorsunuz? Bunu Hesap bölümünden yaparsınız →"
     },
     "account": {
       "metaTitle": "Hesap · BiVelio Savings Layer",

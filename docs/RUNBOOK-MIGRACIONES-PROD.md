@@ -401,3 +401,43 @@ Idempotente.
 update bvsala.organizations set comision_exenta = true, exencion_nota = 'cortesía · <quién y por qué>' where id = '<org_id>';
 ```
 
+
+## Añadido 2026-09-13 — 0018, 0019 y 0020: las tres que el diagnóstico no miraba
+
+Las tres entraron por los PR #128, #169 y #182 con un «aplicar tras el merge» y
+sin constancia posterior; el diagnóstico de arriba salta de 0017 a 0021, así que
+un `false` en cualquiera de ellas no lo habría cazado nadie. Lo que cada una
+crea y cómo se detecta:
+
+| Migración | Objeto que solo ella crea | Si sale `false` |
+|---|---|---|
+| 0018 | índice único `licenses_una_viva_por_periodo` | El candado contra la doble emisión de licencia no existe: dos manejadores de Stripe en ráfaga pueden emitir dos |
+| 0019 | tabla `usage_sessions` **y** la RPC escribiendo en ella | Sin la tabla, la atribución por sesión y subagente no existe; con la tabla pero sin la RPC, alguien regresó `ingest_usage_batch` (regla 1) |
+| 0020 | tabla `skill_downloads` | Las descargas del skill no se registran; la ruta de descarga fallaría al insertar |
+
+### Diagnóstico (solo lectura)
+
+```bash
+cat > /tmp/diagnostico-0018-0020.sql <<'SQL'
+select m.mig, m.aplicada from (values
+  ('0018 licencias sin duplicados', to_regclass('bvsala.licenses_una_viva_por_periodo') is not null),
+  ('0019 usage_sessions',           to_regclass('bvsala.usage_sessions') is not null),
+  ('0019 RPC escribe sesiones',     exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%usage_sessions%')),
+  ('0020 skill_downloads',          to_regclass('bvsala.skill_downloads') is not null)
+) as m(mig, aplicada) order by 1;
+SQL
+
+jq -Rs '{query:.}' < /tmp/diagnostico-0018-0020.sql | curl -sf \
+  -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+  -H "Authorization: Bearer $(cat "$TOKEN_FICHERO")" \
+  -H "Content-Type: application/json" -d @- | jq -r '.[] | "\(.aplicada)\t\(.mig)"'
+```
+
+- **Regla 1, explícita para 0019:** lleva su versión de `ingest_usage_batch`.
+  Las versiones posteriores (0022, 0024) la incluyen; si «0019 RPC escribe
+  sesiones» sale `false` con «RPC en versión 0024» en `true`, alguien aplicó
+  0019 y 0024 en orden inverso o regresó la función: re-aplicar **solo** el
+  bloque `create or replace function bvsala.ingest_usage_batch` de la migración
+  más alta aplicada, nunca el de 0019 a secas.
+- `false` en 0018 o 0020 → el bucle del paso 2 con `PENDIENTES="0018"` o
+  `"0020"`. Las tres son idempotentes (`if not exists`).

@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/i18n/navigation";
 import { loadDashboard } from "../load";
 import { InstallLicensePanel } from "../components/InstallLicensePanel";
 
@@ -19,6 +21,12 @@ export default async function InstallPage() {
         <p className="ck-eyebrow">{t("install.eyebrow")}</p>
         <h1>{t("install.title")}</h1>
         <p>{t("install.intro")}</p>
+        {/* El plan de lanzamiento (fase 3.5) lo apuntaba: dentro del panel no había
+            ningún enlace a comprar salvo la pestaña Cuenta. Quien llega aquí sin
+            plan tiene que poder ir a por él sin adivinar dónde está. */}
+        <p>
+          <Link href="/dashboard/account">{t("install.irACuenta")}</Link>
+        </p>
       </div>
       <InstallLicensePanel ctx={ctx} />
     </>

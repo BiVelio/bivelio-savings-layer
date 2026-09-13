@@ -113,7 +113,8 @@
       "metaTitle": "Instalar · BiVelio Savings Layer",
       "eyebrow": "Integra",
       "title": "Instala y conecta el SDK",
-      "intro": "Coloca BV-SALA delante de tu proveedor: tus prompts nunca salen de tu infraestructura."
+      "intro": "Coloca BV-SALA delante de tu proveedor: tus prompts nunca salen de tu infraestructura.",
+      "irACuenta": "¿Todavía sin plan, o quieres cambiar los asientos? Se hace en Cuenta →"
     },
     "account": {
       "metaTitle": "Cuenta · BiVelio Savings Layer",
