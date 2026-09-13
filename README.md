@@ -22,8 +22,11 @@ that don't have to happen, and trimming what does — so you pay for less. It is
 promise you take on faith: **every saving is measured with the provider's official
 meter, the same one on your bill**, and handed back to you request by request.
 
-**We only earn when you save.** Our commission comes out of the measured saving,
-never out of your pocket — most of what you save stays with you, and a month with no
+**We only earn when you save.** Your first month carries no commission at all: we
+measure everything and show you the statement of what it would have cost. After
+that, the commission comes out of the **measured** saving only — never out of your
+pocket, and never from estimates: a tiered rate from 10 % down to 4 % of what you
+saved, so **you always keep at least 90 % of every euro saved**, and a month with no
 saving is zero commission. And your prompts **never leave your infrastructure**:
 BiVelio only ever sees counts and cost, never your content.
 
@@ -251,7 +254,8 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 ## Licensing & privacy
 
 BV‑SALA is commercial, per‑seat software (**€4 / seat / month** or **€39 / seat /
-year**, EUR). The license is a signed token your SDK verifies **offline**; the
+year**, EUR; VAT not included). No free tier and no trial: what you can check before
+paying is the published measurement. The license is a signed token your SDK verifies **offline**; the
 managed control plane and the revocation kill‑switch are served from BiVelio. Your
 LLM traffic goes **straight to your provider** — BiVelio sees counts and cost,
 never prompts or completions.
