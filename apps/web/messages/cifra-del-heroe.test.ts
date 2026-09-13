@@ -19,13 +19,19 @@ import { describe, it, expect } from "vitest";
  *
  * Sigue exigiendo que las 12 digan LA MISMA cifra y que la fila anuncie el
  * mismo modelo que se midió.
+ *
+ * Desde el 2026-09-13 la verja mira los DOS suelos del artefacto: frente al
+ * brazo ingenuo (B0) y frente al razonable (B1, «lo que un equipo cuidadoso ya
+ * haría»), y exige que lo prometido quepa en el MENOR. El banco publica ambas
+ * cifras a propósito; prometer solo contra la base más favorable era elegir
+ * la comparación que más ahorro enseña.
  */
 
 const DIR = new URL(".", import.meta.url).pathname;
 
 const artefacto = JSON.parse(
   readFileSync(`${DIR}../public/data/ab-live.json`, "utf8"),
-) as { model?: string; aggregate?: { savings?: { lower?: number } } };
+) as { model?: string; aggregate?: { savings?: { lower?: number } }; aggregateB1?: { savings?: { lower?: number } } };
 
 /** El número de una cifra localizada («≥ 23,1 %», «≥ %23,1») como float. */
 function numeroDe(cifra: string): number {
@@ -35,11 +41,18 @@ function numeroDe(cifra: string): number {
 }
 
 describe("la fila OpenAI del héroe no promete más de lo que el artefacto mide", () => {
-  const lower = artefacto.aggregate?.savings?.lower;
-  it("el artefacto publicado trae una cota inferior", () => {
-    expect(typeof lower).toBe("number");
+  const lowerB0 = artefacto.aggregate?.savings?.lower;
+  const lowerB1 = artefacto.aggregateB1?.savings?.lower;
+  it("el artefacto publicado trae una cota inferior frente a B0", () => {
+    expect(typeof lowerB0).toBe("number");
+  });
+  it("y otra frente a B1: la verja exige caber en la MENOR de las dos", () => {
+    expect(typeof lowerB1).toBe("number");
   });
 
+  // El menor de los dos suelos: lo prometido tiene que caber también frente a
+  // la base razonable, no solo frente a la ingenua.
+  const lower = Math.min(lowerB0 ?? 0, lowerB1 ?? lowerB0 ?? 0);
   const medido = Number(((lower ?? 0) * 100).toFixed(1));
   const cifras: number[] = [];
 
