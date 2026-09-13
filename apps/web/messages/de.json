@@ -707,7 +707,7 @@
       "eyebrow": "Neu · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
       "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal. Kein Code, keine Konfiguration — und deine Prompts verlassen nie deine Maschine: in dieses Panel gelangen nur Zählwerte und Kosten.",
-      "note": "Heute misst das Gateway; der automatische Optimierungshebel kommt dort mit dem Schattenmodus. Bis dahin steht der Skill savings-mode für Ihre Limits bereit, seine Wirkung ist noch zu messen. Er funktioniert auch mit Codex CLI, Goose und Qwen Code — und bvsala doctor gibt die genaue Konfiguration für den Rest aus.",
+      "note": "Das Gateway misst jede Anfrage. Mit einer PRO-Lizenz wendet es außerdem standardmäßig einen Hebel an: Es verkürzt die Cache-Schreib-TTL, solange Ihre Sitzung warm bleibt — das ändert den Preis, nie den Inhalt, den das Modell liest. Die übrigen Hebel bleiben aus, bis Sie sie einschalten. Der Skill savings-mode steht für Ihre Limits bereit, seine Wirkung ist noch zu messen. Er funktioniert auch mit Codex CLI, Goose und Qwen Code — und bvsala doctor gibt die genaue Konfiguration für den Rest aus.",
       "cta": "So funktioniert es →"
     },
     "integrate": {

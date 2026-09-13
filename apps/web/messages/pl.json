@@ -707,7 +707,7 @@
       "eyebrow": "Nowość · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
       "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem. Bez zmian w kodzie i bez konfiguracji — a Twoje prompty nigdy nie opuszczają Twojej maszyny: do tego panelu trafiają tylko liczby i koszt.",
-      "note": "Dziś gateway mierzy; dźwignia automatycznej optymalizacji pojawi się tam wraz z trybem cienia. Tymczasem skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor wypisuje dokładną konfigurację dla reszty.",
+      "note": "Gateway mierzy każde żądanie. Z licencją PRO stosuje też domyślnie jedną dźwignię: skraca TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła — zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor wypisuje dokładną konfigurację dla reszty.",
       "cta": "Zobacz, jak to działa →"
     },
     "integrate": {

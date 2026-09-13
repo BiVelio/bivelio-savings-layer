@@ -707,7 +707,7 @@
       "eyebrow": "Yeni · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
       "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
-      "note": "Bugün ağ geçidi ölçüyor; otomatik optimizasyon kaldıracı oraya gölge moduyla gelecek. Bu arada savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
+      "note": "Ağ geçidi her isteği ölçer. PRO lisansıyla varsayılan olarak bir kaldıraç da uygular: oturumunuz sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır — bu fiyatı değiştirir, modelin okuduğu içeriği asla. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
       "cta": "Nasıl çalıştığını gör →"
     },
     "integrate": {
