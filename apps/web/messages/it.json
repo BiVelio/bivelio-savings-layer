@@ -707,7 +707,7 @@
       "eyebrow": "Novità · terminali di codice",
       "title": "Claude Code con chiave API? Guarda la spesa reale, token per token.",
       "body": "Un solo comando mette un contatore locale davanti al tuo terminale. Niente codice da toccare, niente da configurare — e i tuoi prompt non lasciano mai la tua macchina: a questo pannello arrivano solo conteggi e costo.",
-      "note": "Oggi il gateway misura; la leva di ottimizzazione automatica lì arriva con la modalità ombra. Nel frattempo lo skill savings-mode è disponibile per i tuoi limiti, con l'effetto ancora da misurare. Funziona anche con Codex CLI, Goose e Qwen Code — e bvsala doctor stampa la configurazione esatta degli altri.",
+      "note": "Il gateway misura ogni richiesta. Con una licenza PRO applica anche una leva per impostazione predefinita: accorcia il TTL di scrittura della cache finché la sessione resta calda — cambia il prezzo, mai il contenuto che il modello legge. Le altre leve restano spente finché non le attivi. Lo skill savings-mode è disponibile per i tuoi limiti, con l'effetto ancora da misurare. Funziona anche con Codex CLI, Goose e Qwen Code — e bvsala doctor stampa la configurazione esatta degli altri.",
       "cta": "Guarda come funziona →"
     },
     "integrate": {

@@ -707,7 +707,7 @@
       "eyebrow": "Novo · terminais de código",
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
       "body": "Um único comando põe um medidor local à frente do teu terminal. Sem tocar em código, sem configurar nada — e os teus prompts nunca saem da tua máquina: a este painel só chegam contagens e custo.",
-      "note": "Hoje o gateway mede; a alavanca de otimização automática chega aí com a sombra. Entretanto, o skill savings-mode está disponível para os teus limites, com o efeito ainda por medir. Funciona também com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata dos restantes.",
+      "note": "O gateway mede cada pedido. Com licença PRO aplica também uma alavanca por defeito: encurta o TTL de escrita da cache enquanto a sessão se mantém quente — muda o preço, nunca o conteúdo que o modelo lê. As restantes alavancas ficam desligadas até as ativares. O skill savings-mode está disponível para os teus limites, com o efeito ainda por medir. Funciona também com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata dos restantes.",
       "cta": "Vê como funciona →"
     },
     "integrate": {

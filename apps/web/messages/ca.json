@@ -707,7 +707,7 @@
       "eyebrow": "Nou · terminals de codi",
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
       "body": "Una sola ordre posa un mesurador local davant del teu terminal. Sense tocar codi ni configurar res — i els teus prompts mai no surten de la teva màquina: a aquest tauler només arriben recomptes i cost.",
-      "note": "Avui el gateway mesura; la palanca d'optimització automàtica hi arriba amb l'ombra. Mentrestant, l'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. Funciona també amb Codex CLI, Goose i Qwen Code — i bvsala doctor imprimeix la configuració exacta de la resta.",
+      "note": "El gateway mesura cada petició. Amb llicència PRO aplica a més una palanca per defecte: escurça el TTL d'escriptura de la memòria cau mentre la sessió continua calenta — canvia el preu, mai el contingut que llegeix el model. La resta de palanques van apagades fins que les encens. L'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. Funciona també amb Codex CLI, Goose i Qwen Code — i bvsala doctor imprimeix la configuració exacta de la resta.",
       "cta": "Mira com funciona →"
     },
     "integrate": {
