@@ -53,7 +53,9 @@ export async function POST(req: Request): Promise<NextResponse> {
   let codigo: string | null = null;
   try {
     const body = (await req.json()) as { period?: string; seats?: number; locale?: string; codigo?: string };
-    if (typeof body.codigo === "string" && /^[A-Za-z0-9-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
+    // Mismo alfabeto que account/page.tsx: un código con guion bajo pasaba la
+    // página de cuenta y aquí se descartaba en silencio (sin 400).
+    if (typeof body.codigo === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(body.codigo)) codigo = body.codigo.toUpperCase();
     if (body.period === "yearly") period = "yearly";
     // MISMA función que el campo del panel, no una copia del criterio. Y el tope
     // se aplica AQUÍ además de allí porque el cliente no es fuente de verdad:
