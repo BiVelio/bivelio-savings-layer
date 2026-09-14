@@ -135,6 +135,71 @@ export interface GatewayArrancado {
 /** Cabeceras de transporte que NO se reenvían (hallazgo F0 nº1). */
 const CABECERAS_TRANSPORTE = ["content-encoding", "content-length", "transfer-encoding"];
 
+/**
+ * Cabeceras del SALTO cliente→gateway que no viajan al proveedor: las
+ * hop-by-hop de RFC 7230 §6.1 más `expect` y `proxy-connection`. Hasta 0.4.20
+ * se copiaban tal cual y undici las rechaza antes de abrir la conexión
+ * («expect header not supported», «invalid transfer-encoding header»): el
+ * gateway respondía 502 «upstream unreachable · TypeError: fetch failed» —el
+ * MISMO texto que un upstream caído— sin que la petición saliera. curl ≥ 8.7
+ * añade `Expect: 100-continue` a cualquier cuerpo > 1 MB por defecto, así que
+ * un probador con curl lo veía sin hacer nada raro. Las que nombre la propia
+ * `Connection` (RFC 7230 §6.1: «connection: keep-alive, x-lo-que-sea») se
+ * descartan también, en el bucle que copia.
+ */
+const CABECERAS_DE_SALTO = new Set([
+  "connection",
+  "keep-alive",
+  "proxy-connection",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+  "expect",
+]);
+
+/**
+ * El fallo de un fetch con su CAUSA. undici envuelve TODO en «TypeError: fetch
+ * failed» y guarda lo que pasó en `cause`: sin ella, un ECONNREFUSED (el
+ * upstream no está), un ENOTFOUND (DNS) y una cabecera que undici se negó a
+ * mandar se leen exactamente igual en el 502 y en el log. Un AggregateError
+ * (varias direcciones probadas) se abre, porque su String() es solo el nombre.
+ */
+function describirFallo(err: unknown): string {
+  const causa = (err as { cause?: unknown } | null)?.cause;
+  if (causa === undefined || causa === null) return String(err);
+  const detalle =
+    causa instanceof AggregateError && causa.errors.length > 0 ? causa.errors.map((e) => String(e)).join("; ") : String(causa);
+  return `${String(err)} · causa: ${detalle}`;
+}
+
+/**
+ * El servidor no pudo ponerse a escuchar. Lleva el `code` de Node (EADDRINUSE,
+ * EACCES…) y el puerto que falló para que bin.ts lo traduzca en una línea del
+ * producto; el error crudo queda en `cause` para quien depure. Hasta 0.4.20 la
+ * promesa rechazaba con el error de Node tal cual y el proceso moría con su
+ * traza («node:net … listen EADDRINUSE: address already in use 127.0.0.1:8402»).
+ */
+export class ErrorDeEscucha extends Error {
+  readonly code: string;
+  readonly puerto: number;
+  constructor(code: string, puerto: number, causa: unknown) {
+    super(
+      code === "EADDRINUSE"
+        ? `el puerto ${puerto} ya está en uso: no se pudo arrancar el gateway`
+        : code === "EACCES"
+          ? `el puerto ${puerto} no se puede abrir: puerto sin permiso`
+          : `no se pudo escuchar en 127.0.0.1:${puerto} (${code})`,
+      { cause: causa },
+    );
+    this.name = "ErrorDeEscucha";
+    this.code = code;
+    this.puerto = puerto;
+  }
+}
+
 export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<GatewayArrancado> {
   const upstreamBase = (opts.upstream ?? "https://api.anthropic.com").replace(/\/+$/, "");
   const fetchImpl = opts.fetchImpl ?? fetch;
@@ -439,9 +504,19 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         }
       }
 
+      // Las que nombra `Connection` son hop-by-hop por declaración del cliente
+      // (RFC 7230 §6.1); Node ya entrega los nombres en minúsculas.
+      const conexion = req.headers["connection"];
+      const nombradasEnConnection = new Set(
+        (Array.isArray(conexion) ? conexion.join(",") : (conexion ?? ""))
+          .split(",")
+          .map((s) => s.trim().toLowerCase())
+          .filter((s) => s !== ""),
+      );
       const h: Record<string, string> = {};
       for (const [k, v] of Object.entries(req.headers)) {
         if (k === "host" || k === "content-length" || v === undefined) continue;
+        if (CABECERAS_DE_SALTO.has(k) || nombradasEnConnection.has(k)) continue;
         h[k] = Array.isArray(v) ? v.join(", ") : v;
       }
       // Foto de las cabeceras ANTES de que las palancas las toquen: el
@@ -621,9 +696,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         captura?.abortar();
         if (!res.headersSent) {
           res.writeHead(502, { "content-type": "application/json" });
-          res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
+          res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: describirFallo(err) }));
         }
-        log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${String(err)}`);
+        log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${describirFallo(err)}`);
         return;
       }
 
@@ -665,9 +740,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           captura?.abortar();
           if (!res.headersSent) {
             res.writeHead(502, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: String(err) }));
+            res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: describirFallo(err) }));
           }
-          log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable en el reintento: ${String(err)}`);
+          log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable en el reintento: ${describirFallo(err)}`);
           return;
         }
       }
@@ -720,12 +795,25 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         const uso = observador.usage();
         const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
         medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
+        // SIN clave no hay emisor y medir() vuelve en silencio: hasta 0.4.20
+        // una petición en streaming servida con 200 no dejaba NINGUNA línea,
+        // mientras `bvsala doctor` mandaba al probador a buscar justo esta
+        // («[gateway] POST /v1/messages …»). Claude Code, Codex, Goose y Qwen
+        // van SIEMPRE en streaming: sin esta línea, quien no tiene clave (o la
+        // exportó mal) no puede confirmar que su terminal pasa por el gateway.
+        // Con clave, la línea la pone medir() y aquí no se toca nada.
+        if (!emisor) {
+          log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status} (stream) · no medido: sin BIVELIO_SERVICE_KEY`);
+        }
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
         const uso = usoDeJson(respuesta);
         medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs, hermano);
-      } else if (!esSse) {
-        log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}`);
+      } else {
+        // Todo lo que no se mide se dice igual: JSON sin emisor, errores del
+        // proveedor, y también un stream que no entra en medición (ruta sin
+        // dialecto, o un SSE con estado de error).
+        log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}${esSse ? " (stream)" : ""}`);
       }
     } catch (err) {
       // UN CORTE A MITAD DE STREAM YA NO TUMBA EL PROCESO. Antes, un reset del
@@ -750,10 +838,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
         }
       } else {
-        log(`[gateway] ${req.method} ${url.pathname} → error sirviendo: ${String(err)}`);
+        log(`[gateway] ${req.method} ${url.pathname} → error sirviendo: ${describirFallo(err)}`);
         if (!res.headersSent) {
           res.writeHead(502, { "content-type": "application/json" });
-          res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: String(err) }));
+          res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: describirFallo(err) }));
           return;
         }
       }
@@ -780,10 +868,21 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     socket.end("HTTP/1.1 426 Upgrade Required\r\nconnection: close\r\ncontent-length: 0\r\n\r\n");
   });
 
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(opts.puerto ?? 8402, "127.0.0.1", () => resolve());
-  });
+  const puertoPedido = opts.puerto ?? 8402;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(puertoPedido, "127.0.0.1", () => resolve());
+    });
+  } catch (err) {
+    // El proceso va a morir en bin.ts, pero quien nos llame desde código (los
+    // tests, un arnés) no puede quedarse con un emisor con timer vivo: se para
+    // (con el búfer vacío, parar es no-op). El error se devuelve tipado para
+    // que bin.ts hable del puerto y no de node:net.
+    emisor?.stop();
+    const code = (err as { code?: unknown } | null)?.code;
+    throw new ErrorDeEscucha(typeof code === "string" ? code : "EUNKNOWN", puertoPedido, err);
+  }
   // El puerto REAL: con `puerto: 0` el SO asigna uno aleatorio (así corren los
   // tests en paralelo sin pisarse) y devolver el pedido mentiría.
   const puerto = (server.address() as { port: number }).port;
