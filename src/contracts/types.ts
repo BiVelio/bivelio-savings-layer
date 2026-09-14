@@ -828,6 +828,15 @@ export interface LicenseGate {
    * que tener una rama por defecto de todas formas.
    */
   status?(): string;
+  /**
+   * Why the key does not open, when it does not; `undefined` when it does. It
+   * only refines the MESSAGE, never the verdict: an `"invalid"` whose reason is
+   * `"malformed"` (not even the shape of a token: the `bvk_` pasted where the
+   * license goes) gets different advice from an `"invalid"` that has the shape
+   * but no valid signature. Optional because a gate is implemented by the
+   * caller; without it, the generic message for that status.
+   */
+  reason?(): string | undefined;
 }
 
 export interface TraceEvent {

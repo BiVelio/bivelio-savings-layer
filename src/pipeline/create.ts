@@ -134,6 +134,7 @@ export function createSavingsLayer(
         isEntitled: (feature: string) => gate.isEntitled(feature),
         isActive: () => gate.isActive(),
         status: () => gate.status(),
+        reason: () => gate.reason(),
       };
       // `licenseServerUrl` is a BASE url (e.g. https://savings.bivelio.com); the SDK
       // owns the endpoint path so callers never hardcode it.

@@ -75,6 +75,11 @@ export interface SavingsLayerConfig {
    * against the embedded public key and builds a {@link licenseGate} from it.
    * Without a valid, active license (and without {@link devUnlicensed}), the
    * pipeline refuses to run — get a key at https://savings.bivelio.com.
+   *
+   * Surrounding whitespace (the trailing newline of a file or mounted secret),
+   * wrapping quotes and a `Bearer ` prefix are stripped before verification, so
+   * a key read with `readFileSync` works as-is. Anything INSIDE the key is not
+   * touched: a key with a space in the middle is a broken key.
    */
   licenseKey?: string;
 
