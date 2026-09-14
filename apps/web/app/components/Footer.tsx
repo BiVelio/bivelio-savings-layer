@@ -4,6 +4,8 @@ import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
 
+import { NVIDIA_INCEPTION_URL } from "./NvidiaInception";
+
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
 import { SavingsLogo } from "./SavingsLogo";
 
@@ -165,6 +167,14 @@ export default async function Footer() {
             </div>
             <div className="ftr-fine">
               <p className="ftr-trust">{t("footer.trust")}</p>
+              {/* Pertenencia al NVIDIA Inception Program, en texto y con enlace
+                  al programa: la tercera mención de la home y la única en el
+                  resto de páginas, que comparten este pie. */}
+              <p className="ftr-nvidia">
+                <a href={NVIDIA_INCEPTION_URL} target="_blank" rel="noopener noreferrer">
+                  {t("nvidia.pie")}
+                </a>
+              </p>
               <p className="ftr-entity">{t("footer.entity")}</p>
             </div>
           </div>

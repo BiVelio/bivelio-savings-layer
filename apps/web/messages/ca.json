@@ -713,6 +713,11 @@
     "systems": {
       "caption": "On ja viuen les teves automatitzacions. Si crida l'API del teu proveïdor amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."
     },
+    "nvidia": {
+      "rotulo": "Ecosistema",
+      "frase": "Part del NVIDIA Inception Program, impulsant una IA més eficient i sostenible.",
+      "pie": "Membre del NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Nou · terminals de codi",
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",

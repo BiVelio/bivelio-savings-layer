@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Otomasyonlarının zaten yaşadığı yerde. sağlayıcınızın API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
     },
+    "nvidia": {
+      "rotulo": "Ekosistem",
+      "frase": "NVIDIA Inception Program'ın bir parçası: daha verimli ve sürdürülebilir yapay zekâ için.",
+      "pie": "NVIDIA Inception Program üyesi"
+    },
     "gateway": {
       "eyebrow": "Yeni · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",

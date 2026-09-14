@@ -13,6 +13,7 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
+import { NvidiaInceptionBadge } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
@@ -200,6 +201,15 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </div>
             <div className="hero-note">
               <span className="pulse" /> {t("hero.note")}
+            </div>
+
+            {/* NVIDIA Inception Program (petición del dueño, 2026-09-14): el
+                distintivo oficial y una frase a su lado, debajo del titular y
+                de los botones. Es pertenencia factual al programa, no un aval
+                — y va aparte de «Compatible con», que es otra cosa. */}
+            <div className="hero-nvidia">
+              <NvidiaInceptionBadge width={150} />
+              <p>{t("nvidia.frase")}</p>
             </div>
 
             {/* HÉROE LIMPIO (petición del dueño, 2026-09-12): aquí solo el
@@ -702,6 +712,18 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <li>{t.rich("formula.tramos", { b: (c) => <b>{c}</b>, tramos: tramosLocal })}</li>
               <li>{t.rich("formula.permanencia", { b: (c) => <b>{c}</b>, cero: moneyLocal(0) })}</li>
             </ul>
+          </div>
+        </section>
+
+        {/* ECOSISTEMA — la banda de programas al cierre de la home. No había
+            banda de partners (las dos marquesinas de arriba son listas de
+            COMPATIBILIDAD, no de pertenencia), así que se crea pequeña y
+            discreta: rótulo mono en mayúsculas + el distintivo + la frase. */}
+        <section className="ecosistema" aria-labelledby="ecosistema-rotulo">
+          <span className="hm-k" id="ecosistema-rotulo">{t("nvidia.rotulo")}</span>
+          <div className="ecosistema-fila rv">
+            <NvidiaInceptionBadge width={180} />
+            <p>{t("nvidia.frase")}</p>
           </div>
         </section>
       </main>

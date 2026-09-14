@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Donde ya viven tus automatizaciones. Si llama a la API de tu proveedor con tu clave, se mide — el SDK envuelve la llamada; el gateway se pone delante."
     },
+    "nvidia": {
+      "rotulo": "Ecosistema",
+      "frase": "Parte del NVIDIA Inception Program, impulsando una IA más eficiente y sostenible.",
+      "pie": "Miembro del NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Nuevo · terminales de código",
       "title": "¿Claude Code con API key? Mira su gasto real, token a token.",

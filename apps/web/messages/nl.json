@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Waar je automatiseringen al leven. Roept het de API van je aanbieder aan met jouw sleutel, dan wordt het gemeten — de SDK omhult de aanroep; de gateway staat ervoor."
     },
+    "nvidia": {
+      "rotulo": "Ecosysteem",
+      "frase": "Onderdeel van het NVIDIA Inception Program, voor efficiëntere en duurzamere AI.",
+      "pie": "Lid van het NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Nieuw · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",

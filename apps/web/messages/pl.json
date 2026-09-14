@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Tam, gdzie już żyją Twoje automatyzacje. Jeśli wywołuje API Twojego dostawcy Twoim kluczem, jest mierzone — SDK opakowuje wywołanie; brama staje z przodu."
     },
+    "nvidia": {
+      "rotulo": "Ekosystem",
+      "frase": "Część NVIDIA Inception Program — na rzecz wydajniejszej i bardziej zrównoważonej AI.",
+      "pie": "Członek NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Nowość · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
