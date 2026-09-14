@@ -30,6 +30,8 @@ interface Escenario {
   serviceAccount: Record<string, unknown> | null;
   errorLicencia?: unknown;
   errorSuscripcion?: unknown;
+  /** Id de un evento que `bvsala.stripe_events` YA tiene: la guardia de idempotencia debe cortarlo. */
+  eventoVisto?: string;
 }
 
 /** Id de organización DISTINTO del id del usuario: el caso que el producto
@@ -62,7 +64,7 @@ function tabla(nombre: string) {
   const filtros: { col: string; op: "eq" | "in"; val: unknown }[] = [];
   const q: Record<string, unknown> = {};
   const self = () => q;
-  for (const m of ["select", "order", "limit", "not", "neq", "like"]) q[m] = self;
+  for (const m of ["select", "order", "limit", "not", "neq", "like", "or"]) q[m] = self;
   q.eq = (col: string, val: unknown) => {
     filtros.push({ col, op: "eq", val });
     return q;
@@ -103,6 +105,9 @@ function tabla(nombre: string) {
       return { data: pasa(esc.serviceAccount) ? esc.serviceAccount : null, error: null };
     }
     if (nombre === "organizations") return { data: null, error: null };
+    if (nombre === "stripe_events") {
+      return { data: esc.eventoVisto && pasa({ id: esc.eventoVisto }) ? { id: esc.eventoVisto } : null, error: null };
+    }
     return { data: null, error: null };
   };
   // `org_members` sin `.maybeSingle()` devuelve una lista (así lo usa la ruta).
@@ -182,6 +187,8 @@ vi.mock("@/lib/stripe/client", () => ({
 // la PERTENENCIA se escriba, así que se sustituye por un doble. Es un espía para
 // poder afirmar también cuándo NO debe emitirse (checkout reentregado).
 const emitirLicencia = vi.fn(async () => ({ jti: "jti-1", token: "bvl.t", expiresAt: 1_802_592_000 }));
+/** Espía de la revocación total: la cancelación tiene que llamarla, el impago NO. */
+const revocar = vi.fn(async () => ["jti-vieja"]);
 /** Lo que ve el webhook al preguntar "¿esta org ya tiene licencia viva?" — es lo
  *  que decide si la red de seguridad de la PRIMERA licencia entra o no. */
 let licenciaVigente: { jti: string; seats: number } | null = null;
@@ -190,7 +197,7 @@ vi.mock("@/lib/license/issue", () => ({
   supersedeLicense: async () => {},
   currentLicense: async () => licenciaVigente,
   currentLicenseJti: async () => licenciaVigente?.jti ?? null,
-  revokeAllLicenses: async () => [],
+  revokeAllLicenses: (...a: unknown[]) => revocar(...(a as [])),
 }));
 
 beforeEach(() => {
@@ -212,6 +219,8 @@ beforeEach(() => {
   alertas.length = 0;
   crearSesion.mockClear();
   emitirLicencia.mockClear();
+  revocar.mockClear();
+  esc.eventoVisto = undefined;
   licenciaVigente = null;
   suscripcionStripe.status = "active";
   suscripcionStripe.items.data[0]!.price = { id: "price_test_123" };
@@ -789,5 +798,91 @@ describe("POST /api/stripe/webhook — una renovación COBRADA levanta la exenci
     const res = await enviar(factura(0));
     expect(res.status).toBe(200);
     expect(levanta()).toBe(false);
+  });
+});
+
+/**
+ * LOS SEIS MANEJADORES QUE NO TENÍAN PRUEBA DE RUTA (plan de lanzamiento, fase 1;
+ * auditoría del 13-09). Todos tenían lógica pura con pruebas unitarias, pero
+ * ninguno había pasado por la ruta HTTP real con la guardia de producto, la de
+ * idempotencia y la de orden delante. El primer impago real no debería ser la
+ * primera vez que el manejador de impago corre de punta a punta.
+ */
+describe("POST /api/stripe/webhook — los seis manejadores que no tenían prueba de ruta", () => {
+  const orgId = "22222222-2222-4222-8222-222222222222";
+  const compradorId = "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa";
+  const item = (quantity: number) => ({ id: "si_1", quantity, price: { id: "price_test_123" }, current_period_start: 1_800_000_000, current_period_end: 1_802_592_000 });
+  const suscripcion = (extra: Record<string, unknown> = {}) => ({
+    id: "sub_123", status: "active", cancel_at_period_end: false, canceled_at: null, customer: "cus_123",
+    metadata: { org_id: orgId },
+    items: { data: [item(2)] },
+    ...extra,
+  });
+  const evento = (type: string, object: unknown, id = `evt_${type.replace(/\W/g, "_")}`) => ({ id, type, created: 1_800_000_100, data: { object } });
+  const enviar = async (ev: unknown) => {
+    updates.length = 0;
+    upserts.length = 0;
+    construirEvento.mockReturnValueOnce(ev);
+    const { POST } = await import("./stripe/webhook/route.js");
+    return POST(new Request("https://savings.bivelio.com/api/stripe/webhook", { method: "POST", headers: { "stripe-signature": "x" }, body: "{}" }));
+  };
+  const planEscrito = (plan: string) => updates.some((u) => u.tabla === "organizations" && (u.fila as { plan?: string }).plan === plan);
+
+  it("customer.subscription.created (activa) sin licencia previa → plan pro y la PRIMERA licencia", async () => {
+    licenciaVigente = null;
+    const res = await enviar(evento("customer.subscription.created", suscripcion()));
+    expect(res.status).toBe(200);
+    expect(planEscrito("pro")).toBe(true);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
+  });
+
+  it("customer.subscription.updated con MÁS asientos → la licencia vigente se sustituye por una con los asientos nuevos", async () => {
+    licenciaVigente = { jti: "jti-vieja", seats: 2 };
+    const res = await enviar(evento("customer.subscription.updated", suscripcion({ items: { data: [item(5)] } })));
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
+    const pedido = (emitirLicencia.mock.calls[0] as unknown[] | undefined)?.[1] as { seats?: number } | undefined;
+    expect(pedido?.seats).toBe(5);
+  });
+
+  it("customer.subscription.deleted → plan free y se revocan TODAS las licencias", async () => {
+    licenciaVigente = { jti: "jti-vieja", seats: 2 };
+    const res = await enviar(evento("customer.subscription.deleted", suscripcion({ status: "canceled", canceled_at: 1_800_000_050 })));
+    expect(res.status).toBe(200);
+    expect(planEscrito("free")).toBe(true);
+    expect(revocar).toHaveBeenCalledTimes(1);
+    expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
+  it("checkout.session.async_payment_succeeded (SEPA confirmado tarde) → emite la primera licencia como un checkout completado", async () => {
+    licenciaVigente = null;
+    const res = await enviar(evento("checkout.session.async_payment_succeeded", {
+      id: "cs_sepa", mode: "subscription", subscription: "sub_123", client_reference_id: compradorId,
+      metadata: { org_id: orgId, email: "sepa@example.com", user_id: compradorId },
+      amount_total: 400, total_details: { amount_discount: 0 },
+    }));
+    expect(res.status).toBe(200);
+    expect(emitirLicencia).toHaveBeenCalledTimes(1);
+    expect(upserts.some((u) => u.tabla === "org_members")).toBe(true);
+  });
+
+  it("invoice.payment_failed (de asientos, no de comisión) → la suscripción pasa a past_due y NO se revoca ni se emite nada", async () => {
+    esc.suscripcionActiva = { id: "sub-row-1", org_id: orgId, stripe_subscription_id: "sub_123", status: "active", last_event_at: null, past_due_since: null };
+    const res = await enviar(evento("invoice.payment_failed", { id: "in_fallida", subscription: "sub_123", metadata: {}, amount_due: 400 }));
+    expect(res.status).toBe(200);
+    expect(updates.some((u) => u.tabla === "subscriptions" && (u.fila as { status?: string }).status === "past_due")).toBe(true);
+    expect(revocar).not.toHaveBeenCalled();
+    expect(emitirLicencia).not.toHaveBeenCalled();
+  });
+
+  it("un evento que stripe_events YA tiene → 200 con duplicate:true y NINGÚN efecto", async () => {
+    esc.eventoVisto = "evt_repetido";
+    licenciaVigente = null;
+    const res = await enviar(evento("customer.subscription.created", suscripcion(), "evt_repetido"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ received: true, duplicate: true });
+    expect(emitirLicencia).not.toHaveBeenCalled();
+    expect(updates.length).toBe(0);
+    expect(upserts.length).toBe(0);
   });
 });
