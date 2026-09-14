@@ -566,7 +566,10 @@
       "cargando": "Carregant el tauler…",
       "errorTitulo": "Alguna cosa ha fallat en carregar el tauler",
       "errorCuerpo": "Les teves dades estan segures: és un error en pintar la pàgina. Prova-ho una altra vegada; si es repeteix, escriu a support@bivelio.com amb el correu amb què et vas registrar.",
-      "reintentar": "Provar-ho una altra vegada"
+      "reintentar": "Provar-ho una altra vegada",
+      "noExisteTitulo": "Aquesta pàgina del tauler no existeix",
+      "noExisteCuerpo": "L'adreça no correspon a cap secció del tauler. Comprova l'URL o torna al resum.",
+      "volverAlResumen": "Tornar al resum"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Veure l'estalvi mesurat",
     "ctaSignup": "Crear compte",
     "ctaInstall": "Anar a la guia d'instal·lació"
+  },
+  "notFound": {
+    "metaTitle": "Pàgina no trobada · BiVelio Savings Layer",
+    "eyebrow": "Error 404",
+    "title": "Pàgina no trobada",
+    "body": "Aquesta pàgina no existeix o s'ha mogut.",
+    "home": "← Torna a l'inici"
   }
 }
