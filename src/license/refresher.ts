@@ -1,4 +1,4 @@
-import { verifyLicenseToken, type LicenseKeyset } from "./verify.js";
+import { verifyLicenseToken, normalizeLicenseKey, type LicenseKeyset } from "./verify.js";
 
 /**
  * Recogida automática del token de licencia renovado.
@@ -74,7 +74,11 @@ export class LicenseRefresher {
     this.opts = opts;
     this.pollIntervalMs = opts.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
     this.refreshLeadSeconds = opts.refreshLeadSeconds ?? DEFAULT_REFRESH_LEAD_SECONDS;
-    const v = verifyLicenseToken(opts.initialToken, opts.publicKey);
+    // La misma normalización que el gate: el token inicial es la `licenseKey`
+    // del cliente tal cual la configuró, con el `\n` de un fichero si lo trae.
+    // Sin esto, un token bueno con `\n` daba `currentExpiresAt = 0` y el
+    // refresher salía a buscar renovación desde el primer segundo.
+    const v = verifyLicenseToken(normalizeLicenseKey(opts.initialToken), opts.publicKey);
     this.currentExpiresAt = v.signatureValid && v.payload ? v.payload.expires_at : 0;
     this.currentOrg = v.signatureValid ? v.payload?.org_id : undefined;
   }
@@ -149,7 +153,12 @@ export class LicenseRefresher {
       }
       const body = (await res.json()) as { token?: unknown };
       if (typeof body.token !== "string") return false;
-      const v = verifyLicenseToken(body.token, this.opts.publicKey);
+      // Por red también se normaliza: lo que se entrega a `onNewToken` es lo
+      // que el gate va a verificar, y tiene que ser la misma cadena que se
+      // verificó aquí — no una con envoltorio que el gate tendría que volver a
+      // limpiar.
+      const token = normalizeLicenseKey(body.token);
+      const v = verifyLicenseToken(token, this.opts.publicKey);
       if (!v.signatureValid || !v.payload) return false;
       if (v.payload.expires_at <= this.currentExpiresAt) return false; // rancio o el mismo
       if (this.currentOrg && v.payload.org_id !== this.currentOrg) return false; // otra org
@@ -165,7 +174,7 @@ export class LicenseRefresher {
       if (this.parado) return false;
       this.currentExpiresAt = v.payload.expires_at;
       this.currentOrg = v.payload.org_id;
-      this.opts.onNewToken(body.token);
+      this.opts.onNewToken(token);
       return true;
     } catch {
       return false; // best-effort: el token vigente sigue mandando
