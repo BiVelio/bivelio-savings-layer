@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Wo deine Automatisierungen schon leben. Ruft es die API des Anbieters mit deinem Schlüssel auf, wird es gemessen — das SDK umhüllt den Aufruf; das Gateway setzt sich davor."
     },
+    "nvidia": {
+      "rotulo": "Ökosystem",
+      "frase": "Teil des NVIDIA Inception Program – für eine effizientere und nachhaltigere KI.",
+      "pie": "Mitglied im NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Neu · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",

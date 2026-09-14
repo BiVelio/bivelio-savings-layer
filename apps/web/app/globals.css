@@ -1896,3 +1896,28 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 
 /* La etiqueta «Compatible con» va en el mismo kicker mono que «Medido en». */
 .lp .hero-compat .hm-k { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* NVIDIA Inception Program. El distintivo oficial va SIEMPRE sobre tarjeta
+   blanca (#FFF explícito, no var(--surface): la guía de marca lo pide claro
+   aunque el fondo cambie), con radio pequeño y 12 px de aire — más que la
+   altura de la «N» del logotipo a estos tamaños. Nunca se recolorea ni se
+   invierte; el hover solo toca el borde de la tarjeta. `--nvi-w` la fija el
+   componente; `max-width: 100%` hace que en un móvil ceda antes de desbordar,
+   sin bajar nunca del mínimo de 120 px que exige NVIDIA. */
+.lp .nvi-badge { display: inline-flex; flex: none; padding: 12px; background: #FFFFFF; border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-card); line-height: 0; transition: border-color .2s; }
+.lp .nvi-badge:hover { border-color: var(--btn-ghost-line-hover); }
+.lp .nvi-badge img { display: block; width: var(--nvi-w, 150px); max-width: 100%; height: auto; }
+/* En el héroe: bajo los botones y la nota, antes de «Compatible con». */
+.lp .hero-nvidia { margin-top: 22px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; animation: lp-fade .6s ease-out .34s both; }
+.lp .hero-nvidia p { margin: 0; flex: 1 1 200px; min-width: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); max-width: 38ch; }
+/* Banda de ecosistema al cierre de la home: la mitad de aire que una sección
+   normal, mismo kicker mono que «Compatible con». */
+.lp section.ecosistema { padding: clamp(36px, 4vw, 52px) 0; }
+.lp .ecosistema .hm-k { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+.lp .ecosistema-fila { margin-top: 14px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.lp .ecosistema-fila p { margin: 0; flex: 1 1 240px; min-width: 0; font-size: 14px; line-height: 1.55; color: var(--ink-soft); max-width: 56ch; }
+/* Pie: una línea de texto pequeña con enlace, entre la de confianza y la de la entidad. */
+.lp .ftr-nvidia { font-size: 12px; color: var(--ink-soft); }
+.lp .ftr-nvidia a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); transition: color .2s, text-decoration-color .2s; }
+.lp .ftr-nvidia a:hover { color: var(--ink); text-decoration-color: currentColor; }
+@media (prefers-reduced-motion: reduce) { .lp .hero-nvidia { animation: none; } }

@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của nhà cung cấp bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."
     },
+    "nvidia": {
+      "rotulo": "Hệ sinh thái",
+      "frase": "Thành viên của NVIDIA Inception Program, thúc đẩy AI hiệu quả và bền vững hơn.",
+      "pie": "Thành viên NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Mới · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",

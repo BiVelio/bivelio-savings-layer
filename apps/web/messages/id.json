@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API penyedia Anda dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
     },
+    "nvidia": {
+      "rotulo": "Ekosistem",
+      "frase": "Bagian dari NVIDIA Inception Program, mendorong AI yang lebih efisien dan berkelanjutan.",
+      "pie": "Anggota NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Baru · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",

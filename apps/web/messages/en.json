@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Where your automations already live. If it calls your provider's API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
     },
+    "nvidia": {
+      "rotulo": "Ecosystem",
+      "frase": "Part of the NVIDIA Inception Program, advancing more efficient and sustainable AI.",
+      "pie": "Member of the NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "New · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",

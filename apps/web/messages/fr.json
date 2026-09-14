@@ -713,6 +713,11 @@
     "systems": {
       "caption": "Là où vivent déjà vos automatisations. Si ça appelle l'API de votre fournisseur avec votre clé, c'est mesuré — le SDK enveloppe l'appel ; la passerelle se place devant."
     },
+    "nvidia": {
+      "rotulo": "Écosystème",
+      "frase": "Membre du NVIDIA Inception Program, pour une IA plus efficiente et plus durable.",
+      "pie": "Membre du NVIDIA Inception Program"
+    },
     "gateway": {
       "eyebrow": "Nouveau · terminaux de code",
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
