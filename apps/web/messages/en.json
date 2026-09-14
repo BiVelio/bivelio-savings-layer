@@ -566,7 +566,10 @@
       "cargando": "Loading your dashboard…",
       "errorTitulo": "Something went wrong loading the dashboard",
       "errorCuerpo": "Your data is safe: this is an error rendering the page. Try again; if it keeps happening, write to support@bivelio.com from the email you signed up with.",
-      "reintentar": "Try again"
+      "reintentar": "Try again",
+      "noExisteTitulo": "This dashboard page doesn't exist",
+      "noExisteCuerpo": "The address doesn't match any section of the dashboard. Check the URL or go back to the overview.",
+      "volverAlResumen": "Back to overview"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "See the measured savings",
     "ctaSignup": "Create account",
     "ctaInstall": "Go to the install guide"
+  },
+  "notFound": {
+    "metaTitle": "Page not found · BiVelio Savings Layer",
+    "eyebrow": "Error 404",
+    "title": "Page not found",
+    "body": "This page doesn't exist or has moved.",
+    "home": "← Back to home"
   }
 }

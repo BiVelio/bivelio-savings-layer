@@ -566,7 +566,10 @@
       "cargando": "Dashboard laden…",
       "errorTitulo": "Er ging iets mis bij het laden van het dashboard",
       "errorCuerpo": "Je gegevens zijn veilig: dit is een fout bij het tekenen van de pagina. Probeer het opnieuw; blijft het gebeuren, mail dan naar support@bivelio.com vanaf het e-mailadres waarmee je je hebt aangemeld.",
-      "reintentar": "Opnieuw proberen"
+      "reintentar": "Opnieuw proberen",
+      "noExisteTitulo": "Deze dashboardpagina bestaat niet",
+      "noExisteCuerpo": "Het adres komt met geen enkel onderdeel van het dashboard overeen. Controleer de URL of ga terug naar het overzicht.",
+      "volverAlResumen": "Terug naar het overzicht"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Bekijk de gemeten besparing",
     "ctaSignup": "Account aanmaken",
     "ctaInstall": "Naar de installatiegids"
+  },
+  "notFound": {
+    "metaTitle": "Pagina niet gevonden · BiVelio Savings Layer",
+    "eyebrow": "Fout 404",
+    "title": "Pagina niet gevonden",
+    "body": "Deze pagina bestaat niet of is verplaatst.",
+    "home": "← Terug naar de startpagina"
   }
 }

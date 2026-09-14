@@ -566,7 +566,10 @@
       "cargando": "Dashboard wird geladen…",
       "errorTitulo": "Beim Laden des Dashboards ist etwas schiefgelaufen",
       "errorCuerpo": "Ihre Daten sind sicher: es ist ein Fehler beim Darstellen der Seite. Versuchen Sie es erneut; wenn es wieder passiert, schreiben Sie an support@bivelio.com von der E-Mail-Adresse, mit der Sie sich registriert haben.",
-      "reintentar": "Erneut versuchen"
+      "reintentar": "Erneut versuchen",
+      "noExisteTitulo": "Diese Dashboard-Seite existiert nicht",
+      "noExisteCuerpo": "Die Adresse entspricht keinem Bereich des Dashboards. Prüfen Sie die URL oder gehen Sie zurück zur Übersicht.",
+      "volverAlResumen": "Zurück zur Übersicht"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Gemessene Ersparnis ansehen",
     "ctaSignup": "Konto erstellen",
     "ctaInstall": "Zur Installationsanleitung"
+  },
+  "notFound": {
+    "metaTitle": "Seite nicht gefunden · BiVelio Savings Layer",
+    "eyebrow": "Fehler 404",
+    "title": "Seite nicht gefunden",
+    "body": "Diese Seite existiert nicht oder wurde verschoben.",
+    "home": "← Zurück zur Startseite"
   }
 }

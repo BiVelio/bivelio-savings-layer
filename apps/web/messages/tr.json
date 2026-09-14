@@ -566,7 +566,10 @@
       "cargando": "Panel yükleniyor…",
       "errorTitulo": "Panel yüklenirken bir şeyler ters gitti",
       "errorCuerpo": "Verileriniz güvende: bu, sayfayı çizerken oluşan bir hata. Tekrar deneyin; devam ederse kaydolduğunuz e-posta adresinden support@bivelio.com adresine yazın.",
-      "reintentar": "Tekrar dene"
+      "reintentar": "Tekrar dene",
+      "noExisteTitulo": "Bu panel sayfası mevcut değil",
+      "noExisteCuerpo": "Adres panelin hiçbir bölümüyle eşleşmiyor. URL'yi kontrol edin veya genel bakışa dönün.",
+      "volverAlResumen": "Genel bakışa dön"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Ölçülen tasarrufu gör",
     "ctaSignup": "Hesap oluştur",
     "ctaInstall": "Kurulum rehberine git"
+  },
+  "notFound": {
+    "metaTitle": "Sayfa bulunamadı · BiVelio Savings Layer",
+    "eyebrow": "Hata 404",
+    "title": "Sayfa bulunamadı",
+    "body": "Bu sayfa mevcut değil veya taşınmış.",
+    "home": "← Ana sayfaya dön"
   }
 }
