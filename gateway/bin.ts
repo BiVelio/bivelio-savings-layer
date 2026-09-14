@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 import { describirEstadoDeElision } from "./palanca.js";
 import { describirEstadoDeEsfuerzo } from "./esfuerzo.js";
 import { describirEstadoDeHermano } from "./hermano.js";
-import { arrancarGateway } from "./servidor.js";
+import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
+import { decidirArranque, mensajeDeFalloDeArranque } from "./argumentos.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
 import { connect } from "node:net";
@@ -47,8 +48,12 @@ import { BV_SALA_VERSION } from "../src/index.js";
  *
  *   `bvsala doctor [--puerto N]` — detecta terminales instalados e imprime el
  *   bloque de configuración exacto de cada uno (gateway/doctor.ts).
+ *
+ * La decisión «ayuda / versión / arrancar» es una función pura
+ * (gateway/argumentos.ts) porque este fichero arranca cosas al importarse y
+ * no se puede probar; lo que aquí se hace es ejecutar lo decidido.
  */
-const [, , comando, ...resto] = process.argv;
+const decision = decidirArranque(process.argv.slice(2));
 
 function ayuda(): void {
   console.log(`bvsala ${BV_SALA_VERSION} — BiVelio Savings Layer
@@ -70,6 +75,9 @@ Comandos:
                          de AGENTS.md (~/.codex; con --proyecto, ./AGENTS.md) — Codex no
                          tiene skills y AGENTS.md va siempre activo. Su efecto se mide con
                          el gateway, no se promete.
+  --version | -v         Imprime solo la versión.
+  --help | -h            Esta ayuda; también detrás de gateway, doctor o skill
+                         (\`bvsala gateway --help\` no arranca nada).
 
 Entorno:
   BIVELIO_SERVICE_KEY    Clave de servicio (bvk_…): habilita metering + asiento.
@@ -122,11 +130,18 @@ El gateway nunca corta el tráfico: sin clave o con la ingesta caída, reenvía 
 Tus prompts jamás salen de tu máquina — solo cuentas y coste. Más: savings.bivelio.com`);
 }
 
-const esEnvoltorio = esTerminalConEnvoltorio(comando);
-if (comando !== "gateway" && comando !== "doctor" && comando !== "skill" && !esEnvoltorio) {
+if (decision.tipo === "ayuda") {
   ayuda();
-  process.exit(comando === undefined || comando === "help" || comando === "--help" ? 0 : 1);
+  process.exit(decision.salida);
 }
+if (decision.tipo === "version") {
+  // Solo la versión, para que un script (o un probador) la lea sin recortar
+  // nada: `bvsala --version` → «0.4.21».
+  console.log(BV_SALA_VERSION);
+  process.exit(0);
+}
+const { comando, resto } = decision;
+const esEnvoltorio = esTerminalConEnvoltorio(comando);
 
 if (comando === "skill") {
   // El SKILL.md empaquetado vive en <raíz>/skills/; desde dist/gateway/bin.js
@@ -210,51 +225,62 @@ const planAnillo2 = planDeAnillo2({
 const upstreamPedido = process.env.BVSALA_GATEWAY_UPSTREAM ?? planAnillo2.upstream;
 const elisionPedida = process.env.BVSALA_GATEWAY_ELISION ?? planAnillo2.elision;
 
-const arranque = await arrancarGateway({
-  puerto,
-  ...(silencioso ? { log: () => {} } : {}),
-  ...(serviceAccountKey ? { serviceAccountKey } : {}),
-  ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
-  ...(upstreamPedido
-    ? { upstream: upstreamPedido }
-    : envoltorio?.upstream
-      ? { upstream: envoltorio.upstream }
-      : {}),
-  ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
-  ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
-  // S4a · el CANAL de entitlements, del que cuelgan las dos palancas. ARMADO
-  // POR DEFECTO: el ahorro en el terminal tiene que funcionar SOLO. El gate
-  // REAL son los features `context_elision` y `cache_ttl_tuning` en la licencia
-  // de la org (fail-closed). `BVSALA_GATEWAY_ELISION=0` sigue siendo el freno
-  // de emergencia que apaga las dos de golpe. `serviceAccountKey` es
-  // estructuralmente necesaria (identidad de org para el entitlement).
-  elision: elisionPedida !== "0",
-  // S4a-B · los DIALES, APAGADOS desde el 2026-09-09. Hasta hoy iban en la
-  // misma bandera que la rebaja de TTL, así que no se podía apagar la palanca
-  // que pierde sin apagar la que gana. Medida en pérdida por tres vías
-  // independientes (simulador honesto +49 % de coste, carril sombra en
-  // producción los días 08 y 09, y R = 4,05 frente a R* = 0,0127 en
-  // fable-5-1). El brazo del anillo 2 ya NO las arma: mientras el A/B calcule
-  // el brazo una sola vez al arrancar el proceso, una sesión que cruza la
-  // medianoche corre con la bandera de ayer y no hay observación de control
-  // limpia. Se encienden a mano y a sabiendas.
-  ...(process.env.BVSALA_GATEWAY_DIALES_ELISION === "1" ? { dialesElision: true } : {}),
-  // Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
-  // Opt-in explícito del cliente porque cambia el `model` de la respuesta; el
-  // feature `sibling_model_routing` de la licencia sigue verjando (fail-closed)
-  // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
-  // el ahorro se mide sin contrafactual, no hay A/B que hacer.
-  ...(process.env.BVSALA_GATEWAY_MODELO_HERMANO === "1" ? { modeloHermano: true } : {}),
-  // Palanca D · el techo de esfuerzo por turno. Es del OPERADOR: la palanca no
-  // adivina qué turno merece pensar menos. Solo cambia la VÍA por la que se
-  // aplica —un mensaje añadido, que NO reinicia la caché de prefijo, en vez del
-  // campo de la raíz, que sí— y verja por modelo, porque fuera de fable-5-1,
-  // mythos-5-1 y opus-5 es un 400.
-  ...(process.env.BVSALA_GATEWAY_ESFUERZO ? { esfuerzo: process.env.BVSALA_GATEWAY_ESFUERZO } : {}),
-  // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
-  // producción no se toca y el gateway habla con savings.bivelio.com.
-  ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
-});
+let arranque: GatewayArrancado;
+try {
+  arranque = await arrancarGateway({
+    puerto,
+    ...(silencioso ? { log: () => {} } : {}),
+    ...(serviceAccountKey ? { serviceAccountKey } : {}),
+    ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
+    ...(upstreamPedido
+      ? { upstream: upstreamPedido }
+      : envoltorio?.upstream
+        ? { upstream: envoltorio.upstream }
+        : {}),
+    ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
+    ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
+    // S4a · el CANAL de entitlements, del que cuelgan las dos palancas. ARMADO
+    // POR DEFECTO: el ahorro en el terminal tiene que funcionar SOLO. El gate
+    // REAL son los features `context_elision` y `cache_ttl_tuning` en la licencia
+    // de la org (fail-closed). `BVSALA_GATEWAY_ELISION=0` sigue siendo el freno
+    // de emergencia que apaga las dos de golpe. `serviceAccountKey` es
+    // estructuralmente necesaria (identidad de org para el entitlement).
+    elision: elisionPedida !== "0",
+    // S4a-B · los DIALES, APAGADOS desde el 2026-09-09. Hasta hoy iban en la
+    // misma bandera que la rebaja de TTL, así que no se podía apagar la palanca
+    // que pierde sin apagar la que gana. Medida en pérdida por tres vías
+    // independientes (simulador honesto +49 % de coste, carril sombra en
+    // producción los días 08 y 09, y R = 4,05 frente a R* = 0,0127 en
+    // fable-5-1). El brazo del anillo 2 ya NO las arma: mientras el A/B calcule
+    // el brazo una sola vez al arrancar el proceso, una sesión que cruza la
+    // medianoche corre con la bandera de ayer y no hay observación de control
+    // limpia. Se encienden a mano y a sabiendas.
+    ...(process.env.BVSALA_GATEWAY_DIALES_ELISION === "1" ? { dialesElision: true } : {}),
+    // Palanca C · el MODELO HERMANO (decisión del dueño, 2026-09-09: «haz el C»).
+    // Opt-in explícito del cliente porque cambia el `model` de la respuesta; el
+    // feature `sibling_model_routing` de la licencia sigue verjando (fail-closed)
+    // y `BVSALA_GATEWAY_ELISION=0` la apaga con las demás. NO la arma el anillo 2:
+    // el ahorro se mide sin contrafactual, no hay A/B que hacer.
+    ...(process.env.BVSALA_GATEWAY_MODELO_HERMANO === "1" ? { modeloHermano: true } : {}),
+    // Palanca D · el techo de esfuerzo por turno. Es del OPERADOR: la palanca no
+    // adivina qué turno merece pensar menos. Solo cambia la VÍA por la que se
+    // aplica —un mensaje añadido, que NO reinicia la caché de prefijo, en vez del
+    // campo de la raíz, que sí— y verja por modelo, porque fuera de fable-5-1,
+    // mythos-5-1 y opus-5 es un 400.
+    ...(process.env.BVSALA_GATEWAY_ESFUERZO ? { esfuerzo: process.env.BVSALA_GATEWAY_ESFUERZO } : {}),
+    // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
+    // producción no se toca y el gateway habla con savings.bivelio.com.
+    ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
+  });
+} catch (err) {
+  // El escenario más probable para un probador es lanzarlo dos veces (el 8402
+  // por defecto). Hasta 0.4.20 esto era un rechazo sin manejar: la traza cruda
+  // de Node («node:net … listen EADDRINUSE …») y exit 1 sin una palabra del
+  // producto. Una sola línea, sin traza, con la salida (--puerto M o apagar el
+  // otro proceso), y exit 1.
+  console.error(`[bvsala ${comando}] ${mensajeDeFalloDeArranque(err, comando, puerto)}`);
+  process.exit(1);
+}
 
 const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
