@@ -1,8 +1,8 @@
-import { createServer, type Server } from "node:http";
+import { createServer, request, type Server } from "node:http";
 import { brotliCompressSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
-import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { arrancarGateway, ErrorDeEscucha, type GatewayArrancado } from "../gateway/servidor.js";
 import { BV_SALA_VERSION } from "../src/version.js";
 
 /**
@@ -640,5 +640,173 @@ describe("arrancarGateway — passthrough que mide", () => {
     recursos.push(gw);
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/api/hello`, { method: "HEAD" });
     expect(r.status).toBe(200);
+  });
+});
+
+/**
+ * Los tres defectos del gateway que la verificación de cinco agentes encontró
+ * sobre la 0.4.20 (2026-09-13) y que el dueño quiso arreglados antes de
+ * publicar nada más. Cada prueba FALLA contra el código de la 0.4.20.
+ */
+
+/** Una petición HTTP/1.1 cruda con cabeceras que undici (el cliente fetch) se
+ *  negaría a mandar: por eso va con `node:http`, que las escribe tal cual. */
+function pedirCrudo(
+  puerto: number,
+  headers: Record<string, string>,
+  cuerpo: string,
+): Promise<{ status: number; cuerpo: string }> {
+  return new Promise((resolve, reject) => {
+    const req = request({ host: "127.0.0.1", port: puerto, path: "/v1/messages", method: "POST", headers }, (res) => {
+      let datos = "";
+      res.setEncoding("utf8");
+      res.on("data", (d: string) => (datos += d));
+      res.on("end", () => resolve({ status: res.statusCode ?? 0, cuerpo: datos }));
+    });
+    req.on("error", reject);
+    req.end(cuerpo);
+  });
+}
+
+describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-09-13)", () => {
+  it("⛔ dos gateways en el mismo puerto: el segundo rechaza con ErrorDeEscucha (EADDRINUSE) y un mensaje del producto, no la traza de Node", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const primero = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    recursos.push(primero);
+
+    const err = (await arrancarGateway({ puerto: primero.puerto, upstream: `http://127.0.0.1:${upstream}`, log: () => {} }).then(
+      (gw) => {
+        recursos.push(gw);
+        return null;
+      },
+      (e: unknown) => e,
+    )) as (Error & { code?: string; puerto?: number }) | null;
+
+    expect(err).toBeInstanceOf(ErrorDeEscucha);
+    expect(err!.code).toBe("EADDRINUSE");
+    expect(err!.puerto).toBe(primero.puerto);
+    // Un mensaje del producto, en español, con el puerto; el error crudo de
+    // Node («listen EADDRINUSE: address already in use 127.0.0.1:N») queda
+    // como `cause` para quien depure, no como lo primero que lee el probador.
+    expect(err!.message).toContain(`${primero.puerto}`);
+    expect(err!.message).toMatch(/ya está en uso/);
+    expect(err!.message).not.toMatch(/^listen EADDRINUSE/);
+    expect(String((err as { cause?: unknown }).cause)).toContain("EADDRINUSE");
+    // Y el primero sigue sirviendo: el fallo del segundo no le tocó nada.
+    const r = await fetch(`http://127.0.0.1:${primero.puerto}/v1/messages`, { method: "POST", body: JSON.stringify({ model: "claude-haiku-4-5", stream: true }) });
+    expect(r.status).toBe(200);
+  });
+
+  it("⛔ sin clave, una petición en streaming que termina en 200 deja SU línea en el log (la que `bvsala doctor` manda buscar)", async () => {
+    // Claude Code, Codex, Goose y Qwen van SIEMPRE en streaming. Hasta 0.4.20
+    // la rama de streaming solo logueaba desde medir(), y medir() sin emisor
+    // vuelve en silencio: un probador sin clave (o con la clave mal exportada)
+    // no tenía forma de confirmar que su terminal pasaba por el gateway.
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const lineas: string[] = [];
+    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: (l) => lineas.push(l) });
+    recursos.push(gw);
+
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [{ role: "user", content: "hola" }], stream: true }),
+    });
+    expect(r.status).toBe(200);
+    expect(await r.text()).toBe(SSE);
+
+    const linea = lineas.find((l) => l.startsWith("[gateway] POST /v1/messages"));
+    expect(linea).toBeDefined();
+    expect(linea).toContain("→ 200");
+    expect(linea).toContain("(stream)");
+    expect(linea).toContain("no medido: sin BIVELIO_SERVICE_KEY");
+    // Una línea por petición, ni cero ni dos.
+    expect(lineas.filter((l) => l.startsWith("[gateway] POST /v1/messages"))).toHaveLength(1);
+  });
+
+  it("⛔ `Expect: 100-continue` (curl ≥ 8.7 lo añade a cuerpos > 1 MB) → 200, y el upstream NO recibe la cabecera", async () => {
+    // undici rechaza `expect` («expect header not supported») y el gateway
+    // respondía 502 «upstream unreachable · TypeError: fetch failed», el
+    // MISMO texto que un upstream caído, sin que la petición saliera.
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    recursos.push(gw);
+
+    const cuerpo = JSON.stringify({ model: "claude-haiku-4-5", stream: true });
+    const r = await pedirCrudo(gw.puerto, { "content-type": "application/json", expect: "100-continue", "anthropic-beta": "x" }, cuerpo);
+    expect(r.status).toBe(200);
+    expect(r.cuerpo).toBe(SSE);
+    expect(recibidas).toHaveLength(1);
+    expect(recibidas[0]!.body).toBe(cuerpo);
+    expect(recibidas[0]!.headers["expect"]).toBeUndefined();
+    expect(recibidas[0]!.headers["anthropic-beta"]).toBe("x"); // las de verdad siguen pasando
+  });
+
+  it("⛔ `Transfer-Encoding: chunked` en la petición → 200; el upstream recibe el cuerpo entero SIN esa cabecera", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    recursos.push(gw);
+
+    const cuerpo = JSON.stringify({ model: "claude-haiku-4-5", stream: true });
+    const r = await pedirCrudo(gw.puerto, { "content-type": "application/json", "transfer-encoding": "chunked" }, cuerpo);
+    expect(r.status).toBe(200);
+    expect(recibidas).toHaveLength(1);
+    expect(recibidas[0]!.body).toBe(cuerpo);
+    expect(recibidas[0]!.headers["transfer-encoding"]).toBeUndefined();
+  });
+
+  it("las hop-by-hop de RFC 7230 §6.1 y las que nombre `Connection` se quedan en este salto", async () => {
+    const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    recursos.push(gw);
+
+    const r = await pedirCrudo(
+      gw.puerto,
+      {
+        connection: "keep-alive, x-solo-este-salto",
+        "x-solo-este-salto": "1",
+        "keep-alive": "timeout=5",
+        te: "trailers",
+        trailer: "x-fin",
+        "proxy-connection": "keep-alive",
+        "x-api-key": "sk-test",
+      },
+      JSON.stringify({ model: "claude-haiku-4-5", stream: true }),
+    );
+    expect(r.status).toBe(200);
+    expect(recibidas).toHaveLength(1);
+    const h = recibidas[0]!.headers;
+    for (const nombre of ["x-solo-este-salto", "keep-alive", "te", "trailer", "proxy-connection", "upgrade"]) {
+      expect(h[nombre], nombre).toBeUndefined();
+    }
+    expect(h["x-api-key"]).toBe("sk-test");
+  });
+
+  it("⛔ upstream caído → el 502 dice la CAUSA (ECONNREFUSED), no solo «fetch failed»", async () => {
+    // Un puerto que ESTUVO abierto y ya no: el 1 no vale, undici lo corta
+    // antes de conectar («bad port», lista de puertos prohibidos del fetch).
+    const cerrado = await new Promise<number>((resolve) => {
+      const s = createServer();
+      s.listen(0, "127.0.0.1", () => {
+        const p = (s.address() as { port: number }).port;
+        s.close(() => resolve(p));
+      });
+    });
+    const lineas: string[] = [];
+    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${cerrado}`, log: (l) => lineas.push(l) });
+    recursos.push(gw);
+    const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: "{}" });
+    expect(r.status).toBe(502);
+    const json = (await r.json()) as { error: string; detail: string };
+    expect(json.error).toContain("upstream unreachable");
+    expect(json.detail).toContain("ECONNREFUSED");
+    // Y en el log, lo mismo: un probador con «fetch failed» a secas no sabe
+    // si es la red, el upstream o una cabecera que undici rechazó.
+    expect(lineas.find((l) => l.includes("upstream inalcanzable"))).toContain("ECONNREFUSED");
   });
 });
