@@ -28,8 +28,14 @@ import { ed25519 } from "@noble/curves/ed25519.js";
  *
  * El comportamiento no cambia —sigue siendo fail-closed, `granted()` no lo
  * concede— pero ahora el mensaje puede decir la verdad.
+ *
+ * `none` means "there is no key": what is left after `normalizeLicenseKey` is
+ * EMPTY. It is the same value `LicenseError.status` already carries when nothing
+ * was configured, because it is the same problem with the same fix: a
+ * `licenseKey: "   "` (an empty environment variable, a blank secret file) used
+ * to tell the customer their key "does not verify" — there was no key.
  */
-export type LicenseStatus = "active" | "grace" | "expired" | "invalid" | "revoked" | "stale";
+export type LicenseStatus = "active" | "grace" | "expired" | "invalid" | "revoked" | "stale" | "none";
 
 /** Decoded license token body (mirror of `@bivelio/protocol`'s LicensePayload,
  *  declared locally so the SDK stays free of a control-plane dependency). */
@@ -112,6 +118,71 @@ export function isKeyset(k: string | LicenseKeyset): k is LicenseKeyset {
 }
 
 /**
+ * Normalize a license key the way it arrives from the real world — ONCE, at the
+ * entry point, never inside the verifier.
+ *
+ * The README says `export BIVELIO_LICENSE_KEY=…` and dotenv trims, so that path
+ * never showed it. But anyone reading the key from a file (`readFileSync`), from
+ * a Docker/Kubernetes secret (mounted as a file, trailing newline included) or
+ * copying it out of an `Authorization` header handed over a CORRECT key with a
+ * `\n` after it, a space before it, quotes around it or a `Bearer ` in front —
+ * and the SDK answered "does not verify, check you pasted the WHOLE key". A
+ * wrong diagnosis on a good key is the worst possible hint: it sends the
+ * customer to look where the problem is not.
+ *
+ * Worse, it was INCONSISTENT: `tok + "\r\n"` passed and `tok + "\n"` did not,
+ * because `atob` ignores ASCII whitespace while the padding was computed from a
+ * length that included it, and two extra characters give the same remainder
+ * modulo 4 as zero. Behavior that depends on which editor saved the file is not
+ * behavior.
+ *
+ * Only OUTER wrapping is removed — whitespace, one pair of single or double
+ * quotes, a `Bearer` prefix in any capitalization — in that order, in one pass.
+ * Anything INSIDE the key is left alone: an interior space is not wrapping, it
+ * is a broken key, and {@link licenseKeyShape} reports it as `malformed`.
+ */
+export function normalizeLicenseKey(raw: string): string {
+  let k = raw.trim();
+  // Comillas envolventes: un `.env` leído sin dotenv, un valor sacado de JSON.
+  const conComillas = /^(["'])([\s\S]*)\1$/.exec(k);
+  if (conComillas) k = conComillas[2]!.trim();
+  // Prefijo `Bearer`: quien copió la cabecera entera de un ejemplo de curl.
+  k = k.replace(/^bearer\s+/i, "");
+  return k.trim();
+}
+
+/**
+ * The SHAPE of an already-normalized key, so the error message can tell apart
+ * three problems that used to get the same text:
+ *
+ *   · `empty`     — there is no key (only whitespace, or nothing at all).
+ *   · `malformed` — not even the shape of a token: not three dot-separated
+ *                   base64url segments. This is where the `bvk_` service key
+ *                   pasted where the license goes lands, as does arbitrary text
+ *                   or a token with a line break in the middle.
+ *   · `token`     — has the shape; whether it verifies is up to the signature.
+ *
+ * It is the SAME shape rule {@link verifyCompactSignature} enforces, so that "has
+ * the shape" and "verification was attempted" mean the same thing.
+ */
+export type LicenseKeyShape = "empty" | "malformed" | "token";
+
+/** Un segmento base64url: lo ÚNICO que emite el acuñador (`toString("base64url")`,
+ *  sin relleno). Todo lo demás —espacios, `=`, `+`, `/`— es que no es nuestro. */
+const SEGMENTO_BASE64URL = /^[A-Za-z0-9_-]+$/;
+
+function tieneFormaDeTokenCompacto(token: string): boolean {
+  const parts = token.split(".");
+  return parts.length === 3 && parts.every((p) => SEGMENTO_BASE64URL.test(p));
+}
+
+/** Classify a normalized key. See {@link LicenseKeyShape}. */
+export function licenseKeyShape(normalizedKey: string): LicenseKeyShape {
+  if (normalizedKey === "") return "empty";
+  return tieneFormaDeTokenCompacto(normalizedKey) ? "token" : "malformed";
+}
+
+/**
  * Verify the Ed25519 signature of any BV-SALA compact token
  * (`base64url(header).base64url(body).base64url(sig)`, sig over `${head}.${body}`)
  * and return the decoded header + raw payload bytes. This is the single shared
@@ -119,13 +190,20 @@ export function isKeyset(k: string | LicenseKeyset): k is LicenseKeyset {
  * so the browser (`@noble/curves`) and node (`node:crypto`) sides agree byte-for-byte
  * and there is no bespoke per-message verification path to keep in sync. It does NOT
  * interpret the payload or the header `typ` — callers do that.
+ *
+ * Shape is checked SEGMENT by segment, not just by counting dots. Three parts
+ * used to be enough and the rest was left to `atob`, which ignores whitespace:
+ * that is how a token with `\r\n` after it verified while the same token with
+ * `\n` did not (see {@link normalizeLicenseKey}). The shared primitive must give
+ * the same answer to the same input, always; a caller that wants to tolerate
+ * wrapping normalizes BEFORE calling.
  */
 export function verifyCompactSignature(
   token: string,
   publicKey: string | LicenseKeyset,
 ): CompactVerification {
+  if (!tieneFormaDeTokenCompacto(token)) return { ok: false, reason: "malformed token" };
   const parts = token.split(".");
-  if (parts.length !== 3) return { ok: false, reason: "malformed token" };
   const head = parts[0]!;
   const body = parts[1]!;
   const sig = parts[2]!;
@@ -219,13 +297,19 @@ export function deriveStatus(
  * Verify + apply the grace policy → a resolved status. Mirrors what the issuing
  * control plane resolves for the same token. Bad signature / malformed
  * → invalid; otherwise the status comes from {@link deriveStatus}.
+ *
+ * A public entry point, so it normalizes like the others (gate and refresher):
+ * the same key must resolve the same whichever way it comes in.
  */
 export function resolveLicense(
   token: string,
   publicKey: string | LicenseKeyset,
   opts: { nowSeconds?: number; revoked?: ReadonlySet<string> } = {},
 ): ResolvedLicense {
-  const v = verifyLicenseToken(token, publicKey);
+  const key = normalizeLicenseKey(token);
+  const shape = licenseKeyShape(key);
+  if (shape === "empty") return { status: "none", reason: "empty" };
+  const v = verifyLicenseToken(key, publicKey);
   if (!v.signatureValid || !v.payload) {
     return { status: "invalid", ...(v.reason ? { reason: v.reason } : {}) };
   }

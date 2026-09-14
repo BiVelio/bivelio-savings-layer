@@ -62,7 +62,7 @@ import {
 } from "../router/schema-on-demand.js";
 import type { FormatChoice } from "../serialization/format-selector.js";
 import { LicenseError } from "../license/errors.js";
-import type { LicenseStatus } from "../license/verify.js";
+import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
@@ -192,8 +192,17 @@ function errorYaFacturado(err: unknown): boolean {
  * con el que se puede buscar: el texto se reescribe, el estado no. Y todos
  * apuntan a la página que RESUELVE ese estado, nunca a la raíz del sitio: la
  * raíz es la portada de venta, y a quien ya pagó le manda a buscar otra vez.
+ *
+ * `reason` es el diagnóstico fino del gate (`LicenseGate.reason()`), y solo
+ * afina el texto de `invalid`: una clave que NI TIENE FORMA de token no puede
+ * recibir «does not verify», porque no se verificó nada — y el consejo de
+ * «comprueba que pegaste la clave ENTERA» manda a mirar donde no está el
+ * problema, que casi siempre es haber pegado la `bvk_` de servicio.
  */
-export function mensajeDeLicencia(st: LicenseStatus | string | undefined): string {
+export function mensajeDeLicencia(
+  st: LicenseStatus | string | undefined,
+  reason?: string | undefined,
+): string {
   switch (st) {
     case "none":
       // NADA configurado. Es el primer contacto de CUALQUIERA que instale el
@@ -203,8 +212,21 @@ export function mensajeDeLicencia(st: LicenseStatus | string | undefined): strin
       // devolvió un estado que no conozco", y son dos arreglos distintos.
       return mensajeSinLicencia();
     case "invalid":
-      // No verifica contra nuestra clave pública. Casi siempre es un problema de
-      // copiar y pegar, y NUNCA se arregla pagando.
+      // Ni siquiera tiene la forma de un token (tres segmentos base64url con
+      // puntos). No se verificó ninguna firma, así que decir «does not verify»
+      // sería mentir; lo que hay que decir es qué aspecto tiene una clave de
+      // licencia, porque lo más probable es que se pegara otra cosa.
+      if (reason === ("malformed" satisfies LicenseKeyShape)) {
+        return (
+          "BiVelio license key is not a license token (malformed): a BiVelio license key looks " +
+          "like `xxxx.yyyy.zzzz` — three dot-separated base64url segments, several hundred " +
+          "characters long — did you paste the `bvk_` service-account key by mistake? That one " +
+          "goes in `serviceAccountKey`; the license key is the other value on " +
+          "https://savings.bivelio.com/dashboard/install (license status: invalid)"
+        );
+      }
+      // Tiene forma, pero no verifica contra nuestra clave pública. Casi siempre
+      // es un problema de copiar y pegar, y NUNCA se arregla pagando.
       return (
         "BiVelio license key is not valid (it does not verify). Check you pasted the WHOLE key, " +
         "and that it is the license key from your dashboard — not the `bvk_` service-account key, " +
@@ -804,7 +826,11 @@ export class SavingsPipeline {
     if (gate && typeof gate.isActive === "function") {
       if (gate.isActive()) return;
       const st = typeof gate.status === "function" ? gate.status() : undefined;
-      throw new LicenseError(mensajeDeLicencia(st), st);
+      // El diagnóstico fino (p. ej. `malformed`) solo cambia el TEXTO; el
+      // estado que viaja en el error, que es por lo que ramifica el cliente,
+      // sigue siendo el del gate.
+      const reason = typeof gate.reason === "function" ? gate.reason() : undefined;
+      throw new LicenseError(mensajeDeLicencia(st, reason), st);
     }
     // Un gate SIN isActive() no es "auto-gestionado": es la puerta abierta. La
     // rama anterior avisaba por consola y hacía `return`, así que bastaba pasar

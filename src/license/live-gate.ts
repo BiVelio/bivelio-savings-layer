@@ -2,6 +2,8 @@ import type { LicenseGate } from "../contracts/types.js";
 import {
   verifyLicenseToken,
   deriveStatus,
+  normalizeLicenseKey,
+  licenseKeyShape,
   type LicenseStatus,
   type LicenseTokenPayload,
   type LicenseKeyset,
@@ -12,6 +14,15 @@ import type { RevocationSnapshot } from "./revocation.js";
 export interface ResolvedGate extends LicenseGate {
   isActive(): boolean;
   status(): LicenseStatus;
+  /**
+   * Why the key does not open, when it does not; `undefined` when it verified.
+   * Under `status() === "invalid"` it tells a key that does NOT EVEN HAVE THE
+   * SHAPE of a token (`"malformed"`: the `bvk_` pasted where the license goes,
+   * arbitrary text) from a well-formed one whose signature fails (the verifier's
+   * reason, e.g. `"bad signature"`). Both are `invalid` — the stable handle for
+   * branching does not change — but the advice given to the customer differs.
+   */
+  reason(): string | undefined;
   /** Unix seconds after which the online status should be re-checked (poller anchor). */
   refreshAfter?(): number | undefined;
 }
@@ -44,11 +55,26 @@ export function liveGateFromKey(
 ): ResolvedGate {
   const nowSeconds = (): number => Math.floor((opts.now ? opts.now() : Date.now()) / 1000);
   const startedAt = opts.startedAt ?? nowSeconds();
-  const v = verifyLicenseToken(licenseKey, publicKey);
+  // Se normaliza AQUÍ, una vez, porque esta es la puerta por la que entra toda
+  // clave del SDK (`gateFromKey`, el camino offline y el online de
+  // `createSavingsLayer`). Una clave leída de un fichero llega con `\n`, y una
+  // clave correcta con `\n` NO es una clave incorrecta. Y se mira su FORMA antes
+  // de pedirle una firma: a lo que no es un token no se le puede decir que «no
+  // verifica» — no llegó a verificarse nada.
+  const key = normalizeLicenseKey(licenseKey);
+  const shape = licenseKeyShape(key);
+  const v =
+    shape === "token"
+      ? verifyLicenseToken(key, publicKey)
+      : { signatureValid: false as const, reason: shape };
   const payload: LicenseTokenPayload | undefined = v.signatureValid ? v.payload : undefined;
   const features = new Set<string>(payload?.features ?? []);
 
   const status = (): LicenseStatus => {
+    // Vacía tras normalizar = no hay clave. Es el mismo caso —y el mismo
+    // arreglo— que no pasar `licenseKey`, así que lleva el mismo estado y el
+    // mismo mensaje («none was configured»), no un «does not verify».
+    if (shape === "empty") return "none";
     if (!payload) return "invalid";
     const s = deriveStatus(payload, nowSeconds(), opts.revocation.snapshot());
     // Online staleness gate: without a confirmed authorized heartbeat for longer
@@ -101,6 +127,7 @@ export function liveGateFromKey(
     isEntitled: (feature: string) => granted() && features.has(feature),
     isActive: () => granted(),
     status,
+    reason: () => (payload ? undefined : v.reason),
     refreshAfter: () => {
       if (!payload) return undefined;
       // Anchor cadence to the token's own refresh horizon (mirrors
