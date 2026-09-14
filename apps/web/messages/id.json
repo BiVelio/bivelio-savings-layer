@@ -566,7 +566,10 @@
       "cargando": "Memuat dasbor…",
       "errorTitulo": "Terjadi kesalahan saat memuat dasbor",
       "errorCuerpo": "Data Anda aman: ini adalah kesalahan saat menampilkan halaman. Coba lagi; jika terus terjadi, tulis ke support@bivelio.com dari email yang Anda gunakan untuk mendaftar.",
-      "reintentar": "Coba lagi"
+      "reintentar": "Coba lagi",
+      "noExisteTitulo": "Halaman dasbor ini tidak ada",
+      "noExisteCuerpo": "Alamat ini tidak cocok dengan bagian mana pun di dasbor. Periksa URL atau kembali ke ikhtisar.",
+      "volverAlResumen": "Kembali ke ikhtisar"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Lihat penghematan terukur",
     "ctaSignup": "Buat akun",
     "ctaInstall": "Ke panduan pemasangan"
+  },
+  "notFound": {
+    "metaTitle": "Halaman tidak ditemukan · BiVelio Savings Layer",
+    "eyebrow": "Kesalahan 404",
+    "title": "Halaman tidak ditemukan",
+    "body": "Halaman ini tidak ada atau telah dipindahkan.",
+    "home": "← Kembali ke beranda"
   }
 }

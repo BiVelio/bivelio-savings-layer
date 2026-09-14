@@ -566,7 +566,10 @@
       "cargando": "Đang tải bảng điều khiển…",
       "errorTitulo": "Đã xảy ra lỗi khi tải bảng điều khiển",
       "errorCuerpo": "Dữ liệu của bạn vẫn an toàn: đây là lỗi khi hiển thị trang. Hãy thử lại; nếu vẫn lặp lại, hãy viết thư tới support@bivelio.com từ email bạn đã dùng để đăng ký.",
-      "reintentar": "Thử lại"
+      "reintentar": "Thử lại",
+      "noExisteTitulo": "Trang này của bảng điều khiển không tồn tại",
+      "noExisteCuerpo": "Địa chỉ không khớp với mục nào trong bảng điều khiển. Kiểm tra URL hoặc quay lại tổng quan.",
+      "volverAlResumen": "Quay lại tổng quan"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Xem mức tiết kiệm đã đo",
     "ctaSignup": "Tạo tài khoản",
     "ctaInstall": "Đến hướng dẫn cài đặt"
+  },
+  "notFound": {
+    "metaTitle": "Không tìm thấy trang · BiVelio Savings Layer",
+    "eyebrow": "Lỗi 404",
+    "title": "Không tìm thấy trang",
+    "body": "Trang này không tồn tại hoặc đã được chuyển đi.",
+    "home": "← Quay lại trang chủ"
   }
 }

@@ -566,7 +566,10 @@
       "cargando": "A carregar o painel…",
       "errorTitulo": "Algo falhou ao carregar o painel",
       "errorCuerpo": "Os teus dados estão a salvo: é um erro ao desenhar a página. Tenta outra vez; se se repetir, escreve para support@bivelio.com com o email com que te registaste.",
-      "reintentar": "Tentar outra vez"
+      "reintentar": "Tentar outra vez",
+      "noExisteTitulo": "Esta página do painel não existe",
+      "noExisteCuerpo": "O endereço não corresponde a nenhuma secção do painel. Verifica o URL ou volta à visão geral.",
+      "volverAlResumen": "Voltar à visão geral"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Ver a poupança medida",
     "ctaSignup": "Criar conta",
     "ctaInstall": "Ir para o guia de instalação"
+  },
+  "notFound": {
+    "metaTitle": "Página não encontrada · BiVelio Savings Layer",
+    "eyebrow": "Erro 404",
+    "title": "Página não encontrada",
+    "body": "Esta página não existe ou foi movida.",
+    "home": "← Voltar ao início"
   }
 }

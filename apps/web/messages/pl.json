@@ -566,7 +566,10 @@
       "cargando": "Ładowanie panelu…",
       "errorTitulo": "Coś poszło nie tak podczas ładowania panelu",
       "errorCuerpo": "Twoje dane są bezpieczne: to błąd podczas rysowania strony. Spróbuj ponownie; jeśli się powtórzy, napisz na support@bivelio.com z adresu e-mail, którym się rejestrowałeś.",
-      "reintentar": "Spróbuj ponownie"
+      "reintentar": "Spróbuj ponownie",
+      "noExisteTitulo": "Ta strona panelu nie istnieje",
+      "noExisteCuerpo": "Adres nie odpowiada żadnej sekcji panelu. Sprawdź URL lub wróć do przeglądu.",
+      "volverAlResumen": "Wróć do przeglądu"
     }
   },
   "landing": {
@@ -960,5 +963,12 @@
     "ctaVerify": "Zobacz zmierzone oszczędności",
     "ctaSignup": "Utwórz konto",
     "ctaInstall": "Przejdź do instrukcji instalacji"
+  },
+  "notFound": {
+    "metaTitle": "Nie znaleziono strony · BiVelio Savings Layer",
+    "eyebrow": "Błąd 404",
+    "title": "Nie znaleziono strony",
+    "body": "Ta strona nie istnieje lub została przeniesiona.",
+    "home": "← Powrót na stronę główną"
   }
 }
