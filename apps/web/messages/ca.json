@@ -715,8 +715,7 @@
     },
     "nvidia": {
       "rotulo": "Ecosistema",
-      "frase": "Part del NVIDIA Inception Program, impulsant una IA més eficient i sostenible.",
-      "pie": "Membre del NVIDIA Inception Program"
+      "miembro": "Membre del NVIDIA Inception Program"
     },
     "gateway": {
       "eyebrow": "Nou · terminals de codi",

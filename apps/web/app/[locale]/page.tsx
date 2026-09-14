@@ -202,14 +202,18 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div className="hero-note">
               <span className="pulse" /> {t("hero.note")}
             </div>
-
-            {/* NVIDIA Inception Program (petición del dueño, 2026-09-14): el
-                distintivo oficial y una frase a su lado, debajo del titular y
-                de los botones. Es pertenencia factual al programa, no un aval
-                — y va aparte de «Compatible con», que es otra cosa. */}
+            {/* NVIDIA Inception Program: UNA LÍNEA MÁS bajo los botones, en el
+                mismo cuerpo gris que «Se instala en minutos…» — el distintivo
+                oficial desnudo y cinco palabras. Va detrás de esa línea y no
+                delante porque esa línea califica a los botones (se instala en
+                minutos; tus mensajes no pasan por aquí) y esta es un hecho de
+                la empresa: cierra la pila de notas y da paso a «Compatible
+                con», que es otra cosa (compatibilidad, no pertenencia). La
+                tarjeta y la frase larga de la primera versión se fueron en la
+                revisión del 2026-09-14 (NvidiaInception.tsx). */}
             <div className="hero-nvidia">
-              <NvidiaInceptionBadge width={150} />
-              <p>{t("nvidia.frase")}</p>
+              <NvidiaInceptionBadge width={136} />
+              <span>{t("nvidia.miembro")}</span>
             </div>
 
             {/* HÉROE LIMPIO (petición del dueño, 2026-09-12): aquí solo el
@@ -718,12 +722,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         {/* ECOSISTEMA — la banda de programas al cierre de la home. No había
             banda de partners (las dos marquesinas de arriba son listas de
             COMPATIBILIDAD, no de pertenencia), así que se crea pequeña y
-            discreta: rótulo mono en mayúsculas + el distintivo + la frase. */}
+            discreta, en una sola fila: rótulo mono en mayúsculas + el
+            distintivo desnudo + «Miembro del NVIDIA Inception Program» en
+            gris. Sin tarjeta (el SVG ya trae su marco) y sin filete vertical:
+            aquí no hay logos de proveedores de los que separarlo. Bajo 700 px
+            el rótulo pasa a una columna de 112 px y el distintivo a 136. */}
         <section className="ecosistema" aria-labelledby="ecosistema-rotulo">
           <span className="hm-k" id="ecosistema-rotulo">{t("nvidia.rotulo")}</span>
           <div className="ecosistema-fila rv">
-            <NvidiaInceptionBadge width={180} />
-            <p>{t("nvidia.frase")}</p>
+            <NvidiaInceptionBadge width={150} />
+            <span>{t("nvidia.miembro")}</span>
           </div>
         </section>
       </main>

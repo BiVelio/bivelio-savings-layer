@@ -715,8 +715,7 @@
     },
     "nvidia": {
       "rotulo": "Ökosystem",
-      "frase": "Teil des NVIDIA Inception Program – für eine effizientere und nachhaltigere KI.",
-      "pie": "Mitglied im NVIDIA Inception Program"
+      "miembro": "Mitglied im NVIDIA Inception Program"
     },
     "gateway": {
       "eyebrow": "Neu · Coding-Terminals",

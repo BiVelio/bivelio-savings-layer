@@ -715,8 +715,7 @@
     },
     "nvidia": {
       "rotulo": "Hệ sinh thái",
-      "frase": "Thành viên của NVIDIA Inception Program, thúc đẩy AI hiệu quả và bền vững hơn.",
-      "pie": "Thành viên NVIDIA Inception Program"
+      "miembro": "Thành viên NVIDIA Inception Program"
     },
     "gateway": {
       "eyebrow": "Mới · terminal lập trình",

@@ -715,8 +715,7 @@
     },
     "nvidia": {
       "rotulo": "Ekosistem",
-      "frase": "NVIDIA Inception Program'ın bir parçası: daha verimli ve sürdürülebilir yapay zekâ için.",
-      "pie": "NVIDIA Inception Program üyesi"
+      "miembro": "NVIDIA Inception Program üyesi"
     },
     "gateway": {
       "eyebrow": "Yeni · kod terminalleri",
