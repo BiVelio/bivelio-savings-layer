@@ -715,8 +715,7 @@
     },
     "nvidia": {
       "rotulo": "Ecosysteem",
-      "frase": "Onderdeel van het NVIDIA Inception Program, voor efficiëntere en duurzamere AI.",
-      "pie": "Lid van het NVIDIA Inception Program"
+      "miembro": "Lid van het NVIDIA Inception Program"
     },
     "gateway": {
       "eyebrow": "Nieuw · codeterminals",

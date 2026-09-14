@@ -715,8 +715,7 @@
     },
     "nvidia": {
       "rotulo": "Ekosistem",
-      "frase": "Bagian dari NVIDIA Inception Program, mendorong AI yang lebih efisien dan berkelanjutan.",
-      "pie": "Anggota NVIDIA Inception Program"
+      "miembro": "Anggota NVIDIA Inception Program"
     },
     "gateway": {
       "eyebrow": "Baru · terminal pemrograman",

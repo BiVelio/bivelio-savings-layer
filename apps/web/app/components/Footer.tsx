@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
 
-import { NVIDIA_INCEPTION_URL } from "./NvidiaInception";
+import { NvidiaInceptionBadge } from "./NvidiaInception";
 
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
 import { SavingsLogo } from "./SavingsLogo";
@@ -154,9 +154,21 @@ export default async function Footer() {
                   <SavingsLogo variant="full" height={52} />
                 </Link>
                 <p>{t.rich("footer.tagline", { b: (c) => <b>{c}</b> })}</p>
-                <span className="ftr-badge">
-                  <span className="bar" /> {t("footer.badge")}
-                </span>
+                {/* Las dos credenciales del producto, en una fila que envuelve:
+                    el chip del algoritmo que lleva todo pie BV-* (BV‑SALA,
+                    nombre de marca, igual en los 12 idiomas) y el distintivo
+                    del NVIDIA Inception Program, enlazado (NvidiaInception.tsx).
+                    La columna de marca mide 323 px a 1440 y el chip 200, así
+                    que el distintivo (124) baja a una segunda fila alineada a
+                    la izquierda; lo que importa es que van juntas y que el
+                    programa se dice UNA vez en el pie — la línea de texto que
+                    había en el bloque fino se fue (revisión del 2026-09-14). */}
+                <div className="ftr-creds">
+                  <span className="ftr-badge">
+                    <span className="bar" /> {t("footer.badge")}
+                  </span>
+                  <NvidiaInceptionBadge width={124} />
+                </div>
                 <SocialDock />
               </div>
               <div className="ftr-cols">
@@ -167,14 +179,6 @@ export default async function Footer() {
             </div>
             <div className="ftr-fine">
               <p className="ftr-trust">{t("footer.trust")}</p>
-              {/* Pertenencia al NVIDIA Inception Program, en texto y con enlace
-                  al programa: la tercera mención de la home y la única en el
-                  resto de páginas, que comparten este pie. */}
-              <p className="ftr-nvidia">
-                <a href={NVIDIA_INCEPTION_URL} target="_blank" rel="noopener noreferrer">
-                  {t("nvidia.pie")}
-                </a>
-              </p>
               <p className="ftr-entity">{t("footer.entity")}</p>
             </div>
           </div>
