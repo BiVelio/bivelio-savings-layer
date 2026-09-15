@@ -4,20 +4,21 @@
  * y ecosistema» antes del pie, columna de marca del pie).
  *
  * Nada de esto es gusto. El logotipo de un tercero trae reglas — solo el
- * fichero oficial, desnudo sobre fondo claro y sobre tarjeta blanca solo en
- * fondo oscuro o en la banda (donde la caja es la de bivelio.com), nunca por
- * debajo de 120 px, siempre «NVIDIA Inception Program» con «Program», siempre
- * pertenencia y nunca aval — y el fallo es silencioso: una edición posterior
- * cambia el fichero por una copia recoloreada, vuelve a meter el distintivo
- * del héroe en una tarjeta (el «marco dentro de otro» que la revisión del
- * 2026-09-14 rechazó), pinta la caja de la banda con un token que una paleta
- * oscura invertiría, o acorta el nombre en un catálogo, y nada más se pone
- * rojo. Y la banda es la MISMA que la de bivelio.com (captura aprobada el
- * 2026-09-15): medidas, colores y copy verbatim en 12 idiomas, y «BiVelio» en
- * el título como en bivelio.com y en privacy (#304): las letras en el navy del
- * logotipo y las dos íes con su punto de color, no un <strong> en el azul de
- * acento. Por eso las reglas se leen del SVG, del componente, de la marca, de
- * la página, del pie, de la hoja de estilos y de los doce catálogos.
+ * fichero oficial, desnudo sobre fondo claro en el héroe y sobre tarjeta
+ * blanca solo en fondo oscuro, en la banda y en el pie (donde la caja es la de
+ * bivelio.com), nunca por debajo de 120 px, siempre «NVIDIA Inception
+ * Program» con «Program», siempre pertenencia y nunca aval — y el fallo es
+ * silencioso: una edición posterior cambia el fichero por una copia
+ * recoloreada, vuelve a meter el distintivo del héroe en una tarjeta (el
+ * «marco dentro de otro» que la revisión del 2026-09-14 rechazó), pinta la
+ * caja de la banda o la del pie con un token que una paleta oscura invertiría,
+ * o acorta el nombre en un catálogo, y nada más se pone rojo. Y la banda y el
+ * pie son los MISMOS que los de bivelio.com (capturas aprobadas el
+ * 2026-09-15): medidas, colores y copy verbatim en 12 idiomas, y «BiVelio»
+ * como en bivelio.com y en privacy (#304): las letras en el navy del logotipo
+ * y las dos íes con su punto de color, no un <strong> en el azul de acento.
+ * Por eso las reglas se leen del SVG, del componente, de la marca, de la
+ * página, del pie, de la hoja de estilos y de los doce catálogos.
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -28,7 +29,7 @@ import { describe, expect, it } from "vitest";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { NvidiaEcosystemBand, partirMarca } from "./NvidiaInception";
+import { NvidiaEcosystemBand, NvidiaFooterCard, partirMarca } from "./NvidiaInception";
 
 // vitest compila el .tsx con el runtime CLÁSICO de JSX (el tsconfig dice
 // `preserve` y esbuild lo baja a `React.createElement`), así que el componente
@@ -93,10 +94,11 @@ describe("el logotipo es el de NVIDIA, servido desde este dominio", () => {
   it("se referencia por ruta del propio dominio, nunca por CDN, y en un solo <img>", () => {
     expect(COMPONENTE).toContain('NVIDIA_BADGE_SRC = "/nvidia-inception-program.svg"');
     expect(COMPONENTE).not.toMatch(/https?:\/\/[^"]*\.svg/);
-    // Un único <img> (NvidiaInceptionArt) que comparten el distintivo desnudo y
-    // la caja de la banda: no hay dos formas de pintar el logotipo.
+    // Un único <img> (NvidiaInceptionArt) que comparten el distintivo desnudo,
+    // la caja de la banda y la tarjeta del pie: no hay dos formas de pintar el
+    // logotipo.
     expect(COMPONENTE.match(/<img\s/g)?.length).toBe(1);
-    expect(COMPONENTE.match(/<NvidiaInceptionArt width=/g)?.length).toBe(2);
+    expect(COMPONENTE.match(/<NvidiaInceptionArt width=/g)?.length).toBe(3);
     // `img-src 'self'` en next.config.mjs — el distintivo no necesita más.
     expect(leer("next.config.mjs")).toMatch(/img-src 'self'/);
   });
@@ -106,8 +108,9 @@ describe("el distintivo sigue la guía de marca", () => {
   it("cada enlace al programa abre en pestaña nueva y con noopener", () => {
     expect(COMPONENTE).toContain('NVIDIA_INCEPTION_URL = "https://www.nvidia.com/en-us/startups/"');
     const anclas = COMPONENTE.match(/<a\s[\s\S]*?href=\{NVIDIA_INCEPTION_URL\}[\s\S]*?>/g) ?? [];
-    // El distintivo desnudo, el CTA de la banda y la caja de la banda.
-    expect(anclas.length).toBe(3);
+    // El distintivo desnudo, el CTA de la banda, la caja de la banda y la
+    // tarjeta del pie.
+    expect(anclas.length).toBe(4);
     for (const a of anclas) {
       expect(a).toContain('target="_blank"');
       expect(a).toMatch(/rel="[^"]*noopener[^"]*"/);
@@ -123,7 +126,7 @@ describe("el distintivo sigue la guía de marca", () => {
     expect(COMPONENTE).toMatch(/width=\{width\}/);
     expect(COMPONENTE).toMatch(/height=\{Math\.round\(width \* RATIO\)\}/);
     expect(COMPONENTE).toContain("216 / 500.4288");
-    for (const sel of [".nvi-badge img", ".nvi-band-box img"]) {
+    for (const sel of [".nvi-badge img", ".nvi-band-box img", ".nvi-foot-box img"]) {
       const img = regla(sel);
       expect(img).toMatch(/height:\s*auto/);
       expect(img).toMatch(/max-width:\s*100%/);
@@ -135,11 +138,10 @@ describe("el distintivo sigue la guía de marca", () => {
       ...[...COMPONENTE.matchAll(/width = (\d+)/g)].map((m) => Number(m[1])),
       ...[...COMPONENTE.matchAll(/<NvidiaInceptionArt width=\{(\d+)\}/g)].map((m) => Number(m[1])),
       ...[...PAGINA.matchAll(/<NvidiaInceptionBadge width=\{(\d+)\}/g)].map((m) => Number(m[1])),
-      ...[...PIE.matchAll(/<NvidiaInceptionBadge width=\{(\d+)\}/g)].map((m) => Number(m[1])),
       // La regla que acota el logotipo en portátil corto.
       ...[...CSS.matchAll(/\.nvi-badge img \{ width: (\d+)px; \}/g)].map((m) => Number(m[1])),
     ];
-    // Componente (por defecto) + banda + héroe + pie + la acotación de CSS.
+    // Componente (por defecto) + banda + pie + héroe + la acotación de CSS.
     expect(anchos.length).toBeGreaterThanOrEqual(5);
     for (const w of anchos) expect(w).toBeGreaterThanOrEqual(120);
   });
@@ -482,35 +484,131 @@ describe("está en los tres sitios pedidos, y solo ahí", () => {
     expect(CSS).toMatch(quieto);
   });
 
-  it("pie: en la columna de marca, en .ftr-creds junto al chip del algoritmo, y sin línea de texto", () => {
+  it("pie: cierra la columna de marca como en bivelio.com — logo, frase, chip, dock social y DESPUÉS la tarjeta; el chip solo en su fila", () => {
     const marca = PIE.indexOf('className="ftr-brand"');
+    const logo = PIE.indexOf('className="ftr-logo"');
+    const frase = PIE.indexOf('t.rich("footer.tagline"');
     const creds = PIE.indexOf('className="ftr-creds"');
     const chip = PIE.indexOf('className="ftr-badge"');
-    const distintivo = PIE.indexOf("<NvidiaInceptionBadge");
+    const finCreds = PIE.indexOf("</div>", chip);
+    const dock = PIE.indexOf("<SocialDock />");
+    const tarjeta = PIE.indexOf("<NvidiaFooterCard");
     const columnas = PIE.indexOf('className="ftr-cols"');
     expect(marca).toBeGreaterThan(-1);
-    expect(creds).toBeGreaterThan(marca);
+    expect(logo).toBeGreaterThan(marca);
+    expect(frase).toBeGreaterThan(logo);
+    expect(creds).toBeGreaterThan(frase);
     expect(chip).toBeGreaterThan(creds);
-    expect(distintivo).toBeGreaterThan(chip);
-    expect(columnas).toBeGreaterThan(distintivo);
+    expect(dock).toBeGreaterThan(finCreds);
+    expect(tarjeta).toBeGreaterThan(dock);
+    expect(columnas).toBeGreaterThan(tarjeta);
+    // La frase del pie es la clave `title` de la banda, no una copia en doce
+    // catálogos: el pie lee el namespace `landing` entero.
+    expect(PIE).toContain('<NvidiaFooterCard line={t("nvidia.title")} />');
+    expect(PIE).toContain('getTranslations("landing")');
+    expect(PIE).not.toContain("footer.nvidia");
+    // El distintivo desnudo de 124 px que iba en .ftr-creds junto al chip se
+    // fue: dentro de la fila queda solo el chip, y el pie no importa el desnudo.
+    expect(PIE.slice(creds, finCreds)).not.toContain("Nvidia");
+    expect(PIE).not.toContain("NvidiaInceptionBadge");
+    expect(PIE.match(/<NvidiaFooterCard/g)?.length).toBe(1);
     // Se dice una vez: ni la línea de texto bajo las columnas ni su CSS.
     expect(PIE).not.toContain("ftr-nvidia");
     expect(PIE).not.toContain("nvidia.pie");
     expect(CSS).not.toContain(".ftr-nvidia");
-    expect(PIE.match(/<NvidiaInceptionBadge/g)?.length).toBe(1);
-    // La fila: en línea, centrada, envuelve, con su aire; el chip se centra en ella.
+    // La fila del chip: flex para que el `align-self: center` del chip lo
+    // centre en su línea y no en la columna; ya no envuelve dos credenciales.
     const fila = regla(".ftr-creds");
     expect(fila).toMatch(/display:\s*flex/);
     expect(fila).toMatch(/align-items:\s*center/);
-    expect(fila).toMatch(/flex-wrap:\s*wrap/);
-    expect(fila).toMatch(/gap:\s*12px 14px/);
+    expect(fila).not.toMatch(/flex-wrap/);
     expect(regla(".ftr-badge")).toMatch(/align-self:\s*center/);
   });
 
-  it("en ningún otro sitio: dos distintivos desnudos (héroe y pie) y una banda", () => {
-    const desnudos = (PAGINA.match(/<NvidiaInceptionBadge/g)?.length ?? 0) + (PIE.match(/<NvidiaInceptionBadge/g)?.length ?? 0);
-    expect(desnudos).toBe(2);
+  it("pie: un único enlace en columna que apila la tarjeta blanca (arte a 150) y la frase con la marca", () => {
+    const pie = COMPONENTE.slice(COMPONENTE.indexOf("export function NvidiaFooterCard"));
+    expect(pie.length).toBeGreaterThan(0);
+    // Un solo <a>, al programa, en pestaña nueva y con noopener.
+    expect(pie.match(/<a\s/g)?.length).toBe(1);
+    expect(pie).toContain('<a className="nvi-foot" href={NVIDIA_INCEPTION_URL} target="_blank" rel="noopener noreferrer">');
+    // Dentro, primero la tarjeta con el arte a 150 (≥ 120), después la frase.
+    const caja = pie.indexOf('className="nvi-foot-box"');
+    const frase = pie.indexOf('className="nvi-foot-line"');
+    expect(caja).toBeGreaterThan(-1);
+    expect(frase).toBeGreaterThan(caja);
+    expect(pie).toMatch(/<span className="nvi-foot-box">\s*<NvidiaInceptionArt width=\{150\} \/>/);
+    // La frase: el mismo partidor que la banda y el nombre en BvBrandWord.
+    expect(pie).toMatch(/const partes = partirMarca\(line\)/);
+    expect(pie).toMatch(/\{partes\[0\]\}\s*<span className="nvi-brand">\s*<BvBrandWord \/>\s*<\/span>\s*\{partes\[2\]\}/);
+    expect(pie).toMatch(/\) : \(\s*line\s*\)/);
+    // Ni el distintivo desnudo ni la tarjeta de fondo oscuro: es la caja de bivelio.com.
+    expect(pie).not.toContain("nvi-badge");
+    expect(pie).not.toContain("onDark");
+  });
+
+  it("pie: renderizado — la tarjeta, el <img> con su alt y la frase entera con «BiVelio» una vez", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(NvidiaFooterCard, { line: "BiVelio es miembro del NVIDIA Inception Program." }),
+    );
+    expect(html.match(/<a /g)?.length).toBe(1);
+    expect(html).toMatch(/^<a class="nvi-foot" href="https:\/\/www\.nvidia\.com\/en-us\/startups\/" target="_blank" rel="noopener noreferrer">/);
+    expect(html).toMatch(/<span class="nvi-foot-box"><img src="\/nvidia-inception-program\.svg" width="150" height="65" alt="NVIDIA Inception Program"/);
+    const frase = /<span class="nvi-foot-line">([\s\S]*?)<\/span><\/a>$/.exec(html);
+    expect(frase, "frase").not.toBeNull();
+    const f = frase![1]!;
+    expect(f.match(/BiVelio/g)?.length).toBe(1);
+    expect(f).toMatch(/^<span class="nvi-brand"><span style="white-space:nowrap"><span class="sr-only">BiVelio<\/span><span aria-hidden="true">/);
+    expect(f.replace(/<[^>]+>/g, "")).toBe("BiVelioBıVelıo es miembro del NVIDIA Inception Program.");
+    expect(f.endsWith(" es miembro del NVIDIA Inception Program.")).toBe(true);
+    // Sin marca en la frase, va tal cual.
+    const plano = renderToStaticMarkup(React.createElement(NvidiaFooterCard, { line: "Miembro del programa." }));
+    expect(plano).toContain('<span class="nvi-foot-line">Miembro del programa.</span>');
+    expect(plano).not.toContain("nvi-brand");
+  });
+
+  it("pie: las medidas de bivelio.com — enlace en columna a 10 px, 28 px por encima, escala 1.02; tarjeta blanca LITERAL, borde, radio 12, 4 px; frase a 11 px al 80 %", () => {
+    const enlace = regla(".nvi-foot");
+    expect(enlace).toMatch(/display:\s*flex/);
+    expect(enlace).toMatch(/flex-direction:\s*column/);
+    expect(enlace).toMatch(/align-items:\s*flex-start/);
+    expect(enlace).toMatch(/gap:\s*10px/);
+    expect(enlace).toMatch(/width:\s*fit-content/);
+    expect(enlace).toMatch(/margin-top:\s*28px/);
+    expect(enlace).toMatch(/transition:\s*transform \.2s/);
+    const hover = regla(".nvi-foot:hover");
+    expect(hover).toMatch(/scale\(1\.02\)/);
+    expect(hover).toMatch(/text-decoration:\s*none/);
+    expect(CSS).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^\n]*\.lp \.nvi-foot:hover \{ transform: none; \}/);
+    const caja = regla(".nvi-foot-box");
+    expect(caja).toMatch(/display:\s*inline-flex/);
+    expect(caja).toMatch(/align-items:\s*center/);
+    expect(caja).toMatch(/justify-content:\s*center/);
+    // Blanco LITERAL, no `var(--surface)`: una paleta oscura no puede invertirla.
+    expect(caja).toMatch(/background:\s*#FFFFFF\b/i);
+    expect(caja).toMatch(/border:\s*1px solid var\(--line\)/);
+    expect(caja).toMatch(/border-radius:\s*12px/);
+    // ≥ 4 px de aire: 4 + los ≈7,5 px transparentes del SVG oficial a 150 dan
+    // los 10–12 de bivelio.com, que recorta el suyo al marco.
+    const padding = /padding:\s*(\d+)px/.exec(caja);
+    expect(padding, "padding").not.toBeNull();
+    expect(Number(padding![1])).toBeGreaterThanOrEqual(4);
+    expect(caja).not.toMatch(/box-shadow/);
+    const frase = regla(".nvi-foot-line");
+    expect(frase).toMatch(/font-size:\s*11px/);
+    expect(frase).toMatch(/line-height:\s*1\.6/);
+    expect(frase).toMatch(/color:\s*color-mix\(in srgb, var\(--muted\) 80%, transparent\)/);
+    expect(frase).toMatch(/max-width:\s*15rem/);
+    const marca = regla(".nvi-foot-line .nvi-brand");
+    expect(marca).toMatch(/color:\s*var\(--navy\)/);
+    expect(marca).not.toMatch(/--accent|--brand\b/);
+  });
+
+  it("en ningún otro sitio: un distintivo desnudo (héroe), una banda y una tarjeta en el pie", () => {
+    expect(PAGINA.match(/<NvidiaInceptionBadge/g)?.length).toBe(1);
+    expect(PIE).not.toContain("<NvidiaInceptionBadge");
     expect(PAGINA.match(/<NvidiaEcosystemBand/g)?.length).toBe(1);
     expect(PIE).not.toContain("NvidiaEcosystemBand");
+    expect(PIE.match(/<NvidiaFooterCard/g)?.length).toBe(1);
+    expect(PAGINA).not.toContain("NvidiaFooterCard");
   });
 });

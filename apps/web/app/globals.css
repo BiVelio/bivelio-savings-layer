@@ -1974,10 +1974,27 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .nvi-band-art:hover { transform: scale(1.02); }
 .lp .nvi-band-box { display: inline-flex; padding: 6px; border-radius: var(--radius-md); background: #FFFFFF; border: 1px solid var(--line); box-shadow: 0 10px 18px -8px rgba(15, 18, 24, .12); }
 .lp .nvi-band-box img { display: block; height: auto; max-width: 100%; }
-/* Pie: las dos credenciales del producto en una fila dentro de la columna de
-   marca — el chip del algoritmo (BV‑SALA, 200 px) y el distintivo a 124 px.
-   La columna mide 323 px a 1440, así que envuelven en dos filas alineadas a
-   la izquierda y siguen juntas. Lo que NO hay es una línea de texto en el
-   bloque fino: no se dice dos veces. */
-.lp .ftr-creds { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 14px; }
-@media (prefers-reduced-motion: reduce) { .lp .hero-nvidia { animation: none; } .lp .nvi-badge:hover { transform: none; } .lp .nvi-band-art:hover { transform: none; } .lp .nvi-band-cta:hover svg { transform: none; } }
+/* Pie: el chip del algoritmo (BV‑SALA) solo en su fila. La fila sigue siendo
+   flex para que el `align-self: center` del chip lo centre en su línea y no
+   en la columna. El distintivo que iba a su lado se fue al bloque de abajo. */
+.lp .ftr-creds { display: flex; align-items: center; }
+/* Pie: el bloque de NVIDIA que cierra la columna de marca — el MISMO que el
+   de bivelio.com (footer.tsx, columna de marca; aprobado por el CEO el
+   2026-09-15 con captura), traducido de Tailwind: un único enlace en columna
+   (10 px de hueco, ancho al contenido, 28 px por encima además del hueco de
+   la columna, escala 1.02 al hover) que apila la TARJETA BLANCA y la FRASE.
+   La tarjeta: blanco LITERAL (no `var(--surface)`, que una paleta oscura
+   invertiría), borde, radio 12 (el `rounded-xl` de bivelio.com; no hay token
+   de 12) y 4 px de aire — bivelio.com pone 10 con su SVG recortado al marco;
+   el nuestro es el oficial sin recortar, con ≈7,5 px de aire transparente a
+   150, y 4 + 7,5 da el mismo aire visual. Sin sombra: la de la banda es de la
+   banda. La frase: 11 px, 1.6, el gris al 80 %, 15rem de ancho máximo, con
+   «BiVelio» en el navy del logotipo (BvBrandWord). El color se fija en la
+   frase y no se hereda del enlace, que en esta hoja es azul. */
+.lp .nvi-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: fit-content; margin-top: 28px; transition: transform .2s ease; }
+.lp .nvi-foot:hover { transform: scale(1.02); text-decoration: none; }
+.lp .nvi-foot-box { display: inline-flex; align-items: center; justify-content: center; padding: 4px; border-radius: 12px; background: #FFFFFF; border: 1px solid var(--line); line-height: 0; }
+.lp .nvi-foot-box img { display: block; height: auto; max-width: 100%; }
+.lp .nvi-foot-line { font-size: 11px; line-height: 1.6; color: color-mix(in srgb, var(--muted) 80%, transparent); max-width: 15rem; }
+.lp .nvi-foot-line .nvi-brand { color: var(--navy); }
+@media (prefers-reduced-motion: reduce) { .lp .hero-nvidia { animation: none; } .lp .nvi-badge:hover { transform: none; } .lp .nvi-band-art:hover { transform: none; } .lp .nvi-band-cta:hover svg { transform: none; } .lp .nvi-foot:hover { transform: none; } }
