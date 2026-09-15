@@ -714,8 +714,11 @@
       "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API penyedia Anda dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
     },
     "nvidia": {
-      "rotulo": "Ekosistem",
-      "miembro": "Anggota NVIDIA Inception Program"
+      "miembro": "Anggota NVIDIA Inception Program",
+      "kicker": "Perusahaan dan ekosistem",
+      "title": "BiVelio adalah anggota NVIDIA Inception Program.",
+      "sub": "Program NVIDIA untuk startup yang membangun dengan AI.",
+      "cta": "Tentang program ini"
     },
     "gateway": {
       "eyebrow": "Baru · terminal pemrograman",

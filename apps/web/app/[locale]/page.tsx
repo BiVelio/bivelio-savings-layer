@@ -13,7 +13,7 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { NvidiaInceptionBadge } from "@/app/components/NvidiaInception";
+import { NvidiaEcosystemBand, NvidiaInceptionBadge } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
@@ -204,15 +204,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </div>
             {/* NVIDIA Inception Program: UNA LÍNEA MÁS bajo los botones, en el
                 mismo cuerpo gris que «Se instala en minutos…» — el distintivo
-                oficial desnudo y cinco palabras. Va detrás de esa línea y no
-                delante porque esa línea califica a los botones (se instala en
-                minutos; tus mensajes no pasan por aquí) y esta es un hecho de
-                la empresa: cierra la pila de notas y da paso a «Compatible
-                con», que es otra cosa (compatibilidad, no pertenencia). La
-                tarjeta y la frase larga de la primera versión se fueron en la
-                revisión del 2026-09-14 (NvidiaInception.tsx). */}
+                oficial desnudo a 150 px y, en su propia línea debajo, las
+                cinco palabras (apilado como en privacy #303). Va detrás de esa
+                línea y no delante porque esa línea califica a los botones (se
+                instala en minutos; tus mensajes no pasan por aquí) y esta es
+                un hecho de la empresa: cierra la pila de notas y da paso a
+                «Compatible con», que es otra cosa (compatibilidad, no
+                pertenencia). La tarjeta y la frase larga de la primera versión
+                se fueron en la revisión del 2026-09-14 (NvidiaInception.tsx). */}
             <div className="hero-nvidia">
-              <NvidiaInceptionBadge width={136} />
+              <NvidiaInceptionBadge width={150} />
               <span>{t("nvidia.miembro")}</span>
             </div>
 
@@ -719,22 +720,16 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
-        {/* ECOSISTEMA — la banda de programas al cierre de la home. No había
-            banda de partners (las dos marquesinas de arriba son listas de
-            COMPATIBILIDAD, no de pertenencia), así que se crea pequeña y
-            discreta, en una sola fila: rótulo mono en mayúsculas + el
-            distintivo desnudo + «Miembro del NVIDIA Inception Program» en
-            gris. Sin tarjeta (el SVG ya trae su marco) y sin filete vertical:
-            aquí no hay logos de proveedores de los que separarlo. Bajo 700 px
-            el rótulo pasa a una columna de 112 px y el distintivo a 136. */}
-        <section className="ecosistema" aria-labelledby="ecosistema-rotulo">
-          <span className="hm-k" id="ecosistema-rotulo">{t("nvidia.rotulo")}</span>
-          <div className="ecosistema-fila rv">
-            <NvidiaInceptionBadge width={150} />
-            <span>{t("nvidia.miembro")}</span>
-          </div>
-        </section>
       </main>
+
+      {/* COMPAÑÍA Y ECOSISTEMA — la banda del NVIDIA Inception Program al
+          cierre de la home, la MISMA que cierra el héroe de bivelio.com
+          (captura aprobada el 2026-09-15; el copy de las cuatro claves es el
+          suyo, verbatim, en los 12 idiomas). No había banda de partners (las
+          dos marquesinas de arriba son listas de COMPATIBILIDAD, no de
+          pertenencia). Va FUERA de `main.wrap` porque es a sangre completa,
+          como la banda CTA que abre el pie justo debajo. */}
+      <NvidiaEcosystemBand kicker={t("nvidia.kicker")} title={t("nvidia.title")} sub={t("nvidia.sub")} cta={t("nvidia.cta")} />
 
       <Footer />
     </div>
