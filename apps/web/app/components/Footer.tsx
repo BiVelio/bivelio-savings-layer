@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 
 import { corporateUrl, LEGAL_DOCS } from "@/lib/corporate";
 
-import { NvidiaInceptionBadge } from "./NvidiaInception";
+import { NvidiaFooterCard } from "./NvidiaInception";
 
 import { ArrowRightIcon, GitHubIcon, LinkedInIcon } from "./icons";
 import { SavingsLogo } from "./SavingsLogo";
@@ -154,22 +154,26 @@ export default async function Footer() {
                   <SavingsLogo variant="full" height={52} />
                 </Link>
                 <p>{t.rich("footer.tagline", { b: (c) => <b>{c}</b> })}</p>
-                {/* Las dos credenciales del producto, en una fila que envuelve:
-                    el chip del algoritmo que lleva todo pie BV-* (BV‑SALA,
-                    nombre de marca, igual en los 12 idiomas) y el distintivo
-                    del NVIDIA Inception Program, enlazado (NvidiaInception.tsx).
-                    La columna de marca mide 323 px a 1440 y el chip 200, así
-                    que el distintivo (124) baja a una segunda fila alineada a
-                    la izquierda; lo que importa es que van juntas y que el
-                    programa se dice UNA vez en el pie — la línea de texto que
-                    había en el bloque fino se fue (revisión del 2026-09-14). */}
+                {/* El chip del algoritmo que lleva todo pie BV-* (BV‑SALA,
+                    nombre de marca, igual en los 12 idiomas), solo en su fila:
+                    el distintivo de NVIDIA que iba a su lado (revisión del
+                    2026-09-14) se fue al cierre de la columna, como en
+                    bivelio.com (aprobado por el CEO el 2026-09-15). */}
                 <div className="ftr-creds">
                   <span className="ftr-badge">
                     <span className="bar" /> {t("footer.badge")}
                   </span>
-                  <NvidiaInceptionBadge width={124} />
                 </div>
                 <SocialDock />
+                {/* Membresía del NVIDIA Inception Program, cerrando la columna
+                    de marca como en bivelio.com: es una credencial de la
+                    COMPAÑÍA, así que vive donde vive la identidad — logo,
+                    promesa y redes — y no en la fila del producto. La tarjeta
+                    blanca con el arte y la frase de pertenencia debajo
+                    (NvidiaInception.tsx); la frase es `landing.nvidia.title`,
+                    la misma clave que la banda, en los 12 idiomas. El programa
+                    se dice UNA vez en el pie. */}
+                <NvidiaFooterCard line={t("nvidia.title")} />
               </div>
               <div className="ftr-cols">
                 <Column head={t("footer.colSavings")} links={savings} />

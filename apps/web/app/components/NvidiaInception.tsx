@@ -10,24 +10,33 @@
  *   (la CSP es `img-src 'self'`; un CDN externo se bloquearía en silencio).
  *   No se recolorea, no se recorta, no se recrea con trazados propios como
  *   los logos de LogoProveedor — por eso es un <img> y no un SVG en línea.
- * - DESNUDO sobre fondo claro en el héroe y en el pie. El SVG ya trae su
- *   propio campo blanco, su marco negro y su aire (el marco empieza a 25
- *   unidades de un viewBox de 500), así que la tarjeta blanca con borde,
- *   padding y sombra de la primera versión dibujaba un marco dentro de otro —
- *   la revisión del 2026-09-14 la quitó. `.nvi-badge` es un enlace sin fondo,
- *   sin borde y sin padding.
+ * - DESNUDO sobre fondo claro en el héroe. El SVG ya trae su propio campo
+ *   blanco, su marco negro y su aire (el marco empieza a 25 unidades de un
+ *   viewBox de 500), así que la tarjeta blanca con borde, padding y sombra de
+ *   la primera versión dibujaba un marco dentro de otro — la revisión del
+ *   2026-09-14 la quitó. `.nvi-badge` es un enlace sin fondo, sin borde y sin
+ *   padding.
  * - En la BANDA va como en bivelio.com (captura aprobada el 2026-09-15): el
  *   arte a 224 px dentro de una caja blanca literal con borde, radio 8, sombra
  *   y 6 px de aire — bivelio.com pone 12 pero recorta su SVG al marco; el
  *   nuestro es el oficial sin recortar, con ≈11 px de aire transparente a
  *   224, así que 6 + 11 da el mismo aire visual.
+ * - En el PIE va también como en bivelio.com (aprobado por el CEO el
+ *   2026-09-15 con captura): cierra la columna de marca, después del dock
+ *   social, como credencial de la COMPAÑÍA. Un único enlace que apila la
+ *   tarjeta blanca literal (borde, radio 12, el arte a 150 px con 4 px de
+ *   aire — bivelio.com pone 10 con su SVG recortado; 4 + los ≈7,5 px de aire
+ *   transparente del oficial a 150 dan lo mismo) y, debajo, la frase de
+ *   pertenencia a 11 px (`landing.nvidia.title`, la misma de la banda) con
+ *   «BiVelio» en BvBrandWord. Nunca el sello a secas: la frase es el contexto
+ *   que la guía pide y lo que impide leerlo como un aval.
  * - Sobre fondo OSCURO la guía sí pide una tarjeta blanca bajo el logotipo, y
  *   `onDark` la pone (`.nvi-badge--card`: #FFF literal, borde #DEE4E7 literal,
  *   12 px de aire, radio pequeño). Hoy nada en la home es oscuro; la
  *   modificadora existe para que la próxima banda oscura no lo haga mal.
  * - Tamaño mínimo en pantalla: 120 px de ancho. Los anchos que se usan (150 en
- *   el héroe, 224 en la banda, 124 en el pie) y los que fija la hoja de estilos
- *   en móvil y en portátil corto (136 y 120) no bajan de ahí.
+ *   el héroe, 224 en la banda, 150 en el pie) y el que fija la hoja de estilos
+ *   en portátil corto (120) no bajan de ahí.
  * - Se presenta como PERTENENCIA al programa, no como aval de NVIDIA: el texto
  *   siempre dice «Miembro del…», nunca «respaldado por», «avalado» ni «partner».
  * - Siempre «NVIDIA Inception Program», con «Program», en el alt y en la copia.
@@ -143,5 +152,39 @@ export function NvidiaEcosystemBand({ kicker, title, sub, cta }: { kicker: strin
         </a>
       </div>
     </section>
+  );
+}
+
+/** El bloque del PIE — el mismo que cierra la columna de marca de bivelio.com
+ *  (apps/website/components/layout/footer.tsx), traducido de Tailwind: un
+ *  único enlace al programa que apila la TARJETA BLANCA (el arte a 150 px
+ *  dentro de una caja blanca literal con borde y radio 12) y, debajo, la
+ *  FRASE de pertenencia pequeña. `line` llega ya traducida desde el pie: es
+ *  `landing.nvidia.title` («BiVelio es miembro del NVIDIA Inception
+ *  Program.»), la misma clave de la banda, así que el pie no duplica copy en
+ *  doce catálogos. «BiVelio» va con el tratamiento de marca (BvBrandWord:
+ *  navy y las íes con su punto) por el mismo partidor que la banda; sin marca
+ *  en la frase, va tal cual. */
+export function NvidiaFooterCard({ line }: { line: string }) {
+  const partes = partirMarca(line);
+  return (
+    <a className="nvi-foot" href={NVIDIA_INCEPTION_URL} target="_blank" rel="noopener noreferrer">
+      <span className="nvi-foot-box">
+        <NvidiaInceptionArt width={150} />
+      </span>
+      <span className="nvi-foot-line">
+        {partes ? (
+          <>
+            {partes[0]}
+            <span className="nvi-brand">
+              <BvBrandWord />
+            </span>
+            {partes[2]}
+          </>
+        ) : (
+          line
+        )}
+      </span>
+    </a>
   );
 }
