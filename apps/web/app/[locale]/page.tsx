@@ -13,7 +13,7 @@ import { SnippetPorSistema } from "@/app/components/SnippetPorSistema";
 import { SkillPorSuperficie } from "@/app/components/SkillPorSuperficie";
 import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
-import { NvidiaEcosystemBand, NvidiaInceptionBadge } from "@/app/components/NvidiaInception";
+import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
@@ -202,25 +202,14 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div className="hero-note">
               <span className="pulse" /> {t("hero.note")}
             </div>
-            {/* NVIDIA Inception Program: UNA LÍNEA MÁS bajo los botones, en el
-                mismo cuerpo gris que «Se instala en minutos…» — el distintivo
-                oficial desnudo a 150 px y, en su propia línea debajo, las
-                cinco palabras (apilado como en privacy #303). Va detrás de esa
-                línea y no delante porque esa línea califica a los botones (se
-                instala en minutos; tus mensajes no pasan por aquí) y esta es
-                un hecho de la empresa: cierra la pila de notas y da paso a
-                «Compatible con», que es otra cosa (compatibilidad, no
-                pertenencia). La tarjeta y la frase larga de la primera versión
-                se fueron en la revisión del 2026-09-14 (NvidiaInception.tsx). */}
-            <div className="hero-nvidia">
-              <NvidiaInceptionBadge width={150} />
-              <span>{t("nvidia.miembro")}</span>
-            </div>
 
             {/* HÉROE LIMPIO (petición del dueño, 2026-09-12): aquí solo el
                 titular, la entradilla, los botones y el carrusel de marcas. La
                 cifra medida vive en el recibo de la derecha y, con su tarjeta
                 «Medido contra proveedor real», en la sección de lo medido.
+                El sello del programa de startups que iba aquí bajo la nota
+                (2026-09-14) se fue el 2026-09-15 (decisión del dueño): vive en
+                la banda antes del pie y en la tarjeta del pie, no en el héroe.
                 «Compatible con» ≠ «Medido en»: la franja dice dónde CORRE el SDK
                 (cualquier endpoint OpenAI-compatible o el adaptador nativo); la
                 nota de debajo dice con qué modelo hay cifra publicada. */}

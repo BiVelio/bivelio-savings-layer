@@ -714,7 +714,6 @@
       "caption": "Where your automations already live. If it calls your provider's API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
     },
     "nvidia": {
-      "miembro": "Member of the NVIDIA Inception Program",
       "kicker": "Company & ecosystem",
       "title": "BiVelio is a member of the NVIDIA Inception Program.",
       "sub": "NVIDIA's program for startups building with AI.",
