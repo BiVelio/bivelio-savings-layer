@@ -1,21 +1,23 @@
 /**
  * El distintivo del NVIDIA Inception Program.
  *
- * BiVelio forma parte del programa y lo dice en tres sitios de la web (héroe,
- * banda «Compañía y ecosistema» y pie). Lo que hay que respetar de la guía de
- * marca de NVIDIA, y por qué el componente es como es:
+ * BiVelio forma parte del programa y lo dice en dos sitios de la web: la
+ * banda «Compañía y ecosistema» antes del pie y la tarjeta que cierra la
+ * columna de marca del pie. (El distintivo desnudo que iba en el héroe bajo
+ * los botones, del 2026-09-14, se fue el 2026-09-15 por decisión del CEO: el
+ * héroe vuelve a ser solo la nota de instalación y las líneas de
+ * compatibilidad; el sello ya se ve en la banda y en el pie.) Lo que hay que
+ * respetar de la guía de marca de NVIDIA, y por qué el componente es como es:
  *
  * - SOLO el logotipo oficial, tal cual: el SVG se copió byte a byte a
  *   `public/nvidia-inception-program.svg` y se sirve desde el propio dominio
  *   (la CSP es `img-src 'self'`; un CDN externo se bloquearía en silencio).
  *   No se recolorea, no se recorta, no se recrea con trazados propios como
  *   los logos de LogoProveedor — por eso es un <img> y no un SVG en línea.
- * - DESNUDO sobre fondo claro en el héroe. El SVG ya trae su propio campo
- *   blanco, su marco negro y su aire (el marco empieza a 25 unidades de un
- *   viewBox de 500), así que la tarjeta blanca con borde, padding y sombra de
- *   la primera versión dibujaba un marco dentro de otro — la revisión del
- *   2026-09-14 la quitó. `.nvi-badge` es un enlace sin fondo, sin borde y sin
- *   padding.
+ *   El SVG ya trae su propio campo blanco, su marco negro y su aire (el marco
+ *   empieza a 25 unidades de un viewBox de 500): por eso las cajas de la
+ *   banda y del pie llevan menos aire que las de bivelio.com, que recorta el
+ *   suyo al marco.
  * - En la BANDA va como en bivelio.com (captura aprobada el 2026-09-15): el
  *   arte a 224 px dentro de una caja blanca literal con borde, radio 8, sombra
  *   y 6 px de aire — bivelio.com pone 12 pero recorta su SVG al marco; el
@@ -30,20 +32,20 @@
  *   pertenencia a 11 px (`landing.nvidia.title`, la misma de la banda) con
  *   «BiVelio» en BvBrandWord. Nunca el sello a secas: la frase es el contexto
  *   que la guía pide y lo que impide leerlo como un aval.
- * - Sobre fondo OSCURO la guía sí pide una tarjeta blanca bajo el logotipo, y
- *   `onDark` la pone (`.nvi-badge--card`: #FFF literal, borde #DEE4E7 literal,
- *   12 px de aire, radio pequeño). Hoy nada en la home es oscuro; la
- *   modificadora existe para que la próxima banda oscura no lo haga mal.
- * - Tamaño mínimo en pantalla: 120 px de ancho. Los anchos que se usan (150 en
- *   el héroe, 224 en la banda, 150 en el pie) y el que fija la hoja de estilos
- *   en portátil corto (120) no bajan de ahí.
+ * - Las dos cajas son blancas LITERALES (#FFF, no `var(--surface)`): sobre
+ *   fondo oscuro la guía exige tarjeta blanca bajo el logotipo, y un token una
+ *   paleta oscura lo invertiría.
+ * - Tamaño mínimo en pantalla: 120 px de ancho. Los anchos que se usan (224 en
+ *   la banda, 150 en el pie) no bajan de ahí, y ninguna regla de la hoja de
+ *   estilos los acota.
  * - Se presenta como PERTENENCIA al programa, no como aval de NVIDIA: el texto
  *   siempre dice «Miembro del…», nunca «respaldado por», «avalado» ni «partner».
  * - Siempre «NVIDIA Inception Program», con «Program», en el alt y en la copia.
  * - Enlace a la página del programa, en pestaña nueva y con noopener.
  *
  * `nvidia-inception.test.ts` lee todo eso del SVG, de este componente, de la
- * hoja de estilos y de los doce catálogos.
+ * página, del pie, de la hoja de estilos y de los doce catálogos — y comprueba
+ * que el héroe NO lleva el sello.
  */
 import { BvBrandWord } from "./BivelioWordmark";
 
@@ -66,8 +68,9 @@ export function partirMarca(texto: string, marca = "BiVelio"): [string, string, 
   return [texto.slice(0, i), marca, texto.slice(i + marca.length)];
 }
 
-/** El arte oficial, sin tocar. Manda el ancho; el alto sale de la proporción
- *  real para que no se deforme ni salte al cargar. */
+/** El arte oficial, sin tocar: el ÚNICO <img> del logotipo, que comparten la
+ *  caja de la banda y la tarjeta del pie. Manda el ancho; el alto sale de la
+ *  proporción real para que no se deforme ni salte al cargar. */
 function NvidiaInceptionArt({ width }: { width: number }) {
   return (
     /* eslint-disable-next-line @next/next/no-img-element -- SVG estático del
@@ -80,22 +83,6 @@ function NvidiaInceptionArt({ width }: { width: number }) {
       loading="lazy"
       decoding="async"
     />
-  );
-}
-
-/** El distintivo, enlazado y desnudo. `width` es el ancho del logotipo en
- *  píxeles CSS; `onDark` añade la tarjeta blanca que la guía exige sobre
- *  fondo oscuro. */
-export function NvidiaInceptionBadge({ width = 150, onDark = false }: { width?: number; onDark?: boolean }) {
-  return (
-    <a
-      className={onDark ? "nvi-badge nvi-badge--card" : "nvi-badge"}
-      href={NVIDIA_INCEPTION_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <NvidiaInceptionArt width={width} />
-    </a>
   );
 }
 

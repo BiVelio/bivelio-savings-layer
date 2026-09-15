@@ -714,7 +714,6 @@
       "caption": "On ja viuen les teves automatitzacions. Si crida l'API del teu proveïdor amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."
     },
     "nvidia": {
-      "miembro": "Membre del NVIDIA Inception Program",
       "kicker": "Companyia i ecosistema",
       "title": "BiVelio és membre del NVIDIA Inception Program.",
       "sub": "El programa de NVIDIA per a startups que construeixen amb IA.",
