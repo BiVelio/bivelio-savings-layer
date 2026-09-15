@@ -714,8 +714,11 @@
       "caption": "Donde ya viven tus automatizaciones. Si llama a la API de tu proveedor con tu clave, se mide — el SDK envuelve la llamada; el gateway se pone delante."
     },
     "nvidia": {
-      "rotulo": "Ecosistema",
-      "miembro": "Miembro del NVIDIA Inception Program"
+      "miembro": "Miembro del NVIDIA Inception Program",
+      "kicker": "Compañía y ecosistema",
+      "title": "BiVelio es miembro del NVIDIA Inception Program.",
+      "sub": "El programa de NVIDIA para startups que construyen con IA.",
+      "cta": "Conoce el programa"
     },
     "gateway": {
       "eyebrow": "Nuevo · terminales de código",
