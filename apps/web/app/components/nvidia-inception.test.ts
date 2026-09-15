@@ -13,9 +13,11 @@
  * 2026-09-14 rechazó), pinta la caja de la banda con un token que una paleta
  * oscura invertiría, o acorta el nombre en un catálogo, y nada más se pone
  * rojo. Y la banda es la MISMA que la de bivelio.com (captura aprobada el
- * 2026-09-15): medidas, colores y copy verbatim en 12 idiomas. Por eso las
- * reglas se leen del SVG, del componente, de la página, del pie, de la hoja de
- * estilos y de los doce catálogos.
+ * 2026-09-15): medidas, colores y copy verbatim en 12 idiomas, y «BiVelio» en
+ * el título como en bivelio.com y en privacy (#304): las letras en el navy del
+ * logotipo y las dos íes con su punto de color, no un <strong> en el azul de
+ * acento. Por eso las reglas se leen del SVG, del componente, de la marca, de
+ * la página, del pie, de la hoja de estilos y de los doce catálogos.
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -23,13 +25,22 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { partirMarca } from "./NvidiaInception";
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+import { NvidiaEcosystemBand, partirMarca } from "./NvidiaInception";
+
+// vitest compila el .tsx con el runtime CLÁSICO de JSX (el tsconfig dice
+// `preserve` y esbuild lo baja a `React.createElement`), así que el componente
+// espera un `React` global que Next sí inyecta y aquí no hay. Se le da.
+(globalThis as { React?: typeof React }).React = React;
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const WEB = join(AQUI, "..", "..");
 const leer = (...p: string[]) => readFileSync(join(WEB, ...p), "utf8");
 
 const COMPONENTE = leer("app", "components", "NvidiaInception.tsx");
+const MARCA = leer("app", "components", "BivelioWordmark.tsx");
 const PIE = leer("app", "components", "Footer.tsx");
 const PAGINA = leer("app", "[locale]", "page.tsx");
 const CSS = leer("app", "globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
@@ -186,7 +197,7 @@ describe("los doce catálogos lo dicen como pertenencia, completo y con «Progra
     // Héroe: cinco palabras, no un anuncio: sin coma ni segunda oración.
     expect(n!.miembro).not.toMatch(/[,.:;—–]/);
     // Banda: el título nombra a BiVelio tal cual (es lo que `partirMarca`
-    // pinta en azul) y termina en punto; el sub es una sola frase.
+    // sustituye por BvBrandWord) y termina en punto; el sub es una sola frase.
     expect(partirMarca(n!.title!), "title nombra a BiVelio").not.toBeNull();
     expect(n!.title).toMatch(/\.$/);
     expect(n!.sub).toMatch(/\.$/);
@@ -214,7 +225,7 @@ describe("los doce catálogos lo dicen como pertenencia, completo y con «Progra
   });
 });
 
-describe("partirMarca: la marca en azul sin tocar el copy", () => {
+describe("partirMarca: la marca con su tratamiento sin tocar el copy", () => {
   it("parte por la PRIMERA aparición de «BiVelio» y conserva el resto tal cual", () => {
     expect(partirMarca("BiVelio es miembro del NVIDIA Inception Program.")).toEqual([
       "",
@@ -247,14 +258,81 @@ describe("partirMarca: la marca en azul sin tocar el copy", () => {
     }
   });
 
-  it("y el componente la usa sobre el título, con <strong> en el azul de acento", () => {
+  it("y el componente la usa sobre el título: el nombre lo pinta BvBrandWord, no un <strong> en azul", () => {
     expect(COMPONENTE).toMatch(/const partes = partirMarca\(title\)/);
-    expect(COMPONENTE).toMatch(/<strong>\{partes\[1\]\}<\/strong>/);
+    expect(COMPONENTE).toContain('import { BvBrandWord } from "./BivelioWordmark";');
+    expect(COMPONENTE).toMatch(/\{partes\[0\]\}\s*<strong className="nvi-brand">\s*<BvBrandWord \/>\s*<\/strong>\s*\{partes\[2\]\}/);
+    // El texto plano «BiVelio» ya no se pinta: lo dibuja la marca.
+    expect(COMPONENTE).not.toMatch(/<strong>\{partes\[1\]\}<\/strong>/);
     // Sin marca en la frase, el título va tal cual: nada se inventa.
     expect(COMPONENTE).toMatch(/\) : \(\s*title\s*\)/);
-    const marca = regla(".nvi-band-t strong");
-    expect(marca).toMatch(/color:\s*var\(--accent\)/);
+  });
+});
+
+describe("«BiVelio» en el título de la banda: navy con las íes en color, como bivelio.com y privacy", () => {
+  it("BvBrandWord: el nombre una vez para el lector de pantalla, y el dibujo (dos íes con punto) aria-hidden y sin partir", () => {
+    const fn = MARCA.slice(MARCA.indexOf("export function BvBrandWord"), MARCA.indexOf("export function BivelioWordmark"));
+    expect(fn.length).toBeGreaterThan(0);
+    expect(fn).toContain('<span className="sr-only">BiVelio</span>');
+    expect(fn).toMatch(/<span aria-hidden>\s*B<IConPunto color=\{PUNTO_PRIMERO\} \/>Vel<IConPunto color=\{PUNTO_CENTRO\} \/>o\s*<\/span>/);
+    expect(fn).toContain('whiteSpace: "nowrap"');
+    // Sin el punto final del logotipo: es el nombre en una frase, no el logotipo.
+    expect(fn).not.toContain("PUNTO_FINAL");
+    // Ni familia, ni peso, ni tamaño propios: los hereda del título.
+    expect(fn).not.toMatch(/fontFamily|fontWeight|fontSize/);
+  });
+
+  it("los puntos son los dos azules del logotipo (los mismos que privacy y bivelio.com)", () => {
+    expect(MARCA).toContain('const PUNTO_PRIMERO = "#00B3FC"');
+    expect(MARCA).toContain('const PUNTO_CENTRO = "#0073FF"');
+    // La «ı» sin punto (U+0131) con el círculo propio encima, medido: 0.17em a 0.08em.
+    expect(MARCA).toContain('{"ı"}');
+    expect(MARCA).toMatch(/top:\s*"0\.08em"/);
+    expect(MARCA).toMatch(/width:\s*"0\.17em"/);
+  });
+
+  it("renderizado: «BiVelio» sale UNA vez (sr-only), las dos astas sin punto van ocultas al lector y no se parte", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(NvidiaEcosystemBand, { kicker: "K", title: "BiVelio es miembro del NVIDIA Inception Program.", sub: "S.", cta: "C" }),
+    );
+    const titulo = /<p class="nvi-band-t" id="nvi-band-title">([\s\S]*?)<\/p>/.exec(html);
+    expect(titulo).not.toBeNull();
+    const t = titulo![1]!;
+    expect(t.match(/BiVelio/g)?.length).toBe(1);
+    // El nombre: nowrap → sr-only «BiVelio» → el dibujo aria-hidden, y nada más.
+    const nombre = /^<strong class="nvi-brand"><span style="white-space:nowrap"><span class="sr-only">BiVelio<\/span><span aria-hidden="true">(.*?)<\/span><\/span><\/strong>/.exec(t);
+    expect(nombre, "estructura del nombre").not.toBeNull();
+    const dibujo = nombre![1]!;
+    // Dos «ı» (U+0131), cada una con su punto: cian la primera, azul la segunda;
+    // y las letras, tal cual: B ı Vel ı o.
+    expect(dibujo.match(/ı/g)?.length).toBe(2);
+    expect(dibujo).toMatch(/ı<span aria-hidden="true" style="[^"]*background:#00B3FC/);
+    expect(dibujo).toMatch(/ı<span aria-hidden="true" style="[^"]*background:#0073FF/);
+    expect(dibujo.replace(/<[^>]+>/g, "")).toBe("BıVelıo");
+    // Lo que el lector de pantalla oye es la frase entera, con el nombre una vez.
+    const audible = t.replace(nombre![0], '<span class="sr-only">BiVelio</span>').replace(/<[^>]+>/g, "");
+    expect(audible).toBe("BiVelio es miembro del NVIDIA Inception Program.");
+    // Y el «después» va tal cual detrás del nombre.
+    expect(t.slice(nombre![0].length)).toBe(" es miembro del NVIDIA Inception Program.");
+  });
+
+  it("la hoja: el nombre en el navy del logotipo al peso del título, y ni rastro del azul de acento", () => {
+    const marca = regla(".nvi-band-t .nvi-brand");
+    expect(marca).toMatch(/color:\s*var\(--navy\)/);
     expect(marca).toMatch(/font-weight:\s*inherit/);
+    expect(marca).not.toMatch(/--accent|--brand\b/);
+    // La regla anterior (<strong> en azul) se fue del todo.
+    expect(CSS).not.toMatch(/\.nvi-band-t strong/);
+    // El token es el navy exacto de la rampa de bivelio.com (privacy: --ramp-navy).
+    expect(CSS).toMatch(/--navy:\s*#020852;/);
+    // Y `.sr-only` existe de verdad: fuera del flujo, 1×1 y recortada.
+    const sr = /(?:^|\n)\.sr-only \{([^}]*)\}/.exec(CSS);
+    expect(sr, ".sr-only").not.toBeNull();
+    expect(sr![1]).toMatch(/position:\s*absolute/);
+    expect(sr![1]).toMatch(/width:\s*1px/);
+    expect(sr![1]).toMatch(/height:\s*1px/);
+    expect(sr![1]).toMatch(/overflow:\s*hidden/);
+    expect(sr![1]).toMatch(/clip-path:\s*inset\(50%\)/);
   });
 });
 

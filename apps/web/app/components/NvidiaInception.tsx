@@ -36,6 +36,7 @@
  * `nvidia-inception.test.ts` lee todo eso del SVG, de este componente, de la
  * hoja de estilos y de los doce catálogos.
  */
+import { BvBrandWord } from "./BivelioWordmark";
 
 export const NVIDIA_INCEPTION_URL = "https://www.nvidia.com/en-us/startups/";
 export const NVIDIA_BADGE_SRC = "/nvidia-inception-program.svg";
@@ -47,7 +48,9 @@ const RATIO = 216 / 500.4288;
 /** Parte una frase por la PRIMERA aparición de «BiVelio» para darle el
  *  tratamiento de marca en render, sin tocar el copy traducido:
  *  `[antes, "BiVelio", después]`. Si la frase no nombra la marca (o la nombra
- *  con otra grafía) devuelve null y el texto se pinta tal cual. */
+ *  con otra grafía) devuelve null y el texto se pinta tal cual. El trozo
+ *  central lo pinta `BvBrandWord` (letras en navy, las íes con su punto de
+ *  color), no el texto: por eso `partes[1]` no se renderiza. */
 export function partirMarca(texto: string, marca = "BiVelio"): [string, string, string] | null {
   const i = texto.indexOf(marca);
   if (i === -1) return null;
@@ -103,7 +106,10 @@ function Chevron() {
  *  el arte a 224 px en su caja blanca. Va a sangre completa (fuera de
  *  `main.wrap`, con su propio `.wrap` dentro) con el hairline superior. El
  *  copy llega ya traducido desde la página: son las cuatro claves
- *  `landing.nvidia.{kicker,title,sub,cta}`, verbatim de bivelio.com. */
+ *  `landing.nvidia.{kicker,title,sub,cta}`, verbatim de bivelio.com. En el
+ *  título, «BiVelio» va como en bivelio.com y en privacy: `BvBrandWord` — las
+ *  letras en el navy del logotipo y las dos íes con su punto de color, al peso
+ *  del título (600), no en el azul de acento ni en negrita. */
 export function NvidiaEcosystemBand({ kicker, title, sub, cta }: { kicker: string; title: string; sub: string; cta: string }) {
   const partes = partirMarca(title);
   return (
@@ -115,7 +121,9 @@ export function NvidiaEcosystemBand({ kicker, title, sub, cta }: { kicker: strin
             {partes ? (
               <>
                 {partes[0]}
-                <strong>{partes[1]}</strong>
+                <strong className="nvi-brand">
+                  <BvBrandWord />
+                </strong>
                 {partes[2]}
               </>
             ) : (

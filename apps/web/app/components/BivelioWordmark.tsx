@@ -58,6 +58,27 @@ function IConPunto({ color }: { color: string }) {
   );
 }
 
+/** «BiVelio» DENTRO de una frase — el `BrandWord` de bivelio.com: las letras
+ *  en el navy del logotipo, los puntos de las íes en su cian y su azul, y todo
+ *  lo demás (familia, tamaño, peso) heredado del texto que lo rodea. NO es el
+ *  logotipo: `BivelioWordmark` es la display a 700 con el punto final aguamarina
+ *  y en mitad de una frase («BiVelio. es miembro del…») se lee como una errata.
+ *
+ *  El lector de pantalla oye el nombre UNA vez, del `.sr-only`; las astas sin
+ *  punto van `aria-hidden` para que no lea «B ı Vel ı o». El color de las
+ *  letras lo pone quien lo usa (`.nvi-brand` → `--navy`), así que el mismo span
+ *  sirve sobre cualquier fondo. `nowrap`: el nombre no se parte en dos líneas. */
+export function BvBrandWord() {
+  return (
+    <span style={{ whiteSpace: "nowrap" }}>
+      <span className="sr-only">BiVelio</span>
+      <span aria-hidden>
+        B<IConPunto color={PUNTO_PRIMERO} />Vel<IConPunto color={PUNTO_CENTRO} />o
+      </span>
+    </span>
+  );
+}
+
 export function BivelioWordmark({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <span
