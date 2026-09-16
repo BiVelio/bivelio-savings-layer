@@ -48,8 +48,15 @@ const authOrigins = supabaseOrigin
 // o fetch según el navegador). Limitación aceptada: los dominios google.<tld>
 // por país no caben en una CSP sin comodín de TLD; el ping moderno usa los de
 // abajo.
+//
+// 16-09: `ad.doubleclick.net` entra en connect-src e img-src por decisión del
+// dueño. El alta en producción dejaba tres errores de consola: el gtag manda
+// un `fetch` a ese host (la conversión secundaria) y la CSP lo bloqueaba en
+// silencio. La conversión principal ya pasaba; esto cierra el segundo ping.
+// El tercero (la imagen a www.google.<país>) sigue bloqueado por la
+// limitación de arriba, y se acepta. Solo en ping, nunca en script-src.
 const gtagScript = ["https://www.googletagmanager.com", "https://www.googleadservices.com", "https://googleads.g.doubleclick.net"];
-const gtagPing = [...gtagScript, "https://www.google.com"];
+const gtagPing = [...gtagScript, "https://www.google.com", "https://ad.doubleclick.net"];
 
 // Solo en desarrollo: el runtime de `next dev` (React Refresh y los source
 // maps) evalúa cadenas y, con la CSP de producción, el navegador lo bloqueaba
