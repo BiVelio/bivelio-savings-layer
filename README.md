@@ -40,8 +40,10 @@ goes straight from your app to your provider; the SDK is never a middleman serve
 
 > **Commercial software — © 2026 BiVelio Inc.** Free to install, **paid to run**:
 > BV‑SALA is fail‑closed and executes only with an active BiVelio license key.
-> License checks are **offline** and **your prompts never leave your infrastructure** —
-> only counts and cost are ever reported. Use is governed by the [LICENSE](./LICENSE)
+> The license signature is verified **offline**; with `licenseServerUrl` set, the SDK
+> also calls `savings.bivelio.com` for the revocation list, license renewal and usage
+> metering. **Your prompts never leave your infrastructure** — what travels is token
+> counts, cost, the model id and opaque seat/session ids, never content. Use is governed by the [LICENSE](./LICENSE)
 > and the BiVelio Terms. Not a wrapper around any third‑party library.
 
 ## Where it installs
@@ -99,13 +101,16 @@ export BIVELIO_LICENSE_KEY=…   # your license key
 export BIVELIO_SERVICE_KEY=…   # service-account key: auto-renewal + seat metering
 ```
 
-**3 · Wrap the call** — this is the entire code change:
+**3 · Wrap the call** — this is the entire code change. The package is ESM only:
+put this in a `"type": "module"` project or a `.mts` file.
 
 ```ts
 import { createSavingsLayer, OpenAICompatibleProvider } from "@bivelio/savings-layer";
 
 // Your provider. LLM traffic goes straight to it — the SDK never proxies it.
 // Any OpenAI-compatible endpoint works: OpenAI, Azure, vLLM, SGLang, a gateway.
+// Model ids are qualified (`openai/gpt-4o-mini`); the prefix is stripped on the
+// wire for OpenAI and Azure and kept for gateways — see `stripProviderPrefix`.
 const provider = new OpenAICompatibleProvider({
   baseUrl: "https://api.openai.com/v1",
   apiKey: process.env.OPENAI_API_KEY,
@@ -114,7 +119,7 @@ const provider = new OpenAICompatibleProvider({
 const layer = createSavingsLayer({
   provider,
   licenseKey: process.env.BIVELIO_LICENSE_KEY,        // required — from your savings.bivelio.com dashboard
-  licenseServerUrl: "https://savings.bivelio.com",    // license check + kill-switch
+  licenseServerUrl: "https://savings.bivelio.com",    // revocation list, renewal + metering — omit it and the two lines below do nothing
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY, // seat metering + AUTO-RENEWAL pickup
 });
 
@@ -124,12 +129,19 @@ const { text, report } = await layer.generate({
 });
 
 console.log(text);                    // "8"  (computed locally — no LLM call)
-console.log(report.calls.avoidedLlm); // → whole calls you never paid for
-console.log(report.cost.netSavings);  // → verified savings, per request
+console.log(report.calls.avoidedLlm); // → 1: a whole call you never paid for
+console.log(report.cost.netSavings);  // → 0..1 ratio of the baseline you did not pay (1 here)
+console.log(report.cost.baselineEstimate - report.cost.actual); // → the same saving in USD
+console.log(report.cost.basis);       // → "estimated": nothing ran, so there is no provider counter
 ```
 
-That's it. From the first request, `report` carries the saving — measured, not
-estimated.
+That's it. From the first request, `report` carries the saving and says how it
+was obtained: `actual` is what the provider metered; `basis` is `"measured"` when
+the request went through untouched, `"estimated"` when the layer removed something
+(the baseline is then reconstructed with the model's tokenizer, or with a
+calibrated estimate where no exact tokenizer exists, as for Anthropic models),
+and `"unmeasured"` when the provider returned no usage. Only measured figures
+reach your invoice.
 
 ## What you get on every request
 

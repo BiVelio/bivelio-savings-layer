@@ -23,7 +23,18 @@ import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
 export interface OpenAICompatibleOptions {
   baseUrl: string;
   apiKey?: string;
-  /** Strip the "provider/" prefix from model ids before sending. */
+  /**
+   * Strip the `provider/` prefix from model ids before sending (`openai/gpt-4o-mini`
+   * → `gpt-4o-mini`).
+   *
+   * Default (undefined): strip when `baseUrl` is OpenAI's own API or an Azure
+   * OpenAI endpoint, keep otherwise. OpenAI rejects a prefixed id with a 404
+   * ("model does not exist"), so the qualified ids the layer uses everywhere
+   * else — pricing, cache keys, the report — would break the very first call
+   * that reaches the provider. A gateway or a self-hosted server with a
+   * namespaced model name usually WANTS the prefix, so it is kept there. Set `true`/`false` to decide explicitly; an explicit value
+   * always wins.
+   */
   stripProviderPrefix?: boolean;
   /** Extra headers (e.g. for a gateway). */
   headers?: Record<string, string>;
@@ -123,6 +134,32 @@ function instruccionDeJsonPorPrompt(schema: unknown): string {
   );
 }
 
+/** Hosts that only understand a bare model id (`gpt-4o-mini`, never `openai/gpt-4o-mini`). */
+const HOSTS_QUE_QUIEREN_EL_ID_DESNUDO = /(^|\.)api\.openai\.com$|\.openai\.azure\.com$/i;
+
+/**
+ * Decides the id that travels on the wire. Explicit option wins; otherwise the
+ * endpoint decides: OpenAI/Azure get the bare id, everything else keeps what
+ * the caller wrote. Exported for the pipeline-level test that pins the README
+ * snippet; not part of the public API.
+ */
+export function quitarPrefijoDeProveedor(
+  model: string,
+  explicito: boolean | undefined,
+  baseUrl: string,
+): string {
+  const quitar = explicito ?? hostQuiereIdDesnudo(baseUrl);
+  return quitar ? model.replace(/^[^/]+\//, "") : model;
+}
+
+function hostQuiereIdDesnudo(baseUrl: string): boolean {
+  try {
+    return HOSTS_QUE_QUIEREN_EL_ID_DESNUDO.test(new URL(baseUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
 export class OpenAICompatibleProvider implements Provider {
   readonly id: string;
   private readonly opts: OpenAICompatibleOptions;
@@ -137,9 +174,7 @@ export class OpenAICompatibleProvider implements Provider {
   }
 
   async generate(req: ProviderRequest): Promise<ProviderResponse> {
-    const model = this.opts.stripProviderPrefix
-      ? req.model.replace(/^[^/]+\//, "")
-      : req.model;
+    const model = quitarPrefijoDeProveedor(req.model, this.opts.stripProviderPrefix, this.opts.baseUrl);
 
     // Se intenta la vía nativa salvo que ESTE modelo ya la haya rechazado antes.
     // Ese conjunto es lo que acota el coste del descubrimiento: el viaje de más

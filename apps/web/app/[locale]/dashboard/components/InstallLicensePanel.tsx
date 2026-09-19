@@ -36,7 +36,7 @@ const layer = createSavingsLayer({
   provider,
   licenseKey: process.env.BIVELIO_LICENSE_KEY,          // step 1 — unlocks the SDK
   serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,   // step 2 — metering + auto-renewal
-  licenseServerUrl: "https://savings.bivelio.com",      // license check, kill-switch + metering
+  licenseServerUrl: "https://savings.bivelio.com",      // revocation, renewal + metering — omit it and step 2 does nothing
 });
 
 // 3 · call it exactly where you called your provider before.
@@ -46,7 +46,8 @@ const { text, report } = await layer.generate({
 });
 
 console.log(text);                    // the answer
-console.log(report.cost.netSavings);  // → your net savings, per request`;
+console.log(report.cost.netSavings);  // → 0..1: the share of the baseline you did not pay
+console.log(report.cost.basis);       // → "measured" | "estimated" | "unmeasured" — how it was obtained`;
 
 /**
  * Colorea UNA línea del fragmento para lectura: la línea de paso («// N ·») en
