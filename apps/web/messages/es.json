@@ -130,7 +130,10 @@
       "emptyCap": "Aún no medimos tu tráfico — 0 solicitudes vistas. Instala el SDK y tu ahorro neto aparecerá aquí — tus precios, tu carga de trabajo. Nunca una cifra prestada ni inventada.",
       "errorCap": "No hemos podido leer tu uso ahora mismo — es un error temporal nuestro, no datos perdidos. Tus informes están a salvo; recarga en un momento.",
       "unpricedCap": "Vemos {count} solicitudes pero aún no podemos tarifarlas — define un modelo de coste para tu(s) modelo(s) y tu ahorro neto aparecerá aquí. Tu tráfico se está midiendo.",
-      "hiddenCap": "Sus datos de uso existen, pero esta cuenta no puede verlos. Es un fallo nuestro, ya avisado. Escriba a support@bivelio.com si tarda."
+      "hiddenCap": "Sus datos de uso existen, pero esta cuenta no puede verlos. Es un fallo nuestro, ya avisado. Escriba a support@bivelio.com si tarda.",
+      "rangeDays": "últimos {n} días",
+      "rangeLabel": "Rango",
+      "rangeOption": "{n}d"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "llamadas a LLM/recuperación/herramientas que nunca se ejecutaron",
@@ -560,7 +563,21 @@
       "rowTotal": "Total",
       "statModels": "Modelos",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Coste base",
+      "metricActualCost": "Coste real",
+      "metricAvoidedCalls": "Llamadas evitadas",
+      "metricEliminatedTokens": "Tokens eliminados",
+      "metricCompressedTokens": "Tokens comprimidos",
+      "metricProviderCachedTokens": "Tokens en caché del proveedor",
+      "actions": "Acciones",
+      "exportCsv": "Exportar CSV",
+      "modelMetricUnavailable": "{metric} no se registra por modelo: los libros solo viven en el agregado diario. Cambia a Por día o Acumulado.",
+      "selection": "Seleccionado {from} → {to} · {n} días — las estadísticas de arriba siguen la selección",
+      "clearSelection": "Quitar selección",
+      "selectHint": "arrastra sobre el gráfico (o Mayús + flechas) para seleccionar un tramo",
+      "source": "origen: {column}",
+      "ledgerNote": "libro {ledger} — uno de los cuatro que nunca se suman"
     },
     "estado": {
       "cargando": "Cargando el panel…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Esta página del panel no existe",
       "noExisteCuerpo": "La dirección no corresponde a ninguna sección del panel. Comprueba la URL o vuelve al resumen.",
       "volverAlResumen": "Volver al resumen"
+    },
+    "panel": {
+      "customize": "Personalizar",
+      "done": "Listo",
+      "hide": "Ocultar",
+      "up": "Subir",
+      "down": "Bajar",
+      "reset": "Restablecer disposición",
+      "hiddenCards": "Tarjetas ocultas",
+      "hint": "Reordena con las flechas u oculta tarjetas. Se guarda solo en este navegador.",
+      "summary": "{n} tarjetas · {hidden} ocultas",
+      "cards": {
+        "ritmo": "Ritmo y proyección a fin de mes",
+        "tokens": "Totales de tokens",
+        "libros": "Los cuatro libros",
+        "trafico": "Tráfico",
+        "sesiones": "Sesiones",
+        "maquinas": "Máquinas"
+      }
     }
   },
   "landing": {

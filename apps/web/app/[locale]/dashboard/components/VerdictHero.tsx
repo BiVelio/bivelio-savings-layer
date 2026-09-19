@@ -3,7 +3,9 @@ import { getTranslations } from "next-intl/server";
 import type { UsageRollup } from "../data";
 import { deriveVerdict } from "../derive";
 import { pct, money } from "../format";
+import type { Rango } from "../rango";
 import { ProvenancePill } from "./ProvenancePill";
+import { RangeSwitch } from "./RangeSwitch";
 
 /**
  * El titular del panel: el ahorro MEDIDO del cliente, o ausente (—). Nunca
@@ -19,9 +21,13 @@ export async function VerdictHero({
   usage,
   failed = false,
   visibilidad,
+  rango,
 }: {
+  /** Ya CORTADO al rango: el titular suma exactamente lo que el rango dice. */
   usage: UsageRollup[];
   failed?: boolean;
+  /** Días que abarca `usage`. Se escribe al lado del titular y manda en el selector. */
+  rango: Rango;
   /** Por qué está vacío: `oculto` = las filas EXISTEN y esta cuenta no las ve. */
   visibilidad?: "con_datos" | "sin_trafico" | "oculto" | "desconocido";
 }) {
@@ -45,7 +51,9 @@ export async function VerdictHero({
   return (
     <div className="verdict">
       <div>
-        <p className="ck-eyebrow">{t("verdictHero.eyebrow")}</p>
+        <p className="ck-eyebrow">
+          {t("verdictHero.eyebrow")} · {t("verdictHero.rangeDays", { n: rango })}
+        </p>
         {live && v.kind === "measured" ? (
           <>
             <div className={`big ${v.tone} ck-num`}>{pct(v.net)}</div>
@@ -83,11 +91,10 @@ export async function VerdictHero({
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-end" }}>
         <ProvenancePill kind={live ? "live" : "await"} />
-        <div className="seg" aria-hidden>
-          <button disabled>30d</button>
-          <button disabled>90d</button>
-          <button disabled>all</button>
-        </div>
+        {/* Vivo desde el 2026-09-19. Eran tres botones deshabilitados con
+            `aria-hidden`: un control que promete y no hace nada es peor que
+            ninguno. Ahora el rango viaja en la URL y lo aplica el servidor. */}
+        <RangeSwitch activo={rango} />
       </div>
     </div>
   );

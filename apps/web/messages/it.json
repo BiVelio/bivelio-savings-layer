@@ -130,7 +130,10 @@
       "emptyCap": "Non stiamo ancora misurando il tuo traffico — 0 richieste rilevate. Installa l'SDK e il tuo risparmio netto apparirà qui: i tuoi prezzi, il tuo carico di lavoro. Mai una cifra presa in prestito o inventata.",
       "errorCap": "Non siamo riusciti a leggere il tuo utilizzo ora — è un errore temporaneo dalla nostra parte, non dati persi. I tuoi report sono al sicuro; ricarica tra poco.",
       "unpricedCap": "Vediamo {count} richieste ma non possiamo ancora tariffarle — imposta un modello di costo per i tuoi modelli e il tuo risparmio netto apparirà qui. Il tuo traffico è misurato.",
-      "hiddenCap": "I suoi dati di utilizzo esistono, ma questo account non può vederli. È un errore nostro e siamo già stati avvisati. Scriva a support@bivelio.com se persiste."
+      "hiddenCap": "I suoi dati di utilizzo esistono, ma questo account non può vederli. È un errore nostro e siamo già stati avvisati. Scriva a support@bivelio.com se persiste.",
+      "rangeDays": "ultimi {n} giorni",
+      "rangeLabel": "Intervallo",
+      "rangeOption": "{n}g"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "chiamate a LLM/recupero/strumenti mai eseguite",
@@ -560,7 +563,21 @@
       "rowTotal": "Totale",
       "statModels": "Modelli",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Costo di riferimento",
+      "metricActualCost": "Costo reale",
+      "metricAvoidedCalls": "Chiamate evitate",
+      "metricEliminatedTokens": "Token eliminati",
+      "metricCompressedTokens": "Token compressi",
+      "metricProviderCachedTokens": "Token in cache del provider",
+      "actions": "Azioni",
+      "exportCsv": "Esporta CSV",
+      "modelMetricUnavailable": "{metric} non è registrato per modello: i registri vivono solo nell'aggregato giornaliero. Passa a Per giorno o Cumulato.",
+      "selection": "Selezionato {from} → {to} · {n} giorni — le statistiche sopra seguono la selezione",
+      "clearSelection": "Annulla selezione",
+      "selectHint": "trascina sul grafico (o Maiusc + frecce) per selezionare un tratto",
+      "source": "origine: {column}",
+      "ledgerNote": "registro {ledger} — uno dei quattro che non si sommano mai"
     },
     "estado": {
       "cargando": "Caricamento del pannello…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Questa pagina della dashboard non esiste",
       "noExisteCuerpo": "L'indirizzo non corrisponde a nessuna sezione della dashboard. Controlla l'URL o torna alla panoramica.",
       "volverAlResumen": "Torna alla panoramica"
+    },
+    "panel": {
+      "customize": "Personalizza",
+      "done": "Fatto",
+      "hide": "Nascondi",
+      "up": "Sposta su",
+      "down": "Sposta giù",
+      "reset": "Ripristina disposizione",
+      "hiddenCards": "Schede nascoste",
+      "hint": "Riordina con le frecce o nascondi le schede. Salvato solo in questo browser.",
+      "summary": "{n} schede · {hidden} nascoste",
+      "cards": {
+        "ritmo": "Ritmo e proiezione a fine mese",
+        "tokens": "Totali token",
+        "libros": "I quattro registri",
+        "trafico": "Traffico",
+        "sesiones": "Sessioni",
+        "maquinas": "Macchine"
+      }
     }
   },
   "landing": {

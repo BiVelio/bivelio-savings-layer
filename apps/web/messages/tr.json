@@ -130,7 +130,10 @@
       "emptyCap": "Trafiğiniz henüz ölçülmüyor — 0 istek görüldü. SDK'yı kurun; net tasarrufunuz burada görünür — sizin fiyatlarınız, sizin iş yükünüz. Asla ödünç alınmış ya da uydurulmuş bir rakam değil.",
       "errorCap": "Kullanımını şu anda okuyamadık — bizim tarafımızda geçici bir hata, kaybolan veri değil. Raporların güvende; birazdan yenile.",
       "unpricedCap": "{count} istek görüyoruz ama henüz fiyatlandıramıyoruz — modellerin için bir maliyet modeli tanımla, net tasarrufun burada görünsün. Trafiğin ölçülüyor.",
-      "hiddenCap": "Kullanım verileriniz mevcut, ancak bu hesap onları göremiyor. Bu bizim tarafımızdaki bir hata ve uyarı aldık. Sürerse support@bivelio.com adresine yazın."
+      "hiddenCap": "Kullanım verileriniz mevcut, ancak bu hesap onları göremiyor. Bu bizim tarafımızdaki bir hata ve uyarı aldık. Sürerse support@bivelio.com adresine yazın.",
+      "rangeDays": "son {n} gün",
+      "rangeLabel": "Aralık",
+      "rangeOption": "{n}g"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "hiç çalıştırılmayan LLM/getirme/araç çağrıları",
@@ -560,7 +563,21 @@
       "rowTotal": "Toplam",
       "statModels": "Modeller",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Temel maliyet",
+      "metricActualCost": "Gerçek maliyet",
+      "metricAvoidedCalls": "Önlenen çağrılar",
+      "metricEliminatedTokens": "Kaldırılan tokenlar",
+      "metricCompressedTokens": "Sıkıştırılan tokenlar",
+      "metricProviderCachedTokens": "Sağlayıcı önbelleğindeki tokenlar",
+      "actions": "İşlemler",
+      "exportCsv": "CSV dışa aktar",
+      "modelMetricUnavailable": "{metric} model bazında kaydedilmez; defterler yalnızca günlük toplamda bulunur. Güne göre veya Kümülatif görünümüne geçin.",
+      "selection": "Seçilen {from} → {to} · {n} gün — yukarıdaki istatistikler seçimi izler",
+      "clearSelection": "Seçimi temizle",
+      "selectHint": "bir aralık seçmek için grafiğin üzerinde sürükleyin (veya Shift + oklar)",
+      "source": "kaynak: {column}",
+      "ledgerNote": "defter {ledger} — hiçbir zaman toplanmayan dört defterden biri"
     },
     "estado": {
       "cargando": "Panel yükleniyor…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Bu panel sayfası mevcut değil",
       "noExisteCuerpo": "Adres panelin hiçbir bölümüyle eşleşmiyor. URL'yi kontrol edin veya genel bakışa dönün.",
       "volverAlResumen": "Genel bakışa dön"
+    },
+    "panel": {
+      "customize": "Özelleştir",
+      "done": "Bitti",
+      "hide": "Gizle",
+      "up": "Yukarı taşı",
+      "down": "Aşağı taşı",
+      "reset": "Düzeni sıfırla",
+      "hiddenCards": "Gizli kartlar",
+      "hint": "Oklarla sıralayın veya kartları gizleyin. Yalnızca bu tarayıcıda saklanır.",
+      "summary": "{n} kart · {hidden} gizli",
+      "cards": {
+        "ritmo": "Hız ve ay sonu projeksiyonu",
+        "tokens": "Token toplamları",
+        "libros": "Dört defter",
+        "trafico": "Trafik",
+        "sesiones": "Oturumlar",
+        "maquinas": "Makineler"
+      }
     }
   },
   "landing": {

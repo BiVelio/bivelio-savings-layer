@@ -1977,3 +1977,50 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp .nvi-foot-line { font-size: 11px; line-height: 1.6; color: color-mix(in srgb, var(--muted) 80%, transparent); max-width: 15rem; }
 .lp .nvi-foot-line .nvi-brand { color: var(--navy); }
 @media (prefers-reduced-motion: reduce) { .lp .nvi-band-art:hover { transform: none; } .lp .nvi-band-cta:hover svg { transform: none; } .lp .nvi-foot:hover { transform: none; } }
+
+/* ── Panel editable (2026-09-19) ─────────────────────────────────────────────
+   Las tarjetas del panel las ordena y oculta quien mira; el titular y los
+   avisos no entran. Los controles heredan el lenguaje de `.ux-seg button`
+   para que el modo edición no parezca otro producto. ─────────────────────── */
+.panel-stack { display: flex; flex-direction: column; gap: 14px; }
+.card-pad { padding: 16px; }
+.card-title { margin-bottom: 10px; }
+.pe { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.pe-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pe-bar .ck-note { margin: 0; }
+.pe-actions { display: inline-flex; gap: 6px; }
+.pe-btn {
+  padding: 5px 11px; font-size: 12px; line-height: 1.35; font-family: var(--sans); font-weight: 500;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
+  color: var(--ink-soft); cursor: pointer; font-variant-numeric: tabular-nums;
+  transition: background-color .14s ease, color .14s ease, border-color .14s ease;
+}
+.pe-btn:hover:not([disabled]) { background: var(--surface-3); color: var(--ink); border-color: var(--btn-ghost-line-hover); }
+.pe-btn[disabled] { opacity: .4; cursor: default; }
+.pe-btn.primary, .pe-btn[aria-pressed="true"] { background: var(--btn-ink); border-color: var(--btn-ink); color: #fff; font-weight: 600; }
+.pe-btn.primary:hover, .pe-btn[aria-pressed="true"]:hover { background: var(--btn-ink-hover); border-color: var(--btn-ink-hover); }
+.pe-hidden { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--radius-md); }
+.pe-hidden .ck-eyebrow { margin: 0; font-size: 10px; }
+.pe-chip {
+  padding: 4px 10px; font-size: 12px; font-family: var(--sans); border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink); cursor: pointer; transition: background-color .14s ease, border-color .14s ease;
+}
+.pe-chip:hover { background: var(--brand-soft); border-color: var(--brand); }
+.pe-card { position: relative; min-width: 0; }
+.pe-card.editing { outline: 1px dashed var(--brand); outline-offset: 6px; border-radius: var(--radius-xl); }
+.pe-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.pe-title { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--brand); }
+.pe-ctl { display: inline-flex; gap: 4px; }
+
+/* El selector de rango del titular, ya vivo: enlaces, no botones muertos. */
+.seg.live a { display: inline-block; padding: 6px 12px; font-size: .76rem; color: var(--ink-soft); text-decoration: none; background: var(--surface); border-left: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.seg.live a:first-child { border-left: none; }
+.seg.live a:hover { background: var(--surface-3); color: var(--ink); }
+.seg.live a[aria-current="true"] { background: var(--btn-ink); color: #fff; font-weight: 600; }
+
+/* Explorador: selección por arrastre y exportación. */
+.ux-plot { user-select: none; -webkit-user-select: none; touch-action: pan-y; cursor: crosshair; }
+.ux-actions { margin-left: auto; }
+.ux-sel { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.ux-sel .ux-foot { margin: 0; }
+.ux-foot.src { opacity: .8; margin-top: 6px; font-size: 10.5px; letter-spacing: .04em; }

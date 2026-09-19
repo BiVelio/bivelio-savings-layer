@@ -130,7 +130,10 @@
       "emptyCap": "Nog geen meting van je verkeer — 0 verzoeken gezien. Installeer de SDK en je netto besparingen verschijnen hier — jouw prijzen, jouw werklast. Nooit een geleend of verzonnen getal.",
       "errorCap": "We konden je gebruik nu niet lezen — een tijdelijke fout aan onze kant, geen verloren data. Je rapporten zijn veilig; ververs zo meteen.",
       "unpricedCap": "We zien {count} verzoeken maar kunnen ze nog niet beprijzen — stel een kostenmodel in voor je model(len) en je nettobesparing verschijnt hier. Je verkeer wordt gemeten.",
-      "hiddenCap": "Uw gebruiksgegevens bestaan, maar dit account kan ze niet zien. Dat is een fout aan onze kant en wij zijn gewaarschuwd. Schrijf naar support@bivelio.com als het aanhoudt."
+      "hiddenCap": "Uw gebruiksgegevens bestaan, maar dit account kan ze niet zien. Dat is een fout aan onze kant en wij zijn gewaarschuwd. Schrijf naar support@bivelio.com als het aanhoudt.",
+      "rangeDays": "laatste {n} dagen",
+      "rangeLabel": "Bereik",
+      "rangeOption": "{n}d"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/ophaal-/tool-aanroepen die nooit werden uitgevoerd",
@@ -560,7 +563,21 @@
       "rowTotal": "Totaal",
       "statModels": "Modellen",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Basiskosten",
+      "metricActualCost": "Werkelijke kosten",
+      "metricAvoidedCalls": "Vermeden aanroepen",
+      "metricEliminatedTokens": "Verwijderde tokens",
+      "metricCompressedTokens": "Gecomprimeerde tokens",
+      "metricProviderCachedTokens": "Door provider gecachte tokens",
+      "actions": "Acties",
+      "exportCsv": "CSV exporteren",
+      "modelMetricUnavailable": "{metric} wordt niet per model vastgelegd – de grootboeken bestaan alleen in de dagtotalen. Schakel naar Per dag of Cumulatief.",
+      "selection": "Geselecteerd {from} → {to} · {n} dagen – de statistieken hierboven volgen de selectie",
+      "clearSelection": "Selectie wissen",
+      "selectHint": "sleep over de grafiek (of Shift + pijltjes) om een periode te selecteren",
+      "source": "bron: {column}",
+      "ledgerNote": "grootboek {ledger} – een van de vier die nooit worden opgeteld"
     },
     "estado": {
       "cargando": "Dashboard laden…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Deze dashboardpagina bestaat niet",
       "noExisteCuerpo": "Het adres komt met geen enkel onderdeel van het dashboard overeen. Controleer de URL of ga terug naar het overzicht.",
       "volverAlResumen": "Terug naar het overzicht"
+    },
+    "panel": {
+      "customize": "Aanpassen",
+      "done": "Klaar",
+      "hide": "Verbergen",
+      "up": "Omhoog",
+      "down": "Omlaag",
+      "reset": "Indeling herstellen",
+      "hiddenCards": "Verborgen kaarten",
+      "hint": "Herschik met de pijltjes of verberg kaarten. Alleen in deze browser opgeslagen.",
+      "summary": "{n} kaarten · {hidden} verborgen",
+      "cards": {
+        "ritmo": "Tempo en prognose einde maand",
+        "tokens": "Tokentotalen",
+        "libros": "De vier grootboeken",
+        "trafico": "Verkeer",
+        "sesiones": "Sessies",
+        "maquinas": "Machines"
+      }
     }
   },
   "landing": {

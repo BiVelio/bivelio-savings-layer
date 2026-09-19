@@ -4,6 +4,11 @@ import { fileURLToPath } from "node:url";
 const pkg = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
 export default defineConfig({
+  // JSX con el runtime AUTOMÁTICO, como lo compila Next. Sin esto esbuild emite
+  // `React.createElement` y el primer test que renderiza un componente del
+  // panel muere con «React is not defined» — hasta el 2026-09-19 no había
+  // ninguno, y por eso nadie lo notó.
+  esbuild: { jsx: "automatic", jsxImportSource: "react" },
   resolve: {
     alias: {
       // Resolve workspace packages to their source so tests run without a build.
