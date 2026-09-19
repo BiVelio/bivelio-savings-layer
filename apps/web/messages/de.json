@@ -130,7 +130,10 @@
       "emptyCap": "Dein Traffic wird noch nicht gemessen — 0 Anfragen gesehen. Installiere das SDK und deine Netto-Einsparungen erscheinen hier — deine Preise, deine Workload. Niemals eine geliehene oder erfundene Zahl.",
       "errorCap": "Wir konnten deine Nutzung gerade nicht lesen — ein vorübergehender Fehler auf unserer Seite, keine verlorenen Daten. Deine Berichte sind sicher; lade gleich neu.",
       "unpricedCap": "Wir sehen {count} Anfragen, können sie aber noch nicht bepreisen — hinterlege ein Kostenmodell für dein(e) Modell(e), dann erscheint deine Nettoersparnis hier. Dein Traffic wird gemessen.",
-      "hiddenCap": "Ihre Nutzungsdaten sind vorhanden, aber dieses Konto kann sie nicht sehen. Das ist ein Fehler auf unserer Seite; wir wurden benachrichtigt. Schreiben Sie an support@bivelio.com, falls es andauert."
+      "hiddenCap": "Ihre Nutzungsdaten sind vorhanden, aber dieses Konto kann sie nicht sehen. Das ist ein Fehler auf unserer Seite; wir wurden benachrichtigt. Schreiben Sie an support@bivelio.com, falls es andauert.",
+      "rangeDays": "letzte {n} Tage",
+      "rangeLabel": "Zeitraum",
+      "rangeOption": "{n}T"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM-/Retrieval-/Tool-Aufrufe, die nie ausgeführt wurden",
@@ -560,7 +563,21 @@
       "rowTotal": "Gesamt",
       "statModels": "Modelle",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Basiskosten",
+      "metricActualCost": "Tatsächliche Kosten",
+      "metricAvoidedCalls": "Vermiedene Aufrufe",
+      "metricEliminatedTokens": "Entfernte Tokens",
+      "metricCompressedTokens": "Komprimierte Tokens",
+      "metricProviderCachedTokens": "Vom Anbieter gecachte Tokens",
+      "actions": "Aktionen",
+      "exportCsv": "CSV exportieren",
+      "modelMetricUnavailable": "{metric} wird nicht pro Modell erfasst – die Bücher liegen nur in der Tagesaggregation vor. Wechseln Sie zu Pro Tag oder Kumuliert.",
+      "selection": "Ausgewählt {from} → {to} · {n} Tage – die Statistik oben folgt der Auswahl",
+      "clearSelection": "Auswahl aufheben",
+      "selectHint": "ziehen Sie über das Diagramm (oder Umschalt + Pfeile), um einen Abschnitt zu wählen",
+      "source": "Quelle: {column}",
+      "ledgerNote": "Buch {ledger} – eines von vier, die nie summiert werden"
     },
     "estado": {
       "cargando": "Dashboard wird geladen…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Diese Dashboard-Seite existiert nicht",
       "noExisteCuerpo": "Die Adresse entspricht keinem Bereich des Dashboards. Prüfen Sie die URL oder gehen Sie zurück zur Übersicht.",
       "volverAlResumen": "Zurück zur Übersicht"
+    },
+    "panel": {
+      "customize": "Anpassen",
+      "done": "Fertig",
+      "hide": "Ausblenden",
+      "up": "Nach oben",
+      "down": "Nach unten",
+      "reset": "Layout zurücksetzen",
+      "hiddenCards": "Ausgeblendete Karten",
+      "hint": "Mit den Pfeilen umsortieren oder Karten ausblenden. Wird nur in diesem Browser gespeichert.",
+      "summary": "{n} Karten · {hidden} ausgeblendet",
+      "cards": {
+        "ritmo": "Tempo und Monatsprognose",
+        "tokens": "Token-Summen",
+        "libros": "Die vier Bücher",
+        "trafico": "Verkehr",
+        "sesiones": "Sitzungen",
+        "maquinas": "Maschinen"
+      }
     }
   },
   "landing": {

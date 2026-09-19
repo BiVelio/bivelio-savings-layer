@@ -130,7 +130,10 @@
       "emptyCap": "Encara no mesurem el teu trànsit — 0 sol·licituds vistes. Instal·la el SDK i el teu estalvi net apareixerà aquí — els teus preus, la teva càrrega de treball. Mai una xifra prestada ni inventada.",
       "errorCap": "No hem pogut llegir el teu ús ara mateix — és un error temporal nostre, no dades perdudes. Els teus informes són segurs; recarrega d'aquí a un moment.",
       "unpricedCap": "Veiem {count} sol·licituds però encara no les podem tarifar — defineix un model de cost per als teus models i el teu estalvi net apareixerà aquí. El teu trànsit s'està mesurant.",
-      "hiddenCap": "Les vostres dades d'ús existeixen, però aquest compte no les pot veure. És una errada nostra i ja se n'ha avisat. Escriviu a support@bivelio.com si triga."
+      "hiddenCap": "Les vostres dades d'ús existeixen, però aquest compte no les pot veure. És una errada nostra i ja se n'ha avisat. Escriviu a support@bivelio.com si triga.",
+      "rangeDays": "últims {n} dies",
+      "rangeLabel": "Rang",
+      "rangeOption": "{n}d"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "crides a LLM/recuperació/eines que mai no s'han executat",
@@ -560,7 +563,21 @@
       "rowTotal": "Total",
       "statModels": "Models",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Cost base",
+      "metricActualCost": "Cost real",
+      "metricAvoidedCalls": "Crides evitades",
+      "metricEliminatedTokens": "Tokens eliminats",
+      "metricCompressedTokens": "Tokens comprimits",
+      "metricProviderCachedTokens": "Tokens en memòria cau del proveïdor",
+      "actions": "Accions",
+      "exportCsv": "Exportar CSV",
+      "modelMetricUnavailable": "{metric} no es registra per model: els llibres només viuen a l'agregat diari. Canvia a Per dia o Acumulat.",
+      "selection": "Seleccionat {from} → {to} · {n} dies — les estadístiques de dalt segueixen la selecció",
+      "clearSelection": "Treure la selecció",
+      "selectHint": "arrossega sobre el gràfic (o Maj + fletxes) per seleccionar un tram",
+      "source": "origen: {column}",
+      "ledgerNote": "llibre {ledger} — un dels quatre que mai se sumen"
     },
     "estado": {
       "cargando": "Carregant el tauler…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Aquesta pàgina del tauler no existeix",
       "noExisteCuerpo": "L'adreça no correspon a cap secció del tauler. Comprova l'URL o torna al resum.",
       "volverAlResumen": "Tornar al resum"
+    },
+    "panel": {
+      "customize": "Personalitzar",
+      "done": "Fet",
+      "hide": "Amagar",
+      "up": "Pujar",
+      "down": "Baixar",
+      "reset": "Restablir la disposició",
+      "hiddenCards": "Targetes amagades",
+      "hint": "Reordena amb les fletxes o amaga targetes. Es desa només en aquest navegador.",
+      "summary": "{n} targetes · {hidden} amagades",
+      "cards": {
+        "ritmo": "Ritme i projecció a final de mes",
+        "tokens": "Totals de tokens",
+        "libros": "Els quatre llibres",
+        "trafico": "Trànsit",
+        "sesiones": "Sessions",
+        "maquinas": "Màquines"
+      }
     }
   },
   "landing": {

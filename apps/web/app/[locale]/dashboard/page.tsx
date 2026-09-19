@@ -2,7 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { authConfigured } from "@/lib/supabase/env";
 import abData from "@/public/data/ab-live.json";
 import { activationSteps, getAsientos, getSesiones, type AbArtifact } from "./data";
+import { cortarPorPeriodo } from "./explorer-datos";
 import { loadDashboard } from "./load";
+import { RANGO_POR_DEFECTO, rangoDesdeParametro } from "./rango";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { BillingStateBanner } from "./components/BillingStateBanner";
 import { GatewayVersionBanner } from "./components/GatewayVersionBanner";
@@ -13,6 +15,7 @@ import { TokenTotalsTiles } from "./components/TokenTotalsTiles";
 import { UsageExplorer } from "./components/UsageExplorer";
 import { TrafficModelMix } from "./components/TrafficModelMix";
 import { MaquinasCard } from "./components/MaquinasCard";
+import { PanelEditable } from "./components/PanelEditable";
 import { SesionesCard } from "./components/SesionesCard";
 import { VerdictHero } from "./components/VerdictHero";
 
@@ -26,13 +29,24 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 const ab = abData as unknown as AbArtifact;
 
-export default async function OverviewPage() {
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string | string[] }>;
+}) {
   const t = await getTranslations("dashboard");
   if (!authConfigured) {
     return <p className="ck-note">{t("overview.authNotWired")}</p>;
   }
-  const { ctx, usage, usageFailed, porModelo, visibilidad, orgId } = await loadDashboard();
-  const steps = await activationSteps(true, ctx, usage);
+  const { ctx, usage: usageCompleto, usageFailed, porModelo: porModeloCompleto, visibilidad, orgId } = await loadDashboard();
+  // EL RANGO SE APLICA AQUÍ, una vez, antes de derivar nada: el titular, los
+  // libros y el tráfico suman exactamente los días que el selector dice. La
+  // consulta sigue trayendo 120 días (el máximo), así que el corte es local y
+  // barato. El ritmo del mes y la espina de activación miran el conjunto
+  // completo: uno es un cálculo de calendario y el otro una historia de alta.
+  const rango = rangoDesdeParametro((await searchParams).range);
+  const usage = rango === RANGO_POR_DEFECTO ? usageCompleto : cortarPorPeriodo(usageCompleto, rango);
+  const steps = await activationSteps(true, ctx, usageCompleto);
   // Coste por sesión (0019) y máquinas (0024): lecturas aparte y tolerantes —
   // sin tabla o sin columnas (migración por detrás del deploy) o sin filas, la
   // tarjeta no existe y el panel sigue. Un solo cliente de solo lectura para las dos.
@@ -65,29 +79,48 @@ export default async function OverviewPage() {
             <h2>{t("overview.savingsTitle")}</h2>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} />
-          {/* Justo detrás del titular: a qué velocidad va y dónde acaba el mes.
-              La pregunta que sigue a "cuánto llevo ahorrado" es siempre "¿y a
-              este paso?" — y hasta ahora el panel no la contestaba. */}
-          <RitmoCard usage={usage} />
-          {/* Los TOTALES antes que la atribución por libro: "cuántos tokens he
-              gastado" es la pregunta que se hace primero, y los cuatro libros de
-              abajo la responden por partes que NO se pueden sumar entre sí. */}
-          <TokenTotalsTiles usage={usage} />
-          <LiveLedgerTiles usage={usage} ab={ab} />
-          {/* El explorador configurable (por día · periodo · modelo) a lo ancho:
-              necesita sitio para los controles y las barras. */}
-          <div className="card" style={{ padding: "16px" }}>
-            <div className="n" style={{ marginBottom: "10px" }}>{t("usageExplorer.title")}</div>
-            <UsageExplorer usage={usage} porModelo={porModelo} />
-          </div>
-          <div className="card" style={{ padding: "16px" }}>
-            <div className="n" style={{ marginBottom: "10px" }}>{t("overview.traffic")}</div>
-            <TrafficModelMix usage={usage} />
-          </div>
-          <SesionesCard sesiones={sesiones} />
-          <MaquinasCard asientos={asientos} />
+        <div className="panel-stack">
+          <VerdictHero usage={usage} failed={usageFailed} visibilidad={visibilidad} rango={rango} />
+          {/* Lo que sigue lo ordena y filtra quien mira (PanelEditable): las
+              tarjetas llegan ya renderizadas por el servidor con sus datos, y
+              el cliente solo decide orden y visibilidad. El titular de arriba
+              y los avisos NO entran: no son decoración. */}
+          <PanelEditable
+            tarjetas={[
+              // Justo detrás del titular: a qué velocidad va y dónde acaba el mes.
+              // Mira el mes completo, no el rango: es un cálculo de calendario.
+              { id: "ritmo", titulo: t("panel.cards.ritmo"), contenido: <RitmoCard usage={usageCompleto} /> },
+              // Los TOTALES antes que la atribución por libro: "cuántos tokens he
+              // gastado" es la pregunta que se hace primero, y los cuatro libros de
+              // abajo la responden por partes que NO se pueden sumar entre sí.
+              { id: "tokens", titulo: t("panel.cards.tokens"), contenido: <TokenTotalsTiles usage={usage} /> },
+              { id: "libros", titulo: t("panel.cards.libros"), contenido: <LiveLedgerTiles usage={usage} ab={ab} /> },
+              // El explorador configurable (por día · periodo · modelo · libro) a
+              // lo ancho: necesita sitio para los controles y las barras.
+              {
+                id: "explorador",
+                titulo: t("usageExplorer.title"),
+                contenido: (
+                  <div className="card card-pad">
+                    <div className="n card-title">{t("usageExplorer.title")}</div>
+                    <UsageExplorer usage={usageCompleto} porModelo={porModeloCompleto} periodoInicial={rango} />
+                  </div>
+                ),
+              },
+              {
+                id: "trafico",
+                titulo: t("panel.cards.trafico"),
+                contenido: (
+                  <div className="card card-pad">
+                    <div className="n card-title">{t("overview.traffic")}</div>
+                    <TrafficModelMix usage={usage} />
+                  </div>
+                ),
+              },
+              { id: "sesiones", titulo: t("panel.cards.sesiones"), contenido: <SesionesCard sesiones={sesiones} /> },
+              { id: "maquinas", titulo: t("panel.cards.maquinas"), contenido: <MaquinasCard asientos={asientos} /> },
+            ]}
+          />
           {/* FUERA LAS DOS TARJETAS DE ELISIÓN (2026-09-10).
               La elisión está muerta para el cliente: sus diales llevan apagados
               desde el 09-09 y hoy se quitó `context_elision` de las tres

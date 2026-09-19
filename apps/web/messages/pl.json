@@ -130,7 +130,10 @@
       "emptyCap": "Jeszcze nie mierzymy Twojego ruchu — 0 zaobserwowanych żądań. Zainstaluj SDK, a Twoje oszczędności netto pojawią się tutaj — Twoje ceny, Twoje obciążenie. Nigdy zapożyczona ani zmyślona liczba.",
       "errorCap": "Nie udało się teraz odczytać Twojego zużycia — to chwilowy błąd po naszej stronie, nie utracone dane. Twoje raporty są bezpieczne; odśwież za chwilę.",
       "unpricedCap": "Widzimy {count} żądań, ale nie możemy ich jeszcze wycenić — ustaw model kosztów dla swoich modeli, a Twoje oszczędności netto pojawią się tutaj. Twój ruch jest mierzony.",
-      "hiddenCap": "Państwa dane o użyciu istnieją, ale to konto ich nie widzi. To błąd po naszej stronie i zostaliśmy o nim powiadomieni. Prosimy napisać na support@bivelio.com, jeśli to potrwa."
+      "hiddenCap": "Państwa dane o użyciu istnieją, ale to konto ich nie widzi. To błąd po naszej stronie i zostaliśmy o nim powiadomieni. Prosimy napisać na support@bivelio.com, jeśli to potrwa.",
+      "rangeDays": "ostatnie {n} dni",
+      "rangeLabel": "Zakres",
+      "rangeOption": "{n}d"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "wywołania LLM/wyszukiwania/narzędzi, które nigdy się nie wykonały",
@@ -560,7 +563,21 @@
       "rowTotal": "Razem",
       "statModels": "Modele",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Koszt bazowy",
+      "metricActualCost": "Koszt rzeczywisty",
+      "metricAvoidedCalls": "Uniknięte wywołania",
+      "metricEliminatedTokens": "Usunięte tokeny",
+      "metricCompressedTokens": "Skompresowane tokeny",
+      "metricProviderCachedTokens": "Tokeny z pamięci podręcznej dostawcy",
+      "actions": "Akcje",
+      "exportCsv": "Eksportuj CSV",
+      "modelMetricUnavailable": "{metric} nie jest rejestrowane per model — księgi istnieją tylko w agregacie dziennym. Przełącz na Dziennie lub Narastająco.",
+      "selection": "Zaznaczono {from} → {to} · {n} dni — statystyki powyżej odpowiadają zaznaczeniu",
+      "clearSelection": "Wyczyść zaznaczenie",
+      "selectHint": "przeciągnij po wykresie (lub Shift + strzałki), aby zaznaczyć odcinek",
+      "source": "źródło: {column}",
+      "ledgerNote": "księga {ledger} — jedna z czterech, których nigdy się nie sumuje"
     },
     "estado": {
       "cargando": "Ładowanie panelu…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Ta strona panelu nie istnieje",
       "noExisteCuerpo": "Adres nie odpowiada żadnej sekcji panelu. Sprawdź URL lub wróć do przeglądu.",
       "volverAlResumen": "Wróć do przeglądu"
+    },
+    "panel": {
+      "customize": "Dostosuj",
+      "done": "Gotowe",
+      "hide": "Ukryj",
+      "up": "W górę",
+      "down": "W dół",
+      "reset": "Przywróć układ",
+      "hiddenCards": "Ukryte karty",
+      "hint": "Zmień kolejność strzałkami lub ukryj karty. Zapisywane tylko w tej przeglądarce.",
+      "summary": "{n} kart · {hidden} ukrytych",
+      "cards": {
+        "ritmo": "Tempo i prognoza na koniec miesiąca",
+        "tokens": "Sumy tokenów",
+        "libros": "Cztery księgi",
+        "trafico": "Ruch",
+        "sesiones": "Sesje",
+        "maquinas": "Maszyny"
+      }
     }
   },
   "landing": {

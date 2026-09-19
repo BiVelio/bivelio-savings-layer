@@ -12,8 +12,68 @@ import type { UsageRollup, ModelDia } from "./data";
  * nuevo — el componente muestra un estado "acumulando", nunca un 0 fabricado.
  */
 
-/** Las tres métricas que el usuario puede pintar. */
-export type Metrica = "neto" | "peticiones" | "tokensEntrada";
+/**
+ * Las métricas que el usuario puede pintar. Las tres primeras son las de
+ * siempre; las seis siguientes abren los CUATRO LIBROS y los dos costes que hay
+ * detrás del neto. Se pintan de UNA en una, nunca apiladas: los libros no se
+ * suman entre sí (docs/ARCHITECTURE.md §1) y un gráfico apilado los sumaría con
+ * la vista aunque el pie de página dijera lo contrario.
+ */
+export type Metrica =
+  | "neto"
+  | "peticiones"
+  | "tokensEntrada"
+  | "costeBase"
+  | "costeReal"
+  | "llamadasEvitadas"
+  | "tokensEliminados"
+  | "tokensComprimidos"
+  | "tokensCacheProveedor";
+
+/** Cómo se formatea cada métrica: dinero, recuento exacto o tokens compactos. */
+export type TipoMetrica = "dinero" | "entero" | "tokens";
+
+/**
+ * Catálogo de métricas, en el orden de los controles. `porModelo` dice si la
+ * tabla `usage_daily_by_model` la trae: los libros solo existen en el rollup
+ * diario, así que en la vista por modelo se declaran no disponibles en vez de
+ * pintarse a cero.
+ */
+export const METRICAS: ReadonlyArray<{
+  v: Metrica;
+  tipo: TipoMetrica;
+  porModelo: boolean;
+  /** Columna(s) de `bvsala.usage_daily` de las que sale: la procedencia que se escribe al pie. */
+  columna: string;
+  libro?: string;
+}> = [
+  { v: "neto", tipo: "dinero", porModelo: true, columna: "baseline_cost − actual_cost" },
+  { v: "costeBase", tipo: "dinero", porModelo: true, columna: "baseline_cost" },
+  { v: "costeReal", tipo: "dinero", porModelo: true, columna: "actual_cost" },
+  { v: "peticiones", tipo: "entero", porModelo: true, columna: "requests" },
+  { v: "tokensEntrada", tipo: "tokens", porModelo: true, columna: "actual_input_tokens" },
+  { v: "llamadasEvitadas", tipo: "entero", porModelo: false, columna: "avoided_llm", libro: "avoided_calls" },
+  { v: "tokensEliminados", tipo: "tokens", porModelo: false, columna: "eliminated_input_tokens", libro: "eliminated_tokens" },
+  { v: "tokensComprimidos", tipo: "tokens", porModelo: false, columna: "compressed_input_tokens", libro: "compressed_tokens" },
+  { v: "tokensCacheProveedor", tipo: "tokens", porModelo: false, columna: "provider_cached_input_tokens", libro: "provider_cached_tokens" },
+];
+
+export function columnaDeMetrica(m: Metrica): string {
+  return METRICAS.find((x) => x.v === m)?.columna ?? m;
+}
+
+export function tipoDeMetrica(m: Metrica): TipoMetrica {
+  return METRICAS.find((x) => x.v === m)?.tipo ?? "entero";
+}
+
+export function metricaDisponiblePorModelo(m: Metrica): boolean {
+  return METRICAS.find((x) => x.v === m)?.porModelo ?? false;
+}
+
+/** El libro mayor detrás de una métrica, si lo hay (para la procedencia y el color). */
+export function libroDeMetrica(m: Metrica): string | undefined {
+  return METRICAS.find((x) => x.v === m)?.libro;
+}
 /** Las tres vistas: barras por día, línea acumulada, barras por modelo. */
 export type Vista = "dia" | "acumulado" | "modelo";
 /** Los periodos configurables, en días. */
@@ -63,6 +123,18 @@ export function valorDia(r: UsageRollup, m: Metrica): number {
       // Aquí 0 es honesto —el número real de tokens enviados ese día—, no un
       // "no disponible": la tarjeta de tokens del panel ya avisa de la ausencia.
       return r.actualInputTokens ?? 0;
+    case "costeBase":
+      return r.baselineCost;
+    case "costeReal":
+      return r.actualCost;
+    case "llamadasEvitadas":
+      return r.avoidedLlm;
+    case "tokensEliminados":
+      return r.eliminatedInputTokens;
+    case "tokensComprimidos":
+      return r.compressedInputTokens;
+    case "tokensCacheProveedor":
+      return r.providerCachedInputTokens;
   }
 }
 
@@ -85,15 +157,28 @@ export function serieAcumulada(rows: readonly UsageRollup[], m: Metrica): PuntoA
   });
 }
 
-/** El valor de una fila por-modelo según la métrica elegida. */
+/**
+ * El valor de una fila por-modelo según la métrica elegida. Los libros no
+ * viajan por modelo: devuelven 0 y el componente, que consulta
+ * `metricaDisponiblePorModelo` antes, no llega a pintarlos.
+ */
 export function valorModelo(r: ModelDia, m: Metrica): number {
   switch (m) {
     case "neto":
       return r.baselineCost - r.actualCost;
+    case "costeBase":
+      return r.baselineCost;
+    case "costeReal":
+      return r.actualCost;
     case "peticiones":
       return r.requests;
     case "tokensEntrada":
       return r.actualInputTokens;
+    case "llamadasEvitadas":
+    case "tokensEliminados":
+    case "tokensComprimidos":
+    case "tokensCacheProveedor":
+      return 0;
   }
 }
 

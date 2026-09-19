@@ -130,7 +130,10 @@
       "emptyCap": "Belum mengukur lalu lintas Anda — 0 permintaan terlihat. Pasang SDK dan penghematan bersih Anda muncul di sini — harga Anda, beban kerja Anda. Bukan angka pinjaman atau rekaan.",
       "errorCap": "Kami tidak dapat membaca penggunaanmu saat ini — ini kesalahan sementara di pihak kami, bukan data hilang. Laporanmu aman; muat ulang sebentar lagi.",
       "unpricedCap": "Kami melihat {count} permintaan tetapi belum bisa memberi harga — atur model biaya untuk model Anda dan penghematan bersih Anda muncul di sini. Lalu lintas Anda sedang diukur.",
-      "hiddenCap": "Data penggunaan Anda ada, tetapi akun ini tidak dapat melihatnya. Ini kesalahan di pihak kami dan kami sudah diberi tahu. Hubungi support@bivelio.com jika berlanjut."
+      "hiddenCap": "Data penggunaan Anda ada, tetapi akun ini tidak dapat melihatnya. Ini kesalahan di pihak kami dan kami sudah diberi tahu. Hubungi support@bivelio.com jika berlanjut.",
+      "rangeDays": "{n} hari terakhir",
+      "rangeLabel": "Rentang",
+      "rangeOption": "{n}h"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "panggilan LLM/retrieval/tool yang tidak pernah dijalankan",
@@ -560,7 +563,21 @@
       "rowTotal": "Total",
       "statModels": "Model",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Biaya dasar",
+      "metricActualCost": "Biaya aktual",
+      "metricAvoidedCalls": "Panggilan yang dihindari",
+      "metricEliminatedTokens": "Token yang dihapus",
+      "metricCompressedTokens": "Token yang dikompresi",
+      "metricProviderCachedTokens": "Token cache penyedia",
+      "actions": "Tindakan",
+      "exportCsv": "Ekspor CSV",
+      "modelMetricUnavailable": "{metric} tidak dicatat per model — buku besar hanya ada di agregat harian. Beralih ke Per hari atau Kumulatif.",
+      "selection": "Dipilih {from} → {to} · {n} hari — statistik di atas mengikuti pilihan",
+      "clearSelection": "Hapus pilihan",
+      "selectHint": "seret pada grafik (atau Shift + panah) untuk memilih rentang",
+      "source": "sumber: {column}",
+      "ledgerNote": "buku besar {ledger} — satu dari empat yang tidak pernah dijumlahkan"
     },
     "estado": {
       "cargando": "Memuat dasbor…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Halaman dasbor ini tidak ada",
       "noExisteCuerpo": "Alamat ini tidak cocok dengan bagian mana pun di dasbor. Periksa URL atau kembali ke ikhtisar.",
       "volverAlResumen": "Kembali ke ikhtisar"
+    },
+    "panel": {
+      "customize": "Sesuaikan",
+      "done": "Selesai",
+      "hide": "Sembunyikan",
+      "up": "Naik",
+      "down": "Turun",
+      "reset": "Atur ulang tata letak",
+      "hiddenCards": "Kartu tersembunyi",
+      "hint": "Urutkan dengan panah atau sembunyikan kartu. Disimpan di browser ini saja.",
+      "summary": "{n} kartu · {hidden} tersembunyi",
+      "cards": {
+        "ritmo": "Laju dan proyeksi akhir bulan",
+        "tokens": "Total token",
+        "libros": "Empat buku besar",
+        "trafico": "Lalu lintas",
+        "sesiones": "Sesi",
+        "maquinas": "Mesin"
+      }
     }
   },
   "landing": {

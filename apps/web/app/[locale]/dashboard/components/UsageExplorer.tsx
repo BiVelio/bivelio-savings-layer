@@ -4,17 +4,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { UsageRollup, ModelDia } from "../data";
-import { money, intfmt, compact, pct0 } from "../format";
+import { money, intfmt, compact, pct0, LEDGER_COLOR } from "../format";
 import {
   cortarPorPeriodo,
   serieDiaria,
   agregarPorModelo,
   topConResto,
+  columnaDeMetrica,
+  libroDeMetrica,
+  metricaDisponiblePorModelo,
+  tipoDeMetrica,
+  METRICAS,
   PERIODOS,
   type Metrica,
   type Vista,
   type Periodo,
 } from "../explorer-datos";
+import { aCsv, nombreDeFichero } from "../explorer-exportar";
 import {
   escalaBonita,
   marcasEjeX,
@@ -68,24 +74,121 @@ const TOP_MODELOS = 6;
 type T = ReturnType<typeof useTranslations>;
 type Fmt = (v: number) => string;
 
-export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porModelo: ModelDia[] }) {
+/** Selección de un tramo de días por índice en `ranuras`, ambos inclusive. */
+export interface Seleccion {
+  a: number;
+  b: number;
+}
+
+/** Clave de la etiqueta traducida de cada métrica. */
+const ETIQUETA: Record<Metrica, string> = {
+  neto: "usageExplorer.metricNet",
+  costeBase: "usageExplorer.metricBaselineCost",
+  costeReal: "usageExplorer.metricActualCost",
+  peticiones: "usageExplorer.metricRequests",
+  tokensEntrada: "usageExplorer.metricInputTokens",
+  llamadasEvitadas: "usageExplorer.metricAvoidedCalls",
+  tokensEliminados: "usageExplorer.metricEliminatedTokens",
+  tokensComprimidos: "usageExplorer.metricCompressedTokens",
+  tokensCacheProveedor: "usageExplorer.metricProviderCachedTokens",
+};
+
+/** Lo que el explorador recuerda de quien mira, en SU navegador. El periodo no: ese lo manda el rango de la URL. */
+const CLAVE_EXPLORADOR = "bvsala.explorer.v1";
+interface EstadoRecordado {
+  metrica?: Metrica;
+  vista?: Vista;
+}
+const esMetrica = (x: unknown): x is Metrica => METRICAS.some((m) => m.v === x);
+const esVista = (x: unknown): x is Vista => x === "dia" || x === "acumulado" || x === "modelo";
+
+function leerRecordado(): EstadoRecordado {
+  try {
+    const crudo = window.localStorage.getItem(CLAVE_EXPLORADOR);
+    const o = crudo ? (JSON.parse(crudo) as Record<string, unknown>) : {};
+    return {
+      ...(esMetrica(o["metrica"]) ? { metrica: o["metrica"] } : {}),
+      ...(esVista(o["vista"]) ? { vista: o["vista"] } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
+function recordar(e: EstadoRecordado): void {
+  try {
+    window.localStorage.setItem(CLAVE_EXPLORADOR, JSON.stringify(e));
+  } catch {
+    /* sin almacén no pasa nada: se vuelve al valor por defecto la próxima vez */
+  }
+}
+
+/** Baja un fichero de texto desde el navegador, sin dejar el enlace colgando del DOM. */
+function descargar(nombre: string, contenido: string): void {
+  const blob = new Blob([contenido], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+export function UsageExplorer({
+  usage,
+  porModelo,
+  periodoInicial = 30,
+}: {
+  usage: UsageRollup[];
+  porModelo: ModelDia[];
+  /** El rango del panel (URL). El explorador arranca ahí y luego el usuario puede afinar. */
+  periodoInicial?: Periodo;
+}) {
   const t = useTranslations("dashboard");
-  const [periodo, setPeriodo] = useState<Periodo>(30);
+  const [periodo, setPeriodo] = useState<Periodo>(periodoInicial);
   const [metrica, setMetrica] = useState<Metrica>("neto");
   const [vista, setVista] = useState<Vista>("dia");
+  const [seleccion, setSeleccion] = useState<Seleccion | null>(null);
+  const [montado, setMontado] = useState(false);
 
-  // Dinero para el ahorro neto, entero para peticiones (un recuento pequeño se
-  // quiere exacto), compacto para tokens (millones). El valor EXACTO viaja en
+  // Si el rango del panel cambia (enlace 30/90/120), el explorador lo sigue.
+  useEffect(() => {
+    setPeriodo(periodoInicial);
+    setSeleccion(null);
+  }, [periodoInicial]);
+
+  // Métrica y vista se recuerdan tras montar: el primer render es el mismo en
+  // servidor y cliente, y solo después se aplica lo que este navegador guardó.
+  useEffect(() => {
+    const r = leerRecordado();
+    if (r.metrica) setMetrica(r.metrica);
+    if (r.vista) setVista(r.vista);
+    setMontado(true);
+  }, []);
+  useEffect(() => {
+    if (montado) recordar({ metrica, vista });
+  }, [montado, metrica, vista]);
+
+  // Dinero para los costes y el neto, entero para recuentos (un recuento pequeño
+  // se quiere exacto), compacto para tokens (millones). El valor EXACTO viaja en
   // el tooltip vía `fmtExact`, así que la abreviatura nunca pierde información.
-  const fmt: Fmt = (v) => (metrica === "neto" ? money(v) : metrica === "peticiones" ? intfmt(v) : compact(v));
-  const fmtExact: Fmt = (v) => (metrica === "neto" ? money(v) : intfmt(v));
+  const tipo = tipoDeMetrica(metrica);
+  const fmt: Fmt = (v) => (tipo === "dinero" ? money(v) : tipo === "entero" ? intfmt(v) : compact(v));
+  const fmtExact: Fmt = (v) => (tipo === "dinero" ? money(v) : intfmt(v));
 
   const usageCortado = useMemo(() => cortarPorPeriodo(usage, periodo), [usage, periodo]);
   const modeloCortado = useMemo(() => cortarPorPeriodo(porModelo, periodo), [porModelo, periodo]);
 
   const diaria = useMemo(() => serieDiaria(usageCortado, metrica), [usageCortado, metrica]);
   const ranuras = useMemo(() => rellenarCalendario(diaria), [diaria]);
-  const resumen = useMemo(() => resumirSerie(ranuras, MM_VENTANA), [ranuras]);
+
+  // La selección vive en índices de `ranuras`; si el periodo o la métrica la
+  // dejan fuera de rango, se descarta en vez de señalar días que ya no están.
+  const sel = seleccion && seleccion.b < ranuras.length ? seleccion : null;
+  const ranurasVisibles = useMemo(() => (sel ? ranuras.slice(sel.a, sel.b + 1) : ranuras), [ranuras, sel]);
+  const resumen = useMemo(() => resumirSerie(ranurasVisibles, MM_VENTANA), [ranurasVisibles]);
 
   const modelosTodos = useMemo(() => agregarPorModelo(modeloCortado, metrica), [modeloCortado, metrica]);
   const barras = useMemo(
@@ -112,25 +215,51 @@ export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porM
   );
 
   const esModelo = vista === "modelo";
+  const libro = libroDeMetrica(metrica);
+
+  const exportar = () => {
+    const modo = vista === "acumulado" ? "acumulado" : "dia";
+    let acc = 0;
+    const serieCompleta = ranuras.map((r) => (modo === "dia" ? r.valor : (acc += r.valor)));
+    const serie = sel ? serieCompleta.slice(sel.a, sel.b + 1) : serieCompleta;
+    descargar(
+      nombreDeFichero(ranurasVisibles, metrica),
+      aCsv(ranurasVisibles, serie, {
+        metrica,
+        periodoDias: periodo,
+        modo,
+        origen: `bvsala.usage_daily.${columnaDeMetrica(metrica)}`,
+        generadoEn: new Date().toISOString(),
+      }),
+    );
+  };
 
   return (
     <div>
       <div className="ux-controls">
-        {seg<Periodo>(t("usageExplorer.period"), periodo, setPeriodo, PERIODOS.map((p) => ({ v: p, label: String(p) })))}
-        {seg<Metrica>(t("usageExplorer.metric"), metrica, setMetrica, [
-          { v: "neto", label: t("usageExplorer.metricNet") },
-          { v: "peticiones", label: t("usageExplorer.metricRequests") },
-          { v: "tokensEntrada", label: t("usageExplorer.metricInputTokens") },
-        ])}
+        {seg<Periodo>(t("usageExplorer.period"), periodo, (p) => { setPeriodo(p); setSeleccion(null); }, PERIODOS.map((p) => ({ v: p, label: String(p) })))}
+        {seg<Metrica>(t("usageExplorer.metric"), metrica, (m) => { setMetrica(m); setSeleccion(null); }, METRICAS.map((m) => ({ v: m.v, label: t(ETIQUETA[m.v]) })))}
         {seg<Vista>(t("usageExplorer.view"), vista, setVista, [
           { v: "dia", label: t("usageExplorer.viewDaily") },
           { v: "acumulado", label: t("usageExplorer.viewCumulative") },
           { v: "modelo", label: t("usageExplorer.viewModel") },
         ])}
+        {!esModelo && ranuras.length > 0 && (
+          <div className="ux-seg ux-actions">
+            <span className="ck-eyebrow">{t("usageExplorer.actions")}</span>
+            <div className="opts">
+              <button type="button" onClick={exportar}>{t("usageExplorer.exportCsv")}</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {esModelo ? (
-        <VistaModelo barras={barras} totalModelos={modelosTodos.length} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} />
+        metricaDisponiblePorModelo(metrica) ? (
+          <VistaModelo barras={barras} totalModelos={modelosTodos.length} metrica={metrica} fmt={fmt} fmtExact={fmtExact} t={t} />
+        ) : (
+          <p className="ck-note">{t("usageExplorer.modelMetricUnavailable", { metric: t(ETIQUETA[metrica]) })}</p>
+        )
       ) : ranuras.length === 0 ? (
         <p className="ck-note">{t("usageExplorer.emptyPeriod")}</p>
       ) : (
@@ -140,14 +269,34 @@ export function UsageExplorer({ usage, porModelo }: { usage: UsageRollup[]; porM
             ranuras={ranuras}
             modo={vista === "acumulado" ? "acumulado" : "dia"}
             metrica={metrica}
+            color={libro ? LEDGER_COLOR[libro] ?? "var(--ink)" : undefined}
+            seleccion={sel}
+            onSeleccion={setSeleccion}
             fmt={fmt}
             fmtExact={fmtExact}
             t={t}
             aria={vista === "acumulado" ? t("savingsTrendChart.chartAria") : t("usageExplorer.dailyAria")}
           />
-          <p className="ux-foot">
-            {ranuras[0]!.day} → {ranuras[ranuras.length - 1]!.day} ·{" "}
-            {t("usageExplorer.coverage", { conUso: resumen.diasConUso, total: resumen.diasTotales })}
+          <div className="ux-sel">
+            {sel ? (
+              <>
+                <span className="ux-foot">
+                  {t("usageExplorer.selection", { from: ranurasVisibles[0]!.day, to: ranurasVisibles[ranurasVisibles.length - 1]!.day, n: ranurasVisibles.length })}
+                </span>
+                <button type="button" className="pe-btn" onClick={() => setSeleccion(null)}>
+                  {t("usageExplorer.clearSelection")}
+                </button>
+              </>
+            ) : (
+              <span className="ux-foot">
+                {ranuras[0]!.day} → {ranuras[ranuras.length - 1]!.day} ·{" "}
+                {t("usageExplorer.coverage", { conUso: resumen.diasConUso, total: resumen.diasTotales })} · {t("usageExplorer.selectHint")}
+              </span>
+            )}
+          </div>
+          <p className="ux-foot src">
+            {t("usageExplorer.source", { column: `bvsala.usage_daily.${columnaDeMetrica(metrica)}` })}
+            {libro && ` · ${t("usageExplorer.ledgerNote", { ledger: libro })}`}
           </p>
         </>
       )}
@@ -213,6 +362,9 @@ function Grafico({
   ranuras,
   modo,
   metrica,
+  color,
+  seleccion,
+  onSeleccion,
   fmt,
   fmtExact,
   t,
@@ -221,6 +373,10 @@ function Grafico({
   ranuras: Ranura[];
   modo: "dia" | "acumulado";
   metrica: Metrica;
+  /** Color de la serie cuando la métrica es un libro (la rampa de LEDGER_COLOR). */
+  color?: string;
+  seleccion: Seleccion | null;
+  onSeleccion: (s: Seleccion | null) => void;
   fmt: Fmt;
   fmtExact: Fmt;
   t: T;
@@ -229,6 +385,8 @@ function Grafico({
   const cajaRef = useRef<HTMLDivElement | null>(null);
   const [ancho, setAncho] = useState(ANCHO_BASE);
   const [foco, setFoco] = useState<number | null>(null);
+  /** Índice donde empezó el arrastre; null cuando no se está arrastrando. */
+  const [arrastre, setArrastre] = useState<number | null>(null);
 
   // El ancho se MIDE. Con `viewBox` fijo y `width="100%"` el navegador encajaba
   // el dibujo por altura y lo centraba, dejando franjas muertas a los lados.
@@ -283,9 +441,18 @@ function Grafico({
     [n, anchoInterior],
   );
 
-  const colorSerie = metrica === "neto" ? "var(--mint)" : "var(--ink)";
+  const colorSerie = color ?? (metrica === "neto" ? "var(--mint)" : "var(--ink)");
   const rellenoBarra = (v: number) =>
-    metrica === "neto" ? (v >= 0 ? "var(--mint)" : "var(--danger)") : "var(--ink)";
+    metrica === "neto" ? (v >= 0 ? "var(--mint)" : "var(--danger)") : colorSerie;
+
+  /** Índice de ranura bajo el puntero, o null fuera del área de datos. */
+  const indiceEn = (clientX: number, el: HTMLElement): number | null => {
+    const caja = el.getBoundingClientRect();
+    const rel = clientX - caja.left - MARGEN.izquierda;
+    const i = Math.floor(rel / slot);
+    return rel >= 0 && i >= 0 && i < n ? i : null;
+  };
+  const fijarSeleccion = (i: number, j: number) => onSeleccion(i === j ? null : { a: Math.min(i, j), b: Math.max(i, j) });
 
   const puntosMM = mm
     .map((v, i) => (v === null ? null : ([xc(i), y(v)] as const)))
@@ -320,20 +487,45 @@ function Grafico({
         tabIndex={0}
         role="group"
         aria-label={aria}
-        onMouseMove={(e) => {
-          const caja = e.currentTarget.getBoundingClientRect();
-          const rel = e.clientX - caja.left - MARGEN.izquierda;
-          const i = Math.floor(rel / slot);
-          setFoco(rel >= 0 && i >= 0 && i < n ? i : null);
+        onPointerMove={(e) => {
+          const i = indiceEn(e.clientX, e.currentTarget);
+          setFoco(i);
+          // Arrastrando: la selección crece con el puntero. Se PINTA en vivo y
+          // las estadísticas se recalculan al soltar (ver onPointerUp).
+          if (arrastre !== null && i !== null) fijarSeleccion(arrastre, i);
         }}
-        onMouseLeave={() => setFoco(null)}
+        onPointerDown={(e) => {
+          if (e.button !== 0) return;
+          const i = indiceEn(e.clientX, e.currentTarget);
+          if (i === null) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          setArrastre(i);
+          onSeleccion(null);
+        }}
+        onPointerUp={(e) => {
+          if (arrastre === null) return;
+          const i = indiceEn(e.clientX, e.currentTarget);
+          if (i !== null) fijarSeleccion(arrastre, i);
+          setArrastre(null);
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        }}
+        onPointerCancel={() => setArrastre(null)}
+        onPointerLeave={() => { if (arrastre === null) setFoco(null); }}
         onBlur={() => setFoco(null)}
         onKeyDown={(e) => {
-          if (e.key === "ArrowRight") { e.preventDefault(); mover(1); }
-          else if (e.key === "ArrowLeft") { e.preventDefault(); mover(-1); }
-          else if (e.key === "Home") { e.preventDefault(); setFoco(0); }
-          else if (e.key === "End") { e.preventDefault(); setFoco(n - 1); }
-          else if (e.key === "Escape") setFoco(null);
+          // Con Mayús, las flechas EXTIENDEN la selección desde el ancla; sin
+          // ella, mueven el foco como siempre. Escape quita foco y selección.
+          const extender = (destino: number) => {
+            const ancla = seleccion ? (foco === seleccion.b ? seleccion.a : seleccion.b) : (foco ?? destino);
+            fijarSeleccion(ancla, destino);
+            setFoco(destino);
+          };
+          const paso = (d: number) => Math.max(0, Math.min(n - 1, (foco ?? (d > 0 ? -1 : n)) + d));
+          if (e.key === "ArrowRight") { e.preventDefault(); e.shiftKey ? extender(paso(1)) : mover(1); }
+          else if (e.key === "ArrowLeft") { e.preventDefault(); e.shiftKey ? extender(paso(-1)) : mover(-1); }
+          else if (e.key === "Home") { e.preventDefault(); e.shiftKey ? extender(0) : setFoco(0); }
+          else if (e.key === "End") { e.preventDefault(); e.shiftKey ? extender(n - 1) : setFoco(n - 1); }
+          else if (e.key === "Escape") { setFoco(null); onSeleccion(null); }
         }}
       >
         <svg width={ancho} height={ALTO} viewBox={`0 0 ${ancho} ${ALTO}`} role="img" aria-label={aria}>
@@ -362,6 +554,23 @@ function Grafico({
               </text>
             </g>
           ))}
+
+          {/* Tramo seleccionado, debajo de todo: el contexto sigue visible y el
+              tramo se lee como una ventana sobre el periodo, no como un zoom. */}
+          {seleccion && (
+            <rect
+              x={MARGEN.izquierda + seleccion.a * slot}
+              y={MARGEN.arriba}
+              width={(seleccion.b - seleccion.a + 1) * slot}
+              height={altoInterior}
+              fill="var(--brand)"
+              fillOpacity="0.08"
+              stroke="var(--brand)"
+              strokeOpacity="0.45"
+              strokeDasharray="3 3"
+              shapeRendering="crispEdges"
+            />
+          )}
 
           {/* Columna resaltada por debajo de los datos, nunca encima. */}
           {foco !== null && (

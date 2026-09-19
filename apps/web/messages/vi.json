@@ -130,7 +130,10 @@
       "emptyCap": "Chưa đo lưu lượng của bạn — đã thấy 0 yêu cầu. Cài đặt SDK và mức tiết kiệm ròng của bạn sẽ hiện ở đây — giá của bạn, khối lượng công việc của bạn. Không bao giờ là con số vay mượn hay bịa đặt.",
       "errorCap": "Chúng tôi tạm thời không đọc được mức sử dụng của bạn — đây là lỗi tạm thời từ phía chúng tôi, không phải mất dữ liệu. Báo cáo của bạn vẫn an toàn; hãy tải lại sau giây lát.",
       "unpricedCap": "Chúng tôi thấy {count} yêu cầu nhưng chưa thể định giá — hãy đặt mô hình chi phí cho (các) mô hình của bạn và mức tiết kiệm ròng sẽ hiển thị ở đây. Lưu lượng của bạn đang được đo.",
-      "hiddenCap": "Dữ liệu sử dụng của quý vị vẫn tồn tại, nhưng tài khoản này không xem được. Đây là lỗi từ phía chúng tôi và chúng tôi đã được cảnh báo. Hãy viết cho support@bivelio.com nếu tình trạng kéo dài."
+      "hiddenCap": "Dữ liệu sử dụng của quý vị vẫn tồn tại, nhưng tài khoản này không xem được. Đây là lỗi từ phía chúng tôi và chúng tôi đã được cảnh báo. Hãy viết cho support@bivelio.com nếu tình trạng kéo dài.",
+      "rangeDays": "{n} ngày gần nhất",
+      "rangeLabel": "Khoảng thời gian",
+      "rangeOption": "{n}n"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "lệnh gọi LLM/truy xuất/công cụ chưa từng chạy",
@@ -560,7 +563,21 @@
       "rowTotal": "Tổng",
       "statModels": "Mô hình",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Chi phí cơ sở",
+      "metricActualCost": "Chi phí thực",
+      "metricAvoidedCalls": "Lượt gọi đã tránh",
+      "metricEliminatedTokens": "Token đã loại bỏ",
+      "metricCompressedTokens": "Token đã nén",
+      "metricProviderCachedTokens": "Token trong bộ đệm của nhà cung cấp",
+      "actions": "Thao tác",
+      "exportCsv": "Xuất CSV",
+      "modelMetricUnavailable": "{metric} không được ghi theo mô hình — các sổ cái chỉ có trong tổng hợp theo ngày. Chuyển sang Theo ngày hoặc Tích lũy.",
+      "selection": "Đã chọn {from} → {to} · {n} ngày — thống kê phía trên theo vùng chọn",
+      "clearSelection": "Bỏ chọn",
+      "selectHint": "kéo trên biểu đồ (hoặc Shift + phím mũi tên) để chọn một đoạn",
+      "source": "nguồn: {column}",
+      "ledgerNote": "sổ cái {ledger} — một trong bốn sổ không bao giờ được cộng lại"
     },
     "estado": {
       "cargando": "Đang tải bảng điều khiển…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "Trang này của bảng điều khiển không tồn tại",
       "noExisteCuerpo": "Địa chỉ không khớp với mục nào trong bảng điều khiển. Kiểm tra URL hoặc quay lại tổng quan.",
       "volverAlResumen": "Quay lại tổng quan"
+    },
+    "panel": {
+      "customize": "Tùy chỉnh",
+      "done": "Xong",
+      "hide": "Ẩn",
+      "up": "Lên",
+      "down": "Xuống",
+      "reset": "Đặt lại bố cục",
+      "hiddenCards": "Thẻ đã ẩn",
+      "hint": "Sắp xếp bằng mũi tên hoặc ẩn thẻ. Chỉ lưu trên trình duyệt này.",
+      "summary": "{n} thẻ · {hidden} đã ẩn",
+      "cards": {
+        "ritmo": "Tốc độ và dự phóng cuối tháng",
+        "tokens": "Tổng token",
+        "libros": "Bốn sổ cái",
+        "trafico": "Lưu lượng",
+        "sesiones": "Phiên",
+        "maquinas": "Máy"
+      }
     }
   },
   "landing": {

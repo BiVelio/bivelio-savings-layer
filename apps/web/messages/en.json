@@ -130,7 +130,10 @@
       "emptyCap": "Not measuring your traffic yet — 0 requests seen. Install the SDK and your net savings appears here — your prices, your workload. Never a borrowed or fabricated number.",
       "errorCap": "We couldn't read your usage right now — this is a temporary error on our side, not lost data. Your reports are safe; refresh in a moment.",
       "unpricedCap": "We're seeing {count} requests but can't price them yet — set a cost model for your model(s) and your net savings appears here. Your traffic is being measured.",
-      "hiddenCap": "Your usage data exists, but this account can't see it. That's a fault on our side and we've been alerted. Write to support@bivelio.com if it persists."
+      "hiddenCap": "Your usage data exists, but this account can't see it. That's a fault on our side and we've been alerted. Write to support@bivelio.com if it persists.",
+      "rangeDays": "last {n} days",
+      "rangeLabel": "Range",
+      "rangeOption": "{n}d"
     },
     "liveLedgerTiles": {
       "whatAvoidedCalls": "LLM/retrieval/tool calls that never ran",
@@ -560,7 +563,21 @@
       "rowTotal": "Total",
       "statModels": "Models",
       "statTop1": "Top 1",
-      "statTop3": "Top 3"
+      "statTop3": "Top 3",
+      "metricBaselineCost": "Baseline cost",
+      "metricActualCost": "Actual cost",
+      "metricAvoidedCalls": "Avoided calls",
+      "metricEliminatedTokens": "Eliminated tokens",
+      "metricCompressedTokens": "Compressed tokens",
+      "metricProviderCachedTokens": "Provider-cached tokens",
+      "actions": "Actions",
+      "exportCsv": "Export CSV",
+      "modelMetricUnavailable": "{metric} is not recorded per model — the ledgers live in the daily rollup only. Switch to By day or Cumulative.",
+      "selection": "Selected {from} → {to} · {n} days — the statistics above follow the selection",
+      "clearSelection": "Clear selection",
+      "selectHint": "drag across the chart (or Shift + arrows) to select a stretch",
+      "source": "source: {column}",
+      "ledgerNote": "ledger {ledger} — one of four that are never summed"
     },
     "estado": {
       "cargando": "Loading your dashboard…",
@@ -570,6 +587,25 @@
       "noExisteTitulo": "This dashboard page doesn't exist",
       "noExisteCuerpo": "The address doesn't match any section of the dashboard. Check the URL or go back to the overview.",
       "volverAlResumen": "Back to overview"
+    },
+    "panel": {
+      "customize": "Customize",
+      "done": "Done",
+      "hide": "Hide",
+      "up": "Move up",
+      "down": "Move down",
+      "reset": "Reset layout",
+      "hiddenCards": "Hidden cards",
+      "hint": "Reorder with the arrows or hide cards. Saved in this browser only.",
+      "summary": "{n} cards · {hidden} hidden",
+      "cards": {
+        "ritmo": "Pace and month-end projection",
+        "tokens": "Token totals",
+        "libros": "The four ledgers",
+        "trafico": "Traffic",
+        "sesiones": "Sessions",
+        "maquinas": "Machines"
+      }
     }
   },
   "landing": {
