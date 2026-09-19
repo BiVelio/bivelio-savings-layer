@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
-import { createElement } from "react";
+import { createElement, type ReactNode } from "react";
 import { renderToString } from "react-dom/server";
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
 import { describe, expect, it } from "vitest";
 
 import { UsageExplorer } from "./components/UsageExplorer";
@@ -42,8 +42,15 @@ const dias = Array.from({ length: 40 }, (_, i) => {
 });
 const usage = dias.filter((_, i) => i % 7 !== 3).map(fila);
 
-const conMensajes = (hijo: ReturnType<typeof createElement>) =>
-  renderToString(createElement(NextIntlClientProvider, { locale: "en", messages: mensajes, timeZone: "UTC" }, hijo));
+const conMensajes = (hijo: ReactNode) =>
+  renderToString(
+    createElement(NextIntlClientProvider, {
+      locale: "en",
+      messages: mensajes as AbstractIntlMessages,
+      timeZone: "UTC",
+      children: hijo,
+    }),
+  );
 
 describe("los componentes de cliente del panel renderizan en servidor", () => {
   it("el explorador pinta controles, estadísticas, gráfico y procedencia", () => {
