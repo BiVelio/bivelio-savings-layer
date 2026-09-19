@@ -75,9 +75,9 @@ export function avisoDeBusquedaDeHerramientas(v: VistaDeHerramientas): string | 
   if (v.referencias > 0) return null;
   if (v.definiciones < DEFINICIONES_PARA_AVISAR) return null;
   return (
-    `[bvsala gateway] tu cliente manda ${v.definiciones} definiciones de herramientas ENTERAS en cada petición ` +
-    "y no usa la búsqueda de herramientas. Con un proxy delante, Claude Code la apaga por defecto: " +
-    "`bvsala claude` la reactiva, pero solo en una VENTANA NUEVA. Si lanzaste el terminal a mano, " +
-    "exporta ENABLE_TOOL_SEARCH=true. En el corpus de la casa ese bloque era el 24,5 % del dinero de entrada."
+    `[bvsala gateway] your client sends ${v.definiciones} FULL tool definitions in every request ` +
+    "and does not use tool search. With a proxy in front, Claude Code turns tool search off by default: " +
+    "`bvsala claude` turns it back on, but only in a NEW WINDOW. If you launched the terminal by hand, " +
+    "export ENABLE_TOOL_SEARCH=true. In our own corpus that block was 24.5% of input spend."
   );
 }

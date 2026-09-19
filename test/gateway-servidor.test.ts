@@ -690,7 +690,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     // Node («listen EADDRINUSE: address already in use 127.0.0.1:N») queda
     // como `cause` para quien depure, no como lo primero que lee el probador.
     expect(err!.message).toContain(`${primero.puerto}`);
-    expect(err!.message).toMatch(/ya está en uso/);
+    expect(err!.message).toMatch(/already in use/);
     expect(err!.message).not.toMatch(/^listen EADDRINUSE/);
     expect(String((err as { cause?: unknown }).cause)).toContain("EADDRINUSE");
     // Y el primero sigue sirviendo: el fallo del segundo no le tocó nada.
@@ -721,7 +721,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     expect(linea).toBeDefined();
     expect(linea).toContain("→ 200");
     expect(linea).toContain("(stream)");
-    expect(linea).toContain("no medido: sin BIVELIO_SERVICE_KEY");
+    expect(linea).toContain("not metered: no BIVELIO_SERVICE_KEY");
     // Una línea por petición, ni cero ni dos.
     expect(lineas.filter((l) => l.startsWith("[gateway] POST /v1/messages"))).toHaveLength(1);
   });
@@ -807,6 +807,6 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     expect(json.detail).toContain("ECONNREFUSED");
     // Y en el log, lo mismo: un probador con «fetch failed» a secas no sabe
     // si es la red, el upstream o una cabecera que undici rechazó.
-    expect(lineas.find((l) => l.includes("upstream inalcanzable"))).toContain("ECONNREFUSED");
+    expect(lineas.find((l) => l.includes("upstream unreachable"))).toContain("ECONNREFUSED");
   });
 });

@@ -228,13 +228,13 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
 describe("describirEstadoDeHermano — la palanca dicha en voz alta al arrancar", () => {
   it("apagada sin bandera; avisa si hay bandera pero no clave o el canal está cerrado; armada con todo", () => {
     expect(describirEstadoDeHermano(undefined, true, true)).toMatchObject({ aviso: false });
-    expect(describirEstadoDeHermano(undefined, true, true).linea).toContain("APAGADO");
-    expect(describirEstadoDeHermano("0", true, true).linea).toContain("APAGADO");
+    expect(describirEstadoDeHermano(undefined, true, true).linea).toContain("OFF");
+    expect(describirEstadoDeHermano("0", true, true).linea).toContain("OFF");
     expect(describirEstadoDeHermano("1", false, true)).toMatchObject({ aviso: true });
     expect(describirEstadoDeHermano("1", true, false)).toMatchObject({ aviso: true });
     const armada = describirEstadoDeHermano("1", true, true);
     expect(armada.aviso).toBe(false);
-    expect(armada.linea).toContain("ARMADO");
+    expect(armada.linea).toContain("ARMED");
     expect(armada.linea).toContain(`${SOLICITADO}→${SERVIDO}`);
     expect(armada.linea).toContain("sibling_model_routing");
   });

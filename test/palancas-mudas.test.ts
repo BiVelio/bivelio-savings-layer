@@ -237,7 +237,7 @@ describe("`silenceWarnings` llega también al poller y al emisor", () => {
 
   it("el envío de uso habla por defecto y calla con el interruptor", async () => {
     await conElEnvioDeUsoRoto();
-    expect(avisos.filter((a) => a.includes("el envío de uso"))).toHaveLength(1);
+    expect(avisos.filter((a) => a.includes("usage reporting"))).toHaveLength(1);
 
     avisos = [];
     reiniciarAvisos();

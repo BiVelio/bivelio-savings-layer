@@ -71,7 +71,7 @@ describe("anillo 2 · plan de arranque", () => {
     // apagados, así que el brazo se queda en etiqueta informativa.
     expect(plan.elision).toBeUndefined();
     expect(plan.brazo).toBe("palanca");
-    expect(plan.linea).toContain("diales de elisión APAGADOS");
+    expect(plan.linea).toContain("context elision dials OFF");
   });
 
   it("día impar: encadena igual y TAMPOCO apaga el canal — apagarlo mataba la palanca A", () => {
@@ -87,7 +87,7 @@ describe("anillo 2 · plan de arranque", () => {
     expect(plan.elision).toBeUndefined();
     expect(plan.brazo).toBeUndefined();
     expect(plan.aviso).toBe(true);
-    expect(plan.linea).toContain("NO encadeno");
+    expect(plan.linea).toContain("NOT chaining");
   });
 
   it("en pausa: ni encadena ni arma", () => {
@@ -106,7 +106,7 @@ describe("anillo 2 · plan de arranque", () => {
     expect(plan.upstream).toBeUndefined();
     expect(plan.elision).toBeUndefined();
     expect(plan.brazo).toBe("palanca");
-    expect(plan.linea).toContain("respetado");
+    expect(plan.linea).toContain("kept from the environment");
   });
 });
 

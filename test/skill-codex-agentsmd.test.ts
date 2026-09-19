@@ -88,7 +88,7 @@ describe("instalarAgentsMd — el AGENTS.md del usuario es sagrado", () => {
     const tras1 = fs.disco[DESTINO];
     const r2 = instalarAgentsMd({ ...base, fs });
     expect(r2.ok).toBe(true);
-    expect(r2.mensaje).toContain("al día");
+    expect(r2.mensaje).toContain("up to date");
     expect(fs.disco[DESTINO]).toBe(tras1);
   });
 

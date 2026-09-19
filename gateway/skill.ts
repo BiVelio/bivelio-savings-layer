@@ -79,7 +79,7 @@ export function instalarAgentsMd(o: OpcionesInstalarSkill): ResultadoInstalarSki
     return {
       ok: false,
       destino: "",
-      mensaje: `[bvsala skill] no encuentro el SKILL.md empaquetado (raíces probadas: ${o.origenes.join(", ")})`,
+      mensaje: `[bvsala skill] cannot find the bundled SKILL.md (roots tried: ${o.origenes.join(", ")})`,
     };
   }
   const bloque = bloqueAgentsMd(o.fs.leer(origen));
@@ -89,7 +89,7 @@ export function instalarAgentsMd(o: OpcionesInstalarSkill): ResultadoInstalarSki
   if (!o.fs.existe(destino)) {
     o.fs.crearDir(dir);
     o.fs.escribir(destino, bloque + "\n");
-    return { ok: true, destino, mensaje: mensajeCodex(destino, "instalado") };
+    return { ok: true, destino, mensaje: mensajeCodex(destino, "installed") };
   }
 
   const actual = o.fs.leer(destino);
@@ -99,29 +99,29 @@ export function instalarAgentsMd(o: OpcionesInstalarSkill): ResultadoInstalarSki
   if (ini === -1 || fin === -1 || fin < ini) {
     // Sin bloque nuestro: se AÑADE al final; ni un byte ajeno se toca.
     o.fs.escribir(destino, actual.trimEnd() + "\n\n" + bloque + "\n");
-    return { ok: true, destino, mensaje: mensajeCodex(destino, "añadido al AGENTS.md existente") };
+    return { ok: true, destino, mensaje: mensajeCodex(destino, "appended to the existing AGENTS.md") };
   }
 
   const existente = actual.slice(ini, fin + MARCA_FIN.length);
   if (existente === bloque) {
-    return { ok: true, destino, mensaje: `[bvsala skill] ya instalado y al día: ${destino}` };
+    return { ok: true, destino, mensaje: `[bvsala skill] already installed and up to date: ${destino}` };
   }
   if (!o.forzar) {
     return {
       ok: false,
       destino,
-      mensaje: `[bvsala skill] el bloque savings-mode de ${destino} tiene contenido DISTINTO — no lo piso; usa --forzar para actualizarlo`,
+      mensaje: `[bvsala skill] the savings-mode block in ${destino} has DIFFERENT content — not overwriting it; use --forzar to update it`,
     };
   }
   o.fs.escribir(destino, actual.slice(0, ini) + bloque + actual.slice(fin + MARCA_FIN.length));
-  return { ok: true, destino, mensaje: mensajeCodex(destino, "bloque actualizado") };
+  return { ok: true, destino, mensaje: mensajeCodex(destino, "block updated") };
 }
 
 function mensajeCodex(destino: string, que: string): string {
   return (
     `[bvsala skill] ${que}: ${destino}\n` +
-    `[bvsala skill] AGENTS.md va SIEMPRE activo en Codex (no hay paso de activación); borra el bloque para apagarlo.\n` +
-    `[bvsala skill] para medir su efecto: trabaja unos días con él y otros sin él bajo \`bvsala codex\`, y compara en el panel.`
+    `[bvsala skill] AGENTS.md is ALWAYS active in Codex (there is no activation step); delete the block to turn it off.\n` +
+    `[bvsala skill] to measure its effect: work a few days with it and a few without, under \`bvsala codex\`, and compare in the dashboard.`
   );
 }
 
@@ -131,7 +131,7 @@ export function instalarSkill(o: OpcionesInstalarSkill): ResultadoInstalarSkill 
     return {
       ok: false,
       destino: "",
-      mensaje: `[bvsala skill] no encuentro el SKILL.md empaquetado (raíces probadas: ${o.origenes.join(", ")})`,
+      mensaje: `[bvsala skill] cannot find the bundled SKILL.md (roots tried: ${o.origenes.join(", ")})`,
     };
   }
   const base = o.proyecto ? join(o.cwd, ".claude", "skills") : join(o.home, ".claude", "skills");
@@ -145,8 +145,8 @@ export function instalarSkill(o: OpcionesInstalarSkill): ResultadoInstalarSkill 
       ok: igual,
       destino,
       mensaje: igual
-        ? `[bvsala skill] ya instalado y al día: ${destino}`
-        : `[bvsala skill] ya existe ${destino} con contenido DISTINTO — no lo piso; usa --forzar para sobrescribir`,
+        ? `[bvsala skill] already installed and up to date: ${destino}`
+        : `[bvsala skill] ${destino} already exists with DIFFERENT content — not overwriting it; use --forzar to overwrite`,
     };
   }
 
@@ -156,8 +156,8 @@ export function instalarSkill(o: OpcionesInstalarSkill): ResultadoInstalarSkill 
     ok: true,
     destino,
     mensaje:
-      `[bvsala skill] instalado: ${destino}\n` +
-      `[bvsala skill] arranca (o reinicia) Claude Code y pídele «savings mode» — o deja que se active solo al hablar de límites.\n` +
-      `[bvsala skill] para medir su efecto de verdad: trabaja unos días con él y otros sin él bajo \`bvsala claude\`, y compara en el panel.`,
+      `[bvsala skill] installed: ${destino}\n` +
+      `[bvsala skill] start (or restart) Claude Code and ask for "savings mode" — or let it activate on its own when you mention limits.\n` +
+      `[bvsala skill] to measure its real effect: work a few days with it and a few without, under \`bvsala claude\`, and compare in the dashboard.`,
   };
 }

@@ -49,7 +49,7 @@ function arrancarBinario(entorno) {
     const t = setTimeout(() => reject(new Error(`el gateway no arrancó:\n${salida}`)), 8000);
     hijo.stdout.on("data", (d) => {
       salida += String(d);
-      const m = /escuchando en http:\/\/127\.0\.0\.1:(\d+)/.exec(salida);
+      const m = /listening on http:\/\/127\.0\.0\.1:(\d+)/.exec(salida);
       if (m) {
         clearTimeout(t);
         resolve({ puerto: Number(m[1]), parar: () => new Promise((ok) => { hijo.on("exit", ok); hijo.kill("SIGTERM"); }) });

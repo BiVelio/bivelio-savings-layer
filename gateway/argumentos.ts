@@ -50,16 +50,16 @@ export function mensajeDeFalloDeArranque(err: unknown, comando: string, puertoPe
   const puerto = typeof e.puerto === "number" ? e.puerto : puertoPedido;
   if (e.code === "EADDRINUSE") {
     return (
-      `el puerto ${puerto} ya está en uso (¿otro gateway o un terminal lanzado antes?): ` +
-      `usa --puerto ${puerto + 1} o apaga el otro proceso`
+      `port ${puerto} is already in use (another gateway, or a terminal launched earlier?): ` +
+      `use --puerto ${puerto + 1} or stop the other process`
     );
   }
   if (e.code === "EACCES") {
     return (
-      `el puerto ${puerto} no se puede abrir: puerto sin permiso (EACCES; los puertos por debajo de 1024 ` +
-      `piden privilegios): usa --puerto ${Math.max(1024, puerto)} o superior`
+      `port ${puerto} cannot be opened: permission denied (EACCES; ports below 1024 ` +
+      `need privileges): use --puerto ${Math.max(1024, puerto)} or higher`
     );
   }
   const detalle = err instanceof Error ? err.message : String(err);
-  return `no se pudo arrancar el gateway de \`bvsala ${comando}\`: ${detalle}`;
+  return `could not start the gateway for \`bvsala ${comando}\`: ${detalle}`;
 }

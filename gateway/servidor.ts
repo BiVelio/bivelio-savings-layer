@@ -172,7 +172,7 @@ function describirFallo(err: unknown): string {
   if (causa === undefined || causa === null) return String(err);
   const detalle =
     causa instanceof AggregateError && causa.errors.length > 0 ? causa.errors.map((e) => String(e)).join("; ") : String(causa);
-  return `${String(err)} · causa: ${detalle}`;
+  return `${String(err)} · cause: ${detalle}`;
 }
 
 /**
@@ -188,10 +188,10 @@ export class ErrorDeEscucha extends Error {
   constructor(code: string, puerto: number, causa: unknown) {
     super(
       code === "EADDRINUSE"
-        ? `el puerto ${puerto} ya está en uso: no se pudo arrancar el gateway`
+        ? `port ${puerto} is already in use: the gateway could not start`
         : code === "EACCES"
-          ? `el puerto ${puerto} no se puede abrir: puerto sin permiso`
-          : `no se pudo escuchar en 127.0.0.1:${puerto} (${code})`,
+          ? `port ${puerto} cannot be opened: permission denied`
+          : `could not listen on 127.0.0.1:${puerto} (${code})`,
       { cause: causa },
     );
     this.name = "ErrorDeEscucha";
@@ -215,9 +215,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       onAuthError: (status) =>
         avisarUnaVez(
           "gateway-ingest-auth",
-          `[bvsala gateway] la ingesta de uso rechaza la credencial (${status}). ` +
-            "El tráfico sigue fluyendo (avisar, nunca romper), pero este uso no está llegando al panel. " +
-            "Revisa BIVELIO_SERVICE_KEY y el estado de la suscripción en savings.bivelio.com.",
+          `[bvsala gateway] the usage ingest is rejecting the credential (${status}). ` +
+            "Traffic keeps flowing (warn, never break), but this usage is not reaching your dashboard. " +
+            "Check BIVELIO_SERVICE_KEY and your subscription status at savings.bivelio.com.",
         ),
     });
     const ci = detectCi();
@@ -227,8 +227,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   } else {
     avisarUnaVez(
       "gateway-sin-clave",
-      "[bvsala gateway] sin BIVELIO_SERVICE_KEY: el gateway reenvía el tráfico pero NO mide. " +
-        "Consigue tu clave en savings.bivelio.com/dashboard/install para ver el gasto en tu panel.",
+      "[bvsala gateway] no BIVELIO_SERVICE_KEY: the gateway forwards traffic but does not meter it. " +
+        "Get your key at savings.bivelio.com/dashboard/install to see your spend in the dashboard.",
     );
   }
 
@@ -300,7 +300,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     if (!model) {
       avisarUnaVez(
         `gateway-sin-modelo:${path}`,
-        `[bvsala gateway] no se pudo leer el modelo del cuerpo de ${path} (content-encoding: ${codificacion ?? "ninguno"}); su uso se reenvía pero no se mide.`,
+        `[bvsala gateway] could not read the model from the ${path} request body (content-encoding: ${codificacion ?? "none"}); its usage is forwarded but not metered.`,
       );
       return;
     }
@@ -320,8 +320,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // es atribuible a nuestros diales y el modelo tiene precio de lectura.
       const suelo = informe.cost.eliminatedInputFloorCost;
       log(
-        `[gateway] POST ${path} ${coalescida ? "· COALESCIDA (llamada evitada)" : ""} · ` +
-          `${servido !== model ? `${model}→${servido} (modelo hermano)` : model} · ` +
+        `[gateway] POST ${path} ${coalescida ? "· COALESCED (call avoided)" : ""} · ` +
+          `${servido !== model ? `${model}→${servido} (sibling model)` : model} · ` +
           `$${medido.costeUsd.toFixed(6)} (in ${medido.tokens.entrada}, cache↑${medido.tokens.cacheEscrita}` +
           `${medido.tokens.cacheEscrita1h ? ` (1h ${medido.tokens.cacheEscrita1h})` : ""} ` +
           `cache↓${medido.tokens.cacheLeida}, out ${medido.tokens.salida})` +
@@ -330,15 +330,15 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           // eliminatedInputFloorCost, a precio de LECTURA de caché y solo cuando
           // el borrado es atribuible a nuestros diales (regla del delta).
           (elision
-            ? ` · elisión: ${elision.borrados} borrado(s), ${elision.tokensLimpiados} tok limpiados por el proveedor` +
+            ? ` · elision: ${elision.borrados} clear(s), ${elision.tokensLimpiados} tok cleared by the provider` +
               (suelo !== undefined
-                ? ` · suelo $${suelo.toFixed(6)} (lectura de caché)`
+                ? ` · floor $${suelo.toFixed(6)} (cache read price)`
                 : elision.tokensLimpiadosToolUses > 0
                   ? elision.atribuible
-                    ? " · sin precio de lectura en el catálogo: sin suelo"
-                    : " · diales del cliente: se cuenta, no se acredita"
+                    ? " · no cache read price in the catalog: no floor"
+                    : " · your own context_management settings: counted, not credited"
                   : elision.tokensLimpiados > 0
-                    ? " · solo thinking (config del cliente): se cuenta, no se acredita"
+                    ? " · thinking only (your config): counted, not credited"
                     : "")
             : ""),
       );
@@ -368,12 +368,12 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             });
             if (!paso) return;
             if (borradoNuestro) {
-              log(`[gateway] sombra · ${model} · el proveedor ya borró por nuestros diales: la cadena avanza, no se emite`);
+              log(`[gateway] shadow estimate · ${model} · the provider already cleared context via our settings: chain advances, nothing emitted`);
               return;
             }
             em.record(informeSombra(`${requestId}:shadow`, model, paso.baselineUsd, paso.politicaUsd, atribucion));
             log(
-              `[gateway] sombra · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → v0 $${paso.politicaUsd.toFixed(6)}`,
+              `[gateway] shadow estimate · ${model} · baseline $${paso.baselineUsd.toFixed(6)} → with elision $${paso.politicaUsd.toFixed(6)}`,
             );
           } catch {
             /* la sombra jamás rompe el gateway ni el metering */
@@ -383,7 +383,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     } else {
       avisarUnaVez(
         `gateway-sin-precio:${model}`,
-        `[bvsala gateway] el modelo "${model}" no está en el catálogo de precios; su uso se reenvía pero no se mide.`,
+        `[bvsala gateway] model "${model}" is not in the price catalog; its usage is forwarded but not metered.`,
       );
     }
   };
@@ -584,8 +584,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       if (quiereHermano && !canalElision!.tiene("sibling_model_routing")) {
         avisarUnaVez(
           "gateway-hermano-sin-feature",
-          "[bvsala gateway] modelo hermano (C): la bandera está puesta pero la licencia de la org NO trae " +
-            "sibling_model_routing; la petición se reenvía intacta (fail-closed).",
+          "[bvsala gateway] sibling model routing: the flag is set but your org's license does not include " +
+            "sibling_model_routing; the request is forwarded unchanged (fail-closed).",
         );
       }
       if (quiereHermano && canalElision!.tiene("sibling_model_routing")) {
@@ -698,7 +698,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           res.writeHead(502, { "content-type": "application/json" });
           res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: describirFallo(err) }));
         }
-        log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable: ${describirFallo(err)}`);
+        log(`[gateway] ${req.method} ${url.pathname} → upstream unreachable: ${describirFallo(err)}`);
         return;
       }
 
@@ -720,9 +720,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           /* el motivo es solo para el log */
         }
         log(
-          `[gateway] el upstream rechazó (400) la petición reescrita` +
-            `${hermano ? ` a ${hermano.servido}` : ""}${esfuerzoPuesto ? " (esfuerzo por turno)" : ""}` +
-            `; se reenvía intacta · ${motivo}`,
+          `[gateway] the upstream rejected (400) the rewritten request` +
+            `${hermano ? ` to ${hermano.servido}` : ""}${esfuerzoPuesto ? " (per-turn effort)" : ""}` +
+            `; forwarding it unchanged · ${motivo}`,
         );
         hermano = null;
         esfuerzoPuesto = false;
@@ -742,7 +742,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             res.writeHead(502, { "content-type": "application/json" });
             res.end(JSON.stringify({ error: "bvsala gateway: upstream unreachable", detail: describirFallo(err) }));
           }
-          log(`[gateway] ${req.method} ${url.pathname} → upstream inalcanzable en el reintento: ${describirFallo(err)}`);
+          log(`[gateway] ${req.method} ${url.pathname} → upstream unreachable on retry: ${describirFallo(err)}`);
           return;
         }
       }
@@ -803,7 +803,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         // exportó mal) no puede confirmar que su terminal pasa por el gateway.
         // Con clave, la línea la pone medir() y aquí no se toca nada.
         if (!emisor) {
-          log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status} (stream) · no medido: sin BIVELIO_SERVICE_KEY`);
+          log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status} (stream) · not metered: no BIVELIO_SERVICE_KEY`);
         }
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
@@ -828,17 +828,17 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         // de generación no puede convertirse en un registro «medido».
         const uso = !medida && observador ? observador.usageFinal() : null;
         if (uso) {
-          log(`[gateway] ${req.method} ${url.pathname} → el cliente cerró tras el usage final; se mide igual`);
+          log(`[gateway] ${req.method} ${url.pathname} → client closed after the final usage; metered anyway`);
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
           // Sin rebaja (la atribución de A exige el camino completo) pero CON el
           // hermano: el precio del modelo servido se pagó igual aunque el
           // cliente cerrara.
           medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano);
         } else {
-          log(`[gateway] ${req.method} ${url.pathname} → el cliente abortó; upstream cancelado`);
+          log(`[gateway] ${req.method} ${url.pathname} → client aborted; upstream cancelled`);
         }
       } else {
-        log(`[gateway] ${req.method} ${url.pathname} → error sirviendo: ${describirFallo(err)}`);
+        log(`[gateway] ${req.method} ${url.pathname} → error while serving: ${describirFallo(err)}`);
         if (!res.headersSent) {
           res.writeHead(502, { "content-type": "application/json" });
           res.end(JSON.stringify({ error: "bvsala gateway: stream interrupted", detail: describirFallo(err) }));
@@ -857,7 +857,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // fallback a HTTP+SSE inmediato, silencioso y pegajoso por sesión (test
   // websocket_fallback.rs de codex). El passthrough sirve el SSE como siempre.
   server.on("upgrade", (req, socket) => {
-    log(`[gateway] ${req.method} ${new URL(req.url ?? "/", "http://x").pathname} → 426 (WebSocket no soportado; el cliente cae a HTTP)`);
+    log(`[gateway] ${req.method} ${new URL(req.url ?? "/", "http://x").pathname} → 426 (WebSocket not supported; the client falls back to HTTP)`);
     // Node retira SUS manejadores del socket antes de emitir 'upgrade': un RST
     // del cliente (tokio suelta el TcpStream con bytes sin leer) llegaría como
     // 'error' sin oyente y tumbaría el proceso entero. Y el socket es

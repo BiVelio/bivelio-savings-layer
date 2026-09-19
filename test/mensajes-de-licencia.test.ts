@@ -222,7 +222,7 @@ describe("una clave de servicio rechazada deja de ser silenciosa", () => {
       const texto = String(warn.mock.calls[0]?.[0] ?? "");
       // Tiene que apuntar a la causa (la clave) y a lo que se pierde mientras.
       expect(texto).toMatch(/serviceAccountKey/);
-      expect(texto).toMatch(/asientos facturables/i);
+      expect(texto).toMatch(/billable seats/i);
       emitter.stop();
     });
   }

@@ -189,29 +189,29 @@ export function describirEstadoDeElision(
   // cuelgan la rebaja de TTL (A, la que gana) y los diales (B, la que pierde).
   // Los diales tienen bandera propia y nacen apagados: decir "ARMADA" por
   // tener el canal abierto era mentirle al dueño cada mañana.
-  const cola = " (rebaja de TTL activa si la licencia trae cache_ttl_tuning; fail-closed)";
+  const cola = " (TTL tuning ON if your licence includes cache_ttl_tuning; fail-closed)";
   const diales = dialesArmados
-    ? " · DIALES DE ELISIÓN ARMADOS A MANO (BVSALA_GATEWAY_DIALES_ELISION=1): miden pérdida, R=4,05 vs R*=0,0127"
-    : " · diales de elisión APAGADOS";
+    ? " · context elision dials FORCED ON BY HAND (BVSALA_GATEWAY_DIALES_ELISION=1): they measure as a net loss, R=4.05 vs R*=0.0127"
+    : " · context elision dials OFF";
   if (bandera === "0") {
     return {
-      linea: "canal S4a: CERRADO (BVSALA_GATEWAY_ELISION=0) — sin rebaja de TTL y sin diales",
+      linea: "licence channel: CLOSED (BVSALA_GATEWAY_ELISION=0) — no TTL tuning and no context elision dials",
       aviso: false,
     };
   }
   if (!hayClave) {
     return {
       linea:
-        "canal S4a: NO SE ABRE — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar); ni rebaja de TTL ni diales" +
-        (bandera === "1" ? ". Abre un terminal nuevo o exporta la clave y relanza" : ""),
+        "licence channel: NOT OPENED — BIVELIO_SERVICE_KEY is missing (without it there is no org whose licence to check); no TTL tuning and no context elision dials" +
+        (bandera === "1" ? ". Open a new terminal or export the key and relaunch" : ""),
       aviso: bandera === "1",
     };
   }
   return {
     linea:
       (bandera === "1"
-        ? "canal S4a: ABIERTO (BVSALA_GATEWAY_ELISION=1)"
-        : "canal S4a: ABIERTO por defecto (=0 lo cierra)") +
+        ? "licence channel: OPEN (BVSALA_GATEWAY_ELISION=1)"
+        : "licence channel: OPEN by default (=0 closes it)") +
       cola +
       diales,
     aviso: dialesArmados,

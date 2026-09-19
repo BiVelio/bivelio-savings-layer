@@ -55,8 +55,8 @@ interface Terminal {
 }
 
 const COMPROBAR =
-  "comprobar: en el log del gateway debe aparecer `[gateway] POST /v1/messages …`; " +
-  "si ves `/v1/v1/messages`, sobra un /v1; si ves `POST /messages` a secas, falta uno.";
+  "check: the gateway log must show `[gateway] POST /v1/messages …`; " +
+  "if you see `/v1/v1/messages`, there is one /v1 too many; if you see a bare `POST /messages`, one is missing.";
 
 const TERMINALES: readonly Terminal[] = [
   {
@@ -66,8 +66,8 @@ const TERMINALES: readonly Terminal[] = [
     configs: [],
     detectable: true,
     receta: ({ base }) => [
-      "usa `bvsala claude` — arranca el gateway en un puerto efímero, lanza `claude` apuntándole y lo apaga al salir.",
-      `a mano: ANTHROPIC_BASE_URL=${base} claude   (sin /v1: el cliente añade /v1/messages)`,
+      "use `bvsala claude` — starts the gateway on an ephemeral port, launches `claude` pointed at it and shuts it down on exit.",
+      `by hand: ANTHROPIC_BASE_URL=${base} claude   (no /v1: the client appends /v1/messages)`,
     ],
   },
   {
@@ -77,10 +77,10 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".codex", "config.toml"), join(".codex", "auth.json")],
     detectable: true,
     receta: ({ base, rutas }) => [
-      "usa `bvsala codex` — el prefijo del base URL depende del modo de auth y lo resuelve el envoltorio:",
-      `  API key           → openai_base_url=${base}/v1`,
-      `  suscripción ChatGPT → openai_base_url=${base}/backend-api/codex   (tiene que terminar exactamente ahí)`,
-      `${rutas[1]}: solo se comprueba que exista; nunca se lee.`,
+      "use `bvsala codex` — the base URL prefix depends on the auth mode and the wrapper resolves it:",
+      `  API key             → openai_base_url=${base}/v1`,
+      `  ChatGPT subscription → openai_base_url=${base}/backend-api/codex   (must end exactly there)`,
+      `${rutas[1]}: only checked for existence; never read.`,
     ],
   },
   {
@@ -90,7 +90,7 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".config", "opencode", "opencode.json")],
     detectable: true,
     receta: ({ baseV1, rutas }) => [
-      `mecanismo: ${rutas[0]} → provider.anthropic.options.baseURL (el opencode.json del proyecto pisa al global). CON /v1.`,
+      `mechanism: ${rutas[0]} → provider.anthropic.options.baseURL (the project's opencode.json overrides the global one). WITH /v1.`,
       "{",
       '  "provider": {',
       '    "anthropic": {',
@@ -98,7 +98,7 @@ const TERMINALES: readonly Terminal[] = [
       "    }",
       "  }",
       "}",
-      'alternativa: "baseURL": "{env:BVSALA_BASE_URL}" y exportar la variable; trampa: sin la variable, baseURL queda vacío.',
+      'alternative: "baseURL": "{env:BVSALA_BASE_URL}" and export the variable; pitfall: without the variable, baseURL is empty.',
     ],
   },
   {
@@ -108,7 +108,7 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".config", "goose", "config.yaml")],
     detectable: true,
     receta: ({ base, rutas }) => [
-      `mecanismo: variable de entorno ANTHROPIC_HOST (pisa ${rutas[0]}). SIN /v1.`,
+      `mechanism: ANTHROPIC_HOST environment variable (overrides ${rutas[0]}). NO /v1.`,
       `ANTHROPIC_HOST=${base} ANTHROPIC_API_KEY=… goose`,
     ],
   },
@@ -119,7 +119,7 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".config", "crush", "crushrc")],
     detectable: true,
     receta: ({ baseV1, rutas }) => [
-      `mecanismo: ${rutas[0]} (Bash); crush.json está deprecado. CON /v1 y SIN barra final (el SDK Go resuelve relativo: /v1/ → /v1/v1/messages).`,
+      `mechanism: ${rutas[0]} (Bash); crush.json is deprecated. WITH /v1 and NO trailing slash (the Go SDK resolves relative paths: /v1/ → /v1/v1/messages).`,
       `provider add bvsala --type anthropic --base-url ${baseV1} --api-key "$ANTHROPIC_API_KEY"`,
     ],
   },
@@ -130,9 +130,9 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".qwen", "settings.json")],
     detectable: true,
     receta: ({ base, rutas }) => [
-      `mecanismo: variable de entorno ANTHROPIC_BASE_URL + ${rutas[0]} con selectedType = anthropic. SIN /v1 (el SDK TS oficial añade /v1/messages).`,
+      `mechanism: ANTHROPIC_BASE_URL environment variable + ${rutas[0]} with selectedType = anthropic. NO /v1 (the official TS SDK appends /v1/messages).`,
       `ANTHROPIC_BASE_URL=${base} ANTHROPIC_API_KEY=… qwen`,
-      `comprueba a mano que ${rutas[0]} lleve selectedType: anthropic — el doctor no lee el archivo.`,
+      `check by hand that ${rutas[0]} has selectedType: anthropic — the doctor does not read the file.`,
     ],
   },
   {
@@ -142,15 +142,15 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".factory", "settings.json")],
     detectable: true,
     receta: ({ base, rutas }) => [
-      `mecanismo: ${rutas[0]} → customModels[] con provider "anthropic". SIN /v1 [inferido: validar en mano contra el log del gateway].`,
+      `mechanism: ${rutas[0]} → customModels[] with provider "anthropic". NO /v1 [inferred: validate by hand against the gateway log].`,
       "{",
       '  "customModels": [',
       "    {",
-      '      "model": "<id de modelo Anthropic>",',
-      '      "displayName": "<nombre visible>",',
+      '      "model": "<Anthropic model id>",',
+      '      "displayName": "<display name>",',
       '      "provider": "anthropic",',
       `      "baseUrl": "${base}",`,
-      '      "apiKey": "<tu API key de Anthropic>"',
+      '      "apiKey": "<your Anthropic API key>"',
       "    }",
       "  ]",
       "}",
@@ -162,7 +162,7 @@ const TERMINALES: readonly Terminal[] = [
     configs: [],
     detectable: false,
     receta: ({ baseV1 }) => [
-      "mecanismo: UI → proveedor Anthropic → marca «Use custom base URL». CON /v1 (Cline fija https://api.anthropic.com/v1 y solo normaliza la URL oficial exacta).",
+      "mechanism: UI → Anthropic provider → tick \"Use custom base URL\". WITH /v1 (Cline defaults to https://api.anthropic.com/v1 and only normalizes the exact official URL).",
       `Base URL: ${baseV1}`,
     ],
   },
@@ -172,7 +172,7 @@ const TERMINALES: readonly Terminal[] = [
     configs: [],
     detectable: false,
     receta: ({ baseV1 }) => [
-      "mecanismo: UI → proveedor custom, Provider API «Anthropic Messages». Probar CON /v1 primero (linaje Cline) [inferido: validar en mano].",
+      "mechanism: UI → custom provider, Provider API \"Anthropic Messages\". Try WITH /v1 first (Cline lineage) [inferred: validate by hand].",
       `Base URL: ${baseV1}`,
     ],
   },
@@ -187,7 +187,7 @@ function buscadorEnPath(path: string, existe: (ruta: string) => boolean): (bin: 
 
 export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise<InformeDoctor> {
   if (!Number.isInteger(puerto) || puerto < 1 || puerto > 65535) {
-    throw new RangeError(`[bvsala doctor] puerto inválido: ${String(puerto)}`);
+    throw new RangeError(`[bvsala doctor] invalid port: ${String(puerto)}`);
   }
   const home = opts.home ?? homedir();
   const existe = opts.existe ?? existsSync;
@@ -197,9 +197,9 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
   const baseV1 = `${base}/v1`;
   const detectados: string[] = [];
   const lineas: string[] = [
-    `bvsala doctor — gateway local en ${base}`,
-    "Solo imprime: no escribe ninguna configuración. Detección por existencia (binarios en PATH y",
-    "archivos de configuración de usuario); nunca se lee el contenido de ningún archivo.",
+    `bvsala doctor — local gateway at ${base}`,
+    "Print only: it writes no configuration. Detection by existence (binaries on the PATH and",
+    "user configuration files); the contents of a file are never read.",
     "",
   ];
 
@@ -212,15 +212,15 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
 
     let estado: string;
     if (!t.detectable) {
-      estado = "sin detección automática (extensión de editor)";
+      estado = "no automatic detection (editor extension)";
     } else if (detectado) {
       const pistas = [
-        ...(enElPath ? [`binario \`${t.binario}\` en PATH`] : []),
-        ...presentes.map((r) => `config presente: ${r}`),
+        ...(enElPath ? [`binary \`${t.binario}\` on PATH`] : []),
+        ...presentes.map((r) => `config present: ${r}`),
       ];
-      estado = `detectado — ${pistas.join("; ")}`;
+      estado = `detected — ${pistas.join("; ")}`;
     } else {
-      estado = "no detectado";
+      estado = "not detected";
     }
 
     lineas.push(`» ${t.id}: ${estado}`);
@@ -231,11 +231,11 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
   }
 
   lineas.push(
-    "Regla BYOK: las recetas del anillo Anthropic (Goose, Qwen Code, opencode, Crush, Droid, Cline, Kilo) son",
-    "para API key. Nunca enrutes por el gateway el OAuth de una suscripción Claude Pro/Max desde un harness",
-    "de terceros — Anthropic lo prohíbe. Claude Code y Codex con suscripción se enrutan y se miden, pero no",
-    "se monetizan: no hay factura por tokens.",
-    "Detalle por terminal: docs/terminales/<terminal>.md",
+    "BYOK rule: the recipes for the Anthropic-compatible terminals (Goose, Qwen Code, opencode, Crush, Droid, Cline,",
+    "Kilo) are for API keys. Never route the OAuth of a Claude Pro/Max subscription through the gateway from a",
+    "third-party harness — Anthropic forbids it. Claude Code and Codex on a subscription are routed and metered,",
+    "but not billed: there is no per-token invoice.",
+    "Per-terminal detail: docs/terminales/<terminal>.md",
   );
 
   return { texto: lineas.join("\n"), detectados };

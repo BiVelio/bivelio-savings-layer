@@ -53,7 +53,7 @@ describe("envoltorioDe — la forma exacta del base URL por terminal", () => {
     expect(e.args[1]).toMatch(/127\.0\.0\.1:8402\/backend-api\/codex"?$/);
     expect(e.args[1]).not.toMatch(/codex\/"?$/); // sin barra final
     expect(e.upstream).toBe("https://chatgpt.com");
-    expect(e.nota).toContain("no se monetiza");
+    expect(e.nota).toContain("not billed");
   });
 
   it("solo claude/codex/goose/qwen tienen envoltorio; el resto va por doctor", () => {

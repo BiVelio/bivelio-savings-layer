@@ -58,76 +58,75 @@ const decision = decidirArranque(process.argv.slice(2));
 function ayuda(): void {
   console.log(`bvsala ${BV_SALA_VERSION} — BiVelio Savings Layer
 
-Comandos:
-  gateway [--puerto N]   Proxy local medidor (por defecto 8402) para terminales que
-                         respetan un base URL: Claude Code, opencode, Goose, Crush…
-  claude [args…]         Lanza Claude Code a través del gateway, sin configurar nada.
-  codex [args…]          Lanza Codex CLI a través del gateway (API key: api.openai.com;
-                         auth ChatGPT: chatgpt.com/backend-api/codex — se mide, no se monetiza).
-  goose [args…]          Lanza Goose (ANTHROPIC_HOST) a través del gateway.
-  qwen [args…]           Lanza Qwen Code (ANTHROPIC_BASE_URL) a través del gateway.
-  doctor [--puerto N]    Detecta terminales instalados e imprime su configuración exacta.
+Commands:
+  gateway [--puerto N]   Local metering proxy (default port 8402) for terminals that
+                         honour a base URL: Claude Code, opencode, Goose, Crush…
+  claude [args…]         Run Claude Code through the gateway. No configuration needed.
+  codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
+                         ChatGPT auth: chatgpt.com/backend-api/codex — metered, not billed).
+  goose [args…]          Run Goose (ANTHROPIC_HOST) through the gateway.
+  qwen [args…]           Run Qwen Code (ANTHROPIC_BASE_URL) through the gateway.
+  doctor [--puerto N]    Detect installed terminals and print the exact configuration for each.
   skill [--codex] [--proyecto] [--forzar]
-                         Instala el skill «savings-mode» de Claude Code (~/.claude/skills;
-                         con --proyecto, en .claude/skills del directorio actual): salida
-                         tersa + herramientas quirúrgicas para estirar los topes de
-                         suscripción. Con --codex, la misma disciplina como bloque marcado
-                         de AGENTS.md (~/.codex; con --proyecto, ./AGENTS.md) — Codex no
-                         tiene skills y AGENTS.md va siempre activo. Su efecto se mide con
-                         el gateway, no se promete.
-  --version | -v         Imprime solo la versión.
-  --help | -h            Esta ayuda; también detrás de gateway, doctor o skill
-                         (\`bvsala gateway --help\` no arranca nada).
+                         Install the "savings-mode" skill for Claude Code (~/.claude/skills;
+                         with --proyecto, .claude/skills in the current directory): terse
+                         output plus surgical tool use to stretch subscription limits.
+                         With --codex, the same discipline as a marked block in AGENTS.md
+                         (~/.codex; with --proyecto, ./AGENTS.md) — Codex has no skills and
+                         AGENTS.md is always active. Its effect is measured by the gateway,
+                         not promised.
+  --version | -v         Print the version only.
+  --help | -h            This help; also accepted after gateway, doctor or skill
+                         (\`bvsala gateway --help\` starts nothing).
 
-Entorno:
-  BIVELIO_SERVICE_KEY    Clave de servicio (bvk_…): habilita metering + asiento.
-  BVSALA_SEAT_ID         Identidad de asiento estable por réplica (opcional).
-  BVSALA_GATEWAY_UPSTREAM  Upstream alternativo (por defecto el del terminal).
-  BVSALA_GATEWAY_COALESCE  =1 enciende la coalescencia de duplicados (F2, experimental).
-  BVSALA_GATEWAY_SHADOW  =1 enciende el carril sombra de la elisión (S2): calcula qué
-                         habría ahorrado la política v0 SIN tocar el tráfico y lo
-                         reporta aparte (jamás entra en la comisión).
-  BVSALA_GATEWAY_ELISION =0 APAGA las palancas del proveedor (S4a), armadas por
-                         defecto. Cada una se enciende de verdad solo si la licencia de
-                         tu organización trae su feature (consulta fail-closed):
-                           · context_elision  — ajusta SOLO el bloque context_management
-                             de cada /v1/messages; el borrado lo hace el proveedor.
-                           · cache_ttl_tuning — rebaja el TTL de escritura de caché de
-                             1h (2x el precio de entrada) a 5m (1,25x) mientras la sesión
-                             siga caliente. NO toca un solo token que el modelo lea:
-                             cambia la tarifa, no el contenido. En el corpus del espía
-                             el 99,1 % de los turnos encadena en menos de 5 minutos, y
-                             ese sobreprecio era el 8,0 % de la factura.
-                         Ante cualquier duda, la petición viaja intacta. (Hasta 0.4.13
-                         la bandera era al revés: «=1 arma»; en un A/B pásala SIEMPRE
-                         explícita, =1 o =0, y no dependerás de la versión instalada.)
+Environment:
+  BIVELIO_SERVICE_KEY    Service key (bvk_…): enables metering and seat identity.
+  BVSALA_SEAT_ID         Stable seat identity per replica (optional).
+  BVSALA_GATEWAY_UPSTREAM  Alternative upstream (default: the terminal's own).
+  BVSALA_GATEWAY_COALESCE  =1 enables duplicate-request coalescing (experimental).
+  BVSALA_GATEWAY_SHADOW  =1 enables the shadow lane for context elision (experimental):
+                         computes what the elision policy would have saved WITHOUT touching
+                         traffic and reports it separately (never counts toward the fee).
+  BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are armed by default.
+                         Each one only takes effect if your organization's license carries
+                         its feature (checked fail-closed):
+                           · context_elision  — adjusts ONLY the context_management block
+                             of each /v1/messages; the provider does the trimming.
+                           · cache_ttl_tuning — lowers the cache-write TTL from 1h (2x the
+                             input price) to 5m (1.25x) while the session stays warm. It does
+                             NOT touch a single token the model reads: it changes the rate,
+                             not the content. In measured traffic, 99.1% of turns chain within
+                             5 minutes, and that surcharge was 8.0% of the bill.
+                         When in doubt, the request travels untouched. (Up to 0.4.13 the flag
+                         was inverted: "=1 arms". In an A/B always pass it explicitly, =1 or
+                         =0, so you do not depend on the installed version.)
   BVSALA_GATEWAY_MODELO_HERMANO
-                         =1 sirve claude-fable-5 con claude-fable-5-1 (palanca C): misma
-                         tarifa de entrada, salida y escritura de caché; la LECTURA de
-                         caché baja de 0,001 a 0,00025 por 1K tokens (catálogo). El
-                         ahorro es una resta de dos precios sobre el mismo usage:
-                         se mide sin A/B y entra en el titular medido del panel.
-                         Solo si la licencia trae sibling_model_routing (fail-closed).
-                         CAMBIA el model que ves en la respuesta (/cost, /status), y
-                         encenderlo a mitad de un hilo paga UNA escritura fría del
-                         prefijo (cada modelo tiene su caché): arráncalo con el terminal.
-                         Apagar = quitar la variable o =0.
+                         =1 serves claude-fable-5 with claude-fable-5-1 (sibling model routing):
+                         same input, output and cache-write rates; cache READS drop from
+                         0.001 to 0.00025 per 1K tokens (catalog). The saving is the difference
+                         of two prices over the same usage: measured without an A/B, and it
+                         counts toward the measured headline in the dashboard.
+                         Only if the license carries sibling_model_routing (fail-closed).
+                         It CHANGES the model you see in the response (/cost, /status), and
+                         turning it on mid-thread pays ONE cold write of the prefix (each
+                         model has its own cache): start it together with the terminal.
+                         Off = unset the variable or =0.
   BVSALA_GATEWAY_ESFUERZO
-                         =low|medium|high|xhigh|max arma el esfuerzo por turno (palanca D):
-                         añade al final de cada /v1/messages un mensaje con
-                         output_config.effort, sin tocar la raíz (no reinicia la caché de
-                         prefijo). Solo si la licencia trae per_turn_effort (fail-closed)
-                         y solo con claude-fable-5-1, claude-mythos-5-1 y claude-opus-5;
-                         con otro modelo la petición viaja intacta. Es la única palanca
-                         que puede tocar la calidad de la respuesta: va APAGADA por
-                         defecto y aún no está medida contra la verja de calidad.
-  BVSALA_CODEX_AUTH      api-key | chatgpt — fuerza el modo de auth de Codex.
-  BVSALA_GATEWAY_LOG     =1 enseña el log por petición también dentro de los envoltorios
-                         (por defecto va silenciado para no pisar el TUI; mira el panel).
-  CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, solo API key) tus modelos en /model.
+                         =low|medium|high|xhigh|max sets per-turn effort (experimental):
+                         appends a message with output_config.effort to each /v1/messages
+                         without touching the root (does not reset the prefix cache). Only if
+                         the license carries per_turn_effort (fail-closed) and only with
+                         claude-fable-5-1, claude-mythos-5-1 and claude-opus-5; with any other
+                         model the request travels untouched. It is the only lever that can
+                         affect response quality: OFF by default and not yet measured against
+                         the quality gate.
+  BVSALA_CODEX_AUTH      api-key | chatgpt — forces the Codex auth mode.
+  BVSALA_GATEWAY_LOG     =1 shows the per-request log inside the wrappers too (silenced by
+                         default so it does not overwrite the TUI; use the dashboard instead).
+  CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, API key only) your models in /model.
 
-El gateway nunca corta el tráfico: sin clave o con la ingesta caída, reenvía y avisa.
-Tus prompts jamás salen de tu máquina — solo cuentas y coste. Más: savings.bivelio.com`);
+The gateway never blocks traffic: without a key, or with ingestion down, it forwards and warns.
+Your prompts never leave your machine — only counts and cost. More: savings.bivelio.com`);
 }
 
 if (decision.tipo === "ayuda") {
@@ -173,13 +172,13 @@ if (comando === "skill") {
 const idx = resto.indexOf("--puerto");
 const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
 if (!Number.isInteger(puerto) || (comando === "doctor" ? puerto < 1 : puerto < 0) || puerto > 65535) {
-  console.error(`[bvsala ${comando}] puerto inválido: ${resto[idx + 1]}`);
+  console.error(`[bvsala ${comando}] invalid port: ${resto[idx + 1]}`);
   process.exit(1);
 }
 
 if (comando === "doctor") {
   if (resto.includes("--write")) {
-    console.error("[bvsala doctor] --write todavía no existe: el doctor solo imprime; copia el bloque a mano.");
+    console.error("[bvsala doctor] --write does not exist yet: the doctor only prints; copy the block by hand.");
     process.exit(1);
   }
   const informe = await doctor(puerto);
@@ -283,8 +282,8 @@ try {
 }
 
 const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
-console.log(`[bvsala gateway] v${BV_SALA_VERSION} escuchando en http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
-console.log(`[bvsala gateway] medición: ${serviceAccountKey ? "ACTIVA (clave de servicio presente)" : "APAGADA (falta BIVELIO_SERVICE_KEY)"}`);
+console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
+console.log(`[bvsala gateway] metering: ${serviceAccountKey ? "ON (service key present)" : "OFF (BIVELIO_SERVICE_KEY not set)"}`);
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
@@ -318,14 +317,14 @@ if (process.env.BVSALA_GATEWAY_UPSTREAM && envoltorio?.upstream && process.env.B
   // Un BVSALA_GATEWAY_UPSTREAM heredado del .zshrc (p.ej. el de Claude Code)
   // mandaría el tráfico de Codex a un host que no habla su protocolo.
   console.error(
-    `[bvsala ${comando}] AVISO: BVSALA_GATEWAY_UPSTREAM=${process.env.BVSALA_GATEWAY_UPSTREAM} pisa el upstream de este terminal ` +
-      `(${envoltorio.upstream}). Si no es lo que quieres, quita la variable.`,
+    `[bvsala ${comando}] WARNING: BVSALA_GATEWAY_UPSTREAM=${process.env.BVSALA_GATEWAY_UPSTREAM} overrides this terminal's upstream ` +
+      `(${envoltorio.upstream}). If that is not what you want, unset the variable.`,
   );
 }
 if (comando === "codex" && !soportaZstd()) {
   console.error(
-    `[bvsala codex] AVISO: este Node (${process.version}) no descomprime zstd y Codex manda el cuerpo en zstd: ` +
-      "el tráfico pasa pero NO se mide. Usa Node ≥ 22.15.",
+    `[bvsala codex] WARNING: this Node (${process.version}) cannot decompress zstd and Codex sends its body in zstd: ` +
+      "traffic passes through but is NOT metered. Use Node >= 22.15.",
   );
 }
 
@@ -347,9 +346,9 @@ if (envoltorio && esEnvoltorio) {
       binAEjecutar = resuelto.ruta;
     } else if (resuelto.tipo === "solo-shim") {
       console.error(
-        `[bvsala ${comando}] \`${final.bin}\` está instalado como shim de npm (${resuelto.ruta}) y Windows no puede ` +
-          "lanzarlo de forma segura con argumentos (CVE-2024-27980). Instálalo con su instalador nativo " +
-          `(deja un ${final.bin}.exe en el PATH) o usa la receta manual de docs/terminales/.`,
+        `[bvsala ${comando}] \`${final.bin}\` is installed as an npm shim (${resuelto.ruta}) and Windows cannot ` +
+          "launch it safely with arguments (CVE-2024-27980). Install it with its native installer " +
+          `(which leaves a ${final.bin}.exe on the PATH) or use the manual recipe in docs/terminales/.`,
       );
       await arranque.cerrar();
       process.exit(127);
@@ -357,7 +356,7 @@ if (envoltorio && esEnvoltorio) {
   }
   const hijo = spawn(binAEjecutar, final.args, { stdio: "inherit", env: { ...process.env, ...final.env } });
   hijo.on("error", (err) => {
-    console.error(`[bvsala ${comando}] no se pudo lanzar \`${final.bin}\`: ${String(err)}. ¿Está instalado y en el PATH?`);
+    console.error(`[bvsala ${comando}] could not launch \`${final.bin}\`: ${String(err)}. Is it installed and on the PATH?`);
     void arranque.cerrar().then(() => process.exit(127));
   });
   hijo.on("exit", (code, signal) => {
@@ -365,8 +364,8 @@ if (envoltorio && esEnvoltorio) {
   });
 } else {
   console.log(
-    `[bvsala gateway] apunta tu terminal (o usa \`bvsala ${TERMINALES_CON_ENVOLTORIO.join("|")}\`):  ` +
-      `ANTHROPIC_BASE_URL=http://127.0.0.1:${arranque.puerto} claude   ·   bvsala doctor para el resto`,
+    `[bvsala gateway] point your terminal at it (or use \`bvsala ${TERMINALES_CON_ENVOLTORIO.join("|")}\`):  ` +
+      `ANTHROPIC_BASE_URL=http://127.0.0.1:${arranque.puerto} claude   ·   bvsala doctor for the others`,
   );
 }
 

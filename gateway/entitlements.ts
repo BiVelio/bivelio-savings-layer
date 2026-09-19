@@ -79,7 +79,7 @@ export class CanalDeEntitlements {
       }
       const json = (await res.json()) as { features?: unknown; refreshAfterSeconds?: unknown };
       if (!Array.isArray(json.features) || !json.features.every((f) => typeof f === "string")) {
-        this.cerrar("entitlements con forma inesperada");
+        this.cerrar("entitlements response has an unexpected shape");
         return;
       }
       this.features = new Set(json.features);
@@ -100,7 +100,7 @@ export class CanalDeEntitlements {
     this.validoHasta = Date.now() + Math.min(60_000, this.ttlMs);
     if (!this.avisado) {
       this.avisado = true;
-      this.log(`[gateway] entitlements no disponibles (${motivo}) — palanca apagada (fail-closed)`);
+      this.log(`[gateway] entitlements unavailable (${motivo}) — savings features disabled (fail-closed); traffic keeps flowing`);
     }
   }
 }

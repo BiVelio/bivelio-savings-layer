@@ -29,23 +29,23 @@ describe("bvsala doctor — detección por existencia", () => {
     expect(detectados).toEqual([]);
     for (const id of IDS) {
       const s = seccion(texto, id);
-      expect(s).toMatch(/^(claude|codex|opencode|goose|crush|qwen|droid): no detectado|^(cline|kilo): sin detección automática/);
+      expect(s).toMatch(/^(claude|codex|opencode|goose|crush|qwen|droid): not detected|^(cline|kilo): no automatic detection/);
     }
   });
 
   it("detecta por binario en PATH", async () => {
     const { texto, detectados } = await vacio({ enPath: (bin) => bin === "opencode" || bin === "goose" });
     expect(detectados).toEqual(["opencode", "goose"]);
-    expect(seccion(texto, "opencode")).toContain("detectado — binario `opencode` en PATH");
-    expect(seccion(texto, "goose")).toContain("detectado — binario `goose` en PATH");
-    expect(seccion(texto, "crush")).toContain("no detectado");
+    expect(seccion(texto, "opencode")).toContain("detected — binary `opencode` on PATH");
+    expect(seccion(texto, "goose")).toContain("detected — binary `goose` on PATH");
+    expect(seccion(texto, "crush")).toContain("not detected");
   });
 
   it("detecta por config de usuario, y solo imprime la ruta", async () => {
     const rutaQwen = join(HOME, ".qwen", "settings.json");
     const { texto, detectados } = await vacio({ existe: (r) => r === rutaQwen });
     expect(detectados).toEqual(["qwen"]);
-    expect(seccion(texto, "qwen")).toContain(`config presente: ${rutaQwen}`);
+    expect(seccion(texto, "qwen")).toContain(`config present: ${rutaQwen}`);
   });
 
   it("~/.codex/auth.json cuenta como detección de Codex y se declara como «solo existencia»", async () => {
@@ -53,8 +53,8 @@ describe("bvsala doctor — detección por existencia", () => {
     const { texto, detectados } = await vacio({ existe: (r) => r === rutaAuth });
     expect(detectados).toEqual(["codex"]);
     const s = seccion(texto, "codex");
-    expect(s).toContain(`config presente: ${rutaAuth}`);
-    expect(s).toContain(`${rutaAuth}: solo se comprueba que exista; nunca se lee.`);
+    expect(s).toContain(`config present: ${rutaAuth}`);
+    expect(s).toContain(`${rutaAuth}: only checked for existence; never read.`);
   });
 
   it("el buscador por defecto recorre el PATH con `existe`, directorio a directorio, sin spawn", async () => {
@@ -126,24 +126,24 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
 
   it("Claude Code y Codex remiten a sus envoltorios", async () => {
     const { texto } = await vacio();
-    expect(seccion(texto, "claude")).toContain("usa `bvsala claude`");
-    expect(seccion(texto, "codex")).toContain("usa `bvsala codex`");
+    expect(seccion(texto, "claude")).toContain("use `bvsala claude`");
+    expect(seccion(texto, "codex")).toContain("use `bvsala codex`");
   });
 
   it("todas las secciones llevan la línea de comprobación contra el log del gateway", async () => {
     const { texto } = await vacio();
     for (const id of IDS) {
       const s = seccion(texto, id);
-      expect(s, id).toContain("comprobar: en el log del gateway debe aparecer `[gateway] POST /v1/messages …`");
-      expect(s, id).toContain("si ves `/v1/v1/messages`, sobra un /v1");
+      expect(s, id).toContain("check: the gateway log must show `[gateway] POST /v1/messages …`");
+      expect(s, id).toContain("if you see `/v1/v1/messages`, there is one /v1 too many");
     }
   });
 
   it("cierra con la regla BYOK y el puntero a docs/terminales/", async () => {
     const { texto } = await vacio();
-    expect(texto).toContain("Regla BYOK");
+    expect(texto).toContain("BYOK rule");
     expect(texto).toContain("API key");
-    expect(texto).toMatch(/OAuth de una suscripción/);
+    expect(texto).toMatch(/OAuth of a Claude Pro\/Max subscription/);
     expect(texto).toContain("docs/terminales/");
   });
 });

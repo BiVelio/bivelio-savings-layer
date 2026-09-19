@@ -132,15 +132,15 @@ describe("la beta", () => {
 describe("dicha en voz alta al arrancar", () => {
   it("apagada sin nivel; avisa con nivel inválido, sin clave o con el canal cerrado; armada con todo", () => {
     expect(describirEstadoDeEsfuerzo(undefined, true, true)).toMatchObject({ aviso: false });
-    expect(describirEstadoDeEsfuerzo(undefined, true, true).linea).toContain("APAGADO");
+    expect(describirEstadoDeEsfuerzo(undefined, true, true).linea).toContain("OFF");
     expect(describirEstadoDeEsfuerzo("bajito", true, true)).toMatchObject({ aviso: true });
     expect(describirEstadoDeEsfuerzo("low", false, true)).toMatchObject({ aviso: true });
     expect(describirEstadoDeEsfuerzo("low", true, false)).toMatchObject({ aviso: true });
     const armada = describirEstadoDeEsfuerzo("low", true, true);
     expect(armada.aviso).toBe(false);
-    expect(armada.linea).toContain("ARMADO");
+    expect(armada.linea).toContain("ARMED");
     expect(armada.linea).toContain("per_turn_effort");
     // Tiene que decir la propiedad que justifica la palanca.
-    expect(armada.linea).toContain("caché de prefijo");
+    expect(armada.linea).toContain("prefix cache");
   });
 });
