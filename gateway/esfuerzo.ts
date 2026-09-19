@@ -141,35 +141,35 @@ export function describirEstadoDeEsfuerzo(
 ): { linea: string; aviso: boolean } {
   if (nivel === undefined || nivel === "") {
     return {
-      linea: `esfuerzo por turno (D): APAGADO (BVSALA_GATEWAY_ESFUERZO=${NIVELES.join("|")} lo arma)`,
+      linea: `per-turn effort: OFF (BVSALA_GATEWAY_ESFUERZO=${NIVELES.join("|")} turns it on)`,
       aviso: false,
     };
   }
   if (!esNivel(nivel)) {
     return {
-      linea: `esfuerzo por turno (D): NO SE ARMA — "${nivel}" no es un nivel. Usa uno de: ${NIVELES.join(", ")}`,
+      linea: `per-turn effort: NOT ARMED — "${nivel}" is not a level. Use one of: ${NIVELES.join(", ")}`,
       aviso: true,
     };
   }
   if (!hayClave) {
     return {
       linea:
-        "esfuerzo por turno (D): NO SE ARMA — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar). " +
-        "Abre un terminal nuevo o exporta la clave y relanza",
+        "per-turn effort: NOT ARMED — BIVELIO_SERVICE_KEY is missing (without it there is no org whose licence to check). " +
+        "Open a new terminal or export the key and relaunch",
       aviso: true,
     };
   }
   if (!canalAbierto) {
     return {
-      linea: "esfuerzo por turno (D): NO SE ARMA — el canal S4a está CERRADO (BVSALA_GATEWAY_ELISION=0 apaga las palancas)",
+      linea: "per-turn effort: NOT ARMED — the licence channel is CLOSED (BVSALA_GATEWAY_ELISION=0 turns off the levers)",
       aviso: true,
     };
   }
   return {
     linea:
-      `esfuerzo por turno (D): ARMADO a "${nivel}" (activo si la licencia trae per_turn_effort; fail-closed). ` +
-      "Solo fable-5-1, mythos-5-1 y opus-5; el resto pasa intacto. " +
-      "NO reinicia la caché de prefijo: el dial se añade al final, no reescribe nada anterior",
+      `per-turn effort: ARMED at "${nivel}" (ON if your licence includes per_turn_effort; fail-closed). ` +
+      "Only fable-5-1, mythos-5-1 and opus-5; every other model passes through unchanged. " +
+      "Does NOT reset the prefix cache: the dial is appended at the end and nothing earlier is rewritten",
     aviso: false,
   };
 }

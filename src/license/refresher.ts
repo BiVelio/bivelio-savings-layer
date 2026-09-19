@@ -143,10 +143,10 @@ export class LicenseRefresher {
         if ((res.status === 401 || res.status === 403 || res.status === 404) && !this.avisadoDeCredencial) {
           this.avisadoDeCredencial = true;
           console.warn(
-            `[bv-sala] la recogida automática de la licencia renovada falla con HTTP ${res.status} ` +
-              `en ${this.opts.url}. Revisa 'serviceAccountKey' (¿rotada? ¿de otra organización?) y ` +
-              `'licenseServerUrl': mientras no funcione, el token NO se renovará solo y el SDK dejará ` +
-              `de operar al terminar el periodo de gracia.`,
+            `[bv-sala] automatic pickup of the renewed license is failing with HTTP ${res.status} ` +
+              `at ${this.opts.url}. Check 'serviceAccountKey' (rotated? from another organization?) and ` +
+              `'licenseServerUrl': until this works, the token will NOT renew itself and the SDK will ` +
+              `stop operating when the grace period ends.`,
           );
         }
         return false;

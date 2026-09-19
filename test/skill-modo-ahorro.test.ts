@@ -112,7 +112,7 @@ describe("instalarSkill — pura sobre un FS inyectado", () => {
     const fs = fsFalso({ [ORIGEN]: "igual", [destino]: "igual" });
     const r = instalarSkill({ origenes: ["/paquete"], home: "/home/u", cwd: "/repo", proyecto: false, forzar: false, fs });
     expect(r.ok).toBe(true);
-    expect(r.mensaje).toContain("al día");
+    expect(r.mensaje).toContain("up to date");
   });
 
   it("sin SKILL.md empaquetado: error claro, nunca un skill vacío", () => {

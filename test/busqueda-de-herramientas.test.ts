@@ -51,7 +51,7 @@ describe("cuándo hay algo que decir", () => {
     expect(aviso).not.toBeNull();
     expect(aviso).toContain("142");
     // Tiene que decir QUÉ hacer, no solo que algo va mal.
-    expect(aviso).toContain("VENTANA NUEVA");
+    expect(aviso).toContain("NEW WINDOW");
     expect(aviso).toContain("ENABLE_TOOL_SEARCH");
   });
 

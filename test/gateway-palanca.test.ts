@@ -490,27 +490,27 @@ describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
     // único abierto era el canal de entitlements. Ahora nombra las dos cosas
     // por separado, porque de ese canal cuelga la rebaja de TTL (la que gana)
     // y los diales (la que pierde) tienen bandera propia.
-    expect(describirEstadoDeElision("1", true).linea).toMatch(/canal S4a: ABIERTO \(BVSALA_GATEWAY_ELISION=1\)/);
-    expect(describirEstadoDeElision(undefined, true).linea).toMatch(/canal S4a: ABIERTO por defecto/);
-    expect(describirEstadoDeElision("0", true).linea).toMatch(/canal S4a: CERRADO.*sin rebaja de TTL y sin diales/);
+    expect(describirEstadoDeElision("1", true).linea).toMatch(/licence channel: OPEN \(BVSALA_GATEWAY_ELISION=1\)/);
+    expect(describirEstadoDeElision(undefined, true).linea).toMatch(/licence channel: OPEN by default/);
+    expect(describirEstadoDeElision("0", true).linea).toMatch(/licence channel: CLOSED.*no TTL tuning and no context elision dials/);
     // Y jamás vuelve a anunciar la elisión como armada solo por tener canal.
-    expect(describirEstadoDeElision("1", true).linea).toContain("diales de elisión APAGADOS");
+    expect(describirEstadoDeElision("1", true).linea).toContain("context elision dials OFF");
     expect(describirEstadoDeElision("1", true).aviso).toBe(false);
   });
 
   it("los diales armados a mano SE ANUNCIAN y levantan aviso", () => {
     const armados = describirEstadoDeElision("1", true, true);
-    expect(armados.linea).toMatch(/DIALES DE ELISIÓN ARMADOS A MANO/);
-    expect(armados.linea).toContain("R=4,05");
+    expect(armados.linea).toMatch(/context elision dials FORCED ON BY HAND/);
+    expect(armados.linea).toContain("R=4.05");
     expect(armados.aviso).toBe(true);
   });
 
   it("⛔ sin clave el canal NO se abre y, si la bandera decía =1, es un AVISO (la intención no se cumple)", () => {
     const conBandera = describirEstadoDeElision("1", false);
-    expect(conBandera.linea).toMatch(/canal S4a: NO SE ABRE.*falta BIVELIO_SERVICE_KEY.*ni rebaja de TTL ni diales/);
+    expect(conBandera.linea).toMatch(/licence channel: NOT OPENED.*BIVELIO_SERVICE_KEY is missing.*no TTL tuning and no context elision dials/);
     expect(conBandera.aviso).toBe(true);
     const sinBandera = describirEstadoDeElision(undefined, false);
-    expect(sinBandera.linea).toMatch(/canal S4a: NO SE ABRE.*ni rebaja de TTL ni diales$/);
+    expect(sinBandera.linea).toMatch(/licence channel: NOT OPENED.*no TTL tuning and no context elision dials$/);
     expect(sinBandera.aviso).toBe(false);
   });
 });

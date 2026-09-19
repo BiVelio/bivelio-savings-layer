@@ -141,13 +141,13 @@ export function planDeAnillo2(args: {
 }): PlanAnillo2 {
   const { enrolamiento, espiaVivo, upstreamEnv, elisionEnv, hoyUtcIso } = args;
   if (!enrolamiento) return { linea: "", aviso: false };
-  if (!enrolamiento.activo) return { linea: "anillo 2: enrolamiento en pausa (activo:false)", aviso: false };
+  if (!enrolamiento.activo) return { linea: "A/B plan: enrolment paused (activo:false)", aviso: false };
 
   if (!espiaVivo) {
     return {
       linea:
-        `anillo 2: enrolado pero el espía NO escucha en :${enrolamiento.espia} — NO encadeno ` +
-        "(el tráfico de hoy no entra en el corpus). Arráncalo con `pnpm anillo2:espia`.",
+        `A/B plan: enrolled but the capture proxy is NOT listening on :${enrolamiento.espia} — NOT chaining ` +
+        "(today's traffic will not enter the corpus). Start it with `pnpm anillo2:espia`.",
       aviso: true,
     };
   }
@@ -160,11 +160,11 @@ export function planDeAnillo2(args: {
   const elisionYaPuesta = elisionEnv !== undefined && elisionEnv !== "";
 
   const partes: string[] = [];
-  partes.push(`anillo 2: ${hoyUtcIso} UTC → brazo ${brazo.toUpperCase()}`);
-  partes.push(upstreamYaPuesto ? `upstream respetado del entorno (${upstreamEnv})` : `encadenado a :${enrolamiento.espia}`);
-  if (elisionYaPuesta) partes.push(`elisión respetada del entorno (=${elisionEnv})`);
-  partes.push("diales de elisión APAGADOS (2026-09-09): el brazo ya no los arma");
-  partes.push("asignación POR SESIÓN desde el 2026-09-10 (brazoDeSesion), no por paridad del día");
+  partes.push(`A/B plan: ${hoyUtcIso} UTC → arm ${brazo.toUpperCase()}`);
+  partes.push(upstreamYaPuesto ? `upstream kept from the environment (${upstreamEnv})` : `chained to :${enrolamiento.espia}`);
+  if (elisionYaPuesta) partes.push(`elision flag kept from the environment (=${elisionEnv})`);
+  partes.push("context elision dials OFF (2026-09-09): the arm no longer turns them on");
+  partes.push("assignment PER SESSION since 2026-09-10 (brazoDeSesion), not by day parity");
 
   return {
     ...(upstreamYaPuesto ? {} : { upstream: upstreamEspia }),

@@ -181,28 +181,28 @@ export function describirEstadoDeHermano(
     .map(([a, b]) => `${a}→${b}`)
     .join(", ");
   if (bandera !== "1") {
-    return { linea: "modelo hermano (C): APAGADO (BVSALA_GATEWAY_MODELO_HERMANO=1 lo arma)", aviso: false };
+    return { linea: "sibling model routing: OFF (BVSALA_GATEWAY_MODELO_HERMANO=1 turns it on)", aviso: false };
   }
   if (!hayClave) {
     return {
       linea:
-        "modelo hermano (C): NO SE ARMA — falta BIVELIO_SERVICE_KEY (sin clave no hay org que consultar). " +
-        "Abre un terminal nuevo o exporta la clave y relanza",
+        "sibling model routing: NOT ARMED — BIVELIO_SERVICE_KEY is missing (without it there is no org whose licence to check). " +
+        "Open a new terminal or export the key and relaunch",
       aviso: true,
     };
   }
   if (!canalAbierto) {
     return {
-      linea: "modelo hermano (C): NO SE ARMA — el canal S4a está CERRADO (BVSALA_GATEWAY_ELISION=0 apaga las tres palancas)",
+      linea: "sibling model routing: NOT ARMED — the licence channel is CLOSED (BVSALA_GATEWAY_ELISION=0 turns off all three levers)",
       aviso: true,
     };
   }
   return {
     linea:
-      `modelo hermano (C): ARMADO (${par}; activo si la licencia trae sibling_model_routing; fail-closed). ` +
-      "Cambia el model que ves en la respuesta; lectura de caché a 0,025× en vez de 0,1× (catálogo). " +
-      "Encendido a mitad de un hilo paga una escritura fría del prefijo una vez. " +
-      "Si el proveedor rechaza (400) la petición reescrita, se reenvía intacta una vez",
+      `sibling model routing: ARMED (${par}; ON if your licence includes sibling_model_routing; fail-closed). ` +
+      "Changes the model you see in the response; cache reads cost 0.025× instead of 0.1× (list price). " +
+      "Turning it on mid-conversation pays one cold prefix write, once. " +
+      "If the provider rejects the rewritten request (400), it is re-sent unchanged once",
     aviso: false,
   };
 }

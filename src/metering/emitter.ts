@@ -241,7 +241,7 @@ export class UsageEmitter {
       } else if (res.status >= 500) {
         this.fallosSeguidos++;
         this.requeue(batch);
-        this.avisarDeFallo(`el servidor respondió ${res.status}`);
+        this.avisarDeFallo(`the server responded ${res.status}`);
       } else if (res.status === 401 || res.status === 403) {
         // UNA CREDENCIAL MALA NO SE CURA SOLA, a diferencia de un 5xx, y hasta
         // ahora este lote se descartaba SIN log, sin excepción y sin callback.
@@ -252,10 +252,10 @@ export class UsageEmitter {
         // sitio opuesto de la causa.
         avisarUnaVez(
           `metering-auth-${res.status}`,
-          `[bv-sala] el envío de uso está siendo rechazado con HTTP ${res.status} en ${this.options.url}. ` +
-            `Revisa 'serviceAccountKey' (¿rotada? ¿revocada? ¿de otra organización?). Mientras no ` +
-            `funcione NO se reporta uso: el panel dirá que no ve tráfico y los asientos facturables ` +
-            `saldrán a cero.`,
+          `[bv-sala] usage reporting is being rejected with HTTP ${res.status} at ${this.options.url}. ` +
+            `Check 'serviceAccountKey' (rotated? revoked? from another organization?). Until it ` +
+            `works, no usage is reported: the dashboard will say it sees no traffic and billable seats ` +
+            `will show zero.`,
         );
         this.options.onAuthError?.(res.status);
       } else {
@@ -270,14 +270,14 @@ export class UsageEmitter {
         this.fallosSeguidos++;
         this.avisarDeFallo(
           res.status === 404 || res.status === 405
-            ? `HTTP ${res.status}: la URL de envío parece equivocada`
-            : `el servidor rechazó el lote con HTTP ${res.status}`,
+            ? `HTTP ${res.status}: the reporting URL looks wrong`
+            : `the server rejected the batch with HTTP ${res.status}`,
         );
       }
     } catch (err) {
       this.fallosSeguidos++;
       this.requeue(batch);
-      this.avisarDeFallo(err instanceof Error ? err.message : "error de red");
+      this.avisarDeFallo(err instanceof Error ? err.message : "network error");
     }
   }
 
@@ -298,10 +298,10 @@ export class UsageEmitter {
     const n = this.fallosSeguidos;
     if (n < 3 || (n - 3) % 12 !== 0) return;
     console.warn(
-      `[bv-sala] el envío de uso lleva ${n} intentos seguidos fallando contra ${this.options.url} ` +
-        `(${motivo}). Las peticiones SIGUEN funcionando, pero el uso no está llegando: el panel dirá ` +
-        `que no ve tráfico y los asientos facturables saldrán a cero. Comprueba 'meteringUrl' — por ` +
-        `defecto es \`\${licenseServerUrl}/api/metering/usage\`.`,
+      `[bv-sala] usage reporting has failed ${n} times in a row against ${this.options.url} ` +
+        `(${motivo}). Requests keep working, but usage is not arriving: the dashboard will say ` +
+        `it sees no traffic and billable seats will show zero. Check 'meteringUrl' — by default ` +
+        `it is \`\${licenseServerUrl}/api/metering/usage\`.`,
     );
   }
 

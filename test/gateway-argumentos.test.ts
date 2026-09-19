@@ -63,7 +63,7 @@ describe("bvsala · el fallo de arranque traducido al probador", () => {
   it("EADDRINUSE → una sola línea con el puerto, la causa probable y la salida (--puerto M o apagar el otro)", () => {
     const linea = mensajeDeFalloDeArranque(conCodigo("EADDRINUSE", 8402), "gateway", 8402);
     expect(linea).toBe(
-      "el puerto 8402 ya está en uso (¿otro gateway o un terminal lanzado antes?): usa --puerto 8403 o apaga el otro proceso",
+      "port 8402 is already in use (another gateway, or a terminal launched earlier?): use --puerto 8403 or stop the other process",
     );
     expect(linea).not.toContain("\n"); // sin traza
     expect(linea).not.toContain("node:net");
@@ -71,19 +71,19 @@ describe("bvsala · el fallo de arranque traducido al probador", () => {
 
   it("EACCES → «puerto sin permiso» con la salida (un puerto ≥ 1024)", () => {
     const linea = mensajeDeFalloDeArranque(conCodigo("EACCES", 80), "gateway", 80);
-    expect(linea).toContain("puerto sin permiso");
+    expect(linea).toContain("permission denied");
     expect(linea).toContain("80");
     expect(linea).toContain("--puerto");
     expect(linea).not.toContain("\n");
   });
 
   it("el puerto se lee del error (el REAL que falló), no del pedido", () => {
-    expect(mensajeDeFalloDeArranque(conCodigo("EADDRINUSE", 9000), "gateway", 8402)).toContain("el puerto 9000 ya está en uso");
+    expect(mensajeDeFalloDeArranque(conCodigo("EADDRINUSE", 9000), "gateway", 8402)).toContain("port 9000 is already in use");
   });
 
   it("cualquier otro fallo → se dice tal cual, con el comando, sin inventar diagnóstico", () => {
     const linea = mensajeDeFalloDeArranque(new Error("algo raro"), "claude", 0);
-    expect(linea).toContain("no se pudo arrancar el gateway");
+    expect(linea).toContain("could not start the gateway");
     expect(linea).toContain("algo raro");
   });
 });

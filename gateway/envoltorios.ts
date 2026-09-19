@@ -152,7 +152,7 @@ export function envoltorioDe(
         bin: "qwen",
         args: resto,
         env: { ANTHROPIC_BASE_URL: base },
-        nota: "Qwen Code solo enruta por aquí con `security.auth.selectedType: \"anthropic\"` en ~/.qwen/settings.json (ver `bvsala doctor`).",
+        nota: "Qwen Code only routes through here with `security.auth.selectedType: \"anthropic\"` in ~/.qwen/settings.json (see `bvsala doctor`).",
       };
     case "codex": {
       const modo = opts.modoCodex ?? "api-key";
@@ -166,8 +166,8 @@ export function envoltorioDe(
         upstream: destino.upstream,
         nota:
           modo === "chatgpt"
-            ? "Auth ChatGPT detectada: el gateway enruta a chatgpt.com/backend-api/codex. El tráfico de suscripción se mide (equivalente a precio de lista) pero no se monetiza: no hay factura por tokens."
-            : "Auth por API key: el gateway enruta a api.openai.com/v1.",
+            ? "ChatGPT auth detected: the gateway routes to chatgpt.com/backend-api/codex. Subscription traffic is metered (list-price equivalent) but not billed: there is no per-token invoice."
+            : "API key auth: the gateway routes to api.openai.com/v1.",
       };
     }
   }

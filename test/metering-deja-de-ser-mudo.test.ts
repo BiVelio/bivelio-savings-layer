@@ -74,7 +74,7 @@ describe("una URL de envío equivocada deja de ser muda", () => {
     await enviar(e, 3);
     expect(avisos).toHaveLength(1);
     expect(avisos[0]).toContain("404");
-    expect(avisos[0]).toContain("la URL de envío parece equivocada");
+    expect(avisos[0]).toContain("the reporting URL looks wrong");
     // El mensaje dice DÓNDE mirar, no solo que algo falló.
     expect(avisos[0]).toContain("meteringUrl");
   });
@@ -90,8 +90,8 @@ describe("una URL de envío equivocada deja de ser muda", () => {
     // accionable: sin eso, quien lo lea no relaciona la causa con el síntoma.
     const e = emisor(() => resp(404));
     await enviar(e, 3);
-    expect(avisos[0]).toContain("SIGUEN funcionando");
-    expect(avisos[0]).toMatch(/no está llegando|asientos facturables/);
+    expect(avisos[0]).toContain("keep working");
+    expect(avisos[0]).toMatch(/not arriving|billable seats/);
   });
 
   it("no avisa a la primera: un envío perdido es normal", async () => {
