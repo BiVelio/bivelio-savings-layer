@@ -26,6 +26,14 @@ export interface AnthropicOptions {
   apiKey?: string;
   /** Defaults to the public API. Override for a gateway or a proxy. */
   baseUrl?: string;
+  /**
+   * Strip the `provider/` prefix from model ids before sending
+   * (`anthropic/claude-sonnet-4-5` → `claude-sonnet-4-5`). Default (undefined):
+   * strip when talking to `api.anthropic.com`, which rejects a prefixed id;
+   * keep for a gateway or proxy, which usually routes on it. An explicit value
+   * always wins.
+   */
+  stripProviderPrefix?: boolean;
   /** Wire version pinned in the `anthropic-version` header. */
   apiVersion?: string;
   /** Extra headers (e.g. for a gateway). */
@@ -111,6 +119,19 @@ export class AnthropicProvider implements Provider {
     this.opts = opts;
     this.id = `anthropic:${opts.baseUrl ?? "https://api.anthropic.com/v1"}`;
     this.fetchImpl = opts.fetchImpl ?? fetch;
+  }
+
+  /** The id Anthropic's API sees: bare at `api.anthropic.com`, as written elsewhere. */
+  private modeloEnElCable(model: string): string {
+    const base = this.opts.baseUrl ?? "https://api.anthropic.com/v1";
+    let esLaApiPublica = false;
+    try {
+      esLaApiPublica = /(^|\.)api\.anthropic\.com$/i.test(new URL(base).hostname);
+    } catch {
+      esLaApiPublica = false;
+    }
+    const quitar = this.opts.stripProviderPrefix ?? esLaApiPublica;
+    return quitar ? model.replace(/^[^/]+\//, "") : model;
   }
 
   async generate(req: ProviderRequest): Promise<ProviderResponse> {
@@ -360,7 +381,7 @@ export class AnthropicProvider implements Provider {
     }
 
     const body: Record<string, unknown> = {
-      model: req.model,
+      model: this.modeloEnElCable(req.model),
       max_tokens: req.maxOutputTokens ?? this.opts.defaultMaxOutputTokens ?? 4096,
       messages,
     };

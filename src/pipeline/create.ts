@@ -202,6 +202,19 @@ export function createSavingsLayer(
       (config.licenseServerUrl
         ? `${config.licenseServerUrl.replace(/\/+$/, "")}/api/metering/usage`
         : undefined);
+    if (!meteringUrl && config.silenceWarnings !== true) {
+      // Silently doing nothing was the failure mode: the customer pasted the
+      // snippet, dropped `licenseServerUrl`, and got a layer that neither metered
+      // nor picked up the renewed token — so the dashboard stayed empty and the
+      // license died fail-closed at the end of the cycle, paid up. Say it once.
+      console.warn(
+        "[bvsala] `serviceAccountKey` is set but there is no `licenseServerUrl` (or `meteringUrl`): " +
+          "seat metering and automatic license renewal are OFF, so nothing will reach your " +
+          "dashboard and a renewed license will not be picked up. Add " +
+          '`licenseServerUrl: "https://savings.bivelio.com"` — or drop `serviceAccountKey` for a ' +
+          "zero-network deployment.",
+      );
+    }
     if (meteringUrl) {
       emitter = new UsageEmitter({
         url: meteringUrl,
