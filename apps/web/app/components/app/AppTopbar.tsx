@@ -34,8 +34,8 @@ export async function AppTopbar({
   return (
     <header className="app-topbar">
       <Link href="/dashboard" className="brand app-brand" aria-label="Savings by BiVelio — dashboard">
-        <SavingsLogo variant="full" height={36} className="app-logo-full" />
-        <SavingsLogo variant="mark" height={32} className="app-logo-mark" />
+        <SavingsLogo variant="full" height={40} className="app-logo-full" />
+        <SavingsLogo variant="mark" height={36} className="app-logo-mark" />
       </Link>
       <div className="app-spacer" />
       <div className="app-account">
