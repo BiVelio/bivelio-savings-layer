@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
 import { BivelioWordmark } from "./BivelioWordmark";
+import { useHaySesion } from "./useHaySesion";
 
 import { ArrowRightIcon, CloseIcon, GlobeIcon, HowIcon, MenuIcon, ReceiptIcon, VerifyIcon } from "./icons";
 
@@ -43,11 +44,14 @@ export function NavSections() {
 /**
  * El CTA persistente: un solo botón tinta, como el del nav corporativo.
  * "Dashboard" si ya hay sesión, "Sign in" si no. Oculto en las propias
- * pantallas de login / signup, que ya son ese destino.
+ * pantallas de login / signup, que ya son ese destino. La sesión la mira el
+ * NAVEGADOR (`useHaySesion`), no el servidor: es lo que deja la portada
+ * estática.
  */
-export function NavCta({ authed }: { authed: boolean }) {
+export function NavCta() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const authed = useHaySesion();
   if (pathname === "/login" || pathname === "/signup") return null;
 
   return (
@@ -64,9 +68,10 @@ export function NavCta({ authed }: { authed: boolean }) {
  * (icono en caja de 32px con hairline) y el CTA tinta al pie. Mismas rutas que
  * las secciones de escritorio, así que también solo en landing / how-it-works.
  */
-export function MobileMenu({ authed }: { authed: boolean }) {
+export function MobileMenu() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const authed = useHaySesion();
   const [open, setOpen] = useState(false);
   if (pathname !== "/" && pathname !== "/how-it-works") return null;
 

@@ -1,8 +1,5 @@
 import { Link } from "@/i18n/navigation";
 
-// Server Component: cliente de SOLO LECTURA. No puede persistir un token
-// rotado, asi que tampoco debe provocar la rotacion — ver server.ts.
-import { createReadOnlyClient } from "@/lib/supabase/server";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { BivelioWordmark } from "./BivelioWordmark";
@@ -16,19 +13,14 @@ import { SavingsLogo } from "./SavingsLogo";
  * la izquierda con sus secciones (el logotipo completo en escritorio, solo el
  * isotipo «S» en móvil), y a la derecha el idioma y un único CTA tinta.
  * El dashboard tiene su propio shell (topbar + sidebar).
+ *
+ * SIN LEER COOKIES, A PROPÓSITO (22-09-2026). Esta barra preguntaba a Supabase
+ * por el usuario en cada petición, y `cookies()` hace dinámica la ruta entera:
+ * la portada y las demás páginas públicas se renderizaban en una función en
+ * cada visita en vez de servirse estáticas desde el borde. Quién está dentro lo
+ * decide ahora el navegador (`useHaySesion`, dentro de NavCta y MobileMenu).
  */
-export async function NavBar() {
-  let authed = false;
-  try {
-    const supabase = await createReadOnlyClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    authed = !!user;
-  } catch {
-    // Auth no resoluble (p. ej. faltan variables) — se pinta el nav de invitado.
-  }
-
+export function NavBar() {
   return (
     <>
       <AnnouncementBar />
@@ -49,8 +41,8 @@ export async function NavBar() {
             <a className="btn btn-ghost nav-corp" href="https://bivelio.com">
               <BivelioWordmark className="nav-corp-logo" />
             </a>
-            <NavCta authed={authed} />
-            <MobileMenu authed={authed} />
+            <NavCta />
+            <MobileMenu />
           </div>
         </div>
       </header>
