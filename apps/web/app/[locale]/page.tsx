@@ -79,6 +79,16 @@ function lineasDelSnippet(th: (k: string) => string): { cls?: TokenCls; v: strin
   ];
 }
 
+/**
+ * ESTÁTICA, Y REGENERADA CADA HORA (ISR). Desde el 22-09-2026 la portada se
+ * prerenderiza y se sirve desde la caché del borde (antes la hacía dinámica
+ * un `headers()` en not-found.tsx). El precio del plan lo lee Stripe con una
+ * caché de una hora (`lib/stripe/pricing.ts`), y «estática» a secas lo
+ * dejaría clavado hasta el siguiente despliegue: con la misma hora aquí, la
+ * página se regenera en segundo plano y nadie espera a la regeneración.
+ */
+export const revalidate = 3600;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "landing" });

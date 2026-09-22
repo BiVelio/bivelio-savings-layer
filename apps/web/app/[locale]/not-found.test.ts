@@ -51,11 +51,16 @@ describe("la 404 de la web es propia y traducida", () => {
 
   it("una URL del panel que no existe ofrece la vuelta al resumen (la NavBar pública no se ve bajo /dashboard)", () => {
     const src = readFileSync(AQUI + "not-found.tsx", "utf8");
-    // Se decide por la cabecera con la URL pedida que ya pone el middleware,
-    // no por una segunda fuente de verdad.
-    expect(src).toMatch(/CABECERA_DESTINO/);
+    // La distinción por ruta la hace el NAVEGADOR (SegunRuta → usePathname), no
+    // `headers()`: leer cabeceras en el límite de «no encontrado» hacía dinámico
+    // el segmento entero y la portada perdía el prerender (22-09-2026).
+    expect(src).toMatch(/SegunRuta/);
+    expect(src).not.toMatch(/from "next\/headers"/);
     expect(src).toMatch(/<Link href="\/dashboard"/);
     expect(src).toMatch(/estado\.volverAlResumen/);
+    const cliente = readFileSync(APP + "components/SegunRuta.tsx", "utf8");
+    expect(cliente).toMatch(/^"use client";/);
+    expect(cliente).toMatch(/usePathname\(\)/);
   });
 
   it("no hay una 404 dentro de /dashboard: con loading.tsx delante nunca podría dar 404", () => {

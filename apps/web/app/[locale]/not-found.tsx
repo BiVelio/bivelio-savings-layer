@@ -1,9 +1,8 @@
-import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import Footer from "@/app/components/Footer";
+import { SegunRuta } from "@/app/components/SegunRuta";
 import { Link } from "@/i18n/navigation";
-import { CABECERA_DESTINO } from "@/lib/auth/destino";
 
 /**
  * LA 404 PROPIA DE LA WEB, en los 12 idiomas y dentro del layout del idioma
@@ -24,51 +23,56 @@ import { CABECERA_DESTINO } from "@/lib/auth/destino";
  * propia; esta distingue el caso por la ruta pedida y ofrece la vuelta al
  * resumen. La NavBar pública no se ve bajo /dashboard (SiteNavGate la oculta),
  * de ahí que el botón al panel vaya aquí y no se confíe a la cabecera.
+ *
+ * SIN `headers()`, DESDE EL 22-09-2026. La distinción por ruta se hacía
+ * leyendo la cabecera del middleware, y leer cabeceras en el límite de «no
+ * encontrado» hacía DINÁMICO el segmento entero: la portada y las demás
+ * páginas públicas perdían el prerender por esta sola llamada (medido con
+ * `dynamic = "error"`). Ahora los dos bloques —el del panel y el público— se
+ * renderizan aquí con sus textos y `SegunRuta` elige en el navegador cuál se
+ * ve, con `usePathname`.
  */
 export async function generateMetadata() {
   const t = await getTranslations("notFound");
   return { title: t("metaTitle") };
 }
 
-/**
- * ¿Se pidió una ruta del panel? Se lee la cabecera con la URL pedida que pone
- * el middleware (lib/auth/destino.ts), no `safeNextPath`: aquí no se redirige
- * a ella, solo se decide un texto. Sin cabecera (rutas con extensión, que el
- * middleware no toca) se asume que no.
- */
-async function bajoElPanel(): Promise<boolean> {
-  const destino = (await headers()).get(CABECERA_DESTINO) ?? "";
-  return /^\/[a-z]{2}\/dashboard(?:\/|$)/.test(destino);
-}
-
 export default async function NotFound() {
   const t = await getTranslations("notFound");
   const tp = await getTranslations("dashboard");
-  const panel = await bajoElPanel();
 
   return (
     <div className="lp hiw-page">
       <main className="wrap">
         <section className="hiw-hero">
           <span className="eyebrow">{t("eyebrow")}</span>
-          <h1>{panel ? tp("estado.noExisteTitulo") : t("title")}</h1>
-          <p className="lede">{panel ? tp("estado.noExisteCuerpo") : t("body")}</p>
-          {panel ? (
-            <div className="hero-cta">
-              <Link href="/dashboard" className="btn">
-                {tp("estado.volverAlResumen")}
-              </Link>
-              <Link href="/" className="btn ghost">
-                {t("home")}
-              </Link>
-            </div>
-          ) : (
-            <div className="hero-cta">
-              <Link href="/" className="btn">
-                {t("home")}
-              </Link>
-            </div>
-          )}
+          <SegunRuta
+            panel={
+              <>
+                <h1>{tp("estado.noExisteTitulo")}</h1>
+                <p className="lede">{tp("estado.noExisteCuerpo")}</p>
+                <div className="hero-cta">
+                  <Link href="/dashboard" className="btn">
+                    {tp("estado.volverAlResumen")}
+                  </Link>
+                  <Link href="/" className="btn ghost">
+                    {t("home")}
+                  </Link>
+                </div>
+              </>
+            }
+            publico={
+              <>
+                <h1>{t("title")}</h1>
+                <p className="lede">{t("body")}</p>
+                <div className="hero-cta">
+                  <Link href="/" className="btn">
+                    {t("home")}
+                  </Link>
+                </div>
+              </>
+            }
+          />
         </section>
       </main>
       <Footer />
