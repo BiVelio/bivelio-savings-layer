@@ -40,6 +40,12 @@ export interface DashboardData {
    * mezcladas las filas de todas sin este filtro explícito.
    */
   orgId: string | null;
+  /**
+   * La resolución de la organización FALLÓ (no es «no estás en ninguna»). El
+   * raíl lo dice: el menú que se ve entonces es el de ningún rol, y sin esta
+   * distinción se encogía en silencio.
+   */
+  orgFallo: boolean;
 }
 
 const EMPTY_CTX: OrgContext = {
@@ -59,7 +65,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Without Supabase env (e.g. local without .env), createClient() would throw —
   // degrade to a signed-out shell instead of a 500.
   const SIN_MEDIDA = { usados: null, rotacionEsteMes: false };
-  const VACIO = { usage: [], usageFailed: false, porModelo: [], visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA, orgId: null };
+  const VACIO = { usage: [], usageFailed: false, porModelo: [], visibilidad: "desconocido" as Visibilidad, asientos: SIN_MEDIDA, orgId: null, orgFallo: false };
   if (!authConfigured) return { user: null, ctx: EMPTY_CTX, ...VACIO };
   const supabase = await createReadOnlyClient();
   const {
@@ -76,13 +82,15 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
   // Si no se puede resolver NO se cae a `user.id`: se devuelve el contexto vacío.
   // Un respaldo silencioso ahí es lo que reabre el defecto por la puerta de atrás.
   let orgId: string | null = null;
+  let orgFallo = false;
   try {
     orgId = orgParaElPanel(await resolverOrgSiExiste(createAdminClient(), user.id));
   } catch (err) {
     console.error("[dashboard] no se pudo resolver la organización:", err);
+    orgFallo = true;
   }
   if (!orgId) {
-    return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, ...VACIO };
+    return { user: { id: user.id, email: user.email ?? null }, ctx: EMPTY_CTX, ...VACIO, orgFallo };
   }
   const [ctx, usage, porModelo, asientos] = await Promise.all([
     getOrgContext(supabase, orgId, user.id),
@@ -120,6 +128,7 @@ export const loadDashboard = cache(async (): Promise<DashboardData> => {
     visibilidad,
     asientos,
     orgId,
+    orgFallo: false,
   };
 });
 

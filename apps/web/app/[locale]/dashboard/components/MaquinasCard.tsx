@@ -58,7 +58,7 @@ export async function MaquinasCard({ asientos }: { asientos: AsientoVisto[] }) {
   const mono = { fontFamily: "var(--mono)", fontSize: 12 } as const;
 
   return (
-    <div className="card" style={{ padding: "16px" }}>
+    <div className="card card-pad" id="maquinas">
       <div className="n" style={{ marginBottom: "10px" }}>{t("title")}</div>
       <div className="tbl-scroll">
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>

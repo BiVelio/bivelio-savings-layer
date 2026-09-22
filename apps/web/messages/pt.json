@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Secções do painel",
+      "incomplete": "Faltam secções: agora mesmo não foi possível ler a tua organização nem o teu papel.",
+      "groupStart": "Começar",
       "overview": "Visão geral",
-      "savings": "Poupança",
+      "install": "Instalar",
+      "howItWorks": "Como funciona",
+      "groupSave": "Poupar",
       "proof": "Prova",
       "verify": "Verificar",
-      "integrate": "Integrar",
-      "install": "Instalar",
-      "account": "Conta",
-      "howItWorks": "Como funciona",
-      "extracto": "Extrato"
+      "extracto": "Extrato",
+      "groupOrg": "A tua organização",
+      "team": "Equipa",
+      "maquinas": "Máquinas",
+      "account": "Conta"
+    },
+    "setup": {
+      "title": "Arranque",
+      "count": "{done} de {total}",
+      "missing": "Falta: {step}",
+      "unreadable": "Agora mesmo não foi possível ler o teu arranque.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 membro} other {# membros}}",
+        "seats": "{used} de {seats}",
+        "seatsTitle": "{used} lugares em uso de {seats} pagos este mês"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organização: {org}",
+      "accountLink": "Definições da conta de {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Tentar outra vez",
       "noExisteTitulo": "Esta página do painel não existe",
       "noExisteCuerpo": "O endereço não corresponde a nenhuma secção do painel. Verifica o URL ou volta à visão geral.",
-      "volverAlResumen": "Voltar à visão geral"
+      "volverAlResumen": "Voltar à visão geral",
+      "referencia": "Referência: {ref}"
     },
     "panel": {
       "customize": "Personalizar",
@@ -606,6 +633,9 @@
         "sesiones": "Sessões",
         "maquinas": "Máquinas"
       }
+    },
+    "team": {
+      "metaTitle": "Equipa · BiVelio Savings Layer"
     }
   },
   "landing": {

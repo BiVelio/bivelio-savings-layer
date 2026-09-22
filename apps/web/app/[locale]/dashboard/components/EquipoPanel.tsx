@@ -150,8 +150,6 @@ export function EquipoPanel() {
 
   return (
     <section className="card equipo">
-      <h2>{t("title")}</h2>
-      <p className="sub">{t("intro")}</p>
 
       {/* ------------------------------------------------ nombre de la org */}
       {/* Nace con el CORREO de quien pagó, y ese nombre acaba dentro del correo

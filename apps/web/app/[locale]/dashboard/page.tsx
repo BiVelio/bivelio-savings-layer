@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+
+import { PageHead } from "@/app/components/app/PageHead";
 import { authConfigured } from "@/lib/supabase/env";
 import abData from "@/public/data/ab-live.json";
 import { activationSteps, getAsientos, getSesiones, type AbArtifact } from "./data";
@@ -36,7 +38,7 @@ export default async function OverviewPage({
 }) {
   const t = await getTranslations("dashboard");
   if (!authConfigured) {
-    return <p className="ck-note">{t("overview.authNotWired")}</p>;
+    return <p className="note">{t("overview.authNotWired")}</p>;
   }
   const { ctx, usage: usageCompleto, usageFailed, porModelo: porModeloCompleto, visibilidad, orgId } = await loadDashboard();
   // EL RANGO SE APLICA AQUÍ, una vez, antes de derivar nada: el titular, los
@@ -57,11 +59,7 @@ export default async function OverviewPage({
 
   return (
     <>
-      <div className="app-head">
-        <p className="ck-eyebrow">{t("overview.eyebrow")}</p>
-        <h1>{t("overview.title")}</h1>
-        <p>{t("overview.intro")}</p>
-      </div>
+      <PageHead eyebrow={t("overview.eyebrow")} title={t("overview.title")} sub={t("overview.intro")} />
 
       {/* Lo primero de la primera pantalla: si el cobro va mal, se entera aquí
           y no cuando el SDK se le pare. */}
@@ -72,11 +70,11 @@ export default async function OverviewPage({
 
       <InstrumentationSpine steps={steps} />
 
-      <section className="ck-sec">
-        <div className="ck-head">
+      <section className="app-section">
+        <div className="app-sec-head">
           <div>
-            <p className="ck-eyebrow">{t("overview.savingsEyebrow")}</p>
-            <h2>{t("overview.savingsTitle")}</h2>
+            <p className="eyebrow">{t("overview.savingsEyebrow")}</p>
+            <h2 className="t-section">{t("overview.savingsTitle")}</h2>
           </div>
         </div>
         <div className="panel-stack">

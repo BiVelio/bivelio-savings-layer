@@ -1,9 +1,11 @@
 import { getTranslations } from "next-intl/server";
+
+import { AccountTabs } from "@/app/components/app/AccountTabs";
+import { PageHead } from "@/app/components/app/PageHead";
 import { loadDashboard } from "../load";
 import { AccountPlanStrip } from "../components/AccountPlanStrip";
 import { BillingStateBanner } from "../components/BillingStateBanner";
 import { CheckoutBanner } from "../components/CheckoutBanner";
-import { EquipoPanel } from "../components/EquipoPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -16,17 +18,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string; codigo?: string }>;
+  searchParams: Promise<{ checkout?: string }>;
 }) {
   const t = await getTranslations("dashboard");
   const { user, ctx, asientos } = await loadDashboard();
   // `checkout.session.create` manda a esta página con `?checkout=success` o
   // `?checkout=cancelled` desde el principio, y hasta ahora no lo leía nadie.
-  const { checkout, codigo: codigoPedido } = await searchParams;
+  const { checkout } = await searchParams;
   const resultado = checkout === "success" || checkout === "cancelled" ? checkout : null;
-  // El enlace de los probadores: `?codigo=PROBADORES-SEPT`. Se valida aquí solo
-  // por forma; el servidor del checkout lo resuelve contra Stripe.
-  const codigo = typeof codigoPedido === "string" && /^[A-Za-z0-9_-]{2,40}$/.test(codigoPedido) ? codigoPedido.toUpperCase() : null;
   const plan = ctx.org?.plan;
   const activo = plan === "pro" || plan === "enterprise";
   // Ha pagado y el webhook aún no ha aterrizado: NO se le vuelven a ofrecer los
@@ -34,11 +33,8 @@ export default async function AccountPage({
   const activacionPendiente = resultado === "success" && !activo;
   return (
     <>
-      <div className="app-head">
-        <p className="ck-eyebrow">{t("account.eyebrow")}</p>
-        <h1>{t("account.title")}</h1>
-        <p>{t("account.intro")}</p>
-      </div>
+      <AccountTabs role={ctx.role} />
+      <PageHead eyebrow={t("account.eyebrow")} title={t("account.title")} sub={t("account.intro")} />
       {resultado ? <CheckoutBanner resultado={resultado} activo={activo} /> : null}
       {/* El estado real del cobro, ANTES de la tarjeta del plan: si la tarjeta
           no pasa, eso es lo primero que hay que leer, no el precio. */}
@@ -48,12 +44,9 @@ export default async function AccountPage({
         ctx={ctx}
         asientos={asientos}
         ocultarCompra={activacionPendiente}
-        codigo={codigo}
       />
-      {/* El equipo va DESPUÉS del plan: quien entra aquí viene casi siempre a
-          mirar lo que paga. Y se pinta solo si el servidor deja verlo — a un
-          `member` le devuelve 403 y el panel entero desaparece. */}
-      <EquipoPanel />
+      {/* El equipo tiene página propia desde el 22-09 (/dashboard/team, en la
+          pestaña de arriba y en el raíl): aquí se queda lo que se paga. */}
     </>
   );
 }

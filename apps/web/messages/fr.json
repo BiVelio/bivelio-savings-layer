@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Sections du tableau de bord",
+      "incomplete": "Certaines sections sont masquées : votre organisation et votre rôle n'ont pas pu être lus pour le moment.",
+      "groupStart": "Commencer",
       "overview": "Aperçu",
-      "savings": "Économies",
+      "install": "Installer",
+      "howItWorks": "Comment ça marche",
+      "groupSave": "Économiser",
       "proof": "Preuve",
       "verify": "Vérifier",
-      "integrate": "Intégrer",
-      "install": "Installer",
-      "account": "Compte",
-      "howItWorks": "Comment ça marche",
-      "extracto": "Relevé"
+      "extracto": "Relevé",
+      "groupOrg": "Votre organisation",
+      "team": "Équipe",
+      "maquinas": "Machines",
+      "account": "Compte"
+    },
+    "setup": {
+      "title": "Mise en route",
+      "count": "{done} sur {total}",
+      "missing": "Il manque : {step}",
+      "unreadable": "Votre mise en route n'a pas pu être lue pour le moment.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 membre} other {# membres}}",
+        "seats": "{used} sur {seats}",
+        "seatsTitle": "{used} sièges utilisés sur {seats} payés ce mois-ci"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organisation : {org}",
+      "accountLink": "Paramètres du compte de {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Réessayer",
       "noExisteTitulo": "Cette page du tableau de bord n'existe pas",
       "noExisteCuerpo": "L'adresse ne correspond à aucune section du tableau de bord. Vérifiez l'URL ou revenez à l'aperçu.",
-      "volverAlResumen": "Revenir à l'aperçu"
+      "volverAlResumen": "Revenir à l'aperçu",
+      "referencia": "Référence : {ref}"
     },
     "panel": {
       "customize": "Personnaliser",
@@ -606,6 +633,9 @@
         "sesiones": "Sessions",
         "maquinas": "Machines"
       }
+    },
+    "team": {
+      "metaTitle": "Équipe · BiVelio Savings Layer"
     }
   },
   "landing": {

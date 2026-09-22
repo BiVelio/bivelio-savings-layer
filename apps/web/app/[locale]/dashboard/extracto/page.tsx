@@ -1,5 +1,8 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { AccountTabs } from "@/app/components/app/AccountTabs";
+import { PageHead } from "@/app/components/app/PageHead";
+
 import { extractoEnSombra, periodoDe } from "@/lib/billing/extracto-sombra";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { loadDashboard } from "../load";
@@ -95,7 +98,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function ExtractoPage() {
   const t = await getTranslations("dashboard");
   const locale = await getLocale();
-  const { usage, usageFailed, orgId } = await loadDashboard();
+  const { ctx, usage, usageFailed, orgId } = await loadDashboard();
 
   const periodo = periodoDe(new Date());
   // La marca de exención (0028) llega también a la sombra: sin esto la cabecera
@@ -115,25 +118,26 @@ export default async function ExtractoPage() {
 
   return (
     <>
-      <div className="app-head">
-        <p className="ck-eyebrow">{t("extracto.eyebrow")}</p>
-        <h1>{t("extracto.title")}</h1>
-        <p>{t("extracto.intro", { cero: (0).toLocaleString(locale, { style: "currency", currency: "EUR" }) })}</p>
-      </div>
+      <AccountTabs role={ctx.role} />
+      <PageHead
+        eyebrow={t("extracto.eyebrow")}
+        title={t("extracto.title")}
+        sub={t("extracto.intro", { cero: (0).toLocaleString(locale, { style: "currency", currency: "EUR" }) })}
+      />
 
-      <section className="ck-sec">
-        <div className="ck-head">
+      <section className="app-section">
+        <div className="app-sec-head">
           <div>
-            <h2>{t("extracto.periodo", { periodo })}</h2>
+            <h2 className="t-section">{t("extracto.periodo", { periodo })}</h2>
           </div>
           <span className="est-tag">{e.esCalibracion ? t("extracto.badgeCalibracion") : t("extracto.badgeSombra")}</span>
         </div>
 
         {usageFailed ? (
-          <p className="ck-note" style={{ color: "var(--danger)" }}>{t("extracto.lecturaFallo")}</p>
+          <p className="app-note warn" role="alert">{t("extracto.lecturaFallo")}</p>
         ) : null}
 
-        <div className="kpi" style={{ minHeight: "auto", marginBottom: 14 }}>
+        <div className="kpi kpi-auto">
           <div className="n">{t("extracto.kpiTitulo")}</div>
           <div className="v pos ck-num">{eur(e.cargoEur)}</div>
           <div className="sub">
@@ -160,9 +164,9 @@ export default async function ExtractoPage() {
           </div>
         </div>
 
-        <h3 style={{ margin: "18px 0 6px", fontSize: "1rem" }}>{t("extracto.tramosTitulo")}</h3>
+        <h3 className="t-block">{t("extracto.tramosTitulo")}</h3>
         {e.comision.tramos.length === 0 ? (
-          <p className="ck-note">{t("extracto.sinAhorro")}</p>
+          <p className="note">{t("extracto.sinAhorro")}</p>
         ) : (
           <div className="tbl-scroll">
             <table className="tbl">
@@ -190,13 +194,13 @@ export default async function ExtractoPage() {
           </div>
         )}
 
-        <p className="ck-note" style={{ marginTop: 14 }}>
+        <p className="note">
           {t("extracto.estimadoExcluido", { usd: usd(e.ahorroEstimadoExcluidoUsd) })}
         </p>
         {/* El carril sombra (0021): contexto hipotético, jamás en la base — y
             solo cuando hay datos. Con ahorro negativo, la clave lo dice claro. */}
         {e.sombra && (
-          <p className="ck-note">
+          <p className="note">
             {t(e.sombra.ahorroUsd < 0 ? "extracto.sombraElisionNegativa" : "extracto.sombraElision", {
               usd: usd(Math.abs(e.sombra.ahorroUsd)),
               requests: e.sombra.requests.toLocaleString(locale),
@@ -207,11 +211,11 @@ export default async function ExtractoPage() {
             dólar suelo viaja en `e.elisionProveedor.floorUsd` pero NO se pinta
             hasta medir el neto por modelo — y jamás entra en la base. */}
         {e.elisionProveedor && (
-          <p className="ck-note">
+          <p className="note">
             {t("extracto.elisionProveedor", { requests: e.elisionProveedor.requests.toLocaleString(locale) })}
           </p>
         )}
-        <p className="ck-note">
+        <p className="note">
           {t("extracto.parametros", {
             version: e.parametros.versionPrecios,
             // La unidad y la fuente van construidas AQUÍ: los ficheros de
@@ -219,7 +223,7 @@ export default async function ExtractoPage() {
             fx: `${e.parametros.fx.eurPorUsd.toLocaleString(locale)} EUR/USD — ${e.parametros.fx.fuente}`,
           })}
         </p>
-        <p className="ck-note">
+        <p className="note">
           <b>{t("extracto.mismaFacturaTitulo")}</b> {t("extracto.mismaFactura")}
         </p>
       </section>
@@ -228,17 +232,17 @@ export default async function ExtractoPage() {
           el estado de su cobro y el enlace a la factura de Stripe que lo cita.
           El dinero que este producto cobra tiene que poder rastrearse desde
           aquí hasta la factura sin pedirle nada a nadie. */}
-      <section className="ck-sec">
-        <div className="ck-head">
+      <section className="app-section">
+        <div className="app-sec-head">
           <div>
-            <h2>{t("extracto.historialTitulo")}</h2>
-            <p className="ck-note">{t("extracto.historialIntro")}</p>
+            <h2 className="t-section">{t("extracto.historialTitulo")}</h2>
+            <p className="sub-section">{t("extracto.historialIntro")}</p>
           </div>
         </div>
         {cerrados === null ? (
-          <p className="ck-note" style={{ color: "var(--danger)" }}>{t("extracto.lecturaFallo")}</p>
+          <p className="app-note warn" role="alert">{t("extracto.lecturaFallo")}</p>
         ) : cerrados.length === 0 ? (
-          <p className="ck-note">{t("extracto.historialVacio")}</p>
+          <p className="note">{t("extracto.historialVacio")}</p>
         ) : (
           <div className="tbl-scroll">
             <table className="tbl">

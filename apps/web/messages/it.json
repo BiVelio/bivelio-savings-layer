@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Sezioni del pannello",
+      "incomplete": "Alcune sezioni sono nascoste: in questo momento non è stato possibile leggere la tua organizzazione né il tuo ruolo.",
+      "groupStart": "Inizia",
       "overview": "Panoramica",
-      "savings": "Risparmi",
+      "install": "Installa",
+      "howItWorks": "Come funziona",
+      "groupSave": "Risparmia",
       "proof": "Prova",
       "verify": "Verifica",
-      "integrate": "Integra",
-      "install": "Installa",
-      "account": "Account",
-      "howItWorks": "Come funziona",
-      "extracto": "Estratto"
+      "extracto": "Estratto",
+      "groupOrg": "La tua organizzazione",
+      "team": "Team",
+      "maquinas": "Macchine",
+      "account": "Account"
+    },
+    "setup": {
+      "title": "Messa in funzione",
+      "count": "{done} di {total}",
+      "missing": "Manca: {step}",
+      "unreadable": "In questo momento non è stato possibile leggere la tua messa in funzione.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 membro} other {# membri}}",
+        "seats": "{used} di {seats}",
+        "seatsTitle": "{used} postazioni in uso su {seats} pagate questo mese"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organizzazione: {org}",
+      "accountLink": "Impostazioni dell'account di {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Riprova",
       "noExisteTitulo": "Questa pagina della dashboard non esiste",
       "noExisteCuerpo": "L'indirizzo non corrisponde a nessuna sezione della dashboard. Controlla l'URL o torna alla panoramica.",
-      "volverAlResumen": "Torna alla panoramica"
+      "volverAlResumen": "Torna alla panoramica",
+      "referencia": "Riferimento: {ref}"
     },
     "panel": {
       "customize": "Personalizza",
@@ -606,6 +633,9 @@
         "sesiones": "Sessioni",
         "maquinas": "Macchine"
       }
+    },
+    "team": {
+      "metaTitle": "Team · BiVelio Savings Layer"
     }
   },
   "landing": {

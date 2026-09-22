@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Dashboard sections",
+      "incomplete": "Some sections are hidden: your organization and your role could not be read just now.",
+      "groupStart": "Get started",
       "overview": "Overview",
-      "savings": "Savings",
+      "install": "Install",
+      "howItWorks": "How it works",
+      "groupSave": "Save",
       "proof": "Proof",
       "verify": "Verify",
-      "integrate": "Integrate",
-      "install": "Install",
-      "account": "Account",
-      "howItWorks": "How it works",
-      "extracto": "Statement"
+      "extracto": "Statement",
+      "groupOrg": "Your organization",
+      "team": "Team",
+      "maquinas": "Machines",
+      "account": "Account"
+    },
+    "setup": {
+      "title": "Getting set up",
+      "count": "{done} of {total}",
+      "missing": "Missing: {step}",
+      "unreadable": "Your setup progress could not be read just now.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 member} other {# members}}",
+        "seats": "{used} of {seats}",
+        "seatsTitle": "{used} seats in use of {seats} paid this month"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organization: {org}",
+      "accountLink": "Account settings for {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Try again",
       "noExisteTitulo": "This dashboard page doesn't exist",
       "noExisteCuerpo": "The address doesn't match any section of the dashboard. Check the URL or go back to the overview.",
-      "volverAlResumen": "Back to overview"
+      "volverAlResumen": "Back to overview",
+      "referencia": "Reference: {ref}"
     },
     "panel": {
       "customize": "Customize",
@@ -606,6 +633,9 @@
         "sesiones": "Sessions",
         "maquinas": "Machines"
       }
+    },
+    "team": {
+      "metaTitle": "Team · BiVelio Savings Layer"
     }
   },
   "landing": {
