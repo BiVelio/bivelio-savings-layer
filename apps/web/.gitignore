@@ -22,3 +22,7 @@ next-env.d.ts
 /supabase/
 # tsup web-build output (the SERVED copy is public/vendor/, which stays tracked)
 /vendor/
+
+# Sin barra: también el ENLACE SIMBÓLICO. `node_modules/` solo ignora directorios,
+# y un worktree con el node_modules enlazado lo colaba en el árbol (CI, 22-09).
+node_modules

@@ -275,20 +275,25 @@ input[type="range"] { accent-color: var(--brand); }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  /* La geometría del `.badge` de privacy y de lib/attio/badge.ts: 11px/600,
-     radio 6px, relleno 4×8. Era un pastillón de 999px a 10,5px. */
   font-family: var(--sans);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-label);
+  font-size: 10.5px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: -.01em;
+  letter-spacing: .08em;
   line-height: 1;
-  padding: 4px 8px;
-  border-radius: var(--r-sm);
+  padding: 4px 9px;
+  border-radius: 999px;
   border: 1px solid transparent;
   background: var(--surface-2);
   color: var(--ink-soft);
   white-space: nowrap;
+}
+/* DENTRO DEL PANEL, la geometría del `.badge` de privacy (11px/600, radio 6px,
+   relleno 4×8). Acotado a `.app` a propósito: la landing conserva su pastilla
+   de 999px, que es la del héroe de bivelio.com. */
+.app .tag, .app .pill, .app-plan, .app .est-tag {
+  font-size: var(--fs-label); font-weight: var(--fw-label); letter-spacing: -.01em;
+  padding: 4px 8px; border-radius: var(--r-sm);
 }
 .tag, .app-plan { background: var(--brand-soft); color: var(--brand); }
 .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
