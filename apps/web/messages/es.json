@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Secciones del panel",
+      "incomplete": "Faltan secciones: ahora mismo no se ha podido leer tu organización ni tu rol.",
+      "groupStart": "Empezar",
       "overview": "Resumen",
-      "savings": "Ahorros",
+      "install": "Primeros pasos",
+      "howItWorks": "Cómo funciona",
+      "groupSave": "Ahorrar",
       "proof": "Prueba",
       "verify": "Verificar",
-      "integrate": "Integrar",
-      "install": "Instalar",
-      "account": "Cuenta",
-      "howItWorks": "Cómo funciona",
-      "extracto": "Extracto"
+      "extracto": "Extracto",
+      "groupOrg": "Tu organización",
+      "team": "Equipo",
+      "maquinas": "Máquinas",
+      "account": "Cuenta"
+    },
+    "setup": {
+      "title": "Puesta en marcha",
+      "count": "{done} de {total}",
+      "missing": "Falta: {step}",
+      "unreadable": "Ahora mismo no se ha podido leer tu puesta en marcha.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 miembro} other {# miembros}}",
+        "seats": "{used} de {seats}",
+        "seatsTitle": "{used} asientos en uso de {seats} pagados este mes"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organización: {org}",
+      "accountLink": "Ajustes de la cuenta de {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Probar otra vez",
       "noExisteTitulo": "Esta página del panel no existe",
       "noExisteCuerpo": "La dirección no corresponde a ninguna sección del panel. Comprueba la URL o vuelve al resumen.",
-      "volverAlResumen": "Volver al resumen"
+      "volverAlResumen": "Volver al resumen",
+      "referencia": "Referencia: {ref}"
     },
     "panel": {
       "customize": "Personalizar",
@@ -606,6 +633,9 @@
         "sesiones": "Sesiones",
         "maquinas": "Máquinas"
       }
+    },
+    "team": {
+      "metaTitle": "Equipo · BiVelio Savings Layer"
     }
   },
   "landing": {

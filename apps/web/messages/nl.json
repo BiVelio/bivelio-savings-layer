@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Onderdelen van het dashboard",
+      "incomplete": "Sommige onderdelen zijn verborgen: je organisatie en je rol konden zojuist niet worden gelezen.",
+      "groupStart": "Aan de slag",
       "overview": "Overzicht",
-      "savings": "Besparingen",
+      "install": "Eerste stappen",
+      "howItWorks": "Hoe het werkt",
+      "groupSave": "Besparen",
       "proof": "Bewijs",
       "verify": "Verifiëren",
-      "integrate": "Integreren",
-      "install": "Installeren",
-      "account": "Account",
-      "howItWorks": "Hoe het werkt",
-      "extracto": "Afschrift"
+      "extracto": "Afschrift",
+      "groupOrg": "Je organisatie",
+      "team": "Team",
+      "maquinas": "Machines",
+      "account": "Account"
+    },
+    "setup": {
+      "title": "Inrichting",
+      "count": "{done} van {total}",
+      "missing": "Ontbreekt: {step}",
+      "unreadable": "Je inrichtingsvoortgang kon zojuist niet worden gelezen.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 lid} other {# leden}}",
+        "seats": "{used} van {seats}",
+        "seatsTitle": "{used} van {seats} betaalde plaatsen deze maand in gebruik"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organisatie: {org}",
+      "accountLink": "Accountinstellingen voor {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Opnieuw proberen",
       "noExisteTitulo": "Deze dashboardpagina bestaat niet",
       "noExisteCuerpo": "Het adres komt met geen enkel onderdeel van het dashboard overeen. Controleer de URL of ga terug naar het overzicht.",
-      "volverAlResumen": "Terug naar het overzicht"
+      "volverAlResumen": "Terug naar het overzicht",
+      "referencia": "Referentie: {ref}"
     },
     "panel": {
       "customize": "Aanpassen",
@@ -606,6 +633,9 @@
         "sesiones": "Sessies",
         "maquinas": "Machines"
       }
+    },
+    "team": {
+      "metaTitle": "Team · BiVelio Savings Layer"
     }
   },
   "landing": {

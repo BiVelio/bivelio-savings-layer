@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Panel bölümleri",
+      "incomplete": "Bazı bölümler gizli: kuruluşunuz ve rolünüz şu anda okunamadı.",
+      "groupStart": "Başla",
       "overview": "Genel bakış",
-      "savings": "Tasarruf",
+      "install": "İlk adımlar",
+      "howItWorks": "Nasıl çalışır",
+      "groupSave": "Tasarruf et",
       "proof": "Kanıt",
       "verify": "Doğrula",
-      "integrate": "Entegre et",
-      "install": "Kur",
-      "account": "Hesap",
-      "howItWorks": "Nasıl çalışır",
-      "extracto": "Ekstre"
+      "extracto": "Ekstre",
+      "groupOrg": "Kuruluşunuz",
+      "team": "Ekip",
+      "maquinas": "Makineler",
+      "account": "Hesap"
+    },
+    "setup": {
+      "title": "Kurulum",
+      "count": "{done} / {total}",
+      "missing": "Eksik: {step}",
+      "unreadable": "Kurulum ilerlemeniz şu anda okunamadı.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 üye} other {# üye}}",
+        "seats": "{used} / {seats}",
+        "seatsTitle": "Bu ay ödenen {seats} koltuktan {used} tanesi kullanımda"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Kuruluş: {org}",
+      "accountLink": "{email} için hesap ayarları",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Tekrar dene",
       "noExisteTitulo": "Bu panel sayfası mevcut değil",
       "noExisteCuerpo": "Adres panelin hiçbir bölümüyle eşleşmiyor. URL'yi kontrol edin veya genel bakışa dönün.",
-      "volverAlResumen": "Genel bakışa dön"
+      "volverAlResumen": "Genel bakışa dön",
+      "referencia": "Referans: {ref}"
     },
     "panel": {
       "customize": "Özelleştir",
@@ -606,6 +633,9 @@
         "sesiones": "Oturumlar",
         "maquinas": "Makineler"
       }
+    },
+    "team": {
+      "metaTitle": "Ekip · BiVelio Savings Layer"
     }
   },
   "landing": {

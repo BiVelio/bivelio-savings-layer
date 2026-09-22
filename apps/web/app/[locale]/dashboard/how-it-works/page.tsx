@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { PageHead } from "@/app/components/app/PageHead";
 import { HowItWorks } from "@/app/components/HowItWorks";
 
 /** La misma explicación «¿Dónde se instala el ahorro?» de la página pública,
@@ -15,11 +16,7 @@ export default async function DashboardHowItWorksPage() {
   const t = await getTranslations("howItWorks");
   return (
     <>
-      <div className="app-head">
-        <p className="ck-eyebrow">{t("eyebrow")}</p>
-        <h1>{t("title")}</h1>
-        <p>{t("lede")}</p>
-      </div>
+      <PageHead eyebrow={t("eyebrow")} title={t("title")} sub={t("lede")} />
       <HowItWorks variant="app" />
     </>
   );

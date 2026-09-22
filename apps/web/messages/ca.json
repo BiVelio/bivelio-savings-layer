@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Seccions del tauler",
+      "incomplete": "Falten seccions: ara mateix no s'ha pogut llegir la teva organització ni el teu rol.",
+      "groupStart": "Començar",
       "overview": "Resum",
-      "savings": "Estalvi",
+      "install": "Primers passos",
+      "howItWorks": "Com funciona",
+      "groupSave": "Estalviar",
       "proof": "Prova",
       "verify": "Verifica",
-      "integrate": "Integra",
-      "install": "Instal·la",
-      "account": "Compte",
-      "howItWorks": "Com funciona",
-      "extracto": "Extracte"
+      "extracto": "Extracte",
+      "groupOrg": "La teva organització",
+      "team": "Equip",
+      "maquinas": "Màquines",
+      "account": "Compte"
+    },
+    "setup": {
+      "title": "Posada en marxa",
+      "count": "{done} de {total}",
+      "missing": "Falta: {step}",
+      "unreadable": "Ara mateix no s'ha pogut llegir la teva posada en marxa.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 membre} other {# membres}}",
+        "seats": "{used} de {seats}",
+        "seatsTitle": "{used} seients en ús de {seats} pagats aquest mes"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organització: {org}",
+      "accountLink": "Configuració del compte de {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Provar-ho una altra vegada",
       "noExisteTitulo": "Aquesta pàgina del tauler no existeix",
       "noExisteCuerpo": "L'adreça no correspon a cap secció del tauler. Comprova l'URL o torna al resum.",
-      "volverAlResumen": "Tornar al resum"
+      "volverAlResumen": "Tornar al resum",
+      "referencia": "Referència: {ref}"
     },
     "panel": {
       "customize": "Personalitzar",
@@ -606,6 +633,9 @@
         "sesiones": "Sessions",
         "maquinas": "Màquines"
       }
+    },
+    "team": {
+      "metaTitle": "Equip · BiVelio Savings Layer"
     }
   },
   "landing": {

@@ -78,11 +78,12 @@ export const VerifyIcon = () => (
   </Icon>
 );
 
-/** Install — la terminal (lucide Terminal). */
+/** Primeros pasos — la descarga (lucide Download), el mismo que privacy. */
 export const InstallIcon = () => (
   <Icon>
-    <path d="m4 17 6-6-6-6" />
-    <path d="M12 19h8" />
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M7 10l5 5 5-5" />
+    <path d="M12 15V3" />
   </Icon>
 );
 
@@ -132,6 +133,23 @@ export const ReceiptIcon = () => (
   </Icon>
 );
 
+/** Equipo — las personas (lucide Users). */
+export const TeamIcon = () => (
+  <Icon>
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </Icon>
+);
+
+/** Máquinas — el portátil (lucide Laptop). */
+export const MachinesIcon = () => (
+  <Icon>
+    <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16" />
+  </Icon>
+);
+
 export const ICONS: Record<string, () => React.ReactElement> = {
   overview: DashboardIcon,
   proof: ProofIcon,
@@ -140,4 +158,6 @@ export const ICONS: Record<string, () => React.ReactElement> = {
   account: AccountIcon,
   how: HowIcon,
   extracto: ReceiptIcon,
+  team: TeamIcon,
+  machines: MachinesIcon,
 };

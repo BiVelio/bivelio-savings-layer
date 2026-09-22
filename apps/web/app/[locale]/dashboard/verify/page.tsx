@@ -1,4 +1,7 @@
 import { getTranslations } from "next-intl/server";
+
+import { PageHead } from "@/app/components/app/PageHead";
+import { ProofTabs } from "@/app/components/app/ProofTabs";
 import abData from "@/public/data/ab-live.json";
 import { type AbArtifact } from "../data";
 import { ProjectorVerifier } from "../components/ProjectorVerifier";
@@ -17,11 +20,8 @@ export default async function VerifyPage() {
   const t = await getTranslations("dashboard");
   return (
     <>
-      <div className="app-head">
-        <p className="ck-eyebrow">{t("verify.eyebrow")}</p>
-        <h1>{t("verify.title")}</h1>
-        <p>{t("verify.intro")}</p>
-      </div>
+      <ProofTabs />
+      <PageHead eyebrow={t("verify.eyebrow")} title={t("verify.title")} sub={t("verify.intro")} />
       <ProjectorVerifier prices={prices} />
     </>
   );

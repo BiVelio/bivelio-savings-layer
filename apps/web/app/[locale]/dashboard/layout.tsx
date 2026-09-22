@@ -1,9 +1,7 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
-import { destinoDeLaPeticion } from "@/lib/auth/destino";
 import { authConfigured } from "@/lib/supabase/env";
 import { loadDashboard, planLabel } from "./load";
 
@@ -15,25 +13,33 @@ export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
 
 /**
- * Dashboard shell: sticky topbar + left sidebar + main content, wrapping every
- * /dashboard/* route. Single auth gate — an expired token bounces through
- * /auth/refresh (a Route Handler that can rewrite cookies), never a redirect loop.
- * El `next` es la URL pedida, con su consulta (cabecera del middleware, ver
- * lib/auth/destino.ts): sin ella, el enlace de compra con ?codigo= perdía el
- * código en cuanto no había sesión.
+ * La cáscara del panel: barra superior pegajosa + raíl izquierdo + contenido,
+ * envolviendo toda ruta /dashboard/*. Es la MISMA cáscara que el panel de
+ * privacy (`(app)/layout.tsx` allí): misma barra, mismo raíl de 288px, mismas
+ * cifras a la derecha. Único guardián de sesión — un token caducado rebota por
+ * /auth/refresh (un Route Handler que sí puede reescribir cookies), nunca un
+ * bucle de redirecciones.
+ *
+ * LO QUE SE LE PASA AL RAÍL ES EL ROL, Y NUNCA EL PLAN: mientras el plan no
+ * esté a mano en `AppSidebar`, nadie puede filtrar entradas por él, y filtrar
+ * por plan es esconderle el extracto a quien tiene la tarjeta rechazada. La
+ * píldora de la barra superior es la única que lo nombra.
  */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, ctx } = await loadDashboard();
-  if (authConfigured && !user) {
-    const destino = destinoDeLaPeticion(await headers());
-    redirect(`/auth/refresh?next=${encodeURIComponent(destino)}`);
-  }
+  const { user, ctx, orgFallo } = await loadDashboard();
+  if (authConfigured && !user) redirect("/auth/refresh?next=/dashboard");
 
   return (
     <div className="app">
-      <AppTopbar email={user?.email ?? ""} plan={planLabel(ctx)} />
+      {/* `null` cuando no hay organización LEÍDA: la píldora se omite en vez de
+          nombrar el plan más barato a través de una lectura que falló. */}
+      <AppTopbar
+        email={user?.email ?? ""}
+        plan={ctx.org ? planLabel(ctx) : null}
+        orgName={ctx.org?.name ?? ""}
+      />
       <div className="app-body">
-        <AppSidebar />
+        <AppSidebar role={ctx.role} unknownOrg={orgFallo} />
         <main className="app-main">
           <div className="app-inner">{children}</div>
         </main>

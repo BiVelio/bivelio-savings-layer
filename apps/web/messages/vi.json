@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Các mục của bảng điều khiển",
+      "incomplete": "Một số mục đang bị ẩn: hiện không đọc được tổ chức và vai trò của bạn.",
+      "groupStart": "Bắt đầu",
       "overview": "Tổng quan",
-      "savings": "Tiết kiệm",
+      "install": "Những bước đầu",
+      "howItWorks": "Cách hoạt động",
+      "groupSave": "Tiết kiệm",
       "proof": "Bằng chứng",
       "verify": "Xác minh",
-      "integrate": "Tích hợp",
-      "install": "Cài đặt",
-      "account": "Tài khoản",
-      "howItWorks": "Cách hoạt động",
-      "extracto": "Sao kê"
+      "extracto": "Sao kê",
+      "groupOrg": "Tổ chức của bạn",
+      "team": "Nhóm",
+      "maquinas": "Máy",
+      "account": "Tài khoản"
+    },
+    "setup": {
+      "title": "Thiết lập",
+      "count": "{done} trên {total}",
+      "missing": "Còn thiếu: {step}",
+      "unreadable": "Hiện không đọc được tiến độ thiết lập của bạn.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 thành viên} other {# thành viên}}",
+        "seats": "{used} trên {seats}",
+        "seatsTitle": "{used} chỗ đang dùng trên {seats} chỗ đã trả tiền tháng này"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Tổ chức: {org}",
+      "accountLink": "Cài đặt tài khoản của {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Thử lại",
       "noExisteTitulo": "Trang này của bảng điều khiển không tồn tại",
       "noExisteCuerpo": "Địa chỉ không khớp với mục nào trong bảng điều khiển. Kiểm tra URL hoặc quay lại tổng quan.",
-      "volverAlResumen": "Quay lại tổng quan"
+      "volverAlResumen": "Quay lại tổng quan",
+      "referencia": "Mã tham chiếu: {ref}"
     },
     "panel": {
       "customize": "Tùy chỉnh",
@@ -606,6 +633,9 @@
         "sesiones": "Phiên",
         "maquinas": "Máy"
       }
+    },
+    "team": {
+      "metaTitle": "Nhóm · BiVelio Savings Layer"
     }
   },
   "landing": {

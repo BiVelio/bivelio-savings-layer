@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Sekcje panelu",
+      "incomplete": "Niektóre sekcje są ukryte: nie udało się teraz odczytać Twojej organizacji ani Twojej roli.",
+      "groupStart": "Zacznij",
       "overview": "Przegląd",
-      "savings": "Oszczędności",
+      "install": "Pierwsze kroki",
+      "howItWorks": "Jak to działa",
+      "groupSave": "Oszczędzaj",
       "proof": "Dowód",
       "verify": "Zweryfikuj",
-      "integrate": "Zintegruj",
-      "install": "Zainstaluj",
-      "account": "Konto",
-      "howItWorks": "Jak to działa",
-      "extracto": "Wyciąg"
+      "extracto": "Wyciąg",
+      "groupOrg": "Twoja organizacja",
+      "team": "Zespół",
+      "maquinas": "Maszyny",
+      "account": "Konto"
+    },
+    "setup": {
+      "title": "Uruchomienie",
+      "count": "{done} z {total}",
+      "missing": "Brakuje: {step}",
+      "unreadable": "Nie udało się teraz odczytać postępu uruchomienia.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 członek} few {# członkowie} other {# członków}}",
+        "seats": "{used} z {seats}",
+        "seatsTitle": "{used} miejsc w użyciu z {seats} opłaconych w tym miesiącu"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organizacja: {org}",
+      "accountLink": "Ustawienia konta {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Spróbuj ponownie",
       "noExisteTitulo": "Ta strona panelu nie istnieje",
       "noExisteCuerpo": "Adres nie odpowiada żadnej sekcji panelu. Sprawdź URL lub wróć do przeglądu.",
-      "volverAlResumen": "Wróć do przeglądu"
+      "volverAlResumen": "Wróć do przeglądu",
+      "referencia": "Numer referencyjny: {ref}"
     },
     "panel": {
       "customize": "Dostosuj",
@@ -606,6 +633,9 @@
         "sesiones": "Sesje",
         "maquinas": "Maszyny"
       }
+    },
+    "team": {
+      "metaTitle": "Zespół · BiVelio Savings Layer"
     }
   },
   "landing": {

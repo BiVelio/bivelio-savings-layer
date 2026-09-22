@@ -11,11 +11,11 @@ export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
   const t = await getTranslations("dashboard");
   const current = steps.find((s) => s.status === "current");
   return (
-    <section className="ck-sec">
-      <div className="ck-head">
+    <section className="app-section">
+      <div className="app-sec-head">
         <div>
-          <p className="ck-eyebrow">{t("instrumentationSpine.eyebrow")}</p>
-          <h2>{t("instrumentationSpine.title")}</h2>
+          <p className="eyebrow">{t("instrumentationSpine.eyebrow")}</p>
+          <h2 className="t-section">{t("instrumentationSpine.title")}</h2>
         </div>
       </div>
       <div className="spine">
@@ -46,7 +46,7 @@ export async function InstrumentationSpine({ steps }: { steps: StepState[] }) {
               <CopyButton text={INSTALL_CMD} />
             </div>
           ) : (
-            <p className="ck-note" style={{ margin: 0 }}>
+            <p className="note">
               {current.label === "License active"
                 ? t("instrumentationSpine.hintLicense")
                 : current.label === "First report"

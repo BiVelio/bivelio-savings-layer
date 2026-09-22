@@ -17,15 +17,41 @@
   },
   "app": {
     "sidebar": {
+      "sections": "Bagian dasbor",
+      "incomplete": "Beberapa bagian disembunyikan: organisasi dan peran Anda tidak dapat dibaca saat ini.",
+      "groupStart": "Mulai",
       "overview": "Ikhtisar",
-      "savings": "Penghematan",
+      "install": "Langkah pertama",
+      "howItWorks": "Cara kerjanya",
+      "groupSave": "Hemat",
       "proof": "Bukti",
       "verify": "Verifikasi",
-      "integrate": "Integrasikan",
-      "install": "Pasang",
-      "account": "Akun",
-      "howItWorks": "Cara kerjanya",
-      "extracto": "Rekening"
+      "extracto": "Rekening",
+      "groupOrg": "Organisasi Anda",
+      "team": "Tim",
+      "maquinas": "Mesin",
+      "account": "Akun"
+    },
+    "setup": {
+      "title": "Persiapan",
+      "count": "{done} dari {total}",
+      "missing": "Belum: {step}",
+      "unreadable": "Progres persiapan Anda tidak dapat dibaca saat ini.",
+      "badge": {
+        "progress": "{done}/{total}",
+        "members": "{n, plural, =1 {1 anggota} other {# anggota}}",
+        "seats": "{used} dari {seats}",
+        "seatsTitle": "{used} kursi terpakai dari {seats} yang dibayar bulan ini"
+      }
+    },
+    "topbar": {
+      "orgLabel": "Organisasi: {org}",
+      "accountLink": "Pengaturan akun untuk {email}",
+      "plan": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      }
     }
   },
   "auth": {
@@ -586,7 +612,8 @@
       "reintentar": "Coba lagi",
       "noExisteTitulo": "Halaman dasbor ini tidak ada",
       "noExisteCuerpo": "Alamat ini tidak cocok dengan bagian mana pun di dasbor. Periksa URL atau kembali ke ikhtisar.",
-      "volverAlResumen": "Kembali ke ikhtisar"
+      "volverAlResumen": "Kembali ke ikhtisar",
+      "referencia": "Referensi: {ref}"
     },
     "panel": {
       "customize": "Sesuaikan",
@@ -606,6 +633,9 @@
         "sesiones": "Sesi",
         "maquinas": "Mesin"
       }
+    },
+    "team": {
+      "metaTitle": "Tim · BiVelio Savings Layer"
     }
   },
   "landing": {
