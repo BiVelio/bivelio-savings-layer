@@ -105,7 +105,22 @@ export interface OrgContext {
   serviceAccount: { keyPrefix: string; lastUsedAt: string | null } | null;
 }
 
-/** Try the standard membership→organization shape; degrade silently on any error. */
+/**
+ * El contexto de la organización: membresía y organización, suscripción,
+ * licencia y clave de servicio. Degrada en silencio ante cualquier error de
+ * esquema: una tabla que no existe no es un fallo, es AUSENCIA medida.
+ *
+ * LAS CUATRO CONSULTAS SALEN A LA VEZ (22-09-2026). Iban una detrás de otra,
+ * y la de suscripción además esperaba a saber si había organización. Medido en
+ * producción: la función corre en Vercel y la base en Fráncfort, así que cada
+ * viaje de ida y vuelta cuesta lo que cueste la distancia entre las dos —
+ * ~100 ms cuando la función estaba en Virginia— y cuatro en serie eran cuatro
+ * veces eso ANTES de pintar nada. Ninguna consulta depende del resultado de
+ * otra: las cuatro filtran por `orgId`, y la RLS ya devuelve vacío a quien no
+ * es miembro, con lo que pedir la suscripción sin saber aún si hay
+ * organización cuesta una fila vacía y no una fuga. Cada una conserva su
+ * propio `catch` para que el esquema de una no tumbe a las demás.
+ */
 export async function getOrgContext(
   supabase: SupabaseClient,
   orgId: string,
@@ -120,110 +135,125 @@ export async function getOrgContext(
     serviceAccount: null,
   };
 
-  // organizations via a membership table. Table/column names may differ in the
-  // bound project — a PGRST error just means "not resolvable here".
-  try {
-    const { data } = await supabase
-      .schema("bvsala")
-      .from("org_members")
-      .select("role, organizations(name, plan)")
-      // LOS DOS FILTROS, Y EL SEGUNDO FALTABA. `.eq("org_id", …)` a secas devuelve
-      // una fila ARBITRARIA de la organización —`limit(1)` sin `order`— así que en
-      // cuanto una organización tiene dos miembros, el panel le enseña a cualquiera
-      // el rol de OTRO. Le dijo "owner" a un `member` recién invitado.
-      //
-      // No era escalada de privilegios: el servidor decide con `lib/org/permisos`
-      // y la resolución propia, no con esto. Pero era una mentira en pantalla, y se
-      // habría convertido en escalada el día que alguien enseñara u ocultara un
-      // botón mirando `ctx.role`.
-      .eq("org_id", orgId)
-      .eq("user_id", userId)
-      .maybeSingle();
-    const row = data as { role?: string; organizations?: { name?: string; plan?: string } | null } | null;
-    if (row?.organizations?.name) {
-      ctx.org = { name: row.organizations.name, plan: (row.organizations.plan ?? "free").toLowerCase() };
-      ctx.role = row.role ?? null;
-    }
-  } catch {
-    /* schema absent — honest fallback */
-  }
+  // Cuatro envoltorios `async` con su `try`: los constructores de PostgREST son
+  // «thenables» sin `.catch`, y el esquema ausente de una tabla no debe tumbar
+  // a las otras tres.
+  type Membresia = { role?: string; organizations?: { name?: string; plan?: string } | null } | null;
+  type Suscripcion = {
+    seats?: number;
+    status?: string;
+    current_period_end?: string | null;
+    past_due_since?: string | null;
+  } | null;
+  type Licencia = { expires_at?: string; grace_days?: number; revoked?: boolean };
+  type ClaveDeServicio = { key_prefix?: string; last_used_at?: string | null } | null;
 
-  // Best-effort seat / license from a subscriptions/licenses table.
-  if (ctx.org) {
-    try {
-      const { data } = await supabase
-        .schema("bvsala")
-        .from("subscriptions")
-        .select("seats, status, current_period_end, past_due_since")
-        .eq("org_id", orgId)
-        .limit(1)
-        .maybeSingle();
-      const sub = data as {
-        seats?: number;
-        status?: string;
-        current_period_end?: string | null;
-        past_due_since?: string | null;
-      } | null;
-      if (sub?.seats != null) ctx.seats = sub.seats;
-      if (sub?.status) {
-        ctx.subscription = {
-          status: sub.status,
-          currentPeriodEnd: sub.current_period_end ?? null,
-          pastDueSince: sub.past_due_since ?? null,
-        };
+  const [membresia, suscripcion, licencias, claveDeServicio] = await Promise.all([
+    // Organización vía tabla de membresía. LOS DOS FILTROS, y el segundo faltaba:
+    // `.eq("org_id", …)` a secas devuelve una fila ARBITRARIA de la organización
+    // —`limit(1)` sin `order`— así que en cuanto una organización tiene dos
+    // miembros el panel le enseña a cualquiera el rol de OTRO. Le dijo "owner" a
+    // un `member` recién invitado. No era escalada de privilegios: el servidor
+    // decide con `lib/org/permisos` y la resolución propia, no con esto. Pero era
+    // una mentira en pantalla.
+    (async (): Promise<Membresia> => {
+      try {
+        const { data } = await supabase
+          .schema("bvsala")
+          .from("org_members")
+          .select("role, organizations(name, plan)")
+          .eq("org_id", orgId)
+          .eq("user_id", userId)
+          .maybeSingle();
+        return data as Membresia;
+      } catch {
+        return null; /* schema absent — honest fallback */
       }
-    } catch {
-      /* no subscription table */
-    }
+    })(),
+    // Asientos y estado de cobro. Los tres campos de estado se LEÍAN y se tiraban:
+    // un impago era invisible porque `past_due` mapea a plan "pro".
+    (async (): Promise<Suscripcion> => {
+      try {
+        const { data } = await supabase
+          .schema("bvsala")
+          .from("subscriptions")
+          .select("seats, status, current_period_end, past_due_since")
+          .eq("org_id", orgId)
+          .limit(1)
+          .maybeSingle();
+        return data as Suscripcion;
+      } catch {
+        return null; /* no subscription table */
+      }
+    })(),
+    // Licencia real. Este bloque NO existía: `ctx.license` se declaraba, se
+    // inicializaba a null y no se asignaba nunca, así que la espina daba por
+    // buena la licencia con solo existir la organización. La migración 0007 quitó
+    // `token` del alcance de authenticated; aquí solo se piden columnas de estado.
+    // SIN filtrar por `revoked`, a propósito: filtrarlas antes de mirar hacía que
+    // una org con la licencia revocada no devolviera ninguna fila y el panel la
+    // tratara como "nunca tuvo licencia". Quién manda cuando hay varias lo decide
+    // `elegirLicencia`, que prefiere una viva a una revocada vieja.
+    (async (): Promise<Licencia[]> => {
+      try {
+        const { data } = await supabase
+          .schema("bvsala")
+          .from("licenses")
+          .select("expires_at, grace_days, revoked")
+          .eq("org_id", orgId)
+          .order("expires_at", { ascending: false })
+          .limit(5);
+        return (data ?? []) as Licencia[];
+      } catch {
+        return []; /* sin tabla de licencias: null significa AUSENCIA medida */
+      }
+    })(),
+    // Solo el PREFIJO de la clave de servicio: la clave en claro nunca se guarda.
+    (async (): Promise<ClaveDeServicio> => {
+      try {
+        const { data } = await supabase
+          .schema("bvsala")
+          .from("service_accounts")
+          .select("key_prefix, last_used_at")
+          .eq("org_id", orgId)
+          .limit(1)
+          .maybeSingle();
+        return data as ClaveDeServicio;
+      } catch {
+        return null; /* no service_accounts table */
+      }
+    })(),
+  ]);
+
+  if (membresia?.organizations?.name) {
+    ctx.org = { name: membresia.organizations.name, plan: (membresia.organizations.plan ?? "free").toLowerCase() };
+    ctx.role = membresia.role ?? null;
   }
 
-  // Licencia real. Este bloque NO existía: `ctx.license` se declaraba, se
-  // inicializaba a null y no se asignaba nunca, así que la espina daba por
-  // buena la licencia con solo existir la organización — y esa fila la crea el
-  // endpoint de claves de servicio. Pulsar "crear clave" encendía "License
-  // active" sin que hubiera ni una fila en bvsala.licenses.
-  //
-  // La migración 0007 quitó `token` del alcance de authenticated, así que aquí
-  // solo se piden las columnas de estado, que siguen siendo legibles.
-  try {
-    const { data } = await supabase
-      .schema("bvsala")
-      .from("licenses")
-      .select("expires_at, grace_days, revoked")
-      .eq("org_id", orgId)
-      // SIN filtrar por `revoked`, a propósito. Filtrarlas antes de mirar hacía
-      // que una org con la licencia revocada no devolviera ninguna fila y el
-      // panel la tratara como "nunca tuvo licencia": el peor estado posible era
-      // el único sin una palabra en pantalla. Quién manda cuando hay varias lo
-      // decide `elegirLicencia`, que sí prefiere una viva a una revocada vieja.
-      .order("expires_at", { ascending: false })
-      .limit(5);
-    const filas = (data ?? []) as { expires_at?: string; grace_days?: number; revoked?: boolean }[];
-    const elegida = elegirLicencia(filas, Date.now());
-    if (elegida?.row.expires_at) {
-      ctx.license = {
-        status: elegida.status,
-        expiresAt: elegida.row.expires_at,
-        graceDays: elegida.row.grace_days ?? 0,
+  // La suscripción solo cuenta si hay organización: misma regla que antes, cuando
+  // la consulta ni se hacía sin ella. Ahora se hace en paralelo y se descarta.
+  if (ctx.org && suscripcion) {
+    if (suscripcion.seats != null) ctx.seats = suscripcion.seats;
+    if (suscripcion.status) {
+      ctx.subscription = {
+        status: suscripcion.status,
+        currentPeriodEnd: suscripcion.current_period_end ?? null,
+        pastDueSince: suscripcion.past_due_since ?? null,
       };
     }
-  } catch {
-    /* sin tabla de licencias: se queda en null, que significa AUSENCIA medida */
   }
 
-  // Service-account key PREFIX only (plaintext key is never stored/reproducible).
-  try {
-    const { data } = await supabase
-      .schema("bvsala")
-      .from("service_accounts")
-      .select("key_prefix, last_used_at")
-      .eq("org_id", orgId)
-      .limit(1)
-      .maybeSingle();
-    const sa = data as { key_prefix?: string; last_used_at?: string | null } | null;
-    if (sa?.key_prefix) ctx.serviceAccount = { keyPrefix: sa.key_prefix, lastUsedAt: sa.last_used_at ?? null };
-  } catch {
-    /* no service_accounts table */
+  const elegida = elegirLicencia(licencias, Date.now());
+  if (elegida?.row.expires_at) {
+    ctx.license = {
+      status: elegida.status,
+      expiresAt: elegida.row.expires_at,
+      graceDays: elegida.row.grace_days ?? 0,
+    };
+  }
+
+  if (claveDeServicio?.key_prefix) {
+    ctx.serviceAccount = { keyPrefix: claveDeServicio.key_prefix, lastUsedAt: claveDeServicio.last_used_at ?? null };
   }
 
   return ctx;
