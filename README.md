@@ -89,9 +89,15 @@ lives in your dashboard once you sign in.
 **1 · The package**
 
 ```bash
-pnpm add @bivelio/savings-layer
-# or: npm i @bivelio/savings-layer  ·  yarn add @bivelio/savings-layer
+pnpm add @bivelio/savings-layer gpt-tokenizer
+# or: npm i @bivelio/savings-layer gpt-tokenizer  ·  yarn add @bivelio/savings-layer gpt-tokenizer
 ```
+
+`gpt-tokenizer` is optional, but install it if you call OpenAI models: it is the
+provider's own tokenizer, and the SDK loads it by itself. Without it, counts fall back
+to a built‑in estimate, every saving where the layer removed something is reported as
+`estimated` instead of `measured`, and estimated savings are never billed — the SDK
+warns once when that happens.
 
 **2 · The license** — from your [dashboard](https://savings.bivelio.com/dashboard/install)
 (**€4 / seat / month** or **€39 / seat / year**, EUR)
@@ -255,8 +261,10 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 - **Node ≥ 20.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
   `require()` works on Node ≥ 22.
-- Optional peer `gpt-tokenizer` for exact OpenAI token counts — without it a
-  built‑in estimator is used, so it is not required to get started.
+- Optional peer `gpt-tokenizer` for exact OpenAI token counts, loaded automatically
+  when installed — without it a built‑in estimator is used and OpenAI savings are
+  reported as `estimated`, so it is not required to get started but it is required
+  for a `measured` figure.
 - Every component (cache, vector store, tokenizer, compressor, constraint backend)
   ships with an in‑memory default and is independently swappable behind the same
   interfaces.

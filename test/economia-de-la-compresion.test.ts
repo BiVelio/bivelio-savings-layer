@@ -92,7 +92,7 @@ describe("verja 1: un contexto corto no llega ni a pagar el compresor", () => {
   it("no se llama al compresor, no se acredita nada y la traza dice por qué", async () => {
     const { estado, compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
 
     const texto = contexto(20, 30); // ~100 tokens: muy por debajo de los 2000
     const res = await capa.generate(peticion("openai/gpt-4o-mini", texto));
@@ -117,7 +117,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
   it("la compresión se calcula, se mide y se DESCARTA: el prompt sale entero", async () => {
     const { estado, compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
 
     const res = await capa.generate(peticion("openai/gpt-4o-mini", texto));
 
@@ -139,7 +139,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
     // real: la capa no le apaga la palanca por precaución cuando él ya midió.
     const { compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({
+    const capa = createSavingsLayer({ exactTokenizer: false,
       provider: proveedor,
       compressor: compresor,
       compressionEconomics: { prefix: { stableTokens: 0, hitRate: 0 } },
@@ -158,7 +158,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
     // abstiene igual que con OpenAI.
     const { compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
 
     const res = await capa.generate(peticion("un-modelo-de-la-casa", texto));
 
@@ -176,7 +176,7 @@ describe("verja 3: comprimir no puede sacar el prompt del tramo cacheable", () =
     // justo el que más paga.
     const { compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({
+    const capa = createSavingsLayer({ exactTokenizer: false,
       provider: proveedor,
       compressor: compresor,
       compressionEconomics: { prefix: { stableTokens: 3000, hitRate: 1 } },
@@ -198,7 +198,7 @@ describe("verja 2: el ahorro neto se comprueba con lo que se quitó de VERDAD", 
   it("una reducción por debajo del mínimo no se aplica ni se acredita", async () => {
     const { estado, compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
 
     // Contexto largo (pasa la verja 1) del que solo hay ~80 tokens que quitar.
     const res = await capa.generate(
@@ -217,7 +217,7 @@ describe("cuando sale a cuenta, se comprime — las verjas no apagan la palanca"
   it("contexto largo, reducción grande y sin tocar el tramo: se aplica y se acredita", async () => {
     const { compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
 
     // 700 RUIDO fuera y ~1800 tokens de relleno dentro: el prompt comprimido
     // sigue muy por encima de 1024, así que no hay caché que romper.
@@ -323,7 +323,7 @@ describe("la verja de tamaño mide el contexto del CLIENTE, no el texto de la ca
     // comprimible" tokens que nadie iba a comprimir.
     const { estado, compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
 
     const res = await capa.generate({
       model: "openai/gpt-4o-mini",
@@ -367,7 +367,7 @@ describe("el motivo que se le publica al cliente está en inglés", () => {
   ): Promise<void> => {
     const { compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, compressor: compresor });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, compressor: compresor });
     const res = await capa.generate(peticion(model, texto));
 
     const traza = trazaDeCompresion(res.report.traces);
@@ -394,7 +394,7 @@ describe("el motivo que se le publica al cliente está en inglés", () => {
   it("y también el motivo de 'sin comprimir sale más barato'", async () => {
     const { compresor } = compresorContador();
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({
+    const capa = createSavingsLayer({ exactTokenizer: false,
       provider: proveedor,
       compressor: compresor,
       compressionEconomics: { prefix: { stableTokens: 3000, hitRate: 1 } },

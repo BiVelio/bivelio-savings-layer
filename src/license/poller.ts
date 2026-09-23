@@ -291,10 +291,12 @@ export class RevocationPoller {
     if (n < FALLOS_ANTES_DE_AVISAR) return;
     if ((n - FALLOS_ANTES_DE_AVISAR) % REPETIR_AVISO_CADA !== 0) return;
     const motivo = error instanceof Error ? error.message : String(error);
+    // In English, like everything the customer sees: it was the last warning
+    // still in Spanish after #305, and it is the one that fires during an outage.
     console.warn(
-      `[bv-sala] no se ha podido contactar con el servidor de revocaciones ${n} veces seguidas ` +
-        `(${motivo}). La licencia SIGUE funcionando y las revocaciones ya conocidas se siguen ` +
-        `aplicando, pero las NUEVAS no están llegando. Compruebe la salida hacia ${this.opts.url}.`,
+      `[bv-sala] could not reach the revocation server ${n} times in a row (${motivo}). ` +
+        `The license KEEPS working and known revocations still apply, but NEW ones are not ` +
+        `arriving. Check egress to ${this.opts.url}.`,
     );
   }
 

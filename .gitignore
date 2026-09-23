@@ -35,3 +35,7 @@ keys/*.private.pem
 # Artefactos de build de Next: nunca se versionan.
 .next/
 apps/web/.next/
+
+# Notas locales de trabajo (grep de entorno, citas): nunca se versionan.
+/entorno.txt
+/docs-citas.txt

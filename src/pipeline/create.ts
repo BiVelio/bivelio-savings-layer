@@ -1,4 +1,6 @@
 import { defaultTokenizerRegistry } from "../tokenizer/registry.js";
+import { MODELS_BY_ENCODING, registerExactTokenizer } from "../tokenizer/exact.js";
+import { avisarUnaVez } from "../util/warn-once.js";
 import type { SavingsRequest, SavingsResult } from "../contracts/types.js";
 import { gateFromKey } from "../license/gate.js";
 import { liveGateFromKey } from "../license/live-gate.js";
@@ -25,6 +27,26 @@ declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
 // export viajaría al `dist/index.d.ts` público. Override:
 // `licenseRevocation.maxStalenessSeconds`.
 export const DEFAULT_MAX_STALENESS_SECONDS = 72 * 3600;
+
+/**
+ * El tokenizador EXACTO se carga UNA vez por proceso en el registro por defecto.
+ *
+ * Hasta hoy `registerExactTokenizer` existía, `gpt-tokenizer` era peer opcional
+ * y el README lo anunciaba… y NADIE lo llamaba desde la fábrica: solo los
+ * bancos y los tests. Un cliente que instalaba el peer seguía contando con el
+ * heurístico, cada ahorro donde la capa quitó algo salía `estimated`, y
+ * `estimated` nunca entra en el extracto. O sea que el peer "opcional" era, en
+ * la práctica, inalcanzable desde `createSavingsLayer`.
+ *
+ * Memoizado a nivel de módulo porque el registro por defecto es un singleton:
+ * cargar la codificación una vez por capa creada serían decenas de MB por capa.
+ */
+let cargaDelExacto: Promise<boolean> | undefined;
+
+/** Modelos con tokenizador exacto disponible, con y sin prefijo `openai/`. */
+const MODELOS_CON_EXACTO = new Set(
+  Object.values(MODELS_BY_ENCODING).flatMap((ms) => ms.flatMap((m) => [m, `openai/${m}`])),
+);
 
 /** The public handle returned by {@link createSavingsLayer}. */
 export interface SavingsLayer {
@@ -89,6 +111,13 @@ export function createSavingsLayer(
     ...config,
     tokenizer: config.tokenizer ?? defaultTokenizerRegistry,
   };
+
+  // Registro por defecto → intentamos el exacto. Un registro propio del
+  // llamante se respeta tal cual: quien lo construye decide qué contiene.
+  const exactoListo: Promise<boolean> =
+    config.tokenizer == null && config.exactTokenizer !== false
+      ? (cargaDelExacto ??= registerExactTokenizer(defaultTokenizerRegistry).catch(() => false))
+      : Promise.resolve(true);
 
   let poller: RevocationPoller | undefined;
   let refresher: LicenseRefresher | undefined;
@@ -255,7 +284,22 @@ export function createSavingsLayer(
     // optimizador entero saltándose assertLicensed(). El único punto de entrada
     // público es generate(), que sí gatea.
     generate: async <T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> => {
+      // La primera petición espera a que el exacto esté (o no) cargado: sin esto
+      // la primera medición de cada proceso saldría con el heurístico aunque el
+      // peer estuviera instalado. Es un `import` local, sin red: milisegundos.
+      const exacto = await exactoListo;
       const result = await pipeline.generate<T>(request);
+      // Después de la petición, no antes: un llamante sin licencia debe ver el
+      // error de licencia, no un aviso sobre el tokenizador.
+      if (!exacto && config.silenceWarnings !== true && MODELOS_CON_EXACTO.has(request.model)) {
+        avisarUnaVez(
+          "tokenizador-exacto-ausente",
+          "[bvsala] `gpt-tokenizer` is not installed, so token counts for OpenAI models are " +
+            "ESTIMATED with a built-in heuristic: every saving where the layer removed something " +
+            "will be reported as `estimated`, never `measured`, and estimated savings are never " +
+            "billed. Install it once (`npm i gpt-tokenizer`) and the SDK loads it automatically.",
+        );
+      }
       if (emitter) {
         try {
           emitter.record(result.report);

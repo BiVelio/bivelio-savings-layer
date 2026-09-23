@@ -63,7 +63,7 @@ describe("bvsala · el fallo de arranque traducido al probador", () => {
   it("EADDRINUSE → una sola línea con el puerto, la causa probable y la salida (--puerto M o apagar el otro)", () => {
     const linea = mensajeDeFalloDeArranque(conCodigo("EADDRINUSE", 8402), "gateway", 8402);
     expect(linea).toBe(
-      "port 8402 is already in use (another gateway, or a terminal launched earlier?): use --puerto 8403 or stop the other process",
+      "port 8402 is already in use (another gateway, or a terminal launched earlier?): use --port 8403 or stop the other process",
     );
     expect(linea).not.toContain("\n"); // sin traza
     expect(linea).not.toContain("node:net");
@@ -73,7 +73,7 @@ describe("bvsala · el fallo de arranque traducido al probador", () => {
     const linea = mensajeDeFalloDeArranque(conCodigo("EACCES", 80), "gateway", 80);
     expect(linea).toContain("permission denied");
     expect(linea).toContain("80");
-    expect(linea).toContain("--puerto");
+    expect(linea).toContain("--port");
     expect(linea).not.toContain("\n");
   });
 
