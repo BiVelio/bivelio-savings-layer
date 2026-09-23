@@ -128,6 +128,31 @@ describe("un modelo sin structured outputs no rompe la petición", () => {
     expect(envios.filter((e) => e.response_format !== undefined)).toHaveLength(1);
   });
 
+  it("avisa en inglés, una vez por modelo, y dice cómo recuperar la garantía nativa", async () => {
+    const avisos: string[] = [];
+    const espiaWarn = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => {
+      avisos.push(a.map(String).join(" "));
+    });
+    try {
+      const { fetchImpl } = endpointAntiguo();
+      const p = new OpenAICompatibleProvider({ baseUrl: "https://x/v1", fetchImpl });
+      const peticion = {
+        model: "gpt-4",
+        messages: [{ role: "user" as const, content: "hola" }],
+        schema: contrato,
+      };
+      await p.generate(peticion);
+      await p.generate(peticion);
+
+      const sobreElModelo = avisos.filter((a) => a.includes('Model "gpt-4" rejects `response_format`'));
+      expect(sobreElModelo, "el modelo queda anotado: un aviso, no uno por petición").toHaveLength(1);
+      expect(sobreElModelo[0]).toContain('`constraints.backend: "none"`');
+      expect(sobreElModelo[0]).toContain("gpt-4o or later");
+    } finally {
+      espiaWarn.mockRestore();
+    }
+  });
+
   it("un modelo moderno no paga nada por esto", async () => {
     const envios: Envio[] = [];
     const fetchImpl = vi.fn(async (_url: string, init: RequestInit) => {

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 import { OpenAICompatibleProvider, isStrictCompatible } from "../src/providers/openai-compatible.js";
+import { reiniciarAvisos } from "../src/util/warn-once.js";
 
 /**
  * El modo `strict` de OpenAI impone dos reglas que JSON Schema NO tiene:
@@ -127,6 +128,31 @@ describe("lo que el proveedor pone de verdad en el cuerpo", () => {
     await p.generate({ model: "gpt-4o-mini", messages: [{ role: "user", content: "hola" }], schema: contratoEstricto });
 
     expect(rf(visto.body)?.strict).toBe(true);
+  });
+
+  it("el contrato con opcional AVISA en inglés, una vez, y dice cómo recuperar la garantía", async () => {
+    reiniciarAvisos();
+    const avisos: string[] = [];
+    const espiaWarn = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => {
+      avisos.push(a.map(String).join(" "));
+    });
+    try {
+      const { fetchImpl } = capturar();
+      const p = new OpenAICompatibleProvider({ baseUrl: "https://x/v1", fetchImpl });
+      const peticion = { model: "gpt-4o-mini", messages: [{ role: "user" as const, content: "hola" }] };
+      await p.generate({ ...peticion, schema: contratoConOpcional });
+      await p.generate({ ...peticion, schema: contratoConOpcional });
+      // El estricto no tiene nada que avisar.
+      await p.generate({ ...peticion, schema: contratoEstricto });
+
+      const sobreStrict = avisos.filter((a) => a.includes("`strict`"));
+      expect(sobreStrict, "una vez por proceso").toHaveLength(1);
+      expect(sobreStrict[0]).toContain("must list ALL the keys in `properties`");
+      expect(sobreStrict[0]).toContain("sent with `strict: false`");
+      expect(sobreStrict[0]).toContain("make every key in the contract required");
+    } finally {
+      espiaWarn.mockRestore();
+    }
   });
 
   it("sin contrato no se manda response_format", async () => {

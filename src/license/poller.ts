@@ -232,9 +232,9 @@ export class RevocationPoller {
         // `onEvent` — que es lo normal.
         this.avisar(
           `rechazada:${razon}`,
-          `[bv-sala] la lista de revocaciones NO verifica (${razon}). Se mantiene la última buena conocida, ` +
-            `así que las revocaciones YA conocidas se siguen aplicando, pero las nuevas no llegan. ` +
-            `Revise ${this.opts.url}.`,
+          `[bv-sala] the revocation list does NOT verify (${razon}). The last known-good list is kept, ` +
+            `so revocations ALREADY known still apply, but new ones are not arriving. ` +
+            `Check ${this.opts.url}.`,
         );
         return;
       }
@@ -291,10 +291,12 @@ export class RevocationPoller {
     if (n < FALLOS_ANTES_DE_AVISAR) return;
     if ((n - FALLOS_ANTES_DE_AVISAR) % REPETIR_AVISO_CADA !== 0) return;
     const motivo = error instanceof Error ? error.message : String(error);
+    // En inglés, como todo lo que ve el cliente: este salta en plena caída, cuando
+    // nadie tiene tiempo de traducir.
     console.warn(
-      `[bv-sala] no se ha podido contactar con el servidor de revocaciones ${n} veces seguidas ` +
-        `(${motivo}). La licencia SIGUE funcionando y las revocaciones ya conocidas se siguen ` +
-        `aplicando, pero las NUEVAS no están llegando. Compruebe la salida hacia ${this.opts.url}.`,
+      `[bv-sala] could not reach the revocation server ${n} times in a row (${motivo}). ` +
+        `The license KEEPS working and known revocations still apply, but NEW ones are not ` +
+        `arriving. Check egress to ${this.opts.url}.`,
     );
   }
 

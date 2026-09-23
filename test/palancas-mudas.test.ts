@@ -88,8 +88,8 @@ describe("pedir compresión sin compresor AVISA", () => {
     expect(aviso).toHaveLength(1);
     // El aviso vale por lo que le AHORRA al cliente en depuración: si no dice el
     // síntoma que ya está viendo, seguirá creyendo que el compresor corrió.
-    expect(aviso[0]).toContain("AUSENTE");
-    expect(aviso[0]).toContain("`tokens.eliminatedInput` a 0");
+    expect(aviso[0]).toContain("ABSENT");
+    expect(aviso[0]).toContain("`tokens.eliminatedInput` is 0");
     expect(aviso[0]).toContain("createSavingsLayer({ compressor })");
   });
 
@@ -227,7 +227,7 @@ describe("`silenceWarnings` llega también al poller y al emisor", () => {
 
   it("el sondeo de revocaciones habla por defecto y calla con el interruptor", async () => {
     await conElPollerCaido();
-    expect(avisos.filter((a) => a.includes("revocaciones"))).toHaveLength(1);
+    expect(avisos.filter((a) => a.includes("revocation server"))).toHaveLength(1);
 
     avisos = [];
     reiniciarAvisos();

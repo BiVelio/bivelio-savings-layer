@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { AnthropicProvider } from "../src/providers/anthropic.js";
 import type { ProviderRequest } from "../src/providers/types.js";
+import { reiniciarAvisos } from "../src/util/warn-once.js";
 
 /**
  * El adaptador de Anthropic, y sobre todo la caché de prefijo.
@@ -316,24 +317,39 @@ describe("contrato de salida y herramientas", () => {
     expect(r.structuredNatively).toBe(true);
   });
 
-  it("un esquema que no cumple `strict` NO se publica como garantía del proveedor", async () => {
-    const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
-    const r = await new AnthropicProvider({ fetchImpl }).generate({
-      ...PETICION,
-      // `required` no lista todas las claves: en modo strict eso no vale.
-      schema: {
-        type: "object",
-        properties: { a: { type: "string" }, b: { type: "string" } },
-        required: ["a"],
-        additionalProperties: false,
-      },
+  it("un esquema que no cumple `strict` NO se publica como garantía del proveedor, y avisa en inglés", async () => {
+    reiniciarAvisos();
+    const avisos: string[] = [];
+    const espiaWarn = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => {
+      avisos.push(a.map(String).join(" "));
     });
-    const tools = enviados[0]!["tools"] as Record<string, unknown>[];
-    expect(tools[0]!["strict"]).toBeUndefined();
-    // El esquema sigue viajando —el modelo sigue guiado— pero quien impone la
-    // forma es el layer al validar, y el informe lo dirá.
-    expect(tools[0]!["input_schema"]).toBeDefined();
-    expect(r.structuredNatively).toBe(false);
+    try {
+      const { enviados, fetchImpl } = espia(respuestaDeTexto("{}"));
+      const r = await new AnthropicProvider({ fetchImpl }).generate({
+        ...PETICION,
+        // `required` no lista todas las claves: en modo strict eso no vale.
+        schema: {
+          type: "object",
+          properties: { a: { type: "string" }, b: { type: "string" } },
+          required: ["a"],
+          additionalProperties: false,
+        },
+      });
+      const tools = enviados[0]!["tools"] as Record<string, unknown>[];
+      expect(tools[0]!["strict"]).toBeUndefined();
+      // El esquema sigue viajando —el modelo sigue guiado— pero quien impone la
+      // forma es el layer al validar, y el informe lo dirá.
+      expect(tools[0]!["input_schema"]).toBeDefined();
+      expect(r.structuredNatively).toBe(false);
+      // El aviso es lo que lee el cliente: dice la regla que incumple y quién
+      // garantiza la forma mientras tanto.
+      const sobreStrict = avisos.filter((a) => a.includes("`strict`"));
+      expect(sobreStrict).toHaveLength(1);
+      expect(sobreStrict[0]).toContain("must list ALL the keys in `properties`");
+      expect(sobreStrict[0]).toContain("sent without `strict`");
+    } finally {
+      espiaWarn.mockRestore();
+    }
   });
 
   it("con herramientas del llamante se fuerza `any`, NO la nuestra: conserva sus acciones y le quita la prosa", async () => {

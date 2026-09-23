@@ -97,7 +97,7 @@ describe("⛔ el ETag NO se guarda hasta que la lista verifica", () => {
     // despliegue o alguien está sirviendo algo que no hemos firmado nosotros.
     const f = vi.fn(async () => listaMala()) as unknown as typeof fetch;
     await poller(f).pollOnce();
-    expect(avisos.join(" ")).toContain("NO verifica");
+    expect(avisos.join(" ")).toContain("does NOT verify");
     expect(avisos.join(" ")).toContain(URL_CP);
   });
 
@@ -105,7 +105,7 @@ describe("⛔ el ETag NO se guarda hasta que la lista verifica", () => {
     const f = vi.fn(async () => listaMala()) as unknown as typeof fetch;
     const p = poller(f);
     for (let i = 0; i < 5; i++) await p.pollOnce();
-    expect(avisos.filter((a) => a.includes("NO verifica"))).toHaveLength(1);
+    expect(avisos.filter((a) => a.includes("does NOT verify"))).toHaveLength(1);
   });
 
   it("un 304 sigue siendo un éxito silencioso: no avisa de nada", async () => {
@@ -137,9 +137,9 @@ describe("el call-home caído deja de ser mudo", () => {
     const p = poller(caido());
     for (let i = 0; i < 3; i++) await p.pollOnce();
     expect(avisos).toHaveLength(1);
-    expect(avisos[0]).toContain("3 veces seguidas");
+    expect(avisos[0]).toContain("3 times in a row");
     // El mensaje dice qué significa, no solo que algo falló.
-    expect(avisos[0]).toContain("NUEVAS no están llegando");
+    expect(avisos[0]).toContain("NEW ones are not arriving");
     expect(avisos[0]).toContain(URL_CP);
   });
 

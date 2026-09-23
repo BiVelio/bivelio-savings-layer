@@ -52,7 +52,7 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (!process.env.CRON_SECRET) {
     // FALLO CERRADO, PERO NO SILENCIOSO (2026-09-12).
     await alertar({ nivel: "critico", asunto: "cron cierre-extractos no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/cierre-extractos" } });
-    return NextResponse.json({ error: "cron sin configurar" }, { status: 501 });
+    return NextResponse.json({ error: "Cron isn't configured (CRON_SECRET unset)." }, { status: 501 });
   }
   if (!autorizado(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

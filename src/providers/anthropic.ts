@@ -335,10 +335,10 @@ export class AnthropicProvider implements Provider {
         if (!strict && !traeHerramientas) {
           avisarUnaVez(
             "anthropic-strict-incompatible",
-            "[bvsala] El contrato de respuesta no cumple el modo `strict` (en strict, `required` debe " +
-              "listar TODAS las claves de `properties`, y todo objeto necesita " +
-              "`additionalProperties: false`). Se envía el esquema sin `strict`: el modelo sigue " +
-              "guiado y el layer sigue validando, pero la garantía la da el layer, no el proveedor.",
+            "[bvsala] The response contract does not meet `strict` mode (in strict, `required` must " +
+              "list ALL the keys in `properties`, and every object needs " +
+              "`additionalProperties: false`). The schema is sent without `strict`: the model is still " +
+              "guided and the layer still validates, but the guarantee comes from the layer, not the provider.",
           );
         }
         contratoNativo = strict && !traeHerramientas;
@@ -422,11 +422,11 @@ export class AnthropicProvider implements Provider {
     if (req.deferrable === true) {
       avisarUnaVez(
         "anthropic-sin-tier-diferible",
-        "[bvsala] Esta petición se declaró diferible, pero la API de Mensajes de Anthropic NO tiene " +
-          "un tier síncrono más barato: su `service_tier` elige entre capacidad prioritaria (más " +
-          "cara) y estándar, no un flex. La petición sale sin cambios y el informe no acredita " +
-          "ningún descuento. El 50% por diferir existe en la Message Batches API, que es asíncrona " +
-          "y no cabe en una llamada de petición/respuesta.",
+        "[bvsala] This request was declared deferrable, but the Anthropic Messages API has NO " +
+          "cheaper synchronous tier: its `service_tier` chooses between priority capacity (more " +
+          "expensive) and standard, not a flex. The request goes out unchanged and the report " +
+          "credits no discount. The 50% for deferring exists in the Message Batches API, which is " +
+          "asynchronous and does not fit a request/response call.",
       );
     }
 
