@@ -80,6 +80,7 @@ export interface DecisionDelDescubrimiento {
    * red de seguridad, y la verja exige que la ganancia lo cubra.
    */
   perdidaSiDegrada: number;
+  /** En inglés: acaba en `report.traces[].detail.reason`, que es campo público del informe. */
   razon: string;
 }
 
@@ -123,16 +124,16 @@ export function decidirDescubrimiento(e: EntradaDelDescubrimiento): DecisionDelD
   let razon: string;
   if (ganancia <= 0) {
     razon =
-      `descubrir cuesta más de lo que ahorra: el prompt (${e.promptTokens} tokens) se paga dos ` +
-      `veces y los esquemas que se evitan (${e.esquemasCompletos - e.esquemasDeLaSegunda}) no lo cubren`;
+      `discovery costs more than it saves: the prompt (${e.promptTokens} tokens) is paid twice ` +
+      `and the schemas avoided (${e.esquemasCompletos - e.esquemasDeLaSegunda}) do not cover it`;
   } else if (!aplicar) {
     razon =
-      `la ganancia no cubre el coste de degradar: si el sondeo no elige, la petición sale igual ` +
-      `con todos los esquemas y el sondeo es coste puro`;
+      `the gain does not cover the cost of degrading: if the probe does not choose, the request goes ` +
+      `out unchanged with every schema and the probe is pure cost`;
   } else {
     razon =
-      `se evitan ${e.esquemasCompletos - e.esquemasDeLaSegunda} tokens de esquema en el peor caso, ` +
-      `bastante para pagar el prompt repetido y el sondeo`;
+      `${e.esquemasCompletos - e.esquemasDeLaSegunda} schema tokens avoided in the worst case, ` +
+      `enough to pay for the repeated prompt and the probe`;
   }
 
   return { aplicar, costeDeUnaLlamada, costeDeDosLlamadas, ganancia, perdidaSiDegrada, razon };

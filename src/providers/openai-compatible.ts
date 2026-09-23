@@ -205,12 +205,12 @@ export class OpenAICompatibleProvider implements Provider {
       this.sinResponseFormat.add(model);
       avisarUnaVez(
         `sin-response-format:${model}`,
-        `[bvsala] El modelo "${model}" rechaza \`response_format\` con un 400: no tiene ` +
-          "structured outputs. Se repite la petición pidiendo el JSON por prompt (una sola vez: " +
-          "el modelo queda anotado y las siguientes van directas). El esquema sigue viajando y el " +
-          "layer sigue validando, pero la garantía la da el layer, no el proveedor, y el informe " +
-          'lo dice: `constraints.backend: "none"`. Para recuperar la garantía nativa, usa un ' +
-          "modelo con structured outputs (gpt-4o o posterior).",
+        `[bvsala] Model "${model}" rejects \`response_format\` with a 400: it has no ` +
+          "structured outputs. The request is repeated asking for the JSON via prompt (once only: " +
+          "the model is noted and the following requests go straight there). The schema still travels " +
+          "and the layer still validates, but the guarantee comes from the layer, not the provider, " +
+          'and the report says so: `constraints.backend: "none"`. To recover the native guarantee, ' +
+          "use a model with structured outputs (gpt-4o or later).",
       );
       nativo = false;
       response = await this.enviar(model, req, false);
@@ -321,11 +321,11 @@ export class OpenAICompatibleProvider implements Provider {
       if (!strict) {
         avisarUnaVez(
           "strict-incompatible",
-          "[bvsala] El contrato de respuesta no cumple el modo `strict` de OpenAI " +
-            "(en strict, `required` debe listar TODAS las claves de `properties`, y todo objeto " +
-            "necesita `additionalProperties: false`). Se envía el esquema con `strict: false`: " +
-            "el modelo sigue guiado y el layer sigue validando, pero la garantía la da el layer, " +
-            "no el proveedor. Para recuperarla, haz obligatorias todas las claves del contrato.",
+          "[bvsala] The response contract does not meet OpenAI's `strict` mode " +
+            "(in strict, `required` must list ALL the keys in `properties`, and every object " +
+            "needs `additionalProperties: false`). The schema is sent with `strict: false`: " +
+            "the model is still guided and the layer still validates, but the guarantee comes from " +
+            "the layer, not the provider. To recover it, make every key in the contract required.",
         );
       }
       body["response_format"] = {

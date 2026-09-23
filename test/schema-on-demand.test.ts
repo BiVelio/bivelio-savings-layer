@@ -127,7 +127,7 @@ describe("la verja económica del descubrimiento", () => {
     });
     expect(d.aplicar).toBe(false);
     expect(d.ganancia).toBeLessThan(0);
-    expect(d.razon).toContain("dos veces");
+    expect(d.razon).toContain("twice");
   });
 
   it("exige que la ganancia cubra el coste de degradar, no solo que sea positiva", () => {
@@ -141,7 +141,7 @@ describe("la verja económica del descubrimiento", () => {
     expect(d.ganancia).toBeGreaterThan(0);
     expect(d.ganancia).toBeLessThan(d.perdidaSiDegrada);
     expect(d.aplicar).toBe(false);
-    expect(d.razon).toContain("degradar");
+    expect(d.razon).toContain("degrading");
   });
 
   it("decide en DINERO: encarecer la salida tumba una decisión que estaba aprobada", () => {
