@@ -1,7 +1,8 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 /**
@@ -296,5 +297,85 @@ describe("sala limpia: el paquete de npm, instalado y ejecutado SIN clave", () =
     // en el paquete y esto lo cazaría aquí.
     expect(bundlePublicado.includes("BVSALA_DEV_OPEN")).toBe(false);
     expect(bundlePublicado.includes("devUnlicensed")).toBe(false);
+  });
+});
+
+/**
+ * EL BINARIO DEL GATEWAY PUBLICADO (LICENSE §2). `bvsala` va en el mismo
+ * tarball y arranca solo con licencia: aquí se ejecuta el `dist/gateway/bin.js`
+ * de verdad, sin red y con el entorno construido desde cero, y se comprueba que
+ * cada fallo de arranque dice EXACTAMENTE qué falta — y que lo que no necesita
+ * licencia (versión, doctor, la ayuda del terminal hijo) sigue funcionando.
+ */
+describe("sala limpia: el binario del gateway publicado", () => {
+  const bin = () => join(consumidor, "node_modules", "@bivelio", "savings-layer", "dist", "gateway", "bin.js");
+  const correr = (args: string[], env: NodeJS.ProcessEnv) =>
+    spawnSync(process.execPath, [bin(), ...args], { cwd: consumidor, env, encoding: "utf8", timeout: 30_000 });
+
+  it("(a) lleva la clave pública embebida: sin ella ninguna licencia verificaría y bvsala no arrancaría nunca", () => {
+    expect(readFileSync(bin(), "utf8")).toContain("BEGIN PUBLIC KEY");
+  });
+
+  it("(b) sin BIVELIO_SERVICE_KEY: exit 1 y las dos cosas que faltan, con sus URL", () => {
+    const r = correr(["gateway", "--port", "0"], ENTORNO_LIMPIO);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("BIVELIO_SERVICE_KEY is not set");
+    expect(r.stderr).toContain("/dashboard/account");
+    expect(r.stderr).toContain("/dashboard/install");
+  });
+
+  it("(c) con clave y SIN red: exit 1, «could not collect your license» con el respaldo, y jamás la clave", () => {
+    // Sin red de verdad: el preámbulo pisa `fetch` ANTES de cargar el binario,
+    // así que la recogida online falla aquí y no en savings.bivelio.com.
+    const envoltorio = join(consumidor, "gateway-sin-red.mjs");
+    writeFileSync(
+      envoltorio,
+      [
+        'globalThis.fetch = () => { throw new Error("[sala-limpia] la red esta prohibida en este test"); };',
+        `process.argv = [process.execPath, ${JSON.stringify(bin())}, "gateway", "--port", "0"];`,
+        `await import(${JSON.stringify(pathToFileURL(bin()).href)});`,
+      ].join("\n"),
+    );
+    const r = spawnSync(process.execPath, [envoltorio], {
+      cwd: consumidor,
+      env: { ...ENTORNO_LIMPIO, BIVELIO_SERVICE_KEY: "bvk_x" },
+      encoding: "utf8",
+      timeout: 30_000,
+    });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("could not collect your license");
+    expect(r.stderr).toContain("BIVELIO_LICENSE_KEY");
+    expect(`${r.stdout}${r.stderr}`).not.toContain("bvk_x");
+  });
+
+  it("(d) la bvk_ pegada en BIVELIO_LICENSE_KEY: exit 1 con la pista, antes de tocar la red", () => {
+    const r = correr(["gateway", "--port", "0"], { ...ENTORNO_LIMPIO, BIVELIO_SERVICE_KEY: "bvk_x", BIVELIO_LICENSE_KEY: "bvk_y" });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("Did you paste the bvk_");
+    expect(`${r.stdout}${r.stderr}`).not.toMatch(/bvk_[xy]\b/);
+  });
+
+  it("(e) la versión y el doctor NO exigen licencia", () => {
+    const version = correr(["--version"], ENTORNO_LIMPIO);
+    expect(version.status).toBe(0);
+    expect(version.stdout.trim()).toBe(
+      (JSON.parse(readFileSync(join(RAIZ, "package.json"), "utf8")) as { version: string }).version,
+    );
+    const doctor = correr(["doctor"], ENTORNO_LIMPIO);
+    expect(doctor.status).toBe(0);
+    expect(doctor.stdout).toContain("active BiVelio license");
+  });
+
+  it("(f) `bvsala claude --version` va directo al terminal: ni gateway ni licencia", () => {
+    const r = correr(["claude", "--version"], ENTORNO_LIMPIO);
+    expect(r.stderr).not.toContain("BIVELIO_SERVICE_KEY");
+    // 0 si Claude Code está instalado en esta máquina; 127 si no lo está.
+    expect([0, 127]).toContain(r.status);
+  });
+
+  it("(g) el binario tampoco lleva la puerta de desarrollo", () => {
+    const fuente = readFileSync(bin(), "utf8");
+    expect(fuente.includes("BVSALA_DEV_OPEN")).toBe(false);
+    expect(fuente.includes("devUnlicensed")).toBe(false);
   });
 });

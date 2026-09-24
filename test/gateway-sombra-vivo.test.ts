@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { testLicense } from "./helpers/test-license.js";
 import { CarrilSombra, MAX_CADENAS } from "../gateway/sombra-vivo.js";
 import { configDeDiales } from "../gateway/diales.js";
 import {
@@ -156,6 +157,7 @@ describe("el gateway con BVSALA_GATEWAY_SHADOW", () => {
     const upstream = await arrancarUpstreamSse();
     const ingesta = await arrancarIngestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -208,6 +210,7 @@ describe("el gateway con BVSALA_GATEWAY_SHADOW", () => {
     const upstream = await arrancarUpstreamSse();
     const ingesta = await arrancarIngestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -245,6 +248,7 @@ describe("B2-4 · sombra y borrado del proveedor no se solapan", () => {
     const upstream = await arrancarUpstreamSse(sse);
     const ingesta = await arrancarIngestaFalsa(lotes, ["context_elision"]);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",

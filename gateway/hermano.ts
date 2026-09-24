@@ -193,7 +193,7 @@ export function describirEstadoDeHermano(
   }
   if (!canalAbierto) {
     return {
-      linea: "sibling model routing: NOT ARMED — the licence channel is CLOSED (BVSALA_GATEWAY_ELISION=0 turns off all three levers)",
+      linea: "sibling model routing: NOT ARMED - BVSALA_GATEWAY_ELISION=0 turns off the levers",
       aviso: true,
     };
   }

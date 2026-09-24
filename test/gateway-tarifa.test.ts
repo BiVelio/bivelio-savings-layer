@@ -234,6 +234,16 @@ describe("el 0 € estructural del informe medido", () => {
     expect(inf.cost.netSavings).toBeCloseTo(0.375 / inf.cost.baselineEstimate, 9);
   });
 
+  it("tráfico de SUSCRIPCIÓN con la rebaja aplicada: baseline == actual y netSavings 0 (sin factura por tokens no se acredita)", () => {
+    const medido = costeMedido("claude-opus-5", usage);
+    const inf = informeMedido("req-s", "claude-opus-5", medido!, undefined, null, { rebajadas: 1, yaEran5m: 0 }, null, true) as unknown as {
+      cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
+    };
+    expect(inf.cost.basis).toBe("measured");
+    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
+  });
+
   it("con atribución sucia (marcas 5m del cliente) NO se cobra nada", () => {
     const medido = costeMedido("claude-opus-5", usage);
     const inf = informeMedido("req-3", "claude-opus-5", medido!, undefined, null, {
