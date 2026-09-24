@@ -292,9 +292,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
-        {/* HECHO PARA DESARROLLADORES — tres hechos del paquete, ninguno una
+        {/* HECHO PARA DESARROLLADORES — cuatro hechos del paquete, ninguno una
             promesa: cero dependencias, un SavingsReport por llamada, tráfico
-            directo. Sin cifras: aquí no hay nada que medir, solo describir. */}
+            directo y streaming con el mismo informe (y las mismas reglas de base:
+            un stream sin el contador final del proveedor sale no medido). Sin
+            cifras: aquí no hay nada que medir, solo describir. */}
         <section id="devs">
           <div className="sec-head rv">
             <span className="eyebrow">{t("devs.eyebrow")}</span>
@@ -593,6 +595,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <p style={{ marginTop: 12, opacity: 0.85 }}>
             {t("gateway.note")} <Link href="/how-it-works">{t("gateway.cta")}</Link>
           </p>
+          {/* Cualquier lenguaje con un SDK oficial que acepte base URL (Python
+              incluido): se MIDE, no se ahorra. Clave aparte de gateway.note a
+              propósito, para no pisar el texto de la licencia del gateway. */}
+          <p style={{ marginTop: 8, opacity: 0.85 }}>{t("gateway.pythonNote")}</p>
         </section>
 
         {/* SKILL SAVINGS-MODE — el segmento SUSCRIPCIÓN (sin factura, con topes).
