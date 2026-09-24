@@ -145,12 +145,41 @@ describe("AnthropicProvider.generateStream", () => {
     expect(r.finishReason).toBe("tool_calls");
   });
 
-  it("max_tokens se traduce a length", async () => {
+  it("max_tokens se traduce a length, y tool_use a tool_calls", async () => {
     const cuerpo =
       inicio({ input_tokens: 5, output_tokens: 1 }) + textoBloque(0) + textoDelta(0, "cort") + delta("max_tokens", { output_tokens: 4 }) + fin;
     const s = espia(cuerpo);
     const r = hecho(await recoger(new AnthropicProvider({ fetchImpl: s.fetchImpl }).generateStream(PETICION)));
     expect(r.finishReason).toBe("length");
+
+    const conHerramienta =
+      inicio({ input_tokens: 5, output_tokens: 1 }) +
+      ev("content_block_start", { index: 0, content_block: { type: "tool_use", id: "t1", name: "get_weather", input: {} } }) +
+      ev("content_block_delta", { index: 0, delta: { type: "input_json_delta", partial_json: '{"city":"Paris"}' } }) +
+      parar(0) +
+      delta("tool_use", { output_tokens: 9 }) +
+      fin;
+    const t = espia(conHerramienta);
+    const r2 = hecho(await recoger(new AnthropicProvider({ fetchImpl: t.fetchImpl }).generateStream(PETICION)));
+    expect(r2.finishReason).toBe("tool_calls");
+    expect(r2.toolCalls).toEqual([{ id: "t1", name: "get_weather", arguments: '{"city":"Paris"}' }]);
+  });
+
+  it("un endpoint que ignora stream:true y contesta JSON: se lee como generate(), sin tirar la respuesta ya pagada", async () => {
+    const s = espia(
+      JSON.stringify({
+        content: [{ type: "text", text: "Su pedido sale hoy." }],
+        stop_reason: "end_turn",
+        usage: { input_tokens: 10, output_tokens: 7 },
+      }),
+    );
+    const evs = await recoger(new AnthropicProvider({ fetchImpl: s.fetchImpl }).generateStream(PETICION));
+    expect(s.enviados[0]!["stream"]).toBe(true);
+    expect(evs.map((e) => e.type)).toEqual(["text", "done"]);
+    expect(evs[0]).toEqual({ type: "text", delta: "Su pedido sale hoy." });
+    const r = hecho(evs);
+    expect(r.usage).toEqual({ inputTokens: 10, outputTokens: 7 });
+    expect(r.finishReason).toBe("stop");
   });
 
   it("sin message_delta pero con message_stop: usage {0, 0, complete:false}; con requireUsage lanza", async () => {

@@ -282,21 +282,38 @@ export class OpenAICompatibleProvider implements Provider {
             `would carry no usage and requireUsage is set. ${detalle}`,
         );
       }
-      this.streamOptionsRejected = true;
-      avisarUnaVez(
-        `sin-stream-options:${this.opts.baseUrl}`,
-        "[bvsala] This endpoint rejects `stream_options`, so streamed answers from it carry no usage: " +
-          "they are reported as `unmeasured` and never billed. Use `generate()` for a measured figure, " +
-          "or an endpoint that reports usage when streaming.",
-      );
       response = await this.enviar(model, req, false, {
         includeUsage: false,
         ...(signal ? { signal } : {}),
       });
+      // Solo se anota (y se avisa) si SIN la opción pasó: un 422 por otra cosa
+      // (un validador que rechaza los mensajes) vuelve a fallar sin ella, y
+      // anotarlo antes quitaba el usage a todos los streams del proceso por un
+      // error que no era de `stream_options`.
+      if (response.ok) {
+        this.streamOptionsRejected = true;
+        avisarUnaVez(
+          `sin-stream-options:${this.opts.baseUrl}`,
+          "[bvsala] This endpoint rejects `stream_options`, so streamed answers from it carry no usage: " +
+            "they are reported as `unmeasured` and never billed. Use `generate()` for a measured figure, " +
+            "or an endpoint that reports usage when streaming.",
+        );
+      }
     }
 
     if (!response.ok) {
       throw new Error(`provider ${response.status}: ${await safeText(response)}`);
+    }
+
+    // Un endpoint que ignora `stream: true` y contesta la completion entera en
+    // JSON: la llamada ya está hecha (y facturada), así que se lee como en
+    // generate() en vez de tirarla — el parser SSE no vería ningún `data:` y
+    // lanzaría «ended before completion» sobre una respuesta completa.
+    if ((response.headers.get("content-type") ?? "").includes("application/json")) {
+      const entera = await this.leer(response, req, false);
+      if (entera.text !== "") yield { type: "text", delta: entera.text };
+      yield { type: "done", response: entera };
+      return;
     }
 
     const cuerpo = response.body as (ReadableStream<Uint8Array> & { getReader?: unknown }) | null;

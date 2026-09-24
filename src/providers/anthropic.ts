@@ -176,11 +176,21 @@ export class AnthropicProvider implements Provider {
       return;
     }
 
-    const { body } = this.construirCuerpo(req);
+    const construido = this.construirCuerpo(req);
+    const body = construido.body;
     body["stream"] = true;
     const response = await this.enviar(body, options.signal);
     if (!response.ok) {
       throw new Error(`provider ${response.status}: ${await safeText(response)}`);
+    }
+    // Un endpoint compatible que ignora `stream: true` y contesta el mensaje
+    // entero en JSON: ya está facturado, así que se lee como en generate() en
+    // vez de lanzar «ended before completion» sobre una respuesta completa.
+    if ((response.headers.get("content-type") ?? "").includes("application/json")) {
+      const entera = await this.leer(response, req, construido.contratoNativo);
+      if (entera.text !== "") yield { type: "text", delta: entera.text };
+      yield { type: "done", response: entera };
+      return;
     }
 
     const cuerpo = response.body as (ReadableStream<Uint8Array> & { getReader?: unknown }) | null;

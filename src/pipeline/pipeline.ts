@@ -2062,6 +2062,9 @@ export class SavingsPipeline {
     // lo están ni pueden estarlo: no salieron gratis, las pagó una llamada extra.
     // Los dos conjuntos son disjuntos —el sondeo solo mira lo que el selector
     // dejó pasar—, así que ningún token se cuenta dos veces.
+    // En «live», un abort que llegó durante las etapas previas no puede pagar
+    // el sondeo: su respuesta solo sirve a una primaria que ya no va a salir.
+    if (sumidero?.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
     const descubrimiento = await this.descubrirHerramientas(
       testigo, request, toggles, toolSelection.tools, messages, ledger, costModel, trace,
     );

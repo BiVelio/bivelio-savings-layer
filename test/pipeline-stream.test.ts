@@ -669,3 +669,71 @@ describe("generateStream — la verja de la caché de prefijo", () => {
     expect(trazas.some((t) => t.outcome === "measured")).toBe(false);
   });
 });
+
+describe("generateStream — el sondeo de toolDiscovery y el abort", () => {
+  /** Un esquema gordo: con él el sondeo compensa y la verja económica lo deja salir. */
+  const lecturaGorda = (id: string) => {
+    const properties: Record<string, { type: "string"; description: string; maxLength: number }> = {};
+    for (let i = 0; i < 12; i++) {
+      properties[`${id}_field_${i}`] = {
+        type: "string",
+        description: `The ${id} field number ${i}, expressed as a fully qualified value`,
+        maxLength: 120,
+      };
+    }
+    return {
+      id,
+      intents: [`customer ${id} lookup`],
+      risk: "read" as const,
+      description: `Look up ${id} for a customer`,
+      parameters: { type: "object" as const, properties, required: Object.keys(properties) },
+    };
+  };
+  const conCatalogo = (): SavingsRequest =>
+    peticion({
+      messages: [{ role: "user", content: "Explain what the product catalogue lookup returns" }],
+      tools: Array.from({ length: 8 }, (_, i) => lecturaGorda(`tool_${i}`)),
+      savings: { toolDiscovery: true },
+    } as Partial<SavingsRequest>);
+  const PRECIOS = { "openai/gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006 } };
+
+  it("sin abort, el sondeo sale (por generate) antes de la primaria en stream", async () => {
+    const p = new Falso({
+      generate: () => ({
+        text: "",
+        usage: { inputTokens: 500, outputTokens: 10 },
+        finishReason: "tool_calls",
+        toolCalls: [{ id: "c0", name: "tool_1", arguments: "{}" }],
+      }),
+    });
+    const layer = createSavingsLayer({ provider: p, devUnlicensed: true, costModels: PRECIOS });
+    await layer.generateStream(conCatalogo()).result;
+    expect(p.llamadasGenerate).toBe(1);
+    expect(p.llamadasStream).toBe(1);
+  });
+
+  it("un abort que llega ANTES del sondeo no lo paga: ninguna llamada y requestSent false", async () => {
+    let soltar!: () => void;
+    const bloqueo = new Promise<void>((r) => (soltar = r));
+    let avisarGet!: () => void;
+    const enGet = new Promise<void>((r) => (avisarGet = r));
+    const exactCache: ExactCache = {
+      async get() {
+        avisarGet();
+        await bloqueo;
+        return null;
+      },
+      async set() {},
+      async delete() {},
+    };
+    const p = new Falso();
+    const layer = createSavingsLayer({ provider: p, devUnlicensed: true, costModels: PRECIOS, exactCache });
+    const s = layer.generateStream(conCatalogo());
+    await enGet;
+    s.abort();
+    soltar();
+    await expect(s.result).rejects.toBeInstanceOf(StreamAbortedError);
+    await expect(s.result).rejects.toMatchObject({ requestSent: false });
+    expect(p.llamadasGenerate + p.llamadasStream).toBe(0);
+  });
+});

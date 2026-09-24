@@ -193,6 +193,34 @@ describe("OpenAICompatibleProvider.generateStream", () => {
     expect(r.usage.complete).toBe(false);
   });
 
+  it("un 422 que vuelve a fallar SIN la opción no era de stream_options: ni se anota ni se avisa", async () => {
+    const f = falso(() => ({ status: 422, body: '{"detail":[{"msg":"messages: field required"}]}' }));
+    const p = proveedor(f.fetchImpl);
+    await expect(recoger(p.generateStream(REQ))).rejects.toThrow(/provider 422: .*field required/);
+    expect(f.llamadas).toHaveLength(2);
+    expect(avisos.filter((a) => a.includes("rejects `stream_options`"))).toHaveLength(0);
+
+    // El endpoint no quedó marcado: la siguiente vuelve a pedir el usage.
+    await expect(recoger(p.generateStream(REQ))).rejects.toThrow(/provider 422/);
+    expect(f.llamadas).toHaveLength(4);
+    expect(f.llamadas[2]!.body["stream_options"]).toEqual({ include_usage: true });
+  });
+
+  it("un endpoint que ignora stream:true y contesta JSON: se lee como generate(), sin tirar la respuesta ya pagada", async () => {
+    const f = falso(() => ({
+      status: 200,
+      json: true,
+      body: JSON.stringify({ choices: [{ message: { content: "Hola, qué tal" }, finish_reason: "stop" }], usage: USO }),
+    }));
+    const evs = await recoger(proveedor(f.fetchImpl).generateStream(REQ));
+    expect(evs.filter((e) => e.type === "text")).toEqual([{ type: "text", delta: "Hola, qué tal" }]);
+    const r = hecho(evs);
+    expect(r.text).toBe("Hola, qué tal");
+    expect(r.finishReason).toBe("stop");
+    expect(r.usage).toEqual({ inputTokens: 100, outputTokens: 20, cachedInputTokens: 40 });
+    expect(f.llamadas).toHaveLength(1);
+  });
+
   it("un 400 que no habla de stream_options se propaga sin reintentar", async () => {
     const f = falso(() => ({ status: 400, body: '{"error":{"message":"model not found"}}' }));
     await expect(recoger(proveedor(f.fetchImpl).generateStream(REQ))).rejects.toThrow(/provider 400: .*model not found/);
