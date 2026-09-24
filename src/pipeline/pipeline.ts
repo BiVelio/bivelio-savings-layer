@@ -6,6 +6,8 @@ import type {
   SavingsRequest,
   SavingsResult,
   SavingsReport,
+  SavingsStream,
+  SavingsStreamOptions,
   ChatMessage,
   CacheOutcome,
   DeferredExecutionReport,
@@ -50,7 +52,7 @@ import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
-import type { Provider, ProviderResponse } from "../providers/types.js";
+import type { Provider, ProviderRequest, ProviderResponse } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import {
   decidirDescubrimiento,
@@ -66,6 +68,8 @@ import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
+import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
+import { StreamAbortedError } from "./errors.js";
 
 /**
  * Build-time flag: the published npm SDK sets this to `false` (tsup `define`) so the
@@ -120,6 +124,8 @@ const ELISION_EN_VIVO: boolean = true;
 interface TestigoDeFacturacion {
   llamadas: number;
   falloDelProveedor: boolean;
+  /** Llamadas facturadas que volvieron SIN contador completo (`usage.complete === false`). */
+  sinContador: number;
 }
 
 /**
@@ -435,7 +441,7 @@ export class SavingsPipeline {
     this.assertLicensed();
     // Testigo de facturación de ESTA petición. No puede ser un campo de la
     // instancia: una misma capa sirve peticiones concurrentes.
-    const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false };
+    const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 };
     try {
       return await this.generateOptimized<T>(request, testigo);
     } catch (err) {
@@ -470,6 +476,90 @@ export class SavingsPipeline {
     }
   }
 
+  // LA MISMA PETICIÓN QUE generate(), ENTREGADA COMO STREAM.
+  //
+  // Nunca lanza de forma síncrona: todo error —también `LicenseError`— aparece
+  // en `result` y en el primer `next()` del iterador. `antes` es lo que la
+  // fábrica tiene que esperar antes de la primera medición (la carga del
+  // tokenizador exacto); se espera DENTRO, para que el handle vuelva ya.
+  generateStream<T = unknown>(
+    request: SavingsRequest,
+    options: SavingsStreamOptions = {},
+    antes?: Promise<unknown>,
+  ): SavingsStream<T> {
+    let canal: CanalDeStream<T>;
+    try {
+      canal = new CanalDeStream<T>(this.now, options?.signal);
+    } catch (err) {
+      // Una `signal` que no es un AbortSignal de verdad: el error va al handle,
+      // como cualquier otro, en vez de lanzarse aquí.
+      const roto = new CanalDeStream<T>(this.now);
+      roto.fallar(err);
+      return roto.handle;
+    }
+    void this.ejecutarStream<T>(request, canal, antes);
+    return canal.handle;
+  }
+
+  // Dos entregas y ninguna palanca apagada:
+  //
+  //  · «whole»: con contrato, diferible o un proveedor sin `generateStream`, la
+  //    petición es EXACTAMENTE la de generate() —licencia, fail-open,
+  //    singleflight, cascada, codebook, validación, reparación, caché— y se
+  //    entrega de una pieza. Todo lo que reescribe o descarta una respuesta vive
+  //    detrás de un contrato, y un texto ya emitido no se puede reescribir.
+  //  · «live»: el mismo camino optimizado, con la primaria por
+  //    `provider.generateStream` y su texto reenviado según llega.
+  private async ejecutarStream<T>(
+    request: SavingsRequest,
+    canal: CanalDeStream<T>,
+    antes?: Promise<unknown>,
+  ): Promise<void> {
+    try {
+      if (antes) await antes;
+      if (canal.abortado) throw new StreamAbortedError(false);
+      const motivo = this.motivoDeEntregaEntera(request);
+      if (motivo) {
+        const r = await this.generate<T>(request);
+        canal.completar(r, { vivo: false, motivo });
+        return;
+      }
+      // Arriba del try/catch del fail-open, por la misma razón que en generate().
+      this.assertLicensed();
+      // Síncrono tras la comprobación de abort: no hay hueco en el que un abort
+      // llegue sin saber si ya hay que cancelar al proveedor.
+      canal.entrarEnVivo();
+      const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 };
+      let r: SavingsResult<T>;
+      try {
+        r = await this.generateOptimized<T>(request, testigo, canal.sumidero);
+      } catch (err) {
+        if (err instanceof LicenseError || err instanceof StreamAbortedError) throw err;
+        if (canal.sumidero.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
+        // Las mismas reglas del fail-open que generate(): solo se rescata lo que
+        // aún no ha costado nada.
+        if (this.config.failOpen === false) throw err;
+        if (testigo.falloDelProveedor || testigo.llamadas > 0 || errorYaFacturado(err)) throw err;
+        const rescate = await this.failOpenDirect<T>(request, err);
+        canal.completar(rescate, { vivo: false, motivo: "fail-open" });
+        return;
+      }
+      // Lo que decide si el texto se sintetiza entero no es el modo elegido sino
+      // si HUBO servicio en vivo: un atajo (resolver, caché, seguidor) no emitió
+      // nada, y el llamante tiene que recibir el texto igual.
+      canal.completar(r, canal.sumidero.sirvioEnVivo ? { vivo: true } : { vivo: false, motivo: "shortcut" });
+    } catch (err) {
+      canal.fallar(err);
+    }
+  }
+
+  private motivoDeEntregaEntera(request: SavingsRequest): MotivoEntero | null {
+    if (request.response?.schema != null) return "output-contract";
+    if (request.savings?.deferrable === true) return "deferrable";
+    if (typeof this.config.provider.generateStream !== "function") return "provider-without-streaming";
+    return null;
+  }
+
   /**
    * Llama al proveedor dejando constancia. Todo punto que gaste dinero pasa por
    * aquí para que el fail-open sepa si la petición ya ha costado algo y para
@@ -480,12 +570,75 @@ export class SavingsPipeline {
     testigo: TestigoDeFacturacion,
   ): Promise<ProviderResponse> {
     testigo.llamadas += 1;
+    let r: ProviderResponse;
     try {
-      return await this.config.provider.generate(req);
+      r = await this.config.provider.generate(req);
     } catch (err) {
       testigo.falloDelProveedor = true;
       throw err;
     }
+    // UNA LLAMADA FACTURADA SIN SU CONTADOR. Todo punto que gasta pasa por aquí
+    // (primaria, escalada, reparación, sondeo, muestra), así que es el único
+    // sitio donde contarlas. El ledger lo recibe al cerrar la petición y la
+    // saca `unmeasured` entera: una cifra con un contador ausente no es la del
+    // proveedor, la sume quien la sume.
+    if (r.usage.complete === false) testigo.sinContador += 1;
+    return r;
+  }
+
+  // El hermano de llamarProveedor() para la primaria en vivo. Deja la misma
+  // constancia en el testigo y reenvía cada delta al llamante en cuanto llega.
+  //
+  // LO QUE SE INFORMA Y SE CACHEA ES LO QUE EL LLAMANTE RECIBIÓ. Si un
+  // `generateStream` de terceros cierra con un `response.text` distinto de sus
+  // deltas, manda lo emitido: es lo que ya está en la pantalla del cliente.
+  private async llamarProveedorEnStream(
+    req: ProviderRequest,
+    testigo: TestigoDeFacturacion,
+    sumidero: SumideroDeStream,
+  ): Promise<ProviderResponse> {
+    if (sumidero.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
+    testigo.llamadas += 1;
+    let enviado = "";
+    let final: ProviderResponse | undefined;
+    try {
+      for await (const ev of this.config.provider.generateStream!(req, { signal: sumidero.senal })) {
+        // Un proveedor que no atiende la señal no retiene al llamante: se deja
+        // de leer en el siguiente evento.
+        if (sumidero.senal.aborted) break;
+        if (ev.type === "text") {
+          if (ev.delta !== "") {
+            enviado += ev.delta;
+            sumidero.texto(ev.delta);
+          }
+        } else if (ev.type === "done") {
+          final = ev.response;
+          break;
+        }
+      }
+    } catch (err) {
+      if (sumidero.senal.aborted) throw new StreamAbortedError(true);
+      testigo.falloDelProveedor = true;
+      throw err;
+    }
+    if (!final) {
+      if (sumidero.senal.aborted) throw new StreamAbortedError(true);
+      testigo.falloDelProveedor = true;
+      throw new Error(`provider "${this.config.provider.id}" stream ended without a final response`);
+    }
+    sumidero.proveedorTermino();
+    if (final.usage.complete === false) testigo.sinContador += 1;
+    if (final.text !== enviado) {
+      this.avisar(
+        `stream-texto-distinto:${this.config.provider.id}`,
+        `[bvsala] provider "${this.config.provider.id}" streamed text that differs from its final response; ` +
+          "the streamed text is what the caller received, so it is what is reported and cached. Its generateStream " +
+          "must end with a done whose response.text equals the concatenated deltas.",
+      );
+      final = { ...final, text: enviado };
+    }
+    sumidero.sirvioEnVivo = true;
+    return final;
   }
 
   /**
@@ -1004,7 +1157,11 @@ export class SavingsPipeline {
     request: SavingsRequest,
     // Con valor por defecto para que invocarlo directamente (tests de superficie,
     // benchmarks) siga funcionando. En el camino real siempre llega el de generate().
-    testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false },
+    testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 },
+    // Solo lo pasa generateStream() en entrega «live»: la llamada primaria va
+    // entonces por `provider.generateStream` y su texto se reenvía según llega.
+    // Con `null` (generate(), y cualquier llamada directa) nada cambia.
+    sumidero: SumideroDeStream | null = null,
   ): Promise<SavingsResult<T>> {
     // Defensa en profundidad: el gate también aquí, no solo en generate(). El
     // `private` de TypeScript se borra al compilar, así que si alguien alcanzara
@@ -1135,7 +1292,7 @@ export class SavingsPipeline {
       try {
         return await this.expensivePath<T>(
           testigo, request, canonical, policy, toggles, ledger, costModel, trace,
-          exactKey, baselineInput, cascada,
+          exactKey, baselineInput, cascada, sumidero,
         );
       } catch (err) {
         // Aquí, y no en el catch de generate(), porque este es el ÚNICO punto
@@ -1147,6 +1304,25 @@ export class SavingsPipeline {
     };
 
     if (policy.allowSingleflight && toggles.singleflight !== false) {
+      // UNA PETICIÓN EN STREAM NUNCA LIDERA. Si liderase, sus seguidores
+      // —peticiones generate() que no pidieron nada de esto— heredarían su
+      // abort (el llamante del stream cancela y la respuesta de todos muere) y
+      // su bloque `streaming`. Así que solo se SUMA a una ejecución idéntica ya
+      // en vuelo, y si no la hay ejecuta la suya sin registrarse.
+      if (sumidero) {
+        const sf = this.deps.singleflight;
+        const enVuelo =
+          typeof sf.join === "function" ? sf.join<SavingsResult<T>>(inflightKey) : undefined;
+        if (enVuelo) {
+          const value = await enVuelo;
+          trace.record("singleflight", "coalesced", { key: inflightKey });
+          return this.asCoalescedFollower<T>(
+            value, baselineInput, this.tokensFor(value.text ?? "", request), costModel, request,
+          );
+        }
+        trace.record("singleflight", "skipped (streaming: a streamed request never leads)");
+        return runExpensive();
+      }
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
       if (coalesced) {
         trace.record("singleflight", "coalesced", { key: inflightKey });
@@ -1172,6 +1348,7 @@ export class SavingsPipeline {
     exactKey: string,
     baselineInput: number,
     cascada: DecisionDeCascada,
+    sumidero: SumideroDeStream | null,
   ): Promise<SavingsResult<T>> {
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
@@ -1928,7 +2105,7 @@ export class SavingsPipeline {
       constraintBackend: backendPlan.backend,
     };
 
-    let response = await this.llamarProveedor({
+    const argsPrimaria = {
       model: cascada.modeloServido,
       ...peticionAlProveedor,
       ...(marcado.marcar
@@ -1937,7 +2114,13 @@ export class SavingsPipeline {
             promptCacheKey: marcado.huella,
           }
         : {}),
-    }, testigo);
+    };
+    // En entrega «live» la PRIMARIA, y solo ella, va en stream. Escalada,
+    // reparación y muestra no se alcanzan sin contrato; el sondeo de
+    // descubrimiento va antes, no se streamea y nunca se sirve.
+    let response = sumidero
+      ? await this.llamarProveedorEnStream(argsPrimaria, testigo, sumidero)
+      : await this.llamarProveedor(argsPrimaria, testigo);
     // Acumulativo, no asignado: con schema-on-demand esta ya es la SEGUNDA llamada
     // de la petición y el sondeo anterior también costó dinero. Asignar borraba su
     // rastro del informe, que es como el fail-open llegó a publicar `actualLlm: 1`
@@ -2121,7 +2304,12 @@ export class SavingsPipeline {
     // como «no acertó» hundiría la tasa con peticiones que nunca tuvieron
     // ocasión de acertar, y la verja se apagaría por una medición que no es
     // sobre ella.
-    if (marcado.marcar) {
+    if (marcado.marcar && usoDeLaLlamadaMarcada.complete === false) {
+      // SIN CONTADOR NO HAY MEDICIÓN. Apuntar esta llamada como «0 leídos»
+      // hundiría la tasa de aciertos de la huella con un dato que no existe, y
+      // la verja se apagaría por una lectura que nadie hizo.
+      trace.record("prefix-cache", "not measured: the provider reported no usage for this call");
+    } else if (marcado.marcar) {
       // LA PRIMA DE ESCRITURA (1,25x en Anthropic) es un coste que ESTA marca
       // provoca, así que deja de quedarse solo en la traza y se carga en
       // `actual`: sin ella, marcar en frío publicaba `netSavings 0` mientras la
@@ -2730,6 +2918,9 @@ export class SavingsPipeline {
       });
     }
 
+    // Ni un paso antes: la verja de reparación de arriba compara contra el
+    // baseline de la petición, y la guarda es sobre la cifra que se PUBLICA.
+    ledger.callsWithoutUsage = testigo.sinContador;
     const result = this.finish<T>(
       request, canonical, answer, "miss", ledger, precioServido, trace,
       route, formatChoice, undefined, undefined, structurallyValid,
@@ -3358,6 +3549,8 @@ export class SavingsPipeline {
     ledger.baselineInput = response.usage.inputTokens;
     ledger.baselineOutput = response.usage.outputTokens;
     if (response.usage.cachedInputTokens) ledger.providerCached(response.usage.cachedInputTokens);
+    // El camino directo tampoco llama «medido» a un contador que falta.
+    if (response.usage.complete === false) ledger.callsWithoutUsage = 1;
 
     let data: unknown = response.text;
     let structurallyValid: boolean | null = true;
@@ -3436,7 +3629,8 @@ export class SavingsPipeline {
       ? { deferred: diferidoDelSeguidor }
       : {};
 
-    const { deferred: _delLider, ...informeDelLider } = leader.report;
+    // `streaming` tampoco se hereda: dice cómo le llegó la respuesta AL LÍDER.
+    const { deferred: _delLider, streaming: _streamingDelLider, ...informeDelLider } = leader.report;
 
     return {
       ...leader,
