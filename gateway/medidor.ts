@@ -4,6 +4,7 @@ import { precioDeLista } from "../src/pricing/catalogo.js";
 import type { CostModel } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
+import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { CambioDeModelo } from "./hermano.js";
 
 export type { CambioDeModelo } from "./hermano.js";
@@ -271,6 +272,99 @@ function mapearUsoResponses(u: UsoResponses): UsoSse {
   };
 }
 
+/** El `usage` de Chat Completions (último chunk de un stream, o el JSON de `stream: false`). */
+interface UsoChat {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  prompt_tokens_details?: { cached_tokens?: number; cache_write_tokens?: number };
+}
+
+/**
+ * `usage` de Chat Completions → `UsoSse`, con el MISMO mapeo que la Responses
+ * API (es la misma casa y la misma fórmula oficial: entrada ordinaria =
+ * prompt − cached − writes). Null si falta cualquiera de los dos contadores:
+ * un conteo a medias no es el contador del proveedor, y nada se completa con 0.
+ */
+export function mapearUsoChat(u: UsoChat | null | undefined): UsoSse | null {
+  if (!u || typeof u.prompt_tokens !== "number" || typeof u.completion_tokens !== "number") return null;
+  return mapearUsoResponses({
+    input_tokens: u.prompt_tokens,
+    output_tokens: u.completion_tokens,
+    input_tokens_details: {
+      ...(u.prompt_tokens_details?.cached_tokens !== undefined ? { cached_tokens: u.prompt_tokens_details.cached_tokens } : {}),
+      ...(u.prompt_tokens_details?.cache_write_tokens !== undefined
+        ? { cache_write_tokens: u.prompt_tokens_details.cache_write_tokens }
+        : {}),
+    },
+  });
+}
+
+/**
+ * Observa un stream de Chat Completions (`chat.completion.chunk`) SIN tocar un
+ * byte y entrega el `usage` ya mapeado a `UsoSse`. Tercera clase hermana: ni los
+ * eventos ni la forma del usage casan con las otras dos.
+ *
+ * El usage solo cuenta como FINAL si el stream llegó a su cierre: el chunk de
+ * uso con `choices: []` (lo que manda OpenAI con `include_usage`) o el
+ * `data: [DONE]`. Eso cubre a la vez:
+ *   · OpenAI con include_usage — chunk `choices: []` + usage, luego [DONE];
+ *   · vLLM con uso continuo — el usage de cada chunk es parcial hasta [DONE];
+ *   · un corte a mitad — null, aunque algún chunk trajera usage;
+ *   · el primer chunk de Azure — `choices: []` con prompt_filter_results y SIN
+ *     usage, que no marca nada.
+ *
+ * Usa el parser SSE del SDK (WHATWG: CRLF, CR, varias líneas data:, chunks
+ * cortados en cualquier byte) en vez de otro `indexOf("\n\n")`.
+ */
+export class ObservadorChatCompletions {
+  private readonly parser = new SseParser();
+  private ultimoUso: UsoSse | null = null;
+  private vioUsoFinal = false;
+  private vioDone = false;
+  readonly eventos: Record<string, number> = {};
+
+  observar(chunk: Buffer | string): void {
+    for (const m of this.parser.push(chunk)) this.mensaje(m);
+  }
+
+  /**
+   * La misma regla que usageFinal() (solo cuenta tras el chunk de uso con
+   * `choices: []` o tras `[DONE]`), pero SIN vaciar el parser: se puede mirar a
+   * mitad del stream sin despachar una línea a medio recibir.
+   */
+  usage(): UsoSse | null {
+    return this.vioUsoFinal || this.vioDone ? this.ultimoUso : null;
+  }
+
+  /** Solo con el cuerpo ENTERO ya observado: vacía el parser antes de decidir. */
+  usageFinal(): UsoSse | null {
+    // Un `data: [DONE]` sin la línea en blanco final sigue siendo el cierre.
+    for (const m of this.parser.end()) this.mensaje(m);
+    return this.usage();
+  }
+
+  private mensaje(m: SseMessage): void {
+    if (m.data === "[DONE]") {
+      this.vioDone = true;
+      this.eventos["done"] = (this.eventos["done"] ?? 0) + 1;
+      return;
+    }
+    let d: { usage?: unknown; choices?: unknown };
+    try {
+      d = JSON.parse(m.data) as { usage?: unknown; choices?: unknown };
+    } catch {
+      return; // un data ilegible no puede tumbar el passthrough
+    }
+    if (d === null || typeof d !== "object") return;
+    this.eventos["chunk"] = (this.eventos["chunk"] ?? 0) + 1;
+    if (d.usage === null || typeof d.usage !== "object") return;
+    const mapeado = mapearUsoChat(d.usage as UsoChat);
+    if (mapeado === null) return;
+    this.ultimoUso = mapeado;
+    if (Array.isArray(d.choices) && d.choices.length === 0) this.vioUsoFinal = true;
+  }
+}
+
 /**
  * Prima de ESCRITURA de caché de Anthropic (TTL 5m, el defecto): crear una
  * entrada de prompt cache se factura a 1,25× el precio de entrada (precio
@@ -417,6 +511,97 @@ export function usoDeJson(cuerpo: Buffer | string): UsoSse | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * El `usage` de una respuesta JSON (`stream: false`) según el DIALECTO de la
+ * ruta: `/v1/messages` es Anthropic, `…/chat/completions` es Chat Completions y
+ * `…/responses` es la Responses API. Null si la ruta no tiene dialecto o la
+ * respuesta no trae los dos contadores: un `usage` de otra forma jamás se lee
+ * como si fuera el de Anthropic (el registro fantasma de 0 tokens).
+ */
+export function usoDeJsonPorRuta(path: string, cuerpo: Buffer | string): UsoSse | null {
+  if (path === "/v1/messages") return usoDeJson(cuerpo);
+  if (!tieneDialecto(path)) return null;
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as { usage?: unknown } | null;
+    if (d === null || typeof d !== "object") return null;
+    if (path.endsWith("/chat/completions")) return mapearUsoChat(d.usage as UsoChat | undefined);
+    const u = d.usage as UsoResponses | null | undefined;
+    return u && typeof u.input_tokens === "number" && typeof u.output_tokens === "number" ? mapearUsoResponses(u) : null;
+  } catch {
+    return null; // ilegible
+  }
+}
+
+/** ¿La ruta tiene un dialecto de `usage` que el gateway sabe leer? */
+export function tieneDialecto(path: string): boolean {
+  return path === "/v1/messages" || path.endsWith("/chat/completions") || path.endsWith("/responses");
+}
+
+/** El resultado de intentar pedir el usage final en un stream de Chat Completions. */
+export type InyeccionDeUso =
+  | { cuerpo: Buffer<ArrayBuffer>; motivo: "inyectado" }
+  | { cuerpo: null; motivo: "comprimido" | "ilegible" | "no-stream" | "ya-lo-pide" | "cliente-decide" };
+
+const INSERCION_INCLUDE_USAGE = Buffer.from('"stream_options":{"include_usage":true},', "utf8");
+
+/**
+ * Añade `"stream_options":{"include_usage":true},` justo tras la `{` inicial,
+ * SIN reserializar: los números, el orden y los espacios del cliente viajan
+ * intactos (un JSON.stringify redondearía un float largo o reordenaría nada que
+ * el proveedor necesite, pero el principio del passthrough es no tocar lo que
+ * no hace falta). Solo con el cuerpo sin comprimir, `stream === true` y sin
+ * `stream_options` del cliente: cualquier objeto suyo —incluido `{}` o
+ * `include_usage: false`— se respeta.
+ *
+ * La coma siempre es válida: el objeto contiene al menos `stream`.
+ */
+export function inyectarIncludeUsage(cuerpo: Buffer, codificacion?: string): InyeccionDeUso {
+  const cod = (codificacion ?? "").trim().toLowerCase();
+  if (cod !== "" && cod !== "identity") return { cuerpo: null, motivo: "comprimido" };
+  let json: unknown;
+  try {
+    json = JSON.parse(cuerpo.toString("utf8").replace(/^\uFEFF/, ""));
+  } catch {
+    return { cuerpo: null, motivo: "ilegible" };
+  }
+  if (json === null || typeof json !== "object" || Array.isArray(json)) return { cuerpo: null, motivo: "ilegible" };
+  const o = json as { stream?: unknown; stream_options?: { include_usage?: unknown } | null };
+  if (o.stream !== true) return { cuerpo: null, motivo: "no-stream" };
+  if (o.stream_options?.include_usage === true) return { cuerpo: null, motivo: "ya-lo-pide" };
+  if (o.stream_options !== undefined) return { cuerpo: null, motivo: "cliente-decide" };
+  // El primer byte que no sea espacio JSON ni el BOM (EF BB BF) tiene que ser `{`.
+  let i = 0;
+  while (i < cuerpo.length) {
+    const b = cuerpo[i]!;
+    if (b === 0x20 || b === 0x09 || b === 0x0a || b === 0x0d) {
+      i++;
+      continue;
+    }
+    if (b === 0xef && cuerpo[i + 1] === 0xbb && cuerpo[i + 2] === 0xbf) {
+      i += 3;
+      continue;
+    }
+    break;
+  }
+  if (cuerpo[i] !== 0x7b) return { cuerpo: null, motivo: "ilegible" };
+  return {
+    cuerpo: Buffer.concat([cuerpo.subarray(0, i + 1), INSERCION_INCLUDE_USAGE, cuerpo.subarray(i + 1)]),
+    motivo: "inyectado",
+  };
+}
+
+/**
+ * true / false: la petición es un stream y pide / no pide `include_usage`.
+ * null: no es un stream, o el cuerpo no se puede leer.
+ */
+export function pideUsoEnStream(cuerpo: Buffer, codificacion?: string): boolean | null {
+  const json = jsonDelCuerpo(cuerpo, codificacion);
+  if (json === null || typeof json !== "object") return null;
+  const o = json as { stream?: unknown; stream_options?: { include_usage?: unknown } | null };
+  if (o.stream !== true) return null;
+  return o.stream_options?.include_usage === true;
 }
 
 /**

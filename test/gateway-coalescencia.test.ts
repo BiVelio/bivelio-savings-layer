@@ -228,6 +228,9 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     // SIN la verja de ruta del camino primario, y un `usage` de otra forma
     // (/v1/chat/completions, prompt_tokens) emitía un registro de 0 tokens con
     // avoidedLlm:1 que inflaba el contador de llamadas evitadas del panel.
+    // Desde que Chat Completions tiene dialecto propio, ese `usage` SÍ se lee
+    // (bien: test/gateway-chat-completions.test.ts, caso j); la verja se prueba
+    // ahora con una ruta que no tiene dialecto de usage.
     const lotes: unknown[][] = [];
     const upstream = await new Promise<number>((resolve) => {
       const s = createServer(async (req, res) => {
@@ -255,7 +258,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
 
     const cuerpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [] });
     const pedir = () =>
-      fetch(`http://127.0.0.1:${gw.puerto}/v1/chat/completions`, { method: "POST", body: cuerpo }).then((r) => r.text());
+      fetch(`http://127.0.0.1:${gw.puerto}/v1/embeddings`, { method: "POST", body: cuerpo }).then((r) => r.text());
     const p1 = pedir();
     await new Promise((r) => setTimeout(r, 40));
     const p2 = pedir();

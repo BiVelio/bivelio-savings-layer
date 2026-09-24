@@ -68,6 +68,13 @@ export interface ProviderUsage {
    * bill INCREASE as a saving.
    */
   cacheWriteInputTokens?: number;
+  /**
+   * False when the provider did not report both counters for this call (for a
+   * stream: its final usage event never arrived), so the adapter filled the
+   * missing ones with 0. Absent means complete. A request with any such call is
+   * reported as `unmeasured`.
+   */
+  complete?: boolean;
 }
 
 export interface ProviderResponse {
@@ -131,7 +138,28 @@ export interface ProviderResponse {
   raw?: unknown;
 }
 
+/** One event of a provider-level stream. */
+export type ProviderStreamEvent =
+  | { type: "text"; delta: string }
+  | { type: "done"; response: ProviderResponse };
+
+/** Options for {@link Provider.generateStream}. */
+export interface ProviderStreamOptions {
+  /** Cancels the HTTP request. */
+  signal?: AbortSignal;
+}
+
 export interface Provider {
   readonly id: string;
   generate(req: ProviderRequest): Promise<ProviderResponse>;
+  /**
+   * Optional streaming variant of generate(). It must yield `text` events in
+   * order and end with exactly one `done` whose `response` is what generate()
+   * would have returned for the same answer: `response.text` equals the
+   * concatenated deltas, and tool calls travel only in `response.toolCalls`.
+   * When the provider's final usage event is missing, both counters are 0 and
+   * `usage.complete` is false. A body that ends before the provider signalled
+   * completion must throw, never yield `done`.
+   */
+  generateStream?(req: ProviderRequest, options?: ProviderStreamOptions): AsyncIterable<ProviderStreamEvent>;
 }

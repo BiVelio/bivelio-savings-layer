@@ -108,6 +108,18 @@ describe("anillo 2 · plan de arranque", () => {
     expect(plan.brazo).toBe("palanca");
     expect(plan.linea).toContain("kept from the environment");
   });
+
+  it("si el upstream vino de --upstream, la línea lo atribuye al flag y no al entorno", () => {
+    const plan = planDeAnillo2({
+      ...base,
+      enrolamiento: { activo: true, espia: 8402 },
+      upstreamEnv: "https://api.openai.com",
+      upstreamOrigen: "flag",
+    });
+    expect(plan.upstream).toBeUndefined();
+    expect(plan.linea).toContain("upstream kept from --upstream (https://api.openai.com)");
+    expect(plan.linea).not.toContain("kept from the environment");
+  });
 });
 
 describe("brazoDeSesion · la asignación vigente desde el 2026-09-10", () => {

@@ -136,6 +136,8 @@ export function planDeAnillo2(args: {
   enrolamiento: Enrolamiento | null;
   espiaVivo: boolean;
   upstreamEnv: string | undefined;
+  /** De dónde salió `upstreamEnv`: `--upstream` o la variable (por defecto). Solo cambia la línea. */
+  upstreamOrigen?: "flag" | "env";
   elisionEnv: string | undefined;
   hoyUtcIso: string;
 }): PlanAnillo2 {
@@ -161,7 +163,8 @@ export function planDeAnillo2(args: {
 
   const partes: string[] = [];
   partes.push(`A/B plan: ${hoyUtcIso} UTC → arm ${brazo.toUpperCase()}`);
-  partes.push(upstreamYaPuesto ? `upstream kept from the environment (${upstreamEnv})` : `chained to :${enrolamiento.espia}`);
+  const deDonde = args.upstreamOrigen === "flag" ? "--upstream" : "the environment";
+  partes.push(upstreamYaPuesto ? `upstream kept from ${deDonde} (${upstreamEnv})` : `chained to :${enrolamiento.espia}`);
   if (elisionYaPuesta) partes.push(`elision flag kept from the environment (=${elisionEnv})`);
   partes.push("context elision dials OFF (2026-09-09): the arm no longer turns them on");
   partes.push("assignment PER SESSION since 2026-09-10 (brazoDeSesion), not by day parity");

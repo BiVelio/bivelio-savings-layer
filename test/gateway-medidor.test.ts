@@ -15,6 +15,12 @@ import {
   PRIMA_ESCRITURA_CACHE,
   PRIMA_ESCRITURA_CACHE_1H,
   sueloDeElision,
+  ObservadorChatCompletions,
+  mapearUsoChat,
+  usoDeJsonPorRuta,
+  inyectarIncludeUsage,
+  pideUsoEnStream,
+  tieneDialecto,
 } from "../gateway/medidor.js";
 
 /** Un stream SSE como el del catálogo F0 (docs/PASARELA-F0.md). */
@@ -502,5 +508,217 @@ describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () 
     expect(r.cost.netSavings).toBe(1); // 100 % evitado, dentro de [-100, 1]
     expect(r.cost.netSavings).toBeLessThanOrEqual(1); // la verja del ingest ya no lo rechaza
     expect(r.cost.basis).toBe("estimated");
+  });
+});
+
+// ── Chat Completions: el dialecto de los SDK de OpenAI en cualquier lenguaje ──
+
+/** Un stream de Chat Completions con `include_usage`, como lo sirve OpenAI. */
+function streamChat(): string {
+  const chunk = (o: unknown) => `data: ${JSON.stringify(o)}\n\n`;
+  return [
+    chunk({ id: "c", object: "chat.completion.chunk", choices: [{ index: 0, delta: { role: "assistant", content: "" } }], usage: null }),
+    chunk({ id: "c", object: "chat.completion.chunk", choices: [{ index: 0, delta: { content: "Hola " } }], usage: null }),
+    chunk({ id: "c", object: "chat.completion.chunk", choices: [{ index: 0, delta: { content: "mundo" } }], usage: null }),
+    chunk({ id: "c", object: "chat.completion.chunk", choices: [{ index: 0, delta: {}, finish_reason: "stop" }], usage: null }),
+    chunk({
+      id: "c",
+      object: "chat.completion.chunk",
+      choices: [],
+      usage: { prompt_tokens: 100, completion_tokens: 20, prompt_tokens_details: { cached_tokens: 40 } },
+    }),
+    "data: [DONE]\n\n",
+  ].join("");
+}
+
+describe("ObservadorChatCompletions — observa sin tocar", () => {
+  it("el chunk de uso (choices: []) da el usage mapeado como en Responses: entrada = prompt − cached", () => {
+    const o = new ObservadorChatCompletions();
+    o.observar(streamChat());
+    expect(o.usageFinal()).toEqual({
+      input_tokens: 60,
+      output_tokens: 20,
+      cache_read_input_tokens: 40,
+      cache_creation_input_tokens: 0,
+    });
+    expect(o.usage()).toEqual(o.usageFinal());
+    expect(o.eventos["done"]).toBe(1);
+    expect(o.eventos["chunk"]).toBe(5);
+  });
+
+  it("aguanta chunks cortados en CADA byte posible (también como Buffer, con CRLF)", () => {
+    const s = streamChat().replace(/\n/g, "\r\n");
+    const bytes = Buffer.from(s, "utf8");
+    for (let corte = 1; corte <= 40; corte++) {
+      const o = new ObservadorChatCompletions();
+      for (let i = 0; i < bytes.length; i += corte) o.observar(bytes.subarray(i, i + corte));
+      expect(o.usageFinal()?.output_tokens, `corte=${corte}`).toBe(20);
+    }
+  });
+
+  it("el usage solo cuenta como final con choices: [] o con [DONE] (vLLM manda usage en cada chunk)", () => {
+    const vllm = (n: number) =>
+      `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "x" } }], usage: { prompt_tokens: 10, completion_tokens: n } })}\n\n`;
+    const cortado = new ObservadorChatCompletions();
+    cortado.observar(vllm(1) + vllm(2));
+    expect(cortado.usageFinal()).toBeNull();
+
+    const completo = new ObservadorChatCompletions();
+    completo.observar(vllm(1) + vllm(2) + "data: [DONE]\n\n");
+    expect(completo.usageFinal()?.output_tokens).toBe(2);
+
+    // Un [DONE] sin la línea en blanco final sigue siendo el cierre.
+    const sinBlanco = new ObservadorChatCompletions();
+    sinBlanco.observar(vllm(3) + "data: [DONE]");
+    expect(sinBlanco.usageFinal()?.output_tokens).toBe(3);
+  });
+
+  it("usage() a mitad del stream no vacía el parser: un [DONE] partido sigue contando al llegar entero", () => {
+    const vllm = `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "x" } }], usage: { prompt_tokens: 10, completion_tokens: 4 } })}\n\n`;
+    const o = new ObservadorChatCompletions();
+    o.observar(vllm + "data: [DO");
+    expect(o.usage()).toBeNull();
+    o.observar("NE]\n\n");
+    expect(o.usage()?.output_tokens).toBe(4);
+    expect(o.usageFinal()?.output_tokens).toBe(4);
+  });
+
+  it("el primer chunk de Azure (choices: [] con prompt_filter_results, SIN usage) no marca nada", () => {
+    const o = new ObservadorChatCompletions();
+    o.observar(`data: ${JSON.stringify({ choices: [], prompt_filter_results: [{ prompt_index: 0 }] })}\n\n`);
+    o.observar(`data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "hi" }, finish_reason: "stop" }] })}\n\n`);
+    expect(o.usageFinal()).toBeNull();
+  });
+
+  it("sin include_usage (ningún chunk trae usage) → null aunque llegue [DONE]: nada se inventa", () => {
+    const o = new ObservadorChatCompletions();
+    o.observar(`data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "hi" }, finish_reason: "stop" }] })}\n\ndata: [DONE]\n\n`);
+    expect(o.usageFinal()).toBeNull();
+  });
+
+  it("un data ilegible no revienta ni borra lo ya observado", () => {
+    const o = new ObservadorChatCompletions();
+    o.observar(`data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 5, completion_tokens: 1 } })}\n\n`);
+    o.observar("data: {esto no es json}\n\n");
+    expect(o.usageFinal()?.input_tokens).toBe(5);
+  });
+
+  it("y costeMedido lo tarifa: gpt-4o-mini, 60 a entrada, 40 a lectura, 20 a salida", () => {
+    const o = new ObservadorChatCompletions();
+    o.observar(streamChat());
+    const m = costeMedido("gpt-4o-mini", o.usageFinal()!)!;
+    expect(m.costeUsd).toBeCloseTo(0.000009 + 0.000003 + 0.000012, 12);
+  });
+});
+
+describe("mapearUsoChat — los dos contadores o nada", () => {
+  it("falta completion_tokens (o prompt_tokens) → null: un conteo a medias no es el contador", () => {
+    expect(mapearUsoChat({ prompt_tokens: 10 })).toBeNull();
+    expect(mapearUsoChat({ completion_tokens: 10 })).toBeNull();
+    expect(mapearUsoChat(null)).toBeNull();
+    expect(mapearUsoChat(undefined)).toBeNull();
+  });
+
+  it("cache_write_tokens va a la escritura y la plausibilidad recorta al lado que infra-mide", () => {
+    expect(mapearUsoChat({ prompt_tokens: 100, completion_tokens: 1, prompt_tokens_details: { cached_tokens: 30, cache_write_tokens: 20 } })).toEqual({
+      input_tokens: 50,
+      output_tokens: 1,
+      cache_read_input_tokens: 30,
+      cache_creation_input_tokens: 20,
+    });
+    const recortado = mapearUsoChat({ prompt_tokens: 10, completion_tokens: 1, prompt_tokens_details: { cached_tokens: 50 } })!;
+    expect(recortado.input_tokens).toBe(0);
+    expect(recortado.cache_read_input_tokens).toBe(10);
+  });
+});
+
+describe("usoDeJsonPorRuta — el usage de un JSON según el dialecto de la ruta", () => {
+  it("/v1/messages lee el usage de Anthropic tal cual", () => {
+    expect(usoDeJsonPorRuta("/v1/messages", JSON.stringify({ usage: { input_tokens: 7, output_tokens: 3 } }))).toEqual({
+      input_tokens: 7,
+      output_tokens: 3,
+    });
+  });
+
+  it("…/chat/completions mapea prompt_tokens/completion_tokens; sin uno de los dos → null", () => {
+    const u = usoDeJsonPorRuta(
+      "/v1/chat/completions",
+      Buffer.from(JSON.stringify({ usage: { prompt_tokens: 100, completion_tokens: 20, prompt_tokens_details: { cached_tokens: 40 } } })),
+    );
+    expect(u).toEqual({ input_tokens: 60, output_tokens: 20, cache_read_input_tokens: 40, cache_creation_input_tokens: 0 });
+    expect(usoDeJsonPorRuta("/openai/deployments/x/chat/completions", JSON.stringify({ usage: { prompt_tokens: 1 } }))).toBeNull();
+  });
+
+  it("…/responses mapea input_tokens/output_tokens con su desglose", () => {
+    expect(
+      usoDeJsonPorRuta("/v1/responses", JSON.stringify({ usage: { input_tokens: 100, output_tokens: 20, input_tokens_details: { cached_tokens: 40 } } })),
+    ).toEqual({ input_tokens: 60, output_tokens: 20, cache_read_input_tokens: 40, cache_creation_input_tokens: 0 });
+    expect(usoDeJsonPorRuta("/v1/responses", JSON.stringify({ usage: { input_tokens: 100 } }))).toBeNull();
+  });
+
+  it("una ruta sin dialecto, o un cuerpo ilegible, no se lee: nada de registros fantasma", () => {
+    const conUsage = JSON.stringify({ usage: { prompt_tokens: 100, completion_tokens: 50 } });
+    expect(usoDeJsonPorRuta("/v1/embeddings", conUsage)).toBeNull();
+    expect(usoDeJsonPorRuta("/v1/messages/count_tokens", conUsage)).toBeNull();
+    expect(usoDeJsonPorRuta("/v1/chat/completions", "no json")).toBeNull();
+    expect(usoDeJsonPorRuta("/v1/chat/completions", "null")).toBeNull();
+  });
+
+  it("tieneDialecto: exactamente /v1/messages, …/chat/completions y …/responses", () => {
+    expect(tieneDialecto("/v1/messages")).toBe(true);
+    expect(tieneDialecto("/v1/chat/completions")).toBe(true);
+    expect(tieneDialecto("/backend-api/codex/responses")).toBe(true);
+    expect(tieneDialecto("/v1/messages/count_tokens")).toBe(false);
+    expect(tieneDialecto("/v1/embeddings")).toBe(false);
+    expect(tieneDialecto("/v1/responses/input_tokens")).toBe(false);
+  });
+});
+
+describe("inyectarIncludeUsage — inserción textual, sin reserializar", () => {
+  const b = (s: string) => Buffer.from(s, "utf8");
+
+  it("inyecta justo tras la `{` y el resto del cuerpo viaja byte a byte (números, orden y espacios)", () => {
+    const original = '{"model":"gpt-4o-mini", "temperature":0.30000000000000004,"stream":true,"messages":[]}';
+    const r = inyectarIncludeUsage(b(original));
+    expect(r.motivo).toBe("inyectado");
+    expect(r.cuerpo!.toString("utf8")).toBe('{"stream_options":{"include_usage":true},' + original.slice(1));
+    expect(JSON.parse(r.cuerpo!.toString("utf8")).stream_options).toEqual({ include_usage: true });
+  });
+
+  it("con BOM y espacios iniciales, la inserción va tras la primera `{` y lo de delante se conserva", () => {
+    const original = '﻿ \n\t{"stream":true}';
+    const r = inyectarIncludeUsage(b(original));
+    expect(r.motivo).toBe("inyectado");
+    expect(r.cuerpo!.toString("utf8")).toBe('﻿ \n\t{"stream_options":{"include_usage":true},"stream":true}');
+    // identity cuenta como sin comprimir
+    expect(inyectarIncludeUsage(b('{"stream":true}'), "identity").motivo).toBe("inyectado");
+  });
+
+  it("los cinco motivos para NO tocar el cuerpo", () => {
+    expect(inyectarIncludeUsage(b('{"stream":true}'), "gzip")).toEqual({ cuerpo: null, motivo: "comprimido" });
+    expect(inyectarIncludeUsage(b("{roto"))).toEqual({ cuerpo: null, motivo: "ilegible" });
+    expect(inyectarIncludeUsage(b("[1,2]"))).toEqual({ cuerpo: null, motivo: "ilegible" });
+    expect(inyectarIncludeUsage(b('{"stream":false}'))).toEqual({ cuerpo: null, motivo: "no-stream" });
+    expect(inyectarIncludeUsage(b('{"model":"x"}'))).toEqual({ cuerpo: null, motivo: "no-stream" });
+    expect(inyectarIncludeUsage(b('{"stream":true,"stream_options":{"include_usage":true}}'))).toEqual({
+      cuerpo: null,
+      motivo: "ya-lo-pide",
+    });
+    // Cualquier stream_options del cliente se respeta, también {} o include_usage:false.
+    expect(inyectarIncludeUsage(b('{"stream":true,"stream_options":{}}'))).toEqual({ cuerpo: null, motivo: "cliente-decide" });
+    expect(inyectarIncludeUsage(b('{"stream":true,"stream_options":{"include_usage":false}}'))).toEqual({
+      cuerpo: null,
+      motivo: "cliente-decide",
+    });
+  });
+
+  it("pideUsoEnStream: true / false en un stream, null si no es stream o no se lee", () => {
+    expect(pideUsoEnStream(b('{"stream":true,"stream_options":{"include_usage":true}}'))).toBe(true);
+    expect(pideUsoEnStream(b('{"stream":true}'))).toBe(false);
+    expect(pideUsoEnStream(b('{"stream":true,"stream_options":{"include_usage":false}}'))).toBe(false);
+    expect(pideUsoEnStream(b('{"stream":false}'))).toBeNull();
+    expect(pideUsoEnStream(b("roto"))).toBeNull();
+    // A través del content-encoding, como modeloDelCuerpo.
+    expect(pideUsoEnStream(gzipSync(b('{"stream":true,"stream_options":{"include_usage":true}}')), "gzip")).toBe(true);
   });
 });
