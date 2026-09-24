@@ -291,8 +291,8 @@ export class RevocationPoller {
     if (n < FALLOS_ANTES_DE_AVISAR) return;
     if ((n - FALLOS_ANTES_DE_AVISAR) % REPETIR_AVISO_CADA !== 0) return;
     const motivo = error instanceof Error ? error.message : String(error);
-    // In English, like everything the customer sees: it was the last warning
-    // still in Spanish after #305, and it is the one that fires during an outage.
+    // En inglés, como todo lo que ve el cliente: este salta en plena caída, cuando
+    // nadie tiene tiempo de traducir.
     console.warn(
       `[bv-sala] could not reach the revocation server ${n} times in a row (${motivo}). ` +
         `The license KEEPS working and known revocations still apply, but NEW ones are not ` +
