@@ -6,6 +6,7 @@ import type { FilaDiaria } from "@/lib/billing/extracto";
 import { obtenerFxCierre, type Fx } from "@/lib/billing/fx";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { esColumnaInexistente, type ErrorDePostgrest } from "@/lib/supabase/esquema-pendiente";
 import { leerTodo } from "@/lib/supabase/leer-todo";
 
 /**
@@ -45,7 +46,20 @@ interface FilaUso {
   measured_requests: number;
   measured_baseline_cost: number;
   measured_actual_cost: number;
+  /** El carril medido por referencia (0029). Ausente si la migración aún no está aplicada. */
+  reference_requests?: number;
+  reference_baseline_cost?: number;
+  reference_actual_cost?: number;
 }
+
+/** Las columnas que el cierre lee de usage_daily, con el carril medido por referencia (0029). */
+const COLUMNAS_USO =
+  "org_id, day, requests, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost, reference_requests, reference_baseline_cost, reference_actual_cost";
+/** Las mismas sin el carril de 0029: el respaldo si el despliegue adelantó a la migración. */
+const COLUMNAS_USO_SIN_REFERENCIA =
+  "org_id, day, requests, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost";
+/** Las columnas de extractos que añade 0029: se retiran del upsert si la migración no está. */
+const COLUMNAS_EXTRACTO_REFERENCIA = ["requests_referencia", "base_referencia_usd", "ahorro_referencia_usd", "regla_referencia"] as const;
 
 // GET, como los demás crons: es el método con el que Vercel Cron invoca.
 export async function GET(req: Request): Promise<NextResponse> {
@@ -69,13 +83,12 @@ export async function GET(req: Request): Promise<NextResponse> {
 
   // PAGINADO: PostgREST corta a 1000 filas sin error, y con ≥34 orgs activas el
   // mes rebasa ese corte — el cierre sellaba extractos truncados e inmutables.
-  let filas: FilaUso[];
-  try {
-    filas = await leerTodo<FilaUso>(() =>
+  const leerUso = (columnas: string) =>
+    leerTodo<FilaUso>(() =>
       supabase
         .schema("bvsala")
         .from("usage_daily")
-        .select("org_id, day, requests, baseline_cost, actual_cost, measured_requests, measured_baseline_cost, measured_actual_cost")
+        .select(columnas)
         .gte("day", desde)
         .lt("day", hasta)
         // Orden estable: `.range()` pagina por OFFSET y sin ORDER BY el SQL no
@@ -84,6 +97,27 @@ export async function GET(req: Request): Promise<NextResponse> {
         .order("org_id", { ascending: true })
         .order("day", { ascending: true }),
     );
+  // 0029 · EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN. Sin las columnas
+  // reference_* (42703), el cierre se hace SIN el carril por referencia en vez
+  // de aplazarse: sin 0029 la RPC tampoco acumula nada en ese carril, así que
+  // no hay dinero de referencia que perder, y el extracto sellado es el mismo
+  // que antes de 0029. Se avisa para que alguien aplique la migración.
+  let conReferencia = true;
+  let filas: FilaUso[];
+  try {
+    try {
+      filas = await leerUso(COLUMNAS_USO);
+    } catch (error) {
+      if (!esColumnaInexistente(error as ErrorDePostgrest)) throw error;
+      conReferencia = false;
+      console.warn("[cierre-extractos] usage_daily sin las columnas reference_* (¿falta la migración 0029?); se cierra sin ese carril");
+      await alertar({
+        nivel: "aviso",
+        asunto: "Cierre de extractos sin el carril medido por referencia: falta aplicar la migración 0029",
+        detalle: { periodo, motivo: (error as ErrorDePostgrest).message ?? String(error) },
+      });
+      filas = await leerUso(COLUMNAS_USO_SIN_REFERENCIA);
+    }
   } catch (error) {
     console.error("[cierre-extractos] lectura de uso falló:", error);
     await alertar({
@@ -128,6 +162,11 @@ export async function GET(req: Request): Promise<NextResponse> {
       measured_requests: Number(f.measured_requests ?? 0),
       measured_baseline_cost: Number(f.measured_baseline_cost ?? 0),
       measured_actual_cost: Number(f.measured_actual_cost ?? 0),
+      // 0029 · el carril medido por referencia. `extracto.ts` decide si entra en
+      // la base (COMISIONAR_REFERENCIA); aquí solo se lee y se normaliza.
+      reference_requests: Number(f.reference_requests ?? 0),
+      reference_baseline_cost: Number(f.reference_baseline_cost ?? 0),
+      reference_actual_cost: Number(f.reference_actual_cost ?? 0),
     });
     porOrg.set(f.org_id, lista);
   }
@@ -177,11 +216,19 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (seco) {
     return NextResponse.json({ periodo, seco: true, fx, orgs: porOrg.size, extractos: resumenDelCierre(cierre) });
   }
+  // Sin 0029 (respaldo de arriba) la tabla extractos tampoco tiene las cuatro
+  // columnas del carril: se retiran de la fila para que el upsert no dé PGRST204.
+  // Van a 0/'' de todos modos, porque sin las columnas de uso no hay referencia.
+  const filasACerrar: Array<Record<string, unknown>> = cierre.map((c) => {
+    const fila: Record<string, unknown> = { ...c };
+    if (!conReferencia) for (const col of COLUMNAS_EXTRACTO_REFERENCIA) delete fila[col];
+    return fila;
+  });
   // ignoreDuplicates: un extracto cerrado JAMÁS se reescribe (inmutabilidad).
   const { error: errInsert, count } = await supabase
     .schema("bvsala")
     .from("extractos")
-    .upsert(cierre, { onConflict: "org_id,periodo", ignoreDuplicates: true, count: "exact" });
+    .upsert(filasACerrar, { onConflict: "org_id,periodo", ignoreDuplicates: true, count: "exact" });
   if (errInsert) {
     console.error("[cierre-extractos] el cierre no se pudo fijar:", errInsert);
     await alertar({

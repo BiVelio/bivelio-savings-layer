@@ -1,6 +1,6 @@
 import type { UsageRollup } from "@/app/[locale]/dashboard/data";
 
-import { calcularComision, type ComisionCalculada } from "./tarifa";
+import { calcularComision, COMISIONAR_REFERENCIA, type ComisionCalculada } from "./tarifa";
 
 /**
  * RITMO Y PROYECCIÓN — «¿a cuánto voy y en cuánto acabo el mes?».
@@ -10,8 +10,9 @@ import { calcularComision, type ComisionCalculada } from "./tarifa";
  * comisión sobre lo ahorrado, y hasta ahora la única proyección del producto
  * estaba en la calculadora de la portada, con números que teclea el visitante.
  *
- * Se construye sobre las MISMAS filas medidas que el extracto (`measured_*`),
- * no sobre el estimado: proyectar sobre una base que jamás se factura sería
+ * Se construye sobre las MISMAS filas medidas que el extracto (`measured_*` y,
+ * bajo COMISIONAR_REFERENCIA, el carril medido por referencia de 0029), no
+ * sobre el estimado: proyectar sobre una base que jamás se factura sería
  * prometer un dinero que no existe. De ahí salen tres cosas distintas que la
  * vista NO debe mezclar:
  *
@@ -104,9 +105,17 @@ export function calcularRitmo(args: {
   const total = diasDelPeriodo(periodo);
   const enPeriodo = rows.filter((r) => r.day.startsWith(periodo));
 
-  const medidas = enPeriodo.filter((r) => r.measuredRequests > 0);
-  const ahorroDe = (r: UsageRollup) => r.measuredBaselineCost - r.measuredActualCost;
-  const baseHastaLaFechaUsd = medidas.reduce((s, r) => s + r.measuredBaselineCost, 0);
+  // Lo medido de un día: el de la propia petición y, bajo su interruptor, el
+  // medido por referencia (0029) — exactamente lo que el extracto mete en la base.
+  const baseDe = (r: UsageRollup) =>
+    r.measuredBaselineCost + (COMISIONAR_REFERENCIA ? r.referenceBaselineCost ?? 0 : 0);
+  const actDe = (r: UsageRollup) =>
+    r.measuredActualCost + (COMISIONAR_REFERENCIA ? r.referenceActualCost ?? 0 : 0);
+  const medidas = enPeriodo.filter(
+    (r) => r.measuredRequests > 0 || (COMISIONAR_REFERENCIA && (r.referenceRequests ?? 0) > 0),
+  );
+  const ahorroDe = (r: UsageRollup) => baseDe(r) - actDe(r);
+  const baseHastaLaFechaUsd = medidas.reduce((s, r) => s + baseDe(r), 0);
   const ahorroHastaLaFechaUsd = medidas.reduce((s, r) => s + ahorroDe(r), 0);
 
   const periodoDeHoy = hoyIso.slice(0, 7);
@@ -142,7 +151,7 @@ export function calcularRitmo(args: {
   const diasDeRitmo = Math.max(1, diasEntre(primero, ultimoCompleto) + 1);
 
   const ahorroCompleto = completas.reduce((s, r) => s + ahorroDe(r), 0);
-  const baseCompleta = completas.reduce((s, r) => s + r.measuredBaselineCost, 0);
+  const baseCompleta = completas.reduce((s, r) => s + baseDe(r), 0);
   const ahorroPorDiaUsd = ahorroCompleto / diasDeRitmo;
 
   // Ritmo RECIENTE: la misma cuenta sobre la última ventana. El divisor es la
@@ -151,7 +160,7 @@ export function calcularRitmo(args: {
   const diasRecientes = Math.max(1, diasEntre(desdeReciente, ultimoCompleto) + 1);
   const recientes = completas.filter((r) => r.day >= desdeReciente);
   const ahorroPorDiaRecienteUsd = recientes.reduce((s, r) => s + ahorroDe(r), 0) / diasRecientes;
-  const basePorDiaRecienteUsd = recientes.reduce((s, r) => s + r.measuredBaselineCost, 0) / diasRecientes;
+  const basePorDiaRecienteUsd = recientes.reduce((s, r) => s + baseDe(r), 0) / diasRecientes;
 
   const comun = {
     ...vacio,

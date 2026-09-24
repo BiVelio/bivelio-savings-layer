@@ -9,6 +9,8 @@
  * CERO.
  */
 
+import { COMISIONAR_REFERENCIA } from "@/lib/billing/tarifa";
+
 export type LicenseStatus = "active" | "grace" | "expired" | "revoked";
 
 export interface LicenseRow {
@@ -97,12 +99,22 @@ export type Verdict =
     }
   | {
       kind: "measured";
-      /** LO MEDIDO. Comprobable contra la factura del proveedor. Es el titular. */
+      /**
+       * LO MEDIDO. Comprobable contra el contador del proveedor: el de la propia
+       * petición y, bajo COMISIONAR_REFERENCIA, el de la petición idéntica que ya
+       * corrió (medido por referencia, 0029). Es el titular.
+       */
       net: number;
       saved: number;
       tone: "pos" | "neg";
-      /** Qué fracción de las peticiones está medida (1 = todas). */
+      /** Qué fracción de las peticiones está medida, por su contador o por referencia (1 = todas). */
       share: number;
+      /**
+       * La parte del titular medida POR REFERENCIA: repeticiones servidas sin
+       * llamar al proveedor, valoradas con el contador de la idéntica que corrió.
+       * `null` sin peticiones de referencia (o sin las columnas de 0029).
+       */
+      byReference: { requests: number; saved: number } | null;
       /**
        * El TOTAL, que incluye lo estimado y lo no medido. Contexto, jamás el
        * titular. `null` cuando coincide con lo medido, o sea cuando no hay nada
@@ -133,6 +145,13 @@ export interface FilaUso {
   eliminatedInputTokens?: number;
   eliminatedFloorCost?: number;
   eliminatedCreditedRequests?: number;
+  /**
+   * El carril medido por referencia (0029). Entra en el Verdict bajo
+   * COMISIONAR_REFERENCIA; jamás en los tokens (deriveTokens no cambia).
+   */
+  referenceRequests?: number;
+  referenceBaselineCost?: number;
+  referenceActualCost?: number;
 }
 
 /**
@@ -278,10 +297,16 @@ export function deriveVerdict(usage: FilaUso[]): Verdict {
   if (!(baseline > 0)) return { kind: "unpriced" };
   const net = 1 - actual / baseline;
 
-  const mBase = suma((r) => r.measuredBaselineCost ?? 0);
-  const mAct = suma((r) => r.measuredActualCost ?? 0);
+  // 0029 · lo MEDIDO POR REFERENCIA suma a lo medido bajo su interruptor: es
+  // el contador del proveedor de la petición idéntica que sí corrió, valorado a
+  // la baja — la misma regla que el extracto usa para la base.
+  const refReq = COMISIONAR_REFERENCIA ? suma((r) => r.referenceRequests ?? 0) : 0;
+  const refBase = COMISIONAR_REFERENCIA ? suma((r) => r.referenceBaselineCost ?? 0) : 0;
+  const refAct = COMISIONAR_REFERENCIA ? suma((r) => r.referenceActualCost ?? 0) : 0;
+  const mBase = suma((r) => r.measuredBaselineCost ?? 0) + refBase;
+  const mAct = suma((r) => r.measuredActualCost ?? 0) + refAct;
   const peticiones = suma((r) => r.requests);
-  const mReq = suma((r) => r.measuredRequests ?? 0);
+  const mReq = suma((r) => r.measuredRequests ?? 0) + refReq;
 
   // Sin nada medido el titular NO cae al total: eso es justo lo que se arregla.
   if (!(mBase > 0)) return { kind: "sin_medir", requests: peticiones };
@@ -298,6 +323,7 @@ export function deriveVerdict(usage: FilaUso[]): Verdict {
     saved: mBase - mAct,
     tone: mNet < 0 ? "neg" : "pos",
     share,
+    byReference: refReq > 0 ? { requests: refReq, saved: refBase - refAct } : null,
     total: difiere ? { net, saved: baseline - actual } : null,
   };
 }

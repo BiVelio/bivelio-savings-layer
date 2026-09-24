@@ -197,6 +197,20 @@ export default async function ExtractoPage() {
         <p className="note">
           {t("extracto.estimadoExcluido", { usd: usd(e.ahorroEstimadoExcluidoUsd) })}
         </p>
+        {/* 0029 · el carril MEDIDO POR REFERENCIA: repeticiones servidas sin
+            llamar al proveedor, valoradas con el contador de la petición
+            idéntica que ya corrió. Comisionado, ya está dentro de la base de
+            arriba; si no, es contexto. Siempre con su CSV línea a línea, para
+            que cada fila se pueda contrastar con el uso del proveedor. */}
+        {e.referencia && (
+          <p className="note">
+            {t(e.referencia.comisionada ? "extracto.referencia" : "extracto.referenciaExcluida", {
+              usd: usd(e.referencia.ahorroUsd),
+              requests: e.referencia.requests.toLocaleString(locale),
+            })}{" "}
+            <a href={`/api/org/reference-hits?periodo=${periodo}`}>{t("extracto.exportarReferencias")}</a>
+          </p>
+        )}
         {/* El carril sombra (0021): contexto hipotético, jamás en la base — y
             solo cuando hay datos. Con ahorro negativo, la clave lo dice claro. */}
         {e.sombra && (
@@ -221,6 +235,16 @@ export default async function ExtractoPage() {
             // La unidad y la fuente van construidas AQUÍ: los ficheros de
             // mensajes tienen prohibido llevar EUR/USD a mano (parity.test.ts).
             fx: `${e.parametros.fx.eurPorUsd.toLocaleString(locale)} EUR/USD — ${e.parametros.fx.fuente}`,
+          })}
+        </p>
+        {/* La regla con la que se valoran las repeticiones (0029): parte de los
+            parámetros que hacen el extracto autocontenido. Cifras por parámetro,
+            nunca escritas en los mensajes (tarifa-en-parametros.test.ts). */}
+        <p className="note">
+          {t("extracto.parametrosReferencia", {
+            regla: e.parametros.referencia.version,
+            cuota: pct(e.parametros.referencia.cuotaSalida),
+            dias: e.parametros.referencia.edadMaximaDias,
           })}
         </p>
         <p className="note">
