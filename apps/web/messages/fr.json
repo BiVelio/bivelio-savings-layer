@@ -797,6 +797,7 @@
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
       "body": "Une seule commande place un compteur local devant votre terminal. Aucun code à toucher, rien à configurer — et vos prompts ne quittent jamais votre machine : seuls les comptages et le coût arrivent dans ce panneau.",
       "note": "La passerelle mesure chaque requête et, comme le SDK, ne fonctionne qu'avec une licence active : elle la récupère avec votre clé de service et vérifie sa signature sur votre machine. Avec une licence PRO, elle applique aussi un levier par défaut : elle raccourcit le TTL d'écriture du cache tant que votre session reste chaude — cela change le prix, jamais le contenu que lit le modèle. Les autres leviers restent éteints tant que vous ne les activez pas. Le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. Il fonctionne aussi avec Codex CLI, Goose et Qwen Code — et bvsala doctor imprime la configuration exacte des autres.",
+      "pythonNote": "Python ou un autre langage ? Pointez le SDK officiel d'OpenAI ou d'Anthropic vers la passerelle et chaque requête dont le fournisseur rapporte la consommation, pour un modèle qui a un prix catalogue, est enregistrée dans ce panneau à ce prix ; le journal de la passerelle signale quand une requête ne l'est pas. bvsala doctor affiche l'URL de base de chaque SDK. En streaming avec OpenAI, demandez la consommation dans la requête (stream_options.include_usage).",
       "cta": "Voir comment ça marche →"
     },
     "integrate": {
@@ -937,7 +938,7 @@
     "devs": {
       "eyebrow": "Conçu pour les développeurs",
       "title": "Moins de maux de tête avec la facture. Sans changer de fournisseur.",
-      "sub": "Trois faits sur le paquet. Aucun n'est une promesse.",
+      "sub": "Quatre faits sur le paquet. Aucun n'est une promesse.",
       "cards": [
         {
           "title": "Zéro dépendance à l'exécution",
@@ -953,6 +954,11 @@
           "title": "Votre trafic reste direct",
           "body": "Le SDK encapsule l'appel dans votre processus. Vos prompts ne passent jamais par BiVelio : nous ne recevons que des comptages et des coûts.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, le même rapport",
+          "body": "generateStream() vous livre la réponse au fur et à mesure que le fournisseur l'écrit et se termine par le même SavingsReport que generate(), selon les mêmes règles de base : le compteur final du fournisseur est lu à la fin du stream, et un stream qui ne l'a pas est déclaré non mesuré et n'entre jamais dans votre commission. Avec un contrat de sortie, la réponse arrive validée, d'un seul bloc.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1009,7 +1015,7 @@
     "nodeApiSubAfter": "reçoit moins de tokens",
     "billMonth": "facture / mois",
     "billReport": "+ SavingsReport",
-    "s1Note": "Cette case verte est un paquet npm dans le code de l'application. C'est pourquoi la question clé n'est jamais « qu'est-ce que j'installe ? » mais <b>« qui a écrit le code qui appelle l'API ? »</b> — cette personne est celle qui peut l'installer. La seule exception est un terminal de codage comme Claude Code : là, la passerelle « bvsala claude » se place devant sans toucher une seule ligne de code.",
+    "s1Note": "Cette case verte est un paquet npm dans le code de l'application. C'est pourquoi la question clé n'est jamais « qu'est-ce que j'installe ? » mais <b>« qui a écrit le code qui appelle l'API ? »</b> — cette personne est celle qui peut l'installer. Les exceptions sont un terminal de codage comme Claude Code et une application, dans n'importe quel langage, qui utilise le SDK officiel d'OpenAI ou d'Anthropic et permet d'en définir l'URL de base : là, la passerelle bvsala se place devant sans toucher une seule ligne de code. Ce trafic est mesuré pour les modèles qui ont un prix catalogue ; les leviers d'économie du paquet npm n'y tournent pas, et ceux de la passerelle elle-même ne s'appliquent qu'au trafic Anthropic, avec une licence PRO.",
     "s2Title": "Votre cas, en 10 secondes",
     "s2Sub": "Quatre façons d'utiliser l'IA, et ce que BV‑SALA peut faire dans chacune.",
     "caseChatSub": "app ou web, gratuit ou payant",

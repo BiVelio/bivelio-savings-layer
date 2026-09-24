@@ -1997,7 +1997,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 .lp.rv-on .rv:not(.in) { opacity: 0; transform: translateY(14px); }
 .lp .explica-grid > .rv:nth-child(2), .lp .ledgers > .rv:nth-child(2), .lp .devs-grid > .rv:nth-child(2) { --rd: 90ms; }
 .lp .explica-grid > .rv:nth-child(3), .lp .ledgers > .rv:nth-child(3), .lp .devs-grid > .rv:nth-child(3) { --rd: 180ms; }
-.lp .explica-grid > .rv:nth-child(4), .lp .ledgers > .rv:nth-child(4) { --rd: 270ms; }
+.lp .explica-grid > .rv:nth-child(4), .lp .ledgers > .rv:nth-child(4), .lp .devs-grid > .rv:nth-child(4) { --rd: 270ms; }
 
 /* Separador entre secciones: de hairline plano a hairline con luz de marca en
    el centro (el SectionTransition de bivelio.com, estático). */
@@ -2112,7 +2112,7 @@ textarea.proj-ta:focus { outline: none; border-color: var(--brand); box-shadow: 
 }
 
 /* ── Hecho para desarrolladores ────────────────────────────────────────── */
-.lp .devs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.lp .devs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .lp .dev-card {
   position: relative; min-width: 0; padding: 22px 22px 20px; border-radius: var(--radius-xl);
   background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-card);
