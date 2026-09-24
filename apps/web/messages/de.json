@@ -338,6 +338,7 @@
       "errNetwork": "Netzwerkfehler — bitte versuche es erneut.",
       "errNotRecognized": "Nicht erkannt — prüfe auf Tippfehler oder erstelle oben einen neuen Schlüssel.",
       "errUnexpected": "Unerwartete Antwort ({status}). Versuche es gleich noch einmal.",
+      "keyNoPlan": "Schlüssel erkannt, aber diese Organisation hat keine aktive BiVelio-Lizenz und kein aktives Abonnement, daher wird ihre Nutzung abgelehnt. Abonniere oder verlängere unter Konto und teste dann erneut.",
       "keyLabel": "dein Service-Account-Schlüssel{suffix} — wird einmal angezeigt, kopiere ihn jetzt",
       "passHint": "Übergib ihn als <code>serviceAccountKey</code>. Er ist unten vorausgefüllt — klicke auf <b>Schlüssel testen</b>, um zu bestätigen, dass er aktiv ist.",
       "creating": "Wird erstellt…",

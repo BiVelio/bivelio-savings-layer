@@ -338,6 +338,7 @@
       "errNetwork": "Erreur réseau — veuillez réessayer.",
       "errNotRecognized": "Non reconnue — vérifiez les fautes de frappe, ou créez une nouvelle clé ci-dessus.",
       "errUnexpected": "Réponse inattendue ({status}). Réessayez dans un instant.",
+      "keyNoPlan": "Clé reconnue, mais cette organisation n'a ni licence ni abonnement BiVelio actif : son utilisation est donc refusée. Abonnez-vous ou renouvelez depuis l'onglet Compte, puis testez à nouveau.",
       "keyLabel": "votre clé de compte de service{suffix} — affichée une seule fois, copiez-la maintenant",
       "passHint": "Transmettez-la comme <code>serviceAccountKey</code>. Elle est pré-remplie ci-dessous — cliquez sur <b>Tester ma clé</b> pour confirmer qu'elle est active.",
       "creating": "Création…",
