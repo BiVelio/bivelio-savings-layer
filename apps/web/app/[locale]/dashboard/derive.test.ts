@@ -253,3 +253,66 @@ describe("el carril del borrado del proveedor (0025) — conteo del proveedor, c
     expect(deriveElisionProveedor([{ ...fila, eliminatedInputTokens: 9_999, eliminatedFloorCost: 0, eliminatedCreditedRequests: 0 }]).kind).toBe("none");
   });
 });
+
+describe("el carril MEDIDO POR REFERENCIA (0029) — suma al titular bajo COMISIONAR_REFERENCIA", () => {
+  it("solo referencia → titular medido: la repetición tiene contador (el de la idéntica que corrió)", () => {
+    // 4 peticiones: 2 repeticiones por referencia (0,06 USD de baseline, coste 0)
+    // y 2 estimadas. Nada medido por su propio contador.
+    const v = deriveVerdict([
+      { requests: 4, baselineCost: 0.1, actualCost: 0.02,
+        measuredRequests: 0, measuredBaselineCost: 0, measuredActualCost: 0,
+        referenceRequests: 2, referenceBaselineCost: 0.06, referenceActualCost: 0 },
+    ]);
+    expect(v.kind).toBe("measured");
+    if (v.kind !== "measured") return;
+    expect(v.net).toBeCloseTo(1, 6);
+    expect(v.saved).toBeCloseTo(0.06, 6);
+    expect(v.share).toBeCloseTo(0.5, 6);
+    expect(v.byReference).toEqual({ requests: 2, saved: 0.06 });
+    expect(v.total).not.toBeNull();
+  });
+
+  it("medido + referencia se SUMAN en el titular, y byReference dice cuánto viene de la referencia", () => {
+    const v = deriveVerdict([
+      { requests: 3, baselineCost: 0.16, actualCost: 0.06,
+        measuredRequests: 1, measuredBaselineCost: 0.10, measuredActualCost: 0.06,
+        referenceRequests: 2, referenceBaselineCost: 0.06, referenceActualCost: 0 },
+    ]);
+    if (v.kind !== "measured") throw new Error("esperaba measured");
+    expect(v.saved).toBeCloseTo(0.10, 6);           // 0,04 medido + 0,06 por referencia
+    expect(v.net).toBeCloseTo(0.10 / 0.16, 6);
+    expect(v.share).toBeCloseTo(1, 6);              // las tres tienen contador del proveedor
+    expect(v.byReference!.requests).toBe(2);
+    expect(v.byReference!.saved).toBeCloseTo(0.06, 6);
+    // Todo medido (por su contador o por referencia): el total se calla.
+    expect(v.total).toBeNull();
+  });
+
+  it("sin nada medido ni por referencia → sin_medir", () => {
+    const v = deriveVerdict([
+      { requests: 2, baselineCost: 0.2, actualCost: 0,
+        measuredRequests: 0, measuredBaselineCost: 0, measuredActualCost: 0,
+        referenceRequests: 0, referenceBaselineCost: 0, referenceActualCost: 0 },
+    ]);
+    expect(v).toEqual({ kind: "sin_medir", requests: 2 });
+  });
+
+  it("sin las columnas de 0029 → byReference null y el titular de siempre", () => {
+    const fila = { requests: 2, baselineCost: 0.2, actualCost: 0.1, measuredRequests: 2, measuredBaselineCost: 0.2, measuredActualCost: 0.1 };
+    const v = deriveVerdict([fila]);
+    if (v.kind !== "measured") throw new Error("esperaba measured");
+    expect(v.byReference).toBeNull();
+    expect(v.net).toBeCloseTo(0.5, 6);
+  });
+
+  it("⛔ la referencia NO toca los tokens (deriveTokens no cambia)", () => {
+    const fila = {
+      requests: 2, baselineCost: 0.2, actualCost: 0.1,
+      measuredRequests: 2, measuredBaselineCost: 0.2, measuredActualCost: 0.1,
+      baselineInputTokens: 1_000, actualInputTokens: 800, baselineOutputTokens: 10, actualOutputTokens: 10,
+    };
+    expect(deriveTokens([{ ...fila, referenceRequests: 5, referenceBaselineCost: 0.3, referenceActualCost: 0 }])).toEqual(
+      deriveTokens([fila]),
+    );
+  });
+});

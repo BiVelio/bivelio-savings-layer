@@ -1,7 +1,9 @@
 import {
   calcularComision,
   COMISIONAR_ELISION_SUELO,
+  COMISIONAR_REFERENCIA,
   redondearCentimos,
+  REGLA_REFERENCIA,
   TRAMOS,
   type ComisionCalculada,
 } from "./tarifa";
@@ -15,8 +17,10 @@ import {
  * el mes 1 es, por construcción, idéntico a lo que paga el mes 2.
  *
  * Principios que este módulo hace imposibles de violar:
- *   · Solo entra dinero MEDIDO (`measured_*` de usage_daily, migración 0010).
- *     El estimado se enseña APARTE, como contexto, y jamás suma en la base.
+ *   · Solo entra dinero MEDIDO (`measured_*` de usage_daily, migración 0010,
+ *     y el MEDIDO POR REFERENCIA, `reference_*` de 0029, bajo
+ *     COMISIONAR_REFERENCIA). El estimado se enseña APARTE, como contexto, y
+ *     jamás suma en la base.
  *   · Cada extracto fija su versión de precios y su tipo de cambio: dos
  *     extractos del mismo período son byte a byte comparables.
  *   · La comisión sale de `calcularComision` (tramos × rampa) — nunca se
@@ -43,6 +47,12 @@ export interface FilaDiaria {
    *  SOLO bajo COMISIONAR_ELISION_SUELO (hoy false). Opcionales como shadow_*. */
   eliminated_floor_cost?: number;
   eliminated_credited_requests?: number;
+  /** El carril MEDIDO POR REFERENCIA (0029): llamadas evitadas valoradas con el
+   *  contador del proveedor de la petición idéntica que sí corrió. Entra en la
+   *  base bajo COMISIONAR_REFERENCIA. Opcionales: sin la migración, no vienen. */
+  reference_requests?: number;
+  reference_baseline_cost?: number;
+  reference_actual_cost?: number;
 }
 
 export interface OpcionesExtracto {
@@ -97,11 +107,22 @@ export interface Extracto {
    * acreditadas — la línea no se pinta.
    */
   elisionProveedor: { requests: number; floorUsd: number } | null;
+  /**
+   * El carril MEDIDO POR REFERENCIA del período (0029): repeticiones servidas
+   * sin llamar al proveedor, valoradas con el contador de la petición idéntica
+   * que sí corrió. Con `comisionada` (COMISIONAR_REFERENCIA) sus cifras YA
+   * están dentro de `baseMedidaUsd`, `ahorroMedidoUsd` y `requestsMedidas`;
+   * sin ella, es contexto en su línea propia. `null` sin peticiones de
+   * referencia — la línea no se pinta.
+   */
+  referencia: { requests: number; baseUsd: number; ahorroUsd: number; comisionada: boolean } | null;
   /** Los parámetros que hacen el extracto auto-contenido y auditable. */
   parametros: {
     versionPrecios: string;
     fx: { eurPorUsd: number; fuente: string };
     tramos: readonly { hastaEur: number; tipo: number }[];
+    /** La regla con la que se valoraron las repeticiones por referencia. */
+    referencia: typeof REGLA_REFERENCIA;
   };
 }
 
@@ -125,6 +146,9 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
   let sombraActualUsd = 0;
   let elisionRequests = 0;
   let elisionFloorUsd = 0;
+  let refRequests = 0;
+  let refBaseUsd = 0;
+  let refActualUsd = 0;
   for (const f of enPeriodo) {
     baseUsd += f.measured_baseline_cost;
     actualUsd += f.measured_actual_cost;
@@ -136,6 +160,11 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
     sombraActualUsd += f.shadow_actual_cost ?? 0;
     elisionRequests += f.eliminated_credited_requests ?? 0;
     elisionFloorUsd += f.eliminated_floor_cost ?? 0;
+    // El carril por referencia se acumula APARTE y solo se suma a la base
+    // debajo, bajo su interruptor: nunca directo a baseUsd desde la fila.
+    refRequests += f.reference_requests ?? 0;
+    refBaseUsd += f.reference_baseline_cost ?? 0;
+    refActualUsd += f.reference_actual_cost ?? 0;
   }
   // SELLO (2026-09-09) · `eliminated_floor_cost` es un BRUTO: cuenta lo que el
   // proveedor borró, a precio de lectura de caché, y JAMÁS resta la
@@ -158,12 +187,27 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
   }
   const extraSuelo = 0;
   baseUsd += extraSuelo;
+  // 0029 · MEDIDO POR REFERENCIA. A diferencia del suelo de arriba, esto SÍ es
+  // medido: el contador que el proveedor devolvió para la petición idéntica que
+  // ya corrió (y que el cliente ya pagó), valorado a la baja. Entra en la base,
+  // en el ahorro y en las peticiones medidas bajo su interruptor.
+  if (COMISIONAR_REFERENCIA) {
+    baseUsd += refBaseUsd;
+    actualUsd += refActualUsd;
+    requestsMedidas += refRequests;
+  }
   const ahorroUsd = Math.max(0, baseUsd - actualUsd);
-  // El ahorro total (medido+estimado) menos el medido = lo estimado, que se
-  // enseña como contexto. Nunca negativo: una reparación cara puede dejar el
-  // total por debajo del medido.
+  const ahorroReferenciaUsd = refBaseUsd - refActualUsd;
+  // El ahorro total (medido+referencia+estimado) menos lo medido y lo medido por
+  // referencia = lo estimado, que se enseña como contexto. La referencia se
+  // resta SIEMPRE (con el interruptor apagado tiene su línea propia y no es
+  // estimado). Nunca negativo: una reparación cara puede dejar el total por
+  // debajo del medido.
   const ahorroTotalUsd = Math.max(0, baselineTotalUsd - actualTotalUsd);
-  const ahorroEstimadoExcluidoUsd = Math.max(0, ahorroTotalUsd - ahorroUsd);
+  const ahorroEstimadoExcluidoUsd = Math.max(
+    0,
+    ahorroTotalUsd - ahorroUsd - (COMISIONAR_REFERENCIA ? 0 : ahorroReferenciaUsd),
+  );
 
   const baseEur = redondearCentimos(baseUsd * opts.fx.eurPorUsd);
   const ahorroEur = redondearCentimos(ahorroUsd * opts.fx.eurPorUsd);
@@ -191,12 +235,22 @@ export function construirExtracto(opts: OpcionesExtracto): Extracto {
         : null,
     elisionProveedor:
       elisionRequests > 0 ? { requests: elisionRequests, floorUsd: redondearCentimos(elisionFloorUsd) } : null,
+    referencia:
+      refRequests > 0
+        ? {
+            requests: refRequests,
+            baseUsd: redondearCentimos(refBaseUsd),
+            ahorroUsd: redondearCentimos(ahorroReferenciaUsd),
+            comisionada: COMISIONAR_REFERENCIA,
+          }
+        : null,
     parametros: {
       versionPrecios: opts.versionPrecios,
       fx: opts.fx,
       // Sin umbral ni rampa desde el 2026-09-01 (decisión del dueño): un
       // extracto anterior a esa fecha sí trae umbralRatio/finRampaRatio.
       tramos: TRAMOS,
+      referencia: REGLA_REFERENCIA,
     },
   };
 }

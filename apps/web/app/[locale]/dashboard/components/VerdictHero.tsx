@@ -65,6 +65,20 @@ export async function VerdictHero({
                 })}
               </p>
             )}
+            {/* 0029 · la parte del titular medida POR REFERENCIA: repeticiones
+                servidas sin llamar al proveedor, valoradas con el contador de
+                la petición idéntica que ya corrió. Ya está DENTRO del titular
+                (deriveVerdict la suma bajo COMISIONAR_REFERENCIA); esta línea
+                solo dice cuánto y de dónde sale. */}
+            {v.byReference && (
+              <p className="ck-note">
+                {t.rich("verdictHero.referenceNote", {
+                  money: money(v.byReference.saved),
+                  count: v.byReference.requests,
+                  b: (chunks) => <b>{chunks}</b>,
+                })}
+              </p>
+            )}
             <div className="cap">
               {t.rich("verdictHero.savedLine", {
                 money: money(v.saved),

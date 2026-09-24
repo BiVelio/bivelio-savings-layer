@@ -44,6 +44,17 @@ export interface FilaDeCierre {
   fx_eur_por_usd: number;
   fx_fuente: string;
   tramos: { desdeEur: number; hastaEur: number | null; tipo: number; baseEur: number; comisionEur: number }[];
+  /**
+   * El carril MEDIDO POR REFERENCIA (0029), sellado con la regla que lo valoró.
+   * Con la referencia comisionada, estas cifras YA están dentro de
+   * requests_medidas / base_medida_usd / ahorro_medido_usd; aquí van aparte
+   * para auditarlas. `regla_referencia`: "" sin referencia, la versión de la
+   * regla si entró en la base y la versión + ":excluida" si solo se enseñó.
+   */
+  requests_referencia: number;
+  base_referencia_usd: number;
+  ahorro_referencia_usd: number;
+  regla_referencia: string;
 }
 
 /** El período anterior al de la fecha dada (el que el cron del día 1 cierra). */
@@ -106,7 +117,20 @@ function aFilaDeCierre(e: Extracto): FilaDeCierre {
       baseEur: t.baseEur,
       comisionEur: t.comisionEur,
     })),
+    requests_referencia: e.referencia?.requests ?? 0,
+    base_referencia_usd: e.referencia?.baseUsd ?? 0,
+    // El CHECK de 0029 exige ≥ 0: un ahorro de referencia negativo es imposible
+    // por construcción (coste real 0), pero la fila inmutable no se juega a eso.
+    ahorro_referencia_usd: Math.max(0, e.referencia?.ahorroUsd ?? 0),
+    regla_referencia: reglaSellada(e),
   };
+}
+
+/** El sello de la regla del carril por referencia en la fila cerrada. */
+function reglaSellada(e: Extracto): string {
+  if (e.referencia === null) return "";
+  const version = e.parametros.referencia.version;
+  return e.referencia.comisionada ? version : `${version}:excluida`;
 }
 
 function redondear6(n: number): number {
@@ -124,6 +148,8 @@ export interface ResumenDeCierre {
   es_exento: boolean;
   dias: number;
   requests_medidas: number;
+  /** Cuántas de las medidas lo son POR REFERENCIA (0029): las que hay que revisar a mano antes del primer cierre. */
+  requests_referencia: number;
   base_medida_eur: number;
   ahorro_medido_eur: number;
   ratio: number;
@@ -141,6 +167,7 @@ export function resumenDelCierre(cierre: FilaDeCierre[]): ResumenDeCierre[] {
     es_exento: c.es_exento,
     dias: c.dias,
     requests_medidas: c.requests_medidas,
+    requests_referencia: c.requests_referencia,
     base_medida_eur: c.base_medida_eur,
     ahorro_medido_eur: c.ahorro_medido_eur,
     ratio: c.ratio,
