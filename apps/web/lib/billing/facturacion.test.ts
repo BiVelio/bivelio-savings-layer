@@ -197,7 +197,7 @@ describe("ensayoDeCargo — el ensayo en seco dice exactamente lo que haría", (
   it("facturar sin medio de pago lo dice en voz alta", () => {
     const ensayo = ensayoDeCargo(base, decidirCargo(base, CLIENTE, false), null);
     expect(ensayo.medio_de_pago).toBe("ninguno");
-    expect(ensayo.detalle).toMatch(/SIN medio de pago/);
+    expect(ensayo.detalle).toMatch(/NO payment method/);
   });
   it("exenta, omitida y nada llevan su causa y ningún importe", () => {
     expect(ensayoDeCargo(base, "exenta", undefined)).toMatchObject({ accion: "exenta", centimos: null });

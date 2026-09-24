@@ -180,14 +180,14 @@ export function ensayoDeCargo(
 ): EnsayoDeCargo {
   const base = { org_id: e.org_id, periodo: e.periodo, cargo_eur: e.cargo_eur };
   if (decision === "exenta") {
-    return { ...base, accion: "exenta", detalle: "organización exenta de comisión", centimos: null, cliente: null, medio_de_pago: null };
+    return { ...base, accion: "exenta", detalle: "organization exempt from commission", centimos: null, cliente: null, medio_de_pago: null };
   }
   if (decision.accion === "nada") return { ...base, accion: "nada", detalle: decision.motivo, centimos: null, cliente: null, medio_de_pago: null };
   if (decision.accion === "omitir") return { ...base, accion: "omitir", detalle: decision.estado, centimos: null, cliente: null, medio_de_pago: null };
   return {
     ...base,
     accion: "facturar",
-    detalle: medio ? `se cobraría al medio de pago de la ${medio.origen}` : "SIN medio de pago: la factura quedaría abierta",
+    detalle: medio ? `would be charged to the payment method of the ${medio.origen}` : "NO payment method: the invoice would stay open",
     centimos: decision.centimos,
     cliente: decision.clienteStripe,
     medio_de_pago: medio ? medio.origen : "ninguno",

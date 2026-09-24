@@ -232,9 +232,9 @@ export class RevocationPoller {
         // `onEvent` — que es lo normal.
         this.avisar(
           `rechazada:${razon}`,
-          `[bv-sala] la lista de revocaciones NO verifica (${razon}). Se mantiene la última buena conocida, ` +
-            `así que las revocaciones YA conocidas se siguen aplicando, pero las nuevas no llegan. ` +
-            `Revise ${this.opts.url}.`,
+          `[bv-sala] the revocation list does NOT verify (${razon}). The last known-good list is kept, ` +
+            `so revocations ALREADY known still apply, but new ones are not arriving. ` +
+            `Check ${this.opts.url}.`,
         );
         return;
       }

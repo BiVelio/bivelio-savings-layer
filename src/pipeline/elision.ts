@@ -42,7 +42,7 @@ export const KEEP_TOOL_RESULTS = 8;
  *  imprescindible: el turno en que un bloque pasa de presente a elidido paga la
  *  invalidación UNA vez; a partir de ahí el muñón es idéntico turno tras turno. */
 export const MUNON_ELISION =
-  "[BiVelio Savings: resultado de herramienta antiguo recortado para bajar el coste; los resultados recientes viajan enteros.]";
+  "[BiVelio Savings: an older tool result was trimmed here to lower the cost; the most recent results travel in full.]";
 
 export interface EleccionElision {
   /** Índices en `messages` de los tool_result a elidir (orden ascendente). */

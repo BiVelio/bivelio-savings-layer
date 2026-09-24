@@ -97,7 +97,7 @@ describe("⛔ el ETag NO se guarda hasta que la lista verifica", () => {
     // despliegue o alguien está sirviendo algo que no hemos firmado nosotros.
     const f = vi.fn(async () => listaMala()) as unknown as typeof fetch;
     await poller(f).pollOnce();
-    expect(avisos.join(" ")).toContain("NO verifica");
+    expect(avisos.join(" ")).toContain("does NOT verify");
     expect(avisos.join(" ")).toContain(URL_CP);
   });
 
@@ -105,7 +105,7 @@ describe("⛔ el ETag NO se guarda hasta que la lista verifica", () => {
     const f = vi.fn(async () => listaMala()) as unknown as typeof fetch;
     const p = poller(f);
     for (let i = 0; i < 5; i++) await p.pollOnce();
-    expect(avisos.filter((a) => a.includes("NO verifica"))).toHaveLength(1);
+    expect(avisos.filter((a) => a.includes("does NOT verify"))).toHaveLength(1);
   });
 
   it("un 304 sigue siendo un éxito silencioso: no avisa de nada", async () => {

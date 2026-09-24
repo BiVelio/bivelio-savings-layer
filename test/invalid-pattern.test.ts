@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { validateAgainstSchema } from "../src/constraints/validate.js";
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
+import { reiniciarAvisos } from "../src/util/warn-once.js";
 
 /**
  * Un `pattern` con sintaxis inválida en el contrato del cliente NO puede lanzar.
@@ -50,5 +51,39 @@ describe("un pattern inválido se trata como error de validación, no como excep
       response: { contractId: "c:v1", schema: patternInvalido },
     });
     expect(llamadas).toBe(1);
+  });
+
+  it("y AVISA una vez, en inglés, diciendo qué corregir", async () => {
+    // El aviso es lo único que le dice al cliente que el fallo es de SU esquema y
+    // no de la capa; se fija el texto porque es lo que él lee, no la traza.
+    reiniciarAvisos();
+    const avisos: string[] = [];
+    const espia = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => {
+      avisos.push(a.map(String).join(" "));
+    });
+    try {
+      const provider: Provider = {
+        id: "cuenta",
+        async generate(_r: ProviderRequest): Promise<ProviderResponse> {
+          return { text: '{"x":"hola"}', finishReason: "stop", usage: { inputTokens: 10, outputTokens: 5 } };
+        },
+      };
+      const layer = createSavingsLayer({ provider, devUnlicensed: true });
+      const peticion = {
+        model: "openai/gpt-4o-mini",
+        messages: [{ role: "user" as const, content: "dame x" }],
+        response: { contractId: "c:v1", schema: patternInvalido },
+      };
+      await layer.generate(peticion);
+      await layer.generate(peticion);
+
+      const sobreElPattern = avisos.filter((a) => a.includes("`pattern`"));
+      expect(sobreElPattern, "una vez por proceso, no por petición").toHaveLength(1);
+      expect(sobreElPattern[0]).toContain("is not a valid regex");
+      expect(sobreElPattern[0]).toContain("NOT retried");
+      expect(sobreElPattern[0]).toContain("Fix the schema's `pattern`");
+    } finally {
+      espia.mockRestore();
+    }
   });
 });
