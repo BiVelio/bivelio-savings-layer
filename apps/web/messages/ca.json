@@ -236,7 +236,7 @@
       "advanced": "Configuració avançada",
       "projFriendly": "La teva factura passaria de {baseline} a {opt} — un {pct}% menys.",
       "onlyChatTitle": "Només fas servir ChatGPT o Claude?",
-      "onlyChatBody": "ChatGPT sí que és tancat: quota fixa, sense factura ni topalls per tokens a retallar. Però si uses Claude, ja t'ajudem a estalviar: l'skill savings-mode (gratuït, a la portada) estira els teus topalls de subscripció, i «bvsala claude» mesura el teu consum real al terminal. I si desenvolupes una aplicació amb clau d'API, allà BV-SALA mesura i redueix la despesa de debò.",
+      "onlyChatBody": "ChatGPT sí que és tancat: quota fixa, sense factura ni topalls per tokens a retallar. Però si uses Claude, ja t'ajudem a estalviar: l'skill savings-mode (gratuït, a la portada) estira els teus topalls de subscripció. I si desenvolupes una aplicació amb clau d'API, allà BV-SALA mesura i redueix la despesa de debò.",
       "onlyChatCta": "Desenvolupes una app? Ves a Instal·lar"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Error de xarxa: torna-ho a provar.",
       "errNotRecognized": "No reconeguda: comprova que no hi hagi errors d'escriptura, o crea una clau nova a dalt.",
       "errUnexpected": "Resposta inesperada ({status}). Torna-ho a provar d'aquí a un moment.",
+      "keyNoPlan": "Clau reconeguda, però aquesta organització no té cap llicència ni subscripció activa de BiVelio, així que el seu ús es rebutja. Subscriu-te o renova des de Compte i torna a provar.",
       "keyLabel": "la teva clau de compte de servei{suffix} — es mostra un sol cop, copia-la ara",
       "passHint": "Passa-la com a <code>serviceAccountKey</code>. Ja està emplenada a sota: prem <b>Prova la meva clau</b> per confirmar que està activa.",
       "creating": "Creant…",

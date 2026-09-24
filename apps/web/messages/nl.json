@@ -236,7 +236,7 @@
       "advanced": "Geavanceerde instellingen",
       "projFriendly": "Je rekening zou van {baseline} naar {opt} gaan — {pct}% minder.",
       "onlyChatTitle": "Gebruik je alleen ChatGPT of Claude?",
-      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op, en “bvsala claude” meet je echte verbruik in de terminal. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
+      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
       "onlyChatCta": "Bouw je een app? Ga naar Installeren"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Netwerkfout — probeer het opnieuw.",
       "errNotRecognized": "Niet herkend — controleer op typefouten of maak hierboven een nieuwe sleutel aan.",
       "errUnexpected": "Onverwacht antwoord ({status}). Probeer het zo meteen opnieuw.",
+      "keyNoPlan": "Sleutel herkend, maar deze organisatie heeft geen actieve BiVelio-licentie of -abonnement, dus het gebruik wordt geweigerd. Neem een abonnement of verleng via Account en test daarna opnieuw.",
       "keyLabel": "je service-account-sleutel{suffix} — eenmalig getoond, kopieer hem nu",
       "passHint": "Geef hem door als <code>serviceAccountKey</code>. Hij is hieronder al ingevuld — klik op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
       "creating": "Aanmaken…",

@@ -236,7 +236,7 @@
       "advanced": "Ajustes avanzados",
       "projFriendly": "Tu factura pasaría de {baseline} a {opt} — un {pct}% menos.",
       "onlyChatTitle": "¿Solo usas ChatGPT o Claude?",
-      "onlyChatBody": "ChatGPT sí es cerrado: cuota fija, sin factura ni topes por tokens que recortar. Pero si usas Claude, ya te ayudamos a ahorrar: el skill savings-mode (gratis, en la portada) estira tus topes de suscripción, y «bvsala claude» mide tu consumo real en el terminal. Y si desarrollas una aplicación con clave de API, ahí BV-SALA mide y reduce el gasto de verdad.",
+      "onlyChatBody": "ChatGPT sí es cerrado: cuota fija, sin factura ni topes por tokens que recortar. Pero si usas Claude, ya te ayudamos a ahorrar: el skill savings-mode (gratis, en la portada) estira tus topes de suscripción. Y si desarrollas una aplicación con clave de API, ahí BV-SALA mide y reduce el gasto de verdad.",
       "onlyChatCta": "¿Desarrollas una app? Ve a Instalar"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Error de red: vuelve a intentarlo.",
       "errNotRecognized": "No reconocida: revisa que no haya errores de escritura, o crea una nueva clave arriba.",
       "errUnexpected": "Respuesta inesperada ({status}). Vuelve a intentarlo en un momento.",
+      "keyNoPlan": "Clave reconocida, pero esta organización no tiene licencia ni suscripción activa de BiVelio, así que su uso se rechaza. Suscríbete o renueva desde Cuenta y vuelve a probar.",
       "keyLabel": "tu clave de cuenta de servicio{suffix}: se muestra una sola vez, cópiala ahora",
       "passHint": "Pásala como <code>serviceAccountKey</code>. Ya está rellenada abajo: pulsa <b>Probar mi clave</b> para confirmar que está activa.",
       "creating": "Creando…",

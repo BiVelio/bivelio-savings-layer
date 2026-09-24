@@ -682,6 +682,8 @@ input[type="range"] { accent-color: var(--brand); }
 .kt-result { margin: 8px 0 0; font-size: 13px; font-weight: 500; }
 .kt-ok { color: var(--good-ink); }
 .kt-bad { color: var(--danger); }
+/* Clave buena en una org sin licencia ni suscripción: ni ✓ ni ✗, se arregla pagando. */
+.kt-warn { color: var(--warn); }
 @media (max-width: 480px) { .kt-row { flex-direction: column; align-items: stretch; } }
 
 /* ── Tarjeta de autenticación (login / signup) ─────────────────────────── */
