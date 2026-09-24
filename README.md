@@ -75,6 +75,38 @@ cache-write TTL while your session stays hot, which changes the price, never the
 content the model reads. The other levers (sibling model, per-turn effort) stay off
 until you switch them on.
 
+### Python and any other language: the local gateway
+
+The same gateway sits in front of any SDK that lets you set a base URL, whatever
+the language:
+
+```bash
+bvsala gateway --upstream openai --port 8403   # one gateway per upstream
+bvsala gateway                                 # Anthropic, the default, on 8402
+```
+
+```python
+from openai import OpenAI
+client = OpenAI(base_url="http://127.0.0.1:8403/v1")   # WITH /v1
+stream = client.chat.completions.create(
+    model="gpt-4o-mini", messages=[{"role": "user", "content": "Hi"}], stream=True,
+    stream_options={"include_usage": True},  # without it a stream carries no usage and is not metered
+)
+for chunk in stream:
+    if chunk.choices:  # the last chunk carries only the usage
+        print(chunk.choices[0].delta.content or "", end="")
+
+from anthropic import Anthropic
+claude = Anthropic(base_url="http://127.0.0.1:8402")    # NO /v1
+```
+
+With `BIVELIO_SERVICE_KEY` set, the gateway measures every request whose usage the
+provider reports — Anthropic Messages, OpenAI Chat Completions and Responses, streamed
+or not — priced at the model's list price, and its log line says when one is not
+metered. That is measurement, not savings: the saving levers of the SDK are TypeScript,
+and the gateway's own levers apply to Anthropic `/v1/messages` traffic with a PRO
+license. `bvsala doctor` prints the recipe for each SDK.
+
 ## Check it before you install
 
 What you can check before paying is what we have measured: the published benchmark,
@@ -148,6 +180,29 @@ the request went through untouched, `"estimated"` when the layer removed somethi
 calibrated estimate where no exact tokenizer exists, as for Anthropic models),
 and `"unmeasured"` when the provider returned no usage. Only measured figures
 reach your invoice.
+
+**Streaming.** `generateStream()` takes the same request and hands you the answer as
+the provider writes it, then the same `SavingsReport`:
+
+```ts
+const stream = layer.generateStream({
+  model: "openai/gpt-4o-mini",
+  messages: [{ role: "user", content: "Summarize the release notes in one line." }],
+});
+for await (const event of stream) {
+  if (event.type === "text") process.stdout.write(event.delta);
+}
+const { report: streamed } = await stream.result;
+console.log(streamed.cost.basis);          // same rules as generate(), read from the provider's final usage
+console.log(streamed.streaming?.delivery); // "live", or "whole" when the answer arrived in one piece
+```
+
+The SDK asks the provider for its final usage at the end of every stream (on
+OpenAI‑compatible endpoints, `stream_options.include_usage`); a stream that ends
+without it is reported as `unmeasured` and never billed. With an output contract, or
+a request declared `deferrable`, the answer is produced exactly as `generate()` would
+and arrives as a single `text` event. Breaking out of the loop cancels the request;
+`await stream.result` tells you whether it completed.
 
 ## What you get on every request
 

@@ -34,6 +34,7 @@ lo que su terminal manda por fuera.
 | [Droid](droid.md) | `http://127.0.0.1:8402` | sin **[I]** | `~/.factory/settings.json` | — (config de usuario) | validar en mano |
 | [Cline](cline.md) | `http://127.0.0.1:8402/v1` | **con** | UI | — | [V] |
 | [Kilo Code](kilo.md) | `http://127.0.0.1:8402/v1` | con **[I]** | UI | — | validar en mano |
+| [Python y cualquier SDK](../../README.md#python-and-any-other-language-the-local-gateway) (OpenAI · Anthropic) | OpenAI: `http://127.0.0.1:8403/v1` · Anthropic: `http://127.0.0.1:8402` | OpenAI **con**, Anthropic **sin** | `base_url` del SDK | `bvsala gateway --upstream openai` | [V] en test (upstream falso) |
 
 Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones**
 (un 3xx en el base URL es fallo por diseño del cliente, y el gateway lo reenvía
@@ -70,7 +71,12 @@ pero nada llega a tu panel.
 Un gateway habla con **un** upstream (`BVSALA_GATEWAY_UPSTREAM`, por defecto
 `https://api.anthropic.com`). Los terminales del dialecto Anthropic comparten
 instancia; Codex necesita la suya contra OpenAI — `bvsala codex` la arranca
-sola con el upstream correcto según tu modo de auth (ver su guía).
+sola con el upstream correcto según tu modo de auth (ver su guía). Desde la
+próxima versión, `bvsala gateway --upstream openai|anthropic|<origen>` lo elige
+sin variable de entorno (el flag manda sobre `BVSALA_GATEWAY_UPSTREAM`). Para un
+SDK de OpenAI (Python, Node…) arranca uno con `--upstream openai` en otro puerto;
+en streaming, la petición tiene que llevar `stream_options.include_usage` o el
+gateway la reenvía sin medirla y lo dice en el log.
 
 ### 2 · Comprobar que mide: el log del gateway
 
