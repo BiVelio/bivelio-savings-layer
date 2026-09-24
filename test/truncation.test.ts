@@ -58,7 +58,7 @@ const peticion = {
 describe("salida cortada por el tope", () => {
   it("NO se gasta una segunda llamada en algo que un reintento no arregla", async () => {
     const provider = new ProveedorQueTrunca(true);
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
     const r = await layer.generate(peticion);
 
     // Una sola llamada. Antes eran dos, y la segunda truncaba igual.
@@ -72,7 +72,7 @@ describe("salida cortada por el tope", () => {
     // El arreglo no puede costar las reparaciones legítimas: un modelo que
     // devuelve JSON mal formado con finish_reason "stop" sí puede corregirse.
     const provider = new ProveedorQueTrunca(false);
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
     const r = await layer.generate(peticion);
 
     expect(provider.llamadas).toBe(2);
@@ -81,7 +81,7 @@ describe("salida cortada por el tope", () => {
 
   it("el motivo queda en la traza, no solo en un aviso de consola", async () => {
     const provider = new ProveedorQueTrunca(true);
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
     const r = await layer.generate(peticion);
 
     const paso = r.report.traces.find((t) => t.outcome === "repair-skipped");
@@ -124,7 +124,7 @@ const sinContrato = {
 describe("una respuesta cortada por el tope no se archiva", () => {
   it("NO se cachea, aunque no haya contrato que la declare inválida", async () => {
     const provider = new ProveedorCortado();
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
 
     const primera = await layer.generate(sinContrato);
     // Sin esquema no hay nada que validar, y el informe lo AFIRMA en positivo:
@@ -144,7 +144,7 @@ describe("una respuesta cortada por el tope no se archiva", () => {
 
   it("y la traza dice por qué, para que no parezca que la caché falló", async () => {
     const provider = new ProveedorCortado();
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
     const r = await layer.generate(sinContrato);
 
     const paso = r.report.traces.find((t) => t.stage === "cache-write");
@@ -176,7 +176,7 @@ describe("el aviso de truncado distingue contrato y modelo", () => {
 
   it("el mismo contrato contra DOS modelos avisa dos veces", async () => {
     const provider = new ProveedorQueTrunca(true);
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
 
     await layer.generate(peticion);
     await layer.generate({ ...peticion, model: "anthropic/claude-sonnet-4-5" });
@@ -192,7 +192,7 @@ describe("el aviso de truncado distingue contrato y modelo", () => {
     // del modelo de destino y lo compara con el tope, que es la cuenta que hubo
     // que hacer a mano leyendo un CSV.
     const provider = new ProveedorQueTrunca(true);
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
     await layer.generate({
       ...peticion,
       response: {
@@ -223,7 +223,7 @@ describe("el aviso de truncado distingue contrato y modelo", () => {
     // escribiendo por encima de lo que su propio esquema autoriza, y subir el
     // tope solo compraría respuestas más largas que siguen incumpliendo.
     const provider = new ProveedorQueTrunca(true);
-    const layer = createSavingsLayer({ provider, devUnlicensed: true });
+    const layer = createSavingsLayer({ exactTokenizer: false, provider, devUnlicensed: true });
     await layer.generate({
       ...peticion,
       response: {

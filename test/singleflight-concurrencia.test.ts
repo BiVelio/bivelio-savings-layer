@@ -130,7 +130,7 @@ function peticion(extra: Partial<SavingsRequest> = {}): SavingsRequest {
 
 let secuencia = 0;
 function crearCapa(provider: Provider) {
-  return createSavingsLayer({ provider, generateId: () => `req-${secuencia++}` });
+  return createSavingsLayer({ exactTokenizer: false, provider, generateId: () => `req-${secuencia++}` });
 }
 
 /** Lanza N `generate()` a la vez y espera a que TODAS hayan llegado a donde van. */
@@ -367,7 +367,7 @@ describe("cuando el líder falla", () => {
       }
     }
     const proveedor = new ProveedorContado();
-    const capa = createSavingsLayer({
+    const capa = createSavingsLayer({ exactTokenizer: false,
       provider: proveedor,
       router: new RouterQueRevienta(),
       generateId: () => `req-${secuencia++}`,

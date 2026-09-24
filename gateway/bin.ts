@@ -59,26 +59,27 @@ function ayuda(): void {
   console.log(`bvsala ${BV_SALA_VERSION} — BiVelio Savings Layer
 
 Commands:
-  gateway [--puerto N]   Local metering proxy (default port 8402) for terminals that
+  gateway [--port N]     Local metering proxy (default port 8402) for terminals that
                          honour a base URL: Claude Code, opencode, Goose, Crush…
   claude [args…]         Run Claude Code through the gateway. No configuration needed.
   codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
                          ChatGPT auth: chatgpt.com/backend-api/codex — metered, not billed).
   goose [args…]          Run Goose (ANTHROPIC_HOST) through the gateway.
   qwen [args…]           Run Qwen Code (ANTHROPIC_BASE_URL) through the gateway.
-  doctor [--puerto N]    Detect installed terminals and print the exact configuration for each.
-  skill [--codex] [--proyecto] [--forzar]
+  doctor [--port N]      Detect installed terminals and print the exact configuration for each.
+  skill [--codex] [--project] [--force]
                          Install the "savings-mode" skill for Claude Code (~/.claude/skills;
-                         with --proyecto, .claude/skills in the current directory): terse
+                         with --project, .claude/skills in the current directory): terse
                          output plus surgical tool use to stretch subscription limits.
                          With --codex, the same discipline as a marked block in AGENTS.md
-                         (~/.codex; with --proyecto, ./AGENTS.md) — Codex has no skills and
+                         (~/.codex; with --project, ./AGENTS.md) — Codex has no skills and
                          AGENTS.md is always active. Its effect is measured by the gateway,
                          not promised.
   --version | -v         Print the version only.
   --help | -h            This help; also accepted after gateway, doctor or skill
                          (\`bvsala gateway --help\` starts nothing).
 
+  Flags also accept their original Spanish spellings (--puerto, --proyecto, --forzar).
 Environment:
   BIVELIO_SERVICE_KEY    Service key (bvk_…): enables metering and seat identity.
   BVSALA_SEAT_ID         Stable seat identity per replica (optional).
@@ -151,8 +152,8 @@ if (comando === "skill") {
     origenes: [join(aqui, "..", ".."), join(aqui, "..")],
     home: homedir(),
     cwd: process.cwd(),
-    proyecto: resto.includes("--proyecto"),
-    forzar: resto.includes("--forzar"),
+    proyecto: resto.includes("--project") || resto.includes("--proyecto"),
+    forzar: resto.includes("--force") || resto.includes("--forzar"),
     fs: {
       existe: existsSync,
       leer: (ruta: string) => readFileSync(ruta, "utf8"),
@@ -169,7 +170,7 @@ if (comando === "skill") {
 
 // Envoltorios: puerto efímero; `gateway`: 8402 o --puerto (0 = efímero, lo usa
 // el arnés F2); `doctor`: 1–65535 (imprime URLs — un puerto 0 no señala nada).
-const idx = resto.indexOf("--puerto");
+const idx = resto.indexOf("--port") >= 0 ? resto.indexOf("--port") : resto.indexOf("--puerto");
 const puerto = esEnvoltorio ? 0 : idx >= 0 ? Number(resto[idx + 1]) : 8402;
 if (!Number.isInteger(puerto) || (comando === "doctor" ? puerto < 1 : puerto < 0) || puerto > 65535) {
   console.error(`[bvsala ${comando}] invalid port: ${resto[idx + 1]}`);

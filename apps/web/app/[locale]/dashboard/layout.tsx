@@ -1,7 +1,9 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AppSidebar } from "@/app/components/app/AppSidebar";
 import { AppTopbar } from "@/app/components/app/AppTopbar";
+import { destinoDeLaPeticion } from "@/lib/auth/destino";
 import { authConfigured } from "@/lib/supabase/env";
 import { loadDashboard, planLabel } from "./load";
 
@@ -27,7 +29,17 @@ export const metadata = { robots: { index: false, follow: false } };
  */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, ctx, orgFallo } = await loadDashboard();
-  if (authConfigured && !user) redirect("/auth/refresh?next=/dashboard");
+  if (authConfigured && !user) {
+    // El `next` es la URL pedida, con su consulta (cabecera del middleware, ver
+    // lib/auth/destino.ts). Lo arregló #277 y lo perdió #307 al reescribir la
+    // cáscara: con `/dashboard` a secas, el enlace del README y del error del
+    // SDK a /dashboard/install, y el de compra con ?codigo=, aterrizaban tras
+    // el acceso en la portada del panel. Sin este bloque no hay test que lo
+    // cace: `destino.test.ts` prueba la función, no que la cáscara la use —
+    // por eso `layout.test.ts` ahora lee este fichero.
+    const destino = destinoDeLaPeticion(await headers());
+    redirect(`/auth/refresh?next=${encodeURIComponent(destino)}`);
+  }
 
   return (
     <div className="app">
