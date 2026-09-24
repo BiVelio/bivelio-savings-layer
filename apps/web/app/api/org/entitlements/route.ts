@@ -7,10 +7,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Entitlements por organización para la PASARELA (S4a · gate per-org).
  *
- * La pasarela no sabe de licencias: este es su canal mínimo. Se autentica con
- * la misma clave de servicio bvk_ que la ingesta (hash → service_accounts →
- * org derivada del SERVIDOR, jamás del cuerpo) y devuelve la lista de features
- * de las licencias VIVAS de la org.
+ * Es el canal mínimo del control plane con la pasarela: no entrega licencias
+ * (esas salen de /api/license/current), solo qué features concede la org y, si
+ * está bloqueada, por qué. Se autentica con la misma clave de servicio bvk_ que
+ * la ingesta (hash → service_accounts → org derivada del SERVIDOR, jamás del
+ * cuerpo) y devuelve la lista de features de las licencias VIVAS de la org.
  *
  * El contrato con la pasarela es FAIL-CLOSED del lado del cliente: cualquier
  * respuesta que no sea un 200 con features — o ninguna respuesta — significa
@@ -18,9 +19,19 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * como en la ingesta): perder una petición de entitlements no pierde datos de
  * facturación, solo apaga una optimización hasta el próximo refresco.
  *
- * Una org bloqueada por `decideEntitlement` (revocada / caducada sin
- * suscripción) recibe un 200 con features vacías: es una respuesta DEFINITIVA,
- * no un error, y así la pasarela cachea el apagado en vez de reintentar.
+ * Una org bloqueada por `decideEntitlement` (revocada, caducada pasada la
+ * gracia, o sin NINGUNA licencia ni suscripción: no hay free tier) recibe un 200
+ * con features vacías y `reason`: es una respuesta DEFINITIVA, no un error, y
+ * así la pasarela cachea el apagado en vez de reintentar.
+ *
+ * CONTRATO: `reason` presente ⇔ org bloqueada (la pasarela corta con cualquier
+ * `reason`). Una org viva recibe el 200 SIN la clave `reason`, nunca con
+ * `reason: null` ni con el motivo de la concesión: la pasarela que verja por
+ * licencia trata cualquier `reason` no vacío como corte de las peticiones
+ * nuevas, así que un motivo de concesión que se colara aquí cortaría a quien
+ * paga. Las pasarelas anteriores lo ignoran y solo apagan palancas por las
+ * features vacías. No hay código que tocar para cumplirlo: el `reason` sale de
+ * `decideEntitlement` y solo se añade cuando `decision.blocked`.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

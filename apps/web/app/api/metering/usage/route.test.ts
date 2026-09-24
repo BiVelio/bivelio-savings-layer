@@ -10,12 +10,21 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  *  · sin cabecera (gateway anterior al canal), NINGUNO la lleva y el lote entra;
  *  · con cabecera inválida (repetida, texto libre) → «sin declarar», 202, jamás 400;
  *  · un cuerpo que traiga `clientVersion` → 400: solo el servidor escribe la versión.
+ *
+ * Y el candado de entitlement: una org sin NINGUNA licencia ni suscripción → 402
+ * `no-license` (no hay free tier), sin llegar a la RPC.
  */
 
 const ORG = "99999999-9999-4999-8999-999999999999";
 
 /** Lo que recibió la RPC en la última llamada. */
 let rpc: { nombre: string; args: { p_org: string; records: Array<Record<string, unknown>> } } | null = null;
+
+/** Una licencia viva: sin ninguna, la org se bloquea (no hay free tier). */
+const LICENCIA_VIVA = [{ revoked: false, expires_at: "2099-01-01T00:00:00Z", grace_days: 14 }];
+
+/** Filas que ve la ruta en `licenses`. Cada test parte de una licencia viva. */
+let licencias: unknown[] = LICENCIA_VIVA;
 
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
@@ -25,7 +34,8 @@ vi.mock("@/lib/supabase/admin", () => ({
           if (tabla === "service_accounts") {
             return { maybeSingle: async () => ({ data: { org_id: ORG }, error: null }) };
           }
-          // licenses / subscriptions vacías: «no-license-record» → no bloquea.
+          if (tabla === "licenses") return Promise.resolve({ data: licencias, error: null });
+          // subscriptions: ninguna; el derecho lo da la licencia.
           return Promise.resolve({ data: [], error: null });
         },
       }),
@@ -80,6 +90,7 @@ function peticion(cuerpo: unknown, cabeceras: Record<string, string> = {}): Requ
 
 beforeEach(() => {
   rpc = null;
+  licencias = LICENCIA_VIVA;
 });
 
 describe("POST /api/metering/usage — el canal de versión", () => {
@@ -133,5 +144,25 @@ describe("POST /api/metering/usage — el canal de versión", () => {
     );
     expect(res.status).toBe(401);
     expect(rpc).toBeNull();
+  });
+});
+
+describe("POST /api/metering/usage — el candado de entitlement", () => {
+  it("sin NINGUNA licencia ni suscripción → 402 no-license, sin ingerir (no hay free tier)", async () => {
+    licencias = [];
+    const res = await POST(peticion([registro()], { "x-bvsala-version": "gateway/0.4.22" }));
+    expect(res.status).toBe(402);
+    expect(rpc).toBeNull();
+    const cuerpo = (await res.json()) as { error: string; reason: string; detail: string };
+    expect(cuerpo.reason).toBe("no-license");
+    expect(cuerpo.detail).toContain("https://savings.bivelio.com/dashboard/account");
+    // Lo lee el cliente: en inglés y ASCII, como todo lo que ve.
+    expect(cuerpo.detail).toMatch(/^[\x20-\x7E]+$/);
+  });
+
+  it("con una licencia viva, el mismo lote entra (202)", async () => {
+    const res = await POST(peticion([registro()], { "x-bvsala-version": "gateway/0.4.22" }));
+    expect(res.status).toBe(202);
+    expect(rpc?.args.records).toHaveLength(1);
   });
 });
