@@ -18,3 +18,17 @@ export function fechaDeCorte(ahora: Date, dias: number = DIAS_DE_RETENCION): str
   if (!Number.isInteger(dias) || dias < 1) throw new Error(`días de retención inválidos: ${dias}`);
   return new Date(ahora.getTime() - dias * 24 * 60 * 60 * 1000).toISOString();
 }
+
+/**
+ * RETENCIÓN DE `bvsala.reference_hits` (0029): una fila por repetición medida
+ * por referencia, la que baja el CSV del extracto. ≈ 15 meses: cubre el año
+ * fiscal del cliente más el margen para reclamar un extracto; lo que se cobró
+ * queda para siempre en los extractos sellados, que guardan los totales.
+ */
+export const DIAS_DE_RETENCION_REFERENCIAS = 460;
+
+/** El día (YYYY-MM-DD, UTC) por debajo del cual una fila de reference_hits se borra. */
+export function fechaDeCorteReferencias(hoy: Date, dias: number = DIAS_DE_RETENCION_REFERENCIAS): string {
+  if (!Number.isInteger(dias) || dias < 1) throw new Error(`días de retención inválidos: ${dias}`);
+  return new Date(hoy.getTime() - dias * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}

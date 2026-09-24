@@ -7,6 +7,8 @@ import {
   TRAMOS,
   GARANTIA_NETA_RATIO,
   COMISIONAR_ELISION_SUELO,
+  COMISIONAR_REFERENCIA,
+  REGLA_REFERENCIA,
   comisionPorTramos,
   calcularComision,
 } from "./tarifa";
@@ -119,6 +121,67 @@ describe("COMISIONAR_ELISION_SUELO — el interruptor del suelo de la elisión (
     // Encenderlo es decisión del dueño y obliga a reescribir los seis puntos
     // listados en tarifa.ts. Este test es el ancla: nadie lo cambia de tapadillo.
     expect(COMISIONAR_ELISION_SUELO).toBe(false);
+  });
+});
+
+describe("COMISIONAR_REFERENCIA — el interruptor del carril medido por referencia (0029)", () => {
+  it("está ENCENDIDO: la referencia es el contador de una llamada idéntica ya ejecutada, tarifado a la baja", () => {
+    // Apagarlo es decisión del dueño (false + este test + un PR) y deja de
+    // cobrar lo acumulado en los períodos no sellados. Este test es el ancla.
+    expect(COMISIONAR_REFERENCIA).toBe(true);
+  });
+
+  it("la regla publicada en el extracto es la v1 decidida", () => {
+    expect(REGLA_REFERENCIA).toEqual({
+      version: "reference-v1",
+      cuotaSalida: 0.95,
+      edadMaximaDias: 30,
+      margenPorMensajeTokens: 8,
+    });
+  });
+
+  it("el identificador de la regla es PÚBLICO: ASCII y en inglés (se pinta en el extracto y se sella inmutable)", () => {
+    expect(REGLA_REFERENCIA.version).toMatch(/^reference-v\d+$/);
+  });
+
+  /**
+   * La regla del extracto DUPLICA tres constantes del SDK (apps/web no puede
+   * importar de src/). El ancla lee el fuente del SDK como texto, el mismo truco
+   * que precio-publicado y VERSION_PRECIOS_CATALOGO. Las constantes llegan con
+   * el PR del SDK (servidor primero, npm después): hasta entonces el ancla se
+   * salta, y en cuanto existan en src/ la comprobación corre sola.
+   */
+  const accounting = readFileSync(
+    join(new URL(".", import.meta.url).pathname, "..", "..", "..", "..", "src", "tokenizer", "accounting.ts"),
+    "utf8",
+  );
+  const sdkLasTiene = /\bREFERENCE_OUTPUT_SHARE\b/.test(accounting);
+
+  it.skipIf(!sdkLasTiene)("casa con las constantes del SDK (src/tokenizer/accounting.ts) leídas como texto", () => {
+    expect(accounting).toMatch(/export const REFERENCE_OUTPUT_SHARE = 0\.95;/);
+    expect(accounting).toMatch(/export const REFERENCE_MAX_AGE_MS = 30 \* 24 \* 60 \* 60 \* 1000;/);
+    expect(accounting).toMatch(/export const REFERENCE_MESSAGE_ALLOWANCE = 8;/);
+    const cuota = Number(/export const REFERENCE_OUTPUT_SHARE = ([0-9.]+);/.exec(accounting)![1]);
+    const dias = Number(/export const REFERENCE_MAX_AGE_MS = ([0-9]+) \*/.exec(accounting)![1]);
+    const margen = Number(/export const REFERENCE_MESSAGE_ALLOWANCE = ([0-9]+);/.exec(accounting)![1]);
+    expect(REGLA_REFERENCIA.cuotaSalida).toBe(cuota);
+    expect(REGLA_REFERENCIA.edadMaximaDias).toBe(dias);
+    expect(REGLA_REFERENCIA.margenPorMensajeTokens).toBe(margen);
+  });
+
+  /**
+   * EL SALTO NO PUEDE SER SILENCIOSO PARA SIEMPRE. El ancla de arriba se salta
+   * solo mientras el SDK NO emita la clase: en cuanto `CostBasis` de
+   * src/tokenizer/accounting.ts incluya "reference", las tres constantes TIENEN
+   * que estar en ese fichero con esos nombres — si PR-B las pusiera en otro
+   * sitio o con otro nombre, el ancla no correría nunca y la regla publicada
+   * podría divergir de la que valora sin que nadie lo viera.
+   */
+  it("si el SDK ya emite basis \"reference\", las constantes tienen que estar donde el ancla las lee", () => {
+    const tipo = /export type CostBasis\s*=([^;]*);/.exec(accounting);
+    expect(tipo, "CostBasis tiene que seguir en src/tokenizer/accounting.ts (si se mueve, mover el ancla)").not.toBeNull();
+    const sdkEmiteReferencia = /["']reference["']/.test(tipo![1]!);
+    if (sdkEmiteReferencia) expect(sdkLasTiene).toBe(true);
   });
 });
 

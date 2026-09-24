@@ -71,6 +71,16 @@ function aFila(r: UsageRollup): FilaDiaria {
           eliminated_floor_cost: r.eliminatedFloorCost ?? 0,
         }
       : {}),
+    // El carril medido por referencia (0029): a diferencia de los dos de arriba,
+    // entra en la base bajo COMISIONAR_REFERENCIA (lo decide construirExtracto).
+    // Sin columnas, nada — el extracto sale igual que antes de 0029.
+    ...(r.referenceRequests !== undefined
+      ? {
+          reference_requests: r.referenceRequests,
+          reference_baseline_cost: r.referenceBaselineCost ?? 0,
+          reference_actual_cost: r.referenceActualCost ?? 0,
+        }
+      : {}),
   };
 }
 

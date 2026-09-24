@@ -4,8 +4,9 @@
  * Decidida por el dueño el 2026-08-23 (plan maestro «La medición manda») y
  * revisada por el dueño el 2026-09-01: SIN MÍNIMO.
  *
- *   · Se comisiona SOLO el ahorro MEDIDO (basis=measured): el que el cliente
- *     puede contrastar con la factura de su proveedor. Lo estimado nunca.
+ *   · Se comisiona SOLO el ahorro MEDIDO: el del contador de la propia
+ *     petición (basis=measured) y el MEDIDO POR REFERENCIA (basis=reference,
+ *     bajo COMISIONAR_REFERENCIA). Lo estimado nunca.
  *   · SIN umbral ni rampa: la comisión por tramos aplica desde el primer euro
  *     medido. (Hasta el 2026-09-01 existía un umbral del 30% con rampa hasta
  *     el 35%; los clientes con ratio ≥35% no notan el cambio — la franja
@@ -55,6 +56,62 @@
  * tiene que compilar en las dos posiciones. tarifa.test.ts lo ancla en `false`.
  */
 export const COMISIONAR_ELISION_SUELO: boolean = false;
+
+/**
+ * EL INTERRUPTOR del carril MEDIDO POR REFERENCIA (migración 0029).
+ *
+ * `usage_daily.reference_*` guarda, por día, las llamadas EVITADAS (acierto
+ * exacto o seguidor coalescido) cuya repetición es byte a byte una petición que
+ * sí se ejecutó a través de la capa sin que la capa la tocara. Su baseline es
+ * el contador que el proveedor devolvió para esa petición idéntica —la que el
+ * cliente ya pagó—, valorado a la BAJA: toda la entrada al precio de entrada
+ * cacheada (el mínimo que el proveedor cobra por repetir un prompt) y la salida
+ * solo con muestreo determinista, al REGLA_REFERENCIA.cuotaSalida de su
+ * contador.
+ *
+ * El contraste con COMISIONAR_ELISION_SUELO es la razón de que este nazca
+ * encendido: aquel es un BRUTO sin neto (lectura evitada sin restar la
+ * invalidación de prefijo del mismo corte) que ninguna línea de la factura del
+ * cliente respalda; este es el contador de una llamada idéntica ya ejecutada,
+ * tarifado por debajo de lo que la repetición habría costado. Es medido.
+ *
+ * Apagarlo (`false` + su test + un PR) deja de cobrar lo acumulado en los
+ * períodos NO sellados: el extracto lo sigue enseñando como contexto
+ * («referenciaExcluida») y el cierre sella la regla con el sufijo «:excluded». Cortar la
+ * ACUMULACIÓN misma es el otro interruptor, sin código:
+ * BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 en la ruta del ingest.
+ *
+ * Tipado como `boolean` (no literal) a propósito, como el de arriba: el código
+ * que lo consulta tiene que compilar en las dos posiciones. tarifa.test.ts lo
+ * ancla en `true`.
+ */
+export const COMISIONAR_REFERENCIA: boolean = true;
+
+/**
+ * LA REGLA con la que el SDK valora una repetición por referencia, publicada
+ * en cada extracto (`parametros.referencia`) y sellada en el cierre
+ * (`extractos.regla_referencia`): lo que hace el documento autocontenido.
+ *
+ * apps/web no puede importar de src/ (proyecto aparte): estas cifras DUPLICAN
+ * las constantes del SDK (REFERENCE_OUTPUT_SHARE, REFERENCE_MAX_AGE_MS y
+ * REFERENCE_MESSAGE_ALLOWANCE) y tarifa.test.ts las ata leyendo el fuente del
+ * SDK como texto en cuanto existe.
+ */
+export const REGLA_REFERENCIA = {
+  /**
+   * El identificador PÚBLICO de la regla: lo ve el cliente en el extracto
+   * («Rule for repeated requests (reference-v1)») y queda SELLADO en
+   * `extractos.regla_referencia`, inmutable. Por eso en inglés y ASCII, como
+   * todo lo que ve el cliente; tarifa.test.ts lo fija.
+   */
+  version: "reference-v1",
+  /** Fracción del contador de salida que se acredita (solo con muestreo determinista). */
+  cuotaSalida: 0.95,
+  /** Edad máxima del contador de referencia, en días. */
+  edadMaximaDias: 30,
+  /** Tokens de entrada que se descuentan por cada mensaje que la capa insertó en la llamada que corrió. */
+  margenPorMensajeTokens: 8,
+} as const;
 
 /** Tramos marginales sobre el ahorro medido del período, en EUR. */
 export const TRAMOS: readonly { hastaEur: number; tipo: number }[] = [

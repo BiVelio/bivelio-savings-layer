@@ -148,3 +148,37 @@ describe("ritmo · la proyección", () => {
     expect(r.ahorroHastaLaFechaUsd).toBe(50);
   });
 });
+
+describe("ritmo · el carril medido por referencia (0029)", () => {
+  /** Un día SOLO con repeticiones por referencia: nada medido por su propio contador. */
+  const soloReferencia = (day: string, ahorroUsd: number): UsageRollup => ({
+    ...fila(day, 0, 0),
+    measuredRequests: 0,
+    measuredBaselineCost: 0,
+    measuredActualCost: 0,
+    baselineCost: ahorroUsd,
+    actualCost: 0,
+    referenceRequests: 5,
+    referenceBaselineCost: ahorroUsd,
+    referenceActualCost: 0,
+  });
+
+  it("un día solo con referencia CUENTA en el ritmo (es medido, como en el extracto)", () => {
+    const r = calcularRitmo({ ...base, rows: [soloReferencia("2026-09-02", 4)], hoyIso: "2026-09-10" });
+    expect(r.estado).not.toBe("sin_datos");
+    expect(r.ahorroHastaLaFechaUsd).toBeCloseTo(4, 10);
+    expect(r.baseHastaLaFechaUsd).toBeCloseTo(4, 10);
+  });
+
+  it("medido + referencia se suman en el mismo día", () => {
+    const dia: UsageRollup = { ...fila("2026-09-02", 10), referenceRequests: 5, referenceBaselineCost: 4, referenceActualCost: 0 };
+    const r = calcularRitmo({ ...base, rows: [dia], hoyIso: "2026-09-10" });
+    expect(r.ahorroHastaLaFechaUsd).toBeCloseTo(14, 10);
+    expect(r.baseHastaLaFechaUsd).toBeCloseTo(34, 10);
+  });
+
+  it("sin las columnas de 0029, el ritmo es el de antes", () => {
+    const r = calcularRitmo({ ...base, rows: [fila("2026-09-02", 10)], hoyIso: "2026-09-10" });
+    expect(r.ahorroHastaLaFechaUsd).toBeCloseTo(10, 10);
+  });
+});
