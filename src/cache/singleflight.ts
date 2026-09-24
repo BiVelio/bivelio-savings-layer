@@ -41,6 +41,16 @@ export class Singleflight {
     }
   }
 
+  /**
+   * The in-flight execution under `key`, if one is running, joined as a
+   * follower; `undefined` when nothing is in flight. Never starts one.
+   */
+  join<T>(key: string): Promise<T> | undefined {
+    const existing = this.inflight.get(key) as Promise<T> | undefined;
+    if (existing) this.waiters.set(key, (this.waiters.get(key) ?? 1) + 1);
+    return existing;
+  }
+
   get activeKeys(): number {
     return this.inflight.size;
   }

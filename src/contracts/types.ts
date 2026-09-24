@@ -551,6 +551,74 @@ export interface SavingsResult<T = unknown> {
   report: SavingsReport;
 }
 
+/** One event of a streamed answer. */
+export type SavingsStreamEvent<T = unknown> =
+  /** A piece of the answer text, as the provider wrote it. Never empty. */
+  | { type: "text"; delta: string }
+  /** One complete tool call the model requested, in the order of `result.toolCalls`. */
+  | { type: "tool_call"; call: ToolCallRequest }
+  /** Always the last event, exactly once. `result` is the same object `SavingsStream.result` resolves to. */
+  | { type: "done"; result: SavingsResult<T> };
+
+/** Options for `generateStream`. */
+export interface SavingsStreamOptions {
+  /** Aborting it has the same effect as calling `abort()` on the stream. */
+  signal?: AbortSignal;
+}
+
+/**
+ * The handle returned by `generateStream`. Iterate it (once) for the events, or
+ * await `result` for the final SavingsResult; both work on their own, because
+ * the request starts as soon as the handle is created.
+ *
+ * Invariants: the concatenation of every `text` delta equals `result.text`; the
+ * `tool_call` events, in order, equal `result.toolCalls`; `done` is the last
+ * event and `result` is already resolved when it arrives.
+ */
+export interface SavingsStream<T = unknown> extends AsyncIterable<SavingsStreamEvent<T>> {
+  /**
+   * Resolves with the final SavingsResult (the same object the `done` event
+   * carries). Rejects with the provider or license error that ended the stream,
+   * or with StreamAbortedError when the stream was aborted before the provider
+   * finished its answer.
+   */
+  readonly result: Promise<SavingsResult<T>>;
+  /**
+   * Stops the stream. Iteration ends at once, without an error. While the
+   * provider is still writing a live answer, its request is cancelled: `result`
+   * rejects with StreamAbortedError, nothing is cached and nothing is reported.
+   * Once the provider's answer is complete, or when it is produced in one piece
+   * (output contract, deferrable request), nothing is cancelled: `result`
+   * resolves with the full report and it is recorded like any other request.
+   * Breaking out of a for-await loop calls abort(). No-op after `done`.
+   */
+  abort(reason?: unknown): void;
+}
+
+/** How a streamed request reached the caller. Present only on results of `generateStream`. */
+export interface StreamingReport {
+  /**
+   * "live": the text was handed over as the provider produced it.
+   * "whole": the complete answer arrived as one `text` event.
+   */
+  delivery: "live" | "whole";
+  /**
+   * Why the answer arrived whole. Absent when `delivery` is "live".
+   * - "output-contract": the request carried `response.schema`; it was validated first.
+   * - "deferrable": the request was declared `deferrable`.
+   * - "provider-without-streaming": the provider has no `generateStream`.
+   * - "shortcut": answered without a provider call (cache, deterministic resolver, or an identical request in flight).
+   * - "fail-open": an internal error sent the request down the direct fallback path.
+   */
+  wholeReason?: "output-contract" | "deferrable" | "provider-without-streaming" | "shortcut" | "fail-open";
+  /**
+   * Milliseconds from the `generateStream` call to the first `text` or
+   * `tool_call` event handed to the caller. Present only when `delivery` is
+   * "live" and such an event exists.
+   */
+  firstEventMs?: number;
+}
+
 export type CacheOutcome =
   | "miss"
   | "exact"
@@ -724,6 +792,9 @@ export interface SavingsReport {
    * `savings.deferrable` is `true`, including when it got you nothing.
    */
   deferred?: DeferredExecutionReport;
+
+  /** How a streamed request was delivered. Present only on results of `generateStream`. */
+  streaming?: StreamingReport;
 
   quality: {
     taskPassed?: boolean;
