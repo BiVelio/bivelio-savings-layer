@@ -19,8 +19,11 @@
 -- Toda la entrada va a cachedInputPer1k, el MÍNIMO que el proveedor cobra por un
 -- token de entrada aunque la ingenua acertara entera en su caché de prefijo; por
 -- eso es un SUELO. El SDK lo calcula; el servidor no conoce precios y solo lo
--- acota (techo de la verja del ingest: apps/web/lib/metering/usage.ts degrada a
--- 'estimated' todo registro 'reference' incoherente, nunca lo rechaza).
+-- acota: la verja del ingest (apps/web/lib/metering/usage.ts) degrada a
+-- 'estimated' —nunca rechaza— todo registro 'reference' incoherente: sin
+-- puntero a la petición que corrió (referenceRequestId + referenceAt), con un
+-- contador de más de 30 días, con coste o tokens propios, o por encima del techo.
+-- Así toda fila de reference_hits lleva el puntero que el CSV promete.
 --
 -- DOCTRINA:
 --   · measured_* LITERALES; `medido` no cambia. El carril va en sus TRES columnas
@@ -103,11 +106,23 @@ end $$;
 -- 2. usage_daily: el carril medido por referencia. Con default para que las
 --    filas existentes (y las que escriba la RPC de 0025 en la ventana de
 --    despliegue) queden bien definidas: 0 peticiones, 0 dólares.
+--
+--    DINERO EN numeric(20,10), NO en el numeric(14,6) del resto de usage_daily.
+--    La RPC suma registro a registro y Postgres REDONDEA cada `excluded.*` a la
+--    escala de la columna (al más próximo, la mitad hacia arriba). Un acierto
+--    por referencia vale micro-dólares por construcción (entrada a precio
+--    cacheado) y las repeticiones son IDÉNTICAS, así que el error no se
+--    compensa: gpt-5-nano con 100 tokens vale 5e-7 y se guardaría 0,000001
+--    (×2). Eso rompe el SUELO (la base comisionada subiría por encima de lo
+--    que el SDK calculó) y el cuadre con el CSV (reference_hits.baseline_cost
+--    es numeric(20,10)). Con la misma escala que reference_hits y que la
+--    granularidad 1e-10 de roundUsd del SDK, cada registro llega INTACTO a las
+--    tres columnas y Σ reference_hits.baseline_cost = Σ reference_baseline_cost.
 -- ---------------------------------------------------------------------------
 alter table bvsala.usage_daily
-  add column if not exists reference_requests      bigint        not null default 0,
-  add column if not exists reference_baseline_cost numeric(14,6) not null default 0,
-  add column if not exists reference_actual_cost   numeric(14,6) not null default 0;
+  add column if not exists reference_requests      bigint         not null default 0,
+  add column if not exists reference_baseline_cost numeric(20,10) not null default 0,
+  add column if not exists reference_actual_cost   numeric(20,10) not null default 0;
 
 alter table bvsala.usage_daily
   drop constraint if exists usage_daily_reference_no_negatives;
@@ -123,16 +138,19 @@ alter table bvsala.usage_daily
 -- ---------------------------------------------------------------------------
 -- 3. usage_daily_by_model: el mismo carril al grano de modelo, para auditar
 --    dónde se valoran las repeticiones. Sin CHECK (misma razón que 0024/0025).
+--    Dinero en numeric(20,10) por la misma razón que en usage_daily.
 -- ---------------------------------------------------------------------------
 alter table bvsala.usage_daily_by_model
-  add column if not exists reference_requests      bigint        not null default 0,
-  add column if not exists reference_baseline_cost numeric(14,6) not null default 0;
+  add column if not exists reference_requests      bigint         not null default 0,
+  add column if not exists reference_baseline_cost numeric(20,10) not null default 0;
 
 -- ---------------------------------------------------------------------------
 -- 4. extractos: las tres cifras del carril y el SELLO de la regla que las valoró
---    ('' sin referencia; 'referencia-v1' si entró en la base; 'referencia-v1:excluida'
---    si se enseñó como contexto). El cierre las escribe; un extracto cerrado
---    sigue siendo inmutable (upsert ignore-duplicates).
+--    ('' sin referencia; 'reference-v1' si entró en la base; 'reference-v1:excluded'
+--    si se enseñó como contexto — en inglés: el cliente lo ve en el extracto).
+--    El cierre las escribe; un extracto cerrado sigue siendo inmutable (upsert
+--    ignore-duplicates). Aquí numeric(14,6) basta: el cierre sella importes ya
+--    redondeados a céntimos.
 -- ---------------------------------------------------------------------------
 alter table bvsala.extractos
   add column if not exists requests_referencia   bigint        not null default 0,
@@ -153,7 +171,8 @@ alter table bvsala.extractos
 -- 5. reference_hits: una fila por acierto medido por referencia. Clave
 --    (org, request_id) — el mismo requestId que usage_ingest_seen, así que un
 --    reintento del emisor no duplica filas. Dinero en numeric(20,10): un acierto
---    de gpt-4o-mini vale 1e-5 USD y el CSV tiene que cuadrar con el informe.
+--    de gpt-4o-mini vale 1e-5 USD y el CSV tiene que cuadrar con el informe y
+--    con usage_daily.reference_baseline_cost (misma escala, mismo valor).
 -- ---------------------------------------------------------------------------
 create table if not exists bvsala.reference_hits (
   org_id                 uuid           not null references bvsala.organizations(id) on delete cascade,
@@ -169,7 +188,16 @@ create table if not exists bvsala.reference_hits (
   created_at             timestamptz    not null default now(),
   primary key (org_id, request_id)
 );
-create index if not exists reference_hits_org_day on bvsala.reference_hits (org_id, day);
+-- El índice de la DESCARGA: el CSV se sirve en streaming por día y con
+-- paginación por clave (`day = d and request_id > último order by request_id
+-- limit 1000`), nunca por OFFSET — con millones de aciertos al mes, OFFSET
+-- reordena y salta todo lo anterior en cada página. Cubre también (org_id, day).
+create index if not exists reference_hits_org_day_request on bvsala.reference_hits (org_id, day, request_id);
+-- La PURGA de retención borra `day < corte` de TODAS las orgs: sin un índice
+-- que empiece por `day` sería un barrido entero de la tabla cada noche. BRIN
+-- porque las filas llegan casi en orden de día: minúsculo y casi gratis al
+-- escribir (una fila por acierto es la escritura caliente de esta tabla).
+create index if not exists reference_hits_day_brin on bvsala.reference_hits using brin (day);
 
 alter table bvsala.reference_hits enable row level security;
 -- Mismo modelo que usage_daily_by_model (0022) / extractos (0016): los miembros
