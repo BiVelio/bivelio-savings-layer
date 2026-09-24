@@ -790,7 +790,7 @@
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn. Không sửa mã, không cấu hình — và prompt của bạn không bao giờ rời khỏi máy: bảng điều khiển này chỉ nhận số đếm và chi phí.",
       "note": "Gateway đo lường mọi yêu cầu. Với giấy phép PRO, nó còn áp dụng mặc định một đòn bẩy: rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn vẫn còn nóng — điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
-      "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng đều được ghi vào bảng điều khiển này, theo giá niêm yết của mô hình — bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
+      "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
     },
     "integrate": {
@@ -950,7 +950,7 @@
         },
         {
           "title": "Streaming, cùng một báo cáo",
-          "body": "generateStream() trao cho bạn câu trả lời ngay khi nhà cung cấp viết ra và kết thúc bằng cùng SavingsReport như generate(), theo cùng quy tắc về cơ sở: bộ đếm cuối cùng của nhà cung cấp được đọc khi stream kết thúc, và một stream thiếu bộ đếm đó được báo cáo là chưa đo và không bao giờ bị tính phí. Với hợp đồng đầu ra, câu trả lời đến đã được xác thực, trọn vẹn trong một lần.",
+          "body": "generateStream() trao cho bạn câu trả lời ngay khi nhà cung cấp viết ra và kết thúc bằng cùng SavingsReport như generate(), theo cùng quy tắc về cơ sở: bộ đếm cuối cùng của nhà cung cấp được đọc khi stream kết thúc, và một stream thiếu bộ đếm đó được báo cáo là không đo được và không bao giờ tính vào hoa hồng của bạn. Với hợp đồng đầu ra, câu trả lời đến đã được xác thực, trọn vẹn trong một lần.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1008,7 +1008,7 @@
     "nodeApiSubAfter": "nhận ít token hơn",
     "billMonth": "hóa đơn / tháng",
     "billReport": "+ SavingsReport",
-    "s1Note": "Ô màu xanh lá đó là một gói npm bên trong mã của ứng dụng. Vì vậy câu hỏi then chốt không bao giờ là «tôi cài gì?» mà là <b>«ai đã viết đoạn mã gọi API?»</b> — người đó chính là người có thể cài nó. Các ngoại lệ là một terminal lập trình như Claude Code và một ứng dụng viết bằng bất kỳ ngôn ngữ nào cho phép đặt base URL của SDK: ở đó gateway bvsala đứng chắn phía trước mà không chạm vào một dòng mã nào. Lưu lượng đó được đo; các đòn bẩy tiết kiệm của gói npm không chạy ở đó, và đòn bẩy của chính gateway chỉ áp dụng cho lưu lượng Anthropic.",
+    "s1Note": "Ô màu xanh lá đó là một gói npm bên trong mã của ứng dụng. Vì vậy câu hỏi then chốt không bao giờ là «tôi cài gì?» mà là <b>«ai đã viết đoạn mã gọi API?»</b> — người đó chính là người có thể cài nó. Các ngoại lệ là một terminal lập trình như Claude Code và một ứng dụng viết bằng bất kỳ ngôn ngữ nào dùng SDK chính thức của OpenAI hoặc Anthropic và cho phép đặt base URL của nó: ở đó gateway bvsala đứng chắn phía trước mà không chạm vào một dòng mã nào. Lưu lượng đó được đo với các mô hình có giá niêm yết; các đòn bẩy tiết kiệm của gói npm không chạy ở đó, và đòn bẩy của chính gateway chỉ áp dụng cho lưu lượng Anthropic, với giấy phép PRO.",
     "s2Title": "Trường hợp của bạn, trong 10 giây",
     "s2Sub": "Bốn cách dùng AI, và BV‑SALA có thể làm gì trong từng trường hợp.",
     "caseChatSub": "ứng dụng hoặc web, miễn phí hoặc trả phí",

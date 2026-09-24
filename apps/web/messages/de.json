@@ -790,7 +790,7 @@
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
       "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal. Kein Code, keine Konfiguration — und deine Prompts verlassen nie deine Maschine: in dieses Panel gelangen nur Zählwerte und Kosten.",
       "note": "Das Gateway misst jede Anfrage. Mit einer PRO-Lizenz wendet es außerdem standardmäßig einen Hebel an: Es verkürzt die Cache-Schreib-TTL, solange Ihre Sitzung warm bleibt — das ändert den Preis, nie den Inhalt, den das Modell liest. Die übrigen Hebel bleiben aus, bis Sie sie einschalten. Der Skill savings-mode steht für Ihre Limits bereit, seine Wirkung ist noch zu messen. Er funktioniert auch mit Codex CLI, Goose und Qwen Code — und bvsala doctor gibt die genaue Konfiguration für den Rest aus.",
-      "pythonNote": "Python oder eine andere Sprache? Richten Sie das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird in diesem Panel erfasst, zum Listenpreis des Modells — bvsala doctor gibt die Base-URL für jedes SDK aus. Fordern Sie beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
+      "pythonNote": "Python oder eine andere Sprache? Richten Sie das offizielle SDK von OpenAI oder Anthropic auf das Gateway, und jede Anfrage, deren Verbrauch der Anbieter meldet, wird für ein Modell mit Listenpreis in diesem Panel zu diesem Preis erfasst; das Log des Gateways sagt, wenn eine nicht gemessen wird. bvsala doctor gibt die Base-URL für jedes SDK aus. Fordern Sie beim Streaming mit OpenAI den Verbrauch in der Anfrage an (stream_options.include_usage).",
       "cta": "So funktioniert es →"
     },
     "integrate": {
@@ -950,7 +950,7 @@
         },
         {
           "title": "Streaming, derselbe Bericht",
-          "body": "generateStream() liefert Ihnen die Antwort, während der Anbieter sie schreibt, und schließt mit demselben SavingsReport wie generate(), nach denselben Regeln für die Basis: Der finale Zähler des Anbieters wird am Ende des Streams gelesen, und ein Stream ohne ihn wird als nicht gemessen ausgewiesen und nie berechnet. Mit einem Ausgabevertrag kommt die Antwort validiert und in einem Stück an.",
+          "body": "generateStream() liefert Ihnen die Antwort, während der Anbieter sie schreibt, und schließt mit demselben SavingsReport wie generate(), nach denselben Regeln für die Basis: Der finale Zähler des Anbieters wird am Ende des Streams gelesen, und ein Stream ohne ihn wird als nicht gemessen ausgewiesen und geht nie in Ihre Provision ein. Mit einem Ausgabevertrag kommt die Antwort validiert und in einem Stück an.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1008,7 +1008,7 @@
     "nodeApiSubAfter": "erhält weniger Tokens",
     "billMonth": "Rechnung / Monat",
     "billReport": "+ SavingsReport",
-    "s1Note": "Dieses grüne Kästchen ist ein npm-Paket im Code der Anwendung. Deshalb lautet die Schlüsselfrage nie „Was installiere ich?“, sondern <b>„Wer hat den Code geschrieben, der die API aufruft?“</b> — diese Person kann es installieren. Die Ausnahmen sind ein Coding-Terminal wie Claude Code und eine App in beliebiger Sprache, deren SDK sich eine eigene Base-URL geben lässt: dort setzt sich das Gateway von bvsala davor, ohne eine Zeile Code anzufassen. Dieser Traffic wird gemessen; die Einsparhebel des npm-Pakets laufen dort nicht, und die des Gateways selbst gelten nur für Anthropic-Traffic.",
+    "s1Note": "Dieses grüne Kästchen ist ein npm-Paket im Code der Anwendung. Deshalb lautet die Schlüsselfrage nie „Was installiere ich?“, sondern <b>„Wer hat den Code geschrieben, der die API aufruft?“</b> — diese Person kann es installieren. Die Ausnahmen sind ein Coding-Terminal wie Claude Code und eine App in beliebiger Sprache, die das offizielle SDK von OpenAI oder Anthropic nutzt und dessen Base-URL festlegen lässt: dort setzt sich das Gateway von bvsala davor, ohne eine Zeile Code anzufassen. Dieser Traffic wird für Modelle mit Listenpreis gemessen; die Einsparhebel des npm-Pakets laufen dort nicht, und die des Gateways selbst gelten nur für Anthropic-Traffic, mit einer PRO-Lizenz.",
     "s2Title": "Dein Fall, in 10 Sekunden",
     "s2Sub": "Vier Arten, KI zu nutzen — und was BV‑SALA in jeder davon tun kann.",
     "caseChatSub": "App oder Web, gratis oder bezahlt",

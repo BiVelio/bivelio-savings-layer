@@ -790,7 +790,7 @@
       "title": "Claude Code on an API key? See its real spend, token by token.",
       "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
       "note": "The gateway measures every request. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
-      "pythonNote": "Python or any other language? Point the official OpenAI or Anthropic SDK at the gateway and every request whose usage the provider reports is recorded in this dashboard, priced at the model's list price — bvsala doctor prints the base URL for each SDK. For OpenAI streaming, ask for usage in the request (stream_options.include_usage).",
+      "pythonNote": "Python or any other language? Point the official OpenAI or Anthropic SDK at the gateway and every request whose usage the provider reports, for a model with a list price, is recorded in this dashboard at that price; the gateway's log says when one is not. bvsala doctor prints the base URL for each SDK. For OpenAI streaming, ask for usage in the request (stream_options.include_usage).",
       "cta": "See how it works →"
     },
     "integrate": {
@@ -950,7 +950,7 @@
         },
         {
           "title": "Streaming, same report",
-          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never billed. With an output contract, the answer arrives validated, in one piece.",
+          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never enters your commission. With an output contract, the answer arrives validated, in one piece.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1008,7 +1008,7 @@
     "nodeApiSubAfter": "receives fewer tokens",
     "billMonth": "bill / month",
     "billReport": "+ SavingsReport",
-    "s1Note": "That green box is an npm package inside the application's code. That's why the key question is never “what do I install?” but <b>“who wrote the code that calls the API?”</b> — that person is who can install it. The exceptions are a coding terminal like Claude Code and an app in any language that lets you set its SDK's base URL: there the bvsala gateway sits in front without touching a line of code. That traffic is measured; the saving levers of the npm package do not run there, and the gateway's own apply only to Anthropic traffic.",
+    "s1Note": "That green box is an npm package inside the application's code. That's why the key question is never “what do I install?” but <b>“who wrote the code that calls the API?”</b> — that person is who can install it. The exceptions are a coding terminal like Claude Code and an app in any language that uses the official OpenAI or Anthropic SDK and lets you set its base URL: there the bvsala gateway sits in front without touching a line of code. That traffic is measured for models with a list price; the saving levers of the npm package do not run there, and the gateway's own apply only to Anthropic traffic, with a PRO license.",
     "s2Title": "Your case, in 10 seconds",
     "s2Sub": "Four ways of using AI, and what BV‑SALA can do in each one.",
     "caseChatSub": "app or web, free or paid",

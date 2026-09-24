@@ -570,9 +570,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <p style={{ marginTop: 12, opacity: 0.85 }}>
             {t("gateway.note")} <Link href="/how-it-works">{t("gateway.cta")}</Link>
           </p>
-          {/* Cualquier lenguaje con un SDK oficial que acepte base URL (Python
-              incluido): se MIDE, no se ahorra. Clave aparte de gateway.note a
-              propósito, para no pisar el texto de la licencia del gateway. */}
+          {/* Cualquier lenguaje con el SDK oficial de OpenAI o de Anthropic
+              (Python incluido): se MIDE, solo para modelos con precio de lista,
+              y no se ahorra. Clave aparte de gateway.note a propósito, para no
+              pisar el texto de la licencia del gateway. Sus salvedades las fija
+              messages/copia-del-gateway.test.ts. */}
           <p style={{ marginTop: 8, opacity: 0.85 }}>{t("gateway.pythonNote")}</p>
         </section>
 
