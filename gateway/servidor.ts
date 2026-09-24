@@ -6,11 +6,15 @@ import { avisarUnaVez } from "../src/util/warn-once.js";
 import {
   ObservadorSse,
   ObservadorResponses,
+  ObservadorChatCompletions,
   costeMedido,
   informeMedido,
   informeCoalescido,
   informeSombra,
-  usoDeJson,
+  usoDeJsonPorRuta,
+  tieneDialecto,
+  inyectarIncludeUsage,
+  pideUsoEnStream,
   modeloDelCuerpo,
   jsonDelCuerpo,
   elisionDeJson,
@@ -122,6 +126,14 @@ export interface OpcionesGateway {
    * la apaga junto a ellas. NO la arma el anillo 2: no hay A/B que hacer.
    */
   modeloHermano?: boolean;
+  /**
+   * Opt-in: añade `stream_options.include_usage` a los POST …/chat/completions
+   * en stream que no traen `stream_options` (BVSALA_GATEWAY_USAGE_INJECT=1).
+   * APAGADO por defecto: el último chunk de esos streams pasa a llegar con
+   * `choices: []`, y el código que lee `choices[0]` sin mirar revienta. Sin él,
+   * esos streams se reenvían sin medir y el log lo dice.
+   */
+  usageInject?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -131,6 +143,25 @@ export interface GatewayArrancado {
   puerto: number;
   cerrar: () => Promise<void>;
 }
+
+/**
+ * Los avisos de «reenviado pero NO medido», uno por proceso y causa. En inglés:
+ * los lee quien usa el gateway, no quien lo mantiene.
+ */
+const AVISO_CHAT_SIN_INCLUDE_USAGE =
+  "[bvsala gateway] streamed /v1/chat/completions requests without stream_options.include_usage carry no usage, " +
+  'so they are forwarded but NOT metered. Add stream_options={"include_usage": True} to the call ' +
+  "(Node: stream_options: { include_usage: true }); its last chunk then has an empty choices list. " +
+  "Or start the gateway with BVSALA_GATEWAY_USAGE_INJECT=1 to add it for clients you cannot change.";
+const avisoSinUsage = (path: string): string =>
+  `[bvsala gateway] POST ${path} answered without the provider's final usage, so it was forwarded but NOT metered. ` +
+  "Nothing is estimated in its place.";
+const avisoSinDialecto = (path: string): string =>
+  `[bvsala gateway] POST ${path} is forwarded but NOT metered: the gateway reads usage from /v1/messages, ` +
+  "…/chat/completions and …/responses only.";
+
+/** Rutas que responden JSON sin facturar nada: ni se miden ni se avisan. */
+const RUTA_DE_CONTEO = /\/(count_tokens|input_tokens)$/;
 
 /** Cabeceras de transporte que NO se reenvían (hallazgo F0 nº1). */
 const CABECERAS_TRANSPORTE = ["content-encoding", "content-length", "transfer-encoding"];
@@ -264,16 +295,42 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         })
       : null;
 
+  // El endpoint rechazó `stream_options` una vez (400/422 con la inyección
+  // puesta y 2xx sin ella): la inyección queda apagada el resto del proceso. Es
+  // una propiedad del UPSTREAM, y un gateway habla con uno solo.
+  let endpointSinStreamOptions = false;
+
   /**
    * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
    * cualquier `…/responses` (`/v1/responses` con API key, `/backend-api/codex/
-   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI). Otras
-   * rutas SSE no se miden.
+   * responses` con ChatGPT) habla la Responses API de OpenAI (Codex CLI); y
+   * cualquier `…/chat/completions` habla Chat Completions (los SDK oficiales de
+   * OpenAI en cualquier lenguaje, Python incluido). Otras rutas SSE no se miden.
    */
-  const observadorPara = (pathname: string): ObservadorSse | ObservadorResponses | null => {
+  const observadorPara = (pathname: string): ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null => {
     if (pathname === "/v1/messages") return new ObservadorSse();
     if (pathname.endsWith("/responses")) return new ObservadorResponses();
+    if (pathname.endsWith("/chat/completions")) return new ObservadorChatCompletions();
     return null;
+  };
+
+  /**
+   * La línea de «reenviado pero NO medido», con su motivo, y el aviso único
+   * que le toque. Hasta aquí una ruta con dialecto que respondía 2xx sin usage
+   * pasaba sin dejar rastro: ni registro ni línea. Nada se estima en su lugar.
+   */
+  const noMedido = (
+    metodo: string,
+    path: string,
+    status: number,
+    stream: boolean,
+    motivo: string,
+    aviso: "chat" | "uso" | "dialecto" | null,
+  ): void => {
+    log(`[gateway] ${metodo} ${path} → ${status}${stream ? " (stream)" : ""} · not metered: ${motivo}`);
+    if (aviso === "chat") avisarUnaVez("gateway-chat-sin-include-usage", AVISO_CHAT_SIN_INCLUDE_USAGE);
+    if (aviso === "uso") avisarUnaVez(`gateway-sin-usage:${path}`, avisoSinUsage(path));
+    if (aviso === "dialecto") avisarUnaVez(`gateway-sin-dialecto:${path}`, avisoSinDialecto(path));
   };
 
   /** Mide y emite el uso de una respuesta ya servida (o replicada). */
@@ -407,7 +464,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     // termine (Codex CLI lo hace nada más recibir `response.completed`), la
     // medición del camino normal no se alcanza, pero el usage YA observado es
     // del proveedor y se mide igual — el corte del cliente no lo desdice.
-    let observador: ObservadorSse | ObservadorResponses | null = null;
+    let observador: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null = null;
     let cuerpoPeticion: Buffer = Buffer.alloc(0);
     let medida = false;
     // B2 · ¿un borrado que declare el proveedor será ATRIBUIBLE a nuestros
@@ -485,11 +542,31 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
             res.end();
             // Una réplica JSON (stream:false) trae el usage en el cuerpo, no en
             // eventos — mismo hueco que el camino primario (S0.2 del plan). La
-            // MISMA verja de ruta que la primaria: sin ella, cualquier réplica
-            // JSON con una clave `usage` de otra forma (p.ej. /v1/chat/completions,
-            // prompt_tokens) emitía un registro fantasma de 0 tokens.
-            const usoReplica =
-              obs.usage() ?? (url.pathname === "/v1/messages" ? usoDeJson(Buffer.concat(replica.chunks)) : null);
+            // MISMA verja de DIALECTO que la primaria: cada ruta se lee con su
+            // forma de usage, y una ruta sin dialecto no se lee (sin ella, un
+            // `usage` de otra forma emitía un registro fantasma de 0 tokens). Y
+            // el usage FINAL, como la primaria: un stream cortado no es medida.
+            const usoReplica = obs.usageFinal() ?? usoDeJsonPorRuta(url.pathname, Buffer.concat(replica.chunks));
+            if (usoReplica === null) {
+              // La primaria ya dijo lo suyo (línea y aviso): la gemela deja su
+              // línea y nada más. count_tokens no factura: ni línea.
+              if (emisor && !RUTA_DE_CONTEO.test(url.pathname)) {
+                const tipoReplica = String(replica.headers["content-type"] ?? "");
+                noMedido(
+                  req.method ?? "POST",
+                  url.pathname,
+                  replica.status,
+                  tipoReplica.includes("text/event-stream"),
+                  !tieneDialecto(url.pathname)
+                    ? "no usage dialect for this route"
+                    : tipoReplica.includes("text/event-stream")
+                      ? "the stream ended without the provider's final usage event"
+                      : "the response carried no usage",
+                  null,
+                );
+              }
+              return;
+            }
             // Sin `hermano` A PROPÓSITO (revisión del 10-09): una llamada
             // EVITADA se valora al precio del modelo SOLICITADO, que es lo que
             // el cliente habría pagado sin la capa; su coste real es 0. Tarifarla
@@ -681,6 +758,28 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         }
       }
 
+      // ── EL USAGE DE CHAT COMPLETIONS EN STREAM (opt-in) ────────────────
+      // Un stream de Chat Completions solo trae usage si la petición lo pide
+      // (`stream_options.include_usage`). Con BVSALA_GATEWAY_USAGE_INJECT=1 el
+      // gateway lo pide por el cliente que no puede cambiarse: inserción
+      // TEXTUAL tras la `{` inicial, sin reserializar. Apagado por defecto: el
+      // último chunk de esos streams llega con `choices: []`, y el código que
+      // lee `choices[0]` sin mirar revienta. La MEDICIÓN y la clave de
+      // coalescencia siguen usando `cuerpo`, el original.
+      let inyectado = false;
+      const esChat = req.method === "POST" && url.pathname.endsWith("/chat/completions");
+      if (esChat && emisor && opts.usageInject === true && !endpointSinStreamOptions) {
+        try {
+          const r = inyectarIncludeUsage(cuerpo, codificacion);
+          if (r.cuerpo) {
+            cuerpoSaliente = r.cuerpo;
+            inyectado = true;
+          }
+        } catch {
+          /* passthrough */
+        }
+      }
+
       let upstream: Response;
       try {
         upstream = await fetchImpl(url, {
@@ -712,22 +811,35 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // del cliente, ve el mismo 400 que habría visto sin la capa; cuesta un
       // viaje extra en una petición que ya iba a fallar. Nunca en streaming a
       // medias: aquí no se ha escrito ni una cabecera al cliente todavía.
-      if ((hermano !== null || esfuerzoPuesto) && upstream.status === 400 && !ac.signal.aborted) {
+      //
+      // La inyección de include_usage usa el MISMO reintento, y además ante un
+      // 422: hay endpoints compatibles que validan el esquema y rechazan un
+      // campo que no conocen con 422. El rechazo llega antes de generar nada,
+      // así que el reintento no paga tokens.
+      const rechazoDeNuestroCambio =
+        ((hermano !== null || esfuerzoPuesto) && upstream.status === 400) ||
+        (inyectado && (upstream.status === 400 || upstream.status === 422));
+      if (rechazoDeNuestroCambio && !ac.signal.aborted) {
         let motivo = "";
         try {
           motivo = (await upstream.text()).slice(0, 300).replace(/\s+/g, " ");
         } catch {
           /* el motivo es solo para el log */
         }
+        const eraInyeccion = inyectado;
         log(
-          `[gateway] the upstream rejected (400) the rewritten request` +
-            `${hermano ? ` to ${hermano.servido}` : ""}${esfuerzoPuesto ? " (per-turn effort)" : ""}` +
-            `; forwarding it unchanged · ${motivo}`,
+          eraInyeccion
+            ? `[gateway] the upstream rejected (${upstream.status}) the request with stream_options.include_usage added; ` +
+                `forwarding it unchanged · ${motivo}`
+            : `[gateway] the upstream rejected (400) the rewritten request` +
+                `${hermano ? ` to ${hermano.servido}` : ""}${esfuerzoPuesto ? " (per-turn effort)" : ""}` +
+                `; forwarding it unchanged · ${motivo}`,
         );
         hermano = null;
         esfuerzoPuesto = false;
         rebaja = null;
         diales = null;
+        inyectado = false;
         try {
           upstream = await fetchImpl(url, {
             method: req.method,
@@ -745,6 +857,17 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           log(`[gateway] ${req.method} ${url.pathname} → upstream unreachable on retry: ${describirFallo(err)}`);
           return;
         }
+        // Sin la inyección pasó: el endpoint no admite `stream_options`, y
+        // pedírselo en cada petición sería pagar dos viajes por una. Se apaga
+        // para el resto del proceso y se dice una vez.
+        if (eraInyeccion && upstream.ok) {
+          endpointSinStreamOptions = true;
+          avisarUnaVez(
+            "gateway-sin-stream-options",
+            "[bvsala gateway] the upstream rejects stream_options, so usage injection is off for the rest of this process: " +
+              "streamed /v1/chat/completions answers from it are forwarded but NOT metered (stream=false answers still are).",
+          );
+        }
       }
 
       const cabeceras = Object.fromEntries(upstream.headers.entries());
@@ -754,21 +877,25 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // chatgpt.com/backend-api/codex (Codex con auth ChatGPT) sirve el SSE SIN
       // cabecera content-type (validado en mano el 30-08): en una ruta con
       // dialecto conocido, sin content-type se asume SSE — si no lo fuera, el
-      // observador no vería eventos y no se mediría nada (nunca de más).
+      // observador no vería eventos y no se mediría nada (nunca de más). Solo
+      // en los dos dialectos donde se ha visto: Chat Completions no se asume.
       const tipo = upstream.headers.get("content-type") ?? "";
-      const esSse = tipo.includes("text/event-stream") || (tipo === "" && upstream.ok && observadorPara(url.pathname) !== null);
+      const esSse =
+        tipo.includes("text/event-stream") ||
+        (tipo === "" && upstream.ok && observadorPara(url.pathname) !== null && !url.pathname.endsWith("/chat/completions"));
       observador = esSse ? observadorPara(url.pathname) : null;
       // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
-      // Solo /v1/messages (count_tokens también responde JSON pero no factura),
-      // solo con emisor (sin clave no hay nada que medir: ni bufferizar ni
-      // parsear), y con el mismo tope de captura que la coalescencia — un
-      // upstream configurable con un cuerpo desmesurado no puede comerse el heap.
+      // Solo rutas con dialecto de usage (count_tokens también responde JSON
+      // pero no factura), solo con emisor (sin clave no hay nada que medir: ni
+      // bufferizar ni parsear), y con el mismo tope de captura que la
+      // coalescencia — un upstream configurable con un cuerpo desmesurado no
+      // puede comerse el heap.
       const esJsonMedible =
         !esSse &&
         upstream.ok &&
         emisor !== undefined &&
         req.method === "POST" &&
-        url.pathname === "/v1/messages" &&
+        tieneDialecto(url.pathname) &&
         (upstream.headers.get("content-type") ?? "").includes("application/json");
       let cuerpoJson: Buffer[] | null = esJsonMedible ? [] : null;
       let cuerpoJsonBytes = 0;
@@ -792,9 +919,30 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
         medida = true;
-        const uso = observador.usage();
-        const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
+        // El usage FINAL (message_delta, response.completed, el chunk de uso o
+        // [DONE]): el de message_start trae output_tokens:1 de marcador, y un
+        // stream que se corta antes de su evento final no es una medida.
+        const uso = observador.usageFinal();
+        if (uso === null && emisor) {
+          // Chat Completions sin include_usage no es un corte: es que nadie
+          // pidió el contador. Se dice distinto porque se arregla distinto.
+          const noLoPidio =
+            observador instanceof ObservadorChatCompletions &&
+            !(inyectado || pideUsoEnStream(cuerpo, codificacion) === true);
+          noMedido(
+            req.method ?? "POST",
+            url.pathname,
+            upstream.status,
+            true,
+            noLoPidio
+              ? "the request did not ask for usage (stream_options.include_usage)"
+              : "the stream ended without the provider's final usage event",
+            noLoPidio ? "chat" : "uso",
+          );
+        } else {
+          const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
+          medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
+        }
         // SIN clave no hay emisor y medir() vuelve en silencio: hasta 0.4.20
         // una petición en streaming servida con 200 no dejaba NINGUNA línea,
         // mientras `bvsala doctor` mandaba al probador a buscar justo esta
@@ -807,12 +955,37 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         }
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
-        const uso = usoDeJson(respuesta);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs, hermano);
+        const uso = usoDeJsonPorRuta(url.pathname, respuesta);
+        if (uso === null) {
+          noMedido(req.method ?? "POST", url.pathname, upstream.status, false, "the response carried no usage", "uso");
+        } else {
+          // La elisión del proveedor (context_management) solo existe en Anthropic.
+          const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
+          medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano);
+        }
+      } else if (
+        emisor &&
+        req.method === "POST" &&
+        upstream.ok &&
+        !tieneDialecto(url.pathname) &&
+        !RUTA_DE_CONTEO.test(url.pathname)
+      ) {
+        // Una ruta sin dialecto de usage (embeddings, imágenes, audio…): se
+        // reenvía y se dice que no se mide. El aviso, solo en el espacio de la
+        // API (`/v1/…`): lo demás que un terminal manda por el base URL
+        // (telemetría, sondas) no es inferencia y avisarlo sería ruido encima
+        // de su TUI.
+        noMedido(
+          req.method,
+          url.pathname,
+          upstream.status,
+          esSse,
+          "no usage dialect for this route",
+          url.pathname.startsWith("/v1/") ? "dialecto" : null,
+        );
       } else {
-        // Todo lo que no se mide se dice igual: JSON sin emisor, errores del
-        // proveedor, y también un stream que no entra en medición (ruta sin
-        // dialecto, o un SSE con estado de error).
+        // Todo lo demás que no se mide se dice igual: JSON sin emisor, errores
+        // del proveedor, y también un SSE con estado de error.
         log(`[gateway] ${req.method} ${url.pathname} → ${upstream.status}${esSse ? " (stream)" : ""}`);
       }
     } catch (err) {

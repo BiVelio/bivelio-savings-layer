@@ -12,6 +12,7 @@ import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { decidirArranque, mensajeDeFalloDeArranque } from "./argumentos.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
+import { resolverUpstream } from "./upstream.js";
 import { connect } from "node:net";
 
 /**
@@ -39,8 +40,10 @@ import { BV_SALA_VERSION } from "../src/index.js";
 /**
  * El CLI de la pasarela:
  *
- *   `bvsala gateway [--puerto N]` — el medidor local para herramientas que
- *   respetan un base URL (Claude Code y el anillo de terminales compatibles).
+ *   `bvsala gateway [--puerto N] [--upstream U]` — el medidor local para
+ *   herramientas que respetan un base URL (Claude Code, el anillo de terminales
+ *   compatibles y los SDK oficiales de OpenAI y Anthropic en cualquier lenguaje).
+ *   `--upstream` elige el proveedor (gateway/upstream.ts): uno por gateway.
  *
  *   `bvsala claude|codex|goose|qwen [args…]` — cero configuración: arranca el
  *   gateway en un puerto efímero, lanza el terminal apuntándole y lo apaga al
@@ -59,8 +62,13 @@ function ayuda(): void {
   console.log(`bvsala ${BV_SALA_VERSION} — BiVelio Savings Layer
 
 Commands:
-  gateway [--port N]     Local metering proxy (default port 8402) for terminals that
-                         honour a base URL: Claude Code, opencode, Goose, Crush…
+  gateway [--port N] [--upstream U]
+                         Local metering proxy (default port 8402) for anything that honours a
+                         base URL: Claude Code, opencode, Goose, Crush… and the official OpenAI
+                         and Anthropic SDKs in any language, Python included.
+                         --upstream openai | anthropic | an origin URL (default: anthropic).
+                         One gateway talks to ONE upstream: run a second one on another port
+                         for the other provider.
   claude [args…]         Run Claude Code through the gateway. No configuration needed.
   codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
                          ChatGPT auth: chatgpt.com/backend-api/codex — metered, not billed).
@@ -83,8 +91,14 @@ Commands:
 Environment:
   BIVELIO_SERVICE_KEY    Service key (bvk_…): enables metering and seat identity.
   BVSALA_SEAT_ID         Stable seat identity per replica (optional).
-  BVSALA_GATEWAY_UPSTREAM  Alternative upstream (default: the terminal's own).
+  BVSALA_GATEWAY_UPSTREAM  Alternative upstream: openai | anthropic | an origin URL (default: the
+                         terminal's own). --upstream wins over it.
   BVSALA_GATEWAY_COALESCE  =1 enables duplicate-request coalescing (experimental).
+  BVSALA_GATEWAY_USAGE_INJECT
+                         =1 adds stream_options.include_usage to streamed /v1/chat/completions
+                         requests that lack it, so they can be metered. Off by default: the last
+                         chunk of those streams then has an empty choices list, which code that
+                         reads choices[0] without checking does not expect.
   BVSALA_GATEWAY_SHADOW  =1 enables the shadow lane for context elision (experimental):
                          computes what the elision policy would have saved WITHOUT touching
                          traffic and reports it separately (never counts toward the fee).
@@ -187,6 +201,19 @@ if (comando === "doctor") {
   process.exit(0);
 }
 
+// `--upstream` solo es de `gateway`: en los envoltorios todo lo que va detrás
+// del terminal es del terminal (gateway/argumentos.ts). La variable de entorno
+// vale para los dos, y el flag manda sobre ella. Se resuelve DESPUÉS del
+// doctor: una variable mal puesta no puede impedir que el doctor imprima.
+const idxUp = comando === "gateway" ? resto.indexOf("--upstream") : -1;
+const valorUp = idxUp >= 0 ? resto[idxUp + 1] : undefined;
+const flagUpstream = idxUp < 0 ? undefined : valorUp !== undefined && !valorUp.startsWith("--") ? valorUp : null;
+const up = resolverUpstream({ flag: flagUpstream, env: process.env.BVSALA_GATEWAY_UPSTREAM });
+if (!up.ok) {
+  console.error(up.error);
+  process.exit(1);
+}
+
 // La tabla decide destino y variables; bin.ts solo ejecuta. El modo de auth de
 // Codex se lee por EXISTENCIA/enum de ~/.codex/auth.json — jamás se registra.
 const envoltorio = esEnvoltorio
@@ -218,11 +245,11 @@ const enrolamientoAnillo2 = envoltorio?.upstream
 const planAnillo2 = planDeAnillo2({
   enrolamiento: enrolamientoAnillo2,
   espiaVivo: enrolamientoAnillo2 !== null && (await puertoEscucha(enrolamientoAnillo2.espia)),
-  upstreamEnv: process.env.BVSALA_GATEWAY_UPSTREAM,
+  upstreamEnv: up.upstream,
   elisionEnv: process.env.BVSALA_GATEWAY_ELISION,
   hoyUtcIso: new Date().toISOString().slice(0, 10),
 });
-const upstreamPedido = process.env.BVSALA_GATEWAY_UPSTREAM ?? planAnillo2.upstream;
+const upstreamPedido = up.upstream ?? planAnillo2.upstream;
 const elisionPedida = process.env.BVSALA_GATEWAY_ELISION ?? planAnillo2.elision;
 
 let arranque: GatewayArrancado;
@@ -238,6 +265,10 @@ try {
         ? { upstream: envoltorio.upstream }
         : {}),
     ...(process.env.BVSALA_GATEWAY_COALESCE === "1" ? { coalescer: true } : {}),
+    // Opt-in: pedir el usage por los clientes de Chat Completions que no lo
+    // piden. Cambia la forma del último chunk (choices: []), así que nunca por
+    // defecto.
+    ...(process.env.BVSALA_GATEWAY_USAGE_INJECT === "1" ? { usageInject: true } : {}),
     ...(process.env.BVSALA_GATEWAY_SHADOW === "1" ? { sombra: true } : {}),
     // S4a · el CANAL de entitlements, del que cuelgan las dos palancas. ARMADO
     // POR DEFECTO: el ahorro en el terminal tiene que funcionar SOLO. El gate
@@ -285,6 +316,13 @@ try {
 const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
 console.log(`[bvsala gateway] metering: ${serviceAccountKey ? "ON (service key present)" : "OFF (BIVELIO_SERVICE_KEY not set)"}`);
+if (up.aviso) console.error(up.aviso);
+if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
+  console.log(
+    "[bvsala gateway] usage injection: ON (BVSALA_GATEWAY_USAGE_INJECT=1) — streamed chat completions without " +
+      "stream_options get include_usage; their last chunk has an empty choices list.",
+  );
+}
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
@@ -314,11 +352,12 @@ console.log(`[bvsala gateway] metering: ${serviceAccountKey ? "ON (service key p
     (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);
   }
 }
-if (process.env.BVSALA_GATEWAY_UPSTREAM && envoltorio?.upstream && process.env.BVSALA_GATEWAY_UPSTREAM !== envoltorio.upstream) {
+if (up.upstream && envoltorio?.upstream && up.upstream !== envoltorio.upstream) {
   // Un BVSALA_GATEWAY_UPSTREAM heredado del .zshrc (p.ej. el de Claude Code)
-  // mandaría el tráfico de Codex a un host que no habla su protocolo.
+  // mandaría el tráfico de Codex a un host que no habla su protocolo. Se
+  // compara el origen ya resuelto: `openai` y https://api.openai.com son el mismo.
   console.error(
-    `[bvsala ${comando}] WARNING: BVSALA_GATEWAY_UPSTREAM=${process.env.BVSALA_GATEWAY_UPSTREAM} overrides this terminal's upstream ` +
+    `[bvsala ${comando}] WARNING: BVSALA_GATEWAY_UPSTREAM=${up.upstream} overrides this terminal's upstream ` +
       `(${envoltorio.upstream}). If that is not what you want, unset the variable.`,
   );
 }
@@ -364,10 +403,27 @@ if (envoltorio && esEnvoltorio) {
     void arranque.cerrar().then(() => process.exit(code ?? (signal ? 1 : 0)));
   });
 } else {
-  console.log(
-    `[bvsala gateway] point your terminal at it (or use \`bvsala ${TERMINALES_CON_ENVOLTORIO.join("|")}\`):  ` +
-      `ANTHROPIC_BASE_URL=http://127.0.0.1:${arranque.puerto} claude   ·   bvsala doctor for the others`,
-  );
+  // La última línea dice cómo apuntar AL upstream que se eligió: la receta de
+  // Claude Code delante de un gateway de OpenAI sería un 404 garantizado. Sin
+  // elección (`up.upstream` vacío) el destino es Anthropic, directo o a través
+  // del espía del anillo 2, y la línea es la de siempre.
+  const host = new URL(upstreamEfectivo).hostname;
+  if (host === "api.openai.com") {
+    console.log(
+      `[bvsala gateway] point your SDK at it: base_url=http://127.0.0.1:${arranque.puerto}/v1 (OpenAI SDKs) · ` +
+        "streamed chat completions are metered when the request sets stream_options.include_usage · bvsala doctor for recipes",
+    );
+  } else if (host === "api.anthropic.com" || up.upstream === undefined) {
+    console.log(
+      `[bvsala gateway] point your terminal at it (or use \`bvsala ${TERMINALES_CON_ENVOLTORIO.join("|")}\`):  ` +
+        `ANTHROPIC_BASE_URL=http://127.0.0.1:${arranque.puerto} claude   ·   bvsala doctor for the others`,
+    );
+  } else {
+    console.log(
+      `[bvsala gateway] point your client at http://127.0.0.1:${arranque.puerto} plus the path prefix it already uses ` +
+        "(for example /v1) · bvsala doctor for recipes",
+    );
+  }
 }
 
 const parar = async (): Promise<void> => {

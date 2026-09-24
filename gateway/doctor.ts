@@ -37,6 +37,8 @@ interface Contexto {
   base: string;
   /** `http://127.0.0.1:PUERTO/v1`, sin barra final. */
   baseV1: string;
+  /** El puerto, para las recetas que arrancan su propio gateway. */
+  puerto: number;
   /** Rutas absolutas de las configs del terminal, en el orden de `configs`. */
   rutas: string[];
 }
@@ -50,8 +52,12 @@ interface Terminal {
   configs: string[];
   /** Las líneas del bloque de configuración. */
   receta: (ctx: Contexto) => string[];
-  /** Falso en los que no se pueden detectar (Cline, Kilo). */
+  /** Falso en los que no se pueden detectar (Cline, Kilo, los SDK). */
   detectable: boolean;
+  /** La línea de comprobación contra el log, si no es la de /v1/messages. */
+  comprobar?: string;
+  /** El estado de los no detectables, si no es el de una extensión de editor. */
+  estadoSinDeteccion?: string;
 }
 
 const COMPROBAR =
@@ -176,6 +182,38 @@ const TERMINALES: readonly Terminal[] = [
       `Base URL: ${baseV1}`,
     ],
   },
+  // Los SDK oficiales, en cualquier lenguaje: no hay binario ni config que
+  // buscar, así que no se detectan; la receta va siempre. Cada URL termina en
+  // comillas a propósito (el test de formas de URL las recorta ahí).
+  {
+    id: "python-openai",
+    nombre: "Python, or any OpenAI SDK (Chat Completions)",
+    configs: [],
+    detectable: false,
+    estadoSinDeteccion: "no detection: any language, through the SDK's base URL",
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1/chat/completions …`; if you see `/v1/v1/chat/completions`, there is one /v1 too many.",
+    receta: ({ baseV1, puerto }) => [
+      `start: bvsala gateway --upstream openai --port ${puerto}   (one gateway per upstream: if Claude Code already uses this port, pick another and change the URL below to match)`,
+      `python: client = OpenAI(base_url="${baseV1}")   (WITH /v1: the SDK appends /chat/completions)`,
+      `node:   const client = new OpenAI({ baseURL: "${baseV1}" })`,
+      'streaming: pass stream_options={"include_usage": True} (Node: stream_options: { include_usage: true }) or the stream is forwarded but NOT metered; the last chunk then has an empty choices list, so read chunk.choices only when it is not empty.',
+      "stream=False is metered from the usage in the JSON body, and so is client.responses.create. Cost is priced at the model's list price.",
+    ],
+  },
+  {
+    id: "python-anthropic",
+    nombre: "Python, or any Anthropic SDK (Messages)",
+    configs: [],
+    detectable: false,
+    estadoSinDeteccion: "no detection: any language, through the SDK's base URL",
+    receta: ({ base, puerto }) => [
+      `start: bvsala gateway --port ${puerto}   (Anthropic is the default upstream)`,
+      `python: client = Anthropic(base_url="${base}")   (NO /v1: the SDK appends /v1/messages)`,
+      `node:   const client = new Anthropic({ baseURL: "${base}" })`,
+      "streamed and stream=False requests are both metered.",
+    ],
+  },
 ];
 
 /** Recorre el PATH directorio a directorio con `existe`; nunca lanza procesos. */
@@ -212,7 +250,7 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
 
     let estado: string;
     if (!t.detectable) {
-      estado = "no automatic detection (editor extension)";
+      estado = t.estadoSinDeteccion ?? "no automatic detection (editor extension)";
     } else if (detectado) {
       const pistas = [
         ...(enElPath ? [`binary \`${t.binario}\` on PATH`] : []),
@@ -225,8 +263,8 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
 
     lineas.push(`» ${t.id}: ${estado}`);
     lineas.push(`  ${t.nombre}`);
-    for (const l of t.receta({ base, baseV1, rutas })) lineas.push(`  ${l}`);
-    lineas.push(`  ${COMPROBAR}`);
+    for (const l of t.receta({ base, baseV1, puerto, rutas })) lineas.push(`  ${l}`);
+    lineas.push(`  ${t.comprobar ?? COMPROBAR}`);
     lineas.push("");
   }
 
@@ -235,6 +273,9 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     "Kilo) are for API keys. Never route the OAuth of a Claude Pro/Max subscription through the gateway from a",
     "third-party harness — Anthropic forbids it. Claude Code and Codex on a subscription are routed and metered,",
     "but not billed: there is no per-token invoice.",
+    "Any language through the gateway: it measures every request whose usage it can read (Anthropic Messages, OpenAI Chat",
+    "Completions and Responses) for models with a list price, and its log line says when one is not metered. The saving",
+    "levers of the SDK (npm) are TypeScript; the gateway's own levers apply to Anthropic /v1/messages with a PRO license.",
     "Per-terminal detail: docs/terminales/<terminal>.md",
   );
 
