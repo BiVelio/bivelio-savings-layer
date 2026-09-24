@@ -236,7 +236,7 @@
       "advanced": "Geavanceerde instellingen",
       "projFriendly": "Je rekening zou van {baseline} naar {opt} gaan — {pct}% minder.",
       "onlyChatTitle": "Gebruik je alleen ChatGPT of Claude?",
-      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op, en “bvsala claude” meet je echte verbruik in de terminal. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
+      "onlyChatBody": "ChatGPT is echt gesloten: vast tarief, geen tokenfactuur of limiet om te trimmen. Maar gebruik je Claude, dan helpen we je al besparen: de savings-mode-skill (gratis, op de homepage) rekt je abonnementslimieten op. En bouw je een app met een API-sleutel, dáár meet en verlaagt BV-SALA echte uitgaven.",
       "onlyChatCta": "Bouw je een app? Ga naar Installeren"
     },
     "copyButton": {
@@ -320,14 +320,14 @@
       "eyebrow": "Aan de slag",
       "heading": "Vier stappen. Je prompts raken nooit onze servers.",
       "step1": "<b>1 · Haal je licentiesleutel op</b> — de SDK is publiek maar fail-closed; hij draait alleen met een geldige sleutel. Doorgegeven als <code>licenseKey</code>.",
-      "step2": "<b>2 · Maak een service-account-sleutel aan en verifieer die</b> — een machine-credential (<code>bvk_…</code>) met twee taken: hij rapporteert gebruik met alleen aantallen (je seats en besparingen), en hij laat de SDK je <b>vernieuwde licentie zelf ophalen</b> in elke facturatieperiode. Los van de licentiesleutel; alleen de hash ervan wordt opgeslagen. Maak er een aan en klik dan op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
+      "step2": "<b>2 · Maak een service-account-sleutel aan en verifieer die</b> — een machine-credential (<code>bvk_…</code>) met twee taken: hij rapporteert gebruik met alleen aantallen (je seats en besparingen), en hij laat de SDK en de gateway je <b>vernieuwde licentie zelf ophalen</b> in elke facturatieperiode. Los van de licentiesleutel; alleen de hash ervan wordt opgeslagen. Maak er een aan en klik dan op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
       "currentKey": "huidige service-account-sleutel",
       "noneYet": "nog geen — klik hierboven",
       "shownOnce": "eenmalig getoond bij aanmaken — alleen de prefix wordt opgeslagen.",
       "renewalNote": "<b>Houd deze sleutel in je deployment.</b> Je licentie verloopt aan het einde van elke facturatieperiode en bij de verlenging wordt er een nieuwe uitgegeven. Met deze sleutel haalt de SDK die op en zet hem zelf in, zonder herstart. Zonder die sleutel haalt niemand hem op, dus moet iemand elke periode de nieuwe sleutel met de hand plakken — en doet niemand dat, dan stopt de SDK zodra de respijtperiode afloopt, ook al is het abonnement betaald en loopt er niets achter.",
       "step3": "<b>3 · Installeren</b> — publiek op npm, geen token, geen configuratie.",
       "step4": "<b>4 · Koppel je provider en lees het SavingsReport</b>",
-      "gatewayNote": "<b>Codeterminal in plaats van een app?</b> Hetzelfde pakket bevat een lokale meet-gateway: <code>bvsala claude</code> start Claude Code erdoorheen en dit paneel toont de uitgaven, token voor token. Ook <code>bvsala codex</code>, <code>bvsala goose</code> en <code>bvsala qwen</code>; <code>bvsala doctor</code> drukt het exacte blok voor de rest af. Hij gebruikt dezelfde service-sleutel uit stap 2 — meten vereist geen licentiesleutel.",
+      "gatewayNote": "<b>Codeterminal in plaats van een app?</b> Hetzelfde pakket bevat een lokale meet-gateway: <code>bvsala claude</code> start Claude Code erdoorheen en dit paneel toont de uitgaven, token voor token. Ook <code>bvsala codex</code>, <code>bvsala goose</code> en <code>bvsala qwen</code>; <code>bvsala doctor</code> drukt het exacte blok voor de rest af. Hij gebruikt dezelfde service-sleutel uit stap 2 en haalt je licentie zelf op — net als de SDK start hij niet zonder actieve licentie.",
       "finalNote": "Dat is alles. Geen geldige licentie → <code>generate()</code> weigert. Als je abonnement wordt opgezegd, stopt de SDK binnen ~15 min via <code>licenseServerUrl</code> — geen herstart, en hij legt je productie nooit plat als wij onbereikbaar zijn."
     },
     "accountPlanStrip": {
@@ -770,7 +770,7 @@
       "medidaPie": "van de gemeten uitgaven",
       "anatomiaNota": "Gemeten met de meter over {peticiones} echte Claude Code-verzoeken, tegen de tellers van de provider ({fecha}). Het effect van de skill zelf wordt gepubliceerd zodra het in A/B gemeten is — nooit eerder.",
       "ccNota": "Eén commando: installeert in ~/.claude/skills en activeert zichzelf zodra het gesprek over limieten of tokens besparen gaat.",
-      "cxNota": "Codex heeft geen skills: dezelfde discipline reist als gemarkeerd blok in je AGENTS.md (~/.codex) — altijd actief; verwijder het blok om het uit te zetten. Je AGENTS.md buiten de markeringen wordt nooit aangeraakt. Werkt met ChatGPT-account en API-sleutel, en onder bvsala codex wordt het effect gemeten.",
+      "cxNota": "Codex heeft geen skills: dezelfde discipline reist als gemarkeerd blok in je AGENTS.md (~/.codex) — altijd actief; verwijder het blok om het uit te zetten. Je AGENTS.md buiten de markeringen wordt nooit aangeraakt. Werkt met ChatGPT-account en API-sleutel, en onder bvsala codex (met licentie) wordt het effect gemeten.",
       "aiDescargar": "Download savings-mode.zip",
       "aiCuenta": "De download vraagt om je (gratis) Savings-account: zo wordt adoptie een echte metriek, met identiteit — de skill zelf bevat geen enkele telemetrie.",
       "aiPaso1": "Zet op claude.ai “Code execution and file creation” aan (Settings → Capabilities).",
@@ -789,7 +789,7 @@
       "eyebrow": "Nieuw · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
       "body": "Eén commando zet een lokale meter vóór je terminal. Geen code aanpassen, niets configureren — en je prompts verlaten nooit je machine: alleen aantallen en kosten bereiken dit paneel.",
-      "note": "De gateway meet elk verzoek. Met een PRO-licentie past hij standaard ook één hefboom toe: hij verkort de cache-schrijf-TTL zolang je sessie warm blijft — dat verandert de prijs, nooit de inhoud die het model leest. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
+      "note": "De gateway meet elk verzoek en draait, net als de SDK, alleen met een actieve licentie: hij haalt die op met je service-sleutel en verifieert de handtekening ervan op je eigen machine. Met een PRO-licentie past hij standaard ook één hefboom toe: hij verkort de cache-schrijf-TTL zolang je sessie warm blijft — dat verandert de prijs, nooit de inhoud die het model leest. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
       "cta": "Zo werkt het →"
     },
     "integrate": {
@@ -1010,7 +1010,7 @@
     "caseClaudeSub": "claude.ai, gratis of betaald",
     "caseClaudeBody": "Vast abonnement: geen tokenfactuur om te meten — maar wel limieten (het venster van vijf uur en de weeklimiet). Daar is de savings-mode-skill precies voor: gratis, in een minuut geüpload naar claude.ai, gericht op de twee massa's die limiet verbranden. Het effect wordt gepubliceerd zodra het gemeten is — nooit eerder.",
     "caseCodeSub": "terminal, met API-sleutel",
-    "caseCodeBody": "Met een abonnement is het tarief vast — maar begrensd: dezelfde skill installeert met één commando en rekt dezelfde weeklimiet op. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: “bvsala claude” start Claude Code via de lokale gateway en je uitgaven verschijnen in het paneel, token voor token, zonder één regel code aan te raken. Besparen is daar de volgende fase — eerst meten we echt.",
+    "caseCodeBody": "Met een abonnement is het tarief vast — maar begrensd: dezelfde skill installeert met één commando en rekt dezelfde weeklimiet op. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: met je BiVelio-licentie start “bvsala claude” Claude Code via de lokale gateway en je uitgaven verschijnen in het paneel, token voor token, zonder één regel code aan te raken. Met PRO verkort hij bovendien de cache-schrijf-TTL zolang de sessie warm blijft: een besparing berekend op de tokentelling van je eigen provider, nooit op een schatting.",
     "caseAppName": "Jouw applicatie",
     "caseAppSub": "jouw code + jouw API-sleutel",
     "caseAppBody": "Het geval waarvoor BV‑SALA bestaat. Je app roept de API aan met je sleutel, de aanbieder factureert elk token, en de laag wordt in drie stappen geïnstalleerd: pakket, licentie en het omhullen van de aanroep. Vanaf het eerste verzoek geeft hij een <b>SavingsReport</b> terug met de besparing, gesplitst in gemeten en geschat.",
