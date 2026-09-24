@@ -392,18 +392,38 @@ describe("generateStream — entrega entera", () => {
     expect(llamadas).toBe(1);
   });
 
-  it("caché exacta tras un stream: la segunda sale entera, estimated, como atajo", async () => {
+  it("caché exacta tras un stream: la segunda sale entera, como atajo, y se valora por referencia", async () => {
     const p = new Falso();
     const layer = createSavingsLayer({ provider: p, devUnlicensed: true });
-    await layer.generateStream(peticion()).result;
+    const primera = await layer.generateStream(peticion()).result;
     const s = layer.generateStream(peticion());
     const evs = await recoger(s);
     expect(forma(evs)).toEqual([["text", "Hello world"], ["done"]]);
     const r = await s.result;
     expect(r.report.cache.result).toBe("exact");
     expect(r.report.calls.avoidedLlm).toBe(1);
-    expect(r.report.cost.basis).toBe("estimated");
+    // La contabilidad es la misma que la de generate(): la poblada corrió intacta
+    // en stream y con su contador completo, así que la repetición se valora con él.
+    expect(r.report.cost.basis).toBe("reference");
+    expect(r.report.cache.reference?.requestId).toBe(primera.report.requestId);
     expect(r.report.streaming).toEqual({ delivery: "whole", wholeReason: "shortcut" });
+    expect(p.llamadasStream).toBe(1);
+  });
+
+  it("un stream con el contador a medias no deja referencia: la repetición sigue estimated", async () => {
+    // La entrada llegó y la salida no: el adaptador rellena el 0 y marca
+    // `complete: false`. La poblada sale unmeasured; su repetición no se cobra
+    // contra un contador rellenado.
+    const p = new Falso({
+      stream: () => guion(["Hello ", "world"], { usage: { inputTokens: 12, outputTokens: 0, complete: false } }),
+    });
+    const layer = createSavingsLayer({ provider: p, devUnlicensed: true });
+    const primera = await layer.generateStream(peticion()).result;
+    expect(primera.report.cost.basis).toBe("unmeasured");
+    const r = await layer.generateStream(peticion()).result;
+    expect(r.report.cache.result).toBe("exact");
+    expect(r.report.cost.basis).toBe("estimated");
+    expect(r.report.cache.reference).toBeUndefined();
     expect(p.llamadasStream).toBe(1);
   });
 

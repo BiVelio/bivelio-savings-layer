@@ -158,9 +158,9 @@ export interface HechosDeLaPoblada {
    *  no lo midió ningún proveedor ni está en ninguna factura. */
   contadorSimulado: boolean;
   /** Usage de la llamada primaria que sirvió (post-escalada). */
-  usoPrimario: { inputTokens: number; outputTokens: number } | undefined;
+  usoPrimario: { inputTokens: number; outputTokens: number; complete?: boolean } | undefined;
   /** Usage de la reparación, si la hubo. */
-  usoReparacion?: { inputTokens: number; outputTokens: number } | undefined;
+  usoReparacion?: { inputTokens: number; outputTokens: number; complete?: boolean } | undefined;
   /** Tier que el proveedor dijo haber servido a la primaria. */
   tierServido?: string | undefined;
   eliminatedInput: number;
@@ -210,13 +210,24 @@ export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia
   // `estimated`), y así sigue.
   if (h.contadorSimulado) return "simulated-provider";
   // E1 · Usage. Enteros, que es lo que L0 exige al leer: escribir algo que el
-  // lector va a declarar mal formado no sirve de nada.
+  // lector va a declarar mal formado no sirve de nada. Y COMPLETO: con
+  // `complete === false` el proveedor no dio uno de los dos contadores (un
+  // stream sin su evento final de usage, un endpoint que omite la salida) y el
+  // adaptador lo rellenó con 0. Esa llamada se publica `unmeasured` (la guarda
+  // de `callsWithoutUsage` en estimateCost), así que su repetición no puede
+  // cobrarse contra ella: un 0 rellenado parece un contador y no lo es.
   const p = h.usoPrimario;
-  if (!p || !esEnteroNoNegativo(p.inputTokens) || p.inputTokens <= 0 || !esEnteroNoNegativo(p.outputTokens)) {
+  if (
+    !p ||
+    p.complete === false ||
+    !esEnteroNoNegativo(p.inputTokens) ||
+    p.inputTokens <= 0 ||
+    !esEnteroNoNegativo(p.outputTokens)
+  ) {
     return "no-usage";
   }
   const rep = h.usoReparacion;
-  if (rep && !esEnteroNoNegativo(rep.outputTokens)) return "no-usage";
+  if (rep && (rep.complete === false || !esEnteroNoNegativo(rep.outputTokens))) return "no-usage";
 
   // E2 · Intacta. Excluye el selector de herramientas y la elisión (libro 2), la
   // serialización con ahorro y la compresión (libro 3), y todo contenido que la
