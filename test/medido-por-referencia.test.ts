@@ -1,12 +1,17 @@
 import { describe, it, expect } from "vitest";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
+import { createMockProvider } from "../src/providers/mock.js";
 import { InMemoryExactCache, type CachedAnswer, type ExactCache } from "../src/cache/exact.js";
 import { InMemorySemanticCache } from "../src/cache/semantic.js";
 import { UsageEmitter } from "../src/metering/emitter.js";
 import { precioDeLista } from "../src/pricing/catalogo.js";
 import { providerNativeBackend } from "../src/constraints/backends.js";
-import { evaluarReferencia, registroDeReferencia } from "../src/pipeline/referencia.js";
+import {
+  evaluarReferencia,
+  registroDeReferencia,
+  type HechosDeLaPoblada,
+} from "../src/pipeline/referencia.js";
 import type { SavingsLayerConfig } from "../src/pipeline/config.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { JsonSchema, SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
@@ -108,6 +113,30 @@ class CacheManipulada implements ExactCache {
   }
 }
 
+/** Los hechos de una poblada intacta con esquema nativo, para las reglas puras. */
+const HECHOS_INTACTOS: HechosDeLaPoblada = {
+  contadorSimulado: false,
+  usoPrimario: { inputTokens: 500, outputTokens: 300 },
+  eliminatedInput: 0,
+  compressedInput: 0,
+  elididoLocal: 0,
+  sentLocalSinSondeo: 40,
+  baselineInput: 40,
+  codebookAplicado: false,
+  tokensDelSondeo: 0,
+  sondeoAplicado: false,
+  hayEsquema: true,
+  backend: "provider-native",
+  modeloPedido: MINI,
+  modeloServido: MINI,
+  cacheable: true,
+  mensajesDeLaCapa: 0,
+  requestId: "req-poblada",
+  at: 1_000,
+  textoServido: '{"answer":"ok"}',
+  huella: () => "huella",
+};
+
 const conReferencia = (a: CachedAnswer, cambio: Record<string, unknown>): CachedAnswer => ({
   ...a,
   meta: { ...(a.meta ?? {}), reference: { ...(a.meta?.["reference"] as object), ...cambio } },
@@ -120,6 +149,7 @@ describe("1-4 · la valoración: entrada a tarifa cacheada, salida solo determin
     const primera = await layer.generate(peticion({ temperature: 0 }));
     expect(primera.report.cache.result).toBe("miss");
     expect(trazaDeReferencia(primera)?.outcome).toBe("written");
+    expect(trazaDeReferencia(primera)?.detail?.["exactCache"]).toBe(true);
 
     reloj.t += 60_000;
     const hit = await layer.generate(peticion({ temperature: 0 }));
@@ -158,6 +188,15 @@ describe("1-4 · la valoración: entrada a tarifa cacheada, salida solo determin
       ),
     );
     expect(r.traces.find((t) => t.stage === "exact-cache")?.detail?.["basis"]).toBe("reference");
+  });
+
+  it("la traza distingue «registro construido» de «guardado en la caché exacta»", async () => {
+    // Con la caché exacta apagada el registro se construye igual (los seguidores
+    // de singleflight lo usan), pero no viaja a ninguna caché, y la traza lo dice.
+    const { layer } = montar(new ProveedorFijo(1736, 282));
+    const primera = await layer.generate(peticion({ temperature: 0, savings: { exactCache: false } }));
+    expect(trazaDeReferencia(primera)?.outcome).toBe("written");
+    expect(trazaDeReferencia(primera)?.detail?.["exactCache"]).toBe(false);
   });
 
   it("2 · sin temperature: la salida no cuenta", async () => {
@@ -224,6 +263,67 @@ describe("5 · L6: sin tarifa cacheada documentada no hay referencia", () => {
     const hit = await layer.generate(peticion());
     expect(hit.report.cost.basis).toBe("estimated");
     expect(hit.report.cache.referenceRejected).toBe("no-cached-price");
+  });
+
+  it("un id que HEREDA la fila de otro modelo no vale: gemini-2.5-flash-lite no es gemini-2.5-flash", async () => {
+    // `precioDeLista` le da a `-lite` la fila de su pariente (sufijo de letra),
+    // tres veces su entrada cacheada real. Para tarifar un informe puede pasar;
+    // para un suelo que entra en la comisión, no.
+    const LITE = "google/gemini-2.5-flash-lite";
+    expect(precioDeLista(LITE)).toBe(precioDeLista("gemini-2.5-flash"));
+    const { layer } = montar(new ProveedorFijo(400, 60));
+    await layer.generate(peticion({ model: LITE, temperature: 0 }));
+    const hit = await layer.generate(peticion({ model: LITE, temperature: 0 }));
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.referenceRejected).toBe("no-cached-price");
+    expect(hit.report.cache.reference).toBeUndefined();
+  });
+
+  it("…pero con su precio declarado en costModels, sí: el precio es el del cliente", async () => {
+    const LITE = "google/gemini-2.5-flash-lite";
+    const precio = { inputPer1k: 0.0001, outputPer1k: 0.0004, cachedInputPer1k: 0.00001 };
+    const { layer } = montar(new ProveedorFijo(400, 60), { costModels: { "gemini-2.5-flash-lite": precio } });
+    await layer.generate(peticion({ model: LITE, temperature: 0 }));
+    const hit = await layer.generate(peticion({ model: LITE, temperature: 0 }));
+    expect(hit.report.cost.basis).toBe("reference");
+    expect(hit.report.cache.reference?.cachedInputPer1k).toBe(0.00001);
+    expect(hit.report.cache.reference?.outputPer1k).toBe(0.0004);
+    expect(hit.report.cost.baselineEstimate).toBeCloseTo((400 * 0.00001 + 57 * 0.0004) / 1000, 10);
+  });
+
+  it("una instantánea con FECHA es el mismo modelo: gpt-4o-mini-2024-07-18 se valora con su fila", async () => {
+    const FECHADO = "openai/gpt-4o-mini-2024-07-18";
+    const { layer } = montar(new ProveedorFijo(1736, 282));
+    await layer.generate(peticion({ model: FECHADO, temperature: 0 }));
+    const hit = await layer.generate(peticion({ model: FECHADO, temperature: 0 }));
+    expect(hit.report.cost.basis).toBe("reference");
+    expect(hit.report.cache.reference?.cachedInputPer1k).toBe(0.000075);
+    expect(hit.report.cost.baselineEstimate).toBeCloseTo(2.904e-4, 10);
+  });
+});
+
+describe("E0 · el contador del proveedor de demo no es un contador", () => {
+  it("el mock inventa su usage: la poblada no deja registro y la repetición sigue estimated", async () => {
+    const { layer } = montar(createMockProvider({ answer: "Paris" }));
+    const primera = await layer.generate(peticion({ temperature: 0 }));
+    expect(trazaDeReferencia(primera)?.outcome).toBe("not-written");
+    expect(trazaDeReferencia(primera)?.detail).toEqual({ reason: "simulated-provider" });
+
+    const hit = await layer.generate(peticion({ temperature: 0 }));
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.referenceRejected).toBe("absent");
+    expect(hit.report.cache.reference).toBeUndefined();
+  });
+
+  it("la regla pura: E0 va antes que todo lo demás", () => {
+    expect(registroDeReferencia({ ...HECHOS_INTACTOS, contadorSimulado: true })).toBe("simulated-provider");
+    // Y aunque el usage falte: el motivo es el primero que falla.
+    expect(
+      registroDeReferencia({ ...HECHOS_INTACTOS, contadorSimulado: true, usoPrimario: undefined }),
+    ).toBe("simulated-provider");
+    expect(typeof registroDeReferencia(HECHOS_INTACTOS)).toBe("object");
   });
 });
 
@@ -385,26 +485,9 @@ describe("8 · la reparación: su coste es nuestro, y su salida acota la acredit
 
   it("la regla de escritura: entrada de la primaria, salida la menor de las dos", () => {
     const registro = registroDeReferencia({
+      ...HECHOS_INTACTOS,
       usoPrimario: { inputTokens: 500, outputTokens: 300 },
       usoReparacion: { inputTokens: 700, outputTokens: 120 },
-      eliminatedInput: 0,
-      compressedInput: 0,
-      elididoLocal: 0,
-      sentLocalSinSondeo: 40,
-      baselineInput: 40,
-      codebookAplicado: false,
-      tokensDelSondeo: 0,
-      sondeoAplicado: false,
-      hayEsquema: true,
-      backend: "provider-native",
-      modeloPedido: MINI,
-      modeloServido: MINI,
-      cacheable: true,
-      mensajesDeLaCapa: 0,
-      requestId: "req-poblada",
-      at: 1_000,
-      textoServido: '{"answer":"ok"}',
-      huella: () => "huella",
     });
     if (typeof registro !== "object") throw new Error(`se esperaba registro, salió ${registro}`);
     expect(registro.inputTokens).toBe(500);

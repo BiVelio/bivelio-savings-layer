@@ -148,7 +148,7 @@ the request went through untouched, `"reference"` when a repeat of a byte‑iden
 request was served without calling the provider — its baseline is the provider's own
 counter for the identical request that already ran and that you already paid
 (`report.cache.reference` points to it), valued at the provider's cached‑input rate,
-with the output counted only under deterministic sampling, so it is a floor —
+with the output counted only under deterministic sampling (`temperature: 0`), so it is a floor —
 `"estimated"` when the layer removed something (the baseline is then reconstructed
 with the model's tokenizer, or with a calibrated estimate where no exact tokenizer
 exists, as for Anthropic models), and `"unmeasured"` when the provider returned no

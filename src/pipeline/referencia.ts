@@ -1,6 +1,7 @@
 import { sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import type { SavingsRequest } from "../contracts/types.js";
 import { FACTOR_DIFERIDO_MINIMO, veredictoDelTier } from "../economics/tier-diferido.js";
+import { CATALOGO, claveDeCatalogo } from "../pricing/catalogo.js";
 import {
   REFERENCE_MAX_AGE_MS,
   REFERENCE_MESSAGE_ALLOWANCE,
@@ -24,7 +25,7 @@ import {
 //
 // Dos mitades, y las dos están aquí como funciones puras:
 //
-//   · ESCRITURA (E1-E7, `registroDeReferencia`): cuándo la llamada que corrió
+//   · ESCRITURA (E0-E7, `registroDeReferencia`): cuándo la llamada que corrió
 //     deja un registro de su contador. Solo si fue INTACTA: su contador tiene
 //     que ser el de la petición del cliente, no el de una petición que la capa
 //     reescribió.
@@ -35,7 +36,8 @@ import {
 //     siempre. Nunca se lanza nada y nunca se reclama de más.
 //
 // El pipeline solo cablea: aquí no hay estado ni E/S, y por eso se prueba suelto
-// (`test/referencia-es-suelo.test.ts` recorre el catálogo entero).
+// (`test/referencia-es-suelo.test.ts` recorre cada fila del catálogo y, además,
+// los ids que HEREDARÍAN una fila ajena, que aquí no valen).
 //
 // Módulo INTERNO: no se reexporta. Lo público es `ReferenceCredit`,
 // `ReferenceRejection` y las tres constantes, en `tokenizer/accounting.ts`.
@@ -67,6 +69,8 @@ export interface RegistroDeReferencia {
 
 /** Por qué una llamada que corrió NO deja registro. ASCII inglés: va a la traza. */
 export type MotivoSinReferencia =
+  // E0: el contador no es de un proveedor, lo fabricó el proveedor de demo.
+  | "simulated-provider"
   | "no-usage"
   | "layer-changed-request"
   | "codebook"
@@ -74,7 +78,7 @@ export type MotivoSinReferencia =
   | "schema-in-prompt"
   | "cheaper-model-served"
   | "not-cacheable"
-  // Defensivo, fuera de E1-E7: la huella no se pudo calcular (algo no
+  // Defensivo, fuera de E0-E7: la huella no se pudo calcular (algo no
   // serializable en la petición). Sin huella no hay identidad que atestiguar.
   | "fingerprint-failed";
 
@@ -116,8 +120,43 @@ export function muestreoDeterminista(r: SavingsRequest): boolean {
   return r.temperature === 0;
 }
 
+/** Lo único que puede seguir a la clave para que el id sea el MISMO modelo:
+ *  una fecha de instantánea, `2024-07-18` (OpenAI) o `20250929` (Anthropic). */
+const FECHA_DE_INSTANTANEA = /^\d{4}-?\d{2}-?\d{2}$/;
+
+/**
+ * El precio de lista de un modelo SOLO si es SU fila del catálogo: el id es la
+ * clave (con o sin prefijo de proveedor) o una instantánea con fecha de ella.
+ *
+ * `precioDeLista` deja que un id con sufijo de LETRA herede la fila de su
+ * pariente (`-latest`, `-preview`), porque para TARIFAR un informe una cifra
+ * aproximada vale más que el precio ilustrativo. Para la referencia no: el
+ * sufijo también puede ser otro modelo más barato. `gemini-2.5-flash-lite`
+ * heredaba la fila de `gemini-2.5-flash`, y una repetición suya se valoraba al
+ * triple de su entrada cacheada real y a unas seis veces su salida: un crédito
+ * 2,4 veces mayor que la llamada que reemplazaba, dentro de la base de
+ * comisión. Una referencia es un suelo o no es nada, así que cualquier id que no
+ * sea exactamente la fila da `undefined` y L6 lo rechaza (`no-cached-price`).
+ * El alias legítimo que se pierde (`-latest`) solo cuesta que su repetición
+ * siga `estimated`; el cliente lo recupera declarando `costModels`.
+ */
+export function precioDeListaPropio(model: string): CostModel | undefined {
+  const clave = claveDeCatalogo(model);
+  if (clave === undefined) return undefined;
+  const barra = model.lastIndexOf("/");
+  const desnudo = barra >= 0 ? model.slice(barra + 1) : model;
+  if (clave !== model && clave !== desnudo) {
+    // `buscarPorModelo` ya garantiza que tras la clave viene un separador.
+    if (!FECHA_DE_INSTANTANEA.test(desnudo.slice(clave.length + 1))) return undefined;
+  }
+  return CATALOGO[clave];
+}
+
 /** Los hechos de la llamada que corrió, tal como los deja el pipeline en la etapa 12. */
 export interface HechosDeLaPoblada {
+  /** ¿Contestó el proveedor de demo interno? Su usage lo fabrica un estimador,
+   *  no lo midió ningún proveedor ni está en ninguna factura. */
+  contadorSimulado: boolean;
   /** Usage de la llamada primaria que sirvió (post-escalada). */
   usoPrimario: { inputTokens: number; outputTokens: number } | undefined;
   /** Usage de la reparación, si la hubo. */
@@ -153,14 +192,23 @@ const esEnteroNoNegativo = (n: unknown): n is number =>
   typeof n === "number" && Number.isInteger(n) && n >= 0;
 
 /**
- * ESCRITURA: E1-E7, en orden; la primera que falla da el motivo.
+ * ESCRITURA: E0-E7, en orden; la primera que falla da el motivo.
  *
  * El registro solo nace de una llamada poblada INTACTA. Así su contador ES el de
  * la petición del cliente: ni libro 2 ni libro 3, sin elisión, sin contenido
  * añadido (salvo el mensaje de datos, ±2 de ruido de unión), sin codebook, sin
- * sondeo, sin esquema por prompt y con el modelo servido igual al pedido.
+ * sondeo, sin esquema por prompt y con el modelo servido igual al pedido. Y
+ * antes de todo eso (E0), el contador tiene que venir de un proveedor de verdad.
  */
 export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia | MotivoSinReferencia {
+  // E0 · Contador REAL. El proveedor de demo (el mock) inventa su usage con el
+  // estimador heurístico: no hay factura detrás. Sin esta guarda, una suite de
+  // tests o un staging con el mock y la medición encendida emitiría cada
+  // repetición como `reference` con base positiva, o sea comisión sobre dinero
+  // que nadie pagó, justo lo que la regla existe para impedir. Antes de este
+  // carril ese montaje no ganaba nada (medidas con ahorro 0, aciertos
+  // `estimated`), y así sigue.
+  if (h.contadorSimulado) return "simulated-provider";
   // E1 · Usage. Enteros, que es lo que L0 exige al leer: escribir algo que el
   // lector va a declarar mal formado no sirve de nada.
   const p = h.usoPrimario;

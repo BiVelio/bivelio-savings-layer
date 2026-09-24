@@ -78,8 +78,9 @@ Una llamada evitada —un acierto de la caché exacta o un seguidor de una
 ráfaga coalescida— sirve la respuesta de otra petición. Si esa otra petición
 era **idéntica byte a byte** a esta y pasó por la capa **intacta** (sin nada
 quitado ni añadido, sin codebook, sin sondeo, sin esquema por prompt y con el
-modelo pedido), entonces su contador del proveedor ES lo que la ingenua habría
-facturado por esta. No hay mundo que suponer: ese mundo ocurrió, está en el
+modelo pedido) contra un proveedor de verdad —el mock de demo inventa su
+contador, y ese no vale—, entonces su contador del proveedor ES lo que la
+ingenua habría facturado por esta. No hay mundo que suponer: ese mundo ocurrió, está en el
 informe de aquella petición y en el uso del proveedor de ese día, y el cliente
 ya lo pagó.
 
@@ -93,8 +94,11 @@ Aun así se valora **a la baja**, para que sea un suelo y no una estimación:
   tope de salida de la repetición;
 - 8 tokens de margen por cada mensaje que la capa insertó;
 - nunca por encima del tier más barato que la repetición podía obtener;
-- sin precio cacheado documentado, no hay referencia; y el contador caduca a
-  los 30 días.
+- sin precio cacheado documentado **para ese modelo**, no hay referencia: su
+  fila propia del catálogo (o una instantánea con fecha de ella) o el precio que
+  el cliente declaró, nunca la fila que un id hereda de un pariente
+  (`gemini-2.5-flash-lite` no se valora con la de `gemini-2.5-flash`, que
+  cuesta el triple); y el contador caduca a los 30 días.
 
 Lleva su propio `basis` (`"reference"`, «medido por referencia») en vez de
 reutilizar `"measured"`: `measured` significa «el contador de ESTA petición»,
