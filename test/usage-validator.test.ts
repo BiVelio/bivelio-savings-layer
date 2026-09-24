@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 
-import { parseUsageRecord, parseUsageRecords, UsageValidationError } from "../apps/web/lib/metering/usage.js";
+import { REGLA_REFERENCIA } from "../apps/web/lib/billing/tarifa.js";
+import {
+  DESFASE_RELOJ_REFERENCIA_MS,
+  EDAD_MAXIMA_REFERENCIA_MS,
+  parseUsageRecord,
+  parseUsageRecords,
+  UsageValidationError,
+} from "../apps/web/lib/metering/usage.js";
 
 /**
  * The metering ingest's content backstop. This is a privacy-critical invariant:
@@ -163,20 +170,64 @@ describe("usage ingest — basis reference (0029)", () => {
     expect(parseUsageRecord(referencia({ baselineCost: techo }), "org")["basis"]).toBe("reference");
   });
 
-  it("referenceAt en SEGUNDOS o referenceRequestId con espacios se descartan sin 400", () => {
+  it("referenceAt en SEGUNDOS o referenceRequestId con espacios se descartan sin 400 — y sin puntero no hay referencia", () => {
+    // Revisión adversaria de PR-A: un acierto sin puntero a la petición que
+    // corrió es una fila del CSV que el cliente no puede contrastar. Se
+    // descarta el campo (recorte, nunca 400) y el registro baja a estimated.
     const enSegundos = parseUsageRecord(referencia({ referenceAt: Math.floor(Date.now() / 1000) }), "org");
-    expect(enSegundos["basis"]).toBe("reference");
+    expect(enSegundos["basis"]).toBe("estimated");
     expect("referenceAt" in enSegundos).toBe(false);
-    expect(enSegundos.referenceRequestId).toBe("req_poblada-01");
+    expect("referenceRequestId" in enSegundos).toBe(false);
 
     const conEspacios = parseUsageRecord(referencia({ referenceRequestId: "the user asked about" }), "org");
-    expect(conEspacios["basis"]).toBe("reference");
+    expect(conEspacios["basis"]).toBe("estimated");
     expect("referenceRequestId" in conEspacios).toBe(false);
 
     for (const malo of [1.5e12 + 0.5, "1758000000000", Date.now() + 30 * 86_400_000]) {
-      const r = parseUsageRecord(referencia({ referenceAt: malo }), "org");
-      expect("referenceAt" in r).toBe(false);
+      let r: ReturnType<typeof parseUsageRecord> | undefined;
+      expect(() => (r = parseUsageRecord(referencia({ referenceAt: malo }), "org")), String(malo)).not.toThrow();
+      expect("referenceAt" in r!).toBe(false);
+      expect(r!["basis"]).toBe("estimated");
     }
+  });
+
+  it("sin referenceRequestId o sin referenceAt → estimated, jamás 400", () => {
+    const { referenceRequestId: _id, ...sinId } = referencia();
+    const { referenceAt: _at, ...sinAt } = referencia();
+    for (const [motivo, cuerpo] of [["sin referenceRequestId", sinId], ["sin referenceAt", sinAt]] as const) {
+      let r: ReturnType<typeof parseUsageRecord> | undefined;
+      expect(() => (r = parseUsageRecord(cuerpo, "org")), motivo).not.toThrow();
+      expect(r!["basis"], motivo).toBe("estimated");
+      expect("referenceRequestId" in r!, motivo).toBe(false);
+      expect("referenceAt" in r!, motivo).toBe(false);
+    }
+  });
+
+  it("la EDAD que publica el extracto se comprueba en el servidor: at − referenceAt ≤ 30 días (± 5 min de reloj)", () => {
+    expect(EDAD_MAXIMA_REFERENCIA_MS).toBe(REGLA_REFERENCIA.edadMaximaDias * 86_400_000);
+    expect(DESFASE_RELOJ_REFERENCIA_MS).toBe(5 * 60_000);
+    const at = Date.now();
+    const con = (edadMs: number) => parseUsageRecord(referencia({ at, referenceAt: at - edadMs }), "org")["basis"];
+    expect(con(0)).toBe("reference");
+    expect(con(EDAD_MAXIMA_REFERENCIA_MS)).toBe("reference");
+    // Un acierto leído justo en el límite y sellado un poco después sigue valiendo.
+    expect(con(EDAD_MAXIMA_REFERENCIA_MS + 4 * 60_000)).toBe("reference");
+    expect(con(EDAD_MAXIMA_REFERENCIA_MS + DESFASE_RELOJ_REFERENCIA_MS + 1)).toBe("estimated");
+    expect(con(31 * 86_400_000)).toBe("estimated");
+    // Un contador «del futuro» respecto al acierto: tolerado solo el desfase de reloj.
+    expect(con(-4 * 60_000)).toBe("reference");
+    expect(con(-DESFASE_RELOJ_REFERENCIA_MS - 1)).toBe("estimated");
+  });
+
+  it("una llamada evitada no tiene tokens quitados, comprimidos ni cacheados: si los trae, estimated", () => {
+    for (const extra of [{ eliminatedInputTokens: 5 }, { compressedInputTokens: 5 }, { providerCachedInputTokens: 5 }]) {
+      const r = parseUsageRecord(referencia(extra), "org");
+      expect(r["basis"], JSON.stringify(extra)).toBe("estimated");
+      expect("referenceRequestId" in r, JSON.stringify(extra)).toBe(false);
+    }
+    // Un suelo de elisión a 0 (o recortado a 0 por falta de conteo) no molesta.
+    expect(parseUsageRecord(referencia({ eliminatedInputFloorCost: 0 }), "org")["basis"]).toBe("reference");
+    expect(parseUsageRecord(referencia({ eliminatedInputFloorCost: 0.001 }), "org")["basis"]).toBe("reference");
   });
 
   it("los dos campos con basis estimated (o sin basis) se eliminan", () => {
@@ -207,6 +258,7 @@ describe("usage ingest — basis reference (0029)", () => {
     }
     const deReferencia = avisos.filter((a) => String(a[0]).includes("basis reference degradado"));
     expect(deReferencia).toHaveLength(1);
-    expect(deReferencia[0]![1]).toEqual({ registros: 4, degradados: 2, camposDescartados: 1 });
+    // referenceAt: 5 se descarta Y deja al registro sin puntero: también se degrada.
+    expect(deReferencia[0]![1]).toEqual({ registros: 4, degradados: 3, camposDescartados: 1 });
   });
 });
