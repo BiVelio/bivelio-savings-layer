@@ -10,6 +10,7 @@
  * service account. Identity fields are charset-constrained so a free-text string
  * cannot become a value channel for content.
  */
+import { REGLA_REFERENCIA } from "../billing/tarifa";
 import { recortarSuelo, TECHO_PRECIO_LECTURA_PER_1K, TECHO_PRECIO_SALIDA_PER_1K } from "./techo-precio-lectura";
 
 export class UsageValidationError extends Error {
@@ -85,6 +86,21 @@ const REFERENCE_CACHE_RESULTS = new Set(["exact", "singleflight"]);
  */
 const TOLERANCIA_REDONDEO_USD = 1e-10;
 
+/**
+ * La EDAD máxima del contador de referencia: la de la regla PUBLICADA en el
+ * extracto («at most {dias} days old», REGLA_REFERENCIA.edadMaximaDias), en ms.
+ * Derivada de la regla, no copiada: si la regla cambia, la verja cambia con ella.
+ */
+export const EDAD_MAXIMA_REFERENCIA_MS = REGLA_REFERENCIA.edadMaximaDias * 24 * 60 * 60 * 1000;
+/**
+ * Desfase de reloj tolerado entre el proceso que pobló la referencia y el que
+ * la sirvió (5 min, el mismo margen que el SDK en su lectura). Se admite en
+ * los DOS lados: un `referenceAt` algo posterior al `at` del acierto y un
+ * acierto leído justo en el límite de edad cuyo `at` se selló milisegundos
+ * después.
+ */
+export const DESFASE_RELOJ_REFERENCIA_MS = 5 * 60 * 1000;
+
 export interface UsageRecord {
   orgId: string;
   /** Opcional (0025): tokens borrados por el proveedor valorados a precio SUELO de lectura. Recortado al techo; jamás en measured. */
@@ -124,14 +140,32 @@ export interface DescartesDeReferencia {
  * mayor precio de LECTURA del catálogo y su salida al mayor precio de salida. El
  * servidor no conoce precios; esta cota es lo que sí puede comprobar. Lo que no
  * casa se DEGRADA a estimated — nunca se rechaza.
+ *
+ * Y lleva PUNTERO: el extracto promete que cada repetición «is in that
+ * request's report» y el CSV la ata a la petición que corrió. Sin
+ * `referenceRequestId` y `referenceAt` válidos (ya filtrados por forma arriba)
+ * esa fila no se podría contrastar, así que no se factura como referencia. Y
+ * la edad que el extracto publica (REGLA_REFERENCIA.edadMaximaDias) se
+ * comprueba aquí también, con `at − referenceAt`: el SDK lo hace al leer, pero
+ * la regla publicada no puede depender solo de quien emite.
+ *
+ * Una llamada evitada tampoco tiene tokens quitados, comprimidos ni cacheados
+ * por el proveedor, ni suelo de elisión: si los trae, no es lo que dice ser.
  */
 function referenciaCoherente(rec: Record<string, unknown>): boolean {
   const n = (k: string) => rec[k] as number;
   if (!REFERENCE_CACHE_RESULTS.has(rec["cacheResult"] as string)) return false;
   if (n("avoidedLlm") !== 1 || n("actualLlm") !== 0) return false;
   if (n("actualInputTokens") !== 0 || n("actualOutputTokens") !== 0 || n("actualCost") !== 0) return false;
+  if (n("eliminatedInputTokens") !== 0 || n("compressedInputTokens") !== 0 || n("providerCachedInputTokens") !== 0) {
+    return false;
+  }
+  if (rec["eliminatedInputFloorCost"] !== undefined && rec["eliminatedInputFloorCost"] !== 0) return false;
   if (n("netSavings") !== 1) return false;
   if (!(n("baselineInputTokens") > 0) || !(n("baselineCost") > 0)) return false;
+  if (typeof rec["referenceRequestId"] !== "string" || typeof rec["referenceAt"] !== "number") return false;
+  const edad = n("at") - n("referenceAt");
+  if (edad < -DESFASE_RELOJ_REFERENCIA_MS || edad > EDAD_MAXIMA_REFERENCIA_MS + DESFASE_RELOJ_REFERENCIA_MS) return false;
   const techo =
     (n("baselineInputTokens") / 1_000) * TECHO_PRECIO_LECTURA_PER_1K +
     (n("baselineOutputTokens") / 1_000) * TECHO_PRECIO_SALIDA_PER_1K;
@@ -245,8 +279,10 @@ export function parseUsageRecord(
   // 0029 · el carril MEDIDO POR REFERENCIA. Todo aquí es RECORTE, no rechazo:
   // los dos campos se guardan si tienen la forma exacta (identidad con el mismo
   // charset que requestId; epoch en MILISEGUNDOS dentro del rango de `at`) y se
-  // descartan en silencio si no. Un basis "reference" incoherente baja a
-  // "estimated" — sigue contando en los totales, pero no en reference_*.
+  // descartan en silencio si no. Un basis "reference" incoherente —también el
+  // que se queda SIN puntero porque sus campos se descartaron, o cuyo contador
+  // es más viejo que la regla publicada— baja a "estimated": sigue contando en
+  // los totales, pero no en reference_* ni en reference_hits.
   if (input["referenceRequestId"] !== undefined) {
     const v = input["referenceRequestId"];
     if (typeof v === "string" && USAGE_ID_PATTERN.test(v)) rec["referenceRequestId"] = v;
@@ -290,6 +326,24 @@ export function degradarReferencias(records: UsageRecord[]): number {
     n++;
   }
   return n;
+}
+
+/**
+ * Cómo se lee BVSALA_INGEST_REFERENCE_AS_ESTIMATED. Es un interruptor de
+ * EMERGENCIA y tiene que fallar hacia el lado seguro (cobrar de menos), no hacia
+ * «sigue acumulando»: quien lo pone en Vercel durante un incidente puede
+ * escribir `1`, `true`, `yes` u `on` y lo tiene que encender igual. Vacío,
+ * `0`, `false`, `no` u `off` lo dejan apagado. Cualquier otro valor lo
+ * ENCIENDE y queda marcado como no reconocido para que la ruta lo avise.
+ */
+export function leerInterruptorReferenciaComoEstimado(valor: string | undefined): {
+  activo: boolean;
+  reconocido: boolean;
+} {
+  const v = (valor ?? "").trim().toLowerCase();
+  if (v === "" || v === "0" || v === "false" || v === "no" || v === "off") return { activo: false, reconocido: true };
+  if (v === "1" || v === "true" || v === "yes" || v === "on") return { activo: true, reconocido: true };
+  return { activo: true, reconocido: false };
 }
 
 /** Parse a batch (object or array). Caps batch size so one request can't be huge. */

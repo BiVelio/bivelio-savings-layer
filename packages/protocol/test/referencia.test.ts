@@ -60,13 +60,42 @@ describe("reference lane (0029) — parseUsageRecord", () => {
     }
   });
 
-  it("referenceAt in seconds and a referenceRequestId with spaces are dropped, not a 400", () => {
+  it("referenceAt in seconds and a referenceRequestId with spaces are dropped, not a 400 — and without a pointer it is not a reference", () => {
     const seconds = parseUsageRecord(referenceBody({ referenceAt: Math.floor(Date.now() / 1000) }), "org");
-    expect(seconds.basis).toBe("reference");
+    expect(seconds.basis).toBe("estimated");
     expect("referenceAt" in seconds).toBe(false);
+    expect("referenceRequestId" in seconds).toBe(false);
     const spaces = parseUsageRecord(referenceBody({ referenceRequestId: "the user asked" }), "org");
-    expect(spaces.basis).toBe("reference");
+    expect(spaces.basis).toBe("estimated");
     expect("referenceRequestId" in spaces).toBe(false);
+  });
+
+  it("a missing referenceRequestId or referenceAt downgrades to estimated, never a 400", () => {
+    const { referenceRequestId: _id, ...noId } = referenceBody();
+    const { referenceAt: _at, ...noAt } = referenceBody();
+    for (const body of [noId, noAt]) {
+      const rec = parseUsageRecord(body, "org");
+      expect(rec.basis).toBe("estimated");
+      expect("referenceRequestId" in rec).toBe(false);
+      expect("referenceAt" in rec).toBe(false);
+    }
+  });
+
+  it("the published age (30 days, 5 min of clock skew either way) is checked as at - referenceAt", () => {
+    const at = Date.now();
+    const day = 86_400_000;
+    const basisAt = (ageMs: number) => parseUsageRecord(referenceBody({ at, referenceAt: at - ageMs }), "org").basis;
+    expect(basisAt(30 * day)).toBe("reference");
+    expect(basisAt(30 * day + 4 * 60_000)).toBe("reference");
+    expect(basisAt(30 * day + 5 * 60_000 + 1)).toBe("estimated");
+    expect(basisAt(-4 * 60_000)).toBe("reference");
+    expect(basisAt(-5 * 60_000 - 1)).toBe("estimated");
+  });
+
+  it("an avoided call carries no removed, compressed or provider-cached tokens", () => {
+    for (const bad of [{ eliminatedInputTokens: 5 }, { compressedInputTokens: 5 }, { providerCachedInputTokens: 5 }]) {
+      expect(parseUsageRecord(referenceBody(bad), "org").basis, JSON.stringify(bad)).toBe("estimated");
+    }
   });
 
   it("both fields are removed from a non-reference record", () => {
@@ -124,5 +153,8 @@ describe("reference lane (0029) — usageRecordFromReport", () => {
     );
     expect("referenceRequestId" in bad).toBe(false);
     expect("referenceAt" in bad).toBe(false);
+    // What cannot carry its pointer cannot be billed as a reference: the ingest downgrades it.
+    const { orgId: _drop, ...onWire } = bad as unknown as Record<string, unknown>;
+    expect(parseUsageRecord(onWire, "o").basis).toBe("estimated");
   });
 });

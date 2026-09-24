@@ -189,10 +189,33 @@ describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS
     expect(ref!["clientVersion"]).toBe("sdk/0.4.23");
   });
 
-  it("un valor distinto de 1 no enciende el interruptor", async () => {
-    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "true");
-    await POST(peticion([referencia()]));
-    expect(rpc!.args.records[0]!["basis"]).toBe("reference");
+  it("falla hacia ENCENDIDO: 1/true/yes/on (con mayúsculas o espacios) cortan igual — es un interruptor de emergencia", async () => {
+    for (const valor of ["1", "true", "TRUE", " yes ", "on"]) {
+      vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", valor);
+      await POST(peticion([referencia()]));
+      expect(rpc!.args.records[0]!["basis"], JSON.stringify(valor)).toBe("estimated");
+    }
+  });
+
+  it("vacío, 0, false, no y off lo dejan apagado", async () => {
+    for (const valor of ["", "0", "false", "no", "off"]) {
+      vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", valor);
+      await POST(peticion([referencia()]));
+      expect(rpc!.args.records[0]!["basis"], JSON.stringify(valor)).toBe("reference");
+    }
+  });
+
+  it("un valor NO reconocido lo enciende (lado seguro) y lo avisa", async () => {
+    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "enabled");
+    const avisos: unknown[][] = [];
+    const espia = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => void avisos.push(a));
+    try {
+      await POST(peticion([referencia()]));
+    } finally {
+      espia.mockRestore();
+    }
+    expect(rpc!.args.records[0]!["basis"]).toBe("estimated");
+    expect(avisos.some((a) => String(a[0]).includes("valor no reconocido"))).toBe(true);
   });
 
   it("un reference incoherente entra como estimated con 202, jamás 400", async () => {

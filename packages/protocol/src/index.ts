@@ -339,6 +339,14 @@ const USAGE_OPTIONAL_REFERENCE_FIELDS = ["referenceRequestId", "referenceAt"] as
 const REFERENCE_CACHE_RESULTS: ReadonlySet<string> = new Set<string>(["exact", "singleflight"]);
 /** The SDK rounds USD to 1e-10 (roundUsd): the ceiling tolerates that granularity. */
 const REFERENCE_ROUNDING_TOLERANCE_USD = 1e-10;
+/**
+ * Maximum age of the reference counter (`at - referenceAt`), the one the
+ * statement publishes: 30 days. Mirror of EDAD_MAXIMA_REFERENCIA_MS in
+ * apps/web/lib/metering/usage.ts (a test pins both equal).
+ */
+const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+/** Clock skew tolerated on both sides of that age check: 5 minutes, as the SDK's read check. */
+const REFERENCE_CLOCK_SKEW_MS = 5 * 60 * 1000;
 
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",
@@ -367,8 +375,11 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 
 /**
  * Is a basis "reference" record coherent? An avoided call (exact hit or
- * coalesced follower) with no cost of its own, a positive baseline, and a
- * baseline at or under the ceiling. Mirror of `referenciaCoherente` in
+ * coalesced follower) with no cost and no removed, compressed or
+ * provider-cached tokens of its own, a positive baseline at or under the
+ * ceiling, and a POINTER to the identical request that ran
+ * (`referenceRequestId` and `referenceAt`, both kept) no older than the
+ * published rule allows. Mirror of `referenciaCoherente` in
  * apps/web/lib/metering/usage.ts.
  */
 function referenceIsCoherent(rec: Record<string, unknown>): boolean {
@@ -376,8 +387,15 @@ function referenceIsCoherent(rec: Record<string, unknown>): boolean {
   if (!REFERENCE_CACHE_RESULTS.has(rec["cacheResult"] as string)) return false;
   if (n("avoidedLlm") !== 1 || n("actualLlm") !== 0) return false;
   if (n("actualInputTokens") !== 0 || n("actualOutputTokens") !== 0 || n("actualCost") !== 0) return false;
+  if (n("eliminatedInputTokens") !== 0 || n("compressedInputTokens") !== 0 || n("providerCachedInputTokens") !== 0) {
+    return false;
+  }
+  if (rec["eliminatedInputFloorCost"] !== undefined && rec["eliminatedInputFloorCost"] !== 0) return false;
   if (n("netSavings") !== 1) return false;
   if (!(n("baselineInputTokens") > 0) || !(n("baselineCost") > 0)) return false;
+  if (typeof rec["referenceRequestId"] !== "string" || typeof rec["referenceAt"] !== "number") return false;
+  const age = n("at") - n("referenceAt");
+  if (age < -REFERENCE_CLOCK_SKEW_MS || age > REFERENCE_MAX_AGE_MS + REFERENCE_CLOCK_SKEW_MS) return false;
   const ceiling =
     (n("baselineInputTokens") / 1_000) * TECHO_PRECIO_LECTURA_PER_1K +
     (n("baselineOutputTokens") / 1_000) * TECHO_PRECIO_SALIDA_PER_1K;

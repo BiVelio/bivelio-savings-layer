@@ -1,6 +1,15 @@
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
-import { degradarReferencias, parseUsageRecords, type UsageRecord } from "./usage";
+import { REGLA_REFERENCIA } from "../billing/tarifa";
+import {
+  degradarReferencias,
+  DESFASE_RELOJ_REFERENCIA_MS,
+  EDAD_MAXIMA_REFERENCIA_MS,
+  leerInterruptorReferenciaComoEstimado,
+  parseUsageRecords,
+  type UsageRecord,
+} from "./usage";
 
 /**
  * 0029 · EL INTERRUPTOR DE SERVIDOR del carril medido por referencia
@@ -82,5 +91,42 @@ describe("degradarReferencias — el interruptor de servidor", () => {
     const records = parseUsageRecords([registro()], "org");
     expect(degradarReferencias(records)).toBe(1);
     expect(degradarReferencias(records)).toBe(0);
+  });
+});
+
+/**
+ * El interruptor falla hacia ENCENDIDO (revisión adversaria de PR-A): quien lo
+ * pone en Vercel durante un incidente puede escribir `true` en vez de `1`.
+ */
+describe("leerInterruptorReferenciaComoEstimado", () => {
+  it("1/true/yes/on encienden; vacío/0/false/no/off apagan; lo demás enciende y se marca no reconocido", () => {
+    for (const v of ["1", "true", "YES", " on "]) {
+      expect(leerInterruptorReferenciaComoEstimado(v), v).toEqual({ activo: true, reconocido: true });
+    }
+    for (const v of [undefined, "", "0", "false", "No", "off"]) {
+      expect(leerInterruptorReferenciaComoEstimado(v), String(v)).toEqual({ activo: false, reconocido: true });
+    }
+    expect(leerInterruptorReferenciaComoEstimado("enabled")).toEqual({ activo: true, reconocido: false });
+  });
+});
+
+/**
+ * La edad máxima del contador en el ingest ES la de la regla publicada, y el
+ * espejo de packages/protocol lleva las mismas cifras (se lee como texto, el
+ * mismo truco que el techo de precio).
+ */
+describe("la edad de la referencia: regla publicada = verja web = espejo del protocolo", () => {
+  it("EDAD_MAXIMA_REFERENCIA_MS sale de REGLA_REFERENCIA.edadMaximaDias", () => {
+    expect(EDAD_MAXIMA_REFERENCIA_MS).toBe(REGLA_REFERENCIA.edadMaximaDias * 24 * 60 * 60 * 1000);
+  });
+
+  it("packages/protocol lleva EXACTAMENTE la misma edad y el mismo desfase", () => {
+    const protocolo = readFileSync(new URL("../../../../packages/protocol/src/index.ts", import.meta.url), "utf8");
+    const edad = /const REFERENCE_MAX_AGE_MS = (\d+) \* 24 \* 60 \* 60 \* 1000;/.exec(protocolo);
+    const desfase = /const REFERENCE_CLOCK_SKEW_MS = (\d+) \* 60 \* 1000;/.exec(protocolo);
+    expect(edad, "la edad tiene que estar en packages/protocol").not.toBeNull();
+    expect(desfase, "el desfase tiene que estar en packages/protocol").not.toBeNull();
+    expect(Number(edad![1]) * 24 * 60 * 60 * 1000).toBe(EDAD_MAXIMA_REFERENCIA_MS);
+    expect(Number(desfase![1]) * 60 * 1000).toBe(DESFASE_RELOJ_REFERENCIA_MS);
   });
 });
