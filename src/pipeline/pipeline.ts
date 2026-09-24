@@ -66,6 +66,17 @@ import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
+import {
+  evaluarReferencia,
+  huellaDePeticion,
+  leerRegistroDeReferencia,
+  muestreoDeterminista,
+  precioDeListaPropio,
+  registroDeReferencia,
+  type EvaluacionDeReferencia,
+  type MotivoSinReferencia,
+  type RegistroDeReferencia,
+} from "./referencia.js";
 
 /**
  * Build-time flag: the published npm SDK sets this to `false` (tsup `define`) so the
@@ -404,6 +415,16 @@ export class SavingsPipeline {
    * uno al otro, y perdería exactamente ese 8% en el sentido malo.
    */
   private readonly memoriaDelCodebook = new MemoriaDelCodebook();
+
+  /**
+   * El registro de referencia de cada líder de singleflight, indexado por el
+   * OBJETO resultado que reciben sus seguidores (el `Singleflight` les entrega la
+   * misma promesa, así que el mismo objeto). Débil: se va con el resultado.
+   *
+   * Si un `Singleflight` inyectado clonara los valores, el seguidor no
+   * encontraría el registro y caería a `estimated` con `absent`: el lado seguro.
+   */
+  private readonly referenciasDeLider = new WeakMap<object, RegistroDeReferencia>();
 
   constructor(config: SavingsLayerConfig) {
     this.config = config;
@@ -1042,6 +1063,10 @@ export class SavingsPipeline {
     // Baseline: the naive prompt cost if none of the layer ran.
     const baselineInput = this.tokensFor(this.assembleBaselinePrompt(request), request);
     const baselineOutput = request.response?.maxOutputTokens ?? 256;
+    // La huella byte a byte de ESTA petición, perezosa: solo se paga el SHA-256
+    // de la petición entera en un acierto que traiga un registro de referencia.
+    let huella: string | undefined;
+    const huellaDeEsta = (): string => (huella ??= huellaDePeticion(request));
     ledger.baselineInput = baselineInput;
     ledger.baselineOutput = baselineOutput;
     ledger.baselineTools = request.tools?.length ?? 0;
@@ -1088,9 +1113,30 @@ export class SavingsPipeline {
     if (policy.allowExactCache && toggles.exactCache !== false) {
       const hit = await this.deps.exactCache.get<T>(exactKey);
       if (hit) {
-        // Measured avoided-output baseline (the cached answer is the real output).
-        ledger.avoidCall(baselineInput, this.tokensFor(hit.text, request));
-        trace.record("exact-cache", "hit", { ageMs: this.now() - hit.storedAtMs });
+        // MEDIDO POR REFERENCIA, o estimado como siempre. Si la entrada trae el
+        // contador de la llamada intacta que la escribió y pasa L0-L7, la
+        // evitada se valora con ese contador; si no, la cuenta local de siempre
+        // y el motivo publicado. Ver `pipeline/referencia.ts`.
+        const ev = this.creditoPorReferencia(leerRegistroDeReferencia(hit.meta), {
+          request, cascada, toggles, huella: huellaDeEsta,
+          texto: hit.text, claveLeida: exactKey,
+          calidad: () => {
+            const esquema = request.response?.schema;
+            return !esquema || validateAgainstSchema(hit.data, esquema).valid;
+          },
+        });
+        if (ev.ok) {
+          ledger.avoidCallByReference(ev.credit);
+        } else {
+          // Measured avoided-output baseline (the cached answer is the real output).
+          ledger.avoidCall(baselineInput, this.tokensFor(hit.text, request));
+          ledger.referenceRejected = ev.reason;
+        }
+        trace.record("exact-cache", "hit", {
+          ageMs: this.now() - hit.storedAtMs,
+          basis: ev.ok ? "reference" : "estimated",
+          ...(ev.ok ? {} : { referenceRejected: ev.reason }),
+        });
         return this.finish<T>(
           request, canonical, hit, "exact", ledger, costModel, trace,
           defaultRoute(), jsonFallbackChoice(), this.now() - hit.storedAtMs,
@@ -1150,9 +1196,21 @@ export class SavingsPipeline {
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
       if (coalesced) {
         trace.record("singleflight", "coalesced", { key: inflightKey });
+        // El seguidor sirve EL TEXTO DEL LÍDER, así que se valora con el
+        // contador del líder si el líder dejó registro (llamada intacta) y la
+        // petición del seguidor es la misma byte a byte. Sin clave que atestiguar:
+        // no hubo lectura de caché. La calidad es la que el líder publicó.
+        const evaluacion = this.creditoPorReferencia(this.referenciasDeLider.get(value) ?? "absent", {
+          request, cascada, toggles, huella: huellaDeEsta,
+          texto: value.text ?? "", claveLeida: undefined,
+          calidad: () =>
+            value.report.constraints.structurallyValid !== false &&
+            value.report.qualityStatus !== "rejected",
+        });
         // The follower serves the leader's answer — measure that answer's output.
         return this.asCoalescedFollower<T>(
           value, baselineInput, this.tokensFor(value.text ?? "", request), costModel, request,
+          evaluacion,
         );
       }
       return value;
@@ -2034,6 +2092,13 @@ export class SavingsPipeline {
     // precio y sumarla aquí la tarifaría al precio equivocado.
     ledger.actualInput += response.usage.inputTokens;
     ledger.actualOutput += response.usage.outputTokens;
+    // EL CONTADOR DE LA PRIMARIA, para el registro de referencia (etapa 12). Es
+    // el de la llamada que produjo lo servido —la del fuerte si la cascada
+    // escaló—, capturado AQUÍ porque la reparación reasigna `response`. El
+    // intento barato descartado ya está fuera: vive en `cascadeAttempt`.
+    const usoPrimario = response.usage;
+    const tierPrimario = response.servedServiceTier;
+    let usoReparacion: ProviderResponse["usage"] | undefined;
 
     if (codebook?.applied) {
       trace.record(
@@ -2103,6 +2168,10 @@ export class SavingsPipeline {
       0,
       baselineInput - ledger.sentInputLocal - ledger.elididoLocal,
     );
+    // La cuenta local del prompt del CLIENTE que salió, antes de que el sondeo
+    // se sume: es la que E2 compara contra el baseline para decidir si la
+    // llamada fue intacta.
+    const sentLocalSinSondeo = ledger.sentInputLocal;
     // El prompt del sondeo entra en la lectura local DESPUÉS de calcular lo
     // quitado, exactamente como el de la reparación: `removedInputLocal` compara
     // el baseline contra la llamada del CLIENTE, y meter ahí una llamada que puso
@@ -2527,6 +2596,7 @@ export class SavingsPipeline {
               ? { maxOutputTokens: request.response.maxOutputTokens }
               : {}),
           }, testigo);
+          usoReparacion = response.usage;
           ledger.actualLlm += 1;
           ledger.actualInput += response.usage.inputTokens;
           ledger.actualOutput += response.usage.outputTokens;
@@ -2611,60 +2681,124 @@ export class SavingsPipeline {
       });
     }
 
+    // NO se cachea una respuesta que YA sabemos que incumple su contrato.
+    // `structurallyValid` se calculaba arriba y solo se usaba para el informe:
+    // un `{oops not json` con `response.schema` se pagaba dos veces (original +
+    // reparación) y encima se guardaba 24 h, de modo que un fallo puntual del
+    // modelo se convertía en una caída de 24 h para esa consulta — contabilizada
+    // como el mayor ahorro del día, porque cada relectura acreditaba una llamada
+    // evitada al 100 %.
+    // Tampoco se cachea una PETICIÓN DE HERRAMIENTA. No es una respuesta: es
+    // la orden de ejecutar una acción. Reproducirla desde caché servía "" como
+    // texto durante 24 h y acreditaba una llamada 100 % evitada sobre una
+    // acción que nunca se ejecutó — ahorro inventado sobre trabajo no hecho.
+    // Y TAMPOCO se cachea una respuesta que salió con MENOS herramientas de
+    // las que declaró el llamante. Reproducido: el sondeo elige `tool_3`, la
+    // invocación solo ve `tool_3`, el modelo contesta «no tengo una herramienta
+    // para eso» —texto válido, contrato cumplido, ninguna tool call— y eso se
+    // guarda 24 h. La siguiente petición idéntica, INCLUSO SIN la palanca
+    // puesta (la clave exacta lleva el `toolsetHash` del llamante, no el de lo
+    // que se envió), la sirve de caché con `avoidedLlm: 1` y `netSavings: 1`.
+    //
+    // O sea: una capacidad que la capa escondió se congela un día entero y se
+    // publica como el mayor ahorro posible, sobre trabajo que nadie hizo. Es el
+    // mismo fallo que ya cerraron las dos condiciones de arriba, por una puerta
+    // que ninguna cubre: la respuesta no incumple nada y no pide herramientas.
+    //
+    // Y no basta con meter la palanca en la clave: qué herramientas viajan lo
+    // decide la respuesta del sondeo, que NO es determinista. Dos peticiones
+    // idénticas con la palanca igual pueden ver catálogos distintos, así que la
+    // única regla honesta es no cachear lo que se generó con la vista recortada.
+    const vistaRecortada = descubrimiento.aplicado;
+    // Y LA CUARTA PUERTA: TAMPOCO SE CACHEA MEDIA RESPUESTA.
+    //
+    // Aquí no hay heurística que discutir —lo dice el propio proveedor con
+    // `finish_reason: "length"`—, y la condición de "incumple su contrato" NO
+    // lo cubre: una petición SIN esquema (o con uno que no acota nada) sale con
+    // `structurallyValid` en true porque no hay nada que validar, así que el
+    // truncado no lo veía nadie. Ni siquiera hace falta que el llamante ponga
+    // tope: la API de Anthropic EXIGE `max_tokens` y el adaptador manda 4096
+    // por defecto, o sea que una generación larga se corta sin que el cliente
+    // haya pedido ningún tope.
+    //
+    // Lo que entraba por ahí es el mismo fallo que cierran las tres
+    // condiciones de arriba: media respuesta guardada 24 h y servida a cada
+    // petición idéntica con `avoidedLlm: 1`, publicada como ahorro del 100%
+    // sobre algo que ningún cliente aceptaría. Equivocarse al revés —no
+    // cachear una respuesta cortada que al llamante le valía— cuesta una
+    // llamada más, y queda dicho en la traza en vez de en silencio.
+    const cortadaPorElTope = response.finishReason === "length";
+    const cacheable =
+      structurallyValid !== false && !pidioHerramientas && !vistaRecortada && !cortadaPorElTope;
+
+    // --- Etapa 12-bis: el registro de MEDIDO POR REFERENCIA. ---
+    //
+    // El id del informe de ESTA petición se genera aquí y no en `buildReport`,
+    // porque el registro que va a la caché tiene que llevarlo: es lo que una
+    // repetición publica en `report.cache.reference.requestId` para que el
+    // cliente encuentre la llamada que sí corrió. Se sigue llamando a
+    // `generateId` una sola vez por petición: `finish` lo recibe y lo usa.
+    const requestIdDeEsta = this.generateId();
+    // Nada de aquí puede lanzar hacia el fail-open: el proveedor YA cobró, y el
+    // fail-open volvería a llamarlo. La huella serializa la petición entera, y
+    // una petición con algo no serializable fuera del contenido llegaría hasta
+    // aquí sin haber roto nada antes; en ese caso no hay referencia y se dice.
+    let registro: RegistroDeReferencia | MotivoSinReferencia;
+    try {
+      registro = registroDeReferencia({
+        // E0: el contador del mock lo inventa un estimador; no hay factura.
+        contadorSimulado: isBuiltInDemoProvider(this.config.provider),
+        usoPrimario,
+        usoReparacion,
+        tierServido: tierPrimario,
+        eliminatedInput: ledger.eliminatedInput,
+        compressedInput: ledger.compressedInput,
+        elididoLocal: ledger.elididoLocal,
+        sentLocalSinSondeo,
+        baselineInput,
+        codebookAplicado: codebook?.applied === true,
+        tokensDelSondeo: descubrimiento.tokensLocalesDelSondeo,
+        sondeoAplicado: descubrimiento.aplicado,
+        hayEsquema: schema != null,
+        // Leído TRAS la degradación por `structuredNatively === false`.
+        backend: backendPlan.backend,
+        modeloPedido: request.model,
+        modeloServido,
+        cacheable,
+        mensajesDeLaCapa: messages.length - request.messages.length,
+        requestId: requestIdDeEsta,
+        at: this.now(),
+        textoServido: textoServido,
+        huella: () => huellaDePeticion(request),
+      });
+    } catch {
+      registro = "fingerprint-failed";
+    }
+    // ¿Va esta respuesta a la caché exacta? La misma condición que la escritura
+    // de abajo; se calcula aquí para que la traza lo diga.
+    const vaALaCacheExacta = cacheable && policy.allowExactCache && toggles.exactCache !== false;
+    // SIEMPRE una traza: quien vea una repetición `estimated` con `absent` tiene
+    // que poder ir a la llamada que la pobló y leer por qué no dejó contador.
+    // «written» significa que el registro se construyó: los seguidores de
+    // singleflight de esta ejecución lo usan siempre. Si además viaja a la caché
+    // exacta lo dice `exactCache`; que esa escritura falle se traza aparte
+    // (`cache-write`), porque ocurre después.
+    if (typeof registro === "object") {
+      trace.record("reference", "written", {
+        inputTokens: registro.inputTokens,
+        outputTokens: registro.outputTokens,
+        layerMessages: registro.layerMessages,
+        exactCache: vaALaCacheExacta,
+      });
+    } else {
+      trace.record("reference", "not-written", { reason: registro });
+    }
+
     // Cache writes are best-effort side effects AFTER the provider was already
     // billed. A failing cache backend must never fail this request — and must
     // never bubble to the fail-open handler, which would re-invoke (double-bill)
     // the provider. Swallow-and-trace instead.
     try {
-      // NO se cachea una respuesta que YA sabemos que incumple su contrato.
-      // `structurallyValid` se calculaba arriba y solo se usaba para el informe:
-      // un `{oops not json` con `response.schema` se pagaba dos veces (original +
-      // reparación) y encima se guardaba 24 h, de modo que un fallo puntual del
-      // modelo se convertía en una caída de 24 h para esa consulta — contabilizada
-      // como el mayor ahorro del día, porque cada relectura acreditaba una llamada
-      // evitada al 100 %.
-      // Tampoco se cachea una PETICIÓN DE HERRAMIENTA. No es una respuesta: es
-      // la orden de ejecutar una acción. Reproducirla desde caché servía "" como
-      // texto durante 24 h y acreditaba una llamada 100 % evitada sobre una
-      // acción que nunca se ejecutó — ahorro inventado sobre trabajo no hecho.
-      // Y TAMPOCO se cachea una respuesta que salió con MENOS herramientas de
-      // las que declaró el llamante. Reproducido: el sondeo elige `tool_3`, la
-      // invocación solo ve `tool_3`, el modelo contesta «no tengo una herramienta
-      // para eso» —texto válido, contrato cumplido, ninguna tool call— y eso se
-      // guarda 24 h. La siguiente petición idéntica, INCLUSO SIN la palanca
-      // puesta (la clave exacta lleva el `toolsetHash` del llamante, no el de lo
-      // que se envió), la sirve de caché con `avoidedLlm: 1` y `netSavings: 1`.
-      //
-      // O sea: una capacidad que la capa escondió se congela un día entero y se
-      // publica como el mayor ahorro posible, sobre trabajo que nadie hizo. Es el
-      // mismo fallo que ya cerraron las dos condiciones de arriba, por una puerta
-      // que ninguna cubre: la respuesta no incumple nada y no pide herramientas.
-      //
-      // Y no basta con meter la palanca en la clave: qué herramientas viajan lo
-      // decide la respuesta del sondeo, que NO es determinista. Dos peticiones
-      // idénticas con la palanca igual pueden ver catálogos distintos, así que la
-      // única regla honesta es no cachear lo que se generó con la vista recortada.
-      const vistaRecortada = descubrimiento.aplicado;
-      // Y LA CUARTA PUERTA: TAMPOCO SE CACHEA MEDIA RESPUESTA.
-      //
-      // Aquí no hay heurística que discutir —lo dice el propio proveedor con
-      // `finish_reason: "length"`—, y la condición de "incumple su contrato" NO
-      // lo cubre: una petición SIN esquema (o con uno que no acota nada) sale con
-      // `structurallyValid` en true porque no hay nada que validar, así que el
-      // truncado no lo veía nadie. Ni siquiera hace falta que el llamante ponga
-      // tope: la API de Anthropic EXIGE `max_tokens` y el adaptador manda 4096
-      // por defecto, o sea que una generación larga se corta sin que el cliente
-      // haya pedido ningún tope.
-      //
-      // Lo que entraba por ahí es el mismo fallo que cierran las tres
-      // condiciones de arriba: media respuesta guardada 24 h y servida a cada
-      // petición idéntica con `avoidedLlm: 1`, publicada como ahorro del 100%
-      // sobre algo que ningún cliente aceptaría. Equivocarse al revés —no
-      // cachear una respuesta cortada que al llamante le valía— cuesta una
-      // llamada más, y queda dicho en la traza en vez de en silencio.
-      const cortadaPorElTope = response.finishReason === "length";
-      const cacheable =
-        structurallyValid !== false && !pidioHerramientas && !vistaRecortada && !cortadaPorElTope;
       if (!cacheable) {
         trace.record(
           "cache-write",
@@ -2690,7 +2824,7 @@ export class SavingsPipeline {
       const claveDeEscritura = escalo
         ? buildExactKey(canonical, { servedModel: modeloServido })
         : exactKey;
-      if (cacheable && policy.allowExactCache && toggles.exactCache !== false) {
+      if (vaALaCacheExacta) {
         // TTL finito (no "para siempre") para que una consulta que la heurística
         // de frescura no detectó no sirva una respuesta rancia indefinidamente.
         // El techo del `freshnessBucket` manda sobre el TTL configurado: es lo
@@ -2698,7 +2832,19 @@ export class SavingsPipeline {
         // crudo al hash de la clave y NO la rota.
         const ttlBase = this.config.exactCacheTtlMs ?? 24 * 60 * 60 * 1000;
         const ttl = policy.maxCacheAgeMs == null ? ttlBase : Math.min(ttlBase, policy.maxCacheAgeMs);
-        await this.deps.exactCache.set(claveDeEscritura, answer, ttl);
+        // El registro va en `meta.reference`, con la clave bajo la que se guarda
+        // (el testigo que el lector compara). La caché semántica de abajo recibe
+        // el `answer` SIN `meta`: un acierto semántico no es la misma petición.
+        await this.deps.exactCache.set(
+          claveDeEscritura,
+          typeof registro === "object"
+            ? {
+                ...answer,
+                meta: { ...(answer.meta ?? {}), reference: { ...registro, cacheKey: claveDeEscritura } },
+              }
+            : answer,
+          ttl,
+        );
       }
       // LA CACHÉ SEMÁNTICA NO GUARDA UNA RESPUESTA ENRUTADA, y es la otra puerta
       // por la que un cambio de modelo se volvería silencioso. Su identidad la
@@ -2783,7 +2929,11 @@ export class SavingsPipeline {
       // que venir de la misma llamada, o el descuento se aplicaria a los tokens de
       // una y al precio de otra.
       diferido,
+      requestIdDeEsta,
     );
+    // Para los seguidores de singleflight de esta ejecución: reciben este mismo
+    // objeto, y con él encuentran el contador de la llamada que pagó el líder.
+    if (typeof registro === "object") this.referenciasDeLider.set(result, registro);
     // Las tool calls y el finishReason viajan HASTA EL LLAMANTE. Se quedaban en
     // ProviderResponse: el arreglo del adaptador (content:null + tool_calls)
     // moría una capa más arriba porque aquí solo se copiaba `text`, y el cliente
@@ -3159,6 +3309,9 @@ export class SavingsPipeline {
     providerMs = 0,
     cascada?: ModelCascadeReport | undefined,
     diferido?: DeferredExecutionReport | undefined,
+    // Solo lo pasa el camino del proveedor, que lo generó en la etapa 12 para el
+    // registro de referencia. Los atajos no: `buildReport` genera el suyo.
+    requestId?: string,
   ): SavingsResult<T> {
     // La validez estructural se COMPRUEBA aquí, no se hereda de un valor por
     // defecto. El parámetro tenía `= true`, y las cuatro rutas de atajo
@@ -3190,6 +3343,7 @@ export class SavingsPipeline {
       // condiciona por su presencia habria dado por apagada una palanca que el
       // cliente si encendio.
       diferido ?? this.diferidoSinLlamada(request),
+      requestId,
     );
     return {
       requestId: report.requestId,
@@ -3216,6 +3370,7 @@ export class SavingsPipeline {
     providerMs: number,
     cascada: ModelCascadeReport | undefined,
     diferido: DeferredExecutionReport | undefined,
+    requestId?: string,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
     const total = trace.elapsed();
@@ -3224,7 +3379,7 @@ export class SavingsPipeline {
     // a nombrar al que contestó, y `qualityStatus` baja a `bounded_degradation`.
     const degradado = cascada != null && cascada.servedModel !== cascada.requestedModel;
     return {
-      requestId: this.generateId(),
+      requestId: requestId ?? this.generateId(),
       // EL INFORME DECLARA SIEMPRE EL MODELO QUE CONTESTÓ. Sin la cascada esto es
       // literalmente el modelo pedido (nada cambia para quien no la encienda);
       // con ella enrutando, seguir publicando el pedido convertiría el informe en
@@ -3258,6 +3413,10 @@ export class SavingsPipeline {
         result: cacheResult,
         ...(confidence !== undefined ? { confidence } : {}),
         ...(ageMs !== undefined ? { ageMs } : {}),
+        // Con la aritmética entera, para que `baselineEstimate` se recalcule
+        // sin creernos; y, si no aplicó, el motivo.
+        ...(ledger.reference ? { reference: { ...ledger.reference } } : {}),
+        ...(ledger.referenceRejected ? { referenceRejected: ledger.referenceRejected } : {}),
       },
       routing: {
         executionClass: route.executionClass,
@@ -3417,9 +3576,17 @@ export class SavingsPipeline {
     baselineOutput: number,
     costModel: CostModel,
     request: SavingsRequest,
+    evaluacion: EvaluacionDeReferencia = { ok: false, reason: "absent" },
   ): SavingsResult<T> {
     const ledger = new SavingsLedger();
-    ledger.avoidCall(baselineInput, baselineOutput);
+    if (evaluacion.ok) {
+      // La llamada del líder corrió intacta y la del seguidor es la misma byte
+      // a byte: su evitada se valora con el contador del líder.
+      ledger.avoidCallByReference(evaluacion.credit);
+    } else {
+      ledger.avoidCall(baselineInput, baselineOutput);
+      ledger.referenceRejected = evaluacion.reason;
+    }
     const cost = ledger.estimateCost(costModel);
 
     // Un id por seguidor, no dos. Antes se llamaba a generateId() por separado
@@ -3463,7 +3630,14 @@ export class SavingsPipeline {
             ? { providerCachedInput: ledger.providerCachedInput }
             : {}),
         },
-        cache: { result: "singleflight" },
+        cache: {
+          result: "singleflight",
+          ...(ledger.reference
+            ? { reference: { ...ledger.reference } }
+            : ledger.referenceRejected
+              ? { referenceRejected: ledger.referenceRejected }
+              : {}),
+        },
         // `deferred` SE RECONSTRUYE, NO SE HEREDA, y es el mismo motivo que los
         // tokens de aqui arriba: el seguidor NO llamo al proveedor, asi que
         // ningun tier se sirvio para el. Heredando el bloque del lider, un
@@ -3487,6 +3661,61 @@ export class SavingsPipeline {
         cost,
       },
     };
+  }
+
+  /**
+   * Evalúa L0-L7 para una evitada (acierto exacto o seguidor de singleflight).
+   *
+   * EL PRECIO ES `precioDocumentado`, NUNCA `costModelFor`: el ilustrativo y el
+   * `defaultCostModel` no documentan ninguna tarifa cacheada del proveedor, y sin
+   * ella la referencia no es un suelo sino una cuenta inventada (L6). Tampoco
+   * `precioConocido` a secas: deja que un id herede la fila de un pariente más
+   * caro (ver `precioDeListaPropio`). Se resuelve con el modelo PEDIDO, que bajo
+   * L2 es también el servido y el del registro.
+   *
+   * La huella y la calidad llegan perezosas: una entrada sin registro (`absent`)
+   * no paga ni el SHA-256 de la petición ni la validación del esquema.
+   */
+  private creditoPorReferencia(
+    reg: RegistroDeReferencia | "absent" | "malformed",
+    ctx: {
+      request: SavingsRequest;
+      cascada: DecisionDeCascada;
+      toggles: NonNullable<SavingsRequest["savings"]>;
+      huella: () => string;
+      texto: string;
+      claveLeida: string | undefined;
+      calidad: () => boolean;
+    },
+  ): EvaluacionDeReferencia {
+    if (typeof reg === "string") return { ok: false, reason: reg };
+    // La calidad, en su propia red: un validador que lanza es una respuesta que
+    // no se ha podido aprobar (`quality`), no una petición distinta.
+    let calidadOk: boolean;
+    try {
+      calidadOk = ctx.calidad();
+    } catch {
+      calidadOk = false;
+    }
+    try {
+      return evaluarReferencia(reg, {
+        ahoraMs: this.now(),
+        modeloPedido: ctx.request.model,
+        modeloServido: ctx.cascada.modeloServido,
+        huella: ctx.huella(),
+        textoServidoSha256: sha256(ctx.texto),
+        claveLeida: ctx.claveLeida,
+        calidadOk,
+        precio: this.precioDocumentado(ctx.request.model),
+        determinista: muestreoDeterminista(ctx.request),
+        topeDeSalida: ctx.request.response?.maxOutputTokens,
+        diferible: ctx.toggles.deferrable === true,
+      });
+    } catch {
+      // Nunca se lanza por esto: una huella que no se puede calcular es una
+      // identidad que no se puede atestiguar, y la evitada sigue estimada.
+      return { ok: false, reason: "different-request" };
+    }
   }
 
   private assembleBaselinePrompt(request: SavingsRequest): string {
@@ -3600,21 +3829,35 @@ export class SavingsPipeline {
    * apagado automático vigila P(escalar), no el precio.
    */
   private precioConocido(model: string): CostModel | undefined {
-    const models = this.config.costModels;
-    if (models) {
-      const exacto = models[model];
-      if (exacto) return exacto;
-      const barra = model.indexOf("/");
-      if (barra >= 0) {
-        const desnudo = models[model.slice(barra + 1)];
-        if (desnudo) return desnudo;
-      }
-    }
     // EL CATÁLOGO DE PRECIOS DE LISTA, antes del defecto del cliente. Un
     // `defaultCostModel` significa "para lo que yo no conozca"; con el catálogo,
     // muchos menos modelos son desconocidos, y el precio real de gpt-4o sirve
     // mejor al cliente que su propio precio genérico.
-    return precioDeLista(model);
+    return this.precioDelCliente(model) ?? precioDeLista(model);
+  }
+
+  /** El precio que el cliente declaró en `costModels`, por id completo o desnudo. */
+  private precioDelCliente(model: string): CostModel | undefined {
+    const models = this.config.costModels;
+    if (!models) return undefined;
+    const exacto = models[model];
+    if (exacto) return exacto;
+    const barra = model.indexOf("/");
+    if (barra >= 0) {
+      const desnudo = models[model.slice(barra + 1)];
+      if (desnudo) return desnudo;
+    }
+    return undefined;
+  }
+
+  /**
+   * El precio con el que se valora una referencia: el que el cliente declaró o
+   * la fila PROPIA del modelo en el catálogo, nunca la de un pariente. Un
+   * `gemini-2.5-flash-lite` sin fila propia heredaría la de `gemini-2.5-flash`
+   * (3x su entrada cacheada), y la referencia dejaría de ser un suelo.
+   */
+  private precioDocumentado(model: string): CostModel | undefined {
+    return this.precioDelCliente(model) ?? precioDeListaPropio(model);
   }
 
   private costModelFor(model: string): CostModel {

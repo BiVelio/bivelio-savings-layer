@@ -108,6 +108,8 @@ describe("seguidor de singleflight: no hereda los tokens del líder", () => {
       // del líder, así que con N seguidores se contaban N+1 veces en usage_daily.
       expect(s.report.tokens.providerCachedInput ?? 0).toBe(0);
       expect(s.report.tokens.compressedInput).toBe(0);
+      // Y se valora con el contador de la llamada idéntica que corrió.
+      expect(s.report.cost.basis).toBe("reference");
     }
   });
 

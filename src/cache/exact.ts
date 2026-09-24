@@ -13,7 +13,12 @@ export interface CachedAnswer<T = unknown> {
   rendered?: string;
   /** Epoch ms when stored; used to compute age and honor TTL. */
   storedAtMs: number;
-  /** Optional metadata carried alongside the answer. */
+  /**
+   * Optional metadata carried alongside the answer.
+   *
+   * `meta.reference` carries the provider counter of the call that produced this
+   * answer, when that call ran untouched; readers that do not know it ignore it.
+   */
   meta?: Record<string, unknown>;
 }
 

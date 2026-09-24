@@ -11,6 +11,12 @@
  * Where the baseline being compared against comes from.
  *
  * - `measured`   — reconstructed from this request's provider counter. Real money.
+ * - `reference`  — MEASURED BY REFERENCE: the call was avoided (a repeat served
+ *                  without calling the provider) and a byte-identical request had
+ *                  already run through the layer untouched. The baseline is the
+ *                  provider's own counter for that request, valued at the
+ *                  provider's cached-input rate, with output credited only under
+ *                  deterministic sampling. A floor. Enters the commission base.
  * - `estimated`  — the call was AVOIDED: it never ran, so there is no provider
  *                  counter and the baseline comes from the local estimator. Still
  *                  the best figure available, but not measured.
@@ -24,7 +30,7 @@
  * exactly what a verify-don't-trust product cannot do — and adding `shadow` to
  * either would be making the savings up.
  */
-export type CostBasis = "measured" | "estimated" | "unmeasured" | "shadow";
+export type CostBasis = "measured" | "reference" | "estimated" | "unmeasured" | "shadow";
 
 export interface CostModel {
   /** Cost per 1K input tokens, in the caller's currency unit. */
@@ -33,6 +39,74 @@ export interface CostModel {
   outputPer1k: number;
   /** Optional discounted rate for provider-cached (prefix) input tokens. */
   cachedInputPer1k?: number;
+}
+
+// --- Medido por referencia: la regla v1 -------------------------------------
+//
+// Las tres cifras de la regla viven AQUÍ y solo aquí. La web las repite en su
+// `REGLA_REFERENCIA` (lo que el extracto publica como parámetros), y el test de
+// la tarifa del lado servidor (llega con ese cambio, no con este) las lee de este
+// fichero como TEXTO para que una no cambie sin la otra. Por eso cada una va en
+// una línea propia y con la forma literal de siempre.
+
+/** Oldest provider counter a repeat can be valued against: one billing period. */
+export const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+/** Share of the counted output credited to a repeat, and only under deterministic sampling. */
+export const REFERENCE_OUTPUT_SHARE = 0.95;
+/** Input tokens deducted per message the layer inserted in the call that ran. */
+export const REFERENCE_MESSAGE_ALLOWANCE = 8;
+
+/**
+ * Why an avoided call (a cache or coalesced hit) could not be valued by
+ * reference, and so stays `estimated`.
+ *
+ * - `absent`            — the stored answer carries no provider counter.
+ * - `malformed`         — it carries one, but not in a readable shape.
+ * - `witness`           — the counter is not bound to the answer being served.
+ * - `model-mismatch`    — the counter belongs to another model.
+ * - `expired`           — the counter is older than one billing period.
+ * - `different-request` — the request that ran was not byte-identical to this one.
+ * - `quality`           — the answer being served fails its output contract.
+ * - `no-cached-price`   — no documented cached-input rate for this exact model:
+ *                         its own catalogue row (or a dated snapshot of it) or
+ *                         `costModels`, never a row inherited from a sibling id.
+ * - `no-credit`         — nothing left to credit once the allowances are applied.
+ */
+export type ReferenceRejection =
+  | "absent"
+  | "malformed"
+  | "witness"
+  | "model-mismatch"
+  | "expired"
+  | "different-request"
+  | "quality"
+  | "no-cached-price"
+  | "no-credit";
+
+/**
+ * The provider counter an avoided call is valued against, and every figure
+ * needed to recompute its baseline:
+ * `tierFactor * (creditedInputTokens / 1000 * cachedInputPer1k + creditedOutputTokens / 1000 * outputPer1k)`.
+ */
+export interface ReferenceCredit {
+  /** Id of the report of the call that ran (its report.requestId). */
+  requestId: string;
+  /** Epoch ms when that call's provider counter was read. */
+  at: number;
+  /** Input tokens the provider billed for that call. */
+  inputTokens: number;
+  /** Output tokens the provider billed for that call (the smaller of the first answer and its repair). */
+  outputTokens: number;
+  /** Input tokens credited to this repeat: inputTokens minus the allowance for messages the layer inserted. */
+  creditedInputTokens: number;
+  /** Output tokens credited: a share of outputTokens capped by this request's output limit; 0 without deterministic sampling. */
+  creditedOutputTokens: number;
+  /** Rate applied to every credited input token, per 1K: the provider's cached-input rate. */
+  cachedInputPer1k: number;
+  /** Rate applied to credited output tokens, per 1K. */
+  outputPer1k: number;
+  /** Fraction of the standard price applied: 1, or the discounted tier the call ran on or this request declared. */
+  tierFactor: number;
 }
 
 export class SavingsLedger {
@@ -110,15 +184,30 @@ export class SavingsLedger {
   //
   //   Medido en el escenario de la tabla (50 filas): el estimador cuenta 2182
   //   tokens del JSON (40% de sus caracteres son símbolos, y cobra cada símbolo
-  //   La constante se calibra contra el contador del proveedor, no contra el
-  //   estimador local: sin eso el baseline se infla y el ahorro publicado con él.
-  //   −49,6%. Un positivo FABRICADO, y encima etiquetado "measured".
+  //   suelto a token entero) y 877 del formato tabular (16%). k sale 0,901
+  //   cuando la k correcta para el texto quitado era 0,538. Baseline publicado
+  //   4319 contra 1174 reales: 3,68x, o sea +47,4% de ahorro donde el proveedor
+  //   midió −49,6%. Un positivo FABRICADO, y encima etiquetado "measured".
   //
-  // Por eso `basis` solo puede ser "measured" cuando la conversión es de fiar:
-  // o no hubo nada que convertir (`removedInputLocal == 0`), o el estimador
-  // cuenta con la misma regla que factura el proveedor (`estimatorExact`).
-  // Con el heurístico y algo quitado, la cifra es "estimated" — sigue siendo la
-  // mejor disponible, pero no se cobra como comprobable contra la factura.
+  // Por eso, en una llamada que SE EJECUTÓ, `basis` solo es "measured" cuando no
+  // hubo nada que convertir (`removedInputLocal == 0`). Con algo quitado la cifra
+  // es "estimated", tenga el tokenizador que tenga: esta nota decía antes que
+  // bastaba con que el estimador contara con la regla del proveedor
+  // (`estimatorExact`), y era FALSO — `estimatorExact` se anota y nadie lo lee
+  // para decidir el basis, porque ni con la regla exacta la reconstrucción es
+  // una medición (el porqué, con cifras, en `estimateCost`: el protocolo del
+  // proveedor mete tokens aditivos que `k` multiplica). Un tokenizador exacto
+  // mejora la cifra estimada; no la convierte en medida.
+  //
+  // LA EXCEPCIÓN POR REFERENCIA, que es la única vía por la que dinero AHORRADO
+  // llega a la base de comisión desde el SDK: una llamada EVITADA (acierto de
+  // caché exacta o seguidor de singleflight) cuya petición es, byte a byte, la
+  // de una llamada que sí corrió sin que la capa le quitara ni le añadiera nada.
+  // Ahí el contrafactual no se reconstruye: YA SE EJECUTÓ, y su contador es el
+  // del proveedor. Se valora a la baja (toda la entrada a tarifa cacheada, la
+  // salida solo con muestreo determinista) y lleva su propio basis,
+  // "reference", para poder auditarlo y apagarlo sin tocar "measured". Las
+  // reglas de escritura y de lectura viven en `pipeline/referencia.ts`.
 
   /** Cuenta LOCAL del prompt que de verdad se envió al proveedor. */
   sentInputLocal = 0;
@@ -250,6 +339,22 @@ export class SavingsLedger {
     this.providerCachedInput += Math.max(0, tokens);
   }
 
+  // El crédito por referencia se guarda ENTERO, no solo sus tokens: `estimateCost`
+  // tarifa con el precio de la referencia (tarifa cacheada, factor de tier) y no
+  // con el `CostModel` que recibe, y el informe publica la aritmética completa
+  // para que el cliente recalcule `baselineEstimate` sin creernos.
+
+  /** Set when an avoided call is valued against the provider counter of an identical call that ran. */
+  reference: ReferenceCredit | null = null;
+  /** Set when an avoided cache or coalesced hit could not be valued by reference: why it stays estimated. */
+  referenceRejected: ReferenceRejection | null = null;
+
+  /** Record an avoided call valued by reference. */
+  avoidCallByReference(credit: ReferenceCredit): void {
+    this.avoidCall(credit.creditedInputTokens, credit.creditedOutputTokens);
+    this.reference = credit;
+  }
+
   /** Record that a whole primary LLM call was avoided (cache / resolver hit). */
   avoidCall(baselineInput: number, baselineOutput: number): void {
     this.avoidedLlm += 1;
@@ -341,6 +446,12 @@ export class SavingsLedger {
         // estimar. Se sigue publicando, porque es la mejor cifra disponible y
         // ahora es mucho mejor (el libro de compresión pasó de 1306 a 432 con el
         // tokenizador exacto), pero no se cobra como comprobable contra factura.
+        //
+        // La excepción por referencia NO vive en esta rama, y es a propósito:
+        // aquí la llamada SE EJECUTÓ, y con algo quitado su baseline es un mundo
+        // que no ocurrió. La excepción es una llamada EVITADA cuya repetición es
+        // byte a byte una llamada intacta que sí corrió: su contrafactual ya se
+        // ejecutó y su contador existe. Va más abajo, en la rama `!ranCall`.
         basis = this.removedInputLocal === 0 ? "measured" : "estimated";
       } else if (this.actualInput > 0) {
         // Hay medición del proveedor pero no lectura local con la que calibrar:
@@ -401,8 +512,19 @@ export class SavingsLedger {
       (Math.max(0, facturable - cached) / 1000) * model.inputPer1k +
       (cached / 1000) * cachedRate;
 
-    const baselineEstimate =
-      precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k;
+    // MEDIDO POR REFERENCIA. Solo cambia el BASELINE, y con el precio de la
+    // referencia, no con `model`: toda la entrada acreditada a tarifa CACHEADA
+    // —el mínimo que el proveedor cobra por un token de entrada, aunque la
+    // ingenua hubiera acertado entera en su caché de prefijo— y la salida
+    // acreditada (0 sin muestreo determinista), todo por el factor de tier. Es un
+    // suelo: la repetición sin la capa habría costado al menos esto.
+    const r = !ranCall ? this.reference : null;
+    const baselineEstimate = r
+      ? r.tierFactor *
+        ((this.baselineInput / 1000) * r.cachedInputPer1k +
+          (this.baselineOutput / 1000) * r.outputPer1k)
+      : precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k;
+    if (r) basis = baselineEstimate > 0 ? "reference" : "estimated";
     // `extraCostUsd` SOLO aquí, y ésa es toda la asimetría: el intento con el
     // modelo barato es dinero que el cliente pagó de verdad, así que tiene que
     // estar en `actual`; y es una llamada que puso la capa, así que no puede

@@ -19,8 +19,9 @@
 Every request your app sends to an AI is paid for by the text going in and out.
 **Savings** sits on that path and lets through only what's needed — skipping calls
 that don't have to happen, and trimming what does — so you pay for less. It is not a
-promise you take on faith: **every saving is measured with the provider's official
-meter, the same one on your bill**, and handed back to you request by request.
+promise you take on faith: **every saving we charge on is measured with the provider's
+official meter, the same one on your bill**, and every saving — measured or estimated,
+and labelled as such — is handed back to you request by request.
 
 **We only earn when you save.** Your first month carries no commission at all: we
 measure everything and show you the statement of what it would have cost. After
@@ -95,9 +96,9 @@ pnpm add @bivelio/savings-layer gpt-tokenizer
 
 `gpt-tokenizer` is optional, but install it if you call OpenAI models: it is the
 provider's own tokenizer, and the SDK loads it by itself. Without it, counts fall back
-to a built‑in estimate, every saving where the layer removed something is reported as
-`estimated` instead of `measured`, and estimated savings are never billed — the SDK
-warns once when that happens.
+to a built‑in estimate and the reconstructed savings are less accurate. Either way, a
+saving where the layer removed something is reported as `estimated`, and estimated
+savings are never billed — the SDK warns once when the tokenizer is missing.
 
 **2 · The license** — from your [dashboard](https://savings.bivelio.com/dashboard/install)
 (**€4 / seat / month** or **€39 / seat / year**, EUR)
@@ -143,11 +144,16 @@ console.log(report.cost.basis);       // → "estimated": nothing ran, so there 
 
 That's it. From the first request, `report` carries the saving and says how it
 was obtained: `actual` is what the provider metered; `basis` is `"measured"` when
-the request went through untouched, `"estimated"` when the layer removed something
-(the baseline is then reconstructed with the model's tokenizer, or with a
-calibrated estimate where no exact tokenizer exists, as for Anthropic models),
-and `"unmeasured"` when the provider returned no usage. Only measured figures
-reach your invoice.
+the request went through untouched, `"reference"` when a repeat of a byte‑identical
+request was served without calling the provider — its baseline is the provider's own
+counter for the identical request that already ran and that you already paid
+(`report.cache.reference` points to it), valued at the provider's cached‑input rate,
+with the output counted only under deterministic sampling (`temperature: 0`), so it is a floor —
+`"estimated"` when the layer removed something (the baseline is then reconstructed
+with the model's tokenizer, or with a calibrated estimate where no exact tokenizer
+exists, as for Anthropic models), and `"unmeasured"` when the provider returned no
+usage. Only `measured` and `reference` figures reach your invoice; estimated ones
+never do.
 
 ## What you get on every request
 
@@ -262,9 +268,9 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 - **Node ≥ 20.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
   `require()` works on Node ≥ 22.
 - Optional peer `gpt-tokenizer` for exact OpenAI token counts, loaded automatically
-  when installed — without it a built‑in estimator is used and OpenAI savings are
-  reported as `estimated`, so it is not required to get started but it is required
-  for a `measured` figure.
+  when installed — without it a built‑in estimator is used. It improves the accuracy
+  of estimated figures; what reaches your invoice is `measured` and `reference`, which
+  come from the provider's own counter either way.
 - Every component (cache, vector store, tokenizer, compressor, constraint backend)
   ships with an in‑memory default and is independently swappable behind the same
   interfaces.
