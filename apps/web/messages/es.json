@@ -878,7 +878,7 @@
       "title": "¿Claude Code con API key? Mira su gasto real, token a token.",
       "body": "Un solo comando pone un medidor local delante de tu terminal. Sin tocar código y sin configurar nada — y tus prompts jamás salen de tu máquina: a este panel solo llegan conteos y coste.",
       "note": "El gateway mide cada petición y, como el SDK, solo funciona con una licencia activa: la recoge con tu clave de servicio y verifica su firma en tu máquina. Con licencia PRO aplica además una palanca por defecto: acorta el TTL de escritura de caché mientras la sesión sigue caliente — cambia el precio, nunca el contenido que lee el modelo. Las demás palancas van apagadas hasta que las enciendes. El skill savings-mode está disponible para tus topes, con su efecto pendiente de medir. Funciona también con Codex CLI, Goose y Qwen Code — y bvsala doctor imprime la configuración exacta del resto.",
-      "pythonNote": "¿Python o cualquier otro lenguaje? Apunta el SDK oficial de OpenAI o de Anthropic al gateway y cada petición cuyo uso informe el proveedor queda registrada en este panel, al precio de lista del modelo — bvsala doctor imprime el base URL de cada SDK. En streaming con OpenAI, pide el uso en la petición (stream_options.include_usage).",
+      "pythonNote": "¿Python o cualquier otro lenguaje? Apunta el SDK oficial de OpenAI o de Anthropic al gateway y cada petición cuyo uso informe el proveedor, de un modelo con precio de lista, queda registrada en este panel a ese precio; el log del gateway avisa cuando una no se mide. bvsala doctor imprime el base URL de cada SDK. En streaming con OpenAI, pide el uso en la petición (stream_options.include_usage).",
       "cta": "Ver cómo funciona →"
     },
     "integrate": {
@@ -1039,7 +1039,7 @@
         },
         {
           "title": "Streaming, el mismo informe",
-          "body": "generateStream() te entrega la respuesta a medida que la escribe el proveedor y cierra con el mismo SavingsReport que generate(), con las mismas reglas de base: el contador final del proveedor se lee al terminar el stream, y un stream sin él se publica como no medido y jamás se cobra. Con contrato de salida, la respuesta llega validada y de una pieza.",
+          "body": "generateStream() te entrega la respuesta a medida que la escribe el proveedor y cierra con el mismo SavingsReport que generate(), con las mismas reglas de base: el contador final del proveedor se lee al terminar el stream, y un stream sin él se publica como no medido y jamás entra en tu comisión. Con contrato de salida, la respuesta llega validada y de una pieza.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1097,7 +1097,7 @@
     "nodeApiSubAfter": "recibe menos tokens",
     "billMonth": "factura / mes",
     "billReport": "+ SavingsReport",
-    "s1Note": "Ese recuadro verde es un paquete npm dentro del código de la aplicación. Por eso la pregunta clave nunca es «¿qué instalo?» sino <b>«¿quién escribió el código que llama a la API?»</b> — esa persona es quien puede instalarlo. Las excepciones son un terminal de codificación como Claude Code y una app en cualquier lenguaje que deje fijar el base URL de su SDK: ahí el gateway de bvsala se pone delante sin tocar ni una línea de código. Ese tráfico se mide; las palancas de ahorro del paquete npm no corren ahí, y las del propio gateway solo se aplican al tráfico de Anthropic.",
+    "s1Note": "Ese recuadro verde es un paquete npm dentro del código de la aplicación. Por eso la pregunta clave nunca es «¿qué instalo?» sino <b>«¿quién escribió el código que llama a la API?»</b> — esa persona es quien puede instalarlo. Las excepciones son un terminal de codificación como Claude Code y una app en cualquier lenguaje que use el SDK oficial de OpenAI o de Anthropic y deje fijar su base URL: ahí el gateway de bvsala se pone delante sin tocar ni una línea de código. Ese tráfico se mide para los modelos con precio de lista; las palancas de ahorro del paquete npm no corren ahí, y las del propio gateway solo se aplican al tráfico de Anthropic, con licencia PRO.",
     "s2Title": "Tu caso, en 10 segundos",
     "s2Sub": "Cuatro maneras de usar IA, y qué puede hacer BV‑SALA en cada una.",
     "caseChatSub": "app o web, gratis o de pago",

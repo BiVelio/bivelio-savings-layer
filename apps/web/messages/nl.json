@@ -878,7 +878,7 @@
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
       "body": "Eén commando zet een lokale meter vóór je terminal. Geen code aanpassen, niets configureren — en je prompts verlaten nooit je machine: alleen aantallen en kosten bereiken dit paneel.",
       "note": "De gateway meet elk verzoek en draait, net als de SDK, alleen met een actieve licentie: hij haalt die op met je service-sleutel en verifieert de handtekening ervan op je eigen machine. Met een PRO-licentie past hij standaard ook één hefboom toe: hij verkort de cache-schrijf-TTL zolang je sessie warm blijft — dat verandert de prijs, nooit de inhoud die het model leest. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
-      "pythonNote": "Python of een andere taal? Richt de officiële SDK van OpenAI of Anthropic op de gateway en elk verzoek waarvan de aanbieder het gebruik rapporteert, wordt in dit paneel vastgelegd tegen de lijstprijs van het model — bvsala doctor toont de base-URL voor elke SDK. Vraag bij streaming met OpenAI het gebruik op in het verzoek (stream_options.include_usage).",
+      "pythonNote": "Python of een andere taal? Richt de officiële SDK van OpenAI of Anthropic op de gateway en elk verzoek waarvan de aanbieder het gebruik rapporteert, wordt voor een model met een lijstprijs in dit paneel tegen die prijs vastgelegd; het log van de gateway meldt het wanneer een verzoek niet wordt gemeten. bvsala doctor toont de base-URL voor elke SDK. Vraag bij streaming met OpenAI het gebruik op in het verzoek (stream_options.include_usage).",
       "cta": "Zo werkt het →"
     },
     "integrate": {
@@ -1039,7 +1039,7 @@
         },
         {
           "title": "Streaming, hetzelfde rapport",
-          "body": "generateStream() geeft je het antwoord terwijl de aanbieder het schrijft en sluit af met hetzelfde SavingsReport als generate(), volgens dezelfde regels voor de basis: de eindteller van de aanbieder wordt aan het einde van de stream gelezen, en een stream zonder die teller wordt als niet gemeten gerapporteerd en nooit gefactureerd. Met een uitvoercontract komt het antwoord gevalideerd en in één stuk aan.",
+          "body": "generateStream() geeft je het antwoord terwijl de aanbieder het schrijft en sluit af met hetzelfde SavingsReport als generate(), volgens dezelfde regels voor de basis: de eindteller van de aanbieder wordt aan het einde van de stream gelezen, en een stream zonder die teller wordt als niet gemeten gerapporteerd en telt nooit mee voor je commissie. Met een uitvoercontract komt het antwoord gevalideerd en in één stuk aan.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1097,7 +1097,7 @@
     "nodeApiSubAfter": "ontvangt minder tokens",
     "billMonth": "rekening / maand",
     "billReport": "+ SavingsReport",
-    "s1Note": "Dat groene vak is een npm-pakket in de code van de applicatie. Daarom is de sleutelvraag nooit “wat installeer ik?” maar <b>“wie schreef de code die de API aanroept?”</b> — die persoon kan het installeren. De uitzonderingen zijn een codeerterminal zoals Claude Code en een app in welke taal dan ook waarvan je de base-URL van de SDK kunt instellen: daar gaat de gateway van bvsala ervoor staan zonder één regel code aan te raken. Dat verkeer wordt gemeten; de besparingshefbomen van het npm-pakket draaien daar niet, en die van de gateway zelf gelden alleen voor Anthropic-verkeer.",
+    "s1Note": "Dat groene vak is een npm-pakket in de code van de applicatie. Daarom is de sleutelvraag nooit “wat installeer ik?” maar <b>“wie schreef de code die de API aanroept?”</b> — die persoon kan het installeren. De uitzonderingen zijn een codeerterminal zoals Claude Code en een app in welke taal dan ook die de officiële SDK van OpenAI of Anthropic gebruikt en waarvan je de base-URL kunt instellen: daar gaat de gateway van bvsala ervoor staan zonder één regel code aan te raken. Dat verkeer wordt gemeten voor modellen met een lijstprijs; de besparingshefbomen van het npm-pakket draaien daar niet, en die van de gateway zelf gelden alleen voor Anthropic-verkeer, met een PRO-licentie.",
     "s2Title": "Jouw geval, in 10 seconden",
     "s2Sub": "Vier manieren om AI te gebruiken, en wat BV‑SALA in elk ervan kan doen.",
     "caseChatSub": "app of web, gratis of betaald",

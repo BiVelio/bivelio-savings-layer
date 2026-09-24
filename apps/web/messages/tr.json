@@ -878,7 +878,7 @@
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
       "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
       "note": "Ağ geçidi her isteği ölçer ve SDK gibi yalnızca etkin bir lisansla çalışır: lisansı servis anahtarınızla alır ve imzasını kendi makinenizde doğrular. PRO lisansıyla varsayılan olarak bir kaldıraç da uygular: oturumunuz sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır — bu fiyatı değiştirir, modelin okuduğu içeriği asla. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
-      "pythonNote": "Python ya da başka bir dil mi? Resmi OpenAI veya Anthropic SDK'sını ağ geçidine yönlendirin; sağlayıcının kullanımını bildirdiği her istek, modelin liste fiyatıyla bu panele kaydedilir — bvsala doctor her SDK için base URL'yi yazdırır. OpenAI ile streaming'de kullanımı istekte talep edin (stream_options.include_usage).",
+      "pythonNote": "Python ya da başka bir dil mi? Resmi OpenAI veya Anthropic SDK'sını ağ geçidine yönlendirin; sağlayıcının kullanımını bildirdiği ve liste fiyatı olan bir modele ait her istek bu panele o fiyatla kaydedilir, ölçülmeyen bir istek olduğunda ağ geçidinin günlüğü bunu belirtir. bvsala doctor her SDK için base URL'yi yazdırır. OpenAI ile streaming'de kullanımı istekte talep edin (stream_options.include_usage).",
       "cta": "Nasıl çalıştığını gör →"
     },
     "integrate": {
@@ -1039,7 +1039,7 @@
         },
         {
           "title": "Streaming, aynı rapor",
-          "body": "generateStream() yanıtı sağlayıcı yazdıkça size iletir ve generate() ile aynı SavingsReport'la, aynı temel kurallarıyla kapanır: sağlayıcının son sayacı stream'in sonunda okunur; bu sayaç olmadan biten bir stream ölçülmemiş olarak raporlanır ve asla faturalanmaz. Çıktı sözleşmesi varsa yanıt doğrulanmış olarak, tek parça halinde gelir.",
+          "body": "generateStream() yanıtı sağlayıcı yazdıkça size iletir ve generate() ile aynı SavingsReport'la, aynı temel kurallarıyla kapanır: sağlayıcının son sayacı stream'in sonunda okunur; bu sayaç olmadan biten bir stream ölçülmemiş olarak raporlanır ve asla komisyonunuza girmez. Çıktı sözleşmesi varsa yanıt doğrulanmış olarak, tek parça halinde gelir.",
           "mono": "layer.generateStream(request)"
         }
       ]
@@ -1097,7 +1097,7 @@
     "nodeApiSubAfter": "daha az token alır",
     "billMonth": "fatura / ay",
     "billReport": "+ SavingsReport",
-    "s1Note": "O yeşil kutu, uygulamanın kodundaki bir npm paketidir. Bu yüzden kilit soru asla «ne kurayım?» değil, <b>«API'yi çağıran kodu kim yazdı?»</b> sorusudur — onu kurabilecek kişi o kişidir. İstisnalar, Claude Code gibi bir kodlama terminali ve SDK'sının base URL'sini ayarlamaya izin veren herhangi bir dildeki bir uygulamadır: orada bvsala ağ geçidi tek satır koda bile dokunmadan öne geçer. Bu trafik ölçülür; npm paketinin tasarruf kaldıraçları orada çalışmaz, ağ geçidinin kendi kaldıraçları ise yalnızca Anthropic trafiğine uygulanır.",
+    "s1Note": "O yeşil kutu, uygulamanın kodundaki bir npm paketidir. Bu yüzden kilit soru asla «ne kurayım?» değil, <b>«API'yi çağıran kodu kim yazdı?»</b> sorusudur — onu kurabilecek kişi o kişidir. İstisnalar, Claude Code gibi bir kodlama terminali ve resmi OpenAI veya Anthropic SDK'sını kullanan ve base URL'sini ayarlamaya izin veren herhangi bir dildeki bir uygulamadır: orada bvsala ağ geçidi tek satır koda bile dokunmadan öne geçer. Bu trafik, liste fiyatı olan modeller için ölçülür; npm paketinin tasarruf kaldıraçları orada çalışmaz, ağ geçidinin kendi kaldıraçları ise yalnızca Anthropic trafiğine, PRO lisansıyla uygulanır.",
     "s2Title": "Senin durumun, 10 saniyede",
     "s2Sub": "Yapay zekâyı kullanmanın dört yolu ve BV‑SALA'nın her birinde ne yapabileceği.",
     "caseChatSub": "uygulama veya web, ücretsiz ya da ücretli",
