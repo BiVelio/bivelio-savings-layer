@@ -51,8 +51,12 @@ describe("entitlement del ingest", () => {
     expect(decideEntitlement([lic({ revoked: true })], [sub()], AHORA).blocked).toBe(false);
   });
 
-  it("sin licencia válida pero con suscripción activa no se bloquea", () => {
-    expect(decideEntitlement([], [sub()], AHORA).blocked).toBe(false);
+  it("sin fila de licencia pero con suscripción ACTIVA no se bloquea (la fila aún no se ha escrito)", () => {
+    // El webhook de Stripe puede ir por detrás de la suscripción: esa org paga, y
+    // cerrar el free tier no puede cortarla.
+    const d = decideEntitlement([], [sub()], AHORA);
+    expect(d.blocked).toBe(false);
+    expect(d.reason).toBe("active-subscription");
   });
 
   it("una suscripción CANCELADA no cubre", () => {
@@ -60,11 +64,12 @@ describe("entitlement del ingest", () => {
     expect(d.blocked).toBe(true);
   });
 
-  it("una org SIN NINGUNA licencia (trial/free) NO se bloquea aquí", () => {
-    // Este candado para revocados/caducados, no la caducidad del trial.
+  it("una org SIN NINGUNA licencia ni suscripción SE BLOQUEA (no hay free tier)", () => {
+    // Antes pasaba con `no-license-record`: la ingesta le aceptaba uso y el panel
+    // se llenaba sin pagar. Pilotos y probadores tienen siempre fila de licencia.
     const d = decideEntitlement([], [], AHORA);
-    expect(d.blocked).toBe(false);
-    expect(d.reason).toBe("no-license-record");
+    expect(d.blocked).toBe(true);
+    expect(d.reason).toBe("no-license");
   });
 
   it("con varias licencias, basta UNA válida para no bloquear", () => {
@@ -102,9 +107,9 @@ describe("entitlement del ingest", () => {
   });
 
   it("si NINGUNA cubre, se bloquea (el arreglo no abre la puerta)", () => {
-    // Con una licencia REVOCADA de por medio: sin ese registro, `decideEntitlement`
-    // devuelve `no-license-record` a propósito —quien nunca tuvo licencia no es
-    // cosa de este candado— y no bloquearía por otra razón.
+    // Con una licencia REVOCADA de por medio, para que el motivo sea
+    // `license-revoked`: sin ninguna fila también se bloquearía, pero con
+    // `no-license` (quien nunca tuvo licencia tampoco tiene free tier).
     const d = decideEntitlement(
       [lic({ revoked: true })],
       [sub({ status: "canceled" }), sub({ status: "unpaid" })],
@@ -118,5 +123,30 @@ describe("entitlement del ingest", () => {
     const caducada = sub({ status: "active", current_period_end: enISO(AHORA - 30 * DIA) });
     const d = decideEntitlement([lic({ revoked: true })], [caducada], AHORA);
     expect(d.blocked).toBe(true);
+  });
+
+  // ── EL CONTRATO CON LA PASARELA ─────────────────────────────────────────
+  // `/api/org/entitlements` devuelve `reason` SOLO si la org está bloqueada, y la
+  // pasarela que verja por licencia corta las peticiones nuevas con cualquier
+  // `reason` no vacío. Si
+  // un motivo de concesión se confundiera con uno de bloqueo, cortaría a quien
+  // paga; si un bloqueo saliera con un motivo de concesión, no cortaría a nadie.
+  it("blocked ⇔ el motivo es de bloqueo, en todas las combinaciones", () => {
+    const licencias: LicenseRow[][] = [
+      [],
+      [lic()],
+      [lic({ revoked: true })],
+      [lic({ expires_at: enISO(AHORA - 40 * DIA) })],
+      [lic({ revoked: true }), lic({ expires_at: enISO(AHORA - 40 * DIA) })],
+    ];
+    const suscripciones: SubscriptionRow[][] = [[], [sub()], [sub({ status: "canceled" })]];
+    const DE_BLOQUEO = ["no-license", "license-revoked", "license-expired"];
+    const DE_CONCESION = ["valid-license", "active-subscription"];
+    for (const l of licencias) {
+      for (const s of suscripciones) {
+        const d = decideEntitlement(l, s, AHORA);
+        expect(d.blocked ? DE_BLOQUEO : DE_CONCESION, JSON.stringify({ l, s })).toContain(d.reason);
+      }
+    }
   });
 });

@@ -79,18 +79,35 @@ export function hasActiveSubscription(
   return subscriptions.some((s) => suscripcionCubre(s, nowMs));
 }
 
+/**
+ * Por qué se decide lo que se decide. Los tres últimos son los únicos que
+ * bloquean, y son los únicos que `/api/org/entitlements` devuelve al cliente:
+ * `reason` presente ⇔ org bloqueada.
+ */
+export type EntitlementReason =
+  | "valid-license"
+  | "active-subscription"
+  | "no-license"
+  | "license-revoked"
+  | "license-expired";
+
 export interface EntitlementDecision {
   blocked: boolean;
-  reason: string;
+  reason: EntitlementReason;
 }
 
 /**
- * La decisión. Se BLOQUEA solo ante una señal NEGATIVA explícita: la org tuvo
- * licencia y ahora no le queda ninguna válida NI suscripción activa. Una org sin
- * ninguna licencia (trial recién creado, free, aún sin aprovisionar) NO se
- * bloquea aquí — ese es otro control (la caducidad del trial), no este. Bloquear
- * de más rompería a clientes legítimos, que es peor que una ventana breve para
- * uno revocado, y la revocación además la refuerzan el gate del SDK y el poller.
+ * La decisión. Sin licencia válida ni suscripción que cubra → bloqueada. Una org
+ * que NUNCA tuvo licencia también: no hay free tier (README, LICENSE §1-2).
+ * Pilotos y probadores tienen siempre fila (trial/route.ts persiste
+ * fail-closed; el webhook emite con issueLicense), y una org con suscripción
+ * activa y la fila aún sin escribir no se bloquea (active-subscription).
+ *
+ * Antes, quien nunca tuvo licencia pasaba con `no-license-record`: la ingesta
+ * le aceptaba uso y el canal no le daba `reason`, así que cualquier pasarela
+ * —la publicada o una parcheada— medía y llenaba el panel gratis con solo
+ * acuñar una clave bvk_. Este es el candado que lo cierra, y está aquí porque
+ * el servidor no se parchea.
  */
 export function decideEntitlement(
   licenses: LicenseRow[],
@@ -100,12 +117,10 @@ export function decideEntitlement(
   if (hasValidLicense(licenses, nowMs)) return { blocked: false, reason: "valid-license" };
   if (hasActiveSubscription(subscriptions, nowMs)) return { blocked: false, reason: "active-subscription" };
 
-  // Sin licencia válida ni suscripción. ¿Hay señal negativa explícita?
+  // Sin licencia válida ni suscripción que cubra: se bloquea siempre. El motivo
+  // distingue a quien nunca tuvo licencia de quien la tuvo y la perdió.
   const tuvoLicencia = licenses.length > 0;
-  if (!tuvoLicencia) {
-    // Nunca tuvo licencia: trial/free/sin aprovisionar. No es cosa de este candado.
-    return { blocked: false, reason: "no-license-record" };
-  }
+  if (!tuvoLicencia) return { blocked: true, reason: "no-license" };
   const algunaRevocada = licenses.some((l) => l.revoked);
   return {
     blocked: true,
