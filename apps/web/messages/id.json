@@ -236,7 +236,7 @@
       "advanced": "Pengaturan lanjutan",
       "projFriendly": "Tagihan kamu akan turun dari {baseline} menjadi {opt} — {pct}% lebih rendah.",
       "onlyChatTitle": "Hanya pakai ChatGPT atau Claude?",
-      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda, dan “bvsala claude” mengukur pemakaian nyata Anda di terminal. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
+      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
       "onlyChatCta": "Sedang membangun aplikasi? Buka Instal"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
       "errNotRecognized": "Tidak dikenali — periksa kesalahan ketik, atau buat kunci baru di atas.",
       "errUnexpected": "Respons tak terduga ({status}). Coba lagi sebentar lagi.",
+      "keyNoPlan": "Kunci dikenali, tetapi organisasi ini tidak punya lisensi atau langganan BiVelio yang aktif, jadi penggunaannya ditolak. Berlangganan atau perpanjang dari halaman Akun, lalu uji lagi.",
       "keyLabel": "kunci akun layanan Anda{suffix} — ditampilkan sekali, salin sekarang",
       "passHint": "Berikan sebagai <code>serviceAccountKey</code>. Sudah terisi di bawah — klik <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "creating": "Membuat…",

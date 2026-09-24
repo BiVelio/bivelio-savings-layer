@@ -236,7 +236,7 @@
       "advanced": "Cài đặt nâng cao",
       "projFriendly": "Hóa đơn của bạn sẽ giảm từ {baseline} xuống {opt} — ít hơn {pct}%.",
       "onlyChatTitle": "Bạn chỉ dùng ChatGPT hoặc Claude?",
-      "onlyChatBody": "ChatGPT thực sự đóng: phí cố định, không có hóa đơn hay giới hạn token để cắt. Nhưng nếu bạn dùng Claude, chúng tôi đã giúp bạn tiết kiệm: skill savings-mode (miễn phí, ở trang chủ) kéo giãn giới hạn thuê bao, và «bvsala claude» đo mức dùng thật của bạn trong terminal. Còn nếu bạn xây ứng dụng với API key, chính ở đó BV-SALA đo và cắt giảm chi tiêu thật.",
+      "onlyChatBody": "ChatGPT thực sự đóng: phí cố định, không có hóa đơn hay giới hạn token để cắt. Nhưng nếu bạn dùng Claude, chúng tôi đã giúp bạn tiết kiệm: skill savings-mode (miễn phí, ở trang chủ) kéo giãn giới hạn thuê bao. Còn nếu bạn xây ứng dụng với API key, chính ở đó BV-SALA đo và cắt giảm chi tiêu thật.",
       "onlyChatCta": "Bạn đang phát triển ứng dụng? Đến trang Cài đặt"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Lỗi mạng — vui lòng thử lại.",
       "errNotRecognized": "Không nhận diện được — kiểm tra lỗi chính tả, hoặc tạo khóa mới ở trên.",
       "errUnexpected": "Phản hồi ngoài dự kiến ({status}). Hãy thử lại sau giây lát.",
+      "keyNoPlan": "Khóa đã được nhận diện, nhưng tổ chức này chưa có giấy phép hay gói đăng ký BiVelio đang hoạt động, nên mức sử dụng của tổ chức bị từ chối. Hãy đăng ký hoặc gia hạn ở mục Tài khoản, rồi kiểm tra lại.",
       "keyLabel": "khóa tài khoản dịch vụ của bạn{suffix} — chỉ hiển thị một lần, hãy sao chép ngay",
       "passHint": "Truyền nó dưới dạng <code>serviceAccountKey</code>. Nó đã được điền sẵn bên dưới — nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
       "creating": "Đang tạo…",

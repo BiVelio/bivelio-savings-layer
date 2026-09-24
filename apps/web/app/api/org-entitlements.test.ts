@@ -6,10 +6,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  * Contrato con la pasarela (fail-closed del lado del cliente):
  *  · sin bearer o clave desconocida → 401;
  *  · error de BD → 503 (la pasarela apaga; aquí no hay datos que perder);
- *  · org bloqueada (revocada/caducada) → 200 con features VACÍAS — respuesta
+ *  · org bloqueada (revocada/caducada, o sin NINGUNA licencia ni suscripción:
+ *    no hay free tier) → 200 con features VACÍAS y `reason` — respuesta
  *    definitiva, no error, para que la pasarela cachee el apagado;
  *  · org viva → unión de features de las licencias VIVAS únicamente (una
- *    revocada no aporta aunque siga en la tabla).
+ *    revocada no aporta aunque siga en la tabla), y SIN la clave `reason`:
+ *    `reason` presente ⇔ org bloqueada, porque la pasarela corta con cualquiera.
  */
 
 interface FilasFalsas {
@@ -89,6 +91,34 @@ describe("GET /api/org/entitlements", () => {
     expect(json.features).toEqual(["context_elision", "semantic_cache"]);
     expect(json.refreshAfterSeconds).toBeGreaterThan(0);
     expect(res.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("org viva: la respuesta NO lleva la clave `reason` (reason ⇔ bloqueada)", async () => {
+    // Ni `reason: null` ni el motivo de la concesión: la pasarela trata cualquier
+    // `reason` no vacío como corte, así que uno de más cortaría a quien paga.
+    const { GET } = await import("./org/entitlements/route.js");
+    for (const vivas of [
+      // Por licencia vigente…
+      { licenses: [{ revoked: false, expires_at: EN_UN_ANO, grace_days: 14, features: ["context_elision"] }], subscriptions: [] },
+      // …y por suscripción activa con la fila de licencia aún sin escribir.
+      { licenses: [], subscriptions: [{ status: "active", current_period_end: EN_UN_ANO }] },
+    ]) {
+      filas = { service_accounts: { org_id: "org-1" }, ...vivas };
+      const res = await GET(peticion("bvk_x"));
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect("reason" in json, JSON.stringify(vivas)).toBe(false);
+    }
+  });
+
+  it("sin NINGUNA licencia ni suscripción: 200 con features vacías y reason no-license (no hay free tier)", async () => {
+    const { GET } = await import("./org/entitlements/route.js");
+    filas = { service_accounts: { org_id: "org-1" }, licenses: [], subscriptions: [] };
+    const res = await GET(peticion("bvk_x"));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.features).toEqual([]);
+    expect(json.reason).toBe("no-license");
   });
 
   it("org bloqueada (todas revocadas, sin suscripción): 200 con features vacías", async () => {

@@ -236,7 +236,7 @@
       "advanced": "Gelişmiş ayarlar",
       "projFriendly": "Faturan {baseline} yerine {opt} olurdu — %{pct} daha az.",
       "onlyChatTitle": "Yalnızca ChatGPT veya Claude mu kullanıyorsun?",
-      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir ve “bvsala claude” terminaldeki gerçek tüketimini ölçer. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
+      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
       "onlyChatCta": "Uygulama mı geliştiriyorsun? Kuruluma git"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
       "errNotRecognized": "Tanınmadı — yazım hatalarını kontrol edin ya da yukarıdan yeni bir anahtar oluşturun.",
       "errUnexpected": "Beklenmeyen yanıt ({status}). Birazdan tekrar deneyin.",
+      "keyNoPlan": "Anahtar tanındı, ancak bu kuruluşun etkin bir BiVelio lisansı veya aboneliği yok, bu yüzden kullanımı reddediliyor. Hesap'tan abone olun ya da yenileyin, ardından tekrar test edin.",
       "keyLabel": "servis hesabı anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
       "passHint": "<code>serviceAccountKey</code> olarak geçirin. Aşağıda önceden doldurulmuş — canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "creating": "Oluşturuluyor…",

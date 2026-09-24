@@ -236,7 +236,7 @@
       "advanced": "Advanced settings",
       "projFriendly": "Your bill would go from {baseline} to {opt} — {pct}% less.",
       "onlyChatTitle": "Only use ChatGPT or Claude?",
-      "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps, and “bvsala claude” meters your real usage in the terminal. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
+      "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
       "onlyChatCta": "Building an app? Go to Install"
     },
     "copyButton": {
@@ -260,6 +260,7 @@
       "errNetwork": "Network error — please try again.",
       "errNotRecognized": "Not recognized — check for typos, or create a new key above.",
       "errUnexpected": "Unexpected response ({status}). Try again in a moment.",
+      "keyNoPlan": "Key recognized, but this organization has no active BiVelio license or subscription, so its usage is refused. Subscribe or renew from Account, then test again.",
       "keyLabel": "your service-account key{suffix} — shown once, copy it now",
       "passHint": "Pass it as <code>serviceAccountKey</code>. It's pre-filled below — hit <b>Test my key</b> to confirm it's live.",
       "creating": "Creating…",
