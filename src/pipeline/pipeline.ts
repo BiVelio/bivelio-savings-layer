@@ -71,6 +71,7 @@ import {
   huellaDePeticion,
   leerRegistroDeReferencia,
   muestreoDeterminista,
+  precioDeListaPropio,
   registroDeReferencia,
   type EvaluacionDeReferencia,
   type MotivoSinReferencia,
@@ -2745,6 +2746,8 @@ export class SavingsPipeline {
     let registro: RegistroDeReferencia | MotivoSinReferencia;
     try {
       registro = registroDeReferencia({
+        // E0: el contador del mock lo inventa un estimador; no hay factura.
+        contadorSimulado: isBuiltInDemoProvider(this.config.provider),
         usoPrimario,
         usoReparacion,
         tierServido: tierPrimario,
@@ -2771,13 +2774,21 @@ export class SavingsPipeline {
     } catch {
       registro = "fingerprint-failed";
     }
+    // ¿Va esta respuesta a la caché exacta? La misma condición que la escritura
+    // de abajo; se calcula aquí para que la traza lo diga.
+    const vaALaCacheExacta = cacheable && policy.allowExactCache && toggles.exactCache !== false;
     // SIEMPRE una traza: quien vea una repetición `estimated` con `absent` tiene
     // que poder ir a la llamada que la pobló y leer por qué no dejó contador.
+    // «written» significa que el registro se construyó: los seguidores de
+    // singleflight de esta ejecución lo usan siempre. Si además viaja a la caché
+    // exacta lo dice `exactCache`; que esa escritura falle se traza aparte
+    // (`cache-write`), porque ocurre después.
     if (typeof registro === "object") {
       trace.record("reference", "written", {
         inputTokens: registro.inputTokens,
         outputTokens: registro.outputTokens,
         layerMessages: registro.layerMessages,
+        exactCache: vaALaCacheExacta,
       });
     } else {
       trace.record("reference", "not-written", { reason: registro });
@@ -2813,7 +2824,7 @@ export class SavingsPipeline {
       const claveDeEscritura = escalo
         ? buildExactKey(canonical, { servedModel: modeloServido })
         : exactKey;
-      if (cacheable && policy.allowExactCache && toggles.exactCache !== false) {
+      if (vaALaCacheExacta) {
         // TTL finito (no "para siempre") para que una consulta que la heurística
         // de frescura no detectó no sirva una respuesta rancia indefinidamente.
         // El techo del `freshnessBucket` manda sobre el TTL configurado: es lo
@@ -3655,10 +3666,12 @@ export class SavingsPipeline {
   /**
    * Evalúa L0-L7 para una evitada (acierto exacto o seguidor de singleflight).
    *
-   * EL PRECIO ES `precioConocido`, NUNCA `costModelFor`: el ilustrativo y el
+   * EL PRECIO ES `precioDocumentado`, NUNCA `costModelFor`: el ilustrativo y el
    * `defaultCostModel` no documentan ninguna tarifa cacheada del proveedor, y sin
-   * ella la referencia no es un suelo sino una cuenta inventada (L6). Se resuelve
-   * con el modelo PEDIDO, que bajo L2 es también el servido y el del registro.
+   * ella la referencia no es un suelo sino una cuenta inventada (L6). Tampoco
+   * `precioConocido` a secas: deja que un id herede la fila de un pariente más
+   * caro (ver `precioDeListaPropio`). Se resuelve con el modelo PEDIDO, que bajo
+   * L2 es también el servido y el del registro.
    *
    * La huella y la calidad llegan perezosas: una entrada sin registro (`absent`)
    * no paga ni el SHA-256 de la petición ni la validación del esquema.
@@ -3676,6 +3689,14 @@ export class SavingsPipeline {
     },
   ): EvaluacionDeReferencia {
     if (typeof reg === "string") return { ok: false, reason: reg };
+    // La calidad, en su propia red: un validador que lanza es una respuesta que
+    // no se ha podido aprobar (`quality`), no una petición distinta.
+    let calidadOk: boolean;
+    try {
+      calidadOk = ctx.calidad();
+    } catch {
+      calidadOk = false;
+    }
     try {
       return evaluarReferencia(reg, {
         ahoraMs: this.now(),
@@ -3684,8 +3705,8 @@ export class SavingsPipeline {
         huella: ctx.huella(),
         textoServidoSha256: sha256(ctx.texto),
         claveLeida: ctx.claveLeida,
-        calidadOk: ctx.calidad(),
-        precio: this.precioConocido(ctx.request.model),
+        calidadOk,
+        precio: this.precioDocumentado(ctx.request.model),
         determinista: muestreoDeterminista(ctx.request),
         topeDeSalida: ctx.request.response?.maxOutputTokens,
         diferible: ctx.toggles.deferrable === true,
@@ -3808,21 +3829,35 @@ export class SavingsPipeline {
    * apagado automático vigila P(escalar), no el precio.
    */
   private precioConocido(model: string): CostModel | undefined {
-    const models = this.config.costModels;
-    if (models) {
-      const exacto = models[model];
-      if (exacto) return exacto;
-      const barra = model.indexOf("/");
-      if (barra >= 0) {
-        const desnudo = models[model.slice(barra + 1)];
-        if (desnudo) return desnudo;
-      }
-    }
     // EL CATÁLOGO DE PRECIOS DE LISTA, antes del defecto del cliente. Un
     // `defaultCostModel` significa "para lo que yo no conozca"; con el catálogo,
     // muchos menos modelos son desconocidos, y el precio real de gpt-4o sirve
     // mejor al cliente que su propio precio genérico.
-    return precioDeLista(model);
+    return this.precioDelCliente(model) ?? precioDeLista(model);
+  }
+
+  /** El precio que el cliente declaró en `costModels`, por id completo o desnudo. */
+  private precioDelCliente(model: string): CostModel | undefined {
+    const models = this.config.costModels;
+    if (!models) return undefined;
+    const exacto = models[model];
+    if (exacto) return exacto;
+    const barra = model.indexOf("/");
+    if (barra >= 0) {
+      const desnudo = models[model.slice(barra + 1)];
+      if (desnudo) return desnudo;
+    }
+    return undefined;
+  }
+
+  /**
+   * El precio con el que se valora una referencia: el que el cliente declaró o
+   * la fila PROPIA del modelo en el catálogo, nunca la de un pariente. Un
+   * `gemini-2.5-flash-lite` sin fila propia heredaría la de `gemini-2.5-flash`
+   * (3x su entrada cacheada), y la referencia dejaría de ser un suelo.
+   */
+  private precioDocumentado(model: string): CostModel | undefined {
+    return this.precioDelCliente(model) ?? precioDeListaPropio(model);
   }
 
   private costModelFor(model: string): CostModel {

@@ -1,8 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { CATALOGO } from "../src/pricing/catalogo.js";
+import { CATALOGO, claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
 import { SavingsLedger, REFERENCE_MESSAGE_ALLOWANCE } from "../src/tokenizer/accounting.js";
-import { evaluarReferencia, type RegistroDeReferencia } from "../src/pipeline/referencia.js";
+import {
+  evaluarReferencia,
+  precioDeListaPropio,
+  type RegistroDeReferencia,
+} from "../src/pipeline/referencia.js";
 
 /**
  * LA REFERENCIA ES UN SUELO, PARA TODO EL CATÁLOGO.
@@ -17,6 +21,10 @@ import { evaluarReferencia, type RegistroDeReferencia } from "../src/pipeline/re
  *
  * Si un precio nuevo del catálogo rompiera la regla (una tarifa cacheada por
  * encima de la de entrada, por ejemplo), esto se pone rojo antes que la factura.
+ *
+ * Y el suelo solo vale con el precio del modelo que corrió: el segundo bloque
+ * recorre los ids que NO son una fila (sufijos de letra que `precioDeLista` deja
+ * heredar, números que no son fecha) y exige que la referencia no los valore.
  */
 
 /** mulberry32: determinista, para que un fallo se reproduzca con su semilla. */
@@ -121,4 +129,71 @@ describe("la referencia es un suelo (propiedad sobre el catálogo)", () => {
       }
     });
   }
+});
+
+describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de un pariente", () => {
+  const CLAVES = Object.keys(CATALOGO);
+  /** Sufijos de letra: unos son alias del mismo modelo (`latest`), otros son OTRO
+   *  modelo más barato (`lite`, `mini`). Desde fuera no se distinguen. */
+  const SUFIJOS_DE_LETRA = ["lite", "mini", "nano", "pro", "turbo", "flash", "latest", "preview", "exp"];
+  const FECHAS = ["2024-07-18", "20250929"];
+
+  it("cada fila se encuentra a sí misma, con y sin prefijo de proveedor", () => {
+    for (const k of CLAVES) {
+      expect(precioDeListaPropio(k), k).toBe(CATALOGO[k]);
+      expect(precioDeListaPropio(`vendor/${k}`), k).toBe(CATALOGO[k]);
+    }
+  });
+
+  it("un id con sufijo de letra que no es una fila no tiene precio de referencia, aunque herede para tarifar", () => {
+    let heredados = 0;
+    for (const k of CLAVES) {
+      for (const sufijo of SUFIJOS_DE_LETRA) {
+        const id = `${k}-${sufijo}`;
+        if (id in CATALOGO) continue;
+        if (precioDeLista(id) !== undefined) heredados++;
+        expect(precioDeListaPropio(id), id).toBeUndefined();
+        expect(precioDeListaPropio(`vendor/${id}`), id).toBeUndefined();
+
+        const r = azar(id.length * 104729);
+        const ev = evaluarReferencia(registro(r, id), {
+          ahoraMs: 2_000_000,
+          modeloPedido: id,
+          modeloServido: id,
+          huella: "huella",
+          textoServidoSha256: "testigo",
+          calidadOk: true,
+          precio: precioDeListaPropio(id),
+          determinista: true,
+          diferible: false,
+        });
+        expect(ev, id).toEqual({ ok: false, reason: "no-cached-price" });
+      }
+    }
+    // El bloque tiene que ejercitar la herencia peligrosa, no solo ids sin precio.
+    expect(heredados).toBeGreaterThan(0);
+    expect(precioDeLista("gemini-2.5-flash-lite")).toBe(CATALOGO["gemini-2.5-flash"]);
+    expect(precioDeListaPropio("gemini-2.5-flash-lite")).toBeUndefined();
+  });
+
+  it("una instantánea con fecha es el mismo modelo y conserva su fila", () => {
+    for (const k of CLAVES) {
+      for (const fecha of FECHAS) {
+        const id = `${k}-${fecha}`;
+        expect(claveDeCatalogo(id), id).toBe(k);
+        expect(precioDeListaPropio(id), id).toBe(CATALOGO[k]);
+        expect(precioDeListaPropio(`vendor/${id}`), id).toBe(CATALOGO[k]);
+      }
+    }
+  });
+
+  it("un número tras la clave que no es una fecha completa no hereda", () => {
+    for (const k of CLAVES) {
+      for (const cola of ["0125", "0613", "32k", "2024", "2024-07-18-preview"]) {
+        const id = `${k}-${cola}`;
+        if (id in CATALOGO) continue;
+        expect(precioDeListaPropio(id), id).toBeUndefined();
+      }
+    }
+  });
 });

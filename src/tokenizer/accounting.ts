@@ -44,9 +44,10 @@ export interface CostModel {
 // --- Medido por referencia: la regla v1 -------------------------------------
 //
 // Las tres cifras de la regla viven AQUÍ y solo aquí. La web las repite en su
-// `REGLA_REFERENCIA` (lo que el extracto publica como parámetros) y su test las
-// lee de este fichero como TEXTO: si una cambia sin la otra, CI se pone rojo.
-// Por eso cada una va en una línea propia y con la forma literal de siempre.
+// `REGLA_REFERENCIA` (lo que el extracto publica como parámetros), y el test de
+// la tarifa del lado servidor (llega con ese cambio, no con este) las lee de este
+// fichero como TEXTO para que una no cambie sin la otra. Por eso cada una va en
+// una línea propia y con la forma literal de siempre.
 
 /** Oldest provider counter a repeat can be valued against: one billing period. */
 export const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
@@ -66,7 +67,9 @@ export const REFERENCE_MESSAGE_ALLOWANCE = 8;
  * - `expired`           — the counter is older than one billing period.
  * - `different-request` — the request that ran was not byte-identical to this one.
  * - `quality`           — the answer being served fails its output contract.
- * - `no-cached-price`   — no documented cached-input rate for this model.
+ * - `no-cached-price`   — no documented cached-input rate for this exact model:
+ *                         its own catalogue row (or a dated snapshot of it) or
+ *                         `costModels`, never a row inherited from a sibling id.
  * - `no-credit`         — nothing left to credit once the allowances are applied.
  */
 export type ReferenceRejection =

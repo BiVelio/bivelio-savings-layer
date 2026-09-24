@@ -665,7 +665,7 @@ export interface SavingsReport {
     ageMs?: number;
     /** Present when this avoided call is valued by reference; see ReferenceCredit. */
     reference?: import("../tokenizer/accounting.js").ReferenceCredit;
-    /** Present on a cache or coalesced hit that stays estimated: why no reference applied. */
+    /** Present on an exact-cache or coalesced hit that stays estimated: why no reference applied. Semantic-cache hits never carry it. */
     referenceRejected?: import("../tokenizer/accounting.js").ReferenceRejection;
   };
 

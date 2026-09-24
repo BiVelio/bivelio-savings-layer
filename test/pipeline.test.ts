@@ -170,8 +170,18 @@ describe("SavingsPipeline end-to-end", () => {
     expect(other.report.cache.result).not.toBe("semantic");
   });
 
+  /** A provider with a fixed, real-looking counter: 9 in / 3 out on every call.
+   *  The built-in mock is NOT one — its usage comes from a heuristic estimator,
+   *  so it never leaves a reference (see the test below). */
+  const fixedCounterProvider = () => ({
+    id: "fixed-counter",
+    async generate() {
+      return { text: "Paris", usage: { inputTokens: 9, outputTokens: 3 } };
+    },
+  });
+
   it("credits an avoided call's output baseline from the real answer, not the ceiling default", async () => {
-    const layer = createSavingsLayer({ provider: createMockProvider({ answer: "Paris" }), generateId: deterministicId });
+    const layer = createSavingsLayer({ provider: fixedCounterProvider(), generateId: deterministicId });
     const request: SavingsRequest = {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "capital city output-baseline probe" }],
@@ -190,7 +200,7 @@ describe("SavingsPipeline end-to-end", () => {
   });
 
   it("credits no output on a repeat without deterministic sampling", async () => {
-    const layer = createSavingsLayer({ provider: createMockProvider({ answer: "Paris" }), generateId: deterministicId });
+    const layer = createSavingsLayer({ provider: fixedCounterProvider(), generateId: deterministicId });
     const request: SavingsRequest = {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "capital city output-baseline probe, sampled" }],
@@ -200,6 +210,29 @@ describe("SavingsPipeline end-to-end", () => {
     expect(hit.report.cache.result).toBe("exact");
     expect(hit.report.cost.basis).toBe("reference");
     expect(hit.report.tokens.baselineOutput).toBe(0);
+  });
+
+  it("never values a repeat with the built-in mock's made-up counter", async () => {
+    // The mock fabricates its usage with the heuristic estimator: there is no
+    // provider bill behind it. A metered test suite or staging run on the mock
+    // must not turn its repeats into commissionable "reference" savings.
+    const layer = createSavingsLayer({ provider: createMockProvider({ answer: "Paris" }), generateId: deterministicId });
+    const request: SavingsRequest = {
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "capital city output-baseline probe, simulated" }],
+      temperature: 0,
+    };
+    const first = await layer.generate(request);
+    const ref = first.report.traces.find((t) => t.stage === "reference");
+    expect(ref?.outcome).toBe("not-written");
+    expect(ref?.detail).toEqual({ reason: "simulated-provider" });
+    const hit = await layer.generate(request);
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.reference).toBeUndefined();
+    expect(hit.report.cache.referenceRejected).toBe("absent");
+    // The avoided call still credits the real answer's output, as before this lane.
+    expect(hit.report.tokens.baselineOutput).toBeLessThan(20);
   });
 
   it("actually applies compression to the outgoing prompt and credits only the realized reduction", async () => {
