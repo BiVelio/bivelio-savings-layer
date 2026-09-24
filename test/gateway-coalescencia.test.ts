@@ -3,6 +3,7 @@ import { describe, it, expect, afterEach } from "vitest";
 
 import { Coalescedor, claveDePeticion, MAX_CAPTURA_BYTES } from "../gateway/coalescencia.js";
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { testLicense } from "./helpers/test-license.js";
 
 describe("Coalescedor — unidad", () => {
   it("la clave distingue método, ruta y cuerpo", () => {
@@ -125,6 +126,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const upstream = await upstreamLento(contador, 150);
     const ingesta = await ingestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       coalescer: true,
@@ -187,6 +189,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     });
     const ingesta = await ingestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       coalescer: true,
@@ -239,6 +242,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     });
     const ingesta = await ingestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       coalescer: true,
@@ -264,7 +268,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
   it("dos DISTINTAS concurrentes → dos viajes", async () => {
     const contador = { hits: 0 };
     const upstream = await upstreamLento(contador, 100);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, coalescer: true, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, coalescer: true, log: () => {} });
     recursos.push(gw);
     const pedir = (body: string) => fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body }).then((r) => r.text());
     const p1 = pedir(CUERPO);
@@ -277,7 +281,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
   it("con la bandera APAGADA (el defecto), dos idénticas → dos viajes", async () => {
     const contador = { hits: 0 };
     const upstream = await upstreamLento(contador, 100);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
     const pedir = () => fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: CUERPO }).then((r) => r.text());
     const p1 = pedir();

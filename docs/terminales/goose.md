@@ -9,7 +9,7 @@ forma del URL.
 
 - `goose` en el PATH, con el proveedor Anthropic elegido.
 - `ANTHROPIC_API_KEY` exportada (Goose es solo BYOK).
-- `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
+- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
 
 ## Envoltorio: `bvsala goose`
 

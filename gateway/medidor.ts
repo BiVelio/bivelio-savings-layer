@@ -434,6 +434,26 @@ export interface Atribucion {
   agentId?: string;
 }
 
+/**
+ * Traffic with no per-token invoice (a Claude or ChatGPT subscription),
+ * recognised only by protocol markers, never by credentials: an
+ * `anthropic-beta` element starting with `oauth-`, a `/backend-api/` path, or
+ * a chatgpt.com upstream.
+ */
+export function isSubscriptionTraffic(pathname: string, anthropicBeta: string | undefined, upstreamBase: string): boolean {
+  // Las MARCAS del protocolo, jamás el valor de `Authorization` ni de
+  // `x-api-key`: la beta oauth-* es obligatoria para el OAuth de Claude Code, y
+  // el backend de ChatGPT solo se alcanza por /backend-api/ en chatgpt.com.
+  if ((anthropicBeta ?? "").split(",").some((b) => b.trim().startsWith("oauth-"))) return true;
+  if (pathname.startsWith("/backend-api/")) return true;
+  try {
+    const host = new URL(upstreamBase).hostname.toLowerCase();
+    return host === "chatgpt.com" || host.endsWith(".chatgpt.com");
+  } catch {
+    return false;
+  }
+}
+
 export function informeMedido(
   requestId: string,
   model: string,
@@ -447,8 +467,10 @@ export function informeMedido(
    * baseline se recalcula al SOLICITADO sobre el mismo conteo.
    */
   hermano?: CambioDeModelo | null,
+  /** true → no se acredita ahorro de rebaja ni de hermano: baseline == actual. */
+  subscription?: boolean,
 ): SavingsReport {
-  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja, hermano);
+  return construirInforme(requestId, model, medido, false, atribucion, elision, rebaja, hermano, subscription);
 }
 
 /**
@@ -532,6 +554,7 @@ function construirInforme(
   elision?: ElisionAplicada | null,
   rebaja?: RebajaAplicada | null,
   hermano?: CambioDeModelo | null,
+  subscription = false,
 ): SavingsReport {
   const entradaTotal = medido.tokens.entrada + medido.tokens.cacheLeida + medido.tokens.cacheEscrita;
   // ── LA PALANCA DE TARIFA · el primer euro MEDIDO de verdad ──────────────
@@ -556,12 +579,19 @@ function construirInforme(
   // pagó) y el baseline se recalcula al SOLICITADO sobre el mismo conteo. La
   // regla de accounting.ts (`basis = removed===0 ? measured : estimated`)
   // sigue siendo cierta: C no quita un token, cambia su precio.
+  //
+  // Tráfico de suscripción: sin factura por tokens no hay nada contra lo que
+  // defender el ahorro; se aplica la palanca, no se acredita el dinero. Las dos
+  // restas de arriba son entre precios de LISTA, y un suscriptor no paga lista:
+  // acreditarlas sería cobrar comisión sobre una diferencia que no aparece en
+  // ninguna factura suya. Con `subscription`, baseline == actual por diseño.
+  const acreditable = !coalescida && !subscription;
   const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
   const sobrecosteEvitado =
-    !coalescida && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && escrita5m > 0
+    acreditable && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && escrita5m > 0
       ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
       : 0;
-  const ahorroHermano = !coalescida && hermano ? ahorroDeHermano(hermano, medido) : 0;
+  const ahorroHermano = acreditable && hermano ? ahorroDeHermano(hermano, medido) : 0;
   const baselineMedido = medido.costeUsd + sobrecosteEvitado + ahorroHermano;
   const ahorroMedido = sobrecosteEvitado + ahorroHermano;
   // B2 · el suelo de la elisión del proveedor (ver sueloDeElision). Una gemela

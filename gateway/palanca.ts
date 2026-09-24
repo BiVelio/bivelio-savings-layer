@@ -194,8 +194,13 @@ export function describirEstadoDeElision(
     ? " · context elision dials FORCED ON BY HAND (BVSALA_GATEWAY_DIALES_ELISION=1): they measure as a net loss, R=4.05 vs R*=0.0127"
     : " · context elision dials OFF";
   if (bandera === "0") {
+    // Desde que la licencia verja el gateway, =0 apaga las PALANCAS pero no el
+    // canal: por él llega el bloqueo del control plane (`reason`), y cerrarlo
+    // era también cerrar la revocación.
     return {
-      linea: "licence channel: CLOSED (BVSALA_GATEWAY_ELISION=0) — no TTL tuning and no context elision dials",
+      linea:
+        "savings levers: OFF (BVSALA_GATEWAY_ELISION=0) - no TTL tuning and no context elision dials; " +
+        "the licence channel stays open for the license status",
       aviso: false,
     };
   }
@@ -211,7 +216,7 @@ export function describirEstadoDeElision(
     linea:
       (bandera === "1"
         ? "licence channel: OPEN (BVSALA_GATEWAY_ELISION=1)"
-        : "licence channel: OPEN by default (=0 closes it)") +
+        : "licence channel: OPEN by default (=0 turns the levers off)") +
       cola +
       diales,
     aviso: dialesArmados,

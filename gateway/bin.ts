@@ -9,7 +9,8 @@ import { describirEstadoDeElision } from "./palanca.js";
 import { describirEstadoDeEsfuerzo } from "./esfuerzo.js";
 import { describirEstadoDeHermano } from "./hermano.js";
 import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
-import { decidirArranque, mensajeDeFalloDeArranque } from "./argumentos.js";
+import { decidirArranque, isChildInfoRequest, mensajeDeFalloDeArranque } from "./argumentos.js";
+import { LICENSE_SERVER_URL, resolveStartupLicense } from "./license.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
 import { connect } from "node:net";
@@ -35,6 +36,7 @@ import { doctor } from "./doctor.js";
 import { instalarAgentsMd, instalarSkill } from "./skill.js";
 import { soportaZstd } from "./medidor.js";
 import { BV_SALA_VERSION } from "../src/index.js";
+import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
 
 /**
  * El CLI de la pasarela:
@@ -49,6 +51,12 @@ import { BV_SALA_VERSION } from "../src/index.js";
  *   `bvsala doctor [--puerto N]` — detecta terminales instalados e imprime el
  *   bloque de configuración exacto de cada uno (gateway/doctor.ts).
  *
+ * El gateway y los envoltorios EXIGEN LICENCIA al arrancar (LICENSE §2), como el
+ * SDK: la recogen con BIVELIO_SERVICE_KEY y la verifican contra la clave pública
+ * embebida (gateway/license.ts); sin ella, exit 1 con el arreglo exacto. La
+ * ayuda, la versión, el doctor, el skill y `bvsala <terminal> --help|-h|--version`
+ * no usan el servicio ni la red, y siguen funcionando sin licencia.
+ *
  * La decisión «ayuda / versión / arrancar» es una función pura
  * (gateway/argumentos.ts) porque este fichero arranca cosas al importarse y
  * no se puede probar; lo que aquí se hace es ejecutar lo decidido.
@@ -61,9 +69,10 @@ function ayuda(): void {
 Commands:
   gateway [--port N]     Local metering proxy (default port 8402) for terminals that
                          honour a base URL: Claude Code, opencode, Goose, Crush…
+                         Needs BIVELIO_SERVICE_KEY and an active BiVelio license.
   claude [args…]         Run Claude Code through the gateway. No configuration needed.
   codex [args…]          Run Codex CLI through the gateway (API key: api.openai.com;
-                         ChatGPT auth: chatgpt.com/backend-api/codex — metered, not billed).
+                         ChatGPT auth: chatgpt.com/backend-api/codex, metered with no commission).
   goose [args…]          Run Goose (ANTHROPIC_HOST) through the gateway.
   qwen [args…]           Run Qwen Code (ANTHROPIC_BASE_URL) through the gateway.
   doctor [--port N]      Detect installed terminals and print the exact configuration for each.
@@ -77,11 +86,15 @@ Commands:
                          not promised.
   --version | -v         Print the version only.
   --help | -h            This help; also accepted after gateway, doctor or skill
-                         (\`bvsala gateway --help\` starts nothing).
+                         (\`bvsala gateway --help\` starts nothing; \`bvsala claude --help\` or
+                         \`--version\` go straight to the terminal, with no gateway).
 
   Flags also accept their original Spanish spellings (--puerto, --proyecto, --forzar).
 Environment:
-  BIVELIO_SERVICE_KEY    Service key (bvk_…): enables metering and seat identity.
+  BIVELIO_SERVICE_KEY    Service key (bvk_…): REQUIRED. Identifies your organization, collects its
+                         license (renewed by itself) and enables metering and seat identity.
+  BIVELIO_LICENSE_KEY    License key (optional fallback): used only if savings.bivelio.com cannot be
+                         reached at start; verified on this machine. Replace it every billing period.
   BVSALA_SEAT_ID         Stable seat identity per replica (optional).
   BVSALA_GATEWAY_UPSTREAM  Alternative upstream (default: the terminal's own).
   BVSALA_GATEWAY_COALESCE  =1 enables duplicate-request coalescing (experimental).
@@ -89,6 +102,7 @@ Environment:
                          computes what the elision policy would have saved WITHOUT touching
                          traffic and reports it separately (never counts toward the fee).
   BVSALA_GATEWAY_ELISION =0 turns OFF the provider-side levers, which are armed by default.
+                         (The license check is not affected: the licence channel stays open.)
                          Each one only takes effect if your organization's license carries
                          its feature (checked fail-closed):
                            · context_elision  — adjusts ONLY the context_management block
@@ -126,7 +140,11 @@ Environment:
                          default so it does not overwrite the TUI; use the dashboard instead).
   CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1  (Claude Code, API key only) your models in /model.
 
-The gateway never blocks traffic: without a key, or with ingestion down, it forwards and warns.
+The gateway is fail-closed, like the SDK: it starts only with BIVELIO_SERVICE_KEY and an active
+BiVelio license. It never interrupts a request in flight: if the license lapses, only NEW requests
+are refused (HTTP 402) until it is renewed. Metering is best-effort: with ingestion down, it
+forwards and warns. On a Claude or ChatGPT subscription there is no per-token invoice: that
+traffic is metered at list-price equivalent and never carries commission.
 Your prompts never leave your machine — only counts and cost. More: savings.bivelio.com`);
 }
 
@@ -187,6 +205,56 @@ if (comando === "doctor") {
   process.exit(0);
 }
 
+/**
+ * `bvsala claude --help`, `-h` o `--version`: una PREGUNTA al terminal hijo, no
+ * una sesión. Va directa al binario, sin gateway ni licencia: no pasa tráfico
+ * que medir, y exigir la clave para leer la ayuda de Claude Code sería un muro
+ * absurdo. Hereda el entorno sin tocarlo y sale con el código del hijo.
+ */
+function lanzarSinGateway(terminal: typeof comando, args: string[]): Promise<never> {
+  if (!esTerminalConEnvoltorio(terminal)) process.exit(1);
+  let bin = envoltorioDe(terminal, 0, [], {}).bin;
+  if (process.platform === "win32") {
+    const resuelto = resolverBinarioWindows(bin);
+    if (resuelto.tipo === "exe") {
+      bin = resuelto.ruta;
+    } else if (resuelto.tipo === "solo-shim") {
+      console.error(
+        `[bvsala ${terminal}] \`${bin}\` is installed as an npm shim (${resuelto.ruta}) and Windows cannot ` +
+          "launch it safely with arguments (CVE-2024-27980). Install it with its native installer " +
+          `(which leaves a ${bin}.exe on the PATH) or use the manual recipe in docs/terminales/.`,
+      );
+      process.exit(127);
+    }
+  }
+  const hijo = spawn(bin, args, { stdio: "inherit" });
+  hijo.on("error", (err) => {
+    console.error(`[bvsala ${terminal}] could not launch \`${bin}\`: ${String(err)}. Is it installed and on the PATH?`);
+    process.exit(127);
+  });
+  hijo.on("exit", (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
+  return new Promise<never>(() => {});
+}
+if (esEnvoltorio && isChildInfoRequest(resto)) await lanzarSinGateway(comando, resto);
+
+// ── LA VERJA DE LICENCIA (LICENSE §2) ─────────────────────────────────────
+// Antes del envoltorio, del anillo 2 y de cualquier lectura de fichero: sin
+// licencia verificada, el gateway no arranca. Se recoge SIEMPRE online con la
+// clave de servicio (la ata a su org); BIVELIO_LICENSE_KEY solo es el respaldo
+// cuando savings.bivelio.com no responde. La URL es SIEMPRE la de producción:
+// BVSALA_METERING_URL ya no redirige ni la licencia ni el canal.
+const serviceAccountKey = process.env.BIVELIO_SERVICE_KEY?.trim() || undefined;
+const licencia = await resolveStartupLicense({
+  serviceAccountKey,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: LICENSE_SERVER_URL,
+  publicKey: EMBEDDED_PUBLIC_KEY,
+});
+if (!licencia.ok) {
+  console.error(`[bvsala ${comando}] ${licencia.message}`);
+  process.exit(1);
+}
+
 // La tabla decide destino y variables; bin.ts solo ejecuta. El modo de auth de
 // Codex se lee por EXISTENCIA/enum de ~/.codex/auth.json — jamás se registra.
 const envoltorio = esEnvoltorio
@@ -198,7 +266,6 @@ const envoltorio = esEnvoltorio
     })
   : null;
 
-const serviceAccountKey = process.env.BIVELIO_SERVICE_KEY;
 // En modo envoltorio el hijo ES un TUI dueño de la terminal: el log por
 // petición del gateway se imprimía encima y se pisaban las palabras (visto en
 // vivo con el diálogo de confianza de Claude Code). Silencio por defecto —
@@ -230,7 +297,19 @@ try {
   arranque = await arrancarGateway({
     puerto,
     ...(silencioso ? { log: () => {} } : {}),
-    ...(serviceAccountKey ? { serviceAccountKey } : {}),
+    // La licencia ya verificada, y la base del control plane para el canal, las
+    // revocaciones y el renovador. Un arranque OFFLINE pide recogida inmediata.
+    license: {
+      token: licencia.license.token,
+      publicKey: EMBEDDED_PUBLIC_KEY,
+      licenseServerUrl: LICENSE_SERVER_URL,
+      checkOnStart: licencia.source === "offline",
+    },
+    // Las transiciones de licencia NO se silencian en los envoltorios: un 402 a
+    // mitad de sesión tiene que decir por qué y dónde se arregla.
+    warn: (l: string) => console.error(l),
+    // Garantizada por la verja de arriba.
+    serviceAccountKey: serviceAccountKey!,
     ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
     ...(upstreamPedido
       ? { upstream: upstreamPedido }
@@ -268,8 +347,9 @@ try {
     // campo de la raíz, que sí— y verja por modelo, porque fuera de fable-5-1,
     // mythos-5-1 y opus-5 es un 400.
     ...(process.env.BVSALA_GATEWAY_ESFUERZO ? { esfuerzo: process.env.BVSALA_GATEWAY_ESFUERZO } : {}),
-    // Solo para desarrollo y pruebas: redirigir la ingesta de metering. En
-    // producción no se toca y el gateway habla con savings.bivelio.com.
+    // Solo para desarrollo y pruebas: redirigir la INGESTA de metering (y solo
+    // ella: la licencia y el canal van siempre a savings.bivelio.com). En
+    // producción no se toca.
     ...(process.env.BVSALA_METERING_URL ? { meteringUrl: process.env.BVSALA_METERING_URL } : {}),
   });
 } catch (err) {
@@ -284,31 +364,29 @@ try {
 
 const upstreamEfectivo = upstreamPedido ?? envoltorio?.upstream ?? "https://api.anthropic.com";
 console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:${arranque.puerto} → ${upstreamEfectivo}`);
-console.log(`[bvsala gateway] metering: ${serviceAccountKey ? "ON (service key present)" : "OFF (BIVELIO_SERVICE_KEY not set)"}`);
+(licencia.lineIsWarning ? console.error : console.log)(`[bvsala gateway] ${licencia.line}`);
+for (const w of licencia.warnings) console.error(`[bvsala gateway] ${w}`);
+console.log("[bvsala gateway] metering: ON (service key present)");
+if (process.env.BVSALA_METERING_URL) {
+  console.error(
+    `[bvsala gateway] WARNING: BVSALA_METERING_URL=${process.env.BVSALA_METERING_URL} redirects usage reporting away ` +
+      "from savings.bivelio.com (development only): your dashboard will not see this usage. The license and the " +
+      "entitlements channel still use savings.bivelio.com.",
+  );
+}
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de
   // «palanca» corrió sin clave en un terminal viejo y fue control en silencio.
-  const estado = describirEstadoDeElision(
-    elisionPedida,
-    serviceAccountKey !== undefined,
-    process.env.BVSALA_GATEWAY_DIALES_ELISION === "1",
-  );
+  // Con la verja de licencia, la clave está garantizada: `hayClave` es true.
+  const estado = describirEstadoDeElision(elisionPedida, true, process.env.BVSALA_GATEWAY_DIALES_ELISION === "1");
   (estado.aviso ? console.error : console.log)(`[bvsala gateway] ${estado.linea}`);
   // Palanca C dicha en voz alta, por la misma razón: una bandera puesta en un
   // terminal sin clave (o con el canal cerrado) es control en silencio.
-  const estadoHermano = describirEstadoDeHermano(
-    process.env.BVSALA_GATEWAY_MODELO_HERMANO,
-    serviceAccountKey !== undefined,
-    elisionPedida !== "0",
-  );
+  const estadoHermano = describirEstadoDeHermano(process.env.BVSALA_GATEWAY_MODELO_HERMANO, true, elisionPedida !== "0");
   (estadoHermano.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoHermano.linea}`);
   // Palanca D dicha en voz alta por la misma razón que las otras: una palanca
   // que se cree encendida y no lo está es la trampa muda que ya costó un A/B.
-  const estadoEsfuerzo = describirEstadoDeEsfuerzo(
-    process.env.BVSALA_GATEWAY_ESFUERZO,
-    serviceAccountKey !== undefined,
-    elisionPedida !== "0",
-  );
+  const estadoEsfuerzo = describirEstadoDeEsfuerzo(process.env.BVSALA_GATEWAY_ESFUERZO, true, elisionPedida !== "0");
   (estadoEsfuerzo.aviso ? console.error : console.log)(`[bvsala gateway] ${estadoEsfuerzo.linea}`);
   if (planAnillo2.linea) {
     (planAnillo2.aviso ? console.error : console.log)(`[bvsala gateway] ${planAnillo2.linea}`);

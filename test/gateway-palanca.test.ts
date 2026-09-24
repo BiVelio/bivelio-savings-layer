@@ -3,6 +3,7 @@ import { gzipSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { testLicense } from "./helpers/test-license.js";
 import { ajustarDiales, conBetaDeElision, describirEstadoDeElision, dialesSonNuestros, fusionarDiales, triggerDelCliente } from "../gateway/palanca.js";
 import { precioDeLista } from "../src/pricing/catalogo.js";
 import { CanalDeEntitlements } from "../gateway/entitlements.js";
@@ -56,14 +57,14 @@ interface Recibida {
   body: string;
 }
 
-function arrancarUpstreamFalso(recibidas: Recibida[]): Promise<number> {
+function arrancarUpstreamFalso(recibidas: Recibida[], respuesta: string = RESPUESTA_JSON): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
       for await (const c of req) chunks.push(c as Buffer);
       recibidas.push({ path: req.url ?? "", headers: { ...req.headers }, body: Buffer.concat(chunks).toString("utf8") });
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(RESPUESTA_JSON);
+      res.end(respuesta);
     });
     recursos.push(s);
     s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
@@ -152,6 +153,7 @@ async function gatewayCon(opciones: {
   clave?: string;
 }): Promise<GatewayArrancado> {
   const g = await arrancarGateway({
+    license: testLicense(),
     puerto: 0,
     upstream: `http://127.0.0.1:${opciones.upstream}`,
     ...(opciones.clave !== undefined ? { serviceAccountKey: opciones.clave } : {}),
@@ -492,7 +494,9 @@ describe("describirEstadoDeElision — el brazo dicho al arrancar", () => {
     // y los diales (la que pierde) tienen bandera propia.
     expect(describirEstadoDeElision("1", true).linea).toMatch(/licence channel: OPEN \(BVSALA_GATEWAY_ELISION=1\)/);
     expect(describirEstadoDeElision(undefined, true).linea).toMatch(/licence channel: OPEN by default/);
-    expect(describirEstadoDeElision("0", true).linea).toMatch(/licence channel: CLOSED.*no TTL tuning and no context elision dials/);
+    // =0 apaga las PALANCAS, no el canal: por el canal llega el bloqueo de la org.
+    expect(describirEstadoDeElision("0", true).linea).toMatch(/levers: OFF \(BVSALA_GATEWAY_ELISION=0\).*no TTL tuning and no context elision dials/);
+    expect(describirEstadoDeElision("0", true).linea).not.toMatch(/licence channel: CLOSED/);
     // Y jamás vuelve a anunciar la elisión como armada solo por tener canal.
     expect(describirEstadoDeElision("1", true).linea).toContain("context elision dials OFF");
     expect(describirEstadoDeElision("1", true).aviso).toBe(false);
@@ -558,6 +562,54 @@ describe("la palanca de punta a punta", () => {
     // B ESTÁ MUERTA: ni diales ni beta añadida.
     expect(json.context_management).toBeUndefined();
     expect(recibidas[0]!.headers["anthropic-beta"]).toBe("oauth-2025-04-20");
+  });
+
+  it("SUSCRIPCIÓN (anthropic-beta oauth-*): la rebaja SE APLICA pero el lote NO acredita ahorro; con API key sí", async () => {
+    // Un suscriptor no paga lista: la resta 1h→5m es una diferencia de precio
+    // que no aparece en ninguna factura suya. La palanca se aplica (estira
+    // topes), el dinero no se acredita — y la comisión es 0 por diseño.
+    const RESPUESTA_CON_ESCRITURA = JSON.stringify({
+      id: "msg_1",
+      type: "message",
+      usage: {
+        input_tokens: 10,
+        output_tokens: 2,
+        cache_creation_input_tokens: 50_000,
+        cache_creation: { ephemeral_5m_input_tokens: 50_000, ephemeral_1h_input_tokens: 0 },
+      },
+    });
+    const cuerpo = JSON.stringify({
+      model: "claude-fable-5-1",
+      messages: [{ role: "user", content: "hola" }],
+      system: [{ type: "text", text: "sys", cache_control: { type: "ephemeral", ttl: "1h" } }],
+    });
+    const medirCon = async (cabeceras: Record<string, string>) => {
+      const recibidas: Recibida[] = [];
+      const lotes: unknown[][] = [];
+      const upstream = await arrancarUpstreamFalso(recibidas, RESPUESTA_CON_ESCRITURA);
+      const plataforma = await arrancarPlataformaFalsa({ features: ["cache_ttl_tuning"], lotes });
+      const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test" });
+      await esperarCanal();
+      const res = await pedir(g.puerto, cuerpo, cabeceras);
+      expect(res.status).toBe(200);
+      await res.text();
+      await g.cerrar();
+      await esperar(() => lotes.length > 0);
+      return { recibida: recibidas[0]!, reg: lotes.flat()[0] as Record<string, unknown> };
+    };
+
+    const suscripcion = await medirCon({ "anthropic-beta": "oauth-2025-04-20" });
+    expect(JSON.parse(suscripcion.recibida.body).system[0].cache_control.ttl).toBe("5m");
+    expect(suscripcion.reg["basis"]).toBe("measured");
+    expect(suscripcion.reg["baselineCost"]).toBe(suscripcion.reg["actualCost"]);
+    expect(suscripcion.reg["netSavings"]).toBe(0);
+
+    // Control: el MISMO tráfico con API key sí acredita (si no, el test de
+    // arriba no distinguiría nada).
+    const apiKey = await medirCon({});
+    expect(JSON.parse(apiKey.recibida.body).system[0].cache_control.ttl).toBe("5m");
+    expect(apiKey.reg["baselineCost"] as number).toBeGreaterThan(apiKey.reg["actualCost"] as number);
+    expect(apiKey.reg["netSavings"] as number).toBeGreaterThan(0);
   });
 
   it("APAGADA por defecto aunque la licencia traiga context_elision (2026-09-09)", async () => {
@@ -666,6 +718,83 @@ describe("CanalDeEntitlements — fail-closed de verdad", () => {
     });
     await canal.refrescar();
     expect(canal.tiene("context_elision")).toBe(false);
+  });
+
+  it("blockReason(): null al inicio; el `reason` de un 200; null tras un 200 sin él", async () => {
+    let cuerpo: Record<string, unknown> = { features: [], refreshAfterSeconds: 300 };
+    let respuestas = 0;
+    const canal = new CanalDeEntitlements({
+      url: "http://127.0.0.1:1/api/org/entitlements",
+      serviceAccountKey: "bvk_x",
+      fetchImpl: (async () => {
+        respuestas += 1;
+        return new Response(JSON.stringify(cuerpo), { status: 200 });
+      }) as typeof fetch,
+    });
+    // El constructor ya lanzó el primer refresco; hasta que asiente, nada.
+    expect(canal.blockReason()).toBeNull();
+    await canal.refrescar();
+    expect(respuestas).toBe(1);
+    expect(canal.blockReason()).toBeNull();
+    cuerpo = { features: [], refreshAfterSeconds: 300, reason: "license-revoked" };
+    await canal.refrescar();
+    expect(canal.blockReason()).toBe("license-revoked");
+    cuerpo = { features: ["context_elision"], refreshAfterSeconds: 300 };
+    await canal.refrescar();
+    expect(canal.blockReason()).toBeNull();
+  });
+
+  it("⛔ el bloqueo es PEGAJOSO: un fallo de red después no lo levanta (un fallo no es un desbloqueo)", async () => {
+    let falla = false;
+    const canal = new CanalDeEntitlements({
+      url: "http://127.0.0.1:1/api/org/entitlements",
+      serviceAccountKey: "bvk_x",
+      fetchImpl: (async () => {
+        if (falla) throw new TypeError("fetch failed");
+        return new Response(JSON.stringify({ features: [], reason: "no-license" }), { status: 200 });
+      }) as typeof fetch,
+    });
+    await canal.refrescar();
+    expect(canal.blockReason()).toBe("no-license");
+    falla = true;
+    await canal.refrescar();
+    expect(canal.blockReason()).toBe("no-license");
+    expect(canal.tiene("context_elision")).toBe(false);
+  });
+
+  it("blockReason() con el TTL vencido dispara un refresco nuevo SIN que nadie llame a tiene()", async () => {
+    let llamadas = 0;
+    const canal = new CanalDeEntitlements({
+      url: "http://127.0.0.1:1/api/org/entitlements",
+      serviceAccountKey: "bvk_x",
+      ttlMs: 5,
+      fetchImpl: (async () => {
+        llamadas += 1;
+        return new Response(JSON.stringify({ features: [], refreshAfterSeconds: 300 }), { status: 200 });
+      }) as typeof fetch,
+    });
+    await canal.refrescar();
+    expect(llamadas).toBe(1);
+    await new Promise((r) => setTimeout(r, 20));
+    canal.blockReason();
+    await canal.refrescar();
+    expect(llamadas).toBe(2);
+  });
+
+  it("⛔ 401 (clave borrada o rotada con el proceso vivo): una línea con el arreglo, features apagadas, sin bloqueo", async () => {
+    const lineas: string[] = [];
+    const canal = new CanalDeEntitlements({
+      url: "http://127.0.0.1:1/api/org/entitlements",
+      serviceAccountKey: "bvk_x",
+      fetchImpl: (async () => new Response("{}", { status: 401 })) as typeof fetch,
+      log: (l) => lineas.push(l),
+    });
+    await canal.refrescar();
+    await canal.refrescar();
+    expect(lineas.filter((l) => l.includes("no longer recognised"))).toHaveLength(1);
+    expect(lineas[0]).toContain("https://savings.bivelio.com/dashboard/install");
+    expect(canal.tiene("context_elision")).toBe(false);
+    expect(canal.blockReason()).toBeNull();
   });
 
   it("una retirada del feature se aplica en el siguiente refresco", async () => {

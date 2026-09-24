@@ -12,8 +12,10 @@ construcción, con test.
   `apiKeyHelper`): es el segmento que BV-SALA mide y factura. Con login de
   claude.ai el enrutado también funciona — la doc oficial lo sanciona: el login
   sigue siendo la credencial activa y «its usage limits and billing apply» [V] —
-  pero ahí no hay factura por token que recortar.
-- `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
+  pero ahí no hay factura por token: el gateway lo mide a precio de lista
+  equivalente y nunca le acredita ahorro ni comisión (la licencia por asiento
+  hace falta igual).
+- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
 
 ## Envoltorio: `bvsala claude` (recomendado)
 
