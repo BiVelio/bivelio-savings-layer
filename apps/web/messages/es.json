@@ -529,6 +529,7 @@
       "referencia": "Medido por referencia: {usd} en {requests} peticiones repetidas que se sirvieron sin llamar a tu proveedor. Cada una se valora con el contador que tu proveedor devolvió para la petición idéntica que ya se ejecutó —está en el informe de esa petición y en el uso de tu proveedor de ese día— al precio de entrada cacheada, el más bajo que tu proveedor cobra por repetir un prompt; la salida solo cuenta si el muestreo era determinista. Entra en la base.",
       "referenciaExcluida": "Medido por referencia: {usd} en {requests} peticiones repetidas. Se enseña como contexto: por ahora queda fuera de la base y de la comisión.",
       "exportarReferencias": "Descargar las peticiones repetidas de este período, una fila por petición (CSV)",
+      "exportarReferenciasPorDia": "Demasiadas peticiones repetidas para un solo fichero: descargar este período día a día (CSV):",
       "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx}.",
       "parametrosReferencia": "Regla de las peticiones repetidas ({regla}): la petición que se ejecutó tiene que ser idéntica byte a byte, sin que la capa la tocara y con {dias} días como mucho; la entrada, al precio de entrada cacheada de tu proveedor; la salida, al {cuota} de su contador, nunca por encima del límite de salida de esta petición y solo con muestreo determinista.",
       "mismaFacturaTitulo": "Este documento ES la futura factura.",

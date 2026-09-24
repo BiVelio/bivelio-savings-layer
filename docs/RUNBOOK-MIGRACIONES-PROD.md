@@ -80,7 +80,7 @@ migración crea:
 | 0012 | columna `subscriptions.last_event_at` | Ya confirmada el 11-08; debería salir `true` |
 | 0013 | tabla `org_invitations` + columna `organizations.owner_user_id` | |
 | 0014 | función `transferir_propiedad` | |
-| 0015 | check `usage_daily_token_totals_no_negatives` | La versión **final** de la RPC |
+| 0015 | check `usage_daily_token_totals_no_negatives` | Lleva versión de la RPC — regla 1 (fue la final de este lote; hoy la final es la de 0029: fila «RPC final») |
 | 0016 | tabla `extractos` | La que necesita el cron del día 1 a las 05:00 |
 | 0017 | tabla `cargos` | La que necesita el cron del día 1 a las 07:00 |
 | 0029 | tabla `reference_hits` | El carril medido por referencia (anexo 0029, al final). Lleva versión de la RPC — regla 1 |
@@ -454,13 +454,20 @@ cacheada; salida solo con muestreo determinista). Añade:
 
 - `usage_daily`: `reference_requests`, `reference_baseline_cost`,
   `reference_actual_cost` (con el CHECK `usage_daily_reference_no_negatives`,
-  solo `≥ 0`);
-- `usage_daily_by_model`: `reference_requests`, `reference_baseline_cost`;
+  solo `≥ 0`). El dinero va en `numeric(20,10)`, no en el `numeric(14,6)` del
+  resto de la tabla: la RPC suma registro a registro, Postgres redondea cada
+  uno a la escala de la columna y un acierto por referencia vale
+  micro-dólares — a 6 decimales la base subiría por encima del suelo del SDK y
+  dejaría de cuadrar con el CSV;
+- `usage_daily_by_model`: `reference_requests`, `reference_baseline_cost`
+  (también `numeric(20,10)`);
 - `extractos`: `requests_referencia`, `base_referencia_usd`,
   `ahorro_referencia_usd`, `regla_referencia` (CHECK
   `extractos_referencia_no_negativos`, solo `≥ 0`);
 - la tabla `reference_hits` (una fila por acierto, RLS de miembro): lo que
-  descarga el enlace CSV del extracto;
+  descarga el enlace CSV del extracto, con el índice `(org_id, day,
+  request_id)` de la descarga por clave y un BRIN sobre `day` para la purga
+  nocturna de retención (460 días);
 - **otra versión de `ingest_usage_batch`**: el cuerpo de 0025 ENTERO con dos
   bloques distintos (el insert de `usage_daily` y el fold por modelo, que
   además escribe la fila de `reference_hits`). `test/migracion-0029.test.ts`
@@ -481,9 +488,17 @@ acumulación, en la ruta del ingest (`BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1`).
   descarta el lote sin reintento): un SDK que emita `reference` contra una web
   sin la lista blanca recibe 400 y pierde el lote.
 - **Web antes que 0029 NO rompe, pero no se hace:** el panel, el cierre del día
-  1, la purga de retención y el CSV toleran que la migración no esté (leen sin
-  el carril y lo avisan); sin 0029 no se acumula referencia y no hay nada que
-  perder, pero el orden de arriba evita ventanas.
+  1 y la purga de retención toleran que la migración no esté (leen sin el
+  carril y lo avisan; el cierre, con alerta **crítica**, porque con el SDK ya
+  emitiendo referencia cada mes sin 0029 sella ese ahorro fuera de la base); el
+  CSV responde 503, nunca un fichero vacío. El orden de arriba evita ventanas.
+- **Retroceso: NUNCA un rollback de Vercel a un despliegue anterior a este
+  carril** una vez publicado el SDK que emite `reference`: ese ingest no conoce
+  el basis, respondería 400 y el emisor tiraría el lote ENTERO (también el uso
+  medido) sin reintento. El retroceso es `BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1`
+  en Vercel y redesplegar el MISMO commit (corta la acumulación; `1`, `true`,
+  `yes` u `on` valen) o `COMISIONAR_REFERENCIA = false` por PR (deja de cobrar
+  lo no sellado).
 - **Regla 1, literal:** 0029 lleva versión de la RPC — re-ejecutar 0025 o una
   anterior DESPUÉS regresa la RPC en silencio: dejan de acumularse las columnas
   `reference_*` y de escribirse `reference_hits`, y el extracto deja de ver la
@@ -521,8 +536,17 @@ Relanzar el diagnóstico hasta tener las cuatro `true`.
 - Un lote sintético `basis: "reference"` coherente, con la clave `bvk_` de la
   organización interna de pruebas (leída de fichero, jamás impresa) → **202**,
   y en la base `usage_daily.reference_requests` +1 y una fila en
-  `reference_hits`. Un lote incoherente (p. ej. `actualCost > 0`) → **202** con
-  `reference_requests` sin moverse: la verja lo degrada a `estimated`.
+  `reference_hits`. Coherente quiere decir, además de llamada evitada sin
+  coste: `referenceRequestId` y `referenceAt` presentes (epoch ms, como mucho
+  30 días antes de `at`). Un lote incoherente (p. ej. `actualCost > 0`, o sin
+  `referenceRequestId`) → **202** con `reference_requests` sin moverse: la verja
+  lo degrada a `estimated`.
+- La descarga CSV (enlace del extracto) sale en streaming, que es lo que la
+  libra del límite de 4,5 MB de las respuestas de función de Vercel. La primera
+  vez que una org pase de ~35.000 repeticiones en un mes (≈ 5 MB de CSV),
+  bajarla entera desde el extracto y contar las filas contra
+  `requests_referencia`. Un mes de más de 1.000.000 de filas no se sirve en un
+  fichero (413): el extracto ofrece entonces la descarga día a día.
 - Antes del primer cierre con referencia (día 1): `?seco=1` y revisar a mano
   las organizaciones con `requests_referencia > 0`. El primer período de cada
   organización es calibración (cargo 0).

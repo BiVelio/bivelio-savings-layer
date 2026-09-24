@@ -529,6 +529,7 @@
       "referencia": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik. Termasuk dalam basis.",
       "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis maupun komisi.",
       "exportarReferencias": "Unduh permintaan berulang periode ini, satu baris per permintaan (CSV)",
+      "exportarReferenciasPorDia": "Terlalu banyak permintaan berulang untuk satu file — unduh periode ini per hari (CSV):",
       "parametros": "Parameter laporan — katalog harga {version} · nilai tukar {fx}.",
       "parametrosReferencia": "Aturan permintaan berulang ({regla}): permintaan yang dijalankan harus identik byte demi byte, tidak diubah oleh lapisan, dan paling lama berumur {dias} hari; input pada tarif input ter-cache penyedia Anda; output sebesar {cuota} dari penghitungnya, tidak pernah melebihi batas output permintaan ini, dan hanya dengan sampling deterministik.",
       "mismaFacturaTitulo": "Dokumen ini ADALAH faktur yang akan datang.",

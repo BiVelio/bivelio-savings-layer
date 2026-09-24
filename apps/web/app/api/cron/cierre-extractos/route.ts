@@ -99,9 +99,13 @@ export async function GET(req: Request): Promise<NextResponse> {
     );
   // 0029 · EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN. Sin las columnas
   // reference_* (42703), el cierre se hace SIN el carril por referencia en vez
-  // de aplazarse: sin 0029 la RPC tampoco acumula nada en ese carril, así que
-  // no hay dinero de referencia que perder, y el extracto sellado es el mismo
-  // que antes de 0029. Se avisa para que alguien aplique la migración.
+  // de aplazarse: sin 0029 la RPC tampoco acumula nada en ese carril, y el
+  // extracto sellado es el mismo que antes de 0029.
+  //
+  // Pero la alerta es CRÍTICA (solo lo crítico llega por correo): si la web ya
+  // acepta basis "reference" y el SDK ya lo emite, sin 0029 esas repeticiones
+  // entran en la RPC de 0025 como estimado y se sellan FUERA de la base, mes
+  // tras mes, sin ningún error visible. Es ingreso que se pierde en silencio.
   let conReferencia = true;
   let filas: FilaUso[];
   try {
@@ -112,7 +116,7 @@ export async function GET(req: Request): Promise<NextResponse> {
       conReferencia = false;
       console.warn("[cierre-extractos] usage_daily sin las columnas reference_* (¿falta la migración 0029?); se cierra sin ese carril");
       await alertar({
-        nivel: "aviso",
+        nivel: "critico",
         asunto: "Cierre de extractos sin el carril medido por referencia: falta aplicar la migración 0029",
         detalle: { periodo, motivo: (error as ErrorDePostgrest).message ?? String(error) },
       });

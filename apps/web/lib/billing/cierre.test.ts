@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { cerrarPeriodo as cerrarConFx, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "./cierre";
 import type { FilaDiaria } from "./extracto";
@@ -180,7 +180,7 @@ describe("cerrarPeriodo — el carril medido por referencia (0029) en la fila se
     expect(c!.requests_referencia).toBe(20);
     expect(c!.base_referencia_usd).toBe(50);
     expect(c!.ahorro_referencia_usd).toBe(50);
-    expect(c!.regla_referencia).toBe("referencia-v1");
+    expect(c!.regla_referencia).toBe("reference-v1");
     // Comisionada: ya está DENTRO de lo medido (950 USD de ahorro, 30 peticiones).
     expect(c!.requests_medidas).toBe(30);
     expect(c!.ahorro_medido_usd).toBe(950);
@@ -200,6 +200,33 @@ describe("cerrarPeriodo — el carril medido por referencia (0029) en la fila se
       for (const v of [c!.requests_referencia, c!.base_referencia_usd, c!.ahorro_referencia_usd]) {
         expect(v).toBeGreaterThanOrEqual(0);
       }
+    }
+  });
+
+  it("con el interruptor APAGADO el sello es «reference-v1:excluded» — en inglés, porque el cliente lo lee y la fila es inmutable", async () => {
+    vi.resetModules();
+    vi.doMock("./tarifa", async () => ({
+      ...(await vi.importActual<typeof import("./tarifa")>("./tarifa")),
+      COMISIONAR_REFERENCIA: false,
+    }));
+    try {
+      const { cerrarPeriodo: cerrarApagado } = await import("./cierre");
+      const [c] = cerrarApagado([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09", FX_PRUEBA);
+      expect(c!.regla_referencia).toBe("reference-v1:excluded");
+      // Contexto, no base: las cifras propias se sellan igual, lo medido no las incluye.
+      expect(c!.requests_referencia).toBe(20);
+      expect(c!.requests_medidas).toBe(10);
+    } finally {
+      vi.doUnmock("./tarifa");
+      vi.resetModules();
+    }
+  });
+
+  it("el sello es ASCII y en inglés en los tres casos (nada en castellano llega a la fila inmutable)", () => {
+    const con = cerrarPeriodo([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09")[0]!;
+    const sin = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09")[0]!;
+    for (const sello of [con.regla_referencia, sin.regla_referencia, `${con.regla_referencia}:excluded`]) {
+      expect(sello).toMatch(/^(|reference-v\d+(:excluded)?)$/);
     }
   });
 

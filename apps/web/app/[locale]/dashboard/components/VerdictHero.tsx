@@ -65,11 +65,19 @@ export async function VerdictHero({
                 })}
               </p>
             )}
+            <div className="cap">
+              {t.rich("verdictHero.savedLine", {
+                money: money(v.saved),
+                b: (chunks) => <b>{chunks}</b>,
+              })}
+            </div>
             {/* 0029 · la parte del titular medida POR REFERENCIA: repeticiones
                 servidas sin llamar al proveedor, valoradas con el contador de
                 la petición idéntica que ya corrió. Ya está DENTRO del titular
                 (deriveVerdict la suma bajo COMISIONAR_REFERENCIA); esta línea
-                solo dice cuánto y de dónde sale. */}
+                solo dice cuánto y de dónde sale. Va DETRÁS de savedLine: su
+                «De eso» se refiere al importe ahorrado, no al total con lo
+                estimado de totalSplit. */}
             {v.byReference && (
               <p className="ck-note">
                 {t.rich("verdictHero.referenceNote", {
@@ -79,12 +87,6 @@ export async function VerdictHero({
                 })}
               </p>
             )}
-            <div className="cap">
-              {t.rich("verdictHero.savedLine", {
-                money: money(v.saved),
-                b: (chunks) => <b>{chunks}</b>,
-              })}
-            </div>
           </>
         ) : (
           <>

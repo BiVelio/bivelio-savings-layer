@@ -49,7 +49,8 @@ export interface FilaDeCierre {
    * Con la referencia comisionada, estas cifras YA están dentro de
    * requests_medidas / base_medida_usd / ahorro_medido_usd; aquí van aparte
    * para auditarlas. `regla_referencia`: "" sin referencia, la versión de la
-   * regla si entró en la base y la versión + ":excluida" si solo se enseñó.
+   * regla si entró en la base y la versión + ":excluded" si solo se enseñó
+   * (en inglés: es un sello que el cliente puede leer, y la fila es inmutable).
    */
   requests_referencia: number;
   base_referencia_usd: number;
@@ -130,7 +131,7 @@ function aFilaDeCierre(e: Extracto): FilaDeCierre {
 function reglaSellada(e: Extracto): string {
   if (e.referencia === null) return "";
   const version = e.parametros.referencia.version;
-  return e.referencia.comisionada ? version : `${version}:excluida`;
+  return e.referencia.comisionada ? version : `${version}:excluded`;
 }
 
 function redondear6(n: number): number {

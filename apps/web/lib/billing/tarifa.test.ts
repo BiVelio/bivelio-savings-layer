@@ -133,11 +133,15 @@ describe("COMISIONAR_REFERENCIA — el interruptor del carril medido por referen
 
   it("la regla publicada en el extracto es la v1 decidida", () => {
     expect(REGLA_REFERENCIA).toEqual({
-      version: "referencia-v1",
+      version: "reference-v1",
       cuotaSalida: 0.95,
       edadMaximaDias: 30,
       margenPorMensajeTokens: 8,
     });
+  });
+
+  it("el identificador de la regla es PÚBLICO: ASCII y en inglés (se pinta en el extracto y se sella inmutable)", () => {
+    expect(REGLA_REFERENCIA.version).toMatch(/^reference-v\d+$/);
   });
 
   /**
@@ -165,9 +169,19 @@ describe("COMISIONAR_REFERENCIA — el interruptor del carril medido por referen
     expect(REGLA_REFERENCIA.margenPorMensajeTokens).toBe(margen);
   });
 
-  it("(aviso) sin las constantes en el SDK el ancla de arriba se salta: PR-B las trae", () => {
-    // No es un fallo: documenta el estado. Con las constantes en src/, el test de arriba corre.
-    expect(typeof sdkLasTiene).toBe("boolean");
+  /**
+   * EL SALTO NO PUEDE SER SILENCIOSO PARA SIEMPRE. El ancla de arriba se salta
+   * solo mientras el SDK NO emita la clase: en cuanto `CostBasis` de
+   * src/tokenizer/accounting.ts incluya "reference", las tres constantes TIENEN
+   * que estar en ese fichero con esos nombres — si PR-B las pusiera en otro
+   * sitio o con otro nombre, el ancla no correría nunca y la regla publicada
+   * podría divergir de la que valora sin que nadie lo viera.
+   */
+  it("si el SDK ya emite basis \"reference\", las constantes tienen que estar donde el ancla las lee", () => {
+    const tipo = /export type CostBasis\s*=([^;]*);/.exec(accounting);
+    expect(tipo, "CostBasis tiene que seguir en src/tokenizer/accounting.ts (si se mueve, mover el ancla)").not.toBeNull();
+    const sdkEmiteReferencia = /["']reference["']/.test(tipo![1]!);
+    if (sdkEmiteReferencia) expect(sdkLasTiene).toBe(true);
   });
 });
 
