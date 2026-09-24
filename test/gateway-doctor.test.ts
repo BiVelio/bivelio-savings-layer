@@ -157,6 +157,48 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
   });
 });
 
+describe("bvsala doctor — Python, o cualquier lenguaje, por el base URL del SDK", () => {
+  it("OpenAI: arranca su propio gateway, base_url CON /v1, y pide include_usage para medir el stream", async () => {
+    const { texto } = await vacio();
+    const s = seccion(texto, "python-openai");
+    expect(s).toContain('OpenAI(base_url="http://127.0.0.1:8402/v1")');
+    expect(s).toContain('new OpenAI({ baseURL: "http://127.0.0.1:8402/v1" })');
+    expect(s).toContain("--upstream openai");
+    expect(s).toContain('stream_options={"include_usage": True}');
+    // Su comprobación mira la ruta de Chat Completions, no la de Messages.
+    expect(s).toContain("check: the gateway log must show `[gateway] POST /v1/chat/completions …`");
+    expect(s).toContain("`/v1/v1/chat/completions`, there is one /v1 too many");
+  });
+
+  it("Anthropic: el upstream por defecto, base_url SIN /v1", async () => {
+    const { texto } = await vacio();
+    const s = seccion(texto, "python-anthropic");
+    expect(s).toContain('Anthropic(base_url="http://127.0.0.1:8402")');
+    expect(s).not.toContain("8402/v1");
+    expect(s).toContain("check: the gateway log must show `[gateway] POST /v1/messages …`");
+  });
+
+  it("los dos dicen que no se detectan (cualquier lenguaje) y jamás cuentan como detectados", async () => {
+    const { texto, detectados } = await doctor(PUERTO, { home: HOME, path: "/bin", existe: () => true });
+    for (const id of ["python-openai", "python-anthropic"]) {
+      expect(seccion(texto, id), id).toMatch(new RegExp(`^${id}: no detection: any language`));
+      expect(detectados).not.toContain(id);
+    }
+  });
+
+  it("cierra diciendo qué mide el gateway en cualquier lenguaje, y qué no", async () => {
+    const { texto } = await vacio();
+    expect(texto).toContain("Any language through the gateway");
+    expect(texto).toContain("its log line says when one is not metered");
+  });
+
+  it("el puerto que le pasan llega también al arranque de las recetas", async () => {
+    const { texto } = await doctor(51234, { home: HOME, path: "", existe: () => false, enPath: () => false });
+    expect(seccion(texto, "python-openai")).toContain("bvsala gateway --upstream openai --port 51234");
+    expect(seccion(texto, "python-anthropic")).toContain("bvsala gateway --port 51234");
+  });
+});
+
 describe("bvsala doctor — jamás contenido, solo rutas", () => {
   it("aunque todo exista, el informe no lleva nada que no sea una ruta", async () => {
     // `existe` responde que sí a todo: el doctor debe listar rutas y nada más.

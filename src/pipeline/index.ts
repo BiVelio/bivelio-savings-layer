@@ -4,3 +4,4 @@ export * from "./defaults.js";
 // que corre el cascade sin pasar por el gate de licencia. Se importa directo
 // donde de verdad hace falta (create.ts, tests).
 export * from "./create.js";
+export * from "./errors.js";

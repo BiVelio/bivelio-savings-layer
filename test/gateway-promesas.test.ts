@@ -38,7 +38,8 @@ describe("claveDePeticion — separa por cabeceras de identidad", () => {
     expect(a).not.toBe(b);
   });
 
-  it("⛔ distinta x-api-key / anthropic-version / anthropic-beta → claves distintas", () => {
+  it("⛔ distinta x-api-key / anthropic-version / anthropic-beta / api-key (Azure) / openai-organization / openai-project → claves distintas", () => {
+    expect(CABECERAS_DE_IDENTIDAD).toEqual(expect.arrayContaining(["api-key", "openai-organization", "openai-project"]));
     const base = claveDePeticion("POST", "/v1/messages", cuerpo, mat({}));
     for (const h of CABECERAS_DE_IDENTIDAD) {
       expect(claveDePeticion("POST", "/v1/messages", cuerpo, mat({ [h]: "otra" }))).not.toBe(base);

@@ -243,6 +243,13 @@ export class SavingsLedger {
    */
   repairInput = 0;
   /**
+   * Billed provider calls in this request that came back WITHOUT a complete
+   * usage counter (`usage.complete === false`). Any value above zero makes the
+   * request `unmeasured`: a figure built on a missing counter is not the
+   * provider's meter.
+   */
+  callsWithoutUsage = 0;
+  /**
    * INPUT of the schema-on-demand discovery probe. Held apart exactly like
    * {@link repairInput}, and for the same reason.
    *
@@ -409,7 +416,17 @@ export class SavingsLedger {
     // actualInput, nunca desde sí mismo.
     let basis: CostBasis = "estimated";
     if (ranCall) {
-      if (this.actualInput > 0 && this.sentInputLocal > 0) {
+      // LA PRIMERA COMPROBACIÓN, y tiene que seguir siéndolo. Si alguna llamada
+      // facturada llegó sin su contador completo (un stream sin su evento final
+      // de usage, un endpoint que omite un contador), lo que hay en
+      // `actualInput`/`actualOutput` no es el contador del proveedor sino ceros
+      // puestos por el adaptador, sumados quizá a otra llamada que sí midió. Con
+      // el baseline de entrada a 0, `baseline ≤ actual` y `netSavings ≤ 0`:
+      // nunca se publica un ahorro sobre un contador que falta.
+      if (this.callsWithoutUsage > 0) {
+        this.baselineInput = 0;
+        basis = "unmeasured";
+      } else if (this.actualInput > 0 && this.sentInputLocal > 0) {
         const k = this.actualInput / this.sentInputLocal;
         // `actualInput` acumula las DOS llamadas cuando hubo reparación, y esa
         // segunda es coste NUESTRO: si entra en el baseline, el reintento se paga

@@ -327,6 +327,49 @@ describe("E0 · el contador del proveedor de demo no es un contador", () => {
   });
 });
 
+describe("E1 · un contador incompleto no deja referencia", () => {
+  it("la regla pura: complete false en la primaria o en la reparación → no-usage", () => {
+    expect(
+      registroDeReferencia({ ...HECHOS_INTACTOS, usoPrimario: { inputTokens: 500, outputTokens: 0, complete: false } }),
+    ).toBe("no-usage");
+    expect(
+      registroDeReferencia({ ...HECHOS_INTACTOS, usoReparacion: { inputTokens: 520, outputTokens: 0, complete: false } }),
+    ).toBe("no-usage");
+    // `complete: true` (o ausente) sigue siendo un contador.
+    expect(
+      typeof registroDeReferencia({
+        ...HECHOS_INTACTOS,
+        usoPrimario: { inputTokens: 500, outputTokens: 300, complete: true },
+      }),
+    ).toBe("object");
+  });
+
+  it("de punta a punta: la poblada sale unmeasured, no deja registro y la repetición sigue estimated", async () => {
+    // Un endpoint que da la entrada y omite la salida: el adaptador rellena el 0
+    // y marca `complete: false`. La entrada es real; el contador, no.
+    const provider: Provider = {
+      id: "sin-salida",
+      async generate(): Promise<ProviderResponse> {
+        return {
+          text: "Paris is the capital of France.",
+          usage: { inputTokens: 1736, outputTokens: 0, complete: false },
+        };
+      },
+    };
+    const { layer } = montar(provider);
+    const primera = await layer.generate(peticion({ temperature: 0 }));
+    expect(primera.report.cost.basis).toBe("unmeasured");
+    expect(trazaDeReferencia(primera)?.outcome).toBe("not-written");
+    expect(trazaDeReferencia(primera)?.detail).toEqual({ reason: "no-usage" });
+
+    const hit = await layer.generate(peticion({ temperature: 0 }));
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.referenceRejected).toBe("absent");
+    expect(hit.report.cache.reference).toBeUndefined();
+  });
+});
+
 /** Cinco herramientas de las que la pregunta solo casa con una. */
 const HERRAMIENTAS: ToolDescriptor[] = [
   {

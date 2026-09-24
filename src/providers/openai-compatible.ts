@@ -1,6 +1,14 @@
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
 import { avisarUnaVez } from "../util/warn-once.js";
-import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
+import { sseMessages } from "./sse.js";
+import type {
+  Provider,
+  ProviderRequest,
+  ProviderResponse,
+  ProviderStreamEvent,
+  ProviderStreamOptions,
+  ProviderUsage,
+} from "./types.js";
 
 /**
  * OpenAI-compatible provider adapter (chat/completions shape).
@@ -166,6 +174,10 @@ export class OpenAICompatibleProvider implements Provider {
   private readonly fetchImpl: typeof fetch;
   /** Models of this endpoint already known to reject `response_format`. */
   private readonly sinResponseFormat = new Set<string>();
+  // Whether this ENDPOINT already rejected `stream_options` once. It is a
+  // property of the server, not of the model, so a single flag is enough; once
+  // set, streamed requests go out without it and report incomplete usage.
+  private streamOptionsRejected = false;
 
   constructor(opts: OpenAICompatibleOptions) {
     this.opts = opts;
@@ -224,11 +236,184 @@ export class OpenAICompatibleProvider implements Provider {
     return this.leer(response, req, nativo);
   }
 
-  /** Build the request body and post it. `nativo` selects the `response_format` path. */
+  /**
+   * Streaming variant of generate() over Chat Completions. It always asks for
+   * the final usage chunk (`stream_options.include_usage`); an endpoint that
+   * rejects that option is retried once without it and remembered, and its
+   * streamed answers then report `usage.complete: false`. With `requireUsage`,
+   * that rejection throws instead. Requests with an output contract or a
+   * deferrable tier are not streamed: they are served by generate() and yielded
+   * as one text event.
+   */
+  async *generateStream(
+    req: ProviderRequest,
+    options: ProviderStreamOptions = {},
+  ): AsyncGenerator<ProviderStreamEvent, void, undefined> {
+    // Con contrato o tier diferible no se streamea: el pipeline ya las entrega
+    // enteras, y así el camino de `response_format` (con su degradación a JSON
+    // por prompt) sigue viviendo en un solo sitio.
+    if (req.schema != null || req.deferrable === true) {
+      const r = await this.generate(req);
+      if (r.text !== "") yield { type: "text", delta: r.text };
+      yield { type: "done", response: r };
+      return;
+    }
+
+    const model = quitarPrefijoDeProveedor(req.model, this.opts.stripProviderPrefix, this.opts.baseUrl);
+    const signal = options.signal;
+    const conUso = !this.streamOptionsRejected;
+    let response = await this.enviar(model, req, false, {
+      includeUsage: conUso,
+      ...(signal ? { signal } : {}),
+    });
+
+    // Un endpoint que no conoce `stream_options` contesta 400 (OpenAI-compatibles
+    // viejos) o 422 (validadores estrictos tipo pydantic). Se rechaza ANTES de
+    // generar nada, así que repetir sin la opción no duplica ningún gasto: es el
+    // mismo razonamiento que la degradación de `response_format` de generate().
+    if (!response.ok && conUso && (response.status === 400 || response.status === 422)) {
+      const detalle = await safeText(response);
+      if (response.status !== 422 && !/stream_options|include_usage/i.test(detalle)) {
+        throw new Error(`provider ${response.status}: ${detalle}`);
+      }
+      if (this.opts.requireUsage) {
+        throw new Error(
+          `provider ${response.status}: this endpoint rejects stream_options, so a streamed answer ` +
+            `would carry no usage and requireUsage is set. ${detalle}`,
+        );
+      }
+      response = await this.enviar(model, req, false, {
+        includeUsage: false,
+        ...(signal ? { signal } : {}),
+      });
+      // Solo se anota (y se avisa) si SIN la opción pasó: un 422 por otra cosa
+      // (un validador que rechaza los mensajes) vuelve a fallar sin ella, y
+      // anotarlo antes quitaba el usage a todos los streams del proceso por un
+      // error que no era de `stream_options`.
+      if (response.ok) {
+        this.streamOptionsRejected = true;
+        avisarUnaVez(
+          `sin-stream-options:${this.opts.baseUrl}`,
+          "[bvsala] This endpoint rejects `stream_options`, so streamed answers from it carry no usage: " +
+            "they are reported as `unmeasured` and never billed. Use `generate()` for a measured figure, " +
+            "or an endpoint that reports usage when streaming.",
+        );
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
+    }
+
+    // Un endpoint que ignora `stream: true` y contesta la completion entera en
+    // JSON: la llamada ya está hecha (y facturada), así que se lee como en
+    // generate() en vez de tirarla — el parser SSE no vería ningún `data:` y
+    // lanzaría «ended before completion» sobre una respuesta completa.
+    if ((response.headers.get("content-type") ?? "").includes("application/json")) {
+      const entera = await this.leer(response, req, false);
+      if (entera.text !== "") yield { type: "text", delta: entera.text };
+      yield { type: "done", response: entera };
+      return;
+    }
+
+    const cuerpo = response.body as (ReadableStream<Uint8Array> & { getReader?: unknown }) | null;
+    const fuente: ReadableStream<Uint8Array> | string =
+      cuerpo && typeof cuerpo.getReader === "function" ? cuerpo : await response.text();
+
+    let text = "";
+    // Las llamadas a herramienta llegan troceadas y se reensamblan por `index`.
+    // El `id` y el `name` que cuentan son el PRIMERO no vacío: hay servidores que
+    // los repiten en cada fragmento, y concatenarlos daría `get_weatherget_weather`.
+    // Los argumentos sí se concatenan: son el JSON partido.
+    const herramientas = new Map<number, { id?: string; name?: string; args: string }>();
+    let finishReason: string | undefined;
+    let uso: UsoDeChat | undefined;
+    let servedServiceTier: string | undefined;
+
+    for await (const msg of sseMessages(fuente)) {
+      if (msg.data === "[DONE]") break;
+      let json: TrozoDeChat;
+      try {
+        json = JSON.parse(msg.data) as TrozoDeChat;
+      } catch {
+        continue;
+      }
+      if (json === null || typeof json !== "object") continue;
+      if (json.error != null) {
+        const e = json.error as { message?: unknown };
+        const mensaje = typeof e.message === "string" ? e.message : JSON.stringify(json.error);
+        throw new Error(`provider stream error: ${mensaje}`);
+      }
+      const c = json.choices?.[0];
+      const delta = c?.delta;
+      if (typeof delta?.content === "string" && delta.content !== "") {
+        text += delta.content;
+        yield { type: "text", delta: delta.content };
+      }
+      for (const tc of delta?.tool_calls ?? []) {
+        const idx = typeof tc.index === "number" ? tc.index : 0;
+        const acc = herramientas.get(idx) ?? { args: "" };
+        if (!acc.id && typeof tc.id === "string" && tc.id !== "") acc.id = tc.id;
+        const nombre = tc.function?.name;
+        if (!acc.name && typeof nombre === "string" && nombre !== "") acc.name = nombre;
+        if (typeof tc.function?.arguments === "string") acc.args += tc.function.arguments;
+        herramientas.set(idx, acc);
+      }
+      if (c?.finish_reason != null) finishReason = c.finish_reason;
+      if (json.usage != null && typeof json.usage === "object") uso = json.usage;
+      if (typeof json.service_tier === "string" && json.service_tier !== "") {
+        servedServiceTier = json.service_tier;
+      }
+    }
+
+    // MEDIA RESPUESTA NO ES UNA RESPUESTA. Sin `finish_reason` el proveedor no
+    // dijo que hubiera terminado: el cuerpo se cortó. Se lanza, para que nada de
+    // esto se cachee ni se reporte como si fuera la respuesta entera.
+    if (finishReason === undefined) {
+      throw new Error("provider stream ended before completion (no finish_reason)");
+    }
+
+    const inputAbsent = typeof uso?.prompt_tokens !== "number";
+    const outputAbsent = typeof uso?.completion_tokens !== "number";
+    if (this.opts.requireUsage && (inputAbsent || outputAbsent)) {
+      throw new Error(mensajeDeUsoIncompleto(uso?.prompt_tokens, uso?.completion_tokens));
+    }
+    const usage: ProviderUsage = {
+      inputTokens: uso?.prompt_tokens ?? 0,
+      outputTokens: uso?.completion_tokens ?? 0,
+      ...(uso?.prompt_tokens_details?.cached_tokens != null
+        ? { cachedInputTokens: uso.prompt_tokens_details.cached_tokens }
+        : {}),
+      ...(inputAbsent || outputAbsent ? { complete: false } : {}),
+    };
+
+    const toolCalls = [...herramientas.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([, h]) => ({ ...(h.id ? { id: h.id } : {}), name: h.name ?? "", arguments: h.args }))
+      .filter((tc) => tc.name !== "");
+
+    yield {
+      type: "done",
+      response: {
+        text,
+        ...(toolCalls.length > 0 ? { toolCalls } : {}),
+        finishReason,
+        ...(servedServiceTier ? { servedServiceTier } : {}),
+        usage,
+        structuredNatively: false,
+        raw: uso ?? null,
+      },
+    };
+  }
+
+  // Arma el cuerpo y lo envía. `nativo` elige la vía `response_format`; `stream`
+  // pide la respuesta en SSE (y, con `includeUsage`, el chunk final de usage).
+  // Sin `stream`, el cuerpo es byte a byte el de siempre.
   private async enviar(
     model: string,
     req: ProviderRequest,
     nativo: boolean,
+    stream?: { includeUsage: boolean; signal?: AbortSignal },
   ): Promise<Response> {
     // EL CICLO DE HERRAMIENTAS TIENE QUE PODER VOLVER. Chat Completions exige que
     // un mensaje `role:"tool"` lleve `tool_call_id` Y siga a un `assistant` con
@@ -348,6 +533,11 @@ export class OpenAICompatibleProvider implements Provider {
       }));
     }
 
+    if (stream) {
+      body["stream"] = true;
+      if (stream.includeUsage) body["stream_options"] = { include_usage: true };
+    }
+
     return await this.fetchImpl(
       `${this.opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
       {
@@ -358,6 +548,7 @@ export class OpenAICompatibleProvider implements Provider {
           ...this.opts.headers,
         },
         body: JSON.stringify(body),
+        ...(stream?.signal ? { signal: stream.signal } : {}),
       },
     );
   }
@@ -404,11 +595,7 @@ export class OpenAICompatibleProvider implements Provider {
     const inputAbsent = typeof usage.prompt_tokens !== "number";
     const outputAbsent = typeof usage.completion_tokens !== "number";
     if (this.opts.requireUsage && (inputAbsent || outputAbsent)) {
-      throw new Error(
-        `provider returned incomplete usage (prompt=${usage.prompt_tokens ?? "absent"}, ` +
-          `completion=${usage.completion_tokens ?? "absent"}); cannot measure cost. ` +
-          `For gateways/streaming, ensure usage reporting is enabled.`,
-      );
+      throw new Error(mensajeDeUsoIncompleto(usage.prompt_tokens, usage.completion_tokens));
     }
 
     const finishReason = json.choices?.[0]?.finish_reason;
@@ -440,6 +627,9 @@ export class OpenAICompatibleProvider implements Provider {
         ...(usage.prompt_tokens_details?.cached_tokens != null
           ? { cachedInputTokens: usage.prompt_tokens_details.cached_tokens }
           : {}),
+        // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
+        // Con el usage completo la clave NO aparece.
+        ...(inputAbsent || outputAbsent ? { complete: false } : {}),
       },
       // Solo es NATIVO si el contrato viajó en `response_format`. Cuando se
       // degradó a pedir el JSON por prompt, quien impone la forma es el layer al
@@ -451,15 +641,46 @@ export class OpenAICompatibleProvider implements Provider {
   }
 }
 
+interface UsoDeChat {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  prompt_tokens_details?: { cached_tokens?: number };
+}
+
 interface OpenAIChatResponse {
   choices?: { message?: { content?: string }; finish_reason?: string }[];
   /** 'auto' | 'default' | 'flex' | 'scale' | 'priority' | 'fast' — open set on purpose. */
   service_tier?: string;
-  usage?: {
-    prompt_tokens?: number;
-    completion_tokens?: number;
-    prompt_tokens_details?: { cached_tokens?: number };
-  };
+  usage?: UsoDeChat;
+}
+
+// Un `chat.completion.chunk` del stream. El chunk de usage (con
+// `stream_options.include_usage`) llega al final con `choices: []`.
+interface TrozoDeChat {
+  choices?: {
+    delta?: {
+      content?: string | null;
+      tool_calls?: {
+        index?: number;
+        id?: string;
+        function?: { name?: string; arguments?: string };
+      }[];
+    };
+    finish_reason?: string | null;
+  }[];
+  usage?: UsoDeChat | null;
+  service_tier?: string;
+  error?: unknown;
+}
+
+// El mismo texto en generate() y en generateStream(): quien lo capture para
+// ramificar no tiene que conocer dos.
+function mensajeDeUsoIncompleto(prompt: number | undefined, completion: number | undefined): string {
+  return (
+    `provider returned incomplete usage (prompt=${prompt ?? "absent"}, ` +
+    `completion=${completion ?? "absent"}); cannot measure cost. ` +
+    `For gateways/streaming, ensure usage reporting is enabled.`
+  );
 }
 
 async function safeText(response: Response): Promise<string> {
