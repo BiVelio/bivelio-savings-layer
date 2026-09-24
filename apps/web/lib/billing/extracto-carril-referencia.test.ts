@@ -103,7 +103,7 @@ describe("el carril medido por referencia en el extracto (0029)", () => {
   it("los parámetros llevan la regla: el extracto es autocontenido", () => {
     const e = construirExtracto({ ...base, filas: [fila("2026-09-01")] });
     expect(e.parametros.referencia).toBe(REGLA_REFERENCIA);
-    expect(e.parametros.referencia.version).toBe("referencia-v1");
+    expect(e.parametros.referencia.version).toBe("reference-v1");
   });
 
   it("la sombra y el borrado del proveedor NO se mueven con la referencia", () => {

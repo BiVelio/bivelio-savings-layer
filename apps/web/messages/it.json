@@ -529,6 +529,7 @@
       "referencia": "Misurato per riferimento: {usd} su {requests} richieste ripetute servite senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico. Incluso nella base.",
       "referenciaExcluida": "Misurato per riferimento: {usd} su {requests} richieste ripetute. Mostrato come contesto — per ora resta fuori dalla base e dalla commissione.",
       "exportarReferencias": "Scarica le richieste ripetute di questo periodo, una riga per richiesta (CSV)",
+      "exportarReferenciasPorDia": "Troppe richieste ripetute per un solo file: scarica questo periodo giorno per giorno (CSV):",
       "parametros": "Parametri dell'estratto — listino prezzi {version} · tasso di cambio {fx}.",
       "parametrosReferencia": "Regola delle richieste ripetute ({regla}): la richiesta eseguita deve essere identica byte per byte, non toccata dal livello e vecchia al massimo {dias} giorni; l'input, alla tariffa dell'input in cache del tuo fornitore; l'output, al {cuota} del suo contatore, mai oltre il limite di output di questa richiesta e solo con campionamento deterministico.",
       "mismaFacturaTitulo": "Questo documento È la futura fattura.",

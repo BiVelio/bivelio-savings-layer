@@ -529,6 +529,7 @@
       "referencia": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken die zijn bediend zonder je aanbieder aan te roepen. Elk wordt gewaardeerd met de teller die je aanbieder teruggaf voor het identieke verzoek dat al is uitgevoerd — die staat in het rapport van dat verzoek en in het gebruik van je aanbieder op die dag — tegen het tarief voor gecachte input, het laagste dat je aanbieder rekent voor het herhalen van een prompt; de output telt alleen bij deterministische sampling. Opgenomen in de basis.",
       "referenciaExcluida": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken. Getoond als context — voorlopig blijft het buiten de basis en de commissie.",
       "exportarReferencias": "Download de herhaalde verzoeken van deze periode, één rij per verzoek (CSV)",
+      "exportarReferenciasPorDia": "Te veel herhaalde verzoeken voor één bestand — download deze periode per dag (CSV):",
       "parametros": "Parameters van het overzicht — prijscatalogus {version} · wisselkoers {fx}.",
       "parametrosReferencia": "Regel voor herhaalde verzoeken ({regla}): het uitgevoerde verzoek moet byte voor byte identiek zijn, niet aangeraakt door de laag en hoogstens {dias} dagen oud; input tegen het tarief voor gecachte input van je aanbieder; output tegen {cuota} van zijn teller, nooit boven de outputlimiet van dit verzoek en alleen bij deterministische sampling.",
       "mismaFacturaTitulo": "Dit document IS de toekomstige factuur.",

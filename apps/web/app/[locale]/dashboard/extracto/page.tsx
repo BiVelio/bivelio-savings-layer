@@ -1,9 +1,11 @@
+import { Fragment } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { AccountTabs } from "@/app/components/app/AccountTabs";
 import { PageHead } from "@/app/components/app/PageHead";
 
 import { extractoEnSombra, periodoDe } from "@/lib/billing/extracto-sombra";
+import { diaSiguiente, diasEntre, MAX_FILAS_POR_DESCARGA } from "@/lib/metering/referencias-csv";
 import { createReadOnlyClient } from "@/lib/supabase/server";
 import { loadDashboard } from "../load";
 
@@ -17,6 +19,8 @@ interface PeriodoCerrado {
   ratio: number;
   cargo_eur: number;
   cobro: { estado: string; url: string | null; numero: string | null } | null;
+  /** Repeticiones medidas por referencia selladas en el período (0029); 0 sin la migración. */
+  requests_referencia: number;
 }
 
 /**
@@ -26,7 +30,7 @@ interface PeriodoCerrado {
  */
 async function periodosCerrados(orgId: string): Promise<PeriodoCerrado[] | null> {
   const supabase = await createReadOnlyClient();
-  const [{ data: extractos, error: e1 }, { data: cargos, error: e2 }] = await Promise.all([
+  const [{ data: extractos, error: e1 }, { data: cargos, error: e2 }, { data: referencias, error: e3 }] = await Promise.all([
     supabase
       .schema("bvsala")
       .from("extractos")
@@ -35,8 +39,23 @@ async function periodosCerrados(orgId: string): Promise<PeriodoCerrado[] | null>
       .order("periodo", { ascending: false })
       .limit(24),
     supabase.schema("bvsala").from("cargos").select("periodo, estado, detalle").eq("org_id", orgId),
+    // 0029 · aparte y TOLERANTE: sin la migración la columna no existe, y eso no
+    // puede tumbar el historial entero — solo deja sin enlace CSV a los períodos.
+    supabase
+      .schema("bvsala")
+      .from("extractos")
+      .select("periodo, requests_referencia")
+      .eq("org_id", orgId)
+      .order("periodo", { ascending: false })
+      .limit(24),
   ]);
   if (e1 || e2) return null; // el fallo de lectura se pinta como tal, no como "sin historial"
+  if (e3) console.warn("[extracto] historial sin requests_referencia (¿falta la migración 0029?):", e3.message);
+  const referenciasPorPeriodo = new Map(
+    (e3 ? [] : ((referencias ?? []) as Array<{ periodo: string; requests_referencia: number | string | null }>)).map(
+      (r) => [String(r.periodo), Number(r.requests_referencia ?? 0)] as const,
+    ),
+  );
   const cobroPorPeriodo = new Map(
     (cargos ?? []).map((c) => {
       const detalle = (c.detalle ?? {}) as { hosted_invoice_url?: string | null; numero?: string | null };
@@ -56,7 +75,19 @@ async function periodosCerrados(orgId: string): Promise<PeriodoCerrado[] | null>
     ratio: Number(x.ratio ?? 0),
     cargo_eur: Number(x.cargo_eur ?? 0),
     cobro: cobroPorPeriodo.get(String(x.periodo)) ?? null,
+    requests_referencia: referenciasPorPeriodo.get(String(x.periodo)) ?? 0,
   }));
+}
+
+/**
+ * Los días del período ya empezados (UTC), para la descarga día a día cuando el
+ * mes no cabe en un solo fichero (MAX_FILAS_POR_DESCARGA).
+ */
+function diasDelPeriodoHastaHoy(periodo: string, hoy: Date): string[] {
+  const [y, m] = periodo.split("-").map(Number);
+  const finDelMes = new Date(Date.UTC(y!, m!, 1)).toISOString().slice(0, 10);
+  const manana = diaSiguiente(hoy.toISOString().slice(0, 10));
+  return diasEntre(`${periodo}-01`, manana < finDelMes ? manana : finDelMes);
 }
 
 /** La clave i18n del estado del cobro de un período cerrado. */
@@ -208,7 +239,21 @@ export default async function ExtractoPage() {
               usd: usd(e.referencia.ahorroUsd),
               requests: e.referencia.requests.toLocaleString(locale),
             })}{" "}
-            <a href={`/api/org/reference-hits?periodo=${periodo}`}>{t("extracto.exportarReferencias")}</a>
+            {/* Un mes con más filas de las que caben en una descarga se baja
+                por días (la ruta respondería 413 al mes entero). */}
+            {e.referencia.requests <= MAX_FILAS_POR_DESCARGA ? (
+              <a href={`/api/org/reference-hits?periodo=${periodo}`}>{t("extracto.exportarReferencias")}</a>
+            ) : (
+              <>
+                {t("extracto.exportarReferenciasPorDia")}{" "}
+                {diasDelPeriodoHastaHoy(periodo, new Date()).map((d, i) => (
+                  <Fragment key={d}>
+                    {i > 0 ? " · " : ""}
+                    <a href={`/api/org/reference-hits?dia=${d}`}>{Number(d.slice(8)).toLocaleString(locale)}</a>
+                  </Fragment>
+                ))}
+              </>
+            )}
           </p>
         )}
         {/* El carril sombra (0021): contexto hipotético, jamás en la base — y
@@ -239,14 +284,18 @@ export default async function ExtractoPage() {
         </p>
         {/* La regla con la que se valoran las repeticiones (0029): parte de los
             parámetros que hacen el extracto autocontenido. Cifras por parámetro,
-            nunca escritas en los mensajes (tarifa-en-parametros.test.ts). */}
-        <p className="note">
-          {t("extracto.parametrosReferencia", {
-            regla: e.parametros.referencia.version,
-            cuota: pct(e.parametros.referencia.cuotaSalida),
-            dias: e.parametros.referencia.edadMaximaDias,
-          })}
-        </p>
+            nunca escritas en los mensajes (tarifa-en-parametros.test.ts). Solo
+            cuando el período TIENE repeticiones valoradas así: antes de que el
+            SDK las emita, describiría como vigente una regla que nada aplica. */}
+        {e.referencia && (
+          <p className="note">
+            {t("extracto.parametrosReferencia", {
+              regla: e.parametros.referencia.version,
+              cuota: pct(e.parametros.referencia.cuotaSalida),
+              dias: e.parametros.referencia.edadMaximaDias,
+            })}
+          </p>
+        )}
         <p className="note">
           <b>{t("extracto.mismaFacturaTitulo")}</b> {t("extracto.mismaFactura")}
         </p>
@@ -284,7 +333,19 @@ export default async function ExtractoPage() {
               <tbody>
                 {cerrados.map((p) => (
                   <tr key={p.periodo}>
-                    <td className="ck-num">{p.periodo}</td>
+                    <td className="ck-num">
+                      {p.periodo}
+                      {/* 0029 · la prueba fila a fila del período SELLADO (el que
+                          se factura), mientras la retención la conserve. */}
+                      {p.requests_referencia > 0 && (
+                        <>
+                          {" · "}
+                          <a href={`/api/org/reference-hits?periodo=${p.periodo}`} title={t("extracto.exportarReferencias")}>
+                            CSV
+                          </a>
+                        </>
+                      )}
+                    </td>
                     <td className="ck-num">{eur(p.base_medida_eur)}</td>
                     <td className="ck-num">{eur(p.ahorro_medido_eur)}</td>
                     <td className="ck-num">{pct(p.ratio)}</td>

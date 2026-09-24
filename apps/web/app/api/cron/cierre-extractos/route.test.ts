@@ -6,9 +6,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
  *  · Con 0029 aplicada: el cierre lee reference_* y sella las cuatro columnas
  *    nuevas de extractos (con la referencia DENTRO de lo medido).
  *  · Sin 0029 (el despliegue adelantó a la migración): 42703 en la lectura →
- *    aviso, lectura sin el carril y upsert SIN las cuatro columnas, en vez de
- *    aplazar el cierre. Sin 0029 la RPC tampoco acumula referencia: no hay
- *    dinero que perder.
+ *    alerta CRÍTICA, lectura sin el carril y upsert SIN las cuatro columnas, en
+ *    vez de aplazar el cierre. Crítica (llega por correo) porque, con el SDK
+ *    emitiendo referencia, cada mes sin 0029 sella ese ahorro fuera de la base
+ *    sin ningún error visible.
  */
 
 const ORG = "11111111-1111-4111-8111-111111111111";
@@ -114,14 +115,14 @@ describe("cierre-extractos — el carril medido por referencia (0029)", () => {
       requests_referencia: 20,
       base_referencia_usd: 50,
       ahorro_referencia_usd: 50,
-      regla_referencia: "referencia-v1",
+      regla_referencia: "reference-v1",
       requests_medidas: 30,
       ahorro_medido_usd: 950,
     });
     expect(estado.alertas).toEqual([]);
   });
 
-  it("sin 0029: aviso, lectura sin el carril y upsert SIN las cuatro columnas — el cierre no se aplaza", async () => {
+  it("sin 0029: alerta crítica, lectura sin el carril y upsert SIN las cuatro columnas — el cierre no se aplaza", async () => {
     estado.con0029 = false;
     const res = await GET(peticion());
     expect(res.status).toBe(200);
@@ -134,7 +135,8 @@ describe("cierre-extractos — el carril medido por referencia (0029)", () => {
     // El dinero medido por la propia petición, intacto: 900 USD.
     expect(fila).toMatchObject({ requests_medidas: 10, ahorro_medido_usd: 900 });
     expect(estado.alertas).toHaveLength(1);
-    expect(estado.alertas[0]).toMatchObject({ nivel: "aviso" });
+    // Crítica: solo lo crítico llega por correo, y esto es ingreso perdido en silencio.
+    expect(estado.alertas[0]).toMatchObject({ nivel: "critico" });
     expect(estado.alertas[0]!.asunto).toMatch(/0029/);
   });
 

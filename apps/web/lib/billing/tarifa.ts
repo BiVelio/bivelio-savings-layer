@@ -77,7 +77,7 @@ export const COMISIONAR_ELISION_SUELO: boolean = false;
  *
  * Apagarlo (`false` + su test + un PR) deja de cobrar lo acumulado en los
  * períodos NO sellados: el extracto lo sigue enseñando como contexto
- * («referenciaExcluida») y el cierre sella la regla como «:excluida». Cortar la
+ * («referenciaExcluida») y el cierre sella la regla con el sufijo «:excluded». Cortar la
  * ACUMULACIÓN misma es el otro interruptor, sin código:
  * BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 en la ruta del ingest.
  *
@@ -98,7 +98,13 @@ export const COMISIONAR_REFERENCIA: boolean = true;
  * SDK como texto en cuanto existe.
  */
 export const REGLA_REFERENCIA = {
-  version: "referencia-v1",
+  /**
+   * El identificador PÚBLICO de la regla: lo ve el cliente en el extracto
+   * («Rule for repeated requests (reference-v1)») y queda SELLADO en
+   * `extractos.regla_referencia`, inmutable. Por eso en inglés y ASCII, como
+   * todo lo que ve el cliente; tarifa.test.ts lo fija.
+   */
+  version: "reference-v1",
   /** Fracción del contador de salida que se acredita (solo con muestreo determinista). */
   cuotaSalida: 0.95,
   /** Edad máxima del contador de referencia, en días. */
