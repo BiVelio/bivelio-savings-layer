@@ -38,6 +38,17 @@ export function decidirArranque(args: readonly string[]): Decision {
 }
 
 /**
+ * `bvsala <terminal> X` with X one of `--help`, `-h`, `--version` and nothing
+ * else: a question for the child terminal, answered with no gateway.
+ */
+export function isChildInfoRequest(rest: readonly string[]): boolean {
+  // Solo estas tres y solas. `-v`, `help` y `version` quedan fuera A PROPÓSITO:
+  // en algunos terminales `-v` es verbose y una palabra suelta puede ser un
+  // prompt, y lanzarlas sin gateway sería una sesión sin medir ni licencia.
+  return rest.length === 1 && (rest[0] === "--help" || rest[0] === "-h" || rest[0] === "--version");
+}
+
+/**
  * El fallo de arranque del gateway traducido a UNA línea para el probador. El
  * escenario más probable es lanzarlo dos veces (el 8402 por defecto): hasta
  * 0.4.20 moría con la traza cruda de Node («node:net … Error: listen

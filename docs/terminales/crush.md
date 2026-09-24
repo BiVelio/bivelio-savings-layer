@@ -10,7 +10,7 @@ relativa, y eso dicta la forma del URL: **con `/v1`, sin barra final**.
 - `crush` instalado.
 - `ANTHROPIC_API_KEY` exportada (Crush retiró su OAuth de Claude en ene-2026:
   solo API key).
-- `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
+- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
 
 ## Config de usuario: `~/.config/crush/crushrc`
 

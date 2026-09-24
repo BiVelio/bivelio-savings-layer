@@ -146,6 +146,15 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
     expect(texto).toMatch(/OAuth of a Claude Pro\/Max subscription/);
     expect(texto).toContain("docs/terminales/");
   });
+
+  it("dice que el gateway exige licencia en todos los modos, y que la suscripción no lleva comisión", async () => {
+    // LICENSE §2: el doctor imprime recetas que acaban en `bvsala gateway`, y
+    // quien las siga sin licencia no arranca. Se dice ANTES de que lo descubra.
+    const { texto } = await vacio();
+    expect(texto).toContain("active BiVelio license");
+    expect(texto).toContain("no commission");
+    expect(texto).not.toContain("but not billed");
+  });
 });
 
 describe("bvsala doctor — jamás contenido, solo rutas", () => {

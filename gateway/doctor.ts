@@ -200,6 +200,7 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     `bvsala doctor — local gateway at ${base}`,
     "Print only: it writes no configuration. Detection by existence (binaries on the PATH and",
     "user configuration files); the contents of a file are never read.",
+    "The gateway needs BIVELIO_SERVICE_KEY and an active BiVelio license in every mode: it collects the license with that key and does not start without one.",
     "",
   ];
 
@@ -233,8 +234,8 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
   lineas.push(
     "BYOK rule: the recipes for the Anthropic-compatible terminals (Goose, Qwen Code, opencode, Crush, Droid, Cline,",
     "Kilo) are for API keys. Never route the OAuth of a Claude Pro/Max subscription through the gateway from a",
-    "third-party harness — Anthropic forbids it. Claude Code and Codex on a subscription are routed and metered,",
-    "but not billed: there is no per-token invoice.",
+    "third-party harness - Anthropic forbids it. Claude Code and Codex on a subscription are routed and metered at",
+    "list-price equivalent, with no commission (there is no per-token invoice); the per-seat license applies.",
     "Per-terminal detail: docs/terminales/<terminal>.md",
   );
 

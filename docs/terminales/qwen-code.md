@@ -10,7 +10,7 @@ catálogo a propósito (más abajo).
 - `qwen` en el PATH.
 - **Una API key de Anthropic** (`ANTHROPIC_API_KEY`), con Qwen Code configurado
   para usar el proveedor Anthropic.
-- `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
+- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
 
 ## Config de usuario: `~/.qwen/settings.json`
 

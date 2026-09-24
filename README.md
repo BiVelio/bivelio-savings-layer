@@ -66,14 +66,21 @@ story, in plain words:
 
 **Claude Code, Codex CLI, Goose or Qwen Code with an API key?** The package also
 ships a local measuring gateway: `bvsala claude` (or `bvsala codex`, `bvsala
-goose`, `bvsala qwen`) launches the terminal through it and your real spend
-shows up in your dashboard, token by token — nothing to configure, nothing
-persisted. For opencode, Crush, Droid, Cline or Kilo Code, `bvsala doctor`
-prints the exact config block for each one you have installed. It measures every
-request. With a PRO license it also applies one saving by default: it shortens the
-cache-write TTL while your session stays hot, which changes the price, never the
-content the model reads. The other levers (sibling model, per-turn effort) stay off
-until you switch them on.
+goose`, `bvsala qwen`) launches the terminal through it and your real spend shows
+up in your dashboard, token by token — nothing to configure, nothing persisted.
+For opencode, Crush, Droid, Cline or Kilo Code, `bvsala doctor` prints the exact
+config block for each one you have installed. Like the SDK, the gateway is
+fail‑closed: it starts only with your service key (`BIVELIO_SERVICE_KEY`) and an
+active BiVelio license, which it collects with that key and verifies against the
+key embedded in the package. Once running it never interrupts a request in flight:
+if the license lapses, only new requests are refused (HTTP 402) until it is
+renewed. It measures every request. With a PRO license it also applies one saving
+by default: it shortens the cache-write TTL while your session stays hot, which
+changes the price, never the content the model reads. The other levers (sibling
+model, per-turn effort) stay off until you switch them on. On a Claude or ChatGPT
+subscription there is no per-token invoice, so that traffic is metered at
+list-price equivalent and never carries commission; the per-seat license applies
+as for any other use.
 
 ## Check it before you install
 
@@ -104,7 +111,7 @@ warns once when that happens.
 
 ```bash
 export BIVELIO_LICENSE_KEY=…   # your license key
-export BIVELIO_SERVICE_KEY=…   # service-account key: auto-renewal + seat metering
+export BIVELIO_SERVICE_KEY=…   # service-account key: auto-renewal + seat metering (required by the gateway)
 ```
 
 **3 · Wrap the call** — this is the entire code change. The package is ESM only:
@@ -275,7 +282,7 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 BV‑SALA is commercial, per‑seat software (**€4 / seat / month** or **€39 / seat /
 year**, EUR; VAT not included). No free tier and no trial: what you can check before
-paying is the published measurement. The license is a signed token your SDK verifies **offline**; the
+paying is the published measurement. The license is a signed token your SDK and the gateway verify **offline**; the
 managed control plane and the revocation kill‑switch are served from BiVelio. Your
 LLM traffic goes **straight to your provider** — BiVelio sees counts and cost,
 never prompts or completions.

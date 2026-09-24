@@ -90,6 +90,10 @@ jobs:
             echo "::error::Falta la clave pública embebida: ninguna licencia verificaría."
             exit 1
           fi
+          if ! grep -q "BEGIN PUBLIC KEY" package/dist/gateway/bin.js; then
+            echo "::error::El gateway no lleva la clave pública embebida: bvsala no arrancaría con ninguna licencia."
+            exit 1
+          fi
           rm -rf package bivelio-savings-layer-*.tgz
           echo "paquete verificado"
 

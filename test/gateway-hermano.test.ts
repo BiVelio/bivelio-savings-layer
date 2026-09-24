@@ -3,6 +3,7 @@ import { gzipSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { testLicense } from "./helpers/test-license.js";
 import {
   HERMANOS,
   describirEstadoDeHermano,
@@ -178,6 +179,16 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
     }) as unknown as Coste;
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);
     expect(inf.cost.netSavings).toBe(0);
+  });
+
+  it("tráfico de SUSCRIPCIÓN con C aplicada: baseline == actual (sin factura por tokens no se acredita)", () => {
+    const medido = costeMedido(SERVIDO, { cache_read_input_tokens: N })!;
+    const cambio = { solicitado: SOLICITADO, servido: SERVIDO };
+    expect(ahorroDeHermano(cambio, medido)).toBeGreaterThan(0); // habría ahorro que acreditar…
+    const inf = informeMedido("r", SERVIDO, medido, undefined, null, null, cambio, true) as unknown as Coste;
+    expect(inf.cost.baselineEstimate).toBe(inf.cost.actual); // …y no se acredita
+    expect(inf.cost.netSavings).toBe(0);
+    expect(inf.cost.basis).toBe("measured");
   });
 
   it("sin hermano, el resto de peticiones no cambia: baseline == actual y netSavings 0", () => {
@@ -357,6 +368,7 @@ async function gatewayCon(opciones: {
   clave?: string;
 }): Promise<GatewayArrancado> {
   const g = await arrancarGateway({
+    license: testLicense(),
     puerto: 0,
     upstream: `http://127.0.0.1:${opciones.upstream}`,
     ...(opciones.clave !== undefined ? { serviceAccountKey: opciones.clave } : {}),
@@ -439,7 +451,7 @@ describe("palanca C de punta a punta", () => {
     expect(JSON.parse(recibidas[0]!.body).model).toBe(SOLICITADO);
   });
 
-  it("BVSALA_GATEWAY_ELISION=0 (canal cerrado) apaga también C", async () => {
+  it("BVSALA_GATEWAY_ELISION=0 (palancas desarmadas) apaga también C", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const plataforma = await arrancarPlataformaFalsa({ features: ["sibling_model_routing"] });
@@ -500,6 +512,32 @@ describe("palanca C de punta a punta", () => {
     expect(reg["netSavings"]).toBeCloseTo(ahorro / (reg["baselineCost"] as number), 12);
     expect(reg["netSavings"] as number).toBeGreaterThan(0);
     expect(reg["netSavings"] as number).toBeLessThanOrEqual(1);
+  });
+
+  it("MEDIDA en SUSCRIPCIÓN (anthropic-beta oauth-*): C se aplica, el lote lleva el servido y NO acredita ahorro", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstreamFalso(recibidas);
+    const plataforma = await arrancarPlataformaFalsa({ features: ["sibling_model_routing"], lotes });
+    const g = await gatewayCon({ upstream, plataforma, clave: "bvk_test", elision: true, modeloHermano: true });
+    await esperarCanal();
+
+    const res = await pedir(g.puerto, CUERPO, "/v1/messages", { "anthropic-beta": "oauth-2025-04-20" });
+    expect(res.status).toBe(200);
+    await res.text();
+    await g.cerrar();
+    await esperar(() => lotes.length > 0);
+
+    // La palanca SÍ se aplica (valor contra topes)…
+    expect(JSON.parse(recibidas[0]!.body).model).toBe(SERVIDO);
+    // …pero sin factura por tokens el dinero no se acredita: baseline == actual.
+    const registros = lotes.flat() as Record<string, unknown>[];
+    expect(registros).toHaveLength(1);
+    const reg = registros[0]!;
+    expect(reg["model"]).toBe(SERVIDO);
+    expect(reg["basis"]).toBe("measured");
+    expect(reg["baselineCost"]).toBe(reg["actualCost"]);
+    expect(reg["netSavings"]).toBe(0);
   });
 
   it("encadenada con los diales de S4a: el cuerpo saliente lleva las dos cosas", async () => {

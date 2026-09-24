@@ -52,6 +52,8 @@ grep -q "BVSALA_DEV_OPEN" package/dist/index.js && { echo "     FALLA: paywall a
 find package -name "*.map" | grep -q . && { echo "     FALLA: lleva sourcemaps"; exit 1; } || echo "     ok  sin sourcemaps"
 grep -q "BEGIN PUBLIC KEY" package/dist/index.js || { echo "     FALLA: sin clave pública"; exit 1; }
 echo "     ok  clave pública embebida"
+grep -q "BEGIN PUBLIC KEY" package/dist/gateway/bin.js || { echo "     FALLA: el gateway sin clave pública"; exit 1; }
+echo "     ok  clave pública también en el gateway"
 
 echo
 echo "Todo verde en clon limpio. La Release debería publicar."
