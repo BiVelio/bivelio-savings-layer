@@ -181,7 +181,7 @@ describe("el aviso de truncado distingue contrato y modelo", () => {
     await layer.generate(peticion);
     await layer.generate({ ...peticion, model: "anthropic/claude-sonnet-4-5" });
 
-    const truncados = avisos.filter((a) => a.includes("se cortó al agotar"));
+    const truncados = avisos.filter((a) => a.includes("cut off after exhausting"));
     expect(truncados).toHaveLength(2);
     expect(truncados[1]).toContain("anthropic/claude-sonnet-4-5");
   });
@@ -210,11 +210,11 @@ describe("el aviso de truncado distingue contrato y modelo", () => {
       },
     });
 
-    const aviso = avisos.find((a) => a.includes("se cortó al agotar"));
+    const aviso = avisos.find((a) => a.includes("cut off after exhausting"));
     expect(aviso).toContain("demo-answer:v1");
-    expect(aviso).toMatch(/autoriza respuestas de hasta ~\d+ tokens/);
+    expect(aviso).toMatch(/allows responses of up to ~\d+ tokens/);
     expect(aviso, "hay que decir CUÁL de los dos números mover").toContain(
-      "ninguna respuesta que use lo que el propio esquema permite cabe",
+      "no response that uses what the schema itself permits fits",
     );
   });
 
@@ -238,7 +238,7 @@ describe("el aviso de truncado distingue contrato y modelo", () => {
       },
     });
 
-    const aviso = avisos.find((a) => a.includes("se cortó al agotar"));
-    expect(aviso).toContain("el tope no es el problema");
+    const aviso = avisos.find((a) => a.includes("cut off after exhausting"));
+    expect(aviso).toContain("the cap is not the problem");
   });
 });

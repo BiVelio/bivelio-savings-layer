@@ -32,7 +32,7 @@ function autorizado(req: Request): boolean {
 export async function GET(req: Request): Promise<NextResponse> {
   if (!process.env.CRON_SECRET) {
     await alertar({ nivel: "critico", asunto: "cron retencion no ha corrido: CRON_SECRET sin definir", detalle: { ruta: "/api/cron/retencion" } });
-    return NextResponse.json({ error: "cron sin configurar" }, { status: 501 });
+    return NextResponse.json({ error: "Cron isn't configured (CRON_SECRET unset)." }, { status: 501 });
   }
   if (!autorizado(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

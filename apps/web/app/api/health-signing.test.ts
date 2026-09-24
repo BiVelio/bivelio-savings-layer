@@ -65,12 +65,16 @@ describe("GET /api/health/signing — la pareja de claves", () => {
     const { status, cuerpo } = await sonda();
     expect(status).toBe(503);
     expect(cuerpo.motivo).toBe("par_de_claves_distinto");
+    // El `detalle` es prosa para el vigilante externo: en inglés, como todo lo
+    // que sale al cliente. `motivo` es el código máquina y no se toca.
+    expect(cuerpo.detalle).toContain("rejected by every client");
   });
 
   it("503 y motivo propio cuando no hay clave puesta en el despliegue", async () => {
     const { status, cuerpo } = await sonda();
     expect(status).toBe(503);
     expect(cuerpo.motivo).toBe("sin_clave_privada");
+    expect(cuerpo.detalle).toContain("is not set in this deployment");
   });
 
   it("503 cuando la clave está puesta pero es ilegible (saltos de línea perdidos al copiarla)", async () => {
@@ -78,6 +82,48 @@ describe("GET /api/health/signing — la pareja de claves", () => {
     const { status, cuerpo } = await sonda();
     expect(status).toBe(503);
     expect(cuerpo.motivo).toBe("clave_privada_ilegible");
+    expect(cuerpo.detalle).toContain("not a valid PEM key");
+  });
+
+  // Las dos ramas de la ida y vuelta real: la clave carga y las huellas casan,
+  // pero la firma no vale (salió de OTRA privada) o firmar lanza. Se fuerzan
+  // sustituyendo `signCompact` del módulo real; `loadPrivateKey` sigue siendo el
+  // de verdad, así que la huella que se compara es la buena.
+  it("503 firma_no_verifica cuando la firma sale de otra privada aunque la huella case", async () => {
+    process.env.LICENSE_PRIVATE_KEY_B64 = enB64(bueno.privada);
+    vi.doMock("@/lib/license/sign", async () => {
+      const real = await vi.importActual<typeof import("@/lib/license/sign")>("@/lib/license/sign");
+      return { ...real, signCompact: (h: object, p: object) => real.signCompact(h, p, otro.privada) };
+    });
+    try {
+      const { status, cuerpo } = await sonda();
+      expect(status).toBe(503);
+      expect(cuerpo.motivo).toBe("firma_no_verifica");
+      expect(cuerpo.detalle).toContain("signature does not verify");
+    } finally {
+      vi.doUnmock("@/lib/license/sign");
+    }
+  });
+
+  it("503 fallo_al_firmar cuando firmar lanza", async () => {
+    process.env.LICENSE_PRIVATE_KEY_B64 = enB64(bueno.privada);
+    vi.doMock("@/lib/license/sign", async () => {
+      const real = await vi.importActual<typeof import("@/lib/license/sign")>("@/lib/license/sign");
+      return {
+        ...real,
+        signCompact: () => {
+          throw new Error("boom");
+        },
+      };
+    });
+    try {
+      const { status, cuerpo } = await sonda();
+      expect(status).toBe(503);
+      expect(cuerpo.motivo).toBe("fallo_al_firmar");
+      expect(cuerpo.detalle).toContain("signing or verifying threw");
+    } finally {
+      vi.doUnmock("@/lib/license/sign");
+    }
   });
 
   it("no filtra NADA de la clave privada en ninguna respuesta", async () => {

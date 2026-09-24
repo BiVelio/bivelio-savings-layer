@@ -88,8 +88,8 @@ describe("pedir compresión sin compresor AVISA", () => {
     expect(aviso).toHaveLength(1);
     // El aviso vale por lo que le AHORRA al cliente en depuración: si no dice el
     // síntoma que ya está viendo, seguirá creyendo que el compresor corrió.
-    expect(aviso[0]).toContain("AUSENTE");
-    expect(aviso[0]).toContain("`tokens.eliminatedInput` a 0");
+    expect(aviso[0]).toContain("ABSENT");
+    expect(aviso[0]).toContain("`tokens.eliminatedInput` is 0");
     expect(aviso[0]).toContain("createSavingsLayer({ compressor })");
   });
 

@@ -934,40 +934,40 @@ export class SavingsPipeline {
     aprendido: boolean,
   ): void {
     const tope = request.response?.maxOutputTokens;
-    const contrato = contractKey(request) || "(sin contractId)";
+    const contrato = contractKey(request) || "(no contractId)";
     // Lo que la capa hará por su cuenta a partir de ahora, dicho solo cuando de
     // verdad lo va a hacer. Un aviso que anuncia una corrección que no ocurre es
     // peor que no decir nada: manda al lector a esperar en vez de a arreglarlo.
     const loQueHaraLaCapa = aprendido
-      ? " La capa lo ha APUNTADO: las siguientes peticiones de este contrato llevarán sus límites de " +
-        "valor escritos en el prompt, que es lo único que puede corregirlo sin tocarte el tope. Si aun " +
-        "así se corta, es que la tarea no cabe en el contrato: ensancha el esquema y sube el tope con él."
+      ? " The layer has NOTED it: the next requests for this contract will carry their value limits " +
+        "written into the prompt, which is the only thing that can fix it without touching your cap. If " +
+        "it still gets cut off, the task does not fit the contract: widen the schema and raise the cap with it."
       : "";
     const diagnostico =
       techoDelEsquema === null
-        ? " El esquema no acota la respuesta (falta `maxLength`/`maxItems`), así que no hay forma de " +
-          "saber de antemano cuánto necesita: acótalo y el tope deja de ser una apuesta."
+        ? " The schema does not bound the response (no `maxLength`/`maxItems`), so there is no way to " +
+          "know in advance how much it needs: bound it and the cap stops being a guess."
         : tope == null
-          ? ` El contrato autoriza ~${techoDelEsquema} tokens y esta petición no declara tope, así que ` +
-            "quien cortó fue un tope del PROVEEDOR (la API de Anthropic exige `max_tokens` y el " +
-            "adaptador manda 4096 por defecto). Declara `maxOutputTokens` y el corte deja de ser una " +
-            "sorpresa."
+          ? ` The contract allows ~${techoDelEsquema} tokens and this request declares no cap, so ` +
+            "the cut came from a PROVIDER cap (the Anthropic API requires `max_tokens` and the " +
+            "adapter sends 4096 by default). Declare `maxOutputTokens` and the cut stops being a " +
+            "surprise."
           : techoDelEsquema > tope
-            ? ` El contrato autoriza respuestas de hasta ~${techoDelEsquema} tokens con este modelo ` +
-              `(lo que permiten sus \`maxLength\`/\`maxItems\`) y el tope son ${tope}: ninguna respuesta ` +
-              "que use lo que el propio esquema permite cabe. Un tope calibrado con otro modelo NO se " +
-              "hereda — el esquema acota CARACTERES, que son iguales en todas partes, y el tope acota " +
-              "TOKENS, que son distintos en cada tokenizador."
-            : ` El contrato autoriza ~${techoDelEsquema} tokens y el tope son ${tope}, así que el tope ` +
-              "no es el problema: este modelo está escribiendo más de lo que su propio esquema permite " +
-              `(ningún modo estructurado impone \`maxLength\`).${loQueHaraLaCapa}`;
+            ? ` The contract allows responses of up to ~${techoDelEsquema} tokens with this model ` +
+              `(what its \`maxLength\`/\`maxItems\` permit) and the cap is ${tope}: no response ` +
+              "that uses what the schema itself permits fits. A cap calibrated with another model is NOT " +
+              "inherited — the schema bounds CHARACTERS, which are the same everywhere, and the cap bounds " +
+              "TOKENS, which differ per tokenizer."
+            : ` The contract allows ~${techoDelEsquema} tokens and the cap is ${tope}, so the cap ` +
+              "is not the problem: this model is writing more than its own schema permits " +
+              `(no structured mode enforces \`maxLength\`).${loQueHaraLaCapa}`;
     this.avisar(
       `salida-truncada:${contrato}:${modeloServido}`,
-      `[bvsala] La respuesta se cortó al agotar \`maxOutputTokens\`${tope != null ? ` (${tope})` : ""} ` +
-        `con el modelo ${modeloServido} y el contrato «${contrato}»: el proveedor devolvió ` +
-        `finish_reason "length" y ${tokensDeSalida} tokens de salida, así que el JSON no valida. NO se ` +
-        "reintenta: con el mismo tope volvería a cortarse y sería una llamada pagada para el mismo " +
-        `fallo.${diagnostico}`,
+      `[bvsala] The response was cut off after exhausting \`maxOutputTokens\`${tope != null ? ` (${tope})` : ""} ` +
+        `with model ${modeloServido} and contract "${contrato}": the provider returned ` +
+        `finish_reason "length" and ${tokensDeSalida} output tokens, so the JSON does not validate. NOT ` +
+        "retried: with the same cap it would be cut off again, a paid call for the same " +
+        `failure.${diagnostico}`,
     );
   }
 
@@ -977,25 +977,25 @@ export class SavingsPipeline {
     if ((toggles.compression === true || toggles.compression === "auto") && !this.config.compressor) {
       this.avisar(
         "palanca-sin-compresor",
-        "[bv-sala] se pidió `savings.compression` pero esta capa no tiene compresor, así que NO se " +
-          "comprime nada: el contexto largo viaja y se paga entero. En el informe, " +
-          "`report.compression` sale AUSENTE y `tokens.eliminatedInput` a 0 — lo mismo que se ve " +
-          "cuando no había nada que comprimir. El compresor es un sidecar  " +
-          "porque añade latencia y cómputo que solo usted debe decidir pagar: enchúfelo con " +
-          "`createSavingsLayer({ compressor })`, cualquier objeto con `compress({ text })`. " +
-          "Si su plan no incluye `long_context_compression`, hará falta además esa función. " +
-          "El resto de la capa sigue ahorrando igual.",
+        "[bv-sala] `savings.compression` was requested but this layer has no compressor, so NOTHING " +
+          "is compressed: the long context travels and is paid in full. In the report, " +
+          "`report.compression` is ABSENT and `tokens.eliminatedInput` is 0 — the same as when " +
+          "there was nothing to compress. The compressor is a sidecar " +
+          "because it adds latency and compute that only you should decide to pay for: plug it in with " +
+          "`createSavingsLayer({ compressor })`, any object with `compress({ text })`. " +
+          "If your plan does not include `long_context_compression`, that feature is needed too. " +
+          "The rest of the layer keeps saving as usual.",
       );
     }
 
     if (toggles.semanticCache && !this.deps.semanticCache) {
       this.avisar(
         "palanca-sin-cache-semantica",
-        "[bv-sala] se pidió `savings.semanticCache` pero esta capa no tiene caché semántica, así que " +
-          "toda pregunta reformulada saldrá `cache: \"miss\"` y se pagará al proveedor otra vez. " +
-          "No viene por defecto porque necesita un embebedor, que es coste y proveedor suyos: " +
-          "enchúfela con `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
-          "La caché exacta y el resto de la capa siguen funcionando.",
+        "[bv-sala] `savings.semanticCache` was requested but this layer has no semantic cache, so " +
+          "every rephrased question will come out `cache: \"miss\"` and be paid to the provider again. " +
+          "It is not on by default because it needs an embedder, which is your own cost and provider: " +
+          "plug it in with `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
+          "The exact cache and the rest of the layer keep working.",
       );
     }
   }
@@ -2303,9 +2303,9 @@ export class SavingsPipeline {
         });
         this.avisar(
           "esquema-roto",
-          "[bvsala] El contrato de respuesta tiene un `pattern` que no es un regex valido, asi que " +
-            "ninguna respuesta puede cumplirlo. NO se reintenta (seria una llamada pagada para el mismo " +
-            "fallo). Corrige el `pattern` del esquema.",
+          "[bvsala] The response contract has a `pattern` that is not a valid regex, so " +
+            "no response can satisfy it. NOT retried (it would be a paid call for the same " +
+            "failure). Fix the schema's `pattern`.",
         );
       } else if (!validation.valid && truncadoPorTope) {
         const techoDelEsquema = tokensDeLaMayorRespuesta(schema, (t) => this.tokensFor(t, request));

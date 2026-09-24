@@ -47,7 +47,7 @@ export async function GET() {
     return respuesta(503, {
       ok: false,
       motivo: "sin_clave_privada",
-      detalle: "LICENSE_PRIVATE_KEY_B64 no está puesta en este despliegue: no se puede firmar ninguna licencia.",
+      detalle: "LICENSE_PRIVATE_KEY_B64 is not set in this deployment: no license can be signed.",
     });
   }
 
@@ -59,7 +59,7 @@ export async function GET() {
     return respuesta(503, {
       ok: false,
       motivo: "clave_privada_ilegible",
-      detalle: "LICENSE_PRIVATE_KEY_B64 no es una clave PEM válida (¿saltos de línea perdidos al copiarla?).",
+      detalle: "LICENSE_PRIVATE_KEY_B64 is not a valid PEM key (line breaks lost when copying it?).",
     });
   }
 
@@ -70,7 +70,7 @@ export async function GET() {
       ok: false,
       motivo: "par_de_claves_distinto",
       detalle:
-        "La privada de este despliegue NO es pareja de la pública que llevan los SDK instalados. Toda licencia emitida ahora será rechazada por todos los clientes.",
+        "This deployment's private key is NOT the pair of the public key shipped inside the installed SDKs. Every license issued now will be rejected by every client.",
       huellaEsperada: esperada,
       huellaCargada: cargada,
     });
@@ -95,7 +95,7 @@ export async function GET() {
       return respuesta(503, {
         ok: false,
         motivo: "firma_no_verifica",
-        detalle: "La huella coincide pero la firma no verifica contra la pública del SDK.",
+        detalle: "The fingerprint matches but the signature does not verify against the SDK's public key.",
         huella: cargada,
       });
     }
@@ -103,7 +103,7 @@ export async function GET() {
     return respuesta(503, {
       ok: false,
       motivo: "fallo_al_firmar",
-      detalle: "La clave está cargada pero firmar o verificar ha lanzado.",
+      detalle: "The key is loaded but signing or verifying threw.",
       huella: cargada,
     });
   }
