@@ -30,3 +30,16 @@ export function recortarSuelo(suelo: number, tokens: number): number {
   if (!(tokens > 0)) return 0;
   return Math.min(suelo, (tokens / 1_000) * TECHO_PRECIO_LECTURA_PER_1K);
 }
+
+/**
+ * EL TECHO DE SALIDA del carril medido por referencia (0029), en USD por 1.000
+ * tokens: ≥ el mayor `outputPer1k` del catálogo (hoy 0,075, claude-opus-4 /
+ * claude-3-opus). Un test lo ata leyendo el catálogo como texto.
+ *
+ * Con TECHO_PRECIO_LECTURA_PER_1K acota el `baselineCost` de un registro
+ * basis "reference": la entrada acreditada, como mucho, al mayor precio de
+ * LECTURA y la salida acreditada al mayor precio de salida. Un registro por
+ * encima NO se rechaza (un throw tumba el lote entero del cliente): se DEGRADA
+ * a "estimated" en la verja del ingest (usage.ts, `referenciaCoherente`).
+ */
+export const TECHO_PRECIO_SALIDA_PER_1K = 0.08;

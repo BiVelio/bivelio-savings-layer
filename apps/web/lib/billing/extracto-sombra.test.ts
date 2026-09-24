@@ -61,3 +61,21 @@ describe("periodoDe", () => {
     expect(periodoDe(new Date("2026-09-15T23:59:00Z"))).toBe("2026-09");
   });
 });
+
+describe("extractoEnSombra — el carril medido por referencia (0029)", () => {
+  it("aFila mapea reference_* cuando el panel las trae: entran en la base del extracto", () => {
+    const sin = extractoEnSombra("org-1", [rollup("2026-09-01", 2000, 1100)], "2026-09");
+    const con = extractoEnSombra(
+      "org-1",
+      [{ ...rollup("2026-09-01", 2000, 1100), referenceRequests: 20, referenceBaselineCost: 50, referenceActualCost: 0 }],
+      "2026-09",
+    );
+    expect(con.referencia).toEqual({ requests: 20, baseUsd: 50, ahorroUsd: 50, comisionada: true });
+    expect(con.ahorroMedidoUsd).toBe(sin.ahorroMedidoUsd + 50);
+    expect(con.requestsMedidas).toBe(sin.requestsMedidas + 20);
+  });
+
+  it("sin las columnas (proyecto por detrás de 0029), nada: referencia null", () => {
+    expect(extractoEnSombra("org-1", [rollup("2026-09-01", 2000, 1100)], "2026-09").referencia).toBeNull();
+  });
+});

@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexo 0024/0025)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0029)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -56,7 +56,8 @@ select m.mig, m.aplicada from (values
   ('0015 tokens gastados',    exists (select 1 from pg_constraint where conrelid='bvsala.usage_daily'::regclass and conname='usage_daily_token_totals_no_negatives')),
   ('0016 extractos',          to_regclass('bvsala.extractos') is not null),
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
-  ('RPC en version final (0015)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%baseline_input_tokens%'))
+  ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
+  ('RPC en version final (0029)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%'))
 ) as m(mig, aplicada) order by 1;
 SQL
 
@@ -79,10 +80,11 @@ migración crea:
 | 0012 | columna `subscriptions.last_event_at` | Ya confirmada el 11-08; debería salir `true` |
 | 0013 | tabla `org_invitations` + columna `organizations.owner_user_id` | |
 | 0014 | función `transferir_propiedad` | |
-| 0015 | check `usage_daily_token_totals_no_negatives` | La versión **final** de la RPC |
+| 0015 | check `usage_daily_token_totals_no_negatives` | Lleva versión de la RPC — regla 1 (fue la final de este lote; hoy la final es la de 0029: fila «RPC final») |
 | 0016 | tabla `extractos` | La que necesita el cron del día 1 a las 05:00 |
 | 0017 | tabla `cargos` | La que necesita el cron del día 1 a las 07:00 |
-| RPC final | el fuente de `ingest_usage_batch` menciona `baseline_input_tokens` | Si 0015 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0015 |
+| 0029 | tabla `reference_hits` | El carril medido por referencia (anexo 0029, al final). Lleva versión de la RPC — regla 1 |
+| RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits` | La versión **final** de la RPC es la de 0029 (antes lo fue la de 0015, luego 0024 y 0025). Si 0029 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0029 |
 
 ## Paso 2 — Aplicar lo que falte, en orden
 
@@ -441,3 +443,110 @@ jq -Rs '{query:.}' < /tmp/diagnostico-0018-0020.sql | curl -sf \
   más alta aplicada, nunca el de 0019 a secas.
 - `false` en 0018 o 0020 → el bucle del paso 2 con `PENDIENTES="0018"` o
   `"0020"`. Las tres son idempotentes (`if not exists`).
+
+## Anexo — 0029 (septiembre de 2026): medido por referencia
+
+0029 abre el carril `basis = 'reference'`: una llamada EVITADA (acierto exacto
+o seguidor coalescido) cuya repetición es byte a byte una petición que sí corrió
+a través de la capa sin que la capa la tocara, valorada con el contador que el
+proveedor devolvió para esa petición idéntica (entrada al precio de entrada
+cacheada; salida solo con muestreo determinista). Añade:
+
+- `usage_daily`: `reference_requests`, `reference_baseline_cost`,
+  `reference_actual_cost` (con el CHECK `usage_daily_reference_no_negatives`,
+  solo `≥ 0`). El dinero va en `numeric(20,10)`, no en el `numeric(14,6)` del
+  resto de la tabla: la RPC suma registro a registro, Postgres redondea cada
+  uno a la escala de la columna y un acierto por referencia vale
+  micro-dólares — a 6 decimales la base subiría por encima del suelo del SDK y
+  dejaría de cuadrar con el CSV;
+- `usage_daily_by_model`: `reference_requests`, `reference_baseline_cost`
+  (también `numeric(20,10)`);
+- `extractos`: `requests_referencia`, `base_referencia_usd`,
+  `ahorro_referencia_usd`, `regla_referencia` (CHECK
+  `extractos_referencia_no_negativos`, solo `≥ 0`);
+- la tabla `reference_hits` (una fila por acierto, RLS de miembro): lo que
+  descarga el enlace CSV del extracto, con el índice `(org_id, day,
+  request_id)` de la descarga por clave y un BRIN sobre `day` para la purga
+  nocturna de retención (460 días);
+- **otra versión de `ingest_usage_batch`**: el cuerpo de 0025 ENTERO con dos
+  bloques distintos (el insert de `usage_daily` y el fold por modelo, que
+  además escribe la fila de `reference_hits`). `test/migracion-0029.test.ts`
+  lo compara línea a línea contra 0025.
+
+`measured_*` no cambia: un registro `reference` suma a los totales como un
+`estimated` y, además, a sus columnas propias. El interruptor de cobro vive en
+la web (`COMISIONAR_REFERENCIA`, `apps/web/lib/billing/tarifa.ts`); el de
+acumulación, en la ruta del ingest (`BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1`).
+
+- **Orden:** 0029 → `vercel --prod` desde la raíz del repo → SOLO ENTONCES npm
+  con el SDK que emite `basis: "reference"`. 0029 lleva guard de precondición y
+  ABORTA si falta la base 0025 (o `extractos`, 0016) — ese aborto es el
+  resultado *bueno*: aplicar 0024/0025 en orden y volver a lanzar 0029. Es
+  inocua con la web actual (la RPC nueva se comporta igual con los basis
+  viejos; el SELECT del cierre actual es explícito y no lee las columnas nuevas).
+- **Web antes que npm SÍ** (doctrina de `emitter.ts`: un 4xx del ingest
+  descarta el lote sin reintento): un SDK que emita `reference` contra una web
+  sin la lista blanca recibe 400 y pierde el lote.
+- **Web antes que 0029 NO rompe, pero no se hace:** el panel, el cierre del día
+  1 y la purga de retención toleran que la migración no esté (leen sin el
+  carril y lo avisan; el cierre, con alerta **crítica**, porque con el SDK ya
+  emitiendo referencia cada mes sin 0029 sella ese ahorro fuera de la base); el
+  CSV responde 503, nunca un fichero vacío. El orden de arriba evita ventanas.
+- **Retroceso: NUNCA un rollback de Vercel a un despliegue anterior a este
+  carril** una vez publicado el SDK que emite `reference`: ese ingest no conoce
+  el basis, respondería 400 y el emisor tiraría el lote ENTERO (también el uso
+  medido) sin reintento. El retroceso es `BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1`
+  en Vercel y redesplegar el MISMO commit (corta la acumulación; `1`, `true`,
+  `yes` u `on` valen) o `COMISIONAR_REFERENCIA = false` por PR (deja de cobrar
+  lo no sellado).
+- **Regla 1, literal:** 0029 lleva versión de la RPC — re-ejecutar 0025 o una
+  anterior DESPUÉS regresa la RPC en silencio: dejan de acumularse las columnas
+  `reference_*` y de escribirse `reference_hits`, y el extracto deja de ver la
+  referencia sin que nadie vea un error. Si pasa, re-aplicar **solo** el bloque
+  `create or replace function bvsala.ingest_usage_batch` de 0029. La fila
+  «RPC en version final (0029)» del paso 1 lo detecta.
+- **Regla 6:** anota la hora antes (PITR). 0029 es aditiva (sin DROP de datos),
+  pero la RPC se sustituye entera.
+
+### Diagnóstico (solo lectura)
+
+Antes de aplicar, el diagnóstico de 0025 (anexo 0024/0025) y el de 0028 tienen
+que salir `true`. Tras aplicar, las CUATRO de abajo tienen que salir `true`; la
+última exige a la vez la pieza de 0024, la de 0025 y la de 0029 en la RPC viva:
+
+```sql
+select exists(select 1 from information_schema.columns where table_schema='bvsala' and table_name='usage_daily' and column_name='reference_baseline_cost') as columna_0029,
+       to_regclass('bvsala.reference_hits') is not null as tabla_0029,
+       exists(select 1 from information_schema.columns where table_schema='bvsala' and table_name='extractos' and column_name='regla_referencia') as extractos_0029,
+       exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch'
+                and p.prosrc like '%reference_hits%' and p.prosrc like '%eliminatedInputFloorCost%' and p.prosrc like '%clientVersion%') as rpc_0029;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0029"`, tras anotar la hora, desde el
+fichero del PR que la trae (`db/migrations/0029_medido_por_referencia.sql`).
+Relanzar el diagnóstico hasta tener las cuatro `true`.
+
+### Verificar tras el deploy de la web
+
+- El panel carga; `GET /api/cron/cierre-extractos?seco=1&periodo=<mes actual>`
+  responde 200 y cada organización trae `requests_referencia` (0 hasta que
+  llegue el SDK nuevo).
+- Un lote sintético `basis: "reference"` coherente, con la clave `bvk_` de la
+  organización interna de pruebas (leída de fichero, jamás impresa) → **202**,
+  y en la base `usage_daily.reference_requests` +1 y una fila en
+  `reference_hits`. Coherente quiere decir, además de llamada evitada sin
+  coste: `referenceRequestId` y `referenceAt` presentes (epoch ms, como mucho
+  30 días antes de `at`). Un lote incoherente (p. ej. `actualCost > 0`, o sin
+  `referenceRequestId`) → **202** con `reference_requests` sin moverse: la verja
+  lo degrada a `estimated`.
+- La descarga CSV (enlace del extracto) sale en streaming, que es lo que la
+  libra del límite de 4,5 MB de las respuestas de función de Vercel. La primera
+  vez que una org pase de ~35.000 repeticiones en un mes (≈ 5 MB de CSV),
+  bajarla entera desde el extracto y contar las filas contra
+  `requests_referencia`. Un mes de más de 1.000.000 de filas no se sirve en un
+  fichero (413): el extracto ofrece entonces la descarga día a día.
+- Antes del primer cierre con referencia (día 1): `?seco=1` y revisar a mano
+  las organizaciones con `requests_referencia > 0`. El primer período de cada
+  organización es calibración (cargo 0).

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { elegirLicencia } from "./derive";
 import { agregarAsientos, type FilaAsiento } from "@/lib/version/asientos";
 import { DIA_MS, type AsientoVisto } from "@/lib/version/aviso-version";
+import { esColumnaInexistente, esTablaInexistente } from "@/lib/supabase/esquema-pendiente";
 
 /**
  * Server data layer for the dashboard. Every query is best-effort: the bound
@@ -303,6 +304,15 @@ export interface UsageRollup {
    */
   eliminatedFloorCost?: number;
   eliminatedCreditedRequests?: number;
+  /**
+   * El carril MEDIDO POR REFERENCIA (migración 0029): llamadas evitadas
+   * valoradas con el contador del proveedor de la petición idéntica que sí
+   * corrió. Entra en el titular y en el extracto bajo COMISIONAR_REFERENCIA
+   * (lib/billing/tarifa.ts). Opcionales: sin la columna, «no disponible», no 0.
+   */
+  referenceRequests?: number;
+  referenceBaselineCost?: number;
+  referenceActualCost?: number;
 }
 
 /** Reads usage_daily. Returns [] today (no metering pipeline). Never invents rows. */
@@ -318,19 +328,9 @@ export interface UsageResult {
   failed: boolean;
 }
 
-/**
- * ¿El error de PostgREST es «esa columna no existe»?
- *
- * `42703` es el `undefined_column` de Postgres. Se mira también el mensaje
- * porque PostgREST no siempre propaga el `code` del motor —según la versión
- * devuelve `PGRST204` o solo texto—, y confundir este caso con un fallo real de
- * lectura es justo lo que deja el panel en blanco.
- */
-function esColumnaInexistente(error: { code?: string; message?: string }): boolean {
-  if (error.code === "42703" || error.code === "PGRST204") return true;
-  const m = (error.message ?? "").toLowerCase();
-  return m.includes("does not exist") || m.includes("could not find");
-}
+// `esColumnaInexistente` / `esTablaInexistente` (lib/supabase/esquema-pendiente.ts):
+// ¿el error de PostgREST es «esa columna / tabla aún no existe»? Confundir ese
+// caso con un fallo real de lectura es justo lo que deja el panel en blanco.
 
 /** Columnas que existían antes de la migración 0015. */
 const COLUMNAS_BASE =
@@ -342,6 +342,8 @@ const COLUMNAS_TOKENS =
 const COLUMNAS_SOMBRA = "shadow_requests, shadow_baseline_cost, shadow_actual_cost";
 /** El carril del borrado del proveedor que añade 0025. */
 const COLUMNAS_ELISION = "eliminated_floor_cost, eliminated_credited_requests";
+/** El carril medido por referencia que añade 0029. */
+const COLUMNAS_REFERENCIA = "reference_requests, reference_baseline_cost, reference_actual_cost";
 
 export async function getUsageRollups(supabase: SupabaseClient, orgId: string): Promise<UsageResult> {
   try {
@@ -357,16 +359,25 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
         .gte("day", since)
         .order("day", { ascending: true });
 
-    let { data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}`);
+    let { data, error } = await leer(
+      `${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}, ${COLUMNAS_REFERENCIA}`,
+    );
     // EL DESPLIEGUE PUEDE ADELANTAR A LA MIGRACIÓN, y sin esto eso tumbaba el
     // panel ENTERO. PostgREST responde 42703 cuando una columna no existe; si
     // pedimos las de 0015/0021/0025 contra un proyecto que aún no las tiene, el
     // `failed` de abajo le pinta "la lectura falló" a un cliente cuyos datos
     // están intactos — y no solo en la tarjeta nueva, sino en todo lo demás.
     //
-    // Se reintenta en escalera (0025 → 0021 → 0015 → base). Las filas salen sin
-    // las columnas que falten, que es exactamente lo que son: no disponibles
-    // todavía. Las tarjetas lo dirán así, y el resto del panel sigue.
+    // Se reintenta en escalera (0029 → 0025 → 0021 → 0015 → base). Las filas
+    // salen sin las columnas que falten, que es exactamente lo que son: no
+    // disponibles todavía. Las tarjetas lo dirán así, y el resto del panel sigue.
+    if (error && esColumnaInexistente(error)) {
+      console.warn(
+        "[dashboard] usage_daily sin las columnas del carril medido por referencia (¿falta la migración 0029?); " +
+          "se lee sin ellas y el titular y el extracto saldrán solo con lo medido por la propia petición",
+      );
+      ({ data, error } = await leer(`${COLUMNAS_BASE}, ${COLUMNAS_TOKENS}, ${COLUMNAS_SOMBRA}, ${COLUMNAS_ELISION}`));
+    }
     if (error && esColumnaInexistente(error)) {
       console.warn(
         "[dashboard] usage_daily sin las columnas del borrado del proveedor (¿falta la migración 0025?); " +
@@ -437,6 +448,13 @@ export async function getUsageRollups(supabase: SupabaseClient, orgId: string): 
             eliminatedFloorCost: Number(r["eliminated_floor_cost"] ?? 0),
           }
         : {}),
+      ...(r["reference_requests"] != null
+        ? {
+            referenceRequests: Number(r["reference_requests"]),
+            referenceBaselineCost: Number(r["reference_baseline_cost"] ?? 0),
+            referenceActualCost: Number(r["reference_actual_cost"] ?? 0),
+          }
+        : {}),
     }));
     return { rows, failed: false };
   } catch (err) {
@@ -458,16 +476,9 @@ export interface SesionRollup {
   actualCost: number;
 }
 
-/**
- * ¿El error de PostgREST es «esa tabla no existe»? El despliegue puede adelantar
- * a la migración 0019 (misma lección que `esColumnaInexistente`): sin la tabla,
- * la tarjeta de sesiones se esconde y el resto del panel ni se entera.
- */
-function esTablaInexistente(error: { code?: string; message?: string }): boolean {
-  if (error.code === "42P01" || error.code === "PGRST205") return true;
-  const m = (error.message ?? "").toLowerCase();
-  return m.includes("does not exist") || m.includes("could not find");
-}
+// Sin la tabla de 0019 (`esTablaInexistente`), la tarjeta de sesiones se
+// esconde y el resto del panel ni se entera: el despliegue puede adelantar a la
+// migración, misma lección que las columnas.
 
 export async function getSesiones(supabase: SupabaseClient, orgId: string): Promise<{ rows: SesionRollup[]; failed: boolean }> {
   try {

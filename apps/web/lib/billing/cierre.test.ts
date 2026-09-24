@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { cerrarPeriodo as cerrarConFx, periodoAnterior, resumenDelCierre, type UsoDeOrg } from "./cierre";
 import type { FilaDiaria } from "./extracto";
@@ -159,5 +159,79 @@ describe("resumenDelCierre — lo que el ensayo en seco enseña por organizació
     expect(r).toMatchObject({ org_id: "a", periodo: "2026-09", es_calibracion: false, cargo_eur: cierre[0]!.cargo_eur, fx_fuente: "test" });
     expect(r).not.toHaveProperty("tramos");
     expect(r).not.toHaveProperty("base_medida_usd");
+  });
+});
+
+describe("cerrarPeriodo — el carril medido por referencia (0029) en la fila sellada", () => {
+  /** 900 USD medidos por su contador + 20 repeticiones por referencia que valen 50 USD. */
+  function filaConReferencia(day: string): FilaDiaria {
+    return {
+      ...fila(day, 2000, 1100),
+      baseline_cost: 2050,
+      requests: 30,
+      reference_requests: 20,
+      reference_baseline_cost: 50,
+      reference_actual_cost: 0,
+    };
+  }
+
+  it("la fila lleva las cuatro columnas nuevas, con la regla sellada", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09");
+    expect(c!.requests_referencia).toBe(20);
+    expect(c!.base_referencia_usd).toBe(50);
+    expect(c!.ahorro_referencia_usd).toBe(50);
+    expect(c!.regla_referencia).toBe("reference-v1");
+    // Comisionada: ya está DENTRO de lo medido (950 USD de ahorro, 30 peticiones).
+    expect(c!.requests_medidas).toBe(30);
+    expect(c!.ahorro_medido_usd).toBe(950);
+    expect(c!.base_medida_usd).toBe(2050);
+  });
+
+  it("sin referencia → 0 / 0 / 0 / \"\"", () => {
+    const [c] = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09");
+    expect([c!.requests_referencia, c!.base_referencia_usd, c!.ahorro_referencia_usd, c!.regla_referencia]).toEqual([0, 0, 0, ""]);
+  });
+
+  it("las restricciones de la tabla siguen cumpliéndose con referencia (calibración → 0; cargo ≤ comisión; ≥ 0)", () => {
+    for (const primer of ["2026-09", "2026-01"]) {
+      const [c] = cerrarPeriodo([org("a", primer, [filaConReferencia("2026-09-10")])], "2026-09");
+      if (c!.es_calibracion) expect(c!.cargo_eur).toBe(0);
+      expect(c!.cargo_eur).toBeLessThanOrEqual(c!.comision_eur);
+      for (const v of [c!.requests_referencia, c!.base_referencia_usd, c!.ahorro_referencia_usd]) {
+        expect(v).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("con el interruptor APAGADO el sello es «reference-v1:excluded» — en inglés, porque el cliente lo lee y la fila es inmutable", async () => {
+    vi.resetModules();
+    vi.doMock("./tarifa", async () => ({
+      ...(await vi.importActual<typeof import("./tarifa")>("./tarifa")),
+      COMISIONAR_REFERENCIA: false,
+    }));
+    try {
+      const { cerrarPeriodo: cerrarApagado } = await import("./cierre");
+      const [c] = cerrarApagado([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09", FX_PRUEBA);
+      expect(c!.regla_referencia).toBe("reference-v1:excluded");
+      // Contexto, no base: las cifras propias se sellan igual, lo medido no las incluye.
+      expect(c!.requests_referencia).toBe(20);
+      expect(c!.requests_medidas).toBe(10);
+    } finally {
+      vi.doUnmock("./tarifa");
+      vi.resetModules();
+    }
+  });
+
+  it("el sello es ASCII y en inglés en los tres casos (nada en castellano llega a la fila inmutable)", () => {
+    const con = cerrarPeriodo([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09")[0]!;
+    const sin = cerrarPeriodo([org("a", "2026-08", [fila("2026-09-10", 2000, 1100)])], "2026-09")[0]!;
+    for (const sello of [con.regla_referencia, sin.regla_referencia, `${con.regla_referencia}:excluded`]) {
+      expect(sello).toMatch(/^(|reference-v\d+(:excluded)?)$/);
+    }
+  });
+
+  it("el ensayo en seco enseña cuántas medidas lo son por referencia (lo que se revisa a mano antes del día 1)", () => {
+    const [r] = resumenDelCierre(cerrarPeriodo([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09"));
+    expect(r!.requests_referencia).toBe(20);
   });
 });

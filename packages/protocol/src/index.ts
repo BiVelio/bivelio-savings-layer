@@ -165,9 +165,15 @@ export interface UsageRecord {
   netSavings: number;
   /** Optional (0025): provider-cleared input tokens valued at the cache READ floor price. Capped server-side; never part of measured. */
   eliminatedInputFloorCost?: number;
+  /** Optional (0029), only with basis "reference": the requestId of the identical request that ran. */
+  referenceRequestId?: string;
+  /** Optional (0029), only with basis "reference": epoch ms when that request's provider counter was read. */
+  referenceAt?: number;
   /**
    * De dónde sale el baseline de ESTE registro: "measured" (contador del
-   * proveedor), "estimated" (llamada evitada, sin contador), "unmeasured" o
+   * proveedor), "reference" (llamada evitada valorada con el contador del
+   * proveedor de la petición idéntica que sí corrió — 0029), "estimated"
+   * (llamada evitada, sin contador), "unmeasured" o
    * "shadow" (el carril hipotético de S2: qué HABRÍA pasado con la elisión
    * encendida — jamás en la base de comisión, jamás sumado a measured).
    * Viaja hasta el panel para que el dinero medido y el estimado se puedan
@@ -204,7 +210,11 @@ export interface SavingsReportLike {
     actualOutput: number;
     providerCachedInput?: number;
   };
-  cache: { result: string };
+  cache: {
+    result: string;
+    /** Present when this avoided call is valued by reference (the SDK's ReferenceCredit, reduced to what travels). */
+    reference?: { requestId: string; at: number };
+  };
   cost: { baselineEstimate: number; actual: number; netSavings: number; basis?: string };
 }
 
@@ -238,6 +248,14 @@ export function usageRecordFromReport(
     actualCost: report.cost.actual,
     netSavings: report.cost.netSavings,
     ...(report.cost.basis ? { basis: report.cost.basis } : {}),
+    // 0029 · the two reference fields travel ONLY with basis "reference" and only
+    // in the exact shape the ingest keeps (it would drop anything else anyway).
+    ...(report.cost.basis === "reference" &&
+    report.cache.reference &&
+    USAGE_ID_PATTERN.test(report.cache.reference.requestId) &&
+    Number.isInteger(report.cache.reference.at)
+      ? { referenceRequestId: report.cache.reference.requestId, referenceAt: report.cache.reference.at }
+      : {}),
   };
 }
 
@@ -284,8 +302,10 @@ const USAGE_NUMBER_FIELDS = [
 /** `orgId` is intentionally NOT accepted from the client — the server derives it
  * from the authenticated service account. `seatId` and `ci` are the optional fields. */
 /** Valores admitidos en `basis` (espejo de CostBasis del SDK). "shadow" es el
- *  carril hipotético de S2 — solo columnas shadow_*, jamás comisión. */
-const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
+ *  carril hipotético de S2 — solo columnas shadow_*, jamás comisión.
+ *  "reference" es el carril medido por referencia (0029) — columnas reference_*,
+ *  jamás measured_*. Espejo de apps/web/lib/metering/usage.ts. */
+const USAGE_BASIS = new Set(["measured", "reference", "estimated", "unmeasured", "shadow"]);
 
 /**
  * Optional money field of the provider-clearing lane (migration 0025):
@@ -302,6 +322,31 @@ const USAGE_OPTIONAL_MONEY_FIELDS = ["eliminatedInputFloorCost"] as const;
  * apps/web/lib/metering/techo-precio-lectura.ts (a test pins both equal).
  */
 const TECHO_PRECIO_LECTURA_PER_1K = 0.002;
+/**
+ * Output ceiling of the reference lane (0029), USD per 1k tokens: >= the largest
+ * `outputPer1k` in the catalog. With the read ceiling it bounds the baselineCost
+ * of a basis "reference" record; above it the record is DOWNGRADED to
+ * "estimated", never rejected. Mirror of apps/web/lib/metering/techo-precio-lectura.ts
+ * (a test pins both equal).
+ */
+const TECHO_PRECIO_SALIDA_PER_1K = 0.08;
+
+/**
+ * Optional fields of the reference lane (0029). Clip, never reject: a malformed
+ * value is dropped (a throw here drops the client's whole batch).
+ */
+const USAGE_OPTIONAL_REFERENCE_FIELDS = ["referenceRequestId", "referenceAt"] as const;
+const REFERENCE_CACHE_RESULTS: ReadonlySet<string> = new Set<string>(["exact", "singleflight"]);
+/** The SDK rounds USD to 1e-10 (roundUsd): the ceiling tolerates that granularity. */
+const REFERENCE_ROUNDING_TOLERANCE_USD = 1e-10;
+/**
+ * Maximum age of the reference counter (`at - referenceAt`), the one the
+ * statement publishes: 30 days. Mirror of EDAD_MAXIMA_REFERENCIA_MS in
+ * apps/web/lib/metering/usage.ts (a test pins both equal).
+ */
+const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+/** Clock skew tolerated on both sides of that age check: 5 minutes, as the SDK's read check. */
+const REFERENCE_CLOCK_SKEW_MS = 5 * 60 * 1000;
 
 const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   "orgId",
@@ -314,6 +359,7 @@ const USAGE_ALLOWED_FIELDS: ReadonlySet<string> = new Set<string>([
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
   ...USAGE_OPTIONAL_MONEY_FIELDS,
+  ...USAGE_OPTIONAL_REFERENCE_FIELDS,
 ]);
 
 export class UsageValidationError extends Error {
@@ -325,6 +371,35 @@ export class UsageValidationError extends Error {
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Is a basis "reference" record coherent? An avoided call (exact hit or
+ * coalesced follower) with no cost and no removed, compressed or
+ * provider-cached tokens of its own, a positive baseline at or under the
+ * ceiling, and a POINTER to the identical request that ran
+ * (`referenceRequestId` and `referenceAt`, both kept) no older than the
+ * published rule allows. Mirror of `referenciaCoherente` in
+ * apps/web/lib/metering/usage.ts.
+ */
+function referenceIsCoherent(rec: Record<string, unknown>): boolean {
+  const n = (k: string) => rec[k] as number;
+  if (!REFERENCE_CACHE_RESULTS.has(rec["cacheResult"] as string)) return false;
+  if (n("avoidedLlm") !== 1 || n("actualLlm") !== 0) return false;
+  if (n("actualInputTokens") !== 0 || n("actualOutputTokens") !== 0 || n("actualCost") !== 0) return false;
+  if (n("eliminatedInputTokens") !== 0 || n("compressedInputTokens") !== 0 || n("providerCachedInputTokens") !== 0) {
+    return false;
+  }
+  if (rec["eliminatedInputFloorCost"] !== undefined && rec["eliminatedInputFloorCost"] !== 0) return false;
+  if (n("netSavings") !== 1) return false;
+  if (!(n("baselineInputTokens") > 0) || !(n("baselineCost") > 0)) return false;
+  if (typeof rec["referenceRequestId"] !== "string" || typeof rec["referenceAt"] !== "number") return false;
+  const age = n("at") - n("referenceAt");
+  if (age < -REFERENCE_CLOCK_SKEW_MS || age > REFERENCE_MAX_AGE_MS + REFERENCE_CLOCK_SKEW_MS) return false;
+  const ceiling =
+    (n("baselineInputTokens") / 1_000) * TECHO_PRECIO_LECTURA_PER_1K +
+    (n("baselineOutputTokens") / 1_000) * TECHO_PRECIO_SALIDA_PER_1K;
+  return n("baselineCost") <= ceiling + REFERENCE_ROUNDING_TOLERANCE_USD;
 }
 
 /**
@@ -425,6 +500,22 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
     }
     rec["ci"] = input["ci"];
   }
+  // 0029 · reference lane — clip, never reject (mirror of apps/web/lib/metering/usage.ts).
+  if (input["referenceRequestId"] !== undefined) {
+    const v = input["referenceRequestId"];
+    if (typeof v === "string" && USAGE_ID_PATTERN.test(v)) rec["referenceRequestId"] = v;
+  }
+  if (input["referenceAt"] !== undefined) {
+    const v = input["referenceAt"];
+    if (typeof v === "number" && Number.isInteger(v) && v >= AT_MIN_MS && v <= Date.now() + AT_MAX_SKEW_MS) {
+      rec["referenceAt"] = v;
+    }
+  }
+  if (rec["basis"] === "reference" && !referenceIsCoherent(rec)) rec["basis"] = "estimated";
+  if (rec["basis"] !== "reference") {
+    delete rec["referenceRequestId"];
+    delete rec["referenceAt"];
+  }
   return rec as unknown as UsageRecord;
 }
 
@@ -432,6 +523,24 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string): Usage
 export function parseUsageRecords(input: unknown, authorizedOrgId: string): UsageRecord[] {
   const arr = Array.isArray(input) ? input : [input];
   return arr.map((r) => parseUsageRecord(r, authorizedOrgId));
+}
+
+/**
+ * Server-side kill switch of the reference lane: rewrites every basis
+ * "reference" record to "estimated" and drops its two reference fields.
+ * Returns how many it changed. Mirror of `degradarReferencias` in
+ * apps/web/lib/metering/usage.ts.
+ */
+export function downgradeReferences(records: UsageRecord[]): number {
+  let n = 0;
+  for (const r of records) {
+    if (r.basis !== "reference") continue;
+    r.basis = "estimated";
+    delete r.referenceRequestId;
+    delete r.referenceAt;
+    n++;
+  }
+  return n;
 }
 
 export const PROTOCOL_VERSION = 1 as const;

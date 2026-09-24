@@ -10,7 +10,8 @@
  * service account. Identity fields are charset-constrained so a free-text string
  * cannot become a value channel for content.
  */
-import { recortarSuelo } from "./techo-precio-lectura";
+import { REGLA_REFERENCIA } from "../billing/tarifa";
+import { recortarSuelo, TECHO_PRECIO_LECTURA_PER_1K, TECHO_PRECIO_SALIDA_PER_1K } from "./techo-precio-lectura";
 
 export class UsageValidationError extends Error {
   constructor(message: string) {
@@ -40,8 +41,12 @@ const USAGE_NUMBER_FIELDS = [
 // identity; ci flags CI/ephemeral seats (excluded from billable seats).
 /** Valores admitidos en `basis` (espejo de CostBasis del SDK). "shadow" es el
  *  carril hipotético de S2 (migración 0021): la RPC lo acumula SOLO en las
- *  columnas shadow_* — jamás en la base de la comisión ni en measured. */
-const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
+ *  columnas shadow_* — jamás en la base de la comisión ni en measured.
+ *  "reference" es el carril MEDIDO POR REFERENCIA (migración 0029): una llamada
+ *  evitada valorada con el contador del proveedor de la petición idéntica que sí
+ *  corrió. La RPC lo acumula en reference_* (jamás en measured_*) y la web decide
+ *  si entra en la base (COMISIONAR_REFERENCIA, lib/billing/tarifa.ts). */
+const USAGE_BASIS = new Set(["measured", "reference", "estimated", "unmeasured", "shadow"]);
 
 /**
  * Dinero OPCIONAL del carril de la elisión del proveedor (migración 0025):
@@ -53,17 +58,57 @@ const USAGE_BASIS = new Set(["measured", "estimated", "unmeasured", "shadow"]);
  */
 const USAGE_OPTIONAL_MONEY_FIELDS = ["eliminatedInputFloorCost"] as const;
 
+/**
+ * Los dos campos OPCIONALES del carril medido por referencia (0029): qué
+ * petición sirvió de referencia (`referenceRequestId`, su report.requestId) y
+ * cuándo se leyó su contador (`referenceAt`, epoch ms). Van a la fila de
+ * reference_hits (el CSV del cliente). RECORTE, NO RECHAZO: un valor malo se
+ * descarta y se cuenta; jamás un 400 por esto (el emisor descarta el lote
+ * entero sin reintento y npm es inmutable).
+ */
+const USAGE_OPTIONAL_REFERENCE_FIELDS = ["referenceRequestId", "referenceAt"] as const;
+
 const USAGE_ALLOWED_FIELDS = new Set<string>([
   "orgId", "seatId", "ci", "cacheResult", "basis", "sessionId", "agentId",
   ...USAGE_ID_FIELDS,
   ...USAGE_NUMBER_FIELDS,
   ...USAGE_OPTIONAL_MONEY_FIELDS,
+  ...USAGE_OPTIONAL_REFERENCE_FIELDS,
 ]);
+
+/** Resultados de acierto que pueden valorarse por referencia: el exacto y el seguidor coalescido. */
+const REFERENCE_CACHE_RESULTS = new Set(["exact", "singleflight"]);
+
+/**
+ * Tolerancia del techo: la granularidad del redondeo del SDK (roundUsd, 1e-10
+ * USD). Sin ella, un baseline exactamente en el techo podía caer una
+ * diezmilmillonésima por encima al redondear.
+ */
+const TOLERANCIA_REDONDEO_USD = 1e-10;
+
+/**
+ * La EDAD máxima del contador de referencia: la de la regla PUBLICADA en el
+ * extracto («at most {dias} days old», REGLA_REFERENCIA.edadMaximaDias), en ms.
+ * Derivada de la regla, no copiada: si la regla cambia, la verja cambia con ella.
+ */
+export const EDAD_MAXIMA_REFERENCIA_MS = REGLA_REFERENCIA.edadMaximaDias * 24 * 60 * 60 * 1000;
+/**
+ * Desfase de reloj tolerado entre el proceso que pobló la referencia y el que
+ * la sirvió (5 min, el mismo margen que el SDK en su lectura). Se admite en
+ * los DOS lados: un `referenceAt` algo posterior al `at` del acierto y un
+ * acierto leído justo en el límite de edad cuyo `at` se selló milisegundos
+ * después.
+ */
+export const DESFASE_RELOJ_REFERENCIA_MS = 5 * 60 * 1000;
 
 export interface UsageRecord {
   orgId: string;
   /** Opcional (0025): tokens borrados por el proveedor valorados a precio SUELO de lectura. Recortado al techo; jamás en measured. */
   eliminatedInputFloorCost?: number;
+  /** Opcional (0029), solo con basis "reference": el report.requestId de la petición que sirvió de referencia. */
+  referenceRequestId?: string;
+  /** Opcional (0029), solo con basis "reference": epoch ms en que se leyó el contador de esa petición. */
+  referenceAt?: number;
   seatId?: string;
   ci?: boolean;
   requestId: string;
@@ -80,7 +125,59 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 /** Validate one untrusted usage record; orgId is server-supplied, never from the body. */
 type Recorte = { recibido: number; tokens: number; guardado: number };
 
-export function parseUsageRecord(input: unknown, authorizedOrgId: string, recortes: Recorte[] = []): UsageRecord {
+/** Lo que la verja del carril por referencia rebajó en un lote: se avisa UNA vez por lote. */
+export interface DescartesDeReferencia {
+  /** Registros con basis "reference" incoherente, degradados a "estimated". */
+  degradados: number;
+  /** Valores de referenceRequestId / referenceAt descartados por forma o rango. */
+  camposDescartados: number;
+}
+
+/**
+ * ¿Es coherente un registro que dice basis "reference"? Una referencia es, por
+ * definición, una llamada EVITADA (acierto exacto o seguidor) sin coste propio,
+ * con baseline positivo y por debajo del techo: toda su entrada, como mucho, al
+ * mayor precio de LECTURA del catálogo y su salida al mayor precio de salida. El
+ * servidor no conoce precios; esta cota es lo que sí puede comprobar. Lo que no
+ * casa se DEGRADA a estimated — nunca se rechaza.
+ *
+ * Y lleva PUNTERO: el extracto promete que cada repetición «is in that
+ * request's report» y el CSV la ata a la petición que corrió. Sin
+ * `referenceRequestId` y `referenceAt` válidos (ya filtrados por forma arriba)
+ * esa fila no se podría contrastar, así que no se factura como referencia. Y
+ * la edad que el extracto publica (REGLA_REFERENCIA.edadMaximaDias) se
+ * comprueba aquí también, con `at − referenceAt`: el SDK lo hace al leer, pero
+ * la regla publicada no puede depender solo de quien emite.
+ *
+ * Una llamada evitada tampoco tiene tokens quitados, comprimidos ni cacheados
+ * por el proveedor, ni suelo de elisión: si los trae, no es lo que dice ser.
+ */
+function referenciaCoherente(rec: Record<string, unknown>): boolean {
+  const n = (k: string) => rec[k] as number;
+  if (!REFERENCE_CACHE_RESULTS.has(rec["cacheResult"] as string)) return false;
+  if (n("avoidedLlm") !== 1 || n("actualLlm") !== 0) return false;
+  if (n("actualInputTokens") !== 0 || n("actualOutputTokens") !== 0 || n("actualCost") !== 0) return false;
+  if (n("eliminatedInputTokens") !== 0 || n("compressedInputTokens") !== 0 || n("providerCachedInputTokens") !== 0) {
+    return false;
+  }
+  if (rec["eliminatedInputFloorCost"] !== undefined && rec["eliminatedInputFloorCost"] !== 0) return false;
+  if (n("netSavings") !== 1) return false;
+  if (!(n("baselineInputTokens") > 0) || !(n("baselineCost") > 0)) return false;
+  if (typeof rec["referenceRequestId"] !== "string" || typeof rec["referenceAt"] !== "number") return false;
+  const edad = n("at") - n("referenceAt");
+  if (edad < -DESFASE_RELOJ_REFERENCIA_MS || edad > EDAD_MAXIMA_REFERENCIA_MS + DESFASE_RELOJ_REFERENCIA_MS) return false;
+  const techo =
+    (n("baselineInputTokens") / 1_000) * TECHO_PRECIO_LECTURA_PER_1K +
+    (n("baselineOutputTokens") / 1_000) * TECHO_PRECIO_SALIDA_PER_1K;
+  return n("baselineCost") <= techo + TOLERANCIA_REDONDEO_USD;
+}
+
+export function parseUsageRecord(
+  input: unknown,
+  authorizedOrgId: string,
+  recortes: Recorte[] = [],
+  referencia: DescartesDeReferencia = { degradados: 0, camposDescartados: 0 },
+): UsageRecord {
   if (!isPlainObject(input)) throw new UsageValidationError("usage record must be an object");
   for (const key of Object.keys(input)) {
     if (!USAGE_ALLOWED_FIELDS.has(key)) {
@@ -179,7 +276,74 @@ export function parseUsageRecord(input: unknown, authorizedOrgId: string, recort
     if (typeof input["ci"] !== "boolean") throw new UsageValidationError(`field "ci" must be a boolean`);
     rec["ci"] = input["ci"];
   }
+  // 0029 · el carril MEDIDO POR REFERENCIA. Todo aquí es RECORTE, no rechazo:
+  // los dos campos se guardan si tienen la forma exacta (identidad con el mismo
+  // charset que requestId; epoch en MILISEGUNDOS dentro del rango de `at`) y se
+  // descartan en silencio si no. Un basis "reference" incoherente —también el
+  // que se queda SIN puntero porque sus campos se descartaron, o cuyo contador
+  // es más viejo que la regla publicada— baja a "estimated": sigue contando en
+  // los totales, pero no en reference_* ni en reference_hits.
+  if (input["referenceRequestId"] !== undefined) {
+    const v = input["referenceRequestId"];
+    if (typeof v === "string" && USAGE_ID_PATTERN.test(v)) rec["referenceRequestId"] = v;
+    else referencia.camposDescartados++;
+  }
+  if (input["referenceAt"] !== undefined) {
+    const v = input["referenceAt"];
+    if (typeof v === "number" && Number.isInteger(v) && v >= AT_MIN_MS && v <= Date.now() + AT_MAX_SKEW_MS) {
+      rec["referenceAt"] = v;
+    } else {
+      referencia.camposDescartados++;
+    }
+  }
+  if (rec["basis"] === "reference" && !referenciaCoherente(rec)) {
+    rec["basis"] = "estimated";
+    referencia.degradados++;
+  }
+  // Los dos campos solo viajan con una referencia: la RPC solo escribe
+  // reference_hits con basis "reference", y un campo suelto no significa nada.
+  if (rec["basis"] !== "reference") {
+    delete rec["referenceRequestId"];
+    delete rec["referenceAt"];
+  }
   return rec as unknown as UsageRecord;
+}
+
+/**
+ * EL INTERRUPTOR DE SERVIDOR del carril por referencia: reescribe todo registro
+ * "reference" a "estimated" (y le quita los dos campos) ANTES de la RPC. Lo usa
+ * la ruta del ingest bajo BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 — cortar la
+ * acumulación sin npm y sin migración. Devuelve cuántos cambió.
+ */
+export function degradarReferencias(records: UsageRecord[]): number {
+  let n = 0;
+  for (const r of records) {
+    const rec = r as Record<string, unknown>;
+    if (rec["basis"] !== "reference") continue;
+    rec["basis"] = "estimated";
+    delete rec["referenceRequestId"];
+    delete rec["referenceAt"];
+    n++;
+  }
+  return n;
+}
+
+/**
+ * Cómo se lee BVSALA_INGEST_REFERENCE_AS_ESTIMATED. Es un interruptor de
+ * EMERGENCIA y tiene que fallar hacia el lado seguro (cobrar de menos), no hacia
+ * «sigue acumulando»: quien lo pone en Vercel durante un incidente puede
+ * escribir `1`, `true`, `yes` u `on` y lo tiene que encender igual. Vacío,
+ * `0`, `false`, `no` u `off` lo dejan apagado. Cualquier otro valor lo
+ * ENCIENDE y queda marcado como no reconocido para que la ruta lo avise.
+ */
+export function leerInterruptorReferenciaComoEstimado(valor: string | undefined): {
+  activo: boolean;
+  reconocido: boolean;
+} {
+  const v = (valor ?? "").trim().toLowerCase();
+  if (v === "" || v === "0" || v === "false" || v === "no" || v === "off") return { activo: false, reconocido: true };
+  if (v === "1" || v === "true" || v === "yes" || v === "on") return { activo: true, reconocido: true };
+  return { activo: true, reconocido: false };
 }
 
 /** Parse a batch (object or array). Caps batch size so one request can't be huge. */
@@ -189,12 +353,20 @@ export function parseUsageRecords(input: unknown, authorizedOrgId: string): Usag
   // Un aviso POR LOTE, no por registro: un gateway con el precio mal puesto
   // generaría hasta 1.000 líneas por lote y ahogaría la alerta útil.
   const recortes: Recorte[] = [];
-  const out = arr.map((r) => parseUsageRecord(r, authorizedOrgId, recortes));
+  const referencia: DescartesDeReferencia = { degradados: 0, camposDescartados: 0 };
+  const out = arr.map((r) => parseUsageRecord(r, authorizedOrgId, recortes, referencia));
   if (recortes.length > 0) {
     console.warn("[metering/usage] eliminatedInputFloorCost recortado", {
       registros: arr.length,
       recortados: recortes.length,
       maxRecibido: Math.max(...recortes.map((x) => x.recibido)),
+    });
+  }
+  if (referencia.degradados > 0 || referencia.camposDescartados > 0) {
+    console.warn("[metering/usage] basis reference degradado a estimated", {
+      registros: arr.length,
+      degradados: referencia.degradados,
+      camposDescartados: referencia.camposDescartados,
     });
   }
   return out;
