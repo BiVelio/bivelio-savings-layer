@@ -20,6 +20,8 @@ import { createHash } from "node:crypto";
  *     llamada evitada no tiene contador PROPIO, y la comisión solo factura lo
  *     medido. Reclasificarlo es una decisión de doctrina del dueño, no de esta
  *     pieza. (Queda anotado en el plan.)
+ *     El SDK ya valora sus evitadas idénticas por referencia (basis
+ *     `reference`); la gemela sigue `estimated` hasta el sí del dueño (Parte G).
  */
 
 export interface RespuestaCapturada {
