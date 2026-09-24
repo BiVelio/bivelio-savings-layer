@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { resolverUpstream, UPSTREAM_ALIASES } from "../gateway/upstream.js";
+import { flagDeUpstream, resolverUpstream, UPSTREAM_ALIASES } from "../gateway/upstream.js";
 
 /**
  * `--upstream` y BVSALA_GATEWAY_UPSTREAM: a qué proveedor habla un gateway.
@@ -59,9 +59,46 @@ describe("resolverUpstream — el proveedor de ESTE gateway", () => {
     }
   });
 
+  it("un valor con pinta de clave no se repite en el error (acaba en stderr y de ahí en logs pegados)", () => {
+    for (const valor of ["sk-proj-abcdefghijklmnop", "bvk_live_0123456789", "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789"]) {
+      const r = resolverUpstream({ env: valor });
+      expect(r.ok, valor).toBe(false);
+      if (!r.ok) {
+        expect(r.error).not.toContain(valor);
+        expect(r.error).toContain("value hidden");
+      }
+    }
+  });
+
+  it("un valor larguísimo se recorta en el error", () => {
+    const r = resolverUpstream({ flag: `ftp://${"a".repeat(200)}` });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.length).toBeLessThan(200);
+  });
+
   it("--upstream sin valor (flag: null) → error que dice qué poner", () => {
     const r = resolverUpstream({ flag: null, env: "openai" });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toContain("needs a value");
+  });
+});
+
+describe("flagDeUpstream — las dos formas del flag", () => {
+  it("--upstream openai y --upstream=openai dan lo mismo", () => {
+    expect(flagDeUpstream(["--upstream", "openai"])).toBe("openai");
+    expect(flagDeUpstream(["--port", "8403", "--upstream=openai"])).toBe("openai");
+    expect(flagDeUpstream(["--upstream=https://api.openai.com"])).toBe("https://api.openai.com");
+  });
+
+  it("sin el flag: undefined (la cadena de siempre)", () => {
+    expect(flagDeUpstream([])).toBeUndefined();
+    expect(flagDeUpstream(["--port", "8403"])).toBeUndefined();
+  });
+
+  it("el flag sin valor (al final, seguido de otro flag, o con = vacío): null, y resolverUpstream lo rechaza", () => {
+    expect(flagDeUpstream(["--upstream"])).toBeNull();
+    expect(flagDeUpstream(["--upstream", "--port", "8403"])).toBeNull();
+    expect(flagDeUpstream(["--upstream="])).toBeNull();
+    expect(resolverUpstream({ flag: flagDeUpstream(["--upstream="]) }).ok).toBe(false);
   });
 });

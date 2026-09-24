@@ -198,7 +198,8 @@ const TERMINALES: readonly Terminal[] = [
       `python: client = OpenAI(base_url="${baseV1}")   (WITH /v1: the SDK appends /chat/completions)`,
       `node:   const client = new OpenAI({ baseURL: "${baseV1}" })`,
       'streaming: pass stream_options={"include_usage": True} (Node: stream_options: { include_usage: true }) or the stream is forwarded but NOT metered; the last chunk then has an empty choices list, so read chunk.choices only when it is not empty.',
-      "stream=False is metered from the usage in the JSON body, and so is client.responses.create. Cost is priced at the model's list price.",
+      "stream=False is metered from the usage in the JSON body, and so is client.responses.create. Cost is priced at the model's list price;",
+      "a model without one is forwarded but not metered, and the gateway log says so on every such request.",
     ],
   },
   {

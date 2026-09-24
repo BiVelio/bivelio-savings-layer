@@ -12,7 +12,7 @@ import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { decidirArranque, mensajeDeFalloDeArranque } from "./argumentos.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
-import { resolverUpstream } from "./upstream.js";
+import { flagDeUpstream, resolverUpstream } from "./upstream.js";
 import { connect } from "node:net";
 
 /**
@@ -205,9 +205,7 @@ if (comando === "doctor") {
 // del terminal es del terminal (gateway/argumentos.ts). La variable de entorno
 // vale para los dos, y el flag manda sobre ella. Se resuelve DESPUÉS del
 // doctor: una variable mal puesta no puede impedir que el doctor imprima.
-const idxUp = comando === "gateway" ? resto.indexOf("--upstream") : -1;
-const valorUp = idxUp >= 0 ? resto[idxUp + 1] : undefined;
-const flagUpstream = idxUp < 0 ? undefined : valorUp !== undefined && !valorUp.startsWith("--") ? valorUp : null;
+const flagUpstream = comando === "gateway" ? flagDeUpstream(resto) : undefined;
 const up = resolverUpstream({ flag: flagUpstream, env: process.env.BVSALA_GATEWAY_UPSTREAM });
 if (!up.ok) {
   console.error(up.error);
@@ -246,6 +244,7 @@ const planAnillo2 = planDeAnillo2({
   enrolamiento: enrolamientoAnillo2,
   espiaVivo: enrolamientoAnillo2 !== null && (await puertoEscucha(enrolamientoAnillo2.espia)),
   upstreamEnv: up.upstream,
+  ...(up.origen !== "none" ? { upstreamOrigen: up.origen } : {}),
   elisionEnv: process.env.BVSALA_GATEWAY_ELISION,
   hoyUtcIso: new Date().toISOString().slice(0, 10),
 });
@@ -256,7 +255,9 @@ let arranque: GatewayArrancado;
 try {
   arranque = await arrancarGateway({
     puerto,
-    ...(silencioso ? { log: () => {} } : {}),
+    // Callado también en los avisos de «no medido»: un console.warn se pinta
+    // encima del TUI igual que el log.
+    ...(silencioso ? { log: () => {}, avisosDeNoMedido: false } : {}),
     ...(serviceAccountKey ? { serviceAccountKey } : {}),
     ...(process.env.BVSALA_SEAT_ID ? { seatId: process.env.BVSALA_SEAT_ID } : {}),
     ...(upstreamPedido
@@ -318,10 +319,19 @@ console.log(`[bvsala gateway] v${BV_SALA_VERSION} listening on http://127.0.0.1:
 console.log(`[bvsala gateway] metering: ${serviceAccountKey ? "ON (service key present)" : "OFF (BIVELIO_SERVICE_KEY not set)"}`);
 if (up.aviso) console.error(up.aviso);
 if (process.env.BVSALA_GATEWAY_USAGE_INJECT === "1") {
-  console.log(
-    "[bvsala gateway] usage injection: ON (BVSALA_GATEWAY_USAGE_INJECT=1) — streamed chat completions without " +
-      "stream_options get include_usage; their last chunk has an empty choices list.",
-  );
+  // Sin clave no hay nada que medir y el servidor no inyecta: decir ON sería
+  // una palanca que se cree encendida y no lo está.
+  if (serviceAccountKey) {
+    console.log(
+      "[bvsala gateway] usage injection: ON (BVSALA_GATEWAY_USAGE_INJECT=1) — streamed chat completions without " +
+        "stream_options get include_usage; their last chunk has an empty choices list.",
+    );
+  } else {
+    console.error(
+      "[bvsala gateway] usage injection: OFF — BVSALA_GATEWAY_USAGE_INJECT=1 is set, but it needs BIVELIO_SERVICE_KEY: " +
+        "without metering there is nothing to measure, so requests are forwarded unchanged.",
+    );
+  }
 }
 {
   // El brazo del A/B (anillo 2) dicho en voz alta al arrancar: un día entero de

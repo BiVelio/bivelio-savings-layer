@@ -573,6 +573,16 @@ describe("ObservadorChatCompletions — observa sin tocar", () => {
     expect(sinBlanco.usageFinal()?.output_tokens).toBe(3);
   });
 
+  it("usage() a mitad del stream no vacía el parser: un [DONE] partido sigue contando al llegar entero", () => {
+    const vllm = `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: "x" } }], usage: { prompt_tokens: 10, completion_tokens: 4 } })}\n\n`;
+    const o = new ObservadorChatCompletions();
+    o.observar(vllm + "data: [DO");
+    expect(o.usage()).toBeNull();
+    o.observar("NE]\n\n");
+    expect(o.usage()?.output_tokens).toBe(4);
+    expect(o.usageFinal()?.output_tokens).toBe(4);
+  });
+
   it("el primer chunk de Azure (choices: [] con prompt_filter_results, SIN usage) no marca nada", () => {
     const o = new ObservadorChatCompletions();
     o.observar(`data: ${JSON.stringify({ choices: [], prompt_filter_results: [{ prompt_index: 0 }] })}\n\n`);

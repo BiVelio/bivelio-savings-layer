@@ -397,3 +397,138 @@ describe("gateway · inyección opt-in de include_usage (BVSALA_GATEWAY_USAGE_IN
     });
   }
 });
+
+describe("gateway · lo que no se mide se dice, petición a petición", () => {
+  const JSON_CON_USO = { object: "chat.completion", choices: [], usage: { prompt_tokens: 100, completion_tokens: 20 } };
+
+  it("un modelo sin precio de lista: 0 registros y UNA línea por petición (el aviso, una vez)", async () => {
+    const up = await upstreamFalso(sse(SSE_CON_USO));
+    const { gw, lineas, registros } = await gateway(up.puerto);
+    const cuerpo = JSON.stringify({ model: "modelo-sin-precio-x", messages: [], stream: true, stream_options: { include_usage: true } });
+
+    await (await pedir(gw.puerto, "/v1/chat/completions", cuerpo)).text();
+    await (await pedir(gw.puerto, "/v1/chat/completions", cuerpo)).text();
+
+    expect(await registros()).toEqual([]);
+    const sinPrecio = lineas.filter((l) =>
+      l.includes('POST /v1/chat/completions · not metered: model "modelo-sin-precio-x" has no list price'),
+    );
+    expect(sinPrecio).toHaveLength(2);
+    expect(warn.mock.calls.filter((c) => String(c[0]).includes("is not in the price catalog"))).toHaveLength(1);
+  });
+
+  it("un cuerpo del que no se lee el modelo (Azure lo lleva en la ruta): una línea por petición", async () => {
+    const up = await upstreamFalso(json(JSON_CON_USO));
+    const { gw, lineas, registros } = await gateway(up.puerto);
+    const ruta = "/openai/deployments/mi-despliegue/chat/completions";
+
+    await (await pedir(gw.puerto, ruta, JSON.stringify({ messages: [] }))).text();
+    await (await pedir(gw.puerto, ruta, JSON.stringify({ messages: [] }))).text();
+
+    expect(await registros()).toEqual([]);
+    expect(lineas.filter((l) => l.includes(`POST ${ruta} · not metered: could not read the model from the request body`))).toHaveLength(2);
+  });
+
+  it("un cuerpo comprimido que no se puede leer dice su content-encoding", async () => {
+    const up = await upstreamFalso(json(JSON_CON_USO));
+    const { gw, lineas, registros } = await gateway(up.puerto);
+
+    await (await pedir(gw.puerto, "/v1/chat/completions", Buffer.from("no es brotli"), { "content-encoding": "br" })).text();
+
+    expect(await registros()).toEqual([]);
+    expect(lineas.join("\n")).toContain("not metered: could not read the model from the request body (content-encoding: br)");
+  });
+
+  it("una respuesta JSON por encima del tope de captura: se sirve entera, no se mide y la línea lo dice", async () => {
+    const relleno = "x".repeat(6 * 1024 * 1024);
+    const up = await upstreamFalso(json({ ...JSON_CON_USO, relleno }));
+    const { gw, lineas, registros } = await gateway(up.puerto);
+
+    const r = await pedir(gw.puerto, "/v1/chat/completions", JSON.stringify({ model: MODELO, messages: [] }));
+    expect((await r.text()).length).toBeGreaterThan(6 * 1024 * 1024);
+
+    expect(await registros()).toEqual([]);
+    expect(lineas.join("\n")).toContain("POST /v1/chat/completions → 200 · not metered: the response was too large to read its usage");
+  });
+
+  it("una ruta con dialecto que no responde ni JSON ni SSE (sin content-type): la línea lo dice", async () => {
+    const up = await upstreamFalso((_r, res) => {
+      res.writeHead(200);
+      res.end(JSON.stringify(JSON_CON_USO));
+    });
+    const { gw, lineas, registros } = await gateway(up.puerto);
+    await (await pedir(gw.puerto, "/v1/chat/completions", JSON.stringify({ model: MODELO, messages: [] }))).text();
+
+    expect(await registros()).toEqual([]);
+    expect(lineas.join("\n")).toContain("not metered: the response is neither JSON nor an event stream (content-type: none)");
+  });
+
+  it("con la inyección puesta y un cuerpo comprimido, la línea y el aviso dicen por qué no aplicó (sin mandar a ponerla)", async () => {
+    const up = await upstreamFalso(sse(SSE_SIN_USO));
+    const { gw, lineas } = await gateway(up.puerto, { usageInject: true });
+    const comprimido = gzipSync(Buffer.from(JSON.stringify({ model: MODELO, stream: true, messages: [] })));
+
+    await (await pedir(gw.puerto, "/v1/chat/completions", comprimido, { "content-encoding": "gzip" })).text();
+
+    expect(lineas.join("\n")).toContain(
+      "not metered: the request did not ask for usage (stream_options.include_usage); usage injection skips compressed request bodies",
+    );
+    expect(avisos()).toContain("BVSALA_GATEWAY_USAGE_INJECT=1 is on");
+    expect(avisos()).not.toContain("Or start the gateway with BVSALA_GATEWAY_USAGE_INJECT=1");
+  });
+
+  it("tras el rechazo de stream_options, un stream sin usage dice que el upstream lo rechaza y no repite el W1", async () => {
+    const up = await upstreamFalso((r, res) => {
+      if (r.body.toString("utf8").includes("stream_options")) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: { message: "Unrecognized request argument supplied: stream_options" } }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "text/event-stream" });
+      res.end(SSE_SIN_USO);
+    });
+    const { gw, lineas } = await gateway(up.puerto, { usageInject: true });
+    const original = JSON.stringify({ model: MODELO, stream: true, messages: [] });
+
+    await (await pedir(gw.puerto, "/v1/chat/completions", original)).text();
+    await (await pedir(gw.puerto, "/v1/chat/completions", original)).text();
+
+    const noMedidas = lineas.filter((l) => l.includes("not metered"));
+    expect(noMedidas).toHaveLength(2);
+    for (const l of noMedidas) expect(l).toContain("and the upstream rejects that option");
+    expect(avisos()).toContain("rejects stream_options");
+    expect(avisos()).not.toContain("carry no usage, so they are forwarded but NOT metered");
+  });
+
+  it("con avisosDeNoMedido:false (modo envoltorio) la línea se escribe pero nada va a la consola", async () => {
+    const up = await upstreamFalso(sse(comoOpenAI));
+    const { gw, lineas } = await gateway(up.puerto, { avisosDeNoMedido: false });
+
+    await (await pedir(gw.puerto, "/v1/chat/completions", JSON.stringify({ model: MODELO, messages: [], stream: true }))).text();
+    await (await pedir(gw.puerto, "/v1/embeddings", JSON.stringify({ model: "text-embedding-3-small", input: "hola" }))).text();
+
+    expect(lineas.join("\n")).toContain("not metered: the request did not ask for usage");
+    expect(lineas.join("\n")).toContain("POST /v1/embeddings → 200 (stream) · not metered: no usage dialect for this route");
+    expect(avisos()).not.toContain("NOT metered");
+  });
+
+  it("la gemela coalescida de un stream que no pidió usage dice lo mismo que su primaria", async () => {
+    const up = await upstreamFalso((_r, res) => {
+      setTimeout(() => {
+        res.writeHead(200, { "content-type": "text/event-stream" });
+        res.end(SSE_SIN_USO);
+      }, 150);
+    });
+    const { gw, lineas } = await gateway(up.puerto, { coalescer: true });
+    const cuerpo = JSON.stringify({ model: MODELO, messages: [{ role: "user", content: "hola" }], stream: true });
+    const p1 = pedir(gw.puerto, "/v1/chat/completions", cuerpo).then((r) => r.text());
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir(gw.puerto, "/v1/chat/completions", cuerpo).then((r) => r.text());
+    await Promise.all([p1, p2]);
+    expect(up.recibidas).toHaveLength(1);
+
+    const noMedidas = lineas.filter((l) => l.includes("not metered"));
+    expect(noMedidas).toHaveLength(2);
+    for (const l of noMedidas) expect(l).toContain("the request did not ask for usage (stream_options.include_usage)");
+  });
+});

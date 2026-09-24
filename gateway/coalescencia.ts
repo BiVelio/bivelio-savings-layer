@@ -45,6 +45,12 @@ export const CABECERAS_DE_IDENTIDAD = [
   "x-api-key",
   "anthropic-version",
   "anthropic-beta",
+  // Con `--upstream <origen>` delante de cualquier endpoint compatible con
+  // OpenAI: Azure lleva la credencial en `api-key`, y la organización y el
+  // proyecto de OpenAI deciden a quién se factura y qué modelos se ven.
+  "api-key",
+  "openai-organization",
+  "openai-project",
 ] as const;
 
 /**

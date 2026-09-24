@@ -327,15 +327,20 @@ export class ObservadorChatCompletions {
     for (const m of this.parser.push(chunk)) this.mensaje(m);
   }
 
+  /**
+   * La misma regla que usageFinal() (solo cuenta tras el chunk de uso con
+   * `choices: []` o tras `[DONE]`), pero SIN vaciar el parser: se puede mirar a
+   * mitad del stream sin despachar una línea a medio recibir.
+   */
   usage(): UsoSse | null {
-    return this.usageFinal();
+    return this.vioUsoFinal || this.vioDone ? this.ultimoUso : null;
   }
 
+  /** Solo con el cuerpo ENTERO ya observado: vacía el parser antes de decidir. */
   usageFinal(): UsoSse | null {
     // Un `data: [DONE]` sin la línea en blanco final sigue siendo el cierre.
-    // Vaciar el parser aquí es seguro: se llama con el cuerpo ya observado.
     for (const m of this.parser.end()) this.mensaje(m);
-    return this.vioUsoFinal || this.vioDone ? this.ultimoUso : null;
+    return this.usage();
   }
 
   private mensaje(m: SseMessage): void {

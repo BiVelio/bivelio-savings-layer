@@ -20,6 +20,7 @@ import {
   elisionDeJson,
   type Atribucion,
   type ElisionAplicada,
+  type InyeccionDeUso,
   type RebajaAplicada,
   type UsoSse,
 } from "./medidor.js";
@@ -134,6 +135,16 @@ export interface OpcionesGateway {
    * esos streams se reenvían sin medir y el log lo dice.
    */
   usageInject?: boolean;
+  /**
+   * Los avisos únicos por consola que acompañan a las líneas «not metered» de
+   * un stream o una ruta (sin include_usage, sin usage final, sin dialecto). Por
+   * defecto, sí. En modo envoltorio (`bvsala claude|codex|…`) el hijo es un TUI
+   * dueño de la terminal y un console.warn se pinta encima de sus palabras:
+   * bin.ts los apaga ahí, igual que ya apaga el log por petición. La línea de
+   * log de cada petición no depende de esto, y los avisos de modelo ilegible o
+   * sin precio siguen como estaban.
+   */
+  avisosDeNoMedido?: boolean;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -148,17 +159,28 @@ export interface GatewayArrancado {
  * Los avisos de «reenviado pero NO medido», uno por proceso y causa. En inglés:
  * los lee quien usa el gateway, no quien lo mantiene.
  */
-const AVISO_CHAT_SIN_INCLUDE_USAGE =
+const AVISO_CHAT_SIN_INCLUDE_USAGE_BASE =
   "[bvsala gateway] streamed /v1/chat/completions requests without stream_options.include_usage carry no usage, " +
   'so they are forwarded but NOT metered. Add stream_options={"include_usage": True} to the call ' +
-  "(Node: stream_options: { include_usage: true }); its last chunk then has an empty choices list. " +
-  "Or start the gateway with BVSALA_GATEWAY_USAGE_INJECT=1 to add it for clients you cannot change.";
+  "(Node: stream_options: { include_usage: true }); its last chunk then has an empty choices list.";
+const AVISO_CHAT_SIN_INCLUDE_USAGE =
+  AVISO_CHAT_SIN_INCLUDE_USAGE_BASE +
+  " Or start the gateway with BVSALA_GATEWAY_USAGE_INJECT=1 to add it for clients you cannot change.";
+// Con la inyección YA puesta no se puede mandar a ponerla: aquí se dice por qué
+// no aplicó a esta petición.
+const AVISO_CHAT_SIN_INCLUDE_USAGE_CON_INYECCION =
+  AVISO_CHAT_SIN_INCLUDE_USAGE_BASE +
+  " BVSALA_GATEWAY_USAGE_INJECT=1 is on, but it only adds the option to an uncompressed request body " +
+  "that sends no stream_options of its own.";
 const avisoSinUsage = (path: string): string =>
   `[bvsala gateway] POST ${path} answered without the provider's final usage, so it was forwarded but NOT metered. ` +
   "Nothing is estimated in its place.";
 const avisoSinDialecto = (path: string): string =>
   `[bvsala gateway] POST ${path} is forwarded but NOT metered: the gateway reads usage from /v1/messages, ` +
   "…/chat/completions and …/responses only.";
+
+/** Qué aviso único acompaña a una línea de «not metered», si alguno. */
+type AvisoDeNoMedido = "chat" | "chat-con-inyeccion" | "uso" | "dialecto" | null;
 
 /** Rutas que responden JSON sin facturar nada: ni se miden ni se avisan. */
 const RUTA_DE_CONTEO = /\/(count_tokens|input_tokens)$/;
@@ -325,12 +347,47 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     status: number,
     stream: boolean,
     motivo: string,
-    aviso: "chat" | "uso" | "dialecto" | null,
+    aviso: AvisoDeNoMedido,
   ): void => {
     log(`[gateway] ${metodo} ${path} → ${status}${stream ? " (stream)" : ""} · not metered: ${motivo}`);
+    if (opts.avisosDeNoMedido === false) return;
     if (aviso === "chat") avisarUnaVez("gateway-chat-sin-include-usage", AVISO_CHAT_SIN_INCLUDE_USAGE);
+    if (aviso === "chat-con-inyeccion") {
+      avisarUnaVez("gateway-chat-sin-include-usage-con-inyeccion", AVISO_CHAT_SIN_INCLUDE_USAGE_CON_INYECCION);
+    }
     if (aviso === "uso") avisarUnaVez(`gateway-sin-usage:${path}`, avisoSinUsage(path));
     if (aviso === "dialecto") avisarUnaVez(`gateway-sin-dialecto:${path}`, avisoSinDialecto(path));
+  };
+
+  /**
+   * Por qué un stream con dialecto acabó SIN usage, y qué aviso le toca. Chat
+   * Completions sin `include_usage` no es un corte: nadie pidió el contador, y
+   * se arregla distinto (en la llamada, o con la inyección). `inyeccion` es lo
+   * que pasó con la inyección en ESTA petición: null si no estaba puesta o no
+   * se intentó (la réplica coalescida no lo sabe y no avisa).
+   */
+  const porQueSinUsoEnStream = (
+    obs: ObservadorSse | ObservadorResponses | ObservadorChatCompletions,
+    cuerpo: Buffer,
+    codificacion: string | undefined,
+    inyeccion: "inyectado" | "rechazada-por-el-upstream" | Exclude<InyeccionDeUso["motivo"], "inyectado"> | null,
+  ): { motivo: string; aviso: AvisoDeNoMedido } => {
+    const noLoPidio =
+      obs instanceof ObservadorChatCompletions &&
+      inyeccion !== "inyectado" &&
+      pideUsoEnStream(cuerpo, codificacion) !== true;
+    if (!noLoPidio) return { motivo: "the stream ended without the provider's final usage event", aviso: "uso" };
+    const motivo = "the request did not ask for usage (stream_options.include_usage)";
+    // El upstream ya rechazó la opción: el aviso de entonces lo dijo todo, y
+    // pedirla en la llamada tampoco serviría.
+    if (inyeccion === "rechazada-por-el-upstream") {
+      return { motivo: `${motivo}, and the upstream rejects that option`, aviso: null };
+    }
+    if (inyeccion === "comprimido") {
+      return { motivo: `${motivo}; usage injection skips compressed request bodies`, aviso: "chat-con-inyeccion" };
+    }
+    if (inyeccion !== null) return { motivo, aviso: "chat-con-inyeccion" };
+    return { motivo, aviso: "chat" };
   };
 
   /** Mide y emite el uso de una respuesta ya servida (o replicada). */
@@ -354,7 +411,15 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     const em = emisor;
     const usoFinal: UsoSse = uso;
     const model = modeloDelCuerpo(cuerpo, codificacion);
+    // Cada petición que se queda sin medir deja SU línea, no solo la primera:
+    // el aviso por consola sale una vez por ruta o por modelo, pero quien lee
+    // el log tiene que poder contar cuántas se quedaron fuera y por qué.
+    const cabeza = `[gateway] POST ${path}${coalescida ? " · COALESCED (call avoided)" : ""}`;
     if (!model) {
+      log(
+        `${cabeza} · not metered: could not read the model from the request body` +
+          `${codificacion ? ` (content-encoding: ${codificacion})` : ""}`,
+      );
       avisarUnaVez(
         `gateway-sin-modelo:${path}`,
         `[bvsala gateway] could not read the model from the ${path} request body (content-encoding: ${codificacion ?? "none"}); its usage is forwarded but not metered.`,
@@ -438,9 +503,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         });
       }
     } else {
+      log(`${cabeza} · not metered: model "${servido}" has no list price in the catalog`);
       avisarUnaVez(
-        `gateway-sin-precio:${model}`,
-        `[bvsala gateway] model "${model}" is not in the price catalog; its usage is forwarded but not metered.`,
+        `gateway-sin-precio:${servido}`,
+        `[bvsala gateway] model "${servido}" is not in the price catalog; its usage is forwarded but not metered.`,
       );
     }
   };
@@ -551,16 +617,16 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
               // La primaria ya dijo lo suyo (línea y aviso): la gemela deja su
               // línea y nada más. count_tokens no factura: ni línea.
               if (emisor && !RUTA_DE_CONTEO.test(url.pathname)) {
-                const tipoReplica = String(replica.headers["content-type"] ?? "");
+                const esStreamReplica = String(replica.headers["content-type"] ?? "").includes("text/event-stream");
                 noMedido(
                   req.method ?? "POST",
                   url.pathname,
                   replica.status,
-                  tipoReplica.includes("text/event-stream"),
+                  esStreamReplica,
                   !tieneDialecto(url.pathname)
                     ? "no usage dialect for this route"
-                    : tipoReplica.includes("text/event-stream")
-                      ? "the stream ended without the provider's final usage event"
+                    : esStreamReplica
+                      ? porQueSinUsoEnStream(obs, cuerpo, codificacion, null).motivo
                       : "the response carried no usage",
                   null,
                 );
@@ -767,16 +833,25 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // lee `choices[0]` sin mirar revienta. La MEDICIÓN y la clave de
       // coalescencia siguen usando `cuerpo`, el original.
       let inyectado = false;
+      // Qué pasó con la inyección en ESTA petición, para que la línea de «not
+      // metered» diga por qué no aplicó en vez de mandar a poner una variable
+      // que ya está puesta. null: la inyección no estaba puesta.
+      let inyeccion: Parameters<typeof porQueSinUsoEnStream>[3] = null;
       const esChat = req.method === "POST" && url.pathname.endsWith("/chat/completions");
-      if (esChat && emisor && opts.usageInject === true && !endpointSinStreamOptions) {
-        try {
-          const r = inyectarIncludeUsage(cuerpo, codificacion);
-          if (r.cuerpo) {
-            cuerpoSaliente = r.cuerpo;
-            inyectado = true;
+      if (esChat && emisor && opts.usageInject === true) {
+        if (endpointSinStreamOptions) {
+          inyeccion = "rechazada-por-el-upstream";
+        } else {
+          try {
+            const r = inyectarIncludeUsage(cuerpo, codificacion);
+            inyeccion = r.motivo;
+            if (r.cuerpo) {
+              cuerpoSaliente = r.cuerpo;
+              inyectado = true;
+            }
+          } catch {
+            /* passthrough */
           }
-        } catch {
-          /* passthrough */
         }
       }
 
@@ -840,6 +915,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         rebaja = null;
         diales = null;
         inyectado = false;
+        if (eraInyeccion) inyeccion = "rechazada-por-el-upstream";
         try {
           upstream = await fetchImpl(url, {
             method: req.method,
@@ -899,6 +975,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         (upstream.headers.get("content-type") ?? "").includes("application/json");
       let cuerpoJson: Buffer[] | null = esJsonMedible ? [] : null;
       let cuerpoJsonBytes = 0;
+      // Pasado el tope se deja de guardar (el heap manda), pero se recuerda: una
+      // respuesta que no se pudo leer entera no se mide, y la línea lo dice.
+      let jsonDesbordado = false;
 
       if (upstream.body) {
         for await (const chunk of upstream.body) {
@@ -907,8 +986,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           observador?.observar(b);
           if (cuerpoJson) {
             cuerpoJsonBytes += b.length;
-            if (cuerpoJsonBytes > MAX_CAPTURA_BYTES) cuerpoJson = null;
-            else cuerpoJson.push(b);
+            if (cuerpoJsonBytes > MAX_CAPTURA_BYTES) {
+              cuerpoJson = null;
+              jsonDesbordado = true;
+            } else cuerpoJson.push(b);
           }
           captura?.capturar(b);
         }
@@ -926,19 +1007,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         if (uso === null && emisor) {
           // Chat Completions sin include_usage no es un corte: es que nadie
           // pidió el contador. Se dice distinto porque se arregla distinto.
-          const noLoPidio =
-            observador instanceof ObservadorChatCompletions &&
-            !(inyectado || pideUsoEnStream(cuerpo, codificacion) === true);
-          noMedido(
-            req.method ?? "POST",
-            url.pathname,
-            upstream.status,
-            true,
-            noLoPidio
-              ? "the request did not ask for usage (stream_options.include_usage)"
-              : "the stream ended without the provider's final usage event",
-            noLoPidio ? "chat" : "uso",
-          );
+          const porQue = porQueSinUsoEnStream(observador, cuerpo, codificacion, inyectado ? "inyectado" : inyeccion);
+          noMedido(req.method ?? "POST", url.pathname, upstream.status, true, porQue.motivo, porQue.aviso);
         } else {
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
           medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
@@ -963,6 +1033,20 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
           medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano);
         }
+      } else if (jsonDesbordado) {
+        noMedido(req.method ?? "POST", url.pathname, upstream.status, false, "the response was too large to read its usage", null);
+      } else if (emisor && req.method === "POST" && upstream.ok && tieneDialecto(url.pathname)) {
+        // Una ruta con dialecto que no respondió ni SSE ni JSON (sin
+        // content-type en chat/completions, que no se asume SSE, o un tipo
+        // raro): no hay dónde leer el usage, y se dice.
+        noMedido(
+          req.method,
+          url.pathname,
+          upstream.status,
+          false,
+          `the response is neither JSON nor an event stream (content-type: ${tipo === "" ? "none" : tipo.slice(0, 80)})`,
+          null,
+        );
       } else if (
         emisor &&
         req.method === "POST" &&
