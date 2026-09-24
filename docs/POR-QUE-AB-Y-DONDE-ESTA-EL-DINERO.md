@@ -69,6 +69,44 @@ columnas `measured_*`, el resultado inevitable era 0 €.
 No era un bug. Era honestidad llevada hasta su conclusión lógica — y la
 conclusión lógica dejaba el producto sin nada que enseñar.
 
+### La excepción por referencia (septiembre de 2026)
+
+«Medido» y «hubo ahorro» dejan de ser excluyentes en **un** caso, y solo en
+uno: cuando el contrafactual **ya se ejecutó**.
+
+Una llamada evitada —un acierto de la caché exacta o un seguidor de una
+ráfaga coalescida— sirve la respuesta de otra petición. Si esa otra petición
+era **idéntica byte a byte** a esta y pasó por la capa **intacta** (sin nada
+quitado ni añadido, sin codebook, sin sondeo, sin esquema por prompt y con el
+modelo pedido), entonces su contador del proveedor ES lo que la ingenua habría
+facturado por esta. No hay mundo que suponer: ese mundo ocurrió, está en el
+informe de aquella petición y en el uso del proveedor de ese día, y el cliente
+ya lo pagó.
+
+Aun así se valora **a la baja**, para que sea un suelo y no una estimación:
+
+- toda la entrada a la tarifa de **entrada cacheada**, que es el mínimo que el
+  proveedor cobra por un token de entrada aunque la ingenua acertara entera en
+  su caché de prefijo;
+- la salida, al 95 % de su contador y solo con `temperature: 0` (con
+  muestreo, 0: el proveedor no habría escrito lo mismo); nunca por encima del
+  tope de salida de la repetición;
+- 8 tokens de margen por cada mensaje que la capa insertó;
+- nunca por encima del tier más barato que la repetición podía obtener;
+- sin precio cacheado documentado, no hay referencia; y el contador caduca a
+  los 30 días.
+
+Lleva su propio `basis` (`"reference"`, «medido por referencia») en vez de
+reutilizar `"measured"`: `measured` significa «el contador de ESTA petición»,
+y un valor propio deja auditarlo (`reference_*`, una fila por acierto) y
+apagarlo sin publicar un SDK nuevo.
+
+Lo que **no** cambia: los libros 2 y 3 (tokens eliminados y comprimidos, el
+≈ 99 % del dólar de ahorro) siguen sin contador del contrafactual. Una
+repetición de una llamada **optimizada** tampoco tiene referencia, porque su
+contador no es el de la ingenua. Para eso sigue haciendo falta el A/B de abajo.
+Las reglas exactas viven en `src/pipeline/referencia.ts`.
+
 ### Qué es el A/B (anillo 2, #224) y por qué es la única salida
 
 Si no puedes conocer el mundo que no ocurrió, **haz que ocurra**. Eso es el A/B:
