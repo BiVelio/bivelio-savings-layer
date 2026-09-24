@@ -9,7 +9,7 @@ lo dice tal cual; no hay validación hecha.
 ## Qué necesitas
 
 - `droid` instalado, en modo BYOK con tu **API key** de Anthropic.
-- `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
+- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
 
 ## Config de usuario: `~/.factory/settings.json`
 

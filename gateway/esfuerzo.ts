@@ -161,7 +161,7 @@ export function describirEstadoDeEsfuerzo(
   }
   if (!canalAbierto) {
     return {
-      linea: "per-turn effort: NOT ARMED — the licence channel is CLOSED (BVSALA_GATEWAY_ELISION=0 turns off the levers)",
+      linea: "per-turn effort: NOT ARMED - BVSALA_GATEWAY_ELISION=0 turns off the levers",
       aviso: true,
     };
   }

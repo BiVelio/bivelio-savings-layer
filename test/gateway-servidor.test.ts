@@ -3,6 +3,7 @@ import { brotliCompressSync } from "node:zlib";
 import { afterEach, describe, it, expect } from "vitest";
 
 import { arrancarGateway, ErrorDeEscucha, type GatewayArrancado } from "../gateway/servidor.js";
+import { testLicense } from "./helpers/test-license.js";
 import { BV_SALA_VERSION } from "../src/version.js";
 
 /**
@@ -105,7 +106,7 @@ describe("arrancarGateway — passthrough que mide", () => {
   it("reenvía el cuerpo intacto, retira las cabeceras de transporte y conserva las demás", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
 
     const cuerpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [{ role: "user", content: "hola" }], stream: true });
@@ -134,6 +135,7 @@ describe("arrancarGateway — passthrough que mide", () => {
     const upstream = await arrancarUpstreamFalso(recibidas);
     const ingesta = await arrancarIngestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -180,6 +182,7 @@ describe("arrancarGateway — passthrough que mide", () => {
     const upstream = await arrancarUpstreamFalso(recibidas);
     const ingesta = await arrancarIngestaFalsa(lotes, cabeceras);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -216,6 +219,7 @@ describe("arrancarGateway — passthrough que mide", () => {
     const upstream = await arrancarUpstreamFalso(recibidas);
     const ingesta = await arrancarIngestaFalsa(lotes);
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -246,10 +250,10 @@ describe("arrancarGateway — passthrough que mide", () => {
     }
   });
 
-  it("sin clave de servicio: mismo passthrough, cero metering (avisar, nunca romper)", async () => {
+  it("con licencia y SIN clave de servicio (solo en proceso): mismo passthrough, cero metering (la licencia verja; el metering es best-effort)", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
       method: "POST",
@@ -260,7 +264,7 @@ describe("arrancarGateway — passthrough que mide", () => {
   });
 
   it("upstream caído → 502 con detalle, nunca cuelga", async () => {
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: "http://127.0.0.1:1", log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: "http://127.0.0.1:1", log: () => {} });
     recursos.push(gw);
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: "{}" });
     expect(r.status).toBe(502);
@@ -281,6 +285,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       },
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -313,6 +318,7 @@ describe("arrancarGateway — passthrough que mide", () => {
     const ingesta = await arrancarIngestaFalsa(lotes);
     const upstream = await arrancarUpstreamJson({ input_tokens: 2095 });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -346,6 +352,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -367,7 +374,7 @@ describe("arrancarGateway — passthrough que mide", () => {
   it("⛔ un handshake WebSocket (Codex CLI lo intenta en cada sesión) recibe 426, no 502", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
 
     const { createConnection } = await import("node:net");
@@ -394,7 +401,7 @@ describe("arrancarGateway — passthrough que mide", () => {
   it("⛔ un RST del cliente tras el 426 NO tumba el proceso (Node retira sus manejadores del socket en 'upgrade')", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
 
     const { createConnection } = await import("node:net");
@@ -429,6 +436,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -471,6 +479,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -518,6 +527,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -559,6 +569,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -604,6 +615,7 @@ describe("arrancarGateway — passthrough que mide", () => {
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${upstream}`,
       serviceAccountKey: "bvk_test",
@@ -636,7 +648,7 @@ describe("arrancarGateway — passthrough que mide", () => {
   it("HEAD /api/hello (la comprobación de vida de Claude Code) pasa limpia", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/api/hello`, { method: "HEAD" });
     expect(r.status).toBe(200);
@@ -672,10 +684,10 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
   it("⛔ dos gateways en el mismo puerto: el segundo rechaza con ErrorDeEscucha (EADDRINUSE) y un mensaje del producto, no la traza de Node", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const primero = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const primero = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(primero);
 
-    const err = (await arrancarGateway({ puerto: primero.puerto, upstream: `http://127.0.0.1:${upstream}`, log: () => {} }).then(
+    const err = (await arrancarGateway({ license: testLicense(), puerto: primero.puerto, upstream: `http://127.0.0.1:${upstream}`, log: () => {} }).then(
       (gw) => {
         recursos.push(gw);
         return null;
@@ -698,7 +710,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     expect(r.status).toBe(200);
   });
 
-  it("⛔ sin clave, una petición en streaming que termina en 200 deja SU línea en el log (la que `bvsala doctor` manda buscar)", async () => {
+  it("⛔ con licencia y sin clave (en proceso), una petición en streaming que termina en 200 deja SU línea en el log (la que `bvsala doctor` manda buscar)", async () => {
     // Claude Code, Codex, Goose y Qwen van SIEMPRE en streaming. Hasta 0.4.20
     // la rama de streaming solo logueaba desde medir(), y medir() sin emisor
     // vuelve en silencio: un probador sin clave (o con la clave mal exportada)
@@ -706,7 +718,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
     const lineas: string[] = [];
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: (l) => lineas.push(l) });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: (l) => lineas.push(l) });
     recursos.push(gw);
 
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, {
@@ -732,7 +744,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
     // MISMO texto que un upstream caído, sin que la petición saliera.
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
 
     const cuerpo = JSON.stringify({ model: "claude-haiku-4-5", stream: true });
@@ -748,7 +760,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
   it("⛔ `Transfer-Encoding: chunked` en la petición → 200; el upstream recibe el cuerpo entero SIN esa cabecera", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
 
     const cuerpo = JSON.stringify({ model: "claude-haiku-4-5", stream: true });
@@ -762,7 +774,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
   it("las hop-by-hop de RFC 7230 §6.1 y las que nombre `Connection` se quedan en este salto", async () => {
     const recibidas: { path: string; headers: Record<string, unknown>; body: string }[] = [];
     const upstream = await arrancarUpstreamFalso(recibidas);
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${upstream}`, log: () => {} });
     recursos.push(gw);
 
     const r = await pedirCrudo(
@@ -798,7 +810,7 @@ describe("arrancarGateway — los defectos de la 0.4.20 (verificación del 2026-
       });
     });
     const lineas: string[] = [];
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${cerrado}`, log: (l) => lineas.push(l) });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${cerrado}`, log: (l) => lineas.push(l) });
     recursos.push(gw);
     const r = await fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: "{}" });
     expect(r.status).toBe(502);

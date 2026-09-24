@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 
 import { UsageEmitter, deriveSeatId, detectCi } from "../src/metering/index.js";
+import { RevocationPoller, RevocationSnapshot } from "../src/license/index.js";
 import { avisarUnaVez } from "../src/util/warn-once.js";
 import {
   ObservadorSse,
@@ -14,6 +15,7 @@ import {
   modeloDelCuerpo,
   jsonDelCuerpo,
   elisionDeJson,
+  isSubscriptionTraffic,
   type Atribucion,
   type ElisionAplicada,
   type RebajaAplicada,
@@ -21,6 +23,22 @@ import {
 } from "./medidor.js";
 import { CarrilSombra } from "./sombra-vivo.js";
 import { CanalDeEntitlements } from "./entitlements.js";
+import {
+  FORCED_RENEWAL_MIN_INTERVAL_MS,
+  LicenseRenewer,
+  buildLiveLicense,
+  effectivePublicKey,
+  isoDay,
+  licenseVerdict,
+  refusalBody,
+  transitionLine,
+  verifyGatewayLicense,
+  type GatewayLicense,
+  type GatewayLicenseState,
+  type LiveLicense,
+  type Verdict,
+  type VerifiedLicense,
+} from "./license.js";
 import { ajustarDiales, conBetaDeElision } from "./palanca.js";
 import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-herramientas.js";
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
@@ -39,11 +57,11 @@ import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } 
  *     cabeceras de transporte de la respuesta (`content-encoding`,
  *     `content-length`, `transfer-encoding`): el fetch de Node ya descomprime
  *     y reenviarlas rompe el cliente (hallazgo F0 nº1, BrotliDecompressionError).
- *   · AVISAR, NUNCA ROMPER (decisión del dueño 2026-08-23): ningún estado de
- *     licencia o metering corta el tráfico. Sin clave de servicio, o con el
- *     ingest rechazando (401/402), el gateway sigue reenviando y avisa una
- *     sola vez. El candado de facturación es el servidor de ingesta, que es
- *     imparcheable — no este proceso, que corre en la máquina del cliente.
+ *   · AVISAR, NUNCA ROMPER LO QUE ESTÁ EN VUELO (decisión del dueño 2026-08-23,
+ *     acotada el 2026-09-24 para cumplir LICENSE §2): ningún estado del
+ *     METERING corta el tráfico; la LICENCIA verja el arranque (bin.ts) y cada
+ *     petición NUEVA (402), y jamás una en curso. El candado de cobro sigue
+ *     siendo el servidor (ingesta y canal), que es imparcheable.
  *   · SOLO MEDIDO. Un registro existe únicamente si el proveedor emitió
  *     `usage` y el modelo está en el catálogo de precios. Sin contador no hay
  *     cifra: nada se estima en el gateway.
@@ -122,6 +140,18 @@ export interface OpcionesGateway {
    * la apaga junto a ellas. NO la arma el anillo 2: no hay A/B que hacer.
    */
   modeloHermano?: boolean;
+  /**
+   * OBLIGATORIA (LICENSE §2): la licencia ya verificada al arrancar. Con ella se
+   * construye la verja de cada petición NUEVA; sin ella no hay gateway.
+   */
+  license: GatewayLicense;
+  /** Solo tests: TTL del canal de entitlements (por defecto 300 000). */
+  entitlementsTtlMs?: number;
+  /**
+   * Transiciones de licencia y avisos accionables. Por defecto console.error.
+   * bin.ts NO lo silencia en los envoltorios: un corte tiene que verse.
+   */
+  warn?: (line: string) => void;
   /** Inyectables para tests. */
   fetchImpl?: typeof fetch;
   log?: (linea: string) => void;
@@ -130,6 +160,8 @@ export interface OpcionesGateway {
 export interface GatewayArrancado {
   puerto: number;
   cerrar: () => Promise<void>;
+  /** El estado de licencia que decidiría la próxima petición. */
+  licenseStatus(): GatewayLicenseState;
 }
 
 /** Cabeceras de transporte que NO se reenvían (hallazgo F0 nº1). */
@@ -200,10 +232,28 @@ export class ErrorDeEscucha extends Error {
   }
 }
 
-export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<GatewayArrancado> {
+export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArrancado> {
+  // LICENSE §2, antes que nada (ni emisor, ni canal, ni timers): el Software no
+  // opera sin una licencia válida. Un token CADUCADO sí se acepta aquí —la verja
+  // por petición lo cortará con un 402—; uno que no verifica, no.
+  if (!opts?.license) throw new Error("arrancarGateway: a verified BiVelio license is required (LICENSE section 2)");
+  const publicKey = effectivePublicKey(opts.license.publicKey);
+  const comprobada = verifyGatewayLicense(opts.license.token, publicKey);
+  if (!comprobada.ok) throw new Error(`arrancarGateway: the license token does not verify (${comprobada.reason})`);
+
   const upstreamBase = (opts.upstream ?? "https://api.anthropic.com").replace(/\/+$/, "");
   const fetchImpl = opts.fetchImpl ?? fetch;
   const log = opts.log ?? ((l: string) => console.log(l));
+  const warn = opts.warn ?? ((l: string) => console.error(l));
+  const now = opts.license.now ?? Date.now;
+  const baseLicencias = opts.license.licenseServerUrl?.replace(/\/+$/, "");
+
+  // ── La licencia EN VIVO ─────────────────────────────────────────────────
+  // Un gate vivo (reloj real + snapshot de revocaciones compartido con el
+  // poller y el renovador) sobre el token verificado. Es lo ÚNICO que lee la
+  // verja por petición, junto al `reason` del canal.
+  const revocation = new RevocationSnapshot();
+  let live: LiveLicense = buildLiveLicense(comprobada.license, publicKey, revocation, now);
 
   let emisor: UsageEmitter | undefined;
   if (opts.serviceAccountKey) {
@@ -227,8 +277,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   } else {
     avisarUnaVez(
       "gateway-sin-clave",
-      "[bvsala gateway] no BIVELIO_SERVICE_KEY: the gateway forwards traffic but does not meter it. " +
-        "Get your key at savings.bivelio.com/dashboard/install to see your spend in the dashboard.",
+      "[bvsala gateway] no BIVELIO_SERVICE_KEY: this in-process gateway forwards traffic but does not meter it " +
+        "(the bvsala CLI refuses to start without the key).",
     );
   }
 
@@ -237,12 +287,14 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // dónde reportar y simular sería gastar CPU del cliente para nada.
   const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
 
-  // S4a · el canal de entitlements existe por defecto (`elision !== false`) siempre
-  // que haya clave de servicio: sin clave no hay org que consultar. El gate REAL es
-  // el feature `context_elision` (fail-closed), no la bandera — que solo APAGA
-  // (`opts.elision === false`, desde `BVSALA_GATEWAY_ELISION=0`). La URL sale del mismo
-  // origen que la ingesta (meteringUrl), así que dev y tests apuntan a su plataforma
-  // falsa sin opciones nuevas.
+  // S4a · el canal de entitlements existe SIEMPRE que haya clave de servicio (sin
+  // clave no hay org que consultar), con independencia de `opts.elision`: por él
+  // llega también el bloqueo del control plane (`reason`), y `BVSALA_GATEWAY_ELISION=0`
+  // apagaba con el canal la revocación. Ahora =0 solo DESARMA las palancas
+  // (`palancasArmadas`). El gate REAL de cada palanca sigue siendo su feature
+  // (fail-closed). La URL sale de la base del control plane si viene; si no, del
+  // mismo origen que la ingesta (meteringUrl), así que los tests apuntan a su
+  // plataforma falsa sin opciones nuevas.
   // La memoria de prefijos que gobierna la rebaja de TTL: vive en el proceso
   // del gateway (no persiste, no viaja, no se mide) y solo responde a una
   // pregunta —«¿qué parte de este cuerpo NO estaba ya cacheada por el turno
@@ -251,18 +303,41 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // calderilla y el fallo cuesta el prefijo entero.
   const memoria = new MemoriaDePrefijos();
 
-  const canalElision =
-    opts.elision !== false && opts.serviceAccountKey
-      ? new CanalDeEntitlements({
-          url: new URL(
-            "/api/org/entitlements",
-            opts.meteringUrl ?? "https://savings.bivelio.com/api/metering/usage",
-          ).toString(),
-          serviceAccountKey: opts.serviceAccountKey,
-          ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
-          log,
-        })
-      : null;
+  const canal = opts.serviceAccountKey
+    ? new CanalDeEntitlements({
+        url: baseLicencias
+          ? `${baseLicencias}/api/org/entitlements`
+          : new URL("/api/org/entitlements", opts.meteringUrl ?? "https://savings.bivelio.com/api/metering/usage").toString(),
+        serviceAccountKey: opts.serviceAccountKey,
+        ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
+        ...(opts.entitlementsTtlMs !== undefined ? { ttlMs: opts.entitlementsTtlMs } : {}),
+        log,
+      })
+    : null;
+  const palancasArmadas = canal !== null && opts.elision !== false;
+
+  // ── La verja por petición y sus transiciones ────────────────────────────
+  const veredicto = (): Verdict => licenseVerdict(live.gate, canal?.blockReason() ?? null, live.license.payload);
+  // El último estado ANUNCIADO: una línea por transición, nunca una por petición.
+  let anunciado: GatewayLicenseState | null = null;
+  {
+    const inicial = licenseVerdict(live.gate, null, live.license.payload);
+    if (inicial.serve) anunciado = inicial.state;
+  }
+  const anunciar = (v: Verdict): void => {
+    const linea = transitionLine(anunciado, v, live.license.payload);
+    anunciado = v.state;
+    if (linea) warn(linea);
+  };
+  let poller: RevocationPoller | undefined;
+  let renovador: LicenseRenewer | undefined;
+  let ultimoForzadoMs = Number.NEGATIVE_INFINITY;
+  const avisosDeLog = new Set<string>();
+  const logUnaVez = (clave: string, linea: string): void => {
+    if (avisosDeLog.has(clave)) return;
+    avisosDeLog.add(clave);
+    log(linea);
+  };
 
   /**
    * El observador según el DIALECTO de la ruta: `/v1/messages` habla Anthropic;
@@ -292,6 +367,8 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     inicioMs?: number,
     /** Palanca C · el modelo que pidió el cliente y el que viajó, si difieren. */
     hermano?: CambioDeModelo | null,
+    /** Tráfico de suscripción (marcas de protocolo): se mide, no se acredita ahorro. */
+    suscripcion?: boolean,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -314,7 +391,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     if (medido) {
       const informe = coalescida
         ? informeCoalescido(requestId, model, medido, atribucion)
-        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano);
+        : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true);
       emisor.record(informe);
       // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
       // es atribuible a nuestros diales y el modelo tiene precio de lectura.
@@ -340,6 +417,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
                   : elision.tokensLimpiados > 0
                     ? " · thinking only (your config): counted, not credited"
                     : "")
+            : "") +
+          (suscripcion && !coalescida && (rebaja || hermano)
+            ? " · subscription traffic: lever applied, saving not credited (no per-token invoice)"
             : ""),
       );
       // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la
@@ -391,6 +471,39 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   const server = createServer(async (req, res) => {
     const requestId = randomUUID();
     const inicioMs = Date.now();
+
+    // ── LA VERJA DE LICENCIA (LICENSE §2) ───────────────────────────────────
+    // ANTES de leer el cuerpo, de la coalescencia y de cualquier fetch: el ÚNICO
+    // punto del camino de una petición que lee la licencia. Una petición que pasa
+    // de aquí termina aunque la licencia caduque o se revoque un milisegundo
+    // después — jamás se corta lo que está en vuelo; solo las NUEVAS reciben 402.
+    // Todas las rutas quedan verjadas; el `upgrade` WebSocket sigue en 426.
+    const v = veredicto();
+    anunciar(v);
+    if (!v.serve) {
+      // Un corte fuerza una recogida (≤ 1/min): una licencia reemitida o
+      // renovada se adopta sola sin esperar a la vuelta horaria.
+      const t = now();
+      if (renovador && t - ultimoForzadoMs >= FORCED_RENEWAL_MIN_INTERVAL_MS) {
+        ultimoForzadoMs = t;
+        void renovador.check({ force: true });
+      }
+      req.resume();
+      res.writeHead(402, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-bvsala-license-status": v.state,
+      });
+      res.end(req.method === "HEAD" ? undefined : refusalBody(v.state));
+      let ruta = "/";
+      try {
+        ruta = new URL(req.url ?? "/", "http://x").pathname;
+      } catch {
+        /* una ruta ilegible no puede tumbar el 402: solo es para el log */
+      }
+      log(`[gateway] ${req.method} ${ruta} → 402 (license ${v.state})`);
+      return;
+    }
     // La petición está viva solo mientras el cliente la escucha. Si se va —Esc en
     // Claude Code, cierra la pestaña— se ABORTA el upstream: antes seguía
     // generando la completion entera y facturándola sin que nadie la leyera. El
@@ -422,6 +535,9 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
     // Palanca C · fuera del try para que la ruta abortada (el cliente cerró tras
     // el usage final) también tarife al modelo que de verdad viajó.
     let hermano: CambioDeModelo | null = null;
+    // Con las cabeceras ORIGINALES del cliente (antes de que las palancas añadan
+    // betas). Fuera del try por la misma razón que `hermano`.
+    let suscripcion = false;
     const atribuir = (
       e: ElisionAplicada | null,
       uso: ReturnType<ObservadorSse["usage"]>,
@@ -522,22 +638,23 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // Foto de las cabeceras ANTES de que las palancas las toquen: el
       // reintento intacto de C (abajo) reenvía exactamente lo que mandó el cliente.
       const cabecerasOriginales: Record<string, string> = { ...h };
+      suscripcion = isSubscriptionTraffic(url.pathname, cabecerasOriginales["anthropic-beta"], upstreamBase);
 
       // ── S4a · la palanca de diales (doble opt-in, passthrough ante la duda) ──
       // Se ajusta SOLO context_management + la beta; la MEDICIÓN (los medir()
       // de abajo) y la clave de coalescencia siguen usando el cuerpo ORIGINAL
-      // del cliente. Tres interruptores: la bandera local (canalElision existe),
+      // del cliente. Tres interruptores: la bandera local (palancas armadas),
       // el feature per-org (fail-closed), y este try — cualquier anomalía
       // reenvía el cuerpo intacto, jamás un error.
       let cuerpoSaliente = cuerpo;
       if (
-        canalElision !== null &&
+        palancasArmadas &&
         // 2026-09-09 · cuarto interruptor, y el que manda: los diales quedan
         // APAGADOS salvo que alguien los arme a mano. Ver `dialesElision`.
         opts.dialesElision === true &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
-        canalElision.tiene("context_elision")
+        canal!.tiene("context_elision")
       ) {
         try {
           const ajustado = ajustarDiales(cuerpo, codificacion);
@@ -575,20 +692,20 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       }
 
       const quiereHermano =
-        canalElision !== null &&
+        palancasArmadas &&
         opts.modeloHermano === true &&
         req.method === "POST" &&
         (url.pathname === "/v1/messages" || url.pathname === "/v1/messages/count_tokens");
       // La bandera puesta y la licencia sin el feature se dice UNA vez: sin
       // esto, quien paga y enciende C ve pasar el cuerpo intacto en silencio.
-      if (quiereHermano && !canalElision!.tiene("sibling_model_routing")) {
+      if (quiereHermano && !canal!.tiene("sibling_model_routing")) {
         avisarUnaVez(
           "gateway-hermano-sin-feature",
           "[bvsala gateway] sibling model routing: the flag is set but your org's license does not include " +
             "sibling_model_routing; the request is forwarded unchanged (fail-closed).",
         );
       }
-      if (quiereHermano && canalElision!.tiene("sibling_model_routing")) {
+      if (quiereHermano && canal!.tiene("sibling_model_routing")) {
         try {
           // Si los diales ya reescribieron, `cuerpoSaliente` es JSON plano.
           const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
@@ -618,11 +735,11 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // reenvía lo que ya llevara `cuerpoSaliente`.
       let esfuerzoPuesto = false;
       if (
-        canalElision !== null &&
+        palancasArmadas &&
         esNivel(opts.esfuerzo) &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
-        canalElision.tiene("per_turn_effort")
+        canal!.tiene("per_turn_effort")
       ) {
         try {
           const cod = cuerpoSaliente === cuerpo ? codificacion : "identity";
@@ -638,7 +755,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       }
 
       // ── LA PALANCA DE TARIFA · TTL de escritura 1h → 5m ─────────────────
-      // Misma disciplina que la de arriba: bandera local implícita (hay canal),
+      // Misma disciplina que la de arriba: bandera local implícita (palancas armadas),
       // feature per-org fail-closed, y un try que ante cualquier anomalía
       // reenvía lo que ya llevara `cuerpoSaliente`. Se aplica DESPUÉS de los
       // diales para que ambas palancas compongan sin pisarse: la de diales
@@ -648,10 +765,10 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       // de coalescencia siguen usando el cuerpo original del cliente.
       let rebaja: { rebajadas: number; yaEran5m: number } | null = null;
       if (
-        canalElision !== null &&
+        palancasArmadas &&
         req.method === "POST" &&
         url.pathname === "/v1/messages" &&
-        canalElision.tiene("cache_ttl_tuning")
+        canal!.tiene("cache_ttl_tuning")
       ) {
         try {
           // La rebaja solo sabe leer cuerpos SIN comprimir; si los diales ya
@@ -794,7 +911,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
         medida = true;
         const uso = observador.usage();
         const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion);
         // SIN clave no hay emisor y medir() vuelve en silencio: hasta 0.4.20
         // una petición en streaming servida con 200 no dejaba NINGUNA línea,
         // mientras `bvsala doctor` mandaba al probador a buscar justo esta
@@ -808,7 +925,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
       } else if (cuerpoJson) {
         const respuesta = Buffer.concat(cuerpoJson);
         const uso = usoDeJson(respuesta);
-        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs, hermano);
+        medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elisionDeJson(respuesta), uso), rebaja, inicioMs, hermano, suscripcion);
       } else {
         // Todo lo que no se mide se dice igual: JSON sin emisor, errores del
         // proveedor, y también un stream que no entra en medición (ruta sin
@@ -833,7 +950,7 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
           // Sin rebaja (la atribución de A exige el camino completo) pero CON el
           // hermano: el precio del modelo servido se pagó igual aunque el
           // cliente cerrara.
-          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano);
+          medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → client aborted; upstream cancelled`);
         }
@@ -887,14 +1004,61 @@ export async function arrancarGateway(opts: OpcionesGateway = {}): Promise<Gatew
   // tests en paralelo sin pisarse) y devolver el pedido mentiría.
   const puerto = (server.address() as { port: number }).port;
 
+  // ── Los procesos de fondo de la licencia, DESPUÉS de listen: si escuchar
+  // falla no queda ningún timer vivo. Sin base del control plane (solo tests),
+  // cero llamadas de licencia.
+  if (baseLicencias) {
+    // Revocación por jti: la lista firmada, pública, contra la MISMA clave
+    // pública. Sus avisos en consola se callan (el gateway habla por su `log`) y
+    // un rechazo se dice una vez por causa.
+    poller = new RevocationPoller({
+      url: `${baseLicencias}/licenses/revocations`,
+      publicKeyPem: publicKey,
+      snapshot: revocation,
+      getRefreshAfter: () => live.gate.refreshAfter?.(),
+      nowSeconds: () => Math.floor(now() / 1000),
+      ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
+      silenceWarnings: true,
+      onEvent: (e) => {
+        if (e.type === "rejected") {
+          logUnaVez(`poller:${e.reason}`, `[gateway] revocation list rejected (${e.reason}); known revocations still apply`);
+        }
+      },
+      ...(opts.license.revocations ?? {}),
+    });
+    poller.start();
+    if (opts.serviceAccountKey) {
+      renovador = new LicenseRenewer({
+        licenseServerUrl: baseLicencias,
+        serviceAccountKey: opts.serviceAccountKey,
+        publicKey,
+        revocation,
+        current: () => live.license,
+        onAdopt: (l: VerifiedLicense) => {
+          live = buildLiveLicense(l, publicKey, revocation, now);
+          log(`[gateway] renewed license adopted (expires ${isoDay(l.payload.expires_at)})`);
+          anunciar(veredicto());
+        },
+        onWarning: warn,
+        ...(opts.fetchImpl ? { fetchImpl: opts.fetchImpl } : {}),
+        now,
+        ...(opts.license.renewal ?? {}),
+      });
+      renovador.start({ checkNow: opts.license.checkOnStart === true });
+    }
+  }
+
   return {
     puerto,
     cerrar: async () => {
+      renovador?.stop();
+      poller?.stop();
       // Se DRENA el uso antes de cerrar y ANTES del process.exit() de bin.ts:
       // stop() disparaba el flush sin esperarlo y el último lote de cada sesión
       // de `bvsala claude` se perdía (caza del 27-08).
       await emisor?.stopAndDrain();
       await new Promise<void>((resolve) => server.close(() => resolve()));
     },
+    licenseStatus: () => veredicto().state,
   };
 }

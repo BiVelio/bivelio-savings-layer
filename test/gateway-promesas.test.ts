@@ -3,6 +3,7 @@ import { describe, it, expect, afterEach } from "vitest";
 
 import { claveDePeticion, materialDeCabeceras, CABECERAS_DE_IDENTIDAD } from "../gateway/coalescencia.js";
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { testLicense } from "./helpers/test-license.js";
 
 /**
  * TANDA 2 — las promesas del gateway, cazadas el 27-08:
@@ -67,6 +68,7 @@ describe("resiliencia del gateway", () => {
   it("⛔ un reset del upstream a media respuesta NO tumba el gateway: sigue sirviendo", async () => {
     const up = await upstreamQueCorta();
     const gw = await arrancarGateway({
+      license: testLicense(),
       puerto: 0 as never,
       upstream: `http://127.0.0.1:${up}`,
       coalescer: true, // con coalescencia, un cuelgue de clave sería el agravante
@@ -109,7 +111,7 @@ describe("resiliencia del gateway", () => {
       recursos.push(s);
       s.listen(0, "127.0.0.1", () => resolve((s.address() as { port: number }).port));
     });
-    const gw = await arrancarGateway({ puerto: 0 as never, upstream: `http://127.0.0.1:${up}`, log: () => {} });
+    const gw = await arrancarGateway({ license: testLicense(), puerto: 0 as never, upstream: `http://127.0.0.1:${up}`, log: () => {} });
     recursos.push(gw);
 
     const ac = new AbortController();

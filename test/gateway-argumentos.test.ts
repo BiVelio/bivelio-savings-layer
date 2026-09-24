@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { decidirArranque, mensajeDeFalloDeArranque } from "../gateway/argumentos.js";
+import { decidirArranque, isChildInfoRequest, mensajeDeFalloDeArranque } from "../gateway/argumentos.js";
 
 /**
  * La decisión «ayuda / versión / arrancar» del CLI, como función pura. Hasta
@@ -53,6 +53,25 @@ describe("bvsala · la decisión de arranque", () => {
     expect(decidirArranque(["codex", "--version"])).toEqual({ tipo: "arrancar", comando: "codex", resto: ["--version"] });
     expect(decidirArranque(["goose", "-h"])).toEqual({ tipo: "arrancar", comando: "goose", resto: ["-h"] });
     expect(decidirArranque(["qwen", "-v"])).toEqual({ tipo: "arrancar", comando: "qwen", resto: ["-v"] });
+  });
+});
+
+describe("isChildInfoRequest — la pregunta al terminal hijo va directa, sin gateway ni licencia", () => {
+  it("`--help`, `-h` y `--version`, SOLOS, son una pregunta al hijo", () => {
+    expect(isChildInfoRequest(["--help"])).toBe(true);
+    expect(isChildInfoRequest(["-h"])).toBe(true);
+    expect(isChildInfoRequest(["--version"])).toBe(true);
+  });
+
+  it("⛔ `-v`, las palabras sueltas, cualquier otro argumento o ninguno → sesión (pasa por la verja)", () => {
+    // `-v` es verbose en algunos terminales y `help`/`version` pueden ser un
+    // prompt: lanzarlos sin gateway sería una sesión sin medir ni licencia.
+    expect(isChildInfoRequest(["-v"])).toBe(false);
+    expect(isChildInfoRequest(["help"])).toBe(false);
+    expect(isChildInfoRequest(["version"])).toBe(false);
+    expect(isChildInfoRequest(["--help", "x"])).toBe(false);
+    expect(isChildInfoRequest(["-p", "hola"])).toBe(false);
+    expect(isChildInfoRequest([])).toBe(false);
   });
 });
 

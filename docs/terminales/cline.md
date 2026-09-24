@@ -14,7 +14,7 @@ que se usa.
 
 - Cline instalado en VS Code.
 - Tu **API key** de Anthropic.
-- `bvsala gateway` corriendo en `http://127.0.0.1:8402` (ver [README](README.md)).
+- `bvsala gateway` corriendo en `http://127.0.0.1:8402` (necesita `BIVELIO_SERVICE_KEY` y una licencia BiVelio activa; ver [README](README.md)).
 
 ## Pasos en la UI
 

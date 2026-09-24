@@ -11,9 +11,10 @@ cifras.
 
 - `codex` en el PATH.
 - Login en Codex: **API key de OpenAI** (el caso que se monetiza) o
-  suscripción ChatGPT (se enruta y se mide, pero **no se monetiza**: no hay
-  factura por tokens; ver más abajo).
-- `bvsala` instalado y `BIVELIO_SERVICE_KEY` exportada (ver [README](README.md)).
+  suscripción ChatGPT (se enruta y se mide a precio de lista equivalente, **sin
+  comisión**: no hay factura por tokens; la licencia por asiento hace falta
+  igual; ver más abajo).
+- `bvsala` instalado, `BIVELIO_SERVICE_KEY` exportada y una licencia BiVelio activa (la recoge el gateway con la clave; ver [README](README.md)).
 
 ## Envoltorio: `bvsala codex [args…]`
 
@@ -92,30 +93,26 @@ que el tráfico real enseñó y el gateway ya contempla:
    de Codex frente a su backend: aparece igual **sin** gateway (comprobado).
 4. **Barra final.** `…/v1/` no.
 
-## Modo suscripción ChatGPT — validado, medido, NO monetizado
+## Modo suscripción ChatGPT — validado, medido, sin comisión
 
 Validado en mano el 30-08 (prefijo `/backend-api/codex`, upstream
 `https://chatgpt.com`): 200, stream íntegro, `usage` presente en
 `response.completed` y registro `measured` en la ingesta. **Pero un suscriptor
 no paga por tokens**: la cifra que ve es el equivalente a precio de lista por
 API key, no una factura; y como la comisión de BV-SALA solo toca ahorro medido
-sobre gasto real, este tráfico **no se monetiza** — igual que el OAuth de
+sobre gasto real, este tráfico **no genera comisión** — igual que el OAuth de
 suscripción en Claude Code (`docs/PASARELA-F0.md`: «el caso que NO
 facturamos»). OpenAI ni bendice ni prohíbe el proxy de suscripción (silencio
 del staff, a diferencia de Anthropic, que lo documenta). Postura idéntica a
 Claude Code: cero persistencia de `Authorization` / `ChatGPT-Account-ID`,
 binario sin modificar, y no se promociona como modo de ahorro.
 
-**Laguna conocida:** el registro que emite el gateway para un suscriptor es hoy
-**idéntico** al de una API key (`basis: measured`, coste a precio de lista) —
-el panel no puede distinguirlos. La comisión ya se calcula (S4: crons de
-extractos), así que la frase «mientras la comisión sea 0» dejó de valer. Lo
-que hoy evita el cobro es otra cosa: las únicas palancas que producen ahorro
-*medido* en el gateway (rebaja de TTL de caché y modelo hermano) actúan sobre
-`/v1/messages` de Anthropic, nunca sobre el tráfico de Codex, así que en este
-modo `actual == baseline` y la comisión sale 0 por construcción — no por
-diseño. Etiquetar la auth de suscripción en el wire sigue pendiente
-(`docs/PLAN-PASARELA-API-KEY.md`, S3) y es lo que lo haría 0 por diseño.
+**Comisión 0 por diseño (desde la versión en que el gateway exige licencia):**
+el gateway clasifica como suscripción el tráfico de `/backend-api/…` o con
+upstream chatgpt.com (y el de Claude Code con `anthropic-beta: oauth-*`) y no le
+acredita ahorro: `baseline == actual`. Laguna que queda: el registro no lleva
+etiqueta propia en el wire, así que el panel no distingue suscripción de API key
+(exige migración; fuera de este frente).
 
 ## Validaciones en mano
 

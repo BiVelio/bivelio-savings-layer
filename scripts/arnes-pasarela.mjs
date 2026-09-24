@@ -17,7 +17,11 @@
  * BYTE A BYTE idéntica a la de referencia, también para las gemelas. Nada de
  * juicio semántico: la palanca de coalescencia no debe cambiar ni una coma.
  *
- * Todo corre en 127.0.0.1: ni una petición sale de la máquina.
+ * Todo corre en 127.0.0.1: ni una petición sale de la máquina… salvo la
+ * licencia. Desde que el gateway exige licencia al arrancar (LICENSE §2), el
+ * binario necesita BIVELIO_SERVICE_KEY de una org con licencia y red a
+ * savings.bivelio.com, o BIVELIO_LICENSE_KEY si no hay red. OJO: con la clave
+ * exportada, el tráfico del arnés se mide en producción (ya pasaba).
  *
  * Uso:
  *   npm run build                       # el arnés prueba el gateway de dist/
@@ -46,13 +50,25 @@ function arrancarBinario(entorno) {
       stdio: ["ignore", "pipe", "pipe"],
     });
     let salida = "";
-    const t = setTimeout(() => reject(new Error(`el gateway no arrancó:\n${salida}`)), 8000);
+    let listo = false;
+    const t = setTimeout(() => reject(new Error(`el gateway no arrancó:\n${salida}`)), 15000);
     hijo.stdout.on("data", (d) => {
       salida += String(d);
       const m = /listening on http:\/\/127\.0\.0\.1:(\d+)/.exec(salida);
-      if (m) {
+      if (m && !listo) {
+        listo = true;
         clearTimeout(t);
         resolve({ puerto: Number(m[1]), parar: () => new Promise((ok) => { hijo.on("exit", ok); hijo.kill("SIGTERM"); }) });
+      }
+    });
+    // stderr también: ahí sale POR QUÉ no arrancó (la licencia, el puerto…).
+    hijo.stderr.on("data", (d) => {
+      salida += String(d);
+    });
+    hijo.on("exit", (code) => {
+      if (!listo && code !== 0) {
+        clearTimeout(t);
+        reject(new Error(`el gateway salió con código ${code} sin arrancar:\n${salida}`));
       }
     });
     hijo.on("error", reject);
