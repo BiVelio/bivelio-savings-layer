@@ -790,6 +790,7 @@
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
       "note": "Gateway mengukur setiap permintaan. Dengan lisensi PRO, gateway juga menerapkan satu tuas secara default: memperpendek TTL penulisan cache selama sesi Anda masih hangat — ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia tercatat di panel ini, dengan harga daftar model — bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
       "cta": "Lihat cara kerjanya →"
     },
     "integrate": {
@@ -930,7 +931,7 @@
     "devs": {
       "eyebrow": "Dibuat untuk pengembang",
       "title": "Lebih sedikit sakit kepala soal tagihan. Tanpa ganti penyedia.",
-      "sub": "Tiga fakta tentang paket ini. Tidak satu pun berupa janji.",
+      "sub": "Empat fakta tentang paket ini. Tidak satu pun berupa janji.",
       "cards": [
         {
           "title": "Nol dependensi runtime",
@@ -946,6 +947,11 @@
           "title": "Lalu lintas Anda tetap langsung",
           "body": "SDK membungkus panggilan di dalam proses Anda. Prompt Anda tidak pernah lewat BiVelio: kami hanya menerima hitungan dan biaya.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, laporan yang sama",
+          "body": "generateStream() menyerahkan jawaban kepada Anda saat penyedia menulisnya dan ditutup dengan SavingsReport yang sama seperti generate(), dengan aturan yang sama untuk dasar biayanya: penghitung akhir penyedia dibaca di akhir stream, dan stream tanpa penghitung itu dilaporkan sebagai tidak terukur dan tidak pernah ditagih. Dengan kontrak keluaran, jawaban tiba sudah tervalidasi, utuh dalam satu bagian.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1002,7 +1008,7 @@
     "nodeApiSubAfter": "menerima lebih sedikit token",
     "billMonth": "tagihan / bulan",
     "billReport": "+ SavingsReport",
-    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Satu-satunya pengecualian adalah terminal pemrograman seperti Claude Code: di sana gateway «bvsala claude» berdiri di depan tanpa menyentuh satu baris kode pun.",
+    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Pengecualiannya adalah terminal pemrograman seperti Claude Code dan aplikasi dalam bahasa apa pun yang memungkinkan Anda mengatur base URL SDK-nya: di sana gateway bvsala berdiri di depan tanpa menyentuh satu baris kode pun. Lalu lintas itu diukur; tuas penghematan paket npm tidak berjalan di sana, dan tuas milik gateway sendiri hanya berlaku untuk lalu lintas Anthropic.",
     "s2Title": "Kasus kamu, dalam 10 detik",
     "s2Sub": "Empat cara memakai AI, dan apa yang bisa dilakukan BV‑SALA di masing-masing.",
     "caseChatSub": "aplikasi atau web, gratis atau berbayar",
