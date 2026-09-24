@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
-import { TECHO_PRECIO_LECTURA_PER_1K, recortarSuelo } from "./techo-precio-lectura";
+import { TECHO_PRECIO_LECTURA_PER_1K, TECHO_PRECIO_SALIDA_PER_1K, recortarSuelo } from "./techo-precio-lectura";
 
 /**
  * El techo del suelo de la elisión se ata al CATÁLOGO, no a un número en la
@@ -11,7 +11,7 @@ import { TECHO_PRECIO_LECTURA_PER_1K, recortarSuelo } from "./techo-precio-lectu
  */
 const catalogo = readFileSync(new URL("../../../../src/pricing/catalogo.ts", import.meta.url), "utf8");
 
-function precios(campo: "cachedInputPer1k" | "inputPer1k"): number[] {
+function precios(campo: "cachedInputPer1k" | "inputPer1k" | "outputPer1k"): number[] {
   const re = new RegExp(`\\b${campo}:\\s*([0-9.]+)`, "g");
   return [...catalogo.matchAll(re)].map((m) => Number(m[1]));
 }
@@ -50,5 +50,24 @@ describe("el techo del suelo de la elisión (precio de LECTURA de caché)", () =
     const m = /TECHO_PRECIO_LECTURA_PER_1K = ([0-9.]+)/.exec(protocolo);
     expect(m, "el techo tiene que estar en packages/protocol").not.toBeNull();
     expect(Number(m![1])).toBe(TECHO_PRECIO_LECTURA_PER_1K);
+  });
+});
+
+describe("el techo de SALIDA del carril medido por referencia (0029)", () => {
+  it("el catálogo se ha leído de verdad: hay precios de salida", () => {
+    expect(precios("outputPer1k").length).toBeGreaterThan(20);
+  });
+
+  it("el techo es ≥ el MAYOR outputPer1k del catálogo — ninguna referencia legítima se degrada", () => {
+    const max = Math.max(...precios("outputPer1k"));
+    expect(max).toBeGreaterThan(0);
+    expect(TECHO_PRECIO_SALIDA_PER_1K).toBeGreaterThanOrEqual(max);
+  });
+
+  it("espejo: packages/protocol lleva EXACTAMENTE el mismo techo de salida", () => {
+    const protocolo = readFileSync(new URL("../../../../packages/protocol/src/index.ts", import.meta.url), "utf8");
+    const m = /TECHO_PRECIO_SALIDA_PER_1K = ([0-9.]+)/.exec(protocolo);
+    expect(m, "el techo de salida tiene que estar en packages/protocol").not.toBeNull();
+    expect(Number(m![1])).toBe(TECHO_PRECIO_SALIDA_PER_1K);
   });
 });
