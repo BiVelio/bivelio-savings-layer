@@ -38,6 +38,13 @@ interface UsageWire {
    * primero del bloque de toWire, cumplido.
    */
   eliminatedInputFloorCost?: number;
+  /**
+   * Medido por referencia: el `requestId` de la llamada que corrió y cuyo
+   * contador valora esta evitada, y cuándo se leyó ese contador. Identificadores
+   * y un instante, nunca contenido. Solo con `basis: "reference"`.
+   */
+  referenceRequestId?: string;
+  referenceAt?: number;
   /** Atribución de sesión/subagente del gateway (identidades opacas, nunca una persona). */
   sessionId?: string;
   agentId?: string;
@@ -367,6 +374,22 @@ export class UsageEmitter {
       netSavings: r.cost.netSavings,
       // Viaja para que el panel agregue el dinero MEDIDO aparte del estimado.
       ...(r.cost.basis ? { basis: r.cost.basis } : {}),
+      // MEDIDO POR REFERENCIA: el puntero a la llamada que corrió, para la fila
+      // de `reference_hits` (el CSV del cliente). Solo con el basis que lo usa,
+      // y solo si el id tiene la forma que el ingest admite: un id raro se
+      // omite aquí en vez de arriesgar el lote.
+      //
+      // SERVIDOR PRIMERO, igual que `eliminatedInputFloorCost`. `"reference"` es
+      // un valor nuevo de `basis` y estos dos campos son nuevos en la lista
+      // blanca: un ingest que no los conozca contesta 4xx y el lote se pierde
+      // sin reintento. El orden obligatorio es la migración 0029 y la lista
+      // blanca desplegadas ANTES de publicar el SDK que emite esto.
+      ...(r.cost.basis === "reference" &&
+      r.cache.reference &&
+      /^[A-Za-z0-9._:/-]{1,128}$/.test(r.cache.reference.requestId) &&
+      Number.isInteger(r.cache.reference.at)
+        ? { referenceRequestId: r.cache.reference.requestId, referenceAt: r.cache.reference.at }
+        : {}),
       // Atribución del gateway (0019): el servidor ya la acepta — el orden
       // servidor-primero del comentario de arriba se cumplió antes de emitirla.
       ...(r.attribution?.sessionId ? { sessionId: r.attribution.sessionId } : {}),

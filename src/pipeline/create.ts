@@ -295,9 +295,10 @@ export function createSavingsLayer(
         avisarUnaVez(
           "tokenizador-exacto-ausente",
           "[bvsala] `gpt-tokenizer` is not installed, so token counts for OpenAI models are " +
-            "ESTIMATED with a built-in heuristic: every saving where the layer removed something " +
-            "will be reported as `estimated`, never `measured`, and estimated savings are never " +
-            "billed. Install it once (`npm i gpt-tokenizer`) and the SDK loads it automatically.",
+            "ESTIMATED with a built-in heuristic and the reconstructed savings are less accurate. " +
+            "Savings where the layer removed something are reported as `estimated` either way, " +
+            "and estimated savings are never billed. Install it once (`npm i gpt-tokenizer`) and " +
+            "the SDK loads it automatically.",
         );
       }
       if (emitter) {

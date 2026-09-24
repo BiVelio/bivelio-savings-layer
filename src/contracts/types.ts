@@ -663,6 +663,10 @@ export interface SavingsReport {
     result: CacheOutcome;
     confidence?: number;
     ageMs?: number;
+    /** Present when this avoided call is valued by reference; see ReferenceCredit. */
+    reference?: import("../tokenizer/accounting.js").ReferenceCredit;
+    /** Present on an exact-cache or coalesced hit that stays estimated: why no reference applied. Semantic-cache hits never carry it. */
+    referenceRejected?: import("../tokenizer/accounting.js").ReferenceRejection;
   };
 
   routing: {
@@ -749,6 +753,14 @@ export interface SavingsReport {
      *
      * - `measured`   — reconstructed from THIS request's provider counter. Real
      *                  money, checkable against the provider invoice.
+     * - `reference`  — MEASURED BY REFERENCE: the call was avoided (a repeat
+     *                  served without calling the provider) and a byte-identical
+     *                  request had already run through the layer untouched. The
+     *                  baseline is the provider's own counter for that request,
+     *                  valued at the provider's cached-input rate, with output
+     *                  credited only under deterministic sampling. A floor.
+     *                  Enters the commission base; `cache.reference` carries the
+     *                  arithmetic and the id of the request that ran.
      * - `estimated`  — the call was AVOIDED, so there never was a provider
      *                  counter and the baseline comes from the local estimator.
      *                  The best figure available, but not measured.

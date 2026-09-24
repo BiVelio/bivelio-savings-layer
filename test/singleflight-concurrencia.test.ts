@@ -445,8 +445,12 @@ describe("el ahorro que se le reporta a un seguidor", () => {
       expect(s.report.tokens.actualInput).toBe(0);
       expect(s.report.tokens.actualOutput).toBe(0);
       expect(s.report.cost.actual).toBe(0);
-      // Una llamada EVITADA nunca tiene baseline medido contra factura.
-      expect(s.report.cost.basis).toBe("estimated");
+      // Una llamada EVITADA se valora con el contador de la idéntica que corrió
+      // (reference); sin muestreo determinista, su salida no cuenta.
+      expect(s.report.cost.basis).toBe("reference");
+      expect(s.report.tokens.baselineInput).toBe(40);
+      expect(s.report.tokens.baselineOutput).toBe(0);
+      expect(s.report.cache.reference?.requestId).toBe(lider.report.requestId);
       // Se evitó el 100% del coste de ESTA petición, sobre un baseline propio y
       // no nulo (un baseline 0 daría el mismo 1 sin significar nada).
       expect(s.report.cost.baselineEstimate).toBeGreaterThan(0);
