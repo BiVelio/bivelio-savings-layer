@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 /**
  * POST /api/metering/usage — la ruta que ingiere la facturación. No tenía NINGÚN
@@ -133,5 +133,73 @@ describe("POST /api/metering/usage — el canal de versión", () => {
     );
     expect(res.status).toBe(401);
     expect(rpc).toBeNull();
+  });
+});
+
+/**
+ * 0029 · EL INTERRUPTOR DE SERVIDOR del carril medido por referencia. Con
+ * BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 la RPC recibe "estimated" (sin los
+ * dos campos de la referencia); sin la variable, "reference" tal cual. Es el
+ * retroceso sin npm y sin migración: una variable de Vercel y un redespliegue.
+ */
+describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS_ESTIMATED", () => {
+  const referencia = () =>
+    registro({
+      model: "openai/gpt-4o-mini",
+      cacheResult: "exact",
+      avoidedLlm: 1,
+      actualLlm: 0,
+      baselineInputTokens: 1736,
+      actualInputTokens: 0,
+      baselineOutputTokens: 267,
+      actualOutputTokens: 0,
+      baselineCost: 0.0002904,
+      actualCost: 0,
+      netSavings: 1,
+      basis: "reference",
+      referenceRequestId: "req-poblada",
+      referenceAt: Date.now() - 60_000,
+    });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("sin la variable, la RPC recibe basis reference con sus dos campos", async () => {
+    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
+    const res = await POST(peticion([referencia()]));
+    expect(res.status).toBe(202);
+    const r = rpc!.args.records[0]!;
+    expect(r["basis"]).toBe("reference");
+    expect(r["referenceRequestId"]).toBe("req-poblada");
+    expect(typeof r["referenceAt"]).toBe("number");
+  });
+
+  it("con BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 la RPC recibe estimated, sin los campos, y el resto intacto", async () => {
+    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "1");
+    const res = await POST(peticion([referencia(), registro()], { "x-bvsala-version": "sdk/0.4.23" }));
+    expect(res.status).toBe(202);
+    const [ref, med] = rpc!.args.records;
+    expect(ref!["basis"]).toBe("estimated");
+    expect("referenceRequestId" in ref!).toBe(false);
+    expect("referenceAt" in ref!).toBe(false);
+    expect(ref!["baselineCost"]).toBe(0.0002904);
+    expect(med!["basis"]).toBe("measured");
+    // El sellado de versión sigue ocurriendo después del interruptor.
+    expect(ref!["clientVersion"]).toBe("sdk/0.4.23");
+  });
+
+  it("un valor distinto de 1 no enciende el interruptor", async () => {
+    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "true");
+    await POST(peticion([referencia()]));
+    expect(rpc!.args.records[0]!["basis"]).toBe("reference");
+  });
+
+  it("un reference incoherente entra como estimated con 202, jamás 400", async () => {
+    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
+    const res = await POST(peticion([registro({ basis: "reference", referenceRequestId: "req-x" })]));
+    expect(res.status).toBe(202);
+    expect(rpc!.args.records[0]!["basis"]).toBe("estimated");
+    expect("referenceRequestId" in rpc!.args.records[0]!).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { after, NextResponse } from "next/server";
 
-import { parseUsageRecords, UsageValidationError } from "@/lib/metering/usage";
+import { degradarReferencias, parseUsageRecords, UsageValidationError } from "@/lib/metering/usage";
 import { CABECERA_VERSION, sellarVersion, versionDeclarada } from "@/lib/metering/version";
 import { decideEntitlement } from "@/lib/metering/entitlement";
 import { alertar } from "@/lib/observabilidad/alerta";
@@ -83,6 +83,21 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
   if (records.length === 0) return NextResponse.json({ ingested: 0 }, { status: 202 });
+
+  // 0029 · EL INTERRUPTOR DE SERVIDOR del carril medido por referencia. Con
+  // BVSALA_INGEST_REFERENCE_AS_ESTIMATED=1 (variable de Vercel + redespliegue del
+  // mismo commit, sin código ni npm) todo registro "reference" entra como
+  // "estimated": sigue contando en los totales, pero deja de acumularse en
+  // reference_* y de escribir reference_hits. Se aplica sobre los registros YA
+  // validados y antes de sellar la versión y de la RPC. Es el hermano de
+  // COMISIONAR_REFERENCIA (lib/billing/tarifa.ts), que decide si lo acumulado
+  // entra en la base; este corta la acumulación misma.
+  if (process.env.BVSALA_INGEST_REFERENCE_AS_ESTIMATED === "1") {
+    const n = degradarReferencias(records);
+    if (n > 0) {
+      console.warn("[metering/usage] interruptor BVSALA_INGEST_REFERENCE_AS_ESTIMATED: reference→estimated", { n });
+    }
+  }
 
   // La versión del proceso (0024) viene en CABECERA, no en el cuerpo, y se sella
   // SIEMPRE sobre los registros ya validados — nunca sobre el JSON crudo, para

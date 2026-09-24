@@ -95,3 +95,118 @@ describe("usage ingest — dominio de los números", () => {
     expect(() => parseUsageRecord({ ...base(), netSavings: -0.25 }, "org")).not.toThrow();
   });
 });
+
+/**
+ * 0029 · el carril MEDIDO POR REFERENCIA en la verja del ingest. Todo es
+ * RECORTE, no rechazo: un 400 aquí tira el lote entero del cliente sin
+ * reintento (y npm es inmutable). Lo incoherente baja a "estimated" y los dos
+ * campos opcionales se descartan si no tienen la forma exacta.
+ */
+describe("usage ingest — basis reference (0029)", () => {
+  /** Un acierto exacto de gpt-4o-mini valorado por referencia: 1736/267 a 0,000075 y 0,0006. */
+  const referencia = (extra: Record<string, unknown> = {}) => ({
+    ...clean,
+    at: Date.now(),
+    cacheResult: "exact",
+    avoidedLlm: 1,
+    actualLlm: 0,
+    baselineInputTokens: 1736,
+    actualInputTokens: 0,
+    eliminatedInputTokens: 0,
+    compressedInputTokens: 0,
+    baselineOutputTokens: 267,
+    actualOutputTokens: 0,
+    providerCachedInputTokens: 0,
+    baselineCost: 0.0002904,
+    actualCost: 0,
+    netSavings: 1,
+    basis: "reference",
+    referenceRequestId: "req_poblada-01",
+    referenceAt: Date.now() - 60_000,
+    ...extra,
+  });
+
+  it("un reference coherente pasa y conserva referenceRequestId y referenceAt", () => {
+    const r = parseUsageRecord(referencia(), "org");
+    expect(r["basis"]).toBe("reference");
+    expect(r.referenceRequestId).toBe("req_poblada-01");
+    expect(typeof r.referenceAt).toBe("number");
+  });
+
+  it("el seguidor coalescido (singleflight) también puede ser referencia", () => {
+    expect(parseUsageRecord(referencia({ cacheResult: "singleflight" }), "org")["basis"]).toBe("reference");
+  });
+
+  it("incoherente → estimated, SIN excepción y sin los dos campos", () => {
+    for (const [motivo, extra] of [
+      ["con coste propio", { actualCost: 0.0001 }],
+      ["no es un acierto", { cacheResult: "miss" }],
+      ["acierto semántico (no es la misma petición)", { cacheResult: "semantic" }],
+      ["la llamada corrió", { avoidedLlm: 0, actualLlm: 1 }],
+      ["tokens reales", { actualInputTokens: 10 }],
+      ["netSavings distinto de 1", { netSavings: 0.5 }],
+      ["baseline cero", { baselineCost: 0 }],
+      ["sin entrada acreditada", { baselineInputTokens: 0 }],
+      // 1736 tokens × 0,002/1K + 267 × 0,08/1K = 0,024832: por encima, ni el mayor precio del catálogo lo justifica.
+      ["baseline por encima del techo", { baselineCost: 0.03 }],
+    ] as const) {
+      let r: ReturnType<typeof parseUsageRecord> | undefined;
+      expect(() => (r = parseUsageRecord(referencia(extra), "org")), motivo).not.toThrow();
+      expect(r!["basis"], motivo).toBe("estimated");
+      expect("referenceRequestId" in r!, motivo).toBe(false);
+      expect("referenceAt" in r!, motivo).toBe(false);
+    }
+  });
+
+  it("justo en el techo sigue siendo referencia (el techo es una cota, no un precio)", () => {
+    const techo = (1736 / 1000) * 0.002 + (267 / 1000) * 0.08;
+    expect(parseUsageRecord(referencia({ baselineCost: techo }), "org")["basis"]).toBe("reference");
+  });
+
+  it("referenceAt en SEGUNDOS o referenceRequestId con espacios se descartan sin 400", () => {
+    const enSegundos = parseUsageRecord(referencia({ referenceAt: Math.floor(Date.now() / 1000) }), "org");
+    expect(enSegundos["basis"]).toBe("reference");
+    expect("referenceAt" in enSegundos).toBe(false);
+    expect(enSegundos.referenceRequestId).toBe("req_poblada-01");
+
+    const conEspacios = parseUsageRecord(referencia({ referenceRequestId: "the user asked about" }), "org");
+    expect(conEspacios["basis"]).toBe("reference");
+    expect("referenceRequestId" in conEspacios).toBe(false);
+
+    for (const malo of [1.5e12 + 0.5, "1758000000000", Date.now() + 30 * 86_400_000]) {
+      const r = parseUsageRecord(referencia({ referenceAt: malo }), "org");
+      expect("referenceAt" in r).toBe(false);
+    }
+  });
+
+  it("los dos campos con basis estimated (o sin basis) se eliminan", () => {
+    const est = parseUsageRecord(referencia({ basis: "estimated" }), "org");
+    expect(est["basis"]).toBe("estimated");
+    expect("referenceRequestId" in est).toBe(false);
+    expect("referenceAt" in est).toBe(false);
+    const { basis: _b, ...sinBasis } = referencia();
+    const r = parseUsageRecord(sinBasis, "org");
+    expect("referenceRequestId" in r).toBe(false);
+  });
+
+  it('"verified" (el vocabulario del A/B) sigue siendo un 400', () => {
+    expect(() => parseUsageRecord(referencia({ basis: "verified" }), "org")).toThrow(/basis/);
+  });
+
+  it("un aviso POR LOTE con los degradados y los campos descartados, nunca uno por registro", () => {
+    const avisos: unknown[][] = [];
+    const original = console.warn;
+    console.warn = (...args: unknown[]) => void avisos.push(args);
+    try {
+      parseUsageRecords(
+        [referencia(), referencia({ actualCost: 1 }), referencia({ referenceAt: 5 }), referencia({ cacheResult: "miss" })],
+        "org",
+      );
+    } finally {
+      console.warn = original;
+    }
+    const deReferencia = avisos.filter((a) => String(a[0]).includes("basis reference degradado"));
+    expect(deReferencia).toHaveLength(1);
+    expect(deReferencia[0]![1]).toEqual({ registros: 4, degradados: 2, camposDescartados: 1 });
+  });
+});
