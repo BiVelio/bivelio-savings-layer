@@ -175,14 +175,31 @@ describe("SavingsPipeline end-to-end", () => {
     const request: SavingsRequest = {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "capital city output-baseline probe" }],
+      temperature: 0,
     };
-    await layer.generate(request); // miss → populate cache
+    const first = await layer.generate(request); // miss → populate cache
     const hit = await layer.generate(request);
     expect(hit.report.cache.result).toBe("exact");
+    // Measured by reference: the counter of the identical call that ran.
+    expect(hit.report.cost.basis).toBe("reference");
     // Old behavior credited the 256 (maxOutputTokens ?? 256) ceiling as saved output;
-    // the honest baseline is the real answer "Paris" (~1 token), never 256.
-    expect(hit.report.tokens.baselineOutput).toBeGreaterThan(0);
+    // the honest baseline is the real answer's counter, never 256 — and, under
+    // deterministic sampling, 95% of it.
+    expect(hit.report.tokens.baselineOutput).toBe(Math.floor(0.95 * first.report.tokens.actualOutput));
     expect(hit.report.tokens.baselineOutput).toBeLessThan(20);
+  });
+
+  it("credits no output on a repeat without deterministic sampling", async () => {
+    const layer = createSavingsLayer({ provider: createMockProvider({ answer: "Paris" }), generateId: deterministicId });
+    const request: SavingsRequest = {
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "capital city output-baseline probe, sampled" }],
+    };
+    await layer.generate(request);
+    const hit = await layer.generate(request);
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("reference");
+    expect(hit.report.tokens.baselineOutput).toBe(0);
   });
 
   it("actually applies compression to the outgoing prompt and credits only the realized reduction", async () => {
