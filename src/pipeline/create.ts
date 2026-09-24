@@ -1,7 +1,12 @@
 import { defaultTokenizerRegistry } from "../tokenizer/registry.js";
 import { MODELS_BY_ENCODING, registerExactTokenizer } from "../tokenizer/exact.js";
 import { avisarUnaVez } from "../util/warn-once.js";
-import type { SavingsRequest, SavingsResult } from "../contracts/types.js";
+import type {
+  SavingsRequest,
+  SavingsResult,
+  SavingsStream,
+  SavingsStreamOptions,
+} from "../contracts/types.js";
 import { gateFromKey } from "../license/gate.js";
 import { liveGateFromKey } from "../license/live-gate.js";
 import { RevocationSnapshot } from "../license/revocation.js";
@@ -48,9 +53,38 @@ const MODELOS_CON_EXACTO = new Set(
   Object.values(MODELS_BY_ENCODING).flatMap((ms) => ms.flatMap((m) => [m, `openai/${m}`])),
 );
 
+// El aviso de tokenizador ausente, compartido por generate() y generateStream().
+const AVISO_TOKENIZADOR =
+  "[bvsala] `gpt-tokenizer` is not installed, so token counts for OpenAI models are " +
+  "ESTIMATED with a built-in heuristic and the reconstructed savings are less accurate. " +
+  "Savings where the layer removed something are reported as `estimated` either way, " +
+  "and estimated savings are never billed. Install it once (`npm i gpt-tokenizer`) and " +
+  "the SDK loads it automatically.";
+
 /** The public handle returned by {@link createSavingsLayer}. */
 export interface SavingsLayer {
   generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>>;
+  /**
+   * Same request as generate(), delivered as a stream of events.
+   *
+   * Iterate the returned object for `text` deltas as the provider writes them,
+   * then one `tool_call` event per requested tool call, then exactly one `done`
+   * event carrying the same SavingsResult that `result` resolves to. The report
+   * follows the same basis rules as generate(): the provider's final usage is
+   * read at the end of the stream, and a stream that ends without it is
+   * reported as `unmeasured`.
+   *
+   * Requests with an output contract (`response.schema`) or declared
+   * `deferrable`, and providers without streaming support, are produced exactly
+   * as generate() would and delivered in one piece; `report.streaming` says how
+   * the answer was delivered and why.
+   *
+   * Work starts immediately, so awaiting `result` without iterating is valid.
+   * Concurrent identical streamed requests each call the provider; a streamed
+   * request can still reuse an identical generate() call already in flight.
+   * Await `result` before calling close(), or its usage record may be lost.
+   */
+  generateStream<T = unknown>(request: SavingsRequest, options?: SavingsStreamOptions): SavingsStream<T>;
   /**
    * Stop the background revocation poller (when the online call-home was enabled
    * via `licenseServerUrl`) and abort any in-flight request. Always safe to call —
@@ -292,14 +326,7 @@ export function createSavingsLayer(
       // Después de la petición, no antes: un llamante sin licencia debe ver el
       // error de licencia, no un aviso sobre el tokenizador.
       if (!exacto && config.silenceWarnings !== true && MODELOS_CON_EXACTO.has(request.model)) {
-        avisarUnaVez(
-          "tokenizador-exacto-ausente",
-          "[bvsala] `gpt-tokenizer` is not installed, so token counts for OpenAI models are " +
-            "ESTIMATED with a built-in heuristic and the reconstructed savings are less accurate. " +
-            "Savings where the layer removed something are reported as `estimated` either way, " +
-            "and estimated savings are never billed. Install it once (`npm i gpt-tokenizer`) and " +
-            "the SDK loads it automatically.",
-        );
+        avisarUnaVez("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
       }
       if (emitter) {
         try {
@@ -309,6 +336,33 @@ export function createSavingsLayer(
         }
       }
       return result;
+    },
+    // El registro de uso se emite UNA vez, cuando `result` se resuelve, y nunca
+    // si se rechaza: un stream abortado o fallido no tiene contador final que
+    // reportar. La espera del tokenizador exacto va DENTRO del pipeline (el
+    // handle tiene que volver ya, sin `await`).
+    generateStream: <T = unknown>(
+      request: SavingsRequest,
+      options?: SavingsStreamOptions,
+    ): SavingsStream<T> => {
+      const stream = pipeline.generateStream<T>(request, options ?? {}, exactoListo);
+      void stream.result.then(
+        async (result) => {
+          if (emitter) {
+            try {
+              emitter.record(result.report);
+            } catch {
+              /* metering must never affect the caller */
+            }
+          }
+          const exacto = await exactoListo;
+          if (!exacto && config.silenceWarnings !== true && MODELOS_CON_EXACTO.has(request.model)) {
+            avisarUnaVez("tokenizador-exacto-ausente", AVISO_TOKENIZADOR);
+          }
+        },
+        () => {},
+      );
+      return stream;
     },
     close: () => {
       poller?.stop();
