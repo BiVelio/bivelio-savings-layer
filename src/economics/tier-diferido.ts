@@ -93,6 +93,17 @@ const FACTOR_POR_TIER_SERVIDO: Readonly<Record<string, number>> = {
   batch: 0.5,
 };
 
+// EL TIER MÁS BARATO QUE UNA PETICIÓN DIFERIBLE PODÍA OBTENER, para el carril
+// medido por referencia. Un acierto de caché de una petición declarada diferible
+// se valora como si la repetición hubiera ido por ese tier: si la capa no la
+// hubiera servido, la ingenua habría pedido `flex` y podía haber pagado la mitad.
+// Tomar el MÍNIMO es lo que mantiene la referencia como suelo. Se deriva de la
+// tabla en vez de escribirse a mano para que un tier nuevo más barato la mueva
+// solo. Interno: no se reexporta.
+export const FACTOR_DIFERIDO_MINIMO = Math.min(
+  ...Object.values(FACTOR_POR_TIER_SERVIDO).filter((f) => f < 1),
+);
+
 /** Tier the layer asks for when the caller declares a request deferrable. */
 export const TIER_DIFERIBLE_OPENAI = "flex";
 

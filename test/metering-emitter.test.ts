@@ -105,6 +105,7 @@ describe("UsageEmitter", () => {
       "actualOutputTokens", "providerCachedInputTokens", "cacheResult",
       "baselineCost", "actualCost", "netSavings",
       "eliminatedInputFloorCost", // B2 (0.4.17): opcional, solo con dinero y conteo
+      "basis", "referenceRequestId", "referenceAt", // medido por referencia: ids y un instante
     ]);
     for (const k of Object.keys(rec)) expect(ALLOWED.has(k)).toBe(true);
     for (const forbidden of ["prompt", "completion", "messages", "text", "content", "data"]) {
