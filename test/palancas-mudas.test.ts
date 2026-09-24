@@ -227,7 +227,7 @@ describe("`silenceWarnings` llega también al poller y al emisor", () => {
 
   it("el sondeo de revocaciones habla por defecto y calla con el interruptor", async () => {
     await conElPollerCaido();
-    expect(avisos.filter((a) => a.includes("revocaciones"))).toHaveLength(1);
+    expect(avisos.filter((a) => a.includes("revocation server"))).toHaveLength(1);
 
     avisos = [];
     reiniciarAvisos();

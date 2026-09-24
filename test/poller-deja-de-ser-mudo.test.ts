@@ -137,9 +137,9 @@ describe("el call-home caído deja de ser mudo", () => {
     const p = poller(caido());
     for (let i = 0; i < 3; i++) await p.pollOnce();
     expect(avisos).toHaveLength(1);
-    expect(avisos[0]).toContain("3 veces seguidas");
+    expect(avisos[0]).toContain("3 times in a row");
     // El mensaje dice qué significa, no solo que algo falló.
-    expect(avisos[0]).toContain("NUEVAS no están llegando");
+    expect(avisos[0]).toContain("NEW ones are not arriving");
     expect(avisos[0]).toContain(URL_CP);
   });
 

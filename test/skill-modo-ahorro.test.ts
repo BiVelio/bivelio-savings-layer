@@ -100,7 +100,7 @@ describe("instalarSkill — pura sobre un FS inyectado", () => {
     const r = instalarSkill({ origenes: ["/paquete"], home: "/home/u", cwd: "/repo", proyecto: false, forzar: false, fs });
     expect(r.ok).toBe(false);
     expect(fs.disco[destino]).toBe("editado a mano");
-    expect(r.mensaje).toContain("--forzar");
+    expect(r.mensaje).toContain("--force");
     // Con --forzar sí.
     const r2 = instalarSkill({ origenes: ["/paquete"], home: "/home/u", cwd: "/repo", proyecto: false, forzar: true, fs });
     expect(r2.ok).toBe(true);

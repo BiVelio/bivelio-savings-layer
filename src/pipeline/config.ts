@@ -135,7 +135,7 @@ export interface SavingsLayerConfig {
     /** Reject a signed list whose `asOf` is more than this far in the future, seconds (default 300). */
     maxSkewSeconds?: number;
     /**
-     * ONLINE staleness ceiling, seconds (default ~6h). If the SDK goes this long
+     * ONLINE staleness ceiling, seconds (default 72h, `DEFAULT_MAX_STALENESS_SECONDS`). If the SDK goes this long
      * without a CONFIRMED authorized heartbeat (a 304 or a verified list), the LIVE
      * gate stops granting — closing the fail-open window where blocking egress keeps
      * a revoked license alive until natural expiry. Must exceed the poll cadence
@@ -288,6 +288,16 @@ export interface SavingsLayerConfig {
    * emitter and the revocation poller alike.
    */
   silenceWarnings?: boolean;
+  /**
+   * Load the exact OpenAI tokenizer (`gpt-tokenizer`, optional peer) into the
+   * default registry when it is installed. ON by default: without it, every
+   * saving where the layer removed something is reported as `estimated` and
+   * never billed, and the SDK warns once. Set to `false` to keep the built-in
+   * heuristic even when the package is present (tests calibrated on the
+   * heuristic, or a process that must not spend the encoding's memory). Ignored
+   * when you pass your own `tokenizer` registry: you decide what it contains.
+   */
+  exactTokenizer?: boolean;
 
   /** Injectable clock for deterministic tests. */
   now?: () => number;

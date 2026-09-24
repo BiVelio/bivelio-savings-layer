@@ -108,10 +108,14 @@ binario sin modificar, y no se promociona como modo de ahorro.
 
 **Laguna conocida:** el registro que emite el gateway para un suscriptor es hoy
 **idéntico** al de una API key (`basis: measured`, coste a precio de lista) —
-el panel no puede distinguirlos. Mientras la comisión sea 0 no hay efecto; antes
-de que S4 calcule comisión sobre ahorro medido, S2 etiquetará la auth de
-suscripción en el wire para que ese tráfico jamás entre en la base. Está en el
-plan (`docs/PLAN-PASARELA-API-KEY.md`, S3).
+el panel no puede distinguirlos. La comisión ya se calcula (S4: crons de
+extractos), así que la frase «mientras la comisión sea 0» dejó de valer. Lo
+que hoy evita el cobro es otra cosa: las únicas palancas que producen ahorro
+*medido* en el gateway (rebaja de TTL de caché y modelo hermano) actúan sobre
+`/v1/messages` de Anthropic, nunca sobre el tráfico de Codex, así que en este
+modo `actual == baseline` y la comisión sale 0 por construcción — no por
+diseño. Etiquetar la auth de suscripción en el wire sigue pendiente
+(`docs/PLAN-PASARELA-API-KEY.md`, S3) y es lo que lo haría 0 por diseño.
 
 ## Validaciones en mano
 

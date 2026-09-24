@@ -68,7 +68,7 @@ export function bloqueAgentsMd(skillMd: string): string {
     `${MARCA_INICIO}\n${cuerpo}\n\n` +
     // AGENTS.md no tiene activación por descripción: esto va SIEMPRE. Decirlo
     // y dar la salida es parte del contrato.
-    `_Always on (AGENTS.md has no activation step). Delete this block to turn it off; \`bvsala skill --codex --forzar\` restores it._\n` +
+    `_Always on (AGENTS.md has no activation step). Delete this block to turn it off; \`bvsala skill --codex --force\` restores it._\n` +
     `${MARCA_FIN}`
   );
 }
@@ -110,7 +110,7 @@ export function instalarAgentsMd(o: OpcionesInstalarSkill): ResultadoInstalarSki
     return {
       ok: false,
       destino,
-      mensaje: `[bvsala skill] the savings-mode block in ${destino} has DIFFERENT content — not overwriting it; use --forzar to update it`,
+      mensaje: `[bvsala skill] the savings-mode block in ${destino} has DIFFERENT content — not overwriting it; use --force to update it`,
     };
   }
   o.fs.escribir(destino, actual.slice(0, ini) + bloque + actual.slice(fin + MARCA_FIN.length));
@@ -146,7 +146,7 @@ export function instalarSkill(o: OpcionesInstalarSkill): ResultadoInstalarSkill 
       destino,
       mensaje: igual
         ? `[bvsala skill] already installed and up to date: ${destino}`
-        : `[bvsala skill] ${destino} already exists with DIFFERENT content — not overwriting it; use --forzar to overwrite`,
+        : `[bvsala skill] ${destino} already exists with DIFFERENT content — not overwriting it; use --force to overwrite`,
     };
   }
 

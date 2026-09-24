@@ -185,7 +185,7 @@ function peticionConMaterial(extra: Partial<SavingsRequest> = {}): SavingsReques
 describe("integración: con el flag encendido la etapa ELIDE de verdad, sin mover la comisión", () => {
   it("aplica el muñón a los 2 supersedidos y NO acredita dinero de elisión (basis measured)", async () => {
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, devUnlicensed: true });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, costModels: PRECIOS, devUnlicensed: true });
     const res = await capa.generate(peticionConMaterial({ savings: { elision: true } }));
 
     const traza = res.report.traces.find((t) => t.stage === "elision");
@@ -221,7 +221,7 @@ describe("integración: con el flag encendido la etapa ELIDE de verdad, sin move
     // segura, la elisión corre sin que la app pida `savings.elision`. Es el corazón
     // del ahorro-de-entrada-automático.
     const proveedor = new ProveedorEspia();
-    const capa = createSavingsLayer({ provider: proveedor, costModels: PRECIOS, devUnlicensed: true });
+    const capa = createSavingsLayer({ exactTokenizer: false, provider: proveedor, costModels: PRECIOS, devUnlicensed: true });
     const res = await capa.generate(peticionConMaterial()); // sin savings.elision
     const traza = res.report.traces.find((t) => t.stage === "elision");
     expect(traza).toBeDefined();
@@ -230,7 +230,7 @@ describe("integración: con el flag encendido la etapa ELIDE de verdad, sin move
   });
 
   it("con el opt-out explícito `savings:{elision:false}`, la etapa NO corre (kill-switch por petición)", async () => {
-    const capa = createSavingsLayer({
+    const capa = createSavingsLayer({ exactTokenizer: false,
       provider: new ProveedorEspia(),
       costModels: PRECIOS,
       devUnlicensed: true,
@@ -240,7 +240,7 @@ describe("integración: con el flag encendido la etapa ELIDE de verdad, sin move
   });
 
   it("con una herramienta de escritura, allowElision false → la etapa no corre", async () => {
-    const capa = createSavingsLayer({
+    const capa = createSavingsLayer({ exactTokenizer: false,
       provider: new ProveedorEspia(),
       costModels: PRECIOS,
       devUnlicensed: true,

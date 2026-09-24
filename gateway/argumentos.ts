@@ -51,13 +51,13 @@ export function mensajeDeFalloDeArranque(err: unknown, comando: string, puertoPe
   if (e.code === "EADDRINUSE") {
     return (
       `port ${puerto} is already in use (another gateway, or a terminal launched earlier?): ` +
-      `use --puerto ${puerto + 1} or stop the other process`
+      `use --port ${puerto + 1} or stop the other process`
     );
   }
   if (e.code === "EACCES") {
     return (
       `port ${puerto} cannot be opened: permission denied (EACCES; ports below 1024 ` +
-      `need privileges): use --puerto ${Math.max(1024, puerto)} or higher`
+      `need privileges): use --port ${Math.max(1024, puerto)} or higher`
     );
   }
   const detalle = err instanceof Error ? err.message : String(err);
