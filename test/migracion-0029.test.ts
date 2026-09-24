@@ -245,11 +245,78 @@ describe("0029 — lo propio: guard 0025, columnas, CHECK ≥ 0, reference_hits 
     expect(sql.indexOf("drop policy if exists reference_hits_read")).toBeLessThan(sql.indexOf("create policy reference_hits_read"));
   });
 
+  it("la descarga pagina por clave y la purga no barre la tabla: (org_id, day, request_id) y BRIN (day)", () => {
+    // El CSV del extracto se sirve por día con `request_id > último` (keyset),
+    // jamás por OFFSET: con millones de aciertos al mes OFFSET es cuadrático.
+    expect(sql).toContain(
+      "create index if not exists reference_hits_org_day_request on bvsala.reference_hits (org_id, day, request_id);",
+    );
+    // La retención borra `day < corte` en TODAS las orgs cada noche.
+    expect(sql).toContain("create index if not exists reference_hits_day_brin on bvsala.reference_hits using brin (day);");
+  });
+
   it("nunca DROP de función ni de tabla, y el grant va después de la RPC", () => {
     expect(sql.toLowerCase()).not.toContain("drop function");
     expect(sql.toLowerCase()).not.toContain("drop table");
     expect(sql.lastIndexOf("grant execute on function bvsala.ingest_usage_batch(uuid, jsonb) to service_role")).toBeGreaterThan(
       sql.indexOf("create or replace function bvsala.ingest_usage_batch"),
     );
+  });
+});
+
+/**
+ * EL SUELO Y EL CUADRE CON EL CSV (revisión adversaria de PR-A). La RPC suma
+ * registro a registro y Postgres redondea cada `excluded.*` a la escala de la
+ * columna, al más próximo. Un acierto por referencia vale micro-dólares (toda
+ * la entrada a precio cacheado) y las repeticiones son idénticas, así que con
+ * numeric(14,6) el error NO se compensa: gpt-5-nano con 100 tokens (5e-7 USD)
+ * se guardaría como 0,000001 — el doble — y la base comisionada superaría a la
+ * vez al suelo del SDK y a la suma del CSV que el extracto ofrece como prueba.
+ */
+describe("0029 — el dinero del carril llega INTACTO: misma escala y mismo valor en las tres tablas", () => {
+  /** El tipo declarado de una columna añadida o creada en 0029. */
+  function tipoDe(tabla: "usage_daily" | "usage_daily_by_model", columna: string): string {
+    const alter = sql.indexOf(`alter table bvsala.${tabla}\n  add column if not exists reference_requests`);
+    expect(alter, `el alter de ${tabla} tiene que estar`).toBeGreaterThan(0);
+    const fin = sql.indexOf(";", alter);
+    const m = new RegExp(`add column if not exists ${columna}\\s+(numeric\\(\\d+,\\d+\\))`).exec(sql.slice(alter, fin));
+    expect(m, `${tabla}.${columna} tiene que declararse con su numeric`).not.toBeNull();
+    return m![1]!;
+  }
+  const tipoEnHits = /\n  baseline_cost\s+(numeric\(\d+,\d+\))/.exec(sql)?.[1];
+
+  it("reference_hits.baseline_cost es numeric(20,10) (la granularidad 1e-10 de roundUsd del SDK)", () => {
+    expect(tipoEnHits).toBe("numeric(20,10)");
+  });
+
+  it("usage_daily.reference_baseline_cost / reference_actual_cost y usage_daily_by_model.reference_baseline_cost, la MISMA escala", () => {
+    expect(tipoDe("usage_daily", "reference_baseline_cost")).toBe(tipoEnHits);
+    expect(tipoDe("usage_daily", "reference_actual_cost")).toBe(tipoEnHits);
+    expect(tipoDe("usage_daily_by_model", "reference_baseline_cost")).toBe(tipoEnHits);
+    // Ninguna columna de dinero del carril en la escala de 6 decimales.
+    expect(sql).not.toMatch(/reference_(baseline|actual)_cost\s+numeric\(14,6\)/);
+  });
+
+  it("Σ reference_hits.baseline_cost = Σ usage_daily.reference_baseline_cost: la misma expresión, bajo la misma condición, en la misma vuelta", () => {
+    const rpc = cuerpoRpc(sql);
+    const valor = "coalesce((r->>'baselineCost')::numeric, 0)";
+    const usage = bloque(rpc, BLOQUE_USAGE);
+    const modelo = bloque(rpc, BLOQUE_MODELO);
+    // usage_daily y by_model: el baseline del registro, solo si es reference.
+    expect(usage).toContain(`case when r->>'basis' = 'reference' then ${valor} else 0 end,`);
+    expect(modelo).toContain(`case when r->>'basis' = 'reference' then ${valor} else 0 end,`);
+    // reference_hits: el MISMO valor, bajo la MISMA condición, sin más filtros.
+    const hits = modelo.slice(modelo.indexOf("if r->>'basis' = 'reference' then"));
+    expect(hits).toContain(`      ${valor}\n      )\n      on conflict (org_id, request_id) do nothing;`);
+    expect(hits.split("\n")[0]!.trim()).toBe("if r->>'basis' = 'reference' then");
+    // Y el recuento: una petición en reference_requests ⇔ una fila en reference_hits.
+    expect(usage).toContain("case when r->>'basis' = 'reference' then 1 else 0 end,");
+    // El `on conflict do nothing` de reference_hits no puede saltarse una fila
+    // que usage_daily sí sumó: la idempotencia (usage_ingest_seen + continue)
+    // va ANTES de las dos escrituras.
+    const visto = rpc.indexOf("insert into bvsala.usage_ingest_seen");
+    expect(visto).toBeGreaterThan(0);
+    expect(visto).toBeLessThan(rpc.indexOf(`\n    ${BLOQUE_USAGE}\n`));
+    expect(rpc.indexOf(`\n    ${BLOQUE_USAGE}\n`)).toBeLessThan(rpc.indexOf("insert into bvsala.reference_hits ("));
   });
 });
