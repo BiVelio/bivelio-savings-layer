@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, it, expect, vi, type MockInstance } fr
 
 import { arrancarGateway, type GatewayArrancado, type OpcionesGateway } from "../gateway/servidor.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
+import { testLicense } from "./helpers/test-license.js";
 
 /**
  * EL DIALECTO DE CHAT COMPLETIONS EN EL GATEWAY — lo que hace falta para medir
@@ -115,6 +116,8 @@ async function gateway(puertoUpstream: number, extra: Partial<OpcionesGateway> =
   const ingesta = await ingestaFalsa(lotes);
   const lineas: string[] = [];
   const gw = await arrancarGateway({
+    // Desde la verja de licencia (LICENSE §2) no hay gateway sin licencia verificada.
+    license: testLicense(),
     puerto: 0,
     upstream: `http://127.0.0.1:${puertoUpstream}`,
     serviceAccountKey: "bvk_test",
