@@ -1,7 +1,15 @@
 import { avisarUnaVez } from "../util/warn-once.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { isStrictCompatible } from "./openai-compatible.js";
-import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
+import { sseMessages } from "./sse.js";
+import type {
+  Provider,
+  ProviderRequest,
+  ProviderResponse,
+  ProviderStreamEvent,
+  ProviderStreamOptions,
+  ProviderUsage,
+} from "./types.js";
 
 /**
  * Anthropic Messages API adapter.
@@ -136,9 +144,177 @@ export class AnthropicProvider implements Provider {
 
   async generate(req: ProviderRequest): Promise<ProviderResponse> {
     const cuerpo = this.construirCuerpo(req);
-    const base = (this.opts.baseUrl ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
+    const response = await this.enviar(cuerpo.body);
 
-    const response = await this.fetchImpl(`${base}/messages`, {
+    if (!response.ok) {
+      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
+    }
+    return this.leer(response, req, cuerpo.contratoNativo);
+  }
+
+  /**
+   * Streaming variant of generate() over the Messages API. The final usage is
+   * read from the closing `message_delta` event (the output counter in
+   * `message_start` is provisional); a stream without it reports
+   * `usage.complete: false`, and with `requireUsage` it throws instead. A body
+   * that ends before the provider signalled completion throws. Requests with an
+   * output contract or declared deferrable are served by generate() and yielded
+   * as one text event.
+   */
+  async *generateStream(
+    req: ProviderRequest,
+    options: ProviderStreamOptions = {},
+  ): AsyncGenerator<ProviderStreamEvent, void, undefined> {
+    // Con contrato no se streamea: el contrato viaja como la herramienta
+    // `bvsala_contract` y su respuesta ES la respuesta final, así que en un
+    // stream aparecería como una llamada a herramienta. generate() ya sabe
+    // convertirla en texto; el pipeline, además, entrega esas peticiones enteras.
+    if (req.schema != null || req.deferrable === true) {
+      const r = await this.generate(req);
+      if (r.text !== "") yield { type: "text", delta: r.text };
+      yield { type: "done", response: r };
+      return;
+    }
+
+    const { body } = this.construirCuerpo(req);
+    body["stream"] = true;
+    const response = await this.enviar(body, options.signal);
+    if (!response.ok) {
+      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
+    }
+
+    const cuerpo = response.body as (ReadableStream<Uint8Array> & { getReader?: unknown }) | null;
+    const fuente: ReadableStream<Uint8Array> | string =
+      cuerpo && typeof cuerpo.getReader === "function" ? cuerpo : await response.text();
+
+    let text = "";
+    const bloques = new Map<number, { tipo: string; id?: string; name?: string; json: string }>();
+    let usoInicio: UsoAnthropic | undefined;
+    let usoDelta: UsoAnthropic | undefined;
+    let vioDelta = false;
+    let vioStop = false;
+    let stopReason: string | undefined;
+
+    for await (const msg of sseMessages(fuente)) {
+      let data: EventoAnthropic;
+      try {
+        data = JSON.parse(msg.data) as EventoAnthropic;
+      } catch {
+        continue;
+      }
+      if (data === null || typeof data !== "object") continue;
+      const tipo = msg.event !== "message" ? msg.event : (data.type ?? msg.event);
+
+      if (tipo === "message_start") {
+        usoInicio = data.message?.usage ?? usoInicio;
+      } else if (tipo === "content_block_start") {
+        const b = data.content_block;
+        if (typeof data.index === "number" && b) {
+          bloques.set(data.index, {
+            tipo: b.type ?? "",
+            ...(typeof b.id === "string" ? { id: b.id } : {}),
+            ...(typeof b.name === "string" ? { name: b.name } : {}),
+            json: "",
+          });
+        }
+      } else if (tipo === "content_block_delta") {
+        const d = data.delta;
+        if (d?.type === "text_delta" && typeof d.text === "string" && d.text !== "") {
+          text += d.text;
+          yield { type: "text", delta: d.text };
+        } else if (d?.type === "input_json_delta" && typeof d.partial_json === "string") {
+          const bloque = typeof data.index === "number" ? bloques.get(data.index) : undefined;
+          if (bloque) bloque.json += d.partial_json;
+        }
+        // thinking, signature, citations…: no son texto de la respuesta.
+      } else if (tipo === "message_delta") {
+        vioDelta = true;
+        stopReason = data.delta?.stop_reason ?? stopReason;
+        if (data.usage) usoDelta = fusionarUso(usoDelta, data.usage);
+      } else if (tipo === "message_stop") {
+        vioStop = true;
+        break;
+      } else if (tipo === "error") {
+        throw new Error(`provider stream error: ${data.error?.type}: ${data.error?.message}`);
+      }
+      // `ping` y cualquier evento nuevo se ignoran.
+    }
+
+    // Sin `message_delta` ni `message_stop` el proveedor no terminó: el cuerpo
+    // se cortó. Media respuesta no se entrega como si fuera entera.
+    if (!vioStop && !vioDelta) {
+      throw new Error("provider stream ended before completion (no message_delta)");
+    }
+
+    // `message_start` trae la entrada y un `output_tokens` provisional (un
+    // marcador); `message_delta` trae la salida final y pisa los escalares. El
+    // desglose de `cache_creation` por TTL se FUSIONA: un delta que no lo traiga
+    // no puede borrar el de `message_start`.
+    const merged = fusionarUso(usoInicio, usoDelta);
+    let usage: ProviderUsage;
+    if (!vioDelta) {
+      usage = { inputTokens: 0, outputTokens: 0, complete: false };
+    } else {
+      const lecturaCache = merged.cache_read_input_tokens;
+      const escrituraCache = merged.cache_creation_input_tokens;
+      // Igual que en leer(): `input_tokens` es SOLO el resto no cacheado.
+      usage = {
+        inputTokens: (merged.input_tokens ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0),
+        outputTokens: usoDelta?.output_tokens ?? 0,
+        ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
+        ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
+        ...(typeof merged.input_tokens !== "number" || typeof usoDelta?.output_tokens !== "number"
+          ? { complete: false }
+          : {}),
+      };
+    }
+    if (this.opts.requireUsage && usage.complete === false) {
+      throw new Error(
+        mensajeDeUsoIncompleto(
+          vioDelta ? merged.input_tokens : undefined,
+          vioDelta ? usoDelta?.output_tokens : undefined,
+        ),
+      );
+    }
+
+    // `input` llega troceado como JSON parcial; se normaliza con parse+stringify
+    // para que `arguments` sea exactamente lo que generate() habría devuelto
+    // (allí el `input` ya viene parseado y se serializa). Un JSON que no parsea
+    // (un corte por `max_tokens`) se entrega crudo: `finishReason` dirá `length`.
+    const toolCalls = [...bloques.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([, b]) => b)
+      .filter((b) => b.tipo === "tool_use" && b.name !== HERRAMIENTA_DE_CONTRATO)
+      .map((b) => ({
+        ...(b.id ? { id: b.id } : {}),
+        name: b.name ?? "",
+        arguments: normalizarArgumentos(b.json),
+      }))
+      .filter((tc) => tc.name !== "");
+
+    const servedServiceTier =
+      typeof merged.service_tier === "string" && merged.service_tier !== ""
+        ? merged.service_tier
+        : undefined;
+
+    yield {
+      type: "done",
+      response: {
+        text,
+        ...(toolCalls.length > 0 ? { toolCalls } : {}),
+        ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
+        ...(servedServiceTier ? { servedServiceTier } : {}),
+        usage,
+        structuredNatively: false,
+        raw: { usage: merged, stop_reason: stopReason },
+      },
+    };
+  }
+
+  // El POST a `/messages`, compartido por generate() y generateStream().
+  private async enviar(body: Record<string, unknown>, signal?: AbortSignal): Promise<Response> {
+    const base = (this.opts.baseUrl ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
+    return await this.fetchImpl(`${base}/messages`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -146,13 +322,9 @@ export class AnthropicProvider implements Provider {
         ...(this.opts.apiKey ? { "x-api-key": this.opts.apiKey } : {}),
         ...this.opts.headers,
       },
-      body: JSON.stringify(cuerpo.body),
+      body: JSON.stringify(body),
+      ...(signal ? { signal } : {}),
     });
-
-    if (!response.ok) {
-      throw new Error(`provider ${response.status}: ${await safeText(response)}`);
-    }
-    return this.leer(response, req, cuerpo.contratoNativo);
   }
 
   // Traduce una `ProviderRequest` al dialecto de la API de Mensajes.
@@ -593,10 +765,7 @@ export class AnthropicProvider implements Provider {
     const entradaAusente = typeof usage.input_tokens !== "number";
     const salidaAusente = typeof usage.output_tokens !== "number";
     if (this.opts.requireUsage && (entradaAusente || salidaAusente)) {
-      throw new Error(
-        `provider returned incomplete usage (input=${usage.input_tokens ?? "absent"}, ` +
-          `output=${usage.output_tokens ?? "absent"}); cannot measure cost.`,
-      );
+      throw new Error(mensajeDeUsoIncompleto(usage.input_tokens, usage.output_tokens));
     }
 
     // El tier SERVIDO viaja aquí dentro de `usage`, no en la raíz como en OpenAI,
@@ -621,6 +790,9 @@ export class AnthropicProvider implements Provider {
         // un sobrecoste como si fuera un descuento.
         ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
         ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
+        // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
+        // Con el usage completo la clave NO aparece.
+        ...(entradaAusente || salidaAusente ? { complete: false } : {}),
       },
       structuredNatively: req.schema != null && contratoNativo,
       raw: json,
@@ -746,6 +918,59 @@ interface RespuestaAnthropic {
     /** "standard" | "priority" | "batch" — se trata como conjunto abierto. */
     service_tier?: string;
   };
+}
+
+// El `usage` de la API de Mensajes, tal como llega en `message_start`,
+// `message_delta` o la respuesta JSON.
+interface UsoAnthropic {
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_read_input_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number } | null;
+  service_tier?: string;
+}
+
+// Un evento SSE de la API de Mensajes, con los campos que se leen.
+interface EventoAnthropic {
+  type?: string;
+  index?: number;
+  message?: { usage?: UsoAnthropic };
+  content_block?: { type?: string; id?: string; name?: string };
+  delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null };
+  usage?: UsoAnthropic;
+  error?: { type?: string; message?: string };
+}
+
+// Fusiona dos `usage`: el segundo pisa los escalares que TRAE (un null no borra
+// lo que dijo el primero) y `cache_creation` se fusiona clave a clave, igual que
+// el observador SSE del gateway.
+function fusionarUso(a: UsoAnthropic | undefined, b: UsoAnthropic | undefined): UsoAnthropic {
+  const presentes = Object.fromEntries(
+    Object.entries(b ?? {}).filter(([, v]) => v !== null && v !== undefined),
+  ) as UsoAnthropic;
+  const cache_creation =
+    a?.cache_creation || b?.cache_creation
+      ? { ...(a?.cache_creation ?? {}), ...(b?.cache_creation ?? {}) }
+      : undefined;
+  return { ...(a ?? {}), ...presentes, ...(cache_creation ? { cache_creation } : {}) };
+}
+
+// `partial_json` concatenado -> la cadena que generate() habría producido.
+function normalizarArgumentos(json: string): string {
+  try {
+    return JSON.stringify(JSON.parse(json === "" ? "{}" : json));
+  } catch {
+    return json;
+  }
+}
+
+// El mismo texto en generate() y en generateStream().
+function mensajeDeUsoIncompleto(input: number | undefined, output: number | undefined): string {
+  return (
+    `provider returned incomplete usage (input=${input ?? "absent"}, ` +
+    `output=${output ?? "absent"}); cannot measure cost.`
+  );
 }
 
 async function safeText(response: Response): Promise<string> {

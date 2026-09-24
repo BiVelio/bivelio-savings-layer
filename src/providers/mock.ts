@@ -1,7 +1,7 @@
 import type { JsonSchema } from "../contracts/types.js";
 import { marcarDemo } from "./demo-brand.js";
 import { heuristicEstimator } from "../tokenizer/estimator.js";
-import type { Provider, ProviderRequest, ProviderResponse } from "./types.js";
+import type { Provider, ProviderRequest, ProviderResponse, ProviderStreamEvent } from "./types.js";
 
 /**
  * Deterministic mock provider.
@@ -35,6 +35,8 @@ export interface MockProviderOptions {
   data?: unknown;
   /** Simulated provider-cached input tokens (ledger 4). */
   cachedInputTokens?: number;
+  /** Characters per text event in generateStream (default 8). */
+  streamChunkChars?: number;
 }
 
 export class MockProvider implements Provider {
@@ -85,6 +87,17 @@ export class MockProvider implements Provider {
       },
       structuredNatively,
     };
+  }
+
+  /**
+   * Streaming variant of generate(): the same answer, cut into text events of
+   * `streamChunkChars` characters, then one `done` with the generate() response.
+   */
+  async *generateStream(req: ProviderRequest): AsyncGenerator<ProviderStreamEvent, void, undefined> {
+    const r = await this.generate(req);
+    const n = Math.max(1, this.options.streamChunkChars ?? 8);
+    for (let i = 0; i < r.text.length; i += n) yield { type: "text", delta: r.text.slice(i, i + n) };
+    yield { type: "done", response: r };
   }
 }
 
