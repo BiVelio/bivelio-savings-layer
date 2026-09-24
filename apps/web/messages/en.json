@@ -322,14 +322,14 @@
       "eyebrow": "Get started",
       "heading": "Four steps. Your prompts never touch our servers.",
       "step1": "<b>1 · Get your license key</b> — the SDK is public but fail-closed; it only runs with a valid key. Passed as <code>licenseKey</code>.",
-      "step2": "<b>2 · Create & verify a service-account key</b> — a machine credential (<code>bvk_…</code>) that does two jobs: it reports counts-only usage (your seats & savings), and it lets the SDK collect your <b>renewed license by itself</b> every billing period. Separate from the license key; only its hash is stored. Create one, then <b>Test my key</b> to confirm it's live.",
+      "step2": "<b>2 · Create & verify a service-account key</b> — a machine credential (<code>bvk_…</code>) that does two jobs: it reports counts-only usage (your seats & savings), and it lets the SDK and the gateway collect your <b>renewed license by themselves</b> every billing period. Separate from the license key; only its hash is stored. Create one, then <b>Test my key</b> to confirm it's live.",
       "currentKey": "current service-account key",
       "noneYet": "none yet — click above",
       "shownOnce": "shown once at creation — only the prefix is stored.",
       "renewalNote": "<b>Keep this key in your deployment.</b> Your license expires at the end of each billing period and the renewal mints a new one. With this key the SDK collects it and swaps it in without a restart. Without it nobody collects it, so someone has to paste the new key by hand every period — and if nobody does, the SDK stops once the grace period ends, even though the subscription is paid and up to date.",
       "step3": "<b>3 · Install</b> — public on npm, no token, no config.",
       "step4": "<b>4 · Wire your provider & read the SavingsReport</b>",
-      "gatewayNote": "<b>Coding terminal instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. Also <code>bvsala codex</code>, <code>bvsala goose</code> and <code>bvsala qwen</code>; <code>bvsala doctor</code> prints the exact block for the rest. It uses the same service key from step 2 — measuring needs no license key.",
+      "gatewayNote": "<b>Coding terminal instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. Also <code>bvsala codex</code>, <code>bvsala goose</code> and <code>bvsala qwen</code>; <code>bvsala doctor</code> prints the exact block for the rest. It uses the same service key from step 2 and collects your license by itself — like the SDK, it does not start without an active license.",
       "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable."
     },
     "accountPlanStrip": {
@@ -777,7 +777,7 @@
       "medidaPie": "of measured spend",
       "anatomiaNota": "Measured with the meter over {peticiones} real Claude Code requests, against the provider's own counters ({fecha}). The skill's own effect will be published once A/B-measured — never before.",
       "ccNota": "One command: installs into ~/.claude/skills and activates by itself when the conversation turns to limits or saving tokens.",
-      "cxNota": "Codex has no skills: the same discipline ships as a marked block in your AGENTS.md (~/.codex) — always on; delete the block to turn it off. Your AGENTS.md outside the marks is never touched. Works with ChatGPT accounts and API keys, and under bvsala codex its effect is measured.",
+      "cxNota": "Codex has no skills: the same discipline ships as a marked block in your AGENTS.md (~/.codex) — always on; delete the block to turn it off. Your AGENTS.md outside the marks is never touched. Works with ChatGPT accounts and API keys, and under bvsala codex (with a license) its effect is measured.",
       "aiDescargar": "Download savings-mode.zip",
       "aiCuenta": "The download asks for your (free) Savings account: adoption becomes a real metric, with identity — the skill itself carries no telemetry at all.",
       "aiPaso1": "On claude.ai enable “Code execution and file creation” (Settings → Capabilities).",
@@ -796,7 +796,7 @@
       "eyebrow": "New · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
       "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
-      "note": "The gateway measures every request. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
+      "note": "The gateway measures every request and, like the SDK, runs only with an active license: it collects it with your service key and verifies its signature on your machine. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
       "cta": "See how it works →"
     },
     "integrate": {
@@ -1017,7 +1017,7 @@
     "caseClaudeSub": "claude.ai, free or paid",
     "caseClaudeBody": "Flat subscription: no token invoice to meter — but there are caps (the five-hour window and the weekly one). That is exactly what the savings-mode skill is for: free, uploaded to claude.ai in a minute, attacking the two masses that burn cap. Its effect will be published once measured — never before.",
     "caseCodeSub": "terminal, with an API key",
-    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. Savings there are the next phase — first we measure for real.",
+    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: with your BiVelio license, “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. With PRO it also shortens the cache-write TTL while the session stays hot: a saving computed on your provider's own token count, never on an estimate.",
     "caseAppName": "Your application",
     "caseAppSub": "your code + your API key",
     "caseAppBody": "The case BV‑SALA exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in three steps: package, license, and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",

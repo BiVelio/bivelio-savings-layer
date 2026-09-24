@@ -322,14 +322,14 @@
       "eyebrow": "Commencer",
       "heading": "Quatre étapes. Vos prompts ne touchent jamais nos serveurs.",
       "step1": "<b>1 · Obtenez votre clé de licence</b> — le SDK est public mais fail-closed ; il ne fonctionne qu'avec une clé valide. Transmise comme <code>licenseKey</code>.",
-      "step2": "<b>2 · Créez et vérifiez une clé de compte de service</b> — un identifiant machine (<code>bvk_…</code>) qui fait deux choses : il rapporte l'utilisation par décomptes uniquement (vos sièges et vos économies), et il permet au SDK de récupérer <b>tout seul votre licence renouvelée</b> à chaque période de facturation. Distincte de la clé de licence ; seul son hachage est stocké. Créez-en une, puis <b>Tester ma clé</b> pour confirmer qu'elle est active.",
+      "step2": "<b>2 · Créez et vérifiez une clé de compte de service</b> — un identifiant machine (<code>bvk_…</code>) qui fait deux choses : il rapporte l'utilisation par décomptes uniquement (vos sièges et vos économies), et il permet au SDK et à la passerelle de récupérer <b>tout seuls votre licence renouvelée</b> à chaque période de facturation. Distincte de la clé de licence ; seul son hachage est stocké. Créez-en une, puis <b>Tester ma clé</b> pour confirmer qu'elle est active.",
       "currentKey": "clé de compte de service actuelle",
       "noneYet": "aucune pour l'instant — cliquez ci-dessus",
       "shownOnce": "affichée une seule fois à la création — seul le préfixe est stocké.",
       "renewalNote": "<b>Gardez cette clé dans votre déploiement.</b> Votre licence expire à la fin de chaque période de facturation et le renouvellement en émet une nouvelle. Avec cette clé, le SDK la récupère et la remplace sans redémarrage. Sans elle, personne ne la récupère : quelqu'un doit alors coller la nouvelle clé à la main à chaque période — et si personne ne le fait, le SDK s'arrête dès la fin de la période de grâce, alors même que l'abonnement est payé et à jour.",
       "step3": "<b>3 · Installez</b> — public sur npm, sans token, sans configuration.",
       "step4": "<b>4 · Connectez votre fournisseur et lisez le SavingsReport</b>",
-      "gatewayNote": "<b>Terminal de code plutôt qu'une app ?</b> Le même paquet embarque une passerelle de mesure locale : <code>bvsala claude</code> lance Claude Code à travers elle et ce panneau affiche la dépense, token par token. Aussi <code>bvsala codex</code>, <code>bvsala goose</code> et <code>bvsala qwen</code> ; <code>bvsala doctor</code> imprime le bloc exact du reste. Elle utilise la même clé de service de l'étape 2 — mesurer ne demande pas de clé de licence.",
+      "gatewayNote": "<b>Terminal de code plutôt qu'une app ?</b> Le même paquet embarque une passerelle de mesure locale : <code>bvsala claude</code> lance Claude Code à travers elle et ce panneau affiche la dépense, token par token. Aussi <code>bvsala codex</code>, <code>bvsala goose</code> et <code>bvsala qwen</code> ; <code>bvsala doctor</code> imprime le bloc exact du reste. Elle utilise la même clé de service de l'étape 2 et récupère votre licence toute seule — comme le SDK, elle ne démarre pas sans licence active.",
       "finalNote": "C'est tout. Pas de licence valide → <code>generate()</code> refuse. Si votre forfait est annulé, le SDK s'arrête en ~15 min via <code>licenseServerUrl</code> — sans redémarrage, et il ne bloque jamais votre production si nous sommes injoignables."
     },
     "accountPlanStrip": {
@@ -777,7 +777,7 @@
       "medidaPie": "de la dépense mesurée",
       "anatomiaNota": "Mesuré avec le compteur sur {peticiones} requêtes réelles de Claude Code, contre les compteurs du fournisseur ({fecha}). L'effet du skill lui-même sera publié une fois mesuré en A/B — jamais avant.",
       "ccNota": "Une seule commande : s'installe dans ~/.claude/skills et s'active seul quand la conversation parle de limites ou d'économiser des tokens.",
-      "cxNota": "Codex n'a pas de skills : la même discipline voyage comme bloc balisé de votre AGENTS.md (~/.codex) — toujours active ; supprimez le bloc pour l'éteindre. Votre AGENTS.md hors des balises n'est jamais touché. Fonctionne avec compte ChatGPT et clé API, et sous bvsala codex son effet est mesuré.",
+      "cxNota": "Codex n'a pas de skills : la même discipline voyage comme bloc balisé de votre AGENTS.md (~/.codex) — toujours active ; supprimez le bloc pour l'éteindre. Votre AGENTS.md hors des balises n'est jamais touché. Fonctionne avec compte ChatGPT et clé API, et sous bvsala codex (avec une licence) son effet est mesuré.",
       "aiDescargar": "Télécharger savings-mode.zip",
       "aiCuenta": "Le téléchargement demande votre compte Savings (gratuit) : l'adoption devient une métrique réelle, avec identité — le skill lui-même n'embarque aucune télémétrie.",
       "aiPaso1": "Sur claude.ai, activez « Code execution and file creation » (Settings → Capabilities).",
@@ -796,7 +796,7 @@
       "eyebrow": "Nouveau · terminaux de code",
       "title": "Claude Code avec une clé d'API ? Voyez la dépense réelle, token par token.",
       "body": "Une seule commande place un compteur local devant votre terminal. Aucun code à toucher, rien à configurer — et vos prompts ne quittent jamais votre machine : seuls les comptages et le coût arrivent dans ce panneau.",
-      "note": "La passerelle mesure chaque requête. Avec une licence PRO, elle applique aussi un levier par défaut : elle raccourcit le TTL d'écriture du cache tant que votre session reste chaude — cela change le prix, jamais le contenu que lit le modèle. Les autres leviers restent éteints tant que vous ne les activez pas. Le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. Il fonctionne aussi avec Codex CLI, Goose et Qwen Code — et bvsala doctor imprime la configuration exacte des autres.",
+      "note": "La passerelle mesure chaque requête et, comme le SDK, ne fonctionne qu'avec une licence active : elle la récupère avec votre clé de service et vérifie sa signature sur votre machine. Avec une licence PRO, elle applique aussi un levier par défaut : elle raccourcit le TTL d'écriture du cache tant que votre session reste chaude — cela change le prix, jamais le contenu que lit le modèle. Les autres leviers restent éteints tant que vous ne les activez pas. Le skill savings-mode est disponible pour vos plafonds, son effet restant à mesurer. Il fonctionne aussi avec Codex CLI, Goose et Qwen Code — et bvsala doctor imprime la configuration exacte des autres.",
       "cta": "Voir comment ça marche →"
     },
     "integrate": {
@@ -1017,7 +1017,7 @@
     "caseClaudeSub": "claude.ai, gratuit ou payant",
     "caseClaudeBody": "Abonnement fixe : pas de facture de tokens à mesurer — mais des plafonds (la fenêtre de cinq heures et l'hebdomadaire). C'est exactement pour cela qu'existe le skill savings-mode : gratuit, téléversé sur claude.ai en une minute, contre les deux masses qui brûlent le plafond. Son effet sera publié une fois mesuré — jamais avant.",
     "caseCodeSub": "terminal, avec clé d'API",
-    "caseCodeBody": "Avec l'abonnement, la mensualité est fixe — mais plafonnée : le même skill s'installe en une seule commande et étire le même plafond hebdomadaire. Avec une clé API, il y a une vraie facture de tokens — et le compteur tourne déjà : « bvsala claude » lance Claude Code via la passerelle locale et votre dépense apparaît dans le panneau, token par token, sans toucher une ligne de code. L'économie, là, est la phase suivante — d'abord on mesure pour de vrai.",
+    "caseCodeBody": "Avec l'abonnement, la mensualité est fixe — mais plafonnée : le même skill s'installe en une seule commande et étire le même plafond hebdomadaire. Avec une clé API, il y a une vraie facture de tokens — et le compteur tourne déjà : avec votre licence BiVelio, « bvsala claude » lance Claude Code via la passerelle locale et votre dépense apparaît dans le panneau, token par token, sans toucher une ligne de code. Avec PRO, elle raccourcit aussi le TTL d'écriture du cache tant que la session reste chaude : une économie calculée sur le décompte de tokens de votre propre fournisseur, jamais sur une estimation.",
     "caseAppName": "Votre application",
     "caseAppSub": "votre code + votre clé d'API",
     "caseAppBody": "Le cas pour lequel BV‑SALA existe. Votre app appelle l'API avec votre clé, le fournisseur facture chaque token, et la couche s'installe en trois étapes : paquet, licence et encapsulation de l'appel. Dès la première requête, elle renvoie un <b>SavingsReport</b> avec l'économie, séparée en mesuré et estimé.",

@@ -2,18 +2,21 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
 /**
- * La copia del panel sobre la pasarela no promete lo que el servidor ya no da.
+ * La copia pública del gateway dice lo mismo que el binario: sin licencia activa
+ * no arranca.
  *
- * Desde que la org sin licencia ni suscripción recibe 402 en la ingesta (no hay
- * free tier), «bvsala claude» no mide nada a quien no ha pagado. El verificador
- * del panel —lo que se puede comprobar ANTES de pagar— se lo ofrecía a quien
- * solo usa suscripción de chat, así que `onlyChatBody` deja de ofrecerlo en los
- * 12 idiomas. Es cierto con cualquier versión del paquete, por eso va con el
- * cambio de servidor y no espera a la publicación npm.
+ * Hasta la versión con la verja de licencia, el panel prometía «para medir no hace
+ * falta clave de licencia» y ofrecía `bvsala claude` a quien solo usa suscripción.
+ * Las dos frases pasan a ser falsas el día que npm sirve esa versión, y en 12
+ * idiomas: quien las lea, instale y exporte solo la `bvk_` de una org sin licencia
+ * se encuentra un exit 1 que la web le había dicho que no existía.
  *
- * El resto de textos de la pasarela (gatewayNote, landing.gateway.note,
- * caseCodeBody, cxNota, step2) cambia cuando la versión que verja por licencia
- * esté publicada, y sus comprobaciones se añaden aquí entonces.
+ * Este test fija las seis cadenas que cambian (§6.12 de la especificación del
+ * frente 3) y caza lo que más fácil se escapa en una traducción a mano: un idioma
+ * que se quedó con el texto inglés, o con la frase vieja.
+ *
+ * Mismo cargador que `parity.test.ts`: la paridad de claves, etiquetas y
+ * placeholders ya la vigila ese test; aquí solo va el contenido.
  */
 
 const DIR = new URL(".", import.meta.url).pathname;
@@ -35,22 +38,66 @@ const cargar = (loc: string): Plano =>
 
 const LOCALES = readdirSync(DIR)
   .filter((f) => f.endsWith(".json"))
-  .map((f) => f.slice(0, -5));
+  .map((f) => f.slice(0, -5))
+  .sort();
 
+const GATEWAY_NOTE = "dashboard.installLicensePanel.gatewayNote";
+const LANDING_NOTE = "landing.gateway.note";
+const CASE_CODE = "howItWorks.caseCodeBody";
 const ONLY_CHAT = "dashboard.projectorVerifier.onlyChatBody";
+const CX_NOTA = "landing.skill.cxNota";
+const STEP2 = "dashboard.installLicensePanel.step2";
 
-describe("copia de la pasarela: sin free tier", () => {
-  const en = cargar("en");
+/** Las seis claves que cambian con la verja de licencia del gateway. */
+const CAMBIADAS = [GATEWAY_NOTE, LANDING_NOTE, CASE_CODE, ONLY_CHAT, CX_NOTA, STEP2] as const;
 
-  it("onlyChatBody no ofrece «bvsala claude» en ningún idioma", () => {
-    for (const loc of LOCALES) {
-      expect(cargar(loc)[ONLY_CHAT], loc).not.toContain("bvsala claude");
+const en = cargar("en");
+const es = cargar("es");
+
+describe("copia pública: el gateway no arranca sin licencia activa", () => {
+  it("están los 12 locales (si falta alguno, este test no protege nada)", () => {
+    expect(LOCALES).toEqual(["ca", "de", "en", "es", "fr", "id", "it", "nl", "pl", "pt", "tr", "vi"]);
+  });
+
+  it("las seis claves existen y no están vacías en los 12 locales", () => {
+    const faltan = LOCALES.flatMap((loc) => {
+      const d = cargar(loc);
+      return CAMBIADAS.filter((k) => !d[k] || d[k]!.trim() === "").map((k) => `${loc}: ${k}`);
+    });
+    expect(faltan).toEqual([]);
+  });
+
+  describe("ningún idioma se quedó con el texto inglés", () => {
+    for (const loc of LOCALES.filter((l) => l !== "en")) {
+      it(loc, () => {
+        const d = cargar(loc);
+        expect(CAMBIADAS.filter((k) => d[k] === en[k])).toEqual([]);
+      });
     }
   });
 
-  it("onlyChatBody está traducido: cada idioma distinto de en tiene su propio texto", () => {
-    for (const loc of LOCALES.filter((l) => l !== "en")) {
-      expect(cargar(loc)[ONLY_CHAT], loc).not.toBe(en[ONLY_CHAT]);
-    }
+  it("en · gatewayNote: exige licencia activa y ya no dice que medir no la necesita", () => {
+    expect(en[GATEWAY_NOTE]).not.toMatch(/needs no license/i);
+    expect(en[GATEWAY_NOTE]).toMatch(/active license/);
+  });
+
+  it("es · gatewayNote: exige licencia activa y ya no dice que no hace falta", () => {
+    expect(es[GATEWAY_NOTE]).not.toMatch(/no hace falta clave de licencia/);
+    expect(es[GATEWAY_NOTE]).toMatch(/licencia activa/);
+  });
+
+  // A quien solo usa suscripción ya no se le ofrece el gateway: ese tráfico no
+  // tiene factura por tokens, así que no acredita ahorro y la licencia por asiento
+  // aplica igual. Lo que se le ofrece es el skill, que es gratis.
+  it("onlyChatBody no ofrece `bvsala claude` en ningún locale", () => {
+    const conOferta = LOCALES.filter((loc) => cargar(loc)[ONLY_CHAT]!.includes("bvsala claude"));
+    expect(conOferta).toEqual([]);
+  });
+
+  // «El ahorro ahí es la siguiente fase» ya era falso: con PRO, la rebaja de TTL
+  // acredita ahorro medido en el tráfico con clave de API.
+  it("caseCodeBody ya no anuncia el ahorro como «la siguiente fase»", () => {
+    expect(en[CASE_CODE]).not.toContain("next phase");
+    expect(es[CASE_CODE]).not.toContain("siguiente fase");
   });
 });

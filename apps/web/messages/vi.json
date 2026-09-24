@@ -322,14 +322,14 @@
       "eyebrow": "Bắt đầu",
       "heading": "Bốn bước. Prompt của bạn không bao giờ chạm tới máy chủ của chúng tôi.",
       "step1": "<b>1 · Nhận khóa cấp phép của bạn</b> — SDK là mã nguồn công khai nhưng fail-closed; nó chỉ chạy với một khóa hợp lệ. Được truyền dưới dạng <code>licenseKey</code>.",
-      "step2": "<b>2 · Tạo và xác minh khóa tài khoản dịch vụ</b> — một thông tin xác thực máy (<code>bvk_…</code>) làm hai việc: nó báo cáo mức sử dụng chỉ-đếm-số-lượng (số ghế và mức tiết kiệm của bạn), và nó cho phép SDK <b>tự mình lấy giấy phép đã gia hạn</b> của bạn mỗi kỳ thanh toán. Tách biệt với khóa cấp phép; chỉ hash của nó được lưu trữ. Tạo một khóa, rồi nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
+      "step2": "<b>2 · Tạo và xác minh khóa tài khoản dịch vụ</b> — một thông tin xác thực máy (<code>bvk_…</code>) làm hai việc: nó báo cáo mức sử dụng chỉ-đếm-số-lượng (số ghế và mức tiết kiệm của bạn), và nó cho phép SDK và gateway <b>tự lấy giấy phép đã gia hạn</b> của bạn mỗi kỳ thanh toán. Tách biệt với khóa cấp phép; chỉ hash của nó được lưu trữ. Tạo một khóa, rồi nhấn <b>Kiểm tra khóa của tôi</b> để xác nhận nó đang hoạt động.",
       "currentKey": "khóa tài khoản dịch vụ hiện tại",
       "noneYet": "chưa có — nhấp vào ở trên",
       "shownOnce": "chỉ hiển thị một lần khi tạo — chỉ tiền tố được lưu trữ.",
       "renewalNote": "<b>Hãy giữ khóa này trong bản triển khai của bạn.</b> Giấy phép của bạn hết hạn vào cuối mỗi kỳ thanh toán và lần gia hạn sẽ cấp một giấy phép mới. Với khóa này, SDK sẽ tự lấy giấy phép mới và thay nó vào mà không cần khởi động lại. Không có nó thì không ai lấy giấy phép mới cả, nên mỗi kỳ phải có người dán khóa mới bằng tay — và nếu không ai làm, SDK sẽ dừng ngay khi thời gian ân hạn kết thúc, dù gói đăng ký đã được thanh toán đầy đủ và vẫn còn hiệu lực.",
       "step3": "<b>3 · Cài đặt</b> — công khai trên npm, không token, không cấu hình.",
       "step4": "<b>4 · Kết nối nhà cung cấp của bạn và đọc SavingsReport</b>",
-      "gatewayNote": "<b>Terminal lập trình thay vì một ứng dụng?</b> Cùng gói này có sẵn một gateway đo cục bộ: <code>bvsala claude</code> chạy Claude Code qua nó và bảng điều khiển này hiển thị chi tiêu, từng token một. Còn có <code>bvsala codex</code>, <code>bvsala goose</code> và <code>bvsala qwen</code>; <code>bvsala doctor</code> in ra khối chính xác cho phần còn lại. Nó dùng cùng khóa dịch vụ ở bước 2 — đo không cần khóa giấy phép.",
+      "gatewayNote": "<b>Terminal lập trình thay vì một ứng dụng?</b> Cùng gói này có sẵn một gateway đo cục bộ: <code>bvsala claude</code> chạy Claude Code qua nó và bảng điều khiển này hiển thị chi tiêu, từng token một. Còn có <code>bvsala codex</code>, <code>bvsala goose</code> và <code>bvsala qwen</code>; <code>bvsala doctor</code> in ra khối chính xác cho phần còn lại. Nó dùng cùng khóa dịch vụ ở bước 2 và tự lấy giấy phép của bạn — giống như SDK, nó không khởi động nếu không có giấy phép đang hoạt động.",
       "finalNote": "Chỉ vậy thôi. Không có giấy phép hợp lệ → <code>generate()</code> sẽ từ chối. Nếu gói của bạn bị hủy, SDK sẽ dừng trong khoảng 15 phút thông qua <code>licenseServerUrl</code> — không cần khởi động lại, và nó không bao giờ làm hỏng môi trường sản xuất của bạn nếu chúng tôi không thể kết nối được."
     },
     "accountPlanStrip": {
@@ -777,7 +777,7 @@
       "medidaPie": "của chi tiêu đo được",
       "anatomiaNota": "Đo bằng bộ đo trên {peticiones} yêu cầu Claude Code thực, so với bộ đếm của nhà cung cấp ({fecha}). Hiệu quả của chính skill sẽ được công bố khi đo xong bằng A/B — không bao giờ trước đó.",
       "ccNota": "Một lệnh duy nhất: cài vào ~/.claude/skills và tự kích hoạt khi cuộc trò chuyện nói về giới hạn hoặc tiết kiệm token.",
-      "cxNota": "Codex không có skill: cùng kỷ luật đó đi dưới dạng khối được đánh dấu trong AGENTS.md của bạn (~/.codex) — luôn bật; xóa khối để tắt. AGENTS.md của bạn ngoài các dấu không bao giờ bị đụng tới. Hoạt động với tài khoản ChatGPT và API key, và dưới bvsala codex hiệu quả của nó được đo.",
+      "cxNota": "Codex không có skill: cùng kỷ luật đó đi dưới dạng khối được đánh dấu trong AGENTS.md của bạn (~/.codex) — luôn bật; xóa khối để tắt. AGENTS.md của bạn ngoài các dấu không bao giờ bị đụng tới. Hoạt động với tài khoản ChatGPT và API key, và dưới bvsala codex (có giấy phép) hiệu quả của nó được đo.",
       "aiDescargar": "Tải savings-mode.zip",
       "aiCuenta": "Việc tải xuống yêu cầu tài khoản Savings (miễn phí) của bạn: nhờ đó mức độ sử dụng là một chỉ số thật, có danh tính — bản thân skill không chứa bất kỳ telemetry nào.",
       "aiPaso1": "Trên claude.ai, bật “Code execution and file creation” (Settings → Capabilities).",
@@ -796,7 +796,7 @@
       "eyebrow": "Mới · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
       "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn. Không sửa mã, không cấu hình — và prompt của bạn không bao giờ rời khỏi máy: bảng điều khiển này chỉ nhận số đếm và chi phí.",
-      "note": "Gateway đo lường mọi yêu cầu. Với giấy phép PRO, nó còn áp dụng mặc định một đòn bẩy: rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn vẫn còn nóng — điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
+      "note": "Gateway đo lường mọi yêu cầu và, giống như SDK, chỉ chạy khi có giấy phép đang hoạt động: nó lấy giấy phép bằng khóa dịch vụ của bạn và xác minh chữ ký ngay trên máy của bạn. Với giấy phép PRO, nó còn áp dụng mặc định một đòn bẩy: rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn vẫn còn nóng — điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
       "cta": "Xem cách hoạt động →"
     },
     "integrate": {
@@ -1017,7 +1017,7 @@
     "caseClaudeSub": "claude.ai, miễn phí hoặc trả phí",
     "caseClaudeBody": "Thuê bao cố định: không có hóa đơn token để đo — nhưng có giới hạn (cửa sổ năm giờ và giới hạn tuần). Skill savings-mode sinh ra đúng cho việc đó: miễn phí, tải lên claude.ai trong một phút, tấn công hai khối đốt giới hạn. Hiệu quả của nó sẽ được công bố khi đo xong — không bao giờ trước đó.",
     "caseCodeSub": "terminal, với khóa API",
-    "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: «bvsala claude» khởi chạy Claude Code qua gateway cục bộ và chi tiêu của bạn hiện trong bảng điều khiển, từng token một, không đụng một dòng mã. Tiết kiệm ở đó là giai đoạn tiếp theo — trước hết chúng tôi đo thật.",
+    "caseCodeBody": "Với thuê bao, phí cố định — nhưng có giới hạn: cùng skill đó cài bằng một lệnh duy nhất và kéo giãn chính giới hạn tuần ấy. Với API key có hóa đơn token thật — và bộ đo đã chạy: với giấy phép BiVelio của bạn, «bvsala claude» khởi chạy Claude Code qua gateway cục bộ và chi tiêu của bạn hiện trong bảng điều khiển, từng token một, không đụng một dòng mã. Với PRO, nó còn rút ngắn TTL ghi bộ nhớ đệm khi phiên vẫn còn nóng: khoản tiết kiệm được tính trên chính số token do nhà cung cấp của bạn đếm, không bao giờ dựa trên ước tính.",
     "caseAppName": "Ứng dụng của bạn",
     "caseAppSub": "mã của bạn + khóa API của bạn",
     "caseAppBody": "Trường hợp mà BV‑SALA tồn tại để phục vụ. Ứng dụng của bạn gọi API bằng khóa của bạn, nhà cung cấp tính phí từng token, và lớp này cài đặt trong ba bước: gói, giấy phép và bọc lời gọi. Từ yêu cầu đầu tiên nó trả về một <b>SavingsReport</b> với khoản tiết kiệm, tách thành đo được và ước tính.",

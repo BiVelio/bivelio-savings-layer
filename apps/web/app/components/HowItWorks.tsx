@@ -33,8 +33,9 @@ import { Link } from "@/i18n/navigation";
  * La honestidad aquí es parte del producto: los casos «Nada que instalar» se
  * dicen tal cual, y el caso Claude Code lleva la insignia «Ya mide» — el
  * gateway `bvsala claude` está validado de punta a punta (gateway → ingesta →
- * panel, 2026-09-01) — mientras el cuerpo deja claro que el AHORRO ahí es la
- * siguiente fase (docs/PLAN-PASARELA-API-KEY.md).
+ * panel, 2026-09-01) — y el cuerpo dice lo que hay: arranca con la licencia
+ * BiVelio y, con PRO, la rebaja de TTL acredita ahorro medido sobre el conteo
+ * del propio proveedor (docs/PLAN-PASARELA-API-KEY.md).
  */
 export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
   const t = await getTranslations("howItWorks");
@@ -47,8 +48,8 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
     // insignia dice lo que hay (un skill), no lo que aún no se ha medido.
     { name: "Claude", sub: t("caseClaudeSub"), body: [t("caseClaudeBody")], verdict: "skill" },
     // «Ya mide», no «Aún no»: desde la 0.4.5 el medidor está validado de punta a
-    // punta (gateway → ingesta → panel, 01-09). Lo que sigue sin haber ahí es
-    // AHORRO, y el cuerpo lo dice tal cual — la insignia no promete más.
+    // punta (gateway → ingesta → panel, 01-09). El ahorro ahí es solo el de la
+    // rebaja de TTL con PRO, y el cuerpo lo dice tal cual — la insignia no promete más.
     { name: "Claude Code", sub: t("caseCodeSub"), body: [t("caseCodeBody")], verdict: "mide" },
     { name: t("caseAppName"), sub: t("caseAppSub"), body: [t.rich("caseAppBody", { b })], verdict: "si" },
   ];

@@ -322,14 +322,14 @@
       "eyebrow": "Rozpocznij",
       "heading": "Cztery kroki. Twoje prompty nigdy nie dotykają naszych serwerów.",
       "step1": "<b>1 · Uzyskaj klucz licencyjny</b> — SDK jest publiczny, ale działa w trybie fail-closed; uruchamia się tylko z ważnym kluczem. Przekazywany jako <code>licenseKey</code>.",
-      "step2": "<b>2 · Utwórz i zweryfikuj klucz konta serwisowego</b> — poświadczenie maszynowe (<code>bvk_…</code>), które pełni dwie funkcje: raportuje użycie obejmujące wyłącznie liczby (Twoje stanowiska i oszczędności) oraz pozwala SDK <b>samodzielnie pobierać odnowioną licencję</b> w każdym okresie rozliczeniowym. Niezależny od klucza licencyjnego; przechowywany jest tylko jego hash. Utwórz go, a następnie kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
+      "step2": "<b>2 · Utwórz i zweryfikuj klucz konta serwisowego</b> — poświadczenie maszynowe (<code>bvk_…</code>), które pełni dwie funkcje: raportuje użycie obejmujące wyłącznie liczby (Twoje stanowiska i oszczędności) oraz pozwala SDK i bramie <b>samodzielnie pobierać odnowioną licencję</b> w każdym okresie rozliczeniowym. Niezależny od klucza licencyjnego; przechowywany jest tylko jego hash. Utwórz go, a następnie kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
       "currentKey": "bieżący klucz konta serwisowego",
       "noneYet": "jeszcze brak — kliknij powyżej",
       "shownOnce": "pokazywany raz przy tworzeniu — przechowywany jest tylko prefiks.",
       "renewalNote": "<b>Zostaw ten klucz w swoim wdrożeniu.</b> Twoja licencja wygasa na koniec każdego okresu rozliczeniowego, a odnowienie wydaje nową. Z tym kluczem SDK sam ją pobiera i podmienia bez restartu. Bez niego nikt jej nie pobierze, więc ktoś musi ręcznie wklejać nowy klucz w każdym okresie — a jeśli nikt tego nie zrobi, SDK zatrzyma się po zakończeniu okresu karencji, mimo że subskrypcja jest opłacona i aktualna.",
       "step3": "<b>3 · Zainstaluj</b> — publicznie na npm, bez tokena, bez konfiguracji.",
       "step4": "<b>4 · Podłącz swojego dostawcę i odczytaj SavingsReport</b>",
-      "gatewayNote": "<b>Terminal programistyczny zamiast aplikacji?</b> Ten sam pakiet zawiera lokalną bramę pomiarową: <code>bvsala claude</code> uruchamia przez nią Claude Code, a ten panel pokazuje wydatek, token po tokenie. Także <code>bvsala codex</code>, <code>bvsala goose</code> i <code>bvsala qwen</code>; <code>bvsala doctor</code> drukuje dokładny blok dla reszty. Używa tego samego klucza serwisowego z kroku 2 — do mierzenia nie trzeba klucza licencji.",
+      "gatewayNote": "<b>Terminal programistyczny zamiast aplikacji?</b> Ten sam pakiet zawiera lokalną bramę pomiarową: <code>bvsala claude</code> uruchamia przez nią Claude Code, a ten panel pokazuje wydatek, token po tokenie. Także <code>bvsala codex</code>, <code>bvsala goose</code> i <code>bvsala qwen</code>; <code>bvsala doctor</code> drukuje dokładny blok dla reszty. Używa tego samego klucza serwisowego z kroku 2 i sama pobiera Twoją licencję — tak jak SDK, nie uruchamia się bez aktywnej licencji.",
       "finalNote": "To wszystko. Brak ważnej licencji → <code>generate()</code> odmawia działania. Jeśli Twój plan zostanie anulowany, SDK zatrzymuje się w ciągu ~15 min poprzez <code>licenseServerUrl</code> — bez restartu i nigdy nie unieruchamia Twojej produkcji, jeśli jesteśmy nieosiągalni."
     },
     "accountPlanStrip": {
@@ -777,7 +777,7 @@
       "medidaPie": "zmierzonych wydatków",
       "anatomiaNota": "Zmierzone miernikiem na {peticiones} prawdziwych żądaniach Claude Code, wobec liczników dostawcy ({fecha}). Efekt samego skilla zostanie opublikowany po zmierzeniu w A/B — nigdy wcześniej.",
       "ccNota": "Jedno polecenie: instaluje się w ~/.claude/skills i aktywuje sam, gdy rozmowa schodzi na limity lub oszczędzanie tokenów.",
-      "cxNota": "Codex nie ma skilli: ta sama dyscyplina podróżuje jako oznaczony blok w Twoim AGENTS.md (~/.codex) — zawsze aktywna; usuń blok, aby ją wyłączyć. Twój AGENTS.md poza znacznikami nigdy nie jest ruszany. Działa z kontem ChatGPT i kluczem API, a pod bvsala codex jej efekt jest mierzony.",
+      "cxNota": "Codex nie ma skilli: ta sama dyscyplina podróżuje jako oznaczony blok w Twoim AGENTS.md (~/.codex) — zawsze aktywna; usuń blok, aby ją wyłączyć. Twój AGENTS.md poza znacznikami nigdy nie jest ruszany. Działa z kontem ChatGPT i kluczem API, a pod bvsala codex (z licencją) jej efekt jest mierzony.",
       "aiDescargar": "Pobierz savings-mode.zip",
       "aiCuenta": "Pobranie wymaga (darmowego) konta Savings: dzięki temu adopcja jest prawdziwą metryką, z tożsamością — sam skill nie zawiera żadnej telemetrii.",
       "aiPaso1": "Na claude.ai włącz „Code execution and file creation” (Settings → Capabilities).",
@@ -796,7 +796,7 @@
       "eyebrow": "Nowość · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
       "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem. Bez zmian w kodzie i bez konfiguracji — a Twoje prompty nigdy nie opuszczają Twojej maszyny: do tego panelu trafiają tylko liczby i koszt.",
-      "note": "Gateway mierzy każde żądanie. Z licencją PRO stosuje też domyślnie jedną dźwignię: skraca TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła — zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor wypisuje dokładną konfigurację dla reszty.",
+      "note": "Gateway mierzy każde żądanie i, tak jak SDK, działa tylko z aktywną licencją: pobiera ją Twoim kluczem serwisowym i weryfikuje jej podpis na Twoim komputerze. Z licencją PRO stosuje też domyślnie jedną dźwignię: skraca TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła — zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor wypisuje dokładną konfigurację dla reszty.",
       "cta": "Zobacz, jak to działa →"
     },
     "integrate": {
@@ -1017,7 +1017,7 @@
     "caseClaudeSub": "claude.ai, za darmo lub płatnie",
     "caseClaudeBody": "Stała subskrypcja: brak faktury za tokeny do zmierzenia — ale są limity (pięciogodzinne okno i tygodniowy). Właśnie po to jest skill savings-mode: darmowy, wgrywany na claude.ai w minutę, atakuje dwie masy spalające limit. Jego efekt zostanie opublikowany po zmierzeniu — nigdy wcześniej.",
     "caseCodeSub": "terminal, z kluczem API",
-    "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Oszczędności tam to następna faza — najpierw mierzymy naprawdę.",
+    "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: z Twoją licencją BiVelio „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Z PRO skraca też TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła: oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków.",
     "caseAppName": "Twoja aplikacja",
     "caseAppSub": "Twój kod + Twój klucz API",
     "caseAppBody": "Przypadek, dla którego istnieje BV‑SALA. Twoja aplikacja wywołuje API Twoim kluczem, dostawca fakturuje każdy token, a warstwa instaluje się w trzech krokach: pakiet, licencja i opakowanie wywołania. Od pierwszego zapytania zwraca <b>SavingsReport</b> z oszczędnością, rozdzieloną na zmierzoną i szacowaną.",
