@@ -239,6 +239,49 @@ BV‑SALA only moves away from plain JSON when the saving clearly clears the bar
 `report.serialization` shows what was chosen and what each candidate would have cost.
 
 <details>
+<summary><b>Your own A/B — verification sampling (opt-in, off by default)</b></summary>
+
+The per-request figures above are what the layer can show without running your
+request twice. To see what it does on your own traffic, with both sides metered by
+your provider, turn on verification sampling:
+
+```ts
+const checkedLayer = createSavingsLayer({
+  provider,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: "https://savings.bivelio.com",
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  verification: { sampleRate: 0.02 }, // about 2 in every 100 eligible requests
+});
+```
+
+For that share of eligible requests, after your answer has been returned, the SDK
+sends the same request once more to your provider exactly as it would go without the
+layer — the model you asked for, all your tools, your data inline, no cache marks —
+and discards the second answer. Each pair (what the unoptimized copy cost and what the
+optimized request cost, both from your provider's usage counters) appears under
+**Proof › Your bench** in your dashboard, with the mean difference, its 95 % interval
+and every pair as a CSV download.
+
+- **It costs you money.** You pay your provider for every copy: roughly the sampling
+  rate times what that traffic would cost without the layer. The SDK says so once
+  when it starts.
+- **It is never billed.** Pairs travel on their own channel into their own table.
+  They never enter measured savings, your statement or any commission.
+- **Only requests served intact are checked.** Requests that took the fail-open path,
+  were cut off, missed their output contract or came back without a provider counter
+  are counted as excluded and never sent twice. `savings: { verification: false }`
+  excludes a single request.
+- **Only counts leave your infrastructure.** The copy goes to your own provider, like
+  the original; BiVelio receives token counts, costs, model ids and outcomes — never
+  prompts or answers.
+- **`close()` settles every copy still running:** it is recorded as abandoned, never
+  as a pair. On serverless platforms, pass your runtime's `waitUntil` as
+  `verification.waitUntil` so checks can finish.
+
+</details>
+
+<details>
 <summary><b>Structured output — validated <code>data</code>, not just text</b></summary>
 
 Ask for a response contract and you also get `data`, validated against your schema:

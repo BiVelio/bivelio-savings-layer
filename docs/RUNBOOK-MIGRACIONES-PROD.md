@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0029)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0030)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -57,7 +57,8 @@ select m.mig, m.aplicada from (values
   ('0016 extractos',          to_regclass('bvsala.extractos') is not null),
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
   ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
-  ('RPC en version final (0029)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%'))
+  ('RPC en version final (0029)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%')),
+  ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null)
 ) as m(mig, aplicada) order by 1;
 SQL
 
@@ -85,6 +86,7 @@ migración crea:
 | 0017 | tabla `cargos` | La que necesita el cron del día 1 a las 07:00 |
 | 0029 | tabla `reference_hits` | El carril medido por referencia (anexo 0029, al final). Lleva versión de la RPC — regla 1 |
 | RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits` | La versión **final** de la RPC es la de 0029 (antes lo fue la de 0015, luego 0024 y 0025). Si 0029 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0029 |
+| 0030 | tablas `verification_samples` y `verification_daily` + funciones `ingest_verification_batch` y `verification_summary` | «Tu propio banco» (anexo 0030, al final). Aditiva; **no** lleva versión de la función de uso: el orden respecto a 0029 da igual |
 
 ## Paso 2 — Aplicar lo que falte, en orden
 
@@ -550,3 +552,66 @@ Relanzar el diagnóstico hasta tener las cuatro `true`.
 - Antes del primer cierre con referencia (día 1): `?seco=1` y revisar a mano
   las organizaciones con `requests_referencia > 0`. El primer período de cada
   organización es calibración (cargo 0).
+
+## Anexo — 0030 (septiembre de 2026): tu propio banco
+
+0030 guarda la verificación A/B **opcional** del SDK (`verification: {
+sampleRate }` en `createSavingsLayer`): pares de coste medido en los dos lados
+(la copia sin capa y la petición optimizada, ambos del contador del proveedor
+del cliente) y recuentos diarios por estrato y exclusión. El panel los enseña en
+**Prueba › Tu banco** y el cliente se los descarga en CSV
+(`/api/org/verification-pairs`).
+
+**Instrumento, jamás base.** Tablas propias (`verification_samples`,
+`verification_daily`, `verification_batches_seen`), función de ingest propia
+(`ingest_verification_batch`) y canal propio (`POST /api/metering/verification`).
+No toca `ingest_usage_batch`, `usage_daily`, `extractos` ni ninguna columna
+`measured_*`: nada de lo que entra aquí llega al extracto ni a la comisión
+(`test/banco-propio-nunca-factura.test.ts`, y `test/migracion-0030.test.ts`
+prueba que el fichero no nombra ninguna de esas piezas).
+
+- **Orden:** independiente. 0030 no lleva versión de la función de uso, así que
+  aplicarla antes o después de 0029 —o re-ejecutar 0025/0029 después— no
+  regresa nada. Lleva guard de precondición (`organizations` e
+  `is_org_member`).
+- **Servidor antes que SDK, como siempre, pero sin riesgo de dinero:** un SDK con
+  verificación contra una web sin la ruta recibe 404 en su canal propio y pierde
+  solo pares (aviso W5 en consola del cliente); la medición de uso sigue intacta.
+  Una web sin 0030 responde **503** en el ingest y «no disponible» en el panel,
+  nunca ceros.
+- **Interruptor de incidencias:** `BVSALA_INGEST_VERIFICATION_OFF=1` (variable de
+  Vercel + redespliegue del mismo commit) hace que el ingest responda
+  `202 {ingested: 0, disabled: true}` sin escribir nada.
+- **Retención:** el cron `/api/cron/retencion` borra muestras y recuentos de más
+  de 180 días y los lotes vistos de más de 30; `?seco=1` trae la clave
+  `verificacion`.
+- **Regla 6:** anota la hora antes (PITR). Aditiva, sin DROP de datos.
+
+### Diagnóstico (solo lectura)
+
+La fila «0030 tu propio banco» del paso 1. Suelta:
+
+```sql
+select to_regclass('bvsala.verification_samples') is not null
+   and to_regclass('bvsala.verification_daily') is not null
+   and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null
+   and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null as aplicada_0030;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0030"`, tras anotar la hora, desde el
+fichero del PR que la trae (`db/migrations/0030_banco_propio.sql`). Relanzar el
+diagnóstico hasta tener `true`.
+
+### Verificar tras el deploy de la web
+
+- `GET /dashboard/your-bench` carga y enseña «El muestreo de verificación está
+  apagado» (ninguna organización lo tiene encendido todavía).
+- `GET /api/cron/retencion?seco=1` responde 200 con la clave `verificacion`
+  (`{corte, dias: 180, borraria, lotesBorraria}`).
+- Un `POST /api/metering/verification` con la clave `bvk_` de la organización
+  interna de pruebas (leída de fichero, jamás impresa) y un sobre **solo con
+  conteos** (`{"batchId":"<uuid>","samples":[],"counts":[{"day":"<hoy>","category":"unchanged","requests":1}]}`)
+  → **202** y una fila en `verification_daily`. El mismo sobre otra vez (mismo
+  `batchId`) → **202** sin sumar: la idempotencia por lote.
