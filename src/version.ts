@@ -46,7 +46,8 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  * estricto), y la versión de la regla no viaja en el registro de uso: el
  * servidor sella la del extracto entero. Así que el ingest DEGRADA a
  * `estimated` toda referencia que venga de un proceso anterior a esta versión,
- * o que no declare versión (apps/web/lib/metering/version.ts): el sello
+ * que no declare versión, o que declare `gateway/` (el gateway no pasa por el
+ * pipeline que aplica la regla; apps/web/lib/metering/version.ts): el sello
  * «reference-v2» es cierto para todo lo que entra, publique quien publique
  * qué.
  *

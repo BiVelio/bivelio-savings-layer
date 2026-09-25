@@ -103,8 +103,9 @@ export const COMISIONAR_REFERENCIA: boolean = true;
  * QUÉ HACE CIERTO ESTE SELLO: no el orden de publicación. La etiqueta v0.4.23
  * se cortó con la regla v1 y la regla no viaja en el registro de uso, así que el
  * ingest (app/api/metering/usage/route.ts) degrada a "estimated" toda
- * referencia de un proceso que no declara versión o que declara una anterior a
- * VERSION_MINIMA_REFERENCIA (lib/metering/version.ts). Lo que llega a
+ * referencia de un proceso que no declara versión, que declara una anterior a
+ * VERSION_MINIMA_REFERENCIA, o que es el gateway, que no pasa por el pipeline
+ * que aplica esta regla (lib/metering/version.ts). Lo que llega a
  * reference_* después de desplegar esa verja se calculó con esta regla. Si la
  * regla cambia de versión, la mínima sube con ella en el mismo PR.
  *

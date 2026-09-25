@@ -36,8 +36,16 @@ export const VERSION_MINIMA_REFERENCIA = "0.4.24";
 
 /**
  * ¿Puede entrar como `reference` un registro de un proceso que declara esta
- * versión? Solo si la declara (`sdk/` o `gateway/`, que salen del mismo paquete
- * con la misma versión) y es la mínima o posterior.
+ * versión? Solo si la declara, es del SDK (`sdk/`) y es la mínima o posterior.
+ *
+ * `gateway/` NO, a propósito: la regla v2 vive en el pipeline del SDK
+ * (src/pipeline/referencia.ts) y el gateway no pasa por él. Hoy el gateway no
+ * emite referencias; la gemela coalescida que las emitiría (Parte G, PR #322)
+ * las valora con su propio código, que acredita salida con `temperature: 0` sin
+ * la guarda de razonamiento ni la del esquema estricto. Si ese código se
+ * publicara con una versión ≥ la mínima, sus referencias entrarían bajo el sello
+ * «reference-v2» sin cumplirla. El PR que lleve al gateway la regla v2 abre aquí
+ * `gateway/` con su propia mínima, en el mismo cambio.
  *
  * Por qué hace falta: la regla con la que el SDK valoró una repetición NO viaja
  * en el registro de uso, y el cierre sella la del servidor para el extracto
@@ -51,7 +59,7 @@ export const VERSION_MINIMA_REFERENCIA = "0.4.24";
  */
 export function admiteReferencia(version: string | null): boolean {
   const v = parsearVersion(version);
-  if (!v || v.superficie === null) return false;
+  if (!v || v.superficie !== "sdk") return false;
   const minima = parsearVersion(VERSION_MINIMA_REFERENCIA)!;
   for (let i = 0; i < 3; i++) {
     const d = v.partes[i]! - minima.partes[i]!;

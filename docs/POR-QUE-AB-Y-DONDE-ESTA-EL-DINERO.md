@@ -176,7 +176,10 @@ sello sea cierto se publique lo que se publique, el ingest degrada a
 `estimated` toda referencia de un proceso que no declara versión o que declara
 una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.24, `src/version.ts` y su
 espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
-en `reference_*` ni en la base.
+en `reference_*` ni en la base. Lo mismo para toda referencia que declare
+`gateway/`, a cualquier versión: la regla v2 vive en el pipeline del SDK y el
+gateway no pasa por él, así que su gemela coalescida (Parte G) entra como
+`estimated` hasta que el PR que le lleve la regla v2 abra su verja.
 
 ### Qué es el A/B (anillo 2, #224) y por qué es la única salida
 

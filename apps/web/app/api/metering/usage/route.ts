@@ -126,9 +126,10 @@ export async function POST(req: Request): Promise<NextResponse> {
   // extracto entero, y la regla con la que el SDK valoró cada repetición no viaja
   // en el registro. La etiqueta v0.4.23 se cortó con la regla v1; si se publica,
   // sus referencias no pueden entrar bajo el sello «reference-v2». Un proceso que
-  // no declara versión, o que declara una anterior a VERSION_MINIMA_REFERENCIA,
-  // entra como "estimated": sigue en los totales, fuera de reference_* y de la
-  // base. Por construcción, sin depender de qué se publique ni en qué orden.
+  // no declara versión, que declara una anterior a VERSION_MINIMA_REFERENCIA, o
+  // que es el gateway (no pasa por el pipeline que aplica la regla v2), entra
+  // como "estimated": sigue en los totales, fuera de reference_* y de la base.
+  // Por construcción, sin depender de qué se publique ni en qué orden.
   if (!admiteReferencia(version)) {
     const n = degradarReferencias(records);
     if (n > 0) {

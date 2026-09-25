@@ -111,12 +111,18 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
     expect(compararVersiones(VERSION_MINIMA_REFERENCIA, `${a}.${b}.${c + 1}`)).toBeLessThanOrEqual(0);
   });
 
-  it("sdk/ y gateway/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
-    for (const si of ["sdk/0.4.24", "gateway/0.4.24", "sdk/0.4.25", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.25-rc.1"]) {
+  it("sdk/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
+    for (const si of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.25-rc.1"]) {
       expect(admiteReferencia(si), si).toBe(true);
     }
-    for (const no of [null, "sdk/0.4.23", "gateway/0.4.23", "sdk/0.4.22", "sdk/0.4.24-rc.1", "gateway/0.4.24-dev", "0.4.24"]) {
+    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.24-rc.1", "0.4.24"]) {
       expect(admiteReferencia(no), String(no)).toBe(false);
+    }
+  });
+
+  it("gateway/ nunca, sea cual sea la versión: la regla v2 vive en el pipeline del SDK y el gateway no pasa por él", () => {
+    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.24-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
+      expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
