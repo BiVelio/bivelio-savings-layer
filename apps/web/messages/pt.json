@@ -785,7 +785,7 @@
         },
         {
           "title": "Uma taxa por lugar e uma parte do que se mede",
-          "body": "Pagas uma taxa fixa por lugar todos os meses, aconteça o que acontecer. Além disso, a nossa comissão sai só da poupança medida com o contador do teu fornecedor, e a maior parte de cada poupança fica sempre contigo. Um mês sem poupança medida? Pagas os lugares e zero de comissão."
+          "body": "Pagas uma taxa fixa por lugar todos os meses, quer poupes quer não. Além disso, a nossa comissão sai só da poupança medida com o contador do teu fornecedor, e a maior parte de cada poupança fica sempre contigo. Um mês sem poupança medida? Pagas os lugares e zero de comissão."
         }
       ],
       "nota": "As animações ilustram a ideia. Os números a sério — medidos contra fornecedores reais — estão logo abaixo."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
       "title": "Taxa por lugar, sempre. Comissão só sobre a poupança medida.",
-      "body": "Sem plano gratuito e sem período de teste: antes de pagar podes verificar as medições públicas e passar o verificador pelos teus próprios dados, aqui mesmo. A taxa por lugar é cobrada todos os meses, em {currency}, quer poupes quer não. A comissão vem à parte, e só sobre a poupança medida com o contador do teu fornecedor — o estimado nunca entra.",
+      "body": "Sem plano gratuito e sem período de teste: antes de pagar podes verificar as medições públicas e passar o verificador pelos teus próprios dados, aqui mesmo. A taxa por lugar é cobrada todos os meses, em {currency}, quer poupes quer não. A comissão vem à parte, e só sobre a poupança medida com o contador do teu fornecedor — incluindo os pedidos repetidos servidos sem o chamar, cada um valorizado com o contador do pedido idêntico que já foi executado. O estimado nunca entra.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
@@ -1045,7 +1045,7 @@
         "who": "Para apps Node.js, em JavaScript ou TypeScript, que chamam uma API de LLM com a tua própria chave e pagam cada token.",
         "what": "Envolve a chamada dentro do teu código, envia ao fornecedor só o que é preciso pagar e devolve um SavingsReport com cada resposta.",
         "figureLabel": "Piso publicado, medido contra um fornecedor real",
-        "figureNote": "Um piso, não uma previsão: o que poupares depende do teu tráfego, e só o que o contador do teu fornecedor confirma entra na comissão.",
+        "figureNote": "Um piso, não uma previsão: o que poupares depende do teu tráfego. Na comissão só entra a poupança medida com o contador do teu fornecedor — incluindo os pedidos repetidos servidos sem o chamar, cada um valorizado com o contador do pedido idêntico que já foi executado.",
         "ctaMeasured": "Como o medimos",
         "ctaVerify": "Experimenta uma alavanca com os teus dados"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — para agentes de código com chave de API",
         "who": "Para quem trabalha com Claude Code, Codex CLI ou outro agente de código com chave de API.",
-        "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido com o contador do teu fornecedor — nos modelos do nosso catálogo de preços — e dá-lhe o seu recibo no teu painel.",
+        "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido cujo uso o teu fornecedor reporta, com o contador do próprio fornecedor — nos modelos do nosso catálogo de preços — e soma-os no teu painel, por dia e por modelo.",
         "figureLabel": "Sem número de poupança publicado",
-        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway encurta o TTL de escrita da cache enquanto a sessão se mantém quente — muda o preço, nunca o que o modelo lê — e só o que o contador do teu fornecedor confirma entra na comissão.",
+        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway passa as escritas da cache do TTL de uma hora para o de cinco minutos só nos turnos em que uma boa parte do prompt é nova — como o primeiro turno de uma sessão ou uma compactação — e deixa como estão os turnos encadeados de uma sessão em curso. Isso muda o preço, nunca o que o modelo lê, e só o que o contador do teu fornecedor confirma entra na comissão.",
         "cta": "Instalar o gateway"
+      },
+      "skill": {
+        "band": "Skill — para agentes de código com subscrição"
       }
     },
     "verify": {
       "eyebrow": "SDK · uma alavanca, com os teus dados, antes de pagar",
-      "title": "Cola os teus dados. Vê o que o SDK enviaria.",
+      "title": "Cola os teus dados. Vê quantos tokens o SDK enviaria.",
       "sub": "Aqui corre o seletor de formato real do SDK, no teu navegador e com os teus dados. Nada sai desta página e não precisas de conta.",
       "tryExample": "Experimenta um exemplo",
       "sample_orders": "Pedidos da loja",
@@ -1071,6 +1074,7 @@
       "loading": "A carregar o otimizador e o tokenizador exato…",
       "errBundle": "Não foi possível carregar o otimizador. Recarrega a página para tentar de novo.",
       "errInvalidData": "À espera de um JSON válido… {message}",
+      "errTokenizer": "O tokenizador exato não consegue contar este texto ({message}), por isso não mostramos nenhum número.",
       "tooBig": "São mais de {max} caracteres. Cola uma amostra mais pequena.",
       "tagExact": "Contagem exata",
       "tagApprox": "Aproximado",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} de tokens de entrada nestes dados",
       "trims": "De {before} para {after} tokens, instruções do formato incluídas.",
       "alreadyOptimal": "Aqui nenhum formato bate o JSON compacto, por isso o SDK enviá-los-ia tal como estão. Esta alavanca nunca torna os teus dados maiores.",
+      "notComparable": "Com estes dados não conseguimos comparar os formatos com o JSON compacto, por isso não mostramos nenhum número.",
       "exactNote": "Contado com {tokenizer}, o tokenizador que o {model} usa. Comparamos com os teus dados em JSON compacto: se hoje os envias com indentação, a diferença real é maior — e isso não contamos.",
       "approxNote": "O tokenizador exato não carregou, por isso qualquer contagem aqui seria aproximada — e não mostramos poupanças aproximadas. Recarrega a página para tentar de novo.",
-      "scope": "O que é e o que não é: uma alavanca — como os dados estruturados se escrevem no prompt — sobre os tokens de entrada destes dados. Não é a tua fatura: nem as chamadas evitadas, nem a cache do teu fornecedor, nem a saída estão aqui, e muitos pedidos não levam dados estruturados. O número que defendemos para o SDK inteiro é o piso publicado na secção da medição.",
+      "scope": "O que é e o que não é: uma alavanca — como os dados estruturados se escrevem no prompt — sobre os tokens de entrada destes dados. Só se aplica aos dados que passas ao SDK como structuredData, não ao JSON que já vai escrito dentro das tuas mensagens. Não é a tua fatura: nem as chamadas evitadas, nem a cache do teu fornecedor, nem a saída estão aqui, e muitos pedidos não levam dados estruturados. O número que defendemos para o SDK inteiro é o piso publicado na secção da medição.",
       "ctaInstall": "Instalar o SDK"
     }
   },

@@ -785,7 +785,7 @@
         },
         {
           "title": "Eine Gebühr pro Seat und ein Anteil am Gemessenen",
-          "body": "Du zahlst jeden Monat eine feste Gebühr pro Seat, egal was passiert. Dazu kommt unsere Provision, und die stammt nur aus Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — der Großteil jeder Ersparnis bleibt immer bei dir. Ein Monat ohne gemessene Ersparnis? Du zahlst die Seats und null Provision."
+          "body": "Du zahlst jeden Monat eine feste Gebühr pro Seat, ob du sparst oder nicht. Dazu kommt unsere Provision, und die stammt nur aus Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — der Großteil jeder Ersparnis bleibt immer bei dir. Ein Monat ohne gemessene Ersparnis? Du zahlst die Seats und null Provision."
         }
       ],
       "nota": "Die Animationen veranschaulichen die Idee. Die echten Zahlen — gemessen gegen echte Anbieter — stehen direkt darunter."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Ein Plan, Preis pro Seat",
       "title": "Eine Gebühr pro Seat, immer. Provision nur auf gemessene Ersparnis.",
-      "body": "Kein Gratisplan, kein Test: Vor dem Zahlen kannst du die öffentlichen Messungen prüfen und den Verifizierer mit deinen eigenen Daten laufen lassen, direkt auf dieser Seite. Die Gebühr pro Seat wird jeden Monat berechnet, in {currency}, ob du sparst oder nicht. Die Provision kommt obendrauf, und nur auf Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — Geschätztes geht nie ein.",
+      "body": "Kein Gratisplan, kein Test: Vor dem Zahlen kannst du die öffentlichen Messungen prüfen und den Verifizierer mit deinen eigenen Daten laufen lassen, direkt auf dieser Seite. Die Gebühr pro Seat wird jeden Monat berechnet, in {currency}, ob du sparst oder nicht. Die Provision kommt obendrauf, und nur auf Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist. Geschätztes geht nie ein.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
       "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
@@ -1045,7 +1045,7 @@
         "who": "Für Node.js-Apps in JavaScript oder TypeScript, die eine LLM-API mit deinem eigenen Schlüssel aufrufen und jedes Token bezahlen.",
         "what": "Es umschließt den Aufruf in deinem Code, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen SavingsReport.",
         "figureLabel": "Veröffentlichte Untergrenze, gemessen gegen einen echten Anbieter",
-        "figureNote": "Eine Untergrenze, keine Prognose: Was du sparst, hängt von deinem Traffic ab, und nur was der Zähler deines Anbieters bestätigt, geht in die Provision ein.",
+        "figureNote": "Eine Untergrenze, keine Prognose: Was du sparst, hängt von deinem Traffic ab. In die Provision geht nur Ersparnis ein, die mit dem Zähler deines Anbieters gemessen wurde — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist.",
         "ctaMeasured": "Wie wir es gemessen haben",
         "ctaVerify": "Probier einen Hebel mit deinen Daten"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — für Coding-Agenten mit API-Schlüssel",
         "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
-        "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage mit dem Zähler deines Anbieters — für die Modelle in unserem Preiskatalog — und gibt ihr ihren Beleg in deinem Dashboard.",
+        "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage, für die dein Anbieter die Nutzung meldet, mit dessen eigenem Zähler — für die Modelle in unserem Preiskatalog — und summiert sie in deinem Dashboard nach Tag und Modell.",
         "figureLabel": "Keine Ersparniszahl veröffentlicht",
-        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO verkürzt das Gateway bei Anthropic-Modellen die Cache-Schreib-TTL, solange deine Sitzung warm bleibt — das ändert den Preis, nie das, was das Modell liest —, und nur was der Zähler deines Anbieters bestätigt, geht in die Provision ein.",
+        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO stellt das Gateway bei Anthropic-Modellen Cache-Schreibvorgänge von der einstündigen auf die fünfminütige TTL um — nur bei Zügen, in denen ein großer Teil des Prompts neu ist, etwa beim ersten Zug einer Sitzung oder nach einer Kompaktierung — und lässt die verketteten Züge einer laufenden Sitzung unverändert. Das ändert den Preis, nie das, was das Modell liest, und nur was der Zähler deines Anbieters bestätigt, geht in die Provision ein.",
         "cta": "Gateway einrichten"
+      },
+      "skill": {
+        "band": "Skill — für Coding-Agenten im Abo"
       }
     },
     "verify": {
       "eyebrow": "SDK · ein Hebel, mit deinen Daten, vor dem Bezahlen",
-      "title": "Füge deine Daten ein. Sieh, was das SDK senden würde.",
+      "title": "Füge deine Daten ein. Sieh, wie viele Tokens das SDK senden würde.",
       "sub": "Hier läuft der echte Formatwähler des SDK in deinem Browser, mit deinen Daten. Nichts verlässt diese Seite, und du brauchst kein Konto.",
       "tryExample": "Probier ein Beispiel",
       "sample_orders": "Shop-Bestellungen",
@@ -1071,6 +1074,7 @@
       "loading": "Optimierer und exakter Tokenizer werden geladen…",
       "errBundle": "Der Optimierer konnte nicht geladen werden. Lade die Seite neu, um es erneut zu versuchen.",
       "errInvalidData": "Warte auf gültiges JSON… {message}",
+      "errTokenizer": "Der exakte Tokenizer kann diesen Text nicht zählen ({message}), also zeigen wir keine Zahl.",
       "tooBig": "Das sind mehr als {max} Zeichen. Füge eine kleinere Probe ein.",
       "tagExact": "Exakte Zählung",
       "tagApprox": "Näherungsweise",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} Eingabe-Tokens bei diesen Daten",
       "trims": "Von {before} auf {after} Tokens, Anweisungen des Formats inklusive.",
       "alreadyOptimal": "Hier schlägt kein Format das kompakte JSON, also würde das SDK sie unverändert senden. Dieser Hebel macht deine Daten nie größer.",
+      "notComparable": "Mit diesen Daten können wir die Formate nicht mit dem kompakten JSON vergleichen, also zeigen wir keine Zahl.",
       "exactNote": "Gezählt mit {tokenizer}, dem Tokenizer, den {model} verwendet. Wir vergleichen mit deinen Daten als kompaktem JSON: Wenn du sie heute eingerückt sendest, ist der echte Unterschied größer — und den zählen wir nicht.",
       "approxNote": "Der exakte Tokenizer wurde nicht geladen, also wäre jede Zählung hier nur näherungsweise — und näherungsweise Ersparnisse zeigen wir nicht. Lade die Seite neu, um es erneut zu versuchen.",
-      "scope": "Was das ist und was nicht: ein Hebel — wie strukturierte Daten in den Prompt geschrieben werden — auf die Eingabe-Tokens dieser Daten. Es ist nicht deine Rechnung: Vermiedene Aufrufe, der Cache deines Anbieters und die Ausgabe sind nicht enthalten, und viele Anfragen enthalten gar keine strukturierten Daten. Die Zahl, für die wir beim ganzen SDK einstehen, ist die veröffentlichte Untergrenze im Abschnitt zur Messung.",
+      "scope": "Was das ist und was nicht: ein Hebel — wie strukturierte Daten in den Prompt geschrieben werden — auf die Eingabe-Tokens dieser Daten. Er gilt nur für Daten, die du dem SDK als structuredData übergibst, nicht für JSON, das schon in deinen Nachrichten steht. Es ist nicht deine Rechnung: Vermiedene Aufrufe, der Cache deines Anbieters und die Ausgabe sind nicht enthalten, und viele Anfragen enthalten gar keine strukturierten Daten. Die Zahl, für die wir beim ganzen SDK einstehen, ist die veröffentlichte Untergrenze im Abschnitt zur Messung.",
       "ctaInstall": "SDK installieren"
     }
   },

@@ -785,7 +785,7 @@
         },
         {
           "title": "Koltuk başına bir ücret ve ölçülenden bir pay",
-          "body": "Her ay, ne olursa olsun, koltuk başına sabit bir ücret ödersiniz. Bunun üzerine komisyonumuz yalnızca sağlayıcınızın sayacıyla ölçülen tasarruftan çıkar — ve her tasarrufun büyük kısmı her zaman sizde kalır. Ölçülen tasarrufun olmadığı bir ay mı? Koltukları ödersiniz, komisyon sıfır."
+          "body": "Tasarruf etseniz de etmeseniz de her ay koltuk başına sabit bir ücret ödersiniz. Bunun üzerine komisyonumuz yalnızca sağlayıcınızın sayacıyla ölçülen tasarruftan çıkar — ve her tasarrufun büyük kısmı her zaman sizde kalır. Ölçülen tasarrufun olmadığı bir ay mı? Koltukları ödersiniz, komisyon sıfır."
         }
       ],
       "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
       "title": "Koltuk başına ücret, her zaman. Komisyon yalnızca ölçülen tasarruf üzerinden.",
-      "body": "Ücretsiz plan ve deneme yok: ödemeden önce herkese açık ölçümleri kontrol edebilir ve doğrulayıcıyı kendi verileriniz üzerinde çalıştırabilirsiniz, tam bu sayfada. Koltuk ücreti, tasarruf etseniz de etmeseniz de her ay {currency} cinsinden faturalanır. Komisyon bunun üzerine eklenir ve yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf üzerindendir — tahminler asla girmez.",
+      "body": "Ücretsiz plan ve deneme yok: ödemeden önce herkese açık ölçümleri kontrol edebilir ve doğrulayıcıyı kendi verileriniz üzerinde çalıştırabilirsiniz, tam bu sayfada. Koltuk ücreti, tasarruf etseniz de etmeseniz de her ay {currency} cinsinden faturalanır. Komisyon bunun üzerine eklenir ve yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf üzerindendir — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır. Tahminler asla girmez.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
@@ -1045,7 +1045,7 @@
         "who": "Kendi anahtarınızla bir LLM API'sini çağıran ve her token için ödeme yapan, JavaScript veya TypeScript ile yazılmış Node.js uygulamaları için.",
         "what": "Çağrıyı kodunuzun içinde sarar, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir SavingsReport döndürür.",
         "figureLabel": "Yayımlanan taban, gerçek bir sağlayıcıya karşı ölçüldü",
-        "figureNote": "Bir taban, bir tahmin değil: ne kadar tasarruf edeceğiniz trafiğinize bağlıdır ve komisyona yalnızca sağlayıcınızın sayacının doğruladığı girer.",
+        "figureNote": "Bir taban, bir tahmin değil: ne kadar tasarruf edeceğiniz trafiğinize bağlıdır. Komisyona yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf girer — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır.",
         "ctaMeasured": "Nasıl ölçtük",
         "ctaVerify": "Verilerinizde bir kaldıracı deneyin"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — API anahtarıyla çalışan kod ajanları için",
         "who": "Claude Code, Codex CLI veya başka bir kod ajanını API anahtarıyla kullananlar için.",
-        "what": "Tek bir komut, koda dokunmadan terminalinizin önüne yerel bir sayaç koyar. Gateway her isteği sağlayıcınızın sayacıyla sayar — fiyat kataloğumuzdaki modeller için — ve panelinizde ona makbuzunu verir.",
+        "what": "Tek bir komut, koda dokunmadan terminalinizin önüne yerel bir sayaç koyar. Gateway, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla sayar — fiyat kataloğumuzdaki modeller için — ve bunları panelinizde gün ve model bazında toplar.",
         "figureLabel": "Yayımlanmış tasarruf rakamı yok",
-        "figureNote": "Kod ajanları için ölçülmüş bir tasarruf yayımlamadık, bu yüzden hiçbirini duyurmuyoruz. PRO ile, Anthropic modellerinde, gateway oturumunuz sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır — bu fiyatı değiştirir, modelin okuduğunu asla — ve komisyona yalnızca sağlayıcınızın sayacının doğruladığı girer.",
+        "figureNote": "Kod ajanları için ölçülmüş bir tasarruf yayımlamadık, bu yüzden hiçbirini duyurmuyoruz. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; komisyona da yalnızca sağlayıcınızın sayacının doğruladığı girer.",
         "cta": "Gateway'i kurun"
+      },
+      "skill": {
+        "band": "Skill — abonelikle çalışan kod ajanları için"
       }
     },
     "verify": {
       "eyebrow": "SDK · tek bir kaldıraç, verilerinizde, ödemeden önce",
-      "title": "Verilerinizi yapıştırın. SDK'nın ne göndereceğini görün.",
+      "title": "Verilerinizi yapıştırın. SDK'nın kaç token göndereceğini görün.",
       "sub": "Burada SDK'nın gerçek format seçicisi, tarayıcınızda ve verilerinizle çalışır. Hiçbir şey bu sayfadan çıkmaz ve hesaba ihtiyacınız yok.",
       "tryExample": "Bir örnek deneyin",
       "sample_orders": "Mağaza siparişleri",
@@ -1071,6 +1074,7 @@
       "loading": "Optimize edici ve kesin tokenizer yükleniyor…",
       "errBundle": "Optimize edici yüklenemedi. Yeniden denemek için sayfayı yenileyin.",
       "errInvalidData": "Geçerli JSON bekleniyor… {message}",
+      "errTokenizer": "Kesin tokenizer bu metni sayamıyor ({message}), bu yüzden hiçbir rakam göstermiyoruz.",
       "tooBig": "Bu, {max} karakterden fazla. Daha küçük bir örnek yapıştırın.",
       "tagExact": "Kesin sayım",
       "tagApprox": "Yaklaşık",
@@ -1079,9 +1083,10 @@
       "fewer": "Bu verilerde −{pct} giriş token'ı",
       "trims": "{before} token'dan {after} token'a, formatın talimatları dâhil.",
       "alreadyOptimal": "Burada hiçbir format kompakt JSON'dan daha iyi değil, bu yüzden SDK verileri olduğu gibi gönderirdi. Bu kaldıraç verilerinizi asla büyütmez.",
+      "notComparable": "Bu verilerde formatları kompakt JSON ile karşılaştıramıyoruz, bu yüzden hiçbir rakam göstermiyoruz.",
       "exactNote": "{model} modelinin kullandığı tokenizer olan {tokenizer} ile sayıldı. Verilerinizin kompakt JSON hâliyle karşılaştırıyoruz: bugün onları girintili gönderiyorsanız gerçek fark daha büyüktür — ve onu saymıyoruz.",
       "approxNote": "Kesin tokenizer yüklenmedi, bu yüzden buradaki her sayım yaklaşık olurdu — ve yaklaşık tasarruf göstermiyoruz. Yeniden denemek için sayfayı yenileyin.",
-      "scope": "Ne olduğu ve ne olmadığı: tek bir kaldıraç — yapılandırılmış verilerin prompt'a nasıl yazıldığı — bu verilerin giriş token'ları üzerinde. Bu sizin faturanız değil: kaçınılan çağrılar, sağlayıcınızın önbelleği ve çıkış burada yok; birçok istek de hiç yapılandırılmış veri taşımaz. SDK'nın tamamı için arkasında durduğumuz rakam, ölçüm bölümünde yayımlanan tabandır.",
+      "scope": "Ne olduğu ve ne olmadığı: tek bir kaldıraç — yapılandırılmış verilerin prompt'a nasıl yazıldığı — bu verilerin giriş token'ları üzerinde. Yalnızca SDK'ya structuredData olarak verdiğiniz verilere uygulanır, mesajlarınızın içine zaten yazılmış JSON'a değil. Bu sizin faturanız değil: kaçınılan çağrılar, sağlayıcınızın önbelleği ve çıkış burada yok; birçok istek de hiç yapılandırılmış veri taşımaz. SDK'nın tamamı için arkasında durduğumuz rakam, ölçüm bölümünde yayımlanan tabandır.",
       "ctaInstall": "SDK'yı kurun"
     }
   },

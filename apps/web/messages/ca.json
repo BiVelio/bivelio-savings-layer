@@ -785,7 +785,7 @@
         },
         {
           "title": "Una quota per seient i una part del que es mesura",
-          "body": "Pagues una quota fixa per seient cada mes, passi el que passi. A més, la nostra comissió surt només de l'estalvi mesurat amb el comptador del teu proveïdor, i la major part de cada estalvi es queda sempre amb tu. Un mes sense estalvi mesurat? Pagues els seients i zero comissió."
+          "body": "Pagues una quota fixa per seient cada mes, estalviïs o no. A més, la nostra comissió surt només de l'estalvi mesurat amb el comptador del teu proveïdor, i la major part de cada estalvi es queda sempre amb tu. Un mes sense estalvi mesurat? Pagues els seients i zero comissió."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Un sol pla, amb preu per seient",
       "title": "Quota per seient, sempre. Comissió només sobre l'estalvi mesurat.",
-      "body": "Sense pla gratuït i sense prova: abans de pagar pots comprovar els mesuraments públics i passar el verificador per les teves pròpies dades, aquí mateix. La quota per seient es cobra cada mes, en {currency}, estalviïs o no. La comissió va a part, i només sobre l'estalvi mesurat amb el comptador del teu proveïdor: l'estimat no hi entra mai.",
+      "body": "Sense pla gratuït i sense prova: abans de pagar pots comprovar els mesuraments públics i passar el verificador per les teves pròpies dades, aquí mateix. La quota per seient es cobra cada mes, en {currency}, estalviïs o no. La comissió va a part, i només sobre l'estalvi mesurat amb el comptador del teu proveïdor, incloses les peticions repetides que se serveixen sense cridar-lo, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar. L'estimat no hi entra mai.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
@@ -1045,7 +1045,7 @@
         "who": "Per a apps de Node.js, en JavaScript o TypeScript, que criden una API de LLM amb la teva pròpia clau i paguen cada token.",
         "what": "Embolcalla la crida dins del teu codi, envia al proveïdor només el que cal pagar i retorna un SavingsReport amb cada resposta.",
         "figureLabel": "Sòl publicat, mesurat contra un proveïdor real",
-        "figureNote": "Un sòl, no una previsió: el que estalviïs depèn del teu trànsit, i només el que confirma el comptador del teu proveïdor entra a la comissió.",
+        "figureNote": "Un sòl, no una previsió: el que estalviïs depèn del teu trànsit. A la comissió només hi entra l'estalvi mesurat amb el comptador del teu proveïdor, incloses les peticions repetides que se serveixen sense cridar-lo, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar.",
         "ctaMeasured": "Com ho hem mesurat",
         "ctaVerify": "Prova una palanca amb les teves dades"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — per a agents de codi amb API key",
         "who": "Per a qui treballa amb Claude Code, Codex CLI o un altre agent de codi amb API key.",
-        "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició amb el comptador del teu proveïdor —en els models del nostre catàleg de preus— i li dona el seu rebut al teu tauler.",
+        "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició de la qual el teu proveïdor informa l'ús, amb el seu propi comptador —en els models del nostre catàleg de preus—, i ho suma al teu tauler, per dia i per model.",
         "figureLabel": "Sense xifra d'estalvi publicada",
-        "figureNote": "No hem publicat cap estalvi mesurat per a agents de codi, així que no n'anunciem cap. Amb PRO, en models d'Anthropic, escurça el TTL d'escriptura de la memòria cau mentre la sessió continua calenta —canvia el preu, mai el que llegeix el model— i només el que confirma el comptador del teu proveïdor entra a la comissió.",
+        "figureNote": "No hem publicat cap estalvi mesurat per a agents de codi, així que no n'anunciem cap. Amb PRO, en models d'Anthropic, passa les escriptures de la memòria cau del TTL d'una hora al de cinc minuts només en els torns en què una part gran del prompt és nova —com el primer d'una sessió o una compactació— i deixa com estan els torns encadenats d'una sessió en marxa. Això canvia el preu, mai el que llegeix el model, i només el que confirma el comptador del teu proveïdor entra a la comissió.",
         "cta": "Instal·la el gateway"
+      },
+      "skill": {
+        "band": "Skill — per a agents de codi amb subscripció"
       }
     },
     "verify": {
       "eyebrow": "SDK · una palanca, amb les teves dades, abans de pagar",
-      "title": "Enganxa les teves dades. Mira què enviaria l'SDK.",
+      "title": "Enganxa les teves dades. Mira quants tokens enviaria l'SDK.",
       "sub": "Aquí corre el selector de format real de l'SDK, al teu navegador i amb les teves dades. Res no surt d'aquesta pàgina i no necessites compte.",
       "tryExample": "Prova amb un exemple",
       "sample_orders": "Comandes de botiga",
@@ -1071,6 +1074,7 @@
       "loading": "Carregant l'optimitzador i el tokenitzador exacte…",
       "errBundle": "No s'ha pogut carregar l'optimitzador. Recarrega la pàgina per tornar-ho a provar.",
       "errInvalidData": "Esperant un JSON vàlid… {message}",
+      "errTokenizer": "El tokenitzador exacte no pot comptar aquest text ({message}), així que no mostrem cap xifra.",
       "tooBig": "Són més de {max} caràcters. Enganxa una mostra més petita.",
       "tagExact": "Recompte exacte",
       "tagApprox": "Aproximat",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} de tokens d'entrada en aquestes dades",
       "trims": "De {before} a {after} tokens, instruccions del format incloses.",
       "alreadyOptimal": "Aquí cap format no millora el JSON compacte, així que l'SDK les enviaria tal qual. Aquesta palanca mai no fa més grans les teves dades.",
+      "notComparable": "Amb aquestes dades no podem comparar els formats amb el JSON compacte, així que no mostrem cap xifra.",
       "exactNote": "Comptat amb {tokenizer}, el tokenitzador que fa servir {model}. Comparem amb les teves dades en JSON compacte: si avui les envies amb sagnats, la diferència real és més gran, i això no ho comptem.",
       "approxNote": "El tokenitzador exacte no s'ha carregat, així que qualsevol recompte aquí seria aproximat, i no mostrem estalvis aproximats. Recarrega la pàgina per tornar-ho a provar.",
-      "scope": "Què és i què no és: una palanca —com s'escriuen les dades estructurades al prompt— sobre els tokens d'entrada d'aquestes dades. No és la teva factura: ni les crides evitades, ni la memòria cau del teu proveïdor, ni la sortida hi són, i moltes peticions no porten dades estructurades. La xifra que defensem per a l'SDK sencer és el sòl publicat a la secció del mesurament.",
+      "scope": "Què és i què no és: una palanca —com s'escriuen les dades estructurades al prompt— sobre els tokens d'entrada d'aquestes dades. Només s'aplica a les dades que passes a l'SDK com a structuredData, no al JSON que ja va escrit dins dels teus missatges. No és la teva factura: ni les crides evitades, ni la memòria cau del teu proveïdor, ni la sortida hi són, i moltes peticions no porten dades estructurades. La xifra que defensem per a l'SDK sencer és el sòl publicat a la secció del mesurament.",
       "ctaInstall": "Instal·la l'SDK"
     }
   },

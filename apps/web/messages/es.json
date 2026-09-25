@@ -785,7 +785,7 @@
         },
         {
           "title": "Una cuota por asiento y una parte de lo medido",
-          "body": "Pagas una cuota fija por asiento cada mes, pase lo que pase. Además, nuestra comisión sale solo del ahorro medido con el contador de tu proveedor, y la mayor parte de cada ahorro se queda siempre contigo. ¿Un mes sin ahorro medido? Pagas los asientos y cero comisión."
+          "body": "Pagas una cuota fija por asiento cada mes, ahorres o no. Además, nuestra comisión sale solo del ahorro medido con el contador de tu proveedor, y la mayor parte de cada ahorro se queda siempre contigo. ¿Un mes sin ahorro medido? Pagas los asientos y cero comisión."
         }
       ],
       "nota": "Las animaciones ilustran la idea. Las cifras de verdad — medidas contra proveedores reales — están justo debajo."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
       "title": "Cuota por asiento, siempre. Comisión solo sobre el ahorro medido.",
-      "body": "Sin plan gratuito y sin prueba: antes de pagar puedes comprobar las mediciones públicas y pasar el verificador por tus propios datos, aquí mismo. La cuota por asiento se cobra cada mes, en {currency}, ahorres o no. La comisión va aparte, y solo sobre el ahorro medido con el contador de tu proveedor: lo estimado nunca entra.",
+      "body": "Sin plan gratuito y sin prueba: antes de pagar puedes comprobar las mediciones públicas y pasar el verificador por tus propios datos, aquí mismo. La cuota por asiento se cobra cada mes, en {currency}, ahorres o no. La comisión va aparte, y solo sobre el ahorro medido con el contador de tu proveedor, incluidas las peticiones repetidas que se sirven sin llamarlo, cada una valorada con el contador de la petición idéntica que ya se ejecutó. Lo estimado nunca entra.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
@@ -1045,7 +1045,7 @@
         "who": "Para apps de Node.js, en JavaScript o TypeScript, que llaman a una API de LLM con tu propia clave y pagan cada token.",
         "what": "Envuelve la llamada dentro de tu código, envía al proveedor solo lo que hay que pagar y devuelve un SavingsReport con cada respuesta.",
         "figureLabel": "Suelo publicado, medido contra un proveedor real",
-        "figureNote": "Un suelo, no una previsión: lo que ahorres depende de tu tráfico, y solo lo que confirma el contador de tu proveedor entra en la comisión.",
+        "figureNote": "Un suelo, no una previsión: lo que ahorres depende de tu tráfico. En la comisión solo entra el ahorro medido con el contador de tu proveedor, incluidas las peticiones repetidas que se sirven sin llamarlo, cada una valorada con el contador de la petición idéntica que ya se ejecutó.",
         "ctaMeasured": "Cómo lo medimos",
         "ctaVerify": "Prueba una palanca con tus datos"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — para agentes de código con API key",
         "who": "Para quien trabaja con Claude Code, Codex CLI u otro agente de código con API key.",
-        "what": "Un comando pone un medidor local delante de tu terminal, sin tocar código. Cuenta cada petición con el contador de tu proveedor —en los modelos de nuestro catálogo de precios— y le da su recibo en tu panel.",
+        "what": "Un comando pone un medidor local delante de tu terminal, sin tocar código. Cuenta cada petición de la que tu proveedor informa el uso, con su propio contador —en los modelos de nuestro catálogo de precios—, y lo suma en tu panel, por día y por modelo.",
         "figureLabel": "Sin cifra de ahorro publicada",
-        "figureNote": "No hemos publicado un ahorro medido para agentes de código, así que no anunciamos ninguno. Con PRO, en modelos de Anthropic, acorta el TTL de escritura de caché mientras la sesión sigue caliente —cambia el precio, nunca lo que lee el modelo— y solo lo que confirma el contador de tu proveedor entra en la comisión.",
+        "figureNote": "No hemos publicado un ahorro medido para agentes de código, así que no anunciamos ninguno. Con PRO, en modelos de Anthropic, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor entra en la comisión.",
         "cta": "Instalar el gateway"
+      },
+      "skill": {
+        "band": "Skill — para agentes de código con suscripción"
       }
     },
     "verify": {
       "eyebrow": "SDK · una palanca, con tus datos, antes de pagar",
-      "title": "Pega tus datos. Mira lo que enviaría el SDK.",
+      "title": "Pega tus datos. Mira cuántos tokens enviaría el SDK.",
       "sub": "Aquí corre el selector de formato real del SDK, en tu navegador y con tus datos. Nada sale de esta página y no necesitas cuenta.",
       "tryExample": "Prueba un ejemplo",
       "sample_orders": "Pedidos de tienda",
@@ -1071,6 +1074,7 @@
       "loading": "Cargando el optimizador y el tokenizador exacto…",
       "errBundle": "No se pudo cargar el optimizador. Recarga la página para volver a intentarlo.",
       "errInvalidData": "Esperando un JSON válido… {message}",
+      "errTokenizer": "El tokenizador exacto no puede contar este texto ({message}), así que no enseñamos ninguna cifra.",
       "tooBig": "Son más de {max} caracteres. Pega una muestra más pequeña.",
       "tagExact": "Recuento exacto",
       "tagApprox": "Aproximado",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} de tokens de entrada en estos datos",
       "trims": "De {before} a {after} tokens, instrucciones del formato incluidas.",
       "alreadyOptimal": "Aquí ningún formato mejora al JSON compacto, así que el SDK los enviaría tal cual. Esta palanca nunca hace más grandes tus datos.",
+      "notComparable": "Con estos datos no podemos comparar los formatos con el JSON compacto, así que no enseñamos ninguna cifra.",
       "exactNote": "Contado con {tokenizer}, el tokenizador que usa {model}. Comparamos con tus datos en JSON compacto: si hoy los envías con sangrías, la diferencia real es mayor, y eso no lo contamos.",
       "approxNote": "El tokenizador exacto no ha cargado, así que cualquier recuento aquí sería aproximado, y no enseñamos ahorros aproximados. Recarga la página para volver a intentarlo.",
-      "scope": "Qué es y qué no es: una palanca —cómo se escriben los datos estructurados en el prompt— sobre los tokens de entrada de estos datos. No es tu factura: ni las llamadas evitadas, ni la caché de tu proveedor, ni la salida están aquí, y muchas peticiones no llevan datos estructurados. La cifra que defendemos para el SDK entero es el suelo publicado en la sección de la medición.",
+      "scope": "Qué es y qué no es: una palanca —cómo se escriben los datos estructurados en el prompt— sobre los tokens de entrada de estos datos. Solo se aplica a los datos que le pasas al SDK como structuredData, no al JSON que ya va escrito dentro de tus mensajes. No es tu factura: ni las llamadas evitadas, ni la caché de tu proveedor, ni la salida están aquí, y muchas peticiones no llevan datos estructurados. La cifra que defendemos para el SDK entero es el suelo publicado en la sección de la medición.",
       "ctaInstall": "Instalar el SDK"
     }
   },

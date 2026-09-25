@@ -153,6 +153,117 @@ describe("dos ofertas: los espacios nuevos no llevan cifras escritas a mano", ()
   }
 });
 
+/**
+ * LA TARJETA DEL GATEWAY PROMETE LO QUE EL CÓDIGO HACE, NI UN TURNO MÁS.
+ *
+ * · No hay recibo por petición del tráfico del gateway: el panel lo agrega por
+ *   día y modelo (`usage_daily`, `usage_daily_by_model`) y `renderizarRecibo`
+ *   (gateway/recibo.ts) no tiene llamador. El «recibo» del producto es el
+ *   SavingsReport del SDK. La tarjeta no puede decir «recibo».
+ * · La rebaja de TTL NO actúa «mientras la sesión sigue caliente»: esa era la
+ *   política de #229, medida y retirada porque perdía el 6,3 % de la factura.
+ *   `decidirRebaja` rebaja solo cuando una parte grande del cuerpo es nueva
+ *   (arranque, compactación) y nunca en el turno encadenado. El texto de la
+ *   tarjeta lo dice así, y si el código cambia de política este test lo ancla:
+ *   hay que volver a escribir la tarjeta.
+ */
+const TARIFA_GATEWAY = readFileSync(new URL("../../../gateway/tarifa.ts", import.meta.url), "utf8");
+const TARIFA_WEB = readFileSync(new URL("../lib/billing/tarifa.ts", import.meta.url), "utf8");
+
+/** «Recibo» en cada idioma (tal como lo decía la tarjeta antes de corregirla). */
+const RECIBO: Record<Loc, RegExp> = {
+  en: /receipt/i,
+  es: /recibo/i,
+  ca: /rebut/i,
+  de: /beleg/i,
+  fr: /reçu/i,
+  id: /struk/i,
+  it: /ricevut/i,
+  nl: /\bbon\b/i,
+  pl: /paragon/i,
+  pt: /recibo/i,
+  tr: /makbuz/i,
+  vi: /biên lai/i,
+};
+/** «Sesión caliente» en cada idioma: la política de #229, que el código NO aplica. */
+const CALIENTE: Record<Loc, RegExp> = {
+  en: /\b(hot|warm)\b/i,
+  es: /caliente/i,
+  ca: /calent/i,
+  de: /\bwarm/i,
+  fr: /chaud/i,
+  id: /hangat/i,
+  it: /cald/i,
+  nl: /\bwarm/i,
+  pl: /ciepł/i,
+  pt: /quente/i,
+  tr: /sıcak/i,
+  vi: /nóng/i,
+};
+
+describe("la tarjeta del gateway: ni recibo por petición ni «mientras la sesión sigue caliente»", () => {
+  it("el código sigue rebajando SOLO los turnos reescritos (si esto cambia, hay que reescribir la tarjeta)", () => {
+    expect(TARIFA_GATEWAY).toMatch(/export const UMBRAL_REESCRITURA = 0\.3;/);
+    expect(TARIFA_GATEWAY).toMatch(/return fraccion >= umbral;/);
+    expect(TARIFA_GATEWAY).toContain("Turno encadenado (unos K sobre\n * cientos de K) → NO");
+  });
+
+  it("en/es: la tarjeta nombra el arranque de sesión y la compactación, y el paso de una hora a cinco minutos", () => {
+    const en = cargar("en")["landing.offers.gateway.figureNote"]!;
+    const es = cargar("es")["landing.offers.gateway.figureNote"]!;
+    for (const t of ["first turn", "compaction", "one-hour", "five-minute", "chained turns"]) expect(en).toContain(t);
+    for (const t of ["primero de una sesión", "compactación", "una hora", "cinco minutos", "turnos encadenados"]) expect(es).toContain(t);
+  });
+
+  for (const loc of LOCALES) {
+    it(`${loc}: sin recibo en la tarjeta del gateway, y sin sesión «caliente» en su nota`, () => {
+      const d = cargar(loc);
+      const tarjeta = bajo(d, "landing.offers.gateway");
+      expect(tarjeta.filter(([, v]) => RECIBO[loc].test(v)).map(([k]) => k)).toEqual([]);
+      expect(d["landing.offers.gateway.figureNote"]).not.toMatch(CALIENTE[loc]);
+      // Y la tarjeta ya no es la de antes en ningún idioma: «TTL» sigue, «sesión caliente» no.
+      expect(d["landing.offers.gateway.figureNote"]).toContain("TTL");
+    });
+  }
+});
+
+describe("comisión por referencia: si se cobra, se dice", () => {
+  const cobra = /export const COMISIONAR_REFERENCIA: boolean = true;/.test(TARIFA_WEB);
+
+  it("en/es: el precio y la nota del SDK nombran las peticiones repetidas mientras COMISIONAR_REFERENCIA esté encendido", () => {
+    if (!cobra) return;
+    const en = cargar("en");
+    const es = cargar("es");
+    for (const k of ["landing.pricing.body", "landing.offers.sdk.figureNote"]) {
+      expect(en[k], k).toMatch(/repeated requests/);
+      expect(en[k], k).toMatch(/identical request that already ran/);
+      expect(es[k], k).toMatch(/peticiones repetidas/);
+      expect(es[k], k).toMatch(/petición idéntica que ya se ejecutó/);
+    }
+  });
+
+  /** «La petición idéntica» en cada idioma: la cláusula que dice con qué contador se valora la repetición. */
+  const IDENTICA: Record<Exclude<Loc, "en" | "es">, string> = {
+    ca: "petició idèntica",
+    de: "identischen Anfrage",
+    fr: "requête identique",
+    id: "permintaan identik",
+    it: "richiesta identica",
+    nl: "identieke verzoek",
+    pl: "identycznego zapytania",
+    pt: "pedido idêntico",
+    tr: "özdeş isteğin",
+    vi: "giống hệt",
+  };
+  for (const [loc, frase] of Object.entries(IDENTICA) as [Exclude<Loc, "en" | "es">, string][]) {
+    it(`${loc}: el precio y la nota del SDK también dicen con qué contador se valora una repetición`, () => {
+      if (!cobra) return;
+      const d = cargar(loc);
+      for (const k of ["landing.pricing.body", "landing.offers.sdk.figureNote"]) expect(d[k], `${loc} ${k}`).toContain(frase);
+    });
+  }
+});
+
 describe("comisión sin trampa: la cuota por asiento se cobra siempre", () => {
   const en = cargar("en");
   const es = cargar("es");

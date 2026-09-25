@@ -305,15 +305,20 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         {/* DOS OFERTAS (decisión delegada, bitácora del 10-09): la portada
             mezclaba dos productos. Al cliente con una app y su API key el SDK
             le recorta la factura y hay un suelo publicado; al de un agente de
-            código, el gateway le MIDE con el contador del proveedor y le da un
-            recibo por petición. Cada uno lleva su público, su instalación y su
-            propia promesa.
+            código, el gateway le MIDE con el contador del proveedor y lo suma
+            en el panel por día y modelo (no hay recibo por petición del
+            gateway: `renderizarRecibo` no tiene llamador, y el recibo del
+            producto es el SavingsReport del SDK). Cada uno lleva su público, su
+            instalación y su propia promesa.
             · La cifra del SDK es la fila de `hero.proofs` (la de la sección de
               lo medido y la del recibo): una sola fuente, con su verja.
             · El gateway va SIN número a propósito: no hay ningún artefacto
               medido y publicado de su ahorro (public/data solo trae el A/B del
-              SDK), y aquí se publica el suelo o nada. Su promesa es medir y dar
-              recibo, y con PRO acortar el TTL de escritura de caché. */}
+              SDK), y aquí se publica el suelo o nada. Su promesa es medir y
+              enseñarlo en el panel, y con PRO pasar a 5m las escrituras de
+              caché SOLO en los turnos con buena parte del prompt nueva
+              (gateway/tarifa.ts, `decidirRebaja`): nunca «mientras la sesión
+              sigue caliente», que es la política de #229 que perdía dinero. */}
         <section id="offers">
           <div className="sec-head rv">
             <span className="eyebrow">{t("offers.eyebrow")}</span>
@@ -732,6 +737,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               messages/copia-del-gateway.test.ts. */}
           <p style={{ marginTop: 8, opacity: 0.85 }}>{t("gateway.pythonNote")}</p>
         </section>
+
+        {/* Su propia banda: sin ella, el skill (gratis, para quien usa un agente
+            con SUSCRIPCIÓN) quedaba bajo la del gateway «con API key» y se leía
+            como parte de esa oferta. */}
+        <div className="offer-band rv" id="skill">
+          {t("offers.skill.band")}
+        </div>
 
         {/* SKILL SAVINGS-MODE — el segmento SUSCRIPCIÓN (sin factura, con topes).
             Gratis a propósito: el embudo. Las tres cifras salen de

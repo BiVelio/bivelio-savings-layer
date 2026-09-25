@@ -785,7 +785,7 @@
         },
         {
           "title": "A seat fee, and a share of what's measured",
-          "body": "You pay a fixed fee per seat every month, whatever happens. On top of it, our commission comes only out of savings measured with your provider's meter — and most of every saving always stays with you. A month with no measured savings? You pay the seats and zero commission."
+          "body": "You pay a fixed fee per seat every month, whether or not you save. On top of it, our commission comes only out of savings measured with your provider's meter — and most of every saving always stays with you. A month with no measured savings? You pay the seats and zero commission."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "One plan, priced per seat",
       "title": "A seat fee, always. Commission only on measured savings.",
-      "body": "No free tier, no trial: before paying you can check the public measurements and run the verifier on your own data, right on this page. The seat fee is billed every month, in {currency}, whether or not you save. The commission is on top, and only on savings measured with your provider's meter — estimates never enter it.",
+      "body": "No free tier, no trial: before paying you can check the public measurements and run the verifier on your own data, right on this page. The seat fee is billed every month, in {currency}, whether or not you save. The commission is on top, and only on savings measured with your provider's meter — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran. Estimates never enter it.",
       "amount": "{amount}",
       "per": "/ seat / month",
       "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
@@ -1045,7 +1045,7 @@
         "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
         "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
         "figureLabel": "Published floor, measured against a real provider",
-        "figureNote": "A floor, not a forecast: what you save depends on your traffic, and only what your provider's meter confirms enters the commission.",
+        "figureNote": "A floor, not a forecast: what you save depends on your traffic. Only savings measured with your provider's counter enter the commission — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
         "ctaMeasured": "How we measured it",
         "ctaVerify": "Try one lever on your data"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — for coding agents on an API key",
         "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
-        "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request with your provider's own counter — for models in our price catalog — and gives it a receipt in your dashboard.",
+        "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
         "figureLabel": "No savings figure published",
-        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it shortens the cache-write TTL while your session stays hot — that changes the price, never what the model reads — and only what your provider's counter confirms enters the commission.",
+        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms enters the commission.",
         "cta": "Set up the gateway"
+      },
+      "skill": {
+        "band": "Skill — for coding agents on a subscription plan"
       }
     },
     "verify": {
       "eyebrow": "SDK · one lever, on your data, before paying",
-      "title": "Paste your data. See what the SDK would send.",
+      "title": "Paste your data. See how many tokens the SDK would send.",
       "sub": "This runs the SDK's real format selector in your browser, on your data. Nothing leaves this page and you don't need an account.",
       "tryExample": "Try an example",
       "sample_orders": "Store orders",
@@ -1071,6 +1074,7 @@
       "loading": "Loading the optimizer and the exact tokenizer…",
       "errBundle": "The optimizer could not load. Reload the page to try again.",
       "errInvalidData": "Waiting for valid JSON… {message}",
+      "errTokenizer": "The exact tokenizer can't count this text ({message}), so we show no figure.",
       "tooBig": "That is more than {max} characters. Paste a smaller sample.",
       "tagExact": "Exact count",
       "tagApprox": "Approximate",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} input tokens on this data",
       "trims": "From {before} to {after} tokens, the format's instructions included.",
       "alreadyOptimal": "No format beats compact JSON here, so the SDK would send it as it is. This lever never makes your data bigger.",
+      "notComparable": "We can't compare the formats against compact JSON on this data, so we show no figure.",
       "exactNote": "Counted with {tokenizer}, the tokenizer {model} uses. We compare against your data as compact JSON: if you send it indented today, the real difference is larger — and we don't count that.",
       "approxNote": "The exact tokenizer did not load, so any count here would be approximate — and we don't show approximate savings. Reload the page to try again.",
-      "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. The figure we stand behind for the whole SDK is the published floor in the measurement section.",
+      "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It applies only to data you pass to the SDK as structuredData, not to JSON already written inside your messages. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. The figure we stand behind for the whole SDK is the published floor in the measurement section.",
       "ctaInstall": "Install the SDK"
     }
   },

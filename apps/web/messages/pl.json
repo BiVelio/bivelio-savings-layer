@@ -785,7 +785,7 @@
         },
         {
           "title": "Opłata za stanowisko i część tego, co zmierzone",
-          "body": "Płacisz co miesiąc stałą opłatę za stanowisko, bez względu na wszystko. Do tego nasza prowizja pochodzi wyłącznie z oszczędności zmierzonych licznikiem Twojego dostawcy — a większość każdej oszczędności zawsze zostaje u Ciebie. Miesiąc bez zmierzonych oszczędności? Płacisz za stanowiska i zero prowizji."
+          "body": "Płacisz co miesiąc stałą opłatę za stanowisko, niezależnie od tego, czy oszczędzasz. Do tego nasza prowizja pochodzi wyłącznie z oszczędności zmierzonych licznikiem Twojego dostawcy — a większość każdej oszczędności zawsze zostaje u Ciebie. Miesiąc bez zmierzonych oszczędności? Płacisz za stanowiska i zero prowizji."
         }
       ],
       "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
       "title": "Opłata za stanowisko, zawsze. Prowizja tylko od zmierzonych oszczędności.",
-      "body": "Bez darmowego planu i bez okresu próbnego: przed zapłatą możesz sprawdzić publiczne pomiary i przepuścić własne dane przez weryfikator, tu, na tej stronie. Opłata za stanowisko jest pobierana co miesiąc, w {currency}, niezależnie od tego, czy oszczędzasz. Prowizja jest doliczana osobno i tylko od oszczędności zmierzonych licznikiem Twojego dostawcy — szacunki nigdy do niej nie wchodzą.",
+      "body": "Bez darmowego planu i bez okresu próbnego: przed zapłatą możesz sprawdzić publiczne pomiary i przepuścić własne dane przez weryfikator, tu, na tej stronie. Opłata za stanowisko jest pobierana co miesiąc, w {currency}, niezależnie od tego, czy oszczędzasz. Prowizja jest doliczana osobno i tylko od oszczędności zmierzonych licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane. Szacunki nigdy do niej nie wchodzą.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
@@ -1045,7 +1045,7 @@
         "who": "Dla aplikacji Node.js, w JavaScript lub TypeScript, które wywołują API LLM własnym kluczem i płacą za każdy token.",
         "what": "Opakowuje wywołanie w Twoim kodzie, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca SavingsReport z każdą odpowiedzią.",
         "figureLabel": "Opublikowany próg, zmierzony względem prawdziwego dostawcy",
-        "figureNote": "Próg, nie prognoza: ile zaoszczędzisz, zależy od Twojego ruchu, a do prowizji wchodzi tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "figureNote": "Próg, nie prognoza: ile zaoszczędzisz, zależy od Twojego ruchu. Do prowizji wchodzą tylko oszczędności zmierzone licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
         "ctaMeasured": "Jak to zmierzyliśmy",
         "ctaVerify": "Wypróbuj jedną dźwignię na swoich danych"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — dla agentów programistycznych z kluczem API",
         "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
-        "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie licznikiem Twojego dostawcy — dla modeli z naszego cennika — i wystawia mu paragon w Twoim panelu.",
+        "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
         "figureLabel": "Brak opublikowanej liczby oszczędności",
-        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway skraca TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła — zmienia to cenę, nigdy to, co czyta model — a do prowizji wchodzi tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a do prowizji wchodzi tylko to, co potwierdzi licznik Twojego dostawcy.",
         "cta": "Skonfiguruj gateway"
+      },
+      "skill": {
+        "band": "Skill — dla agentów programistycznych w subskrypcji"
       }
     },
     "verify": {
       "eyebrow": "SDK · jedna dźwignia, na Twoich danych, przed zapłatą",
-      "title": "Wklej swoje dane. Zobacz, co wysłałby SDK.",
+      "title": "Wklej swoje dane. Zobacz, ile tokenów wysłałby SDK.",
       "sub": "Tu działa prawdziwy selektor formatu SDK, w Twojej przeglądarce i na Twoich danych. Nic nie opuszcza tej strony i nie potrzebujesz konta.",
       "tryExample": "Wypróbuj przykład",
       "sample_orders": "Zamówienia sklepu",
@@ -1071,6 +1074,7 @@
       "loading": "Ładowanie optymalizatora i dokładnego tokenizera…",
       "errBundle": "Nie udało się załadować optymalizatora. Odśwież stronę, aby spróbować ponownie.",
       "errInvalidData": "Oczekiwanie na prawidłowy JSON… {message}",
+      "errTokenizer": "Dokładny tokenizer nie potrafi policzyć tego tekstu ({message}), więc nie pokazujemy żadnej liczby.",
       "tooBig": "To ponad {max} znaków. Wklej mniejszą próbkę.",
       "tagExact": "Dokładne liczenie",
       "tagApprox": "Przybliżone",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} tokenów wejściowych na tych danych",
       "trims": "Z {before} do {after} tokenów, razem z instrukcjami formatu.",
       "alreadyOptimal": "Tu żaden format nie wygrywa z kompaktowym JSON-em, więc SDK wysłałby je bez zmian. Ta dźwignia nigdy nie powiększa Twoich danych.",
+      "notComparable": "Na tych danych nie możemy porównać formatów z kompaktowym JSON-em, więc nie pokazujemy żadnej liczby.",
       "exactNote": "Policzone tokenizerem {tokenizer}, którego używa {model}. Porównujemy z Twoimi danymi jako kompaktowym JSON-em: jeśli dziś wysyłasz je z wcięciami, rzeczywista różnica jest większa — i tego nie liczymy.",
       "approxNote": "Dokładny tokenizer się nie załadował, więc każde liczenie tutaj byłoby przybliżone — a przybliżonych oszczędności nie pokazujemy. Odśwież stronę, aby spróbować ponownie.",
-      "scope": "Czym to jest, a czym nie: jedna dźwignia — sposób zapisu danych strukturalnych w prompcie — na tokenach wejściowych tych danych. To nie jest Twoja faktura: nie ma tu unikniętych wywołań, pamięci podręcznej Twojego dostawcy ani wyjścia, a wiele zapytań w ogóle nie zawiera danych strukturalnych. Liczba, za którą ręczymy dla całego SDK, to opublikowany próg w sekcji pomiarów.",
+      "scope": "Czym to jest, a czym nie: jedna dźwignia — sposób zapisu danych strukturalnych w prompcie — na tokenach wejściowych tych danych. Działa tylko na danych przekazanych do SDK jako structuredData, nie na JSON-ie zapisanym już w Twoich wiadomościach. To nie jest Twoja faktura: nie ma tu unikniętych wywołań, pamięci podręcznej Twojego dostawcy ani wyjścia, a wiele zapytań w ogóle nie zawiera danych strukturalnych. Liczba, za którą ręczymy dla całego SDK, to opublikowany próg w sekcji pomiarów.",
       "ctaInstall": "Zainstaluj SDK"
     }
   },

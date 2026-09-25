@@ -785,7 +785,7 @@
         },
         {
           "title": "Phí theo ghế, và một phần của những gì đo được",
-          "body": "Bạn trả một khoản phí cố định cho mỗi ghế hằng tháng, dù có chuyện gì xảy ra. Ngoài ra, hoa hồng của chúng tôi chỉ lấy từ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — và phần lớn mỗi khoản tiết kiệm luôn ở lại với bạn. Một tháng không có tiết kiệm đo được? Bạn trả tiền ghế và hoa hồng bằng không."
+          "body": "Bạn trả một khoản phí cố định cho mỗi ghế hằng tháng, dù bạn có tiết kiệm hay không. Ngoài ra, hoa hồng của chúng tôi chỉ lấy từ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — và phần lớn mỗi khoản tiết kiệm luôn ở lại với bạn. Một tháng không có tiết kiệm đo được? Bạn trả tiền ghế và hoa hồng bằng không."
         }
       ],
       "nota": "Các đoạn hoạt hình minh họa ý tưởng. Những con số thật — đo với nhà cung cấp thật — nằm ngay bên dưới."
@@ -878,7 +878,7 @@
     "pricing": {
       "eyebrow": "Một gói, tính giá theo ghế",
       "title": "Phí theo ghế, luôn luôn. Hoa hồng chỉ trên khoản tiết kiệm đo được.",
-      "body": "Không gói miễn phí, không dùng thử: trước khi trả tiền, bạn có thể kiểm tra các phép đo công khai và chạy trình xác minh trên dữ liệu của chính mình, ngay trên trang này. Phí theo ghế được tính hằng tháng, bằng {currency}, dù bạn có tiết kiệm hay không. Hoa hồng được cộng thêm, và chỉ trên khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — phần ước tính không bao giờ được tính vào.",
+      "body": "Không gói miễn phí, không dùng thử: trước khi trả tiền, bạn có thể kiểm tra các phép đo công khai và chạy trình xác minh trên dữ liệu của chính mình, ngay trên trang này. Phí theo ghế được tính hằng tháng, bằng {currency}, dù bạn có tiết kiệm hay không. Hoa hồng được cộng thêm, và chỉ trên khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện. Phần ước tính không bao giờ được tính vào.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
@@ -1045,7 +1045,7 @@
         "who": "Cho ứng dụng Node.js, viết bằng JavaScript hoặc TypeScript, gọi một API LLM bằng khóa của chính bạn và trả tiền cho từng token.",
         "what": "SDK bọc lời gọi ngay trong mã của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một SavingsReport kèm mỗi phản hồi.",
         "figureLabel": "Mức sàn đã công bố, đo với nhà cung cấp thật",
-        "figureNote": "Một mức sàn, không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào lưu lượng của bạn, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới tính vào hoa hồng.",
+        "figureNote": "Một mức sàn, không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào lưu lượng của bạn. Chỉ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp mới tính vào hoa hồng — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện.",
         "ctaMeasured": "Cách chúng tôi đo",
         "ctaVerify": "Thử một đòn bẩy trên dữ liệu của bạn"
       },
@@ -1053,15 +1053,18 @@
         "name": "Gateway",
         "band": "Gateway — cho agent lập trình dùng khóa API",
         "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
-        "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi bằng bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cấp cho mỗi lượt một biên lai trong bảng điều khiển của bạn.",
+        "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi mà nhà cung cấp có báo cáo mức sử dụng, bằng chính bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cộng dồn chúng trong bảng điều khiển của bạn, theo ngày và theo mô hình.",
         "figureLabel": "Chưa công bố con số tiết kiệm",
-        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn còn nóng — điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc — và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới tính vào hoa hồng.",
+        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway chuyển các lần ghi bộ nhớ đệm từ TTL một giờ sang TTL năm phút, chỉ ở những lượt mà một phần lớn prompt là mới — như lượt đầu tiên của một phiên hoặc sau khi nén ngữ cảnh — và giữ nguyên các lượt nối tiếp của một phiên đang chạy. Điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới tính vào hoa hồng.",
         "cta": "Cài đặt gateway"
+      },
+      "skill": {
+        "band": "Skill — cho agent lập trình dùng gói thuê bao"
       }
     },
     "verify": {
       "eyebrow": "SDK · một đòn bẩy, trên dữ liệu của bạn, trước khi trả tiền",
-      "title": "Dán dữ liệu của bạn. Xem SDK sẽ gửi gì.",
+      "title": "Dán dữ liệu của bạn. Xem SDK sẽ gửi bao nhiêu token.",
       "sub": "Tại đây, bộ chọn định dạng thật của SDK chạy trong trình duyệt của bạn, trên dữ liệu của bạn. Không có gì rời khỏi trang này và bạn không cần tài khoản.",
       "tryExample": "Thử một ví dụ",
       "sample_orders": "Đơn hàng cửa hàng",
@@ -1071,6 +1074,7 @@
       "loading": "Đang tải trình tối ưu và tokenizer chính xác…",
       "errBundle": "Không thể tải trình tối ưu. Tải lại trang để thử lại.",
       "errInvalidData": "Đang chờ JSON hợp lệ… {message}",
+      "errTokenizer": "Tokenizer chính xác không đếm được văn bản này ({message}), nên chúng tôi không hiển thị con số nào.",
       "tooBig": "Nội dung này dài hơn {max} ký tự. Hãy dán một mẫu nhỏ hơn.",
       "tagExact": "Đếm chính xác",
       "tagApprox": "Xấp xỉ",
@@ -1079,9 +1083,10 @@
       "fewer": "−{pct} token đầu vào trên dữ liệu này",
       "trims": "Từ {before} xuống {after} token, đã gồm hướng dẫn của định dạng.",
       "alreadyOptimal": "Ở đây không định dạng nào tốt hơn JSON gọn, nên SDK sẽ gửi nguyên trạng. Đòn bẩy này không bao giờ làm dữ liệu của bạn lớn hơn.",
+      "notComparable": "Với dữ liệu này, chúng tôi không thể so sánh các định dạng với JSON gọn, nên chúng tôi không hiển thị con số nào.",
       "exactNote": "Đếm bằng {tokenizer}, tokenizer mà {model} sử dụng. Chúng tôi so sánh với dữ liệu của bạn ở dạng JSON gọn: nếu hôm nay bạn gửi dạng thụt lề, chênh lệch thực tế còn lớn hơn — và phần đó chúng tôi không tính.",
       "approxNote": "Tokenizer chính xác chưa tải được, nên mọi con số đếm ở đây chỉ là xấp xỉ — và chúng tôi không hiển thị mức tiết kiệm xấp xỉ. Tải lại trang để thử lại.",
-      "scope": "Đây là gì và không phải là gì: một đòn bẩy — cách dữ liệu có cấu trúc được viết vào prompt — trên token đầu vào của dữ liệu này. Đây không phải hóa đơn của bạn: các lời gọi được tránh, bộ nhớ đệm của nhà cung cấp và đầu ra không có ở đây, và nhiều lượt gọi hoàn toàn không mang dữ liệu có cấu trúc. Con số chúng tôi cam kết cho toàn bộ SDK là mức sàn đã công bố trong phần đo lường.",
+      "scope": "Đây là gì và không phải là gì: một đòn bẩy — cách dữ liệu có cấu trúc được viết vào prompt — trên token đầu vào của dữ liệu này. Nó chỉ áp dụng cho dữ liệu bạn truyền vào SDK dưới dạng structuredData, không áp dụng cho JSON đã viết sẵn trong tin nhắn của bạn. Đây không phải hóa đơn của bạn: các lời gọi được tránh, bộ nhớ đệm của nhà cung cấp và đầu ra không có ở đây, và nhiều lượt gọi hoàn toàn không mang dữ liệu có cấu trúc. Con số chúng tôi cam kết cho toàn bộ SDK là mức sàn đã công bố trong phần đo lường.",
       "ctaInstall": "Cài đặt SDK"
     }
   },
