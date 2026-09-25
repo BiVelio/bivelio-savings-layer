@@ -1,8 +1,11 @@
 import { createServer, type Server } from "node:http";
 import { describe, it, expect, afterEach } from "vitest";
 
+import { parseUsageRecords } from "../apps/web/lib/metering/usage.js";
 import { Coalescedor, claveDePeticion, MAX_CAPTURA_BYTES } from "../gateway/coalescencia.js";
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
+import { CATALOGO } from "../src/pricing/catalogo.js";
+import { REFERENCE_OUTPUT_SHARE } from "../src/tokenizer/accounting.js";
 import { testLicense } from "./helpers/test-license.js";
 
 describe("Coalescedor — unidad", () => {
@@ -44,6 +47,20 @@ describe("Coalescedor — unidad", () => {
     expect(await espera).toBeNull();
   });
 
+  it("Parte G · la huella de la primaria viaja con la réplica (y solo con una réplica válida)", async () => {
+    const c = new Coalescedor();
+    const huella = { requestId: "req-primaria", at: 1_800_000_000_000, intacta: true, suscripcion: false, fallida: false };
+    const cap = c.registrar("k")!;
+    const espera = c.esperar("k");
+    cap.terminar(200, {}, huella);
+    expect((await espera)?.primaria).toEqual(huella);
+
+    const cap2 = c.registrar("k2")!;
+    const espera2 = c.esperar("k2");
+    cap2.terminar(500, {}, huella);
+    expect(await espera2).toBeNull();
+  });
+
   it("terminada la primaria, la clave queda libre: esto no es una caché", async () => {
     const c = new Coalescedor();
     const cap = c.registrar("k")!;
@@ -68,12 +85,15 @@ afterEach(async () => {
     else await new Promise((res) => r.close(res));
   }
   recursos = [];
+  ingeridos.length = 0;
 });
 
-function upstreamLento(contador: { hits: number }, retrasoMs: number): Promise<number> {
+function upstreamLento(contador: { hits: number; cuerpos?: string[] }, retrasoMs: number): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
-      for await (const _ of req) void _;
+      const trozos: Buffer[] = [];
+      for await (const c of req) trozos.push(c as Buffer);
+      contador.cuerpos?.push(Buffer.concat(trozos).toString("utf8"));
       contador.hits += 1;
       setTimeout(() => {
         res.writeHead(200, { "content-type": "text/event-stream" });
@@ -85,7 +105,15 @@ function upstreamLento(contador: { hits: number }, retrasoMs: number): Promise<n
   });
 }
 
-function ingestaFalsa(lotes: unknown[][]): Promise<number> {
+/**
+ * Lo que la verja REAL del ingest de producción (apps/web/lib/metering/usage.ts,
+ * la que corre antes de la RPC) deja de cada lote: si un registro «reference» no
+ * le parece coherente, lo DEGRADA a estimated en silencio. Estos tests miran lo
+ * que el gateway manda Y lo que el servidor se quedaría.
+ */
+const ingeridos: Record<string, unknown>[] = [];
+
+function ingestaFalsa(lotes: unknown[][], features: string[] = []): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
@@ -97,10 +125,12 @@ function ingestaFalsa(lotes: unknown[][]): Promise<number> {
       // promesa sin manejar).
       if (req.method === "GET" && (req.url ?? "").startsWith("/api/org/entitlements")) {
         res.writeHead(200, { "content-type": "application/json" });
-        res.end('{"features":[]}');
+        res.end(JSON.stringify({ features }));
         return;
       }
-      lotes.push(JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[]);
+      const lote = JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown[];
+      lotes.push(lote);
+      ingeridos.push(...(parseUsageRecords(structuredClone(lote), "org-test") as unknown as Record<string, unknown>[]));
       res.writeHead(202);
       res.end("{}");
     });
@@ -159,13 +189,30 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const evitada = regs.find((r) => r["cacheResult"] === "singleflight")!;
     expect(medida["actualLlm"]).toBe(1);
     expect(evitada["avoidedLlm"]).toBe(1);
-    expect(evitada["basis"]).toBe("estimated");
+    // Parte G · la primaria viajó intacta (sin palancas: la licencia de prueba
+    // no trae features) y claude-haiku-4-5 tiene precio de lectura en SU fila:
+    // la gemela se valora con el contador de la primaria, al SUELO. Toda la
+    // entrada (100) a lectura de caché, y la salida (42) a 0 porque el cuerpo
+    // no fija temperature 0.
+    expect(evitada["basis"]).toBe("reference");
+    expect(evitada["baselineInputTokens"]).toBe(100);
+    expect(evitada["baselineOutputTokens"]).toBe(0);
+    expect(evitada["baselineCost"]).toBeCloseTo((100 / 1000) * CATALOGO["claude-haiku-4-5"]!.cachedInputPer1k!, 12);
+    // Menos de lo que costó la primaria: el suelo, nunca la cifra halagüeña.
+    expect(evitada["baselineCost"] as number).toBeLessThan(medida["actualCost"] as number);
+    expect(evitada["referenceRequestId"]).toBe(medida["requestId"]);
+    expect(typeof evitada["referenceAt"]).toBe("number");
     expect(evitada["actualCost"]).toBe(0);
     // netSavings es una PROPORCIÓN [-100,1], no dólares: una coalescencia evita
     // la llamada entera → 1 (100 %). Este test afirmaba antes `== actualCost`
     // (dólares), que era EL bug: con una primaria > $1 el ingest rechazaba el
     // lote entero por `> 1`.
     expect(evitada["netSavings"]).toBe(1);
+    // Y la verja REAL del ingest la acepta como referencia coherente (no la
+    // degrada), con su puntero a la primaria.
+    const ingerida = ingeridos.find((r) => r["requestId"] === evitada["requestId"])!;
+    expect(ingerida["basis"]).toBe("reference");
+    expect(ingerida["referenceRequestId"]).toBe(medida["requestId"]);
   });
 
   it("réplica stream:false — la gemela de una respuesta JSON también reporta su ahorro (S0.2)", async () => {
@@ -219,8 +266,108 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const evitada = regs.find((r) => r["cacheResult"] === "singleflight")!;
     expect(medida["actualLlm"]).toBe(1);
     expect(evitada["avoidedLlm"]).toBe(1);
-    expect(evitada["basis"]).toBe("estimated");
+    expect(evitada["basis"]).toBe("reference");
+    expect(evitada["baselineCost"]).toBeCloseTo((100 / 1000) * CATALOGO["claude-haiku-4-5"]!.cachedInputPer1k!, 12);
     expect(evitada["netSavings"]).toBe(1);
+    expect(ingeridos.find((r) => r["requestId"] === evitada["requestId"])!["basis"]).toBe("reference");
+  });
+
+  /** Dos idénticas concurrentes por un gateway con coalescencia: los registros y las líneas de log. */
+  async function pareja(
+    cuerpo: string,
+    headers: Record<string, string> = {},
+    palancas: { features?: string[]; opciones?: Partial<Parameters<typeof arrancarGateway>[0]> } = {},
+  ) {
+    const contador = { hits: 0, cuerpos: [] as string[] };
+    const lotes: unknown[][] = [];
+    const lineas: string[] = [];
+    const upstream = await upstreamLento(contador, 150);
+    const ingesta = await ingestaFalsa(lotes, palancas.features ?? []);
+    const gw = await arrancarGateway({
+      license: testLicense(),
+      puerto: 0 as never,
+      upstream: `http://127.0.0.1:${upstream}`,
+      coalescer: true,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "t",
+      log: (l) => lineas.push(l),
+      ...palancas.opciones,
+    });
+    recursos.push(gw);
+    // El canal de entitlements refresca al arrancar: con features, que asiente.
+    if (palancas.features) await new Promise((r) => setTimeout(r, 150));
+    const pedir = () =>
+      fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: cuerpo, headers }).then((r) => r.text());
+    const p1 = pedir();
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir();
+    await Promise.all([p1, p2]);
+    expect(contador.hits).toBe(1);
+    await gw.cerrar();
+    await esperar(() => lotes.flat().length >= 2);
+    const regs = lotes.flat() as Record<string, unknown>[];
+    return {
+      medida: regs.find((r) => r["basis"] === "measured")!,
+      evitada: regs.find((r) => r["cacheResult"] === "singleflight")!,
+      lineas,
+      enviado: contador.cuerpos[0]!,
+    };
+  }
+
+  it("Parte G · con temperature 0 en el cuerpo la salida también cuenta, al 95 % y redondeada hacia abajo", async () => {
+    const cuerpo = JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      temperature: 0,
+      messages: [{ role: "user", content: "hola" }],
+      stream: true,
+    });
+    const { evitada, lineas } = await pareja(cuerpo);
+    const precio = CATALOGO["claude-haiku-4-5"]!;
+    const salida = Math.floor(REFERENCE_OUTPUT_SHARE * 42);
+    expect(salida).toBe(39);
+    expect(evitada["basis"]).toBe("reference");
+    expect(evitada["baselineOutputTokens"]).toBe(salida);
+    expect(evitada["baselineCost"]).toBeCloseTo((100 / 1000) * precio.cachedInputPer1k! + (salida / 1000) * precio.outputPer1k, 12);
+    expect(ingeridos.find((r) => r["requestId"] === evitada["requestId"])!["basis"]).toBe("reference");
+    expect(lineas.join("\n")).toMatch(/COALESCED \(call avoided\).*by reference: floor \$[0-9.]+ \(cache read price, 39 output tok at temperature 0\)/);
+  });
+
+  it("Parte G · la rebaja de TTL se ADMITE: cambia la tarifa de la escritura, no un token de la petición", async () => {
+    const cuerpo = JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      system: [{ type: "text", text: "sys", cache_control: { type: "ephemeral", ttl: "1h" } }],
+      messages: [{ role: "user", content: "hola" }],
+      stream: true,
+    });
+    const { evitada, enviado } = await pareja(cuerpo, {}, { features: ["cache_ttl_tuning"] });
+    // La palanca actuó de verdad sobre la primaria…
+    expect((JSON.parse(enviado) as { system: { cache_control: { ttl: string } }[] }).system[0]!.cache_control.ttl).toBe("5m");
+    // …y la gemela se valora igual por referencia.
+    expect(evitada["basis"]).toBe("reference");
+  });
+
+  it("⛔ Parte G · con los diales de elisión la primaria NO viajó intacta: la gemela sigue estimated", async () => {
+    const cuerpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [{ role: "user", content: "hola" }], stream: true });
+    const { evitada, enviado, lineas } = await pareja(cuerpo, {}, { features: ["context_elision"], opciones: { dialesElision: true } });
+    expect(enviado).toContain("context_management");
+    expect(evitada["basis"]).toBe("estimated");
+    expect(lineas.join("\n")).toContain("estimated, not by reference: layer-changed-request");
+  });
+
+  it("⛔ Parte G · el tráfico de SUSCRIPCIÓN jamás se valora por referencia: sin factura por token no hay contador", async () => {
+    const { medida, evitada, lineas } = await pareja(CUERPO, { "anthropic-beta": "oauth-2025-04-20" });
+    expect(medida["basis"]).toBe("measured");
+    expect(evitada["basis"]).toBe("estimated");
+    expect(evitada["referenceRequestId"]).toBeUndefined();
+    expect(lineas.join("\n")).toContain("estimated, not by reference: subscription");
+  });
+
+  it("⛔ Parte G · un modelo sin precio de lectura en SU fila (gpt-4 no lo publica) sigue estimated", async () => {
+    const cuerpo = JSON.stringify({ model: "gpt-4", messages: [{ role: "user", content: "hola" }], stream: true });
+    const { evitada, lineas } = await pareja(cuerpo);
+    expect(evitada["basis"]).toBe("estimated");
+    expect(lineas.join("\n")).toContain("estimated, not by reference: no-cached-price");
   });
 
   it("⛔ una réplica JSON de OTRA ruta no emite registro fantasma (la verja de /v1/messages aplica también a la gemela)", async () => {

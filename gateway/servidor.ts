@@ -20,6 +20,8 @@ import {
   jsonDelCuerpo,
   elisionDeJson,
   isSubscriptionTraffic,
+  valorarGemelaPorReferencia,
+  sueloDeReferencia,
   type Atribucion,
   type ElisionAplicada,
   type InyeccionDeUso,
@@ -49,7 +51,7 @@ import { avisoDeBusquedaDeHerramientas, verHerramientas } from "./busqueda-de-he
 import { aplicarEsfuerzo, conBetaDeEsfuerzo, esNivel } from "./esfuerzo.js";
 import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
-import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES } from "./coalescencia.js";
+import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 
 /**
  * F1 · EL GATEWAY — un proxy local delante de la API de Anthropic que MIDE.
@@ -447,6 +449,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     codificacion: string | undefined,
     inyeccion: "inyectado" | "rechazada-por-el-upstream" | Exclude<InyeccionDeUso["motivo"], "inyectado"> | null,
   ): { motivo: string; aviso: AvisoDeNoMedido } => {
+    // Responses que SÍ llegó a su evento final (incomplete o failed) pero sin
+    // usage: el final existe, lo que falta es el contador. Se dice tal cual.
+    const finalSinUso = obs instanceof ObservadorResponses ? obs.estadoFinal() : null;
+    if (finalSinUso !== null && finalSinUso !== "completed") {
+      return { motivo: `the response ended as response.${finalSinUso} without usage`, aviso: "uso" };
+    }
     const noLoPidio =
       obs instanceof ObservadorChatCompletions &&
       inyeccion !== "inyectado" &&
@@ -483,6 +491,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     hermano?: CambioDeModelo | null,
     /** Tráfico de suscripción (marcas de protocolo): se mide, no se acredita ahorro. */
     suscripcion?: boolean,
+    /** Parte G · solo en una gemela: lo que su primaria dejó al terminar. */
+    primaria?: HuellaDeLaPrimaria | null,
   ): void => {
     if (!emisor || !uso) return;
     const em = emisor;
@@ -511,8 +521,14 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     const servido = !coalescida && hermano ? hermano.servido : model;
     const medido = costeMedido(servido, uso);
     if (medido) {
+      // Parte G · una gemela se valora por referencia con el contador de su
+      // primaria si la regla lo permite; si no, sigue `estimated` y el log dice
+      // por qué. Solo gemelas: una petición que viajó se mide con el suyo.
+      const valoracion = coalescida
+        ? valorarGemelaPorReferencia(model, medido, primaria, jsonDelCuerpo(cuerpo, codificacion), suscripcion === true)
+        : null;
       const informe = coalescida
-        ? informeCoalescido(requestId, model, medido, atribucion)
+        ? informeCoalescido(requestId, model, medido, atribucion, valoracion?.ok ? valoracion.credit : null)
         : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true);
       emisor.record(informe);
       // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
@@ -542,6 +558,12 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             : "") +
           (suscripcion && !coalescida && (rebaja || hermano)
             ? " · subscription traffic: lever applied, saving not credited (no per-token invoice)"
+            : "") +
+          (valoracion
+            ? valoracion.ok
+              ? ` · by reference: floor $${sueloDeReferencia(valoracion.credit).toFixed(6)} (cache read price` +
+                `${valoracion.credit.creditedOutputTokens > 0 ? `, ${valoracion.credit.creditedOutputTokens} output tok at temperature 0` : ", no output credited"})`
+              : ` · estimated, not by reference: ${valoracion.reason}`
             : ""),
       );
       // ── S2 · el carril sombra: EN ASÍNCRONO, jamás en el camino de la
@@ -754,7 +776,32 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             // el cliente habría pagado sin la capa; su coste real es 0. Tarifarla
             // al servido restaría a la baseline el ahorro de C sobre una
             // petición que C no tocó porque nunca viajó.
-            medir(requestId, cuerpo, usoReplica, true, url.pathname, codificacion, atribucion);
+            //
+            // Parte G · la suscripción de la GEMELA se mira con sus propias
+            // cabeceras (la clave ya iguala las de identidad, pero la regla no
+            // puede depender de eso), y la huella de la primaria viaja con la
+            // réplica: sin ella no hay referencia.
+            const betaGemela = req.headers["anthropic-beta"];
+            const suscripcionGemela = isSubscriptionTraffic(
+              url.pathname,
+              Array.isArray(betaGemela) ? betaGemela.join(", ") : betaGemela,
+              upstreamBase,
+            );
+            medir(
+              requestId,
+              cuerpo,
+              usoReplica,
+              true,
+              url.pathname,
+              codificacion,
+              atribucion,
+              null,
+              null,
+              inicioMs,
+              null,
+              suscripcionGemela,
+              replica.primaria ?? null,
+            );
             return;
           }
           // Primaria fallida o desbordada: la gemela viaja por su cuenta.
@@ -973,6 +1020,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       }
 
       let upstream: Response;
+      // Parte G · lo que de verdad viajó, para la huella de la primaria. El
+      // reintento intacto de abajo lo vuelve a poner en el cuerpo del cliente.
+      let cuerpoEnviado: Buffer = cuerpoSaliente;
       try {
         upstream = await fetchImpl(url, {
           method: req.method,
@@ -1033,6 +1083,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         diales = null;
         inyectado = false;
         if (eraInyeccion) inyeccion = "rechazada-por-el-upstream";
+        cuerpoEnviado = cuerpo;
         try {
           upstream = await fetchImpl(url, {
             method: req.method,
@@ -1112,7 +1163,24 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
       res.end();
-      captura?.terminar(upstream.status, cabeceras);
+      // Parte G · la huella que leen las gemelas para valorarse por referencia.
+      // INTACTA = ninguna palanca tocó lo que viajó: ni el modelo (C), ni el
+      // cuerpo o las betas (diales, esfuerzo), ni `stream_options` (inyección).
+      // La rebaja de TTL se admite: solo cambia la tarifa de la escritura. Y,
+      // sin rebaja, el cuerpo que viajó tiene que ser EL MISMO objeto que llegó
+      // del cliente: una palanca futura que olvide su bandera cae aquí del lado
+      // seguro. Tras el reintento intacto, todas las banderas ya están a cero.
+      // Una palanca nueva que cambie cuerpo, cabeceras o modelo SE AÑADE AQUÍ.
+      if (captura) {
+        const intacta =
+          hermano === null &&
+          !esfuerzoPuesto &&
+          diales === null &&
+          !inyectado &&
+          (rebaja !== null || cuerpoEnviado === cuerpo);
+        const fallida = observador instanceof ObservadorResponses && observador.estadoFinal() === "failed";
+        captura.terminar(upstream.status, cabeceras, { requestId, at: Date.now(), intacta, suscripcion, fallida });
+      }
 
       // Medición tras servir la respuesta — jamás en el camino caliente.
       if (observador && upstream.ok) {
