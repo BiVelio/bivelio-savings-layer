@@ -142,9 +142,10 @@ export class AnthropicProvider implements Provider {
     return quitar ? model.replace(/^[^/]+\//, "") : model;
   }
 
-  async generate(req: ProviderRequest): Promise<ProviderResponse> {
+  async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
     const cuerpo = this.construirCuerpo(req);
-    const response = await this.enviar(cuerpo.body);
+    // Sin `options`, ninguna señal: la petición HTTP es la de siempre.
+    const response = await this.enviar(cuerpo.body, options?.signal);
 
     if (!response.ok) {
       throw new Error(`provider ${response.status}: ${await safeText(response)}`);

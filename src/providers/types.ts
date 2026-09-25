@@ -143,7 +143,7 @@ export type ProviderStreamEvent =
   | { type: "text"; delta: string }
   | { type: "done"; response: ProviderResponse };
 
-/** Options for {@link Provider.generateStream}. */
+/** Options for {@link Provider.generate} and {@link Provider.generateStream}. */
 export interface ProviderStreamOptions {
   /** Cancels the HTTP request. */
   signal?: AbortSignal;
@@ -151,7 +151,7 @@ export interface ProviderStreamOptions {
 
 export interface Provider {
   readonly id: string;
-  generate(req: ProviderRequest): Promise<ProviderResponse>;
+  generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse>;
   /**
    * Optional streaming variant of generate(). It must yield `text` events in
    * order and end with exactly one `done` whose `response` is what generate()

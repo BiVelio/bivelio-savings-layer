@@ -185,14 +185,17 @@ export class OpenAICompatibleProvider implements Provider {
     this.fetchImpl = opts.fetchImpl ?? fetch;
   }
 
-  async generate(req: ProviderRequest): Promise<ProviderResponse> {
+  async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
     const model = quitarPrefijoDeProveedor(req.model, this.opts.stripProviderPrefix, this.opts.baseUrl);
+    // La señal solo existe si el llamante la pasa (la copia de verificación, que
+    // se aborta al cerrar la capa). Sin ella, la petición HTTP es la de siempre.
+    const senal = options?.signal;
 
     // Se intenta la vía nativa salvo que ESTE modelo ya la haya rechazado antes.
     // Ese conjunto es lo que acota el coste del descubrimiento: el viaje de más
     // se paga UNA vez por modelo y por instancia, no en cada petición.
     let nativo = req.schema != null && !this.sinResponseFormat.has(model);
-    let response = await this.enviar(model, req, nativo);
+    let response = await this.enviar(model, req, nativo, undefined, senal);
 
     // DEGRADAR, NO REVENTAR. Tres modelos vivos y de uso corriente (gpt-3.5-turbo,
     // gpt-4, gpt-4-turbo) son anteriores a structured outputs y devuelven 400 al
@@ -225,7 +228,7 @@ export class OpenAICompatibleProvider implements Provider {
           "use a model with structured outputs (gpt-4o or later).",
       );
       nativo = false;
-      response = await this.enviar(model, req, false);
+      response = await this.enviar(model, req, false, undefined, senal);
     }
 
     if (!response.ok) {
@@ -414,6 +417,7 @@ export class OpenAICompatibleProvider implements Provider {
     req: ProviderRequest,
     nativo: boolean,
     stream?: { includeUsage: boolean; signal?: AbortSignal },
+    senal?: AbortSignal,
   ): Promise<Response> {
     // EL CICLO DE HERRAMIENTAS TIENE QUE PODER VOLVER. Chat Completions exige que
     // un mensaje `role:"tool"` lleve `tool_call_id` Y siga a un `assistant` con
@@ -548,7 +552,9 @@ export class OpenAICompatibleProvider implements Provider {
           ...this.opts.headers,
         },
         body: JSON.stringify(body),
-        ...(stream?.signal ? { signal: stream.signal } : {}),
+        // `senal` solo cuenta sin `stream` (generate con opciones); el cuerpo
+        // no cambia en ningún caso.
+        ...(stream?.signal ? { signal: stream.signal } : !stream && senal ? { signal: senal } : {}),
       },
     );
   }
