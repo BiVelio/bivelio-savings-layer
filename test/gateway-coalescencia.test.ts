@@ -49,7 +49,15 @@ describe("Coalescedor — unidad", () => {
 
   it("Parte G · la huella de la primaria viaja con la réplica (y solo con una réplica válida)", async () => {
     const c = new Coalescedor();
-    const huella = { requestId: "req-primaria", at: 1_800_000_000_000, intacta: true, suscripcion: false, fallida: false };
+    const huella = {
+      requestId: "req-primaria",
+      at: 1_800_000_000_000,
+      intacta: true,
+      proveedorOficial: true,
+      conContador: true,
+      suscripcion: false,
+      fallida: false,
+    };
     const cap = c.registrar("k")!;
     const espera = c.esperar("k");
     cap.terminar(200, {}, huella);
@@ -139,6 +147,22 @@ function ingestaFalsa(lotes: unknown[][], features: string[] = []): Promise<numb
   });
 }
 
+/**
+ * Parte G · la referencia solo se concede contra el origen OFICIAL del
+ * proveedor. Estos tests arrancan el gateway con `upstream:
+ * "https://api.anthropic.com"` y este `fetchImpl` lleva ESE origen al mock
+ * local; todo lo demás (la ingesta, el canal de entitlements) sale por el fetch
+ * de siempre. Nada sale a Internet.
+ */
+function haciaElMock(puerto: number): typeof fetch {
+  return ((input: string | URL | Request, init?: RequestInit) => {
+    const u = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+    if (u.origin === OFICIAL) return fetch(`http://127.0.0.1:${puerto}${u.pathname}${u.search}`, init);
+    return fetch(input, init);
+  }) as typeof fetch;
+}
+const OFICIAL = "https://api.anthropic.com";
+
 async function esperar(cond: () => boolean, ms = 4000): Promise<void> {
   const t0 = Date.now();
   while (!cond()) {
@@ -158,7 +182,8 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const gw = await arrancarGateway({
       license: testLicense(),
       puerto: 0 as never,
-      upstream: `http://127.0.0.1:${upstream}`,
+      upstream: OFICIAL,
+      fetchImpl: haciaElMock(upstream),
       coalescer: true,
       serviceAccountKey: "bvk_test",
       meteringUrl: `http://127.0.0.1:${ingesta}`,
@@ -238,7 +263,8 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const gw = await arrancarGateway({
       license: testLicense(),
       puerto: 0 as never,
-      upstream: `http://127.0.0.1:${upstream}`,
+      upstream: OFICIAL,
+      fetchImpl: haciaElMock(upstream),
       coalescer: true,
       serviceAccountKey: "bvk_test",
       meteringUrl: `http://127.0.0.1:${ingesta}`,
@@ -276,7 +302,7 @@ describe("gateway con coalescencia (bandera encendida)", () => {
   async function pareja(
     cuerpo: string,
     headers: Record<string, string> = {},
-    palancas: { features?: string[]; opciones?: Partial<Parameters<typeof arrancarGateway>[0]> } = {},
+    palancas: { features?: string[]; opciones?: Partial<Parameters<typeof arrancarGateway>[0]>; oficial?: boolean } = {},
   ) {
     const contador = { hits: 0, cuerpos: [] as string[] };
     const lotes: unknown[][] = [];
@@ -286,7 +312,11 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     const gw = await arrancarGateway({
       license: testLicense(),
       puerto: 0 as never,
-      upstream: `http://127.0.0.1:${upstream}`,
+      // El origen oficial por defecto, para que cada ⛔ pruebe SU motivo; con
+      // `oficial: false`, el mock local tal cual.
+      ...(palancas.oficial === false
+        ? { upstream: `http://127.0.0.1:${upstream}` }
+        : { upstream: OFICIAL, fetchImpl: haciaElMock(upstream) }),
       coalescer: true,
       serviceAccountKey: "bvk_test",
       meteringUrl: `http://127.0.0.1:${ingesta}`,
@@ -333,19 +363,94 @@ describe("gateway con coalescencia (bandera encendida)", () => {
     expect(lineas.join("\n")).toMatch(/COALESCED \(call avoided\).*by reference: floor \$[0-9.]+ \(cache read price, 39 output tok at temperature 0\)/);
   });
 
-  it("Parte G · la rebaja de TTL se ADMITE: cambia la tarifa de la escritura, no un token de la petición", async () => {
+  it("⛔ Parte G · con la rebaja de TTL la primaria NO viajó intacta: la gemela sigue estimated", async () => {
+    // Lo publicado al cliente (parametrosReferencia, 12 idiomas) dice que la
+    // petición que corrió es «byte-identical, untouched by the layer». La
+    // rebaja reescribe `cache_control.ttl`: cambia bytes aunque no cambie
+    // tokens, así que no hay excepción que valga.
     const cuerpo = JSON.stringify({
       model: "claude-haiku-4-5-20251001",
       system: [{ type: "text", text: "sys", cache_control: { type: "ephemeral", ttl: "1h" } }],
       messages: [{ role: "user", content: "hola" }],
       stream: true,
     });
-    const { evitada, enviado } = await pareja(cuerpo, {}, { features: ["cache_ttl_tuning"] });
+    const { evitada, enviado, lineas } = await pareja(cuerpo, {}, { features: ["cache_ttl_tuning"] });
     // La palanca actuó de verdad sobre la primaria…
     expect((JSON.parse(enviado) as { system: { cache_control: { ttl: string } }[] }).system[0]!.cache_control.ttl).toBe("5m");
-    // …y la gemela se valora igual por referencia.
-    expect(evitada["basis"]).toBe("reference");
+    // …y por eso la gemela NO se valora por referencia.
+    expect(evitada["basis"]).toBe("estimated");
+    expect(evitada["referenceRequestId"]).toBeUndefined();
+    expect(lineas.join("\n")).toContain("estimated, not by reference: layer-changed-request");
   });
+
+  it("⛔ Parte G · contra un upstream que NO es el origen oficial (un mock, un proxy) la gemela sigue estimated", async () => {
+    // Antes de la Parte G esta gemela era estimated y quedaba fuera de la
+    // comisión; con un contador que no está en ninguna factura a precio de
+    // lista, así sigue.
+    const { evitada, lineas } = await pareja(CUERPO, {}, { oficial: false });
+    expect(evitada["basis"]).toBe("estimated");
+    expect(evitada["referenceRequestId"]).toBeUndefined();
+    expect(lineas.join("\n")).toContain("estimated, not by reference: unofficial-upstream");
+    expect(ingeridos.find((r) => r["requestId"] === evitada["requestId"])!["basis"]).toBe("estimated");
+  });
+
+  it("⛔ Parte G · una gemela cuyo cliente se fue antes de la réplica NO se valora por referencia; la que la recibe, sí", async () => {
+    // El caso del watchdog: el cliente abandona la espera y reintenta con el
+    // MISMO cuerpo. Sin esta guarda, una sola llamada del proveedor se
+    // acreditaba una vez por cada gemela abandonada.
+    const contador = { hits: 0 };
+    const lotes: unknown[][] = [];
+    const lineas: string[] = [];
+    const upstream = await upstreamLento(contador, 600);
+    const ingesta = await ingestaFalsa(lotes);
+    const gw = await arrancarGateway({
+      license: testLicense(),
+      puerto: 0 as never,
+      upstream: OFICIAL,
+      fetchImpl: haciaElMock(upstream),
+      coalescer: true,
+      serviceAccountKey: "bvk_test",
+      meteringUrl: `http://127.0.0.1:${ingesta}`,
+      seatId: "t",
+      log: (l) => lineas.push(l),
+    });
+    recursos.push(gw);
+    const pedir = (abortarTrasMs?: number) => {
+      const ac = new AbortController();
+      if (abortarTrasMs !== undefined) setTimeout(() => ac.abort(), abortarTrasMs);
+      return fetch(`http://127.0.0.1:${gw.puerto}/v1/messages`, { method: "POST", body: CUERPO, signal: ac.signal }).then(
+        (r) => r.text().then(() => "ok"),
+        () => "se-fue",
+      );
+    };
+    const primaria = pedir();
+    await new Promise((r) => setTimeout(r, 50));
+    const abandonada = pedir(150); // su cliente se va mientras espera a la primaria
+    await new Promise((r) => setTimeout(r, 50));
+    const recibida = pedir();
+    expect(await Promise.all([primaria, abandonada, recibida])).toEqual(["ok", "se-fue", "ok"]);
+    expect(contador.hits).toBe(1);
+
+    await gw.cerrar();
+    await esperar(() => lotes.flat().length >= 3);
+    const regs = lotes.flat() as Record<string, unknown>[];
+    const medida = regs.find((r) => r["basis"] === "measured")!;
+    const gemelas = regs.filter((r) => r["cacheResult"] === "singleflight");
+    expect(gemelas).toHaveLength(2);
+    // Una sola gemela por referencia: la que su cliente recibió.
+    const porReferencia = gemelas.filter((r) => r["basis"] === "reference");
+    expect(porReferencia).toHaveLength(1);
+    expect(porReferencia[0]!["referenceRequestId"]).toBe(medida["requestId"]);
+    const abandonadaReg = gemelas.find((r) => r["basis"] !== "reference")!;
+    expect(abandonadaReg["basis"]).toBe("estimated");
+    expect(abandonadaReg["referenceRequestId"]).toBeUndefined();
+    expect(lineas.join("\n")).toContain("estimated, not by reference: client-disconnected");
+    // Y tras la verja REAL del ingest, una sola referencia.
+    expect(ingeridos.filter((r) => r["basis"] === "reference")).toHaveLength(1);
+    // El plazo: con una conexión abortada, `cerrar()` espera unos 4 s a que el
+    // servidor HTTP suelte sus sockets (ya pasaba antes de la Parte G). Sin
+    // margen, el tope de 5 s de vitest volvería el test intermitente.
+  }, 15_000);
 
   it("⛔ Parte G · con los diales de elisión la primaria NO viajó intacta: la gemela sigue estimated", async () => {
     const cuerpo = JSON.stringify({ model: "claude-haiku-4-5-20251001", messages: [{ role: "user", content: "hola" }], stream: true });

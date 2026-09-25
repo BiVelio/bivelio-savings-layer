@@ -23,6 +23,9 @@ import {
   tieneDialecto,
   valorarGemelaPorReferencia,
   sueloDeReferencia,
+  respuestaJsonFallida,
+  tierServidoDeRespuesta,
+  type HechosDeLaGemela,
 } from "../gateway/medidor.js";
 import type { HuellaDeLaPrimaria } from "../gateway/coalescencia.js";
 import { CATALOGO } from "../src/pricing/catalogo.js";
@@ -536,7 +539,7 @@ describe("informeCoalescido — netSavings es una PROPORCIÓN, no dólares", () 
   it("⛔ una primaria cara (> $1) por referencia: baseline = SUELO, netSavings 1, basis reference", () => {
     const medido = costeMedido("claude-opus-4", { input_tokens: 400000, output_tokens: 4000 })!;
     expect(medido.costeUsd).toBeGreaterThan(1);
-    const v = valorarGemelaPorReferencia("claude-opus-4", medido, huellaIntacta, { model: "claude-opus-4" }, false);
+    const v = valorarGemelaPorReferencia("claude-opus-4", medido, huellaIntacta, { model: "claude-opus-4" }, GEMELA);
     expect(v.ok).toBe(true);
     const credit = (v as { ok: true; credit: Parameters<typeof sueloDeReferencia>[0] }).credit;
     const r = informeCoalescido("req-c", "claude-opus-4", medido, undefined, credit) as unknown as {
@@ -795,9 +798,14 @@ const huellaIntacta: HuellaDeLaPrimaria = {
   requestId: "req-primaria",
   at: 1_800_000_000_000,
   intacta: true,
+  proveedorOficial: true,
+  conContador: true,
   suscripcion: false,
   fallida: false,
 };
+
+/** Una gemela normal: sin suscripción, con la réplica entregada y sin tier servido. */
+const GEMELA: HechosDeLaGemela = { suscripcion: false, entregada: true };
 
 describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
   const uso = { input_tokens: 600, cache_read_input_tokens: 300, cache_creation_input_tokens: 100, output_tokens: 50 };
@@ -805,7 +813,7 @@ describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
   const precio = CATALOGO["claude-haiku-4-5"]!;
 
   it("valora TODA la entrada (normal + leída + escrita) a lectura de caché, sin primas, y la salida a 0 sin temperature 0", () => {
-    const v = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { model: "claude-haiku-4-5" }, false);
+    const v = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { model: "claude-haiku-4-5" }, GEMELA);
     expect(v).toEqual({
       ok: true,
       credit: {
@@ -827,9 +835,9 @@ describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
   });
 
   it("con temperature 0 la salida cuenta al 95 %, redondeada hacia abajo; seed NO basta", () => {
-    const det = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { temperature: 0 }, false);
+    const det = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { temperature: 0 }, GEMELA);
     expect(det.ok && det.credit.creditedOutputTokens).toBe(47);
-    const conSeed = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { temperature: 0.2, seed: 7 }, false);
+    const conSeed = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { temperature: 0.2, seed: 7 }, GEMELA);
     expect(conSeed.ok && conSeed.credit.creditedOutputTokens).toBe(0);
   });
 
@@ -837,31 +845,57 @@ describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
     for (const [modelo, p] of Object.entries(CATALOGO)) {
       if (p.cachedInputPer1k === undefined) continue;
       const m = costeMedido(modelo, uso)!;
-      const v = valorarGemelaPorReferencia(modelo, m, huellaIntacta, { temperature: 0 }, false);
+      const v = valorarGemelaPorReferencia(modelo, m, huellaIntacta, { temperature: 0 }, GEMELA);
       expect(v.ok, modelo).toBe(true);
       if (v.ok) expect(sueloDeReferencia(v.credit), modelo).toBeLessThanOrEqual(m.costeUsd);
     }
   });
 
-  it("⛔ los motivos, en orden: sin huella, suscripción, palanca, primaria fallida", () => {
-    const v = (h: HuellaDeLaPrimaria | undefined, sus = false) =>
-      valorarGemelaPorReferencia("claude-haiku-4-5", medido, h, {}, sus);
+  it("⛔ los motivos, en orden: sin huella, suscripción, upstream no oficial, palanca, primaria fallida, cliente ido", () => {
+    const v = (h: HuellaDeLaPrimaria | undefined, sus = false, entregada = true) =>
+      valorarGemelaPorReferencia("claude-haiku-4-5", medido, h, {}, { ...GEMELA, suscripcion: sus, entregada });
     expect(v(undefined)).toEqual({ ok: false, reason: "no-primary-record" });
+    // Una primaria que no leyó su contador final no deja registro medido al que apuntar.
+    expect(v({ ...huellaIntacta, conContador: false })).toEqual({ ok: false, reason: "no-primary-record" });
     expect(v({ ...huellaIntacta, suscripcion: true })).toEqual({ ok: false, reason: "subscription" });
     expect(v(huellaIntacta, true)).toEqual({ ok: false, reason: "subscription" });
+    // Un mock, un proxy o un revendedor: el precio de lista no está en ninguna factura.
+    expect(v({ ...huellaIntacta, proveedorOficial: false })).toEqual({ ok: false, reason: "unofficial-upstream" });
     expect(v({ ...huellaIntacta, intacta: false })).toEqual({ ok: false, reason: "layer-changed-request" });
     expect(v({ ...huellaIntacta, fallida: true })).toEqual({ ok: false, reason: "primary-failed" });
+    // Una réplica que su cliente no recibió no es una llamada evitada que se pueda cobrar.
+    expect(v(huellaIntacta, false, false)).toEqual({ ok: false, reason: "client-disconnected" });
+  });
+
+  it("⛔ el tier SERVIDO manda también: scale (prepago) o uno desconocido no tienen suelo; flex servido baja el factor", () => {
+    const m = costeMedido("gpt-4o-mini", uso)!;
+    const conServido = (servido: string | undefined, cuerpo: Record<string, unknown> = {}) =>
+      valorarGemelaPorReferencia("gpt-4o-mini", m, huellaIntacta, cuerpo, { ...GEMELA, tierServido: servido });
+    // `auto` pedido y servido en `scale` (un proyecto con Scale Tier): capacidad
+    // prepagada, sin factura por token → sin referencia.
+    expect(conServido("scale", { service_tier: "auto" })).toEqual({ ok: false, reason: "service-tier" });
+    expect(conServido("un-tier-nuevo")).toEqual({ ok: false, reason: "service-tier" });
+    for (const t of ["default", "auto", "priority", "standard"]) {
+      const r = conServido(t);
+      expect(r.ok && r.credit.tierFactor, t).toBe(1);
+    }
+    // Servido en flex sin pedirlo: el suelo baja a la mitad (el menor de los dos).
+    const flex = conServido("flex");
+    expect(flex.ok && flex.credit.tierFactor).toBe(0.5);
+    // Pedido flex y servido default: sigue la mitad (el pedido es el tope).
+    const pedidoFlex = conServido("default", { service_tier: "flex" });
+    expect(pedidoFlex.ok && pedidoFlex.credit.tierFactor).toBe(0.5);
   });
 
   it("⛔ el tier: flex vale la mitad (el suelo sigue siéndolo); un tier sin precio publicado no tiene suelo", () => {
-    const flex = valorarGemelaPorReferencia("gpt-4o-mini", costeMedido("gpt-4o-mini", uso)!, huellaIntacta, { service_tier: "flex" }, false);
+    const flex = valorarGemelaPorReferencia("gpt-4o-mini", costeMedido("gpt-4o-mini", uso)!, huellaIntacta, { service_tier: "flex" }, GEMELA);
     expect(flex.ok && flex.credit.tierFactor).toBe(0.5);
     for (const t of ["auto", "default", "priority"]) {
-      const r = valorarGemelaPorReferencia("gpt-4o-mini", costeMedido("gpt-4o-mini", uso)!, huellaIntacta, { service_tier: t }, false);
+      const r = valorarGemelaPorReferencia("gpt-4o-mini", costeMedido("gpt-4o-mini", uso)!, huellaIntacta, { service_tier: t }, GEMELA);
       expect(r.ok && r.credit.tierFactor, t).toBe(1);
     }
     for (const t of ["scale", "un-tier-nuevo", 3]) {
-      const r = valorarGemelaPorReferencia("gpt-4o-mini", costeMedido("gpt-4o-mini", uso)!, huellaIntacta, { service_tier: t }, false);
+      const r = valorarGemelaPorReferencia("gpt-4o-mini", costeMedido("gpt-4o-mini", uso)!, huellaIntacta, { service_tier: t }, GEMELA);
       expect(r, String(t)).toEqual({ ok: false, reason: "service-tier" });
     }
   });
@@ -870,19 +904,19 @@ describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
     // `gpt-4o-mini-latest` HEREDA la fila de gpt-4o-mini para tarifar, pero un
     // sufijo de letra puede ser otro modelo más barato: para el suelo no vale.
     const alias = costeMedido("gpt-4o-mini-latest", uso)!;
-    expect(valorarGemelaPorReferencia("gpt-4o-mini-latest", alias, huellaIntacta, {}, false)).toEqual({ ok: false, reason: "no-cached-price" });
+    expect(valorarGemelaPorReferencia("gpt-4o-mini-latest", alias, huellaIntacta, {}, GEMELA)).toEqual({ ok: false, reason: "no-cached-price" });
     // Una instantánea con fecha es el mismo modelo y sí vale.
     const fechado = costeMedido("gpt-4o-mini-2024-07-18", uso)!;
-    expect(valorarGemelaPorReferencia("gpt-4o-mini-2024-07-18", fechado, huellaIntacta, {}, false).ok).toBe(true);
+    expect(valorarGemelaPorReferencia("gpt-4o-mini-2024-07-18", fechado, huellaIntacta, {}, GEMELA).ok).toBe(true);
     // gpt-4 y o3-pro no publican lectura de caché.
     for (const m of ["gpt-4", "o3-pro"]) {
-      expect(valorarGemelaPorReferencia(m, costeMedido(m, uso)!, huellaIntacta, {}, false), m).toEqual({ ok: false, reason: "no-cached-price" });
+      expect(valorarGemelaPorReferencia(m, costeMedido(m, uso)!, huellaIntacta, {}, GEMELA), m).toEqual({ ok: false, reason: "no-cached-price" });
     }
   });
 
   it("⛔ sin tokens de entrada no hay crédito", () => {
     const vacio = costeMedido("claude-haiku-4-5", { input_tokens: 0, output_tokens: 5 })!;
-    expect(valorarGemelaPorReferencia("claude-haiku-4-5", vacio, huellaIntacta, {}, false)).toEqual({ ok: false, reason: "no-credit" });
+    expect(valorarGemelaPorReferencia("claude-haiku-4-5", vacio, huellaIntacta, {}, GEMELA)).toEqual({ ok: false, reason: "no-credit" });
   });
 
   it("sin crédito, informeCoalescido sigue como siempre: estimated con el coste de la primaria", () => {
@@ -893,5 +927,48 @@ describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
     expect(r.cost.basis).toBe("estimated");
     expect(r.cost.baselineEstimate).toBe(medido.costeUsd);
     expect(r.cache.reference).toBeUndefined();
+  });
+});
+
+describe("Parte G · lo que la gemela lee de la réplica", () => {
+  it("respuestaJsonFallida: solo `status: \"failed\"` en …/responses", () => {
+    const fallida = JSON.stringify({ status: "failed", usage: { input_tokens: 10, output_tokens: 0 } });
+    expect(respuestaJsonFallida("/v1/responses", fallida)).toBe(true);
+    expect(respuestaJsonFallida("/v1/responses", JSON.stringify({ status: "completed" }))).toBe(false);
+    expect(respuestaJsonFallida("/v1/responses", JSON.stringify({ status: "incomplete" }))).toBe(false);
+    expect(respuestaJsonFallida("/v1/responses", "roto")).toBe(false);
+    // Otra ruta no tiene ese campo con ese sentido.
+    expect(respuestaJsonFallida("/v1/chat/completions", fallida)).toBe(false);
+  });
+
+  it("tierServidoDeRespuesta lee cada dialecto en su sitio, en JSON y en stream, y gana el último", () => {
+    // Anthropic: usage.service_tier.
+    expect(tierServidoDeRespuesta("/v1/messages", JSON.stringify({ usage: { input_tokens: 1, service_tier: "priority" } }))).toBe("priority");
+    const sseAnthropic =
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":1,"service_tier":"standard"}}}\n\n' +
+      'event: message_delta\ndata: {"type":"message_delta","usage":{"output_tokens":3}}\n\n';
+    expect(tierServidoDeRespuesta("/v1/messages", sseAnthropic)).toBe("standard");
+    // Chat Completions: la raíz del JSON o de cada chunk.
+    expect(tierServidoDeRespuesta("/v1/chat/completions", JSON.stringify({ service_tier: "scale", usage: {} }))).toBe("scale");
+    const sseChat = 'data: {"service_tier":"default","choices":[]}\n\ndata: {"service_tier":"flex","choices":[]}\n\ndata: [DONE]\n\n';
+    expect(tierServidoDeRespuesta("/v1/chat/completions", sseChat)).toBe("flex");
+    // Responses: la raíz del JSON o `response` de cada evento.
+    expect(tierServidoDeRespuesta("/v1/responses", JSON.stringify({ status: "completed", service_tier: "default" }))).toBe("default");
+    const sseResponses =
+      'event: response.created\ndata: {"type":"response.created","response":{"service_tier":"auto"}}\n\n' +
+      'event: response.completed\ndata: {"type":"response.completed","response":{"service_tier":"scale"}}\n\n';
+    expect(tierServidoDeRespuesta("/v1/responses", sseResponses)).toBe("scale");
+    // Sin dato: undefined, que no es «estándar».
+    expect(tierServidoDeRespuesta("/v1/messages", JSON.stringify({ usage: { input_tokens: 1 } }))).toBeUndefined();
+    // El campo de OTRO dialecto no se lee: en /v1/messages la raíz no manda.
+    expect(tierServidoDeRespuesta("/v1/messages", JSON.stringify({ service_tier: "scale" }))).toBeUndefined();
+  });
+
+  it("⛔ ObservadorResponses: un evento con nombre de propiedad del prototipo no pasa por un final", () => {
+    const o = new ObservadorResponses();
+    o.observar('event: constructor\ndata: {"type":"constructor","response":{"usage":{"input_tokens":5,"output_tokens":1}}}\n\n');
+    o.observar('event: toString\ndata: {"type":"toString","response":{"usage":{"input_tokens":5,"output_tokens":1}}}\n\n');
+    expect(o.usageFinal()).toBeNull();
+    expect(o.estadoFinal()).toBeNull();
   });
 });

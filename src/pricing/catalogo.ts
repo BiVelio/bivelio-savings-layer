@@ -84,14 +84,18 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // infla nada.
   //
   // Lo que se queda FUERA a propósito, aunque el tokenizador lo mapee a o200k:
-  //   · o1: la tabla oficial dice $15 / $7.50 / $60, pero su lectura de caché
-  //     (0,0075 por 1K) está por ENCIMA del techo con el que el ingest acota el
-  //     dinero a precio de lectura (TECHO_PRECIO_LECTURA_PER_1K = 0,002,
-  //     apps/web/lib/metering/techo-precio-lectura.ts). Meterla obliga a subir
-  //     ese techo para TODOS los modelos —una verja más floja— o a degradar sus
-  //     referencias legítimas. Es decisión del dueño, no de una fila.
-  //   · o1-pro ($150 / $600): su salida supera el techo de salida del mismo
-  //     ingest (0,08 por 1K). Mismo motivo.
+  //   · o1: la tabla oficial dice $15 / $7.50 / $60 (hay fuente), pero su
+  //     lectura de caché (0,0075 por 1K) supera TECHO_PRECIO_LECTURA_PER_1K
+  //     (0,002, apps/web/lib/metering/techo-precio-lectura.ts), y el invariante
+  //     de techo-precio-lectura.test.ts exige que ese techo sea ≥ el MAYOR
+  //     cachedInputPer1k de este catálogo. Ese techo es además el recorte del
+  //     suelo de la elisión que impide tarifar un borrado de Anthropic a precio
+  //     de entrada. Con la fila, o se sube el techo para TODOS (verja más
+  //     floja) o se rompe el invariante. Sin subirlo, o1 se podría MEDIR igual
+  //     (los registros medidos no tienen techo) y sus referencias fuera de techo
+  //     se degradarían a estimated, no darían un 400: es decisión del dueño.
+  //   · o1-pro ($150 / $600): su salida supera TECHO_PRECIO_SALIDA_PER_1K (0,08
+  //     por 1K) y su invariante gemelo en el mismo test. Mismo motivo.
   //   · o1-mini: ya no figura en la tabla oficial ni en la referencia del vigía.
   //     Sin fuente no hay fila.
   // Ninguna de las tres puede heredar de otra fila (no existe clave `o1`), así
@@ -229,8 +233,10 @@ export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): 
 
 /**
  * Ids que NO pueden heredar la fila de un pariente por prefijo, aunque el
- * emparejador se la daría: son OTRO modelo con otro precio y ninguna fuente
- * citable lo publica hoy. Sin esta lista, `o3-deep-research` heredaría la fila
+ * emparejador se la daría: son OTRO modelo con otro precio, y la página
+ * oficial de precios de OpenAI no lo publica (comprobado el 2026-09-25; la
+ * referencia comunitaria del vigía puede listarlos, pero no es la factura de
+ * nadie). Sin esta lista, `o3-deep-research` heredaría la fila
  * de `o3` (un sufijo de letra es «alias» para `buscarPorModelo`) y se tarifaría
  * a un quinto de lo que factura, con el aviso de «sin precio» callado. Aquí dan
  * `undefined`, que es la respuesta honesta: se reenvían y se dice que no se

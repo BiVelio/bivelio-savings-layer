@@ -20,14 +20,18 @@ import { createHash } from "node:crypto";
  *     la petición idéntica byte a byte que sí viajó y que el cliente ya pagó —
  *     la clave de abajo es el cuerpo más las cabeceras de identidad, así que la
  *     identidad la garantiza la propia coalescencia—. Solo si la primaria viajó
- *     INTACTA (ninguna palanca le cambió el cuerpo, las cabeceras ni el modelo;
- *     la rebaja de TTL solo cambia la tarifa de la escritura y se admite), no es
- *     tráfico de suscripción y el modelo tiene precio de lectura documentado en
- *     SU fila del catálogo. Se valora al SUELO: toda la entrada a precio de
- *     lectura de caché, sin primas, y la salida solo con `temperature: 0` en el
- *     cuerpo (al 95 %). Si algo falla, sigue `estimated` como siempre y fuera de
- *     la comisión. La regla y los motivos: `valorarGemelaPorReferencia`
- *     (gateway/medidor.ts). La MISMA regla v1 que el SDK (src/pipeline/referencia.ts).
+ *     INTACTA (ninguna palanca le cambió el cuerpo, las cabeceras ni el modelo:
+ *     tampoco la rebaja de TTL, porque lo publicado dice «byte-identical,
+ *     untouched by the layer»), contra el origen OFICIAL del proveedor (solo ahí
+ *     hay una factura a precio de lista), no es tráfico de suscripción, la
+ *     réplica llegó entera al cliente de la gemela y el modelo tiene precio de
+ *     lectura documentado en SU fila del catálogo. Se valora al SUELO: toda la
+ *     entrada a precio de lectura de caché, sin primas, y la salida solo con
+ *     `temperature: 0` en el cuerpo (al 95 %). Si algo falla, sigue `estimated`
+ *     como siempre y fuera de la comisión. La regla y los motivos:
+ *     `valorarGemelaPorReferencia` (gateway/medidor.ts), que sigue la regla v1
+ *     del SDK (src/pipeline/referencia.ts) con las guardas que el gateway puede
+ *     comprobar y alguna más que el SDK no necesita.
  */
 
 /**
@@ -43,15 +47,27 @@ export interface HuellaDeLaPrimaria {
   at: number;
   /**
    * true si ninguna palanca cambió lo que viajó: ni el cuerpo, ni las
-   * cabeceras, ni el modelo. La rebaja de TTL se admite: cambia la tarifa de la
-   * escritura, no un solo token de la petición.
+   * cabeceras, ni el modelo. Sin excepciones, tampoco la rebaja de TTL: lo que
+   * se publica al cliente es «byte-identical, untouched by the layer».
    */
   intacta: boolean;
+  /**
+   * El upstream es el origen OFICIAL del proveedor (`esUpstreamOficial`). Un
+   * mock, un proxy o un revendedor no dejan una factura a precio de lista.
+   */
+  proveedorOficial: boolean;
+  /**
+   * La primaria leyó el contador FINAL del proveedor en su propia respuesta (el
+   * evento final del stream o el `usage` del JSON): sin él no hay registro
+   * medido al que apuntar `referenceRequestId`.
+   */
+  conContador: boolean;
   /** Tráfico de suscripción (marcas de protocolo): sin factura por token no hay contador que valga. */
   suscripcion: boolean;
   /**
-   * La Responses API cerró con `response.failed`: su contador existe, pero nada
-   * garantiza que una repetición hubiera facturado lo mismo.
+   * La Responses API cerró con `response.failed` (evento final del stream, o
+   * `status: "failed"` en el JSON): su contador existe, pero nada garantiza que
+   * una repetición hubiera facturado lo mismo.
    */
   fallida: boolean;
 }

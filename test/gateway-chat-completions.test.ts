@@ -90,6 +90,21 @@ function json(respuesta: unknown, retrasoMs = 0) {
   };
 }
 
+/**
+ * Parte G · la referencia solo se concede contra el origen OFICIAL. Con
+ * `upstream: "https://api.openai.com"` y este `fetchImpl`, ese origen va al mock
+ * local y lo demás (la ingesta) por el fetch de siempre: nada sale a Internet.
+ */
+function comoOficial(puerto: number): Partial<OpcionesGateway> {
+  const OFICIAL = "https://api.openai.com";
+  const fetchImpl = ((input: string | URL | Request, init?: RequestInit) => {
+    const u = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+    if (u.origin === OFICIAL) return fetch(`http://127.0.0.1:${puerto}${u.pathname}${u.search}`, init);
+    return fetch(input, init);
+  }) as typeof fetch;
+  return { upstream: OFICIAL, fetchImpl };
+}
+
 function ingestaFalsa(lotes: unknown[][]): Promise<number> {
   return new Promise((resolve) => {
     const s = createServer(async (req, res) => {
@@ -313,7 +328,7 @@ describe("gateway · respuestas JSON por dialecto", () => {
 
   it("(j) coalescencia: dos chat/completions JSON idénticas → la primaria measured y la gemela por referencia (singleflight)", async () => {
     const up = await upstreamFalso(json({ object: "chat.completion", choices: [], usage: { prompt_tokens: 100, completion_tokens: 20 } }, 150));
-    const { gw, registros } = await gateway(up.puerto, { coalescer: true });
+    const { gw, registros } = await gateway(up.puerto, { coalescer: true, ...comoOficial(up.puerto) });
     const cuerpo = JSON.stringify({ model: MODELO, messages: [{ role: "user", content: "hola" }] });
     const p1 = pedir(gw.puerto, "/v1/chat/completions", cuerpo).then((r) => r.text());
     await new Promise((r) => setTimeout(r, 40));
@@ -339,7 +354,7 @@ describe("gateway · respuestas JSON por dialecto", () => {
     // La inyección cambia el cuerpo que viaja (`stream_options`): el contador de
     // la primaria ya no es el de la petición del cliente byte a byte.
     const up = await upstreamFalso((r, res) => setTimeout(() => sse(comoOpenAI)(r, res), 150));
-    const { gw, lineas, registros } = await gateway(up.puerto, { coalescer: true, usageInject: true });
+    const { gw, lineas, registros } = await gateway(up.puerto, { coalescer: true, usageInject: true, ...comoOficial(up.puerto) });
     const cuerpo = JSON.stringify({ model: MODELO, stream: true, messages: [{ role: "user", content: "hola" }] });
     const p1 = pedir(gw.puerto, "/v1/chat/completions", cuerpo).then((r) => r.text());
     await new Promise((r) => setTimeout(r, 40));
@@ -352,6 +367,67 @@ describe("gateway · respuestas JSON por dialecto", () => {
     expect(gemela["basis"]).toBe("estimated");
     expect(gemela["referenceRequestId"]).toBeUndefined();
     expect(lineas.join("\n")).toContain("estimated, not by reference: layer-changed-request");
+  });
+});
+
+describe("gateway · Parte G: lo que la réplica dice de la primaria", () => {
+  /** Dos idénticas concurrentes por un gateway «oficial» con coalescencia. */
+  async function pareja(path: string, respuesta: unknown, cuerpo: Record<string, unknown>) {
+    const up = await upstreamFalso(json(respuesta, 150));
+    const { gw, lineas, registros } = await gateway(up.puerto, { coalescer: true, ...comoOficial(up.puerto) });
+    const texto = JSON.stringify(cuerpo);
+    const p1 = pedir(gw.puerto, path, texto).then((r) => r.text());
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir(gw.puerto, path, texto).then((r) => r.text());
+    await Promise.all([p1, p2]);
+    expect(up.recibidas).toHaveLength(1);
+    const regs = await registros(2);
+    return {
+      medida: regs.find((r) => r["basis"] === "measured")!,
+      gemela: regs.find((r) => r["cacheResult"] === "singleflight")!,
+      lineas,
+    };
+  }
+
+  it("(g1) ⛔ /v1/responses sin stream con `status: \"failed\"` y usage: la primaria se mide, la gemela NO por referencia", async () => {
+    const { medida, gemela, lineas } = await pareja(
+      "/v1/responses",
+      { object: "response", status: "failed", usage: { input_tokens: 100, output_tokens: 0 } },
+      { model: MODELO, input: "hola" },
+    );
+    expect(medida["actualInputTokens"]).toBe(100);
+    expect(gemela["basis"]).toBe("estimated");
+    expect(gemela["referenceRequestId"]).toBeUndefined();
+    expect(lineas.join("\n")).toContain("estimated, not by reference: primary-failed");
+  });
+
+  it("(g2) la misma /v1/responses con `status: \"completed\"` sí da referencia (el control de g1)", async () => {
+    const { gemela } = await pareja(
+      "/v1/responses",
+      { object: "response", status: "completed", service_tier: "default", usage: { input_tokens: 100, output_tokens: 5 } },
+      { model: MODELO, input: "hola" },
+    );
+    expect(gemela["basis"]).toBe("reference");
+  });
+
+  it("(g3) ⛔ pedido `auto` y SERVIDO en `scale` (capacidad prepagada): la gemela NO por referencia", async () => {
+    const { gemela, lineas } = await pareja(
+      "/v1/chat/completions",
+      { object: "chat.completion", service_tier: "scale", choices: [], usage: { prompt_tokens: 100, completion_tokens: 20 } },
+      { model: MODELO, service_tier: "auto", messages: [{ role: "user", content: "hola" }] },
+    );
+    expect(gemela["basis"]).toBe("estimated");
+    expect(lineas.join("\n")).toContain("estimated, not by reference: service-tier");
+  });
+
+  it("(g4) servido en `flex` sin pedirlo: el suelo baja a la mitad", async () => {
+    const { gemela } = await pareja(
+      "/v1/chat/completions",
+      { object: "chat.completion", service_tier: "flex", choices: [], usage: { prompt_tokens: 100, completion_tokens: 20 } },
+      { model: MODELO, messages: [{ role: "user", content: "hola" }] },
+    );
+    expect(gemela["basis"]).toBe("reference");
+    expect(gemela["baselineCost"]).toBeCloseTo(0.5 * (100 / 1000) * 0.000075, 12);
   });
 });
 
