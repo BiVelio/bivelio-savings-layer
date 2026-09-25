@@ -15,8 +15,16 @@
  *                  without calling the provider) and a byte-identical request had
  *                  already run through the layer untouched. The baseline is the
  *                  provider's own counter for that request, valued at the
- *                  provider's cached-input rate, with output credited only under
- *                  deterministic sampling. A floor. Enters the commission base.
+ *                  provider's cached-input rate. Output is credited only under
+ *                  deterministic sampling, on a model with a list price in the
+ *                  catalog that does not reason and honors that setting, when
+ *                  the call that ran carried no hidden reasoning (zero reasoning
+ *                  tokens reported, or no reasoning block where the provider
+ *                  does not break them out), and then at 95% of its counter.
+ *                  With an output schema, only when the schema traveled exactly
+ *                  as sent, in strict mode, in the provider's native
+ *                  response-format parameter. Valued low on purpose. Enters the
+ *                  commission base.
  * - `estimated`  — the call was AVOIDED: it never ran, so there is no provider
  *                  counter and the baseline comes from the local estimator. Still
  *                  the best figure available, but not measured.
@@ -41,7 +49,7 @@ export interface CostModel {
   cachedInputPer1k?: number;
 }
 
-// --- Medido por referencia: la regla v1 -------------------------------------
+// --- Medido por referencia: la regla v2 -------------------------------------
 //
 // Las tres cifras de la regla viven AQUÍ y solo aquí. La web las repite en su
 // `REGLA_REFERENCIA` (lo que el extracto publica como parámetros), y el test de
@@ -51,9 +59,9 @@ export interface CostModel {
 
 /** Oldest provider counter a repeat can be valued against: one billing period. */
 export const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-/** Share of the counted output credited to a repeat, and only under deterministic sampling. */
+/** Share of the counted output credited to a repeat: only under deterministic sampling, on a catalog model that does not reason and honors it, when the call that ran carried no hidden reasoning. */
 export const REFERENCE_OUTPUT_SHARE = 0.95;
-/** Input tokens deducted per message the layer inserted in the call that ran. */
+/** Input tokens deducted per piece the layer inserted in the call that ran: a message, the wrapper around a native output schema, or half of the empty parameters given to a tool that had none. */
 export const REFERENCE_MESSAGE_ALLOWANCE = 8;
 
 /**
@@ -97,9 +105,16 @@ export interface ReferenceCredit {
   inputTokens: number;
   /** Output tokens the provider billed for that call (the smaller of the first answer and its repair). */
   outputTokens: number;
-  /** Input tokens credited to this repeat: inputTokens minus the allowance for messages the layer inserted. */
+  /** Input tokens credited to this repeat: inputTokens minus the allowance for what the layer inserted (messages, the native schema wrapper, empty tool parameters). */
   creditedInputTokens: number;
-  /** Output tokens credited: a share of outputTokens capped by this request's output limit; 0 without deterministic sampling. */
+  /**
+   * Output tokens credited: a share of outputTokens capped by this request's
+   * output limit. 0 unless this request asked for deterministic sampling
+   * (`temperature: 0`), the model has a list price in the catalog, does not
+   * reason and honors that setting, and the call that ran carried no hidden
+   * reasoning (zero reasoning tokens reported, or no reasoning block where the
+   * provider does not break them out).
+   */
   creditedOutputTokens: number;
   /** Rate applied to every credited input token, per 1K: the provider's cached-input rate. */
   cachedInputPer1k: number;
@@ -205,7 +220,7 @@ export class SavingsLedger {
   // de una llamada que sí corrió sin que la capa le quitara ni le añadiera nada.
   // Ahí el contrafactual no se reconstruye: YA SE EJECUTÓ, y su contador es el
   // del proveedor. Se valora a la baja (toda la entrada a tarifa cacheada, la
-  // salida solo con muestreo determinista) y lleva su propio basis,
+  // salida solo con muestreo determinista y sin razonamiento oculto) y lleva su propio basis,
   // "reference", para poder auditarlo y apagarlo sin tocar "measured". Las
   // reglas de escritura y de lectura viven en `pipeline/referencia.ts`.
 
@@ -533,8 +548,9 @@ export class SavingsLedger {
     // referencia, no con `model`: toda la entrada acreditada a tarifa CACHEADA
     // —el mínimo que el proveedor cobra por un token de entrada, aunque la
     // ingenua hubiera acertado entera en su caché de prefijo— y la salida
-    // acreditada (0 sin muestreo determinista), todo por el factor de tier. Es un
-    // suelo: la repetición sin la capa habría costado al menos esto.
+    // acreditada (0 sin muestreo determinista o con razonamiento oculto), todo
+    // por el factor de tier. La entrada es un suelo; la salida, el 95 % de un
+    // contador que `temperature: 0` reproduce de cerca pero no bit a bit.
     const r = !ranCall ? this.reference : null;
     const baselineEstimate = r
       ? r.tierFactor *

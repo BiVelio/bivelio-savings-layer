@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 
 import { CATALOGO, claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
+import {
+  esModeloDeRazonamiento,
+  filasSinClasificar,
+  IGNORA_TEMPERATURA,
+  RAZONA_POR_FILA,
+  salidaNoRepetible,
+} from "../src/pricing/razonamiento.js";
 import { SavingsLedger, REFERENCE_MESSAGE_ALLOWANCE } from "../src/tokenizer/accounting.js";
 import {
   evaluarReferencia,
@@ -12,12 +19,19 @@ import {
  * LA REFERENCIA ES UN SUELO, PARA TODO EL CATÁLOGO.
  *
  * Propiedad, no ejemplos: 500 semillas por fila del catálogo, con contadores,
- * topes, muestreo, tiers y mensajes de la capa al azar. Para cada una, el crédito
- * que sale de `evaluarReferencia` y el `baselineEstimate` que sale del libro
- * (el mismo camino que publica el informe) tienen que quedar por debajo de:
+ * topes, muestreo, tiers, piezas de la capa y razonamiento declarado al azar.
+ * Para cada una, el crédito que sale de `evaluarReferencia` y el
+ * `baselineEstimate` que sale del libro (el mismo camino que publica el
+ * informe) tienen que quedar por debajo de:
  *
  *   · lo que la regla declara: tier · ((entrada − 8·m)·cacheada + min(salida, tope)·salida) / 1000;
  *   · lo que la poblada costó a precio de lista.
+ *
+ * Y la GUARDA DE SALIDA (regla v2): ni un token de salida si el modelo razona
+ * según su fila, si no honra `temperature: 0`, si no es fila del catálogo, si
+ * el contador declaró razonamiento o si no dijo nada. El modelo se pide unas
+ * veces por su clave y otras con prefijo de pasarela (`vendor/…`, la forma de
+ * OpenRouter): la guarda no puede depender de cómo se escriba el id.
  *
  * Si un precio nuevo del catálogo rompiera la regla (una tarifa cacheada por
  * encima de la de entrada, por ejemplo), esto se pone rojo antes que la factura.
@@ -47,15 +61,20 @@ const SEMILLAS = 500;
 const CUANTO = 5e-11;
 
 function registro(r: () => number, modelo: string): RegistroDeReferencia {
+  // Razonamiento declarado: 0 la mitad de las veces, positivo o callado el resto.
+  const dado = r();
+  const razonamiento = dado < 0.5 ? 0 : dado < 0.75 ? entero(r, 1, 3_000) : undefined;
   return {
-    v: 1,
+    v: 2,
     requestId: "req-poblada",
     at: 1_000_000,
     model: modelo,
     inputTokens: entero(r, 1, 20_000),
     outputTokens: entero(r, 0, 4_000),
     ...(r() < 0.5 ? { tierFactor: 0.5 } : {}),
-    layerMessages: r() < 0.5 ? 0 : 1,
+    // Mensaje de datos, turno del adaptador, envoltorio del esquema: 0 a 3.
+    layerInsertions: entero(r, 0, 3),
+    ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
     requestFingerprint: "huella",
     textSha256: "testigo",
   };
@@ -79,16 +98,21 @@ describe("la referencia es un suelo (propiedad sobre el catálogo)", () => {
         const tope = r() < 0.3 ? undefined : entero(r, 1, 5_000);
         const determinista = r() < 0.5;
         const diferible = r() < 0.3;
+        const id = r() < 0.5 ? modelo : `vendor/${modelo}`;
+        reg.model = id;
 
+        const salidaDelModelo = salidaNoRepetible(id);
+        expect(salidaDelModelo, id).toBe(salidaNoRepetible(modelo));
         const ev = evaluarReferencia(reg, {
           ahoraMs: 2_000_000,
-          modeloPedido: modelo,
-          modeloServido: modelo,
+          modeloPedido: id,
+          modeloServido: id,
           huella: "huella",
           textoServidoSha256: "testigo",
           calidadOk: true,
           precio,
           determinista,
+          salidaDelModelo,
           topeDeSalida: tope,
           diferible,
         });
@@ -97,7 +121,7 @@ describe("la referencia es un suelo (propiedad sobre el catálogo)", () => {
           expect(ev).toEqual({ ok: false, reason: "no-cached-price" });
           continue;
         }
-        const entradaNeta = reg.inputTokens - REFERENCE_MESSAGE_ALLOWANCE * reg.layerMessages;
+        const entradaNeta = reg.inputTokens - REFERENCE_MESSAGE_ALLOWANCE * reg.layerInsertions;
         if (entradaNeta <= 0) {
           expect(ev).toEqual({ ok: false, reason: "no-credit" });
           continue;
@@ -107,8 +131,16 @@ describe("la referencia es un suelo (propiedad sobre el catálogo)", () => {
         const salidaTope = Math.min(reg.outputTokens, tope ?? Number.POSITIVE_INFINITY);
 
         expect(c.creditedInputTokens).toBeLessThanOrEqual(reg.inputTokens);
+        expect(c.creditedInputTokens).toBe(entradaNeta);
         expect(c.creditedOutputTokens).toBeLessThanOrEqual(salidaTope);
         if (!determinista) expect(c.creditedOutputTokens).toBe(0);
+        // LA GUARDA DE SALIDA: el contador de salida de un modelo que razona,
+        // que no honra temperature 0 o que nadie clasificó, o de una llamada que
+        // no declaró exactamente 0, no vale nada.
+        if (salidaDelModelo !== undefined || reg.reasoningTokens !== 0) {
+          expect(c.creditedOutputTokens, `semilla ${semilla}`).toBe(0);
+          if (determinista) expect(ev.outputNotCredited, `semilla ${semilla}`).toBeDefined();
+        }
         expect(c.tierFactor).toBeGreaterThan(0);
         expect(c.tierFactor).toBeLessThanOrEqual(1);
 
@@ -119,9 +151,11 @@ describe("la referencia es un suelo (propiedad sobre el catálogo)", () => {
         expect(coste.basis).toBe("reference");
         expect(coste.actual).toBe(0);
 
+        const salidaAcreditable = determinista && salidaDelModelo === undefined && reg.reasoningTokens === 0;
         const suelo =
           (c.tierFactor *
-            (entradaNeta * precio.cachedInputPer1k! + salidaTope * precio.outputPer1k)) /
+            (entradaNeta * precio.cachedInputPer1k! +
+              (salidaAcreditable ? salidaTope : 0) * precio.outputPer1k)) /
           1000;
         const aLista = (reg.inputTokens * precio.inputPer1k + reg.outputTokens * precio.outputPer1k) / 1000;
         expect(coste.baselineEstimate, `semilla ${semilla}`).toBeLessThanOrEqual(suelo + CUANTO);
@@ -165,6 +199,7 @@ describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de u
           calidadOk: true,
           precio: precioDeListaPropio(id),
           determinista: true,
+          salidaDelModelo: salidaNoRepetible(id),
           diferible: false,
         });
         expect(ev, id).toEqual({ ok: false, reason: "no-cached-price" });
@@ -195,5 +230,192 @@ describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de u
         expect(precioDeListaPropio(id), id).toBeUndefined();
       }
     }
+  });
+});
+
+describe("la guarda de razonamiento: cada fila del catálogo declara si razona", () => {
+  it("ninguna fila del catálogo queda sin clasificar, y la tabla no clasifica filas que no existen", () => {
+    // Quien añada un precio tiene que decidir también esto: una fila sin
+    // clasificar pondría en duda la salida acreditada de sus repeticiones.
+    expect(filasSinClasificar()).toEqual([]);
+    expect(Object.keys(RAZONA_POR_FILA).sort()).toEqual(Object.keys(CATALOGO).sort());
+  });
+
+  it("la fila manda para sus instantáneas y sus alias; el nombre suma, nunca resta", () => {
+    for (const k of Object.keys(CATALOGO)) {
+      // Lo que dice la fila es lo que sale, también con prefijo y con fecha: el
+      // patrón de nombres no contradice a ninguna fila de la tabla.
+      for (const id of [k, `vendor/${k}`, `${k}-2025-08-07`]) {
+        expect(esModeloDeRazonamiento(id), id).toBe(RAZONA_POR_FILA[k]);
+      }
+    }
+    // Familias enteras: gpt-5, Gemini 2.5/3.x y la generación 5 de Claude
+    // razonan; gpt-4o y Claude 4.6 o anterior no.
+    expect(esModeloDeRazonamiento("openai/gpt-5-mini")).toBe(true);
+    expect(esModeloDeRazonamiento("gpt-5.6-sol")).toBe(true);
+    expect(esModeloDeRazonamiento("google/gemini-2.5-flash-lite")).toBe(true);
+    expect(esModeloDeRazonamiento("openai/gpt-4o-mini")).toBe(false);
+    expect(esModeloDeRazonamiento("anthropic/claude-sonnet-4-5")).toBe(false);
+    // Claude 5: razonamiento adaptativo sin pedirlo (Opus 5, Sonnet 5) o siempre
+    // puesto (Fable, Mythos, Opus 5.5). La forma de OpenRouter también.
+    for (const id of [
+      "claude-opus-5",
+      "anthropic/claude-opus-5",
+      "claude-sonnet-5",
+      "claude-fable-5",
+      "claude-fable-5-1",
+      "claude-mythos-5",
+      "claude-mythos-5-1",
+      "claude-opus-5-5",
+      "anthropic/claude-opus-5-5",
+    ]) {
+      expect(esModeloDeRazonamiento(id), id).toBe(true);
+    }
+    // Fuera del catálogo (con precio en costModels), el nombre lo delata.
+    for (const id of [
+      "o1",
+      "o3-mini",
+      "openai/o4-mini",
+      "deepseek/deepseek-r1",
+      "deepseek-reasoner",
+      "qwq-32b",
+      "magistral-medium",
+      "grok-4-fast-reasoning",
+      "qwen3-235b-a22b-thinking-2507",
+      "openai/gpt-oss-120b",
+      "x-ai/grok-4",
+      "grok-3-mini",
+      "qwen/qwen3-235b-a22b",
+      "z-ai/glm-4.6",
+      "anthropic/claude-3.7-sonnet:thinking",
+    ]) {
+      expect(esModeloDeRazonamiento(id), id).toBe(true);
+    }
+    // Una variante «thinking» de una fila que no razona: el nombre suma.
+    expect(esModeloDeRazonamiento("claude-sonnet-4-5-thinking")).toBe(true);
+  });
+
+  it("para un modelo que razona, ni temperature 0 ni un contador que diga 0 acreditan salida", () => {
+    for (const [modelo, precio] of Object.entries(CATALOGO)) {
+      if (!RAZONA_POR_FILA[modelo] || precio.cachedInputPer1k === undefined) continue;
+      const ev = evaluarReferencia(
+        {
+          v: 2,
+          requestId: "req-poblada",
+          at: 1_000_000,
+          model: modelo,
+          inputTokens: 1_000,
+          outputTokens: 500,
+          layerInsertions: 0,
+          reasoningTokens: 0,
+          requestFingerprint: "huella",
+          textSha256: "testigo",
+        },
+        {
+          ahoraMs: 2_000_000,
+          modeloPedido: modelo,
+          modeloServido: modelo,
+          huella: "huella",
+          textoServidoSha256: "testigo",
+          calidadOk: true,
+          precio,
+          determinista: true,
+          salidaDelModelo: salidaNoRepetible(modelo),
+          diferible: false,
+        },
+      );
+      if (!ev.ok) throw new Error(`${modelo}: ${ev.reason}`);
+      expect(ev.credit.creditedInputTokens, modelo).toBe(1_000);
+      expect(ev.credit.creditedOutputTokens, modelo).toBe(0);
+      expect(ev.outputNotCredited, modelo).toBe("reasoning-model");
+    }
+  });
+});
+
+describe("la guarda de salida: temperatura ignorada y modelos sin clasificar", () => {
+  it("IGNORA_TEMPERATURA solo nombra filas del catálogo que no razonan (las que razonan ya salen)", () => {
+    for (const k of IGNORA_TEMPERATURA) {
+      expect(k in CATALOGO, k).toBe(true);
+      expect(RAZONA_POR_FILA[k], k).toBe(false);
+    }
+  });
+
+  it("Opus 4.7 y 4.8 no admiten temperature: su salida no cuenta, con o sin pasarela", () => {
+    for (const id of ["claude-opus-4-7", "anthropic/claude-opus-4-8", "claude-opus-4-8-20260101"]) {
+      expect(salidaNoRepetible(id), id).toBe("temperature-ignored");
+    }
+  });
+
+  it("un id que no es fila del catálogo no acredita salida: nadie decidió si razona", () => {
+    for (const id of ["meta-llama/llama-3.1-70b-instruct", "mistral-large-2411", "anthropic/claude-opus-4-6:nitro"]) {
+      expect(salidaNoRepetible(id), id).toBe("unclassified-model");
+    }
+  });
+
+  it("las filas cuya salida SÍ puede acreditarse son exactamente éstas (trinquete)", () => {
+    // Cambiar esta lista es una decisión de dinero: una fila nueva que entre
+    // aquí acredita salida en sus repeticiones con temperature 0.
+    const repetibles = Object.keys(CATALOGO)
+      .filter((k) => salidaNoRepetible(k) === undefined)
+      .sort();
+    expect(repetibles).toEqual(
+      [
+        "claude-3-5-haiku",
+        "claude-3-5-sonnet",
+        "claude-3-haiku",
+        "claude-3-opus",
+        "claude-haiku-4-5",
+        "claude-opus-4",
+        "claude-opus-4-5",
+        "claude-opus-4-6",
+        "claude-sonnet-4",
+        "claude-sonnet-4-5",
+        "claude-sonnet-4-6",
+        "gpt-3.5-turbo",
+        "gpt-4",
+        "gpt-4-turbo",
+        "gpt-4.1",
+        "gpt-4.1-mini",
+        "gpt-4.1-nano",
+        "gpt-4o",
+        "gpt-4o-mini",
+      ].sort(),
+    );
+  });
+
+  it("OpenRouter con anthropic/claude-opus-5, temperature 0 y reasoning_tokens 0: salida 0", () => {
+    const modelo = "anthropic/claude-opus-5";
+    const precio = precioDeListaPropio(modelo);
+    expect(precio).toBe(CATALOGO["claude-opus-5"]);
+    const ev = evaluarReferencia(
+      {
+        v: 2,
+        requestId: "req-poblada",
+        at: 1_000_000,
+        model: modelo,
+        inputTokens: 1_000,
+        outputTokens: 500,
+        layerInsertions: 0,
+        reasoningTokens: 0,
+        requestFingerprint: "huella",
+        textSha256: "testigo",
+      },
+      {
+        ahoraMs: 2_000_000,
+        modeloPedido: modelo,
+        modeloServido: modelo,
+        huella: "huella",
+        textoServidoSha256: "testigo",
+        calidadOk: true,
+        precio,
+        determinista: true,
+        salidaDelModelo: salidaNoRepetible(modelo),
+        diferible: false,
+      },
+    );
+    if (!ev.ok) throw new Error(ev.reason);
+    expect(ev.credit.creditedInputTokens).toBe(1_000);
+    expect(ev.credit.creditedOutputTokens).toBe(0);
+    expect(ev.outputNotCredited).toBe("reasoning-model");
   });
 });

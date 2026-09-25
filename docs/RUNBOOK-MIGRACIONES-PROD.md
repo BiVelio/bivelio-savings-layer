@@ -450,7 +450,14 @@ jq -Rs '{query:.}' < /tmp/diagnostico-0018-0020.sql | curl -sf \
 o seguidor coalescido) cuya repetición es byte a byte una petición que sí corrió
 a través de la capa sin que la capa la tocara, valorada con el contador que el
 proveedor devolvió para esa petición idéntica (entrada al precio de entrada
-cacheada; salida solo con muestreo determinista). Añade:
+cacheada; salida solo con muestreo determinista, con un modelo del catálogo que
+no razona y honra ese muestreo, y sin razonamiento oculto en la llamada que
+corrió — regla `reference-v2`, ver `src/pipeline/referencia.ts`). El ingest solo
+admite `reference` de procesos que declaran `sdk/` desde
+`VERSION_MINIMA_REFERENCIA` (0.4.24); el resto entra como `estimated`, porque la
+etiqueta v0.4.23 lleva la regla v1 y la regla no viaja en el registro. El
+`gateway/` tampoco entra, a ninguna versión, hasta que un PR le lleve la regla
+v2 y abra su verja en `apps/web/lib/metering/version.ts`. Añade:
 
 - `usage_daily`: `reference_requests`, `reference_baseline_cost`,
   `reference_actual_cost` (con el CHECK `usage_daily_reference_no_negatives`,

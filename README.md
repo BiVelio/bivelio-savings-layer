@@ -188,8 +188,15 @@ was obtained: `actual` is what the provider metered; `basis` is `"measured"` whe
 the request went through untouched, `"reference"` when a repeat of a byte‑identical
 request was served without calling the provider — its baseline is the provider's own
 counter for the identical request that already ran and that you already paid
-(`report.cache.reference` points to it), valued at the provider's cached‑input rate,
-with the output counted only under deterministic sampling (`temperature: 0`), so it is a floor —
+(`report.cache.reference` points to it; with an output schema, only when your schema
+traveled exactly as sent, in strict mode, in the provider's native response‑format
+parameter, with nothing added to the prompt), valued at the provider's cached‑input
+rate, the lowest it bills for repeating a prompt; the output counts only under deterministic
+sampling (`temperature: 0`), on a model with a list price in the catalog that does not
+reason and honors that setting, and when the call that ran carried no hidden reasoning (the
+provider reported zero reasoning tokens or, where it does not break them out, its answer
+had no reasoning block), and then at 95 % of its counter, a margin for the small drift
+`temperature: 0` still has —
 `"estimated"` when the layer removed something (the baseline is then reconstructed
 with the model's tokenizer, or with a calibrated estimate where no exact tokenizer
 exists, as for Anthropic models), and `"unmeasured"` when the provider returned no

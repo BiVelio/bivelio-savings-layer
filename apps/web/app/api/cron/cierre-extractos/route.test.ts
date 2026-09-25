@@ -115,7 +115,7 @@ describe("cierre-extractos — el carril medido por referencia (0029)", () => {
       requests_referencia: 20,
       base_referencia_usd: 50,
       ahorro_referencia_usd: 50,
-      regla_referencia: "reference-v1",
+      regla_referencia: "reference-v2",
       requests_medidas: 30,
       ahorro_medido_usd: 950,
     });
