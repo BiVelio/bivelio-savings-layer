@@ -1,4 +1,4 @@
-# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0030)
+# Runbook — migraciones 0007–0017 en producción (+ anexos 0024/0025 … 0031)
 
 **Escrito el 2026-08-26.** Estado de partida conocido: 0001–0006 aplicadas
 (bitácoras de julio), 0012 **confirmada** aplicada (verificación del 2026-08-11
@@ -57,8 +57,9 @@ select m.mig, m.aplicada from (values
   ('0016 extractos',          to_regclass('bvsala.extractos') is not null),
   ('0017 cargos',             to_regclass('bvsala.cargos') is not null),
   ('0029 medido por referencia', to_regclass('bvsala.reference_hits') is not null),
-  ('RPC en version final (0029)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%')),
-  ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null)
+  ('0030 tu propio banco', to_regclass('bvsala.verification_samples') is not null and to_regclass('bvsala.verification_daily') is not null and to_regprocedure('bvsala.ingest_verification_batch(uuid, text, jsonb, jsonb)') is not null and to_regprocedure('bvsala.verification_summary(uuid, date, date)') is not null),
+  ('0031 referencia por asiento', exists (select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='reference_baseline_cost')),
+  ('RPC en version final (0031)', exists (select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch' and p.prosrc like '%reference_hits%' and p.prosrc like '%seat_activity.reference_baseline_cost%'))
 ) as m(mig, aplicada) order by 1;
 SQL
 
@@ -81,12 +82,13 @@ migración crea:
 | 0012 | columna `subscriptions.last_event_at` | Ya confirmada el 11-08; debería salir `true` |
 | 0013 | tabla `org_invitations` + columna `organizations.owner_user_id` | |
 | 0014 | función `transferir_propiedad` | |
-| 0015 | check `usage_daily_token_totals_no_negatives` | Lleva versión de la RPC — regla 1 (fue la final de este lote; hoy la final es la de 0029: fila «RPC final») |
+| 0015 | check `usage_daily_token_totals_no_negatives` | Lleva versión de la RPC — regla 1 (fue la final de este lote; hoy la final es la de 0031: fila «RPC final») |
 | 0016 | tabla `extractos` | La que necesita el cron del día 1 a las 05:00 |
 | 0017 | tabla `cargos` | La que necesita el cron del día 1 a las 07:00 |
-| 0029 | tabla `reference_hits` | El carril medido por referencia (anexo 0029, al final). Lleva versión de la RPC — regla 1 |
-| RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits` | La versión **final** de la RPC es la de 0029 (antes lo fue la de 0015, luego 0024 y 0025). Si 0029 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0029 |
-| 0030 | tablas `verification_samples` y `verification_daily` + funciones `ingest_verification_batch` y `verification_summary` | «Tu propio banco» (anexo 0030, al final). Aditiva; **no** lleva versión de la función de uso: el orden respecto a 0029 da igual |
+| 0029 | tabla `reference_hits` | El carril medido por referencia (anexo 0029). Lleva versión de la RPC — regla 1 |
+| 0030 | tablas `verification_samples` y `verification_daily` + funciones `ingest_verification_batch` y `verification_summary` | «Tu propio banco» (anexo 0030). Aditiva; **no** lleva versión de la función de uso: el orden respecto a 0029 y a 0031 da igual |
+| 0031 | columna `seat_activity.reference_baseline_cost` | Lo medido por referencia, también por asiento (anexo 0031, al final). Lleva versión de la RPC — regla 1 |
+| RPC final | el fuente de `ingest_usage_batch` menciona `reference_hits` **y** `seat_activity.reference_baseline_cost` | La versión **final** de la RPC es la de 0031 (antes lo fue la de 0015, luego 0024, 0025 y 0029). Si 0031 sale `true` pero esto sale `false`, alguien regresó la RPC: re-aplicar **solo** el bloque de función de 0031 |
 
 ## Paso 2 — Aplicar lo que falte, en orden
 
@@ -622,3 +624,78 @@ diagnóstico hasta tener `true`.
   conteos** (`{"batchId":"<uuid>","samples":[],"counts":[{"day":"<hoy>","category":"unchanged","requests":1}]}`)
   → **202** y una fila en `verification_daily`. El mismo sobre otra vez (mismo
   `batchId`) → **202** sin sumar: la idempotencia por lote.
+
+## Anexo — 0031 (septiembre de 2026): lo medido por referencia, también por asiento
+
+0029 dejó `seat_activity` sin el carril de referencia («el dinero medido por
+asiento lo infraestima; documentado»). Con `COMISIONAR_REFERENCIA` encendido,
+el titular y el extracto ya suman la referencia como medida, pero la tarjeta de
+máquinas y el aviso de versión leen `seat_activity`: una máquina cuyo ahorro de
+la semana eran repeticiones valoradas por referencia salía con «0 € medidos» y
+el panel avisaba en ámbar. 0031 añade:
+
+- `seat_activity`: `reference_requests`, `reference_baseline_cost`,
+  `reference_actual_cost`, con default 0 y **sin CHECK** (misma doctrina que
+  0024: un CHECK que pudiera saltar revierte el lote entero). Dinero en
+  `numeric(20,10)`, la escala de 0029, para que lo sumado por asiento cuadre con
+  `usage_daily` y con `reference_hits`;
+- **otra versión de `ingest_usage_batch`**: el cuerpo de 0029 ENTERO con un solo
+  bloque distinto, el de `seat_activity` (tres columnas al final del insert, con
+  las mismas tres expresiones `case when r->>'basis' = 'reference' …` que el de
+  `usage_daily`, y sus tres acumulaciones al final del conflict).
+  `test/migracion-0031.test.ts` lo compara línea a línea contra 0029.
+
+`measured_*` no cambia. **No cambia lo que se cobra:** ninguna ruta de
+facturación lee el dinero de `seat_activity` (los asientos se cobran por días
+activos; la comisión sale de `usage_daily`). La web suma la referencia por
+asiento solo bajo `COMISIONAR_REFERENCIA`, la misma regla del titular.
+
+- **Orden:** 0031 → la web que lee las columnas. En cualquier orden es inocuo:
+  la web tolera que falte 0031 (lee `seat_activity` en escalera sin las
+  columnas nuevas y la referencia por asiento sale a 0) y la web anterior no
+  las lee. 0031 lleva guard de precondición y ABORTA si falta la base 0029 —
+  ese aborto es el resultado *bueno*: aplicar 0029 (anexo anterior) y volver a
+  lanzar 0031.
+- **Numeración:** 0031 y no 0030 porque el número 0030 lo tomó antes el PR #324
+  (`0030_banco_propio.sql`). 0030 crea tablas propias y **no** toca
+  `ingest_usage_batch`, así que 0031 no depende de ella (su guard solo exige
+  0029). Si al aplicar 0031 todavía no existe 0030 en `main`, el diagnóstico
+  del paso 1 no tendrá fila 0030 y no es un estado raro: la regla 2 se cumple
+  entre las que existen.
+- **Regla 1, literal:** 0031 lleva versión de la RPC — re-ejecutar 0029 o una
+  anterior DESPUÉS regresa la RPC en silencio: deja de acumularse la referencia
+  por asiento (solo eso; `usage_daily`, `reference_hits` y el extracto siguen
+  igual) y la tarjeta de máquinas vuelve a infraestimar sin que nadie vea un
+  error. Si pasa, re-aplicar **solo** el bloque
+  `create or replace function bvsala.ingest_usage_batch` de 0031. La fila
+  «RPC en version final (0031)» del paso 1 lo detecta.
+- **Regla 6:** anota la hora antes (PITR). 0031 es aditiva (sin DROP de datos),
+  pero la RPC se sustituye entera.
+
+### Diagnóstico (solo lectura)
+
+Antes de aplicar, el diagnóstico de 0029 (anexo anterior) tiene que salir
+`true` entero. Tras aplicar, las DOS de abajo tienen que salir `true`; la
+segunda exige a la vez la pieza de 0024, la de 0025, la de 0029 y la de 0031 en
+la RPC viva:
+
+```sql
+select exists(select 1 from information_schema.columns where table_schema='bvsala' and table_name='seat_activity' and column_name='reference_baseline_cost') as columna_0031,
+       exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='bvsala' and p.proname='ingest_usage_batch'
+              and p.prosrc like '%reference_hits%' and p.prosrc like '%seat_activity.reference_baseline_cost%'
+              and p.prosrc like '%eliminatedInputFloorCost%' and p.prosrc like '%clientVersion%') as rpc_0031;
+```
+
+### Aplicar
+
+El bucle del paso 2 con `PENDIENTES="0031"`, tras anotar la hora, desde el
+fichero del PR que la trae (`db/migrations/0031_referencia_por_asiento.sql`).
+Relanzar el diagnóstico hasta tener las dos `true`.
+
+### Verificar tras el deploy de la web
+
+- El panel carga y la tarjeta de máquinas sale igual que antes en una org sin
+  repeticiones por referencia.
+- En una org con una repetición por referencia en los últimos 7 días: la
+  columna «Measured savings (7 d)» de esa máquina la incluye, sale la nota de
+  referencia bajo la tarjeta y esa máquina no dispara el aviso ámbar.
