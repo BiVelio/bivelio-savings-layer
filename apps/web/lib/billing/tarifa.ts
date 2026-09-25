@@ -13,7 +13,8 @@
  *     0–35% pasa de comisión 0 a comisión por tramos.)
  *   · La garantía que lo sustituye, testeada y por construcción: el cliente
  *     se queda SIEMPRE con GARANTIA_NETA_RATIO o más de cada euro ahorrado,
- *     porque ningún tramo supera el tipo máximo. Solo cobramos si ahorra.
+ *     porque ningún tramo supera el tipo máximo. Sin ahorro medido no hay
+ *     COMISIÓN; la cuota por asiento es otra cosa y se cobra siempre.
  *   · Escalado A — marginal por volumen, cada tramo a su tipo (como el IRPF):
  *     10% / 8% / 6% / 4% con cortes en 1.000 / 5.000 / 20.000 €.
  *   · Mes de calibración: el primer período de cada organización no se cobra;

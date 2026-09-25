@@ -60,6 +60,7 @@ type Resultado =
   | { tipo: "pendiente" }
   | { tipo: "grande" }
   | { tipo: "invalido"; message: string }
+  | { tipo: "incontable"; message: string }
   | { tipo: "ok"; verdict: FormatVerdict };
 
 const MODELO_CORTO = VERIFIER_MODEL.split("/").pop() ?? VERIFIER_MODEL;
@@ -153,9 +154,11 @@ export function FormatVerifier({ eager = false }: { eager?: boolean }) {
         const eleccion = motor.selector.choose(datos, { model: VERIFIER_MODEL });
         setResultado({ tipo: "ok", verdict: verdictFor(eleccion, motor.exact) });
       } catch (e) {
-        // gpt-tokenizer lanza con tokens especiales (`<|endoftext|>`): para el
-        // visitante es lo mismo que un dato que no se puede contar.
-        setResultado({ tipo: "invalido", message: (e as Error).message });
+        // gpt-tokenizer lanza con tokens especiales (`<|endoftext|>`): el JSON
+        // es válido, pero el tokenizador exacto no lo cuenta — y sin recuento
+        // exacto no hay cifra. Mensaje propio: «esperando un JSON válido»
+        // mentiría sobre un JSON que sí lo es.
+        setResultado({ tipo: "incontable", message: (e as Error).message });
       }
     }, 250);
     return () => clearTimeout(h);
@@ -190,6 +193,14 @@ export function FormatVerifier({ eager = false }: { eager?: boolean }) {
         <>
           {etiqueta}
           <p className="ck-note" style={{ color: "var(--danger)" }}>{t("errInvalidData", { message: resultado.message })}</p>
+        </>
+      );
+    }
+    if (resultado.tipo === "incontable") {
+      return (
+        <>
+          {etiqueta}
+          <p className="ck-note" style={{ color: "var(--danger)" }}>{t("errTokenizer", { message: resultado.message })}</p>
         </>
       );
     }
@@ -241,7 +252,15 @@ export function FormatVerifier({ eager = false }: { eager?: boolean }) {
           </>
         );
       case "not-comparable":
-        return etiqueta;
+        // Casi inalcanzable (json-compact siempre existe y el selector solo
+        // elige un formato estrictamente menor), pero si llega se dice por qué
+        // no hay cifra en vez de dejar la etiqueta sola.
+        return (
+          <>
+            {etiqueta}
+            <p className="ck-note">{t("notComparable")}</p>
+          </>
+        );
     }
   };
 

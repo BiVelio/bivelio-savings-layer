@@ -703,7 +703,7 @@
         },
         {
           "title": "Een vergoeding per seat en een deel van wat gemeten is",
-          "body": "Je betaalt elke maand een vaste vergoeding per seat, wat er ook gebeurt. Daarbovenop komt onze commissie alleen uit besparing die met de teller van je aanbieder is gemeten — en het grootste deel van elke besparing blijft altijd bij jou. Een maand zonder gemeten besparing? Je betaalt de seats en nul commissie."
+          "body": "Je betaalt elke maand een vaste vergoeding per seat, of je nu bespaart of niet. Daarbovenop komt onze commissie alleen uit besparing die met de teller van je aanbieder is gemeten — en het grootste deel van elke besparing blijft altijd bij jou. Een maand zonder gemeten besparing? Je betaalt de seats en nul commissie."
         }
       ],
       "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
@@ -794,7 +794,7 @@
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
       "title": "Een vergoeding per seat, altijd. Commissie alleen over gemeten besparing.",
-      "body": "Geen gratis plan en geen proefperiode: vóór het betalen kun je de publieke metingen controleren en de verificatie op je eigen gegevens loslaten, hier op deze pagina. De vergoeding per seat wordt elke maand gefactureerd, in {currency}, of je nu bespaart of niet. De commissie komt erbovenop, en alleen over besparing die met de teller van je aanbieder is gemeten — geschat telt nooit mee.",
+      "body": "Geen gratis plan en geen proefperiode: vóór het betalen kun je de publieke metingen controleren en de verificatie op je eigen gegevens loslaten, hier op deze pagina. De vergoeding per seat wordt elke maand gefactureerd, in {currency}, of je nu bespaart of niet. De commissie komt erbovenop, en alleen over besparing die met de teller van je aanbieder is gemeten — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd. Geschat telt nooit mee.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
@@ -955,7 +955,7 @@
         "who": "Voor Node.js-apps, in JavaScript of TypeScript, die een LLM-API aanroepen met je eigen sleutel en voor elke token betalen.",
         "what": "De SDK omhult de aanroep in je code, stuurt de aanbieder alleen wat betaald moet worden en geeft bij elk antwoord een SavingsReport terug.",
         "figureLabel": "Gepubliceerde ondergrens, gemeten tegen een echte aanbieder",
-        "figureNote": "Een ondergrens, geen voorspelling: wat je bespaart hangt af van je verkeer, en alleen wat de teller van je aanbieder bevestigt, telt mee voor de commissie.",
+        "figureNote": "Een ondergrens, geen voorspelling: wat je bespaart hangt af van je verkeer. Alleen besparing die met de teller van je aanbieder is gemeten, telt mee voor de commissie — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd.",
         "ctaMeasured": "Hoe we het hebben gemeten",
         "ctaVerify": "Probeer één hefboom op je gegevens"
       },
@@ -963,15 +963,18 @@
         "name": "Gateway",
         "band": "Gateway — voor coding-agents met een API-sleutel",
         "who": "Voor wie Claude Code, Codex CLI of een andere coding-agent met een API-sleutel gebruikt.",
-        "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek met de teller van je aanbieder — voor de modellen in onze prijscatalogus — en geeft het zijn bon in je dashboard.",
+        "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek waarvan je aanbieder het gebruik meldt, met de eigen teller van die aanbieder — voor de modellen in onze prijscatalogus — en zet het totaal in je dashboard, per dag en per model.",
         "figureLabel": "Geen besparingscijfer gepubliceerd",
-        "figureNote": "We hebben geen gemeten besparing voor coding-agents gepubliceerd, dus we adverteren er ook geen. Met PRO verkort de gateway op Anthropic-modellen de cache-schrijf-TTL zolang je sessie warm blijft — dat verandert de prijs, nooit wat het model leest — en alleen wat de teller van je aanbieder bevestigt, telt mee voor de commissie.",
+        "figureNote": "We hebben geen gemeten besparing voor coding-agents gepubliceerd, dus we adverteren er ook geen. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee voor de commissie.",
         "cta": "Gateway instellen"
+      },
+      "skill": {
+        "band": "Skill — voor coding-agents met een abonnement"
       }
     },
     "verify": {
       "eyebrow": "SDK · één hefboom, op je gegevens, vóór je betaalt",
-      "title": "Plak je gegevens. Zie wat de SDK zou versturen.",
+      "title": "Plak je gegevens. Zie hoeveel tokens de SDK zou versturen.",
       "sub": "Hier draait de echte formaatkiezer van de SDK, in je browser, op je gegevens. Niets verlaat deze pagina en je hebt geen account nodig.",
       "tryExample": "Probeer een voorbeeld",
       "sample_orders": "Winkelbestellingen",
@@ -981,6 +984,7 @@
       "loading": "De optimizer en de exacte tokenizer worden geladen…",
       "errBundle": "De optimizer kon niet worden geladen. Herlaad de pagina om het opnieuw te proberen.",
       "errInvalidData": "Wachten op geldige JSON… {message}",
+      "errTokenizer": "De exacte tokenizer kan deze tekst niet tellen ({message}), dus tonen we geen cijfer.",
       "tooBig": "Dat is meer dan {max} tekens. Plak een kleiner voorbeeld.",
       "tagExact": "Exacte telling",
       "tagApprox": "Bij benadering",
@@ -989,9 +993,10 @@
       "fewer": "−{pct} invoertokens op deze gegevens",
       "trims": "Van {before} naar {after} tokens, instructies van het formaat inbegrepen.",
       "alreadyOptimal": "Hier verslaat geen enkel formaat compacte JSON, dus de SDK zou ze ongewijzigd versturen. Deze hefboom maakt je gegevens nooit groter.",
+      "notComparable": "Met deze gegevens kunnen we de formaten niet met compacte JSON vergelijken, dus tonen we geen cijfer.",
       "exactNote": "Geteld met {tokenizer}, de tokenizer die {model} gebruikt. We vergelijken met je gegevens als compacte JSON: als je ze vandaag ingesprongen verstuurt, is het echte verschil groter — en dat tellen we niet.",
       "approxNote": "De exacte tokenizer is niet geladen, dus elke telling hier zou een benadering zijn — en besparingen bij benadering tonen we niet. Herlaad de pagina om het opnieuw te proberen.",
-      "scope": "Wat dit is, en wat niet: één hefboom — hoe gestructureerde gegevens in de prompt worden geschreven — op de invoertokens van deze gegevens. Het is niet je factuur: vermeden aanroepen, de cache van je aanbieder en de uitvoer zitten er niet in, en veel verzoeken bevatten helemaal geen gestructureerde gegevens. Het cijfer waar we voor de hele SDK achter staan, is de gepubliceerde ondergrens in het meetgedeelte.",
+      "scope": "Wat dit is, en wat niet: één hefboom — hoe gestructureerde gegevens in de prompt worden geschreven — op de invoertokens van deze gegevens. Hij geldt alleen voor gegevens die je als structuredData aan de SDK doorgeeft, niet voor JSON dat al in je berichten staat. Het is niet je factuur: vermeden aanroepen, de cache van je aanbieder en de uitvoer zitten er niet in, en veel verzoeken bevatten helemaal geen gestructureerde gegevens. Het cijfer waar we voor de hele SDK achter staan, is de gepubliceerde ondergrens in het meetgedeelte.",
       "ctaInstall": "SDK installeren"
     }
   },

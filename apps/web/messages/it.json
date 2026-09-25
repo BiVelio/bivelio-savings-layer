@@ -703,7 +703,7 @@
         },
         {
           "title": "Un canone per postazione e una parte di ciò che si misura",
-          "body": "Paghi ogni mese un canone fisso per postazione, qualunque cosa accada. In più, la nostra commissione esce solo dal risparmio misurato con il contatore del tuo fornitore, e la maggior parte di ogni risparmio resta sempre a te. Un mese senza risparmio misurato? Paghi le postazioni e zero commissione."
+          "body": "Paghi ogni mese un canone fisso per postazione, che tu risparmi o no. In più, la nostra commissione esce solo dal risparmio misurato con il contatore del tuo fornitore, e la maggior parte di ogni risparmio resta sempre a te. Un mese senza risparmio misurato? Paghi le postazioni e zero commissione."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -794,7 +794,7 @@
     "pricing": {
       "eyebrow": "Un unico piano, con prezzo per postazione",
       "title": "Un canone per postazione, sempre. Commissione solo sul risparmio misurato.",
-      "body": "Nessun piano gratuito e nessuna prova: prima di pagare puoi verificare le misurazioni pubbliche e passare i tuoi dati nel verificatore, proprio su questa pagina. Il canone per postazione si addebita ogni mese, in {currency}, che tu risparmi o no. La commissione si aggiunge, e solo sul risparmio misurato con il contatore del tuo fornitore — lo stimato non entra mai.",
+      "body": "Nessun piano gratuito e nessuna prova: prima di pagare puoi verificare le misurazioni pubbliche e passare i tuoi dati nel verificatore, proprio su questa pagina. Il canone per postazione si addebita ogni mese, in {currency}, che tu risparmi o no. La commissione si aggiunge, e solo sul risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita. Lo stimato non entra mai.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
@@ -955,7 +955,7 @@
         "who": "Per app Node.js, in JavaScript o TypeScript, che chiamano un'API di LLM con la tua chiave e pagano ogni token.",
         "what": "Avvolge la chiamata nel tuo codice, invia al fornitore solo ciò che va pagato e restituisce un SavingsReport con ogni risposta.",
         "figureLabel": "Soglia pubblicata, misurata contro un fornitore reale",
-        "figureNote": "Una soglia, non una previsione: quanto risparmierai dipende dal tuo traffico, e solo ciò che conferma il contatore del tuo fornitore entra nella commissione.",
+        "figureNote": "Una soglia, non una previsione: quanto risparmierai dipende dal tuo traffico. Nella commissione entra solo il risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita.",
         "ctaMeasured": "Come l'abbiamo misurato",
         "ctaVerify": "Prova una leva sui tuoi dati"
       },
@@ -963,15 +963,18 @@
         "name": "Gateway",
         "band": "Gateway — per agenti di codice con chiave API",
         "who": "Per chi usa Claude Code, Codex CLI o un altro agente di codice con chiave API.",
-        "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta con il contatore del tuo fornitore — per i modelli del nostro catalogo prezzi — e le dà la sua ricevuta nella tua dashboard.",
+        "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta di cui il tuo fornitore riporta l'utilizzo, con il contatore del fornitore stesso — per i modelli del nostro catalogo prezzi — e le somma nella tua dashboard, per giorno e per modello.",
         "figureLabel": "Nessuna cifra di risparmio pubblicata",
-        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway accorcia il TTL di scrittura della cache finché la sessione resta calda — cambia il prezzo, mai ciò che legge il modello — e solo ciò che conferma il contatore del tuo fornitore entra nella commissione.",
+        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore entra nella commissione.",
         "cta": "Installa il gateway"
+      },
+      "skill": {
+        "band": "Skill — per agenti di codice in abbonamento"
       }
     },
     "verify": {
       "eyebrow": "SDK · una leva, sui tuoi dati, prima di pagare",
-      "title": "Incolla i tuoi dati. Guarda cosa invierebbe l'SDK.",
+      "title": "Incolla i tuoi dati. Guarda quanti token invierebbe l'SDK.",
       "sub": "Qui gira il vero selettore di formato dell'SDK, nel tuo browser e sui tuoi dati. Niente lascia questa pagina e non ti serve un account.",
       "tryExample": "Prova un esempio",
       "sample_orders": "Ordini del negozio",
@@ -981,6 +984,7 @@
       "loading": "Caricamento dell'ottimizzatore e del tokenizzatore esatto…",
       "errBundle": "Impossibile caricare l'ottimizzatore. Ricarica la pagina per riprovare.",
       "errInvalidData": "In attesa di un JSON valido… {message}",
+      "errTokenizer": "Il tokenizzatore esatto non riesce a contare questo testo ({message}), quindi non mostriamo nessuna cifra.",
       "tooBig": "Sono più di {max} caratteri. Incolla un campione più piccolo.",
       "tagExact": "Conteggio esatto",
       "tagApprox": "Approssimativo",
@@ -989,9 +993,10 @@
       "fewer": "−{pct} di token di input su questi dati",
       "trims": "Da {before} a {after} token, istruzioni del formato incluse.",
       "alreadyOptimal": "Qui nessun formato batte il JSON compatto, quindi l'SDK li invierebbe così come sono. Questa leva non rende mai più grandi i tuoi dati.",
+      "notComparable": "Con questi dati non possiamo confrontare i formati con il JSON compatto, quindi non mostriamo nessuna cifra.",
       "exactNote": "Contato con {tokenizer}, il tokenizzatore che usa {model}. Confrontiamo con i tuoi dati in JSON compatto: se oggi li invii indentati, la differenza reale è maggiore — e quella non la contiamo.",
       "approxNote": "Il tokenizzatore esatto non si è caricato, quindi qualsiasi conteggio qui sarebbe approssimativo — e non mostriamo risparmi approssimativi. Ricarica la pagina per riprovare.",
-      "scope": "Cos'è e cosa non è: una leva — come si scrivono i dati strutturati nel prompt — sui token di input di questi dati. Non è la tua fattura: le chiamate evitate, la cache del tuo fornitore e l'output non ci sono, e molte richieste non contengono dati strutturati. La cifra che difendiamo per l'SDK intero è la soglia pubblicata nella sezione della misurazione.",
+      "scope": "Cos'è e cosa non è: una leva — come si scrivono i dati strutturati nel prompt — sui token di input di questi dati. Vale solo per i dati che passi all'SDK come structuredData, non per il JSON già scritto nei tuoi messaggi. Non è la tua fattura: le chiamate evitate, la cache del tuo fornitore e l'output non ci sono, e molte richieste non contengono dati strutturati. La cifra che difendiamo per l'SDK intero è la soglia pubblicata nella sezione della misurazione.",
       "ctaInstall": "Installa l'SDK"
     }
   },

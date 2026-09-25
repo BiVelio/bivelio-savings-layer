@@ -703,7 +703,7 @@
         },
         {
           "title": "Biaya per kursi, dan bagian dari yang terukur",
-          "body": "Anda membayar biaya tetap per kursi setiap bulan, apa pun yang terjadi. Di atas itu, komisi kami hanya diambil dari penghematan yang diukur dengan penghitung penyedia Anda — dan sebagian besar dari setiap penghematan selalu tetap milik Anda. Sebulan tanpa penghematan terukur? Anda membayar kursinya dan komisi nol."
+          "body": "Anda membayar biaya tetap per kursi setiap bulan, baik Anda berhemat maupun tidak. Di atas itu, komisi kami hanya diambil dari penghematan yang diukur dengan penghitung penyedia Anda — dan sebagian besar dari setiap penghematan selalu tetap milik Anda. Sebulan tanpa penghematan terukur? Anda membayar kursinya dan komisi nol."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -794,7 +794,7 @@
     "pricing": {
       "eyebrow": "Satu paket, dihargai per kursi",
       "title": "Biaya per kursi, selalu. Komisi hanya atas penghematan terukur.",
-      "body": "Tanpa paket gratis dan tanpa uji coba: sebelum membayar, Anda bisa memeriksa pengukuran publik dan menjalankan verifikator pada data Anda sendiri, langsung di halaman ini. Biaya per kursi ditagih setiap bulan, dalam {currency}, baik Anda berhemat maupun tidak. Komisi ditambahkan terpisah, dan hanya atas penghematan yang diukur dengan penghitung penyedia Anda — estimasi tidak pernah masuk.",
+      "body": "Tanpa paket gratis dan tanpa uji coba: sebelum membayar, Anda bisa memeriksa pengukuran publik dan menjalankan verifikator pada data Anda sendiri, langsung di halaman ini. Biaya per kursi ditagih setiap bulan, dalam {currency}, baik Anda berhemat maupun tidak. Komisi ditambahkan terpisah, dan hanya atas penghematan yang diukur dengan penghitung penyedia Anda — termasuk permintaan berulang yang dilayani tanpa memanggil penyedia, masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan. Estimasi tidak pernah masuk.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
@@ -955,7 +955,7 @@
         "who": "Untuk aplikasi Node.js, dalam JavaScript atau TypeScript, yang memanggil API LLM dengan kunci Anda sendiri dan membayar setiap token.",
         "what": "SDK membungkus panggilan di dalam kode Anda, hanya mengirim ke penyedia yang memang harus dibayar, dan mengembalikan SavingsReport bersama setiap respons.",
         "figureLabel": "Batas bawah yang dipublikasikan, diukur terhadap penyedia nyata",
-        "figureNote": "Batas bawah, bukan perkiraan: berapa yang Anda hemat bergantung pada lalu lintas Anda, dan hanya yang dikonfirmasi penghitung penyedia Anda yang masuk ke komisi.",
+        "figureNote": "Batas bawah, bukan perkiraan: berapa yang Anda hemat bergantung pada lalu lintas Anda. Hanya penghematan yang diukur dengan penghitung penyedia Anda yang masuk ke komisi — termasuk permintaan berulang yang dilayani tanpa memanggil penyedia, masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan.",
         "ctaMeasured": "Cara kami mengukurnya",
         "ctaVerify": "Coba satu tuas pada data Anda"
       },
@@ -963,15 +963,18 @@
         "name": "Gateway",
         "band": "Gateway — untuk agen pemrograman dengan kunci API",
         "who": "Untuk Anda yang memakai Claude Code, Codex CLI, atau agen pemrograman lain dengan kunci API.",
-        "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan dengan penghitung penyedia Anda — untuk model dalam katalog harga kami — dan memberinya struk di dasbor Anda.",
+        "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan yang penggunaannya dilaporkan penyedia Anda, dengan penghitung milik penyedia itu sendiri — untuk model dalam katalog harga kami — lalu menjumlahkannya di dasbor Anda, per hari dan per model.",
         "figureLabel": "Tidak ada angka penghematan yang dipublikasikan",
-        "figureNote": "Kami belum mempublikasikan penghematan terukur untuk agen pemrograman, jadi kami tidak mengiklankan angka apa pun. Dengan PRO, pada model Anthropic, gateway memperpendek TTL penulisan cache selama sesi Anda masih hangat — itu mengubah harga, tidak pernah apa yang dibaca model — dan hanya yang dikonfirmasi penghitung penyedia Anda yang masuk ke komisi.",
+        "figureNote": "Kami belum mempublikasikan penghematan terukur untuk agen pemrograman, jadi kami tidak mengiklankan angka apa pun. Dengan PRO, pada model Anthropic, gateway memindahkan penulisan cache dari TTL satu jam ke TTL lima menit, hanya pada giliran ketika porsi besar dari prompt masih baru — seperti giliran pertama sebuah sesi atau setelah pemadatan — dan membiarkan giliran berantai dari sesi yang sedang berjalan apa adanya. Itu mengubah harga, tidak pernah apa yang dibaca model, dan hanya yang dikonfirmasi penghitung penyedia Anda yang masuk ke komisi.",
         "cta": "Pasang gateway"
+      },
+      "skill": {
+        "band": "Skill — untuk agen pemrograman dengan langganan"
       }
     },
     "verify": {
       "eyebrow": "SDK · satu tuas, pada data Anda, sebelum membayar",
-      "title": "Tempel data Anda. Lihat apa yang akan dikirim SDK.",
+      "title": "Tempel data Anda. Lihat berapa token yang akan dikirim SDK.",
       "sub": "Di sini pemilih format SDK yang asli berjalan di browser Anda, pada data Anda. Tidak ada yang keluar dari halaman ini dan Anda tidak memerlukan akun.",
       "tryExample": "Coba sebuah contoh",
       "sample_orders": "Pesanan toko",
@@ -981,6 +984,7 @@
       "loading": "Memuat pengoptimal dan tokenizer eksak…",
       "errBundle": "Pengoptimal tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",
       "errInvalidData": "Menunggu JSON yang valid… {message}",
+      "errTokenizer": "Tokenizer eksak tidak dapat menghitung teks ini ({message}), jadi kami tidak menampilkan angka apa pun.",
       "tooBig": "Itu lebih dari {max} karakter. Tempel sampel yang lebih kecil.",
       "tagExact": "Hitungan eksak",
       "tagApprox": "Perkiraan",
@@ -989,9 +993,10 @@
       "fewer": "−{pct} token masukan pada data ini",
       "trims": "Dari {before} menjadi {after} token, termasuk instruksi formatnya.",
       "alreadyOptimal": "Di sini tidak ada format yang mengalahkan JSON ringkas, jadi SDK akan mengirimnya apa adanya. Tuas ini tidak pernah membuat data Anda lebih besar.",
+      "notComparable": "Dengan data ini kami tidak dapat membandingkan format-format itu dengan JSON ringkas, jadi kami tidak menampilkan angka apa pun.",
       "exactNote": "Dihitung dengan {tokenizer}, tokenizer yang dipakai {model}. Kami membandingkan dengan data Anda sebagai JSON ringkas: jika hari ini Anda mengirimnya dengan indentasi, selisih sebenarnya lebih besar — dan itu tidak kami hitung.",
       "approxNote": "Tokenizer eksak tidak termuat, jadi setiap hitungan di sini hanya perkiraan — dan kami tidak menampilkan penghematan perkiraan. Muat ulang halaman untuk mencoba lagi.",
-      "scope": "Apa ini, dan apa yang bukan: satu tuas — cara data terstruktur ditulis ke dalam prompt — pada token masukan data ini. Ini bukan tagihan Anda: panggilan yang dihindari, cache penyedia Anda, dan keluaran tidak termasuk di sini, dan banyak permintaan sama sekali tidak membawa data terstruktur. Angka yang kami pertanggungjawabkan untuk SDK secara keseluruhan adalah batas bawah yang dipublikasikan di bagian pengukuran.",
+      "scope": "Apa ini, dan apa yang bukan: satu tuas — cara data terstruktur ditulis ke dalam prompt — pada token masukan data ini. Tuas ini hanya berlaku untuk data yang Anda berikan ke SDK sebagai structuredData, bukan untuk JSON yang sudah tertulis di dalam pesan Anda. Ini bukan tagihan Anda: panggilan yang dihindari, cache penyedia Anda, dan keluaran tidak termasuk di sini, dan banyak permintaan sama sekali tidak membawa data terstruktur. Angka yang kami pertanggungjawabkan untuk SDK secara keseluruhan adalah batas bawah yang dipublikasikan di bagian pengukuran.",
       "ctaInstall": "Pasang SDK"
     }
   },

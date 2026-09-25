@@ -29,8 +29,10 @@ function seccion(id: string): string {
 }
 
 describe("portada: dos ofertas, cada una con su bloque", () => {
-  it("las anclas existen y en este orden: ofertas → SDK → medición → verificador → instalación → gateway → precios", () => {
-    const ids = ["offers", "sdk", "measured", "verify", "sdk-install", "gateway", "pricing"];
+  it("las anclas existen y en este orden: ofertas → SDK → medición → verificador → instalación → gateway → skill → precios", () => {
+    // El skill (suscripción, gratis) lleva su propia banda: bajo la del gateway
+    // «con API key» se leía como parte de esa oferta.
+    const ids = ["offers", "sdk", "measured", "verify", "sdk-install", "gateway", "skill", "pricing"];
     const pos = ids.map((id) => CODIGO.indexOf(`id="${id}"`));
     for (const [i, p] of pos.entries()) expect(p, ids[i]).toBeGreaterThan(-1);
     expect([...pos].sort((a, b) => a - b)).toEqual(pos);
