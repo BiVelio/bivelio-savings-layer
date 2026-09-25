@@ -148,7 +148,11 @@ otra que sigue en vuelo no viaja: recibe la réplica y su línea lleva
 `· COALESCED (call avoided)`. Detrás va `· by reference: floor $… (cache read
 price, …)` cuando se valora con el contador de la petición que sí viajó —a
 precio de lectura de caché, sin primas y con la salida solo si el cuerpo trae
-`temperature: 0`—, o `· estimated, not by reference: <motivo>` cuando no:
+`temperature: 0` y el modelo no razona (la misma guarda de modelo que el SDK)—,
+o `· estimated, not by reference: <motivo>` cuando no. Esa línea es la
+valoración local: el panel todavía recibe estas peticiones como `estimated`, y
+no entran en la base de la comisión, porque el gateway aún no lee los tokens de
+razonamiento que declara el proveedor y la regla `reference-v2` los exige.
 
 | `· estimated, not by reference: …` | Por qué no |
 |---|---|
