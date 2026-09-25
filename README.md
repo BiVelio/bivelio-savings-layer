@@ -19,17 +19,23 @@
 Every request your app sends to an AI is paid for by the text going in and out.
 **Savings** sits on that path and lets through only what's needed — skipping calls
 that don't have to happen, and trimming what does — so you pay for less. It is not a
-promise you take on faith: **every saving we charge on is measured with the provider's
-official meter, the same one on your bill**, and every saving — measured or estimated,
-and labelled as such — is handed back to you request by request.
+promise you take on faith: **every saving we charge on is measured with your provider's
+own usage counter, the one your bill is built from** (for a repeat served without
+calling the provider, the counter of the identical call that ran), and every saving —
+measured or estimated, and labelled as such — is handed back to you request by request.
 
-**We only earn when you save.** Your first month carries no commission at all: we
-measure everything and show you the statement of what it would have cost. After
-that, the commission comes out of the **measured** saving only — never out of your
-pocket, and never from estimates: a tiered rate from 10 % down to 4 % of what you
-saved, so **you always keep at least 90 % of every euro saved**, and a month with no
-saving is zero commission. And your prompts **never leave your infrastructure**:
-BiVelio only ever sees counts and cost, never your content.
+**A small per‑seat fee, and a commission only on savings measured against your
+provider's counter.** The seat fee is paid whether or not you save. Your
+first month carries no commission at all — it is the first calendar month (UTC) in
+which your organization reports usage, so starting late in a month makes it a short one —
+and at its close you see the statement of what the commission would have been. After
+that, the commission is charged on the **measured** saving only — never from estimates:
+a tiered rate from 10 % down to 4 % of what you saved, so **you keep
+at least 90 % of every euro saved** (before the invoice is rounded to the cent; the
+seat fee is separate). A month with no measured saving is zero commission. And your
+prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
+usage — token counts, cost, the model id and opaque ids — never your content
+([LICENSE](./LICENSE) §5 lists every field).
 
 ### For engineers, in one line
 
@@ -43,9 +49,11 @@ goes straight from your app to your provider; the SDK is never a middleman serve
 > BV‑SALA is fail‑closed and executes only with an active BiVelio license key.
 > The license signature is verified **offline**; with `licenseServerUrl` set, the SDK
 > also calls `savings.bivelio.com` for the revocation list, license renewal and usage
-> metering. **Your prompts never leave your infrastructure** — what travels is token
-> counts, cost, the model id and opaque seat/session ids, never content. Use is governed by the [LICENSE](./LICENSE)
-> and the BiVelio Terms. Not a wrapper around any third‑party library.
+> metering. **Your prompts, completions and provider keys never reach BiVelio** — what
+> travels is per‑request usage: token counts, cost, the model id, a request id and
+> opaque seat and session ids (the exact list is in [LICENSE](./LICENSE) §5). Use is
+> governed by the LICENSE, which also sets out the seat fee and the commission, and the
+> BiVelio Terms. Not a wrapper around any third‑party library.
 
 ## Where it installs
 
@@ -402,12 +410,15 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 ## Licensing & privacy
 
-BV‑SALA is commercial, per‑seat software (**€4 / seat / month** or **€39 / seat /
-year**, EUR; VAT not included). No free tier and no trial: what you can check before
-paying is the published measurement. The license is a signed token your SDK and the gateway verify **offline**; the
-managed control plane and the revocation kill‑switch are served from BiVelio. Your
-LLM traffic goes **straight to your provider** — BiVelio sees counts and cost,
-never prompts or completions.
+BV‑SALA is commercial software: a per‑seat subscription (**€4 / seat / month** or
+**€39 / seat / year**, EUR; VAT not included), paid whether or not you save, plus a
+tiered commission on measured savings only, as described at the top of this page and
+in [LICENSE](./LICENSE) §6. No free tier and no trial: what you can check before
+paying is the published measurement. The license is a signed token your SDK and the
+gateway verify **offline**; the managed control plane and the revocation kill‑switch
+are served from BiVelio. Your LLM traffic goes **straight to your provider** —
+BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never
+prompts, completions or provider keys; [LICENSE](./LICENSE) §5 lists every field.
 
 Get a key and read the terms at **[savings.bivelio.com](https://savings.bivelio.com)**.
 Onboarding & general questions: **support@bivelio.com** · licensing & compliance:

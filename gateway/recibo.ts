@@ -159,10 +159,12 @@ export function renderizarRecibo(datos: DatosDelRecibo): string {
   L.push("");
   L.push("  · Solo se cobra sobre LO MEDIDO. Lo estimado y lo hipotético");
   L.push("    nunca entran en la factura, aunque salgan más grandes.");
-  L.push("  · Te quedas como mínimo el 90 % de cada euro ahorrado.");
+  L.push("  · Te quedas como mínimo el 90 % de cada euro ahorrado (antes");
+  L.push("    del redondeo al céntimo; la cuota por asiento va aparte).");
   L.push("  · Un mes sin ahorro es un mes sin comisión: 0 €.");
-  L.push("  · Tus prompts no salen de tu máquina. Al panel solo suben");
-  L.push("    conteos y coste, jamás contenido.");
+  L.push("  · Tus prompts, respuestas y claves del proveedor nunca llegan");
+  L.push("    a BiVelio: al panel suben conteos de tokens, coste, el id del");
+  L.push("    modelo e ids opacos (la lista exacta, en la LICENSE §5).");
   L.push("");
   L.push(`  Precios del catálogo ${datos.versionPrecios} · gateway ${datos.version}`);
   L.push("  Verifícalo contra tu consola del proveedor. Si no cuadra, es un");

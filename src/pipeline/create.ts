@@ -319,8 +319,9 @@ export function createSavingsLayer(
 
   const pipeline = new SavingsPipeline(resolved, sumideroVerif ? { verificacion: sumideroVerif } : {});
 
-  // DETECTIVE usage metering (opt-in via `serviceAccountKey`). Counts-only,
-  // best-effort, and NON-BLOCKING — it can neither block nor break `generate()`.
+  // DETECTIVE usage metering (opt-in via `serviceAccountKey`). Sin contenido
+  // (cuentas, coste, id del modelo e ids opacos: la lista exacta es la LICENSE
+  // §5), best-effort y NO BLOQUEANTE: no puede bloquear ni romper `generate()`.
   let emitter: UsageEmitter | undefined;
   if (config.serviceAccountKey && config.metering?.enabled !== false) {
     const meteringUrl =
