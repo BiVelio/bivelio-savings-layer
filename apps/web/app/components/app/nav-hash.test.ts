@@ -130,6 +130,12 @@ describe("isNavLinkActive", () => {
     expect(isNavLinkActive({ pathname: "/dashboard/verify", hash: "", href: "/dashboard/account" })).toBe(false);
   });
 
+  it("y en Tu banco (la otra pestaña de Prueba, 2026-09-25)", () => {
+    expect(isNavLinkActive({ pathname: "/dashboard/your-bench", hash: "", href: "/dashboard/proof" })).toBe(true);
+    expect(isNavLinkActive({ pathname: "/dashboard/your-bench", hash: "", href: "/dashboard" })).toBe(false);
+    expect(isNavLinkActive({ pathname: "/dashboard/your-bench", hash: "", href: "/dashboard/account" })).toBe(false);
+  });
+
   it("una entrada con ancla y `primary` se enciende también sin ancla", () => {
     expect(isNavLinkActive({ pathname: OVERVIEW, hash: "", href: MACHINES, primary: true })).toBe(true);
   });

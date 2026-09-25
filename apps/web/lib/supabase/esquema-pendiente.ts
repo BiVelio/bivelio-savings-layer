@@ -32,3 +32,16 @@ export function esTablaInexistente(error: ErrorDePostgrest): boolean {
   const m = (error.message ?? "").toLowerCase();
   return m.includes("does not exist") || m.includes("could not find");
 }
+
+/**
+ * ¿«Esa función no existe»? `42883` (undefined_function) en Postgres,
+ * `PGRST202` en PostgREST («Could not find the function … in the schema
+ * cache»). Desde 0030 lo necesitan el ingest y el panel de la verificación A/B
+ * (`ingest_verification_batch`, `verification_summary`): un despliegue que
+ * adelanta a la migración responde 503 o «no disponible», nunca ceros.
+ */
+export function esFuncionInexistente(error: ErrorDePostgrest): boolean {
+  if (error.code === "42883" || error.code === "PGRST202") return true;
+  const m = (error.message ?? "").toLowerCase();
+  return m.includes("could not find the function") || (m.includes("function") && m.includes("does not exist"));
+}

@@ -26,8 +26,12 @@ const LOCALES = ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id
  * del mínimo porque esta verja solo miraba la landing — el dueño la cazó en el
  * panel. El extracto enseña sus cifras por parámetro ({cero}, {pct}, {usd}),
  * así que le aplica la misma regla: ni un dígito en los textos.
+ *
+ * `dashboard.yourBench` entró el 2026-09-25 («tu propio banco», la verificación
+ * A/B opcional): nivel del intervalo, «por cada mil», mínimos de pares y todas
+ * sus cifras llegan por parámetro desde lib/verificacion/banco-propio.ts.
  */
-const NAMESPACES = ["landing.calculadora", "landing.formula", "dashboard.extracto"] as const;
+const NAMESPACES = ["landing.calculadora", "landing.formula", "dashboard.extracto", "dashboard.yourBench"] as const;
 const DIR = new URL(".", import.meta.url).pathname;
 
 function porRuta(data: Record<string, unknown>, ruta: string): unknown {
