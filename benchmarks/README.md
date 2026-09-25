@@ -292,17 +292,29 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
   override, because losing the only defensible number by accident is silent;
 - the two arms did not talk to the same **served model** (what actually makes a paired A/B comparable — `system_fingerprint` is recorded but never gated on, because through a gateway it is a per-request id);
 - the ledgers don't reconcile — a non-zero residual means double counting;
-- the run measured the bench-only compressor (`sdk.asShipped: false`). The npm
-  package ships `noopCompressor` only, so a headline measured with
-  `benchmarks/compresor.ts` promises a lever the customer does not have. No
-  override: the publishable run is `BVSALA_AB_SIN_COMPRESOR=1 BVSALA_DEMO_MODEL=openai/gpt-4o-mini pnpm ab`,
-  and its compression scenario is still measured (it is traffic a customer
-  sends) with the lever declared in `levers.notExercised`;
+- the run does not declare `sdk.asShipped: true`. `false` means it measured the
+  bench-only compressor; a missing seal means it predates the seal, and until
+  then the bench measured **with** that compressor by default (the 2026-09-12
+  artifact has exactly that shape). The npm package ships `noopCompressor`
+  only, so a headline measured with `benchmarks/compresor.ts` promises a lever
+  the customer does not have. No override: the publishable run is
+  `BVSALA_AB_SIN_COMPRESOR=1 BVSALA_DEMO_MODEL=openai/gpt-4o-mini pnpm ab`, and
+  its compression scenario is still measured (it is traffic a customer sends)
+  with the lever declared in `levers.notExercised`;
 - savings exceed 100%, the interval is inverted, or the point estimate falls
   outside its own interval.
 
 `proven: false` **is** publishable — under-claiming is honest — but it warns, and
 the landing must not present it as demonstrated savings.
+
+**What `sdk.asShipped: true` does and does not say.** It says arm B carried no
+piece the bench injects and npm does not ship. It does *not* say the run
+measured the published tarball: the bench imports `../src/index.js`, so it
+measures `src/` at the sealed commit (`sdk.version`). If `main` is ahead of
+npm, compare `sdk.version` with `npm view @bivelio/savings-layer version`
+before publishing. `sdk.tokenizer` says whether the exact tokenizer
+(`gpt-tokenizer`, an optional dependency of the package) was registered — a
+default install without it uses the heuristic estimator.
 
 ### The floor the npm package actually delivers (`benchmarks/titular-como-se-instala.ts`)
 
@@ -311,11 +323,28 @@ compression scenario saved 15.1 % with a piece npm does not ship) cannot back
 the promise on its own. Dropping that scenario is not the fix — it *raises* the
 floors (27.2 % / 26.4 %), because it saved less than the average. Instead, with
 no network and the published trials, the tool gives back to arm B the input
-tokens the compressor removed, keeps B's measured output, and reruns the same
-stratified estimator with the same seed. It is a **reconstruction, not a
-measurement**: it is never published, it only checks that the web's promise
-also fits under what npm delivers (`test/titular-como-se-instala.test.ts`,
-`pnpm luz-verde`). An artifact with `sdk.asShipped: true` switches it off.
+tokens the compressor removed, keeps B's measured output and repairs, and
+reruns the same stratified estimator with the same seed.
+
+How many tokens go back: the **larger** of `attribution.compressedInputTokens`
+(what the layer's own report says the compressor removed: 2,005) and
+`measured.inputTokenDeltaMean` (the net A − B difference: 1,654). The net
+difference already subtracts arm B's own extra input — its output-contract
+repairs, which an npm install still pays — so using it alone overstated the
+package. The repair call (pipeline stage 11) sends only the invalid reply and
+its errors, never the source thread, so it carries nothing the compressor would
+have removed: 2,005 per trial is what the first call loses, not a lower bound
+to multiply. On the 2026-09-12 artifact: B0 ≥ 10.68 %, B1 ≥ 10.37 % (with the
+net difference it read 12.87 % / 12.57 %).
+
+It is a **reconstruction, not a measurement**: its figure is never published,
+it only checks that the web's promise also fits under what npm delivers
+(`test/titular-como-se-instala.test.ts`, `pnpm luz-verde`). Keeping arm B's
+output and repairs as measured is the conservative reading of the data, not a
+bound: without the compressor the model sees a different prompt. An artifact
+with `sdk.asShipped: true` switches the reconstruction off, and while it is
+missing the web never presents that artifact's floor as what a customer gets
+(`apps/web/lib/bench/sdk-instalado.ts`).
 
 ```bash
 pnpm -s exec tsx benchmarks/titular-como-se-instala.ts          # human-readable

@@ -201,7 +201,8 @@
       "colACost": "cost A",
       "colBCost": "cost B",
       "colSavings": "estalvi",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compressor del banc, no és a npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificador d'estalvi",
@@ -360,6 +361,7 @@
       "proven": "comprovat",
       "notProven": "no comprovat",
       "notExercised": "no exercitada en aquesta tirada — el seu zero no és una mesura",
+      "benchOnly": "inclou un compressor exclusiu del banc que el paquet de npm no porta — no s'anuncia",
       "estimatedMock": "estimat (simulat)",
       "footnoteMain": "Quatre llibres comptables, <b>mai sumats</b>: cadascun és una palanca mesurada per separat, de manera que un dòlar no es pot comptar dues vegades.",
       "reconciledNote": "El residu de conciliació ≈ 0 ho demostra.",
@@ -379,6 +381,7 @@
     },
     "netSavingsCIBand": {
       "caption": "estalvi net, <b>límit inferior de l'IC del 95%</b>. Estimació puntual {point}, superior {upper} — destaquem el mínim{mockNote}.",
+      "captionSdkPendiente": "el que sosté l'SDK tal com s'instal·la des de npm. La tirada publicada duia un compressor exclusiu del banc que el paquet no inclou, així que el seu interval i el seu punt no es mostren com a promesa fins que una tirada de l'SDK instal·lat els substitueixi.",
       "mockNote": " (càrrega de treball de referència, proveïdor simulat)"
     },
     "cacheBreakEven": {
@@ -392,6 +395,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mesurat contra un proveïdor real, amb control de qualitat.",
+      "sdkPendiente": "Aquesta tirada duia un compressor exclusiu del banc que el paquet de npm no inclou: les seves xifres mostren el mecanisme, no el que estalvia l'SDK instal·lat.",
       "mock": "<b>ESTIMAT · proveïdor simulat</b> — això demostra que el mecanisme funciona, no la teva factura. Una execució LIVE confirmada substitueix cada xifra d'aquí."
     },
     "connectionStatePill": {
@@ -660,10 +664,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0 %",
+          "cifra": "≥ 10,0 %",
           "que": "menys factura, verificat al 95 % · davant d'una integració sense optimitzar, sense streaming"
         }
       ],
+      "proofSdkPendiente": "Provisional: la tirada publicada duia un compressor exclusiu del banc que el paquet de npm no inclou. Aquesta xifra cap sota el sòl d'aquella tirada quan se'n treu l'efecte del compressor, recalculat amb els assajos mesurats: encara no és una mesura de l'SDK instal·lat. Aquesta tirada està pendent.",
       "medidoEn": "Mesurat a",
       "compatibleCon": "Compatible amb",
       "compatibleNota": "Qualsevol endpoint compatible amb l'API d'OpenAI, i l'adaptador natiu d'Anthropic. Amb xifra publicada, avui, només OpenAI {modelo}."
@@ -727,6 +732,7 @@
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
       "plain": "En aquesta prova, la factura va baixar amb gairebé total seguretat almenys un {piso}. El més probable és que baixés un {punto}.",
+      "plainSdkPendiente": "Amb l'SDK tal com l'instal·les des de npm, la factura baixa almenys un {piso}. La prova publicada duia a més un compressor exclusiu del banc que el paquet no inclou; en traiem l'efecte en lloc de comptar-lo, fins que una tirada de l'SDK instal·lat substitueixi aquesta xifra.",
       "plainNote": "Quan hi ha una forquilla, anunciem sempre el número petit — el que l'estadística garanteix —, mai el bonic.",
       "trialsLink": "Baixar els assaigs en cru (CSV)"
     },
@@ -929,6 +935,7 @@
       "calidad": "qualitat",
       "punto": "estimació puntual",
       "suelo": "El titular és el sòl de l'interval del 95 %, mai el punt.",
+      "sdkPendiente": "Aquesta tirada duia un compressor exclusiu del banc que el paquet de npm no inclou, així que el seu sòl no es mostra. La xifra de dalt és el nostre titular per a l'SDK tal com l'instal·les: continua cabent quan se'n treu l'efecte d'aquest compressor. Falta una tirada de l'SDK instal·lat.",
       "libros": "per llibre comptable",
       "pie": "Cada llibre es publica amb el seu propi interval; els que no superen el zero no s'anuncien.",
       "fecha": "tirada"

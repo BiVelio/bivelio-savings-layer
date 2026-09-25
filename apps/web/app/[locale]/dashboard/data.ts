@@ -40,9 +40,19 @@ export interface AbScenario {
   measuredB1?: { savings: CI; wilcoxonP: number; inputTokenDeltaMean: number; outputTokenDeltaMean: number };
   quality: { gate: string; passed: number; total: number };
   amortization?: { coldMissCost: number; hitCost: number; breakEvenK: number | null };
+  /** La palanca que el escenario existe para ejercitar, y si llegó a hacerlo. */
+  palanca?: { palanca: string; ejercitada?: boolean; motivo?: string } | null;
 }
 export interface AbArtifact {
   mode: "LIVE" | "MOCK";
+  /**
+   * Qué SDK midió la tirada (lo sella `benchmarks/ab-live.ts`). `asShipped:
+   * true` = sin piezas que el banco inyecta y el paquete de npm no trae (el
+   * compresor). Opcional porque el artefacto del 2026-09-12 es anterior al
+   * sello — y se midió CON el compresor. Quien lo lea pasa por
+   * `lib/bench/sdk-instalado.ts`.
+   */
+  sdk?: { version?: string; asShipped?: boolean; compressor?: string; tokenizer?: string };
   generatedNote: string;
   methodology: string;
   config: { reps: number; seed: number };

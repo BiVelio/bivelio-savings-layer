@@ -201,7 +201,8 @@
       "colACost": "A Kosten",
       "colBCost": "B Kosten",
       "colSavings": "Einsparung",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "Prüfstand-Kompressor, nicht in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Einsparungs-Verifizierer",
@@ -360,6 +361,7 @@
       "proven": "bewiesen",
       "notProven": "nicht bewiesen",
       "notExercised": "in diesem Lauf nicht ausgeübt — ihre Null ist keine Messung",
+      "benchOnly": "enthält einen Prüfstand-Kompressor, den das npm-Paket nicht mitliefert — wird nicht beworben",
       "estimatedMock": "geschätzt (Mock)",
       "footnoteMain": "Vier Ledger, <b>niemals summiert</b> — jeder ist ein separat gemessener Hebel, sodass ein Dollar nicht doppelt gezählt werden kann.",
       "reconciledNote": "Der Abstimmungsrest ≈ 0 beweist es.",
@@ -379,6 +381,7 @@
     },
     "netSavingsCIBand": {
       "caption": "Netto-Einsparung, <b>untere 95%-Konfidenzgrenze</b>. Punktschätzung {point}, obere {upper} — wir stellen den unteren Wert in den Vordergrund{mockNote}.",
+      "captionSdkPendiente": "was das SDK trägt, wie es aus npm installiert wird. Der veröffentlichte Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das Paket nicht mitliefert, deshalb werden sein Intervall und sein Punktschätzer nicht als Versprechen gezeigt, bis ein Lauf mit dem installierten SDK sie ersetzt.",
       "mockNote": " (Referenz-Workload, Mock-Provider)"
     },
     "cacheBreakEven": {
@@ -392,6 +395,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gegen einen echten Provider gemessen, mit Quality-Gate.",
+      "sdkPendiente": "Dieser Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert: Seine Zahlen zeigen den Mechanismus, nicht was das installierte SDK spart.",
       "mock": "<b>GESCHÄTZT · Mock-Provider</b> — das beweist, dass der Mechanismus funktioniert, nicht deine Rechnung. Ein verbindlicher LIVE-Lauf ersetzt jede Zahl hier."
     },
     "connectionStatePill": {
@@ -660,10 +664,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0 %",
+          "cifra": "≥ 10,0 %",
           "que": "weniger Rechnung, geprüft bei 95 % · gegenüber einer nicht optimierten Integration, ohne Streaming"
         }
       ],
+      "proofSdkPendiente": "Vorläufig: Der veröffentlichte Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert. Diese Zahl passt unter die Untergrenze dieses Laufs, wenn die Wirkung des Kompressors herausgerechnet wird, neu berechnet aus den gemessenen Versuchen — sie ist noch keine Messung des installierten SDK. Dieser Lauf steht noch aus.",
       "medidoEn": "Gemessen auf",
       "compatibleCon": "Kompatibel mit",
       "compatibleNota": "Jeder mit der OpenAI-API kompatible Endpunkt sowie der native Anthropic-Adapter. Mit veröffentlichter Zahl, heute, nur OpenAI {modelo}."
@@ -727,6 +732,7 @@
       "videoCaption": "Der Test ist ein faires Experiment: dieselbe Aufgabe zweimal — ohne Savings und mit Savings — und derselbe Zähler des Anbieters zählt beide.",
       "plainTitle": "Übersetzung, ohne Fachjargon",
       "plain": "In diesem Test sank die Rechnung mit an Sicherheit grenzender Wahrscheinlichkeit um mindestens {piso}. Am wahrscheinlichsten sank sie um {punto}.",
+      "plainSdkPendiente": "Mit dem SDK, wie du es aus npm installierst, sinkt die Rechnung um mindestens {piso}. Der veröffentlichte Test enthielt zusätzlich einen Kompressor, den es nur im Prüfstand gibt und den das Paket nicht mitliefert; wir rechnen seine Wirkung heraus, statt sie mitzuzählen, bis ein Lauf mit dem installierten SDK diese Zahl ersetzt.",
       "plainNote": "Gibt es eine Spanne, verkünden wir immer die kleine Zahl — die, die die Statistik garantiert —, nie die schöne.",
       "trialsLink": "Rohdaten der Versuche herunterladen (CSV)"
     },
@@ -929,6 +935,7 @@
       "calidad": "Qualität",
       "punto": "Punktschätzung",
       "suelo": "Die Schlagzahl ist die Untergrenze des 95-%-Intervalls, nie der Punkt.",
+      "sdkPendiente": "Dieser Lauf enthielt einen Kompressor, den es nur im Prüfstand gibt und den das npm-Paket nicht mitliefert, deshalb wird seine Untergrenze nicht gezeigt. Die Zahl oben ist unsere Schlagzahl für das SDK, wie du es installierst: Sie passt auch dann noch, wenn die Wirkung dieses Kompressors herausgerechnet wird. Ein Lauf mit dem installierten SDK steht noch aus.",
       "libros": "pro Buch",
       "pie": "Jedes Buch wird mit eigenem Intervall veröffentlicht; was die Null nicht klar übersteigt, wird nicht beworben.",
       "fecha": "Lauf"

@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import abData from "@/public/data/ab-live.json";
+import type { AbArtifact } from "@/app/[locale]/dashboard/data";
+import { sueloPublicable } from "@/lib/bench/sdk-instalado";
 
 /**
  * LA FACTURA DE EJEMPLO SALE DE LA MEDICIÓN, NO DE LA IMAGINACIÓN.
@@ -17,7 +19,11 @@ import abData from "@/public/data/ab-live.json";
  * banco se mueve, esto se mueve solo; si alguien publica un artefacto peor, la
  * ilustración se vuelve más modesta sin que nadie tenga que acordarse.
  */
-const SUELO_MEDIDO = abData.aggregate?.savings?.lower ?? 0;
+// Mientras la tirada publicada no mida el SDK tal como se instala (la del
+// 2026-09-12 llevaba el compresor del banco, que npm no trae), la regla de tres
+// va sobre lo que sostiene el paquete, no sobre ese suelo: esta ilustración está
+// junto a «esa caja verde es un paquete de npm» (lib/bench/sdk-instalado.ts).
+const SUELO_MEDIDO = sueloPublicable(abData as unknown as AbArtifact);
 const FACTURA_EJEMPLO = 100;
 const FACTURA_CON_CAPA = Math.round(FACTURA_EJEMPLO * (1 - SUELO_MEDIDO));
 

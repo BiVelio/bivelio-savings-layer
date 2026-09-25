@@ -201,7 +201,8 @@
       "colACost": "kosten A",
       "colBCost": "kosten B",
       "colSavings": "besparing",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "testbank-compressor, niet in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Besparingsverificatie",
@@ -360,6 +361,7 @@
       "proven": "bewezen",
       "notProven": "niet bewezen",
       "notExercised": "niet uitgeoefend in deze run — de nul is geen meting",
+      "benchOnly": "bevat een testbank-compressor die het npm-pakket niet meelevert — niet aangeprezen",
       "estimatedMock": "geschat (mock)",
       "footnoteMain": "Vier grootboeken, <b>nooit opgeteld</b> — elk is een afzonderlijk gemeten hefboom, dus een dollar kan niet dubbel geteld worden.",
       "reconciledNote": "Het reconciliatierestant ≈ 0 bewijst het.",
@@ -379,6 +381,7 @@
     },
     "netSavingsCIBand": {
       "caption": "netto besparingen, <b>ondergrens van het 95%-BI</b>. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop{mockNote}.",
+      "captionSdkPendiente": "wat de SDK waarmaakt zoals die vanuit npm wordt geïnstalleerd. De gepubliceerde run bevatte een compressor die alleen in de testbank zit en die het pakket niet meelevert, dus het interval en de puntschatting ervan worden niet als belofte getoond tot een run met de geïnstalleerde SDK ze vervangt.",
       "mockNote": " (referentiewerklast, mock-provider)"
     },
     "cacheBreakEven": {
@@ -392,6 +395,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gemeten tegen een echte provider, met kwaliteitscontrole.",
+      "sdkPendiente": "Deze run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert: de cijfers tonen het mechanisme, niet wat de geïnstalleerde SDK bespaart.",
       "mock": "<b>GESCHAT · mock-provider</b> — dit bewijst dat het mechanisme werkt, niet je factuur. Een vastgelegde LIVE-run vervangt elk getal hier."
     },
     "connectionStatePill": {
@@ -660,10 +664,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0%",
+          "cifra": "≥ 10,0%",
           "que": "minder factuur, geverifieerd op 95% · tegenover een niet-geoptimaliseerde integratie, zonder streaming"
         }
       ],
+      "proofSdkPendiente": "Voorlopig: de gepubliceerde run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert. Dit cijfer past onder de ondergrens van die run als het effect van de compressor eruit wordt gehaald, herberekend uit de gemeten proeven — het is nog geen meting van de geïnstalleerde SDK. Die run volgt nog.",
       "medidoEn": "Gemeten op",
       "compatibleCon": "Compatibel met",
       "compatibleNota": "Elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter. Met gepubliceerd cijfer, vandaag, alleen OpenAI {modelo}."
@@ -727,6 +732,7 @@
       "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
       "plainTitle": "Vertaling, zonder jargon",
       "plain": "In deze test daalde de factuur vrijwel zeker met minstens {piso}. Waarschijnlijk daalde hij met {punto}.",
+      "plainSdkPendiente": "Met de SDK zoals je die vanuit npm installeert, daalt de factuur met minstens {piso}. De gepubliceerde test bevatte daarnaast een compressor die alleen in de testbank zit en die het pakket niet meelevert; we halen het effect ervan eruit in plaats van het mee te tellen, tot een run met de geïnstalleerde SDK dit cijfer vervangt.",
       "plainNote": "Bij een marge noemen we altijd het kleine getal — het getal dat de statistiek garandeert — nooit het mooiste.",
       "trialsLink": "Download de ruwe proeven (CSV)"
     },
@@ -929,6 +935,7 @@
       "calidad": "kwaliteit",
       "punto": "puntschatting",
       "suelo": "De kop is de ondergrens van het 95%-interval, nooit het punt.",
+      "sdkPendiente": "Deze run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert, dus de ondergrens ervan wordt niet getoond. Het cijfer hierboven is onze kop voor de SDK zoals je die installeert: het past nog steeds als het effect van die compressor eruit wordt gehaald. Een run met de geïnstalleerde SDK volgt nog.",
       "libros": "per grootboek",
       "pie": "Elk grootboek wordt met zijn eigen interval gepubliceerd; wat niet boven nul uitkomt, wordt niet geadverteerd.",
       "fecha": "run"
