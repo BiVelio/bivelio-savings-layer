@@ -3,12 +3,16 @@ import { avisarUnaVez } from "../util/warn-once.js";
 import { BV_SALA_VERSION, CABECERA_VERSION } from "../version.js";
 
 /**
- * A counts-only usage record on the wire. Mirrors `@bivelio/protocol`'s
+ * A usage record on the wire. Mirrors `@bivelio/protocol`'s
  * `UsageRecord` but is reimplemented here so the SDK stays dependency-free (the
- * published package must not pull in a workspace package). It carries ONLY counts
- * and cost — NEVER a prompt, completion, or any request content. That invariant is
- * enforced a second time server-side by the ingest allow-list.
+ * published package must not pull in a workspace package). It carries ONLY counts,
+ * cost figures and opaque identifiers — NEVER a prompt, completion, or any request
+ * content. That invariant is enforced a second time server-side by the ingest
+ * allow-list.
  */
+// La LICENSE §5 enumera cada campo de este cable (y de la lista blanca de la
+// ingesta): test/licencia-alineada.test.ts rompe si uno nuevo no tiene su línea
+// allí. Añadir un campo es también un cambio de la licencia, con revisión legal.
 interface UsageWire {
   orgId: string;
   seatId?: string;
@@ -100,7 +104,8 @@ interface Entry {
 }
 
 /**
- * Buffers counts-only usage and flushes it to the control plane. DETECTIVE
+ * Buffers usage records (counts, cost figures and opaque identifiers, never
+ * content) and flushes them to the control plane. DETECTIVE
  * metering: strictly best-effort and NON-BLOCKING. `record()` is O(1) and
  * `flush()` never throws, so a slow, unreachable, or erroring control plane can
  * neither block nor crash the customer's request path. The buffer is hard-capped

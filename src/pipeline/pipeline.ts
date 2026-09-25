@@ -1416,7 +1416,7 @@ export class SavingsPipeline {
       this.deps.semanticCache &&
       !semanticLicensed
     ) {
-      trace.record("semantic-cache", "degraded: feature not licensed (free tier)");
+      trace.record("semantic-cache", "degraded: feature not included in this license");
     }
     if (
       policy.allowSemanticCache &&

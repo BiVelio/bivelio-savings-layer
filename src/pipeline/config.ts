@@ -107,7 +107,7 @@ export interface SavingsLayerConfig {
    * `GET /licenses/revocations` for a signed revocation list and enforces it via a
    * LIVE gate — a license cancelled mid-term stops working without a restart.
    *
-   * NEVER-BRICK: the customer request path never blocks on the fetch; the warm poll
+   * NON-BLOCKING: the customer request path never blocks on the fetch; the warm poll
    * is fired but not awaited, and any failed/unreachable poll is a no-op that keeps
    * the last-known-good snapshot. Leaving this unset keeps the fully-offline,
    * zero-network default path. Pass the base URL of the licensing service, e.g.
@@ -156,9 +156,10 @@ export interface SavingsLayerConfig {
    *     must paste the new token by hand every cycle or the deployment stops with
    *     `LicenseError` once the grace period ends — while the subscription is paid
    *     and current. Disable with {@link licenseRefresh}`.enabled = false`.
-   *  2. **DETECTIVE usage metering.** COUNTS-ONLY usage after each request —
-   *     request id, model, cache outcome, and token/cost counts, tagged with an
-   *     auto-derived machine seat id — NEVER prompts or completions. Disable with
+   *  2. **DETECTIVE usage metering.** Usage figures after each request —
+   *     request id, model id, cache outcome, token counts and cost figures, tagged
+   *     with an opaque machine seat id (section 5 of the LICENSE lists every field) —
+   *     NEVER prompts, completions or provider credentials. Disable with
    *     {@link metering}`.enabled = false` (which does NOT disable renewal pickup).
    *
    * Both are best-effort and non-blocking: a slow or unreachable control plane

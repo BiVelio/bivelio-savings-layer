@@ -8,15 +8,19 @@ terminal). Cada afirmación va marcada **[V]** (verificada en fuente) o **[I]**
 ## Qué es esto
 
 `bvsala gateway` es un proxy local medidor: escucha en `127.0.0.1`, reenvía
-cada petición **byte a byte** al proveedor (`https://api.anthropic.com` por
-defecto) y, una vez servida la respuesta, lee el `usage` del stream y lo
-convierte en coste. Tus prompts jamás salen de tu máquina hacia BiVelio — solo
-cuentas y coste. Es fail-closed como el SDK: arranca solo con tu clave de
-servicio (`BIVELIO_SERVICE_KEY`) y una licencia BiVelio activa, que recoge con
-esa clave y cuya firma verifica en tu máquina. Una vez arrancado, jamás corta
-una petición en curso: si la licencia caduca o se revoca, solo las peticiones
-NUEVAS reciben un HTTP 402 hasta renovarla. La medición es best-effort: con la
-ingesta caída, reenvía y avisa.
+cada petición al proveedor (`https://api.anthropic.com` por defecto) —**byte a
+byte**, salvo las palancas que se explican abajo (con licencia PRO, la de tarifa
+va encendida por defecto)— y, una vez servida la respuesta, lee el `usage` del
+stream y lo convierte en coste. Ni tus prompts, ni las respuestas, ni la clave de
+tu proveedor salen de tu máquina hacia BiVelio: solo viaja el uso de cada
+petición —cuentas de tokens, coste, el id del modelo, un id de petición y los ids
+opacos de asiento y de sesión—, y la lista exacta de campos está en la
+LICENSE §5. Es fail-closed como el SDK: arranca solo con tu clave de servicio
+(`BIVELIO_SERVICE_KEY`) y una licencia BiVelio activa, que recoge con esa clave y
+cuya firma verifica en tu máquina. Una vez arrancado, jamás corta una petición en
+curso: si la licencia caduca o se revoca, solo las peticiones NUEVAS reciben un
+HTTP 402 hasta renovarla. La medición es best-effort: con la ingesta caída,
+reenvía y avisa.
 
 Mide cada petición. Con licencia PRO aplica por defecto **una sola palanca**:
 rebaja el TTL de escritura de caché mientras la sesión sigue caliente — cambia la

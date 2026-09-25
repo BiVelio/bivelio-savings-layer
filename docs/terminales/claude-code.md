@@ -117,8 +117,13 @@ con cada release de Claude Code; BV-SALA repite el smoke test de `bvsala claude`
 contra cada versión nueva.
 
 Las cabeceras `x-claude-code-session-id` / `agent-id` / `parent-agent-id`
-llegan en el tráfico real y hoy se reenvían sin consumirlas: el coste por sesión
-y por subagente está previsto en S3 §1.3, todavía no en el panel.
+llegan en el tráfico real y se reenvían al proveedor sin tocarlas. Además, el
+gateway LEE las dos primeras y, si tienen forma de identificador, adjunta su
+valor (`sessionId`, `agentId`) al registro de uso que manda a BiVelio: es lo que
+reparte el coste por sesión y por subagente en el panel. Son los ids que Claude
+Code ya pone en sus propias peticiones, no una persona ni un contenido;
+`parent-agent-id` no se lee. La lista completa de lo que viaja está en la
+LICENSE §5.
 
 ## Nota BYOK y wording
 
