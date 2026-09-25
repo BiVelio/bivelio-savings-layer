@@ -84,7 +84,7 @@ for (const f of idiomas) {
 const prometido = Math.max(...cifras, 0);
 const csv = existsSync("apps/web/public/data/ab-live-trials.csv");
 const salida = {
-  suelo: suelo.toFixed(1), prometido: prometido.toFixed(1), sellado, csv,
+  suelo: (Math.floor(suelo * 10) / 10).toFixed(1), prometido: prometido.toFixed(1), sellado, csv,
   unaSola: cifras.size === 1, idiomas: idiomas.length, pares: art.trials ?? null,
   modo: art.mode, calidad: art.aggregate?.qualityPassRate ?? null,
 };
@@ -100,16 +100,30 @@ if [[ -s /tmp/lv-cifras.json ]]; then
   # el artefacto se midió con una pieza que npm no trae (el compresor del banco),
   # se reconstruye el suelo sin ella — sin red, con los ensayos publicados.
   if TCS=$(pnpm -s exec tsx benchmarks/titular-como-se-instala.ts --json 2>/dev/null) && [[ -n "$TCS" ]]; then
-    read -r TAL MENOR <<<"$(node -p 'const d=JSON.parse(process.argv[1]);[d.medidoTalCual,(Math.floor(d.menor*1000)/10).toFixed(1)].join(" ")' "$TCS")"
+    read -r TAL SINREC MENOR <<<"$(node -p 'const d=JSON.parse(process.argv[1]);[d.medidoTalCual,d.sinReconstruir,(Math.floor(d.menor*1000)/10).toFixed(1)].join(" ")' "$TCS")"
+    MOTIVO=$(node -p 'JSON.parse(process.argv[1]).motivo' "$TCS")
     if [[ "$TAL" == "true" ]]; then
-      ok "el artefacto midió el SDK tal como se instala desde npm"
+      ok "el artefacto midió el SDK tal como se instala desde npm (sdk.asShipped: true)"
     else
-      avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con BVSALA_AB_SIN_COMPRESOR=1"
-      nota "el recibo y la factura de ejemplo de la web salen de ese artefacto hasta que se re-mida"
+      if [[ "$SINREC" == "true" ]]; then
+        avis "$MOTIVO: re-medir con BVSALA_AB_SIN_COMPRESOR=1 para sellarlo"
+      else
+        avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con BVSALA_AB_SIN_COMPRESOR=1"
+      fi
       if awk "BEGIN{exit !($PROM <= $MENOR)}"; then
-        ok "lo prometido ($PROM %) cabe también en lo que entrega npm ($MENOR %, reconstruido sin el compresor del banco)"
+        ok "lo prometido ($PROM %) cabe también en lo que entrega npm ($MENOR %$([[ "$SINREC" == "true" ]] || echo ', reconstruido sin el compresor del banco'))"
       else
         mal "la web promete $PROM % y sin el compresor del banco el suelo es $MENOR %"
+      fi
+      # Y NINGUNA OTRA SUPERFICIE lo contradice: mientras el artefacto no mida lo
+      # instalado, el recibo del héroe, la frase del paso 2, la banda, las
+      # tarjetas por libro y la factura de ejemplo no pueden presentar su suelo
+      # como lo que obtiene el cliente. Rojo si alguna lo hace.
+      if pnpm -s exec vitest run apps/web/lib/bench/sdk-instalado.test.ts >/tmp/lv-sdk-instalado.log 2>&1; then
+        ok "ninguna superficie de la web presenta el suelo de esa tirada como lo que obtiene el cliente: enseñan el titular"
+      else
+        mal "alguna superficie de la web presenta el suelo de una tirada que no midió lo instalado"
+        nota "mira /tmp/lv-sdk-instalado.log"
       fi
     fi
   else
