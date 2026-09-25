@@ -256,7 +256,9 @@ export class ObservadorResponses {
       try {
         const d = JSON.parse(data) as { type?: string; response?: { usage?: UsoResponses | null } };
         const tipo = ev ?? d.type;
-        const final = tipo !== undefined ? FINALES_RESPONSES[tipo] : undefined;
+        // Object.hasOwn: el literal hereda de Object.prototype, y un evento
+        // `constructor` o `toString` no puede pasar por un final.
+        const final = tipo !== undefined && Object.hasOwn(FINALES_RESPONSES, tipo) ? FINALES_RESPONSES[tipo] : undefined;
         if (final === undefined) continue;
         this.final = final;
         const u = d.response?.usage;
@@ -567,6 +569,77 @@ export function usoDeJsonPorRuta(path: string, cuerpo: Buffer | string): UsoSse 
   }
 }
 
+/**
+ * Parte G · ¿una respuesta JSON (`stream: false`) de la Responses API dice
+ * `status: "failed"`? La hermana de `ObservadorResponses.estadoFinal()` para el
+ * camino sin stream: una respuesta 200 con `status: "failed"` y `usage` se mide,
+ * pero su gemela no puede valorarse por referencia. Solo `…/responses`; lo
+ * ilegible es false (no hay estado que leer).
+ */
+export function respuestaJsonFallida(path: string, cuerpo: Buffer | string): boolean {
+  if (!path.endsWith("/responses")) return false;
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as { status?: unknown } | null;
+    return d !== null && typeof d === "object" && d.status === "failed";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Parte G · el `service_tier` que el proveedor dice haber SERVIDO, leído de la
+ * respuesta entera (la réplica que recibe la gemela), cada dialecto en su sitio:
+ *   · `/v1/messages` (Anthropic): `usage.service_tier` — en el JSON, o en
+ *     `message_start.message.usage` / `message_delta.usage` del stream.
+ *   · `…/chat/completions`: `service_tier` en la raíz del JSON o de cada chunk.
+ *   · `…/responses`: `service_tier` en la raíz del JSON, o en `response` de los
+ *     eventos del stream.
+ * Gana el ÚLTIMO que aparezca (el del evento final). undefined si la respuesta
+ * no lo dice: no es «estándar», es no saberlo.
+ */
+export function tierServidoDeRespuesta(path: string, cuerpo: Buffer | string): string | undefined {
+  const texto = typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8");
+  const deObjeto = (d: unknown): string | undefined => {
+    if (d === null || typeof d !== "object") return undefined;
+    const o = d as Record<string, unknown>;
+    const deUso = (u: unknown): unknown =>
+      u !== null && typeof u === "object" ? (u as Record<string, unknown>)["service_tier"] : undefined;
+    let t: unknown;
+    if (path === "/v1/messages") {
+      t = deUso(o["usage"]);
+      if (t === undefined && o["message"] !== null && typeof o["message"] === "object") {
+        t = deUso((o["message"] as Record<string, unknown>)["usage"]);
+      }
+    } else if (path.endsWith("/chat/completions")) {
+      t = o["service_tier"];
+    } else if (path.endsWith("/responses")) {
+      t = o["service_tier"];
+      if (t === undefined && o["response"] !== null && typeof o["response"] === "object") {
+        t = (o["response"] as Record<string, unknown>)["service_tier"];
+      }
+    }
+    return typeof t === "string" && t !== "" ? t : undefined;
+  };
+  // JSON entero (stream: false)…
+  try {
+    return deObjeto(JSON.parse(texto));
+  } catch {
+    /* …o un stream SSE: cada línea `data:` por separado */
+  }
+  let ultimo: string | undefined;
+  for (const linea of texto.split("\n")) {
+    if (!linea.startsWith("data:")) continue;
+    const data = linea.slice(5).trim();
+    if (data === "" || data === "[DONE]") continue;
+    try {
+      ultimo = deObjeto(JSON.parse(data)) ?? ultimo;
+    } catch {
+      /* un data ilegible no dice nada del tier */
+    }
+  }
+  return ultimo;
+}
+
 /** ¿La ruta tiene un dialecto de `usage` que el gateway sabe leer? */
 export function tieneDialecto(path: string): boolean {
   return path === "/v1/messages" || path.endsWith("/chat/completions") || path.endsWith("/responses");
@@ -695,14 +768,24 @@ export function informeMedido(
  * Por qué una gemela coalescida NO se valora por referencia y sigue
  * `estimated`. ASCII inglés: va a la línea de log, que lee quien usa el gateway.
  *
- * - `no-primary-record` — la réplica no trae la huella de su primaria.
+ * - `no-primary-record` — la réplica no trae la huella de su primaria, o la
+ *                         primaria no leyó el contador final en su respuesta
+ *                         (no hay registro medido al que apuntar).
  * - `subscription`      — tráfico de suscripción: no hay factura por token.
+ * - `unofficial-upstream` — el gateway no habla con el origen oficial del
+ *                         proveedor (un mock, un proxy, un revendedor): el
+ *                         precio de lista no está en ninguna factura.
  * - `layer-changed-request` — una palanca cambió el cuerpo, las cabeceras o el
- *                         modelo de la primaria: su contador no es el de la
- *                         petición del cliente.
- * - `primary-failed`    — la primaria cerró con `response.failed`.
- * - `service-tier`      — el cuerpo pide un tier cuyo precio por token no se
- *                         conoce (`scale`, uno nuevo…): no hay suelo que valga.
+ *                         modelo de la primaria (también la rebaja de TTL): su
+ *                         contador no es el de la petición del cliente.
+ * - `primary-failed`    — la primaria cerró con `response.failed` (o
+ *                         `status: "failed"` en el JSON).
+ * - `client-disconnected` — el cliente de la gemela se fue antes de recibir la
+ *                         réplica entera: sin la capa se habría cortado igual,
+ *                         y una llamada que nadie recibió no es una llamada
+ *                         evitada que se pueda cobrar.
+ * - `service-tier`      — el tier pedido o el servido no tiene precio por token
+ *                         conocido (`scale`, uno nuevo…): no hay suelo que valga.
  * - `no-cached-price`   — el modelo no tiene precio de lectura documentado en SU
  *                         fila del catálogo (una fila heredada no vale).
  * - `no-credit`         — el contador no deja nada que acreditar.
@@ -710,11 +793,23 @@ export function informeMedido(
 export type MotivoSinReferenciaGateway =
   | "no-primary-record"
   | "subscription"
+  | "unofficial-upstream"
   | "layer-changed-request"
   | "primary-failed"
+  | "client-disconnected"
   | "service-tier"
   | "no-cached-price"
   | "no-credit";
+
+/** Parte G · lo que se sabe de la GEMELA (lo de su primaria va en `HuellaDeLaPrimaria`). */
+export interface HechosDeLaGemela {
+  /** Tráfico de suscripción según las cabeceras de la PROPIA gemela. */
+  suscripcion: boolean;
+  /** La réplica llegó entera a su cliente (no cerró antes de recibirla). */
+  entregada: boolean;
+  /** `service_tier` que la respuesta de la primaria dice haber SERVIDO, si lo dice. */
+  tierServido?: string | undefined;
+}
 
 /** Tiers que se facturan a la tarifa estándar o por ENCIMA: el suelo de lista vale. */
 const TIERS_A_PRECIO_DE_LISTA = new Set(["auto", "default", "priority", "standard_only"]);
@@ -726,6 +821,12 @@ const TIERS_A_PRECIO_DE_LISTA = new Set(["auto", "default", "priority", "standar
  * ese tier o en uno más caro, así que tomar el del tier pedido nunca excede lo
  * que la repetición habría costado. Cualquier otro valor (`scale`, cuya tarifa
  * no se publica, o uno nuevo) → null: sin precio conocido no hay suelo.
+ *
+ * OJO: aquí `veredictoDelTier` recibe el tier PEDIDO, y su módulo
+ * (src/economics/tier-diferido.ts) dice que su única entrada es el SERVIDO. Se
+ * usa solo como tabla de descuentos y el resultado actúa como TOPE: pedir
+ * `flex` nunca sube el suelo por encima de lo que se habría pagado. El tier
+ * servido se mira aparte (`factorDelTierServido`) y manda el menor de los dos.
  */
 function factorDelTierPedido(tier: unknown): number | null {
   if (tier === undefined || tier === null) return 1;
@@ -736,12 +837,30 @@ function factorDelTierPedido(tier: unknown): number | null {
 }
 
 /**
- * PARTE G · ¿se valora esta gemela por referencia? La MISMA regla v1 que el SDK
+ * El factor del tier que la respuesta de la primaria dice haber SERVIDO. Sin
+ * dato, 1 (el pedido ya puso su tope). `scale` → null aunque la tabla le dé 1:
+ * es capacidad PREPAGADA, sin tarifa por token publicada, y cobrar su
+ * repetición a precio de lista sería comisión sobre dinero que la factura por
+ * token no trae. Un tier que la tabla no conoce, también null.
+ */
+function factorDelTierServido(servido: string | undefined): number | null {
+  if (servido === undefined) return 1;
+  if (servido === "scale") return null;
+  const v = veredictoDelTier(servido);
+  return v !== null && v.factor !== null ? v.factor : null;
+}
+
+/**
+ * PARTE G · ¿se valora esta gemela por referencia? La regla v1 del SDK
  * (src/pipeline/referencia.ts), en la forma que el gateway puede comprobar:
  *
  *   · Identidad byte a byte: la da la clave de coalescencia (cuerpo más
  *     cabeceras de identidad), así que no hay huella que recalcular.
- *   · La primaria viajó INTACTA y no es suscripción, ni suya ni de la gemela.
+ *   · La primaria viajó INTACTA (sin excepciones: tampoco la rebaja de TTL) y
+ *     no es suscripción, ni suya ni de la gemela.
+ *   · El contador es de un proveedor de verdad: el origen OFICIAL (la E0
+ *     `simulated-provider` del SDK, en su forma de gateway).
+ *   · La gemela RECIBIÓ la réplica: una llamada que nadie recibió no se cobra.
  *   · Precio de lectura documentado en la fila PROPIA del modelo pedido
  *     (`precioDeListaPropio`): la fila de un pariente puede ser otro modelo más
  *     barato, y entonces el «suelo» ya no lo sería.
@@ -752,24 +871,28 @@ function factorDelTierPedido(tier: unknown): number | null {
  * su caché de prefijo; sin primas de escritura; la salida solo con
  * `temperature: 0` en el cuerpo y al 95 % (REFERENCE_OUTPUT_SHARE), porque sin
  * muestreo determinista nada garantiza que la repetición escribiera lo mismo;
- * y todo por el factor del tier que pidió el cuerpo. La primera condición que
- * falla da el motivo; nunca se lanza nada y nunca se reclama de más.
+ * y todo por el MENOR de los factores del tier pedido y del servido. La primera
+ * condición que falla da el motivo; nunca se lanza nada y nunca se reclama de más.
  */
 export function valorarGemelaPorReferencia(
   model: string,
   medidoPrimaria: RegistroMedido,
   primaria: HuellaDeLaPrimaria | null | undefined,
   cuerpo: unknown,
-  suscripcionGemela: boolean,
+  gemela: HechosDeLaGemela,
 ): { ok: true; credit: ReferenceCredit } | { ok: false; reason: MotivoSinReferenciaGateway } {
-  if (!primaria) return { ok: false, reason: "no-primary-record" };
-  if (primaria.suscripcion || suscripcionGemela) return { ok: false, reason: "subscription" };
+  if (!primaria || !primaria.conContador) return { ok: false, reason: "no-primary-record" };
+  if (primaria.suscripcion || gemela.suscripcion) return { ok: false, reason: "subscription" };
+  if (!primaria.proveedorOficial) return { ok: false, reason: "unofficial-upstream" };
   if (!primaria.intacta) return { ok: false, reason: "layer-changed-request" };
   if (primaria.fallida) return { ok: false, reason: "primary-failed" };
+  if (!gemela.entregada) return { ok: false, reason: "client-disconnected" };
 
   const json = cuerpo !== null && typeof cuerpo === "object" && !Array.isArray(cuerpo) ? (cuerpo as Record<string, unknown>) : {};
-  const tierFactor = factorDelTierPedido(json["service_tier"]);
-  if (tierFactor === null) return { ok: false, reason: "service-tier" };
+  const factorPedido = factorDelTierPedido(json["service_tier"]);
+  const factorServido = factorDelTierServido(gemela.tierServido);
+  if (factorPedido === null || factorServido === null) return { ok: false, reason: "service-tier" };
+  const tierFactor = Math.min(factorPedido, factorServido);
 
   const precio = precioDeListaPropio(model);
   const c = precio?.cachedInputPer1k;

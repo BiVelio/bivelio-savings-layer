@@ -132,7 +132,8 @@ como salen hoy:
 | `…; usage injection skips compressed request bodies` | la inyección está puesta, pero solo añade la opción a cuerpos sin comprimir | pídelo en la llamada |
 | `…, and the upstream rejects that option` | el upstream rechazó `stream_options` y la inyección quedó apagada para el resto del proceso | en stream no hay arreglo desde el gateway; con `stream: false` sí se mide |
 | `the stream ended without the provider's final usage event` | el stream se cortó antes de su evento final (`message_delta`, `response.completed`/`incomplete`/`failed`, el chunk de uso o `[DONE]`): sin él no hay contador | nada |
-| `the response ended as response.failed without usage` | la Responses API cerró con `response.failed` (o `response.incomplete`) sin `usage`. Si lo trae, sí se mide: también un `response.incomplete` por `max_output_tokens`, que el proveedor factura | nada |
+| `the response ended as response.failed without usage` | la Responses API cerró con `response.failed` sin `usage`. Si lo trae, sí se mide | nada |
+| `the response ended as response.incomplete without usage` | la Responses API cerró con `response.incomplete` sin `usage`. Si lo trae, sí se mide: un `response.incomplete` por `max_output_tokens` o por el filtro de contenido lo factura el proveedor | nada |
 | `the response carried no usage` | respuesta JSON (`stream: false`) sin `usage` | nada |
 | `the response was too large to read its usage` | respuesta JSON de más de 5 MB: el gateway no la guarda entera para leerla | nada |
 | `the response is neither JSON nor an event stream (content-type: …)` | el upstream contestó con otro tipo de contenido en una ruta que sí sabe medir | revisa el upstream |
@@ -143,9 +144,19 @@ otra que sigue en vuelo no viaja: recibe la réplica y su línea lleva
 `· COALESCED (call avoided)`. Detrás va `· by reference: floor $… (cache read
 price, …)` cuando se valora con el contador de la petición que sí viajó —a
 precio de lectura de caché, sin primas y con la salida solo si el cuerpo trae
-`temperature: 0`—, o `· estimated, not by reference: <motivo>` cuando no
-(`subscription`, `layer-changed-request`, `primary-failed`, `service-tier`,
-`no-cached-price`, `no-credit`, `no-primary-record`).
+`temperature: 0`—, o `· estimated, not by reference: <motivo>` cuando no:
+
+| `· estimated, not by reference: …` | Por qué no |
+|---|---|
+| `no-primary-record` | la petición que viajó no dejó su contador final (ni evento final del stream ni `usage` en el JSON) |
+| `subscription` | tráfico de suscripción (Claude o ChatGPT): no hay factura por token |
+| `unofficial-upstream` | el gateway no habla con `api.anthropic.com` ni `api.openai.com` (un mock, un proxy, Azure, un revendedor): el precio de lista no está en ninguna factura |
+| `layer-changed-request` | una palanca cambió lo que viajó (modelo, cuerpo, cabeceras; también la rebaja de TTL de la caché): ya no es la petición del cliente byte a byte |
+| `primary-failed` | la petición que viajó cerró con `response.failed` |
+| `client-disconnected` | el cliente de esta petición se fue antes de recibir la réplica entera |
+| `service-tier` | el `service_tier` pedido o el servido no tiene precio por token publicado (`scale`, uno nuevo) |
+| `no-cached-price` | el modelo no tiene precio de lectura de caché en su propia fila del catálogo |
+| `no-credit` | el contador no deja nada que acreditar |
 
 Claude Code manda además un `HEAD /api/hello` antes de la primera llamada: es
 la sonda de vida, no una inferencia.
