@@ -8,6 +8,8 @@ export function money(n: number): string {
   if (a > 0 && a < 0.01) return "$" + n.toFixed(6);
   return "$" + n.toFixed(2);
 }
+/** Dinero con signo: «−» tipográfico delante de un importe negativo, nunca «$-». */
+export const moneySigned = (n: number): string => (n < 0 ? "−" : "") + money(Math.abs(n));
 // Separador de millares FIJO (coma), no `toLocaleString()` sin locale. Ese
 // dependía del idioma del runtime: el servidor lo pintaba "1,212" y el navegador
 // en español "1.212", y esa diferencia de TEXTO rompía la hidratación de React
