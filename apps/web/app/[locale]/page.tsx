@@ -346,6 +346,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                   </div>
                 ) : null}
                 <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
+                {/* La fila de arriba es la del héroe: mientras la tirada publicada
+                    no mida el SDK tal como se instala, es provisional y se dice
+                    aquí igual que en el héroe (integración de #321 y #325). */}
+                {SDK_INSTALADO ? null : <p className="offer-fig-note">{t("hero.proofSdkPendiente")}</p>}
               </div>
               <div className="offer-install">
                 <span className="offer-fig-t">{t("offers.install")}</span>
