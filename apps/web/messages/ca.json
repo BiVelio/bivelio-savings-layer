@@ -151,7 +151,7 @@
     "verdictHero": {
       "eyebrow": "El teu estalvi · mesurat contra la teva factura",
       "totalSplit": "El total, incloent-hi l'estimat, és {pct}. Només {share} de les peticions té comptador del proveïdor amb què comprovar-ho: el seu, o el de la petició idèntica que ja es va executar.",
-      "referenceNote": "D'això, <b>{money}</b> ve de {count} peticions repetides que es van servir sense cridar el teu proveïdor, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar — al preu més baix que el teu proveïdor et podia cobrar per repetir-la.",
+      "referenceNote": "D'això, <b>{money}</b> ve de {count, plural, one {# petició repetida que es va servir} other {# peticions repetides que es van servir}} sense cridar el teu proveïdor, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar — al preu més baix que el teu proveïdor et podria haver cobrat per repetir-la.",
       "unmeasuredCap": "Veiem {count} sol·licituds amb preu, però cap s'ha pogut comprovar encara contra el comptador del teu proveïdor. Quan arribi la primera, el teu estalvi mesurat apareixerà aquí.",
       "savedLine": "de la teva despesa en LLM conservada aquest període · <b>{money}</b> estalviats (línia base − real, als teus preus).",
       "emptyCap": "Encara no mesurem el teu trànsit — 0 sol·licituds vistes. Instal·la el SDK i el teu estalvi net apareixerà aquí — els teus preus, la teva càrrega de treball. Mai una xifra prestada ni inventada.",
@@ -204,12 +204,6 @@
       "colQa": "qa"
     },
     "projectorVerifier": {
-      "verifierTitle": "Verificador d'estalvi",
-      "estimateFull": "ESTIMACIÓ — heurística, no mesurada pel proveïdor",
-      "errBundle": "No s'ha pogut carregar el paquet de l'optimitzador.",
-      "errInvalidData": "Esperant dades vàlides… {message}",
-      "yourData": "Les teves dades",
-      "alreadyOptimal": "Ja és òptim aquí — BV‑SALA mai no ho empitjora.",
       "projectorTitle": "Projector de factura",
       "estimate": "ESTIMACIÓ",
       "reqsPerMonth": "Sol·licituds / mes",
@@ -219,13 +213,6 @@
       "inputCut": "Retall d'entrada",
       "outputCut": "Retall de sortida",
       "projectedSaving": "estalvi projectat / mes · a preus de {model}",
-      "tryExample": "Prova amb un exemple",
-      "sample_users": "Llista d'usuaris",
-      "sample_orders": "Comandes de botiga",
-      "sample_tickets": "Tiquets de suport",
-      "pasteHint": "…o enganxa aquí el teu propi JSON. Res no surt del teu navegador.",
-      "savedPct": "−{pct}% de tokens",
-      "trimsFriendly": "De {before} a {after} tokens per enviament. BV‑SALA només tria el format més barat — sense canviar el teu codi.",
       "profileLabel": "Què estàs construint?",
       "profile_chat": "Chatbot",
       "profile_extract": "Extracció de dades",
@@ -315,7 +302,8 @@
       "chipOutdated": "actualitza",
       "chipOk": "al dia",
       "chipMixed": "part sense declarar",
-      "hint": "Una fila per màquina que reporta ús, identificada pel seu id de seient opac (mai una persona). El que viatja és un número de versió —gateway/x.y.z o sdk/x.y.z—, mai contingut. Una màquina amb un gateway anterior al canal de versió surt com a «sense declarar»."
+      "hint": "Una fila per màquina que reporta ús, identificada pel seu id de seient opac (mai una persona). El que viatja és un número de versió —gateway/x.y.z o sdk/x.y.z—, mai contingut. Una màquina amb un gateway anterior al canal de versió surt com a «sense declarar».",
+      "referenceHint": "L'estalvi mesurat inclou aquí les peticions repetides mesurades per referència: cadascuna es valora amb el comptador de la petició idèntica que ja es va executar."
     },
     "installLicensePanel": {
       "eyebrow": "Comença",
@@ -503,7 +491,7 @@
       "metaTitle": "Extracte · BiVelio Savings Layer",
       "eyebrow": "Mode ombra · aquí no es cobra res",
       "title": "El teu extracte, abans que existeixi la factura",
-      "intro": "El document exacte que produirà la futura factura variable: només estalvi mesurat, amb la tarifa per trams — sense mínim, només es cobra si estalvies. Durant la calibració, el càrrec és sempre {cero}.",
+      "intro": "El document exacte que produirà la futura factura variable: només estalvi mesurat, amb la tarifa per trams i sense mínim — sense estalvi mesurat no hi ha comissió. La quota per seient és un càrrec a part, fix i mensual. Durant la calibració, la comissió és sempre {cero}.",
       "periodo": "Període {periodo}",
       "badgeCalibracion": "PERÍODE DE CALIBRACIÓ — CÀRREC ZERO",
       "badgeSombra": "OMBRA — SENSE CÀRREC REAL",
@@ -526,12 +514,12 @@
       "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base ni a la comissió.",
       "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Per això està apagada: només s'encén el que estalvia de veritat.",
       "elisionProveedor": "Carril de l'esborrat del proveïdor: {requests} peticions en què els nostres dials van fer que el proveïdor esborrés context. Un recompte, no un estalvi — mai no entra a la base ni a la comissió.",
-      "referencia": "Mesurat per referència: {usd} en {requests} peticions repetides que es van servir sense cridar el teu proveïdor. Cadascuna es valora amb el comptador que el teu proveïdor va retornar per a la petició idèntica que ja es va executar —és a l'informe d'aquella petició i a l'ús del teu proveïdor d'aquell dia— al preu d'entrada en memòria cau, el més baix que el teu proveïdor cobra per repetir un prompt; la sortida només compta si el mostreig era determinista. Entra a la base.",
-      "referenciaExcluida": "Mesurat per referència: {usd} en {requests} peticions repetides. Es mostra com a context: de moment queda fora de la base i de la comissió.",
+      "referencia": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida que es va servir} other {# peticions repetides que es van servir}} sense cridar el teu proveïdor. Cadascuna es valora amb el comptador que el teu proveïdor va retornar per a la petició idèntica que ja es va executar —és a l'informe d'aquella petició i a l'ús del teu proveïdor d'aquell dia— al preu d'entrada en memòria cau, el més baix que el teu proveïdor cobra per repetir un prompt; la sortida només compta si el mostreig era determinista. Entra a la base.",
+      "referenciaExcluida": "Mesurat per referència: {usd} en {requests, plural, one {# petició repetida} other {# peticions repetides}}. Es mostra com a context: de moment queda fora de la base i de la comissió.",
       "exportarReferencias": "Descarrega les peticions repetides d'aquest període, una fila per petició (CSV)",
       "exportarReferenciasPorDia": "Massa peticions repetides per a un sol fitxer: descarrega aquest període dia a dia (CSV):",
       "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx}.",
-      "parametrosReferencia": "Regla de les peticions repetides ({regla}): la petició que es va executar ha de ser idèntica byte a byte, sense que la capa la toqués i amb {dias} dies com a màxim; l'entrada, al preu d'entrada en memòria cau del teu proveïdor; la sortida, al {cuota} del seu comptador, mai per sobre del límit de sortida d'aquesta petició i només amb mostreig determinista.",
+      "parametrosReferencia": "Regla de les peticions repetides ({regla}): la petició que es va executar ha de ser idèntica byte a byte, sense que la capa la toqués i amb una antiguitat màxima de {dias} dies; l'entrada, al preu d'entrada en memòria cau del teu proveïdor; la sortida, al {cuota} del seu comptador, mai per sobre del límit de sortida d'aquesta petició i només amb mostreig determinista.",
       "mismaFacturaTitulo": "Aquest document ÉS la futura factura.",
       "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí.",
       "historialTitulo": "Extractes tancats",
@@ -646,13 +634,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica el teu estalvi en LLM",
-    "metaDescription": "Capa de cost per a LLM amb llicència. Es posa davant del teu proveïdor i retalla la factura; l'estalvi es mesura contra el seu comptador, amb interval al 95 %.",
+    "metaDescription": "Un SDK perquè la teva app pagui al proveïdor de LLM només el que necessita, i un gateway que mesura el teu agent de codi. Tot amb el comptador del teu proveïdor: quota per seient i comissió només sobre l'estalvi mesurat.",
     "hero": {
       "eyebrow": "Per a equips que paguen l'API de LLM per tokens",
       "title": "La teva factura de LLM, sota control.",
       "titleAccent": "Mesurada a cada crida.",
-      "lede": "Un SDK que s'instal·la al teu codi, deixa passar només el que cal pagar i retorna un SavingsReport per crida: el mesurat i l'estimat per separat, comptats amb el comptador del teu proveïdor. Publiquem només el que hem mesurat.",
-      "ctaRun": "Veure els resultats mesurats",
+      "lede": "Dos productes, una regla. L'SDK s'instal·la dins de la teva app i deixa passar només el que cal pagar; el gateway es posa davant del teu agent de codi i en mesura la despesa. Tots dos compten amb el comptador del teu proveïdor i separen el mesurat de l'estimat. Publiquem només el que hem mesurat.",
+      "ctaOffers": "SDK o gateway?",
       "ctaPricing": "Veure els preus",
       "note": "S'instal·la en minuts. Els teus missatges no passen pels nostres servidors.",
       "proofTitle": "Mesurat contra proveïdor real",
@@ -698,8 +686,8 @@
     },
     "explica": {
       "eyebrow": "En paraules normals",
-      "title": "Què fa Savings, exactament?",
-      "sub": "Quatre idees, quatre animacions de vuit segons. Això és tot el producte.",
+      "title": "Què fa l'SDK, exactament?",
+      "sub": "Quatre idees, quatre animacions de vuit segons.",
       "pasos": [
         {
           "title": "La IA es cobra per paraules",
@@ -714,8 +702,8 @@
           "body": "No et demanem fe. Cada estalvi es mesura amb el comptador oficial del proveïdor — el mateix amb què et factura — i apareix al teu rebut. El que no es pot contrastar amb la factura, no s'anuncia."
         },
         {
-          "title": "Només hi guanyem si tu estalvies",
-          "body": "La nostra comissió surt de l'estalvi mesurat, mai de la teva butxaca: la major part del que estalvies es queda sempre amb tu. Un mes sense estalvi? Comissió zero."
+          "title": "Una quota per seient i una part del que es mesura",
+          "body": "Pagues una quota fixa per seient cada mes, passi el que passi. A més, la nostra comissió surt només de l'estalvi mesurat amb el comptador del teu proveïdor, i la major part de cada estalvi es queda sempre amb tu. Un mes sense estalvi mesurat? Pagues els seients i zero comissió."
         }
       ],
       "nota": "Les animacions il·lustren la idea. Les xifres de debò — mesurades contra proveïdors reals — són just a sota."
@@ -792,9 +780,9 @@
       "cta": "Coneix el programa"
     },
     "gateway": {
-      "eyebrow": "Nou · terminals de codi",
+      "eyebrow": "Gateway · terminals de codi",
       "title": "Claude Code amb clau d'API? Mira la despesa real, token a token.",
-      "body": "Una sola ordre posa un mesurador local davant del teu terminal. Sense tocar codi ni configurar res — i els teus prompts mai no surten de la teva màquina: a aquest tauler només arriben recomptes i cost.",
+      "body": "Una sola ordre posa un mesurador local davant del teu terminal, sense tocar el teu codi: exportes la teva clau de servei i arrenques el teu agent amb bvsala. Els teus prompts mai no surten de la teva màquina: al teu tauler només hi arriben recomptes i cost.",
       "note": "El gateway mesura cada petició. Amb llicència PRO aplica a més una palanca per defecte: escurça el TTL d'escriptura de la memòria cau mentre la sessió continua calenta — canvia el preu, mai el contingut que llegeix el model. La resta de palanques van apagades fins que les encens. L'skill savings-mode està disponible per als teus topalls, amb l'efecte pendent de mesurar. Funciona també amb Codex CLI, Goose i Qwen Code — i bvsala doctor imprimeix la configuració exacta de la resta.",
       "cta": "Mira com funciona →"
     },
@@ -805,8 +793,8 @@
     },
     "pricing": {
       "eyebrow": "Un sol pla, amb preu per seient",
-      "title": "Una quota petita per seient. I comissió només sobre el que estalvies.",
-      "body": "Sense pla gratuït i sense prova: el que pots comprovar abans de pagar són els mesuraments públics d'aquesta pàgina. La quota va per seient, en {currency}, i la comissió surt de l'estalvi mesurat — mai de la teva butxaca.",
+      "title": "Quota per seient, sempre. Comissió només sobre l'estalvi mesurat.",
+      "body": "Sense pla gratuït i sense prova: abans de pagar pots comprovar els mesuraments públics i passar el verificador per les teves pròpies dades, aquí mateix. La quota per seient es cobra cada mes, en {currency}, estalviïs o no. La comissió va a part, i només sobre l'estalvi mesurat amb el comptador del teu proveïdor: l'estimat no hi entra mai.",
       "amount": "{amount}",
       "per": "/ seient / mes",
       "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
@@ -841,7 +829,7 @@
     },
     "footer": {
       "ctaTitle": "Mesura-ho amb el teu propi trànsit",
-      "ctaSub": "Instal·lat, cada crida retorna el seu SavingsReport: el mesurat i l'estimat, per separat; només el mesurat entra a la comissió. La llicència és el que et deixa executar BV‑SALA dins de la teva app.",
+      "ctaSub": "Instal·lat, cada crida retorna el seu SavingsReport, amb el mesurat i l'estimat per separat. La quota per seient és mensual i fixa; la comissió surt només del que es mesura. La llicència és el que et deixa executar BV‑SALA: l'SDK a la teva app, el gateway al teu terminal.",
       "ctaStart": "Comença",
       "tagline": "El sistema operatiu per al teu negoci. Això és <b>BV‑SALA</b>, l'optimitzador de cost de LLM neutral respecte al proveïdor de BiVelio — cada xifra publicada, mesurada contra el comptador del proveïdor; l'estimat es mostra a part i mai no es factura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -895,7 +883,7 @@
       "colExtra": "El nostre extra",
       "colTeQuedas": "Et queda",
       "extraCero": "res",
-      "notaGarantia": "Només cobrem sobre estalvi mesurat — i sempre et quedes amb el {garantia} o més.",
+      "notaGarantia": "Comissió només sobre l'estalvi mesurat — i sempre et quedes amb el {garantia} o més. Els seients es cobren a part, cada mes.",
       "notaTramos": "Per trams, i cada tram al seu tipus: {tramos}. Com més estalvies, menor és el nostre percentatge.",
       "notaPrimerMesLead": "El teu primer mes: només el seient.",
       "notaPrimerMes": "Ho mesurem tot, calibrem amb la teva càrrega real i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
@@ -923,7 +911,7 @@
       "caption": "No tots els enviaments porten la mateixa palla: en aquesta tirada, la retallada mesurada per escenari va anar des de {min} fins a {max}. Els que no estalvien també es publiquen."
     },
     "recibo": {
-      "title": "SavingsReport · tirada publicada",
+      "title": "SDK · SavingsReport · tirada publicada",
       "modelo": "model",
       "parejas": "parelles mesurades",
       "calidad": "qualitat",
@@ -954,6 +942,57 @@
           "mono": "app → provider api"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Dos productes",
+      "title": "On van els teus tokens: a la teva app o al teu agent de codi?",
+      "sub": "Tots dos es llicencien per seient i tots dos compten amb el comptador del teu proveïdor. Fan feines diferents, així que cadascun fa la seva pròpia promesa, i avui només un té una xifra d'estalvi publicada.",
+      "install": "Instal·lació",
+      "installMore": "Instal·lació completa",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — per a apps en JavaScript o TypeScript amb API key",
+        "who": "Per a apps de Node.js, en JavaScript o TypeScript, que criden una API de LLM amb la teva pròpia clau i paguen cada token.",
+        "what": "Embolcalla la crida dins del teu codi, envia al proveïdor només el que cal pagar i retorna un SavingsReport amb cada resposta.",
+        "figureLabel": "Sòl publicat, mesurat contra un proveïdor real",
+        "figureNote": "Un sòl, no una previsió: el que estalviïs depèn del teu trànsit, i només el que confirma el comptador del teu proveïdor entra a la comissió.",
+        "ctaMeasured": "Com ho hem mesurat",
+        "ctaVerify": "Prova una palanca amb les teves dades"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — per a agents de codi amb API key",
+        "who": "Per a qui treballa amb Claude Code, Codex CLI o un altre agent de codi amb API key.",
+        "what": "Una ordre posa un mesurador local davant del teu terminal, sense tocar codi. Compta cada petició amb el comptador del teu proveïdor —en els models del nostre catàleg de preus— i li dona el seu rebut al teu tauler.",
+        "figureLabel": "Sense xifra d'estalvi publicada",
+        "figureNote": "No hem publicat cap estalvi mesurat per a agents de codi, així que no n'anunciem cap. Amb PRO, en models d'Anthropic, escurça el TTL d'escriptura de la memòria cau mentre la sessió continua calenta —canvia el preu, mai el que llegeix el model— i només el que confirma el comptador del teu proveïdor entra a la comissió.",
+        "cta": "Instal·la el gateway"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · una palanca, amb les teves dades, abans de pagar",
+      "title": "Enganxa les teves dades. Mira què enviaria l'SDK.",
+      "sub": "Aquí corre el selector de format real de l'SDK, al teu navegador i amb les teves dades. Res no surt d'aquesta pàgina i no necessites compte.",
+      "tryExample": "Prova amb un exemple",
+      "sample_orders": "Comandes de botiga",
+      "sample_tickets": "Tiquets de suport",
+      "sample_users": "Llista d'usuaris",
+      "pasteHint": "…o enganxa aquí el teu propi JSON. Res no surt del teu navegador.",
+      "loading": "Carregant l'optimitzador i el tokenitzador exacte…",
+      "errBundle": "No s'ha pogut carregar l'optimitzador. Recarrega la pàgina per tornar-ho a provar.",
+      "errInvalidData": "Esperant un JSON vàlid… {message}",
+      "tooBig": "Són més de {max} caràcters. Enganxa una mostra més petita.",
+      "tagExact": "Recompte exacte",
+      "tagApprox": "Aproximat",
+      "yourData": "Les teves dades, en JSON compacte",
+      "optimized": "Com les enviaria l'SDK",
+      "fewer": "−{pct} de tokens d'entrada en aquestes dades",
+      "trims": "De {before} a {after} tokens, instruccions del format incloses.",
+      "alreadyOptimal": "Aquí cap format no millora el JSON compacte, així que l'SDK les enviaria tal qual. Aquesta palanca mai no fa més grans les teves dades.",
+      "exactNote": "Comptat amb {tokenizer}, el tokenitzador que fa servir {model}. Comparem amb les teves dades en JSON compacte: si avui les envies amb sagnats, la diferència real és més gran, i això no ho comptem.",
+      "approxNote": "El tokenitzador exacte no s'ha carregat, així que qualsevol recompte aquí seria aproximat, i no mostrem estalvis aproximats. Recarrega la pàgina per tornar-ho a provar.",
+      "scope": "Què és i què no és: una palanca —com s'escriuen les dades estructurades al prompt— sobre els tokens d'entrada d'aquestes dades. No és la teva factura: ni les crides evitades, ni la memòria cau del teu proveïdor, ni la sortida hi són, i moltes peticions no porten dades estructurades. La xifra que defensem per a l'SDK sencer és el sòl publicat a la secció del mesurament.",
+      "ctaInstall": "Instal·la l'SDK"
     }
   },
   "invitacion": {

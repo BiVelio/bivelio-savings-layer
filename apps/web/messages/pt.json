@@ -151,7 +151,7 @@
     "verdictHero": {
       "eyebrow": "A tua poupança · medida face à tua fatura",
       "totalSplit": "O total, incluindo a parte estimada, é {pct}. Só {share} dos pedidos tem contador do fornecedor com que o verificar: o seu, ou o do pedido idêntico que já foi executado.",
-      "referenceNote": "Disso, <b>{money}</b> vem de {count} pedidos repetidos servidos sem chamar o teu fornecedor, cada um valorizado com o contador do pedido idêntico que já foi executado — ao preço mais baixo que o teu fornecedor te podia cobrar por repeti-lo.",
+      "referenceNote": "Disso, <b>{money}</b> vem de {count, plural, one {# pedido repetido servido} other {# pedidos repetidos servidos}} sem chamar o teu fornecedor, cada um valorizado com o contador do pedido idêntico que já foi executado — ao preço mais baixo que o teu fornecedor te poderia ter cobrado para o repetir.",
       "unmeasuredCap": "Vemos {count} pedidos com preço, mas nenhum pode ainda ser verificado face ao contador do teu fornecedor. Assim que chegar o primeiro, a tua poupança medida aparecerá aqui.",
       "savedLine": "do teu gasto em LLM conservado este período · <b>{money}</b> poupados (linha de base − real, aos teus preços).",
       "emptyCap": "Ainda não estamos a medir o teu tráfego — 0 pedidos vistos. Instala o SDK e a tua poupança líquida aparece aqui — os teus preços, a tua carga de trabalho. Nunca um número emprestado ou inventado.",
@@ -204,12 +204,6 @@
       "colQa": "qa"
     },
     "projectorVerifier": {
-      "verifierTitle": "Verificador de poupança",
-      "estimateFull": "ESTIMATIVA — heurística, não medida pelo fornecedor",
-      "errBundle": "Não foi possível carregar o pacote do otimizador.",
-      "errInvalidData": "À espera de dados válidos… {message}",
-      "yourData": "Os teus dados",
-      "alreadyOptimal": "Já está ótimo aqui — o BV‑SALA nunca piora.",
       "projectorTitle": "Projetor de fatura",
       "estimate": "ESTIMATIVA",
       "reqsPerMonth": "Pedidos / mês",
@@ -219,13 +213,6 @@
       "inputCut": "Corte de entrada",
       "outputCut": "Corte de saída",
       "projectedSaving": "poupança projetada / mês · a preços de {model}",
-      "tryExample": "Experimente um exemplo",
-      "sample_users": "Lista de usuários",
-      "sample_orders": "Pedidos da loja",
-      "sample_tickets": "Tickets de suporte",
-      "pasteHint": "…ou cole aqui o seu próprio JSON. Nada sai do seu navegador.",
-      "savedPct": "−{pct}% de tokens",
-      "trimsFriendly": "De {before} para {after} tokens por envio. O BV‑SALA só escolhe o formato mais barato — sem mudar o seu código.",
       "profileLabel": "O que você está construindo?",
       "profile_chat": "Chatbot",
       "profile_extract": "Extração de dados",
@@ -315,7 +302,8 @@
       "chipOutdated": "atualiza",
       "chipOk": "atualizada",
       "chipMixed": "parte não declarada",
-      "hint": "Uma linha por máquina que reporta uso, identificada pelo seu id de lugar opaco (nunca uma pessoa). O que viaja é um número de versão — gateway/x.y.z ou sdk/x.y.z —, nunca conteúdo. Uma máquina com um gateway anterior ao canal de versão aparece como «não declarada»."
+      "hint": "Uma linha por máquina que reporta uso, identificada pelo seu id de lugar opaco (nunca uma pessoa). O que viaja é um número de versão — gateway/x.y.z ou sdk/x.y.z —, nunca conteúdo. Uma máquina com um gateway anterior ao canal de versão aparece como «não declarada».",
+      "referenceHint": "A poupança medida inclui aqui os pedidos repetidos medidos por referência: cada um é valorizado com o contador do pedido idêntico que já foi executado."
     },
     "installLicensePanel": {
       "eyebrow": "Começar",
@@ -503,7 +491,7 @@
       "metaTitle": "Extrato · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aqui nada é cobrado",
       "title": "O seu extrato, antes de a fatura existir",
-      "intro": "O documento exato que a futura fatura variável produzirá: só economia medida, com a tarifa por faixas — sem mínimo, só se cobra se poupares. Durante a calibração, a cobrança é sempre {cero}.",
+      "intro": "O documento exato que a futura fatura variável produzirá: só economia medida, com a tarifa por faixas e sem mínimo — sem economia medida não há comissão. A taxa por lugar é uma cobrança à parte, fixa e mensal. Durante a calibração, a comissão é sempre {cero}.",
       "periodo": "Período {periodo}",
       "badgeCalibracion": "PERÍODO DE CALIBRAÇÃO — COBRANÇA ZERO",
       "badgeSombra": "SOMBRA — SEM COBRANÇA REAL",
@@ -526,12 +514,12 @@
       "sombraElision": "Via sombra: a elisão teria poupado {usd} em {requests} pedidos simulados. Hipotético — nunca entra na base nem na comissão.",
       "sombraElisionNegativa": "Via sombra: a elisão teria custado {usd} a mais em {requests} pedidos simulados. Por isso está desligada: só se liga o que poupa de verdade.",
       "elisionProveedor": "Faixa do apagamento do fornecedor: {requests} pedidos em que os nossos ajustes fizeram o fornecedor apagar contexto. Uma contagem, não uma poupança — nunca entra na base nem na comissão.",
-      "referencia": "Medido por referência: {usd} em {requests} pedidos repetidos servidos sem chamar o teu fornecedor. Cada um é valorizado com o contador que o teu fornecedor devolveu para o pedido idêntico que já foi executado —está no relatório desse pedido e no uso do teu fornecedor desse dia— ao preço de entrada em cache, o mais baixo que o teu fornecedor cobra para repetir um prompt; a saída só conta se a amostragem era determinística. Entra na base.",
-      "referenciaExcluida": "Medido por referência: {usd} em {requests} pedidos repetidos. Mostra-se como contexto: por agora fica fora da base e da comissão.",
+      "referencia": "Medido por referência: {usd} em {requests, plural, one {# pedido repetido servido} other {# pedidos repetidos servidos}} sem chamar o teu fornecedor. Cada um é valorizado com o contador que o teu fornecedor devolveu para o pedido idêntico que já foi executado —está no relatório desse pedido e no uso do teu fornecedor desse dia— ao preço de entrada em cache, o mais baixo que o teu fornecedor cobra para repetir um prompt; a saída só conta se a amostragem tiver sido determinística. Entra na base.",
+      "referenciaExcluida": "Medido por referência: {usd} em {requests, plural, one {# pedido repetido} other {# pedidos repetidos}}. Mostra-se como contexto: por agora fica fora da base e da comissão.",
       "exportarReferencias": "Descarregar os pedidos repetidos deste período, uma linha por pedido (CSV)",
       "exportarReferenciasPorDia": "Demasiados pedidos repetidos para um único ficheiro: descarregar este período dia a dia (CSV):",
       "parametros": "Parâmetros do extrato — catálogo de preços {version} · taxa de câmbio {fx}.",
-      "parametrosReferencia": "Regra dos pedidos repetidos ({regla}): o pedido que foi executado tem de ser idêntico byte a byte, sem que a camada lhe tocasse e com {dias} dias no máximo; a entrada, ao preço de entrada em cache do teu fornecedor; a saída, a {cuota} do seu contador, nunca acima do limite de saída deste pedido e só com amostragem determinística.",
+      "parametrosReferencia": "Regra dos pedidos repetidos ({regla}): o pedido que foi executado tem de ser idêntico byte a byte, sem que a camada lhe tivesse tocado e com, no máximo, {dias} dias; a entrada, ao preço de entrada em cache do teu fornecedor; a saída, a {cuota} do seu contador, nunca acima do limite de saída deste pedido e só com amostragem determinística.",
       "mismaFacturaTitulo": "Este documento É a futura fatura.",
       "mismaFactura": "O extrato em sombra e o faturável são calculados pela mesma máquina: quando a comissão ativar, a primeira fatura só terá números que você já viu aqui.",
       "historialTitulo": "Extratos fechados",
@@ -646,13 +634,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica a tua poupança em LLM",
-    "metaDescription": "Camada de custo para LLM, licenciada. Instala-se à frente do teu fornecedor e corta a fatura; a poupança é medida contra o contador dele, com intervalo de 95%.",
+    "metaDescription": "Um SDK para que a tua app pague ao fornecedor de LLM só o que precisa, e um gateway que mede o teu agente de código. Tudo com o contador do teu fornecedor: uma taxa por lugar e comissão só sobre a poupança medida.",
     "hero": {
       "eyebrow": "Para equipas que pagam a API de LLM por tokens",
       "title": "A tua fatura de LLM, sob controlo.",
       "titleAccent": "Medida em cada chamada.",
-      "lede": "Um SDK que se instala no teu código, deixa passar só o que é preciso pagar e devolve um SavingsReport por chamada: o medido e o estimado em separado, contados com o contador do teu fornecedor. Publicamos só o que medimos.",
-      "ctaRun": "Ver o que medimos",
+      "lede": "Dois produtos, uma regra. O SDK instala-se dentro da tua app e deixa passar só o que é preciso pagar; o gateway põe-se à frente do teu agente de código e mede o seu gasto. Os dois contam com o contador do teu fornecedor e separam o medido do estimado. Publicamos só o que medimos.",
+      "ctaOffers": "SDK ou gateway?",
       "ctaPricing": "Ver preços",
       "note": "Instala-se em minutos. As suas mensagens nunca passam pelos nossos servidores.",
       "proofTitle": "Medido contra fornecedor real",
@@ -698,8 +686,8 @@
     },
     "explica": {
       "eyebrow": "Em palavras simples",
-      "title": "O que faz o Savings, exatamente?",
-      "sub": "Quatro ideias, quatro animações de oito segundos. Isto é o produto inteiro.",
+      "title": "O que faz o SDK, exatamente?",
+      "sub": "Quatro ideias, quatro animações de oito segundos.",
       "pasos": [
         {
           "title": "A IA cobra por palavras",
@@ -714,8 +702,8 @@
           "body": "Não pedimos fé. Cada poupança é medida com o contador oficial do fornecedor — o mesmo com que ele o fatura — e aparece no seu recibo. O que não se pode conferir com a fatura nunca é anunciado."
         },
         {
-          "title": "Só ganhamos se você poupar",
-          "body": "A nossa comissão sai da poupança medida, nunca do seu bolso: a maior parte do que poupa fica sempre consigo. Um mês sem poupança? Comissão zero."
+          "title": "Uma taxa por lugar e uma parte do que se mede",
+          "body": "Pagas uma taxa fixa por lugar todos os meses, aconteça o que acontecer. Além disso, a nossa comissão sai só da poupança medida com o contador do teu fornecedor, e a maior parte de cada poupança fica sempre contigo. Um mês sem poupança medida? Pagas os lugares e zero de comissão."
         }
       ],
       "nota": "As animações ilustram a ideia. Os números a sério — medidos contra fornecedores reais — estão logo abaixo."
@@ -792,9 +780,9 @@
       "cta": "Conhecer o programa"
     },
     "gateway": {
-      "eyebrow": "Novo · terminais de código",
+      "eyebrow": "Gateway · terminais de código",
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
-      "body": "Um único comando põe um medidor local à frente do teu terminal. Sem tocar em código, sem configurar nada — e os teus prompts nunca saem da tua máquina: a este painel só chegam contagens e custo.",
+      "body": "Um único comando põe um medidor local à frente do teu terminal, sem tocar no teu código: exportas a tua chave de serviço e arrancas o teu agente através do bvsala. Os teus prompts nunca saem da tua máquina — ao teu painel só chegam contagens e custo.",
       "note": "O gateway mede cada pedido. Com licença PRO aplica também uma alavanca por defeito: encurta o TTL de escrita da cache enquanto a sessão se mantém quente — muda o preço, nunca o conteúdo que o modelo lê. As restantes alavancas ficam desligadas até as ativares. O skill savings-mode está disponível para os teus limites, com o efeito ainda por medir. Funciona também com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata dos restantes.",
       "cta": "Vê como funciona →"
     },
@@ -805,8 +793,8 @@
     },
     "pricing": {
       "eyebrow": "Um só plano, com preço por lugar",
-      "title": "Uma taxa pequena por lugar. E comissão só sobre o que poupa.",
-      "body": "Sem plano gratuito e sem período de teste: o que pode verificar antes de pagar são as medições públicas desta página. A taxa é por lugar, em {currency}, e a comissão sai da poupança medida — nunca do seu bolso.",
+      "title": "Taxa por lugar, sempre. Comissão só sobre a poupança medida.",
+      "body": "Sem plano gratuito e sem período de teste: antes de pagar podes verificar as medições públicas e passar o verificador pelos teus próprios dados, aqui mesmo. A taxa por lugar é cobrada todos os meses, em {currency}, quer poupes quer não. A comissão vem à parte, e só sobre a poupança medida com o contador do teu fornecedor — o estimado nunca entra.",
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
@@ -841,7 +829,7 @@
     },
     "footer": {
       "ctaTitle": "Meça-o com o seu próprio tráfego",
-      "ctaSub": "Instalado, cada chamada devolve o seu SavingsReport: o medido e o estimado, em separado; só o medido entra na comissão. A licença é o que te deixa executar o BV‑SALA dentro da tua app.",
+      "ctaSub": "Instalado, cada chamada devolve o seu SavingsReport, com o medido e o estimado em separado. A taxa por lugar é mensal e fixa; a comissão sai só do que se mede. A licença é o que te deixa executar o BV‑SALA — o SDK na tua app, o gateway no teu terminal.",
       "ctaStart": "Começar",
       "tagline": "O sistema operativo para o teu negócio. Isto é o <b>BV‑SALA</b>, o otimizador de custo de LLM da BiVelio, neutro quanto ao fornecedor — cada valor publicado é medido contra o contador do fornecedor; o estimado mostra-se à parte e nunca se fatura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -895,7 +883,7 @@
       "colExtra": "Nosso extra",
       "colTeQuedas": "Fica com você",
       "extraCero": "nada",
-      "notaGarantia": "Só cobramos sobre poupança medida — e ficas sempre com {garantia} ou mais.",
+      "notaGarantia": "Comissão só sobre a poupança medida — e ficas sempre com {garantia} ou mais. Os lugares cobram-se à parte, todos os meses.",
       "notaTramos": "Por faixas, cada uma à sua taxa: {tramos}. Quanto mais você economiza, menor o nosso percentual.",
       "notaPrimerMesLead": "Seu primeiro mês: só o assento.",
       "notaPrimerMes": "Medimos tudo, calibramos com a sua carga real e você verá o extrato exato do que teria custado — sem cobrança.",
@@ -923,7 +911,7 @@
       "caption": "Nem todos os envios levam a mesma palha: nesta ronda, o corte medido por cenário foi de {min} a {max}. Os que não poupam também são publicados."
     },
     "recibo": {
-      "title": "SavingsReport · tiragem publicada",
+      "title": "SDK · SavingsReport · tiragem publicada",
       "modelo": "modelo",
       "parejas": "pares medidos",
       "calidad": "qualidade",
@@ -954,6 +942,57 @@
           "mono": "app → provider api"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Dois produtos",
+      "title": "Para onde vão os teus tokens: para a tua app ou para o teu agente de código?",
+      "sub": "Os dois são licenciados por lugar e os dois contam com o contador do teu fornecedor. Fazem trabalhos diferentes, por isso cada um faz a sua própria promessa — e hoje só um tem um número de poupança publicado.",
+      "install": "Instalação",
+      "installMore": "Instalação completa",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — para apps em JavaScript ou TypeScript com chave de API",
+        "who": "Para apps Node.js, em JavaScript ou TypeScript, que chamam uma API de LLM com a tua própria chave e pagam cada token.",
+        "what": "Envolve a chamada dentro do teu código, envia ao fornecedor só o que é preciso pagar e devolve um SavingsReport com cada resposta.",
+        "figureLabel": "Piso publicado, medido contra um fornecedor real",
+        "figureNote": "Um piso, não uma previsão: o que poupares depende do teu tráfego, e só o que o contador do teu fornecedor confirma entra na comissão.",
+        "ctaMeasured": "Como o medimos",
+        "ctaVerify": "Experimenta uma alavanca com os teus dados"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — para agentes de código com chave de API",
+        "who": "Para quem trabalha com Claude Code, Codex CLI ou outro agente de código com chave de API.",
+        "what": "Um comando põe um medidor local à frente do teu terminal, sem tocar em código. O gateway conta cada pedido com o contador do teu fornecedor — nos modelos do nosso catálogo de preços — e dá-lhe o seu recibo no teu painel.",
+        "figureLabel": "Sem número de poupança publicado",
+        "figureNote": "Não publicámos uma poupança medida para agentes de código, por isso não anunciamos nenhuma. Com PRO, em modelos da Anthropic, o gateway encurta o TTL de escrita da cache enquanto a sessão se mantém quente — muda o preço, nunca o que o modelo lê — e só o que o contador do teu fornecedor confirma entra na comissão.",
+        "cta": "Instalar o gateway"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · uma alavanca, com os teus dados, antes de pagar",
+      "title": "Cola os teus dados. Vê o que o SDK enviaria.",
+      "sub": "Aqui corre o seletor de formato real do SDK, no teu navegador e com os teus dados. Nada sai desta página e não precisas de conta.",
+      "tryExample": "Experimenta um exemplo",
+      "sample_orders": "Pedidos da loja",
+      "sample_tickets": "Tickets de suporte",
+      "sample_users": "Lista de utilizadores",
+      "pasteHint": "…ou cola aqui o teu próprio JSON. Nada sai do teu navegador.",
+      "loading": "A carregar o otimizador e o tokenizador exato…",
+      "errBundle": "Não foi possível carregar o otimizador. Recarrega a página para tentar de novo.",
+      "errInvalidData": "À espera de um JSON válido… {message}",
+      "tooBig": "São mais de {max} caracteres. Cola uma amostra mais pequena.",
+      "tagExact": "Contagem exata",
+      "tagApprox": "Aproximado",
+      "yourData": "Os teus dados, em JSON compacto",
+      "optimized": "Como o SDK os enviaria",
+      "fewer": "−{pct} de tokens de entrada nestes dados",
+      "trims": "De {before} para {after} tokens, instruções do formato incluídas.",
+      "alreadyOptimal": "Aqui nenhum formato bate o JSON compacto, por isso o SDK enviá-los-ia tal como estão. Esta alavanca nunca torna os teus dados maiores.",
+      "exactNote": "Contado com {tokenizer}, o tokenizador que o {model} usa. Comparamos com os teus dados em JSON compacto: se hoje os envias com indentação, a diferença real é maior — e isso não contamos.",
+      "approxNote": "O tokenizador exato não carregou, por isso qualquer contagem aqui seria aproximada — e não mostramos poupanças aproximadas. Recarrega a página para tentar de novo.",
+      "scope": "O que é e o que não é: uma alavanca — como os dados estruturados se escrevem no prompt — sobre os tokens de entrada destes dados. Não é a tua fatura: nem as chamadas evitadas, nem a cache do teu fornecedor, nem a saída estão aqui, e muitos pedidos não levam dados estruturados. O número que defendemos para o SDK inteiro é o piso publicado na secção da medição.",
+      "ctaInstall": "Instalar o SDK"
     }
   },
   "invitacion": {

@@ -235,9 +235,12 @@ export default async function ExtractoPage() {
             que cada fila se pueda contrastar con el uso del proveedor. */}
         {e.referencia && (
           <p className="note">
+            {/* `requests` va como NÚMERO: el plural ICU elige la forma y `#` lo
+                formatea con el idioma (el turco, el indonesio y el vietnamita,
+                sin plural, lo formatean con `{requests, number}`). */}
             {t(e.referencia.comisionada ? "extracto.referencia" : "extracto.referenciaExcluida", {
               usd: usd(e.referencia.ahorroUsd),
-              requests: e.referencia.requests.toLocaleString(locale),
+              requests: e.referencia.requests,
             })}{" "}
             {/* Un mes con más filas de las que caben en una descarga se baja
                 por días (la ruta respondería 413 al mes entero). */}

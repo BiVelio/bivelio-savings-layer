@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { COMISIONAR_REFERENCIA } from "@/lib/billing/tarifa";
 import { estadoVersion, type AsientoVisto } from "@/lib/version/aviso-version";
 
 import { money } from "../format";
@@ -17,6 +18,11 @@ import { money } from "../format";
  * El chip habla SOLO de la versión (al día / actualiza / parte sin declarar) y
  * nada del dinero: el dinero tiene su propia columna. Un SDK no lleva palanca de
  * tarifa, así que no se le pone chip.
+ *
+ * La columna de dinero es lo MEDIDO de 7 días con la regla del titular: lo de
+ * la propia petición más lo medido por referencia (0031) cuando
+ * COMISIONAR_REFERENCIA lo comisiona. Si alguna máquina tiene referencia en la
+ * semana, una nota lo dice: que nadie lea esa cifra como solo contador propio.
  */
 const MAX_FILAS = 12;
 
@@ -96,6 +102,9 @@ export async function MaquinasCard({ asientos }: { asientos: AsientoVisto[] }) {
         </table>
       </div>
       <p className="ck-note" style={{ marginTop: 8, marginBottom: 0 }}>{t("hint")}</p>
+      {COMISIONAR_REFERENCIA && asientos.some((a) => a.ahorroReferencia7dUsd > 0) ? (
+        <p className="ck-note" style={{ marginTop: 6, marginBottom: 0 }}>{t("referenceHint")}</p>
+      ) : null}
     </div>
   );
 }

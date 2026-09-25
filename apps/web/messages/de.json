@@ -151,7 +151,7 @@
     "verdictHero": {
       "eyebrow": "Ihre Ersparnis · an Ihrer Rechnung gemessen",
       "totalSplit": "Der Gesamtwert, inklusive des geschätzten Teils, liegt bei {pct}. Nur {share} der Anfragen haben einen Zähler des Anbieters, mit dem sich das prüfen lässt: ihren eigenen oder den der identischen Anfrage, die bereits gelaufen ist.",
-      "referenceNote": "Davon stammen <b>{money}</b> aus {count} wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient wurden, jeweils bewertet mit dem Zähler der identischen Anfrage, die bereits gelaufen ist — zum niedrigsten Preis, den dein Anbieter für die Wiederholung hätte berechnen können.",
+      "referenceNote": "Davon stammen <b>{money}</b> aus {count, plural, one {# wiederholten Anfrage, die ohne Aufruf deines Anbieters bedient wurde} other {# wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient wurden}}, jeweils bewertet mit dem Zähler der identischen Anfrage, die bereits gelaufen ist — zum niedrigsten Preis, den dein Anbieter für die Wiederholung hätte berechnen können.",
       "unmeasuredCap": "Wir sehen {count} bepreiste Anfragen, aber noch keine lässt sich am Zähler Ihres Anbieters prüfen. Sobald die erste eintrifft, erscheint hier Ihre gemessene Ersparnis.",
       "savedLine": "deiner LLM-Ausgaben in diesem Zeitraum behalten · <b>{money}</b> gespart (Baseline − Ist-Wert, zu deinen Preisen).",
       "emptyCap": "Dein Traffic wird noch nicht gemessen — 0 Anfragen gesehen. Installiere das SDK und deine Netto-Einsparungen erscheinen hier — deine Preise, deine Workload. Niemals eine geliehene oder erfundene Zahl.",
@@ -204,12 +204,6 @@
       "colQa": "qa"
     },
     "projectorVerifier": {
-      "verifierTitle": "Einsparungs-Verifizierer",
-      "estimateFull": "SCHÄTZUNG — heuristisch, nicht vom Provider gemessen",
-      "errBundle": "Das Optimierer-Bundle konnte nicht geladen werden.",
-      "errInvalidData": "Warte auf gültige Daten… {message}",
-      "yourData": "Deine Daten",
-      "alreadyOptimal": "Hier bereits optimal — BV‑SALA macht es niemals schlechter.",
       "projectorTitle": "Rechnungsprognose",
       "estimate": "SCHÄTZUNG",
       "reqsPerMonth": "Anfragen / Monat",
@@ -219,13 +213,6 @@
       "inputCut": "Eingabe gekürzt",
       "outputCut": "Ausgabe gekürzt",
       "projectedSaving": "prognostizierte Einsparung / Monat · zu {model}-Preisen",
-      "tryExample": "Probier ein Beispiel",
-      "sample_users": "Nutzerliste",
-      "sample_orders": "Shop-Bestellungen",
-      "sample_tickets": "Support-Tickets",
-      "pasteHint": "…oder füge hier dein eigenes JSON ein. Nichts verlässt deinen Browser.",
-      "savedPct": "−{pct}% Tokens",
-      "trimsFriendly": "Von {before} auf {after} Tokens pro Anfrage. BV‑SALA wählt einfach das günstigste Format — ohne Änderungen an deinem Code.",
       "profileLabel": "Was baust du?",
       "profile_chat": "Chatbot",
       "profile_extract": "Datenextraktion",
@@ -315,7 +302,8 @@
       "chipOutdated": "aktualisieren",
       "chipOk": "aktuell",
       "chipMixed": "teilweise nicht gemeldet",
-      "hint": "Eine Zeile pro Maschine, die Nutzung meldet, identifiziert über ihre opake Sitz-ID (nie eine Person). Übertragen wird eine Versionsnummer — gateway/x.y.z oder sdk/x.y.z —, nie Inhalt. Eine Maschine mit einem Gateway älter als der Versionskanal erscheint als „nicht gemeldet“."
+      "hint": "Eine Zeile pro Maschine, die Nutzung meldet, identifiziert über ihre opake Sitz-ID (nie eine Person). Übertragen wird eine Versionsnummer — gateway/x.y.z oder sdk/x.y.z —, nie Inhalt. Eine Maschine mit einem Gateway älter als der Versionskanal erscheint als „nicht gemeldet“.",
+      "referenceHint": "Die gemessene Ersparnis enthält hier wiederholte Anfragen, die per Referenz gemessen wurden: Jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist."
     },
     "installLicensePanel": {
       "eyebrow": "Erste Schritte",
@@ -503,7 +491,7 @@
       "metaTitle": "Abrechnung · BiVelio Savings Layer",
       "eyebrow": "Schattenmodus · hier wird nichts berechnet",
       "title": "Deine Abrechnung, bevor die Rechnung existiert",
-      "intro": "Das exakte Dokument, das die künftige variable Rechnung erzeugen wird: nur gemessene Ersparnis, mit Stufentarif — ohne Minimum, berechnet wird nur, wenn du sparst. Während der Kalibrierung ist der Betrag immer {cero}.",
+      "intro": "Das exakte Dokument, das die künftige variable Rechnung erzeugen wird: nur gemessene Ersparnis, mit Stufentarif und ohne Minimum — ohne gemessene Ersparnis keine Provision. Die Gebühr pro Seat ist ein separater, fester Monatsbetrag. Während der Kalibrierung ist die Provision immer {cero}.",
       "periodo": "Zeitraum {periodo}",
       "badgeCalibracion": "KALIBRIERUNGSZEITRAUM — NULL BELASTUNG",
       "badgeSombra": "SCHATTEN — KEINE ECHTE BELASTUNG",
@@ -517,7 +505,7 @@
       "ahorroMedido": "Gemessene Ersparnis",
       "ratio": "Quote {pct}",
       "tramosTitulo": "Die Provision, Stufe für Stufe",
-      "sinAhorro": "Keine gemessene Ersparnis in diesem Zeitraum — ohne Ersparnis keine Gebühr. Niemals.",
+      "sinAhorro": "Keine gemessene Ersparnis in diesem Zeitraum — ohne Ersparnis keine Provision. Niemals.",
       "colTramo": "Stufe",
       "colTipo": "Satz",
       "colBase": "Stufenbasis",
@@ -526,12 +514,12 @@
       "sombraElision": "Schattenspur: Elision hätte {usd} über {requests} simulierte Anfragen gespart. Hypothetisch — fließt nie in die Basis oder die Provision ein.",
       "sombraElisionNegativa": "Schattenspur: Elision hätte {usd} zusätzlich über {requests} simulierte Anfragen gekostet. Deshalb bleibt sie aus: aktiviert wird nur, was wirklich spart.",
       "elisionProveedor": "Spur der Anbieter-Löschung: {requests} Anfragen, bei denen unsere Regler den Anbieter Kontext löschen ließen. Eine Zählung, keine Ersparnis — sie fließt nie in die Basis oder die Provision ein.",
-      "referencia": "Nach Referenz gemessen: {usd} über {requests} wiederholte Anfragen, die ohne Aufruf deines Anbieters bedient wurden. Jede wird mit dem Zähler bewertet, den dein Anbieter für die identische, bereits gelaufene Anfrage zurückgegeben hat — er steht im Bericht dieser Anfrage und in der Nutzung deines Anbieters an diesem Tag — zum Preis für gecachten Input, dem niedrigsten, den dein Anbieter für die Wiederholung eines Prompts berechnet; die Ausgabe zählt nur bei deterministischem Sampling. In der Basis enthalten.",
-      "referenciaExcluida": "Nach Referenz gemessen: {usd} über {requests} wiederholte Anfragen. Zur Einordnung gezeigt — vorerst bleibt es außerhalb der Basis und der Provision.",
+      "referencia": "Per Referenz gemessen: {usd} über {requests, plural, one {# wiederholte Anfrage, die ohne Aufruf deines Anbieters bedient wurde} other {# wiederholte Anfragen, die ohne Aufruf deines Anbieters bedient wurden}}. Jede wird mit dem Zähler bewertet, den dein Anbieter für die identische, bereits gelaufene Anfrage zurückgegeben hat — er steht im Bericht dieser Anfrage und in der Nutzung deines Anbieters an diesem Tag — zum Preis für gecachte Eingabe, dem niedrigsten, den dein Anbieter für die Wiederholung eines Prompts berechnet; die Ausgabe zählt nur bei deterministischem Sampling. In der Basis enthalten.",
+      "referenciaExcluida": "Per Referenz gemessen: {usd} über {requests, plural, one {# wiederholte Anfrage} other {# wiederholte Anfragen}}. Zur Einordnung gezeigt — vorerst bleibt es außerhalb der Basis und der Provision.",
       "exportarReferencias": "Die wiederholten Anfragen dieses Zeitraums herunterladen, eine Zeile pro Anfrage (CSV)",
       "exportarReferenciasPorDia": "Zu viele wiederholte Anfragen für eine einzige Datei — diesen Zeitraum Tag für Tag herunterladen (CSV):",
       "parametros": "Parameter des Auszugs — Preiskatalog {version} · Wechselkurs {fx}.",
-      "parametrosReferencia": "Regel für wiederholte Anfragen ({regla}): Die gelaufene Anfrage muss Byte für Byte identisch sein, von der Schicht unberührt und höchstens {dias} Tage alt; der Input zum Preis deines Anbieters für gecachten Input; der Output zu {cuota} seines Zählers, nie über dem Output-Limit dieser Anfrage und nur bei deterministischem Sampling.",
+      "parametrosReferencia": "Regel für wiederholte Anfragen ({regla}): Die gelaufene Anfrage muss Byte für Byte identisch sein, von der Schicht unberührt und höchstens {dias} Tage alt; die Eingabe zum Preis deines Anbieters für gecachte Eingabe; die Ausgabe zu {cuota} ihres Zählers, nie über dem Ausgabelimit dieser Anfrage und nur bei deterministischem Sampling.",
       "mismaFacturaTitulo": "Dieses Dokument IST die künftige Rechnung.",
       "mismaFactura": "Schatten- und abrechenbare Version werden von derselben Maschinerie berechnet: wenn die Provision aktiv wird, enthält deine erste Rechnung nur Zahlen, die du hier schon gesehen hast.",
       "historialTitulo": "Abgeschlossene Abrechnungen",
@@ -646,13 +634,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifiziere deine LLM-Einsparungen",
-    "metaDescription": "Lizenzierte Kostenschicht für LLMs. Sie sitzt vor deinem Provider und senkt die Rechnung; die Ersparnis ist an dessen Zähler gemessen, mit 95-%-Intervall.",
+    "metaDescription": "Ein SDK, mit dem deine App dem LLM-Anbieter nur zahlt, was sie braucht, und ein Gateway, das deinen Coding-Agenten misst. Gezählt mit dem eigenen Zähler deines Anbieters: eine Gebühr pro Seat plus Provision nur auf gemessene Ersparnis.",
     "hero": {
       "eyebrow": "Für Teams, die LLM-APIs pro Token bezahlen",
       "title": "Ihre LLM-Rechnung, unter Kontrolle.",
       "titleAccent": "Gemessen bei jedem Aufruf.",
-      "lede": "Ein SDK, das in Ihren Code eingebaut wird, nur durchlässt, was bezahlt werden muss, und pro Aufruf einen SavingsReport liefert: gemessen und geschätzt getrennt, gezählt mit dem Zähler Ihres Anbieters. Wir veröffentlichen nur, was wir gemessen haben.",
-      "ctaRun": "Zu den Messungen",
+      "lede": "Zwei Produkte, eine Regel. Das SDK wird in deine App eingebaut und lässt nur durch, was bezahlt werden muss; das Gateway sitzt vor deinem Coding-Agenten und misst seine Ausgaben. Beide zählen mit dem eigenen Zähler deines Anbieters und halten Gemessenes und Geschätztes getrennt. Wir veröffentlichen nur, was wir gemessen haben.",
+      "ctaOffers": "SDK oder Gateway?",
       "ctaPricing": "Preise ansehen",
       "note": "In Minuten installiert. Deine Nachrichten laufen nie über unsere Server.",
       "proofTitle": "Gegen echten Provider gemessen",
@@ -698,8 +686,8 @@
     },
     "explica": {
       "eyebrow": "In normalen Worten",
-      "title": "Was macht Savings eigentlich?",
-      "sub": "Vier Ideen, vier Animationen von acht Sekunden. Das ist das ganze Produkt.",
+      "title": "Was macht das SDK eigentlich?",
+      "sub": "Vier Ideen, vier Animationen von acht Sekunden.",
       "pasos": [
         {
           "title": "KI wird pro Wort abgerechnet",
@@ -714,8 +702,8 @@
           "body": "Wir bitten nicht um Vertrauen. Jede Ersparnis wird mit dem offiziellen Zähler des Anbieters gemessen — demselben, mit dem er dir Rechnungen stellt — und landet auf deinem Beleg. Was sich nicht mit der Rechnung abgleichen lässt, wird nie verkündet."
         },
         {
-          "title": "Wir verdienen nur, wenn du sparst",
-          "body": "Unsere Provision kommt aus der gemessenen Ersparnis, nie aus deiner Tasche: Der Großteil des Gesparten bleibt immer bei dir. Ein Monat ohne Ersparnis? Null Provision."
+          "title": "Eine Gebühr pro Seat und ein Anteil am Gemessenen",
+          "body": "Du zahlst jeden Monat eine feste Gebühr pro Seat, egal was passiert. Dazu kommt unsere Provision, und die stammt nur aus Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — der Großteil jeder Ersparnis bleibt immer bei dir. Ein Monat ohne gemessene Ersparnis? Du zahlst die Seats und null Provision."
         }
       ],
       "nota": "Die Animationen veranschaulichen die Idee. Die echten Zahlen — gemessen gegen echte Anbieter — stehen direkt darunter."
@@ -792,9 +780,9 @@
       "cta": "Zum Programm"
     },
     "gateway": {
-      "eyebrow": "Neu · Coding-Terminals",
+      "eyebrow": "Gateway · Coding-Terminals",
       "title": "Claude Code mit API-Schlüssel? Sieh die echten Ausgaben, Token für Token.",
-      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal. Kein Code, keine Konfiguration — und deine Prompts verlassen nie deine Maschine: in dieses Panel gelangen nur Zählwerte und Kosten.",
+      "body": "Ein einziger Befehl setzt einen lokalen Zähler vor dein Terminal, ohne deinen Code anzufassen: Du exportierst deinen Service-Schlüssel und startest deinen Agenten über bvsala. Deine Prompts verlassen nie deine Maschine — in dein Dashboard gelangen nur Zählwerte und Kosten.",
       "note": "Das Gateway misst jede Anfrage. Mit einer PRO-Lizenz wendet es außerdem standardmäßig einen Hebel an: Es verkürzt die Cache-Schreib-TTL, solange Ihre Sitzung warm bleibt — das ändert den Preis, nie den Inhalt, den das Modell liest. Die übrigen Hebel bleiben aus, bis Sie sie einschalten. Der Skill savings-mode steht für Ihre Limits bereit, seine Wirkung ist noch zu messen. Er funktioniert auch mit Codex CLI, Goose und Qwen Code — und bvsala doctor gibt die genaue Konfiguration für den Rest aus.",
       "cta": "So funktioniert es →"
     },
@@ -805,8 +793,8 @@
     },
     "pricing": {
       "eyebrow": "Ein Plan, Preis pro Seat",
-      "title": "Eine kleine Gebühr pro Sitz. Und Provision nur auf das, was du sparst.",
-      "body": "Kein Gratisplan, kein Test: Was du vor dem Zahlen prüfen kannst, sind die öffentlichen Messungen auf dieser Seite. Die Gebühr gilt pro Sitz, in {currency}, und die Provision kommt aus der gemessenen Ersparnis — nie aus deiner Tasche.",
+      "title": "Eine Gebühr pro Seat, immer. Provision nur auf gemessene Ersparnis.",
+      "body": "Kein Gratisplan, kein Test: Vor dem Zahlen kannst du die öffentlichen Messungen prüfen und den Verifizierer mit deinen eigenen Daten laufen lassen, direkt auf dieser Seite. Die Gebühr pro Seat wird jeden Monat berechnet, in {currency}, ob du sparst oder nicht. Die Provision kommt obendrauf, und nur auf Ersparnis, die mit dem Zähler deines Anbieters gemessen wurde — Geschätztes geht nie ein.",
       "amount": "{amount}",
       "per": "/ Seat / Monat",
       "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
@@ -841,7 +829,7 @@
     },
     "footer": {
       "ctaTitle": "Messen Sie es an Ihrem eigenen Traffic",
-      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport: gemessen und geschätzt getrennt; nur Gemessenes geht in die Provision ein. Die Lizenz ist das, was BV‑SALA in Ihrer App laufen lässt.",
+      "ctaSub": "Einmal installiert, liefert jeder Aufruf seinen SavingsReport, gemessen und geschätzt getrennt. Die Gebühr pro Seat ist monatlich und fest; die Provision kommt nur aus dem Gemessenen. Die Lizenz ist das, was BV‑SALA laufen lässt — das SDK in deiner App, das Gateway in deinem Terminal.",
       "ctaStart": "Loslegen",
       "tagline": "Das Betriebssystem für Ihr Unternehmen. Das ist <b>BV‑SALA</b>, BiVelios anbieterneutraler LLM-Kostenoptimierer — jede veröffentlichte Zahl gegen den Zähler des Anbieters gemessen; Schätzungen werden getrennt gezeigt und nie berechnet.",
       "badge": "BV‑SALA · Savings Layer",
@@ -895,7 +883,7 @@
       "colExtra": "Unser Extra",
       "colTeQuedas": "Dir bleibt",
       "extraCero": "nichts",
-      "notaGarantia": "Wir berechnen nur auf gemessene Ersparnis — und dir bleiben immer {garantia} oder mehr.",
+      "notaGarantia": "Provision nur auf gemessene Ersparnis — und dir bleiben immer {garantia} oder mehr davon. Seats werden separat berechnet, jeden Monat.",
       "notaTramos": "Gestuft, jede Stufe zu ihrem Satz: {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
       "notaPrimerMesLead": "Dein erster Monat: nur der Sitz.",
       "notaPrimerMes": "Wir messen alles, kalibrieren auf deiner echten Last, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
@@ -923,7 +911,7 @@
       "caption": "Nicht jede Sendung trägt dieselbe Füllung: In diesem Lauf reichte der gemessene Zuschnitt je Szenario von {min} bis {max}. Auch die, die nichts sparen, werden veröffentlicht."
     },
     "recibo": {
-      "title": "SavingsReport · veröffentlichter Lauf",
+      "title": "SDK · SavingsReport · veröffentlichter Lauf",
       "modelo": "Modell",
       "parejas": "gemessene Paare",
       "calidad": "Qualität",
@@ -954,6 +942,57 @@
           "mono": "app → provider api"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Zwei Produkte",
+      "title": "Wohin gehen deine Tokens: in deine App oder in deinen Coding-Agenten?",
+      "sub": "Beide werden pro Seat lizenziert, und beide zählen mit dem eigenen Zähler deines Anbieters. Sie erledigen unterschiedliche Aufgaben, also gibt jedes sein eigenes Versprechen — und heute hat nur eines eine veröffentlichte Ersparniszahl.",
+      "install": "Installation",
+      "installMore": "Vollständige Einrichtung",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — für JavaScript- und TypeScript-Apps mit API-Schlüssel",
+        "who": "Für Node.js-Apps in JavaScript oder TypeScript, die eine LLM-API mit deinem eigenen Schlüssel aufrufen und jedes Token bezahlen.",
+        "what": "Es umschließt den Aufruf in deinem Code, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen SavingsReport.",
+        "figureLabel": "Veröffentlichte Untergrenze, gemessen gegen einen echten Anbieter",
+        "figureNote": "Eine Untergrenze, keine Prognose: Was du sparst, hängt von deinem Traffic ab, und nur was der Zähler deines Anbieters bestätigt, geht in die Provision ein.",
+        "ctaMeasured": "Wie wir es gemessen haben",
+        "ctaVerify": "Probier einen Hebel mit deinen Daten"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — für Coding-Agenten mit API-Schlüssel",
+        "who": "Für alle, die Claude Code, Codex CLI oder einen anderen Coding-Agenten mit API-Schlüssel nutzen.",
+        "what": "Ein Befehl setzt einen lokalen Zähler vor dein Terminal, ohne Code anzufassen. Das Gateway zählt jede Anfrage mit dem Zähler deines Anbieters — für die Modelle in unserem Preiskatalog — und gibt ihr ihren Beleg in deinem Dashboard.",
+        "figureLabel": "Keine Ersparniszahl veröffentlicht",
+        "figureNote": "Für Coding-Agenten haben wir keine gemessene Ersparnis veröffentlicht, also werben wir mit keiner. Mit PRO verkürzt das Gateway bei Anthropic-Modellen die Cache-Schreib-TTL, solange deine Sitzung warm bleibt — das ändert den Preis, nie das, was das Modell liest —, und nur was der Zähler deines Anbieters bestätigt, geht in die Provision ein.",
+        "cta": "Gateway einrichten"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · ein Hebel, mit deinen Daten, vor dem Bezahlen",
+      "title": "Füge deine Daten ein. Sieh, was das SDK senden würde.",
+      "sub": "Hier läuft der echte Formatwähler des SDK in deinem Browser, mit deinen Daten. Nichts verlässt diese Seite, und du brauchst kein Konto.",
+      "tryExample": "Probier ein Beispiel",
+      "sample_orders": "Shop-Bestellungen",
+      "sample_tickets": "Support-Tickets",
+      "sample_users": "Nutzerliste",
+      "pasteHint": "…oder füge hier dein eigenes JSON ein. Nichts verlässt deinen Browser.",
+      "loading": "Optimierer und exakter Tokenizer werden geladen…",
+      "errBundle": "Der Optimierer konnte nicht geladen werden. Lade die Seite neu, um es erneut zu versuchen.",
+      "errInvalidData": "Warte auf gültiges JSON… {message}",
+      "tooBig": "Das sind mehr als {max} Zeichen. Füge eine kleinere Probe ein.",
+      "tagExact": "Exakte Zählung",
+      "tagApprox": "Näherungsweise",
+      "yourData": "Deine Daten, als kompaktes JSON",
+      "optimized": "So würde das SDK sie senden",
+      "fewer": "−{pct} Eingabe-Tokens bei diesen Daten",
+      "trims": "Von {before} auf {after} Tokens, Anweisungen des Formats inklusive.",
+      "alreadyOptimal": "Hier schlägt kein Format das kompakte JSON, also würde das SDK sie unverändert senden. Dieser Hebel macht deine Daten nie größer.",
+      "exactNote": "Gezählt mit {tokenizer}, dem Tokenizer, den {model} verwendet. Wir vergleichen mit deinen Daten als kompaktem JSON: Wenn du sie heute eingerückt sendest, ist der echte Unterschied größer — und den zählen wir nicht.",
+      "approxNote": "Der exakte Tokenizer wurde nicht geladen, also wäre jede Zählung hier nur näherungsweise — und näherungsweise Ersparnisse zeigen wir nicht. Lade die Seite neu, um es erneut zu versuchen.",
+      "scope": "Was das ist und was nicht: ein Hebel — wie strukturierte Daten in den Prompt geschrieben werden — auf die Eingabe-Tokens dieser Daten. Es ist nicht deine Rechnung: Vermiedene Aufrufe, der Cache deines Anbieters und die Ausgabe sind nicht enthalten, und viele Anfragen enthalten gar keine strukturierten Daten. Die Zahl, für die wir beim ganzen SDK einstehen, ist die veröffentlichte Untergrenze im Abschnitt zur Messung.",
+      "ctaInstall": "SDK installieren"
     }
   },
   "invitacion": {
