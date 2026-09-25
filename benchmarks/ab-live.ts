@@ -235,6 +235,35 @@ const B1_ACTIVO = process.env.BVSALA_AB_B1 !== "0";
 const SDK_TAL_COMO_SE_INSTALA = process.env.BVSALA_AB_SIN_COMPRESOR === "1";
 
 /**
+ * EL SELLO DEL SDK MEDIDO, el mismo en el artefacto de un modelo y en el
+ * informe multi-modelo. Tres cosas que un lector necesita para saber si la
+ * cifra es la de SU instalación:
+ *
+ *   · `asShipped`: sin piezas que el banco inyecta y npm no trae (el
+ *     compresor). Es lo que exige `pnpm ab:publish`.
+ *   · `version`: la de `src/` en este commit, que es lo que el banco importa
+ *     (`../src/index.js`), NO el tarball publicado. Si `main` va por delante de
+ *     npm, la tirada mide código que aún no se puede instalar; por eso se sella
+ *     la versión, para compararla con `npm view @bivelio/savings-layer version`.
+ *   · `tokenizer`: el banco registra el tokenizador exacto (gpt-tokenizer, una
+ *     dependencia opcional del paquete). Una instalación que no lo añada usa el
+ *     estimador heurístico, que interviene en la elección TOON/JSON y en las
+ *     verjas de compresión. Se declara en vez de callarlo.
+ */
+function selloDelSdk(): { version: string; asShipped: boolean; compressor: string; tokenizer: string } {
+  return {
+    version: BV_SALA_VERSION,
+    asShipped: SDK_TAL_COMO_SE_INSTALA,
+    compressor: SDK_TAL_COMO_SE_INSTALA
+      ? "none: the npm package ships noopCompressor only, so a request that asks for compression is sent uncompressed"
+      : "bench-only literal-repetition compressor (benchmarks/compresor.ts), NOT shipped on npm: research run, not a headline",
+    tokenizer: tokenizadorExacto
+      ? "exact (gpt-tokenizer registered; an optional dependency of the package — without it the SDK uses its heuristic estimator)"
+      : "heuristic estimator (gpt-tokenizer not installed): token counts are ESTIMATED",
+  };
+}
+
+/**
  * Sin compresor la capa no deja traza de la etapa de compresión (solo avisa por
  * consola), y el motivo genérico «la capa no dejó traza» se leería como un fallo
  * del banco. No lo es: es lo que entrega el paquete. Se dice con esas palabras.
@@ -1503,13 +1532,7 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     // QUÉ SDK SE MIDIÓ. `asShipped: false` = con el compresor del banco, que el
     // paquete de npm no trae: sirve para investigar la palanca, nunca para el
     // titular (la verja de publicación lo bloquea). Público: en inglés.
-    sdk: {
-      version: BV_SALA_VERSION,
-      asShipped: SDK_TAL_COMO_SE_INSTALA,
-      compressor: SDK_TAL_COMO_SE_INSTALA
-        ? "none: the npm package ships noopCompressor only, so a request that asks for compression is sent uncompressed"
-        : "bench-only literal-repetition compressor (benchmarks/compresor.ts), NOT shipped on npm: research run, not a headline",
-    },
+    sdk: selloDelSdk(),
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
     pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
     methodology:
@@ -1806,6 +1829,7 @@ async function main(): Promise<void> {
     rutas.push(
       writeReport("ab-live-por-modelo", {
         mode,
+        sdk: selloDelSdk(),
         generatedNote:
           mode === "LIVE"
             ? "real provider tokens & cost, quality-gated, one run per model"

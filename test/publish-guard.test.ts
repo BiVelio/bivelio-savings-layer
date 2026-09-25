@@ -127,9 +127,24 @@ describe("verja de publicación del artefacto A/B", () => {
     expect(d.blockers.join(" ")).toMatch(/BVSALA_AB_SIN_COMPRESOR=1/);
   });
 
-  it("un artefacto anterior al sello del SDK se publica, pero avisa de que no se puede comprobar", () => {
-    const d = decidePublish(null, live({ sdk: undefined }));
-    expect(d.ok).toBe(true);
-    expect(d.warnings.join(" ")).toMatch(/no declara qué SDK midió/);
+  it("⛔ un artefacto anterior al sello del SDK tampoco: hasta el sello, el banco medía CON el compresor", () => {
+    // La forma exacta del artefacto del 2026-09-12: LIVE, sin `sdk` y con la
+    // compresión entre las palancas ejercitadas.
+    const d = decidePublish(null, {
+      ...live({ sdk: undefined }),
+      levers: { exercised: [{ palanca: "compression", escenario: "Forwarded support thread (compression)" }] },
+    } as ArtifactShape);
+    expect(d.ok).toBe(false);
+    expect(d.blockers.join(" ")).toMatch(/falta sdk\.asShipped: true/);
+    expect(d.blockers.join(" ")).toMatch(/BVSALA_AB_SIN_COMPRESOR=1/);
+    // Y sin palancas declaradas, igual: lo que no está sellado no se sabe.
+    expect(decidePublish(null, live({ sdk: undefined })).ok).toBe(false);
+    expect(decidePublish(null, live({ sdk: { version: "0.4.23" } })).ok).toBe(false);
+    expect(decidePublish(null, live({ sdk: { version: "0.4.23", asShipped: "true" } })).ok).toBe(false);
+  });
+
+  it("un MOCK sin sello sigue el camino de siempre: --allow-mock decide, el sello es cosa de las tiradas LIVE", () => {
+    const d = decidePublish(null, live({ mode: "MOCK", sdk: undefined }), { allowMock: true });
+    expect(d.blockers.join(" ")).not.toMatch(/sdk\.asShipped/);
   });
 });
