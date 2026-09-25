@@ -272,6 +272,11 @@ export interface SavingsToggles {
    * tier the request is sent unchanged and the report says so.
    */
   deferrable?: boolean;
+  /**
+   * Set to `false` to keep this request out of verification sampling: it is
+   * counted as excluded and never sent twice. No effect when verification is off.
+   */
+  verification?: boolean;
 }
 
 /**
@@ -799,6 +804,12 @@ export interface SavingsReport {
 
   /** How a streamed request was delivered. Present only on results of `generateStream`. */
   streaming?: StreamingReport;
+
+  /**
+   * Whether this request was drawn for verification sampling, and how it counts.
+   * Present only when `verification` is enabled on the layer.
+   */
+  verification?: import("./verification.js").VerificationReport;
 
   quality: {
     taskPassed?: boolean;

@@ -14,6 +14,7 @@ import type { CompressionEconomics } from "../economics/politica-compresion.js";
 import type { Retriever, Reranker } from "../retrieval/retrieval.js";
 import type { Provider } from "../providers/types.js";
 import type { LicenseGate } from "../contracts/types.js";
+import type { VerificationSettings } from "../contracts/verification.js";
 import type { LicenseKeyset } from "../license/verify.js";
 
 /**
@@ -213,6 +214,9 @@ export interface SavingsLayerConfig {
     /** Optional org hint; the server derives the authoritative org from the key. */
     orgId?: string;
   };
+
+  /** Opt-in A/B verification on your own traffic. Off by default. See VerificationSettings. */
+  verification?: VerificationSettings;
 
   /**
    * Development-only escape hatch to run ungated, honored ONLY when building from
