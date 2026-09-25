@@ -29,8 +29,8 @@ export interface ArtifactShape {
   commit?: unknown;
   trials?: unknown;
   /** Qué SDK midió la tirada. `asShipped: true` = el paquete tal como se
-   *  instala desde npm, sin el compresor del banco. Opcional porque un artefacto
-   *  anterior al sello no lo trae. */
+   *  instala desde npm, sin el compresor del banco. Opcional en el TIPO porque
+   *  un artefacto anterior al sello no lo trae; la verja no publica un LIVE sin él. */
   sdk?: { version?: unknown; asShipped?: unknown };
   reconciliation?: { reconciled?: unknown; residual?: unknown };
   aggregate?: {
@@ -110,10 +110,24 @@ export function decidePublish(
     // de npm no trae: un escenario caro ahorraba un 15 % que ningún cliente
     // puede ahorrar. Sin anulación, como el paso 1: no hay motivo legítimo para
     // publicar en la web una palanca que no se entrega.
+    //
+    // Y SIN SELLO TAMPOCO. Hasta que `ab-live.ts` empezó a sellar `sdk`, medía
+    // CON el compresor por defecto: un artefacto LIVE que no declara qué SDK
+    // midió es, casi seguro, uno de esos (el del 12-09 tiene exactamente esa
+    // forma). Dejarlo pasar con un aviso era abrir la misma puerta por el lado
+    // de los artefactos viejos: un `benchmarks/out/ab-live.json` de una tirada
+    // anterior, o de una rama sin el sello, se publicaba con `pnpm ab:publish`.
+    // Solo `asShipped: true`, dicho por el propio banco, pasa.
     if (incoming.sdk?.asShipped === false) {
       blockers.push(
         "la tirada se midió con el compresor del banco, que el paquete de npm NO trae (sdk.asShipped = false): " +
           "el titular prometería una palanca que el cliente no tiene. Vuelve a medir con BVSALA_AB_SIN_COMPRESOR=1",
+      );
+    } else if (incoming.sdk?.asShipped !== true) {
+      blockers.push(
+        "el artefacto no declara que midió el SDK tal como se instala (falta sdk.asShipped: true): es anterior al " +
+          "sello, y hasta entonces el banco medía CON el compresor del banco, que npm no trae. Vuelve a medir con " +
+          "BVSALA_AB_SIN_COMPRESOR=1",
       );
     }
   }
@@ -141,12 +155,6 @@ export function decidePublish(
   if (esLive && esNumero(incoming.aggregate?.qualityPassRate) && (incoming.aggregate.qualityPassRate as number) < 1) {
     warnings.push(
       `calidad ${((incoming.aggregate.qualityPassRate as number) * 100).toFixed(1)}%: alguna respuesta no pasó la verja`,
-    );
-  }
-  if (esLive && incoming.sdk?.asShipped === undefined) {
-    warnings.push(
-      "el artefacto no declara qué SDK midió (sdk.asShipped): es anterior al sello, así que no se puede " +
-        "comprobar que no llevara el compresor del banco",
     );
   }
   if (esLive && !incoming.model) {

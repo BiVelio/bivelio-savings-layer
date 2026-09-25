@@ -55,6 +55,8 @@ function artefactoLive(trials: number | null) {
     ...(trials === null ? {} : { trials }),
     generatedAt: "2026-08-29T10:00:00.000Z",
     commit: "abc1234",
+    // El SDK tal como se instala: sin este sello la verja no publica un LIVE.
+    sdk: { version: "0.4.23", asShipped: true },
     reconciliation: { reconciled: true, residual: 0 },
     aggregate: { savings: { lower: 0.2, point: 0.3, upper: 0.4 }, proven: true, qualityPassRate: 1 },
     // El guardarraíl exige escenarios: un artefacto sin ellos no se publica,
