@@ -60,7 +60,8 @@ export interface VerificationSettings {
   onCheck?: (check: VerificationCheck) => void;
   /**
    * Keeps a serverless runtime alive until a check is settled and reported, for
-   * example your platform's `waitUntil`. Receives one promise per check; it never rejects.
+   * example your platform's `waitUntil`. Receives one promise per copy actually
+   * sent (a check recorded as `dropped` is never sent and passes none); it never rejects.
    */
   waitUntil?: (promise: Promise<void>) => void;
 }
@@ -93,7 +94,12 @@ export interface VerificationCheck {
   cacheResult: CacheOutcome;
   /** The served request, as its report measured it. Zero on an avoided call. */
   optimized: VerificationSide;
-  /** The unoptimized copy. Present only when `outcome` is `paired`. */
+  /**
+   * The unoptimized copy. Present only when `outcome` is `paired`. The dashboard
+   * compares a pair only when the copy finished the way a served request must to
+   * be checked: `finishReason` `stop`, `tool_calls` or absent, and a contract that
+   * was not `missed`. Other pairs are counted and exported, but left out of every figure.
+   */
   naive?: VerificationSide & {
     finishReason?: string;
     /** Whether the copy met your output contract: `none` without a contract or on a tool-call turn. */
@@ -105,7 +111,9 @@ export interface VerificationCheck {
 
 /**
  * Whether this request was drawn for verification sampling, and how it counts.
- * Present only when `verification` is enabled on the layer.
+ * Present only when `verification` is enabled on the layer and its pairs have
+ * somewhere to go (your dashboard or `onCheck`). Absent after `close()`, and on
+ * the rare internal error of the sampler, which never affects the request itself.
  */
 export interface VerificationReport {
   /** Drawn for a check. A copy is sent only when the request is also eligible. */

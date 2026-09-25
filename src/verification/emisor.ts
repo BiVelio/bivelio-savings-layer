@@ -57,6 +57,8 @@ export const MAX_REINTENTOS = 10;
 export const MAX_PETICIONES_POR_CONTEO = 10_000_000;
 /** Sobres por flush, como mucho: `stop()` y el reposo vacían algo más que uno. */
 const SOBRES_POR_FLUSH = 5;
+/** El tope de futuro del servidor (wire.ts, `FUTURO_MAXIMO_MS`): un `at` más allá tumbaría el lote entero. */
+const FUTURO_MAXIMO_MS = 48 * 3600 * 1000;
 
 const ID = /^[A-Za-z0-9._:/-]{1,128}$/;
 const contable = (n: unknown): n is number => typeof n === "number" && Number.isSafeInteger(n) && n >= 0;
@@ -66,11 +68,15 @@ const dinero = (n: unknown): n is number => typeof n === "number" && Number.isFi
 
 // Del check al cable, con las MISMAS reglas que el validador del servidor
 // (apps/web/lib/verificacion/wire.ts): una muestra que el servidor rechazaría
-// tumbaría el lote entero (400, sin reintento), así que se descarta AQUÍ, sola.
-// `onCheck` la recibe igual; lo que no viaja es solo esta copia al panel.
-export function muestraEnElCable(c: VerificationCheck): MuestraEnElCable | null {
+// tumbaría el lote entero (400, sin reintento, y con él los conteos), así que se
+// descarta AQUÍ, sola. `onCheck` la recibe igual; lo que no viaja es solo esta
+// copia al panel. `ahora` es el reloj del emisor: un `now` inyectado o un reloj
+// adelantado más de 48 h no puede tumbar el sobre.
+export function muestraEnElCable(c: VerificationCheck, opciones: { ahora?: number } = {}): MuestraEnElCable | null {
   if (!ID.test(c.requestId) || !ID.test(c.requestedModel) || !ID.test(c.servedModel)) return null;
   if (typeof c.at !== "number" || !Number.isFinite(c.at) || c.at < 1e12) return null;
+  const ahora = typeof opciones?.ahora === "number" ? opciones.ahora : Date.now();
+  if (c.at > ahora + FUTURO_MAXIMO_MS) return null;
   const o = c.optimized;
   if (!dinero(o.cost)) return null;
   if (!contable(o.inputTokens) || !contable(o.cachedInputTokens) || !contable(o.outputTokens)) return null;
@@ -135,17 +141,23 @@ export class EmisorDeVerificacion {
   private inflight: Promise<void> | null = null;
   private timer: ReturnType<typeof setInterval> | undefined;
   private fallosSeguidos = 0;
+  /** Cuándo falló el último envío reintentable (5xx o red). */
+  private ultimoFallo = Number.NEGATIVE_INFINITY;
 
   constructor(o: OpcionesDelEmisorDeVerificacion) {
     this.o = o;
     this.flushIntervalMs = o.flushIntervalMs ?? 15_000;
   }
 
+  private ahora(): number {
+    return (this.o.now ?? Date.now)();
+  }
+
   /** Un check decidido. O(1), nunca lanza. */
   encolar(c: VerificationCheck): void {
     let m: MuestraEnElCable | null;
     try {
-      m = muestraEnElCable(c);
+      m = muestraEnElCable(c, { ahora: this.ahora() });
     } catch {
       m = null;
     }
@@ -154,7 +166,19 @@ export class EmisorDeVerificacion {
     if (this.pendientes.length > MAX_PENDIENTES) {
       this.pendientes.splice(0, this.pendientes.length - MAX_PENDIENTES);
     }
-    if (this.pendientes.length >= MUESTRAS_POR_SOBRE) void this.flush();
+    if (this.pendientes.length >= MUESTRAS_POR_SOBRE) void this.flushSiToca();
+  }
+
+  /**
+   * El flush que NO marca el intervalo (el umbral de 200 y el reposo tras la
+   * última copia). Con un reintento pendiente de un fallo reciente, espera al
+   * intervalo: si no, durante un 5xx sostenido cada comprobación dispararía un
+   * POST (invocaciones y filas de `verification_batches_seen` que pagamos
+   * nosotros), al ritmo del tráfico y no al del reloj. Nunca lanza.
+   */
+  flushSiToca(): Promise<void> {
+    if (this.reintentos.length > 0 && this.ahora() - this.ultimoFallo < this.flushIntervalMs) return Promise.resolve();
+    return this.flush();
   }
 
   /** Una petición contada en su estrato o su exclusión. */
@@ -238,6 +262,7 @@ export class EmisorDeVerificacion {
       }
       if (res.status >= 500) {
         this.fallosSeguidos++;
+        this.ultimoFallo = this.ahora();
         this.reencolar(sobre);
         this.avisarDeFallo(`the server responded ${res.status}`);
         return false;
@@ -263,6 +288,7 @@ export class EmisorDeVerificacion {
       return false;
     } catch (err) {
       this.fallosSeguidos++;
+      this.ultimoFallo = this.ahora();
       this.reencolar(sobre);
       this.avisarDeFallo(err instanceof Error ? err.message : "network error");
       return false;
@@ -270,10 +296,11 @@ export class EmisorDeVerificacion {
   }
 
   // El MISMO sobre (mismo batchId) vuelve al frente: el servidor lo deduplica por
-  // `verification_batches_seen`. Con más de MAX_REINTENTOS se descarta el más antiguo.
+  // `verification_batches_seen`. Con más de MAX_REINTENTOS se descarta el más
+  // antiguo, que es el del FONDO (el recién fallado acaba de entrar por delante).
   private reencolar(sobre: SobreDeVerificacion): void {
     this.reintentos.unshift(sobre);
-    while (this.reintentos.length > MAX_REINTENTOS) this.reintentos.shift();
+    while (this.reintentos.length > MAX_REINTENTOS) this.reintentos.pop();
   }
 
   // W5 · el 3.º fallo seguido y luego cada 12, como el emisor de uso.

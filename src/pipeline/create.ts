@@ -309,7 +309,7 @@ export function createSavingsLayer(
       sumideroVerif = {
         encolar: (c) => em?.encolar(c),
         ...(em ? { contar: (d: string, k: string) => em.contar(d, k) } : {}),
-        enReposo: () => em?.flush(),
+        enReposo: () => em?.flushSiToca(),
       };
       // Una vez por capa (la clave lleva la tasa: dos capas con tasas distintas
       // avisan cada una de lo suyo).

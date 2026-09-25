@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { EmisorDeVerificacion, muestraEnElCable } from "../src/verification/emisor.js";
+import { EmisorDeVerificacion, muestraEnElCable, type SobreDeVerificacion } from "../src/verification/emisor.js";
 import { UsageEmitter } from "../src/metering/emitter.js";
 import { BV_SALA_VERSION } from "../src/version.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
@@ -125,6 +125,22 @@ describe("el sobre", () => {
     expect(muestraEnElCable(check({ optimized: { cost: 0.1, inputTokens: 1.5, cachedInputTokens: 0, outputTokens: 1 } }))).toBeNull();
     expect(muestraEnElCable(check())).not.toBeNull();
   });
+
+  it("un `at` más de 48 h por delante del reloj del emisor no viaja (el servidor tumbaría el lote, conteos incluidos)", async () => {
+    const h = 3600 * 1000;
+    expect(muestraEnElCable(check({ at: AT + 49 * h }), { ahora: AT })).toBeNull();
+    expect(muestraEnElCable(check({ at: AT + 47 * h }), { ahora: AT })).not.toBeNull();
+    // Por el emisor, con su `now`: la muestra adelantada se cae sola y el sobre sale con los conteos.
+    const { envios, f } = fetchConEstados([]);
+    const e = new EmisorDeVerificacion({ url: URL_VERIF, serviceAccountKey: "bvk_prueba", fetchImpl: f, now: () => AT });
+    e.encolar(check({ at: AT + 72 * h }));
+    e.encolar(check());
+    e.contar("2026-09-21", "unchanged");
+    await e.flush();
+    expect(envios).toHaveLength(1);
+    expect(envios[0]!.cuerpo.samples).toHaveLength(1);
+    expect(envios[0]!.cuerpo.counts).toHaveLength(1);
+  });
 });
 
 describe("fallos", () => {
@@ -218,6 +234,43 @@ describe("cuándo se envía", () => {
     e.stop();
     await new Promise((r) => setTimeout(r, 0));
     expect(envios).toHaveLength(1);
+  });
+
+  it("con un reintento de un fallo RECIENTE, el umbral y el reposo esperan al intervalo (sin POST por cada comprobación)", async () => {
+    let t = AT;
+    const { envios, f } = fetchConEstados([503, 202, 202]);
+    const e = new EmisorDeVerificacion({ url: URL_VERIF, serviceAccountKey: "bvk_prueba", fetchImpl: f, now: () => t, flushIntervalMs: 15_000 });
+    e.encolar(check());
+    await e.flush(); // 503 → reintento pendiente
+    expect(envios).toHaveLength(1);
+    expect(e.estado.reintentos).toBe(1);
+    for (let i = 0; i < 250; i++) e.encolar(check()); // cruza el umbral de 200
+    await e.flushSiToca(); // el reposo tras la última copia
+    await new Promise((r) => setTimeout(r, 0));
+    expect(envios).toHaveLength(1);
+    // Pasado el intervalo desde el fallo, vuelve a enviar: primero el reintento, con el MISMO batchId.
+    t += 15_000;
+    await e.flushSiToca();
+    expect(envios.length).toBeGreaterThanOrEqual(2);
+    expect(envios[1]!.cuerpo.batchId).toBe(envios[0]!.cuerpo.batchId);
+    expect(e.estado.reintentos).toBe(0);
+  });
+
+  it("sin reintentos pendientes, el reposo vacía en el acto (serverless no pierde el par)", async () => {
+    const { envios, f } = fetchConEstados([]);
+    const e = new EmisorDeVerificacion({ url: URL_VERIF, serviceAccountKey: "bvk_prueba", fetchImpl: f, flushIntervalMs: 60_000 });
+    e.encolar(check());
+    await e.flushSiToca();
+    expect(envios).toHaveLength(1);
+  });
+
+  it("más de 10 reintentos: se descarta el MÁS ANTIGUO (el del fondo), no el que acaba de fallar", () => {
+    // Hoy no llega a pasar (siguienteSobre no crea sobres nuevos mientras quede
+    // un reintento), pero el comentario prometía esto y el código hacía lo contrario.
+    const e = new EmisorDeVerificacion({ url: URL_VERIF, serviceAccountKey: "bvk_prueba", fetchImpl: fetchConEstados([]).f });
+    const interno = e as unknown as { reencolar(s: SobreDeVerificacion): void; reintentos: SobreDeVerificacion[] };
+    for (let i = 0; i < 11; i++) interno.reencolar({ batchId: `lote-${i}`, samples: [], counts: [] });
+    expect(interno.reintentos.map((s) => s.batchId)).toEqual(Array.from({ length: 10 }, (_, k) => `lote-${10 - k}`));
   });
 
   it("el buffer está acotado a 2000 (se tiran las más antiguas)", () => {
