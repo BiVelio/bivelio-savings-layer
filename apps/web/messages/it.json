@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Il tuo risparmio · misurato sulla tua fattura",
       "totalSplit": "Il totale, compresa la parte stimata, è {pct}. Solo {share} delle richieste ha un contatore del fornitore con cui verificarlo: il proprio, o quello della richiesta identica già eseguita.",
-      "referenceNote": "Di questi, <b>{money}</b> provengono da {count} richieste ripetute servite senza chiamare il tuo fornitore, ciascuna valutata con il contatore della richiesta identica già eseguita — alla tariffa più bassa che il tuo fornitore poteva addebitarti per ripeterla.",
+      "referenceNote": "Di questo importo, <b>{money}</b> proviene da {count, plural, one {# richiesta ripetuta servita} other {# richieste ripetute servite}} senza chiamare il tuo fornitore, ciascuna valutata con il contatore della richiesta identica già eseguita — alla tariffa più bassa che il tuo fornitore avrebbe potuto addebitarti per ripeterla.",
       "unmeasuredCap": "Vediamo {count} richieste con prezzo, ma nessuna è ancora verificabile sul contatore del tuo fornitore. Appena arriverà la prima, qui comparirà il tuo risparmio misurato.",
       "savedLine": "della tua spesa in LLM trattenuta in questo periodo · <b>{money}</b> risparmiati (base di riferimento − effettivo, ai tuoi prezzi).",
       "emptyCap": "Non stiamo ancora misurando il tuo traffico — 0 richieste rilevate. Installa l'SDK e il tuo risparmio netto apparirà qui: i tuoi prezzi, il tuo carico di lavoro. Mai una cifra presa in prestito o inventata.",
@@ -281,12 +281,6 @@
       "benchOnly": "compressore del banco di prova, non in npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Verificatore di risparmio",
-      "estimateFull": "STIMA — euristica, non misurata dal provider",
-      "errBundle": "Impossibile caricare il bundle dell'ottimizzatore.",
-      "errInvalidData": "In attesa di dati validi… {message}",
-      "yourData": "I tuoi dati",
-      "alreadyOptimal": "Già ottimale qui — BV‑SALA non peggiora mai le cose.",
       "projectorTitle": "Proiettore di fattura",
       "estimate": "STIMA",
       "reqsPerMonth": "Richieste / mese",
@@ -296,13 +290,6 @@
       "inputCut": "Taglio input",
       "outputCut": "Taglio output",
       "projectedSaving": "risparmio previsto / mese · ai prezzi di {model}",
-      "tryExample": "Prova un esempio",
-      "sample_users": "Elenco utenti",
-      "sample_orders": "Ordini del negozio",
-      "sample_tickets": "Ticket di supporto",
-      "pasteHint": "…o incolla qui il tuo JSON. Niente esce dal tuo browser.",
-      "savedPct": "−{pct}% di token",
-      "trimsFriendly": "Da {before} a {after} token per invio. BV‑SALA sceglie solo il formato più economico — senza toccare il tuo codice.",
       "profileLabel": "Cosa stai costruendo?",
       "profile_chat": "Chatbot",
       "profile_extract": "Estrazione dati",
@@ -392,7 +379,8 @@
       "chipOutdated": "aggiorna",
       "chipOk": "aggiornata",
       "chipMixed": "in parte non dichiarata",
-      "hint": "Una riga per macchina che riporta utilizzo, identificata dal suo id di postazione opaco (mai una persona). Viaggia solo un numero di versione — gateway/x.y.z o sdk/x.y.z —, mai contenuto. Una macchina con un gateway precedente al canale di versione compare come «non dichiarata»."
+      "hint": "Una riga per macchina che riporta utilizzo, identificata dal suo id di postazione opaco (mai una persona). Viaggia solo un numero di versione — gateway/x.y.z o sdk/x.y.z —, mai contenuto. Una macchina con un gateway precedente al canale di versione compare come «non dichiarata».",
+      "referenceHint": "Il risparmio misurato include qui le richieste ripetute misurate per riferimento: ciascuna è valutata con il contatore della richiesta identica già eseguita."
     },
     "installLicensePanel": {
       "eyebrow": "Inizia",
@@ -583,7 +571,7 @@
       "metaTitle": "Estratto · BiVelio Savings Layer",
       "eyebrow": "Modalità ombra · qui non si addebita nulla",
       "title": "Il tuo estratto, prima che la fattura esista",
-      "intro": "Il documento esatto che produrrà la futura fattura variabile: solo risparmio misurato, con la tariffa a scaglioni — senza minimo, si paga solo se risparmi. Durante la calibrazione, l'addebito è sempre {cero}.",
+      "intro": "Il documento esatto che produrrà la futura fattura variabile: solo risparmio misurato, con la tariffa a scaglioni e senza minimo — senza risparmio misurato niente commissione. Il canone per postazione è un addebito a parte, fisso e mensile. Durante la calibrazione, la commissione è sempre {cero}.",
       "periodo": "Periodo {periodo}",
       "badgeCalibracion": "PERIODO DI CALIBRAZIONE — ADDEBITO ZERO",
       "badgeSombra": "OMBRA — NESSUN ADDEBITO REALE",
@@ -606,12 +594,12 @@
       "sombraElision": "Corsia ombra: l'elisione avrebbe risparmiato {usd} su {requests} richieste simulate. Ipotetico — non entra mai nella base né nella commissione.",
       "sombraElisionNegativa": "Corsia ombra: l'elisione avrebbe fatto spendere {usd} in più su {requests} richieste simulate. Per questo resta spenta: si accende solo ciò che fa risparmiare davvero.",
       "elisionProveedor": "Corsia della cancellazione del provider: {requests} richieste in cui i nostri parametri hanno fatto cancellare contesto al provider. Un conteggio, non un risparmio — non entra mai nella base né nella commissione.",
-      "referencia": "Misurato per riferimento: {usd} su {requests} richieste ripetute servite senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico e la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento). Incluso nella base.",
-      "referenciaExcluida": "Misurato per riferimento: {usd} su {requests} richieste ripetute. Mostrato come contesto — per ora resta fuori dalla base e dalla commissione.",
+      "referencia": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta servita} other {# richieste ripetute servite}} senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico e la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento). Incluso nella base.",
+      "referenciaExcluida": "Misurato per riferimento: {usd} su {requests, plural, one {# richiesta ripetuta} other {# richieste ripetute}}. Mostrato a titolo informativo — per ora resta fuori dalla base e dalla commissione.",
       "exportarReferencias": "Scarica le richieste ripetute di questo periodo, una riga per richiesta (CSV)",
       "exportarReferenciasPorDia": "Troppe richieste ripetute per un solo file: scarica questo periodo giorno per giorno (CSV):",
       "parametros": "Parametri dell'estratto — listino prezzi {version} · tasso di cambio {fx}.",
-      "parametrosReferencia": "Regola delle richieste ripetute ({regla}): la richiesta eseguita deve essere identica byte per byte, non toccata dal livello (uno schema di output conta solo se ha viaggiato esattamente come l'hai inviato, in modalità strict, nel parametro nativo di formato di risposta del tuo fornitore, senza nulla di aggiunto al prompt) e vecchia al massimo {dias} giorni; l'input, alla tariffa dell'input in cache del tuo fornitore; l'output, al {cuota} del suo contatore, mai oltre il limite di output di questa richiesta e solo con campionamento deterministico, su un modello del nostro catalogo prezzi che non ragiona e rispetta quel campionamento, quando la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento).",
+      "parametrosReferencia": "Regola delle richieste ripetute ({regla}): la richiesta eseguita deve essere identica byte per byte, non modificata dal layer (uno schema di output conta solo se ha viaggiato esattamente come l'hai inviato, in modalità strict, nel parametro nativo di formato di risposta del tuo fornitore, senza nulla di aggiunto al prompt) ed eseguita al massimo {dias} giorni prima; l'input, alla tariffa dell'input in cache del tuo fornitore; l'output, al {cuota} del suo contatore, mai oltre il limite di output di questa richiesta e solo con campionamento deterministico, su un modello del nostro catalogo prezzi che non ragiona e rispetta quel campionamento, quando la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento).",
       "mismaFacturaTitulo": "Questo documento È la futura fattura.",
       "mismaFactura": "L'estratto in ombra e quello fatturabile sono calcolati dalla stessa macchina: quando la commissione si attiverà, la prima fattura conterrà solo numeri che hai già visto qui.",
       "historialTitulo": "Estratti chiusi",
@@ -726,13 +714,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica i tuoi risparmi sugli LLM",
-    "metaDescription": "Layer di costo LLM con licenza. Si installa davanti al tuo provider e taglia la fattura; il risparmio è misurato con il suo contatore, intervallo al 95%.",
+    "metaDescription": "Un SDK perché la tua app paghi al fornitore di LLM solo ciò che le serve, e un gateway che misura il tuo agente di codice. Tutto con il contatore del tuo fornitore: un canone per postazione, più una commissione solo sul risparmio misurato.",
     "hero": {
       "eyebrow": "Per i team che pagano le API LLM a token",
       "title": "La tua fattura LLM, sotto controllo.",
       "titleAccent": "Misurata a ogni chiamata.",
-      "lede": "Un SDK che si installa nel tuo codice, lascia passare solo ciò che va pagato e restituisce un SavingsReport per chiamata: misurato e stimato separati, contati con il contatore del tuo fornitore. Pubblichiamo solo ciò che abbiamo misurato.",
-      "ctaRun": "Vedi i dati misurati",
+      "lede": "Due prodotti, una regola. L'SDK si installa nella tua app e lascia passare solo ciò che va pagato; il gateway si mette davanti al tuo agente di codice e ne misura la spesa. Entrambi contano con il contatore del tuo fornitore e tengono separati misurato e stimato. Pubblichiamo solo ciò che abbiamo misurato.",
+      "ctaOffers": "SDK o gateway?",
       "ctaPricing": "Vedi i prezzi",
       "note": "Si installa in pochi minuti. I tuoi messaggi non passano mai dai nostri server.",
       "proofTitle": "Misurato contro un provider reale",
@@ -779,8 +767,8 @@
     },
     "explica": {
       "eyebrow": "In parole semplici",
-      "title": "Cosa fa Savings, esattamente?",
-      "sub": "Quattro idee, quattro animazioni da otto secondi. Questo è tutto il prodotto.",
+      "title": "Cosa fa l'SDK, esattamente?",
+      "sub": "Quattro idee, quattro animazioni da otto secondi.",
       "pasos": [
         {
           "title": "L'IA si paga a parole",
@@ -795,8 +783,8 @@
           "body": "Non ti chiediamo fede. Ogni risparmio si misura con il contatore ufficiale del fornitore — lo stesso con cui ti fattura — e compare sulla tua ricevuta. Ciò che non si può confrontare con la fattura non viene mai annunciato."
         },
         {
-          "title": "Guadagniamo solo se tu risparmi",
-          "body": "La nostra commissione esce dal risparmio misurato, mai dalla tua tasca: la maggior parte di ciò che risparmi resta sempre a te. Un mese senza risparmio? Commissione zero."
+          "title": "Un canone per postazione e una parte di ciò che si misura",
+          "body": "Paghi ogni mese un canone fisso per postazione, che tu risparmi o no. In più, la nostra commissione esce solo dal risparmio misurato con il contatore del tuo fornitore, e la maggior parte di ogni risparmio resta sempre a te. Un mese senza risparmio misurato? Paghi le postazioni e zero commissione."
         }
       ],
       "nota": "Le animazioni illustrano l'idea. Le cifre vere — misurate contro fornitori reali — sono subito sotto."
@@ -874,9 +862,9 @@
       "cta": "Scopri il programma"
     },
     "gateway": {
-      "eyebrow": "Novità · terminali di codice",
+      "eyebrow": "Gateway · terminali di codice",
       "title": "Claude Code con chiave API? Guarda la spesa reale, token per token.",
-      "body": "Un solo comando mette un contatore locale davanti al tuo terminale. Niente codice da toccare, niente da configurare — e i tuoi prompt non lasciano mai la tua macchina: a questo pannello arrivano solo conteggi e costo.",
+      "body": "Un solo comando mette un contatore locale davanti al tuo terminale, senza toccare il tuo codice: esporti la tua chiave di servizio e avvii il tuo agente tramite bvsala. I tuoi prompt non lasciano mai la tua macchina — alla tua dashboard arrivano solo conteggi e costo.",
       "note": "Il gateway misura ogni richiesta. Con una licenza PRO applica anche una leva per impostazione predefinita: accorcia il TTL di scrittura della cache finché la sessione resta calda — cambia il prezzo, mai il contenuto che il modello legge. Le altre leve restano spente finché non le attivi. Lo skill savings-mode è disponibile per i tuoi limiti, con l'effetto ancora da misurare. Funziona anche con Codex CLI, Goose e Qwen Code — e bvsala doctor stampa la configurazione esatta degli altri.",
       "cta": "Guarda come funziona →"
     },
@@ -887,8 +875,8 @@
     },
     "pricing": {
       "eyebrow": "Un unico piano, con prezzo per postazione",
-      "title": "Un piccolo canone per postazione. E commissione solo su ciò che risparmi.",
-      "body": "Nessun piano gratuito e nessuna prova: ciò che puoi verificare prima di pagare sono le misurazioni pubbliche di questa pagina. Il canone è per postazione, in {currency}, e la commissione esce dal risparmio misurato — mai dalla tua tasca.",
+      "title": "Un canone per postazione, sempre. Commissione solo sul risparmio misurato.",
+      "body": "Nessun piano gratuito e nessuna prova: prima di pagare puoi verificare le misurazioni pubbliche e passare i tuoi dati nel verificatore, proprio su questa pagina. Il canone per postazione si addebita ogni mese, in {currency}, che tu risparmi o no. La commissione si aggiunge, e solo sul risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita. Lo stimato non entra mai.",
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
@@ -923,7 +911,7 @@
     },
     "footer": {
       "ctaTitle": "Misuralo sul tuo traffico",
-      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport: misurato e stimato separati; solo il misurato entra nella commissione. La licenza è ciò che ti permette di eseguire BV‑SALA nella tua app.",
+      "ctaSub": "Una volta installato, ogni chiamata restituisce il suo SavingsReport, con misurato e stimato separati. Il canone per postazione è mensile e fisso; la commissione esce solo da ciò che si misura. La licenza è ciò che ti permette di eseguire BV‑SALA — l'SDK nella tua app, il gateway nel tuo terminale.",
       "ctaStart": "Inizia",
       "tagline": "Il sistema operativo per la tua azienda. Questo è <b>BV‑SALA</b>, l'ottimizzatore di costo LLM di BiVelio, neutrale rispetto al fornitore — ogni cifra pubblicata è misurata contro il contatore del fornitore; le stime si mostrano a parte e non si fatturano mai.",
       "badge": "BV‑SALA · Savings Layer",
@@ -977,7 +965,7 @@
       "colExtra": "Il nostro extra",
       "colTeQuedas": "Ti resta",
       "extraCero": "niente",
-      "notaGarantia": "Addebitiamo solo sul risparmio misurato — e te ne tieni sempre il {garantia} o più.",
+      "notaGarantia": "Commissione solo sul risparmio misurato — e te ne tieni sempre il {garantia} o più. Le postazioni si addebitano a parte, ogni mese.",
       "notaTramos": "A scaglioni, ciascuno alla sua aliquota: {tramos}. Più risparmi, più basso è il nostro percentuale.",
       "notaPrimerMesLead": "Il tuo primo mese: solo il posto.",
       "notaPrimerMes": "Misuriamo tutto, calibriamo sul tuo carico reale e vedrai l'estratto esatto di quanto sarebbe costato — senza addebitarlo.",
@@ -1005,7 +993,7 @@
       "caption": "Non tutte le spedizioni portano la stessa paglia: in questa tornata, il taglio misurato per scenario è andato da {min} a {max}. Anche quelli che non risparmiano vengono pubblicati."
     },
     "recibo": {
-      "title": "SavingsReport · tornata pubblicata",
+      "title": "SDK · SavingsReport · tornata pubblicata",
       "modelo": "modello",
       "parejas": "coppie misurate",
       "calidad": "qualità",
@@ -1037,6 +1025,62 @@
           "mono": "app → provider api"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Due prodotti",
+      "title": "Dove vanno i tuoi token: nella tua app o nel tuo agente di codice?",
+      "sub": "Entrambi si licenziano per postazione ed entrambi contano con il contatore del tuo fornitore. Fanno lavori diversi, quindi ognuno fa la sua promessa — e oggi solo uno ha una cifra di risparmio pubblicata.",
+      "install": "Installazione",
+      "installMore": "Configurazione completa",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — per app JavaScript e TypeScript con chiave API",
+        "who": "Per app Node.js, in JavaScript o TypeScript, che chiamano un'API di LLM con la tua chiave e pagano ogni token.",
+        "what": "Avvolge la chiamata nel tuo codice, invia al fornitore solo ciò che va pagato e restituisce un SavingsReport con ogni risposta.",
+        "figureLabel": "La cifra che pubblichiamo",
+        "figureNote": "Una soglia, non una previsione: quanto risparmierai dipende dal tuo traffico. Nella commissione entra solo il risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita.",
+        "ctaMeasured": "Come l'abbiamo misurato",
+        "ctaVerify": "Prova una leva sui tuoi dati"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — per agenti di codice con chiave API",
+        "who": "Per chi usa Claude Code, Codex CLI o un altro agente di codice con chiave API.",
+        "what": "Un comando mette un contatore locale davanti al tuo terminale, senza codice da toccare. Il gateway conta ogni richiesta di cui il tuo fornitore riporta l'utilizzo, con il contatore del fornitore stesso — per i modelli del nostro catalogo prezzi — e le somma nella tua dashboard, per giorno e per modello.",
+        "figureLabel": "Nessuna cifra di risparmio pubblicata",
+        "figureNote": "Non abbiamo pubblicato un risparmio misurato per gli agenti di codice, quindi non ne annunciamo nessuno. Con PRO, sui modelli Anthropic, il gateway sposta le scritture della cache dal TTL di un'ora a quello di cinque minuti, solo nei turni in cui una parte consistente del prompt è nuova — come il primo turno di una sessione o una compattazione — e lascia come sono i turni concatenati di una sessione in corso. Questo cambia il prezzo, mai ciò che legge il modello, e solo ciò che conferma il contatore del tuo fornitore entra nella commissione.",
+        "cta": "Installa il gateway"
+      },
+      "skill": {
+        "band": "Skill — per agenti di codice in abbonamento"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · una leva, sui tuoi dati, prima di pagare",
+      "title": "Incolla i tuoi dati. Guarda quanti token invierebbe l'SDK.",
+      "sub": "Qui gira il vero selettore di formato dell'SDK, nel tuo browser e sui tuoi dati. Niente lascia questa pagina e non ti serve un account.",
+      "tryExample": "Prova un esempio",
+      "sample_orders": "Ordini del negozio",
+      "sample_tickets": "Ticket di supporto",
+      "sample_users": "Elenco utenti",
+      "pasteHint": "…o incolla qui il tuo JSON. Niente esce dal tuo browser.",
+      "loading": "Caricamento dell'ottimizzatore e del tokenizzatore esatto…",
+      "errBundle": "Impossibile caricare l'ottimizzatore. Ricarica la pagina per riprovare.",
+      "errInvalidData": "In attesa di un JSON valido… {message}",
+      "errTokenizer": "Il tokenizzatore esatto non riesce a contare questo testo ({message}), quindi non mostriamo nessuna cifra.",
+      "tooBig": "Sono più di {max} caratteri. Incolla un campione più piccolo.",
+      "tagExact": "Conteggio esatto",
+      "tagApprox": "Approssimativo",
+      "yourData": "I tuoi dati, in JSON compatto",
+      "optimized": "Come li invierebbe l'SDK",
+      "fewer": "−{pct} di token di input su questi dati",
+      "trims": "Da {before} a {after} token, istruzioni del formato incluse.",
+      "alreadyOptimal": "Qui nessun formato batte il JSON compatto, quindi l'SDK li invierebbe così come sono. Questa leva non rende mai più grandi i tuoi dati.",
+      "notComparable": "Con questi dati non possiamo confrontare i formati con il JSON compatto, quindi non mostriamo nessuna cifra.",
+      "exactNote": "Contato con {tokenizer}, il tokenizzatore che usa {model}. Confrontiamo con i tuoi dati in JSON compatto: se oggi li invii indentati, la differenza reale è maggiore — e quella non la contiamo.",
+      "approxNote": "Il tokenizzatore esatto non si è caricato, quindi qualsiasi conteggio qui sarebbe approssimativo — e non mostriamo risparmi approssimativi. Ricarica la pagina per riprovare.",
+      "scope": "Cos'è e cosa non è: una leva — come si scrivono i dati strutturati nel prompt — sui token di input di questi dati. Vale solo per i dati che passi all'SDK come structuredData, non per il JSON già scritto nei tuoi messaggi. Non è la tua fattura: le chiamate evitate, la cache del tuo fornitore e l'output non ci sono, e molte richieste non contengono dati strutturati. La cifra che difendiamo per l'SDK intero è la soglia pubblicata nella sezione della misurazione.",
+      "ctaInstall": "Installa l'SDK"
     }
   },
   "invitacion": {

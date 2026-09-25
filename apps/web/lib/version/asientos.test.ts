@@ -44,6 +44,7 @@ describe("agregarAsientos", () => {
         sinVersion7d: false,
         lastSeenAt: visto(1),
         ahorroMedido7dUsd: 0.5,
+        ahorroReferencia7dUsd: 0,
         conDatos7d: true,
       },
     ]);
@@ -165,5 +166,70 @@ describe("agregarAsientos · filas anteriores a 0024 no cuentan como «sin ahorr
     );
     expect(a!.conDatos7d).toBe(true);
     expect(a!.ahorroMedido7dUsd).toBeCloseTo(0.5, 9);
+  });
+});
+
+/**
+ * 0031 · LO MEDIDO POR REFERENCIA, POR ASIENTO. Con COMISIONAR_REFERENCIA, el
+ * titular y el extracto suman la referencia como medida; la tarjeta de máquinas
+ * y el aviso tienen que hacer lo mismo, o una máquina que solo ahorra por
+ * repeticiones sale con «0 € medidos». `ahorroReferencia7dUsd` es siempre la
+ * parte de referencia (para la nota), con el interruptor como esté.
+ */
+describe("agregarAsientos · lo medido por referencia (0031)", () => {
+  it("asiento solo con referencia: bajo el interruptor cuenta como medido; sin él, no", () => {
+    const filas = [fila({ referenceBaselineCost: 0.02, referenceActualCost: 0 })];
+    const [con] = agregarAsientos(filas, AHORA, { incluirReferencia: true });
+    expect(con!.ahorroMedido7dUsd).toBeCloseTo(0.02, 12);
+    expect(con!.ahorroReferencia7dUsd).toBeCloseTo(0.02, 12);
+    const [sin] = agregarAsientos(filas, AHORA, { incluirReferencia: false });
+    expect(sin!.ahorroMedido7dUsd).toBe(0);
+    // La parte de referencia se sigue viendo: el interruptor decide qué suma, no qué existe.
+    expect(sin!.ahorroReferencia7dUsd).toBeCloseTo(0.02, 12);
+  });
+
+  it("por defecto sigue al interruptor de cobro (hoy encendido)", () => {
+    const [a] = agregarAsientos([fila({ referenceBaselineCost: 0.5, referenceActualCost: 0 })], AHORA);
+    expect(a!.ahorroMedido7dUsd).toBeCloseTo(0.5, 12);
+  });
+
+  it("la referencia de más de 7 días no cuenta (ventana por el DÍA de la fila)", () => {
+    const [a] = agregarAsientos(
+      [fila({ day: dia(9), lastSeenAt: visto(0), referenceBaselineCost: 3, referenceActualCost: 0 })],
+      AHORA,
+      { incluirReferencia: true },
+    );
+    expect(a!.ahorroMedido7dUsd).toBe(0);
+    expect(a!.ahorroReferencia7dUsd).toBe(0);
+  });
+
+  it("una fila pre-canal no suma referencia (misma regla que lo medido)", () => {
+    const [a] = agregarAsientos(
+      [fila({ versionMin: null, versionMax: null, requestsSinVersion: 0, referenceBaselineCost: 4, referenceActualCost: 0 })],
+      AHORA,
+      { incluirReferencia: true },
+    );
+    expect(a!.conDatos7d).toBe(false);
+    expect(a!.ahorroMedido7dUsd).toBe(0);
+    expect(a!.ahorroReferencia7dUsd).toBe(0);
+  });
+
+  it("medido y referencia a la vez: se suman, y la nota ve solo la referencia", () => {
+    const [a] = agregarAsientos(
+      [
+        fila({ day: dia(1), measuredBaselineCost: 2, measuredActualCost: 1.5, referenceBaselineCost: 0.25, referenceActualCost: 0 }),
+        fila({ day: dia(3), measuredBaselineCost: 1, measuredActualCost: 1, referenceBaselineCost: 0.25, referenceActualCost: 0 }),
+      ],
+      AHORA,
+      { incluirReferencia: true },
+    );
+    expect(a!.ahorroMedido7dUsd).toBeCloseTo(1, 12);
+    expect(a!.ahorroReferencia7dUsd).toBeCloseTo(0.5, 12);
+  });
+
+  it("sin las columnas de 0031 (campos ausentes) la referencia es 0", () => {
+    const [a] = agregarAsientos([fila({ measuredBaselineCost: 1, measuredActualCost: 0.5 })], AHORA, { incluirReferencia: true });
+    expect(a!.ahorroMedido7dUsd).toBeCloseTo(0.5, 12);
+    expect(a!.ahorroReferencia7dUsd).toBe(0);
   });
 });
