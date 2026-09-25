@@ -33,7 +33,11 @@ printf "${G}commit %s${N}\n" "$(git rev-parse --short HEAD)"
 
 # ── 1 · El código se puede publicar ──────────────────────────────────────────
 area "1 · El código se puede publicar"
-if bash scripts/simular-ci.sh main >/tmp/lv-ci.log 2>&1; then
+# El commit que dice la cabecera, no la rama `main` LOCAL: en un árbol de
+# trabajo cortado de origin/main esa rama puede ir semanas por detrás, y el
+# veredicto hablaba de un código que no era el que se estaba evaluando. En main,
+# HEAD es main. Lo que no esté commiteado no entra en el clon limpio.
+if bash scripts/simular-ci.sh "$(git rev-parse HEAD)" >/tmp/lv-ci.log 2>&1; then
   ok "clon limpio: instala, construye, tipa, pasa las pruebas y compila la web en los 12 idiomas"
   ok "el tarball de npm: paywall cerrado, sin sourcemaps, clave pública embebida"
 else
@@ -92,6 +96,25 @@ if [[ -s /tmp/lv-cifras.json ]]; then
   if [[ "$SELL" == "true" ]]; then ok "el artefacto lleva sello de procedencia (fecha, commit y nº de parejas)"; else mal "el artefacto no lleva sello: no se sabe de qué tirada salió"; fi
   if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %, el menor de los suelos frente a B0 y B1)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO % (menor suelo B0/B1)"; fi
   if [[ "$UNA" == "true" ]]; then ok "los $IDI idiomas prometen la misma cifra"; else mal "los idiomas no dicen lo mismo"; fi
+  # Lo prometido tiene que caber también en lo que ENTREGA el paquete de npm. Si
+  # el artefacto se midió con una pieza que npm no trae (el compresor del banco),
+  # se reconstruye el suelo sin ella — sin red, con los ensayos publicados.
+  if TCS=$(pnpm -s exec tsx benchmarks/titular-como-se-instala.ts --json 2>/dev/null) && [[ -n "$TCS" ]]; then
+    read -r TAL MENOR <<<"$(node -p 'const d=JSON.parse(process.argv[1]);[d.medidoTalCual,(Math.floor(d.menor*1000)/10).toFixed(1)].join(" ")' "$TCS")"
+    if [[ "$TAL" == "true" ]]; then
+      ok "el artefacto midió el SDK tal como se instala desde npm"
+    else
+      avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con BVSALA_AB_SIN_COMPRESOR=1"
+      nota "el recibo y la factura de ejemplo de la web salen de ese artefacto hasta que se re-mida"
+      if awk "BEGIN{exit !($PROM <= $MENOR)}"; then
+        ok "lo prometido ($PROM %) cabe también en lo que entrega npm ($MENOR %, reconstruido sin el compresor del banco)"
+      else
+        mal "la web promete $PROM % y sin el compresor del banco el suelo es $MENOR %"
+      fi
+    fi
+  else
+    mal "no se pudo calcular el suelo de lo que entrega npm (benchmarks/titular-como-se-instala.ts)"
+  fi
   if [[ "$CSV" == "true" ]]; then ok "los ensayos crudos están publicados y enlazados"; else mal "no se publican los ensayos: la promesa de verificable es falsa"; fi
 else
   mal "no se pudieron leer las cifras de la web"
