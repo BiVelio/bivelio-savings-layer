@@ -159,7 +159,9 @@ BiVelio license. It never interrupts a request in flight: if the license lapses,
 are refused (HTTP 402) until it is renewed. Metering is best-effort: with ingestion down, it
 forwards and warns. On a Claude or ChatGPT subscription there is no per-token invoice: that
 traffic is metered at list-price equivalent and never carries commission.
-Your prompts never leave your machine — only counts and cost. More: savings.bivelio.com`);
+Your prompts, completions and provider keys never reach BiVelio: what it receives is per-request
+usage (token counts, cost, the model id and opaque ids); LICENSE §5 lists every field.
+More: savings.bivelio.com`);
 }
 
 if (decision.tipo === "ayuda") {

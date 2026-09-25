@@ -26,13 +26,13 @@ not install or use the Software.
 3. RESTRICTIONS. Except as expressly permitted above, you will not: (a) distribute,
    publish, resell, rent, lease, lend, offer as a hosted or managed service, or
    otherwise make the Software available to any third party; (b) sublicense, assign,
-   or transfer your rights; (c) use the Software for more seats than you have paid
-   for, or share a License Key across more machines or service identities than your
-   subscription covers; (d) remove, alter, or obscure any proprietary or copyright
-   notice; (e) reverse engineer, decompile, or disassemble the Software, except to
-   the limited extent applicable law expressly permits notwithstanding this
-   restriction; or (f) use the Software to develop, train, or improve a product or
-   service that competes with the Software.
+   or transfer your rights; (c) use the Software for more seats than your
+   subscription covers, or share a License Key across more machines or service
+   identities than it covers; (d) remove, alter, or obscure any proprietary or
+   copyright notice; (e) reverse engineer, decompile, or disassemble the Software,
+   except to the limited extent applicable law expressly permits notwithstanding
+   this restriction; or (f) use the Software to develop, train, or improve a product
+   or service that competes with the Software.
 
 4. OWNERSHIP. The Software is the exclusive property of BiVelio and its licensors and
    embodies valuable proprietary information and trade secrets. BiVelio retains all
@@ -64,8 +64,10 @@ not install or use the Software.
          its own requests (for example, Claude Code's session id), only when they
          are plain identifiers; an organization hint; and a flag marking CI or
          ephemeral runners;
-     (ii) the model identifier as named in the request (for a self-hosted or Azure
-         deployment, the name you gave it) and a timestamp;
+     (ii) the identifier of the model that served the request (the model named in
+         the request or, where the Software sent the request to another model under
+         a setting you enabled, that model; for a self-hosted or Azure deployment,
+         the name you gave it) and the time of the request;
      (iii) counts: LLM calls executed and avoided; input and output tokens before
          and after the Software's optimizations, including tokens removed,
          compressed, or read from the provider's cache; and the cache outcome; and
@@ -90,20 +92,29 @@ not install or use the Software.
    https://savings.bivelio.com (the "Published Pricing") for each billing period:
    (a) a subscription fee per seat, payable whether or not the Software produces any
    saving; and (b) a commission, at tiered marginal rates, charged only on measured
-   savings, meaning savings established from your LLM provider's own usage counters
-   (including, for a repeated request valued by reference, the counter of the
-   identical earlier request) and valued at the provider's list prices in the
-   price-catalogue version stated on your statement. Savings the Software estimates,
-   reconstructs, or simulates never carry commission, and neither does traffic with
-   no per-token provider invoice (such as a flat-rate provider subscription). A
-   period with no measured savings carries no commission. The initial calibration
-   period defined in the Published Pricing carries no commission, and neither does
-   an account that BiVelio exempts from it (including a subscription activated with
-   a full-discount promotional code); in both cases the statement still shows the
-   commission that would have applied. Each period's commission is itemized on a
-   statement in your dashboard, together with the exchange rate applied. Rates, tier
-   thresholds, currency, and the length of the calibration period are those of the
-   Published Pricing and are not restated here.
+   savings, meaning savings whose basis is labelled "measured" or "reference" in
+   your usage records (Section 5(b)(iv)). A "measured" saving is established from
+   your LLM provider's own usage counter for that request; a "reference" saving, for
+   a repeated request the Software served without calling your provider, from your
+   provider's counter for the identical earlier request that did run. Both are
+   valued at the per-token prices the Software applied to that request: those of a
+   cost model you configure, where you configure one, and otherwise your provider's
+   list prices in the price catalogue included in the Software. Savings labelled
+   "estimated", "shadow", or "unmeasured" never carry commission. Traffic the
+   Software identifies as a flat-rate provider subscription (a Claude or ChatGPT
+   subscription used through the local gateway) is metered but credited no measured
+   saving, so it carries no commission. A period with no measured savings carries no
+   commission. The first calendar month (UTC) in which your organization reports any
+   usage is a calibration period, however little of that month remains, and carries
+   no commission. Nor is commission charged for a period that BiVelio closes while
+   your account is exempt from it. Your account is exempt if BiVelio grants it an
+   exemption and, until a payment is made on the account, if its subscription was
+   activated with a promotional code that waives the subscription fee in full for
+   its entire term. For a calibration or exempt period the statement still shows the
+   commission that would have applied. Each period's commission is
+   itemized on a statement in your dashboard, together with the exchange rate
+   applied. Rates, tier thresholds, and currency are those of the Published Pricing
+   and are not restated here.
 
 7. TERM AND TERMINATION. This Agreement remains in effect while your subscription is
    active. BiVelio may terminate this Agreement immediately if you breach it. Upon

@@ -6,8 +6,8 @@ import { BV_SALA_VERSION, CABECERA_VERSION } from "../version.js";
  * A usage record on the wire. Mirrors `@bivelio/protocol`'s
  * `UsageRecord` but is reimplemented here so the SDK stays dependency-free (the
  * published package must not pull in a workspace package). It carries ONLY counts,
- * cost figures and opaque identifiers — NEVER a prompt, completion, or any request
- * content. That invariant is enforced a second time server-side by the ingest
+ * cost figures, the model id and opaque identifiers — NEVER a prompt, completion,
+ * or any request content. That invariant is enforced a second time server-side by the ingest
  * allow-list.
  */
 // La LICENSE §5 enumera cada campo de este cable (y de la lista blanca de la

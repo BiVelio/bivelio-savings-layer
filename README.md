@@ -19,14 +19,15 @@
 Every request your app sends to an AI is paid for by the text going in and out.
 **Savings** sits on that path and lets through only what's needed — skipping calls
 that don't have to happen, and trimming what does — so you pay for less. It is not a
-promise you take on faith: **every saving we charge on is measured with the provider's
-official meter, the same one on your bill**, and every saving — measured or estimated,
-and labelled as such — is handed back to you request by request.
+promise you take on faith: **every saving we charge on is measured with your provider's
+own usage counter, the one your bill is built from** (for a repeat served without
+calling the provider, the counter of the identical call that ran), and every saving —
+measured or estimated, and labelled as such — is handed back to you request by request.
 
 **A small per‑seat fee, and a commission only on savings measured against your
 provider's counter.** The seat fee is paid whether or not you save. Your
-first month carries no commission at all — it is the first calendar month in which
-your organization reports usage, so starting late in a month makes it a short one —
+first month carries no commission at all — it is the first calendar month (UTC) in
+which your organization reports usage, so starting late in a month makes it a short one —
 and at its close you see the statement of what the commission would have been. After
 that, the commission is charged on the **measured** saving only — never from estimates:
 a tiered rate from 10 % down to 4 % of what you saved, so **you keep

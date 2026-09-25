@@ -18,8 +18,9 @@
 > - **El precio no es `$4/seat` en USD ni la comisión es un «upsell» futuro** (§0, §5,
 >   §9): hoy es una cuota por asiento en EUR (apps/web/lib/stripe/pricing.ts) que se
 >   paga ahorres o no, más una comisión por tramos SOLO sobre el ahorro medido con el
->   contador del proveedor, con el primer mes de calibración sin comisión y exención
->   para las cuentas con cupón del 100 % (apps/web/lib/billing/tarifa.ts, LICENSE §6).
+>   contador del proveedor, con el primer mes natural (UTC) con uso como calibración
+>   sin comisión y exención para las cuentas activadas con un cupón del 100 % «para
+>   siempre» hasta su primer pago (apps/web/lib/billing/tarifa.ts, LICENSE §6).
 > - **Lo que viaja a BiVelio no es «solo counts/metadata»** (§1, §8): viajan también el
 >   id del modelo y los ids de petición, de asiento (HMAC) y de sesión. La lista exacta
 >   está en la LICENSE §5, atada al emisor por test/licencia-alineada.test.ts.
