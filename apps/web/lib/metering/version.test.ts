@@ -1,7 +1,14 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 
-import { CABECERA_VERSION, sellarVersion, versionDeclarada } from "./version";
+import {
+  admiteReferencia,
+  CABECERA_VERSION,
+  sellarVersion,
+  VERSION_MINIMA_REFERENCIA,
+  versionDeclarada,
+} from "./version";
+import { compararVersiones } from "@/lib/version/semver";
 import { parseUsageRecord, UsageValidationError } from "./usage";
 
 /**
@@ -79,5 +86,43 @@ describe("sellarVersion — solo el servidor escribe la versión", () => {
     };
     expect(() => parseUsageRecord(cuerpo, "org-1")).toThrow(UsageValidationError);
     expect(() => parseUsageRecord(cuerpo, "org-1")).toThrow(/disallowed field "clientVersion"/);
+  });
+});
+
+describe("admiteReferencia — la verja de la regla de la referencia", () => {
+  const fuente = readFileSync(new URL("../../../../src/version.ts", import.meta.url), "utf8");
+  const pkg = JSON.parse(readFileSync(new URL("../../../../package.json", import.meta.url), "utf8")) as {
+    version: string;
+  };
+
+  it("la mínima es la MISMA que declara src/version.ts (espejo atado por texto)", () => {
+    const m = /export const VERSION_MINIMA_REFERENCIA = "([^"]+)";/.exec(fuente);
+    expect(m, "src/version.ts tiene que declarar VERSION_MINIMA_REFERENCIA").not.toBeNull();
+    expect(VERSION_MINIMA_REFERENCIA).toBe(m![1]);
+    expect(VERSION_MINIMA_REFERENCIA).toMatch(/^\d{1,4}\.\d{1,4}\.\d{1,4}$/);
+  });
+
+  it("va por delante de la etiqueta v0.4.23, que se cortó con la regla v1", () => {
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.23")).toBeGreaterThan(0);
+  });
+
+  it("no está más allá del siguiente parche de la versión actual (una errata degradaría para siempre)", () => {
+    const [a, b, c] = pkg.version.split(".").map(Number) as [number, number, number];
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, `${a}.${b}.${c + 1}`)).toBeLessThanOrEqual(0);
+  });
+
+  it("sdk/ y gateway/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
+    for (const si of ["sdk/0.4.24", "gateway/0.4.24", "sdk/0.4.25", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.25-rc.1"]) {
+      expect(admiteReferencia(si), si).toBe(true);
+    }
+    for (const no of [null, "sdk/0.4.23", "gateway/0.4.23", "sdk/0.4.22", "sdk/0.4.24-rc.1", "gateway/0.4.24-dev", "0.4.24"]) {
+      expect(admiteReferencia(no), String(no)).toBe(false);
+    }
+  });
+
+  it("encadenada con versionDeclarada: una cabecera rara es «sin versión» y tampoco admite", () => {
+    expect(admiteReferencia(versionDeclarada("sdk/0.4.24, sdk/0.4.24"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("cli/0.4.24"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.24 "))).toBe(true);
   });
 });

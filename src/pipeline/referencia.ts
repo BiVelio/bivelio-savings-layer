@@ -2,6 +2,7 @@ import { sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import type { SavingsRequest } from "../contracts/types.js";
 import { FACTOR_DIFERIDO_MINIMO, veredictoDelTier } from "../economics/tier-diferido.js";
 import { CATALOGO, claveDeCatalogo } from "../pricing/catalogo.js";
+import type { SalidaNoRepetible } from "../pricing/razonamiento.js";
 import {
   REFERENCE_MAX_AGE_MS,
   REFERENCE_MESSAGE_ALLOWANCE,
@@ -45,21 +46,29 @@ import {
 //     registro con el backend `provider-native` configurado, y la configuración
 //     por defecto no configura ninguno: todo el tráfico con esquema quedaba
 //     fuera aunque el esquema viajara nativo. Ahora cuenta lo que PASÓ, no lo
-//     que se planeó: deja registro cuando el proveedor confirma que impuso el
-//     esquema (`structuredNatively === true`) Y el adaptador de este paquete
-//     atestigua que viajó TAL CUAL en su parámetro nativo de formato de
-//     respuesta, sin una palabra de la capa en el prompt
-//     (`providers/atestado-del-cable.ts`). El esquema es del cliente —va en su
-//     petición y en la huella—; lo único de la capa es el envoltorio
-//     (`name: "bvsala_contract"`), y ese se descuenta como una pieza insertada
-//     más: los mismos 8 tokens que un mensaje.
+//     que se planeó: deja registro cuando el adaptador de este paquete
+//     atestigua que el esquema viajó TAL CUAL en el parámetro nativo de formato
+//     de respuesta, en modo estricto (`strict: true`) y sin una palabra de la
+//     capa en el prompt (`providers/atestado-del-cable.ts`), Y la respuesta no
+//     lo desmiente (`structuredNatively === true`: el proveedor no rechazó el
+//     parámetro). Lo que se afirma es lo que salió por el cable, no que el
+//     proveedor lo impusiera: un endpoint compatible que acepte e ignore
+//     `response_format` no cambia el contador, que sigue siendo el de la
+//     petición del cliente. El esquema es del cliente —va en su petición y en la
+//     huella—; lo único de la capa es el envoltorio (`name: "bvsala_contract"`),
+//     y ese se descuenta como una pieza insertada más: los mismos 8 tokens que
+//     un mensaje.
 //   · LO QUE AÑADE EL ADAPTADOR, también descontado. El turno «(continue)» que
 //     el adaptador de Anthropic antepone cuando la conversación empieza por el
-//     asistente no lo ve la cuenta local, pero el contador sí lo cobra.
-//   · GUARDA DE RAZONAMIENTO. La salida solo se acredita si la llamada que
-//     corrió declaró EXACTAMENTE 0 tokens de razonamiento (`reasoningTokens`) y
-//     el modelo no es de razonamiento (`pricing/razonamiento.ts`). Un contador
-//     que no lo dice no es un 0.
+//     asistente, y los parámetros vacíos que los dos adaptadores ponen a una
+//     herramienta que no traía, no los ve la cuenta local, pero el contador sí
+//     los cobra: una pieza cada uno.
+//   · GUARDA DE SALIDA. La salida solo se acredita si la llamada que corrió no
+//     llevó razonamiento oculto —su proveedor declaró EXACTAMENTE 0 tokens de
+//     razonamiento, o, donde no los desglosa, su respuesta no trae bloque de
+//     razonamiento (`reasoningTokens: 0` del adaptador)— y si el modelo es una
+//     fila del catálogo que no razona y honra `temperature: 0`
+//     (`pricing/razonamiento.ts`). Un contador que no lo dice no es un 0.
 //   · FORMATO v2 del registro. Un lector v1 declara `malformed` un registro v2
 //     y viceversa: nunca se valora un registro con una regla que no lo escribió.
 //
@@ -114,10 +123,15 @@ export type MotivoSinReferencia =
   | "schema-in-prompt"
   | "cheaper-model-served"
   | "not-cacheable"
-  // E5, segunda mitad: el proveedor dice que impuso el esquema, pero no por una
-  // vía que el adaptador atestigüe como el esquema del cliente TAL CUAL (la
-  // herramienta de contrato de Anthropic; un proveedor de terceros).
+  // E5, segunda mitad: el esquema no viajó por una vía que el adaptador
+  // atestigüe como el esquema del cliente TAL CUAL (la herramienta de contrato
+  // de Anthropic; un proveedor de terceros).
   | "schema-not-verbatim"
+  // E5, tercera mitad: viajó tal cual en el parámetro nativo, pero con
+  // `strict: false` (un campo opcional lo impide en OpenAI). Ahí la forma la
+  // garantiza la capa al validar, no el proveedor, y la regla publicada solo
+  // admite el modo estricto.
+  | "schema-not-strict"
   // Defensivo, fuera de E0-E7: la huella no se pudo calcular (algo no
   // serializable en la petición). Sin huella no hay identidad que atestiguar.
   | "fingerprint-failed";
@@ -218,14 +232,18 @@ export interface HechosDeLaPoblada {
   tokensDelSondeo: number;
   sondeoAplicado: boolean;
   hayEsquema: boolean;
-  /** `structuredNatively === true` en la respuesta de la primaria: el proveedor
-   *  dice que impuso el esquema. `undefined` o `false` no afirman nada. */
+  /** `structuredNatively === true` en la respuesta de la primaria: el
+   *  proveedor no rechazó la vía nativa. `undefined` o `false` no afirman nada. */
   esquemaNativo: boolean;
   /** El adaptador propio atestigua que el esquema viajó TAL CUAL en el
    *  parámetro nativo de formato de respuesta (ver `atestado-del-cable.ts`). */
   esquemaEnFormatoNativo: boolean;
-  /** Mensajes que el ADAPTADOR añadió al cable (0 sin atestado). */
-  mensajesDelAdaptador: number;
+  /** …y con `strict: true`. */
+  esquemaEstricto: boolean;
+  /** El adaptador escribió el esquema en el prompt (la instrucción de JSON). */
+  esquemaPorPrompt: boolean;
+  /** Piezas que el ADAPTADOR añadió al cable (0 sin atestado). */
+  piezasDelAdaptador: number;
   modeloPedido: string;
   modeloServido: string;
   cacheable: boolean;
@@ -310,20 +328,26 @@ export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia
   if (h.codebookAplicado) return "codebook";
   // E4 · El sondeo es otra llamada y recorta la vista de herramientas.
   if (h.tokensDelSondeo !== 0 || h.sondeoAplicado) return "tool-discovery";
-  // E5 · El esquema, NATIVO Y TAL CUAL. Se mira lo que pasó, no lo que se
-  // planeó: el backend `none` de la configuración por defecto no impide que el
-  // adaptador de Chat Completions mande el esquema en `response_format`, y un
-  // `provider-native` configurado no impide que un modelo lo rechace y el
-  // adaptador lo pida por prompt. Dos preguntas, en orden:
-  //   · ¿lo impuso el proveedor? Si no lo dice (`structuredNatively` distinto
-  //     de true), el esquema pudo viajar como prompt, y esa instrucción la
-  //     cuenta el proveedor y no la cuenta E2: fuera.
+  // E5 · El esquema, NATIVO, TAL CUAL Y ESTRICTO. Se mira lo que pasó, no lo
+  // que se planeó: el backend `none` de la configuración por defecto no impide
+  // que el adaptador de Chat Completions mande el esquema en `response_format`,
+  // y un `provider-native` configurado no impide que un modelo lo rechace y el
+  // adaptador lo pida por prompt. Tres preguntas, en orden:
+  //   · ¿viajó por la vía nativa? Si la respuesta no lo dice
+  //     (`structuredNatively` distinto de true) o el adaptador atestigua que lo
+  //     escribió en el prompt, esa instrucción la cuenta el proveedor y no la
+  //     cuenta E2: fuera. La segunda condición no es redundante: la
+  //     instrucción lleva el esquema ENTERO (cientos de tokens, no una pieza de
+  //     8) y no puede colarse aunque alguien relaje la primera.
   //   · ¿viajó TAL CUAL, en el parámetro nativo? La herramienta de contrato de
   //     Anthropic también es nativa, pero su nombre, su descripción y el prompt
-  //     de uso de herramientas que el proveedor cobra con ella los puso la capa.
-  //     Y un proveedor de terceros no puede atestiguarlo. Fuera los dos.
-  if (h.hayEsquema && !h.esquemaNativo) return "schema-in-prompt";
+  //     de uso de herramientas que el proveedor cobra con ella los puso nuestro
+  //     adaptador. Y un proveedor de terceros no puede atestiguarlo. Fuera.
+  //   · ¿en modo estricto? Con `strict: false` la forma la garantiza la capa,
+  //     no el proveedor. La regla publicada solo admite el modo estricto.
+  if (h.hayEsquema && (!h.esquemaNativo || h.esquemaPorPrompt)) return "schema-in-prompt";
   if (h.hayEsquema && !h.esquemaEnFormatoNativo) return "schema-not-verbatim";
+  if (h.hayEsquema && !h.esquemaEstricto) return "schema-not-strict";
   // E6 · Ni cascada que sirve el barato ni rebaja de modelo.
   if (h.modeloServido !== h.modeloPedido) return "cheaper-model-served";
   // E7 · Lo que no se cachea no se repite.
@@ -355,7 +379,7 @@ export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia
     // cual), su envoltorio.
     layerInsertions:
       Math.max(0, h.mensajesDeLaCapa) +
-      Math.max(0, h.mensajesDelAdaptador) +
+      Math.max(0, h.piezasDelAdaptador) +
       (h.hayEsquema ? 1 : 0),
     ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
     requestFingerprint: h.huella(),
@@ -431,8 +455,12 @@ export interface ContextoDeLectura {
   precio: CostModel | undefined;
   /** ¿Pidió ESTA petición `temperature: 0`? */
   determinista: boolean;
-  /** ¿Es el modelo pedido de razonamiento (`pricing/razonamiento.ts`)? */
-  modeloRazona: boolean;
+  /**
+   * Por qué la salida del modelo pedido no se puede repetir
+   * (`pricing/razonamiento.ts`), o `undefined` si se puede. Obligatorio a
+   * propósito: olvidarlo no puede equivaler a «se puede».
+   */
+  salidaDelModelo: SalidaNoRepetible | undefined;
   topeDeSalida?: number | undefined;
   diferible: boolean;
 }
@@ -441,10 +469,12 @@ export interface ContextoDeLectura {
  * Por qué una referencia válida no acredita salida. ASCII inglés: va a la traza.
  *   · `sampled`                — esta petición no pidió `temperature: 0`;
  *   · `reasoning-model`        — el modelo razona, diga lo que diga el contador;
+ *   · `temperature-ignored`    — el modelo no honra `temperature: 0`;
+ *   · `unclassified-model`     — el modelo no es fila del catálogo;
  *   · `reasoning-reported`     — la llamada que corrió declaró razonamiento;
  *   · `reasoning-not-reported` — la llamada que corrió no dijo cuánto razonó.
  */
-export type MotivoSinSalida = "sampled" | "reasoning-model" | "reasoning-reported" | "reasoning-not-reported";
+export type MotivoSinSalida = "sampled" | SalidaNoRepetible | "reasoning-reported" | "reasoning-not-reported";
 
 export type EvaluacionDeReferencia =
   | { ok: true; credit: ReferenceCredit; outputNotCredited?: MotivoSinSalida }
@@ -452,22 +482,24 @@ export type EvaluacionDeReferencia =
 
 /**
  * LA GUARDA DE SALIDA, regla v2. Tres condiciones y las tres hacen falta:
- * muestreo determinista pedido por ESTA petición, un modelo que no razona, y un
- * contador de la llamada que corrió que declare EXACTAMENTE 0 tokens de
- * razonamiento. Devuelve el primer motivo que falla, o `undefined` si la salida
+ * muestreo determinista pedido por ESTA petición, un modelo clasificado que no
+ * razona y honra `temperature: 0`, y una llamada que corrió sin razonamiento
+ * oculto: `reasoningTokens` EXACTAMENTE 0 (el contador del proveedor o, donde
+ * no lo desglosa, la ausencia de bloque de razonamiento que declara el
+ * adaptador). Devuelve el primer motivo que falla, o `undefined` si la salida
  * se puede acreditar.
  *
  * Por qué no basta `temperature: 0`: los tokens de razonamiento no se ven y su
  * número cambia de una llamada idéntica a otra; y los modelos que razonan casi
  * nunca respetan ese parámetro (una pasarela que lo quita en silencio convierte
- * la petición en muestreada). El 95 % de un contador así no es un suelo.
+ * la petición en muestreada). El 95 % de un contador así no mide nada.
  */
 export function motivoSinSalida(
   reg: Pick<RegistroDeReferencia, "reasoningTokens">,
-  ctx: Pick<ContextoDeLectura, "determinista" | "modeloRazona">,
+  ctx: Pick<ContextoDeLectura, "determinista" | "salidaDelModelo">,
 ): MotivoSinSalida | undefined {
   if (!ctx.determinista) return "sampled";
-  if (ctx.modeloRazona) return "reasoning-model";
+  if (ctx.salidaDelModelo !== undefined) return ctx.salidaDelModelo;
   if (reg.reasoningTokens === undefined) return "reasoning-not-reported";
   if (reg.reasoningTokens !== 0) return "reasoning-reported";
   return undefined;
@@ -482,7 +514,8 @@ export function motivoSinSalida(
  *   tierFactor           = min(1, tier de la poblada, diferible ? tier diferido mínimo : 1)
  *
  * «Salida acreditable» es la guarda de `motivoSinSalida`: `temperature: 0`, un
- * modelo que no razona y 0 tokens de razonamiento declarados.
+ * modelo clasificado que no razona y honra ese parámetro, y 0 tokens de
+ * razonamiento declarados.
  *
  * El precio es el del proceso que LEE, con el catálogo o los `costModels`
  * vigentes: la factura contra la que se contrasta es la de hoy.

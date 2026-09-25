@@ -92,11 +92,21 @@ export const COMISIONAR_REFERENCIA: boolean = true;
  * en cada extracto (`parametros.referencia`) y sellada en el cierre
  * (`extractos.regla_referencia`): lo que hace el documento autocontenido.
  *
- * v2 (la que emite el primer SDK que publica el carril; la v1 nunca salió a
- * npm): el tráfico con contrato de salida entra cuando el proveedor impuso el
- * esquema del cliente tal cual por su vía nativa, y la salida solo se acredita
- * si el modelo no razona y su proveedor declaró 0 tokens de razonamiento. El
+ * v2: el tráfico con contrato de salida entra cuando el esquema del cliente
+ * viajó tal cual, en modo estricto, en el parámetro nativo de formato de
+ * respuesta, sin nada añadido al prompt; y la salida solo se acredita con un
+ * modelo del catálogo que no razona y honra `temperature: 0`, y si la llamada
+ * que corrió no llevó razonamiento oculto (0 tokens de razonamiento declarados
+ * o, donde el proveedor no los desglosa, ningún bloque de razonamiento). El
  * texto que ve el cliente es `dashboard.extracto.parametrosReferencia`.
+ *
+ * QUÉ HACE CIERTO ESTE SELLO: no el orden de publicación. La etiqueta v0.4.23
+ * se cortó con la regla v1 y la regla no viaja en el registro de uso, así que el
+ * ingest (app/api/metering/usage/route.ts) degrada a "estimated" toda
+ * referencia de un proceso que no declara versión o que declara una anterior a
+ * VERSION_MINIMA_REFERENCIA (lib/metering/version.ts). Lo que llega a
+ * reference_* después de desplegar esa verja se calculó con esta regla. Si la
+ * regla cambia de versión, la mínima sube con ella en el mismo PR.
  *
  * apps/web no puede importar de src/ (proyecto aparte): estas cifras DUPLICAN
  * las constantes del SDK (REFERENCE_OUTPUT_SHARE, REFERENCE_MAX_AGE_MS y
@@ -115,7 +125,7 @@ export const REGLA_REFERENCIA = {
   cuotaSalida: 0.95,
   /** Edad máxima del contador de referencia, en días. */
   edadMaximaDias: 30,
-  /** Tokens de entrada que se descuentan por cada pieza que la capa insertó en la llamada que corrió (un mensaje, el envoltorio del esquema nativo). */
+  /** Tokens de entrada que se descuentan por cada pieza que la capa insertó en la llamada que corrió (un mensaje, el envoltorio del esquema nativo; dos por los parámetros vacíos de una herramienta que no traía). */
   margenPorMensajeTokens: 8,
 } as const;
 

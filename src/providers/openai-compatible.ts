@@ -1,6 +1,6 @@
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
 import { avisarUnaVez } from "../util/warn-once.js";
-import { atestiguar } from "./atestado-del-cable.js";
+import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
 import { sseMessages } from "./sse.js";
 import type {
   Provider,
@@ -412,7 +412,8 @@ export class OpenAICompatibleProvider implements Provider {
           structuredNatively: false,
           raw: uso ?? null,
         },
-        { esquemaEnFormatoNativo: false, mensajesDelAdaptador: 0 },
+        // Los parámetros vacíos de una herramienta que no traía son del adaptador.
+        sinContrato(herramientasSinParametros(req.tools)),
       ),
     };
   }
@@ -663,11 +664,16 @@ export class OpenAICompatibleProvider implements Provider {
       },
       // Lo que salió por el cable, para la regla de la referencia: con la vía
       // nativa, el esquema del llamante TAL CUAL dentro de `response_format`
-      // (envoltorio fijo: tipo, nombre, strict) y los mensajes sin tocar; con
-      // la degradada, un mensaje de sistema más con la instrucción de JSON.
+      // (envoltorio fijo: tipo, nombre, strict) y los mensajes sin tocar, y si
+      // viajó en modo estricto —el MISMO `isStrictCompatible` que decidió el
+      // `strict` del cuerpo—; con la degradada, la instrucción de JSON en el
+      // prompt, que la referencia rechaza siempre. Y los parámetros vacíos de
+      // las herramientas que no los traían, dos piezas cada una.
       {
         esquemaEnFormatoNativo: req.schema != null && nativo,
-        mensajesDelAdaptador: req.schema != null && !nativo ? 1 : 0,
+        esquemaEstricto: req.schema != null && nativo && isStrictCompatible(req.schema),
+        esquemaPorPrompt: req.schema != null && !nativo,
+        piezasDelAdaptador: herramientasSinParametros(req.tools),
       },
     );
   }

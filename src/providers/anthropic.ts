@@ -1,5 +1,5 @@
 import { avisarUnaVez } from "../util/warn-once.js";
-import { atestiguar } from "./atestado-del-cable.js";
+import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
@@ -150,7 +150,7 @@ export class AnthropicProvider implements Provider {
     if (!response.ok) {
       throw new Error(`provider ${response.status}: ${await safeText(response)}`);
     }
-    return this.leer(response, req, cuerpo.contratoNativo, cuerpo.turnoAnadido);
+    return this.leer(response, req, cuerpo.contratoNativo, cuerpo.turnoAnadido, cuerpo.esquemaPorPrompt);
   }
 
   /**
@@ -188,7 +188,13 @@ export class AnthropicProvider implements Provider {
     // entero en JSON: ya está facturado, así que se lee como en generate() en
     // vez de lanzar «ended before completion» sobre una respuesta completa.
     if ((response.headers.get("content-type") ?? "").includes("application/json")) {
-      const entera = await this.leer(response, req, construido.contratoNativo, construido.turnoAnadido);
+      const entera = await this.leer(
+        response,
+        req,
+        construido.contratoNativo,
+        construido.turnoAnadido,
+        construido.esquemaPorPrompt,
+      );
       if (entera.text !== "") yield { type: "text", delta: entera.text };
       yield { type: "done", response: entera };
       return;
@@ -324,8 +330,10 @@ export class AnthropicProvider implements Provider {
           structuredNatively: false,
           raw: { usage: merged, stop_reason: stopReason },
         },
-        // Sin contrato: los que lo llevan van por generate().
-        { esquemaEnFormatoNativo: false, mensajesDelAdaptador: construido.turnoAnadido ? 1 : 0 },
+        // Sin contrato: los que lo llevan van por generate(). Piezas del
+        // adaptador: el «(continue)» y el `input_schema` vacío de cada
+        // herramienta que no traía el suyo.
+        sinContrato((construido.turnoAnadido ? 1 : 0) + herramientasSinParametros(req.tools)),
       ),
     };
   }
@@ -363,6 +371,7 @@ export class AnthropicProvider implements Provider {
     body: Record<string, unknown>;
     contratoNativo: boolean;
     turnoAnadido: boolean;
+    esquemaPorPrompt: boolean;
   } {
     const { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido } = repartirMensajes(req);
 
@@ -508,6 +517,7 @@ export class AnthropicProvider implements Provider {
     // sale MENOR del real. Es el mismo sesgo, y en la misma dirección segura, que
     // ya documenta `instruccionDeJsonPorPrompt`.
     let contratoNativo = false;
+    let esquemaPorPrompt = false;
     let forzarCualquiera = false;
     if (req.schema) {
       const traeHerramientas = tools.length > 0;
@@ -520,6 +530,7 @@ export class AnthropicProvider implements Provider {
 
       if (nombreOcupado) {
         system.push({ type: "text", text: instruccionDeJsonPorPrompt(req.schema) });
+        esquemaPorPrompt = true;
         avisarUnaVez(
           "anthropic-contrato-nombre-ocupado",
           `[bvsala] One of your tools is already named \`${HERRAMIENTA_DE_CONTRATO}\`, so the output ` +
@@ -653,7 +664,7 @@ export class AnthropicProvider implements Provider {
       body["cache_control"] = { type: "ephemeral" };
     }
 
-    return { body, contratoNativo, turnoAnadido };
+    return { body, contratoNativo, turnoAnadido, esquemaPorPrompt };
   }
 
   // Coloca los puntos de ruptura de cache.
@@ -730,6 +741,7 @@ export class AnthropicProvider implements Provider {
     req: ProviderRequest,
     contratoNativo: boolean,
     turnoAnadido: boolean,
+    esquemaPorPrompt: boolean,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as RespuestaAnthropic;
     const bloques = json.content ?? [];
@@ -834,8 +846,15 @@ export class AnthropicProvider implements Provider {
       },
       // El contrato, cuando lo hay, viaja como HERRAMIENTA escrita por este
       // adaptador (nombre, descripción y `tool_choice`), y el proveedor cobra
-      // además su prompt de uso de herramientas: nativo sí, tal cual no.
-      { esquemaEnFormatoNativo: false, mensajesDelAdaptador: turnoAnadido ? 1 : 0 },
+      // además su prompt de uso de herramientas: nativo sí, tal cual no. Piezas
+      // del adaptador: el «(continue)» y el `input_schema` vacío de cada
+      // herramienta que no traía el suyo.
+      {
+        ...sinContrato((turnoAnadido ? 1 : 0) + herramientasSinParametros(req.tools)),
+        // Solo con el nombre de la herramienta de contrato ya ocupado: entonces
+        // el esquema va en `system` como prosa (ver construirCuerpo).
+        esquemaPorPrompt,
+      },
     );
   }
 }

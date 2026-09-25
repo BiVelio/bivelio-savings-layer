@@ -35,11 +35,16 @@ const PREGUNTA = "What is the capital of France?";
 
 /**
  * El cable que atestigua el adaptador de Chat Completions con la vía nativa: el
- * esquema del cliente tal cual en `response_format`. Aquí lo firma el test para
+ * esquema del cliente tal cual en `response_format`, en modo estricto. Aquí lo firma el test para
  * probar las reglas del pipeline; que el adaptador REAL lo firme (y solo
  * entonces) lo fija `test/referencia-v2.test.ts`.
  */
-const CABLE_NATIVO: AtestadoDelCable = { esquemaEnFormatoNativo: true, mensajesDelAdaptador: 0 };
+const CABLE_NATIVO: AtestadoDelCable = {
+  esquemaEnFormatoNativo: true,
+  esquemaEstricto: true,
+  esquemaPorPrompt: false,
+  piezasDelAdaptador: 0,
+};
 
 /** Proveedor de contador FIJO, que cuenta las llamadas. Declara 0 tokens de
  *  razonamiento salvo que se le diga otra cosa (`razonamiento: null` = no lo dice). */
@@ -148,7 +153,9 @@ const HECHOS_INTACTOS: HechosDeLaPoblada = {
   hayEsquema: true,
   esquemaNativo: true,
   esquemaEnFormatoNativo: true,
-  mensajesDelAdaptador: 0,
+  esquemaEstricto: true,
+  esquemaPorPrompt: false,
+  piezasDelAdaptador: 0,
   modeloPedido: MINI,
   modeloServido: MINI,
   cacheable: true,
@@ -621,7 +628,7 @@ describe("8 · la reparación: su coste es nuestro, y su salida acota la acredit
       calidadOk: true,
       precio: precioDeLista("gpt-4o-mini"),
       determinista: true,
-      modeloRazona: false,
+      salidaDelModelo: undefined,
       diferible: false,
     });
     if (!ev.ok) throw new Error(`se esperaba crédito, salió ${ev.reason}`);

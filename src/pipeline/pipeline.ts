@@ -2,7 +2,7 @@ import { randomId } from "../util/id.js";
 import { avisarUnaVez } from "../util/warn-once.js";
 import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
 import { atestadoDelCable, heredarAtestado } from "../providers/atestado-del-cable.js";
-import { esModeloDeRazonamiento } from "../pricing/razonamiento.js";
+import { salidaNoRepetible } from "../pricing/razonamiento.js";
 
 import type {
   SavingsRequest,
@@ -2967,7 +2967,9 @@ export class SavingsPipeline {
         // pero la regla no depende del orden de las comprobaciones.
         esquemaEnFormatoNativo:
           atestadoPrimario?.esquemaEnFormatoNativo === true && esquemaAlProveedor === schema,
-        mensajesDelAdaptador: atestadoPrimario?.mensajesDelAdaptador ?? 0,
+        esquemaEstricto: atestadoPrimario?.esquemaEstricto === true,
+        esquemaPorPrompt: atestadoPrimario?.esquemaPorPrompt === true,
+        piezasDelAdaptador: atestadoPrimario?.piezasDelAdaptador ?? 0,
         modeloPedido: request.model,
         modeloServido,
         cacheable,
@@ -3922,7 +3924,7 @@ export class SavingsPipeline {
         calidadOk,
         precio: this.precioDocumentado(ctx.request.model),
         determinista: muestreoDeterminista(ctx.request),
-        modeloRazona: esModeloDeRazonamiento(ctx.request.model),
+        salidaDelModelo: salidaNoRepetible(ctx.request.model),
         topeDeSalida: ctx.request.response?.maxOutputTokens,
         diferible: ctx.toggles.deferrable === true,
       });

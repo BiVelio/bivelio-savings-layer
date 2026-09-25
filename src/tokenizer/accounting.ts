@@ -15,10 +15,15 @@
  *                  without calling the provider) and a byte-identical request had
  *                  already run through the layer untouched. The baseline is the
  *                  provider's own counter for that request, valued at the
- *                  provider's cached-input rate, with output credited only under
- *                  deterministic sampling on a model that does not reason and
- *                  when the provider reported zero reasoning tokens, and then at
- *                  95% of its counter. Valued low on purpose. Enters the
+ *                  provider's cached-input rate. Output is credited only under
+ *                  deterministic sampling, on a model with a list price in the
+ *                  catalog that does not reason and honors that setting, when
+ *                  the call that ran carried no hidden reasoning (zero reasoning
+ *                  tokens reported, or no reasoning block where the provider
+ *                  does not break them out), and then at 95% of its counter.
+ *                  With an output schema, only when the schema traveled exactly
+ *                  as sent, in strict mode, in the provider's native
+ *                  response-format parameter. Valued low on purpose. Enters the
  *                  commission base.
  * - `estimated`  — the call was AVOIDED: it never ran, so there is no provider
  *                  counter and the baseline comes from the local estimator. Still
@@ -54,9 +59,9 @@ export interface CostModel {
 
 /** Oldest provider counter a repeat can be valued against: one billing period. */
 export const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-/** Share of the counted output credited to a repeat: only under deterministic sampling, on a model that does not reason, when the call that ran reported zero reasoning tokens. */
+/** Share of the counted output credited to a repeat: only under deterministic sampling, on a catalog model that does not reason and honors it, when the call that ran carried no hidden reasoning. */
 export const REFERENCE_OUTPUT_SHARE = 0.95;
-/** Input tokens deducted per piece the layer inserted in the call that ran: a message, or the wrapper around a native output schema. */
+/** Input tokens deducted per piece the layer inserted in the call that ran: a message, the wrapper around a native output schema, or half of the empty parameters given to a tool that had none. */
 export const REFERENCE_MESSAGE_ALLOWANCE = 8;
 
 /**
@@ -100,13 +105,15 @@ export interface ReferenceCredit {
   inputTokens: number;
   /** Output tokens the provider billed for that call (the smaller of the first answer and its repair). */
   outputTokens: number;
-  /** Input tokens credited to this repeat: inputTokens minus the allowance for what the layer inserted (messages, the native schema wrapper). */
+  /** Input tokens credited to this repeat: inputTokens minus the allowance for what the layer inserted (messages, the native schema wrapper, empty tool parameters). */
   creditedInputTokens: number;
   /**
    * Output tokens credited: a share of outputTokens capped by this request's
    * output limit. 0 unless this request asked for deterministic sampling
-   * (`temperature: 0`), the model does not reason, and the call that ran
-   * reported zero reasoning tokens.
+   * (`temperature: 0`), the model has a list price in the catalog, does not
+   * reason and honors that setting, and the call that ran carried no hidden
+   * reasoning (zero reasoning tokens reported, or no reasoning block where the
+   * provider does not break them out).
    */
   creditedOutputTokens: number;
   /** Rate applied to every credited input token, per 1K: the provider's cached-input rate. */

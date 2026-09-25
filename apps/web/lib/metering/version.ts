@@ -22,7 +22,44 @@
  * ese fichero como texto y afirma que el nombre de la cabecera no deriva.
  */
 
+import { parsearVersion } from "@/lib/version/semver";
+
 export const CABECERA_VERSION = "x-bvsala-version";
+
+/**
+ * Espejo de `VERSION_MINIMA_REFERENCIA` (src/version.ts): la primera versión
+ * del proceso emisor cuyos registros `basis: "reference"` siguen la regla que
+ * sella el extracto (`REGLA_REFERENCIA.version`, lib/billing/tarifa.ts). Se cambia
+ * aquí y en el SDK a la vez; `version.test.ts` ata los dos.
+ */
+export const VERSION_MINIMA_REFERENCIA = "0.4.24";
+
+/**
+ * ¿Puede entrar como `reference` un registro de un proceso que declara esta
+ * versión? Solo si la declara (`sdk/` o `gateway/`, que salen del mismo paquete
+ * con la misma versión) y es la mínima o posterior.
+ *
+ * Por qué hace falta: la regla con la que el SDK valoró una repetición NO viaja
+ * en el registro de uso, y el cierre sella la del servidor para el extracto
+ * entero. La etiqueta v0.4.23 lleva la regla v1 (salida acreditada sin guarda
+ * de razonamiento, esquema admitido sin modo estricto): si alguien la publica,
+ * sus referencias no pueden sellarse como «reference-v2». Entran como
+ * `estimated`, que siguen contando en los totales pero no en la base.
+ *
+ * El lado seguro en cada duda: sin versión declarada → no; una preliminar de la
+ * propia mínima (`0.4.24-rc.1`, que en semver va ANTES de `0.4.24`) → no.
+ */
+export function admiteReferencia(version: string | null): boolean {
+  const v = parsearVersion(version);
+  if (!v || v.superficie === null) return false;
+  const minima = parsearVersion(VERSION_MINIMA_REFERENCIA)!;
+  for (let i = 0; i < 3; i++) {
+    const d = v.partes[i]! - minima.partes[i]!;
+    if (d !== 0) return d > 0;
+  }
+  // Igual a la mínima en los tres números: solo la final, no una preliminar.
+  return !/-/.test(version!.slice(version!.indexOf("/") + 1));
+}
 
 /** superficie/semver con sufijo opcional. El MISMO patrón que bvsala.semver_key (0024). */
 const VERSION_PATTERN = /^(gateway|sdk)\/\d{1,4}\.\d{1,4}\.\d{1,4}(-[0-9A-Za-z.-]{1,16})?$/;

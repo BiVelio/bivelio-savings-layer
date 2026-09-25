@@ -38,3 +38,25 @@ export const CABECERA_VERSION = "x-bvsala-version";
  * el espejo no derive y que no sea mayor que la versión publicada.
  */
 export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
+
+/**
+ * Política A MANO: la primera versión que emite registros `basis: "reference"`
+ * con la regla v2 (`reference-v2`). La etiqueta v0.4.23 se cortó con la regla v1
+ * (formato de registro `v: 1`, sin guarda de razonamiento y sin el esquema
+ * estricto), y la versión de la regla no viaja en el registro de uso: el
+ * servidor sella la del extracto entero. Así que el ingest DEGRADA a
+ * `estimated` toda referencia que venga de un proceso anterior a esta versión,
+ * o que no declare versión (apps/web/lib/metering/version.ts): el sello
+ * «reference-v2» es cierto para todo lo que entra, publique quien publique
+ * qué.
+ *
+ * Va por DELANTE de BV_SALA_VERSION hasta el PR de release que la publique, a
+ * propósito: mientras tanto, lo que emita este código con la versión de ahora
+ * también entra como estimado, que es el lado seguro. El espejo de la web
+ * (apps/web/lib/metering/version.ts) lo ata `version.test.ts` leyendo este
+ * fichero como texto.
+ *
+ * Casilla del PR de release: «¿cambia la regla de la referencia? → sube la
+ * regla en tarifa.ts y esta MINIMA a la versión que la publica».
+ */
+export const VERSION_MINIMA_REFERENCIA = "0.4.24";

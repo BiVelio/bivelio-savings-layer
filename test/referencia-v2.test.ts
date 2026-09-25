@@ -8,7 +8,9 @@ import {
   atestadoDelCable,
   atestiguar,
   heredarAtestado,
+  PIEZAS_POR_HERRAMIENTA_SIN_PARAMETROS,
 } from "../src/providers/atestado-del-cable.js";
+import { REFERENCE_MESSAGE_ALLOWANCE } from "../src/tokenizer/accounting.js";
 import { precioDeLista } from "../src/pricing/catalogo.js";
 import {
   motivoSinSalida,
@@ -439,7 +441,7 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     ]);
     const r1 = await recoger(openai(servidorSse(limpio)).generateStream!(REQ));
     expect(r1.usage.reasoningTokens).toBe(0);
-    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, mensajesDelAdaptador: 0 });
+    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
 
     const conRazonamiento = sse([
       { choices: [{ delta: { reasoning_content: "pensando…" } }] },
@@ -455,7 +457,7 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     const nativo = servidor([completion('{"answer":"x"}', USO_OPENAI(0))]);
     const r1 = await openai(nativo.fetchImpl).generate({ ...REQ, schema: CONTRATO });
     expect(r1.structuredNatively).toBe(true);
-    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: true, mensajesDelAdaptador: 0 });
+    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: true, esquemaEstricto: true, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
 
     const degradado = servidor([
       { estado: 400, cuerpo: "Unrecognized request argument supplied: response_format" },
@@ -463,11 +465,11 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     ]);
     const r2 = await openai(degradado.fetchImpl).generate({ ...REQ, schema: CONTRATO });
     expect(r2.structuredNatively).toBe(false);
-    expect(atestadoDelCable(r2)).toEqual({ esquemaEnFormatoNativo: false, mensajesDelAdaptador: 1 });
+    expect(atestadoDelCable(r2)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: true, piezasDelAdaptador: 0 });
 
     const sinEsquema = servidor([completion("ok", USO_OPENAI(0))]);
     const r3 = await openai(sinEsquema.fetchImpl).generate(REQ);
-    expect(atestadoDelCable(r3)).toEqual({ esquemaEnFormatoNativo: false, mensajesDelAdaptador: 0 });
+    expect(atestadoDelCable(r3)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
   });
 
   it("Anthropic: sin bloque de razonamiento declara 0; con él (también en stream), no dice nada", async () => {
@@ -476,7 +478,7 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     ]);
     const r1 = await anthropic(texto.fetchImpl).generate(REQ);
     expect(r1.usage.reasoningTokens).toBe(0);
-    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, mensajesDelAdaptador: 0 });
+    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
 
     const redactado = servidor([
       {
@@ -517,7 +519,7 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     ]);
     const r1 = await anthropic(contrato.fetchImpl).generate({ ...REQ, schema: CONTRATO });
     expect(r1.structuredNatively).toBe(true);
-    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, mensajesDelAdaptador: 0 });
+    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
 
     const turno = servidor([
       { cuerpo: { content: [{ type: "text", text: "ok" }], stop_reason: "end_turn", usage: { input_tokens: 5, output_tokens: 2 } } },
@@ -526,15 +528,15 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
       ...REQ,
       messages: [{ role: "assistant", content: "hola" }, ...REQ.messages],
     });
-    expect(atestadoDelCable(r2)).toEqual({ esquemaEnFormatoNativo: false, mensajesDelAdaptador: 1 });
+    expect(atestadoDelCable(r2)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 1 });
   });
 
   it("un objeto que ningún adaptador propio firmó no tiene atestado; una copia rehecha lo hereda", () => {
     const r: ProviderResponse = { text: "x", usage: { inputTokens: 1, outputTokens: 1 } };
     expect(atestadoDelCable(r)).toBeUndefined();
-    atestiguar(r, { esquemaEnFormatoNativo: true, mensajesDelAdaptador: 0 });
+    atestiguar(r, { esquemaEnFormatoNativo: true, esquemaEstricto: true, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
     const copia = heredarAtestado(r, { ...r, text: "y" });
-    expect(atestadoDelCable(copia)).toEqual({ esquemaEnFormatoNativo: true, mensajesDelAdaptador: 0 });
+    expect(atestadoDelCable(copia)).toEqual({ esquemaEnFormatoNativo: true, esquemaEstricto: true, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
     expect(atestadoDelCable({ ...r })).toBeUndefined();
   });
 });
@@ -558,7 +560,9 @@ describe("E5 v2 y las piezas de la capa, como reglas puras", () => {
     hayEsquema: true,
     esquemaNativo: true,
     esquemaEnFormatoNativo: true,
-    mensajesDelAdaptador: 0,
+    esquemaEstricto: true,
+    esquemaPorPrompt: false,
+    piezasDelAdaptador: 0,
     modeloPedido: MINI,
     modeloServido: MINI,
     cacheable: true,
@@ -586,7 +590,7 @@ describe("E5 v2 y las piezas de la capa, como reglas puras", () => {
   });
 
   it("las piezas se suman: mensaje de datos + mensaje del adaptador + envoltorio del esquema", () => {
-    const r = registroDeReferencia({ ...HECHOS, mensajesDeLaCapa: 1, mensajesDelAdaptador: 1 });
+    const r = registroDeReferencia({ ...HECHOS, mensajesDeLaCapa: 1, piezasDelAdaptador: 1 });
     if (typeof r !== "object") throw new Error(r);
     expect(r.v).toBe(2);
     expect(r.layerInsertions).toBe(3);
@@ -616,12 +620,280 @@ describe("E5 v2 y las piezas de la capa, como reglas puras", () => {
   });
 
   it("motivoSinSalida: el orden de los motivos", () => {
-    expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: false, modeloRazona: true })).toBe("sampled");
-    expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: true, modeloRazona: true })).toBe("reasoning-model");
-    expect(motivoSinSalida({}, { determinista: true, modeloRazona: false })).toBe("reasoning-not-reported");
-    expect(motivoSinSalida({ reasoningTokens: 3 }, { determinista: true, modeloRazona: false })).toBe(
-      "reasoning-reported",
+    const razona = { salidaDelModelo: "reasoning-model" as const };
+    const repetible = { salidaDelModelo: undefined };
+    expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: false, ...razona })).toBe("sampled");
+    expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: true, ...razona })).toBe("reasoning-model");
+    for (const motivo of ["temperature-ignored", "unclassified-model"] as const) {
+      expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: true, salidaDelModelo: motivo })).toBe(motivo);
+    }
+    expect(motivoSinSalida({}, { determinista: true, ...repetible })).toBe("reasoning-not-reported");
+    expect(motivoSinSalida({ reasoningTokens: 3 }, { determinista: true, ...repetible })).toBe("reasoning-reported");
+    expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: true, ...repetible })).toBeUndefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Revisión adversaria: lo que el texto publicado promete, contra el cable real
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("revisión · el esquema cuenta solo en modo estricto", () => {
+  /** Un campo OPCIONAL (`refs`) impide el modo `strict` de OpenAI. */
+  const OPCIONAL: JsonSchema = {
+    type: "object",
+    additionalProperties: false,
+    required: ["answer"],
+    properties: { answer: { type: "string" }, refs: { type: "array", items: { type: "string" } } },
+  };
+
+  it("el adaptador atestigua strict solo cuando mandó strict: true", async () => {
+    const REQ = { model: "gpt-4o-mini", messages: [{ role: "user" as const, content: PREGUNTA }] };
+    const s = servidor([completion('{"answer":"x"}', USO_OPENAI(0))]);
+    const r = await openai(s.fetchImpl).generate({ ...REQ, schema: OPCIONAL });
+    const rf = s.enviados[0]!["response_format"] as { json_schema: { strict: boolean; schema: unknown } };
+    expect(rf.json_schema.strict).toBe(false);
+    expect(rf.json_schema.schema).toEqual(OPCIONAL);
+    // La respuesta no desmiente la vía nativa, pero el proveedor no la impuso.
+    expect(r.structuredNatively).toBe(true);
+    expect(atestadoDelCable(r)).toEqual({
+      esquemaEnFormatoNativo: true,
+      esquemaEstricto: false,
+      esquemaPorPrompt: false,
+      piezasDelAdaptador: 0,
+    });
+  });
+
+  it("un esquema con strict: false no deja referencia (schema-not-strict) y su repetición sigue estimada", async () => {
+    const s = servidor([completion('{"answer":"Paris"}', USO_OPENAI(0))]);
+    const { layer } = montar(openai(s.fetchImpl));
+    const req = peticion({ temperature: 0, response: { contractId: "opcional:v1", schema: OPCIONAL } });
+    const primera = await layer.generate(req);
+    expect(trazaDeReferencia(primera)?.outcome).toBe("not-written");
+    expect(trazaDeReferencia(primera)?.detail).toEqual({ reason: "schema-not-strict" });
+
+    const hit = await layer.generate(req);
+    expect(s.enviados).toHaveLength(1);
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("estimated");
+    expect(hit.report.cache.referenceRejected).toBe("absent");
+  });
+
+  it("Anthropic con el nombre del contrato ocupado: el esquema va en system como prosa y se atestigua", async () => {
+    const s = servidor([
+      { cuerpo: { content: [{ type: "text", text: '{"answer":"x"}' }], stop_reason: "end_turn", usage: { input_tokens: 5, output_tokens: 2 } } },
+    ]);
+    const r = await anthropic(s.fetchImpl).generate({
+      model: "claude-haiku-4-5",
+      messages: [{ role: "user", content: PREGUNTA }],
+      schema: CONTRATO,
+      tools: [
+        {
+          id: "bvsala_contract",
+          intents: ["answer"],
+          risk: "read",
+          parameters: { type: "object", properties: { q: { type: "string" } } },
+        },
+      ],
+    });
+    const system = s.enviados[0]!["system"] as Array<{ text: string }>;
+    expect(system.some((b) => b.text.includes("JSON Schema"))).toBe(true);
+    expect(r.structuredNatively).toBe(false);
+    expect(atestadoDelCable(r)).toEqual({
+      esquemaEnFormatoNativo: false,
+      esquemaEstricto: false,
+      esquemaPorPrompt: true,
+      piezasDelAdaptador: 0,
+    });
+  });
+
+  it("la instrucción de JSON por prompt se rechaza aunque la respuesta dijera nativo", () => {
+    const hechos: HechosDeLaPoblada = {
+      contadorSimulado: false,
+      usoPrimario: { inputTokens: 500, outputTokens: 300, reasoningTokens: 0 },
+      eliminatedInput: 0,
+      compressedInput: 0,
+      elididoLocal: 0,
+      sentLocalSinSondeo: 40,
+      baselineInput: 40,
+      codebookAplicado: false,
+      tokensDelSondeo: 0,
+      sondeoAplicado: false,
+      hayEsquema: true,
+      // Todo lo demás dice «nativo, tal cual, estricto»: la bandera manda igual.
+      esquemaNativo: true,
+      esquemaEnFormatoNativo: true,
+      esquemaEstricto: true,
+      esquemaPorPrompt: true,
+      piezasDelAdaptador: 0,
+      modeloPedido: MINI,
+      modeloServido: MINI,
+      cacheable: true,
+      mensajesDeLaCapa: 0,
+      requestId: "req-poblada",
+      at: 1_000,
+      textoServido: '{"answer":"ok"}',
+      huella: () => "huella",
+    };
+    expect(registroDeReferencia(hechos)).toBe("schema-in-prompt");
+    expect(registroDeReferencia({ ...hechos, esquemaPorPrompt: false, esquemaEstricto: false })).toBe(
+      "schema-not-strict",
     );
-    expect(motivoSinSalida({ reasoningTokens: 0 }, { determinista: true, modeloRazona: false })).toBeUndefined();
+  });
+});
+
+describe("revisión · la salida de un modelo que razona, ignora temperature o nadie clasificó no cuenta", () => {
+  // La forma de OpenRouter: un endpoint compatible con Chat Completions que
+  // ignora por defecto los parámetros que el modelo no admite. `temperature: 0`
+  // llega a un modelo que no lo honra, el razonamiento adaptativo decide no
+  // pensar y el contador dice 0: aun así, la salida de esa llamada fue muestreada.
+  const openrouter = (fetchImpl: typeof fetch) =>
+    new OpenAICompatibleProvider({ baseUrl: "https://openrouter.ai/api/v1", fetchImpl });
+
+  for (const [modelo, motivo] of [
+    ["anthropic/claude-opus-5", "reasoning-model"],
+    ["anthropic/claude-sonnet-5", "reasoning-model"],
+    ["anthropic/claude-opus-4-7", "temperature-ignored"],
+    ["anthropic/claude-opus-4-8", "temperature-ignored"],
+  ] as const) {
+    it(`${modelo} por OpenRouter, temperature 0 y reasoning_tokens 0 → entrada sí, salida 0 (${motivo})`, async () => {
+      const s = servidor([completion("Paris is the capital of France.", USO_OPENAI(0))]);
+      const { layer } = montar(openrouter(s.fetchImpl));
+      const req = peticion({ model: modelo, temperature: 0 });
+      await layer.generate(req);
+      const hit = await layer.generate(req);
+      expect(s.enviados).toHaveLength(1);
+      expect(hit.report.cost.basis).toBe("reference");
+      expect(hit.report.cache.reference?.creditedInputTokens).toBe(1736);
+      expect(hit.report.cache.reference?.creditedOutputTokens).toBe(0);
+      expect(hit.report.tokens.baselineOutput).toBe(0);
+      expect(trazaDelAcierto(hit)?.detail?.["outputNotCredited"]).toBe(motivo);
+    });
+  }
+
+  it("un modelo fuera del catálogo con precio en costModels: entrada sí, salida 0 (unclassified-model)", async () => {
+    const modelo = "meta-llama/llama-3.1-70b-instruct";
+    const s = servidor([completion("Paris is the capital of France.", USO_OPENAI(0))]);
+    const { layer } = montar(openrouter(s.fetchImpl), {
+      costModels: { [modelo]: { inputPer1k: 0.0004, outputPer1k: 0.0004, cachedInputPer1k: 0.0002 } },
+    });
+    const req = peticion({ model: modelo, temperature: 0 });
+    await layer.generate(req);
+    const hit = await layer.generate(req);
+    expect(hit.report.cost.basis).toBe("reference");
+    expect(hit.report.cache.reference?.creditedInputTokens).toBe(1736);
+    expect(hit.report.cache.reference?.creditedOutputTokens).toBe(0);
+    expect(trazaDelAcierto(hit)?.detail?.["outputNotCredited"]).toBe("unclassified-model");
+  });
+
+  it("Claude 4.6 por su adaptador propio, temperature 0 y sin bloque de razonamiento: la salida sí cuenta", async () => {
+    const s = servidor([
+      {
+        cuerpo: {
+          content: [{ type: "text", text: "Paris." }],
+          stop_reason: "end_turn",
+          usage: { input_tokens: 300, output_tokens: 20 },
+        },
+      },
+    ]);
+    const { layer } = montar(anthropic(s.fetchImpl));
+    const req = peticion({ model: "anthropic/claude-sonnet-4-6", temperature: 0 });
+    await layer.generate(req);
+    const hit = await layer.generate(req);
+    expect(s.enviados[0]!["temperature"]).toBe(0);
+    expect(hit.report.cache.reference?.creditedOutputTokens).toBe(19);
+    expect(trazaDelAcierto(hit)?.detail?.["outputNotCredited"]).toBeUndefined();
+  });
+});
+
+describe("revisión · los parámetros vacíos que el adaptador pone a una herramienta se descuentan", () => {
+  const SIN_PARAMETROS = [
+    { id: "current_time", intents: ["time", "clock"], risk: "read" as const, description: "Returns the current time." },
+  ];
+
+  it("Chat Completions: la herramienta viaja con parameters vacíos y se descuentan dos piezas", async () => {
+    const s = servidor([completion("It is noon.", USO_OPENAI(0))]);
+    const { layer } = montar(openai(s.fetchImpl));
+    const req = peticion({
+      temperature: 0,
+      tools: SIN_PARAMETROS,
+      messages: [{ role: "user", content: "What time is it?" }],
+    });
+    const primera = await layer.generate(req);
+    const tools = s.enviados[0]!["tools"] as Array<{ function: { parameters: unknown } }>;
+    expect(tools[0]!.function.parameters).toEqual({ type: "object", properties: {} });
+    expect(trazaDeReferencia(primera)?.outcome).toBe("written");
+    expect(trazaDeReferencia(primera)?.detail?.["layerInsertions"]).toBe(2);
+
+    const hit = await layer.generate(req);
+    expect(hit.report.cost.basis).toBe("reference");
+    expect(hit.report.cache.reference?.creditedInputTokens).toBe(1736 - 2 * 8);
+  });
+
+  it("Anthropic: el input_schema vacío también, sumado al «(continue)»", async () => {
+    const s = servidor([
+      {
+        cuerpo: {
+          content: [{ type: "text", text: "It is noon." }],
+          stop_reason: "end_turn",
+          usage: { input_tokens: 300, output_tokens: 20 },
+        },
+      },
+    ]);
+    const { layer } = montar(anthropic(s.fetchImpl));
+    const req = peticion({
+      model: "anthropic/claude-haiku-4-5",
+      temperature: 0,
+      tools: SIN_PARAMETROS,
+      messages: [
+        { role: "assistant", content: "I can tell the time." },
+        { role: "user", content: "What time is it?" },
+      ],
+    });
+    const primera = await layer.generate(req);
+    const tools = s.enviados[0]!["tools"] as Array<{ input_schema: unknown }>;
+    expect(tools[0]!.input_schema).toEqual({ type: "object", properties: {} });
+    // Una por el «(continue)» y dos por el input_schema vacío.
+    expect(trazaDeReferencia(primera)?.detail?.["layerInsertions"]).toBe(3);
+
+    const hit = await layer.generate(req);
+    expect(hit.report.cache.reference?.creditedInputTokens).toBe(300 - 3 * 8);
+  });
+});
+
+describe("revisión · el margen de 8 tokens por pieza, medido con el tokenizador", () => {
+  // o200k es el tokenizador de los modelos de OpenAI a los que va el
+  // envoltorio; para el «(continue)» de Anthropic es un indicador, no su
+  // tokenizador. Lo que se fija es que un cambio de nombre o de forma no pueda
+  // pasar del margen publicado sin poner esto en rojo.
+  const CABECERA_DE_TURNO = 4; // <|im_start|>rol … <|im_end|> en el formato de chat
+
+  it("el nombre del envoltorio que viaja de verdad cabe en una pieza, también como cabecera", async () => {
+    const { encode } = await import("gpt-tokenizer/encoding/o200k_base");
+    const s = servidor([completion('{"answer":"x"}', USO_OPENAI(0))]);
+    await openai(s.fetchImpl).generate({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: PREGUNTA }],
+      schema: CONTRATO,
+    });
+    const nombre = (s.enviados[0]!["response_format"] as { json_schema: { name: string } }).json_schema.name;
+    expect(encode(nombre).length).toBeLessThanOrEqual(REFERENCE_MESSAGE_ALLOWANCE);
+    expect(encode(`## ${nombre}\n\n`).length).toBeLessThanOrEqual(REFERENCE_MESSAGE_ALLOWANCE);
+    expect(encode(JSON.stringify({ name: nombre })).length).toBeLessThanOrEqual(REFERENCE_MESSAGE_ALLOWANCE);
+  });
+
+  it("el turno «(continue)» cabe en una pieza con su cabecera de turno", async () => {
+    const { encode } = await import("gpt-tokenizer/encoding/o200k_base");
+    expect(encode("(continue)").length + CABECERA_DE_TURNO).toBeLessThanOrEqual(REFERENCE_MESSAGE_ALLOWANCE);
+  });
+
+  it("la clave de parámetros vacíos entera cabe en las piezas que se descuentan por herramienta", async () => {
+    const { encode } = await import("gpt-tokenizer/encoding/o200k_base");
+    const vacio = { type: "object", properties: {} };
+    for (const clave of ["parameters", "input_schema"]) {
+      const texto = `,${JSON.stringify({ [clave]: vacio }).slice(1, -1)}`;
+      expect(encode(texto).length, clave).toBeLessThanOrEqual(
+        PIEZAS_POR_HERRAMIENTA_SIN_PARAMETROS * REFERENCE_MESSAGE_ALLOWANCE,
+      );
+    }
   });
 });

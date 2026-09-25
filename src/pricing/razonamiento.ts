@@ -1,7 +1,8 @@
 import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ¿RAZONA ESTE MODELO? La guarda de salida de la referencia, regla v2.
+// ¿SE PUEDE REPETIR LA SALIDA DE ESTE MODELO? La guarda de salida de la
+// referencia, regla v2.
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // Módulo INTERNO: no se reexporta (el catálogo sí es público; esta tabla no).
@@ -9,11 +10,13 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 // Un modelo de razonamiento factura como salida unos tokens que nadie ve y que
 // no se repiten: la longitud del razonamiento cambia de una llamada a otra
 // aunque la petición sea idéntica. Y casi ninguno respeta `temperature: 0`: la
-// familia gpt-5 y la serie o solo aceptan el valor por defecto, y una pasarela
-// que lo quite en silencio convierte una petición «determinista» en una
-// muestreada. Así que el contador de salida de la llamada que corrió NO dice lo
-// que su repetición habría escrito, y la referencia no acredita ni un token de
-// salida para estos modelos, diga lo que diga el contador.
+// familia gpt-5 y la serie o solo aceptan el valor por defecto, la API de
+// Anthropic devuelve 400 a `temperature` en Opus 4.7 y posteriores, y una
+// pasarela que lo quite en silencio (OpenRouter ignora por defecto lo que un
+// modelo no admite) convierte una petición «determinista» en una muestreada.
+// Así que el contador de salida de la llamada que corrió NO dice lo que su
+// repetición habría escrito, y la referencia no acredita ni un token de salida
+// para estos modelos, diga lo que diga el contador.
 //
 // La entrada sí se sigue acreditando: el contador de ENTRADA de unos bytes
 // idénticos es determinista también aquí, y la tarifa cacheada sigue siendo el
@@ -23,13 +26,23 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 // POR QUÉ UNA FILA POR CADA MODELO DEL CATÁLOGO, Y NO UN PATRÓN: el test
 // `referencia-es-suelo` exige que toda fila de `CATALOGO` tenga aquí su
 // respuesta. Quien añada un precio tiene que decidir también esto, y no puede
-// olvidarlo: una fila sin clasificar pone el test en rojo.
+// olvidarlo: una fila sin clasificar pone el test en rojo. Y un id que NO es
+// fila del catálogo (el cliente le pone precio con `costModels`) no está
+// clasificado por nadie: su salida NO se acredita (`unclassified-model`).
 //
-// Claude va en `false` a sabiendas: su razonamiento extendido es opcional, este
-// paquete no lo pide nunca, y la API de Anthropic rechaza `temperature` distinto
-// de 1 con él puesto, así que una petición con `temperature: 0` no puede haber
-// razonado. Si aun así una respuesta trae un bloque de razonamiento, el
-// adaptador no declara `reasoningTokens: 0` y la salida tampoco se acredita.
+// Claude, según la referencia de la API de Anthropic (septiembre de 2026):
+//   · Opus 5, Sonnet 5, Fable 5 y 5.1, Mythos 5 y 5.1 (y Opus 5.5, fuera del
+//     catálogo) RAZONAN sin que nadie lo pida: con `thinking` omitido corren el
+//     razonamiento adaptativo, o lo llevan siempre puesto, y además rechazan
+//     `temperature` con un 400. En `true`.
+//   · Opus 4.7 y 4.8 no razonan si no se pide, pero tampoco admiten
+//     `temperature` (400): una llamada con `temperature: 0` que tuvo éxito es
+//     una a la que alguien le quitó el parámetro por el camino, o sea muestreada.
+//     En `false` aquí y en `IGNORA_TEMPERATURA` abajo: la salida no cuenta.
+//   · Opus 4.6, Sonnet 4.6, Haiku 4.5 y anteriores: el razonamiento es
+//     opcional, este paquete no lo pide nunca y `temperature` se respeta. En
+//     `false`. Si aun así una respuesta trae un bloque de razonamiento, el
+//     adaptador no declara `reasoningTokens: 0` y la salida tampoco se acredita.
 //
 // Gemini va entero en `true`: 2.5 y 3.x razonan por defecto (2.5 Pro no se puede
 // apagar), y este paquete no manda ningún presupuesto de razonamiento.
@@ -66,15 +79,15 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "claude-opus-4-6": false,
   "claude-opus-4-7": false,
   "claude-opus-4-8": false,
-  "claude-opus-5": false,
+  "claude-opus-5": true,
   "claude-opus-4": false,
   "claude-sonnet-4-5": false,
   "claude-sonnet-4-6": false,
-  "claude-sonnet-5": false,
-  "claude-fable-5": false,
-  "claude-fable-5-1": false,
-  "claude-mythos-5-1": false,
-  "claude-mythos-5": false,
+  "claude-sonnet-5": true,
+  "claude-fable-5": true,
+  "claude-fable-5-1": true,
+  "claude-mythos-5-1": true,
+  "claude-mythos-5": true,
   "claude-sonnet-4": false,
   "claude-haiku-4-5": false,
   "claude-3-5-sonnet": false,
@@ -91,36 +104,67 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
 };
 
 /**
- * Nombres que delatan un modelo de razonamiento FUERA del catálogo (el cliente
- * puede ponerle precio con `costModels`), o una variante de una fila que por
- * nombre sí razona (`claude-sonnet-4-5-thinking` hereda la clave de su pariente,
- * que no razona). Se miran sobre el id sin prefijo de proveedor.
+ * Filas que NO razonan por defecto pero NO honran `temperature`: la API del
+ * proveedor rechaza el parámetro (Anthropic, Opus 4.7 y 4.8: 400), así que una
+ * llamada con `temperature: 0` que llegó a contestar es una a la que una
+ * pasarela le quitó el parámetro. Su salida fue muestreada aunque la petición
+ * pidiera lo contrario, y la referencia no la acredita. Los modelos que razonan
+ * no hace falta listarlos aquí: ya se excluyen por `RAZONA_POR_FILA`.
+ */
+export const IGNORA_TEMPERATURA: ReadonlySet<string> = new Set(["claude-opus-4-7", "claude-opus-4-8"]);
+
+/**
+ * Nombres que delatan un modelo de razonamiento aunque su clave de catálogo sea
+ * la de un pariente que no razona (`claude-sonnet-4-5-thinking` hereda la clave
+ * de `claude-sonnet-4-5`). Se miran sobre el id sin prefijo de proveedor.
  *
- * Es un patrón, no una lista cerrada, y se equivoca a propósito del lado seguro:
- * marcar de más solo cuesta la salida acreditada de una repetición; marcar de
- * menos la cobraría sobre tokens que no se repiten.
+ * Fuera del catálogo ya no hace falta adivinar: un id sin fila no acredita
+ * salida (`unclassified-model`). El patrón queda para que la traza diga el
+ * motivo verdadero cuando el nombre lo delata.
  */
 const NOMBRE_DE_RAZONAMIENTO: readonly RegExp[] = [
   /^o\d/, //                      o1, o3, o3-mini, o4-mini…
   /^gpt-5/, //                    toda la familia, también los ids fuera del catálogo
+  /^gpt-oss/, //                  razona siempre
   /^gemini-(2\.5|[3-9])/, //      Gemini que razona por defecto
+  /^claude-[a-z]+-([5-9]|\d{2})/, // la generación 5 de Claude y posteriores razonan por defecto
+  /^grok-(3-mini|[4-9])/, //      grok-3-mini, grok-4…
   /reason/, //                    deepseek-reasoner, grok-…-reasoning
-  /think/, //                     …-thinking, qwen3-…-thinking
+  /think/, //                     …-thinking, qwen3-…-thinking, `:thinking`
   /(^|[-_.])r\d($|[-_.])/, //     deepseek-r1, …-r2
   /^qwq/,
+  /^qwen3/, //                    qwen3 híbrido: razona salvo que se apague
+  /^glm-(4\.[5-9]|[5-9])/, //     glm-4.5 y posteriores
   /magistral/,
 ];
 
 /**
- * ¿Razona el modelo? Verdadero si su fila del catálogo lo dice O si su nombre
- * lo delata. Las dos fuentes suman: basta una para que la salida no cuente.
+ * Por qué la salida de un modelo NO se puede repetir, o `undefined` si se
+ * puede. ASCII inglés: va a la traza (`outputNotCredited`).
+ *   · `reasoning-model`     — razona (su fila o su nombre lo dicen);
+ *   · `temperature-ignored` — no razona, pero no honra `temperature: 0`;
+ *   · `unclassified-model`  — no es fila del catálogo: nadie decidió si razona,
+ *                             y ante la duda la salida no cuenta.
  */
-export function esModeloDeRazonamiento(model: string): boolean {
+export type SalidaNoRepetible = "reasoning-model" | "temperature-ignored" | "unclassified-model";
+
+/** El veredicto de la guarda de salida para un modelo. Ver `SalidaNoRepetible`. */
+export function salidaNoRepetible(model: string): SalidaNoRepetible | undefined {
   const barra = model.lastIndexOf("/");
   const desnudo = (barra >= 0 ? model.slice(barra + 1) : model).toLowerCase();
-  if (NOMBRE_DE_RAZONAMIENTO.some((re) => re.test(desnudo))) return true;
+  if (NOMBRE_DE_RAZONAMIENTO.some((re) => re.test(desnudo))) return "reasoning-model";
   const clave = claveDeCatalogo(model);
-  return clave !== undefined && RAZONA_POR_FILA[clave] === true;
+  if (clave === undefined) return "unclassified-model";
+  const razona = RAZONA_POR_FILA[clave];
+  if (razona === true) return "reasoning-model";
+  if (razona !== false) return "unclassified-model";
+  if (IGNORA_TEMPERATURA.has(clave)) return "temperature-ignored";
+  return undefined;
+}
+
+/** ¿Razona el modelo? Su fila del catálogo o su nombre lo dicen. */
+export function esModeloDeRazonamiento(model: string): boolean {
+  return salidaNoRepetible(model) === "reasoning-model";
 }
 
 /** Las filas del catálogo que esta tabla no clasifica (el test exige cero). */

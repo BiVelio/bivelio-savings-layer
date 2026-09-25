@@ -828,11 +828,16 @@ export interface SavingsReport {
      *                  served without calling the provider) and a byte-identical
      *                  request had already run through the layer untouched. The
      *                  baseline is the provider's own counter for that request,
-     *                  valued at the provider's cached-input rate, with output
-     *                  credited only under deterministic sampling on a model that
-     *                  does not reason and when the provider reported zero
-     *                  reasoning tokens, and then at 95% of its counter. Valued
-     *                  low on purpose.
+     *                  valued at the provider's cached-input rate. Output is
+     *                  credited only under deterministic sampling, on a model
+     *                  with a list price in the catalog that does not reason and
+     *                  honors that setting, when the call that ran carried no
+     *                  hidden reasoning (zero reasoning tokens reported, or no
+     *                  reasoning block where the provider does not break them
+     *                  out), and then at 95% of its counter. With an output
+     *                  schema, only when the schema traveled exactly as sent, in
+     *                  strict mode, in the provider's native response-format
+     *                  parameter. Valued low on purpose.
      *                  Enters the commission base; `cache.reference` carries the
      *                  arithmetic and the id of the request that ran.
      * - `estimated`  — the call was AVOIDED, so there never was a provider

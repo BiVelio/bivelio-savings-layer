@@ -72,10 +72,14 @@ export interface ProviderUsage {
    * Output tokens the provider billed for hidden reasoning, already included in
    * `outputTokens` (OpenAI `completion_tokens_details.reasoning_tokens`).
    *
-   * `0` states that the answer carried no hidden reasoning. Absent means the
-   * provider did not say, which is NOT the same as 0: a repeat served by
-   * reference only credits output when the call that ran reported exactly 0,
-   * because reasoning tokens are neither visible nor deterministic.
+   * `0` states that the answer carried no hidden reasoning. Where the provider
+   * does not break reasoning out (Anthropic's Messages API), the built-in
+   * adapter reports `0` only when the answer has no `thinking` or
+   * `redacted_thinking` block, and leaves this absent otherwise. Absent means
+   * nobody said, which is NOT the same as 0: a repeat served by reference only
+   * credits output when the call that ran reported exactly 0, because reasoning
+   * tokens are neither visible nor deterministic. A custom provider should set
+   * it only from its provider's own counter or an equally direct signal.
    */
   reasoningTokens?: number;
   /**

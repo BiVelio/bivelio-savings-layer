@@ -78,25 +78,32 @@ Una llamada evitada —un acierto de la caché exacta o un seguidor de una
 ráfaga coalescida— sirve la respuesta de otra petición. Si esa otra petición
 era **idéntica byte a byte** a esta y pasó por la capa **intacta** (sin nada
 quitado ni añadido, sin codebook, sin sondeo, con el modelo pedido y, si
-llevaba contrato de salida, con el esquema del cliente impuesto por el
-proveedor **de forma nativa y tal cual**) contra un proveedor de verdad —el mock
+llevaba contrato de salida, con el esquema del cliente enviado **tal cual y en
+modo estricto** en el parámetro nativo de formato de respuesta del proveedor)
+contra un proveedor de verdad —el mock
 de demo inventa su contador, y ese no vale—, entonces su contador del proveedor ES lo que la
 ingenua habría facturado por esta. No hay mundo que suponer: ese mundo ocurrió, está en el
 informe de aquella petición y en el uso del proveedor de ese día, y el cliente
 ya lo pagó.
 
-Aun así se valora **a la baja**, para que sea un suelo y no una estimación:
+Aun así se valora **a la baja**. La entrada es un suelo; la salida, cuando
+cuenta, lleva un margen (el 95 %), no un suelo, porque `temperature: 0` solo la
+reproduce aproximadamente:
 
 - toda la entrada a la tarifa de **entrada cacheada**, que es el mínimo que el
   proveedor cobra por un token de entrada aunque la ingenua acertara entera en
   su caché de prefijo;
 - la salida, al 95 % de su contador y solo con `temperature: 0` (con
-  muestreo, 0: el proveedor no habría escrito lo mismo), con un modelo que no
-  razona y cuando el contador de la llamada que corrió declaró **exactamente 0**
-  tokens de razonamiento; nunca por encima del tope de salida de la repetición;
+  muestreo, 0: el proveedor no habría escrito lo mismo), con un modelo que es
+  fila del catálogo, no razona y honra ese parámetro, y cuando la llamada que
+  corrió no llevó razonamiento oculto: su proveedor declaró **exactamente 0**
+  tokens de razonamiento o, donde no los desglosa (Anthropic), su respuesta no
+  trae bloque de razonamiento; nunca por encima del tope de salida de la
+  repetición;
 - 8 tokens de margen por cada pieza que la capa insertó: el mensaje de datos,
-  el turno que añade un adaptador (el «(continue)» de Anthropic) y el
-  envoltorio del esquema nativo (`response_format`);
+  el turno que añade un adaptador (el «(continue)» de Anthropic), el envoltorio
+  del esquema nativo (`response_format`) y, por cada herramienta que no traía
+  parámetros, dos piezas por los parámetros vacíos que le pone el adaptador;
 - nunca por encima del tier más barato que la repetición podía obtener;
 - sin precio cacheado documentado **para ese modelo**, no hay referencia: su
   fila propia del catálogo (o una instantánea con fecha de ella) o el precio que
@@ -115,38 +122,61 @@ repetición de una llamada **optimizada** tampoco tiene referencia, porque su
 contador no es el de la ingenua. Para eso sigue haciendo falta el A/B de abajo.
 Las reglas exactas viven en `src/pipeline/referencia.ts`.
 
-**Regla v2 (septiembre de 2026, antes de que ningún SDK publicara la v1).** Dos
-decisiones que el dueño delegó, las dos tomadas del lado del suelo:
+**Regla v2 (septiembre de 2026).** Dos decisiones que el dueño delegó, las dos
+tomadas del lado seguro:
 
 - **El esquema nativo entra.** En la v1 una petición con contrato de salida solo
   dejaba referencia con el backend `provider-native` configurado, y la
   configuración por defecto no configura ninguno: todo el tráfico con esquema
   quedaba fuera aunque el esquema viajara nativo. La v2 mira lo que **pasó**:
-  entra cuando la respuesta confirma que el proveedor impuso el esquema
-  (`structuredNatively === true`) **y** el adaptador de este paquete atestigua
-  que viajó tal cual en su parámetro nativo de formato de respuesta, sin una
-  palabra de la capa en el prompt. El esquema es del cliente —va en su petición y
-  en la huella—; lo único de la capa es el envoltorio (el nombre del
-  `response_format`), y ese se descuenta como una pieza más. Se quedan fuera, a
-  propósito: el esquema pedido por prompt (un modelo que rechaza
+  entra cuando el adaptador de este paquete atestigua que el esquema viajó tal
+  cual en su parámetro nativo de formato de respuesta, **con `strict: true`** y
+  sin una palabra de la capa en el prompt, **y** la respuesta no lo desmiente
+  (`structuredNatively === true`: el proveedor no rechazó el parámetro). Lo que
+  se afirma es lo que salió por el cable, no que el proveedor lo impusiera: un
+  endpoint compatible que acepte e ignore `response_format` no cambia el
+  contador, que sigue siendo el de la petición del cliente. El esquema es del
+  cliente —va en su petición y en la huella—; lo único de la capa es el
+  envoltorio (el nombre del `response_format`), y ese se descuenta como una
+  pieza más. Se quedan fuera, a propósito: el esquema con `strict: false` (un
+  campo opcional lo impide en OpenAI, y entonces la forma la garantiza la capa,
+  no el proveedor), el esquema pedido por prompt (un modelo que rechaza
   `response_format`), la pista de límites de JSON (ya la excluía E2), la
   herramienta de contrato de Anthropic (nativa, pero con nombre, descripción y
-  prompt de herramientas que puso la capa) y cualquier proveedor de terceros,
-  que no puede atestiguar su cable.
+  prompt de herramientas que puso nuestro adaptador) y cualquier proveedor de
+  terceros, que no puede atestiguar su cable.
 - **La guarda de razonamiento.** Los tokens de razonamiento no se ven y su
   número cambia entre llamadas idénticas, y los modelos que razonan casi nunca
   respetan `temperature: 0` (una pasarela que lo quita en silencio convierte la
-  petición en muestreada). Así que la salida no se acredita si el modelo razona
-  según su fila del catálogo (`src/pricing/razonamiento.ts`; toda fila nueva
-  tiene que decirlo o el test se pone rojo) ni si el contador declaró
-  razonamiento **o no dijo cuánto**: un contador callado no es un 0. Se valoró
-  excluir la referencia entera y se descartó: el contador de **entrada** de unos
-  bytes idénticos es determinista también en un modelo que razona, y la tarifa
+  petición en muestreada: OpenRouter ignora por defecto lo que un modelo no
+  admite). Así que la salida no se acredita si el modelo razona según su fila
+  del catálogo (`src/pricing/razonamiento.ts`; toda fila nueva tiene que
+  decirlo o el test se pone rojo), si no honra `temperature` (Opus 4.7 y 4.8 la
+  rechazan con un 400: si una llamada con `temperature: 0` contestó, alguien le
+  quitó el parámetro), si el modelo no es fila del catálogo (nadie decidió si
+  razona), ni si el contador declaró razonamiento **o no dijo cuánto**: un
+  contador callado no es un 0. La generación 5 de Claude razona sin que se le
+  pida (Opus 5 y Sonnet 5 corren el razonamiento adaptativo con `thinking`
+  omitido; Fable y Mythos lo llevan siempre puesto), así que va como modelo de
+  razonamiento. En Anthropic, que no desglosa el razonamiento en `usage`, el 0
+  lo declara el adaptador cuando la respuesta no trae bloque `thinking` ni
+  `redacted_thinking`; con bloque no declara nada. Se valoró excluir la
+  referencia entera y se descartó: el contador de **entrada** de unos bytes
+  idénticos es determinista también en un modelo que razona, y la tarifa
   cacheada sigue siendo el mínimo que el proveedor cobra por repetirlos.
 
 El registro pasó a formato v2: un lector de la v1 declara `malformed` un
 registro v2 y al revés, así que nunca se valora un contador con una regla que
 no lo escribió.
+
+**La verja de versión del servidor.** La etiqueta v0.4.23 se cortó con la regla
+v1, y la regla con la que un SDK valoró una repetición no viaja en el registro
+de uso: el cierre sella `reference-v2` para el extracto entero. Para que ese
+sello sea cierto se publique lo que se publique, el ingest degrada a
+`estimated` toda referencia de un proceso que no declara versión o que declara
+una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.24, `src/version.ts` y su
+espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
+en `reference_*` ni en la base.
 
 ### Qué es el A/B (anillo 2, #224) y por qué es la única salida
 
