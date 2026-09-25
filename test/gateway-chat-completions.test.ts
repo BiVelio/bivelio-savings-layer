@@ -311,7 +311,7 @@ describe("gateway · respuestas JSON por dialecto", () => {
     );
   });
 
-  it("(j) coalescencia: dos chat/completions JSON idénticas → la primaria measured y la gemela estimated (singleflight)", async () => {
+  it("(j) coalescencia: dos chat/completions JSON idénticas → la primaria measured y la gemela por referencia (singleflight)", async () => {
     const up = await upstreamFalso(json({ object: "chat.completion", choices: [], usage: { prompt_tokens: 100, completion_tokens: 20 } }, 150));
     const { gw, registros } = await gateway(up.puerto, { coalescer: true });
     const cuerpo = JSON.stringify({ model: MODELO, messages: [{ role: "user", content: "hola" }] });
@@ -326,8 +326,32 @@ describe("gateway · respuestas JSON por dialecto", () => {
     const medida = regs.find((r) => r["basis"] === "measured")!;
     const gemela = regs.find((r) => r["cacheResult"] === "singleflight")!;
     expect(medida["actualInputTokens"]).toBe(100);
-    expect(gemela["basis"]).toBe("estimated");
+    // Parte G · primaria intacta y gpt-4o-mini con lectura documentada: suelo
+    // por referencia (toda la entrada a 0,000075/1K, sin salida: no hay
+    // temperature 0 en el cuerpo).
+    expect(gemela["basis"]).toBe("reference");
+    expect(gemela["baselineCost"]).toBeCloseTo((100 / 1000) * 0.000075, 12);
+    expect(gemela["referenceRequestId"]).toBe(medida["requestId"]);
     expect(gemela["avoidedLlm"]).toBe(1);
+  });
+
+  it("(j2) ⛔ coalescencia con la inyección de include_usage: la primaria NO viajó intacta → la gemela sigue estimated", async () => {
+    // La inyección cambia el cuerpo que viaja (`stream_options`): el contador de
+    // la primaria ya no es el de la petición del cliente byte a byte.
+    const up = await upstreamFalso((r, res) => setTimeout(() => sse(comoOpenAI)(r, res), 150));
+    const { gw, lineas, registros } = await gateway(up.puerto, { coalescer: true, usageInject: true });
+    const cuerpo = JSON.stringify({ model: MODELO, stream: true, messages: [{ role: "user", content: "hola" }] });
+    const p1 = pedir(gw.puerto, "/v1/chat/completions", cuerpo).then((r) => r.text());
+    await new Promise((r) => setTimeout(r, 40));
+    const p2 = pedir(gw.puerto, "/v1/chat/completions", cuerpo).then((r) => r.text());
+    await Promise.all([p1, p2]);
+    expect(up.recibidas).toHaveLength(1);
+
+    const regs = await registros(2);
+    const gemela = regs.find((r) => r["cacheResult"] === "singleflight")!;
+    expect(gemela["basis"]).toBe("estimated");
+    expect(gemela["referenceRequestId"]).toBeUndefined();
+    expect(lineas.join("\n")).toContain("estimated, not by reference: layer-changed-request");
   });
 });
 
@@ -533,5 +557,57 @@ describe("gateway · lo que no se mide se dice, petición a petición", () => {
     const noMedidas = lineas.filter((l) => l.includes("not metered"));
     expect(noMedidas).toHaveLength(2);
     for (const l of noMedidas) expect(l).toContain("the request did not ask for usage (stream_options.include_usage)");
+  });
+});
+
+describe("gateway · /v1/responses en stream: los tres finales", () => {
+  const ev = (tipo: string, response: unknown): string => `event: ${tipo}\ndata: ${JSON.stringify({ type: tipo, response })}\n\n`;
+  const INICIO = ev("response.created", { id: "resp_1", status: "in_progress" });
+  const TEXTO = 'event: response.output_text.delta\ndata: {"type":"response.output_text.delta","delta":"Hola"}\n\n';
+
+  it("(r1) ⛔ un stream que acaba en response.incomplete SE FACTURA: ahora se mide con el usage de ese evento", async () => {
+    const up = await upstreamFalso(
+      sse(
+        INICIO +
+          TEXTO +
+          ev("response.incomplete", {
+            id: "resp_1",
+            status: "incomplete",
+            incomplete_details: { reason: "max_output_tokens" },
+            usage: { input_tokens: 100, input_tokens_details: { cached_tokens: 40 }, output_tokens: 16 },
+          }),
+      ),
+    );
+    const { gw, lineas, registros } = await gateway(up.puerto);
+    await (await pedir(gw.puerto, "/v1/responses", JSON.stringify({ model: MODELO, input: "hola", stream: true }))).text();
+
+    const regs = await registros(1);
+    expect(regs).toHaveLength(1);
+    expect(regs[0]!["basis"]).toBe("measured");
+    expect(regs[0]!["actualInputTokens"]).toBe(100);
+    expect(regs[0]!["actualOutputTokens"]).toBe(16);
+    expect(regs[0]!["providerCachedInputTokens"]).toBe(40);
+    expect(lineas.join("\n")).not.toContain("not metered");
+  });
+
+  it("(r2) response.failed CON usage también se mide; SIN usage no se inventa nada y la línea lo dice", async () => {
+    const conUso = await upstreamFalso(
+      sse(INICIO + ev("response.failed", { id: "resp_1", status: "failed", usage: { input_tokens: 80, output_tokens: 0 } })),
+    );
+    const a = await gateway(conUso.puerto);
+    await (await pedir(a.gw.puerto, "/v1/responses", JSON.stringify({ model: MODELO, input: "hola", stream: true }))).text();
+    const regsA = await a.registros(1);
+    expect(regsA).toHaveLength(1);
+    expect(regsA[0]!["actualInputTokens"]).toBe(80);
+
+    const sinUso = await upstreamFalso(
+      sse(INICIO + ev("response.failed", { id: "resp_1", status: "failed", error: { code: "server_error" }, usage: null })),
+    );
+    const b = await gateway(sinUso.puerto, { avisosDeNoMedido: false });
+    await (await pedir(b.gw.puerto, "/v1/responses", JSON.stringify({ model: MODELO, input: "hola", stream: true }))).text();
+    expect(await b.registros()).toEqual([]);
+    expect(b.lineas.join("\n")).toContain(
+      "POST /v1/responses → 200 (stream) · not metered: the response ended as response.failed without usage",
+    );
   });
 });

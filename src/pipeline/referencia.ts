@@ -1,7 +1,6 @@
 import { sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import type { SavingsRequest } from "../contracts/types.js";
 import { FACTOR_DIFERIDO_MINIMO, veredictoDelTier } from "../economics/tier-diferido.js";
-import { CATALOGO, claveDeCatalogo } from "../pricing/catalogo.js";
 import type { SalidaNoRepetible } from "../pricing/razonamiento.js";
 import {
   REFERENCE_MAX_AGE_MS,
@@ -178,37 +177,11 @@ export function muestreoDeterminista(r: SavingsRequest): boolean {
   return r.temperature === 0;
 }
 
-/** Lo único que puede seguir a la clave para que el id sea el MISMO modelo:
- *  una fecha de instantánea, `2024-07-18` (OpenAI) o `20250929` (Anthropic). */
-const FECHA_DE_INSTANTANEA = /^\d{4}-?\d{2}-?\d{2}$/;
-
-/**
- * El precio de lista de un modelo SOLO si es SU fila del catálogo: el id es la
- * clave (con o sin prefijo de proveedor) o una instantánea con fecha de ella.
- *
- * `precioDeLista` deja que un id con sufijo de LETRA herede la fila de su
- * pariente (`-latest`, `-preview`), porque para TARIFAR un informe una cifra
- * aproximada vale más que el precio ilustrativo. Para la referencia no: el
- * sufijo también puede ser otro modelo más barato. `gemini-2.5-flash-lite`
- * heredaba la fila de `gemini-2.5-flash`, y una repetición suya se valoraba al
- * triple de su entrada cacheada real y a unas seis veces su salida: un crédito
- * 2,4 veces mayor que la llamada que reemplazaba, dentro de la base de
- * comisión. Una referencia es un suelo o no es nada, así que cualquier id que no
- * sea exactamente la fila da `undefined` y L6 lo rechaza (`no-cached-price`).
- * El alias legítimo que se pierde (`-latest`) solo cuesta que su repetición
- * siga `estimated`; el cliente lo recupera declarando `costModels`.
- */
-export function precioDeListaPropio(model: string): CostModel | undefined {
-  const clave = claveDeCatalogo(model);
-  if (clave === undefined) return undefined;
-  const barra = model.lastIndexOf("/");
-  const desnudo = barra >= 0 ? model.slice(barra + 1) : model;
-  if (clave !== model && clave !== desnudo) {
-    // `buscarPorModelo` ya garantiza que tras la clave viene un separador.
-    if (!FECHA_DE_INSTANTANEA.test(desnudo.slice(clave.length + 1))) return undefined;
-  }
-  return CATALOGO[clave];
-}
+// `precioDeListaPropio` (la fila PROPIA del modelo, nunca la de un pariente)
+// vive en el catálogo desde la Parte G: el gateway valora su gemela coalescida
+// con la MISMA regla y no puede importar de src/pipeline/ (verja de no-solape).
+// Se reexporta aquí para que el pipeline y sus tests no cambien de import.
+export { precioDeListaPropio } from "../pricing/catalogo.js";
 
 /** Los hechos de la llamada que corrió, tal como los deja el pipeline en la etapa 12. */
 export interface HechosDeLaPoblada {

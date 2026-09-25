@@ -23,7 +23,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
  */
 
 /** When these prices were last checked against the providers' public rates. */
-export const PRECIOS_AL_DIA = "2026-09-06";
+export const PRECIOS_AL_DIA = "2026-09-25";
 
 /**
  * Key = the model id as the provider publishes it, without a vendor prefix.
@@ -72,6 +72,34 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // el vigía cazó el 2x en su segunda corrida (2026-08-24) y manda la oficial.
   "gpt-5.6-sol":        { inputPer1k: 0.004,    outputPer1k: 0.02,     cachedInputPer1k: 0.0004    },
   "gpt-5.6-terra":      { inputPer1k: 0.002,    outputPer1k: 0.012,    cachedInputPer1k: 0.0002    },
+
+  // La serie o (razonamiento). Verificada el 2026-09-25 contra la página oficial
+  // de precios de OpenAI (developers.openai.com/api/docs/pricing, tabla
+  // «Standard», USD por 1M: o3 $2 / $0.50 / $8; o3-mini $1.10 / $0.55 / $4.40;
+  // o4-mini $1.10 / $0.275 / $4.40; o3-pro $20 / sin precio cacheado / $80) y,
+  // el mismo día, contra la referencia del vigía (scripts/vigia-precios.mjs:
+  // model_prices_and_context_window.json de BerriAI/litellm), que da las mismas
+  // cifras. o3-pro NO lleva precio de lectura porque la tabla oficial no lo
+  // publica: sin él, sus tokens cacheados se tarifan a entrada, el lado que no
+  // infla nada.
+  //
+  // Lo que se queda FUERA a propósito, aunque el tokenizador lo mapee a o200k:
+  //   · o1: la tabla oficial dice $15 / $7.50 / $60, pero su lectura de caché
+  //     (0,0075 por 1K) está por ENCIMA del techo con el que el ingest acota el
+  //     dinero a precio de lectura (TECHO_PRECIO_LECTURA_PER_1K = 0,002,
+  //     apps/web/lib/metering/techo-precio-lectura.ts). Meterla obliga a subir
+  //     ese techo para TODOS los modelos —una verja más floja— o a degradar sus
+  //     referencias legítimas. Es decisión del dueño, no de una fila.
+  //   · o1-pro ($150 / $600): su salida supera el techo de salida del mismo
+  //     ingest (0,08 por 1K). Mismo motivo.
+  //   · o1-mini: ya no figura en la tabla oficial ni en la referencia del vigía.
+  //     Sin fuente no hay fila.
+  // Ninguna de las tres puede heredar de otra fila (no existe clave `o1`), así
+  // que siguen sin precio y el gateway lo dice en su log.
+  "o3":      { inputPer1k: 0.002,  outputPer1k: 0.008,  cachedInputPer1k: 0.0005   },
+  "o3-mini": { inputPer1k: 0.0011, outputPer1k: 0.0044, cachedInputPer1k: 0.00055  },
+  "o3-pro":  { inputPer1k: 0.02,   outputPer1k: 0.08 },
+  "o4-mini": { inputPer1k: 0.0011, outputPer1k: 0.0044, cachedInputPer1k: 0.000275 },
 
   // ── Anthropic ─────────────────────────────────────────────────────────────
   // Anthropic bills a cache read at 10% of the input rate.
@@ -199,9 +227,26 @@ export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): 
   return Object.keys(catalogo).sort((a, b) => b.length - a.length);
 }
 
+/**
+ * Ids que NO pueden heredar la fila de un pariente por prefijo, aunque el
+ * emparejador se la daría: son OTRO modelo con otro precio y ninguna fuente
+ * citable lo publica hoy. Sin esta lista, `o3-deep-research` heredaría la fila
+ * de `o3` (un sufijo de letra es «alias» para `buscarPorModelo`) y se tarifaría
+ * a un quinto de lo que factura, con el aviso de «sin precio» callado. Aquí dan
+ * `undefined`, que es la respuesta honesta: se reenvían y se dice que no se
+ * miden. Interno: la tabla pública sigue siendo `CATALOGO`.
+ */
+const SIN_FILA_PROPIA: readonly string[] = ["o3-deep-research", "o4-mini-deep-research"];
+
+/** El catálogo con las ids vetadas a null: lo que de verdad consulta la búsqueda. */
+const TABLA_DE_BUSQUEDA: Readonly<Record<string, CostModel | null>> = {
+  ...CATALOGO,
+  ...Object.fromEntries(SIN_FILA_PROPIA.map((k) => [k, null])),
+};
+
 /** Keys longest-first, so the most specific prefix wins: `claude-haiku-4-5`
  *  before `claude-haiku`. */
-const CLAVES_POR_LONGITUD = clavesPorLongitud(CATALOGO);
+const CLAVES_POR_LONGITUD = clavesPorLongitud(TABLA_DE_BUSQUEDA);
 
 /**
  * The list price for a model, or `undefined` when it is not in the catalogue.
@@ -209,12 +254,12 @@ const CLAVES_POR_LONGITUD = clavesPorLongitud(CATALOGO);
  * @param model the id as the caller passes it, with or without a vendor prefix.
  */
 export function precioDeLista(model: string): CostModel | undefined {
-  return buscarPorModelo(CATALOGO, CLAVES_POR_LONGITUD, model);
+  return buscarPorModelo(TABLA_DE_BUSQUEDA, CLAVES_POR_LONGITUD, model) ?? undefined;
 }
 
-/** Catálogo de identidad: cada clave apuntando a sí misma. Se calcula UNA vez. */
-const CLAVES_IDENTIDAD: Readonly<Record<string, string>> = Object.fromEntries(
-  Object.keys(CATALOGO).map((k) => [k, k]),
+/** Catálogo de identidad: cada clave apuntando a sí misma (y las vetadas a null). Se calcula UNA vez. */
+const CLAVES_IDENTIDAD: Readonly<Record<string, string | null>> = Object.fromEntries(
+  Object.keys(TABLA_DE_BUSQUEDA).map((k) => [k, TABLA_DE_BUSQUEDA[k] === null ? null : k]),
 );
 
 /**
@@ -237,5 +282,41 @@ const CLAVES_IDENTIDAD: Readonly<Record<string, string>> = Object.fromEntries(
  * (0,001 frente a 0,00025) y confundirlas mueve el veredicto de una palanca.
  */
 export function claveDeCatalogo(model: string): string | undefined {
-  return buscarPorModelo(CLAVES_IDENTIDAD, CLAVES_POR_LONGITUD, model);
+  return buscarPorModelo(CLAVES_IDENTIDAD, CLAVES_POR_LONGITUD, model) ?? undefined;
+}
+
+/** Lo único que puede seguir a la clave para que el id sea el MISMO modelo:
+ *  una fecha de instantánea, `2024-07-18` (OpenAI) o `20250929` (Anthropic). */
+const FECHA_DE_INSTANTANEA = /^\d{4}-?\d{2}-?\d{2}$/;
+
+/**
+ * El precio de lista de un modelo SOLO si es SU fila del catálogo: el id es la
+ * clave (con o sin prefijo de proveedor) o una instantánea con fecha de ella.
+ *
+ * `precioDeLista` deja que un id con sufijo de LETRA herede la fila de su
+ * pariente (`-latest`, `-preview`), porque para TARIFAR un informe una cifra
+ * aproximada vale más que el precio ilustrativo. Para la referencia no: el
+ * sufijo también puede ser otro modelo más barato. `gemini-2.5-flash-lite`
+ * heredaba la fila de `gemini-2.5-flash`, y una repetición suya se valoraba al
+ * triple de su entrada cacheada real y a unas seis veces su salida: un crédito
+ * 2,4 veces mayor que la llamada que reemplazaba, dentro de la base de
+ * comisión. Una referencia es un suelo o no es nada, así que cualquier id que no
+ * sea exactamente la fila da `undefined` y L6 lo rechaza (`no-cached-price`).
+ * El alias legítimo que se pierde (`-latest`) solo cuesta que su repetición
+ * siga `estimated`; el cliente lo recupera declarando `costModels`.
+ *
+ * Vive aquí, y no en src/pipeline/referencia.ts (que la reexporta), porque el
+ * gateway valora su gemela coalescida con la MISMA regla (Parte G) y no puede
+ * importar del pipeline. Interno: src/index.ts no la reexporta.
+ */
+export function precioDeListaPropio(model: string): CostModel | undefined {
+  const clave = claveDeCatalogo(model);
+  if (clave === undefined) return undefined;
+  const barra = model.lastIndexOf("/");
+  const desnudo = barra >= 0 ? model.slice(barra + 1) : model;
+  if (clave !== model && clave !== desnudo) {
+    // `buscarPorModelo` ya garantiza que tras la clave viene un separador.
+    if (!FECHA_DE_INSTANTANEA.test(desnudo.slice(clave.length + 1))) return undefined;
+  }
+  return CATALOGO[clave];
 }

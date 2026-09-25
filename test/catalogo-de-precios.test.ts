@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { CATALOGO, precioDeLista, PRECIOS_AL_DIA } from "../src/pricing/catalogo.js";
+import { CATALOGO, claveDeCatalogo, precioDeLista, PRECIOS_AL_DIA } from "../src/pricing/catalogo.js";
 
 /**
  * EL CATÁLOGO DE PRECIOS DE LISTA.
@@ -148,6 +148,38 @@ describe("la forma del catálogo", () => {
     // Y la generación 5 sin punto sigue al 10%: la excepción es SOLO de la 5.1.
     expect(CATALOGO["claude-fable-5"]!.cachedInputPer1k).toBe(0.001);
     expect(CATALOGO["claude-mythos-5"]!.cachedInputPer1k).toBe(0.001);
+  });
+
+  it("la serie o: las cifras de la tabla Standard oficial de OpenAI (2026-09-25), y solo las que caben en las verjas", () => {
+    // USD por 1M en la página → por 1K aquí. o3-pro NO publica lectura de caché:
+    // el campo se omite (sus tokens cacheados se tarifan a entrada).
+    expect(CATALOGO["o3"]).toEqual({ inputPer1k: 0.002, outputPer1k: 0.008, cachedInputPer1k: 0.0005 });
+    expect(CATALOGO["o3-mini"]).toEqual({ inputPer1k: 0.0011, outputPer1k: 0.0044, cachedInputPer1k: 0.00055 });
+    expect(CATALOGO["o4-mini"]).toEqual({ inputPer1k: 0.0011, outputPer1k: 0.0044, cachedInputPer1k: 0.000275 });
+    expect(CATALOGO["o3-pro"]).toEqual({ inputPer1k: 0.02, outputPer1k: 0.08 });
+    // Las instantáneas con fecha heredan de SU fila (o3-mini, no o3).
+    expect(precioDeLista("o3-mini-2025-01-31")).toEqual(CATALOGO["o3-mini"]);
+    expect(precioDeLista("o3-2025-04-16")).toEqual(CATALOGO["o3"]);
+    expect(precioDeLista("o3-pro-2025-06-10")).toEqual(CATALOGO["o3-pro"]);
+    // Fuera a propósito (ver el comentario del catálogo): o1 y o1-pro no caben
+    // en los techos del ingest, y o1-mini ya no tiene fuente. Sin clave `o1`
+    // ninguno puede heredar nada.
+    for (const m of ["o1", "o1-2024-12-17", "o1-mini", "o1-pro", "openai/o1"]) {
+      expect(precioDeLista(m), m).toBeUndefined();
+    }
+  });
+
+  it("⛔ un id con fila VETADA no hereda la de su pariente: deep-research no es o3 a otro nombre", () => {
+    // Sin el veto, `o3-deep-research` heredaría la fila de `o3` (un sufijo de
+    // letra es «alias» para el emparejador) y se tarifaría a un quinto de lo
+    // que factura, con el aviso de «sin precio» callado.
+    for (const m of ["o3-deep-research", "o3-deep-research-2025-06-26", "openai/o3-deep-research", "o4-mini-deep-research"]) {
+      expect(precioDeLista(m), m).toBeUndefined();
+      expect(claveDeCatalogo(m), m).toBeUndefined();
+    }
+    // Y el veto no toca a nadie más.
+    expect(precioDeLista("o3")).toEqual(CATALOGO["o3"]);
+    expect(precioDeLista("o4-mini-2025-04-16")).toEqual(CATALOGO["o4-mini"]);
   });
 
   it("deja por escrito de cuándo son los precios", () => {
