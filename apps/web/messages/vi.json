@@ -660,7 +660,7 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 12,0%",
           "que": "hóa đơn giảm, xác minh ở mức 95% · so với tích hợp chưa tối ưu, không streaming"
         }
       ],
