@@ -33,12 +33,19 @@ function ficheros(dir: string, acc: string[] = []): string[] {
 
 const LO_QUE_FACTURA = [
   "apps/web/lib/billing",
+  "apps/web/lib/stripe",
+  "apps/web/app/api/billing",
+  "apps/web/app/api/stripe",
   "apps/web/app/api/cron/cierre-extractos",
   "apps/web/app/api/cron/facturar-extractos",
+  "apps/web/app/api/cron/dunning",
   "apps/web/app/[locale]/dashboard/extracto",
   "apps/web/lib/metering/usage.ts",
   "apps/web/app/api/metering/usage",
 ];
+
+/** Lo que, en SQL, es dinero facturable: si una migración lo nombra, no puede nombrar además la verificación. */
+const SQL_QUE_FACTURA = ["ingest_usage_batch", "usage_daily", "extractos", "measured_", "reference_", "comision", "commission"];
 
 describe("⛔ la facturación no lee la verificación", () => {
   const todos = LO_QUE_FACTURA.flatMap((r) => {
@@ -60,6 +67,25 @@ describe("⛔ la facturación no lee la verificación", () => {
     const anteriores = readdirSync(dir).filter((f) => /^\d{4}_/.test(f) && Number(f.slice(0, 4)) < 30);
     expect(anteriores.length).toBeGreaterThan(20);
     const malas = anteriores.filter((f) => readFileSync(join(dir, f), "utf8").includes("verification_"));
+    expect(malas).toEqual([]);
+  });
+
+  it("ninguna migración de la 0030 en adelante junta `verification_` con el dinero facturable", () => {
+    // El SQL futuro que llevara pares a un extracto, a `usage_daily` o a la
+    // comisión tendría que nombrar las dos cosas en el mismo fichero. Si algún día
+    // se quiere de verdad, es otra especificación y el sí del dueño: se cambia
+    // este test a la vista, no se cuela. (Comentarios fuera: 0030 explica en
+    // prosa qué NO toca.)
+    const dir = join(RAIZ, "db/migrations");
+    const desde30 = readdirSync(dir).filter((f) => /^\d{4}_/.test(f) && Number(f.slice(0, 4)) >= 30);
+    expect(desde30).toContain("0030_banco_propio.sql");
+    const malas = desde30.filter((f) => {
+      const codigo = readFileSync(join(dir, f), "utf8")
+        .split("\n")
+        .map((l) => l.replace(/--.*$/, ""))
+        .join("\n");
+      return codigo.includes("verification_") && SQL_QUE_FACTURA.some((x) => codigo.includes(x));
+    });
     expect(malas).toEqual([]);
   });
 });
