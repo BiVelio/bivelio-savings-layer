@@ -339,6 +339,43 @@ la elisión, que sigue bloqueado por publicar #226 en npm.
 
 ---
 
+## Parte 4 — Tu propio banco: instrumento, no base (añadido 2026-09-25)
+
+El A/B ya no vive solo en nuestro banco. Con `verification: { sampleRate }` en
+`createSavingsLayer` (apagado por defecto), el SDK manda una fracción aleatoria
+de las peticiones elegibles **otra vez, sin optimizar, al proveedor del
+cliente** —después de servir; la respuesta se descarta— y reporta el par medido
+en los dos lados. El panel lo enseña en **Prueba › Tu banco**: el suelo del IC
+95 % por bootstrap estratificado (pesos = cuota de población de cada estrato),
+la diferencia media por cada mil peticiones, una línea de «peor caso para la
+capa» (cada copia valorada como si toda su entrada viniera de caché) y cada par
+en CSV.
+
+**No es base de comisión, y no por prudencia sino por veredicto.** El panel de
+jueces del roadmap refutó el carril «verified» (extrapolar N·d_low a todo el
+tráfico) en tres líneas:
+
+1. N·d_low cobra peticiones que nadie midió y no ve las colas negativas raras:
+   una muestra del 2 % casi nunca pilla la petición en la que la capa pierde.
+2. Por construcción, el suelo de un IC 95 % sobrecobra en el 2,5 % de los
+   periodos: facturar sobre él es cobrar de más uno de cada cuarenta meses.
+3. Ninguna línea de la factura del proveedor respalda la cifra extrapolada, y
+   «defendible frente a la factura» es la regla de la comisión.
+
+Por eso los pares viajan por su canal propio (`/api/metering/verification`) a
+sus tablas propias (migración 0030), el ingest de uso rechaza
+`basis: "verification"` y una verja de tests impide que facturación, cierre o
+extracto lean nada de esto. Si algún día entra en la base, será con otra
+especificación (un n mínimo mucho mayor, un estimador robusto a colas) y con el
+sí explícito del dueño.
+
+**Hallazgo al construirlo:** el brazo B0 del banco (`benchmarks/brazos.ts`)
+copia los mensajes como `{role, content}` y pierde `toolCallId` y `toolCalls`:
+un escenario con ciclo de herramientas daría 400 en el brazo naive. La copia del
+SDK conserva los mensajes enteros; el banco queda pendiente.
+
+---
+
 ## Resumen en tres frases
 
 1. El 0 € no era un fallo del panel: era la doctrina de honestidad del repo
