@@ -954,7 +954,7 @@
         "band": "SDK — API anahtarıyla çalışan JavaScript ve TypeScript uygulamaları için",
         "who": "Kendi anahtarınızla bir LLM API'sini çağıran ve her token için ödeme yapan, JavaScript veya TypeScript ile yazılmış Node.js uygulamaları için.",
         "what": "Çağrıyı kodunuzun içinde sarar, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir SavingsReport döndürür.",
-        "figureLabel": "Yayımlanan taban, gerçek bir sağlayıcıya karşı ölçüldü",
+        "figureLabel": "Yayımladığımız rakam",
         "figureNote": "Bir taban, bir tahmin değil: ne kadar tasarruf edeceğiniz trafiğinize bağlıdır. Komisyona yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf girer — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır.",
         "ctaMeasured": "Nasıl ölçtük",
         "ctaVerify": "Verilerinizde bir kaldıracı deneyin"

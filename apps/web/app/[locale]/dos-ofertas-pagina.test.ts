@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
@@ -67,6 +67,24 @@ describe("portada: dos ofertas, cada una con su bloque", () => {
     expect(sdk).toContain('href="#measured"');
     expect(sdk).toContain('href="#verify"');
   });
+
+  // Cable trampa con #321 (fix/titular-lo-que-lleva-npm), abierto a la vez que
+  // este PR: trae `lib/bench/sdk-instalado.ts` y baja `hero.proofs` a un titular
+  // PROVISIONAL (recalculado, no medido con el SDK de npm) que el héroe
+  // acompaña de `hero.proofSdkPendiente` mientras la tirada publicada no mida
+  // el SDK tal como se instala. Esta tarjeta enseña esa misma fila: el día que
+  // los dos PR convivan, tiene que llevar la misma nota bajo la misma regla, o
+  // la portada presentaría como medido lo que no lo es. Se pone rojo en quien
+  // rebase segundo, en cualquier orden.
+  it.skipIf(!existsSync(fileURLToPath(new URL("../../lib/bench/sdk-instalado.ts", import.meta.url))))(
+    "con la regla del SDK instalado en el árbol, la tarjeta del SDK lleva su nota provisional",
+    () => {
+      const ofertas = seccion("offers");
+      const sdk = ofertas.slice(ofertas.indexOf('t("offers.sdk.name")'), ofertas.indexOf('t("offers.gateway.name")'));
+      expect(sdk).toContain("SDK_INSTALADO");
+      expect(sdk).toMatch(/SdkPendiente/);
+    },
+  );
 
   it("el verificador vive en #verify, y la página no importa el proyector", () => {
     expect(seccion("verify")).toContain("<FormatVerifier");

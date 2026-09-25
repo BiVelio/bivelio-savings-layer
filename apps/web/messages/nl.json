@@ -954,7 +954,7 @@
         "band": "SDK — voor JavaScript- en TypeScript-apps met een API-sleutel",
         "who": "Voor Node.js-apps, in JavaScript of TypeScript, die een LLM-API aanroepen met je eigen sleutel en voor elke token betalen.",
         "what": "De SDK omhult de aanroep in je code, stuurt de aanbieder alleen wat betaald moet worden en geeft bij elk antwoord een SavingsReport terug.",
-        "figureLabel": "Gepubliceerde ondergrens, gemeten tegen een echte aanbieder",
+        "figureLabel": "Het cijfer dat we publiceren",
         "figureNote": "Een ondergrens, geen voorspelling: wat je bespaart hangt af van je verkeer. Alleen besparing die met de teller van je aanbieder is gemeten, telt mee voor de commissie — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd.",
         "ctaMeasured": "Hoe we het hebben gemeten",
         "ctaVerify": "Probeer één hefboom op je gegevens"

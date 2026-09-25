@@ -954,7 +954,7 @@
         "band": "SDK — cho ứng dụng JavaScript và TypeScript dùng khóa API",
         "who": "Cho ứng dụng Node.js, viết bằng JavaScript hoặc TypeScript, gọi một API LLM bằng khóa của chính bạn và trả tiền cho từng token.",
         "what": "SDK bọc lời gọi ngay trong mã của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một SavingsReport kèm mỗi phản hồi.",
-        "figureLabel": "Mức sàn đã công bố, đo với nhà cung cấp thật",
+        "figureLabel": "Con số chúng tôi công bố",
         "figureNote": "Một mức sàn, không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào lưu lượng của bạn. Chỉ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp mới tính vào hoa hồng — kể cả các lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện.",
         "ctaMeasured": "Cách chúng tôi đo",
         "ctaVerify": "Thử một đòn bẩy trên dữ liệu của bạn"
