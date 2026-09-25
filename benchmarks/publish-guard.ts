@@ -28,6 +28,10 @@ export interface ArtifactShape {
   generatedAt?: unknown;
   commit?: unknown;
   trials?: unknown;
+  /** Qué SDK midió la tirada. `asShipped: true` = el paquete tal como se
+   *  instala desde npm, sin el compresor del banco. Opcional en el TIPO porque
+   *  un artefacto anterior al sello no lo trae; la verja no publica un LIVE sin él. */
+  sdk?: { version?: unknown; asShipped?: unknown };
   reconciliation?: { reconciled?: unknown; residual?: unknown };
   aggregate?: {
     savings?: Partial<CI>;
@@ -100,6 +104,31 @@ export function decidePublish(
     }
     if (!Array.isArray(incoming.scenarios) || incoming.scenarios.length === 0) {
       blockers.push("el artefacto no trae escenarios");
+    }
+    // ── 3b. El titular solo puede salir del SDK que el cliente instala. El del
+    // 2026-09-12 (≥ 23,2 %) se midió con el compresor del banco, que el paquete
+    // de npm no trae: un escenario caro ahorraba un 15 % que ningún cliente
+    // puede ahorrar. Sin anulación, como el paso 1: no hay motivo legítimo para
+    // publicar en la web una palanca que no se entrega.
+    //
+    // Y SIN SELLO TAMPOCO. Hasta que `ab-live.ts` empezó a sellar `sdk`, medía
+    // CON el compresor por defecto: un artefacto LIVE que no declara qué SDK
+    // midió es, casi seguro, uno de esos (el del 12-09 tiene exactamente esa
+    // forma). Dejarlo pasar con un aviso era abrir la misma puerta por el lado
+    // de los artefactos viejos: un `benchmarks/out/ab-live.json` de una tirada
+    // anterior, o de una rama sin el sello, se publicaba con `pnpm ab:publish`.
+    // Solo `asShipped: true`, dicho por el propio banco, pasa.
+    if (incoming.sdk?.asShipped === false) {
+      blockers.push(
+        "la tirada se midió con el compresor del banco, que el paquete de npm NO trae (sdk.asShipped = false): " +
+          "el titular prometería una palanca que el cliente no tiene. Vuelve a medir con BVSALA_AB_SIN_COMPRESOR=1",
+      );
+    } else if (incoming.sdk?.asShipped !== true) {
+      blockers.push(
+        "el artefacto no declara que midió el SDK tal como se instala (falta sdk.asShipped: true): es anterior al " +
+          "sello, y hasta entonces el banco medía CON el compresor del banco, que npm no trae. Vuelve a medir con " +
+          "BVSALA_AB_SIN_COMPRESOR=1",
+      );
     }
   }
 

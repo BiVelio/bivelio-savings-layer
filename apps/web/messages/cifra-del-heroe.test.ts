@@ -13,9 +13,12 @@ import { describe, it, expect } from "vitest";
  * publicar exactamente el suelo obliga a reescribir los 12 idiomas cada vez que
  * el banco se mueve una décima, y —peor— convierte cualquier redondeo hacia
  * arriba en una promesa que la medición no sostiene. Con `prometido ≤ medido`
- * se puede elegir una cifra redonda y conservadora (hoy 15 %, con el suelo en
- * 16,1 %) y el build sigue poniéndose rojo en el único caso que de verdad
- * importa: que la web prometa más de lo que el banco puede defender.
+ * se puede elegir una cifra redonda y conservadora y el build sigue poniéndose
+ * rojo en el único caso que de verdad importa: que la web prometa más de lo que
+ * el banco puede defender. (Desde el 2026-09-25 la cifra es 10 %: la verja
+ * hermana, test/titular-como-se-instala.test.ts, exige que quepa también en lo
+ * que entrega el paquete de npm, y el artefacto publicado se midió con el
+ * compresor del banco.)
  *
  * Sigue exigiendo que las 12 digan LA MISMA cifra y que la fila anuncie el
  * mismo modelo que se midió.
@@ -53,7 +56,10 @@ describe("la fila OpenAI del héroe no promete más de lo que el artefacto mide"
   // El menor de los dos suelos: lo prometido tiene que caber también frente a
   // la base razonable, no solo frente a la ingenua.
   const lower = Math.min(lowerB0 ?? 0, lowerB1 ?? lowerB0 ?? 0);
-  const medido = Number(((lower ?? 0) * 100).toFixed(1));
+  // TRUNCADO a una décima, nunca redondeado: `toFixed(1)` convertía un 22,96 %
+  // en 23,0 % y dejaba prometer una décima que el banco no sostiene. La verja
+  // hermana (titular-como-se-instala) ya truncaba; ahora las dos dicen lo mismo.
+  const medido = Math.floor((lower ?? 0) * 1000) / 10;
   const cifras: number[] = [];
 
   for (const f of readdirSync(DIR).filter((f) => f.endsWith(".json"))) {

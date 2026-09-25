@@ -44,7 +44,8 @@
  * `Scenario.familia`) y publicando una tabla comparable entre modelos.
  *
  * ENV: BVSALA_AB_SIN_COMPRESOR=1 (mide el SDK TAL COMO SE INSTALA: sin el
- *      compresor del banco, que no viaja en el paquete npm),
+ *      compresor del banco, que no viaja en el paquete npm; es la ÚNICA tirada
+ *      que `pnpm ab:publish` acepta, ver `sdk.asShipped`),
  *      BVSALA_AB_REPS (paired reps for generative scenarios), BVSALA_AB_SEED,
  *      BVSALA_DEMO_KEEP_PREFIX, BVSALA_AB_BUDGET_USD (aborta si la estimación de
  *      coste de la tirada lo supera), and optionally a judge endpoint
@@ -53,6 +54,7 @@
 import { execSync } from "node:child_process";
 
 import {
+  BV_SALA_VERSION,
   createSavingsLayer,
   OpenAICompatibleProvider,
   precioDeLista,
@@ -219,6 +221,64 @@ const QUALITY_FLOOR = Number(process.env.BVSALA_AB_QUALITY_FLOOR ?? 0.999);
 const B1_ACTIVO = process.env.BVSALA_AB_B1 !== "0";
 
 /**
+ * ¿MIDE ESTA TIRADA EL SDK TAL COMO SE INSTALA DESDE NPM?
+ *
+ * El paquete de npm solo trae `noopCompressor`; el compresor de
+ * `benchmarks/compresor.ts` es del banco y no viaja. Con él, el escenario de
+ * compresión ahorra lo que un cliente NO puede ahorrar, y el titular de la web
+ * del 2026-09-12 (≥ 23,2 %) se midió así: 15,1 % de ahorro en un escenario caro
+ * que, con el SDK instalado, no comprime nada. Por eso la decisión se SELLA en
+ * el artefacto (`sdk.asShipped`) y `pnpm ab:publish` se niega a publicar un
+ * artefacto que no la declare verdadera: el titular solo puede salir de lo que
+ * el cliente instala.
+ */
+const SDK_TAL_COMO_SE_INSTALA = process.env.BVSALA_AB_SIN_COMPRESOR === "1";
+
+/**
+ * EL SELLO DEL SDK MEDIDO, el mismo en el artefacto de un modelo y en el
+ * informe multi-modelo. Tres cosas que un lector necesita para saber si la
+ * cifra es la de SU instalación:
+ *
+ *   · `asShipped`: sin piezas que el banco inyecta y npm no trae (el
+ *     compresor). Es lo que exige `pnpm ab:publish`.
+ *   · `version`: la de `src/` en este commit, que es lo que el banco importa
+ *     (`../src/index.js`), NO el tarball publicado. Si `main` va por delante de
+ *     npm, la tirada mide código que aún no se puede instalar; por eso se sella
+ *     la versión, para compararla con `npm view @bivelio/savings-layer version`.
+ *   · `tokenizer`: el banco registra el tokenizador exacto (gpt-tokenizer, una
+ *     dependencia opcional del paquete). Una instalación que no lo añada usa el
+ *     estimador heurístico, que interviene en la elección TOON/JSON y en las
+ *     verjas de compresión. Se declara en vez de callarlo.
+ */
+function selloDelSdk(): { version: string; asShipped: boolean; compressor: string; tokenizer: string } {
+  return {
+    version: BV_SALA_VERSION,
+    asShipped: SDK_TAL_COMO_SE_INSTALA,
+    compressor: SDK_TAL_COMO_SE_INSTALA
+      ? "none: the npm package ships noopCompressor only, so a request that asks for compression is sent uncompressed"
+      : "bench-only literal-repetition compressor (benchmarks/compresor.ts), NOT shipped on npm: research run, not a headline",
+    tokenizer: tokenizadorExacto
+      ? "exact (gpt-tokenizer registered; an optional dependency of the package — without it the SDK uses its heuristic estimator)"
+      : "heuristic estimator (gpt-tokenizer not installed): token counts are ESTIMATED",
+  };
+}
+
+/**
+ * Sin compresor la capa no deja traza de la etapa de compresión (solo avisa por
+ * consola), y el motivo genérico «la capa no dejó traza» se leería como un fallo
+ * del banco. No lo es: es lo que entrega el paquete. Se dice con esas palabras.
+ */
+function conMotivoDelPaquete(p: EstadoDePalanca | null): EstadoDePalanca | null {
+  if (!p || !SDK_TAL_COMO_SE_INSTALA || p.palanca !== "compression" || p.ejercitada) return p;
+  return {
+    ...p,
+    motivo:
+      "not run: the npm package ships noopCompressor only, so the request travels uncompressed; " +
+      "this scenario is still measured because it is traffic a customer sends, and its saving is what the shipped SDK achieves on it",
+  };
+}
+
+/**
  * EL AVISO MÁS CARO DEL BANCO, y va junto a la cifra que desmiente — no en un
  * fichero que hay que ir a buscar.
  *
@@ -345,7 +405,7 @@ const nuevaCapa = (provider: Provider, model: string, memoriaDeContratos: Set<st
     // nada» — o sea que el 0 % de ese escenario no es un defecto del banco, es
     // lo que obtiene quien instala hoy. Publicar el titular CON un compresor que
     // no viaja en el paquete es cobrar por una palanca que el cliente no tiene.
-    ...(process.env.BVSALA_AB_SIN_COMPRESOR === "1" ? {} : { compressor: compresorDeRepeticionesLiterales }),
+    ...(SDK_TAL_COMO_SE_INSTALA ? {} : { compressor: compresorDeRepeticionesLiterales }),
     // `compressionEconomics.prefix` NO se declara a propósito. Es la tasa de
     // aciertos de prefijo del tráfico, y nadie la ha medido para este banco;
     // inventarla desbloquea la decisión completa a cambio de un número falso. Sin
@@ -646,7 +706,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   // Se calcula sobre el SONDEO de clasificación (una petición completa por la
   // capa) y se recalcula en la primera repetición, para que refleje la misma
   // llamada que produjo las cifras que se publican.
-  let palanca = estadoDePalanca(s, probe, probe.report.tokens.providerCachedInput ?? 0, transporte);
+  let palanca = conMotivoDelPaquete(estadoDePalanca(s, probe, probe.report.tokens.providerCachedInput ?? 0, transporte));
 
   async function sampleOnce(t: number): Promise<void> {
     // La MISMA sal para los dos brazos de esta repetición: pareado de verdad.
@@ -748,7 +808,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
         compressedInputTokens: resB.report.tokens.compressedInput,
         providerCachedInputTokens: resB.report.tokens.providerCachedInput ?? 0,
       };
-      palanca = estadoDePalanca(s, resB, uB.cachedInputTokens ?? 0, transporte);
+      palanca = conMotivoDelPaquete(estadoDePalanca(s, resB, uB.cachedInputTokens ?? 0, transporte));
     }
   }
 
@@ -1469,6 +1529,10 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     // CSV que va a copiar y se niega si no cuadran, así que un CSV rezagado de
     // una corrida anterior ya no puede viajar junto a este JSON.
     trials: results.reduce((n, r) => n + r.paired.length, 0),
+    // QUÉ SDK SE MIDIÓ. `asShipped: false` = con el compresor del banco, que el
+    // paquete de npm no trae: sirve para investigar la palanca, nunca para el
+    // titular (la verja de publicación lo bloquea). Público: en inglés.
+    sdk: selloDelSdk(),
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
     pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
     methodology:
@@ -1564,6 +1628,12 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
         "cold cache: the limits hint the layer adds after a value failure can only appear inside a within-call " +
         "repair (both provider calls counted). `scenarios[].pistaDeLimites` counts the reps where it travelled.",
       "The headline is the 95% CI lower bound, never the point estimate.",
+      SDK_TAL_COMO_SE_INSTALA
+        ? "Arm B is the SDK exactly as installed from npm (`sdk.asShipped`): no compressor is injected, because the package " +
+          "ships noopCompressor only. A scenario that asks for compression is still measured — it is traffic a customer " +
+          "sends — and its saving is whatever the shipped SDK achieves on it, with the lever declared in `levers.notExercised`."
+        : "Arm B carries a bench-only compressor the npm package does not ship (`sdk.asShipped: false`). This run " +
+          "measures a lever a customer does not have; it is research, not a headline, and `pnpm ab:publish` refuses it.",
       "The headline is STRATIFIED by scenario with equal weight: f = 1 − Σ_s mean(costB_s)/Σ_s mean(costA_s), resampled " +
         "within each scenario. Pooling every trial let the adaptive sampler's rep split move the headline by 4 points " +
         "between runs of the same layer; the pooled figure is kept as `aggregatePooled` and is not the claim.",
@@ -1617,6 +1687,12 @@ function babosa(modelo: string): string {
 
 async function main(): Promise<void> {
   console.log(`\nBV-SALA TRUE A/B live benchmark  [mode: ${mode}]`);
+  console.log(
+    SDK_TAL_COMO_SE_INSTALA
+      ? `sdk: ${BV_SALA_VERSION} tal como se instala desde npm (sin compresor: el paquete solo trae noopCompressor)`
+      : `sdk: ${BV_SALA_VERSION} CON el compresor del banco, que npm NO trae — tirada de investigación, no publicable\n` +
+          "     (BVSALA_AB_SIN_COMPRESOR=1 mide lo que instala el cliente)",
+  );
   console.log(
     mode === "LIVE"
       ? `provider: real endpoint   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   (both arms metered by the provider)`
@@ -1753,6 +1829,7 @@ async function main(): Promise<void> {
     rutas.push(
       writeReport("ab-live-por-modelo", {
         mode,
+        sdk: selloDelSdk(),
         generatedNote:
           mode === "LIVE"
             ? "real provider tokens & cost, quality-gated, one run per model"

@@ -277,7 +277,8 @@
       "colACost": "custo A",
       "colBCost": "custo B",
       "colSavings": "poupança",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compressor da bancada de testes, não está no npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificador de poupança",
@@ -436,6 +437,7 @@
       "proven": "comprovado",
       "notProven": "não comprovado",
       "notExercised": "não exercitada nesta execução — o seu zero não é uma medição",
+      "benchOnly": "inclui um compressor exclusivo da bancada de testes que o pacote npm não traz — não é anunciado",
       "estimatedMock": "estimado (simulado)",
       "footnoteMain": "Quatro livros-razão, <b>nunca somados</b> — cada um é uma alavanca medida separadamente, por isso um dólar não pode ser contado duas vezes.",
       "reconciledNote": "O resíduo de reconciliação ≈ 0 prova-o.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "poupança líquida, <b>limite inferior do IC de 95%</b>. Estimativa pontual {point}, superior {upper} — destacamos o mínimo{mockNote}.",
+      "captionSdkPendiente": "o que o SDK sustenta tal como se instala a partir do npm. A execução publicada incluía um compressor exclusivo da bancada de testes que o pacote não traz, por isso o seu intervalo e a sua estimativa pontual não são mostrados como promessa até que uma execução do SDK instalado os substitua.",
       "mockNote": " (carga de trabalho de referência, fornecedor simulado)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— medido contra um fornecedor real, com controlo de qualidade.",
+      "sdkPendiente": "Esta execução incluía um compressor exclusivo da bancada de testes que o pacote npm não traz: os seus números mostram o mecanismo, não o que o SDK instalado poupa.",
       "mock": "<b>ESTIMADO · fornecedor simulado</b> — isto prova que o mecanismo funciona, não a tua fatura. Uma execução LIVE confirmada substitui cada número aqui."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "menos fatura, verificado a 95 % · face a uma integração sem otimizar, sem streaming"
         }
       ],
+      "proofSdkPendiente": "Provisório: a execução publicada incluía um compressor exclusivo da bancada de testes que o pacote npm não traz. Este número cabe sob o piso dessa execução quando se retira o efeito do compressor, recalculado a partir dos ensaios medidos — ainda não é uma medição do SDK instalado. Essa execução está pendente.",
       "medidoEn": "Medido em",
       "compatibleCon": "Compatível com",
       "compatibleNota": "Qualquer endpoint compatível com a API da OpenAI, e o adaptador nativo da Anthropic. Com valor publicado, hoje, só OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "O teste é uma experiência justa: a mesma tarefa duas vezes — sem Savings e com Savings — com o mesmo contador do fornecedor a medir as duas.",
       "plainTitle": "Tradução, sem jargão",
       "plain": "Neste teste, a fatura baixou quase de certeza pelo menos {piso}. O mais provável é que tenha baixado {punto}.",
+      "plainSdkPendiente": "Com o SDK tal como o instalas a partir do npm, a fatura baixa pelo menos {piso}. O teste publicado incluía ainda um compressor exclusivo da bancada de testes que o pacote não traz; retiramos o seu efeito em vez de o contar, até que uma execução do SDK instalado substitua este número.",
       "plainNote": "Quando há um intervalo, anunciamos sempre o número pequeno — o que a estatística garante —, nunca o bonito.",
       "trialsLink": "Descarregar os ensaios em bruto (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "qualidade",
       "punto": "estimativa pontual",
       "suelo": "O título é o piso do intervalo de 95 %, nunca o ponto.",
+      "sdkPendiente": "Esta execução incluía um compressor exclusivo da bancada de testes que o pacote npm não traz, por isso o seu piso não é mostrado. O número acima é o nosso título para o SDK tal como o instalas: continua a caber quando se retira o efeito desse compressor. Falta uma execução do SDK instalado.",
       "libros": "por livro",
       "pie": "Cada livro publica-se com o seu próprio intervalo; os que não passam de zero não se anunciam.",
       "fecha": "tiragem"

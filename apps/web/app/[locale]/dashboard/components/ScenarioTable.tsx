@@ -9,8 +9,15 @@ import { pct, money, intfmt, LEDGER_COLOR } from "../format";
 
 type Col = "name" | "kind" | "a" | "b" | "savings" | "quality";
 
-/** Per-scenario A vs B, sortable, horizontal-scroll on narrow screens. */
-export function ScenarioTable({ scenarios }: { scenarios: AbScenario[] }) {
+/**
+ * Per-scenario A vs B, sortable, horizontal-scroll on narrow screens.
+ *
+ * `piezaDelBanco`: escenarios cuyo ahorro salió de una pieza que el paquete de
+ * npm no trae (el compresor del banco). La fila es evidencia y se queda, pero
+ * lleva la marca: su cifra no es la de quien instala el SDK. La calcula la
+ * página (servidor) con `escenariosConPiezaDelBanco`.
+ */
+export function ScenarioTable({ scenarios, piezaDelBanco = [] }: { scenarios: AbScenario[]; piezaDelBanco?: string[] }) {
   const t = useTranslations("dashboard");
   const [sort, setSort] = useState<{ col: Col; dir: 1 | -1 }>({ col: "savings", dir: -1 });
 
@@ -61,6 +68,12 @@ export function ScenarioTable({ scenarios }: { scenarios: AbScenario[] }) {
                 <td>
                   <span className="ltag" style={{ background: LEDGER_COLOR[s.ledger] ?? "var(--muted)" }} />
                   {s.name}
+                  {piezaDelBanco.includes(s.name) ? (
+                    <>
+                      {" "}
+                      <small className="mono">{t("scenarioTable.benchOnly")}</small>
+                    </>
+                  ) : null}
                 </td>
                 <td className="mono">{s.kind}</td>
                 <td className="mono">{intfmt(s.armA.meanInputTokens)}/{intfmt(s.armA.meanOutputTokens)}</td>
