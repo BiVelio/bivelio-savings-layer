@@ -28,6 +28,10 @@ export interface ArtifactShape {
   generatedAt?: unknown;
   commit?: unknown;
   trials?: unknown;
+  /** Qué SDK midió la tirada. `asShipped: true` = el paquete tal como se
+   *  instala desde npm, sin el compresor del banco. Opcional porque un artefacto
+   *  anterior al sello no lo trae. */
+  sdk?: { version?: unknown; asShipped?: unknown };
   reconciliation?: { reconciled?: unknown; residual?: unknown };
   aggregate?: {
     savings?: Partial<CI>;
@@ -101,6 +105,17 @@ export function decidePublish(
     if (!Array.isArray(incoming.scenarios) || incoming.scenarios.length === 0) {
       blockers.push("el artefacto no trae escenarios");
     }
+    // ── 3b. El titular solo puede salir del SDK que el cliente instala. El del
+    // 2026-09-12 (≥ 23,2 %) se midió con el compresor del banco, que el paquete
+    // de npm no trae: un escenario caro ahorraba un 15 % que ningún cliente
+    // puede ahorrar. Sin anulación, como el paso 1: no hay motivo legítimo para
+    // publicar en la web una palanca que no se entrega.
+    if (incoming.sdk?.asShipped === false) {
+      blockers.push(
+        "la tirada se midió con el compresor del banco, que el paquete de npm NO trae (sdk.asShipped = false): " +
+          "el titular prometería una palanca que el cliente no tiene. Vuelve a medir con BVSALA_AB_SIN_COMPRESOR=1",
+      );
+    }
   }
 
   // ── 4. Cordura del número. Un ahorro fuera de (−∞, 1] o un intervalo dado la
@@ -126,6 +141,12 @@ export function decidePublish(
   if (esLive && esNumero(incoming.aggregate?.qualityPassRate) && (incoming.aggregate.qualityPassRate as number) < 1) {
     warnings.push(
       `calidad ${((incoming.aggregate.qualityPassRate as number) * 100).toFixed(1)}%: alguna respuesta no pasó la verja`,
+    );
+  }
+  if (esLive && incoming.sdk?.asShipped === undefined) {
+    warnings.push(
+      "el artefacto no declara qué SDK midió (sdk.asShipped): es anterior al sello, así que no se puede " +
+        "comprobar que no llevara el compresor del banco",
     );
   }
   if (esLive && !incoming.model) {
