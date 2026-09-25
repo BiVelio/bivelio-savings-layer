@@ -14,6 +14,7 @@ const live = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
   modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
   scenarios: [{}, {}],
+  sdk: { version: "0.4.23", asShipped: true },
   aggregate: { savings: { point: 0.42, lower: 0.31, upper: 0.5 }, proven: true, qualityPassRate: 1 },
   ...over,
 });
@@ -115,5 +116,20 @@ describe("verja de publicación del artefacto A/B", () => {
 
   it("un LIVE sí sustituye a otro LIVE (sin regresión)", () => {
     expect(decidePublish(live(), live({ model: "gpt-4.1-mini" })).ok).toBe(true);
+  });
+
+  it("⛔ una tirada con el compresor del banco NO se publica: npm no lo trae", () => {
+    // El titular del 2026-09-12 se midió así: el escenario de compresión
+    // ahorraba un 15 % que el SDK instalado no puede ahorrar.
+    const d = decidePublish(null, live({ sdk: { version: "0.4.23", asShipped: false } }));
+    expect(d.ok).toBe(false);
+    expect(d.blockers.join(" ")).toMatch(/compresor del banco/);
+    expect(d.blockers.join(" ")).toMatch(/BVSALA_AB_SIN_COMPRESOR=1/);
+  });
+
+  it("un artefacto anterior al sello del SDK se publica, pero avisa de que no se puede comprobar", () => {
+    const d = decidePublish(null, live({ sdk: undefined }));
+    expect(d.ok).toBe(true);
+    expect(d.warnings.join(" ")).toMatch(/no declara qué SDK midió/);
   });
 });

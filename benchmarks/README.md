@@ -292,6 +292,12 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
   override, because losing the only defensible number by accident is silent;
 - the two arms did not talk to the same **served model** (what actually makes a paired A/B comparable — `system_fingerprint` is recorded but never gated on, because through a gateway it is a per-request id);
 - the ledgers don't reconcile — a non-zero residual means double counting;
+- the run measured the bench-only compressor (`sdk.asShipped: false`). The npm
+  package ships `noopCompressor` only, so a headline measured with
+  `benchmarks/compresor.ts` promises a lever the customer does not have. No
+  override: the publishable run is `BVSALA_AB_SIN_COMPRESOR=1 BVSALA_DEMO_MODEL=openai/gpt-4o-mini pnpm ab`,
+  and its compression scenario is still measured (it is traffic a customer
+  sends) with the lever declared in `levers.notExercised`;
 - savings exceed 100%, the interval is inverted, or the point estimate falls
   outside its own interval.
 
