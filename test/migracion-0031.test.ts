@@ -136,6 +136,54 @@ describe("0031 — el bloque de seat_activity: el carril, con las MISMAS expresi
     expect(rpc).toContain("medido := case when r->>'basis' = 'measured' then 1 else 0 end;");
   });
 
+  it("deshecho lo que 0031 añade, el bloque ENTERO es el de 0029 línea a línea (requests, last_seen_at, is_ci, seatId, min/max…)", () => {
+    // Cada añadido de 0031, tal cual; quitarlo tiene que dejar el bloque de
+    // 0029 sin una coma de diferencia. Así un cambio en cualquier otra línea
+    // del bloque —`requests + 1`, `now()`, la comparación `>` del máximo, el
+    // `is_ci` o el `'unknown'` del seatId— pone esto en rojo.
+    const deshacer: [string, string][] = [
+      [
+        "    -- 0031 · + lo medido POR REFERENCIA por asiento, en sus tres columnas propias al\n" +
+          "    -- final (reference_*), con las MISMAS tres expresiones que el bloque de usage_daily.\n" +
+          "    -- measured_* siguen LITERALES: la referencia jamás se multiplica por `medido`.\n",
+        "",
+      ],
+      [
+        "measured_baseline_cost, measured_actual_cost,\n" +
+          "                                      reference_requests, reference_baseline_cost, reference_actual_cost)\n",
+        "measured_baseline_cost, measured_actual_cost)\n",
+      ],
+      [
+        "              medido * coalesce((r->>'actualCost')::numeric, 0),\n" +
+          EXPRESIONES_REFERENCIA.map((e, i) => `              ${e}${i < 2 ? "," : ")"}\n`).join(""),
+        "              medido * coalesce((r->>'actualCost')::numeric, 0))\n",
+      ],
+      [
+        "        measured_actual_cost   = bvsala.seat_activity.measured_actual_cost + excluded.measured_actual_cost,\n" +
+          "        reference_requests      = bvsala.seat_activity.reference_requests + excluded.reference_requests,\n" +
+          "        reference_baseline_cost = bvsala.seat_activity.reference_baseline_cost + excluded.reference_baseline_cost,\n" +
+          "        reference_actual_cost   = bvsala.seat_activity.reference_actual_cost + excluded.reference_actual_cost;",
+        "        measured_actual_cost   = bvsala.seat_activity.measured_actual_cost + excluded.measured_actual_cost;",
+      ],
+    ];
+    /** El bloque CON sus comentarios de cabecera (los de 0024 y, en 0031, los suyos). */
+    const conComentarios = (cuerpo: string): string => {
+      const lineas = cuerpo.split("\n");
+      const ini = lineas.findIndex((l) => l.trim() === BLOQUE_ASIENTO);
+      let desde = ini;
+      while (desde > 0 && lineas[desde - 1]!.trim().startsWith("--")) desde--;
+      let hasta = ini;
+      while (hasta < lineas.length && lineas[hasta]!.trim() !== "") hasta++;
+      return lineas.slice(desde, hasta).join("\n") + "\n";
+    };
+    let deshecho = conComentarios(rpc);
+    for (const [de, a] of deshacer) {
+      expect(deshecho.split(de).length - 1, de).toBe(1);
+      deshecho = deshecho.replace(de, a);
+    }
+    expect(deshecho.split("\n")).toEqual(conComentarios(cuerpoRpc(sql29)).split("\n"));
+  });
+
   it("las tres acumulaciones al final del conflict, y measured_* intactas", () => {
     expect(asiento).toContain(
       "        measured_actual_cost   = bvsala.seat_activity.measured_actual_cost + excluded.measured_actual_cost,\n" +
