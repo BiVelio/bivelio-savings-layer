@@ -1,11 +1,32 @@
 import { getTranslations } from "next-intl/server";
 
-import type { CI } from "../data";
+import { midioElSdkInstalado, sueloPublicable } from "@/lib/bench/sdk-instalado";
+
+import type { AbArtifact } from "../data";
 import { pct } from "../format";
 
-/** The headline is the 95% CI LOWER bound (never the point estimate). */
-export async function NetSavingsCIBand({ savings, mode }: { savings: CI; mode: "LIVE" | "MOCK" }) {
+/**
+ * The headline is the 95% CI LOWER bound (never the point estimate).
+ *
+ * Recibe el ARTEFACTO, no un intervalo suelto: así nadie puede pasarle el suelo
+ * de una tirada que no midió el SDK tal como se instala. Sin
+ * `sdk.asShipped: true` la banda enseña lo que el paquete sostiene
+ * (`sueloPublicable`) y no dibuja el intervalo ni el punto de esa tirada: eran
+ * de una capa con el compresor del banco, que npm no trae.
+ */
+export async function NetSavingsCIBand({ ab }: { ab: AbArtifact }) {
   const t = await getTranslations("dashboard");
+  const savings = ab.aggregate.savings;
+  if (!midioElSdkInstalado(ab)) {
+    return (
+      <div className="verdict band">
+        <div>
+          <div className="big pos ck-num">≥ {pct(sueloPublicable(ab))}</div>
+          <div className="cap">{t("netSavingsCIBand.captionSdkPendiente")}</div>
+        </div>
+      </div>
+    );
+  }
   const dmin = Math.min(-0.05, savings.lower - 0.05);
   const dmax = Math.max(0.6, savings.upper + 0.05);
   const xp = (v: number) => Math.max(0, Math.min(100, ((v - dmin) / (dmax - dmin)) * 100));
@@ -18,7 +39,7 @@ export async function NetSavingsCIBand({ savings, mode }: { savings: CI; mode: "
             b: (chunks) => <b>{chunks}</b>,
             point: pct(savings.point),
             upper: pct(savings.upper),
-            mockNote: mode === "MOCK" ? t("netSavingsCIBand.mockNote") : "",
+            mockNote: ab.mode === "MOCK" ? t("netSavingsCIBand.mockNote") : "",
           })}
         </div>
       </div>

@@ -277,7 +277,8 @@
       "colACost": "A cost",
       "colBCost": "B cost",
       "colSavings": "savings",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "bench-only compressor, not in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Savings verifier",
@@ -436,6 +437,7 @@
       "proven": "proven",
       "notProven": "not proven",
       "notExercised": "not exercised in this run — its zero is not a measurement",
+      "benchOnly": "includes a bench-only compressor the npm package does not ship — not advertised",
       "estimatedMock": "estimated (mock)",
       "footnoteMain": "Four ledgers, <b>never summed</b> — each is a separately measured lever, so a dollar can't be double-counted.",
       "reconciledNote": "Reconciliation residual ≈ 0 proves it.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "net savings, <b>95% CI lower bound</b>. Point estimate {point}, upper {upper} — we headline the floor{mockNote}.",
+      "captionSdkPendiente": "what the SDK holds as installed from npm. The published run carried a bench-only compressor the package does not ship, so its interval and point estimate are not shown as a promise until a run of the installed SDK replaces them.",
       "mockNote": " (reference workload, mock provider)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— measured against a real provider, quality-gated.",
+      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship: its figures show the mechanism, not what the installed SDK saves.",
       "mock": "<b>ESTIMATED · mock provider</b> — this proves the mechanism works, not your bill. A committed LIVE run replaces every number here."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12.0%",
+          "cifra": "≥ 10.0%",
           "que": "less bill, verified at 95% · against an unoptimized integration, no streaming"
         }
       ],
+      "proofSdkPendiente": "Provisional: the published run carried a bench-only compressor that the npm package does not ship. This figure fits under that run's floor once the compressor's effect is taken out, recalculated from the measured trials — it is not yet a measurement of the installed SDK. That run is pending.",
       "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
       "compatibleNota": "Any endpoint compatible with the OpenAI API, plus the native Anthropic adapter. With a published figure, today, only OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
       "plain": "In this test, the bill went down by at least {piso}, with near certainty. Most likely it went down by {punto}.",
+      "plainSdkPendiente": "With the SDK as you install it from npm, the bill goes down by at least {piso}. The published test also carried a bench-only compressor that the package does not ship; we take its effect out instead of counting it, until a run of the installed SDK replaces this figure.",
       "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one.",
       "trialsLink": "Download the raw trials (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "quality",
       "punto": "point estimate",
       "suelo": "The headline is the floor of the 95% interval, never the point.",
+      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship, so its own floor is not shown. The figure above is our headline for the SDK as you install it: it still fits once that compressor's effect is taken out. A run of the installed SDK is pending.",
       "libros": "per ledger",
       "pie": "Each ledger is published with its own interval; those that do not clear zero are not advertised.",
       "fecha": "run"

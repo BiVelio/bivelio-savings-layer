@@ -277,7 +277,8 @@
       "colACost": "biaya A",
       "colBCost": "biaya B",
       "colSavings": "penghematan",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "kompresor bangku uji, tidak ada di npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verifikator penghematan",
@@ -436,6 +437,7 @@
       "proven": "terbukti",
       "notProven": "tidak terbukti",
       "notExercised": "tidak diaktifkan pada eksekusi ini — angka nolnya bukan pengukuran",
+      "benchOnly": "mencakup kompresor khusus bangku uji yang tidak disertakan dalam paket npm — tidak diiklankan",
       "estimatedMock": "diperkirakan (tiruan)",
       "footnoteMain": "Empat ledger, <b>tidak pernah dijumlahkan</b> — masing-masing adalah tuas yang diukur terpisah, sehingga satu dolar tidak bisa dihitung dua kali.",
       "reconciledNote": "Residual rekonsiliasi ≈ 0 membuktikannya.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "penghematan bersih, <b>batas bawah CI 95%</b>. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah{mockNote}.",
+      "captionSdkPendiente": "yang dipertahankan SDK sebagaimana dipasang dari npm. Eksekusi yang dipublikasikan memakai kompresor khusus bangku uji yang tidak disertakan dalam paket, jadi interval dan estimasi titiknya tidak ditampilkan sebagai janji sampai eksekusi dengan SDK terpasang menggantikannya.",
       "mockNote": " (beban kerja referensi, penyedia tiruan)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— diukur terhadap penyedia nyata, dengan gerbang kualitas.",
+      "sdkPendiente": "Eksekusi ini memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm: angka-angkanya menunjukkan mekanismenya, bukan penghematan SDK terpasang.",
       "mock": "<b>DIPERKIRAKAN · penyedia tiruan</b> — ini membuktikan mekanismenya berfungsi, bukan tagihan Anda. Menjalankan LIVE yang telah di-commit menggantikan setiap angka di sini."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0%",
+          "cifra": "≥ 10,0%",
           "que": "tagihan lebih rendah, terverifikasi 95% · dibanding integrasi tanpa optimasi, tanpa streaming"
         }
       ],
+      "proofSdkPendiente": "Sementara: eksekusi yang dipublikasikan memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm. Angka ini berada di bawah batas bawah eksekusi itu setelah efek kompresor dikeluarkan, dihitung ulang dari percobaan yang diukur — ini belum merupakan pengukuran SDK terpasang. Eksekusi itu masih tertunda.",
       "medidoEn": "Diukur pada",
       "compatibleCon": "Kompatibel dengan",
       "compatibleNota": "Endpoint apa pun yang kompatibel dengan API OpenAI, plus adaptor asli Anthropic. Dengan angka yang dipublikasikan, saat ini, hanya OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
       "plainTitle": "Terjemahan, tanpa jargon",
       "plain": "Dalam pengujian ini, tagihan hampir pasti turun setidaknya {piso}. Kemungkinan besar turun {punto}.",
+      "plainSdkPendiente": "Dengan SDK sebagaimana Anda memasangnya dari npm, tagihan turun setidaknya {piso}. Pengujian yang dipublikasikan juga memakai kompresor khusus bangku uji yang tidak disertakan dalam paket; kami mengeluarkan efeknya alih-alih menghitungnya, sampai eksekusi dengan SDK terpasang menggantikan angka ini.",
       "plainNote": "Saat ada rentang, kami selalu mengumumkan angka yang kecil — yang dijamin statistik — tidak pernah yang menyanjung.",
       "trialsLink": "Unduh data percobaan mentah (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "kualitas",
       "punto": "estimasi titik",
       "suelo": "Angka utama adalah batas bawah interval 95%, bukan titiknya.",
+      "sdkPendiente": "Eksekusi ini memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm, jadi batas bawahnya tidak ditampilkan. Angka di atas adalah angka utama kami untuk SDK sebagaimana Anda memasangnya: angka itu tetap berlaku setelah efek kompresor tersebut dikeluarkan. Eksekusi dengan SDK terpasang masih tertunda.",
       "libros": "per buku besar",
       "pie": "Setiap buku besar dipublikasikan dengan intervalnya sendiri; yang tidak melewati nol tidak diiklankan.",
       "fecha": "putaran"

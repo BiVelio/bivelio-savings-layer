@@ -277,7 +277,8 @@
       "colACost": "coût A",
       "colBCost": "coût B",
       "colSavings": "économies",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compresseur du banc d'essai, absent de npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Vérificateur d'économies",
@@ -436,6 +437,7 @@
       "proven": "prouvé",
       "notProven": "non prouvé",
       "notExercised": "non exercée dans cette série — son zéro n'est pas une mesure",
+      "benchOnly": "inclut un compresseur propre au banc d'essai que le paquet npm ne fournit pas — non annoncé",
       "estimatedMock": "estimé (simulé)",
       "footnoteMain": "Quatre registres, <b>jamais additionnés</b> — chacun est un levier mesuré séparément, un dollar ne peut donc pas être compté deux fois.",
       "reconciledNote": "Le résidu de réconciliation ≈ 0 le prouve.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "économies nettes, <b>borne inférieure de l'IC à 95%</b>. Estimation ponctuelle {point}, supérieure {upper} — nous mettons en avant le plancher{mockNote}.",
+      "captionSdkPendiente": "ce que tient le SDK tel qu'il s'installe depuis npm. La série publiée comportait un compresseur propre au banc d'essai que le paquet ne fournit pas ; son intervalle et son estimation ponctuelle ne sont donc pas présentés comme une promesse tant qu'une série avec le SDK installé ne les remplace pas.",
       "mockNote": " (charge de travail de référence, fournisseur simulé)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mesuré face à un vrai fournisseur, avec contrôle qualité.",
+      "sdkPendiente": "Cette série comportait un compresseur propre au banc d'essai que le paquet npm ne fournit pas : ses chiffres montrent le mécanisme, pas ce que le SDK installé fait économiser.",
       "mock": "<b>ESTIMÉ · fournisseur simulé</b> — cela prouve que le mécanisme fonctionne, pas votre facture. Une exécution LIVE confirmée remplace chaque chiffre ici."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0 %",
+          "cifra": "≥ 10,0 %",
           "que": "de facture en moins, vérifié à 95 % · face à une intégration non optimisée, sans streaming"
         }
       ],
+      "proofSdkPendiente": "Provisoire : la série publiée comportait un compresseur propre au banc d'essai que le paquet npm ne fournit pas. Ce chiffre tient sous le plancher de cette série une fois l'effet du compresseur retiré, recalculé à partir des essais mesurés — ce n'est pas encore une mesure du SDK installé. Cette série est en attente.",
       "medidoEn": "Mesuré sur",
       "compatibleCon": "Compatible avec",
       "compatibleNota": "Tout endpoint compatible avec l'API OpenAI, plus l'adaptateur natif Anthropic. Avec un chiffre publié, aujourd'hui, seulement OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "Le test est une expérience équitable : la même tâche deux fois — sans Savings et avec Savings — avec le même compteur du fournisseur qui mesure les deux.",
       "plainTitle": "Traduction, sans jargon",
       "plain": "Dans ce test, la facture a baissé avec une quasi-certitude d'au moins {piso}. Le plus probable est qu'elle ait baissé de {punto}.",
+      "plainSdkPendiente": "Avec le SDK tel que vous l'installez depuis npm, la facture baisse d'au moins {piso}. Le test publié comportait en plus un compresseur propre au banc d'essai que le paquet ne fournit pas ; nous retirons son effet au lieu de le compter, jusqu'à ce qu'une série avec le SDK installé remplace ce chiffre.",
       "plainNote": "Quand il y a une fourchette, nous annonçons toujours le petit chiffre — celui que la statistique garantit —, jamais le plus flatteur.",
       "trialsLink": "Télécharger les essais bruts (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "qualité",
       "punto": "estimation ponctuelle",
       "suelo": "Le titre est le plancher de l'intervalle à 95 %, jamais le point.",
+      "sdkPendiente": "Cette série comportait un compresseur propre au banc d'essai que le paquet npm ne fournit pas ; son plancher n'est donc pas affiché. Le chiffre ci-dessus est notre titre pour le SDK tel que vous l'installez : il tient toujours une fois l'effet de ce compresseur retiré. Une série avec le SDK installé est en attente.",
       "libros": "par registre",
       "pie": "Chaque registre est publié avec son propre intervalle ; ceux qui ne dépassent pas zéro ne sont pas annoncés.",
       "fecha": "série"

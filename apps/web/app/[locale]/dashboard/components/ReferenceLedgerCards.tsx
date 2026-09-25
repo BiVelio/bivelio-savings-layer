@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
+import { librosConPiezaDelBanco } from "@/lib/bench/sdk-instalado";
+
 import type { AbArtifact } from "../data";
 import { pct, money, LEDGER_COLOR } from "../format";
 
@@ -35,11 +37,27 @@ function sinEjercitar(ab: AbArtifact, ledger: string, proven: boolean): boolean 
 
 export async function ReferenceLedgerCards({ ab }: { ab: AbArtifact }) {
   const t = await getTranslations("dashboard");
+  // Un libro que agrega un escenario cuyo ahorro salió de una pieza que npm no
+  // trae (el compresor del banco) no se anuncia con cifra: mezclaría lo que el
+  // paquete entrega con lo que no. Vacío cuando la tirada midió lo instalado.
+  const conPiezaDelBanco = librosConPiezaDelBanco(ab);
   return (
     <>
       <div className="kpis">
         {ab.ledgers.map((l) => {
           const pos = l.savings.point >= 0;
+          if (conPiezaDelBanco.has(l.ledger)) {
+            return (
+              <div key={l.ledger} className="kpi">
+                <div className="n">
+                  <span className="ltag" style={{ background: LEDGER_COLOR[l.ledger] ?? "var(--muted)" }} />
+                  {l.ledger}
+                </div>
+                <div className="v empty ck-num">—</div>
+                <div className="sub">{t("referenceLedgerCards.benchOnly")}</div>
+              </div>
+            );
+          }
           if (sinEjercitar(ab, l.ledger, l.proven)) {
             return (
               <div key={l.ledger} className="kpi">

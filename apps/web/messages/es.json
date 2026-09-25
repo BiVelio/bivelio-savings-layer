@@ -277,7 +277,8 @@
       "colACost": "costo A",
       "colBCost": "costo B",
       "colSavings": "ahorro",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compresor del banco, no está en npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificador de ahorro",
@@ -436,6 +437,7 @@
       "proven": "comprobado",
       "notProven": "no comprobado",
       "notExercised": "no ejercitada en esta tirada — su cero no es una medición",
+      "benchOnly": "incluye un compresor exclusivo del banco que el paquete de npm no trae — no se anuncia",
       "estimatedMock": "estimado (simulado)",
       "footnoteMain": "Cuatro libros, <b>nunca sumados</b>: cada uno es una palanca medida por separado, así que un dólar no se puede contar dos veces.",
       "reconciledNote": "El residual de conciliación ≈ 0 lo demuestra.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "ahorro neto, <b>límite inferior del IC del 95%</b>. Estimación puntual {point}, superior {upper}: destacamos el piso{mockNote}.",
+      "captionSdkPendiente": "lo que sostiene el SDK tal como se instala desde npm. La tirada publicada llevaba un compresor exclusivo del banco que el paquete no trae, así que su intervalo y su punto no se enseñan como promesa hasta que una tirada del SDK instalado los sustituya.",
       "mockNote": " (carga de trabajo de referencia, proveedor simulado)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— medido contra un proveedor real, con control de calidad.",
+      "sdkPendiente": "Esta tirada llevaba un compresor exclusivo del banco que el paquete de npm no trae: sus cifras muestran el mecanismo, no lo que ahorra el SDK instalado.",
       "mock": "<b>ESTIMADO · proveedor simulado</b>: esto demuestra que el mecanismo funciona, no tu factura. Una ejecución LIVE confirmada reemplaza cada número aquí."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0 %",
+          "cifra": "≥ 10,0 %",
           "que": "menos factura, verificado al 95 % · frente a una integración sin optimizar, sin streaming"
         }
       ],
+      "proofSdkPendiente": "Provisional: la tirada publicada llevaba un compresor exclusivo del banco que el paquete de npm no trae. Esta cifra cabe bajo el suelo de esa tirada al quitar el efecto del compresor, recalculado con los ensayos medidos: aún no es una medición del SDK instalado. Esa tirada está pendiente.",
       "medidoEn": "Medido en",
       "compatibleCon": "Compatible con",
       "compatibleNota": "Cualquier endpoint compatible con la API de OpenAI, y el adaptador nativo de Anthropic. Con cifra publicada, hoy, solo OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings y con Savings — y el mismo contador del proveedor midiendo las dos.",
       "plainTitle": "Traducción, sin jerga",
       "plain": "En esta prueba, la factura bajó con casi total seguridad al menos un {piso}. Lo más probable es que bajara un {punto}.",
+      "plainSdkPendiente": "Con el SDK tal como lo instalas desde npm, la factura baja al menos un {piso}. La prueba publicada llevaba además un compresor exclusivo del banco que el paquete no trae; quitamos su efecto en vez de contarlo, hasta que una tirada del SDK instalado sustituya esta cifra.",
       "plainNote": "Cuando hay una horquilla, anunciamos siempre el número pequeño — el que la estadística garantiza —, nunca el bonito.",
       "trialsLink": "Descargar los ensayos crudos (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "calidad",
       "punto": "estimación puntual",
       "suelo": "El titular es el suelo del intervalo del 95 %, nunca el punto.",
+      "sdkPendiente": "Esta tirada llevaba un compresor exclusivo del banco que el paquete de npm no trae, así que su suelo no se muestra. La cifra de arriba es nuestro titular para el SDK tal como lo instalas: sigue cabiendo al quitar el efecto de ese compresor. Falta una tirada del SDK instalado.",
       "libros": "por libro contable",
       "pie": "Cada libro se publica con su propio intervalo; los que no despejan el cero no se anuncian.",
       "fecha": "tirada"

@@ -277,7 +277,8 @@
       "colACost": "koszt A",
       "colBCost": "koszt B",
       "colSavings": "oszczędności",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "kompresor ze stanowiska testowego, nie ma go w npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Weryfikator oszczędności",
@@ -436,6 +437,7 @@
       "proven": "udowodnione",
       "notProven": "nieudowodnione",
       "notExercised": "niewykorzystana w tym przebiegu — jej zero nie jest pomiarem",
+      "benchOnly": "zawiera kompresor ze stanowiska testowego, którego nie ma w pakiecie npm — nie jest reklamowany",
       "estimatedMock": "szacunkowe (mock)",
       "footnoteMain": "Cztery księgi, <b>nigdy nie sumowane</b> — każda to osobno mierzona dźwignia, więc dolara nie da się policzyć dwa razy.",
       "reconciledNote": "Reszta uzgodnienia ≈ 0 to potwierdza.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "oszczędności netto, <b>dolna granica 95% przedziału ufności</b>. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg{mockNote}.",
+      "captionSdkPendiente": "to, co utrzymuje SDK w postaci instalowanej z npm. Opublikowany przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet nie zawiera, dlatego jego przedział i estymacja punktowa nie są pokazywane jako obietnica, dopóki nie zastąpi ich przebieg z zainstalowanym SDK.",
       "mockNote": " (obciążenie referencyjne, dostawca mock)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mierzone względem prawdziwego dostawcy, z bramką jakości.",
+      "sdkPendiente": "Ten przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera: jego liczby pokazują mechanizm, a nie to, ile oszczędza zainstalowane SDK.",
       "mock": "<b>SZACUNEK · dostawca mock</b> — to dowodzi, że mechanizm działa, a nie ile wyniesie Twój rachunek. Zatwierdzone uruchomienie LIVE zastępuje każdą liczbę tutaj."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 12,0%",
+          "cifra": "≥ 10,0%",
           "que": "mniej na fakturze, zweryfikowane na 95% · wobec niezoptymalizowanej integracji, bez streamingu"
         }
       ],
+      "proofSdkPendiente": "Tymczasowo: opublikowany przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera. Ta liczba mieści się pod dolną granicą tego przebiegu po odjęciu efektu kompresora, przeliczoną na podstawie zmierzonych prób — to jeszcze nie jest pomiar zainstalowanego SDK. Ten przebieg jeszcze się nie odbył.",
       "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
       "compatibleNota": "Każdy endpoint zgodny z API OpenAI oraz natywny adapter Anthropic. Z opublikowaną liczbą, dziś, tylko OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
       "plain": "W tym teście rachunek spadł niemal na pewno o co najmniej {piso}. Najprawdopodobniej spadł o {punto}.",
+      "plainSdkPendiente": "Z SDK w postaci, w jakiej instalujesz go z npm, rachunek spada o co najmniej {piso}. Opublikowany test zawierał dodatkowo kompresor dostępny tylko na stanowisku testowym, którego pakiet nie zawiera; odejmujemy jego efekt zamiast go liczyć, dopóki przebieg z zainstalowanym SDK nie zastąpi tej liczby.",
       "plainNote": "Gdy są widełki, zawsze ogłaszamy mniejszą liczbę — tę, którą gwarantuje statystyka — nigdy tę ładniejszą.",
       "trialsLink": "Pobierz surowe próby (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "jakość",
       "punto": "oszacowanie punktowe",
       "suelo": "Nagłówek to dolna granica przedziału 95%, nigdy punkt.",
+      "sdkPendiente": "Ten przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera, dlatego jego dolna granica nie jest pokazywana. Liczba powyżej to nasz nagłówek dla SDK w postaci, w jakiej go instalujesz: mieści się nadal po odjęciu efektu tego kompresora. Przebieg z zainstalowanym SDK jeszcze się nie odbył.",
       "libros": "na księgę",
       "pie": "Każda księga jest publikowana z własnym przedziałem; te, które nie przekraczają zera, nie są reklamowane.",
       "fecha": "seria"
