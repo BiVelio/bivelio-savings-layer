@@ -1,31 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
-
-/* Muestras con forma tabular real: en las tres el optimizador encuentra un
- * formato más barato que el JSON compacto, así que la primera impresión
- * enseña un ahorro de verdad (−44% a −51% con el bundle 0.5.0). */
-const SAMPLES: Record<string, string> = {
-  users: JSON.stringify(
-    { users: Array.from({ length: 24 }, (_, i) => ({ id: 1000 + i, name: `user_${i}`, role: i % 3 ? "member" : "admin", active: i % 4 !== 0 })) },
-    null,
-    2,
-  ),
-  orders: JSON.stringify(
-    { orders: Array.from({ length: 18 }, (_, i) => ({ order: `PED-2026-0${140 + i}`, customer: `cliente_${i + 1}`, items: (i % 4) + 1, total: Number((19.9 + i * 7.35).toFixed(2)), status: ["pagado", "enviado", "entregado"][i % 3] })) },
-    null,
-    2,
-  ),
-  tickets: JSON.stringify(
-    { tickets: Array.from({ length: 16 }, (_, i) => ({ id: `TCK-${3300 + i}`, subject: `No puedo acceder a mi cuenta (${i + 1})`, priority: ["baja", "media", "alta"][i % 3], status: i % 2 ? "abierto" : "resuelto", agent: `agente_${(i % 5) + 1}` })) },
-    null,
-    2,
-  ),
-};
 
 /* Perfiles de uso: rellenan volumen y tamaños sin pedir que nadie sepa sus
  * "tokens de entrada promedio" de memoria. Ajustables en Ajustes avanzados. */
@@ -43,19 +22,19 @@ const SCENARIOS = {
   bold: { avoid: 0.4, elim: 0.55, outRed: 0.45 },
 } as const;
 
-/** Verify-locally island: the REAL BV-SALA optimizer + a bill projector. Every
- *  output is a heuristic ESTIMATE, never a provider-metered measurement. */
+/**
+ * El PROYECTOR de factura del panel: una ESTIMACIÓN con deslizadores, y lo dice
+ * su etiqueta. Es la mitad que 9feb377 (#85) sacó de la portada porque el
+ * visitante inventaba sus propios porcentajes, y por eso se queda aquí, tras el
+ * login, y no vuelve a la portada.
+ *
+ * La otra mitad —el verificador de formato— se fue a `FormatVerifier`
+ * (app/components), que cuenta con el tokenizador EXACTO y es el mismo en la
+ * portada y en el panel. Aquí contaba con el heurístico y enseñaba a clientes
+ * que pagan un 45–51 % donde lo real es 17–27 %.
+ */
 export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPer1k: number } }) {
-  type Selector = { choose: (p: unknown, o: { model: string }) => { chosen: string; candidateTokens: Record<string, number> } };
-  type SdkModule = { FormatSelector: new (o: { tokenizer: unknown }) => Selector; defaultTokenizerRegistry: unknown };
   const t = useTranslations("dashboard");
-  const locale = useLocale();
-  const [selector, setSelector] = useState<Selector | null>(null);
-  const [payload, setPayload] = useState(SAMPLES.users);
-  const [sample, setSample] = useState<string | null>("users");
-  const [err, setErr] = useState("");
-  const [baseTok, setBaseTok] = useState(0);
-  const [chosenTok, setChosenTok] = useState(0);
 
   // Projector inputs
   const [reqs, setReqs] = useState<number>(PROFILES.chat.reqs);
@@ -64,38 +43,6 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
   const [avoid, setAvoid] = useState<number>(SCENARIOS.typical.avoid);
   const [elim, setElim] = useState<number>(SCENARIOS.typical.elim);
   const [outRed, setOutRed] = useState<number>(SCENARIOS.typical.outRed);
-
-  useEffect(() => {
-    let alive = true;
-    // Runtime dynamic import of the vendored SDK bundle (public/vendor/bv-sala.js).
-    // webpackIgnore leaves it a native browser URL import (allowed by CSP
-    // 'self'); the browser resolves the same bundle the landing uses.
-    // @ts-expect-error — non-module URL specifier, resolved at runtime not build.
-    const p: Promise<SdkModule> = import(/* webpackIgnore: true */ "/vendor/bv-sala.js");
-    p.then((m) => {
-      if (!alive) return;
-      setSelector(new m.FormatSelector({ tokenizer: m.defaultTokenizerRegistry }));
-    }).catch(() => setErr(t("projectorVerifier.errBundle")));
-    return () => { alive = false; };
-  }, []);
-
-  useEffect(() => {
-    if (!selector) return;
-    let parsed: unknown;
-    try { parsed = JSON.parse(payload); setErr(""); } catch (e) { setErr(t("projectorVerifier.errInvalidData", { message: (e as Error).message })); return; }
-    const choice = selector.choose(parsed, { model: "openai/gpt-4o-mini" });
-    // Sin lista fija de formatos: la línea base es el JSON compacto y el ganador
-    // es lo que diga el selector, se llame como se llame en esta versión del
-    // SDK ("toon" ayer, "compact-rows" hoy). Una lista fija aquí es lo que
-    // dejaba el medidor clavado en "recorta 0 tokens".
-    const base = choice.candidateTokens["json-compact"] ?? Math.max(...Object.values(choice.candidateTokens), 0);
-    setBaseTok(base);
-    setChosenTok(choice.candidateTokens[choice.chosen] ?? base);
-  }, [selector, payload]);
-
-  const maxTok = Math.max(baseTok, chosenTok, 1);
-  const savedTokPct = baseTok > 0 ? Math.round((100 * (baseTok - chosenTok)) / baseTok) : 0;
-  const win = chosenTok < baseTok;
 
   const projected = useMemo(() => {
     const baseline = (reqs * inTok) / 1e6 * prices.inPer1k * 1000 + (reqs * outTok) / 1e6 * prices.outPer1k * 1000;
@@ -114,55 +61,11 @@ export function ProjectorVerifier({ prices }: { prices: { inPer1k: number; outPe
   const scenarioKey = (Object.keys(SCENARIOS) as (keyof typeof SCENARIOS)[])
     .find((k) => Math.abs(SCENARIOS[k].avoid - avoid) < 0.005 && Math.abs(SCENARIOS[k].elim - elim) < 0.005 && Math.abs(SCENARIOS[k].outRed - outRed) < 0.005);
 
-  const pickSample = (k: string) => { setSample(k); setPayload(SAMPLES[k]); };
   const pickProfile = (k: keyof typeof PROFILES) => { setReqs(PROFILES[k].reqs); setInTok(PROFILES[k].inTok); setOutTok(PROFILES[k].outTok); };
   const pickScenario = (k: keyof typeof SCENARIOS) => { setAvoid(SCENARIOS[k].avoid); setElim(SCENARIOS[k].elim); setOutRed(SCENARIOS[k].outRed); };
 
   return (
-    <div className="proj">
-      <div>
-        <div className="ck-head" style={{ marginBottom: "8px" }}>
-          <b style={{ fontSize: ".9rem" }}>{t("projectorVerifier.verifierTitle")}</b>
-          <span className="est-tag">{t("projectorVerifier.estimateFull")}</span>
-        </div>
-        <p className="pv-label">{t("projectorVerifier.tryExample")}</p>
-        <div className="pv-chips">
-          {(["users", "orders", "tickets"] as const).map((k) => (
-            <button key={k} type="button" className={`pv-chip ${sample === k ? "on" : ""}`} onClick={() => pickSample(k)}>
-              {t(`projectorVerifier.sample_${k}`)}
-            </button>
-          ))}
-        </div>
-        <textarea
-          className="proj-ta"
-          value={payload}
-          spellCheck={false}
-          onChange={(e) => { setPayload(e.target.value); setSample(null); }}
-        />
-        <p className="ck-note">{t("projectorVerifier.pasteHint")}</p>
-        {err ? <p className="ck-note" style={{ color: "var(--danger)" }}>{err}</p> : null}
-        <div className="pv-verdict">
-          <span className={`pv-pct ${win ? "" : "zero"}`}>{win ? t("projectorVerifier.savedPct", { pct: savedTokPct.toLocaleString(locale) }) : "0%"}</span>
-        </div>
-        <div>
-          {[
-            { name: t("projectorVerifier.yourData"), tokens: baseTok, win: false },
-            { name: "BV-SALA", tokens: chosenTok, win },
-          ].map((c) => (
-            <div key={c.name} className="fmt-row2">
-              <span className={`fmt-name2 ${c.win ? "win" : ""}`}>{c.name}{c.win ? " ●" : ""}</span>
-              <span className="track2"><span className={`fill2 ${c.win ? "win" : ""}`} style={{ width: `${(100 * c.tokens) / maxTok}%` }} /></span>
-              <span className="fmt-tok2">{c.tokens.toLocaleString(locale)}</span>
-            </div>
-          ))}
-        </div>
-        <p className="ck-note">
-          {win
-            ? t("projectorVerifier.trimsFriendly", { before: baseTok.toLocaleString(locale), after: chosenTok.toLocaleString(locale) })
-            : t("projectorVerifier.alreadyOptimal")}
-        </p>
-      </div>
-
+    <div className="proj proj-solo">
       <div>
         <div className="ck-head" style={{ marginBottom: "8px" }}>
           <b style={{ fontSize: ".9rem" }}>{t("projectorVerifier.projectorTitle")}</b>

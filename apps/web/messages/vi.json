@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Khoản tiết kiệm của bạn · đo trên hóa đơn của bạn",
       "totalSplit": "Tổng cộng, bao gồm cả phần ước tính, là {pct}. Chỉ {share} số lượt gọi có bộ đếm của nhà cung cấp để đối chiếu: bộ đếm của chính nó, hoặc của lượt gọi giống hệt đã được thực hiện trước đó.",
-      "referenceNote": "Trong đó, <b>{money}</b> đến từ {count} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện — theo mức giá thấp nhất mà nhà cung cấp có thể tính cho việc lặp lại nó.",
+      "referenceNote": "Trong đó, <b>{money}</b> đến từ {count, number} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn, mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện — theo mức giá thấp nhất mà nhà cung cấp có thể tính cho việc lặp lại nó.",
       "unmeasuredCap": "Chúng tôi thấy {count} lượt gọi đã có giá, nhưng chưa lượt nào đối chiếu được với bộ đếm của nhà cung cấp. Ngay khi có lượt đầu tiên, khoản tiết kiệm đã đo của bạn sẽ hiện ở đây.",
       "savedLine": "chi tiêu LLM của bạn được giữ lại trong kỳ này · đã tiết kiệm <b>{money}</b> (đường cơ sở − thực tế, theo giá của bạn).",
       "emptyCap": "Chưa đo lưu lượng của bạn — đã thấy 0 yêu cầu. Cài đặt SDK và mức tiết kiệm ròng của bạn sẽ hiện ở đây — giá của bạn, khối lượng công việc của bạn. Không bao giờ là con số vay mượn hay bịa đặt.",
@@ -281,12 +281,6 @@
       "benchOnly": "bộ nén của băng thử, không có trong npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Trình xác minh tiết kiệm",
-      "estimateFull": "ƯỚC TÍNH — theo phương pháp heuristic, không đo bởi nhà cung cấp",
-      "errBundle": "Không thể tải gói trình tối ưu.",
-      "errInvalidData": "Đang chờ dữ liệu hợp lệ… {message}",
-      "yourData": "Dữ liệu của bạn",
-      "alreadyOptimal": "Đã tối ưu ở đây — BV‑SALA không bao giờ làm nó tệ hơn.",
       "projectorTitle": "Trình dự phóng hóa đơn",
       "estimate": "ƯỚC TÍNH",
       "reqsPerMonth": "Số yêu cầu / tháng",
@@ -296,13 +290,6 @@
       "inputCut": "Cắt giảm đầu vào",
       "outputCut": "Cắt giảm đầu ra",
       "projectedSaving": "tiết kiệm dự phóng / tháng · theo giá {model}",
-      "tryExample": "Thử một ví dụ",
-      "sample_users": "Danh sách người dùng",
-      "sample_orders": "Đơn hàng cửa hàng",
-      "sample_tickets": "Ticket hỗ trợ",
-      "pasteHint": "…hoặc dán JSON của bạn vào đây. Không có gì rời khỏi trình duyệt của bạn.",
-      "savedPct": "−{pct}% token",
-      "trimsFriendly": "Từ {before} xuống {after} token mỗi lần gửi. BV‑SALA chỉ chọn định dạng rẻ nhất — không cần đổi mã của bạn.",
       "profileLabel": "Bạn đang xây dựng gì?",
       "profile_chat": "Chatbot",
       "profile_extract": "Trích xuất dữ liệu",
@@ -393,7 +380,8 @@
       "chipOutdated": "cập nhật",
       "chipOk": "đã cập nhật",
       "chipMixed": "một phần chưa khai báo",
-      "hint": "Mỗi máy báo cáo mức sử dụng là một hàng, nhận diện bằng id chỗ ngồi ẩn danh (không bao giờ là một người). Thứ được gửi đi là một số phiên bản — gateway/x.y.z hoặc sdk/x.y.z —, không bao giờ là nội dung. Máy chạy gateway cũ hơn kênh phiên bản hiển thị là “chưa khai báo”."
+      "hint": "Mỗi máy báo cáo mức sử dụng là một hàng, nhận diện bằng id chỗ ngồi ẩn danh (không bao giờ là một người). Thứ được gửi đi là một số phiên bản — gateway/x.y.z hoặc sdk/x.y.z —, không bao giờ là nội dung. Máy chạy gateway cũ hơn kênh phiên bản hiển thị là “chưa khai báo”.",
+      "referenceHint": "Khoản tiết kiệm đo được ở đây bao gồm các lượt gọi lặp lại được đo theo tham chiếu: mỗi lượt được định giá bằng bộ đếm của lượt gọi giống hệt đã được thực hiện."
     },
     "installLicensePanel": {
       "eyebrow": "Bắt đầu",
@@ -584,7 +572,7 @@
       "metaTitle": "Sao kê · BiVelio Savings Layer",
       "eyebrow": "Chế độ bóng · không có khoản thu nào ở đây",
       "title": "Sao kê của bạn, trước khi hóa đơn tồn tại",
-      "intro": "Chính xác tài liệu mà hóa đơn biến đổi trong tương lai sẽ tạo ra: chỉ khoản tiết kiệm đã đo, với biểu phí bậc thang — không có mức tối thiểu, chỉ tính phí khi bạn tiết kiệm. Trong thời gian hiệu chuẩn, khoản thu luôn là {cero}.",
+      "intro": "Chính xác tài liệu mà hóa đơn biến đổi trong tương lai sẽ tạo ra: chỉ khoản tiết kiệm đã đo, với biểu phí bậc thang và không có mức tối thiểu — không có tiết kiệm đã đo thì không có hoa hồng. Phí theo ghế là một khoản thu riêng, cố định hằng tháng. Trong thời gian hiệu chuẩn, hoa hồng luôn là {cero}.",
       "periodo": "Kỳ {periodo}",
       "badgeCalibracion": "KỲ HIỆU CHUẨN — THU BẰNG KHÔNG",
       "badgeSombra": "BÓNG — KHÔNG THU THẬT",
@@ -607,8 +595,8 @@
       "sombraElision": "Làn bóng: việc lược bỏ lẽ ra đã tiết kiệm {usd} trên {requests} yêu cầu mô phỏng. Giả định — không bao giờ vào cơ sở hay hoa hồng.",
       "sombraElisionNegativa": "Làn bóng: việc lược bỏ lẽ ra đã tốn thêm {usd} trên {requests} yêu cầu mô phỏng. Vì thế nó vẫn tắt: chỉ bật những gì thực sự tiết kiệm.",
       "elisionProveedor": "Làn xóa bởi nhà cung cấp: {requests} yêu cầu mà cấu hình của chúng tôi khiến nhà cung cấp xóa ngữ cảnh. Một số đếm, không phải tiết kiệm — không bao giờ tính vào cơ sở hay hoa hồng.",
-      "referencia": "Đo theo tham chiếu: {usd} trên {requests} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn. Mỗi lượt được định giá bằng bộ đếm mà nhà cung cấp trả về cho lượt gọi giống hệt đã được thực hiện — có trong báo cáo của lượt gọi đó và trong mức sử dụng của nhà cung cấp ngày hôm đó — theo giá đầu vào đã lưu bộ nhớ đệm, mức thấp nhất nhà cung cấp tính cho việc lặp lại một prompt; đầu ra chỉ được tính khi lấy mẫu là tất định và lượt gọi đã chạy không có suy luận ẩn (nhà cung cấp báo cáo số token suy luận bằng không hoặc, nếu không tách riêng, câu trả lời không có khối suy luận). Được tính vào cơ sở.",
-      "referenciaExcluida": "Đo theo tham chiếu: {usd} trên {requests} lượt gọi lặp lại. Hiển thị để tham khảo — hiện tại không được tính vào cơ sở và hoa hồng.",
+      "referencia": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn. Mỗi lượt được định giá bằng bộ đếm mà nhà cung cấp trả về cho lượt gọi giống hệt đã được thực hiện — có trong báo cáo của lượt gọi đó và trong mức sử dụng của nhà cung cấp ngày hôm đó — theo giá đầu vào đã lưu bộ nhớ đệm, mức thấp nhất nhà cung cấp tính cho việc lặp lại một prompt; đầu ra chỉ được tính khi lấy mẫu là tất định và lượt gọi đã chạy không có suy luận ẩn (nhà cung cấp báo cáo số token suy luận bằng không hoặc, nếu không tách riêng, câu trả lời không có khối suy luận). Được tính vào cơ sở.",
+      "referenciaExcluida": "Đo theo tham chiếu: {usd} trên {requests, number} lượt gọi lặp lại. Hiển thị để tham khảo — hiện tại không được tính vào cơ sở lẫn hoa hồng.",
       "exportarReferencias": "Tải xuống các lượt gọi lặp lại của kỳ này, mỗi lượt một dòng (CSV)",
       "exportarReferenciasPorDia": "Quá nhiều lượt gọi lặp lại cho một tệp — tải xuống kỳ này theo từng ngày (CSV):",
       "parametros": "Tham số sao kê — bảng giá {version} · tỷ giá {fx}.",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Xác minh mức tiết kiệm LLM của bạn",
-    "metaDescription": "Lớp chi phí LLM có cấp phép. Cài đặt trước nhà cung cấp của bạn và cắt giảm hóa đơn; mức tiết kiệm đo theo chính bộ đếm của họ, kèm khoảng tin cậy 95%.",
+    "metaDescription": "Một SDK giúp ứng dụng của bạn chỉ trả cho nhà cung cấp LLM những gì nó cần, và một gateway đo lường agent lập trình của bạn. Đếm bằng chính bộ đếm của nhà cung cấp: phí theo ghế, cộng hoa hồng chỉ trên khoản tiết kiệm đo được.",
     "hero": {
       "eyebrow": "Dành cho các đội trả phí API LLM theo token",
       "title": "Hóa đơn LLM của bạn, trong tầm kiểm soát.",
       "titleAccent": "Được đo ở mỗi lời gọi.",
-      "lede": "Một SDK cài trong mã của bạn, chỉ cho qua những gì phải trả và trả về một SavingsReport cho mỗi lời gọi: đo được và ước tính tách riêng, đếm bằng chính bộ đếm của nhà cung cấp. Chúng tôi chỉ công bố những gì đã đo.",
-      "ctaRun": "Xem kết quả đo",
+      "lede": "Hai sản phẩm, một nguyên tắc. SDK được cài bên trong ứng dụng của bạn và chỉ cho qua những gì phải trả; gateway đứng trước agent lập trình của bạn và đo chi tiêu của nó. Cả hai đều đếm bằng chính bộ đếm của nhà cung cấp và tách riêng phần đo được với phần ước tính. Chúng tôi chỉ công bố những gì đã đo.",
+      "ctaOffers": "SDK hay gateway?",
       "ctaPricing": "Xem bảng giá",
       "note": "Cài đặt trong vài phút. Tin nhắn của bạn không bao giờ đi qua máy chủ của chúng tôi.",
       "proofTitle": "Đo với nhà cung cấp thật",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "Nói một cách dễ hiểu",
-      "title": "Savings thực sự làm gì?",
-      "sub": "Bốn ý tưởng, bốn đoạn hoạt hình tám giây. Đó là toàn bộ sản phẩm.",
+      "title": "SDK thực sự làm gì?",
+      "sub": "Bốn ý tưởng, bốn đoạn hoạt hình tám giây.",
       "pasos": [
         {
           "title": "AI tính tiền theo từng chữ",
@@ -796,8 +784,8 @@
           "body": "Chúng tôi không xin niềm tin. Mỗi khoản tiết kiệm được đo bằng bộ đếm chính thức của nhà cung cấp — chính bộ đếm dùng để tính tiền bạn — và hiện trên biên lai của bạn. Điều gì không đối chiếu được với hóa đơn thì không bao giờ được công bố."
         },
         {
-          "title": "Chúng tôi chỉ có lời khi bạn tiết kiệm",
-          "body": "Hoa hồng của chúng tôi lấy từ khoản tiết kiệm đo được, không bao giờ từ túi bạn: phần lớn số tiền tiết kiệm luôn ở lại với bạn. Một tháng không tiết kiệm? Hoa hồng bằng không."
+          "title": "Phí theo ghế, và một phần của những gì đo được",
+          "body": "Bạn trả một khoản phí cố định cho mỗi ghế hằng tháng, dù có chuyện gì xảy ra. Ngoài ra, hoa hồng của chúng tôi chỉ lấy từ khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — và phần lớn mỗi khoản tiết kiệm luôn ở lại với bạn. Một tháng không có tiết kiệm đo được? Bạn trả tiền ghế và hoa hồng bằng không."
         }
       ],
       "nota": "Các đoạn hoạt hình minh họa ý tưởng. Những con số thật — đo với nhà cung cấp thật — nằm ngay bên dưới."
@@ -875,9 +863,9 @@
       "cta": "Tìm hiểu chương trình"
     },
     "gateway": {
-      "eyebrow": "Mới · terminal lập trình",
+      "eyebrow": "Gateway · terminal lập trình",
       "title": "Dùng Claude Code với khóa API? Xem chi tiêu thật, từng token một.",
-      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn. Không sửa mã, không cấu hình — và prompt của bạn không bao giờ rời khỏi máy: bảng điều khiển này chỉ nhận số đếm và chi phí.",
+      "body": "Một lệnh duy nhất đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã: bạn xuất khóa dịch vụ và khởi chạy agent qua bvsala. Prompt của bạn không bao giờ rời khỏi máy — bảng điều khiển của bạn chỉ nhận số đếm và chi phí.",
       "note": "Gateway đo lường mọi yêu cầu và, giống như SDK, chỉ chạy khi có giấy phép đang hoạt động: nó lấy giấy phép bằng khóa dịch vụ của bạn và xác minh chữ ký ngay trên máy của bạn. Với giấy phép PRO, nó còn áp dụng mặc định một đòn bẩy: rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn vẫn còn nóng — điều này thay đổi giá, không bao giờ thay đổi nội dung mà mô hình đọc. Các đòn bẩy khác vẫn tắt cho đến khi bạn bật chúng. Skill savings-mode đã sẵn sàng cho các giới hạn của bạn, hiệu quả còn chờ đo. Cũng hoạt động với Codex CLI, Goose và Qwen Code — và bvsala doctor in ra cấu hình chính xác cho phần còn lại.",
       "pythonNote": "Python hay bất kỳ ngôn ngữ nào khác? Trỏ SDK chính thức của OpenAI hoặc Anthropic tới gateway và mọi yêu cầu mà nhà cung cấp báo cáo mức sử dụng, với mô hình có giá niêm yết, đều được ghi vào bảng điều khiển này theo giá đó; log của gateway sẽ báo khi có yêu cầu không được đo. bvsala doctor in ra base URL cho từng SDK. Với streaming của OpenAI, hãy yêu cầu mức sử dụng ngay trong yêu cầu (stream_options.include_usage).",
       "cta": "Xem cách hoạt động →"
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "Một gói, tính giá theo ghế",
-      "title": "Một khoản phí nhỏ cho mỗi chỗ ngồi. Và hoa hồng chỉ trên phần bạn tiết kiệm.",
-      "body": "Không gói miễn phí, không dùng thử: điều bạn có thể kiểm chứng trước khi trả tiền là các phép đo công khai trên trang này. Phí tính theo chỗ ngồi, bằng {currency}, và hoa hồng lấy từ khoản tiết kiệm đo được — không bao giờ từ túi của bạn.",
+      "title": "Phí theo ghế, luôn luôn. Hoa hồng chỉ trên khoản tiết kiệm đo được.",
+      "body": "Không gói miễn phí, không dùng thử: trước khi trả tiền, bạn có thể kiểm tra các phép đo công khai và chạy trình xác minh trên dữ liệu của chính mình, ngay trên trang này. Phí theo ghế được tính hằng tháng, bằng {currency}, dù bạn có tiết kiệm hay không. Hoa hồng được cộng thêm, và chỉ trên khoản tiết kiệm đo bằng bộ đếm của nhà cung cấp — phần ước tính không bao giờ được tính vào.",
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Đo trên chính lưu lượng của bạn",
-      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport của nó: đo được và ước tính tách riêng; chỉ phần đo được mới tính vào hoa hồng. Giấy phép là thứ cho phép bạn chạy BV‑SALA trong ứng dụng của mình.",
+      "ctaSub": "Sau khi cài, mỗi lời gọi trả về SavingsReport của nó, với phần đo được và phần ước tính tách riêng. Phí theo ghế là cố định hằng tháng; hoa hồng chỉ lấy từ phần đo được. Giấy phép là thứ cho phép bạn chạy BV‑SALA — SDK trong ứng dụng, gateway trong terminal của bạn.",
       "ctaStart": "Bắt đầu",
       "tagline": "Hệ điều hành cho doanh nghiệp của bạn. Đây là <b>BV‑SALA</b>, bộ tối ưu chi phí LLM trung lập với nhà cung cấp của BiVelio — mọi con số công bố đều được đo theo bộ đếm của chính nhà cung cấp; ước tính được hiển thị riêng và không bao giờ tính phí.",
       "badge": "BV‑SALA · Savings Layer",
@@ -979,7 +967,7 @@
       "colExtra": "Phần thêm của chúng tôi",
       "colTeQuedas": "Bạn giữ lại",
       "extraCero": "không gì cả",
-      "notaGarantia": "Chúng tôi chỉ tính phí trên khoản tiết kiệm đo được — và bạn luôn giữ lại {garantia} trở lên.",
+      "notaGarantia": "Hoa hồng chỉ trên khoản tiết kiệm đo được — và bạn luôn giữ lại {garantia} trở lên. Ghế được tính phí riêng, hằng tháng.",
       "notaTramos": "Theo bậc, mỗi bậc theo mức riêng: {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
       "notaPrimerMesLead": "Tháng đầu của bạn: chỉ phí chỗ.",
       "notaPrimerMes": "Chúng tôi đo tất cả, hiệu chuẩn theo tải thực của bạn, và bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả — mà không bị thu.",
@@ -1007,7 +995,7 @@
       "caption": "Không phải gói gửi nào cũng độn nhiều như nhau: trong đợt chạy này, mức cắt đo được theo từng kịch bản dao động từ {min} đến {max}. Những kịch bản không tiết kiệm cũng được công bố."
     },
     "recibo": {
-      "title": "SavingsReport · đợt chạy đã công bố",
+      "title": "SDK · SavingsReport · đợt chạy đã công bố",
       "modelo": "mô hình",
       "parejas": "cặp đã đo",
       "calidad": "chất lượng",
@@ -1044,6 +1032,57 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Hai sản phẩm",
+      "title": "Token của bạn đi đâu: vào ứng dụng hay vào agent lập trình của bạn?",
+      "sub": "Cả hai đều được cấp phép theo ghế và đều đếm bằng chính bộ đếm của nhà cung cấp. Chúng làm những việc khác nhau, nên mỗi sản phẩm đưa ra lời hứa riêng — và hôm nay chỉ một trong hai có con số tiết kiệm đã công bố.",
+      "install": "Cài đặt",
+      "installMore": "Hướng dẫn cài đặt đầy đủ",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — cho ứng dụng JavaScript và TypeScript dùng khóa API",
+        "who": "Cho ứng dụng Node.js, viết bằng JavaScript hoặc TypeScript, gọi một API LLM bằng khóa của chính bạn và trả tiền cho từng token.",
+        "what": "SDK bọc lời gọi ngay trong mã của bạn, chỉ gửi cho nhà cung cấp những gì phải trả và trả về một SavingsReport kèm mỗi phản hồi.",
+        "figureLabel": "Mức sàn đã công bố, đo với nhà cung cấp thật",
+        "figureNote": "Một mức sàn, không phải dự báo: bạn tiết kiệm bao nhiêu tùy vào lưu lượng của bạn, và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới tính vào hoa hồng.",
+        "ctaMeasured": "Cách chúng tôi đo",
+        "ctaVerify": "Thử một đòn bẩy trên dữ liệu của bạn"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — cho agent lập trình dùng khóa API",
+        "who": "Cho những ai dùng Claude Code, Codex CLI hoặc agent lập trình khác với khóa API.",
+        "what": "Một lệnh đặt một bộ đo cục bộ trước terminal của bạn, không cần sửa mã. Gateway đếm từng lượt gọi bằng bộ đếm của nhà cung cấp — với các mô hình trong danh mục giá của chúng tôi — và cấp cho mỗi lượt một biên lai trong bảng điều khiển của bạn.",
+        "figureLabel": "Chưa công bố con số tiết kiệm",
+        "figureNote": "Chúng tôi chưa công bố khoản tiết kiệm đo được nào cho agent lập trình, nên chúng tôi không quảng cáo con số nào. Với PRO, trên các mô hình Anthropic, gateway rút ngắn TTL ghi bộ nhớ đệm khi phiên của bạn còn nóng — điều đó thay đổi giá, không bao giờ thay đổi những gì mô hình đọc — và chỉ phần được bộ đếm của nhà cung cấp xác nhận mới tính vào hoa hồng.",
+        "cta": "Cài đặt gateway"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · một đòn bẩy, trên dữ liệu của bạn, trước khi trả tiền",
+      "title": "Dán dữ liệu của bạn. Xem SDK sẽ gửi gì.",
+      "sub": "Tại đây, bộ chọn định dạng thật của SDK chạy trong trình duyệt của bạn, trên dữ liệu của bạn. Không có gì rời khỏi trang này và bạn không cần tài khoản.",
+      "tryExample": "Thử một ví dụ",
+      "sample_orders": "Đơn hàng cửa hàng",
+      "sample_tickets": "Ticket hỗ trợ",
+      "sample_users": "Danh sách người dùng",
+      "pasteHint": "…hoặc dán JSON của bạn vào đây. Không có gì rời khỏi trình duyệt của bạn.",
+      "loading": "Đang tải trình tối ưu và tokenizer chính xác…",
+      "errBundle": "Không thể tải trình tối ưu. Tải lại trang để thử lại.",
+      "errInvalidData": "Đang chờ JSON hợp lệ… {message}",
+      "tooBig": "Nội dung này dài hơn {max} ký tự. Hãy dán một mẫu nhỏ hơn.",
+      "tagExact": "Đếm chính xác",
+      "tagApprox": "Xấp xỉ",
+      "yourData": "Dữ liệu của bạn, dạng JSON gọn",
+      "optimized": "Như SDK sẽ gửi",
+      "fewer": "−{pct} token đầu vào trên dữ liệu này",
+      "trims": "Từ {before} xuống {after} token, đã gồm hướng dẫn của định dạng.",
+      "alreadyOptimal": "Ở đây không định dạng nào tốt hơn JSON gọn, nên SDK sẽ gửi nguyên trạng. Đòn bẩy này không bao giờ làm dữ liệu của bạn lớn hơn.",
+      "exactNote": "Đếm bằng {tokenizer}, tokenizer mà {model} sử dụng. Chúng tôi so sánh với dữ liệu của bạn ở dạng JSON gọn: nếu hôm nay bạn gửi dạng thụt lề, chênh lệch thực tế còn lớn hơn — và phần đó chúng tôi không tính.",
+      "approxNote": "Tokenizer chính xác chưa tải được, nên mọi con số đếm ở đây chỉ là xấp xỉ — và chúng tôi không hiển thị mức tiết kiệm xấp xỉ. Tải lại trang để thử lại.",
+      "scope": "Đây là gì và không phải là gì: một đòn bẩy — cách dữ liệu có cấu trúc được viết vào prompt — trên token đầu vào của dữ liệu này. Đây không phải hóa đơn của bạn: các lời gọi được tránh, bộ nhớ đệm của nhà cung cấp và đầu ra không có ở đây, và nhiều lượt gọi hoàn toàn không mang dữ liệu có cấu trúc. Con số chúng tôi cam kết cho toàn bộ SDK là mức sàn đã công bố trong phần đo lường.",
+      "ctaInstall": "Cài đặt SDK"
     }
   },
   "invitacion": {

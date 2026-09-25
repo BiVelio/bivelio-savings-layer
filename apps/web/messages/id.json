@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Penghematan Anda · diukur terhadap tagihan Anda",
       "totalSplit": "Totalnya, termasuk bagian yang diperkirakan, adalah {pct}. Hanya {share} permintaan yang punya penghitung penyedia untuk memeriksanya: penghitungnya sendiri, atau penghitung permintaan identik yang sudah dijalankan.",
-      "referenceNote": "Dari jumlah itu, <b>{money}</b> berasal dari {count} permintaan berulang yang dilayani tanpa memanggil penyedia Anda, masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan — pada tarif terendah yang bisa ditagihkan penyedia Anda untuk mengulanginya.",
+      "referenceNote": "Dari jumlah itu, <b>{money}</b> berasal dari {count, number} permintaan berulang yang dilayani tanpa memanggil penyedia Anda, masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan — pada tarif terendah yang bisa ditagihkan penyedia Anda untuk mengulanginya.",
       "unmeasuredCap": "Kami melihat {count} permintaan berharga, tetapi belum ada yang bisa diperiksa terhadap penghitung penyedia Anda. Begitu yang pertama tiba, penghematan terukur Anda akan muncul di sini.",
       "savedLine": "dari pengeluaran LLM Anda yang dihemat pada periode ini · <b>{money}</b> dihemat (baseline − aktual, pada harga Anda).",
       "emptyCap": "Belum mengukur lalu lintas Anda — 0 permintaan terlihat. Pasang SDK dan penghematan bersih Anda muncul di sini — harga Anda, beban kerja Anda. Bukan angka pinjaman atau rekaan.",
@@ -281,12 +281,6 @@
       "benchOnly": "kompresor bangku uji, tidak ada di npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Verifikator penghematan",
-      "estimateFull": "ESTIMASI — heuristik, bukan diukur penyedia",
-      "errBundle": "Tidak dapat memuat bundel pengoptimal.",
-      "errInvalidData": "Menunggu data yang valid… {message}",
-      "yourData": "Data Anda",
-      "alreadyOptimal": "Sudah optimal di sini — BV‑SALA tidak pernah memperburuknya.",
       "projectorTitle": "Proyektor tagihan",
       "estimate": "ESTIMASI",
       "reqsPerMonth": "Permintaan / bulan",
@@ -296,13 +290,6 @@
       "inputCut": "Pemangkasan input",
       "outputCut": "Pemangkasan output",
       "projectedSaving": "penghematan proyeksi / bulan · pada harga {model}",
-      "tryExample": "Coba sebuah contoh",
-      "sample_users": "Daftar pengguna",
-      "sample_orders": "Pesanan toko",
-      "sample_tickets": "Tiket dukungan",
-      "pasteHint": "…atau tempel JSON kamu di sini. Tidak ada yang keluar dari browser kamu.",
-      "savedPct": "−{pct}% token",
-      "trimsFriendly": "Dari {before} menjadi {after} token per kiriman. BV‑SALA hanya memilih format termurah — tanpa mengubah kode kamu.",
       "profileLabel": "Apa yang sedang kamu bangun?",
       "profile_chat": "Chatbot",
       "profile_extract": "Ekstraksi data",
@@ -393,7 +380,8 @@
       "chipOutdated": "perbarui",
       "chipOk": "mutakhir",
       "chipMixed": "sebagian tidak dideklarasikan",
-      "hint": "Satu baris per mesin yang melaporkan pemakaian, dikenali lewat id kursi opak (tidak pernah seseorang). Yang dikirim hanyalah nomor versi — gateway/x.y.z atau sdk/x.y.z —, tidak pernah konten. Mesin dengan gateway yang lebih lama dari kanal versi tampil sebagai “tidak dideklarasikan”."
+      "hint": "Satu baris per mesin yang melaporkan pemakaian, dikenali lewat id kursi opak (tidak pernah seseorang). Yang dikirim hanyalah nomor versi — gateway/x.y.z atau sdk/x.y.z —, tidak pernah konten. Mesin dengan gateway yang lebih lama dari kanal versi tampil sebagai “tidak dideklarasikan”.",
+      "referenceHint": "Penghematan terukur di sini mencakup permintaan berulang yang diukur berdasarkan referensi: masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan."
     },
     "installLicensePanel": {
       "eyebrow": "Mulai",
@@ -584,7 +572,7 @@
       "metaTitle": "Rekening · BiVelio Savings Layer",
       "eyebrow": "Mode bayangan · tidak ada tagihan di sini",
       "title": "Rekening kamu, sebelum fakturnya ada",
-      "intro": "Dokumen persis yang akan dihasilkan faktur variabel nanti: hanya penghematan terukur, dengan tarif berjenjang — tanpa minimum, hanya ditagih jika Anda berhemat. Selama kalibrasi, tagihan selalu {cero}.",
+      "intro": "Dokumen persis yang akan dihasilkan faktur variabel nanti: hanya penghematan terukur, dengan tarif berjenjang dan tanpa minimum — tanpa penghematan terukur tidak ada komisi. Biaya per kursi adalah tagihan terpisah, tetap dan bulanan. Selama kalibrasi, komisi selalu {cero}.",
       "periodo": "Periode {periodo}",
       "badgeCalibracion": "PERIODE KALIBRASI — TAGIHAN NOL",
       "badgeSombra": "BAYANGAN — TANPA TAGIHAN NYATA",
@@ -607,8 +595,8 @@
       "sombraElision": "Jalur bayangan: elisi akan menghemat {usd} pada {requests} permintaan tersimulasi. Hipotetis — tidak pernah masuk basis maupun komisi.",
       "sombraElisionNegativa": "Jalur bayangan: elisi akan menambah biaya {usd} pada {requests} permintaan tersimulasi. Karena itu tetap mati: hanya yang benar-benar menghemat yang dinyalakan.",
       "elisionProveedor": "Jalur penghapusan oleh penyedia: {requests} permintaan di mana pengaturan kami membuat penyedia menghapus konteks. Sebuah hitungan, bukan penghematan — tidak pernah masuk ke basis maupun komisi.",
-      "referencia": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik dan permintaan yang dijalankan tidak membawa penalaran tersembunyi (penyedia Anda melaporkan nol token penalaran atau, jika tidak merincinya, jawabannya tidak memuat blok penalaran). Termasuk dalam basis.",
-      "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis maupun komisi.",
+      "referencia": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik dan permintaan yang dijalankan tidak membawa penalaran tersembunyi (penyedia Anda melaporkan nol token penalaran atau, jika tidak merincinya, jawabannya tidak memuat blok penalaran). Termasuk dalam basis.",
+      "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests, number} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis maupun komisi.",
       "exportarReferencias": "Unduh permintaan berulang periode ini, satu baris per permintaan (CSV)",
       "exportarReferenciasPorDia": "Terlalu banyak permintaan berulang untuk satu file — unduh periode ini per hari (CSV):",
       "parametros": "Parameter laporan — katalog harga {version} · nilai tukar {fx}.",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifikasi Penghematan LLM Anda",
-    "metaDescription": "Lapisan biaya LLM berlisensi. Dipasang di depan penyedia Anda dan memangkas tagihan; penghematan diukur terhadap penghitung penyedia, interval keyakinan 95%.",
+    "metaDescription": "SDK yang membuat aplikasi Anda hanya membayar penyedia LLM sesuai kebutuhannya, dan gateway yang mengukur agen pemrograman Anda. Dihitung dengan penghitung penyedia Anda sendiri: biaya per kursi, ditambah komisi hanya atas penghematan terukur.",
     "hero": {
       "eyebrow": "Untuk tim yang membayar API LLM per token",
       "title": "Tagihan LLM Anda, terkendali.",
       "titleAccent": "Diukur di setiap panggilan.",
-      "lede": "SDK yang dipasang di dalam kode Anda, hanya meloloskan yang memang harus dibayar, dan mengembalikan SavingsReport per panggilan: terukur dan estimasi dipisah, dihitung dengan penghitung penyedia Anda. Kami hanya mempublikasikan yang sudah kami ukur.",
-      "ctaRun": "Lihat hasil terukur",
+      "lede": "Dua produk, satu aturan. SDK dipasang di dalam aplikasi Anda dan hanya meloloskan yang memang harus dibayar; gateway berdiri di depan agen pemrograman Anda dan mengukur pengeluarannya. Keduanya menghitung dengan penghitung penyedia Anda sendiri dan memisahkan yang terukur dari yang diperkirakan. Kami hanya mempublikasikan yang sudah kami ukur.",
+      "ctaOffers": "SDK atau gateway?",
       "ctaPricing": "Lihat harga",
       "note": "Terpasang dalam hitungan menit. Pesan Anda tidak pernah melewati server kami.",
       "proofTitle": "Diukur terhadap penyedia nyata",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "Dengan bahasa sehari-hari",
-      "title": "Sebenarnya apa yang dilakukan Savings?",
-      "sub": "Empat ide, empat animasi delapan detik. Itulah seluruh produknya.",
+      "title": "Sebenarnya apa yang dilakukan SDK?",
+      "sub": "Empat ide, empat animasi delapan detik.",
       "pasos": [
         {
           "title": "AI menagih per kata",
@@ -796,8 +784,8 @@
           "body": "Kami tidak meminta kepercayaan buta. Setiap penghematan diukur dengan meteran resmi penyedia — meteran yang sama untuk menagih Anda — dan muncul di struk Anda. Yang tidak bisa dicocokkan dengan tagihan tidak pernah diumumkan."
         },
         {
-          "title": "Kami hanya untung jika Anda hemat",
-          "body": "Komisi kami diambil dari penghematan terukur, tidak pernah dari kantong Anda: sebagian besar dari yang Anda hemat selalu tetap milik Anda. Sebulan tanpa penghematan? Komisi nol."
+          "title": "Biaya per kursi, dan bagian dari yang terukur",
+          "body": "Anda membayar biaya tetap per kursi setiap bulan, apa pun yang terjadi. Di atas itu, komisi kami hanya diambil dari penghematan yang diukur dengan penghitung penyedia Anda — dan sebagian besar dari setiap penghematan selalu tetap milik Anda. Sebulan tanpa penghematan terukur? Anda membayar kursinya dan komisi nol."
         }
       ],
       "nota": "Animasi ini menggambarkan idenya. Angka sesungguhnya — diukur terhadap penyedia sungguhan — ada tepat di bawah."
@@ -875,9 +863,9 @@
       "cta": "Tentang program ini"
     },
     "gateway": {
-      "eyebrow": "Baru · terminal pemrograman",
+      "eyebrow": "Gateway · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
-      "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
+      "body": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa menyentuh kode Anda: ekspor kunci layanan Anda dan jalankan agen Anda melalui bvsala. Prompt Anda tidak pernah meninggalkan mesin Anda — yang sampai ke dasbor Anda hanya hitungan dan biaya.",
       "note": "Gateway mengukur setiap permintaan dan, seperti SDK, hanya berjalan dengan lisensi aktif: gateway mengambilnya dengan kunci layanan Anda dan memverifikasi tanda tangannya di mesin Anda. Dengan lisensi PRO, gateway juga menerapkan satu tuas secara default: memperpendek TTL penulisan cache selama sesi Anda masih hangat — ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
       "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia, untuk model yang memiliki harga daftar, tercatat di panel ini dengan harga tersebut; log gateway memberi tahu bila ada yang tidak diukur. bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
       "cta": "Lihat cara kerjanya →"
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "Satu paket, dihargai per kursi",
-      "title": "Biaya kecil per kursi. Dan komisi hanya atas yang Anda hemat.",
-      "body": "Tanpa paket gratis dan tanpa uji coba: yang bisa Anda periksa sebelum membayar adalah pengukuran publik di halaman ini. Biayanya per kursi, dalam {currency}, dan komisi diambil dari penghematan terukur — tidak pernah dari kantong Anda.",
+      "title": "Biaya per kursi, selalu. Komisi hanya atas penghematan terukur.",
+      "body": "Tanpa paket gratis dan tanpa uji coba: sebelum membayar, Anda bisa memeriksa pengukuran publik dan menjalankan verifikator pada data Anda sendiri, langsung di halaman ini. Biaya per kursi ditagih setiap bulan, dalam {currency}, baik Anda berhemat maupun tidak. Komisi ditambahkan terpisah, dan hanya atas penghematan yang diukur dengan penghitung penyedia Anda — estimasi tidak pernah masuk.",
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Ukur dengan trafik Anda sendiri",
-      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya: terukur dan estimasi dipisah; hanya yang terukur masuk ke komisi. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA di dalam aplikasi Anda.",
+      "ctaSub": "Setelah terpasang, setiap panggilan mengembalikan SavingsReport-nya, dengan yang terukur dan estimasi dipisah. Biaya per kursi bersifat bulanan dan tetap; komisi hanya diambil dari yang terukur. Lisensi adalah yang memungkinkan Anda menjalankan BV‑SALA — SDK di aplikasi Anda, gateway di terminal Anda.",
       "ctaStart": "Mulai",
       "tagline": "Sistem operasi untuk bisnis Anda. Inilah <b>BV‑SALA</b>, pengoptimal biaya LLM BiVelio yang netral terhadap penyedia — setiap angka yang dipublikasikan diukur terhadap penghitung penyedia; estimasi ditampilkan terpisah dan tidak pernah ditagih.",
       "badge": "BV‑SALA · Savings Layer",
@@ -979,7 +967,7 @@
       "colExtra": "Tambahan kami",
       "colTeQuedas": "Milikmu",
       "extraCero": "tidak ada",
-      "notaGarantia": "Kami hanya menagih atas penghematan terukur — dan Anda selalu menyimpan {garantia} atau lebih.",
+      "notaGarantia": "Komisi hanya atas penghematan terukur — dan Anda selalu menyimpan {garantia} atau lebih. Kursi ditagih terpisah, setiap bulan.",
       "notaTramos": "Berjenjang, tiap jenjang dengan tarifnya sendiri: {tramos}. Makin besar hematmu, makin kecil persentase kami.",
       "notaPrimerMesLead": "Bulan pertamamu: hanya seat.",
       "notaPrimerMes": "Kami mengukur semuanya, mengkalibrasi dengan beban nyatamu, dan kamu akan melihat rekening persis dari biaya yang seharusnya — tanpa ditagih.",
@@ -1007,7 +995,7 @@
       "caption": "Tidak semua kiriman membawa isian yang sama: pada putaran ini, pemangkasan terukur per skenario berkisar dari {min} sampai {max}. Yang tidak menghemat pun tetap dipublikasikan."
     },
     "recibo": {
-      "title": "SavingsReport · putaran yang dipublikasikan",
+      "title": "SDK · SavingsReport · putaran yang dipublikasikan",
       "modelo": "model",
       "parejas": "pasangan terukur",
       "calidad": "kualitas",
@@ -1044,6 +1032,57 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Dua produk",
+      "title": "Ke mana token Anda pergi: ke aplikasi Anda atau ke agen pemrograman Anda?",
+      "sub": "Keduanya dilisensikan per kursi dan keduanya menghitung dengan penghitung penyedia Anda sendiri. Keduanya mengerjakan tugas yang berbeda, jadi masing-masing membuat janjinya sendiri — dan hari ini hanya satu yang memiliki angka penghematan yang dipublikasikan.",
+      "install": "Pemasangan",
+      "installMore": "Pemasangan lengkap",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — untuk aplikasi JavaScript dan TypeScript dengan kunci API",
+        "who": "Untuk aplikasi Node.js, dalam JavaScript atau TypeScript, yang memanggil API LLM dengan kunci Anda sendiri dan membayar setiap token.",
+        "what": "SDK membungkus panggilan di dalam kode Anda, hanya mengirim ke penyedia yang memang harus dibayar, dan mengembalikan SavingsReport bersama setiap respons.",
+        "figureLabel": "Batas bawah yang dipublikasikan, diukur terhadap penyedia nyata",
+        "figureNote": "Batas bawah, bukan perkiraan: berapa yang Anda hemat bergantung pada lalu lintas Anda, dan hanya yang dikonfirmasi penghitung penyedia Anda yang masuk ke komisi.",
+        "ctaMeasured": "Cara kami mengukurnya",
+        "ctaVerify": "Coba satu tuas pada data Anda"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — untuk agen pemrograman dengan kunci API",
+        "who": "Untuk Anda yang memakai Claude Code, Codex CLI, atau agen pemrograman lain dengan kunci API.",
+        "what": "Satu perintah menempatkan pengukur lokal di depan terminal Anda, tanpa mengubah kode. Gateway menghitung setiap permintaan dengan penghitung penyedia Anda — untuk model dalam katalog harga kami — dan memberinya struk di dasbor Anda.",
+        "figureLabel": "Tidak ada angka penghematan yang dipublikasikan",
+        "figureNote": "Kami belum mempublikasikan penghematan terukur untuk agen pemrograman, jadi kami tidak mengiklankan angka apa pun. Dengan PRO, pada model Anthropic, gateway memperpendek TTL penulisan cache selama sesi Anda masih hangat — itu mengubah harga, tidak pernah apa yang dibaca model — dan hanya yang dikonfirmasi penghitung penyedia Anda yang masuk ke komisi.",
+        "cta": "Pasang gateway"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · satu tuas, pada data Anda, sebelum membayar",
+      "title": "Tempel data Anda. Lihat apa yang akan dikirim SDK.",
+      "sub": "Di sini pemilih format SDK yang asli berjalan di browser Anda, pada data Anda. Tidak ada yang keluar dari halaman ini dan Anda tidak memerlukan akun.",
+      "tryExample": "Coba sebuah contoh",
+      "sample_orders": "Pesanan toko",
+      "sample_tickets": "Tiket dukungan",
+      "sample_users": "Daftar pengguna",
+      "pasteHint": "…atau tempel JSON Anda sendiri di sini. Tidak ada yang keluar dari browser Anda.",
+      "loading": "Memuat pengoptimal dan tokenizer eksak…",
+      "errBundle": "Pengoptimal tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",
+      "errInvalidData": "Menunggu JSON yang valid… {message}",
+      "tooBig": "Itu lebih dari {max} karakter. Tempel sampel yang lebih kecil.",
+      "tagExact": "Hitungan eksak",
+      "tagApprox": "Perkiraan",
+      "yourData": "Data Anda, sebagai JSON ringkas",
+      "optimized": "Seperti yang akan dikirim SDK",
+      "fewer": "−{pct} token masukan pada data ini",
+      "trims": "Dari {before} menjadi {after} token, termasuk instruksi formatnya.",
+      "alreadyOptimal": "Di sini tidak ada format yang mengalahkan JSON ringkas, jadi SDK akan mengirimnya apa adanya. Tuas ini tidak pernah membuat data Anda lebih besar.",
+      "exactNote": "Dihitung dengan {tokenizer}, tokenizer yang dipakai {model}. Kami membandingkan dengan data Anda sebagai JSON ringkas: jika hari ini Anda mengirimnya dengan indentasi, selisih sebenarnya lebih besar — dan itu tidak kami hitung.",
+      "approxNote": "Tokenizer eksak tidak termuat, jadi setiap hitungan di sini hanya perkiraan — dan kami tidak menampilkan penghematan perkiraan. Muat ulang halaman untuk mencoba lagi.",
+      "scope": "Apa ini, dan apa yang bukan: satu tuas — cara data terstruktur ditulis ke dalam prompt — pada token masukan data ini. Ini bukan tagihan Anda: panggilan yang dihindari, cache penyedia Anda, dan keluaran tidak termasuk di sini, dan banyak permintaan sama sekali tidak membawa data terstruktur. Angka yang kami pertanggungjawabkan untuk SDK secara keseluruhan adalah batas bawah yang dipublikasikan di bagian pengukuran.",
+      "ctaInstall": "Pasang SDK"
     }
   },
   "invitacion": {

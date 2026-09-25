@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { PageHead } from "@/app/components/app/PageHead";
+import { FormatVerifier } from "@/app/components/FormatVerifier";
 import { ProofTabs } from "@/app/components/app/ProofTabs";
 import abData from "@/public/data/ab-live.json";
 import { type AbArtifact } from "../data";
@@ -22,6 +23,10 @@ export default async function VerifyPage() {
     <>
       <ProofTabs />
       <PageHead eyebrow={t("verify.eyebrow")} title={t("verify.title")} sub={t("verify.intro")} />
+      {/* El MISMO verificador de la portada, con el tokenizador exacto y
+          cargado sin esperar al scroll. El proyector (estimación con
+          deslizadores) va debajo, con su etiqueta de estimación. */}
+      <FormatVerifier eager />
       <ProjectorVerifier prices={prices} />
     </>
   );

@@ -15,6 +15,7 @@ import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
+import { FormatVerifier } from "@/app/components/FormatVerifier";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
@@ -51,8 +52,8 @@ const LLMS = [
   { marca: "vllm", label: "vLLM" },
 ] as const;
 
-// The measured A/B artifact powers Step 2 (the reference bench) and the price
-// used by the Step-1 projector — exactly like the dashboard verify/proof pages.
+// El artefacto A/B medido alimenta la sección de lo medido (el banco de
+// referencia), el recibo del héroe y los libros contables.
 const ab = abData as unknown as AbArtifact;
 
 // ¿La tirada publicada midió el SDK tal como se instala desde npm? La del
@@ -63,8 +64,8 @@ const SDK_INSTALADO = midioElSdkInstalado(ab);
 const LIBROS_CON_PIEZA_DEL_BANCO = librosConPiezaDelBanco(ab);
 const ESCENARIOS_CON_PIEZA_DEL_BANCO = escenariosConPiezaDelBanco(ab);
 
-const mini = (ab.pricing.table["gpt-4o-mini"] ?? {}) as { inputPer1k?: number; outputPer1k?: number };
-const prices = { inPer1k: mini.inputPer1k ?? 0.00015, outPer1k: mini.outputPer1k ?? 0.0006 };
+/** Una fila de `hero.proofs`: la ÚNICA cifra prometida de la web (cifra-del-heroe.test.ts). */
+type FilaPrueba = { marca: string; modelo: string; cifra: string; que: string };
 
 // The "integrate" snippet: the same 3-step story as /how-it-works (package →
 // license → wrap the call), with its step headers localized via the shared
@@ -152,6 +153,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     grey: boolean;
   }[];
   const ledgers = t.raw("ledgers") as { idx: string; name: string; desc: string }[];
+  // La cifra del SDK en su tarjeta es ESTA fila, leída del mensaje y nunca
+  // copiada: así la verja «prometido ≤ medido» (cifra-del-heroe.test.ts) sigue
+  // siendo la única fuente, y el valor lo gestiona quien gestiona el titular.
+  const proofs = t.raw("hero.proofs") as FilaPrueba[];
+  const proofSdk = proofs[0];
 
   // Las cuatro tarjetas llevaban un guion ESCRITO A MANO y el texto «ejecuta el
   // optimizador para medir», encima de un artefacto que YA traía las cuatro
@@ -217,9 +223,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               <KineticTitle text={t("hero.titleAccent")} className="u" start={220} />
             </h1>
             <p className="lede">{t("hero.lede")}</p>
+            {/* El botón principal pregunta «¿SDK o gateway?» y lleva a #offers:
+                la portada vende dos productos y el visitante elige el suyo
+                antes de leer cifras. La medición queda enlazada desde la
+                tarjeta del SDK y desde el menú. */}
             <div className="hero-cta">
-              <a className="btn" href="#measured">
-                {t("hero.ctaRun")}
+              <a className="btn" href="#offers">
+                {t("hero.ctaOffers")}
               </a>
               <a className="btn ghost" href="#pricing">
                 {t("hero.ctaPricing")}
@@ -291,6 +301,99 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             />
           </div>
         </section>
+
+        {/* DOS OFERTAS (decisión delegada, bitácora del 10-09): la portada
+            mezclaba dos productos. Al cliente con una app y su API key el SDK
+            le recorta la factura y hay un suelo publicado; al de un agente de
+            código, el gateway le MIDE con el contador del proveedor y le da un
+            recibo por petición. Cada uno lleva su público, su instalación y su
+            propia promesa.
+            · La cifra del SDK es la fila de `hero.proofs` (la de la sección de
+              lo medido y la del recibo): una sola fuente, con su verja.
+            · El gateway va SIN número a propósito: no hay ningún artefacto
+              medido y publicado de su ahorro (public/data solo trae el A/B del
+              SDK), y aquí se publica el suelo o nada. Su promesa es medir y dar
+              recibo, y con PRO acortar el TTL de escritura de caché. */}
+        <section id="offers">
+          <div className="sec-head rv">
+            <span className="eyebrow">{t("offers.eyebrow")}</span>
+            <h2>{t("offers.title")}</h2>
+            <p>{t("offers.sub")}</p>
+          </div>
+          <div className="offers-grid">
+            <article className="offer-card rv">
+              <h3 className="offer-name">{t("offers.sdk.name")}</h3>
+              <p className="offer-who">{t("offers.sdk.who")}</p>
+              <p>{t("offers.sdk.what")}</p>
+              <div className="offer-fig">
+                <span className="offer-fig-t">{t("offers.sdk.figureLabel")}</span>
+                {proofSdk ? (
+                  <div className="hp">
+                    <div className="hp-marca">
+                      <LogoProveedor marca={proofSdk.marca} />
+                      <b>{proofSdk.marca}</b>
+                      <code>{proofSdk.modelo}</code>
+                    </div>
+                    <div className="hp-dato">
+                      <span className="hp-n">{proofSdk.cifra}</span>
+                      <span className="hp-q">{proofSdk.que}</span>
+                    </div>
+                  </div>
+                ) : null}
+                <p className="offer-fig-note">{t("offers.sdk.figureNote")}</p>
+              </div>
+              <div className="offer-install">
+                <span className="offer-fig-t">{t("offers.install")}</span>
+                <pre className="code">
+                  {"pnpm add "}
+                  <span className="s">@bivelio/savings-layer</span>
+                </pre>
+                <a href="#sdk-install">{t("offers.installMore")}</a>
+              </div>
+              <div className="offer-cta">
+                <a className="btn" href="#measured">
+                  {t("offers.sdk.ctaMeasured")}
+                </a>
+                <a className="btn ghost" href="#verify">
+                  {t("offers.sdk.ctaVerify")}
+                </a>
+              </div>
+            </article>
+
+            <article className="offer-card rv">
+              <h3 className="offer-name">{t("offers.gateway.name")}</h3>
+              <p className="offer-who">{t("offers.gateway.who")}</p>
+              <p>{t("offers.gateway.what")}</p>
+              <div className="offer-fig offer-nofig">
+                <span className="offer-fig-t">{t("offers.gateway.figureLabel")}</span>
+                <p className="offer-fig-note">{t("offers.gateway.figureNote")}</p>
+              </div>
+              <div className="offer-install">
+                <span className="offer-fig-t">{t("offers.install")}</span>
+                {/* La clave de servicio va en el fragmento: sin ella el gateway
+                    no recoge la licencia y no arranca. */}
+                <pre className="code">
+                  {"npm i -g @bivelio/savings-layer\n"}
+                  {"export "}
+                  <span className="s">BIVELIO_SERVICE_KEY</span>
+                  {"=bvk_…\n"}
+                  <span className="k">bvsala</span>
+                  {" claude"}
+                </pre>
+                <a href="#gateway">{t("offers.installMore")}</a>
+              </div>
+              <div className="offer-cta">
+                <a className="btn" href="#gateway">
+                  {t("offers.gateway.cta")}
+                </a>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <div className="offer-band rv" id="sdk">
+          {t("offers.sdk.band")}
+        </div>
 
         {/* HECHO PARA DESARROLLADORES — cuatro hechos del paquete, ninguno una
             promesa: cero dependencias, un SavingsReport por llamada, tráfico
@@ -378,7 +481,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <div className="hero-prueba medido-prueba rv">
             <span className="hero-prueba-t">{t("hero.proofTitle")}</span>
             <div className="hero-prueba-filas">
-              {(t.raw("hero.proofs") as { marca: string; modelo: string; cifra: string; que: string }[]).map((p) => (
+              {proofs.map((p) => (
                 <div className="hp" key={p.marca}>
                   <div className="hp-marca">
                     <LogoProveedor marca={p.marca} />
@@ -520,8 +623,31 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
         </section>
 
+        {/* PRUEBA ANTES DE PAGAR — el verificador de formato, sin cuenta. Lo
+            quitó 9feb377 (#85) junto con el PROYECTOR, y el motivo era el
+            proyector: deslizadores donde el visitante inventaba sus
+            porcentajes. Ese motivo sigue vigente, así que el proyector NO
+            vuelve (se queda en el panel) y esta página no lo importa. El
+            verificador sí: corre el selector de formato real del bundle web en
+            el navegador, con el tokenizador exacto, abre con la muestra de
+            menor efecto, redondea hacia abajo y dice en pantalla que es UNA
+            palanca, no la factura. Ni proveedor ni paquete de pago. */}
+        <section id="verify">
+          <div className="sec-head rv">
+            <span className="eyebrow">{t("verify.eyebrow")}</span>
+            <h2>{t("verify.title")}</h2>
+            <p>{t("verify.sub")}</p>
+          </div>
+          <FormatVerifier />
+          <div className="offer-cta" style={{ marginTop: 20 }}>
+            <a className="btn" href="#sdk-install">
+              {t("verify.ctaInstall")}
+            </a>
+          </div>
+        </section>
+
         {/* INTEGRATE — five lines to start */}
-        <section>
+        <section id="sdk-install">
           <div className="sec-head rv">
             <span className="eyebrow">{t("integrate.eyebrow")}</span>
             <h2>{t("integrate.title")}</h2>
@@ -559,6 +685,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </div>
           <p className="sys-note">{t("systems.caption")}</p>
         </section>
+
+        <div className="offer-band rv" id="gateway">
+          {t("offers.gateway.band")}
+        </div>
 
         {/* GATEWAY — el medidor de terminales (S3): Claude Code/Codex sin tocar código.
             Honestidad: aquí solo se promete MEDIR; el veredicto de ahorro en
