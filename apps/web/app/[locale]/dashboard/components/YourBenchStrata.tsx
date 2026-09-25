@@ -5,9 +5,11 @@ import { intfmt, money, moneySigned } from "../format";
 
 /**
  * LOS ESTRATOS: cómo sirvió la capa cada petición, cuántas elegibles hubo
- * (N_h, el peso), cuántos pares, las dos medias y la diferencia por cada mil
- * con su intervalo. Un estrato sin pares suficientes lo dice en vez de enseñar
- * una cifra que no se sostiene.
+ * (N_h, el peso), cuántos pares comparables, las dos medias y la diferencia por
+ * cada mil con su intervalo. Un estrato con pocos pares lo dice en vez de
+ * enseñar un intervalo que no se sostiene (sus pares sí entran en el titular);
+ * uno sin ninguno, que no tiene pares. Se enseña también mientras se reúnen
+ * pares: es donde se ve qué grupo falta.
  */
 export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPropio }) {
   const t = await getTranslations("dashboard");
@@ -38,7 +40,9 @@ export async function YourBenchStrata({ informe }: { informe: InformeDelBancoPro
                 <td className="mono">
                   {e.cubierto && e.diferencia
                     ? `${moneySigned(e.diferencia.point * POR_CADA)} (${moneySigned(e.diferencia.lower * POR_CADA)} … ${moneySigned(e.diferencia.upper * POR_CADA)})`
-                    : t("yourBench.notCovered", { n: intfmt(e.pares), min: intfmt(MIN_PARES_POR_ESTRATO) })}
+                    : e.pares === 0
+                      ? t("yourBench.noPairs")
+                      : t("yourBench.notCovered", { n: intfmt(e.pares), min: intfmt(MIN_PARES_POR_ESTRATO) })}
                 </td>
               </tr>
             ))}

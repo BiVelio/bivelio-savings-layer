@@ -49,6 +49,8 @@ class LecturaFallida extends Error {
   }
 }
 
+const textoONulo = (v: unknown): string | null => (v === null || v === undefined ? null : String(v));
+
 const pendiente = (e: ErrorDePostgrest) => esTablaInexistente(e) || esFuncionInexistente(e) || esColumnaInexistente(e);
 
 export async function leerBancoPropio(
@@ -91,7 +93,10 @@ export async function leerBancoPropio(
     while (pares.length < MAX_PARES_EN_INFORME) {
       let q = bv
         .from("verification_samples")
-        .select("sort_key, stratum, naive_cost::text, optimized_cost::text, naive_input_tokens, naive_output_tokens, cached_input_per_1k::text, output_per_1k::text")
+        .select(
+          "sort_key, stratum, naive_cost::text, optimized_cost::text, naive_input_tokens, naive_output_tokens, " +
+            "cached_input_per_1k::text, output_per_1k::text, naive_finish_reason, naive_contract",
+        )
         .eq("org_id", orgId)
         .eq("outcome", "paired")
         .gte("day", desde)
@@ -109,6 +114,10 @@ export async function leerBancoPropio(
           naiveOutputTokens: Number(f["naive_output_tokens"] ?? 0),
           cachedInputPer1k: f["cached_input_per_1k"] === null || f["cached_input_per_1k"] === undefined ? null : Number(f["cached_input_per_1k"]),
           outputPer1k: Number(f["output_per_1k"] ?? 0),
+          // Sin ellas el informe no sabría qué pares apartar: una copia cortada
+          // por el tope contaría como ahorro (banco-propio.ts, D12 corregida).
+          naiveFinishReason: textoONulo(f["naive_finish_reason"]),
+          naiveContract: textoONulo(f["naive_contract"]),
         });
       }
       if (filas.length < TAM_PAGINA) break;
@@ -128,6 +137,7 @@ export async function leerBancoPropio(
       samples: Number(f["samples"] ?? 0),
       naiveCost: Number(f["naive_cost"] ?? 0),
       naiveTruncated: Number(f["naive_truncated"] ?? 0),
+      naiveIncomplete: Number(f["naive_incomplete"] ?? 0),
       naiveContractMissed: Number(f["naive_contract_missed"] ?? 0),
     }));
 

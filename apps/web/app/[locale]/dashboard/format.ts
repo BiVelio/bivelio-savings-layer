@@ -1,6 +1,23 @@
 /** Shared, honest formatters for the cockpit. */
 export const pct = (n: number): string => (n >= 0 ? "" : "−") + Math.abs(n * 100).toFixed(1) + "%";
 export const pct0 = (n: number): string => (n >= 0 ? "" : "−") + Math.abs(n * 100).toFixed(0) + "%";
+// Redondeo con dirección, para cifras que no pueden subir al pintarse: un suelo
+// se pinta hacia abajo (un 40,66 % no es «≥ 40,7 %»), una cobertura también (un
+// 99,6 % no es «100 %»), y la cuota de lo que falta hacia arriba. El 1e-9
+// absorbe el error de coma flotante (0,407·1000 = 406,99…).
+const signo = (v: number): string => (v < 0 ? "−" : "");
+export const pctFloor = (n: number): string => {
+  const v = Math.floor(n * 1000 + 1e-9) / 10;
+  return signo(v) + Math.abs(v).toFixed(1) + "%";
+};
+export const pct0Floor = (n: number): string => {
+  const v = Math.floor(n * 100 + 1e-9);
+  return signo(v) + Math.abs(v).toFixed(0) + "%";
+};
+export const pct0Ceil = (n: number): string => {
+  const v = Math.ceil(n * 100 - 1e-9);
+  return signo(v) + Math.abs(v).toFixed(0) + "%";
+};
 export function money(n: number): string {
   const a = Math.abs(n);
   if (a >= 1e6) return "$" + (n / 1e6).toFixed(2).replace(/\.00$/, "") + "M";

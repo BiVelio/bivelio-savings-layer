@@ -14,6 +14,12 @@ export type Clase = { estrato: VerificationStratum } | { excluida: VerificationE
 // Orden fijo: la primera regla que se cumple gana. El precio es el CONOCIDO
 // (cliente o catálogo), NUNCA el `DEFAULT_COST_MODEL` ilustrativo: una copia
 // valorada con un precio inventado no es una medición.
+//
+// SIMETRÍA: las reglas que miran la RESPUESTA (cortada, parada, contrato) se le
+// aplican también a la copia, en el panel (`motivoDeNoComparable`, apps/web/lib/
+// verificacion/banco-propio.ts). Si solo se aplicaran aquí, la selección sería
+// de un lado y se inventaría ahorro: con el mismo tope, la copia cortada es la
+// salida más cara. Quien cambie una de las dos, cambia las dos.
 export function clasificar(ctx: {
   request: SavingsRequest;
   result: SavingsResult<unknown>;

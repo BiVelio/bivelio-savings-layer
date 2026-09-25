@@ -4,14 +4,19 @@ import { PageHead } from "@/app/components/app/PageHead";
 import { ProofTabs } from "@/app/components/app/ProofTabs";
 import { authConfigured } from "@/lib/supabase/env";
 import { createReadOnlyClient } from "@/lib/supabase/server";
-import { MIN_PARES, type InformeDelBancoPropio } from "@/lib/verificacion/banco-propio";
+import {
+  CUOTA_CORTA_MAXIMA,
+  MIN_PARES,
+  MIN_PARES_POR_ESTRATO,
+  type InformeDelBancoPropio,
+} from "@/lib/verificacion/banco-propio";
 import { leerBancoPropio, type LecturaDelBancoPropio } from "@/lib/verificacion/lectura";
 import { CopyButton } from "../components/CopyButton";
 import { RangeSwitch } from "../components/RangeSwitch";
 import { YourBenchCounts } from "../components/YourBenchCounts";
 import { YourBenchHeadline } from "../components/YourBenchHeadline";
 import { YourBenchStrata } from "../components/YourBenchStrata";
-import { intfmt, money, pct } from "../format";
+import { intfmt, money, pct0, pct0Ceil, pctFloor } from "../format";
 import { loadDashboard } from "../load";
 import { rangoDesdeParametro, type Rango } from "../rango";
 
@@ -32,8 +37,8 @@ const AJUSTE = "verification: { sampleRate: 0.02 },";
  *
  * INFORMATIVO, JAMÁS FACTURADO: la insignia va en todas las ramas, y nada de
  * esta página se suma al extracto ni a la comisión. El titular es el suelo del
- * intervalo; con pocos pares no hay intervalo; un fallo de lectura nunca se
- * pinta como un cero.
+ * intervalo; con pocos pares, o con demasiado tráfico en grupos con pocos
+ * pares, no hay intervalo; un fallo de lectura nunca se pinta como un cero.
  */
 export default async function YourBenchPage({
   searchParams,
@@ -116,15 +121,50 @@ async function Contenido({ lectura, rango }: { lectura: LecturaDelBancoPropio; r
       {informe.coste.sinCoste > 0 ? <p className="ck-note">{t("yourBench.costUnknown", { n: intfmt(informe.coste.sinCoste) })}</p> : null}
     </div>
   );
+  // Los pares que no entran en ninguna cifra (la copia no terminó como se le
+  // exige a la petición servida), contados a la vista en los dos estados.
+  const nc = informe.noComparables;
+  const noComparados =
+    nc.truncadas + nc.incompletas + nc.incumplidas > 0 ? (
+      <p className="ck-note app-gap">
+        {t("yourBench.naiveQuality", {
+          truncated: intfmt(nc.truncadas),
+          incomplete: intfmt(nc.incompletas),
+          missed: intfmt(nc.incumplidas),
+        })}
+      </p>
+    ) : null;
 
   if (informe.estado === "reuniendo") {
+    const porGrupos = informe.falta === "grupos";
     return (
       <>
         <div className="card card-pad">
-          <div className="card-title">{t("yourBench.collectingTitle", { n: intfmt(informe.paresTotales), min: intfmt(MIN_PARES) })}</div>
-          <p className="ck-note">{t("yourBench.collectingBody", { min: intfmt(MIN_PARES) })}</p>
+          {porGrupos ? (
+            <>
+              <div className="card-title">{t("yourBench.collectingGroupsTitle", { n: intfmt(informe.paresEnTitular) })}</div>
+              <p className="ck-note">
+                {t("yourBench.collectingGroupsBody", {
+                  min: intfmt(MIN_PARES_POR_ESTRATO),
+                  gap: pct0Ceil(informe.cuotaCorta),
+                  max: pct0(CUOTA_CORTA_MAXIMA),
+                })}
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="card-title">{t("yourBench.collectingTitle", { n: intfmt(informe.paresEnTitular), min: intfmt(MIN_PARES) })}</div>
+              <p className="ck-note">{t("yourBench.collectingBody", { min: intfmt(MIN_PARES) })}</p>
+            </>
+          )}
         </div>
         {coste}
+        {informe.estratos.some((e) => e.elegibles > 0 || e.pares > 0) ? (
+          <div className="app-gap">
+            <YourBenchStrata informe={informe} />
+          </div>
+        ) : null}
+        {noComparados}
         <div className="app-gap">
           <YourBenchCounts informe={informe} />
         </div>
@@ -137,15 +177,13 @@ async function Contenido({ lectura, rango }: { lectura: LecturaDelBancoPropio; r
       <YourBenchHeadline informe={informe} />
       <div className="card card-pad app-gap">
         <div className="card-title">{t("yourBench.stressTitle")}</div>
-        <p className="ck-note">{t("yourBench.stressBody", { lower: pct(informe.peorCaso!.fraccion.lower) })}</p>
+        <p className="ck-note">{t("yourBench.stressBody", { lower: pctFloor(informe.peorCaso!.fraccion.lower) })}</p>
       </div>
       {coste}
       <div className="app-gap">
         <YourBenchStrata informe={informe} />
       </div>
-      <p className="ck-note">
-        {t("yourBench.naiveQuality", { truncated: intfmt(informe.calidad.truncadas), missed: intfmt(informe.calidad.incumplidas) })}
-      </p>
+      {noComparados}
       <div className="app-gap">
         <YourBenchCounts informe={informe} />
       </div>
@@ -176,17 +214,19 @@ function vacio(): InformeDelBancoPropio {
   return {
     estado: "sin_datos",
     paresTotales: 0,
-    paresUsados: 0,
+    paresLeidos: 0,
+    paresEnTitular: 0,
     submuestreado: false,
     elegibles: 0,
     cobertura: 0,
+    cuotaCorta: 0,
     tasaLograda: 0,
     remuestreos: 0,
     semilla: 0,
     estratos: [],
     exclusiones: [],
     resultados: [],
-    calidad: { truncadas: 0, incumplidas: 0 },
+    noComparables: { truncadas: 0, incompletas: 0, incumplidas: 0 },
     coste: { usd: 0, copias: 0, sinCoste: 0 },
   };
 }

@@ -272,13 +272,20 @@ and every pair as a CSV download.
 
 - **It costs you money.** You pay your provider for every copy: roughly the sampling
   rate times what that traffic would cost without the layer. The SDK says so once
-  when it starts.
+  per process when it starts (`silenceWarnings: true` mutes that notice too).
 - **It is never billed.** Pairs travel on their own channel into their own table.
   They never enter measured savings, your statement or any commission.
 - **Only requests served intact are checked.** Requests that took the fail-open path,
   were cut off, missed their output contract or came back without a provider counter
   are counted as excluded and never sent twice. `savings: { verification: false }`
   excludes a single request.
+- **Both sides follow the same rule.** A pair is compared only when the copy also
+  finished normally and met your contract; a copy cut off by the output limit is
+  counted and exported, never scored as a saving.
+- **The headline is the floor, and it waits.** It is the lower bound of the 95 %
+  interval, shown once there are enough pairs overall and groups with too few pairs
+  of their own are a small share of your traffic, so a group where the layer costs
+  you money cannot be left out of it.
 - **Only counts leave your infrastructure.** The copy goes to your own provider, like
   the original; BiVelio receives token counts, costs, model ids and outcomes — never
   prompts or answers.
