@@ -841,6 +841,20 @@ describe("valorarGemelaPorReferencia — el suelo, o nada", () => {
     expect(conSeed.ok && conSeed.credit.creditedOutputTokens).toBe(0);
   });
 
+  it("la salida no se acredita en un modelo que razona o no honra temperature 0, aunque el cuerpo lo pida (guarda de modelo de la regla v2)", () => {
+    for (const modelo of ["gpt-5", "o3", "o4-mini", "claude-sonnet-5", "claude-opus-4-7", "gemini-2.5-flash"]) {
+      const m = costeMedido(modelo, uso);
+      if (!m) continue;
+      const v = valorarGemelaPorReferencia(modelo, m, huellaIntacta, { temperature: 0 }, GEMELA);
+      expect(v.ok, modelo).toBe(true);
+      expect(v.ok && v.credit.creditedOutputTokens, modelo).toBe(0);
+      expect(v.ok && v.credit.creditedInputTokens, modelo).toBeGreaterThan(0);
+    }
+    // El mismo cuerpo en un modelo que no razona sí acredita salida.
+    const noRazona = valorarGemelaPorReferencia("claude-haiku-4-5", medido, huellaIntacta, { temperature: 0 }, GEMELA);
+    expect(noRazona.ok && noRazona.credit.creditedOutputTokens).toBeGreaterThan(0);
+  });
+
   it("el suelo nunca excede el coste real de la primaria, en ningún modelo del catálogo con lectura documentada", () => {
     for (const [modelo, p] of Object.entries(CATALOGO)) {
       if (p.cachedInputPer1k === undefined) continue;

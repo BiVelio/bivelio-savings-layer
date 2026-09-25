@@ -2,6 +2,7 @@ import * as zlib from "node:zlib";
 
 import { veredictoDelTier } from "../src/economics/tier-diferido.js";
 import { precioDeLista, precioDeListaPropio } from "../src/pricing/catalogo.js";
+import { salidaNoRepetible } from "../src/pricing/razonamiento.js";
 import { REFERENCE_OUTPUT_SHARE, type CostModel, type ReferenceCredit } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
@@ -870,7 +871,15 @@ function factorDelTierServido(servido: string | undefined): number | null {
  * cobra por un token de entrada aunque la repetición hubiera acertado entera en
  * su caché de prefijo; sin primas de escritura; la salida solo con
  * `temperature: 0` en el cuerpo y al 95 % (REFERENCE_OUTPUT_SHARE), porque sin
- * muestreo determinista nada garantiza que la repetición escribiera lo mismo;
+ * muestreo determinista nada garantiza que la repetición escribiera lo mismo,
+ * y solo si el modelo es una fila del catálogo que no razona y honra
+ * `temperature: 0` (`salidaNoRepetible`, la guarda de modelo de la regla v2 del
+ * SDK en src/pricing/razonamiento.ts): la longitud del razonamiento oculto
+ * cambia de una llamada a otra y su contador no dice lo que la repetición habría
+ * escrito. La otra mitad de la guarda v2 (el proveedor declaró 0 tokens de
+ * razonamiento en la primaria) el gateway aún no la lee; por eso el ingest
+ * sigue sin admitir `reference` de `gateway/` (apps/web/lib/metering/version.ts)
+ * y estos registros entran como `estimated`;
  * y todo por el MENOR de los factores del tier pedido y del servido. La primera
  * condición que falla da el motivo; nunca se lanza nada y nunca se reclama de más.
  */
@@ -915,7 +924,9 @@ export function valorarGemelaPorReferencia(
   if (!esEntero(t.entrada) || !esEntero(t.cacheLeida) || !esEntero(t.cacheEscrita) || !esEntero(t.salida) || !(entrada > 0)) {
     return { ok: false, reason: "no-credit" };
   }
-  const determinista = json["temperature"] === 0;
+  // La salida, solo con muestreo determinista pedido Y un modelo cuya salida se
+  // puede repetir (la misma guarda de modelo que la regla v2 del SDK).
+  const determinista = json["temperature"] === 0 && salidaNoRepetible(model) === undefined;
   return {
     ok: true,
     credit: {
