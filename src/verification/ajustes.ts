@@ -84,11 +84,14 @@ export function avisoDeVerificacionInvalida(v: unknown): string {
 }
 
 /** W3 · sin destino para los pares: no se envía ninguna copia (D4). */
+// Con `meteringUrl` propia el destino es su hermana (…/api/metering/verification)
+// solo si termina en /api/metering/usage; si no, se dice aquí, en vez de pedir
+// al cliente una `licenseServerUrl` que quizá ya tiene.
 export const AVISO_VERIFICACION_SIN_DESTINO =
   "[bvsala] Verification sampling is set, but its pairs have nowhere to go: set " +
   "`serviceAccountKey` and `licenseServerUrl` (with metering on) to see them in your " +
-  "dashboard, or pass `verification.onCheck` to receive them yourself. No request will be " +
-  "sent twice until then.";
+  "dashboard — a custom `meteringUrl` is followed only when it ends in `/api/metering/usage` — " +
+  "or pass `verification.onCheck` to receive them yourself. No request will be sent twice until then.";
 
 /** El aviso de un fallo interno del muestreo: la petición servida no se toca. */
 export const AVISO_VERIFICACION_FALLO_INTERNO =
