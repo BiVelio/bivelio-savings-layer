@@ -299,6 +299,24 @@ extracto lean nada de esto. Si algún día entra en la base, será con otra
 especificación (un n mínimo mucho mayor, un estimador robusto a colas) y con el
 sí explícito del dueño.
 
+**Dos reglas que endureció la revisión adversaria antes de publicar nada:**
+
+1. *Un par solo cuenta si los dos lados terminaron igual de bien.* La petición
+   servida ya se excluía si salía cortada por el tope, parada por otro motivo o
+   sin cumplir el contrato; la copia no. Con el mismo tope en los dos brazos,
+   una copia cortada es la salida **más cara** posible, así que quedarse solo con
+   las servidas no cortadas fabricaba ahorro: con una capa que no hacía nada, un
+   15 %. Ahora la copia pasa por la misma regla (los pares apartados se cuentan,
+   se enseñan y van en el CSV) y el instrumento ya no marca ahorro sobre tráfico intacto
+   (`test/verificacion-nulo-simetrico.test.ts`, de punta a punta).
+2. *Ningún grupo con datos se queda fuera del titular, y el titular espera.* Un
+   grupo con menos de 10 pares se quitaba del cálculo; si era el que perdía
+   dinero, el panel podía pintar «≥ 100 %» sobre un tercio del tráfico. Ahora
+   todo grupo con algún par entra con su peso, el mínimo de 30 pares cuenta solo
+   los que entran, y no hay titular mientras los grupos con menos de 10 pares
+   sumen más del 5 % de las peticiones elegibles. Si algún grupo no tiene ningún
+   par, el pie dice qué parte del tráfico abarca la cifra.
+
 **Hallazgo al construirlo:** el brazo B0 del banco (`benchmarks/brazos.ts`)
 copia los mensajes como `{role, content}` y pierde `toolCallId` y `toolCalls`:
 un escenario con ciclo de herramientas daría 400 en el brazo naive. La copia del

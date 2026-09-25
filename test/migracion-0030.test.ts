@@ -82,6 +82,20 @@ describe("0030 — tu propio banco", () => {
     expect(codigo).toContain("grant execute on function bvsala.verification_summary(uuid, date, date) to authenticated, service_role;");
   });
 
+  it("el resumen cuenta aparte las copias NO comparables, disjuntas y con la precedencia del informe", () => {
+    // La misma precedencia que motivoDeNoComparable (apps/web/lib/verificacion/banco-propio.ts)
+    // y que clasificar() para la petición servida: cortada, parada por otro motivo, contrato.
+    const f = bloque("create or replace function bvsala.verification_summary", "\n$$;").replace(/\s+/g, " ");
+    expect(f).toContain("naive_truncated bigint, naive_incomplete bigint, naive_contract_missed bigint");
+    expect(f).toContain("count(*) filter (where naive_finish_reason = 'length')::bigint");
+    expect(f).toContain(
+      "count(*) filter (where naive_finish_reason is not null and naive_finish_reason not in ('length', 'stop', 'tool_calls'))::bigint",
+    );
+    expect(f).toContain(
+      "count(*) filter (where naive_contract = 'missed' and (naive_finish_reason is null or naive_finish_reason in ('stop', 'tool_calls')))::bigint",
+    );
+  });
+
   it("⛔ no nombra nada de la facturación ni borra funciones", () => {
     for (const prohibido of ["ingest_usage_batch", "usage_daily", "extractos", "measured_", "reference_", "drop function"]) {
       expect(sql, prohibido).not.toContain(prohibido);

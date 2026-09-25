@@ -156,13 +156,20 @@ grant execute on function bvsala.ingest_verification_batch(uuid, text, jsonb, js
 
 -- Resumen EXACTO del panel (recuentos por resultado y estrato, coste de las copias).
 -- SECURITY INVOKER: corre con la RLS de quien consulta; un no-miembro recibe cero filas.
+-- Los tres recuentos de copias NO COMPARABLES son disjuntos y siguen la precedencia
+-- de apps/web/lib/verificacion/banco-propio.ts (motivoDeNoComparable), que es la
+-- de clasificar() para la petición servida: cortada por el tope, parada por otro
+-- motivo, contrato incumplido. Esos pares no entran en ninguna cifra del panel.
 create or replace function bvsala.verification_summary(p_org uuid, p_from date, p_to date)
 returns table (outcome text, stratum text, samples bigint, naive_cost numeric,
-               naive_truncated bigint, naive_contract_missed bigint)
+               naive_truncated bigint, naive_incomplete bigint, naive_contract_missed bigint)
 language sql stable security invoker set search_path = bvsala as $$
   select outcome, stratum, count(*)::bigint, coalesce(sum(naive_cost), 0),
          count(*) filter (where naive_finish_reason = 'length')::bigint,
-         count(*) filter (where naive_contract = 'missed')::bigint
+         count(*) filter (where naive_finish_reason is not null
+                            and naive_finish_reason not in ('length', 'stop', 'tool_calls'))::bigint,
+         count(*) filter (where naive_contract = 'missed'
+                            and (naive_finish_reason is null or naive_finish_reason in ('stop', 'tool_calls')))::bigint
     from bvsala.verification_samples
    where org_id = p_org and day >= p_from and day <= p_to
    group by outcome, stratum
