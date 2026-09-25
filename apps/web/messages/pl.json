@@ -1044,7 +1044,7 @@
         "band": "SDK — dla aplikacji w JavaScript i TypeScript z kluczem API",
         "who": "Dla aplikacji Node.js, w JavaScript lub TypeScript, które wywołują API LLM własnym kluczem i płacą za każdy token.",
         "what": "Opakowuje wywołanie w Twoim kodzie, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca SavingsReport z każdą odpowiedzią.",
-        "figureLabel": "Opublikowany próg, zmierzony względem prawdziwego dostawcy",
+        "figureLabel": "Liczba, którą publikujemy",
         "figureNote": "Próg, nie prognoza: ile zaoszczędzisz, zależy od Twojego ruchu. Do prowizji wchodzą tylko oszczędności zmierzone licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
         "ctaMeasured": "Jak to zmierzyliśmy",
         "ctaVerify": "Wypróbuj jedną dźwignię na swoich danych"

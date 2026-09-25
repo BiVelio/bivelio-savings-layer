@@ -1044,7 +1044,7 @@
         "band": "SDK — untuk aplikasi JavaScript dan TypeScript dengan kunci API",
         "who": "Untuk aplikasi Node.js, dalam JavaScript atau TypeScript, yang memanggil API LLM dengan kunci Anda sendiri dan membayar setiap token.",
         "what": "SDK membungkus panggilan di dalam kode Anda, hanya mengirim ke penyedia yang memang harus dibayar, dan mengembalikan SavingsReport bersama setiap respons.",
-        "figureLabel": "Batas bawah yang dipublikasikan, diukur terhadap penyedia nyata",
+        "figureLabel": "Angka yang kami publikasikan",
         "figureNote": "Batas bawah, bukan perkiraan: berapa yang Anda hemat bergantung pada lalu lintas Anda. Hanya penghematan yang diukur dengan penghitung penyedia Anda yang masuk ke komisi — termasuk permintaan berulang yang dilayani tanpa memanggil penyedia, masing-masing dinilai dengan penghitung permintaan identik yang sudah dijalankan.",
         "ctaMeasured": "Cara kami mengukurnya",
         "ctaVerify": "Coba satu tuas pada data Anda"

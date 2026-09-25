@@ -1044,7 +1044,7 @@
         "band": "SDK — per a apps en JavaScript o TypeScript amb API key",
         "who": "Per a apps de Node.js, en JavaScript o TypeScript, que criden una API de LLM amb la teva pròpia clau i paguen cada token.",
         "what": "Embolcalla la crida dins del teu codi, envia al proveïdor només el que cal pagar i retorna un SavingsReport amb cada resposta.",
-        "figureLabel": "Sòl publicat, mesurat contra un proveïdor real",
+        "figureLabel": "La xifra que publiquem",
         "figureNote": "Un sòl, no una previsió: el que estalviïs depèn del teu trànsit. A la comissió només hi entra l'estalvi mesurat amb el comptador del teu proveïdor, incloses les peticions repetides que se serveixen sense cridar-lo, cadascuna valorada amb el comptador de la petició idèntica que ja es va executar.",
         "ctaMeasured": "Com ho hem mesurat",
         "ctaVerify": "Prova una palanca amb les teves dades"

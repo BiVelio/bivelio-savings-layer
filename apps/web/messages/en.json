@@ -1044,7 +1044,7 @@
         "band": "SDK — for JavaScript and TypeScript apps on an API key",
         "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
         "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
-        "figureLabel": "Published floor, measured against a real provider",
+        "figureLabel": "The figure we publish",
         "figureNote": "A floor, not a forecast: what you save depends on your traffic. Only savings measured with your provider's counter enter the commission — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
         "ctaMeasured": "How we measured it",
         "ctaVerify": "Try one lever on your data"

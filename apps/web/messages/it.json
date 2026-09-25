@@ -1044,7 +1044,7 @@
         "band": "SDK — per app JavaScript e TypeScript con chiave API",
         "who": "Per app Node.js, in JavaScript o TypeScript, che chiamano un'API di LLM con la tua chiave e pagano ogni token.",
         "what": "Avvolge la chiamata nel tuo codice, invia al fornitore solo ciò che va pagato e restituisce un SavingsReport con ogni risposta.",
-        "figureLabel": "Soglia pubblicata, misurata contro un fornitore reale",
+        "figureLabel": "La cifra che pubblichiamo",
         "figureNote": "Una soglia, non una previsione: quanto risparmierai dipende dal tuo traffico. Nella commissione entra solo il risparmio misurato con il contatore del tuo fornitore — comprese le richieste ripetute servite senza chiamarlo, ciascuna valutata con il contatore della richiesta identica già eseguita.",
         "ctaMeasured": "Come l'abbiamo misurato",
         "ctaVerify": "Prova una leva sui tuoi dati"

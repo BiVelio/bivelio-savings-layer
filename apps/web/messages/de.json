@@ -1044,7 +1044,7 @@
         "band": "SDK — für JavaScript- und TypeScript-Apps mit API-Schlüssel",
         "who": "Für Node.js-Apps in JavaScript oder TypeScript, die eine LLM-API mit deinem eigenen Schlüssel aufrufen und jedes Token bezahlen.",
         "what": "Es umschließt den Aufruf in deinem Code, schickt dem Anbieter nur, was bezahlt werden muss, und liefert zu jeder Antwort einen SavingsReport.",
-        "figureLabel": "Veröffentlichte Untergrenze, gemessen gegen einen echten Anbieter",
+        "figureLabel": "Die Zahl, die wir veröffentlichen",
         "figureNote": "Eine Untergrenze, keine Prognose: Was du sparst, hängt von deinem Traffic ab. In die Provision geht nur Ersparnis ein, die mit dem Zähler deines Anbieters gemessen wurde — auch bei wiederholten Anfragen, die ohne Aufruf deines Anbieters bedient werden; jede wird mit dem Zähler der identischen Anfrage bewertet, die bereits gelaufen ist.",
         "ctaMeasured": "Wie wir es gemessen haben",
         "ctaVerify": "Probier einen Hebel mit deinen Daten"

@@ -323,3 +323,38 @@ describe("repeticiones por referencia: plural ICU sin dígitos", () => {
     });
   }
 });
+
+/**
+ * LA ETIQUETA DE LA CIFRA DEL SDK NO DICE «MEDIDO».
+ *
+ * La cifra de la tarjeta es la fila de `hero.proofs`, y quien la gestiona es la
+ * unidad del titular. #321 la baja a un titular PROVISIONAL, recalculado desde
+ * los ensayos y no medido con el SDK tal como se instala desde npm. Una
+ * etiqueta que dijera «suelo medido contra un proveedor real» seguiría ahí
+ * cuando la cifra deje de ser una medición: la etiqueta tiene que ser verdad
+ * con cualquier fila que llegue. Lo que se midió y cómo lo cuentan la propia
+ * fila (`que`), la nota y «Cómo lo medimos».
+ */
+describe("la tarjeta del SDK: su etiqueta no afirma una medición que la fila puede no tener", () => {
+  const MEDIDO: Record<Loc, RegExp> = {
+    ca: /mesura/i,
+    de: /gemessen/i,
+    en: /measur/i,
+    es: /medid/i,
+    fr: /mesur/i,
+    id: /diukur|terukur/i,
+    it: /misurat/i,
+    nl: /gemeten/i,
+    pl: /zmierz|mierzon/i,
+    pt: /medid/i,
+    tr: /ölçül/i,
+    vi: /\bđo\b/i,
+  };
+  for (const loc of LOCALES) {
+    it(`${loc}: landing.offers.sdk.figureLabel`, () => {
+      const etiqueta = cargar(loc)["landing.offers.sdk.figureLabel"];
+      expect(etiqueta, loc).toBeTruthy();
+      expect(etiqueta, loc).not.toMatch(MEDIDO[loc]);
+    });
+  }
+});
