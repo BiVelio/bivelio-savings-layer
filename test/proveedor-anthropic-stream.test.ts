@@ -95,6 +95,8 @@ describe("AnthropicProvider.generateStream", () => {
       outputTokens: 42,
       cachedInputTokens: 400,
       cacheWriteInputTokens: 50,
+      // Sin bloque de razonamiento, el adaptador lo dice: 0.
+      reasoningTokens: 0,
     });
     expect("complete" in r.usage).toBe(false);
     expect(r.finishReason).toBe("stop");
@@ -178,7 +180,7 @@ describe("AnthropicProvider.generateStream", () => {
     expect(evs.map((e) => e.type)).toEqual(["text", "done"]);
     expect(evs[0]).toEqual({ type: "text", delta: "Su pedido sale hoy." });
     const r = hecho(evs);
-    expect(r.usage).toEqual({ inputTokens: 10, outputTokens: 7 });
+    expect(r.usage).toEqual({ inputTokens: 10, outputTokens: 7, reasoningTokens: 0 });
     expect(r.finishReason).toBe("stop");
   });
 
@@ -268,6 +270,6 @@ describe("AnthropicProvider.generate — usage parcial", () => {
 
     const entero = espia(JSON.stringify({ content: [{ type: "text", text: "x" }], stop_reason: "end_turn", usage: { input_tokens: 10, output_tokens: 2 } }));
     const r2 = await new AnthropicProvider({ fetchImpl: entero.fetchImpl }).generate(PETICION);
-    expect(r2.usage).toEqual({ inputTokens: 10, outputTokens: 2 });
+    expect(r2.usage).toEqual({ inputTokens: 10, outputTokens: 2, reasoningTokens: 0 });
   });
 });

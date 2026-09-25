@@ -176,7 +176,9 @@ describe("SavingsPipeline end-to-end", () => {
   const fixedCounterProvider = () => ({
     id: "fixed-counter",
     async generate() {
-      return { text: "Paris", usage: { inputTokens: 9, outputTokens: 3 } };
+      // Like OpenAI's counter, it states that no hidden reasoning was billed:
+      // without that statement a repeat never credits output (rule v2).
+      return { text: "Paris", usage: { inputTokens: 9, outputTokens: 3, reasoningTokens: 0 } };
     },
   });
 
@@ -197,6 +199,28 @@ describe("SavingsPipeline end-to-end", () => {
     // deterministic sampling, 95% of it.
     expect(hit.report.tokens.baselineOutput).toBe(Math.floor(0.95 * first.report.tokens.actualOutput));
     expect(hit.report.tokens.baselineOutput).toBeLessThan(20);
+  });
+
+  it("credits no output on a deterministic repeat when the counter did not state its reasoning tokens", async () => {
+    const layer = createSavingsLayer({
+      provider: {
+        id: "silent-reasoning",
+        async generate() {
+          return { text: "Paris", usage: { inputTokens: 9, outputTokens: 3 } };
+        },
+      },
+      generateId: deterministicId,
+    });
+    const request: SavingsRequest = {
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: "capital city output-baseline probe, silent counter" }],
+      temperature: 0,
+    };
+    await layer.generate(request);
+    const hit = await layer.generate(request);
+    expect(hit.report.cost.basis).toBe("reference");
+    expect(hit.report.tokens.baselineInput).toBeGreaterThan(0);
+    expect(hit.report.tokens.baselineOutput).toBe(0);
   });
 
   it("credits no output on a repeat without deterministic sampling", async () => {

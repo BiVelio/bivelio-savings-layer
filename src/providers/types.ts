@@ -69,6 +69,16 @@ export interface ProviderUsage {
    */
   cacheWriteInputTokens?: number;
   /**
+   * Output tokens the provider billed for hidden reasoning, already included in
+   * `outputTokens` (OpenAI `completion_tokens_details.reasoning_tokens`).
+   *
+   * `0` states that the answer carried no hidden reasoning. Absent means the
+   * provider did not say, which is NOT the same as 0: a repeat served by
+   * reference only credits output when the call that ran reported exactly 0,
+   * because reasoning tokens are neither visible nor deterministic.
+   */
+  reasoningTokens?: number;
+  /**
    * False when the provider did not report both counters for this call (for a
    * stream: its final usage event never arrived), so the adapter filled the
    * missing ones with 0. Absent means complete. A request with any such call is

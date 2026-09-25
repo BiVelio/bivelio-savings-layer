@@ -12,6 +12,7 @@ import {
   registroDeReferencia,
   type HechosDeLaPoblada,
 } from "../src/pipeline/referencia.js";
+import { atestiguar, type AtestadoDelCable } from "../src/providers/atestado-del-cable.js";
 import type { SavingsLayerConfig } from "../src/pipeline/config.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { JsonSchema, SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
@@ -23,14 +24,25 @@ import type { JsonSchema, SavingsReport, SavingsRequest, SavingsResult, ToolDesc
  * contador de la petición IDÉNTICA BYTE A BYTE que sí corrió, intacta, y a la
  * baja: toda la entrada a tarifa cacheada, la salida solo con `temperature: 0`.
  * Cada `describe` fija una de las reglas de escritura (E1-E7) o de lectura
- * (L0-L7); el orden de los casos es el de la especificación.
+ * (L0-L7); el orden de los casos es el de la especificación. Lo nuevo de la
+ * regla v2 (E5 ampliada y la guarda de razonamiento) vive en
+ * `test/referencia-v2.test.ts`, contra los adaptadores de verdad.
  */
 
 const DIA = 24 * 60 * 60 * 1000;
 const MINI = "openai/gpt-4o-mini"; // catálogo: cacheada 0,000075 · salida 0,0006
 const PREGUNTA = "What is the capital of France?";
 
-/** Proveedor de contador FIJO, que cuenta las llamadas. */
+/**
+ * El cable que atestigua el adaptador de Chat Completions con la vía nativa: el
+ * esquema del cliente tal cual en `response_format`. Aquí lo firma el test para
+ * probar las reglas del pipeline; que el adaptador REAL lo firme (y solo
+ * entonces) lo fija `test/referencia-v2.test.ts`.
+ */
+const CABLE_NATIVO: AtestadoDelCable = { esquemaEnFormatoNativo: true, mensajesDelAdaptador: 0 };
+
+/** Proveedor de contador FIJO, que cuenta las llamadas. Declara 0 tokens de
+ *  razonamiento salvo que se le diga otra cosa (`razonamiento: null` = no lo dice). */
 class ProveedorFijo implements Provider {
   readonly id = "fijo";
   readonly recibidas: ProviderRequest[] = [];
@@ -41,6 +53,8 @@ class ProveedorFijo implements Provider {
       tier?: string;
       texto?: string | ((r: ProviderRequest) => string);
       structuredNatively?: boolean;
+      razonamiento?: number | null;
+      cable?: AtestadoDelCable;
     } = {},
   ) {}
   get llamadas(): number {
@@ -49,14 +63,20 @@ class ProveedorFijo implements Provider {
   async generate(r: ProviderRequest): Promise<ProviderResponse> {
     this.recibidas.push(r);
     const t = this.opciones.texto;
-    return {
+    const razonamiento = this.opciones.razonamiento === undefined ? 0 : this.opciones.razonamiento;
+    const respuesta: ProviderResponse = {
       text: typeof t === "function" ? t(r) : (t ?? "Paris is the capital of France."),
-      usage: { inputTokens: this.entrada, outputTokens: this.salida },
+      usage: {
+        inputTokens: this.entrada,
+        outputTokens: this.salida,
+        ...(razonamiento !== null ? { reasoningTokens: razonamiento } : {}),
+      },
       ...(this.opciones.tier ? { servedServiceTier: this.opciones.tier } : {}),
       ...(this.opciones.structuredNatively !== undefined
         ? { structuredNatively: this.opciones.structuredNatively }
         : {}),
     };
+    return this.opciones.cable ? atestiguar(respuesta, this.opciones.cable) : respuesta;
   }
 }
 
@@ -116,7 +136,7 @@ class CacheManipulada implements ExactCache {
 /** Los hechos de una poblada intacta con esquema nativo, para las reglas puras. */
 const HECHOS_INTACTOS: HechosDeLaPoblada = {
   contadorSimulado: false,
-  usoPrimario: { inputTokens: 500, outputTokens: 300 },
+  usoPrimario: { inputTokens: 500, outputTokens: 300, reasoningTokens: 0 },
   eliminatedInput: 0,
   compressedInput: 0,
   elididoLocal: 0,
@@ -126,7 +146,9 @@ const HECHOS_INTACTOS: HechosDeLaPoblada = {
   tokensDelSondeo: 0,
   sondeoAplicado: false,
   hayEsquema: true,
-  backend: "provider-native",
+  esquemaNativo: true,
+  esquemaEnFormatoNativo: true,
+  mensajesDelAdaptador: 0,
   modeloPedido: MINI,
   modeloServido: MINI,
   cacheable: true,
@@ -222,10 +244,10 @@ describe("1-4 · la valoración: entrada a tarifa cacheada, salida solo determin
     // `maxOutputTokens` no está en la clave exacta: la repetición puede pedir
     // menos salida que la poblada, y nunca se le acredita más que su tope.
     // El tope viaja en el contrato de salida, así que hace falta esquema, y con
-    // esquema, el backend nativo (E5).
+    // esquema, nativo y tal cual (E5). Con la configuración POR DEFECTO: sin
+    // `constraintBackends`, que en la v1 lo dejaba fuera.
     const { layer } = montar(
-      new ProveedorFijo(1736, 282, { texto: '{"answer":"Paris"}', structuredNatively: true }),
-      { constraintBackends: [providerNativeBackend()] },
+      new ProveedorFijo(1736, 282, { texto: '{"answer":"Paris"}', structuredNatively: true, cable: CABLE_NATIVO }),
     );
     const contrato = (maxOutputTokens: number) => ({ contractId: "a:v1", schema: CONTRATO, maxOutputTokens });
     await layer.generate(peticion({ temperature: 0, response: contrato(1000) }));
@@ -289,7 +311,13 @@ describe("5 · L6: sin tarifa cacheada documentada no hay referencia", () => {
     expect(hit.report.cost.basis).toBe("reference");
     expect(hit.report.cache.reference?.cachedInputPer1k).toBe(0.00001);
     expect(hit.report.cache.reference?.outputPer1k).toBe(0.0004);
-    expect(hit.report.cost.baselineEstimate).toBeCloseTo((400 * 0.00001 + 57 * 0.0004) / 1000, 10);
+    // Regla v2: Gemini 2.5 es familia de razonamiento, así que la salida no
+    // cuenta aunque el contador diga 0 y la petición pida temperature 0.
+    expect(hit.report.cache.reference?.creditedOutputTokens).toBe(0);
+    expect(hit.report.cost.baselineEstimate).toBeCloseTo((400 * 0.00001) / 1000, 10);
+    expect(hit.report.traces.find((t) => t.stage === "exact-cache")?.detail?.["outputNotCredited"]).toBe(
+      "reasoning-model",
+    );
   });
 
   it("una instantánea con FECHA es el mismo modelo: gpt-4o-mini-2024-07-18 se valora con su fila", async () => {
@@ -462,7 +490,7 @@ describe("6 · E2/E3: una poblada que la capa tocó no deja contador", () => {
 
   it("(c) el codebook de salida aplicado", async () => {
     const texto = JSON.stringify({ d: "H", c: 87, e: ["E17:4"] });
-    const { layer } = montar(new ProveedorFijo(100, 12, { texto, structuredNatively: true }));
+    const { layer } = montar(new ProveedorFijo(100, 12, { texto, structuredNatively: true, cable: CABLE_NATIVO }));
     const req: SavingsRequest = {
       model: "openai/gpt-4o",
       messages: [{ role: "user", content: "clasifica el expediente 4711 y cita la evidencia" }],
@@ -490,7 +518,7 @@ describe("7 · el mensaje de datos que inserta la capa se descuenta", () => {
     const primera = await layer.generate(req);
     expect(primera.report.serialization.chosen).toBe("json-compact");
     expect(trazaDeReferencia(primera)?.outcome).toBe("written");
-    expect(trazaDeReferencia(primera)?.detail?.["layerMessages"]).toBe(1);
+    expect(trazaDeReferencia(primera)?.detail?.["layerInsertions"]).toBe(1);
 
     const hit = await layer.generate(req);
     expect(hit.report.cost.basis).toBe("reference");
@@ -500,10 +528,10 @@ describe("7 · el mensaje de datos que inserta la capa se descuenta", () => {
 });
 
 describe("8 · la reparación: su coste es nuestro, y su salida acota la acreditada", () => {
-  it("en el pipeline, reparar exige el esquema en el prompt, y eso ya excluye la referencia (E5)", async () => {
-    // La reparación solo corre con el backend `none`, o sea con el esquema
-    // viajando fuera del modo nativo: E5 la saca antes de llegar a la regla del
-    // `min`. Queda fijado para que nadie crea que una reparación deja contador.
+  it("un proveedor que no dice que impuso el esquema no deja contador, repare o no (E5)", async () => {
+    // Sin `structuredNatively: true` el esquema pudo viajar como prompt, y esa
+    // instrucción la cobra el proveedor sin que la cuenta local la vea. La
+    // reparación con esquema NATIVO sí deja contador: ver el caso siguiente.
     let n = 0;
     const provider: Provider = {
       id: "repara",
@@ -526,11 +554,59 @@ describe("8 · la reparación: su coste es nuestro, y su salida acota la acredit
     expect(hit.report.cache.referenceRejected).toBe("absent");
   });
 
+  it("de punta a punta, con el esquema nativo: la entrada es la de la primaria y la salida la menor de las dos", async () => {
+    // Con la configuración por defecto el backend planeado es `none`, así que
+    // una respuesta que el proveedor dio por buena pero que nuestro validador
+    // rechaza (aquí, `maxLength`) se repara. La reparación es coste NUESTRO: su
+    // entrada no entra en la referencia, y su salida solo acota la acreditada.
+    const LARGO: JsonSchema = {
+      type: "object",
+      additionalProperties: false,
+      required: ["answer"],
+      properties: { answer: { type: "string", maxLength: 10 } },
+    };
+    let n = 0;
+    const provider: Provider = {
+      id: "repara-nativo",
+      async generate(): Promise<ProviderResponse> {
+        n++;
+        return atestiguar(
+          n === 1
+            ? {
+                text: '{"answer":"Paris is the capital of France"}',
+                usage: { inputTokens: 500, outputTokens: 300, reasoningTokens: 0 },
+                structuredNatively: true,
+              }
+            : {
+                text: '{"answer":"Paris"}',
+                usage: { inputTokens: 700, outputTokens: 120, reasoningTokens: 0 },
+                structuredNatively: true,
+              },
+          CABLE_NATIVO,
+        );
+      },
+    };
+    const { layer } = montar(provider);
+    const req = peticion({ temperature: 0, response: { contractId: "corto:v1", schema: LARGO } });
+    const primera = await layer.generate(req);
+    expect(primera.report.calls.retries).toBe(1);
+    expect(trazaDeReferencia(primera)?.outcome).toBe("written");
+    expect(trazaDeReferencia(primera)?.detail?.["inputTokens"]).toBe(500);
+    expect(trazaDeReferencia(primera)?.detail?.["outputTokens"]).toBe(120);
+
+    const hit = await layer.generate(req);
+    expect(hit.report.cache.result).toBe("exact");
+    expect(hit.report.cost.basis).toBe("reference");
+    // El envoltorio del esquema nativo se descuenta como una pieza de la capa.
+    expect(hit.report.cache.reference?.creditedInputTokens).toBe(500 - 8);
+    expect(hit.report.cache.reference?.creditedOutputTokens).toBe(114);
+  });
+
   it("la regla de escritura: entrada de la primaria, salida la menor de las dos", () => {
     const registro = registroDeReferencia({
       ...HECHOS_INTACTOS,
-      usoPrimario: { inputTokens: 500, outputTokens: 300 },
-      usoReparacion: { inputTokens: 700, outputTokens: 120 },
+      usoPrimario: { inputTokens: 500, outputTokens: 300, reasoningTokens: 0 },
+      usoReparacion: { inputTokens: 700, outputTokens: 120, reasoningTokens: 0 },
     });
     if (typeof registro !== "object") throw new Error(`se esperaba registro, salió ${registro}`);
     expect(registro.inputTokens).toBe(500);
@@ -545,6 +621,7 @@ describe("8 · la reparación: su coste es nuestro, y su salida acota la acredit
       calidadOk: true,
       precio: precioDeLista("gpt-4o-mini"),
       determinista: true,
+      modeloRazona: false,
       diferible: false,
     });
     if (!ev.ok) throw new Error(`se esperaba crédito, salió ${ev.reason}`);
@@ -563,7 +640,11 @@ describe("9 · E6: la cascada", () => {
   });
 
   it("si sirve el barato no hay referencia, y la repetición sin cascada no acierta", async () => {
-    const p = new ProveedorFijo(1000, 200, { texto: '{"answer":"del barato"}' });
+    const p = new ProveedorFijo(1000, 200, {
+      texto: '{"answer":"del barato"}',
+      structuredNatively: true,
+      cable: CABLE_NATIVO,
+    });
     const { layer } = montar(p, { costModels: PRECIOS, constraintBackends: [providerNativeBackend()] });
     const enrutada = await layer.generate(pet({ savings: { modelCascade: "on" } }));
     expect(enrutada.report.model).toBe(MINI);
@@ -577,9 +658,16 @@ describe("9 · E6: la cascada", () => {
     const provider: Provider = {
       id: "escala",
       async generate(r: ProviderRequest): Promise<ProviderResponse> {
-        return r.model === MINI
-          ? { text: "no es json", usage: { inputTokens: 900, outputTokens: 150 } }
-          : { text: '{"answer":"del fuerte"}', usage: { inputTokens: 1000, outputTokens: 200 } };
+        return atestiguar(
+          r.model === MINI
+            ? { text: "no es json", usage: { inputTokens: 900, outputTokens: 150 }, structuredNatively: true }
+            : {
+                text: '{"answer":"del fuerte"}',
+                usage: { inputTokens: 1000, outputTokens: 200 },
+                structuredNatively: true,
+              },
+          CABLE_NATIVO,
+        );
       },
     };
     const { layer } = montar(provider, { costModels: PRECIOS, constraintBackends: [providerNativeBackend()] });
@@ -634,8 +722,8 @@ describe("11-12 · L0/L1: forma y testigo", () => {
     expect(hit.report.cache.referenceRejected).toBe("witness");
   });
 
-  it("12 · inputTokens negativo o una versión desconocida: malformed", async () => {
-    for (const cambio of [{ inputTokens: -5 }, { v: 2 }]) {
+  it("12 · inputTokens negativo, un registro de la regla v1 o una versión desconocida: malformed", async () => {
+    for (const cambio of [{ inputTokens: -5 }, { v: 1 }, { v: 3 }, { reasoningTokens: -1 }]) {
       const exactCache = new CacheManipulada((a) => conReferencia(a, cambio));
       const { layer } = montar(new ProveedorFijo(1736, 282), { exactCache });
       await layer.generate(peticion());
@@ -671,8 +759,8 @@ describe("13-14 · L4/L5: identidad byte a byte y calidad", () => {
   it("14 · lo que se va a servir no cumple el esquema: quality", async () => {
     const exactCache = new CacheManipulada((a) => ({ ...a, data: { otra: 1 } }));
     const { layer } = montar(
-      new ProveedorFijo(1736, 12, { texto: '{"answer":"ok"}', structuredNatively: true }),
-      { exactCache, constraintBackends: [providerNativeBackend()] },
+      new ProveedorFijo(1736, 12, { texto: '{"answer":"ok"}', structuredNatively: true, cable: CABLE_NATIVO }),
+      { exactCache },
     );
     const req = peticion({ response: { contractId: "a:v1", schema: CONTRATO } });
     const primera = await layer.generate(req);
@@ -713,7 +801,7 @@ class ProveedorContado implements Provider {
     this.recibidas.push(req);
     return new Promise<ProviderResponse>((cumplir) => this.enVuelo.push(cumplir));
   }
-  responder(texto: string, uso = { inputTokens: 40, outputTokens: 12 }): void {
+  responder(texto: string, uso = { inputTokens: 40, outputTokens: 12, reasoningTokens: 0 }): void {
     for (const c of this.enVuelo.splice(0)) c({ text: texto, usage: uso });
   }
 }

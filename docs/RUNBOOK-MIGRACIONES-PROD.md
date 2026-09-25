@@ -450,7 +450,9 @@ jq -Rs '{query:.}' < /tmp/diagnostico-0018-0020.sql | curl -sf \
 o seguidor coalescido) cuya repetición es byte a byte una petición que sí corrió
 a través de la capa sin que la capa la tocara, valorada con el contador que el
 proveedor devolvió para esa petición idéntica (entrada al precio de entrada
-cacheada; salida solo con muestreo determinista). Añade:
+cacheada; salida solo con muestreo determinista, con un modelo que no razona y
+0 tokens de razonamiento declarados — regla `reference-v2`, ver
+`src/pipeline/referencia.ts`). Añade:
 
 - `usage_daily`: `reference_requests`, `reference_baseline_cost`,
   `reference_actual_cost` (con el CHECK `usage_daily_reference_no_negatives`,

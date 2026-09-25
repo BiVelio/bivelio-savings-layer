@@ -16,7 +16,10 @@
  *                  already run through the layer untouched. The baseline is the
  *                  provider's own counter for that request, valued at the
  *                  provider's cached-input rate, with output credited only under
- *                  deterministic sampling. A floor. Enters the commission base.
+ *                  deterministic sampling on a model that does not reason and
+ *                  when the provider reported zero reasoning tokens, and then at
+ *                  95% of its counter. Valued low on purpose. Enters the
+ *                  commission base.
  * - `estimated`  — the call was AVOIDED: it never ran, so there is no provider
  *                  counter and the baseline comes from the local estimator. Still
  *                  the best figure available, but not measured.
@@ -41,7 +44,7 @@ export interface CostModel {
   cachedInputPer1k?: number;
 }
 
-// --- Medido por referencia: la regla v1 -------------------------------------
+// --- Medido por referencia: la regla v2 -------------------------------------
 //
 // Las tres cifras de la regla viven AQUÍ y solo aquí. La web las repite en su
 // `REGLA_REFERENCIA` (lo que el extracto publica como parámetros), y el test de
@@ -51,9 +54,9 @@ export interface CostModel {
 
 /** Oldest provider counter a repeat can be valued against: one billing period. */
 export const REFERENCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-/** Share of the counted output credited to a repeat, and only under deterministic sampling. */
+/** Share of the counted output credited to a repeat: only under deterministic sampling, on a model that does not reason, when the call that ran reported zero reasoning tokens. */
 export const REFERENCE_OUTPUT_SHARE = 0.95;
-/** Input tokens deducted per message the layer inserted in the call that ran. */
+/** Input tokens deducted per piece the layer inserted in the call that ran: a message, or the wrapper around a native output schema. */
 export const REFERENCE_MESSAGE_ALLOWANCE = 8;
 
 /**
@@ -97,9 +100,14 @@ export interface ReferenceCredit {
   inputTokens: number;
   /** Output tokens the provider billed for that call (the smaller of the first answer and its repair). */
   outputTokens: number;
-  /** Input tokens credited to this repeat: inputTokens minus the allowance for messages the layer inserted. */
+  /** Input tokens credited to this repeat: inputTokens minus the allowance for what the layer inserted (messages, the native schema wrapper). */
   creditedInputTokens: number;
-  /** Output tokens credited: a share of outputTokens capped by this request's output limit; 0 without deterministic sampling. */
+  /**
+   * Output tokens credited: a share of outputTokens capped by this request's
+   * output limit. 0 unless this request asked for deterministic sampling
+   * (`temperature: 0`), the model does not reason, and the call that ran
+   * reported zero reasoning tokens.
+   */
   creditedOutputTokens: number;
   /** Rate applied to every credited input token, per 1K: the provider's cached-input rate. */
   cachedInputPer1k: number;
@@ -205,7 +213,7 @@ export class SavingsLedger {
   // de una llamada que sí corrió sin que la capa le quitara ni le añadiera nada.
   // Ahí el contrafactual no se reconstruye: YA SE EJECUTÓ, y su contador es el
   // del proveedor. Se valora a la baja (toda la entrada a tarifa cacheada, la
-  // salida solo con muestreo determinista) y lleva su propio basis,
+  // salida solo con muestreo determinista y sin razonamiento oculto) y lleva su propio basis,
   // "reference", para poder auditarlo y apagarlo sin tocar "measured". Las
   // reglas de escritura y de lectura viven en `pipeline/referencia.ts`.
 
@@ -533,8 +541,9 @@ export class SavingsLedger {
     // referencia, no con `model`: toda la entrada acreditada a tarifa CACHEADA
     // —el mínimo que el proveedor cobra por un token de entrada, aunque la
     // ingenua hubiera acertado entera en su caché de prefijo— y la salida
-    // acreditada (0 sin muestreo determinista), todo por el factor de tier. Es un
-    // suelo: la repetición sin la capa habría costado al menos esto.
+    // acreditada (0 sin muestreo determinista o con razonamiento oculto), todo
+    // por el factor de tier. La entrada es un suelo; la salida, el 95 % de un
+    // contador que `temperature: 0` reproduce de cerca pero no bit a bit.
     const r = !ranCall ? this.reference : null;
     const baselineEstimate = r
       ? r.tierFactor *

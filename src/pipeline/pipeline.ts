@@ -1,6 +1,8 @@
 import { randomId } from "../util/id.js";
 import { avisarUnaVez } from "../util/warn-once.js";
 import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
+import { atestadoDelCable, heredarAtestado } from "../providers/atestado-del-cable.js";
+import { esModeloDeRazonamiento } from "../pricing/razonamiento.js";
 
 import type {
   SavingsRequest,
@@ -656,7 +658,7 @@ export class SavingsPipeline {
           "the streamed text is what the caller received, so it is what is reported and cached. Its generateStream " +
           "must end with a done whose response.text equals the concatenated deltas.",
       );
-      final = { ...final, text: enviado };
+      final = heredarAtestado(final, { ...final, text: enviado });
     }
     sumidero.sirvioEnVivo = true;
     return final;
@@ -1293,6 +1295,7 @@ export class SavingsPipeline {
           ageMs: this.now() - hit.storedAtMs,
           basis: ev.ok ? "reference" : "estimated",
           ...(ev.ok ? {} : { referenceRejected: ev.reason }),
+          ...(ev.ok && ev.outputNotCredited ? { outputNotCredited: ev.outputNotCredited } : {}),
         });
         return this.finish<T>(
           request, canonical, hit, "exact", ledger, costModel, trace,
@@ -2284,6 +2287,10 @@ export class SavingsPipeline {
     // intento barato descartado ya está fuera: vive en `cascadeAttempt`.
     const usoPrimario = response.usage;
     const tierPrimario = response.servedServiceTier;
+    // Y lo que esa misma llamada dijo de su esquema y de su cable (E5 de la
+    // referencia), por la misma razón: la reparación reasigna `response`.
+    const esquemaNativoPrimario = response.structuredNatively === true;
+    const atestadoPrimario = atestadoDelCable(response);
     let usoReparacion: ProviderResponse["usage"] | undefined;
 
     if (codebook?.applied) {
@@ -2951,8 +2958,16 @@ export class SavingsPipeline {
         tokensDelSondeo: descubrimiento.tokensLocalesDelSondeo,
         sondeoAplicado: descubrimiento.aplicado,
         hayEsquema: schema != null,
-        // Leído TRAS la degradación por `structuredNatively === false`.
-        backend: backendPlan.backend,
+        // E5 mira lo que PASÓ en la primaria, no el backend planeado: la
+        // configuración por defecto planea `none` aunque el adaptador mande el
+        // esquema en `response_format`.
+        esquemaNativo: esquemaNativoPrimario,
+        // Y el que viajó es el DEL CLIENTE, el mismo objeto de su petición (y de
+        // la huella): con el codebook viaja el compacto, y E3 ya lo excluye,
+        // pero la regla no depende del orden de las comprobaciones.
+        esquemaEnFormatoNativo:
+          atestadoPrimario?.esquemaEnFormatoNativo === true && esquemaAlProveedor === schema,
+        mensajesDelAdaptador: atestadoPrimario?.mensajesDelAdaptador ?? 0,
         modeloPedido: request.model,
         modeloServido,
         cacheable,
@@ -2978,7 +2993,9 @@ export class SavingsPipeline {
       trace.record("reference", "written", {
         inputTokens: registro.inputTokens,
         outputTokens: registro.outputTokens,
-        layerMessages: registro.layerMessages,
+        layerInsertions: registro.layerInsertions,
+        // Ausente = el proveedor no lo dijo, y entonces la salida no se acredita.
+        ...(registro.reasoningTokens !== undefined ? { reasoningTokens: registro.reasoningTokens } : {}),
         exactCache: vaALaCacheExacta,
       });
     } else {
@@ -3905,6 +3922,7 @@ export class SavingsPipeline {
         calidadOk,
         precio: this.precioDocumentado(ctx.request.model),
         determinista: muestreoDeterminista(ctx.request),
+        modeloRazona: esModeloDeRazonamiento(ctx.request.model),
         topeDeSalida: ctx.request.response?.maxOutputTokens,
         diferible: ctx.toggles.deferrable === true,
       });

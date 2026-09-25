@@ -1,4 +1,5 @@
 import { avisarUnaVez } from "../util/warn-once.js";
+import { atestiguar } from "./atestado-del-cable.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
@@ -149,7 +150,7 @@ export class AnthropicProvider implements Provider {
     if (!response.ok) {
       throw new Error(`provider ${response.status}: ${await safeText(response)}`);
     }
-    return this.leer(response, req, cuerpo.contratoNativo);
+    return this.leer(response, req, cuerpo.contratoNativo, cuerpo.turnoAnadido);
   }
 
   /**
@@ -187,7 +188,7 @@ export class AnthropicProvider implements Provider {
     // entero en JSON: ya está facturado, así que se lee como en generate() en
     // vez de lanzar «ended before completion» sobre una respuesta completa.
     if ((response.headers.get("content-type") ?? "").includes("application/json")) {
-      const entera = await this.leer(response, req, construido.contratoNativo);
+      const entera = await this.leer(response, req, construido.contratoNativo, construido.turnoAnadido);
       if (entera.text !== "") yield { type: "text", delta: entera.text };
       yield { type: "done", response: entera };
       return;
@@ -204,6 +205,7 @@ export class AnthropicProvider implements Provider {
     let vioDelta = false;
     let vioStop = false;
     let stopReason: string | undefined;
+    let razono = false;
 
     for await (const msg of sseMessages(fuente)) {
       let data: EventoAnthropic;
@@ -219,6 +221,7 @@ export class AnthropicProvider implements Provider {
         usoInicio = data.message?.usage ?? usoInicio;
       } else if (tipo === "content_block_start") {
         const b = data.content_block;
+        if (esBloqueDeRazonamiento(b?.type)) razono = true;
         if (typeof data.index === "number" && b) {
           bloques.set(data.index, {
             tipo: b.type ?? "",
@@ -273,6 +276,8 @@ export class AnthropicProvider implements Provider {
         outputTokens: usoDelta?.output_tokens ?? 0,
         ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
         ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
+        // Igual que en leer(): sin bloque de razonamiento, 0; con él, no se sabe.
+        ...(razono || typeof usoDelta?.output_tokens !== "number" ? {} : { reasoningTokens: 0 }),
         ...(typeof merged.input_tokens !== "number" || typeof usoDelta?.output_tokens !== "number"
           ? { complete: false }
           : {}),
@@ -309,15 +314,19 @@ export class AnthropicProvider implements Provider {
 
     yield {
       type: "done",
-      response: {
-        text,
-        ...(toolCalls.length > 0 ? { toolCalls } : {}),
-        ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
-        ...(servedServiceTier ? { servedServiceTier } : {}),
-        usage,
-        structuredNatively: false,
-        raw: { usage: merged, stop_reason: stopReason },
-      },
+      response: atestiguar(
+        {
+          text,
+          ...(toolCalls.length > 0 ? { toolCalls } : {}),
+          ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
+          ...(servedServiceTier ? { servedServiceTier } : {}),
+          usage,
+          structuredNatively: false,
+          raw: { usage: merged, stop_reason: stopReason },
+        },
+        // Sin contrato: los que lo llevan van por generate().
+        { esquemaEnFormatoNativo: false, mensajesDelAdaptador: construido.turnoAnadido ? 1 : 0 },
+      ),
     };
   }
 
@@ -346,11 +355,16 @@ export class AnthropicProvider implements Provider {
   // Devuelve tambien si el contrato de salida viajo por la via NATIVA, porque de
   // eso depende que el informe pueda decir `constraints.backend:
   // "provider-native"` sin mentir.
+  //
+  // Y si el adaptador antepuso el turno «(continue)», que la petición no traía:
+  // son tokens que el contador del proveedor cuenta y que la cuenta local del
+  // pipeline no ve (ver `atestado-del-cable.ts`).
   private construirCuerpo(req: ProviderRequest): {
     body: Record<string, unknown>;
     contratoNativo: boolean;
+    turnoAnadido: boolean;
   } {
-    const { system, messages, prefijoEnMensajes, prefijoEnSystem } = repartirMensajes(req);
+    const { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido } = repartirMensajes(req);
 
     if (messages.length === 0) {
       // Sin un solo turno de usuario no hay petición: la API exige al menos un
@@ -639,7 +653,7 @@ export class AnthropicProvider implements Provider {
       body["cache_control"] = { type: "ephemeral" };
     }
 
-    return { body, contratoNativo };
+    return { body, contratoNativo, turnoAnadido };
   }
 
   // Coloca los puntos de ruptura de cache.
@@ -710,14 +724,22 @@ export class AnthropicProvider implements Provider {
     return presupuestoInicial - presupuesto;
   }
 
-  /** Traduce una respuesta 2xx a la forma neutra del layer. */
+  // Traduce una respuesta 2xx a la forma neutra del layer.
   private async leer(
     response: Response,
     req: ProviderRequest,
     contratoNativo: boolean,
+    turnoAnadido: boolean,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as RespuestaAnthropic;
     const bloques = json.content ?? [];
+    // RAZONAMIENTO OCULTO. La API de Mensajes no lo desglosa en `usage`: los
+    // tokens de `thinking` van dentro de `output_tokens` sin más. Lo que sí
+    // hace es devolver SIEMPRE su bloque (`thinking` o `redacted_thinking`)
+    // cuando lo hubo, y este adaptador nunca lo pide. Así que sin ese bloque
+    // el razonamiento es 0 —y se dice—, y con él no se sabe cuánto fue, y no se
+    // dice nada: un número inventado aquí acabaría acreditando salida.
+    const razono = bloques.some((b) => esBloqueDeRazonamiento(b.type));
 
     const text = bloques
       .filter((b) => b.type === "text")
@@ -787,26 +809,34 @@ export class AnthropicProvider implements Provider {
         ? usage.service_tier
         : undefined;
 
-    return {
-      text: textoFinal,
-      ...(toolCalls.length > 0 ? { toolCalls } : {}),
-      ...(json.stop_reason ? { finishReason: traducirParada(json.stop_reason) } : {}),
-      ...(servedServiceTier ? { servedServiceTier } : {}),
-      usage: {
-        inputTokens,
-        outputTokens,
-        // Sólo el LEÍDO es libro 4. `cache_creation_input_tokens` es la prima de
-        // escritura —se paga MÁS caro, 1,25x— y contarlo como ahorro publicaría
-        // un sobrecoste como si fuera un descuento.
-        ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
-        ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
-        // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
-        // Con el usage completo la clave NO aparece.
-        ...(entradaAusente || salidaAusente ? { complete: false } : {}),
+    return atestiguar(
+      {
+        text: textoFinal,
+        ...(toolCalls.length > 0 ? { toolCalls } : {}),
+        ...(json.stop_reason ? { finishReason: traducirParada(json.stop_reason) } : {}),
+        ...(servedServiceTier ? { servedServiceTier } : {}),
+        usage: {
+          inputTokens,
+          outputTokens,
+          // Sólo el LEÍDO es libro 4. `cache_creation_input_tokens` es la prima de
+          // escritura —se paga MÁS caro, 1,25x— y contarlo como ahorro publicaría
+          // un sobrecoste como si fuera un descuento.
+          ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
+          ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
+          // Solo si hay contador de salida del que decirlo.
+          ...(razono || salidaAusente ? {} : { reasoningTokens: 0 }),
+          // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
+          // Con el usage completo la clave NO aparece.
+          ...(entradaAusente || salidaAusente ? { complete: false } : {}),
+        },
+        structuredNatively: req.schema != null && contratoNativo,
+        raw: json,
       },
-      structuredNatively: req.schema != null && contratoNativo,
-      raw: json,
-    };
+      // El contrato, cuando lo hay, viaja como HERRAMIENTA escrita por este
+      // adaptador (nombre, descripción y `tool_choice`), y el proveedor cobra
+      // además su prompt de uso de herramientas: nativo sí, tal cual no.
+      { esquemaEnFormatoNativo: false, mensajesDelAdaptador: turnoAnadido ? 1 : 0 },
+    );
   }
 }
 
@@ -851,6 +881,7 @@ function repartirMensajes(req: ProviderRequest): {
   messages: MensajeAnthropic[];
   prefijoEnMensajes: number;
   prefijoEnSystem: number;
+  turnoAnadido: boolean;
 } {
   const system: BloqueDeTexto[] = [];
   const messages: MensajeAnthropic[] = [];
@@ -883,12 +914,19 @@ function repartirMensajes(req: ProviderRequest): {
   // El primer mensaje tiene que ser `user`. Si el llamante empieza por
   // `assistant` se antepone un turno mínimo en vez de fallar: la alternativa es
   // un 400 por una conversación que en cualquier otro proveedor es válida.
+  let turnoAnadido = false;
   if (messages.length > 0 && messages[0]!.role === "assistant") {
     messages.unshift({ role: "user", content: [{ type: "text", text: "(continue)" }] });
     if (prefijoEnMensajes > 0) prefijoEnMensajes += 1;
+    turnoAnadido = true;
   }
 
-  return { system, messages, prefijoEnMensajes, prefijoEnSystem };
+  return { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido };
+}
+
+/** ¿Es un bloque de razonamiento (visible o redactado) de la API de Mensajes? */
+function esBloqueDeRazonamiento(tipo: string | undefined): boolean {
+  return tipo === "thinking" || tipo === "redacted_thinking";
 }
 
 /** `stop_reason` de Anthropic -> el vocabulario neutro de `finishReason`. */

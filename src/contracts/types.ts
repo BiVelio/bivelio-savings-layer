@@ -829,7 +829,10 @@ export interface SavingsReport {
      *                  request had already run through the layer untouched. The
      *                  baseline is the provider's own counter for that request,
      *                  valued at the provider's cached-input rate, with output
-     *                  credited only under deterministic sampling. A floor.
+     *                  credited only under deterministic sampling on a model that
+     *                  does not reason and when the provider reported zero
+     *                  reasoning tokens, and then at 95% of its counter. Valued
+     *                  low on purpose.
      *                  Enters the commission base; `cache.reference` carries the
      *                  arithmetic and the id of the request that ran.
      * - `estimated`  — the call was AVOIDED, so there never was a provider

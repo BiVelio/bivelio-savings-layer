@@ -77,9 +77,10 @@ uno: cuando el contrafactual **ya se ejecutó**.
 Una llamada evitada —un acierto de la caché exacta o un seguidor de una
 ráfaga coalescida— sirve la respuesta de otra petición. Si esa otra petición
 era **idéntica byte a byte** a esta y pasó por la capa **intacta** (sin nada
-quitado ni añadido, sin codebook, sin sondeo, sin esquema por prompt y con el
-modelo pedido) contra un proveedor de verdad —el mock de demo inventa su
-contador, y ese no vale—, entonces su contador del proveedor ES lo que la
+quitado ni añadido, sin codebook, sin sondeo, con el modelo pedido y, si
+llevaba contrato de salida, con el esquema del cliente impuesto por el
+proveedor **de forma nativa y tal cual**) contra un proveedor de verdad —el mock
+de demo inventa su contador, y ese no vale—, entonces su contador del proveedor ES lo que la
 ingenua habría facturado por esta. No hay mundo que suponer: ese mundo ocurrió, está en el
 informe de aquella petición y en el uso del proveedor de ese día, y el cliente
 ya lo pagó.
@@ -90,9 +91,12 @@ Aun así se valora **a la baja**, para que sea un suelo y no una estimación:
   proveedor cobra por un token de entrada aunque la ingenua acertara entera en
   su caché de prefijo;
 - la salida, al 95 % de su contador y solo con `temperature: 0` (con
-  muestreo, 0: el proveedor no habría escrito lo mismo); nunca por encima del
-  tope de salida de la repetición;
-- 8 tokens de margen por cada mensaje que la capa insertó;
+  muestreo, 0: el proveedor no habría escrito lo mismo), con un modelo que no
+  razona y cuando el contador de la llamada que corrió declaró **exactamente 0**
+  tokens de razonamiento; nunca por encima del tope de salida de la repetición;
+- 8 tokens de margen por cada pieza que la capa insertó: el mensaje de datos,
+  el turno que añade un adaptador (el «(continue)» de Anthropic) y el
+  envoltorio del esquema nativo (`response_format`);
 - nunca por encima del tier más barato que la repetición podía obtener;
 - sin precio cacheado documentado **para ese modelo**, no hay referencia: su
   fila propia del catálogo (o una instantánea con fecha de ella) o el precio que
@@ -110,6 +114,39 @@ Lo que **no** cambia: los libros 2 y 3 (tokens eliminados y comprimidos, el
 repetición de una llamada **optimizada** tampoco tiene referencia, porque su
 contador no es el de la ingenua. Para eso sigue haciendo falta el A/B de abajo.
 Las reglas exactas viven en `src/pipeline/referencia.ts`.
+
+**Regla v2 (septiembre de 2026, antes de que ningún SDK publicara la v1).** Dos
+decisiones que el dueño delegó, las dos tomadas del lado del suelo:
+
+- **El esquema nativo entra.** En la v1 una petición con contrato de salida solo
+  dejaba referencia con el backend `provider-native` configurado, y la
+  configuración por defecto no configura ninguno: todo el tráfico con esquema
+  quedaba fuera aunque el esquema viajara nativo. La v2 mira lo que **pasó**:
+  entra cuando la respuesta confirma que el proveedor impuso el esquema
+  (`structuredNatively === true`) **y** el adaptador de este paquete atestigua
+  que viajó tal cual en su parámetro nativo de formato de respuesta, sin una
+  palabra de la capa en el prompt. El esquema es del cliente —va en su petición y
+  en la huella—; lo único de la capa es el envoltorio (el nombre del
+  `response_format`), y ese se descuenta como una pieza más. Se quedan fuera, a
+  propósito: el esquema pedido por prompt (un modelo que rechaza
+  `response_format`), la pista de límites de JSON (ya la excluía E2), la
+  herramienta de contrato de Anthropic (nativa, pero con nombre, descripción y
+  prompt de herramientas que puso la capa) y cualquier proveedor de terceros,
+  que no puede atestiguar su cable.
+- **La guarda de razonamiento.** Los tokens de razonamiento no se ven y su
+  número cambia entre llamadas idénticas, y los modelos que razonan casi nunca
+  respetan `temperature: 0` (una pasarela que lo quita en silencio convierte la
+  petición en muestreada). Así que la salida no se acredita si el modelo razona
+  según su fila del catálogo (`src/pricing/razonamiento.ts`; toda fila nueva
+  tiene que decirlo o el test se pone rojo) ni si el contador declaró
+  razonamiento **o no dijo cuánto**: un contador callado no es un 0. Se valoró
+  excluir la referencia entera y se descartó: el contador de **entrada** de unos
+  bytes idénticos es determinista también en un modelo que razona, y la tarifa
+  cacheada sigue siendo el mínimo que el proveedor cobra por repetirlos.
+
+El registro pasó a formato v2: un lector de la v1 declara `malformed` un
+registro v2 y al revés, así que nunca se valora un contador con una regla que
+no lo escribió.
 
 ### Qué es el A/B (anillo 2, #224) y por qué es la única salida
 
