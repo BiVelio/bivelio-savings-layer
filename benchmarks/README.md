@@ -304,6 +304,24 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
 `proven: false` **is** publishable — under-claiming is honest — but it warns, and
 the landing must not present it as demonstrated savings.
 
+### The floor the npm package actually delivers (`benchmarks/titular-como-se-instala.ts`)
+
+An artifact measured **with** the bench compressor (the 2026-09-12 one: the
+compression scenario saved 15.1 % with a piece npm does not ship) cannot back
+the promise on its own. Dropping that scenario is not the fix — it *raises* the
+floors (27.2 % / 26.4 %), because it saved less than the average. Instead, with
+no network and the published trials, the tool gives back to arm B the input
+tokens the compressor removed, keeps B's measured output, and reruns the same
+stratified estimator with the same seed. It is a **reconstruction, not a
+measurement**: it is never published, it only checks that the web's promise
+also fits under what npm delivers (`test/titular-como-se-instala.test.ts`,
+`pnpm luz-verde`). An artifact with `sdk.asShipped: true` switches it off.
+
+```bash
+pnpm -s exec tsx benchmarks/titular-como-se-instala.ts          # human-readable
+pnpm -s exec tsx benchmarks/titular-como-se-instala.ts --json   # for scripts
+```
+
 **The raw trials ship with the artifact.** `ab-live-trials.csv` is copied next to
 `ab-live.json` into `apps/web/public/data/`, so anyone can download it and
 recompute the confidence interval themselves. This used to be a broken promise:

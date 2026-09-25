@@ -736,7 +736,7 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 12,0%",
           "que": "tagihan lebih rendah, terverifikasi 95% · dibanding integrasi tanpa optimasi, tanpa streaming"
         }
       ],

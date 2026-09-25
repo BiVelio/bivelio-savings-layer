@@ -736,7 +736,7 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0 %",
+          "cifra": "≥ 12,0 %",
           "que": "menys factura, verificat al 95 % · davant d'una integració sense optimitzar, sense streaming"
         }
       ],
