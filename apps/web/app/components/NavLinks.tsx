@@ -12,7 +12,7 @@ import { ArrowRightIcon, CloseIcon, GlobeIcon, HowIcon, MenuIcon, ReceiptIcon, V
 
 /**
  * Enlaces de sección junto a la marca, al modo de los menús de bivelio.com.
- * Solo en la landing: apuntan a anclas (#measured, #pricing) que únicamente
+ * Solo en la landing: apuntan a anclas (#verify, #pricing) que únicamente
  * existen ahí, así que en cualquier otra ruta no se pintan.
  */
 export function NavSections() {
@@ -26,12 +26,11 @@ export function NavSections() {
       <Link className="nav-link" href="/how-it-works">
         {t("howItWorks")}
       </Link>
-      {/* Apuntaba a `/#verify`, y ese ancla NO EXISTE en la landing: las únicas
-          son #measured, #anthropic-cache y #pricing (ver [locale]/page.tsx), así
-          que el enlace no llevaba a ninguna parte — se quedaba donde estabas.
-          El destino correcto es la sección de la medición, que es lo que este
-          enlace promete. */}
-      <Link className="nav-link" href="/#measured">
+      {/* «Verificador» vuelve a ser cierto: la portada tiene otra vez su
+          sección #verify (el verificador de formato, sin cuenta y con el
+          tokenizador exacto). Mientras ese ancla no existió, el enlace iba a
+          #measured para no quedarse en ninguna parte. */}
+      <Link className="nav-link" href="/#verify">
         {t("verifier")}
       </Link>
       <Link className="nav-link" href="/#pricing">
@@ -78,7 +77,7 @@ export function MobileMenu() {
   const cerrar = () => setOpen(false);
   const items = [
     { href: "/how-it-works", label: t("howItWorks"), icon: <HowIcon /> },
-    { href: "/#measured", label: t("verifier"), icon: <VerifyIcon /> },
+    { href: "/#verify", label: t("verifier"), icon: <VerifyIcon /> },
     { href: "/#pricing", label: t("pricing"), icon: <ReceiptIcon /> },
   ] as const;
 

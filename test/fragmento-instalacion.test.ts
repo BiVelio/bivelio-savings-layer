@@ -136,6 +136,24 @@ describe("los fragmentos que le damos al cliente compilan pegados tal cual", () 
     expect(r.errores).toBe("");
   }, 120_000);
 
+  it("el comentario de `report.cost.basis` lista TODOS los basis que `generate()` puede devolver", () => {
+    // Lo cazó #317: el SDK ganó basis "reference" y el fragmento que copia quien
+    // acaba de pagar seguía diciendo `"measured" | "estimated" | "unmeasured"`.
+    // Compilar no lo ve (es un comentario), así que se lee la unión del SDK.
+    const fuente = readFileSync(join(RAIZ, "src/tokenizer/accounting.ts"), "utf8");
+    const m = fuente.match(/export type CostBasis = ([^;]+);/);
+    expect(m, "la unión CostBasis tiene que estar en src/tokenizer/accounting.ts").not.toBeNull();
+    // "shadow" no sale nunca de generate(): es el carril hipotético del gateway
+    // (registro con sufijo :shadow), no el basis de un informe del SDK.
+    const basis = [...m![1]!.matchAll(/"([a-z]+)"/g)].map((x) => x[1]!).filter((b) => b !== "shadow");
+    expect(basis).toContain("reference");
+    const linea = fragmentoDelPanel()
+      .split("\n")
+      .find((l) => l.includes("report.cost.basis"));
+    expect(linea, "el fragmento tiene que enseñar report.cost.basis").toBeDefined();
+    for (const b of basis) expect(linea, b).toContain(`"${b}"`);
+  });
+
   it("el fragmento nombra un proveedor REAL, no un hueco para el lector", () => {
     // La causa raíz era esta: `provider: yourProvider` es sintácticamente un
     // ejemplo y prácticamente un ejercicio. Sin esta comprobación, alguien podría

@@ -7,7 +7,8 @@ import { describe, it, expect } from "vitest";
  *
  * Tres claves de la web describen qué pasa con el tráfico de «Python o cualquier
  * lenguaje» a través del gateway: `landing.gateway.pythonNote`,
- * `howItWorks.s1Note` y la cuarta tarjeta de devs (`generateStream`). El gateway
+ * `howItWorks.s1Note` y la cuarta tarjeta de devs (`generateStream`). Una
+ * cuarta, `landing.systems.caption`, dice qué se mide de las automatizaciones. El gateway
  * tiene tres límites que la copia no puede callarse:
  *
  * - Solo registra modelos con PRECIO DE LISTA: sin él, `medir()` avisa una vez
@@ -113,7 +114,11 @@ const SALVEDADES: Record<string, { condicion: RegExp; medida: RegExp; log: RegEx
 };
 
 type Mensajes = {
-  landing: { gateway: { pythonNote: string }; devs: { cards: { title: string; body: string; mono: string }[] } };
+  landing: {
+    gateway: { pythonNote: string };
+    devs: { cards: { title: string; body: string; mono: string }[] };
+    systems: { caption: string };
+  };
   howItWorks: { s1Note: string };
 };
 
@@ -148,6 +153,16 @@ describe("la copia del gateway lleva sus salvedades en los 12 idiomas", () => {
         expect(nota).toContain("OpenAI");
         expect(nota).toContain("Anthropic");
         expect(nota).toMatch(/\bPRO\b/);
+      });
+
+      // El pie de los logos de sistemas (Salesforce, Zapier, n8n…) decía «si llama
+      // a la API de tu proveedor con tu clave, se mide». El SDK es para Node.js y
+      // el gateway solo registra, con el SDK oficial de OpenAI o de Anthropic,
+      // los modelos con precio de lista: la frase lleva las dos condiciones.
+      it("systems.caption: el SDK en Node.js y el gateway con SDK oficial y precio de lista", () => {
+        const pie = m.landing.systems.caption;
+        expect(pie).toMatch(s.condicion);
+        for (const nombre of ["Node.js", "OpenAI", "Anthropic"]) expect(pie).toContain(nombre);
       });
 
       it("tarjeta 4: el stream sin contador no entra en la comisión; nombres de código intactos", () => {

@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Twoja oszczędność · zmierzona względem Twojego rachunku",
       "totalSplit": "Łącznie, wliczając część szacowaną, wychodzi {pct}. Tylko {share} zapytań ma licznik dostawcy, którym można to sprawdzić: własny albo licznik identycznego zapytania, które już zostało wykonane.",
-      "referenceNote": "Z tego <b>{money}</b> pochodzi z {count} powtórzonych zapytań obsłużonych bez wywoływania Twojego dostawcy, każde wycenione licznikiem identycznego zapytania, które już zostało wykonane — po najniższej stawce, jaką dostawca mógł naliczyć za jego powtórzenie.",
+      "referenceNote": "Z tego <b>{money}</b> pochodzi z {count, plural, one {# powtórzonego zapytania obsłużonego} few {# powtórzonych zapytań obsłużonych} many {# powtórzonych zapytań obsłużonych} other {# powtórzonego zapytania obsłużonego}} bez wywoływania Twojego dostawcy, każde wycenione licznikiem identycznego zapytania, które już zostało wykonane — po najniższej stawce, jaką dostawca mógłby naliczyć za jego powtórzenie.",
       "unmeasuredCap": "Widzimy {count} wycenionych zapytań, ale żadnego nie da się jeszcze sprawdzić licznikiem Twojego dostawcy. Gdy pojawi się pierwsze, zobaczysz tu swoją zmierzoną oszczędność.",
       "savedLine": "Twoich wydatków na LLM zatrzymanych w tym okresie · <b>{money}</b> zaoszczędzone (linia bazowa − rzeczywiste, w Twoich cenach).",
       "emptyCap": "Jeszcze nie mierzymy Twojego ruchu — 0 zaobserwowanych żądań. Zainstaluj SDK, a Twoje oszczędności netto pojawią się tutaj — Twoje ceny, Twoje obciążenie. Nigdy zapożyczona ani zmyślona liczba.",
@@ -281,12 +281,6 @@
       "benchOnly": "kompresor ze stanowiska testowego, nie ma go w npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Weryfikator oszczędności",
-      "estimateFull": "SZACUNEK — heurystyka, nie mierzone przez dostawcę",
-      "errBundle": "Nie udało się załadować pakietu optymalizatora.",
-      "errInvalidData": "Oczekiwanie na prawidłowe dane… {message}",
-      "yourData": "Twoje dane",
-      "alreadyOptimal": "Tutaj już optymalnie — BV‑SALA nigdy tego nie pogarsza.",
       "projectorTitle": "Prognoza rachunku",
       "estimate": "SZACUNEK",
       "reqsPerMonth": "Żądania / miesiąc",
@@ -296,13 +290,6 @@
       "inputCut": "Cięcie wejścia",
       "outputCut": "Cięcie wyjścia",
       "projectedSaving": "prognozowane oszczędności / miesiąc · w cenach {model}",
-      "tryExample": "Wypróbuj przykład",
-      "sample_users": "Lista użytkowników",
-      "sample_orders": "Zamówienia sklepu",
-      "sample_tickets": "Zgłoszenia supportu",
-      "pasteHint": "…albo wklej tu własny JSON. Nic nie opuszcza Twojej przeglądarki.",
-      "savedPct": "−{pct}% tokenów",
-      "trimsFriendly": "Z {before} do {after} tokenów na żądanie. BV‑SALA po prostu wybiera najtańszy format — bez zmian w Twoim kodzie.",
       "profileLabel": "Co budujesz?",
       "profile_chat": "Chatbot",
       "profile_extract": "Ekstrakcja danych",
@@ -393,7 +380,8 @@
       "chipOutdated": "zaktualizuj",
       "chipOk": "aktualna",
       "chipMixed": "częściowo niezadeklarowana",
-      "hint": "Jeden wiersz na maszynę raportującą użycie, rozpoznawaną po nieprzejrzystym id miejsca (nigdy osoba). Przesyłany jest numer wersji — gateway/x.y.z lub sdk/x.y.z — nigdy treść. Maszyna z gatewayem starszym niż kanał wersji pojawia się jako „niezadeklarowana”."
+      "hint": "Jeden wiersz na maszynę raportującą użycie, rozpoznawaną po nieprzejrzystym id miejsca (nigdy osoba). Przesyłany jest numer wersji — gateway/x.y.z lub sdk/x.y.z — nigdy treść. Maszyna z gatewayem starszym niż kanał wersji pojawia się jako „niezadeklarowana”.",
+      "referenceHint": "Zmierzone oszczędności obejmują tu powtórzone zapytania zmierzone przez odniesienie: każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane."
     },
     "installLicensePanel": {
       "eyebrow": "Rozpocznij",
@@ -584,7 +572,7 @@
       "metaTitle": "Wyciąg · BiVelio Savings Layer",
       "eyebrow": "Tryb cienia · tu nic nie jest pobierane",
       "title": "Twój wyciąg, zanim powstanie faktura",
-      "intro": "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową — bez minimum, płacisz tylko wtedy, gdy oszczędzasz. Podczas kalibracji opłata wynosi zawsze {cero}.",
+      "intro": "Dokładnie ten dokument, który wygeneruje przyszła faktura zmienna: tylko zmierzone oszczędności, ze stawką progową i bez minimum — bez zmierzonych oszczędności nie ma prowizji. Opłata za stanowisko to osobna, stała opłata miesięczna. Podczas kalibracji prowizja wynosi zawsze {cero}.",
       "periodo": "Okres {periodo}",
       "badgeCalibracion": "OKRES KALIBRACJI — OPŁATA ZERO",
       "badgeSombra": "CIEŃ — BEZ RZECZYWISTEJ OPŁATY",
@@ -607,8 +595,8 @@
       "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy ani do prowizji.",
       "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Dlatego jest wyłączona: włącza się tylko to, co naprawdę oszczędza.",
       "elisionProveedor": "Tor czyszczenia przez dostawcę: {requests} żądań, w których nasze ustawienia sprawiły, że dostawca wyczyścił kontekst. Licznik, nie oszczędność — nigdy nie wchodzi do bazy ani do prowizji.",
-      "referencia": "Zmierzone przez odniesienie: {usd} w {requests} powtórzonych zapytaniach obsłużonych bez wywoływania Twojego dostawcy. Każde jest wyceniane licznikiem, który dostawca zwrócił dla identycznego, już wykonanego zapytania — znajdziesz go w raporcie tamtego zapytania i w zużyciu u dostawcy z tego dnia — po stawce za wejście z pamięci podręcznej, najniższej, jaką dostawca pobiera za powtórzenie promptu; wyjście liczy się tylko przy deterministycznym próbkowaniu i gdy wykonane zapytanie nie zawierało ukrytego rozumowania (dostawca zgłosił zero tokenów rozumowania lub, jeśli ich nie wyszczególnia, jego odpowiedź nie zawierała bloku rozumowania). Wliczone do bazy.",
-      "referenciaExcluida": "Zmierzone przez odniesienie: {usd} w {requests} powtórzonych zapytaniach. Pokazane jako kontekst — na razie pozostaje poza bazą i prowizją.",
+      "referencia": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu obsłużonym} few {# powtórzonych zapytaniach obsłużonych} many {# powtórzonych zapytaniach obsłużonych} other {# powtórzonego zapytania obsłużonego}} bez wywoływania Twojego dostawcy. Każde jest wyceniane licznikiem, który dostawca zwrócił dla identycznego, już wykonanego zapytania — znajdziesz go w raporcie tamtego zapytania i w zużyciu u dostawcy z tego dnia — po stawce za wejście z pamięci podręcznej, najniższej, jaką dostawca pobiera za powtórzenie promptu; wyjście liczy się tylko przy deterministycznym próbkowaniu i gdy wykonane zapytanie nie zawierało ukrytego rozumowania (dostawca zgłosił zero tokenów rozumowania lub, jeśli ich nie wyszczególnia, jego odpowiedź nie zawierała bloku rozumowania). Wliczone do bazy.",
+      "referenciaExcluida": "Zmierzone przez odniesienie: {usd} w {requests, plural, one {# powtórzonym zapytaniu} few {# powtórzonych zapytaniach} many {# powtórzonych zapytaniach} other {# powtórzonego zapytania}}. Pokazane jako kontekst — na razie pozostaje poza bazą i prowizją.",
       "exportarReferencias": "Pobierz powtórzone zapytania z tego okresu, jeden wiersz na zapytanie (CSV)",
       "exportarReferenciasPorDia": "Zbyt wiele powtórzonych zapytań na jeden plik — pobierz ten okres dzień po dniu (CSV):",
       "parametros": "Parametry zestawienia — cennik {version} · kurs wymiany {fx}.",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Zweryfikuj swoje oszczędności na LLM",
-    "metaDescription": "Licencjonowana warstwa kosztów LLM. Staje przed Twoim dostawcą i tnie rachunek; oszczędność zmierzona jego własnym licznikiem, z przedziałem ufności 95%.",
+    "metaDescription": "SDK, dzięki któremu Twoja aplikacja płaci dostawcy LLM tylko za to, czego potrzebuje, i gateway, który mierzy Twojego agenta programistycznego. Liczone własnym licznikiem Twojego dostawcy: opłata za stanowisko plus prowizja tylko od zmierzonych oszczędności.",
     "hero": {
       "eyebrow": "Dla zespołów, które płacą za API LLM od tokena",
       "title": "Twoja faktura za LLM, pod kontrolą.",
       "titleAccent": "Mierzona przy każdym wywołaniu.",
-      "lede": "SDK, który instaluje się w Twoim kodzie, przepuszcza tylko to, za co trzeba zapłacić, i zwraca SavingsReport przy każdym wywołaniu: zmierzone i szacowane osobno, policzone licznikiem Twojego dostawcy. Publikujemy tylko to, co zmierzyliśmy.",
-      "ctaRun": "Zobacz zmierzone wyniki",
+      "lede": "Dwa produkty, jedna zasada. SDK instaluje się w Twojej aplikacji i przepuszcza tylko to, za co trzeba zapłacić; gateway staje przed Twoim agentem programistycznym i mierzy jego wydatki. Oba liczą licznikiem Twojego dostawcy i trzymają to, co zmierzone, osobno od tego, co szacowane. Publikujemy tylko to, co zmierzyliśmy.",
+      "ctaOffers": "SDK czy gateway?",
       "ctaPricing": "Zobacz cennik",
       "note": "Instalacja w kilka minut. Twoje wiadomości nigdy nie przechodzą przez nasze serwery.",
       "proofTitle": "Zmierzone względem prawdziwego dostawcy",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "Prostymi słowami",
-      "title": "Co właściwie robi Savings?",
-      "sub": "Cztery pomysły, cztery ośmiosekundowe animacje. To cały produkt.",
+      "title": "Co właściwie robi SDK?",
+      "sub": "Cztery pomysły, cztery ośmiosekundowe animacje.",
       "pasos": [
         {
           "title": "AI liczy sobie za słowa",
@@ -796,8 +784,8 @@
           "body": "Nie prosimy o wiarę. Każdą oszczędność mierzy oficjalny licznik dostawcy — ten sam, którym wystawia Ci faktury — i trafia ona na Twój rachunek. Czego nie da się porównać z fakturą, tego nigdy nie ogłaszamy."
         },
         {
-          "title": "Zarabiamy tylko wtedy, gdy Ty oszczędzasz",
-          "body": "Nasza prowizja pochodzi ze zmierzonej oszczędności, nigdy z Twojej kieszeni: większość tego, co zaoszczędzisz, zawsze zostaje u Ciebie. Miesiąc bez oszczędności? Zero prowizji."
+          "title": "Opłata za stanowisko i część tego, co zmierzone",
+          "body": "Płacisz co miesiąc stałą opłatę za stanowisko, niezależnie od tego, czy oszczędzasz. Do tego nasza prowizja pochodzi wyłącznie z oszczędności zmierzonych licznikiem Twojego dostawcy — a większość każdej oszczędności zawsze zostaje u Ciebie. Miesiąc bez zmierzonych oszczędności? Płacisz za stanowiska i zero prowizji."
         }
       ],
       "nota": "Animacje ilustrują pomysł. Prawdziwe liczby — zmierzone u prawdziwych dostawców — są tuż poniżej."
@@ -866,7 +854,7 @@
       "aiPaso2": "Następnie wgraj zip w Customize → Skills: pojawi się z własnym przełącznikiem, prywatny na Twoim koncie."
     },
     "systems": {
-      "caption": "Tam, gdzie już żyją Twoje automatyzacje. Jeśli wywołuje API Twojego dostawcy Twoim kluczem, jest mierzone — SDK opakowuje wywołanie; brama staje z przodu."
+      "caption": "Tam, gdzie już żyją Twoje automatyzacje. Mierzone jest wywołanie API Twojego dostawcy Twoim kluczem: w aplikacji Node.js opakowuje je SDK; z innego kodu z oficjalnym SDK OpenAI lub Anthropic brama staje z przodu i zapisuje je dla modelu z ceną katalogową."
     },
     "nvidia": {
       "kicker": "Firma i ekosystem",
@@ -875,10 +863,10 @@
       "cta": "Poznaj program"
     },
     "gateway": {
-      "eyebrow": "Nowość · terminale programistyczne",
+      "eyebrow": "Gateway · terminale programistyczne",
       "title": "Claude Code z kluczem API? Zobacz realny wydatek, token po tokenie.",
-      "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem. Bez zmian w kodzie i bez konfiguracji — a Twoje prompty nigdy nie opuszczają Twojej maszyny: do tego panelu trafiają tylko liczby i koszt.",
-      "note": "Gateway mierzy każde żądanie i, tak jak SDK, działa tylko z aktywną licencją: pobiera ją Twoim kluczem serwisowym i weryfikuje jej podpis na Twoim komputerze. Z licencją PRO stosuje też domyślnie jedną dźwignię: skraca TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła — zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor wypisuje dokładną konfigurację dla reszty.",
+      "body": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w Twoim kodzie: eksportujesz swój klucz serwisowy i uruchamiasz agenta przez bvsala. Twoje prompty nigdy nie opuszczają Twojej maszyny — do Twojego panelu trafiają tylko liczby i koszt.",
+      "note": "Gateway mierzy licznikiem Twojego dostawcy każde żądanie, dla którego ten raportuje zużycie (dla modeli z naszego cennika), i, tak jak SDK, działa tylko z aktywną licencją: pobiera ją Twoim kluczem serwisowym i weryfikuje jej podpis na Twoim komputerze. Z licencją PRO, na modelach Anthropic, stosuje też domyślnie jedną dźwignię: przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury zostawia bez zmian. Zmienia to cenę, nigdy treść, którą czyta model. Pozostałe dźwignie są wyłączone, dopóki ich nie włączysz. Skill savings-mode jest dostępny dla Twoich limitów, a jego efekt czeka na pomiar. Gateway działa też z Codex CLI, Goose i Qwen Code — a bvsala doctor wypisuje dokładną konfigurację dla reszty.",
       "pythonNote": "Python albo inny język? Skieruj oficjalne SDK OpenAI lub Anthropic na gateway, a każde żądanie, którego zużycie raportuje dostawca, dla modelu z ceną katalogową, zostanie zapisane w tym panelu po tej cenie; gateway odnotowuje w logu, gdy któreś nie jest mierzone. bvsala doctor wypisuje base URL dla każdego SDK. Przy streamingu z OpenAI poproś o zużycie w żądaniu (stream_options.include_usage).",
       "cta": "Zobacz, jak to działa →"
     },
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "Jeden plan, cena za stanowisko",
-      "title": "Mała opłata za stanowisko. I prowizja tylko od tego, co zaoszczędzisz.",
-      "body": "Bez darmowego planu i bez okresu próbnego: przed zapłatą możesz sprawdzić publiczne pomiary na tej stronie. Opłata jest za stanowisko, w {currency}, a prowizja pochodzi ze zmierzonej oszczędności — nigdy z Twojej kieszeni.",
+      "title": "Opłata za stanowisko, zawsze. Prowizja tylko od zmierzonych oszczędności.",
+      "body": "Bez darmowego planu i bez okresu próbnego: przed zapłatą możesz sprawdzić publiczne pomiary i przepuścić własne dane przez weryfikator, tu, na tej stronie. Opłata za stanowisko jest pobierana co miesiąc, w {currency}, niezależnie od tego, czy oszczędzasz. Prowizja jest doliczana osobno i tylko od oszczędności zmierzonych licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane. Szacunki nigdy do niej nie wchodzą.",
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Zmierz to na własnym ruchu",
-      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport: zmierzone i szacowane osobno; do prowizji wchodzi tylko to, co zmierzone. Licencja pozwala uruchamiać BV‑SALA w Twojej aplikacji.",
+      "ctaSub": "Po instalacji każde wywołanie zwraca swój SavingsReport, z tym, co zmierzone, i tym, co szacowane, osobno. Opłata za stanowisko jest miesięczna i stała; prowizja pochodzi tylko z tego, co zmierzone. Licencja pozwala uruchamiać BV‑SALA — SDK w Twojej aplikacji, gateway w Twoim terminalu.",
       "ctaStart": "Zacznij",
       "tagline": "System operacyjny dla Twojej firmy. To <b>BV‑SALA</b>, neutralny wobec dostawcy optymalizator kosztów LLM od BiVelio — każda opublikowana liczba zmierzona względem licznika dostawcy; szacunki pokazujemy osobno i nigdy nie fakturujemy.",
       "badge": "BV‑SALA · Savings Layer",
@@ -981,7 +969,7 @@
       "colExtra": "Nasza dopłata",
       "colTeQuedas": "Zostaje Ci",
       "extraCero": "nic",
-      "notaGarantia": "Pobieramy prowizję tylko od zmierzonych oszczędności — i zawsze zatrzymujesz {garantia} lub więcej.",
+      "notaGarantia": "Prowizja tylko od zmierzonych oszczędności — i zawsze zatrzymujesz {garantia} lub więcej. Stanowiska są rozliczane osobno, co miesiąc.",
       "notaTramos": "Progowo, każdy próg według własnej stawki: {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
       "notaPrimerMesLead": "Twój pierwszy miesiąc kalendarzowy z użyciem: tylko miejsce.",
       "notaPrimerMes": "To Twój okres kalibracji, niezależnie od tego, ile z tego miesiąca zostało: mierzymy wszystko, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
@@ -1009,7 +997,7 @@
       "caption": "Nie każda przesyłka niesie tyle samo wypełniacza: w tym przebiegu zmierzone cięcie na scenariusz wyniosło od {min} do {max}. Te, które nie oszczędzają, też publikujemy."
     },
     "recibo": {
-      "title": "SavingsReport · opublikowana seria",
+      "title": "SDK · SavingsReport · opublikowana seria",
       "modelo": "model",
       "parejas": "zmierzone pary",
       "calidad": "jakość",
@@ -1046,6 +1034,62 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Dwa produkty",
+      "title": "Dokąd idą Twoje tokeny: do Twojej aplikacji czy do Twojego agenta programistycznego?",
+      "sub": "Oba są licencjonowane za stanowisko i oba liczą własnym licznikiem Twojego dostawcy. Wykonują różne zadania, więc każdy składa własną obietnicę — a dziś tylko jeden ma opublikowaną liczbę oszczędności.",
+      "install": "Instalacja",
+      "installMore": "Pełna konfiguracja",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — dla aplikacji w JavaScript i TypeScript z kluczem API",
+        "who": "Dla aplikacji Node.js, w JavaScript lub TypeScript, które wywołują API LLM własnym kluczem i płacą za każdy token.",
+        "what": "Opakowuje wywołanie w Twoim kodzie, wysyła dostawcy tylko to, za co trzeba zapłacić, i zwraca SavingsReport z każdą odpowiedzią.",
+        "figureLabel": "Liczba, którą publikujemy",
+        "figureNote": "Próg, nie prognoza: ile zaoszczędzisz, zależy od Twojego ruchu. Do prowizji wchodzą tylko oszczędności zmierzone licznikiem Twojego dostawcy — także przy powtórzonych zapytaniach obsłużonych bez wywołania dostawcy, z których każde jest wyceniane licznikiem identycznego zapytania, które już zostało wykonane.",
+        "ctaMeasured": "Jak to zmierzyliśmy",
+        "ctaVerify": "Wypróbuj jedną dźwignię na swoich danych"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — dla agentów programistycznych z kluczem API",
+        "who": "Dla osób, które pracują z Claude Code, Codex CLI lub innym agentem programistycznym na kluczu API.",
+        "what": "Jedno polecenie stawia lokalny licznik przed Twoim terminalem, bez zmian w kodzie. Gateway liczy każde zapytanie, dla którego Twój dostawca raportuje zużycie, jego własnym licznikiem — dla modeli z naszego cennika — i sumuje je w Twoim panelu, według dnia i modelu.",
+        "figureLabel": "Brak opublikowanej liczby oszczędności",
+        "figureNote": "Nie opublikowaliśmy zmierzonej oszczędności dla agentów programistycznych, więc żadnej nie reklamujemy. Z PRO, na modelach Anthropic, gateway przestawia zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa — jak pierwsza tura sesji albo kompaktowanie — a kolejne tury trwającej sesji zostawia bez zmian. Zmienia to cenę, nigdy to, co czyta model, a do prowizji wchodzi tylko to, co potwierdzi licznik Twojego dostawcy.",
+        "cta": "Skonfiguruj gateway"
+      },
+      "skill": {
+        "band": "Skill — dla agentów programistycznych w subskrypcji"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · jedna dźwignia, na Twoich danych, przed zapłatą",
+      "title": "Wklej swoje dane. Zobacz, ile tokenów wysłałby SDK.",
+      "sub": "Tu działa prawdziwy selektor formatu SDK, w Twojej przeglądarce i na Twoich danych. Nic nie opuszcza tej strony i nie potrzebujesz konta.",
+      "tryExample": "Wypróbuj przykład",
+      "sample_orders": "Zamówienia sklepu",
+      "sample_tickets": "Zgłoszenia supportu",
+      "sample_users": "Lista użytkowników",
+      "pasteHint": "…albo wklej tu własny JSON. Nic nie opuszcza Twojej przeglądarki.",
+      "loading": "Ładowanie optymalizatora i dokładnego tokenizera…",
+      "errBundle": "Nie udało się załadować optymalizatora. Odśwież stronę, aby spróbować ponownie.",
+      "errInvalidData": "Oczekiwanie na prawidłowy JSON… {message}",
+      "errTokenizer": "Dokładny tokenizer nie potrafi policzyć tego tekstu ({message}), więc nie pokazujemy żadnej liczby.",
+      "tooBig": "To ponad {max} znaków. Wklej mniejszą próbkę.",
+      "tagExact": "Dokładne liczenie",
+      "tagApprox": "Przybliżone",
+      "yourData": "Twoje dane jako kompaktowy JSON",
+      "optimized": "Tak, jak wysłałby je SDK",
+      "fewer": "−{pct} tokenów wejściowych na tych danych",
+      "trims": "Z {before} do {after} tokenów, razem z instrukcjami formatu.",
+      "alreadyOptimal": "Tu żaden format nie wygrywa z kompaktowym JSON-em, więc SDK wysłałby je bez zmian. Ta dźwignia nigdy nie powiększa Twoich danych.",
+      "notComparable": "Na tych danych nie możemy porównać formatów z kompaktowym JSON-em, więc nie pokazujemy żadnej liczby.",
+      "exactNote": "Policzone tokenizerem {tokenizer}, którego używa {model}. Porównujemy z Twoimi danymi jako kompaktowym JSON-em: jeśli dziś wysyłasz je z wcięciami, rzeczywista różnica jest większa — i tego nie liczymy.",
+      "approxNote": "Dokładny tokenizer się nie załadował, więc każde liczenie tutaj byłoby przybliżone — a przybliżonych oszczędności nie pokazujemy. Odśwież stronę, aby spróbować ponownie.",
+      "scope": "Czym to jest, a czym nie: jedna dźwignia — sposób zapisu danych strukturalnych w prompcie — na tokenach wejściowych tych danych. Działa tylko na danych przekazanych do SDK jako structuredData, nie na JSON-ie zapisanym już w Twoich wiadomościach. To nie jest Twoja faktura: nie ma tu unikniętych wywołań, pamięci podręcznej Twojego dostawcy ani wyjścia, a wiele zapytań w ogóle nie zawiera danych strukturalnych. Dla całego SDK liczba, którą publikujemy, to ta z sekcji pomiarów, wraz z jej przypisem.",
+      "ctaInstall": "Zainstaluj SDK"
     }
   },
   "invitacion": {
@@ -1108,7 +1152,7 @@
     "caseClaudeSub": "claude.ai, za darmo lub płatnie",
     "caseClaudeBody": "Stała subskrypcja: brak faktury za tokeny do zmierzenia — ale są limity (pięciogodzinne okno i tygodniowy). Właśnie po to jest skill savings-mode: darmowy, wgrywany na claude.ai w minutę, atakuje dwie masy spalające limit. Jego efekt zostanie opublikowany po zmierzeniu — nigdy wcześniej.",
     "caseCodeSub": "terminal, z kluczem API",
-    "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: z Twoją licencją BiVelio „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Z PRO skraca też TTL zapisu do pamięci podręcznej, dopóki sesja pozostaje ciepła: oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków.",
+    "caseCodeBody": "Przy subskrypcji opłata jest stała — ale z limitami: ten sam skill instaluje się jednym poleceniem i rozciąga ten sam tygodniowy limit. Z kluczem API jest prawdziwa faktura za tokeny — a miernik już działa: z Twoją licencją BiVelio „bvsala claude” uruchamia Claude Code przez lokalną bramkę i Twoje wydatki pojawiają się w panelu, token po tokenie, bez dotykania linijki kodu. Z PRO, na modelach Anthropic, przestawia też zapisy do pamięci podręcznej z godzinnego TTL na pięciominutowy tylko w turach, w których duża część promptu jest nowa (pierwsza tura sesji, kompaktowanie): oszczędność wyliczona z liczby tokenów podanej przez Twojego własnego dostawcę, nigdy z szacunków.",
     "caseAppName": "Twoja aplikacja",
     "caseAppSub": "Twój kod + Twój klucz API",
     "caseAppBody": "Przypadek, dla którego istnieje BV‑SALA. Twoja aplikacja wywołuje API Twoim kluczem, dostawca fakturuje każdy token, a warstwa instaluje się w trzech krokach: pakiet, licencja i opakowanie wywołania. Od pierwszego zapytania zwraca <b>SavingsReport</b> z oszczędnością, rozdzieloną na zmierzoną i szacowaną.",

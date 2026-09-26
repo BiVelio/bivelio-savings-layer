@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Your savings · measured against your bill",
       "totalSplit": "The total, including the estimated part, is {pct}. Only {share} of requests carry a provider counter to check it against: their own, or that of the identical request that already ran.",
-      "referenceNote": "Of that, <b>{money}</b> comes from {count} repeated requests served without calling your provider, each valued with the counter of the identical request that already ran — at the lowest rate your provider could have billed for repeating it.",
+      "referenceNote": "Of that, <b>{money}</b> comes from {count, plural, one {# repeated request} other {# repeated requests}} served without calling your provider, each valued with the counter of the identical request that already ran — at the lowest rate your provider could have billed for repeating it.",
       "unmeasuredCap": "We see {count} priced requests, but none can be checked against your provider's counter yet. As soon as the first one arrives, your measured savings will appear here.",
       "savedLine": "of your LLM spend kept this period · <b>{money}</b> saved (baseline − actual, at your prices).",
       "emptyCap": "Not measuring your traffic yet — 0 requests seen. Install the SDK and your net savings appears here — your prices, your workload. Never a borrowed or fabricated number.",
@@ -281,12 +281,6 @@
       "benchOnly": "bench-only compressor, not in npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Savings verifier",
-      "estimateFull": "ESTIMATE — heuristic, not provider-metered",
-      "errBundle": "Could not load the optimizer bundle.",
-      "errInvalidData": "Waiting for valid data… {message}",
-      "yourData": "Your data",
-      "alreadyOptimal": "Already optimal here — BV‑SALA never makes it worse.",
       "projectorTitle": "Bill projector",
       "estimate": "ESTIMATE",
       "reqsPerMonth": "Requests / month",
@@ -296,13 +290,6 @@
       "inputCut": "Input cut",
       "outputCut": "Output cut",
       "projectedSaving": "projected saving / month · at {model} prices",
-      "tryExample": "Try an example",
-      "sample_users": "User list",
-      "sample_orders": "Store orders",
-      "sample_tickets": "Support tickets",
-      "pasteHint": "…or paste your own JSON here. Nothing leaves your browser.",
-      "savedPct": "−{pct}% tokens",
-      "trimsFriendly": "From {before} to {after} tokens per request. BV‑SALA just picks the cheapest format — no changes to your code.",
       "profileLabel": "What are you building?",
       "profile_chat": "Chatbot",
       "profile_extract": "Data extraction",
@@ -393,7 +380,8 @@
       "chipOutdated": "update",
       "chipOk": "up to date",
       "chipMixed": "partly undeclared",
-      "hint": "One row per machine that reports usage, identified by its opaque seat id (never a person). What travels is a version number — gateway/x.y.z or sdk/x.y.z — never content. A machine on a gateway older than the version channel shows as “not declared”."
+      "hint": "One row per machine that reports usage, identified by its opaque seat id (never a person). What travels is a version number — gateway/x.y.z or sdk/x.y.z — never content. A machine on a gateway older than the version channel shows as “not declared”.",
+      "referenceHint": "Measured savings here include repeated requests measured by reference: each is valued with the counter of the identical request that already ran."
     },
     "installLicensePanel": {
       "eyebrow": "Get started",
@@ -584,7 +572,7 @@
       "metaTitle": "Statement · BiVelio Savings Layer",
       "eyebrow": "Shadow mode · nothing is charged here",
       "title": "Your statement, before the invoice exists",
-      "intro": "The exact document the future variable invoice will produce: measured savings only, with the tiered rate — no minimum, you are only charged if you save. During calibration, the charge is always {cero}.",
+      "intro": "The exact document the future variable invoice will produce: measured savings only, with the tiered rate and no minimum — no measured savings, no commission. The seat fee is a separate, fixed monthly charge. During calibration, the commission is always {cero}.",
       "periodo": "Period {periodo}",
       "badgeCalibracion": "CALIBRATION PERIOD — ZERO CHARGE",
       "badgeSombra": "SHADOW — NO REAL CHARGE",
@@ -598,7 +586,7 @@
       "ahorroMedido": "Measured savings",
       "ratio": "ratio {pct}",
       "tramosTitulo": "The commission, bracket by bracket",
-      "sinAhorro": "No measured savings this period — no savings, no fee. Ever.",
+      "sinAhorro": "No measured savings this period — no measured savings, no commission. Ever.",
       "colTramo": "Bracket",
       "colTipo": "Rate",
       "colBase": "Bracket base",
@@ -607,8 +595,8 @@
       "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base or the commission.",
       "sombraElisionNegativa": "Shadow lane: elision would have cost an extra {usd} across {requests} simulated requests. That is why it stays off: only what truly saves gets turned on.",
       "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base or the commission.",
-      "referencia": "Measured by reference: {usd} across {requests} repeated requests served without calling your provider. Each is valued with the counter your provider returned for the identical request that already ran — it is in that request's report and in your provider's usage for that day — at the cached-input rate, the lowest your provider bills for repeating a prompt; the output only counts when sampling was deterministic and the call that ran carried no hidden reasoning (your provider reported zero reasoning tokens or, where it does not break them out, its answer had no reasoning block). Included in the base.",
-      "referenciaExcluida": "Measured by reference: {usd} across {requests} repeated requests. Shown for context — for now it is kept out of the base and the commission.",
+      "referencia": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}} served without calling your provider. Each is valued with the counter your provider returned for the identical request that already ran — it is in that request's report and in your provider's usage for that day — at the cached-input rate, the lowest your provider bills for repeating a prompt; the output only counts when sampling was deterministic and the call that ran carried no hidden reasoning (your provider reported zero reasoning tokens or, where it does not break them out, its answer had no reasoning block). Included in the base.",
+      "referenciaExcluida": "Measured by reference: {usd} across {requests, plural, one {# repeated request} other {# repeated requests}}. Shown for context — for now it is kept out of the base and the commission.",
       "exportarReferencias": "Download the repeated requests of this period, one row each (CSV)",
       "exportarReferenciasPorDia": "Too many repeated requests for a single file — download this period one day at a time (CSV):",
       "parametros": "Statement parameters — price catalog {version} · exchange rate {fx}.",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verify Your LLM Savings",
-    "metaDescription": "Licensed LLM cost layer. Installs in front of your provider and cuts the bill — savings measured against the provider's own counter, with a 95% interval.",
+    "metaDescription": "An SDK that has your app pay the LLM provider only for what it needs, and a gateway that meters your coding agent. Counted with your provider's own meter: a seat fee, plus commission only on measured savings.",
     "hero": {
       "eyebrow": "For teams that pay for LLM APIs by the token",
       "title": "Your LLM bill, under control.",
       "titleAccent": "Measured on every call.",
-      "lede": "An SDK that installs inside your code, lets through only what has to be paid for, and returns a SavingsReport per call: measured and estimated kept apart, counted with your provider's own meter. We publish only what we have measured.",
-      "ctaRun": "See what we measured",
+      "lede": "Two products, one rule. The SDK installs inside your app and lets through only what has to be paid for; the gateway sits in front of your coding agent and meters its spend. Both count with your provider's own meter and keep measured and estimated apart. We publish only what we have measured.",
+      "ctaOffers": "SDK or gateway?",
       "ctaPricing": "See pricing",
       "note": "Installs in minutes. Your messages never pass through our servers.",
       "proofTitle": "Measured against a real provider",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "In plain words",
-      "title": "What does Savings actually do?",
-      "sub": "Four ideas, four eight-second animations. That's the whole product.",
+      "title": "What does the SDK actually do?",
+      "sub": "Four ideas, four eight-second animations.",
       "pasos": [
         {
           "title": "AI charges you per word",
@@ -796,8 +784,8 @@
           "body": "We don't ask for faith. Every saving is measured with the provider's official meter — the same one they bill you with — and lands on your receipt. Anything that can't be checked against the bill is never announced."
         },
         {
-          "title": "We only earn when you save",
-          "body": "Our commission comes out of the measured saving, never out of your pocket: most of what you save always stays with you. A month with no savings? Zero commission."
+          "title": "A seat fee, and a share of what's measured",
+          "body": "You pay a fixed fee per seat every month, whether or not you save. On top of it, our commission comes only out of savings measured with your provider's meter — and most of every saving always stays with you. A month with no measured savings? You pay the seats and zero commission."
         }
       ],
       "nota": "The animations illustrate the idea. The real numbers — measured against live providers — are right below."
@@ -866,7 +854,7 @@
       "aiPaso2": "Then upload the zip under Customize → Skills: it appears with its own toggle, private to your account."
     },
     "systems": {
-      "caption": "Where your automations already live. If it calls your provider's API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
+      "caption": "Where your automations already live. What gets measured is the call to your provider's API with your key: in a Node.js app, the SDK wraps it; from other code on the official OpenAI or Anthropic SDK, the gateway sits in front and records it for a model with a list price."
     },
     "nvidia": {
       "kicker": "Company & ecosystem",
@@ -875,10 +863,10 @@
       "cta": "About the program"
     },
     "gateway": {
-      "eyebrow": "New · coding terminals",
+      "eyebrow": "Gateway · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
-      "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
-      "note": "The gateway measures every request and, like the SDK, runs only with an active license: it collects it with your service key and verifies its signature on your machine. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
+      "body": "One command puts a local meter in front of your terminal, with no changes to your code: export your service key and start your agent through bvsala. Your prompts never leave your machine — only counts and cost reach your dashboard.",
+      "note": "The gateway measures, with your provider's own counter, every request whose usage the provider reports (for models in our price catalog) and, like the SDK, runs only with an active license: it collects it with your service key and verifies its signature on your machine. With a PRO license, on Anthropic models, it also applies one lever by default: it moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves chained turns as they are. That changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. The gateway also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
       "pythonNote": "Python or any other language? Point the official OpenAI or Anthropic SDK at the gateway and every request whose usage the provider reports, for a model with a list price, is recorded in this dashboard at that price; the gateway's log says when one is not. bvsala doctor prints the base URL for each SDK. For OpenAI streaming, ask for usage in the request (stream_options.include_usage).",
       "cta": "See how it works →"
     },
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "One plan, priced per seat",
-      "title": "A small fee per seat. And commission only on what you save.",
-      "body": "No free tier, no trial: what you can check before paying are the public measurements on this page. The fee is per seat, in {currency}, and the commission comes out of the measured saving — never out of your pocket.",
+      "title": "A seat fee, always. Commission only on measured savings.",
+      "body": "No free tier, no trial: before paying you can check the public measurements and run the verifier on your own data, right on this page. The seat fee is billed every month, in {currency}, whether or not you save. The commission is on top, and only on savings measured with your provider's meter — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran. Estimates never enter it.",
       "amount": "{amount}",
       "per": "/ seat / month",
       "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Measure it on your own traffic",
-      "ctaSub": "Once installed, every call returns its SavingsReport: measured and estimated kept apart; only what is measured enters the commission. The license is what lets you run BV-SALA inside your app.",
+      "ctaSub": "Once installed, every call returns its SavingsReport, measured and estimated kept apart. The seat fee is monthly and fixed; the commission comes only from what is measured. The license is what lets you run BV‑SALA — the SDK in your app, the gateway in your terminal.",
       "ctaStart": "Get started",
       "tagline": "The operating system for your business. This is <b>BV-SALA</b>, BiVelio's provider-neutral LLM cost optimizer — every published figure measured against the provider's own counter; estimates are shown apart and never billed.",
       "badge": "BV‑SALA · Savings Layer",
@@ -981,7 +969,7 @@
       "colExtra": "Our extra",
       "colTeQuedas": "You keep",
       "extraCero": "nothing",
-      "notaGarantia": "We only charge on measured savings — and you always keep {garantia} or more of them.",
+      "notaGarantia": "Commission only on measured savings — and you always keep {garantia} or more of them. Seats are billed apart, every month.",
       "notaTramos": "Tiered, each bracket at its own rate: {tramos}. The more you save, the lower our percentage.",
       "notaPrimerMesLead": "Your first calendar month with usage: seat only.",
       "notaPrimerMes": "It is your calibration period, however little of that month remains: we measure everything, and you'll see the exact statement of what it would have cost — without being charged.",
@@ -1009,7 +997,7 @@
       "caption": "Not every shipment carries the same padding: in this run, the measured trim per scenario ranged from {min} to {max}. The ones that don't save get published too."
     },
     "recibo": {
-      "title": "SavingsReport · published run",
+      "title": "SDK · SavingsReport · published run",
       "modelo": "model",
       "parejas": "measured pairs",
       "calidad": "quality",
@@ -1046,6 +1034,62 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Two products",
+      "title": "Where do your tokens go: your app, or your coding agent?",
+      "sub": "Both are licensed per seat and both count with your provider's own meter. They do different jobs, so each makes its own promise — and today only one of them has a published savings figure.",
+      "install": "Install",
+      "installMore": "Full setup",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — for JavaScript and TypeScript apps on an API key",
+        "who": "For Node.js apps, in JavaScript or TypeScript, that call an LLM API with your own key and pay for every token.",
+        "what": "It wraps the call inside your code, sends the provider only what has to be paid for, and returns a SavingsReport with every response.",
+        "figureLabel": "The figure we publish",
+        "figureNote": "A floor, not a forecast: what you save depends on your traffic. Only savings measured with your provider's counter enter the commission — including repeated requests served without calling your provider, each valued with the counter of the identical request that already ran.",
+        "ctaMeasured": "How we measured it",
+        "ctaVerify": "Try one lever on your data"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — for coding agents on an API key",
+        "who": "For developers who run Claude Code, Codex CLI or another coding agent on an API key.",
+        "what": "One command puts a local meter in front of your terminal, with no code to change. It counts each request your provider reports usage for, with the provider's own counter — for models in our price catalog — and adds it up in your dashboard, by day and by model.",
+        "figureLabel": "No savings figure published",
+        "figureNote": "We have not published a measured saving for coding agents, so we don't advertise one. With PRO, on Anthropic models, it moves cache writes from the one-hour TTL to the five-minute one, only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves the chained turns of a running session as they are. That changes the price, never what the model reads, and only what your provider's counter confirms enters the commission.",
+        "cta": "Set up the gateway"
+      },
+      "skill": {
+        "band": "Skill — for coding agents on a subscription plan"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · one lever, on your data, before paying",
+      "title": "Paste your data. See how many tokens the SDK would send.",
+      "sub": "This runs the SDK's real format selector in your browser, on your data. Nothing leaves this page and you don't need an account.",
+      "tryExample": "Try an example",
+      "sample_orders": "Store orders",
+      "sample_tickets": "Support tickets",
+      "sample_users": "User list",
+      "pasteHint": "…or paste your own JSON here. Nothing leaves your browser.",
+      "loading": "Loading the optimizer and the exact tokenizer…",
+      "errBundle": "The optimizer could not load. Reload the page to try again.",
+      "errInvalidData": "Waiting for valid JSON… {message}",
+      "errTokenizer": "The exact tokenizer can't count this text ({message}), so we show no figure.",
+      "tooBig": "That is more than {max} characters. Paste a smaller sample.",
+      "tagExact": "Exact count",
+      "tagApprox": "Approximate",
+      "yourData": "Your data, as compact JSON",
+      "optimized": "As the SDK would send it",
+      "fewer": "−{pct} input tokens on this data",
+      "trims": "From {before} to {after} tokens, the format's instructions included.",
+      "alreadyOptimal": "No format beats compact JSON here, so the SDK would send it as it is. This lever never makes your data bigger.",
+      "notComparable": "We can't compare the formats against compact JSON on this data, so we show no figure.",
+      "exactNote": "Counted with {tokenizer}, the tokenizer {model} uses. We compare against your data as compact JSON: if you send it indented today, the real difference is larger — and we don't count that.",
+      "approxNote": "The exact tokenizer did not load, so any count here would be approximate — and we don't show approximate savings. Reload the page to try again.",
+      "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It applies only to data you pass to the SDK as structuredData, not to JSON already written inside your messages. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. For the whole SDK, the figure we publish is the one in the measurement section, with its note.",
+      "ctaInstall": "Install the SDK"
     }
   },
   "invitacion": {
@@ -1108,7 +1152,7 @@
     "caseClaudeSub": "claude.ai, free or paid",
     "caseClaudeBody": "Flat subscription: no token invoice to meter — but there are caps (the five-hour window and the weekly one). That is exactly what the savings-mode skill is for: free, uploaded to claude.ai in a minute, attacking the two masses that burn cap. Its effect will be published once measured — never before.",
     "caseCodeSub": "terminal, with an API key",
-    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: with your BiVelio license, “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. With PRO it also shortens the cache-write TTL while the session stays hot: a saving computed on your provider's own token count, never on an estimate.",
+    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: with your BiVelio license, “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. With PRO, on Anthropic models, it also moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new (a session's first turn, a compaction): a saving computed on your provider's own token count, never on an estimate.",
     "caseAppName": "Your application",
     "caseAppSub": "your code + your API key",
     "caseAppBody": "The case BV‑SALA exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in three steps: package, license, and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",

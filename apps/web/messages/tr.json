@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Tasarrufunuz · faturanıza karşı ölçüldü",
       "totalSplit": "Tahmini kısım dâhil toplam {pct}. İsteklerin yalnızca {share} kadarında bunu doğrulayacak sağlayıcı sayacı var: kendi sayacı ya da daha önce çalışmış özdeş isteğin sayacı.",
-      "referenceNote": "Bunun <b>{money}</b> kadarı, sağlayıcınız çağrılmadan sunulan {count} tekrarlanan istekten geliyor; her biri daha önce çalışmış özdeş isteğin sayacıyla değerlendirildi — sağlayıcınızın onu tekrarlamak için faturalayabileceği en düşük fiyattan.",
+      "referenceNote": "Bunun <b>{money}</b> kadarı, sağlayıcınız çağrılmadan sunulan {count, number} tekrarlanan istekten geliyor; her biri daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırıldı — sağlayıcınızın onu tekrarlamak için faturalayabileceği en düşük fiyattan.",
       "unmeasuredCap": "Fiyatlandırılmış {count} istek görüyoruz, ancak henüz hiçbiri sağlayıcınızın sayacıyla doğrulanamıyor. İlki geldiği anda ölçülen tasarrufunuz burada görünecek.",
       "savedLine": "LLM harcamanızdan bu dönem cebinizde kaldı · <b>{money}</b> tasarruf (taban − gerçek, sizin fiyatlarınızla).",
       "emptyCap": "Trafiğiniz henüz ölçülmüyor — 0 istek görüldü. SDK'yı kurun; net tasarrufunuz burada görünür — sizin fiyatlarınız, sizin iş yükünüz. Asla ödünç alınmış ya da uydurulmuş bir rakam değil.",
@@ -281,12 +281,6 @@
       "benchOnly": "test düzeneği sıkıştırıcısı, npm'de yok"
     },
     "projectorVerifier": {
-      "verifierTitle": "Tasarruf doğrulayıcı",
-      "estimateFull": "TAHMİN — sezgisel, sağlayıcı tarafından ölçülmedi",
-      "errBundle": "Optimize edici paketi yüklenemedi.",
-      "errInvalidData": "Geçerli veri bekleniyor… {message}",
-      "yourData": "Verileriniz",
-      "alreadyOptimal": "Burada zaten en uygun durumda — BV‑SALA asla kötüleştirmez.",
       "projectorTitle": "Fatura tahmincisi",
       "estimate": "TAHMİN",
       "reqsPerMonth": "İstek / ay",
@@ -296,13 +290,6 @@
       "inputCut": "Girdi kesintisi",
       "outputCut": "Çıktı kesintisi",
       "projectedSaving": "öngörülen tasarruf / ay · {model} fiyatlarıyla",
-      "tryExample": "Bir örnek dene",
-      "sample_users": "Kullanıcı listesi",
-      "sample_orders": "Mağaza siparişleri",
-      "sample_tickets": "Destek talepleri",
-      "pasteHint": "…veya kendi JSON'unu buraya yapıştır. Hiçbir şey tarayıcından çıkmaz.",
-      "savedPct": "−%{pct} token",
-      "trimsFriendly": "Gönderi başına {before} tokendan {after} tokena. BV‑SALA yalnızca en ucuz formatı seçer — kodunu değiştirmeden.",
       "profileLabel": "Ne inşa ediyorsun?",
       "profile_chat": "Sohbet botu",
       "profile_extract": "Veri çıkarma",
@@ -393,7 +380,8 @@
       "chipOutdated": "güncelle",
       "chipOk": "güncel",
       "chipMixed": "kısmen bildirilmedi",
-      "hint": "Kullanım bildiren her makine için bir satır; makine, opak koltuk kimliğiyle tanınır (asla bir kişi). Gönderilen şey yalnızca bir sürüm numarasıdır — gateway/x.y.z veya sdk/x.y.z —, asla içerik değil. Sürüm kanalından eski bir gateway çalıştıran makine “bildirilmedi” olarak görünür."
+      "hint": "Kullanım bildiren her makine için bir satır; makine, opak koltuk kimliğiyle tanınır (asla bir kişi). Gönderilen şey yalnızca bir sürüm numarasıdır — gateway/x.y.z veya sdk/x.y.z —, asla içerik değil. Sürüm kanalından eski bir gateway çalıştıran makine “bildirilmedi” olarak görünür.",
+      "referenceHint": "Buradaki ölçülen tasarruf, referansla ölçülen tekrarlanan istekleri de içerir: her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır."
     },
     "installLicensePanel": {
       "eyebrow": "Başlayın",
@@ -584,7 +572,7 @@
       "metaTitle": "Ekstre · BiVelio Savings Layer",
       "eyebrow": "Gölge modu · burada hiçbir şey tahsil edilmez",
       "title": "Fatura var olmadan önce ekstren",
-      "intro": "Gelecekteki değişken faturanın üreteceği belgenin ta kendisi: yalnızca ölçülmüş tasarruf, kademeli tarifeyle — asgari yok, yalnızca tasarruf edersen ücret alınır. Kalibrasyon sırasında tutar her zaman {cero} olur.",
+      "intro": "Gelecekteki değişken faturanın üreteceği belgenin ta kendisi: yalnızca ölçülmüş tasarruf, kademeli tarifeyle ve asgari tutar olmadan — ölçülmüş tasarruf yoksa komisyon da yok. Koltuk ücreti ayrı, sabit ve aylık bir ücrettir. Kalibrasyon sırasında komisyon her zaman {cero} olur.",
       "periodo": "Dönem {periodo}",
       "badgeCalibracion": "KALİBRASYON DÖNEMİ — SIFIR TUTAR",
       "badgeSombra": "GÖLGE — GERÇEK TAHSİLAT YOK",
@@ -607,8 +595,8 @@
       "sombraElision": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} tasarruf sağlardı. Varsayımsal — asla tabana veya komisyona girmez.",
       "sombraElisionNegativa": "Gölge şerit: eksiltme {requests} simüle edilmiş istekte {usd} fazladan maliyete yol açardı. Bu yüzden kapalı: yalnızca gerçekten tasarruf ettiren açılır.",
       "elisionProveedor": "Sağlayıcı temizlemesi hattı: ayarlarımızın sağlayıcıya bağlam temizlettiği {requests} istek. Bir sayım, tasarruf değil — tabana da komisyona da asla girmez.",
-      "referencia": "Referansla ölçülen: sağlayıcınız çağrılmadan sunulan {requests} tekrarlanan istekte {usd}. Her biri, sağlayıcınızın daha önce çalışmış özdeş istek için döndürdüğü sayaçla değerlendirilir — o isteğin raporunda ve sağlayıcınızın o güne ait kullanımında yer alır — önbelleğe alınmış girdi fiyatından, yani sağlayıcınızın bir istemi tekrarlamak için aldığı en düşük fiyattan; çıktı yalnızca örnekleme deterministik olduğunda ve çalışmış istek gizli akıl yürütme içermediğinde sayılır (sağlayıcınız sıfır akıl yürütme tokeni bildirdi ya da bunları ayrıca göstermiyorsa yanıtında akıl yürütme bloğu yoktu). Tabana dâhildir.",
-      "referenciaExcluida": "Referansla ölçülen: {requests} tekrarlanan istekte {usd}. Bağlam olarak gösterilir — şimdilik tabanın ve komisyonun dışında tutulur.",
+      "referencia": "Referansla ölçülen: sağlayıcınız çağrılmadan sunulan {requests, number} tekrarlanan istekte {usd}. Her biri, sağlayıcınızın daha önce çalışmış özdeş istek için döndürdüğü sayaçla fiyatlandırılır — o isteğin raporunda ve sağlayıcınızın o güne ait kullanımında yer alır — önbelleğe alınmış girdi fiyatından, yani sağlayıcınızın bir istemi tekrarlamak için aldığı en düşük fiyattan; çıktı yalnızca örnekleme deterministik olduğunda ve çalışmış istek gizli akıl yürütme içermediğinde sayılır (sağlayıcınız sıfır akıl yürütme tokeni bildirdi ya da bunları ayrıca göstermiyorsa yanıtında akıl yürütme bloğu yoktu). Tabana dâhildir.",
+      "referenciaExcluida": "Referansla ölçülen: {requests, number} tekrarlanan istekte {usd}. Bağlam olarak gösterilir — şimdilik tabanın ve komisyonun dışında tutulur.",
       "exportarReferencias": "Bu dönemin tekrarlanan isteklerini indir, istek başına bir satır (CSV)",
       "exportarReferenciasPorDia": "Tek bir dosya için çok fazla tekrarlanan istek var — bu dönemi gün gün indir (CSV):",
       "parametros": "Ekstre parametreleri — fiyat kataloğu {version} · döviz kuru {fx}.",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — LLM Tasarrufunuzu Doğrulayın",
-    "metaDescription": "Lisanslı LLM maliyet katmanı. Sağlayıcınızın önüne kurulur ve faturanızı kısar; tasarruf, sağlayıcının kendi sayacına karşı %95 güven aralığıyla ölçülür.",
+    "metaDescription": "Uygulamanızın LLM sağlayıcısına yalnızca ihtiyaç duyduğu kadarını ödemesini sağlayan bir SDK ve kod ajanınızı ölçen bir gateway. Sağlayıcınızın kendi sayacıyla sayılır: koltuk başına bir ücret, artı yalnızca ölçülen tasarruf üzerinden komisyon.",
     "hero": {
       "eyebrow": "LLM API'lerine token başına ödeyen ekipler için",
       "title": "LLM faturanız, kontrol altında.",
       "titleAccent": "Her çağrıda ölçülür.",
-      "lede": "Kodunuzun içine kurulan, yalnızca ödenmesi gerekeni geçiren ve her çağrıda bir SavingsReport döndüren bir SDK: ölçülen ve tahmini ayrı, sağlayıcınızın kendi sayacıyla sayılmış. Yalnızca ölçtüğümüzü yayımlarız.",
-      "ctaRun": "Ölçülen sonuçları gör",
+      "lede": "İki ürün, tek kural. SDK uygulamanızın içine kurulur ve yalnızca ödenmesi gerekeni geçirir; gateway kod ajanınızın önünde durur ve harcamasını ölçer. İkisi de sağlayıcınızın kendi sayacıyla sayar ve ölçüleni tahminiden ayrı tutar. Yalnızca ölçtüğümüzü yayımlarız.",
+      "ctaOffers": "SDK mı, gateway mi?",
       "ctaPricing": "Fiyatları gör",
       "note": "Dakikalar içinde kurulur. Mesajlarınız asla bizim sunucularımızdan geçmez.",
       "proofTitle": "Gerçek sağlayıcıya karşı ölçüldü",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "Sade bir dille",
-      "title": "Savings tam olarak ne yapar?",
-      "sub": "Dört fikir, dört adet sekiz saniyelik animasyon. Ürünün tamamı bu.",
+      "title": "SDK tam olarak ne yapar?",
+      "sub": "Dört fikir, dört adet sekiz saniyelik animasyon.",
       "pasos": [
         {
           "title": "Yapay zekâ kelime başına ücret alır",
@@ -796,8 +784,8 @@
           "body": "İnanç istemiyoruz. Her tasarruf, sağlayıcının resmî sayacıyla ölçülür — size fatura kestiği sayaçla — ve makbuzunuza işlenir. Faturayla karşılaştırılamayan hiçbir şey duyurulmaz."
         },
         {
-          "title": "Yalnızca siz tasarruf ederseniz kazanırız",
-          "body": "Komisyonumuz ölçülen tasarruftan çıkar, asla cebinizden değil: tasarrufunuzun büyük kısmı her zaman sizde kalır. Tasarrufsuz bir ay mı? Komisyon sıfır."
+          "title": "Koltuk başına bir ücret ve ölçülenden bir pay",
+          "body": "Tasarruf etseniz de etmeseniz de her ay koltuk başına sabit bir ücret ödersiniz. Bunun üzerine komisyonumuz yalnızca sağlayıcınızın sayacıyla ölçülen tasarruftan çıkar — ve her tasarrufun büyük kısmı her zaman sizde kalır. Ölçülen tasarrufun olmadığı bir ay mı? Koltukları ödersiniz, komisyon sıfır."
         }
       ],
       "nota": "Animasyonlar fikri anlatır. Gerçek rakamlar — gerçek sağlayıcılara karşı ölçülmüş — hemen aşağıda."
@@ -866,7 +854,7 @@
       "aiPaso2": "Sonra zip'i Customize → Skills altında yükle: kendi anahtarıyla, hesabında özel olarak görünür."
     },
     "systems": {
-      "caption": "Otomasyonlarının zaten yaşadığı yerde. sağlayıcınızın API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
+      "caption": "Otomasyonlarınızın zaten yaşadığı yerde. Ölçülen, sağlayıcınızın API'sine kendi anahtarınızla yapılan çağrıdır: bir Node.js uygulamasında SDK onu sarar; resmi OpenAI veya Anthropic SDK'sını kullanan başka bir koddan gelen çağrıda ise ağ geçidi öne geçer ve liste fiyatı olan bir modele aitse onu kaydeder."
     },
     "nvidia": {
       "kicker": "Şirket ve ekosistem",
@@ -875,10 +863,10 @@
       "cta": "Programı tanıyın"
     },
     "gateway": {
-      "eyebrow": "Yeni · kod terminalleri",
+      "eyebrow": "Gateway · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
-      "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
-      "note": "Ağ geçidi her isteği ölçer ve SDK gibi yalnızca etkin bir lisansla çalışır: lisansı servis anahtarınızla alır ve imzasını kendi makinenizde doğrular. PRO lisansıyla varsayılan olarak bir kaldıraç da uygular: oturumunuz sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır — bu fiyatı değiştirir, modelin okuduğu içeriği asla. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
+      "body": "Tek bir komut, kodunuza dokunmadan terminalinizin önüne yerel bir sayaç koyar: servis anahtarınızı dışa aktarır ve ajanınızı bvsala üzerinden başlatırsınız. Prompt'larınız asla makinenizden çıkmaz — panelinize yalnızca sayımlar ve maliyet ulaşır.",
+      "note": "Ağ geçidi, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla ölçer (fiyat kataloğumuzdaki modeller için) ve SDK gibi yalnızca etkin bir lisansla çalışır: lisansı servis anahtarınızla alır ve imzasını kendi makinenizde doğrular. PRO lisansıyla, Anthropic modellerinde, varsayılan olarak bir kaldıraç da uygular: önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve ardışık turlara dokunmaz. Bu fiyatı değiştirir, modelin okuduğu içeriği asla. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Ağ geçidi Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
       "pythonNote": "Python ya da başka bir dil mi? Resmi OpenAI veya Anthropic SDK'sını ağ geçidine yönlendirin; sağlayıcının kullanımını bildirdiği ve liste fiyatı olan bir modele ait her istek bu panele o fiyatla kaydedilir, ölçülmeyen bir istek olduğunda ağ geçidinin günlüğü bunu belirtir. bvsala doctor her SDK için base URL'yi yazdırır. OpenAI ile streaming'de kullanımı istekte talep edin (stream_options.include_usage).",
       "cta": "Nasıl çalıştığını gör →"
     },
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "Tek plan, koltuk başına fiyatlandırma",
-      "title": "Koltuk başına küçük bir ücret. Ve yalnızca tasarruf ettiğiniz üzerinden komisyon.",
-      "body": "Ücretsiz plan ve deneme yok: ödemeden önce doğrulayabileceğiniz şey, bu sayfadaki herkese açık ölçümlerdir. Ücret koltuk başınadır, {currency} cinsindendir ve komisyon ölçülen tasarruftan çıkar — asla cebinizden değil.",
+      "title": "Koltuk başına ücret, her zaman. Komisyon yalnızca ölçülen tasarruf üzerinden.",
+      "body": "Ücretsiz plan ve deneme yok: ödemeden önce herkese açık ölçümleri kontrol edebilir ve doğrulayıcıyı kendi verileriniz üzerinde çalıştırabilirsiniz, tam bu sayfada. Koltuk ücreti, tasarruf etseniz de etmeseniz de her ay {currency} cinsinden faturalanır. Komisyon bunun üzerine eklenir ve yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf üzerindendir — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır. Tahminler asla girmez.",
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Kendi trafiğinde ölç",
-      "ctaSub": "Kurulduktan sonra her çağrı kendi SavingsReport'unu döndürür: ölçülen ve tahmini ayrı; komisyona yalnızca ölçülen girer. Lisans, BV‑SALA'yı uygulamanızın içinde çalıştırmanızı sağlayan şeydir.",
+      "ctaSub": "Kurulduktan sonra her çağrı, ölçülen ve tahmini ayrı tutulmuş kendi SavingsReport'unu döndürür. Koltuk ücreti aylık ve sabittir; komisyon yalnızca ölçülenden çıkar. Lisans, BV‑SALA'yı çalıştırmanızı sağlayan şeydir — SDK uygulamanızda, gateway terminalinizde.",
       "ctaStart": "Başla",
       "tagline": "İşletmeniz için işletim sistemi. Bu, BiVelio'nun sağlayıcıdan bağımsız LLM maliyet optimizasyonu <b>BV‑SALA</b> — yayımlanan her rakam sağlayıcının kendi sayacına göre ölçülür; tahminler ayrı gösterilir ve asla faturalanmaz.",
       "badge": "BV‑SALA · Savings Layer",
@@ -981,7 +969,7 @@
       "colExtra": "Bizim payımız",
       "colTeQuedas": "Sana kalan",
       "extraCero": "hiçbir şey",
-      "notaGarantia": "Yalnızca ölçülen tasarruf üzerinden ücret alırız — ve her zaman {garantia} veya fazlası sende kalır.",
+      "notaGarantia": "Komisyon yalnızca ölçülen tasarruf üzerinden — ve her zaman {garantia} veya fazlası sizde kalır. Koltuklar her ay ayrıca faturalanır.",
       "notaTramos": "Kademeli, her kademe kendi oranında: {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
       "notaPrimerMesLead": "Kullanım olan ilk takvim ayın: yalnızca koltuk.",
       "notaPrimerMes": "O aydan ne kadar az kalmış olursa olsun, bu senin kalibrasyon dönemindir: her şeyi ölçeriz ve neye mal olacağının birebir ekstresini görürsün — tahsil edilmeden.",
@@ -1009,7 +997,7 @@
       "caption": "Her gönderi aynı dolguyu taşımaz: bu turda senaryo başına ölçülen kesinti {min} ile {max} arasındaydı. Tasarruf etmeyenler de yayımlanır."
     },
     "recibo": {
-      "title": "SavingsReport · yayımlanan çalıştırma",
+      "title": "SDK · SavingsReport · yayımlanan çalıştırma",
       "modelo": "model",
       "parejas": "ölçülen çift",
       "calidad": "kalite",
@@ -1046,6 +1034,62 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "İki ürün",
+      "title": "Token'larınız nereye gidiyor: uygulamanıza mı, kod ajanınıza mı?",
+      "sub": "İkisi de koltuk başına lisanslanır ve ikisi de sağlayıcınızın kendi sayacıyla sayar. Farklı işler yaparlar, bu yüzden her biri kendi sözünü verir — ve bugün yalnızca birinin yayımlanmış bir tasarruf rakamı var.",
+      "install": "Kurulum",
+      "installMore": "Tam kurulum",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — API anahtarıyla çalışan JavaScript ve TypeScript uygulamaları için",
+        "who": "Kendi anahtarınızla bir LLM API'sini çağıran ve her token için ödeme yapan, JavaScript veya TypeScript ile yazılmış Node.js uygulamaları için.",
+        "what": "Çağrıyı kodunuzun içinde sarar, sağlayıcıya yalnızca ödenmesi gerekeni gönderir ve her yanıtla birlikte bir SavingsReport döndürür.",
+        "figureLabel": "Yayımladığımız rakam",
+        "figureNote": "Bir taban, bir tahmin değil: ne kadar tasarruf edeceğiniz trafiğinize bağlıdır. Komisyona yalnızca sağlayıcınızın sayacıyla ölçülen tasarruf girer — sağlayıcı çağrılmadan sunulan tekrarlanan istekler de buna dahildir ve her biri, daha önce çalışmış özdeş isteğin sayacıyla fiyatlandırılır.",
+        "ctaMeasured": "Nasıl ölçtük",
+        "ctaVerify": "Verilerinizde bir kaldıracı deneyin"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — API anahtarıyla çalışan kod ajanları için",
+        "who": "Claude Code, Codex CLI veya başka bir kod ajanını API anahtarıyla kullananlar için.",
+        "what": "Tek bir komut, koda dokunmadan terminalinizin önüne yerel bir sayaç koyar. Gateway, sağlayıcınızın kullanımını bildirdiği her isteği sağlayıcının kendi sayacıyla sayar — fiyat kataloğumuzdaki modeller için — ve bunları panelinizde gün ve model bazında toplar.",
+        "figureLabel": "Yayımlanmış tasarruf rakamı yok",
+        "figureNote": "Kod ajanları için ölçülmüş bir tasarruf yayımlamadık, bu yüzden hiçbirini duyurmuyoruz. PRO ile, Anthropic modellerinde, gateway önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır — bir oturumun ilk turu ya da bir sıkıştırma gibi — ve süren bir oturumun ardışık turlarına dokunmaz. Bu fiyatı değiştirir, modelin okuduğunu asla; komisyona da yalnızca sağlayıcınızın sayacının doğruladığı girer.",
+        "cta": "Gateway'i kurun"
+      },
+      "skill": {
+        "band": "Skill — abonelikle çalışan kod ajanları için"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · tek bir kaldıraç, verilerinizde, ödemeden önce",
+      "title": "Verilerinizi yapıştırın. SDK'nın kaç token göndereceğini görün.",
+      "sub": "Burada SDK'nın gerçek format seçicisi, tarayıcınızda ve verilerinizle çalışır. Hiçbir şey bu sayfadan çıkmaz ve hesaba ihtiyacınız yok.",
+      "tryExample": "Bir örnek deneyin",
+      "sample_orders": "Mağaza siparişleri",
+      "sample_tickets": "Destek talepleri",
+      "sample_users": "Kullanıcı listesi",
+      "pasteHint": "…veya kendi JSON'unuzu buraya yapıştırın. Hiçbir şey tarayıcınızdan çıkmaz.",
+      "loading": "Optimize edici ve kesin tokenizer yükleniyor…",
+      "errBundle": "Optimize edici yüklenemedi. Yeniden denemek için sayfayı yenileyin.",
+      "errInvalidData": "Geçerli JSON bekleniyor… {message}",
+      "errTokenizer": "Kesin tokenizer bu metni sayamıyor ({message}), bu yüzden hiçbir rakam göstermiyoruz.",
+      "tooBig": "Bu, {max} karakterden fazla. Daha küçük bir örnek yapıştırın.",
+      "tagExact": "Kesin sayım",
+      "tagApprox": "Yaklaşık",
+      "yourData": "Verileriniz, kompakt JSON olarak",
+      "optimized": "SDK'nın göndereceği şekliyle",
+      "fewer": "Bu verilerde −{pct} giriş token'ı",
+      "trims": "{before} token'dan {after} token'a, formatın talimatları dâhil.",
+      "alreadyOptimal": "Burada hiçbir format kompakt JSON'dan daha iyi değil, bu yüzden SDK verileri olduğu gibi gönderirdi. Bu kaldıraç verilerinizi asla büyütmez.",
+      "notComparable": "Bu verilerde formatları kompakt JSON ile karşılaştıramıyoruz, bu yüzden hiçbir rakam göstermiyoruz.",
+      "exactNote": "{model} modelinin kullandığı tokenizer olan {tokenizer} ile sayıldı. Verilerinizin kompakt JSON hâliyle karşılaştırıyoruz: bugün onları girintili gönderiyorsanız gerçek fark daha büyüktür — ve onu saymıyoruz.",
+      "approxNote": "Kesin tokenizer yüklenmedi, bu yüzden buradaki her sayım yaklaşık olurdu — ve yaklaşık tasarruf göstermiyoruz. Yeniden denemek için sayfayı yenileyin.",
+      "scope": "Ne olduğu ve ne olmadığı: tek bir kaldıraç — yapılandırılmış verilerin prompt'a nasıl yazıldığı — bu verilerin giriş token'ları üzerinde. Yalnızca SDK'ya structuredData olarak verdiğiniz verilere uygulanır, mesajlarınızın içine zaten yazılmış JSON'a değil. Bu sizin faturanız değil: kaçınılan çağrılar, sağlayıcınızın önbelleği ve çıkış burada yok; birçok istek de hiç yapılandırılmış veri taşımaz. SDK'nın tamamı için yayımladığımız rakam, ölçüm bölümündeki rakamdır; notuyla birlikte.",
+      "ctaInstall": "SDK'yı kurun"
     }
   },
   "invitacion": {
@@ -1108,7 +1152,7 @@
     "caseClaudeSub": "claude.ai, ücretsiz ya da ücretli",
     "caseClaudeBody": "Sabit abonelik: ölçülecek token faturası yok — ama limitler var (beş saatlik pencere ve haftalık). savings-mode skill'i tam bunun için: ücretsiz, bir dakikada claude.ai'ye yüklenir ve limiti yakan iki kütleye saldırır. Etkisi ölçüldüğünde yayımlanacak — asla öncesinde değil.",
     "caseCodeSub": "terminal, API anahtarıyla",
-    "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: BiVelio lisansınla “bvsala claude” Claude Code'u yerel gateway üzerinden başlatır ve harcaman panelde token token görünür, tek satır koda dokunmadan. PRO ile ayrıca oturum sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır: kendi sağlayıcının token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil.",
+    "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: BiVelio lisansınızla “bvsala claude” Claude Code'u yerel gateway üzerinden başlatır ve harcamanız panelde token token görünür, tek satır koda dokunmadan. PRO ile, Anthropic modellerinde, ayrıca önbellek yazmalarını bir saatlik TTL'den beş dakikalık TTL'ye yalnızca prompt'un büyük bir kısmının yeni olduğu turlarda taşır (bir oturumun ilk turu, bir sıkıştırma): kendi sağlayıcınızın token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil.",
     "caseAppName": "Senin uygulaman",
     "caseAppSub": "senin kodun + senin API anahtarın",
     "caseAppBody": "BV‑SALA'nın var olma nedeni olan durum. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman üç adımda kurulur: paket, lisans ve çağrıyı sarmalama. İlk istekten itibaren, ölçülen ve tahmini olarak ayrılmış tasarrufla bir <b>SavingsReport</b> döndürür.",

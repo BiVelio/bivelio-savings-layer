@@ -226,8 +226,8 @@
     },
     "verdictHero": {
       "eyebrow": "Jouw besparing · gemeten aan je factuur",
-      "totalSplit": "Het totaal, inclusief het geschatte deel, is {pct}. Slechts {share} van de verzoeken heeft een teller van de aanbieder om dat mee te controleren: die van henzelf, of die van het identieke verzoek dat al is uitgevoerd.",
-      "referenceNote": "Daarvan komt <b>{money}</b> uit {count} herhaalde verzoeken die zijn bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd — tegen het laagste tarief dat je aanbieder voor het herhalen had kunnen rekenen.",
+      "totalSplit": "Het totaal, inclusief het geschatte deel, is {pct}. Slechts {share} van de verzoeken heeft een teller van de aanbieder om dat mee te controleren: hun eigen teller, of die van het identieke verzoek dat al is uitgevoerd.",
+      "referenceNote": "Daarvan komt <b>{money}</b> uit {count, plural, one {# herhaald verzoek dat is afgehandeld} other {# herhaalde verzoeken die zijn afgehandeld}} zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd — tegen het laagste tarief dat je aanbieder voor het herhalen in rekening had kunnen brengen.",
       "unmeasuredCap": "We zien {count} geprijsde verzoeken, maar nog geen enkele is te controleren aan de teller van je aanbieder. Zodra de eerste binnenkomt, verschijnt hier je gemeten besparing.",
       "savedLine": "van je LLM-uitgaven bespaard in deze periode · <b>{money}</b> bespaard (basislijn − werkelijk, tegen jouw prijzen).",
       "emptyCap": "Nog geen meting van je verkeer — 0 verzoeken gezien. Installeer de SDK en je netto besparingen verschijnen hier — jouw prijzen, jouw werklast. Nooit een geleend of verzonnen getal.",
@@ -281,12 +281,6 @@
       "benchOnly": "testbank-compressor, niet in npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Besparingsverificatie",
-      "estimateFull": "SCHATTING — heuristisch, niet door provider gemeten",
-      "errBundle": "Kon de optimizer-bundle niet laden.",
-      "errInvalidData": "Wachten op geldige gegevens… {message}",
-      "yourData": "Jouw gegevens",
-      "alreadyOptimal": "Hier al optimaal — BV‑SALA maakt het nooit slechter.",
       "projectorTitle": "Factuurprojectie",
       "estimate": "SCHATTING",
       "reqsPerMonth": "Verzoeken / maand",
@@ -296,13 +290,6 @@
       "inputCut": "Invoerreductie",
       "outputCut": "Uitvoerreductie",
       "projectedSaving": "verwachte besparing / maand · tegen {model}-prijzen",
-      "tryExample": "Probeer een voorbeeld",
-      "sample_users": "Gebruikerslijst",
-      "sample_orders": "Winkelbestellingen",
-      "sample_tickets": "Supporttickets",
-      "pasteHint": "…of plak hier je eigen JSON. Niets verlaat je browser.",
-      "savedPct": "−{pct}% tokens",
-      "trimsFriendly": "Van {before} naar {after} tokens per verzoek. BV‑SALA kiest gewoon het goedkoopste formaat — zonder je code te wijzigen.",
       "profileLabel": "Wat bouw je?",
       "profile_chat": "Chatbot",
       "profile_extract": "Data-extractie",
@@ -393,7 +380,8 @@
       "chipOutdated": "bijwerken",
       "chipOk": "up-to-date",
       "chipMixed": "deels niet gemeld",
-      "hint": "Eén rij per machine die gebruik rapporteert, herkend aan een ondoorzichtige seat-id (nooit een persoon). Wat verstuurd wordt is een versienummer — gateway/x.y.z of sdk/x.y.z —, nooit inhoud. Een machine met een gateway ouder dan het versiekanaal verschijnt als „niet gemeld”."
+      "hint": "Eén rij per machine die gebruik rapporteert, herkend aan een ondoorzichtige seat-id (nooit een persoon). Wat verstuurd wordt is een versienummer — gateway/x.y.z of sdk/x.y.z —, nooit inhoud. Een machine met een gateway ouder dan het versiekanaal verschijnt als „niet gemeld”.",
+      "referenceHint": "De gemeten besparing omvat hier herhaalde verzoeken die via referentie zijn gemeten: elk wordt gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd."
     },
     "installLicensePanel": {
       "eyebrow": "Aan de slag",
@@ -584,7 +572,7 @@
       "metaTitle": "Afschrift · BiVelio Savings Layer",
       "eyebrow": "Schaduwmodus · hier wordt niets afgeschreven",
       "title": "Je afschrift, voordat de factuur bestaat",
-      "intro": "Het exacte document dat de toekomstige variabele factuur zal produceren: alleen gemeten besparing, met het schijventarief — zonder minimum, je betaalt alleen als je bespaart. Tijdens de kalibratie is het bedrag altijd {cero}.",
+      "intro": "Het exacte document dat de toekomstige variabele factuur zal produceren: alleen gemeten besparing, met het schijventarief en zonder minimum — zonder gemeten besparing geen commissie. De vergoeding per seat is een aparte, vaste maandelijkse post. Tijdens de kalibratie is de commissie altijd {cero}.",
       "periodo": "Periode {periodo}",
       "badgeCalibracion": "KALIBRATIEPERIODE — NUL BEDRAG",
       "badgeSombra": "SCHADUW — GEEN ECHTE AFSCHRIJVING",
@@ -607,12 +595,12 @@
       "sombraElision": "Schaduwspoor: elisie zou {usd} hebben bespaard over {requests} gesimuleerde verzoeken. Hypothetisch — telt nooit mee in de basis of de commissie.",
       "sombraElisionNegativa": "Schaduwspoor: elisie zou {usd} extra hebben gekost over {requests} gesimuleerde verzoeken. Daarom blijft het uit: alleen wat echt bespaart gaat aan.",
       "elisionProveedor": "Baan van het wissen door de provider: {requests} verzoeken waarbij onze instellingen de provider context lieten wissen. Een telling, geen besparing — telt nooit mee in de basis of de commissie.",
-      "referencia": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken die zijn bediend zonder je aanbieder aan te roepen. Elk wordt gewaardeerd met de teller die je aanbieder teruggaf voor het identieke verzoek dat al is uitgevoerd — die staat in het rapport van dat verzoek en in het gebruik van je aanbieder op die dag — tegen het tarief voor gecachte input, het laagste dat je aanbieder rekent voor het herhalen van een prompt; de output telt alleen bij deterministische sampling en als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok). Opgenomen in de basis.",
-      "referenciaExcluida": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken. Getoond als context — voorlopig blijft het buiten de basis en de commissie.",
+      "referencia": "Gemeten via referentie: {usd} over {requests, plural, one {# herhaald verzoek dat is afgehandeld} other {# herhaalde verzoeken die zijn afgehandeld}} zonder je aanbieder aan te roepen. Elk wordt gewaardeerd met de teller die je aanbieder teruggaf voor het identieke verzoek dat al is uitgevoerd — die staat in het rapport van dat verzoek en in het gebruik van je aanbieder op die dag — tegen het tarief voor gecachte invoer, het laagste dat je aanbieder rekent voor het herhalen van een prompt; de uitvoer telt alleen bij deterministische sampling en als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok). Opgenomen in de basis.",
+      "referenciaExcluida": "Gemeten via referentie: {usd} over {requests, plural, one {# herhaald verzoek} other {# herhaalde verzoeken}}. Getoond als context — voorlopig blijft het buiten de basis en de commissie.",
       "exportarReferencias": "Download de herhaalde verzoeken van deze periode, één rij per verzoek (CSV)",
       "exportarReferenciasPorDia": "Te veel herhaalde verzoeken voor één bestand — download deze periode per dag (CSV):",
       "parametros": "Parameters van het overzicht — prijscatalogus {version} · wisselkoers {fx}.",
-      "parametrosReferencia": "Regel voor herhaalde verzoeken ({regla}): het uitgevoerde verzoek moet byte voor byte identiek zijn, niet aangeraakt door de laag (een outputschema telt alleen als het precies zoals je het stuurde, in strikte modus, in de native parameter voor het antwoordformaat van je aanbieder is meegestuurd, zonder toevoeging aan de prompt) en hoogstens {dias} dagen oud; input tegen het tarief voor gecachte input van je aanbieder; output tegen {cuota} van zijn teller, nooit boven de outputlimiet van dit verzoek en alleen bij deterministische sampling, met een model uit onze prijscatalogus dat niet redeneert en die sampling respecteert, als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok).",
+      "parametrosReferencia": "Regel voor herhaalde verzoeken ({regla}): het uitgevoerde verzoek moet byte voor byte identiek zijn, niet aangeraakt door de laag (een uitvoerschema telt alleen als het precies zoals je het stuurde, in strikte modus, in de native parameter voor het antwoordformaat van je aanbieder is meegestuurd, zonder toevoeging aan de prompt) en hoogstens {dias} dagen oud; invoer tegen het tarief voor gecachte invoer van je aanbieder; uitvoer tegen {cuota} van de teller, nooit boven de uitvoerlimiet van dit verzoek en alleen bij deterministische sampling, met een model uit onze prijscatalogus dat niet redeneert en die sampling respecteert, als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok).",
       "mismaFacturaTitulo": "Dit document IS de toekomstige factuur.",
       "mismaFactura": "Het schaduwafschrift en het factureerbare worden door dezelfde machinerie berekend: wanneer de commissie actief wordt, bevat je eerste factuur alleen cijfers die je hier al zag.",
       "historialTitulo": "Afgesloten afschriften",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifieer je LLM-besparingen",
-    "metaDescription": "LLM-kostenlaag met licentie. Installeer hem vóór je provider en verlaag je factuur; de besparing is gemeten tegen de teller van de provider, met 95%-interval.",
+    "metaDescription": "Een SDK waarmee je app de LLM-aanbieder alleen betaalt wat ze nodig heeft, en een gateway die je coding-agent meet. Geteld met de eigen teller van je aanbieder: een vergoeding per seat, plus commissie alleen over gemeten besparing.",
     "hero": {
       "eyebrow": "Voor teams die LLM-API's per token betalen",
       "title": "Je LLM-factuur, onder controle.",
       "titleAccent": "Gemeten bij elke aanroep.",
-      "lede": "Een SDK die in je code wordt geïnstalleerd, alleen doorlaat wat betaald moet worden en per aanroep een SavingsReport teruggeeft: gemeten en geschat apart, geteld met de teller van je aanbieder. We publiceren alleen wat we hebben gemeten.",
-      "ctaRun": "Bekijk de metingen",
+      "lede": "Twee producten, één regel. De SDK wordt in je app geïnstalleerd en laat alleen door wat betaald moet worden; de gateway staat vóór je coding-agent en meet zijn uitgaven. Beide tellen met de eigen teller van je aanbieder en houden gemeten en geschat apart. We publiceren alleen wat we hebben gemeten.",
+      "ctaOffers": "SDK of gateway?",
       "ctaPricing": "Bekijk prijzen",
       "note": "In minuten geïnstalleerd. Je berichten gaan nooit via onze servers.",
       "proofTitle": "Gemeten tegen een echte provider",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "In gewone taal",
-      "title": "Wat doet Savings nu eigenlijk?",
-      "sub": "Vier ideeën, vier animaties van acht seconden. Dat is het hele product.",
+      "title": "Wat doet de SDK nu eigenlijk?",
+      "sub": "Vier ideeën, vier animaties van acht seconden.",
       "pasos": [
         {
           "title": "AI rekent per woord",
@@ -796,8 +784,8 @@
           "body": "We vragen geen blind vertrouwen. Elke besparing wordt gemeten met de officiële teller van de aanbieder — dezelfde waarmee hij je factureert — en komt op je bon. Wat niet naast de factuur te leggen valt, wordt nooit aangekondigd."
         },
         {
-          "title": "Wij verdienen alleen als jij bespaart",
-          "body": "Onze commissie komt uit de gemeten besparing, nooit uit jouw zak: het grootste deel van wat je bespaart blijft altijd bij jou. Een maand zonder besparing? Nul commissie."
+          "title": "Een vergoeding per seat en een deel van wat gemeten is",
+          "body": "Je betaalt elke maand een vaste vergoeding per seat, of je nu bespaart of niet. Daarbovenop komt onze commissie alleen uit besparing die met de teller van je aanbieder is gemeten — en het grootste deel van elke besparing blijft altijd bij jou. Een maand zonder gemeten besparing? Je betaalt de seats en nul commissie."
         }
       ],
       "nota": "De animaties illustreren het idee. De echte cijfers — gemeten tegen echte aanbieders — staan er direct onder."
@@ -866,7 +854,7 @@
       "aiPaso2": "Upload daarna de zip onder Customize → Skills: hij verschijnt met zijn eigen schakelaar, privé in je account."
     },
     "systems": {
-      "caption": "Waar je automatiseringen al leven. Roept het de API van je aanbieder aan met jouw sleutel, dan wordt het gemeten — de SDK omhult de aanroep; de gateway staat ervoor."
+      "caption": "Waar je automatiseringen al leven. Wat gemeten wordt, is de aanroep van de API van je aanbieder met jouw sleutel: in een Node.js-app omhult de SDK hem; vanuit andere code met de officiële SDK van OpenAI of Anthropic staat de gateway ervoor en legt hem vast voor een model met een lijstprijs."
     },
     "nvidia": {
       "kicker": "Bedrijf en ecosysteem",
@@ -875,10 +863,10 @@
       "cta": "Over het programma"
     },
     "gateway": {
-      "eyebrow": "Nieuw · codeterminals",
+      "eyebrow": "Gateway · codeterminals",
       "title": "Claude Code met een API-sleutel? Zie de echte uitgaven, token voor token.",
-      "body": "Eén commando zet een lokale meter vóór je terminal. Geen code aanpassen, niets configureren — en je prompts verlaten nooit je machine: alleen aantallen en kosten bereiken dit paneel.",
-      "note": "De gateway meet elk verzoek en draait, net als de SDK, alleen met een actieve licentie: hij haalt die op met je service-sleutel en verifieert de handtekening ervan op je eigen machine. Met een PRO-licentie past hij standaard ook één hefboom toe: hij verkort de cache-schrijf-TTL zolang je sessie warm blijft — dat verandert de prijs, nooit de inhoud die het model leest. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. Werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
+      "body": "Eén commando zet een lokale meter vóór je terminal, zonder je code aan te raken: je exporteert je service-sleutel en start je agent via bvsala. Je prompts verlaten nooit je machine — alleen aantallen en kosten bereiken je dashboard.",
+      "note": "De gateway meet met de teller van je aanbieder elk verzoek waarvan die het gebruik meldt (voor de modellen in onze prijscatalogus) en draait, net als de SDK, alleen met een actieve licentie: hij haalt die op met je service-sleutel en verifieert de handtekening ervan op je eigen machine. Met een PRO-licentie past hij op Anthropic-modellen standaard ook één hefboom toe: hij zet cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten zoals ze zijn. Dat verandert de prijs, nooit de inhoud die het model leest. De overige hefbomen blijven uit tot je ze inschakelt. De skill savings-mode is beschikbaar voor je limieten, met een effect dat nog gemeten moet worden. De gateway werkt ook met Codex CLI, Goose en Qwen Code — en bvsala doctor drukt de exacte configuratie voor de rest af.",
       "pythonNote": "Python of een andere taal? Richt de officiële SDK van OpenAI of Anthropic op de gateway en elk verzoek waarvan de aanbieder het gebruik rapporteert, wordt voor een model met een lijstprijs in dit paneel tegen die prijs vastgelegd; het log van de gateway meldt het wanneer een verzoek niet wordt gemeten. bvsala doctor toont de base-URL voor elke SDK. Vraag bij streaming met OpenAI het gebruik op in het verzoek (stream_options.include_usage).",
       "cta": "Zo werkt het →"
     },
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "Eén abonnement, geprijsd per seat",
-      "title": "Een kleine vergoeding per seat. En commissie alleen over wat je bespaart.",
-      "body": "Geen gratis plan en geen proefperiode: wat je vóór het betalen kunt controleren, zijn de publieke metingen op deze pagina. De vergoeding is per seat, in {currency}, en de commissie komt uit de gemeten besparing — nooit uit je zak.",
+      "title": "Een vergoeding per seat, altijd. Commissie alleen over gemeten besparing.",
+      "body": "Geen gratis plan en geen proefperiode: vóór het betalen kun je de publieke metingen controleren en de verificatie op je eigen gegevens loslaten, hier op deze pagina. De vergoeding per seat wordt elke maand gefactureerd, in {currency}, of je nu bespaart of niet. De commissie komt erbovenop, en alleen over besparing die met de teller van je aanbieder is gemeten — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd. Geschat telt nooit mee.",
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Meet het op je eigen verkeer",
-      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug: gemeten en geschat apart; alleen het gemetene telt voor de commissie. De licentie is wat je BV‑SALA in je app laat draaien.",
+      "ctaSub": "Eenmaal geïnstalleerd geeft elke aanroep zijn SavingsReport terug, gemeten en geschat apart. De vergoeding per seat is maandelijks en vast; de commissie komt alleen uit wat gemeten is. De licentie is wat je BV‑SALA laat draaien — de SDK in je app, de gateway in je terminal.",
       "ctaStart": "Aan de slag",
       "tagline": "Het besturingssysteem voor je bedrijf. Dit is <b>BV‑SALA</b>, BiVelio's aanbieder-neutrale LLM-kostenoptimalisator — elk gepubliceerd cijfer gemeten tegen de teller van de aanbieder; schattingen worden apart getoond en nooit gefactureerd.",
       "badge": "BV‑SALA · Savings Layer",
@@ -981,7 +969,7 @@
       "colExtra": "Ons extra",
       "colTeQuedas": "Jij houdt",
       "extraCero": "niets",
-      "notaGarantia": "We rekenen alleen over gemeten besparing — en je houdt er altijd {garantia} of meer van.",
+      "notaGarantia": "Commissie alleen over gemeten besparing — en je houdt er altijd {garantia} of meer van. Seats worden apart gefactureerd, elke maand.",
       "notaTramos": "In schijven, elk tegen zijn eigen tarief: {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
       "notaPrimerMesLead": "Je eerste kalendermaand met gebruik: alleen de seat.",
       "notaPrimerMes": "Het is je kalibratieperiode, hoe weinig er ook van die maand over is: we meten alles en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
@@ -1009,7 +997,7 @@
       "caption": "Niet elke zending draagt dezelfde opvulling: in deze run liep de gemeten besparing per scenario van {min} tot {max}. Ook de scenario's die niets besparen worden gepubliceerd."
     },
     "recibo": {
-      "title": "SavingsReport · gepubliceerde run",
+      "title": "SDK · SavingsReport · gepubliceerde run",
       "modelo": "model",
       "parejas": "gemeten paren",
       "calidad": "kwaliteit",
@@ -1046,6 +1034,62 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Twee producten",
+      "title": "Waar gaan je tokens heen: naar je app of naar je coding-agent?",
+      "sub": "Beide worden per seat gelicentieerd en beide tellen met de eigen teller van je aanbieder. Ze doen verschillend werk, dus elk doet zijn eigen belofte — en vandaag heeft er maar één een gepubliceerd besparingscijfer.",
+      "install": "Installatie",
+      "installMore": "Volledige installatie",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — voor JavaScript- en TypeScript-apps met een API-sleutel",
+        "who": "Voor Node.js-apps, in JavaScript of TypeScript, die een LLM-API aanroepen met je eigen sleutel en voor elke token betalen.",
+        "what": "De SDK omhult de aanroep in je code, stuurt de aanbieder alleen wat betaald moet worden en geeft bij elk antwoord een SavingsReport terug.",
+        "figureLabel": "Het cijfer dat we publiceren",
+        "figureNote": "Een ondergrens, geen voorspelling: wat je bespaart hangt af van je verkeer. Alleen besparing die met de teller van je aanbieder is gemeten, telt mee voor de commissie — ook bij herhaalde verzoeken die worden bediend zonder je aanbieder aan te roepen, elk gewaardeerd met de teller van het identieke verzoek dat al is uitgevoerd.",
+        "ctaMeasured": "Hoe we het hebben gemeten",
+        "ctaVerify": "Probeer één hefboom op je gegevens"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — voor coding-agents met een API-sleutel",
+        "who": "Voor wie Claude Code, Codex CLI of een andere coding-agent met een API-sleutel gebruikt.",
+        "what": "Eén commando zet een lokale meter vóór je terminal, zonder code aan te passen. De gateway telt elk verzoek waarvan je aanbieder het gebruik meldt, met de eigen teller van die aanbieder — voor de modellen in onze prijscatalogus — en zet het totaal in je dashboard, per dag en per model.",
+        "figureLabel": "Geen besparingscijfer gepubliceerd",
+        "figureNote": "We hebben geen gemeten besparing voor coding-agents gepubliceerd, dus we adverteren er ook geen. Met PRO zet de gateway op Anthropic-modellen cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is — zoals de eerste beurt van een sessie of een compactie — en laat de aaneengeschakelde beurten van een lopende sessie zoals ze zijn. Dat verandert de prijs, nooit wat het model leest, en alleen wat de teller van je aanbieder bevestigt, telt mee voor de commissie.",
+        "cta": "Gateway instellen"
+      },
+      "skill": {
+        "band": "Skill — voor coding-agents met een abonnement"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · één hefboom, op je gegevens, vóór je betaalt",
+      "title": "Plak je gegevens. Zie hoeveel tokens de SDK zou versturen.",
+      "sub": "Hier draait de echte formaatkiezer van de SDK, in je browser, op je gegevens. Niets verlaat deze pagina en je hebt geen account nodig.",
+      "tryExample": "Probeer een voorbeeld",
+      "sample_orders": "Winkelbestellingen",
+      "sample_tickets": "Supporttickets",
+      "sample_users": "Gebruikerslijst",
+      "pasteHint": "…of plak hier je eigen JSON. Niets verlaat je browser.",
+      "loading": "De optimizer en de exacte tokenizer worden geladen…",
+      "errBundle": "De optimizer kon niet worden geladen. Herlaad de pagina om het opnieuw te proberen.",
+      "errInvalidData": "Wachten op geldige JSON… {message}",
+      "errTokenizer": "De exacte tokenizer kan deze tekst niet tellen ({message}), dus tonen we geen cijfer.",
+      "tooBig": "Dat is meer dan {max} tekens. Plak een kleiner voorbeeld.",
+      "tagExact": "Exacte telling",
+      "tagApprox": "Bij benadering",
+      "yourData": "Je gegevens, als compacte JSON",
+      "optimized": "Zoals de SDK ze zou versturen",
+      "fewer": "−{pct} invoertokens op deze gegevens",
+      "trims": "Van {before} naar {after} tokens, instructies van het formaat inbegrepen.",
+      "alreadyOptimal": "Hier verslaat geen enkel formaat compacte JSON, dus de SDK zou ze ongewijzigd versturen. Deze hefboom maakt je gegevens nooit groter.",
+      "notComparable": "Met deze gegevens kunnen we de formaten niet met compacte JSON vergelijken, dus tonen we geen cijfer.",
+      "exactNote": "Geteld met {tokenizer}, de tokenizer die {model} gebruikt. We vergelijken met je gegevens als compacte JSON: als je ze vandaag ingesprongen verstuurt, is het echte verschil groter — en dat tellen we niet.",
+      "approxNote": "De exacte tokenizer is niet geladen, dus elke telling hier zou een benadering zijn — en besparingen bij benadering tonen we niet. Herlaad de pagina om het opnieuw te proberen.",
+      "scope": "Wat dit is, en wat niet: één hefboom — hoe gestructureerde gegevens in de prompt worden geschreven — op de invoertokens van deze gegevens. Hij geldt alleen voor gegevens die je als structuredData aan de SDK doorgeeft, niet voor JSON dat al in je berichten staat. Het is niet je factuur: vermeden aanroepen, de cache van je aanbieder en de uitvoer zitten er niet in, en veel verzoeken bevatten helemaal geen gestructureerde gegevens. Voor de hele SDK is het cijfer dat we publiceren dat in het meetgedeelte, met de toelichting erbij.",
+      "ctaInstall": "SDK installeren"
     }
   },
   "invitacion": {
@@ -1108,7 +1152,7 @@
     "caseClaudeSub": "claude.ai, gratis of betaald",
     "caseClaudeBody": "Vast abonnement: geen tokenfactuur om te meten — maar wel limieten (het venster van vijf uur en de weeklimiet). Daar is de savings-mode-skill precies voor: gratis, in een minuut geüpload naar claude.ai, gericht op de twee massa's die limiet verbranden. Het effect wordt gepubliceerd zodra het gemeten is — nooit eerder.",
     "caseCodeSub": "terminal, met API-sleutel",
-    "caseCodeBody": "Met een abonnement is het tarief vast — maar begrensd: dezelfde skill installeert met één commando en rekt dezelfde weeklimiet op. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: met je BiVelio-licentie start “bvsala claude” Claude Code via de lokale gateway en je uitgaven verschijnen in het paneel, token voor token, zonder één regel code aan te raken. Met PRO verkort hij bovendien de cache-schrijf-TTL zolang de sessie warm blijft: een besparing berekend op de tokentelling van je eigen provider, nooit op een schatting.",
+    "caseCodeBody": "Met een abonnement is het tarief vast — maar begrensd: dezelfde skill installeert met één commando en rekt dezelfde weeklimiet op. Met een API-sleutel is er een echte tokenfactuur — en de meter loopt al: met je BiVelio-licentie start “bvsala claude” Claude Code via de lokale gateway en je uitgaven verschijnen in het paneel, token voor token, zonder één regel code aan te raken. Met PRO zet hij op Anthropic-modellen bovendien cache-schrijfacties om van de TTL van een uur naar die van vijf minuten, alleen in beurten waarin een groot deel van de prompt nieuw is (de eerste beurt van een sessie, een compactie): een besparing berekend op de tokentelling van je eigen provider, nooit op een schatting.",
     "caseAppName": "Jouw applicatie",
     "caseAppSub": "jouw code + jouw API-sleutel",
     "caseAppBody": "Het geval waarvoor BV‑SALA bestaat. Je app roept de API aan met je sleutel, de aanbieder factureert elk token, en de laag wordt in drie stappen geïnstalleerd: pakket, licentie en het omhullen van de aanroep. Vanaf het eerste verzoek geeft hij een <b>SavingsReport</b> terug met de besparing, gesplitst in gemeten en geschat.",
