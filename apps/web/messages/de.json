@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ Seat / Monat",
       "proNote": "<b>PRO</b> — pro Seat abgerechnet. Oder <b>{yearly} / Seat / Jahr</b> (spare ~19%). Enterprise, mit gebündelten Funktionen, kommt später.",
-      "seatNote": "Ein Seat ist eine aktive <b>Maschine oder Dienstidentität</b>, keine Person — nur abgerechnet, wenn an 3+ Tagen im Monat aktiv. CI und kurzlebige Runner zählen nicht.",
+      "seatNote": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, keine Person. Du zahlst für die Seats, die dein Abo abdeckt; dein Dashboard zeigt, wie viele diesen Monat genutzt wurden (an mindestens {dias} Tagen aktiv; CI und kurzlebige Runner zählen nicht).",
       "features": [
         "Jede BV‑SALA-Optimierung, ohne Limit",
         "Ein Beleg pro Anfrage: SavingsReport mit vier Büchern, gemessen und geschätzt getrennt",
@@ -983,8 +983,8 @@
       "extraCero": "nichts",
       "notaGarantia": "Wir berechnen nur auf gemessene Ersparnis — und dir bleiben immer {garantia} oder mehr.",
       "notaTramos": "Gestuft, jede Stufe zu ihrem Satz: {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
-      "notaPrimerMesLead": "Dein erster Monat: nur der Sitz.",
-      "notaPrimerMes": "Wir messen alles, kalibrieren auf deiner echten Last, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
+      "notaPrimerMesLead": "Dein erster Kalendermonat mit Nutzung: nur der Sitz.",
+      "notaPrimerMes": "Es ist dein Kalibrierungszeitraum, egal wie wenig von diesem Monat übrig ist: Wir messen alles, und du siehst die exakte Abrechnung dessen, was es gekostet hätte — ohne dass es berechnet wird.",
       "version": "SDK-Katalogpreise, Version {fecha}. Eine Schätzung: deine Abrechnung nutzt deine gemessene Nutzung.",
       "cargando": "Preiskatalog wird geladen…",
       "badge": "Schätzung",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Wie sich das berechnet, was du uns zahlst",
-      "mes1": "<b>Dein erster Monat: nur {precioMes} pro Sitz.</b> Wir messen alles und berechnen keine Provision — zum Abschluss siehst du die exakte Abrechnung dessen, was es gekostet hätte.",
+      "mes1": "<b>Dein erster Kalendermonat mit Nutzung (UTC): nur die Gebühr pro Sitz.</b> Wir messen alles und berechnen keine Provision, egal wie wenig von diesem Monat übrig ist — zum Abschluss siehst du die exakte Abrechnung dessen, was es gekostet hätte.",
       "medido": "Danach Provision nur auf die <b>gemessene Ersparnis</b>: die, die du mit der Rechnung deines Anbieters abgleichen kannst. Geschätztes wird nie berechnet.",
       "garantia": "Und <b>dir bleiben immer {garantia} oder mehr</b> jedes gesparten Euros: die Provision existiert nur, wenn deine gemessene Ersparnis existiert.",
       "tramos": "<b>Gestuft, jede Stufe zu ihrem Satz</b> — {tramos}. Je mehr du sparst, desto niedriger unser Prozentsatz.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Veröffentlichte Preise",
     "title": "Preisbedingungen",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Die LICENSE verweist auf diese Seite als „Published Pricing“. Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
+    "lede": "Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
     "seat": {
       "title": "Die Gebühr pro Seat",
       "amount": "<b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
+      "cycle": "Die Gebühr pro Seat wird über Stripe für jeden monatlichen oder jährlichen Zyklus deines Abos abgerechnet, gezählt ab dem Tag, an dem es beginnt.",
       "paidAlways": "Die Gebühr pro Seat wird bezahlt, <b>ob die Software eine Ersparnis erzielt oder nicht</b>.",
       "vat": "Die Beträge verstehen sich ohne MwSt. Beim Bezahlen werden deine Rechnungsadresse und, optional, deine USt-IdNr. abgefragt; beide stehen auf deiner Rechnung.",
       "whatTitle": "Was ein Seat ist",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Abrechnung und Rechnung",
-      "body": "Abrechnungszeiträume sind Kalendermonate (UTC). Nach Ende eines Monats schließt BiVelio ihn ab: Die Abrechnung dieses Monats in deinem Dashboard wird mit der gemessenen Basis, den Stufen, dem Wechselkurs und der Version des Preiskatalogs versiegelt, und die Provision wird auf Grundlage dieser Abrechnung über Stripe in Rechnung gestellt."
+      "body": "Die Provision wird pro Kalendermonat (UTC) berechnet. Nach Ende eines Monats schließt BiVelio ihn ab: Die Abrechnung dieses Monats in deinem Dashboard wird mit der gemessenen Basis, den Stufen, dem Wechselkurs und der Version des Preiskatalogs versiegelt, und die Provision wird auf Grundlage dieser Abrechnung über Stripe in Rechnung gestellt, auf einer eigenen Rechnung, getrennt von der Gebühr pro Seat."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Datenschutz",
     "title": "Was deine Infrastruktur verlässt",
     "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
-    "lede": "Was die Software (das SDK und das lokale Gateway) an BiVelio sendet, was sie nie sendet und wie lange BiVelio es aufbewahrt. Die LICENSE verweist für diese Einzelheiten auf diese Seite.",
+    "lede": "Was die Software (das SDK und das lokale Gateway) an BiVelio sendet, was sie nie sendet und wie lange BiVelio es aufbewahrt.",
     "never": {
       "title": "Was nie an BiVelio gesendet wird",
       "content": "<b>Der Inhalt deiner Anfragen und Antworten</b>: Prompts, Systemanweisungen, Nachrichten, Tool-Definitionen, Tool-Argumente und -Ergebnisse, abgerufene Dokumente und generierte Antworten.",

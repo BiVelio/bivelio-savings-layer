@@ -65,6 +65,10 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <p className="terms-amount">
             {t.rich("seat.amount", { b, monthly: p.mensual, yearly: p.anual, currency: p.monedaCuota })}
           </p>
+          {/* El ciclo del asiento es el de la suscripción de Stripe (el checkout no
+              fija `billing_cycle_anchor`): empieza el día que empieza ella, y es
+              mensual o anual. El mes natural (UTC) es solo el de la comisión. */}
+          <p>{t("seat.cycle")}</p>
           <p>{t.rich("seat.paidAlways", { b })}</p>
           <p>{t("seat.vat")}</p>
           <h3>{t("seat.whatTitle")}</h3>

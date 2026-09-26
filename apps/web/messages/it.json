@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ postazione / mese",
       "proNote": "<b>PRO</b> — fatturato per postazione. Oppure <b>{yearly} / postazione / anno</b> (risparmi ~19%). Enterprise, con funzionalità in pacchetto, arriverà più avanti.",
-      "seatNote": "Una postazione è una <b>macchina o identità di servizio</b> attiva, non una persona — fatturata solo se attiva per 3+ giorni in un mese. CI e runner effimeri non contano.",
+      "seatNote": "Una postazione è una <b>macchina o identità di servizio</b>, non una persona. Paghi le postazioni coperte dal tuo abbonamento; la tua dashboard mostra quante sono state in uso questo mese (attive in almeno {dias} giorni; CI e runner effimeri non contano).",
       "features": [
         "Ogni ottimizzazione BV‑SALA, senza limiti",
         "Una ricevuta per richiesta: SavingsReport con quattro registri, misurato e stimato separati",
@@ -983,8 +983,8 @@
       "extraCero": "niente",
       "notaGarantia": "Addebitiamo solo sul risparmio misurato — e te ne tieni sempre il {garantia} o più.",
       "notaTramos": "A scaglioni, ciascuno alla sua aliquota: {tramos}. Più risparmi, più basso è il nostro percentuale.",
-      "notaPrimerMesLead": "Il tuo primo mese: solo il posto.",
-      "notaPrimerMes": "Misuriamo tutto, calibriamo sul tuo carico reale e vedrai l'estratto esatto di quanto sarebbe costato — senza addebitarlo.",
+      "notaPrimerMesLead": "Il tuo primo mese solare con utilizzo: solo il posto.",
+      "notaPrimerMes": "È il tuo periodo di calibrazione, per quanto poco ne resti: misuriamo tutto e vedrai l'estratto esatto di quanto sarebbe costato — senza addebitarlo.",
       "version": "Prezzi del catalogo dell'SDK, versione {fecha}. Una stima: il tuo estratto userà il tuo uso misurato.",
       "cargando": "Caricamento del catalogo prezzi…",
       "badge": "Stima",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Come si calcola quello che ci paghi",
-      "mes1": "<b>Il tuo primo mese: solo {precioMes} per posto.</b> Misuriamo tutto e non addebitiamo commissioni — alla chiusura vedrai l'estratto esatto di quanto sarebbe costato.",
+      "mes1": "<b>Il tuo primo mese solare con utilizzo (UTC): solo la quota per posto.</b> Misuriamo tutto e non addebitiamo commissioni, per quanto poco ne resti — alla chiusura vedrai l'estratto esatto di quanto sarebbe costato.",
       "medido": "Dopo, commissione solo sul <b>risparmio misurato</b>: quello che puoi riscontrare con la fattura del tuo provider. Lo stimato non si fattura mai.",
       "garantia": "E <b>ti tieni sempre il {garantia} o più</b> di ogni euro risparmiato: la commissione esiste solo quando esiste il tuo risparmio misurato.",
       "tramos": "<b>A scaglioni, ciascuno alla sua aliquota</b> — {tramos}. Più risparmi, più basso è il nostro percentuale.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Prezzi pubblicati",
     "title": "Condizioni di prezzo",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "La LICENSE rimanda a questa pagina come «Published Pricing». Ogni cifra che vedi qui viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "lede": "Ogni cifra che vedi qui viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
     "seat": {
       "title": "La quota per postazione",
       "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all'anno, in {currency}.",
+      "cycle": "La quota per postazione viene addebitata tramite Stripe per ogni ciclo mensile o annuale del tuo abbonamento, contato dal giorno in cui inizia.",
       "paidAlways": "La quota per postazione si paga <b>che il Software produca un risparmio o no</b>.",
       "vat": "Gli importi sono IVA esclusa. Il pagamento chiede il tuo indirizzo di fatturazione e, facoltativamente, la tua partita IVA; entrambi compaiono in fattura.",
       "whatTitle": "Che cos'è una postazione",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Estratto e fattura",
-      "body": "I periodi di fatturazione sono mesi solari (UTC). Alla fine di un mese, BiVelio lo chiude: l'estratto di quel mese nella tua dashboard viene sigillato con la base misurata, gli scaglioni, il tasso di cambio e la versione del catalogo prezzi, e la commissione viene fatturata a partire da quell'estratto tramite Stripe."
+      "body": "La commissione si calcola per mese solare (UTC). Alla fine di un mese, BiVelio lo chiude: l'estratto di quel mese nella tua dashboard viene sigillato con la base misurata, gli scaglioni, il tasso di cambio e la versione del catalogo prezzi, e la commissione viene fatturata a partire da quell'estratto tramite Stripe, in una fattura separata dalla quota per postazione."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privacy",
     "title": "Cosa esce dalla tua infrastruttura",
     "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
-    "lede": "Che cosa invia il Software (l'SDK e il gateway locale) a BiVelio, che cosa non invia mai e per quanto tempo BiVelio lo conserva. La LICENSE rimanda a questa pagina per questi dettagli.",
+    "lede": "Che cosa invia il Software (l'SDK e il gateway locale) a BiVelio, che cosa non invia mai e per quanto tempo BiVelio lo conserva.",
     "never": {
       "title": "Cosa non viene mai inviato a BiVelio",
       "content": "<b>Il contenuto delle tue richieste e risposte</b>: prompt, istruzioni di sistema, messaggi, definizioni degli strumenti, argomenti e risultati degli strumenti, documenti recuperati e risposte generate.",

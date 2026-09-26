@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ siège / mois",
       "proNote": "<b>PRO</b> — facturé par siège. Ou <b>{yearly} / siège / an</b> (économisez ~19%). Enterprise, avec des fonctionnalités groupées, arrivera plus tard.",
-      "seatNote": "Un siège est une <b>machine ou identité de service</b> active, pas une personne — facturé uniquement s'il est actif 3 jours ou plus dans un mois. Les exécuteurs CI et éphémères ne comptent pas.",
+      "seatNote": "Un siège est une <b>machine ou identité de service</b>, pas une personne. Vous payez les sièges couverts par votre abonnement ; votre tableau de bord indique combien ont été utilisés ce mois-ci (actifs au moins {dias} jours ; les exécuteurs CI et éphémères ne comptent pas).",
       "features": [
         "Chaque optimisation BV‑SALA, sans plafond",
         "Un reçu par requête : SavingsReport avec quatre registres, mesuré et estimé séparés",
@@ -983,8 +983,8 @@
       "extraCero": "rien",
       "notaGarantia": "Nous ne facturons que l'économie mesurée — et vous en gardez toujours {garantia} ou plus.",
       "notaTramos": "Par tranches, chacune à son taux : {tramos}. Plus vous économisez, plus notre pourcentage baisse.",
-      "notaPrimerMesLead": "Votre premier mois : le siège seulement.",
-      "notaPrimerMes": "Nous mesurons tout, calibrons sur votre charge réelle, et vous verrez le relevé exact de ce que cela aurait coûté — sans être facturé.",
+      "notaPrimerMesLead": "Votre premier mois civil avec usage : le siège seulement.",
+      "notaPrimerMes": "C'est votre période de calibrage, aussi peu qu'il reste de ce mois : nous mesurons tout, et vous verrez le relevé exact de ce que cela aurait coûté — sans être facturé.",
       "version": "Prix du catalogue du SDK, version {fecha}. Une estimation : votre relevé utilisera votre usage mesuré.",
       "cargando": "Chargement du catalogue de prix…",
       "badge": "Estimation",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Comment se calcule ce que vous nous payez",
-      "mes1": "<b>Votre premier mois : seulement {precioMes} par siège.</b> Nous mesurons tout et ne facturons aucune commission — à la clôture vous verrez le relevé exact de ce que cela aurait coûté.",
+      "mes1": "<b>Votre premier mois civil avec usage (UTC) : la redevance par siège seulement.</b> Nous mesurons tout et ne facturons aucune commission, aussi peu qu'il reste de ce mois — à la clôture vous verrez le relevé exact de ce que cela aurait coûté.",
       "medido": "Ensuite, commission uniquement sur l'<b>économie mesurée</b> : celle que vous pouvez rapprocher de la facture de votre fournisseur. L'estimé n'est jamais facturé.",
       "garantia": "Et <b>vous gardez toujours {garantia} ou plus</b> de chaque euro économisé : la commission n'existe que si votre économie mesurée existe.",
       "tramos": "<b>Par tranches, chacune à son taux</b> — {tramos}. Plus vous économisez, plus notre pourcentage baisse.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Tarifs publiés",
     "title": "Conditions tarifaires",
     "governs": "Cette page décrit le fonctionnement actuel du service ; la <license>LICENSE</license> et les <terms>Conditions de BiVelio</terms> prévalent.",
-    "lede": "La LICENSE renvoie à cette page sous le nom de « Published Pricing ». Chaque chiffre affiché ici est lu dans le code même qui vous facture : il change quand le prix change.",
+    "lede": "Chaque chiffre affiché ici est lu dans le code même qui vous facture : il change quand le prix change.",
     "seat": {
       "title": "La redevance par siège",
       "amount": "<b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
+      "cycle": "La redevance par siège est facturée via Stripe pour chaque cycle mensuel ou annuel de votre abonnement, compté à partir du jour où il commence.",
       "paidAlways": "La redevance par siège est due <b>que le Logiciel produise une économie ou non</b>.",
       "vat": "Les montants s'entendent hors TVA. Le paiement demande votre adresse de facturation et, en option, votre numéro de TVA ; les deux figurent sur votre facture.",
       "whatTitle": "Ce qu'est un siège",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Relevé et facture",
-      "body": "Les périodes de facturation sont des mois civils (UTC). À la fin d'un mois, BiVelio le clôture : le relevé de ce mois dans votre tableau de bord est scellé avec l'assiette mesurée, les tranches, le taux de change et la version du catalogue de prix, et la commission est facturée à partir de ce relevé via Stripe."
+      "body": "La commission est calculée par mois civil (UTC). À la fin d'un mois, BiVelio le clôture : le relevé de ce mois dans votre tableau de bord est scellé avec l'assiette mesurée, les tranches, le taux de change et la version du catalogue de prix, et la commission est facturée à partir de ce relevé via Stripe, sur une facture distincte de la redevance par siège."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Confidentialité",
     "title": "Ce qui sort de votre infrastructure",
     "governs": "Cette page décrit le fonctionnement actuel du service ; la <license>LICENSE</license> et les <terms>Conditions de BiVelio</terms> prévalent.",
-    "lede": "Ce que le Logiciel (le SDK et le gateway local) envoie à BiVelio, ce qu'il n'envoie jamais et combien de temps BiVelio le conserve. La LICENSE renvoie à cette page pour ces détails.",
+    "lede": "Ce que le Logiciel (le SDK et le gateway local) envoie à BiVelio, ce qu'il n'envoie jamais et combien de temps BiVelio le conserve.",
     "never": {
       "title": "Ce qui n'est jamais envoyé à BiVelio",
       "content": "<b>Le contenu de vos requêtes et réponses</b> : prompts, instructions système, messages, définitions d'outils, arguments et résultats d'outils, documents récupérés et réponses générées.",

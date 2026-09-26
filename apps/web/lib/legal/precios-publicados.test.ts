@@ -144,4 +144,59 @@ describe("⛔ el asiento que publica /pricing es el que cuenta el SQL", () => {
   it("el tope de asientos es el que aplica el checkout", () => {
     expect(leerApp("app/api/stripe/checkout/route.ts")).toMatch(/maximum: MAX_ASIENTOS/);
   });
+
+  it("el ciclo del asiento es el de la suscripción: el checkout no lo ancla a un día fijo (seat.cycle)", () => {
+    // /pricing dice que la cuota se cobra por cada ciclo mensual o anual de la
+    // suscripción, contado desde el día en que empieza. Eso es lo que hace
+    // Stripe mientras el checkout no fije `billing_cycle_anchor`; si alguien lo
+    // fija (p. ej. al día 1), seat.cycle deja de ser verdad en los doce idiomas.
+    expect(leerApp("app/api/stripe/checkout/route.ts")).not.toMatch(/billing_cycle_anchor/);
+  });
+
+  it("la comisión va en su propia factura, aparte de la cuota (statement.body)", () => {
+    const facturar = leerApp("app/api/cron/facturar-extractos/route.ts");
+    expect(facturar).toMatch(/stripe\.invoices\.create\(/);
+    expect(facturar).toMatch(/pending_invoice_items_behavior: "exclude"/);
+  });
+});
+
+describe("⛔ las páginas no afirman qué dice la LICENSE que enlazan", () => {
+  /**
+   * `LegalGoverns.LICENSE_URL` enlaza la LICENSE de la ÚLTIMA versión publicada
+   * en npm, y esa puede ser anterior a estas páginas: la web se despliega al
+   * fusionar en main y la LICENSE nueva llega con la release siguiente. El
+   * 2026-09-26 servía la de la 0.4.24, sin §6 de tarifas y sin remitir a
+   * /pricing ni a /privacy, mientras las dos páginas decían «The LICENSE refers
+   * to this page…». Regla: la única frase que nombra la LICENSE es `governs`
+   * («…the LICENSE and the BiVelio Terms govern»), que es verdad con cualquier
+   * versión. «LICENSE» no se traduce en ningún idioma, así que la verja vale
+   * para los doce.
+   */
+  const LOCALES = ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id", "vi"];
+
+  function hojas(o: unknown, p = ""): [string, string][] {
+    if (typeof o === "string") return [[p, o]];
+    if (o !== null && typeof o === "object") {
+      return Object.entries(o as Record<string, unknown>).flatMap(([k, v]) => hojas(v, p ? `${p}.${k}` : k));
+    }
+    return [];
+  }
+
+  for (const loc of LOCALES) {
+    it(`${loc}: en pricingPage y privacyPage solo «governs» nombra la LICENSE`, () => {
+      const cat = JSON.parse(leerApp(`messages/${loc}.json`)) as Record<string, unknown>;
+      for (const ns of ["pricingPage", "privacyPage"]) {
+        const conLicencia = hojas(cat[ns], ns)
+          .filter(([, v]) => v.includes("LICENSE"))
+          .map(([k]) => k);
+        expect(conLicencia, `${loc}: ${ns}`).toEqual([`${ns}.governs`]);
+      }
+    });
+  }
+
+  it("las dos páginas pintan `governs` con el enlace a la LICENSE", () => {
+    for (const ruta of ["app/[locale]/pricing/page.tsx", "app/[locale]/privacy/page.tsx"]) {
+      expect(leerApp(ruta)).toContain('t.rich("governs", etiquetasQueRigen(locale))');
+    }
+  });
 });

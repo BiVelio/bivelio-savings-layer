@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
-      "seatNote": "Een seat is één actieve <b>machine- of service-identiteit</b>, geen persoon — alleen gefactureerd bij activiteit op 3+ dagen in een maand. CI en kortstondige runners tellen niet mee.",
+      "seatNote": "Een seat is één <b>machine- of service-identiteit</b>, geen persoon. Je betaalt voor de seats die je abonnement dekt; je dashboard toont hoeveel er deze maand in gebruik waren (actief op minstens {dias} dagen; CI en kortstondige runners tellen niet mee).",
       "features": [
         "Elke BV‑SALA-optimalisatie, ongelimiteerd",
         "Een bon per verzoek: SavingsReport met vier grootboeken, gemeten en geschat apart",
@@ -983,8 +983,8 @@
       "extraCero": "niets",
       "notaGarantia": "We rekenen alleen over gemeten besparing — en je houdt er altijd {garantia} of meer van.",
       "notaTramos": "In schijven, elk tegen zijn eigen tarief: {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
-      "notaPrimerMesLead": "Je eerste maand: alleen de seat.",
-      "notaPrimerMes": "We meten alles, kalibreren op je echte belasting, en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
+      "notaPrimerMesLead": "Je eerste kalendermaand met gebruik: alleen de seat.",
+      "notaPrimerMes": "Het is je kalibratieperiode, hoe weinig er ook van die maand over is: we meten alles en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
       "version": "SDK-catalogusprijzen, versie {fecha}. Een schatting: je afschrift gebruikt je gemeten gebruik.",
       "cargando": "Prijscatalogus laden…",
       "badge": "Schatting",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Hoe wat je ons betaalt wordt berekend",
-      "mes1": "<b>Je eerste maand: alleen {precioMes} per seat.</b> We meten alles en rekenen geen commissie — bij afsluiting zie je het exacte afschrift van wat het gekost zou hebben.",
+      "mes1": "<b>Je eerste kalendermaand met gebruik (UTC): alleen de vergoeding per seat.</b> We meten alles en rekenen geen commissie, hoe weinig er ook van die maand over is — bij afsluiting zie je het exacte afschrift van wat het gekost zou hebben.",
       "medido": "Daarna commissie alleen over de <b>gemeten besparing</b>: die je kunt afstemmen met de factuur van je provider. Geschat wordt nooit gefactureerd.",
       "garantia": "En <b>je houdt altijd {garantia} of meer</b> van elke bespaarde euro: de commissie bestaat alleen als jouw gemeten besparing bestaat.",
       "tramos": "<b>In schijven, elk tegen zijn eigen tarief</b> — {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Gepubliceerde prijzen",
     "title": "Prijsvoorwaarden",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "De LICENSE verwijst naar deze pagina als de ‘Published Pricing’. Elk getal hier wordt gelezen uit dezelfde code die jou factureert, dus het verandert wanneer de prijs verandert.",
+    "lede": "Elk getal hier wordt gelezen uit dezelfde code die jou factureert, dus het verandert wanneer de prijs verandert.",
     "seat": {
       "title": "De vergoeding per seat",
       "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+      "cycle": "De vergoeding per seat wordt via Stripe gefactureerd voor elke maandelijkse of jaarlijkse cyclus van je abonnement, gerekend vanaf de dag waarop het begint.",
       "paidAlways": "De vergoeding per seat wordt betaald <b>of de Software nu besparing oplevert of niet</b>.",
       "vat": "De bedragen zijn exclusief btw. Bij het afrekenen wordt om je factuuradres en, optioneel, je btw-nummer gevraagd; beide staan op je factuur.",
       "whatTitle": "Wat een seat is",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Afschrift en factuur",
-      "body": "Factuurperiodes zijn kalendermaanden (UTC). Na afloop van een maand sluit BiVelio die af: het afschrift van die maand in je dashboard wordt verzegeld met de gemeten grondslag, de schijven, de wisselkoers en de versie van de prijscatalogus, en de commissie wordt op basis van dat afschrift via Stripe gefactureerd."
+      "body": "De commissie wordt per kalendermaand (UTC) berekend. Na afloop van een maand sluit BiVelio die af: het afschrift van die maand in je dashboard wordt verzegeld met de gemeten grondslag, de schijven, de wisselkoers en de versie van de prijscatalogus, en de commissie wordt op basis van dat afschrift via Stripe gefactureerd, op een aparte factuur, los van de vergoeding per seat."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privacy",
     "title": "Wat je infrastructuur verlaat",
     "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
-    "lede": "Wat de Software (de SDK en de lokale gateway) naar BiVelio stuurt, wat ze nooit stuurt en hoe lang BiVelio het bewaart. De LICENSE verwijst voor deze details naar deze pagina.",
+    "lede": "Wat de Software (de SDK en de lokale gateway) naar BiVelio stuurt, wat ze nooit stuurt en hoe lang BiVelio het bewaart.",
     "never": {
       "title": "Wat nooit naar BiVelio gaat",
       "content": "<b>De inhoud van je verzoeken en antwoorden</b>: prompts, systeeminstructies, berichten, tooldefinities, toolargumenten en -resultaten, opgehaalde documenten en gegenereerde antwoorden.",

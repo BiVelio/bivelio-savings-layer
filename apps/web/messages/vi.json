@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ ghế / tháng",
       "proNote": "<b>PRO</b> — tính phí theo ghế. Hoặc <b>{yearly} / ghế / năm</b> (tiết kiệm ~19%). Enterprise, với các tính năng đóng gói, sẽ đến sau.",
-      "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> đang hoạt động, không phải một người — chỉ tính phí nếu hoạt động từ 3 ngày trở lên trong một tháng. CI và các trình chạy tạm thời không được tính.",
+      "seatNote": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b>, không phải một người. Bạn trả tiền cho số ghế mà gói đăng ký bao gồm; bảng điều khiển cho biết có bao nhiêu ghế được dùng trong tháng này (hoạt động ít nhất {dias} ngày; CI và các trình chạy tạm thời không được tính).",
       "features": [
         "Mọi tối ưu hóa của BV‑SALA, không giới hạn",
         "Biên lai cho mỗi yêu cầu: SavingsReport với bốn sổ cái, đo được và ước tính tách riêng",
@@ -983,8 +983,8 @@
       "extraCero": "không gì cả",
       "notaGarantia": "Chúng tôi chỉ tính phí trên khoản tiết kiệm đo được — và bạn luôn giữ lại {garantia} trở lên.",
       "notaTramos": "Theo bậc, mỗi bậc theo mức riêng: {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
-      "notaPrimerMesLead": "Tháng đầu của bạn: chỉ phí chỗ.",
-      "notaPrimerMes": "Chúng tôi đo tất cả, hiệu chuẩn theo tải thực của bạn, và bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả — mà không bị thu.",
+      "notaPrimerMesLead": "Tháng dương lịch đầu tiên có sử dụng: chỉ phí chỗ.",
+      "notaPrimerMes": "Đó là kỳ hiệu chỉnh của bạn, dù tháng đó chỉ còn lại ít ngày: chúng tôi đo tất cả và bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả — mà không bị thu.",
       "version": "Giá danh mục SDK, phiên bản {fecha}. Ước tính: sao kê của bạn sẽ dùng mức dùng đã đo.",
       "cargando": "Đang tải danh mục giá…",
       "badge": "Ước tính",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Cách tính số tiền bạn trả cho chúng tôi",
-      "mes1": "<b>Tháng đầu của bạn: chỉ {precioMes} mỗi chỗ.</b> Chúng tôi đo tất cả và không thu hoa hồng — khi chốt kỳ bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả.",
+      "mes1": "<b>Tháng dương lịch đầu tiên có sử dụng (UTC): chỉ phí chỗ.</b> Chúng tôi đo tất cả và không thu hoa hồng, dù tháng đó chỉ còn lại ít ngày — khi chốt kỳ bạn sẽ thấy sao kê chính xác của số tiền lẽ ra phải trả.",
       "medido": "Sau đó, hoa hồng chỉ trên <b>khoản tiết kiệm đã đo</b>: khoản bạn có thể đối chiếu với hóa đơn nhà cung cấp. Ước tính không bao giờ bị tính phí.",
       "garantia": "Và <b>bạn luôn giữ lại {garantia} trở lên</b> của mỗi euro tiết kiệm được: hoa hồng chỉ tồn tại khi khoản tiết kiệm đo được của bạn tồn tại.",
       "tramos": "<b>Theo bậc, mỗi bậc theo mức riêng</b> — {tramos}. Bạn tiết kiệm càng nhiều, phần trăm của chúng tôi càng thấp.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Bảng giá công bố",
     "title": "Điều khoản giá",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "LICENSE gọi trang này là “Published Pricing”. Mọi con số ở đây đều được đọc từ chính đoạn mã tính phí bạn, nên chúng thay đổi khi giá thay đổi.",
+    "lede": "Mọi con số ở đây đều được đọc từ chính đoạn mã tính phí bạn, nên chúng thay đổi khi giá thay đổi.",
     "seat": {
       "title": "Phí theo ghế",
       "amount": "<b>{monthly}</b> mỗi ghế mỗi tháng, hoặc <b>{yearly}</b> mỗi ghế mỗi năm, bằng {currency}.",
+      "cycle": "Phí theo ghế được tính qua Stripe cho mỗi chu kỳ tháng hoặc năm của gói đăng ký, tính từ ngày gói đăng ký của bạn bắt đầu.",
       "paidAlways": "Phí theo ghế được thanh toán <b>dù Phần mềm có tạo ra khoản tiết kiệm nào hay không</b>.",
       "vat": "Số tiền chưa bao gồm VAT. Khi thanh toán, bạn được yêu cầu nhập địa chỉ thanh toán và, tùy chọn, mã số VAT; cả hai đều được in trên hóa đơn.",
       "whatTitle": "Ghế là gì",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Sao kê và hóa đơn",
-      "body": "Kỳ thanh toán là các tháng dương lịch (UTC). Khi một tháng kết thúc, BiVelio chốt tháng đó: sao kê của tháng trong bảng điều khiển được niêm phong cùng cơ sở đã đo, các bậc, tỷ giá và phiên bản danh mục giá, và hoa hồng được xuất hóa đơn dựa trên sao kê đó qua Stripe."
+      "body": "Hoa hồng được tính theo tháng dương lịch (UTC). Khi một tháng kết thúc, BiVelio chốt tháng đó: sao kê của tháng trong bảng điều khiển được niêm phong cùng cơ sở đã đo, các bậc, tỷ giá và phiên bản danh mục giá, và hoa hồng được xuất hóa đơn dựa trên sao kê đó qua Stripe, trên một hóa đơn riêng, tách khỏi phí theo ghế."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Quyền riêng tư",
     "title": "Những gì rời khỏi hạ tầng của bạn",
     "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
-    "lede": "Những gì Phần mềm (SDK và gateway cục bộ) gửi tới BiVelio, những gì nó không bao giờ gửi, và BiVelio lưu giữ chúng bao lâu. LICENSE dẫn chiếu tới trang này cho các chi tiết đó.",
+    "lede": "Những gì Phần mềm (SDK và gateway cục bộ) gửi tới BiVelio, những gì nó không bao giờ gửi, và BiVelio lưu giữ chúng bao lâu.",
     "never": {
       "title": "Không bao giờ gửi tới BiVelio",
       "content": "<b>Nội dung các yêu cầu và phản hồi của bạn</b>: prompt, chỉ dẫn hệ thống, tin nhắn, định nghĩa công cụ, đối số và kết quả công cụ, tài liệu được truy xuất, và câu trả lời được tạo ra.",

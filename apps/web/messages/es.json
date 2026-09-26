@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
-      "seatNote": "Un asiento es una <b>máquina o identidad de servicio</b> activa, no una persona — facturado solo si está activo 3 o más días en un mes. CI y ejecutores efímeros no cuentan.",
+      "seatNote": "Un asiento es una <b>máquina o identidad de servicio</b>, no una persona. Pagas los asientos que cubre tu suscripción; tu panel muestra cuántos estuvieron en uso este mes (activos al menos {dias} días; CI y ejecutores efímeros no cuentan).",
       "features": [
         "Cada optimización de BV‑SALA, sin límite",
         "Recibo por petición: SavingsReport con cuatro libros contables, medido y estimado por separado",
@@ -983,8 +983,8 @@
       "extraCero": "nada",
       "notaGarantia": "Solo cobramos sobre ahorro medido — y siempre te quedas con el {garantia} o más.",
       "notaTramos": "Por tramos, y cada tramo a su tipo: {tramos}. Cuanto más ahorras, menor es nuestro porcentaje.",
-      "notaPrimerMesLead": "Tu primer mes: solo el asiento.",
-      "notaPrimerMes": "Lo medimos todo, calibramos con tu carga real y verás el extracto exacto de lo que habría costado — sin cobrarlo.",
+      "notaPrimerMesLead": "Tu primer mes natural con uso: solo el asiento.",
+      "notaPrimerMes": "Es tu período de calibración, aunque quede poco de ese mes: lo medimos todo y verás el extracto exacto de lo que habría costado — sin cobrarlo.",
       "version": "Precios del catálogo del SDK, versión {fecha}. Estimación: tu extracto usará tu uso medido.",
       "cargando": "Cargando el catálogo de precios…",
       "badge": "Estimación",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Cómo se calcula lo que nos pagas",
-      "mes1": "<b>Tu primer mes: solo {precioMes} por asiento.</b> Lo medimos todo y no cobramos comisión — al cierre verás el extracto exacto de lo que habría costado.",
+      "mes1": "<b>Tu primer mes natural con uso (UTC): solo la cuota por asiento.</b> Lo medimos todo y no cobramos comisión, aunque quede poco de ese mes — al cierre verás el extracto exacto de lo que habría costado.",
       "medido": "Después, comisión solo sobre el <b>ahorro medido</b>: el que puedes contrastar con la factura de tu proveedor. Lo estimado nunca se factura.",
       "garantia": "Y <b>siempre te quedas con el {garantia} o más</b> de cada euro ahorrado: la comisión solo existe cuando existe tu ahorro medido.",
       "tramos": "<b>Por tramos, y cada tramo a su tipo</b> — {tramos}. Cuanto más ahorras, menor es nuestro porcentaje.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Precios publicados",
     "title": "Términos de precio",
     "governs": "Esta página describe cómo funciona el servicio hoy; rigen la <license>LICENSE</license> y los <terms>Términos de BiVelio</terms>.",
-    "lede": "La LICENSE remite a esta página como la «Published Pricing». Cada cifra que ves aquí se lee del mismo código que te cobra, así que cambia cuando cambia el precio.",
+    "lede": "Cada cifra que ves aquí se lee del mismo código que te cobra, así que cambia cuando cambia el precio.",
     "seat": {
       "title": "La cuota por asiento",
       "amount": "<b>{monthly}</b> por asiento y mes, o <b>{yearly}</b> por asiento y año, en {currency}.",
+      "cycle": "La cuota por asiento se cobra a través de Stripe por cada ciclo mensual o anual de tu suscripción, contado desde el día en que empieza.",
       "paidAlways": "La cuota por asiento se paga <b>haya ahorro o no</b>.",
       "vat": "Los importes no incluyen IVA. El pago pide tu dirección de facturación y, si quieres, tu NIF-IVA; los dos aparecen en tu factura.",
       "whatTitle": "Qué es un asiento",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Extracto y factura",
-      "body": "Los períodos de facturación son meses naturales (UTC). Cuando termina un mes, BiVelio lo cierra: el extracto de ese mes en tu panel queda sellado con la base medida, los tramos, el tipo de cambio y la versión del catálogo de precios, y la comisión se factura a partir de ese extracto a través de Stripe."
+      "body": "La comisión se calcula por mes natural (UTC). Cuando termina un mes, BiVelio lo cierra: el extracto de ese mes en tu panel queda sellado con la base medida, los tramos, el tipo de cambio y la versión del catálogo de precios, y la comisión se factura a partir de ese extracto a través de Stripe, en una factura aparte de la cuota por asiento."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privacidad",
     "title": "Qué sale de tu infraestructura",
     "governs": "Esta página describe cómo funciona el servicio hoy; rigen la <license>LICENSE</license> y los <terms>Términos de BiVelio</terms>.",
-    "lede": "Qué envía el Software (el SDK y el gateway local) a BiVelio, qué no envía nunca y cuánto tiempo lo guarda BiVelio. La LICENSE remite a esta página para estos detalles.",
+    "lede": "Qué envía el Software (el SDK y el gateway local) a BiVelio, qué no envía nunca y cuánto tiempo lo guarda BiVelio.",
     "never": {
       "title": "Lo que nunca se envía a BiVelio",
       "content": "<b>El contenido de tus peticiones y respuestas</b>: prompts, instrucciones de sistema, mensajes, definiciones de herramientas, argumentos y resultados de herramientas, documentos recuperados y respuestas generadas.",

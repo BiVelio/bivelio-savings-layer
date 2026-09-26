@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ seient / mes",
       "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
-      "seatNote": "Un seient és una <b>màquina o identitat de servei</b> activa, no una persona — facturat només si està actiu 3 dies o més en un mes. La CI i els executors efímers no compten.",
+      "seatNote": "Un seient és una <b>màquina o identitat de servei</b>, no una persona. Pagues els seients que cobreix la teva subscripció; el teu tauler mostra quants n'hi ha hagut en ús aquest mes (actius com a mínim {dias} dies; la CI i els executors efímers no compten).",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",
         "Rebut per petició: SavingsReport amb quatre llibres comptables, mesurat i estimat per separat",
@@ -983,8 +983,8 @@
       "extraCero": "res",
       "notaGarantia": "Només cobrem sobre estalvi mesurat — i sempre et quedes amb el {garantia} o més.",
       "notaTramos": "Per trams, i cada tram al seu tipus: {tramos}. Com més estalvies, menor és el nostre percentatge.",
-      "notaPrimerMesLead": "El teu primer mes: només el seient.",
-      "notaPrimerMes": "Ho mesurem tot, calibrem amb la teva càrrega real i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
+      "notaPrimerMesLead": "El teu primer mes natural amb ús: només el seient.",
+      "notaPrimerMes": "És el teu període de calibratge, encara que en quedi poc: ho mesurem tot i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
       "version": "Preus del catàleg de l'SDK, versió {fecha}. Estimació: el teu extracte usarà el teu ús mesurat.",
       "cargando": "Carregant el catàleg de preus…",
       "badge": "Estimació",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Com es calcula el que ens pagues",
-      "mes1": "<b>El teu primer mes: només {precioMes} per seient.</b> Ho mesurem tot i no cobrem comissió — al tancament veuràs l'extracte exacte del que hauria costat.",
+      "mes1": "<b>El teu primer mes natural amb ús (UTC): només la quota per seient.</b> Ho mesurem tot i no cobrem comissió, encara que en quedi poc — al tancament veuràs l'extracte exacte del que hauria costat.",
       "medido": "Després, comissió només sobre l'<b>estalvi mesurat</b>: el que pots contrastar amb la factura del teu proveïdor. L'estimat mai no es factura.",
       "garantia": "I <b>sempre et quedes amb el {garantia} o més</b> de cada euro estalviat: la comissió només existeix quan existeix el teu estalvi mesurat.",
       "tramos": "<b>Per trams, i cada tram al seu tipus</b> — {tramos}. Com més estalvies, menor és el nostre percentatge.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Preus publicats",
     "title": "Termes de preu",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "La LICENSE remet a aquesta pàgina com a «Published Pricing». Cada xifra que hi veus es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "lede": "Cada xifra que hi veus es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
     "seat": {
       "title": "La quota per seient",
       "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+      "cycle": "La quota per seient es cobra a través d'Stripe per cada cicle mensual o anual de la teva subscripció, comptat des del dia que comença.",
       "paidAlways": "La quota per seient es paga <b>tant si hi ha estalvi com si no</b>.",
       "vat": "Els imports no inclouen l'IVA. El pagament demana la teva adreça de facturació i, si vols, el teu NIF-IVA; tots dos surten a la factura.",
       "whatTitle": "Què és un seient",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Extracte i factura",
-      "body": "Els períodes de facturació són mesos naturals (UTC). Quan acaba un mes, BiVelio el tanca: l'extracte d'aquell mes al teu tauler queda segellat amb la base mesurada, els trams, el tipus de canvi i la versió del catàleg de preus, i la comissió es factura a partir d'aquell extracte a través d'Stripe."
+      "body": "La comissió es calcula per mes natural (UTC). Quan acaba un mes, BiVelio el tanca: l'extracte d'aquell mes al teu tauler queda segellat amb la base mesurada, els trams, el tipus de canvi i la versió del catàleg de preus, i la comissió es factura a partir d'aquell extracte a través d'Stripe, en una factura a banda de la quota per seient."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privadesa",
     "title": "Què surt de la teva infraestructura",
     "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
-    "lede": "Què envia el Software (l'SDK i el gateway local) a BiVelio, què no envia mai i quant de temps ho guarda BiVelio. La LICENSE remet a aquesta pàgina per a aquests detalls.",
+    "lede": "Què envia el Software (l'SDK i el gateway local) a BiVelio, què no envia mai i quant de temps ho guarda BiVelio.",
     "never": {
       "title": "El que no s'envia mai a BiVelio",
       "content": "<b>El contingut de les teves peticions i respostes</b>: prompts, instruccions de sistema, missatges, definicions d'eines, arguments i resultats d'eines, documents recuperats i respostes generades.",

@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
-      "seatNote": "Stanowisko to jedna aktywna <b>maszyna lub tożsamość usługi</b>, nie osoba — rozliczane tylko wtedy, gdy jest aktywne przez 3+ dni w miesiącu. CI i efemeryczne runnery się nie liczą.",
+      "seatNote": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, nie osoba. Płacisz za stanowiska objęte subskrypcją; Twój panel pokazuje, ile z nich było używanych w tym miesiącu (aktywnych przez co najmniej {dias} dni; CI i efemeryczne runnery się nie liczą).",
       "features": [
         "Każda optymalizacja BV‑SALA, bez limitu",
         "Paragon na każde zapytanie: SavingsReport z czterema księgami, zmierzone i szacowane osobno",
@@ -983,8 +983,8 @@
       "extraCero": "nic",
       "notaGarantia": "Pobieramy prowizję tylko od zmierzonych oszczędności — i zawsze zatrzymujesz {garantia} lub więcej.",
       "notaTramos": "Progowo, każdy próg według własnej stawki: {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
-      "notaPrimerMesLead": "Twój pierwszy miesiąc: tylko miejsce.",
-      "notaPrimerMes": "Mierzymy wszystko, kalibrujemy na Twoim rzeczywistym obciążeniu, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
+      "notaPrimerMesLead": "Twój pierwszy miesiąc kalendarzowy z użyciem: tylko miejsce.",
+      "notaPrimerMes": "To Twój okres kalibracji, niezależnie od tego, ile z tego miesiąca zostało: mierzymy wszystko, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
       "version": "Ceny katalogu SDK, wersja {fecha}. Szacunek: Twój wyciąg użyje Twojego zmierzonego użycia.",
       "cargando": "Ładowanie katalogu cen…",
       "badge": "Szacunek",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Jak liczy się to, co nam płacisz",
-      "mes1": "<b>Twój pierwszy miesiąc: tylko {precioMes} za miejsce.</b> Mierzymy wszystko i nie pobieramy prowizji — na zamknięciu zobaczysz dokładny wyciąg tego, ile by to kosztowało.",
+      "mes1": "<b>Twój pierwszy miesiąc kalendarzowy z użyciem (UTC): tylko opłata za miejsce.</b> Mierzymy wszystko i nie pobieramy prowizji, niezależnie od tego, ile z tego miesiąca zostało — na zamknięciu zobaczysz dokładny wyciąg tego, ile by to kosztowało.",
       "medido": "Potem prowizja tylko od <b>zmierzonych oszczędności</b>: takich, które możesz uzgodnić z fakturą dostawcy. Szacowane nigdy nie są rozliczane.",
       "garantia": "I <b>zawsze zatrzymujesz {garantia} lub więcej</b> z każdego zaoszczędzonego euro: prowizja istnieje tylko wtedy, gdy istnieją Twoje zmierzone oszczędności.",
       "tramos": "<b>Progowo, każdy próg według własnej stawki</b> — {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Opublikowany cennik",
     "title": "Warunki cenowe",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "LICENSE odsyła do tej strony jako do „Published Pricing”. Każda liczba na niej jest odczytywana z tego samego kodu, który wystawia Ci rachunek, więc zmienia się razem z ceną.",
+    "lede": "Każda liczba na tej stronie jest odczytywana z tego samego kodu, który wystawia Ci rachunek, więc zmienia się razem z ceną.",
     "seat": {
       "title": "Opłata za stanowisko",
       "amount": "<b>{monthly}</b> za stanowisko miesięcznie albo <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
+      "cycle": "Opłata za stanowisko jest pobierana przez Stripe za każdy miesięczny lub roczny cykl Twojej subskrypcji, liczony od dnia jej rozpoczęcia.",
       "paidAlways": "Opłatę za stanowisko płaci się <b>niezależnie od tego, czy Oprogramowanie przynosi oszczędności</b>.",
       "vat": "Kwoty nie zawierają VAT. Przy płatności podajesz adres rozliczeniowy i opcjonalnie numer VAT; oba widnieją na fakturze.",
       "whatTitle": "Czym jest stanowisko",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Wyciąg i faktura",
-      "body": "Okresy rozliczeniowe to miesiące kalendarzowe (UTC). Po zakończeniu miesiąca BiVelio go zamyka: wyciąg za ten miesiąc w Twoim panelu zostaje zapieczętowany wraz ze zmierzoną podstawą, progami, kursem wymiany i wersją katalogu cen, a prowizja jest fakturowana na podstawie tego wyciągu przez Stripe."
+      "body": "Prowizja jest obliczana za każdy miesiąc kalendarzowy (UTC). Po zakończeniu miesiąca BiVelio go zamyka: wyciąg za ten miesiąc w Twoim panelu zostaje zapieczętowany wraz ze zmierzoną podstawą, progami, kursem wymiany i wersją katalogu cen, a prowizja jest fakturowana na podstawie tego wyciągu przez Stripe, na fakturze odrębnej od opłaty za stanowisko."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Prywatność",
     "title": "Co opuszcza Twoją infrastrukturę",
     "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
-    "lede": "Co Oprogramowanie (SDK i lokalny gateway) wysyła do BiVelio, czego nigdy nie wysyła i jak długo BiVelio to przechowuje. LICENSE odsyła do tej strony po te szczegóły.",
+    "lede": "Co Oprogramowanie (SDK i lokalny gateway) wysyła do BiVelio, czego nigdy nie wysyła i jak długo BiVelio to przechowuje.",
     "never": {
       "title": "Czego nigdy nie wysyła się do BiVelio",
       "content": "<b>Treści Twoich żądań i odpowiedzi</b>: promptów, instrukcji systemowych, wiadomości, definicji narzędzi, argumentów i wyników narzędzi, pobranych dokumentów ani wygenerowanych odpowiedzi.",

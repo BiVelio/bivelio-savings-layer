@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ koltuk / ay",
       "proNote": "<b>PRO</b> — koltuk başına faturalandırılır. Ya da <b>{yearly} / koltuk / yıl</b> (~%19 tasarruf). Paketlenmiş özelliklere sahip Enterprise daha sonra gelecek.",
-      "seatNote": "Bir koltuk, bir kişi değil, etkin bir <b>makine ya da servis kimliğidir</b> — yalnızca bir ayda 3+ gün etkinse faturalandırılır. CI ve geçici çalıştırıcılar sayılmaz.",
+      "seatNote": "Bir koltuk, bir kişi değil, bir <b>makine ya da servis kimliğidir</b>. Aboneliğinin kapsadığı koltuklar için ödersin; panelin bu ay kaçının kullanımda olduğunu gösterir (en az {dias} gün etkin; CI ve geçici çalıştırıcılar sayılmaz).",
       "features": [
         "Her BV‑SALA optimizasyonu, sınırsız",
         "İstek başına makbuz: dört defterli SavingsReport, ölçülen ve tahmini ayrı tutulur",
@@ -983,8 +983,8 @@
       "extraCero": "hiçbir şey",
       "notaGarantia": "Yalnızca ölçülen tasarruf üzerinden ücret alırız — ve her zaman {garantia} veya fazlası sende kalır.",
       "notaTramos": "Kademeli, her kademe kendi oranında: {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
-      "notaPrimerMesLead": "İlk ayın: yalnızca koltuk.",
-      "notaPrimerMes": "Her şeyi ölçer, gerçek yükünle kalibre ederiz; neye mal olacağının birebir ekstresini görürsün — tahsil edilmeden.",
+      "notaPrimerMesLead": "Kullanım olan ilk takvim ayın: yalnızca koltuk.",
+      "notaPrimerMes": "O aydan ne kadar az kalmış olursa olsun, bu senin kalibrasyon dönemindir: her şeyi ölçeriz ve neye mal olacağının birebir ekstresini görürsün — tahsil edilmeden.",
       "version": "SDK katalog fiyatları, sürüm {fecha}. Bir tahmin: ekstren ölçülen kullanımını esas alacak.",
       "cargando": "Fiyat kataloğu yükleniyor…",
       "badge": "Tahmin",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Bize ödediğin nasıl hesaplanır",
-      "mes1": "<b>İlk ayın: koltuk başına yalnızca {precioMes}.</b> Her şeyi ölçeriz ve komisyon almayız — kapanışta neye mal olacağının birebir ekstresini görürsün.",
+      "mes1": "<b>Kullanım olan ilk takvim ayın (UTC): yalnızca koltuk ücreti.</b> Her şeyi ölçeriz ve o aydan ne kadar az kalmış olursa olsun komisyon almayız — kapanışta neye mal olacağının birebir ekstresini görürsün.",
       "medido": "Sonrasında komisyon yalnızca <b>ölçülmüş tasarruf</b> üzerinden: sağlayıcının faturasıyla karşılaştırabileceğin tasarruf. Tahmini olan asla faturalanmaz.",
       "garantia": "Ve <b>tasarruf edilen her euronun {garantia} veya fazlası her zaman sende kalır</b>: komisyon yalnızca ölçülen tasarrufun varsa vardır.",
       "tramos": "<b>Kademeli, her kademe kendi oranında</b> — {tramos}. Ne kadar çok tasarruf edersen, yüzdemiz o kadar düşer.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Yayımlanan fiyatlar",
     "title": "Fiyat koşulları",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "LICENSE bu sayfaya “Published Pricing” olarak atıfta bulunur. Buradaki her rakam, sana fatura kesen kodun kendisinden okunur; yani fiyat değişince sayfa da değişir.",
+    "lede": "Buradaki her rakam, sana fatura kesen kodun kendisinden okunur; yani fiyat değişince sayfa da değişir.",
     "seat": {
       "title": "Koltuk başına ücret",
       "amount": "Koltuk başına aylık <b>{monthly}</b> ya da koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
+      "cycle": "Koltuk başına ücret, aboneliğinin başladığı günden itibaren sayılan her aylık ya da yıllık döngü için Stripe üzerinden faturalanır.",
       "paidAlways": "Koltuk başına ücret, <b>Yazılım tasarruf sağlasa da sağlamasa da</b> ödenir.",
       "vat": "Tutarlara KDV dahil değildir. Ödeme sırasında fatura adresin ve isteğe bağlı olarak KDV numaran istenir; ikisi de faturanda yer alır.",
       "whatTitle": "Koltuk nedir",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Ekstre ve fatura",
-      "body": "Faturalama dönemleri takvim aylarıdır (UTC). Bir ay bittiğinde BiVelio onu kapatır: panelindeki o aya ait ekstre ölçülmüş matrah, dilimler, döviz kuru ve fiyat kataloğu sürümüyle mühürlenir ve komisyon o ekstreye dayanarak Stripe üzerinden faturalanır."
+      "body": "Komisyon her takvim ayı (UTC) için hesaplanır. Bir ay bittiğinde BiVelio onu kapatır: panelindeki o aya ait ekstre ölçülmüş matrah, dilimler, döviz kuru ve fiyat kataloğu sürümüyle mühürlenir ve komisyon o ekstreye dayanarak Stripe üzerinden, koltuk başına ücretten ayrı bir faturayla faturalanır."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Gizlilik",
     "title": "Altyapından ne çıkar",
     "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
-    "lede": "Yazılımın (SDK ve yerel gateway) BiVelio'ya ne gönderdiği, neyi asla göndermediği ve BiVelio'nun bunları ne kadar sakladığı. LICENSE bu ayrıntılar için bu sayfaya atıfta bulunur.",
+    "lede": "Yazılımın (SDK ve yerel gateway) BiVelio'ya ne gönderdiği, neyi asla göndermediği ve BiVelio'nun bunları ne kadar sakladığı.",
     "never": {
       "title": "BiVelio'ya asla gönderilmeyenler",
       "content": "<b>İsteklerinin ve yanıtlarının içeriği</b>: promptlar, sistem talimatları, mesajlar, araç tanımları, araç argümanları ve sonuçları, getirilen belgeler ve üretilen yanıtlar.",

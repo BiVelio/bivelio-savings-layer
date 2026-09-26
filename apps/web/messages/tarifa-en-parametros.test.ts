@@ -36,10 +36,18 @@ const LOCALES = ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id
  * tramos, mínimo facturable, días activos de un asiento y plazos de retención
  * llegan por parámetro desde las constantes que cobran y purgan
  * (lib/legal/precios-publicados.ts, lib/legal/lo-que-sale.ts).
+ *
+ * `landing.pricing.seatNote` entró el mismo día, sola (el resto de
+ * `landing.pricing` no es tarifa): anunciaba «billed only if active on 3+
+ * days» con el 3 escrito a mano, y además prometía algo que el código no
+ * hace — se cobran los asientos de la suscripción; los días activos solo
+ * cuentan cuántos hubo en uso. Ahora los días llegan por parámetro desde
+ * DIAS_ACTIVOS_PARA_CONTAR_ASIENTO (portada-como-cobra.test.ts).
  */
 const NAMESPACES = [
   "landing.calculadora",
   "landing.formula",
+  "landing.pricing.seatNote",
   "dashboard.extracto",
   "dashboard.yourBench",
   "pricingPage",

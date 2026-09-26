@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
-      "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b> ativa, não uma pessoa — faturado apenas se estiver ativo em 3 ou mais dias num mês. CI e executores efémeros não contam.",
+      "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b>, não uma pessoa. Paga os lugares que a sua subscrição cobre; o seu painel mostra quantos estiveram em uso este mês (ativos em pelo menos {dias} dias; CI e executores efémeros não contam).",
       "features": [
         "Todas as otimizações do BV‑SALA, sem limite",
         "Um recibo por pedido: SavingsReport com quatro livros, medido e estimado em separado",
@@ -983,8 +983,8 @@
       "extraCero": "nada",
       "notaGarantia": "Só cobramos sobre poupança medida — e ficas sempre com {garantia} ou mais.",
       "notaTramos": "Por faixas, cada uma à sua taxa: {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "notaPrimerMesLead": "Seu primeiro mês: só o assento.",
-      "notaPrimerMes": "Medimos tudo, calibramos com a sua carga real e você verá o extrato exato do que teria custado — sem cobrança.",
+      "notaPrimerMesLead": "Seu primeiro mês civil com uso: só o assento.",
+      "notaPrimerMes": "É o seu período de calibração, por pouco que reste desse mês: medimos tudo e você verá o extrato exato do que teria custado — sem cobrança.",
       "version": "Preços do catálogo do SDK, versão {fecha}. Uma estimativa: seu extrato usará o seu uso medido.",
       "cargando": "Carregando o catálogo de preços…",
       "badge": "Estimativa",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Como se calcula o que você nos paga",
-      "mes1": "<b>Seu primeiro mês: só {precioMes} por assento.</b> Medimos tudo e não cobramos comissão — no fechamento você verá o extrato exato do que teria custado.",
+      "mes1": "<b>Seu primeiro mês civil com uso (UTC): só a taxa do assento.</b> Medimos tudo e não cobramos comissão, por pouco que reste desse mês — no fechamento você verá o extrato exato do que teria custado.",
       "medido": "Depois, comissão só sobre a <b>economia medida</b>: a que você pode conciliar com a fatura do seu provedor. O estimado nunca é faturado.",
       "garantia": "E <b>ficas sempre com {garantia} ou mais</b> de cada euro poupado: a comissão só existe quando existe a tua poupança medida.",
       "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Preços publicados",
     "title": "Condições de preço",
     "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
-    "lede": "A LICENSE remete para esta página como «Published Pricing». Cada número que vê aqui é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
+    "lede": "Cada número que vê aqui é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
     "seat": {
       "title": "A taxa por lugar",
       "amount": "<b>{monthly}</b> por lugar e por mês, ou <b>{yearly}</b> por lugar e por ano, em {currency}.",
+      "cycle": "A taxa por lugar é cobrada através da Stripe em cada ciclo mensal ou anual da sua subscrição, contado a partir do dia em que começa.",
       "paidAlways": "A taxa por lugar paga-se <b>quer o Software produza economia, quer não</b>.",
       "vat": "Os valores não incluem IVA. O pagamento pede o seu endereço de faturação e, opcionalmente, o seu número de IVA; ambos aparecem na fatura.",
       "whatTitle": "O que é um lugar",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Extrato e fatura",
-      "body": "Os períodos de faturação são meses civis (UTC). Quando um mês termina, a BiVelio fecha-o: o extrato desse mês no seu painel fica selado com a base medida, os escalões, a taxa de câmbio e a versão do catálogo de preços, e a comissão é faturada a partir desse extrato através da Stripe."
+      "body": "A comissão é calculada por mês civil (UTC). Quando um mês termina, a BiVelio fecha-o: o extrato desse mês no seu painel fica selado com a base medida, os escalões, a taxa de câmbio e a versão do catálogo de preços, e a comissão é faturada a partir desse extrato através da Stripe, numa fatura separada da taxa por lugar."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privacidade",
     "title": "O que sai da sua infraestrutura",
     "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
-    "lede": "O que o Software (o SDK e o gateway local) envia à BiVelio, o que nunca envia e durante quanto tempo a BiVelio o guarda. A LICENSE remete para esta página para estes detalhes.",
+    "lede": "O que o Software (o SDK e o gateway local) envia à BiVelio, o que nunca envia e durante quanto tempo a BiVelio o guarda.",
     "never": {
       "title": "O que nunca é enviado à BiVelio",
       "content": "<b>O conteúdo dos seus pedidos e respostas</b>: prompts, instruções de sistema, mensagens, definições de ferramentas, argumentos e resultados de ferramentas, documentos recuperados e respostas geradas.",

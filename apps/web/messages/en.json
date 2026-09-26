@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ seat / month",
       "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
-      "seatNote": "A seat is one active <b>machine or service identity</b>, not a person — billed only if active on 3+ days in a month. CI and ephemeral runners don't count.",
+      "seatNote": "A seat is one <b>machine or service identity</b>, not a person. You pay for the seats your subscription covers; your dashboard shows how many were in use this month (active on at least {dias} days; CI and ephemeral runners don't count).",
       "features": [
         "Every BV‑SALA optimization, uncapped",
         "A receipt per request: SavingsReport with four ledgers, measured and estimated kept apart",
@@ -983,8 +983,8 @@
       "extraCero": "nothing",
       "notaGarantia": "We only charge on measured savings — and you always keep {garantia} or more of them.",
       "notaTramos": "Tiered, each bracket at its own rate: {tramos}. The more you save, the lower our percentage.",
-      "notaPrimerMesLead": "Your first month: seat only.",
-      "notaPrimerMes": "We measure everything, calibrate on your real load, and you'll see the exact statement of what it would have cost — without being charged.",
+      "notaPrimerMesLead": "Your first calendar month with usage: seat only.",
+      "notaPrimerMes": "It is your calibration period, however little of that month remains: we measure everything, and you'll see the exact statement of what it would have cost — without being charged.",
       "version": "SDK catalog prices, version {fecha}. An estimate: your statement will use your measured usage.",
       "cargando": "Loading the price catalog…",
       "badge": "Estimate",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "How what you pay us is calculated",
-      "mes1": "<b>Your first month: only {precioMes} per seat.</b> We measure everything and charge no commission — at close you'll see the exact statement of what it would have cost.",
+      "mes1": "<b>Your first calendar month with usage (UTC): the seat fee only.</b> We measure everything and charge no commission, however little of that month remains — at close you'll see the exact statement of what it would have cost.",
       "medido": "After that, commission only on <b>measured savings</b>: the kind you can reconcile against your provider's invoice. Estimated savings are never billed.",
       "garantia": "And <b>you always keep {garantia} or more</b> of every euro saved: the commission only exists when your measured savings exist.",
       "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Published pricing",
     "title": "Pricing terms",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "The LICENSE refers to this page as the Published Pricing. Every figure on it is read from the code that bills you, so it changes when the price changes.",
+    "lede": "Every figure on this page is read from the code that bills you, so it changes when the price changes.",
     "seat": {
       "title": "The seat fee",
       "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+      "cycle": "The seat fee is billed through Stripe for each monthly or yearly cycle of your subscription, counted from the day it starts.",
       "paidAlways": "The seat fee is paid <b>whether or not the Software produces any saving</b>.",
       "vat": "Amounts exclude VAT. Checkout asks for your billing address and, optionally, your VAT number; both are printed on your invoice.",
       "whatTitle": "What a seat is",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Statement and invoice",
-      "body": "Billing periods are calendar months (UTC). After a month ends, BiVelio closes it: your dashboard's statement for that month is sealed with the measured base, the tiers, the exchange rate and the price-catalogue version, and the commission is invoiced from that statement through Stripe."
+      "body": "The commission is calculated per calendar month (UTC). After a month ends, BiVelio closes it: your dashboard's statement for that month is sealed with the measured base, the tiers, the exchange rate and the price-catalogue version, and the commission is invoiced from that statement through Stripe, on an invoice separate from the seat fee."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privacy",
     "title": "What leaves your infrastructure",
     "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
-    "lede": "What the Software (the SDK and the local gateway) sends to BiVelio, what it never sends, and how long BiVelio keeps it. The LICENSE refers to this page for these details.",
+    "lede": "What the Software (the SDK and the local gateway) sends to BiVelio, what it never sends, and how long BiVelio keeps it.",
     "never": {
       "title": "Never sent to BiVelio",
       "content": "<b>The content of your requests and responses</b>: prompts, system instructions, messages, tool definitions, tool arguments and results, retrieved documents, and completions.",

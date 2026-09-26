@@ -15,6 +15,7 @@ import { ANATOMIA_MEDIDA } from "@/lib/skill/anatomia";
 import { LogoProveedor } from "@/app/components/LogoProveedor";
 import { NvidiaEcosystemBand } from "@/app/components/NvidiaInception";
 import { VideoExplicativo } from "@/app/components/VideoExplicativo";
+import { DIAS_ACTIVOS_PARA_CONTAR_ASIENTO } from "@/lib/billing/asientos";
 import { GARANTIA_NETA_RATIO, TRAMOS } from "@/lib/billing/tarifa";
 import { type AbArtifact } from "@/app/[locale]/dashboard/data";
 import { ReferenceModeBadge } from "@/app/[locale]/dashboard/components/ReferenceModeBadge";
@@ -710,7 +711,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 {t("pricing.taxNote")}
               </p>
               <p style={{ margin: "6px 0 0", opacity: 0.65, fontSize: 13 }}>
-                {t.rich("pricing.seatNote", { b: (c) => <b>{c}</b> })}
+                {/* Se cobran los asientos de la suscripción (la `quantity` de Stripe); los
+                    días activos solo cuentan cuántos hubo en uso, y el panel lo compara
+                    (/api/billing/reconcile no cobra). La cifra llega de la constante
+                    espejo del SQL, no escrita a mano: portada-como-cobra.test.ts. */}
+                {t.rich("pricing.seatNote", { b: (c) => <b>{c}</b>, dias: DIAS_ACTIVOS_PARA_CONTAR_ASIENTO })}
               </p>
               <ul>
                 {features.map((f) => (
@@ -735,7 +740,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           <div className="formula-publica rv">
             <h3>{t("formula.title")}</h3>
             <ul>
-              <li>{t.rich("formula.mes1", { b: (c) => <b>{c}</b>, precioMes: precioMensual })}</li>
+              <li>{t.rich("formula.mes1", { b: (c) => <b>{c}</b> })}</li>
               <li>{t.rich("formula.medido", { b: (c) => <b>{c}</b> })}</li>
               <li>
                 {/* Sin mínimo desde el 2026-09-01: la promesa pasa de «bajo el

@@ -894,7 +894,7 @@
       "amount": "{amount}",
       "per": "/ kursi / bulan",
       "proNote": "<b>PRO</b> — ditagih per kursi. Atau <b>{yearly} / kursi / tahun</b> (hemat ~19%). Enterprise, dengan fitur terpaket, hadir kemudian.",
-      "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> aktif, bukan orang — ditagih hanya jika aktif pada 3+ hari dalam sebulan. CI dan runner sementara tidak dihitung.",
+      "seatNote": "Satu kursi adalah satu <b>mesin atau identitas layanan</b>, bukan orang. Kamu membayar kursi yang dicakup langgananmu; dasbormu menampilkan berapa yang terpakai bulan ini (aktif setidaknya {dias} hari; CI dan runner sementara tidak dihitung).",
       "features": [
         "Setiap optimasi BV‑SALA, tanpa batas",
         "Tanda terima per permintaan: SavingsReport dengan empat buku besar, terukur dan estimasi dipisah",
@@ -983,8 +983,8 @@
       "extraCero": "tidak ada",
       "notaGarantia": "Kami hanya menagih atas penghematan terukur — dan Anda selalu menyimpan {garantia} atau lebih.",
       "notaTramos": "Berjenjang, tiap jenjang dengan tarifnya sendiri: {tramos}. Makin besar hematmu, makin kecil persentase kami.",
-      "notaPrimerMesLead": "Bulan pertamamu: hanya seat.",
-      "notaPrimerMes": "Kami mengukur semuanya, mengkalibrasi dengan beban nyatamu, dan kamu akan melihat rekening persis dari biaya yang seharusnya — tanpa ditagih.",
+      "notaPrimerMesLead": "Bulan kalender pertamamu dengan penggunaan: hanya seat.",
+      "notaPrimerMes": "Itu periode kalibrasimu, berapa pun sisa bulan itu: kami mengukur semuanya dan kamu akan melihat rekening persis dari biaya yang seharusnya — tanpa ditagih.",
       "version": "Harga katalog SDK, versi {fecha}. Perkiraan: rekeningmu akan memakai pemakaian terukurmu.",
       "cargando": "Memuat katalog harga…",
       "badge": "Perkiraan",
@@ -995,7 +995,7 @@
     },
     "formula": {
       "title": "Bagaimana yang kamu bayar ke kami dihitung",
-      "mes1": "<b>Bulan pertamamu: hanya {precioMes} per seat.</b> Kami mengukur semuanya dan tidak memungut komisi — saat penutupan kamu akan melihat rekening persis dari biaya yang seharusnya.",
+      "mes1": "<b>Bulan kalender pertamamu dengan penggunaan (UTC): hanya biaya seat.</b> Kami mengukur semuanya dan tidak memungut komisi, berapa pun sisa bulan itu — saat penutupan kamu akan melihat rekening persis dari biaya yang seharusnya.",
       "medido": "Setelah itu, komisi hanya atas <b>penghematan terukur</b>: yang bisa kamu cocokkan dengan faktur penyedia. Estimasi tidak pernah ditagih.",
       "garantia": "Dan <b>Anda selalu menyimpan {garantia} atau lebih</b> dari setiap euro yang dihemat: komisi hanya ada jika penghematan terukur Anda ada.",
       "tramos": "<b>Berjenjang, tiap jenjang dengan tarifnya</b> — {tramos}. Makin besar hematmu, makin kecil persentase kami.",
@@ -1140,10 +1140,11 @@
     "eyebrow": "Harga yang diterbitkan",
     "title": "Ketentuan harga",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "LICENSE merujuk halaman ini sebagai “Published Pricing”. Setiap angka di sini dibaca dari kode yang sama yang menagih kamu, jadi angkanya berubah saat harganya berubah.",
+    "lede": "Setiap angka di sini dibaca dari kode yang sama yang menagih kamu, jadi angkanya berubah saat harganya berubah.",
     "seat": {
       "title": "Biaya per kursi",
       "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
+      "cycle": "Biaya per kursi ditagih melalui Stripe untuk setiap siklus bulanan atau tahunan langgananmu, dihitung sejak hari langganan itu dimulai.",
       "paidAlways": "Biaya per kursi dibayar <b>baik Perangkat Lunak menghasilkan penghematan maupun tidak</b>.",
       "vat": "Jumlah belum termasuk PPN. Saat pembayaran, kamu diminta alamat penagihan dan, secara opsional, nomor PPN; keduanya tercetak di faktur.",
       "whatTitle": "Apa itu kursi",
@@ -1182,7 +1183,7 @@
     },
     "statement": {
       "title": "Rekening dan faktur",
-      "body": "Periode penagihan adalah bulan kalender (UTC). Setelah sebuah bulan berakhir, BiVelio menutupnya: rekening bulan itu di dasbormu disegel bersama dasar terukur, tingkatan, kurs, dan versi katalog harga, lalu komisi ditagih berdasarkan rekening itu melalui Stripe."
+      "body": "Komisi dihitung per bulan kalender (UTC). Setelah sebuah bulan berakhir, BiVelio menutupnya: rekening bulan itu di dasbormu disegel bersama dasar terukur, tingkatan, kurs, dan versi katalog harga, lalu komisi ditagih berdasarkan rekening itu melalui Stripe, dalam faktur terpisah dari biaya per kursi."
     }
   },
   "privacyPage": {
@@ -1191,7 +1192,7 @@
     "eyebrow": "Privasi",
     "title": "Apa yang keluar dari infrastrukturmu",
     "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
-    "lede": "Apa yang dikirim Perangkat Lunak (SDK dan gateway lokal) ke BiVelio, apa yang tidak pernah dikirimnya, dan berapa lama BiVelio menyimpannya. LICENSE merujuk halaman ini untuk rincian tersebut.",
+    "lede": "Apa yang dikirim Perangkat Lunak (SDK dan gateway lokal) ke BiVelio, apa yang tidak pernah dikirimnya, dan berapa lama BiVelio menyimpannya.",
     "never": {
       "title": "Yang tidak pernah dikirim ke BiVelio",
       "content": "<b>Isi permintaan dan responsmu</b>: prompt, instruksi sistem, pesan, definisi alat, argumen dan hasil alat, dokumen yang diambil, dan jawaban yang dihasilkan.",
