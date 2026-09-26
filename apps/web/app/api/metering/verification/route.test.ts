@@ -11,13 +11,17 @@ import { precioDelUso } from "@/lib/verificacion/wire";
 
 const ORG = "99999999-9999-4999-8999-999999999999";
 
+// Desde que no hay free tier (#314), una org sin licencia ni suscripción no ingiere
+// nada: el caso por defecto es una org con licencia viva, como en el test de uso.
+const LICENCIA_VIVA: unknown[] = [{ revoked: false, expires_at: "2099-01-01T00:00:00Z", grace_days: 14 }];
+
 const estado: {
   rpc: { nombre: string; args: Record<string, unknown> } | null;
   rpcRespuesta: { data: unknown; error: { code?: string; message?: string } | null };
   claveConocida: boolean;
   licencias: unknown[];
   suscripciones: unknown[];
-} = { rpc: null, rpcRespuesta: { data: 1, error: null }, claveConocida: true, licencias: [], suscripciones: [] };
+} = { rpc: null, rpcRespuesta: { data: 1, error: null }, claveConocida: true, licencias: LICENCIA_VIVA, suscripciones: [] };
 
 const alertas: Array<{ nivel: string; asunto: string }> = [];
 
@@ -94,7 +98,7 @@ beforeEach(() => {
   estado.rpc = null;
   estado.rpcRespuesta = { data: 1, error: null };
   estado.claveConocida = true;
-  estado.licencias = [];
+  estado.licencias = LICENCIA_VIVA;
   estado.suscripciones = [];
   alertas.length = 0;
   vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -119,6 +123,14 @@ describe("POST /api/metering/verification", () => {
     estado.licencias = [{ revoked: true, expires_at: new Date(Date.now() + 86_400_000).toISOString(), grace_days: 0 }];
     const res = await POST(peticion(sobre()));
     expect(res.status).toBe(402);
+    expect(estado.rpc).toBeNull();
+  });
+
+  it("sin NINGUNA licencia ni suscripción → 402 no-license, sin llamar a la función", async () => {
+    estado.licencias = [];
+    const res = await POST(peticion(sobre()));
+    expect(res.status).toBe(402);
+    expect(((await res.json()) as { reason: string }).reason).toBe("no-license");
     expect(estado.rpc).toBeNull();
   });
 

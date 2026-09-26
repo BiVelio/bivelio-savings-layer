@@ -338,6 +338,7 @@
       "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
       "errNotRecognized": "Tanınmadı — yazım hatalarını kontrol edin ya da yukarıdan yeni bir anahtar oluşturun.",
       "errUnexpected": "Beklenmeyen yanıt ({status}). Birazdan tekrar deneyin.",
+      "keyNoPlan": "Anahtar tanındı, ancak bu kuruluşun etkin bir BiVelio lisansı veya aboneliği yok, bu yüzden kullanımı reddediliyor. Hesap'tan abone olun ya da yenileyin, ardından tekrar test edin.",
       "keyLabel": "servis hesabı anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
       "passHint": "<code>serviceAccountKey</code> olarak geçirin. Aşağıda önceden doldurulmuş — canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "creating": "Oluşturuluyor…",

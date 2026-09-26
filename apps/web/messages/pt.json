@@ -338,6 +338,7 @@
       "errNetwork": "Erro de rede — tenta novamente.",
       "errNotRecognized": "Não reconhecida — verifica se há erros de escrita, ou cria uma nova chave acima.",
       "errUnexpected": "Resposta inesperada ({status}). Tenta novamente daqui a um momento.",
+      "keyNoPlan": "Chave reconhecida, mas esta organização não tem licença nem subscrição BiVelio ativa, por isso o seu uso é recusado. Subscreve ou renova em Conta e volta a testar.",
       "keyLabel": "a tua chave de conta de serviço{suffix} — mostrada uma só vez, copia-a agora",
       "passHint": "Passa-a como <code>serviceAccountKey</code>. Já está preenchida abaixo — carrega em <b>Testar a minha chave</b> para confirmar que está ativa.",
       "creating": "A criar…",

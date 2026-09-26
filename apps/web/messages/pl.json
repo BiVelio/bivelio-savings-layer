@@ -338,6 +338,7 @@
       "errNetwork": "Błąd sieci — spróbuj ponownie.",
       "errNotRecognized": "Nierozpoznany — sprawdź literówki lub utwórz nowy klucz powyżej.",
       "errUnexpected": "Nieoczekiwana odpowiedź ({status}). Spróbuj ponownie za chwilę.",
+      "keyNoPlan": "Klucz rozpoznany, ale ta organizacja nie ma aktywnej licencji ani subskrypcji BiVelio, więc jej użycie jest odrzucane. Wykup subskrypcję lub odnów ją w zakładce Konto, a potem przetestuj ponownie.",
       "keyLabel": "Twój klucz konta serwisowego{suffix} — pokazany raz, skopiuj go teraz",
       "passHint": "Przekaż go jako <code>serviceAccountKey</code>. Jest wstępnie wypełniony poniżej — kliknij <b>Przetestuj klucz</b>, aby potwierdzić, że działa.",
       "creating": "Tworzenie…",

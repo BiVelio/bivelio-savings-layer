@@ -338,6 +338,7 @@
       "errNetwork": "Error de xarxa: torna-ho a provar.",
       "errNotRecognized": "No reconeguda: comprova que no hi hagi errors d'escriptura, o crea una clau nova a dalt.",
       "errUnexpected": "Resposta inesperada ({status}). Torna-ho a provar d'aquí a un moment.",
+      "keyNoPlan": "Clau reconeguda, però aquesta organització no té cap llicència ni subscripció activa de BiVelio, així que el seu ús es rebutja. Subscriu-te o renova des de Compte i torna a provar.",
       "keyLabel": "la teva clau de compte de servei{suffix} — es mostra un sol cop, copia-la ara",
       "passHint": "Passa-la com a <code>serviceAccountKey</code>. Ja està emplenada a sota: prem <b>Prova la meva clau</b> per confirmar que està activa.",
       "creating": "Creant…",

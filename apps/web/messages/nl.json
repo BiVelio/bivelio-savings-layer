@@ -338,6 +338,7 @@
       "errNetwork": "Netwerkfout — probeer het opnieuw.",
       "errNotRecognized": "Niet herkend — controleer op typefouten of maak hierboven een nieuwe sleutel aan.",
       "errUnexpected": "Onverwacht antwoord ({status}). Probeer het zo meteen opnieuw.",
+      "keyNoPlan": "Sleutel herkend, maar deze organisatie heeft geen actieve BiVelio-licentie of -abonnement, dus het gebruik wordt geweigerd. Neem een abonnement of verleng via Account en test daarna opnieuw.",
       "keyLabel": "je service-account-sleutel{suffix} — eenmalig getoond, kopieer hem nu",
       "passHint": "Geef hem door als <code>serviceAccountKey</code>. Hij is hieronder al ingevuld — klik op <b>Mijn sleutel testen</b> om te bevestigen dat hij live is.",
       "creating": "Aanmaken…",

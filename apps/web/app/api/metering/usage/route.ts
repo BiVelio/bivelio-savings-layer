@@ -48,9 +48,11 @@ export async function POST(req: Request): Promise<NextResponse> {
   const orgId = sa.org_id as string;
 
   // ── Candado de entitlement (servidor). El SDK del cliente es parcheable; esto
-  // no. Una org revocada o caducada-pasada-la-gracia sin suscripción activa deja
-  // de poder ingerir uso (402), así que pierde panel y facturación. La lógica
-  // refleja la del SDK para que no se contradigan.
+  // no. Una org sin licencia válida ni suscripción que la cubra deja de poder
+  // ingerir uso (402), así que pierde panel y facturación: la revocada, la
+  // caducada pasada la gracia y también la que NUNCA tuvo licencia (no hay free
+  // tier; ver `decideEntitlement`). La lógica refleja la del SDK para que no se
+  // contradigan.
   //
   // Fail-OPEN ante error de BD: el trabajo primario de este endpoint es no
   // PERDER datos de facturación, así que un fallo transitorio de la consulta de
@@ -73,7 +75,8 @@ export async function POST(req: Request): Promise<NextResponse> {
         {
           error: "subscription required",
           reason: decision.reason,
-          detail: "This organization has no active BiVelio license or subscription. Renew at https://savings.bivelio.com",
+          detail:
+            "This organization has no active BiVelio license or subscription. Subscribe or renew at https://savings.bivelio.com/dashboard/account",
         },
         { status: 402 },
       );

@@ -338,6 +338,7 @@
       "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
       "errNotRecognized": "Tidak dikenali — periksa kesalahan ketik, atau buat kunci baru di atas.",
       "errUnexpected": "Respons tak terduga ({status}). Coba lagi sebentar lagi.",
+      "keyNoPlan": "Kunci dikenali, tetapi organisasi ini tidak punya lisensi atau langganan BiVelio yang aktif, jadi penggunaannya ditolak. Berlangganan atau perpanjang dari halaman Akun, lalu uji lagi.",
       "keyLabel": "kunci akun layanan Anda{suffix} — ditampilkan sekali, salin sekarang",
       "passHint": "Berikan sebagai <code>serviceAccountKey</code>. Sudah terisi di bawah — klik <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "creating": "Membuat…",
