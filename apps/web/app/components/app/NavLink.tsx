@@ -23,7 +23,8 @@ import {
  * parar a un sitio raro».
  */
 const ALSO_MATCHES: Record<string, string[]> = {
-  "/dashboard/proof": ["/dashboard/verify"],
+  // «Tu banco» (la verificación A/B opcional, 2026-09-25) es la tercera pestaña de Prueba.
+  "/dashboard/proof": ["/dashboard/verify", "/dashboard/your-bench"],
   // Cuenta sólo se representa a sí misma: Equipo y Extracto tienen entrada propia.
   "/dashboard/account": [],
 };

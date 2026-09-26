@@ -9,15 +9,18 @@ import { RANGOS, RANGO_POR_DEFECTO, type Rango } from "../rango";
  * aplica el servidor antes de derivar el veredicto. Componente de servidor:
  * conoce el activo por props y no necesita `useSearchParams` (que obligaría a
  * un límite de Suspense en toda la página).
+ *
+ * `base` es la página a la que apuntan los enlaces (por defecto el Resumen):
+ * «Tu banco» usa el mismo selector sobre `/dashboard/your-bench`.
  */
-export async function RangeSwitch({ activo }: { activo: Rango }) {
+export async function RangeSwitch({ activo, base = "/dashboard" }: { activo: Rango; base?: string }) {
   const t = await getTranslations("dashboard");
   return (
     <nav className="seg live" aria-label={t("verdictHero.rangeLabel")}>
       {RANGOS.map((r) => (
         <Link
           key={r}
-          href={r === RANGO_POR_DEFECTO ? "/dashboard" : `/dashboard?range=${r}`}
+          href={r === RANGO_POR_DEFECTO ? base : `${base}?range=${r}`}
           scroll={false}
           aria-current={r === activo ? "true" : undefined}
         >

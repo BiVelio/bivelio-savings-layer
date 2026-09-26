@@ -83,6 +83,9 @@ import {
 } from "./referencia.js";
 import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
 import { StreamAbortedError } from "./errors.js";
+import { normalizarAjustes } from "../verification/ajustes.js";
+import { ComprobadorAB, type SumideroDeVerificacion } from "../verification/comprobador.js";
+import type { ViaDeServicio } from "../verification/clasificar.js";
 
 /**
  * Build-time flag: the published npm SDK sets this to `false` (tsup `define`) so the
@@ -434,7 +437,15 @@ export class SavingsPipeline {
    */
   private readonly referenciasDeLider = new WeakMap<object, RegistroDeReferencia>();
 
-  constructor(config: SavingsLayerConfig) {
+  /**
+   * La verificación A/B opcional («tu propio banco»). Solo existe con
+   * `verification` activa Y un destino para los pares (lo decide create.ts, que
+   * pasa el sumidero). La copia sin capa NO pasa por nada de esta instancia:
+   * ni cachés, ni singleflight, ni resolvers, ni verjas, ni memorias.
+   */
+  private readonly comprobador: ComprobadorAB | undefined;
+
+  constructor(config: SavingsLayerConfig, interno: { verificacion?: SumideroDeVerificacion } = {}) {
     this.config = config;
     this.deps = resolveDependencies(config);
     this.now = config.now ?? (() => Date.now());
@@ -445,6 +456,30 @@ export class SavingsPipeline {
         ? { exploracion: config.modelCascade.exploration }
         : {},
     );
+    const ajustes = normalizarAjustes(config.verification);
+    this.comprobador =
+      ajustes.activo && interno.verificacion
+        ? new ComprobadorAB({
+            ajustes,
+            provider: config.provider,
+            precio: (m) => this.precioConocido(m),
+            contrato: (peticion, resp) => contratoDeLaCopia(peticion, resp),
+            now: this.now,
+            sumidero: interno.verificacion,
+            avisar: (clave, mensaje) => this.avisar(clave, mensaje),
+          })
+        : undefined;
+  }
+
+  // El resultado servido, con su bloque `verification` y —si le toca— la copia
+  // sin capa lanzada DESPUÉS de servir. Sin comprobador, el mismo objeto.
+  private conVerificacion<T>(request: SavingsRequest, r: SavingsResult<T>, via: ViaDeServicio): SavingsResult<T> {
+    return this.comprobador ? this.comprobador.decidir(request, r, via) : r;
+  }
+
+  /** Decide en el acto cada copia de verificación en vuelo (`abandoned`). Lo llama `close()`. */
+  cerrarVerificacion(): void {
+    this.comprobador?.cerrar();
   }
 
   /**
@@ -465,8 +500,9 @@ export class SavingsPipeline {
     // Testigo de facturación de ESTA petición. No puede ser un campo de la
     // instancia: una misma capa sirve peticiones concurrentes.
     const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 };
+    let servido: SavingsResult<T>;
     try {
-      return await this.generateOptimized<T>(request, testigo);
+      servido = await this.generateOptimized<T>(request, testigo);
     } catch (err) {
       if (err instanceof LicenseError) throw err;
       if (this.config.failOpen === false) throw err;
@@ -495,8 +531,11 @@ export class SavingsPipeline {
       // testigo no es el nuestro, así que la deuda viaja marcada en el error.
       if (errorYaFacturado(err)) throw err;
 
-      return await this.failOpenDirect<T>(request, err);
+      return this.conVerificacion(request, await this.failOpenDirect<T>(request, err), "fail-open");
     }
+    // FUERA del try: la verificación nunca lanza, y aunque lo hiciera no puede
+    // disparar un fail-open (una segunda llamada) sobre algo ya servido.
+    return this.conVerificacion(request, servido, "optimizado");
   }
 
   // LA MISMA PETICIÓN QUE generate(), ENTREGADA COMO STREAM.
@@ -563,10 +602,13 @@ export class SavingsPipeline {
         // aún no ha costado nada.
         if (this.config.failOpen === false) throw err;
         if (testigo.falloDelProveedor || testigo.llamadas > 0 || errorYaFacturado(err)) throw err;
-        const rescate = await this.failOpenDirect<T>(request, err);
+        const rescate = this.conVerificacion(request, await this.failOpenDirect<T>(request, err), "fail-open");
         canal.completar(rescate, { vivo: false, motivo: "fail-open" });
         return;
       }
+      // La entrega «whole» ya decidió dentro de generate(); ésta es la única
+      // decisión de la entrega en vivo.
+      r = this.conVerificacion(request, r, "optimizado");
       // Lo que decide si el texto se sintetiza entero no es el modo elegido sino
       // si HUBO servicio en vivo: un atajo (resolver, caché, seguidor) no emitió
       // nada, y el llamante tiene que recibir el texto igual.
@@ -4124,6 +4166,17 @@ export class SavingsPipeline {
  * en vez de la prosa: el llamante pidió un contrato, y devolverle la valla lo
  * obligaría a repetir este mismo trabajo por su cuenta.
  */
+// ¿Cumplió la copia sin capa el contrato de salida? Con la MISMA regla que el
+// camino servido (tryParse con su rescate local + validateAgainstSchema), para
+// que «missed» signifique lo mismo en los dos lados del par. Un turno de
+// herramientas no trae respuesta final que validar → "none", como sin contrato.
+function contratoDeLaCopia(peticion: ProviderRequest, resp: ProviderResponse): "met" | "missed" | "none" {
+  if ((resp.toolCalls?.length ?? 0) > 0 || !peticion.schema) return "none";
+  const parsed = tryParse(typeof resp.text === "string" ? resp.text : "");
+  if (!parsed.ok) return "missed";
+  return validateAgainstSchema(parsed.value, peticion.schema).valid ? "met" : "missed";
+}
+
 function tryParse(
   text: string,
 ): { ok: true; value: unknown; rescatado?: string } | { ok: false } {
