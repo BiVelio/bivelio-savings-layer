@@ -227,6 +227,43 @@ describe("la tarjeta del gateway: ni recibo por petición ni «mientras la sesi�
   }
 });
 
+/**
+ * LA MISMA PALANCA, DICHA IGUAL EN TODA LA WEB.
+ *
+ * La tarjeta no es el único sitio que describe la rebaja de TTL: la nota de la
+ * sección del gateway (`landing.gateway.note`, #312) y la tarjeta de Claude Code
+ * de /how-it-works (`howItWorks.caseCodeBody`, #312) decían «mientras la sesión
+ * sigue caliente», la política de #229 que el código no aplica. Las dos dicen
+ * ahora lo mismo que `landing.offers.gateway.figureNote`, con el mismo ancla al
+ * código (el primer `it` del bloque anterior).
+ */
+const OTRAS_NOTAS_TTL = ["landing.gateway.note", "howItWorks.caseCodeBody"] as const;
+
+describe("la rebaja de TTL, fuera de la tarjeta: tampoco «mientras la sesión sigue caliente»", () => {
+  it("en/es: las dos notas nombran la hora, los cinco minutos y la compactación", () => {
+    const en = cargar("en");
+    const es = cargar("es");
+    for (const k of OTRAS_NOTAS_TTL) {
+      for (const t of ["one-hour", "five-minute", "compaction", "Anthropic"]) expect(en[k], `en ${k}`).toContain(t);
+      for (const t of ["una hora", "cinco minutos", "compactación", "Anthropic"]) expect(es[k], `es ${k}`).toContain(t);
+    }
+    // La nota de la sección, además, deja fuera los turnos encadenados.
+    expect(en["landing.gateway.note"]).toContain("chained turns");
+    expect(es["landing.gateway.note"]).toContain("turnos encadenados");
+  });
+
+  for (const loc of LOCALES) {
+    it(`${loc}: landing.gateway.note y howItWorks.caseCodeBody sin sesión «caliente», con «TTL» y «PRO»`, () => {
+      const d = cargar(loc);
+      for (const k of OTRAS_NOTAS_TTL) {
+        expect(d[k], `${loc} ${k}`).not.toMatch(CALIENTE[loc]);
+        expect(d[k], `${loc} ${k}`).toContain("TTL");
+        expect(d[k], `${loc} ${k}`).toMatch(/\bPRO\b/);
+      }
+    });
+  }
+});
+
 describe("comisión por referencia: si se cobra, se dice", () => {
   const cobra = /export const COMISIONAR_REFERENCIA: boolean = true;/.test(TARIFA_WEB);
 
