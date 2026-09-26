@@ -25,6 +25,7 @@
       "howItWorks": "Com funciona",
       "groupSave": "Estalviar",
       "proof": "Prova",
+      "yourBench": "El teu banc",
       "verify": "Verifica",
       "extracto": "Extracte",
       "groupOrg": "La teva organització",
@@ -135,6 +136,81 @@
       "title": "Quant estalviaries tu?",
       "intro": "Comprova-ho en un minut: tria un exemple (o enganxa les teves dades), digues quant fas servir l'API i mira l'estalvi projectat. Tot es calcula al teu navegador."
     },
+    "yourBench": {
+      "metaTitle": "El teu banc · BiVelio Savings Layer",
+      "eyebrow": "El teu trànsit · els dos costats mesurats pel teu proveïdor",
+      "title": "El teu propi banc",
+      "intro": "El banc publicat executa els nostres escenaris. Aquest executa els teus: amb el mostreig de verificació activat, una part aleatòria de les teves peticions elegibles també s'envia sense optimitzar al teu propi proveïdor, i cada parell es mesura pels dos costats.",
+      "badge": "INFORMATIU — MAI NO ES FACTURA",
+      "offTitle": "El mostreig de verificació està apagat",
+      "offBody": "No s'ha comprovat res en aquest període. Afegeix l'ajust de sota a createSavingsLayer i els teus parells començaran a aparèixer aquí.",
+      "offCost": "Cada comprovació és una crida real al teu proveïdor, que pagues tu: més o menys la taxa de mostreig per allò que costaria aquest trànsit sense la capa. Mai no entra al teu extracte ni en cap comissió.",
+      "collectingTitle": "Reunint parells: {n} de {min}",
+      "collectingBody": "Per sota de {min} parells un interval diria més que les dades. Els recomptes de sota ja són definitius.",
+      "collectingGroupsTitle": "Reunint parells: {n} de moment, però encara en falten en alguns grups",
+      "collectingGroupsBody": "Els grups amb menys de {min} parells encara sumen el {gap} de les teves peticions elegibles. Un titular sense prou parells d'aquests grups podria amagar just el trànsit on la capa et costa diners, així que apareix quan sumin el {max} o menys. Els recomptes de sota ja són definitius.",
+      "readFailed": "Ara mateix no s'han pogut llegir els teus parells. Res del que hi ha a sota és un zero: torna-ho a provar d'aquí a un moment.",
+      "notAvailable": "El teu banc encara no està disponible en aquest servidor.",
+      "headlineCaption": "estimat a partir de {pairs} parells comparats: el <b>límit inferior de l'interval del {level}</b> per a les teves peticions elegibles. Estimació puntual {point}, sostre {upper}; el titular és el límit inferior.",
+      "headlineCaptionPartial": "estimat a partir de {pairs} parells comparats: el <b>límit inferior de l'interval del {level}</b> per al {coverage} de les teves peticions elegibles que és en grups amb parells; la resta no entra en aquesta xifra. Estimació puntual {point}, sostre {upper}; el titular és el límit inferior.",
+      "meanDiff": "Diferència mitjana per cada {per} peticions: {point} (de {lower} a {upper}, interval del {level}).",
+      "basis": "{pairs} parells comparats · cobreixen el {coverage} de les teves {eligible} peticions elegibles · el {rate} d'aquestes peticions va tornar com a parell",
+      "subsampled": "Calculat sobre un subconjunt aleatori de {n} dels teus {total} parells.",
+      "stressTitle": "El pitjor cas per a la capa",
+      "stressBody": "Les teves còpies sense optimitzar només s'envien de tant en tant, així que rarament troben calenta la memòria cau del teu proveïdor; sense la capa, totes les peticions ho farien. Valorant cada còpia com si tots els seus tokens d'entrada s'haguessin llegit de la memòria cau —a la tarifa d'entrada en memòria cau de la taula de preus, o de franc si no en té—, el límit inferior és {lower}.",
+      "costTitle": "El que et van costar les comprovacions",
+      "costBody": "{usd} per {pairs} còpies sense optimitzar, a les tarifes de la taula de preus. És el cost de l'instrument; mai no entra al teu extracte ni en cap comissió.",
+      "costUnknown": "Més {n} còpies el cost de les quals no s'ha pogut mesurar: sense comptador d'ús, tancades en vol, o fallides o fora de termini. És possible que el teu proveïdor te n'hagi cobrat alguna.",
+      "strataTitle": "Segons com va servir la capa la petició",
+      "colKind": "Com es va servir",
+      "colEligible": "Peticions elegibles",
+      "colPairs": "Parells comparats",
+      "colNaive": "Sense optimitzar, mitjana",
+      "colOptimized": "Amb la capa, mitjana",
+      "colDiff": "Diferència per cada {per}",
+      "notCovered": "Massa pocs parells per a un interval propi ({n} de {min})",
+      "noPairs": "Encara sense parells",
+      "stratum": {
+        "avoided_call": "Resposta sense cridar el teu proveïdor",
+        "cheaper_model": "Resposta per un model més barat",
+        "tokens_removed": "Enviada amb parts tretes",
+        "tokens_compressed": "Enviada recodificada amb menys tokens",
+        "unchanged": "Enviada sense canvis"
+      },
+      "naiveQuality": "Parells no comparats, perquè la còpia sense optimitzar no va acabar com ha d'acabar una petició teva per comprovar-se — tallada pel límit de sortida: {truncated} · aturada per un altre motiu: {incomplete} · sense complir el teu contracte de sortida: {missed}. Es compten i són al CSV, però no entren en cap xifra: un parell només compta si els dos costats van acabar amb normalitat.",
+      "exclusionsTitle": "Mai no comprovades, i per què",
+      "exclusionsIntro": "Aquestes peticions es compten però mai no s'envien dues vegades: comparar-les no seria comparar el mateix. Les de fail-open, les tallades i les que van incomplir el contracte solen ser les més cares per a la capa, així que deixar-les fora pot afavorir la xifra; per això cadascuna s'ensenya aquí.",
+      "exclusionsNone": "Cap petició no va quedar exclosa en aquest període.",
+      "excluded": {
+        "fail_open": "Van anar pel camí de rescat (enviades sense optimitzar)",
+        "truncated": "Tallades pel límit de sortida",
+        "incomplete": "Es van aturar per un altre motiu",
+        "contract_failed": "No van complir el seu contracte de sortida",
+        "unmeasured": "Sense comptador d'ús del teu proveïdor",
+        "no_price": "Model sense preu conegut",
+        "over_cap": "Per sobre del teu límit per comprovació",
+        "opted_out": "Excloses per tu (savings.verification: false)",
+        "retrieval": "La capa va afegir documents recuperats: no hi ha còpia equivalent"
+      },
+      "outcomesTitle": "Comprovacions que no van arribar a parell",
+      "outcomesNone": "Totes les comprovacions van arribar a parell.",
+      "outcome": {
+        "check_failed": "El teu proveïdor va retornar un error, o la còpia va esgotar el temps",
+        "check_unmeasured": "El teu proveïdor no va retornar comptador d'ús",
+        "abandoned": "Encara en curs quan es va tancar la capa",
+        "dropped": "No enviades: ja hi havia massa comprovacions en curs"
+      },
+      "methodTitle": "Com es calcula",
+      "methodBody": "Cada parell és una petició: el que va costar la còpia sense optimitzar i el que va costar la petició optimitzada, tots dos segons els comptadors d'ús del teu proveïdor i a les tarifes de la taula de preus. Un parell només compta si la còpia va acabar amb normalitat i va complir el teu contracte de sortida, la mateixa regla que ha de passar una petició teva per comprovar-se. Les peticions s'agrupen segons com les va servir la capa, i cada grup pesa el que representa en les teves peticions elegibles. L'interval és un bootstrap percentil estratificat: {resamples} remostrejos, llavor {seed}. Amb el CSV i els recomptes d'aquesta pàgina pots recalcular cada estimació puntual; els teus intervals coincidiran amb els nostres llevat del soroll del remostreig.",
+      "caveatsTitle": "El que això no mostra",
+      "caveats": {
+        "sample": "Una mostra aleatòria, no totes les peticions: les xifres descriuen el teu trànsit elegible amb la incertesa que es veu, i mai no es converteixen en un import a facturar.",
+        "randomness": "Dues crides rarament responen igual tret que fixis la llavor i posis la temperatura a zero. Això eixampla l'interval. Un parell només compta si els dos costats van acabar amb normalitat, així que una resposta tallada només en un costat mai no compta com a estalvi.",
+        "outside": "Els costos fora de la crida al teu proveïdor, com un servei d'embeddings que operis tu, no són a cap costat.",
+        "streaming": "Les peticions que van fallar, o que vas cancel·lar mentre es transmetien, no es compten."
+      },
+      "exportCsv": "Descarrega els parells (CSV)"
+    },
     "install": {
       "metaTitle": "Instal·la · BiVelio Savings Layer",
       "eyebrow": "Integra",
@@ -201,7 +277,8 @@
       "colACost": "cost A",
       "colBCost": "cost B",
       "colSavings": "estalvi",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compressor del banc, no és a npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificador d'estalvi",
@@ -360,6 +437,7 @@
       "proven": "comprovat",
       "notProven": "no comprovat",
       "notExercised": "no exercitada en aquesta tirada — el seu zero no és una mesura",
+      "benchOnly": "inclou un compressor exclusiu del banc que el paquet de npm no porta — no s'anuncia",
       "estimatedMock": "estimat (simulat)",
       "footnoteMain": "Quatre llibres comptables, <b>mai sumats</b>: cadascun és una palanca mesurada per separat, de manera que un dòlar no es pot comptar dues vegades.",
       "reconciledNote": "El residu de conciliació ≈ 0 ho demostra.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "estalvi net, <b>límit inferior de l'IC del 95%</b>. Estimació puntual {point}, superior {upper} — destaquem el mínim{mockNote}.",
+      "captionSdkPendiente": "el que sosté l'SDK tal com s'instal·la des de npm. La tirada publicada duia un compressor exclusiu del banc que el paquet no inclou, així que el seu interval i el seu punt no es mostren com a promesa fins que una tirada de l'SDK instal·lat els substitueixi.",
       "mockNote": " (càrrega de treball de referència, proveïdor simulat)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mesurat contra un proveïdor real, amb control de qualitat.",
+      "sdkPendiente": "Aquesta tirada duia un compressor exclusiu del banc que el paquet de npm no inclou: les seves xifres mostren el mecanisme, no el que estalvia l'SDK instal·lat.",
       "mock": "<b>ESTIMAT · proveïdor simulat</b> — això demostra que el mecanisme funciona, no la teva factura. Una execució LIVE confirmada substitueix cada xifra d'aquí."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Carril ombra: l'elisió hauria estalviat {usd} en {requests} peticions simulades. Hipotètic — mai no entra a la base ni a la comissió.",
       "sombraElisionNegativa": "Carril ombra: l'elisió hauria costat {usd} de més en {requests} peticions simulades. Per això està apagada: només s'encén el que estalvia de veritat.",
       "elisionProveedor": "Carril de l'esborrat del proveïdor: {requests} peticions en què els nostres dials van fer que el proveïdor esborrés context. Un recompte, no un estalvi — mai no entra a la base ni a la comissió.",
-      "referencia": "Mesurat per referència: {usd} en {requests} peticions repetides que es van servir sense cridar el teu proveïdor. Cadascuna es valora amb el comptador que el teu proveïdor va retornar per a la petició idèntica que ja es va executar —és a l'informe d'aquella petició i a l'ús del teu proveïdor d'aquell dia— al preu d'entrada en memòria cau, el més baix que el teu proveïdor cobra per repetir un prompt; la sortida només compta si el mostreig era determinista. Entra a la base.",
+      "referencia": "Mesurat per referència: {usd} en {requests} peticions repetides que es van servir sense cridar el teu proveïdor. Cadascuna es valora amb el comptador que el teu proveïdor va retornar per a la petició idèntica que ja es va executar —és a l'informe d'aquella petició i a l'ús del teu proveïdor d'aquell dia— al preu d'entrada en memòria cau, el més baix que el teu proveïdor cobra per repetir un prompt; la sortida només compta si el mostreig era determinista i la petició que es va executar no va portar raonament ocult (el teu proveïdor va declarar zero tokens de raonament o, si no els desglossa, la seva resposta no duia cap bloc de raonament). Entra a la base.",
       "referenciaExcluida": "Mesurat per referència: {usd} en {requests} peticions repetides. Es mostra com a context: de moment queda fora de la base i de la comissió.",
       "exportarReferencias": "Descarrega les peticions repetides d'aquest període, una fila per petició (CSV)",
       "exportarReferenciasPorDia": "Massa peticions repetides per a un sol fitxer: descarrega aquest període dia a dia (CSV):",
       "parametros": "Paràmetres de l'extracte — catàleg de preus {version} · tipus de canvi {fx}.",
-      "parametrosReferencia": "Regla de les peticions repetides ({regla}): la petició que es va executar ha de ser idèntica byte a byte, sense que la capa la toqués i amb {dias} dies com a màxim; l'entrada, al preu d'entrada en memòria cau del teu proveïdor; la sortida, al {cuota} del seu comptador, mai per sobre del límit de sortida d'aquesta petició i només amb mostreig determinista.",
+      "parametrosReferencia": "Regla de les peticions repetides ({regla}): la petició que es va executar ha de ser idèntica byte a byte, sense que la capa la toqués (un esquema de sortida només compta si va viatjar tal com el vas enviar, en mode estricte, al paràmetre natiu de format de resposta del teu proveïdor, sense res afegit al prompt) i amb {dias} dies com a màxim; l'entrada, al preu d'entrada en memòria cau del teu proveïdor; la sortida, al {cuota} del seu comptador, mai per sobre del límit de sortida d'aquesta petició i només amb mostreig determinista, amb un model del nostre catàleg de preus que no raona i respecta aquest mostreig, quan la petició que es va executar no va portar raonament ocult (el teu proveïdor va declarar zero tokens de raonament o, si no els desglossa, la seva resposta no duia cap bloc de raonament).",
       "mismaFacturaTitulo": "Aquest document ÉS la futura factura.",
       "mismaFactura": "L'extracte en ombra i el facturable es calculen amb la mateixa maquinària: quan la comissió s'activi, la primera factura només contindrà números que ja has vist aquí.",
       "historialTitulo": "Extractes tancats",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0 %",
+          "cifra": "≥ 10,0 %",
           "que": "menys factura, verificat al 95 % · davant d'una integració sense optimitzar, sense streaming"
         }
       ],
+      "proofSdkPendiente": "Provisional: la tirada publicada duia un compressor exclusiu del banc que el paquet de npm no inclou. Aquesta xifra cap sota el sòl d'aquella tirada quan se'n treu l'efecte del compressor, recalculat amb els assajos mesurats: encara no és una mesura de l'SDK instal·lat. Aquesta tirada està pendent.",
       "medidoEn": "Mesurat a",
       "compatibleCon": "Compatible amb",
       "compatibleNota": "Qualsevol endpoint compatible amb l'API d'OpenAI, i l'adaptador natiu d'Anthropic. Amb xifra publicada, avui, només OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "La prova és un experiment just: la mateixa tasca dues vegades — sense Savings i amb Savings — amb el mateix comptador del proveïdor mesurant totes dues.",
       "plainTitle": "Traducció, sense argot",
       "plain": "En aquesta prova, la factura va baixar amb gairebé total seguretat almenys un {piso}. El més probable és que baixés un {punto}.",
+      "plainSdkPendiente": "Amb l'SDK tal com l'instal·les des de npm, la factura baixa almenys un {piso}. La prova publicada duia a més un compressor exclusiu del banc que el paquet no inclou; en traiem l'efecte en lloc de comptar-lo, fins que una tirada de l'SDK instal·lat substitueixi aquesta xifra.",
       "plainNote": "Quan hi ha una forquilla, anunciem sempre el número petit — el que l'estadística garanteix —, mai el bonic.",
       "trialsLink": "Baixar els assaigs en cru (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "qualitat",
       "punto": "estimació puntual",
       "suelo": "El titular és el sòl de l'interval del 95 %, mai el punt.",
+      "sdkPendiente": "Aquesta tirada duia un compressor exclusiu del banc que el paquet de npm no inclou, així que el seu sòl no es mostra. La xifra de dalt és el nostre titular per a l'SDK tal com l'instal·les: continua cabent quan se'n treu l'efecte d'aquest compressor. Falta una tirada de l'SDK instal·lat.",
       "libros": "per llibre comptable",
       "pie": "Cada llibre es publica amb el seu propi interval; els que no superen el zero no s'anuncien.",
       "fecha": "tirada"

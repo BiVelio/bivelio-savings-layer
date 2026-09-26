@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { AbArtifact } from "@/app/[locale]/dashboard/data";
+import { librosConPiezaDelBanco, midioElSdkInstalado, sueloPublicable } from "@/lib/bench/sdk-instalado";
 
 /**
  * El recibo medido, en el héroe. Es la tesis del producto convertida en la
@@ -10,6 +11,13 @@ import type { AbArtifact } from "@/app/[locale]/dashboard/data";
  * propio intervalo. Ni un dígito escrito a mano: todo llega de
  * `public/data/ab-live.json`, el mismo fichero que lee el panel y que la verja
  * `cifra-del-heroe.test.ts` compara con lo prometido.
+ *
+ * SALVO QUE LA TIRADA NO MIDIERA EL SDK QUE SE INSTALA. La del 2026-09-12
+ * llevaba el compresor del banco, que npm no trae, y su suelo (≥ 23,2 %) era la
+ * primera cifra de la portada mientras el titular ya decía menos. Sin
+ * `sdk.asShipped: true`, el número grande es el que el paquete sostiene
+ * (`sueloPublicable`), no se enseña el punto de esa tirada, los libros que
+ * mezclan esa pieza no salen y una línea dice por qué (lib/bench/sdk-instalado.ts).
  */
 export function ReciboMedido({
   ab,
@@ -29,6 +37,8 @@ export function ReciboMedido({
     libros: string;
     pie: string;
     fecha: string;
+    /** Sustituye a `suelo` cuando la tirada no midió el SDK tal como se instala. */
+    sdkPendiente: string;
   };
   /** Título humano por libro (de `cascade.steps`), en el idioma de la página. */
   filas: { ledger: string; title: string }[];
@@ -41,11 +51,16 @@ export function ReciboMedido({
     ? new Date(meta.generatedAt).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" })
     : "";
 
+  const instalado = midioElSdkInstalado(ab);
+  const conPiezaDelBanco = librosConPiezaDelBanco(ab);
   const porLibro = new Map((ab.ledgers ?? []).map((l) => [l.ledger, l]));
-  // Solo los libros que despejaron el cero; el orden es el de la cascada.
+  // Solo los libros que despejaron el cero y cuyo ahorro entrega el paquete de
+  // npm; el orden es el de la cascada.
   const rows = filas
     .map((f) => ({ ...f, m: porLibro.get(f.ledger) }))
-    .filter((r): r is typeof r & { m: NonNullable<typeof r.m> } => !!r.m && r.m.proven);
+    .filter(
+      (r): r is typeof r & { m: NonNullable<typeof r.m> } => !!r.m && r.m.proven && !conPiezaDelBanco.has(r.ledger),
+    );
   const dmax = Math.max(0.5, ...rows.map((r) => r.m.savings.upper)) + 0.04;
   const x = (v: number) => `${Math.max(0, Math.min(100, (v / dmax) * 100)).toFixed(2)}%`;
 
@@ -64,7 +79,7 @@ export function ReciboMedido({
       <div className="recibo-head">
         <div className="recibo-big">
           <span className="ge">≥</span>
-          {pct.format(ab.aggregate.savings.lower)}
+          {pct.format(sueloPublicable(ab))}
         </div>
         <dl className="recibo-meta">
           <div>
@@ -81,12 +96,14 @@ export function ReciboMedido({
             <dt>{labels.calidad}</dt>
             <dd>{pct.format(ab.aggregate.qualityPassRate)}</dd>
           </div>
-          <div>
-            <dt>{labels.punto}</dt>
-            <dd>{pct.format(ab.aggregate.savings.point)}</dd>
-          </div>
+          {instalado ? (
+            <div>
+              <dt>{labels.punto}</dt>
+              <dd>{pct.format(ab.aggregate.savings.point)}</dd>
+            </div>
+          ) : null}
         </dl>
-        <p className="recibo-suelo">{labels.suelo}</p>
+        <p className="recibo-suelo">{instalado ? labels.suelo : labels.sdkPendiente}</p>
       </div>
 
       <div className="recibo-libros">

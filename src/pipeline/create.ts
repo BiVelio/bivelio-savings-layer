@@ -16,6 +16,14 @@ import { EMBEDDED_PUBLIC_KEY } from "../license/verify.js";
 import { UsageEmitter } from "../metering/emitter.js";
 import { deriveSeatId, detectCi } from "../metering/seat.js";
 import { SavingsPipeline } from "./pipeline.js";
+import {
+  AVISO_VERIFICACION_SIN_DESTINO,
+  avisoDeVerificacionActiva,
+  avisoDeVerificacionInvalida,
+  normalizarAjustes,
+} from "../verification/ajustes.js";
+import type { SumideroDeVerificacion } from "../verification/comprobador.js";
+import { EmisorDeVerificacion } from "../verification/emisor.js";
 import type { SavingsLayerConfig } from "./config.js";
 
 declare const __BV_SALA_ALLOW_DEV_OPEN__: boolean | undefined;
@@ -87,9 +95,10 @@ export interface SavingsLayer {
   generateStream<T = unknown>(request: SavingsRequest, options?: SavingsStreamOptions): SavingsStream<T>;
   /**
    * Stop the background revocation poller (when the online call-home was enabled
-   * via `licenseServerUrl`) and abort any in-flight request. Always safe to call —
-   * a no-op when there is no poller. Call it when shutting down a long-running
-   * process so the interval timer and any pending fetch are released.
+   * via `licenseServerUrl`) and abort any in-flight request, and settle every
+   * verification check still in flight (recorded as abandoned). Always safe to
+   * call — a no-op when there is no poller. Call it when shutting down a
+   * long-running process so the interval timer and any pending fetch are released.
    */
   close(): void;
 }
@@ -254,7 +263,61 @@ export function createSavingsLayer(
     }
   }
 
-  const pipeline = new SavingsPipeline(resolved);
+  // LA VERIFICACIÓN A/B OPCIONAL («tu propio banco»). Apagada por defecto; con
+  // un valor inválido, APAGADA y avisada (nunca recortada: cada copia es gasto
+  // real del cliente). Sin destino para los pares no se manda ninguna copia.
+  const ajustesVerif = normalizarAjustes(config.verification);
+  const avisarVerif = (clave: string, mensaje: string): void => {
+    if (config.silenceWarnings !== true) avisarUnaVez(clave, mensaje);
+  };
+  if (!ajustesVerif.activo && ajustesVerif.motivo === "invalido") {
+    avisarVerif("verificacion-invalida", avisoDeVerificacionInvalida(config.verification));
+  }
+  let emisorVerif: EmisorDeVerificacion | undefined;
+  let sumideroVerif: SumideroDeVerificacion | undefined;
+  if (ajustesVerif.activo) {
+    // El destino sigue a la medición de uso: misma clave, mismo servidor, y solo
+    // con la medición encendida. Con `meteringUrl` propia, la hermana de su ruta.
+    let urlVerif: string | undefined;
+    if (config.serviceAccountKey && config.metering?.enabled !== false) {
+      if (config.meteringUrl) {
+        const m = /^(.*)\/api\/metering\/usage\/?$/.exec(config.meteringUrl);
+        if (m) urlVerif = `${m[1]}/api/metering/verification`;
+      } else if (config.licenseServerUrl) {
+        urlVerif = `${config.licenseServerUrl.replace(/\/+$/, "")}/api/metering/verification`;
+      }
+    }
+    if (!urlVerif && !ajustesVerif.onCheck) {
+      avisarVerif("verificacion-sin-destino", AVISO_VERIFICACION_SIN_DESTINO);
+    } else {
+      if (urlVerif && config.serviceAccountKey) {
+        emisorVerif = new EmisorDeVerificacion({
+          url: urlVerif,
+          serviceAccountKey: config.serviceAccountKey,
+          ...(config.meteringFetch
+            ? { fetchImpl: config.meteringFetch }
+            : config.licenseFetch
+              ? { fetchImpl: config.licenseFetch }
+              : {}),
+          ...(config.now ? { now: config.now } : {}),
+          ...(config.metering?.flushIntervalMs != null ? { flushIntervalMs: config.metering.flushIntervalMs } : {}),
+          ...(config.silenceWarnings != null ? { silenceWarnings: config.silenceWarnings } : {}),
+        });
+        emisorVerif.start();
+      }
+      const em = emisorVerif;
+      sumideroVerif = {
+        encolar: (c) => em?.encolar(c),
+        ...(em ? { contar: (d: string, k: string) => em.contar(d, k) } : {}),
+        enReposo: () => em?.flushSiToca(),
+      };
+      // Una vez por capa (la clave lleva la tasa: dos capas con tasas distintas
+      // avisan cada una de lo suyo).
+      avisarVerif(`verificacion-activa:${ajustesVerif.tasa}`, avisoDeVerificacionActiva(ajustesVerif.tasa));
+    }
+  }
+
+  const pipeline = new SavingsPipeline(resolved, sumideroVerif ? { verificacion: sumideroVerif } : {});
 
   // DETECTIVE usage metering (opt-in via `serviceAccountKey`). Sin contenido
   // (cuentas, coste, id del modelo e ids opacos: la lista exacta es la LICENSE
@@ -366,6 +429,10 @@ export function createSavingsLayer(
       return stream;
     },
     close: () => {
+      // Primero se deciden las copias de verificación en vuelo (abandoned) y se
+      // vacía su emisor; después, lo de siempre.
+      pipeline.cerrarVerificacion();
+      emisorVerif?.stop();
       poller?.stop();
       refresher?.stop();
       emitter?.stop();

@@ -1,5 +1,6 @@
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
 import { avisarUnaVez } from "../util/warn-once.js";
+import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
 import { sseMessages } from "./sse.js";
 import type {
   Provider,
@@ -185,14 +186,17 @@ export class OpenAICompatibleProvider implements Provider {
     this.fetchImpl = opts.fetchImpl ?? fetch;
   }
 
-  async generate(req: ProviderRequest): Promise<ProviderResponse> {
+  async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
     const model = quitarPrefijoDeProveedor(req.model, this.opts.stripProviderPrefix, this.opts.baseUrl);
+    // La señal solo existe si el llamante la pasa (la copia de verificación, que
+    // se aborta al cerrar la capa). Sin ella, la petición HTTP es la de siempre.
+    const senal = options?.signal;
 
     // Se intenta la vía nativa salvo que ESTE modelo ya la haya rechazado antes.
     // Ese conjunto es lo que acota el coste del descubrimiento: el viaje de más
     // se paga UNA vez por modelo y por instancia, no en cada petición.
     let nativo = req.schema != null && !this.sinResponseFormat.has(model);
-    let response = await this.enviar(model, req, nativo);
+    let response = await this.enviar(model, req, nativo, undefined, senal);
 
     // DEGRADAR, NO REVENTAR. Tres modelos vivos y de uso corriente (gpt-3.5-turbo,
     // gpt-4, gpt-4-turbo) son anteriores a structured outputs y devuelven 400 al
@@ -225,7 +229,7 @@ export class OpenAICompatibleProvider implements Provider {
           "use a model with structured outputs (gpt-4o or later).",
       );
       nativo = false;
-      response = await this.enviar(model, req, false);
+      response = await this.enviar(model, req, false, undefined, senal);
     }
 
     if (!response.ok) {
@@ -329,6 +333,7 @@ export class OpenAICompatibleProvider implements Provider {
     let finishReason: string | undefined;
     let uso: UsoDeChat | undefined;
     let servedServiceTier: string | undefined;
+    let huboTextoDeRazonamiento = false;
 
     for await (const msg of sseMessages(fuente)) {
       if (msg.data === "[DONE]") break;
@@ -346,6 +351,9 @@ export class OpenAICompatibleProvider implements Provider {
       }
       const c = json.choices?.[0];
       const delta = c?.delta;
+      if (esTextoNoVacio(delta?.reasoning_content) || esTextoNoVacio(delta?.reasoning)) {
+        huboTextoDeRazonamiento = true;
+      }
       if (typeof delta?.content === "string" && delta.content !== "") {
         text += delta.content;
         yield { type: "text", delta: delta.content };
@@ -378,12 +386,14 @@ export class OpenAICompatibleProvider implements Provider {
     if (this.opts.requireUsage && (inputAbsent || outputAbsent)) {
       throw new Error(mensajeDeUsoIncompleto(uso?.prompt_tokens, uso?.completion_tokens));
     }
+    const razonamiento = razonamientoDeclarado(uso, huboTextoDeRazonamiento);
     const usage: ProviderUsage = {
       inputTokens: uso?.prompt_tokens ?? 0,
       outputTokens: uso?.completion_tokens ?? 0,
       ...(uso?.prompt_tokens_details?.cached_tokens != null
         ? { cachedInputTokens: uso.prompt_tokens_details.cached_tokens }
         : {}),
+      ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
       ...(inputAbsent || outputAbsent ? { complete: false } : {}),
     };
 
@@ -394,15 +404,20 @@ export class OpenAICompatibleProvider implements Provider {
 
     yield {
       type: "done",
-      response: {
-        text,
-        ...(toolCalls.length > 0 ? { toolCalls } : {}),
-        finishReason,
-        ...(servedServiceTier ? { servedServiceTier } : {}),
-        usage,
-        structuredNatively: false,
-        raw: uso ?? null,
-      },
+      // Sin contrato (los que lo llevan van por generate()) y sin nada añadido.
+      response: atestiguar(
+        {
+          text,
+          ...(toolCalls.length > 0 ? { toolCalls } : {}),
+          finishReason,
+          ...(servedServiceTier ? { servedServiceTier } : {}),
+          usage,
+          structuredNatively: false,
+          raw: uso ?? null,
+        },
+        // Los parámetros vacíos de una herramienta que no traía son del adaptador.
+        sinContrato(herramientasSinParametros(req.tools)),
+      ),
     };
   }
 
@@ -414,6 +429,7 @@ export class OpenAICompatibleProvider implements Provider {
     req: ProviderRequest,
     nativo: boolean,
     stream?: { includeUsage: boolean; signal?: AbortSignal },
+    senal?: AbortSignal,
   ): Promise<Response> {
     // EL CICLO DE HERRAMIENTAS TIENE QUE PODER VOLVER. Chat Completions exige que
     // un mensaje `role:"tool"` lleve `tool_call_id` Y siga a un `assistant` con
@@ -548,7 +564,9 @@ export class OpenAICompatibleProvider implements Provider {
           ...this.opts.headers,
         },
         body: JSON.stringify(body),
-        ...(stream?.signal ? { signal: stream.signal } : {}),
+        // `senal` solo cuenta sin `stream` (generate con opciones); el cuerpo
+        // no cambia en ningún caso.
+        ...(stream?.signal ? { signal: stream.signal } : !stream && senal ? { signal: senal } : {}),
       },
     );
   }
@@ -561,7 +579,12 @@ export class OpenAICompatibleProvider implements Provider {
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as OpenAIChatResponse;
     const mensaje = json.choices?.[0]?.message as
-      | { content?: string | null; tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[] }
+      | {
+          content?: string | null;
+          tool_calls?: { id?: string; function?: { name?: string; arguments?: string } }[];
+          reasoning_content?: unknown;
+          reasoning?: unknown;
+        }
       | undefined;
     const text = mensaje?.content ?? "";
 
@@ -615,29 +638,50 @@ export class OpenAICompatibleProvider implements Provider {
         ? json.service_tier
         : undefined;
 
-    return {
-      text,
-      ...(toolCalls.length > 0 ? { toolCalls } : {}),
-      ...(finishReason ? { finishReason } : {}),
-      ...(servedServiceTier ? { servedServiceTier } : {}),
-      ...(req.deferrable === true ? { requestedServiceTier: TIER_DIFERIBLE_OPENAI } : {}),
-      usage: {
-        inputTokens,
-        outputTokens,
-        ...(usage.prompt_tokens_details?.cached_tokens != null
-          ? { cachedInputTokens: usage.prompt_tokens_details.cached_tokens }
-          : {}),
-        // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
-        // Con el usage completo la clave NO aparece.
-        ...(inputAbsent || outputAbsent ? { complete: false } : {}),
+    const razonamiento = razonamientoDeclarado(
+      usage,
+      esTextoNoVacio(mensaje?.reasoning_content) || esTextoNoVacio(mensaje?.reasoning),
+    );
+
+    return atestiguar(
+      {
+        text,
+        ...(toolCalls.length > 0 ? { toolCalls } : {}),
+        ...(finishReason ? { finishReason } : {}),
+        ...(servedServiceTier ? { servedServiceTier } : {}),
+        ...(req.deferrable === true ? { requestedServiceTier: TIER_DIFERIBLE_OPENAI } : {}),
+        usage: {
+          inputTokens,
+          outputTokens,
+          ...(usage.prompt_tokens_details?.cached_tokens != null
+            ? { cachedInputTokens: usage.prompt_tokens_details.cached_tokens }
+            : {}),
+          ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
+          // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
+          // Con el usage completo la clave NO aparece.
+          ...(inputAbsent || outputAbsent ? { complete: false } : {}),
+        },
+        // Solo es NATIVO si el contrato viajó en `response_format`. Cuando se
+        // degradó a pedir el JSON por prompt, quien impone la forma es el layer al
+        // validar, y de este campo depende que el informe no publique una garantía
+        // del proveedor que el proveedor no dio.
+        structuredNatively: req.schema != null && nativo,
+        raw: json,
       },
-      // Solo es NATIVO si el contrato viajó en `response_format`. Cuando se
-      // degradó a pedir el JSON por prompt, quien impone la forma es el layer al
-      // validar, y de este campo depende que el informe no publique una garantía
-      // del proveedor que el proveedor no dio.
-      structuredNatively: req.schema != null && nativo,
-      raw: json,
-    };
+      // Lo que salió por el cable, para la regla de la referencia: con la vía
+      // nativa, el esquema del llamante TAL CUAL dentro de `response_format`
+      // (envoltorio fijo: tipo, nombre, strict) y los mensajes sin tocar, y si
+      // viajó en modo estricto —el MISMO `isStrictCompatible` que decidió el
+      // `strict` del cuerpo—; con la degradada, la instrucción de JSON en el
+      // prompt, que la referencia rechaza siempre. Y los parámetros vacíos de
+      // las herramientas que no los traían, dos piezas cada una.
+      {
+        esquemaEnFormatoNativo: req.schema != null && nativo,
+        esquemaEstricto: req.schema != null && nativo && isStrictCompatible(req.schema),
+        esquemaPorPrompt: req.schema != null && !nativo,
+        piezasDelAdaptador: herramientasSinParametros(req.tools),
+      },
+    );
   }
 }
 
@@ -645,6 +689,29 @@ interface UsoDeChat {
   prompt_tokens?: number;
   completion_tokens?: number;
   prompt_tokens_details?: { cached_tokens?: number };
+  completion_tokens_details?: { reasoning_tokens?: number } | null;
+}
+
+// Los tokens de razonamiento OCULTO que el proveedor declara dentro de la
+// salida, o `undefined` si no lo dice. Un 0 solo se afirma cuando el contador lo
+// dice Y la respuesta no trae texto de razonamiento (`reasoning_content` de
+// DeepSeek o vLLM, `reasoning` de OpenRouter): un 0 al lado de un razonamiento
+// es un contador que se contradice, y entonces no se afirma nada.
+//
+// No es decorativo: la referencia solo acredita salida cuando la llamada que
+// corrió declaró exactamente 0 (ver `pipeline/referencia.ts`).
+function razonamientoDeclarado(
+  uso: UsoDeChat | null | undefined,
+  huboTextoDeRazonamiento: boolean,
+): number | undefined {
+  const n = uso?.completion_tokens_details?.reasoning_tokens;
+  if (typeof n !== "number" || !Number.isInteger(n) || n < 0) return undefined;
+  if (n === 0 && huboTextoDeRazonamiento) return undefined;
+  return n;
+}
+
+function esTextoNoVacio(v: unknown): boolean {
+  return typeof v === "string" && v !== "";
 }
 
 interface OpenAIChatResponse {
@@ -660,6 +727,8 @@ interface TrozoDeChat {
   choices?: {
     delta?: {
       content?: string | null;
+      reasoning_content?: unknown;
+      reasoning?: unknown;
       tool_calls?: {
         index?: number;
         id?: string;

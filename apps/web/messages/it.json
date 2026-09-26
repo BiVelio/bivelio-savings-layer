@@ -25,6 +25,7 @@
       "howItWorks": "Come funziona",
       "groupSave": "Risparmia",
       "proof": "Prova",
+      "yourBench": "Il tuo banco",
       "verify": "Verifica",
       "extracto": "Estratto",
       "groupOrg": "La tua organizzazione",
@@ -135,6 +136,81 @@
       "title": "Quanto risparmieresti tu?",
       "intro": "Scoprilo in un minuto: scegli un esempio (o incolla i tuoi dati), indica quanto usi l'API e guarda il risparmio previsto. Tutto gira nel tuo browser."
     },
+    "yourBench": {
+      "metaTitle": "Il tuo banco · BiVelio Savings Layer",
+      "eyebrow": "Il tuo traffico · entrambi i lati misurati dal tuo provider",
+      "title": "Il tuo banco di prova",
+      "intro": "Il banco pubblicato esegue i nostri scenari. Questo esegue i tuoi: con il campionamento di verifica attivo, una quota casuale delle tue richieste idonee viene inviata anche non ottimizzata al tuo provider, e ogni coppia viene misurata su entrambi i lati.",
+      "badge": "INFORMATIVO — MAI FATTURATO",
+      "offTitle": "Il campionamento di verifica è spento",
+      "offBody": "In questo periodo non è stato verificato nulla. Aggiungi l'impostazione qui sotto a createSavingsLayer e le tue coppie inizieranno ad apparire qui.",
+      "offCost": "Ogni verifica è una chiamata reale al tuo provider, pagata da te: più o meno il tasso di campionamento per quanto costerebbe quel traffico senza il layer. Non entra mai nel tuo estratto né in alcuna commissione.",
+      "collectingTitle": "Raccolta coppie: {n} di {min}",
+      "collectingBody": "Sotto le {min} coppie un intervallo direbbe più dei dati. I conteggi qui sotto sono già definitivi.",
+      "collectingGroupsTitle": "Raccolta coppie: {n} finora, ma ad alcuni gruppi ne mancano ancora",
+      "collectingGroupsBody": "I gruppi con meno di {min} coppie sommano ancora il {gap} delle tue richieste idonee. Un titolo senza abbastanza coppie da questi gruppi potrebbe nascondere proprio il traffico in cui il layer ti costa denaro, quindi compare quando sommano il {max} o meno. I conteggi qui sotto sono già definitivi.",
+      "readFailed": "Non è stato possibile leggere le tue coppie in questo momento. Nulla qui sotto è uno zero: riprova tra un attimo.",
+      "notAvailable": "Il tuo banco non è ancora disponibile su questo server.",
+      "headlineCaption": "stimato da {pairs} coppie confrontate: il <b>limite inferiore dell'intervallo al {level}</b> per le tue richieste idonee. Stima puntuale {point}, superiore {upper} — evidenziamo il minimo.",
+      "headlineCaptionPartial": "stimato da {pairs} coppie confrontate: il <b>limite inferiore dell'intervallo al {level}</b> per il {coverage} delle tue richieste idonee che sta in gruppi con coppie; il resto non entra in questa cifra. Stima puntuale {point}, superiore {upper} — evidenziamo il minimo.",
+      "meanDiff": "Differenza media ogni {per} richieste: {point} (da {lower} a {upper}, intervallo al {level}).",
+      "basis": "{pairs} coppie confrontate · coprono il {coverage} delle tue {eligible} richieste idonee · per il {rate} di queste richieste è tornata una coppia",
+      "subsampled": "Calcolato su un sottoinsieme casuale di {n} delle tue {total} coppie.",
+      "stressTitle": "Il caso peggiore per il layer",
+      "stressBody": "Le tue copie non ottimizzate vengono inviate solo ogni tanto, quindi trovano raramente calda la cache del tuo provider; senza il layer, ogni richiesta la troverebbe. Valutando ogni copia come se tutti i suoi token di input fossero stati letti dalla cache — alla tariffa di input in cache della tabella prezzi, o gratis se non ce l'ha —, il limite inferiore è {lower}.",
+      "costTitle": "Quanto ti sono costate le verifiche",
+      "costBody": "{usd} per {pairs} copie non ottimizzate, alle tariffe della tabella prezzi. È il costo dello strumento; non entra mai nel tuo estratto né in alcuna commissione.",
+      "costUnknown": "Più {n} copie il cui costo non si è potuto misurare: senza contatore d'uso, chiuse mentre erano in corso, oppure fallite o scadute. Il tuo provider potrebbe comunque averne fatturate alcune.",
+      "strataTitle": "Secondo come il layer ha servito la richiesta",
+      "colKind": "Come è stata servita",
+      "colEligible": "Richieste idonee",
+      "colPairs": "Coppie confrontate",
+      "colNaive": "Non ottimizzata, media",
+      "colOptimized": "Con il layer, media",
+      "colDiff": "Differenza ogni {per}",
+      "notCovered": "Troppo poche coppie per un intervallo proprio ({n} di {min})",
+      "noPairs": "Ancora nessuna coppia",
+      "stratum": {
+        "avoided_call": "Risposta senza chiamare il tuo provider",
+        "cheaper_model": "Risposta da un modello più economico",
+        "tokens_removed": "Inviata con parti rimosse",
+        "tokens_compressed": "Inviata ricodificata con meno token",
+        "unchanged": "Inviata senza modifiche"
+      },
+      "naiveQuality": "Coppie non confrontate, perché la copia non ottimizzata non è terminata come deve terminare una tua richiesta per essere verificata — troncata dal limite di output: {truncated} · interrotta per un altro motivo: {incomplete} · senza rispettare il tuo contratto di output: {missed}. Vengono contate e sono nel CSV, ma non entrano in nessuna cifra: una coppia conta solo se entrambi i lati sono terminati normalmente.",
+      "exclusionsTitle": "Mai verificate, e perché",
+      "exclusionsIntro": "Queste richieste vengono contate ma mai inviate due volte: confrontarle non significherebbe confrontare cose equivalenti. Le richieste in fail-open, troncate o che hanno mancato il contratto sono spesso le più costose per il layer, quindi lasciarle fuori può abbellire la cifra; per questo ciascuna è mostrata qui.",
+      "exclusionsNone": "Nessuna richiesta è stata esclusa in questo periodo.",
+      "excluded": {
+        "fail_open": "Passate per il percorso di fallback (inviate senza ottimizzare)",
+        "truncated": "Troncate dal limite di output",
+        "incomplete": "Interrotte per un altro motivo",
+        "contract_failed": "Non hanno rispettato il loro contratto di output",
+        "unmeasured": "Nessun contatore d'uso dal tuo provider",
+        "no_price": "Modello senza prezzo noto",
+        "over_cap": "Oltre il tuo tetto di costo per verifica",
+        "opted_out": "Escluse da te (savings.verification: false)",
+        "retrieval": "Il layer ha aggiunto documenti recuperati: nessuna copia equivalente"
+      },
+      "outcomesTitle": "Verifiche che non sono diventate coppie",
+      "outcomesNone": "Ogni verifica è diventata una coppia.",
+      "outcome": {
+        "check_failed": "Il tuo provider ha restituito un errore, o la copia è scaduta",
+        "check_unmeasured": "Il tuo provider non ha restituito il contatore d'uso",
+        "abandoned": "Ancora in corso quando il layer è stato chiuso",
+        "dropped": "Non inviate: c'erano già troppe verifiche in corso"
+      },
+      "methodTitle": "Come viene calcolato",
+      "methodBody": "Ogni coppia è una richiesta: quanto è costata la copia non ottimizzata e quanto è costata la richiesta ottimizzata, entrambe dai contatori d'uso del tuo provider alle tariffe della tabella prezzi. Una coppia conta solo se la copia è terminata normalmente e ha rispettato il tuo contratto di output, la stessa regola che le tue richieste devono superare per essere verificate. Le richieste sono raggruppate in base a come il layer le ha servite, e ogni gruppo pesa quanto la sua quota delle tue richieste idonee. L'intervallo è un bootstrap percentile stratificato: {resamples} ricampionamenti, seme {seed}. Con il CSV e i conteggi di questa pagina puoi ricalcolare ogni stima puntuale; i tuoi intervalli coincideranno con i nostri a meno del rumore di ricampionamento.",
+      "caveatsTitle": "Cosa questo non mostra",
+      "caveats": {
+        "sample": "Un campione casuale, non ogni richiesta: le cifre descrivono il tuo traffico idoneo con l'incertezza mostrata, e non vengono mai trasformate in un importo da fatturare.",
+        "randomness": "Due chiamate rispondono raramente allo stesso modo a meno che tu non fissi il seme e porti la temperatura a zero. Questo allarga l'intervallo. Una coppia conta solo se entrambi i lati sono terminati normalmente, quindi una risposta troncata da un solo lato non conta mai come risparmio.",
+        "outside": "I costi al di fuori della chiamata al tuo provider, come un servizio di embedding che gestisci tu, non sono in nessuno dei due lati.",
+        "streaming": "Le richieste fallite, o che hai annullato durante lo streaming, non vengono contate."
+      },
+      "exportCsv": "Scarica le coppie (CSV)"
+    },
     "install": {
       "metaTitle": "Installa · BiVelio Savings Layer",
       "eyebrow": "Integra",
@@ -201,7 +277,8 @@
       "colACost": "costo A",
       "colBCost": "costo B",
       "colSavings": "risparmio",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compressore del banco di prova, non in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificatore di risparmio",
@@ -360,6 +437,7 @@
       "proven": "comprovato",
       "notProven": "non comprovato",
       "notExercised": "non esercitata in questa esecuzione — il suo zero non è una misurazione",
+      "benchOnly": "include un compressore esclusivo del banco di prova che il pacchetto npm non contiene — non pubblicizzato",
       "estimatedMock": "stimato (simulato)",
       "footnoteMain": "Quattro registri, <b>mai sommati</b> — ognuno è una leva misurata separatamente, così un dollaro non può essere contato due volte.",
       "reconciledNote": "Il residuo di riconciliazione ≈ 0 lo dimostra.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "risparmio netto, <b>limite inferiore dell'IC al 95%</b>. Stima puntuale {point}, superiore {upper} — evidenziamo il minimo{mockNote}.",
+      "captionSdkPendiente": "ciò che regge l'SDK così come si installa da npm. L'esecuzione pubblicata includeva un compressore esclusivo del banco di prova che il pacchetto non include, quindi il suo intervallo e la sua stima puntuale non vengono mostrati come promessa finché un'esecuzione dell'SDK installato non li sostituirà.",
       "mockNote": " (carico di lavoro di riferimento, provider simulato)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— misurato contro un provider reale, con controllo qualità.",
+      "sdkPendiente": "Questa esecuzione includeva un compressore esclusivo del banco di prova che il pacchetto npm non include: le sue cifre mostrano il meccanismo, non quanto risparmia l'SDK installato.",
       "mock": "<b>STIMATO · provider simulato</b> — questo dimostra che il meccanismo funziona, non la tua fattura. Un'esecuzione LIVE confermata sostituisce ogni numero qui."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Corsia ombra: l'elisione avrebbe risparmiato {usd} su {requests} richieste simulate. Ipotetico — non entra mai nella base né nella commissione.",
       "sombraElisionNegativa": "Corsia ombra: l'elisione avrebbe fatto spendere {usd} in più su {requests} richieste simulate. Per questo resta spenta: si accende solo ciò che fa risparmiare davvero.",
       "elisionProveedor": "Corsia della cancellazione del provider: {requests} richieste in cui i nostri parametri hanno fatto cancellare contesto al provider. Un conteggio, non un risparmio — non entra mai nella base né nella commissione.",
-      "referencia": "Misurato per riferimento: {usd} su {requests} richieste ripetute servite senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico. Incluso nella base.",
+      "referencia": "Misurato per riferimento: {usd} su {requests} richieste ripetute servite senza chiamare il tuo fornitore. Ciascuna è valutata con il contatore che il tuo fornitore ha restituito per la richiesta identica già eseguita — si trova nel report di quella richiesta e nell'utilizzo del tuo fornitore di quel giorno — alla tariffa dell'input in cache, la più bassa che il tuo fornitore applica per ripetere un prompt; l'output conta solo se il campionamento era deterministico e la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento). Incluso nella base.",
       "referenciaExcluida": "Misurato per riferimento: {usd} su {requests} richieste ripetute. Mostrato come contesto — per ora resta fuori dalla base e dalla commissione.",
       "exportarReferencias": "Scarica le richieste ripetute di questo periodo, una riga per richiesta (CSV)",
       "exportarReferenciasPorDia": "Troppe richieste ripetute per un solo file: scarica questo periodo giorno per giorno (CSV):",
       "parametros": "Parametri dell'estratto — listino prezzi {version} · tasso di cambio {fx}.",
-      "parametrosReferencia": "Regola delle richieste ripetute ({regla}): la richiesta eseguita deve essere identica byte per byte, non toccata dal livello e vecchia al massimo {dias} giorni; l'input, alla tariffa dell'input in cache del tuo fornitore; l'output, al {cuota} del suo contatore, mai oltre il limite di output di questa richiesta e solo con campionamento deterministico.",
+      "parametrosReferencia": "Regola delle richieste ripetute ({regla}): la richiesta eseguita deve essere identica byte per byte, non toccata dal livello (uno schema di output conta solo se ha viaggiato esattamente come l'hai inviato, in modalità strict, nel parametro nativo di formato di risposta del tuo fornitore, senza nulla di aggiunto al prompt) e vecchia al massimo {dias} giorni; l'input, alla tariffa dell'input in cache del tuo fornitore; l'output, al {cuota} del suo contatore, mai oltre il limite di output di questa richiesta e solo con campionamento deterministico, su un modello del nostro catalogo prezzi che non ragiona e rispetta quel campionamento, quando la richiesta eseguita non conteneva ragionamento nascosto (il tuo fornitore ha dichiarato zero token di ragionamento o, se non li dettaglia, la sua risposta non conteneva alcun blocco di ragionamento).",
       "mismaFacturaTitulo": "Questo documento È la futura fattura.",
       "mismaFactura": "L'estratto in ombra e quello fatturabile sono calcolati dalla stessa macchina: quando la commissione si attiverà, la prima fattura conterrà solo numeri che hai già visto qui.",
       "historialTitulo": "Estratti chiusi",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "di fattura in meno, verificato al 95 % · rispetto a un'integrazione non ottimizzata, senza streaming"
         }
       ],
+      "proofSdkPendiente": "Provvisorio: l'esecuzione pubblicata includeva un compressore esclusivo del banco di prova che il pacchetto npm non include. Questa cifra sta sotto la soglia minima di quell'esecuzione togliendo l'effetto del compressore, ricalcolata dalle prove misurate: non è ancora una misurazione dell'SDK installato. Quell'esecuzione è in sospeso.",
       "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Qualsiasi endpoint compatibile con l'API OpenAI, più l'adattatore nativo Anthropic. Con cifra pubblicata, oggi, solo OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
       "plain": "In questo test la fattura è scesa quasi con certezza di almeno {piso}. Molto probabilmente è scesa del {punto}.",
+      "plainSdkPendiente": "Con l'SDK così come lo installi da npm, la fattura scende di almeno {piso}. Il test pubblicato includeva anche un compressore esclusivo del banco di prova che il pacchetto non include; ne togliamo l'effetto invece di contarlo, finché un'esecuzione dell'SDK installato non sostituirà questa cifra.",
       "plainNote": "Quando c'è una forchetta, annunciamo sempre il numero piccolo — quello che la statistica garantisce —, mai quello lusinghiero.",
       "trialsLink": "Scarica le prove grezze (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "qualità",
       "punto": "stima puntuale",
       "suelo": "Il titolo è la soglia minima dell'intervallo al 95 %, mai il punto.",
+      "sdkPendiente": "Questa esecuzione includeva un compressore esclusivo del banco di prova che il pacchetto npm non include, quindi la sua soglia minima non viene mostrata. La cifra qui sopra è il nostro titolo per l'SDK così come lo installi: regge anche togliendo l'effetto di quel compressore. Manca ancora un'esecuzione dell'SDK installato.",
       "libros": "per registro",
       "pie": "Ogni registro si pubblica con il proprio intervallo; quelli che non superano lo zero non si annunciano.",
       "fecha": "tornata"

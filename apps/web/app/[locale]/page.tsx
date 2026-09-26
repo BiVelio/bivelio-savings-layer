@@ -25,6 +25,12 @@ import { Link } from "@/i18n/navigation";
 import { absolute, languageAlternates } from "@/i18n/site";
 import { preciosDelPlan } from "@/lib/stripe/pricing";
 import { formatearPrecio } from "@/lib/format/precio";
+import {
+  escenariosConPiezaDelBanco,
+  librosConPiezaDelBanco,
+  midioElSdkInstalado,
+  sueloPublicable,
+} from "@/lib/bench/sdk-instalado";
 
 // Proveedores que exponen un endpoint OpenAI-compatible (o, en el caso de
 // Anthropic, tienen adaptador nativo). Es una lista de COMPATIBILIDAD, no de
@@ -48,6 +54,14 @@ const LLMS = [
 // The measured A/B artifact powers Step 2 (the reference bench) and the price
 // used by the Step-1 projector — exactly like the dashboard verify/proof pages.
 const ab = abData as unknown as AbArtifact;
+
+// ¿La tirada publicada midió el SDK tal como se instala desde npm? La del
+// 2026-09-12 no (llevaba el compresor del banco). Mientras no, ninguna cifra de
+// esta página presenta su suelo como lo que el cliente obtiene, y los libros y
+// escenarios que mezclan esa pieza no se anuncian (lib/bench/sdk-instalado.ts).
+const SDK_INSTALADO = midioElSdkInstalado(ab);
+const LIBROS_CON_PIEZA_DEL_BANCO = librosConPiezaDelBanco(ab);
+const ESCENARIOS_CON_PIEZA_DEL_BANCO = escenariosConPiezaDelBanco(ab);
 
 const mini = (ab.pricing.table["gpt-4o-mini"] ?? {}) as { inputPer1k?: number; outputPer1k?: number };
 const prices = { inPer1k: mini.inputPer1k ?? 0.00015, outPer1k: mini.outputPer1k ?? 0.0006 };
@@ -176,7 +190,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
 
   // El rango real de la tirada, escenario a escenario — sustituye a la tabla
   // en la landing sin inventar nada: mínimo y máximo medidos del artefacto.
+  // Sin los escenarios cuyo ahorro salió de una pieza que npm no trae.
   const puntosEscenario = ab.scenarios
+    .filter((s) => !ESCENARIOS_CON_PIEZA_DEL_BANCO.has(s.name))
     .map((s) => s.measured?.savings?.point)
     .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
   const rangoMin = pctLocal1(Math.min(...puntosEscenario));
@@ -255,6 +271,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               libros: t("recibo.libros"),
               pie: t("recibo.pie"),
               fecha: t("recibo.fecha"),
+              sdkPendiente: t("recibo.sdkPendiente"),
             }}
             filas={cascadeSteps.map((st) => ({ ledger: st.ledger, title: st.title }))}
           />
@@ -374,6 +391,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               ))}
             </div>
             <p className="cascade-nota">{t("cascade.footnote")}</p>
+            {/* La cifra de arriba, mientras la tirada publicada no mida el SDK
+                tal como se instala, no sale de medir el paquete de npm: sale de
+                la tirada con el compresor del banco, recalculada sin él. Se dice. */}
+            {SDK_INSTALADO ? null : <p className="cascade-nota">{t("hero.proofSdkPendiente")}</p>}
           </div>
           {/* La traducción sin jerga (petición del dueño, 2026-09-04): el vídeo
               del experimento justo + las dos cifras del artefacto dichas en
@@ -393,17 +414,19 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             <div className="medido-llano-texto">
               <h3>{t("step2.plainTitle")}</h3>
               <p className="grande">
-                {t("step2.plain", {
-                  piso: pctLocal1(ab.aggregate.savings.lower),
-                  punto: pctLocal1(ab.aggregate.savings.point),
-                })}
+                {SDK_INSTALADO
+                  ? t("step2.plain", {
+                      piso: pctLocal1(ab.aggregate.savings.lower),
+                      punto: pctLocal1(ab.aggregate.savings.point),
+                    })
+                  : t("step2.plainSdkPendiente", { piso: pctLocal1(sueloPublicable(ab)) })}
               </p>
               <p className="nota">{t("step2.plainNote")}</p>
             </div>
           </div>
           <div className="bench rv">
             <ReferenceModeBadge ab={ab} />
-            <NetSavingsCIBand savings={ab.aggregate.savings} mode={ab.mode} />
+            <NetSavingsCIBand ab={ab} />
             <div style={{ marginTop: "16px" }}>
               <ReferenceLedgerCards ab={ab} />
             </div>
@@ -465,7 +488,9 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
                 // libro no sale. Que salgan tres tarjetas en vez de cuatro es la
                 // verdad de esa tirada.
                 const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");
-                return !!m && m.proven;
+                // Y un libro que mezcla una pieza que npm no trae tampoco: su
+                // cifra no es la de quien instala el paquete.
+                return !!m && m.proven && !LIBROS_CON_PIEZA_DEL_BANCO.has(m.ledger);
               })
               .map((l) => {
               const m = medidoPorLibro.get(CLAVE_DE_TARJETA[l.name] ?? "");

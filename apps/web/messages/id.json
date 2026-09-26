@@ -25,6 +25,7 @@
       "howItWorks": "Cara kerjanya",
       "groupSave": "Hemat",
       "proof": "Bukti",
+      "yourBench": "Bench Anda",
       "verify": "Verifikasi",
       "extracto": "Rekening",
       "groupOrg": "Organisasi Anda",
@@ -135,6 +136,81 @@
       "title": "Berapa yang bisa kamu hemat?",
       "intro": "Cek dalam satu menit: pilih contoh (atau tempel data kamu sendiri), beri tahu seberapa banyak kamu memakai API, dan lihat proyeksi penghematannya. Semua dihitung di browser kamu."
     },
+    "yourBench": {
+      "metaTitle": "Bench Anda · BiVelio Savings Layer",
+      "eyebrow": "Lalu lintas Anda · kedua sisi diukur oleh penyedia Anda",
+      "title": "Bench Anda sendiri",
+      "intro": "Bench yang dipublikasikan menjalankan skenario kami. Yang ini menjalankan skenario Anda: dengan sampling verifikasi aktif, sebagian acak dari permintaan Anda yang memenuhi syarat juga dikirim tanpa optimasi ke penyedia Anda sendiri, dan setiap pasangan diukur di kedua sisi.",
+      "badge": "INFORMASI SAJA — TIDAK PERNAH DITAGIH",
+      "offTitle": "Sampling verifikasi nonaktif",
+      "offBody": "Belum ada yang diperiksa dalam periode ini. Tambahkan pengaturan di bawah ke createSavingsLayer dan pasangan Anda akan mulai muncul di sini.",
+      "offCost": "Setiap pemeriksaan adalah panggilan nyata ke penyedia Anda, yang Anda bayar: kira-kira tingkat sampling dikali biaya lalu lintas itu tanpa lapisan. Tidak pernah masuk ke rekening Anda atau komisi apa pun.",
+      "collectingTitle": "Mengumpulkan pasangan: {n} dari {min}",
+      "collectingBody": "Di bawah {min} pasangan, sebuah interval akan mengatakan lebih dari datanya. Hitungan di bawah sudah final.",
+      "collectingGroupsTitle": "Mengumpulkan pasangan: {n} sejauh ini, tetapi beberapa kelompok masih kekurangan",
+      "collectingGroupsBody": "Kelompok dengan kurang dari {min} pasangan masih mencakup {gap} dari permintaan Anda yang memenuhi syarat. Angka utama tanpa cukup pasangan dari kelompok itu bisa menyembunyikan justru lalu lintas tempat lapisan membuat Anda rugi, jadi angka itu muncul setelah kelompok tersebut mencakup {max} atau kurang. Hitungan di bawah sudah final.",
+      "readFailed": "Pasangan Anda tidak dapat dibaca saat ini. Tidak ada yang di bawah bernilai nol: coba lagi sebentar lagi.",
+      "notAvailable": "Bench Anda belum tersedia di server ini.",
+      "headlineCaption": "diperkirakan dari {pairs} pasangan yang dibandingkan: <b>batas bawah interval {level}</b> untuk permintaan Anda yang memenuhi syarat. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah.",
+      "headlineCaptionPartial": "diperkirakan dari {pairs} pasangan yang dibandingkan: <b>batas bawah interval {level}</b> untuk {coverage} permintaan Anda yang memenuhi syarat dan berada dalam kelompok yang punya pasangan; sisanya tidak termasuk dalam angka ini. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah.",
+      "meanDiff": "Selisih rata-rata per {per} permintaan: {point} (dari {lower} hingga {upper}, interval {level}).",
+      "basis": "{pairs} pasangan dibandingkan · mencakup {coverage} dari {eligible} permintaan Anda yang memenuhi syarat · untuk {rate} dari permintaan itu, sebuah pasangan kembali",
+      "subsampled": "Dihitung pada subset acak berisi {n} dari {total} pasangan Anda.",
+      "stressTitle": "Kasus terburuk bagi lapisan",
+      "stressBody": "Salinan tanpa optimasi Anda hanya dikirim sesekali, sehingga jarang menemukan cache penyedia Anda dalam keadaan hangat; tanpa lapisan, setiap permintaan akan menemukannya. Jika setiap salinan dihargai seolah semua token inputnya dibaca dari cache — dengan tarif input cache di tabel harga, atau gratis jika tidak ada — batas bawahnya adalah {lower}.",
+      "costTitle": "Biaya pemeriksaan bagi Anda",
+      "costBody": "{usd} untuk {pairs} salinan tanpa optimasi, dengan tarif tabel harga. Ini adalah biaya instrumennya; tidak pernah masuk ke rekening Anda atau komisi apa pun.",
+      "costUnknown": "Ditambah {n} salinan yang biayanya tidak dapat diukur: tanpa penghitung penggunaan, ditutup saat berjalan, atau gagal atau melewati batas waktu. Penyedia Anda mungkin tetap menagih sebagian darinya.",
+      "strataTitle": "Menurut cara lapisan melayani permintaan",
+      "colKind": "Cara dilayani",
+      "colEligible": "Permintaan yang memenuhi syarat",
+      "colPairs": "Pasangan dibandingkan",
+      "colNaive": "Tanpa optimasi, rata-rata",
+      "colOptimized": "Dengan lapisan, rata-rata",
+      "colDiff": "Selisih per {per}",
+      "notCovered": "Terlalu sedikit pasangan untuk interval sendiri ({n} dari {min})",
+      "noPairs": "Belum ada pasangan",
+      "stratum": {
+        "avoided_call": "Dijawab tanpa memanggil penyedia Anda",
+        "cheaper_model": "Dijawab oleh model yang lebih murah",
+        "tokens_removed": "Dikirim dengan beberapa bagian dihapus",
+        "tokens_compressed": "Dikirim dengan pengodean ulang ke lebih sedikit token",
+        "unchanged": "Dikirim tanpa perubahan"
+      },
+      "naiveQuality": "Pasangan yang tidak dibandingkan, karena salinan tanpa optimasi tidak selesai seperti yang disyaratkan agar permintaan Anda diperiksa — terpotong batas output: {truncated} · berhenti karena alasan lain: {incomplete} · tidak memenuhi kontrak output Anda: {missed}. Semuanya dihitung dan ada di CSV, tetapi tidak masuk ke angka mana pun: sebuah pasangan hanya dihitung jika kedua sisi selesai dengan normal.",
+      "exclusionsTitle": "Tidak pernah diperiksa, dan alasannya",
+      "exclusionsIntro": "Permintaan ini dihitung tetapi tidak pernah dikirim dua kali: membandingkannya bukan membandingkan hal yang setara. Permintaan fail-open, yang terpotong, dan yang gagal memenuhi kontrak sering kali yang paling mahal bagi lapisan, jadi mengecualikannya dapat membuat angkanya tampak lebih baik; karena itu masing-masing ditampilkan di sini.",
+      "exclusionsNone": "Tidak ada permintaan yang dikecualikan dalam periode ini.",
+      "excluded": {
+        "fail_open": "Melalui jalur fail-open (dikirim tanpa optimasi)",
+        "truncated": "Terpotong batas output",
+        "incomplete": "Berhenti karena alasan lain",
+        "contract_failed": "Tidak memenuhi kontrak output-nya",
+        "unmeasured": "Tidak ada penghitung penggunaan dari penyedia Anda",
+        "no_price": "Model tanpa harga yang diketahui",
+        "over_cap": "Di atas batas biaya per pemeriksaan Anda",
+        "opted_out": "Dikecualikan oleh Anda (savings.verification: false)",
+        "retrieval": "Lapisan menambahkan dokumen hasil pencarian: tidak ada salinan yang setara"
+      },
+      "outcomesTitle": "Pemeriksaan yang tidak menjadi pasangan",
+      "outcomesNone": "Setiap pemeriksaan menjadi pasangan.",
+      "outcome": {
+        "check_failed": "Penyedia Anda mengembalikan error, atau salinan kehabisan waktu",
+        "check_unmeasured": "Penyedia Anda tidak mengembalikan penghitung penggunaan",
+        "abandoned": "Masih berjalan saat lapisan ditutup",
+        "dropped": "Tidak dikirim: sudah terlalu banyak pemeriksaan yang berjalan"
+      },
+      "methodTitle": "Cara penghitungannya",
+      "methodBody": "Setiap pasangan adalah satu permintaan: biaya salinan tanpa optimasi dan biaya permintaan yang dioptimasi, keduanya dari penghitung penggunaan penyedia Anda dengan tarif tabel harga. Sebuah pasangan hanya dihitung jika salinannya selesai dengan normal dan memenuhi kontrak output Anda, aturan yang sama yang harus dilewati permintaan Anda sendiri agar diperiksa. Permintaan dikelompokkan menurut cara lapisan melayaninya, dan setiap kelompok diberi bobot sesuai porsinya dalam permintaan Anda yang memenuhi syarat. Intervalnya adalah bootstrap persentil bertingkat: {resamples} resampling, seed {seed}. Dengan CSV dan hitungan di halaman ini Anda dapat menghitung ulang setiap estimasi titik; interval Anda akan cocok dengan interval kami, kecuali derau resampling.",
+      "caveatsTitle": "Yang tidak ditunjukkan di sini",
+      "caveats": {
+        "sample": "Sampel acak, bukan setiap permintaan: angka-angka ini menggambarkan lalu lintas Anda yang memenuhi syarat dengan ketidakpastian yang ditampilkan, dan tidak pernah diubah menjadi jumlah tagihan.",
+        "randomness": "Dua panggilan jarang menjawab sama kecuali Anda menetapkan seed dan mengatur temperatur ke nol. Itu memperlebar interval. Sebuah pasangan hanya dihitung jika kedua sisi selesai dengan normal, jadi jawaban yang terpotong hanya di satu sisi tidak pernah dihitung sebagai penghematan.",
+        "outside": "Biaya di luar panggilan ke penyedia Anda, seperti layanan embedding yang Anda jalankan sendiri, tidak ada di sisi mana pun.",
+        "streaming": "Permintaan yang gagal, atau yang Anda batalkan saat streaming, tidak dihitung."
+      },
+      "exportCsv": "Unduh pasangan (CSV)"
+    },
     "install": {
       "metaTitle": "Pasang · BiVelio Savings Layer",
       "eyebrow": "Integrasikan",
@@ -201,7 +277,8 @@
       "colACost": "biaya A",
       "colBCost": "biaya B",
       "colSavings": "penghematan",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "kompresor bangku uji, tidak ada di npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verifikator penghematan",
@@ -360,6 +437,7 @@
       "proven": "terbukti",
       "notProven": "tidak terbukti",
       "notExercised": "tidak diaktifkan pada eksekusi ini — angka nolnya bukan pengukuran",
+      "benchOnly": "mencakup kompresor khusus bangku uji yang tidak disertakan dalam paket npm — tidak diiklankan",
       "estimatedMock": "diperkirakan (tiruan)",
       "footnoteMain": "Empat ledger, <b>tidak pernah dijumlahkan</b> — masing-masing adalah tuas yang diukur terpisah, sehingga satu dolar tidak bisa dihitung dua kali.",
       "reconciledNote": "Residual rekonsiliasi ≈ 0 membuktikannya.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "penghematan bersih, <b>batas bawah CI 95%</b>. Estimasi titik {point}, atas {upper} — kami menonjolkan angka terendah{mockNote}.",
+      "captionSdkPendiente": "yang dipertahankan SDK sebagaimana dipasang dari npm. Eksekusi yang dipublikasikan memakai kompresor khusus bangku uji yang tidak disertakan dalam paket, jadi interval dan estimasi titiknya tidak ditampilkan sebagai janji sampai eksekusi dengan SDK terpasang menggantikannya.",
       "mockNote": " (beban kerja referensi, penyedia tiruan)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— diukur terhadap penyedia nyata, dengan gerbang kualitas.",
+      "sdkPendiente": "Eksekusi ini memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm: angka-angkanya menunjukkan mekanismenya, bukan penghematan SDK terpasang.",
       "mock": "<b>DIPERKIRAKAN · penyedia tiruan</b> — ini membuktikan mekanismenya berfungsi, bukan tagihan Anda. Menjalankan LIVE yang telah di-commit menggantikan setiap angka di sini."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Jalur bayangan: elisi akan menghemat {usd} pada {requests} permintaan tersimulasi. Hipotetis — tidak pernah masuk basis maupun komisi.",
       "sombraElisionNegativa": "Jalur bayangan: elisi akan menambah biaya {usd} pada {requests} permintaan tersimulasi. Karena itu tetap mati: hanya yang benar-benar menghemat yang dinyalakan.",
       "elisionProveedor": "Jalur penghapusan oleh penyedia: {requests} permintaan di mana pengaturan kami membuat penyedia menghapus konteks. Sebuah hitungan, bukan penghematan — tidak pernah masuk ke basis maupun komisi.",
-      "referencia": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik. Termasuk dalam basis.",
+      "referencia": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang yang dilayani tanpa memanggil penyedia Anda. Masing-masing dinilai dengan penghitung yang dikembalikan penyedia Anda untuk permintaan identik yang sudah dijalankan — ada di laporan permintaan itu dan di penggunaan penyedia Anda pada hari itu — pada tarif input ter-cache, tarif terendah yang ditagihkan penyedia Anda untuk mengulang sebuah prompt; output hanya dihitung jika sampling-nya deterministik dan permintaan yang dijalankan tidak membawa penalaran tersembunyi (penyedia Anda melaporkan nol token penalaran atau, jika tidak merincinya, jawabannya tidak memuat blok penalaran). Termasuk dalam basis.",
       "referenciaExcluida": "Diukur berdasarkan referensi: {usd} dari {requests} permintaan berulang. Ditampilkan sebagai konteks — untuk saat ini tidak dimasukkan ke basis maupun komisi.",
       "exportarReferencias": "Unduh permintaan berulang periode ini, satu baris per permintaan (CSV)",
       "exportarReferenciasPorDia": "Terlalu banyak permintaan berulang untuk satu file — unduh periode ini per hari (CSV):",
       "parametros": "Parameter laporan — katalog harga {version} · nilai tukar {fx}.",
-      "parametrosReferencia": "Aturan permintaan berulang ({regla}): permintaan yang dijalankan harus identik byte demi byte, tidak diubah oleh lapisan, dan paling lama berumur {dias} hari; input pada tarif input ter-cache penyedia Anda; output sebesar {cuota} dari penghitungnya, tidak pernah melebihi batas output permintaan ini, dan hanya dengan sampling deterministik.",
+      "parametrosReferencia": "Aturan permintaan berulang ({regla}): permintaan yang dijalankan harus identik byte demi byte, tidak diubah oleh lapisan (skema output hanya dihitung jika dikirim persis seperti yang Anda kirim, dalam mode ketat, di parameter format respons native penyedia Anda, tanpa tambahan apa pun pada prompt), dan paling lama berumur {dias} hari; input pada tarif input ter-cache penyedia Anda; output sebesar {cuota} dari penghitungnya, tidak pernah melebihi batas output permintaan ini, dan hanya dengan sampling deterministik, pada model dalam katalog harga kami yang tidak melakukan penalaran dan mematuhi sampling tersebut, ketika permintaan yang dijalankan tidak membawa penalaran tersembunyi (penyedia Anda melaporkan nol token penalaran atau, jika tidak merincinya, jawabannya tidak memuat blok penalaran).",
       "mismaFacturaTitulo": "Dokumen ini ADALAH faktur yang akan datang.",
       "mismaFactura": "Rekening bayangan dan yang ditagihkan dihitung mesin yang sama: saat komisi aktif, faktur pertamamu hanya berisi angka yang sudah kamu lihat di sini.",
       "historialTitulo": "Laporan tertutup",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "tagihan lebih rendah, terverifikasi 95% · dibanding integrasi tanpa optimasi, tanpa streaming"
         }
       ],
+      "proofSdkPendiente": "Sementara: eksekusi yang dipublikasikan memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm. Angka ini berada di bawah batas bawah eksekusi itu setelah efek kompresor dikeluarkan, dihitung ulang dari percobaan yang diukur — ini belum merupakan pengukuran SDK terpasang. Eksekusi itu masih tertunda.",
       "medidoEn": "Diukur pada",
       "compatibleCon": "Kompatibel dengan",
       "compatibleNota": "Endpoint apa pun yang kompatibel dengan API OpenAI, plus adaptor asli Anthropic. Dengan angka yang dipublikasikan, saat ini, hanya OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "Pengujian ini eksperimen yang adil: tugas yang sama dua kali — tanpa Savings dan dengan Savings — dengan meteran penyedia yang sama menghitung keduanya.",
       "plainTitle": "Terjemahan, tanpa jargon",
       "plain": "Dalam pengujian ini, tagihan hampir pasti turun setidaknya {piso}. Kemungkinan besar turun {punto}.",
+      "plainSdkPendiente": "Dengan SDK sebagaimana Anda memasangnya dari npm, tagihan turun setidaknya {piso}. Pengujian yang dipublikasikan juga memakai kompresor khusus bangku uji yang tidak disertakan dalam paket; kami mengeluarkan efeknya alih-alih menghitungnya, sampai eksekusi dengan SDK terpasang menggantikan angka ini.",
       "plainNote": "Saat ada rentang, kami selalu mengumumkan angka yang kecil — yang dijamin statistik — tidak pernah yang menyanjung.",
       "trialsLink": "Unduh data percobaan mentah (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "kualitas",
       "punto": "estimasi titik",
       "suelo": "Angka utama adalah batas bawah interval 95%, bukan titiknya.",
+      "sdkPendiente": "Eksekusi ini memakai kompresor khusus bangku uji yang tidak disertakan dalam paket npm, jadi batas bawahnya tidak ditampilkan. Angka di atas adalah angka utama kami untuk SDK sebagaimana Anda memasangnya: angka itu tetap berlaku setelah efek kompresor tersebut dikeluarkan. Eksekusi dengan SDK terpasang masih tertunda.",
       "libros": "per buku besar",
       "pie": "Setiap buku besar dipublikasikan dengan intervalnya sendiri; yang tidak melewati nol tidak diiklankan.",
       "fecha": "putaran"

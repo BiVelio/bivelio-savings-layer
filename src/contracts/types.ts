@@ -272,6 +272,11 @@ export interface SavingsToggles {
    * tier the request is sent unchanged and the report says so.
    */
   deferrable?: boolean;
+  /**
+   * Set to `false` to keep this request out of verification sampling: it is
+   * counted as excluded and never sent twice. No effect when verification is off.
+   */
+  verification?: boolean;
 }
 
 /**
@@ -800,6 +805,12 @@ export interface SavingsReport {
   /** How a streamed request was delivered. Present only on results of `generateStream`. */
   streaming?: StreamingReport;
 
+  /**
+   * Whether this request was drawn for verification sampling, and how it counts.
+   * Present only when `verification` is enabled on the layer.
+   */
+  verification?: import("./verification.js").VerificationReport;
+
   quality: {
     taskPassed?: boolean;
     /**
@@ -828,8 +839,16 @@ export interface SavingsReport {
      *                  served without calling the provider) and a byte-identical
      *                  request had already run through the layer untouched. The
      *                  baseline is the provider's own counter for that request,
-     *                  valued at the provider's cached-input rate, with output
-     *                  credited only under deterministic sampling. A floor.
+     *                  valued at the provider's cached-input rate. Output is
+     *                  credited only under deterministic sampling, on a model
+     *                  with a list price in the catalog that does not reason and
+     *                  honors that setting, when the call that ran carried no
+     *                  hidden reasoning (zero reasoning tokens reported, or no
+     *                  reasoning block where the provider does not break them
+     *                  out), and then at 95% of its counter. With an output
+     *                  schema, only when the schema traveled exactly as sent, in
+     *                  strict mode, in the provider's native response-format
+     *                  parameter. Valued low on purpose.
      *                  Enters the commission base; `cache.reference` carries the
      *                  arithmetic and the id of the request that ran.
      * - `estimated`  — the call was AVOIDED, so there never was a provider

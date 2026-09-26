@@ -131,9 +131,9 @@ describe("COMISIONAR_REFERENCIA — el interruptor del carril medido por referen
     expect(COMISIONAR_REFERENCIA).toBe(true);
   });
 
-  it("la regla publicada en el extracto es la v1 decidida", () => {
+  it("la regla publicada en el extracto es la v2 decidida (E5 ampliada y guarda de razonamiento)", () => {
     expect(REGLA_REFERENCIA).toEqual({
-      version: "reference-v1",
+      version: "reference-v2",
       cuotaSalida: 0.95,
       edadMaximaDias: 30,
       margenPorMensajeTokens: 8,

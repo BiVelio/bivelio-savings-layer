@@ -25,6 +25,7 @@
       "howItWorks": "Cách hoạt động",
       "groupSave": "Tiết kiệm",
       "proof": "Bằng chứng",
+      "yourBench": "Bài đo của bạn",
       "verify": "Xác minh",
       "extracto": "Sao kê",
       "groupOrg": "Tổ chức của bạn",
@@ -135,6 +136,81 @@
       "title": "Bạn sẽ tiết kiệm được bao nhiêu?",
       "intro": "Kiểm tra trong một phút: chọn một ví dụ (hoặc dán dữ liệu của bạn), cho biết mức dùng API và xem khoản tiết kiệm dự kiến. Mọi thứ chạy ngay trong trình duyệt của bạn."
     },
+    "yourBench": {
+      "metaTitle": "Bài đo của bạn · BiVelio Savings Layer",
+      "eyebrow": "Lưu lượng của bạn · cả hai phía do nhà cung cấp của bạn đo",
+      "title": "Bài đo của riêng bạn",
+      "intro": "Bài đo công bố chạy các kịch bản của chúng tôi. Bài này chạy kịch bản của bạn: khi bật lấy mẫu xác minh, một phần ngẫu nhiên các yêu cầu hợp lệ của bạn cũng được gửi không tối ưu tới chính nhà cung cấp của bạn, và mỗi cặp được đo ở cả hai phía.",
+      "badge": "CHỈ ĐỂ THAM KHẢO — KHÔNG BAO GIỜ TÍNH PHÍ",
+      "offTitle": "Lấy mẫu xác minh đang tắt",
+      "offBody": "Chưa có gì được kiểm tra trong khoảng thời gian này. Thêm thiết lập bên dưới vào createSavingsLayer và các cặp của bạn sẽ bắt đầu xuất hiện ở đây.",
+      "offCost": "Mỗi lần kiểm tra là một lệnh gọi thật tới nhà cung cấp của bạn, do bạn trả tiền: xấp xỉ tỷ lệ lấy mẫu nhân với chi phí của lưu lượng đó khi không có lớp. Nó không bao giờ đi vào sao kê của bạn hay bất kỳ khoản hoa hồng nào.",
+      "collectingTitle": "Đang thu thập cặp: {n} / {min}",
+      "collectingBody": "Dưới {min} cặp, một khoảng tin cậy sẽ nói nhiều hơn dữ liệu. Các số đếm bên dưới đã là cuối cùng.",
+      "collectingGroupsTitle": "Đang thu thập cặp: đến nay có {n}, nhưng một số nhóm vẫn còn thiếu",
+      "collectingGroupsBody": "Các nhóm có ít hơn {min} cặp vẫn chiếm {gap} yêu cầu hợp lệ của bạn. Một tiêu đề thiếu đủ cặp từ các nhóm đó có thể che giấu đúng phần lưu lượng mà lớp khiến bạn tốn tiền, nên nó chỉ xuất hiện khi các nhóm đó chiếm {max} hoặc ít hơn. Các số đếm bên dưới đã là cuối cùng.",
+      "readFailed": "Hiện không đọc được các cặp của bạn. Không có gì bên dưới là số không: hãy thử lại sau giây lát.",
+      "notAvailable": "Bài đo của bạn chưa có trên máy chủ này.",
+      "headlineCaption": "ước tính từ {pairs} cặp được so sánh: <b>cận dưới của khoảng {level}</b> cho các yêu cầu hợp lệ của bạn. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề.",
+      "headlineCaptionPartial": "ước tính từ {pairs} cặp được so sánh: <b>cận dưới của khoảng {level}</b> cho {coverage} yêu cầu hợp lệ của bạn nằm trong các nhóm có cặp; phần còn lại không nằm trong con số này. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề.",
+      "meanDiff": "Chênh lệch trung bình trên {per} yêu cầu: {point} (từ {lower} đến {upper}, khoảng {level}).",
+      "basis": "{pairs} cặp được so sánh · bao phủ {coverage} trong {eligible} yêu cầu hợp lệ của bạn · {rate} trong số các yêu cầu đó đã có cặp trả về",
+      "subsampled": "Tính trên một tập con ngẫu nhiên gồm {n} trong {total} cặp của bạn.",
+      "stressTitle": "Trường hợp xấu nhất cho lớp",
+      "stressBody": "Các bản sao không tối ưu của bạn chỉ thỉnh thoảng mới được gửi, nên hiếm khi gặp bộ nhớ đệm của nhà cung cấp đang nóng; không có lớp, mọi yêu cầu đều sẽ gặp. Khi định giá mỗi bản sao như thể mọi token đầu vào đều được đọc từ bộ nhớ đệm — theo giá đầu vào có bộ nhớ đệm trong bảng giá, hoặc miễn phí nếu bảng không có — cận dưới là {lower}.",
+      "costTitle": "Chi phí của các lần kiểm tra",
+      "costBody": "{usd} cho {pairs} bản sao không tối ưu, theo giá trong bảng giá. Đây là chi phí của công cụ đo; nó không bao giờ đi vào sao kê của bạn hay bất kỳ khoản hoa hồng nào.",
+      "costUnknown": "Cộng thêm {n} bản sao không đo được chi phí: không có bộ đếm sử dụng, bị đóng khi đang chạy, hoặc thất bại hay hết thời gian. Nhà cung cấp vẫn có thể đã tính phí một số trong đó.",
+      "strataTitle": "Theo cách lớp phục vụ yêu cầu",
+      "colKind": "Cách được phục vụ",
+      "colEligible": "Yêu cầu hợp lệ",
+      "colPairs": "Cặp được so sánh",
+      "colNaive": "Không tối ưu, trung bình",
+      "colOptimized": "Có lớp, trung bình",
+      "colDiff": "Chênh lệch trên {per}",
+      "notCovered": "Quá ít cặp để có khoảng riêng ({n} / {min})",
+      "noPairs": "Chưa có cặp",
+      "stratum": {
+        "avoided_call": "Trả lời mà không gọi nhà cung cấp của bạn",
+        "cheaper_model": "Trả lời bằng một mô hình rẻ hơn",
+        "tokens_removed": "Gửi đi với một số phần đã được lược bỏ",
+        "tokens_compressed": "Gửi đi sau khi mã hóa lại với ít token hơn",
+        "unchanged": "Gửi đi không thay đổi"
+      },
+      "naiveQuality": "Các cặp không được so sánh, vì bản sao không tối ưu không kết thúc theo cách một yêu cầu của bạn phải kết thúc để được kiểm tra — bị cắt do giới hạn đầu ra: {truncated} · dừng vì lý do khác: {incomplete} · không đáp ứng hợp đồng đầu ra của bạn: {missed}. Chúng được đếm và có trong CSV, nhưng không nằm trong bất kỳ con số nào: một cặp chỉ được tính khi cả hai bên đều kết thúc bình thường.",
+      "exclusionsTitle": "Không bao giờ kiểm tra, và lý do",
+      "exclusionsIntro": "Các yêu cầu này được đếm nhưng không bao giờ gửi hai lần: so sánh chúng sẽ không phải là so sánh những thứ tương đương. Các yêu cầu fail-open, bị cắt và không đạt hợp đồng thường là những yêu cầu tốn kém nhất cho lớp, nên loại chúng ra có thể làm con số đẹp hơn; vì vậy từng loại được hiển thị ở đây.",
+      "exclusionsNone": "Không có yêu cầu nào bị loại trừ trong khoảng thời gian này.",
+      "excluded": {
+        "fail_open": "Đi theo đường dự phòng (gửi đi không tối ưu)",
+        "truncated": "Bị cắt do giới hạn đầu ra",
+        "incomplete": "Dừng vì lý do khác",
+        "contract_failed": "Không đáp ứng hợp đồng đầu ra của chúng",
+        "unmeasured": "Không có bộ đếm sử dụng từ nhà cung cấp của bạn",
+        "no_price": "Mô hình chưa có giá",
+        "over_cap": "Vượt trần chi phí mỗi lần kiểm tra của bạn",
+        "opted_out": "Do bạn loại trừ (savings.verification: false)",
+        "retrieval": "Lớp đã thêm tài liệu truy xuất: không có bản sao tương đương"
+      },
+      "outcomesTitle": "Các lần kiểm tra không thành cặp",
+      "outcomesNone": "Mọi lần kiểm tra đều thành cặp.",
+      "outcome": {
+        "check_failed": "Nhà cung cấp của bạn trả về lỗi, hoặc bản sao hết thời gian chờ",
+        "check_unmeasured": "Nhà cung cấp của bạn không trả về bộ đếm sử dụng",
+        "abandoned": "Vẫn đang chạy khi lớp bị đóng",
+        "dropped": "Không gửi: đã có quá nhiều lần kiểm tra đang chạy"
+      },
+      "methodTitle": "Cách tính",
+      "methodBody": "Mỗi cặp là một yêu cầu: chi phí của bản sao không tối ưu và chi phí của yêu cầu đã tối ưu, cả hai theo bộ đếm sử dụng của nhà cung cấp và theo giá trong bảng giá. Một cặp chỉ được tính khi bản sao kết thúc bình thường và đáp ứng hợp đồng đầu ra của bạn, cùng quy tắc mà chính các yêu cầu của bạn phải qua để được kiểm tra. Các yêu cầu được nhóm theo cách lớp phục vụ chúng, và mỗi nhóm có trọng số bằng tỷ phần của nó trong các yêu cầu hợp lệ của bạn. Khoảng tin cậy là bootstrap phân vị phân tầng: {resamples} lần lấy mẫu lại, hạt giống {seed}. Với tệp CSV và các số đếm trên trang này, bạn có thể tính lại mọi ước tính điểm; các khoảng của bạn sẽ khớp với của chúng tôi, sai khác chỉ do nhiễu lấy mẫu lại.",
+      "caveatsTitle": "Những gì điều này không cho thấy",
+      "caveats": {
+        "sample": "Một mẫu ngẫu nhiên, không phải mọi yêu cầu: các con số mô tả lưu lượng hợp lệ của bạn với độ bất định được hiển thị, và không bao giờ được chuyển thành số tiền để tính phí.",
+        "randomness": "Hai lệnh gọi hiếm khi trả lời giống nhau trừ khi bạn cố định hạt giống và đặt nhiệt độ về không. Điều đó làm rộng khoảng tin cậy. Một cặp chỉ được tính khi cả hai bên đều kết thúc bình thường, nên một câu trả lời bị cắt ở một bên không bao giờ được tính là tiết kiệm.",
+        "outside": "Chi phí nằm ngoài lệnh gọi tới nhà cung cấp, chẳng hạn một dịch vụ embedding do bạn tự vận hành, không có ở phía nào.",
+        "streaming": "Các yêu cầu đã thất bại, hoặc bạn đã hủy khi đang truyền phát, không được tính."
+      },
+      "exportCsv": "Tải xuống các cặp (CSV)"
+    },
     "install": {
       "metaTitle": "Cài đặt · BiVelio Savings Layer",
       "eyebrow": "Tích hợp",
@@ -201,7 +277,8 @@
       "colACost": "chi phí A",
       "colBCost": "chi phí B",
       "colSavings": "tiết kiệm",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "bộ nén của băng thử, không có trong npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Trình xác minh tiết kiệm",
@@ -360,6 +437,7 @@
       "proven": "đã chứng minh",
       "notProven": "chưa chứng minh",
       "notExercised": "chưa được kích hoạt trong lần chạy này — số 0 không phải là một phép đo",
+      "benchOnly": "có một bộ nén của băng thử mà gói npm không kèm theo — không quảng bá",
       "estimatedMock": "ước tính (mô phỏng)",
       "footnoteMain": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — mỗi cái là một đòn bẩy được đo riêng biệt, nên một đô la không thể bị đếm hai lần.",
       "reconciledNote": "Phần dư đối chiếu ≈ 0 chứng minh điều đó.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "tiết kiệm ròng, <b>giới hạn dưới của khoảng tin cậy 95%</b>. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề{mockNote}.",
+      "captionSdkPendiente": "mức mà SDK đạt được đúng như khi cài đặt từ npm. Lần chạy đã công bố có một bộ nén chỉ dùng trong băng thử mà gói không kèm theo, nên khoảng tin cậy và ước lượng điểm của nó không được hiển thị như một cam kết cho đến khi một lần chạy với SDK đã cài đặt thay thế chúng.",
       "mockNote": " (khối lượng công việc tham chiếu, nhà cung cấp mô phỏng)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— được đo đối chiếu với một nhà cung cấp thực, có kiểm soát chất lượng.",
+      "sdkPendiente": "Lần chạy này có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo: các con số của nó cho thấy cơ chế, không phải mức SDK đã cài đặt tiết kiệm được.",
       "mock": "<b>ƯỚC TÍNH · nhà cung cấp mô phỏng</b> — điều này chứng minh cơ chế hoạt động, không phải hóa đơn của bạn. Một lần chạy LIVE đã cam kết sẽ thay thế mọi con số ở đây."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Làn bóng: việc lược bỏ lẽ ra đã tiết kiệm {usd} trên {requests} yêu cầu mô phỏng. Giả định — không bao giờ vào cơ sở hay hoa hồng.",
       "sombraElisionNegativa": "Làn bóng: việc lược bỏ lẽ ra đã tốn thêm {usd} trên {requests} yêu cầu mô phỏng. Vì thế nó vẫn tắt: chỉ bật những gì thực sự tiết kiệm.",
       "elisionProveedor": "Làn xóa bởi nhà cung cấp: {requests} yêu cầu mà cấu hình của chúng tôi khiến nhà cung cấp xóa ngữ cảnh. Một số đếm, không phải tiết kiệm — không bao giờ tính vào cơ sở hay hoa hồng.",
-      "referencia": "Đo theo tham chiếu: {usd} trên {requests} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn. Mỗi lượt được định giá bằng bộ đếm mà nhà cung cấp trả về cho lượt gọi giống hệt đã được thực hiện — có trong báo cáo của lượt gọi đó và trong mức sử dụng của nhà cung cấp ngày hôm đó — theo giá đầu vào đã lưu bộ nhớ đệm, mức thấp nhất nhà cung cấp tính cho việc lặp lại một prompt; đầu ra chỉ được tính khi lấy mẫu là tất định. Được tính vào cơ sở.",
+      "referencia": "Đo theo tham chiếu: {usd} trên {requests} lượt gọi lặp lại được phục vụ mà không gọi nhà cung cấp của bạn. Mỗi lượt được định giá bằng bộ đếm mà nhà cung cấp trả về cho lượt gọi giống hệt đã được thực hiện — có trong báo cáo của lượt gọi đó và trong mức sử dụng của nhà cung cấp ngày hôm đó — theo giá đầu vào đã lưu bộ nhớ đệm, mức thấp nhất nhà cung cấp tính cho việc lặp lại một prompt; đầu ra chỉ được tính khi lấy mẫu là tất định và lượt gọi đã chạy không có suy luận ẩn (nhà cung cấp báo cáo số token suy luận bằng không hoặc, nếu không tách riêng, câu trả lời không có khối suy luận). Được tính vào cơ sở.",
       "referenciaExcluida": "Đo theo tham chiếu: {usd} trên {requests} lượt gọi lặp lại. Hiển thị để tham khảo — hiện tại không được tính vào cơ sở và hoa hồng.",
       "exportarReferencias": "Tải xuống các lượt gọi lặp lại của kỳ này, mỗi lượt một dòng (CSV)",
       "exportarReferenciasPorDia": "Quá nhiều lượt gọi lặp lại cho một tệp — tải xuống kỳ này theo từng ngày (CSV):",
       "parametros": "Tham số sao kê — bảng giá {version} · tỷ giá {fx}.",
-      "parametrosReferencia": "Quy tắc cho lượt gọi lặp lại ({regla}): lượt gọi đã chạy phải giống hệt từng byte, không bị lớp can thiệp và tối đa {dias} ngày tuổi; đầu vào tính theo giá đầu vào đã lưu bộ nhớ đệm của nhà cung cấp; đầu ra tính {cuota} bộ đếm của nó, không bao giờ vượt quá giới hạn đầu ra của lượt gọi này và chỉ khi lấy mẫu tất định.",
+      "parametrosReferencia": "Quy tắc cho lượt gọi lặp lại ({regla}): lượt gọi đã chạy phải giống hệt từng byte, không bị lớp can thiệp (một lược đồ đầu ra chỉ được tính khi nó được gửi đúng như bạn đã gửi, ở chế độ nghiêm ngặt, trong tham số định dạng phản hồi gốc của nhà cung cấp, không thêm gì vào prompt) và tối đa {dias} ngày tuổi; đầu vào tính theo giá đầu vào đã lưu bộ nhớ đệm của nhà cung cấp; đầu ra tính {cuota} bộ đếm của nó, không bao giờ vượt quá giới hạn đầu ra của lượt gọi này và chỉ khi lấy mẫu tất định, với mô hình trong danh mục giá của chúng tôi không suy luận và tuân thủ cách lấy mẫu đó, khi lượt gọi đã chạy không có suy luận ẩn (nhà cung cấp báo cáo số token suy luận bằng không hoặc, nếu không tách riêng, câu trả lời không có khối suy luận).",
       "mismaFacturaTitulo": "Tài liệu này CHÍNH LÀ hóa đơn tương lai.",
       "mismaFactura": "Sao kê bóng và sao kê tính phí được tính bởi cùng một bộ máy: khi hoa hồng kích hoạt, hóa đơn đầu tiên của bạn chỉ chứa những con số bạn đã thấy ở đây.",
       "historialTitulo": "Sao kê đã chốt",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "hóa đơn giảm, xác minh ở mức 95% · so với tích hợp chưa tối ưu, không streaming"
         }
       ],
+      "proofSdkPendiente": "Tạm thời: lần chạy đã công bố có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo. Con số này nằm dưới cận dưới của lần chạy đó khi loại bỏ tác động của bộ nén, được tính lại từ các lần thử đã đo — nó chưa phải là phép đo của SDK đã cài đặt. Lần chạy đó vẫn đang chờ.",
       "medidoEn": "Đo trên",
       "compatibleCon": "Tương thích với",
       "compatibleNota": "Mọi endpoint tương thích với API của OpenAI, cùng bộ điều hợp gốc cho Anthropic. Có con số đã công bố, hiện nay, chỉ OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
       "plain": "Trong bài kiểm tra này, hóa đơn gần như chắc chắn giảm ít nhất {piso}. Nhiều khả năng nhất là giảm {punto}.",
+      "plainSdkPendiente": "Với SDK đúng như bạn cài đặt từ npm, hóa đơn giảm ít nhất {piso}. Bài kiểm tra đã công bố còn có một bộ nén chỉ dùng trong băng thử mà gói không kèm theo; chúng tôi loại bỏ tác động của nó thay vì tính vào, cho đến khi một lần chạy với SDK đã cài đặt thay thế con số này.",
       "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp.",
       "trialsLink": "Tải dữ liệu thử nghiệm thô (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "chất lượng",
       "punto": "ước lượng điểm",
       "suelo": "Con số tiêu đề là cận dưới của khoảng 95%, không bao giờ là điểm.",
+      "sdkPendiente": "Lần chạy này có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo, nên cận dưới của nó không được hiển thị. Con số phía trên là con số tiêu đề của chúng tôi cho SDK đúng như bạn cài đặt: nó vẫn đứng vững khi loại bỏ tác động của bộ nén đó. Một lần chạy với SDK đã cài đặt vẫn đang chờ.",
       "libros": "theo từng sổ cái",
       "pie": "Mỗi sổ cái được công bố với khoảng riêng; sổ nào không vượt qua số không thì không được quảng bá.",
       "fecha": "đợt chạy"

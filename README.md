@@ -196,8 +196,15 @@ was obtained: `actual` is what the provider metered; `basis` is `"measured"` whe
 the request went through untouched, `"reference"` when a repeat of a byte‑identical
 request was served without calling the provider — its baseline is the provider's own
 counter for the identical request that already ran and that you already paid
-(`report.cache.reference` points to it), valued at the provider's cached‑input rate,
-with the output counted only under deterministic sampling (`temperature: 0`), so it is a floor —
+(`report.cache.reference` points to it; with an output schema, only when your schema
+traveled exactly as sent, in strict mode, in the provider's native response‑format
+parameter, with nothing added to the prompt), valued at the provider's cached‑input
+rate, the lowest it bills for repeating a prompt; the output counts only under deterministic
+sampling (`temperature: 0`), on a model with a list price in the catalog that does not
+reason and honors that setting, and when the call that ran carried no hidden reasoning (the
+provider reported zero reasoning tokens or, where it does not break them out, its answer
+had no reasoning block), and then at 95 % of its counter, a margin for the small drift
+`temperature: 0` still has —
 `"estimated"` when the layer removed something (the baseline is then reconstructed
 with the model's tokenizer, or with a calibrated estimate where no exact tokenizer
 exists, as for Anthropic models), and `"unmeasured"` when the provider returned no
@@ -245,6 +252,56 @@ And a promise you can hold it to: **never worse than your JSON.** Payload encodi
 are chosen by counting real tokens with the destination model's own tokenizer, and
 BV‑SALA only moves away from plain JSON when the saving clearly clears the bar —
 `report.serialization` shows what was chosen and what each candidate would have cost.
+
+<details>
+<summary><b>Your own A/B — verification sampling (opt-in, off by default)</b></summary>
+
+The per-request figures above are what the layer can show without running your
+request twice. To see what it does on your own traffic, with both sides metered by
+your provider, turn on verification sampling:
+
+```ts
+const checkedLayer = createSavingsLayer({
+  provider,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: "https://savings.bivelio.com",
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  verification: { sampleRate: 0.02 }, // about 2 in every 100 eligible requests
+});
+```
+
+For that share of eligible requests, after your answer has been returned, the SDK
+sends the same request once more to your provider exactly as it would go without the
+layer — the model you asked for, all your tools, your data inline, no cache marks —
+and discards the second answer. Each pair (what the unoptimized copy cost and what the
+optimized request cost, both from your provider's usage counters) appears under
+**Proof › Your bench** in your dashboard, with the mean difference, its 95 % interval
+and every pair as a CSV download.
+
+- **It costs you money.** You pay your provider for every copy: roughly the sampling
+  rate times what that traffic would cost without the layer. The SDK says so once
+  per process when it starts (`silenceWarnings: true` mutes that notice too).
+- **It is never billed.** Pairs travel on their own channel into their own table.
+  They never enter measured savings, your statement or any commission.
+- **Only requests served intact are checked.** Requests that took the fail-open path,
+  were cut off, missed their output contract or came back without a provider counter
+  are counted as excluded and never sent twice. `savings: { verification: false }`
+  excludes a single request.
+- **Both sides follow the same rule.** A pair is compared only when the copy also
+  finished normally and met your contract; a copy cut off by the output limit is
+  counted and exported, never scored as a saving.
+- **The headline is the floor, and it waits.** It is the lower bound of the 95 %
+  interval, shown once there are enough pairs overall and groups with too few pairs
+  of their own are a small share of your traffic, so a group where the layer costs
+  you money cannot be left out of it.
+- **Only counts leave your infrastructure.** The copy goes to your own provider, like
+  the original; BiVelio receives token counts, costs, model ids and outcomes — never
+  prompts or answers.
+- **`close()` settles every copy still running:** it is recorded as abandoned, never
+  as a pair. On serverless platforms, pass your runtime's `waitUntil` as
+  `verification.waitUntil` so checks can finish.
+
+</details>
 
 <details>
 <summary><b>Structured output — validated <code>data</code>, not just text</b></summary>

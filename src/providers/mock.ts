@@ -1,7 +1,13 @@
 import type { JsonSchema } from "../contracts/types.js";
 import { marcarDemo } from "./demo-brand.js";
 import { heuristicEstimator } from "../tokenizer/estimator.js";
-import type { Provider, ProviderRequest, ProviderResponse, ProviderStreamEvent } from "./types.js";
+import type {
+  Provider,
+  ProviderRequest,
+  ProviderResponse,
+  ProviderStreamEvent,
+  ProviderStreamOptions,
+} from "./types.js";
 
 /**
  * Deterministic mock provider.
@@ -48,7 +54,8 @@ export class MockProvider implements Provider {
     marcarDemo(this);
   }
 
-  async generate(req: ProviderRequest): Promise<ProviderResponse> {
+  // `_options` (la señal de aborto) se acepta y se ignora: aquí no hay red.
+  async generate(req: ProviderRequest, _options?: ProviderStreamOptions): Promise<ProviderResponse> {
     const inputText = req.messages.map((m) => m.content).join("\n");
     let inputTokens = heuristicEstimator.count(inputText);
     // Tool schemas travel in the real prompt, so a real provider bills them as

@@ -25,6 +25,7 @@
       "howItWorks": "How it works",
       "groupSave": "Save",
       "proof": "Proof",
+      "yourBench": "Your bench",
       "verify": "Verify",
       "extracto": "Statement",
       "groupOrg": "Your organization",
@@ -135,6 +136,81 @@
       "title": "How much would you save?",
       "intro": "Find out in a minute: pick an example (or paste your own data), tell us how much you use the API, and see the projected saving. Everything runs in your browser."
     },
+    "yourBench": {
+      "metaTitle": "Your bench · BiVelio Savings Layer",
+      "eyebrow": "Your traffic · both sides metered by your provider",
+      "title": "Your own bench",
+      "intro": "The published bench runs our scenarios. This one runs yours: with verification sampling on, a random share of your eligible requests is also sent unoptimized to your own provider, and each pair is metered on both sides.",
+      "badge": "INFORMATIONAL — NEVER BILLED",
+      "offTitle": "Verification sampling is off",
+      "offBody": "Nothing has been checked in this window. Add the setting below to createSavingsLayer and your pairs will start to appear here.",
+      "offCost": "Each check is a real call to your provider, paid by you: roughly the sampling rate times what that traffic would cost without the layer. It never enters your statement or any commission.",
+      "collectingTitle": "Collecting pairs: {n} of {min}",
+      "collectingBody": "Below {min} pairs an interval would say more than the data. The counts below are already final.",
+      "collectingGroupsTitle": "Collecting pairs: {n} so far, but some groups are still short",
+      "collectingGroupsBody": "Groups with fewer than {min} pairs still make up {gap} of your eligible requests. A headline without enough pairs from them could hide the traffic where the layer costs you money, so it appears once they are {max} or less. The counts below are already final.",
+      "readFailed": "Could not read your pairs just now. Nothing below is a zero: try again in a moment.",
+      "notAvailable": "Your bench is not available on this server yet.",
+      "headlineCaption": "estimated from {pairs} pairs compared: the <b>lower bound of the {level} interval</b> for your eligible requests. Point estimate {point}, upper {upper} — we headline the floor.",
+      "headlineCaptionPartial": "estimated from {pairs} pairs compared: the <b>lower bound of the {level} interval</b> for the {coverage} of your eligible requests in groups that have pairs; the rest are not in this figure. Point estimate {point}, upper {upper} — we headline the floor.",
+      "meanDiff": "Mean difference per {per} requests: {point} (from {lower} to {upper}, {level} interval).",
+      "basis": "{pairs} pairs compared · they cover {coverage} of your {eligible} eligible requests · {rate} of those requests came back as a pair",
+      "subsampled": "Computed on a random subset of {n} of your {total} pairs.",
+      "stressTitle": "Worst case for the layer",
+      "stressBody": "Your unoptimized copies are sent only now and then, so they rarely find your provider's cache warm; without the layer, every request would. Priced as if every input token of each copy had been read from cache — at the cached-input rate of the price table, or free when it has none — the lower bound is {lower}.",
+      "costTitle": "What the checks cost you",
+      "costBody": "{usd} for {pairs} unoptimized copies, at the price table's rates. This is the cost of the instrument; it never enters your statement or any commission.",
+      "costUnknown": "Plus {n} copies whose cost could not be measured: no usage counter, closed while running, or failed or timed out. Your provider may still have billed some of them.",
+      "strataTitle": "By how the layer served the request",
+      "colKind": "How it was served",
+      "colEligible": "Eligible requests",
+      "colPairs": "Pairs compared",
+      "colNaive": "Unoptimized, mean",
+      "colOptimized": "With the layer, mean",
+      "colDiff": "Difference per {per}",
+      "notCovered": "Too few pairs for an interval of its own ({n} of {min})",
+      "noPairs": "No pairs yet",
+      "stratum": {
+        "avoided_call": "Answered without calling your provider",
+        "cheaper_model": "Answered by a cheaper model",
+        "tokens_removed": "Sent with parts removed",
+        "tokens_compressed": "Sent re-encoded with fewer tokens",
+        "unchanged": "Sent unchanged"
+      },
+      "naiveQuality": "Pairs not compared, because the unoptimized copy did not finish the way your requests must to be checked — cut off by the output limit: {truncated} · stopped for another reason: {incomplete} · missed your output contract: {missed}. They are counted and in the CSV, but left out of every figure: a pair counts only when both sides finished normally.",
+      "exclusionsTitle": "Never checked, and why",
+      "exclusionsIntro": "These requests are counted but never sent twice: comparing them would not be comparing like with like. Fail-open, cut-off and failed-contract requests are often the layer's most expensive ones, so leaving them out can flatter the figure; that is why each one is shown here.",
+      "exclusionsNone": "No request was excluded in this window.",
+      "excluded": {
+        "fail_open": "Took the fail-open path (sent without optimizing)",
+        "truncated": "Cut off by the output limit",
+        "incomplete": "Stopped for another reason",
+        "contract_failed": "Did not meet their output contract",
+        "unmeasured": "No usage counter from your provider",
+        "no_price": "Model without a known price",
+        "over_cap": "Above your per-check cost cap",
+        "opted_out": "Excluded by you (savings.verification: false)",
+        "retrieval": "The layer added retrieved documents: no like-for-like copy"
+      },
+      "outcomesTitle": "Checks that did not become pairs",
+      "outcomesNone": "Every check became a pair.",
+      "outcome": {
+        "check_failed": "Your provider returned an error, or the copy timed out",
+        "check_unmeasured": "Your provider returned no usage counter",
+        "abandoned": "Still running when the layer was closed",
+        "dropped": "Not sent: too many checks were already running"
+      },
+      "methodTitle": "How this is computed",
+      "methodBody": "Each pair is one request: what the unoptimized copy cost and what the optimized request cost, both from your provider's usage counters at the price table's rates. A pair counts only when the copy finished normally and met your output contract, the same rule your own requests must pass to be checked. Requests are grouped by how the layer served them, and each group is weighted by its share of your eligible requests. The interval is a stratified percentile bootstrap: {resamples} resamples, seed {seed}. With the CSV and the counts on this page you can recompute every point estimate; your intervals will match ours within resampling noise.",
+      "caveatsTitle": "What this does not show",
+      "caveats": {
+        "sample": "A random sample, not every request: the figures describe your eligible traffic with the uncertainty shown, and they are never turned into an amount to bill.",
+        "randomness": "Two calls rarely answer alike unless you fix the seed and set temperature to zero. That widens the interval. A pair counts only when both sides finished normally, so an answer cut off on one side only is never counted as a saving.",
+        "outside": "Costs outside your provider call, such as an embedding service you run yourself, are in neither side.",
+        "streaming": "Requests that failed, or that you cancelled while streaming, are not counted."
+      },
+      "exportCsv": "Download the pairs (CSV)"
+    },
     "install": {
       "metaTitle": "Install · BiVelio Savings Layer",
       "eyebrow": "Integrate",
@@ -201,7 +277,8 @@
       "colACost": "A cost",
       "colBCost": "B cost",
       "colSavings": "savings",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "bench-only compressor, not in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Savings verifier",
@@ -360,6 +437,7 @@
       "proven": "proven",
       "notProven": "not proven",
       "notExercised": "not exercised in this run — its zero is not a measurement",
+      "benchOnly": "includes a bench-only compressor the npm package does not ship — not advertised",
       "estimatedMock": "estimated (mock)",
       "footnoteMain": "Four ledgers, <b>never summed</b> — each is a separately measured lever, so a dollar can't be double-counted.",
       "reconciledNote": "Reconciliation residual ≈ 0 proves it.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "net savings, <b>95% CI lower bound</b>. Point estimate {point}, upper {upper} — we headline the floor{mockNote}.",
+      "captionSdkPendiente": "what the SDK holds as installed from npm. The published run carried a bench-only compressor the package does not ship, so its interval and point estimate are not shown as a promise until a run of the installed SDK replaces them.",
       "mockNote": " (reference workload, mock provider)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— measured against a real provider, quality-gated.",
+      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship: its figures show the mechanism, not what the installed SDK saves.",
       "mock": "<b>ESTIMATED · mock provider</b> — this proves the mechanism works, not your bill. A committed LIVE run replaces every number here."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Shadow lane: elision would have saved {usd} across {requests} simulated requests. Hypothetical — it never enters the base or the commission.",
       "sombraElisionNegativa": "Shadow lane: elision would have cost an extra {usd} across {requests} simulated requests. That is why it stays off: only what truly saves gets turned on.",
       "elisionProveedor": "Provider clearing lane: {requests} requests where our dials made the provider clear context. A count, not a saving — it never enters the base or the commission.",
-      "referencia": "Measured by reference: {usd} across {requests} repeated requests served without calling your provider. Each is valued with the counter your provider returned for the identical request that already ran — it is in that request's report and in your provider's usage for that day — at the cached-input rate, the lowest your provider bills for repeating a prompt; the output only counts when sampling was deterministic. Included in the base.",
+      "referencia": "Measured by reference: {usd} across {requests} repeated requests served without calling your provider. Each is valued with the counter your provider returned for the identical request that already ran — it is in that request's report and in your provider's usage for that day — at the cached-input rate, the lowest your provider bills for repeating a prompt; the output only counts when sampling was deterministic and the call that ran carried no hidden reasoning (your provider reported zero reasoning tokens or, where it does not break them out, its answer had no reasoning block). Included in the base.",
       "referenciaExcluida": "Measured by reference: {usd} across {requests} repeated requests. Shown for context — for now it is kept out of the base and the commission.",
       "exportarReferencias": "Download the repeated requests of this period, one row each (CSV)",
       "exportarReferenciasPorDia": "Too many repeated requests for a single file — download this period one day at a time (CSV):",
       "parametros": "Statement parameters — price catalog {version} · exchange rate {fx}.",
-      "parametrosReferencia": "Rule for repeated requests ({regla}): the request that ran must be byte-identical, untouched by the layer and at most {dias} days old; input at your provider's cached-input rate; output at {cuota} of its counter, never above this request's output limit, and only with deterministic sampling.",
+      "parametrosReferencia": "Rule for repeated requests ({regla}): the request that ran must be byte-identical, untouched by the layer (an output schema counts only when it traveled exactly as you sent it, in strict mode, in your provider's native response-format parameter, with nothing added to the prompt) and at most {dias} days old; input at your provider's cached-input rate; output at {cuota} of its counter, never above this request's output limit, and only with deterministic sampling, on a model in our price catalog that does not reason and honors that sampling, when the call that ran carried no hidden reasoning (your provider reported zero reasoning tokens or, where it does not break them out, its answer had no reasoning block).",
       "mismaFacturaTitulo": "This document IS the future invoice.",
       "mismaFactura": "The shadow statement and the billable one are computed by the same machinery: when the commission activates, your first invoice will only contain numbers you have already seen here.",
       "historialTitulo": "Closed statements",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15.0%",
+          "cifra": "≥ 10.0%",
           "que": "less bill, verified at 95% · against an unoptimized integration, no streaming"
         }
       ],
+      "proofSdkPendiente": "Provisional: the published run carried a bench-only compressor that the npm package does not ship. This figure fits under that run's floor once the compressor's effect is taken out, recalculated from the measured trials — it is not yet a measurement of the installed SDK. That run is pending.",
       "medidoEn": "Measured on",
       "compatibleCon": "Compatible with",
       "compatibleNota": "Any endpoint compatible with the OpenAI API, plus the native Anthropic adapter. With a published figure, today, only OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "The test is a fair experiment: the same task twice — without Savings and with Savings — with the provider's own meter counting both.",
       "plainTitle": "Translation, no jargon",
       "plain": "In this test, the bill went down by at least {piso}, with near certainty. Most likely it went down by {punto}.",
+      "plainSdkPendiente": "With the SDK as you install it from npm, the bill goes down by at least {piso}. The published test also carried a bench-only compressor that the package does not ship; we take its effect out instead of counting it, until a run of the installed SDK replaces this figure.",
       "plainNote": "When there's a range, we always announce the small number — the one statistics guarantees — never the flattering one.",
       "trialsLink": "Download the raw trials (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "quality",
       "punto": "point estimate",
       "suelo": "The headline is the floor of the 95% interval, never the point.",
+      "sdkPendiente": "This run carried a bench-only compressor that the npm package does not ship, so its own floor is not shown. The figure above is our headline for the SDK as you install it: it still fits once that compressor's effect is taken out. A run of the installed SDK is pending.",
       "libros": "per ledger",
       "pie": "Each ledger is published with its own interval; those that do not clear zero are not advertised.",
       "fecha": "run"

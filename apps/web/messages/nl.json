@@ -25,6 +25,7 @@
       "howItWorks": "Hoe het werkt",
       "groupSave": "Besparen",
       "proof": "Bewijs",
+      "yourBench": "Je eigen bench",
       "verify": "Verifiëren",
       "extracto": "Afschrift",
       "groupOrg": "Je organisatie",
@@ -135,6 +136,81 @@
       "title": "Hoeveel zou jij besparen?",
       "intro": "Check het in een minuut: kies een voorbeeld (of plak je eigen data), geef aan hoeveel je de API gebruikt en zie de verwachte besparing. Alles draait in je browser."
     },
+    "yourBench": {
+      "metaTitle": "Je eigen bench · BiVelio Savings Layer",
+      "eyebrow": "Jouw verkeer · beide kanten gemeten door je provider",
+      "title": "Je eigen bench",
+      "intro": "De gepubliceerde bench draait onze scenario's. Deze draait de jouwe: met verificatiesampling aan wordt een willekeurig deel van je geschikte verzoeken ook ongeoptimaliseerd naar je eigen provider gestuurd, en elk paar wordt aan beide kanten gemeten.",
+      "badge": "INFORMATIEF — NOOIT GEFACTUREERD",
+      "offTitle": "Verificatiesampling staat uit",
+      "offBody": "In deze periode is niets gecontroleerd. Voeg de instelling hieronder toe aan createSavingsLayer en je paren verschijnen hier.",
+      "offCost": "Elke controle is een echte aanroep bij je provider, die jij betaalt: ongeveer de samplingratio maal wat dat verkeer zonder de laag zou kosten. Het komt nooit in je afschrift of in een commissie.",
+      "collectingTitle": "Paren verzamelen: {n} van {min}",
+      "collectingBody": "Onder {min} paren zou een interval meer zeggen dan de data. De tellingen hieronder zijn al definitief.",
+      "collectingGroupsTitle": "Paren verzamelen: tot nu toe {n}, maar sommige groepen hebben er nog te weinig",
+      "collectingGroupsBody": "Groepen met minder dan {min} paren maken nog {gap} van je geschikte verzoeken uit. Een kopcijfer zonder genoeg paren uit die groepen kan juist het verkeer verbergen waar de laag je geld kost, dus het verschijnt zodra ze {max} of minder uitmaken. De tellingen hieronder zijn al definitief.",
+      "readFailed": "Je paren konden nu niet worden gelezen. Niets hieronder is een nul: probeer het zo opnieuw.",
+      "notAvailable": "Je eigen bench is op deze server nog niet beschikbaar.",
+      "headlineCaption": "geschat uit {pairs} vergeleken paren: de <b>ondergrens van het {level}-interval</b> voor je geschikte verzoeken. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop.",
+      "headlineCaptionPartial": "geschat uit {pairs} vergeleken paren: de <b>ondergrens van het {level}-interval</b> voor de {coverage} van je geschikte verzoeken die in groepen met paren zitten; de rest zit niet in dit cijfer. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop.",
+      "meanDiff": "Gemiddeld verschil per {per} verzoeken: {point} (van {lower} tot {upper}, {level}-interval).",
+      "basis": "{pairs} vergeleken paren · ze dekken {coverage} van je {eligible} geschikte verzoeken · bij {rate} van die verzoeken kwam een paar terug",
+      "subsampled": "Berekend op een willekeurige deelverzameling van {n} van je {total} paren.",
+      "stressTitle": "Het slechtste geval voor de laag",
+      "stressBody": "Je ongeoptimaliseerde kopieën worden maar af en toe verstuurd, dus ze treffen de cache van je provider zelden warm aan; zonder de laag zou elk verzoek dat wel doen. Gewaardeerd alsof elk invoertoken van elke kopie uit de cache was gelezen — tegen het gecachte invoertarief van de prijstabel, of gratis als die er geen heeft — is de ondergrens {lower}.",
+      "costTitle": "Wat de controles je hebben gekost",
+      "costBody": "{usd} voor {pairs} ongeoptimaliseerde kopieën, tegen de tarieven van de prijstabel. Dit zijn de kosten van het instrument; ze komen nooit in je afschrift of in een commissie.",
+      "costUnknown": "Plus {n} kopieën waarvan de kosten niet te meten waren: zonder gebruiksteller, gesloten terwijl ze liepen, of mislukt of verlopen. Je provider kan er toch een paar hebben gefactureerd.",
+      "strataTitle": "Naar hoe de laag het verzoek bediende",
+      "colKind": "Hoe het werd bediend",
+      "colEligible": "Geschikte verzoeken",
+      "colPairs": "Vergeleken paren",
+      "colNaive": "Ongeoptimaliseerd, gemiddeld",
+      "colOptimized": "Met de laag, gemiddeld",
+      "colDiff": "Verschil per {per}",
+      "notCovered": "Te weinig paren voor een eigen interval ({n} van {min})",
+      "noPairs": "Nog geen paren",
+      "stratum": {
+        "avoided_call": "Beantwoord zonder je provider aan te roepen",
+        "cheaper_model": "Beantwoord door een goedkoper model",
+        "tokens_removed": "Verstuurd met delen verwijderd",
+        "tokens_compressed": "Verstuurd, opnieuw gecodeerd met minder tokens",
+        "unchanged": "Ongewijzigd verstuurd"
+      },
+      "naiveQuality": "Niet vergeleken paren, omdat de ongeoptimaliseerde kopie niet eindigde zoals een verzoek van jou moet eindigen om gecontroleerd te worden — afgekapt door de uitvoerlimiet: {truncated} · om een andere reden gestopt: {incomplete} · je uitvoercontract niet gehaald: {missed}. Ze worden geteld en staan in de CSV, maar tellen in geen enkel cijfer mee: een paar telt alleen als beide kanten normaal eindigden.",
+      "exclusionsTitle": "Nooit gecontroleerd, en waarom",
+      "exclusionsIntro": "Deze verzoeken worden geteld maar nooit twee keer verstuurd: ze vergelijken zou appels met peren vergelijken zijn. Fail-open-verzoeken, afgekapte en verzoeken die het contract niet haalden zijn vaak de duurste voor de laag, dus ze weglaten kan het cijfer mooier maken; daarom staat elk ervan hier.",
+      "exclusionsNone": "In deze periode is geen enkel verzoek uitgesloten.",
+      "excluded": {
+        "fail_open": "Gingen via het fail-open-pad (verstuurd zonder optimalisatie)",
+        "truncated": "Afgekapt door de uitvoerlimiet",
+        "incomplete": "Om een andere reden gestopt",
+        "contract_failed": "Voldeden niet aan hun uitvoercontract",
+        "unmeasured": "Geen gebruiksteller van je provider",
+        "no_price": "Model zonder bekende prijs",
+        "over_cap": "Boven je kostenplafond per controle",
+        "opted_out": "Door jou uitgesloten (savings.verification: false)",
+        "retrieval": "De laag voegde opgehaalde documenten toe: geen gelijkwaardige kopie"
+      },
+      "outcomesTitle": "Controles die geen paar werden",
+      "outcomesNone": "Elke controle werd een paar.",
+      "outcome": {
+        "check_failed": "Je provider gaf een fout terug, of de kopie liep in een time-out",
+        "check_unmeasured": "Je provider gaf geen gebruiksteller terug",
+        "abandoned": "Liep nog toen de laag werd gesloten",
+        "dropped": "Niet verstuurd: er liepen al te veel controles"
+      },
+      "methodTitle": "Hoe dit wordt berekend",
+      "methodBody": "Elk paar is één verzoek: wat de ongeoptimaliseerde kopie kostte en wat het geoptimaliseerde verzoek kostte, beide volgens de gebruikstellers van je provider tegen de tarieven van de prijstabel. Een paar telt alleen als de kopie normaal eindigde en je uitvoercontract haalde, dezelfde regel die je eigen verzoeken moeten halen om gecontroleerd te worden. Verzoeken worden gegroepeerd naar hoe de laag ze bediende, en elke groep weegt naar haar aandeel in je geschikte verzoeken. Het interval is een gestratificeerde percentiel-bootstrap: {resamples} hersteekproeven, seed {seed}. Met de CSV en de tellingen op deze pagina kun je elke puntschatting narekenen; je intervallen komen op de hersteekproefruis na overeen met de onze.",
+      "caveatsTitle": "Wat dit niet laat zien",
+      "caveats": {
+        "sample": "Een willekeurige steekproef, niet elk verzoek: de cijfers beschrijven je geschikte verkeer met de getoonde onzekerheid, en worden nooit omgezet in een te factureren bedrag.",
+        "randomness": "Twee aanroepen antwoorden zelden gelijk, tenzij je de seed vastzet en de temperatuur op nul zet. Dat verbreedt het interval. Een paar telt alleen als beide kanten normaal eindigden, dus een antwoord dat aan één kant is afgekapt telt nooit als besparing.",
+        "outside": "Kosten buiten de aanroep bij je provider, zoals een embeddingdienst die je zelf draait, zitten aan geen van beide kanten.",
+        "streaming": "Verzoeken die mislukten, of die je tijdens het streamen annuleerde, worden niet geteld."
+      },
+      "exportCsv": "Paren downloaden (CSV)"
+    },
     "install": {
       "metaTitle": "Installeren · BiVelio Savings Layer",
       "eyebrow": "Integreren",
@@ -201,7 +277,8 @@
       "colACost": "kosten A",
       "colBCost": "kosten B",
       "colSavings": "besparing",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "testbank-compressor, niet in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Besparingsverificatie",
@@ -360,6 +437,7 @@
       "proven": "bewezen",
       "notProven": "niet bewezen",
       "notExercised": "niet uitgeoefend in deze run — de nul is geen meting",
+      "benchOnly": "bevat een testbank-compressor die het npm-pakket niet meelevert — niet aangeprezen",
       "estimatedMock": "geschat (mock)",
       "footnoteMain": "Vier grootboeken, <b>nooit opgeteld</b> — elk is een afzonderlijk gemeten hefboom, dus een dollar kan niet dubbel geteld worden.",
       "reconciledNote": "Het reconciliatierestant ≈ 0 bewijst het.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "netto besparingen, <b>ondergrens van het 95%-BI</b>. Puntschatting {point}, bovengrens {upper} — we zetten de ondergrens voorop{mockNote}.",
+      "captionSdkPendiente": "wat de SDK waarmaakt zoals die vanuit npm wordt geïnstalleerd. De gepubliceerde run bevatte een compressor die alleen in de testbank zit en die het pakket niet meelevert, dus het interval en de puntschatting ervan worden niet als belofte getoond tot een run met de geïnstalleerde SDK ze vervangt.",
       "mockNote": " (referentiewerklast, mock-provider)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gemeten tegen een echte provider, met kwaliteitscontrole.",
+      "sdkPendiente": "Deze run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert: de cijfers tonen het mechanisme, niet wat de geïnstalleerde SDK bespaart.",
       "mock": "<b>GESCHAT · mock-provider</b> — dit bewijst dat het mechanisme werkt, niet je factuur. Een vastgelegde LIVE-run vervangt elk getal hier."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Schaduwspoor: elisie zou {usd} hebben bespaard over {requests} gesimuleerde verzoeken. Hypothetisch — telt nooit mee in de basis of de commissie.",
       "sombraElisionNegativa": "Schaduwspoor: elisie zou {usd} extra hebben gekost over {requests} gesimuleerde verzoeken. Daarom blijft het uit: alleen wat echt bespaart gaat aan.",
       "elisionProveedor": "Baan van het wissen door de provider: {requests} verzoeken waarbij onze instellingen de provider context lieten wissen. Een telling, geen besparing — telt nooit mee in de basis of de commissie.",
-      "referencia": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken die zijn bediend zonder je aanbieder aan te roepen. Elk wordt gewaardeerd met de teller die je aanbieder teruggaf voor het identieke verzoek dat al is uitgevoerd — die staat in het rapport van dat verzoek en in het gebruik van je aanbieder op die dag — tegen het tarief voor gecachte input, het laagste dat je aanbieder rekent voor het herhalen van een prompt; de output telt alleen bij deterministische sampling. Opgenomen in de basis.",
+      "referencia": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken die zijn bediend zonder je aanbieder aan te roepen. Elk wordt gewaardeerd met de teller die je aanbieder teruggaf voor het identieke verzoek dat al is uitgevoerd — die staat in het rapport van dat verzoek en in het gebruik van je aanbieder op die dag — tegen het tarief voor gecachte input, het laagste dat je aanbieder rekent voor het herhalen van een prompt; de output telt alleen bij deterministische sampling en als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok). Opgenomen in de basis.",
       "referenciaExcluida": "Gemeten via referentie: {usd} over {requests} herhaalde verzoeken. Getoond als context — voorlopig blijft het buiten de basis en de commissie.",
       "exportarReferencias": "Download de herhaalde verzoeken van deze periode, één rij per verzoek (CSV)",
       "exportarReferenciasPorDia": "Te veel herhaalde verzoeken voor één bestand — download deze periode per dag (CSV):",
       "parametros": "Parameters van het overzicht — prijscatalogus {version} · wisselkoers {fx}.",
-      "parametrosReferencia": "Regel voor herhaalde verzoeken ({regla}): het uitgevoerde verzoek moet byte voor byte identiek zijn, niet aangeraakt door de laag en hoogstens {dias} dagen oud; input tegen het tarief voor gecachte input van je aanbieder; output tegen {cuota} van zijn teller, nooit boven de outputlimiet van dit verzoek en alleen bij deterministische sampling.",
+      "parametrosReferencia": "Regel voor herhaalde verzoeken ({regla}): het uitgevoerde verzoek moet byte voor byte identiek zijn, niet aangeraakt door de laag (een outputschema telt alleen als het precies zoals je het stuurde, in strikte modus, in de native parameter voor het antwoordformaat van je aanbieder is meegestuurd, zonder toevoeging aan de prompt) en hoogstens {dias} dagen oud; input tegen het tarief voor gecachte input van je aanbieder; output tegen {cuota} van zijn teller, nooit boven de outputlimiet van dit verzoek en alleen bij deterministische sampling, met een model uit onze prijscatalogus dat niet redeneert en die sampling respecteert, als het uitgevoerde verzoek geen verborgen redeneren bevatte (je aanbieder meldde nul redeneertokens of, als hij die niet uitsplitst, zijn antwoord bevatte geen redeneerblok).",
       "mismaFacturaTitulo": "Dit document IS de toekomstige factuur.",
       "mismaFactura": "Het schaduwafschrift en het factureerbare worden door dezelfde machinerie berekend: wanneer de commissie actief wordt, bevat je eerste factuur alleen cijfers die je hier al zag.",
       "historialTitulo": "Afgesloten afschriften",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "minder factuur, geverifieerd op 95% · tegenover een niet-geoptimaliseerde integratie, zonder streaming"
         }
       ],
+      "proofSdkPendiente": "Voorlopig: de gepubliceerde run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert. Dit cijfer past onder de ondergrens van die run als het effect van de compressor eruit wordt gehaald, herberekend uit de gemeten proeven — het is nog geen meting van de geïnstalleerde SDK. Die run volgt nog.",
       "medidoEn": "Gemeten op",
       "compatibleCon": "Compatibel met",
       "compatibleNota": "Elk endpoint dat compatibel is met de OpenAI-API, plus de native Anthropic-adapter. Met gepubliceerd cijfer, vandaag, alleen OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "De test is een eerlijk experiment: dezelfde taak twee keer — zonder Savings en met Savings — met dezelfde teller van de aanbieder die beide meet.",
       "plainTitle": "Vertaling, zonder jargon",
       "plain": "In deze test daalde de factuur vrijwel zeker met minstens {piso}. Waarschijnlijk daalde hij met {punto}.",
+      "plainSdkPendiente": "Met de SDK zoals je die vanuit npm installeert, daalt de factuur met minstens {piso}. De gepubliceerde test bevatte daarnaast een compressor die alleen in de testbank zit en die het pakket niet meelevert; we halen het effect ervan eruit in plaats van het mee te tellen, tot een run met de geïnstalleerde SDK dit cijfer vervangt.",
       "plainNote": "Bij een marge noemen we altijd het kleine getal — het getal dat de statistiek garandeert — nooit het mooiste.",
       "trialsLink": "Download de ruwe proeven (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "kwaliteit",
       "punto": "puntschatting",
       "suelo": "De kop is de ondergrens van het 95%-interval, nooit het punt.",
+      "sdkPendiente": "Deze run bevatte een compressor die alleen in de testbank zit en die het npm-pakket niet meelevert, dus de ondergrens ervan wordt niet getoond. Het cijfer hierboven is onze kop voor de SDK zoals je die installeert: het past nog steeds als het effect van die compressor eruit wordt gehaald. Een run met de geïnstalleerde SDK volgt nog.",
       "libros": "per grootboek",
       "pie": "Elk grootboek wordt met zijn eigen interval gepubliceerd; wat niet boven nul uitkomt, wordt niet geadverteerd.",
       "fecha": "run"

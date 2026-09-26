@@ -25,6 +25,7 @@
       "howItWorks": "Jak to działa",
       "groupSave": "Oszczędzaj",
       "proof": "Dowód",
+      "yourBench": "Twój benchmark",
       "verify": "Zweryfikuj",
       "extracto": "Wyciąg",
       "groupOrg": "Twoja organizacja",
@@ -135,6 +136,81 @@
       "title": "Ile byś zaoszczędził?",
       "intro": "Sprawdź w minutę: wybierz przykład (albo wklej własne dane), podaj, jak dużo używasz API, i zobacz prognozowane oszczędności. Wszystko liczy się w Twojej przeglądarce."
     },
+    "yourBench": {
+      "metaTitle": "Twój benchmark · BiVelio Savings Layer",
+      "eyebrow": "Twój ruch · obie strony zmierzone przez Twojego dostawcę",
+      "title": "Twój własny benchmark",
+      "intro": "Opublikowany benchmark uruchamia nasze scenariusze. Ten uruchamia Twoje: przy włączonym próbkowaniu weryfikacyjnym losowa część Twoich kwalifikujących się żądań jest dodatkowo wysyłana bez optymalizacji do Twojego dostawcy, a każda para jest mierzona po obu stronach.",
+      "badge": "INFORMACYJNIE — NIGDY NIE FAKTUROWANE",
+      "offTitle": "Próbkowanie weryfikacyjne jest wyłączone",
+      "offBody": "W tym okresie nic nie zostało sprawdzone. Dodaj poniższe ustawienie do createSavingsLayer, a Twoje pary zaczną się tu pojawiać.",
+      "offCost": "Każde sprawdzenie to prawdziwe wywołanie u Twojego dostawcy, za które płacisz: mniej więcej współczynnik próbkowania razy to, ile ten ruch kosztowałby bez warstwy. Nigdy nie trafia do Twojego wyciągu ani do żadnej prowizji.",
+      "collectingTitle": "Zbieranie par: {n} z {min}",
+      "collectingBody": "Poniżej {min} par przedział mówiłby więcej niż dane. Liczniki poniżej są już ostateczne.",
+      "collectingGroupsTitle": "Zbieranie par: na razie {n}, ale niektórym grupom wciąż brakuje par",
+      "collectingGroupsBody": "Grupy mające mniej niż {min} par wciąż stanowią {gap} Twoich kwalifikujących się żądań. Nagłówek bez wystarczającej liczby par z tych grup mógłby ukryć właśnie ten ruch, na którym warstwa kosztuje Cię pieniądze, więc pojawi się, gdy będą stanowić {max} lub mniej. Liczniki poniżej są już ostateczne.",
+      "readFailed": "Nie udało się teraz odczytać Twoich par. Nic poniżej nie jest zerem: spróbuj ponownie za chwilę.",
+      "notAvailable": "Twój benchmark nie jest jeszcze dostępny na tym serwerze.",
+      "headlineCaption": "oszacowane na podstawie {pairs} porównanych par: <b>dolna granica przedziału {level}</b> dla Twoich kwalifikujących się żądań. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg.",
+      "headlineCaptionPartial": "oszacowane na podstawie {pairs} porównanych par: <b>dolna granica przedziału {level}</b> dla {coverage} Twoich kwalifikujących się żądań, które należą do grup mających pary; reszta nie wchodzi do tej liczby. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg.",
+      "meanDiff": "Średnia różnica na {per} żądań: {point} (od {lower} do {upper}, przedział {level}).",
+      "basis": "{pairs} porównanych par · obejmują {coverage} z Twoich {eligible} kwalifikujących się żądań · dla {rate} z tych żądań wróciła para",
+      "subsampled": "Obliczone na losowym podzbiorze {n} z Twoich {total} par.",
+      "stressTitle": "Najgorszy przypadek dla warstwy",
+      "stressBody": "Twoje niezoptymalizowane kopie są wysyłane tylko od czasu do czasu, więc rzadko trafiają na rozgrzany cache Twojego dostawcy; bez warstwy trafiałoby na niego każde żądanie. Przy wycenie każdej kopii tak, jakby wszystkie jej tokeny wejściowe zostały odczytane z cache — po stawce wejścia z cache z tabeli cen, albo za darmo, jeśli jej nie ma — dolna granica wynosi {lower}.",
+      "costTitle": "Ile kosztowały Cię sprawdzenia",
+      "costBody": "{usd} za {pairs} niezoptymalizowanych kopii, po stawkach z tabeli cen. To koszt instrumentu; nigdy nie trafia do Twojego wyciągu ani do żadnej prowizji.",
+      "costUnknown": "Do tego {n} kopii, których kosztu nie dało się zmierzyć: bez licznika użycia, zamknięte w trakcie albo nieudane lub przeterminowane. Twój dostawca mógł mimo to naliczyć opłatę za część z nich.",
+      "strataTitle": "Według tego, jak warstwa obsłużyła żądanie",
+      "colKind": "Jak zostało obsłużone",
+      "colEligible": "Kwalifikujące się żądania",
+      "colPairs": "Porównane pary",
+      "colNaive": "Bez optymalizacji, średnio",
+      "colOptimized": "Z warstwą, średnio",
+      "colDiff": "Różnica na {per}",
+      "notCovered": "Za mało par na własny przedział ({n} z {min})",
+      "noPairs": "Jeszcze brak par",
+      "stratum": {
+        "avoided_call": "Odpowiedziano bez wywołania Twojego dostawcy",
+        "cheaper_model": "Odpowiedział tańszy model",
+        "tokens_removed": "Wysłane z usuniętymi fragmentami",
+        "tokens_compressed": "Wysłane po przekodowaniu na mniej tokenów",
+        "unchanged": "Wysłane bez zmian"
+      },
+      "naiveQuality": "Pary nieporównane, bo niezoptymalizowana kopia nie zakończyła się tak, jak musi się zakończyć Twoje żądanie, aby zostało sprawdzone — ucięte przez limit wyjścia: {truncated} · zatrzymane z innego powodu: {incomplete} · niespełniające Twojego kontraktu wyjścia: {missed}. Są liczone i znajdują się w CSV, ale nie wchodzą do żadnej liczby: para liczy się tylko wtedy, gdy obie strony zakończyły się normalnie.",
+      "exclusionsTitle": "Nigdy nie sprawdzone, i dlaczego",
+      "exclusionsIntro": "Te żądania są liczone, ale nigdy nie są wysyłane dwa razy: ich porównanie nie byłoby porównaniem tego samego z tym samym. Żądania w trybie fail-open, ucięte i niespełniające kontraktu są często najdroższe dla warstwy, więc ich pominięcie może upiększyć liczbę; dlatego każde z nich jest tu pokazane.",
+      "exclusionsNone": "W tym okresie żadne żądanie nie zostało wykluczone.",
+      "excluded": {
+        "fail_open": "Poszły ścieżką awaryjną (wysłane bez optymalizacji)",
+        "truncated": "Ucięte przez limit wyjścia",
+        "incomplete": "Zatrzymane z innego powodu",
+        "contract_failed": "Nie spełniły swojego kontraktu wyjścia",
+        "unmeasured": "Brak licznika użycia od Twojego dostawcy",
+        "no_price": "Model bez znanej ceny",
+        "over_cap": "Powyżej Twojego limitu kosztu na sprawdzenie",
+        "opted_out": "Wykluczone przez Ciebie (savings.verification: false)",
+        "retrieval": "Warstwa dodała pobrane dokumenty: brak równoważnej kopii"
+      },
+      "outcomesTitle": "Sprawdzenia, z których nie powstała para",
+      "outcomesNone": "Z każdego sprawdzenia powstała para.",
+      "outcome": {
+        "check_failed": "Twój dostawca zwrócił błąd albo kopia przekroczyła limit czasu",
+        "check_unmeasured": "Twój dostawca nie zwrócił licznika użycia",
+        "abandoned": "Nadal w toku, gdy warstwa została zamknięta",
+        "dropped": "Nie wysłane: trwało już zbyt wiele sprawdzeń"
+      },
+      "methodTitle": "Jak to jest liczone",
+      "methodBody": "Każda para to jedno żądanie: ile kosztowała niezoptymalizowana kopia i ile kosztowało zoptymalizowane żądanie, oba według liczników użycia Twojego dostawcy po stawkach z tabeli cen. Para liczy się tylko wtedy, gdy kopia zakończyła się normalnie i spełniła Twój kontrakt wyjścia — tę samą regułę muszą spełnić Twoje żądania, aby zostały sprawdzone. Żądania są grupowane według tego, jak warstwa je obsłużyła, a każda grupa waży tyle, ile wynosi jej udział w Twoich kwalifikujących się żądaniach. Przedział to stratyfikowany bootstrap percentylowy: {resamples} ponownych próbkowań, ziarno {seed}. Z plikiem CSV i licznikami z tej strony możesz przeliczyć każdą estymację punktową; Twoje przedziały zgodzą się z naszymi z dokładnością do szumu ponownego próbkowania.",
+      "caveatsTitle": "Czego to nie pokazuje",
+      "caveats": {
+        "sample": "Losowa próba, nie każde żądanie: liczby opisują Twój kwalifikujący się ruch z pokazaną niepewnością i nigdy nie są zamieniane na kwotę do zafakturowania.",
+        "randomness": "Dwa wywołania rzadko odpowiadają tak samo, chyba że ustalisz ziarno i ustawisz temperaturę na zero. To poszerza przedział. Para liczy się tylko wtedy, gdy obie strony zakończyły się normalnie, więc odpowiedź ucięta tylko po jednej stronie nigdy nie liczy się jako oszczędność.",
+        "outside": "Koszty poza wywołaniem u Twojego dostawcy, np. usługa embeddingów, którą obsługujesz sam, nie są po żadnej stronie.",
+        "streaming": "Żądania, które się nie powiodły lub które anulowałeś podczas streamingu, nie są liczone."
+      },
+      "exportCsv": "Pobierz pary (CSV)"
+    },
     "install": {
       "metaTitle": "Zainstaluj · BiVelio Savings Layer",
       "eyebrow": "Integracja",
@@ -201,7 +277,8 @@
       "colACost": "koszt A",
       "colBCost": "koszt B",
       "colSavings": "oszczędności",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "kompresor ze stanowiska testowego, nie ma go w npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Weryfikator oszczędności",
@@ -360,6 +437,7 @@
       "proven": "udowodnione",
       "notProven": "nieudowodnione",
       "notExercised": "niewykorzystana w tym przebiegu — jej zero nie jest pomiarem",
+      "benchOnly": "zawiera kompresor ze stanowiska testowego, którego nie ma w pakiecie npm — nie jest reklamowany",
       "estimatedMock": "szacunkowe (mock)",
       "footnoteMain": "Cztery księgi, <b>nigdy nie sumowane</b> — każda to osobno mierzona dźwignia, więc dolara nie da się policzyć dwa razy.",
       "reconciledNote": "Reszta uzgodnienia ≈ 0 to potwierdza.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "oszczędności netto, <b>dolna granica 95% przedziału ufności</b>. Estymacja punktowa {point}, górna {upper} — nagłówkiem czynimy dolny próg{mockNote}.",
+      "captionSdkPendiente": "to, co utrzymuje SDK w postaci instalowanej z npm. Opublikowany przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet nie zawiera, dlatego jego przedział i estymacja punktowa nie są pokazywane jako obietnica, dopóki nie zastąpi ich przebieg z zainstalowanym SDK.",
       "mockNote": " (obciążenie referencyjne, dostawca mock)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— mierzone względem prawdziwego dostawcy, z bramką jakości.",
+      "sdkPendiente": "Ten przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera: jego liczby pokazują mechanizm, a nie to, ile oszczędza zainstalowane SDK.",
       "mock": "<b>SZACUNEK · dostawca mock</b> — to dowodzi, że mechanizm działa, a nie ile wyniesie Twój rachunek. Zatwierdzone uruchomienie LIVE zastępuje każdą liczbę tutaj."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Tor cienia: elizja zaoszczędziłaby {usd} w {requests} symulowanych żądaniach. Hipotetyczne — nigdy nie wchodzi do bazy ani do prowizji.",
       "sombraElisionNegativa": "Tor cienia: elizja kosztowałaby {usd} więcej w {requests} symulowanych żądaniach. Dlatego jest wyłączona: włącza się tylko to, co naprawdę oszczędza.",
       "elisionProveedor": "Tor czyszczenia przez dostawcę: {requests} żądań, w których nasze ustawienia sprawiły, że dostawca wyczyścił kontekst. Licznik, nie oszczędność — nigdy nie wchodzi do bazy ani do prowizji.",
-      "referencia": "Zmierzone przez odniesienie: {usd} w {requests} powtórzonych zapytaniach obsłużonych bez wywoływania Twojego dostawcy. Każde jest wyceniane licznikiem, który dostawca zwrócił dla identycznego, już wykonanego zapytania — znajdziesz go w raporcie tamtego zapytania i w zużyciu u dostawcy z tego dnia — po stawce za wejście z pamięci podręcznej, najniższej, jaką dostawca pobiera za powtórzenie promptu; wyjście liczy się tylko przy deterministycznym próbkowaniu. Wliczone do bazy.",
+      "referencia": "Zmierzone przez odniesienie: {usd} w {requests} powtórzonych zapytaniach obsłużonych bez wywoływania Twojego dostawcy. Każde jest wyceniane licznikiem, który dostawca zwrócił dla identycznego, już wykonanego zapytania — znajdziesz go w raporcie tamtego zapytania i w zużyciu u dostawcy z tego dnia — po stawce za wejście z pamięci podręcznej, najniższej, jaką dostawca pobiera za powtórzenie promptu; wyjście liczy się tylko przy deterministycznym próbkowaniu i gdy wykonane zapytanie nie zawierało ukrytego rozumowania (dostawca zgłosił zero tokenów rozumowania lub, jeśli ich nie wyszczególnia, jego odpowiedź nie zawierała bloku rozumowania). Wliczone do bazy.",
       "referenciaExcluida": "Zmierzone przez odniesienie: {usd} w {requests} powtórzonych zapytaniach. Pokazane jako kontekst — na razie pozostaje poza bazą i prowizją.",
       "exportarReferencias": "Pobierz powtórzone zapytania z tego okresu, jeden wiersz na zapytanie (CSV)",
       "exportarReferenciasPorDia": "Zbyt wiele powtórzonych zapytań na jeden plik — pobierz ten okres dzień po dniu (CSV):",
       "parametros": "Parametry zestawienia — cennik {version} · kurs wymiany {fx}.",
-      "parametrosReferencia": "Zasada dla powtórzonych zapytań ({regla}): wykonane zapytanie musi być identyczne bajt po bajcie, nietknięte przez warstwę i nie starsze niż {dias} dni; wejście po stawce Twojego dostawcy za wejście z pamięci podręcznej; wyjście w wysokości {cuota} jego licznika, nigdy powyżej limitu wyjścia tego zapytania i tylko przy deterministycznym próbkowaniu.",
+      "parametrosReferencia": "Zasada dla powtórzonych zapytań ({regla}): wykonane zapytanie musi być identyczne bajt po bajcie, nietknięte przez warstwę (schemat wyjścia liczy się tylko wtedy, gdy został przesłany dokładnie w takiej postaci, w jakiej go wysłano, w trybie ścisłym, w natywnym parametrze formatu odpowiedzi Twojego dostawcy, bez niczego dodanego do promptu) i nie starsze niż {dias} dni; wejście po stawce Twojego dostawcy za wejście z pamięci podręcznej; wyjście w wysokości {cuota} jego licznika, nigdy powyżej limitu wyjścia tego zapytania i tylko przy deterministycznym próbkowaniu, w modelu z naszego katalogu cen, który nie rozumuje i przestrzega tego próbkowania, gdy wykonane zapytanie nie zawierało ukrytego rozumowania (dostawca zgłosił zero tokenów rozumowania lub, jeśli ich nie wyszczególnia, jego odpowiedź nie zawierała bloku rozumowania).",
       "mismaFacturaTitulo": "Ten dokument JEST przyszłą fakturą.",
       "mismaFactura": "Wyciąg w cieniu i ten rozliczeniowy liczy ta sama maszyneria: gdy prowizja się włączy, pierwsza faktura będzie zawierać tylko liczby, które już tu widziałeś.",
       "historialTitulo": "Zamknięte zestawienia",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "mniej na fakturze, zweryfikowane na 95% · wobec niezoptymalizowanej integracji, bez streamingu"
         }
       ],
+      "proofSdkPendiente": "Tymczasowo: opublikowany przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera. Ta liczba mieści się pod dolną granicą tego przebiegu po odjęciu efektu kompresora, przeliczoną na podstawie zmierzonych prób — to jeszcze nie jest pomiar zainstalowanego SDK. Ten przebieg jeszcze się nie odbył.",
       "medidoEn": "Zmierzone na",
       "compatibleCon": "Zgodne z",
       "compatibleNota": "Każdy endpoint zgodny z API OpenAI oraz natywny adapter Anthropic. Z opublikowaną liczbą, dziś, tylko OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "Test to uczciwy eksperyment: to samo zadanie dwa razy — bez Savings i z Savings — a oba mierzy ten sam licznik dostawcy.",
       "plainTitle": "Tłumaczenie, bez żargonu",
       "plain": "W tym teście rachunek spadł niemal na pewno o co najmniej {piso}. Najprawdopodobniej spadł o {punto}.",
+      "plainSdkPendiente": "Z SDK w postaci, w jakiej instalujesz go z npm, rachunek spada o co najmniej {piso}. Opublikowany test zawierał dodatkowo kompresor dostępny tylko na stanowisku testowym, którego pakiet nie zawiera; odejmujemy jego efekt zamiast go liczyć, dopóki przebieg z zainstalowanym SDK nie zastąpi tej liczby.",
       "plainNote": "Gdy są widełki, zawsze ogłaszamy mniejszą liczbę — tę, którą gwarantuje statystyka — nigdy tę ładniejszą.",
       "trialsLink": "Pobierz surowe próby (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "jakość",
       "punto": "oszacowanie punktowe",
       "suelo": "Nagłówek to dolna granica przedziału 95%, nigdy punkt.",
+      "sdkPendiente": "Ten przebieg zawierał kompresor dostępny tylko na stanowisku testowym, którego pakiet npm nie zawiera, dlatego jego dolna granica nie jest pokazywana. Liczba powyżej to nasz nagłówek dla SDK w postaci, w jakiej go instalujesz: mieści się nadal po odjęciu efektu tego kompresora. Przebieg z zainstalowanym SDK jeszcze się nie odbył.",
       "libros": "na księgę",
       "pie": "Każda księga jest publikowana z własnym przedziałem; te, które nie przekraczają zera, nie są reklamowane.",
       "fecha": "seria"

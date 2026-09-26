@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import { getTranslations } from "next-intl/server";
 
 import abData from "@/public/data/ab-live.json";
+import type { AbArtifact } from "@/app/[locale]/dashboard/data";
+import { sueloPublicable } from "@/lib/bench/sdk-instalado";
 
 /**
  * La MISMA regla de tres que `HowItWorks.tsx`, y no por casualidad: esta
@@ -10,7 +12,9 @@ import abData from "@/public/data/ab-live.json";
  * dos números escritos a mano ($330 → $160) sin ningún respaldo, copiados en
  * tres sitios; ahora los tres salen del suelo del artefacto publicado.
  */
-const SUELO_MEDIDO = abData.aggregate?.savings?.lower ?? 0;
+// La misma regla que la página: sin `sdk.asShipped: true`, lo que sostiene el
+// paquete de npm, no el suelo de una tirada con el compresor del banco.
+const SUELO_MEDIDO = sueloPublicable(abData as unknown as AbArtifact);
 const FACTURA_EJEMPLO = 100;
 const FACTURA_CON_CAPA = Math.round(FACTURA_EJEMPLO * (1 - SUELO_MEDIDO));
 

@@ -25,6 +25,7 @@
       "howItWorks": "Cómo funciona",
       "groupSave": "Ahorrar",
       "proof": "Prueba",
+      "yourBench": "Tu banco",
       "verify": "Verificar",
       "extracto": "Extracto",
       "groupOrg": "Tu organización",
@@ -135,6 +136,81 @@
       "title": "¿Cuánto ahorrarías tú?",
       "intro": "Compruébalo en un minuto: elige un ejemplo (o pega tus propios datos), di cuánto usas la API y mira el ahorro proyectado. Todo se calcula en tu navegador."
     },
+    "yourBench": {
+      "metaTitle": "Tu banco · BiVelio Savings Layer",
+      "eyebrow": "Tu tráfico · los dos lados medidos por tu proveedor",
+      "title": "Tu propio banco",
+      "intro": "El banco publicado corre nuestros escenarios. Este corre los tuyos: con el muestreo de verificación activado, una parte aleatoria de tus peticiones elegibles se envía también sin optimizar a tu propio proveedor, y cada par se mide en los dos lados.",
+      "badge": "INFORMATIVO — NUNCA SE FACTURA",
+      "offTitle": "El muestreo de verificación está apagado",
+      "offBody": "No se ha comprobado nada en este periodo. Añade el ajuste de abajo a createSavingsLayer y tus pares empezarán a aparecer aquí.",
+      "offCost": "Cada comprobación es una llamada real a tu proveedor, que pagas tú: más o menos la tasa de muestreo por lo que costaría ese tráfico sin la capa. Nunca entra en tu extracto ni en ninguna comisión.",
+      "collectingTitle": "Reuniendo pares: {n} de {min}",
+      "collectingBody": "Por debajo de {min} pares un intervalo diría más que los datos. Los recuentos de abajo ya son definitivos.",
+      "collectingGroupsTitle": "Reuniendo pares: {n} por ahora, pero aún faltan pares en algunos grupos",
+      "collectingGroupsBody": "Los grupos con menos de {min} pares aún suman el {gap} de tus peticiones elegibles. Un titular sin pares suficientes de ellos podría esconder justo el tráfico donde la capa te cuesta dinero, así que aparece cuando sumen el {max} o menos. Los recuentos de abajo ya son definitivos.",
+      "readFailed": "No se han podido leer tus pares ahora mismo. Nada de lo de abajo es un cero: vuelve a intentarlo en un momento.",
+      "notAvailable": "Tu banco aún no está disponible en este servidor.",
+      "headlineCaption": "estimado a partir de {pairs} pares comparados: el <b>suelo del intervalo del {level}</b> para tus peticiones elegibles. Estimación puntual {point}, techo {upper}; el titular es el suelo.",
+      "headlineCaptionPartial": "estimado a partir de {pairs} pares comparados: el <b>suelo del intervalo del {level}</b> para el {coverage} de tus peticiones elegibles que está en grupos con pares; el resto no entra en esta cifra. Estimación puntual {point}, techo {upper}; el titular es el suelo.",
+      "meanDiff": "Diferencia media por cada {per} peticiones: {point} (de {lower} a {upper}, intervalo del {level}).",
+      "basis": "{pairs} pares comparados · cubren el {coverage} de tus {eligible} peticiones elegibles · el {rate} de esas peticiones volvió como par",
+      "subsampled": "Calculado sobre un subconjunto aleatorio de {n} de tus {total} pares.",
+      "stressTitle": "El peor caso para la capa",
+      "stressBody": "Tus copias sin optimizar se envían solo de vez en cuando, así que rara vez encuentran caliente la caché de tu proveedor; sin la capa, todas las peticiones lo harían. Valorando cada copia como si todos sus tokens de entrada se hubieran leído de caché —a la tarifa de entrada cacheada de la tabla de precios, o gratis si no la tiene—, el suelo es {lower}.",
+      "costTitle": "Lo que te costaron las comprobaciones",
+      "costBody": "{usd} por {pairs} copias sin optimizar, a las tarifas de la tabla de precios. Es el coste del instrumento; nunca entra en tu extracto ni en ninguna comisión.",
+      "costUnknown": "Más {n} copias cuyo coste no se pudo medir: sin contador de uso, cerradas en vuelo, o fallidas o fuera de plazo. Puede que tu proveedor te haya cobrado alguna.",
+      "strataTitle": "Según cómo sirvió la capa la petición",
+      "colKind": "Cómo se sirvió",
+      "colEligible": "Peticiones elegibles",
+      "colPairs": "Pares comparados",
+      "colNaive": "Sin optimizar, media",
+      "colOptimized": "Con la capa, media",
+      "colDiff": "Diferencia por cada {per}",
+      "notCovered": "Pocos pares para un intervalo propio ({n} de {min})",
+      "noPairs": "Aún sin pares",
+      "stratum": {
+        "avoided_call": "Respondida sin llamar a tu proveedor",
+        "cheaper_model": "Respondida por un modelo más barato",
+        "tokens_removed": "Enviada con partes quitadas",
+        "tokens_compressed": "Enviada recodificada con menos tokens",
+        "unchanged": "Enviada sin cambios"
+      },
+      "naiveQuality": "Pares no comparados, porque la copia sin optimizar no terminó como tiene que terminar una petición tuya para comprobarse — cortada por el límite de salida: {truncated} · parada por otro motivo: {incomplete} · sin cumplir tu contrato de salida: {missed}. Se cuentan y van en el CSV, pero no entran en ninguna cifra: un par solo cuenta si los dos lados terminaron con normalidad.",
+      "exclusionsTitle": "Nunca comprobadas, y por qué",
+      "exclusionsIntro": "Estas peticiones se cuentan pero nunca se envían dos veces: compararlas no sería comparar lo mismo. Las de fail-open, las cortadas y las que incumplieron el contrato suelen ser las más caras para la capa, así que dejarlas fuera puede favorecer la cifra; por eso cada una se enseña aquí.",
+      "exclusionsNone": "Ninguna petición quedó excluida en este periodo.",
+      "excluded": {
+        "fail_open": "Fueron por el camino de rescate (enviadas sin optimizar)",
+        "truncated": "Cortadas por el límite de salida",
+        "incomplete": "Se detuvieron por otro motivo",
+        "contract_failed": "No cumplieron su contrato de salida",
+        "unmeasured": "Sin contador de uso de tu proveedor",
+        "no_price": "Modelo sin precio conocido",
+        "over_cap": "Por encima de tu tope por comprobación",
+        "opted_out": "Excluidas por ti (savings.verification: false)",
+        "retrieval": "La capa añadió documentos recuperados: no hay copia equivalente"
+      },
+      "outcomesTitle": "Comprobaciones que no llegaron a par",
+      "outcomesNone": "Todas las comprobaciones llegaron a par.",
+      "outcome": {
+        "check_failed": "Tu proveedor devolvió un error, o la copia agotó el tiempo",
+        "check_unmeasured": "Tu proveedor no devolvió contador de uso",
+        "abandoned": "Aún en curso cuando se cerró la capa",
+        "dropped": "No enviadas: ya había demasiadas comprobaciones en curso"
+      },
+      "methodTitle": "Cómo se calcula",
+      "methodBody": "Cada par es una petición: lo que costó la copia sin optimizar y lo que costó la petición optimizada, los dos según los contadores de uso de tu proveedor y a las tarifas de la tabla de precios. Un par solo cuenta si la copia terminó con normalidad y cumplió tu contrato de salida, la misma regla que tiene que pasar una petición tuya para comprobarse. Las peticiones se agrupan según cómo las sirvió la capa, y cada grupo pesa lo que representa en tus peticiones elegibles. El intervalo es un bootstrap percentil estratificado: {resamples} remuestreos, semilla {seed}. Con el CSV y los recuentos de esta página puedes recalcular cada estimación puntual; tus intervalos coincidirán con los nuestros salvo el ruido del remuestreo.",
+      "caveatsTitle": "Lo que esto no enseña",
+      "caveats": {
+        "sample": "Una muestra aleatoria, no todas las peticiones: las cifras describen tu tráfico elegible con la incertidumbre que se ve, y nunca se convierten en un importe que facturar.",
+        "randomness": "Dos llamadas rara vez contestan igual salvo que fijes la semilla y pongas la temperatura a cero. Eso ensancha el intervalo. Un par solo cuenta si los dos lados terminaron con normalidad, así que una respuesta cortada solo en un lado nunca cuenta como ahorro.",
+        "outside": "Los costes fuera de la llamada a tu proveedor, como un servicio de embeddings que operes tú, no están en ningún lado.",
+        "streaming": "Las peticiones que fallaron, o que cancelaste mientras se transmitían, no se cuentan."
+      },
+      "exportCsv": "Descargar los pares (CSV)"
+    },
     "install": {
       "metaTitle": "Instalar · BiVelio Savings Layer",
       "eyebrow": "Integra",
@@ -201,7 +277,8 @@
       "colACost": "costo A",
       "colBCost": "costo B",
       "colSavings": "ahorro",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compresor del banco, no está en npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificador de ahorro",
@@ -360,6 +437,7 @@
       "proven": "comprobado",
       "notProven": "no comprobado",
       "notExercised": "no ejercitada en esta tirada — su cero no es una medición",
+      "benchOnly": "incluye un compresor exclusivo del banco que el paquete de npm no trae — no se anuncia",
       "estimatedMock": "estimado (simulado)",
       "footnoteMain": "Cuatro libros, <b>nunca sumados</b>: cada uno es una palanca medida por separado, así que un dólar no se puede contar dos veces.",
       "reconciledNote": "El residual de conciliación ≈ 0 lo demuestra.",
@@ -379,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "ahorro neto, <b>límite inferior del IC del 95%</b>. Estimación puntual {point}, superior {upper}: destacamos el piso{mockNote}.",
+      "captionSdkPendiente": "lo que sostiene el SDK tal como se instala desde npm. La tirada publicada llevaba un compresor exclusivo del banco que el paquete no trae, así que su intervalo y su punto no se enseñan como promesa hasta que una tirada del SDK instalado los sustituya.",
       "mockNote": " (carga de trabajo de referencia, proveedor simulado)"
     },
     "cacheBreakEven": {
@@ -392,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— medido contra un proveedor real, con control de calidad.",
+      "sdkPendiente": "Esta tirada llevaba un compresor exclusivo del banco que el paquete de npm no trae: sus cifras muestran el mecanismo, no lo que ahorra el SDK instalado.",
       "mock": "<b>ESTIMADO · proveedor simulado</b>: esto demuestra que el mecanismo funciona, no tu factura. Una ejecución LIVE confirmada reemplaza cada número aquí."
     },
     "connectionStatePill": {
@@ -526,12 +606,12 @@
       "sombraElision": "Carril sombra: la elisión habría ahorrado {usd} en {requests} peticiones simuladas. Hipotético — jamás entra en la base ni en la comisión.",
       "sombraElisionNegativa": "Carril sombra: la elisión habría costado {usd} de más en {requests} peticiones simuladas. Por eso está apagada: solo se enciende lo que ahorra de verdad.",
       "elisionProveedor": "Carril del borrado del proveedor: {requests} peticiones en las que nuestros diales hicieron que el proveedor borrara contexto. Un conteo, no un ahorro — jamás entra en la base ni en la comisión.",
-      "referencia": "Medido por referencia: {usd} en {requests} peticiones repetidas que se sirvieron sin llamar a tu proveedor. Cada una se valora con el contador que tu proveedor devolvió para la petición idéntica que ya se ejecutó —está en el informe de esa petición y en el uso de tu proveedor de ese día— al precio de entrada cacheada, el más bajo que tu proveedor cobra por repetir un prompt; la salida solo cuenta si el muestreo era determinista. Entra en la base.",
+      "referencia": "Medido por referencia: {usd} en {requests} peticiones repetidas que se sirvieron sin llamar a tu proveedor. Cada una se valora con el contador que tu proveedor devolvió para la petición idéntica que ya se ejecutó —está en el informe de esa petición y en el uso de tu proveedor de ese día— al precio de entrada cacheada, el más bajo que tu proveedor cobra por repetir un prompt; la salida solo cuenta si el muestreo era determinista y la llamada que se ejecutó no llevó razonamiento oculto (tu proveedor declaró cero tokens de razonamiento o, si no los desglosa, su respuesta no traía bloque de razonamiento). Entra en la base.",
       "referenciaExcluida": "Medido por referencia: {usd} en {requests} peticiones repetidas. Se enseña como contexto: por ahora queda fuera de la base y de la comisión.",
       "exportarReferencias": "Descargar las peticiones repetidas de este período, una fila por petición (CSV)",
       "exportarReferenciasPorDia": "Demasiadas peticiones repetidas para un solo fichero: descargar este período día a día (CSV):",
       "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx}.",
-      "parametrosReferencia": "Regla de las peticiones repetidas ({regla}): la petición que se ejecutó tiene que ser idéntica byte a byte, sin que la capa la tocara y con {dias} días como mucho; la entrada, al precio de entrada cacheada de tu proveedor; la salida, al {cuota} de su contador, nunca por encima del límite de salida de esta petición y solo con muestreo determinista.",
+      "parametrosReferencia": "Regla de las peticiones repetidas ({regla}): la petición que se ejecutó tiene que ser idéntica byte a byte, sin que la capa la tocara (un esquema de salida solo cuenta si viajó tal como lo enviaste, en modo estricto, en el parámetro nativo de formato de respuesta de tu proveedor, sin nada añadido al prompt) y con {dias} días como mucho; la entrada, al precio de entrada cacheada de tu proveedor; la salida, al {cuota} de su contador, nunca por encima del límite de salida de esta petición y solo con muestreo determinista, con un modelo de nuestro catálogo de precios que no razona y respeta ese muestreo, cuando la llamada que se ejecutó no llevó razonamiento oculto (tu proveedor declaró cero tokens de razonamiento o, si no los desglosa, su respuesta no traía bloque de razonamiento).",
       "mismaFacturaTitulo": "Este documento ES la futura factura.",
       "mismaFactura": "El extracto en sombra y el facturable se calculan con la misma máquina: cuando la comisión se active, la primera factura solo contendrá números que ya has visto aquí.",
       "historialTitulo": "Extractos cerrados",
@@ -660,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0 %",
+          "cifra": "≥ 10,0 %",
           "que": "menos factura, verificado al 95 % · frente a una integración sin optimizar, sin streaming"
         }
       ],
+      "proofSdkPendiente": "Provisional: la tirada publicada llevaba un compresor exclusivo del banco que el paquete de npm no trae. Esta cifra cabe bajo el suelo de esa tirada al quitar el efecto del compresor, recalculado con los ensayos medidos: aún no es una medición del SDK instalado. Esa tirada está pendiente.",
       "medidoEn": "Medido en",
       "compatibleCon": "Compatible con",
       "compatibleNota": "Cualquier endpoint compatible con la API de OpenAI, y el adaptador nativo de Anthropic. Con cifra publicada, hoy, solo OpenAI {modelo}."
@@ -727,6 +808,7 @@
       "videoCaption": "La prueba es un experimento justo: la misma tarea dos veces — sin Savings y con Savings — y el mismo contador del proveedor midiendo las dos.",
       "plainTitle": "Traducción, sin jerga",
       "plain": "En esta prueba, la factura bajó con casi total seguridad al menos un {piso}. Lo más probable es que bajara un {punto}.",
+      "plainSdkPendiente": "Con el SDK tal como lo instalas desde npm, la factura baja al menos un {piso}. La prueba publicada llevaba además un compresor exclusivo del banco que el paquete no trae; quitamos su efecto en vez de contarlo, hasta que una tirada del SDK instalado sustituya esta cifra.",
       "plainNote": "Cuando hay una horquilla, anunciamos siempre el número pequeño — el que la estadística garantiza —, nunca el bonito.",
       "trialsLink": "Descargar los ensayos crudos (CSV)"
     },
@@ -929,6 +1011,7 @@
       "calidad": "calidad",
       "punto": "estimación puntual",
       "suelo": "El titular es el suelo del intervalo del 95 %, nunca el punto.",
+      "sdkPendiente": "Esta tirada llevaba un compresor exclusivo del banco que el paquete de npm no trae, así que su suelo no se muestra. La cifra de arriba es nuestro titular para el SDK tal como lo instalas: sigue cabiendo al quitar el efecto de ese compresor. Falta una tirada del SDK instalado.",
       "libros": "por libro contable",
       "pie": "Cada libro se publica con su propio intervalo; los que no despejan el cero no se anuncian.",
       "fecha": "tirada"

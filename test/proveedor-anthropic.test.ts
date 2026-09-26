@@ -273,7 +273,7 @@ describe("contabilidad del uso: el libro 4 y la prima que NO es ahorro", () => {
   it("sin bloques de caché el total sigue siendo el que reporta el proveedor", async () => {
     const { fetchImpl } = espia(respuestaDeTexto("ok", { input_tokens: 123, output_tokens: 7 }));
     const r = await new AnthropicProvider({ fetchImpl }).generate(PETICION);
-    expect(r.usage).toEqual({ inputTokens: 123, outputTokens: 7 });
+    expect(r.usage).toEqual({ inputTokens: 123, outputTokens: 7, reasoningTokens: 0 });
   });
 
   it("con `requireUsage`, un contador AUSENTE es error duro", async () => {

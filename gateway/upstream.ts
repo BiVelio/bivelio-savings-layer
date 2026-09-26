@@ -13,6 +13,26 @@ export const UPSTREAM_ALIASES: Readonly<Record<string, string>> = {
   anthropic: "https://api.anthropic.com",
 };
 
+/**
+ * ¿Es `upstreamBase` el origen OFICIAL de un proveedor (uno de los alias de
+ * arriba)? Parte G · solo entonces el contador que devuelve está en una factura
+ * que se pueda enseñar: detrás de un mock local, de vLLM o LiteLLM sirviendo con
+ * un nombre del catálogo, de Azure o de un revendedor con otras tarifas, el
+ * precio de lista del catálogo no es lo que nadie pagó, y una gemela valorada
+ * con él sería comisión sin factura detrás (la misma razón que la E0
+ * `simulated-provider` del SDK). Se compara el ORIGEN normalizado: mayúsculas y
+ * puerto por defecto no cambian nada, y una ruta pegada tampoco.
+ */
+export function esUpstreamOficial(upstreamBase: string): boolean {
+  let origen: string;
+  try {
+    origen = new URL(upstreamBase).origin;
+  } catch {
+    return false;
+  }
+  return Object.values(UPSTREAM_ALIASES).includes(origen);
+}
+
 export type UpstreamResuelto =
   | {
       ok: true;

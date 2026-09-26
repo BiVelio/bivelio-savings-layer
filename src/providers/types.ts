@@ -69,6 +69,20 @@ export interface ProviderUsage {
    */
   cacheWriteInputTokens?: number;
   /**
+   * Output tokens the provider billed for hidden reasoning, already included in
+   * `outputTokens` (OpenAI `completion_tokens_details.reasoning_tokens`).
+   *
+   * `0` states that the answer carried no hidden reasoning. Where the provider
+   * does not break reasoning out (Anthropic's Messages API), the built-in
+   * adapter reports `0` only when the answer has no `thinking` or
+   * `redacted_thinking` block, and leaves this absent otherwise. Absent means
+   * nobody said, which is NOT the same as 0: a repeat served by reference only
+   * credits output when the call that ran reported exactly 0, because reasoning
+   * tokens are neither visible nor deterministic. A custom provider should set
+   * it only from its provider's own counter or an equally direct signal.
+   */
+  reasoningTokens?: number;
+  /**
    * False when the provider did not report both counters for this call (for a
    * stream: its final usage event never arrived), so the adapter filled the
    * missing ones with 0. Absent means complete. A request with any such call is
@@ -143,7 +157,7 @@ export type ProviderStreamEvent =
   | { type: "text"; delta: string }
   | { type: "done"; response: ProviderResponse };
 
-/** Options for {@link Provider.generateStream}. */
+/** Options for {@link Provider.generate} and {@link Provider.generateStream}. */
 export interface ProviderStreamOptions {
   /** Cancels the HTTP request. */
   signal?: AbortSignal;
@@ -151,7 +165,7 @@ export interface ProviderStreamOptions {
 
 export interface Provider {
   readonly id: string;
-  generate(req: ProviderRequest): Promise<ProviderResponse>;
+  generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse>;
   /**
    * Optional streaming variant of generate(). It must yield `text` events in
    * order and end with exactly one `done` whose `response` is what generate()

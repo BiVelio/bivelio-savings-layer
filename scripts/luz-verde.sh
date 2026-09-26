@@ -33,7 +33,11 @@ printf "${G}commit %s${N}\n" "$(git rev-parse --short HEAD)"
 
 # ── 1 · El código se puede publicar ──────────────────────────────────────────
 area "1 · El código se puede publicar"
-if bash scripts/simular-ci.sh main >/tmp/lv-ci.log 2>&1; then
+# El commit que dice la cabecera, no la rama `main` LOCAL: en un árbol de
+# trabajo cortado de origin/main esa rama puede ir semanas por detrás, y el
+# veredicto hablaba de un código que no era el que se estaba evaluando. En main,
+# HEAD es main. Lo que no esté commiteado no entra en el clon limpio.
+if bash scripts/simular-ci.sh "$(git rev-parse HEAD)" >/tmp/lv-ci.log 2>&1; then
   ok "clon limpio: instala, construye, tipa, pasa las pruebas y compila la web en los 12 idiomas"
   ok "el tarball de npm: paywall cerrado, sin sourcemaps, clave pública embebida"
 else
@@ -80,7 +84,7 @@ for (const f of idiomas) {
 const prometido = Math.max(...cifras, 0);
 const csv = existsSync("apps/web/public/data/ab-live-trials.csv");
 const salida = {
-  suelo: suelo.toFixed(1), prometido: prometido.toFixed(1), sellado, csv,
+  suelo: (Math.floor(suelo * 10) / 10).toFixed(1), prometido: prometido.toFixed(1), sellado, csv,
   unaSola: cifras.size === 1, idiomas: idiomas.length, pares: art.trials ?? null,
   modo: art.mode, calidad: art.aggregate?.qualityPassRate ?? null,
 };
@@ -92,6 +96,39 @@ if [[ -s /tmp/lv-cifras.json ]]; then
   if [[ "$SELL" == "true" ]]; then ok "el artefacto lleva sello de procedencia (fecha, commit y nº de parejas)"; else mal "el artefacto no lleva sello: no se sabe de qué tirada salió"; fi
   if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %, el menor de los suelos frente a B0 y B1)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO % (menor suelo B0/B1)"; fi
   if [[ "$UNA" == "true" ]]; then ok "los $IDI idiomas prometen la misma cifra"; else mal "los idiomas no dicen lo mismo"; fi
+  # Lo prometido tiene que caber también en lo que ENTREGA el paquete de npm. Si
+  # el artefacto se midió con una pieza que npm no trae (el compresor del banco),
+  # se reconstruye el suelo sin ella — sin red, con los ensayos publicados.
+  if TCS=$(pnpm -s exec tsx benchmarks/titular-como-se-instala.ts --json 2>/dev/null) && [[ -n "$TCS" ]]; then
+    read -r TAL SINREC MENOR <<<"$(node -p 'const d=JSON.parse(process.argv[1]);[d.medidoTalCual,d.sinReconstruir,(Math.floor(d.menor*1000)/10).toFixed(1)].join(" ")' "$TCS")"
+    MOTIVO=$(node -p 'JSON.parse(process.argv[1]).motivo' "$TCS")
+    if [[ "$TAL" == "true" ]]; then
+      ok "el artefacto midió el SDK tal como se instala desde npm (sdk.asShipped: true)"
+    else
+      if [[ "$SINREC" == "true" ]]; then
+        avis "$MOTIVO: re-medir con BVSALA_AB_SIN_COMPRESOR=1 para sellarlo"
+      else
+        avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con BVSALA_AB_SIN_COMPRESOR=1"
+      fi
+      if awk "BEGIN{exit !($PROM <= $MENOR)}"; then
+        ok "lo prometido ($PROM %) cabe también en lo que entrega npm ($MENOR %$([[ "$SINREC" == "true" ]] || echo ', reconstruido sin el compresor del banco'))"
+      else
+        mal "la web promete $PROM % y sin el compresor del banco el suelo es $MENOR %"
+      fi
+      # Y NINGUNA OTRA SUPERFICIE lo contradice: mientras el artefacto no mida lo
+      # instalado, el recibo del héroe, la frase del paso 2, la banda, las
+      # tarjetas por libro y la factura de ejemplo no pueden presentar su suelo
+      # como lo que obtiene el cliente. Rojo si alguna lo hace.
+      if pnpm -s exec vitest run apps/web/lib/bench/sdk-instalado.test.ts >/tmp/lv-sdk-instalado.log 2>&1; then
+        ok "ninguna superficie de la web presenta el suelo de esa tirada como lo que obtiene el cliente: enseñan el titular"
+      else
+        mal "alguna superficie de la web presenta el suelo de una tirada que no midió lo instalado"
+        nota "mira /tmp/lv-sdk-instalado.log"
+      fi
+    fi
+  else
+    mal "no se pudo calcular el suelo de lo que entrega npm (benchmarks/titular-como-se-instala.ts)"
+  fi
   if [[ "$CSV" == "true" ]]; then ok "los ensayos crudos están publicados y enlazados"; else mal "no se publican los ensayos: la promesa de verificable es falsa"; fi
 else
   mal "no se pudieron leer las cifras de la web"

@@ -32,3 +32,18 @@ export function fechaDeCorteReferencias(hoy: Date, dias: number = DIAS_DE_RETENC
   if (!Number.isInteger(dias) || dias < 1) throw new Error(`días de retención inválidos: ${dias}`);
   return new Date(hoy.getTime() - dias * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
+
+/**
+ * RETENCIÓN DE «TU PROPIO BANCO» (0030): `verification_samples` y
+ * `verification_daily`, 180 días. Es un instrumento, no un registro de
+ * facturación —el panel mira como mucho 120 días—, y empezar corto es el lado
+ * seguro para los datos: alargarlo después es fácil. `verification_batches_seen`
+ * (la idempotencia por lote) sigue el corte de 30 días de `fechaDeCorte`.
+ */
+export const DIAS_DE_RETENCION_VERIFICACION = 180;
+
+/** El día (YYYY-MM-DD, UTC) por debajo del cual una fila de la verificación se borra. */
+export function fechaDeCorteVerificacion(hoy: Date, dias: number = DIAS_DE_RETENCION_VERIFICACION): string {
+  if (!Number.isInteger(dias) || dias < 1) throw new Error(`días de retención inválidos: ${dias}`);
+  return new Date(hoy.getTime() - dias * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}

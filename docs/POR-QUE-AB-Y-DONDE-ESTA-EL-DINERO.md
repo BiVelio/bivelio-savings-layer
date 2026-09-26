@@ -77,22 +77,33 @@ uno: cuando el contrafactual **ya se ejecutó**.
 Una llamada evitada —un acierto de la caché exacta o un seguidor de una
 ráfaga coalescida— sirve la respuesta de otra petición. Si esa otra petición
 era **idéntica byte a byte** a esta y pasó por la capa **intacta** (sin nada
-quitado ni añadido, sin codebook, sin sondeo, sin esquema por prompt y con el
-modelo pedido) contra un proveedor de verdad —el mock de demo inventa su
-contador, y ese no vale—, entonces su contador del proveedor ES lo que la
+quitado ni añadido, sin codebook, sin sondeo, con el modelo pedido y, si
+llevaba contrato de salida, con el esquema del cliente enviado **tal cual y en
+modo estricto** en el parámetro nativo de formato de respuesta del proveedor)
+contra un proveedor de verdad —el mock
+de demo inventa su contador, y ese no vale—, entonces su contador del proveedor ES lo que la
 ingenua habría facturado por esta. No hay mundo que suponer: ese mundo ocurrió, está en el
 informe de aquella petición y en el uso del proveedor de ese día, y el cliente
 ya lo pagó.
 
-Aun así se valora **a la baja**, para que sea un suelo y no una estimación:
+Aun así se valora **a la baja**. La entrada es un suelo; la salida, cuando
+cuenta, lleva un margen (el 95 %), no un suelo, porque `temperature: 0` solo la
+reproduce aproximadamente:
 
 - toda la entrada a la tarifa de **entrada cacheada**, que es el mínimo que el
   proveedor cobra por un token de entrada aunque la ingenua acertara entera en
   su caché de prefijo;
 - la salida, al 95 % de su contador y solo con `temperature: 0` (con
-  muestreo, 0: el proveedor no habría escrito lo mismo); nunca por encima del
-  tope de salida de la repetición;
-- 8 tokens de margen por cada mensaje que la capa insertó;
+  muestreo, 0: el proveedor no habría escrito lo mismo), con un modelo que es
+  fila del catálogo, no razona y honra ese parámetro, y cuando la llamada que
+  corrió no llevó razonamiento oculto: su proveedor declaró **exactamente 0**
+  tokens de razonamiento o, donde no los desglosa (Anthropic), su respuesta no
+  trae bloque de razonamiento; nunca por encima del tope de salida de la
+  repetición;
+- 8 tokens de margen por cada pieza que la capa insertó: el mensaje de datos,
+  el turno que añade un adaptador (el «(continue)» de Anthropic), el envoltorio
+  del esquema nativo (`response_format`) y, por cada herramienta que no traía
+  parámetros, dos piezas por los parámetros vacíos que le pone el adaptador;
 - nunca por encima del tier más barato que la repetición podía obtener;
 - sin precio cacheado documentado **para ese modelo**, no hay referencia: su
   fila propia del catálogo (o una instantánea con fecha de ella) o el precio que
@@ -110,6 +121,65 @@ Lo que **no** cambia: los libros 2 y 3 (tokens eliminados y comprimidos, el
 repetición de una llamada **optimizada** tampoco tiene referencia, porque su
 contador no es el de la ingenua. Para eso sigue haciendo falta el A/B de abajo.
 Las reglas exactas viven en `src/pipeline/referencia.ts`.
+
+**Regla v2 (septiembre de 2026).** Dos decisiones que el dueño delegó, las dos
+tomadas del lado seguro:
+
+- **El esquema nativo entra.** En la v1 una petición con contrato de salida solo
+  dejaba referencia con el backend `provider-native` configurado, y la
+  configuración por defecto no configura ninguno: todo el tráfico con esquema
+  quedaba fuera aunque el esquema viajara nativo. La v2 mira lo que **pasó**:
+  entra cuando el adaptador de este paquete atestigua que el esquema viajó tal
+  cual en su parámetro nativo de formato de respuesta, **con `strict: true`** y
+  sin una palabra de la capa en el prompt, **y** la respuesta no lo desmiente
+  (`structuredNatively === true`: el proveedor no rechazó el parámetro). Lo que
+  se afirma es lo que salió por el cable, no que el proveedor lo impusiera: un
+  endpoint compatible que acepte e ignore `response_format` no cambia el
+  contador, que sigue siendo el de la petición del cliente. El esquema es del
+  cliente —va en su petición y en la huella—; lo único de la capa es el
+  envoltorio (el nombre del `response_format`), y ese se descuenta como una
+  pieza más. Se quedan fuera, a propósito: el esquema con `strict: false` (un
+  campo opcional lo impide en OpenAI, y entonces la forma la garantiza la capa,
+  no el proveedor), el esquema pedido por prompt (un modelo que rechaza
+  `response_format`), la pista de límites de JSON (ya la excluía E2), la
+  herramienta de contrato de Anthropic (nativa, pero con nombre, descripción y
+  prompt de herramientas que puso nuestro adaptador) y cualquier proveedor de
+  terceros, que no puede atestiguar su cable.
+- **La guarda de razonamiento.** Los tokens de razonamiento no se ven y su
+  número cambia entre llamadas idénticas, y los modelos que razonan casi nunca
+  respetan `temperature: 0` (una pasarela que lo quita en silencio convierte la
+  petición en muestreada: OpenRouter ignora por defecto lo que un modelo no
+  admite). Así que la salida no se acredita si el modelo razona según su fila
+  del catálogo (`src/pricing/razonamiento.ts`; toda fila nueva tiene que
+  decirlo o el test se pone rojo), si no honra `temperature` (Opus 4.7 y 4.8 la
+  rechazan con un 400: si una llamada con `temperature: 0` contestó, alguien le
+  quitó el parámetro), si el modelo no es fila del catálogo (nadie decidió si
+  razona), ni si el contador declaró razonamiento **o no dijo cuánto**: un
+  contador callado no es un 0. La generación 5 de Claude razona sin que se le
+  pida (Opus 5 y Sonnet 5 corren el razonamiento adaptativo con `thinking`
+  omitido; Fable y Mythos lo llevan siempre puesto), así que va como modelo de
+  razonamiento. En Anthropic, que no desglosa el razonamiento en `usage`, el 0
+  lo declara el adaptador cuando la respuesta no trae bloque `thinking` ni
+  `redacted_thinking`; con bloque no declara nada. Se valoró excluir la
+  referencia entera y se descartó: el contador de **entrada** de unos bytes
+  idénticos es determinista también en un modelo que razona, y la tarifa
+  cacheada sigue siendo el mínimo que el proveedor cobra por repetirlos.
+
+El registro pasó a formato v2: un lector de la v1 declara `malformed` un
+registro v2 y al revés, así que nunca se valora un contador con una regla que
+no lo escribió.
+
+**La verja de versión del servidor.** La etiqueta v0.4.23 se cortó con la regla
+v1, y la regla con la que un SDK valoró una repetición no viaja en el registro
+de uso: el cierre sella `reference-v2` para el extracto entero. Para que ese
+sello sea cierto se publique lo que se publique, el ingest degrada a
+`estimated` toda referencia de un proceso que no declara versión o que declara
+una anterior a `VERSION_MINIMA_REFERENCIA` (0.4.24, `src/version.ts` y su
+espejo en `apps/web/lib/metering/version.ts`). Sigue en los totales; no entra
+en `reference_*` ni en la base. Lo mismo para toda referencia que declare
+`gateway/`, a cualquier versión: la regla v2 vive en el pipeline del SDK y el
+gateway no pasa por él, así que su gemela coalescida (Parte G) entra como
+`estimated` hasta que el PR que le lleve la regla v2 abra su verja.
 
 ### Qué es el A/B (anillo 2, #224) y por qué es la única salida
 
@@ -266,6 +336,61 @@ pelo es mentir.
 **Sin cambiar de modelo**, el techo honesto hoy es #2 (+4,9 %, medido) + #4
 (≤3,6 %, sin medir) + #3 (≤21,6 %, sin A/B): el 20 % **solo** llega con el A/B de
 la elisión, que sigue bloqueado por publicar #226 en npm.
+
+---
+
+## Parte 4 — Tu propio banco: instrumento, no base (añadido 2026-09-25)
+
+El A/B ya no vive solo en nuestro banco. Con `verification: { sampleRate }` en
+`createSavingsLayer` (apagado por defecto), el SDK manda una fracción aleatoria
+de las peticiones elegibles **otra vez, sin optimizar, al proveedor del
+cliente** —después de servir; la respuesta se descarta— y reporta el par medido
+en los dos lados. El panel lo enseña en **Prueba › Tu banco**: el suelo del IC
+95 % por bootstrap estratificado (pesos = cuota de población de cada estrato),
+la diferencia media por cada mil peticiones, una línea de «peor caso para la
+capa» (cada copia valorada como si toda su entrada viniera de caché) y cada par
+en CSV.
+
+**No es base de comisión, y no por prudencia sino por veredicto.** El panel de
+jueces del roadmap refutó el carril «verified» (extrapolar N·d_low a todo el
+tráfico) en tres líneas:
+
+1. N·d_low cobra peticiones que nadie midió y no ve las colas negativas raras:
+   una muestra del 2 % casi nunca pilla la petición en la que la capa pierde.
+2. Por construcción, el suelo de un IC 95 % sobrecobra en el 2,5 % de los
+   periodos: facturar sobre él es cobrar de más uno de cada cuarenta meses.
+3. Ninguna línea de la factura del proveedor respalda la cifra extrapolada, y
+   «defendible frente a la factura» es la regla de la comisión.
+
+Por eso los pares viajan por su canal propio (`/api/metering/verification`) a
+sus tablas propias (migración 0030), el ingest de uso rechaza
+`basis: "verification"` y una verja de tests impide que facturación, cierre o
+extracto lean nada de esto. Si algún día entra en la base, será con otra
+especificación (un n mínimo mucho mayor, un estimador robusto a colas) y con el
+sí explícito del dueño.
+
+**Dos reglas que endureció la revisión adversaria antes de publicar nada:**
+
+1. *Un par solo cuenta si los dos lados terminaron igual de bien.* La petición
+   servida ya se excluía si salía cortada por el tope, parada por otro motivo o
+   sin cumplir el contrato; la copia no. Con el mismo tope en los dos brazos,
+   una copia cortada es la salida **más cara** posible, así que quedarse solo con
+   las servidas no cortadas fabricaba ahorro: con una capa que no hacía nada, un
+   15 %. Ahora la copia pasa por la misma regla (los pares apartados se cuentan,
+   se enseñan y van en el CSV) y el instrumento ya no marca ahorro sobre tráfico intacto
+   (`test/verificacion-nulo-simetrico.test.ts`, de punta a punta).
+2. *Ningún grupo con datos se queda fuera del titular, y el titular espera.* Un
+   grupo con menos de 10 pares se quitaba del cálculo; si era el que perdía
+   dinero, el panel podía pintar «≥ 100 %» sobre un tercio del tráfico. Ahora
+   todo grupo con algún par entra con su peso, el mínimo de 30 pares cuenta solo
+   los que entran, y no hay titular mientras los grupos con menos de 10 pares
+   sumen más del 5 % de las peticiones elegibles. Si algún grupo no tiene ningún
+   par, el pie dice qué parte del tráfico abarca la cifra.
+
+**Hallazgo al construirlo:** el brazo B0 del banco (`benchmarks/brazos.ts`)
+copia los mensajes como `{role, content}` y pierde `toolCallId` y `toolCalls`:
+un escenario con ciclo de herramientas daría 400 en el brazo naive. La copia del
+SDK conserva los mensajes enteros; el banco queda pendiente.
 
 ---
 

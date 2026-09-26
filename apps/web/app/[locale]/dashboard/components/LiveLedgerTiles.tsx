@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import type { AbArtifact, UsageRollup } from "../data";
 import { intfmt, LEDGER_COLOR } from "../format";
+import { librosConPiezaDelBanco } from "@/lib/bench/sdk-instalado";
 
 // The LIVE ledger names (NOT the reference's output_restriction). A faint
 // reference "ghost" keeps the never-summed model legible before any customer
@@ -29,6 +30,9 @@ const LIVE = [
  */
 function fantasmaDeReferencia(ab: AbArtifact, key: string): string {
   if (key === "provider_cached_tokens") return "—";
+  // Un libro de referencia que mezcla una pieza que npm no trae (el compresor
+  // del banco) no es una referencia de lo que el cliente va a ver.
+  if (librosConPiezaDelBanco(ab).has(key)) return "—";
   const l = (ab?.ledgers ?? []).find((x) => x.ledger === key);
   const punto = l?.savings?.point;
   if (typeof punto !== "number" || !Number.isFinite(punto)) return "—";
