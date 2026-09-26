@@ -1,0 +1,104 @@
+import type { ProviderResponse } from "./types.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LO QUE UN ADAPTADOR PROPIO ATESTIGUA SOBRE LO QUE PUSO EN EL CABLE.
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// El pipeline no ve el cuerpo HTTP: ve la `ProviderRequest` antes y la
+// `ProviderResponse` después. Lo que el ADAPTADOR añade entre medias —un turno
+// «(continue)», una instrucción de JSON por prompt, una herramienta de contrato,
+// el envoltorio de `response_format`— no está en la cuenta local del prompt, así
+// que la regla E2 de la referencia (`pipeline/referencia.ts`) no puede verlo. Y
+// el contador del proveedor SÍ lo cuenta: acreditarlo en una repetición sería
+// cobrar comisión sobre tokens que la capa puso.
+//
+// Este módulo es el canal por el que los adaptadores de ESTE paquete lo
+// declaran, respuesta a respuesta (la vía nativa puede apagarse a mitad de
+// vida de un adaptador: un modelo que rechaza `response_format` degrada al
+// prompt y lo recuerda).
+//
+// WeakMap privado y NO reexportado por ningún barrel, el mismo patrón que
+// `demo-brand.ts`: un proveedor de terceros no puede atestiguar nada. Su
+// ausencia de atestado es el lado seguro donde importa —un esquema nativo sin
+// atestado no deja referencia— y, donde no importa (un proveedor propio sin
+// esquema), deja la regla como estaba.
+
+export interface AtestadoDelCable {
+  /**
+   * El contrato de salida viajó TAL CUAL en el parámetro nativo de formato de
+   * respuesta del proveedor (`response_format` de Chat Completions), dentro de
+   * un envoltorio fijo —tipo, nombre, `strict`— y sin una sola palabra de la
+   * capa en el prompt. Es lo único que permite decir que el contador de esa
+   * llamada es el de la petición del cliente con su esquema.
+   *
+   * `false` para la herramienta de contrato de Anthropic: la descripción y el
+   * nombre los escribe el adaptador, y el proveedor cobra además su prompt de
+   * uso de herramientas, que una petición nativa del cliente podría no pagar.
+   */
+  esquemaEnFormatoNativo: boolean;
+  /**
+   * …y con `strict: true`. Un esquema con un campo opcional no cumple el modo
+   * estricto de OpenAI y viaja con `strict: false`: el proveedor lo usa de
+   * guía, no lo impone, y la regla de la referencia no lo admite.
+   */
+  esquemaEstricto: boolean;
+  /**
+   * El adaptador escribió el esquema en el PROMPT (la instrucción de JSON de un
+   * modelo que rechaza `response_format`). No es una pieza de 8 tokens: lleva el
+   * esquema entero. La referencia lo rechaza SIEMPRE, sea cual sea el resto.
+   */
+  esquemaPorPrompt: boolean;
+  /**
+   * Piezas que el ADAPTADOR añadió al cable y que la petición no traía, cada una
+   * cubierta con REFERENCE_MESSAGE_ALLOWANCE tokens: el turno «(continue)» de
+   * Anthropic (una) y los parámetros vacíos (`{type: "object", properties: {}}`)
+   * que se ponen a cada herramienta que no traía los suyos (dos por herramienta,
+   * ver `PIEZAS_POR_HERRAMIENTA_SIN_PARAMETROS`).
+   */
+  piezasDelAdaptador: number;
+}
+
+/** El atestado de una llamada sin contrato: nada nativo, nada por prompt. */
+export function sinContrato(piezasDelAdaptador: number): AtestadoDelCable {
+  return { esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador };
+}
+
+/**
+ * Piezas por cada herramienta de la petición que no traía parámetros: el
+ * adaptador le pone un esquema vacío que el contador cobra y la cuenta local no
+ * ve. DOS piezas por herramienta, no una: la clave entera
+ * (`"parameters":{"type":"object","properties":{}}`, o su `input_schema` en
+ * Anthropic) mide 11-12 tokens en o200k, más que el margen de una pieza. Lo
+ * que el proveedor renderiza de verdad es probablemente menos, pero no está
+ * medido, y el lado seguro es descontar la clave entera
+ * (`test/referencia-v2.test.ts` lo fija con el tokenizador).
+ */
+export const PIEZAS_POR_HERRAMIENTA_SIN_PARAMETROS = 2;
+
+/** Las piezas que suman las herramientas sin parámetros de una petición. */
+export function herramientasSinParametros(tools: readonly { parameters?: unknown }[] | undefined): number {
+  return PIEZAS_POR_HERRAMIENTA_SIN_PARAMETROS * (tools ?? []).filter((t) => t.parameters == null).length;
+}
+
+const atestados = new WeakMap<object, AtestadoDelCable>();
+
+/** Ata un atestado a una respuesta. Solo lo llaman los adaptadores de este paquete. */
+export function atestiguar<T extends ProviderResponse>(respuesta: T, atestado: AtestadoDelCable): T {
+  atestados.set(respuesta, atestado);
+  return respuesta;
+}
+
+/** El atestado de una respuesta, o `undefined` si ningún adaptador propio la firmó. */
+export function atestadoDelCable(respuesta: unknown): AtestadoDelCable | undefined {
+  return typeof respuesta === "object" && respuesta !== null ? atestados.get(respuesta) : undefined;
+}
+
+/**
+ * Copia el atestado de `de` a `a`. Para el pipeline, cuando rehace una respuesta
+ * (`{ ...final, text }`): la copia sigue describiendo el mismo cable.
+ */
+export function heredarAtestado<T extends ProviderResponse>(de: ProviderResponse, a: T): T {
+  const atestado = atestados.get(de);
+  if (atestado) atestados.set(a, atestado);
+  return a;
+}

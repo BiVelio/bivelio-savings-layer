@@ -161,13 +161,17 @@ describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS
       referenceAt: Date.now() - 60_000,
     });
 
+  // Un proceso con la regla vigente: sin él, la verja de versión degradaría
+  // la referencia antes de que el interruptor tuviera nada que decir.
+  const V2 = { "x-bvsala-version": "sdk/0.4.24" };
+
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
   it("sin la variable, la RPC recibe basis reference con sus dos campos", async () => {
     vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
-    const res = await POST(peticion([referencia()]));
+    const res = await POST(peticion([referencia()], V2));
     expect(res.status).toBe(202);
     const r = rpc!.args.records[0]!;
     expect(r["basis"]).toBe("reference");
@@ -200,7 +204,7 @@ describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS
   it("vacío, 0, false, no y off lo dejan apagado", async () => {
     for (const valor of ["", "0", "false", "no", "off"]) {
       vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", valor);
-      await POST(peticion([referencia()]));
+      await POST(peticion([referencia()], V2));
       expect(rpc!.args.records[0]!["basis"], JSON.stringify(valor)).toBe("reference");
     }
   });
@@ -220,9 +224,91 @@ describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS
 
   it("un reference incoherente entra como estimated con 202, jamás 400", async () => {
     vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
-    const res = await POST(peticion([registro({ basis: "reference", referenceRequestId: "req-x" })]));
+    const res = await POST(peticion([registro({ basis: "reference", referenceRequestId: "req-x" })], V2));
     expect(res.status).toBe(202);
     expect(rpc!.args.records[0]!["basis"]).toBe("estimated");
     expect("referenceRequestId" in rpc!.args.records[0]!).toBe(false);
+  });
+});
+
+/**
+ * LA VERJA DE LA REGLA. La etiqueta v0.4.23 se cortó con la regla v1 y la regla
+ * no viaja en el registro: el cierre sella «reference-v2» para el extracto
+ * entero. Así que una referencia solo entra como tal si el proceso es el SDK y
+ * declara una versión desde VERSION_MINIMA_REFERENCIA; si no, "estimated", con
+ * 202. El gateway no, a ninguna versión: no implementa la regla v2.
+ */
+describe("POST /api/metering/usage — la verja de versión de la referencia", () => {
+  const referencia = () =>
+    registro({
+      model: "openai/gpt-4o-mini",
+      cacheResult: "exact",
+      avoidedLlm: 1,
+      actualLlm: 0,
+      baselineInputTokens: 1736,
+      actualInputTokens: 0,
+      baselineOutputTokens: 267,
+      actualOutputTokens: 0,
+      baselineCost: 0.0002904,
+      actualCost: 0,
+      netSavings: 1,
+      basis: "reference",
+      referenceRequestId: "req-poblada",
+      referenceAt: Date.now() - 60_000,
+    });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  for (const cabecera of ["sdk/0.4.23", "gateway/0.4.23", "sdk/0.4.24-rc.1", "gateway/0.4.24", "gateway/0.5.0"]) {
+    it(`${cabecera}: la referencia entra como estimated, sin sus campos, y la versión se sella igual`, async () => {
+      vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
+      const avisos: unknown[][] = [];
+      const espia = vi.spyOn(console, "warn").mockImplementation((...a: unknown[]) => void avisos.push(a));
+      let res: Response;
+      try {
+        res = await POST(peticion([referencia(), registro()], { "x-bvsala-version": cabecera }));
+      } finally {
+        espia.mockRestore();
+      }
+      expect(res.status).toBe(202);
+      const [ref, med] = rpc!.args.records;
+      expect(ref!["basis"]).toBe("estimated");
+      expect("referenceRequestId" in ref!).toBe(false);
+      expect("referenceAt" in ref!).toBe(false);
+      expect(ref!["baselineCost"]).toBe(0.0002904);
+      expect(ref!["clientVersion"]).toBe(cabecera);
+      expect(med!["basis"]).toBe("measured");
+      expect(avisos.some((a) => String(a[0]).includes("reference→estimated"))).toBe(true);
+    });
+  }
+
+  it("sin cabecera de versión (o con una que no casa): estimated", async () => {
+    vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
+    const casos: Array<Record<string, string>> = [{}, { "x-bvsala-version": "sdk/0.4.24, sdk/0.4.24" }];
+    for (const cabeceras of casos) {
+      await POST(peticion([referencia()], cabeceras));
+      const r = rpc!.args.records[0]!;
+      expect(r["basis"], JSON.stringify(cabeceras)).toBe("estimated");
+      expect("clientVersion" in r).toBe(false);
+    }
+  });
+
+  for (const cabecera of ["sdk/0.4.24", "sdk/0.5.0"]) {
+    it(`${cabecera}: la referencia entra como reference`, async () => {
+      vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
+      const res = await POST(peticion([referencia()], { "x-bvsala-version": cabecera }));
+      expect(res.status).toBe(202);
+      const r = rpc!.args.records[0]!;
+      expect(r["basis"]).toBe("reference");
+      expect(r["referenceRequestId"]).toBe("req-poblada");
+      expect(r["clientVersion"]).toBe(cabecera);
+    });
+  }
+
+  it("un lote sin referencias de un proceso antiguo entra intacto (la verja solo toca reference)", async () => {
+    await POST(peticion([registro(), registro({ basis: "estimated" })], { "x-bvsala-version": "sdk/0.4.20" }));
+    expect(rpc!.args.records.map((r) => r["basis"])).toEqual(["measured", "estimated"]);
   });
 });

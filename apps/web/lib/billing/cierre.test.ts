@@ -180,7 +180,7 @@ describe("cerrarPeriodo — el carril medido por referencia (0029) en la fila se
     expect(c!.requests_referencia).toBe(20);
     expect(c!.base_referencia_usd).toBe(50);
     expect(c!.ahorro_referencia_usd).toBe(50);
-    expect(c!.regla_referencia).toBe("reference-v1");
+    expect(c!.regla_referencia).toBe("reference-v2");
     // Comisionada: ya está DENTRO de lo medido (950 USD de ahorro, 30 peticiones).
     expect(c!.requests_medidas).toBe(30);
     expect(c!.ahorro_medido_usd).toBe(950);
@@ -203,7 +203,7 @@ describe("cerrarPeriodo — el carril medido por referencia (0029) en la fila se
     }
   });
 
-  it("con el interruptor APAGADO el sello es «reference-v1:excluded» — en inglés, porque el cliente lo lee y la fila es inmutable", async () => {
+  it("con el interruptor APAGADO el sello es «reference-v2:excluded» — en inglés, porque el cliente lo lee y la fila es inmutable", async () => {
     vi.resetModules();
     vi.doMock("./tarifa", async () => ({
       ...(await vi.importActual<typeof import("./tarifa")>("./tarifa")),
@@ -212,7 +212,7 @@ describe("cerrarPeriodo — el carril medido por referencia (0029) en la fila se
     try {
       const { cerrarPeriodo: cerrarApagado } = await import("./cierre");
       const [c] = cerrarApagado([org("a", "2026-08", [filaConReferencia("2026-09-10")])], "2026-09", FX_PRUEBA);
-      expect(c!.regla_referencia).toBe("reference-v1:excluded");
+      expect(c!.regla_referencia).toBe("reference-v2:excluded");
       // Contexto, no base: las cifras propias se sellan igual, lo medido no las incluye.
       expect(c!.requests_referencia).toBe(20);
       expect(c!.requests_medidas).toBe(10);

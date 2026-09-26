@@ -66,8 +66,8 @@ export const COMISIONAR_ELISION_SUELO: boolean = false;
  * el contador que el proveedor devolvió para esa petición idéntica —la que el
  * cliente ya pagó—, valorado a la BAJA: toda la entrada al precio de entrada
  * cacheada (el mínimo que el proveedor cobra por repetir un prompt) y la salida
- * solo con muestreo determinista, al REGLA_REFERENCIA.cuotaSalida de su
- * contador.
+ * solo con muestreo determinista y sin razonamiento oculto, al
+ * REGLA_REFERENCIA.cuotaSalida de su contador.
  *
  * El contraste con COMISIONAR_ELISION_SUELO es la razón de que este nazca
  * encendido: aquel es un BRUTO sin neto (lectura evitada sin restar la
@@ -92,6 +92,23 @@ export const COMISIONAR_REFERENCIA: boolean = true;
  * en cada extracto (`parametros.referencia`) y sellada en el cierre
  * (`extractos.regla_referencia`): lo que hace el documento autocontenido.
  *
+ * v2: el tráfico con contrato de salida entra cuando el esquema del cliente
+ * viajó tal cual, en modo estricto, en el parámetro nativo de formato de
+ * respuesta, sin nada añadido al prompt; y la salida solo se acredita con un
+ * modelo del catálogo que no razona y honra `temperature: 0`, y si la llamada
+ * que corrió no llevó razonamiento oculto (0 tokens de razonamiento declarados
+ * o, donde el proveedor no los desglosa, ningún bloque de razonamiento). El
+ * texto que ve el cliente es `dashboard.extracto.parametrosReferencia`.
+ *
+ * QUÉ HACE CIERTO ESTE SELLO: no el orden de publicación. La etiqueta v0.4.23
+ * se cortó con la regla v1 y la regla no viaja en el registro de uso, así que el
+ * ingest (app/api/metering/usage/route.ts) degrada a "estimated" toda
+ * referencia de un proceso que no declara versión, que declara una anterior a
+ * VERSION_MINIMA_REFERENCIA, o que es el gateway, que no pasa por el pipeline
+ * que aplica esta regla (lib/metering/version.ts). Lo que llega a
+ * reference_* después de desplegar esa verja se calculó con esta regla. Si la
+ * regla cambia de versión, la mínima sube con ella en el mismo PR.
+ *
  * apps/web no puede importar de src/ (proyecto aparte): estas cifras DUPLICAN
  * las constantes del SDK (REFERENCE_OUTPUT_SHARE, REFERENCE_MAX_AGE_MS y
  * REFERENCE_MESSAGE_ALLOWANCE) y tarifa.test.ts las ata leyendo el fuente del
@@ -100,16 +117,16 @@ export const COMISIONAR_REFERENCIA: boolean = true;
 export const REGLA_REFERENCIA = {
   /**
    * El identificador PÚBLICO de la regla: lo ve el cliente en el extracto
-   * («Rule for repeated requests (reference-v1)») y queda SELLADO en
+   * («Rule for repeated requests (reference-v2)») y queda SELLADO en
    * `extractos.regla_referencia`, inmutable. Por eso en inglés y ASCII, como
    * todo lo que ve el cliente; tarifa.test.ts lo fija.
    */
-  version: "reference-v1",
-  /** Fracción del contador de salida que se acredita (solo con muestreo determinista). */
+  version: "reference-v2",
+  /** Fracción del contador de salida que se acredita (solo con muestreo determinista y sin razonamiento oculto). */
   cuotaSalida: 0.95,
   /** Edad máxima del contador de referencia, en días. */
   edadMaximaDias: 30,
-  /** Tokens de entrada que se descuentan por cada mensaje que la capa insertó en la llamada que corrió. */
+  /** Tokens de entrada que se descuentan por cada pieza que la capa insertó en la llamada que corrió (un mensaje, el envoltorio del esquema nativo; dos por los parámetros vacíos de una herramienta que no traía). */
   margenPorMensajeTokens: 8,
 } as const;
 

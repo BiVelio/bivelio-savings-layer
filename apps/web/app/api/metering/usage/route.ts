@@ -7,7 +7,7 @@ import {
   parseUsageRecords,
   UsageValidationError,
 } from "@/lib/metering/usage";
-import { CABECERA_VERSION, sellarVersion, versionDeclarada } from "@/lib/metering/version";
+import { admiteReferencia, CABECERA_VERSION, sellarVersion, versionDeclarada } from "@/lib/metering/version";
 import { decideEntitlement } from "@/lib/metering/entitlement";
 import { alertar } from "@/lib/observabilidad/alerta";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -120,7 +120,27 @@ export async function POST(req: Request): Promise<NextResponse> {
   // Una cabecera rara es «sin declarar» (null), jamás un 400; una RPC anterior a
   // 0024 ignora la clave porque lee por nombre. Se sella también en los registros
   // sombra: inocuo, la RPC sale de ese carril antes del upsert de seat_activity.
-  sellarVersion(records, versionDeclarada(req.headers.get(CABECERA_VERSION)));
+  const version = versionDeclarada(req.headers.get(CABECERA_VERSION));
+
+  // LA VERJA DE LA REGLA. El cierre sella REGLA_REFERENCIA.version para el
+  // extracto entero, y la regla con la que el SDK valoró cada repetición no viaja
+  // en el registro. La etiqueta v0.4.23 se cortó con la regla v1; si se publica,
+  // sus referencias no pueden entrar bajo el sello «reference-v2». Un proceso que
+  // no declara versión, que declara una anterior a VERSION_MINIMA_REFERENCIA, o
+  // que es el gateway (no pasa por el pipeline que aplica la regla v2), entra
+  // como "estimated": sigue en los totales, fuera de reference_* y de la base.
+  // Por construcción, sin depender de qué se publique ni en qué orden.
+  if (!admiteReferencia(version)) {
+    const n = degradarReferencias(records);
+    if (n > 0) {
+      console.warn("[metering/usage] referencias de un proceso anterior a la regla vigente: reference→estimated", {
+        n,
+        version,
+      });
+    }
+  }
+
+  sellarVersion(records, version);
 
   const { data, error } = await supabase.rpc("ingest_usage_batch", { p_org: orgId, records });
   if (error) {
