@@ -314,7 +314,7 @@
       "advanced": "Advanced settings",
       "projFriendly": "Your bill would go from {baseline} to {opt} — {pct}% less.",
       "onlyChatTitle": "Only use ChatGPT or Claude?",
-      "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps, and “bvsala claude” meters your real usage in the terminal. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
+      "onlyChatBody": "ChatGPT is truly closed: flat fee, no token invoice or cap worth trimming. But if you use Claude, we already help you save: the savings-mode skill (free, on the home page) stretches your subscription caps. And if you build an app with an API key, that is where BV-SALA measures and cuts real spend.",
       "onlyChatCta": "Building an app? Go to Install"
     },
     "copyButton": {
@@ -338,6 +338,7 @@
       "errNetwork": "Network error — please try again.",
       "errNotRecognized": "Not recognized — check for typos, or create a new key above.",
       "errUnexpected": "Unexpected response ({status}). Try again in a moment.",
+      "keyNoPlan": "Key recognized, but this organization has no active BiVelio license or subscription, so its usage is refused. Subscribe or renew from Account, then test again.",
       "keyLabel": "your service-account key{suffix} — shown once, copy it now",
       "passHint": "Pass it as <code>serviceAccountKey</code>. It's pre-filled below — hit <b>Test my key</b> to confirm it's live.",
       "creating": "Creating…",
@@ -398,14 +399,14 @@
       "eyebrow": "Get started",
       "heading": "Four steps. Your prompts never touch our servers.",
       "step1": "<b>1 · Get your license key</b> — the SDK is public but fail-closed; it only runs with a valid key. Passed as <code>licenseKey</code>.",
-      "step2": "<b>2 · Create & verify a service-account key</b> — a machine credential (<code>bvk_…</code>) that does two jobs: it reports counts-only usage (your seats & savings), and it lets the SDK collect your <b>renewed license by itself</b> every billing period. Separate from the license key; only its hash is stored. Create one, then <b>Test my key</b> to confirm it's live.",
+      "step2": "<b>2 · Create & verify a service-account key</b> — a machine credential (<code>bvk_…</code>) that does two jobs: it reports counts-only usage (your seats & savings), and it lets the SDK and the gateway collect your <b>renewed license by themselves</b> every billing period. Separate from the license key; only its hash is stored. Create one, then <b>Test my key</b> to confirm it's live.",
       "currentKey": "current service-account key",
       "noneYet": "none yet — click above",
       "shownOnce": "shown once at creation — only the prefix is stored.",
       "renewalNote": "<b>Keep this key in your deployment.</b> Your license expires at the end of each billing period and the renewal mints a new one. With this key the SDK collects it and swaps it in without a restart. Without it nobody collects it, so someone has to paste the new key by hand every period — and if nobody does, the SDK stops once the grace period ends, even though the subscription is paid and up to date.",
       "step3": "<b>3 · Install</b> — public on npm, no token, no config.",
       "step4": "<b>4 · Wire your provider & read the SavingsReport</b>",
-      "gatewayNote": "<b>Coding terminal instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. Also <code>bvsala codex</code>, <code>bvsala goose</code> and <code>bvsala qwen</code>; <code>bvsala doctor</code> prints the exact block for the rest. It uses the same service key from step 2 — measuring needs no license key.",
+      "gatewayNote": "<b>Coding terminal instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. Also <code>bvsala codex</code>, <code>bvsala goose</code> and <code>bvsala qwen</code>; <code>bvsala doctor</code> prints the exact block for the rest. It uses the same service key from step 2 and collects your license by itself — like the SDK, it does not start without an active license.",
       "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable."
     },
     "accountPlanStrip": {
@@ -858,7 +859,7 @@
       "medidaPie": "of measured spend",
       "anatomiaNota": "Measured with the meter over {peticiones} real Claude Code requests, against the provider's own counters ({fecha}). The skill's own effect will be published once A/B-measured — never before.",
       "ccNota": "One command: installs into ~/.claude/skills and activates by itself when the conversation turns to limits or saving tokens.",
-      "cxNota": "Codex has no skills: the same discipline ships as a marked block in your AGENTS.md (~/.codex) — always on; delete the block to turn it off. Your AGENTS.md outside the marks is never touched. Works with ChatGPT accounts and API keys, and under bvsala codex its effect is measured.",
+      "cxNota": "Codex has no skills: the same discipline ships as a marked block in your AGENTS.md (~/.codex) — always on; delete the block to turn it off. Your AGENTS.md outside the marks is never touched. Works with ChatGPT accounts and API keys, and under bvsala codex (with a license) its effect is measured.",
       "aiDescargar": "Download savings-mode.zip",
       "aiCuenta": "The download asks for your (free) Savings account: adoption becomes a real metric, with identity — the skill itself carries no telemetry at all.",
       "aiPaso1": "On claude.ai enable “Code execution and file creation” (Settings → Capabilities).",
@@ -877,7 +878,8 @@
       "eyebrow": "New · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
       "body": "One command puts a local meter in front of your terminal. No code changes, nothing to configure — and your prompts never leave your machine: only counts and cost reach this dashboard.",
-      "note": "The gateway measures every request. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
+      "note": "The gateway measures every request and, like the SDK, runs only with an active license: it collects it with your service key and verifies its signature on your machine. With a PRO license it also applies one lever by default: it shortens the cache-write TTL while your session stays hot — that changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. It also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
+      "pythonNote": "Python or any other language? Point the official OpenAI or Anthropic SDK at the gateway and every request whose usage the provider reports, for a model with a list price, is recorded in this dashboard at that price; the gateway's log says when one is not. bvsala doctor prints the base URL for each SDK. For OpenAI streaming, ask for usage in the request (stream_options.include_usage).",
       "cta": "See how it works →"
     },
     "integrate": {
@@ -1021,7 +1023,7 @@
     "devs": {
       "eyebrow": "Built for developers",
       "title": "Fewer bill headaches. Without changing provider.",
-      "sub": "Three facts about the package. None of them is a promise.",
+      "sub": "Four facts about the package. None of them is a promise.",
       "cards": [
         {
           "title": "Zero runtime dependencies",
@@ -1037,6 +1039,11 @@
           "title": "Your traffic still goes direct",
           "body": "The SDK wraps the call inside your process. Your prompts never pass through BiVelio: we only ever receive counts and cost.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, same report",
+          "body": "generateStream() hands you the answer as the provider writes it and closes with the same SavingsReport as generate(), under the same basis rules: the provider's final counter is read at the end of the stream, and a stream without it is reported as unmeasured and never enters your commission. With an output contract, the answer arrives validated, in one piece.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1093,7 +1100,7 @@
     "nodeApiSubAfter": "receives fewer tokens",
     "billMonth": "bill / month",
     "billReport": "+ SavingsReport",
-    "s1Note": "That green box is an npm package inside the application's code. That's why the key question is never “what do I install?” but <b>“who wrote the code that calls the API?”</b> — that person is who can install it. The one exception is a coding terminal like Claude Code: there the “bvsala claude” gateway sits in front without touching a single line of code.",
+    "s1Note": "That green box is an npm package inside the application's code. That's why the key question is never “what do I install?” but <b>“who wrote the code that calls the API?”</b> — that person is who can install it. The exceptions are a coding terminal like Claude Code and an app in any language that uses the official OpenAI or Anthropic SDK and lets you set its base URL: there the bvsala gateway sits in front without touching a line of code. That traffic is measured for models with a list price; the saving levers of the npm package do not run there, and the gateway's own apply only to Anthropic traffic, with a PRO license.",
     "s2Title": "Your case, in 10 seconds",
     "s2Sub": "Four ways of using AI, and what BV‑SALA can do in each one.",
     "caseChatSub": "app or web, free or paid",
@@ -1101,7 +1108,7 @@
     "caseClaudeSub": "claude.ai, free or paid",
     "caseClaudeBody": "Flat subscription: no token invoice to meter — but there are caps (the five-hour window and the weekly one). That is exactly what the savings-mode skill is for: free, uploaded to claude.ai in a minute, attacking the two masses that burn cap. Its effect will be published once measured — never before.",
     "caseCodeSub": "terminal, with an API key",
-    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. Savings there are the next phase — first we measure for real.",
+    "caseCodeBody": "On a subscription the fee is flat — but capped: the same skill installs with a single command and stretches the same weekly cap. With an API key there is a real token invoice — and the meter is already running: with your BiVelio license, “bvsala claude” launches Claude Code through the local gateway and your spend shows up in the panel, token by token, without touching a line of code. With PRO it also shortens the cache-write TTL while the session stays hot: a saving computed on your provider's own token count, never on an estimate.",
     "caseAppName": "Your application",
     "caseAppSub": "your code + your API key",
     "caseAppBody": "The case BV‑SALA exists for. Your app calls the API with your key, the provider bills every token, and the layer installs in three steps: package, license, and wrapping the call. From the first request it returns a <b>SavingsReport</b> with the saving, split into measured and estimated.",

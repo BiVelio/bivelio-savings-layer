@@ -3,10 +3,11 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { estadoDeLaPrueba, type EstadoDeLaPrueba } from "../prueba-de-clave";
 import { CopyButton } from "./CopyButton";
 
 type CreateState = "idle" | "loading" | "done" | "error";
-type TestState = "idle" | "testing" | "valid" | "invalid" | "error";
+type TestState = "idle" | "testing" | EstadoDeLaPrueba;
 
 interface ClaveViva {
   id: string;
@@ -19,8 +20,9 @@ interface ClaveViva {
  * Create + verify a service-account key (bvk_…). "Create" mints a real key via
  * POST /api/service-accounts and reveals it once. "Test my key" proves any key is
  * live by hitting the real metering endpoint with an empty batch — 202 = valid,
- * 401 = not recognized. Creating a key auto-fills the tester so the customer gets
- * instant confirmation.
+ * 401 = not recognized, 402 = recognized but the organization has no active
+ * license or subscription (see `estadoDeLaPrueba`). Creating a key auto-fills the
+ * tester so the customer gets instant confirmation.
  */
 export function ServiceAccountKeySection() {
   const t = useTranslations("dashboard");
@@ -141,13 +143,15 @@ export function ServiceAccountKeySection() {
         headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
         body: "[]",
       });
-      if (res.status === 202) {
-        setTState("valid");
-      } else if (res.status === 401) {
-        setTState("invalid");
+      // 402 = clave buena en una org sin licencia ni suscripción: tiene su propio
+      // mensaje (keyNoPlan). Antes caía en «Unexpected response… Try again», que
+      // presentaba una clave válida como un fallo pasajero que no se cura
+      // reintentando. Ver `estadoDeLaPrueba`.
+      const estado = estadoDeLaPrueba(res.status);
+      setTState(estado);
+      if (estado === "invalid") {
         setTMsg(t("serviceAccountKeySection.errNotRecognized"));
-      } else {
-        setTState("error");
+      } else if (estado === "error") {
         setTMsg(t("serviceAccountKeySection.errUnexpected", { status: res.status }));
       }
     } catch {
@@ -226,6 +230,11 @@ export function ServiceAccountKeySection() {
         </div>
         {tState === "valid" && (
           <p className="kt-result kt-ok">{t("serviceAccountKeySection.validResult")}</p>
+        )}
+        {tState === "noPlan" && (
+          <p className="kt-result kt-warn" role="status">
+            {t("serviceAccountKeySection.keyNoPlan")}
+          </p>
         )}
         {(tState === "invalid" || tState === "error") && <p className="kt-result kt-bad">✗ {tMsg}</p>}
       </div>

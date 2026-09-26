@@ -314,7 +314,7 @@
       "advanced": "Pengaturan lanjutan",
       "projFriendly": "Tagihan kamu akan turun dari {baseline} menjadi {opt} — {pct}% lebih rendah.",
       "onlyChatTitle": "Hanya pakai ChatGPT atau Claude?",
-      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda, dan “bvsala claude” mengukur pemakaian nyata Anda di terminal. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
+      "onlyChatBody": "ChatGPT memang tertutup: biaya tetap, tanpa tagihan atau batas token untuk dipangkas. Tapi jika Anda memakai Claude, kami sudah membantu Anda berhemat: skill savings-mode (gratis, di beranda) merenggangkan batas langganan Anda. Dan jika Anda membangun aplikasi dengan API key, di situlah BV-SALA mengukur dan memangkas pengeluaran sungguhan.",
       "onlyChatCta": "Sedang membangun aplikasi? Buka Instal"
     },
     "copyButton": {
@@ -338,6 +338,7 @@
       "errNetwork": "Kesalahan jaringan — silakan coba lagi.",
       "errNotRecognized": "Tidak dikenali — periksa kesalahan ketik, atau buat kunci baru di atas.",
       "errUnexpected": "Respons tak terduga ({status}). Coba lagi sebentar lagi.",
+      "keyNoPlan": "Kunci dikenali, tetapi organisasi ini tidak punya lisensi atau langganan BiVelio yang aktif, jadi penggunaannya ditolak. Berlangganan atau perpanjang dari halaman Akun, lalu uji lagi.",
       "keyLabel": "kunci akun layanan Anda{suffix} — ditampilkan sekali, salin sekarang",
       "passHint": "Berikan sebagai <code>serviceAccountKey</code>. Sudah terisi di bawah — klik <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "creating": "Membuat…",
@@ -398,14 +399,14 @@
       "eyebrow": "Mulai",
       "heading": "Empat langkah. Prompt Anda tidak pernah menyentuh server kami.",
       "step1": "<b>1 · Dapatkan kunci lisensi Anda</b> — SDK bersifat publik tetapi fail-closed; hanya berjalan dengan kunci yang valid. Diberikan sebagai <code>licenseKey</code>.",
-      "step2": "<b>2 · Buat & verifikasi kunci akun layanan</b> — kredensial mesin (<code>bvk_…</code>) dengan dua tugas: melaporkan penggunaan berbasis-hitungan (kursi & penghematan Anda), dan memungkinkan SDK <b>mengambil sendiri lisensi Anda yang diperbarui</b> pada setiap periode penagihan. Terpisah dari kunci lisensi; hanya hash-nya yang disimpan. Buat satu, lalu <b>Uji kunci saya</b> untuk memastikannya aktif.",
+      "step2": "<b>2 · Buat & verifikasi kunci akun layanan</b> — kredensial mesin (<code>bvk_…</code>) dengan dua tugas: melaporkan penggunaan berbasis-hitungan (kursi & penghematan Anda), dan memungkinkan SDK dan gateway <b>mengambil sendiri lisensi Anda yang diperbarui</b> pada setiap periode penagihan. Terpisah dari kunci lisensi; hanya hash-nya yang disimpan. Buat satu, lalu <b>Uji kunci saya</b> untuk memastikannya aktif.",
       "currentKey": "kunci akun layanan saat ini",
       "noneYet": "belum ada — klik di atas",
       "shownOnce": "ditampilkan sekali saat pembuatan — hanya prefiks yang disimpan.",
       "renewalNote": "<b>Simpan kunci ini di deployment Anda.</b> Lisensi Anda kedaluwarsa pada akhir setiap periode penagihan, dan perpanjangan menerbitkan lisensi baru. Dengan kunci ini, SDK mengambilnya dan menggantinya tanpa restart. Tanpa kunci ini, tidak ada yang mengambilnya, sehingga seseorang harus menempelkan kunci baru secara manual setiap periode — dan jika tidak ada yang melakukannya, SDK berhenti begitu masa tenggang berakhir, meskipun langganan Anda sudah dibayar dan tidak menunggak.",
       "step3": "<b>3 · Pasang</b> — publik di npm, tanpa token, tanpa konfigurasi.",
       "step4": "<b>4 · Sambungkan penyedia Anda & baca SavingsReport</b>",
-      "gatewayNote": "<b>Terminal pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Juga <code>bvsala codex</code>, <code>bvsala goose</code>, dan <code>bvsala qwen</code>; <code>bvsala doctor</code> mencetak blok persis untuk sisanya. Ia memakai kunci layanan yang sama dari langkah 2 — mengukur tidak butuh kunci lisensi.",
+      "gatewayNote": "<b>Terminal pemrograman alih-alih aplikasi?</b> Paket yang sama membawa gateway pengukur lokal: <code>bvsala claude</code> menjalankan Claude Code melaluinya dan panel ini menampilkan pengeluaran, token demi token. Juga <code>bvsala codex</code>, <code>bvsala goose</code>, dan <code>bvsala qwen</code>; <code>bvsala doctor</code> mencetak blok persis untuk sisanya. Ia memakai kunci layanan yang sama dari langkah 2 dan mengambil sendiri lisensi Anda — seperti SDK, ia tidak mau berjalan tanpa lisensi aktif.",
       "finalNote": "Selesai. Tanpa lisensi valid → <code>generate()</code> menolak. Jika paket Anda dibatalkan, SDK berhenti dalam ~15 mnt melalui <code>licenseServerUrl</code> — tanpa restart, dan tidak pernah melumpuhkan produksi Anda jika kami tidak dapat dihubungi."
     },
     "accountPlanStrip": {
@@ -858,7 +859,7 @@
       "medidaPie": "dari pengeluaran terukur",
       "anatomiaNota": "Diukur dengan meteran pada {peticiones} permintaan Claude Code nyata, terhadap penghitung penyedia ({fecha}). Efek skill itu sendiri akan dipublikasikan setelah diukur secara A/B — tidak pernah sebelumnya.",
       "ccNota": "Satu perintah: terpasang di ~/.claude/skills dan aktif sendiri saat percakapan menyinggung batas atau menghemat token.",
-      "cxNota": "Codex tidak punya skill: disiplin yang sama dikirim sebagai blok bertanda di AGENTS.md Anda (~/.codex) — selalu aktif; hapus bloknya untuk mematikan. AGENTS.md Anda di luar tanda tidak pernah disentuh. Bekerja dengan akun ChatGPT maupun API key, dan di bawah bvsala codex efeknya diukur.",
+      "cxNota": "Codex tidak punya skill: disiplin yang sama dikirim sebagai blok bertanda di AGENTS.md Anda (~/.codex) — selalu aktif; hapus bloknya untuk mematikan. AGENTS.md Anda di luar tanda tidak pernah disentuh. Bekerja dengan akun ChatGPT maupun API key, dan di bawah bvsala codex (dengan lisensi) efeknya diukur.",
       "aiDescargar": "Unduh savings-mode.zip",
       "aiCuenta": "Unduhan meminta akun Savings (gratis) Anda: dengan begitu adopsi menjadi metrik nyata, dengan identitas — skill itu sendiri tidak membawa telemetri apa pun.",
       "aiPaso1": "Di claude.ai aktifkan “Code execution and file creation” (Settings → Capabilities).",
@@ -877,7 +878,8 @@
       "eyebrow": "Baru · terminal pemrograman",
       "title": "Claude Code dengan kunci API? Lihat pengeluaran nyata, token demi token.",
       "body": "Satu perintah menempatkan pengukur lokal di depan terminalmu. Tanpa menyentuh kode, tanpa konfigurasi — dan prompt-mu tidak pernah meninggalkan mesinmu: hanya hitungan dan biaya yang sampai ke panel ini.",
-      "note": "Gateway mengukur setiap permintaan. Dengan lisensi PRO, gateway juga menerapkan satu tuas secara default: memperpendek TTL penulisan cache selama sesi Anda masih hangat — ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "note": "Gateway mengukur setiap permintaan dan, seperti SDK, hanya berjalan dengan lisensi aktif: gateway mengambilnya dengan kunci layanan Anda dan memverifikasi tanda tangannya di mesin Anda. Dengan lisensi PRO, gateway juga menerapkan satu tuas secara default: memperpendek TTL penulisan cache selama sesi Anda masih hangat — ini mengubah harga, bukan konten yang dibaca model. Tuas lainnya tetap mati sampai Anda mengaktifkannya. Skill savings-mode tersedia untuk batas kuota Anda, dengan efek yang masih harus diukur. Juga bekerja dengan Codex CLI, Goose, dan Qwen Code — dan bvsala doctor mencetak konfigurasi persis untuk sisanya.",
+      "pythonNote": "Python atau bahasa lain? Arahkan SDK resmi OpenAI atau Anthropic ke gateway, dan setiap permintaan yang penggunaannya dilaporkan penyedia, untuk model yang memiliki harga daftar, tercatat di panel ini dengan harga tersebut; log gateway memberi tahu bila ada yang tidak diukur. bvsala doctor mencetak base URL untuk setiap SDK. Untuk streaming OpenAI, minta penggunaan di dalam permintaan (stream_options.include_usage).",
       "cta": "Lihat cara kerjanya →"
     },
     "integrate": {
@@ -1021,7 +1023,7 @@
     "devs": {
       "eyebrow": "Dibuat untuk pengembang",
       "title": "Lebih sedikit sakit kepala soal tagihan. Tanpa ganti penyedia.",
-      "sub": "Tiga fakta tentang paket ini. Tidak satu pun berupa janji.",
+      "sub": "Empat fakta tentang paket ini. Tidak satu pun berupa janji.",
       "cards": [
         {
           "title": "Nol dependensi runtime",
@@ -1037,6 +1039,11 @@
           "title": "Lalu lintas Anda tetap langsung",
           "body": "SDK membungkus panggilan di dalam proses Anda. Prompt Anda tidak pernah lewat BiVelio: kami hanya menerima hitungan dan biaya.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, laporan yang sama",
+          "body": "generateStream() menyerahkan jawaban kepada Anda saat penyedia menulisnya dan ditutup dengan SavingsReport yang sama seperti generate(), dengan aturan yang sama untuk dasar biayanya: penghitung akhir penyedia dibaca di akhir stream, dan stream tanpa penghitung itu dilaporkan sebagai tidak terukur dan tidak pernah masuk komisi Anda. Dengan kontrak keluaran, jawaban tiba sudah tervalidasi, utuh dalam satu bagian.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1093,7 +1100,7 @@
     "nodeApiSubAfter": "menerima lebih sedikit token",
     "billMonth": "tagihan / bulan",
     "billReport": "+ SavingsReport",
-    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Satu-satunya pengecualian adalah terminal pemrograman seperti Claude Code: di sana gateway «bvsala claude» berdiri di depan tanpa menyentuh satu baris kode pun.",
+    "s1Note": "Kotak hijau itu adalah paket npm di dalam kode aplikasi. Karena itu pertanyaan kuncinya tidak pernah «apa yang saya pasang?» melainkan <b>«siapa yang menulis kode yang memanggil API?»</b> — orang itulah yang bisa memasangnya. Pengecualiannya adalah terminal pemrograman seperti Claude Code dan aplikasi dalam bahasa apa pun yang memakai SDK resmi OpenAI atau Anthropic dan memungkinkan Anda mengatur base URL-nya: di sana gateway bvsala berdiri di depan tanpa menyentuh satu baris kode pun. Lalu lintas itu diukur untuk model yang memiliki harga daftar; tuas penghematan paket npm tidak berjalan di sana, dan tuas milik gateway sendiri hanya berlaku untuk lalu lintas Anthropic, dengan lisensi PRO.",
     "s2Title": "Kasus kamu, dalam 10 detik",
     "s2Sub": "Empat cara memakai AI, dan apa yang bisa dilakukan BV‑SALA di masing-masing.",
     "caseChatSub": "aplikasi atau web, gratis atau berbayar",
@@ -1101,7 +1108,7 @@
     "caseClaudeSub": "claude.ai, gratis atau berbayar",
     "caseClaudeBody": "Langganan tetap: tidak ada tagihan token untuk diukur — tapi ada batas (jendela lima jam dan mingguan). Untuk itulah skill savings-mode: gratis, diunggah ke claude.ai dalam semenit, menyerang dua massa yang membakar batas. Efeknya akan dipublikasikan setelah diukur — tidak pernah sebelumnya.",
     "caseCodeSub": "terminal, dengan kunci API",
-    "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: “bvsala claude” meluncurkan Claude Code lewat gateway lokal dan pengeluaranmu muncul di panel, token demi token, tanpa menyentuh satu baris kode. Penghematan di sana adalah fase berikutnya — pertama kami mengukur sungguhan.",
+    "caseCodeBody": "Dengan langganan, biayanya tetap — tapi berbatas: skill yang sama terpasang dengan satu perintah dan merenggangkan batas mingguan yang sama. Dengan API key ada tagihan token sungguhan — dan meterannya sudah berjalan: dengan lisensi BiVelio-mu, “bvsala claude” meluncurkan Claude Code lewat gateway lokal dan pengeluaranmu muncul di panel, token demi token, tanpa menyentuh satu baris kode. Dengan PRO, gateway juga memperpendek TTL penulisan cache selama sesi masih hangat: penghematan yang dihitung dari hitungan token penyediamu sendiri, tidak pernah dari estimasi.",
     "caseAppName": "Aplikasi kamu",
     "caseAppSub": "kode kamu + kunci API kamu",
     "caseAppBody": "Kasus yang menjadi alasan BV‑SALA ada. Aplikasi Anda memanggil API dengan kunci Anda, penyedia menagih setiap token, dan lapisan ini dipasang dalam tiga langkah: paket, lisensi, dan membungkus panggilan. Sejak permintaan pertama ia mengembalikan <b>SavingsReport</b> dengan penghematan, dipisah menjadi terukur dan estimasi.",

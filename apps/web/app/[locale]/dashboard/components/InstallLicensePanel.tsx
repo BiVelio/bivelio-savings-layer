@@ -172,7 +172,8 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       </p>
 
       {/* 5 · terminal (gateway) — la vía sin código: medir Claude Code/Codex.
-          Solo mide; la clave de servicio del paso 2 es la única credencial. */}
+          La clave de servicio del paso 2 es la única credencial que se exporta:
+          con ella el gateway recoge la licencia, sin la cual no arranca. */}
       <p className="ck-note" style={{ marginTop: 16 }}>
         {t.rich("installLicensePanel.gatewayNote", {
           b: (chunks) => <b>{chunks}</b>,

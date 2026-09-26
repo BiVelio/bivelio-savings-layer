@@ -314,7 +314,7 @@
       "advanced": "Gelişmiş ayarlar",
       "projFriendly": "Faturan {baseline} yerine {opt} olurdu — %{pct} daha az.",
       "onlyChatTitle": "Yalnızca ChatGPT veya Claude mu kullanıyorsun?",
-      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir ve “bvsala claude” terminaldeki gerçek tüketimini ölçer. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
+      "onlyChatBody": "ChatGPT gerçekten kapalı: sabit ücret, kesilecek token faturası veya limiti yok. Ama Claude kullanıyorsan sana zaten tasarruf ettiriyoruz: savings-mode skill'i (ücretsiz, ana sayfada) abonelik limitlerini esnetir. API anahtarıyla uygulama geliştiriyorsan, BV-SALA gerçek harcamayı orada ölçer ve azaltır.",
       "onlyChatCta": "Uygulama mı geliştiriyorsun? Kuruluma git"
     },
     "copyButton": {
@@ -338,6 +338,7 @@
       "errNetwork": "Ağ hatası — lütfen tekrar deneyin.",
       "errNotRecognized": "Tanınmadı — yazım hatalarını kontrol edin ya da yukarıdan yeni bir anahtar oluşturun.",
       "errUnexpected": "Beklenmeyen yanıt ({status}). Birazdan tekrar deneyin.",
+      "keyNoPlan": "Anahtar tanındı, ancak bu kuruluşun etkin bir BiVelio lisansı veya aboneliği yok, bu yüzden kullanımı reddediliyor. Hesap'tan abone olun ya da yenileyin, ardından tekrar test edin.",
       "keyLabel": "servis hesabı anahtarınız{suffix} — yalnızca bir kez gösterilir, şimdi kopyalayın",
       "passHint": "<code>serviceAccountKey</code> olarak geçirin. Aşağıda önceden doldurulmuş — canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "creating": "Oluşturuluyor…",
@@ -398,14 +399,14 @@
       "eyebrow": "Başlayın",
       "heading": "Dört adım. Prompt'larınız sunucularımıza asla dokunmaz.",
       "step1": "<b>1 · Lisans anahtarınızı alın</b> — SDK herkese açıktır ama fail-closed'dur; yalnızca geçerli bir anahtarla çalışır. <code>licenseKey</code> olarak geçirilir.",
-      "step2": "<b>2 · Bir servis hesabı anahtarı oluşturun ve doğrulayın</b> — iki iş yapan bir makine kimlik bilgisi (<code>bvk_…</code>): yalnızca sayımlara dayalı kullanımı (koltuklarınız ve tasarrufunuz) raporlar ve SDK'nın her faturalandırma döneminde <b>yenilenen lisansınızı kendi başına almasını</b> sağlar. Lisans anahtarından ayrıdır; yalnızca hash'i saklanır. Bir tane oluşturun, ardından canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
+      "step2": "<b>2 · Bir servis hesabı anahtarı oluşturun ve doğrulayın</b> — iki iş yapan bir makine kimlik bilgisi (<code>bvk_…</code>): yalnızca sayımlara dayalı kullanımı (koltuklarınız ve tasarrufunuz) raporlar ve SDK'nın ve ağ geçidinin her faturalandırma döneminde <b>yenilenen lisansınızı kendi başlarına almalarını</b> sağlar. Lisans anahtarından ayrıdır; yalnızca hash'i saklanır. Bir tane oluşturun, ardından canlı olduğunu doğrulamak için <b>Anahtarımı test et</b>'e basın.",
       "currentKey": "mevcut servis hesabı anahtarı",
       "noneYet": "henüz yok — yukarıya tıklayın",
       "shownOnce": "oluşturulurken yalnızca bir kez gösterilir — yalnızca önek saklanır.",
       "renewalNote": "<b>Bu anahtarı dağıtımınızda tutun.</b> Lisansınızın süresi her faturalandırma döneminin sonunda dolar ve yenileme yeni bir lisans üretir. Bu anahtar varsa SDK yenisini kendisi alır ve yeniden başlatmadan devreye sokar. Yoksa kimse almaz; yeni anahtarı her dönem birinin elle yapıştırması gerekir — ve kimse yapmazsa, abonelik ödenmiş ve güncel olsa bile ek süre bittiğinde SDK durur.",
       "step3": "<b>3 · Kurun</b> — npm'de herkese açık, token yok, yapılandırma yok.",
       "step4": "<b>4 · Sağlayıcınızı bağlayın ve SavingsReport'u okuyun</b>",
-      "gatewayNote": "<b>Uygulama yerine kod terminali mi?</b> Aynı paket yerel bir ölçüm ağ geçidi getirir: <code>bvsala claude</code> Claude Code'u onun üzerinden başlatır ve bu panel harcamayı token token gösterir. Ayrıca <code>bvsala codex</code>, <code>bvsala goose</code> ve <code>bvsala qwen</code>; geri kalanı için <code>bvsala doctor</code> tam bloğu yazdırır. 2. adımdaki aynı servis anahtarını kullanır — ölçmek için lisans anahtarı gerekmez.",
+      "gatewayNote": "<b>Uygulama yerine kod terminali mi?</b> Aynı paket yerel bir ölçüm ağ geçidi getirir: <code>bvsala claude</code> Claude Code'u onun üzerinden başlatır ve bu panel harcamayı token token gösterir. Ayrıca <code>bvsala codex</code>, <code>bvsala goose</code> ve <code>bvsala qwen</code>; geri kalanı için <code>bvsala doctor</code> tam bloğu yazdırır. 2. adımdaki aynı servis anahtarını kullanır ve lisansınızı kendi başına alır — SDK gibi, etkin bir lisans olmadan başlamaz.",
       "finalNote": "Hepsi bu. Geçerli lisans yoksa → <code>generate()</code> reddeder. Planınız iptal edilirse SDK, <code>licenseServerUrl</code> aracılığıyla ~15 dakika içinde durur — yeniden başlatma gerekmez ve bize ulaşılamıyorsa üretim ortamınızı asla işlevsiz bırakmaz."
     },
     "accountPlanStrip": {
@@ -858,7 +859,7 @@
       "medidaPie": "ölçülen harcamanın",
       "anatomiaNota": "Sağlayıcının kendi sayaçlarına karşı, {peticiones} gerçek Claude Code isteği üzerinde ölçüldü ({fecha}). Skill'in kendi etkisi A/B ile ölçüldüğünde yayımlanacak — asla öncesinde değil.",
       "ccNota": "Tek komut: ~/.claude/skills içine kurulur ve konuşma limitlerden veya token tasarrufundan bahsedince kendiliğinden devreye girer.",
-      "cxNota": "Codex'te skill yok: aynı disiplin AGENTS.md dosyanda (~/.codex) işaretli blok olarak taşınır — her zaman etkin; kapatmak için bloğu sil. İşaretlerin dışındaki AGENTS.md'ine asla dokunulmaz. ChatGPT hesabıyla ve API anahtarıyla çalışır; bvsala codex altında etkisi ölçülür.",
+      "cxNota": "Codex'te skill yok: aynı disiplin AGENTS.md dosyanda (~/.codex) işaretli blok olarak taşınır — her zaman etkin; kapatmak için bloğu sil. İşaretlerin dışındaki AGENTS.md'ine asla dokunulmaz. ChatGPT hesabıyla ve API anahtarıyla çalışır; bvsala codex altında (lisansla) etkisi ölçülür.",
       "aiDescargar": "savings-mode.zip'i indir",
       "aiCuenta": "İndirme (ücretsiz) Savings hesabını ister: böylece benimseme, kimlikli gerçek bir metrik olur — skill'in kendisinde hiçbir telemetri yoktur.",
       "aiPaso1": "claude.ai'de “Code execution and file creation” özelliğini aç (Settings → Capabilities).",
@@ -877,7 +878,8 @@
       "eyebrow": "Yeni · kod terminalleri",
       "title": "API anahtarıyla Claude Code mu? Gerçek harcamayı token token gör.",
       "body": "Tek bir komut, terminalinin önüne yerel bir sayaç koyar. Koda dokunmadan, hiçbir şey yapılandırmadan — ve promptların asla makinenden çıkmaz: bu panele yalnızca sayımlar ve maliyet ulaşır.",
-      "note": "Ağ geçidi her isteği ölçer. PRO lisansıyla varsayılan olarak bir kaldıraç da uygular: oturumunuz sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır — bu fiyatı değiştirir, modelin okuduğu içeriği asla. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
+      "note": "Ağ geçidi her isteği ölçer ve SDK gibi yalnızca etkin bir lisansla çalışır: lisansı servis anahtarınızla alır ve imzasını kendi makinenizde doğrular. PRO lisansıyla varsayılan olarak bir kaldıraç da uygular: oturumunuz sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır — bu fiyatı değiştirir, modelin okuduğu içeriği asla. Diğer kaldıraçlar siz açana kadar kapalı kalır. savings-mode becerisi limitleriniz için mevcut, etkisi henüz ölçülmedi. Codex CLI, Goose ve Qwen Code ile de çalışır — ve bvsala doctor geri kalanı için tam yapılandırmayı yazdırır.",
+      "pythonNote": "Python ya da başka bir dil mi? Resmi OpenAI veya Anthropic SDK'sını ağ geçidine yönlendirin; sağlayıcının kullanımını bildirdiği ve liste fiyatı olan bir modele ait her istek bu panele o fiyatla kaydedilir, ölçülmeyen bir istek olduğunda ağ geçidinin günlüğü bunu belirtir. bvsala doctor her SDK için base URL'yi yazdırır. OpenAI ile streaming'de kullanımı istekte talep edin (stream_options.include_usage).",
       "cta": "Nasıl çalıştığını gör →"
     },
     "integrate": {
@@ -1021,7 +1023,7 @@
     "devs": {
       "eyebrow": "Geliştiriciler için yapıldı",
       "title": "Faturayla daha az baş ağrısı. Sağlayıcı değiştirmeden.",
-      "sub": "Paket hakkında üç gerçek. Hiçbiri bir vaat değil.",
+      "sub": "Paket hakkında dört gerçek. Hiçbiri bir vaat değil.",
       "cards": [
         {
           "title": "Sıfır çalışma zamanı bağımlılığı",
@@ -1037,6 +1039,11 @@
           "title": "Trafiğiniz doğrudan gitmeye devam eder",
           "body": "SDK çağrıyı sürecinizin içinde sarmalar. Promptlarınız BiVelio'dan geçmez: bize yalnızca sayımlar ve maliyet ulaşır.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, aynı rapor",
+          "body": "generateStream() yanıtı sağlayıcı yazdıkça size iletir ve generate() ile aynı SavingsReport'la, aynı temel kurallarıyla kapanır: sağlayıcının son sayacı stream'in sonunda okunur; bu sayaç olmadan biten bir stream ölçülmemiş olarak raporlanır ve asla komisyonunuza girmez. Çıktı sözleşmesi varsa yanıt doğrulanmış olarak, tek parça halinde gelir.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1093,7 +1100,7 @@
     "nodeApiSubAfter": "daha az token alır",
     "billMonth": "fatura / ay",
     "billReport": "+ SavingsReport",
-    "s1Note": "O yeşil kutu, uygulamanın kodundaki bir npm paketidir. Bu yüzden kilit soru asla «ne kurayım?» değil, <b>«API'yi çağıran kodu kim yazdı?»</b> sorusudur — onu kurabilecek kişi o kişidir. Tek istisna, Claude Code gibi bir kodlama terminalidir: orada «bvsala claude» ağ geçidi tek satır koda bile dokunmadan öne geçer.",
+    "s1Note": "O yeşil kutu, uygulamanın kodundaki bir npm paketidir. Bu yüzden kilit soru asla «ne kurayım?» değil, <b>«API'yi çağıran kodu kim yazdı?»</b> sorusudur — onu kurabilecek kişi o kişidir. İstisnalar, Claude Code gibi bir kodlama terminali ve resmi OpenAI veya Anthropic SDK'sını kullanan ve base URL'sini ayarlamaya izin veren herhangi bir dildeki bir uygulamadır: orada bvsala ağ geçidi tek satır koda bile dokunmadan öne geçer. Bu trafik, liste fiyatı olan modeller için ölçülür; npm paketinin tasarruf kaldıraçları orada çalışmaz, ağ geçidinin kendi kaldıraçları ise yalnızca Anthropic trafiğine, PRO lisansıyla uygulanır.",
     "s2Title": "Senin durumun, 10 saniyede",
     "s2Sub": "Yapay zekâyı kullanmanın dört yolu ve BV‑SALA'nın her birinde ne yapabileceği.",
     "caseChatSub": "uygulama veya web, ücretsiz ya da ücretli",
@@ -1101,7 +1108,7 @@
     "caseClaudeSub": "claude.ai, ücretsiz ya da ücretli",
     "caseClaudeBody": "Sabit abonelik: ölçülecek token faturası yok — ama limitler var (beş saatlik pencere ve haftalık). savings-mode skill'i tam bunun için: ücretsiz, bir dakikada claude.ai'ye yüklenir ve limiti yakan iki kütleye saldırır. Etkisi ölçüldüğünde yayımlanacak — asla öncesinde değil.",
     "caseCodeSub": "terminal, API anahtarıyla",
-    "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: “bvsala claude” Claude Code'u yerel gateway üzerinden başlatır ve harcaman panelde token token görünür, tek satır koda dokunmadan. Oradaki tasarruf bir sonraki aşama — önce gerçekten ölçüyoruz.",
+    "caseCodeBody": "Abonelikte ücret sabittir — ama limitlidir: aynı skill tek komutla kurulur ve aynı haftalık limiti esnetir. API anahtarıyla gerçek bir token faturası vardır — ve sayaç zaten çalışıyor: BiVelio lisansınla “bvsala claude” Claude Code'u yerel gateway üzerinden başlatır ve harcaman panelde token token görünür, tek satır koda dokunmadan. PRO ile ayrıca oturum sıcak kaldığı sürece önbellek yazma TTL'sini kısaltır: kendi sağlayıcının token sayımı üzerinden hesaplanan bir tasarruf, asla bir tahmin üzerinden değil.",
     "caseAppName": "Senin uygulaman",
     "caseAppSub": "senin kodun + senin API anahtarın",
     "caseAppBody": "BV‑SALA'nın var olma nedeni olan durum. Uygulamanız API'yi kendi anahtarınızla çağırır, sağlayıcı her token'ı faturalar ve katman üç adımda kurulur: paket, lisans ve çağrıyı sarmalama. İlk istekten itibaren, ölçülen ve tahmini olarak ayrılmış tasarrufla bir <b>SavingsReport</b> döndürür.",
