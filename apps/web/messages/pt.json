@@ -882,7 +882,7 @@
       "amount": "{amount}",
       "per": "/ lugar / mês",
       "proNote": "<b>PRO</b> — faturado por lugar. Ou <b>{yearly} / lugar / ano</b> (poupa ~19%). O Enterprise, com funcionalidades empacotadas, chega mais tarde.",
-      "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b> ativa, não uma pessoa — faturado apenas se estiver ativo em 3 ou mais dias num mês. CI e executores efémeros não contam.",
+      "seatNote": "Um lugar é uma <b>máquina ou identidade de serviço</b>, não uma pessoa. Paga os lugares que a sua subscrição cobre; o seu painel mostra quantos estiveram em uso este mês (ativos em pelo menos {dias} dias; CI e executores efémeros não contam).",
       "features": [
         "Todas as otimizações do BV‑SALA, sem limite",
         "Um recibo por pedido: SavingsReport com quatro livros, medido e estimado em separado",
@@ -939,7 +939,9 @@
       "andorra": "De Andorra para o mundo 🇦🇩",
       "bottomPrivacy": "Privacidade",
       "bottomTerms": "Termos",
-      "howItWorks": "Como funciona"
+      "howItWorks": "Como funciona",
+      "pricingTerms": "Condições de preço",
+      "dataPrivacy": "O que a BiVelio recebe"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -969,8 +971,8 @@
       "extraCero": "nada",
       "notaGarantia": "Comissão só sobre a poupança medida — e ficas sempre com {garantia} ou mais. Os lugares cobram-se à parte, todos os meses.",
       "notaTramos": "Por faixas, cada uma à sua taxa: {tramos}. Quanto mais você economiza, menor o nosso percentual.",
-      "notaPrimerMesLead": "Seu primeiro mês: só o assento.",
-      "notaPrimerMes": "Medimos tudo, calibramos com a sua carga real e você verá o extrato exato do que teria custado — sem cobrança.",
+      "notaPrimerMesLead": "Seu primeiro mês civil com uso: só o assento.",
+      "notaPrimerMes": "É o seu período de calibração, por pouco que reste desse mês: medimos tudo e você verá o extrato exato do que teria custado — sem cobrança.",
       "version": "Preços do catálogo do SDK, versão {fecha}. Uma estimativa: seu extrato usará o seu uso medido.",
       "cargando": "Carregando o catálogo de preços…",
       "badge": "Estimativa",
@@ -981,7 +983,7 @@
     },
     "formula": {
       "title": "Como se calcula o que você nos paga",
-      "mes1": "<b>Seu primeiro mês: só {precioMes} por assento.</b> Medimos tudo e não cobramos comissão — no fechamento você verá o extrato exato do que teria custado.",
+      "mes1": "<b>Seu primeiro mês civil com uso (UTC): só a taxa do assento.</b> Medimos tudo e não cobramos comissão, por pouco que reste desse mês — no fechamento você verá o extrato exato do que teria custado.",
       "medido": "Depois, comissão só sobre a <b>economia medida</b>: a que você pode conciliar com a fatura do seu provedor. O estimado nunca é faturado.",
       "garantia": "E <b>ficas sempre com {garantia} ou mais</b> de cada euro poupado: a comissão só existe quando existe a tua poupança medida.",
       "tramos": "<b>Por faixas, cada uma à sua taxa</b> — {tramos}. Quanto mais você economiza, menor o nosso percentual.",
@@ -1175,6 +1177,138 @@
     "ctaVerify": "Ver a poupança medida",
     "ctaSignup": "Criar conta",
     "ctaInstall": "Ir para o guia de instalação"
+  },
+  "pricingPage": {
+    "metaTitle": "Condições de preço · BV-SALA",
+    "metaDescription": "A taxa por lugar e a comissão sobre a economia medida, publicadas a partir das mesmas constantes que cobram.",
+    "eyebrow": "Preços publicados",
+    "title": "Condições de preço",
+    "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
+    "lede": "Cada número que vê aqui é lido do mesmo código que lhe cobra, por isso muda quando o preço muda.",
+    "seat": {
+      "title": "A taxa por lugar",
+      "amount": "<b>{monthly}</b> por lugar e por mês, ou <b>{yearly}</b> por lugar e por ano, em {currency}.",
+      "cycle": "A taxa por lugar é cobrada através da Stripe em cada ciclo mensal ou anual da sua subscrição, contado a partir do dia em que começa.",
+      "paidAlways": "A taxa por lugar paga-se <b>quer o Software produza economia, quer não</b>.",
+      "vat": "Os valores não incluem IVA. O pagamento pede o seu endereço de faturação e, opcionalmente, o seu número de IVA; ambos aparecem na fatura.",
+      "whatTitle": "O que é um lugar",
+      "what": "Um lugar é uma <b>máquina ou identidade de serviço</b> que executa o Software, não uma pessoa. Você escolhe quantos lugares a sua subscrição cobre (até {max} no pagamento), e a sua licença cobre esses.",
+      "counted": "Em cada mês civil (UTC), a BiVelio conta como em uso cada identificador de lugar distinto que esteve ativo em pelo menos {dias} dias diferentes desse mês. As identidades marcadas como CI ou executores efémeros não contam. O seu painel compara essa contagem com os lugares que a sua subscrição cobre.",
+      "identifier": "Como se forma o identificador de lugar, e tudo o resto que o Software envia à BiVelio, está na <privacy>página de privacidade</privacy>."
+    },
+    "commission": {
+      "title": "A comissão sobre a economia medida",
+      "only": "Só se cobra comissão <b>sobre a economia medida</b>: a economia etiquetada {labels} nos seus registos de uso. A economia etiquetada {never} nunca tem comissão.",
+      "measured": "Uma economia medida resulta do próprio contador de uso do seu provedor de LLM para esse pedido.",
+      "reference": "Uma economia por referência, num pedido repetido que o Software serviu sem chamar o seu provedor, resulta do contador do seu provedor para o pedido idêntico anterior que foi de facto executado, segundo a regra indicada no seu extrato ({regla}).",
+      "valued": "Ambas são valorizadas aos preços por token que o Software aplicou a esse pedido: os de um modelo de custos que configure, se configurar um, e, caso contrário, os preços de tabela do seu provedor no catálogo de preços incluído no Software.",
+      "flatRate": "O tráfego que o Software identifica como uma subscrição de tarifa fixa de um provedor (uma subscrição do Claude ou do ChatGPT usada através do gateway local) é medido, mas não lhe é creditada economia medida, pelo que não tem comissão.",
+      "elision": "O valor dos tokens de entrada que o seu provedor declara removidos do contexto é registado, mas não faz parte da base da comissão.",
+      "tiersTitle": "Escalões",
+      "tiersIntro": "A economia medida do período é convertida para {currency} e repartida por escalões marginais, cada um à sua própria taxa:",
+      "colBand": "Economia medida no período",
+      "colRate": "Taxa",
+      "bandUpTo": "Até {hasta}",
+      "bandBetween": "De {desde} a {hasta}",
+      "bandAbove": "Acima de {desde}",
+      "ceiling": "Nenhum escalão ultrapassa {max}, por isso, antes de arredondar a comissão ao cêntimo, <b>fica sempre com pelo menos {garantia}</b> da economia medida do período. A taxa por lugar é à parte.",
+      "fx": "A economia medida é contada em dólares americanos e convertida à taxa de referência do Banco Central Europeu obtida no fecho do período; o seu extrato mostra a taxa aplicada.",
+      "rounding": "A comissão é arredondada ao cêntimo mais próximo. Uma comissão inferior a {minimo} não é faturada nem transita para outro período.",
+      "zero": "Um período sem economia medida <b>não tem comissão</b>.",
+      "calculator": "Para ver o que isto significa para o seu tráfego, experimente a <calc>calculadora</calc> da página inicial."
+    },
+    "calibration": {
+      "title": "Período de calibração",
+      "body": "O <b>primeiro mês civil (UTC) em que a sua organização reporta algum uso</b> é um período de calibração, por pouco que reste desse mês. Não tem comissão, e o seu extrato mostra na mesma a comissão que se teria aplicado."
+    },
+    "exemption": {
+      "title": "Isenção da comissão",
+      "body": "Não se cobra comissão por um período que a BiVelio fecha enquanto a sua conta está isenta dela. Uma conta está isenta quando a BiVelio lhe concede uma isenção e, até ser feito um pagamento na conta, quando a sua subscrição foi ativada com um código promocional que isenta a taxa por lugar por inteiro durante toda a vigência. O extrato mostra na mesma a comissão que se teria aplicado."
+    },
+    "statement": {
+      "title": "Extrato e fatura",
+      "body": "A comissão é calculada por mês civil (UTC). Quando um mês termina, a BiVelio fecha-o: o extrato desse mês no seu painel fica selado com a base medida, os escalões, a taxa de câmbio e a versão do catálogo de preços, e a comissão é faturada a partir desse extrato através da Stripe, numa fatura separada da taxa por lugar."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "O que sai da sua infraestrutura · BV-SALA",
+    "metaDescription": "A lista exata do que o SDK e o gateway local enviam à BiVelio, do que nunca enviam e de quanto tempo a BiVelio o guarda.",
+    "eyebrow": "Privacidade",
+    "title": "O que sai da sua infraestrutura",
+    "governs": "Esta página descreve como o serviço funciona hoje; prevalecem a <license>LICENSE</license> e os <terms>Termos da BiVelio</terms>.",
+    "lede": "O que o Software (o SDK e o gateway local) envia à BiVelio, o que nunca envia e durante quanto tempo a BiVelio o guarda.",
+    "never": {
+      "title": "O que nunca é enviado à BiVelio",
+      "content": "<b>O conteúdo dos seus pedidos e respostas</b>: prompts, instruções de sistema, mensagens, definições de ferramentas, argumentos e resultados de ferramentas, documentos recuperados e respostas geradas.",
+      "credentials": "<b>As credenciais que usa com o seu provedor de LLM</b>: chaves de API, tokens OAuth ou outros cabeçalhos de autorização.",
+      "path": "Esse conteúdo e essas credenciais só circulam entre os seus sistemas e o provedor de LLM que configurar."
+    },
+    "usage": {
+      "title": "Registos de uso",
+      "when": "O SDK só envia registos de uso quando configura um servidor de licenças ou um URL de medição; o gateway local envia sempre. Cada lote leva a sua chave de conta de serviço da BiVelio, que identifica a sua organização, e a superfície e a versão do Software no cabeçalho <b>{header}</b>.",
+      "limit": "Cada registo limita-se aos campos abaixo. <b>A ingestão da BiVelio rejeita qualquer registo que traga um campo que não esteja nesta lista.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identificadores",
+          "body": "Um identificador de pedido gerado do seu lado (ao acaso ou pelo seu próprio gerador). Num pedido repetido valorizado por referência, o identificador e o instante do pedido anterior cujo contador do provedor é usado. Um identificador de lugar: um valor definido por si, ou um valor opaco calculado na sua máquina como um hash com chave (HMAC), com a sua chave de conta de serviço como chave, a partir da plataforma, da arquitetura de CPU, do caminho do executável, do nome da máquina, do utilizador do sistema operativo e do diretório pessoal; esses valores nunca são enviados. Através do gateway local, os identificadores de sessão e de subagente que o seu agente de programação junta aos próprios pedidos (por exemplo, o id de sessão do Claude Code), apenas quando são identificadores simples. Uma pista de organização (a BiVelio deriva sempre a sua organização da chave). Uma marca para executores CI ou efémeros."
+        },
+        "model": {
+          "title": "Modelo e instante",
+          "body": "O identificador do modelo que respondeu ao pedido: o indicado no pedido ou, se o Software o enviou para outro modelo por uma definição que ativou, esse outro; numa implementação própria ou do Azure, o nome que lhe deu. E o instante do pedido."
+        },
+        "counts": {
+          "title": "Contagens",
+          "body": "Chamadas ao LLM executadas e evitadas; tokens de entrada e de saída antes e depois das otimizações do Software, incluindo os tokens removidos, comprimidos ou lidos da cache do provedor; e o resultado da cache."
+        },
+        "cost": {
+          "title": "Custo",
+          "body": "Valores de custo calculados pelo Software a partir do seu catálogo de preços ou de um modelo de custos que forneça: custo de referência, custo real, o rácio de economia líquida, a base dos valores (measured, reference, estimated, shadow ou unmeasured) e o valor, ao preço de leitura de cache do provedor, dos tokens de entrada que o seu provedor declarou removidos do contexto."
+        }
+      }
+    },
+    "verification": {
+      "title": "Verificação opcional (só o SDK, desligada por predefinição)",
+      "when": "Se ativar a opção de verificação do SDK, o SDK volta a enviar ao seu próprio provedor uma amostra dos pedidos que serviu, sem otimização, e descarta essa segunda resposta. Por cada pedido da amostra envia à BiVelio, <b>por um canal separado, apenas os campos abaixo</b>; esse canal também rejeita qualquer outro campo, e nada do que recebe é usado para calcular a comissão.",
+      "groups": {
+        "sample": {
+          "title": "Cada pedido da amostra",
+          "body": "A etiqueta verification, o identificador e o instante do pedido; o modelo pedido e o que respondeu; o resultado da cache; a categoria do pedido e o resultado da verificação; os tokens de entrada, de entrada em cache e de saída e o custo do pedido servido e da cópia sem otimização; como terminou a cópia e se cumpriu o contrato de resposta; e os preços por token aplicados."
+        },
+        "counts": {
+          "title": "Contagens diárias",
+          "body": "Para cada dia, o número de pedidos de cada categoria, incluindo os que ficaram fora da verificação."
+        },
+        "batch": {
+          "title": "Cada lote",
+          "body": "Um identificador de lote aleatório, para descartar duplicados, e as duas listas acima."
+        }
+      }
+    },
+    "other": {
+      "title": "Outros pedidos à BiVelio",
+      "body": "O Software também obtém o seu token de licença em vigor e a lista assinada de licenças revogadas, e o gateway local obtém as funcionalidades contratadas pela sua organização. Estes pedidos levam a sua chave de conta de serviço quando é necessária autenticação, e nenhum dado dos pedidos.",
+      "network": "Como qualquer pedido HTTPS, tudo isto revela ainda metadados de rede comuns, como o seu endereço IP."
+    },
+    "retention": {
+      "title": "O que a BiVelio guarda, e durante quanto tempo",
+      "intro": "A ingestão soma cada registo de uso a totais diários: por dia, por modelo, por lugar e por sessão do gateway. As linhas individuais só são guardadas nos sítios abaixo, e uma tarefa diária apaga cada linha quando ultrapassa o seu prazo:",
+      "items": {
+        "seen": "Identificadores de pedido, guardados para descartar registos duplicados: {dias} dias.",
+        "reference": "Pedidos repetidos valorizados por referência (identificadores de pedido, modelo, instante e o contador do provedor usado), as linhas por trás da transferência do seu extrato: {dias} dias.",
+        "verificationSamples": "Amostras de verificação e as suas contagens diárias: {dias} dias.",
+        "verificationBatches": "Identificadores de lote da verificação: {dias} dias."
+      },
+      "noSchedule": "Os totais diários, a atividade por lugar e os seus extratos selados não têm hoje prazo de eliminação automática."
+    },
+    "use": {
+      "title": "Para que a BiVelio os usa",
+      "body": "Para operar as licenças e as revogações, mostrar-lhe o seu painel, contar os lugares em uso e calcular as tarifas descritas na <pricing>página de preços</pricing>."
+    },
+    "account": {
+      "title": "A sua conta neste site",
+      "body": "O seu e-mail de acesso, a sua organização e os seus dados de faturação (os pagamentos são processados pela Stripe) regem-se pela <policy>política de privacidade da BiVelio</policy>."
+    },
+    "contact": "Perguntas e pedidos sobre estes dados: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Página não encontrada · BiVelio Savings Layer",

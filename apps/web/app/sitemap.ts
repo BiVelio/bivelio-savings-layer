@@ -15,6 +15,8 @@ import { absolute, languageAlternates } from "@/i18n/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   const languages = languageAlternates();
   const hiwLanguages = languageAlternates("how-it-works");
+  const pricingLanguages = languageAlternates("pricing");
+  const privacyLanguages = languageAlternates("privacy");
   return [
     ...locales.map((locale) => ({
       url: absolute(`/${locale}`),
@@ -29,6 +31,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
       alternates: { languages: hiwLanguages },
+    })),
+    // Las dos páginas que cita la LICENSE (§6 y §5): públicas e indexables,
+    // porque un cliente tiene que poder encontrarlas sin sesión.
+    ...locales.map((locale) => ({
+      url: absolute(`/${locale}/pricing`),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+      alternates: { languages: pricingLanguages },
+    })),
+    ...locales.map((locale) => ({
+      url: absolute(`/${locale}/privacy`),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+      alternates: { languages: privacyLanguages },
     })),
   ];
 }

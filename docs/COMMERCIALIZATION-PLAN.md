@@ -5,14 +5,39 @@
 > into a commercial product integrated into the BiVelio platform and website.
 > Prices and copy are placeholders; the mechanics are the plan.
 
+> **HISTÓRICO — no describe el producto de hoy (marcado el 2026-09-25).** Este plan es
+> de julio de 2026 y **no viaja a npm** (no está en `files` de package.json). Varias de
+> sus decisiones se revocaron después y contradicen lo que hoy dicen la LICENSE y el
+> README, que es lo que el cliente lee y firma:
+>
+> - **No hay free tier ni prueba** («Free self-hosted tier», §0 y tabla §9): BV‑SALA es
+>   de pago y fail-closed (LICENSE §1-§2; README «No free tier and no trial»).
+> - **No hay «graceful degrade, never brick»** (§0, §4, §5): sin licencia activa el SDK
+>   no ejecuta y el gateway no arranca; si la licencia caduca con el gateway en marcha,
+>   solo se rechazan las peticiones NUEVAS (HTTP 402) y ninguna en vuelo se corta.
+> - **El precio no es `$4/seat` en USD ni la comisión es un «upsell» futuro** (§0, §5,
+>   §9): hoy es una cuota por asiento en EUR (apps/web/lib/stripe/pricing.ts) que se
+>   paga ahorres o no, más una comisión por tramos SOLO sobre el ahorro medido con el
+>   contador del proveedor, con el primer mes natural (UTC) con uso como calibración
+>   sin comisión y exención para las cuentas activadas con un cupón del 100 % «para
+>   siempre» hasta su primer pago (apps/web/lib/billing/tarifa.ts, LICENSE §6).
+> - **Lo que viaja a BiVelio no es «solo counts/metadata»** (§1, §8): viajan también el
+>   id del modelo y los ids de petición, de asiento (HMAC) y de sesión. La lista exacta
+>   está en la LICENSE §5, atada al emisor por test/licencia-alineada.test.ts.
+> - **La infraestructura es Supabase + Stripe + Vercel**, no Neon/Keycloak/Hyperswitch/
+>   Hetzner, y ninguna afirmación de residencia en la UE está verificada.
+>
+> Fuentes vigentes: LICENSE, README.md, apps/web/lib/billing/tarifa.ts y
+> apps/web/lib/stripe/pricing.ts. El resto del documento se conserva como registro.
+
 ## 0. Locked decisions (2026-07-15)
 
 | Decision | Choice |
 | --- | --- |
 | **Infra (launch)** | **Vercel-first.** The product web + dashboard ship on **Vercel** at `savings.bivelio.com` (same place the corporate site already lives → least maintenance, no servers to run) with a **managed Postgres** (Neon) for BV-SALA's own data. The licensing + metering services are small HTTP endpoints that also run serverless on Vercel to start. **Hetzner is the scale option**, not the launch option: move cost-sensitive/heavy pieces there once volume makes the €-savings worth the ops work. Rationale: at small scale the money gap (~$20–40/mo Vercel vs ~€5–15/mo Hetzner) is negligible, and Vercel costs far less to *maintain*; the gap only matters at scale, by which point revenue funds ops. |
 | **Identity, DB & billing** *(decided CP-1, 2026-07-18)* | **Supabase Auth** — DNS shows BiVelio's platform login is already Supabase (`auth.bivelio.com`), **not** Keycloak. Reusing it gives one BiVelio account across the suite with zero new infra (the real *extension of bivelio.com*). **Supabase Postgres** holds BV-SALA's control-plane data (orgs, licenses, usage rollups). **Stripe** for per-seat billing (no Hyperswitch in prod). The keycloak/hyperswitch forks are dormant and dropped from the launch plan. |
-| **Billing (launch)** | **Per-seat**, e.g. `$4/user/month`. Metered-by-volume and value-based (% of savings) are upsell/enterprise tiers later. |
-| **Free / offline** | **Free self-hosted tier with a cap.** Local-only optimizations (exact cache, resolvers, format selector) work capped and offline. Semantic cache, learned thresholds, dashboards and cross-tenant optimization require a license. **No valid license → graceful degrade, never brick the customer's production.** |
+| **Billing (launch)** | **[HISTÓRICO: hoy EUR por asiento + comisión sobre lo medido, LICENSE §6]** **Per-seat**, e.g. `$4/user/month`. Metered-by-volume and value-based (% of savings) are upsell/enterprise tiers later. |
+| **Free / offline** | **[HISTÓRICO: no hay free tier; fail-closed, LICENSE §2]** **Free self-hosted tier with a cap.** Local-only optimizations (exact cache, resolvers, format selector) work capped and offline. Semantic cache, learned thresholds, dashboards and cross-tenant optimization require a license. **No valid license → graceful degrade, never brick the customer's production.** |
 
 ## 1. Product shape: the control-plane / data-plane split
 
@@ -111,6 +136,8 @@ BiVelio's private key) embedding:
 4. Entitlements are exposed to the pipeline: e.g. semantic cache and learned
    thresholds are only enabled if `features` includes them.
 
+> **[HISTÓRICO]** Política revocada: hoy el SDK y el gateway son fail-closed (LICENSE §2).
+
 **Graceful degradation (decided policy):** an expired/absent/revoked license
 does **not** stop the customer's production. It drops BV-SALA to the **free
 local tier** (exact cache, resolvers, format selector, strict output — all the
@@ -146,6 +173,7 @@ basic ones.
 **Billing pipeline:** metering service aggregates usage → billing service maps
 to Hyperswitch plans/subscriptions → invoices, proration, dunning, tax. Failed
 payment → license auto-downgrades to free tier at next validation (graceful).
+**[HISTÓRICO]** No hay free tier al que degradar: la licencia caduca tras su gracia.
 
 ## 6. Web & platform integration
 
@@ -222,7 +250,8 @@ already cover the box they run on.
 
 ## 8. Security, privacy, compliance
 
-- **Data minimization (headline promise):** raw prompts/completions never leave
+- **[HISTÓRICO: la lista exacta de lo que viaja está en la LICENSE §5]**
+  **Data minimization (headline promise):** raw prompts/completions never leave
   customer infra by default. Only counts/metadata reach us. This is contractual
   and enforced in `control-plane-client` (allowlist of fields).
 - **EU residency** via Hetzner (Germany/Finland) — a genuine differentiator vs
@@ -239,7 +268,7 @@ already cover the box they run on.
 
 | Tier | Who | Includes | Billing |
 | --- | --- | --- | --- |
-| **Free (self-hosted)** | Individuals / evals | Local wins (exact cache, resolvers, format selector, strict output), capped volume, community support | $0 |
+| **[HISTÓRICO: no existe]** **Free (self-hosted)** | Individuals / evals | Local wins (exact cache, resolvers, format selector, strict output), capped volume, community support | $0 |
 | **Pro** | Teams / startups | + semantic cache, learned thresholds, dashboards, telemetry, email support | **per-seat** (`$4`-ish launch anchor) |
 | **Team** | Scaleups | + SSO, roles, higher caps, SLAs | per-seat + platform fee |
 | **Enterprise** | Large orgs / regulated | + SAML, private/on-prem control plane, value-based option, SOC2, DPA, dedicated support | custom / value-based |

@@ -75,8 +75,10 @@ import { esUpstreamOficial } from "./upstream.js";
  *   · SOLO MEDIDO. Un registro existe únicamente si el proveedor emitió
  *     `usage` y el modelo está en el catálogo de precios. Sin contador no hay
  *     cifra: nada se estima en el gateway.
- *   · Los prompts no salen de la máquina: el metering transporta SOLO cuentas
- *     y coste (misma garantía que el SDK).
+ *   · Los prompts, las respuestas y las claves del proveedor nunca llegan a
+ *     BiVelio. El metering transporta cuentas, coste, el id del modelo e ids
+ *     opacos (asiento, sesión, subagente): la lista exacta es la LICENSE §5 y
+ *     test/licencia-alineada.test.ts la ata al cable.
  */
 
 export interface OpcionesGateway {

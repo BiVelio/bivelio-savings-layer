@@ -882,7 +882,7 @@
       "amount": "{amount}",
       "per": "/ stanowisko / mies.",
       "proNote": "<b>PRO</b> — rozliczane za stanowisko. Lub <b>{yearly} / stanowisko / rok</b> (oszczędzasz ~19%). Enterprise, z pakietowymi funkcjami, pojawi się później.",
-      "seatNote": "Stanowisko to jedna aktywna <b>maszyna lub tożsamość usługi</b>, nie osoba — rozliczane tylko wtedy, gdy jest aktywne przez 3+ dni w miesiącu. CI i efemeryczne runnery się nie liczą.",
+      "seatNote": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, nie osoba. Płacisz za stanowiska objęte subskrypcją; Twój panel pokazuje, ile z nich było używanych w tym miesiącu (aktywnych przez co najmniej {dias} dni; CI i efemeryczne runnery się nie liczą).",
       "features": [
         "Każda optymalizacja BV‑SALA, bez limitu",
         "Paragon na każde zapytanie: SavingsReport z czterema księgami, zmierzone i szacowane osobno",
@@ -939,7 +939,9 @@
       "andorra": "Z Andory dla świata 🇦🇩",
       "bottomPrivacy": "Prywatność",
       "bottomTerms": "Warunki",
-      "howItWorks": "Jak to działa"
+      "howItWorks": "Jak to działa",
+      "pricingTerms": "Warunki cenowe",
+      "dataPrivacy": "Co otrzymuje BiVelio"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -969,8 +971,8 @@
       "extraCero": "nic",
       "notaGarantia": "Prowizja tylko od zmierzonych oszczędności — i zawsze zatrzymujesz {garantia} lub więcej. Stanowiska są rozliczane osobno, co miesiąc.",
       "notaTramos": "Progowo, każdy próg według własnej stawki: {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
-      "notaPrimerMesLead": "Twój pierwszy miesiąc: tylko miejsce.",
-      "notaPrimerMes": "Mierzymy wszystko, kalibrujemy na Twoim rzeczywistym obciążeniu, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
+      "notaPrimerMesLead": "Twój pierwszy miesiąc kalendarzowy z użyciem: tylko miejsce.",
+      "notaPrimerMes": "To Twój okres kalibracji, niezależnie od tego, ile z tego miesiąca zostało: mierzymy wszystko, a Ty zobaczysz dokładny wyciąg tego, ile by to kosztowało — bez pobierania opłaty.",
       "version": "Ceny katalogu SDK, wersja {fecha}. Szacunek: Twój wyciąg użyje Twojego zmierzonego użycia.",
       "cargando": "Ładowanie katalogu cen…",
       "badge": "Szacunek",
@@ -981,7 +983,7 @@
     },
     "formula": {
       "title": "Jak liczy się to, co nam płacisz",
-      "mes1": "<b>Twój pierwszy miesiąc: tylko {precioMes} za miejsce.</b> Mierzymy wszystko i nie pobieramy prowizji — na zamknięciu zobaczysz dokładny wyciąg tego, ile by to kosztowało.",
+      "mes1": "<b>Twój pierwszy miesiąc kalendarzowy z użyciem (UTC): tylko opłata za miejsce.</b> Mierzymy wszystko i nie pobieramy prowizji, niezależnie od tego, ile z tego miesiąca zostało — na zamknięciu zobaczysz dokładny wyciąg tego, ile by to kosztowało.",
       "medido": "Potem prowizja tylko od <b>zmierzonych oszczędności</b>: takich, które możesz uzgodnić z fakturą dostawcy. Szacowane nigdy nie są rozliczane.",
       "garantia": "I <b>zawsze zatrzymujesz {garantia} lub więcej</b> z każdego zaoszczędzonego euro: prowizja istnieje tylko wtedy, gdy istnieją Twoje zmierzone oszczędności.",
       "tramos": "<b>Progowo, każdy próg według własnej stawki</b> — {tramos}. Im więcej oszczędzasz, tym niższy nasz procent.",
@@ -1175,6 +1177,138 @@
     "ctaVerify": "Zobacz zmierzone oszczędności",
     "ctaSignup": "Utwórz konto",
     "ctaInstall": "Przejdź do instrukcji instalacji"
+  },
+  "pricingPage": {
+    "metaTitle": "Warunki cenowe · BV-SALA",
+    "metaDescription": "Opłata za stanowisko i prowizja od zmierzonych oszczędności, publikowane z tych samych stałych, które naliczają opłaty.",
+    "eyebrow": "Opublikowany cennik",
+    "title": "Warunki cenowe",
+    "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
+    "lede": "Każda liczba na tej stronie jest odczytywana z tego samego kodu, który wystawia Ci rachunek, więc zmienia się razem z ceną.",
+    "seat": {
+      "title": "Opłata za stanowisko",
+      "amount": "<b>{monthly}</b> za stanowisko miesięcznie albo <b>{yearly}</b> za stanowisko rocznie, w {currency}.",
+      "cycle": "Opłata za stanowisko jest pobierana przez Stripe za każdy miesięczny lub roczny cykl Twojej subskrypcji, liczony od dnia jej rozpoczęcia.",
+      "paidAlways": "Opłatę za stanowisko płaci się <b>niezależnie od tego, czy Oprogramowanie przynosi oszczędności</b>.",
+      "vat": "Kwoty nie zawierają VAT. Przy płatności podajesz adres rozliczeniowy i opcjonalnie numer VAT; oba widnieją na fakturze.",
+      "whatTitle": "Czym jest stanowisko",
+      "what": "Stanowisko to jedna <b>maszyna lub tożsamość usługi</b>, na której działa Oprogramowanie, a nie osoba. Sam wybierasz, ile stanowisk obejmuje Twoja subskrypcja (do {max} przy płatności), i tyle obejmuje Twoja licencja.",
+      "counted": "W każdym miesiącu kalendarzowym (UTC) BiVelio liczy jako używany każdy odrębny identyfikator stanowiska, który był aktywny w co najmniej {dias} różnych dniach tego miesiąca. Tożsamości oznaczone jako CI lub efemeryczne runnery się nie liczą. Twój panel porównuje tę liczbę ze stanowiskami objętymi subskrypcją.",
+      "identifier": "Jak powstaje identyfikator stanowiska i wszystko inne, co Oprogramowanie wysyła do BiVelio, opisuje <privacy>strona o prywatności</privacy>."
+    },
+    "commission": {
+      "title": "Prowizja od zmierzonych oszczędności",
+      "only": "Prowizja jest naliczana <b>tylko od zmierzonych oszczędności</b>: oszczędności oznaczonych w Twoich rekordach użycia jako {labels}. Oszczędności oznaczone jako {never} nigdy nie podlegają prowizji.",
+      "measured": "Zmierzona oszczędność wynika z własnego licznika użycia Twojego dostawcy LLM dla tego żądania.",
+      "reference": "Oszczędność przez odniesienie, dla powtórzonego żądania, które Oprogramowanie obsłużyło bez wywołania dostawcy, wynika z licznika dostawcy dla identycznego wcześniejszego żądania, które faktycznie zostało wykonane, według reguły podanej na Twoim wyciągu ({regla}).",
+      "valued": "Obie są wyceniane po cenach za token, które Oprogramowanie zastosowało do tego żądania: z modelu kosztów, który skonfigurujesz, jeśli go skonfigurujesz, a w przeciwnym razie po cenach katalogowych Twojego dostawcy z katalogu cen dołączonego do Oprogramowania.",
+      "flatRate": "Ruch, który Oprogramowanie rozpoznaje jako abonament ryczałtowy dostawcy (abonament Claude lub ChatGPT używany przez lokalny gateway), jest mierzony, ale nie zalicza mu się zmierzonych oszczędności, więc nie podlega prowizji.",
+      "elision": "Wartość tokenów wejściowych, które dostawca zgłasza jako usunięte z kontekstu, jest rejestrowana, ale nie wchodzi do podstawy prowizji.",
+      "tiersTitle": "Progi",
+      "tiersIntro": "Zmierzone oszczędności okresu są przeliczane na {currency} i dzielone na progi krańcowe, każdy z własną stawką:",
+      "colBand": "Zmierzone oszczędności w okresie",
+      "colRate": "Stawka",
+      "bandUpTo": "Do {hasta}",
+      "bandBetween": "Od {desde} do {hasta}",
+      "bandAbove": "Powyżej {desde}",
+      "ceiling": "Żaden próg nie przekracza {max}, więc przed zaokrągleniem prowizji do centa <b>zatrzymujesz co najmniej {garantia}</b> zmierzonych oszczędności okresu. Opłata za stanowisko jest osobno.",
+      "fx": "Zmierzone oszczędności są liczone w dolarach amerykańskich i przeliczane po kursie referencyjnym Europejskiego Banku Centralnego pobranym przy zamknięciu okresu; Twój wyciąg pokazuje zastosowany kurs.",
+      "rounding": "Prowizja jest zaokrąglana do najbliższego centa. Prowizja niższa niż {minimo} nie jest fakturowana ani przenoszona na inny okres.",
+      "zero": "Okres bez zmierzonych oszczędności <b>nie podlega prowizji</b>.",
+      "calculator": "Aby zobaczyć, co to oznacza dla Twojego ruchu, wypróbuj <calc>kalkulator</calc> na stronie głównej."
+    },
+    "calibration": {
+      "title": "Okres kalibracji",
+      "body": "<b>Pierwszy miesiąc kalendarzowy (UTC), w którym Twoja organizacja zgłasza jakiekolwiek użycie</b>, jest okresem kalibracji, niezależnie od tego, ile z niego zostało. Nie podlega prowizji, a jego wyciąg i tak pokazuje prowizję, która by obowiązywała."
+    },
+    "exemption": {
+      "title": "Zwolnienie z prowizji",
+      "body": "Prowizja nie jest naliczana za okres, który BiVelio zamyka, gdy Twoje konto jest z niej zwolnione. Konto jest zwolnione, gdy BiVelio przyzna mu zwolnienie oraz, do czasu dokonania płatności na koncie, gdy jego subskrypcję aktywowano kodem promocyjnym, który w całości znosi opłatę za stanowisko na cały okres jej trwania. Wyciąg i tak pokazuje prowizję, która by obowiązywała."
+    },
+    "statement": {
+      "title": "Wyciąg i faktura",
+      "body": "Prowizja jest obliczana za każdy miesiąc kalendarzowy (UTC). Po zakończeniu miesiąca BiVelio go zamyka: wyciąg za ten miesiąc w Twoim panelu zostaje zapieczętowany wraz ze zmierzoną podstawą, progami, kursem wymiany i wersją katalogu cen, a prowizja jest fakturowana na podstawie tego wyciągu przez Stripe, na fakturze odrębnej od opłaty za stanowisko."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Co opuszcza Twoją infrastrukturę · BV-SALA",
+    "metaDescription": "Dokładna lista tego, co SDK i lokalny gateway wysyłają do BiVelio, czego nigdy nie wysyłają i jak długo BiVelio to przechowuje.",
+    "eyebrow": "Prywatność",
+    "title": "Co opuszcza Twoją infrastrukturę",
+    "governs": "Ta strona opisuje, jak usługa działa dziś; wiążące są <license>LICENSE</license> i <terms>Warunki BiVelio</terms>.",
+    "lede": "Co Oprogramowanie (SDK i lokalny gateway) wysyła do BiVelio, czego nigdy nie wysyła i jak długo BiVelio to przechowuje.",
+    "never": {
+      "title": "Czego nigdy nie wysyła się do BiVelio",
+      "content": "<b>Treści Twoich żądań i odpowiedzi</b>: promptów, instrukcji systemowych, wiadomości, definicji narzędzi, argumentów i wyników narzędzi, pobranych dokumentów ani wygenerowanych odpowiedzi.",
+      "credentials": "<b>Danych uwierzytelniających, których używasz u dostawcy LLM</b>: kluczy API, tokenów OAuth ani innych nagłówków autoryzacji.",
+      "path": "Ta treść i te dane uwierzytelniające przechodzą wyłącznie między Twoimi systemami a skonfigurowanym dostawcą LLM."
+    },
+    "usage": {
+      "title": "Rekordy użycia",
+      "when": "SDK wysyła rekordy użycia tylko wtedy, gdy skonfigurujesz serwer licencji lub adres URL pomiaru; lokalny gateway robi to zawsze. Każda paczka zawiera Twój klucz konta usługi BiVelio, który identyfikuje Twoją organizację, oraz powierzchnię i wersję Oprogramowania w nagłówku <b>{header}</b>.",
+      "limit": "Każdy rekord ogranicza się do poniższych pól. <b>Pobieranie danych w BiVelio odrzuca każdy rekord zawierający pole spoza tej listy.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identyfikatory",
+          "body": "Identyfikator żądania wygenerowany po Twojej stronie (losowo lub przez Twój własny generator). Dla powtórzonego żądania wycenionego przez odniesienie: identyfikator i czas wcześniejszego żądania, którego licznik dostawcy jest używany. Identyfikator stanowiska: wartość, którą ustawiasz sam, albo nieprzejrzysta wartość obliczana na Twojej maszynie jako skrót z kluczem (HMAC), z Twoim kluczem konta usługi jako kluczem, z platformy, architektury procesora, ścieżki pliku wykonywalnego, nazwy hosta, nazwy użytkownika systemu operacyjnego i katalogu domowego; te wartości nigdy nie są wysyłane. Przez lokalny gateway: identyfikatory sesji i podagenta, które Twój agent programistyczny dołącza do własnych żądań (na przykład id sesji Claude Code), tylko gdy są to proste identyfikatory. Wskazówka dotycząca organizacji (BiVelio zawsze ustala Twoją organizację na podstawie klucza). Znacznik runnerów CI lub efemerycznych."
+        },
+        "model": {
+          "title": "Model i czas",
+          "body": "Identyfikator modelu, który obsłużył żądanie: modelu wskazanego w żądaniu albo, jeśli Oprogramowanie wysłało żądanie do innego modelu na podstawie włączonego przez Ciebie ustawienia, tego modelu; dla wdrożenia własnego lub w Azure nazwa, którą mu nadałeś. Oraz czas żądania."
+        },
+        "counts": {
+          "title": "Liczniki",
+          "body": "Wykonane i uniknięte wywołania LLM; tokeny wejściowe i wyjściowe przed optymalizacjami Oprogramowania i po nich, w tym tokeny usunięte, skompresowane lub odczytane z pamięci podręcznej dostawcy; oraz wynik pamięci podręcznej."
+        },
+        "cost": {
+          "title": "Koszt",
+          "body": "Wartości kosztów obliczane przez Oprogramowanie z jego katalogu cen lub z dostarczonego przez Ciebie modelu kosztów: koszt bazowy, koszt rzeczywisty, wskaźnik oszczędności netto, podstawa wartości (measured, reference, estimated, shadow lub unmeasured) oraz wartość, po cenie odczytu z pamięci podręcznej dostawcy, tokenów wejściowych, które dostawca zgłosił jako usunięte z kontekstu."
+        }
+      }
+    },
+    "verification": {
+      "title": "Opcjonalna weryfikacja (tylko SDK, domyślnie wyłączona)",
+      "when": "Jeśli włączysz opcję weryfikacji w SDK, SDK wysyła ponownie do Twojego dostawcy próbkę obsłużonych żądań, bez optymalizacji, i odrzuca tę drugą odpowiedź. Dla każdego żądania z próbki wysyła do BiVelio <b>osobnym kanałem wyłącznie poniższe pola</b>; ten kanał również odrzuca każde inne pole, a nic z tego, co otrzymuje, nie służy do obliczania prowizji.",
+      "groups": {
+        "sample": {
+          "title": "Każde żądanie z próbki",
+          "body": "Etykieta verification, identyfikator i czas żądania; model żądany i model, który odpowiedział; wynik pamięci podręcznej; kategoria żądania i wynik sprawdzenia; tokeny wejściowe, wejściowe z pamięci podręcznej i wyjściowe oraz koszt obsłużonego żądania i niezoptymalizowanej kopii; jak zakończyła się kopia i czy spełniła kontrakt odpowiedzi; oraz zastosowane ceny za token."
+        },
+        "counts": {
+          "title": "Dzienne liczniki",
+          "body": "Dla każdego dnia liczba żądań w każdej kategorii, w tym tych wyłączonych ze sprawdzenia."
+        },
+        "batch": {
+          "title": "Każda paczka",
+          "body": "Losowy identyfikator paczki, służący do odrzucania duplikatów, oraz dwie powyższe listy."
+        }
+      }
+    },
+    "other": {
+      "title": "Inne żądania do BiVelio",
+      "body": "Oprogramowanie pobiera też swój aktualny token licencji i podpisaną listę unieważnionych licencji, a lokalny gateway pobiera uprawnienia funkcji Twojej organizacji. Te żądania zawierają Twój klucz konta usługi tam, gdzie wymagane jest uwierzytelnienie, i żadnych danych żądań.",
+      "network": "Jak każde żądanie HTTPS, wszystko to ujawnia ponadto zwykłe metadane sieciowe, takie jak Twój adres IP."
+    },
+    "retention": {
+      "title": "Co BiVelio przechowuje i jak długo",
+      "intro": "Pobieranie danych dodaje każdy rekord użycia do sum dziennych: na dzień, na model, na stanowisko i na sesję gatewaya. Pojedyncze wiersze są przechowywane tylko w poniższych miejscach, a codzienne zadanie usuwa każdy wiersz, gdy przekroczy swój termin:",
+      "items": {
+        "seen": "Identyfikatory żądań, przechowywane do odrzucania zduplikowanych rekordów: {dias} dni.",
+        "reference": "Powtórzone żądania wycenione przez odniesienie (identyfikatory żądań, model, czas i użyty licznik dostawcy), czyli wiersze pobierane z Twojego wyciągu: {dias} dni.",
+        "verificationSamples": "Próbki weryfikacji i ich dzienne liczniki: {dias} dni.",
+        "verificationBatches": "Identyfikatory paczek weryfikacji: {dias} dni."
+      },
+      "noSchedule": "Sumy dzienne, aktywność stanowisk i Twoje zapieczętowane wyciągi nie mają dziś terminu automatycznego usuwania."
+    },
+    "use": {
+      "title": "Do czego BiVelio ich używa",
+      "body": "Do obsługi licencji i unieważnień, pokazywania Twojego panelu, liczenia używanych stanowisk i obliczania opłat opisanych na <pricing>stronie z cennikiem</pricing>."
+    },
+    "account": {
+      "title": "Twoje konto w tym serwisie",
+      "body": "Twój adres e-mail do logowania, Twoja organizacja i dane rozliczeniowe (płatności obsługuje Stripe) podlegają <policy>polityce prywatności BiVelio</policy>."
+    },
+    "contact": "Pytania i wnioski dotyczące tych danych: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Nie znaleziono strony · BiVelio Savings Layer",

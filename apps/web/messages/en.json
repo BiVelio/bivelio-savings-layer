@@ -882,7 +882,7 @@
       "amount": "{amount}",
       "per": "/ seat / month",
       "proNote": "<b>PRO</b> — billed per seat. Or <b>{yearly} / seat / year</b> (save ~19%). Enterprise, with packaged features, comes later.",
-      "seatNote": "A seat is one active <b>machine or service identity</b>, not a person — billed only if active on 3+ days in a month. CI and ephemeral runners don't count.",
+      "seatNote": "A seat is one <b>machine or service identity</b>, not a person. You pay for the seats your subscription covers; your dashboard shows how many were in use this month (active on at least {dias} days; CI and ephemeral runners don't count).",
       "features": [
         "Every BV‑SALA optimization, uncapped",
         "A receipt per request: SavingsReport with four ledgers, measured and estimated kept apart",
@@ -939,7 +939,9 @@
       "andorra": "From Andorra to the world 🇦🇩",
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Terms",
-      "howItWorks": "How it works"
+      "howItWorks": "How it works",
+      "pricingTerms": "Pricing terms",
+      "dataPrivacy": "What BiVelio receives"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -969,8 +971,8 @@
       "extraCero": "nothing",
       "notaGarantia": "Commission only on measured savings — and you always keep {garantia} or more of them. Seats are billed apart, every month.",
       "notaTramos": "Tiered, each bracket at its own rate: {tramos}. The more you save, the lower our percentage.",
-      "notaPrimerMesLead": "Your first month: seat only.",
-      "notaPrimerMes": "We measure everything, calibrate on your real load, and you'll see the exact statement of what it would have cost — without being charged.",
+      "notaPrimerMesLead": "Your first calendar month with usage: seat only.",
+      "notaPrimerMes": "It is your calibration period, however little of that month remains: we measure everything, and you'll see the exact statement of what it would have cost — without being charged.",
       "version": "SDK catalog prices, version {fecha}. An estimate: your statement will use your measured usage.",
       "cargando": "Loading the price catalog…",
       "badge": "Estimate",
@@ -981,7 +983,7 @@
     },
     "formula": {
       "title": "How what you pay us is calculated",
-      "mes1": "<b>Your first month: only {precioMes} per seat.</b> We measure everything and charge no commission — at close you'll see the exact statement of what it would have cost.",
+      "mes1": "<b>Your first calendar month with usage (UTC): the seat fee only.</b> We measure everything and charge no commission, however little of that month remains — at close you'll see the exact statement of what it would have cost.",
       "medido": "After that, commission only on <b>measured savings</b>: the kind you can reconcile against your provider's invoice. Estimated savings are never billed.",
       "garantia": "And <b>you always keep {garantia} or more</b> of every euro saved: the commission only exists when your measured savings exist.",
       "tramos": "<b>Tiered, each bracket at its own rate</b> — {tramos}. The more you save, the lower our percentage.",
@@ -1175,6 +1177,138 @@
     "ctaVerify": "See the measured savings",
     "ctaSignup": "Create account",
     "ctaInstall": "Go to the install guide"
+  },
+  "pricingPage": {
+    "metaTitle": "Pricing terms · BV-SALA",
+    "metaDescription": "The seat fee and the commission on measured savings, published from the same constants that bill you.",
+    "eyebrow": "Published pricing",
+    "title": "Pricing terms",
+    "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
+    "lede": "Every figure on this page is read from the code that bills you, so it changes when the price changes.",
+    "seat": {
+      "title": "The seat fee",
+      "amount": "<b>{monthly}</b> per seat per month, or <b>{yearly}</b> per seat per year, in {currency}.",
+      "cycle": "The seat fee is billed through Stripe for each monthly or yearly cycle of your subscription, counted from the day it starts.",
+      "paidAlways": "The seat fee is paid <b>whether or not the Software produces any saving</b>.",
+      "vat": "Amounts exclude VAT. Checkout asks for your billing address and, optionally, your VAT number; both are printed on your invoice.",
+      "whatTitle": "What a seat is",
+      "what": "A seat is one <b>machine or service identity</b> that runs the Software, not a person. You choose how many seats your subscription covers (up to {max} at checkout), and your license covers that many.",
+      "counted": "Each calendar month (UTC), BiVelio counts as in use every distinct seat identifier that was active on at least {dias} different days of that month. Identities flagged as CI or ephemeral runners are not counted. Your dashboard compares that count with the seats your subscription covers.",
+      "identifier": "How a seat identifier is formed, and everything else the Software sends to BiVelio, is on the <privacy>privacy page</privacy>."
+    },
+    "commission": {
+      "title": "The commission on measured savings",
+      "only": "A commission is charged <b>only on measured savings</b>: savings labelled {labels} in your usage records. Savings labelled {never} never carry commission.",
+      "measured": "A measured saving is established from your LLM provider's own usage counter for that request.",
+      "reference": "A reference saving, for a repeated request the Software served without calling your provider, is established from your provider's counter for the identical earlier request that did run, under the rule shown on your statement ({regla}).",
+      "valued": "Both are valued at the per-token prices the Software applied to that request: those of a cost model you configure, where you configure one, and otherwise your provider's list prices in the price catalogue included in the Software.",
+      "flatRate": "Traffic the Software identifies as a flat-rate provider subscription (a Claude or ChatGPT subscription used through the local gateway) is metered but credited no measured saving, so it carries no commission.",
+      "elision": "The value of input tokens your provider reports as cleared from context is recorded, but it is not part of the commission base.",
+      "tiersTitle": "Tiers",
+      "tiersIntro": "The period's measured savings are converted to {currency} and split into marginal tiers, each charged at its own rate:",
+      "colBand": "Measured savings in the period",
+      "colRate": "Rate",
+      "bandUpTo": "Up to {hasta}",
+      "bandBetween": "From {desde} to {hasta}",
+      "bandAbove": "Above {desde}",
+      "ceiling": "No tier's rate exceeds {max}, so before the commission is rounded to the cent <b>you keep at least {garantia}</b> of the period's measured savings. The seat fee is separate.",
+      "fx": "Measured savings are counted in US dollars and converted at the European Central Bank reference rate fetched when the period is closed; your statement shows the rate used.",
+      "rounding": "The commission is rounded to the nearest cent. A commission below {minimo} is not invoiced and is not carried over to another period.",
+      "zero": "A period with no measured savings carries <b>no commission</b>.",
+      "calculator": "To see what this means for your own traffic, try the <calc>calculator</calc> on the home page."
+    },
+    "calibration": {
+      "title": "Calibration period",
+      "body": "The <b>first calendar month (UTC) in which your organization reports any usage</b> is a calibration period, however little of that month remains. It carries no commission, and its statement still shows the commission that would have applied."
+    },
+    "exemption": {
+      "title": "Exemption from the commission",
+      "body": "No commission is charged for a period that BiVelio closes while your account is exempt from it. An account is exempt when BiVelio grants it an exemption and, until a payment is made on the account, when its subscription was activated with a promotional code that waives the seat fee in full for its entire term. The statement still shows the commission that would have applied."
+    },
+    "statement": {
+      "title": "Statement and invoice",
+      "body": "The commission is calculated per calendar month (UTC). After a month ends, BiVelio closes it: your dashboard's statement for that month is sealed with the measured base, the tiers, the exchange rate and the price-catalogue version, and the commission is invoiced from that statement through Stripe, on an invoice separate from the seat fee."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "What leaves your infrastructure · BV-SALA",
+    "metaDescription": "The exact list of what the SDK and the local gateway send to BiVelio, what they never send, and how long BiVelio keeps it.",
+    "eyebrow": "Privacy",
+    "title": "What leaves your infrastructure",
+    "governs": "This page describes how the service works today; the <license>LICENSE</license> and the <terms>BiVelio Terms</terms> govern.",
+    "lede": "What the Software (the SDK and the local gateway) sends to BiVelio, what it never sends, and how long BiVelio keeps it.",
+    "never": {
+      "title": "Never sent to BiVelio",
+      "content": "<b>The content of your requests and responses</b>: prompts, system instructions, messages, tool definitions, tool arguments and results, retrieved documents, and completions.",
+      "credentials": "<b>The credentials you use with your LLM provider</b>: API keys, OAuth tokens, or other authorization headers.",
+      "path": "That content and those credentials travel only between your systems and the LLM provider you configure."
+    },
+    "usage": {
+      "title": "Usage records",
+      "when": "The SDK sends usage records only when you configure a license server or metering URL; the local gateway always does. Each batch carries your BiVelio service-account key, which identifies your organization, and the Software's surface and version in the <b>{header}</b> header.",
+      "limit": "Each record is limited to the fields below. <b>BiVelio's ingest rejects any record that carries a field not on this list.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identifiers",
+          "body": "A request identifier generated on your side (at random, or by your own generator). For a repeated request valued by reference, the identifier and time of the earlier request whose provider counter is used. A seat identifier: a value you set, or an opaque value computed on your machine as a keyed hash (HMAC), keyed with your service-account key, of the platform, CPU architecture, runtime executable path, host name, operating-system user name and home directory; those underlying values are never sent. Through the local gateway, the session and sub-agent identifiers your coding agent attaches to its own requests (for example, Claude Code's session id), only when they are plain identifiers. An organization hint (BiVelio always derives your organization from the key). A flag marking CI or ephemeral runners."
+        },
+        "model": {
+          "title": "Model and time",
+          "body": "The identifier of the model that served the request: the model named in the request or, where the Software sent the request to another model under a setting you enabled, that model; for a self-hosted or Azure deployment, the name you gave it. And the time of the request."
+        },
+        "counts": {
+          "title": "Counts",
+          "body": "LLM calls executed and avoided; input and output tokens before and after the Software's optimizations, including tokens removed, compressed, or read from the provider's cache; and the cache outcome."
+        },
+        "cost": {
+          "title": "Cost",
+          "body": "Cost figures computed by the Software from its price catalogue, or from a cost model you supply: baseline cost, actual cost, the net-saving ratio, the basis of the figures (measured, reference, estimated, shadow or unmeasured), and the value, at the provider's cache-read price, of input tokens your provider reported as cleared from context."
+        }
+      }
+    },
+    "verification": {
+      "title": "Optional verification (SDK only, off by default)",
+      "when": "If you turn on the SDK's verification option, the SDK sends a sample of the requests it served to your own provider again, without optimization, and discards that second response. For each sampled request it sends BiVelio, <b>through a separate channel, only the fields below</b>; that channel also rejects any other field, and nothing it receives is used to calculate the commission.",
+      "groups": {
+        "sample": {
+          "title": "Each sampled request",
+          "body": "The label verification, the request identifier and time; the model requested and the model that served; the cache outcome; the category of the request and the outcome of the check; the input, cached-input and output tokens and the cost of the served request and of the unoptimized copy; how the copy finished and whether it met the response contract; and the per-token prices applied."
+        },
+        "counts": {
+          "title": "Daily counts",
+          "body": "For each day, the number of requests in each category, including the requests excluded from the check."
+        },
+        "batch": {
+          "title": "Each batch",
+          "body": "A random batch identifier, used to discard duplicates, and the two lists above."
+        }
+      }
+    },
+    "other": {
+      "title": "Other requests to BiVelio",
+      "body": "The Software also fetches its current license token and the signed license revocation list, and the local gateway fetches your organization's feature entitlements. These requests carry your service-account key where authentication is required, and no request data.",
+      "network": "Like any HTTPS request, all of the above also reveals ordinary network metadata, such as your IP address."
+    },
+    "retention": {
+      "title": "What BiVelio keeps, and for how long",
+      "intro": "The ingest adds each usage record to daily totals: per day, per model, per seat and per gateway session. Individual rows are kept only in the places below, and a daily job deletes each row once it is older than its period:",
+      "items": {
+        "seen": "Request identifiers, kept to discard duplicate records: {dias} days.",
+        "reference": "Repeated requests valued by reference (request identifiers, model, time and the provider counter used), the rows behind your statement's download: {dias} days.",
+        "verificationSamples": "Verification samples and their daily counts: {dias} days.",
+        "verificationBatches": "Verification batch identifiers: {dias} days."
+      },
+      "noSchedule": "Daily totals, seat activity and your sealed statements have no automatic deletion schedule today."
+    },
+    "use": {
+      "title": "What BiVelio uses it for",
+      "body": "To operate licensing and revocation, show your dashboard, count seats in use, and calculate the fees described on the <pricing>pricing page</pricing>."
+    },
+    "account": {
+      "title": "Your account on this website",
+      "body": "Your sign-in e-mail, your organization and your billing details (payments are processed by Stripe) are covered by <policy>BiVelio's privacy policy</policy>."
+    },
+    "contact": "Questions and requests about this data: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Page not found · BiVelio Savings Layer",

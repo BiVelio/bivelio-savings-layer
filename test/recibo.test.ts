@@ -77,7 +77,11 @@ describe("recibo · la honestidad", () => {
   it("lleva la garantía, el suelo de cero y la promesa de privacidad", () => {
     expect(texto).toMatch(/90 % de cada euro/);
     expect(texto).toMatch(/Un mes sin ahorro es un mes sin comisión: 0 €/);
-    expect(texto).toMatch(/prompts no salen de tu máquina/);
+    // La promesa exacta de la LICENSE §5: nunca llegan A BIVELIO (sí al
+    // proveedor), y lo que sube no son «solo conteos y coste».
+    expect(texto).toMatch(/prompts, respuestas y claves del proveedor nunca llegan/);
+    expect(texto).toMatch(/LICENSE §5/);
+    expect(texto).not.toMatch(/no salen de tu máquina|solo suben/);
   });
 
   it("es auditable: cita versión de precios, de gateway y a quién reclamar", () => {

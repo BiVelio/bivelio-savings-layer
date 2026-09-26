@@ -124,7 +124,15 @@ export default async function Footer() {
   ];
   // El corpus legal COMPLETO de bivelio.com, no un extracto: seis documentos
   // más el centro legal que los agrupa.
-  const legal: string[][] = LEGAL_DOCS.map((d) => [t(`footer.${d.key}`), corporateUrl(d.path, locale)]);
+  //
+  // Delante van las dos páginas de ESTE producto que cita la LICENSE: los
+  // términos de precio (§6, «Published Pricing») y lo que sale de la
+  // infraestructura del cliente (§5). Son rutas propias, no de bivelio.com.
+  const legal: string[][] = [
+    [t("footer.pricingTerms"), "/pricing"],
+    [t("footer.dataPrivacy"), "/privacy"],
+    ...LEGAL_DOCS.map((d) => [t(`footer.${d.key}`), corporateUrl(d.path, locale)]),
+  ];
 
   return (
     <footer className="ftr">

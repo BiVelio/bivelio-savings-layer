@@ -882,7 +882,7 @@
       "amount": "{amount}",
       "per": "/ seat / maand",
       "proNote": "<b>PRO</b> — gefactureerd per seat. Of <b>{yearly} / seat / jaar</b> (bespaar ~19%). Enterprise, met gebundelde functies, komt later.",
-      "seatNote": "Een seat is één actieve <b>machine- of service-identiteit</b>, geen persoon — alleen gefactureerd bij activiteit op 3+ dagen in een maand. CI en kortstondige runners tellen niet mee.",
+      "seatNote": "Een seat is één <b>machine- of service-identiteit</b>, geen persoon. Je betaalt voor de seats die je abonnement dekt; je dashboard toont hoeveel er deze maand in gebruik waren (actief op minstens {dias} dagen; CI en kortstondige runners tellen niet mee).",
       "features": [
         "Elke BV‑SALA-optimalisatie, ongelimiteerd",
         "Een bon per verzoek: SavingsReport met vier grootboeken, gemeten en geschat apart",
@@ -939,7 +939,9 @@
       "andorra": "Van Andorra naar de wereld 🇦🇩",
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Voorwaarden",
-      "howItWorks": "Hoe het werkt"
+      "howItWorks": "Hoe het werkt",
+      "pricingTerms": "Prijsvoorwaarden",
+      "dataPrivacy": "Wat BiVelio ontvangt"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -969,8 +971,8 @@
       "extraCero": "niets",
       "notaGarantia": "Commissie alleen over gemeten besparing — en je houdt er altijd {garantia} of meer van. Seats worden apart gefactureerd, elke maand.",
       "notaTramos": "In schijven, elk tegen zijn eigen tarief: {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
-      "notaPrimerMesLead": "Je eerste maand: alleen de seat.",
-      "notaPrimerMes": "We meten alles, kalibreren op je echte belasting, en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
+      "notaPrimerMesLead": "Je eerste kalendermaand met gebruik: alleen de seat.",
+      "notaPrimerMes": "Het is je kalibratieperiode, hoe weinig er ook van die maand over is: we meten alles en je ziet het exacte afschrift van wat het gekost zou hebben — zonder dat het wordt afgeschreven.",
       "version": "SDK-catalogusprijzen, versie {fecha}. Een schatting: je afschrift gebruikt je gemeten gebruik.",
       "cargando": "Prijscatalogus laden…",
       "badge": "Schatting",
@@ -981,7 +983,7 @@
     },
     "formula": {
       "title": "Hoe wat je ons betaalt wordt berekend",
-      "mes1": "<b>Je eerste maand: alleen {precioMes} per seat.</b> We meten alles en rekenen geen commissie — bij afsluiting zie je het exacte afschrift van wat het gekost zou hebben.",
+      "mes1": "<b>Je eerste kalendermaand met gebruik (UTC): alleen de vergoeding per seat.</b> We meten alles en rekenen geen commissie, hoe weinig er ook van die maand over is — bij afsluiting zie je het exacte afschrift van wat het gekost zou hebben.",
       "medido": "Daarna commissie alleen over de <b>gemeten besparing</b>: die je kunt afstemmen met de factuur van je provider. Geschat wordt nooit gefactureerd.",
       "garantia": "En <b>je houdt altijd {garantia} of meer</b> van elke bespaarde euro: de commissie bestaat alleen als jouw gemeten besparing bestaat.",
       "tramos": "<b>In schijven, elk tegen zijn eigen tarief</b> — {tramos}. Hoe meer je bespaart, hoe lager ons percentage.",
@@ -1175,6 +1177,138 @@
     "ctaVerify": "Bekijk de gemeten besparing",
     "ctaSignup": "Account aanmaken",
     "ctaInstall": "Naar de installatiegids"
+  },
+  "pricingPage": {
+    "metaTitle": "Prijsvoorwaarden · BV-SALA",
+    "metaDescription": "De vergoeding per seat en de commissie over gemeten besparing, gepubliceerd vanuit dezelfde constanten die factureren.",
+    "eyebrow": "Gepubliceerde prijzen",
+    "title": "Prijsvoorwaarden",
+    "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
+    "lede": "Elk getal hier wordt gelezen uit dezelfde code die jou factureert, dus het verandert wanneer de prijs verandert.",
+    "seat": {
+      "title": "De vergoeding per seat",
+      "amount": "<b>{monthly}</b> per seat per maand, of <b>{yearly}</b> per seat per jaar, in {currency}.",
+      "cycle": "De vergoeding per seat wordt via Stripe gefactureerd voor elke maandelijkse of jaarlijkse cyclus van je abonnement, gerekend vanaf de dag waarop het begint.",
+      "paidAlways": "De vergoeding per seat wordt betaald <b>of de Software nu besparing oplevert of niet</b>.",
+      "vat": "De bedragen zijn exclusief btw. Bij het afrekenen wordt om je factuuradres en, optioneel, je btw-nummer gevraagd; beide staan op je factuur.",
+      "whatTitle": "Wat een seat is",
+      "what": "Een seat is één <b>machine- of service-identiteit</b> waarop de Software draait, geen persoon. Je kiest zelf hoeveel seats je abonnement dekt (tot {max} bij het afrekenen), en je licentie dekt er evenveel.",
+      "counted": "Elke kalendermaand (UTC) telt BiVelio elke afzonderlijke seat-ID als in gebruik die op minstens {dias} verschillende dagen van die maand actief was. Identiteiten die als CI of kortstondige runner zijn gemarkeerd, tellen niet mee. Je dashboard vergelijkt dat aantal met de seats die je abonnement dekt.",
+      "identifier": "Hoe een seat-ID wordt gevormd, en alles wat de Software verder naar BiVelio stuurt, staat op de <privacy>privacypagina</privacy>."
+    },
+    "commission": {
+      "title": "De commissie over gemeten besparing",
+      "only": "Er wordt <b>alleen commissie berekend over gemeten besparing</b>: besparing die in je gebruiksrecords als {labels} is gelabeld. Besparing gelabeld als {never} draagt nooit commissie.",
+      "measured": "Een gemeten besparing volgt uit de eigen gebruiksteller van je LLM-provider voor dat verzoek.",
+      "reference": "Een besparing via referentie, voor een herhaald verzoek dat de Software beantwoordde zonder je provider aan te roepen, volgt uit de teller van je provider voor het identieke eerdere verzoek dat wel is uitgevoerd, volgens de regel die op je afschrift staat ({regla}).",
+      "valued": "Beide worden gewaardeerd tegen de prijzen per token die de Software op dat verzoek toepaste: die van een kostenmodel dat je configureert, als je er een configureert, en anders de lijstprijzen van je provider in de prijscatalogus die met de Software wordt meegeleverd.",
+      "flatRate": "Verkeer dat de Software herkent als een vast-tariefabonnement van een provider (een Claude- of ChatGPT-abonnement dat via de lokale gateway wordt gebruikt) wordt gemeten, maar krijgt geen gemeten besparing toegekend, en draagt dus geen commissie.",
+      "elision": "De waarde van invoertokens die je provider meldt als uit de context verwijderd, wordt vastgelegd, maar hoort niet bij de grondslag van de commissie.",
+      "tiersTitle": "Schijven",
+      "tiersIntro": "De gemeten besparing van de periode wordt omgerekend naar {currency} en verdeeld over marginale schijven, elk tegen een eigen tarief:",
+      "colBand": "Gemeten besparing in de periode",
+      "colRate": "Tarief",
+      "bandUpTo": "Tot {hasta}",
+      "bandBetween": "Van {desde} tot {hasta}",
+      "bandAbove": "Boven {desde}",
+      "ceiling": "Geen enkele schijf gaat boven {max}, dus vóór het afronden van de commissie op de cent <b>houd je minstens {garantia}</b> van de gemeten besparing van de periode over. De vergoeding per seat komt daar los bij.",
+      "fx": "Gemeten besparing wordt geteld in Amerikaanse dollars en omgerekend tegen de referentiekoers van de Europese Centrale Bank die bij het afsluiten van de periode wordt opgehaald; je afschrift toont de gebruikte koers.",
+      "rounding": "De commissie wordt afgerond op de dichtstbijzijnde cent. Een commissie onder {minimo} wordt niet gefactureerd en niet naar een andere periode overgedragen.",
+      "zero": "Een periode zonder gemeten besparing draagt <b>geen commissie</b>.",
+      "calculator": "Wil je zien wat dit betekent voor je eigen verkeer, probeer dan de <calc>calculator</calc> op de homepage."
+    },
+    "calibration": {
+      "title": "Kalibratieperiode",
+      "body": "De <b>eerste kalendermaand (UTC) waarin je organisatie gebruik meldt</b> is een kalibratieperiode, hoe weinig er ook van die maand over is. Die draagt geen commissie, en het afschrift toont toch de commissie die van toepassing zou zijn geweest."
+    },
+    "exemption": {
+      "title": "Vrijstelling van de commissie",
+      "body": "Er wordt geen commissie berekend over een periode die BiVelio afsluit terwijl je account ervan is vrijgesteld. Een account is vrijgesteld wanneer BiVelio het een vrijstelling verleent en, totdat er een betaling op het account is gedaan, wanneer het abonnement is geactiveerd met een promotiecode die de vergoeding per seat volledig kwijtscheldt voor de hele looptijd. Het afschrift toont toch de commissie die van toepassing zou zijn geweest."
+    },
+    "statement": {
+      "title": "Afschrift en factuur",
+      "body": "De commissie wordt per kalendermaand (UTC) berekend. Na afloop van een maand sluit BiVelio die af: het afschrift van die maand in je dashboard wordt verzegeld met de gemeten grondslag, de schijven, de wisselkoers en de versie van de prijscatalogus, en de commissie wordt op basis van dat afschrift via Stripe gefactureerd, op een aparte factuur, los van de vergoeding per seat."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Wat je infrastructuur verlaat · BV-SALA",
+    "metaDescription": "De exacte lijst van wat de SDK en de lokale gateway naar BiVelio sturen, wat ze nooit sturen en hoe lang BiVelio het bewaart.",
+    "eyebrow": "Privacy",
+    "title": "Wat je infrastructuur verlaat",
+    "governs": "Deze pagina beschrijft hoe de dienst vandaag werkt; de <license>LICENSE</license> en de <terms>BiVelio-voorwaarden</terms> zijn leidend.",
+    "lede": "Wat de Software (de SDK en de lokale gateway) naar BiVelio stuurt, wat ze nooit stuurt en hoe lang BiVelio het bewaart.",
+    "never": {
+      "title": "Wat nooit naar BiVelio gaat",
+      "content": "<b>De inhoud van je verzoeken en antwoorden</b>: prompts, systeeminstructies, berichten, tooldefinities, toolargumenten en -resultaten, opgehaalde documenten en gegenereerde antwoorden.",
+      "credentials": "<b>De inloggegevens die je bij je LLM-provider gebruikt</b>: API-sleutels, OAuth-tokens of andere autorisatieheaders.",
+      "path": "Die inhoud en die inloggegevens gaan alleen tussen je eigen systemen en de LLM-provider die je configureert."
+    },
+    "usage": {
+      "title": "Gebruiksrecords",
+      "when": "De SDK stuurt alleen gebruiksrecords als je een licentieserver of meet-URL configureert; de lokale gateway doet dat altijd. Elke batch bevat je BiVelio-serviceaccountsleutel, die je organisatie identificeert, en het oppervlak en de versie van de Software in de header <b>{header}</b>.",
+      "limit": "Elk record is beperkt tot de velden hieronder. <b>De ingest van BiVelio weigert elk record met een veld dat niet op deze lijst staat.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identificatoren",
+          "body": "Een verzoek-ID die aan jouw kant wordt aangemaakt (willekeurig, of door je eigen generator). Bij een herhaald verzoek dat via referentie wordt gewaardeerd: de ID en het tijdstip van het eerdere verzoek waarvan de providerteller wordt gebruikt. Een seat-ID: een waarde die je zelf instelt, of een ondoorzichtige waarde die op je machine wordt berekend als een hash met sleutel (HMAC), met je serviceaccountsleutel als sleutel, over het platform, de CPU-architectuur, het pad van het uitvoerbare bestand, de hostnaam, de gebruikersnaam van het besturingssysteem en de thuismap; die waarden worden nooit verstuurd. Via de lokale gateway de sessie- en subagent-ID's die je coding agent aan zijn eigen verzoeken toevoegt (bijvoorbeeld de sessie-ID van Claude Code), alleen als het eenvoudige ID's zijn. Een organisatiehint (BiVelio leidt je organisatie altijd af uit de sleutel). Een markering voor CI- of kortstondige runners."
+        },
+        "model": {
+          "title": "Model en tijdstip",
+          "body": "De ID van het model dat het verzoek beantwoordde: het model dat in het verzoek staat of, als de Software het verzoek door een instelling die jij hebt ingeschakeld naar een ander model stuurde, dat model; bij een eigen of Azure-deployment de naam die je het gaf. En het tijdstip van het verzoek."
+        },
+        "counts": {
+          "title": "Tellingen",
+          "body": "Uitgevoerde en vermeden LLM-aanroepen; invoer- en uitvoertokens vóór en na de optimalisaties van de Software, inclusief tokens die zijn verwijderd, gecomprimeerd of uit de cache van de provider gelezen; en het cacheresultaat."
+        },
+        "cost": {
+          "title": "Kosten",
+          "body": "Kostencijfers die de Software berekent uit haar prijscatalogus of uit een kostenmodel dat jij aanlevert: basiskosten, werkelijke kosten, de netto-besparingsratio, de grondslag van de cijfers (measured, reference, estimated, shadow of unmeasured) en de waarde, tegen de cache-leesprijs van de provider, van invoertokens die je provider als uit de context verwijderd meldde."
+        }
+      }
+    },
+    "verification": {
+      "title": "Optionele verificatie (alleen de SDK, standaard uit)",
+      "when": "Als je de verificatie-optie van de SDK inschakelt, stuurt de SDK een steekproef van de beantwoorde verzoeken opnieuw, zonder optimalisatie, naar je eigen provider en gooit dat tweede antwoord weg. Voor elk verzoek in de steekproef stuurt ze naar BiVelio <b>via een apart kanaal alleen de velden hieronder</b>; ook dat kanaal weigert elk ander veld, en niets van wat het ontvangt wordt gebruikt om de commissie te berekenen.",
+      "groups": {
+        "sample": {
+          "title": "Elk verzoek in de steekproef",
+          "body": "Het label verification, de ID en het tijdstip van het verzoek; het gevraagde en het antwoordende model; het cacheresultaat; de categorie van het verzoek en de uitkomst van de controle; de invoer-, gecachte invoer- en uitvoertokens en de kosten van het beantwoorde verzoek en van de niet-geoptimaliseerde kopie; hoe de kopie eindigde en of die het antwoordcontract naleefde; en de toegepaste prijzen per token."
+        },
+        "counts": {
+          "title": "Dagelijkse tellingen",
+          "body": "Per dag het aantal verzoeken in elke categorie, inclusief de verzoeken die buiten de controle vielen."
+        },
+        "batch": {
+          "title": "Elke batch",
+          "body": "Een willekeurige batch-ID, om duplicaten weg te gooien, en de twee lijsten hierboven."
+        }
+      }
+    },
+    "other": {
+      "title": "Andere verzoeken aan BiVelio",
+      "body": "De Software haalt ook haar geldige licentietoken en de ondertekende lijst van ingetrokken licenties op, en de lokale gateway haalt de functierechten van je organisatie op. Deze verzoeken bevatten je serviceaccountsleutel waar authenticatie nodig is, en geen verzoekgegevens.",
+      "network": "Zoals elk HTTPS-verzoek onthult dit alles bovendien gewone netwerkmetadata, zoals je IP-adres."
+    },
+    "retention": {
+      "title": "Wat BiVelio bewaart, en hoe lang",
+      "intro": "De ingest telt elk gebruiksrecord op bij dagtotalen: per dag, per model, per seat en per gatewaysessie. Afzonderlijke rijen worden alleen op de plekken hieronder bewaard, en een dagelijkse taak verwijdert elke rij zodra die ouder is dan de termijn:",
+      "items": {
+        "seen": "Verzoek-ID's, bewaard om dubbele records weg te gooien: {dias} dagen.",
+        "reference": "Herhaalde verzoeken die via referentie zijn gewaardeerd (verzoek-ID's, model, tijdstip en de gebruikte providerteller), de rijen achter de download van je afschrift: {dias} dagen.",
+        "verificationSamples": "Verificatiesteekproeven en hun dagelijkse tellingen: {dias} dagen.",
+        "verificationBatches": "Batch-ID's van de verificatie: {dias} dagen."
+      },
+      "noSchedule": "Dagtotalen, seat-activiteit en je verzegelde afschriften hebben vandaag geen automatische verwijdertermijn."
+    },
+    "use": {
+      "title": "Waarvoor BiVelio het gebruikt",
+      "body": "Om licenties en intrekkingen te beheren, je dashboard te tonen, seats in gebruik te tellen en de vergoedingen te berekenen die op de <pricing>prijspagina</pricing> staan."
+    },
+    "account": {
+      "title": "Je account op deze website",
+      "body": "Je inlog-e-mailadres, je organisatie en je factuurgegevens (betalingen worden verwerkt door Stripe) vallen onder het <policy>privacybeleid van BiVelio</policy>."
+    },
+    "contact": "Vragen en verzoeken over deze gegevens: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Pagina niet gevonden · BiVelio Savings Layer",

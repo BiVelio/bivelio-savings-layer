@@ -6,6 +6,14 @@
 > (self-serve trial + signup + billing at `savings.bivelio.com`) — **not** open-sourcing
 > the proprietary SDK.
 
+> **HISTÓRICO — no describe el producto de hoy (marcado el 2026-09-25).** Plan de julio
+> de 2026 que **no viaja a npm**. Sus menciones de «free tier», «self-serve trial» y
+> «never-brick / graceful-degrade» quedaron revocadas: BV‑SALA es de pago y
+> fail-closed, sin free tier ni prueba (LICENSE §1-§2; README «No free tier and no
+> trial»), con cuota por asiento en EUR más comisión por tramos solo sobre ahorro
+> medido (LICENSE §6), y lo que viaja a BiVelio está enumerado en la LICENSE §5. Se
+> conserva como registro.
+
 ## The wedge we are launching on
 
 **"Cut your LLM bill without switching providers or sending us a single prompt — and

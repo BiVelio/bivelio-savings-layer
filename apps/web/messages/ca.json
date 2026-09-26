@@ -882,7 +882,7 @@
       "amount": "{amount}",
       "per": "/ seient / mes",
       "proNote": "<b>PRO</b> — facturat per seient. O <b>{yearly} / seient / any</b> (estalvia ~19%). Enterprise, amb funcions empaquetades, arribarà més endavant.",
-      "seatNote": "Un seient és una <b>màquina o identitat de servei</b> activa, no una persona — facturat només si està actiu 3 dies o més en un mes. La CI i els executors efímers no compten.",
+      "seatNote": "Un seient és una <b>màquina o identitat de servei</b>, no una persona. Pagues els seients que cobreix la teva subscripció; el teu tauler mostra quants n'hi ha hagut en ús aquest mes (actius com a mínim {dias} dies; la CI i els executors efímers no compten).",
       "features": [
         "Cada optimització de BV‑SALA, sense límit",
         "Rebut per petició: SavingsReport amb quatre llibres comptables, mesurat i estimat per separat",
@@ -939,7 +939,9 @@
       "andorra": "D'Andorra al món 🇦🇩",
       "bottomPrivacy": "Privadesa",
       "bottomTerms": "Termes",
-      "howItWorks": "Com funciona"
+      "howItWorks": "Com funciona",
+      "pricingTerms": "Termes de preu",
+      "dataPrivacy": "Què rep BiVelio"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -969,8 +971,8 @@
       "extraCero": "res",
       "notaGarantia": "Comissió només sobre l'estalvi mesurat — i sempre et quedes amb el {garantia} o més. Els seients es cobren a part, cada mes.",
       "notaTramos": "Per trams, i cada tram al seu tipus: {tramos}. Com més estalvies, menor és el nostre percentatge.",
-      "notaPrimerMesLead": "El teu primer mes: només el seient.",
-      "notaPrimerMes": "Ho mesurem tot, calibrem amb la teva càrrega real i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
+      "notaPrimerMesLead": "El teu primer mes natural amb ús: només el seient.",
+      "notaPrimerMes": "És el teu període de calibratge, encara que en quedi poc: ho mesurem tot i veuràs l'extracte exacte del que hauria costat — sense cobrar-lo.",
       "version": "Preus del catàleg de l'SDK, versió {fecha}. Estimació: el teu extracte usarà el teu ús mesurat.",
       "cargando": "Carregant el catàleg de preus…",
       "badge": "Estimació",
@@ -981,7 +983,7 @@
     },
     "formula": {
       "title": "Com es calcula el que ens pagues",
-      "mes1": "<b>El teu primer mes: només {precioMes} per seient.</b> Ho mesurem tot i no cobrem comissió — al tancament veuràs l'extracte exacte del que hauria costat.",
+      "mes1": "<b>El teu primer mes natural amb ús (UTC): només la quota per seient.</b> Ho mesurem tot i no cobrem comissió, encara que en quedi poc — al tancament veuràs l'extracte exacte del que hauria costat.",
       "medido": "Després, comissió només sobre l'<b>estalvi mesurat</b>: el que pots contrastar amb la factura del teu proveïdor. L'estimat mai no es factura.",
       "garantia": "I <b>sempre et quedes amb el {garantia} o més</b> de cada euro estalviat: la comissió només existeix quan existeix el teu estalvi mesurat.",
       "tramos": "<b>Per trams, i cada tram al seu tipus</b> — {tramos}. Com més estalvies, menor és el nostre percentatge.",
@@ -1175,6 +1177,138 @@
     "ctaVerify": "Veure l'estalvi mesurat",
     "ctaSignup": "Crear compte",
     "ctaInstall": "Anar a la guia d'instal·lació"
+  },
+  "pricingPage": {
+    "metaTitle": "Termes de preu · BV-SALA",
+    "metaDescription": "La quota per seient i la comissió sobre l'estalvi mesurat, publicades des de les mateixes constants que cobren.",
+    "eyebrow": "Preus publicats",
+    "title": "Termes de preu",
+    "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
+    "lede": "Cada xifra que hi veus es llegeix del mateix codi que et cobra, així que canvia quan canvia el preu.",
+    "seat": {
+      "title": "La quota per seient",
+      "amount": "<b>{monthly}</b> per seient i mes, o <b>{yearly}</b> per seient i any, en {currency}.",
+      "cycle": "La quota per seient es cobra a través d'Stripe per cada cicle mensual o anual de la teva subscripció, comptat des del dia que comença.",
+      "paidAlways": "La quota per seient es paga <b>tant si hi ha estalvi com si no</b>.",
+      "vat": "Els imports no inclouen l'IVA. El pagament demana la teva adreça de facturació i, si vols, el teu NIF-IVA; tots dos surten a la factura.",
+      "whatTitle": "Què és un seient",
+      "what": "Un seient és una <b>màquina o identitat de servei</b> que executa el Software, no una persona. Tu tries quants seients cobreix la teva subscripció (fins a {max} en el pagament) i la teva llicència en cobreix aquests.",
+      "counted": "Cada mes natural (UTC), BiVelio compta com a en ús cada identificador de seient diferent que ha estat actiu com a mínim {dias} dies diferents d'aquell mes. Les identitats marcades com a CI o executors efímers no compten. El teu tauler compara aquest recompte amb els seients que cobreix la teva subscripció.",
+      "identifier": "Com es forma l'identificador de seient, i tota la resta que el Software envia a BiVelio, és a la <privacy>pàgina de privadesa</privacy>."
+    },
+    "commission": {
+      "title": "La comissió sobre l'estalvi mesurat",
+      "only": "Es cobra comissió <b>només sobre l'estalvi mesurat</b>: l'estalvi etiquetat {labels} als teus registres d'ús. L'estalvi etiquetat {never} mai no porta comissió.",
+      "measured": "Un estalvi mesurat surt del comptador d'ús del teu mateix proveïdor de LLM per a aquella petició.",
+      "reference": "Un estalvi per referència, en una petició repetida que el Software va servir sense cridar el teu proveïdor, surt del comptador del teu proveïdor per a la petició idèntica anterior que sí que es va executar, amb la regla que figura al teu extracte ({regla}).",
+      "valued": "Tots dos es valoren als preus per token que el Software va aplicar a aquella petició: els d'un model de costos que configuris, si en configures un, i si no, els preus de llista del teu proveïdor al catàleg de preus inclòs al Software.",
+      "flatRate": "El trànsit que el Software identifica com una subscripció de tarifa plana del proveïdor (una subscripció de Claude o de ChatGPT usada a través del gateway local) es mesura, però no se li acredita estalvi mesurat, així que no porta comissió.",
+      "elision": "El valor dels tokens d'entrada que el teu proveïdor declara esborrats del context es registra, però no forma part de la base de la comissió.",
+      "tiersTitle": "Trams",
+      "tiersIntro": "L'estalvi mesurat del període es converteix a {currency} i es reparteix en trams marginals, cadascun al seu propi tipus:",
+      "colBand": "Estalvi mesurat del període",
+      "colRate": "Tipus",
+      "bandUpTo": "Fins a {hasta}",
+      "bandBetween": "De {desde} a {hasta}",
+      "bandAbove": "Més de {desde}",
+      "ceiling": "Cap tram no supera el {max}, així que, abans d'arrodonir la comissió al cèntim, <b>et quedes com a mínim el {garantia}</b> de l'estalvi mesurat del període. La quota per seient va a part.",
+      "fx": "L'estalvi mesurat es compta en dòlars dels Estats Units i es converteix al tipus de referència del Banc Central Europeu obtingut en tancar el període; el teu extracte mostra el tipus aplicat.",
+      "rounding": "La comissió s'arrodoneix al cèntim més pròxim. Una comissió inferior a {minimo} no es factura ni es trasllada a un altre període.",
+      "zero": "Un període sense estalvi mesurat <b>no porta comissió</b>.",
+      "calculator": "Per veure què vol dir això amb el teu propi trànsit, prova la <calc>calculadora</calc> de la portada."
+    },
+    "calibration": {
+      "title": "Període de calibratge",
+      "body": "El <b>primer mes natural (UTC) en què la teva organització informa d'algun ús</b> és un període de calibratge, encara que en quedi poc. No porta comissió, i el seu extracte mostra igualment la comissió que s'hauria aplicat."
+    },
+    "exemption": {
+      "title": "Exempció de la comissió",
+      "body": "No es cobra comissió per un període que BiVelio tanca mentre el teu compte n'està exempt. Un compte està exempt quan BiVelio li concedeix una exempció i, fins que es fa un pagament al compte, quan la seva subscripció es va activar amb un codi promocional que eximeix la quota per seient sencera durant tota la seva vigència. L'extracte mostra igualment la comissió que s'hauria aplicat."
+    },
+    "statement": {
+      "title": "Extracte i factura",
+      "body": "La comissió es calcula per mes natural (UTC). Quan acaba un mes, BiVelio el tanca: l'extracte d'aquell mes al teu tauler queda segellat amb la base mesurada, els trams, el tipus de canvi i la versió del catàleg de preus, i la comissió es factura a partir d'aquell extracte a través d'Stripe, en una factura a banda de la quota per seient."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Què surt de la teva infraestructura · BV-SALA",
+    "metaDescription": "La llista exacta del que l'SDK i el gateway local envien a BiVelio, el que no envien mai i quant de temps ho guarda BiVelio.",
+    "eyebrow": "Privadesa",
+    "title": "Què surt de la teva infraestructura",
+    "governs": "Aquesta pàgina descriu com funciona el servei avui; regeixen la <license>LICENSE</license> i els <terms>Termes de BiVelio</terms>.",
+    "lede": "Què envia el Software (l'SDK i el gateway local) a BiVelio, què no envia mai i quant de temps ho guarda BiVelio.",
+    "never": {
+      "title": "El que no s'envia mai a BiVelio",
+      "content": "<b>El contingut de les teves peticions i respostes</b>: prompts, instruccions de sistema, missatges, definicions d'eines, arguments i resultats d'eines, documents recuperats i respostes generades.",
+      "credentials": "<b>Les credencials que fas servir amb el teu proveïdor de LLM</b>: claus d'API, tokens OAuth o altres capçaleres d'autorització.",
+      "path": "Aquest contingut i aquestes credencials només viatgen entre els teus sistemes i el proveïdor de LLM que configuris."
+    },
+    "usage": {
+      "title": "Registres d'ús",
+      "when": "L'SDK envia registres d'ús només quan configures un servidor de llicències o una URL de mesura; el gateway local, sempre. Cada lot porta la teva clau de compte de servei de BiVelio, que identifica la teva organització, i la superfície i la versió del Software a la capçalera <b>{header}</b>.",
+      "limit": "Cada registre es limita als camps de sota. <b>La ingesta de BiVelio rebutja qualsevol registre que porti un camp que no sigui en aquesta llista.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identificadors",
+          "body": "Un identificador de petició generat al teu costat (a l'atzar o amb el teu propi generador). En una petició repetida valorada per referència, l'identificador i l'instant de la petició anterior el comptador del proveïdor de la qual s'usa. Un identificador de seient: un valor que fixes tu, o un valor opac calculat a la teva màquina com un hash amb clau (HMAC), amb la teva clau de compte de servei com a clau, de la plataforma, l'arquitectura de CPU, la ruta de l'executable, el nom de la màquina, l'usuari del sistema operatiu i el directori personal; aquests valors no s'envien mai. A través del gateway local, els identificadors de sessió i de subagent que el teu agent de programació afegeix a les seves pròpies peticions (per exemple, l'id de sessió de Claude Code), només quan són identificadors simples. Una pista d'organització (BiVelio sempre deriva la teva organització de la clau). Una marca d'executors CI o efímers."
+        },
+        "model": {
+          "title": "Model i instant",
+          "body": "L'identificador del model que va atendre la petició: el que anomena la petició o, si el Software la va enviar a un altre model amb un ajust que vas activar, aquest altre; en un desplegament propi o d'Azure, el nom que li vas donar. I l'instant de la petició."
+        },
+        "counts": {
+          "title": "Recomptes",
+          "body": "Crides al LLM executades i evitades; tokens d'entrada i de sortida abans i després de les optimitzacions del Software, inclosos els tokens eliminats, comprimits o llegits de la memòria cau del proveïdor; i el resultat de la memòria cau."
+        },
+        "cost": {
+          "title": "Cost",
+          "body": "Xifres de cost que calcula el Software amb el seu catàleg de preus o amb un model de costos que aportis tu: cost de referència, cost real, la proporció d'estalvi net, la base de les xifres (measured, reference, estimated, shadow o unmeasured) i el valor, al preu de lectura de memòria cau del proveïdor, dels tokens d'entrada que el teu proveïdor va declarar esborrats del context."
+        }
+      }
+    },
+    "verification": {
+      "title": "Verificació opcional (només l'SDK, apagada per defecte)",
+      "when": "Si actives l'opció de verificació de l'SDK, l'SDK torna a enviar al teu propi proveïdor una mostra de les peticions que va servir, sense optimitzar, i descarta aquesta segona resposta. Per cada petició de la mostra envia a BiVelio, <b>per un canal a part, només els camps de sota</b>; aquest canal també rebutja qualsevol altre camp, i res del que rep no s'usa per calcular la comissió.",
+      "groups": {
+        "sample": {
+          "title": "Cada petició de la mostra",
+          "body": "L'etiqueta verification, l'identificador i l'instant de la petició; el model demanat i el que la va atendre; el resultat de la memòria cau; la categoria de la petició i el resultat de la comprovació; els tokens d'entrada, d'entrada en memòria cau i de sortida i el cost de la petició servida i de la còpia sense optimitzar; com va acabar la còpia i si va complir el contracte de resposta; i els preus per token aplicats."
+        },
+        "counts": {
+          "title": "Recomptes diaris",
+          "body": "Per cada dia, el nombre de peticions de cada categoria, incloses les que van quedar fora de la comprovació."
+        },
+        "batch": {
+          "title": "Cada lot",
+          "body": "Un identificador de lot aleatori, per descartar duplicats, i les dues llistes anteriors."
+        }
+      }
+    },
+    "other": {
+      "title": "Altres peticions a BiVelio",
+      "body": "El Software també baixa el seu token de llicència vigent i la llista signada de llicències revocades, i el gateway local baixa les funcions contractades per la teva organització. Aquestes peticions porten la teva clau de compte de servei quan requereixen autenticació, i cap dada de les teves peticions.",
+      "network": "Com qualsevol petició HTTPS, tot l'anterior revela a més metadades de xarxa corrents, com la teva adreça IP."
+    },
+    "retention": {
+      "title": "Què guarda BiVelio i durant quant de temps",
+      "intro": "La ingesta suma cada registre d'ús a totals diaris: per dia, per model, per seient i per sessió del gateway. Les files individuals només es guarden als llocs de sota, i una tasca diària esborra cada fila quan supera el seu termini:",
+      "items": {
+        "seen": "Identificadors de petició, per descartar registres duplicats: {dias} dies.",
+        "reference": "Peticions repetides valorades per referència (identificadors de petició, model, instant i el comptador del proveïdor usat), les files de la baixada del teu extracte: {dias} dies.",
+        "verificationSamples": "Mostres de verificació i els seus recomptes diaris: {dias} dies.",
+        "verificationBatches": "Identificadors de lot de la verificació: {dias} dies."
+      },
+      "noSchedule": "Els totals diaris, l'activitat per seient i els teus extractes segellats no tenen avui cap termini d'esborrat automàtic."
+    },
+    "use": {
+      "title": "Per a què ho fa servir BiVelio",
+      "body": "Per operar les llicències i les revocacions, mostrar-te el tauler, comptar els seients en ús i calcular les tarifes que descriu la <pricing>pàgina de preus</pricing>."
+    },
+    "account": {
+      "title": "El teu compte en aquest web",
+      "body": "El teu correu d'accés, la teva organització i les teves dades de facturació (els pagaments els processa Stripe) es regeixen per la <policy>política de privadesa de BiVelio</policy>."
+    },
+    "contact": "Preguntes i sol·licituds sobre aquestes dades: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Pàgina no trobada · BiVelio Savings Layer",

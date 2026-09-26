@@ -83,6 +83,23 @@ const CLAVES_DE_LA_COPIA = ["naiveCost", "naiveInputTokens", "naiveCachedInputTo
 const CLAVES_OPCIONALES = ["naiveFinishReason", "cachedInputPer1k"] as const;
 const CLAVES_DE_LA_MUESTRA = new Set<string>([...CLAVES_OBLIGATORIAS, ...CLAVES_DE_LA_COPIA, ...CLAVES_OPCIONALES]);
 
+/**
+ * La lista blanca ENTERA del cable, por nivel, tal como la aplica este
+ * validador. Es lo que enumera la página pública de privacidad
+ * (`app/[locale]/privacy`, vía `lib/legal/lo-que-sale.ts`); su test compara
+ * los dos conjuntos, así que una clave nueva aquí sin su línea en la página
+ * pone la suite en rojo.
+ */
+export const CAMPOS_DEL_CABLE_DE_VERIFICACION: {
+  readonly sobre: readonly string[];
+  readonly conteo: readonly string[];
+  readonly muestra: readonly string[];
+} = Object.freeze({
+  sobre: Object.freeze([...CLAVES_DEL_SOBRE]),
+  conteo: Object.freeze([...CLAVES_DEL_CONTEO]),
+  muestra: Object.freeze([...CLAVES_DE_LA_MUESTRA]),
+});
+
 /** Una muestra validada, tal como la recibe `ingest_verification_batch`. */
 export interface MuestraDeVerificacion {
   basis: "verification";
