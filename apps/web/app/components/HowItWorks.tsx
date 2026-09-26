@@ -168,7 +168,10 @@ export async function HowItWorks({ variant }: { variant: "landing" | "app" }) {
         <div className="hiw-cta">
           {variant === "landing" ? (
             <>
-              {/* `/#verify` no existe en la landing — el ancla de la medición es #measured. */}
+              {/* El botón dice «ver el ahorro medido», y eso vive en #measured (el
+                  banco publicado). #verify también existe en la portada, pero es
+                  el verificador: una palanca sobre tus datos, no un ahorro medido;
+                  llevar este botón allí prometería lo que la sección no enseña. */}
               <Link className="btn btn-primary" href="/#measured">{t("ctaVerify")}</Link>
               <Link className="btn btn-ghost" href="/signup">{t("ctaSignup")}</Link>
             </>

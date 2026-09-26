@@ -531,33 +531,54 @@ export type { AsientoVisto };
  * agregada POR ASIENTO en memoria (`agregarAsientos`, pura y con tests). El
  * panel decide el aviso por el dinero medido de 7 días y explica con la versión.
  *
- * Tolerante en las dos direcciones del despliegue: si la migración 0024 va por
- * detrás de la web faltan las columnas (42703/PGRST204 → `esColumnaInexistente`)
- * y si faltara la tabla entera (`esTablaInexistente`), la tarjeta se esconde y
- * el panel sigue. Cualquier otro error sí es un fallo (failed) con traza.
+ * 0031 añade lo medido POR REFERENCIA por asiento (reference_*): con él, un
+ * asiento cuyo ahorro de la semana son repeticiones valoradas con el contador
+ * de la petición idéntica deja de salir con «0 € medidos». Nada de esto cobra:
+ * los asientos se facturan por días activos y la comisión sale de usage_daily.
+ *
+ * Tolerante en las dos direcciones del despliegue, en ESCALERA como
+ * getUsageRollups: sin las columnas de 0031 (42703/PGRST204 →
+ * `esColumnaInexistente`) se relee con las de 0024 y la referencia por asiento
+ * sale a 0 (no disponible: la tarjeta no pinta su nota); si faltaran también
+ * las de 0024, o la tabla entera (`esTablaInexistente`), la tarjeta se esconde
+ * y el panel sigue. Cualquier otro error sí es un fallo (failed) con traza.
  *
  * limit 2000 y no 500: cada job de CI es un asiento nuevo (hostnames efímeros),
  * y ordenado por día descendente para que, si se corta, se corte por lo viejo.
  */
+const COLUMNAS_ASIENTO_0024 =
+  "seat_id, is_ci, day, last_seen_at, client_version_min, client_version_max, requests_sin_version, measured_baseline_cost, measured_actual_cost";
+/** Lo medido por referencia por asiento que añade 0031. */
+const COLUMNAS_ASIENTO_0031 = "reference_baseline_cost, reference_actual_cost";
+
 export async function getAsientos(supabase: SupabaseClient, orgId: string): Promise<{ rows: AsientoVisto[]; failed: boolean }> {
   try {
     const nowMs = Date.now();
     const since = new Date(nowMs - 30 * DIA_MS).toISOString().slice(0, 10);
-    const { data, error } = await supabase
-      .schema("bvsala")
-      .from("seat_activity")
-      .select(
-        "seat_id, is_ci, day, last_seen_at, client_version_min, client_version_max, requests_sin_version, measured_baseline_cost, measured_actual_cost",
-      )
-      .eq("org_id", orgId)
-      .gte("day", since)
-      .order("day", { ascending: false })
-      .limit(2000);
+    const leer = (columnas: string) =>
+      supabase
+        .schema("bvsala")
+        .from("seat_activity")
+        .select(columnas)
+        .eq("org_id", orgId)
+        .gte("day", since)
+        .order("day", { ascending: false })
+        .limit(2000);
+    let { data, error } = await leer(`${COLUMNAS_ASIENTO_0024}, ${COLUMNAS_ASIENTO_0031}`);
+    if (error && esColumnaInexistente(error)) {
+      console.warn(
+        "[dashboard] seat_activity sin las columnas de referencia por asiento (¿falta la migración 0031?); " +
+          "se lee sin ellas y la tarjeta de máquinas sumará solo lo medido por la propia petición",
+      );
+      ({ data, error } = await leer(COLUMNAS_ASIENTO_0024));
+    }
     if (error) {
       if (esColumnaInexistente(error) || esTablaInexistente(error)) return { rows: [], failed: false };
       console.error("[dashboard] seat_activity read failed:", error.code, error.message);
       return { rows: [], failed: true };
     }
+    // PostgREST devuelve numeric(20,10) como CADENA («0.0200000000»): Number() la
+    // normaliza, igual que el resto de columnas de dinero.
     const filas: FilaAsiento[] = ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
       seatId: String(r["seat_id"] ?? "unknown"),
       isCi: Boolean(r["is_ci"]),
@@ -568,6 +589,8 @@ export async function getAsientos(supabase: SupabaseClient, orgId: string): Prom
       requestsSinVersion: Number(r["requests_sin_version"] ?? 0),
       measuredBaselineCost: Number(r["measured_baseline_cost"] ?? 0),
       measuredActualCost: Number(r["measured_actual_cost"] ?? 0),
+      referenceBaselineCost: Number(r["reference_baseline_cost"] ?? 0),
+      referenceActualCost: Number(r["reference_actual_cost"] ?? 0),
     }));
     return { rows: agregarAsientos(filas, nowMs), failed: false };
   } catch (err) {

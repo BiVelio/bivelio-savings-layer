@@ -10,11 +10,22 @@
  *     la máquina se actualizó anteayer, la explicación no debe citar la versión
  *     de hace tres semanas. Solo si en 7 días no declaró nada se cae a las 30.
  *   · sinVersion7d = alguna fila de 7 días con requests_sin_version > 0.
- *   · ahorroMedido7dUsd = Σ(measured_baseline_cost − measured_actual_cost) en
- *     las filas de 7 días. Es el fold medido de usage_daily al grano de asiento.
+ *   · ahorroMedido7dUsd = Σ(measured_baseline_cost − measured_actual_cost)
+ *     + Σ(reference_baseline_cost − reference_actual_cost) bajo
+ *     COMISIONAR_REFERENCIA, en las filas de 7 días. Es el fold de lo MEDIDO de
+ *     usage_daily al grano de asiento, con la misma regla que el titular y el
+ *     extracto: lo medido por referencia (0029/0031) es medido cuando el
+ *     interruptor lo comisiona. Lo estimado, nunca.
+ *   · ahorroReferencia7dUsd = solo la parte de referencia de esos 7 días, siempre
+ *     (para la nota de la tarjeta de máquinas), con el interruptor como esté.
  *   · surface = prefijo de versionMax.
+ *
+ * Nada de esto cobra: los asientos se facturan por días activos y la comisión
+ * sale de usage_daily. Este dinero solo decide el aviso y la columna de la
+ * tarjeta de máquinas.
  */
 
+import { COMISIONAR_REFERENCIA } from "../billing/tarifa";
 import { compararVersiones, parsearVersion, superficieDe } from "./semver";
 import { DIA_MS, VENTANA_AVISO_DIAS, type AsientoVisto } from "./aviso-version";
 
@@ -31,6 +42,14 @@ export interface FilaAsiento {
   requestsSinVersion: number;
   measuredBaselineCost: number;
   measuredActualCost: number;
+  /** 0031: lo medido por referencia en ese asiento-día. Ausente sin 0031 (cuenta como 0). */
+  referenceBaselineCost?: number;
+  referenceActualCost?: number;
+}
+
+export interface OpcionesAgregado {
+  /** ¿Suma lo medido por referencia a `ahorroMedido7dUsd`? Por defecto, el interruptor de cobro. */
+  incluirReferencia?: boolean;
 }
 
 function menor(a: string | null, b: string | null): string | null {
@@ -44,7 +63,11 @@ function mayor(a: string | null, b: string | null): string | null {
   return compararVersiones(b, a) > 0 ? b : a;
 }
 
-export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): AsientoVisto[] {
+export function agregarAsientos(
+  filas: readonly FilaAsiento[],
+  nowMs: number,
+  { incluirReferencia = COMISIONAR_REFERENCIA }: OpcionesAgregado = {},
+): AsientoVisto[] {
   const desde7d = nowMs - VENTANA_AVISO_DIAS * DIA_MS;
   interface Acum {
     seatId: string;
@@ -58,6 +81,7 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
     sinVersion7d: boolean;
     conDatos7d: boolean;
     ahorro7d: number;
+    ref7d: number;
   }
   const porAsiento = new Map<string, Acum>();
   for (const f of filas) {
@@ -73,6 +97,7 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
       sinVersion7d: false,
       conDatos7d: false,
       ahorro7d: 0,
+      ref7d: 0,
     };
     // Un asiento es CI si CUALQUIER fila lo marcó: un job puede haber corrido
     // un turno sin la variable de entorno y no por eso deja de ser efímero.
@@ -101,6 +126,9 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
         acum.max7 = mayor(acum.max7, f.versionMax);
         if (f.requestsSinVersion > 0) acum.sinVersion7d = true;
         acum.ahorro7d += f.measuredBaselineCost - f.measuredActualCost;
+        // 0031 · la referencia del asiento-día. Mismo filtro de ventana y de
+        // pre-canal que lo medido: una fila vieja no aporta ni una cosa ni la otra.
+        acum.ref7d += (f.referenceBaselineCost ?? 0) - (f.referenceActualCost ?? 0);
       }
     }
     porAsiento.set(f.seatId, acum);
@@ -117,7 +145,8 @@ export function agregarAsientos(filas: readonly FilaAsiento[], nowMs: number): A
       versionMax,
       sinVersion7d: a.sinVersion7d,
       lastSeenAt: a.lastSeenAt,
-      ahorroMedido7dUsd: a.ahorro7d,
+      ahorroMedido7dUsd: a.ahorro7d + (incluirReferencia ? a.ref7d : 0),
+      ahorroReferencia7dUsd: a.ref7d,
       conDatos7d: a.conDatos7d,
     });
   }

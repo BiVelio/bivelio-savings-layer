@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 
+import { agregarAsientos, type FilaAsiento } from "./asientos";
 import { DIA_MS, decidirAvisoVersion, estadoVersion, type AsientoVisto } from "./aviso-version";
 
 /**
@@ -22,6 +23,7 @@ function asiento(p: Partial<AsientoVisto> = {}): AsientoVisto {
     sinVersion7d: false,
     lastSeenAt: hace(1),
     ahorroMedido7dUsd: 0,
+    ahorroReferencia7dUsd: 0,
     conDatos7d: true,
     ...p,
   };
@@ -141,5 +143,39 @@ describe("decidirAvisoVersion · el falso positivo del día de la migración", (
 
   it("con datos y 0 € sigue avisando — la verja solo excluye lo que no tiene medida", () => {
     expect(decidirAvisoVersion([asiento({ conDatos7d: true, ahorroMedido7dUsd: 0 })], AHORA, MINIMA)).not.toBeNull();
+  });
+});
+
+/**
+ * 0031 · Un gateway al día cuyo ahorro de la semana son repeticiones medidas por
+ * referencia NO es un gateway con «0 € medidos»: con COMISIONAR_REFERENCIA,
+ * `agregarAsientos` las suma a ahorroMedido7dUsd y el aviso no salta. La
+ * decisión sigue siendo la misma (`> 0`); lo que cambia es lo que llega.
+ */
+describe("decidirAvisoVersion · el ahorro medido por referencia también es dinero (0031)", () => {
+  it("gateway ≥ mínima, con datos de 7 días y ahorro SOLO por referencia: null", () => {
+    const soloReferencia: FilaAsiento = {
+      seatId: "m-ref",
+      isCi: false,
+      day: new Date(AHORA - DIA_MS).toISOString().slice(0, 10),
+      lastSeenAt: hace(1),
+      versionMin: "gateway/0.4.17",
+      versionMax: "gateway/0.4.17",
+      requestsSinVersion: 0,
+      measuredBaselineCost: 0,
+      measuredActualCost: 0,
+      referenceBaselineCost: 0.03,
+      referenceActualCost: 0,
+    };
+    const [con] = agregarAsientos([soloReferencia], AHORA, { incluirReferencia: true });
+    expect(con!.conDatos7d).toBe(true);
+    expect(decidirAvisoVersion([con!], AHORA, MINIMA)).toBeNull();
+    // Y sin el interruptor, el mismo asiento sí avisa: la regla es la del cobro.
+    const [sin] = agregarAsientos([soloReferencia], AHORA, { incluirReferencia: false });
+    expect(decidirAvisoVersion([sin!], AHORA, MINIMA)).toMatchObject({ sinPalanca: 1 });
+  });
+
+  it("con el campo ya agregado: ahorro por referencia > 0 y medido 0 → el aviso lo decide ahorroMedido7dUsd", () => {
+    expect(decidirAvisoVersion([asiento({ ahorroMedido7dUsd: 0.03, ahorroReferencia7dUsd: 0.03 })], AHORA, MINIMA)).toBeNull();
   });
 });

@@ -227,7 +227,7 @@
     "verdictHero": {
       "eyebrow": "Tu ahorro · medido contra tu factura",
       "totalSplit": "El total, incluyendo lo estimado, es {pct}. Solo {share} de las peticiones tiene contador del proveedor con el que comprobarlo: el suyo, o el de la petición idéntica que ya se ejecutó.",
-      "referenceNote": "De eso, <b>{money}</b> viene de {count} peticiones repetidas que se sirvieron sin llamar a tu proveedor, cada una valorada con el contador de la petición idéntica que ya se ejecutó — al precio más bajo que tu proveedor podía cobrarte por repetirla.",
+      "referenceNote": "De eso, <b>{money}</b> viene de {count, plural, one {# petición repetida que se sirvió} other {# peticiones repetidas que se sirvieron}} sin llamar a tu proveedor, cada una valorada con el contador de la petición idéntica que ya se ejecutó — al precio más bajo que tu proveedor podía cobrarte por repetirla.",
       "unmeasuredCap": "Vemos {count} solicitudes con precio, pero ninguna se ha podido comprobar todavía contra el contador de tu proveedor. En cuanto llegue la primera, tu ahorro medido aparecerá aquí.",
       "savedLine": "de tu gasto en LLM conservado este período · <b>{money}</b> ahorrados (línea base − real, a tus precios).",
       "emptyCap": "Aún no medimos tu tráfico — 0 solicitudes vistas. Instala el SDK y tu ahorro neto aparecerá aquí — tus precios, tu carga de trabajo. Nunca una cifra prestada ni inventada.",
@@ -281,12 +281,6 @@
       "benchOnly": "compresor del banco, no está en npm"
     },
     "projectorVerifier": {
-      "verifierTitle": "Verificador de ahorro",
-      "estimateFull": "ESTIMACIÓN — heurística, no medida por el proveedor",
-      "errBundle": "No se pudo cargar el paquete del optimizador.",
-      "errInvalidData": "Esperando datos válidos… {message}",
-      "yourData": "Tus datos",
-      "alreadyOptimal": "Ya es óptimo aquí — BV‑SALA nunca lo empeora.",
       "projectorTitle": "Proyector de factura",
       "estimate": "ESTIMACIÓN",
       "reqsPerMonth": "Solicitudes / mes",
@@ -296,13 +290,6 @@
       "inputCut": "Recorte de entrada",
       "outputCut": "Recorte de salida",
       "projectedSaving": "ahorro proyectado / mes · a precios de {model}",
-      "tryExample": "Prueba con un ejemplo",
-      "sample_users": "Lista de usuarios",
-      "sample_orders": "Pedidos de tienda",
-      "sample_tickets": "Tickets de soporte",
-      "pasteHint": "…o pega aquí tu propio JSON. Nada sale de tu navegador.",
-      "savedPct": "−{pct}% de tokens",
-      "trimsFriendly": "De {before} a {after} tokens por envío. BV‑SALA elige solo el formato más barato — sin cambiar tu código.",
       "profileLabel": "¿Qué estás construyendo?",
       "profile_chat": "Chatbot",
       "profile_extract": "Extracción de datos",
@@ -393,7 +380,8 @@
       "chipOutdated": "actualiza",
       "chipOk": "al día",
       "chipMixed": "parte sin declarar",
-      "hint": "Una fila por máquina que reporta uso, identificada por su id de asiento opaco (jamás una persona). Lo que viaja es un número de versión —gateway/x.y.z o sdk/x.y.z—, nunca contenido. Una máquina con un gateway anterior al canal de versión sale como «sin declarar»."
+      "hint": "Una fila por máquina que reporta uso, identificada por su id de asiento opaco (jamás una persona). Lo que viaja es un número de versión —gateway/x.y.z o sdk/x.y.z—, nunca contenido. Una máquina con un gateway anterior al canal de versión sale como «sin declarar».",
+      "referenceHint": "El ahorro medido incluye aquí las peticiones repetidas medidas por referencia: cada una se valora con el contador de la petición idéntica que ya se ejecutó."
     },
     "installLicensePanel": {
       "eyebrow": "Empezar",
@@ -584,7 +572,7 @@
       "metaTitle": "Extracto · BiVelio Savings Layer",
       "eyebrow": "Modo sombra · aquí no se cobra nada",
       "title": "Tu extracto, antes de que exista la factura",
-      "intro": "El documento exacto que producirá la futura factura variable: solo ahorro medido, con la tarifa por tramos — sin mínimo, solo se cobra si ahorras. Durante la calibración, el cargo es siempre {cero}.",
+      "intro": "El documento exacto que producirá la futura factura variable: solo ahorro medido, con la tarifa por tramos y sin mínimo — sin ahorro medido no hay comisión. La cuota por asiento es un cargo aparte, fijo y mensual. Durante la calibración, la comisión es siempre {cero}.",
       "periodo": "Período {periodo}",
       "badgeCalibracion": "PERÍODO DE CALIBRACIÓN — CARGO CERO",
       "badgeSombra": "SOMBRA — SIN CARGO REAL",
@@ -607,8 +595,8 @@
       "sombraElision": "Carril sombra: la elisión habría ahorrado {usd} en {requests} peticiones simuladas. Hipotético — jamás entra en la base ni en la comisión.",
       "sombraElisionNegativa": "Carril sombra: la elisión habría costado {usd} de más en {requests} peticiones simuladas. Por eso está apagada: solo se enciende lo que ahorra de verdad.",
       "elisionProveedor": "Carril del borrado del proveedor: {requests} peticiones en las que nuestros diales hicieron que el proveedor borrara contexto. Un conteo, no un ahorro — jamás entra en la base ni en la comisión.",
-      "referencia": "Medido por referencia: {usd} en {requests} peticiones repetidas que se sirvieron sin llamar a tu proveedor. Cada una se valora con el contador que tu proveedor devolvió para la petición idéntica que ya se ejecutó —está en el informe de esa petición y en el uso de tu proveedor de ese día— al precio de entrada cacheada, el más bajo que tu proveedor cobra por repetir un prompt; la salida solo cuenta si el muestreo era determinista y la llamada que se ejecutó no llevó razonamiento oculto (tu proveedor declaró cero tokens de razonamiento o, si no los desglosa, su respuesta no traía bloque de razonamiento). Entra en la base.",
-      "referenciaExcluida": "Medido por referencia: {usd} en {requests} peticiones repetidas. Se enseña como contexto: por ahora queda fuera de la base y de la comisión.",
+      "referencia": "Medido por referencia: {usd} en {requests, plural, one {# petición repetida que se sirvió} other {# peticiones repetidas que se sirvieron}} sin llamar a tu proveedor. Cada una se valora con el contador que tu proveedor devolvió para la petición idéntica que ya se ejecutó —está en el informe de esa petición y en el uso de tu proveedor de ese día— al precio de entrada cacheada, el más bajo que tu proveedor cobra por repetir un prompt; la salida solo cuenta si el muestreo era determinista y la llamada que se ejecutó no llevó razonamiento oculto (tu proveedor declaró cero tokens de razonamiento o, si no los desglosa, su respuesta no traía bloque de razonamiento). Entra en la base.",
+      "referenciaExcluida": "Medido por referencia: {usd} en {requests, plural, one {# petición repetida} other {# peticiones repetidas}}. Se enseña como contexto: por ahora queda fuera de la base y de la comisión.",
       "exportarReferencias": "Descargar las peticiones repetidas de este período, una fila por petición (CSV)",
       "exportarReferenciasPorDia": "Demasiadas peticiones repetidas para un solo fichero: descargar este período día a día (CSV):",
       "parametros": "Parámetros del extracto — catálogo de precios {version} · tipo de cambio {fx}.",
@@ -727,13 +715,13 @@
   },
   "landing": {
     "metaTitle": "BiVelio — Verifica tu ahorro en LLM",
-    "metaDescription": "Capa de coste para LLM con licencia. Se instala delante de tu proveedor y recorta la factura; el ahorro va medido contra su contador, con intervalo al 95 %.",
+    "metaDescription": "Un SDK para que tu app pague al proveedor de LLM solo lo que necesita, y un gateway que mide tu agente de código. Todo con el contador de tu proveedor: cuota por asiento y comisión solo sobre el ahorro medido.",
     "hero": {
       "eyebrow": "Para equipos que pagan la API de LLM por tokens",
       "title": "Tu factura de LLM, bajo control.",
       "titleAccent": "Medida en cada llamada.",
-      "lede": "Un SDK que se instala en tu código, deja pasar solo lo que hace falta pagar y devuelve un SavingsReport por llamada: lo medido y lo estimado por separado, contados con el contador de tu proveedor. Publicamos solo lo que hemos medido.",
-      "ctaRun": "Ver lo medido",
+      "lede": "Dos productos, una regla. El SDK se instala dentro de tu app y deja pasar solo lo que hay que pagar; el gateway se pone delante de tu agente de código y mide su gasto. Los dos cuentan con el contador de tu proveedor y separan lo medido de lo estimado. Publicamos solo lo que hemos medido.",
+      "ctaOffers": "¿SDK o gateway?",
       "ctaPricing": "Precios",
       "note": "Se instala en minutos. Tus mensajes no pasan por nuestros servidores.",
       "proofTitle": "Medido contra proveedor real",
@@ -780,8 +768,8 @@
     },
     "explica": {
       "eyebrow": "En palabras normales",
-      "title": "¿Qué hace Savings, exactamente?",
-      "sub": "Cuatro ideas, cuatro animaciones de ocho segundos. Esto es todo el producto.",
+      "title": "¿Qué hace el SDK, exactamente?",
+      "sub": "Cuatro ideas, cuatro animaciones de ocho segundos.",
       "pasos": [
         {
           "title": "La IA se cobra por palabras",
@@ -796,8 +784,8 @@
           "body": "No te pedimos fe. Cada ahorro se mide con el contador oficial del proveedor — el mismo con el que te factura — y aparece en tu recibo. Lo que no se puede contrastar con la factura, no se anuncia."
         },
         {
-          "title": "Solo ganamos si tú ahorras",
-          "body": "Nuestra comisión sale del ahorro medido, nunca de tu bolsillo: la mayor parte de lo ahorrado se queda siempre contigo. ¿Un mes sin ahorro? Comisión cero."
+          "title": "Una cuota por asiento y una parte de lo medido",
+          "body": "Pagas una cuota fija por asiento cada mes, ahorres o no. Además, nuestra comisión sale solo del ahorro medido con el contador de tu proveedor, y la mayor parte de cada ahorro se queda siempre contigo. ¿Un mes sin ahorro medido? Pagas los asientos y cero comisión."
         }
       ],
       "nota": "Las animaciones ilustran la idea. Las cifras de verdad — medidas contra proveedores reales — están justo debajo."
@@ -866,7 +854,7 @@
       "aiPaso2": "Después sube el zip en Customize → Skills: aparece con su interruptor, privado en tu cuenta."
     },
     "systems": {
-      "caption": "Donde ya viven tus automatizaciones. Si llama a la API de tu proveedor con tu clave, se mide — el SDK envuelve la llamada; el gateway se pone delante."
+      "caption": "Donde ya viven tus automatizaciones. Lo que se mide es la llamada a la API de tu proveedor con tu clave: en una app Node.js, el SDK la envuelve; desde otro código con el SDK oficial de OpenAI o de Anthropic, el gateway se pone delante y la registra si es de un modelo con precio de lista."
     },
     "nvidia": {
       "kicker": "Compañía y ecosistema",
@@ -875,10 +863,10 @@
       "cta": "Conoce el programa"
     },
     "gateway": {
-      "eyebrow": "Nuevo · terminales de código",
+      "eyebrow": "Gateway · terminales de código",
       "title": "¿Claude Code con API key? Mira su gasto real, token a token.",
-      "body": "Un solo comando pone un medidor local delante de tu terminal. Sin tocar código y sin configurar nada — y tus prompts jamás salen de tu máquina: a este panel solo llegan conteos y coste.",
-      "note": "El gateway mide cada petición y, como el SDK, solo funciona con una licencia activa: la recoge con tu clave de servicio y verifica su firma en tu máquina. Con licencia PRO aplica además una palanca por defecto: acorta el TTL de escritura de caché mientras la sesión sigue caliente — cambia el precio, nunca el contenido que lee el modelo. Las demás palancas van apagadas hasta que las enciendes. El skill savings-mode está disponible para tus topes, con su efecto pendiente de medir. Funciona también con Codex CLI, Goose y Qwen Code — y bvsala doctor imprime la configuración exacta del resto.",
+      "body": "Un solo comando pone un medidor local delante de tu terminal, sin tocar tu código: exportas tu clave de servicio y arrancas tu agente con bvsala. Tus prompts jamás salen de tu máquina: a tu panel solo llegan conteos y coste.",
+      "note": "El gateway mide, con el contador de tu proveedor, cada petición de la que este informa el uso (en los modelos de nuestro catálogo de precios) y, como el SDK, solo funciona con una licencia activa: la recoge con tu clave de servicio y verifica su firma en tu máquina. Con licencia PRO, en modelos de Anthropic, aplica además una palanca por defecto: pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados. Eso cambia el precio, nunca el contenido que lee el modelo. Las demás palancas van apagadas hasta que las enciendes. El skill savings-mode está disponible para tus topes, con su efecto pendiente de medir. El gateway funciona también con Codex CLI, Goose y Qwen Code — y bvsala doctor imprime la configuración exacta del resto.",
       "pythonNote": "¿Python o cualquier otro lenguaje? Apunta el SDK oficial de OpenAI o de Anthropic al gateway y cada petición cuyo uso informe el proveedor, de un modelo con precio de lista, queda registrada en este panel a ese precio; el log del gateway avisa cuando una no se mide. bvsala doctor imprime el base URL de cada SDK. En streaming con OpenAI, pide el uso en la petición (stream_options.include_usage).",
       "cta": "Ver cómo funciona →"
     },
@@ -889,8 +877,8 @@
     },
     "pricing": {
       "eyebrow": "Un solo plan, con precio por asiento",
-      "title": "Una cuota pequeña por asiento. Y comisión solo sobre lo que ahorras.",
-      "body": "Sin plan gratuito y sin prueba: lo que puedes comprobar antes de pagar son las mediciones públicas de esta página. La cuota va por asiento, en {currency}, y la comisión sale del ahorro medido — nunca de tu bolsillo.",
+      "title": "Cuota por asiento, siempre. Comisión solo sobre el ahorro medido.",
+      "body": "Sin plan gratuito y sin prueba: antes de pagar puedes comprobar las mediciones públicas y pasar el verificador por tus propios datos, aquí mismo. La cuota por asiento se cobra cada mes, en {currency}, ahorres o no. La comisión va aparte, y solo sobre el ahorro medido con el contador de tu proveedor, incluidas las peticiones repetidas que se sirven sin llamarlo, cada una valorada con el contador de la petición idéntica que ya se ejecutó. Lo estimado nunca entra.",
       "amount": "{amount}",
       "per": "/ asiento / mes",
       "proNote": "<b>PRO</b> — facturado por asiento. O <b>{yearly} / asiento / año</b> (ahorra ~19%). Enterprise, con funciones empaquetadas, llegará más adelante.",
@@ -925,7 +913,7 @@
     },
     "footer": {
       "ctaTitle": "Mídelo con tu propio tráfico",
-      "ctaSub": "Instalado, cada llamada devuelve su SavingsReport: lo medido y lo estimado, por separado; solo lo medido entra en la comisión. La licencia es lo que te deja ejecutar BV‑SALA dentro de tu app.",
+      "ctaSub": "Instalado, cada llamada devuelve su SavingsReport, con lo medido y lo estimado por separado. La cuota por asiento es mensual y fija; la comisión sale solo de lo medido. La licencia es lo que te deja ejecutar BV‑SALA: el SDK en tu app, el gateway en tu terminal.",
       "ctaStart": "Empezar",
       "tagline": "El sistema operativo para tu negocio. Esto es <b>BV‑SALA</b>, el optimizador de coste de LLM neutral respecto al proveedor de BiVelio — cada cifra publicada, medida contra el contador del proveedor; lo estimado se enseña aparte y nunca se factura.",
       "badge": "BV‑SALA · Savings Layer",
@@ -979,7 +967,7 @@
       "colExtra": "Nuestro extra",
       "colTeQuedas": "Te quedas",
       "extraCero": "nada",
-      "notaGarantia": "Solo cobramos sobre ahorro medido — y siempre te quedas con el {garantia} o más.",
+      "notaGarantia": "Comisión solo sobre el ahorro medido — y siempre te quedas con el {garantia} o más. Los asientos se cobran aparte, cada mes.",
       "notaTramos": "Por tramos, y cada tramo a su tipo: {tramos}. Cuanto más ahorras, menor es nuestro porcentaje.",
       "notaPrimerMesLead": "Tu primer mes: solo el asiento.",
       "notaPrimerMes": "Lo medimos todo, calibramos con tu carga real y verás el extracto exacto de lo que habría costado — sin cobrarlo.",
@@ -1007,7 +995,7 @@
       "caption": "No todos los envíos llevan la misma paja: en esta tirada, el recorte medido por escenario fue desde {min} hasta {max}. Los que no ahorran también se publican."
     },
     "recibo": {
-      "title": "SavingsReport · tirada publicada",
+      "title": "SDK · SavingsReport · tirada publicada",
       "modelo": "modelo",
       "parejas": "parejas medidas",
       "calidad": "calidad",
@@ -1044,6 +1032,62 @@
           "mono": "layer.generateStream(request)"
         }
       ]
+    },
+    "offers": {
+      "eyebrow": "Dos productos",
+      "title": "¿Dónde se van tus tokens: en tu app o en tu agente de código?",
+      "sub": "Los dos se licencian por asiento y los dos cuentan con el contador de tu proveedor. Hacen trabajos distintos, así que cada uno hace su propia promesa, y hoy solo uno tiene una cifra de ahorro publicada.",
+      "install": "Instalación",
+      "installMore": "Instalación completa",
+      "sdk": {
+        "name": "SDK",
+        "band": "SDK — para apps en JavaScript o TypeScript con API key",
+        "who": "Para apps de Node.js, en JavaScript o TypeScript, que llaman a una API de LLM con tu propia clave y pagan cada token.",
+        "what": "Envuelve la llamada dentro de tu código, envía al proveedor solo lo que hay que pagar y devuelve un SavingsReport con cada respuesta.",
+        "figureLabel": "La cifra que publicamos",
+        "figureNote": "Un suelo, no una previsión: lo que ahorres depende de tu tráfico. En la comisión solo entra el ahorro medido con el contador de tu proveedor, incluidas las peticiones repetidas que se sirven sin llamarlo, cada una valorada con el contador de la petición idéntica que ya se ejecutó.",
+        "ctaMeasured": "Cómo lo medimos",
+        "ctaVerify": "Prueba una palanca con tus datos"
+      },
+      "gateway": {
+        "name": "Gateway",
+        "band": "Gateway — para agentes de código con API key",
+        "who": "Para quien trabaja con Claude Code, Codex CLI u otro agente de código con API key.",
+        "what": "Un comando pone un medidor local delante de tu terminal, sin tocar código. Cuenta cada petición de la que tu proveedor informa el uso, con su propio contador —en los modelos de nuestro catálogo de precios—, y lo suma en tu panel, por día y por modelo.",
+        "figureLabel": "Sin cifra de ahorro publicada",
+        "figureNote": "No hemos publicado un ahorro medido para agentes de código, así que no anunciamos ninguno. Con PRO, en modelos de Anthropic, pasa las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva —como el primero de una sesión o una compactación— y deja como están los turnos encadenados de una sesión en marcha. Eso cambia el precio, nunca lo que lee el modelo, y solo lo que confirma el contador de tu proveedor entra en la comisión.",
+        "cta": "Instalar el gateway"
+      },
+      "skill": {
+        "band": "Skill — para agentes de código con suscripción"
+      }
+    },
+    "verify": {
+      "eyebrow": "SDK · una palanca, con tus datos, antes de pagar",
+      "title": "Pega tus datos. Mira cuántos tokens enviaría el SDK.",
+      "sub": "Aquí corre el selector de formato real del SDK, en tu navegador y con tus datos. Nada sale de esta página y no necesitas cuenta.",
+      "tryExample": "Prueba un ejemplo",
+      "sample_orders": "Pedidos de tienda",
+      "sample_tickets": "Tickets de soporte",
+      "sample_users": "Lista de usuarios",
+      "pasteHint": "…o pega aquí tu propio JSON. Nada sale de tu navegador.",
+      "loading": "Cargando el optimizador y el tokenizador exacto…",
+      "errBundle": "No se pudo cargar el optimizador. Recarga la página para volver a intentarlo.",
+      "errInvalidData": "Esperando un JSON válido… {message}",
+      "errTokenizer": "El tokenizador exacto no puede contar este texto ({message}), así que no enseñamos ninguna cifra.",
+      "tooBig": "Son más de {max} caracteres. Pega una muestra más pequeña.",
+      "tagExact": "Recuento exacto",
+      "tagApprox": "Aproximado",
+      "yourData": "Tus datos, en JSON compacto",
+      "optimized": "Como los enviaría el SDK",
+      "fewer": "−{pct} de tokens de entrada en estos datos",
+      "trims": "De {before} a {after} tokens, instrucciones del formato incluidas.",
+      "alreadyOptimal": "Aquí ningún formato mejora al JSON compacto, así que el SDK los enviaría tal cual. Esta palanca nunca hace más grandes tus datos.",
+      "notComparable": "Con estos datos no podemos comparar los formatos con el JSON compacto, así que no enseñamos ninguna cifra.",
+      "exactNote": "Contado con {tokenizer}, el tokenizador que usa {model}. Comparamos con tus datos en JSON compacto: si hoy los envías con sangrías, la diferencia real es mayor, y eso no lo contamos.",
+      "approxNote": "El tokenizador exacto no ha cargado, así que cualquier recuento aquí sería aproximado, y no enseñamos ahorros aproximados. Recarga la página para volver a intentarlo.",
+      "scope": "Qué es y qué no es: una palanca —cómo se escriben los datos estructurados en el prompt— sobre los tokens de entrada de estos datos. Solo se aplica a los datos que le pasas al SDK como structuredData, no al JSON que ya va escrito dentro de tus mensajes. No es tu factura: ni las llamadas evitadas, ni la caché de tu proveedor, ni la salida están aquí, y muchas peticiones no llevan datos estructurados. Para el SDK entero, la cifra que publicamos es la de la sección de la medición, con su nota.",
+      "ctaInstall": "Instalar el SDK"
     }
   },
   "invitacion": {
@@ -1106,7 +1150,7 @@
     "caseClaudeSub": "claude.ai, gratis o de pago",
     "caseClaudeBody": "Suscripción fija: sin factura de tokens que medir — pero con topes (la ventana de cinco horas y el semanal). Justo para eso está el skill savings-mode: gratis, se sube a claude.ai en un minuto y ataca las dos masas que queman tope. Su efecto se publicará cuando esté medido — nunca antes.",
     "caseCodeSub": "terminal, con clave de API",
-    "caseCodeBody": "Con suscripción hay cuota fija — y topes: el mismo skill se instala con un solo comando y estira el mismo tope semanal. Con clave de API hay una factura por tokens real — y el medidor ya está en marcha: con tu licencia BiVelio, «bvsala claude» lanza Claude Code a través del gateway local y tu gasto aparece en el panel, token a token, sin tocar una línea de código. Con PRO acorta además el TTL de escritura de caché mientras la sesión sigue caliente: un ahorro calculado sobre el conteo de tokens de tu propio proveedor, nunca sobre una estimación.",
+    "caseCodeBody": "Con suscripción hay cuota fija — y topes: el mismo skill se instala con un solo comando y estira el mismo tope semanal. Con clave de API hay una factura por tokens real — y el medidor ya está en marcha: con tu licencia BiVelio, «bvsala claude» lanza Claude Code a través del gateway local y tu gasto aparece en el panel, token a token, sin tocar una línea de código. Con PRO, en modelos de Anthropic, pasa además las escrituras de caché del TTL de una hora al de cinco minutos solo en los turnos en que una parte grande del prompt es nueva (el primero de una sesión, una compactación): un ahorro calculado sobre el conteo de tokens de tu propio proveedor, nunca sobre una estimación.",
     "caseAppName": "Tu aplicación",
     "caseAppSub": "tu código + tu clave de API",
     "caseAppBody": "El caso para el que existe BV‑SALA. Tu app llama a la API con tu clave, el proveedor factura cada token, y la capa se instala en tres pasos: paquete, licencia y envolver la llamada. Desde la primera petición devuelve un <b>SavingsReport</b> con el ahorro, separado en medido y estimado.",

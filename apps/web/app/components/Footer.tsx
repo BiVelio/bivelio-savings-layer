@@ -102,12 +102,13 @@ export default async function Footer() {
 
   // Rutas con hash (Link), no anclas peladas: este footer ya no vive solo en la
   // landing, y un ancla suelta en /how-it-works no llevaría a ninguna parte.
-  // Y el destino es #measured: `#verify` NO existe en [locale]/page.tsx.
+  // El enlace de esta columna es el de los resultados medidos (#measured); el
+  // verificador de formato (#verify) lo enlaza el menú.
   const savings: string[][] = [
     [t("footer.howItWorks"), "/how-it-works"],
-    // `footer.verify` («Verifica tu ahorro») apuntaba también a /#measured: dos
-    // enlaces distintos de la misma columna al MISMO sitio, y el primero además
-    // prometía un verificador que ya no existe. Se queda el honesto.
+    // `footer.verify` («Verifica tu ahorro») apuntaba también a /#measured
+    // cuando #verify no existía: dos enlaces de la misma columna al MISMO
+    // sitio. Se quedó el de lo medido, que es lo que dice su etiqueta.
     [t("footer.measured"), "/#measured"],
     [t("footer.pricing"), "/#pricing"],
   ];

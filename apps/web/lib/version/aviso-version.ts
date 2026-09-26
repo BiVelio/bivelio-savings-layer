@@ -14,6 +14,10 @@
  *     de tarifa: no se le puede pedir), vistos en los últimos 7 días.
  *   · Un asiento con ahorro medido > 0 en 7 días NUNCA entra en el aviso, sea
  *     cual sea su versión: jamás un falso positivo sobre un 0.4.16 que mide.
+ *     «Medido» incluye lo medido POR REFERENCIA cuando COMISIONAR_REFERENCIA lo
+ *     comisiona (0031, `agregarAsientos`): un asiento cuyo ahorro de la semana
+ *     son repeticiones valoradas con el contador de la petición idéntica no es
+ *     un asiento con «0 € medidos». La decisión de abajo no cambia.
  *   · Entre los que no producen, la versión reparte la explicación:
  *       desactualizada  → versión < mínima: «esta versión no lleva la palanca».
  *       sinDeclarar     → sin versión (gateway anterior al canal) o con algún
@@ -50,8 +54,12 @@ export interface AsientoVisto {
   sinVersion7d: boolean;
   /** ISO de la última actividad. */
   lastSeenAt: string;
-  /** Σ(measured_baseline_cost − measured_actual_cost) en los últimos 7 días. */
+  /** Σ(measured_baseline_cost − measured_actual_cost) en los últimos 7 días, más la
+   *  referencia (Σ reference_baseline_cost − reference_actual_cost) cuando
+   *  COMISIONAR_REFERENCIA la comisiona: la misma regla que el titular y el extracto. */
   ahorroMedido7dUsd: number;
+  /** Solo la parte medida por referencia de esos 7 días, con el interruptor como esté (0031). */
+  ahorroReferencia7dUsd: number;
   /** Alguna fila de los 7 días trae datos del canal (versión o contador de sin-versión). Las
    *  anteriores a 0024 no: sus measured_* son defaults y no dicen que el asiento no ahorre. */
   conDatos7d: boolean;
