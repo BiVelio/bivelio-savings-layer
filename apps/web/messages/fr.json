@@ -1086,7 +1086,7 @@
       "notComparable": "Sur ces données, nous ne pouvons pas comparer les formats au JSON compact, donc nous n'affichons aucun chiffre.",
       "exactNote": "Compté avec {tokenizer}, le tokeniseur qu'utilise {model}. Nous comparons avec vos données en JSON compact : si vous les envoyez indentées aujourd'hui, l'écart réel est plus grand — et nous ne le comptons pas.",
       "approxNote": "Le tokeniseur exact n'a pas été chargé, donc tout décompte ici serait approximatif — et nous n'affichons pas d'économies approximatives. Rechargez la page pour réessayer.",
-      "scope": "Ce que c'est, et ce que ce n'est pas : un levier — la façon dont les données structurées sont écrites dans le prompt — sur les tokens d'entrée de ces données. Il ne s'applique qu'aux données que vous passez au SDK en structuredData, pas au JSON déjà écrit dans vos messages. Ce n'est pas votre facture : les appels évités, le cache de votre fournisseur et la sortie n'y sont pas, et beaucoup de requêtes ne contiennent aucune donnée structurée. Le chiffre que nous défendons pour le SDK entier est le plancher publié dans la section de la mesure.",
+      "scope": "Ce que c'est, et ce que ce n'est pas : un levier — la façon dont les données structurées sont écrites dans le prompt — sur les tokens d'entrée de ces données. Il ne s'applique qu'aux données que vous passez au SDK en structuredData, pas au JSON déjà écrit dans vos messages. Ce n'est pas votre facture : les appels évités, le cache de votre fournisseur et la sortie n'y sont pas, et beaucoup de requêtes ne contiennent aucune donnée structurée. Pour le SDK entier, le chiffre que nous publions est celui de la section de la mesure, avec sa note.",
       "ctaInstall": "Installer le SDK"
     }
   },

@@ -1086,7 +1086,7 @@
       "notComparable": "Mit diesen Daten können wir die Formate nicht mit dem kompakten JSON vergleichen, also zeigen wir keine Zahl.",
       "exactNote": "Gezählt mit {tokenizer}, dem Tokenizer, den {model} verwendet. Wir vergleichen mit deinen Daten als kompaktem JSON: Wenn du sie heute eingerückt sendest, ist der echte Unterschied größer — und den zählen wir nicht.",
       "approxNote": "Der exakte Tokenizer wurde nicht geladen, also wäre jede Zählung hier nur näherungsweise — und näherungsweise Ersparnisse zeigen wir nicht. Lade die Seite neu, um es erneut zu versuchen.",
-      "scope": "Was das ist und was nicht: ein Hebel — wie strukturierte Daten in den Prompt geschrieben werden — auf die Eingabe-Tokens dieser Daten. Er gilt nur für Daten, die du dem SDK als structuredData übergibst, nicht für JSON, das schon in deinen Nachrichten steht. Es ist nicht deine Rechnung: Vermiedene Aufrufe, der Cache deines Anbieters und die Ausgabe sind nicht enthalten, und viele Anfragen enthalten gar keine strukturierten Daten. Die Zahl, für die wir beim ganzen SDK einstehen, ist die veröffentlichte Untergrenze im Abschnitt zur Messung.",
+      "scope": "Was das ist und was nicht: ein Hebel — wie strukturierte Daten in den Prompt geschrieben werden — auf die Eingabe-Tokens dieser Daten. Er gilt nur für Daten, die du dem SDK als structuredData übergibst, nicht für JSON, das schon in deinen Nachrichten steht. Es ist nicht deine Rechnung: Vermiedene Aufrufe, der Cache deines Anbieters und die Ausgabe sind nicht enthalten, und viele Anfragen enthalten gar keine strukturierten Daten. Für das ganze SDK ist die Zahl, die wir veröffentlichen, die im Abschnitt zur Messung, mit ihrer Anmerkung.",
       "ctaInstall": "SDK installieren"
     }
   },

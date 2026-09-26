@@ -1086,7 +1086,7 @@
       "notComparable": "Với dữ liệu này, chúng tôi không thể so sánh các định dạng với JSON gọn, nên chúng tôi không hiển thị con số nào.",
       "exactNote": "Đếm bằng {tokenizer}, tokenizer mà {model} sử dụng. Chúng tôi so sánh với dữ liệu của bạn ở dạng JSON gọn: nếu hôm nay bạn gửi dạng thụt lề, chênh lệch thực tế còn lớn hơn — và phần đó chúng tôi không tính.",
       "approxNote": "Tokenizer chính xác chưa tải được, nên mọi con số đếm ở đây chỉ là xấp xỉ — và chúng tôi không hiển thị mức tiết kiệm xấp xỉ. Tải lại trang để thử lại.",
-      "scope": "Đây là gì và không phải là gì: một đòn bẩy — cách dữ liệu có cấu trúc được viết vào prompt — trên token đầu vào của dữ liệu này. Nó chỉ áp dụng cho dữ liệu bạn truyền vào SDK dưới dạng structuredData, không áp dụng cho JSON đã viết sẵn trong tin nhắn của bạn. Đây không phải hóa đơn của bạn: các lời gọi được tránh, bộ nhớ đệm của nhà cung cấp và đầu ra không có ở đây, và nhiều lượt gọi hoàn toàn không mang dữ liệu có cấu trúc. Con số chúng tôi cam kết cho toàn bộ SDK là mức sàn đã công bố trong phần đo lường.",
+      "scope": "Đây là gì và không phải là gì: một đòn bẩy — cách dữ liệu có cấu trúc được viết vào prompt — trên token đầu vào của dữ liệu này. Nó chỉ áp dụng cho dữ liệu bạn truyền vào SDK dưới dạng structuredData, không áp dụng cho JSON đã viết sẵn trong tin nhắn của bạn. Đây không phải hóa đơn của bạn: các lời gọi được tránh, bộ nhớ đệm của nhà cung cấp và đầu ra không có ở đây, và nhiều lượt gọi hoàn toàn không mang dữ liệu có cấu trúc. Với toàn bộ SDK, con số chúng tôi công bố là con số trong phần đo lường, kèm ghi chú của nó.",
       "ctaInstall": "Cài đặt SDK"
     }
   },

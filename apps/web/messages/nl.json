@@ -1086,7 +1086,7 @@
       "notComparable": "Met deze gegevens kunnen we de formaten niet met compacte JSON vergelijken, dus tonen we geen cijfer.",
       "exactNote": "Geteld met {tokenizer}, de tokenizer die {model} gebruikt. We vergelijken met je gegevens als compacte JSON: als je ze vandaag ingesprongen verstuurt, is het echte verschil groter — en dat tellen we niet.",
       "approxNote": "De exacte tokenizer is niet geladen, dus elke telling hier zou een benadering zijn — en besparingen bij benadering tonen we niet. Herlaad de pagina om het opnieuw te proberen.",
-      "scope": "Wat dit is, en wat niet: één hefboom — hoe gestructureerde gegevens in de prompt worden geschreven — op de invoertokens van deze gegevens. Hij geldt alleen voor gegevens die je als structuredData aan de SDK doorgeeft, niet voor JSON dat al in je berichten staat. Het is niet je factuur: vermeden aanroepen, de cache van je aanbieder en de uitvoer zitten er niet in, en veel verzoeken bevatten helemaal geen gestructureerde gegevens. Het cijfer waar we voor de hele SDK achter staan, is de gepubliceerde ondergrens in het meetgedeelte.",
+      "scope": "Wat dit is, en wat niet: één hefboom — hoe gestructureerde gegevens in de prompt worden geschreven — op de invoertokens van deze gegevens. Hij geldt alleen voor gegevens die je als structuredData aan de SDK doorgeeft, niet voor JSON dat al in je berichten staat. Het is niet je factuur: vermeden aanroepen, de cache van je aanbieder en de uitvoer zitten er niet in, en veel verzoeken bevatten helemaal geen gestructureerde gegevens. Voor de hele SDK is het cijfer dat we publiceren dat in het meetgedeelte, met de toelichting erbij.",
       "ctaInstall": "SDK installeren"
     }
   },

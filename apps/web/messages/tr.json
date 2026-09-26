@@ -1086,7 +1086,7 @@
       "notComparable": "Bu verilerde formatları kompakt JSON ile karşılaştıramıyoruz, bu yüzden hiçbir rakam göstermiyoruz.",
       "exactNote": "{model} modelinin kullandığı tokenizer olan {tokenizer} ile sayıldı. Verilerinizin kompakt JSON hâliyle karşılaştırıyoruz: bugün onları girintili gönderiyorsanız gerçek fark daha büyüktür — ve onu saymıyoruz.",
       "approxNote": "Kesin tokenizer yüklenmedi, bu yüzden buradaki her sayım yaklaşık olurdu — ve yaklaşık tasarruf göstermiyoruz. Yeniden denemek için sayfayı yenileyin.",
-      "scope": "Ne olduğu ve ne olmadığı: tek bir kaldıraç — yapılandırılmış verilerin prompt'a nasıl yazıldığı — bu verilerin giriş token'ları üzerinde. Yalnızca SDK'ya structuredData olarak verdiğiniz verilere uygulanır, mesajlarınızın içine zaten yazılmış JSON'a değil. Bu sizin faturanız değil: kaçınılan çağrılar, sağlayıcınızın önbelleği ve çıkış burada yok; birçok istek de hiç yapılandırılmış veri taşımaz. SDK'nın tamamı için arkasında durduğumuz rakam, ölçüm bölümünde yayımlanan tabandır.",
+      "scope": "Ne olduğu ve ne olmadığı: tek bir kaldıraç — yapılandırılmış verilerin prompt'a nasıl yazıldığı — bu verilerin giriş token'ları üzerinde. Yalnızca SDK'ya structuredData olarak verdiğiniz verilere uygulanır, mesajlarınızın içine zaten yazılmış JSON'a değil. Bu sizin faturanız değil: kaçınılan çağrılar, sağlayıcınızın önbelleği ve çıkış burada yok; birçok istek de hiç yapılandırılmış veri taşımaz. SDK'nın tamamı için yayımladığımız rakam, ölçüm bölümündeki rakamdır; notuyla birlikte.",
       "ctaInstall": "SDK'yı kurun"
     }
   },

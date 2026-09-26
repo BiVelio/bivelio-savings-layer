@@ -1086,7 +1086,7 @@
       "notComparable": "Na tych danych nie możemy porównać formatów z kompaktowym JSON-em, więc nie pokazujemy żadnej liczby.",
       "exactNote": "Policzone tokenizerem {tokenizer}, którego używa {model}. Porównujemy z Twoimi danymi jako kompaktowym JSON-em: jeśli dziś wysyłasz je z wcięciami, rzeczywista różnica jest większa — i tego nie liczymy.",
       "approxNote": "Dokładny tokenizer się nie załadował, więc każde liczenie tutaj byłoby przybliżone — a przybliżonych oszczędności nie pokazujemy. Odśwież stronę, aby spróbować ponownie.",
-      "scope": "Czym to jest, a czym nie: jedna dźwignia — sposób zapisu danych strukturalnych w prompcie — na tokenach wejściowych tych danych. Działa tylko na danych przekazanych do SDK jako structuredData, nie na JSON-ie zapisanym już w Twoich wiadomościach. To nie jest Twoja faktura: nie ma tu unikniętych wywołań, pamięci podręcznej Twojego dostawcy ani wyjścia, a wiele zapytań w ogóle nie zawiera danych strukturalnych. Liczba, za którą ręczymy dla całego SDK, to opublikowany próg w sekcji pomiarów.",
+      "scope": "Czym to jest, a czym nie: jedna dźwignia — sposób zapisu danych strukturalnych w prompcie — na tokenach wejściowych tych danych. Działa tylko na danych przekazanych do SDK jako structuredData, nie na JSON-ie zapisanym już w Twoich wiadomościach. To nie jest Twoja faktura: nie ma tu unikniętych wywołań, pamięci podręcznej Twojego dostawcy ani wyjścia, a wiele zapytań w ogóle nie zawiera danych strukturalnych. Dla całego SDK liczba, którą publikujemy, to ta z sekcji pomiarów, wraz z jej przypisem.",
       "ctaInstall": "Zainstaluj SDK"
     }
   },

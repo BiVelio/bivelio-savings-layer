@@ -1086,7 +1086,7 @@
       "notComparable": "We can't compare the formats against compact JSON on this data, so we show no figure.",
       "exactNote": "Counted with {tokenizer}, the tokenizer {model} uses. We compare against your data as compact JSON: if you send it indented today, the real difference is larger — and we don't count that.",
       "approxNote": "The exact tokenizer did not load, so any count here would be approximate — and we don't show approximate savings. Reload the page to try again.",
-      "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It applies only to data you pass to the SDK as structuredData, not to JSON already written inside your messages. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. The figure we stand behind for the whole SDK is the published floor in the measurement section.",
+      "scope": "What this is, and what it isn't: one lever — how structured data is written into the prompt — on the input tokens of this data. It applies only to data you pass to the SDK as structuredData, not to JSON already written inside your messages. It is not your bill: calls avoided, your provider's cache and the output are not in it, and many requests carry no structured data at all. For the whole SDK, the figure we publish is the one in the measurement section, with its note.",
       "ctaInstall": "Install the SDK"
     }
   },

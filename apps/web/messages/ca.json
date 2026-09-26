@@ -1086,7 +1086,7 @@
       "notComparable": "Amb aquestes dades no podem comparar els formats amb el JSON compacte, així que no mostrem cap xifra.",
       "exactNote": "Comptat amb {tokenizer}, el tokenitzador que fa servir {model}. Comparem amb les teves dades en JSON compacte: si avui les envies amb sagnats, la diferència real és més gran, i això no ho comptem.",
       "approxNote": "El tokenitzador exacte no s'ha carregat, així que qualsevol recompte aquí seria aproximat, i no mostrem estalvis aproximats. Recarrega la pàgina per tornar-ho a provar.",
-      "scope": "Què és i què no és: una palanca —com s'escriuen les dades estructurades al prompt— sobre els tokens d'entrada d'aquestes dades. Només s'aplica a les dades que passes a l'SDK com a structuredData, no al JSON que ja va escrit dins dels teus missatges. No és la teva factura: ni les crides evitades, ni la memòria cau del teu proveïdor, ni la sortida hi són, i moltes peticions no porten dades estructurades. La xifra que defensem per a l'SDK sencer és el sòl publicat a la secció del mesurament.",
+      "scope": "Què és i què no és: una palanca —com s'escriuen les dades estructurades al prompt— sobre els tokens d'entrada d'aquestes dades. Només s'aplica a les dades que passes a l'SDK com a structuredData, no al JSON que ja va escrit dins dels teus missatges. No és la teva factura: ni les crides evitades, ni la memòria cau del teu proveïdor, ni la sortida hi són, i moltes peticions no porten dades estructurades. Per a l'SDK sencer, la xifra que publiquem és la de la secció del mesurament, amb la seva nota.",
       "ctaInstall": "Instal·la l'SDK"
     }
   },

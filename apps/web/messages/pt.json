@@ -1086,7 +1086,7 @@
       "notComparable": "Com estes dados não conseguimos comparar os formatos com o JSON compacto, por isso não mostramos nenhum número.",
       "exactNote": "Contado com {tokenizer}, o tokenizador que o {model} usa. Comparamos com os teus dados em JSON compacto: se hoje os envias com indentação, a diferença real é maior — e isso não contamos.",
       "approxNote": "O tokenizador exato não carregou, por isso qualquer contagem aqui seria aproximada — e não mostramos poupanças aproximadas. Recarrega a página para tentar de novo.",
-      "scope": "O que é e o que não é: uma alavanca — como os dados estruturados se escrevem no prompt — sobre os tokens de entrada destes dados. Só se aplica aos dados que passas ao SDK como structuredData, não ao JSON que já vai escrito dentro das tuas mensagens. Não é a tua fatura: nem as chamadas evitadas, nem a cache do teu fornecedor, nem a saída estão aqui, e muitos pedidos não levam dados estruturados. O número que defendemos para o SDK inteiro é o piso publicado na secção da medição.",
+      "scope": "O que é e o que não é: uma alavanca — como os dados estruturados se escrevem no prompt — sobre os tokens de entrada destes dados. Só se aplica aos dados que passas ao SDK como structuredData, não ao JSON que já vai escrito dentro das tuas mensagens. Não é a tua fatura: nem as chamadas evitadas, nem a cache do teu fornecedor, nem a saída estão aqui, e muitos pedidos não levam dados estruturados. Para o SDK inteiro, o número que publicamos é o da secção da medição, com a sua nota.",
       "ctaInstall": "Instalar o SDK"
     }
   },

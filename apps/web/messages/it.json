@@ -1086,7 +1086,7 @@
       "notComparable": "Con questi dati non possiamo confrontare i formati con il JSON compatto, quindi non mostriamo nessuna cifra.",
       "exactNote": "Contato con {tokenizer}, il tokenizzatore che usa {model}. Confrontiamo con i tuoi dati in JSON compatto: se oggi li invii indentati, la differenza reale è maggiore — e quella non la contiamo.",
       "approxNote": "Il tokenizzatore esatto non si è caricato, quindi qualsiasi conteggio qui sarebbe approssimativo — e non mostriamo risparmi approssimativi. Ricarica la pagina per riprovare.",
-      "scope": "Cos'è e cosa non è: una leva — come si scrivono i dati strutturati nel prompt — sui token di input di questi dati. Vale solo per i dati che passi all'SDK come structuredData, non per il JSON già scritto nei tuoi messaggi. Non è la tua fattura: le chiamate evitate, la cache del tuo fornitore e l'output non ci sono, e molte richieste non contengono dati strutturati. La cifra che difendiamo per l'SDK intero è la soglia pubblicata nella sezione della misurazione.",
+      "scope": "Cos'è e cosa non è: una leva — come si scrivono i dati strutturati nel prompt — sui token di input di questi dati. Vale solo per i dati che passi all'SDK come structuredData, non per il JSON già scritto nei tuoi messaggi. Non è la tua fattura: le chiamate evitate, la cache del tuo fornitore e l'output non ci sono, e molte richieste non contengono dati strutturati. Per l'SDK intero, la cifra che pubblichiamo è quella della sezione della misurazione, con la sua nota.",
       "ctaInstall": "Installa l'SDK"
     }
   },

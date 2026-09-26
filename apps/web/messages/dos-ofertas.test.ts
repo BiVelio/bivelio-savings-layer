@@ -395,3 +395,27 @@ describe("la tarjeta del SDK: su etiqueta no afirma una medición que la fila pu
     });
   }
 });
+
+/**
+ * EL VERIFICADOR NOMBRA LA CIFRA DEL SDK COMO LA TARJETA.
+ *
+ * `landing.verify.scope` cerraba con «la cifra que defendemos para el SDK entero
+ * es el suelo publicado en la sección de la medición». Con #321 esa cifra es un
+ * titular provisional, recalculado y todavía no medido con el SDK tal como se
+ * instala: llamarlo «suelo publicado» y «la cifra que defendemos» es lo que D8
+ * retiró de la etiqueta de la tarjeta. El verificador la nombra ahora con las
+ * mismas palabras que `landing.offers.sdk.figureLabel` y remite a su nota.
+ */
+describe("el verificador nombra la cifra del SDK con las palabras de la tarjeta", () => {
+  it("en/es: sin «floor»/«suelo» ni «stand behind»/«defendemos»", () => {
+    expect(cargar("en")["landing.verify.scope"]).not.toMatch(/floor|stand behind/i);
+    expect(cargar("es")["landing.verify.scope"]).not.toMatch(/suelo|defendemos/i);
+  });
+  for (const loc of LOCALES) {
+    it(`${loc}: landing.verify.scope contiene landing.offers.sdk.figureLabel`, () => {
+      const d = cargar(loc);
+      const etiqueta = d["landing.offers.sdk.figureLabel"]!.toLocaleLowerCase(loc);
+      expect(d["landing.verify.scope"]!.toLocaleLowerCase(loc), loc).toContain(etiqueta);
+    });
+  }
+});
