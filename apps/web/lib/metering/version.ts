@@ -39,13 +39,14 @@ export const VERSION_MINIMA_REFERENCIA = "0.4.24";
  * versión? Solo si la declara, es del SDK (`sdk/`) y es la mínima o posterior.
  *
  * `gateway/` NO, a propósito: la regla v2 vive en el pipeline del SDK
- * (src/pipeline/referencia.ts) y el gateway no pasa por él. Hoy el gateway no
- * emite referencias; la gemela coalescida que las emitiría (Parte G, PR #322)
- * las valora con su propio código, que acredita salida con `temperature: 0` sin
- * la guarda de razonamiento ni la del esquema estricto. Si ese código se
- * publicara con una versión ≥ la mínima, sus referencias entrarían bajo el sello
- * «reference-v2» sin cumplirla. El PR que lleve al gateway la regla v2 abre aquí
- * `gateway/` con su propia mínima, en el mismo cambio.
+ * (src/pipeline/referencia.ts) y el gateway no pasa por él. La gemela
+ * coalescida del gateway (Parte G, PR #322) emite referencias con su propio
+ * código: acredita salida con `temperature: 0` y la guarda de MODELO de la v2
+ * (`salidaNoRepetible`), pero no lee los tokens de razonamiento que declaró la
+ * primaria, que la v2 también exige. Si se admitieran con una versión ≥ la
+ * mínima, sus referencias entrarían bajo el sello «reference-v2» sin cumplirla
+ * entera. El PR que lleve al gateway la regla v2 completa abre aquí `gateway/`
+ * con su propia mínima, en el mismo cambio.
  *
  * Por qué hace falta: la regla con la que el SDK valoró una repetición NO viaja
  * en el registro de uso, y el cierre sella la del servidor para el extracto

@@ -74,6 +74,13 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gpt-5.6-luna": true,
   "gpt-5.6-sol": true,
   "gpt-5.6-terra": true,
+  // La serie o (filas del catálogo desde la Parte G del gateway): razonan
+  // siempre y solo aceptan el `temperature` por defecto. Su salida no se
+  // acredita nunca por referencia.
+  "o3": true,
+  "o3-mini": true,
+  "o3-pro": true,
+  "o4-mini": true,
   // ── Anthropic ──
   "claude-opus-4-5": false,
   "claude-opus-4-6": false,

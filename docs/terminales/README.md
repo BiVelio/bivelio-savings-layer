@@ -116,9 +116,51 @@ las otras líneas:
 |---|---|---|
 | `[gateway] POST /v1/v1/messages → 404` | el base URL lleva `/v1` **de más** para ese terminal | quita el `/v1` |
 | `[gateway] POST /messages → 404` | al base URL le **falta** `/v1` (el SDK solo añade `/messages`) | añade el `/v1` |
-| `[bvsala gateway] el modelo "…" no está en el catálogo de precios; su uso se reenvía pero no se mide.` | modelo fuera de catálogo (a propósito: presente-y-mal es peor que ausente) | nada; se reenvía sin medir |
 | `[gateway] POST /v1/messages → 402 (license expired)` | la licencia caducó, se revocó o la org está bloqueada: las peticiones NUEVAS se rechazan (las que estaban en curso terminaron) | renueva en Cuenta; el terminal enseña el motivo |
 | nada de nada | el terminal no está apuntando al gateway (config no leída, env pisado por config, otro puerto) | revisa la trampa de su guía |
+
+Cada petición que el gateway reenvía **sin medir** deja su propia línea con
+`· not metered: <motivo>`, y en su lugar no se estima nada. Los motivos, tal y
+como salen hoy:
+
+| `· not metered: …` | Qué pasa | Arreglo |
+|---|---|---|
+| `no BIVELIO_SERVICE_KEY` | un gateway arrancado desde código sin clave de servicio: reenvía, no mide (el CLI `bvsala` ni arranca sin ella) | exporta `BIVELIO_SERVICE_KEY` |
+| `model "…" has no list price in the catalog` | modelo fuera del catálogo de precios, a propósito: un precio presente y equivocado es peor que ninguno (la consola lo avisa una vez por modelo) | nada; se reenvía sin medir |
+| `could not read the model from the request body (content-encoding: …)` | el cuerpo no se pudo leer: JSON ilegible o una compresión que este Node no abre (zstd, el de Codex, necesita Node ≥ 22.15) | actualiza Node |
+| `the request did not ask for usage (stream_options.include_usage)` | Chat Completions en stream sin `include_usage`: el proveedor no manda contador | añade `stream_options={"include_usage": True}` a la llamada, o arranca con `BVSALA_GATEWAY_USAGE_INJECT=1` |
+| `…; usage injection skips compressed request bodies` | la inyección está puesta, pero solo añade la opción a cuerpos sin comprimir | pídelo en la llamada |
+| `…, and the upstream rejects that option` | el upstream rechazó `stream_options` y la inyección quedó apagada para el resto del proceso | en stream no hay arreglo desde el gateway; con `stream: false` sí se mide |
+| `the stream ended without the provider's final usage event` | el stream se cortó antes de su evento final (`message_delta`, `response.completed`/`incomplete`/`failed`, el chunk de uso o `[DONE]`): sin él no hay contador | nada |
+| `the response ended as response.failed without usage` | la Responses API cerró con `response.failed` sin `usage`. Si lo trae, sí se mide | nada |
+| `the response ended as response.incomplete without usage` | la Responses API cerró con `response.incomplete` sin `usage`. Si lo trae, sí se mide: un `response.incomplete` por `max_output_tokens` o por el filtro de contenido lo factura el proveedor | nada |
+| `the response carried no usage` | respuesta JSON (`stream: false`) sin `usage` | nada |
+| `the response was too large to read its usage` | respuesta JSON de más de 5 MB: el gateway no la guarda entera para leerla | nada |
+| `the response is neither JSON nor an event stream (content-type: …)` | el upstream contestó con otro tipo de contenido en una ruta que sí sabe medir | revisa el upstream |
+| `no usage dialect for this route` | ruta sin contador que el gateway sepa leer (embeddings, imágenes, audio…): solo mide `/v1/messages`, `…/chat/completions` y `…/responses` | nada |
+
+Con `BVSALA_GATEWAY_COALESCE=1` (apagada por defecto), una petición idéntica a
+otra que sigue en vuelo no viaja: recibe la réplica y su línea lleva
+`· COALESCED (call avoided)`. Detrás va `· by reference: floor $… (cache read
+price, …)` cuando se valora con el contador de la petición que sí viajó —a
+precio de lectura de caché, sin primas y con la salida solo si el cuerpo trae
+`temperature: 0` y el modelo no razona (la misma guarda de modelo que el SDK)—,
+o `· estimated, not by reference: <motivo>` cuando no. Esa línea es la
+valoración local: el panel todavía recibe estas peticiones como `estimated`, y
+no entran en la base de la comisión, porque el gateway aún no lee los tokens de
+razonamiento que declara el proveedor y la regla `reference-v2` los exige.
+
+| `· estimated, not by reference: …` | Por qué no |
+|---|---|
+| `no-primary-record` | la petición que viajó no dejó su contador final (ni evento final del stream ni `usage` en el JSON) |
+| `subscription` | tráfico de suscripción (Claude o ChatGPT): no hay factura por token |
+| `unofficial-upstream` | el gateway no habla con `api.anthropic.com` ni `api.openai.com` (un mock, un proxy, Azure, un revendedor): el precio de lista no está en ninguna factura |
+| `layer-changed-request` | una palanca cambió lo que viajó (modelo, cuerpo, cabeceras; también la rebaja de TTL de la caché): ya no es la petición del cliente byte a byte |
+| `primary-failed` | la petición que viajó cerró con `response.failed` |
+| `client-disconnected` | el cliente de esta petición se fue antes de recibir la réplica entera |
+| `service-tier` | el `service_tier` pedido o el servido no tiene precio por token publicado (`scale`, uno nuevo) |
+| `no-cached-price` | el modelo no tiene precio de lectura de caché en su propia fila del catálogo |
+| `no-credit` | el contador no deja nada que acreditar |
 
 Claude Code manda además un `HEAD /api/hello` antes de la primera llamada: es
 la sonda de vida, no una inferencia.
