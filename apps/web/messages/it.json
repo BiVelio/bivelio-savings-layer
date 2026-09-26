@@ -878,6 +878,7 @@
       "title": "Claude Code con chiave API? Guarda la spesa reale, token per token.",
       "body": "Un solo comando mette un contatore locale davanti al tuo terminale. Niente codice da toccare, niente da configurare — e i tuoi prompt non lasciano mai la tua macchina: a questo pannello arrivano solo conteggi e costo.",
       "note": "Il gateway misura ogni richiesta e, come l'SDK, funziona solo con una licenza attiva: la ritira con la tua chiave di servizio e ne verifica la firma sulla tua macchina. Con una licenza PRO applica anche una leva per impostazione predefinita: accorcia il TTL di scrittura della cache finché la sessione resta calda — cambia il prezzo, mai il contenuto che il modello legge. Le altre leve restano spente finché non le attivi. Lo skill savings-mode è disponibile per i tuoi limiti, con l'effetto ancora da misurare. Funziona anche con Codex CLI, Goose e Qwen Code — e bvsala doctor stampa la configurazione esatta degli altri.",
+      "pythonNote": "Python o qualsiasi altro linguaggio? Punta l'SDK ufficiale di OpenAI o di Anthropic al gateway e ogni richiesta di cui il fornitore riporta l'utilizzo, per un modello con prezzo di listino, viene registrata in questo pannello a quel prezzo; il log del gateway avvisa quando una non viene misurata. bvsala doctor stampa l'URL di base di ogni SDK. In streaming con OpenAI, chiedi l'utilizzo nella richiesta (stream_options.include_usage).",
       "cta": "Guarda come funziona →"
     },
     "integrate": {
@@ -1019,7 +1020,7 @@
     "devs": {
       "eyebrow": "Fatto per sviluppatori",
       "title": "Meno mal di testa con la fattura. Senza cambiare fornitore.",
-      "sub": "Tre fatti sul pacchetto. Nessuno è una promessa.",
+      "sub": "Quattro fatti sul pacchetto. Nessuno è una promessa.",
       "cards": [
         {
           "title": "Zero dipendenze a runtime",
@@ -1035,6 +1036,11 @@
           "title": "Il tuo traffico resta diretto",
           "body": "L'SDK incapsula la chiamata nel tuo processo. I tuoi prompt non passano da BiVelio: a noi arrivano solo conteggi e costo.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, lo stesso report",
+          "body": "generateStream() ti consegna la risposta man mano che il fornitore la scrive e si chiude con lo stesso SavingsReport di generate(), con le stesse regole di base: il contatore finale del fornitore viene letto alla fine dello stream, e uno stream che ne è privo viene riportato come non misurato e non entra mai nella tua commissione. Con un contratto di output, la risposta arriva validata, in un solo pezzo.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1091,7 +1097,7 @@
     "nodeApiSubAfter": "riceve meno token",
     "billMonth": "fattura / mese",
     "billReport": "+ SavingsReport",
-    "s1Note": "Quel riquadro verde è un pacchetto npm dentro il codice dell'applicazione. Per questo la domanda chiave non è mai «cosa installo?» ma <b>«chi ha scritto il codice che chiama l'API?»</b> — quella persona è chi può installarlo. L'unica eccezione è un terminale di codifica come Claude Code: lì il gateway «bvsala claude» si mette davanti senza toccare una sola riga di codice.",
+    "s1Note": "Quel riquadro verde è un pacchetto npm dentro il codice dell'applicazione. Per questo la domanda chiave non è mai «cosa installo?» ma <b>«chi ha scritto il codice che chiama l'API?»</b> — quella persona è chi può installarlo. Le eccezioni sono un terminale di codifica come Claude Code e un'app in qualsiasi linguaggio che usi l'SDK ufficiale di OpenAI o di Anthropic e permetta di impostarne l'URL di base: lì il gateway di bvsala si mette davanti senza toccare una sola riga di codice. Quel traffico viene misurato per i modelli con prezzo di listino; le leve di risparmio del pacchetto npm lì non girano, e quelle del gateway stesso si applicano solo al traffico Anthropic, con una licenza PRO.",
     "s2Title": "Il tuo caso, in 10 secondi",
     "s2Sub": "Quattro modi di usare l'IA, e cosa può fare BV‑SALA in ciascuno.",
     "caseChatSub": "app o web, gratis o a pagamento",

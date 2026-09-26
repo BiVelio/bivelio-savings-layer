@@ -878,6 +878,7 @@
       "title": "Claude Code com chave de API? Vê o gasto real, token a token.",
       "body": "Um único comando põe um medidor local à frente do teu terminal. Sem tocar em código, sem configurar nada — e os teus prompts nunca saem da tua máquina: a este painel só chegam contagens e custo.",
       "note": "O gateway mede cada pedido e, tal como o SDK, só funciona com uma licença ativa: recolhe-a com a tua chave de serviço e verifica a sua assinatura na tua máquina. Com licença PRO aplica também uma alavanca por defeito: encurta o TTL de escrita da cache enquanto a sessão se mantém quente — muda o preço, nunca o conteúdo que o modelo lê. As restantes alavancas ficam desligadas até as ativares. O skill savings-mode está disponível para os teus limites, com o efeito ainda por medir. Funciona também com Codex CLI, Goose e Qwen Code — e o bvsala doctor imprime a configuração exata dos restantes.",
+      "pythonNote": "Python ou qualquer outra linguagem? Aponta o SDK oficial da OpenAI ou da Anthropic para o gateway e cada pedido cujo uso o fornecedor reporte, de um modelo com preço de tabela, fica registado neste painel a esse preço; o log do gateway avisa quando um não é medido. O bvsala doctor imprime o base URL de cada SDK. Em streaming com a OpenAI, pede o uso no pedido (stream_options.include_usage).",
       "cta": "Vê como funciona →"
     },
     "integrate": {
@@ -1019,7 +1020,7 @@
     "devs": {
       "eyebrow": "Feito para programadores",
       "title": "Menos dores de cabeça com a fatura. Sem mudar de fornecedor.",
-      "sub": "Três factos sobre o pacote. Nenhum é uma promessa.",
+      "sub": "Quatro factos sobre o pacote. Nenhum é uma promessa.",
       "cards": [
         {
           "title": "Zero dependências de runtime",
@@ -1035,6 +1036,11 @@
           "title": "O teu tráfego continua direto",
           "body": "O SDK envolve a chamada dentro do teu processo. Os teus prompts não passam pela BiVelio: a nós só chegam contagens e custo.",
           "mono": "app → provider api"
+        },
+        {
+          "title": "Streaming, o mesmo relatório",
+          "body": "generateStream() entrega-te a resposta à medida que o fornecedor a escreve e fecha com o mesmo SavingsReport que generate(), com as mesmas regras de base: o contador final do fornecedor é lido no fim do stream, e um stream sem ele é reportado como não medido e nunca entra na tua comissão. Com contrato de saída, a resposta chega validada e numa só peça.",
+          "mono": "layer.generateStream(request)"
         }
       ]
     }
@@ -1091,7 +1097,7 @@
     "nodeApiSubAfter": "recebe menos tokens",
     "billMonth": "fatura / mês",
     "billReport": "+ SavingsReport",
-    "s1Note": "Aquele quadro verde é um pacote npm dentro do código da aplicação. Por isso a pergunta-chave nunca é «o que eu instalo?», e sim <b>«quem escreveu o código que chama a API?»</b> — essa pessoa é quem pode instalá-lo. A única exceção é um terminal de programação como o Claude Code: aí o gateway «bvsala claude» fica à frente sem tocar numa única linha de código.",
+    "s1Note": "Aquele quadro verde é um pacote npm dentro do código da aplicação. Por isso a pergunta-chave nunca é «o que eu instalo?», e sim <b>«quem escreveu o código que chama a API?»</b> — essa pessoa é quem pode instalá-lo. As exceções são um terminal de programação como o Claude Code e uma app em qualquer linguagem que use o SDK oficial da OpenAI ou da Anthropic e deixe definir o seu base URL: aí o gateway do bvsala fica à frente sem tocar numa única linha de código. Esse tráfego é medido para os modelos com preço de tabela; as alavancas de poupança do pacote npm não correm aí, e as do próprio gateway só se aplicam ao tráfego da Anthropic, com licença PRO.",
     "s2Title": "O seu caso, em 10 segundos",
     "s2Sub": "Quatro maneiras de usar IA, e o que o BV‑SALA pode fazer em cada uma.",
     "caseChatSub": "app ou web, grátis ou pago",
