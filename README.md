@@ -35,7 +35,8 @@ at least 90 % of every euro saved** (before the invoice is rounded to the cent; 
 seat fee is separate). A month with no measured saving is zero commission. And your
 prompts and completions **never reach BiVelio**: what BiVelio receives is per‑request
 usage — token counts, cost, the model id and opaque ids — never your content
-([LICENSE](./LICENSE) §5 lists every field).
+([LICENSE](./LICENSE) §5 lists every field; [savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)
+explains each one and how long it is kept).
 
 ### For engineers, in one line
 
@@ -412,15 +413,18 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 BV‑SALA is commercial software: a per‑seat subscription (**€4 / seat / month** or
 **€39 / seat / year**, EUR; VAT not included), paid whether or not you save, plus a
-tiered commission on measured savings only, as described at the top of this page and
-in [LICENSE](./LICENSE) §6. No free tier and no trial: what you can check before
+tiered commission on measured savings only, as described at the top of this page, in
+[LICENSE](./LICENSE) §6 and in the Published Pricing it refers to,
+**[savings.bivelio.com/pricing](https://savings.bivelio.com/pricing)**. No free tier and no trial: what you can check before
 paying is the published measurement. The license is a signed token your SDK and the
 gateway verify **offline**; the managed control plane and the revocation kill‑switch
 are served from BiVelio. Your LLM traffic goes **straight to your provider** —
 BiVelio receives per‑request usage (counts, cost, the model id and opaque ids), never
-prompts, completions or provider keys; [LICENSE](./LICENSE) §5 lists every field.
+prompts, completions or provider keys; [LICENSE](./LICENSE) §5 lists every field, and
+**[savings.bivelio.com/privacy](https://savings.bivelio.com/privacy)** says how long
+each one is kept.
 
-Get a key and read the terms at **[savings.bivelio.com](https://savings.bivelio.com)**.
+Get a key at **[savings.bivelio.com](https://savings.bivelio.com)**.
 Onboarding & general questions: **support@bivelio.com** · licensing & compliance:
 **privacy@bivelio.com** · technical: **team@bivelio.com**.
 

@@ -83,13 +83,25 @@ not install or use the Software.
    organization's feature entitlements; these requests carry your service-account
    key where authentication is required, and no request data. Like any HTTPS
    request, all of the above also reveals ordinary network metadata, such as your
-   IP address.
+   IP address. If you enable the SDK's optional verification, which is off by
+   default, the SDK also sends BiVelio, through a separate channel and for each
+   request it samples: a label marking the record as a verification sample; the
+   request identifier and time; the model requested and the model that served it;
+   the cache outcome; the category of the request and the outcome of the check;
+   the input, cached-input, and output token counts and the cost of the served
+   request and of the unoptimized copy the SDK sent to your LLM provider; how
+   that copy finished and whether it met the response contract; and the per-token
+   prices applied; together with daily counts of requests per category and a
+   random batch identifier. That channel likewise rejects any field not listed
+   here, and none of it is used to calculate the fees in Section 6.
    (c) BiVelio uses this data to operate licensing and revocation, show your
-   dashboard, count billable seats, and calculate the fees in Section 6, as
-   further described in BiVelio's privacy terms.
+   dashboard, count billable seats, and calculate the fees in Section 6. Each
+   field, and how long BiVelio keeps it, is further described at
+   https://savings.bivelio.com/privacy.
 
 6. FEES. Your subscription is subject to BiVelio's pricing as published at
-   https://savings.bivelio.com (the "Published Pricing") for each billing period:
+   https://savings.bivelio.com/pricing (the "Published Pricing") for each billing
+   period:
    (a) a subscription fee per seat, payable whether or not the Software produces any
    saving; and (b) a commission, at tiered marginal rates, charged only on measured
    savings, meaning savings whose basis is labelled "measured" or "reference" in

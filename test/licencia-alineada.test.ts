@@ -141,6 +141,113 @@ describe("la LICENSE §5 enumera exactamente lo que viaja a BiVelio", () => {
   });
 });
 
+/** Los campos de una `interface X { … }` de un fuente, leídos como texto. */
+function camposDeInterfaz(fuente: string, nombre: string): string[] {
+  const inicio = fuente.indexOf(`interface ${nombre} {`);
+  if (inicio < 0) throw new Error(`no se encontró \`interface ${nombre}\``);
+  const cuerpo = fuente.slice(inicio, fuente.indexOf("\n}\n", inicio));
+  return [...cuerpo.matchAll(/^ {2}(\w+)\??:/gm)].map((m) => m[1]!);
+}
+
+/**
+ * La verificación A/B opcional (#324) tiene su propio canal y su propia lista
+ * blanca (apps/web/lib/verificacion/wire.ts). Viaja a BiVelio, así que la §5
+ * la enumera también: cada campo → la frase que lo cubre, como arriba.
+ */
+const FRASE_DE_LA_VERIFICACION: Record<string, string> = {
+  basis: "a label marking the record as a verification sample",
+  requestId: "request identifier and time; the model requested and the model that served it",
+  at: "request identifier and time; the model requested and the model that served it",
+  requestedModel: "the model requested and the model that served it",
+  servedModel: "the model requested and the model that served it",
+  cacheResult: "the cache outcome; the category of the request and the outcome of the check",
+  stratum: "the category of the request and the outcome of the check",
+  outcome: "the category of the request and the outcome of the check",
+  optimizedInputTokens: "the input, cached-input, and output token counts and the cost of the served request",
+  optimizedCachedInputTokens: "the input, cached-input, and output token counts and the cost of the served request",
+  optimizedOutputTokens: "the input, cached-input, and output token counts and the cost of the served request",
+  optimizedCost: "the input, cached-input, and output token counts and the cost of the served request",
+  naiveInputTokens: "and of the unoptimized copy the SDK sent to your LLM provider",
+  naiveCachedInputTokens: "and of the unoptimized copy the SDK sent to your LLM provider",
+  naiveOutputTokens: "and of the unoptimized copy the SDK sent to your LLM provider",
+  naiveCost: "and of the unoptimized copy the SDK sent to your LLM provider",
+  naiveFinishReason: "how that copy finished and whether it met the response contract",
+  naiveContract: "how that copy finished and whether it met the response contract",
+  inputPer1k: "and the per-token prices applied",
+  cachedInputPer1k: "and the per-token prices applied",
+  outputPer1k: "and the per-token prices applied",
+  samples: "for each request it samples",
+  counts: "together with daily counts of requests per category",
+  day: "together with daily counts of requests per category",
+  category: "together with daily counts of requests per category",
+  requests: "together with daily counts of requests per category",
+  batchId: "and a random batch identifier",
+};
+
+describe("la LICENSE §5 enumera también el canal de verificación opcional (#324)", () => {
+  const s5 = plano(seccion(5));
+  const wire = leer("../apps/web/lib/verificacion/wire.ts");
+  const emisorVerif = leer("../src/verification/emisor.ts");
+
+  /** Las claves de una `const X = [...]` de wire.ts. */
+  const claves = (nombre: string) => {
+    const m = new RegExp(`const ${nombre} = \\[([\\s\\S]*?)\\]`).exec(wire);
+    if (!m?.[1]) throw new Error(`no se encontró ${nombre} en wire.ts`);
+    return [...m[1].matchAll(/"(\w+)"/g)].map((x) => x[1]!);
+  };
+
+  const todos = () => [
+    ...new Set([
+      ...camposDeInterfaz(emisorVerif, "MuestraEnElCable"),
+      ...camposDeInterfaz(emisorVerif, "ConteoEnElCable"),
+      ...camposDeInterfaz(emisorVerif, "SobreDeVerificacion"),
+      ...["CLAVES_DEL_SOBRE", "CLAVES_DEL_CONTEO", "CLAVES_OBLIGATORIAS", "CLAVES_DE_LA_COPIA", "CLAVES_OPCIONALES"].flatMap(
+        claves,
+      ),
+    ]),
+  ];
+
+  it("el lector del cable de verificación funciona", () => {
+    expect(todos().length).toBeGreaterThan(20);
+  });
+
+  it("⛔ ningún campo del canal de verificación queda sin su línea en la §5", () => {
+    const sinFrase = todos().filter((c) => FRASE_DE_LA_VERIFICACION[c] === undefined);
+    expect(sinFrase, "campo nuevo en el cable de verificación: añádelo a la LICENSE §5 y a este mapa").toEqual([]);
+    const sinLinea = todos().filter((c) => !s5.includes(FRASE_DE_LA_VERIFICACION[c]!));
+    expect(sinLinea, "la LICENSE §5 perdió la línea de estos campos").toEqual([]);
+    expect(s5).toMatch(/off by default/);
+    expect(s5).toMatch(/none of it is used to calculate the fees in Section 6/);
+  });
+});
+
+describe("la LICENSE remite a páginas que existen", () => {
+  const existe = (ruta: string) => {
+    try {
+      leer(ruta);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  it("⛔ la «Published Pricing» de la §6 es /pricing, y la ruta existe en la web", () => {
+    expect(plano(seccion(6))).toContain('https://savings.bivelio.com/pricing (the "Published Pricing")');
+    expect(existe("../apps/web/app/[locale]/pricing/page.tsx")).toBe(true);
+  });
+
+  it("⛔ la §5 remite a /privacy para cada campo y su retención, y la ruta existe en la web", () => {
+    expect(plano(seccion(5))).toContain("is further described at https://savings.bivelio.com/privacy");
+    expect(plano(seccion(5))).not.toMatch(/BiVelio's privacy terms/);
+    expect(existe("../apps/web/app/[locale]/privacy/page.tsx")).toBe(true);
+  });
+
+  it("el README (npm) enlaza las dos páginas", () => {
+    expect(readme).toContain("https://savings.bivelio.com/pricing");
+    expect(readme).toContain("https://savings.bivelio.com/privacy");
+  });
+});
+
 /** Las etiquetas de `basis` que existen: el tipo `CostBasis` del SDK, leído del fuente. */
 function etiquetasDeBasis(): string[] {
   const m = /export type CostBasis = ([^;]+);/.exec(contabilidad);
