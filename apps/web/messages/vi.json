@@ -277,7 +277,8 @@
       "colACost": "chi phí A",
       "colBCost": "chi phí B",
       "colSavings": "tiết kiệm",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "bộ nén của băng thử, không có trong npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Trình xác minh tiết kiệm",
@@ -436,6 +437,7 @@
       "proven": "đã chứng minh",
       "notProven": "chưa chứng minh",
       "notExercised": "chưa được kích hoạt trong lần chạy này — số 0 không phải là một phép đo",
+      "benchOnly": "có một bộ nén của băng thử mà gói npm không kèm theo — không quảng bá",
       "estimatedMock": "ước tính (mô phỏng)",
       "footnoteMain": "Bốn sổ cái, <b>không bao giờ cộng gộp</b> — mỗi cái là một đòn bẩy được đo riêng biệt, nên một đô la không thể bị đếm hai lần.",
       "reconciledNote": "Phần dư đối chiếu ≈ 0 chứng minh điều đó.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "tiết kiệm ròng, <b>giới hạn dưới của khoảng tin cậy 95%</b>. Ước tính điểm {point}, cận trên {upper} — chúng tôi lấy mức sàn làm tiêu đề{mockNote}.",
+      "captionSdkPendiente": "mức mà SDK đạt được đúng như khi cài đặt từ npm. Lần chạy đã công bố có một bộ nén chỉ dùng trong băng thử mà gói không kèm theo, nên khoảng tin cậy và ước lượng điểm của nó không được hiển thị như một cam kết cho đến khi một lần chạy với SDK đã cài đặt thay thế chúng.",
       "mockNote": " (khối lượng công việc tham chiếu, nhà cung cấp mô phỏng)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— được đo đối chiếu với một nhà cung cấp thực, có kiểm soát chất lượng.",
+      "sdkPendiente": "Lần chạy này có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo: các con số của nó cho thấy cơ chế, không phải mức SDK đã cài đặt tiết kiệm được.",
       "mock": "<b>ƯỚC TÍNH · nhà cung cấp mô phỏng</b> — điều này chứng minh cơ chế hoạt động, không phải hóa đơn của bạn. Một lần chạy LIVE đã cam kết sẽ thay thế mọi con số ở đây."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "hóa đơn giảm, xác minh ở mức 95% · so với tích hợp chưa tối ưu, không streaming"
         }
       ],
+      "proofSdkPendiente": "Tạm thời: lần chạy đã công bố có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo. Con số này nằm dưới cận dưới của lần chạy đó khi loại bỏ tác động của bộ nén, được tính lại từ các lần thử đã đo — nó chưa phải là phép đo của SDK đã cài đặt. Lần chạy đó vẫn đang chờ.",
       "medidoEn": "Đo trên",
       "compatibleCon": "Tương thích với",
       "compatibleNota": "Mọi endpoint tương thích với API của OpenAI, cùng bộ điều hợp gốc cho Anthropic. Có con số đã công bố, hiện nay, chỉ OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "Bài kiểm tra là một thí nghiệm công bằng: cùng một nhiệm vụ chạy hai lần — không có Savings và có Savings — và cùng một bộ đếm của nhà cung cấp đo cả hai.",
       "plainTitle": "Diễn giải, không thuật ngữ",
       "plain": "Trong bài kiểm tra này, hóa đơn gần như chắc chắn giảm ít nhất {piso}. Nhiều khả năng nhất là giảm {punto}.",
+      "plainSdkPendiente": "Với SDK đúng như bạn cài đặt từ npm, hóa đơn giảm ít nhất {piso}. Bài kiểm tra đã công bố còn có một bộ nén chỉ dùng trong băng thử mà gói không kèm theo; chúng tôi loại bỏ tác động của nó thay vì tính vào, cho đến khi một lần chạy với SDK đã cài đặt thay thế con số này.",
       "plainNote": "Khi có một khoảng dao động, chúng tôi luôn công bố con số nhỏ — con số được thống kê bảo đảm — không bao giờ là con số đẹp.",
       "trialsLink": "Tải dữ liệu thử nghiệm thô (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "chất lượng",
       "punto": "ước lượng điểm",
       "suelo": "Con số tiêu đề là cận dưới của khoảng 95%, không bao giờ là điểm.",
+      "sdkPendiente": "Lần chạy này có một bộ nén chỉ dùng trong băng thử mà gói npm không kèm theo, nên cận dưới của nó không được hiển thị. Con số phía trên là con số tiêu đề của chúng tôi cho SDK đúng như bạn cài đặt: nó vẫn đứng vững khi loại bỏ tác động của bộ nén đó. Một lần chạy với SDK đã cài đặt vẫn đang chờ.",
       "libros": "theo từng sổ cái",
       "pie": "Mỗi sổ cái được công bố với khoảng riêng; sổ nào không vượt qua số không thì không được quảng bá.",
       "fecha": "đợt chạy"

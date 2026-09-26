@@ -277,7 +277,8 @@
       "colACost": "costo A",
       "colBCost": "costo B",
       "colSavings": "risparmio",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "compressore del banco di prova, non in npm"
     },
     "projectorVerifier": {
       "verifierTitle": "Verificatore di risparmio",
@@ -436,6 +437,7 @@
       "proven": "comprovato",
       "notProven": "non comprovato",
       "notExercised": "non esercitata in questa esecuzione — il suo zero non è una misurazione",
+      "benchOnly": "include un compressore esclusivo del banco di prova che il pacchetto npm non contiene — non pubblicizzato",
       "estimatedMock": "stimato (simulato)",
       "footnoteMain": "Quattro registri, <b>mai sommati</b> — ognuno è una leva misurata separatamente, così un dollaro non può essere contato due volte.",
       "reconciledNote": "Il residuo di riconciliazione ≈ 0 lo dimostra.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "risparmio netto, <b>limite inferiore dell'IC al 95%</b>. Stima puntuale {point}, superiore {upper} — evidenziamo il minimo{mockNote}.",
+      "captionSdkPendiente": "ciò che regge l'SDK così come si installa da npm. L'esecuzione pubblicata includeva un compressore esclusivo del banco di prova che il pacchetto non include, quindi il suo intervallo e la sua stima puntuale non vengono mostrati come promessa finché un'esecuzione dell'SDK installato non li sostituirà.",
       "mockNote": " (carico di lavoro di riferimento, provider simulato)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— misurato contro un provider reale, con controllo qualità.",
+      "sdkPendiente": "Questa esecuzione includeva un compressore esclusivo del banco di prova che il pacchetto npm non include: le sue cifre mostrano il meccanismo, non quanto risparmia l'SDK installato.",
       "mock": "<b>STIMATO · provider simulato</b> — questo dimostra che il meccanismo funziona, non la tua fattura. Un'esecuzione LIVE confermata sostituisce ogni numero qui."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ 15,0%",
+          "cifra": "≥ 10,0%",
           "que": "di fattura in meno, verificato al 95 % · rispetto a un'integrazione non ottimizzata, senza streaming"
         }
       ],
+      "proofSdkPendiente": "Provvisorio: l'esecuzione pubblicata includeva un compressore esclusivo del banco di prova che il pacchetto npm non include. Questa cifra sta sotto la soglia minima di quell'esecuzione togliendo l'effetto del compressore, ricalcolata dalle prove misurate: non è ancora una misurazione dell'SDK installato. Quell'esecuzione è in sospeso.",
       "medidoEn": "Misurato su",
       "compatibleCon": "Compatibile con",
       "compatibleNota": "Qualsiasi endpoint compatibile con l'API OpenAI, più l'adattatore nativo Anthropic. Con cifra pubblicata, oggi, solo OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "Il test è un esperimento equo: lo stesso compito due volte — senza Savings e con Savings — con lo stesso contatore del fornitore che misura entrambi.",
       "plainTitle": "Traduzione, senza gergo",
       "plain": "In questo test la fattura è scesa quasi con certezza di almeno {piso}. Molto probabilmente è scesa del {punto}.",
+      "plainSdkPendiente": "Con l'SDK così come lo installi da npm, la fattura scende di almeno {piso}. Il test pubblicato includeva anche un compressore esclusivo del banco di prova che il pacchetto non include; ne togliamo l'effetto invece di contarlo, finché un'esecuzione dell'SDK installato non sostituirà questa cifra.",
       "plainNote": "Quando c'è una forchetta, annunciamo sempre il numero piccolo — quello che la statistica garantisce —, mai quello lusinghiero.",
       "trialsLink": "Scarica le prove grezze (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "qualità",
       "punto": "stima puntuale",
       "suelo": "Il titolo è la soglia minima dell'intervallo al 95 %, mai il punto.",
+      "sdkPendiente": "Questa esecuzione includeva un compressore esclusivo del banco di prova che il pacchetto npm non include, quindi la sua soglia minima non viene mostrata. La cifra qui sopra è il nostro titolo per l'SDK così come lo installi: regge anche togliendo l'effetto di quel compressore. Manca ancora un'esecuzione dell'SDK installato.",
       "libros": "per registro",
       "pie": "Ogni registro si pubblica con il proprio intervallo; quelli che non superano lo zero non si annunciano.",
       "fecha": "tornata"

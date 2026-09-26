@@ -277,7 +277,8 @@
       "colACost": "A maliyet",
       "colBCost": "B maliyet",
       "colSavings": "tasarruf",
-      "colQa": "qa"
+      "colQa": "qa",
+      "benchOnly": "test düzeneği sıkıştırıcısı, npm'de yok"
     },
     "projectorVerifier": {
       "verifierTitle": "Tasarruf doğrulayıcı",
@@ -436,6 +437,7 @@
       "proven": "kanıtlandı",
       "notProven": "kanıtlanmadı",
       "notExercised": "bu turda devreye girmedi — sıfırı bir ölçüm değil",
+      "benchOnly": "npm paketinde bulunmayan bir test düzeneği sıkıştırıcısı içerir — tanıtılmaz",
       "estimatedMock": "tahmini (sahte)",
       "footnoteMain": "Dört defter, <b>asla toplanmaz</b> — her biri ayrı ayrı ölçülen bir kaldıraçtır, dolayısıyla bir dolar iki kez sayılamaz.",
       "reconciledNote": "Mutabakat kalıntısı ≈ 0 bunu kanıtlar.",
@@ -455,6 +457,7 @@
     },
     "netSavingsCIBand": {
       "caption": "net tasarruf, <b>%95 GA alt sınırı</b>. Nokta tahmini {point}, üst {upper} — biz tabanı öne çıkarırız{mockNote}.",
+      "captionSdkPendiente": "SDK'nın npm'den kurulduğu haliyle sağladığı. Yayımlanan tur, paketin içermediği ve yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu; bu yüzden aralığı ve nokta tahmini, kurulu SDK ile bir tur onların yerini alana kadar bir vaat olarak gösterilmiyor.",
       "mockNote": " (referans iş yükü, sahte sağlayıcı)"
     },
     "cacheBreakEven": {
@@ -468,6 +471,7 @@
     },
     "referenceModeBadge": {
       "liveDesc": "— gerçek bir sağlayıcıya karşı ölçüldü, kalite kapısından geçti.",
+      "sdkPendiente": "Bu tur, npm paketinde bulunmayan ve yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu: rakamları kurulu SDK'nın ne kadar tasarruf ettirdiğini değil, mekanizmayı gösterir.",
       "mock": "<b>TAHMİNİ · sahte sağlayıcı</b> — bu, mekanizmanın çalıştığını kanıtlar, faturanızı değil. Taahhüt edilmiş bir LIVE çalıştırması buradaki her rakamın yerini alır."
     },
     "connectionStatePill": {
@@ -736,10 +740,11 @@
         {
           "marca": "OpenAI",
           "modelo": "gpt-4o-mini",
-          "cifra": "≥ %15,0",
+          "cifra": "≥ %10,0",
           "que": "daha az fatura, %95'te doğrulandı · optimize edilmemiş bir entegrasyona kıyasla, akış olmadan"
         }
       ],
+      "proofSdkPendiente": "Geçici: yayımlanan tur, npm paketinde bulunmayan ve yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu. Bu rakam, sıkıştırıcının etkisi çıkarıldığında o turun tabanının altında kalıyor; ölçülen denemelerden yeniden hesaplandı — henüz kurulu SDK'nın bir ölçümü değil. O tur bekleniyor.",
       "medidoEn": "Ölçüldüğü yer",
       "compatibleCon": "Uyumlu",
       "compatibleNota": "OpenAI API'siyle uyumlu her uç nokta ve yerel Anthropic adaptörü. Yayımlanmış rakamla, bugün, yalnızca OpenAI {modelo}."
@@ -803,6 +808,7 @@
       "videoCaption": "Test adil bir deneydir: aynı görev iki kez — Savings olmadan ve Savings ile — ve ikisini de sağlayıcının aynı sayacı ölçer.",
       "plainTitle": "Jargonsuz çevirisi",
       "plain": "Bu testte fatura neredeyse kesin olarak en az {piso} düştü. Büyük olasılıkla {punto} düştü.",
+      "plainSdkPendiente": "SDK'yı npm'den kurduğunuz haliyle fatura en az {piso} düşer. Yayımlanan test ayrıca paketin içermediği, yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu; kurulu SDK ile bir tur bu rakamın yerini alana kadar onun etkisini saymak yerine çıkarıyoruz.",
       "plainNote": "Bir aralık olduğunda her zaman küçük sayıyı duyururuz — istatistiğin garanti ettiğini — asla gösterişli olanı değil.",
       "trialsLink": "Ham denemeleri indir (CSV)"
     },
@@ -1005,6 +1011,7 @@
       "calidad": "kalite",
       "punto": "nokta tahmini",
       "suelo": "Başlık %95 aralığının tabanıdır, asla nokta değil.",
+      "sdkPendiente": "Bu tur, npm paketinde bulunmayan ve yalnızca test düzeneğine ait bir sıkıştırıcı içeriyordu; bu yüzden kendi tabanı gösterilmiyor. Yukarıdaki rakam, SDK'yı kurduğunuz haliyle başlığımızdır: o sıkıştırıcının etkisi çıkarıldığında da geçerliliğini koruyor. Kurulu SDK ile bir tur henüz yapılmadı.",
       "libros": "defter başına",
       "pie": "Her defter kendi aralığıyla yayımlanır; sıfırı aşmayanlar duyurulmaz.",
       "fecha": "çalıştırma"
