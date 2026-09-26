@@ -76,6 +76,16 @@ const USAGE_ALLOWED_FIELDS = new Set<string>([
   ...USAGE_OPTIONAL_REFERENCE_FIELDS,
 ]);
 
+/**
+ * La lista blanca del registro de uso, tal cual la aplica `parseUsageRecord`,
+ * y las etiquetas de `basis` que admite. Las lee la web pública: la página de
+ * privacidad enumera los campos (su test compara los dos conjuntos: un campo
+ * nuevo aquí sin su línea en la página pone la suite en rojo) y la de precios
+ * dice qué etiquetas nunca llevan comisión.
+ */
+export const CAMPOS_DEL_REGISTRO_DE_USO: readonly string[] = Object.freeze([...USAGE_ALLOWED_FIELDS]);
+export const ETIQUETAS_DE_BASIS: readonly string[] = Object.freeze([...USAGE_BASIS]);
+
 /** Resultados de acierto que pueden valorarse por referencia: el exacto y el seguidor coalescido. */
 const REFERENCE_CACHE_RESULTS = new Set(["exact", "singleflight"]);
 

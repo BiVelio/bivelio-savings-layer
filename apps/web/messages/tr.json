@@ -949,7 +949,9 @@
       "andorra": "Andorra'dan tüm dünyaya 🇦🇩",
       "bottomPrivacy": "Gizlilik",
       "bottomTerms": "Şartlar",
-      "howItWorks": "Nasıl çalışır"
+      "howItWorks": "Nasıl çalışır",
+      "pricingTerms": "Fiyat koşulları",
+      "dataPrivacy": "BiVelio ne alır"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1124,6 +1126,137 @@
     "ctaVerify": "Ölçülen tasarrufu gör",
     "ctaSignup": "Hesap oluştur",
     "ctaInstall": "Kurulum rehberine git"
+  },
+  "pricingPage": {
+    "metaTitle": "Fiyat koşulları · BV-SALA",
+    "metaDescription": "Koltuk başına ücret ve ölçülmüş tasarruf üzerinden komisyon, faturayı kesen sabitlerin kendisinden yayımlanır.",
+    "eyebrow": "Yayımlanan fiyatlar",
+    "title": "Fiyat koşulları",
+    "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
+    "lede": "LICENSE bu sayfaya “Published Pricing” olarak atıfta bulunur. Buradaki her rakam, sana fatura kesen kodun kendisinden okunur; yani fiyat değişince sayfa da değişir.",
+    "seat": {
+      "title": "Koltuk başına ücret",
+      "amount": "Koltuk başına aylık <b>{monthly}</b> ya da koltuk başına yıllık <b>{yearly}</b>, {currency} cinsinden.",
+      "paidAlways": "Koltuk başına ücret, <b>Yazılım tasarruf sağlasa da sağlamasa da</b> ödenir.",
+      "vat": "Tutarlara KDV dahil değildir. Ödeme sırasında fatura adresin ve isteğe bağlı olarak KDV numaran istenir; ikisi de faturanda yer alır.",
+      "whatTitle": "Koltuk nedir",
+      "what": "Koltuk, Yazılımı çalıştıran bir <b>makine ya da servis kimliğidir</b>, bir kişi değil. Aboneliğinin kaç koltuğu kapsayacağını sen seçersin (ödemede en fazla {max}), lisansın da o kadarını kapsar.",
+      "counted": "BiVelio her takvim ayında (UTC), o ayın en az {dias} farklı gününde etkin olan her ayrı koltuk kimliğini kullanımda sayar. CI ya da geçici çalıştırıcı olarak işaretlenen kimlikler sayılmaz. Panelin bu sayıyı aboneliğinin kapsadığı koltuklarla karşılaştırır.",
+      "identifier": "Koltuk kimliğinin nasıl oluşturulduğu ve Yazılımın BiVelio'ya gönderdiği diğer her şey <privacy>gizlilik sayfasında</privacy> yer alır."
+    },
+    "commission": {
+      "title": "Ölçülmüş tasarruf üzerinden komisyon",
+      "only": "Komisyon <b>yalnızca ölçülmüş tasarruf üzerinden</b> alınır: kullanım kayıtlarında {labels} olarak etiketlenen tasarruf. {never} olarak etiketlenen tasarruf asla komisyona tabi değildir.",
+      "measured": "Ölçülmüş tasarruf, LLM sağlayıcının o istek için tuttuğu kendi kullanım sayacından belirlenir.",
+      "reference": "Referansla tasarruf, Yazılımın sağlayıcını çağırmadan yanıtladığı tekrarlanan bir istek için, gerçekten çalışmış olan önceki özdeş isteğin sağlayıcı sayacından, ekstrende yazan kurala ({regla}) göre belirlenir.",
+      "valued": "İkisi de Yazılımın o isteğe uyguladığı token başına fiyatlarla değerlenir: yapılandırdıysan kendi maliyet modelinin fiyatları, yoksa Yazılımla birlikte gelen fiyat kataloğundaki sağlayıcı liste fiyatları.",
+      "flatRate": "Yazılımın sağlayıcı sabit ücretli aboneliği olarak tanıdığı trafik (yerel gateway üzerinden kullanılan bir Claude ya da ChatGPT aboneliği) ölçülür ama ona ölçülmüş tasarruf yazılmaz; bu yüzden komisyona tabi değildir.",
+      "elision": "Sağlayıcının bağlamdan temizlendiğini bildirdiği girdi tokenlarının değeri kaydedilir ama komisyon matrahına girmez.",
+      "tiersTitle": "Dilimler",
+      "tiersIntro": "Dönemin ölçülmüş tasarrufu {currency} cinsine çevrilir ve her biri kendi oranıyla marjinal dilimlere bölünür:",
+      "colBand": "Dönemdeki ölçülmüş tasarruf",
+      "colRate": "Oran",
+      "bandUpTo": "{hasta} tutarına kadar",
+      "bandBetween": "{desde} ile {hasta} arası",
+      "bandAbove": "{desde} üzeri",
+      "ceiling": "Hiçbir dilimin oranı {max} değerini aşmaz; bu yüzden komisyon kuruşa yuvarlanmadan önce dönemin ölçülmüş tasarrufunun <b>en az {garantia} kadarı sende kalır</b>. Koltuk başına ücret ayrıdır.",
+      "fx": "Ölçülmüş tasarruf ABD doları cinsinden sayılır ve dönem kapanırken alınan Avrupa Merkez Bankası referans kuruyla çevrilir; ekstren kullanılan kuru gösterir.",
+      "rounding": "Komisyon en yakın kuruşa yuvarlanır. {minimo} altındaki bir komisyon faturalanmaz ve başka bir döneme aktarılmaz.",
+      "zero": "Ölçülmüş tasarrufu olmayan bir dönemde <b>komisyon yoktur</b>.",
+      "calculator": "Bunun kendi trafiğin için ne anlama geldiğini görmek için ana sayfadaki <calc>hesaplayıcıyı</calc> dene."
+    },
+    "calibration": {
+      "title": "Kalibrasyon dönemi",
+      "body": "<b>Kuruluşunun herhangi bir kullanım bildirdiği ilk takvim ayı (UTC)</b>, o aydan ne kadar az kalmış olursa olsun, bir kalibrasyon dönemidir. Komisyona tabi değildir ve ekstresi yine de uygulanacak olan komisyonu gösterir."
+    },
+    "exemption": {
+      "title": "Komisyondan muafiyet",
+      "body": "Hesabın komisyondan muafken BiVelio'nun kapattığı bir dönem için komisyon alınmaz. BiVelio bir hesaba muafiyet tanıdığında o hesap muaftır; ayrıca hesapta bir ödeme yapılana kadar, aboneliği koltuk başına ücreti tüm süresi boyunca tamamen kaldıran bir promosyon koduyla etkinleştirilmiş hesap da muaftır. Ekstre yine de uygulanacak olan komisyonu gösterir."
+    },
+    "statement": {
+      "title": "Ekstre ve fatura",
+      "body": "Faturalama dönemleri takvim aylarıdır (UTC). Bir ay bittiğinde BiVelio onu kapatır: panelindeki o aya ait ekstre ölçülmüş matrah, dilimler, döviz kuru ve fiyat kataloğu sürümüyle mühürlenir ve komisyon o ekstreye dayanarak Stripe üzerinden faturalanır."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Altyapından ne çıkar · BV-SALA",
+    "metaDescription": "SDK'nın ve yerel gateway'in BiVelio'ya gönderdiklerinin, asla göndermediklerinin ve BiVelio'nun bunları ne kadar sakladığının tam listesi.",
+    "eyebrow": "Gizlilik",
+    "title": "Altyapından ne çıkar",
+    "governs": "Bu sayfa hizmetin bugün nasıl işlediğini anlatır; bağlayıcı metinler <license>LICENSE</license> ve <terms>BiVelio Koşulları</terms> olarak kalır.",
+    "lede": "Yazılımın (SDK ve yerel gateway) BiVelio'ya ne gönderdiği, neyi asla göndermediği ve BiVelio'nun bunları ne kadar sakladığı. LICENSE bu ayrıntılar için bu sayfaya atıfta bulunur.",
+    "never": {
+      "title": "BiVelio'ya asla gönderilmeyenler",
+      "content": "<b>İsteklerinin ve yanıtlarının içeriği</b>: promptlar, sistem talimatları, mesajlar, araç tanımları, araç argümanları ve sonuçları, getirilen belgeler ve üretilen yanıtlar.",
+      "credentials": "<b>LLM sağlayıcınla kullandığın kimlik bilgileri</b>: API anahtarları, OAuth tokenları ya da diğer yetkilendirme başlıkları.",
+      "path": "Bu içerik ve bu kimlik bilgileri yalnızca senin sistemlerinle yapılandırdığın LLM sağlayıcısı arasında dolaşır."
+    },
+    "usage": {
+      "title": "Kullanım kayıtları",
+      "when": "SDK kullanım kayıtlarını yalnızca bir lisans sunucusu ya da ölçüm URL'si yapılandırdığında gönderir; yerel gateway ise her zaman gönderir. Her toplu gönderim, kuruluşunu tanımlayan BiVelio servis hesabı anahtarını ve Yazılımın yüzeyini ve sürümünü <b>{header}</b> başlığında taşır.",
+      "limit": "Her kayıt aşağıdaki alanlarla sınırlıdır. <b>BiVelio'nun alım hizmeti bu listede olmayan bir alan taşıyan her kaydı reddeder.</b>",
+      "groups": {
+        "ids": {
+          "title": "Kimlikler",
+          "body": "Senin tarafında üretilen bir istek kimliği (rastgele ya da kendi üreticinle). Referansla değerlenen tekrarlanan bir istekte, sağlayıcı sayacı kullanılan önceki isteğin kimliği ve zamanı. Bir koltuk kimliği: senin belirlediğin bir değer ya da makinende, servis hesabı anahtarın anahtar olarak kullanılarak anahtarlı bir özetle (HMAC) platform, CPU mimarisi, çalışma zamanı yürütülebilir dosya yolu, ana makine adı, işletim sistemi kullanıcı adı ve ana dizinden hesaplanan opak bir değer; bu değerler asla gönderilmez. Yerel gateway üzerinden, kodlama ajanının kendi isteklerine eklediği oturum ve alt ajan kimlikleri (örneğin Claude Code'un oturum kimliği), yalnızca düz kimlik olduklarında. Bir kuruluş ipucu (BiVelio kuruluşunu her zaman anahtardan çıkarır). CI ya da geçici çalıştırıcıları işaretleyen bir bayrak."
+        },
+        "model": {
+          "title": "Model ve zaman",
+          "body": "İsteği yanıtlayan modelin kimliği: istekte adı geçen model ya da Yazılım isteği senin etkinleştirdiğin bir ayarla başka bir modele gönderdiyse o model; kendi barındırdığın ya da Azure dağıtımında ona verdiğin ad. Ve isteğin zamanı."
+        },
+        "counts": {
+          "title": "Sayımlar",
+          "body": "Yürütülen ve kaçınılan LLM çağrıları; Yazılımın optimizasyonlarından önce ve sonra girdi ve çıktı tokenları, kaldırılan, sıkıştırılan ya da sağlayıcının önbelleğinden okunan tokenlar dahil; ve önbellek sonucu."
+        },
+        "cost": {
+          "title": "Maliyet",
+          "body": "Yazılımın kendi fiyat kataloğundan ya da senin sağladığın bir maliyet modelinden hesapladığı maliyet rakamları: temel maliyet, gerçek maliyet, net tasarruf oranı, rakamların dayanağı (measured, reference, estimated, shadow ya da unmeasured) ve sağlayıcının bağlamdan temizlendiğini bildirdiği girdi tokenlarının, sağlayıcının önbellek okuma fiyatıyla değeri."
+        }
+      }
+    },
+    "verification": {
+      "title": "İsteğe bağlı doğrulama (yalnızca SDK, varsayılan olarak kapalı)",
+      "when": "SDK'nın doğrulama seçeneğini açarsan SDK, yanıtladığı isteklerden bir örneklemi optimizasyon olmadan kendi sağlayıcına yeniden gönderir ve bu ikinci yanıtı atar. Örneklemdeki her istek için BiVelio'ya <b>ayrı bir kanaldan yalnızca aşağıdaki alanları</b> gönderir; bu kanal da başka her alanı reddeder ve aldığı hiçbir şey komisyon hesaplamasında kullanılmaz.",
+      "groups": {
+        "sample": {
+          "title": "Örneklemdeki her istek",
+          "body": "verification etiketi, isteğin kimliği ve zamanı; istenen model ve yanıtlayan model; önbellek sonucu; isteğin kategorisi ve kontrolün sonucu; yanıtlanan isteğin ve optimize edilmemiş kopyanın girdi, önbellekli girdi ve çıktı tokenları ile maliyeti; kopyanın nasıl bittiği ve yanıt sözleşmesine uyup uymadığı; ve uygulanan token başına fiyatlar."
+        },
+        "counts": {
+          "title": "Günlük sayımlar",
+          "body": "Her gün için, kontrol dışında kalanlar dahil, her kategorideki istek sayısı."
+        },
+        "batch": {
+          "title": "Her toplu gönderim",
+          "body": "Kopyaları ayıklamak için rastgele bir toplu gönderim kimliği ve yukarıdaki iki liste."
+        }
+      }
+    },
+    "other": {
+      "title": "BiVelio'ya yapılan diğer istekler",
+      "body": "Yazılım ayrıca geçerli lisans tokenını ve imzalı iptal edilmiş lisans listesini indirir; yerel gateway de kuruluşunun özellik yetkilerini indirir. Bu istekler, kimlik doğrulama gerektiğinde servis hesabı anahtarını taşır ve hiçbir istek verisi taşımaz.",
+      "network": "Her HTTPS isteği gibi, bunların hepsi ayrıca IP adresin gibi olağan ağ meta verilerini de açığa çıkarır."
+    },
+    "retention": {
+      "title": "BiVelio neyi, ne kadar süre saklar",
+      "intro": "Alım hizmeti her kullanım kaydını günlük toplamlara ekler: gün, model, koltuk ve gateway oturumu başına. Tekil satırlar yalnızca aşağıdaki yerlerde tutulur ve günlük bir görev her satırı süresi dolduğunda siler:",
+      "items": {
+        "seen": "Yinelenen kayıtları ayıklamak için tutulan istek kimlikleri: {dias} gün.",
+        "reference": "Referansla değerlenen tekrarlanan istekler (istek kimlikleri, model, zaman ve kullanılan sağlayıcı sayacı), ekstrenin indirmesindeki satırlar: {dias} gün.",
+        "verificationSamples": "Doğrulama örnekleri ve günlük sayımları: {dias} gün.",
+        "verificationBatches": "Doğrulamanın toplu gönderim kimlikleri: {dias} gün."
+      },
+      "noSchedule": "Günlük toplamlar, koltuk etkinliği ve mühürlü ekstrelerin için bugün otomatik silme süresi yoktur."
+    },
+    "use": {
+      "title": "BiVelio bunları ne için kullanır",
+      "body": "Lisansları ve iptalleri işletmek, panelini göstermek, kullanımdaki koltukları saymak ve <pricing>fiyat sayfasında</pricing> anlatılan ücretleri hesaplamak için."
+    },
+    "account": {
+      "title": "Bu sitedeki hesabın",
+      "body": "Giriş e-postan, kuruluşun ve fatura bilgilerin (ödemeleri Stripe işler) <policy>BiVelio gizlilik politikası</policy> kapsamındadır."
+    },
+    "contact": "Bu verilerle ilgili sorular ve talepler: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Sayfa bulunamadı · BiVelio Savings Layer",

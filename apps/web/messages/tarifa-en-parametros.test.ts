@@ -30,8 +30,21 @@ const LOCALES = ["es", "en", "ca", "de", "fr", "it", "nl", "pl", "pt", "tr", "id
  * `dashboard.yourBench` entró el 2026-09-25 («tu propio banco», la verificación
  * A/B opcional): nivel del intervalo, «por cada mil», mínimos de pares y todas
  * sus cifras llegan por parámetro desde lib/verificacion/banco-propio.ts.
+ *
+ * `pricingPage` y `privacyPage` entraron el 2026-09-26: son las páginas que
+ * cita la LICENSE (§6 «Published Pricing», §5 los datos que salen). Cuota,
+ * tramos, mínimo facturable, días activos de un asiento y plazos de retención
+ * llegan por parámetro desde las constantes que cobran y purgan
+ * (lib/legal/precios-publicados.ts, lib/legal/lo-que-sale.ts).
  */
-const NAMESPACES = ["landing.calculadora", "landing.formula", "dashboard.extracto", "dashboard.yourBench"] as const;
+const NAMESPACES = [
+  "landing.calculadora",
+  "landing.formula",
+  "dashboard.extracto",
+  "dashboard.yourBench",
+  "pricingPage",
+  "privacyPage",
+] as const;
 const DIR = new URL(".", import.meta.url).pathname;
 
 function porRuta(data: Record<string, unknown>, ruta: string): unknown {

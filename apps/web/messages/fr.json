@@ -949,7 +949,9 @@
       "andorra": "De l'Andorre au monde entier 🇦🇩",
       "bottomPrivacy": "Confidentialité",
       "bottomTerms": "Conditions",
-      "howItWorks": "Comment ça marche"
+      "howItWorks": "Comment ça marche",
+      "pricingTerms": "Conditions tarifaires",
+      "dataPrivacy": "Ce que reçoit BiVelio"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1124,6 +1126,137 @@
     "ctaVerify": "Voir les économies mesurées",
     "ctaSignup": "Créer un compte",
     "ctaInstall": "Voir le guide d'installation"
+  },
+  "pricingPage": {
+    "metaTitle": "Conditions tarifaires · BV-SALA",
+    "metaDescription": "La redevance par siège et la commission sur l'économie mesurée, publiées à partir des mêmes constantes qui facturent.",
+    "eyebrow": "Tarifs publiés",
+    "title": "Conditions tarifaires",
+    "governs": "Cette page décrit le fonctionnement actuel du service ; la <license>LICENSE</license> et les <terms>Conditions de BiVelio</terms> prévalent.",
+    "lede": "La LICENSE renvoie à cette page sous le nom de « Published Pricing ». Chaque chiffre affiché ici est lu dans le code même qui vous facture : il change quand le prix change.",
+    "seat": {
+      "title": "La redevance par siège",
+      "amount": "<b>{monthly}</b> par siège et par mois, ou <b>{yearly}</b> par siège et par an, en {currency}.",
+      "paidAlways": "La redevance par siège est due <b>que le Logiciel produise une économie ou non</b>.",
+      "vat": "Les montants s'entendent hors TVA. Le paiement demande votre adresse de facturation et, en option, votre numéro de TVA ; les deux figurent sur votre facture.",
+      "whatTitle": "Ce qu'est un siège",
+      "what": "Un siège est une <b>machine ou identité de service</b> qui exécute le Logiciel, pas une personne. Vous choisissez le nombre de sièges couverts par votre abonnement (jusqu'à {max} au paiement), et votre licence couvre ce nombre.",
+      "counted": "Chaque mois civil (UTC), BiVelio compte comme utilisé chaque identifiant de siège distinct actif au moins {dias} jours différents de ce mois. Les identités marquées comme CI ou exécuteurs éphémères ne comptent pas. Votre tableau de bord compare ce décompte aux sièges couverts par votre abonnement.",
+      "identifier": "La façon dont un identifiant de siège est formé, et tout ce que le Logiciel envoie d'autre à BiVelio, se trouve sur la <privacy>page de confidentialité</privacy>."
+    },
+    "commission": {
+      "title": "La commission sur l'économie mesurée",
+      "only": "Une commission n'est prélevée <b>que sur l'économie mesurée</b> : l'économie étiquetée {labels} dans vos enregistrements d'usage. L'économie étiquetée {never} ne porte jamais de commission.",
+      "measured": "Une économie mesurée est établie à partir du propre compteur d'usage de votre fournisseur de LLM pour cette requête.",
+      "reference": "Une économie par référence, pour une requête répétée que le Logiciel a servie sans appeler votre fournisseur, est établie à partir du compteur de votre fournisseur pour la requête identique antérieure qui a bien été exécutée, selon la règle indiquée sur votre relevé ({regla}).",
+      "valued": "Les deux sont valorisées aux prix par token que le Logiciel a appliqués à cette requête : ceux d'un modèle de coûts que vous configurez, si vous en configurez un, et sinon les prix catalogue de votre fournisseur dans le catalogue de prix fourni avec le Logiciel.",
+      "flatRate": "Le trafic que le Logiciel identifie comme un abonnement forfaitaire d'un fournisseur (un abonnement Claude ou ChatGPT utilisé via le gateway local) est mesuré mais ne se voit créditer aucune économie mesurée ; il ne porte donc pas de commission.",
+      "elision": "La valeur des tokens d'entrée que votre fournisseur déclare retirés du contexte est enregistrée, mais ne fait pas partie de l'assiette de la commission.",
+      "tiersTitle": "Tranches",
+      "tiersIntro": "L'économie mesurée de la période est convertie en {currency} et répartie en tranches marginales, chacune à son propre taux :",
+      "colBand": "Économie mesurée sur la période",
+      "colRate": "Taux",
+      "bandUpTo": "Jusqu'à {hasta}",
+      "bandBetween": "De {desde} à {hasta}",
+      "bandAbove": "Au-delà de {desde}",
+      "ceiling": "Aucune tranche ne dépasse {max} : avant l'arrondi de la commission au centime, <b>vous conservez au moins {garantia}</b> de l'économie mesurée de la période. La redevance par siège s'y ajoute.",
+      "fx": "L'économie mesurée est comptée en dollars américains et convertie au taux de référence de la Banque centrale européenne obtenu à la clôture de la période ; votre relevé indique le taux appliqué.",
+      "rounding": "La commission est arrondie au centime le plus proche. Une commission inférieure à {minimo} n'est pas facturée et n'est pas reportée sur une autre période.",
+      "zero": "Une période sans économie mesurée ne porte <b>aucune commission</b>.",
+      "calculator": "Pour voir ce que cela donne sur votre propre trafic, essayez le <calc>calculateur</calc> de la page d'accueil."
+    },
+    "calibration": {
+      "title": "Période de calibrage",
+      "body": "Le <b>premier mois civil (UTC) au cours duquel votre organisation déclare un usage</b> est une période de calibrage, aussi peu qu'il en reste. Il ne porte pas de commission, et son relevé indique tout de même la commission qui se serait appliquée."
+    },
+    "exemption": {
+      "title": "Exonération de la commission",
+      "body": "Aucune commission n'est prélevée pour une période que BiVelio clôture pendant que votre compte en est exonéré. Un compte est exonéré lorsque BiVelio lui accorde une exonération et, jusqu'à ce qu'un paiement soit effectué sur le compte, lorsque son abonnement a été activé avec un code promotionnel qui exonère entièrement la redevance par siège pendant toute sa durée. Le relevé indique tout de même la commission qui se serait appliquée."
+    },
+    "statement": {
+      "title": "Relevé et facture",
+      "body": "Les périodes de facturation sont des mois civils (UTC). À la fin d'un mois, BiVelio le clôture : le relevé de ce mois dans votre tableau de bord est scellé avec l'assiette mesurée, les tranches, le taux de change et la version du catalogue de prix, et la commission est facturée à partir de ce relevé via Stripe."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Ce qui sort de votre infrastructure · BV-SALA",
+    "metaDescription": "La liste exacte de ce que le SDK et le gateway local envoient à BiVelio, de ce qu'ils n'envoient jamais et de la durée de conservation chez BiVelio.",
+    "eyebrow": "Confidentialité",
+    "title": "Ce qui sort de votre infrastructure",
+    "governs": "Cette page décrit le fonctionnement actuel du service ; la <license>LICENSE</license> et les <terms>Conditions de BiVelio</terms> prévalent.",
+    "lede": "Ce que le Logiciel (le SDK et le gateway local) envoie à BiVelio, ce qu'il n'envoie jamais et combien de temps BiVelio le conserve. La LICENSE renvoie à cette page pour ces détails.",
+    "never": {
+      "title": "Ce qui n'est jamais envoyé à BiVelio",
+      "content": "<b>Le contenu de vos requêtes et réponses</b> : prompts, instructions système, messages, définitions d'outils, arguments et résultats d'outils, documents récupérés et réponses générées.",
+      "credentials": "<b>Les identifiants que vous utilisez avec votre fournisseur de LLM</b> : clés d'API, jetons OAuth ou autres en-têtes d'autorisation.",
+      "path": "Ce contenu et ces identifiants ne circulent qu'entre vos systèmes et le fournisseur de LLM que vous configurez."
+    },
+    "usage": {
+      "title": "Enregistrements d'usage",
+      "when": "Le SDK n'envoie des enregistrements d'usage que si vous configurez un serveur de licences ou une URL de mesure ; le gateway local, toujours. Chaque lot porte votre clé de compte de service BiVelio, qui identifie votre organisation, ainsi que la surface et la version du Logiciel dans l'en-tête <b>{header}</b>.",
+      "limit": "Chaque enregistrement se limite aux champs ci-dessous. <b>L'ingestion de BiVelio rejette tout enregistrement qui porte un champ absent de cette liste.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identifiants",
+          "body": "Un identifiant de requête généré de votre côté (au hasard, ou par votre propre générateur). Pour une requête répétée valorisée par référence, l'identifiant et l'horodatage de la requête antérieure dont le compteur du fournisseur est utilisé. Un identifiant de siège : une valeur que vous fixez, ou une valeur opaque calculée sur votre machine comme un hachage à clé (HMAC), avec votre clé de compte de service pour clé, à partir de la plateforme, de l'architecture CPU, du chemin de l'exécutable, du nom d'hôte, du nom d'utilisateur du système et du répertoire personnel ; ces valeurs ne sont jamais envoyées. Via le gateway local, les identifiants de session et de sous-agent que votre agent de code joint à ses propres requêtes (par exemple l'id de session de Claude Code), uniquement lorsqu'il s'agit d'identifiants simples. Un indice d'organisation (BiVelio déduit toujours votre organisation de la clé). Un indicateur signalant les exécuteurs CI ou éphémères."
+        },
+        "model": {
+          "title": "Modèle et horodatage",
+          "body": "L'identifiant du modèle qui a répondu à la requête : celui nommé dans la requête ou, si le Logiciel l'a envoyée à un autre modèle selon un réglage que vous avez activé, cet autre modèle ; pour un déploiement auto-hébergé ou Azure, le nom que vous lui avez donné. Et l'horodatage de la requête."
+        },
+        "counts": {
+          "title": "Décomptes",
+          "body": "Appels au LLM exécutés et évités ; tokens d'entrée et de sortie avant et après les optimisations du Logiciel, y compris les tokens supprimés, compressés ou lus dans le cache du fournisseur ; et le résultat du cache."
+        },
+        "cost": {
+          "title": "Coût",
+          "body": "Chiffres de coût calculés par le Logiciel à partir de son catalogue de prix, ou d'un modèle de coûts que vous fournissez : coût de référence, coût réel, le ratio d'économie nette, la base des chiffres (measured, reference, estimated, shadow ou unmeasured) et la valeur, au prix de lecture de cache du fournisseur, des tokens d'entrée que votre fournisseur a déclarés retirés du contexte."
+        }
+      }
+    },
+    "verification": {
+      "title": "Vérification optionnelle (SDK uniquement, désactivée par défaut)",
+      "when": "Si vous activez l'option de vérification du SDK, le SDK renvoie à votre propre fournisseur un échantillon des requêtes qu'il a servies, sans optimisation, et écarte cette seconde réponse. Pour chaque requête échantillonnée, il envoie à BiVelio, <b>par un canal distinct, uniquement les champs ci-dessous</b> ; ce canal rejette lui aussi tout autre champ, et rien de ce qu'il reçoit ne sert à calculer la commission.",
+      "groups": {
+        "sample": {
+          "title": "Chaque requête échantillonnée",
+          "body": "L'étiquette verification, l'identifiant et l'horodatage de la requête ; le modèle demandé et celui qui a répondu ; le résultat du cache ; la catégorie de la requête et le résultat du contrôle ; les tokens d'entrée, d'entrée en cache et de sortie ainsi que le coût de la requête servie et de la copie non optimisée ; la façon dont la copie s'est terminée et si elle a respecté le contrat de réponse ; et les prix par token appliqués."
+        },
+        "counts": {
+          "title": "Décomptes quotidiens",
+          "body": "Pour chaque jour, le nombre de requêtes de chaque catégorie, y compris celles exclues du contrôle."
+        },
+        "batch": {
+          "title": "Chaque lot",
+          "body": "Un identifiant de lot aléatoire, pour écarter les doublons, et les deux listes ci-dessus."
+        }
+      }
+    },
+    "other": {
+      "title": "Autres requêtes vers BiVelio",
+      "body": "Le Logiciel récupère aussi son jeton de licence en vigueur et la liste signée des licences révoquées, et le gateway local récupère les fonctionnalités ouvertes à votre organisation. Ces requêtes portent votre clé de compte de service lorsqu'une authentification est requise, et aucune donnée de requête.",
+      "network": "Comme toute requête HTTPS, tout ce qui précède révèle en outre des métadonnées réseau ordinaires, comme votre adresse IP."
+    },
+    "retention": {
+      "title": "Ce que BiVelio conserve, et pendant combien de temps",
+      "intro": "L'ingestion ajoute chaque enregistrement d'usage à des totaux quotidiens : par jour, par modèle, par siège et par session du gateway. Les lignes individuelles ne sont conservées qu'aux endroits ci-dessous, et une tâche quotidienne supprime chaque ligne dès qu'elle dépasse son délai :",
+      "items": {
+        "seen": "Identifiants de requête, conservés pour écarter les enregistrements en double : {dias} jours.",
+        "reference": "Requêtes répétées valorisées par référence (identifiants de requête, modèle, horodatage et compteur du fournisseur utilisé), les lignes derrière le téléchargement de votre relevé : {dias} jours.",
+        "verificationSamples": "Échantillons de vérification et leurs décomptes quotidiens : {dias} jours.",
+        "verificationBatches": "Identifiants de lot de la vérification : {dias} jours."
+      },
+      "noSchedule": "Les totaux quotidiens, l'activité par siège et vos relevés scellés n'ont aujourd'hui aucun délai de suppression automatique."
+    },
+    "use": {
+      "title": "À quoi BiVelio les utilise",
+      "body": "À exploiter les licences et les révocations, vous montrer votre tableau de bord, compter les sièges utilisés et calculer les frais décrits sur la <pricing>page des tarifs</pricing>."
+    },
+    "account": {
+      "title": "Votre compte sur ce site",
+      "body": "Votre e-mail de connexion, votre organisation et vos données de facturation (les paiements sont traités par Stripe) relèvent de la <policy>politique de confidentialité de BiVelio</policy>."
+    },
+    "contact": "Questions et demandes concernant ces données : <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Page introuvable · BiVelio Savings Layer",

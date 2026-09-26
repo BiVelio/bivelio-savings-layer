@@ -949,7 +949,9 @@
       "andorra": "Dari Andorra untuk dunia 🇦🇩",
       "bottomPrivacy": "Privasi",
       "bottomTerms": "Ketentuan",
-      "howItWorks": "Cara kerjanya"
+      "howItWorks": "Cara kerjanya",
+      "pricingTerms": "Ketentuan harga",
+      "dataPrivacy": "Apa yang diterima BiVelio"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1124,6 +1126,137 @@
     "ctaVerify": "Lihat penghematan terukur",
     "ctaSignup": "Buat akun",
     "ctaInstall": "Ke panduan pemasangan"
+  },
+  "pricingPage": {
+    "metaTitle": "Ketentuan harga · BV-SALA",
+    "metaDescription": "Biaya per kursi dan komisi atas penghematan terukur, diterbitkan dari konstanta yang sama yang menagih kamu.",
+    "eyebrow": "Harga yang diterbitkan",
+    "title": "Ketentuan harga",
+    "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
+    "lede": "LICENSE merujuk halaman ini sebagai “Published Pricing”. Setiap angka di sini dibaca dari kode yang sama yang menagih kamu, jadi angkanya berubah saat harganya berubah.",
+    "seat": {
+      "title": "Biaya per kursi",
+      "amount": "<b>{monthly}</b> per kursi per bulan, atau <b>{yearly}</b> per kursi per tahun, dalam {currency}.",
+      "paidAlways": "Biaya per kursi dibayar <b>baik Perangkat Lunak menghasilkan penghematan maupun tidak</b>.",
+      "vat": "Jumlah belum termasuk PPN. Saat pembayaran, kamu diminta alamat penagihan dan, secara opsional, nomor PPN; keduanya tercetak di faktur.",
+      "whatTitle": "Apa itu kursi",
+      "what": "Satu kursi adalah satu <b>mesin atau identitas layanan</b> yang menjalankan Perangkat Lunak, bukan orang. Kamu memilih berapa kursi yang dicakup langgananmu (hingga {max} saat pembayaran), dan lisensimu mencakup sebanyak itu.",
+      "counted": "Setiap bulan kalender (UTC), BiVelio menghitung sebagai terpakai setiap ID kursi berbeda yang aktif setidaknya {dias} hari berbeda dalam bulan itu. Identitas yang ditandai sebagai CI atau runner sementara tidak dihitung. Dasbormu membandingkan hitungan itu dengan kursi yang dicakup langgananmu.",
+      "identifier": "Cara ID kursi dibentuk, dan semua hal lain yang dikirim Perangkat Lunak ke BiVelio, ada di <privacy>halaman privasi</privacy>."
+    },
+    "commission": {
+      "title": "Komisi atas penghematan terukur",
+      "only": "Komisi dikenakan <b>hanya atas penghematan terukur</b>: penghematan yang berlabel {labels} di catatan penggunaanmu. Penghematan berlabel {never} tidak pernah dikenai komisi.",
+      "measured": "Penghematan terukur ditetapkan dari penghitung penggunaan milik penyedia LLM-mu sendiri untuk permintaan itu.",
+      "reference": "Penghematan berdasarkan referensi, untuk permintaan berulang yang dilayani Perangkat Lunak tanpa memanggil penyediamu, ditetapkan dari penghitung penyediamu untuk permintaan identik sebelumnya yang memang dijalankan, menurut aturan yang tercantum di rekeningmu ({regla}).",
+      "valued": "Keduanya dinilai dengan harga per token yang diterapkan Perangkat Lunak pada permintaan itu: harga dari model biaya yang kamu konfigurasikan, jika ada, dan jika tidak, harga daftar penyediamu di katalog harga yang disertakan bersama Perangkat Lunak.",
+      "flatRate": "Lalu lintas yang dikenali Perangkat Lunak sebagai langganan tarif tetap dari penyedia (langganan Claude atau ChatGPT yang digunakan melalui gateway lokal) diukur, tetapi tidak dikreditkan penghematan terukur, jadi tidak dikenai komisi.",
+      "elision": "Nilai token input yang dilaporkan penyediamu sebagai dihapus dari konteks dicatat, tetapi tidak termasuk dalam dasar komisi.",
+      "tiersTitle": "Tingkatan",
+      "tiersIntro": "Penghematan terukur periode itu dikonversi ke {currency} dan dibagi ke dalam tingkatan marginal, masing-masing dengan tarifnya sendiri:",
+      "colBand": "Penghematan terukur dalam periode",
+      "colRate": "Tarif",
+      "bandUpTo": "Hingga {hasta}",
+      "bandBetween": "Dari {desde} hingga {hasta}",
+      "bandAbove": "Di atas {desde}",
+      "ceiling": "Tidak ada tarif tingkatan yang melebihi {max}, jadi sebelum komisi dibulatkan ke sen, <b>kamu menyimpan setidaknya {garantia}</b> dari penghematan terukur periode itu. Biaya per kursi terpisah.",
+      "fx": "Penghematan terukur dihitung dalam dolar AS dan dikonversi dengan kurs referensi Bank Sentral Eropa yang diambil saat periode ditutup; rekeningmu menampilkan kurs yang digunakan.",
+      "rounding": "Komisi dibulatkan ke sen terdekat. Komisi di bawah {minimo} tidak ditagih dan tidak dipindahkan ke periode lain.",
+      "zero": "Periode tanpa penghematan terukur <b>tidak dikenai komisi</b>.",
+      "calculator": "Untuk melihat artinya bagi lalu lintasmu sendiri, coba <calc>kalkulator</calc> di halaman beranda."
+    },
+    "calibration": {
+      "title": "Periode kalibrasi",
+      "body": "<b>Bulan kalender pertama (UTC) saat organisasimu melaporkan penggunaan apa pun</b> adalah periode kalibrasi, berapa pun sisa bulan itu. Periode ini tidak dikenai komisi, dan rekeningnya tetap menampilkan komisi yang seharusnya berlaku."
+    },
+    "exemption": {
+      "title": "Pembebasan dari komisi",
+      "body": "Tidak ada komisi untuk periode yang ditutup BiVelio saat akunmu dibebaskan darinya. Sebuah akun dibebaskan ketika BiVelio memberinya pembebasan dan, sampai ada pembayaran pada akun itu, ketika langganannya diaktifkan dengan kode promosi yang membebaskan seluruh biaya per kursi selama seluruh masa berlakunya. Rekening tetap menampilkan komisi yang seharusnya berlaku."
+    },
+    "statement": {
+      "title": "Rekening dan faktur",
+      "body": "Periode penagihan adalah bulan kalender (UTC). Setelah sebuah bulan berakhir, BiVelio menutupnya: rekening bulan itu di dasbormu disegel bersama dasar terukur, tingkatan, kurs, dan versi katalog harga, lalu komisi ditagih berdasarkan rekening itu melalui Stripe."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Apa yang keluar dari infrastrukturmu · BV-SALA",
+    "metaDescription": "Daftar persis apa yang dikirim SDK dan gateway lokal ke BiVelio, apa yang tidak pernah dikirim, dan berapa lama BiVelio menyimpannya.",
+    "eyebrow": "Privasi",
+    "title": "Apa yang keluar dari infrastrukturmu",
+    "governs": "Halaman ini menjelaskan cara layanan bekerja saat ini; yang mengikat adalah <license>LICENSE</license> dan <terms>Ketentuan BiVelio</terms>.",
+    "lede": "Apa yang dikirim Perangkat Lunak (SDK dan gateway lokal) ke BiVelio, apa yang tidak pernah dikirimnya, dan berapa lama BiVelio menyimpannya. LICENSE merujuk halaman ini untuk rincian tersebut.",
+    "never": {
+      "title": "Yang tidak pernah dikirim ke BiVelio",
+      "content": "<b>Isi permintaan dan responsmu</b>: prompt, instruksi sistem, pesan, definisi alat, argumen dan hasil alat, dokumen yang diambil, dan jawaban yang dihasilkan.",
+      "credentials": "<b>Kredensial yang kamu gunakan dengan penyedia LLM-mu</b>: kunci API, token OAuth, atau header otorisasi lainnya.",
+      "path": "Isi dan kredensial itu hanya berpindah antara sistemmu dan penyedia LLM yang kamu konfigurasikan."
+    },
+    "usage": {
+      "title": "Catatan penggunaan",
+      "when": "SDK mengirim catatan penggunaan hanya jika kamu mengonfigurasi server lisensi atau URL pengukuran; gateway lokal selalu mengirimnya. Setiap batch membawa kunci akun layanan BiVelio-mu, yang mengidentifikasi organisasimu, serta permukaan dan versi Perangkat Lunak di header <b>{header}</b>.",
+      "limit": "Setiap catatan dibatasi pada kolom di bawah ini. <b>Penerimaan data BiVelio menolak setiap catatan yang membawa kolom yang tidak ada dalam daftar ini.</b>",
+      "groups": {
+        "ids": {
+          "title": "Pengidentifikasi",
+          "body": "ID permintaan yang dibuat di sisimu (secara acak, atau oleh generatormu sendiri). Untuk permintaan berulang yang dinilai berdasarkan referensi, ID dan waktu permintaan sebelumnya yang penghitung penyedianya digunakan. ID kursi: nilai yang kamu tetapkan, atau nilai buram yang dihitung di mesinmu sebagai hash berkunci (HMAC), dengan kunci akun layananmu sebagai kunci, dari platform, arsitektur CPU, jalur file eksekusi runtime, nama host, nama pengguna sistem operasi, dan direktori home; nilai-nilai itu tidak pernah dikirim. Melalui gateway lokal, ID sesi dan sub-agen yang dilampirkan agen pemrogramanmu pada permintaannya sendiri (misalnya ID sesi Claude Code), hanya jika berupa pengidentifikasi sederhana. Petunjuk organisasi (BiVelio selalu menurunkan organisasimu dari kunci). Penanda untuk runner CI atau sementara."
+        },
+        "model": {
+          "title": "Model dan waktu",
+          "body": "ID model yang melayani permintaan: model yang disebut dalam permintaan atau, jika Perangkat Lunak mengirim permintaan ke model lain berdasarkan pengaturan yang kamu aktifkan, model tersebut; untuk deployment yang di-host sendiri atau Azure, nama yang kamu berikan. Dan waktu permintaan."
+        },
+        "counts": {
+          "title": "Hitungan",
+          "body": "Panggilan LLM yang dijalankan dan dihindari; token input dan output sebelum dan sesudah optimasi Perangkat Lunak, termasuk token yang dihapus, dikompresi, atau dibaca dari cache penyedia; dan hasil cache."
+        },
+        "cost": {
+          "title": "Biaya",
+          "body": "Angka biaya yang dihitung Perangkat Lunak dari katalog harganya, atau dari model biaya yang kamu berikan: biaya dasar, biaya aktual, rasio penghematan bersih, dasar angka-angka itu (measured, reference, estimated, shadow, atau unmeasured), dan nilai, dengan harga baca cache penyedia, dari token input yang dilaporkan penyediamu sebagai dihapus dari konteks."
+        }
+      }
+    },
+    "verification": {
+      "title": "Verifikasi opsional (hanya SDK, nonaktif secara bawaan)",
+      "when": "Jika kamu mengaktifkan opsi verifikasi SDK, SDK mengirim ulang sampel permintaan yang telah dilayaninya ke penyediamu sendiri, tanpa optimasi, lalu membuang respons kedua itu. Untuk setiap permintaan dalam sampel, SDK mengirim ke BiVelio, <b>melalui saluran terpisah, hanya kolom di bawah ini</b>; saluran itu juga menolak kolom lain apa pun, dan tidak ada yang diterimanya yang dipakai untuk menghitung komisi.",
+      "groups": {
+        "sample": {
+          "title": "Setiap permintaan dalam sampel",
+          "body": "Label verification, ID dan waktu permintaan; model yang diminta dan model yang melayani; hasil cache; kategori permintaan dan hasil pemeriksaan; token input, input dari cache, dan output serta biaya permintaan yang dilayani dan salinan tanpa optimasi; bagaimana salinan itu berakhir dan apakah memenuhi kontrak respons; dan harga per token yang diterapkan."
+        },
+        "counts": {
+          "title": "Hitungan harian",
+          "body": "Untuk setiap hari, jumlah permintaan di setiap kategori, termasuk yang dikecualikan dari pemeriksaan."
+        },
+        "batch": {
+          "title": "Setiap batch",
+          "body": "ID batch acak, untuk membuang duplikat, dan kedua daftar di atas."
+        }
+      }
+    },
+    "other": {
+      "title": "Permintaan lain ke BiVelio",
+      "body": "Perangkat Lunak juga mengambil token lisensinya yang berlaku dan daftar pencabutan lisensi yang ditandatangani, dan gateway lokal mengambil hak fitur organisasimu. Permintaan ini membawa kunci akun layananmu jika autentikasi diperlukan, dan tanpa data permintaan.",
+      "network": "Seperti permintaan HTTPS apa pun, semua hal di atas juga mengungkap metadata jaringan biasa, seperti alamat IP-mu."
+    },
+    "retention": {
+      "title": "Apa yang disimpan BiVelio, dan berapa lama",
+      "intro": "Penerimaan data menambahkan setiap catatan penggunaan ke total harian: per hari, per model, per kursi, dan per sesi gateway. Baris individual hanya disimpan di tempat-tempat di bawah ini, dan tugas harian menghapus setiap baris setelah melewati masa simpannya:",
+      "items": {
+        "seen": "ID permintaan, disimpan untuk membuang catatan duplikat: {dias} hari.",
+        "reference": "Permintaan berulang yang dinilai berdasarkan referensi (ID permintaan, model, waktu, dan penghitung penyedia yang digunakan), baris di balik unduhan rekeningmu: {dias} hari.",
+        "verificationSamples": "Sampel verifikasi dan hitungan hariannya: {dias} hari.",
+        "verificationBatches": "ID batch verifikasi: {dias} hari."
+      },
+      "noSchedule": "Total harian, aktivitas kursi, dan rekening tersegelmu saat ini tidak memiliki jadwal penghapusan otomatis."
+    },
+    "use": {
+      "title": "Untuk apa BiVelio menggunakannya",
+      "body": "Untuk menjalankan lisensi dan pencabutan, menampilkan dasbormu, menghitung kursi yang terpakai, dan menghitung biaya yang dijelaskan di <pricing>halaman harga</pricing>."
+    },
+    "account": {
+      "title": "Akunmu di situs ini",
+      "body": "Email masukmu, organisasimu, dan detail penagihanmu (pembayaran diproses oleh Stripe) diatur oleh <policy>kebijakan privasi BiVelio</policy>."
+    },
+    "contact": "Pertanyaan dan permintaan tentang data ini: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Halaman tidak ditemukan · BiVelio Savings Layer",

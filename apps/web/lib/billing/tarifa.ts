@@ -130,6 +130,15 @@ export const REGLA_REFERENCIA = {
   margenPorMensajeTokens: 8,
 } as const;
 
+/**
+ * La moneda de los tramos, de la comisión y del mínimo facturable: la de
+ * `hastaEur`, `comisionEur` y `cargo_eur`. El cierre convierte a ella el ahorro
+ * medido (que se cuenta en USD) con el cambio del BCE (fx.ts). La página
+ * pública de precios formatea con ella; no es la del Price de Stripe (la cuota
+ * por asiento), aunque hoy coincidan.
+ */
+export const MONEDA_DE_LA_COMISION = "EUR";
+
 /** Tramos marginales sobre el ahorro medido del período, en EUR. */
 export const TRAMOS: readonly { hastaEur: number; tipo: number }[] = [
   { hastaEur: 1_000, tipo: 0.1 },

@@ -949,7 +949,9 @@
       "andorra": "Từ Andorra ra thế giới 🇦🇩",
       "bottomPrivacy": "Quyền riêng tư",
       "bottomTerms": "Điều khoản",
-      "howItWorks": "Cách hoạt động"
+      "howItWorks": "Cách hoạt động",
+      "pricingTerms": "Điều khoản giá",
+      "dataPrivacy": "BiVelio nhận được gì"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1124,6 +1126,137 @@
     "ctaVerify": "Xem mức tiết kiệm đã đo",
     "ctaSignup": "Tạo tài khoản",
     "ctaInstall": "Đến hướng dẫn cài đặt"
+  },
+  "pricingPage": {
+    "metaTitle": "Điều khoản giá · BV-SALA",
+    "metaDescription": "Phí theo ghế và hoa hồng trên khoản tiết kiệm đã đo, được công bố từ chính các hằng số dùng để tính phí.",
+    "eyebrow": "Bảng giá công bố",
+    "title": "Điều khoản giá",
+    "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
+    "lede": "LICENSE gọi trang này là “Published Pricing”. Mọi con số ở đây đều được đọc từ chính đoạn mã tính phí bạn, nên chúng thay đổi khi giá thay đổi.",
+    "seat": {
+      "title": "Phí theo ghế",
+      "amount": "<b>{monthly}</b> mỗi ghế mỗi tháng, hoặc <b>{yearly}</b> mỗi ghế mỗi năm, bằng {currency}.",
+      "paidAlways": "Phí theo ghế được thanh toán <b>dù Phần mềm có tạo ra khoản tiết kiệm nào hay không</b>.",
+      "vat": "Số tiền chưa bao gồm VAT. Khi thanh toán, bạn được yêu cầu nhập địa chỉ thanh toán và, tùy chọn, mã số VAT; cả hai đều được in trên hóa đơn.",
+      "whatTitle": "Ghế là gì",
+      "what": "Một ghế là một <b>máy hoặc danh tính dịch vụ</b> chạy Phần mềm, không phải một người. Bạn chọn số ghế mà gói đăng ký của mình bao gồm (tối đa {max} khi thanh toán), và giấy phép của bạn bao gồm đúng số đó.",
+      "counted": "Mỗi tháng dương lịch (UTC), BiVelio tính là đang dùng mọi mã ghế riêng biệt đã hoạt động ít nhất {dias} ngày khác nhau trong tháng đó. Các danh tính được đánh dấu là CI hoặc trình chạy tạm thời không được tính. Bảng điều khiển của bạn so sánh con số đó với số ghế mà gói đăng ký bao gồm.",
+      "identifier": "Cách tạo mã ghế, và mọi thứ khác mà Phần mềm gửi tới BiVelio, có trên <privacy>trang quyền riêng tư</privacy>."
+    },
+    "commission": {
+      "title": "Hoa hồng trên khoản tiết kiệm đã đo",
+      "only": "Hoa hồng <b>chỉ được tính trên khoản tiết kiệm đã đo</b>: khoản tiết kiệm được gắn nhãn {labels} trong bản ghi sử dụng của bạn. Khoản tiết kiệm gắn nhãn {never} không bao giờ bị tính hoa hồng.",
+      "measured": "Khoản tiết kiệm đã đo được xác lập từ chính bộ đếm sử dụng của nhà cung cấp LLM của bạn cho yêu cầu đó.",
+      "reference": "Khoản tiết kiệm theo tham chiếu, cho một yêu cầu lặp lại mà Phần mềm phục vụ mà không gọi nhà cung cấp, được xác lập từ bộ đếm của nhà cung cấp cho yêu cầu giống hệt trước đó đã thực sự chạy, theo quy tắc ghi trên sao kê của bạn ({regla}).",
+      "valued": "Cả hai được định giá theo giá mỗi token mà Phần mềm đã áp dụng cho yêu cầu đó: giá của mô hình chi phí bạn cấu hình, nếu bạn cấu hình, và nếu không thì giá niêm yết của nhà cung cấp trong danh mục giá đi kèm Phần mềm.",
+      "flatRate": "Lưu lượng mà Phần mềm nhận diện là gói đăng ký trọn gói của nhà cung cấp (gói Claude hoặc ChatGPT dùng qua gateway cục bộ) được đo, nhưng không được ghi nhận khoản tiết kiệm đã đo nào, nên không bị tính hoa hồng.",
+      "elision": "Giá trị của các token đầu vào mà nhà cung cấp báo đã xóa khỏi ngữ cảnh được ghi lại, nhưng không nằm trong cơ sở tính hoa hồng.",
+      "tiersTitle": "Các bậc",
+      "tiersIntro": "Khoản tiết kiệm đã đo của kỳ được quy đổi sang {currency} và chia thành các bậc lũy tiến, mỗi bậc theo tỷ lệ riêng:",
+      "colBand": "Tiết kiệm đã đo trong kỳ",
+      "colRate": "Tỷ lệ",
+      "bandUpTo": "Đến {hasta}",
+      "bandBetween": "Từ {desde} đến {hasta}",
+      "bandAbove": "Trên {desde}",
+      "ceiling": "Không bậc nào vượt quá {max}, nên trước khi hoa hồng được làm tròn đến xu, <b>bạn giữ lại ít nhất {garantia}</b> khoản tiết kiệm đã đo của kỳ. Phí theo ghế tính riêng.",
+      "fx": "Khoản tiết kiệm đã đo được tính bằng đô la Mỹ và quy đổi theo tỷ giá tham chiếu của Ngân hàng Trung ương châu Âu lấy tại thời điểm chốt kỳ; sao kê của bạn hiển thị tỷ giá đã dùng.",
+      "rounding": "Hoa hồng được làm tròn đến xu gần nhất. Hoa hồng dưới {minimo} không được xuất hóa đơn và không chuyển sang kỳ khác.",
+      "zero": "Một kỳ không có khoản tiết kiệm đã đo thì <b>không có hoa hồng</b>.",
+      "calculator": "Để xem điều này có ý nghĩa gì với lưu lượng của chính bạn, hãy thử <calc>công cụ tính</calc> trên trang chủ."
+    },
+    "calibration": {
+      "title": "Kỳ hiệu chỉnh",
+      "body": "<b>Tháng dương lịch đầu tiên (UTC) mà tổ chức của bạn báo cáo bất kỳ mức sử dụng nào</b> là kỳ hiệu chỉnh, dù tháng đó chỉ còn lại ít ngày. Kỳ này không có hoa hồng, và sao kê của nó vẫn hiển thị khoản hoa hồng lẽ ra đã áp dụng."
+    },
+    "exemption": {
+      "title": "Miễn hoa hồng",
+      "body": "Không tính hoa hồng cho kỳ mà BiVelio chốt trong khi tài khoản của bạn được miễn. Một tài khoản được miễn khi BiVelio cấp miễn trừ cho nó và, cho đến khi có một khoản thanh toán trên tài khoản, khi gói đăng ký của nó được kích hoạt bằng mã khuyến mãi miễn toàn bộ phí theo ghế trong suốt thời hạn. Sao kê vẫn hiển thị khoản hoa hồng lẽ ra đã áp dụng."
+    },
+    "statement": {
+      "title": "Sao kê và hóa đơn",
+      "body": "Kỳ thanh toán là các tháng dương lịch (UTC). Khi một tháng kết thúc, BiVelio chốt tháng đó: sao kê của tháng trong bảng điều khiển được niêm phong cùng cơ sở đã đo, các bậc, tỷ giá và phiên bản danh mục giá, và hoa hồng được xuất hóa đơn dựa trên sao kê đó qua Stripe."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Những gì rời khỏi hạ tầng của bạn · BV-SALA",
+    "metaDescription": "Danh sách chính xác những gì SDK và gateway cục bộ gửi tới BiVelio, những gì chúng không bao giờ gửi, và BiVelio lưu giữ bao lâu.",
+    "eyebrow": "Quyền riêng tư",
+    "title": "Những gì rời khỏi hạ tầng của bạn",
+    "governs": "Trang này mô tả cách dịch vụ hoạt động hiện nay; văn bản có hiệu lực là <license>LICENSE</license> và <terms>Điều khoản của BiVelio</terms>.",
+    "lede": "Những gì Phần mềm (SDK và gateway cục bộ) gửi tới BiVelio, những gì nó không bao giờ gửi, và BiVelio lưu giữ chúng bao lâu. LICENSE dẫn chiếu tới trang này cho các chi tiết đó.",
+    "never": {
+      "title": "Không bao giờ gửi tới BiVelio",
+      "content": "<b>Nội dung các yêu cầu và phản hồi của bạn</b>: prompt, chỉ dẫn hệ thống, tin nhắn, định nghĩa công cụ, đối số và kết quả công cụ, tài liệu được truy xuất, và câu trả lời được tạo ra.",
+      "credentials": "<b>Thông tin xác thực bạn dùng với nhà cung cấp LLM</b>: khóa API, token OAuth hoặc các header ủy quyền khác.",
+      "path": "Nội dung và thông tin xác thực đó chỉ đi giữa hệ thống của bạn và nhà cung cấp LLM mà bạn cấu hình."
+    },
+    "usage": {
+      "title": "Bản ghi sử dụng",
+      "when": "SDK chỉ gửi bản ghi sử dụng khi bạn cấu hình máy chủ giấy phép hoặc URL đo lường; gateway cục bộ thì luôn gửi. Mỗi lô mang khóa tài khoản dịch vụ BiVelio của bạn, dùng để xác định tổ chức của bạn, cùng bề mặt và phiên bản của Phần mềm trong header <b>{header}</b>.",
+      "limit": "Mỗi bản ghi chỉ gồm các trường bên dưới. <b>Hệ thống tiếp nhận của BiVelio từ chối mọi bản ghi mang một trường không có trong danh sách này.</b>",
+      "groups": {
+        "ids": {
+          "title": "Mã định danh",
+          "body": "Một mã yêu cầu được tạo ở phía bạn (ngẫu nhiên, hoặc bằng trình tạo của riêng bạn). Với một yêu cầu lặp lại được định giá theo tham chiếu, mã và thời điểm của yêu cầu trước đó có bộ đếm nhà cung cấp được dùng. Một mã ghế: giá trị do bạn đặt, hoặc một giá trị mờ được tính trên máy của bạn bằng hàm băm có khóa (HMAC), dùng khóa tài khoản dịch vụ của bạn làm khóa, từ nền tảng, kiến trúc CPU, đường dẫn tệp thực thi, tên máy chủ, tên người dùng hệ điều hành và thư mục chính; các giá trị đó không bao giờ được gửi. Qua gateway cục bộ, mã phiên và mã tác tử phụ mà tác tử lập trình của bạn gắn vào các yêu cầu của chính nó (ví dụ mã phiên của Claude Code), chỉ khi chúng là mã định danh đơn giản. Một gợi ý về tổ chức (BiVelio luôn xác định tổ chức của bạn từ khóa). Một cờ đánh dấu trình chạy CI hoặc tạm thời."
+        },
+        "model": {
+          "title": "Mô hình và thời điểm",
+          "body": "Mã của mô hình đã phục vụ yêu cầu: mô hình được nêu trong yêu cầu hoặc, nếu Phần mềm gửi yêu cầu tới mô hình khác theo một thiết lập bạn đã bật, mô hình đó; với triển khai tự lưu trữ hoặc Azure, tên bạn đã đặt. Và thời điểm của yêu cầu."
+        },
+        "counts": {
+          "title": "Số đếm",
+          "body": "Các lệnh gọi LLM đã thực hiện và đã tránh; token đầu vào và đầu ra trước và sau các tối ưu hóa của Phần mềm, bao gồm token bị loại bỏ, nén hoặc đọc từ bộ nhớ đệm của nhà cung cấp; và kết quả bộ nhớ đệm."
+        },
+        "cost": {
+          "title": "Chi phí",
+          "body": "Các con số chi phí do Phần mềm tính từ danh mục giá của nó, hoặc từ mô hình chi phí do bạn cung cấp: chi phí cơ sở, chi phí thực tế, tỷ lệ tiết kiệm ròng, cơ sở của các con số (measured, reference, estimated, shadow hoặc unmeasured), và giá trị, theo giá đọc bộ nhớ đệm của nhà cung cấp, của các token đầu vào mà nhà cung cấp báo đã xóa khỏi ngữ cảnh."
+        }
+      }
+    },
+    "verification": {
+      "title": "Xác minh tùy chọn (chỉ SDK, tắt theo mặc định)",
+      "when": "Nếu bạn bật tùy chọn xác minh của SDK, SDK gửi lại một mẫu các yêu cầu đã phục vụ tới chính nhà cung cấp của bạn, không tối ưu hóa, rồi bỏ phản hồi thứ hai đó. Với mỗi yêu cầu trong mẫu, SDK gửi tới BiVelio, <b>qua một kênh riêng, chỉ các trường bên dưới</b>; kênh đó cũng từ chối mọi trường khác, và không dữ liệu nào nó nhận được dùng để tính hoa hồng.",
+      "groups": {
+        "sample": {
+          "title": "Mỗi yêu cầu trong mẫu",
+          "body": "Nhãn verification, mã và thời điểm của yêu cầu; mô hình được yêu cầu và mô hình đã phục vụ; kết quả bộ nhớ đệm; loại yêu cầu và kết quả kiểm tra; token đầu vào, đầu vào từ bộ nhớ đệm và đầu ra cùng chi phí của yêu cầu đã phục vụ và của bản sao không tối ưu hóa; bản sao kết thúc thế nào và có đáp ứng hợp đồng phản hồi hay không; và giá mỗi token đã áp dụng."
+        },
+        "counts": {
+          "title": "Số đếm hằng ngày",
+          "body": "Với mỗi ngày, số yêu cầu thuộc từng loại, kể cả những yêu cầu bị loại khỏi việc kiểm tra."
+        },
+        "batch": {
+          "title": "Mỗi lô",
+          "body": "Một mã lô ngẫu nhiên, dùng để loại bản trùng, và hai danh sách ở trên."
+        }
+      }
+    },
+    "other": {
+      "title": "Các yêu cầu khác tới BiVelio",
+      "body": "Phần mềm cũng tải token giấy phép hiện hành và danh sách thu hồi giấy phép có chữ ký, còn gateway cục bộ tải các quyền tính năng của tổ chức bạn. Các yêu cầu này mang khóa tài khoản dịch vụ của bạn khi cần xác thực, và không mang dữ liệu yêu cầu nào.",
+      "network": "Như mọi yêu cầu HTTPS, tất cả những điều trên còn để lộ siêu dữ liệu mạng thông thường, chẳng hạn địa chỉ IP của bạn."
+    },
+    "retention": {
+      "title": "BiVelio lưu giữ gì, và trong bao lâu",
+      "intro": "Hệ thống tiếp nhận cộng mỗi bản ghi sử dụng vào tổng hằng ngày: theo ngày, theo mô hình, theo ghế và theo phiên gateway. Các dòng riêng lẻ chỉ được giữ ở những nơi dưới đây, và một tác vụ hằng ngày xóa mỗi dòng khi nó quá hạn:",
+      "items": {
+        "seen": "Mã yêu cầu, giữ để loại các bản ghi trùng: {dias} ngày.",
+        "reference": "Các yêu cầu lặp lại được định giá theo tham chiếu (mã yêu cầu, mô hình, thời điểm và bộ đếm nhà cung cấp đã dùng), các dòng đằng sau bản tải xuống của sao kê: {dias} ngày.",
+        "verificationSamples": "Mẫu xác minh và số đếm hằng ngày của chúng: {dias} ngày.",
+        "verificationBatches": "Mã lô của việc xác minh: {dias} ngày."
+      },
+      "noSchedule": "Tổng hằng ngày, hoạt động theo ghế và các sao kê đã niêm phong của bạn hiện chưa có lịch xóa tự động."
+    },
+    "use": {
+      "title": "BiVelio dùng chúng để làm gì",
+      "body": "Để vận hành giấy phép và việc thu hồi, hiển thị bảng điều khiển của bạn, đếm số ghế đang dùng và tính các khoản phí được mô tả trên <pricing>trang giá</pricing>."
+    },
+    "account": {
+      "title": "Tài khoản của bạn trên trang web này",
+      "body": "Email đăng nhập, tổ chức và thông tin thanh toán của bạn (thanh toán do Stripe xử lý) thuộc phạm vi <policy>chính sách quyền riêng tư của BiVelio</policy>."
+    },
+    "contact": "Câu hỏi và yêu cầu về dữ liệu này: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Không tìm thấy trang · BiVelio Savings Layer",

@@ -949,7 +949,9 @@
       "andorra": "Von Andorra in die Welt 🇦🇩",
       "bottomPrivacy": "Datenschutz",
       "bottomTerms": "Bedingungen",
-      "howItWorks": "So funktioniert es"
+      "howItWorks": "So funktioniert es",
+      "pricingTerms": "Preisbedingungen",
+      "dataPrivacy": "Was BiVelio erhält"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1124,6 +1126,137 @@
     "ctaVerify": "Gemessene Ersparnis ansehen",
     "ctaSignup": "Konto erstellen",
     "ctaInstall": "Zur Installationsanleitung"
+  },
+  "pricingPage": {
+    "metaTitle": "Preisbedingungen · BV-SALA",
+    "metaDescription": "Die Gebühr pro Seat und die Provision auf gemessene Ersparnis, veröffentlicht aus denselben Konstanten, die abrechnen.",
+    "eyebrow": "Veröffentlichte Preise",
+    "title": "Preisbedingungen",
+    "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
+    "lede": "Die LICENSE verweist auf diese Seite als „Published Pricing“. Jede Zahl hier wird aus demselben Code gelesen, der dir die Rechnung stellt – sie ändert sich also, wenn sich der Preis ändert.",
+    "seat": {
+      "title": "Die Gebühr pro Seat",
+      "amount": "<b>{monthly}</b> pro Seat und Monat oder <b>{yearly}</b> pro Seat und Jahr, in {currency}.",
+      "paidAlways": "Die Gebühr pro Seat wird bezahlt, <b>ob die Software eine Ersparnis erzielt oder nicht</b>.",
+      "vat": "Die Beträge verstehen sich ohne MwSt. Beim Bezahlen werden deine Rechnungsadresse und, optional, deine USt-IdNr. abgefragt; beide stehen auf deiner Rechnung.",
+      "whatTitle": "Was ein Seat ist",
+      "what": "Ein Seat ist eine <b>Maschine oder Dienstidentität</b>, auf der die Software läuft – keine Person. Du wählst, wie viele Seats dein Abo abdeckt (bis zu {max} beim Bezahlen), und deine Lizenz deckt genau so viele ab.",
+      "counted": "In jedem Kalendermonat (UTC) zählt BiVelio jede eindeutige Seat-Kennung als genutzt, die an mindestens {dias} verschiedenen Tagen dieses Monats aktiv war. Als CI oder kurzlebige Runner markierte Identitäten zählen nicht. Dein Dashboard vergleicht diese Zahl mit den Seats, die dein Abo abdeckt.",
+      "identifier": "Wie eine Seat-Kennung gebildet wird und alles andere, was die Software an BiVelio sendet, steht auf der <privacy>Datenschutzseite</privacy>."
+    },
+    "commission": {
+      "title": "Die Provision auf gemessene Ersparnis",
+      "only": "Eine Provision wird <b>nur auf gemessene Ersparnis</b> berechnet: Ersparnis, die in deinen Nutzungsdatensätzen als {labels} gekennzeichnet ist. Als {never} gekennzeichnete Ersparnis trägt nie eine Provision.",
+      "measured": "Eine gemessene Ersparnis ergibt sich aus dem eigenen Nutzungszähler deines LLM-Anbieters für diese Anfrage.",
+      "reference": "Eine Ersparnis per Referenz – bei einer wiederholten Anfrage, die die Software ohne Aufruf deines Anbieters bedient hat – ergibt sich aus dem Zähler deines Anbieters für die identische frühere Anfrage, die tatsächlich lief, nach der Regel, die auf deiner Abrechnung steht ({regla}).",
+      "valued": "Beide werden zu den Preisen pro Token bewertet, die die Software auf diese Anfrage angewendet hat: denen eines Kostenmodells, das du konfigurierst, falls du eines konfigurierst, und sonst den Listenpreisen deines Anbieters im Preiskatalog, der mit der Software ausgeliefert wird.",
+      "flatRate": "Traffic, den die Software als Flatrate-Abo eines Anbieters erkennt (ein Claude- oder ChatGPT-Abo, das über das lokale Gateway genutzt wird), wird gemessen, aber es wird ihm keine gemessene Ersparnis gutgeschrieben; er trägt also keine Provision.",
+      "elision": "Der Wert der Eingabetokens, die dein Anbieter als aus dem Kontext entfernt meldet, wird erfasst, ist aber nicht Teil der Provisionsbasis.",
+      "tiersTitle": "Stufen",
+      "tiersIntro": "Die gemessene Ersparnis des Zeitraums wird in {currency} umgerechnet und auf Grenzstufen verteilt, jede mit ihrem eigenen Satz:",
+      "colBand": "Gemessene Ersparnis im Zeitraum",
+      "colRate": "Satz",
+      "bandUpTo": "Bis {hasta}",
+      "bandBetween": "Von {desde} bis {hasta}",
+      "bandAbove": "Über {desde}",
+      "ceiling": "Kein Stufensatz liegt über {max}; vor dem Runden der Provision auf den Cent <b>behältst du also mindestens {garantia}</b> der gemessenen Ersparnis des Zeitraums. Die Gebühr pro Seat kommt separat hinzu.",
+      "fx": "Die gemessene Ersparnis wird in US-Dollar gezählt und zum Referenzkurs der Europäischen Zentralbank umgerechnet, der beim Abschluss des Zeitraums abgerufen wird; deine Abrechnung zeigt den verwendeten Kurs.",
+      "rounding": "Die Provision wird auf den nächsten Cent gerundet. Eine Provision unter {minimo} wird nicht in Rechnung gestellt und nicht in einen anderen Zeitraum übertragen.",
+      "zero": "Ein Zeitraum ohne gemessene Ersparnis trägt <b>keine Provision</b>.",
+      "calculator": "Was das für deinen eigenen Traffic bedeutet, zeigt dir der <calc>Rechner</calc> auf der Startseite."
+    },
+    "calibration": {
+      "title": "Kalibrierungszeitraum",
+      "body": "Der <b>erste Kalendermonat (UTC), in dem deine Organisation Nutzung meldet</b>, ist ein Kalibrierungszeitraum, egal wie wenig von diesem Monat übrig ist. Er trägt keine Provision, und seine Abrechnung zeigt trotzdem die Provision, die angefallen wäre."
+    },
+    "exemption": {
+      "title": "Befreiung von der Provision",
+      "body": "Für einen Zeitraum, den BiVelio abschließt, während dein Konto von der Provision befreit ist, wird keine Provision berechnet. Ein Konto ist befreit, wenn BiVelio ihm eine Befreiung gewährt, und – bis eine Zahlung auf dem Konto erfolgt – wenn sein Abo mit einem Aktionscode aktiviert wurde, der die Gebühr pro Seat für die gesamte Laufzeit vollständig erlässt. Die Abrechnung zeigt trotzdem die Provision, die angefallen wäre."
+    },
+    "statement": {
+      "title": "Abrechnung und Rechnung",
+      "body": "Abrechnungszeiträume sind Kalendermonate (UTC). Nach Ende eines Monats schließt BiVelio ihn ab: Die Abrechnung dieses Monats in deinem Dashboard wird mit der gemessenen Basis, den Stufen, dem Wechselkurs und der Version des Preiskatalogs versiegelt, und die Provision wird auf Grundlage dieser Abrechnung über Stripe in Rechnung gestellt."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Was deine Infrastruktur verlässt · BV-SALA",
+    "metaDescription": "Die genaue Liste dessen, was das SDK und das lokale Gateway an BiVelio senden, was sie nie senden und wie lange BiVelio es aufbewahrt.",
+    "eyebrow": "Datenschutz",
+    "title": "Was deine Infrastruktur verlässt",
+    "governs": "Diese Seite beschreibt, wie der Dienst heute funktioniert; maßgeblich sind die <license>LICENSE</license> und die <terms>BiVelio-Bedingungen</terms>.",
+    "lede": "Was die Software (das SDK und das lokale Gateway) an BiVelio sendet, was sie nie sendet und wie lange BiVelio es aufbewahrt. Die LICENSE verweist für diese Einzelheiten auf diese Seite.",
+    "never": {
+      "title": "Was nie an BiVelio gesendet wird",
+      "content": "<b>Der Inhalt deiner Anfragen und Antworten</b>: Prompts, Systemanweisungen, Nachrichten, Tool-Definitionen, Tool-Argumente und -Ergebnisse, abgerufene Dokumente und generierte Antworten.",
+      "credentials": "<b>Die Zugangsdaten, die du bei deinem LLM-Anbieter verwendest</b>: API-Schlüssel, OAuth-Tokens oder andere Autorisierungs-Header.",
+      "path": "Dieser Inhalt und diese Zugangsdaten gehen nur zwischen deinen Systemen und dem LLM-Anbieter hin und her, den du konfigurierst."
+    },
+    "usage": {
+      "title": "Nutzungsdatensätze",
+      "when": "Das SDK sendet Nutzungsdatensätze nur, wenn du einen Lizenzserver oder eine Metering-URL konfigurierst; das lokale Gateway immer. Jeder Stapel trägt deinen BiVelio-Dienstkontoschlüssel, der deine Organisation identifiziert, sowie Oberfläche und Version der Software im Header <b>{header}</b>.",
+      "limit": "Jeder Datensatz ist auf die folgenden Felder beschränkt. <b>Die Erfassung von BiVelio weist jeden Datensatz zurück, der ein Feld enthält, das nicht auf dieser Liste steht.</b>",
+      "groups": {
+        "ids": {
+          "title": "Kennungen",
+          "body": "Eine auf deiner Seite erzeugte Anfragekennung (zufällig oder mit deinem eigenen Generator). Bei einer wiederholten, per Referenz bewerteten Anfrage die Kennung und der Zeitpunkt der früheren Anfrage, deren Anbieterzähler verwendet wird. Eine Seat-Kennung: ein Wert, den du festlegst, oder ein undurchsichtiger Wert, der auf deiner Maschine als schlüsselbasierter Hash (HMAC) mit deinem Dienstkontoschlüssel als Schlüssel berechnet wird, aus Plattform, CPU-Architektur, Pfad der ausführbaren Laufzeitdatei, Hostname, Benutzername des Betriebssystems und Home-Verzeichnis; diese Werte werden nie gesendet. Über das lokale Gateway die Sitzungs- und Subagent-Kennungen, die dein Coding-Agent an seine eigenen Anfragen anhängt (zum Beispiel die Sitzungs-ID von Claude Code), nur wenn es einfache Kennungen sind. Ein Organisationshinweis (BiVelio leitet deine Organisation immer aus dem Schlüssel ab). Eine Markierung für CI- oder kurzlebige Runner."
+        },
+        "model": {
+          "title": "Modell und Zeitpunkt",
+          "body": "Die Kennung des Modells, das die Anfrage beantwortet hat: das in der Anfrage genannte Modell oder, wenn die Software die Anfrage aufgrund einer von dir aktivierten Einstellung an ein anderes Modell geschickt hat, dieses; bei einem selbst gehosteten oder Azure-Deployment der Name, den du ihm gegeben hast. Und der Zeitpunkt der Anfrage."
+        },
+        "counts": {
+          "title": "Zählwerte",
+          "body": "Ausgeführte und vermiedene LLM-Aufrufe; Eingabe- und Ausgabetokens vor und nach den Optimierungen der Software, einschließlich entfernter, komprimierter oder aus dem Cache des Anbieters gelesener Tokens; und das Cache-Ergebnis."
+        },
+        "cost": {
+          "title": "Kosten",
+          "body": "Kostenzahlen, die die Software aus ihrem Preiskatalog oder aus einem von dir bereitgestellten Kostenmodell berechnet: Ausgangskosten, tatsächliche Kosten, die Netto-Ersparnisquote, die Grundlage der Zahlen (measured, reference, estimated, shadow oder unmeasured) und der Wert – zum Cache-Lesepreis des Anbieters – der Eingabetokens, die dein Anbieter als aus dem Kontext entfernt gemeldet hat."
+        }
+      }
+    },
+    "verification": {
+      "title": "Optionale Verifizierung (nur SDK, standardmäßig aus)",
+      "when": "Wenn du die Verifizierungsoption des SDK einschaltest, sendet das SDK eine Stichprobe der bedienten Anfragen ohne Optimierung erneut an deinen eigenen Anbieter und verwirft diese zweite Antwort. Für jede Anfrage der Stichprobe sendet es an BiVelio <b>über einen eigenen Kanal nur die folgenden Felder</b>; auch dieser Kanal weist jedes andere Feld zurück, und nichts, was er empfängt, wird zur Berechnung der Provision verwendet.",
+      "groups": {
+        "sample": {
+          "title": "Jede Anfrage der Stichprobe",
+          "body": "Die Kennzeichnung verification, Kennung und Zeitpunkt der Anfrage; das angefragte und das antwortende Modell; das Cache-Ergebnis; die Kategorie der Anfrage und das Ergebnis der Prüfung; die Eingabe-, gecachten Eingabe- und Ausgabetokens sowie die Kosten der bedienten Anfrage und der nicht optimierten Kopie; wie die Kopie endete und ob sie den Antwortvertrag erfüllte; und die angewendeten Preise pro Token."
+        },
+        "counts": {
+          "title": "Tägliche Zählungen",
+          "body": "Für jeden Tag die Zahl der Anfragen je Kategorie, einschließlich der von der Prüfung ausgeschlossenen."
+        },
+        "batch": {
+          "title": "Jeder Stapel",
+          "body": "Eine zufällige Stapelkennung zum Verwerfen von Duplikaten und die beiden Listen oben."
+        }
+      }
+    },
+    "other": {
+      "title": "Andere Anfragen an BiVelio",
+      "body": "Die Software ruft außerdem ihr aktuelles Lizenztoken und die signierte Sperrliste der Lizenzen ab, und das lokale Gateway ruft die Funktionsberechtigungen deiner Organisation ab. Diese Anfragen tragen deinen Dienstkontoschlüssel, wo eine Authentifizierung nötig ist, und keine Anfragedaten.",
+      "network": "Wie jede HTTPS-Anfrage gibt all das außerdem gewöhnliche Netzwerk-Metadaten preis, etwa deine IP-Adresse."
+    },
+    "retention": {
+      "title": "Was BiVelio aufbewahrt und wie lange",
+      "intro": "Die Erfassung addiert jeden Nutzungsdatensatz zu Tagessummen: pro Tag, pro Modell, pro Seat und pro Gateway-Sitzung. Einzelne Zeilen werden nur an den folgenden Stellen aufbewahrt, und ein täglicher Job löscht jede Zeile, sobald sie älter als ihre Frist ist:",
+      "items": {
+        "seen": "Anfragekennungen, um doppelte Datensätze zu verwerfen: {dias} Tage.",
+        "reference": "Per Referenz bewertete wiederholte Anfragen (Anfragekennungen, Modell, Zeitpunkt und der verwendete Anbieterzähler), die Zeilen hinter dem Download deiner Abrechnung: {dias} Tage.",
+        "verificationSamples": "Verifizierungsstichproben und ihre täglichen Zählungen: {dias} Tage.",
+        "verificationBatches": "Stapelkennungen der Verifizierung: {dias} Tage."
+      },
+      "noSchedule": "Tagessummen, Seat-Aktivität und deine versiegelten Abrechnungen haben heute keine automatische Löschfrist."
+    },
+    "use": {
+      "title": "Wofür BiVelio sie verwendet",
+      "body": "Um Lizenzen und Sperren zu betreiben, dir dein Dashboard zu zeigen, genutzte Seats zu zählen und die Gebühren zu berechnen, die die <pricing>Preisseite</pricing> beschreibt."
+    },
+    "account": {
+      "title": "Dein Konto auf dieser Website",
+      "body": "Deine Anmelde-E-Mail, deine Organisation und deine Rechnungsdaten (Zahlungen verarbeitet Stripe) fallen unter die <policy>Datenschutzerklärung von BiVelio</policy>."
+    },
+    "contact": "Fragen und Anfragen zu diesen Daten: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Seite nicht gefunden · BiVelio Savings Layer",

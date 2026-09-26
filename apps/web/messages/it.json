@@ -949,7 +949,9 @@
       "andorra": "Da Andorra al mondo 🇦🇩",
       "bottomPrivacy": "Privacy",
       "bottomTerms": "Termini",
-      "howItWorks": "Come funziona"
+      "howItWorks": "Come funziona",
+      "pricingTerms": "Condizioni di prezzo",
+      "dataPrivacy": "Cosa riceve BiVelio"
     },
     "cta15": {
       "titulo": "Book 15-min call",
@@ -1124,6 +1126,137 @@
     "ctaVerify": "Vedi il risparmio misurato",
     "ctaSignup": "Crea account",
     "ctaInstall": "Vai alla guida di installazione"
+  },
+  "pricingPage": {
+    "metaTitle": "Condizioni di prezzo · BV-SALA",
+    "metaDescription": "La quota per postazione e la commissione sul risparmio misurato, pubblicate dalle stesse costanti che fatturano.",
+    "eyebrow": "Prezzi pubblicati",
+    "title": "Condizioni di prezzo",
+    "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
+    "lede": "La LICENSE rimanda a questa pagina come «Published Pricing». Ogni cifra che vedi qui viene letta dallo stesso codice che ti fattura, quindi cambia quando cambia il prezzo.",
+    "seat": {
+      "title": "La quota per postazione",
+      "amount": "<b>{monthly}</b> per postazione al mese, oppure <b>{yearly}</b> per postazione all'anno, in {currency}.",
+      "paidAlways": "La quota per postazione si paga <b>che il Software produca un risparmio o no</b>.",
+      "vat": "Gli importi sono IVA esclusa. Il pagamento chiede il tuo indirizzo di fatturazione e, facoltativamente, la tua partita IVA; entrambi compaiono in fattura.",
+      "whatTitle": "Che cos'è una postazione",
+      "what": "Una postazione è una <b>macchina o identità di servizio</b> che esegue il Software, non una persona. Scegli tu quante postazioni copre il tuo abbonamento (fino a {max} al pagamento) e la tua licenza ne copre altrettante.",
+      "counted": "Ogni mese solare (UTC), BiVelio conta come in uso ogni identificativo di postazione distinto che è stato attivo in almeno {dias} giorni diversi di quel mese. Le identità contrassegnate come CI o runner effimeri non contano. La tua dashboard confronta questo conteggio con le postazioni coperte dal tuo abbonamento.",
+      "identifier": "Come si forma l'identificativo di postazione, e tutto il resto che il Software invia a BiVelio, è nella <privacy>pagina sulla privacy</privacy>."
+    },
+    "commission": {
+      "title": "La commissione sul risparmio misurato",
+      "only": "La commissione si applica <b>solo al risparmio misurato</b>: il risparmio etichettato {labels} nei tuoi record di utilizzo. Il risparmio etichettato {never} non porta mai commissione.",
+      "measured": "Un risparmio misurato si ricava dal contatore di utilizzo del tuo stesso provider di LLM per quella richiesta.",
+      "reference": "Un risparmio per riferimento, per una richiesta ripetuta che il Software ha servito senza chiamare il tuo provider, si ricava dal contatore del tuo provider per la richiesta identica precedente che è stata effettivamente eseguita, secondo la regola indicata nel tuo estratto ({regla}).",
+      "valued": "Entrambi sono valorizzati ai prezzi per token che il Software ha applicato a quella richiesta: quelli di un modello di costo che configuri, se lo configuri, e altrimenti i prezzi di listino del tuo provider nel catalogo prezzi incluso nel Software.",
+      "flatRate": "Il traffico che il Software riconosce come abbonamento a tariffa fissa di un provider (un abbonamento Claude o ChatGPT usato tramite il gateway locale) viene misurato ma non riceve alcun risparmio misurato, quindi non porta commissione.",
+      "elision": "Il valore dei token di input che il tuo provider dichiara rimossi dal contesto viene registrato, ma non fa parte della base della commissione.",
+      "tiersTitle": "Scaglioni",
+      "tiersIntro": "Il risparmio misurato del periodo viene convertito in {currency} e suddiviso in scaglioni marginali, ciascuno con la propria aliquota:",
+      "colBand": "Risparmio misurato nel periodo",
+      "colRate": "Aliquota",
+      "bandUpTo": "Fino a {hasta}",
+      "bandBetween": "Da {desde} a {hasta}",
+      "bandAbove": "Oltre {desde}",
+      "ceiling": "Nessuno scaglione supera il {max}, quindi, prima di arrotondare la commissione al centesimo, <b>ti resta almeno il {garantia}</b> del risparmio misurato del periodo. La quota per postazione è a parte.",
+      "fx": "Il risparmio misurato si conta in dollari statunitensi e si converte al tasso di riferimento della Banca centrale europea rilevato alla chiusura del periodo; il tuo estratto mostra il tasso applicato.",
+      "rounding": "La commissione viene arrotondata al centesimo più vicino. Una commissione inferiore a {minimo} non viene fatturata né riportata a un altro periodo.",
+      "zero": "Un periodo senza risparmio misurato <b>non porta commissione</b>.",
+      "calculator": "Per vedere cosa significa per il tuo traffico, prova il <calc>calcolatore</calc> nella home page."
+    },
+    "calibration": {
+      "title": "Periodo di calibrazione",
+      "body": "Il <b>primo mese solare (UTC) in cui la tua organizzazione registra un utilizzo</b> è un periodo di calibrazione, per quanto poco ne resti. Non porta commissione, e il suo estratto mostra comunque la commissione che si sarebbe applicata."
+    },
+    "exemption": {
+      "title": "Esenzione dalla commissione",
+      "body": "Non si applica alcuna commissione a un periodo che BiVelio chiude mentre il tuo account ne è esente. Un account è esente quando BiVelio gli concede un'esenzione e, finché non viene effettuato un pagamento sull'account, quando il suo abbonamento è stato attivato con un codice promozionale che esenta del tutto dalla quota per postazione per l'intera durata. L'estratto mostra comunque la commissione che si sarebbe applicata."
+    },
+    "statement": {
+      "title": "Estratto e fattura",
+      "body": "I periodi di fatturazione sono mesi solari (UTC). Alla fine di un mese, BiVelio lo chiude: l'estratto di quel mese nella tua dashboard viene sigillato con la base misurata, gli scaglioni, il tasso di cambio e la versione del catalogo prezzi, e la commissione viene fatturata a partire da quell'estratto tramite Stripe."
+    }
+  },
+  "privacyPage": {
+    "metaTitle": "Cosa esce dalla tua infrastruttura · BV-SALA",
+    "metaDescription": "L'elenco esatto di ciò che l'SDK e il gateway locale inviano a BiVelio, di ciò che non inviano mai e di quanto tempo BiVelio lo conserva.",
+    "eyebrow": "Privacy",
+    "title": "Cosa esce dalla tua infrastruttura",
+    "governs": "Questa pagina descrive come funziona il servizio oggi; prevalgono la <license>LICENSE</license> e i <terms>Termini di BiVelio</terms>.",
+    "lede": "Che cosa invia il Software (l'SDK e il gateway locale) a BiVelio, che cosa non invia mai e per quanto tempo BiVelio lo conserva. La LICENSE rimanda a questa pagina per questi dettagli.",
+    "never": {
+      "title": "Cosa non viene mai inviato a BiVelio",
+      "content": "<b>Il contenuto delle tue richieste e risposte</b>: prompt, istruzioni di sistema, messaggi, definizioni degli strumenti, argomenti e risultati degli strumenti, documenti recuperati e risposte generate.",
+      "credentials": "<b>Le credenziali che usi con il tuo provider di LLM</b>: chiavi API, token OAuth o altri header di autorizzazione.",
+      "path": "Quel contenuto e quelle credenziali viaggiano solo tra i tuoi sistemi e il provider di LLM che configuri."
+    },
+    "usage": {
+      "title": "Record di utilizzo",
+      "when": "L'SDK invia record di utilizzo solo se configuri un server delle licenze o un URL di misurazione; il gateway locale, sempre. Ogni lotto porta la tua chiave di account di servizio di BiVelio, che identifica la tua organizzazione, e la superficie e la versione del Software nell'header <b>{header}</b>.",
+      "limit": "Ogni record è limitato ai campi qui sotto. <b>L'ingestione di BiVelio rifiuta qualsiasi record che contenga un campo non presente in questo elenco.</b>",
+      "groups": {
+        "ids": {
+          "title": "Identificativi",
+          "body": "Un identificativo di richiesta generato dalla tua parte (a caso, o dal tuo generatore). Per una richiesta ripetuta valorizzata per riferimento, l'identificativo e l'istante della richiesta precedente di cui si usa il contatore del provider. Un identificativo di postazione: un valore che imposti tu, oppure un valore opaco calcolato sulla tua macchina come hash con chiave (HMAC), con la tua chiave di account di servizio come chiave, a partire da piattaforma, architettura della CPU, percorso dell'eseguibile, nome host, nome utente del sistema operativo e directory home; questi valori non vengono mai inviati. Tramite il gateway locale, gli identificativi di sessione e di sotto-agente che il tuo agente di programmazione aggiunge alle proprie richieste (per esempio l'id di sessione di Claude Code), solo quando sono identificativi semplici. Un indizio sull'organizzazione (BiVelio ricava sempre la tua organizzazione dalla chiave). Un indicatore per i runner CI o effimeri."
+        },
+        "model": {
+          "title": "Modello e istante",
+          "body": "L'identificativo del modello che ha risposto alla richiesta: quello indicato nella richiesta oppure, se il Software l'ha inviata a un altro modello per un'impostazione che hai attivato, quest'ultimo; per un deployment self-hosted o Azure, il nome che gli hai dato. E l'istante della richiesta."
+        },
+        "counts": {
+          "title": "Conteggi",
+          "body": "Chiamate al LLM eseguite ed evitate; token di input e di output prima e dopo le ottimizzazioni del Software, inclusi i token rimossi, compressi o letti dalla cache del provider; e l'esito della cache."
+        },
+        "cost": {
+          "title": "Costo",
+          "body": "Cifre di costo calcolate dal Software con il suo catalogo prezzi o con un modello di costo che fornisci tu: costo di riferimento, costo effettivo, il rapporto di risparmio netto, la base delle cifre (measured, reference, estimated, shadow o unmeasured) e il valore, al prezzo di lettura della cache del provider, dei token di input che il tuo provider ha dichiarato rimossi dal contesto."
+        }
+      }
+    },
+    "verification": {
+      "title": "Verifica facoltativa (solo SDK, disattivata per impostazione predefinita)",
+      "when": "Se attivi l'opzione di verifica dell'SDK, l'SDK rimanda al tuo stesso provider un campione delle richieste che ha servito, senza ottimizzazione, e scarta quella seconda risposta. Per ogni richiesta del campione invia a BiVelio, <b>attraverso un canale separato, solo i campi qui sotto</b>; anche quel canale rifiuta qualsiasi altro campo, e nulla di ciò che riceve viene usato per calcolare la commissione.",
+      "groups": {
+        "sample": {
+          "title": "Ogni richiesta del campione",
+          "body": "L'etichetta verification, l'identificativo e l'istante della richiesta; il modello richiesto e quello che ha risposto; l'esito della cache; la categoria della richiesta e l'esito del controllo; i token di input, di input in cache e di output e il costo della richiesta servita e della copia non ottimizzata; come è terminata la copia e se ha rispettato il contratto di risposta; e i prezzi per token applicati."
+        },
+        "counts": {
+          "title": "Conteggi giornalieri",
+          "body": "Per ogni giorno, il numero di richieste di ciascuna categoria, incluse quelle escluse dal controllo."
+        },
+        "batch": {
+          "title": "Ogni lotto",
+          "body": "Un identificativo di lotto casuale, per scartare i duplicati, e i due elenchi precedenti."
+        }
+      }
+    },
+    "other": {
+      "title": "Altre richieste a BiVelio",
+      "body": "Il Software scarica anche il proprio token di licenza in vigore e l'elenco firmato delle licenze revocate, e il gateway locale scarica le funzionalità abilitate per la tua organizzazione. Queste richieste portano la tua chiave di account di servizio quando serve l'autenticazione, e nessun dato delle richieste.",
+      "network": "Come qualsiasi richiesta HTTPS, tutto ciò rivela inoltre i normali metadati di rete, come il tuo indirizzo IP."
+    },
+    "retention": {
+      "title": "Cosa conserva BiVelio, e per quanto tempo",
+      "intro": "L'ingestione somma ogni record di utilizzo a totali giornalieri: per giorno, per modello, per postazione e per sessione del gateway. Le singole righe si conservano solo nei punti qui sotto, e un'attività giornaliera cancella ogni riga quando supera il suo termine:",
+      "items": {
+        "seen": "Identificativi di richiesta, conservati per scartare record duplicati: {dias} giorni.",
+        "reference": "Richieste ripetute valorizzate per riferimento (identificativi di richiesta, modello, istante e contatore del provider usato), le righe dietro il download del tuo estratto: {dias} giorni.",
+        "verificationSamples": "Campioni di verifica e i loro conteggi giornalieri: {dias} giorni.",
+        "verificationBatches": "Identificativi di lotto della verifica: {dias} giorni."
+      },
+      "noSchedule": "I totali giornalieri, l'attività per postazione e i tuoi estratti sigillati oggi non hanno un termine di cancellazione automatica."
+    },
+    "use": {
+      "title": "A cosa serve a BiVelio",
+      "body": "A gestire licenze e revoche, mostrarti la dashboard, contare le postazioni in uso e calcolare le tariffe descritte nella <pricing>pagina dei prezzi</pricing>."
+    },
+    "account": {
+      "title": "Il tuo account su questo sito",
+      "body": "La tua e-mail di accesso, la tua organizzazione e i tuoi dati di fatturazione (i pagamenti sono gestiti da Stripe) rientrano nella <policy>informativa sulla privacy di BiVelio</policy>."
+    },
+    "contact": "Domande e richieste su questi dati: <mail>{email}</mail>."
   },
   "notFound": {
     "metaTitle": "Pagina non trovata · BiVelio Savings Layer",

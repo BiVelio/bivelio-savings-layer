@@ -15,6 +15,15 @@
 export const MAX_ASIENTOS = 500;
 
 /**
+ * Días DISTINTOS de un mes natural (UTC) que un asiento tiene que estar activo
+ * para contar como usado: el `having count(distinct day) >= N` de
+ * `bvsala.billable_seats` (db/migrations/0003_metering.sql). La cifra vive en
+ * SQL; esta constante es su espejo para la web pública, y
+ * `lib/legal/precios-publicados.test.ts` la ata al SQL leyéndolo como texto.
+ */
+export const DIAS_ACTIVOS_PARA_CONTAR_ASIENTO = 3;
+
+/**
  * Cuántos asientos se compran, a partir de lo que haya escrito o mandado quien
  * sea. Acepta el texto del campo del panel y el número del cuerpo de la petición.
  *
