@@ -854,7 +854,7 @@
       "aiPaso2": "Lalu unggah zip di Customize → Skills: muncul dengan sakelarnya sendiri, privat di akunmu."
     },
     "systems": {
-      "caption": "Tempat otomasimu sudah hidup. Jika ia memanggil API penyedia Anda dengan kuncimu, ia terukur — SDK membungkus panggilan; gateway berdiri di depannya."
+      "caption": "Tempat otomasi Anda sudah berjalan. Yang diukur adalah panggilan ke API penyedia Anda dengan kunci Anda: di aplikasi Node.js, SDK membungkusnya; dari kode lain yang memakai SDK resmi OpenAI atau Anthropic, gateway berdiri di depannya dan mencatatnya untuk model yang memiliki harga daftar."
     },
     "nvidia": {
       "kicker": "Perusahaan dan ekosistem",

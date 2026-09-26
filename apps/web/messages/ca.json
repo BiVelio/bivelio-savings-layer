@@ -854,7 +854,7 @@
       "aiPaso2": "Després puja el zip a Customize → Skills: apareix amb el seu interruptor, privat al teu compte."
     },
     "systems": {
-      "caption": "On ja viuen les teves automatitzacions. Si crida l'API del teu proveïdor amb la teva clau, es mesura — l'SDK embolcalla la crida; el gateway s'hi posa al davant."
+      "caption": "On ja viuen les teves automatitzacions. El que es mesura és la crida a l'API del teu proveïdor amb la teva clau: en una app Node.js, l'SDK l'embolcalla; des d'un altre codi amb l'SDK oficial d'OpenAI o d'Anthropic, el gateway s'hi posa al davant i la registra si és d'un model amb preu de llista."
     },
     "nvidia": {
       "kicker": "Companyia i ecosistema",

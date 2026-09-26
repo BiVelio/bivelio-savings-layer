@@ -854,7 +854,7 @@
       "aiPaso2": "Then upload the zip under Customize → Skills: it appears with its own toggle, private to your account."
     },
     "systems": {
-      "caption": "Where your automations already live. If it calls your provider's API with your key, it gets measured — the SDK wraps the call; the gateway sits in front."
+      "caption": "Where your automations already live. What gets measured is the call to your provider's API with your key: in a Node.js app, the SDK wraps it; from other code on the official OpenAI or Anthropic SDK, the gateway sits in front and records it for a model with a list price."
     },
     "nvidia": {
       "kicker": "Company & ecosystem",

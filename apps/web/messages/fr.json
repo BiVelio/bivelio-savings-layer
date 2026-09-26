@@ -854,7 +854,7 @@
       "aiPaso2": "Puis téléversez le zip dans Customize → Skills : il apparaît avec son interrupteur, privé sur votre compte."
     },
     "systems": {
-      "caption": "Là où vivent déjà vos automatisations. Si ça appelle l'API de votre fournisseur avec votre clé, c'est mesuré — le SDK enveloppe l'appel ; la passerelle se place devant."
+      "caption": "Là où vivent déjà vos automatisations. Ce qui est mesuré, c'est l'appel à l'API de votre fournisseur avec votre clé : dans une app Node.js, le SDK l'enveloppe ; depuis un autre code qui utilise le SDK officiel d'OpenAI ou d'Anthropic, la passerelle se place devant et l'enregistre pour un modèle qui a un prix catalogue."
     },
     "nvidia": {
       "kicker": "Entreprise et écosystème",

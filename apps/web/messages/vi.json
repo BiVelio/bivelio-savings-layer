@@ -854,7 +854,7 @@
       "aiPaso2": "Sau đó tải zip lên trong Customize → Skills: nó xuất hiện với công tắc riêng, riêng tư trong tài khoản của bạn."
     },
     "systems": {
-      "caption": "Nơi các tự động hóa của bạn đã sống. Nếu nó gọi API của nhà cung cấp bằng khóa của bạn, nó được đo — SDK bọc lời gọi; gateway đứng chắn phía trước."
+      "caption": "Nơi các tự động hóa của bạn đã sống. Thứ được đo là lời gọi tới API của nhà cung cấp bằng khóa của bạn: trong một ứng dụng Node.js, SDK bọc lời gọi đó; từ mã khác dùng SDK chính thức của OpenAI hoặc Anthropic, gateway đứng chắn phía trước và ghi nhận nó với mô hình có giá niêm yết."
     },
     "nvidia": {
       "kicker": "Công ty và hệ sinh thái",

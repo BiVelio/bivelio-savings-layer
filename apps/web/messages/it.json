@@ -854,7 +854,7 @@
       "aiPaso2": "Poi carica lo zip in Customize → Skills: appare con il suo interruttore, privato nel tuo account."
     },
     "systems": {
-      "caption": "Dove già vivono le tue automazioni. Se chiama l'API del tuo fornitore con la tua chiave, si misura — l'SDK avvolge la chiamata; il gateway si mette davanti."
+      "caption": "Dove già vivono le tue automazioni. Ciò che si misura è la chiamata all'API del tuo fornitore con la tua chiave: in un'app Node.js, l'SDK la avvolge; da altro codice con l'SDK ufficiale di OpenAI o di Anthropic, il gateway si mette davanti e la registra per un modello con prezzo di listino."
     },
     "nvidia": {
       "kicker": "Azienda ed ecosistema",

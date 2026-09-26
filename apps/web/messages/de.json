@@ -854,7 +854,7 @@
       "aiPaso2": "Dann das Zip unter Customize → Skills hochladen: es erscheint mit eigenem Schalter, privat in deinem Konto."
     },
     "systems": {
-      "caption": "Wo deine Automatisierungen schon leben. Ruft es die API des Anbieters mit deinem Schlüssel auf, wird es gemessen — das SDK umhüllt den Aufruf; das Gateway setzt sich davor."
+      "caption": "Wo deine Automatisierungen schon leben. Gemessen wird der Aufruf der API deines Anbieters mit deinem Schlüssel: In einer Node.js-App umhüllt ihn das SDK; aus anderem Code mit dem offiziellen SDK von OpenAI oder Anthropic setzt sich das Gateway davor und erfasst ihn für ein Modell mit Listenpreis."
     },
     "nvidia": {
       "kicker": "Unternehmen und Ökosystem",

@@ -854,7 +854,7 @@
       "aiPaso2": "Upload daarna de zip onder Customize → Skills: hij verschijnt met zijn eigen schakelaar, privé in je account."
     },
     "systems": {
-      "caption": "Waar je automatiseringen al leven. Roept het de API van je aanbieder aan met jouw sleutel, dan wordt het gemeten — de SDK omhult de aanroep; de gateway staat ervoor."
+      "caption": "Waar je automatiseringen al leven. Wat gemeten wordt, is de aanroep van de API van je aanbieder met jouw sleutel: in een Node.js-app omhult de SDK hem; vanuit andere code met de officiële SDK van OpenAI of Anthropic staat de gateway ervoor en legt hem vast voor een model met een lijstprijs."
     },
     "nvidia": {
       "kicker": "Bedrijf en ecosysteem",

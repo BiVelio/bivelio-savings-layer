@@ -854,7 +854,7 @@
       "aiPaso2": "Następnie wgraj zip w Customize → Skills: pojawi się z własnym przełącznikiem, prywatny na Twoim koncie."
     },
     "systems": {
-      "caption": "Tam, gdzie już żyją Twoje automatyzacje. Jeśli wywołuje API Twojego dostawcy Twoim kluczem, jest mierzone — SDK opakowuje wywołanie; brama staje z przodu."
+      "caption": "Tam, gdzie już żyją Twoje automatyzacje. Mierzone jest wywołanie API Twojego dostawcy Twoim kluczem: w aplikacji Node.js opakowuje je SDK; z innego kodu z oficjalnym SDK OpenAI lub Anthropic brama staje z przodu i zapisuje je dla modelu z ceną katalogową."
     },
     "nvidia": {
       "kicker": "Firma i ekosystem",

@@ -854,7 +854,7 @@
       "aiPaso2": "Sonra zip'i Customize → Skills altında yükle: kendi anahtarıyla, hesabında özel olarak görünür."
     },
     "systems": {
-      "caption": "Otomasyonlarının zaten yaşadığı yerde. sağlayıcınızın API'sini senin anahtarınla çağırıyorsa ölçülür — SDK çağrıyı sarar; ağ geçidi öne geçer."
+      "caption": "Otomasyonlarınızın zaten yaşadığı yerde. Ölçülen, sağlayıcınızın API'sine kendi anahtarınızla yapılan çağrıdır: bir Node.js uygulamasında SDK onu sarar; resmi OpenAI veya Anthropic SDK'sını kullanan başka bir koddan gelen çağrıda ise ağ geçidi öne geçer ve liste fiyatı olan bir modele aitse onu kaydeder."
     },
     "nvidia": {
       "kicker": "Şirket ve ekosistem",

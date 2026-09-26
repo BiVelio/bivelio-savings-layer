@@ -680,7 +680,10 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </pre>
           {/* Sistemas donde ya viven las automatizaciones del cliente: logos
               oficiales a color (decisión del dueño). El texto mantiene la
-              afirmación honesta: se mide lo que llama a la API con su clave. */}
+              afirmación honesta: se mide la llamada a la API con su clave, con
+              el SDK en Node.js o, desde otro código con el SDK oficial de
+              OpenAI o de Anthropic, con el gateway y solo para modelos con
+              precio de lista (#313; lo fija messages/copia-del-gateway.test.ts). */}
           <div className="sys-marquee" aria-label="Salesforce, HubSpot, Odoo, Zapier, n8n, UiPath">
             <div className="sys-track">
               {[0, 1].map((copia) =>
