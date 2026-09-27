@@ -48,15 +48,16 @@ It prints `https://slsa.dev/provenance/v1` when the version has one, and nothing
 when it does not. On npmjs.com, a version with provenance shows a "Provenance"
 section that links to the source commit and the build that produced it.
 
-Which versions have provenance:
+How each version was published:
 
-- **Up to and including 0.4.24**, versions were published by hand. They carry no
-  provenance attestation.
-- **From the next release on**, versions are published by our release workflow
-  with npm trusted publishing (short-lived OIDC credentials, no stored npm
-  token). npm only generates provenance when the source repository is public.
-  While our repository is private, releases are published without it, and the
-  command above prints nothing.
+- **Up to and including 0.4.24**, every version was published by hand. None of
+  them carries a provenance attestation.
+- A version published by our release workflow uses npm trusted publishing
+  (short-lived OIDC credentials, no stored npm token). npm only generates
+  provenance when the source repository is public. While our repository is
+  private, the workflow publishes without it, and the command above prints
+  nothing.
+- If a later version has to be published by hand, it is listed here as such.
 
 ### What the release workflow checks before publishing
 
@@ -65,11 +66,13 @@ file. It refuses to publish unless the tarball:
 
 - has the license check closed (the development bypass is not compiled in);
 - contains no source maps;
-- embeds BiVelio's public verification key in both the SDK and the gateway.
+- embeds BiVelio's public verification key in both the SDK and the gateway;
+- contains no private key in PEM form, as text or base64-encoded, in any file.
 
-Only the Ed25519 public key ships. The signing key never leaves our control
-plane. After publishing, the workflow checks that the registry serves a tarball
-with the same SHA-512 as the one it checked.
+Only BiVelio's Ed25519 public key ships in the package. The private signing key
+is never part of it, and the workflow refuses a tarball that contains one. After
+publishing, the workflow checks that the registry serves a tarball with the same
+SHA-512 as the one it checked.
 
 ### SBOM
 
@@ -113,10 +116,11 @@ every 60 minutes.
 
 **Fail-closed after 72 hours.** The SDK stops serving if it goes 72 hours
 without a confirmed answer from the revocation endpoint (an "unchanged"
-response, or a list whose signature verifies). The 72 hours count from process
-start or from the last confirmed answer, and each new process starts its own
-window. When the limit is reached, new requests fail with `LicenseError` status
-`stale` (`generate()` throws it, `generateStream()` reports it in the stream).
+response, or a list whose signature verifies). The 72 hours count from the most
+recent of: process start, the last confirmed answer, and the moment the SDK
+adopts a renewed license. Each new process starts its own window. When the
+limit is reached, new requests fail with `LicenseError` status `stale`
+(`generate()` throws it, `generateStream()` reports it in the stream).
 The message says it is a connectivity problem, not a billing one. The SDK serves
 again as soon as a confirmed answer arrives. You can change the limit
 with `licenseRevocation.maxStalenessSeconds`.
@@ -161,10 +165,11 @@ your machine. It waits up to 10 seconds, or 3 seconds when a valid
 - Entitlements (which savings features your plan includes, and whether the
   control plane reports your organization as blocked) are cached for up to 5
   minutes and refreshed in the background when a request arrives (10-second
-  timeout). If they cannot be fetched, savings features switch off, traffic
-  keeps flowing to your provider unchanged, and the gateway retries within 60
-  seconds. A failed fetch never blocks your organization. Only an answer from
-  the server can.
+  timeout). If they cannot be fetched, savings features switch off and traffic
+  keeps flowing to your provider unchanged. There is no retry timer: the
+  gateway tries again with the first request that arrives more than 60 seconds
+  later, and that request is still served without savings features. A failed
+  fetch never blocks your organization. Only an answer from the server can.
 - Usage reporting works as in the SDK.
 
 ### Grace period

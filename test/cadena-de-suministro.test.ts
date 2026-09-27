@@ -1,12 +1,12 @@
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { createHash, generateKeyPairSync } from "node:crypto";
+import { appendFileSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, it, expect } from "vitest";
 
-import { construirSbom, generarSbom, paqueteDeRuta, purlNpm } from "../scripts/sbom.js";
+import { construirSbom, generarSbom, licencias, paqueteDeRuta, purlNpm } from "../scripts/sbom.js";
 
 /**
  * LA CADENA DE SUMINISTRO (recomendación n.º 7 del informe de competencia del
@@ -63,6 +63,24 @@ function paso(bloque: string, nombre: string): string {
   return p;
 }
 
+/** El script de shell de un paso (`run: |`), sin la sangría del YAML. */
+function scriptDe(p: string): string {
+  const i = p.indexOf("run: |\n");
+  if (i < 0) throw new Error("el paso no tiene un `run: |`");
+  const lineas = p.slice(i + "run: |\n".length).split("\n");
+  const sangria = /^ */.exec(lineas[0]!)![0].length;
+  return lineas.map((l) => l.slice(sangria)).join("\n");
+}
+
+/** «PRIVATE KEY» en base64, en sus tres alineaciones: lo que la verja busca además del PEM. */
+function privateKeyEnBase64(): string[] {
+  const s = Buffer.from("PRIVATE KEY");
+  return [0, 1, 2].map((k) => {
+    const b = Buffer.concat([Buffer.alloc(k, 0x78), s]).toString("base64");
+    return b.slice(Math.ceil((k * 8) / 6), Math.floor(((k + s.length) * 8) / 6));
+  });
+}
+
 describe("publish.yml publica con trusted publishing y provenance", () => {
   const publicar = trabajo("publicar");
 
@@ -106,7 +124,7 @@ describe("publish.yml publica con trusted publishing y provenance", () => {
     expect(sinComentarios(workflow)).not.toMatch(/NPM_TOKEN|NODE_AUTH_TOKEN/);
   });
 
-  it("requisitos de npm: runner de GitHub, Node >= 22.14 y npm >= 11.5.1", () => {
+  it("requisitos de npm: runner de GitHub, Node >= 22.14 y npm >= 11.5.1 (comprobado, no instalado)", () => {
     expect(publicar).toMatch(/runs-on: ubuntu-latest/);
     const node = /node-version: (\d+)(?:\.(\d+))?/.exec(publicar);
     expect(node).not.toBeNull();
@@ -115,19 +133,22 @@ describe("publish.yml publica con trusted publishing y provenance", () => {
     expect(mayor > 22 || (mayor === 22 && menor >= 14)).toBe(true);
     const npm = paso(publicar, "trusted publishing \\(>= 11.5.1\\)");
     expect(npm).toMatch(/b===5&&c>=1/);
-    // Y la comprobación MANDA: si tras instalar sigue por debajo, el paso falla.
+    // Y la comprobación MANDA: por debajo, el paso falla. No se instala otro npm.
     expect(npm).toMatch(/^\s*admite \|\| \{[^\n]*exit 1; \}$/m);
+    expect(npm).not.toMatch(/install/);
   });
 
   it("solo el trabajo que publica puede pedir un token OIDC, y no ejecuta código de terceros", () => {
     const todos = [...sinComentarios(workflow).matchAll(/id-token:\s*write/g)];
     expect(todos).toHaveLength(1);
     expect(sinComentarios(workflow)).toMatch(/^permissions: \{\}$/m);
-    // Ni instala dependencias ni hace checkout: con `id-token: write`, un
-    // script de instalación de un tercero podría publicar en nuestro nombre.
-    expect(publicar).not.toMatch(/pnpm|npm ci|actions\/checkout/);
-    const instalaciones = [...publicar.matchAll(/npm install[^\n]*/g)].map((m) => m[0]);
-    expect(instalaciones.every((i) => /^npm install -g npm@\d+$/.test(i.trim()))).toBe(true);
+    // No instala NADA (ni dependencias ni otro npm) ni hace checkout: con
+    // `id-token: write`, un script de instalación de un tercero podría publicar
+    // en nuestro nombre.
+    expect(publicar).not.toMatch(/\bnpm (?:install|i|ci|add|update)\b|pnpm|yarn|npx|actions\/checkout/);
+    // Y las únicas acciones que ejecuta son estas dos.
+    const acciones = [...publicar.matchAll(/uses: ([^\s@]+)@/g)].map((m) => m[1]);
+    expect(acciones.sort()).toEqual(["actions/download-artifact", "actions/setup-node"]);
     expect(publicar).toMatch(/needs: verificar/);
   });
 
@@ -154,21 +175,53 @@ describe("publish.yml conserva las verjas de antes de publicar", () => {
     expect(p).toMatch(/exit 1/);
   });
 
-  it("el tarball: paywall cerrado, sin sourcemaps y con la clave pública en el SDK y en el gateway", () => {
+  it("el tarball: paywall cerrado, sin sourcemaps, con la clave pública en el SDK y en el gateway, y sin ninguna privada", () => {
     const p = paso(verificar, "El paquete no regala el producto");
     expect(p).toMatch(/grep -q "BVSALA_DEV_OPEN" "\$DIR\/package\/dist\/index\.js"/);
     expect(p).toMatch(/-name "\*\.map"/);
     expect(p).toMatch(/grep -q "BEGIN PUBLIC KEY" "\$DIR\/package\/dist\/index\.js"/);
     expect(p).toMatch(/grep -q "BEGIN PUBLIC KEY" "\$DIR\/package\/dist\/gateway\/bin\.js"/);
-    expect(p.match(/exit 1/g)?.length).toBe(4);
+    // SECURITY.md promete que la privada no viaja y que el workflow rechaza un
+    // tarball que la lleve: esto es lo que lo respalda. En TODO el paquete, en
+    // PEM y en base64 del PEM (el formato de LICENSE_PRIVATE_KEY_B64).
+    const privada = /grep -rqaE "([^"]+)" "\$DIR\/package"; then\n\s*echo "::error::[^\n]*clave privada[^\n]*"\n\s*exit 1/.exec(p);
+    expect(privada, "falta la comprobación de la clave privada").not.toBeNull();
+    expect(privada![1]!.split("|").sort()).toEqual(["PRIVATE KEY", ...privateKeyEnBase64()].sort());
+    // scripts/simular-ci.sh hace la MISMA búsqueda: lo que pasa en local, pasa en la Release.
+    expect(leer("../scripts/simular-ci.sh")).toContain(`grep -rqaE "${privada![1]}" package`);
+    // Cada comprobación termina en `exit 1`: una que solo avisara publicaría igual.
+    const comprobaciones = p.match(/^\s*if /gm)?.length ?? 0;
+    expect(comprobaciones).toBeGreaterThanOrEqual(5);
+    expect(p.match(/exit 1/g)?.length).toBe(comprobaciones);
   });
 
   it("genera el SBOM del MISMO tarball y lo entrega al trabajo que publica", () => {
     expect(paso(verificar, "SBOM CycloneDX del tarball")).toMatch(/scripts\/sbom\.ts "paquete\/[^"]*\.tgz" "paquete\/[^"]*\.cdx\.json"/);
     expect(verificar).toMatch(/actions\/upload-artifact@v4/);
     expect(verificar).not.toMatch(/id-token/);
-    // Y el que publica comprueba que le llegó ese tarball y no otro.
-    expect(paso(trabajo("publicar"), "El tarball es el verificado")).toMatch(/SHA-512/);
+  });
+
+  it("el hash del tarball verificado viaja como SALIDA de `verificar`, no dentro del artefacto", () => {
+    expect(verificar).toMatch(/^ {4}outputs:\n {6}sha512: \$\{\{ steps\.hash\.outputs\.sha512 \}\}$/m);
+    const hash = paso(verificar, "Hash del tarball verificado");
+    expect(hash).toMatch(/id: hash/);
+    expect(hash).toMatch(/echo "sha512=\$H" >> "\$GITHUB_OUTPUT"/);
+    // Se calcula después del SBOM y antes de subir el artefacto.
+    expect(verificar.indexOf("Hash del tarball verificado")).toBeGreaterThan(verificar.indexOf("SBOM CycloneDX del tarball"));
+    expect(verificar.indexOf("Hash del tarball verificado")).toBeLessThan(verificar.indexOf("actions/upload-artifact"));
+    // El que publica compara con ESA salida (y con el SBOM), y falla si no llegó.
+    const llega = paso(trabajo("publicar"), "El tarball es el verificado");
+    expect(llega).toMatch(/SHA512_VERIFICADO: \$\{\{ needs\.verificar\.outputs\.sha512 \}\}/);
+    expect(llega).toMatch(/real !== verificado/);
+    expect(llega).toMatch(/SHA-512/);
+    expect(llega).toMatch(/\[0-9a-f\]\{128\}/);
+  });
+
+  it("la comprobación del registro distingue «no la sirve todavía» de «sirve otra», y espera hasta 5 minutos", () => {
+    const p = paso(trabajo("publicar"), "El registro sirve el tarball verificado");
+    expect(p).toMatch(/for i in \$\(seq 1 30\); do/);
+    expect(p).toMatch(/sleep 10/);
+    expect(p).toMatch(/if \[ -z "\$REMOTO" \]; then\n[^\n]*NO relances[^\n]*\n\s*exit 1/);
   });
 
   it("el SBOM se adjunta a la Release, solo si la versión llegó a publicarse", () => {
@@ -236,6 +289,16 @@ describe("el SBOM describe lo que viaja", () => {
     expect(sbom.dependencies[0]!.dependsOn).toHaveLength(2);
   });
 
+  it("solo una expresión SPDX válida va en `expression`; una palabra suelta va como nombre", () => {
+    expect(licencias("MIT")).toEqual([{ expression: "MIT" }]);
+    expect(licencias("(MIT OR Apache-2.0)")).toEqual([{ expression: "(MIT OR Apache-2.0)" }]);
+    expect(licencias("MIT AND ISC")).toEqual([{ expression: "MIT AND ISC" }]);
+    for (const libre of ["UNLICENSED", "Custom", "SEE LICENSE IN LICENSE", "(MIT", "MIT OR", "MIT or ISC"]) {
+      expect(licencias(libre)).toEqual([{ license: { name: libre } }]);
+    }
+    expect(licencias(undefined)).toBeUndefined();
+  });
+
   describe("sobre el tarball de verdad", () => {
     // Como sala-limpia-del-tarball: `npm pack` sobre el dist/ construido. Sin
     // esto, el script solo se ejecutaría por primera vez al cortar una Release.
@@ -266,6 +329,65 @@ describe("el SBOM describe lo que viaja", () => {
       // Y nada de lo que solo construye o prueba.
       expect(sbom.components.map((c) => c.name)).not.toContain("tsup");
       expect(sbom.components.map((c) => c.name)).not.toContain("vitest");
+    }, 60_000);
+
+    /** Un tarball igual al real, con `cambio` aplicado sobre su árbol `package/`. */
+    function manipulado(nombre: string, cambio: (pkg: string) => void): string {
+      const otro = join(dir, nombre);
+      mkdirSync(otro, { recursive: true });
+      execFileSync("tar", ["xzf", tgz, "-C", otro]);
+      cambio(join(otro, "package"));
+      const salida = join(dir, `${nombre}.tgz`);
+      execFileSync("tar", ["czf", salida, "-C", otro, "package"]);
+      return salida;
+    }
+
+    /** Ejecuta TAL CUAL el paso «El paquete no regala el producto» sobre un tarball. */
+    function verjaDelPaquete(tarball: string): { ok: boolean; salida: string } {
+      const script = scriptDe(paso(trabajo("verificar"), "El paquete no regala el producto"));
+      const cwd = mkdtempSync(join(tmpdir(), "bvsala-verja-"));
+      try {
+        const { version } = JSON.parse(leer("../package.json")) as { version: string };
+        writeFileSync(join(cwd, "package.json"), JSON.stringify({ version }));
+        mkdirSync(join(cwd, "paquete"));
+        copyFileSync(tarball, join(cwd, "paquete", `bivelio-savings-layer-${version}.tgz`));
+        // `bash -e`, como el shell por defecto de un paso de GitHub Actions en Linux.
+        const r = spawnSync("bash", ["-e", "-c", script], { cwd, encoding: "utf8" });
+        return { ok: r.status === 0, salida: `${r.stdout}${r.stderr}` };
+      } finally {
+        rmSync(cwd, { recursive: true, force: true });
+      }
+    }
+
+    it("la verja del paquete deja pasar el tarball real", () => {
+      const r = verjaDelPaquete(tgz);
+      expect(r.salida).toContain("paquete verificado");
+      expect(r.ok).toBe(true);
+    }, 60_000);
+
+    it("la verja del paquete rechaza un tarball con una clave privada, en PEM o en base64 del PEM", () => {
+      // Una clave de usar y tirar, generada aquí: no es ningún secreto.
+      const { privateKey } = generateKeyPairSync("ed25519", {
+        publicKeyEncoding: { type: "spki", format: "pem" },
+        privateKeyEncoding: { type: "pkcs8", format: "pem" },
+      });
+      const casos = [
+        manipulado("pem", (pkg) => appendFileSync(join(pkg, "docs", "terminales", "README.md"), `\n${privateKey}\n`)),
+        // En base64, a los tres desplazamientos posibles del PEM dentro de lo codificado.
+        ...[0, 1, 2].map((k) =>
+          manipulado(`b64-${k}`, (pkg) =>
+            appendFileSync(
+              join(pkg, "dist", "index.js"),
+              `\nconst k = "${Buffer.concat([Buffer.alloc(k, 0x61), Buffer.from(privateKey)]).toString("base64")}";\n`,
+            ),
+          ),
+        ),
+      ];
+      for (const caso of casos) {
+        const r = verjaDelPaquete(caso);
+        expect(r.ok, caso).toBe(false);
+        expect(r.salida).toContain("El paquete lleva una clave privada.");
+      }
     }, 60_000);
 
     it("un tarball cuyo bundle no es el del build actual NO obtiene SBOM", async () => {

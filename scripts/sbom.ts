@@ -74,13 +74,43 @@ function grupoYNombre(name: string): { group?: string; name: string } {
 }
 
 /**
- * Una expresión SPDX sencilla va en `expression`; cualquier otra cosa (p. ej.
- * «SEE LICENSE IN LICENSE») va como nombre libre, que el esquema admite.
+ * Identificadores SPDX (https://spdx.org/licenses/) que se aceptan en una
+ * `expression`. Es una lista CORTA a propósito: una palabra suelta no es una
+ * licencia SPDX por parecerlo («UNLICENSED», «Custom», «Proprietary»), y una
+ * expresión inválida es un SBOM que un validador rechaza. Lo que no esté aquí
+ * va como nombre libre (`license.name`), que el esquema admite siempre.
  */
-function licencias(license: string | undefined): unknown[] | undefined {
+const SPDX_CONOCIDOS = new Set([
+  "0BSD",
+  "Apache-2.0",
+  "BlueOak-1.0.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC-BY-4.0",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MIT-0",
+  "MPL-2.0",
+  "Python-2.0",
+  "Unlicense",
+  "Zlib",
+]);
+
+/**
+ * `MIT`, `(MIT OR Apache-2.0)`, `MIT AND ISC`: todo identificador conocido →
+ * `expression`. Cualquier otra cosa («SEE LICENSE IN LICENSE», «UNLICENSED»,
+ * un identificador fuera de la lista) → nombre libre.
+ */
+export function licencias(license: string | undefined): unknown[] | undefined {
   if (!license) return undefined;
-  const pareceSpdx = /^[A-Za-z0-9.+-]+( (AND|OR|WITH) [A-Za-z0-9.+-]+)*$/.test(license) || /^\(.*\)$/.test(license);
-  return pareceSpdx ? [{ expression: license }] : [{ license: { name: license } }];
+  const tokens = license.replace(/[()]/g, " ").trim().split(/\s+/);
+  const parentesisCuadran = license.split("(").length === license.split(")").length;
+  const esSpdx =
+    parentesisCuadran &&
+    tokens.length % 2 === 1 &&
+    tokens.every((tk, i) => (i % 2 === 0 ? SPDX_CONOCIDOS.has(tk) : tk === "AND" || tk === "OR"));
+  return esSpdx ? [{ expression: license }] : [{ license: { name: license } }];
 }
 
 /** El documento CycloneDX 1.5. Puro: todo lo que varía entra por argumento. */
@@ -160,14 +190,14 @@ export function paqueteDeRuta(ruta: string): { name: string; raiz: string } | nu
   return { name: nombre, raiz: partes.slice(0, i + 1 + n).join(sep) };
 }
 
-/** Los .js de un directorio, con su ruta relativa a él. */
+/** Los .js, .mjs y .cjs de un directorio, con su ruta relativa a él. */
 function jsDe(dir: string): string[] {
   const out: string[] = [];
   const recorrer = (d: string): void => {
     for (const f of readdirSync(d)) {
       const p = join(d, f);
       if (statSync(p).isDirectory()) recorrer(p);
-      else if (f.endsWith(".js")) out.push(relative(dir, p).split(sep).join("/"));
+      else if (/\.[cm]?js$/.test(f)) out.push(relative(dir, p).split(sep).join("/"));
     }
   };
   recorrer(dir);

@@ -54,6 +54,8 @@ grep -q "BEGIN PUBLIC KEY" package/dist/index.js || { echo "     FALLA: sin clav
 echo "     ok  clave pública embebida"
 grep -q "BEGIN PUBLIC KEY" package/dist/gateway/bin.js || { echo "     FALLA: el gateway sin clave pública"; exit 1; }
 echo "     ok  clave pública también en el gateway"
+# La privada no viaja, ni en PEM ni en base64 del PEM (la misma búsqueda que publish.yml).
+grep -rqaE "PRIVATE KEY|UFJJVkFURSBLRV|BSSVZBVEUgS0VZ|QUklWQVRFIEtFW" package && { echo "     FALLA: lleva una clave privada"; exit 1; } || echo "     ok  sin clave privada"
 # El SBOM que publish.yml adjunta a la Release: falla si el bundle reconstruido
 # no es byte a byte el del tarball.
 paso "sbom CycloneDX del tarball" pnpm exec tsx scripts/sbom.ts "$(ls bivelio-savings-layer-*.tgz)" sbom.cdx.json
