@@ -36,6 +36,7 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   "claude-sonnet-4-5": "benchmarks (README, scenarios, ab-live, arneses, verja-de-calidad)",
   "gemini-3.7-flash": "benchmarks (scenarios, ab-live, transporte)",
   "gemini-3.5-flash": "benchmarks/sdk/sonda.ts",
+  "gpt-5-mini": "benchmarks/latencia-gateways (la prueba de fidelidad con Flex: modelo con fila Flex oficial)",
   // Lo que nombra la ayuda del gateway (`bvsala gateway --help`): el hermano y el esfuerzo por turno.
   "claude-fable-5": "gateway/bin.ts (palanca C, el modelo que se pide)",
   "claude-fable-5-1": "gateway/bin.ts (palanca C y esfuerzo por turno)",

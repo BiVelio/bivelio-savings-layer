@@ -1,0 +1,16 @@
+# LiteLLM proxy 1.102.1 contra el upstream falso del banco (127.0.0.1:9911).
+# Sin base de datos ni master key: lo mínimo que arranca (el quickstart de su
+# documentación). La clave es de relleno; el upstream falso no mira ninguna.
+# Un alias por modelo: gpt-4o-mini para la latencia y gpt-5-mini para la prueba
+# de fidelidad con Flex (arnes.ts → objetivosDeTerceros).
+model_list:
+  - model_name: bench-gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_base: http://127.0.0.1:9911/v1
+      api_key: relleno-no-es-una-clave
+  - model_name: bench-gpt-5-mini
+    litellm_params:
+      model: openai/gpt-5-mini
+      api_base: http://127.0.0.1:9911/v1
+      api_key: relleno-no-es-una-clave
