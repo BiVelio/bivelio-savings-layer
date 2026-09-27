@@ -162,14 +162,15 @@ Environment:
                          model has its own cache): start it together with the terminal.
                          Off = unset the variable or =0.
   BVSALA_GATEWAY_ESFUERZO
-                         =low|medium|high|xhigh|max sets per-turn effort (experimental):
+                         =low|medium sets a per-turn effort ceiling (experimental):
                          appends a message with output_config.effort to each /v1/messages
                          without touching the root (does not reset the prefix cache). Only if
-                         the license carries per_turn_effort (fail-closed) and only with
-                         claude-fable-5-1, claude-mythos-5-1 and claude-opus-5; with any other
-                         model the request travels untouched. It is the only lever that can
-                         affect response quality: OFF by default and not yet measured against
-                         the quality gate.
+                         the license carries per_turn_effort (fail-closed), only with
+                         claude-fable-5-1, claude-mythos-5-1, claude-opus-5-5 and claude-opus-5,
+                         and only when the level is below the model's default (high; medium on
+                         claude-opus-5-5): it never raises effort. Any other request travels
+                         untouched. It is the only lever that can affect response quality: OFF
+                         by default and not yet measured against the quality gate.
   BVSALA_CODEX_AUTH      api-key | chatgpt — forces the Codex auth mode.
   BVSALA_GATEWAY_LOG     =1 shows the per-request log inside the wrappers too (silenced by
                          default so it does not overwrite the TUI; use the dashboard instead).
@@ -412,7 +413,8 @@ try {
     // adivina qué turno merece pensar menos. Solo cambia la VÍA por la que se
     // aplica —un mensaje añadido, que NO reinicia la caché de prefijo, en vez del
     // campo de la raíz, que sí— y verja por modelo, porque fuera de fable-5-1,
-    // mythos-5-1 y opus-5 es un 400.
+    // mythos-5-1, opus-5-5 y opus-5 es un 400. Y solo REBAJA: un nivel igual o
+    // superior al defecto del modelo deja la petición intacta.
     ...(process.env.BVSALA_GATEWAY_ESFUERZO ? { esfuerzo: process.env.BVSALA_GATEWAY_ESFUERZO } : {}),
     // Solo para desarrollo y pruebas: redirigir la INGESTA de metering (y solo
     // ella: la licencia y el canal van siempre a savings.bivelio.com). En

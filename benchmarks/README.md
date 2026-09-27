@@ -604,6 +604,47 @@ ask you to take its confidence interval on faith.
 Output: `benchmarks/out/ab-live.json` (per-scenario + aggregate, with CI and
 provenance) and `benchmarks/out/ab-live-trials.csv` (raw paired trials).
 
+## Effort, lever D (`pnpm esfuerzo`)
+
+The gateway's per-turn effort lever (`gateway/esfuerzo.ts`) is the only one that
+can make an answer worse, and it targets the only spend billed at list price:
+output, where thinking is billed. `pnpm esfuerzo` measures it on the ring-1
+corpus (15 agentic tasks with a programmatic verifier: no judge) with four arms
+per task and rep, run back to back:
+
+| Arm | What travels |
+|---|---|
+| `control` | no effort field: the model's default (`high`; `medium` on `claude-opus-5-5`) |
+| `dial-final` | **the lever as shipped**: the control body through the gateway's own `aplicarEsfuerzo`, byte for byte, plus its beta |
+| `dial-inicial` | the same dial as the first entry of `messages` (a candidate placement, not the product) |
+| `raiz` | top-level `output_config.effort`, constant for the whole task |
+
+The history the harness keeps is the client's: the dial is applied per request,
+as the gateway does, and never stays in the next one. Automatic caching is on,
+with one salt per run, so the bench also checks the lever's promise of no cache
+toll instead of assuming it. Only levels below the model's default are
+measured: the lever never raises effort.
+
+```bash
+pnpm esfuerzo --humo                  # DRY (default): simulated provider, no network, no key read
+BVSALA_ESFUERZO_NIVELES=low BVSALA_ESFUERZO_BUDGET_USD=<ceiling> pnpm esfuerzo --en-vivo --humo
+BVSALA_ESFUERZO_BUDGET_USD=<ceiling> pnpm esfuerzo --en-vivo    # 4 reps = 60 pairs per arm and level
+pnpm esfuerzo --decidir=benchmarks/out/<effort artifact>.json    # re-run the criterion, no network
+```
+
+**The criterion** (`decidir`, `benchmarks/esfuerzo/nucleo.ts`) switches a level
+on only when all of these hold: at least 3 tasks; the 95 % CI of the success
+difference (resampling whole tasks) has its floor above −margin *and* the
+one-sided Clopper-Pearson bound on the loss rate among the pairs control solved
+(control solved it, the arm did not) is under the margin (5 points by default,
+`BVSALA_ESFUERZO_MARGEN`: with no losses that takes 59 pairs control solved, 29
+at 10 points); no truncated answer on either side;
+the floor of the output-spend reduction is above zero on all pairs and on pairs
+both sides solved; the total bill does not go up; and the share of input read
+from cache does not fall more than 2 points. The gateway takes one level for
+all traffic, so the global level must also leave no class with a success drop
+whose whole CI is below zero. A simulated run never switches anything on.
+
 ## Ablation: where the savings come from (`pnpm ablation`)
 
 "Baseline vs everything on" hides which lever pays for itself. `pnpm ablation`

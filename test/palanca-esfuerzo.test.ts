@@ -4,11 +4,14 @@ import { gzipSync } from "node:zlib";
 import {
   BETA_ESFUERZO,
   NIVELES,
+  NIVELES_QUE_REBAJAN,
   admiteEsfuerzoPorTurno,
   aplicarEsfuerzo,
   conBetaDeEsfuerzo,
+  defectoDeEsfuerzo,
   describirEstadoDeEsfuerzo,
   mensajeDeEsfuerzo,
+  rebajaElDefecto,
   yaGobiernaSuEsfuerzo,
 } from "../gateway/esfuerzo.js";
 
@@ -39,8 +42,10 @@ const PETICION = {
 };
 
 describe("qué modelos admiten el esfuerzo por turno", () => {
-  it("solo los tres verificados", () => {
-    for (const m of ["claude-fable-5-1", "claude-mythos-5-1", "claude-opus-5"]) {
+  it("solo los cuatro que nombra la página oficial (2026-09-27)", () => {
+    // platform.claude.com/docs/en/build-with-claude/effort, «Change effort
+    // mid-conversation»: Fable 5.1, Mythos 5.1, Opus 5.5 y Opus 5.
+    for (const m of ["claude-fable-5-1", "claude-mythos-5-1", "claude-opus-5-5", "claude-opus-5"]) {
       expect(admiteEsfuerzoPorTurno(m)).toBe(true);
     }
   });
@@ -114,6 +119,46 @@ describe("cuándo NO se toca", () => {
     expect(aplicarEsfuerzo(gzipSync(cuerpo(PETICION)), "low", "gzip")).toBeNull();
     expect(aplicarEsfuerzo(Buffer.from("{no", "utf8"), "low")).toBeNull();
     expect(aplicarEsfuerzo(cuerpo({ model: "claude-opus-5" }), "low")).toBeNull();
+  });
+});
+
+describe("⛔ la palanca es un TECHO: solo rebaja el defecto del modelo, nunca lo sube", () => {
+  // Hasta el 2026-09-27, BVSALA_GATEWAY_ESFUERZO=max se aplicaba tal cual: más
+  // pensamiento, a precio de lista, en nombre de una palanca de ahorro.
+  it("el defecto de cada modelo es el de la página oficial: high, y medium en Opus 5.5", () => {
+    expect(defectoDeEsfuerzo("claude-fable-5-1")).toBe("high");
+    expect(defectoDeEsfuerzo("claude-mythos-5-1")).toBe("high");
+    expect(defectoDeEsfuerzo("claude-opus-5")).toBe("high");
+    expect(defectoDeEsfuerzo("claude-opus-5-5")).toBe("medium");
+    expect(defectoDeEsfuerzo("claude-fable-5")).toBeUndefined();
+  });
+
+  it("un nivel igual o superior al defecto deja el cuerpo intacto (null = no tocar)", () => {
+    for (const n of ["high", "xhigh", "max"] as const) {
+      expect(rebajaElDefecto("claude-fable-5-1", n)).toBe(false);
+      expect(aplicarEsfuerzo(cuerpo(PETICION), n), n).toBeNull();
+    }
+    const opus55 = { ...PETICION, model: "claude-opus-5-5" };
+    expect(aplicarEsfuerzo(cuerpo(opus55), "medium")).toBeNull(); // su defecto
+    expect(aplicarEsfuerzo(cuerpo(opus55), "high")).toBeNull(); // por encima
+    expect(aplicarEsfuerzo(cuerpo(opus55), "low")).not.toBeNull();
+  });
+
+  it("los niveles con sentido se derivan de la tabla: low y medium", () => {
+    expect(NIVELES_QUE_REBAJAN).toEqual(["low", "medium"]);
+  });
+
+  it("al arrancar, un nivel que no rebaja nada se dice NO ARMADA, con aviso", () => {
+    for (const n of ["high", "xhigh", "max"]) {
+      const e = describirEstadoDeEsfuerzo(n, true, true);
+      expect(e.aviso, n).toBe(true);
+      expect(e.linea).toContain("NOT ARMED");
+      expect(e.linea).toContain("only lowers");
+    }
+    // medium sí se arma, y dice que en Opus 5.5 no cambia nada.
+    const medium = describirEstadoDeEsfuerzo("medium", true, true);
+    expect(medium.aviso).toBe(false);
+    expect(medium.linea).toContain("opus-5-5 passes through unchanged");
   });
 });
 

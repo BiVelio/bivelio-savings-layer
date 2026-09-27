@@ -561,6 +561,20 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     }
   });
 
+  it("⛔ esfuerzo por turno a un nivel que NO rebaja el defecto (max): la petición llega byte a byte", async () => {
+    // La palanca es un techo: hasta el 2026-09-27 `max` se aplicaba y SUBÍA la
+    // salida a precio de lista. Ahora no toca ni el cuerpo ni la beta.
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstream(recibidas);
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["per_turn_effort"]), esfuerzo: "max" });
+    const original = JSON.stringify(peticionCompleta("claude-fable-5-1"));
+
+    await enviar(g.puerto, original, CABECERAS_DEL_CLIENTE);
+
+    expect(recibidas[0]!.body.toString("utf8")).toBe(original);
+    for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) expect(recibidas[0]!.headers[k], k).toBe(v);
+  });
+
   it("modelo hermano (sibling_model_routing + bandera): solo `model`; cabeceras intactas", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas);
