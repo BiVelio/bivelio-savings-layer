@@ -29,7 +29,7 @@ import { salidaNoRepetible } from "../src/pricing/razonamiento.js";
  */
 const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   // Lo que nombran el README, los ejemplos y el banco.
-  "gpt-4o-mini": "README, examples/*, benchmarks (scenarios, ab-live, fidelidad-elision)",
+  "gpt-4o-mini": "README, examples/*, gateway/init-fragmentos.ts (bvsala init), benchmarks (scenarios, ab-live, fidelidad-elision)",
   "gpt-4o": "benchmarks (README, scenarios, ab-live)",
   "gpt-4.1": "benchmarks/ab-live.ts",
   "gpt-4.1-mini": "benchmarks/ab-live.ts",
@@ -46,7 +46,7 @@ const MODELOS_QUE_SERVIMOS: Readonly<Record<string, string>> = {
   // y los insignia que un cliente manda hoy por el SDK o el gateway.
   "claude-opus-5-5": "insignia de Anthropic a 2026-09-27",
   "claude-sonnet-5": "banco 2026",
-  "claude-haiku-4-5": "banco 2026",
+  "claude-haiku-4-5": "banco 2026; gateway/init-fragmentos.ts (bvsala init, pilas de Anthropic)",
   "gpt-6-astra": "insignia de OpenAI a 2026-09-27",
   "gpt-6-sol": "familia gpt-6",
   "gpt-6-luna": "banco 2026",
@@ -82,9 +82,9 @@ const MENCIONADOS_NO_SERVIDOS: Readonly<Record<string, string>> = {
 
 const RAIZ = fileURLToPath(new URL("../", import.meta.url));
 
-/** Los sitios que «nombran» modelos: README, doctor, ayuda del gateway, ejemplos y banco. */
+/** Los sitios que «nombran» modelos: README, doctor, init, ayuda del gateway, ejemplos y banco. */
 function sitios(): string[] {
-  const out = ["README.md", "gateway/doctor.ts", "gateway/bin.ts"];
+  const out = ["README.md", "gateway/doctor.ts", "gateway/bin.ts", "gateway/init-fragmentos.ts"];
   const recorrer = (dir: string): void => {
     for (const e of readdirSync(join(RAIZ, dir), { withFileTypes: true })) {
       const rel = `${dir}/${e.name}`;

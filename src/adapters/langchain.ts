@@ -200,7 +200,18 @@ function tipoDeModelo(model: unknown): string {
 
 function nombreDeModelo(model: unknown): string {
   if (typeof model === "string") return model.replace(":", "/");
-  const m = model as { model?: unknown; modelName?: unknown };
+  const m = model as { model?: unknown; modelName?: unknown; _defaultConfig?: unknown };
+  // EL MODELO EN CADENA. `createAgent({ model: "openai:gpt-4o-mini" })` —la forma
+  // que enseñan el README, `bvsala init` y la documentación de LangChain v1— no
+  // llega como ChatOpenAI sino como `ConfigurableModel`: su `_llmType()` es
+  // "chat_model" y no tiene `model` ni `modelName`; el nombre y el proveedor
+  // viven en `_defaultConfig` (langchain 1.5.14). Sin esto el informe salía como
+  // "chat_model/" y se tarifaba al precio ILUSTRATIVO, no al de lista.
+  const conf = m._defaultConfig as { model?: unknown; modelProvider?: unknown } | undefined;
+  if (conf && typeof conf === "object" && typeof conf.model === "string" && conf.model !== "") {
+    if (conf.model.includes("/")) return conf.model;
+    return typeof conf.modelProvider === "string" && conf.modelProvider !== "" ? `${conf.modelProvider}/${conf.model}` : conf.model;
+  }
   const nombre = typeof m.model === "string" ? m.model : typeof m.modelName === "string" ? m.modelName : "";
   if (nombre.includes("/")) return nombre;
   const tipo = tipoDeModelo(model);
