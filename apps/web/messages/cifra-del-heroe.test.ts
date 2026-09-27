@@ -28,13 +28,23 @@ import { describe, it, expect } from "vitest";
  * haría»), y exige que lo prometido quepa en el MENOR. El banco publica ambas
  * cifras a propósito; prometer solo contra la base más favorable era elegir
  * la comparación que más ahorro enseña.
+ *
+ * Desde el 2026-09-27, cuando el artefacto trae el brazo B2 («nativo bien
+ * configurado»: B1 más lo que el proveedor documenta gratis para esa petición),
+ * la cifra tiene que caber en el MENOR DE LOS TRES. Es la comparación con la
+ * que un comprador técnico nos va a medir (informe de competencia, §8 rec. 3).
  */
 
 const DIR = new URL(".", import.meta.url).pathname;
 
 const artefacto = JSON.parse(
   readFileSync(`${DIR}../public/data/ab-live.json`, "utf8"),
-) as { model?: string; aggregate?: { savings?: { lower?: number } }; aggregateB1?: { savings?: { lower?: number } } };
+) as {
+  model?: string;
+  aggregate?: { savings?: { lower?: number } };
+  aggregateB1?: { savings?: { lower?: number } };
+  aggregateB2?: { savings?: { lower?: number } };
+};
 
 /** El número de una cifra localizada («≥ 23,1 %», «≥ %23,1») como float. */
 function numeroDe(cifra: string): number {
@@ -46,6 +56,8 @@ function numeroDe(cifra: string): number {
 describe("la fila OpenAI del héroe no promete más de lo que el artefacto mide", () => {
   const lowerB0 = artefacto.aggregate?.savings?.lower;
   const lowerB1 = artefacto.aggregateB1?.savings?.lower;
+  // B2 solo existe en los artefactos medidos desde el 2026-09-27; si está, manda.
+  const lowerB2 = artefacto.aggregateB2?.savings?.lower;
   it("el artefacto publicado trae una cota inferior frente a B0", () => {
     expect(typeof lowerB0).toBe("number");
   });
@@ -53,9 +65,10 @@ describe("la fila OpenAI del héroe no promete más de lo que el artefacto mide"
     expect(typeof lowerB1).toBe("number");
   });
 
-  // El menor de los dos suelos: lo prometido tiene que caber también frente a
-  // la base razonable, no solo frente a la ingenua.
-  const lower = Math.min(lowerB0 ?? 0, lowerB1 ?? lowerB0 ?? 0);
+  // El menor de los suelos: lo prometido tiene que caber también frente a la
+  // base razonable y, si el artefacto la trae, frente a la nativa bien
+  // configurada — no solo frente a la ingenua.
+  const lower = Math.min(lowerB0 ?? 0, lowerB1 ?? lowerB0 ?? 0, lowerB2 ?? lowerB1 ?? lowerB0 ?? 0);
   // TRUNCADO a una décima, nunca redondeado: `toFixed(1)` convertía un 22,96 %
   // en 23,0 % y dejaba prometer una décima que el banco no sostiene. La verja
   // hermana (titular-como-se-instala) ya truncaba; ahora las dos dicen lo mismo.

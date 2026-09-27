@@ -7,6 +7,7 @@
  * savings — not to flatter the numbers.
  */
 import type { JsonSchema, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/index.js";
+import { esModeloDeRazonamiento, salidaNoRepetible } from "../src/pricing/razonamiento.js";
 
 /**
  * Los libros que un escenario puede declarar. "none" = una llamada normal usada
@@ -925,9 +926,69 @@ export function conSalDeFrio(req: SavingsRequest, marca: string): SavingsRequest
  */
 export const MUESTREO_PAREADO = { temperature: 0, seed: 7 } as const;
 
+/**
+ * EL MUESTREO QUE ADMITE ESTE MODELO: `MUESTREO_PAREADO` si su salida se puede
+ * repetir, y NADA si no.
+ *
+ * Con los modelos de 2026 mandar `temperature: 0` rompe la tirada en la
+ * primera llamada: Claude Sonnet 5 devuelve 400 a cualquier `temperature` que
+ * no sea la de por defecto, y la familia gpt-5 solo acepta la de por defecto
+ * (lo dice `src/pricing/razonamiento.ts`, que es quien clasifica cada fila del
+ * catálogo). La regla es la MISMA guarda que usa la referencia:
+ * `salidaNoRepetible(model) === undefined` ⇒ el modelo honra el muestreo fijo;
+ * cualquier otro veredicto (razona, ignora `temperature`, no está clasificado)
+ * ⇒ no se manda nada y el proveedor aplica su valor por defecto.
+ *
+ * El emparejamiento sigue siendo honesto porque TODOS los brazos reciben lo
+ * mismo: el naive, el razonable, el nativo y el que atraviesa la capa.
+ */
+export function muestreoPareadoPara(model: string): Partial<typeof MUESTREO_PAREADO> {
+  return salidaNoRepetible(model) === undefined ? MUESTREO_PAREADO : {};
+}
+
 /** La petición del escenario con el muestreo del banco: lo que manda el brazo B. */
 export function conMuestreoPareado(req: SavingsRequest): SavingsRequest {
-  return { ...req, ...MUESTREO_PAREADO };
+  return { ...req, ...muestreoPareadoPara(req.model) };
+}
+
+/**
+ * ¿RAZONA ESTE MODELO, a efectos del banco?
+ *
+ * Es `esModeloDeRazonamiento` (la fila del catálogo o el nombre lo dicen) más la
+ * familia gpt-6, que en `main` todavía no tiene fila: la página del modelo
+ * declara el razonamiento con esfuerzo `medium` por defecto.
+ * Fuente: https://developers.openai.com/api/docs/models/gpt-6-luna (consultado
+ * 2026-09-27). Cuando la unidad del catálogo de 2026 añada sus filas, el patrón
+ * queda redundante e inofensivo.
+ *
+ * Lo usan el margen de razonamiento (el mismo en todos los brazos) y la
+ * decisión de esfuerzo del brazo B2.
+ */
+export function razonaParaElBanco(model: string): boolean {
+  if (esModeloDeRazonamiento(model)) return true;
+  const barra = model.lastIndexOf("/");
+  const desnudo = (barra >= 0 ? model.slice(barra + 1) : model).toLowerCase();
+  return /^gpt-([6-9]|\d{2})(\.|-|$)/.test(desnudo);
+}
+
+/**
+ * EL MARGEN DE RAZONAMIENTO, declarado por el dueño y nunca inventado.
+ *
+ * Los topes de salida de los escenarios (232, 220, 500, 600) se calibraron
+ * contra gpt-4o-mini. En un modelo que razona, el proveedor cuenta el
+ * razonamiento oculto DENTRO del mismo tope, así que el contrato se trunca antes
+ * de escribir la respuesta. `margen` tokens se suman al tope de la petición del
+ * escenario —y con eso a TODOS los brazos a la vez, el que atraviesa la capa
+ * incluido— y solo en modelos que razonan. Sin tope declarado no se toca nada:
+ * no hay tope al que sumar.
+ *
+ * Va aquí, sobre la `SavingsRequest`, y no en cada constructor de brazo, para
+ * que sea imposible aplicarlo a unos brazos sí y a otros no (o dos veces).
+ */
+export function conMargenDeRazonamiento(req: SavingsRequest, model: string, margen: number): SavingsRequest {
+  const tope = req.response?.maxOutputTokens;
+  if (!(margen > 0) || tope == null || !razonaParaElBanco(model)) return req;
+  return { ...req, response: { ...req.response!, maxOutputTokens: tope + Math.floor(margen) } };
 }
 
 /**

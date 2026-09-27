@@ -44,7 +44,8 @@
  * ES UNA RECONSTRUCCIÓN, NO UNA MEDICIÓN, y por eso su cifra no se publica en
  * ningún artefacto ni en la web. Sirve para una sola cosa: comprobar que lo que
  * la web PROMETE cabe también en lo que el paquete entrega, mientras no haya una
- * tirada `BVSALA_AB_SIN_COMPRESOR=1`. Que la salida y las reparaciones del brazo
+ * tirada tal como se instala (`pnpm ab`, el modo por defecto desde el 2026-09-27).
+ * Que la salida y las reparaciones del brazo
  * B se queden como se midieron es el supuesto conservador que dejan los datos
  * (en esa tirada B escribió 490 tokens frente a 261 del A): suponer «la capa no
  * hace nada ahí» (B = A) daría un suelo más alto y sin nada que lo respalde. No

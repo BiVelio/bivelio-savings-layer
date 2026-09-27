@@ -9,7 +9,9 @@ import { dirname, join } from "node:path";
  * gitignored (results are reproducible by re-running the harness).
  */
 const here = dirname(fileURLToPath(import.meta.url));
-const outDir = join(here, "out");
+// `BVSALA_AB_OUT_DIR` existe para las verjas en seco: una tirada MOCK lanzada
+// por un test escribe en un directorio temporal y no pisa `benchmarks/out/`.
+const outDir = process.env.BVSALA_AB_OUT_DIR || join(here, "out");
 
 export function writeReport(name: string, data: unknown): string {
   mkdirSync(outDir, { recursive: true });

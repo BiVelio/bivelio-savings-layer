@@ -120,9 +120,11 @@ describe("los escenarios del banco y sus declaraciones B1", () => {
     expect(construirBrazoRazonable(salado, estable.request.model).stablePrefixMessages).toBeUndefined();
   });
 
-  it("la definición de los brazos nombra a los tres y dice qué distingue a B1", () => {
-    expect(Object.keys(DEFINICION_DE_BRAZOS)).toEqual(["A", "A1", "B"]);
+  it("la definición de los brazos nombra a los cuatro y dice qué distingue a B1 y a B2", () => {
+    expect(Object.keys(DEFINICION_DE_BRAZOS)).toEqual(["A", "A1", "A2", "B"]);
     expect(DEFINICION_DE_BRAZOS.A1).toMatch(/cache_control/);
     expect(DEFINICION_DE_BRAZOS.A1).toMatch(/toolsB1/);
+    expect(DEFINICION_DE_BRAZOS.A2).toMatch(/^B2 · natively well-configured: B1 plus/);
+    expect(DEFINICION_DE_BRAZOS.A2).toContain("native.decisions");
   });
 });

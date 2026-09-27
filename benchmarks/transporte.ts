@@ -22,6 +22,8 @@ import {
   OpenAICompatibleProvider,
   type Provider,
 } from "../src/index.js";
+import type { ProviderRequest } from "../src/providers/types.js";
+import { conAjustesNativos, type PlanNativo } from "./nativo.js";
 import { familiaDeModelo, type TransporteDelBanco } from "./scenarios.js";
 
 /**
@@ -42,6 +44,19 @@ export interface ConfigDeTransporte {
   anthropicBaseUrl?: string | undefined;
   anthropicApiKey?: string | undefined;
   /**
+   * ENDPOINTS DIRECTOS POR FAMILIA, opcionales (OpenAI y Google hablan el
+   * protocolo de OpenAI). Dos razones para tenerlos aparte de la pasarela: un
+   * tercero que reproduzca el banco tendrá claves de SUS proveedores, no las
+   * nuestras; y una pasarela puede no reenviar `prompt_cache_options` ni
+   * devolver `cache_write_tokens`, que es justo lo que mide el brazo B2. Por un
+   * endpoint directo el id del modelo viaja SIEMPRE sin el prefijo `proveedor/`.
+   */
+  openaiBaseUrl?: string | undefined;
+  openaiApiKey?: string | undefined;
+  /** Gemini por su endpoint OpenAI-compatible (`…/v1beta/openai`). */
+  googleBaseUrl?: string | undefined;
+  googleApiKey?: string | undefined;
+  /**
    * `fetch` inyectable. Sólo lo usa la verja, y es la única forma de comprobar
    * QUÉ sale por el cable sin gastar una llamada de pago.
    */
@@ -49,24 +64,92 @@ export interface ConfigDeTransporte {
 }
 
 /**
- * El transporte que le toca a ESTE modelo.
+ * UN TEXTO DE ERROR SIN NADA QUE SE PAREZCA A UNA CLAVE. Algunos proveedores
+ * devuelven la clave rechazada enmascarada (`Incorrect API key provided:
+ * sk-…abcd`) y el banco guarda los errores en sus artefactos y los imprime.
+ * Se quita cualquier token con forma de clave (prefijos `sk-`, `pk-`, `AIza`,
+ * `Bearer …`) y cualquier `usuario:contraseña@` de una URL.
+ */
+export function sinSecretos(texto: string): string {
+  return texto
+    .replace(/\b(?:sk|pk|rk)[-_][A-Za-z0-9*_-]{4,}/g, "[redacted]")
+    .replace(/\bAIza[A-Za-z0-9_*-]{8,}/g, "[redacted]")
+    .replace(/\bBearer\s+[A-Za-z0-9._*-]+/gi, "Bearer [redacted]")
+    .replace(/\/\/[^\s/@:]+:[^\s/@]+@/g, "//[redacted]@");
+}
+
+/** ¿Declara esta configuración ALGÚN endpoint? Sin ninguno, la tirada es MOCK. */
+export function hayEndpoints(cfg: ConfigDeTransporte): boolean {
+  return !!(cfg.baseUrl || cfg.anthropicBaseUrl || cfg.openaiBaseUrl || cfg.googleBaseUrl);
+}
+
+/** Por dónde sale un modelo: el dialecto, la URL, la clave y si se le quita el prefijo. */
+export interface EndpointDeModelo {
+  transporte: TransporteDelBanco;
+  baseUrl?: string;
+  apiKey?: string;
+  /** Quitar `proveedor/` del id: siempre en un endpoint directo; en la pasarela, salvo KEEP_PREFIX. */
+  quitarPrefijo: boolean;
+  /** Solo el nombre del host (nunca la URL entera): es lo que se publica. `null` en MOCK. */
+  host: string | null;
+}
+
+function hostDe(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "(invalid url)";
+  }
+}
+
+/**
+ * El endpoint que le toca a ESTE modelo, por este orden: el nativo de Anthropic
+ * (si el modelo es de esa familia), el directo de su familia, la pasarela. Sin
+ * ningún endpoint declarado la tirada es MOCK; con alguno pero ninguno para
+ * esta familia, `null` — y el prevuelo aborta antes de gastar (o, sin modelo
+ * forzado, el escenario se declara no medible).
  *
  * La familia la decide el id del modelo y no el escenario: un
  * `BVSALA_DEMO_MODELS` con un `claude-…` dentro fuerza TODOS los escenarios
  * contra ese modelo, y todos ellos tienen que salir por el adaptador que habla
  * su protocolo — no sólo el que mide `cache_control`.
- *
- * Sin endpoint principal no hay red: la tirada es MOCK y lo dice.
  */
-export function transporteDeModelo(
-  model: string | null,
-  cfg: ConfigDeTransporte,
-): TransporteDelBanco {
-  if (!cfg.baseUrl) return "mock";
-  if (cfg.anthropicBaseUrl && model && familiaDeModelo(model) === "anthropic") {
-    return "anthropic-nativo";
+export function endpointDeModelo(model: string | null, cfg: ConfigDeTransporte): EndpointDeModelo | null {
+  if (!hayEndpoints(cfg)) return { transporte: "mock", quitarPrefijo: false, host: null };
+  const familia = model ? familiaDeModelo(model) : null;
+  const directo = (transporte: TransporteDelBanco, baseUrl: string, apiKey: string | undefined): EndpointDeModelo => ({
+    transporte,
+    baseUrl,
+    ...(apiKey ? { apiKey } : {}),
+    quitarPrefijo: true,
+    host: hostDe(baseUrl),
+  });
+  if (familia === "anthropic" && cfg.anthropicBaseUrl) {
+    return directo("anthropic-nativo", cfg.anthropicBaseUrl, cfg.anthropicApiKey);
   }
-  return "openai-compatible";
+  if (familia === "openai" && cfg.openaiBaseUrl) return directo("openai-compatible", cfg.openaiBaseUrl, cfg.openaiApiKey);
+  if (familia === "google" && cfg.googleBaseUrl) return directo("openai-compatible", cfg.googleBaseUrl, cfg.googleApiKey);
+  if (cfg.baseUrl) {
+    return {
+      transporte: "openai-compatible",
+      baseUrl: cfg.baseUrl,
+      ...(cfg.apiKey ? { apiKey: cfg.apiKey } : {}),
+      quitarPrefijo: !cfg.keepPrefix,
+      host: hostDe(cfg.baseUrl),
+    };
+  }
+  return null;
+}
+
+/**
+ * El transporte que le toca a ESTE modelo (ver `endpointDeModelo`). Sin
+ * endpoint para su familia es un error de programación: quien llama tiene que
+ * haberlo descartado antes (prevuelo o `repartirEscenarios`).
+ */
+export function transporteDeModelo(model: string | null, cfg: ConfigDeTransporte): TransporteDelBanco {
+  const e = endpointDeModelo(model, cfg);
+  if (!e) throw new Error(`no endpoint declared for ${model ?? "(per-scenario model)"}`);
+  return e.transporte;
 }
 
 /**
@@ -78,21 +161,52 @@ export function transporteDeModelo(
  * medible, y un contador ausente coerced a 0 es un ahorro del 100% inventado.
  */
 export function proveedorDelBanco(model: string | null, cfg: ConfigDeTransporte): Provider {
-  switch (transporteDeModelo(model, cfg)) {
+  const e = endpointDeModelo(model, cfg);
+  if (!e) throw new Error(`no endpoint declared for ${model ?? "(per-scenario model)"}`);
+  switch (e.transporte) {
     case "mock":
       return createMockProvider();
     case "anthropic-nativo":
-      return proveedorAnthropicNativo(cfg);
+      return proveedorAnthropicNativo(e, cfg);
     case "openai-compatible":
       return new OpenAICompatibleProvider({
-        baseUrl: cfg.baseUrl!,
-        ...(cfg.apiKey ? { apiKey: cfg.apiKey } : {}),
-        stripProviderPrefix: !cfg.keepPrefix,
+        baseUrl: e.baseUrl!,
+        ...(e.apiKey ? { apiKey: e.apiKey } : {}),
+        stripProviderPrefix: e.quitarPrefijo,
         requireUsage: true,
         // La verja inyecta su fetch de mentira; en red, SIEMPRE con plazo.
         fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
       });
   }
+}
+
+/**
+ * EL PROVEEDOR DEL BRAZO B2: el mismo adaptador que los demás brazos, con un
+ * `fetch` que aplica los ajustes nativos del plan al cuerpo que ese adaptador
+ * arma (benchmarks/nativo.ts). El plan se calcula POR PETICIÓN porque depende
+ * de ella (el breakpoint va donde acaba SU prefijo estable).
+ *
+ * El `fetch` de los ajustes envuelve SIEMPRE el `fetch` con plazo del banco (o
+ * el espía de la verja): nunca lo sustituye. Y va con `conReintentos`, como
+ * todos los proveedores de la tirada.
+ */
+export function proveedorDelBrazoNativo(
+  model: string,
+  cfg: ConfigDeTransporte,
+  planPara: (req: ProviderRequest) => PlanNativo,
+): Provider {
+  const base = proveedorDelBanco(model, cfg);
+  return conReintentos({
+    id: base.id,
+    generate(req) {
+      const plan = planPara(req);
+      const conAjustes = proveedorDelBanco(model, {
+        ...cfg,
+        fetchImpl: conAjustesNativos(plan, cfg.fetchImpl ?? fetchConPlazo()),
+      });
+      return conAjustes.generate(req);
+    },
+  });
 }
 
 /**
@@ -182,10 +296,10 @@ export function conReintentos(
  * pasarela, así que se quita aquí en vez de mantener dos catálogos de ids que
  * tienen que decir lo mismo.
  */
-function proveedorAnthropicNativo(cfg: ConfigDeTransporte): Provider {
+function proveedorAnthropicNativo(e: EndpointDeModelo, cfg: ConfigDeTransporte): Provider {
   const nativo = new AnthropicProvider({
-    baseUrl: cfg.anthropicBaseUrl!,
-    ...(cfg.anthropicApiKey ? { apiKey: cfg.anthropicApiKey } : {}),
+    baseUrl: e.baseUrl!,
+    ...(e.apiKey ? { apiKey: e.apiKey } : {}),
     requireUsage: true,
     fetchImpl: cfg.fetchImpl ?? fetchConPlazo(),
   });

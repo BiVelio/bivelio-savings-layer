@@ -40,7 +40,7 @@
  */
 import type { SavingsRequest, ToolDescriptor } from "../src/index.js";
 import type { ProviderRequest } from "../src/providers/types.js";
-import { MUESTREO_PAREADO } from "./scenarios.js";
+import { muestreoPareadoPara } from "./scenarios.js";
 
 /** El marcador que `conSalDeFrio` antepone; no forma parte del prefijo del cliente. */
 const ES_SAL_DE_FRIO = /^\[medicion-fria /;
@@ -50,6 +50,11 @@ const ES_SAL_DE_FRIO = /^\[medicion-fria /;
  * payload inline, all tools transmitted natively, NO cache marks, and the
  * caller's own contract and output cap (they are the caller's requirement, not
  * something the layer adds, so an arm without them would solve an easier task).
+ *
+ * El muestreo es el que ADMITE el modelo (`muestreoPareadoPara`): temperature 0
+ * y seed 7 donde se honran, nada donde el proveedor rechaza o ignora un valor
+ * propio. El margen de razonamiento no se aplica aquí sino sobre la petición del
+ * escenario (`conMargenDeRazonamiento`), para que lo reciban todos los brazos.
  */
 export function construirBrazoNaive(req: SavingsRequest, model: string): ProviderRequest {
   const messages = req.messages.map((m) => ({ role: m.role, content: m.content }));
@@ -64,8 +69,9 @@ export function construirBrazoNaive(req: SavingsRequest, model: string): Provide
     ...(req.response?.maxOutputTokens != null
       ? { maxOutputTokens: req.response.maxOutputTokens }
       : {}),
-    // El MISMO muestreo que el brazo B (`conMuestreoPareado`): una sola constante.
-    ...MUESTREO_PAREADO,
+    // El MISMO muestreo que el brazo B (`conMuestreoPareado`): una sola regla,
+    // por modelo — con los de 2026 fijar la temperatura a cero es un 400.
+    ...muestreoPareadoPara(model),
   };
 }
 
@@ -132,9 +138,46 @@ export function construirBrazoRazonable(
   };
 }
 
+export interface OpcionesB2 extends OpcionesB1 {
+  /**
+   * La regla de la búsqueda de herramientas del proveedor dice que aplica a esta
+   * petición (ver `planNativo` en benchmarks/nativo.ts). Entonces B2 manda TODAS
+   * las herramientas, como B0, y el reescritor del cable difiere todas menos las
+   * de `toolsB1`: un equipo que usa la búsqueda del proveedor no elige a mano.
+   */
+  busquedaDeHerramientas?: boolean;
+}
+
+/**
+ * Brazo A2 (B2) — «nativo bien configurado».
+ *
+ * Es B1 TAL CUAL: mismos mensajes, contrato, tope, muestreo, marcas de caché y
+ * `promptCacheKey` (B2 es un superconjunto de B1). Lo que añade —esfuerzo de
+ * razonamiento, modo de caché explícito en GPT-5.6+, búsqueda de herramientas—
+ * no cabe en `ProviderRequest` sin cambiar la API pública, así que viaja en el
+ * cable: lo pone `reescribirCuerpo` (benchmarks/nativo.ts) DESPUÉS de que el
+ * adaptador arme el cuerpo, igual para todos los brazos.
+ *
+ * La única diferencia en la petición neutra es la búsqueda de herramientas:
+ * con ella, B2 manda todas las herramientas (el proveedor elige), no la
+ * selección a mano de B1.
+ */
+export function construirBrazoNativo(
+  req: SavingsRequest,
+  model: string,
+  opts: OpcionesB2 = {},
+): ProviderRequest {
+  if (opts.busquedaDeHerramientas) {
+    // Sin `toolsB1`: todas las herramientas, con la caché de B1 intacta.
+    return construirBrazoRazonable(req, model, {});
+  }
+  return construirBrazoRazonable(req, model, opts.toolsB1 ? { toolsB1: opts.toolsB1 } : {});
+}
+
 /** Descripción de los brazos, para el artefacto y para el README: UNA fuente. */
 export const DEFINICION_DE_BRAZOS = {
-  A: "B0 · naive: full compact JSON payload, all tools, no cache marks; same contract, cap, temperature and seed as the other arms.",
+  A: "B0 · naive: full compact JSON payload, all tools, no cache marks; same contract, cap and sampling as the other arms (temperature 0 and seed 7 where the model honours them, the provider default where it does not).",
   A1: "B1 · reasonably optimized (research guide R01): B0 plus native provider cache configured on the stable prefix (cache_control on Anthropic via stablePrefixMessages; prompt_cache_key hint on OpenAI-compatible endpoints) only where the prefix really repeats, and only the tools a diligent integrator would send when the scenario declares them (toolsB1). Everything else identical to B0.",
+  A2: "B2 · natively well-configured: B1 plus every setting the provider documents at no extra charge that applies to this request shape — reasoning effort where the model accepts it, explicit cache mode on GPT-5.6+ (breakpoint only on a prefix that repeats, no cache writes otherwise), tool search when the request carries 10+ tools or 10k+ schema tokens (Anthropic), compaction/context editing only where the conversation can reach their triggers. Each decision and its source is in `native.decisions`.",
   B: "BV-SALA: the same task through the layer.",
 } as const;
