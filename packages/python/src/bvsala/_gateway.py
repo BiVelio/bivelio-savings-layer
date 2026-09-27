@@ -152,7 +152,7 @@ class Gateway:
         if codigo != 200:
             raise GatewayUnavailable(
                 f"{self.url} did not answer as a bvsala gateway with local reports (HTTP {codigo}). "
-                "If it is an older gateway, update @bivelio/savings-layer: local reports need a version newer than 0.4.25."
+                "If it is an older gateway, update @bivelio/savings-layer: local reports need 0.4.26 or later."
             )
         try:
             return parse_status(cuerpo)

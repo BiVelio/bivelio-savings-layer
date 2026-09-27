@@ -118,7 +118,7 @@ header as a dict, for `extra_headers=` or `default_headers=`.
 
 | Exception | When |
 |---|---|
-| `GatewayUnavailable` | nothing answers at the URL, or it is not a bvsala gateway with local reports (a version newer than 0.4.25 is needed) |
+| `GatewayUnavailable` | nothing answers at the URL, or it is not a bvsala gateway with local reports (0.4.26 or later is needed) |
 | `LicenseInactive` | the gateway's license does not serve new requests; `.state` says why |
 | `GatewayMismatch` | the client points at a different provider than the one the gateway forwards to |
 | `ReportNotFound` | the gateway holds no report for that id (only requests sent with `x-bvsala-report: 1` have one, kept for at most an hour) |
