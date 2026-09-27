@@ -90,11 +90,18 @@ const RESPUESTA_OPENAI = {
 };
 
 describe("el transporte del banco se elige por el modelo", () => {
-  it("sin endpoint principal la tirada es MOCK, haya o no endpoint nativo", () => {
+  it("sin NINGÚN endpoint la tirada es MOCK; con uno solo por familia, esa familia ya es LIVE", () => {
     expect(transporteDeModelo("anthropic/claude-sonnet-4-5", {})).toBe("mock");
+    // Desde el 2026-09-27 el endpoint nativo basta: un tercero con su clave de
+    // Anthropic y sin pasarela puede medir Claude.
     expect(
       transporteDeModelo("anthropic/claude-sonnet-4-5", { anthropicBaseUrl: "https://x.invalido" }),
-    ).toBe("mock");
+    ).toBe("anthropic-nativo");
+    // …y un modelo de otra familia sin endpoint para ella no cae en MOCK a
+    // escondidas: es un error que el prevuelo y `repartirEscenarios` descartan antes.
+    expect(() => transporteDeModelo("openai/gpt-4o-mini", { anthropicBaseUrl: "https://x.invalido" })).toThrow(
+      /no endpoint declared/,
+    );
   });
 
   it("un modelo de Anthropic con endpoint nativo declarado va por el adaptador nativo", () => {

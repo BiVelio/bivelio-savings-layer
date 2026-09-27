@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { decidePublish, type ArtifactShape } from "../benchmarks/publish-guard.js";
+import { babosaDeModelo, decidePublish, type ArtifactShape } from "../benchmarks/publish-guard.js";
 
 /**
  * La cifra que la landing enseña es la afirmación comercial del producto. Este
@@ -8,23 +8,40 @@ import { decidePublish, type ArtifactShape } from "../benchmarks/publish-guard.j
  * probar que no se puede publicar una mentira por descuido.
  */
 
+/**
+ * Un artefacto LIVE completo desde el 2026-09-27: los tres brazos de control
+ * (B0, B1, B2), sus suelos, el endpoint, el coste y el conjunto de escenarios.
+ */
 const live = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
   mode: "LIVE",
   model: "gpt-4o-mini",
   modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
   scenarios: [{}, {}],
+  scenariosNotApplicable: [{}],
+  scenarioSet: { size: 3 },
   sdk: { version: "0.4.23", asShipped: true },
   aggregate: { savings: { point: 0.42, lower: 0.31, upper: 0.5 }, proven: true, qualityPassRate: 1 },
+  aggregateB1: { savings: { point: 0.3, lower: 0.2, upper: 0.4 } },
+  aggregateB2: { savings: { point: 0.25, lower: 0.15, upper: 0.35 } },
+  floors: { vsB0: 0.31, vsB1: 0.2, vsB2: 0.15, min: 0.15, minAgainst: "B2" },
+  native: { degradedByTransport: false, honored: { promptCacheMode: null } },
+  transport: { kind: "openai-compatible", endpointHost: "api.openai.com" },
+  cost: {},
+  pricing: { listPriceKnown: true, cacheWrites: { premium: 1, metered: false } },
   ...over,
 });
 
-const mock = (): ArtifactShape => ({
+const mock = (over: Partial<ArtifactShape> = {}): ArtifactShape => ({
   mode: "MOCK",
   modelStable: true,
   reconciliation: { reconciled: true, residual: 0 },
   scenarios: [{}],
+  scenarioSet: { size: 1 },
+  sdk: { version: "0.4.23", asShipped: true },
   aggregate: { savings: { point: 0.6, lower: 0.6, upper: 0.6 }, proven: false, qualityPassRate: 1 },
+  floors: { vsB0: 0.6, min: 0.6, minAgainst: "B0" },
+  ...over,
 });
 
 describe("verja de publicación del artefacto A/B", () => {
@@ -101,6 +118,7 @@ describe("verja de publicación del artefacto A/B", () => {
     // Publicar una medición floja es honesto; presentarla como victoria no.
     const d = decidePublish(null, live({
       aggregate: { savings: { point: 0.05, lower: -0.02, upper: 0.11 }, proven: false, qualityPassRate: 1 },
+      floors: { vsB0: -0.02, vsB1: 0.2, vsB2: 0.15, min: -0.02, minAgainst: "B0" },
     }));
     expect(d.ok).toBe(true);
     expect(d.warnings.join(" ")).toMatch(/NO puede presentarlo como ahorro demostrado/);
@@ -124,7 +142,9 @@ describe("verja de publicación del artefacto A/B", () => {
     const d = decidePublish(null, live({ sdk: { version: "0.4.23", asShipped: false } }));
     expect(d.ok).toBe(false);
     expect(d.blockers.join(" ")).toMatch(/compresor del banco/);
-    expect(d.blockers.join(" ")).toMatch(/BVSALA_AB_SIN_COMPRESOR=1/);
+    // Desde el 2026-09-27 medir lo que se instala es el defecto de `pnpm ab`.
+    expect(d.blockers.join(" ")).toMatch(/`pnpm ab` \(asShipped es el modo por defecto/);
+    expect(d.blockers.join(" ")).not.toMatch(/BVSALA_AB_SIN_COMPRESOR/);
   });
 
   it("⛔ un artefacto anterior al sello del SDK tampoco: hasta el sello, el banco medía CON el compresor", () => {
@@ -136,15 +156,98 @@ describe("verja de publicación del artefacto A/B", () => {
     } as ArtifactShape);
     expect(d.ok).toBe(false);
     expect(d.blockers.join(" ")).toMatch(/falta sdk\.asShipped: true/);
-    expect(d.blockers.join(" ")).toMatch(/BVSALA_AB_SIN_COMPRESOR=1/);
+    expect(d.blockers.join(" ")).toMatch(/`pnpm ab`/);
     // Y sin palancas declaradas, igual: lo que no está sellado no se sabe.
     expect(decidePublish(null, live({ sdk: undefined })).ok).toBe(false);
     expect(decidePublish(null, live({ sdk: { version: "0.4.23" } })).ok).toBe(false);
     expect(decidePublish(null, live({ sdk: { version: "0.4.23", asShipped: "true" } })).ok).toBe(false);
   });
 
-  it("un MOCK sin sello sigue el camino de siempre: --allow-mock decide, el sello es cosa de las tiradas LIVE", () => {
-    const d = decidePublish(null, live({ mode: "MOCK", sdk: undefined }), { allowMock: true });
-    expect(d.blockers.join(" ")).not.toMatch(/sdk\.asShipped/);
+  it("⛔ un MOCK sin sello TAMBIÉN se bloquea, ni con --allow-mock: el sello ya no es cosa solo de LIVE", () => {
+    // Hasta el 2026-09-27 un MOCK sin sello pasaba con --allow-mock. Desde que
+    // asShipped es el defecto de `pnpm ab`, no hay tirada legítima sin él.
+    const d = decidePublish(null, mock({ sdk: undefined }), { allowMock: true });
+    expect(d.ok).toBe(false);
+    expect(d.blockers.join(" ")).toMatch(/sdk\.asShipped/);
+    expect(decidePublish(null, mock({ sdk: { version: "0.4.23", asShipped: false } }), { allowMock: true }).ok).toBe(false);
+  });
+});
+
+describe("verja de publicación: los bloqueos del banco de 2026 (recomendación n.º 3)", () => {
+  const bloquea = (a: ArtifactShape, patron: RegExp, opts = {}): void => {
+    const d = decidePublish(null, a, opts);
+    expect(d.ok).toBe(false);
+    expect(d.blockers.join(" ")).toMatch(patron);
+  };
+
+  it("sin un intervalo numérico frente a B2 no hay comparación contra lo que el proveedor da gratis", () => {
+    bloquea(live({ aggregateB2: undefined, floors: { vsB0: 0.31, vsB1: 0.2, vsB2: null, min: 0.2 } }), /aggregateB2/);
+    bloquea(live({ aggregateB2: { savings: { point: 0.2 } } }), /aggregateB2/);
+  });
+
+  it("un precio que no es de lista no se publica", () => {
+    bloquea(live({ pricing: { listPriceKnown: false } }), /listPriceKnown = false/);
+  });
+
+  it("con prima de escritura > 1, las escrituras tienen que venir del contador del proveedor", () => {
+    bloquea(live({ pricing: { listPriceKnown: true, cacheWrites: { premium: 1.25, metered: false } } }), /cacheWrites/);
+    expect(decidePublish(null, live({ pricing: { listPriceKnown: true, cacheWrites: { premium: 1.25, metered: true } } })).ok).toBe(true);
+    // Sin prima, el contador no cambia el coste: no bloquea.
+    expect(decidePublish(null, live({ pricing: { listPriceKnown: true, cacheWrites: { premium: 1, metered: false } } })).ok).toBe(true);
+  });
+
+  it("un B2 degradado por el transporte, o cuyo modo de caché el proveedor no honró, no se publica", () => {
+    bloquea(live({ native: { degradedByTransport: true } }), /degradedByTransport/);
+    bloquea(live({ native: { degradedByTransport: false, honored: { promptCacheMode: false } } }), /promptCacheMode = false/);
+    // `null` = no observable: no es un sí, pero tampoco un no.
+    expect(decidePublish(null, live({ native: { honored: { promptCacheMode: null } } })).ok).toBe(true);
+  });
+
+  it("sin host del endpoint, o contra loopback / red privada, no se publica", () => {
+    bloquea(live({ transport: { kind: "openai-compatible" } }), /endpointHost falta/);
+    for (const host of ["localhost", "127.0.0.1", "10.0.0.8", "192.168.1.20", "172.16.0.1", "172.31.255.1", "169.254.1.1", "::1", "[::1]", "fd12:3456::1", "fe80::1"]) {
+      bloquea(live({ transport: { endpointHost: host } }), /loopback o red privada/);
+    }
+    bloquea(live({ transport: { endpointHost: "api.openai.com,localhost" } }), /loopback o red privada/);
+    expect(decidePublish(null, live({ transport: { endpointHost: "172.32.0.1" } })).ok).toBe(true);
+    expect(decidePublish(null, live({ transport: { endpointHost: "api.anthropic.com,ai-gateway.vercel.sh" } })).ok).toBe(true);
+  });
+
+  it("una tirada cortada por el presupuesto no se publica", () => {
+    bloquea(live({ cost: { aborted: "budget" } }), /cost\.aborted/);
+    expect(decidePublish(null, live({ cost: { aborted: false } })).ok).toBe(true);
+  });
+
+  it("ninguna fila roja se cae en silencio: scenarioSet = medidos + no aplicables", () => {
+    bloquea(live({ scenarioSet: { size: 4 } }), /falta alguna fila/);
+    bloquea(live({ scenarioSet: undefined }), /no declara scenarioSet/);
+    // En MOCK, sin scenarioSet no bloquea (no hay cifra), pero si lo declara tiene que cuadrar.
+    bloquea(mock({ scenarioSet: { size: 2 } }), /falta alguna fila/, { allowMock: true });
+  });
+
+  it("los suelos cuadran con sus agregados y `min` es el menor", () => {
+    bloquea(live({ floors: undefined }), /no trae floors/);
+    bloquea(live({ floors: { vsB0: 0.31, vsB1: 0.2, vsB2: 0.15, min: 0.2 } }), /floors\.min/);
+    bloquea(live({ floors: { vsB0: 0.3, vsB1: 0.2, vsB2: 0.15, min: 0.15 } }), /vsB0 ↔ aggregate/);
+    bloquea(live({ floors: { vsB0: 0.31, vsB1: null, vsB2: 0.15, min: 0.15 } }), /falta vsB1/);
+  });
+
+  it("⚠ un suelo por debajo del 5 % frente al brazo más fuerte avisa: el informe pide girar el mensaje hacia la contabilidad", () => {
+    const d = decidePublish(
+      null,
+      live({
+        aggregateB2: { savings: { point: 0.06, lower: 0.03, upper: 0.09 } },
+        floors: { vsB0: 0.31, vsB1: 0.2, vsB2: 0.03, min: 0.03, minAgainst: "B2" },
+      }),
+    );
+    expect(d.ok).toBe(true);
+    expect(d.warnings.join(" ")).toMatch(/floors\.min = 3\.0% \(frente a B2\).*contabilidad/);
+    expect(decidePublish(null, live()).warnings.join(" ")).not.toMatch(/contabilidad/);
+  });
+
+  it("la babosa del modelo es la misma para escribir el artefacto y para publicarlo", () => {
+    expect(babosaDeModelo("openai/gpt-6-luna")).toBe("openai-gpt-6-luna");
+    expect(babosaDeModelo("google/gemini-3.8-flash")).toBe("google-gemini-3-8-flash");
+    expect(babosaDeModelo("Anthropic/Claude-Sonnet-5")).toBe("anthropic-claude-sonnet-5");
   });
 });

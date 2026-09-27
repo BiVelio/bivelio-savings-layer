@@ -76,7 +76,13 @@ claim. For every scenario it sends **two real requests to the same provider/mode
   the provider's own discount and compact JSON are taken out. Both are published.
   `BVSALA_AB_B1=0` runs the old two-arm bench. Definitions live in
   `benchmarks/brazos.ts`, pinned by `test/brazos-del-banco.test.ts`.
-- **Arm B (BV-SALA)** — the same task through the layer.
+- **Arm A2 (natively well-configured, "B2")** — B1 plus every setting the
+  provider documents at no extra charge that *applies to this request shape*:
+  reasoning effort, explicit cache mode on GPT-5.6+, tool search over its
+  documented threshold. It is the comparison a technical buyer will run against
+  us. See [Arm B2](#arm-b2--natively-well-configured-) below.
+- **Arm B (BV-SALA)** — the same task through the layer, **as installed from
+  npm** (`sdk.asShipped: true`, the default since 2026-09-27).
 
 **All** arms are priced from the provider's own `usage` — so no modeled baseline
 can enter, and both are counted by the *same* tokenizer. Savings = the measured
@@ -89,10 +95,11 @@ pnpm ab            # MOCK: exercises the whole A/B pipeline; dollars labeled EST
 cp .env.bench.example .env.bench     # fill in BVSALA_DEMO_API_KEY
 pnpm ab                              # the script loads .env.bench by itself
 
-# …or pass them inline for a one-off:
+# …or pass them inline for a one-off (the budget is mandatory in LIVE: use the
+# ceiling the run prints, rounded up):
 BVSALA_DEMO_BASE_URL=https://ai-gateway.vercel.sh/v1 \
 BVSALA_DEMO_API_KEY=<KEY> BVSALA_DEMO_MODEL=openai/gpt-4o-mini BVSALA_DEMO_KEEP_PREFIX=1 \
-pnpm ab
+BVSALA_AB_BUDGET_USD=<ceiling> pnpm ab
 ```
 
 `.env.bench` is gitignored and read via `--env-file-if-exists`, so the key never
@@ -253,8 +260,10 @@ configured endpoint cannot speak its protocol (see the Anthropic section above).
 
 Artifacts: with one model, `out/ab-live.json` (+ trials CSV) exactly as before —
 that is what `pnpm ab:publish` reads. With several, one
-`out/ab-live--<model>.json` each plus `out/ab-live-por-modelo.{json,csv}`, and
-**no** `ab-live.json`: a headline needs one model.
+`out/ab-live--<model>.json` (+ `out/ab-live-trials--<model>.csv`) each plus
+`out/ab-live-por-modelo.{json,csv}`, and **no** `ab-live.json`: a headline needs
+one model. To publish one of them without paying for another run, see
+[Publishing one model from a multi-model run](#publishing-one-model-from-a-multi-model-run).
 
 ### What the run costs, before you pay for it ★
 
@@ -271,8 +280,16 @@ It is a **ceiling** and says so: output counted at the declared cap, arm B price
 as if it spent as much as arm A, adaptive sampling counted at its hard cap. A
 model missing from the catalogue is priced illustratively **and flagged**.
 
-`BVSALA_AB_BUDGET_USD=2.50 pnpm ab` aborts before the first provider call if the
-ceiling exceeds the budget.
+`BVSALA_AB_BUDGET_USD` is **mandatory in LIVE** since 2026-09-27: the run aborts
+before the first provider call if it is missing or below the ceiling. The
+ceiling is not a ceiling for scenarios without `maxOutputTokens` (a reasoning
+model can write as much as it likes there; the estimate says how many there
+are), so the run also keeps a **running spend** of every provider call —
+classification probe, all four arms, cache amortization; the judge is excluded
+and says so — and stops as soon as it passes the budget. The model in progress
+is marked `modelsFailed: [{ error: "budget" }]`, nothing publishable is written
+for it, the remaining models are not started, and the exit code is 1. What a
+model actually cost is in `cost.spentUsd`, next to `cost.ceilingUsd`.
 
 ### Publishing the artifact (`pnpm ab:publish`)
 
@@ -292,20 +309,46 @@ pnpm ab:publish              # benchmarks/out → apps/web/public/data
   override, because losing the only defensible number by accident is silent;
 - the two arms did not talk to the same **served model** (what actually makes a paired A/B comparable — `system_fingerprint` is recorded but never gated on, because through a gateway it is a per-request id);
 - the ledgers don't reconcile — a non-zero residual means double counting;
-- the run does not declare `sdk.asShipped: true`. `false` means it measured the
-  bench-only compressor; a missing seal means it predates the seal, and until
-  then the bench measured **with** that compressor by default (the 2026-09-12
-  artifact has exactly that shape). The npm package ships `noopCompressor`
-  only, so a headline measured with `benchmarks/compresor.ts` promises a lever
-  the customer does not have. No override: the publishable run is
-  `BVSALA_AB_SIN_COMPRESOR=1 BVSALA_DEMO_MODEL=openai/gpt-4o-mini pnpm ab`, and
-  its compression scenario is still measured (it is traffic a customer sends)
-  with the lever declared in `levers.notExercised`;
+- the run does not declare `sdk.asShipped: true` — **MOCK included** since
+  2026-09-27. `false` means it measured the bench-only compressor; a missing
+  seal means it predates the seal, and until then the bench measured **with**
+  that compressor by default (the 2026-09-12 artifact has exactly that shape).
+  The npm package ships `noopCompressor` only, so a headline measured with
+  `benchmarks/compresor.ts` promises a lever the customer does not have. No
+  override: the publishable run is plain `pnpm ab` (see
+  [asShipped is the default](#asshipped-is-the-default)), and its compression
+  scenario is still measured (it is traffic a customer sends) with the lever
+  declared in `levers.notExercised`;
+- a LIVE run has no numeric `aggregateB2` interval: without arm B2 there is no
+  comparison against what the provider gives for free (`BVSALA_AB_B2=0` is a
+  research run);
+- `pricing.listPriceKnown` is false (the model has no row in the SDK price
+  catalogue, so its dollars are illustrative);
+- the model pays a cache-write premium (`pricing.cacheWrites.premium > 1`) and
+  not every call carried the provider's write counter (`metered` is not true):
+  unmetered writes would be priced at zero;
+- `native.degradedByTransport` is true (a Claude model through an
+  OpenAI-protocol endpoint cannot carry `cache_control` or
+  `output_config.effort`), or `native.honored.promptCacheMode` is false (the
+  provider wrote cache under explicit mode with no breakpoint: the endpoint does
+  not forward `prompt_cache_options`);
+- a LIVE run does not name its endpoint (`transport.endpointHost`), or names a
+  loopback / private-network host: the site publishes measurements against a
+  provider, not against a local server;
+- `cost.aborted` is present;
+- `scenarioSet.size` is not the number of measured plus not-applicable
+  scenarios (dropping a red row is choosing the figure), or a LIVE run does not
+  declare `scenarioSet`;
+- `floors` does not match its aggregates, `floors.min` is not the lowest of
+  them, or a LIVE run has no `floors`;
 - savings exceed 100%, the interval is inverted, or the point estimate falls
   outside its own interval.
 
 `proven: false` **is** publishable — under-claiming is honest — but it warns, and
-the landing must not present it as demonstrated savings.
+the landing must not present it as demonstrated savings. So is a `floors.min`
+below 5%, with a warning that quotes the competition report (§8 rec. 3): below
+that against the strongest baseline, the message should turn towards the
+accounting. That is a business decision, not a blocker.
 
 **What `sdk.asShipped: true` does and does not say.** It says arm B carried no
 piece the bench injects and npm does not ship. It does *not* say the run
@@ -315,6 +358,163 @@ npm, compare `sdk.version` with `npm view @bivelio/savings-layer version`
 before publishing. `sdk.tokenizer` says whether the exact tokenizer
 (`gpt-tokenizer`, an optional dependency of the package) was registered — a
 default install without it uses the heuristic estimator.
+
+### Publishing one model from a multi-model run
+
+```bash
+pnpm ab:publish --model openai/gpt-6-luna --dry-run
+pnpm ab:publish --model openai/gpt-6-luna
+```
+
+`--model <id>` (or `--model=<id>`) publishes `out/ab-live--<slug>.json` together
+with its own `out/ab-live-trials--<slug>.csv`, so a multi-model run never has to
+be paid for twice. The slug is `babosaDeModelo` in `publish-guard.ts`, the same
+function the bench uses to write the files, and the artifact's `model` must be
+exactly the requested id: the file name does not decide what gets published.
+Without `--model` and without `ab-live.json`, the publisher lists the per-model
+artifacts it found.
+
+### Arm B2 — natively well-configured ★
+
+B2 answers the question a technical buyer will ask first: *what is left once I
+switch on everything my provider already gives me for free?* It is **B1 plus
+every setting the provider documents at no extra charge that applies to this
+request shape** — not «everything on». A setting that cannot fire here measures
+nothing and adds risk (beta headers, 400s), so each one has an applicability
+rule with its official source, and the artifact publishes every decision in
+`native.decisions` (and per scenario in `scenarios[].native`) so anyone can
+check it against the documentation.
+
+| Setting | B2 applies it when | Source (checked 2026-09-27) |
+|---|---|---|
+| Reasoning effort, OpenAI (`reasoning_effort`) | the model reasons; value validated per model (gpt-6-luna has no `minimal`) | [gpt-6-luna](https://developers.openai.com/api/docs/models/gpt-6-luna), [Chat Completions types](https://raw.githubusercontent.com/openai/openai-node/master/src/resources/chat/completions/completions.ts) |
+| Reasoning effort, Anthropic (`output_config.effort`) | the model is in the parameter's `supportedModels` (Claude Sonnet 5 is; Haiku 4.5 and Sonnet 4.5 are not) | [Effort](https://platform.claude.com/docs/en/build-with-claude/effort) |
+| Reasoning effort, Gemini (`reasoning_effort` → `thinking_level`) | Gemini reasons (it cannot be turned off on Gemini 3, so `none` is rejected) | [Gemini OpenAI compatibility](https://ai.google.dev/gemini-api/docs/openai) |
+| Explicit cache mode (`prompt_cache_options.mode: "explicit"`) | GPT-5.6 and later over Chat Completions; a `prompt_cache_breakpoint` only at the end of a prefix B1 already marks (never on cold-salted scenarios) | [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) |
+| Anthropic cache breakpoint | kept from B1 (B2 is a superset) | [Prompt caching](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) |
+| Tool search (Anthropic, BM25) | native Anthropic endpoint, 10 or more tools or more than 10k tokens of definitions, model in the compatibility table; every tool is sent, deferred except B1's hand-picked ones | [Tool search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) |
+| Threshold compaction / context editing | never on today's single-turn scenarios (compaction's lowest trigger is 50,000 input tokens; there are no earlier tool results to clear) | [Compaction](https://platform.claude.com/docs/en/build-with-claude/compaction-threshold), [Context editing](https://platform.claude.com/docs/en/build-with-claude/context-editing) |
+| Implicit cache (Gemini, pre-5.6 OpenAI) | already on in every arm, B0 included; declared, nothing to send | [Gemini caching](https://ai.google.dev/gemini-api/docs/caching), [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) |
+
+How it travels: `ProviderRequest` has no fields for effort, tool search or cache
+mode, and adding them would change the package's public API. So B2 goes through
+the **same adapter** as every other arm and a bench-only `fetch` rewriter
+(`benchmarks/nativo.ts`, `reescribirCuerpo`) adds the settings to the body the
+adapter built. It never removes messages, never touches their text, and never
+changes `temperature`, `max_tokens` or `tools` outside the cases above.
+
+What B2 costs in quality: its effort defaults to `low` (`BVSALA_AB_B2_EFFORT`:
+`none|minimal|low|medium|default`), below the documented default of gpt-6-luna
+(`medium`) and Claude Sonnet 5 (`high`), and the level the Sonnet 5 guidance
+lists for chat and non-coding work.
+It is not free: `scenarios[].nativeContractValid`, `truncated.nativo` and
+`reasoningTokens.nativo` show what it cost. If B2 is cheaper because it answers
+worse, that counts **against** BV-SALA's savings. `default` gives a B2 without
+that trade-off.
+
+What gets published: `aggregateB2` (B against B2, same stratified estimator),
+`ledgersB2` / `reconciliationB2`, `aggregateNativeVsB0` (what the provider alone
+saves — **not** a BV-SALA figure), and `floors`: the lower bounds against B0,
+B1 and B2 and their minimum. **Any claim must fit under `floors.min`**, and the
+`cifra-del-heroe` gate enforces it for the landing. Cache writes are priced at
+the model's write premium in **every** arm (`benchmarks/coste.ts`): until
+2026-09-27 the bench billed them at 1×, which hid exactly what explicit cache
+mode saves. The adaptive sampler stops on the *widest* of the three intervals.
+
+On today's scenario set B2 differs from B1 only by effort and, on GPT-5.6+, by
+cache mode. Adding scenarios where tool search or compaction apply (10+ tools,
+50k+ tokens per call) is an owner decision: it changes the headline's strata and
+costs more per rep.
+
+### asShipped is the default
+
+`pnpm ab` measures the SDK **exactly as installed from npm** (`sdk.asShipped:
+true`). The bench-only compressor now has to be asked for, with
+`BVSALA_AB_CON_COMPRESOR=1`: a research run that `pnpm ab:publish` refuses.
+`BVSALA_AB_SIN_COMPRESOR` is deprecated: `1` only prints that it is already the
+default; any other value aborts with the new instruction, because guessing what
+it meant is worse than stopping.
+
+### 2026 preset, direct endpoints and budget
+
+```bash
+BVSALA_AB_PRESET=2026 BVSALA_AB_BUDGET_USD=<ceiling printed> pnpm ab
+```
+
+`BVSALA_AB_PRESET=2026` measures `openai/gpt-6-luna`, `anthropic/claude-sonnet-5`
+(native endpoint required) and `google/gemini-3.8-flash`; `2026+optional` adds
+`anthropic/claude-haiku-4-5` and `openai/gpt-oss-120b`. The preset is
+incompatible with `BVSALA_DEMO_MODEL(S)`: if both are set (check `.env.bench`),
+the run aborts instead of guessing. Ids and their sources are in
+`benchmarks/modelos.ts`.
+
+Each family can have its **own direct endpoint**, and the gateway stays as the
+fallback: a third party will have provider keys, not ours, and a gateway may not
+forward `prompt_cache_options` or return `cache_write_tokens`.
+
+| Variable | Default | Effect |
+|---|---|---|
+| `BVSALA_AB_PRESET` | — | `2026` or `2026+optional`. |
+| `BVSALA_AB_B2` | on | `0` disables B2 (research; cannot be published). |
+| `BVSALA_AB_B2_EFFORT` | `low` | `none\|minimal\|low\|medium\|default`, validated per model before any call. |
+| `BVSALA_AB_CON_COMPRESOR` | off | `1` injects the bench compressor → `sdk.asShipped: false`. |
+| `BVSALA_AB_BUDGET_USD` | — | **Mandatory in LIVE** (and in the probe). |
+| `BVSALA_AB_MARGEN_RAZONAMIENTO` | `0` | Tokens added to the output cap of **every** arm, on reasoning models only. Set it after the calibration run, never before. |
+| `BVSALA_AB_PERMITIR_PRECIO_ILUSTRATIVO` | off | `1` runs (never publishes) a model without a catalogue row. |
+| `BVSALA_AB_OUT_DIR` | `benchmarks/out` | Output directory (the dry tests use a temporary one). |
+| `BVSALA_DEMO_OPENAI_BASE_URL` / `_API_KEY` | — | Direct endpoint for the OpenAI family. |
+| `BVSALA_DEMO_GOOGLE_BASE_URL` / `_API_KEY` | — | Direct endpoint for Gemini (OpenAI-compatible, `…/v1beta/openai`). |
+
+The run is LIVE as soon as **any** endpoint is declared. Before estimating, a
+**preflight** (`veredictoDePrevuelo`, `benchmarks/modelos.ts`) aborts without a
+single call when: there is no budget; a model has no endpoint for its family; a
+model has no catalogue row (unless the illustrative override is set); a
+GPT-5.6+/GPT-6 model's cache-write premium is not 1.25 (the catalogue unit for
+2026 has not landed); the B2 effort is invalid for a model; or a model that
+needs the native Anthropic endpoint does not have it. It warns about reasoning
+models with no reasoning headroom and about scenarios without an output cap.
+
+Sampling is now **per model** (`muestreoPareadoPara`): `temperature: 0` and
+`seed: 7` where the model honours them, the provider default where
+`src/pricing/razonamiento.ts` classifies the model as reasoning or unclassified
+(Claude Sonnet 5 returns 400 to a non-default temperature; the gpt-5 family
+accepts only the default). Every arm gets the same, so the pairing stays
+honest; the artifact says which in `sampling`.
+
+On gpt-6-luna, Chat Completions supports function calling only with
+`reasoning_effort: "none"`. Arm B0 sends the provider default and the SDK cannot
+send another, so scenarios with tools are declared **not measurable** on that
+transport (with the source) instead of failing mid-run.
+
+### Probe before you pay (`pnpm ab:sonda`)
+
+```bash
+BVSALA_AB_PRESET=2026 BVSALA_AB_BUDGET_USD=<ceiling the probe prints, rounded up> pnpm ab:sonda
+```
+
+One minimal B0-shaped request per model (cap of 16 output tokens) checks the
+credentials and the model id, that the provider accepts the body the adapter
+builds (`max_tokens`, the bench's sampling), and which usage counters come back.
+On GPT-5.6+/GPT-6 it adds an implicit vs explicit-without-breakpoint pair on the
+bench's long stable prefix: `promptCacheModeHonored: true` means the explicit
+mode reaches the provider. It prints its ceiling before spending, requires the
+budget, writes `out/sonda.json` in English and never prints headers, keys or
+URLs — only the endpoint host and the provider's error text, truncated. If the
+provider rejects `max_tokens` or `temperature`, **stop**: the fix belongs in
+the product (`src/providers/openai-compatible.ts`) and needs its own PR.
+
+### Independent measurement
+
+`docs/MEDICION-INDEPENDIENTE.md` (published byte for byte at
+`/measure/independent-measurement.md`) tells a third party how to check us: by
+recomputing the published figures (no key, no cost), by measuring the npm
+package on their own traffic (the SDK's `verification` option), or by rerunning
+this bench. `apps/web/public/measure/reproduce.mjs` (served at
+`/measure/reproduce.mjs`, `pnpm medicion:reproducir`) has no dependencies: it
+re-runs the seeded stratified bootstrap on the published trials CSV and
+compares every aggregate, every scenario row, `trials`, `scenarioSet` and
+`floors` with exact equality. `test/medicion-independiente.test.ts` keeps it
+honest: whatever is published must be recomputable with the public script.
 
 ### The floor the npm package actually delivers (`benchmarks/titular-como-se-instala.ts`)
 

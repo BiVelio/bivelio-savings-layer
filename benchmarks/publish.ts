@@ -6,24 +6,45 @@
  * landing lleva sirviendo un MOCK.
  *
  * Flags:
- *   --allow-mock   publicar un artefacto MOCK a propósito (nunca sobre un LIVE)
- *   --dry-run      decidir e imprimir, sin escribir
+ *   --allow-mock      publicar un artefacto MOCK a propósito (nunca sobre un LIVE)
+ *   --dry-run         decidir e imprimir, sin escribir
+ *   --model <id>      publicar UN modelo de una tirada multi-modelo:
+ *                     out/ab-live--<babosa>.json con su ab-live-trials--<babosa>.csv,
+ *                     sin pagar otra tirada. Su `model` tiene que ser <id>.
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { decidePublish, type ArtifactShape } from "./publish-guard.js";
+import { babosaDeModelo, decidePublish, type ArtifactShape } from "./publish-guard.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const ORIGEN = join(here, "out", "ab-live.json");
-const ORIGEN_CSV = join(here, "out", "ab-live-trials.csv");
 const DESTINO = join(here, "..", "apps", "web", "public", "data", "ab-live.json");
 const DESTINO_CSV = join(here, "..", "apps", "web", "public", "data", "ab-live-trials.csv");
 
-const flags = new Set(process.argv.slice(2));
+const args = process.argv.slice(2);
+const flags = new Set(args.filter((a) => a.startsWith("--") && !a.startsWith("--model")));
 const allowMock = flags.has("--allow-mock");
 const dryRun = flags.has("--dry-run");
+
+/** `--model <id>` o `--model=<id>`. */
+function modeloPedido(): string | undefined {
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!;
+    if (a.startsWith("--model=")) return a.slice("--model=".length) || undefined;
+    // `--model --dry-run` no es un modelo que se llame «--dry-run».
+    if (a === "--model") return args[i + 1]?.startsWith("--") ? undefined : args[i + 1];
+  }
+  return undefined;
+}
+const modelo = modeloPedido();
+if (args.includes("--model") && !modelo) {
+  console.error("--model necesita el id del modelo, p. ej. --model openai/gpt-6-luna");
+  process.exit(1);
+}
+const sufijo = modelo ? `--${babosaDeModelo(modelo)}` : "";
+const ORIGEN = join(here, "out", `ab-live${sufijo}.json`);
+const ORIGEN_CSV = join(here, "out", `ab-live-trials${sufijo}.csv`);
 
 function leer(path: string): ArtifactShape | null {
   if (!existsSync(path)) return null;
@@ -36,7 +57,26 @@ function leer(path: string): ArtifactShape | null {
 
 const entrante = leer(ORIGEN);
 if (!entrante) {
+  // Una tirada multi-modelo NO escribe ab-live.json (un titular necesita un
+  // modelo), pero sí uno por modelo: se publica ése, sin volver a pagar.
+  const porModelo = existsSync(join(here, "out"))
+    ? readdirSync(join(here, "out")).filter((f) => /^ab-live--.+\.json$/.test(f))
+    : [];
   console.error(`No existe ${ORIGEN}. Genera el artefacto antes:  pnpm ab`);
+  if (!modelo && porModelo.length > 0) {
+    console.error(
+      `Hay artefactos por modelo de una tirada multi-modelo (${porModelo.join(", ")}): publica uno con ` +
+        "`pnpm ab:publish --model <id>`.",
+    );
+  }
+  process.exit(1);
+}
+// El fichero se elige por la babosa; el MODELO lo dice el artefacto. Si no
+// coinciden, el fichero no es el que se cree publicar.
+if (modelo && entrante.model !== modelo) {
+  console.error(
+    `\n✗ NO publicado: ${ORIGEN} declara model = ${String(entrante.model)} y se pidió --model ${modelo}.\n`,
+  );
   process.exit(1);
 }
 const actual = leer(DESTINO);
@@ -48,6 +88,12 @@ console.log(`  publicado hoy:  ${actual ? String(actual.mode) : "(ninguno)"}`);
 console.log(`  entrante:       ${String(entrante.mode)}${entrante.model ? `  model: ${String(entrante.model)}` : ""}`);
 const s = entrante.aggregate?.savings;
 if (s) console.log(`  ahorro:         ${((s.point ?? 0) * 100).toFixed(1)}%  95%lo ${((s.lower ?? 0) * 100).toFixed(1)}%   proven: ${String(entrante.aggregate?.proven)}`);
+// EL SUELO QUE MANDA: el menor de los tres (frente a B0, B1 y B2). La cifra de
+// la web tiene que caber debajo; la verja `cifra-del-heroe` lo comprueba.
+const suelo = entrante.floors?.min;
+if (typeof suelo === "number") {
+  console.log(`  suelo mínimo:   ${(suelo * 100).toFixed(1)}%  frente a ${String(entrante.floors?.minAgainst)} — la cifra de la web tiene que caber debajo`);
+}
 
 for (const w of d.warnings) console.log(`  ⚠ ${w}`);
 for (const b of d.blockers) console.log(`  ✗ ${b}`);

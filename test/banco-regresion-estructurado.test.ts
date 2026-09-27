@@ -101,9 +101,18 @@ describe("el brazo B manda el MISMO muestreo que el brazo A", () => {
     expect(buildNaive).toContain("construirBrazoNaive(");
     const brazos = readFileSync(new URL("../benchmarks/brazos.ts", import.meta.url), "utf8");
     const naive = brazos.slice(brazos.indexOf("export function construirBrazoNaive("), brazos.indexOf("export function mensajesDePrefijoRazonable("));
-    expect(naive).toContain("...MUESTREO_PAREADO");
+    // Desde el 2026-09-27 la constante pasa por la regla POR MODELO
+    // (`muestreoPareadoPara`), la misma que usa `conMuestreoPareado` para el B.
+    expect(naive).toContain("...muestreoPareadoPara(model)");
     expect(naive).not.toMatch(/temperature:\s*0/);
     expect(fuente).toContain("conMuestreoPareado(");
+    const escenarios = readFileSync(new URL("../benchmarks/scenarios.ts", import.meta.url), "utf8");
+    const conMuestreo = escenarios.slice(escenarios.indexOf("export function conMuestreoPareado("));
+    expect(conMuestreo.slice(0, conMuestreo.indexOf("\n}"))).toContain("muestreoPareadoPara(req.model)");
+    // Y `runScenario` ya no fija 0/7 a mano: con Claude Sonnet 5 era un 400 en la primera llamada.
+    const runScenario = fuente.slice(fuente.indexOf("async function runScenario("), fuente.indexOf("// ── Quality gate"));
+    expect(runScenario).not.toMatch(/temperature:\s*s\.request\.temperature\s*\?\?\s*0/);
+    expect(runScenario).not.toMatch(/seed:\s*s\.request\.seed\s*\?\?\s*7/);
   });
 });
 

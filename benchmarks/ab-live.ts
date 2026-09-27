@@ -43,12 +43,28 @@
  * separado, saltando los escenarios que no apliquen a ese modelo (ver
  * `Scenario.familia`) y publicando una tabla comparable entre modelos.
  *
- * ENV: BVSALA_AB_SIN_COMPRESOR=1 (mide el SDK TAL COMO SE INSTALA: sin el
- *      compresor del banco, que no viaja en el paquete npm; es la ÚNICA tirada
- *      que `pnpm ab:publish` acepta, ver `sdk.asShipped`),
+ * CUATRO BRAZOS (desde el 2026-09-27): B0 naive, B1 razonable, B2 «nativo bien
+ * configurado» (B1 más los ajustes gratuitos que el proveedor documenta para
+ * esta forma de petición; benchmarks/nativo.ts) y B = la capa. El artefacto
+ * publica el suelo del IC frente a los tres controles (`floors`) y cualquier
+ * cifra tiene que caber bajo el menor.
+ *
+ * ENV (la tabla completa está en benchmarks/README.md):
+ *      por defecto se mide el SDK TAL COMO SE INSTALA (`sdk.asShipped: true`);
+ *      BVSALA_AB_CON_COMPRESOR=1 inyecta el compresor del banco, que npm no trae
+ *      (investigación: `pnpm ab:publish` lo rechaza). BVSALA_AB_SIN_COMPRESOR
+ *      queda obsoleta: `1` solo avisa; cualquier otro valor aborta.
+ *      BVSALA_AB_PRESET=2026 (o 2026+optional) mide los modelos de 2026
+ *      (benchmarks/modelos.ts); incompatible con BVSALA_DEMO_MODEL(S).
+ *      BVSALA_AB_B2=0 apaga B2 (no publicable), BVSALA_AB_B2_EFFORT
+ *      (none|minimal|low|medium|default, `low` por defecto),
+ *      BVSALA_AB_MARGEN_RAZONAMIENTO (tokens de tope extra en modelos que razonan),
+ *      BVSALA_AB_PERMITIR_PRECIO_ILUSTRATIVO=1, BVSALA_AB_OUT_DIR,
  *      BVSALA_AB_REPS (paired reps for generative scenarios), BVSALA_AB_SEED,
- *      BVSALA_DEMO_KEEP_PREFIX, BVSALA_AB_BUDGET_USD (aborta si la estimación de
- *      coste de la tirada lo supera), and optionally a judge endpoint
+ *      BVSALA_DEMO_KEEP_PREFIX, BVSALA_AB_BUDGET_USD (OBLIGATORIO en LIVE: aborta
+ *      si la estimación lo supera y corta la tirada si el gasto real lo pasa),
+ *      endpoints directos por familia BVSALA_DEMO_OPENAI_BASE_URL / _API_KEY y
+ *      BVSALA_DEMO_GOOGLE_BASE_URL / _API_KEY, and optionally a judge endpoint
  *      BVSALA_JUDGE_BASE_URL / _API_KEY / _MODEL for LIVE answer-vs-answer QA.
  */
 import { execSync } from "node:child_process";
@@ -57,7 +73,6 @@ import {
   BV_SALA_VERSION,
   createSavingsLayer,
   OpenAICompatibleProvider,
-  precioDeLista,
   PRECIOS_AL_DIA,
   type CostModel,
   type Provider,
@@ -66,11 +81,13 @@ import {
   TokenizerRegistry,
   registrarTokenizadorExacto,
 } from "../src/index.js";
-import type { ProviderRequest } from "../src/providers/types.js";
+import type { ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import {
   scenarios,
   conSalDeFrio,
   conMuestreoPareado,
+  conMargenDeRazonamiento,
+  muestreoPareadoPara,
   llevaPistaDeLimites,
   estadoDePalanca,
   familiaDeModelo,
@@ -86,12 +103,41 @@ import {
 } from "./scenarios.js";
 import {
   conReintentos,
+  endpointDeModelo,
   proveedorDelBanco,
+  proveedorDelBrazoNativo,
+  sinSecretos,
   transporteDeModelo,
-  type ConfigDeTransporte,
 } from "./transporte.js";
 import { compresorDeRepeticionesLiterales } from "./compresor.js";
-import { construirBrazoNaive, construirBrazoRazonable, DEFINICION_DE_BRAZOS } from "./brazos.js";
+import {
+  construirBrazoNaive,
+  construirBrazoNativo,
+  construirBrazoRazonable,
+  DEFINICION_DE_BRAZOS,
+} from "./brazos.js";
+import {
+  ESFUERZOS_B2,
+  HERRAMIENTAS_SOLO_SIN_RAZONAMIENTO_EN_CHAT,
+  FUENTES,
+  desnudo,
+  planNativo,
+  resumenDelPlan,
+  resumirPlanes,
+  type EsfuerzoB2,
+  type PlanNativo,
+} from "./nativo.js";
+import {
+  costeDeLlamada,
+  escriturasDeLlamada,
+  leerEscrituras,
+  precioYPrima,
+  usoCrudo,
+  MENSAJE_DE_COMPACTACION,
+  PRECIO_ILUSTRATIVO,
+} from "./coste.js";
+import { configDesdeEntorno, modoDe, resolverModelos, veredictoDePrevuelo } from "./modelos.js";
+import { babosaDeModelo } from "./publish-guard.js";
 import { avisoDeTruncado, cortadaPorElTope, veredictoDeCalidad } from "./verja-de-calidad.js";
 import { bootstrapRatioCI, bootstrapRatioCIEstratificado, wilcoxonSignedRankP, mean, type CI } from "./stats.js";
 import { writeReport, writeCsv } from "./report.js";
@@ -110,65 +156,31 @@ function gitCommitCorto(): string {
   }
 }
 
-// ── Real per-model price table (USD per 1K tokens). Public list pricing; the
-// EXACT figures are dated in the report and overridable. Because both arms are
-// priced with the SAME model, any price error cancels in the savings RATIO —
-// only cross-model and cached-rate differences move the percentage.
-const PRICES: Record<string, CostModel> = {
-  "gpt-4o-mini": { inputPer1k: 0.00015, outputPer1k: 0.0006, cachedInputPer1k: 0.000075 },
-  "gpt-4o": { inputPer1k: 0.0025, outputPer1k: 0.01, cachedInputPer1k: 0.00125 },
-  "gpt-4.1-mini": { inputPer1k: 0.0004, outputPer1k: 0.0016, cachedInputPer1k: 0.0001 },
-  "gpt-4.1": { inputPer1k: 0.002, outputPer1k: 0.008, cachedInputPer1k: 0.0005 },
-  // Anthropic. La lectura cacheada cuesta el 10% de la entrada —contra el 50%
-  // de la familia 4o/4.1— y por eso es donde más vale la palanca de la caché de
-  // prefijo. Lo que esta tabla NO puede expresar es la otra mitad del trato: la
-  // ESCRITURA se cobra a 1,25x, así que un escenario con pocos aciertos sale más
-  // caro de lo que este precio sugiere. La verja económica del layer es quien
-  // vigila eso; aquí sólo se tarifa lo que el proveedor reporte.
-  "claude-sonnet-4-5": { inputPer1k: 0.003, outputPer1k: 0.015, cachedInputPer1k: 0.0003 },
-  // Google. Caché IMPLÍCITA con lectura al 10% de la entrada y sin prima de
-  // escritura (verificado 2026-08-24 contra el /models de la pasarela); el resto
-  // de la familia gemini se tarifa desde `pricing/catalogo.ts` vía `precioDeLista`.
-  "gemini-3.7-flash": { inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 },
-};
+// ── Precios: el CATÁLOGO del SDK, y nada más (benchmarks/coste.ts). La tabla
+// local `PRICES` que vivía aquí duplicaba el catálogo con otra fecha y otro
+// criterio; una cifra con dos fuentes acaba teniendo dos valores. Como todos los
+// brazos se tarifan con el MISMO modelo, un error de precio se cancela en el
+// porcentaje salvo en la prima de escritura y la tarifa cacheada — que es
+// justo lo que el catálogo tiene que decir bien.
 const PRICING_NOTE =
-  "USD/1K tokens, illustrative public list pricing; verify against your provider's current rates. " +
-  "Both arms share one price, so the savings % is insensitive to price level.";
-const FALLBACK_PRICE: CostModel = { inputPer1k: 0.00015, outputPer1k: 0.0006, cachedInputPer1k: 0.000075 };
-
-const baseUrl = process.env.BVSALA_DEMO_BASE_URL;
-const apiKey = process.env.BVSALA_DEMO_API_KEY;
-const keepPrefix = !!process.env.BVSALA_DEMO_KEEP_PREFIX;
-const mode: "LIVE" | "MOCK" = baseUrl ? "LIVE" : "MOCK";
-
-/**
- * EL ENDPOINT NATIVO DE ANTHROPIC, OPCIONAL Y APARTE DEL PRINCIPAL.
- *
- * Es aparte porque no es intercambiable: `BVSALA_DEMO_BASE_URL` habla el
- * protocolo de OpenAI (una pasarela, OpenAI, vLLM…) y `AnthropicProvider` habla
- * el de Mensajes. No es «otra URL para lo mismo»: son dos dialectos, y el único
- * de los dos que tiene `cache_control` es el segundo.
- *
- * Quien apunte su endpoint principal directamente a Anthropic pone aquí la MISMA
- * url: el banco elegirá adaptador por familia de modelo y cada escenario irá por
- * donde le corresponde.
- */
-const anthropicBaseUrl = process.env.BVSALA_DEMO_ANTHROPIC_BASE_URL;
+  "USD per 1K tokens: the list prices of the SDK price catalogue (`catalogueDated`), the measured model's own row. " +
+  "Cache writes are billed at the model's write premium (`cacheWrites.premium`), read from the provider's counter. " +
+  "All arms share one price, so the savings % moves only with the cached and cache-write rates.";
 
 /**
  * LOS ENDPOINTS, LEÍDOS DEL ENTORNO UNA SOLA VEZ Y AQUÍ.
  *
  * La decisión que sale de ellos vive en `benchmarks/transporte.ts`, sin entorno
  * y sin red, para que una verja pueda comprobarla sin pagar una tirada. Este
- * objeto es la única frontera con `process.env`.
+ * objeto es la única frontera con `process.env` para los endpoints: pasarela
+ * (`BVSALA_DEMO_BASE_URL`), nativo de Anthropic (`BVSALA_DEMO_ANTHROPIC_*`: la
+ * API de Mensajes, el único dialecto con `cache_control`) y directos por
+ * familia (`BVSALA_DEMO_OPENAI_*`, `BVSALA_DEMO_GOOGLE_*`).
  */
-const CONFIG_DE_TRANSPORTE: ConfigDeTransporte = {
-  baseUrl,
-  apiKey,
-  keepPrefix,
-  anthropicBaseUrl,
-  anthropicApiKey: process.env.BVSALA_DEMO_ANTHROPIC_API_KEY,
-};
+const CONFIG_DE_TRANSPORTE = configDesdeEntorno(process.env);
+/** LIVE si hay CUALQUIER endpoint declarado; sin ninguno, MOCK y lo dice. */
+const mode: "LIVE" | "MOCK" = modoDe(CONFIG_DE_TRANSPORTE);
+const keepPrefix = !!CONFIG_DE_TRANSPORTE.keepPrefix;
 
 /** Por dónde va a hablar el banco con el proveedor PARA ESTE MODELO. */
 const transporteDe = (model: string | null): TransporteDelBanco =>
@@ -183,20 +195,20 @@ const transporteDe = (model: string | null): TransporteDelBanco =>
  * no aplica a un modelo (la caché de prefijo explícita de Anthropic contra un
  * endpoint de OpenAI) se SALTE en vez de medirse mal.
  *
- * Vacío = comportamiento de siempre: cada escenario con el modelo que declara.
+ * `BVSALA_AB_PRESET=2026` mide los modelos de 2026 (benchmarks/modelos.ts).
+ * Vacío todo = comportamiento de siempre: cada escenario con el modelo que declara.
  */
-const modelosPedidos = (process.env.BVSALA_DEMO_MODELS ?? "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-const modeloUnico = process.env.BVSALA_DEMO_MODEL;
+const RESOLUCION = resolverModelos(process.env);
 /** `null` = no se fuerza ningún modelo; manda el de cada escenario. */
-const modelosAMedir: (string | null)[] = modelosPedidos.length
-  ? modelosPedidos
-  : modeloUnico
-    ? [modeloUnico]
-    : [null];
+const modelosAMedir: (string | null)[] = RESOLUCION.modelos;
 const SEED = intEnv("BVSALA_AB_SEED", 1234567);
+/**
+ * Remuestreos del bootstrap: el valor por defecto de `benchmarks/stats.ts`. Se
+ * publica en `config.resamples` para que un tercero recalcule los agregados con
+ * el CSV de ensayos (apps/web/public/measure/reproduce.mjs); la verja
+ * `banco-seco-extremo-a-extremo` comprueba que el recálculo sale idéntico.
+ */
+const REMUESTREOS = 10_000;
 /**
  * Nonce de TIRADA para la sal de frío: la caché de prefijo del proveedor vive
  * minutos, así que sin él la rep N de esta tirada pegaría con la rep N de la
@@ -221,18 +233,50 @@ const QUALITY_FLOOR = Number(process.env.BVSALA_AB_QUALITY_FLOOR ?? 0.999);
 const B1_ACTIVO = process.env.BVSALA_AB_B1 !== "0";
 
 /**
- * ¿MIDE ESTA TIRADA EL SDK TAL COMO SE INSTALA DESDE NPM?
+ * EL TERCER BRAZO DE CONTROL (B2, «nativo bien configurado»), encendido por
+ * defecto: B1 más lo que el proveedor documenta gratis para esta forma de
+ * petición (benchmarks/nativo.ts). Es la comparación con la que va a medirnos
+ * un comprador técnico (informe de competencia, §4.3 y §8 rec. 3). Cuesta una
+ * llamada más por repetición; BVSALA_AB_B2=0 lo apaga, y entonces el artefacto
+ * no se puede publicar.
+ */
+const B2_ACTIVO = process.env.BVSALA_AB_B2 !== "0";
+/** El esfuerzo de razonamiento de B2. `low` por defecto; ver la decisión D3 en el README. */
+const ESFUERZO_B2_CRUDO = (process.env.BVSALA_AB_B2_EFFORT ?? "low").trim();
+const ESFUERZO_B2: EsfuerzoB2 = (ESFUERZOS_B2 as readonly string[]).includes(ESFUERZO_B2_CRUDO)
+  ? (ESFUERZO_B2_CRUDO as EsfuerzoB2)
+  : "low";
+/**
+ * El margen de razonamiento (tokens), declarado por el dueño tras la tirada de
+ * calibración y nunca inventado: 0 por defecto. Ver `conMargenDeRazonamiento`.
+ */
+const MARGEN_RAZONAMIENTO = enteroNoNegativo(process.env.BVSALA_AB_MARGEN_RAZONAMIENTO);
+/** Correr (nunca publicar) un modelo sin fila de catálogo, con el precio ilustrativo. */
+const PERMITIR_ILUSTRATIVO = process.env.BVSALA_AB_PERMITIR_PRECIO_ILUSTRATIVO === "1";
+/** El presupuesto de la tirada: obligatorio en LIVE (lo exige el prevuelo). */
+const PRESUPUESTO = Number(process.env.BVSALA_AB_BUDGET_USD ?? NaN);
+
+/**
+ * ¿MIDE ESTA TIRADA EL SDK TAL COMO SE INSTALA DESDE NPM? Sí, POR DEFECTO.
  *
  * El paquete de npm solo trae `noopCompressor`; el compresor de
  * `benchmarks/compresor.ts` es del banco y no viaja. Con él, el escenario de
  * compresión ahorra lo que un cliente NO puede ahorrar, y el titular de la web
  * del 2026-09-12 (≥ 23,2 %) se midió así: 15,1 % de ahorro en un escenario caro
- * que, con el SDK instalado, no comprime nada. Por eso la decisión se SELLA en
- * el artefacto (`sdk.asShipped`) y `pnpm ab:publish` se niega a publicar un
- * artefacto que no la declare verdadera: el titular solo puede salir de lo que
- * el cliente instala.
+ * que, con el SDK instalado, no comprime nada. Hasta el 2026-09-27 el modo
+ * honesto era el que había que pedir (`BVSALA_AB_SIN_COMPRESOR=1`) y el de
+ * investigación el que salía sin pedir nada. Ahora es al revés: `pnpm ab` mide
+ * lo que el cliente instala, y el compresor del banco hay que pedirlo con
+ * `BVSALA_AB_CON_COMPRESOR=1`. La decisión se SELLA en el artefacto
+ * (`sdk.asShipped`) y `pnpm ab:publish` rechaza cualquier artefacto sin
+ * `asShipped: true`, MOCK incluido.
+ *
+ * `asShipped` depende SOLO de `BVSALA_AB_CON_COMPRESOR`.
  */
-const SDK_TAL_COMO_SE_INSTALA = process.env.BVSALA_AB_SIN_COMPRESOR === "1";
+const CON_COMPRESOR = process.env.BVSALA_AB_CON_COMPRESOR === "1";
+const SDK_TAL_COMO_SE_INSTALA = !CON_COMPRESOR;
+/** La variable antigua: `1` ya es lo que hace el banco; otro valor es un malentendido. */
+const SIN_COMPRESOR_OBSOLETA = process.env.BVSALA_AB_SIN_COMPRESOR || undefined;
 
 /**
  * EL SELLO DEL SDK MEDIDO, el mismo en el artefacto de un modelo y en el
@@ -312,6 +356,12 @@ function intEnv(name: string, def: number): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : def;
 }
 
+/** Un entero ≥ 0 desde una variable; ausente o inválido = 0. */
+function enteroNoNegativo(v: string | undefined): number {
+  const n = v ? Number(v) : NaN;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
 /**
  * Raw provider (Arm A calls this directly, bypassing the layer).
  *
@@ -332,6 +382,87 @@ function intEnv(name: string, def: number): number {
 // de llamadas pagadas (pasó el 2026-08-24, en el cuarto modelo de cuatro).
 const makeProvider = (model: string | null): Provider =>
   conReintentos(proveedorDelBanco(model, CONFIG_DE_TRANSPORTE));
+
+// ── EL GASTO REAL, LLAMADA A LLAMADA ─────────────────────────────────────────
+//
+// La estimación de antes de empezar es un techo SOLO donde el escenario declara
+// su tope de salida: sin tope, un modelo que razona puede escribir lo que
+// quiera. Así que la tirada lleva la cuenta de lo que de verdad gasta —toda
+// llamada al proveedor: sondeo, los cuatro brazos y la amortización; el juez
+// no, y se dice— y se corta en cuanto pasa `BVSALA_AB_BUDGET_USD`.
+
+/** El presupuesto se agotó: el modelo en curso no se publica y los siguientes no se miden. */
+class PresupuestoAgotado extends Error {
+  constructor(readonly gastado: number, readonly presupuesto: number) {
+    super(`running spend ${gastado.toFixed(4)} USD passed BVSALA_AB_BUDGET_USD = ${presupuesto} USD`);
+    this.name = "PresupuestoAgotado";
+  }
+}
+
+const GASTO = {
+  total: 0,
+  /** Llamadas vistas y cuántas trajeron el contador de escritura de caché. */
+  llamadas: 0,
+  informadas: 0,
+  /**
+   * Lo mismo, solo en modelos que PAGAN la escritura a prima (> 1). Es lo que
+   * decide `pricing.cacheWrites.metered`: sin prima, una escritura sin contador
+   * cuesta lo mismo que la entrada normal y no mueve el coste.
+   */
+  llamadasConPrima: 0,
+  informadasConPrima: 0,
+  /** De dónde salió el contador de escritura, llamada a llamada (adaptador, respuesta cruda, ninguno). */
+  fuentes: { adapter: 0, "raw-usage": 0, none: 0 } as Record<"adapter" | "raw-usage" | "none", number>,
+  /** Alguna respuesta traía `usage.iterations` de compactación (ningún brazo la manda). */
+  compactacion: false,
+};
+
+/** Una foto del contador, para restar lo que gastó UN modelo de la tirada. */
+function fotoDelGasto() {
+  return {
+    total: GASTO.total,
+    llamadas: GASTO.llamadas,
+    informadas: GASTO.informadas,
+    llamadasConPrima: GASTO.llamadasConPrima,
+    informadasConPrima: GASTO.informadasConPrima,
+    fuentes: { ...GASTO.fuentes } as Record<string, number>,
+  };
+}
+
+/**
+ * Cuenta el coste de cada llamada que pasa por aquí, sin lanzar nunca: vive
+ * también DENTRO de la capa (brazo B), donde una excepción del banco se
+ * confundiría con un fallo del proveedor. La tirada comprueba presupuesto y
+ * compactación FUERA de la capa, en `comprobarGasto()`.
+ */
+function conContadorDeGasto(p: Provider, model: string): Provider {
+  return {
+    id: p.id,
+    async generate(req) {
+      const resp = await p.generate(req);
+      const { precio, prima } = precioYPrima(model);
+      const e = leerEscrituras(resp);
+      GASTO.total += costeDeLlamada(precio, prima, resp.usage, e.escrituras);
+      GASTO.llamadas++;
+      if (e.informada) GASTO.informadas++;
+      if (prima > 1) {
+        GASTO.llamadasConPrima++;
+        if (e.informada) GASTO.informadasConPrima++;
+      }
+      GASTO.fuentes[e.fuente]++;
+      if (e.compactacion) GASTO.compactacion = true;
+      return resp;
+    },
+  };
+}
+
+/** Para la tirada si se pasó del presupuesto o si apareció una compactación. */
+function comprobarGasto(): void {
+  if (GASTO.compactacion) throw new Error(MENSAJE_DE_COMPACTACION);
+  if (mode === "LIVE" && Number.isFinite(PRESUPUESTO) && GASTO.total > PRESUPUESTO) {
+    throw new PresupuestoAgotado(GASTO.total, PRESUPUESTO);
+  }
+}
 
 const modelId = (r: SavingsRequest, forzado: string | null): string => forzado ?? r.model;
 
@@ -398,8 +529,9 @@ const nuevaCapa = (provider: Provider, model: string, memoriaDeContratos: Set<st
     //
     // Sin esto, el escenario de compresión no comprime NADA y el informe
     // publicaría un 0% que se lee como "la compresión no ahorra".
-    // BVSALA_AB_SIN_COMPRESOR=1 lo omite, y entonces el banco mide EL SDK TAL
-    // COMO SE INSTALA. Es la tirada honesta para la web: `defaults.ts` no
+    // Desde el 2026-09-27 SOLO va con BVSALA_AB_CON_COMPRESOR=1 (investigación):
+    // por defecto el banco mide EL SDK TAL COMO SE INSTALA. Es la tirada honesta
+    // para la web: `defaults.ts` no
     // resuelve ningún compresor y el pipeline avisa por consola de que «se pidió
     // compression pero esta capa no tiene compresor, así que NO se comprime
     // nada» — o sea que el 0 % de ese escenario no es un defecto del banco, es
@@ -414,25 +546,18 @@ const nuevaCapa = (provider: Provider, model: string, memoriaDeContratos: Set<st
   });
 
 /**
- * El precio del modelo, en este orden: la tabla local del banco, el CATÁLOGO DE
- * PRECIOS DE LISTA del SDK y, si tampoco está, el precio ilustrativo.
- *
- * El catálogo en medio es lo que permite medir un modelo que esta tabla no
- * enumera sin que la cifra en dólares se convierta en ficción silenciosa:
- * `precioDeLista` conoce las familias 4o/4.1 y Claude con sus tarifas cacheadas.
- * Cuando ninguno de los dos lo conoce se cae en el precio ilustrativo, y eso el
- * informe lo AVISA — un modelo ausente que se tarifa como si estuviera es
- * exactamente el fallo que documenta `pricing/catalogo.ts`.
+ * El precio del modelo: la fila del PROPIO modelo en el catálogo de precios de
+ * lista del SDK (benchmarks/coste.ts). Sin fila, el precio ilustrativo — y el
+ * prevuelo no deja gastar con él salvo `BVSALA_AB_PERMITIR_PRECIO_ILUSTRATIVO=1`,
+ * y la verja de publicación no deja publicarlo nunca (`pricing.listPriceKnown`).
  */
 function priceFor(model: string): CostModel {
-  const key = model.replace(/^[^/]+\//, "");
-  return PRICES[key] ?? PRICES[model] ?? precioDeLista(model) ?? FALLBACK_PRICE;
+  return precioYPrima(model).precio;
 }
 
-/** ¿El precio de este modelo sale de una tarifa publicada, o del ilustrativo? */
+/** ¿El precio de este modelo sale de su fila del catálogo, o del ilustrativo? */
 function precioConocido(model: string): boolean {
-  const key = model.replace(/^[^/]+\//, "");
-  return !!(PRICES[key] ?? PRICES[model] ?? precioDeLista(model));
+  return precioYPrima(model).conocido;
 }
 
 /**
@@ -459,15 +584,14 @@ interface Usage {
   outputTokens: number;
   cachedInputTokens?: number;
 }
-function cost(model: string, u: Usage): number {
-  const p = priceFor(model);
-  const cached = u.cachedInputTokens ?? 0;
-  const billedInput = Math.max(0, u.inputTokens - cached);
-  return (
-    (billedInput / 1000) * p.inputPer1k +
-    (cached / 1000) * (p.cachedInputPer1k ?? p.inputPer1k) +
-    (u.outputTokens / 1000) * p.outputPer1k
-  );
+/**
+ * El coste de una llamada, con sus ESCRITURAS de caché a la prima del modelo
+ * (1,25× en Anthropic y en GPT-5.6+). Antes se cobraban a 1× en todos los
+ * brazos, y eso escondía justo lo que el modo de caché explícito de B2 ahorra.
+ */
+function cost(model: string, u: Usage, escrituras = 0): number {
+  const { precio, prima } = precioYPrima(model);
+  return costeDeLlamada(precio, prima, u, escrituras);
 }
 
 /**
@@ -500,6 +624,29 @@ function usageOf(res: SavingsResult): Usage {
   };
 }
 
+/** Los contadores facturables de una respuesta cruda del proveedor. */
+function usoDe(resp: ProviderResponse): Usage {
+  return {
+    inputTokens: resp.usage.inputTokens,
+    outputTokens: resp.usage.outputTokens,
+    ...(resp.usage.cachedInputTokens != null ? { cachedInputTokens: resp.usage.cachedInputTokens } : {}),
+  };
+}
+
+/** Tokens de las definiciones de herramientas, en la forma en que viajan por Chat Completions. */
+function tokensDeHerramientas(tools: SavingsRequest["tools"], model: string): number {
+  if (!tools?.length) return 0;
+  return tokensDe(
+    JSON.stringify(
+      tools.map((t) => ({
+        type: "function",
+        function: { name: t.id, description: t.description, parameters: t.parameters ?? {} },
+      })),
+    ),
+    model,
+  );
+}
+
 function safeExpect(s: Scenario, res: SavingsResult): boolean {
   try {
     return s.expect ? s.expect(res) : true;
@@ -521,6 +668,8 @@ interface ScenarioResult {
   armA: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   /** Brazo A1 (B1, integración razonablemente optimizada). Ausente si BVSALA_AB_B1=0. */
   armA1?: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
+  /** Brazo A2 (B2, nativo bien configurado). Ausente si BVSALA_AB_B2=0. */
+  armA2?: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   armB: { meanInputTokens: number; meanOutputTokens: number; meanCost: number };
   measured: {
     inputTokenDeltaMean: number;
@@ -539,6 +688,26 @@ interface ScenarioResult {
     savings: CI;
     wilcoxonP: number;
   };
+  /**
+   * El ahorro de B frente a B2: lo que queda después de TODO lo que el
+   * proveedor da gratis para esta petición. Ausente si BVSALA_AB_B2=0.
+   */
+  measuredB2?: {
+    inputTokenDeltaMean: number;
+    outputTokenDeltaMean: number;
+    savings: CI;
+    wilcoxonP: number;
+  };
+  /** Qué ajustes nativos aplicó B2 en ESTE escenario y cuáles no, con el motivo. */
+  native?: ReturnType<typeof resumenDelPlan>;
+  /** Cuántas respuestas de B2 cumplían el contrato: B2 puede ahorrar contestando peor (esfuerzo bajo). */
+  nativeContractValid?: { valid: number; total: number };
+  /** Tokens de ESCRITURA de caché por brazo (suma de la tirada), a la prima del modelo en el coste. */
+  cacheWrites: { naive: number; razonable?: number; nativo?: number; optimizado: number };
+  /** Tokens de razonamiento oculto por brazo, cuando el proveedor los declara (OpenAI). */
+  reasoningTokens: { naive: number; razonable?: number; nativo?: number; optimizado: number };
+  /** El muestreo que recibieron TODOS los brazos de este escenario. */
+  sampling: { temperature: number | null; seed: number | null };
   /**
    * FORMA DE LA FACTURA del brazo naive: qué fracción del dinero es entrada y
    * qué fracción es salida.
@@ -562,7 +731,7 @@ interface ScenarioResult {
    * del tramo mínimo, le estamos QUITANDO dinero mientras el informe dice que se
    * lo ahorramos. `attribution` solo miraba el brazo optimizado.
    */
-  cacheDePrefijo: { naive: number; razonable?: number; optimizado: number };
+  cacheDePrefijo: { naive: number; razonable?: number; nativo?: number; optimizado: number };
   quality: { gate: string; passed: number; total: number };
   /** Cuántas respuestas del brazo NAIVE cumplían el contrato que se le pidió. */
   naiveContractValid: { valid: number; total: number };
@@ -573,7 +742,7 @@ interface ScenarioResult {
    * 0/8» ilegible en un diagnóstico: la tirada del 2026-08-16 obligó a deducirlo
    * comparando los tokens de salida con el tope, a mano y desde un CSV.
    */
-  truncated: { naive: number; razonable?: number; optimizado: number };
+  truncated: { naive: number; razonable?: number; nativo?: number; optimizado: number };
   /**
    * En cuántas repeticiones la petición del brazo B llevó la PISTA DE LÍMITES
    * de la capa (`JSON limits (not API-enforced): …`). Solo la lleva el B, y
@@ -604,25 +773,37 @@ interface ScenarioResult {
     compressedInputTokens: number;
     providerCachedInputTokens: number;
   };
-  paired: { costA: number; costA1?: number; costB: number }[];
+  paired: { costA: number; costA1?: number; costA2?: number; costB: number }[];
+  /** El plan de B2 de este escenario (interno: se resume en `native` y en el agregado). */
+  planB2?: PlanNativo;
+  /** Escrituras de caché de B2 en las repeticiones SIN breakpoint, y de B0 en esas mismas. */
+  sondaDeModo?: { escriturasB2SinBreakpoint: number; escriturasB0: number; reps: number };
 }
 
 async function runScenario(s: Scenario, forzado: string | null): Promise<ScenarioResult> {
   // El adaptador se elige por el modelo QUE SE VA A PEDIR, así que se instancia
   // después de resolverlo — y el de este escenario puede no ser el forzado.
   const transporte = transporteDe(forzado ?? s.request.model);
-  const provider = makeProvider(forzado ?? s.request.model);
-  // Los dos brazos tienen que muestrear de la MISMA distribución. El brazo A
-  // fijaba temperature:0 y seed:7 (buildNaive) y el B no mandaba ninguno de los
-  // dos, porque el pipeline solo los propaga si vienen en el request. Comparar
-  // así mezcla el efecto de la capa con el del muestreo.
-  const req: SavingsRequest = {
-    ...s.request,
-    ...(forzado ? { model: forzado } : {}),
-    temperature: s.request.temperature ?? 0,
-    seed: s.request.seed ?? 7,
-  };
-  const model = modelId(req, forzado);
+  // Toda llamada de este escenario pasa por el contador de gasto (sondeo,
+  // brazos, amortización): el presupuesto se comprueba con lo que se GASTA.
+  const provider = conContadorDeGasto(makeProvider(forzado ?? s.request.model), forzado ?? s.request.model);
+  const model = modelId(s.request, forzado);
+  // Todos los brazos tienen que muestrear de la MISMA distribución, y cuál es
+  // lo decide el MODELO (`muestreoPareadoPara`): temperature 0 y seed 7 donde se
+  // honran; nada donde el proveedor los rechaza (Claude Sonnet 5: 400) o solo
+  // acepta el suyo (gpt-5, gpt-6). Hasta el 2026-09-27 esta petición fijaba
+  // 0/7 a mano y la primera llamada contra un modelo de 2026 habría sido un
+  // 400. Lo pone `conMuestreoPareado` en `reqDeRep`, para todos los brazos.
+  //
+  // Y el margen de razonamiento va AQUÍ, sobre la petición del escenario, para
+  // que lo reciban los cuatro brazos por igual (el que atraviesa la capa
+  // incluido): solo en modelos que razonan y solo si el dueño lo declaró.
+  const req: SavingsRequest = conMargenDeRazonamiento(
+    { ...s.request, ...(forzado ? { model: forzado } : {}) },
+    model,
+    MARGEN_RAZONAMIENTO,
+  );
+  const muestreo = muestreoPareadoPara(model);
 
   // FRÍO POR CONSTRUCCIÓN. Contra un endpoint que cachea prefijos solo (OpenAI,
   // con cualquier prompt ≥1024 tokens), repetir el prompt idéntico calienta los
@@ -644,11 +825,42 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   // Cada capa de este escenario estrena su memoria de contratos (ver `nuevaCapa`).
   const memoriaNueva = (): Set<string> => new Set<string>();
 
+  // ── EL BRAZO B2 de este escenario ──────────────────────────────────────────
+  // El plan (benchmarks/nativo.ts) depende de la petición: el breakpoint va
+  // donde acaba SU prefijo estable, y la búsqueda de herramientas mira cuántas
+  // herramientas tiene la integración (las de B0) y cuánto pesan sus esquemas.
+  const numHerramientas = req.tools?.length ?? 0;
+  const tokensDeEsquemas = tokensDeHerramientas(req.tools, model);
+  const planPara = (r: ProviderRequest): PlanNativo =>
+    planNativo({
+      modelo: model,
+      transporte,
+      peticion: r,
+      esfuerzo: ESFUERZO_B2,
+      numHerramientas,
+      tokensDeEsquemas,
+      ...(s.toolsB1 ? { noDiferidas: s.toolsB1 } : {}),
+    });
+  // ¿Usa B2 la búsqueda de herramientas del proveedor? Lo decide la regla una
+  // vez por escenario: con ella B2 manda todas las herramientas (el proveedor
+  // elige), sin ella las de B1.
+  const busquedaB2 = B2_ACTIVO
+    ? planPara(construirBrazoRazonable(req, model, s.toolsB1 ? { toolsB1: s.toolsB1 } : {})).decisiones.some(
+        (d) => d.funcion === "toolSearch" && d.aplicada,
+      )
+    : false;
+  const proveedorB2 = B2_ACTIVO
+    ? conContadorDeGasto(proveedorDelBrazoNativo(model, CONFIG_DE_TRANSPORTE, planPara), model)
+    : undefined;
+  let planB2: PlanNativo | undefined;
+  const sondaDeModo = { escriturasB2SinBreakpoint: 0, escriturasB0: 0, reps: 0 };
+
   // Probe the optimized arm once (fresh layer) to classify the scenario.
   // `warm` scenarios demonstrate caching (their value is repeat-traffic, shown
   // in the amortization pass); the COLD headline treats their first call like
   // any ran call so caches honestly read ~0% per single call.
   const probe = await nuevaCapa(provider, model, memoriaNueva()).generate(reqDeRep("sonda"));
+  comprobarGasto();
   const kind: Kind = s.warm
     ? "cache"
     : probe.report.calls.actualLlm === 0
@@ -657,9 +869,10 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
 
   const minReps = kind === "ran" ? REPS : Math.max(2, Math.ceil(REPS / 2));
 
-  const paired: { costA: number; costA1?: number; costB: number }[] = [];
+  const paired: { costA: number; costA1?: number; costA2?: number; costB: number }[] = [];
   const aIn: number[] = [], aOut: number[] = [], bIn: number[] = [], bOut: number[] = [];
   const a1In: number[] = [], a1Out: number[] = [];
+  const a2In: number[] = [], a2Out: number[] = [];
   const fingerprints = new Set<string>();
   // Lo que de verdad hay que garantizar: que los DOS brazos hablaron con el
   // mismo modelo. La verja anterior solo recogía el fingerprint del brazo A y
@@ -673,7 +886,16 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   let naiveTotal = 0;
   let truncadasA = 0;
   let truncadasA1 = 0;
+  let truncadasA2 = 0;
   let truncadasB = 0;
+  let nativoValid = 0;
+  let nativoTotal = 0;
+  // Escrituras de caché y razonamiento oculto por brazo: la prima se cobra en
+  // el coste, y el razonamiento explica una salida larga sin que nadie la vea.
+  const escrituras = { naive: 0, razonable: 0, nativo: 0, optimizado: 0 };
+  const razonamiento = { naive: 0, razonable: 0, nativo: 0, optimizado: 0 };
+  let escriturasEnEstaRep = 0;
+  let razonamientoEnEstaRep = 0;
   /**
    * Envuelve el proveedor para poder ver qué modelo sirvió al brazo B, y si la
    * petición llevaba la pista de límites de la capa: es la única forma de saber
@@ -688,6 +910,11 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
       const resp = await provider.generate(r);
       const m = modeloDe(resp.raw);
       if (m) modelosServidos.add(m);
+      // Las escrituras de TODAS las llamadas de la capa en esta repetición
+      // (sondeo de herramientas, reparación…): el brazo B las paga todas. Sin
+      // lanzar: estamos dentro de la capa (ver `conContadorDeGasto`).
+      escriturasEnEstaRep += leerEscrituras(resp).escrituras;
+      razonamientoEnEstaRep += usoCrudo(resp.raw).razonamiento ?? 0;
       return resp;
     },
   };
@@ -696,6 +923,7 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   // Acumuladores de caché de prefijo, uno por brazo.
   let cacheNaive = 0;
   let cacheRazonable = 0;
+  let cacheNativo = 0;
   let cacheOptimizado = 0;
   let attribution = {
     avoidedCall: probe.report.calls.avoidedLlm > 0,
@@ -713,16 +941,16 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     const reqRep = reqDeRep(String(t));
     // Arm A: naive baseline — a real call, measured.
     const respA = await provider.generate(buildNaive(reqRep, forzado));
+    comprobarGasto();
     const fp = (respA.raw as { system_fingerprint?: string } | undefined)?.system_fingerprint;
     if (fp) fingerprints.add(fp);
     modelosServidos.add(modeloDe(respA.raw) ?? "(sin declarar)");
-    const uA: Usage = {
-      inputTokens: respA.usage.inputTokens,
-      outputTokens: respA.usage.outputTokens,
-      ...(respA.usage.cachedInputTokens != null ? { cachedInputTokens: respA.usage.cachedInputTokens } : {}),
-    };
-    const costA = cost(model, uA);
+    const uA = usoDe(respA);
+    const eA = escriturasDeLlamada(respA);
+    const costA = cost(model, uA, eA.escrituras);
     cacheNaive += uA.cachedInputTokens ?? 0;
+    escrituras.naive += eA.escrituras;
+    razonamiento.naive += usoCrudo(respA.raw).razonamiento ?? 0;
 
     // ¿El brazo naive cumplió de verdad el contrato? Hasta ahora nadie lo
     // comprobaba: se le exigía validez SOLO al brazo optimizado. Pero el layer
@@ -759,29 +987,77 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     if (B1_ACTIVO) {
       const reqRepB1 = reqDeRep(`${t}-b1`);
       const respA1 = await provider.generate(construirBrazoRazonable(reqRepB1, model, { toolsB1: s.toolsB1 }));
+      comprobarGasto();
       modelosServidos.add(modeloDe(respA1.raw) ?? "(sin declarar)");
-      const uA1: Usage = {
-        inputTokens: respA1.usage.inputTokens,
-        outputTokens: respA1.usage.outputTokens,
-        ...(respA1.usage.cachedInputTokens != null ? { cachedInputTokens: respA1.usage.cachedInputTokens } : {}),
-      };
-      costA1 = cost(model, uA1);
+      const uA1 = usoDe(respA1);
+      const eA1 = escriturasDeLlamada(respA1);
+      costA1 = cost(model, uA1, eA1.escrituras);
       cacheRazonable += uA1.cachedInputTokens ?? 0;
+      escrituras.razonable += eA1.escrituras;
+      razonamiento.razonable += usoCrudo(respA1.raw).razonamiento ?? 0;
       a1In.push(uA1.inputTokens); a1Out.push(uA1.outputTokens);
       if (cortadaPorElTope(respA1.finishReason)) truncadasA1++;
+    }
+
+    // Arm A2 (B2, «nativo bien configurado»): B1 más los ajustes gratuitos que
+    // el proveedor documenta para esta forma de petición, puestos en el cable
+    // por el mismo adaptador (benchmarks/nativo.ts). SAL PROPIA, por lo mismo
+    // que A1: con la de A o la de A1 heredaría la caché que ellos acaban de
+    // escribir, y eso no es la integración nativa, es la petición de un segundo
+    // antes. Su contrato se valida como el del naive: B2 puede abaratar
+    // contestando peor (esfuerzo bajo), y eso cuenta EN CONTRA nuestra.
+    let costA2: number | undefined;
+    if (proveedorB2) {
+      const reqRepB2 = reqDeRep(`${t}-b2`);
+      const peticionB2 = construirBrazoNativo(reqRepB2, model, {
+        ...(s.toolsB1 ? { toolsB1: s.toolsB1 } : {}),
+        busquedaDeHerramientas: busquedaB2,
+      });
+      const planDeEstaRep = planPara(peticionB2);
+      planB2 ??= planDeEstaRep;
+      const respA2 = await proveedorB2.generate(peticionB2);
+      comprobarGasto();
+      modelosServidos.add(modeloDe(respA2.raw) ?? "(sin declarar)");
+      const uA2 = usoDe(respA2);
+      const eA2 = escriturasDeLlamada(respA2);
+      costA2 = cost(model, uA2, eA2.escrituras);
+      cacheNativo += uA2.cachedInputTokens ?? 0;
+      escrituras.nativo += eA2.escrituras;
+      razonamiento.nativo += usoCrudo(respA2.raw).razonamiento ?? 0;
+      a2In.push(uA2.inputTokens); a2Out.push(uA2.outputTokens);
+      if (cortadaPorElTope(respA2.finishReason)) truncadasA2++;
+      if (req.response?.schema) {
+        nativoTotal++;
+        const p = tryParseJson(respA2.text);
+        if (p !== undefined && validateAgainstSchema(p, req.response.schema).valid) nativoValid++;
+      }
+      // ¿Llegó el modo explícito al proveedor? En una repetición sin breakpoint,
+      // B2 no debería escribir caché; B0 (implícito) sí, si el prompt pasa del
+      // mínimo. Se acumula y se juzga a nivel de modelo (`native.honored`).
+      const o = planDeEstaRep.cable.openai;
+      if (o?.promptCacheMode && o.breakpointEnMensaje == null) {
+        sondaDeModo.escriturasB2SinBreakpoint += eA2.escrituras;
+        sondaDeModo.escriturasB0 += eA.escrituras;
+        sondaDeModo.reps++;
+      }
     }
 
     // Arm B: BV-SALA optimized — a COLD run (fresh layer) so caching is never
     // secretly pre-warmed for the headline. Avoided calls cost $0 (real).
     pistaEnEstaRep = false;
+    escriturasEnEstaRep = 0;
+    razonamientoEnEstaRep = 0;
     const resB = await nuevaCapa(espia, model, memoriaNueva()).generate(reqRep);
+    comprobarGasto();
     if (pistaEnEstaRep) repsConPista++;
     const uB = usageOf(resB);
     cacheOptimizado += uB.cachedInputTokens ?? 0;
+    escrituras.optimizado += escriturasEnEstaRep;
+    razonamiento.optimizado += razonamientoEnEstaRep;
     const ran = resB.report.calls.actualLlm > 0;
-    const costB = ran ? cost(model, uB) : 0;
+    const costB = ran ? cost(model, uB, escriturasEnEstaRep) : 0;
 
-    paired.push({ costA, ...(costA1 != null ? { costA1 } : {}), costB });
+    paired.push({ costA, ...(costA1 != null ? { costA1 } : {}), ...(costA2 != null ? { costA2 } : {}), costB });
     aIn.push(uA.inputTokens); aOut.push(uA.outputTokens);
     bIn.push(uB.inputTokens); bOut.push(uB.outputTokens);
 
@@ -816,9 +1092,20 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   // enough or the cap is hit — spend more reps only where variance demands it.
   let t = 0;
   for (; t < minReps; t++) await sampleOnce(t);
-  const ciHalf = (): number => {
-    const ci = bootstrapRatioCI(paired.map((p) => p.costA), paired.map((p) => p.costB), { seed: SEED });
+  // EL MÁS ANCHO de los intervalos activos manda: el titular publicable es el
+  // MENOR de los suelos (frente a B0, B1 y B2), así que su precisión no puede
+  // depender de contra cuál se decidió parar. La cota dura (`MAX_REPS`) es la
+  // misma, así que el techo de la estimación no cambia.
+  const semiancho = (a: number[], b: number[]): number => {
+    const ci = bootstrapRatioCI(a, b, { seed: SEED });
     return (ci.upper - ci.lower) / 2;
+  };
+  const ciHalf = (): number => {
+    const costB = paired.map((p) => p.costB);
+    let h = semiancho(paired.map((p) => p.costA), costB);
+    if (B1_ACTIVO) h = Math.max(h, semiancho(paired.map((p) => p.costA1 ?? 0), costB));
+    if (B2_ACTIVO) h = Math.max(h, semiancho(paired.map((p) => p.costA2 ?? 0), costB));
+    return h;
   };
   while (mode === "LIVE" && paired.length < MAX_REPS && ciHalf() > CI_TARGET) {
     await sampleOnce(t++);
@@ -844,9 +1131,30 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
     ...(B1_ACTIVO
       ? { armA1: { meanInputTokens: mean(a1In), meanOutputTokens: mean(a1Out), meanCost: mean(paired.map((p) => p.costA1 ?? 0)) } }
       : {}),
+    ...(B2_ACTIVO
+      ? { armA2: { meanInputTokens: mean(a2In), meanOutputTokens: mean(a2Out), meanCost: mean(paired.map((p) => p.costA2 ?? 0)) } }
+      : {}),
     armB: { meanInputTokens: mean(bIn), meanOutputTokens: mean(bOut), meanCost: mean(paired.map((p) => p.costB)) },
     formaFactura: repartoDeLaFactura(model, mean(aIn), mean(aOut)),
-    cacheDePrefijo: { naive: cacheNaive, ...(B1_ACTIVO ? { razonable: cacheRazonable } : {}), optimizado: cacheOptimizado },
+    cacheDePrefijo: {
+      naive: cacheNaive,
+      ...(B1_ACTIVO ? { razonable: cacheRazonable } : {}),
+      ...(B2_ACTIVO ? { nativo: cacheNativo } : {}),
+      optimizado: cacheOptimizado,
+    },
+    cacheWrites: {
+      naive: escrituras.naive,
+      ...(B1_ACTIVO ? { razonable: escrituras.razonable } : {}),
+      ...(B2_ACTIVO ? { nativo: escrituras.nativo } : {}),
+      optimizado: escrituras.optimizado,
+    },
+    reasoningTokens: {
+      naive: razonamiento.naive,
+      ...(B1_ACTIVO ? { razonable: razonamiento.razonable } : {}),
+      ...(B2_ACTIVO ? { nativo: razonamiento.nativo } : {}),
+      optimizado: razonamiento.optimizado,
+    },
+    sampling: { temperature: muestreo.temperature ?? null, seed: muestreo.seed ?? null },
     measured: {
       inputTokenDeltaMean: mean(aIn) - mean(bIn),
       outputTokenDeltaMean: mean(aOut) - mean(bOut),
@@ -863,9 +1171,27 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
           },
         }
       : {}),
+    ...(B2_ACTIVO
+      ? {
+          measuredB2: {
+            inputTokenDeltaMean: mean(a2In) - mean(bIn),
+            outputTokenDeltaMean: mean(a2Out) - mean(bOut),
+            savings: bootstrapRatioCI(paired.map((p) => p.costA2 ?? 0), paired.map((p) => p.costB), { seed: SEED }),
+            wilcoxonP: wilcoxonSignedRankP(paired.map((p) => (p.costA2 ?? 0) - p.costB)),
+          },
+          ...(planB2 ? { native: resumenDelPlan(planB2), planB2 } : {}),
+          nativeContractValid: { valid: nativoValid, total: nativoTotal },
+          sondaDeModo,
+        }
+      : {}),
     quality: { gate, passed: qPass, total: reps },
     naiveContractValid: { valid: naiveValid, total: naiveTotal },
-    truncated: { naive: truncadasA, ...(B1_ACTIVO ? { razonable: truncadasA1 } : {}), optimizado: truncadasB },
+    truncated: {
+      naive: truncadasA,
+      ...(B1_ACTIVO ? { razonable: truncadasA1 } : {}),
+      ...(B2_ACTIVO ? { nativo: truncadasA2 } : {}),
+      optimizado: truncadasB,
+    },
     pistaDeLimites: { reps: repsConPista, total: reps },
     proven: mode === "LIVE" && savings.lower > 0 && qualityOk && modelStable,
     modelStable,
@@ -879,12 +1205,17 @@ async function runScenario(s: Scenario, forzado: string | null): Promise<Scenari
   if (kind === "cache") {
     // Una capa para el par miss/hit (el valor de la caché ES el estado que
     // sobrevive entre las dos llamadas), con el mismo muestreo que los brazos.
-    const layer = nuevaCapa(provider, model, memoriaNueva());
+    // El espía de B también aquí: la amortización paga sus escrituras de caché.
+    const layer = nuevaCapa(espia, model, memoriaNueva());
     const reqAmortizacion = conMuestreoPareado(req);
+    escriturasEnEstaRep = 0;
     const miss = await layer.generate(reqAmortizacion); // cold miss (real optimized cost)
-    const coldMissCost = miss.report.calls.actualLlm > 0 ? cost(model, usageOf(miss)) : 0;
+    comprobarGasto();
+    const coldMissCost = miss.report.calls.actualLlm > 0 ? cost(model, usageOf(miss), escriturasEnEstaRep) : 0;
+    escriturasEnEstaRep = 0;
     const hit = await layer.generate(reqAmortizacion); // warmed → hit
-    const hitCost = hit.report.calls.actualLlm > 0 ? cost(model, usageOf(hit)) : 0;
+    comprobarGasto();
+    const hitCost = hit.report.calls.actualLlm > 0 ? cost(model, usageOf(hit), escriturasEnEstaRep) : 0;
     // The hit must actually be a cache hit AND satisfy the scenario's own
     // correctness assertion — a saving on a stale/wrong cached answer is void.
     const hitVerified = hit.report.calls.actualLlm === 0 && safeExpect(s, hit);
@@ -952,8 +1283,9 @@ async function judgeEquivalent(a: string, b: string, s: Scenario, model: string)
   const flip = (s.name.length + a.length) % 2 === 0;
   const one = flip ? b : a;
   const two = flip ? a : b;
+  const modeloJuez = process.env.BVSALA_JUDGE_MODEL ?? model;
   const res = await judgeProvider.generate({
-    model: process.env.BVSALA_JUDGE_MODEL ?? model,
+    model: modeloJuez,
     messages: [
       { role: "system", content: "You are a strict evaluator. Reply ONLY with compact JSON {\"equivalent\":bool}." },
       { role: "user", content:
@@ -962,7 +1294,9 @@ async function judgeEquivalent(a: string, b: string, s: Scenario, model: string)
         `Is Response ${flip ? "1" : "2"} at least as correct and complete as the other, with no factual regression? JSON only.` },
     ],
     maxOutputTokens: 20,
-    temperature: 0,
+    // Solo donde el modelo la honra: a Claude Sonnet 5 o a la familia gpt-5 un
+    // `temperature: 0` les cuesta un 400 y el juez caería siempre a estructural.
+    ...(muestreoPareadoPara(modeloJuez).temperature != null ? { temperature: 0 } : {}),
   });
   try {
     return !!JSON.parse(res.text.trim()).equivalent;
@@ -1028,9 +1362,49 @@ function repartirEscenarios(modelo: string | null): {
       });
       continue;
     }
-    // 2. ¿Puede el transporte configurado ejercitar su palanca? El modelo que
+    // 2. ¿Hay endpoint para la familia de este modelo? Con un modelo forzado el
+    //    prevuelo ya abortó si no lo hay; sin él (cada escenario con su modelo)
+    //    el escenario se declara no medible, con qué declarar para medirlo.
+    const modeloDelEscenario = modelo ?? s.request.model;
+    if (!endpointDeModelo(modeloDelEscenario, CONFIG_DE_TRANSPORTE)) {
+      noAplican.push({
+        name: s.name,
+        lever: s.lever,
+        causa: "transporte",
+        motivo: `no endpoint is declared for the family of ${modeloDelEscenario}`,
+        comoMedirlo:
+          "declare the direct endpoint of that family (BVSALA_DEMO_OPENAI_BASE_URL, BVSALA_DEMO_ANTHROPIC_BASE_URL or " +
+          "BVSALA_DEMO_GOOGLE_BASE_URL, each with its _API_KEY) or the gateway (BVSALA_DEMO_BASE_URL)",
+      });
+      continue;
+    }
+    // 3. ¿Admite este modelo, por este transporte, la FORMA de la petición? La
+    //    página de gpt-6-luna dice que Chat Completions solo acepta `tools` con
+    //    `reasoning_effort: "none"`. B0 manda el esfuerzo por defecto y el SDK
+    //    no sabe mandar otro, así que el escenario no se puede medir aquí sin
+    //    cambiar lo que mide: se declara, con su fuente, en vez de romper el
+    //    modelo entero a mitad de una tirada pagada.
+    const transporteDelEscenario = transporteDe(modeloDelEscenario);
+    const idDesnudo = desnudo(modeloDelEscenario);
+    if (
+      transporteDelEscenario === "openai-compatible" &&
+      (s.request.tools?.length ?? 0) > 0 &&
+      HERRAMIENTAS_SOLO_SIN_RAZONAMIENTO_EN_CHAT.some((k) => idDesnudo === k || idDesnudo.startsWith(`${k}-`))
+    ) {
+      const motivo =
+        `${idDesnudo}: Chat Completions supports function calling only with reasoning_effort "none" ` +
+        `(${FUENTES.gpt6Luna.url}, checked ${FUENTES.gpt6Luna.consultado}); arm B0 sends the default effort and the SDK ` +
+        "cannot send another, so this request shape is not measurable on this transport";
+      const comoMedirlo =
+        "measure it through the Responses API (not supported by the SDK's adapter today: a product change), or " +
+        "on a model without this restriction";
+      if (s.palanca) noMedibles.push({ palanca: s.palanca, escenario: s.name, motivo, comoMedirla: comoMedirlo });
+      noAplican.push({ name: s.name, lever: s.lever, causa: "transporte", motivo, comoMedirlo });
+      continue;
+    }
+    // 4. ¿Puede el transporte configurado ejercitar su palanca? El modelo que
     //    manda es el de la tirada si lo hay, y si no el que declara el escenario.
-    const noMedible = noMedibleEnTransporte(s, transporteDe(modelo ?? s.request.model));
+    const noMedible = noMedibleEnTransporte(s, transporteDelEscenario);
     if (noMedible) {
       noMedibles.push(noMedible);
       noAplican.push({
@@ -1064,6 +1438,8 @@ function repartirEscenarios(modelo: string | null): {
  */
 interface EstimacionDeEscenario {
   escenario: string;
+  /** Sin `maxOutputTokens` declarado: la salida no tiene tope y esto NO es un techo. */
+  sinTope: boolean;
   /** Tokens de entrada por llamada, tal y como sale el brazo naive. */
   entradaTokens: number;
   /** Techo de tokens de salida por llamada. */
@@ -1087,7 +1463,7 @@ function tokensDe(texto: string, model: string): number {
 }
 
 function estimarEscenario(s: Scenario, model: string): EstimacionDeEscenario {
-  const p = priceFor(model);
+  const { precio: p, prima } = precioYPrima(model);
   let entrada = tokensDe(s.request.messages.map((m) => m.content).join("\n"), model);
   if (s.request.structuredData !== undefined) {
     entrada += tokensDe(JSON.stringify(s.request.structuredData), model);
@@ -1106,12 +1482,16 @@ function estimarEscenario(s: Scenario, model: string): EstimacionDeEscenario {
   // El contrato viaja en `response_format` en LOS DOS brazos.
   if (s.request.response?.schema) entrada += tokensDe(JSON.stringify(s.request.response.schema), model);
 
-  const salida = s.request.response?.maxOutputTokens ?? 256;
+  // El tope que de verdad llevará la petición: con el margen de razonamiento,
+  // si el modelo razona y el dueño lo declaró (`conMargenDeRazonamiento`).
+  const tope = conMargenDeRazonamiento({ ...s.request, model }, model, MARGEN_RAZONAMIENTO).response?.maxOutputTokens;
+  const salida = tope ?? 256;
 
   // Llamadas: 1 sondeo de clasificación (brazo B) + por repetición un brazo A y
   // un brazo B; `toolDiscovery` puede partir el brazo B en dos; los escenarios de
   // caché añaden el par fallo-frío/acierto de la amortización.
-  const porRepeticion = 2 + (B1_ACTIVO ? 1 : 0) + (s.request.savings?.toolDiscovery === true ? 1 : 0);
+  const porRepeticion =
+    2 + (B1_ACTIVO ? 1 : 0) + (B2_ACTIVO ? 1 : 0) + (s.request.savings?.toolDiscovery === true ? 1 : 0);
   const extraCache = s.warm ? 2 : 0;
   // Los escenarios de caché tiran la mitad de repeticiones; los resolvers
   // también, pero eso no se sabe hasta ejecutarlos, así que se les cuenta la
@@ -1121,9 +1501,12 @@ function estimarEscenario(s: Scenario, model: string): EstimacionDeEscenario {
   const llamadasMinimo = 1 + extraCache + minimo * porRepeticion;
   const llamadasTecho = 1 + extraCache + MAX_REPS * porRepeticion;
 
-  const porLlamada = (entrada / 1000) * p.inputPer1k + (salida / 1000) * p.outputPer1k;
+  // La entrada a la prima de escritura: en el peor caso cada llamada escribe
+  // su prompt entero en la caché (1,25× en Anthropic y GPT-5.6+).
+  const porLlamada = (entrada / 1000) * p.inputPer1k * Math.max(1, prima) + (salida / 1000) * p.outputPer1k;
   return {
     escenario: s.name,
+    sinTope: tope == null,
     entradaTokens: entrada,
     salidaTokens: salida,
     llamadasMinimo,
@@ -1133,24 +1516,25 @@ function estimarEscenario(s: Scenario, model: string): EstimacionDeEscenario {
   };
 }
 
+/** La estimación de UN modelo de la tirada (la misma que se imprime antes de gastar). */
+function estimarModelo(modelo: string | null): EstimacionDeModelo {
+  const { aplican } = repartirEscenarios(modelo);
+  // Sin modelo forzado cada escenario lleva el suyo, así que la estimación se
+  // hace escenario a escenario con su propio precio.
+  const filas = aplican.map((s) => estimarEscenario(s, modelo ?? s.request.model));
+  return {
+    modelo: modelo ?? "(el de cada escenario)",
+    precioConocido: modelo
+      ? precioConocido(modelo)
+      : aplican.every((s) => precioConocido(s.request.model)),
+    escenarios: filas,
+    costeMinimo: filas.reduce((n, f) => n + f.costeMinimo, 0),
+    costeTecho: filas.reduce((n, f) => n + f.costeTecho, 0),
+  };
+}
+
 function estimarTirada(): EstimacionDeModelo[] {
-  const out: EstimacionDeModelo[] = [];
-  for (const modelo of modelosAMedir) {
-    const { aplican } = repartirEscenarios(modelo);
-    // Sin modelo forzado cada escenario lleva el suyo, así que la estimación se
-    // hace escenario a escenario con su propio precio.
-    const filas = aplican.map((s) => estimarEscenario(s, modelo ?? s.request.model));
-    out.push({
-      modelo: modelo ?? "(el de cada escenario)",
-      precioConocido: modelo
-        ? precioConocido(modelo)
-        : aplican.every((s) => precioConocido(s.request.model)),
-      escenarios: filas,
-      costeMinimo: filas.reduce((n, f) => n + f.costeMinimo, 0),
-      costeTecho: filas.reduce((n, f) => n + f.costeTecho, 0),
-    });
-  }
-  return out;
+  return modelosAMedir.map(estimarModelo);
 }
 
 function imprimirEstimacion(est: EstimacionDeModelo[]): number {
@@ -1159,9 +1543,11 @@ function imprimirEstimacion(est: EstimacionDeModelo[]): number {
   console.log("\nCoste estimado de la tirada (techo: salida al tope, brazo B como el A, reps a la cota dura)");
   for (const e of est) {
     const aviso = e.precioConocido ? "" : "   ⚠ precio ILUSTRATIVO: este modelo no está en el catálogo";
+    const sinTope = e.escenarios.filter((x) => x.sinTope).length;
     console.log(
       `  ${pad(e.modelo, 34)} ${padL(dinero4(e.costeMinimo), 10)} – ${padL(dinero4(e.costeTecho), 10)}` +
-        `   ${e.escenarios.length} escenarios${aviso}`,
+        `   ${e.escenarios.length} escenarios${aviso}` +
+        (sinTope ? `   (${sinTope} sin tope de salida: ahí no es un techo)` : ""),
     );
   }
   if (est.length > 1) console.log(`  ${pad("TOTAL", 34)} ${padL(dinero4(totalMin), 10)} – ${padL(dinero4(totalMax), 10)}`);
@@ -1215,6 +1601,15 @@ interface Tirada {
   /** El agregado frente a B1 (integración razonable). Ausente si BVSALA_AB_B1=0. */
   aggB1?: CI;
   provenB1?: boolean;
+  /** Frente a B2 (nativo bien configurado), y B2 frente a B0. Ausentes si BVSALA_AB_B2=0. */
+  aggB2?: CI;
+  provenB2?: boolean;
+  aggNativoVsB0?: CI;
+  /** Los suelos del IC frente a cada brazo de control, y el menor. */
+  floors: { vsB0: number; vsB1: number | null; vsB2: number | null; min: number; minAgainst: string; note: string };
+  /** Lo que B2 decidió en este modelo (público, en inglés). */
+  nativo?: Record<string, unknown>;
+  coste: Record<string, unknown>;
   wilcoxonP: number;
   qualityPassRate: number;
   proven: boolean;
@@ -1230,38 +1625,46 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   const etiqueta = modelo ?? "(el de cada escenario)";
   const { aplican, noAplican, noMedibles } = repartirEscenarios(modelo);
 
+  const gastoAlEmpezar = fotoDelGasto();
   console.log(`\n╭─ modelo: ${etiqueta}`);
+  const ancho = 132 + (B1_ACTIVO ? 34 : 0) + (B2_ACTIVO ? 50 : 0);
+  const cabeceraCache = ["A", ...(B1_ACTIVO ? ["A1"] : []), ...(B2_ACTIVO ? ["A2"] : []), "B"].join("/");
   console.log(
     pad("scenario", 26) + pad("kind", 9) + padL("A in/out tok", 16) +
-    (B1_ACTIVO ? padL("A1 in/out tok", 16) : "") + padL("B in/out tok", 16) +
-    padL("bill in/out", 14) + padL(B1_ACTIVO ? "cached A/A1/B" : "cached A/B", 14) +
-    padL("vs B0 (95% lo)", 20) + (B1_ACTIVO ? padL("vs B1 (95% lo)", 20) : "") + padL("qa", 8),
+    (B1_ACTIVO ? padL("A1 in/out tok", 16) : "") + (B2_ACTIVO ? padL("A2 in/out tok", 16) : "") +
+    padL("B in/out tok", 16) +
+    padL("bill in/out", 14) + padL(`cached ${cabeceraCache}`, 18) +
+    padL("vs B0 (95% lo)", 20) + (B1_ACTIVO ? padL("vs B1 (95% lo)", 20) : "") +
+    (B2_ACTIVO ? padL("vs B2 (95% lo)", 20) : "") + padL("qa", 8),
   );
-  console.log("─".repeat(B1_ACTIVO ? 166 : 132));
+  console.log("─".repeat(ancho));
 
   const results: ScenarioResult[] = [];
   for (const s of aplican) results.push(await runScenario(s, modelo));
 
   for (const r of results) {
     const qa = `${r.quality.passed}/${r.quality.total}`;
+    const cache = [
+      r.cacheDePrefijo.naive,
+      ...(r.cacheDePrefijo.razonable != null ? [r.cacheDePrefijo.razonable] : []),
+      ...(r.cacheDePrefijo.nativo != null ? [r.cacheDePrefijo.nativo] : []),
+      r.cacheDePrefijo.optimizado,
+    ].join("/");
     console.log(
       pad(r.name, 26) + pad(r.kind, 9) +
       padL(`${r.armA.meanInputTokens.toFixed(0)}/${r.armA.meanOutputTokens.toFixed(0)}`, 16) +
       (r.armA1 ? padL(`${r.armA1.meanInputTokens.toFixed(0)}/${r.armA1.meanOutputTokens.toFixed(0)}`, 16) : "") +
+      (r.armA2 ? padL(`${r.armA2.meanInputTokens.toFixed(0)}/${r.armA2.meanOutputTokens.toFixed(0)}`, 16) : "") +
       padL(`${r.armB.meanInputTokens.toFixed(0)}/${r.armB.meanOutputTokens.toFixed(0)}`, 16) +
       padL(`${(r.formaFactura.entrada * 100).toFixed(0)}/${(r.formaFactura.salida * 100).toFixed(0)}`, 14) +
-      padL(
-        r.cacheDePrefijo.razonable != null
-          ? `${r.cacheDePrefijo.naive}/${r.cacheDePrefijo.razonable}/${r.cacheDePrefijo.optimizado}`
-          : `${r.cacheDePrefijo.naive}/${r.cacheDePrefijo.optimizado}`,
-        14,
-      ) +
+      padL(cache, 18) +
       padL(`${pct(r.measured.savings.point)} (${pct(r.measured.savings.lower)})`, 20) +
       (r.measuredB1 ? padL(`${pct(r.measuredB1.savings.point)} (${pct(r.measuredB1.savings.lower)})`, 20) : "") +
+      (r.measuredB2 ? padL(`${pct(r.measuredB2.savings.point)} (${pct(r.measuredB2.savings.lower)})`, 20) : "") +
       padL(qa, 8),
     );
   }
-  console.log("─".repeat(B1_ACTIVO ? 166 : 132));
+  console.log("─".repeat(ancho));
 
   // LA SEÑAL QUE DECIDE SI ESTE BANCO PUEDE VER LA PALANCA MAYOR DE LA ENTRADA.
   // Si ningún escenario consigue que el proveedor devuelva `cached_tokens > 0`,
@@ -1332,6 +1735,51 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   const wPB1 = aggB1 ? wilcoxonSignedRankP(parejasB1.map((p) => p.costA1! - p.costB)) : undefined;
   const provenB1 = aggB1 ? mode === "LIVE" && aggB1.lower > 0 && qualityPassRate >= QUALITY_FLOOR && allFpStable : undefined;
 
+  // EL MISMO TITULAR, FRENTE A B2 («nativo bien configurado»): lo que queda
+  // después de todo lo que el proveedor da gratis para estas peticiones. Mismo
+  // estimador, mismas parejas, misma verja de calidad del brazo B.
+  const parejasB2 = results.flatMap((r) => r.paired).filter((p) => p.costA2 != null);
+  const estratosB2 = results.map((r) => {
+    const conB2 = r.paired.filter((p) => p.costA2 != null);
+    return { costA: conB2.map((p) => p.costA2!), costB: conB2.map((p) => p.costB) };
+  });
+  const aggB2 = B2_ACTIVO && parejasB2.length ? bootstrapRatioCIEstratificado(estratosB2, { seed: SEED }) : undefined;
+  const wPB2 = aggB2 ? wilcoxonSignedRankP(parejasB2.map((p) => p.costA2! - p.costB)) : undefined;
+  const provenB2 = aggB2 ? mode === "LIVE" && aggB2.lower > 0 && qualityPassRate >= QUALITY_FLOOR && allFpStable : undefined;
+  // Y LO QUE AHORRA EL PROVEEDOR SOLO: B2 frente a B0. No es una cifra de
+  // BV-SALA —es el descuento que cualquiera obtiene leyendo la documentación—,
+  // y por eso se publica aparte y con esa etiqueta.
+  const aggNativoVsB0 = aggB2
+    ? bootstrapRatioCIEstratificado(
+        results.map((r) => {
+          const conB2 = r.paired.filter((p) => p.costA2 != null);
+          return { costA: conB2.map((p) => p.costA), costB: conB2.map((p) => p.costA2!) };
+        }),
+        { seed: SEED },
+      )
+    : undefined;
+
+  // LOS SUELOS: la cota inferior del IC frente a cada brazo de control, y el
+  // MENOR. Cualquier cifra que se publique tiene que caber bajo `min`: prometer
+  // solo contra la base más favorable es elegir la comparación que más enseña.
+  const suelos: { brazo: "B0" | "B1" | "B2"; lower: number }[] = [
+    { brazo: "B0", lower: agg.lower },
+    ...(aggB1 ? [{ brazo: "B1" as const, lower: aggB1.lower }] : []),
+    ...(aggB2 ? [{ brazo: "B2" as const, lower: aggB2.lower }] : []),
+  ];
+  const menor = Math.min(...suelos.map((x) => x.lower));
+  // Ante un empate, el control más fuerte: B2, luego B1, luego B0.
+  const contraQuien = [...suelos].reverse().find((x) => x.lower === menor)!.brazo;
+  const floors = {
+    vsB0: agg.lower,
+    vsB1: aggB1 ? aggB1.lower : null,
+    vsB2: aggB2 ? aggB2.lower : null,
+    min: menor,
+    minAgainst: contraQuien,
+    note:
+      "95% CI lower bounds of the same stratified estimator against each control arm. Any claim must fit under `min`.",
+  };
+
   // Per-ledger attribution. Each scenario maps to exactly ONE ledger, so the
   // ledger cost-deltas PARTITION the total delta — double-counting is impossible
   // by construction, and the reconciliation residual below proves it.
@@ -1366,6 +1814,23 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       })
     : undefined;
 
+  const ledgerRollupB2: FilaDeLibro[] | undefined = aggB2
+    ? LEDGERS.map((lg) => {
+        const rs = results.filter((r) => r.ledger === lg);
+        const ps = rs.flatMap((r) => r.paired).filter((p) => p.costA2 != null);
+        const a = ps.map((p) => p.costA2!);
+        const b = ps.map((p) => p.costB);
+        const ci = bootstrapRatioCI(a, b, { seed: SEED });
+        return {
+          ledger: lg,
+          scenarios: rs.map((r) => r.name),
+          savings: ci,
+          deltaCost: sumArr(a) - sumArr(b),
+          proven: mode === "LIVE" && ci.lower > 0 && rs.length > 0 && rs.every((r) => r.quality.passed === r.quality.total && r.modelStable),
+        };
+      })
+    : undefined;
+
   // Reconciliation: (Σ ledger deltas) + (the "none"/setup bucket) must equal the
   // total measured delta, to the cent. A non-zero residual means a bug.
   const totalDelta = sumArr(allA) - sumArr(allB);
@@ -1386,6 +1851,116 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     const residualB1 = totalB1 - sumaB1;
     reconciliationB1 = { totalDelta: totalB1, ledgerSum: sumaB1, residual: residualB1, reconciled: Math.abs(residualB1) < 1e-9 };
   }
+  // Y frente a B2: la misma partición tiene que cuadrar.
+  let reconciliationB2: { totalDelta: number; ledgerSum: number; residual: number; reconciled: boolean } | undefined;
+  if (ledgerRollupB2) {
+    const totalB2 = sumArr(parejasB2.map((p) => p.costA2!)) - sumArr(parejasB2.map((p) => p.costB));
+    const noneB2 = noneRs.flatMap((r) => r.paired).filter((p) => p.costA2 != null);
+    const noneDeltaB2 = sumArr(noneB2.map((p) => p.costA2!)) - sumArr(noneB2.map((p) => p.costB));
+    const sumaB2 = ledgerRollupB2.reduce((n, l) => n + l.deltaCost, 0) + noneDeltaB2;
+    const residualB2 = totalB2 - sumaB2;
+    reconciliationB2 = { totalDelta: totalB2, ledgerSum: sumaB2, residual: residualB2, reconciled: Math.abs(residualB2) < 1e-9 };
+  }
+
+  // ── B2: sus decisiones a nivel de modelo, y si el modo de caché llegó ──────
+  const planes = results.filter((r) => r.planB2).map((r) => ({ escenario: r.name, plan: r.planB2! }));
+  const decisionesB2 = resumirPlanes(planes);
+  const transportesB2 = [...new Set(planes.map((x) => x.plan.transporte))];
+  // ¿Honró el proveedor el modo explícito? Falso si B2 escribió caché en una
+  // repetición sin breakpoint; verdadero si en alguna B0 escribió y B2 no; si
+  // no se pudo observar (prompts por debajo del mínimo, o ninguna repetición
+  // sin breakpoint), null — que no es un sí.
+  const sondas = results.map((r) => r.sondaDeModo).filter((x): x is NonNullable<typeof x> => !!x && x.reps > 0);
+  const honradoModo: boolean | null = sondas.length === 0 || mode !== "LIVE"
+    ? null
+    : sondas.some((x) => x.escriturasB2SinBreakpoint > 0)
+      ? false
+      : sondas.some((x) => x.escriturasB0 > 0)
+        ? true
+        : null;
+  const nativo = B2_ACTIVO
+    ? {
+        effort: ESFUERZO_B2,
+        transport: transportesB2.length === 1 ? transportesB2[0]! : transportesB2.length ? transportesB2.join(",") : "none",
+        simulated: mode !== "LIVE",
+        degradedByTransport: planes.some((x) => x.plan.degradadoPorTransporte),
+        decisions: decisionesB2,
+        honored: { promptCacheMode: honradoModo },
+        note:
+          "What arm B2 applied, per feature, with the official page it follows. `scenarios` lists where a feature was " +
+          "applied; `honored.promptCacheMode` is true only when the provider was seen writing no cache under explicit " +
+          "mode without a breakpoint while the naive arm wrote, false when it wrote anyway, null when not observable.",
+      }
+    : undefined;
+
+  // Validez del contrato en B2, a nivel de modelo: B2 puede abaratar contestando peor.
+  const nativoValidos = results.reduce((n, r) => n + (r.nativeContractValid?.valid ?? 0), 0);
+  const nativoTotal = results.reduce((n, r) => n + (r.nativeContractValid?.total ?? 0), 0);
+
+  // ── Lo que se gastó, contra qué precio y contra qué endpoint ─────────────
+  const gastoAlAcabar = fotoDelGasto();
+  const gastoDelModelo = gastoAlAcabar.total - gastoAlEmpezar.total;
+  const llamadasDelModelo = gastoAlAcabar.llamadas - gastoAlEmpezar.llamadas;
+  const informadasDelModelo = gastoAlAcabar.informadas - gastoAlEmpezar.informadas;
+  // De dónde salió el contador de escritura en las llamadas de ESTE modelo.
+  const fuentesDelModelo = (["adapter", "raw-usage"] as const).filter(
+    (f) => (gastoAlAcabar.fuentes[f] ?? 0) - (gastoAlEmpezar.fuentes[f] ?? 0) > 0,
+  );
+  const modelosTarifados = [...new Set(results.map((r) => r.model))];
+  const primaMaxima = Math.max(1, ...modelosTarifados.map((m) => precioYPrima(m).prima));
+  const conocidos = modelosTarifados.filter((m) => precioYPrima(m).conocido);
+  const ilustrativos = modelosTarifados.filter((m) => !precioYPrima(m).conocido);
+  const precioDeListaConocido = modelosTarifados.length > 0 && ilustrativos.length === 0;
+  // SOLO las filas del catálogo: un precio ilustrativo bajo la clave del modelo
+  // se leería como su precio de lista.
+  const tablaDePrecios = Object.fromEntries(
+    conocidos.map((m) => {
+      const pp = precioYPrima(m);
+      return [pp.clave ?? desnudo(m), pp.precio];
+    }),
+  );
+  // ¿Trajo el contador de escritura TODA llamada a un modelo que paga la
+  // escritura a prima? Es condición para publicar: una escritura sin contador se
+  // tarifaría a 0. Sin llamadas con prima no hay nada que medir (`null`).
+  const llamadasConPrima = gastoAlAcabar.llamadasConPrima - gastoAlEmpezar.llamadasConPrima;
+  const informadasConPrima = gastoAlAcabar.informadasConPrima - gastoAlEmpezar.informadasConPrima;
+  const escriturasMedidas: boolean | null = llamadasConPrima === 0 ? null : informadasConPrima === llamadasConPrima;
+  const techoDelModelo = estimarModelo(modelo).costeTecho;
+  const hosts = [
+    ...new Set(
+      results.map((r) => endpointDeModelo(r.model, CONFIG_DE_TRANSPORTE)?.host).filter((h): h is string => !!h),
+    ),
+  ];
+  const kinds = [...new Set(results.map((r) => transporteDe(r.model)))];
+  // El muestreo lo decide el modelo (`muestreoPareadoPara`); sin modelo forzado,
+  // cada escenario el suyo.
+  const muestreos = [...new Set(results.map((r) => `${r.sampling.temperature}/${r.sampling.seed}`))];
+  const muestreoUnico = muestreos.length <= 1 ? results[0]?.sampling : undefined;
+  const sampling = muestreoUnico
+    ? {
+        temperature: muestreoUnico.temperature,
+        seed: muestreoUnico.seed,
+        reason:
+          muestreoUnico.temperature != null
+            ? "the model honours a fixed temperature and seed: every arm sends temperature 0 and seed 7"
+            : "the model is classified as reasoning or unclassified (src/pricing/razonamiento.ts), where a fixed " +
+              "temperature is rejected or ignored: every arm uses the provider default",
+      }
+    : {
+        temperature: "per-scenario",
+        seed: "per-scenario",
+        reason: "each scenario uses its own model's rule; see scenarios[].sampling",
+      };
+  const costeDelModelo = {
+    ceilingUsd: techoDelModelo,
+    spentUsd: gastoDelModelo,
+    budgetUsd: Number.isFinite(PRESUPUESTO) ? PRESUPUESTO : null,
+    calls: llamadasDelModelo,
+    note:
+      "spentUsd = every provider call of this model in this run (classification probe, all arms and the cache " +
+      "amortization) at list price, cache writes at their premium; the judge is excluded. ceilingUsd is the estimate " +
+      "printed before the first call. In MOCK both are what the run would cost, not money spent.",
+  };
 
   console.log("\nHeadline (per cold single call, measured both sides; one effective rep per scenario)");
   if (mode === "LIVE") {
@@ -1398,11 +1973,20 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
       console.log(`  vs B1 (razonable): point ${pct(aggB1.point)}   95% CI [${pct(aggB1.lower)}, ${pct(aggB1.upper)}]   Wilcoxon p ${wPB1.toExponential(2)}`);
       console.log(`  Claim vs B1:   ${provenB1 ? `VERIFIED ≥ ${pct(aggB1.lower)} beyond a reasonably optimized integration` : "NOT PROVEN vs B1 (CI lower ≤ 0, quality regressed, or model swapped)"}`);
     }
+    if (aggB2 && wPB2 != null) {
+      console.log(`  vs B2 (nativo):    point ${pct(aggB2.point)}   95% CI [${pct(aggB2.lower)}, ${pct(aggB2.upper)}]   Wilcoxon p ${wPB2.toExponential(2)}`);
+      console.log(`  Claim vs B2:   ${provenB2 ? `VERIFIED ≥ ${pct(aggB2.lower)} beyond a natively well-configured integration` : "NOT PROVEN vs B2 (CI lower ≤ 0, quality regressed, or model swapped)"}`);
+    }
+    if (aggNativoVsB0) {
+      console.log(`  B2 vs B0:      point ${pct(aggNativoVsB0.point)}   95% CI [${pct(aggNativoVsB0.lower)}, ${pct(aggNativoVsB0.upper)}]   (lo que ahorra el proveedor SOLO: no es cifra de BV-SALA)`);
+    }
   } else {
     console.log(`  Net savings:   ${pct(agg.point)}  — ESTIMATED (mock provider), NOT a real savings claim   (pooled: ${pct(aggPooled.point)})`);
     if (aggB1) console.log(`  vs B1:         ${pct(aggB1.point)}  — ESTIMATED (mock provider), NOT a real savings claim`);
-    console.log(`  Run LIVE (set BVSALA_DEMO_BASE_URL) for real provider tokens & dollars.`);
+    if (aggB2) console.log(`  vs B2:         ${pct(aggB2.point)}  — ESTIMATED (mock provider), NOT a real savings claim`);
+    console.log(`  Run LIVE (declare an endpoint: BVSALA_DEMO_BASE_URL or a per-family one) for real provider tokens & dollars.`);
   }
+  console.log(`  Suelo mínimo:  ${pct(floors.min)} frente a ${floors.minAgainst} — cualquier cifra publicada tiene que caber debajo`);
   console.log(`  Quality:       ${qTotalPass}/${qTotal} answers passed the gate (${pct(qualityPassRate)})`);
   const nv = results.reduce((n, r) => n + r.naiveContractValid.valid, 0);
   const nt = results.reduce((n, r) => n + r.naiveContractValid.total, 0);
@@ -1433,8 +2017,34 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     const badge = l.scenarios.length === 0 ? "sin escenario" : mode !== "LIVE" ? "est" : l.proven ? "proven" : "not-proven";
     const b1 = ledgerRollupB1?.find((x) => x.ledger === l.ledger);
     const colB1 = b1 ? `   vs B1 ${padL(pct(b1.savings.point), 8)}  95%lo ${padL(pct(b1.savings.lower), 8)}` : "";
-    console.log(`  ${pad(l.ledger, 20)} ${padL(pct(l.savings.point), 8)}  95%lo ${padL(pct(l.savings.lower), 8)}   ${badge}${colB1}`);
+    const b2 = ledgerRollupB2?.find((x) => x.ledger === l.ledger);
+    const colB2 = b2 ? `   vs B2 ${padL(pct(b2.savings.point), 8)}  95%lo ${padL(pct(b2.savings.lower), 8)}` : "";
+    console.log(`  ${pad(l.ledger, 20)} ${padL(pct(l.savings.point), 8)}  95%lo ${padL(pct(l.savings.lower), 8)}   ${badge}${colB1}${colB2}`);
   }
+
+  // ── B2: qué hizo, con qué fuente, y si el proveedor lo honró ──────────────
+  if (nativo) {
+    console.log(
+      `\nB2 nativo  (transporte ${nativo.transport}, esfuerzo ${ESFUERZO_B2}` +
+        `${nativo.simulated ? ", SIMULADO: MOCK, nada llegó a un proveedor" : ""})`,
+    );
+    for (const d of decisionesB2) {
+      const donde = d.applied && d.scenarios?.length ? `  [${d.scenarios.length} escenario(s)]` : "";
+      console.log(`  ${d.applied ? "✓" : "–"} ${pad(d.feature, 26)} ${d.reason}${donde}`);
+      console.log(`    ${" ".repeat(26)} ${d.source.url} (${d.source.checked})`);
+    }
+    if (nativo.degradedByTransport) {
+      console.log("  ⚠ DEGRADADO POR TRANSPORTE: un modelo de Claude por un endpoint OpenAI. Esta tirada no se puede publicar.");
+    }
+    console.log(
+      `  modo de caché explícito honrado: ${honradoModo === null ? "no observable (null)" : honradoModo ? "sí" : "NO — no se puede publicar"}`,
+    );
+  }
+  console.log(
+    `\nGasto de este modelo: ${dinero4(gastoDelModelo)} (techo estimado ${dinero4(techoDelModelo)}; ` +
+      `${llamadasDelModelo} llamadas, contador de escritura de caché en ${informadasDelModelo}/${llamadasDelModelo})` +
+      (mode === "LIVE" ? "" : "  — MOCK: lo que costaría, no dinero gastado"),
+  );
 
   // ── EL AVISO HONESTO: qué palancas NO se ejercitaron y por qué ────────────
   //
@@ -1534,24 +2144,77 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     // titular (la verja de publicación lo bloquea). Público: en inglés.
     sdk: selloDelSdk(),
     generatedNote: mode === "LIVE" ? "real provider tokens & cost, quality-gated" : "ESTIMATED — mock provider, not a savings claim",
-    pricing: { note: PRICING_NOTE, table: PRICES, fallback: FALLBACK_PRICE, catalogueDated: PRECIOS_AL_DIA, ...(modelo ? { listPriceKnown: precioConocido(modelo) } : {}) },
+    // El precio, del CATÁLOGO del SDK y de nada más: la fila del propio modelo.
+    // Sin ella, `listPriceKnown: false` y la verja de publicación lo rechaza.
+    pricing: {
+      note: PRICING_NOTE,
+      table: tablaDePrecios,
+      catalogueDated: PRECIOS_AL_DIA,
+      listPriceKnown: precioDeListaConocido,
+      ...(ilustrativos.length
+        ? {
+            illustrative: {
+              models: ilustrativos,
+              price: PRECIO_ILUSTRATIVO,
+              note:
+                "These models have no row in the SDK price catalogue: their dollars use the gpt-4o-mini catalogue row as an " +
+                "illustrative price. This artefact cannot be published.",
+            },
+          }
+        : {}),
+      cacheWrites: {
+        premium: primaMaxima,
+        metered: escriturasMedidas,
+        source: fuentesDelModelo.length ? fuentesDelModelo.join(",") : "none",
+        note:
+          "Cache writes are priced at the input rate times `premium` (src/pricing/primas.ts), read from the provider's " +
+          "counter (the adapter's cacheWriteInputTokens, else the raw usage). `metered` is true only when every call to a " +
+          "model with a write premium carried that counter, and null when no such call was made; with premium > 1 an " +
+          "artefact without it cannot be published.",
+      },
+    },
+    sampling,
+    transport: { kind: kinds.join(","), endpointHost: hosts.length ? hosts.join(",") : null },
+    cost: costeDelModelo,
+    // EL CONJUNTO ENTERO, antes del reparto por modelo: cada nombre tiene que
+    // aparecer en `scenarios` o en `scenariosNotApplicable`. Quitar una fila roja
+    // en silencio es elegir la cifra, y la verja de publicación lo comprueba.
+    scenarioSet: { size: scenarios.length, names: scenarios.map((x) => x.name) },
     methodology:
       "Paired A/B: Arm A = naive request (B0: full compact JSON, all tools, no cache marks; same contract and cap as the caller) executed against the same provider; " +
       (B1_ACTIVO ? "Arm A1 = the same integration reasonably optimized (B1: native provider cache configured on the stable prefix, hand-picked tools where the scenario declares them); " : "") +
-      "Arm B = BV-SALA optimized. All arms priced from provider usage. Headline = 95% STRATIFIED bootstrap CI lower bound of " +
+      (B2_ACTIVO ? "Arm A2 = the same integration natively well-configured (B2: B1 plus the provider's documented no-cost settings that apply to the request shape, each decision and its source in `native.decisions`); " : "") +
+      "Arm B = BV-SALA optimized. All arms priced from provider usage, cache writes at the model's write premium. Headline = 95% STRATIFIED bootstrap CI lower bound of " +
       "1 − Σ_s mean(costB_s) / Σ_s mean(costA_s), one stratum per scenario with equal weight, resampled within each scenario " +
       "(so the headline does not move with how many reps the adaptive sampler gave each scenario; the interval is conditional " +
       "on this fixed scenario set and covers per-scenario sampling noise only). The pooled 1−ΣcostB/ΣcostA " +
       "over all trials is kept in `aggregatePooled` for comparison with earlier artefacts; it is no longer the headline" +
       (B1_ACTIVO ? "; `aggregateB1` is the same stratified headline against Arm A1 — the research guide's «additional value of Savings»" : "") +
+      (B2_ACTIVO ? "; `aggregateB2` is the same stratified headline against Arm A2, and `floors.min` is the lowest of the three lower bounds: any claim must fit under it" : "") +
       ". Quality gate voids regressed answers. Cache savings amortized separately with a break-even K.",
     arms: {
       A: DEFINICION_DE_BRAZOS.A,
       ...(B1_ACTIVO ? { A1: DEFINICION_DE_BRAZOS.A1 } : {}),
+      ...(B2_ACTIVO ? { A2: DEFINICION_DE_BRAZOS.A2 } : {}),
       B: DEFINICION_DE_BRAZOS.B,
     },
-    config: { reps: REPS, minReps: REPS, maxReps: MAX_REPS, ciTarget: CI_TARGET, qualityFloor: QUALITY_FLOOR, seed: SEED },
-    scenarios: results.map((r) => ({ ...r, paired: undefined })),
+    // `resamples` y `seed` son los del bootstrap: con ellos y el CSV de ensayos,
+    // `apps/web/public/measure/reproduce.mjs` recalcula los agregados bit a bit.
+    config: {
+      reps: REPS,
+      minReps: REPS,
+      maxReps: MAX_REPS,
+      ciTarget: CI_TARGET,
+      qualityFloor: QUALITY_FLOOR,
+      seed: SEED,
+      resamples: REMUESTREOS,
+      b1: B1_ACTIVO,
+      b2: B2_ACTIVO,
+      ...(B2_ACTIVO ? { b2Effort: ESFUERZO_B2 } : {}),
+      reasoningHeadroomTokens: MARGEN_RAZONAMIENTO,
+    },
+    // `planB2` es interno (se publica resumido en `scenarios[].native` y en `native`).
+    scenarios: results.map((r) => ({ ...r, paired: undefined, planB2: undefined })),
     // LOS ESCENARIOS QUE NO SE MIDIERON CONTRA ESTE MODELO, con su motivo. Sin
     // esta lista, un artefacto de `gpt-4o-mini` y uno de `claude-haiku` parecen
     // comparables aunque midan conjuntos de escenarios distintos.
@@ -1580,6 +2243,8 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     reconciliation: { totalDelta, ledgerSum, residual, reconciled },
     ...(ledgerRollupB1 ? { ledgersB1: ledgerRollupB1 } : {}),
     ...(reconciliationB1 ? { reconciliationB1 } : {}),
+    ...(ledgerRollupB2 ? { ledgersB2: ledgerRollupB2 } : {}),
+    ...(reconciliationB2 ? { reconciliationB2 } : {}),
     modelStable: allFpStable,
     aggregate: {
       savings: agg,
@@ -1619,11 +2284,40 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
           },
         }
       : {}),
+    ...(aggB2 && wPB2 != null
+      ? {
+          aggregateB2: {
+            savings: aggB2,
+            estimator: "stratified-by-scenario",
+            strata: estratosB2.filter((e) => e.costA.length > 0).length,
+            wilcoxonP: wPB2,
+            qualityPassRate,
+            ...(nativoTotal > 0 ? { nativeContractValidRate: nativoValidos / nativoTotal } : {}),
+            proven: provenB2,
+            headline: mode === "LIVE"
+              ? (provenB2 ? `verified ≥ ${pct(aggB2.lower)} beyond a natively well-configured integration (95% CI lower bound)` : "not proven vs B2")
+              : "ESTIMATED (mock) — not a savings claim",
+          },
+        }
+      : {}),
+    ...(aggNativoVsB0
+      ? {
+          aggregateNativeVsB0: {
+            savings: aggNativoVsB0,
+            estimator: "stratified-by-scenario",
+            note: "What the provider's own settings (arm B2) save against the naive request (B0). Not a BV-SALA figure.",
+          },
+        }
+      : {}),
+    floors,
+    ...(nativo ? { native: nativo } : {}),
     honesty: [
       "Both arms are metered by the provider's own tokenizer — no modeled baseline.",
-      "Since 2026-09-12 BOTH arms are sampled the same way (temperature 0, seed 7; Anthropic ignores seed). " +
-        "Before, only the naive arm was: arm B went out with the provider's default sampling, so its outputs " +
-        "carried variance that was not the layer's. Earlier artefacts are not comparable rep by rep.",
+      "Since 2026-09-12 every arm is sampled the same way. Before, only the naive arm was: arm B went out with the " +
+        "provider's default sampling, so its outputs carried variance that was not the layer's. Earlier artefacts are " +
+        "not comparable rep by rep. Since 2026-09-27 the rule is per model (`sampling`): temperature 0 and seed 7 where " +
+        "the model honours them (Anthropic ignores seed), the provider default where src/pricing/razonamiento.ts " +
+        "classifies the model as reasoning or unclassified — a fixed temperature is rejected or ignored there.",
       "Since 2026-09-12 every measured call of arm B starts with a fresh contract memory, like it starts with a " +
         "cold cache: the limits hint the layer adds after a value failure can only appear inside a within-call " +
         "repair (both provider calls counted). `scenarios[].pistaDeLimites` counts the reps where it travelled.",
@@ -1658,6 +2352,20 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
             "Dos brazos de control, no uno: `aggregate` es el ahorro frente a B0 (la integración sin optimizar) y `aggregateB1` frente a B1 (la misma integración con la caché nativa configurada y las herramientas elegidas a mano). Solo la segunda cifra es mérito atribuible al SDK; la primera incluye lo que un cliente razonable ya tendría sin nosotros.",
           ]
         : []),
+      ...(B2_ACTIVO
+        ? [
+            "A third control arm, B2 «natively well-configured»: B1 plus every setting the provider documents at no extra " +
+              "charge that applies to the request shape (reasoning effort, explicit cache mode on GPT-5.6+, tool search " +
+              "over its documented threshold). Each decision, applied or not, is published in `native.decisions` with the " +
+              "official page it follows. `aggregateB2` is what is left after all of that; `aggregateNativeVsB0` is what " +
+              "the provider alone saves and is not a BV-SALA figure. Any claim must fit under `floors.min`.",
+            "B2 runs at a lower reasoning effort than the provider default (`config.b2Effort`), which is not free in " +
+              "quality: `scenarios[].nativeContractValid`, `truncated.nativo` and `reasoningTokens.nativo` show what it " +
+              "cost. If B2 is cheaper because it answers worse, that counts against BV-SALA's savings, never for them.",
+          ]
+        : []),
+      "Cache writes are priced at the model's write premium in every arm (`pricing.cacheWrites`), read from the " +
+        "provider's counter. Until 2026-09-27 the bench billed them at 1x, which hid what an explicit cache mode saves.",
     ],
   };
 
@@ -1670,6 +2378,11 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
     agg,
     aggPooled,
     ...(aggB1 ? { aggB1, provenB1 } : {}),
+    ...(aggB2 ? { aggB2, provenB2 } : {}),
+    ...(aggNativoVsB0 ? { aggNativoVsB0 } : {}),
+    floors,
+    ...(nativo ? { nativo } : {}),
+    coste: costeDelModelo,
     wilcoxonP: wP,
     qualityPassRate,
     proven,
@@ -1680,30 +2393,128 @@ async function medirModelo(modelo: string | null): Promise<Tirada> {
   };
 }
 
-/** `openai/gpt-4o-mini` → `openai-gpt-4o-mini`, para nombrar ficheros. */
-function babosa(modelo: string): string {
-  return modelo.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+/**
+ * LAS COLUMNAS DEL CSV DE ENSAYOS: una fila por repetición pareada, con el
+ * coste de cada brazo. Es lo que `apps/web/public/measure/reproduce.mjs` lee
+ * para recalcular los agregados sin confiar en el JSON. Las columnas nuevas se
+ * AÑADEN; los lectores del CSV buscan por nombre, no por posición.
+ */
+const COLUMNAS_DE_ENSAYOS = [
+  "scenario",
+  "kind",
+  "rep",
+  "costA",
+  "costA1",
+  "costA2",
+  "costB",
+  "savedFraction",
+  "savedFractionB1",
+  "savedFractionB2",
+];
+
+function filasDeEnsayos(t: Tirada): Record<string, unknown>[] {
+  const fraccion = (control: number | undefined, b: number): number | "" =>
+    control == null ? "" : control > 0 ? 1 - b / control : 0;
+  return t.results.flatMap((r) =>
+    r.paired.map((p, i) => ({
+      scenario: r.name,
+      kind: r.kind,
+      rep: i,
+      costA: p.costA,
+      costA1: p.costA1 ?? "",
+      costA2: p.costA2 ?? "",
+      costB: p.costB,
+      savedFraction: fraccion(p.costA, p.costB),
+      savedFractionB1: fraccion(p.costA1, p.costB),
+      savedFractionB2: fraccion(p.costA2, p.costB),
+    })),
+  );
+}
+
+/** Aborta la tirada ANTES de cualquier llamada, con el motivo. */
+function abortarAntesDeGastar(motivos: string[]): void {
+  console.error("\n✗ La tirada NO empieza (no se ha llamado a ningún proveedor):");
+  for (const m of motivos) console.error(`  · ${m}`);
+  console.error("");
+  process.exitCode = 1;
 }
 
 async function main(): Promise<void> {
   console.log(`\nBV-SALA TRUE A/B live benchmark  [mode: ${mode}]`);
+
+  // ── Lo que impide empezar, antes que nada ────────────────────────────────
+  if (RESOLUCION.error) return abortarAntesDeGastar([RESOLUCION.error]);
+  if (RESOLUCION.aviso) console.warn(`⚠ ${RESOLUCION.aviso}`);
+  // La variable antigua. `1` pedía lo que ahora es el defecto; cualquier otro
+  // valor es alguien que cree estar pidiendo otra cosa, y adivinar qué es peor
+  // que parar.
+  if (SIN_COMPRESOR_OBSOLETA !== undefined) {
+    if (SIN_COMPRESOR_OBSOLETA === "1" && !CON_COMPRESOR) {
+      console.warn(
+        "⚠ BVSALA_AB_SIN_COMPRESOR=1 está obsoleta: medir el SDK tal como se instala ya es lo que hace `pnpm ab`. Quítala.",
+      );
+    } else {
+      return abortarAntesDeGastar([
+        `BVSALA_AB_SIN_COMPRESOR=${SIN_COMPRESOR_OBSOLETA} está obsoleta y no se interpreta. El SDK tal como se instala ` +
+          "es el modo por defecto; el compresor del banco (investigación, nunca publicable) se pide con " +
+          "BVSALA_AB_CON_COMPRESOR=1. Quita BVSALA_AB_SIN_COMPRESOR (mira también .env.bench).",
+      ]);
+    }
+  }
+
+  // ── El prevuelo: todo lo que haría inservible una tirada de pago ─────────
+  const porEscenario = modelosAMedir.some((m) => m === null);
+  const prevuelo = veredictoDePrevuelo({
+    modelos: porEscenario
+      ? [...new Set(scenarios.map((s) => s.request.model))].map((id) => ({ id, obligatorio: false }))
+      : modelosAMedir.map((id) => ({
+          id: id!,
+          obligatorio: true,
+          exigeNativo: RESOLUCION.exigenNativo.includes(id!),
+        })),
+    modo: mode,
+    cfg: CONFIG_DE_TRANSPORTE,
+    presupuesto: PRESUPUESTO,
+    // El valor CRUDO: si no es un esfuerzo válido, el prevuelo lo dice y para.
+    esfuerzo: ESFUERZO_B2_CRUDO as EsfuerzoB2,
+    permitirIlustrativo: PERMITIR_ILUSTRATIVO,
+    margen: MARGEN_RAZONAMIENTO,
+    b2: B2_ACTIVO,
+    escenariosSinTope: scenarios.filter((s) => s.request.response?.maxOutputTokens == null).map((s) => s.name),
+    escenariosConHerramientas: scenarios.filter((s) => (s.request.tools?.length ?? 0) > 0).map((s) => s.name),
+  });
+  for (const a of prevuelo.avisos) console.warn(`⚠ ${a}`);
+  if (prevuelo.aborta) return abortarAntesDeGastar(prevuelo.motivos);
+
   console.log(
     SDK_TAL_COMO_SE_INSTALA
       ? `sdk: ${BV_SALA_VERSION} tal como se instala desde npm (sin compresor: el paquete solo trae noopCompressor)`
       : `sdk: ${BV_SALA_VERSION} CON el compresor del banco, que npm NO trae — tirada de investigación, no publicable\n` +
-          "     (BVSALA_AB_SIN_COMPRESOR=1 mide lo que instala el cliente)",
+          "     (quita BVSALA_AB_CON_COMPRESOR para medir lo que instala el cliente)",
   );
   console.log(
     mode === "LIVE"
-      ? `provider: real endpoint   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   (both arms metered by the provider)`
+      ? `provider: real endpoint   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   (every arm metered by the provider)`
       : `provider: mock (no network)   models: ${modelosAMedir.map((m) => m ?? "(per-request)").join(", ")}   reps: ${REPS}   —  ESTIMATED plumbing run, NOT a savings claim`,
   );
-  // POR EXISTENCIA, NUNCA POR VALOR: se dice SI hay endpoint nativo declarado,
+  console.log(
+    B2_ACTIVO
+      ? `B2 (nativo bien configurado): encendido, esfuerzo ${ESFUERZO_B2}, margen de razonamiento ${MARGEN_RAZONAMIENTO} tokens`
+      : "B2: APAGADO (BVSALA_AB_B2=0) — tirada de investigación: sin B2 no se puede publicar",
+  );
+  // POR EXISTENCIA, NUNCA POR VALOR: se dice QUÉ endpoints hay declarados,
   // jamás cuál ni con qué clave. Y se dice siempre, porque su ausencia es la que
-  // decide que la palanca mayor de la entrada no se mida en esta tirada.
+  // decide que una familia o una palanca no se mida en esta tirada.
   if (mode === "LIVE") {
+    const declarados = [
+      CONFIG_DE_TRANSPORTE.baseUrl ? "pasarela (BVSALA_DEMO_BASE_URL)" : null,
+      CONFIG_DE_TRANSPORTE.anthropicBaseUrl ? "anthropic nativo" : null,
+      CONFIG_DE_TRANSPORTE.openaiBaseUrl ? "openai directo" : null,
+      CONFIG_DE_TRANSPORTE.googleBaseUrl ? "google directo" : null,
+    ].filter((x): x is string => !!x);
+    console.log(`endpoints declarados: ${declarados.join(", ")}`);
     console.log(
-      anthropicBaseUrl
+      CONFIG_DE_TRANSPORTE.anthropicBaseUrl
         ? "anthropic: endpoint NATIVO declarado — los modelos de esa familia van por AnthropicProvider (cache_control viaja)"
         : "anthropic: sin endpoint nativo (BVSALA_DEMO_ANTHROPIC_BASE_URL) — `cache_control` no cabe en el protocolo de OpenAI,\n" +
           "           así que los escenarios que lo miden se declaran NO MEDIBLES y no se ejecutan",
@@ -1713,11 +2524,10 @@ async function main(): Promise<void> {
   // ── El precio ANTES de gastarlo ──────────────────────────────────────────
   const estimacion = estimarTirada();
   const techo = imprimirEstimacion(estimacion);
-  const presupuesto = Number(process.env.BVSALA_AB_BUDGET_USD ?? NaN);
-  if (mode === "LIVE" && Number.isFinite(presupuesto) && techo > presupuesto) {
+  if (mode === "LIVE" && techo > PRESUPUESTO) {
     console.error(
-      `\n✗ La tirada puede costar hasta ${dinero4(techo)} y BVSALA_AB_BUDGET_USD son ${dinero4(presupuesto)}.\n` +
-        `  No se ha llamado a ningún proveedor. Sube el presupuesto o recorta BVSALA_AB_REPS / BVSALA_DEMO_MODELS.\n`,
+      `\n✗ La tirada puede costar hasta ${dinero4(techo)} y BVSALA_AB_BUDGET_USD son ${dinero4(PRESUPUESTO)}.\n` +
+        `  No se ha llamado a ningún proveedor. Sube el presupuesto o recorta BVSALA_AB_REPS / los modelos.\n`,
     );
     process.exitCode = 1;
     return;
@@ -1727,25 +2537,53 @@ async function main(): Promise<void> {
   // escriben al final, así que dejar subir la excepción convertía el fallo del
   // cuarto modelo en la pérdida de los tres anteriores — llamadas pagadas
   // incluidas (2026-08-24). El fallo queda en el artefacto y en el exit code.
+  //
+  // DOS EXCEPCIONES que sí paran la tirada entera: el presupuesto agotado (el
+  // gasto real pasó `BVSALA_AB_BUDGET_USD`; seguir sería gastar lo que no se
+  // autorizó) y una compactación que ningún brazo pidió (el uso de arriba deja
+  // de ser el total facturado, y eso vale para todos los modelos que siguen).
   const tiradas: Tirada[] = [];
-  const modelosFallidos: { modelo: string; error: string }[] = [];
-  for (const modelo of modelosAMedir) {
+  const modelosFallidos: { modelo: string; error: string; detail?: string }[] = [];
+  for (const [i, modelo] of modelosAMedir.entries()) {
     try {
       tiradas.push(await medirModelo(modelo));
     } catch (err) {
-      modelosFallidos.push({ modelo: modelo ?? "(el de cada escenario)", error: String(err) });
-      console.error(
-        `\n✗ la medición de ${modelo ?? "(el de cada escenario)"} FALLÓ y se descarta este modelo` +
-          ` (los demás siguen): ${String(err)}\n`,
-      );
+      const etiqueta = modelo ?? "(el de cada escenario)";
+      const agotado = err instanceof PresupuestoAgotado;
+      const compactacion = GASTO.compactacion || (err instanceof Error && err.message === MENSAJE_DE_COMPACTACION);
+      // El texto de error del proveedor puede traer una clave ENMASCARADA
+      // (`Incorrect API key provided: sk-…abcd`): va al artefacto y a la consola
+      // sin nada que se parezca a una clave.
+      const texto = sinSecretos(String(err));
+      modelosFallidos.push({
+        modelo: etiqueta,
+        error: agotado ? "budget" : compactacion ? "compaction" : texto,
+        ...(agotado || compactacion ? { detail: sinSecretos((err as Error).message) } : {}),
+      });
+      console.error(`\n✗ la medición de ${etiqueta} FALLÓ y se descarta este modelo: ${texto}\n`);
+      if (agotado || compactacion) {
+        for (const resto of modelosAMedir.slice(i + 1)) {
+          modelosFallidos.push({
+            modelo: resto ?? "(el de cada escenario)",
+            error: agotado ? "budget" : "compaction",
+            detail: "not started: the run stopped at an earlier model",
+          });
+        }
+        console.error(
+          agotado
+            ? "✗ presupuesto agotado: los modelos que faltaban NO se miden y este no se publica.\n"
+            : "✗ el proveedor devolvió una compactación que nadie pidió: la tirada para aquí.\n",
+        );
+        break;
+      }
     }
   }
+  if (modelosFallidos.length > 0) process.exitCode = 1;
   if (tiradas.length === 0) {
     console.error("✗ ningún modelo completó la medición; no hay nada que escribir.");
     process.exitCode = 1;
     return;
   }
-  if (modelosFallidos.length > 0) process.exitCode = 1;
 
   // ── La tabla comparable entre modelos ────────────────────────────────────
   if (tiradas.length > 1) {
@@ -1780,6 +2618,21 @@ async function main(): Promise<void> {
           tiradas.map((t) => celda(t.aggB1 ? `${pct(t.aggB1.point)} (${pct(t.aggB1.lower)})` : "n/a")).join(""),
       );
     }
+    if (tiradas.some((t) => t.aggB2)) {
+      console.log(
+        pad("AGREGADO vs B2", anchoNombre) +
+          tiradas.map((t) => celda(t.aggB2 ? `${pct(t.aggB2.point)} (${pct(t.aggB2.lower)})` : "n/a")).join(""),
+      );
+      // Lo que ahorra el proveedor solo: NO es una cifra de BV-SALA.
+      console.log(
+        pad("B2 vs B0 (native)", anchoNombre) +
+          tiradas.map((t) => celda(t.aggNativoVsB0 ? `${pct(t.aggNativoVsB0.point)} (${pct(t.aggNativoVsB0.lower)})` : "n/a")).join(""),
+      );
+    }
+    console.log(
+      pad("suelo mínimo (contra)", anchoNombre) +
+        tiradas.map((t) => celda(`${pct(t.floors.min)} (${t.floors.minAgainst})`)).join(""),
+    );
     console.log(
       pad("proven", anchoNombre) +
         tiradas.map((t) => celda(mode === "LIVE" ? String(t.proven) : "est")).join(""),
@@ -1799,32 +2652,18 @@ async function main(): Promise<void> {
     // lee `pnpm ab:publish`, y cambiarla rompería la publicación.
     const t = tiradas[0]!;
     rutas.push(writeReport("ab-live", t.artefacto));
-    rutas.push(
-      writeCsv(
-        "ab-live-trials",
-        ["scenario", "kind", "rep", "costA", "costA1", "costB", "savedFraction", "savedFractionB1"],
-        t.results.flatMap((r) =>
-          r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costA1: p.costA1 ?? "", costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0, savedFractionB1: p.costA1 != null ? (p.costA1 > 0 ? 1 - p.costB / p.costA1 : 0) : "" })),
-        ),
-      ),
-    );
+    rutas.push(writeCsv("ab-live-trials", COLUMNAS_DE_ENSAYOS, filasDeEnsayos(t)));
   } else {
     // VARIOS modelos: un artefacto por modelo y una comparación. `ab-live.json`
     // NO se escribe, y es deliberado: publicar una tirada multi-modelo bajo un
     // solo titular es exactamente la confusión que este cambio viene a quitar.
-    // Para publicar, se elige un modelo y se corre con `BVSALA_DEMO_MODEL`.
+    // Para publicar UNO sin pagar otra tirada: `pnpm ab:publish --model <id>`,
+    // que lee `ab-live--<babosa>.json` y su CSV (la babosa es la misma función,
+    // `babosaDeModelo`, en los dos lados).
     for (const t of tiradas) {
-      const slug = babosa(t.etiqueta);
+      const slug = babosaDeModelo(t.etiqueta);
       rutas.push(writeReport(`ab-live--${slug}`, t.artefacto));
-      rutas.push(
-        writeCsv(
-          `ab-live-trials--${slug}`,
-          ["scenario", "kind", "rep", "costA", "costA1", "costB", "savedFraction", "savedFractionB1"],
-          t.results.flatMap((r) =>
-            r.paired.map((p, i) => ({ scenario: r.name, kind: r.kind, rep: i, costA: p.costA, costA1: p.costA1 ?? "", costB: p.costB, savedFraction: p.costA > 0 ? 1 - p.costB / p.costA : 0, savedFractionB1: p.costA1 != null ? (p.costA1 > 0 ? 1 - p.costB / p.costA1 : 0) : "" })),
-          ),
-        ),
-      );
+      rutas.push(writeCsv(`ab-live-trials--${slug}`, COLUMNAS_DE_ENSAYOS, filasDeEnsayos(t)));
     }
     rutas.push(
       writeReport("ab-live-por-modelo", {
@@ -1844,6 +2683,19 @@ async function main(): Promise<void> {
           aggregate: { savings: t.agg, estimator: "stratified-by-scenario", proven: t.proven, qualityPassRate: t.qualityPassRate },
           aggregatePooled: { savings: t.aggPooled, estimator: "pooled-all-trials" },
           ...(t.aggB1 ? { aggregateB1: { savings: t.aggB1, estimator: "stratified-by-scenario", proven: t.provenB1 } } : {}),
+          ...(t.aggB2 ? { aggregateB2: { savings: t.aggB2, estimator: "stratified-by-scenario", proven: t.provenB2 } } : {}),
+          ...(t.aggNativoVsB0
+            ? {
+                aggregateNativeVsB0: {
+                  savings: t.aggNativoVsB0,
+                  estimator: "stratified-by-scenario",
+                  note: "What the provider's own settings (arm B2) save against B0. Not a BV-SALA figure.",
+                },
+              }
+            : {}),
+          floors: t.floors,
+          cost: t.coste,
+          ...(t.nativo ? { native: t.nativo } : {}),
           ledgers: t.ledgerRollup.map((l) => ({ ledger: l.ledger, savings: l.savings, scenarios: l.scenarios.length })),
           levers: t.palancas,
           leversNotMeasurable: t.noMedibles,
@@ -1853,6 +2705,7 @@ async function main(): Promise<void> {
             ledger: r.ledger,
             kind: r.kind,
             savings: r.measured.savings,
+            ...(r.measuredB2 ? { savingsB2: r.measuredB2.savings } : {}),
             quality: r.quality,
             truncated: r.truncated,
             palanca: r.palanca,
@@ -1864,7 +2717,8 @@ async function main(): Promise<void> {
           "n/a en la tabla = el escenario NO se midió contra ese modelo; nunca es un cero.",
           "Una palanca opt-in que no llegó a dispararse se declara; su cero no es una medición.",
           "Una palanca que el transporte configurado no puede ejercitar va en `leversNotMeasurable`, con qué configurar para medirla; su escenario no se ejecuta.",
-          "No se escribe `ab-live.json` en una tirada multi-modelo: un titular necesita un modelo.",
+          "No se escribe `ab-live.json` en una tirada multi-modelo: un titular necesita un modelo. Para publicar uno sin volver a pagar: `pnpm ab:publish --model <id>`.",
+          "`floors.min` de cada modelo es el menor de los suelos frente a B0, B1 y B2: cualquier cifra de ese modelo tiene que caber debajo. `aggregateNativeVsB0` es lo que ahorra el proveedor solo y no es una cifra de BV-SALA.",
         ],
       }),
     );
@@ -1874,7 +2728,7 @@ async function main(): Promise<void> {
         // `truncadasA`/`truncadasB` van en el CSV porque es donde se leyó a mano la
         // tirada del 2026-08-16: entonces había que deducir el truncado comparando
         // los tokens de salida con el tope, columna a columna.
-        ["model", "scenario", "ledger", "kind", "palanca", "palancaEjercitada", "savingsPoint", "savingsLower", "reps", "qualityPassed", "qualityTotal", "truncadasA", "truncadasB"],
+        ["model", "scenario", "ledger", "kind", "palanca", "palancaEjercitada", "savingsPoint", "savingsLower", "savingsB2Point", "savingsB2Lower", "reps", "qualityPassed", "qualityTotal", "truncadasA", "truncadasA2", "truncadasB"],
         tiradas.flatMap((t) =>
           t.results.map((r) => ({
             model: t.etiqueta,
@@ -1885,10 +2739,13 @@ async function main(): Promise<void> {
             palancaEjercitada: r.palanca ? String(r.palanca.ejercitada) : "",
             savingsPoint: r.measured.savings.point,
             savingsLower: r.measured.savings.lower,
+            savingsB2Point: r.measuredB2?.savings.point ?? "",
+            savingsB2Lower: r.measuredB2?.savings.lower ?? "",
             reps: r.reps,
             qualityPassed: r.quality.passed,
             qualityTotal: r.quality.total,
             truncadasA: r.truncated.naive,
+            truncadasA2: r.truncated.nativo ?? "",
             truncadasB: r.truncated.optimizado,
           })),
         ),

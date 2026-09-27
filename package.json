@@ -78,6 +78,8 @@
     "web:dev": "node apps/web/serve.mjs",
     "prepublishOnly": "pnpm run build",
     "ab:publish": "tsx benchmarks/publish.ts",
+    "ab:sonda": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sonda-del-banco.ts",
+    "medicion:reproducir": "node apps/web/public/measure/reproduce.mjs",
     "verja:calibrar": "tsx corpus/calibrar-la-verja.ts",
     "corpus:arnes": "tsx corpus/arnes/informe.ts",
     "corpus:auditar": "tsx corpus/auditoria/auditar.ts",
