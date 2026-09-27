@@ -73,6 +73,10 @@ import { planOutputCodebook } from "../constraints/codebook.js";
 import { MemoriaDelCodebook } from "../constraints/codebook-evidencia.js";
 import { executeRetrievalPlan } from "../retrieval/retrieval.js";
 import { compresionFiel, shouldCompress } from "../compression/compression.js";
+import {
+  seleccionarCompactables,
+  type ToolOutputCompactionSettings,
+} from "../compression/cola.js";
 import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision.js";
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
@@ -2222,6 +2226,79 @@ export class SavingsPipeline {
       }
     }
 
+    // --- Etapa 9-ter: compactación de la COLA (opt-in, license-gated, sin tocar el prefijo). ---
+    //
+    // Compacta el texto de los `role: "tool"` con transformaciones deterministas
+    // y verificadas (ver `compression/cola.ts`). La decisión de cada mensaje es
+    // función PURA de su contenido y de la llamada que lo pidió: el tool_result
+    // se compacta el turno en que nace, y en los turnos siguientes —ya dentro del
+    // prefijo que el proveedor tiene en caché— se reenvían los MISMOS bytes. Por
+    // eso esta etapa NO anota `comprimioElPrefijo`: no reescribe nada que el
+    // proveedor haya visto de otra forma, salvo el caso documentado de encenderla
+    // a mitad de conversación, que la verja de marcado ve igual (la tasa de
+    // aciertos de esa huella baja) sin que haya que adivinarlo aquí.
+    //
+    // NO HAY VERJA POR PETICIÓN, y es a propósito. Las verjas de la etapa 9
+    // (tamaño del contexto, tramo de caché) dependen del prompt entero, que crece
+    // turno a turno: una decisión que hoy dice «no» y mañana «sí» sobre el MISMO
+    // bloque es exactamente lo que invalida el prefijo (v0 −16,7 % en el replay
+    // del corpus). La única verja económica que se permite es la que no cambia de
+    // opinión: un mínimo de caracteres ahorrados por mensaje.
+    //
+    // Va DESPUÉS de la elisión: lo que la elisión ya sustituyó por el muñón no se
+    // compacta (el muñón es corto), y los dos créditos no se solapan.
+    const ajustesDeCompactacion = resolverCompactacion(
+      this.config.toolOutputCompaction,
+      toggles.toolOutputCompaction,
+    );
+    if (ajustesDeCompactacion && policy.allowCompression && this.entitled("long_context_compression")) {
+      const eleccion = seleccionarCompactables(messages, ajustesDeCompactacion);
+      let antes = 0;
+      let despues = 0;
+      let enLaCola = 0;
+      let repetidos = 0;
+      const porTransformacion: Record<string, number> = {};
+      if (eleccion.compactados.length > 0) {
+        const nuevos = messages.slice();
+        for (const c of eleccion.compactados) {
+          const original = messages[c.indice]!;
+          const a = this.tokensFor(original.content, request);
+          const d = this.tokensFor(c.texto, request);
+          nuevos[c.indice] = { ...original, content: c.texto };
+          antes += a;
+          despues += d;
+          if (c.enLaCola) enLaCola += Math.max(0, a - d);
+          else repetidos += Math.max(0, a - d);
+          for (const t of c.aplicadas) porTransformacion[t] = (porTransformacion[t] ?? 0) + 1;
+        }
+        messages = nuevos;
+        // LIBRO 3 (CONTEO) + CORRECCIÓN DE BASELINE, la misma doctrina que la
+        // elisión: el cliente paga menos al proveedor, pero ese contrafactual no
+        // se mide contra su factura, así que no entra en el baseline reconstruido
+        // ni en la comisión. `basis` no se mueve de "measured".
+        ledger.compress(antes, despues);
+        ledger.compactedLocal += Math.max(0, antes - despues);
+      }
+      const tramo = tramoDeCache(request.model, this.config.compressionEconomics);
+      trace.record("tool-output-compaction", eleccion.compactados.length > 0 ? "applied" : "skipped", {
+        compacted: eleccion.compactados.length,
+        before: antes,
+        after: despues,
+        // Lo nuevo de este turno frente a lo que se reenvía igual que cuando
+        // nació. Sólo lo primero es escritura nueva en la caché del proveedor.
+        tailSavedTokens: enLaCola,
+        replayedSavedTokens: repetidos,
+        transforms: porTransformacion,
+        fileViewsKeptVerbatim: eleccion.vistasDeFichero,
+        exceptedTools: eleccion.exceptuados,
+        cacheWriteMultiplier: tramo.cacheWriteMultiplier,
+        cacheReadMultiplier: tramo.cacheReadMultiplier,
+        note:
+          "counted in tokens.compressedInput only; never priced into savings or commission. " +
+          "each tail token saved is one token fewer written now and re-read on every later turn",
+      });
+    }
+
     // --- Stage 10: constrained decoding + the single primary LLM call. ---
     const schema = request.response?.schema;
 
@@ -2662,9 +2739,11 @@ export class SavingsPipeline {
     // cuenta en el baseline (ver su nota en la etapa 6). `sentInputLocal` se deja
     // casado con el cable para que `k = actualInput/sentInputLocal` siga siendo una
     // razón de reglas limpia; solo se corrige `removedInputLocal`.
+    // `compactedLocal` se descuenta por la misma razón: la compactación de la
+    // cola es conteo del libro 3, no dinero reclamable.
     ledger.removedInputLocal = Math.max(
       0,
-      baselineInput - ledger.sentInputLocal - ledger.elididoLocal,
+      baselineInput - ledger.sentInputLocal - ledger.elididoLocal - ledger.compactedLocal,
     );
     // La cuenta local del prompt del CLIENTE que salió, antes de que el sondeo
     // se sume: es la que E2 compara contra el baseline para decidir si la
@@ -5362,6 +5441,23 @@ function insertarAntesDeLaPregunta(messages: ChatMessage[], bloque: ChatMessage)
     }
   }
   messages.push(bloque);
+}
+
+/**
+ * ¿Corre la compactación de la cola en esta petición, y con qué ajustes?
+ *
+ * La petición manda en los dos sentidos: `false` la apaga aunque la capa la
+ * encienda, `true` la enciende con los ajustes de la capa (o los de por
+ * defecto). Sin nada en la petición, decide la capa. `null` = no corre.
+ */
+function resolverCompactacion(
+  deLaCapa: boolean | ToolOutputCompactionSettings | undefined,
+  deLaPeticion: boolean | undefined,
+): ToolOutputCompactionSettings | null {
+  if (deLaPeticion === false) return null;
+  const ajustes = typeof deLaCapa === "object" && deLaCapa !== null ? deLaCapa : {};
+  if (deLaPeticion === true) return ajustes;
+  return deLaCapa ? ajustes : null;
 }
 
 /**

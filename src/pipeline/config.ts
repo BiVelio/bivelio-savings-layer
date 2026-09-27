@@ -10,6 +10,7 @@ import type { FormatSelector } from "../serialization/format-selector.js";
 import type { SchemaRegistry } from "../constraints/schema-registry.js";
 import type { ConstraintBackend } from "../constraints/backends.js";
 import type { Compressor } from "../compression/compression.js";
+import type { ToolOutputCompactionSettings } from "../compression/cola.js";
 import type { CompressionEconomics } from "../economics/politica-compresion.js";
 import type { Retriever, Reranker } from "../retrieval/retrieval.js";
 import type { Provider } from "../providers/types.js";
@@ -61,6 +62,13 @@ export interface SavingsLayerConfig {
    * with your own measurements to unlock the full decision in both directions.
    */
   compressionEconomics?: CompressionEconomics;
+  /**
+   * Compact tool outputs on every request (`true`, or settings), unless a
+   * request sets `savings.toolOutputCompaction: false`. Off by default; a request
+   * can also switch it on alone with `savings.toolOutputCompaction: true`.
+   * See {@link ToolOutputCompactionSettings}.
+   */
+  toolOutputCompaction?: boolean | ToolOutputCompactionSettings;
   retriever?: Retriever;
   reranker?: Reranker;
 
