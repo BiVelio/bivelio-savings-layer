@@ -2,6 +2,7 @@ import { avisarUnaVez } from "../util/warn-once.js";
 import { atestiguar, declararBusquedaNativa, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
 import { HERRAMIENTA_DE_BUSQUEDA } from "../router/busqueda-nativa.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
+import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
 import {
@@ -144,6 +145,34 @@ export class AnthropicProvider implements Provider {
     // bloques de la búsqueda (es lo mismo que hace Claude Code con un base URL
     // ajeno).
     declararBusquedaNativa(this, esHostOficial(opts.baseUrl) ? "oficial" : "compatible");
+    // LA MESSAGE BATCHES API, para `layer.batches`. Mismo cuerpo que generate()
+    // (sin `stream`, que un lote rechaza) y misma lectura; la HTTP va contra la
+    // MISMA base y con las MISMAS cabeceras. Ver lotes-del-proveedor.ts.
+    const base = this.opts.baseUrl ?? "https://api.anthropic.com/v1";
+    registrarLotes(this, {
+      protocolo: "anthropic",
+      origen: origenAnthropic(base),
+      endpoint: endpointLimpio(base),
+      cuerpo: (req) => this.construirCuerpo(req).body,
+      // El contrato viaja como la herramienta `bvsala_contract` y su `input` se
+      // sirve como texto, igual que en generate(); los tres indicadores del
+      // atestado solo importan a la referencia, que un lote no usa.
+      leer: (json, req) => this.leerMensaje(json as RespuestaAnthropic, req, false, false, false, false),
+      solicitar: (ruta, o) => {
+        const url = `${base.replace(/\/$/, "")}${rutaRelativa(ruta)}`;
+        return this.fetchImpl(url, {
+          method: o.method,
+          headers: {
+            ...(o.json !== undefined ? { "content-type": "application/json" } : {}),
+            "anthropic-version": this.opts.apiVersion ?? "2023-06-01",
+            ...(this.opts.apiKey ? { "x-api-key": this.opts.apiKey } : {}),
+            ...this.opts.headers,
+          },
+          ...(o.json !== undefined ? { body: JSON.stringify(o.json) } : {}),
+          ...(o.signal ? { signal: o.signal } : {}),
+        });
+      },
+    });
   }
 
   /** The id Anthropic's API sees: bare at `api.anthropic.com`, as written elsewhere. */
@@ -660,7 +689,8 @@ export class AnthropicProvider implements Provider {
           "cheaper synchronous tier: its `service_tier` chooses between priority capacity (more " +
           "expensive) and standard, not a flex. The request goes out unchanged and the report " +
           "credits no discount. The 50% for deferring exists in the Message Batches API, which is " +
-          "asynchronous and does not fit a request/response call.",
+          "asynchronous and does not fit a request/response call: send such requests with " +
+          "layer.batches.submit() instead.",
       );
     }
 
@@ -771,6 +801,20 @@ export class AnthropicProvider implements Provider {
     esquemaPorPrompt: boolean,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as RespuestaAnthropic;
+    return this.leerMensaje(json, req, contratoNativo, turnoAnadido, esquemaPorPrompt, this.opts.requireUsage === true);
+  }
+
+  // El mensaje ya parseado —el de generate() o el de un resultado de lote— en la
+  // forma neutra. `exigirUso` es `requireUsage` en generate(); en un lote va
+  // apagado (una línea sin contador no puede tumbar las demás: sale marcada).
+  private leerMensaje(
+    json: RespuestaAnthropic,
+    req: ProviderRequest,
+    contratoNativo: boolean,
+    turnoAnadido: boolean,
+    esquemaPorPrompt: boolean,
+    exigirUso: boolean,
+  ): ProviderResponse {
     const bloques = json.content ?? [];
     // RAZONAMIENTO OCULTO. La API de Mensajes no lo desglosa en `usage`: los
     // tokens de `thinking` van dentro de `output_tokens` sin más. Lo que sí
@@ -814,7 +858,7 @@ export class AnthropicProvider implements Provider {
     // entre por donde entre.
     const uso = json.usage;
     const { usage, entradaAusente, salidaAusente } = usoDeMensajes(uso, uso?.output_tokens, razono);
-    if (this.opts.requireUsage && (entradaAusente || salidaAusente)) {
+    if (exigirUso && (entradaAusente || salidaAusente)) {
       throw new Error(mensajeDeUsoIncompleto(uso?.input_tokens, uso?.output_tokens));
     }
 
@@ -1030,5 +1074,19 @@ async function safeText(response: Response): Promise<string> {
     return (await response.text()).slice(0, 500);
   } catch {
     return "<no body>";
+  }
+}
+
+// EL API OFICIAL DE ANTHROPIC, por el host y solo por el host: https y
+// `api.anthropic.com` exacto. Un proxy, un gateway, Bedrock o Vertex dan `null`
+// —otra lista de precios, u otra factura—, y con `null` lo que valga un lote es
+// como mucho `estimated`. NO se exporta: el barril de proveedores reexporta este
+// fichero entero hacia los tipos publicados.
+function origenAnthropic(base: string): "anthropic" | null {
+  try {
+    const u = new URL(base);
+    return u.protocol === "https:" && u.hostname.toLowerCase() === "api.anthropic.com" ? "anthropic" : null;
+  } catch {
+    return null;
   }
 }

@@ -41,6 +41,7 @@ import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
 import {
   SIN_TIER_DIFERIBLE,
   TIER_DIFERIBLE_OPENAI,
+  hayTarifaDeLote,
   latenciaDelTier,
   valorarTierServido,
   type MotivoSinValoracion,
@@ -1144,6 +1145,13 @@ export class SavingsPipeline {
 
     if (this.config.devUnlicensed === true) return true;
     return typeof process !== "undefined" && process.env?.BVSALA_DEV_OPEN === "1";
+  }
+
+  // El MISMO portero de generate() para las superficies que no pasan por él:
+  // `layer.batches` (src/batch/lotes.ts). Sin esto, los lotes serían la puerta
+  // trasera del pago. SavingsPipeline no se reexporta, así que no es API.
+  exigirLicencia(): void {
+    this.assertLicensed();
   }
 
   /**
@@ -4086,7 +4094,19 @@ export class SavingsPipeline {
       ahoraMs: this.now(),
     });
     if (!v.ok) {
-      return { ...base, reason: motivoDelDiferido(v.motivo, pedido, servido) };
+      // Un modelo sin tarifa Flex publicada que SÍ la tiene de lote (gpt-4o-mini,
+      // gpt-4.1…): se dice dónde vive su descuento. Solo cuando el adaptador
+      // propio atestigua el API OFICIAL de OpenAI: detrás de un proxy no se sabe
+      // si hay Batch API, y `layer.batches` solo sabe hablar con los adaptadores
+      // de este paquete.
+      const haciaLotes =
+        v.motivo === "no-tier-price" &&
+        origen === "openai" &&
+        hayTarifaDeLote(modelo, origen, this.now())
+          ? "; this model's deferred discount is published for the provider's batch API instead: send such " +
+            "requests with layer.batches.submit()"
+          : "";
+      return { ...base, reason: motivoDelDiferido(v.motivo, pedido, servido) + haciaLotes };
     }
     return {
       ...base,
@@ -4970,7 +4990,9 @@ function contratoDeLaCopia(peticion: ProviderRequest, resp: ProviderResponse): "
   return validateAgainstSchema(parsed.value, peticion.schema).valid ? "met" : "missed";
 }
 
-function tryParse(
+// Exportada para la superficie de lotes (src/batch/lotes.ts), que valida el
+// contrato de cada resultado con la MISMA regla. pipeline.js no se reexporta.
+export function tryParse(
   text: string,
 ): { ok: true; value: unknown; rescatado?: string } | { ok: false } {
   try {

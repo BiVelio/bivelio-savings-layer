@@ -60,6 +60,7 @@ function capaFalsa(g: {
 }): SavingsLayer & { llamadas: number } {
   const capa = {
     llamadas: 0,
+    batches: undefined as unknown as SavingsLayer["batches"],
     generate<T>(r: SavingsRequest): Promise<SavingsResult<T>> {
       capa.llamadas += 1;
       return g.generate!(r) as Promise<SavingsResult<T>>;
