@@ -6,6 +6,9 @@ import {
   bootstrapRatioCI,
   wilcoxonSignedRankP,
   mulberry32,
+  wilsonCI,
+  normalQuantile,
+  bootstrapProporcionPorGrupos,
 } from "../benchmarks/stats.js";
 
 describe("stats — descriptive", () => {
@@ -69,5 +72,62 @@ describe("stats — mulberry32 PRNG", () => {
       expect(v).toBeGreaterThanOrEqual(0);
       expect(v).toBeLessThan(1);
     }
+  });
+});
+
+describe("stats — Wilson (precisión y recall de la caché semántica)", () => {
+  it("wilsonCI(5,10) ≈ [0,2366; 0,7634]", () => {
+    const ci = wilsonCI(5, 10)!;
+    expect(ci.point).toBe(0.5);
+    expect(ci.lower).toBeCloseTo(0.2366, 4);
+    expect(ci.upper).toBeCloseTo(0.7634, 4);
+  });
+
+  it("wilsonCI(0,10) ≈ [0; 0,2775]: no colapsa a un punto con k = 0", () => {
+    const ci = wilsonCI(0, 10)!;
+    expect(ci.lower).toBe(0);
+    expect(ci.upper).toBeCloseTo(0.2775, 4);
+  });
+
+  it("wilsonCI(0,0) es null: sin denominador no hay proporción que acotar", () => {
+    expect(wilsonCI(0, 0)).toBeNull();
+  });
+
+  it("wilsonCI(10,10) no se sale de [0,1] y su suelo queda por debajo de 1", () => {
+    const ci = wilsonCI(10, 10)!;
+    expect(ci.upper).toBe(1);
+    expect(ci.lower).toBeLessThan(1);
+    expect(ci.lower).toBeCloseTo(0.7225, 4);
+  });
+
+  it("normalQuantile(0,975) = 1,959964", () => {
+    expect(normalQuantile(0.975)).toBeCloseTo(1.959964, 6);
+    expect(normalQuantile(0.5)).toBeCloseTo(0, 12);
+  });
+});
+
+describe("stats — bootstrap por grupos (el stream no tiene consultas independientes)", () => {
+  const grupos = Array.from({ length: 40 }, (_, i) => ({ num: i % 3, den: 3 + (i % 5) }));
+
+  it("es determinista con semilla", () => {
+    const a = bootstrapProporcionPorGrupos(grupos, { resamples: 500, seed: 9 })!;
+    const b = bootstrapProporcionPorGrupos(grupos, { resamples: 500, seed: 9 })!;
+    expect(a).toEqual(b);
+    expect(a.lower).toBeLessThanOrEqual(a.point);
+    expect(a.upper).toBeGreaterThanOrEqual(a.point);
+  });
+
+  it("colapsa si todos los grupos tienen la misma proporción", () => {
+    const iguales = [
+      { num: 1, den: 2 },
+      { num: 3, den: 6 },
+      { num: 5, den: 10 },
+    ];
+    expect(bootstrapProporcionPorGrupos(iguales, { resamples: 300, seed: 1 })).toEqual({ point: 0.5, lower: 0.5, upper: 0.5 });
+  });
+
+  it("sin denominador, null; los grupos vacíos no cuentan", () => {
+    expect(bootstrapProporcionPorGrupos([{ num: 0, den: 0 }])).toBeNull();
+    expect(bootstrapProporcionPorGrupos([{ num: 1, den: 2 }, { num: 0, den: 0 }])).toEqual({ point: 0.5, lower: 0.5, upper: 0.5 });
   });
 });

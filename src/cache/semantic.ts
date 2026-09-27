@@ -44,10 +44,14 @@ export interface SemanticRecord {
   /**
    * The COMPLETE identity of the request that produced this answer.
    *
-   * Every field here is a hard filter, checked before similarity is scored, and
-   * the set is identical to the one the exact cache keys on. Two questions
-   * worded alike but carrying different attached data, a different model or a
-   * different system prompt are different questions, and never match.
+   * Every field here is a hard filter, checked before similarity is scored.
+   * Together with the isolation fields above they are the identity the exact
+   * cache keys on, except for the text itself, which is what similarity
+   * compares. Freshness is covered by construction: the semantic cache only
+   * runs on requests whose freshness bucket is `any`, the default. Two questions worded
+   * alike but carrying different attached data, a different model, a different
+   * system prompt, a different tool catalog or different sampling controls are
+   * different questions, and never match.
    */
   model: string;
   systemPromptHash: string;
@@ -55,15 +59,31 @@ export interface SemanticRecord {
   locale: string;
   schemaVersion: string;
   safetyPolicyVersion: string;
+  /** Hash of the declared tool catalog (ids, risk and parameters). */
+  toolsetHash: string;
+  /** Sampling temperature of the request, or null when it set none. */
+  temperature: number | null;
+  /** Sampling seed of the request, or null when it set none. */
+  seed: number | null;
   storedAtMs: number;
 }
 
 export interface SemanticHit {
   record: SemanticRecord;
   similarity: number;
+  /** Your verifier's score, or the similarity itself when no verifier is configured (see `verifierRan`). */
   verifierScore: number;
+  /** The lower of `similarity` and `verifierScore`; a hit is served only at or above `acceptFloor`. */
   confidence: number;
   ageMs: number;
+  /** Similarity a candidate had to reach to be considered at all. */
+  similarityFloor: number;
+  /** Confidence a candidate had to reach to be served. */
+  acceptFloor: number;
+  /** `built_in`: the lexical embedder shipped with the SDK. `custom`: the one you passed as `embed`. */
+  embedder: "built_in" | "custom";
+  /** Whether a verifier scored this hit. When false, `verifierScore` equals `similarity`. */
+  verifierRan: boolean;
 }
 
 export interface SemanticCacheOptions {
@@ -319,11 +339,17 @@ export class InMemorySemanticCache {
   private readonly ttlMs: number | undefined;
   private readonly maxRecords: number;
   private readonly now: () => number;
+  // Si el embebedor es el léxico que viaja con el SDK. Se guarda para que el
+  // acierto lo declare (`SemanticHit.embedder`) y el libro de calidad pueda
+  // decir con qué vara se midió la similitud: 0,9 con un vector léxico y 0,9
+  // con un sentence-transformer no significan lo mismo.
+  private readonly embebedorPropio: boolean;
 
   constructor(opts: SemanticCacheOptions = {}) {
     // Sin `embed`, el local. Es lo que convierte esta caché en algo que se puede
     // construir —y por tanto medir— sin traerse un proveedor de embeddings.
     const propio = opts.embed == null;
+    this.embebedorPropio = propio;
     this.embed = opts.embed ?? embebedorLocal;
     this.verify = opts.verify;
     // EL UMBRAL SIGUE AL EMBEBEDOR, y no hacerlo dejaba la palanca muerta igual.
@@ -373,6 +399,17 @@ export class InMemorySemanticCache {
       if (record.locale !== c.locale) continue;
       if (record.schemaVersion !== c.schemaVersion) continue;
       if (record.safetyPolicyVersion !== c.safetyPolicyVersion) continue;
+      // Y LOS TRES QUE LA CLAVE EXACTA YA TENÍA Y ESTE FILTRO NO: el catálogo de
+      // herramientas, la temperatura y la semilla (`buildExactKey`: `tools`,
+      // `temperature`, `seed`). El JSDoc de `SemanticRecord` prometía la misma
+      // identidad que la clave exacta y no era verdad: con herramientas de solo
+      // lectura declaradas, una reformulación podía recibir la respuesta que se
+      // generó viendo OTRO catálogo —o con otro muestreo—, y eso cambia qué
+      // podía contestar el modelo. Van antes de puntuar, como los demás: un
+      // candidato con otra identidad no llega ni a compararse.
+      if (record.toolsetHash !== c.toolsetHash) continue;
+      if (record.temperature !== c.temperature) continue;
+      if (record.seed !== c.seed) continue;
       if (
         this.ttlMs != null &&
         this.now() - record.storedAtMs > this.ttlMs
@@ -401,6 +438,10 @@ export class InMemorySemanticCache {
           verifierScore,
           confidence,
           ageMs: this.now() - record.storedAtMs,
+          similarityFloor: this.similarityThreshold,
+          acceptFloor: this.acceptThreshold,
+          embedder: this.embebedorPropio ? "built_in" : "custom",
+          verifierRan: this.verify != null,
         };
       }
     }
@@ -425,6 +466,9 @@ export class InMemorySemanticCache {
       locale: c.locale,
       schemaVersion: c.schemaVersion,
       safetyPolicyVersion: c.safetyPolicyVersion,
+      toolsetHash: c.toolsetHash,
+      temperature: c.temperature,
+      seed: c.seed,
       storedAtMs: this.now(),
     });
   }

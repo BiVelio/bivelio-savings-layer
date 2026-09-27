@@ -504,3 +504,53 @@ answers that are cheap but wrong.
   run, and eight scenarios share the same contract, so when the hint switched on depended
   on what the model had answered earlier in the run.
 
+
+## Semantic cache precision (`pnpm cache-semantica`)
+
+The savings bench has no semantic-cache scenario (see `PALANCAS_SIN_ESCENARIO` in
+`scenarios.ts`). What it cannot say, whether a reused answer was **right** to reuse,
+is measured here, against public datasets and without calling any model. It is a
+precision bench, not a savings bench: it computes no money.
+
+**Protocol.** The cache as it ships (built-in lexical embedder, default floors,
+deterministic guard, policy) is driven through the whole layer, `createSavingsLayer`
+with a stand-in provider, and every figure is read from the `SavingsReport`
+(`report.cache.result`, `report.qualityLedger`), not from a re-implementation. The
+floors and the record limit in the artifact are probed from the code, not copied.
+
+- **Triplets**: GPTCache `reuse_compatibility` at a pinned commit, arm `arena` only.
+  Each case runs in its own tenant (independent cases, Wilson 95 % intervals);
+  `uncertain` labels are left out of precision and recall and reported apart.
+- **Stream**: SemBenchmarkLmArena at a pinned revision, first `--n` prompts in dataset
+  order, one tenant, the default record limit. A hit is correct when it serves the
+  prompt's class (`ID_Set`). Hits depend on the cache state, so intervals come from a
+  bootstrap over whole classes (B = 2000, fixed seed).
+- **Scorer self-check**: `--verificar-puntuador` recomputes the project's published
+  figures for its own evaluator from its files; publishing requires it to match exactly.
+- No threshold is tuned here. If one ever is, tune on `split=calibration` and report
+  on `split=test`.
+
+```bash
+pnpm cache-semantica --seco                 # synthetic fixture, no network (what CI covers)
+pnpm cache-semantica --descargar            # pinned revisions, verified by sha256 / LFS oid
+pnpm cache-semantica --verificar-puntuador
+pnpm cache-semantica --conjunto todos --n 20000
+pnpm cache-semantica:publicar --dry-run && pnpm cache-semantica:publicar
+```
+
+Other flags: `--conjunto tripletas|lmarena`, `--max-registros <N>`, `--datos <dir>`,
+`--embebedor dataset:<column>` (precomputed vectors from the stream dataset, about
+1 GB of download; a diagnostic the publisher refuses to publish) and `--incluir-orcas`.
+
+**Licenses.** The two triplet arms `search_llama` / `search_gpt` and
+SemBenchmarkSearchQueries derive from ORCAS, which is for non-commercial research only.
+They are excluded unless `--incluir-orcas` is passed, and the publisher refuses any
+artifact that carries them unless `--permitir-origen-no-comercial` is passed, which is
+the owner's legal call. Downloads go to `benchmarks/out/cache-semantica/datos/`
+(git-ignored): no dataset text is redistributed from this repository.
+
+**Evidence.** `pnpm cache-semantica:publicar` only accepts a live artifact measured on a
+clean tree at a recorded commit, with a revision and a fingerprint for every source. It
+writes `docs/SEMANTIC-CACHE-PRECISION.md` and copies the artifact, which holds ids,
+decisions and similarity scores and no text, to
+`benchmarks/evidencia/cache-semantica-<date>.json`; the page cites it by sha256.

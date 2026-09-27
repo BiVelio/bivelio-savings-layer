@@ -78,7 +78,13 @@ afterEach(() => {
 });
 
 const sobreCompresion = () => avisos.filter((a) => a.includes("savings.compression"));
-const sobreCacheSemantica = () => avisos.filter((a) => a.includes("savings.semanticCache"));
+// El aviso de «pediste la caché semántica y la capa no tiene». Se filtra por su
+// frase y no por `savings.semanticCache` a secas: la petición de este fichero
+// lleva DOS turnos de usuario, o sea que es tráfico agéntico, y con la caché
+// configurada habla OTRO aviso —`semantica-agentica-apagada`, que dice que se
+// apartó por defecto— que no es el que se prueba aquí.
+const sobreCacheSemantica = () =>
+  avisos.filter((a) => a.includes("savings.semanticCache") && a.includes("has no semantic cache"));
 
 describe("pedir compresión sin compresor AVISA", () => {
   it('`compression: "auto"` sin compresor dice qué no pasa, qué se pierde y cómo encenderlo', async () => {

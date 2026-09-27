@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { UsageEmitter } from "../src/metering/emitter.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 import { BV_SALA_VERSION, CABECERA_VERSION } from "../src/version.js";
+import { CAMPOS_DEL_REGISTRO_DE_USO } from "../apps/web/lib/metering/usage.js";
 
 function mkReport(requestId = "req-abc"): SavingsReport {
   return {
@@ -151,6 +152,46 @@ describe("UsageEmitter", () => {
         expect("eliminatedInputFloorCost" in (await wireDe(conSuelo(malo))), String(malo)).toBe(false);
       }
     });
+  });
+
+  /**
+   * EL LIBRO DE CALIDAD NO VIAJA. Su promesa pública es «never leaves your
+   * process», y el ingest valida con lista blanca: un campo desconocido tumbaría
+   * el lote entero. Se registra un informe con el libro COMPLETO (todos los
+   * bloques) y se compara el cuerpo del POST con la lista blanca DEL SERVIDOR,
+   * no con una copia local que podría quedarse atrás.
+   */
+  it("el libro de calidad no viaja: el cuerpo ⊆ la lista blanca del ingest", async () => {
+    const { fn, calls } = okFetch();
+    const em = new UsageEmitter({ url: URL, serviceAccountKey: "bvk_x", fetchImpl: fn });
+    const conLibro = {
+      ...mkReport("req-libro"),
+      qualityStatus: "task_equivalent",
+      qualityLedger: {
+        source: "coalesced",
+        sharedFrom: "semantic_cache",
+        schema: { outcome: "passed", decodeTimeConstraint: false, errorCount: 0, unwrapped: true },
+        repair: { outcome: "skipped", skipReason: "output_truncated" },
+        truncation: { truncated: false, finishReason: "stop", capSetByCaller: true, outputLimit: 256 },
+        cacheMatch: {
+          kind: "semantic", ageMs: 10, similarity: 0.93, similarityFloor: 0.72, acceptFloor: 0.85,
+          verifierScore: 0.9, embedder: "built_in", factGuard: "passed",
+        },
+        cascade: { mode: "shadow", gate: "structural", outcome: "not_applied", sampleDiverged: false },
+      },
+    } as unknown as SavingsReport;
+    em.record(conLibro);
+    await em.flush();
+    const rec = JSON.parse(calls[0]!.init.body as string)[0] as Record<string, unknown>;
+    const permitidos = new Set(CAMPOS_DEL_REGISTRO_DE_USO);
+    for (const k of Object.keys(rec)) expect(permitidos.has(k), k).toBe(true);
+    expect(rec["qualityLedger"]).toBeUndefined();
+    expect(rec["qualityStatus"]).toBeUndefined();
+    // Y nada del libro aparece con otro nombre: ningún valor suyo en el cuerpo.
+    const cuerpo = calls[0]!.init.body as string;
+    for (const pista of ["semantic_cache", "not_applied", "similarityFloor", "0.93", "output_truncated"]) {
+      expect(cuerpo).not.toContain(pista);
+    }
   });
 
   it("stamps the seat resolved AFTER records were buffered (none lost)", async () => {
