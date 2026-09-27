@@ -385,16 +385,21 @@
     },
     "installLicensePanel": {
       "eyebrow": "Get started",
-      "heading": "Four steps. Your prompts never touch our servers.",
+      "heading": "Three steps. Your prompts never touch our servers.",
       "step1": "<b>1 · Get your license key</b> — the SDK is public but fail-closed; it only runs with a valid key. Passed as <code>licenseKey</code>.",
       "step2": "<b>2 · Create & verify a service-account key</b> — a machine credential (<code>bvk_…</code>) that does two jobs: it reports counts-only usage (your seats & savings), and it lets the SDK and the gateway collect your <b>renewed license by themselves</b> every billing period. Separate from the license key; only its hash is stored. Create one, then <b>Test my key</b> to confirm it's live.",
       "currentKey": "current service-account key",
       "noneYet": "none yet — click above",
       "shownOnce": "shown once at creation — only the prefix is stored.",
       "renewalNote": "<b>Keep this key in your deployment.</b> Your license expires at the end of each billing period and the renewal mints a new one. With this key the SDK collects it and swaps it in without a restart. Without it nobody collects it, so someone has to paste the new key by hand every period — and if nobody does, the SDK stops once the grace period ends, even though the subscription is paid and up to date.",
-      "step3": "<b>3 · Install</b> — public on npm, no token, no config.",
-      "step4": "<b>4 · Wire your provider & read the SavingsReport</b>",
-      "gatewayNote": "<b>Coding terminal instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. Also <code>bvsala codex</code>, <code>bvsala goose</code> and <code>bvsala qwen</code>; <code>bvsala doctor</code> prints the exact block for the rest. It uses the same service key from step 2 and collects your license by itself — like the SDK, it does not start without an active license.",
+      "step3": "<b>3 · Set it up with one command</b> — the recommended way. Run it in your project's folder:",
+      "initNote": "It reads your <code>package.json</code> (Next.js, Express, the Vercel AI SDK, Mastra, LangChain.js, the Anthropic SDK or the OpenAI SDK) and prints what your stack needs: the install line for your package manager, which keys are still missing, the exact code for your adapter and a check that spends no tokens — the layer answers it on your machine, without calling the model. It writes nothing: <code>--write</code> creates new files only, after asking you, and never overwrites an existing one.",
+      "manualInstall": "<b>Prefer to wire it by hand?</b> Install the package — public on npm, no token, no config:",
+      "manualWire": "…then wire your provider and read the SavingsReport:",
+      "gatewayNote": "<b>Coding agent instead of an app?</b> The same package ships a local measuring gateway: <code>bvsala claude</code> launches Claude Code through it and this dashboard shows the spend, token by token. It uses the same service key from step 2 and collects your license by itself — like the SDK, it does not start without an active license.",
+      "doctorComment": "other agents and SDKs: the exact configuration for each",
+      "agentsNote": "Each wrapper sets its agent up for that session only — nothing in its configuration changes — and on exit tells you how many requests it metered, which ones it could not, and why. <code>bvsala copilot</code> needs your own Anthropic key (BYOK): GitHub-hosted models never go through a base URL, so there is nothing to meter. For Crush, Droid, Cline, Continue or Copilot in VS Code, <code>bvsala doctor</code> prints the exact configuration. <b>Cursor cannot be metered</b>: it sends every request, your own key included, from its own servers, which cannot reach a gateway on your machine. <b>Gemini CLI, not yet</b>: it speaks the Gemini API, whose usage counter the gateway does not read yet.",
+      "pythonNote": "<b>Python?</b> The <code>bvsala</code> client for Python routes the official OpenAI and Anthropic SDKs through this same gateway (<code>bvsala gateway</code>) and hands your code the report of each request — the same figures this dashboard receives. It needs a 0.4.26 or later gateway and Python 3.10 or newer. It is not on PyPI yet: until it is, it installs from the repository with <code>pip install ./packages/python</code>, and the repository is not public yet — if you need it now, write to support@bivelio.com.",
       "finalNote": "That's it. No valid license → <code>generate()</code> refuses. If your plan is cancelled the SDK stops within ~15 min via <code>licenseServerUrl</code> — no restart, and it never bricks your production if we're unreachable."
     },
     "accountPlanStrip": {
@@ -866,14 +871,15 @@
       "eyebrow": "Gateway · coding terminals",
       "title": "Claude Code on an API key? See its real spend, token by token.",
       "body": "One command puts a local meter in front of your terminal, with no changes to your code: export your service key and start your agent through bvsala. Your prompts never leave your machine — only counts and cost reach your dashboard.",
-      "note": "The gateway measures, with your provider's own counter, every request whose usage the provider reports (for models in our price catalog) and, like the SDK, runs only with an active license: it collects it with your service key and verifies its signature on your machine. With a PRO license, on Anthropic models, it also applies one lever by default: it moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves chained turns as they are. That changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. The gateway also works with Codex CLI, Goose and Qwen Code — and bvsala doctor prints the exact configuration for the rest.",
+      "note": "The gateway measures, with your provider's own counter, every request whose usage the provider reports (for models in our price catalog) and, like the SDK, runs only with an active license: it collects it with your service key and verifies its signature on your machine. With a PRO license, on Anthropic models, it also applies one lever by default: it moves cache writes from the one-hour TTL to the five-minute one only on turns where a large part of the prompt is new — such as a session's first turn or a compaction — and leaves chained turns as they are. That changes the price, never the content the model reads. The other levers stay off until you switch them on. The savings-mode skill is available for your caps, with its effect still to be measured. The gateway also works with Codex CLI, Goose, Qwen Code, opencode, Kilo, Aider and, with your own Anthropic key, GitHub Copilot CLI; for others, such as Cline or Continue, bvsala doctor prints the exact configuration. Cursor cannot be metered, and Gemini CLI not yet.",
       "pythonNote": "Python or any other language? Point the official OpenAI or Anthropic SDK at the gateway and every request whose usage the provider reports, for a model with a list price, is recorded in this dashboard at that price; the gateway's log says when one is not. bvsala doctor prints the base URL for each SDK. For OpenAI streaming, ask for usage in the request (stream_options.include_usage).",
       "cta": "See how it works →"
     },
     "integrate": {
       "eyebrow": "Five lines to start",
       "title": "Run it in your own app. Your prompts never touch our servers.",
-      "body": "Drop the SDK in front of your provider. Every response carries a full SavingsReport you can chart — the same numbers the dashboard reads."
+      "body": "Drop the SDK in front of your provider. Every response carries a full SavingsReport you can chart — the same numbers the dashboard reads.",
+      "initNote": "<b>Or let one command tailor it to your stack.</b> <code>init</code> reads your <code>package.json</code> (Next.js, Express, the Vercel AI SDK, Mastra, LangChain.js, the Anthropic or the OpenAI SDK) and prints the install line, the exact code for your adapter and a check that spends no tokens: once your license is in place, the layer answers it on your machine, without calling the model. It writes nothing unless you ask it to."
     },
     "pricing": {
       "eyebrow": "One plan, priced per seat",

@@ -138,7 +138,7 @@ function compila(fragmento: string): { ok: boolean; errores: string } {
 }
 
 describe("los fragmentos que le damos al cliente compilan pegados tal cual", () => {
-  it("el del paso 4 del panel de instalación", () => {
+  it("el del cableado a mano del panel de instalación (antes, el paso 4)", () => {
     const r = compila(fragmentoDelPanel());
     expect(r.errores).toBe("");
     expect(r.ok).toBe(true);

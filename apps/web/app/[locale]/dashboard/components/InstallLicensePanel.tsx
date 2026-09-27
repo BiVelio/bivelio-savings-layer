@@ -50,6 +50,35 @@ console.log(report.cost.netSavings);  // → 0..1: the share of the baseline you
 console.log(report.cost.basis);       // → "measured" | "reference" | "estimated" | "unmeasured" — how it was obtained`;
 
 /**
+ * LA VÍA RECOMENDADA DESDE LA 0.4.26: `init` lee el package.json del proyecto,
+ * detecta la pila e imprime el cableado exacto y una comprobación que no llama al
+ * modelo. No escribe nada sin permiso (con `--write`, solo ficheros nuevos y tras
+ * preguntar), así que puede ir primero sin letra pequeña. `@latest` a propósito:
+ * una copia vieja en caché de npx no trae `init` (gateway/init.ts, y el informe de
+ * onboarding del 27-09-2026, §7 y §9).
+ */
+const INIT = "npx @bivelio/savings-layer@latest init";
+
+/**
+ * Los agentes de código con envoltorio propio, en el orden de la ayuda de
+ * `bvsala` (gateway/bin.ts). Tiene que coincidir con TERMINALES_CON_ENVOLTORIO
+ * (gateway/envoltorios.ts): un comando que el binario no conoce imprime la ayuda
+ * y sale con 1, y la web lo habría anunciado. El nombre del producto no se
+ * traduce; Cursor y Gemini CLI NO van aquí porque no se pueden medir hoy
+ * (docs/terminales/no-soportados.md): lo dice `agentsNote`.
+ */
+const AGENTES: readonly (readonly [comando: string, producto: string])[] = [
+  ["claude", "Claude Code"],
+  ["codex", "Codex CLI"],
+  ["goose", "Goose"],
+  ["qwen", "Qwen Code"],
+  ["opencode", "opencode"],
+  ["kilo", "Kilo CLI"],
+  ["copilot", "GitHub Copilot CLI"],
+  ["aider", "Aider"],
+];
+
+/**
  * Colorea UNA línea del fragmento para lectura: la línea de paso («// N ·») en
  * azul de marca, los comentarios en suave, las palabras clave en azul y las
  * cadenas en ámbar — la misma paleta que el snippet de la landing y el de
@@ -149,17 +178,28 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
         {t.rich("installLicensePanel.renewalNote", { b: (chunks) => <b>{chunks}</b> })}
       </p>
 
-      {/* 3 · install (public npm, zero auth) */}
+      {/* 3 · un comando: `init` detecta la pila e imprime el cableado exacto. Es la
+          vía recomendada; el cableado a mano sigue debajo como alternativa. */}
       <p className="ck-note">
         {t.rich("installLicensePanel.step3", { b: (chunks) => <b>{chunks}</b> })}
+      </p>
+      <div className="code2">
+        <span>{INIT}</span>
+        <CopyButton text={INIT} />
+      </div>
+      <p className="ck-note">
+        {t.rich("installLicensePanel.initNote", { code: (chunks) => <code>{chunks}</code> })}
+      </p>
+
+      {/* La alternativa: instalar (npm público, sin token) y cablear a mano. */}
+      <p className="ck-note" style={{ marginTop: 12 }}>
+        {t.rich("installLicensePanel.manualInstall", { b: (chunks) => <b>{chunks}</b> })}
       </p>
       <div className="code2">
         <span>pnpm add @bivelio/savings-layer</span>
         <CopyButton text="pnpm add @bivelio/savings-layer" />
       </div>
-
-      {/* 4 · wire + run */}
-      <p className="ck-note">{t.rich("installLicensePanel.step4", { b: (chunks) => <b>{chunks}</b> })}</p>
+      <p className="ck-note">{t("installLicensePanel.manualWire")}</p>
       <div className="code2">
         <pre className="code-multi">{WRAP.split("\n").map((l, i) => lineaColoreada(l, i))}</pre>
         <CopyButton text={WRAP} />
@@ -171,7 +211,7 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
         })}
       </p>
 
-      {/* 5 · terminal (gateway) — la vía sin código: medir Claude Code/Codex.
+      {/* Terminal (gateway) — la vía sin código: medir los agentes de código.
           La clave de servicio del paso 2 es la única credencial que se exporta:
           con ella el gateway recoge la licencia, sin la cual no arranca. */}
       <p className="ck-note" style={{ marginTop: 16 }}>
@@ -189,31 +229,53 @@ export async function InstallLicensePanel({ ctx }: { ctx: OrgContext }) {
       <div style={{ marginTop: 8 }}>
         <SnippetPorSistema
           unix={
-            <>
-              <div className="code2">
-                <span>export BIVELIO_SERVICE_KEY=bvk_…</span>
-                <CopyButton text="export BIVELIO_SERVICE_KEY=" />
-              </div>
-              <div className="code2" style={{ marginTop: 8 }}>
-                <span>bvsala claude</span>
-                <CopyButton text="bvsala claude" />
-              </div>
-            </>
+            <div className="code2">
+              <span>export BIVELIO_SERVICE_KEY=bvk_…</span>
+              <CopyButton text="export BIVELIO_SERVICE_KEY=" />
+            </div>
           }
           windows={
-            <>
-              <div className="code2">
-                <span>{'$env:BIVELIO_SERVICE_KEY = "bvk_…"'}</span>
-                <CopyButton text={'$env:BIVELIO_SERVICE_KEY = ""'} />
-              </div>
-              <div className="code2" style={{ marginTop: 8 }}>
-                <span>bvsala claude</span>
-                <CopyButton text="bvsala claude" />
-              </div>
-            </>
+            <div className="code2">
+              <span>{'$env:BIVELIO_SERVICE_KEY = "bvk_…"'}</span>
+              <CopyButton text={'$env:BIVELIO_SERVICE_KEY = ""'} />
+            </div>
           }
         />
       </div>
+      {/* Los comandos de los envoltorios son iguales en los dos sistemas: van
+          fuera de las pestañas. Sin botón de copiar: se elige UNO de la lista. */}
+      <div className="code2" style={{ marginTop: 8 }}>
+        <pre className="code-multi">
+          {AGENTES.map(([comando, producto]) => (
+            <span key={comando}>
+              <span className="k">bvsala</span>
+              {` ${comando.padEnd(10)}`}
+              <span className="c">{`# ${producto}`}</span>
+              {"\n"}
+            </span>
+          ))}
+          <span className="k">bvsala</span>
+          {` ${"doctor".padEnd(10)}`}
+          <span className="c">{`# ${t("installLicensePanel.doctorComment")}`}</span>
+        </pre>
+      </div>
+      <p className="ck-note" style={{ marginTop: 10 }}>
+        {t.rich("installLicensePanel.agentsNote", {
+          b: (chunks) => <b>{chunks}</b>,
+          code: (chunks) => <code>{chunks}</code>,
+        })}
+      </p>
+      {/* Python: el cliente `bvsala` de packages/python habla con este mismo
+          gateway y le pide el informe de cada petición (rutas locales, 0.4.26 o
+          posterior). No está en PyPI y el repositorio es privado: la nota da la
+          instalación que documenta packages/python/README.md y dice las dos
+          cosas, en vez de inventar un `pip install` de PyPI que no existe. */}
+      <p className="ck-note" style={{ marginTop: 10 }}>
+        {t.rich("installLicensePanel.pythonNote", {
+          b: (chunks) => <b>{chunks}</b>,
+          code: (chunks) => <code>{chunks}</code>,
+        })}
+      </p>
       {/* El skill savings-mode, también aquí: el login no honra `next`, así que
           quien vino de la landing a por el zip aterriza en el panel — y lo
           encuentra sin volver atrás. Claves REUTILIZADAS de landing.skill: el

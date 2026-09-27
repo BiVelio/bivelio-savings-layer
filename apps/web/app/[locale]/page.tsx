@@ -679,6 +679,18 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
               </Fragment>
             ))}
           </pre>
+          {/* La vía de un comando (0.4.26): `init` lee el package.json, detecta la
+              pila e imprime el cableado exacto y una comprobación que no llama al
+              modelo. No escribe nada sin permiso, así que va aquí sin letra
+              pequeña. La comprobación también exige licencia (el SDK es
+              fail-closed): la copia lo dice en vez de venderla como prueba gratis. */}
+          <p style={{ marginTop: 16, opacity: 0.85 }}>
+            {t.rich("integrate.initNote", { b: (c) => <b>{c}</b>, code: (c) => <code>{c}</code> })}
+          </p>
+          <pre className="code" style={{ marginTop: 8 }}>
+            <span className="k">npx</span>
+            {" @bivelio/savings-layer@latest init"}
+          </pre>
           {/* Sistemas donde ya viven las automatizaciones del cliente: logos
               oficiales a color (decisión del dueño). El texto mantiene la
               afirmación honesta: se mide la llamada a la API con su clave, con
