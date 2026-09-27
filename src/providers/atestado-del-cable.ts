@@ -160,3 +160,21 @@ export function declararBusquedaNativa(proveedor: object, capacidad: "oficial" |
 export function busquedaNativaDelProveedor(proveedor: unknown): "oficial" | "compatible" | undefined {
   return typeof proveedor === "object" && proveedor !== null ? busquedas.get(proveedor) : undefined;
 }
+
+// LOS AVISOS DE UN ADAPTADOR PROPIO, CALLADOS POR LA CAPA. `silenceWarnings`
+// calla los avisos del pipeline, pero el adaptador los emite por su cuenta y no
+// ve esa configuración: el llamante lo construye aparte y se lo pasa a la capa.
+// La capa lo apunta aquí al crearse, y el adaptador lo consulta antes de avisar.
+// Mismo patrón que los de arriba: privado, sin barril. Un adaptador compartido
+// por dos capas queda callado si una de ellas lo pidió.
+const silenciados = new WeakSet<object>();
+
+/** La capa con `silenceWarnings: true` calla los avisos de su proveedor. */
+export function silenciarAvisosDelProveedor(proveedor: unknown): void {
+  if (typeof proveedor === "object" && proveedor !== null) silenciados.add(proveedor);
+}
+
+/** ¿Pidió alguna capa callar los avisos de este proveedor? */
+export function avisosDelProveedorSilenciados(proveedor: object): boolean {
+  return silenciados.has(proveedor);
+}

@@ -7,6 +7,7 @@ import { TokenizerRegistry } from "../src/tokenizer/registry.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import type { ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ChatMessage, SavingsReport, SavingsRequest, SavingsResult, ToolDescriptor } from "../src/contracts/types.js";
+import { reglasDelBucle } from "./helpers/api-de-mensajes-falsa.js";
 
 /**
  * LA BÚSQUEDA NATIVA ENTRE TURNOS: los pares `server_tool_use` +
@@ -49,7 +50,11 @@ function error400(mensaje: string): Response {
   });
 }
 
-/** Las reglas documentadas que un historial con bloques de búsqueda puede romper. */
+/**
+ * Las reglas documentadas que un historial con bloques de búsqueda puede romper,
+ * y después las del bucle de herramientas (`tool_use` seguido de su
+ * `tool_result`, texto no vacío…: ver `helpers/api-de-mensajes-falsa.ts`).
+ */
 function validar(cuerpo: Cuerpo): string | undefined {
   const tools = (cuerpo["tools"] as Bloque[] | undefined) ?? [];
   const nombres = new Set(tools.map((t) => t["name"] as string));
@@ -78,10 +83,9 @@ function validar(cuerpo: Cuerpo): string | undefined {
           if (!nombres.has(r.tool_name)) return `Tool reference '${r.tool_name}' not found in available tools`;
         }
       }
-      if (b["type"] === "tool_use" && m.role === "assistant") return "tool_use in history needs a tool_result right after";
     }
   }
-  return undefined;
+  return reglasDelBucle(cuerpo);
 }
 
 function sse(contenido: Bloque[], stopReason: string, uso: { input_tokens: number; output_tokens: number }): string {
@@ -132,7 +136,11 @@ function apiFalsa(): ApiFalsa {
       }
     }
     const ultimo = mensajes[mensajes.length - 1]!;
-    const texto = ultimo.content.map((b) => String(b["text"] ?? "")).join("");
+    // Lo que el «modelo» lee del último turno: su texto y, si son resultados de
+    // herramienta, su contenido.
+    const texto = ultimo.content
+      .map((b) => String(b["type"] === "tool_result" ? (b["content"] ?? "") : (b["text"] ?? "")))
+      .join("");
     const pedido = /servicio (\d+)/.exec(texto);
     const necesaria = pedido ? `servicio_${pedido[1]}_consultar` : undefined;
 
@@ -298,10 +306,11 @@ describe.each<Modo>(["json", "sse"])("una conversación de varios turnos con `to
       expect(JSON.stringify((ahora["messages"] as Mensaje[]).slice(0, previos.length))).toBe(JSON.stringify(previos));
     }
     // Y el par del primer turno está en el historial del último, delante del texto
-    // y sin el `tool_use` (que exigiría un `tool_result` justo detrás).
+    // y de la llamada, que ya viaja como `tool_use` con su `tool_result` detrás
+    // (test/anthropic-bucle-de-herramientas.test.ts).
     const ultimo = cuerpos[cuerpos.length - 1]!["messages"] as Mensaje[];
     const primerAsistente = ultimo.find((m) => m.role === "assistant")!;
-    expect(primerAsistente.content.map((b) => b["type"])).toEqual(["server_tool_use", "tool_search_tool_result", "text"]);
+    expect(primerAsistente.content.map((b) => b["type"])).toEqual(["server_tool_use", "tool_search_tool_result", "text", "tool_use"]);
     expect(primerAsistente.content[0]).toEqual({ type: "server_tool_use", id: "srvtoolu_1", name: "tool_search_tool_bm25", input: { query: "servicio 17" } });
   });
 
@@ -324,7 +333,7 @@ describe.each<Modo>(["json", "sse"])("una conversación de varios turnos con `to
 
 // ── 2 · Con la palanca apagada, NADA cambia ───────────────────────────────────
 
-describe("con `toolSearch` apagado el cuerpo es el de antes, byte a byte", () => {
+describe("con `toolSearch` apagado, la memoria de búsquedas no cambia ni un byte", () => {
   // Un historial con las MISMAS ids de llamada que la memoria tiene guardadas.
   const HISTORIAL: ChatMessage[] = [
     { role: "system", content: "Sistema." },
@@ -373,6 +382,10 @@ describe("con `toolSearch` apagado el cuerpo es el de antes, byte a byte", () =>
     // El mismo adaptador (con su memoria) mandando por otro `fetch` no es posible;
     // se compara el cuerpo que mandó por la API falsa con el literal, y otro
     // adaptador por el espía, para fijar que los dos coinciden con él.
+    //
+    // Con `tools.slice(0, 1)` la herramienta llamada (`servicio_1_consultar`) no
+    // viaja, así que el intercambio no puede ir como `tool_use`/`tool_result` y
+    // sale como texto: el cuerpo de la versión anterior, literal.
     await recuerda.generate({ model: "claude-sonnet-4-6", messages: HISTORIAL, tools: tools.slice(0, 1) });
     await new AnthropicProvider({ fetchImpl: espia }).generate({ model: "claude-sonnet-4-6", messages: HISTORIAL, tools: tools.slice(0, 1) });
     const t = tools[0]!;
@@ -434,13 +447,13 @@ describe("el adaptador devuelve un par ENTERO o no lo devuelve", () => {
     });
   const asistente = (c: Cuerpo): Mensaje => (c["messages"] as Mensaje[]).find((m) => m.role === "assistant")!;
 
-  it("JSON: el par vuelve tal cual lo devolvió la API, delante del texto, sin el `tool_use`, y la respuesta lo cuenta", async () => {
+  it("JSON: el par vuelve tal cual lo devolvió la API, delante del texto y del `tool_use`, y la respuesta lo cuenta", async () => {
     const api = apiFalsa();
     const p = new AnthropicProvider({ fetchImpl: api.fetchImpl });
     const r1 = await p.generate(base());
     const r2 = await p.generate(turnoDos(r1));
     const raw = (r1.raw as { content: Bloque[] }).content;
-    expect(asistente(api.cuerpos[1]!).content).toEqual([raw[1], raw[2], { type: "text", text: "Busco. " }]);
+    expect(asistente(api.cuerpos[1]!).content).toEqual([raw[1], raw[2], { type: "text", text: "Busco. " }, raw[3]]);
     expect(r2.toolSearch).toEqual({ searches: 0, loaded: [], errors: 0, resent: { results: 1, tools: ["servicio_1_consultar"] } });
   });
 
@@ -495,9 +508,13 @@ describe("el adaptador devuelve un par ENTERO o no lo devuelve", () => {
     const api = apiFalsa();
     const p = new AnthropicProvider({ fetchImpl: api.fetchImpl });
     const r1 = await p.generate(base({ messages: [{ role: "user", content: "¿Qué pedidos del servicio 1 siguen abiertos?" }] }));
-    // Asistente con texto vacío: su último bloque es el resultado de la búsqueda,
-    // y el prefijo estable declarado lo cubre.
-    const dos = turnoDos({ ...r1, text: "" });
+    // Asistente con texto vacío y SIN el resultado de su llamada (el llamante
+    // sigue hablando): el intercambio no puede ir en nativo, así que el turno
+    // lleva solo el par, su último bloque es el resultado de la búsqueda, y el
+    // prefijo estable declarado lo cubre. Con el resultado, el último bloque
+    // sería el `tool_use` y la marca no tocaría el par.
+    const conResultado = turnoDos({ ...r1, text: "" });
+    const dos = { ...conResultado, messages: [...conResultado.messages.slice(0, 2), { role: "user" as const, content: "¿Y bien?" }] };
     await p.generate({ ...dos, stablePrefixMessages: 2 });
     await p.generate(dos);
     const marcado = asistente(api.cuerpos[1]!).content;

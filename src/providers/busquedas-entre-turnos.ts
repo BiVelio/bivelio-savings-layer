@@ -6,8 +6,8 @@
 // (`providers/index.ts` reexporta `anthropic.ts` entero, por eso esto vive
 // aparte).
 //
-// EL PROBLEMA. El adaptador manda el historial como texto (`repartirMensajes`):
-// de un turno del asistente solo viaja `content`. Con la búsqueda nativa
+// EL PROBLEMA. De un turno del asistente, el contrato neutro solo transporta
+// `content` y `toolCalls` (`repartirMensajes`). Con la búsqueda nativa
 // (`savings.toolSearch`), eso tira los bloques `server_tool_use` +
 // `tool_search_tool_result` que el proveedor devolvió, y con ellos las
 // referencias a las herramientas que la búsqueda cargó. En el turno siguiente
@@ -41,15 +41,14 @@
 // inyectar en una la consulta que el modelo escribió en la otra —la consulta
 // lleva datos de la conversación—. Con ids, eso no puede pasar.
 //
-// POR QUÉ SOLO LOS PARES, Y NO EL CONTENIDO ENTERO. El contenido entero lleva
-// los `tool_use`, y un `tool_use` en el historial exige que el turno de usuario
-// siguiente EMPIECE por su `tool_result` («Tool result blocks must immediately
-// follow their corresponding tool use blocks», handle-tool-calls). El adaptador
-// manda hoy los resultados como texto de usuario; cambiar eso es otro cambio,
-// y un fallo ahí sería un 400 en una conversación que hoy funciona. El par de
-// búsqueda, en cambio, está completo en sí mismo (el resultado sigue a su
-// `server_tool_use` dentro del mismo turno) y es lo único que hace falta para
-// que la herramienta siga cargada.
+// POR QUÉ SOLO LOS PARES, Y NO EL CONTENIDO ENTERO. El resto del turno se
+// reconstruye de lo que el llamante devuelve: el texto de `content` y los
+// `tool_use` de `toolCalls`, que el adaptador ya manda en nativo con sus
+// `tool_result` detrás cuando el intercambio está completo (`repartirMensajes`
+// en anthropic.ts). Lo único que el contrato neutro no transporta son los pares
+// de búsqueda, y por eso solo esos se recuerdan. El par está completo en sí
+// mismo (el resultado sigue a su `server_tool_use` dentro del mismo turno), así
+// que puede viajar también cuando el intercambio sale como texto.
 //
 // FALLA HACIA LO DE HOY. Sin entrada en la memoria (otro proceso, una entrada
 // expulsada, un llamante que no devuelve `toolCalls`) el turno se manda como
