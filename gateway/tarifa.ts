@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H } from "../src/pricing/primas.js";
+import { parsearParaReescribir } from "./reserializacion.js";
 
 /**
  * LA PALANCA DE TARIFA — el dinero que se ahorra sin tocar un solo token.
@@ -84,6 +85,45 @@ export interface RebajaTtl {
    * la misma doctrina que la prima de escritura del medidor.
    */
   yaEran5m: number;
+  /**
+   * La petición declara herramientas de servidor (declaraHerramientaDeServidor).
+   * Si Claude usa una, la API pone por su cuenta un breakpoint de 5 min sobre
+   * su resultado, y esa escritura sale en `ephemeral_5m_input_tokens` junto a
+   * la nuestra: el usage no las separa, así que el ahorro se declara 0.
+   */
+  herramientaDeServidor: boolean;
+}
+
+/**
+ * Familias de herramientas TIPADAS que ejecuta el cliente (bash, editor de
+ * texto, computer use, browser use, memoria): no escriben caché por su cuenta.
+ * Cualquier otro `type` —web search, web fetch, code execution, tool search,
+ * el advisor, un `mcp_toolset`, o uno que aún no conocemos— se trata como de
+ * servidor: ante la duda, no se acredita.
+ */
+const HERRAMIENTA_DEL_CLIENTE = /^(custom|bash_|text_editor_|computer_|browser_|memory_)/;
+
+/**
+ * ¿Declara la petición alguna herramienta que corre en el servidor del
+ * proveedor? Una herramienta sin `type` (o `custom`) es del cliente; un
+ * `mcp_servers` no vacío es el conector MCP, que también corre en el servidor.
+ *
+ * Por qué importa: «When your request has prompt caching enabled and Claude
+ * uses a server tool such as web search, web fetch, or code execution, the API
+ * automatically places a cache breakpoint on the server tool result […] This
+ * automatic breakpoint always uses the default 5-minute TTL, independent of
+ * any TTL you set on your own cache_control markers» —
+ * https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching#server-tool-results-are-cached-automatically
+ * (consultada el 2026-09-27). Con una de estas declarada, una escritura a 5 min
+ * no es atribuible ni a la palanca de TTL ni a nadie aguas arriba.
+ */
+export function declaraHerramientaDeServidor(json: Record<string, unknown>): boolean {
+  if (Array.isArray(json.mcp_servers) && json.mcp_servers.length > 0) return true;
+  if (!Array.isArray(json.tools)) return false;
+  return json.tools.some((t) => {
+    const tipo = t !== null && typeof t === "object" ? (t as { type?: unknown }).type : undefined;
+    return typeof tipo === "string" && !HERRAMIENTA_DEL_CLIENTE.test(tipo);
+  });
 }
 
 /**
@@ -131,19 +171,18 @@ function hashDe(serie: string): string {
 
 /**
  * Parsea un cuerpo /v1/messages, o devuelve null — «no tocar, reenviar
- * intacto» — si llega comprimido, no es JSON o no tiene forma de mensajes.
+ * intacto» — si llega comprimido, no es UTF-8 válido, no es JSON, no tiene forma
+ * de mensajes, o reescribirlo cambiaría algo más que lo que la palanca declara
+ * (números no canónicos, claves con forma de índice: ver reserializacion.ts).
  */
 export function parsearMensajes(cuerpo: Buffer, codificacion?: string): Record<string, unknown> | null {
-  if (codificacion !== undefined && codificacion !== "" && codificacion !== "identity") return null;
-  try {
-    const json = JSON.parse(cuerpo.toString("utf8")) as unknown;
-    if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
-    const obj = json as Record<string, unknown>;
-    if (typeof obj.model !== "string" || !Array.isArray(obj.messages)) return null;
-    return obj;
-  } catch {
-    return null;
-  }
+  // La puerta común de las palancas que reescriben (reserializacion.ts): si
+  // volver a escribir el cuerpo cambiara algo que la palanca no declara, null.
+  const json = parsearParaReescribir(cuerpo, codificacion);
+  if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
+  const obj = json as Record<string, unknown>;
+  if (typeof obj.model !== "string" || !Array.isArray(obj.messages)) return null;
+  return obj;
 }
 
 /** La huella de un cuerpo ya parseado. Pura. */
@@ -199,35 +238,89 @@ export function decidirRebaja(entrada: { fraccionNueva: number; umbral?: number 
   return fraccion >= umbral;
 }
 
-/** Dónde puede vivir una marca `cache_control` en un cuerpo /v1/messages. */
-function marcarEn(nodo: unknown, cuenta: { rebajadas: number; yaEran5m: number }): void {
-  if (nodo === null || typeof nodo !== "object") return;
-  if (Array.isArray(nodo)) {
-    for (const hijo of nodo) marcarEn(hijo, cuenta);
-    return;
+/** Rebaja UNA marca `cache_control` y la cuenta. */
+function rebajarMarca(marca: Record<string, unknown>, cuenta: { rebajadas: number; yaEran5m: number }): void {
+  if (marca.ttl === "1h") {
+    marca.ttl = "5m";
+    cuenta.rebajadas++;
+  } else if (marca.ttl === "5m") {
+    cuenta.yaEran5m++;
   }
-  const obj = nodo as Record<string, unknown>;
-  const cc = obj.cache_control;
-  if (cc !== null && typeof cc === "object" && !Array.isArray(cc)) {
-    const marca = cc as Record<string, unknown>;
-    if (marca.ttl === "1h") {
-      marca.ttl = "5m";
-      cuenta.rebajadas++;
-    } else if (marca.ttl === "5m") {
-      cuenta.yaEran5m++;
+  // `cache_control` sin `ttl` = 5m implícito: es el defecto de la API. No se
+  // toca (ya está en la tarifa barata) pero cuenta como 5m preexistente.
+  else if (marca.ttl === undefined) cuenta.yaEran5m++;
+}
+
+/** Dónde está una marca `cache_control` dentro de un cuerpo /v1/messages. */
+export type SitioDeMarca = "raiz" | "system" | "tools" | "mensaje" | "ultimoMensaje";
+
+const esObjeto = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
+const marcaDe = (nodo: unknown): Record<string, unknown> | null =>
+  esObjeto(nodo) && esObjeto(nodo.cache_control) ? nodo.cache_control : null;
+
+/** Profundidad máxima de `content` anidado que se recorre (un tool_result dentro de otro no existe; es un tope, no un caso). */
+const MAX_ANIDAMIENTO = 8;
+
+function visitarBloques(
+  bloques: unknown,
+  sitio: SitioDeMarca,
+  visita: (marca: Record<string, unknown>, sitio: SitioDeMarca) => void,
+  profundidad: number,
+): void {
+  if (!Array.isArray(bloques) || profundidad > MAX_ANIDAMIENTO) return;
+  for (const bloque of bloques) {
+    const marca = marcaDe(bloque);
+    if (marca) visita(marca, sitio);
+    if (!esObjeto(bloque)) continue;
+    if (Array.isArray(bloque.content)) visitarBloques(bloque.content, sitio, visita, profundidad + 1);
+    // Un `document` cuya fuente es contenido (`source.type: "content"`): sus
+    // bloques de texto e imagen también admiten `cache_control`.
+    const fuente = bloque.source;
+    if (esObjeto(fuente) && fuente.type === "content" && Array.isArray(fuente.content)) {
+      visitarBloques(fuente.content, sitio, visita, profundidad + 1);
     }
-    // `cache_control` sin `ttl` = 5m implícito: es el defecto de la API. No se
-    // toca (ya está en la tarifa barata) pero cuenta como 5m preexistente.
-    else if (marca.ttl === undefined) cuenta.yaEran5m++;
-  }
-  for (const [k, v] of Object.entries(obj)) {
-    if (k === "cache_control") continue;
-    if (v !== null && typeof v === "object") marcarEn(v, cuenta);
   }
 }
 
 /**
- * Reescribe a 5m los `cache_control.ttl === "1h"` del cuerpo. Acepta el
+ * Las marcas `cache_control` de un cuerpo /v1/messages, SOLO donde la API las
+ * lee: la raíz (caché automática), cada bloque de `system`, cada herramienta de
+ * `tools` y cada bloque de contenido de `messages`, también los anidados en el
+ * `content` de un bloque (el de un `tool_result`) y en el `source.content` de un
+ * `document` con fuente de contenido.
+ *
+ * NO entra en el `input` de un `tool_use`, ni en el `input_schema` de una
+ * herramienta, ni en ningún otro objeto. Ahí una clave `cache_control` es
+ * CONTENIDO del cliente —los argumentos de una herramienta que construye una
+ * petición a la API, por ejemplo— y reescribirla sería cambiar lo que el modelo
+ * lee. Hasta el 2026-09-27 la rebaja recorría el cuerpo entero y la habría
+ * reescrito.
+ */
+export function visitarMarcasDeCache(
+  json: Record<string, unknown>,
+  visita: (marca: Record<string, unknown>, sitio: SitioDeMarca) => void,
+): void {
+  const raiz = marcaDe(json);
+  if (raiz) visita(raiz, "raiz");
+  visitarBloques(json.system, "system", visita, 0);
+  if (Array.isArray(json.tools)) {
+    for (const herramienta of json.tools) {
+      const marca = marcaDe(herramienta);
+      if (marca) visita(marca, "tools");
+    }
+  }
+  if (Array.isArray(json.messages)) {
+    const ultimo = json.messages.length - 1;
+    json.messages.forEach((mensaje, i) => {
+      if (esObjeto(mensaje)) visitarBloques(mensaje.content, i === ultimo ? "ultimoMensaje" : "mensaje", visita, 0);
+    });
+  }
+}
+
+/**
+ * Reescribe a 5m los `cache_control.ttl === "1h"` del cuerpo, en los sitios
+ * donde la API lee una marca (visitarMarcasDeCache: la raíz, `system`, `tools`
+ * y los bloques de `messages`) y en ningún otro. Acepta el
  * cuerpo crudo o ya parseado (el servidor lo parsea una vez para la huella y
  * lo reutiliza aquí; si es un objeto, se modifica en sitio).
  *
@@ -245,9 +338,19 @@ export function rebajarTtlDeCache(
   if (json === null) return null;
   try {
     const cuenta = { rebajadas: 0, yaEran5m: 0 };
-    for (const clave of ["system", "messages", "tools"]) marcarEn(json[clave], cuenta);
+    // La marca de la RAÍZ (caché automática) va con las demás. Si se quedara
+    // en 1h con las explícitas ya en 5m, la petición rompería dos reglas de la
+    // API: las entradas de TTL más largo van primero, y una marca explícita en
+    // el último bloque no puede llevar otro TTL que la de la raíz (un 400 que
+    // sin la palanca no habría existido).
+    visitarMarcasDeCache(json, (marca) => rebajarMarca(marca, cuenta));
     if (cuenta.rebajadas === 0) return null;
-    return { cuerpo: Buffer.from(JSON.stringify(json), "utf8"), rebajadas: cuenta.rebajadas, yaEran5m: cuenta.yaEran5m };
+    return {
+      cuerpo: Buffer.from(JSON.stringify(json), "utf8"),
+      rebajadas: cuenta.rebajadas,
+      yaEran5m: cuenta.yaEran5m,
+      herramientaDeServidor: declaraHerramientaDeServidor(json),
+    };
   } catch {
     return null;
   }
@@ -262,15 +365,22 @@ export function rebajarTtlDeCache(
  * entrada) es el ahorro, y no hay contrafactual que imaginar.
  *
  * Devuelve 0 —y no miente— cuando la atribución no es limpia: si el cliente ya
- * traía marcas de 5m propias, el usage no dice qué bloque escribió qué tokens.
+ * traía marcas de 5m propias, o declaraba herramientas de servidor (la API
+ * escribe sus resultados a 5m por su cuenta), el usage no dice qué bloque
+ * escribió qué tokens.
  */
 export function ahorroDeRebaja(entrada: {
   cacheEscrita5m: number;
   inputPer1k: number;
   yaEran5m: number;
+  /**
+   * Obligatorio, como en RebajaAplicada: un llamador que lo olvidara acreditaría
+   * por defecto escrituras que pueden ser de la API y no de la palanca.
+   */
+  herramientaDeServidor: boolean;
 }): number {
-  const { cacheEscrita5m, inputPer1k, yaEran5m } = entrada;
-  if (yaEran5m > 0 || cacheEscrita5m <= 0 || inputPer1k <= 0) return 0;
+  const { cacheEscrita5m, inputPer1k, yaEran5m, herramientaDeServidor } = entrada;
+  if (yaEran5m > 0 || herramientaDeServidor || cacheEscrita5m <= 0 || inputPer1k <= 0) return 0;
   return (cacheEscrita5m / 1_000) * inputPer1k * (PRIMA_1H - PRIMA_5M);
 }
 

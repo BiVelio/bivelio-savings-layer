@@ -120,14 +120,17 @@ export function aplicarEsfuerzo(
   return { cuerpo: Buffer.from(JSON.stringify(json), "utf8"), nivel };
 }
 
-/** Añade la beta sin pisar las que ya viajaban. */
+/**
+ * Añade la beta sin pisar las que ya viajaban. La cabecera del cliente se
+ * conserva TAL CUAL (espacios y orden incluidos) y la nuestra va al final: lo
+ * único que esta palanca declara en las cabeceras es esa añadidura, igual que
+ * `conBetaDeElision`. Hasta el 2026-09-27 se re-unía sin espacios.
+ */
 export function conBetaDeEsfuerzo(betas: string | undefined): string {
-  const partes = (betas ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (!partes.includes(BETA_ESFUERZO)) partes.push(BETA_ESFUERZO);
-  return partes.join(",");
+  if (betas === undefined || betas.trim() === "") return BETA_ESFUERZO;
+  const partes = betas.split(",").map((s) => s.trim());
+  if (partes.includes(BETA_ESFUERZO)) return betas;
+  return `${betas},${BETA_ESFUERZO}`;
 }
 
 /**

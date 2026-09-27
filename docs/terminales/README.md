@@ -209,3 +209,107 @@ no se promociona ni se documenta como receta.
 di eso, nunca «aprobado por Anthropic». El contrato del gateway es una lista
 abierta de cabeceras y campos que crece con cada release del terminal; el
 passthrough byte a byte es lo que lo mantiene vivo sin tocar nada.
+
+## What the gateway guarantees: it forwards what your client sends
+
+A proxy in front of your provider can raise your bill without breaking anything
+you can see: a lost cache marker, a dropped beta header, a block it does not
+recognise. This gateway is built not to do that, and a test suite checks it
+against a fake upstream on 127.0.0.1: `test/gateway-no-empeora.test.ts`, which
+runs in our CI on every pull request and every push to `main`. The source
+repository is not public, so this section lists exactly what the suite checks.
+
+**With no lever armed, your provider receives what your client sent, byte for
+byte:**
+
+- **The request body**, including `tool_reference` blocks (from the provider's
+  tool search and from a client-side search tool such as Claude Code's), tools
+  with `defer_loading`, `cache_control` in every place the API reads it (top
+  level, `system`, `tools`, and text, image, document, `tool_use` and
+  `tool_result` blocks, including blocks nested inside a `tool_result` or inside
+  a document's `source.content`), each with its `ttl: "1h"`, the advisor tool
+  with its `advisor_tool_result` blocks, thinking signatures, and fields the
+  gateway does not know. Not a JSON equivalent: the same bytes.
+- **The path and query string** (`/v1/messages?beta=true`).
+- **Every request header**, including every `anthropic-beta` value (the 1-hour
+  cache TTL, the advisor, context management, OAuth, and betas that do not exist
+  yet). Three kinds stay on the hop from your client to the gateway, as HTTP
+  requires: hop-by-hop headers (RFC 7230 §6.1, plus `expect` and any header named
+  in `Connection`), `host` and `content-length`.
+- **The response**: the same bytes and headers, except the transport ones
+  (`content-encoding`, `content-length`, `transfer-encoding`), because the
+  gateway receives the body already decompressed.
+
+"No lever armed" means any of: a license without that lever's feature,
+`BVSALA_GATEWAY_ELISION=0`, or a lever you have not turned on (the sibling
+model, per-turn effort, the context-editing dials and usage injection are off by
+default). The suite checks each of these with the request exactly as Claude
+Code sends it (compact JSON, which every armed lever would rewrite) and with a
+hand-formatted one, and next to each it runs the same setup with the lever armed
+and checks that the request does change, so a lever that stopped switching off
+would fail it.
+
+**With a lever armed, the only change is the one it declares:**
+
+| Lever | Applies to | What changes | What does not |
+|---|---|---|---|
+| Cache TTL (`cache_ttl_tuning`, on by default with PRO) | `/v1/messages` requests where a large part of the prompt is new (session start, compaction); a chained turn travels untouched | every `cache_control` with `ttl: "1h"` becomes `"5m"`, the top-level one included (a 1-hour top-level marker behind 5-minute block markers would be a 400) | a key named `cache_control` inside a tool call's `input` or a tool's `input_schema` is content and stays as it is; so does the advisor's `caching`; headers are untouched |
+| Per-turn effort (`BVSALA_GATEWAY_ESFUERZO=low…max`) | `/v1/messages` for `claude-fable-5-1`, `claude-mythos-5-1` and `claude-opus-5`, when the request carries no `output_config` of its own (top level or in a message) | one message appended at the end of `messages`, `{"role":"system","content":[],"output_config":{"effort":…}}`, and `mid-conversation-output-config-2026-07-01` appended after your `anthropic-beta` value | your `anthropic-beta` value is kept verbatim in front; nothing earlier in `messages` moves |
+| Sibling model (`BVSALA_GATEWAY_MODELO_HERMANO=1`) | `/v1/messages` and `/v1/messages/count_tokens` for `claude-fable-5`, except with a forced `tool_choice` or the 1M-context beta | `model` becomes `claude-fable-5-1` | headers are untouched |
+| Context-editing dials (`BVSALA_GATEWAY_DIALES_ELISION=1`; measured as a net loss, off) | `/v1/messages` | your `clear_tool_uses_20250919` edit in `context_management` is replaced by ours | your other edits are kept, `clear_thinking_20251015` first; your `anthropic-beta` value is kept verbatim, with `context-management-2025-06-27` appended if it was not there |
+| Usage in Chat Completions streams (`BVSALA_GATEWAY_USAGE_INJECT=1`, off) | streaming `…/chat/completions` requests without `stream_options` of their own | `"stream_options":{"include_usage":true},` inserted as text right after the opening `{` | the rest of the body, byte for byte (nothing is re-serialized); headers are untouched; a 400 or 422 gets your original request once more |
+
+A lever that changes the body parses it and writes it back: your provider reads
+the same JSON values, although whitespace and the way strings are escaped may
+differ. When writing it back would change anything else (a number JavaScript
+prints differently, such as `1.0`, `1e5`, `-0` or an integer beyond 2^53; an
+object key that looks like an array index, which JavaScript moves to the front;
+a key repeated in the same object; invalid UTF-8; a compressed body), no lever
+is applied and the request travels byte for byte. If the provider answers 400 to
+a request a lever changed, the gateway sends your original request once more,
+unchanged, and meters that one.
+
+**Degraded traffic.** The gateway also watches, with the provider's own usage
+counters, for requests that come out worse than your client asked for:
+
+| Log line: `[gateway] degraded traffic (session …) · …` | What it means |
+|---|---|
+| `prompt caching: … no cache read and no cache write` | the request marked `cache_control` at its end (top level or in the last message), the provider counted at least 4,096 input tokens (the largest minimum cacheable prompt in [Anthropic's prompt caching documentation](https://platform.claude.com/docs/en/build-with-claude/prompt-caching), checked on 2026-09-27) and reported neither a cache read nor a cache write |
+| `cache TTL: … wrote the cache at the 5-minute TTL only` | every `cache_control` asked for `ttl: "1h"`, the TTL lever did not touch the request, and the provider wrote only 5-minute entries |
+| `tool search: … tool search is off` | Claude Code traffic (a `x-claude-code-session-id` header or a `claude-cli/` user agent) sent at least 40 full tool definitions, none with `defer_loading` and no `tool_reference`. Claude Code turns tool search off by default behind any proxy, this gateway included: `bvsala claude` turns it back on in a new window, or export `ENABLE_TOOL_SEARCH=true` |
+
+Each kind is logged once per session (Claude Code's session id; once per gateway
+process for clients that send none) and every case is counted. `bvsala` prints
+the totals when it exits, because the per-request log is silent inside `bvsala
+claude|codex|goose|qwen` (unless `BVSALA_GATEWAY_LOG=1`). None of this is sent to BiVelio: the usage record has
+no field for it (LICENSE §5), so it stays on your machine.
+
+**Limits.**
+
+- The guarantee covers what the gateway sends. It cannot make the provider
+  cache: the watcher reports, it does not fix.
+- The cache TTL lever changes the price of a cache write, never the content the
+  model reads, and it is a trade: if a 5-minute entry expires before the next
+  turn starts, that turn pays for a cache write that a 1-hour entry would have
+  saved. The lever only acts where a large part of the prompt is being written
+  anyway (session start, compaction), and `BVSALA_GATEWAY_ELISION=0` turns it
+  off.
+- On a request that declares server tools (web search, web fetch, code
+  execution, tool search, the advisor, MCP servers; the gateway counts any typed
+  tool other than a client tool such as bash or the text editor), the cache TTL
+  lever still applies but its saving is recorded as zero. When Claude uses a
+  server tool, the provider caches its result at the 5-minute TTL on its own,
+  whatever TTL your markers ask for, and reports that write in the same
+  `ephemeral_5m_input_tokens` counter
+  ([Anthropic's documentation](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching#server-tool-results-are-cached-automatically),
+  checked on 2026-09-27), so the invoice cannot tell which part the lever wrote.
+- The two cache checks need the provider's usage: a request that is not metered
+  is not checked. The prompt-caching check uses the largest documented minimum
+  for every model, so a future model with a larger minimum would raise false
+  alarms until the threshold moves.
+- For the same reason, the TTL check skips requests that declare server tools.
+- The tool-search check only looks at Claude Code traffic: another client with
+  many tools may never have used tool search, and that is not degraded traffic.
+- Header names arrive in lower case (HTTP header names are case-insensitive),
+  and a header your client sends twice arrives once, with both values joined by
+  a comma, in order.

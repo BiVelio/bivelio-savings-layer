@@ -27,6 +27,14 @@ export interface VistaDeHerramientas {
   definiciones: number;
   /** Bloques `tool_reference`: la búsqueda de herramientas EN ACCIÓN. */
   referencias: number;
+  /**
+   * Definiciones con `defer_loading: true`: la búsqueda de herramientas está
+   * ENCENDIDA aunque el modelo aún no haya buscado nada. El proveedor las deja
+   * fuera del prefijo y el cliente las manda igual en cada petición (lo pide la
+   * doc de tool search), así que no pesan. Opcional para quien construya la
+   * vista a mano; `verHerramientas` siempre la rellena.
+   */
+  diferidas?: number;
 }
 
 /**
@@ -53,7 +61,10 @@ export function verHerramientas(cuerpo: string): VistaDeHerramientas {
     referencias += 1;
     desde = i + 16;
   }
-  return { definiciones, referencias };
+  // Sobre el texto también, y con el espacio opcional que un cliente que no
+  // compacte su JSON pondría tras los dos puntos.
+  const diferidas = cuerpo.match(/"defer_loading"\s*:\s*true/g)?.length ?? 0;
+  return { definiciones, referencias, diferidas };
 }
 
 /**
@@ -67,12 +78,16 @@ export const DEFINICIONES_PARA_AVISAR = 40;
  * El aviso, o null si no hay nada que decir. Es PURO: quien lo llame decide
  * cuándo y cómo enseñarlo (una vez, por consola, ver `avisarUnaVez`).
  *
- * Solo habla cuando el cliente manda MUCHAS definiciones y NINGUNA referencia:
- * si ya hay referencias, la búsqueda está funcionando y no hay nada que
- * arreglar.
+ * Solo habla cuando el cliente manda MUCHAS definiciones, NINGUNA diferida y
+ * NINGUNA referencia: si hay diferidas o referencias, la búsqueda está
+ * funcionando y no hay nada que arreglar.
  */
 export function avisoDeBusquedaDeHerramientas(v: VistaDeHerramientas): string | null {
   if (v.referencias > 0) return null;
+  // Con herramientas diferidas la búsqueda está encendida, aunque el modelo aún
+  // no haya buscado (el primer turno de una sesión nunca trae referencias).
+  // Sin esto, el aviso saltaba justo en las sesiones que ya lo hacían bien.
+  if ((v.diferidas ?? 0) > 0) return null;
   if (v.definiciones < DEFINICIONES_PARA_AVISAR) return null;
   return (
     `[bvsala gateway] your client sends ${v.definiciones} FULL tool definitions in every request ` +

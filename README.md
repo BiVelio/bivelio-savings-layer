@@ -92,6 +92,20 @@ subscription there is no per-token invoice, so that traffic is metered at
 list-price equivalent and never carries commission; the per-seat license applies
 as for any other use.
 
+**The gateway forwards what your terminal sends.** With no lever armed, your
+provider receives the request body byte for byte and every header your client
+sends (see the limits): `cache_control` and its 1-hour TTL, tool search and
+`tool_reference` blocks, the advisor, every `anthropic-beta` value. An armed lever
+changes only what it declares, and a request it cannot rewrite exactly travels
+untouched. A test suite checks this against a fake upstream on every change
+(`test/gateway-no-empeora.test.ts`; the repository is private, so the linked
+section lists exactly what it checks). The gateway also logs, once per session,
+requests that come out worse than your client asked for: cache markers the
+provider ignored, a 1-hour TTL written at 5 minutes upstream, and tool search off
+(Claude Code turns it off by default behind any proxy, this one included;
+`bvsala claude` turns it back on). What it checks, and its limits:
+[docs/terminales/README.md](./docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
+
 ### Python and any other language: the local gateway
 
 The same gateway sits in front of any SDK that lets you set a base URL, whatever
