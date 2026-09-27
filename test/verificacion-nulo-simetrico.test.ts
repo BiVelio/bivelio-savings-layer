@@ -115,7 +115,10 @@ describe("nulo simétrico: una capa que no hace nada no fabrica ahorro", () => {
     const a = pares.reduce((n, p) => n + p.naiveCost, 0);
     const b = pares.reduce((n, p) => n + p.optimizedCost, 0);
     expect(1 - b / a).toBeGreaterThan(0.1);
-  });
+    // 1.500 vueltas por el SDK: unos 2 s en una máquina libre, más de los 5 s por
+    // defecto cuando la suite comparte máquina. Sin tope propio el fallo es de
+    // reloj, no de la regla.
+  }, 30_000);
 
   it("la misma regla en los dos lados: clasificar() para la servida y motivoDeNoComparable() para la copia", () => {
     // Quien cambie una sin la otra reabre el agujero: este test lo ata.
