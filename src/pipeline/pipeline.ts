@@ -6,6 +6,7 @@ import {
   busquedaNativaDelProveedor,
   heredarAtestado,
   origenDelProveedor,
+  silenciarAvisosDelProveedor,
   type AtestadoDelCable,
 } from "../providers/atestado-del-cable.js";
 import {
@@ -508,6 +509,9 @@ export class SavingsPipeline {
 
   constructor(config: SavingsLayerConfig, interno: { verificacion?: SumideroDeVerificacion } = {}) {
     this.config = config;
+    // Los avisos que el ADAPTADOR emite por su cuenta (el bucle de herramientas
+    // de Anthropic que viaja como texto) también obedecen `silenceWarnings`.
+    if (config.silenceWarnings === true) silenciarAvisosDelProveedor(config.provider);
     this.deps = resolveDependencies(config);
     this.now = config.now ?? (() => Date.now());
     this.generateId = config.generateId ?? (() => randomId());

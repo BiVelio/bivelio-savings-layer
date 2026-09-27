@@ -117,11 +117,16 @@ function huella(texto: string): string {
 // Todo lo que el adaptador pone en el cable a partir de un mensaje: rol,
 // nombre, id de llamada y llamadas a herramienta, además del texto. Lo que no
 // viaja (`metadata`) no entra.
+//
+// `isError` viaja en Anthropic (`is_error` del `tool_result`) y por eso entra,
+// pero SOLO cuando es cierto: la huella de todo mensaje sin él sigue siendo la
+// de antes, carácter a carácter, y el espejo no pierde lo que ya midió.
 function textoDelMensaje(m: ChatMessage): string {
   const llamadas = m.toolCalls?.length
     ? m.toolCalls.map((c) => `${c.id ?? ""}\u0003${c.name}\u0003${c.arguments}`).join("\u0004")
     : "";
-  return `${m.role}\u0001${m.name ?? ""}\u0001${m.toolCallId ?? ""}\u0001${llamadas}\u0001${m.content}`;
+  const error = m.isError === true ? "\u0001error" : "";
+  return `${m.role}\u0001${m.name ?? ""}\u0001${m.toolCallId ?? ""}\u0001${llamadas}\u0001${m.content}${error}`;
 }
 
 /**

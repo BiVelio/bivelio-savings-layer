@@ -30,16 +30,30 @@ export interface ChatMessage {
    * The provider tool loop needs it: OpenAI's Chat Completions rejects a
    * `role: "tool"` message that does not carry `tool_call_id` and does not follow
    * an assistant turn with `tool_calls` (a 400). Pass the `id` from the
-   * {@link ToolCallRequest} the model asked for. Ignored by providers that model
-   * tool results differently.
+   * {@link ToolCallRequest} the model asked for.
+   *
+   * Anthropic's Messages API needs it too: with it, the Anthropic adapter sends
+   * the result as a `tool_result` block paired with the call's `tool_use` block.
+   * Without it (or without the ids in the assistant turn's `toolCalls`), the
+   * exchange is sent as plain text and the adapter warns once.
    */
   toolCallId?: string;
+  /**
+   * For `role: "tool"`: the tool failed, and `content` says how.
+   *
+   * The Anthropic adapter sends it as `is_error: true` on the `tool_result`, so
+   * the model reads the content as an error rather than as data. Providers
+   * without such a flag (OpenAI's Chat Completions) send the content unchanged,
+   * so write the error into `content` either way.
+   */
+  isError?: boolean;
   /**
    * For `role: "assistant"`: the tool calls the model requested on that turn.
    *
    * Send it back with the assistant turn when you continue a tool conversation,
    * so the following `role: "tool"` messages are valid. These are the same
-   * {@link ToolCallRequest}s that came back in {@link SavingsResult.toolCalls}.
+   * {@link ToolCallRequest}s that came back in {@link SavingsResult.toolCalls},
+   * ids included.
    */
   toolCalls?: ToolCallRequest[];
   /** Opaque provider metadata; never used for the exact-cache key. */

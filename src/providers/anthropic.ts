@@ -1,5 +1,11 @@
 import { avisarUnaVez } from "../util/warn-once.js";
-import { atestiguar, declararBusquedaNativa, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
+import {
+  atestiguar,
+  avisosDelProveedorSilenciados,
+  declararBusquedaNativa,
+  herramientasSinParametros,
+  sinContrato,
+} from "./atestado-del-cable.js";
 import { HERRAMIENTA_DE_BUSQUEDA } from "../router/busqueda-nativa.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
@@ -14,7 +20,7 @@ import {
   usoDeMensajes,
   type UsoAnthropic,
 } from "./anthropic-uso.js";
-import type { ChatMessage } from "../contracts/types.js";
+import type { ChatMessage, ToolCallRequest } from "../contracts/types.js";
 import type {
   Provider,
   ProviderRequest,
@@ -143,9 +149,39 @@ type MarcaDeCache = { type: "ephemeral" } | { type: "ephemeral"; ttl: "1h" };
 // estable si es el último bloque de su turno: la API lo admite en los dos.
 type BloqueReenviado = BloqueCrudo & { cache_control?: MarcaDeCache };
 
+// EL BUCLE DE HERRAMIENTAS EN EL CABLE (ver `repartirMensajes`): la llamada del
+// modelo en su turno y el resultado en el turno de usuario siguiente. Los dos
+// admiten `cache_control` («Create a cache control breakpoint at this content
+// block», referencia de la API), así que el prefijo estable puede acabar en
+// cualquiera de ellos.
+interface BloqueDeLlamada {
+  type: "tool_use";
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+  cache_control?: MarcaDeCache;
+}
+
+interface BloqueDeResultado {
+  type: "tool_result";
+  tool_use_id: string;
+  content?: string;
+  is_error?: true;
+  cache_control?: MarcaDeCache;
+}
+
 interface MensajeAnthropic {
   role: "user" | "assistant";
-  content: (BloqueDeTexto | BloqueReenviado)[];
+  content: (BloqueDeTexto | BloqueReenviado | BloqueDeLlamada | BloqueDeResultado)[];
+}
+
+// Dónde acaba, en el cable, el prefijo estable que declaró el pipeline: el
+// mensaje y el BLOQUE. Un recuento de mensajes ya no basta: los resultados de
+// varias herramientas viajan juntos en un solo turno de usuario, y el prefijo
+// puede acabar entre dos de ellos.
+interface FinDelPrefijo {
+  mensaje: number;
+  bloque: number;
 }
 
 // Lo que el adaptador devolvió en el historial de ESTA petición: cuántos pares
@@ -155,6 +191,34 @@ interface ReenvioDeBusquedas {
   herramientas: string[];
   anteponer: (m: ChatMessage) => BloqueCrudo[] | undefined;
 }
+
+// Por qué un intercambio de herramientas viajó como texto (ver `repartirMensajes`).
+type MotivoDeTexto = "sin-ids" | "sin-pareja" | "no-disponibles";
+
+// Lo que ve el cliente, en inglés, una vez por causa. Los tres dicen lo mismo al
+// final —el intercambio sale como antes, en texto— porque es lo que pasa, y los
+// tres dicen qué cambiar para que no pase.
+const AVISO_DE_TEXTO: Record<MotivoDeTexto, string> = {
+  "sin-ids":
+    "[bvsala] A tool conversation reached the Anthropic adapter without its call ids. To send it the way the " +
+    "Messages API expects (`tool_use` blocks in the assistant turn, `tool_result` blocks in the next user turn), " +
+    "each entry of the assistant turn's `toolCalls` needs its `id`, and each `role: \"tool\"` message the " +
+    "`toolCallId` of the call it answers: the same ids that came back in `result.toolCalls`. Without them the " +
+    "exchange is sent as plain text, as in earlier versions: the model reads the results but not its own calls.",
+  "sin-pareja":
+    "[bvsala] A tool exchange sent to the Anthropic adapter does not pair up. The Messages API wants one result " +
+    "for every call, right after the assistant turn that made them, and each call's `arguments` must be a JSON " +
+    "object. This exchange has a call without its result, a result for a call that turn did not make, a repeated " +
+    "id, or arguments that are not a JSON object, so it is sent as plain text, as in earlier versions. Answer " +
+    "every call of a turn with one `role: \"tool\"` message carrying its `toolCallId`, before the next user or " +
+    "assistant message.",
+  "no-disponibles":
+    "[bvsala] A tool exchange names a tool this request does not make available to the model: it is missing " +
+    "from `tools` (not passed, or left out by the layer's tool selection), or it is deferred behind tool search " +
+    "and this adapter no longer holds the search that loaded it. The Messages API does not document a `tool_use` " +
+    "block for such a tool as valid, so that exchange is sent as plain text, as in earlier versions. Pass the " +
+    "tool in `tools` on every turn of the conversation to keep the native tool loop.",
+};
 
 export class AnthropicProvider implements Provider {
   readonly id: string;
@@ -483,9 +547,10 @@ export class AnthropicProvider implements Provider {
     // Sin `toolSearch`, `reenvio` es undefined y `repartirMensajes` hace lo de
     // siempre, byte a byte (test/busqueda-entre-turnos.test.ts lo fija).
     const reenvio = this.reenvioDeBusquedas(req);
-    const { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido } = repartirMensajes(
+    const { system, messages, finDelPrefijo, prefijoEnSystem, turnoAnadido } = repartirMensajes(
       req,
       reenvio?.anteponer,
+      (motivo) => this.avisar(`anthropic-herramientas-${motivo}`, AVISO_DE_TEXTO[motivo]),
     );
 
     if (messages.length === 0) {
@@ -775,7 +840,7 @@ export class AnthropicProvider implements Provider {
       );
     }
 
-    const puntosGastados = this.marcarCache(req, system, messages, prefijoEnMensajes, prefijoEnSystem);
+    const puntosGastados = this.marcarCache(req, system, messages, finDelPrefijo, prefijoEnSystem);
 
     // CACHÉ AUTOMÁTICA (opt-in): el `cache_control` a NIVEL DE PETICIÓN hace
     // que el proveedor coloque UN punto de ruptura más en el último bloque
@@ -886,6 +951,13 @@ export class AnthropicProvider implements Provider {
     this.busquedas.recordar(ids, paresDeBusqueda(bloques));
   }
 
+  // Un aviso por proceso y por causa, salvo que la capa que usa este adaptador
+  // se creara con `silenceWarnings` (ver `silenciarAvisosDelProveedor`).
+  private avisar(clave: string, mensaje: string): void {
+    if (avisosDelProveedorSilenciados(this)) return;
+    avisarUnaVez(clave, mensaje);
+  }
+
   // Coloca los puntos de ruptura de cache.
   //
   // Anthropic NO cachea sola: sin un `cache_control` explicito el descuento del
@@ -911,7 +983,7 @@ export class AnthropicProvider implements Provider {
     req: ProviderRequest,
     system: BloqueDeTexto[],
     messages: MensajeAnthropic[],
-    prefijoEnMensajes: number,
+    finDelPrefijo: FinDelPrefijo | undefined,
     prefijoEnSystem: number,
   ): number {
     if (req.promptCacheKey != null) {
@@ -969,9 +1041,14 @@ export class AnthropicProvider implements Provider {
     // El segundo punto sólo se gasta si de verdad hay historial dentro del
     // prefijo. Marcar el final de `system` dos veces no cachea más y quema un
     // punto del presupuesto del llamante.
-    if (presupuesto > 0 && prefijoEnMensajes > 0) {
-      const mensaje = messages[Math.min(prefijoEnMensajes, messages.length) - 1];
-      const bloque = mensaje?.content[mensaje.content.length - 1];
+    //
+    // Va sobre el BLOQUE en que acaba el prefijo, no sobre el último del mensaje:
+    // con los resultados de varias herramientas en un mismo turno, el prefijo
+    // declarado puede cubrir el primero y no el segundo, y marcar el último
+    // metería en el tramo cacheado un resultado que no es estable. Sin bucle de
+    // herramientas cada mensaje es un bloque y es el mismo punto de siempre.
+    if (presupuesto > 0 && finDelPrefijo) {
+      const bloque = messages[finDelPrefijo.mensaje]?.content[finDelPrefijo.bloque];
       if (bloque && bloque.cache_control == null) {
         bloque.cache_control = marca();
         presupuesto -= 1;
@@ -1157,58 +1234,161 @@ export class AnthropicProvider implements Provider {
  *
  * Un `system` que aparece DESPUÉS del primer turno se emite en su sitio, como
  * turno de `user`. Se pierde el rango de sistema —`messages` solo admite
- * user/assistant de forma portable en esta API, y es el mismo trato que ya
- * recibía el rol `tool`— pero se conserva la POSICIÓN, que es lo que decide si
- * queda algún prefijo reutilizable.
+ * user/assistant de forma portable en esta API— pero se conserva la POSICIÓN,
+ * que es lo que decide si queda algún prefijo reutilizable.
+ *
+ * EL BUCLE DE HERRAMIENTAS VIAJA COMO LO PIDE LA API, NO COMO TEXTO.
+ *
+ * Antes cada mensaje salía como `{role, content: [{type: "text", text}]}`. Un
+ * turno del asistente que solo pide herramientas —`content: ""` con `toolCalls`,
+ * justo lo que devuelve la capa y lo que el README manda devolver— salía como un
+ * bloque de texto VACÍO, y la referencia de la API exige `minLength: 1` en el
+ * texto: un 400 en el segundo turno de cualquier agente. Además las llamadas se
+ * tiraban y los resultados viajaban como texto de usuario. La documentación
+ * oficial (leída el 2026-09-27):
+ *
+ *  · handle-tool-calls: el turno del asistente lleva `tool_use {id, name,
+ *    input}`; el resultado va en el turno `user` SIGUIENTE como `tool_result
+ *    {tool_use_id, content?, is_error?}`; «Tool result blocks must immediately
+ *    follow their corresponding tool use blocks» y «the tool_result blocks must
+ *    come FIRST in the content array. Any text must come AFTER all tool
+ *    results». Un resultado vacío se manda sin `content` (su ejemplo «empty tool
+ *    result»).
+ *  · parallel-tool-use: «return one `tool_result` for each `tool_use` block, all
+ *    together in the next user message»; un turno de usuario por resultado es su
+ *    ejemplo de «Wrong».
+ *  · api/messages/create: «Consecutive `user` or `assistant` turns in your
+ *    request will be combined into a single turn»; el `id` de `tool_use` y el
+ *    `tool_use_id` siguen `^[a-zA-Z0-9_-]+$`.
+ *
+ * Así que un turno del asistente con `toolCalls` sale como [pares de búsqueda
+ * (#354)] + [texto, solo si no está vacío] + un `tool_use` por llamada —el orden
+ * de una respuesta de la API: lo que el modelo busca y escribe va antes de las
+ * llamadas, que cierran el turno—, y los mensajes `role: "tool"` que lo siguen
+ * salen JUNTOS en UN turno `user` con sus `tool_result`, en el orden del
+ * llamante. El `input` es `JSON.parse(arguments)`.
+ *
+ * UN INTERCAMBIO VIAJA ENTERO EN NATIVO O ENTERO COMO ANTES. Nativo solo si:
+ *
+ *  · cada llamada trae `id` y cada resultado su `toolCallId` («sin-ids»);
+ *  · emparejan uno a uno —ni llamada sin resultado, ni resultado de otra
+ *    llamada, ni id repetido en la petición— y cada `arguments` es un objeto
+ *    JSON («sin-pareja»). Un `arguments` que no parsea es una llamada que el
+ *    modelo no terminó (un corte por `max_tokens`): mandarla como `input: {}`
+ *    sería afirmar que llamó sin argumentos, y eso no lo dijo nunca;
+ *  · cada herramienta llamada está al alcance del modelo en ESTA petición: en
+ *    `tools` y, con la búsqueda nativa, cargada (no diferida, o referenciada por
+ *    un par que viaja antes en el historial) («no-disponibles»). La API no
+ *    documenta qué hace con un `tool_use` de una herramienta que la petición no
+ *    define, y la capa sí puede quitarla (la verja de riesgo retira las de
+ *    escritura cuando la petición no es una acción).
+ *
+ * Si no, sale lo de antes —texto, y los resultados como turnos de usuario— con
+ * un aviso por causa. Nunca un 400 nuevo por esta vía, y un llamante que nunca
+ * mandó ids sigue mandando el mismo cuerpo.
+ *
+ * NUNCA UN BLOQUE DE TEXTO VACÍO. Un mensaje cuyo único contenido sería un
+ * texto vacío no se manda: era un 400 seguro, y el turno que se pierde no decía
+ * nada. Sin bucle de herramientas y sin textos vacíos, el cuerpo es el de antes
+ * byte a byte (`test/fixtures/anthropic-cuerpos-sin-herramientas.json`).
  */
 //
 // `anteponer` solo llega con la búsqueda nativa: los pares de búsqueda que el
 // adaptador recordó de la respuesta que produjo ese turno del asistente. Van
 // DELANTE del texto: la búsqueda ocurre antes de la llamada que la usa, y el
 // texto del turno llega de vuelta en una sola pieza (`content`) aunque la API lo
-// devolviera partido a los dos lados de la búsqueda. Un texto vacío no se manda
-// (un bloque de texto vacío no es contenido válido). Sin `anteponer`, lo de
-// siempre.
+// devolviera partido a los dos lados de la búsqueda. Sin `anteponer`, sin pares.
+//
+// `finDelPrefijo` apunta al último BLOQUE que puso un mensaje del llamante
+// dentro del prefijo estable: los resultados agrupados cambian el número de
+// turnos, y el punto de ruptura tiene que seguir cayendo donde acaba lo estable.
 function repartirMensajes(
   req: ProviderRequest,
-  anteponer?: (m: ChatMessage) => BloqueCrudo[] | undefined,
+  anteponer: ((m: ChatMessage) => BloqueCrudo[] | undefined) | undefined,
+  avisar: (motivo: MotivoDeTexto) => void,
 ): {
   system: BloqueDeTexto[];
   messages: MensajeAnthropic[];
-  prefijoEnMensajes: number;
+  finDelPrefijo: FinDelPrefijo | undefined;
   prefijoEnSystem: number;
   turnoAnadido: boolean;
 } {
   const system: BloqueDeTexto[] = [];
   const messages: MensajeAnthropic[] = [];
   const limite = req.stablePrefixMessages ?? 0;
-  let prefijoEnMensajes = 0;
+  let finDelPrefijo: FinDelPrefijo | undefined;
   let prefijoEnSystem = 0;
   let cabecera = true;
+  const alcance = herramientasAlAlcance(req);
+  const idsEnviados = new Set<string>();
+  const entrada = req.messages;
 
-  req.messages.forEach((m, i) => {
+  // El mensaje `i` del llamante acaba de poner el último bloque del cable: si cae
+  // dentro del prefijo declarado, el prefijo acaba ahí.
+  const cerrar = (i: number): void => {
+    if (i >= limite) return;
+    const ultimo = messages.length - 1;
+    finDelPrefijo = { mensaje: ultimo, bloque: messages[ultimo]!.content.length - 1 };
+  };
+  // Lo de antes: un turno de texto. Un `tool` o un `system` tardío van como `user`.
+  const comoTexto = (m: ChatMessage, i: number): void => {
+    if (m.content === "") return;
+    messages.push({ role: m.role === "assistant" ? "assistant" : "user", content: [{ type: "text", text: m.content }] });
+    cerrar(i);
+  };
+
+  for (let i = 0; i < entrada.length; i++) {
+    const m = entrada[i]!;
     if (m.role === "system" && cabecera) {
       system.push({ type: "text", text: m.content });
       // Solo cuenta como prefijo el `system` que el pipeline declaro dentro. Un
       // llamante puede declarar menos cabecera de la que manda, y marcar de mas
       // es justo el error caro.
       if (i < limite) prefijoEnSystem = system.length;
-      return;
+      continue;
     }
     cabecera = false;
-    // `tool` no existe como rol aquí: el resultado de una herramienta se
-    // devuelve dentro de un turno de usuario. Se traduce a `user` en vez de
-    // descartarlo — perderlo dejaría al modelo respondiendo sin el resultado que
-    // él mismo pidió.
-    const previos = anteponer && m.role === "assistant" ? anteponer(m) : undefined;
-    messages.push({
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: previos
-        ? [...previos, ...(m.content !== "" ? [{ type: "text" as const, text: m.content }] : [])]
-        : [{ type: "text", text: m.content }],
-    });
-    if (i < limite) prefijoEnMensajes = messages.length;
-  });
+    if (m.role !== "assistant") {
+      // Un resultado que no sigue a un turno con sus llamadas: no tiene `tool_use`
+      // al que responder, así que va como texto de usuario, como antes.
+      if (m.role === "tool") avisar(m.toolCallId ? "sin-pareja" : "sin-ids");
+      comoTexto(m, i);
+      continue;
+    }
+
+    const previos = anteponer ? anteponer(m) : undefined;
+    if (previos) alcance.cargar(previos);
+    const texto: BloqueDeTexto[] = m.content !== "" ? [{ type: "text", text: m.content }] : [];
+    const llamadas = m.toolCalls ?? [];
+    // Los `role: "tool"` que siguen a este turno son sus resultados.
+    let fin = i + 1;
+    if (llamadas.length > 0) {
+      while (fin < entrada.length && entrada[fin]!.role === "tool") fin += 1;
+      const plan = intercambio(llamadas, entrada.slice(i + 1, fin), alcance, idsEnviados);
+      if ("llamadas" in plan) {
+        messages.push({ role: "assistant", content: [...(previos ?? []), ...texto, ...plan.llamadas] });
+        cerrar(i);
+        const resultados: MensajeAnthropic = { role: "user", content: [] };
+        messages.push(resultados);
+        plan.resultados.forEach((r, k) => {
+          resultados.content.push(r);
+          cerrar(i + 1 + k);
+        });
+        i = fin - 1;
+        continue;
+      }
+      avisar(plan.motivo);
+    }
+    // Sin llamadas, o un intercambio que no puede viajar nativo: lo de antes.
+    const contenido = previos ? [...previos, ...texto] : texto;
+    if (contenido.length > 0) {
+      messages.push({ role: "assistant", content: contenido });
+      cerrar(i);
+    }
+    // Los resultados de ese intercambio, como texto y sin otro aviso: ya se dio.
+    for (let j = i + 1; j < fin; j++) comoTexto(entrada[j]!, j);
+    i = fin - 1;
+  }
 
   // El primer mensaje tiene que ser `user`. Si el llamante empieza por
   // `assistant` se antepone un turno mínimo en vez de fallar: la alternativa es
@@ -1216,11 +1396,109 @@ function repartirMensajes(
   let turnoAnadido = false;
   if (messages.length > 0 && messages[0]!.role === "assistant") {
     messages.unshift({ role: "user", content: [{ type: "text", text: "(continue)" }] });
-    if (prefijoEnMensajes > 0) prefijoEnMensajes += 1;
+    if (finDelPrefijo) finDelPrefijo = { mensaje: finDelPrefijo.mensaje + 1, bloque: finDelPrefijo.bloque };
     turnoAnadido = true;
   }
 
-  return { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido };
+  return { system, messages, finDelPrefijo, prefijoEnSystem, turnoAnadido };
+}
+
+// Un intercambio —un turno del asistente con sus llamadas y los `role: "tool"`
+// que lo siguen— en bloques nativos, o el motivo por el que no puede serlo (ver
+// `repartirMensajes`). No toca `idsEnviados` salvo cuando sale nativo.
+function intercambio(
+  llamadas: readonly ToolCallRequest[],
+  respuestas: readonly ChatMessage[],
+  alcance: AlcanceDeHerramientas,
+  idsEnviados: Set<string>,
+): { llamadas: BloqueDeLlamada[]; resultados: BloqueDeResultado[] } | { motivo: MotivoDeTexto } {
+  if (llamadas.some((c) => !c.id) || respuestas.some((r) => !r.toolCallId)) return { motivo: "sin-ids" };
+  const ids = llamadas.map((c) => idDelCable(c.id!));
+  const propios = new Set(ids);
+  if (propios.size !== ids.length || ids.some((id) => idsEnviados.has(id))) return { motivo: "sin-pareja" };
+  const contestados = respuestas.map((r) => idDelCable(r.toolCallId!));
+  // Tantos resultados como llamadas, distintos entre sí y todos de ESTE turno:
+  // cada llamada tiene exactamente el suyo.
+  if (
+    contestados.length !== ids.length ||
+    new Set(contestados).size !== contestados.length ||
+    contestados.some((id) => !propios.has(id))
+  ) {
+    return { motivo: "sin-pareja" };
+  }
+  const entradas = llamadas.map((c) => entradaDeLaLlamada(c.arguments));
+  if (entradas.some((e) => e === undefined)) return { motivo: "sin-pareja" };
+  if (llamadas.some((c) => !alcance.tiene(c.name))) return { motivo: "no-disponibles" };
+  for (const id of ids) idsEnviados.add(id);
+  return {
+    llamadas: llamadas.map((c, k) => ({ type: "tool_use", id: ids[k]!, name: c.name, input: entradas[k]! })),
+    resultados: respuestas.map((r, k) => ({
+      type: "tool_result",
+      tool_use_id: contestados[k]!,
+      // Sin texto, sin `content`: es el «empty tool result» de la documentación.
+      ...(r.content !== "" ? { content: r.content } : {}),
+      ...(r.isError === true ? { is_error: true as const } : {}),
+    })),
+  };
+}
+
+// El id en el cable. La API exige `^[a-zA-Z0-9_-]+$` en `tool_use.id` y en
+// `tool_use_id`; los de Anthropic ya lo cumplen y los de otros proveedores casi
+// siempre (`call_…`). Lo que no, se sustituye por `_` a los DOS lados, de forma
+// determinista (el mismo id da el mismo id en cada turno, y el prefijo cacheado
+// no se mueve); si eso junta dos ids, el intercambio sale como texto.
+function idDelCable(id: string): string {
+  return id.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+// `arguments` → el `input` de un `tool_use`, que la API quiere como objeto. Una
+// cadena vacía es una llamada sin argumentos (la misma lectura que
+// `normalizarArgumentos`). Lo que no parsea, o no es un objeto, `undefined`.
+function entradaDeLaLlamada(argumentos: unknown): Record<string, unknown> | undefined {
+  const esObjeto = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null && !Array.isArray(v);
+  // Un llamante en JavaScript que pasa el objeto en vez de la cadena.
+  if (esObjeto(argumentos)) return argumentos;
+  if (typeof argumentos !== "string") return undefined;
+  if (argumentos.trim() === "") return {};
+  try {
+    const v = JSON.parse(argumentos) as unknown;
+    return esObjeto(v) ? v : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+interface AlcanceDeHerramientas {
+  /** ¿Puede el modelo ver esta herramienta en este punto del historial? */
+  tiene(nombre: string): boolean;
+  /** Los pares de búsqueda que viajan en un turno cargan sus referencias. */
+  cargar(bloques: readonly BloqueCrudo[]): void;
+}
+
+// Qué herramientas define ESTA petición para el modelo. Sin búsqueda nativa,
+// las de `tools`. Con ella, las que no se difieren (`alwaysLoaded`) más las que
+// cargan los pares de búsqueda que viajan en el historial, en orden: «The API
+// expands `tool_reference` blocks throughout the conversation history»
+// (tool-search-tool). Una diferida sin su búsqueda en el historial no se da por
+// cargada.
+function herramientasAlAlcance(req: ProviderRequest): AlcanceDeHerramientas {
+  const definidas = new Set((req.tools ?? []).map((t) => t.id));
+  if (!req.toolSearch) return { tiene: (n) => definidas.has(n), cargar: () => {} };
+  const cargadas = new Set(req.toolSearch.alwaysLoaded.filter((n) => definidas.has(n)));
+  return {
+    tiene: (n) => cargadas.has(n),
+    cargar(bloques) {
+      for (const b of bloques) {
+        if (b["type"] !== "tool_search_tool_result") continue;
+        const refs = (b["content"] as { tool_references?: unknown } | null | undefined)?.tool_references;
+        if (!Array.isArray(refs)) continue;
+        for (const r of refs as { tool_name?: unknown }[]) {
+          if (typeof r?.tool_name === "string" && definidas.has(r.tool_name)) cargadas.add(r.tool_name);
+        }
+      }
+    },
+  };
 }
 
 interface RespuestaAnthropic {

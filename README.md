@@ -781,10 +781,11 @@ console.log(data.answer); // 8
 
 When you pass `tools` and the model asks to invoke one, the reply is not the final
 answer: `text` is empty by design and the request is in `toolCalls`. Execute it,
-append the result to `messages`, and call `generate()` again.
+append the assistant turn and one `role: "tool"` message per call to `messages`, and
+call `generate()` again.
 
 ```ts
-import type { ToolDescriptor } from "@bivelio/savings-layer";
+import type { ChatMessage, ToolDescriptor } from "@bivelio/savings-layer";
 
 const tools: ToolDescriptor[] = [
   {
@@ -801,22 +802,32 @@ const tools: ToolDescriptor[] = [
   },
 ];
 
-const res = await layer.generate({
-  model: "openai/gpt-4o-mini",
-  messages: [{ role: "user", content: "What's the weather in Madrid?" }],
-  tools,
-});
+// ← your tool
+const getWeather = async (city: string): Promise<string> => `${city}: 21 °C, clear`;
 
-if (res.toolCalls?.length) {
-  // res.finishReason === "tool_calls"
+const messages: ChatMessage[] = [{ role: "user", content: "What's the weather in Madrid?" }];
+let res = await layer.generate({ model: "openai/gpt-4o-mini", messages, tools });
+
+while (res.toolCalls?.length) {
+  // res.finishReason === "tool_calls". Send the calls back as they came, ids included.
+  messages.push({ role: "assistant", content: res.text, toolCalls: res.toolCalls });
   for (const call of res.toolCalls) {
     const args = JSON.parse(call.arguments) as { city: string };
-    console.log(call.name, args); // ← run your tool here, then append its result
+    const output = await getWeather(args.city);
+    messages.push({ role: "tool", toolCallId: call.id, name: call.name, content: output });
   }
-} else {
-  console.log(res.text);
+  res = await layer.generate({ model: "openai/gpt-4o-mini", messages, tools });
 }
+console.log(res.text);
 ```
+
+- **Ids.** Each result carries the `toolCallId` of the call it answers, and every call
+  of a turn gets its result before the next user or assistant message. On Anthropic
+  that is what lets the turn travel as `tool_use`/`tool_result` blocks (with the tool
+  still in that request's `tools`); otherwise it is sent as plain text, as before, and
+  the SDK warns once.
+- **Errors.** When a tool fails, put the error in `content` and set `isError: true`.
+  Anthropic receives it as `is_error`; providers without such a flag get the text.
 
 A tool‑call turn is never served from cache and never counted as an avoided call:
 an action that has not run yet cannot be a saving.

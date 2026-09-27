@@ -260,6 +260,8 @@ El proveedor falso **valida** las reglas documentadas que un historial así pued
 
 **Un turno del asistente con `content: ""` sale como un bloque de texto vacío**, y la API exige `minLength: 1` [13]. El README dice que en un turno de herramienta «`text` is empty by design», así que un llamante que devuelve ese turno por `AnthropicProvider` manda un cuerpo que la referencia declara inválido, con la búsqueda y sin ella. Arreglarlo cambia el cuerpo con la palanca apagada, y el arreglo bueno es mandar `tool_use`/`tool_result` de verdad. Va en su propio PR. El proveedor falso lo detecta, y por eso su «modelo» escribe un preámbulo antes de cada llamada.
 
+> **Actualización (2026-09-27, rama `fix/anthropic-bucle-de-herramientas`).** Arreglado como se proponía: el adaptador manda `tool_use`/`tool_result` de verdad cuando el intercambio está completo (ids, un resultado por llamada, herramienta presente y, con la búsqueda nativa, cargada), nunca un texto vacío, y si no, lo de antes. El turno del asistente sale como `[pares, texto si lo hay, tool_use…]`, así que la desviación de «unchanged» de la decisión 2 se reduce al orden del texto respecto de los pares. Los tests de esta sección pasan a validar también las reglas del bucle (`test/helpers/api-de-mensajes-falsa.ts`).
+
 ### 10.7 · Qué no se pudo verificar y la sonda del dueño
 
 Sin llamadas reales (con gasto) no está verificado que la API acepte un turno del asistente con los pares de búsqueda y **sin** el `tool_use` que los siguió, seguido de un turno de usuario de texto. Tampoco está verificado que el modelo real deje de buscar con ellos.
