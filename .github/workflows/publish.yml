@@ -5,24 +5,64 @@ name: publish
 # — it refuses to run without a valid signed license, so the LICENSE (not the
 # registry) is the gate. Install is a friction-free `pnpm add @bivelio/savings-layer`.
 #
-# Requires an `NPM_TOKEN` repo secret: an npm automation/granular token with publish
-# rights for the @bivelio scope (npmjs.com → Access Tokens). The @bivelio org must
-# exist on npmjs.com. Cut a Release (tag) to publish; bump package.json version first.
+# AUTENTICACIÓN: npm TRUSTED PUBLISHING (OIDC), sin token guardado. GitHub emite
+# un token OIDC de vida corta para ESTE workflow y npm lo canjea por un permiso
+# de publicación. Arregla el EOTP: las nueve ejecuciones de este workflow
+# fallaron, y las siete que llegaron a `npm publish` (v0.1.0, v0.2.0 dos veces,
+# v0.4.1, v0.4.22, v0.4.23 y v0.4.24) murieron ahí con EOTP; las otras dos, de
+# v0.2.0, cayeron antes, en Tests y en Typecheck. Comprobado en sus logs
+# (`gh run list --workflow publish.yml`, 2026-09-27): el NPM_TOKEN exigía el
+# segundo factor y un CI no tiene autenticador.
+# Requisitos (https://docs.npmjs.com/trusted-publishers, consultado 2026-09-27):
+# npm >= 11.5.1, Node >= 22.14.0, runner alojado por GitHub, `id-token: write`
+# y `repository.url` de package.json igual a este repositorio. El paso del
+# dueño en npmjs.com está en docs/PUBLISHING.md: sin él, `npm publish` falla.
+#
+# PROVENANCE: `--provenance` SOLO si el repositorio es público. npm no admite
+# provenance desde repositorios privados, ni siquiera para paquetes públicos
+# (misma página, consultada 2026-09-27), así que pedirla no es una opción
+# mientras lo sea. El flag depende de `github.event.repository.private`, y
+# mientras el repo sea privado la Release publica sin provenance y lo dice con
+# un ::warning::.
+# Hacer público el repo es decisión del dueño; el día que lo sea, la provenance
+# entra sola. test/cadena-de-suministro.test.ts rompe si alguien quita el flag
+# o el `id-token: write`.
+#
+# TRES TRABAJOS, cada uno con el mínimo permiso:
+#   verificar (contents: read)   instala, construye, prueba, empaqueta y genera
+#                                el SBOM. Es el ÚNICO que ejecuta código de
+#                                terceros (pnpm install), y por eso no puede
+#                                pedir un token OIDC.
+#   publicar  (id-token: write)  publica EXACTAMENTE el tarball verificado, por
+#                                ruta. No instala nada (ni dependencias ni otro
+#                                npm) ni hace checkout: solo ejecuta dos acciones
+#                                de GitHub (setup-node, download-artifact),
+#                                fijadas por etiqueta mayor, no por SHA.
+#   sbom      (contents: write)  adjunta el SBOM a la Release en cuanto la
+#                                versión está en npm, aunque falle después la
+#                                comprobación del registro.
 on:
   release:
     types: [published]
 
+# Nada por defecto: cada trabajo declara lo suyo.
+permissions: {}
+
 jobs:
-  publish:
+  verificar:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # El sha512 del tarball verificado viaja como SALIDA del trabajo, no dentro
+    # del artefacto: así el trabajo que publica tiene contra qué comparar lo que
+    # le llega, y un artefacto cambiado por el camino no trae su propio hash.
+    outputs:
+      sha512: ${{ steps.hash.outputs.sha512 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org
       - name: Enable pnpm (from packageManager)
         run: corepack enable
       - run: pnpm install --frozen-lockfile
@@ -71,33 +111,204 @@ jobs:
           fi
           echo "etiqueta y package.json coinciden en $VERSION"
 
+      # El tarball se empaqueta UNA vez, aquí, y es ese fichero el que se
+      # comprueba, se describe en el SBOM y se publica (por ruta, en el trabajo
+      # siguiente). `npm publish` a secas volvería a empaquetar —y a construir,
+      # por `prepublishOnly`— algo que ya no sería lo verificado.
+      - name: Empaquetar
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          mkdir -p paquete
+          npm pack --silent --pack-destination paquete >/dev/null
+          test -f "paquete/bivelio-savings-layer-$VERSION.tgz" || { echo "::error::npm pack no dejó paquete/bivelio-savings-layer-$VERSION.tgz"; exit 1; }
+
       # Lo que de verdad se va a subir, comprobado sobre el tarball y no sobre el
       # árbol de trabajo: que el paywall va cerrado (la puerta de desarrollo se
       # compila fuera del build publicado) y que no se filtra el código fuente.
       - name: El paquete no regala el producto
         run: |
-          npm pack --silent >/dev/null
-          tar xzf bivelio-savings-layer-*.tgz
-          if grep -q "BVSALA_DEV_OPEN" package/dist/index.js; then
+          VERSION="$(node -p "require('./package.json').version")"
+          DIR="$(mktemp -d)"
+          tar xzf "paquete/bivelio-savings-layer-$VERSION.tgz" -C "$DIR"
+          if grep -q "BVSALA_DEV_OPEN" "$DIR/package/dist/index.js"; then
             echo "::error::El build publicado conserva la puerta de desarrollo: sería gratis."
             exit 1
           fi
-          if find package -name "*.map" | grep -q .; then
+          if find "$DIR/package" -name "*.map" | grep -q .; then
             echo "::error::El paquete lleva sourcemaps: filtraría el código fuente propietario."
             exit 1
           fi
-          if ! grep -q "BEGIN PUBLIC KEY" package/dist/index.js; then
+          if ! grep -q "BEGIN PUBLIC KEY" "$DIR/package/dist/index.js"; then
             echo "::error::Falta la clave pública embebida: ninguna licencia verificaría."
             exit 1
           fi
-          if ! grep -q "BEGIN PUBLIC KEY" package/dist/gateway/bin.js; then
+          if ! grep -q "BEGIN PUBLIC KEY" "$DIR/package/dist/gateway/bin.js"; then
             echo "::error::El gateway no lleva la clave pública embebida: bvsala no arrancaría con ninguna licencia."
             exit 1
           fi
-          rm -rf package bivelio-savings-layer-*.tgz
+          # La privada NO viaja nunca, en ningún fichero del paquete: ni como PEM
+          # (`-----BEGIN … PRIVATE KEY-----`) ni en base64, que es como la guarda
+          # LICENSE_PRIVATE_KEY_B64 (apps/web/lib/license/sign.ts). Las tres
+          # cadenas en base64 son «PRIVATE KEY» en sus tres alineaciones posibles.
+          # SECURITY.md promete esto apoyándose en esta comprobación.
+          if grep -rqaE "PRIVATE KEY|UFJJVkFURSBLRV|BSSVZBVEUgS0VZ|QUklWQVRFIEtFW" "$DIR/package"; then
+            echo "::error::El paquete lleva una clave privada."
+            exit 1
+          fi
+          rm -rf "$DIR"
           echo "paquete verificado"
 
-      - name: Publish to npm (public)
-        run: npm publish --access public
+      # SBOM CycloneDX 1.5 del tarball: el código de terceros que va DENTRO del
+      # bundle, sacado del metafile del propio empaquetador, y el peer opcional.
+      # El script falla si el bundle que reconstruye no es byte a byte el del
+      # tarball (scripts/sbom.ts explica por qué no `npm sbom`).
+      - name: SBOM CycloneDX del tarball
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          pnpm exec tsx scripts/sbom.ts "paquete/bivelio-savings-layer-$VERSION.tgz" "paquete/bivelio-savings-layer-$VERSION.cdx.json"
+
+      # Lo último antes de subir el artefacto: el hash de lo que se sube.
+      - name: Hash del tarball verificado
+        id: hash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          H="$(node -e 'process.stdout.write(require("crypto").createHash("sha512").update(require("fs").readFileSync(process.argv[1])).digest("hex"))' "paquete/bivelio-savings-layer-$VERSION.tgz")"
+          echo "sha512=$H" >> "$GITHUB_OUTPUT"
+          # También al log: es con lo que se compara una publicación a mano.
+          echo "tarball verificado: sha512 $H"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paquete
+          path: paquete/
+          if-no-files-found: error
+
+  publicar:
+    needs: verificar
+    runs-on: ubuntu-latest
+    # El entorno se crea solo en la primera ejecución (sin reglas). En npmjs.com
+    # el trusted publisher se ata a este nombre: ver docs/PUBLISHING.md. Sin
+    # revisores obligatorios: con plan Team y repo privado GitHub no los ofrece
+    # (sí la restricción a etiquetas `v*`; ver docs/PUBLISHING.md).
+    environment: npm
+    permissions:
+      id-token: write
+    outputs:
+      publicado: ${{ steps.publicar.outputs.publicado }}
+    steps:
+      # Node 24 para el trusted publishing (Node >= 22.14.0). El build y los
+      # tests siguen en Node 20, en el trabajo de arriba, como ci.yml.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # Se COMPRUEBA y no se instala: este trabajo tiene `id-token: write` y no
+      # baja nada del registro. Node 24 trae npm >= 11.5.1 desde la 24.5.0, y la
+      # 24.21.0 trae la 11.19.0 (https://nodejs.org/dist/index.json, consultado
+      # 2026-09-27). Si un runner trajera uno más viejo, falla aquí con el motivo
+      # y no en `npm publish` con un error de autenticación.
+      - name: npm con trusted publishing (>= 11.5.1)
+        run: |
+          admite() { node -e 'const [a,b,c]=process.argv[1].split(".").map(Number);process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$(npm --version)"; }
+          admite || { echo "::error::npm $(npm --version) no admite trusted publishing (hace falta >= 11.5.1)."; exit 1; }
+          echo "npm $(npm --version)"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: paquete
+          path: paquete
+
+      # El artefacto viaja entre trabajos. Se compara con el sha512 que
+      # `verificar` dejó en su SALIDA —que no viaja en el artefacto, así que un
+      # artefacto cambiado no trae su propio hash— y con el que lleva el SBOM,
+      # para que el SBOM adjunto describa este fichero. Lo que esto NO prueba:
+      # que nada tocara el tarball dentro de `verificar`, antes de hashearlo.
+      - name: El tarball es el verificado
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          SHA512_VERIFICADO: ${{ needs.verificar.outputs.sha512 }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node -e '
+            const fs = require("fs"), c = require("crypto");
+            const [tgz, sbom] = process.argv.slice(1);
+            const verificado = process.env.SHA512_VERIFICADO;
+            if (!/^[0-9a-f]{128}$/.test(verificado ?? "")) { console.log("::error::verificar no dejó el sha512 del tarball en su salida."); process.exit(1); }
+            const real = c.createHash("sha512").update(fs.readFileSync(tgz)).digest("hex");
+            if (real !== verificado) { console.log("::error::El tarball no es el que se verificó."); process.exit(1); }
+            const delSbom = JSON.parse(fs.readFileSync(sbom, "utf8")).metadata.component.hashes.find((h) => h.alg === "SHA-512").content;
+            if (delSbom !== verificado) { console.log("::error::El SBOM describe otro tarball."); process.exit(1); }
+            console.log("tarball verificado: sha512 " + real.slice(0, 16) + "…");
+          ' "paquete/bivelio-savings-layer-$VERSION.tgz" "paquete/bivelio-savings-layer-$VERSION.cdx.json"
+
+      - name: Publish to npm (public, trusted publishing)
+        id: publicar
+        env:
+          REPO_PRIVADO: ${{ github.event.repository.private }}
+        run: |
+          TGZ="paquete/bivelio-savings-layer-${GITHUB_REF_NAME#v}.tgz"
+          if [ "$REPO_PRIVADO" = "false" ]; then
+            npm publish "$TGZ" --provenance --access public
+          else
+            echo "::warning title=Sin provenance::El repositorio es privado y npm no genera provenance desde repositorios privados (https://docs.npmjs.com/trusted-publishers). Se publica con trusted publishing y SIN provenance."
+            npm publish "$TGZ" --access public
+          fi
+          echo "publicado=true" >> "$GITHUB_OUTPUT"
+
+      # Lo que sirve el registro tiene que ser lo que se verificó: su integridad
+      # (sha512) contra la del tarball local y, con el repo público, la
+      # provenance. El registro tarda en servir la versión nueva: se espera hasta
+      # 5 minutos. Si este paso falla, la versión YA está en npm: no se relanza
+      # la Release (fallaría con «cannot publish over»); ver docs/PUBLISHING.md.
+      # Se lee como ANÓNIMO (sin el .npmrc de setup-node): lo que ve un cliente.
+      - name: El registro sirve el tarball verificado
+        env:
+          REPO_PRIVADO: ${{ github.event.repository.private }}
+          NPM_CONFIG_USERCONFIG: /dev/null
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TGZ="paquete/bivelio-savings-layer-$VERSION.tgz"
+          LOCAL="sha512-$(node -e 'process.stdout.write(require("crypto").createHash("sha512").update(require("fs").readFileSync(process.argv[1])).digest("base64"))' "$TGZ")"
+          REMOTO=""
+          for i in $(seq 1 30); do
+            REMOTO="$(npm view "@bivelio/savings-layer@$VERSION" dist.integrity 2>/dev/null || true)"
+            [ -n "$REMOTO" ] && break
+            sleep 10
+          done
+          if [ -z "$REMOTO" ]; then
+            echo "::error::npm publish terminó, pero el registro no sirve $VERSION tras 5 minutos. La versión YA está publicada: NO relances la Release; compruébalo con 'npm view @bivelio/savings-layer@$VERSION dist.integrity' (debe ser $LOCAL)."
+            exit 1
+          fi
+          if [ "$REMOTO" != "$LOCAL" ]; then
+            echo "::error::npm sirve '$REMOTO' para $VERSION y el tarball verificado es '$LOCAL'."
+            exit 1
+          fi
+          echo "npm sirve el tarball verificado ($LOCAL)"
+          if [ "$REPO_PRIVADO" = "false" ]; then
+            TIPO="$(npm view "@bivelio/savings-layer@$VERSION" dist.attestations.provenance.predicateType 2>/dev/null || true)"
+            if [ -z "$TIPO" ]; then
+              echo "::error::$VERSION se publicó sin provenance aunque el repositorio es público."
+              exit 1
+            fi
+            echo "provenance: $TIPO"
+          fi
+
+  # Con la versión ya en npm, el SBOM se adjunta aunque falle la comprobación
+  # posterior del registro: la Release tiene que describir lo que se publicó.
+  sbom:
+    needs: publicar
+    if: ${{ always() && needs.publicar.outputs.publicado == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: paquete
+          path: paquete
+      - name: Adjuntar el SBOM a la Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" "paquete/bivelio-savings-layer-${GITHUB_REF_NAME#v}.cdx.json" \
+            --repo "$GITHUB_REPOSITORY" --clobber
