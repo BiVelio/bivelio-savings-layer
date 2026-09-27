@@ -39,6 +39,17 @@ import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
 import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
 import {
+  EspejoDeCache,
+  VENTANA_DE_BUSQUEDA,
+  cabeceraDeSistema,
+  decidirColocacion,
+  decidirExplicitaOpenAI,
+  huellasDePrefijos,
+  type Coincidencia,
+  type TipoDeTramo,
+  type TtlDeCache,
+} from "../economics/colocador-de-cache.js";
+import {
   SIN_TIER_DIFERIBLE,
   TIER_DIFERIBLE_OPENAI,
   hayTarifaDeLote,
@@ -97,7 +108,7 @@ import { LicenseError } from "../license/errors.js";
 import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
-import { primaDeEscrituraAutomatica } from "../pricing/primas.js";
+import { primaDeEscritura1h, primaDeEscrituraAutomatica } from "../pricing/primas.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 import {
   evaluarReferencia,
@@ -433,6 +444,15 @@ export class SavingsPipeline {
    * medición hay que acumularla entre peticiones o no se llega a tener nunca.
    */
   private readonly verjaDeCache = new VerjaDeCacheDePrefijo();
+
+  /**
+   * El espejo de la caché de prefijo (`cacheBreakpoints: "auto"`): mide, sin
+   * marcar nada, con qué frecuencia y con qué hueco el tráfico reutiliza cada
+   * tramo del prompt. Vive en la instancia por lo mismo que la verja: es una
+   * medición, y una medición se acumula entre peticiones o no existe. Con la
+   * colocación fija (el defecto) no se toca.
+   */
+  private readonly espejoDeCache = new EspejoDeCache();
 
   /**
    * Verja de la cascada de modelos. Vive en la instancia por lo mismo que las
@@ -834,14 +854,7 @@ export class SavingsPipeline {
     descubrimientoActivo: boolean,
     mensajesDePrefijo: number,
     trace: TraceCollector,
-  ): {
-    marcar: boolean;
-    huella: string;
-    claveDeVerja: string;
-    mensajesDePrefijo: number;
-    cacheWriteMultiplier: number;
-    explicita: boolean;
-  } {
+  ): MarcadoDeCache {
     // El modo explícito se decide AQUÍ, antes de llamar, y solo cuando el
     // adaptador lo va a honrar: el origen lo declaró un adaptador propio.
     const tramoExplicito =
@@ -850,13 +863,15 @@ export class SavingsPipeline {
         ? tramoParaDecidirExplicita(modeloServido)
         : null;
     const explicita = tramoExplicito !== null;
-    const nada = {
-      marcar: false as const,
+    const nada: MarcadoDeCache = {
+      marcar: false,
       huella: "",
       claveDeVerja: "",
       mensajesDePrefijo: 0,
       cacheWriteMultiplier: 1,
       explicita,
+      explicitaPorColocador: false,
+      colocacion: null,
     };
 
     const tier = tramoDelModelo(modeloServido, this.config.compressionEconomics);
@@ -886,7 +901,19 @@ export class SavingsPipeline {
       });
       return nada;
     }
-    if (mensajesDePrefijo <= 0) return nada;
+    // EL COLOCADOR (opt-in). Solo con la colocación automática y sin modo
+    // explícito DECLARADO: lo que el cliente declara manda sobre lo que la capa
+    // mide. Devuelve la decisión entera, o la observación a apuntar cuando la
+    // colocación que toca es la fija (sin muestras, o un proveedor donde colocar
+    // no cambia la factura).
+    let observacion: ColocacionEnCurso | null = null;
+    if (this.config.cacheBreakpoints === "auto" && !explicita) {
+      const colocado = this.colocarConEspejo(request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace);
+      if ("marcado" in colocado) return colocado.marcado;
+      observacion = colocado.observacion;
+    }
+
+    if (mensajesDePrefijo <= 0) return { ...nada, colocacion: observacion };
 
     const prefijo = messages.slice(0, mensajesDePrefijo);
     const stablePrefixTokens = this.tokensFor(
@@ -933,8 +960,281 @@ export class SavingsPipeline {
           mensajesDePrefijo,
           cacheWriteMultiplier: tier.cacheWriteMultiplier,
           explicita,
+          explicitaPorColocador: false,
+          colocacion: observacion,
         }
-      : nada;
+      : { ...nada, colocacion: observacion };
+  }
+
+  /**
+   * EL COLOCADOR DE PUNTOS DE RUPTURA (`cacheBreakpoints: "auto"`).
+   *
+   * Mira en el espejo cuánto reutiliza el tráfico de esta clase cada tramo del
+   * prompt —cabecera, historial, prompt entero— y decide dónde escribir. El
+   * razonamiento y las fuentes están en `economics/colocador-de-cache.ts`; aquí
+   * solo se cablea:
+   *
+   *  · ANTHROPIC (escritura con prima y puntos explícitos): cabecera siempre que
+   *    la verja lo apruebe; historial solo si se reutiliza por encima del
+   *    equilibrio; cola solo si las continuaciones lo superan; 1 h solo si sale
+   *    a cuenta con los tamaños de esta petición.
+   *  · OPENAI GPT-5.6+ en su API: modo explícito (sin punto en la pregunta) solo
+   *    si las continuaciones en 30 min no llegan al equilibrio.
+   *  · El resto (sin prima de escritura, caché implícita): la colocación fija,
+   *    que ahí no cuesta nada.
+   *
+   * LA VERJA DE PREFIJO SIGUE MANDANDO, con otra llave: por CLASE y FORMA de la
+   * colocación, no por huella del prefijo. La huella de un historial no se repite
+   * nunca, así que la verja no llegaba a medir nada en conversaciones; la clase
+   * sí se repite, y con ella la tasa de aciertos del proveedor vuelve a ser una
+   * medición.
+   */
+  private colocarConEspejo(
+    request: SavingsRequest,
+    modeloServido: string,
+    messages: ChatMessage[],
+    toolSelection: { tools: SavingsRequest["tools"] & object; setIsStable: boolean },
+    mensajesDePrefijo: number,
+    tier: CacheTier,
+    trace: TraceCollector,
+  ): { marcado: MarcadoDeCache } | { observacion: ColocacionEnCurso | null } {
+    const origen = origenDelProveedor(this.config.provider);
+    const openaiExplicita =
+      request.savings?.standalone === undefined && explicitaAplicable(modeloServido, origen);
+    const tramoOpenAI = openaiExplicita ? tramoParaDecidirExplicita(modeloServido) : null;
+    // Colocar solo cambia la factura donde escribir lleva prima: Anthropic
+    // (puntos explícitos) u OpenAI GPT-5.6+ en su API con precio propio.
+    const conPrima = tier.cacheWriteMultiplier > 1 && !openaiExplicita;
+    if (!conPrima && !tramoOpenAI) return { observacion: null };
+
+    const S = cabeceraDeSistema(messages);
+    const H = Math.max(S, Math.min(mensajesDePrefijo, messages.length));
+    const T = messages.length;
+    const herramientas = (toolSelection.tools ?? []).map((t) => t.id);
+    // La raíz es lo que va DELANTE de los mensajes en el cable: el modelo, las
+    // herramientas y el contrato (que en Anthropic viaja como herramienta o como
+    // bloque de sistema). Cambiar cualquiera invalida todo lo que va detrás.
+    const raiz = stableStringify({
+      model: modeloServido,
+      tools: herramientas,
+      schema: request.response?.schema ?? null,
+    });
+    const huellas = huellasDePrefijos(raiz, messages);
+    const clase = huellas[S]!;
+    const ahora = this.now();
+    const coincidencia = this.espejoDeCache.observar(clase, huellas, ahora);
+    const estadistica = this.espejoDeCache.estadistica(clase, ahora);
+    const tramos: Partial<Record<TipoDeTramo, number>> = { S, ...(H > S ? { H } : {}), T };
+    const tokensHasta = (n: number): number =>
+      this.tokensFor(this.assemblePromptText(messages.slice(0, n), toolSelection.tools), request);
+    const base = { clase, huellas, tramos, coincidencia, enviada: ahora };
+
+    if (tramoOpenAI) {
+      const d = decidirExplicitaOpenAI({ estadistica, tramo: tramoOpenAI, hayHistorial: H > S });
+      trace.record("prefix-cache-placement", d.explicita ? "explicit" : "provider-default", {
+        reason: d.razon,
+        breakEvenReuseRate: d.equilibrio,
+        continuedWithin30m: estadistica.T.en30m,
+        samples: estadistica.T.muestras30m,
+      });
+      // El modo del proveedor escribe en la pregunta: su último punto es la cola.
+      const observacion: ColocacionEnCurso = {
+        ...base,
+        cola: !d.explicita,
+        ttl: "5m",
+        ultimo: d.explicita ? null : "T",
+        indiceDelUltimo: d.explicita ? null : T,
+      };
+      if (!d.explicita) return { observacion };
+      const frontera = d.historial ? H : S;
+      if (frontera <= 0) {
+        // Explícito y sin frontera: ni se escribe ni se lee. Es el lado que no
+        // cobra prima, y la verja no tiene nada que decidir.
+        return {
+          marcado: {
+            marcar: false, huella: "", claveDeVerja: "", mensajesDePrefijo: 0, cacheWriteMultiplier: 1,
+            explicita: true, explicitaPorColocador: true, colocacion: { ...observacion, ultimo: null, indiceDelUltimo: null },
+          },
+        };
+      }
+      const tipo: TipoDeTramo = frontera === S ? "S" : "H";
+      const claveDeVerja = `${clase}|explicit|${tipo}`;
+      const decision = this.verjaDeCache.decidir(claveDeVerja, {
+        totalTokens: tokensHasta(T),
+        stablePrefixTokens: tokensHasta(frontera),
+        tier: tramoOpenAI,
+      });
+      trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
+        reason: decision.razon,
+        breakEvenHitRate: decision.umbral,
+        observedHitRate: decision.observada,
+        mode: "explicit",
+      });
+      return {
+        marcado: {
+          marcar: decision.marcar,
+          huella: decision.marcar ? this.huellaDelPrefijo(modeloServido, toolSelection.tools, messages, frontera) : "",
+          claveDeVerja: decision.marcar ? claveDeVerja : "",
+          mensajesDePrefijo: decision.marcar ? frontera : 0,
+          cacheWriteMultiplier: 1,
+          explicita: true,
+          explicitaPorColocador: true,
+          colocacion: {
+            ...observacion,
+            ultimo: decision.marcar ? tipo : null,
+            indiceDelUltimo: decision.marcar ? frontera : null,
+          },
+        },
+      };
+    }
+
+    // ANTHROPIC (y cualquier tramo declarado con prima de escritura y puntos).
+    const tokens = { S: S > 0 ? tokensHasta(S) : 0, H: H > S ? tokensHasta(H) : 0, T: tokensHasta(T) };
+    const unaHora = primaDeEscritura1h(modeloServido);
+    const c = decidirColocacion({
+      estadistica,
+      tramo: tier,
+      // La hora solo existe en Anthropic (`primaDeEscritura1h` devuelve la prima
+      // normal donde no la hay): sin ella no se decide nada sobre el TTL.
+      primaDeUnaHora: unaHora > tier.cacheWriteMultiplier ? unaHora : null,
+      tokens,
+      hayHistorial: H > S,
+      lecturaPrevista: () => (coincidencia ? tokensHasta(coincidencia.indice) : 0),
+    });
+    const frontera = c.historial && H > S ? H : S;
+    const ultimo: TipoDeTramo | null = c.cola ? "T" : frontera > 0 ? (frontera === H && H > S ? "H" : "S") : null;
+    const indiceDelUltimo = c.cola ? T : frontera > 0 ? frontera : null;
+    trace.record("prefix-cache-placement", ultimo ?? "none", {
+      reason: c.razon || "fixed placement",
+      boundary: frontera === 0 ? "none" : frontera === S ? "system" : "history",
+      tail: c.cola,
+      ttl: c.ttl,
+      breakEvenReuseRate: c.equilibrio,
+      historyReusedWithin5m: estadistica.H.en5m,
+      continuedWithin5m: estadistica.T.en5m,
+      samples: estadistica.T.muestras5m,
+      providerConfirmedReads: `${estadistica.confirmadas}/${estadistica.predichas}`,
+    });
+    const observacion: ColocacionEnCurso = { ...base, cola: c.cola, ttl: c.ttl, ultimo: null, indiceDelUltimo: null };
+    if (ultimo == null || indiceDelUltimo == null) {
+      return {
+        marcado: {
+          marcar: false, huella: "", claveDeVerja: "", mensajesDePrefijo: 0, cacheWriteMultiplier: 1,
+          explicita: false, explicitaPorColocador: false, colocacion: observacion,
+        },
+      };
+    }
+
+    // La verja juzga ESTA forma de colocar con la tasa de aciertos que dé el
+    // contador del proveedor, a la prima del TTL elegido (2× con la hora).
+    const tierDeLaForma: CacheTier =
+      c.ttl === "1h" ? { ...tier, cacheWriteMultiplier: unaHora } : tier;
+    const claveDeVerja = `${clase}|${frontera === 0 ? "-" : frontera === S ? "S" : "H"}${c.cola ? "+T" : ""}@${c.ttl}`;
+    const decision = this.verjaDeCache.decidir(claveDeVerja, {
+      totalTokens: tokens.T,
+      stablePrefixTokens: c.cola ? tokens.T : frontera === S ? tokens.S : tokens.H,
+      tier: tierDeLaForma,
+    });
+    trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
+      reason: decision.razon,
+      stablePrefixTokens: c.cola ? tokens.T : frontera === S ? tokens.S : tokens.H,
+      breakEvenHitRate: decision.umbral,
+      observedHitRate: decision.observada,
+    });
+    if (!decision.marcar) {
+      return {
+        marcado: {
+          marcar: false, huella: "", claveDeVerja: "", mensajesDePrefijo: 0, cacheWriteMultiplier: 1,
+          explicita: false, explicitaPorColocador: false, colocacion: observacion,
+        },
+      };
+    }
+    return {
+      marcado: {
+        marcar: true,
+        huella: this.huellaDelPrefijo(modeloServido, toolSelection.tools, messages, frontera),
+        claveDeVerja,
+        mensajesDePrefijo: frontera,
+        cacheWriteMultiplier: tier.cacheWriteMultiplier,
+        explicita: false,
+        explicitaPorColocador: false,
+        colocacion: { ...observacion, ultimo, indiceDelUltimo },
+      },
+    };
+  }
+
+  /**
+   * Apunta en el espejo los tramos de la petición que acaba de volver, y deja
+   * que el CONTADOR DEL PROVEEDOR confirme o desmienta la lectura que el espejo
+   * predijo al llegar. La predicción solo se comprueba cuando es comprobable:
+   * la entrada coincidente fue el último punto de su petición (su posición la
+   * dio el proveedor, no un tokenizador) y esta petición puso un punto que la
+   * alcanza (en ella o detrás, dentro de las 20 posiciones de búsqueda).
+   */
+  private apuntarEnElEspejo(
+    marcado: MarcadoDeCache,
+    uso: ProviderResponse["usage"],
+    trace: TraceCollector,
+  ): void {
+    const c = marcado.colocacion!;
+    const informo = uso.complete !== false;
+    const leidos = Math.max(0, uso.cachedInputTokens ?? 0);
+    const escritos = Math.max(0, uso.cacheWriteInputTokens ?? 0);
+    const marco = c.ultimo != null && c.indiceDelUltimo != null;
+    const k = c.coincidencia?.indice;
+    if (
+      informo &&
+      marco &&
+      c.coincidencia &&
+      k !== undefined &&
+      c.indiceDelUltimo! >= k &&
+      c.indiceDelUltimo! - k < VENTANA_DE_BUSQUEDA
+    ) {
+      const antes = this.espejoDeCache.estadistica(c.clase, c.enviada);
+      this.espejoDeCache.verificar(c.clase, c.coincidencia, leidos);
+      const despues = this.espejoDeCache.estadistica(c.clase, c.enviada);
+      if (despues.predichas > antes.predichas) {
+        trace.record("prefix-cache-placement", "verified", {
+          predictedRead: c.coincidencia.posicionDelProveedor,
+          providerCacheRead: leidos,
+          confirmed: despues.confirmadas > antes.confirmadas,
+          ...(despues.apagada && !antes.apagada
+            ? {
+                reason:
+                  `the provider's counter confirmed only ${despues.confirmadas} of ${despues.predichas} ` +
+                  "predicted cache reads: this traffic goes back to the fixed placement",
+              }
+            : {}),
+        });
+      }
+    }
+    this.espejoDeCache.registrar({
+      clase: c.clase,
+      huellas: c.huellas,
+      tramos: c.tramos,
+      enviada: c.enviada,
+      ultimoMarcado: marco ? c.ultimo : null,
+      // La posición del último punto en tokens DEL PROVEEDOR: lo que leyó más
+      // lo que escribió es exactamente el prefijo hasta ese punto.
+      posicionDelProveedor: informo && marco ? leidos + escritos : null,
+      ttl: c.ttl,
+    });
+  }
+
+  /** La huella de un prefijo, la misma que la colocación fija (viaja como `prompt_cache_key`). */
+  private huellaDelPrefijo(
+    modelo: string,
+    tools: SavingsRequest["tools"],
+    messages: ChatMessage[],
+    n: number,
+  ): string {
+    return sha256(
+      stableStringify({
+        model: modelo,
+        tools: (tools ?? []).map((t) => t.id),
+        prefijo: messages.slice(0, n).map((m) => `${m.role}:${m.content}`),
+      }),
+    );
   }
 
   /**
@@ -2520,6 +2820,11 @@ export class SavingsPipeline {
         ? {
             stablePrefixMessages: marcado.mensajesDePrefijo,
             promptCacheKey: marcado.huella,
+            // Solo cuando el colocador decidió algo distinto de la fija: sin
+            // esto el cuerpo que sale es el de siempre, byte a byte.
+            ...(marcado.colocacion && !marcado.explicita && (marcado.colocacion.cola || marcado.colocacion.ttl !== "5m")
+              ? { cachePlacement: { tail: marcado.colocacion.cola, ttl: marcado.colocacion.ttl } }
+              : {}),
           }
         : {}),
     };
@@ -2817,11 +3122,23 @@ export class SavingsPipeline {
       // ANTES de que una escalada pudiera reemplazar `response`; la escalada sale
       // sin marcar a propósito. Tarifarla con el fuerte multiplicaba la prima por
       // 15 en una escalada barato→fuerte.
+      // LA HORA SE COBRA A 2×. El desglose por TTL lo da el proveedor
+      // (`ephemeral_1h_input_tokens`); si se pidió la hora y el proveedor no lo
+      // desglosó, TODA la escritura se carga a 2×: el lado conservador, porque
+      // un `actual` por debajo de la factura publicaría un ahorro que no existe.
+      const escritas = Math.max(0, usoDeLaLlamadaMarcada.cacheWriteInputTokens ?? 0);
+      const unaHora = Math.min(
+        escritas,
+        Math.max(0, usoDeLaLlamadaMarcada.cacheWrite1hInputTokens ?? (marcado.colocacion?.ttl === "1h" ? escritas : 0)),
+      );
       ledger.cacheWritePremium(
-        usoDeLaLlamadaMarcada.cacheWriteInputTokens ?? 0,
+        escritas - unaHora,
         marcado.cacheWriteMultiplier,
         cascada.precioBarato ?? costModel,
       );
+      if (unaHora > 0) {
+        ledger.cacheWritePremium(unaHora, primaDeEscritura1h(cascada.modeloServido), cascada.precioBarato ?? costModel);
+      }
       // LA VERJA Y LA TRAZA LEEN DE LA MISMA VARIABLE, no de dos expresiones
       // equivalentes. Con dos, una mutación de la que alimenta a la VERJA —la que
       // decide el dinero— deja la traza intacta, y un test que mire la traza sigue
@@ -2835,7 +3152,15 @@ export class SavingsPipeline {
         // escondida: es lo que costó obtenerlo, y sin ella el número de al lado
         // parece un ahorro neto que no es.
         cacheWritePremiumTokens: usoDeLaLlamadaMarcada.cacheWriteInputTokens ?? 0,
+        ...(unaHora > 0 ? { cacheWrite1hTokens: unaHora } : {}),
       });
+    }
+
+    // EL ESPEJO APUNTA ESTA PETICIÓN, y el contador del proveedor juzga lo que
+    // el espejo predijo. Va después de la respuesta, como en el proveedor: una
+    // entrada solo se puede leer cuando la respuesta que la escribió ya empezó.
+    if (marcado.colocacion) {
+      this.apuntarEnElEspejo(marcado, usoDeLaLlamadaMarcada, trace);
     }
 
     // --- Etapa 10d: la MUESTRA del modo sombra (opt-in, y cuesta dinero). ---
@@ -3321,6 +3646,7 @@ export class SavingsPipeline {
       tierDeLaMarcada,
       cascada.modeloServido,
       marcado.marcar,
+      marcado.explicitaPorColocador,
     );
     if (escrituras) {
       trace.record("cache-writes", escrituras.mode, {
@@ -4142,8 +4468,12 @@ export class SavingsPipeline {
     tierServido: string | undefined,
     modelo: string,
     marcado: boolean,
+    porColocador = false,
   ): CacheWriteReport | undefined {
-    if (toggles.standalone !== true) return undefined;
+    // Con el colocador, el informe sale cuando ÉL eligió el modo explícito: el
+    // cliente no lo declaró y tiene derecho a saber que su pregunta no se
+    // escribió en la caché, y por qué.
+    if (toggles.standalone !== true && !porColocador) return undefined;
     const explicita = atestado?.cacheExplicita;
     if (!explicita) {
       const origen = origenDelProveedor(this.config.provider);
@@ -4167,6 +4497,10 @@ export class SavingsPipeline {
 
     const puntos = explicita.puntos;
     const riesgo =
+      (porColocador
+        ? 'Chosen by cacheBreakpoints: "auto" because continuations of this traffic within 30 minutes ' +
+          "were measured below the write premium's break-even (see the prefix-cache-placement trace). "
+        : "") +
       "Trade-off: repeats and continuations of this exact prompt lose the cache reads the provider " +
       "default would have given them.";
     const razon =
@@ -5538,6 +5872,36 @@ function limiteDelPrefijoEstable(messages: ChatMessage[], soloSystem = false): n
  * solo puede perder dinero. Se prefiere el ahorro no capturado a la apuesta con
  * dinero del cliente: los dos errores no cuestan lo mismo.
  */
+/** Lo que decide `decidirMarcadoDeCache`. */
+interface MarcadoDeCache {
+  marcar: boolean;
+  huella: string;
+  claveDeVerja: string;
+  mensajesDePrefijo: number;
+  cacheWriteMultiplier: number;
+  explicita: boolean;
+  /** El modo explícito lo eligió el colocador por medición, no lo declaró el cliente. */
+  explicitaPorColocador: boolean;
+  /** Con `cacheBreakpoints: "auto"`: lo que el colocador decidió y lo que se apunta en el espejo al volver. */
+  colocacion: ColocacionEnCurso | null;
+}
+
+/** Lo que el colocador decidió para una petición y lo que hace falta para apuntarla en el espejo al volver. */
+interface ColocacionEnCurso {
+  clase: string;
+  huellas: string[];
+  tramos: Partial<Record<TipoDeTramo, number>>;
+  coincidencia: Coincidencia | null;
+  /** Cuándo salió la petición (el TTL del proveedor se cuenta desde ahí). */
+  enviada: number;
+  cola: boolean;
+  ttl: TtlDeCache;
+  /** El tramo del último punto que se puso; null si no se puso ninguno. */
+  ultimo: TipoDeTramo | null;
+  /** Mensajes que cubre ese último punto, para saber si alcanza la coincidencia. */
+  indiceDelUltimo: number | null;
+}
+
 function tramoDelModelo(
   model: string,
   econ: SavingsLayerConfig["compressionEconomics"],

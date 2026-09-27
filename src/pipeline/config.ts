@@ -86,6 +86,34 @@ export interface SavingsLayerConfig {
   priceLevers?: PriceLeverSettings;
 
   /**
+   * Where the layer writes the provider's prompt cache. Defaults to `"fixed"`.
+   *
+   * `"fixed"`: one breakpoint at the end of the system header and one at the
+   * end of the history before the last user message, subject to the measured
+   * hit-rate gate. Nothing else.
+   *
+   * `"auto"`: the layer watches, per model, tool set and system header, how
+   * often your traffic re-sends each part of the prompt and how long after.
+   * Watching costs nothing — it compares prefixes locally, it does not mark
+   * anything to find out. Once it has enough samples it places breakpoints only
+   * where the reuse beats the write premium: the tail of the prompt when turns
+   * continue each other (agent loops, conversations), the history only when it
+   * is re-sent, and a one-hour lifetime on Anthropic only when your gaps and the
+   * size of this request make it pay. On OpenAI models that bill cache writes
+   * (GPT-5.6 and later, on OpenAI's own API) it switches to explicit mode, with
+   * no write on your question, when continuations are rare; `savings.standalone`
+   * still wins when you set it. Until it has samples it behaves exactly like
+   * `"fixed"`.
+   *
+   * What it did and why is in `report.traces` (`prefix-cache-placement`), and
+   * the effect is read from the provider's own counters (`cachedInputTokens`,
+   * `cacheWriteInputTokens`): if they do not confirm the reads the layer
+   * predicted, it falls back to `"fixed"` for that traffic. The write premium it
+   * causes, one-hour writes at 2x included, is charged to `cost.actual`.
+   */
+  cacheBreakpoints?: "fixed" | "auto";
+
+  /**
    * Signed BiVelio license token (from your paid subscription). This is the
    * primary way to license the SDK: `createSavingsLayer` verifies it offline
    * against the embedded public key and builds a {@link licenseGate} from it.

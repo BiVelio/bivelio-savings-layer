@@ -64,6 +64,13 @@ export interface ProviderRequest {
    * declared the capability; other providers never receive it.
    */
   toolSearch?: ProviderToolSearch;
+  /**
+   * Where the layer's breakpoint placer (`cacheBreakpoints: "auto"`) wants the
+   * provider's prompt cache written, on top of `stablePrefixMessages`. Only
+   * adapters with explicit breakpoints (Anthropic) act on it; others ignore it.
+   * Absent: the adapter's fixed placement.
+   */
+  cachePlacement?: CachePlacement;
 }
 
 /** See {@link ProviderRequest.toolSearch}. */
@@ -84,6 +91,24 @@ export interface ProviderToolSearchUsage {
   errors: number;
 }
 
+/**
+ * Breakpoint placement decided by the layer from the reuse it measured on your
+ * traffic. See `cacheBreakpoints` in the layer configuration.
+ */
+export interface CachePlacement {
+  /**
+   * Also mark the last block of the request, so that a continuation of this
+   * exact prompt (the next turn of a conversation or an agent loop) reads all
+   * of it from cache instead of writing it again.
+   */
+  tail: boolean;
+  /**
+   * Cache lifetime for every breakpoint of this request. On Anthropic a
+   * one-hour write is billed at 2x the input rate, a five-minute one at 1.25x.
+   */
+  ttl: "5m" | "1h";
+}
+
 export interface ProviderUsage {
   inputTokens: number;
   outputTokens: number;
@@ -101,6 +126,13 @@ export interface ProviderUsage {
    * bill INCREASE as a saving.
    */
   cacheWriteInputTokens?: number;
+  /**
+   * The part of `cacheWriteInputTokens` written with a ONE-HOUR lifetime
+   * (Anthropic `cache_creation.ephemeral_1h_input_tokens`), billed at 2x the
+   * input rate instead of 1.25x. Absent when the provider did not break the
+   * writes down by lifetime.
+   */
+  cacheWrite1hInputTokens?: number;
   /**
    * Output tokens the provider billed for hidden reasoning, already included in
    * `outputTokens` (OpenAI `completion_tokens_details.reasoning_tokens`).

@@ -78,10 +78,13 @@ export interface AnthropicOptions {
   /**
    * How many `cache_control` breakpoints the adapter may spend.
    *
-   * The API caps them at 4 per request. The adapter never needs more than 2
-   * (end of system, end of the stable message prefix) and the cap is exposed so
-   * a gateway with a stricter limit can lower it. Raising it above 4 is
-   * pointless: the extra breakpoints are rejected by the API, not ignored.
+   * The API caps them at 4 per request. The fixed placement never needs more
+   * than 2 (end of system, end of the stable message prefix); the layer's
+   * placer (`cacheBreakpoints: "auto"`) may add a third on the last block. The
+   * cap is exposed so a gateway with a stricter limit can lower it; when it is
+   * short, the system block goes first and the last block second. Raising it
+   * above 4 is pointless: the extra breakpoints are rejected by the API, not
+   * ignored.
    */
   maxCacheBreakpoints?: number;
   /**
@@ -98,6 +101,10 @@ export interface AnthropicOptions {
    * the whole history at 0.1x — and loses money on one-shot traffic where
    * nothing ever reads it back. It is also rejected by legacy Bedrock
    * deployments. Turn it on when your traffic is multi-turn.
+   *
+   * Ignored on requests whose breakpoints were placed by the layer's placer
+   * (`cacheBreakpoints: "auto"`): the placer already decides whether the tail is
+   * marked, from the reuse it measured on your traffic.
    */
   automaticCache?: boolean;
   /**
@@ -122,8 +129,12 @@ const HERRAMIENTA_DE_CONTRATO = "bvsala_contract";
 interface BloqueDeTexto {
   type: "text";
   text: string;
-  cache_control?: { type: "ephemeral" };
+  cache_control?: MarcaDeCache;
 }
+
+// Sin `ttl` es el defecto de la API (5 min). La colocación fija nunca lo manda,
+// así que su cuerpo sigue byte a byte como antes de que existiera la hora.
+type MarcaDeCache = { type: "ephemeral" } | { type: "ephemeral"; ttl: "1h" };
 
 interface MensajeAnthropic {
   role: "user" | "assistant";
@@ -715,6 +726,7 @@ export class AnthropicProvider implements Provider {
     // entero), el automático es un no-op — inofensivo, no un error.
     if (
       this.opts.automaticCache === true &&
+      req.cachePlacement == null &&
       req.stablePrefixMessages != null &&
       puntosGastados < Math.min(this.opts.maxCacheBreakpoints ?? TOPE_DE_PUNTOS_DE_RUPTURA, TOPE_DE_PUNTOS_DE_RUPTURA)
     ) {
@@ -738,10 +750,13 @@ export class AnthropicProvider implements Provider {
   //   2. al final del prefijo estable de mensajes, cuando el pipeline afirma
   //      que hay uno.
   //
-  // Los otros dos se dejan libres a proposito: el tope es duro y quien envuelva
-  // este adaptador (un gateway, una capa de agentes) necesita sitio para los
-  // suyos. Marcar de mas no es gratis — cada escritura lleva prima del 25% —,
-  // asi que el techo no se agota por si acaso.
+  // Y un TERCERO solo si el colocador (`cacheBreakpoints: "auto"`) lo pidió:
+  // el último bloque, cuando midió que el tráfico continúa sus prompts.
+  //
+  // El cuarto se deja libre a proposito: el tope es duro y quien envuelva este
+  // adaptador (un gateway, una capa de agentes) necesita sitio para los suyos.
+  // Marcar de mas no es gratis — cada escritura lleva prima del 25% —, asi que
+  // el techo no se agota por si acaso.
   private marcarCache(
     req: ProviderRequest,
     system: BloqueDeTexto[],
@@ -764,6 +779,15 @@ export class AnthropicProvider implements Provider {
     if (presupuesto <= 0) return 0;
     const presupuestoInicial = presupuesto;
 
+    // EL TTL ES UNO POR PETICIÓN. La API exige que los de 1 h vayan DELANTE de
+    // los de 5 min; con uno solo para todos los puntos no hay orden que romper,
+    // y el colocador ya decidió la hora mirando el último punto, que es el que
+    // decide lo que lee el turno siguiente. Un objeto nuevo por bloque: el
+    // mismo compartido saldría igual en JSON, pero un llamante que mutase uno
+    // los cambiaría todos.
+    const marca = (): MarcaDeCache =>
+      req.cachePlacement?.ttl === "1h" ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" };
+
     // EL PUNTO VA AL FINAL DEL `system` QUE ESTA DENTRO DEL PREFIJO, no al final
     // del array. Son cosas distintas en cuanto queda un bloque de sistema fuera
     // del prefijo declarado: el esquema por prompt que se anade mas abajo, o una
@@ -774,7 +798,21 @@ export class AnthropicProvider implements Provider {
     // de escritura (1,25x) del tramo entero.
     const ultimoSystem = prefijoEnSystem > 0 ? system[prefijoEnSystem - 1] : undefined;
     if (ultimoSystem) {
-      ultimoSystem.cache_control = { type: "ephemeral" };
+      ultimoSystem.cache_control = marca();
+      presupuesto -= 1;
+    }
+
+    // LA COLA (solo con el colocador): el último bloque del último mensaje, para
+    // que la continuación de este prompt exacto —el turno siguiente de una
+    // conversación o de un bucle de agente— lo lea entero a 0,1× en vez de
+    // volver a escribirlo. Va ANTES que el historial en el orden de gasto: con
+    // la cola puesta, la búsqueda hacia atrás de 20 posiciones ya encuentra la
+    // entrada del turno anterior, y el punto del historial pasa a ser un extra.
+    // Es el colocador quien decide si compensa: lo ha medido en el tráfico.
+    const ultimoMensaje = messages[messages.length - 1];
+    const bloqueDeCola = ultimoMensaje?.content[ultimoMensaje.content.length - 1];
+    if (req.cachePlacement?.tail === true && presupuesto > 0 && bloqueDeCola) {
+      bloqueDeCola.cache_control = marca();
       presupuesto -= 1;
     }
 
@@ -784,8 +822,8 @@ export class AnthropicProvider implements Provider {
     if (presupuesto > 0 && prefijoEnMensajes > 0) {
       const mensaje = messages[Math.min(prefijoEnMensajes, messages.length) - 1];
       const bloque = mensaje?.content[mensaje.content.length - 1];
-      if (bloque) {
-        bloque.cache_control = { type: "ephemeral" };
+      if (bloque && bloque.cache_control == null) {
+        bloque.cache_control = marca();
         presupuesto -= 1;
       }
     }

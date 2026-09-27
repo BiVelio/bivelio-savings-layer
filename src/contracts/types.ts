@@ -1127,7 +1127,8 @@ export interface SavingsReport {
 
   /**
    * Where the provider was allowed to write its prompt cache. Present whenever
-   * `savings.standalone` is `true`, including when it changed nothing.
+   * `savings.standalone` is `true`, including when it changed nothing, and when
+   * `cacheBreakpoints: "auto"` switched this request to explicit mode.
    */
   cacheWrites?: CacheWriteReport;
 
