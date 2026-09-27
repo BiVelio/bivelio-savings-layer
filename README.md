@@ -767,6 +767,12 @@ cached prompt prefix stays the same from one question to the next.
   search on every request even with a warm prompt cache. `"always"` skips those checks
   (for example behind a proxy that forwards the search blocks). Requests with an output
   contract, or with the model cascade on, keep the selector.
+- **Across turns.** Append the assistant turn with its `toolCalls` (ids as returned)
+  before the tool results, as in any tool conversation. The Anthropic adapter then sends
+  the earlier search results back in that turn, so the model calls the tools it already
+  found without searching again. It keeps them in memory, per adapter instance and
+  bounded; a turn it no longer remembers (another process, say) goes out as before and
+  the model searches again.
 - **Whose saving.** The provider's. Your usage counter shows it; the layer credits
   nothing for it and charges no commission on it.
 

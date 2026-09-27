@@ -5,6 +5,7 @@ import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
+import { MemoriaDeBusquedas, paresDeBusqueda, type BloqueCrudo } from "./busquedas-entre-turnos.js";
 import {
   esBloqueDeRazonamiento,
   fusionarUso,
@@ -13,6 +14,7 @@ import {
   usoDeMensajes,
   type UsoAnthropic,
 } from "./anthropic-uso.js";
+import type { ChatMessage } from "../contracts/types.js";
 import type {
   Provider,
   ProviderRequest,
@@ -136,15 +138,31 @@ interface BloqueDeTexto {
 // así que su cuerpo sigue byte a byte como antes de que existiera la hora.
 type MarcaDeCache = { type: "ephemeral" } | { type: "ephemeral"; ttl: "1h" };
 
+// Un par de búsqueda de un turno anterior, devuelto tal cual lo mandó la API
+// (ver busquedas-entre-turnos.ts). Puede recibir el `cache_control` del prefijo
+// estable si es el último bloque de su turno: la API lo admite en los dos.
+type BloqueReenviado = BloqueCrudo & { cache_control?: MarcaDeCache };
+
 interface MensajeAnthropic {
   role: "user" | "assistant";
-  content: BloqueDeTexto[];
+  content: (BloqueDeTexto | BloqueReenviado)[];
+}
+
+// Lo que el adaptador devolvió en el historial de ESTA petición: cuántos pares
+// de búsqueda de turnos anteriores y qué herramientas cargaban.
+interface ReenvioDeBusquedas {
+  resultados: number;
+  herramientas: string[];
+  anteponer: (m: ChatMessage) => BloqueCrudo[] | undefined;
 }
 
 export class AnthropicProvider implements Provider {
   readonly id: string;
   private readonly opts: AnthropicOptions;
   private readonly fetchImpl: typeof fetch;
+  // Los pares de búsqueda de cada respuesta con `toolSearch`, por los ids de sus
+  // llamadas, para devolverlos en el turno siguiente. En proceso y acotada.
+  private readonly busquedas = new MemoriaDeBusquedas();
 
   constructor(opts: AnthropicOptions = {}) {
     this.opts = opts;
@@ -200,7 +218,14 @@ export class AnthropicProvider implements Provider {
     if (!response.ok) {
       throw new Error(`provider ${response.status}: ${await safeText(response)}`);
     }
-    return this.leer(response, req, cuerpo.contratoNativo, cuerpo.turnoAnadido, cuerpo.esquemaPorPrompt);
+    return this.leer(
+      response,
+      req,
+      cuerpo.contratoNativo,
+      cuerpo.turnoAnadido,
+      cuerpo.esquemaPorPrompt,
+      cuerpo.reenviadas,
+    );
   }
 
   /**
@@ -244,6 +269,7 @@ export class AnthropicProvider implements Provider {
         construido.contratoNativo,
         construido.turnoAnadido,
         construido.esquemaPorPrompt,
+        construido.reenviadas,
       );
       if (entera.text !== "") yield { type: "text", delta: entera.text };
       yield { type: "done", response: entera };
@@ -255,7 +281,10 @@ export class AnthropicProvider implements Provider {
       cuerpo && typeof cuerpo.getReader === "function" ? cuerpo : await response.text();
 
     let text = "";
-    const bloques = new Map<number, { tipo: string; id?: string; name?: string; json: string; content?: unknown }>();
+    const bloques = new Map<
+      number,
+      { tipo: string; id?: string; name?: string; json: string; content?: unknown; crudo?: BloqueCrudo }
+    >();
     let usoInicio: UsoAnthropic | undefined;
     let usoDelta: UsoAnthropic | undefined;
     let vioDelta = false;
@@ -287,6 +316,11 @@ export class AnthropicProvider implements Provider {
             // El resultado de la búsqueda llega ENTERO en su `content_block_start`
             // (no tiene deltas): es donde están las referencias.
             ...(b.content !== undefined ? { content: b.content } : {}),
+            // Los bloques de la búsqueda, crudos, para devolverlos en el turno
+            // siguiente (el `input` del `server_tool_use` llega luego en deltas).
+            ...(req.toolSearch && (b.type === "server_tool_use" || b.type === "tool_search_tool_result")
+              ? { crudo: b as unknown as BloqueCrudo }
+              : {}),
           });
         }
       } else if (tipo === "content_block_delta") {
@@ -357,8 +391,27 @@ export class AnthropicProvider implements Provider {
           [...bloques.entries()]
             .sort((x, y) => x[0] - y[0])
             .map(([, b]) => ({ type: b.tipo, name: b.name, content: b.content })),
+          construido.reenviadas,
         )
       : undefined;
+    // Lo mismo que generate() recuerda de una respuesta JSON, reconstruido del
+    // stream: el `server_tool_use` con su `input` ya parseado (un JSON que no
+    // parsea deja el par incompleto, y un par incompleto no se recuerda) y el
+    // resultado tal cual llegó en su `content_block_start`.
+    if (req.toolSearch) {
+      const crudos: BloqueCrudo[] = [];
+      for (const [, b] of [...bloques.entries()].sort((x, y) => x[0] - y[0])) {
+        if (b.tipo === "tool_use") {
+          crudos.push({ type: "tool_use", id: b.id, name: b.name });
+        } else if (b.tipo === "tool_search_tool_result" && b.crudo) {
+          crudos.push(b.crudo);
+        } else if (b.tipo === "server_tool_use" && b.crudo) {
+          const input = b.json === "" ? (b.crudo["input"] ?? {}) : parsearONada(b.json);
+          if (input !== undefined) crudos.push({ ...b.crudo, input });
+        }
+      }
+      this.recordarBusquedas(crudos);
+    }
 
     yield {
       type: "done",
@@ -410,13 +463,23 @@ export class AnthropicProvider implements Provider {
   // Y si el adaptador antepuso el turno «(continue)», que la petición no traía:
   // son tokens que el contador del proveedor cuenta y que la cuenta local del
   // pipeline no ve (ver `atestado-del-cable.ts`).
+  //
+  // Y, con la búsqueda nativa, cuántos pares de búsqueda de turnos anteriores
+  // devolvió en el historial (`reenviadas`), para la traza.
   private construirCuerpo(req: ProviderRequest): {
     body: Record<string, unknown>;
     contratoNativo: boolean;
     turnoAnadido: boolean;
     esquemaPorPrompt: boolean;
+    reenviadas: ReenvioDeBusquedas | undefined;
   } {
-    const { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido } = repartirMensajes(req);
+    // Sin `toolSearch`, `reenvio` es undefined y `repartirMensajes` hace lo de
+    // siempre, byte a byte (test/busqueda-entre-turnos.test.ts lo fija).
+    const reenvio = this.reenvioDeBusquedas(req);
+    const { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido } = repartirMensajes(
+      req,
+      reenvio?.anteponer,
+    );
 
     if (messages.length === 0) {
       // Sin un solo turno de usuario no hay petición: la API exige al menos un
@@ -733,7 +796,78 @@ export class AnthropicProvider implements Provider {
       body["cache_control"] = { type: "ephemeral" };
     }
 
-    return { body, contratoNativo, turnoAnadido, esquemaPorPrompt };
+    return { body, contratoNativo, turnoAnadido, esquemaPorPrompt, reenviadas: reenvio };
+  }
+
+  // LOS PARES DE BÚSQUEDA DE TURNOS ANTERIORES, DE VUELTA EN SU TURNO.
+  //
+  // Solo con `toolSearch` en la petición: sin ella la herramienta de búsqueda no
+  // viaja y un `server_tool_use` suyo en el historial no tendría a qué referirse.
+  // Para cada turno del asistente que el llamante devuelve con sus `toolCalls`,
+  // se buscan en la memoria los pares de la respuesta que generó esas llamadas y
+  // se anteponen a su texto. Un par se devuelve ENTERO o no se devuelve:
+  //
+  //  · si lo corrió la misma variante de búsqueda que viaja ahora (con otra, su
+  //    `server_tool_use` nombraría una herramienta que no está en `tools`);
+  //  · si TODAS las herramientas que referencia viajan en esta petición. Es la
+  //    regla del proveedor (una referencia a una herramienta ausente es un 400)
+  //    y es, además, la verja de riesgo de escrituras: si la etapa 6 retiró una
+  //    herramienta de escritura porque esta petición no es una acción, el par que
+  //    la cargó no puede volver a cargarla por detrás. Retirarla ya cambia
+  //    `tools`, así que la caché entera se invalida igual: quitar el par no
+  //    rompe ningún prefijo que no estuviera roto;
+  //  · una sola vez por petición, aunque el llamante repita un turno.
+  //
+  // Tocar el contenido de un par (filtrar una referencia) sería mandar algo que
+  // la API no devolvió; la documentación pide devolverlo «unchanged».
+  //
+  // NO SE ACREDITA NADA. Los bloques devueltos son tokens que pone el adaptador
+  // y que la cuenta local no ve; con la búsqueda nativa la petición nunca deja
+  // registro por referencia (E4-bis), así que no hay regla E2 que atestiguar, y
+  // la calibración `k` ya sale por debajo de la real con el catálogo diferido
+  // contado entero en local (ver `planearBusquedaNativa` en el pipeline).
+  private reenvioDeBusquedas(req: ProviderRequest): ReenvioDeBusquedas | undefined {
+    if (!req.toolSearch || !req.tools || req.tools.length === 0) return undefined;
+    const disponibles = new Set(req.tools.map((t) => t.id));
+    const busqueda: string = HERRAMIENTA_DE_BUSQUEDA[req.toolSearch.variant].name;
+    const vistos = new Set<string>();
+    const memoria = this.busquedas;
+    const reenvio: ReenvioDeBusquedas = {
+      resultados: 0,
+      herramientas: [],
+      anteponer(m) {
+        const ids = (m.toolCalls ?? [])
+          .map((c) => c.id)
+          .filter((id): id is string => typeof id === "string" && id !== "");
+        if (ids.length === 0) return undefined;
+        const pares = memoria.para(ids);
+        if (!pares) return undefined;
+        const bloques: BloqueCrudo[] = [];
+        for (const p of pares) {
+          if (p.busqueda !== busqueda || vistos.has(p.id)) continue;
+          if (!p.herramientas.every((h) => disponibles.has(h))) continue;
+          vistos.add(p.id);
+          bloques.push(p.uso, p.resultado);
+          reenvio.resultados += 1;
+          for (const h of p.herramientas) if (!reenvio.herramientas.includes(h)) reenvio.herramientas.push(h);
+        }
+        return bloques.length > 0 ? bloques : undefined;
+      },
+    };
+    return reenvio;
+  }
+
+  // Recuerda los pares de búsqueda de una respuesta bajo los ids de sus
+  // llamadas a herramienta (las del llamante; el contrato no viaja con la
+  // búsqueda nativa). Sin llamadas no hay clave segura (ver
+  // busquedas-entre-turnos.ts) y no se recuerda nada.
+  private recordarBusquedas(bloques: readonly BloqueCrudo[]): void {
+    const ids = bloques
+      .filter((b) => b["type"] === "tool_use" && b["name"] !== HERRAMIENTA_DE_CONTRATO)
+      .map((b) => b["id"])
+      .filter((id): id is string => typeof id === "string" && id !== "");
+    if (ids.length === 0) return;
+    this.busquedas.recordar(ids, paresDeBusqueda(bloques));
   }
 
   // Coloca los puntos de ruptura de cache.
@@ -837,9 +971,18 @@ export class AnthropicProvider implements Provider {
     contratoNativo: boolean,
     turnoAnadido: boolean,
     esquemaPorPrompt: boolean,
+    reenviadas?: ReenvioDeBusquedas,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as RespuestaAnthropic;
-    return this.leerMensaje(json, req, contratoNativo, turnoAnadido, esquemaPorPrompt, this.opts.requireUsage === true);
+    return this.leerMensaje(
+      json,
+      req,
+      contratoNativo,
+      turnoAnadido,
+      esquemaPorPrompt,
+      this.opts.requireUsage === true,
+      reenviadas,
+    );
   }
 
   // El mensaje ya parseado —el de generate() o el de un resultado de lote— en la
@@ -852,6 +995,7 @@ export class AnthropicProvider implements Provider {
     turnoAnadido: boolean,
     esquemaPorPrompt: boolean,
     exigirUso: boolean,
+    reenviadas?: ReenvioDeBusquedas,
   ): ProviderResponse {
     const bloques = json.content ?? [];
     // RAZONAMIENTO OCULTO. La API de Mensajes no lo desglosa en `usage`: los
@@ -905,7 +1049,10 @@ export class AnthropicProvider implements Provider {
     // esta capa no pida nunca un tier a este proveedor, y no es decorativo: es lo
     // que permite al informe DEMOSTRAR que no hubo descuento en vez de suponerlo.
     const servedServiceTier = tierServidoDe(uso);
-    const busqueda = req.toolSearch ? usoDeLaBusqueda(bloques) : undefined;
+    const busqueda = req.toolSearch ? usoDeLaBusqueda(bloques, reenviadas) : undefined;
+    // Los pares de esta respuesta, para devolverlos en el turno siguiente. Tal
+    // cual llegaron: la API los pide «unchanged».
+    if (req.toolSearch) this.recordarBusquedas(bloques as BloqueCrudo[]);
 
     return atestiguar(
       {
@@ -969,7 +1116,18 @@ export class AnthropicProvider implements Provider {
  * recibía el rol `tool`— pero se conserva la POSICIÓN, que es lo que decide si
  * queda algún prefijo reutilizable.
  */
-function repartirMensajes(req: ProviderRequest): {
+//
+// `anteponer` solo llega con la búsqueda nativa: los pares de búsqueda que el
+// adaptador recordó de la respuesta que produjo ese turno del asistente. Van
+// DELANTE del texto: la búsqueda ocurre antes de la llamada que la usa, y el
+// texto del turno llega de vuelta en una sola pieza (`content`) aunque la API lo
+// devolviera partido a los dos lados de la búsqueda. Un texto vacío no se manda
+// (un bloque de texto vacío no es contenido válido). Sin `anteponer`, lo de
+// siempre.
+function repartirMensajes(
+  req: ProviderRequest,
+  anteponer?: (m: ChatMessage) => BloqueCrudo[] | undefined,
+): {
   system: BloqueDeTexto[];
   messages: MensajeAnthropic[];
   prefijoEnMensajes: number;
@@ -997,9 +1155,12 @@ function repartirMensajes(req: ProviderRequest): {
     // devuelve dentro de un turno de usuario. Se traduce a `user` en vez de
     // descartarlo — perderlo dejaría al modelo respondiendo sin el resultado que
     // él mismo pidió.
+    const previos = anteponer && m.role === "assistant" ? anteponer(m) : undefined;
     messages.push({
       role: m.role === "assistant" ? "assistant" : "user",
-      content: [{ type: "text", text: m.content }],
+      content: previos
+        ? [...previos, ...(m.content !== "" ? [{ type: "text" as const, text: m.content }] : [])]
+        : [{ type: "text", text: m.content }],
     });
     if (i < limite) prefijoEnMensajes = messages.length;
   });
@@ -1067,8 +1228,12 @@ function esHostOficial(baseUrl: string | undefined): boolean {
 // `tool_references`, o bien `tool_search_tool_result_error`. Solo se CUENTA: la
 // capa no acredita nada por ello; sirve para que el cliente vea cuántas veces
 // busca su tráfico, que es el dato que decide si la palanca le compensa.
+//
+// `reenviadas`: los pares de turnos anteriores que ESTA petición devolvió en el
+// historial (ver `reenvioDeBusquedas`). Tampoco se acredita: se informa.
 function usoDeLaBusqueda(
   bloques: readonly { type?: string | undefined; name?: string | undefined; content?: unknown }[],
+  reenviadas?: { resultados: number; herramientas: string[] },
 ): ProviderToolSearchUsage {
   let searches = 0;
   let errors = 0;
@@ -1087,7 +1252,23 @@ function usoDeLaBusqueda(
       }
     }
   }
-  return { searches, loaded, errors };
+  return {
+    searches,
+    loaded,
+    errors,
+    ...(reenviadas && reenviadas.resultados > 0
+      ? { resent: { results: reenviadas.resultados, tools: [...reenviadas.herramientas] } }
+      : {}),
+  };
+}
+
+// Un JSON completo, o `undefined` si no parsea.
+function parsearONada(json: string): unknown {
+  try {
+    return JSON.parse(json) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 // `partial_json` concatenado -> la cadena que generate() habría producido.

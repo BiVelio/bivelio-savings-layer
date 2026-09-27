@@ -89,6 +89,12 @@ export interface ProviderToolSearchUsage {
   loaded: string[];
   /** Searches that came back as an error result instead of references. */
   errors: number;
+  /**
+   * Search results from earlier turns that the adapter sent back in this request's history,
+   * so the model could call the tools they loaded without searching again: how many results,
+   * and which tools. Absent when none were sent back.
+   */
+  resent?: { results: number; tools: string[] };
 }
 
 /**
