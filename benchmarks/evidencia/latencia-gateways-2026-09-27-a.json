@@ -1,0 +1,1632 @@
+{
+  "fecha": "2026-09-27T16:47:01.612Z",
+  "metodo": "Rondas pareadas directo/gateway en orden aleatorio equilibrado contra un upstream falso local; sobrecoste = mediana de las diferencias con IC 95 % por bootstrap (benchmarks/latencia-gateways/nucleo.ts).",
+  "maquina": {
+    "cpu": "Apple M4 Pro",
+    "nucleos": 14,
+    "memoriaGb": 48,
+    "node": "v25.9.0",
+    "plataforma": "darwin/arm64"
+  },
+  "parametros": {
+    "rondas": 600,
+    "calentamiento": 60,
+    "concurrencia": 32,
+    "peticionesCarga": 4000,
+    "bvsalaCompilado": true
+  },
+  "cargaDeLaMaquina": {
+    "alEmpezar": [
+      15.3,
+      60.4,
+      59.4
+    ],
+    "alTerminar": [
+      29.4,
+      48.8,
+      54.7
+    ]
+  },
+  "versiones": {
+    "bvsala": "0.4.25-fuente-compilado",
+    "litellm": "1.102.1",
+    "bifrost": "transports/v2.2.3",
+    "portkey": "1.15.2",
+    "helicone": "0.2.0-beta.30",
+    "node": "v25.9.0"
+  },
+  "resultados": [
+    {
+      "objetivo": "bvsala",
+      "escenario": "chat 1 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.1295415,
+            "p90": 0.1713917,
+            "p99": 0.2489165799999999,
+            "max": 2.528042
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.1312085,
+            "p90": 0.1741417,
+            "p99": 0.2524244999999999,
+            "max": 2.534125
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.5868955,
+            "p90": 0.7167542,
+            "p99": 0.9361055099999998,
+            "max": 5.257708
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.5923125,
+            "p90": 0.7227207999999999,
+            "p99": 0.9730644999999996,
+            "max": 5.261083
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.45216649999999997,
+            "inferior": 0.44387399999999994,
+            "superior": 0.45952099999999996
+          },
+          "totalMs": {
+            "punto": 0.4603535000000001,
+            "inferior": 0.45166649999999997,
+            "superior": 0.467438
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 0.6871889299999998,
+          "total": 0.7206399999999997
+        },
+        "orden": {
+          "directoPrimero": 292,
+          "gatewayPrimero": 308
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala-medido",
+      "escenario": "chat 1 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.1295415,
+            "p90": 0.1713917,
+            "p99": 0.2489165799999999,
+            "max": 2.528042
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.1312085,
+            "p90": 0.1741417,
+            "p99": 0.2524244999999999,
+            "max": 2.534125
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.5941455,
+            "p90": 0.7298128,
+            "p99": 0.9094038399999999,
+            "max": 2.14225
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.603437,
+            "p90": 0.7377214,
+            "p99": 0.9185695799999999,
+            "max": 2.146875
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.462,
+            "inferior": 0.451875,
+            "superior": 0.474333
+          },
+          "totalMs": {
+            "punto": 0.4705625,
+            "inferior": 0.4599575,
+            "superior": 0.47972950000000003
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 0.66048726,
+          "total": 0.66614508
+        },
+        "orden": {
+          "directoPrimero": 305,
+          "gatewayPrimero": 295
+        }
+      }
+    },
+    {
+      "objetivo": "litellm",
+      "escenario": "chat 1 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.1295415,
+            "p90": 0.1713917,
+            "p99": 0.2489165799999999,
+            "max": 2.528042
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.1312085,
+            "p90": 0.1741417,
+            "p99": 0.2524244999999999,
+            "max": 2.534125
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 3.6229165,
+            "p90": 4.1680044,
+            "p99": 4.7192045799999995,
+            "max": 14.738625
+          },
+          "total": {
+            "n": 600,
+            "p50": 3.6261039999999998,
+            "p90": 4.1725089,
+            "p99": 4.724260739999999,
+            "max": 14.74275
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 3.4831874999999997,
+            "inferior": 3.4515000000000002,
+            "superior": 3.5137495
+          },
+          "totalMs": {
+            "punto": 3.4838545,
+            "inferior": 3.451723175,
+            "superior": 3.5157645874999996
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 4.470288,
+          "total": 4.471836239999999
+        },
+        "orden": {
+          "directoPrimero": 300,
+          "gatewayPrimero": 300
+        }
+      }
+    },
+    {
+      "objetivo": "bifrost",
+      "escenario": "chat 1 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.1295415,
+            "p90": 0.1713917,
+            "p99": 0.2489165799999999,
+            "max": 2.528042
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.1312085,
+            "p90": 0.1741417,
+            "p99": 0.2524244999999999,
+            "max": 2.534125
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.530208,
+            "p90": 0.6425744,
+            "p99": 0.7715069899999999,
+            "max": 2.011834
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.5324585,
+            "p90": 0.6456710999999999,
+            "p99": 0.7769050799999999,
+            "max": 2.013834
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.40212400000000004,
+            "inferior": 0.3912505,
+            "superior": 0.408834
+          },
+          "totalMs": {
+            "punto": 0.4019165,
+            "inferior": 0.39120849999999996,
+            "superior": 0.40850000000000003
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 0.5225904100000001,
+          "total": 0.5244805800000001
+        },
+        "orden": {
+          "directoPrimero": 298,
+          "gatewayPrimero": 302
+        }
+      }
+    },
+    {
+      "objetivo": "portkey",
+      "escenario": "chat 1 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.1295415,
+            "p90": 0.1713917,
+            "p99": 0.2489165799999999,
+            "max": 2.528042
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.1312085,
+            "p90": 0.1741417,
+            "p99": 0.2524244999999999,
+            "max": 2.534125
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.8930005,
+            "p90": 1.0710628,
+            "p99": 1.253407329999999,
+            "max": 4.852291
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.8950834999999999,
+            "p90": 1.0741503000000001,
+            "p99": 1.255574829999999,
+            "max": 4.857041
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.7622920000000001,
+            "inferior": 0.7500824875000001,
+            "superior": 0.7757295
+          },
+          "totalMs": {
+            "punto": 0.7631245,
+            "inferior": 0.7503744999999999,
+            "superior": 0.7751665
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 1.004490749999999,
+          "total": 1.003150329999999
+        },
+        "orden": {
+          "directoPrimero": 288,
+          "gatewayPrimero": 312
+        }
+      }
+    },
+    {
+      "objetivo": "helicone",
+      "escenario": "chat 1 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.1295415,
+            "p90": 0.1713917,
+            "p99": 0.2489165799999999,
+            "max": 2.528042
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.1312085,
+            "p90": 0.1741417,
+            "p99": 0.2524244999999999,
+            "max": 2.534125
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.44002050000000004,
+            "p90": 0.5399545,
+            "p99": 0.6998663399999997,
+            "max": 5.445792
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.44195850000000003,
+            "p90": 0.54305,
+            "p99": 0.7041914299999997,
+            "max": 5.449875
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.31022900000000003,
+            "inferior": 0.30537499999999995,
+            "superior": 0.316397075
+          },
+          "totalMs": {
+            "punto": 0.31043750000000003,
+            "inferior": 0.3055415,
+            "superior": 0.3165
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 0.4509497599999998,
+          "total": 0.45176692999999984
+        },
+        "orden": {
+          "directoPrimero": 313,
+          "gatewayPrimero": 287
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala",
+      "escenario": "chat 1 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.208875,
+            "p90": 0.2898375,
+            "p99": 1.3512766699999967,
+            "max": 4.789667
+          },
+          "total": {
+            "n": 600,
+            "p50": 9.556479,
+            "p90": 9.8567666,
+            "p99": 12.93161773999999,
+            "max": 29.285042
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.8228125,
+            "p90": 1.0528795000000002,
+            "p99": 3.428422909999988,
+            "max": 8.171583
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.1262495,
+            "p90": 10.4829788,
+            "p99": 16.668651579999995,
+            "max": 23.363042
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.601375,
+            "inferior": 0.5930009999999999,
+            "superior": 0.6164580000000001
+          },
+          "totalMs": {
+            "punto": 0.5411045000000003,
+            "inferior": 0.5153760000000016,
+            "superior": 0.5778539999999994
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 2.0771462399999914,
+          "total": 3.737033840000006
+        },
+        "orden": {
+          "directoPrimero": 325,
+          "gatewayPrimero": 275
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala-medido",
+      "escenario": "chat 1 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.208875,
+            "p90": 0.2898375,
+            "p99": 1.3512766699999967,
+            "max": 4.789667
+          },
+          "total": {
+            "n": 600,
+            "p50": 9.556479,
+            "p90": 9.8567666,
+            "p99": 12.93161773999999,
+            "max": 29.285042
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.823292,
+            "p90": 1.0678506,
+            "p99": 3.4006108399999984,
+            "max": 16.766542
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.1087495,
+            "p90": 10.4383036,
+            "p99": 15.094005589999993,
+            "max": 28.39
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.6094165,
+            "inferior": 0.5977079999999999,
+            "superior": 0.6210420000000001
+          },
+          "totalMs": {
+            "punto": 0.5428744999999999,
+            "inferior": 0.5099579999999992,
+            "superior": 0.5820000000000007
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 2.0493341700000016,
+          "total": 2.1623878500000036
+        },
+        "orden": {
+          "directoPrimero": 310,
+          "gatewayPrimero": 290
+        }
+      }
+    },
+    {
+      "objetivo": "litellm",
+      "escenario": "chat 1 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.208875,
+            "p90": 0.2898375,
+            "p99": 1.3512766699999967,
+            "max": 4.789667
+          },
+          "total": {
+            "n": 600,
+            "p50": 9.556479,
+            "p90": 9.8567666,
+            "p99": 12.93161773999999,
+            "max": 29.285042
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 4.9077079999999995,
+            "p90": 6.7181128,
+            "p99": 21.853274159999998,
+            "max": 45.421042
+          },
+          "total": {
+            "n": 600,
+            "p50": 14.3603955,
+            "p90": 16.1236956,
+            "p99": 26.45051058999998,
+            "max": 49.832125
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 4.676686500000001,
+            "inferior": 4.5454170000000005,
+            "superior": 4.793459
+          },
+          "totalMs": {
+            "punto": 4.954854,
+            "inferior": 4.841771499999999,
+            "superior": 5.0842915
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 20.50199749,
+          "total": 13.51889284999999
+        },
+        "orden": {
+          "directoPrimero": 318,
+          "gatewayPrimero": 282
+        }
+      }
+    },
+    {
+      "objetivo": "bifrost",
+      "escenario": "chat 1 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.208875,
+            "p90": 0.2898375,
+            "p99": 1.3512766699999967,
+            "max": 4.789667
+          },
+          "total": {
+            "n": 600,
+            "p50": 9.556479,
+            "p90": 9.8567666,
+            "p99": 12.93161773999999,
+            "max": 29.285042
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.8515835,
+            "p90": 2.0854747000000002,
+            "p99": 3.3042969899999997,
+            "max": 15.489875
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.0737505,
+            "p90": 10.413400000000001,
+            "p99": 13.81031866,
+            "max": 26.411625
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 1.6370835000000001,
+            "inferior": 1.628874,
+            "superior": 1.644083
+          },
+          "totalMs": {
+            "punto": 0.49983299999999975,
+            "inferior": 0.4794732750000004,
+            "superior": 0.5256245000000002
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 1.953020320000003,
+          "total": 0.8787009200000107
+        },
+        "orden": {
+          "directoPrimero": 313,
+          "gatewayPrimero": 287
+        }
+      }
+    },
+    {
+      "objetivo": "helicone",
+      "escenario": "chat 1 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.208875,
+            "p90": 0.2898375,
+            "p99": 1.3512766699999967,
+            "max": 4.789667
+          },
+          "total": {
+            "n": 600,
+            "p50": 9.556479,
+            "p90": 9.8567666,
+            "p99": 12.93161773999999,
+            "max": 29.285042
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6430625,
+            "p90": 0.8153292000000001,
+            "p99": 3.0757158299999987,
+            "max": 13.183333
+          },
+          "total": {
+            "n": 600,
+            "p50": 9.9586255,
+            "p90": 10.2567414,
+            "p99": 14.331075659999996,
+            "max": 24.945958
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.4260205,
+            "inferior": 0.42187499999999994,
+            "superior": 0.435458
+          },
+          "totalMs": {
+            "punto": 0.3776459999999995,
+            "inferior": 0.3521875000000003,
+            "superior": 0.3963750000000008
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 1.724439160000002,
+          "total": 1.3994579200000068
+        },
+        "orden": {
+          "directoPrimero": 312,
+          "gatewayPrimero": 288
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala",
+      "escenario": "chat 200 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6510210000000001,
+            "p90": 1.3054292000000003,
+            "p99": 3.5113283299999996,
+            "max": 7.746459
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.6542085,
+            "p90": 1.3142417,
+            "p99": 3.5193216699999996,
+            "max": 7.754375
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.3835415000000002,
+            "p90": 2.890475000000001,
+            "p99": 8.790184249999998,
+            "max": 27.254
+          },
+          "total": {
+            "n": 600,
+            "p50": 1.3910625,
+            "p90": 2.9339785000000007,
+            "p99": 8.798881159999997,
+            "max": 27.26225
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.708208,
+            "inferior": 0.679334,
+            "superior": 0.732729
+          },
+          "totalMs": {
+            "punto": 0.7161664999999999,
+            "inferior": 0.682,
+            "superior": 0.7367962
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 5.278855919999998,
+          "total": 5.279559489999997
+        },
+        "orden": {
+          "directoPrimero": 296,
+          "gatewayPrimero": 304
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala-medido",
+      "escenario": "chat 200 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6510210000000001,
+            "p90": 1.3054292000000003,
+            "p99": 3.5113283299999996,
+            "max": 7.746459
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.6542085,
+            "p90": 1.3142417,
+            "p99": 3.5193216699999996,
+            "max": 7.754375
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.401729,
+            "p90": 2.894158300000001,
+            "p99": 6.892876339999999,
+            "max": 29.571417
+          },
+          "total": {
+            "n": 600,
+            "p50": 1.415708,
+            "p90": 2.9132542000000012,
+            "p99": 6.901376749999999,
+            "max": 29.57975
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.723625,
+            "inferior": 0.684041,
+            "superior": 0.7473955
+          },
+          "totalMs": {
+            "punto": 0.725125,
+            "inferior": 0.6875914875,
+            "superior": 0.7524170000000001
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 3.3815480099999995,
+          "total": 3.3820550799999993
+        },
+        "orden": {
+          "directoPrimero": 296,
+          "gatewayPrimero": 304
+        }
+      }
+    },
+    {
+      "objetivo": "litellm",
+      "escenario": "chat 200 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6510210000000001,
+            "p90": 1.3054292000000003,
+            "p99": 3.5113283299999996,
+            "max": 7.746459
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.6542085,
+            "p90": 1.3142417,
+            "p99": 3.5193216699999996,
+            "max": 7.754375
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 5.487396,
+            "p90": 9.9753253,
+            "p99": 19.384347499999965,
+            "max": 61.442875
+          },
+          "total": {
+            "n": 600,
+            "p50": 5.493104499999999,
+            "p90": 9.9831206,
+            "p99": 19.393222089999966,
+            "max": 61.450333
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 4.7493745,
+            "inferior": 4.649167,
+            "superior": 4.950875
+          },
+          "totalMs": {
+            "punto": 4.750875,
+            "inferior": 4.647625,
+            "superior": 4.939166499999999
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 15.873019169999965,
+          "total": 15.873900419999966
+        },
+        "orden": {
+          "directoPrimero": 287,
+          "gatewayPrimero": 313
+        }
+      }
+    },
+    {
+      "objetivo": "bifrost",
+      "escenario": "chat 200 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6510210000000001,
+            "p90": 1.3054292000000003,
+            "p99": 3.5113283299999996,
+            "max": 7.746459
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.6542085,
+            "p90": 1.3142417,
+            "p99": 3.5193216699999996,
+            "max": 7.754375
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.9747085,
+            "p90": 3.5049460999999997,
+            "p99": 7.767822739999994,
+            "max": 13.029333
+          },
+          "total": {
+            "n": 600,
+            "p50": 1.979188,
+            "p90": 3.5142461000000003,
+            "p99": 7.775262499999995,
+            "max": 13.041708
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 1.2532295000000002,
+            "inferior": 1.2195420000000001,
+            "superior": 1.2856670000000001
+          },
+          "totalMs": {
+            "punto": 1.2498335,
+            "inferior": 1.2195004999999999,
+            "superior": 1.285396
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 4.256494409999995,
+          "total": 4.255940829999995
+        },
+        "orden": {
+          "directoPrimero": 284,
+          "gatewayPrimero": 316
+        }
+      }
+    },
+    {
+      "objetivo": "portkey",
+      "escenario": "chat 200 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6510210000000001,
+            "p90": 1.3054292000000003,
+            "p99": 3.5113283299999996,
+            "max": 7.746459
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.6542085,
+            "p90": 1.3142417,
+            "p99": 3.5193216699999996,
+            "max": 7.754375
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 2.8966250000000002,
+            "p90": 4.662270200000001,
+            "p99": 9.082307919999993,
+            "max": 22.835334
+          },
+          "total": {
+            "n": 600,
+            "p50": 2.8994375,
+            "p90": 4.6702208,
+            "p99": 9.090094339999993,
+            "max": 22.84775
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 2.119375,
+            "inferior": 2.055812,
+            "superior": 2.1766245
+          },
+          "totalMs": {
+            "punto": 2.1203744999999996,
+            "inferior": 2.0522080000000003,
+            "superior": 2.178207
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 5.570979589999993,
+          "total": 5.570772669999993
+        },
+        "orden": {
+          "directoPrimero": 280,
+          "gatewayPrimero": 320
+        }
+      }
+    },
+    {
+      "objetivo": "helicone",
+      "escenario": "chat 200 KB",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.6510210000000001,
+            "p90": 1.3054292000000003,
+            "p99": 3.5113283299999996,
+            "max": 7.746459
+          },
+          "total": {
+            "n": 600,
+            "p50": 0.6542085,
+            "p90": 1.3142417,
+            "p99": 3.5193216699999996,
+            "max": 7.754375
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.3557295,
+            "p90": 2.717804200000001,
+            "p99": 8.029100499999995,
+            "max": 19.12475
+          },
+          "total": {
+            "n": 600,
+            "p50": 1.359667,
+            "p90": 2.725478900000001,
+            "p99": 8.037310329999993,
+            "max": 19.132375
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.656563,
+            "inferior": 0.6279138624999999,
+            "superior": 0.6781460000000001
+          },
+          "totalMs": {
+            "punto": 0.656855,
+            "inferior": 0.6275778,
+            "superior": 0.6793360875
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 4.517772169999995,
+          "total": 4.517988659999993
+        },
+        "orden": {
+          "directoPrimero": 303,
+          "gatewayPrimero": 297
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala",
+      "escenario": "chat 200 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.7547919999999999,
+            "p90": 1.5432955,
+            "p99": 5.0131928299999995,
+            "max": 6.897958
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.2135,
+            "p90": 13.9204956,
+            "p99": 25.567970589999998,
+            "max": 32.07175
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.568271,
+            "p90": 3.5145456000000013,
+            "p99": 9.860990749999996,
+            "max": 12.951459
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.8825205,
+            "p90": 16.347828800000002,
+            "p99": 25.80655301,
+            "max": 30.708583
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.7891250000000001,
+            "inferior": 0.773021,
+            "superior": 0.8014590500000001
+          },
+          "totalMs": {
+            "punto": 0.6813965,
+            "inferior": 0.6501156250000001,
+            "superior": 0.7097499999999997
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 4.847797919999996,
+          "total": 0.23858242000000018
+        },
+        "orden": {
+          "directoPrimero": 310,
+          "gatewayPrimero": 290
+        }
+      }
+    },
+    {
+      "objetivo": "bvsala-medido",
+      "escenario": "chat 200 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.7547919999999999,
+            "p90": 1.5432955,
+            "p99": 5.0131928299999995,
+            "max": 6.897958
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.2135,
+            "p90": 13.9204956,
+            "p99": 25.567970589999998,
+            "max": 32.07175
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.5524165,
+            "p90": 3.2488994000000013,
+            "p99": 9.865106579999994,
+            "max": 19.758708
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.9065625,
+            "p90": 15.568316300000001,
+            "p99": 28.642531169999984,
+            "max": 42.999833
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.7793325,
+            "inferior": 0.7582500000000001,
+            "superior": 0.7937069999999999
+          },
+          "totalMs": {
+            "punto": 0.6859999999999999,
+            "inferior": 0.6487479124999997,
+            "superior": 0.7404331624999995
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 4.851913749999994,
+          "total": 3.0745605799999858
+        },
+        "orden": {
+          "directoPrimero": 298,
+          "gatewayPrimero": 302
+        }
+      }
+    },
+    {
+      "objetivo": "litellm",
+      "escenario": "chat 200 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.7547919999999999,
+            "p90": 1.5432955,
+            "p99": 5.0131928299999995,
+            "max": 6.897958
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.2135,
+            "p90": 13.9204956,
+            "p99": 25.567970589999998,
+            "max": 32.07175
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 6.4893125000000005,
+            "p90": 14.747107800000006,
+            "p99": 27.853765749999997,
+            "max": 32.858834
+          },
+          "total": {
+            "n": 600,
+            "p50": 15.8074795,
+            "p90": 24.525745900000004,
+            "p99": 38.34754967,
+            "max": 49.308042
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 5.699229,
+            "inferior": 5.52675,
+            "superior": 5.7927085
+          },
+          "totalMs": {
+            "punto": 5.691604,
+            "inferior": 5.532166999999999,
+            "superior": 5.821249000000002
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 22.84057292,
+          "total": 12.779579080000001
+        },
+        "orden": {
+          "directoPrimero": 296,
+          "gatewayPrimero": 304
+        }
+      }
+    },
+    {
+      "objetivo": "bifrost",
+      "escenario": "chat 200 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.7547919999999999,
+            "p90": 1.5432955,
+            "p99": 5.0131928299999995,
+            "max": 6.897958
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.2135,
+            "p90": 13.9204956,
+            "p99": 25.567970589999998,
+            "max": 32.07175
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 3.3370625,
+            "p90": 5.261120800000001,
+            "p99": 11.426478669999995,
+            "max": 23.541042
+          },
+          "total": {
+            "n": 600,
+            "p50": 11.619729,
+            "p90": 15.993683600000006,
+            "p99": 28.39050717,
+            "max": 39.323167
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 2.5532705,
+            "inferior": 2.512,
+            "superior": 2.577959
+          },
+          "totalMs": {
+            "punto": 1.3983125000000003,
+            "inferior": 1.353708000000001,
+            "superior": 1.4498759999999997
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 6.413285839999995,
+          "total": 2.8225365800000013
+        },
+        "orden": {
+          "directoPrimero": 306,
+          "gatewayPrimero": 294
+        }
+      }
+    },
+    {
+      "objetivo": "helicone",
+      "escenario": "chat 200 KB, stream",
+      "resumen": {
+        "directo": {
+          "primerByte": {
+            "n": 600,
+            "p50": 0.7547919999999999,
+            "p90": 1.5432955,
+            "p99": 5.0131928299999995,
+            "max": 6.897958
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.2135,
+            "p90": 13.9204956,
+            "p99": 25.567970589999998,
+            "max": 32.07175
+          }
+        },
+        "gateway": {
+          "primerByte": {
+            "n": 600,
+            "p50": 1.5152295,
+            "p90": 3.060604500000001,
+            "p99": 12.725773659999998,
+            "max": 42.693708
+          },
+          "total": {
+            "n": 600,
+            "p50": 10.8347085,
+            "p90": 15.6897041,
+            "p99": 28.73719049999996,
+            "max": 66.236541
+          }
+        },
+        "sobrecoste": {
+          "primerByteMs": {
+            "punto": 0.7280200000000001,
+            "inferior": 0.7147064125,
+            "superior": 0.751417
+          },
+          "totalMs": {
+            "punto": 0.640542,
+            "inferior": 0.5999989999999986,
+            "superior": 0.6797500000000003
+          }
+        },
+        "sobrecosteP99Ms": {
+          "primerByte": 7.7125808299999985,
+          "total": 3.1692199099999634
+        },
+        "orden": {
+          "directoPrimero": 285,
+          "gatewayPrimero": 315
+        }
+      }
+    }
+  ],
+  "errores": [
+    {
+      "objetivo": "portkey",
+      "escenario": "chat 1 KB, stream",
+      "error": "HTTP 500 en http://127.0.0.1:8787/v1/chat/completions: {\"status\":\"failure\",\"message\":\"Something went wrong\"}"
+    },
+    {
+      "objetivo": "portkey",
+      "escenario": "chat 200 KB, stream",
+      "error": "HTTP 500 en http://127.0.0.1:8787/v1/chat/completions: {\"status\":\"failure\",\"message\":\"Something went wrong\"}"
+    }
+  ],
+  "fidelidades": {
+    "bvsala · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "litellm · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "model",
+          "choices"
+        ]
+      }
+    },
+    "litellm · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "model",
+          "choices"
+        ]
+      }
+    },
+    "bifrost · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [
+          "service_tier"
+        ],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "extra_fields"
+        ],
+        "cambiadas": [
+          "usage"
+        ]
+      }
+    },
+    "bifrost · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "extra_fields"
+        ],
+        "cambiadas": [
+          "usage"
+        ]
+      }
+    },
+    "portkey · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "portkey · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "helicone · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [
+          "prompt_cache_key"
+        ],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "service_tier"
+        ],
+        "cambiadas": [
+          "choices",
+          "usage"
+        ]
+      }
+    },
+    "helicone · gpt-5-mini": {
+      "error": "HTTP 500 en http://127.0.0.1:8090/ai/chat/completions: {\"error\":{\"message\":\"Mapper error: No model mapping found for provider: openai and model: gpt-5-mini\",\"type\":\"server_error\",\"param\":null,\"code\":n"
+    }
+  },
+  "carga": {
+    "directo": {
+      "rps": 41949.62651093902,
+      "total": {
+        "n": 4000,
+        "p50": 0.699417,
+        "p90": 1.0153548,
+        "p99": 2.620905329999997,
+        "max": 8.950292
+      },
+      "errores": 0,
+      "peticiones": 4000
+    },
+    "bvsala": {
+      "rps": 7978.795696176166,
+      "total": {
+        "n": 4000,
+        "p50": 3.6276245,
+        "p90": 5.1756035,
+        "p99": 7.2688400799999995,
+        "max": 49.324292
+      },
+      "errores": 0,
+      "peticiones": 4000
+    },
+    "bvsala-medido": {
+      "rps": 7455.427025919615,
+      "total": {
+        "n": 4000,
+        "p50": 3.9353125,
+        "p90": 5.5226048,
+        "p99": 7.2020886599999985,
+        "max": 37.374083
+      },
+      "errores": 0,
+      "peticiones": 4000
+    },
+    "litellm": {
+      "rps": 434.06864833654447,
+      "total": {
+        "n": 4000,
+        "p50": 70.9264585,
+        "p90": 76.8017962,
+        "p99": 160.24791949,
+        "max": 171.577792
+      },
+      "errores": 0,
+      "peticiones": 4000
+    },
+    "bifrost": {
+      "rps": 16691.97120816909,
+      "total": {
+        "n": 4000,
+        "p50": 1.5635625,
+        "p90": 2.9671583,
+        "p99": 8.85808190999996,
+        "max": 20.286458
+      },
+      "errores": 0,
+      "peticiones": 4000
+    },
+    "portkey": {
+      "rps": 4662.937385348206,
+      "total": {
+        "n": 4000,
+        "p50": 6.511917,
+        "p90": 8.479365999999999,
+        "p99": 10.196823419999978,
+        "max": 15.760334
+      },
+      "errores": 0,
+      "peticiones": 4000
+    },
+    "helicone": {
+      "rps": 37326.678583768706,
+      "total": {
+        "n": 4000,
+        "p50": 0.782313,
+        "p90": 1.0883081,
+        "p99": 2.329824669999997,
+        "max": 6.396541
+      },
+      "errores": 0,
+      "peticiones": 4000
+    }
+  },
+  "memoriaMb": {
+    "bvsala": 299,
+    "bvsala-medido": 292,
+    "litellm": 386,
+    "bifrost": 2116,
+    "portkey": 409,
+    "helicone": 60
+  },
+  "recuentoDelUpstream": {
+    "entitlements": 1,
+    "chat": 37274,
+    "ingesta": 137,
+    "chat-stream": 7932
+  }
+}

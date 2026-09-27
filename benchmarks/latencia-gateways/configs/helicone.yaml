@@ -1,0 +1,10 @@
+# Helicone AI Gateway 0.2.0-beta.30 contra el upstream falso del banco.
+# `helicone.features` se queda en su valor por defecto (none): sin nube de
+# Helicone. Su dirección por defecto es 0.0.0.0; aquí se fija a loopback y a
+# 8090 para no chocar con Bifrost (8080).
+server:
+  address: 127.0.0.1
+  port: 8090
+providers:
+  openai:
+    base-url: "http://127.0.0.1:9911"

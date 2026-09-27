@@ -126,7 +126,9 @@
     "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts",
     "sbom:tarball": "tsx scripts/sbom.ts",
     "cache-semantica": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/arnes.ts",
-    "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts"
+    "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts",
+    "latencia:gateways": "tsx benchmarks/latencia-gateways/arnes.ts",
+    "vigia:conexiones": "tsx benchmarks/latencia-gateways/vigia-conexiones.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
