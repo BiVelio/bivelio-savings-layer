@@ -68,10 +68,12 @@ area "3 · Las cifras de la web resisten a un escéptico"
 node --input-type=module -e '
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 const art = JSON.parse(readFileSync("apps/web/public/data/ab-live.json","utf8"));
-// Los DOS suelos del artefacto (frente a B0 y frente a B1): lo prometido tiene que caber en el menor.
+// Los suelos del artefacto (frente a B0, B1 y, si lo trae, B2 «nativo bien
+// configurado»): lo prometido tiene que caber en el menor.
 const sueloB0 = (art.aggregate?.savings?.lower ?? 0) * 100;
 const sueloB1 = art.aggregateB1?.savings?.lower != null ? art.aggregateB1.savings.lower * 100 : sueloB0;
-const suelo = Math.min(sueloB0, sueloB1);
+const sueloB2 = art.aggregateB2?.savings?.lower != null ? art.aggregateB2.savings.lower * 100 : sueloB1;
+const suelo = Math.min(sueloB0, sueloB1, sueloB2);
 const sellado = !!(art.generatedAt && art.commit && art.trials);
 const dir = "apps/web/messages/";
 const idiomas = readdirSync(dir).filter(f=>f.endsWith(".json"));
@@ -94,7 +96,7 @@ if [[ -s /tmp/lv-cifras.json ]]; then
   read -r SUELO PROM SELL CSV UNA IDI PARES MODO CAL <<<"$(node -p "const d=require('/tmp/lv-cifras.json');[d.suelo,d.prometido,d.sellado,d.csv,d.unaSola,d.idiomas,d.pares,d.modo,d.calidad].join(' ')")"
   if [[ "$MODO" == "LIVE" ]]; then ok "el artefacto es una medición real contra proveedor ($PARES parejas, calidad $CAL)"; else mal "el artefacto publicado NO es LIVE (es $MODO)"; fi
   if [[ "$SELL" == "true" ]]; then ok "el artefacto lleva sello de procedencia (fecha, commit y nº de parejas)"; else mal "el artefacto no lleva sello: no se sabe de qué tirada salió"; fi
-  if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %, el menor de los suelos frente a B0 y B1)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO % (menor suelo B0/B1)"; fi
+  if awk "BEGIN{exit !($PROM <= $SUELO)}"; then ok "lo prometido ($PROM %) cabe dentro de lo medido ($SUELO %, el menor de los suelos frente a B0, B1 y B2)"; else mal "la web promete $PROM % y el banco solo sostiene $SUELO % (menor suelo B0/B1/B2)"; fi
   if [[ "$UNA" == "true" ]]; then ok "los $IDI idiomas prometen la misma cifra"; else mal "los idiomas no dicen lo mismo"; fi
   # Lo prometido tiene que caber también en lo que ENTREGA el paquete de npm. Si
   # el artefacto se midió con una pieza que npm no trae (el compresor del banco),
@@ -106,9 +108,9 @@ if [[ -s /tmp/lv-cifras.json ]]; then
       ok "el artefacto midió el SDK tal como se instala desde npm (sdk.asShipped: true)"
     else
       if [[ "$SINREC" == "true" ]]; then
-        avis "$MOTIVO: re-medir con BVSALA_AB_SIN_COMPRESOR=1 para sellarlo"
+        avis "$MOTIVO: re-medir con \`pnpm ab\` (asShipped es el modo por defecto) para sellarlo"
       else
-        avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con BVSALA_AB_SIN_COMPRESOR=1"
+        avis "el artefacto se midió con el compresor del banco, que npm no trae: re-medir con \`pnpm ab\` (asShipped es el modo por defecto)"
       fi
       if awk "BEGIN{exit !($PROM <= $MENOR)}"; then
         ok "lo prometido ($PROM %) cabe también en lo que entrega npm ($MENOR %$([[ "$SINREC" == "true" ]] || echo ', reconstruido sin el compresor del banco'))"
@@ -130,6 +132,16 @@ if [[ -s /tmp/lv-cifras.json ]]; then
     mal "no se pudo calcular el suelo de lo que entrega npm (benchmarks/titular-como-se-instala.ts)"
   fi
   if [[ "$CSV" == "true" ]]; then ok "los ensayos crudos están publicados y enlazados"; else mal "no se publican los ensayos: la promesa de verificable es falsa"; fi
+  # Y CUALQUIERA PUEDE RECALCULARLOS: el script público del kit de medición
+  # independiente (docs/MEDICION-INDEPENDIENTE.md) rehace el bootstrap con el
+  # CSV publicado y compara con lo que el JSON afirma, bit a bit.
+  if node apps/web/public/measure/reproduce.mjs --json --artifact apps/web/public/data/ab-live.json \
+      --trials apps/web/public/data/ab-live-trials.csv >/tmp/lv-reproduce.json 2>&1; then
+    ok "reproduce.mjs recalcula lo publicado desde los ensayos crudos, bit a bit"
+  else
+    mal "reproduce.mjs NO recalcula lo publicado: el JSON no se sigue de su propio CSV"
+    nota "mira /tmp/lv-reproduce.json"
+  fi
 else
   mal "no se pudieron leer las cifras de la web"
 fi
