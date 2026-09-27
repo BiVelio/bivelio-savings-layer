@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-27T17:10:58.814Z",
- "commit": "8251c6f09e15d3799e4eb435dc742166443a31f0",
+ "generatedAt": "2026-09-27T17:20:51.997Z",
+ "commit": "1d58badf558c225132b35811267f54312968c24b",
  "dirty": false,
  "sdkVersion": "0.4.25",
  "node": "v25.9.0",
@@ -13,7 +13,7 @@
  },
  "etiquetasStream": {
   "n": 3276,
-  "ms": 16914,
+  "ms": 22636,
   "ruidoDeEtiqueta": {
    "erroneas": 326,
    "conPromptIdentico": 70,
@@ -151,7 +151,7 @@
    },
    "precisionPuntual": 0.9029249682068673,
    "cumpleLaCota": null,
-   "ms": 16537
+   "ms": 20815
   },
   {
    "nombre": "calibrated δ=0.15",
@@ -202,7 +202,7 @@
      "nextTestAt": 3806
     }
    },
-   "ms": 18128
+   "ms": 31397
   },
   {
    "nombre": "calibrated δ=0.15, no per-record floors",
@@ -252,7 +252,7 @@
      "nextTestAt": 3806
     }
    },
-   "ms": 16585
+   "ms": 43253
   },
   {
    "nombre": "calibrated δ=0.12",
@@ -297,7 +297,7 @@
      "nextTestAt": 4844
     }
    },
-   "ms": 16686
+   "ms": 16245
   },
   {
    "nombre": "calibrated δ=0.12, no per-record floors",
@@ -342,7 +342,7 @@
      "nextTestAt": 4844
     }
    },
-   "ms": 16350
+   "ms": 16198
   },
   {
    "nombre": "calibrated δ=0.1",
@@ -387,7 +387,7 @@
      "nextTestAt": 3922
     }
    },
-   "ms": 16190
+   "ms": 15791
   },
   {
    "nombre": "calibrated δ=0.1, no per-record floors",
@@ -432,7 +432,7 @@
      "nextTestAt": 3922
     }
    },
-   "ms": 16330
+   "ms": 15777
   },
   {
    "nombre": "calibrated δ=0.05",
@@ -477,7 +477,7 @@
      "nextTestAt": 3537
     }
    },
-   "ms": 19728
+   "ms": 16594
   },
   {
    "nombre": "calibrated δ=0.05, no per-record floors",
@@ -522,7 +522,7 @@
      "nextTestAt": 3537
     }
    },
-   "ms": 17781
+   "ms": 16655
   },
   {
    "nombre": "calibrated δ=0.02",
@@ -567,7 +567,7 @@
      "nextTestAt": 3942
     }
    },
-   "ms": 16354
+   "ms": 16319
   },
   {
    "nombre": "calibrated δ=0.02, no per-record floors",
@@ -612,7 +612,7 @@
      "nextTestAt": 3942
     }
    },
-   "ms": 17070
+   "ms": 17895
   }
  ],
  "tripletas": [

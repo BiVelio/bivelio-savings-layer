@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-09-27T17:12:32.537Z",
- "commit": "8251c6f09e15d3799e4eb435dc742166443a31f0",
+ "generatedAt": "2026-09-27T17:22:09.554Z",
+ "commit": "1d58badf558c225132b35811267f54312968c24b",
  "dirty": false,
  "sdkVersion": "0.4.25",
  "node": "v25.9.0",
@@ -13,7 +13,7 @@
  },
  "etiquetasStream": {
   "n": 3384,
-  "ms": 78022,
+  "ms": 62634,
   "ruidoDeEtiqueta": {
    "erroneas": 333,
    "conPromptIdentico": 70,

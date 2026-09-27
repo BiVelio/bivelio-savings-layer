@@ -1,6 +1,6 @@
 # Caché semántica calibrada: un suelo que certifican las etiquetas, con la tasa de error que elige el usuario
 
-**Fecha:** 27‑sep‑2026 · **Línea:** `cache-semantica-calibrada` · **Rama:** `feat/cache-semantica-calibrada` · **Base:** `origin/main` en `8183037` (SDK 0.4.25, tras #342) · **Código medido:** commit `8251c6f` de esta rama, con el árbol limpio.
+**Fecha:** 27‑sep‑2026 · **Línea:** `cache-semantica-calibrada` · **Rama:** `feat/cache-semantica-calibrada` · **Base:** `origin/main` en `372f866` (SDK 0.4.25, tras #339, #342 y #345) · **Código medido:** commit `1d58bad` de esta rama, con el árbol limpio.
 
 Las citas [n] remiten a las fuentes del final, con la fecha en que se consultaron. Etiquetas: **[medido]** medición con método; **[marketing]** cifra del propio vendedor; **[inferido]** conclusión de este informe. Las cifras propias salen de los tres ficheros de `benchmarks/evidencia/` que cita la §8; ninguna se ha copiado a mano de otro sitio.
 
@@ -172,10 +172,10 @@ La garantía se cumple con holgura: el método es conservador, con un suelo fina
   - `pnpm cache-semantica:simulacion`: 0 tiradas con violación, o por debajo de α·N con margen.
   - `pnpm cache-semantica:calibrada`: en los brazos que certifican, la precisión realizada debe ser ≥ 1 − δ.
 - **Señal de producto:** entre las sondas `audit` (reutilizaciones que pasaban el suelo y se mandaron al proveedor), la tasa de erróneas tiene que quedar ≤ δ. Si la supera de forma sostenida, la siguiente prueba deja de certificar ese suelo.
-- **Evidencia de este informe** (sin texto de ningún dataset; solo ids de revisión, conteos y cotas; todo medido en el commit `8251c6f` con el árbol limpio):
-  - **E1:** `benchmarks/evidencia/cache-semantica-calibrada-2026-09-27.json` (sha256 `863bf170e08dbba3a28984e85f8c850c2c43128c72f8914ff590df23338d7130`)
-  - **E2:** `benchmarks/evidencia/cache-semantica-calibrada-e5-2026-09-27.json` (sha256 `56f900dd28d6d472dd92f6c67afc9025ece7dc3cc803057c287ad24b14ca55d8`)
-  - **E3:** `benchmarks/evidencia/cache-semantica-simulacion-2026-09-27.json` (sha256 `25576156e201ae20d722ea8586d4d3fc6dd2b1a515db098a0e13bb2cd51e67c6`)
+- **Evidencia de este informe** (sin texto de ningún dataset; solo ids de revisión, conteos y cotas; todo medido en el commit `1d58bad` con el árbol limpio; tras cada uno de los dos rebases sobre `main` se volvió a medir y las cifras salieron idénticas):
+  - **E1:** `benchmarks/evidencia/cache-semantica-calibrada-2026-09-27.json` (sha256 `f8aac0551bacd3b762e1e3e84abadc61872458986f16a3181fd4fddf14108f0a`)
+  - **E2:** `benchmarks/evidencia/cache-semantica-calibrada-e5-2026-09-27.json` (sha256 `f9bc39f6a850ea7e3c812df8e3554659f409a2b64e64f790540a98812b1eabae`)
+  - **E3:** `benchmarks/evidencia/cache-semantica-simulacion-2026-09-27.json` (sha256 `0429e174f16649d69e7976dfda1659796fc741aa7b96f8b8967bdda83a66243e`)
 - **Para reproducirlo:** `pnpm cache-semantica --descargar && pnpm cache-semantica:calibrada --n 20000 && pnpm cache-semantica:calibrada --n 20000 --solo-etiquetas --embebedor dataset:emb_e5_large_v2 && pnpm cache-semantica:simulacion`.
 
 ---
