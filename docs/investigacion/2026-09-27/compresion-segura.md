@@ -103,7 +103,7 @@ La restricción que manda: en un bucle de agente el ~95 % de los tokens de entra
 - en cada turno posterior se reenvían los mismos bytes;
 - sobrevive a reinicios y a instancias serverless distintas.
 
-**Una memoria «pegajosa» sería peor.** Dos turnos seguidos en instancias distintas enviarían versiones distintas del mismo bloque, y el prefijo se rompería en cada salto. Es el baile de víctimas que hundió v2 al −38,9 % [19].
+**Una memoria «pegajosa» sería peor.** Dos turnos seguidos en instancias distintas enviarían versiones distintas del mismo bloque, y el prefijo se rompería en cada salto. Es el baile de víctimas que hundió v2: −18,8 % en el replay corregido del 07-09, y −38,9 % en el del 03-09 [19].
 
 **Por qué es segura con la fidelidad:** las cuatro transformaciones, y nada más:
 
