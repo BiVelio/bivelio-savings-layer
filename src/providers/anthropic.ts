@@ -291,6 +291,8 @@ export class AnthropicProvider implements Provider {
     let vioStop = false;
     let stopReason: string | undefined;
     let razono = false;
+    let idDelMensaje: string | undefined;
+    let diagnostico: unknown;
 
     for await (const msg of sseMessages(fuente)) {
       let data: EventoAnthropic;
@@ -304,6 +306,9 @@ export class AnthropicProvider implements Provider {
 
       if (tipo === "message_start") {
         usoInicio = data.message?.usage ?? usoInicio;
+        if (typeof data.message?.id === "string" && data.message.id !== "") idDelMensaje = data.message.id;
+        // El diagnóstico llega en `message_start` («diagnostics appears on the message_start event»).
+        diagnostico = data.message?.diagnostics;
       } else if (tipo === "content_block_start") {
         const b = data.content_block;
         if (esBloqueDeRazonamiento(b?.type)) razono = true;
@@ -422,6 +427,8 @@ export class AnthropicProvider implements Provider {
           ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
           ...(servedServiceTier ? { servedServiceTier } : {}),
           ...(busqueda ? { toolSearch: busqueda } : {}),
+          ...(idDelMensaje ? { providerMessageId: idDelMensaje } : {}),
+          ...this.diagnosticoDe(req, diagnostico),
           usage,
           structuredNatively: false,
           raw: { usage: merged, stop_reason: stopReason },
@@ -787,6 +794,15 @@ export class AnthropicProvider implements Provider {
     // Caso borde documentado por el proveedor: si el último bloque ya lleva un
     // `cache_control` explícito con el mismo TTL (prefijo estable == prompt
     // entero), el automático es un no-op — inofensivo, no un error.
+    // DIAGNÓSTICO DE CACHÉ (lo pide el colocador, y solo con `cacheMissDiagnostics`).
+    // GA en la Claude API el 23-sep-2026, sin cabecera beta; ni Bedrock ni Vertex
+    // ni Claude Platform on AWS lo tienen, así que contra otro host (un proxy, un
+    // gateway) no se manda: un campo desconocido podría ser un 400.
+    // https://platform.claude.com/docs/en/build-with-claude/cache-diagnostics
+    if (req.cacheDiagnostics && esHostOficial(this.opts.baseUrl)) {
+      body["diagnostics"] = { previous_message_id: req.cacheDiagnostics.previousMessageId };
+    }
+
     if (
       this.opts.automaticCache === true &&
       req.cachePlacement == null &&
@@ -988,6 +1004,33 @@ export class AnthropicProvider implements Provider {
   // El mensaje ya parseado —el de generate() o el de un resultado de lote— en la
   // forma neutra. `exigirUso` es `requireUsage` en generate(); en un lote va
   // apagado (una línea sin contador no puede tumbar las demás: sale marcada).
+  // El diagnóstico solo significa algo si ESTA petición pidió comparar con
+  // otra: sin `previous_message_id`, o sin el objeto, `diagnostics: null` no
+  // quiere decir «sin divergencia», sino «no se comparó». Tres formas según la
+  // documentación: `null` (comparó y no divergió), `{cache_miss_reason: null}`
+  // (aún comparando) y `{cache_miss_reason: {type, cache_missed_input_tokens?}}`.
+  private diagnosticoDe(
+    req: ProviderRequest,
+    d: unknown,
+  ): { cacheDiagnostics?: NonNullable<ProviderResponse["cacheDiagnostics"]> } {
+    if (req.cacheDiagnostics?.previousMessageId == null || !esHostOficial(this.opts.baseUrl)) return {};
+    if (d === undefined) return {};
+    if (d === null) return { cacheDiagnostics: { missReason: "none" } };
+    if (typeof d !== "object") return {};
+    const r = (d as { cache_miss_reason?: unknown }).cache_miss_reason;
+    if (r === null) return { cacheDiagnostics: { missReason: "pending" } };
+    if (r === undefined || typeof r !== "object") return {};
+    const tipo = (r as { type?: unknown }).type;
+    const tokens = (r as { cache_missed_input_tokens?: unknown }).cache_missed_input_tokens;
+    if (typeof tipo !== "string" || tipo === "") return {};
+    return {
+      cacheDiagnostics: {
+        missReason: tipo,
+        ...(typeof tokens === "number" && Number.isFinite(tokens) && tokens >= 0 ? { missedInputTokens: tokens } : {}),
+      },
+    };
+  }
+
   private leerMensaje(
     json: RespuestaAnthropic,
     req: ProviderRequest,
@@ -1063,6 +1106,8 @@ export class AnthropicProvider implements Provider {
         usage,
         structuredNatively: req.schema != null && contratoNativo,
         ...(busqueda ? { toolSearch: busqueda } : {}),
+        ...(typeof json.id === "string" && json.id !== "" ? { providerMessageId: json.id } : {}),
+        ...this.diagnosticoDe(req, json.diagnostics),
         raw: json,
       },
       // El contrato, cuando lo hay, viaja como HERRAMIENTA escrita por este
@@ -1179,6 +1224,9 @@ function repartirMensajes(
 }
 
 interface RespuestaAnthropic {
+  id?: string;
+  /** Diagnóstico de caché: ver `diagnosticoDe`. */
+  diagnostics?: unknown;
   content?: {
     type?: string;
     text?: string;
@@ -1205,7 +1253,7 @@ interface RespuestaAnthropic {
 interface EventoAnthropic {
   type?: string;
   index?: number;
-  message?: { usage?: UsoAnthropic };
+  message?: { id?: string; usage?: UsoAnthropic; diagnostics?: unknown };
   content_block?: { type?: string; id?: string; name?: string; content?: unknown };
   delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null };
   usage?: UsoAnthropic;

@@ -1,5 +1,6 @@
 import type { CachedAnswer } from "./exact.js";
 import {
+  CalibrationStateError,
   candidatosDeSeleccion,
   etiquetasMinimas,
   Histograma,
@@ -62,6 +63,69 @@ export interface SemanticCalibrationOptions {
   perRecordFloors?: boolean;
   /** Source of randomness for audits, in [0, 1). Default `Math.random`. */
   random?: () => number;
+  /**
+   * Names your `judge` (e.g. `"support-answers-v2"`), so that a saved
+   * calibration is only ever restored under the same definition of a wrong
+   * reuse. Required to export a calibration when you pass your own judge.
+   */
+  judgeId?: string;
+}
+
+export { CalibrationStateError };
+
+/**
+ * A calibration saved with `exportCalibration`, to be restored with
+ * `importCalibration` after a restart. Plain JSON: store it as is.
+ *
+ * It carries the whole experiment, not a summary: both halves of the labels
+ * (the half that proposes floors and the half kept apart to test them), how
+ * many tests have already spent the confidence budget, and the floor in force.
+ * Restoring it continues the same calibration, so the bound keeps holding
+ * across restarts; it never starts the budget over.
+ *
+ * It describes itself: who scored the requests (`embedder`, `verifier`), who
+ * judged the answers (`judge`) and the numbers of the test (`config`). A cache
+ * with any of them different refuses it.
+ */
+export interface SemanticCalibrationState {
+  format: "bvsala.semantic-calibration";
+  /** Format and method version. A newer SDK may read an older state; never the other way round. */
+  version: 1;
+  /** `built_in:<version>` for the embedder shipped with the SDK, `custom:<embedderId>` for yours. */
+  embedder: string;
+  /** `null` without a verifier, `custom:<verifierId>` with yours. */
+  verifier: string | null;
+  /** `built_in:<version>` for {@link sameAnswer}, `custom:<judgeId>` for yours. */
+  judge: string;
+  config: {
+    maxErrorRate: number;
+    confidence: number;
+    /** Only candidates at or above it are labeled, so it is part of what the labels mean. */
+    similarityThreshold: number;
+    /** Candidate floors are tested on a fixed grid of `grid + 1` values in [0, 1]. */
+    grid: number;
+  };
+  /** One calibration per traffic segment; a segment with no state yet is absent. */
+  segments: {
+    single_shot?: SemanticCalibrationSegmentState;
+    agentic?: SemanticCalibrationSegmentState;
+  };
+}
+
+/** The calibration of one traffic segment. Grid indices are scores times `grid`. */
+export interface SemanticCalibrationSegmentState {
+  /** Labels recorded. They alternate by arrival between the two halves below. */
+  labeled: number;
+  /** Tests already run. It follows from `labeled`, and a state where it does not is refused. */
+  looks: number;
+  /** The floor the next test starts from (a grid index), or null. */
+  previousCandidate: number | null;
+  /** The floor in force and the held-out labels that certified it, or null. */
+  certified: { floorIndex: number; heldOut: number; wrong: number } | null;
+  /** The half that proposes floors: `[gridIndex, labels, wrong]` where there are labels. */
+  selection: [number, number, number][];
+  /** The half kept apart to test them, in the same shape. */
+  heldOut: [number, number, number][];
 }
 
 /** One labeled reuse decision: the score the cache would have served on, and whether the stored answer was right. */

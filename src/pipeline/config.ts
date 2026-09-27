@@ -2,6 +2,7 @@ import type { CostModel } from "../tokenizer/accounting.js";
 import type { TokenizerRegistry } from "../tokenizer/registry.js";
 import type { ExactCache } from "../cache/exact.js";
 import type { InMemorySemanticCache } from "../cache/semantic.js";
+import type { CacheBreakpointStore } from "../cache/breakpoint-store.js";
 import type { Singleflight } from "../cache/singleflight.js";
 import type { ResolverRegistry } from "../resolvers/resolvers.js";
 import type { ExecutionRouter } from "../router/router.js";
@@ -112,6 +113,37 @@ export interface SavingsLayerConfig {
    * causes, one-hour writes at 2x included, is charged to `cost.actual`.
    */
   cacheBreakpoints?: "fixed" | "auto";
+
+  /**
+   * Where `cacheBreakpoints: "auto"` keeps its reuse measurement when it must
+   * outlive a single instance. Optional: without it the measurement lives in this
+   * layer's memory, exactly as before.
+   *
+   * On serverless platforms (one instance per request, or instances that live
+   * a few minutes) memory never gathers enough samples, so `"auto"` stays on
+   * the fixed placement. Pass a store your instances share and each one reads
+   * and extends the same measurement: what one instance learned, the next one
+   * uses. Only prompt-prefix fingerprints, timestamps and counts are stored,
+   * never content. See {@link CacheBreakpointStore}.
+   */
+  cacheBreakpointStore?: CacheBreakpointStore;
+
+  /**
+   * With `cacheBreakpoints: "auto"` on Anthropic's own API: when the layer
+   * expects a request to read the cache entry an earlier response wrote, ask
+   * Anthropic to compare the two requests (cache diagnostics), and when that
+   * read does not arrive, publish the provider's `cache_miss_reason` in the
+   * `prefix-cache-placement` trace (`system_changed`, `tools_changed`,
+   * `messages_changed`…, or `none` when the requests matched and the entry was
+   * simply gone). Off by default.
+   *
+   * Each request that opts in makes Anthropic keep a fingerprint of it for a
+   * short time (hashes and token-count estimates, never prompt text), scoped to
+   * your organization and workspace; check it against your data-retention
+   * terms before switching this on. Not sent through Bedrock, Vertex or any
+   * other host. It costs nothing and changes no bill.
+   */
+  cacheMissDiagnostics?: boolean;
 
   /**
    * Signed BiVelio license token (from your paid subscription). This is the

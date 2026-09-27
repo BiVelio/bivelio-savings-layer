@@ -71,6 +71,14 @@ export interface ProviderRequest {
    * Absent: the adapter's fixed placement.
    */
   cachePlacement?: CachePlacement;
+  /**
+   * Ask the provider to compare this request's prompt prefix with the one of
+   * an earlier response and report where they diverged (Anthropic cache
+   * diagnostics, Claude API only). `previousMessageId: null` opts in without a
+   * comparison, so that a later request can be compared with this one.
+   * Adapters without the feature, or talking to another host, ignore it.
+   */
+  cacheDiagnostics?: { previousMessageId: string | null };
 }
 
 /** See {@link ProviderRequest.toolSearch}. */
@@ -234,6 +242,19 @@ export interface ProviderResponse {
    * read what the search did. The layer only reports it; it credits nothing for it.
    */
   toolSearch?: ProviderToolSearchUsage;
+  /** The provider's own id for this response (Anthropic `id`), when it gave one. */
+  providerMessageId?: string;
+  /**
+   * The provider's answer to {@link ProviderRequest.cacheDiagnostics}, when the
+   * request asked for a comparison. `missReason` is the provider's
+   * `cache_miss_reason.type` (`model_changed`, `system_changed`,
+   * `tools_changed`, `messages_changed`, `previous_message_not_found`,
+   * `unavailable`), `"none"` when it compared and found no divergence, or
+   * `"pending"` when the comparison had not finished. `missedInputTokens` is the
+   * provider's estimate of the input after the divergence: a magnitude, not a
+   * billing number.
+   */
+  cacheDiagnostics?: { missReason: string; missedInputTokens?: number };
   raw?: unknown;
 }
 

@@ -40,8 +40,10 @@ import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
 import {
   EspejoDeCache,
+  TTL_DEL_ALMACEN_MS,
   VENTANA_DE_BUSQUEDA,
   cabeceraDeSistema,
+  claveDelAlmacen,
   decidirColocacion,
   decidirExplicitaOpenAI,
   huellasDePrefijos,
@@ -855,6 +857,7 @@ export class SavingsPipeline {
     descubrimientoActivo: boolean,
     mensajesDePrefijo: number,
     trace: TraceCollector,
+    espejoCargado: EspejoCargado | null = null,
   ): MarcadoDeCache {
     // El modo explícito se decide AQUÍ, antes de llamar, y solo cuando el
     // adaptador lo va a honrar: el origen lo declaró un adaptador propio.
@@ -909,7 +912,9 @@ export class SavingsPipeline {
     // no cambia la factura).
     let observacion: ColocacionEnCurso | null = null;
     if (this.config.cacheBreakpoints === "auto" && !explicita) {
-      const colocado = this.colocarConEspejo(request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace);
+      const colocado = this.colocarConEspejo(
+        request, modeloServido, messages, toolSelection, mensajesDePrefijo, tier, trace, espejoCargado,
+      );
       if ("marcado" in colocado) return colocado.marcado;
       observacion = colocado.observacion;
     }
@@ -998,37 +1003,29 @@ export class SavingsPipeline {
     mensajesDePrefijo: number,
     tier: CacheTier,
     trace: TraceCollector,
+    espejoCargado: EspejoCargado | null = null,
   ): { marcado: MarcadoDeCache } | { observacion: ColocacionEnCurso | null } {
-    const origen = origenDelProveedor(this.config.provider);
-    const openaiExplicita =
-      request.savings?.standalone === undefined && explicitaAplicable(modeloServido, origen);
-    const tramoOpenAI = openaiExplicita ? tramoParaDecidirExplicita(modeloServido) : null;
-    // Colocar solo cambia la factura donde escribir lleva prima: Anthropic
-    // (puntos explícitos) u OpenAI GPT-5.6+ en su API con precio propio.
-    const conPrima = tier.cacheWriteMultiplier > 1 && !openaiExplicita;
+    const { tramoOpenAI, conPrima } = this.primasDelColocador(request, modeloServido, tier);
     if (!conPrima && !tramoOpenAI) return { observacion: null };
 
     const S = cabeceraDeSistema(messages);
     const H = Math.max(S, Math.min(mensajesDePrefijo, messages.length));
     const T = messages.length;
-    const herramientas = (toolSelection.tools ?? []).map((t) => t.id);
-    // La raíz es lo que va DELANTE de los mensajes en el cable: el modelo, las
-    // herramientas y el contrato (que en Anthropic viaja como herramienta o como
-    // bloque de sistema). Cambiar cualquiera invalida todo lo que va detrás.
-    const raiz = stableStringify({
-      model: modeloServido,
-      tools: herramientas,
-      schema: request.response?.schema ?? null,
-    });
-    const huellas = huellasDePrefijos(raiz, messages);
+    const huellas = espejoCargado?.huellas ?? this.huellasDelColocador(request, modeloServido, messages, toolSelection.tools);
     const clase = huellas[S]!;
+    // Con almacén, el espejo de ESTA petición es el que se acaba de leer; si
+    // por lo que sea no es de esta clase (no debería pasar: la clase sale de la
+    // misma función), se mide sobre el de la instancia, como sin almacén.
+    const delAlmacen = espejoCargado?.clase === clase ? espejoCargado : null;
+    const espejo = delAlmacen?.espejo ?? this.espejoDeCache;
     const ahora = this.now();
-    const coincidencia = this.espejoDeCache.observar(clase, huellas, ahora);
-    const estadistica = this.espejoDeCache.estadistica(clase, ahora);
+    const coincidencia = espejo.observar(clase, huellas, ahora);
+    const estadistica = espejo.estadistica(clase, ahora);
+    const almacen = delAlmacen ? { mirrorStore: delAlmacen.estado } : {};
     const tramos: Partial<Record<TipoDeTramo, number>> = { S, ...(H > S ? { H } : {}), T };
     const tokensHasta = (n: number): number =>
       this.tokensFor(this.assemblePromptText(messages.slice(0, n), toolSelection.tools), request);
-    const base = { clase, huellas, tramos, coincidencia, enviada: ahora };
+    const base = { clase, huellas, tramos, coincidencia, enviada: ahora, ...(delAlmacen ? { conAlmacen: true as const } : {}) };
 
     if (tramoOpenAI) {
       const d = decidirExplicitaOpenAI({ estadistica, tramo: tramoOpenAI, hayHistorial: H > S });
@@ -1037,6 +1034,7 @@ export class SavingsPipeline {
         breakEvenReuseRate: d.equilibrio,
         continuedWithin30m: estadistica.T.en30m,
         samples: estadistica.T.muestras30m,
+        ...almacen,
       });
       // El modo del proveedor escribe en la pregunta: su último punto es la cola.
       const observacion: ColocacionEnCurso = {
@@ -1115,6 +1113,7 @@ export class SavingsPipeline {
       continuedWithin5m: estadistica.T.en5m,
       samples: estadistica.T.muestras5m,
       providerConfirmedReads: `${estadistica.confirmadas}/${estadistica.predichas}`,
+      ...almacen,
     });
     const observacion: ColocacionEnCurso = { ...base, cola: c.cola, ttl: c.ttl, ultimo: null, indiceDelUltimo: null };
     if (ultimo == null || indiceDelUltimo == null) {
@@ -1176,6 +1175,8 @@ export class SavingsPipeline {
     marcado: MarcadoDeCache,
     uso: ProviderResponse["usage"],
     trace: TraceCollector,
+    espejo: EspejoDeCache = this.espejoDeCache,
+    respuesta: RespuestaMarcada = {},
   ): void {
     const c = marcado.colocacion!;
     const informo = uso.complete !== false;
@@ -1191,14 +1192,23 @@ export class SavingsPipeline {
       c.indiceDelUltimo! >= k &&
       c.indiceDelUltimo! - k < VENTANA_DE_BUSQUEDA
     ) {
-      const antes = this.espejoDeCache.estadistica(c.clase, c.enviada);
-      this.espejoDeCache.verificar(c.clase, c.coincidencia, leidos);
-      const despues = this.espejoDeCache.estadistica(c.clase, c.enviada);
+      const antes = espejo.estadistica(c.clase, c.enviada);
+      espejo.verificar(c.clase, c.coincidencia, leidos);
+      const despues = espejo.estadistica(c.clase, c.enviada);
       if (despues.predichas > antes.predichas) {
+        const confirmada = despues.confirmadas > antes.confirmadas;
+        const diag = respuesta.diagnostico;
         trace.record("prefix-cache-placement", "verified", {
           predictedRead: c.coincidencia.posicionDelProveedor,
           providerCacheRead: leidos,
-          confirmed: despues.confirmadas > antes.confirmadas,
+          confirmed: confirmada,
+          // Por qué no llegó la lectura, según el proveedor (`cacheMissDiagnostics`).
+          ...(!confirmada && diag
+            ? {
+                cacheMissReason: diag.missReason,
+                ...(diag.missedInputTokens !== undefined ? { cacheMissedInputTokensEstimate: diag.missedInputTokens } : {}),
+              }
+            : {}),
           ...(despues.apagada && !antes.apagada
             ? {
                 reason:
@@ -1209,7 +1219,7 @@ export class SavingsPipeline {
         });
       }
     }
-    this.espejoDeCache.registrar({
+    espejo.registrar({
       clase: c.clase,
       huellas: c.huellas,
       tramos: c.tramos,
@@ -1219,7 +1229,132 @@ export class SavingsPipeline {
       // lo que escribió es exactamente el prefijo hasta ese punto.
       posicionDelProveedor: informo && marco ? leidos + escritos : null,
       ttl: c.ttl,
+      // Solo si se pidió el diagnóstico: sin él no hay a quién pasarle el id.
+      idDelProveedor: this.config.cacheMissDiagnostics === true && marco ? (respuesta.id ?? null) : null,
     });
+  }
+
+  /**
+   * EL ESPEJO EN UN ALMACÉN (`cacheBreakpointStore`): la segunda mitad.
+   *
+   * Leer, apuntar y reescribir van SEGUIDOS, después de la respuesta, y no
+   * envolviendo la llamada al proveedor: entre instancias concurrentes de la
+   * misma clase, lo que se pisa es lo escrito en esos milisegundos y no en los
+   * segundos que tarda el modelo. Por eso la llegada de la petición se vuelve a
+   * apuntar aquí, sobre lo que haya ahora en el almacén, con su instante de
+   * salida: lo que se apuntó al decidir era una copia de usar y tirar.
+   *
+   * Si el almacén falla al leer, esta petición no se apunta y NO se escribe
+   * nada: escribir sobre una lectura fallida borraría lo que otras instancias
+   * aprendieron. Si la instantánea la escribió un SDK más nuevo, tampoco.
+   */
+  private async apuntarEnElAlmacen(
+    marcado: MarcadoDeCache,
+    uso: ProviderResponse["usage"],
+    trace: TraceCollector,
+    respuesta: RespuestaMarcada,
+  ): Promise<void> {
+    const almacen = this.config.cacheBreakpointStore!;
+    const c = marcado.colocacion!;
+    const clave = claveDelAlmacen(c.clase);
+    let texto: unknown;
+    try {
+      texto = await almacen.get(clave);
+    } catch (e) {
+      trace.record("prefix-cache-placement", "store-error", {
+        // Solo el tipo del error: el mensaje de un cliente de Redis puede traer
+        // el host o la URL de conexión, y la traza viaja a la telemetría.
+        reason: `could not read the placement store (${nombreDelError(e)}), so this request was not recorded`,
+      });
+      return;
+    }
+    const espejo = new EspejoDeCache();
+    if (texto != null && espejo.importarClase(c.clase, texto) === "newer") {
+      trace.record("prefix-cache-placement", "store-error", {
+        reason: "the placement store holds a state written by a newer SDK version; left untouched",
+      });
+      return;
+    }
+    espejo.observar(c.clase, c.huellas, c.enviada);
+    this.apuntarEnElEspejo(marcado, uso, trace, espejo, respuesta);
+    try {
+      await almacen.set(clave, espejo.exportarClase(c.clase), TTL_DEL_ALMACEN_MS);
+    } catch (e) {
+      trace.record("prefix-cache-placement", "store-error", {
+        reason: `could not write the placement store (${nombreDelError(e)})`,
+      });
+    }
+  }
+
+  /**
+   * La primera mitad: antes de decidir, el espejo de la clase de esta petición
+   * tal como está en el almacén. `null` cuando el colocador no va a correr en
+   * esta petición (no hay nada que leer). Un almacén que falla o una
+   * instantánea ilegible dan un espejo VACÍO: la decisión es la de un proceso
+   * nuevo, o sea la colocación fija, y la traza lo dice.
+   */
+  private async cargarEspejo(
+    request: SavingsRequest,
+    modeloServido: string,
+    messages: ChatMessage[],
+    toolSelection: { tools: SavingsRequest["tools"] & object; setIsStable: boolean },
+    descubrimientoActivo: boolean,
+  ): Promise<EspejoCargado | null> {
+    if (this.config.cacheBreakpoints !== "auto" || !toolSelection.setIsStable || descubrimientoActivo) return null;
+    const origen = origenDelProveedor(this.config.provider);
+    // Lo mismo que `decidirMarcadoDeCache`: con el modo explícito DECLARADO el
+    // colocador no corre, y sin descuento de lectura no se marca nada.
+    if (request.savings?.standalone === true && explicitaAplicable(modeloServido, origen)) return null;
+    const tier = tramoDelModelo(modeloServido, this.config.compressionEconomics);
+    if (!tier) return null;
+    const { tramoOpenAI, conPrima } = this.primasDelColocador(request, modeloServido, tier);
+    if (!conPrima && !tramoOpenAI) return null;
+    const huellas = this.huellasDelColocador(request, modeloServido, messages, toolSelection.tools);
+    const clase = huellas[cabeceraDeSistema(messages)]!;
+    const espejo = new EspejoDeCache();
+    let estado: EspejoCargado["estado"];
+    try {
+      const texto = await this.config.cacheBreakpointStore!.get(claveDelAlmacen(clase));
+      estado = texto == null ? "empty" : espejo.importarClase(clase, texto) === "loaded" ? "loaded" : "unreadable";
+    } catch {
+      estado = "unavailable";
+    }
+    return { clase, huellas, espejo, estado };
+  }
+
+  /** Dónde escribir lleva prima: Anthropic (puntos explícitos) u OpenAI GPT-5.6+ en su API con precio propio. */
+  private primasDelColocador(
+    request: SavingsRequest,
+    modeloServido: string,
+    tier: CacheTier,
+  ): { tramoOpenAI: CacheTier | null; conPrima: boolean } {
+    const origen = origenDelProveedor(this.config.provider);
+    const openaiExplicita =
+      request.savings?.standalone === undefined && explicitaAplicable(modeloServido, origen);
+    const tramoOpenAI = openaiExplicita ? tramoParaDecidirExplicita(modeloServido) : null;
+    // Colocar solo cambia la factura donde escribir lleva prima: Anthropic
+    // (puntos explícitos) u OpenAI GPT-5.6+ en su API con precio propio.
+    return { tramoOpenAI, conPrima: tier.cacheWriteMultiplier > 1 && !openaiExplicita };
+  }
+
+  /**
+   * Las huellas encadenadas de la petición, desde la raíz: lo que va DELANTE de
+   * los mensajes en el cable —el modelo, las herramientas y el contrato (que en
+   * Anthropic viaja como herramienta o como bloque de sistema)—. Cambiar
+   * cualquiera invalida todo lo que va detrás. La clase es `huellas[S]`.
+   */
+  private huellasDelColocador(
+    request: SavingsRequest,
+    modeloServido: string,
+    messages: ChatMessage[],
+    tools: SavingsRequest["tools"],
+  ): string[] {
+    const raiz = stableStringify({
+      model: modeloServido,
+      tools: (tools ?? []).map((t) => t.id),
+      schema: request.response?.schema ?? null,
+    });
+    return huellasDePrefijos(raiz, messages);
   }
 
   /** La huella de un prefijo, la misma que la colocación fija (viaja como `prompt_cache_key`). */
@@ -2725,19 +2860,29 @@ export class SavingsPipeline {
     // para descubrir su tasa de aciertos. Si la huella llevara el modelo pedido,
     // las dos poblaciones se mezclarían en una sola medición y la verja decidiría
     // sobre un promedio de dos cachés distintas, que no es la tasa de ninguna.
+    // Con la búsqueda nativa, el prefijo que el PROVEEDOR renderiza lleva solo
+    // las herramientas no diferidas: las diferidas quedan fuera («the API
+    // excludes deferred tools from the system-prompt prefix»). La huella y las
+    // cuentas del prefijo se hacen sobre ESAS, que es lo que puede acertar; y
+    // por eso un catálogo diferido que crece no parte la medición en dos.
+    const herramientasDelPrefijo = nativa
+      ? { tools: nativa.prefijo, setIsStable: toolSelection.setIsStable }
+      : toolSelection;
+    const conDescubrimiento = toggles.toolDiscovery === true && !nativa;
+    // EL ESPEJO DEL ALMACÉN (`cacheBreakpointStore`), solo si lo hay: sin él no
+    // se espera nada y el camino es exactamente el de siempre.
+    const espejoCargado = this.config.cacheBreakpointStore
+      ? await this.cargarEspejo(request, cascada.modeloServido, messages, herramientasDelPrefijo, conDescubrimiento)
+      : null;
     const marcado = this.decidirMarcadoDeCache(
       request,
       cascada.modeloServido,
       messages,
-      // Con la búsqueda nativa, el prefijo que el PROVEEDOR renderiza lleva solo
-      // las herramientas no diferidas: las diferidas quedan fuera («the API
-      // excludes deferred tools from the system-prompt prefix»). La huella y las
-      // cuentas del prefijo se hacen sobre ESAS, que es lo que puede acertar; y
-      // por eso un catálogo diferido que crece no parte la medición en dos.
-      nativa ? { tools: nativa.prefijo, setIsStable: toolSelection.setIsStable } : toolSelection,
-      toggles.toolDiscovery === true && !nativa,
+      herramientasDelPrefijo,
+      conDescubrimiento,
       comprimioElPrefijo ? limiteDelPrefijoEstable(messages, true) : finDelPrefijo,
       trace,
+      espejoCargado,
     );
 
     // El cronómetro del proveedor arranca ANTES del sondeo: si el patrón parte la
@@ -2839,6 +2984,13 @@ export class SavingsPipeline {
             // esto el cuerpo que sale es el de siempre, byte a byte.
             ...(marcado.colocacion && !marcado.explicita && (marcado.colocacion.cola || marcado.colocacion.ttl !== "5m")
               ? { cachePlacement: { tail: marcado.colocacion.cola, ttl: marcado.colocacion.ttl } }
+              : {}),
+            // EL DIAGNÓSTICO DE CACHÉ (opt-in): en cada petición que el colocador
+            // marca, para que el proveedor guarde su huella, y con el id de la
+            // respuesta que escribió la entrada que el espejo predice leer. Si esa
+            // lectura no llega, el proveedor dice por qué.
+            ...(this.config.cacheMissDiagnostics === true && marcado.colocacion
+              ? { cacheDiagnostics: { previousMessageId: marcado.colocacion.coincidencia?.idDelProveedor ?? null } }
               : {}),
           }
         : {}),
@@ -2944,6 +3096,12 @@ export class SavingsPipeline {
     // acierto que nunca tuvo ocasión de producirse y apagaría la verja por una
     // medición que no es sobre ella.
     const usoDeLaLlamadaMarcada = response.usage;
+    // Lo que el colocador apunta de la respuesta marcada además del contador:
+    // su id y, si se pidió, el diagnóstico de caché. De la PRIMARIA, como el uso.
+    const respuestaMarcada = {
+      ...(response.providerMessageId ? { id: response.providerMessageId } : {}),
+      ...(response.cacheDiagnostics ? { diagnostico: response.cacheDiagnostics } : {}),
+    };
 
     // --- Etapa 10c: la cascada de modelos verifica y, si hace falta, escala. ---
     let escalo = false;
@@ -3181,8 +3339,10 @@ export class SavingsPipeline {
     // EL ESPEJO APUNTA ESTA PETICIÓN, y el contador del proveedor juzga lo que
     // el espejo predijo. Va después de la respuesta, como en el proveedor: una
     // entrada solo se puede leer cuando la respuesta que la escribió ya empezó.
-    if (marcado.colocacion) {
-      this.apuntarEnElEspejo(marcado, usoDeLaLlamadaMarcada, trace);
+    if (marcado.colocacion?.conAlmacen) {
+      await this.apuntarEnElAlmacen(marcado, usoDeLaLlamadaMarcada, trace, respuestaMarcada);
+    } else if (marcado.colocacion) {
+      this.apuntarEnElEspejo(marcado, usoDeLaLlamadaMarcada, trace, this.espejoDeCache, respuestaMarcada);
     }
 
     // --- Etapa 10d: la MUESTRA del modo sombra (opt-in, y cuesta dinero). ---
@@ -5968,8 +6128,29 @@ interface MarcadoDeCache {
   colocacion: ColocacionEnCurso | null;
 }
 
+/** De la respuesta marcada, lo que el colocador apunta además del contador. */
+interface RespuestaMarcada {
+  id?: string;
+  diagnostico?: NonNullable<ProviderResponse["cacheDiagnostics"]>;
+}
+
+function nombreDelError(e: unknown): string {
+  return e instanceof Error ? e.name : typeof e;
+}
+
+/** El espejo de la clase de una petición, leído del almacén antes de decidir (`cacheBreakpointStore`). */
+interface EspejoCargado {
+  clase: string;
+  huellas: string[];
+  espejo: EspejoDeCache;
+  /** `empty`: primera petición de la clase; `unavailable`: el almacén falló; `unreadable`: no se pudo leer lo guardado. */
+  estado: "loaded" | "empty" | "unavailable" | "unreadable";
+}
+
 /** Lo que el colocador decidió para una petición y lo que hace falta para apuntarla en el espejo al volver. */
 interface ColocacionEnCurso {
+  /** El espejo de esta petición vive en el almacén: se relee, se apunta y se reescribe al volver. */
+  conAlmacen?: true;
   clase: string;
   huellas: string[];
   tramos: Partial<Record<TipoDeTramo, number>>;
