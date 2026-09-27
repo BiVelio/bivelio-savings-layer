@@ -167,6 +167,12 @@ interface Entrada {
   posicionDelProveedor?: number;
   /** TTL con el que se marcó (para no predecir un acierto que ya caducó). */
   ttl?: TtlDeCache;
+  /**
+   * Con `cacheMissDiagnostics`: el id que el proveedor dio a la respuesta de esa
+   * petición. Es lo que se le pasa como `previous_message_id` a la que prediga
+   * leer esta entrada, para que diga por qué no la leyó si no la lee.
+   */
+  idDelProveedor?: string;
 }
 
 interface Contador {
@@ -261,6 +267,8 @@ export interface Coincidencia {
   /** Presente si esa entrada fue el último punto marcado de su petición: la posición del proveedor. */
   posicionDelProveedor?: number;
   ttl?: TtlDeCache;
+  /** El id de la respuesta que la escribió, si se guardó (ver `Entrada.idDelProveedor`). */
+  idDelProveedor?: string;
 }
 
 export interface OpcionesDelEspejo {
@@ -274,6 +282,35 @@ export interface OpcionesDelEspejo {
   confirmacionMinima?: number;
   /** A partir de cuántas resoluciones por ventana se reducen los contadores a la mitad (default 512). */
   memoria?: number;
+}
+
+/** Versión de la instantánea de una clase. Subirla si cambia su forma o lo que significa un campo. */
+export const VERSION_DEL_ESPEJO = 1;
+
+/** Cuánto sobrevive en el almacén la instantánea de una clase sin que ninguna petición suya la reescriba. */
+export const TTL_DEL_ALMACEN_MS = 24 * 60 * 60_000;
+
+/** La clave de una clase en el almacén. La clase ya es una huella: no lleva texto. */
+export function claveDelAlmacen(clase: string): string {
+  return `bvsala:cache-breakpoints:v${VERSION_DEL_ESPEJO}:${clase}`;
+}
+
+/**
+ * La instantánea de una clase, en JSON compacto. Ventanas en el orden 5m, 30m,
+ * 1h; entradas `[huella, tipo, mensajes, escrita, contadas, descartada, posición, ttl, id]`
+ * desde la cabeza de la FIFO; cursores relativos a esa cabeza. `id` es el de la
+ * respuesta del proveedor, solo con `cacheMissDiagnostics`.
+ */
+interface InstantaneaDeClase {
+  v: number;
+  clase: string;
+  c: Record<TipoDeTramo, number[][]>;
+  p: Record<TipoDeTramo, number[]>;
+  e: [string, TipoDeTramo, number, number, number, 0 | 1, number | null, TtlDeCache | null, string | null][];
+  cur: number[];
+  pr: number;
+  co: number;
+  off: boolean;
 }
 
 /**
@@ -321,6 +358,7 @@ export class EspejoDeCache {
         huecoMs: hueco,
         ...(e.posicionDelProveedor !== undefined ? { posicionDelProveedor: e.posicionDelProveedor } : {}),
         ...(e.ttl ? { ttl: e.ttl } : {}),
+        ...(e.idDelProveedor ? { idDelProveedor: e.idDelProveedor } : {}),
       };
     }
     return mejor;
@@ -345,6 +383,8 @@ export class EspejoDeCache {
     ultimoMarcado?: TipoDeTramo | null;
     posicionDelProveedor?: number | null;
     ttl?: TtlDeCache;
+    /** El id de la respuesta, para el diagnóstico de caché (solo se guarda en el último punto). */
+    idDelProveedor?: string | null;
   }): void {
     const estado = this.estadoDe(e.clase);
     this.vencer(estado, e.enviada);
@@ -374,6 +414,7 @@ export class EspejoDeCache {
           ? { posicionDelProveedor: e.posicionDelProveedor }
           : {}),
         ...(esElUltimo && e.ttl ? { ttl: e.ttl } : {}),
+        ...(esElUltimo && e.idDelProveedor ? { idDelProveedor: e.idDelProveedor } : {}),
       };
       // La misma huella registrada otra vez (la cabecera de cada petición, una
       // plantilla fija). Si seguía viva, `observar` ya la contó como
@@ -444,15 +485,146 @@ export class EspejoDeCache {
     return this.porHuella.size;
   }
 
-  private estadoDe(clase: string): EstadoDeClase {
-    let e = this.clases.get(clase);
-    if (e) {
-      // LRU: se reinserta al final.
-      this.clases.delete(clase);
-      this.clases.set(clase, e);
-      return e;
+  // ── El espejo fuera del proceso (`cacheBreakpointStore`) ──────────────────
+  //
+  // En serverless el proceso vive una petición: el espejo en memoria no llega a
+  // tener muestras nunca y la colocación se queda en la fija para siempre. Con
+  // un almacén, cada petición lee la instantánea de SU clase, decide, y al
+  // volver la relee, apunta y la reescribe. Lo que viaja es exactamente el
+  // estado de la clase —la FIFO desde la cabeza, contadores, pendientes,
+  // cursores y el juicio del contador del proveedor—, así que un espejo que se
+  // restaura decide lo mismo que uno que no se paró nunca (lo fija un test que
+  // compara el cable byte a byte). Solo huellas, instantes y cuentas: ningún
+  // texto del cliente.
+
+  /** La clase entera, lista para guardarse. Sin clase, una vacía (se guarda igual: es la primera petición). */
+  exportarClase(clase: string): string {
+    const e = this.clases.get(clase);
+    const estado = e ?? this.estadoVacio();
+    const cab = estado.cabeza;
+    const contadores = (t: TipoDeTramo) =>
+      ORDEN_VENTANAS.map((v) => {
+        const c = estado.contadores[t][v];
+        return [c.resueltas, c.reutilizadas, c.tardias];
+      });
+    const pendientes = (t: TipoDeTramo) => ORDEN_VENTANAS.map((v) => estado.pendientes[t][v]);
+    const instantanea: InstantaneaDeClase = {
+      v: VERSION_DEL_ESPEJO,
+      clase,
+      c: { S: contadores("S"), H: contadores("H"), T: contadores("T") },
+      p: { S: pendientes("S"), H: pendientes("H"), T: pendientes("T") },
+      // Una descartada ya no coincide con nada (otra ocupa su huella): de ella
+      // solo cuenta el instante, para que los cursores avancen igual.
+      e: estado.cola.slice(cab).map((en) =>
+        en.descartada
+          ? ["", en.tipo, en.indice, en.escrita, en.contadas, 1, null, null, null]
+          : [
+              en.huella, en.tipo, en.indice, en.escrita, en.contadas, 0,
+              en.posicionDelProveedor ?? null, en.ttl ?? null, en.idDelProveedor ?? null,
+            ],
+      ),
+      cur: ORDEN_VENTANAS.map((v) => Math.max(0, estado.cursores[v] - cab)),
+      pr: estado.predichas,
+      co: estado.confirmadas,
+      off: estado.apagada,
+    };
+    return JSON.stringify(instantanea);
+  }
+
+  /**
+   * Sustituye la clase por la instantánea. `invalid` si no se puede leer o no
+   * cuadra (la clase queda vacía, como en un proceso nuevo); `newer` si la
+   * escribió un SDK más nuevo (tampoco se lee, y quien llama no debe pisarla).
+   */
+  importarClase(clase: string, guardado: unknown): "loaded" | "invalid" | "newer" {
+    // Texto JSON, o el mismo JSON ya parseado: hay clientes de Redis y de KV
+    // que deserializan solos lo que parece JSON.
+    let d: unknown = guardado;
+    if (typeof guardado === "string") {
+      try {
+        d = JSON.parse(guardado);
+      } catch {
+        return "invalid";
+      }
     }
-    e = {
+    const o = d as Partial<InstantaneaDeClase> | null;
+    if (o === null || typeof o !== "object") return "invalid";
+    if (typeof o.v === "number" && o.v > VERSION_DEL_ESPEJO) return "newer";
+    const estado = this.leerInstantanea(o, clase);
+    if (!estado) return "invalid";
+    const vieja = this.clases.get(clase);
+    if (vieja) {
+      for (let i = vieja.cabeza; i < vieja.cola.length; i++) {
+        const en = vieja.cola[i]!;
+        if (this.porHuella.get(en.huella) === en) this.porHuella.delete(en.huella);
+      }
+      this.clases.delete(clase);
+    }
+    this.clases.set(clase, estado);
+    // En orden de registro: si dos vivas comparten huella, manda la última,
+    // igual que en `registrar`.
+    for (const en of estado.cola) if (!en.descartada) this.porHuella.set(en.huella, en);
+    return "loaded";
+  }
+
+  private leerInstantanea(o: Partial<InstantaneaDeClase>, clase: string): EstadoDeClase | null {
+    if (o.v !== VERSION_DEL_ESPEJO || o.clase !== clase) return null;
+    const entero = (x: unknown): x is number => typeof x === "number" && Number.isInteger(x) && x >= 0;
+    const estado = this.estadoVacio();
+    for (const t of ["S", "H", "T"] as const) {
+      const c = o.c?.[t];
+      const p = o.p?.[t];
+      if (!Array.isArray(c) || c.length !== 3 || !Array.isArray(p) || p.length !== 3) return null;
+      for (let i = 0; i < 3; i++) {
+        const fila = c[i];
+        if (!Array.isArray(fila) || fila.length !== 3 || !fila.every(entero)) return null;
+        const [resueltas, reutilizadas, tardias] = fila as [number, number, number];
+        if (reutilizadas > resueltas || tardias > reutilizadas) return null;
+        if (!entero(p[i])) return null;
+        const v = ORDEN_VENTANAS[i]!;
+        estado.contadores[t][v] = { resueltas, reutilizadas, tardias };
+        estado.pendientes[t][v] = p[i] as number;
+      }
+    }
+    if (!Array.isArray(o.e) || o.e.length > this.maxPorClase) return null;
+    for (const fila of o.e) {
+      if (!Array.isArray(fila) || fila.length !== 9) return null;
+      const [huella, tipo, indice, escrita, contadas, descartada, pos, ttl, id] = fila;
+      if (typeof huella !== "string" || (descartada === 0 && huella === "")) return null;
+      if (tipo !== "S" && tipo !== "H" && tipo !== "T") return null;
+      if (!entero(indice) || indice === 0 || typeof escrita !== "number" || !Number.isFinite(escrita)) return null;
+      if (!entero(contadas) || contadas > 0b111 || (descartada !== 0 && descartada !== 1)) return null;
+      if (pos !== null && !(typeof pos === "number" && Number.isFinite(pos) && pos > 0)) return null;
+      if (ttl !== null && ttl !== "5m" && ttl !== "1h") return null;
+      if (id !== null && !(typeof id === "string" && id !== "" && id.length <= 256)) return null;
+      estado.cola.push({
+        clase,
+        tipo,
+        huella,
+        indice,
+        escrita,
+        contadas,
+        descartada: descartada === 1,
+        ...(pos !== null ? { posicionDelProveedor: pos } : {}),
+        ...(ttl !== null ? { ttl } : {}),
+        ...(id !== null ? { idDelProveedor: id } : {}),
+      });
+    }
+    if (!Array.isArray(o.cur) || o.cur.length !== 3) return null;
+    for (let i = 0; i < 3; i++) {
+      const cur = o.cur[i];
+      if (!entero(cur) || cur > estado.cola.length) return null;
+      estado.cursores[ORDEN_VENTANAS[i]!] = cur;
+    }
+    if (!entero(o.pr) || !entero(o.co) || o.co > o.pr || typeof o.off !== "boolean") return null;
+    estado.predichas = o.pr;
+    estado.confirmadas = o.co;
+    estado.apagada = o.off;
+    return estado;
+  }
+
+  private estadoVacio(): EstadoDeClase {
+    return {
       contadores: { S: contadoresVacios(), H: contadoresVacios(), T: contadoresVacios() },
       pendientes: { S: pendientesVacios(), H: pendientesVacios(), T: pendientesVacios() },
       cola: [],
@@ -462,6 +634,17 @@ export class EspejoDeCache {
       confirmadas: 0,
       apagada: false,
     };
+  }
+
+  private estadoDe(clase: string): EstadoDeClase {
+    let e = this.clases.get(clase);
+    if (e) {
+      // LRU: se reinserta al final.
+      this.clases.delete(clase);
+      this.clases.set(clase, e);
+      return e;
+    }
+    e = this.estadoVacio();
     this.clases.set(clase, e);
     while (this.clases.size > this.maxClases) {
       const [vieja, estadoViejo] = this.clases.entries().next().value as [string, EstadoDeClase];

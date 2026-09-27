@@ -1,10 +1,20 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
 import type { SemanticCalibrationBound } from "../contracts/types.js";
-import { EstadoDeCalibracion, indiceEnRejilla, umbralDeIndice, validarCalibracion } from "./calibracion.js";
+import {
+  CalibrationStateError,
+  EstadoDeCalibracion,
+  escribirEstado,
+  indiceEnRejilla,
+  leerEstado,
+  umbralDeIndice,
+  validarCalibracion,
+  type IdentidadDeCalibracion,
+} from "./calibracion.js";
 import {
   sameAnswer,
   type AnswerJudge,
   type SemanticCalibrationOptions,
+  type SemanticCalibrationState,
   type SemanticCalibrationStatus,
 } from "./calibration.js";
 import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
@@ -141,7 +151,16 @@ export interface SemanticCacheOptions {
    * cache miss — never a wrong answer.
    */
   embed?: EmbeddingFn;
+  /**
+   * Names your `embed` function: model and version, e.g.
+   * `"text-embedding-3-small@1536"`. A saved calibration carries it, and one
+   * recorded under another embedder is refused on import. Required to export a
+   * calibration when you pass your own `embed`.
+   */
+  embedderId?: string;
   verify?: SemanticVerifier;
+  /** Names your `verify` function, like {@link embedderId}. Required to export a calibration when you pass one. */
+  verifierId?: string;
   /** Cosine similarity floor for a candidate to be considered at all. */
   similarityThreshold?: number;
   /** Verifier score floor for acceptance. */
@@ -369,6 +388,15 @@ function hechosCoinciden(a: string, b: string): boolean {
   return union === 0 ? true : inter / union >= 0.75;
 }
 
+// La identidad del embebedor LÉXICO que viaja con el SDK en un estado de
+// calibración. SUBIRLA en cuanto cambie un vector de `vectorLocal` (rasgos,
+// dimensiones, hash, normalización): un suelo certificado con los vectores de
+// antes no dice nada de los de ahora. `test/estado-de-calibracion.test.ts` fija
+// los vectores y falla si cambian sin que cambie esto.
+const ID_DEL_EMBEBEDOR_LOCAL = "lexical-256-v1";
+// Lo mismo para el juez por defecto, `sameAnswer`.
+const ID_DEL_JUEZ_POR_DEFECTO = "same-answer-v1";
+
 /**
  * In-memory reference implementation. A production build would back this with a
  * real vector store and metadata filters pushed down
@@ -402,6 +430,9 @@ export class InMemorySemanticCache {
       }
     | undefined;
   private readonly estados = new Map<SemanticProbe["segment"], EstadoDeCalibracion>();
+  // Los nombres que declaró el llamante para su embebedor, su verificador y su
+  // juez. Solo los lee la identidad de un estado exportado.
+  private readonly nombres: { embedder?: string; verifier?: string; judge?: string };
   private readonly pendientes = new Set<Promise<boolean | null>>();
   // ¿Pasó el llamante un `acceptThreshold` suyo? Con calibración, solo uno
   // EXPLÍCITO sigue contando (como tope inferior adicional); el 0,85 por defecto no.
@@ -427,6 +458,11 @@ export class InMemorySemanticCache {
       opts.similarityThreshold ?? (propio ? UMBRAL_LOCAL : 0.9);
     this.acceptThreshold = opts.acceptThreshold ?? 0.85;
     this.aceptacionExplicita = opts.acceptThreshold != null;
+    this.nombres = {
+      ...(opts.embedderId != null ? { embedder: opts.embedderId } : {}),
+      ...(opts.verifierId != null ? { verifier: opts.verifierId } : {}),
+      ...(opts.calibration?.judgeId != null ? { judge: opts.calibration.judgeId } : {}),
+    };
     this.ttlMs = opts.ttlMs;
     this.maxRecords = opts.maxRecords ?? 5_000;
     this.now = opts.now ?? (() => Date.now());
@@ -649,6 +685,92 @@ export class InMemorySemanticCache {
       wrongHeldOutAtFloor: r.erroneasEnSuelo,
       minHeldOutToCertify: r.minimasParaLaSiguiente,
       nextTestAt: r.etiquetasParaLaSiguiente,
+    };
+  }
+
+  /**
+   * The calibration's full state, to restore it with {@link importCalibration}
+   * in a later process: after a deploy, or in the next serverless invocation.
+   * Plain JSON. Call it after `await cache.settled()` so labels still being
+   * judged are included.
+   *
+   * The bound holds along one line of history: restore the latest state you
+   * saved and keep saving from where it went. Processes that continue the same
+   * state at the same time each spend its remaining confidence again. Each one
+   * keeps its own bound, but the chance that some process certifies a wrong
+   * floor grows with how many do it, and whichever saves last overwrites the
+   * labels of the others.
+   *
+   * Throws {@link CalibrationStateError} without calibration, and when you
+   * passed your own `embed`, `verify` or `judge` without naming it
+   * (`embedderId`, `verifierId`, `calibration.judgeId`).
+   */
+  exportCalibration(): SemanticCalibrationState {
+    return escribirEstado(this.identidad("exportCalibration"), this.estados);
+  }
+
+  /**
+   * Restore a state saved with {@link exportCalibration} (the object, or its
+   * JSON text), right after constructing the cache. The calibration continues
+   * exactly where it was: the same labels in the same two halves, the same
+   * tests already run and the same floor in force.
+   *
+   * All or nothing. Throws {@link CalibrationStateError}, and changes nothing,
+   * when the state comes from another embedder, verifier, judge or
+   * configuration, from a newer SDK, when its numbers do not add up, or when
+   * this cache has already recorded labels in a segment the state carries
+   * (merging two histories would count some labels twice).
+   */
+  importCalibration(state: SemanticCalibrationState | string | unknown): void {
+    const id = this.identidad("importCalibration");
+    let datos = state;
+    if (typeof state === "string") {
+      try {
+        datos = JSON.parse(state);
+      } catch {
+        throw new CalibrationStateError("importCalibration: the state is a string but not JSON");
+      }
+    }
+    const leidos = leerEstado(datos, id);
+    for (const [segmento] of leidos) {
+      const actual = this.estados.get(segmento);
+      if (actual && actual.resumen().etiquetas > 0) {
+        throw new CalibrationStateError(
+          `importCalibration: this cache has already recorded ${actual.resumen().etiquetas} labels in the ` +
+            `${segmento} segment; import right after constructing it`,
+        );
+      }
+    }
+    for (const [segmento, estado] of leidos) this.estados.set(segmento, estado);
+  }
+
+  // Quién puntúa, quién juzga y con qué números: lo que un estado exportado
+  // tiene que compartir con la caché que lo importa. Sin nombre para una pieza
+  // del cliente no hay identidad que comparar, y se rechaza en vez de adivinar.
+  private identidad(accion: string): IdentidadDeCalibracion {
+    const cal = this.calibracion;
+    if (!cal) throw new CalibrationStateError(`${accion}: this cache runs without \`calibration\``);
+    const falta = (opcion: string, pieza: string): never => {
+      throw new CalibrationStateError(
+        `${accion}: pass \`${opcion}\` naming your ${pieza}, so that a saved calibration is only ever ` +
+          "restored under the same one",
+      );
+    };
+    const embedder = this.embebedorPropio
+      ? `built_in:${ID_DEL_EMBEBEDOR_LOCAL}`
+      : `custom:${this.nombres.embedder ?? falta("embedderId", "embed function")}`;
+    const verifier = this.verify == null ? null : `custom:${this.nombres.verifier ?? falta("verifierId", "verifier")}`;
+    const judge =
+      cal.judge === sameAnswer
+        ? `built_in:${ID_DEL_JUEZ_POR_DEFECTO}`
+        : `custom:${this.nombres.judge ?? falta("calibration.judgeId", "judge")}`;
+    return {
+      embedder,
+      verifier,
+      judge,
+      maxErrorRate: cal.maxErrorRate,
+      confidence: cal.confidence,
+      similarityThreshold: this.similarityThreshold,
     };
   }
 

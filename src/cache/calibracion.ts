@@ -47,6 +47,11 @@
 //   · Lo «correcto» lo decide el juez (`judge`). La garantía es tan buena como
 //     él: con el juez por defecto, «correcta» = idéntica.
 
+import type {
+  SemanticCalibrationSegmentState,
+  SemanticCalibrationState,
+} from "./calibration.js";
+
 /** La rejilla es FIJA y previa a los datos: 1.001 umbrales, 0,000 … 1,000. */
 export const PASOS_REJILLA = 1000;
 
@@ -112,6 +117,12 @@ export class Histograma {
     this.total[indice]!++;
     if (!correcta) this.erroneas[indice]!++;
     this.n++;
+  }
+
+  copiarDe(otro: Histograma): void {
+    this.total.set(otro.total);
+    this.erroneas.set(otro.erroneas);
+    this.n = otro.n;
   }
 
   /** Acumulados desde arriba: en [i] van las etiquetas con índice ≥ i. */
@@ -205,7 +216,122 @@ export class EstadoDeCalibracion {
 
   /** Cuántas etiquetas hacen falta para la mirada k: ⌈L0·1,5^k⌉. */
   etiquetasDeLaMirada(k: number): number {
-    return Math.ceil(this.primeraMirada * 1.5 ** k);
+    return umbralDeMirada(this.primeraMirada, k);
+  }
+
+  /**
+   * TODO lo que hace falta para seguir exactamente donde se quedó: las dos
+   * mitades por separado, cuántas miradas se hicieron (o sea, cuánto α se ha
+   * gastado ya), el candidato que venía de antes y el certificado vigente.
+   * Restaurarlo y seguir anotando da, etiqueta a etiqueta, los mismos suelos
+   * que no haber parado nunca (lo fija el test de Monte Carlo con reinicios).
+   */
+  exportar(): SemanticCalibrationSegmentState {
+    return {
+      labeled: this.etiquetas,
+      looks: this.miradas,
+      previousCandidate: this.candidatoPrevio,
+      certified: this.certificado
+        ? {
+            floorIndex: this.certificado.indice,
+            heldOut: this.certificado.retenidas,
+            wrong: this.certificado.erroneas,
+          }
+        : null,
+      selection: dispersar(this.seleccion),
+      heldOut: dispersar(this.retenida),
+    };
+  }
+
+  /**
+   * El inverso de `exportar`, VALIDADO. Todo lo que no cuadre se rechaza con
+   * `CalibrationStateError`: un estado que no se puede defender no se usa.
+   *
+   * LO QUE IMPORTA DE VERDAD: `looks` no se lee, se COMPRUEBA. Es función de
+   * `labeled` (una mirada por cada umbral ⌈L0·1,5^k⌉ alcanzado), y si un
+   * estado pudiera traer menos miradas de las que sus etiquetas ya gastaron,
+   * la siguiente mirada volvería a gastar el α de la primera —el trozo más
+   * gordo, 6α/π²— sobre datos que ya se miraron. Reiniciar el gasto de α en
+   * cada arranque es exactamente lo que rompería la garantía.
+   */
+  static restaurar(
+    delta: number,
+    alfa: number,
+    datos: unknown,
+    donde: string,
+  ): EstadoDeCalibracion {
+    const e = new EstadoDeCalibracion(delta, alfa);
+    const mal = (que: string): never => {
+      throw new CalibrationStateError(`importCalibration: ${donde}: ${que}`);
+    };
+    if (datos === null || typeof datos !== "object" || Array.isArray(datos)) mal("not an object");
+    const d = datos as Record<string, unknown>;
+    const labeled = d["labeled"];
+    if (!esEnteroNoNegativo(labeled)) mal("`labeled` must be a non-negative integer");
+    const n = labeled as number;
+    const seleccion = leerHistograma(d["selection"], `${donde}.selection`);
+    const retenida = leerHistograma(d["heldOut"], `${donde}.heldOut`);
+    // La paridad de llegada reparte: la etiqueta i va a la selección si i es
+    // par. Con `n` etiquetas, ⌈n/2⌉ en una mitad y ⌊n/2⌋ en la otra, siempre.
+    if (seleccion.n !== Math.ceil(n / 2) || retenida.n !== Math.floor(n / 2)) {
+      mal(
+        `the two halves hold ${seleccion.n} and ${retenida.n} labels, but ${n} labels split by arrival ` +
+          `order give ${Math.ceil(n / 2)} and ${Math.floor(n / 2)}`,
+      );
+    }
+    const miradasEsperadas = miradasTras(e.primeraMirada, n);
+    if (d["looks"] !== miradasEsperadas) {
+      mal(
+        `\`looks\` is ${String(d["looks"])}, but ${n} labels have already spent ${miradasEsperadas} tests ` +
+          `of the confidence budget; a state cannot start that spending over`,
+      );
+    }
+    const previo = d["previousCandidate"];
+    if (previo !== null && !esIndiceDeRejilla(previo)) mal("`previousCandidate` must be null or a grid index");
+    const cert = d["certified"];
+    let certificado: Certificado | null = null;
+    if (cert !== null) {
+      if (cert === undefined || typeof cert !== "object" || Array.isArray(cert)) mal("`certified` must be null or an object");
+      const c = cert as Record<string, unknown>;
+      if (!esIndiceDeRejilla(c["floorIndex"])) mal("`certified.floorIndex` must be a grid index");
+      if (!esEnteroNoNegativo(c["heldOut"]) || !esEnteroNoNegativo(c["wrong"])) {
+        mal("`certified.heldOut` and `certified.wrong` must be non-negative integers");
+      }
+      certificado = {
+        indice: c["floorIndex"] as number,
+        retenidas: c["heldOut"] as number,
+        erroneas: c["wrong"] as number,
+      };
+      if (miradasEsperadas === 0) mal("a floor is certified but no test has run yet");
+      if (previo !== certificado.indice) mal("`previousCandidate` must be the certified floor");
+      // El certificado lo dio la ÚLTIMA mirada, con su trozo de α y con las
+      // retenidas que había entonces: tiene que pasar ESE test, y lo llegado
+      // después solo puede sumar por encima del suelo, nunca restar.
+      const ultima = miradasEsperadas - 1;
+      const enLaMirada = umbralDeMirada(e.primeraMirada, ultima);
+      const retenidasEnLaMirada = Math.floor(enLaMirada / 2);
+      if (certificado.retenidas > retenidasEnLaMirada || certificado.erroneas > certificado.retenidas) {
+        mal("the certificate counts more held-out labels than there were when it was issued");
+      }
+      if (!certifica(certificado.retenidas, certificado.erroneas, delta, alfaDeMirada(alfa, ultima))) {
+        mal("the certificate does not pass the test it claims to have passed");
+      }
+      const { n: nAcum, e: eAcum } = retenida.acumulados();
+      const masN = nAcum[certificado.indice]! - certificado.retenidas;
+      const masE = eAcum[certificado.indice]! - certificado.erroneas;
+      if (masN < 0 || masE < 0 || masE > masN || masN > retenida.n - retenidasEnLaMirada) {
+        mal("the held-out labels at the floor do not extend the ones the certificate counted");
+      }
+    } else if (miradasEsperadas === 0 && previo !== null) {
+      mal("`previousCandidate` is set but no test has run yet");
+    }
+    e.seleccion.copiarDe(seleccion);
+    e.retenida.copiarDe(retenida);
+    e.etiquetas = n;
+    e.miradas = miradasEsperadas;
+    e.candidatoPrevio = previo as number | null;
+    e.certificado = certificado;
+    return e;
   }
 
   anotar(puntuacion: number, correcta: boolean): void {
@@ -256,6 +382,183 @@ export class EstadoDeCalibracion {
       etiquetasParaLaSiguiente: this.etiquetasDeLaMirada(this.miradas),
     };
   }
+}
+
+// ── EL ESTADO QUE SOBREVIVE A UN REINICIO ───────────────────────────────────
+//
+// En serverless cada instancia vive una petición o unos minutos, y en un
+// servidor cada despliegue es un reinicio: con el estado solo en memoria, la
+// calibración volvía a empezar cada vez y el arranque en frío (miles de
+// etiquetas) se pagaba otra vez. Exportarlo y restaurarlo lo evita SIN tocar la
+// garantía, porque lo que se guarda es el experimento entero, no un resumen:
+//
+//   · las dos mitades POR SEPARADO: la retenida nunca se mezcla con la de
+//     selección, así que ningún candidato futuro la habrá visto;
+//   · el número de miradas, que es cuánto α se ha gastado ya. Se valida contra
+//     el número de etiquetas: no se puede volver a gastar el de la primera;
+//   · el candidato previo y el certificado vigente, que es lo que se sirve.
+//
+// Y lo que NO cubre, dicho en el README y en el JSDoc: la garantía es de UNA
+// línea de historia. Dos procesos que siguen a la vez desde el mismo estado son
+// dos experimentos que gastan el mismo α restante; cada uno mantiene su cota,
+// pero la probabilidad de que ALGUNO certifique un suelo malo crece con cuántos
+// lo hagan. Eso no se puede impedir desde dentro sin un almacén con escritura
+// condicional; se documenta.
+
+/**
+ * Thrown by `importCalibration` / `exportCalibration` when a calibration state
+ * cannot be used as-is: another embedder, verifier, judge or configuration, a
+ * newer format, or numbers that do not add up.
+ */
+export class CalibrationStateError extends Error {
+  constructor(message: string) {
+    super(`[bvsala] ${message}`);
+    this.name = "CalibrationStateError";
+  }
+}
+
+/** Qué se guarda en `format`. Un estado de otra cosa no se lee. */
+export const FORMATO_DEL_ESTADO = "bvsala.semantic-calibration";
+/**
+ * Versión del estado. SUBIRLA si cambia el test, la rejilla, la escalera de
+ * candidatos, el reparto de α o el calendario de miradas: un estado de otro
+ * método no dice nada del de ahora, y leerlo mezclaría dos experimentos.
+ */
+export const VERSION_DEL_ESTADO = 1;
+
+/** Quién puntúa y quién juzga, y los números del test: lo que un estado tiene que compartir con la caché que lo importa. */
+export interface IdentidadDeCalibracion {
+  embedder: string;
+  verifier: string | null;
+  judge: string;
+  maxErrorRate: number;
+  confidence: number;
+  similarityThreshold: number;
+}
+
+const SEGMENTOS = ["single_shot", "agentic"] as const;
+type Segmento = (typeof SEGMENTOS)[number];
+
+export function escribirEstado(
+  id: IdentidadDeCalibracion,
+  estados: ReadonlyMap<Segmento, EstadoDeCalibracion>,
+): SemanticCalibrationState {
+  const segments: SemanticCalibrationState["segments"] = {};
+  for (const s of SEGMENTOS) {
+    const e = estados.get(s);
+    if (e) segments[s] = e.exportar();
+  }
+  return {
+    format: FORMATO_DEL_ESTADO,
+    version: VERSION_DEL_ESTADO,
+    embedder: id.embedder,
+    verifier: id.verifier,
+    judge: id.judge,
+    config: {
+      maxErrorRate: id.maxErrorRate,
+      confidence: id.confidence,
+      similarityThreshold: id.similarityThreshold,
+      grid: PASOS_REJILLA,
+    },
+    segments,
+  };
+}
+
+/**
+ * Lee un estado exportado y lo convierte en los estados en línea de cada
+ * segmento, o rechaza. Todo o nada: si algo falla no se devuelve nada.
+ */
+export function leerEstado(datos: unknown, id: IdentidadDeCalibracion): Map<Segmento, EstadoDeCalibracion> {
+  const mal = (que: string): never => {
+    throw new CalibrationStateError(`importCalibration: ${que}`);
+  };
+  if (datos === null || typeof datos !== "object" || Array.isArray(datos)) mal("the state must be an object");
+  const d = datos as Record<string, unknown>;
+  if (d["format"] !== FORMATO_DEL_ESTADO) mal(`not a semantic calibration state (format ${JSON.stringify(d["format"])})`);
+  const v = d["version"];
+  if (typeof v === "number" && v > VERSION_DEL_ESTADO) {
+    mal(`this state was exported by a newer SDK (version ${v}); this one reads version ${VERSION_DEL_ESTADO}`);
+  }
+  if (v !== VERSION_DEL_ESTADO) mal(`unknown state version ${JSON.stringify(v)}`);
+  const config = (d["config"] ?? {}) as Record<string, unknown>;
+  const distintos: string[] = [];
+  const comparar = (nombre: string, guardado: unknown, aqui: unknown) => {
+    if (guardado !== aqui) distintos.push(`${nombre}: ${JSON.stringify(guardado)} in the state, ${JSON.stringify(aqui)} here`);
+  };
+  comparar("embedder", d["embedder"], id.embedder);
+  comparar("verifier", d["verifier"], id.verifier);
+  comparar("judge", d["judge"], id.judge);
+  comparar("maxErrorRate", config["maxErrorRate"], id.maxErrorRate);
+  comparar("confidence", config["confidence"], id.confidence);
+  comparar("similarityThreshold", config["similarityThreshold"], id.similarityThreshold);
+  comparar("grid", config["grid"], PASOS_REJILLA);
+  if (distintos.length > 0) {
+    mal(
+      `the state was recorded under a different setup (${distintos.join("; ")}). A floor certified ` +
+        "under one setup says nothing about another: start a new calibration instead",
+    );
+  }
+  const segs = d["segments"];
+  if (segs === null || typeof segs !== "object" || Array.isArray(segs)) mal("`segments` must be an object");
+  const out = new Map<Segmento, EstadoDeCalibracion>();
+  for (const [nombre, valor] of Object.entries(segs as Record<string, unknown>)) {
+    if (!(SEGMENTOS as readonly string[]).includes(nombre)) mal(`unknown segment ${JSON.stringify(nombre)}`);
+    out.set(
+      nombre as Segmento,
+      EstadoDeCalibracion.restaurar(id.maxErrorRate, 1 - id.confidence, valor, `segments.${nombre}`),
+    );
+  }
+  return out;
+}
+
+function umbralDeMirada(primera: number, k: number): number {
+  return Math.ceil(primera * 1.5 ** k);
+}
+
+/** Miradas que ya se hicieron con `n` etiquetas: una por cada umbral alcanzado. */
+function miradasTras(primera: number, n: number): number {
+  let k = 0;
+  while (umbralDeMirada(primera, k) <= n) k++;
+  return k;
+}
+
+function esEnteroNoNegativo(x: unknown): boolean {
+  return typeof x === "number" && Number.isInteger(x) && x >= 0 && x <= 0xffff_ffff;
+}
+
+function esIndiceDeRejilla(x: unknown): boolean {
+  return typeof x === "number" && Number.isInteger(x) && x >= 0 && x <= PASOS_REJILLA;
+}
+
+/** El histograma en disperso: `[índice, etiquetas, erróneas]` solo donde hay algo. */
+function dispersar(h: Histograma): [number, number, number][] {
+  const out: [number, number, number][] = [];
+  for (let i = 0; i <= PASOS_REJILLA; i++) {
+    if (h.total[i]! > 0) out.push([i, h.total[i]!, h.erroneas[i]!]);
+  }
+  return out;
+}
+
+function leerHistograma(datos: unknown, donde: string): Histograma {
+  const mal = (que: string): never => {
+    throw new CalibrationStateError(`importCalibration: ${donde}: ${que}`);
+  };
+  if (!Array.isArray(datos)) mal("must be an array of [gridIndex, labels, wrong]");
+  const h = new Histograma();
+  let previo = -1;
+  for (const fila of datos as unknown[]) {
+    if (!Array.isArray(fila) || fila.length !== 3) mal("each entry must be [gridIndex, labels, wrong]");
+    const [i, n, e] = fila as unknown[];
+    if (!esIndiceDeRejilla(i) || (i as number) <= previo) mal("grid indices must be increasing integers in [0, 1000]");
+    if (!esEnteroNoNegativo(n) || (n as number) === 0) mal("label counts must be positive integers");
+    if (!esEnteroNoNegativo(e) || (e as number) > (n as number)) mal("wrong counts must be integers between 0 and the label count");
+    h.total[i as number] = n as number;
+    h.erroneas[i as number] = e as number;
+    h.n += n as number;
+    previo = i as number;
+  }
+  if (h.n > 0xffff_ffff) mal("too many labels");
+  return h;
 }
 
 /** Los números de una calibración, validados y con sus valores por defecto. */

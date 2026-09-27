@@ -10,13 +10,26 @@
  * etiquetas hacen falta para la primera certificación en línea, y a qué
  * distancia queda el suelo certificado del óptimo verdadero.
  *
+ * Con `--reinicios`, cada tirada se REINICIA a intervalos al azar (de 1 a 2·N
+ * etiquetas, semilla aparte): el estado se exporta, pasa por JSON y se importa
+ * en un estado nuevo, como haría un despliegue serverless entre invocaciones.
+ * Los suelos tienen que salir idénticos a los de la tirada sin reinicios, y las
+ * violaciones también; el artefacto cuenta cuántas tiradas divergieron (0).
+ *
  * Escribe `benchmarks/out/cache-semantica/simulacion.json` (git lo ignora).
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { EstadoDeCalibracion, mulberry32, umbralDeIndice } from "../../src/cache/calibracion.js";
+import {
+  EstadoDeCalibracion,
+  escribirEstado,
+  leerEstado,
+  mulberry32,
+  umbralDeIndice,
+  type IdentidadDeCalibracion,
+} from "../../src/cache/calibracion.js";
 import { calibrateSemanticFloor } from "../../src/cache/calibration.js";
 import { procedencia } from "./arnes.js";
 import { DIR_SALIDA } from "./datos.js";
@@ -47,20 +60,54 @@ const percentil = (xs: number[], p: number) => {
   return o.length ? o[Math.min(o.length - 1, Math.floor(p * o.length))]! : null;
 };
 
-export function simular(delta: number, alfa: number, tiradas: number, etiquetas: number) {
+/**
+ * Un reinicio de verdad: el estado sale por `exportCalibration`, pasa por JSON
+ * (lo que haría cualquier almacén) y entra por `importCalibration`, con todas
+ * sus validaciones. Lo que no sobreviva a este viaje no sobrevive a un despliegue.
+ */
+export function reiniciarPorJson(estado: EstadoDeCalibracion, delta: number, alfa: number): EstadoDeCalibracion {
+  const id: IdentidadDeCalibracion = {
+    embedder: "built_in:simulacion",
+    verifier: null,
+    judge: "built_in:simulacion",
+    maxErrorRate: delta,
+    confidence: 1 - alfa,
+    similarityThreshold: 0.6,
+  };
+  const guardado = JSON.stringify(escribirEstado(id, new Map([["single_shot", estado]])));
+  return leerEstado(JSON.parse(guardado), id).get("single_shot")!;
+}
+
+export function simular(delta: number, alfa: number, tiradas: number, etiquetas: number, reinicioCada = 0) {
   const primeras: number[] = [];
   const suelosFinales: number[] = [];
   let conViolacion = 0;
   let sinCertificar = 0;
+  let reinicios = 0;
+  let divergentes = 0;
   for (let t = 0; t < tiradas; t++) {
-    const estado = new EstadoDeCalibracion(delta, alfa);
+    let estado = new EstadoDeCalibracion(delta, alfa);
+    // La tirada de referencia, sin reiniciar nunca: con reinicios, cada suelo
+    // tiene que coincidir con el suyo etiqueta a etiqueta.
+    const referencia = reinicioCada > 0 ? new EstadoDeCalibracion(delta, alfa) : null;
     const rng = mulberry32(5000 + t);
+    const cuandoReiniciar = mulberry32(77_000 + t);
+    let siguienteReinicio = reinicioCada > 0 ? 1 + Math.floor(cuandoReiniciar() * 2 * reinicioCada) : Infinity;
+    let divergio = false;
     let primera: number | null = null;
     let violo = false;
     let previo: number | null = null;
     for (let i = 0; i < etiquetas; i++) {
       const s = 0.6 + 0.4 * rng();
-      estado.anotar(s, rng() >= qVerdad(s));
+      const correcta = rng() >= qVerdad(s);
+      estado.anotar(s, correcta);
+      referencia?.anotar(s, correcta);
+      if (i + 1 >= siguienteReinicio) {
+        estado = reiniciarPorJson(estado, delta, alfa);
+        reinicios++;
+        siguienteReinicio = i + 1 + 1 + Math.floor(cuandoReiniciar() * 2 * reinicioCada);
+      }
+      if (referencia && referencia.suelo !== estado.suelo) divergio = true;
       const suelo = estado.suelo;
       if (suelo != null && primera == null) primera = i + 1;
       if (suelo != null && suelo !== previo && tasaVerdadera(umbralDeIndice(suelo)) > delta) violo = true;
@@ -70,6 +117,7 @@ export function simular(delta: number, alfa: number, tiradas: number, etiquetas:
     else primeras.push(primera);
     if (estado.suelo != null) suelosFinales.push(umbralDeIndice(estado.suelo));
     if (violo) conViolacion++;
+    if (divergio) divergentes++;
   }
   // Fuera de línea, con el mismo número de etiquetas y otras semillas.
   let fueraCertificadas = 0;
@@ -93,6 +141,9 @@ export function simular(delta: number, alfa: number, tiradas: number, etiquetas:
     tiradas,
     etiquetas,
     sueloOptimo: sueloOptimo(delta),
+    ...(reinicioCada > 0
+      ? { reinicios: { cadaMedia: reinicioCada, total: reinicios, tiradasQueDivergieron: divergentes } }
+      : {}),
     enLinea: {
       tiradasConAlgunaViolacion: conViolacion,
       sinCertificarNunca: sinCertificar,
@@ -113,9 +164,12 @@ function main(): void {
     [0.05, 0.05],
     [0.02, 0.05],
   ] as const;
-  const resultados = casos.map(([d, a]) => simular(d, a, 300, 20_000));
+  // `--reinicios [N]`: reiniciar cada N etiquetas de media (500 si no se da N).
+  const i = process.argv.indexOf("--reinicios");
+  const reinicioCada = i < 0 ? 0 : Number(process.argv[i + 1] ?? "") > 0 ? Number(process.argv[i + 1]) : 500;
+  const resultados = casos.map(([d, a]) => simular(d, a, 300, 20_000, reinicioCada));
   mkdirSync(DIR_SALIDA, { recursive: true });
-  const ruta = join(DIR_SALIDA, "simulacion.json");
+  const ruta = join(DIR_SALIDA, reinicioCada > 0 ? "simulacion-reinicios.json" : "simulacion.json");
   const { commit, dirty } = procedencia();
   const artefacto = {
     generatedAt: new Date().toISOString(),
