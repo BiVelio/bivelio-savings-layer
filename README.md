@@ -96,7 +96,8 @@ as for any other use.
 
 **The gateway forwards what your terminal sends.** With no lever armed, your
 provider receives the request body byte for byte and every header your client
-sends (see the limits): `cache_control` and its 1-hour TTL, tool search and
+sends except `x-bvsala-report`, which asks the gateway itself for a report (see
+the limits): `cache_control` and its 1-hour TTL, tool search and
 `tool_reference` blocks, the advisor, every `anthropic-beta` value. An armed lever
 changes only what it declares, and a request it cannot rewrite exactly travels
 untouched. A test suite checks this against a fake upstream on every change
@@ -141,6 +142,17 @@ that never asked for usage) is still forwarded, and its log line says so and why
 is measurement, not savings: the saving levers of the SDK are TypeScript, and the
 gateway's own levers apply to Anthropic `/v1/messages` traffic with a PRO license.
 `bvsala doctor` prints the recipe for each SDK.
+
+Each request can also bring its report back to your code. Send the header
+`x-bvsala-report: 1` (in Python, `default_headers={"x-bvsala-report": "1"}` on
+the client) and the gateway answers with `x-bvsala-request-id`. On the same
+gateway, `GET /_bvsala/v1/reports/<that id>` returns what it recorded for your
+dashboard: `metered` with the `SavingsReport` (the provider's token counts, the
+cost at list price and `cost.basis`), or `not_metered` with the reason from the
+log line. `?response_id=<the provider's response id>` finds it too, and
+`wait_ms` waits for a request still in flight. The header never reaches your
+provider, and a request without it is not changed at all:
+[the details](./docs/terminales/README.md#what-the-gateway-guarantees-it-forwards-what-your-client-sends).
 
 ## Check it before you install
 

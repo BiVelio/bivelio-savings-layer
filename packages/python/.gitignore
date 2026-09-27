@@ -1,0 +1,7 @@
+# Artefactos de Python: nada de esto se versiona.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+build/
+*.egg-info/
