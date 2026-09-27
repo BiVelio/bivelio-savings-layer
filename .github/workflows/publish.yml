@@ -38,8 +38,9 @@ name: publish
 #                                npm) ni hace checkout: solo ejecuta dos acciones
 #                                de GitHub (setup-node, download-artifact),
 #                                fijadas por etiqueta mayor, no por SHA.
-#   sbom      (contents: write)  adjunta el SBOM a la Release, solo si publicar
-#                                terminó bien.
+#   sbom      (contents: write)  adjunta el SBOM a la Release en cuanto la
+#                                versión está en npm, aunque falle después la
+#                                comprobación del registro.
 on:
   release:
     types: [published]
