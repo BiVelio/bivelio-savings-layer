@@ -2883,11 +2883,18 @@ export class SavingsPipeline {
     // Lo que hizo la búsqueda nativa en esta llamada, si la hubo. Solo se CUENTA:
     // cuántas búsquedas y qué cargaron. Es el dato que el cliente necesita para
     // saber si le compensa (la verja de `auto` supone lo peor: una por petición).
+    //
+    // `resentResults`/`resentTools`: los resultados de búsqueda de turnos
+    // anteriores que el adaptador devolvió en el historial para que el modelo no
+    // tenga que volver a buscar (providers/busquedas-entre-turnos.ts). Tampoco se
+    // acredita: lo que ahorre o cueste está en el contador del proveedor.
     if (nativa) {
       trace.record("tool-search", "provider", {
         searches: response.toolSearch?.searches ?? null,
         loaded: response.toolSearch?.loaded ?? [],
         errors: response.toolSearch?.errors ?? 0,
+        resentResults: response.toolSearch?.resent?.results ?? 0,
+        resentTools: response.toolSearch?.resent?.tools ?? [],
         reason: response.toolSearch
           ? "what the provider's tool search did in this call; its cost is in the provider's counter and credited to no ledger"
           : "the adapter did not report what the search did",
