@@ -137,10 +137,10 @@ describe("veredictoDePrevuelo: lo que haría inservible una tirada de pago, ante
   it("un GPT-5.6+/GPT-6 sin la prima de escritura de 1,25 (falta la unidad del catálogo), aborta", () => {
     const sinPrima = (m: string): PrecioYPrima => ({ ...catalogo2026(m), prima: m.includes("gpt-6") ? 1 : catalogo2026(m).prima });
     expect(veredictoDePrevuelo(entrada({ precioYPrima: sinPrima })).motivos.join(" ")).toMatch(/cache write premium is 1.*rec\. 1/);
-    // Con el catálogo de verdad de hoy, gpt-6-luna no tiene fila ni prima: el prevuelo no deja gastar.
+    // Con el catálogo de verdad de hoy (#333), gpt-6-luna tiene fila y prima de 1,25: el prevuelo deja gastar.
     const hoy = veredictoDePrevuelo(entrada({ precioYPrima: undefined }));
-    expect(hoy.aborta).toBe(true);
-    expect(hoy.motivos.join(" ")).toMatch(/gpt-6-luna/);
+    expect(hoy.aborta).toBe(false);
+    expect(hoy.motivos).toEqual([]);
   });
 
   it("un esfuerzo que el modelo no admite, aborta", () => {

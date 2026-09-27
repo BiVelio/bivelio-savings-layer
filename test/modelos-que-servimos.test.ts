@@ -61,6 +61,25 @@ const NO_SON_MODELOS: Readonly<Record<string, string>> = {
   "gpt-4o-mini-class": "etiqueta de clase de precio en benchmarks/run.ts, no un id que se mande a nadie",
 };
 
+/**
+ * Ids que el barrido encuentra, que SÍ son modelos o familias, pero que nadie
+ * sirve ni tarifica desde aquí: prefijos de familia que el código usa para
+ * decidir (startsWith) y las tablas de compatibilidad del banco, copiadas de la
+ * documentación oficial de Anthropic (qué modelos admiten `effort` o la búsqueda
+ * de herramientas). Si alguno pasa a servirse, sale de aquí y entra arriba, con fila.
+ */
+const MENCIONADOS_NO_SERVIDOS: Readonly<Record<string, string>> = {
+  "gpt-5": "prefijo de familia (startsWith) en el banco y el README",
+  "gpt-6": "prefijo de familia (startsWith) en el banco",
+  "gemini-2": "prefijo de familia en benchmarks/nativo.ts",
+  "claude-mythos-5": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
+  "claude-opus-4-8": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
+  "claude-opus-4-7": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
+  "claude-opus-4-6": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
+  "claude-opus-4-5": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
+  "claude-sonnet-4-6": "tabla de compatibilidad de Anthropic en benchmarks/nativo.ts",
+};
+
 const RAIZ = fileURLToPath(new URL("../", import.meta.url));
 
 /** Los sitios que «nombran» modelos: README, doctor, ayuda del gateway, ejemplos y banco. */
@@ -110,7 +129,7 @@ describe("los modelos que servimos tienen fila vigente", () => {
     const sinDeclarar: string[] = [];
     for (const f of sitios()) {
       for (const id of new Set(idsDeModelo(readFileSync(join(RAIZ, f), "utf8")))) {
-        if (!(id in MODELOS_QUE_SERVIMOS) && !(id in NO_SON_MODELOS)) sinDeclarar.push(`${f}: ${id}`);
+        if (!(id in MODELOS_QUE_SERVIMOS) && !(id in NO_SON_MODELOS) && !(id in MENCIONADOS_NO_SERVIDOS)) sinDeclarar.push(`${f}: ${id}`);
       }
     }
     expect(sinDeclarar, "declara estos modelos en MODELOS_QUE_SERVIMOS (y dales fila en el catálogo)").toEqual([]);
