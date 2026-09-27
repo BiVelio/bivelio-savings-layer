@@ -452,6 +452,10 @@ export class InMemorySemanticCache {
    * Find a safe hit for a canonical request, or null. Metadata filters run
    * FIRST and hard — a candidate from another tenant, scope, or knowledge epoch
    * is never even scored.
+   *
+   * With calibration on, it returns only a hit served under a certified floor
+   * and labels nothing: without {@link lookup} and {@link observe} (the layer
+   * calls both) the calibration never gets a label and never certifies.
    */
   async find(c: CanonicalRequest): Promise<SemanticHit | null> {
     // Con calibración, lo que se sirve lo decide `lookup`; `find` devuelve solo
