@@ -176,6 +176,26 @@ describe("publish.yml conserva las verjas de antes de publicar", () => {
     expect([...orden].sort((a, b) => a - b)).toEqual(orden);
   });
 
+  it("prueba con lo mismo que ci.yml: Python y sus SDK fijados por hash antes de `pnpm test`", () => {
+    // La Release de v0.4.26 cayó aquí: ci.yml instalaba los SDK de Python que
+    // exige test/python-cliente.test.ts y publish.yml corría la misma suite sin
+    // ellos. Lo que ci.yml instala antes de los tests, publish.yml también.
+    const ci = sinComentarios(leer("../.github/workflows/ci.yml"));
+    const pip = /run: '(python -m pip install --require-hashes [^']+requirements-ci\.txt)'/.exec(ci);
+    expect(pip, "ci.yml ya no instala las dependencias de Python como se esperaba").not.toBeNull();
+    const version = /uses: actions\/setup-python@\S+\n\s+with:\n\s+python-version: "([^"]+)"/.exec(ci);
+    expect(version).not.toBeNull();
+
+    const iPython = verificar.indexOf("uses: actions/setup-python@");
+    const iPip = verificar.indexOf(pip![1]!);
+    const iTests = verificar.indexOf("run: pnpm test");
+    expect(iPython, "publish.yml no prepara Python").toBeGreaterThanOrEqual(0);
+    expect(iPip, "publish.yml no instala los SDK de Python con el mismo comando que ci.yml").toBeGreaterThanOrEqual(0);
+    expect(iPython).toBeLessThan(iPip);
+    expect(iPip).toBeLessThan(iTests);
+    expect(verificar).toContain(`python-version: "${version![1]}"`);
+  });
+
   it("la etiqueta coincide con package.json", () => {
     const p = paso(verificar, "La etiqueta coincide con package.json");
     expect(p).toMatch(/ETIQUETA="\$\{GITHUB_REF_NAME#v\}"/);
