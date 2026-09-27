@@ -85,6 +85,45 @@ export interface RebajaTtl {
    * la misma doctrina que la prima de escritura del medidor.
    */
   yaEran5m: number;
+  /**
+   * La petición declara herramientas de servidor (declaraHerramientaDeServidor).
+   * Si Claude usa una, la API pone por su cuenta un breakpoint de 5 min sobre
+   * su resultado, y esa escritura sale en `ephemeral_5m_input_tokens` junto a
+   * la nuestra: el usage no las separa, así que el ahorro se declara 0.
+   */
+  herramientaDeServidor: boolean;
+}
+
+/**
+ * Familias de herramientas TIPADAS que ejecuta el cliente (bash, editor de
+ * texto, computer use, browser use, memoria): no escriben caché por su cuenta.
+ * Cualquier otro `type` —web search, web fetch, code execution, tool search,
+ * el advisor, un `mcp_toolset`, o uno que aún no conocemos— se trata como de
+ * servidor: ante la duda, no se acredita.
+ */
+const HERRAMIENTA_DEL_CLIENTE = /^(custom|bash_|text_editor_|computer_|browser_|memory_)/;
+
+/**
+ * ¿Declara la petición alguna herramienta que corre en el servidor del
+ * proveedor? Una herramienta sin `type` (o `custom`) es del cliente; un
+ * `mcp_servers` no vacío es el conector MCP, que también corre en el servidor.
+ *
+ * Por qué importa: «When your request has prompt caching enabled and Claude
+ * uses a server tool such as web search, web fetch, or code execution, the API
+ * automatically places a cache breakpoint on the server tool result […] This
+ * automatic breakpoint always uses the default 5-minute TTL, independent of
+ * any TTL you set on your own cache_control markers» —
+ * https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching#server-tool-results-are-cached-automatically
+ * (consultada el 2026-09-27). Con una de estas declarada, una escritura a 5 min
+ * no es atribuible ni a la palanca de TTL ni a nadie aguas arriba.
+ */
+export function declaraHerramientaDeServidor(json: Record<string, unknown>): boolean {
+  if (Array.isArray(json.mcp_servers) && json.mcp_servers.length > 0) return true;
+  if (!Array.isArray(json.tools)) return false;
+  return json.tools.some((t) => {
+    const tipo = t !== null && typeof t === "object" ? (t as { type?: unknown }).type : undefined;
+    return typeof tipo === "string" && !HERRAMIENTA_DEL_CLIENTE.test(tipo);
+  });
 }
 
 /**
@@ -232,7 +271,14 @@ function visitarBloques(
   for (const bloque of bloques) {
     const marca = marcaDe(bloque);
     if (marca) visita(marca, sitio);
-    if (esObjeto(bloque) && Array.isArray(bloque.content)) visitarBloques(bloque.content, sitio, visita, profundidad + 1);
+    if (!esObjeto(bloque)) continue;
+    if (Array.isArray(bloque.content)) visitarBloques(bloque.content, sitio, visita, profundidad + 1);
+    // Un `document` cuya fuente es contenido (`source.type: "content"`): sus
+    // bloques de texto e imagen también admiten `cache_control`.
+    const fuente = bloque.source;
+    if (esObjeto(fuente) && fuente.type === "content" && Array.isArray(fuente.content)) {
+      visitarBloques(fuente.content, sitio, visita, profundidad + 1);
+    }
   }
 }
 
@@ -240,7 +286,8 @@ function visitarBloques(
  * Las marcas `cache_control` de un cuerpo /v1/messages, SOLO donde la API las
  * lee: la raíz (caché automática), cada bloque de `system`, cada herramienta de
  * `tools` y cada bloque de contenido de `messages`, también los anidados en el
- * `content` de un bloque (el de un `tool_result`).
+ * `content` de un bloque (el de un `tool_result`) y en el `source.content` de un
+ * `document` con fuente de contenido.
  *
  * NO entra en el `input` de un `tool_use`, ni en el `input_schema` de una
  * herramienta, ni en ningún otro objeto. Ahí una clave `cache_control` es
@@ -298,7 +345,12 @@ export function rebajarTtlDeCache(
     // sin la palanca no habría existido).
     visitarMarcasDeCache(json, (marca) => rebajarMarca(marca, cuenta));
     if (cuenta.rebajadas === 0) return null;
-    return { cuerpo: Buffer.from(JSON.stringify(json), "utf8"), rebajadas: cuenta.rebajadas, yaEran5m: cuenta.yaEran5m };
+    return {
+      cuerpo: Buffer.from(JSON.stringify(json), "utf8"),
+      rebajadas: cuenta.rebajadas,
+      yaEran5m: cuenta.yaEran5m,
+      herramientaDeServidor: declaraHerramientaDeServidor(json),
+    };
   } catch {
     return null;
   }
@@ -313,15 +365,18 @@ export function rebajarTtlDeCache(
  * entrada) es el ahorro, y no hay contrafactual que imaginar.
  *
  * Devuelve 0 —y no miente— cuando la atribución no es limpia: si el cliente ya
- * traía marcas de 5m propias, el usage no dice qué bloque escribió qué tokens.
+ * traía marcas de 5m propias, o declaraba herramientas de servidor (la API
+ * escribe sus resultados a 5m por su cuenta), el usage no dice qué bloque
+ * escribió qué tokens.
  */
 export function ahorroDeRebaja(entrada: {
   cacheEscrita5m: number;
   inputPer1k: number;
   yaEran5m: number;
+  herramientaDeServidor?: boolean;
 }): number {
-  const { cacheEscrita5m, inputPer1k, yaEran5m } = entrada;
-  if (yaEran5m > 0 || cacheEscrita5m <= 0 || inputPer1k <= 0) return 0;
+  const { cacheEscrita5m, inputPer1k, yaEran5m, herramientaDeServidor = false } = entrada;
+  if (yaEran5m > 0 || herramientaDeServidor || cacheEscrita5m <= 0 || inputPer1k <= 0) return 0;
   return (cacheEscrita5m / 1_000) * inputPer1k * (PRIMA_1H - PRIMA_5M);
 }
 

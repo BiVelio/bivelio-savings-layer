@@ -19,15 +19,19 @@
  *     reescribir tendrían prefijos distintos y la caché se perdería entera.
  *  3. UTF-8 inválido. `Buffer.toString` lo sustituye por U+FFFD en silencio: se
  *     reenviaría un contenido distinto del que mandó el cliente.
+ *  4. Claves duplicadas en un mismo objeto. JSON.parse se queda con el último
+ *     valor y reescribir borraría los demás; qué hace el parser del proveedor
+ *     no lo sabemos: «When the names within an object are not unique, the
+ *     behavior of software that receives such an object is unpredictable»
+ *     (RFC 8259 §4).
  *
- * En cualquiera de los tres, la palanca NO se aplica y el cuerpo viaja intacto,
- * byte a byte: es la regla de siempre («ante la duda, passthrough»), con la duda
- * medida en vez de supuesta. Las claves duplicadas no se miran: JSON.parse se
- * queda con la última en la posición de la primera, que es lo mismo que hace
- * cualquier parser del otro lado.
+ * En cualquiera de los cuatro, la palanca NO se aplica y el cuerpo viaja
+ * intacto, byte a byte: es la regla de siempre («ante la duda, passthrough»),
+ * con la duda medida en vez de supuesta.
  *
- * Coste: una pasada lineal por el texto, del orden de un JSON.parse (4 ms para
- * un cuerpo de 4 MB medido en local). Solo corre cuando una palanca está armada.
+ * Coste: una pasada lineal por el texto, unas dos veces un JSON.parse (de 5 a
+ * 8 ms para un cuerpo de 4 MB, medido en local el 2026-09-27 con la cuenta de
+ * claves duplicadas ya dentro). Solo corre cuando una palanca está armada.
  */
 
 // `ignoreBOM: true` CONSERVA una BOM inicial en el texto: así JSON.parse la
@@ -54,15 +58,33 @@ function esBlanco(c: number): boolean {
 
 /**
  * ¿`JSON.stringify(JSON.parse(texto))` conserva todo lo que el proveedor puede
- * ver? Es decir: ningún número deja de escribirse igual y ninguna clave cambia
- * de sitio. Presupone un JSON ya validado (quien llama parsea antes); aun así,
- * ante un texto truncado termina y devuelve false.
+ * ver? Es decir: ningún número deja de escribirse igual, ninguna clave cambia
+ * de sitio y ninguna desaparece por repetida. Presupone un JSON ya validado
+ * (quien llama parsea antes); aun así, ante un texto truncado termina y
+ * devuelve false.
  */
 export function reserializacionFiel(texto: string): boolean {
   const n = texto.length;
+  // Las claves ya vistas de cada objeto abierto (null: un array abierto).
+  const abiertos: (Set<string> | null)[] = [];
   let i = 0;
   while (i < n) {
     const c = texto.charCodeAt(i);
+    if (c === 0x7b) {
+      abiertos.push(new Set());
+      i++;
+      continue;
+    }
+    if (c === 0x5b) {
+      abiertos.push(null);
+      i++;
+      continue;
+    }
+    if (c === 0x7d || c === 0x5d) {
+      abiertos.pop();
+      i++;
+      continue;
+    }
     if (c === 0x22) {
       // Una cadena: se salta entera, y si va seguida de «:» es una clave.
       const inicio = i;
@@ -92,6 +114,11 @@ export function reserializacionFiel(texto: string): boolean {
           }
         }
         if (esClaveDeIndice(clave)) return false;
+        const vistas = abiertos.at(-1);
+        if (vistas) {
+          if (vistas.has(clave)) return false;
+          vistas.add(clave);
+        }
       }
       continue;
     }

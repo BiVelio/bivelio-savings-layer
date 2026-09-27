@@ -7,10 +7,13 @@ import { arrancarGateway, type GatewayArrancado, type OpcionesGateway } from "..
 import { BETA_ESFUERZO } from "../gateway/esfuerzo.js";
 import { configDeDiales } from "../gateway/diales.js";
 import { parsearParaReescribir, reserializacionFiel } from "../gateway/reserializacion.js";
+import { costeMedido, informeMedido } from "../gateway/medidor.js";
+import { rebajarTtlDeCache } from "../gateway/tarifa.js";
 import {
   ENTRADA_MINIMA_PARA_ESPERAR_CACHE,
   VigiaDeDegradacion,
   degradacionDeCache,
+  esTraficoDeClaudeCode,
   lineaDeDegradacion,
   resumenDeDegradaciones,
   usoConFormaDeDegradacion,
@@ -32,17 +35,23 @@ import { testLicense } from "./helpers/test-license.js";
  *     cliente llegan todas (salvo las de salto de RFC 7230, `host` y
  *     `content-length`), con `tool_reference`, tool search, el TTL de 1 h,
  *     `cache_control` en cada sitio donde la API lo lee, el advisor y cualquier
- *     `anthropic-beta`. La respuesta vuelve igual.
- *  2. Con cada palanca armada (TTL, esfuerzo por turno, modelo hermano, diales),
- *     lo que llega es el cuerpo del cliente MÁS el cambio que esa palanca
- *     declara, y nada más. El «esperado» se escribe aquí a mano, ruta a ruta: no
- *     sale del código que se prueba.
+ *     `anthropic-beta`. La respuesta vuelve igual. Con el cuerpo compacto de
+ *     Claude Code (el que toda palanca armada reescribiría) y, al lado, un
+ *     control: la misma configuración con la palanca armada SÍ lo cambia.
+ *  2. Con cada palanca armada (TTL, esfuerzo por turno, modelo hermano, diales,
+ *     usage en Chat Completions), lo que llega es el cuerpo del cliente MÁS el
+ *     cambio que esa palanca declara, y nada más, comparado como TEXTO (el orden
+ *     de las claves también es prompt). El «esperado» se escribe aquí a mano,
+ *     ruta a ruta: no sale del código que se prueba. Y la palanca de TTL no
+ *     acredita ahorro si la petición declara herramientas de servidor.
  *  3. Cuando reescribir cambiaría algo que la palanca no declara (números no
- *     canónicos, claves con forma de índice, UTF-8 inválido), no se reescribe.
+ *     canónicos, claves con forma de índice o repetidas, UTF-8 inválido), no se
+ *     reescribe.
  *  4. Un 400 tras una reescritura se reintenta una vez con la petición intacta.
- *  5. El vigía nota el tráfico degradado que llega de OTRO sitio (caché ignorada,
- *     TTL acortado aguas arriba, tool search apagado): una línea por sesión, un
- *     contador local y ningún campo nuevo en el registro de uso.
+ *  5. El vigía nota el tráfico que sale peor de lo que pidió el cliente (caché
+ *     ignorada, TTL acortado aguas arriba, tool search apagado por Claude Code al
+ *     ver un proxy, este incluido): una línea por sesión, un contador local y
+ *     ningún campo nuevo en el registro de uso.
  *
  * Ninguna petición sale de 127.0.0.1.
  */
@@ -208,11 +217,12 @@ const MARCA_1H = { type: "ephemeral", ttl: "1h" } as const;
 /**
  * Un cuerpo /v1/messages con `cache_control` en CADA sitio donde la API lo lee
  * (raíz, system, tools, bloques de texto, imagen, documento, tool_use,
- * tool_result y un bloque anidado en un tool_result), las dos formas de
+ * tool_result, un bloque anidado en un tool_result y otro en el `source.content`
+ * de un documento), las dos formas de
  * `tool_reference` (la de la búsqueda propia de Claude Code en un tool_result y
  * la del tool search del servidor), herramientas diferidas, el advisor con su
  * resultado cifrado, y dos SEÑUELOS: una clave `cache_control` que es contenido
- * (un argumento de una herramienta y una propiedad de su esquema). Nueve marcas:
+ * (un argumento de una herramienta y una propiedad de su esquema). Diez marcas:
  * más de las cuatro que admite la API real, a propósito — esto es un catálogo de
  * sitios, y el gateway no valida, reenvía.
  */
@@ -261,6 +271,11 @@ function peticionCompleta(model: string): Record<string, unknown> {
           { type: "text", text: "Read the page, then file an issue. Café, naïve, 漢字, 🙂." },
           { type: "image", source: { type: "base64", media_type: "image/png", data: "iVBORw0KGgo=" }, cache_control: { ...MARCA_1H } },
           { type: "document", source: { type: "text", media_type: "text/plain", data: "spec" }, cache_control: { ...MARCA_1H } },
+          {
+            type: "document",
+            source: { type: "content", content: [{ type: "text", text: "chapter 1", cache_control: { ...MARCA_1H } }] },
+            title: "notes",
+          },
         ],
       },
       {
@@ -313,7 +328,7 @@ function peticionCompleta(model: string): Record<string, unknown> {
 }
 
 /**
- * Las nueve marcas de peticionCompleta, escritas a mano: el «esperado» de la
+ * Las diez marcas de peticionCompleta, escritas a mano: el «esperado» de la
  * palanca de TTL no puede salir de la función que se prueba.
  */
 const RUTAS_DE_LAS_MARCAS: (string | number)[][] = [
@@ -322,6 +337,7 @@ const RUTAS_DE_LAS_MARCAS: (string | number)[][] = [
   ["tools", 1],
   ["messages", 0, "content", 1],
   ["messages", 0, "content", 2],
+  ["messages", 0, "content", 3, "source", "content", 0],
   ["messages", 2, "content", 0],
   ["messages", 3, "content", 0],
   ["messages", 4, "content", 0, "content", 0],
@@ -334,7 +350,7 @@ function en(o: unknown, ruta: (string | number)[]): Record<string, unknown> {
   return x as Record<string, unknown>;
 }
 
-/** La petición tal cual, con las nueve marcas (y SOLO ellas) a 5 min. */
+/** La petición tal cual, con las diez marcas (y SOLO ellas) a 5 min. */
 function conMarcasA5m(o: Record<string, unknown>): Record<string, unknown> {
   const c = clon(o);
   for (const ruta of RUTAS_DE_LAS_MARCAS) (en(c, ruta).cache_control as Record<string, unknown>).ttl = "5m";
@@ -356,45 +372,85 @@ function textoDeOtroCliente(o: Record<string, unknown>): Buffer {
 
 // ── 1 · Sin palancas armadas: byte a byte ────────────────────────────────
 
+/** Las cuatro features de palanca: una licencia con todas. */
+const TODAS = ["cache_ttl_tuning", "per_turn_effort", "sibling_model_routing", "context_elision"];
+
+/** Las banderas locales de las palancas opt-in, todas puestas. */
+const BANDERAS_LOCALES = { esfuerzo: "low", modeloHermano: true, dialesElision: true } as const;
+
+/**
+ * El cuerpo de Claude Code tal cual viaja: JSON compacto, el que TODA palanca
+ * armada reescribiría. Con él, «llega byte a byte» solo puede ser verdad si las
+ * palancas están de verdad desarmadas (el control positivo de abajo lo prueba).
+ */
+const cuerpoDeClaudeCode = (model = "claude-fable-5"): Buffer => Buffer.from(JSON.stringify(peticionCompleta(model)), "utf8");
+
 describe("1 · sin palancas armadas, el gateway reenvía byte a byte", () => {
-  const CASOS: [string, (u: number) => Promise<GatewayArrancado>][] = [
-    ["sin clave de servicio (gateway en proceso)", (u) => gateway(u)],
-    ["con clave y una licencia sin palancas", async (u) => gateway(u, { plataforma: await arrancarPlataforma([]) })],
-    [
-      "con todas las features pero BVSALA_GATEWAY_ELISION=0",
-      async (u) =>
-        gateway(u, {
-          plataforma: await arrancarPlataforma(["cache_ttl_tuning", "per_turn_effort", "sibling_model_routing", "context_elision"]),
-          elision: false,
-          esfuerzo: "low",
-          modeloHermano: true,
-          dialesElision: true,
-        }),
-    ],
+  /**
+   * Cada caso trae su gemelo ARMADO, que solo cambia el factor que desarma. El
+   * control positivo exige que el gemelo SÍ cambie el cuerpo de Claude Code:
+   * así el «byte a byte» del caso desarmado demuestra algo sobre las palancas
+   * y no sobre la verja de la reserialización.
+   */
+  const CASOS: { nombre: string; desarmado: (u: number) => Promise<GatewayArrancado>; armado: (u: number) => Promise<GatewayArrancado> }[] = [
+    {
+      nombre: "sin canal de licencia (solo en proceso: `bvsala` no arranca sin BIVELIO_SERVICE_KEY)",
+      desarmado: (u) => gateway(u, { ...BANDERAS_LOCALES }),
+      armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
+    },
+    {
+      nombre: "con clave y una licencia sin features, con las banderas locales puestas",
+      desarmado: async (u) => gateway(u, { plataforma: await arrancarPlataforma([]), ...BANDERAS_LOCALES }),
+      armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES }),
+    },
+    {
+      nombre: "con todas las features y banderas pero BVSALA_GATEWAY_ELISION=0",
+      desarmado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES, elision: false }),
+      armado: async (u) => gateway(u, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES, elision: true }),
+    },
   ];
 
-  for (const [nombre, arrancar] of CASOS) {
-    it(`${nombre}: cuerpo, ruta y cabeceras llegan intactos, y la respuesta vuelve igual`, async () => {
+  const CUERPOS: [string, () => Buffer][] = [
+    ["el cuerpo de Claude Code (JSON compacto)", () => cuerpoDeClaudeCode()],
+    ['el de otro cliente (sangría, escapes, un 1.0, una clave "0")', () => textoDeOtroCliente(peticionCompleta("claude-fable-5"))],
+  ];
+
+  for (const { nombre, desarmado, armado } of CASOS) {
+    for (const [queCuerpo, hacerCuerpo] of CUERPOS) {
+      it(`${nombre} · ${queCuerpo}: cuerpo, ruta y cabeceras llegan intactos, y la respuesta vuelve igual`, async () => {
+        const recibidas: Recibida[] = [];
+        const respuesta = sse(USO_SANO);
+        const upstream = await arrancarUpstream(recibidas, () => ({ body: respuesta }));
+        const g = await desarmado(upstream);
+        const cuerpo = hacerCuerpo();
+
+        const r = await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE);
+
+        expect(r.status).toBe(200);
+        expect(recibidas).toHaveLength(1);
+        const llegada = recibidas[0]!;
+        // El cuerpo: los MISMOS bytes, no un JSON equivalente.
+        expect(llegada.body.equals(cuerpo)).toBe(true);
+        // La ruta con su query.
+        expect(llegada.path).toBe("/v1/messages?beta=true");
+        // Cada cabecera del cliente, con su valor exacto.
+        for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) expect(llegada.headers[k], k).toBe(v);
+        // La respuesta: los mismos bytes y las mismas cabeceras (salvo las de transporte).
+        expect(r.body.toString("utf8")).toBe(respuesta);
+        for (const [k, v] of Object.entries(CABECERAS_DE_RESPUESTA)) expect(r.headers[k], k).toBe(v);
+      });
+    }
+
+    it(`${nombre} · CONTROL: el gemelo armado SÍ reescribe el cuerpo de Claude Code (el test distingue)`, async () => {
       const recibidas: Recibida[] = [];
-      const respuesta = sse(USO_SANO);
-      const upstream = await arrancarUpstream(recibidas, () => ({ body: respuesta }));
-      const g = await arrancar(upstream);
-      const cuerpo = textoDeOtroCliente(peticionCompleta("claude-fable-5"));
+      const upstream = await arrancarUpstream(recibidas);
+      const g = await armado(upstream);
+      const cuerpo = cuerpoDeClaudeCode();
 
-      const r = await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE);
+      await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE);
 
-      expect(r.status).toBe(200);
-      expect(recibidas).toHaveLength(1);
-      const llegada = recibidas[0]!;
-      // El cuerpo: los MISMOS bytes, no un JSON equivalente.
-      expect(llegada.body.equals(cuerpo)).toBe(true);
-      // La ruta con su query.
-      expect(llegada.path).toBe("/v1/messages?beta=true");
-      // Cada cabecera del cliente, con su valor exacto.
-      for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) expect(llegada.headers[k], k).toBe(v);
-      // La respuesta: los mismos bytes y las mismas cabeceras (salvo las de transporte).
-      expect(r.body.toString("utf8")).toBe(respuesta);
-      for (const [k, v] of Object.entries(CABECERAS_DE_RESPUESTA)) expect(r.headers[k], k).toBe(v);
+      expect(recibidas[0]!.body.equals(cuerpo)).toBe(false);
+      expect(json(recibidas[0]!.body).model).toBe("claude-fable-5-1");
     });
   }
 
@@ -408,27 +464,48 @@ describe("1 · sin palancas armadas, el gateway reenvía byte a byte", () => {
     expect(recibidas[0]!.headers["anthropic-beta"]).toBe("advisor-tool-2026-03-01, extended-cache-ttl-2025-04-11");
   });
 
-  it("count_tokens y cualquier otra ruta, también byte a byte", async () => {
+  it("count_tokens y cualquier otra ruta, también byte a byte: con todo armado salvo el modelo hermano, la única palanca que toca count_tokens", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas, () => ({
       headers: { "content-type": "application/json" },
       body: '{"input_tokens":123}',
     }));
-    const g = await gateway(upstream, { plataforma: await arrancarPlataforma([]) });
-    const cuerpo = textoDeOtroCliente(peticionCompleta("claude-fable-5-1"));
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma(TODAS), esfuerzo: "low", dialesElision: true });
+    const cuerpos = [cuerpoDeClaudeCode("claude-fable-5"), textoDeOtroCliente(peticionCompleta("claude-fable-5"))];
+    for (const cuerpo of cuerpos) {
+      await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE, "/v1/messages/count_tokens?beta=true");
+      await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE, "/v1/files");
+    }
+    expect(recibidas.map((r) => r.path)).toEqual([
+      "/v1/messages/count_tokens?beta=true",
+      "/v1/files",
+      "/v1/messages/count_tokens?beta=true",
+      "/v1/files",
+    ]);
+    recibidas.forEach((r, i) => expect(r.body.equals(cuerpos[Math.floor(i / 2)]!), r.path).toBe(true));
+  });
+
+  it("count_tokens · CONTROL: con la bandera del modelo hermano, count_tokens cambia `model` y nada más; /v1/files sigue intacto", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstream(recibidas, () => ({
+      headers: { "content-type": "application/json" },
+      body: '{"input_tokens":123}',
+    }));
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma(TODAS), ...BANDERAS_LOCALES });
+    const cuerpo = cuerpoDeClaudeCode("claude-fable-5");
+
     await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE, "/v1/messages/count_tokens?beta=true");
     await enviar(g.puerto, cuerpo, CABECERAS_DEL_CLIENTE, "/v1/files");
-    expect(recibidas.map((r) => r.path)).toEqual(["/v1/messages/count_tokens?beta=true", "/v1/files"]);
-    for (const r of recibidas) expect(r.body.equals(cuerpo)).toBe(true);
+
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify({ ...peticionCompleta("claude-fable-5"), model: "claude-fable-5-1" }));
+    expect(recibidas[1]!.body.equals(cuerpo)).toBe(true);
   });
 });
 
 // ── 2 · Con palancas armadas: solo cambia lo declarado ───────────────────
 
 describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara", () => {
-  const TODAS = ["cache_ttl_tuning", "per_turn_effort", "sibling_model_routing", "context_elision"];
-
-  it("TTL (cache_ttl_tuning, PRO por defecto): las NUEVE marcas pasan de 1h a 5m —la de la raíz incluida— y nada más; ni los señuelos ni el `caching` del advisor", async () => {
+  it("TTL (cache_ttl_tuning, PRO por defecto): las DIEZ marcas pasan de 1h a 5m —la de la raíz y la del documento incluidas— y nada más; ni los señuelos ni el `caching` del advisor", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas);
     const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["cache_ttl_tuning"]) });
@@ -436,7 +513,8 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
 
     await enviar(g.puerto, JSON.stringify(original), CABECERAS_DEL_CLIENTE);
 
-    expect(json(recibidas[0]!.body)).toEqual(conMarcasA5m(original));
+    // Texto contra texto: también el ORDEN de las claves, que es parte del prompt.
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify(conMarcasA5m(original)));
     // Los señuelos siguen pidiendo 1h: son contenido.
     const llegada = json(recibidas[0]!.body);
     expect(en(llegada, ["messages", 3, "content", 0, "input", "cache_control"]).ttl).toBe("1h");
@@ -476,7 +554,7 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
 
     const esperado = clon(original);
     (esperado.messages as unknown[]).push({ role: "system", content: [], output_config: { effort: "low" } });
-    expect(json(recibidas[0]!.body)).toEqual(esperado);
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify(esperado));
     expect(recibidas[0]!.headers["anthropic-beta"]).toBe(`${BETAS_DEL_CLIENTE},${BETA_ESFUERZO}`);
     for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) {
       if (k !== "anthropic-beta") expect(recibidas[0]!.headers[k], k).toBe(v);
@@ -491,7 +569,7 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
 
     await enviar(g.puerto, JSON.stringify(original), CABECERAS_DEL_CLIENTE);
 
-    expect(json(recibidas[0]!.body)).toEqual({ ...original, model: "claude-fable-5-1" });
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify({ ...original, model: "claude-fable-5-1" }));
     for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) expect(recibidas[0]!.headers[k], k).toBe(v);
   });
 
@@ -505,12 +583,12 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
 
     const esperado = clon(original);
     esperado.context_management = { edits: [{ type: "clear_thinking_20251015", keep: "all" }, configDeDiales().edits[0]] };
-    expect(json(recibidas[0]!.body)).toEqual(esperado);
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify(esperado));
     // La beta de context management ya venía del cliente: la cabecera no cambia.
     for (const [k, v] of Object.entries(CABECERAS_DEL_CLIENTE)) expect(recibidas[0]!.headers[k], k).toBe(v);
   });
 
-  it("las tres por defecto armables a la vez (TTL + esfuerzo + hermano): la suma exacta de lo que declara cada una", async () => {
+  it("tres a la vez (TTL, que PRO trae, más esfuerzo y hermano, que son opt-in): la suma exacta de lo que declara cada una", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas);
     const g = await gateway(upstream, { plataforma: await arrancarPlataforma(TODAS), esfuerzo: "medium", modeloHermano: true });
@@ -520,8 +598,24 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
 
     const esperado = conMarcasA5m({ ...original, model: "claude-fable-5-1" });
     (esperado.messages as unknown[]).push({ role: "system", content: [], output_config: { effort: "medium" } });
-    expect(json(recibidas[0]!.body)).toEqual(esperado);
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify(esperado));
     expect(recibidas[0]!.headers["anthropic-beta"]).toBe(`${BETAS_DEL_CLIENTE},${BETA_ESFUERZO}`);
+  });
+
+  it("usage en streams de Chat Completions (BVSALA_GATEWAY_USAGE_INJECT=1): `\"stream_options\":{\"include_usage\":true},` insertado tras la `{` y el resto, byte a byte", async () => {
+    const recibidas: Recibida[] = [];
+    const upstream = await arrancarUpstream(recibidas, () => ({
+      headers: { "content-type": "text/event-stream" },
+      body: 'data: {"choices":[{"delta":{"content":"OK"}}]}\n\ndata: [DONE]\n\n',
+    }));
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma([]), usageInject: true });
+    // Escrito a mano, con un 1.0 y sangría: la inserción es textual y no reserializa nada.
+    const cuerpo = '{\n  "model": "gpt-5.1",\n  "stream": true,\n  "temperature": 1.0,\n  "messages": [{"role": "user", "content": "caf\\u00e9"}]\n}';
+
+    await enviar(g.puerto, cuerpo, { authorization: "Bearer sk-test-no-real" }, "/v1/chat/completions");
+
+    expect(recibidas[0]!.body.toString("utf8")).toBe(`{"stream_options":{"include_usage":true},${cuerpo.slice(1)}`);
+    expect(recibidas[0]!.headers.authorization).toBe("Bearer sk-test-no-real");
   });
 
   it("⛔ si reescribir cambiaría algo no declarado (un `1.0`, una clave \"0\"), ninguna palanca toca el cuerpo: byte a byte", async () => {
@@ -555,6 +649,75 @@ describe("2 · con cada palanca armada, solo cambia lo que esa palanca declara",
     expect(recibidas[1]!.body.equals(cuerpo)).toBe(true);
     expect(lineas.some((l) => l.includes("(cache TTL); forwarding it unchanged"))).toBe(true);
   });
+
+  // ── El dinero de la palanca de TTL con herramientas de servidor ─────────
+  // «This automatic breakpoint always uses the default 5-minute TTL,
+  // independent of any TTL you set on your own cache_control markers» —
+  // https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching#server-tool-results-are-cached-automatically
+  // (consultada el 2026-09-27). Con una herramienta de servidor, parte de lo
+  // escrito a 5 min puede ser de la API y no de la palanca: no se acredita.
+
+  /** Solo la marca de la raíz y una búsqueda web: una forma que la palanca no tocaba antes de acreditar la raíz. */
+  const conBusquedaWeb = (): Record<string, unknown> => ({
+    model: "claude-fable-5-1",
+    max_tokens: 1024,
+    stream: true,
+    cache_control: { type: "ephemeral", ttl: "1h" },
+    tools: [{ type: "web_search_20250305", name: "web_search" }],
+    messages: [{ role: "user", content: "search the news" }],
+  });
+
+  it("💶 TTL + herramienta de servidor: la palanca se aplica (el cliente paga 1,25× y no 2×), pero el registro no acredita ni un céntimo", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstream(recibidas, () => ({ body: sse(USO_TTL_A_5M) }));
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["cache_ttl_tuning"], lotes) });
+    const original = conBusquedaWeb();
+
+    await enviar(g.puerto, JSON.stringify(original), { "x-claude-code-session-id": "s-servidor" });
+
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify({ ...original, cache_control: { type: "ephemeral", ttl: "5m" } }));
+    await g.cerrar();
+    const registros = lotes.flat() as Record<string, unknown>[];
+    expect(registros).toHaveLength(1);
+    expect(registros[0]).toMatchObject({ basis: "measured", netSavings: 0 });
+    expect(registros[0]!.baselineCost).toBe(registros[0]!.actualCost);
+    expect(() => parseUsageRecords(registros, "org-test")).not.toThrow();
+  });
+
+  it("💶 CONTROL: la misma petición sin la herramienta de servidor sí acredita la diferencia de tarifa", async () => {
+    const recibidas: Recibida[] = [];
+    const lotes: unknown[][] = [];
+    const upstream = await arrancarUpstream(recibidas, () => ({ body: sse(USO_TTL_A_5M) }));
+    const g = await gateway(upstream, { plataforma: await arrancarPlataforma(["cache_ttl_tuning"], lotes) });
+    const { tools: _sinHerramientas, ...original } = conBusquedaWeb();
+
+    await enviar(g.puerto, JSON.stringify(original), { "x-claude-code-session-id": "s-cliente" });
+
+    expect(recibidas[0]!.body.toString("utf8")).toBe(JSON.stringify({ ...original, cache_control: { type: "ephemeral", ttl: "5m" } }));
+    await g.cerrar();
+    const registros = lotes.flat() as Record<string, unknown>[];
+    expect(registros).toHaveLength(1);
+    expect(registros[0]!.basis).toBe("measured");
+    expect(registros[0]!.netSavings as number).toBeGreaterThan(0);
+    expect(registros[0]!.baselineCost as number).toBeGreaterThan(registros[0]!.actualCost as number);
+  });
+
+  it("💶 las piezas puras: rebajarTtlDeCache avisa de la herramienta de servidor e informeMedido no la acredita", () => {
+    const r = rebajarTtlDeCache(conBusquedaWeb());
+    expect(r).toMatchObject({ rebajadas: 1, yaEran5m: 0, herramientaDeServidor: true });
+    // Un MCP por el conector también corre en el servidor; bash o el editor, no.
+    expect(rebajarTtlDeCache({ ...conBusquedaWeb(), tools: [], mcp_servers: [{ type: "url", url: "https://x", name: "x" }] })?.herramientaDeServidor).toBe(true);
+    expect(rebajarTtlDeCache({ ...conBusquedaWeb(), tools: [{ type: "bash_20250124", name: "bash" }] })?.herramientaDeServidor).toBe(false);
+
+    const medido = costeMedido("claude-fable-5-1", USO_TTL_A_5M)!;
+    type Coste = { cost: { baselineEstimate: number; actual: number; netSavings: number } };
+    const con = informeMedido("r1", "claude-fable-5-1", medido, undefined, null, { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: true }) as unknown as Coste;
+    expect(con.cost.netSavings).toBe(0);
+    expect(con.cost.baselineEstimate).toBe(con.cost.actual);
+    const sin = informeMedido("r2", "claude-fable-5-1", medido, undefined, null, { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false }) as unknown as Coste;
+    expect(sin.cost.netSavings).toBeGreaterThan(0);
+  });
 });
 
 // ── 3 · La verja de la reserialización fiel ──────────────────────────────
@@ -577,6 +740,13 @@ describe("3 · reescribir solo cuando JSON.stringify devuelve lo mismo que el pr
     expect(reserializacionFiel('{"b":1,"01":2,"-1":3,"4294967295":4}')).toBe(true);
     // Una cadena "0" que NO es clave no importa.
     expect(reserializacionFiel('{"b":["0","1"]}')).toBe(true);
+  });
+
+  it("claves duplicadas en un mismo objeto (reescribir borraría una; RFC 8259 §4), también escapadas; la misma clave en objetos distintos, sí", () => {
+    expect(reserializacionFiel('{"a":1,"a":2}')).toBe(false);
+    expect(reserializacionFiel('{"a":1,"\\u0061":2}')).toBe(false);
+    expect(reserializacionFiel('{"x":{"a":1,"b":{"a":2}},"a":[{"a":1},{"a":2}],"s":"{\\"a\\":1,\\"a\\":2}"}')).toBe(true);
+    expect(parsearParaReescribir(Buffer.from('{"model":"m","messages":[],"model":"n"}'))).toBeNull();
   });
 
   it("UTF-8 inválido, una BOM o un cuerpo comprimido: no se reescribe", () => {
@@ -613,7 +783,7 @@ const USO_TTL_A_5M = {
 describe("4 · el vigía: firmas puras", () => {
   it("verMarcasDeCache cuenta solo las marcas reales, sabe si hay una en la cola y ve las herramientas de servidor", () => {
     const v = verMarcasDeCache(peticionCompleta("m"));
-    expect(v).toEqual({ marcas: 9, de1h: 9, deOtroTtl: 0, enLaCola: true, herramientaDeServidor: true });
+    expect(v).toEqual({ marcas: 10, de1h: 10, deOtroTtl: 0, enLaCola: true, herramientaDeServidor: true });
     const soloSystem = peticionSimple("1h");
     delete (en(soloSystem, ["messages", 0, "content", 0]) as { cache_control?: unknown }).cache_control;
     expect(verMarcasDeCache(soloSystem)).toMatchObject({ marcas: 1, enLaCola: false, herramientaDeServidor: false });
@@ -643,6 +813,14 @@ describe("4 · el vigía: firmas puras", () => {
     expect(degradacionDeCache({ vista: mixta, uso: USO_TTL_A_5M, ttlReescritoPorLaCapa: false })).toBeNull();
     const conServidor = verMarcasDeCache(peticionSimple("1h", { tools: [{ type: "web_search_20260209", name: "web_search" }] }));
     expect(degradacionDeCache({ vista: conServidor, uso: USO_TTL_A_5M, ttlReescritoPorLaCapa: false })).toBeNull();
+  });
+
+  it("esTraficoDeClaudeCode: por su id de sesión o su user-agent, y nada más", () => {
+    expect(esTraficoDeClaudeCode({ "x-claude-code-session-id": "s1" })).toBe(true);
+    expect(esTraficoDeClaudeCode({ "user-agent": "claude-cli/2.1.260 (external, cli)" })).toBe(true);
+    expect(esTraficoDeClaudeCode({ "user-agent": "python-httpx/0.28.1" })).toBe(false);
+    expect(esTraficoDeClaudeCode({ "x-claude-code-session-id": "" })).toBe(false);
+    expect(esTraficoDeClaudeCode({})).toBe(false);
   });
 
   it("el filtro barato por usage deja fuera el turno sano sin parsear nada", () => {
@@ -720,7 +898,7 @@ describe("4 · el vigía de punta a punta: una línea por sesión, un contador, 
     expect(lineas2.filter((l) => l.startsWith("[gateway] degraded traffic"))).toHaveLength(0);
   });
 
-  it("busquedaApagada: el catálogo entero sin diferir → contada en cada petición y dicha una vez por sesión; con diferidas, nada", async () => {
+  it("busquedaApagada: Claude Code con el catálogo entero sin diferir → contada en cada petición y dicha una vez por sesión; con diferidas, o desde otro cliente, nada", async () => {
     const recibidas: Recibida[] = [];
     const upstream = await arrancarUpstream(recibidas);
     const lineas: string[] = [];
@@ -739,6 +917,8 @@ describe("4 · el vigía de punta a punta: una línea por sesión, un contador, 
     await enviar(g.puerto, sinBusqueda, { "x-claude-code-session-id": "s1" });
     await enviar(g.puerto, sinBusqueda, { "x-claude-code-session-id": "s1" });
     await enviar(g.puerto, conBusqueda, { "x-claude-code-session-id": "s2" });
+    // Un agente cualquiera con 45 herramientas no «tenía» tool search: no es tráfico degradado.
+    await enviar(g.puerto, sinBusqueda, { "user-agent": "python-httpx/0.28.1" });
 
     expect(g.degradaciones().busquedaApagada).toBe(2);
     const avisos = lineas.filter((l) => l.includes("tool search is off"));
@@ -765,9 +945,21 @@ describe("5 · la garantía publicada cita esta batería y dice sus límites", (
     // Los límites, dichos: la reserialización, las de salto y lo que el vigía no ve.
     expect(guia).toMatch(/Limits/);
     expect(guia).toMatch(/hop-by-hop/);
+    // La palanca de TTL con herramientas de servidor: no se acredita, y se dice por qué con la fuente.
+    expect(guia).toContain(
+      "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching#server-tool-results-are-cached-automatically",
+    );
+    expect(guia).toContain("its saving is recorded as zero");
+    // El tool search apagado lo causa CUALQUIER proxy, este incluido: no se le echa la culpa a otro.
+    expect(guia).toContain("this gateway included");
+    expect(guia).not.toContain("because of something other than the gateway");
   });
 
-  it("el README cita la batería", () => {
-    expect(leer("../README.md")).toContain("test/gateway-no-empeora.test.ts");
+  it("el README cita la batería, dice que el repositorio es privado y no culpa a otro del tool search apagado", () => {
+    const readme = leer("../README.md");
+    expect(readme).toContain("test/gateway-no-empeora.test.ts");
+    expect(readme).toContain("the repository is private");
+    expect(readme).toContain("this one included");
+    expect(readme).not.toContain("something else in the chain");
   });
 });

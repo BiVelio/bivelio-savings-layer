@@ -212,7 +212,7 @@ describe("contabilidad — baseline al solicitado, actual al servido, basis meas
       medido,
       undefined,
       null,
-      { rebajadas: 2, yaEran5m: 0 },
+      { rebajadas: 2, yaEran5m: 0, herramientaDeServidor: false },
       { solicitado: SOLICITADO, servido: SERVIDO },
     ) as unknown as Coste;
     const sobrecoste = (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE);

@@ -58,6 +58,7 @@ import { esUpstreamOficial } from "./upstream.js";
 import {
   VigiaDeDegradacion,
   degradacionDeCache,
+  esTraficoDeClaudeCode,
   lineaDeDegradacion,
   usoConFormaDeDegradacion,
   verMarcasDeCache,
@@ -995,8 +996,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const aviso = avisoDeBusquedaDeHerramientas(vista);
           if (aviso) {
             avisarUnaVez("gateway-busqueda-herramientas", aviso);
-            // Y como tráfico degradado: contada siempre, dicha una vez por sesión.
-            if (vigia.anotar("busquedaApagada", sesionId)) {
+            // Y como tráfico degradado, pero SOLO el de Claude Code: es el
+            // cliente que la apaga al ver un proxy delante (este incluido). Un
+            // agente con 40 herramientas que nunca usó tool search no está
+            // «degradado». Contada siempre, dicha una vez por sesión.
+            if (esTraficoDeClaudeCode(req.headers) && vigia.anotar("busquedaApagada", sesionId)) {
               log(lineaDeDegradacion("busquedaApagada", { sesion: sesionId, definiciones: vista.definiciones }));
             }
           }
@@ -1077,7 +1081,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       //
       // Y va sobre `cuerpoSaliente`, no sobre `cuerpo`: la MEDICIÓN y la clave
       // de coalescencia siguen usando el cuerpo original del cliente.
-      let rebaja: { rebajadas: number; yaEran5m: number } | null = null;
+      let rebaja: RebajaAplicada | null = null;
       if (
         palancasArmadas &&
         req.method === "POST" &&
@@ -1103,7 +1107,14 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
               const rebajado = rebajarTtlDeCache(json);
               if (rebajado !== null) {
                 cuerpoSaliente = rebajado.cuerpo;
-                rebaja = { rebajadas: rebajado.rebajadas, yaEran5m: rebajado.yaEran5m };
+                // Con herramientas de servidor la palanca se aplica igual (el
+                // cliente paga menos) pero no se acredita: parte de la escritura
+                // a 5 min puede ser la que la API hace sola tras una de ellas.
+                rebaja = {
+                  rebajadas: rebajado.rebajadas,
+                  yaEran5m: rebajado.yaEran5m,
+                  herramientaDeServidor: rebajado.herramientaDeServidor,
+                };
                 ttlReescrito = true;
               }
             }

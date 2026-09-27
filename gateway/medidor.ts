@@ -115,6 +115,13 @@ export interface RebajaAplicada {
   rebajadas: number;
   /** Marcas que YA pedían 5m: si hay alguna, la atribución no es limpia y no se cobra. */
   yaEran5m: number;
+  /**
+   * La petición declaraba herramientas de servidor: la API escribe a 5 min el
+   * resultado de las que Claude use, pida el cliente el TTL que pida, y el usage
+   * no separa esa escritura de la nuestra. Tampoco se cobra (tarifa.ts,
+   * declaraHerramientaDeServidor).
+   */
+  herramientaDeServidor: boolean;
 }
 
 /** Lo que el proveedor declara haber borrado en una respuesta (su contador, no el nuestro). */
@@ -1104,7 +1111,7 @@ function construirInforme(
   const acreditable = !coalescida && !subscription;
   const escrita5m = medido.tokens.cacheEscrita - medido.tokens.cacheEscrita1h;
   const sobrecosteEvitado =
-    acreditable && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && escrita5m > 0
+    acreditable && rebaja && rebaja.rebajadas > 0 && rebaja.yaEran5m === 0 && !rebaja.herramientaDeServidor && escrita5m > 0
       ? (escrita5m / 1_000) * medido.precio.inputPer1k * (PRIMA_ESCRITURA_CACHE_1H - PRIMA_ESCRITURA_CACHE)
       : 0;
   const ahorroHermano = acreditable && hermano ? ahorroDeHermano(hermano, medido) : 0;

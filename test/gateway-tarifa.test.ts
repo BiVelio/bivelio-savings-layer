@@ -223,6 +223,7 @@ describe("el 0 € estructural del informe medido", () => {
     const inf = informeMedido("req-2", "claude-opus-5", medido!, undefined, null, {
       rebajadas: 3,
       yaEran5m: 0,
+      herramientaDeServidor: false,
     }) as unknown as {
       cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
     };
@@ -236,7 +237,7 @@ describe("el 0 € estructural del informe medido", () => {
 
   it("tráfico de SUSCRIPCIÓN con la rebaja aplicada: baseline == actual y netSavings 0 (sin factura por tokens no se acredita)", () => {
     const medido = costeMedido("claude-opus-5", usage);
-    const inf = informeMedido("req-s", "claude-opus-5", medido!, undefined, null, { rebajadas: 1, yaEran5m: 0 }, null, true) as unknown as {
+    const inf = informeMedido("req-s", "claude-opus-5", medido!, undefined, null, { rebajadas: 1, yaEran5m: 0, herramientaDeServidor: false }, null, true) as unknown as {
       cost: { baselineEstimate: number; actual: number; netSavings: number; basis: string };
     };
     expect(inf.cost.basis).toBe("measured");
@@ -249,6 +250,7 @@ describe("el 0 € estructural del informe medido", () => {
     const inf = informeMedido("req-3", "claude-opus-5", medido!, undefined, null, {
       rebajadas: 1,
       yaEran5m: 2,
+      herramientaDeServidor: false,
     }) as unknown as { cost: { netSavings: number; baselineEstimate: number; actual: number } };
     expect(inf.cost.netSavings).toBe(0);
     expect(inf.cost.baselineEstimate).toBe(inf.cost.actual);

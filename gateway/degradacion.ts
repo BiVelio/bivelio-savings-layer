@@ -19,8 +19,11 @@
  *    entrada y aun así no declara ni lectura ni escritura de caché.
  *  · `ttlAcortado`: TODAS las marcas piden `ttl: "1h"`, la palanca de TTL no
  *    tocó esa petición y el proveedor escribió solo a 5 min.
- *  · `busquedaApagada`: el catálogo entero de herramientas viaja sin diferir
- *    y sin `tool_reference` (busqueda-de-herramientas.ts).
+ *  · `busquedaApagada`: tráfico de Claude Code cuyo catálogo entero de
+ *    herramientas viaja sin diferir y sin `tool_reference`
+ *    (busqueda-de-herramientas.ts). Solo Claude Code: es el cliente que apaga
+ *    la búsqueda al ver un proxy delante —este gateway incluido—; otro cliente
+ *    con muchas herramientas puede no haberla usado nunca.
  *
  * Lo que NO hace: viajar. La lista blanca de la ingesta
  * (apps/web/lib/metering/usage.ts) rechaza cualquier campo que no conozca con
@@ -30,7 +33,7 @@
  */
 
 import type { UsoSse } from "./medidor.js";
-import { visitarMarcasDeCache } from "./tarifa.js";
+import { declaraHerramientaDeServidor, visitarMarcasDeCache } from "./tarifa.js";
 
 export type TipoDeDegradacion = "cacheIgnorada" | "ttlAcortado" | "busquedaApagada";
 
@@ -63,15 +66,17 @@ export interface VistaDeMarcas {
   enLaCola: boolean;
   /**
    * La petición declara herramientas que corren en el servidor del proveedor
-   * (búsqueda web, ejecución de código, tool search, advisor, MCP…). El
-   * proveedor escribe SUS resultados en caché a 5 min por su cuenta, así que
-   * una escritura a 5 min no demuestra que alguien acortara el TTL.
+   * (búsqueda web, ejecución de código, tool search, advisor, MCP…). Si Claude
+   * usa una, la API escribe SU resultado en caché a 5 min por su cuenta, sea
+   * cual sea el TTL de las marcas del cliente
+   * (https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-use-with-prompt-caching#server-tool-results-are-cached-automatically,
+   * consultada el 2026-09-27), así que una escritura a 5 min no demuestra que
+   * alguien acortara el TTL. La regla vive en tarifa.ts
+   * (declaraHerramientaDeServidor): es la misma que deja sin acreditar la
+   * palanca de TTL.
    */
   herramientaDeServidor: boolean;
 }
-
-/** Familias de herramientas tipadas que ejecuta el CLIENTE: no escriben caché por su cuenta. */
-const HERRAMIENTA_DEL_CLIENTE = /^(custom|bash_|text_editor_|computer_|browser_|memory_)/;
 
 export function verMarcasDeCache(json: Record<string, unknown>): VistaDeMarcas {
   const vista: VistaDeMarcas = { marcas: 0, de1h: 0, deOtroTtl: 0, enLaCola: false, herramientaDeServidor: false };
@@ -81,14 +86,20 @@ export function verMarcasDeCache(json: Record<string, unknown>): VistaDeMarcas {
     else vista.deOtroTtl++;
     if (sitio === "raiz" || sitio === "ultimoMensaje") vista.enLaCola = true;
   });
-  if (Array.isArray(json.tools)) {
-    vista.herramientaDeServidor = json.tools.some((t) => {
-      const tipo = t !== null && typeof t === "object" ? (t as { type?: unknown }).type : undefined;
-      return typeof tipo === "string" && !HERRAMIENTA_DEL_CLIENTE.test(tipo);
-    });
-  }
-  if (Array.isArray(json.mcp_servers) && json.mcp_servers.length > 0) vista.herramientaDeServidor = true;
+  vista.herramientaDeServidor = declaraHerramientaDeServidor(json);
   return vista;
+}
+
+/**
+ * ¿Lo manda Claude Code? Por su id de sesión (`x-claude-code-session-id`) o
+ * por su user-agent (`claude-cli/…`). Solo limita la firma `busquedaApagada`:
+ * apagar la búsqueda al ver un proxy delante es cosa de Claude Code.
+ */
+export function esTraficoDeClaudeCode(cabeceras: Readonly<Record<string, string | string[] | undefined>>): boolean {
+  const sesion = cabeceras["x-claude-code-session-id"];
+  if (typeof sesion === "string" ? sesion !== "" : Array.isArray(sesion) && sesion.length > 0) return true;
+  const agente = cabeceras["user-agent"];
+  return typeof agente === "string" && agente.startsWith("claude-cli/");
 }
 
 const escritaDe = (uso: UsoSse): number =>
