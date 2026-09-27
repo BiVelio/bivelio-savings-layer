@@ -127,6 +127,12 @@ describe("la beta", () => {
   it("sirve para un entorno sin betas", () => {
     expect(conBetaDeEsfuerzo(undefined)).toBe(BETA_ESFUERZO);
   });
+  it("⛔ conserva la cabecera del cliente tal cual, espacios incluidos: solo AÑADE la suya al final", () => {
+    expect(conBetaDeEsfuerzo("oauth-2025-04-20, advisor-tool-2026-03-01")).toBe(
+      `oauth-2025-04-20, advisor-tool-2026-03-01,${BETA_ESFUERZO}`,
+    );
+    expect(conBetaDeEsfuerzo(`a, ${BETA_ESFUERZO}`)).toBe(`a, ${BETA_ESFUERZO}`);
+  });
 });
 
 describe("dicha en voz alta al arrancar", () => {

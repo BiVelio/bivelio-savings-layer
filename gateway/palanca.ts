@@ -19,6 +19,7 @@
  */
 
 import { BETA_CONTEXT_MANAGEMENT, TRIGGER_POR_DEFECTO_DE_LA_API, configDeDiales } from "./diales.js";
+import { parsearParaReescribir } from "./reserializacion.js";
 
 /**
  * Ajusta el cuerpo de una petición /v1/messages: fusiona nuestros diales en su
@@ -27,7 +28,8 @@ import { BETA_CONTEXT_MANAGEMENT, TRIGGER_POR_DEFECTO_DE_LA_API, configDeDiales 
  * Devuelve `null` — «no ajustar, reenviar intacto» — si:
  *  · el cuerpo llega comprimido (S4a no construye el camino de recompresión;
  *    el tráfico Anthropic de Claude Code viaja sin comprimir),
- *  · no parsea como JSON,
+ *  · no parsea como JSON, o reescribirlo cambiaría algo más que los diales
+ *    (reserializacion.ts),
  *  · no tiene la forma de /v1/messages (model + messages).
  *
  * Es pura y determinista: el mismo cuerpo produce el mismo ajuste, así que la
@@ -57,9 +59,9 @@ export interface AjusteDeDiales {
 }
 
 export function ajustarDiales(cuerpo: Buffer, codificacion?: string): AjusteDeDiales | null {
-  if (codificacion !== undefined && codificacion !== "" && codificacion !== "identity") return null;
   try {
-    const json = JSON.parse(cuerpo.toString("utf8")) as Record<string, unknown>;
+    // La puerta común de las palancas que reescriben (reserializacion.ts).
+    const json = parsearParaReescribir(cuerpo, codificacion) as Record<string, unknown> | null;
     if (json === null || typeof json !== "object" || Array.isArray(json)) return null;
     if (typeof json.model !== "string" || !Array.isArray(json.messages)) return null;
     // La atribución se decide ANTES de fusionar: compara lo que traía el

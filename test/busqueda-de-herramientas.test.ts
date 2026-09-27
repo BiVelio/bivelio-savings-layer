@@ -26,11 +26,11 @@ describe("ver el catálogo de herramientas de una petición", () => {
 
   it("cuenta las referencias, que son la búsqueda EN ACCIÓN", () => {
     const cuerpo = `{"tools":[{"type":"tool_reference","name":"a"},{"type":"tool_reference","name":"b"}]}`;
-    expect(verHerramientas(cuerpo)).toEqual({ definiciones: 0, referencias: 2 });
+    expect(verHerramientas(cuerpo)).toEqual({ definiciones: 0, referencias: 2, diferidas: 0 });
   });
 
   it("un cuerpo sin herramientas no tiene ni lo uno ni lo otro", () => {
-    expect(verHerramientas('{"model":"m","messages":[]}')).toEqual({ definiciones: 0, referencias: 0 });
+    expect(verHerramientas('{"model":"m","messages":[]}')).toEqual({ definiciones: 0, referencias: 0, diferidas: 0 });
   });
 });
 
@@ -57,5 +57,29 @@ describe("cuándo hay algo que decir", () => {
 
   it("el umbral es un límite, no una sugerencia", () => {
     expect(avisoDeBusquedaDeHerramientas({ definiciones: DEFINICIONES_PARA_AVISAR, referencias: 0 })).not.toBeNull();
+  });
+});
+
+describe("⛔ las herramientas diferidas son la búsqueda ENCENDIDA (2026-09-27)", () => {
+  // Con tool search, el cliente manda TODAS las definiciones en cada petición
+  // —las diferidas también— y el proveedor deja las diferidas fuera del prefijo.
+  // En el primer turno aún no hay ninguna `tool_reference`: el aviso saltaba
+  // justo en las sesiones que ya lo hacían bien.
+  const diferidas = (n: number, espacio = "") =>
+    Array.from({ length: n }, (_, i) => `{"name":"d${i}","input_schema":{"type":"object"},"defer_loading":${espacio}true}`).join(",");
+
+  it("verHerramientas cuenta las diferidas, compactas o con espacio", () => {
+    expect(verHerramientas(`{"tools":[${definicion(2)},${diferidas(3)}]}`)).toEqual({ definiciones: 5, referencias: 0, diferidas: 3 });
+    expect(verHerramientas(`{"tools":[${diferidas(2, " ")}]}`).diferidas).toBe(2);
+  });
+
+  it("con diferidas y sin referencias todavía, NO avisa", () => {
+    const vista = verHerramientas(`{"tools":[${definicion(5)},${diferidas(140)}]}`);
+    expect(vista.referencias).toBe(0);
+    expect(avisoDeBusquedaDeHerramientas(vista)).toBeNull();
+  });
+
+  it("sin diferidas y con el catálogo entero, SIGUE avisando", () => {
+    expect(avisoDeBusquedaDeHerramientas(verHerramientas(`{"tools":[${definicion(142)}]}`))).not.toBeNull();
   });
 });

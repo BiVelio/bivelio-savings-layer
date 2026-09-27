@@ -55,6 +55,14 @@ import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 import { esUpstreamOficial } from "./upstream.js";
+import {
+  VigiaDeDegradacion,
+  degradacionDeCache,
+  lineaDeDegradacion,
+  usoConFormaDeDegradacion,
+  verMarcasDeCache,
+  type TipoDeDegradacion,
+} from "./degradacion.js";
 
 /**
  * F1 · EL GATEWAY — un proxy local delante de la API de Anthropic que MIDE.
@@ -192,6 +200,12 @@ export interface GatewayArrancado {
   cerrar: () => Promise<void>;
   /** El estado de licencia que decidiría la próxima petición. */
   licenseStatus(): GatewayLicenseState;
+  /**
+   * Cuántas peticiones de este proceso llegaron DEGRADADAS, por tipo
+   * (degradacion.ts). Es local: no viaja en el registro de uso, porque la
+   * lista blanca de la ingesta no tiene campo para ello.
+   */
+  degradaciones(): Readonly<Record<TipoDeDegradacion, number>>;
 }
 
 /**
@@ -395,6 +409,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   // (arranque, compactación) y nunca el turno encadenado, donde la prima es
   // calderilla y el fallo cuesta el prefijo entero.
   const memoria = new MemoriaDePrefijos();
+  // El vigía del tráfico degradado: una línea por sesión y tipo, y un contador.
+  const vigia = new VigiaDeDegradacion();
 
   const canal = opts.serviceAccountKey
     ? new CanalDeEntitlements({
@@ -661,6 +677,47 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     }
   };
 
+  /**
+   * La firma de caché de una petición /v1/messages ya servida: el cuerpo del
+   * CLIENTE (lo que pidió) contra el usage del PROVEEDOR (lo que pasó). Solo se
+   * parsea el cuerpo cuando el usage tiene la forma de una degradación, y un
+   * fallo aquí no puede romper nada: la respuesta ya está entregada.
+   */
+  const vigilarCache = (
+    path: string,
+    cuerpo: Buffer,
+    codificacion: string | undefined,
+    uso: UsoSse | null,
+    ttlReescrito: boolean,
+    sesion: string | undefined,
+  ): void => {
+    if (path !== "/v1/messages" || uso === null || !usoConFormaDeDegradacion(uso)) return;
+    // Las dos firmas exigen marcas: un cuerpo sin comprimir que no dice
+    // «cache_control» en ningún sitio no se parsea.
+    const sinComprimir = codificacion === undefined || codificacion === "" || codificacion === "identity";
+    if (sinComprimir && !cuerpo.includes('"cache_control"')) return;
+    try {
+      const json = jsonDelCuerpo(cuerpo, codificacion);
+      if (json === null || typeof json !== "object" || Array.isArray(json)) return;
+      const tipo = degradacionDeCache({
+        vista: verMarcasDeCache(json as Record<string, unknown>),
+        uso,
+        ttlReescritoPorLaCapa: ttlReescrito,
+      });
+      if (tipo !== null && vigia.anotar(tipo, sesion)) {
+        log(
+          lineaDeDegradacion(tipo, {
+            sesion,
+            entrada: uso.input_tokens ?? 0,
+            escrita5m: uso.cache_creation?.ephemeral_5m_input_tokens ?? 0,
+          }),
+        );
+      }
+    } catch {
+      /* el vigía jamás rompe el gateway */
+    }
+  };
+
   const server = createServer(async (req, res) => {
     const requestId = randomUUID();
     const inicioMs = Date.now();
@@ -731,6 +788,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     // Con las cabeceras ORIGINALES del cliente (antes de que las palancas añadan
     // betas). Fuera del try por la misma razón que `hermano`.
     let suscripcion = false;
+    // ¿La palanca de TTL reescribió lo que viajó? El vigía lo necesita también en
+    // la ruta abortada (catch), donde `rebaja` ya no está a la vista.
+    let ttlReescrito = false;
     const atribuir = (
       e: ElisionAplicada | null,
       uso: ReturnType<ObservadorSse["usage"]>,
@@ -931,8 +991,15 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       // comprimir, que es como viaja el tráfico de Claude Code.
       if (req.method === "POST" && url.pathname === "/v1/messages" && (codificacion ?? "") === "") {
         try {
-          const aviso = avisoDeBusquedaDeHerramientas(verHerramientas(cuerpo.toString("utf8")));
-          if (aviso) avisarUnaVez("gateway-busqueda-herramientas", aviso);
+          const vista = verHerramientas(cuerpo.toString("utf8"));
+          const aviso = avisoDeBusquedaDeHerramientas(vista);
+          if (aviso) {
+            avisarUnaVez("gateway-busqueda-herramientas", aviso);
+            // Y como tráfico degradado: contada siempre, dicha una vez por sesión.
+            if (vigia.anotar("busquedaApagada", sesionId)) {
+              log(lineaDeDegradacion("busquedaApagada", { sesion: sesionId, definiciones: vista.definiciones }));
+            }
+          }
         } catch {
           /* un aviso jamás puede tumbar una petición */
         }
@@ -1037,6 +1104,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
               if (rebajado !== null) {
                 cuerpoSaliente = rebajado.cuerpo;
                 rebaja = { rebajadas: rebajado.rebajadas, yaEran5m: rebajado.yaEran5m };
+                ttlReescrito = true;
               }
             }
           }
@@ -1102,24 +1170,30 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         return;
       }
 
-      // ── Palanca C · el REINTENTO INTACTO ──────────────────────────────
+      // ── EL REINTENTO INTACTO ──────────────────────────────────────────
       // Un 400 tras tocar el cuerpo puede ser culpa nuestra. Con la palanca C,
       // porque fable-5-1 rechaza cosas que fable-5 acepta. Con la D, porque la
       // beta del esfuerzo por turno estaba abierta como beta limitada y una org
-      // sin acceso recibe un 400 de una petición que sin nosotros iba bien. Se reenvía
-      // UNA vez el cuerpo y las cabeceras ORIGINALES del cliente — sin C, sin
-      // diales, sin rebaja — y se mide lo que de verdad viajó. Si el 400 era
-      // del cliente, ve el mismo 400 que habría visto sin la capa; cuesta un
-      // viaje extra en una petición que ya iba a fallar. Nunca en streaming a
-      // medias: aquí no se ha escrito ni una cabecera al cliente todavía.
+      // sin acceso recibe un 400 de una petición que sin nosotros iba bien. Con
+      // la de TTL o los diales, por una regla de la API que no hayamos previsto
+      // (el orden de los TTL, por ejemplo). Se reenvía UNA vez el cuerpo y las
+      // cabeceras ORIGINALES del cliente — sin C, sin diales, sin rebaja — y se
+      // mide lo que de verdad viajó. Si el 400 era del cliente, ve el mismo 400
+      // que habría visto sin la capa; cuesta un viaje extra en una petición que
+      // ya iba a fallar. Nunca en streaming a medias: aquí no se ha escrito ni
+      // una cabecera al cliente todavía.
+      //
+      // La condición es ESTRUCTURAL, no una lista de banderas: si lo que viajó
+      // no es el cuerpo y las cabeceras del cliente, un 400 se reintenta intacto.
+      // Una palanca futura queda cubierta sin tener que acordarse de añadirse.
       //
       // La inyección de include_usage usa el MISMO reintento, y además ante un
       // 422: hay endpoints compatibles que validan el esquema y rechazan un
       // campo que no conocen con 422. El rechazo llega antes de generar nada,
       // así que el reintento no paga tokens.
+      const tocadaPorLaCapa = cuerpoEnviado !== cuerpo || !mismasCabeceras(cabecerasEnviadas, cabecerasOriginales);
       const rechazoDeNuestroCambio =
-        ((hermano !== null || esfuerzoPuesto) && upstream.status === 400) ||
-        (inyectado && (upstream.status === 400 || upstream.status === 422));
+        (tocadaPorLaCapa && upstream.status === 400) || (inyectado && (upstream.status === 400 || upstream.status === 422));
       if (rechazoDeNuestroCambio && !ac.signal.aborted) {
         let motivo = "";
         try {
@@ -1134,11 +1208,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
                 `forwarding it unchanged · ${motivo}`
             : `[gateway] the upstream rejected (400) the rewritten request` +
                 `${hermano ? ` to ${hermano.servido}` : ""}${esfuerzoPuesto ? " (per-turn effort)" : ""}` +
+                `${rebaja ? " (cache TTL)" : ""}${diales ? " (context editing dials)" : ""}` +
                 `; forwarding it unchanged · ${motivo}`,
         );
         hermano = null;
         esfuerzoPuesto = false;
         rebaja = null;
+        ttlReescrito = false;
         diales = null;
         inyectado = false;
         if (eraInyeccion) inyeccion = "rechazada-por-el-upstream";
@@ -1279,6 +1355,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         } else {
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
           medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion);
+          vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
         // SIN clave no hay emisor y medir() vuelve en silencio: hasta 0.4.20
         // una petición en streaming servida con 200 no dejaba NINGUNA línea,
@@ -1299,6 +1376,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           // La elisión del proveedor (context_management) solo existe en Anthropic.
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
           medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, atribuir(elision, uso), rebaja, inicioMs, hermano, suscripcion);
+          vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
       } else if (jsonDesbordado) {
         noMedido(req.method ?? "POST", url.pathname, upstream.status, false, "the response was too large to read its usage", null);
@@ -1358,6 +1436,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           // hermano: el precio del modelo servido se pagó igual aunque el
           // cliente cerrara.
           medir(requestId, cuerpoPeticion, uso, false, url.pathname, codificacion, atribucion, elision, undefined, inicioMs, hermano, suscripcion);
+          vigilarCache(url.pathname, cuerpoPeticion, codificacion, uso, ttlReescrito, sesionId);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → client aborted; upstream cancelled`);
         }
@@ -1467,5 +1546,6 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       await new Promise<void>((resolve) => server.close(() => resolve()));
     },
     licenseStatus: () => veredicto().state,
+    degradaciones: () => vigia.contadores(),
   };
 }

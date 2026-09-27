@@ -9,6 +9,7 @@ import { describirEstadoDeElision } from "./palanca.js";
 import { describirEstadoDeEsfuerzo } from "./esfuerzo.js";
 import { describirEstadoDeHermano } from "./hermano.js";
 import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
+import { resumenDeDegradaciones } from "./degradacion.js";
 import { decidirArranque, isChildInfoRequest, mensajeDeFalloDeArranque } from "./argumentos.js";
 import { LICENSE_SERVER_URL, resolveStartupLicense } from "./license.js";
 import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
@@ -483,6 +484,10 @@ if (envoltorio && esEnvoltorio) {
     void arranque.cerrar().then(() => process.exit(127));
   });
   hijo.on("exit", (code, signal) => {
+    // El terminal ya soltó la pantalla: es el momento de decir lo que el log
+    // callado del envoltorio no pudo (tráfico degradado, degradacion.ts).
+    const resumen = resumenDeDegradaciones(arranque.degradaciones());
+    if (resumen) console.error(resumen);
     void arranque.cerrar().then(() => process.exit(code ?? (signal ? 1 : 0)));
   });
 } else {
@@ -510,6 +515,8 @@ if (envoltorio && esEnvoltorio) {
 }
 
 const parar = async (): Promise<void> => {
+  const resumen = resumenDeDegradaciones(arranque.degradaciones());
+  if (resumen) console.error(resumen);
   await arranque.cerrar();
   process.exit(0);
 };
