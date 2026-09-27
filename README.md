@@ -251,6 +251,135 @@ still writing cancels its request, and nothing is cached or recorded; once its a
 is complete, or when it arrives in one piece, nothing is cancelled.
 `await stream.result` tells you which happened.
 
+## Inside your framework
+
+Already on an agent framework? The layer plugs in at that framework's own extension
+point, from a subpath of this same package. The four adapters behave alike:
+
+- **They answer without calling the model when they can** — a computed answer (the
+  arithmetic above), an exact repeat of a request that already ran, an identical
+  request already in flight — and otherwise let your framework make exactly the call
+  it was going to make. They never rewrite what your framework sends.
+- **Tools are treated as having side effects** unless you list them in
+  `readOnlyTools`: a request that offers any other tool is never answered from a
+  cache, because the action has to run.
+- **Fail‑closed, like the SDK**: without an active license the call fails with
+  `LicenseError` (a framework may wrap it, keeping its name and message) and the
+  model is not called. **Put the adapter last**, so nothing sits between it and the
+  model.
+
+Every model call gets the same `SavingsReport` as with the SDK — its `basis` says
+whether a figure comes from your provider's own counter — and `onReport` receives it
+too.
+
+### Vercel AI SDK
+
+`pnpm add @bivelio/savings-layer ai @ai-sdk/openai` — a `LanguageModelMiddleware`
+for `ai` 6 or 7:
+
+```ts
+import { generateText, wrapLanguageModel } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { savingsMiddleware, getSavingsReport } from "@bivelio/savings-layer/ai-sdk";
+
+const savings = savingsMiddleware({
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: "https://savings.bivelio.com",
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  readOnlyTools: ["get_weather"],
+});
+const model = wrapLanguageModel({ model: openai("gpt-4o-mini"), middleware: savings }); // last in the list
+
+const result = await generateText({
+  model,
+  prompt: "What is 2 + 2 * 3?",
+  providerOptions: { bivelio: { context: { sessionId: "user-42" } } },
+});
+console.log(getSavingsReport(result)?.cost.basis); // "estimated": answered without calling the model
+```
+
+For `streamText`, read it with `getSavingsReport({ providerMetadata: await result.providerMetadata })`.
+
+### Mastra
+
+`pnpm add @bivelio/savings-layer @mastra/core` — an input processor for
+`@mastra/core` 1.x:
+
+```ts
+import { Agent } from "@mastra/core/agent";
+import { savingsProcessor } from "@bivelio/savings-layer/mastra";
+
+const bivelio = savingsProcessor({
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: "https://savings.bivelio.com",
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+  onReport: (r) => console.log(r.cost.basis),
+});
+const agent = new Agent({
+  id: "support",
+  name: "Support",
+  instructions: "Answer briefly.",
+  model: "openai/gpt-4o-mini",
+  inputProcessors: [bivelio], // last in the list
+});
+console.log((await agent.generate("What is 2 + 2 * 3?")).text); // "8"
+```
+
+It covers `generate()` and `stream()`, not `generateLegacy()`/`streamLegacy()` or a
+durable agent that resumes in another process; identical requests in flight are not
+shared here. `emitReportPart: true` also streams each report as a
+`data-bivelio-savings-report` part.
+
+### LangChain.js
+
+`pnpm add @bivelio/savings-layer langchain @langchain/core` — an agent middleware for
+`createAgent` in `langchain` 1.x:
+
+```ts
+import { createAgent } from "langchain";
+import { savingsAgentMiddleware, getSavingsReportFromMessage } from "@bivelio/savings-layer/langchain";
+
+const agentSavings = savingsAgentMiddleware({
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: "https://savings.bivelio.com",
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+});
+const lcAgent = createAgent({ model: "openai:gpt-4o-mini", tools: [], middleware: [agentSavings] }); // last
+const state = await lcAgent.invoke({ messages: [{ role: "user", content: "What is 2 + 2 * 3?" }] });
+console.log(getSavingsReportFromMessage(state.messages.at(-1))?.cost.basis);
+```
+
+The model call is measured when it finishes; tokens you stream with
+`streamMode: "messages"` keep coming from the model as usual. A chat model with its
+own `cache` set is reported as `unmeasured`: its counter may be a cached copy.
+
+### Anthropic TypeScript SDK
+
+`pnpm add @bivelio/savings-layer @anthropic-ai/sdk` — a client middleware for
+`@anthropic-ai/sdk` 0.103 or later:
+
+```ts
+import Anthropic from "@anthropic-ai/sdk";
+import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";
+
+const claudeSavings = anthropicSavings({
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  licenseServerUrl: "https://savings.bivelio.com",
+  serviceAccountKey: process.env.BIVELIO_SERVICE_KEY,
+});
+const client = new Anthropic({ middleware: [claudeSavings.middleware] }); // last in the list
+const message = await client.messages.create({
+  model: "claude-opus-5",
+  max_tokens: 256,
+  messages: [{ role: "user", content: "What is 2 + 2 * 3?" }],
+});
+console.log(claudeSavings.reportFor(message)?.cost.basis);
+```
+
+It runs once per HTTP attempt, inside the SDK's retries: an attempt the provider
+rejects reaches the SDK unchanged and is not recorded. Only message creation goes
+through the layer; `countTokens`, batches, models and files pass untouched.
+
 ## What you get on every request
 
 A `SavingsReport` with the numbers behind every claim, kept in **four separate
@@ -620,6 +749,10 @@ BVSALA_SEAT_ID=worker-03   # stable per replica; [A-Za-z0-9._:/-], max 128 chars
 
 - **Node ≥ 20.** The package is **ESM‑only** (`"type": "module"`); from CommonJS,
   `require()` works on Node ≥ 22.
+- Framework adapters: `ai` 6 or 7, `@mastra/core` ≥ 1.68 < 2, `langchain` ≥ 1.1 < 2
+  with `@langchain/core` ≥ 1.1 < 2, and `@anthropic-ai/sdk` ≥ 0.103 < 1 — optional
+  peers, needed only for the adapter you import. `ai` 7 and `@mastra/core` declare
+  Node ≥ 22 in their own `engines`.
 - Optional peer `gpt-tokenizer` for exact OpenAI token counts, loaded automatically
   when installed — without it a built‑in estimator is used. It improves the accuracy
   of estimated figures; what reaches your invoice is `measured` and `reference`, which
