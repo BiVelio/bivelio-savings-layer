@@ -1,0 +1,2421 @@
+{
+  "que": "Contraste del catálogo de precios de BV-SALA con la tabla de LiteLLM (experimento E4). ALARMA, nunca fuente.",
+  "generado": "2026-09-27T20:14:18.971Z",
+  "referencia": {
+    "repositorio": "BerriAI/litellm",
+    "fichero": "model_prices_and_context_window.json",
+    "licencia": "MIT",
+    "commit": "d09bbae1c6df463e425558f60d460437193635da",
+    "url": "https://raw.githubusercontent.com/BerriAI/litellm/d09bbae1c6df463e425558f60d460437193635da/model_prices_and_context_window.json",
+    "sha256": "a33bce9dc5238cd84b2c9b9fa807d7a5fe57ff499d146ebccba8ad2b4b1ae417",
+    "entradas": 3921
+  },
+  "catalogo": {
+    "preciosAlDia": "2026-09-27",
+    "tarifasDeTierAlDia": "2026-09-27",
+    "dia": "2026-09-27"
+  },
+  "resumen": {
+    "filas": 129,
+    "coinciden": 88,
+    "conDiferencias": 2,
+    "sinReferencia": 39,
+    "alarmas": 1,
+    "revisadas": 1,
+    "soloUnLado": 12
+  },
+  "alarmas": [
+    {
+      "clave": "claude-3-haiku",
+      "tramo": "estandar",
+      "claveLiteLLM": "claude-3-haiku-20240307",
+      "campo": "escritura",
+      "tipo": "difiere",
+      "nuestro": 0.0003125,
+      "suyo": 0.0003
+    }
+  ],
+  "filas": [
+    {
+      "clave": "claude-3-5-haiku",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0008,
+        "salida": 0.004,
+        "escritura": 0.001,
+        "lectura": 0.00008,
+        "escritura1h": 0.0016
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-3-5-sonnet",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.003,
+        "salida": 0.015,
+        "escritura": 0.00375,
+        "lectura": 0.0003,
+        "escritura1h": 0.006
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-3-haiku",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00025,
+        "salida": 0.00125,
+        "escritura": 0.0003125,
+        "lectura": 0.00003,
+        "escritura1h": 0.0005
+      },
+      "claveLiteLLM": "claude-3-haiku-20240307",
+      "estado": "difiere",
+      "diferencias": [
+        {
+          "campo": "escritura",
+          "tipo": "difiere",
+          "nuestro": 0.0003125,
+          "suyo": 0.0003
+        }
+      ],
+      "suyo": {
+        "entrada": 0.00025,
+        "salida": 0.00125,
+        "lectura": 0.000029999999999999997,
+        "escritura": 0.0003,
+        "escritura1h": 0.0005
+      }
+    },
+    {
+      "clave": "claude-3-opus",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.015,
+        "salida": 0.075,
+        "escritura": 0.01875,
+        "lectura": 0.0015,
+        "escritura1h": 0.03
+      },
+      "claveLiteLLM": "claude-3-opus-20240229",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.015000000000000001,
+        "salida": 0.075,
+        "lectura": 0.0015,
+        "escritura": 0.01875,
+        "escritura1h": 0.030000000000000002
+      }
+    },
+    {
+      "clave": "claude-fable-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "escritura": 0.0125,
+        "lectura": 0.001,
+        "escritura1h": 0.02
+      },
+      "claveLiteLLM": "claude-fable-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "lectura": 0.001,
+        "escritura": 0.0125,
+        "escritura1h": 0.02
+      }
+    },
+    {
+      "clave": "claude-fable-5-1",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "escritura": 0.0125,
+        "lectura": 0.00025,
+        "escritura1h": 0.02
+      },
+      "claveLiteLLM": "claude-fable-5-1",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "lectura": 0.00025,
+        "escritura": 0.0125,
+        "escritura1h": 0.02
+      }
+    },
+    {
+      "clave": "claude-haiku-4-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.005,
+        "escritura": 0.00125,
+        "lectura": 0.0001,
+        "escritura1h": 0.002
+      },
+      "claveLiteLLM": "claude-haiku-4-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.001,
+        "salida": 0.005,
+        "lectura": 0.00009999999999999999,
+        "escritura": 0.00125,
+        "escritura1h": 0.002
+      }
+    },
+    {
+      "clave": "claude-mythos-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "escritura": 0.0125,
+        "lectura": 0.001,
+        "escritura1h": 0.02
+      },
+      "claveLiteLLM": "claude-mythos-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "lectura": 0.001,
+        "escritura": 0.0125,
+        "escritura1h": 0.02
+      }
+    },
+    {
+      "clave": "claude-mythos-5-1",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "escritura": 0.0125,
+        "lectura": 0.00025,
+        "escritura1h": 0.02
+      },
+      "claveLiteLLM": "claude-mythos-5-1",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "lectura": 0.00025,
+        "escritura": 0.0125,
+        "escritura1h": 0.02
+      }
+    },
+    {
+      "clave": "claude-opus-4",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.015,
+        "salida": 0.075,
+        "escritura": 0.01875,
+        "lectura": 0.0015,
+        "escritura1h": 0.03
+      },
+      "claveLiteLLM": "claude-opus-4-20250514",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.015000000000000001,
+        "salida": 0.075,
+        "lectura": 0.0015,
+        "escritura": 0.01875,
+        "escritura1h": 0.030000000000000002
+      }
+    },
+    {
+      "clave": "claude-opus-4-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "escritura": 0.00625,
+        "lectura": 0.0005,
+        "escritura1h": 0.01
+      },
+      "claveLiteLLM": "claude-opus-4-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625,
+        "escritura1h": 0.01
+      }
+    },
+    {
+      "clave": "claude-opus-4-6",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "escritura": 0.00625,
+        "lectura": 0.0005,
+        "escritura1h": 0.01
+      },
+      "claveLiteLLM": "claude-opus-4-6",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625,
+        "escritura1h": 0.01
+      }
+    },
+    {
+      "clave": "claude-opus-4-7",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "escritura": 0.00625,
+        "lectura": 0.0005,
+        "escritura1h": 0.01
+      },
+      "claveLiteLLM": "claude-opus-4-7",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625,
+        "escritura1h": 0.01
+      }
+    },
+    {
+      "clave": "claude-opus-4-8",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "escritura": 0.00625,
+        "lectura": 0.0005,
+        "escritura1h": 0.01
+      },
+      "claveLiteLLM": "claude-opus-4-8",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625,
+        "escritura1h": 0.01
+      }
+    },
+    {
+      "clave": "claude-opus-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "escritura": 0.00625,
+        "lectura": 0.0005,
+        "escritura1h": 0.01
+      },
+      "claveLiteLLM": "claude-opus-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625,
+        "escritura1h": 0.01
+      }
+    },
+    {
+      "clave": "claude-opus-5-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.004,
+        "salida": 0.02,
+        "escritura": 0.005,
+        "lectura": 0.0002,
+        "escritura1h": 0.008
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-sonnet-4",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.003,
+        "salida": 0.015,
+        "escritura": 0.00375,
+        "lectura": 0.0003,
+        "escritura1h": 0.006
+      },
+      "claveLiteLLM": "claude-sonnet-4-20250514",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.003,
+        "salida": 0.015000000000000001,
+        "lectura": 0.0003,
+        "escritura": 0.0037500000000000003,
+        "escritura1h": 0.006
+      }
+    },
+    {
+      "clave": "claude-sonnet-4-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.003,
+        "salida": 0.015,
+        "escritura": 0.00375,
+        "lectura": 0.0003,
+        "escritura1h": 0.006
+      },
+      "claveLiteLLM": "claude-sonnet-4-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.003,
+        "salida": 0.015000000000000001,
+        "lectura": 0.0003,
+        "escritura": 0.0037500000000000003,
+        "escritura1h": 0.006
+      }
+    },
+    {
+      "clave": "claude-sonnet-4-6",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.003,
+        "salida": 0.015,
+        "escritura": 0.00375,
+        "lectura": 0.0003,
+        "escritura1h": 0.006
+      },
+      "claveLiteLLM": "claude-sonnet-4-6",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.003,
+        "salida": 0.015000000000000001,
+        "lectura": 0.0003,
+        "escritura": 0.0037500000000000003,
+        "escritura1h": 0.006
+      }
+    },
+    {
+      "clave": "claude-sonnet-5",
+      "origen": "anthropic",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "escritura": 0.0025,
+        "lectura": 0.0002,
+        "escritura1h": 0.004
+      },
+      "claveLiteLLM": "claude-sonnet-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "lectura": 0.00019999999999999998,
+        "escritura": 0.0025,
+        "escritura1h": 0.004
+      }
+    },
+    {
+      "clave": "gemini-2.5-flash",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0003,
+        "salida": 0.0025,
+        "escritura": 0.0003,
+        "lectura": 0.00003
+      },
+      "claveLiteLLM": "gemini/gemini-2.5-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0003,
+        "salida": 0.0025,
+        "lectura": 0.000029999999999999997
+      }
+    },
+    {
+      "clave": "gemini-2.5-pro",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "escritura": 0.00125,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": "gemini/gemini-2.5-pro",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "lectura": 0.000125
+      }
+    },
+    {
+      "clave": "gemini-3-flash-preview",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0005,
+        "salida": 0.003,
+        "escritura": 0.0005,
+        "lectura": 0.00005
+      },
+      "claveLiteLLM": "gemini/gemini-3-flash-preview",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0005,
+        "salida": 0.003,
+        "lectura": 0.000049999999999999996
+      }
+    },
+    {
+      "clave": "gemini-3.1-flash-lite",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00025,
+        "salida": 0.0015,
+        "escritura": 0.00025,
+        "lectura": 0.000025
+      },
+      "claveLiteLLM": "gemini/gemini-3.1-flash-lite",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00025,
+        "salida": 0.0015,
+        "lectura": 0.000024999999999999998
+      }
+    },
+    {
+      "clave": "gemini-3.1-pro-preview",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.012,
+        "escritura": 0.002,
+        "lectura": 0.0002
+      },
+      "claveLiteLLM": "gemini/gemini-3.1-pro-preview",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.012,
+        "lectura": 0.00019999999999999998
+      }
+    },
+    {
+      "clave": "gemini-3.5-flash",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0015,
+        "salida": 0.009,
+        "escritura": 0.0015,
+        "lectura": 0.00015
+      },
+      "claveLiteLLM": "gemini/gemini-3.5-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0015,
+        "salida": 0.009000000000000001,
+        "lectura": 0.00015
+      }
+    },
+    {
+      "clave": "gemini-3.5-flash-lite",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0003,
+        "salida": 0.0025,
+        "escritura": 0.0003,
+        "lectura": 0.00003
+      },
+      "claveLiteLLM": "gemini/gemini-3.5-flash-lite",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0003,
+        "salida": 0.0025,
+        "lectura": 0.000029999999999999997
+      }
+    },
+    {
+      "clave": "gemini-3.6-flash",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00075,
+        "salida": 0.00375,
+        "escritura": 0.00075,
+        "lectura": 0.000075
+      },
+      "claveLiteLLM": "gemini/gemini-3.6-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00075,
+        "salida": 0.0037500000000000003,
+        "lectura": 0.000075
+      }
+    },
+    {
+      "clave": "gemini-3.7-flash",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00075,
+        "salida": 0.00375,
+        "escritura": 0.00075,
+        "lectura": 0.000075
+      },
+      "claveLiteLLM": "gemini/gemini-3.7-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00075,
+        "salida": 0.0037500000000000003,
+        "lectura": 0.000075
+      }
+    },
+    {
+      "clave": "gemini-3.8-flash",
+      "origen": "google",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00075,
+        "salida": 0.00375,
+        "escritura": 0.00075,
+        "lectura": 0.000075
+      },
+      "claveLiteLLM": "gemini/gemini-3.8-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00075,
+        "salida": 0.0037500000000000003,
+        "lectura": 0.000075
+      }
+    },
+    {
+      "clave": "gpt-3.5-turbo",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0005,
+        "salida": 0.0015,
+        "escritura": 0.0005
+      },
+      "claveLiteLLM": "gpt-3.5-turbo",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0005,
+        "salida": 0.0015
+      }
+    },
+    {
+      "clave": "gpt-4",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.03,
+        "salida": 0.06,
+        "escritura": 0.03
+      },
+      "claveLiteLLM": "gpt-4",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.030000000000000002,
+        "salida": 0.060000000000000005
+      }
+    },
+    {
+      "clave": "gpt-4-turbo",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.03,
+        "escritura": 0.01
+      },
+      "claveLiteLLM": "gpt-4-turbo",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.030000000000000002
+      }
+    },
+    {
+      "clave": "gpt-4.1",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.008,
+        "escritura": 0.002,
+        "lectura": 0.0005
+      },
+      "claveLiteLLM": "gpt-4.1",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.008,
+        "lectura": 0.0005
+      }
+    },
+    {
+      "clave": "gpt-4.1-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0004,
+        "salida": 0.0016,
+        "escritura": 0.0004,
+        "lectura": 0.0001
+      },
+      "claveLiteLLM": "gpt-4.1-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00039999999999999996,
+        "salida": 0.0015999999999999999,
+        "lectura": 0.00009999999999999999
+      }
+    },
+    {
+      "clave": "gpt-4.1-nano",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0001,
+        "salida": 0.0004,
+        "escritura": 0.0001,
+        "lectura": 0.000025
+      },
+      "claveLiteLLM": "gpt-4.1-nano",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00009999999999999999,
+        "salida": 0.00039999999999999996,
+        "lectura": 0.000024999999999999998
+      }
+    },
+    {
+      "clave": "gpt-4o",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.01,
+        "escritura": 0.0025,
+        "lectura": 0.00125
+      },
+      "claveLiteLLM": "gpt-4o",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0025,
+        "salida": 0.01,
+        "lectura": 0.00125
+      }
+    },
+    {
+      "clave": "gpt-4o-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00015,
+        "salida": 0.0006,
+        "escritura": 0.00015,
+        "lectura": 0.000075
+      },
+      "claveLiteLLM": "gpt-4o-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00015,
+        "salida": 0.0006,
+        "lectura": 0.000075
+      }
+    },
+    {
+      "clave": "gpt-5",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "escritura": 0.00125,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": "gpt-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "lectura": 0.000125
+      }
+    },
+    {
+      "clave": "gpt-5-codex",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "escritura": 0.00125,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": "gpt-5-codex",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "lectura": 0.000125
+      }
+    },
+    {
+      "clave": "gpt-5-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00025,
+        "salida": 0.002,
+        "escritura": 0.00025,
+        "lectura": 0.000025
+      },
+      "claveLiteLLM": "gpt-5-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00025,
+        "salida": 0.002,
+        "lectura": 0.000024999999999999998
+      }
+    },
+    {
+      "clave": "gpt-5-nano",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00005,
+        "salida": 0.0004,
+        "escritura": 0.00005,
+        "lectura": 0.000005
+      },
+      "claveLiteLLM": "gpt-5-nano",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000049999999999999996,
+        "salida": 0.00039999999999999996,
+        "lectura": 0.000005
+      }
+    },
+    {
+      "clave": "gpt-5.1-codex",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "escritura": 0.00125,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": "gpt-5.1-codex",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "lectura": 0.000125
+      }
+    },
+    {
+      "clave": "gpt-5.1-codex-max",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "escritura": 0.00125,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": "gpt-5.1-codex-max",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "lectura": 0.000125
+      }
+    },
+    {
+      "clave": "gpt-5.1-codex-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00025,
+        "salida": 0.002,
+        "escritura": 0.00025,
+        "lectura": 0.000025
+      },
+      "claveLiteLLM": "gpt-5.1-codex-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00025,
+        "salida": 0.002,
+        "lectura": 0.000024999999999999998
+      }
+    },
+    {
+      "clave": "gpt-5.1-thinking",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.01,
+        "escritura": 0.00125,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-5.2",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00175,
+        "salida": 0.014,
+        "escritura": 0.00175,
+        "lectura": 0.000175
+      },
+      "claveLiteLLM": "gpt-5.2",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00175,
+        "salida": 0.014,
+        "lectura": 0.000175
+      }
+    },
+    {
+      "clave": "gpt-5.2-codex",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00175,
+        "salida": 0.014,
+        "escritura": 0.00175,
+        "lectura": 0.000175
+      },
+      "claveLiteLLM": "gpt-5.2-codex",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00175,
+        "salida": 0.014,
+        "lectura": 0.000175
+      }
+    },
+    {
+      "clave": "gpt-5.3-codex",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00175,
+        "salida": 0.014,
+        "escritura": 0.00175,
+        "lectura": 0.000175
+      },
+      "claveLiteLLM": "gpt-5.3-codex",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00175,
+        "salida": 0.014,
+        "lectura": 0.000175
+      }
+    },
+    {
+      "clave": "gpt-5.4",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.015,
+        "escritura": 0.0025,
+        "lectura": 0.00025
+      },
+      "claveLiteLLM": "gpt-5.4",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0025,
+        "salida": 0.015000000000000001,
+        "lectura": 0.00025
+      }
+    },
+    {
+      "clave": "gpt-5.4-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.00075,
+        "salida": 0.0045,
+        "escritura": 0.00075,
+        "lectura": 0.000075
+      },
+      "claveLiteLLM": "gpt-5.4-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00075,
+        "salida": 0.0045000000000000005,
+        "lectura": 0.000075
+      }
+    },
+    {
+      "clave": "gpt-5.4-nano",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0002,
+        "salida": 0.00125,
+        "escritura": 0.0002,
+        "lectura": 0.00002
+      },
+      "claveLiteLLM": "gpt-5.4-nano",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00019999999999999998,
+        "salida": 0.00125,
+        "lectura": 0.00002
+      }
+    },
+    {
+      "clave": "gpt-5.5",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.03,
+        "escritura": 0.005,
+        "lectura": 0.0005
+      },
+      "claveLiteLLM": "gpt-5.5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.030000000000000002,
+        "lectura": 0.0005
+      }
+    },
+    {
+      "clave": "gpt-5.6-luna",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0002,
+        "salida": 0.0012,
+        "escritura": 0.00025,
+        "lectura": 0.00002
+      },
+      "claveLiteLLM": "gpt-5.6-luna",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00019999999999999998,
+        "salida": 0.0012,
+        "lectura": 0.00002,
+        "escritura": 0.00025
+      }
+    },
+    {
+      "clave": "gpt-5.6-sol",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.004,
+        "salida": 0.02,
+        "escritura": 0.005,
+        "lectura": 0.0004
+      },
+      "claveLiteLLM": "gpt-5.6-sol",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.004,
+        "salida": 0.02,
+        "lectura": 0.00039999999999999996,
+        "escritura": 0.005
+      }
+    },
+    {
+      "clave": "gpt-5.6-terra",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.012,
+        "escritura": 0.0025,
+        "lectura": 0.0002
+      },
+      "claveLiteLLM": "gpt-5.6-terra",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.012,
+        "lectura": 0.00019999999999999998,
+        "escritura": 0.0025
+      }
+    },
+    {
+      "clave": "gpt-6-astra",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "escritura": 0.0125,
+        "lectura": 0.001
+      },
+      "claveLiteLLM": "gpt-6-astra",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.05,
+        "lectura": 0.001,
+        "escritura": 0.0125
+      }
+    },
+    {
+      "clave": "gpt-6-luna",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0001,
+        "salida": 0.0005,
+        "escritura": 0.000125,
+        "lectura": 0.00001
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-6-sol",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "escritura": 0.0025,
+        "lectura": 0.0002
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "o3",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.008,
+        "escritura": 0.002,
+        "lectura": 0.0005
+      },
+      "claveLiteLLM": "o3",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.008,
+        "lectura": 0.0005
+      }
+    },
+    {
+      "clave": "o3-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0011,
+        "salida": 0.0044,
+        "escritura": 0.0011,
+        "lectura": 0.00055
+      },
+      "claveLiteLLM": "o3-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0011,
+        "salida": 0.0044,
+        "lectura": 0.00055
+      }
+    },
+    {
+      "clave": "o3-pro",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.02,
+        "salida": 0.08,
+        "escritura": 0.02
+      },
+      "claveLiteLLM": "o3-pro",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.02,
+        "salida": 0.08
+      }
+    },
+    {
+      "clave": "o4-mini",
+      "origen": "openai",
+      "tramo": "estandar",
+      "nuestro": {
+        "entrada": 0.0011,
+        "salida": 0.0044,
+        "escritura": 0.0011,
+        "lectura": 0.000275
+      },
+      "claveLiteLLM": "o4-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0011,
+        "salida": 0.0044,
+        "lectura": 0.000275
+      }
+    },
+    {
+      "clave": "gpt-5",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000625,
+        "salida": 0.005,
+        "lectura": 0.0000625
+      },
+      "claveLiteLLM": "gpt-5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000625,
+        "salida": 0.005,
+        "lectura": 0.0000625
+      }
+    },
+    {
+      "clave": "gpt-5-mini",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000125,
+        "salida": 0.001,
+        "lectura": 0.0000125
+      },
+      "claveLiteLLM": "gpt-5-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000125,
+        "salida": 0.001,
+        "lectura": 0.000012499999999999999
+      }
+    },
+    {
+      "clave": "gpt-5-nano",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000025,
+        "salida": 0.0002,
+        "lectura": 0.0000025
+      },
+      "claveLiteLLM": "gpt-5-nano",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000024999999999999998,
+        "salida": 0.00019999999999999998,
+        "lectura": 0.0000025
+      }
+    },
+    {
+      "clave": "gpt-5.2",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000875,
+        "salida": 0.007,
+        "lectura": 0.0000875
+      },
+      "claveLiteLLM": "gpt-5.2",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-5.4",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.0075,
+        "lectura": 0.00013
+      },
+      "claveLiteLLM": "gpt-5.4",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.007500000000000001,
+        "lectura": 0.00013
+      }
+    },
+    {
+      "clave": "gpt-5.4-mini",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000375,
+        "salida": 0.00225,
+        "lectura": 0.0000375
+      },
+      "claveLiteLLM": "gpt-5.4-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000375,
+        "salida": 0.0022500000000000003,
+        "lectura": 0.0000375
+      }
+    },
+    {
+      "clave": "gpt-5.4-nano",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.0001,
+        "salida": 0.000625,
+        "lectura": 0.00001
+      },
+      "claveLiteLLM": "gpt-5.4-nano",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00009999999999999999,
+        "salida": 0.000625,
+        "lectura": 0.00001
+      }
+    },
+    {
+      "clave": "gpt-5.5",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.015,
+        "lectura": 0.00025
+      },
+      "claveLiteLLM": "gpt-5.5",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.0025,
+        "salida": 0.015000000000000001,
+        "lectura": 0.00025
+      }
+    },
+    {
+      "clave": "gpt-5.6-luna",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.0001,
+        "salida": 0.0006,
+        "lectura": 0.00001,
+        "escritura": 0.000125
+      },
+      "claveLiteLLM": "gpt-5.6-luna",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00009999999999999999,
+        "salida": 0.0006,
+        "lectura": 0.00001,
+        "escritura": 0.000125
+      }
+    },
+    {
+      "clave": "gpt-5.6-sol",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "lectura": 0.0002,
+        "escritura": 0.0025
+      },
+      "claveLiteLLM": "gpt-5.6-sol",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "lectura": 0.00019999999999999998,
+        "escritura": 0.0025
+      }
+    },
+    {
+      "clave": "gpt-5.6-terra",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.006,
+        "lectura": 0.0001,
+        "escritura": 0.00125
+      },
+      "claveLiteLLM": "gpt-5.6-terra",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.001,
+        "salida": 0.006,
+        "lectura": 0.00009999999999999999,
+        "escritura": 0.00125
+      }
+    },
+    {
+      "clave": "o3",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.004,
+        "lectura": 0.00025
+      },
+      "claveLiteLLM": "o3",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.001,
+        "salida": 0.004,
+        "lectura": 0.00025
+      }
+    },
+    {
+      "clave": "o4-mini",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00055,
+        "salida": 0.0022,
+        "lectura": 0.000138
+      },
+      "claveLiteLLM": "o4-mini",
+      "estado": "difiere",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "difiere",
+          "nuestro": 0.000138,
+          "suyo": 0.0001375,
+          "revision": {
+            "clave": "o4-mini",
+            "tramo": "flex",
+            "campo": "lectura",
+            "suyo": 0.0001375,
+            "veredicto": "nosotros",
+            "fuente": "https://developers.openai.com/api/docs/pricing",
+            "consultado": "2026-09-27",
+            "nota": "tabla «Flex pricing data»: o4-mini $0.55 / $0.138 / - / $2.20 (entrada, entrada cacheada, escritura, salida). Si la factura fuera 0,1375 (la mitad de 0,275), 0,138 deja el ahorro de Flex en la lectura por DEBAJO, el lado que no infla la comisión."
+          }
+        }
+      ],
+      "suyo": {
+        "entrada": 0.00055,
+        "salida": 0.0022,
+        "lectura": 0.0001375
+      }
+    },
+    {
+      "clave": "gpt-6-astra",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625
+      },
+      "claveLiteLLM": "gpt-6-astra",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625
+      }
+    },
+    {
+      "clave": "gpt-6-sol",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.005,
+        "lectura": 0.0001,
+        "escritura": 0.00125
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-6-luna",
+      "origen": "openai",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00005,
+        "salida": 0.00025,
+        "lectura": 0.000005,
+        "escritura": 0.0000625
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-6-astra",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625
+      },
+      "claveLiteLLM": "gpt-6-astra",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.0005
+        },
+        {
+          "campo": "escritura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.00625
+        }
+      ],
+      "suyo": {
+        "entrada": 0.005,
+        "salida": 0.025
+      }
+    },
+    {
+      "clave": "gpt-6-sol",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.005,
+        "lectura": 0.0001,
+        "escritura": 0.00125
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-6-luna",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.00005,
+        "salida": 0.00025,
+        "lectura": 0.000005,
+        "escritura": 0.0000625
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-5.6-sol",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "lectura": 0.0002,
+        "escritura": 0.0025
+      },
+      "claveLiteLLM": "gpt-5.6-sol",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.0002
+        },
+        {
+          "campo": "escritura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.0025
+        }
+      ],
+      "suyo": {
+        "entrada": 0.002,
+        "salida": 0.01
+      }
+    },
+    {
+      "clave": "gpt-5.6-terra",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.006,
+        "lectura": 0.0001,
+        "escritura": 0.00125
+      },
+      "claveLiteLLM": "gpt-5.6-terra",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.0001
+        },
+        {
+          "campo": "escritura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.00125
+        }
+      ],
+      "suyo": {
+        "entrada": 0.001,
+        "salida": 0.006
+      }
+    },
+    {
+      "clave": "gpt-5.6-luna",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0001,
+        "salida": 0.0006,
+        "lectura": 0.00001,
+        "escritura": 0.000125
+      },
+      "claveLiteLLM": "gpt-5.6-luna",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.00001
+        },
+        {
+          "campo": "escritura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.000125
+        }
+      ],
+      "suyo": {
+        "entrada": 0.00009999999999999999,
+        "salida": 0.0006
+      }
+    },
+    {
+      "clave": "gpt-5.5",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.015,
+        "lectura": 0.00025
+      },
+      "claveLiteLLM": "gpt-5.5",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.00025
+        }
+      ],
+      "suyo": {
+        "entrada": 0.0025,
+        "salida": 0.015000000000000001
+      }
+    },
+    {
+      "clave": "gpt-5.4",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.0075,
+        "lectura": 0.00013
+      },
+      "claveLiteLLM": "gpt-5.4",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.00013
+        }
+      ],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.007500000000000001
+      }
+    },
+    {
+      "clave": "gpt-5.4-mini",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.000375,
+        "salida": 0.00225,
+        "lectura": 0.0000375
+      },
+      "claveLiteLLM": "gpt-5.4-mini",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.0000375
+        }
+      ],
+      "suyo": {
+        "entrada": 0.000375,
+        "salida": 0.0022500000000000003
+      }
+    },
+    {
+      "clave": "gpt-5.4-nano",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0001,
+        "salida": 0.000625,
+        "lectura": 0.00001
+      },
+      "claveLiteLLM": "gpt-5.4-nano",
+      "estado": "coincide",
+      "diferencias": [
+        {
+          "campo": "lectura",
+          "tipo": "solo-nuestro",
+          "nuestro": 0.00001
+        }
+      ],
+      "suyo": {
+        "entrada": 0.00009999999999999999,
+        "salida": 0.000625
+      }
+    },
+    {
+      "clave": "gpt-5.2",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.000875,
+        "salida": 0.007,
+        "lectura": 0.0000875
+      },
+      "claveLiteLLM": "gpt-5.2",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-5",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.000625,
+        "salida": 0.005,
+        "lectura": 0.0000625
+      },
+      "claveLiteLLM": "gpt-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-5-mini",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.000125,
+        "salida": 0.001,
+        "lectura": 0.0000125
+      },
+      "claveLiteLLM": "gpt-5-mini",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-5-nano",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.000025,
+        "salida": 0.0002,
+        "lectura": 0.0000025
+      },
+      "claveLiteLLM": "gpt-5-nano",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gpt-4.1",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.004
+      },
+      "claveLiteLLM": "gpt-4.1",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.001,
+        "salida": 0.004
+      }
+    },
+    {
+      "clave": "gpt-4.1-mini",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0002,
+        "salida": 0.0008
+      },
+      "claveLiteLLM": "gpt-4.1-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00019999999999999998,
+        "salida": 0.0007999999999999999
+      }
+    },
+    {
+      "clave": "gpt-4.1-nano",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.00005,
+        "salida": 0.0002
+      },
+      "claveLiteLLM": "gpt-4.1-nano",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000049999999999999996,
+        "salida": 0.00019999999999999998
+      }
+    },
+    {
+      "clave": "gpt-4o",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.00125,
+        "salida": 0.005
+      },
+      "claveLiteLLM": "gpt-4o",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00125,
+        "salida": 0.005
+      }
+    },
+    {
+      "clave": "gpt-4o-mini",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.000075,
+        "salida": 0.0003
+      },
+      "claveLiteLLM": "gpt-4o-mini",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000075,
+        "salida": 0.0003
+      }
+    },
+    {
+      "clave": "o3",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.004
+      },
+      "claveLiteLLM": "o3",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "o4-mini",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.00055,
+        "salida": 0.0022
+      },
+      "claveLiteLLM": "o4-mini",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "o3-mini",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.00055,
+        "salida": 0.0022
+      },
+      "claveLiteLLM": "o3-mini",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "o3-pro",
+      "origen": "openai",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.01,
+        "salida": 0.04
+      },
+      "claveLiteLLM": "o3-pro",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.01,
+        "salida": 0.04
+      }
+    },
+    {
+      "clave": "claude-fable-5-1",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.000125,
+        "escritura": 0.00625
+      },
+      "claveLiteLLM": "claude-fable-5-1",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-mythos-5-1",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.000125,
+        "escritura": 0.00625
+      },
+      "claveLiteLLM": "claude-mythos-5-1",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-fable-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625
+      },
+      "claveLiteLLM": "claude-fable-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-mythos-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.005,
+        "salida": 0.025,
+        "lectura": 0.0005,
+        "escritura": 0.00625
+      },
+      "claveLiteLLM": "claude-mythos-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-5-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.002,
+        "salida": 0.01,
+        "lectura": 0.0001,
+        "escritura": 0.0025
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.0125,
+        "lectura": 0.00025,
+        "escritura": 0.003125
+      },
+      "claveLiteLLM": "claude-opus-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-4-8",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.0125,
+        "lectura": 0.00025,
+        "escritura": 0.003125
+      },
+      "claveLiteLLM": "claude-opus-4-8",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-4-7",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.0125,
+        "lectura": 0.00025,
+        "escritura": 0.003125
+      },
+      "claveLiteLLM": "claude-opus-4-7",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-4-6",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.0125,
+        "lectura": 0.00025,
+        "escritura": 0.003125
+      },
+      "claveLiteLLM": "claude-opus-4-6",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-4-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0025,
+        "salida": 0.0125,
+        "lectura": 0.00025,
+        "escritura": 0.003125
+      },
+      "claveLiteLLM": "claude-opus-4-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-opus-4",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0075,
+        "salida": 0.0375,
+        "lectura": 0.00075,
+        "escritura": 0.009375
+      },
+      "claveLiteLLM": "claude-opus-4-20250514",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-sonnet-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.005,
+        "lectura": 0.0001,
+        "escritura": 0.00125
+      },
+      "claveLiteLLM": "claude-sonnet-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-sonnet-4-6",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0015,
+        "salida": 0.0075,
+        "lectura": 0.00015,
+        "escritura": 0.001875
+      },
+      "claveLiteLLM": "claude-sonnet-4-6",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-sonnet-4-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0015,
+        "salida": 0.0075,
+        "lectura": 0.00015,
+        "escritura": 0.001875
+      },
+      "claveLiteLLM": "claude-sonnet-4-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-sonnet-4",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0015,
+        "salida": 0.0075,
+        "lectura": 0.00015,
+        "escritura": 0.001875
+      },
+      "claveLiteLLM": "claude-sonnet-4-20250514",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-haiku-4-5",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0005,
+        "salida": 0.0025,
+        "lectura": 0.00005,
+        "escritura": 0.000625
+      },
+      "claveLiteLLM": "claude-haiku-4-5",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "claude-3-5-haiku",
+      "origen": "anthropic",
+      "tramo": "batch",
+      "nuestro": {
+        "entrada": 0.0004,
+        "salida": 0.002,
+        "lectura": 0.00004,
+        "escritura": 0.0005
+      },
+      "claveLiteLLM": null,
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gemini-3.7-flash",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000375,
+        "salida": 0.001875,
+        "lectura": 0.0000375
+      },
+      "claveLiteLLM": "gemini/gemini-3.7-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000375,
+        "salida": 0.0018750000000000001,
+        "lectura": 0.0000375
+      }
+    },
+    {
+      "clave": "gemini-3.5-flash",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00075,
+        "salida": 0.0045,
+        "lectura": 0.00008
+      },
+      "claveLiteLLM": "gemini/gemini-3.5-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00075,
+        "salida": 0.0045000000000000005,
+        "lectura": 0.00008
+      }
+    },
+    {
+      "clave": "gemini-3.5-flash-lite",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00015,
+        "salida": 0.00125,
+        "lectura": 0.00002
+      },
+      "claveLiteLLM": "gemini/gemini-3.5-flash-lite",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.00015,
+        "salida": 0.00125,
+        "lectura": 0.00002
+      }
+    },
+    {
+      "clave": "gemini-3.1-pro-preview",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.001,
+        "salida": 0.006,
+        "lectura": 0.0002
+      },
+      "claveLiteLLM": "gemini/gemini-3.1-pro-preview",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gemini-2.5-pro",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000625,
+        "salida": 0.005,
+        "lectura": 0.000125
+      },
+      "claveLiteLLM": "gemini/gemini-2.5-pro",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gemini-2.5-flash",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00015,
+        "salida": 0.00125,
+        "lectura": 0.00003
+      },
+      "claveLiteLLM": "gemini/gemini-2.5-flash",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    },
+    {
+      "clave": "gemini-3.8-flash",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000375,
+        "salida": 0.001875,
+        "lectura": 0.0000375
+      },
+      "claveLiteLLM": "gemini/gemini-3.8-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000375,
+        "salida": 0.0018750000000000001,
+        "lectura": 0.0000375
+      }
+    },
+    {
+      "clave": "gemini-3.6-flash",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000375,
+        "salida": 0.001875,
+        "lectura": 0.0000375
+      },
+      "claveLiteLLM": "gemini/gemini-3.6-flash",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000375,
+        "salida": 0.0018750000000000001,
+        "lectura": 0.0000375
+      }
+    },
+    {
+      "clave": "gemini-3.1-flash-lite",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.000125,
+        "salida": 0.00075,
+        "lectura": 0.0000125
+      },
+      "claveLiteLLM": "gemini/gemini-3.1-flash-lite",
+      "estado": "coincide",
+      "diferencias": [],
+      "suyo": {
+        "entrada": 0.000125,
+        "salida": 0.00075,
+        "lectura": 0.000012499999999999999
+      }
+    },
+    {
+      "clave": "gemini-3-flash-preview",
+      "origen": "google",
+      "tramo": "flex",
+      "nuestro": {
+        "entrada": 0.00025,
+        "salida": 0.0015,
+        "lectura": 0.00005
+      },
+      "claveLiteLLM": "gemini/gemini-3-flash-preview",
+      "estado": "sin-referencia",
+      "diferencias": [],
+      "suyo": null
+    }
+  ]
+}
