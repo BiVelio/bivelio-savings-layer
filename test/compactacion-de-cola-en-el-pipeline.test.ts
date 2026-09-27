@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
-import type { ChatMessage, SavingsRequest, TraceEvent } from "../src/contracts/types.js";
+import type { ChatMessage, LicenseGate, SavingsRequest, TraceEvent } from "../src/contracts/types.js";
 import type { ToolOutputCompactionSettings } from "../src/compression/cola.js";
 
 /**
@@ -163,6 +163,26 @@ describe("lo que no se toca", () => {
     const p = new ProveedorEspia();
     const r = await capa(p, true).generate(peticion(2, {}));
     expect(traza(r.report.traces)?.outcome).toBe("applied");
+  });
+});
+
+describe("pedida sin licencia que la cubra: no hace nada, y lo dice", () => {
+  let guardada: string | undefined;
+  beforeAll(() => {
+    guardada = process.env.BVSALA_DEV_OPEN;
+    delete process.env.BVSALA_DEV_OPEN;
+  });
+  afterAll(() => {
+    if (guardada !== undefined) process.env.BVSALA_DEV_OPEN = guardada;
+  });
+
+  it("con una licencia activa sin `long_context_compression`, el proveedor recibe los originales y la traza lo explica", async () => {
+    const p = new ProveedorEspia();
+    const gate: LicenseGate = { isEntitled: () => false, isActive: () => true, status: () => "active" };
+    const r = await createSavingsLayer({ exactTokenizer: false, provider: p, licenseGate: gate }).generate(peticion(2));
+    expect(p.ultima.filter((m) => m.role === "tool").map((m) => m.content)).toEqual([salida(0), salida(1)]);
+    expect(traza(r.report.traces)?.outcome).toMatch(/^degraded: feature not included/);
+    expect(r.report.tokens.compressedInput).toBe(0);
   });
 });
 

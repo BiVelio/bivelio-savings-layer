@@ -128,7 +128,7 @@ Además, **no se tocan nunca** las vistas de fichero (llamadas cuyos argumentos 
 | Etapa 9-ter en el pipeline, después de la elisión y detrás de la licencia `long_context_compression`; traza que separa `tailSavedTokens` de `replayedSavedTokens` | `src/pipeline/pipeline.ts` |
 | Contabilidad: `SavingsLedger.compactedLocal`, restado de `removedInputLocal` (conteo sin dinero ni comisión) | `src/tokenizer/accounting.ts`, `src/pipeline/pipeline.ts` |
 | Verja de fidelidad: casos límite más un fuzz sembrado de 600 textos, cruzado con implementaciones de referencia independientes | `test/compactacion-de-cola.test.ts` |
-| Verja en el pipeline: prefijo byte a byte idéntico entre turnos, **con una capa nueva por turno**; vistas de fichero; `false` gana; `basis` `measured` con `netSavings` 0 | `test/compactacion-de-cola-en-el-pipeline.test.ts` |
+| Verja en el pipeline: prefijo byte a byte idéntico entre turnos, **con una capa nueva por turno**; vistas de fichero; `false` gana; sin licencia no hace nada y lo dice en la traza; `basis` `measured` con `netSavings` 0 | `test/compactacion-de-cola-en-el-pipeline.test.ts` |
 | Banco en seco y su verja económica: el artefacto publicado tiene que coincidir con una tirada nueva | `benchmarks/compactacion-de-cola/`, `benchmarks/evidencia/compactacion-de-cola-2026-09-27.json`, `test/banco-compactacion-de-cola.test.ts`, `pnpm compactacion:banco` |
 | README: sección opt-in sin cifras | `README.md` |
 

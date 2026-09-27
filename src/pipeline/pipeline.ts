@@ -2251,6 +2251,12 @@ export class SavingsPipeline {
       this.config.toolOutputCompaction,
       toggles.toolOutputCompaction,
     );
+    // Pedida y sin la licencia que la cubre: no se hace nada, pero SE DICE. Una
+    // palanca que se pide y calla es indistinguible de «no había nada que
+    // compactar» (la lección de `test/palancas-mudas.test.ts`).
+    if (ajustesDeCompactacion && !this.entitled("long_context_compression")) {
+      trace.record("tool-output-compaction", "degraded: feature not included in this license");
+    }
     if (ajustesDeCompactacion && policy.allowCompression && this.entitled("long_context_compression")) {
       const eleccion = seleccionarCompactables(messages, ajustesDeCompactacion);
       let antes = 0;
