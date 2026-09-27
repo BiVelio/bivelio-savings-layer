@@ -142,11 +142,17 @@ function brazo(nombre: string, config: Brazo["config"], r: ResultadoStream, ms: 
  * otra candidata). Por eso aquí veredictos y puntuaciones van en dos listas, en
  * el orden en que ocurren, y se casan al final comprobando que miden lo mismo.
  */
+export interface EtiquetaDelStream extends CalibrationObservation {
+  /** El `id` de la fila consultada y el de la fila cuya respuesta estaba guardada. */
+  consulta: number;
+  guardada: number;
+}
+
 export async function etiquetasDelStream(
   filas: FilaStream[],
   opcionesCache: SemanticCacheOptions,
-): Promise<CalibrationObservation[]> {
-  const veredictos: boolean[] = [];
+): Promise<EtiquetaDelStream[]> {
+  const veredictos: { correct: boolean; consulta: number; guardada: number }[] = [];
   const puntuaciones: number[] = [];
   const semanticCache = new InMemorySemanticCache({
     ...opcionesCache,
@@ -159,7 +165,7 @@ export async function etiquetasDelStream(
         const a = leerRespuesta(guardada.text);
         const b = leerRespuesta(fresca.text);
         if (a == null || b == null) throw new Error("label without a class");
-        veredictos.push(a.idSet === b.idSet);
+        veredictos.push({ correct: a.idSet === b.idSet, consulta: b.id, guardada: a.id });
         return false;
       },
     },
@@ -195,7 +201,24 @@ export async function etiquetasDelStream(
   } finally {
     await layer.close();
   }
-  return veredictos.map((correct, i) => ({ score: puntuaciones[i]!, correct }));
+  return veredictos.map((v, i) => ({ score: puntuaciones[i]!, ...v }));
+}
+
+/**
+ * ¿Cuántas «erróneas» son ruido de etiqueta? Una etiqueta errónea cuyo prompt
+ * guardado es IDÉNTICO al consultado no es un error de la caché: el dataset
+ * pone el mismo texto en dos clases. Se cuenta en total y a puntuación 1,00.
+ */
+export function ruidoDeEtiqueta(obs: EtiquetaDelStream[], filas: FilaStream[]) {
+  const texto = new Map(filas.map((f) => [f.id, f.prompt]));
+  const erroneas = obs.filter((o) => !o.correct);
+  const identica = (o: EtiquetaDelStream) => texto.get(o.consulta) === texto.get(o.guardada);
+  const enUno = erroneas.filter((o) => o.score >= 0.9995);
+  return {
+    erroneas: erroneas.length,
+    conPromptIdentico: erroneas.filter(identica).length,
+    aPuntuacionUno: { erroneas: enUno.length, conPromptIdentico: enUno.filter(identica).length },
+  };
 }
 
 /** Error por tramo de puntuación (de 0,05 en 0,05) y acumulado desde arriba: si la puntuación separa o no. */
@@ -300,6 +323,7 @@ async function main(): Promise<void> {
   const etiquetasStream = {
     n: etiquetas.length,
     ms: Date.now() - t0,
+    ruidoDeEtiqueta: ruidoDeEtiqueta(etiquetas, filas),
     tramos: tablaPorTramos(etiquetas),
     fueraDeLinea: o.deltas.map((d) => calibrateSemanticFloor(etiquetas, { maxErrorRate: d })),
   };
@@ -365,7 +389,7 @@ async function main(): Promise<void> {
         ` (${(b.ms / 1000).toFixed(1)} s)`,
     );
   }
-  console.log(`stream labels: ${etiquetasStream.n} (${(etiquetasStream.ms / 1000).toFixed(1)} s)`);
+  console.log(`stream labels: ${etiquetasStream.n} (${(etiquetasStream.ms / 1000).toFixed(1)} s); label noise ${JSON.stringify(etiquetasStream.ruidoDeEtiqueta)}`);
   for (const t of etiquetasStream.tramos) {
     console.log(`  score ≥ ${t.desde.toFixed(2)}: ${t.n} labels, ${t.erroneas} wrong; cumulative ${t.nAcumulado}, ${pct(t.errorAcumulado)} wrong`);
   }

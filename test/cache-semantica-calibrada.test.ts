@@ -538,6 +538,7 @@ describe("el banco de la calibración (en seco)", () => {
     ];
     const obs = await etiquetasDelStream(filas, {});
     expect(obs.map((o) => o.correct)).toEqual([true, false]);
+    expect(obs.map((o) => [o.consulta, o.guardada])).toEqual([[2, 1], [4, 3]]);
     const esperada = async (guardada: string, actual: string) => {
       const cache = new InMemorySemanticCache({ calibration: { maxErrorRate: 0.5 } });
       await cache.store(canon(guardada, "stream"), resp("x"));
@@ -546,6 +547,25 @@ describe("el banco de la calibración (en seco)", () => {
     expect(obs[0]!.score).toBe(await esperada(filas[0]!.prompt, filas[1]!.prompt));
     expect(obs[1]!.score).toBe(await esperada(filas[2]!.prompt, filas[3]!.prompt));
     expect(obs[0]!.score).not.toBe(obs[1]!.score);
+  });
+
+  it("el ruido de etiqueta cuenta las erróneas con el MISMO texto guardado y consultado", async () => {
+    const { ruidoDeEtiqueta } = await import("../benchmarks/cache-semantica/calibrada.js");
+    const filas = [
+      { id: 1, prompt: "same text", idSet: 1 },
+      { id: 2, prompt: "same text", idSet: 2 },
+      { id: 3, prompt: "other text", idSet: 3 },
+    ];
+    expect(
+      ruidoDeEtiqueta(
+        [
+          { score: 1, correct: false, consulta: 2, guardada: 1 },
+          { score: 0.9, correct: false, consulta: 3, guardada: 1 },
+          { score: 1, correct: true, consulta: 3, guardada: 3 },
+        ],
+        filas,
+      ),
+    ).toEqual({ erroneas: 2, conPromptIdentico: 1, aPuntuacionUno: { erroneas: 1, conPromptIdentico: 1 } });
   });
 
   it("la tabla por tramos acumula desde arriba", async () => {
