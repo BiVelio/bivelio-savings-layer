@@ -88,6 +88,14 @@ describe("publish.yml publica con trusted publishing y provenance", () => {
     expect(publicar).toMatch(/^ {4}permissions:\n(?: {6}.*\n)*? {6}id-token: write$/m);
   });
 
+  it("la ruta del tarball empieza por ./ — sin ella, npm la lee como un repositorio de GitHub «usuario/repo»", () => {
+    // La 0.4.25 falló así: `npm publish paquete/x.tgz` intentó un git ls-remote
+    // contra github.com/paquete/x.tgz. Con `./` npm la trata como fichero local.
+    const rutas = [...trabajo("publicar").matchAll(/TGZ="([^"]+)"/g)].map((m) => m[1]!);
+    expect(rutas.length).toBeGreaterThan(0);
+    for (const r of rutas) expect(r, r).toMatch(/^\.\//);
+  });
+
   it("publica con `--provenance --access public` cuando el repositorio es público", () => {
     const p = paso(publicar, "Publish to npm");
     // La condición sale del evento, no de una variable que alguien pueda fijar.
