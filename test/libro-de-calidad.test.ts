@@ -82,13 +82,15 @@ const VOCABULARIO = new Set([
   "passed", "failed", "not_applicable",
   "repaired", "still_invalid", "skipped",
   "output_truncated", "schema_defect", "would_cost_more_than_no_layer", "decode_time_constraint",
+  // E7 · una negativa del proveedor no se repara (test/negativas-facturadas.test.ts).
+  "provider_refusal",
   "exact", "semantic", "built_in", "custom",
   // El segmento de la calibración de la caché semántica (opt-in).
   "single_shot", "agentic",
   "shadow", "on", "none", "structural", "value-constrained",
   "accepted", "escalated", "not_routed", "not_applied",
   // `finishReason`, tal cual lo nombra el proveedor.
-  "stop", "length", "tool_calls",
+  "stop", "length", "tool_calls", "content_filter",
 ]);
 
 // «MEASURED» ES UNA PALABRA DE DINERO EN ESTE REPO: la base de lo leído del

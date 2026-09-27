@@ -3330,6 +3330,15 @@ export class SavingsPipeline {
       // haberlo hecho para controlar el gasto. Lo honesto es no cobrarle una
       // llamada inútil y decirle exactamente qué pasa.
       const truncadoPorTope = response.finishReason === "length";
+      // E7 · UNA NEGATIVA DEL PROVEEDOR TAMPOCO SE REPARA. Llega sin texto (un
+      // `content: []` con `stop_reason: "refusal"`, o `finish_reason:
+      // "content_filter"`), así que falla cualquier contrato; y la reparación es
+      // la MISMA petición al MISMO modelo con la salida vacía pegada: la
+      // documentación de Anthropic manda reintentar en OTRO modelo, y en
+      // `bio`, `frontier_llm` y `reasoning_extraction` la segunda negativa
+      // también se cobra (desde el 24-09-2026). Medido con el adaptador real:
+      // dos llamadas pagadas y `netSavings: -1` por una respuesta que no existe.
+      const negativaDelProveedor = response.finishReason === "content_filter";
       // Un fallo cuya causa es el ESQUEMA del cliente (un `pattern` que no
       // compila) no se puede reparar: ningún texto cumple un regex invalido, asi
       // que el reintento fallaria igual y seria otra llamada pagada — la segunda
@@ -3350,6 +3359,14 @@ export class SavingsPipeline {
             "failure). Fix the schema's `pattern`.",
         );
         hechos.reparacion = { outcome: "skipped", skipReason: "schema_defect" };
+      } else if (!validation.valid && negativaDelProveedor) {
+        trace.record("validation", "repair-skipped", {
+          reason:
+            "the provider refused the request (finish reason content_filter); a repair on the same model " +
+            "would be refused, and may be billed, again",
+          model: modeloServido,
+        });
+        hechos.reparacion = { outcome: "skipped", skipReason: "provider_refusal" };
       } else if (!validation.valid && truncadoPorTope) {
         const techoDelEsquema = tokensDeLaMayorRespuesta(schema, (t) => this.tokensFor(t, request));
         // UN TRUNCADO TAMBIÉN ES UN INCUMPLIMIENTO DE VALOR, Y ERA EL ÚNICO QUE LA
@@ -3741,12 +3758,34 @@ export class SavingsPipeline {
     // que el proveedor espera de vuelta). Lo declara quien construye la
     // respuesta; sin el campo, nada cambia.
     const noReproducible = response.replayable === false;
+    // Y LA SEXTA: UNA NEGATIVA DEL PROVEEDOR TAMPOCO SE CACHEA (E7, 2026-09-27).
+    //
+    // `content_filter` es el vocabulario neutro de las dos: el `stop_reason:
+    // "refusal"` de la API de Mensajes (traducirParada) y el `finish_reason` de
+    // Chat Completions. Llega con `usage` y sin texto, se MIDE como cualquier
+    // petición —desde el 24-09-2026 Anthropic cobra las de `bio`,
+    // `frontier_llm` y `reasoning_extraction` «at the rates of the model that
+    // ran it»— y no se guarda, por tres razones:
+    //   · no es una respuesta: la documentación manda reintentar en OTRO modelo
+    //     (o con `fallbacks`) y el clasificador tiene falsos positivos; guardarla
+    //     24 h serviría el falso positivo a cada petición idéntica sin preguntar;
+    //   · repetida desde caché se valoraría por referencia como llamada evitada,
+    //     y en `cyber`, `general_harms` o categoría nula esa llamada NO se habría
+    //     cobrado: ahorro inventado, y comisionable;
+    //   · qué categorías se cobran «may change»: al leer la caché no se puede
+    //     saber si la repetición se habría facturado.
+    // Sin registro de referencia (E7 de referencia.ts: lo que no se cachea no se
+    // repite), tampoco un seguidor de singleflight la valora por referencia. Es
+    // la misma regla que ya aplican los adaptadores de frameworks: solo se
+    // reutiliza una parada `stop`/`end_turn`.
+    const negativa = response.finishReason === "content_filter";
     const cacheable =
       structurallyValid !== false &&
       !pidioHerramientas &&
       !vistaRecortada &&
       !cortadaPorElTope &&
-      !noReproducible;
+      !noReproducible &&
+      !negativa;
 
     // --- Etapa 12-bis: el registro de MEDIDO POR REFERENCIA. ---
     //
@@ -3842,7 +3881,11 @@ export class SavingsPipeline {
                   "an answer would bill it as a 100% avoided call"
                 : noReproducible
                   ? "skipped: the provider answer carries content this layer cannot replay"
-                  : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+                  : negativa
+                    ? "skipped: the provider refused (stop_reason \"refusal\" / finish_reason \"content_filter\"); " +
+                      "a refusal is not an answer, and replaying it would credit an avoided call the provider " +
+                      "may not have billed"
+                    : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
         );
       }
 

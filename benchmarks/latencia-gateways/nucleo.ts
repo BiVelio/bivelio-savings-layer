@@ -279,6 +279,132 @@ export function cuerpoDeFidelidad(modelo: string): string {
   });
 }
 
+// ── La fidelidad en el dialecto de Anthropic (E1, 2026-09-27) ─────────────
+
+/**
+ * Las betas que viajan con la prueba de fidelidad de Mensajes: el TTL de 1 h
+ * (la que negocia Claude Code), las herramientas en línea (22-sep-2026) y los
+ * cambios de herramientas por referencia a mitad de conversación. Un gateway que
+ * pierda la cabecera o la reescriba cambia lo que el proveedor acepta y cobra.
+ */
+export const BETAS_DE_FIDELIDAD = "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01";
+
+/** Las cabeceras de Mensajes que tienen que llegar INTACTAS (en minúsculas). */
+export const CABECERAS_DE_FIDELIDAD_ANTHROPIC = ["anthropic-version", "anthropic-beta"] as const;
+
+/**
+ * Un cuerpo de la API de Mensajes con lo que CAMBIA LA FACTURA de Claude o su
+ * comportamiento, en las formas de la documentación oficial (consultada el
+ * 2026-09-27):
+ *
+ *   · `cache_control` con `ttl: "1h"` en `system`, en una herramienta y en el
+ *     último turno del usuario (la escritura de 1 h se cobra a 2×, la de 5 min a
+ *     1,25×: un gateway que quite el `ttl` cambia la prima);
+ *   · la búsqueda de herramientas: la herramienta de búsqueda, una herramienta
+ *     diferida (`defer_loading: true`) y, en el historial, el resultado de la
+ *     búsqueda con su bloque `tool_reference`;
+ *   · las herramientas EN LÍNEA (beta `inline-tools-2026-09-15`): un mensaje
+ *     `system` a mitad de conversación con un `tool_addition` que trae la
+ *     definición entera y otro que añade por referencia (`tool_reference`).
+ *     Existen para NO tocar `tools` y no invalidar la caché de prefijo.
+ *
+ * Con `stream` el mismo cuerpo pide SSE. La marca de fidelidad va en `system`:
+ * el upstream falso responde con un usage FIJO (con el desglose de la escritura
+ * de 1 h) para que la comparación de respuestas no culpe al gateway del banco.
+ */
+export function cuerpoDeFidelidadAnthropic(modelo: string, opts: { stream?: boolean } = {}): string {
+  const unaHora = { type: "ephemeral", ttl: "1h" };
+  return JSON.stringify({
+    model: modelo,
+    max_tokens: 64,
+    system: [{ type: "text", text: `You are a careful assistant. ${MARCA_DE_FIDELIDAD}`, cache_control: unaHora }],
+    tools: [
+      { type: "tool_search_tool_regex_20251119", name: "tool_search_tool_regex" },
+      {
+        name: "add",
+        description: "Adds two numbers",
+        input_schema: { type: "object", properties: { a: { type: "number" }, b: { type: "number" } }, required: ["a", "b"] },
+        cache_control: unaHora,
+      },
+      {
+        name: "lookup_order",
+        description: "Looks up an order by id",
+        input_schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+        defer_loading: true,
+      },
+    ],
+    messages: [
+      { role: "user", content: [{ type: "text", text: "Find the order tool first." }] },
+      {
+        role: "assistant",
+        content: [
+          { type: "server_tool_use", id: "srvtoolu_banco_1", name: "tool_search_tool_regex", input: { query: "order" } },
+          {
+            type: "tool_search_tool_result",
+            tool_use_id: "srvtoolu_banco_1",
+            content: { type: "tool_search_tool_search_result", tool_references: [{ type: "tool_reference", tool_name: "lookup_order" }] },
+          },
+          { type: "text", text: "Found it." },
+        ],
+      },
+      { role: "user", content: [{ type: "text", text: "Now add 2 and 3 with the tool.", cache_control: unaHora }] },
+      {
+        role: "system",
+        content: [
+          {
+            type: "tool_addition",
+            tool: {
+              type: "tool_definition",
+              definition: {
+                name: "db_query",
+                description: "Run a read-only SQL query against the analytics database.",
+                input_schema: { type: "object", properties: { sql: { type: "string" } }, required: ["sql"] },
+              },
+            },
+          },
+          { type: "tool_addition", tool: { type: "tool_reference", name: "lookup_order" } },
+        ],
+      },
+    ],
+    ...(opts.stream ? { stream: true } : {}),
+  });
+}
+
+/** Lo que el upstream falso declara para la prueba de fidelidad de Mensajes: una escritura de 1 h. */
+export const USO_DE_FIDELIDAD_ANTHROPIC = {
+  input_tokens: ENTRADA_DE_FIDELIDAD,
+  cache_creation_input_tokens: 2048,
+  cache_read_input_tokens: 0,
+  cache_creation: { ephemeral_5m_input_tokens: 0, ephemeral_1h_input_tokens: 2048 },
+  output_tokens: 12,
+  service_tier: "standard",
+} as const;
+
+export interface FidelidadDeCabeceras {
+  /** Las de CABECERAS_DE_FIDELIDAD_ANTHROPIC que no llegaron. */
+  perdidas: string[];
+  /** Las que llegaron con otro valor. */
+  cambiadas: string[];
+}
+
+/** Compara las cabeceras que el cliente mandó con las que el upstream dice haber recibido. */
+export function compararCabeceras(
+  enviadas: Readonly<Record<string, string>>,
+  recibidas: Readonly<Record<string, string | string[] | undefined>>,
+  nombres: readonly string[] = CABECERAS_DE_FIDELIDAD_ANTHROPIC,
+): FidelidadDeCabeceras {
+  const perdidas: string[] = [];
+  const cambiadas: string[] = [];
+  for (const n of nombres) {
+    const mandada = Object.entries(enviadas).find(([k]) => k.toLowerCase() === n)?.[1];
+    if (mandada === undefined) continue;
+    const llego = recibidas[n];
+    if (llego === undefined) perdidas.push(n);
+    else if ((Array.isArray(llego) ? llego.join(",") : llego) !== mandada) cambiadas.push(n);
+  }
+  return { perdidas, cambiadas };
+}
+
 export interface Fidelidad {
   /** Los bytes llegaron iguales. */
   identicoEnBytes: boolean;
@@ -329,6 +455,143 @@ export function compararCuerpos(enviado: string, recibido: string, ignorar: read
     perdidas,
     anadidas,
     cambiadas,
+  };
+}
+
+export interface DiferenciasProfundas {
+  /** Rutas JSON (`system[0].cache_control.ttl`) que estaban y no llegaron. */
+  perdidas: string[];
+  /** Rutas que llegaron sin haberse mandado. */
+  anadidas: string[];
+  /** Hojas que llegaron con otro valor (o con otro tipo). */
+  cambiadas: string[];
+}
+
+/**
+ * Qué cambió DENTRO de un JSON, ruta a ruta: `compararCuerpos` dice que cambió
+ * `system`; esto dice que se perdió `system[0].cache_control.ttl`, que es lo que
+ * decide la prima. Los arrays se comparan por posición. `ignorar` son claves de
+ * PRIMER nivel (el `model` que el gateway reescribe por diseño). Como mucho
+ * `tope` rutas por lista, para que un cuerpo reescrito entero no llene el informe.
+ */
+export function diferenciasProfundas(enviado: unknown, recibido: unknown, ignorar: readonly string[] = [], tope = 40): DiferenciasProfundas {
+  const out: DiferenciasProfundas = { perdidas: [], anadidas: [], cambiadas: [] };
+  const empujar = (l: string[], r: string) => {
+    if (l.length < tope) l.push(r);
+  };
+  const esObjeto = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
+  const andar = (a: unknown, b: unknown, ruta: string, nivel: number): void => {
+    if (Array.isArray(a) && Array.isArray(b)) {
+      for (let i = 0; i < Math.max(a.length, b.length); i++) {
+        const r = `${ruta}[${i}]`;
+        if (i >= b.length) empujar(out.perdidas, r);
+        else if (i >= a.length) empujar(out.anadidas, r);
+        else andar(a[i], b[i], r, nivel + 1);
+      }
+      return;
+    }
+    if (esObjeto(a) && esObjeto(b)) {
+      for (const k of Object.keys(a)) {
+        if (nivel === 0 && ignorar.includes(k)) continue;
+        const r = ruta ? `${ruta}.${k}` : k;
+        if (!(k in b)) empujar(out.perdidas, r);
+        else andar(a[k], b[k], r, nivel + 1);
+      }
+      for (const k of Object.keys(b)) {
+        if (nivel === 0 && ignorar.includes(k)) continue;
+        if (!(k in a)) empujar(out.anadidas, ruta ? `${ruta}.${k}` : k);
+      }
+      return;
+    }
+    if (!igualJson(a, b)) empujar(out.cambiadas, ruta || "$");
+  };
+  andar(enviado, recibido, "", 0);
+  return out;
+}
+
+/** Las claves de un `usage` de Mensajes, aplanadas un nivel (`cache_creation.ephemeral_1h_input_tokens`). */
+function clavesDeUso(u: unknown): Map<string, unknown> {
+  const out = new Map<string, unknown>();
+  if (u === null || typeof u !== "object") return out;
+  for (const [k, v] of Object.entries(u as Record<string, unknown>)) {
+    if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+      for (const [k2, v2] of Object.entries(v as Record<string, unknown>)) out.set(`${k}.${k2}`, v2);
+    } else out.set(k, v);
+  }
+  return out;
+}
+
+export interface FidelidadDeUso {
+  /** Claves del `usage` directo que no llegaron (aplanadas un nivel). */
+  perdidas: string[];
+  anadidas: string[];
+  cambiadas: string[];
+}
+
+/** Compara dos `usage` de Mensajes clave a clave: aquí vive la factura de la respuesta. */
+export function compararUso(directo: unknown, viaGateway: unknown): FidelidadDeUso {
+  const a = clavesDeUso(directo);
+  const b = clavesDeUso(viaGateway);
+  return {
+    perdidas: [...a.keys()].filter((k) => !b.has(k)),
+    anadidas: [...b.keys()].filter((k) => !a.has(k)),
+    cambiadas: [...a.keys()].filter((k) => b.has(k) && !igualJson(a.get(k), b.get(k))),
+  };
+}
+
+/** Los eventos de un SSE de Mensajes: su tipo y su `data` parseado (o null). */
+export function eventosSse(texto: string): { evento: string; data: unknown }[] {
+  const out: { evento: string; data: unknown }[] = [];
+  for (const bloque of texto.replace(/\r\n/g, "\n").split("\n\n")) {
+    if (bloque.trim() === "") continue;
+    const evento = /^event: ?(.*)$/m.exec(bloque)?.[1]?.trim() ?? "message";
+    const datos = [...bloque.matchAll(/^data: ?(.*)$/gm)].map((m) => m[1]).join("\n");
+    let data: unknown = null;
+    try {
+      data = JSON.parse(datos);
+    } catch {
+      data = datos === "" ? null : datos;
+    }
+    out.push({ evento, data });
+  }
+  return out;
+}
+
+/** El `usage` de un SSE de Mensajes tal como lo leería quien mide: message_start ∪ message_delta. */
+export function usoDeSse(texto: string): Record<string, unknown> {
+  let uso: Record<string, unknown> = {};
+  for (const { evento, data } of eventosSse(texto)) {
+    const d = (data ?? {}) as { usage?: Record<string, unknown>; message?: { usage?: Record<string, unknown> } };
+    const u = evento === "message_start" ? d.message?.usage : evento === "message_delta" ? d.usage : undefined;
+    if (u && typeof u === "object") {
+      const cc = { ...((uso["cache_creation"] as object | undefined) ?? {}), ...((u["cache_creation"] as object | undefined) ?? {}) };
+      uso = { ...uso, ...Object.fromEntries(Object.entries(u).filter(([, v]) => v !== null && v !== undefined)) };
+      if (Object.keys(cc).length) uso["cache_creation"] = cc;
+    }
+  }
+  return uso;
+}
+
+export interface FidelidadDeSse {
+  identicoEnBytes: boolean;
+  /** La misma secuencia de tipos de evento. */
+  mismosEventos: boolean;
+  eventosDirecto: string[];
+  eventosGateway: string[];
+  /** El `usage` fusionado (message_start ∪ message_delta), clave a clave. */
+  uso: FidelidadDeUso;
+}
+
+/** Compara la respuesta SSE de Mensajes vía gateway con la directa. */
+export function compararSseMensajes(directa: string, viaGateway: string): FidelidadDeSse {
+  const ed = eventosSse(directa).map((e) => e.evento);
+  const eg = eventosSse(viaGateway).map((e) => e.evento);
+  return {
+    identicoEnBytes: directa === viaGateway,
+    mismosEventos: ed.length === eg.length && ed.every((e, i) => e === eg[i]),
+    eventosDirecto: ed,
+    eventosGateway: eg,
+    uso: compararUso(usoDeSse(directa), usoDeSse(viaGateway)),
   };
 }
 

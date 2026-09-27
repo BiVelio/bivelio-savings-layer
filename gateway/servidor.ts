@@ -23,6 +23,7 @@ import {
   valorarGemelaPorReferencia,
   sueloDeReferencia,
   respuestaJsonFallida,
+  negativaEnJson,
   tierServidoDeRespuesta,
   type Atribucion,
   type ElisionAplicada,
@@ -1443,6 +1444,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         const fallida =
           (observador instanceof ObservadorResponses && observador.estadoFinal() === "failed") ||
           (respuestaJson !== null && respuestaJsonFallida(url.pathname, respuestaJson));
+        // E7 · una negativa se mide, pero su gemela no se valora por referencia.
+        const negativa =
+          ((observador instanceof ObservadorSse || observador instanceof ObservadorChatCompletions) && observador.negativa()) ||
+          (respuestaJson !== null && negativaEnJson(url.pathname, respuestaJson));
         captura.terminar(upstream.status, cabeceras, {
           requestId,
           at: Date.now(),
@@ -1451,6 +1456,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           conContador,
           suscripcion,
           fallida,
+          ...(negativa ? { negativa } : {}),
         });
       }
 

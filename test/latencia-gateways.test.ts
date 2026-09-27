@@ -1,10 +1,16 @@
+import { createServer, request as peticionHttp, type Server } from "node:http";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { arrancarGateway, type GatewayArrancado } from "../gateway/servidor.js";
 import {
+  BETAS_DE_FIDELIDAD,
+  compararCabeceras,
   compararCuerpos,
+  compararSseMensajes,
   cuerpoDeChat,
   cuerpoDeFidelidad,
+  cuerpoDeFidelidadAnthropic,
+  diferenciasProfundas,
   ENTRADA_DE_FIDELIDAD,
   esLoopback,
   extremosRemotos,
@@ -13,10 +19,21 @@ import {
   percentil,
   percentiles,
   resumir,
+  USO_DE_FIDELIDAD_ANTHROPIC,
+  usoDeSse,
   type Ronda,
 } from "../benchmarks/latencia-gateways/nucleo.js";
 import { arrancarUpstreamFalso, type UpstreamFalso } from "../benchmarks/latencia-gateways/upstream-falso.js";
-import { medirCargaVarios, medirEscenarioMultibrazo, medirFidelidad, objetivosDeTerceros } from "../benchmarks/latencia-gateways/arnes.js";
+import {
+  CABECERAS_DE_MENSAJES,
+  medirCargaVarios,
+  medirEscenarioMultibrazo,
+  medirFidelidad,
+  medirFidelidadMensajes,
+  MENSAJES_BVSALA,
+  objetivosDeTerceros,
+  type ResultadoDeFidelidadMensajes,
+} from "../benchmarks/latencia-gateways/arnes.js";
 import { testLicense } from "./helpers/test-license.js";
 
 /**
@@ -28,9 +45,12 @@ import { testLicense } from "./helpers/test-license.js";
  * Ninguna petición sale de 127.0.0.1.
  */
 
-let recursos: (UpstreamFalso | GatewayArrancado)[] = [];
+let recursos: (UpstreamFalso | GatewayArrancado | Server)[] = [];
 afterEach(async () => {
-  for (const r of recursos) await r.cerrar();
+  for (const r of recursos) {
+    if ("cerrar" in r) await r.cerrar();
+    else await new Promise((res) => r.close(res));
+  }
   recursos = [];
 });
 
@@ -122,6 +142,67 @@ describe("núcleo: los cuerpos", () => {
   });
 });
 
+describe("núcleo: la fidelidad en el dialecto de Anthropic (E1)", () => {
+  it("el cuerpo de Mensajes lleva lo que cambia la factura de Claude, en las formas oficiales", () => {
+    const c = JSON.parse(cuerpoDeFidelidadAnthropic("claude-opus-5-5"));
+    expect(c.model).toBe("claude-opus-5-5");
+    expect(c.stream).toBeUndefined();
+    // TTL de 1 h en system, en una herramienta y en el último turno del usuario.
+    expect(c.system[0].cache_control).toEqual({ type: "ephemeral", ttl: "1h" });
+    expect(c.tools[1].cache_control).toEqual({ type: "ephemeral", ttl: "1h" });
+    expect(c.messages[2].content[0].cache_control).toEqual({ type: "ephemeral", ttl: "1h" });
+    // Búsqueda de herramientas: la herramienta, una diferida SIN cache_control y el tool_reference.
+    expect(c.tools[0].type).toBe("tool_search_tool_regex_20251119");
+    expect(c.tools[2]).toMatchObject({ name: "lookup_order", defer_loading: true });
+    expect(c.tools[2].cache_control).toBeUndefined();
+    expect(c.messages[1].content[1].content.tool_references).toEqual([{ type: "tool_reference", tool_name: "lookup_order" }]);
+    // Herramientas en línea: un mensaje system a mitad de conversación, por definición y por referencia.
+    expect(c.messages[3].role).toBe("system");
+    expect(c.messages[3].content.map((b: { tool: { type: string } }) => b.tool.type)).toEqual(["tool_definition", "tool_reference"]);
+    expect(JSON.parse(cuerpoDeFidelidadAnthropic("m", { stream: true })).stream).toBe(true);
+    expect(BETAS_DE_FIDELIDAD.split(",")).toContain("inline-tools-2026-09-15");
+    expect(CABECERAS_DE_MENSAJES["anthropic-beta"]).toBe(BETAS_DE_FIDELIDAD);
+  });
+
+  it("diferenciasProfundas dice QUÉ ruta se perdió dentro del cuerpo, no solo la clave de primer nivel", () => {
+    const a = JSON.parse(cuerpoDeFidelidadAnthropic("claude-haiku-4-5"));
+    const b = structuredClone(a);
+    delete b.system[0].cache_control.ttl;
+    b.tools.pop();
+    b.model = "otro";
+    b.metadata = { user_id: "x" };
+    expect(diferenciasProfundas(a, b, ["model"])).toEqual({
+      perdidas: ["system[0].cache_control.ttl", "tools[2]"],
+      anadidas: ["metadata"],
+      cambiadas: [],
+    });
+    expect(diferenciasProfundas(a, a)).toEqual({ perdidas: [], anadidas: [], cambiadas: [] });
+    expect(diferenciasProfundas({ x: 1 }, { x: "1" }).cambiadas).toEqual(["x"]);
+  });
+
+  it("compararCabeceras: perdidas y cambiadas, sin distinguir mayúsculas en lo enviado", () => {
+    const enviadas = { "Anthropic-Version": "2023-06-01", "anthropic-beta": "a,b" };
+    expect(compararCabeceras(enviadas, { "anthropic-version": "2023-06-01", "anthropic-beta": "a,b" })).toEqual({ perdidas: [], cambiadas: [] });
+    expect(compararCabeceras(enviadas, { "anthropic-version": "2023-06-01" })).toEqual({ perdidas: ["anthropic-beta"], cambiadas: [] });
+    expect(compararCabeceras(enviadas, { "anthropic-version": "2023-06-01", "anthropic-beta": "a" })).toEqual({ perdidas: [], cambiadas: ["anthropic-beta"] });
+  });
+
+  it("compararSseMensajes: eventos y usage fusionado (message_start ∪ message_delta), con el desglose de 1 h", () => {
+    const ev = (t: string, d: unknown) => `event: ${t}\ndata: ${JSON.stringify(d)}\n\n`;
+    const directa =
+      ev("message_start", { type: "message_start", message: { usage: { input_tokens: 5, cache_creation: { ephemeral_1h_input_tokens: 9 }, output_tokens: 1 } } }) +
+      ev("message_delta", { type: "message_delta", usage: { output_tokens: 7 } }) +
+      ev("message_stop", { type: "message_stop" });
+    expect(usoDeSse(directa)).toEqual({ input_tokens: 5, cache_creation: { ephemeral_1h_input_tokens: 9 }, output_tokens: 7 });
+    expect(compararSseMensajes(directa, directa)).toMatchObject({ identicoEnBytes: true, mismosEventos: true, uso: { perdidas: [], anadidas: [], cambiadas: [] } });
+    const sinDesglose = directa.replace(',"cache_creation":{"ephemeral_1h_input_tokens":9}', "");
+    const c = compararSseMensajes(directa, sinDesglose.replace(ev("message_stop", { type: "message_stop" }), ""));
+    expect(c.mismosEventos).toBe(false);
+    expect(c.eventosGateway).toEqual(["message_start", "message_delta"]);
+    expect(c.uso.perdidas).toEqual(["cache_creation.ephemeral_1h_input_tokens"]);
+  });
+});
+
 describe("núcleo: los extremos remotos de lsof", () => {
   it("se queda con los remotos no locales y descarta loopback y sockets escuchando", () => {
     const salida = [
@@ -189,6 +270,26 @@ describe("el upstream falso", () => {
     expect(sse.trim().endsWith('{"type":"message_stop"}')).toBe(true);
   });
 
+  it("Mensajes con la marca de fidelidad: usage fijo con la escritura de 1 h, una tool_use, y el espejo de cabeceras", async () => {
+    const u = await arrancarUpstreamFalso({ trozos: 2, entreTrozosMs: 0 });
+    recursos.push(u);
+    const cabeceras = { "content-type": "application/json", ...CABECERAS_DE_MENSAJES };
+    const json = (await (await fetch(`http://127.0.0.1:${u.puerto}/v1/messages`, { method: "POST", headers: cabeceras, body: cuerpoDeFidelidadAnthropic("claude-haiku-4-5") })).json()) as {
+      usage: unknown;
+      content: { type: string }[];
+      stop_reason: string;
+    };
+    expect(json.usage).toEqual(USO_DE_FIDELIDAD_ANTHROPIC);
+    expect(json.content[0]!.type).toBe("tool_use");
+    expect(json.stop_reason).toBe("tool_use");
+    const recibidas = (await (await fetch(`http://127.0.0.1:${u.puerto}/banco/ultimas-cabeceras`)).json()) as Record<string, string>;
+    expect(recibidas["anthropic-beta"]).toBe(BETAS_DE_FIDELIDAD);
+    expect(recibidas["anthropic-version"]).toBe("2023-06-01");
+    const sse = await (await fetch(`http://127.0.0.1:${u.puerto}/v1/messages`, { method: "POST", headers: cabeceras, body: cuerpoDeFidelidadAnthropic("claude-haiku-4-5", { stream: true }) })).text();
+    expect(usoDeSse(sse)).toEqual(USO_DE_FIDELIDAD_ANTHROPIC);
+    expect(sse).toContain('"type":"input_json_delta"');
+  });
+
   it("la prueba de fidelidad recibe un usage fijo y el espejo devuelve los bytes recibidos", async () => {
     const u = await arrancarUpstreamFalso();
     recursos.push(u);
@@ -247,6 +348,63 @@ describe("el arnés contra el gateway de BV-SALA (en proceso)", () => {
     }
   });
 
+  it("E1 · fidelidad en Mensajes: sin palancas, el gateway de BV-SALA entrega intactos cuerpo, anthropic-beta y respuesta (JSON y SSE)", async () => {
+    const { u, g } = await montar();
+    for (const m of ["claude-haiku-4-5", "claude-opus-5-5"]) {
+      for (const stream of [false, true]) {
+        const f = await medirFidelidadMensajes({ nombre: "bvsala", base: `http://127.0.0.1:${g.puerto}`, mensajes: MENSAJES_BVSALA }, `http://127.0.0.1:${u.puerto}`, m, stream);
+        const donde = `${m} · ${stream ? "sse" : "json"}`;
+        expect(f.peticion, donde).toEqual({ identicoEnBytes: true, mismoJson: true, perdidas: [], anadidas: [], cambiadas: [] });
+        expect(f.peticionRutas, donde).toEqual({ perdidas: [], anadidas: [], cambiadas: [] });
+        expect(f.cabeceras, donde).toEqual({ perdidas: [], cambiadas: [] });
+        expect(f.betaRecibida, donde).toBe(BETAS_DE_FIDELIDAD);
+        expect(f.roles.recibidos, donde).toEqual(["user", "assistant", "user", "system"]);
+        expect(f.respuesta.identicoEnBytes, donde).toBe(true);
+        expect(f.uso, donde).toEqual({ perdidas: [], anadidas: [], cambiadas: [] });
+      }
+    }
+  });
+
+  it("E1 · control: un proxy que quita el ttl y la beta SÍ se ve (la prueba tiene dientes)", async () => {
+    const u = await arrancarUpstreamFalso({ trozos: 2, entreTrozosMs: 0 });
+    recursos.push(u);
+    // Un «gateway» mínimo que hace lo que haría uno descuidado: reserializa el
+    // cuerpo sin el `ttl` de system y sin la herramienta diferida, y no reenvía
+    // `anthropic-beta`. La respuesta sí la devuelve tal cual.
+    const proxy = createServer(async (req, res) => {
+      const trozos: Buffer[] = [];
+      for await (const t of req) trozos.push(t as Buffer);
+      const c = JSON.parse(Buffer.concat(trozos).toString("utf8"));
+      delete c.system[0].cache_control.ttl;
+      c.tools = c.tools.filter((t: { defer_loading?: boolean }) => !t.defer_loading);
+      const cuerpo = JSON.stringify(c);
+      const { "anthropic-beta": _beta, host: _host, "content-length": _cl, ...resto } = req.headers;
+      const salida = peticionHttp(
+        { host: "127.0.0.1", port: u.puerto, path: req.url, method: "POST", headers: { ...resto, "content-length": Buffer.byteLength(cuerpo) } },
+        (r) => {
+          res.writeHead(r.statusCode ?? 502, r.headers);
+          r.pipe(res);
+        },
+      );
+      salida.end(cuerpo);
+    });
+    recursos.push(proxy);
+    const puerto = await new Promise<number>((r) => proxy.listen(0, "127.0.0.1", () => r((proxy.address() as { port: number }).port)));
+    const f: ResultadoDeFidelidadMensajes = await medirFidelidadMensajes(
+      { nombre: "descuidado", base: `http://127.0.0.1:${puerto}`, mensajes: MENSAJES_BVSALA },
+      `http://127.0.0.1:${u.puerto}`,
+      "claude-haiku-4-5",
+      false,
+    );
+    expect(f.peticion.identicoEnBytes).toBe(false);
+    expect(f.peticionRutas.perdidas).toEqual(["system[0].cache_control.ttl", "tools[2]"]);
+    expect(f.cabeceras.perdidas).toEqual(["anthropic-beta"]);
+    expect(f.betaRecibida).toBeNull();
+    expect(f.roles.recibidos).toEqual(f.roles.enviados);
+    // La respuesta la devolvió intacta: la prueba separa los dos sentidos.
+    expect(f.respuesta.identicoEnBytes).toBe(true);
+  });
+
   it("carga: bloques alternos sin errores y RPS positivo en cada brazo", async () => {
     const { u, g } = await montar();
     const cuerpo = cuerpoDeChat({ bytes: 1_024, modelo: "gpt-4o-mini", stream: false });
@@ -273,6 +431,13 @@ describe("los objetivos de terceros", () => {
     expect(o.litellm!.modelo).toBe("bench-gpt-5-mini");
     expect(o.bifrost!.modelo).toBe("openai/gpt-5-mini");
     expect(o.portkey!.cabeceras["x-portkey-custom-host"]).toBe("http://127.0.0.1:9911/v1");
+    // E1 · la ruta de Mensajes de cada uno (Helicone no entra: su catálogo acaba en 2025).
+    expect(o.litellm!.mensajes).toMatchObject({ ruta: "/v1/messages" });
+    expect(o.litellm!.mensajes!.modelo("claude-haiku-4-5")).toBe("bench-claude-haiku-4-5");
+    expect(o.bifrost!.mensajes).toMatchObject({ ruta: "/anthropic/v1/messages" });
+    expect(o.portkey!.mensajes!.cabeceras).toMatchObject({ "x-portkey-provider": "anthropic", "x-portkey-custom-host": "http://127.0.0.1:9911/v1" });
+    expect(o.helicone!.mensajes).toBeUndefined();
+    for (const x of Object.values(o)) for (const v of Object.values(x.mensajes?.cabeceras ?? {})) expect(v).not.toMatch(/sk-|bvk_|sbp_/);
     // Ninguna cabecera lleva nada con forma de clave real.
     for (const x of Object.values(o)) for (const v of Object.values(x.cabeceras)) expect(v).not.toMatch(/sk-|bvk_|sbp_/);
   });

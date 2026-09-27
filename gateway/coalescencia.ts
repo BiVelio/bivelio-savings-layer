@@ -70,6 +70,13 @@ export interface HuellaDeLaPrimaria {
    * una repetición hubiera facturado lo mismo.
    */
   fallida: boolean;
+  /**
+   * E7 · la primaria fue una NEGATIVA del proveedor (`stop_reason: "refusal"`
+   * en Mensajes, `finish_reason: "content_filter"` en Chat Completions). Su
+   * contador se mide, pero no vale para una repetición: en las categorías que
+   * Anthropic no cobra, la llamada evitada habría costado 0 $. Ausente = no.
+   */
+  negativa?: boolean;
 }
 
 export interface RespuestaCapturada {

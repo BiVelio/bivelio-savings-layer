@@ -12,12 +12,16 @@
  *   GET  /banco/ultima-peticion  Los BYTES del último cuerpo de Chat Completions
  *                             o Messages que llegó (la prueba de fidelidad del
  *                             arnés los compara con lo que mandó el cliente).
+ *   GET  /banco/ultimas-cabeceras  Las cabeceras de esa misma petición, en JSON
+ *                             (la fidelidad de Mensajes mira `anthropic-beta` y
+ *                             `anthropic-version`).
  *   POST /api/metering/usage  Una ingesta falsa de BiVelio para el modo «medido»
  *   GET  /api/org/entitlements  del gateway de BV-SALA: cuenta lo que recibe y
  *                             no concede ninguna palanca.
  *
  * El usage es determinista (≈ bytes/4 de entrada, 12 de salida; fijo en la
- * prueba de fidelidad) y el modelo de la respuesta es el de la petición.
+ * prueba de fidelidad, y en Mensajes con una escritura de caché de 1 h y una
+ * llamada a herramienta) y el modelo de la respuesta es el de la petición.
  * Ninguna respuesta sale de 127.0.0.1.
  *
  * Se usa de dos maneras: importado (los tests) o como proceso propio
@@ -26,7 +30,13 @@
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
-import { esElPrincipal, ENTRADA_DE_FIDELIDAD, MARCA_DE_FIDELIDAD, tokensDeEntradaFalsos } from "./nucleo.js";
+import {
+  esElPrincipal,
+  ENTRADA_DE_FIDELIDAD,
+  MARCA_DE_FIDELIDAD,
+  tokensDeEntradaFalsos,
+  USO_DE_FIDELIDAD_ANTHROPIC,
+} from "./nucleo.js";
 
 export interface OpcionesUpstreamFalso {
   /** 0 = efímero. */
@@ -66,6 +76,7 @@ export function arrancarUpstreamFalso(opts: OpcionesUpstreamFalso = {}): Promise
   const entreTrozosMs = opts.entreTrozosMs ?? 1;
   const cuenta: Record<string, number> = {};
   let ultimoCuerpo: Buffer = Buffer.alloc(0);
+  let ultimasCabeceras: Record<string, string | string[] | undefined> = {};
   const contar = (k: string) => (cuenta[k] = (cuenta[k] ?? 0) + 1);
 
   const servidor = createServer(async (req, res) => {
@@ -83,6 +94,9 @@ export function arrancarUpstreamFalso(opts: OpcionesUpstreamFalso = {}): Promise
         res.end(ultimoCuerpo);
         return;
       }
+      if (req.method === "GET" && ruta === "/banco/ultimas-cabeceras") {
+        return json(res, 200, ultimasCabeceras);
+      }
       if (req.method === "GET" && ruta === "/api/org/entitlements") {
         contar("entitlements");
         return json(res, 200, { features: [], refreshAfterSeconds: 300 });
@@ -94,7 +108,10 @@ export function arrancarUpstreamFalso(opts: OpcionesUpstreamFalso = {}): Promise
         contar("ingesta");
         return json(res, 200, { accepted: true });
       }
-      if (ruta.endsWith("/chat/completions") || ruta === "/v1/messages") ultimoCuerpo = crudo;
+      if (ruta.endsWith("/chat/completions") || ruta === "/v1/messages") {
+        ultimoCuerpo = crudo;
+        ultimasCabeceras = { ...req.headers };
+      }
       let cuerpo: Record<string, unknown> = {};
       try {
         cuerpo = JSON.parse(crudo.toString("utf8")) as Record<string, unknown>;
@@ -102,11 +119,13 @@ export function arrancarUpstreamFalso(opts: OpcionesUpstreamFalso = {}): Promise
         return json(res, 400, { error: { message: "invalid json" } });
       }
       const modelo = typeof cuerpo.model === "string" ? cuerpo.model : "gpt-4o-mini";
-      // La prueba de fidelidad lleva una marca en los mensajes y recibe un usage
-      // fijo (nucleo.ts → MARCA_DE_FIDELIDAD); lo demás, ≈ bytes/4.
-      const entrada = JSON.stringify(cuerpo.messages ?? "").includes(MARCA_DE_FIDELIDAD)
-        ? ENTRADA_DE_FIDELIDAD
-        : tokensDeEntradaFalsos(crudo.length);
+      // La prueba de fidelidad lleva una marca en los mensajes (Chat
+      // Completions) o en `system` (Mensajes) y recibe un usage fijo
+      // (nucleo.ts → MARCA_DE_FIDELIDAD); lo demás, ≈ bytes/4.
+      const deFidelidad =
+        JSON.stringify(cuerpo.messages ?? "").includes(MARCA_DE_FIDELIDAD) ||
+        JSON.stringify(cuerpo.system ?? "").includes(MARCA_DE_FIDELIDAD);
+      const entrada = deFidelidad ? ENTRADA_DE_FIDELIDAD : tokensDeEntradaFalsos(crudo.length);
       await esperar(retardoMs);
 
       if (ruta.endsWith("/chat/completions")) {
@@ -133,6 +152,37 @@ export function arrancarUpstreamFalso(opts: OpcionesUpstreamFalso = {}): Promise
         const pideUso = (cuerpo.stream_options as { include_usage?: unknown } | undefined)?.include_usage === true;
         if (pideUso) res.write(`data: ${JSON.stringify({ ...base, object: "chat.completion.chunk", choices: [], usage: uso })}\n\n`);
         res.end("data: [DONE]\n\n");
+        return;
+      }
+
+      if (ruta === "/v1/messages" && deFidelidad) {
+        // La fidelidad de Mensajes: una llamada a herramienta y una escritura de
+        // caché de 1 h con su desglose, que es lo que un gateway tiene que
+        // devolver intacto para que quien mide aguas abajo tarife la prima a 2×.
+        contar(cuerpo.stream === true ? "messages-stream" : "messages");
+        const uso = USO_DE_FIDELIDAD_ANTHROPIC;
+        const herramienta = { type: "tool_use", id: "toolu_bench", name: "add", input: { a: 2, b: 3 } };
+        if (cuerpo.stream !== true) {
+          return json(res, 200, {
+            id: "msg_bench",
+            type: "message",
+            role: "assistant",
+            model: modelo,
+            content: [herramienta],
+            stop_reason: "tool_use",
+            stop_sequence: null,
+            usage: uso,
+          });
+        }
+        res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache" });
+        const ev = (tipo: string, datos: unknown) => `event: ${tipo}\ndata: ${JSON.stringify(datos)}\n\n`;
+        res.write(ev("message_start", { type: "message_start", message: { id: "msg_bench", type: "message", role: "assistant", model: modelo, content: [], stop_reason: null, stop_sequence: null, usage: { ...uso, output_tokens: 1 } } }));
+        res.write(ev("content_block_start", { type: "content_block_start", index: 0, content_block: { ...herramienta, input: {} } }));
+        res.write(ev("content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: '{"a": 2, ' } }));
+        res.write(ev("content_block_delta", { type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: '"b": 3}' } }));
+        res.write(ev("content_block_stop", { type: "content_block_stop", index: 0 }));
+        res.write(ev("message_delta", { type: "message_delta", delta: { stop_reason: "tool_use", stop_sequence: null }, usage: { output_tokens: uso.output_tokens } }));
+        res.end(ev("message_stop", { type: "message_stop" }));
         return;
       }
 

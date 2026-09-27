@@ -16,6 +16,22 @@
       "network_config": {
         "base_url": "http://127.0.0.1:9911"
       }
+    },
+    "anthropic": {
+      "keys": [
+        {
+          "name": "relleno-anthropic",
+          "value": "relleno-no-es-una-clave",
+          "models": [
+            "claude-haiku-4-5",
+            "claude-opus-5-5"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "base_url": "http://127.0.0.1:9911"
+      }
     }
   }
 }

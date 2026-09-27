@@ -57,6 +57,7 @@ export class ObservadorSse {
   private resto = "";
   private uso: UsoSse | null = null;
   private elisionObservada: ElisionAplicada | null = null;
+  private paradaFinal: string | null = null;
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
@@ -75,7 +76,11 @@ export class ObservadorSse {
           usage?: UsoSse;
           message?: { usage?: UsoSse };
           context_management?: unknown;
+          delta?: { stop_reason?: unknown };
         };
+        // E7 · el motivo de parada viaja en message_delta (en message_start va a
+        // null). Solo se apunta: el passthrough no lo mira.
+        if (ev === "message_delta" && typeof d.delta?.stop_reason === "string") this.paradaFinal = d.delta.stop_reason;
         // S4a · el borrado del proveedor viaja en el evento message_delta
         // (sondeado en vivo el 04-09: en message_start va a null).
         const elision = elisionDeContextManagement(d.context_management);
@@ -109,6 +114,11 @@ export class ObservadorSse {
   /** Los borrados que el PROVEEDOR declaró para esta respuesta (S4a), si hubo. */
   elision(): ElisionAplicada | null {
     return this.elisionObservada;
+  }
+
+  /** E7 · ¿cerró el stream con `stop_reason: "refusal"`? (ver `negativaEnJson`). */
+  negativa(): boolean {
+    return this.paradaFinal === "refusal";
   }
 }
 
@@ -371,10 +381,16 @@ export class ObservadorChatCompletions {
   private ultimoUso: UsoSse | null = null;
   private vioUsoFinal = false;
   private vioDone = false;
+  private filtrada = false;
   readonly eventos: Record<string, number> = {};
 
   observar(chunk: Buffer | string): void {
     for (const m of this.parser.push(chunk)) this.mensaje(m);
+  }
+
+  /** E7 · ¿algún chunk cerró su elección con `finish_reason: "content_filter"`? */
+  negativa(): boolean {
+    return this.filtrada;
   }
 
   /**
@@ -407,6 +423,7 @@ export class ObservadorChatCompletions {
     }
     if (d === null || typeof d !== "object") return;
     this.eventos["chunk"] = (this.eventos["chunk"] ?? 0) + 1;
+    if (eleccionFiltrada(d.choices)) this.filtrada = true;
     if (d.usage === null || typeof d.usage !== "object") return;
     const mapeado = mapearUsoChat(d.usage as UsoChat);
     if (mapeado === null) return;
@@ -623,6 +640,36 @@ export function respuestaJsonFallida(path: string, cuerpo: Buffer | string): boo
   }
 }
 
+/** ¿Alguna elección de Chat Completions cerró con `finish_reason: "content_filter"`? */
+function eleccionFiltrada(choices: unknown): boolean {
+  return (
+    Array.isArray(choices) &&
+    choices.some((c) => c !== null && typeof c === "object" && (c as { finish_reason?: unknown }).finish_reason === "content_filter")
+  );
+}
+
+/**
+ * E7 · ¿la respuesta JSON (`stream: false`) es una NEGATIVA del proveedor? En
+ * `/v1/messages`, `stop_reason: "refusal"` (llega con `content: []` y con
+ * `usage`); en `…/chat/completions`, `finish_reason: "content_filter"`. La
+ * negativa se MIDE como cualquier petición —Anthropic cobra desde el 24-09-2026
+ * las de `bio`, `frontier_llm` y `reasoning_extraction`—, pero la gemela
+ * coalescida de una negativa no se valora por referencia (`primary-refused`):
+ * en las demás categorías la repetición no se habría cobrado. Lo ilegible es
+ * false. La Responses API no entra: su negativa es una parte `refusal` dentro
+ * de una respuesta `completed`.
+ */
+export function negativaEnJson(path: string, cuerpo: Buffer | string): boolean {
+  if (path !== "/v1/messages" && !path.endsWith("/chat/completions")) return false;
+  try {
+    const d = JSON.parse(typeof cuerpo === "string" ? cuerpo : cuerpo.toString("utf8")) as { stop_reason?: unknown; choices?: unknown } | null;
+    if (d === null || typeof d !== "object") return false;
+    return path === "/v1/messages" ? d.stop_reason === "refusal" : eleccionFiltrada(d.choices);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Parte G · el `service_tier` que el proveedor dice haber SERVIDO, leído de la
  * respuesta entera (la réplica que recibe la gemela), cada dialecto en su sitio:
@@ -817,6 +864,11 @@ export function informeMedido(
  *                         contador no es el de la petición del cliente.
  * - `primary-failed`    — la primaria cerró con `response.failed` (o
  *                         `status: "failed"` en el JSON).
+ * - `primary-refused`   — la primaria fue una NEGATIVA del proveedor (E7:
+ *                         `stop_reason: "refusal"` o `finish_reason:
+ *                         "content_filter"`). Se mide, pero no se repite como
+ *                         llamada evitada: en las categorías que Anthropic no
+ *                         cobra, la repetición habría costado 0 $.
  * - `client-disconnected` — el cliente de la gemela se fue antes de recibir la
  *                         réplica entera: sin la capa se habría cortado igual,
  *                         y una llamada que nadie recibió no es una llamada
@@ -833,6 +885,7 @@ export type MotivoSinReferenciaGateway =
   | "unofficial-upstream"
   | "layer-changed-request"
   | "primary-failed"
+  | "primary-refused"
   | "client-disconnected"
   | "service-tier"
   | "no-cached-price"
@@ -931,6 +984,7 @@ export function valorarGemelaPorReferencia(
   if (!primaria.proveedorOficial) return { ok: false, reason: "unofficial-upstream" };
   if (!primaria.intacta) return { ok: false, reason: "layer-changed-request" };
   if (primaria.fallida) return { ok: false, reason: "primary-failed" };
+  if (primaria.negativa === true) return { ok: false, reason: "primary-refused" };
   if (!gemela.entregada) return { ok: false, reason: "client-disconnected" };
 
   const json = cuerpo !== null && typeof cuerpo === "object" && !Array.isArray(cuerpo) ? (cuerpo as Record<string, unknown>) : {};
