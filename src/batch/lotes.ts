@@ -215,8 +215,10 @@ async function enviarLote(
       };
       const pendientes = job.requests.filter((r) => r.batch >= creados).map((r) => r.customId);
       throw new BatchSubmitError(
-        `[bvsala] batch submission failed after ${creados} of ${trozos.length} provider batches were created: ` +
-          `${mensajeDe(err)}. The created batches run and are billed; error.job holds them.`,
+        creados === 0
+          ? `[bvsala] batch submission failed before any provider batch was created: ${mensajeDe(err)}.`
+          : `[bvsala] batch submission failed after ${creados} of ${trozos.length} provider batches were created: ` +
+            `${mensajeDe(err)}. The created batches run and are billed; error.job holds them.`,
         parcial,
         pendientes,
         { cause: err },

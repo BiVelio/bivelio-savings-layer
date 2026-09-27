@@ -252,6 +252,14 @@ describe("Anthropic · submit", () => {
     expect(e.job.requests.map((r) => r.customId)).toEqual(["row-0", "row-1"]);
     expect(e.notSubmitted).toEqual(["row-2", "row-3", "row-4"]);
     expect(e.message).toMatch(/1 of 3 provider batches were created/);
+
+    // Si falla el PRIMERO, no hay nada creado y el mensaje no dice lo contrario.
+    const primero = anthropic({ fallarCreacion: 1 });
+    const e0 = (await primero.layer.batches.submit(lote(2)).catch((x: unknown) => x)) as BatchSubmitError;
+    expect(e0).toBeInstanceOf(BatchSubmitError);
+    expect(e0.job.batchIds).toEqual([]);
+    expect(e0.notSubmitted).toEqual(["row-0", "row-1"]);
+    expect(e0.message).toMatch(/before any provider batch was created/);
   });
 });
 
