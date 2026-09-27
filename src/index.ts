@@ -58,3 +58,11 @@ export * from "./telemetry/index.js";
 export * from "./license/index.js";
 export * from "./metering/index.js";
 export * from "./pipeline/index.js";
+// Los exportadores: los libros hacia OpenTelemetry, Langfuse, Datadog y FOCUS,
+// desde el proceso del cliente y sin enviar nada a BiVelio. NO importan
+// `@opentelemetry/api`: sus tipos son estructurales (como `gpt-tokenizer` en
+// tokenizer/exact.ts), porque un `import type` del peer opcional acabaría en el
+// `.d.ts` y rompería el typecheck de quien no lo tenga instalado, y porque
+// `bv-sala.js` (la web) se construye con este mismo fichero. El peer opcional
+// de package.json solo documenta el rango probado.
+export * from "./exporters/index.js";
