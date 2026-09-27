@@ -166,18 +166,22 @@ describe("la decisión mira el PREFIJO, no el reloj", () => {
 describe("ahorroDeRebaja", () => {
   it("es la resta entre dos tarifas públicas sobre el MISMO conteo", () => {
     // 100.000 tokens de escritura a $0,005/1k de entrada: 2× = $1,00 · 1,25× = $0,625.
-    const ahorro = ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0.005, yaEran5m: 0 });
+    const ahorro = ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0.005, yaEran5m: 0, herramientaDeServidor: false });
     expect(ahorro).toBeCloseTo(100 * 0.005 * (PRIMA_1H - PRIMA_5M), 10);
     expect(ahorro).toBeCloseTo(0.375, 10);
   });
 
   it("declara 0 —y no miente— si el cliente ya traía marcas de 5m propias", () => {
-    expect(ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0.005, yaEran5m: 1 })).toBe(0);
+    expect(ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0.005, yaEran5m: 1, herramientaDeServidor: false })).toBe(0);
+  });
+
+  it("declara 0 si la petición declaraba herramientas de servidor: la API escribe su resultado a 5 min por su cuenta", () => {
+    expect(ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0.005, yaEran5m: 0, herramientaDeServidor: true })).toBe(0);
   });
 
   it("declara 0 sin escritura o sin precio", () => {
-    expect(ahorroDeRebaja({ cacheEscrita5m: 0, inputPer1k: 0.005, yaEran5m: 0 })).toBe(0);
-    expect(ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0, yaEran5m: 0 })).toBe(0);
+    expect(ahorroDeRebaja({ cacheEscrita5m: 0, inputPer1k: 0.005, yaEran5m: 0, herramientaDeServidor: false })).toBe(0);
+    expect(ahorroDeRebaja({ cacheEscrita5m: 100_000, inputPer1k: 0, yaEran5m: 0, herramientaDeServidor: false })).toBe(0);
   });
 });
 

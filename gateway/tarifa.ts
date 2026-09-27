@@ -373,9 +373,13 @@ export function ahorroDeRebaja(entrada: {
   cacheEscrita5m: number;
   inputPer1k: number;
   yaEran5m: number;
-  herramientaDeServidor?: boolean;
+  /**
+   * Obligatorio, como en RebajaAplicada: un llamador que lo olvidara acreditaría
+   * por defecto escrituras que pueden ser de la API y no de la palanca.
+   */
+  herramientaDeServidor: boolean;
 }): number {
-  const { cacheEscrita5m, inputPer1k, yaEran5m, herramientaDeServidor = false } = entrada;
+  const { cacheEscrita5m, inputPer1k, yaEran5m, herramientaDeServidor } = entrada;
   if (yaEran5m > 0 || herramientaDeServidor || cacheEscrita5m <= 0 || inputPer1k <= 0) return 0;
   return (cacheEscrita5m / 1_000) * inputPer1k * (PRIMA_1H - PRIMA_5M);
 }
