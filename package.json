@@ -15,6 +15,10 @@
     "email": "support@bivelio.com",
     "url": "https://savings.bivelio.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BiVelio/bivelio-savings-layer.git"
+  },
   "license": "SEE LICENSE IN LICENSE",
   "author": "BiVelio Inc.",
   "type": "module",
@@ -85,7 +89,8 @@
     "salida:anatomia": "tsx benchmarks/salida/anatomia.ts",
     "salida:por-clase": "tsx benchmarks/salida/por-clase.ts",
     "luz-verde": "bash scripts/luz-verde.sh",
-    "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts"
+    "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts",
+    "sbom": "tsx scripts/sbom.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
