@@ -1,0 +1,564 @@
+{
+  "experimento": "E6 · BV-SALA delante de LiteLLM (informe de competencia 2026-09-27, §10)",
+  "fecha": "2026-09-27T20:05:45.642Z",
+  "maquina": {
+    "plataforma": "darwin 24.6.0",
+    "arquitectura": "arm64",
+    "cpu": "Apple M4 Pro",
+    "nucleos": 14,
+    "node": "v25.9.0"
+  },
+  "bvsala": {
+    "version": "0.4.26",
+    "desde": "fuente (devUnlicensed / licencia efímera de los tests)"
+  },
+  "litellm": {
+    "version": "1.102.1",
+    "instalacion": "benchmarks/delante-de-litellm/instalar-litellm.sh (rueda comprobada con sha256; dependencias con --exclude-newer 2026-09-24T00:00:00Z)",
+    "paquetesInstalados": 108,
+    "entorno": "vaciado; HOME temporal; LITELLM_LOCAL_MODEL_COST_MAP=True; LITELLM_TELEMETRY=False; --host 127.0.0.1",
+    "configs": [
+      "benchmarks/delante-de-litellm/litellm.yaml",
+      "benchmarks/delante-de-litellm/litellm-con-cache.yaml"
+    ]
+  },
+  "upstream": "benchmarks/latencia-gateways/upstream-falso.ts (retardo 300 ms)",
+  "comprobaciones": [
+    "✓ versión: LiteLLM dice 1.102.1",
+    "✓ S1 (a) OpenAI por LiteLLM: primera measured, segunda reference (exact, referencia → 674963d2-c2b6-455b-a46b-5efee8724cb9); al upstream llegaron 1",
+    "✓ S1 HUECO (b) en el SDK: ingerida como reference, en la base de la comisión: SÍ (2.475e-6 USD)",
+    "✓ S2 alias sin precio: primera measured, segunda estimated (no-cached-price); en la base: no",
+    "✓ S3 alias con costModels: segunda reference; en la base: SÍ",
+    "✓ S4 (a) Anthropic por LiteLLM: primera measured, segunda reference; al upstream llegaron 1",
+    "✓ S5 HUECO caché de LiteLLM: al upstream llegaron 1; la segunda instancia recibió un acierto de LiteLLM (true) y el SDK lo reporta measured con actual 1.215e-5 USD; cabecera de coste 1ª 1.215e-05 · 2ª 1.215e-05",
+    "✓ S6 (b) gateway delante de LiteLLM: al upstream llegaron 1; la gemela sale estimated, en la base: no",
+    "✓ S7 cache_control por LiteLLM: el upstream recibió ttl=1h",
+    "✓ S8 palanca de TTL por LiteLLM: el upstream recibió ttl=5m; registro measured con ahorro 0 USD (el upstream falso no declara escrituras de caché)"
+  ],
+  "fallos": 0,
+  "cabecerasObservadas": {
+    "chat": [
+      "x-litellm-attempted-fallbacks",
+      "x-litellm-attempted-retries",
+      "x-litellm-call-id",
+      "x-litellm-callback-duration-ms",
+      "x-litellm-key-spend",
+      "x-litellm-model-api-base",
+      "x-litellm-model-group",
+      "x-litellm-model-id",
+      "x-litellm-model-name",
+      "x-litellm-overhead-duration-ms",
+      "x-litellm-response-cost",
+      "x-litellm-response-cost-discount-amount",
+      "x-litellm-response-cost-input",
+      "x-litellm-response-cost-margin-amount",
+      "x-litellm-response-cost-margin-percent",
+      "x-litellm-response-cost-original",
+      "x-litellm-response-cost-output",
+      "x-litellm-response-cost-tool-usage",
+      "x-litellm-response-duration-ms",
+      "x-litellm-version"
+    ],
+    "messages": [
+      "x-litellm-attempted-fallbacks",
+      "x-litellm-attempted-retries",
+      "x-litellm-call-id",
+      "x-litellm-key-spend",
+      "x-litellm-model-group",
+      "x-litellm-model-id",
+      "x-litellm-model-name",
+      "x-litellm-overhead-duration-ms",
+      "x-litellm-response-cost",
+      "x-litellm-response-cost-discount-amount",
+      "x-litellm-response-cost-input",
+      "x-litellm-response-cost-margin-amount",
+      "x-litellm-response-cost-margin-percent",
+      "x-litellm-response-cost-original",
+      "x-litellm-response-cost-output",
+      "x-litellm-response-cost-tool-usage",
+      "x-litellm-response-duration-ms",
+      "x-litellm-version"
+    ],
+    "chatAciertoDeCache": [
+      "x-litellm-attempted-fallbacks",
+      "x-litellm-attempted-retries",
+      "x-litellm-cache-key",
+      "x-litellm-call-id",
+      "x-litellm-callback-duration-ms",
+      "x-litellm-key-spend",
+      "x-litellm-model-api-base",
+      "x-litellm-model-group",
+      "x-litellm-model-id",
+      "x-litellm-model-name",
+      "x-litellm-overhead-duration-ms",
+      "x-litellm-response-cost",
+      "x-litellm-response-cost-discount-amount",
+      "x-litellm-response-cost-input",
+      "x-litellm-response-cost-margin-amount",
+      "x-litellm-response-cost-margin-percent",
+      "x-litellm-response-cost-original",
+      "x-litellm-response-cost-output",
+      "x-litellm-response-cost-tool-usage",
+      "x-litellm-response-duration-ms",
+      "x-litellm-version"
+    ]
+  },
+  "escenarios": {
+    "s1_openai_id_del_proveedor": {
+      "primera": {
+        "requestId": "674963d2-c2b6-455b-a46b-5efee8724cb9",
+        "basis": "measured",
+        "cacheResult": "miss",
+        "actualUsd": 0.00001215,
+        "baselineUsd": 0.00001215
+      },
+      "segunda": {
+        "requestId": "1660beeb-6346-425d-bb29-d93d52d190e8",
+        "basis": "reference",
+        "cacheResult": "exact",
+        "actualUsd": 0,
+        "baselineUsd": 0.000002475,
+        "referenceRequestId": "674963d2-c2b6-455b-a46b-5efee8724cb9"
+      },
+      "veredictos": [
+        {
+          "requestId": "674963d2-c2b6-455b-a46b-5efee8724cb9",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        },
+        {
+          "requestId": "1660beeb-6346-425d-bb29-d93d52d190e8",
+          "cacheResult": "exact",
+          "basisEmitido": "reference",
+          "basisIngerido": "reference",
+          "enLaBase": true,
+          "ahorroUsd": 0.000002475
+        }
+      ],
+      "cabecerasDelProxy": [
+        {
+          "x-litellm-attempted-fallbacks": "0",
+          "x-litellm-attempted-retries": "0",
+          "x-litellm-call-id": "3af8e96e-f9c7-47e1-ba73-79ee2369b5a0",
+          "x-litellm-callback-duration-ms": "0.0",
+          "x-litellm-key-spend": "1.215e-05",
+          "x-litellm-model-api-base": "http://127.0.0.1:64534/v1",
+          "x-litellm-model-group": "gpt-4o-mini",
+          "x-litellm-model-id": "fc8e429a5a3f878e21462a634456a6bb7a7c45c56c70b6d0bace4f9545bb5ab2",
+          "x-litellm-model-name": "openai/gpt-4o-mini",
+          "x-litellm-overhead-duration-ms": "1.027",
+          "x-litellm-response-cost": "1.215e-05",
+          "x-litellm-response-cost-discount-amount": "0.0",
+          "x-litellm-response-cost-input": "4.95e-06",
+          "x-litellm-response-cost-margin-amount": "0.0",
+          "x-litellm-response-cost-margin-percent": "0.0",
+          "x-litellm-response-cost-original": "1.215e-05",
+          "x-litellm-response-cost-output": "7.2e-06",
+          "x-litellm-response-cost-tool-usage": "0.0",
+          "x-litellm-response-duration-ms": "303.57099999999997",
+          "x-litellm-version": "1.102.1"
+        }
+      ]
+    },
+    "s2_alias_sin_precio": {
+      "primera": {
+        "requestId": "cc82bcaf-355b-4870-98c7-fe3e331f9fa4",
+        "basis": "measured",
+        "cacheResult": "miss",
+        "actualUsd": 0.0000345,
+        "baselineUsd": 0.0000345
+      },
+      "segunda": {
+        "requestId": "60c56fb1-d36c-446f-bb48-e54ab89f93f4",
+        "basis": "estimated",
+        "cacheResult": "exact",
+        "actualUsd": 0,
+        "baselineUsd": 0.0000195,
+        "referenceRejected": "no-cached-price"
+      },
+      "veredictos": [
+        {
+          "requestId": "cc82bcaf-355b-4870-98c7-fe3e331f9fa4",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        },
+        {
+          "requestId": "60c56fb1-d36c-446f-bb48-e54ab89f93f4",
+          "cacheResult": "exact",
+          "basisEmitido": "estimated",
+          "basisIngerido": "estimated",
+          "enLaBase": false,
+          "ahorroUsd": 0.0000195
+        }
+      ],
+      "cabecerasDelProxy": [
+        {
+          "x-litellm-attempted-fallbacks": "0",
+          "x-litellm-attempted-retries": "0",
+          "x-litellm-call-id": "df37783f-d026-43d7-a382-d73df2a8d0c1",
+          "x-litellm-callback-duration-ms": "0.0",
+          "x-litellm-key-spend": "1.215e-05",
+          "x-litellm-model-api-base": "http://127.0.0.1:64534/v1",
+          "x-litellm-model-group": "equipo-rapido",
+          "x-litellm-model-id": "3bcfaefd26612252fdde239c76478bda15f2ba79bcfe93e2fe7065fe7e6980d6",
+          "x-litellm-model-name": "openai/gpt-4o-mini",
+          "x-litellm-overhead-duration-ms": "0.752",
+          "x-litellm-response-cost": "1.215e-05",
+          "x-litellm-response-cost-discount-amount": "0.0",
+          "x-litellm-response-cost-input": "4.95e-06",
+          "x-litellm-response-cost-margin-amount": "0.0",
+          "x-litellm-response-cost-margin-percent": "0.0",
+          "x-litellm-response-cost-original": "1.215e-05",
+          "x-litellm-response-cost-output": "7.2e-06",
+          "x-litellm-response-cost-tool-usage": "0.0",
+          "x-litellm-response-duration-ms": "302.565",
+          "x-litellm-version": "1.102.1"
+        }
+      ]
+    },
+    "s3_alias_con_costModels": {
+      "primera": {
+        "requestId": "6c61f5ac-3361-4141-becf-7aac011ac877",
+        "basis": "measured",
+        "cacheResult": "miss",
+        "actualUsd": 0.00001215,
+        "baselineUsd": 0.00001215
+      },
+      "segunda": {
+        "requestId": "93e1eaa5-08a5-4c31-8206-ff865f9cbed8",
+        "basis": "reference",
+        "cacheResult": "exact",
+        "actualUsd": 0,
+        "baselineUsd": 0.000002475,
+        "referenceRequestId": "6c61f5ac-3361-4141-becf-7aac011ac877"
+      },
+      "veredictos": [
+        {
+          "requestId": "6c61f5ac-3361-4141-becf-7aac011ac877",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        },
+        {
+          "requestId": "93e1eaa5-08a5-4c31-8206-ff865f9cbed8",
+          "cacheResult": "exact",
+          "basisEmitido": "reference",
+          "basisIngerido": "reference",
+          "enLaBase": true,
+          "ahorroUsd": 0.000002475
+        }
+      ],
+      "cabecerasDelProxy": [
+        {
+          "x-litellm-attempted-fallbacks": "0",
+          "x-litellm-attempted-retries": "0",
+          "x-litellm-call-id": "8da309ca-424c-4b53-a45b-077aa7e1dd0a",
+          "x-litellm-callback-duration-ms": "0.0",
+          "x-litellm-key-spend": "1.215e-05",
+          "x-litellm-model-api-base": "http://127.0.0.1:64534/v1",
+          "x-litellm-model-group": "equipo-rapido",
+          "x-litellm-model-id": "3bcfaefd26612252fdde239c76478bda15f2ba79bcfe93e2fe7065fe7e6980d6",
+          "x-litellm-model-name": "openai/gpt-4o-mini",
+          "x-litellm-overhead-duration-ms": "0.767",
+          "x-litellm-response-cost": "1.215e-05",
+          "x-litellm-response-cost-discount-amount": "0.0",
+          "x-litellm-response-cost-input": "4.95e-06",
+          "x-litellm-response-cost-margin-amount": "0.0",
+          "x-litellm-response-cost-margin-percent": "0.0",
+          "x-litellm-response-cost-original": "1.215e-05",
+          "x-litellm-response-cost-output": "7.2e-06",
+          "x-litellm-response-cost-tool-usage": "0.0",
+          "x-litellm-response-duration-ms": "302.248",
+          "x-litellm-version": "1.102.1"
+        }
+      ]
+    },
+    "s4_anthropic_messages": {
+      "primera": {
+        "requestId": "01636a7a-c433-4a5f-a009-efc1f2818e70",
+        "basis": "measured",
+        "cacheResult": "miss",
+        "actualUsd": 0.000112,
+        "baselineUsd": 0.000112
+      },
+      "segunda": {
+        "requestId": "57a3b036-b4cd-4f19-a28c-26af26e9e1c7",
+        "basis": "reference",
+        "cacheResult": "exact",
+        "actualUsd": 0,
+        "baselineUsd": 0.0000602,
+        "referenceRequestId": "01636a7a-c433-4a5f-a009-efc1f2818e70"
+      },
+      "veredictos": [
+        {
+          "requestId": "01636a7a-c433-4a5f-a009-efc1f2818e70",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        },
+        {
+          "requestId": "57a3b036-b4cd-4f19-a28c-26af26e9e1c7",
+          "cacheResult": "exact",
+          "basisEmitido": "reference",
+          "basisIngerido": "reference",
+          "enLaBase": true,
+          "ahorroUsd": 0.0000602
+        }
+      ],
+      "cabecerasDelProxy": [
+        {
+          "x-litellm-attempted-fallbacks": "0",
+          "x-litellm-attempted-retries": "0",
+          "x-litellm-call-id": "90414c86-02be-44d6-9091-b64acc01611f",
+          "x-litellm-key-spend": "0.00011200000000000001",
+          "x-litellm-model-group": "claude-haiku-4-5",
+          "x-litellm-model-id": "d430d5c4bbb399f8b4d0e45df6ae7de3b68eeb3e3debe4f41e987028cd3426ba",
+          "x-litellm-model-name": "anthropic/claude-haiku-4-5",
+          "x-litellm-overhead-duration-ms": "5.967",
+          "x-litellm-response-cost": "0.00011200000000000001",
+          "x-litellm-response-cost-discount-amount": "0.0",
+          "x-litellm-response-cost-input": "5.2e-05",
+          "x-litellm-response-cost-margin-amount": "0.0",
+          "x-litellm-response-cost-margin-percent": "0.0",
+          "x-litellm-response-cost-original": "0.00011200000000000001",
+          "x-litellm-response-cost-output": "6.000000000000001e-05",
+          "x-litellm-response-cost-tool-usage": "0.0",
+          "x-litellm-response-duration-ms": "309.272",
+          "x-litellm-version": "1.102.1"
+        }
+      ]
+    },
+    "s5_dos_instancias_tras_la_cache_de_litellm": {
+      "primera": {
+        "requestId": "37986a2b-d7b2-41a1-8108-a6d6ef5ba188",
+        "basis": "measured",
+        "cacheResult": "miss",
+        "actualUsd": 0.00001215,
+        "baselineUsd": 0.00001215
+      },
+      "segunda": {
+        "requestId": "b73871ca-60b0-4fdf-aca0-420aaf719c32",
+        "basis": "measured",
+        "cacheResult": "miss",
+        "actualUsd": 0.00001215,
+        "baselineUsd": 0.00001215
+      },
+      "veredictos": [
+        {
+          "requestId": "37986a2b-d7b2-41a1-8108-a6d6ef5ba188",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        },
+        {
+          "requestId": "b73871ca-60b0-4fdf-aca0-420aaf719c32",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        }
+      ],
+      "cabecerasDelProxy": [
+        {
+          "x-litellm-attempted-fallbacks": "0",
+          "x-litellm-attempted-retries": "0",
+          "x-litellm-call-id": "427fb3f9-e490-4dac-950f-04cc3f30dda9",
+          "x-litellm-callback-duration-ms": "0.0",
+          "x-litellm-key-spend": "1.215e-05",
+          "x-litellm-model-api-base": "http://127.0.0.1:64534/v1",
+          "x-litellm-model-group": "gpt-4o-mini",
+          "x-litellm-model-id": "fc8e429a5a3f878e21462a634456a6bb7a7c45c56c70b6d0bace4f9545bb5ab2",
+          "x-litellm-model-name": "openai/gpt-4o-mini",
+          "x-litellm-overhead-duration-ms": "5.734",
+          "x-litellm-response-cost": "1.215e-05",
+          "x-litellm-response-cost-discount-amount": "0.0",
+          "x-litellm-response-cost-input": "4.95e-06",
+          "x-litellm-response-cost-margin-amount": "0.0",
+          "x-litellm-response-cost-margin-percent": "0.0",
+          "x-litellm-response-cost-original": "1.215e-05",
+          "x-litellm-response-cost-output": "7.2e-06",
+          "x-litellm-response-cost-tool-usage": "0.0",
+          "x-litellm-response-duration-ms": "470.18",
+          "x-litellm-version": "1.102.1"
+        },
+        {
+          "x-litellm-attempted-fallbacks": "0",
+          "x-litellm-attempted-retries": "0",
+          "x-litellm-cache-key": "548882ebb96376fe6cb23da398a3a63da9bd6e4c8280cf12468de78282c52a9f",
+          "x-litellm-call-id": "8ae7c514-2ff7-4fd6-9a89-3fa8a35a8aa4",
+          "x-litellm-callback-duration-ms": "0.0",
+          "x-litellm-key-spend": "1.215e-05",
+          "x-litellm-model-api-base": "http://127.0.0.1:64534/v1",
+          "x-litellm-model-group": "gpt-4o-mini",
+          "x-litellm-model-id": "fc8e429a5a3f878e21462a634456a6bb7a7c45c56c70b6d0bace4f9545bb5ab2",
+          "x-litellm-model-name": "openai/gpt-4o-mini",
+          "x-litellm-overhead-duration-ms": "0.18658305597305302",
+          "x-litellm-response-cost": "1.215e-05",
+          "x-litellm-response-cost-discount-amount": "0.0",
+          "x-litellm-response-cost-input": "4.95e-06",
+          "x-litellm-response-cost-margin-amount": "0.0",
+          "x-litellm-response-cost-margin-percent": "0.0",
+          "x-litellm-response-cost-original": "1.215e-05",
+          "x-litellm-response-cost-output": "7.2e-06",
+          "x-litellm-response-cost-tool-usage": "0.0",
+          "x-litellm-response-duration-ms": "0.30200000000000005",
+          "x-litellm-version": "1.102.1"
+        }
+      ],
+      "llegaronAlUpstream": 1
+    },
+    "s6_gateway_gemela_coalescida": {
+      "estados": [
+        200,
+        200
+      ],
+      "lineas": [
+        "[gateway] POST /v1/chat/completions  · gpt-4o-mini · $0.000012 (in 33, cache↑0 cache↓0, out 12)",
+        "[gateway] POST /v1/chat/completions · COALESCED (call avoided) · gpt-4o-mini · $0.000012 (in 33, cache↑0 cache↓0, out 12) · estimated, not by reference: unofficial-upstream"
+      ],
+      "registros": [
+        {
+          "orgId": "self",
+          "seatId": "asiento-e6",
+          "requestId": "f06854e5-14d5-4328-9f1a-9a1d9f8fd67a",
+          "model": "gpt-4o-mini",
+          "at": 1790539544820,
+          "avoidedLlm": 0,
+          "actualLlm": 1,
+          "baselineInputTokens": 33,
+          "actualInputTokens": 33,
+          "eliminatedInputTokens": 0,
+          "compressedInputTokens": 0,
+          "baselineOutputTokens": 12,
+          "actualOutputTokens": 12,
+          "providerCachedInputTokens": 0,
+          "cacheResult": "miss",
+          "baselineCost": 0.00001215,
+          "actualCost": 0.00001215,
+          "netSavings": 0,
+          "basis": "measured"
+        },
+        {
+          "orgId": "self",
+          "seatId": "asiento-e6",
+          "requestId": "a5c61b8a-4b2e-44df-b343-a3c09f4224b6",
+          "model": "gpt-4o-mini",
+          "at": 1790539544821,
+          "avoidedLlm": 1,
+          "actualLlm": 0,
+          "baselineInputTokens": 33,
+          "actualInputTokens": 0,
+          "eliminatedInputTokens": 0,
+          "compressedInputTokens": 0,
+          "baselineOutputTokens": 12,
+          "actualOutputTokens": 0,
+          "providerCachedInputTokens": 0,
+          "cacheResult": "singleflight",
+          "baselineCost": 0.00001215,
+          "actualCost": 0,
+          "netSavings": 1,
+          "basis": "estimated"
+        }
+      ],
+      "veredictos": [
+        {
+          "requestId": "f06854e5-14d5-4328-9f1a-9a1d9f8fd67a",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        },
+        {
+          "requestId": "a5c61b8a-4b2e-44df-b343-a3c09f4224b6",
+          "cacheResult": "singleflight",
+          "basisEmitido": "estimated",
+          "basisIngerido": "estimated",
+          "enLaBase": false,
+          "ahorroUsd": 0.00001215
+        }
+      ],
+      "llegaronAlUpstream": 1
+    },
+    "s7_cache_control_por_litellm": {
+      "ttlEnviado": "1h",
+      "ttlRecibidoPorElUpstream": "1h",
+      "cuerpoRecibido": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "ttl probe"
+          }
+        ],
+        "max_tokens": 64,
+        "model": "claude-haiku-4-5",
+        "stream": false,
+        "system": [
+          {
+            "type": "text",
+            "text": "You are terse.",
+            "cache_control": {
+              "type": "ephemeral",
+              "ttl": "1h"
+            }
+          }
+        ]
+      }
+    },
+    "s8_gateway_palanca_ttl": {
+      "estados": [
+        200
+      ],
+      "lineas": [
+        "[gateway] POST /v1/messages  · claude-haiku-4-5 · $0.000128 (in 68, cache↑0 cache↓0, out 12)"
+      ],
+      "registros": [
+        {
+          "orgId": "self",
+          "seatId": "asiento-e6",
+          "requestId": "0d4a2fc6-3618-4236-946a-247b819b1adc",
+          "model": "claude-haiku-4-5",
+          "at": 1790539545641,
+          "avoidedLlm": 0,
+          "actualLlm": 1,
+          "baselineInputTokens": 68,
+          "actualInputTokens": 68,
+          "eliminatedInputTokens": 0,
+          "compressedInputTokens": 0,
+          "baselineOutputTokens": 12,
+          "actualOutputTokens": 12,
+          "providerCachedInputTokens": 0,
+          "cacheResult": "miss",
+          "baselineCost": 0.00012800000000000002,
+          "actualCost": 0.00012800000000000002,
+          "netSavings": 0,
+          "basis": "measured"
+        }
+      ],
+      "veredictos": [
+        {
+          "requestId": "0d4a2fc6-3618-4236-946a-247b819b1adc",
+          "cacheResult": "miss",
+          "basisEmitido": "measured",
+          "basisIngerido": "measured",
+          "enLaBase": false,
+          "ahorroUsd": 0
+        }
+      ],
+      "ttlRecibidoPorElUpstream": "5m"
+    }
+  }
+}

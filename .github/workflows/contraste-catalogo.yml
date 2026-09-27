@@ -1,0 +1,44 @@
+name: contraste-catalogo
+
+# E4 · El contraste semanal del catálogo de precios (scripts/contraste-catalogo.ts)
+# con la tabla de LiteLLM del ÚLTIMO commit de su `main` (el script lo resuelve y
+# lo anota con su sha256). Compara filas estándar, primas de escritura de caché y
+# tarifas de tier; cada discrepancia sin revisar contra la página oficial del
+# proveedor es una ALARMA y pone el run en rojo. El informe queda como artefacto.
+#
+# Solo lee: sin permisos de escritura, sin secretos, sin tocar el catálogo. La
+# corrección, si hace falta, es humana, fechada y con su fuente (doctrina del
+# vigía de precios, scripts/vigia-precios.mjs, que sigue corriendo aparte).
+on:
+  schedule:
+    - cron: "30 6 * * 1" # lunes, 06:30 UTC (el vigía de precios va a las 06:00)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  contraste:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Habilitar pnpm (desde packageManager)
+        run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Contraste contra LiteLLM main
+        run: pnpm catalogo:contraste --commit main --estricto --salida contraste/contraste-catalogo.json
+      - name: El informe, como artefacto (también en rojo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contraste-catalogo
+          path: contraste/contraste-catalogo.json
+          if-no-files-found: warn
+          retention-days: 90
