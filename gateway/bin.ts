@@ -43,6 +43,7 @@ function puertoEscucha(puerto: number, msTope = 300): Promise<boolean> {
   });
 }
 import { doctor } from "./doctor.js";
+import { conFicheros, detectar, escribirConPermiso, jsonDelPlan, leerArgumentosDeInit, planear, textoDelPlan } from "./init.js";
 import { instalarAgentsMd, instalarSkill } from "./skill.js";
 import { soportaZstd } from "./medidor.js";
 import { BV_SALA_VERSION } from "../src/index.js";
@@ -64,10 +65,14 @@ import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
  *   `bvsala doctor [--puerto N]` — detecta terminales instalados e imprime el
  *   bloque de configuración exacto de cada uno (gateway/doctor.ts).
  *
+ *   `bvsala init` (y `npx @bivelio/savings-layer init`, porque el paquete tiene un
+ *   solo `bin`) — el doctor del SDK: detecta la pila del proyecto e imprime el
+ *   código exacto de su adaptador y una comprobación gratuita (gateway/init.ts).
+ *
  * El gateway y los envoltorios EXIGEN LICENCIA al arrancar (LICENSE §2), como el
  * SDK: la recogen con BIVELIO_SERVICE_KEY y la verifican contra la clave pública
  * embebida (gateway/license.ts); sin ella, exit 1 con el arreglo exacto. La
- * ayuda, la versión, el doctor, el skill y `bvsala <terminal> --help|-h|--version`
+ * ayuda, la versión, el doctor, el skill, init y `bvsala <terminal> --help|-h|--version`
  * no usan el servicio ni la red, y siguen funcionando sin licencia.
  *
  * La decisión «ayuda / versión / arrancar» es una función pura
@@ -113,8 +118,20 @@ Commands:
                          (~/.codex; with --project, ./AGENTS.md) — Codex has no skills and
                          AGENTS.md is always active. Its effect is measured by the gateway,
                          not promised.
+  init [--write [--yes]] [--stack S] [--provider P] [--cwd DIR] [--json]
+                         Set up the SDK in a JavaScript/TypeScript project (also:
+                         npx @bivelio/savings-layer@latest init). Detects Next.js, Express, the
+                         Vercel AI SDK, Mastra, LangChain.js, the Anthropic SDK and the OpenAI SDK,
+                         and prints the install line, the keys that are missing, the exact code
+                         for your adapter and a free check. Reads package.json files only, never
+                         a .env file or a secret's value, and uses no network. It writes nothing
+                         unless you pass --write, and then it creates new files only, after
+                         asking (--yes without a terminal); an existing file is never overwritten.
+                         --stack ai-sdk | mastra | langchain | anthropic-sdk | sdk   (default: detected)
+                         --provider openai | anthropic                              (default: detected)
+                         --json prints the plan for a script or a coding agent.
   --version | -v         Print the version only.
-  --help | -h            This help; also accepted after gateway, doctor or skill
+  --help | -h            This help; also accepted after gateway, doctor, skill or init
                          (\`bvsala gateway --help\` starts nothing; \`bvsala claude --help\` or
                          \`--version\` go straight to the terminal, with no gateway).
 
@@ -198,6 +215,72 @@ if (decision.tipo === "version") {
 }
 const { comando, resto } = decision;
 const esEnvoltorio = esTerminalConEnvoltorio(comando);
+
+if (comando === "init") {
+  // Antes del puerto, del upstream y de la verja de licencia: init es onboarding,
+  // no usa la red ni el servicio, y tiene que funcionar ANTES de tener la clave.
+  const leido = leerArgumentosDeInit(resto, process.cwd());
+  if (!leido.ok) {
+    console.error(`[bvsala init] ${leido.mensaje}`);
+    process.exit(1);
+  }
+  const opciones = leido.valor;
+  const sonda = {
+    leer: (ruta: string) => {
+      try {
+        return readFileSync(ruta, "utf8");
+      } catch {
+        return undefined;
+      }
+    },
+    existe: existsSync,
+  };
+  const detectado = detectar(opciones.cwd, sonda);
+  if (!detectado.ok) {
+    console.error(`[bvsala init] ${detectado.mensaje}`);
+    process.exit(1);
+  }
+  const planeado = planear(detectado.valor, opciones, {
+    node: process.versions.node,
+    // Solo EXISTENCIA: el valor no se lee más allá de saber si está vacío.
+    env: (nombre) => Boolean(process.env[nombre]?.trim()),
+  });
+  if (!planeado.ok) {
+    console.error(`[bvsala init] ${planeado.mensaje}`);
+    process.exit(1);
+  }
+  const plan = conFicheros(planeado.valor, sonda);
+  if (opciones.json) {
+    console.log(jsonDelPlan(plan, BV_SALA_VERSION));
+    process.exit(0);
+  }
+  // `@latest`: con una versión anterior ya instalada en el proyecto, `npx` a secas
+  // ejecutaría la local, que puede no tener `init`.
+  console.log(
+    textoDelPlan(plan, `bvsala init · BiVelio Savings Layer ${BV_SALA_VERSION}`, "npx @bivelio/savings-layer@latest init", {
+      escribira: opciones.escribir,
+    }),
+  );
+  if (!opciones.escribir) process.exit(0);
+  console.log("");
+  const { createInterface } = await import("node:readline/promises");
+  const r = await escribirConPermiso(plan, {
+    si: opciones.si,
+    esTerminal: Boolean(process.stdin.isTTY),
+    preguntar: async (pregunta) => {
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      try {
+        return await rl.question(pregunta);
+      } finally {
+        rl.close();
+      }
+    },
+    crearDir: (ruta) => mkdirSync(ruta, { recursive: true }),
+    crearExclusivo: (ruta, contenido) => writeFileSync(ruta, contenido, { flag: "wx" }),
+  });
+  for (const l of r.lineas) (r.salida === 0 ? console.log : console.error)(l);
+  process.exit(r.salida);
+}
 
 if (comando === "skill") {
   // El SKILL.md empaquetado vive en <raíz>/skills/; desde dist/gateway/bin.js

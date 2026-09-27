@@ -1,0 +1,24 @@
+{
+  "//": "Los ejemplos de `bvsala init` se compilan como los compilaría el proyecto de un cliente: una aplicación (noEmit, sin declaraciones), en strict. Con el tsconfig raíz (declaration: true) los módulos que exportan un modelo darían TS2742, un aviso de librería que una aplicación no ve. Los subpaths del paquete apuntan a su fuente.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "paths": {
+      "@bivelio/savings-layer": ["../../src/index.ts"],
+      "@bivelio/savings-layer/*": ["../../src/adapters/*.ts"]
+    }
+  },
+  "include": ["**/*.ts"]
+}

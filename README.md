@@ -151,6 +151,22 @@ and the commission calculator on the front page, which runs on the same price
 catalogue that bills you. The verifier that replays the optimizer on your own data
 lives in your dashboard once you sign in.
 
+## Set it up in one command
+
+```bash
+npx @bivelio/savings-layer@latest init
+```
+
+It reads your `package.json` (Next.js, Express, the Vercel AI SDK, Mastra,
+LangChain.js, the Anthropic SDK or the OpenAI SDK) and prints the three steps below,
+written for your stack — the install line for your package manager, which keys are
+missing, the exact code for your adapter — plus a free check: a question the layer
+answers on your machine, so the model is not called. It reads `package.json` files only
+(yours, and those in `node_modules` for the installed versions), never a `.env` file or a
+key's value; it uses no network of its own and writes nothing.
+`--write` creates the new files after asking you, and never overwrites one; `--json`
+prints the same plan for a script or a coding agent.
+
 ## Install in three steps
 
 **1 · The package**
@@ -334,8 +350,10 @@ shared here. `emitReportPart: true` also streams each report as a
 
 ### LangChain.js
 
-`pnpm add @bivelio/savings-layer langchain @langchain/core` — an agent middleware for
-`createAgent` in `langchain` 1.x:
+`pnpm add @bivelio/savings-layer langchain @langchain/core @langchain/openai` — an agent
+middleware for `createAgent` in `langchain` 1.x. The model string (`"openai:…"`) is loaded
+through its integration package, so `@langchain/openai` (or `@langchain/anthropic`) has
+to be installed:
 
 ```ts
 import { createAgent } from "langchain";
