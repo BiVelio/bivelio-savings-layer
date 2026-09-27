@@ -1,0 +1,387 @@
+{
+  "fecha": "2026-09-27",
+  "metodo": "dry bench: synthetic agent sessions (seeded), the npm compactor with the pipeline's own selection, and the shadow-lane prefix-cache simulator (breakpoints on the system prompt and on the last block, 5m TTL). Input cost only; trajectories are fixed, so extra turns caused by compaction are NOT measured here.",
+  "tokenizador": "o200k_base (gpt-tokenizer); percentages between arms are the result, absolute USD is illustrative",
+  "sesionesPorPerfil": 20,
+  "mezcla": {
+    "app-con-api": {
+      "json-indentado": 40,
+      "json-compacto": 40,
+      "prosa-web": 20
+    },
+    "agente-de-codigo": {
+      "lectura-de-fichero": 40,
+      "grep": 20,
+      "diff": 10,
+      "tests-sin-color": 15,
+      "prosa-web": 5,
+      "tests-con-color": 3,
+      "sondeo-repetido": 3,
+      "barra-de-progreso": 2,
+      "json-indentado": 2
+    },
+    "agente-de-operaciones": {
+      "sondeo-repetido": 25,
+      "barra-de-progreso": 15,
+      "tests-con-color": 20,
+      "json-indentado": 25,
+      "json-compacto": 15
+    }
+  },
+  "perfiles": {
+    "app-con-api": {
+      "turnos": 560,
+      "escrituraSobreEntradaPct": {
+        "claude-sonnet-5": 45.23,
+        "claude-opus-5-5": 62.29
+      },
+      "lecturaSobreTokensPct": 93.8,
+      "porModelo": {
+        "claude-sonnet-5": {
+          "base": {
+            "usd": 7.597929,
+            "ahorroPct": 0,
+            "tokensEnviados": 22180306,
+            "reduccionTokensPct": 0,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "cola": {
+            "usd": 6.255474,
+            "ahorroPct": 17.67,
+            "tokensEnviados": 18252952,
+            "reduccionTokensPct": 17.71,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "vieja": {
+            "usd": 8.675348,
+            "ahorroPct": -14.18,
+            "tokensEnviados": 18495119,
+            "reduccionTokensPct": 16.61,
+            "invalidacionUsd": 0.664143,
+            "tokensInvalidados": 288758,
+            "sesionesPeores": 20
+          },
+          "mitad": {
+            "usd": 7.991494,
+            "ahorroPct": -5.18,
+            "tokensEnviados": 19283332,
+            "reduccionTokensPct": 13.06,
+            "invalidacionUsd": 0.655744,
+            "tokensInvalidados": 285106,
+            "sesionesPeores": 17
+          }
+        },
+        "claude-opus-5-5": {
+          "base": {
+            "usd": 11.034741,
+            "ahorroPct": 0,
+            "tokensEnviados": 22180306,
+            "reduccionTokensPct": 0,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "cola": {
+            "usd": 9.086869,
+            "ahorroPct": 17.65,
+            "tokensEnviados": 18252952,
+            "reduccionTokensPct": 17.71,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "vieja": {
+            "usd": 14.084395,
+            "ahorroPct": -27.64,
+            "tokensEnviados": 18495119,
+            "reduccionTokensPct": 16.61,
+            "invalidacionUsd": 1.386038,
+            "tokensInvalidados": 288758,
+            "sesionesPeores": 20
+          },
+          "mitad": {
+            "usd": 12.485871,
+            "ahorroPct": -13.15,
+            "tokensEnviados": 19283332,
+            "reduccionTokensPct": 13.06,
+            "invalidacionUsd": 1.368509,
+            "tokensInvalidados": 285106,
+            "sesionesPeores": 20
+          }
+        }
+      }
+    },
+    "agente-de-codigo": {
+      "turnos": 519,
+      "escrituraSobreEntradaPct": {
+        "claude-sonnet-5": 45.85,
+        "claude-opus-5-5": 62.87
+      },
+      "lecturaSobreTokensPct": 93.66,
+      "porModelo": {
+        "claude-sonnet-5": {
+          "base": {
+            "usd": 2.795608,
+            "ahorroPct": 0,
+            "tokensEnviados": 8081784,
+            "reduccionTokensPct": 0,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "cola": {
+            "usd": 2.478571,
+            "ahorroPct": 11.34,
+            "tokensEnviados": 7174360,
+            "reduccionTokensPct": 11.23,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "vieja": {
+            "usd": 2.743815,
+            "ahorroPct": 1.85,
+            "tokensEnviados": 7233296,
+            "reduccionTokensPct": 10.5,
+            "invalidacionUsd": 0.009672,
+            "tokensInvalidados": 4205,
+            "sesionesPeores": 7
+          },
+          "mitad": {
+            "usd": 2.98486,
+            "ahorroPct": -6.77,
+            "tokensEnviados": 7413249,
+            "reduccionTokensPct": 8.27,
+            "invalidacionUsd": 0.330593,
+            "tokensInvalidados": 143736,
+            "sesionesPeores": 14
+          }
+        },
+        "claude-opus-5-5": {
+          "base": {
+            "usd": 4.077403,
+            "ahorroPct": 0,
+            "tokensEnviados": 8081784,
+            "reduccionTokensPct": 0,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "cola": {
+            "usd": 3.613026,
+            "ahorroPct": 11.39,
+            "tokensEnviados": 7174360,
+            "reduccionTokensPct": 11.23,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "vieja": {
+            "usd": 4.153768,
+            "ahorroPct": -1.87,
+            "tokensEnviados": 7233296,
+            "reduccionTokensPct": 10.5,
+            "invalidacionUsd": 0.020184,
+            "tokensInvalidados": 4205,
+            "sesionesPeores": 13
+          },
+          "mitad": {
+            "usd": 4.617698,
+            "ahorroPct": -13.25,
+            "tokensEnviados": 7413249,
+            "reduccionTokensPct": 8.27,
+            "invalidacionUsd": 0.689933,
+            "tokensInvalidados": 143736,
+            "sesionesPeores": 15
+          }
+        }
+      }
+    },
+    "agente-de-operaciones": {
+      "turnos": 532,
+      "escrituraSobreEntradaPct": {
+        "claude-sonnet-5": 46.82,
+        "claude-opus-5-5": 63.78
+      },
+      "lecturaSobreTokensPct": 93.42,
+      "porModelo": {
+        "claude-sonnet-5": {
+          "base": {
+            "usd": 5.770372,
+            "ahorroPct": 0,
+            "tokensEnviados": 16423658,
+            "reduccionTokensPct": 0,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "cola": {
+            "usd": 3.619436,
+            "ahorroPct": 37.28,
+            "tokensEnviados": 10374136,
+            "reduccionTokensPct": 36.83,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "vieja": {
+            "usd": 11.192588,
+            "ahorroPct": -93.97,
+            "tokensEnviados": 10783280,
+            "reduccionTokensPct": 34.34,
+            "invalidacionUsd": 5.597726,
+            "tokensInvalidados": 2433794,
+            "sesionesPeores": 20
+          },
+          "mitad": {
+            "usd": 5.07752,
+            "ahorroPct": 12.01,
+            "tokensEnviados": 11841496,
+            "reduccionTokensPct": 27.9,
+            "invalidacionUsd": 0.220522,
+            "tokensInvalidados": 95879,
+            "sesionesPeores": 0
+          }
+        },
+        "claude-opus-5-5": {
+          "base": {
+            "usd": 8.472154,
+            "ahorroPct": 0,
+            "tokensEnviados": 16423658,
+            "reduccionTokensPct": 0,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "cola": {
+            "usd": 5.298358,
+            "ahorroPct": 37.46,
+            "tokensEnviados": 10374136,
+            "reduccionTokensPct": 36.83,
+            "invalidacionUsd": 0,
+            "tokensInvalidados": 0,
+            "sesionesPeores": 0
+          },
+          "vieja": {
+            "usd": 21.014253,
+            "ahorroPct": -148.04,
+            "tokensEnviados": 10783280,
+            "reduccionTokensPct": 34.34,
+            "invalidacionUsd": 11.682211,
+            "tokensInvalidados": 2433794,
+            "sesionesPeores": 20
+          },
+          "mitad": {
+            "usd": 8.022325,
+            "ahorroPct": 5.31,
+            "tokensEnviados": 11841496,
+            "reduccionTokensPct": 27.9,
+            "invalidacionUsd": 0.460219,
+            "tokensInvalidados": 95879,
+            "sesionesPeores": 4
+          }
+        }
+      }
+    }
+  },
+  "porClase": {
+    "barra-de-progreso": {
+      "salidas": 78,
+      "compactadas": 78,
+      "tokensOriginales": 62396,
+      "tokensCompactados": 8318,
+      "reduccionPct": 86.67,
+      "transformaciones": {
+        "carriage-return": 78
+      }
+    },
+    "diff": {
+      "salidas": 43,
+      "compactadas": 0,
+      "tokensOriginales": 8000,
+      "tokensCompactados": 8000,
+      "reduccionPct": 0,
+      "transformaciones": {}
+    },
+    "grep": {
+      "salidas": 99,
+      "compactadas": 0,
+      "tokensOriginales": 34143,
+      "tokensCompactados": 34143,
+      "reduccionPct": 0,
+      "transformaciones": {}
+    },
+    "json-compacto": {
+      "salidas": 306,
+      "compactadas": 0,
+      "tokensOriginales": 721583,
+      "tokensCompactados": 721583,
+      "reduccionPct": 0,
+      "transformaciones": {}
+    },
+    "json-indentado": {
+      "salidas": 365,
+      "compactadas": 365,
+      "tokensOriginales": 1291044,
+      "tokensCompactados": 875954,
+      "reduccionPct": 32.15,
+      "transformaciones": {
+        "json": 365
+      }
+    },
+    "lectura-de-fichero": {
+      "salidas": 204,
+      "compactadas": 0,
+      "tokensOriginales": 260329,
+      "tokensCompactados": 260329,
+      "reduccionPct": 0,
+      "transformaciones": {}
+    },
+    "prosa-web": {
+      "salidas": 159,
+      "compactadas": 0,
+      "tokensOriginales": 61581,
+      "tokensCompactados": 61581,
+      "reduccionPct": 0,
+      "transformaciones": {}
+    },
+    "sondeo-repetido": {
+      "salidas": 153,
+      "compactadas": 152,
+      "tokensOriginales": 111190,
+      "tokensCompactados": 14112,
+      "reduccionPct": 87.31,
+      "transformaciones": {
+        "repeated-lines": 152
+      }
+    },
+    "tests-con-color": {
+      "salidas": 136,
+      "compactadas": 136,
+      "tokensOriginales": 236646,
+      "tokensCompactados": 92645,
+      "reduccionPct": 60.85,
+      "transformaciones": {
+        "ansi": 136
+      }
+    },
+    "tests-sin-color": {
+      "salidas": 68,
+      "compactadas": 0,
+      "tokensOriginales": 46731,
+      "tokensCompactados": 46731,
+      "reduccionPct": 0,
+      "transformaciones": {}
+    }
+  },
+  "limites": [
+    "synthetic sessions: the class mix is an assumption, published per profile and per class",
+    "no live provider: the cache model is the shadow simulator calibrated at 3% write error on Anthropic traffic",
+    "second-order effects (extra turns, re-running tools) are not measured; fidelity is the argument, not a measurement",
+    "output tokens are not simulated; compaction does not touch them"
+  ]
+}

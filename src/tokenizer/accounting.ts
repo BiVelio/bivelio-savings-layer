@@ -254,6 +254,14 @@ export class SavingsLedger {
    */
   elididoLocal = 0;
   /**
+   * Tokens (LOCAL ruler) that tool-output compaction removed from the sent
+   * prompt. Subtracted from `removedInputLocal` for the same reason as
+   * {@link elididoLocal}: the saving is a COUNT in ledger 3 (`compressedInput`)
+   * and never enters the reconstructed baseline or the commission, so `basis`
+   * stays "measured" and the provider's invoice shows the effect on its own.
+   */
+  compactedLocal = 0;
+  /**
    * ¿El estimador que produjo las dos cifras anteriores cuenta con la regla del
    * proveedor? Lo fija el pipeline al resolver el tokenizador del modelo.
    * Defaults to NO: exactness is claimed only once it has been verified.

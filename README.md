@@ -549,6 +549,46 @@ report.cacheWrites;          // { mode, breakpoints, avoidedWritePremium?, reaso
 </details>
 
 <details>
+<summary><b>Tool outputs, compacted where they are born (opt-in, off by default)</b></summary>
+
+In an agent loop your history is re-sent on every turn and your provider reads it
+from its prompt cache at a fraction of the input price. Rewriting anything it has
+already cached turns everything after it back into full-price cache writes, which is
+how "fewer tokens" ends up as a bigger bill. So this lever only ever changes a tool
+output on the turn it arrives, and re-sends exactly the same bytes afterwards.
+
+It removes terminal colour codes, superseded progress-bar states, whitespace between
+JSON tokens and runs of identical lines (folded into one line plus a count), and
+nothing else: no summaries, no dropped words. Each change either reverses exactly or
+leaves what a terminal would display. Outputs of calls that name a file are left
+verbatim, so an agent that edits by exact match still sees the file as it is.
+
+```ts
+const agentLayer = createSavingsLayer({
+  provider,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  toolOutputCompaction: true, // or { exceptTools: ["read_logs"], minSavedChars: 512 }
+});
+// or per request: savings: { toolOutputCompaction: true }
+```
+
+- **Switch it on for whole conversations.** The decision depends only on each
+  output's own text, so every process and every turn produces the same bytes. A
+  conversation that started without it is rewritten once, on its first compacted
+  request.
+- **Counted, not billed.** What it removes shows in `report.tokens.compressedInput`
+  and in `report.traces`; it never enters `cost.*` or any commission. Your provider's
+  invoice shows the effect.
+- **Inside a framework,** call `compactToolOutput(text)` in your tool before you
+  return its result: your history then holds the compacted text itself.
+- **Measure it by conversation, not by request.** A verification copy re-sends one
+  request with the original history, which your provider has not cached, so on
+  turns that re-send compacted outputs the copy costs more than going without the
+  layer would have. Compare whole conversations with and without it.
+
+</details>
+
+<details>
 <summary><b>Structured output — validated <code>data</code>, not just text</b></summary>
 
 Ask for a response contract and you also get `data`, validated against your schema:

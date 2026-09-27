@@ -195,6 +195,30 @@ export interface SavingsToggles {
    * and never enters your commission — your invoice stays the source of truth.
    */
   elision?: boolean;
+  /**
+   * OPT-IN. Compact the text of `role: "tool"` messages before the request is
+   * sent: terminal escape sequences and superseded progress-bar states are
+   * removed, whitespace between JSON tokens is removed when the whole output is
+   * JSON, and runs of identical consecutive lines are folded into one line plus
+   * a count. Nothing is summarised and no word is dropped.
+   *
+   * IT NEVER REWRITES WHAT THE PROVIDER HAS ALREADY CACHED. The decision for each
+   * tool output depends only on its own text and on the call that produced it,
+   * so an output compacted on the turn it arrives is re-sent with the same bytes
+   * on every later turn and the prefix cache keeps matching. Turn it on for a
+   * whole conversation (or layer-wide with `toolOutputCompaction` in
+   * `createSavingsLayer`), not halfway through one: the first compacted request
+   * of a conversation that started without it rewrites the history once.
+   *
+   * Outputs of calls whose arguments name a file are left verbatim by default,
+   * because an agent that edits files by exact string match copies what it read.
+   * `false` switches it off for this request even when the layer enables it.
+   *
+   * What it removes is a COUNT in `report.tokens.compressedInput`; it is never
+   * priced into `cost.netSavings` or your commission — your provider's invoice
+   * shows the effect.
+   */
+  toolOutputCompaction?: boolean;
   serialization?: boolean | "auto";
   singleflight?: boolean;
   deterministicResolvers?: boolean;
