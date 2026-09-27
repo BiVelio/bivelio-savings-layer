@@ -106,7 +106,7 @@ La referencia es cómo lo resuelven en «5 minutos» Portkey, Helicone, LiteLLM 
 
 `init` no manda telemetría y no se le va a añadir: sería contradictorio con la promesa del producto. El efecto se mide con lo que ya existe:
 
-1. **Tiempo desde que se emite la licencia hasta el primer registro de uso de la organización.** El servidor ya tiene las dos fechas. Hay que comparar las cohortes de antes y de después de publicar la versión con `init`, y publicar la mediana con su tamaño de muestra.
+1. **Tiempo desde que se emite la licencia hasta el primer uso de la organización.** El servidor guarda `bvsala.licenses.issued_at` y el uso agregado por día (`bvsala.usage_daily`, migración 0001), así que la medida sale en días, no en minutos. Hay que comparar las cohortes de antes y de después de publicar la versión con `init`, y publicar la mediana con su tamaño de muestra. Afinarla a minutos exigiría leer la hora del primer registro de ingesta, y eso no se ha comprobado aquí.
 2. **Proporción de organizaciones con licencia y sin ningún registro a los 7 días.** Es la gente que se atasca antes del primer «ok».
 3. **Correos a soporte sobre la instalación**, antes y después, clasificados por causa (M1–M4).
 4. **En CI**, el camino completo desde el tarball (`init-desde-el-tarball`) tiene que seguir en verde. Es el control de que el primer paso no se rompe.
