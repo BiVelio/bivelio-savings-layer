@@ -32,7 +32,34 @@ export default defineConfig([
     // `gateway/bin` es el CLI (`bvsala gateway`, F1 de la pasarela Claude
     // Code): entra en el MISMO bundle de pago, con el mismo minificado y las
     // mismas defines — comparte catálogo de precios y metering con el SDK.
-    entry: { index: "src/index.ts", "gateway/bin": "gateway/bin.ts" },
+    //
+    // LOS ADAPTADORES DE FRAMEWORKS (`@bivelio/savings-layer/ai-sdk`, `/mastra`,
+    // `/langchain`, `/anthropic-sdk`) van en esta MISMA configuración para que el
+    // `clean` corra una sola vez. Importan el núcleo por el nombre del paquete y
+    // ese nombre va en `external`: en el tarball, `dist/adapters/*.js` carga el
+    // MISMO `dist/index.js` que el cliente —una sola instancia, sin duplicar— y,
+    // sobre todo, solo puede entrar por la API pública (`createSavingsLayer` →
+    // `generate()`), que gatea la licencia y registra el uso. Por construcción,
+    // un adaptador no tiene cómo saltárselos. En el repo, `paths` (tsconfig) y el
+    // alias de vitest resuelven ese nombre al fuente. Los frameworks, también
+    // `external`: son peers opcionales del cliente, nunca van dentro.
+    entry: {
+      index: "src/index.ts",
+      "gateway/bin": "gateway/bin.ts",
+      "adapters/ai-sdk": "src/adapters/ai-sdk.ts",
+      "adapters/mastra": "src/adapters/mastra.ts",
+      "adapters/langchain": "src/adapters/langchain.ts",
+      "adapters/anthropic-sdk": "src/adapters/anthropic-sdk.ts",
+    },
+    external: [
+      "@bivelio/savings-layer",
+      "ai",
+      /^@mastra\/core(\/.*)?$/,
+      /^langchain(\/.*)?$/,
+      /^@langchain\/core(\/.*)?$/,
+      /^@anthropic-ai\/sdk(\/.*)?$/,
+      /^node:/,
+    ],
     format: ["esm"],
     target: "es2022",
     dts: true,
