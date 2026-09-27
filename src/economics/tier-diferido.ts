@@ -20,8 +20,9 @@ import {
 //
 // A) BATCH API (OpenAI Batch, Anthropic Message Batches). Descuento grande y
 //    ASÍNCRONO: se envía un lote, se espera, se recoge. NO CABE en `generate()`,
-//    que es petición/respuesta. Ver el bloque «EL ASÍNCRONO» al final: está
-//    diseñado y NO construido, y ahí se explica por qué eso no es pereza.
+//    que es petición/respuesta, y por eso tiene superficie PROPIA
+//    (`layer.batches`, src/batch/lotes.ts). Ver el bloque «EL ASÍNCRONO» al
+//    final: qué se construyó, qué no y por qué.
 //
 // B) TIER DE SERVICIO SÍNCRONO (`service_tier: "flex"` de OpenAI, y el de
 //    Gemini a través de su endpoint compatible con OpenAI, que «matches
@@ -175,7 +176,10 @@ export function veredictoDelTier(servido: string | undefined): VeredictoDelTier 
 //
 // `measured` exige las SEIS a la vez:
 //   M1 el tier servido se leyó del CUERPO de la respuesta (la cabecera de
-//      Gemini tiene nombre oficial pero valores sin documentar: `estimated`);
+//      Gemini tiene nombre oficial pero valores sin documentar: `estimated`) o
+//      del REGISTRO DE LOTE del proveedor: un resultado bajado del fichero de
+//      salida de un lote de su Batch API se factura a tarifa de lote por
+//      construcción (ver «EL ASÍNCRONO»);
 //   M2 un adaptador de este paquete atestigua que habló con el API oficial;
 //   M3 el modelo tiene fila propia en CATALOGO y fila en la tabla de tiers;
 //   M4 el cliente no declaró `costModels` para ese modelo;
@@ -214,8 +218,12 @@ export interface EntradaDeValoracion {
   tierServido: string | undefined;
   /** Origen oficial ATESTIGUADO por un adaptador propio; `null` si no lo hay. */
   origen: OrigenDeTarifa | null;
-  /** De dónde se leyó el tier servido (solo lo sabe un adaptador propio). */
-  tierLeidoDe?: "cuerpo" | "cabecera";
+  /**
+   * De dónde se leyó el tier servido (solo lo sabe un adaptador propio):
+   * el cuerpo de la respuesta, una cabecera, o el registro de lote del
+   * proveedor (la superficie de lotes, para un resultado de su Batch API).
+   */
+  tierLeidoDe?: "cuerpo" | "cabecera" | "lote";
   /** El precio que el cliente declaró en `costModels` para este modelo. */
   precioDelCliente?: CostModel;
   ahoraMs?: number;
@@ -418,7 +426,7 @@ export function valorarTierServido(e: EntradaDeValoracion): ValoracionDelTier {
       "the endpoint is not the provider's own API as attested by this package's adapter, so the rate " +
         "cards it bills cannot be confirmed",
     );
-  } else if (e.tierLeidoDe !== "cuerpo") {
+  } else if (e.tierLeidoDe !== "cuerpo" && e.tierLeidoDe !== "lote") {
     motivos.push("the served tier was read from a response header whose values the provider does not document");
   }
   if (cliente) {
@@ -452,10 +460,20 @@ export function valorarTierServido(e: EntradaDeValoracion): ValoracionDelTier {
     factorEfectivo: costeAplicado / costeEstandar,
     motivoBasis: medido
       ? `the provider's own usage for this call at two published rate cards (${tier.fuente}, checked ` +
-        `${tier.consultado}), with the served tier read back from the provider's official API`
+        `${tier.consultado}), with the served tier read back from the provider's official API` +
+        (e.tierLeidoDe === "lote" ? " (its batch record: a batch result is billed at the batch rate card)" : "")
       : `estimated: ${motivos.join("; ")}`,
     consultado: tier.consultado,
   };
+}
+
+// ¿Publica el proveedor una tarifa de LOTE para este modelo? Para decirle a quien
+// declaró `deferrable` sobre un modelo SIN Flex (gpt-4o-mini, gpt-4.1…) dónde vive
+// su descuento en vez de dejarle con un «no hay precio» a secas. Solo mira la
+// tabla: no acredita nada.
+export function hayTarifaDeLote(modelo: string, origen: OrigenDeTarifa | null, ahoraMs?: number): boolean {
+  const o = origen ?? familiaDeTarifa(modelo);
+  return o !== null && tarifaDeTier(o, "batch", modelo, ahoraMs) !== undefined;
 }
 
 // ── LO QUE EL INFORME TIENE QUE DECIR SOBRE LA LATENCIA ─────────────────────
@@ -503,7 +521,8 @@ const LATENCIA_SIN_TIER =
 export const SIN_TIER_DIFERIBLE =
   "this provider has no cheaper synchronous processing tier, so the request was sent unchanged " +
   "and nothing is credited; on this provider the deferred discount lives only in the " +
-  "asynchronous batch API, which is not a request/response call";
+  "asynchronous batch API, which is not a request/response call (with the built-in Anthropic " +
+  "and OpenAI providers, layer.batches.submit() sends such requests there)";
 
 /**
  * What the provider documents about the latency of the tier that was asked for.
@@ -530,7 +549,7 @@ export function latenciaDelTier(
   );
 }
 
-// ═══ EL ASÍNCRONO: DISEÑADO Y NO CONSTRUIDO, Y POR QUÉ ══════════════════════
+// ═══ EL ASÍNCRONO: LA SUPERFICIE DE LOTES (2026-09-27) ═════════════════════
 //
 // La Batch API da el MISMO 50% que flex en OpenAI, y en Anthropic es el ÚNICO
 // sitio donde ese 50% existe. La tentación de meterlo por la puerta de atrás de
@@ -539,48 +558,58 @@ export function latenciaDelTier(
 // exactamente la clase de mentira que esta capa se niega a contar. `generate()`
 // es petición/respuesta y tiene que seguir siéndolo.
 //
-// Necesita superficie propia. El boceto, con los tres sitios donde rompe lo que
-// hoy existe:
+// Por eso tiene superficie propia, `layer.batches` (src/batch/lotes.ts):
 //
-//   submitDeferred(requests[]) -> { batchId, submittedAt, expiresAt }
-//   pollDeferred(batchId)      -> { status, results?[] }
+//   submit(requests[]) -> BatchJob     (JSON plano: ids, modelos y esquemas)
+//   status(job)        -> BatchJobStatus
+//   results(job)       -> BatchResults (un resultado por petición + resumen)
+//   cancel(job)        -> BatchJobStatus
 //
-//   1. EL INFORME. `SavingsReport` describe UNA petición que YA se sirvió:
-//      `latencyMs.provider`, `cost.actual`, `qualityStatus`. En un lote no hay
-//      nada de eso en el momento de enviar. Un lote necesita DOS informes —uno
-//      de envío, con lo que se pidió y lo que se espera, y uno por resultado al
-//      recogerlo— y sólo el segundo puede tarifar. Reutilizar `SavingsReport`
-//      para el primero publicaría `cost.actual: 0` sobre trabajo pendiente, que
-//      es un ahorro del 100% fabricado: el mismo fallo que `requireUsage` cierra.
+// Los tres sitios donde el lote rompía lo que ya existe, y qué se hizo con cada
+// uno en esta primera fase:
 //
-//   2. LA CACHÉ. Los atajos de la capa (exacta, semántica, singleflight) sirven
-//      una respuesta INMEDIATA. En un lote, un acierto de caché significa que esa
-//      entrada del lote no hay ni que enviarla, así que el filtrado tiene que
-//      pasar ANTES de construir el lote y el resultado tiene que devolverse en la
-//      misma forma que los que sí viajaron. El singleflight, en cambio, no aplica:
-//      coalescer dos peticiones idénticas dentro de un lote no ahorra una espera,
-//      ahorra una línea de factura, y eso ya lo hace la caché exacta.
+//   1. EL INFORME. `SavingsReport` describe UNA petición que YA se sirvió; un
+//      lote necesita DOS informes —el de envío, sin coste, y uno por resultado
+//      al recogerlo— y sólo el segundo puede tarifar. Hecho así: `submit` no
+//      devuelve ninguna cifra, y solo `results` valora, resultado a resultado.
+//      Reutilizar `SavingsReport` para el envío publicaría `cost.actual: 0`
+//      sobre trabajo pendiente: un ahorro del 100% fabricado.
 //
-//   3. EL METERING. Hoy emite uso al terminar la petición. Con un lote, el envío
-//      y el cobro están separados por hasta 24 horas y por un reinicio de proceso.
-//      El uso NO se puede emitir al enviar (aún no se sabe ni si se ejecutará: un
-//      lote caduca a las 24h y sus peticiones no se facturan), así que el emisor
-//      necesita durabilidad — o el cobro se pierde, o se cobra trabajo que
-//      expiró. Ése es el trabajo de verdad, y es lo que hace que esto sea otra
-//      fase y no un rato.
+//   2. LA CACHÉ. En un lote, un acierto de caché significa que esa entrada no
+//      hay ni que enviarla, así que el filtrado tendría que pasar ANTES de
+//      construir el lote. NO SE HACE en esta fase, a propósito: las peticiones
+//      viajan TAL CUAL las escribió el cliente —traducidas por el MISMO
+//      adaptador que usa `generate()`, sin compresión, sin caché, sin cascada—,
+//      y el informe lo dice. El único ahorro que se publica es el del tier, que
+//      es del proveedor, no de la capa.
+//
+//   3. EL METERING. El uso de un lote NO se emite, ni al enviar (aún no se sabe
+//      si se ejecutará: un lote caduca y lo caducado no se factura) ni al
+//      recoger. Sin emisión no hay comisión posible sobre él: el ahorro de tier
+//      se REPORTA y no se cobra (`creditedLedger: "none"`), igual que el de
+//      Flex. Cobrarlo exigiría servidor primero —campo en la lista blanca,
+//      LICENSE §5, textos— y un emisor con durabilidad, porque entre el envío y
+//      la recogida puede haber un reinicio. Es decisión del dueño, no de código.
 //
 // Y un límite que decide el diseño: en Anthropic un lote son 100.000 peticiones
-// o 256 MB; en OpenAI 50.000 peticiones o 200 MB, con 2.000 lotes por hora. O sea
-// que el troceado es responsabilidad de la capa, no del cliente.
+// o 256 MB; en OpenAI 50.000 peticiones o 200 MB, UN SOLO MODELO por fichero,
+// con 2.000 lotes por hora. El troceado es responsabilidad de la capa, no del
+// cliente, y `BatchJob.batchIds` lleva un id por trozo.
 //
-// ── CÓMO SE VALORARÁ, CUANDO SE CONSTRUYA (2026-09-27) ──────────────────────
+// ── CÓMO SE VALORA ──────────────────────────────────────────────────────────
 //
 // Con la misma regla que `valorarTierServido`, sin excepciones: el `usage` de
-// cada resultado del lote a la tarifa estándar menos el mismo `usage` a la
-// tarifa batch publicada, componente a componente. Anthropic informa
-// `usage.service_tier: "batch"` en cada resultado y un lote se factura SIEMPRE a
-// tarifa batch, así que cumpliría M1–M6 y saldría `measured`. Lo que falta es
-// la superficie de arriba, no la cuenta.
+// cada resultado a la tarifa estándar menos el mismo `usage` a la tarifa de
+// lote publicada, componente a componente (TARIFAS_DE_TIER.*.batch).
+//   · Anthropic informa `usage.service_tier` en cada resultado (API de
+//     resultados de lotes: "standard" | "priority" | "batch"). Se lee de ahí,
+//     del CUERPO: sin él no hay crédito.
+//   · OpenAI no pone "batch" en el cuerpo (el `service_tier` de Chat
+//     Completions no tiene ese valor). El tier se lee del REGISTRO DE LOTE: el
+//     resultado sale del fichero de salida de un lote que su API de lotes
+//     informa, y la guía de Batch dice que esos tokens se cobran a tarifa de
+//     lote («50% cost discount compared to synchronous APIs»). Eso es
+//     `tierLeidoDe: "lote"`, y cuenta para M1 igual que el cuerpo.
 //
 // Y un dato que ordena la prioridad, leído en la página oficial de precios de
 // OpenAI (developers.openai.com/api/docs/pricing, 2026-09-27): en TODOS los
@@ -589,10 +618,15 @@ export function latenciaDelTier(
 // publica (en o3 y o4-mini Batch no publica lectura cacheada y Flex sí, o sea
 // que ahí Flex no es peor). En OpenAI, Batch solo añade precio en modelos SIN
 // Flex (gpt-4o, gpt-4.1, o1, o3-mini, gpt-5-pro, gpt-5.2-pro, o3-pro, o1-pro;
-// gpt-5.5-pro y gpt-5.4-pro sí tienen Flex). Donde Batch
-// es la ÚNICA vía es Anthropic, y ahí está el valor de construirlo. Es trabajo
-// de tamaño L (partir `generate()` en pre- y post-proveedor y dar durabilidad
-// al metering), no un añadido a esta unidad.
+// gpt-5.5-pro y gpt-5.4-pro sí tienen Flex). Donde Batch es la ÚNICA vía es
+// Anthropic, y ahí está el valor de haberlo construido.
+//
+// GEMINI EN LOTE: NO. Su Batch Mode existe (mitad de precio, objetivo de 24 h)
+// y su endpoint compatible con OpenAI crea y consulta lotes, pero «Compatibility
+// for upload and download is currently not supported» (ai.google.dev/gemini-api/
+// docs/openai, 2026-09-27): subir el JSONL y bajar los resultados exige la API
+// de ficheros nativa, y esta capa no tiene adaptador nativo de Gemini. Pedirlo
+// por el adaptador compatible falla en claro, antes de enviar nada.
 
 // ═══ BEDROCK: NO CUBIERTO, Y POR QUÉ ═════════════════════════════════════════
 //
@@ -610,17 +644,31 @@ export function latenciaDelTier(
 
 // ═══ DEEPSEEK FUERA DE PUNTA: NO SE CONSTRUYE, Y POR QUÉ ══════════════════════
 //
-// api-docs.deepseek.com/quick_start/pricing (leída 2026-09-27): «Off-peak rates
-// are half of the peak rates». Punta: 01:00–04:00 y 06:00–10:00 UTC, de lunes a
-// viernes, salvo festivos chinos, que son valle enteros. Cuatro motivos para
-// no construirlo:
-//   1. CATALOGO no tiene filas de DeepSeek: no hay tarifa estándar contra la que
-//      restar.
-//   2. La respuesta NO dice qué tarifa se aplicó. Como mucho sería `estimated`,
-//      y un reloj local no es el contador del proveedor.
-//   3. Aprovecharlo exige RETENER peticiones hasta la ventana de valle, que es
-//      exactamente la superficie asíncrona de Batch (arriba): no cabe en
-//      `generate()`.
-//   4. Dos dudas sin fuente: el calendario de festivos chinos que aplica
-//      DeepSeek, y si manda la hora de INICIO o la de FIN de la petición (la
-//      página no lo dice).
+// api-docs.deepseek.com/quick_start/pricing (releída el 2026-09-27, HTML oficial
+// descargado tal cual): dos modelos, `deepseek-flash` (DeepSeek-V4.1-Flash) y
+// `deepseek-v4-pro`; nota (2): «Off-peak rates are half of the peak rates. Peak
+// hours are 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday,
+// excluding Chinese public holidays. All other hours are off-peak, including
+// weekends and Chinese public holidays in full.» No hay Batch API. Cinco
+// motivos para seguir sin construirlo, y ninguno es de esfuerzo:
+//   1. CATALOGO no tiene filas de DeepSeek (y a propósito: su precio depende de
+//      la HORA, y una fila por modelo mentiría en una de las dos franjas). Sin
+//      tarifa estándar no hay contra qué restar.
+//   2. La respuesta NO dice qué tarifa se aplicó: la referencia de Chat
+//      Completions no trae tier ni franja en el `usage`, solo `created` (el
+//      instante en que se creó la respuesta). Un reloj, aunque sea el suyo, no
+//      es el contador: como mucho sería `estimated`.
+//   3. La página no dice si manda la hora de INICIO o la de FIN de la petición,
+//      y una petición larga que cruza las 01:00 o las 06:00 UTC cae en la duda.
+//   4. «excluding Chinese public holidays»: la página no publica qué calendario
+//      aplica. Adivinarlo sobre-acredita: un festivo supuesto que no lo era
+//      acredita la mitad de una llamada cobrada entera.
+//   5. Aprovecharlo exige RETENER peticiones hasta la franja de valle, que es
+//      una superficie asíncrona; la de lotes no sirve porque DeepSeek no tiene
+//      lotes: habría que construir una cola propia con su durabilidad.
+// Lo que sí se puede decir sin inventar: fuera de 01:00–04:00 y 06:00–10:00
+// UTC de lunes a viernes la tarifa es la de valle SEGURO (fines de semana
+// enteros incluidos), y dentro de esas franjas depende del calendario chino. Si
+// algún día CATALOGO sabe de franjas, la valoración defendible es solo esa:
+// valle cuando `created` cae en fin de semana o fuera de las dos franjas con
+// margen, y nada en cualquier otro caso — y siempre `estimated`.

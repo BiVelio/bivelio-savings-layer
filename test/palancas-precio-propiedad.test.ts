@@ -145,10 +145,14 @@ describe("P1 · el importe es la diferencia real de catálogo, redondeada hacia 
       const r = azar(semilla * 7919 + f.modelo.length);
       const u = usoAleatorio(r);
       const variante = r();
-      const id =
-        variante < 0.25 ? `${f.origen === "openai" ? "openai" : "google"}/${f.modelo}` : f.modelo;
+      // El prefijo de proveedor es el del origen de la fila: `openai/`, `google/`
+      // o `anthropic/` (sin atestado, la familia de tabla sale del nombre).
+      const id = variante < 0.25 ? `${f.origen}/${f.modelo}` : f.modelo;
       const atestiguado = r() < 0.7;
-      const leidoDe = r() < 0.8 ? ("cuerpo" as const) : ("cabecera" as const);
+      // «lote»: el tier leído del registro de lote del proveedor (la superficie
+      // de lotes), que cuenta para M1 igual que el cuerpo.
+      const dado = r();
+      const leidoDe = dado < 0.7 ? ("cuerpo" as const) : dado < 0.85 ? ("lote" as const) : ("cabecera" as const);
       const v = valorarTierServido({
         modelo: id,
         uso: u,
@@ -179,7 +183,8 @@ describe("P1 · el importe es la diferencia real de catálogo, redondeada hacia 
       expect(real.unidades - BigInt(k) * 100n <= 100n, `${ctx} · se queda más de 1e-10 corto`).toBe(true);
       // `measured` solo con M1–M6 a la vez (M3 y M4 los da el caso; M6 exige
       // además el desglose de la caché en el contador).
-      const debeSerMedido = atestiguado && leidoDe === "cuerpo" && !real.sinPrecio && !real.sinDesglose;
+      const debeSerMedido =
+        atestiguado && (leidoDe === "cuerpo" || leidoDe === "lote") && !real.sinPrecio && !real.sinDesglose;
       expect(v.basis, ctx).toBe(debeSerMedido ? "measured" : "estimated");
     }
   });

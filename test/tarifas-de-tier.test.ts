@@ -21,6 +21,7 @@ import {
 const FUENTES: Record<OrigenDeTarifa, string> = {
   openai: "https://developers.openai.com/api/docs/pricing",
   google: "https://ai.google.dev/gemini-api/docs/pricing",
+  anthropic: "https://platform.claude.com/docs/en/about-claude/pricing",
 };
 
 const filas = Object.entries(TARIFAS_DE_TIER).flatMap(([origen, porTier]) =>
