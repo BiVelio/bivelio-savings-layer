@@ -948,7 +948,32 @@ export type QualityCacheMatch =
        * negation parity and content-word overlap. A hit is never served without it.
        */
       factGuard: "passed";
+      /**
+       * Present when the cache runs with `calibration`: the bound this reuse was
+       * served under, and the labels behind it.
+       */
+      calibration?: SemanticCalibrationBound;
     };
+
+/**
+ * The bound a calibrated semantic reuse was served under: with probability at
+ * least `confidence`, at most `maxErrorRate` of the reuses served at or above
+ * `floor` are wrong, where "wrong" is what the calibration's judge rejects.
+ * It rests on the labels counted here, which your own traffic produced.
+ */
+export interface SemanticCalibrationBound {
+  maxErrorRate: number;
+  confidence: number;
+  /** The certified floor this reuse's score cleared. */
+  floor: number;
+  /** Held-out labels at or above the floor that certified it, and how many were wrong reuses. */
+  heldOutAtFloor: number;
+  wrongHeldOutAtFloor: number;
+  /** Labels collected in this traffic segment. */
+  labeled: number;
+  /** Calibrations are kept apart for single-shot and agentic traffic. */
+  segment: "single_shot" | "agentic";
+}
 
 /** What the model cascade decided on this request. See {@link ModelCascadeReport}. */
 export interface QualityCascadeCheck {

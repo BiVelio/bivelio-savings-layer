@@ -128,7 +128,9 @@
     "cache-semantica": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/arnes.ts",
     "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts",
     "latencia:gateways": "tsx benchmarks/latencia-gateways/arnes.ts",
-    "vigia:conexiones": "tsx benchmarks/latencia-gateways/vigia-conexiones.ts"
+    "vigia:conexiones": "tsx benchmarks/latencia-gateways/vigia-conexiones.ts",
+    "cache-semantica:calibrada": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/calibrada.ts",
+    "cache-semantica:simulacion": "tsx benchmarks/cache-semantica/simulacion.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",

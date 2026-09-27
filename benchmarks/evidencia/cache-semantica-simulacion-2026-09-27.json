@@ -1,0 +1,80 @@
+{
+ "generatedAt": "2026-09-27T17:22:13.313Z",
+ "commit": "1d58badf558c225132b35811267f54312968c24b",
+ "dirty": false,
+ "curva": "q(s) = 0.5 / (1 + exp(40 (s - 0.85))), s ~ U(0.6, 1)",
+ "resultados": [
+  {
+   "delta": 0.05,
+   "alfa": 0.1,
+   "tiradas": 300,
+   "etiquetas": 20000,
+   "sueloOptimo": 0.857,
+   "enLinea": {
+    "tiradasConAlgunaViolacion": 0,
+    "sinCertificarNunca": 1,
+    "etiquetasHastaLaPrimera": {
+     "p50": 2820,
+     "p90": 4229
+    },
+    "sueloFinal": {
+     "p50": 0.873,
+     "certificadasAlFinal": 294
+    }
+   },
+   "fueraDeLinea": {
+    "certificadas": 285,
+    "violaciones": 1,
+    "sueloP50": 0.863
+   }
+  },
+  {
+   "delta": 0.05,
+   "alfa": 0.05,
+   "tiradas": 300,
+   "etiquetas": 20000,
+   "sueloOptimo": 0.857,
+   "enLinea": {
+    "tiradasConAlgunaViolacion": 0,
+    "sinCertificarNunca": 1,
+    "etiquetasHastaLaPrimera": {
+     "p50": 3537,
+     "p90": 5306
+    },
+    "sueloFinal": {
+     "p50": 0.872,
+     "certificadasAlFinal": 297
+    }
+   },
+   "fueraDeLinea": {
+    "certificadas": 280,
+    "violaciones": 0,
+    "sueloP50": 0.864
+   }
+  },
+  {
+   "delta": 0.02,
+   "alfa": 0.05,
+   "tiradas": 300,
+   "etiquetas": 20000,
+   "sueloOptimo": 0.892,
+   "enLinea": {
+    "tiradasConAlgunaViolacion": 0,
+    "sinCertificarNunca": 34,
+    "etiquetasHastaLaPrimera": {
+     "p50": 13302,
+     "p90": 19953
+    },
+    "sueloFinal": {
+     "p50": 0.921,
+     "certificadasAlFinal": 266
+    }
+   },
+   "fueraDeLinea": {
+    "certificadas": 288,
+    "violaciones": 0,
+    "sueloP50": 0.904
+   }
+  }
+ ]
+}

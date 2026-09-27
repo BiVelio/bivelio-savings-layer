@@ -1,0 +1,785 @@
+{
+ "generatedAt": "2026-09-27T17:20:51.997Z",
+ "commit": "1d58badf558c225132b35811267f54312968c24b",
+ "dirty": false,
+ "sdkVersion": "0.4.25",
+ "node": "v25.9.0",
+ "embedder": "built_in",
+ "stream": {
+  "dataset": "vCache/SemBenchmarkLmArena",
+  "revision": "c6f36229bef6a5f7936e5b9d982bd5766ef2f862",
+  "extractSha256": "8d7c99158d3eac23f2d9eac7e0f0c4071a3740ee53f977d240a0cfa134433314",
+  "n": 20000
+ },
+ "etiquetasStream": {
+  "n": 3276,
+  "ms": 22636,
+  "ruidoDeEtiqueta": {
+   "erroneas": 326,
+   "conPromptIdentico": 70,
+   "aPuntuacionUno": {
+    "erroneas": 97,
+    "conPromptIdentico": 70
+   }
+  },
+  "tramos": [
+   {
+    "desde": 1,
+    "n": 955,
+    "erroneas": 97,
+    "nAcumulado": 955,
+    "errorAcumulado": 0.10157068062827225
+   },
+   {
+    "desde": 0.95,
+    "n": 196,
+    "erroneas": 28,
+    "nAcumulado": 1151,
+    "errorAcumulado": 0.10860121633362294
+   },
+   {
+    "desde": 0.9,
+    "n": 717,
+    "erroneas": 73,
+    "nAcumulado": 1868,
+    "errorAcumulado": 0.10599571734475374
+   },
+   {
+    "desde": 0.85,
+    "n": 670,
+    "erroneas": 55,
+    "nAcumulado": 2538,
+    "errorAcumulado": 0.09968479117415288
+   },
+   {
+    "desde": 0.8,
+    "n": 436,
+    "erroneas": 42,
+    "nAcumulado": 2974,
+    "errorAcumulado": 0.09919300605245461
+   },
+   {
+    "desde": 0.75,
+    "n": 224,
+    "erroneas": 25,
+    "nAcumulado": 3198,
+    "errorAcumulado": 0.10006253908692933
+   },
+   {
+    "desde": 0.7,
+    "n": 78,
+    "erroneas": 6,
+    "nAcumulado": 3276,
+    "errorAcumulado": 0.0995115995115995
+   }
+  ],
+  "fueraDeLinea": [
+   {
+    "maxErrorRate": 0.15,
+    "confidence": 0.95,
+    "floor": 0.721,
+    "labeled": 3276,
+    "heldOut": 1633,
+    "heldOutAtFloor": 1633,
+    "wrongHeldOutAtFloor": 172,
+    "minHeldOutToCertify": 19
+   },
+   {
+    "maxErrorRate": 0.12,
+    "confidence": 0.95,
+    "floor": 0.721,
+    "labeled": 3276,
+    "heldOut": 1633,
+    "heldOutAtFloor": 1633,
+    "wrongHeldOutAtFloor": 172,
+    "minHeldOutToCertify": 24
+   },
+   {
+    "maxErrorRate": 0.1,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 3276,
+    "heldOut": 1633,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 29
+   },
+   {
+    "maxErrorRate": 0.05,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 3276,
+    "heldOut": 1633,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 59
+   },
+   {
+    "maxErrorRate": 0.02,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 3276,
+    "heldOut": 1633,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 149
+   }
+  ]
+ },
+ "brazos": [
+  {
+   "nombre": "static (as shipped)",
+   "config": {},
+   "consultas": 16316,
+   "aciertos": 2359,
+   "correctos": 2130,
+   "erroneos": 229,
+   "hitRate": {
+    "point": 0.1445820053934788,
+    "lower": 0.13693715982187035,
+    "upper": 0.1526354771015924
+   },
+   "precision": {
+    "point": 0.9029249682068673,
+    "lower": 0.880302393952121,
+    "upper": 0.9255184088023699
+   },
+   "errorRate": {
+    "point": 0.014035302770286836,
+    "lower": 0.010767733300888186,
+    "upper": 0.018049016056984186
+   },
+   "precisionPuntual": 0.9029249682068673,
+   "cumpleLaCota": null,
+   "ms": 20815
+  },
+  {
+   "nombre": "calibrated δ=0.15",
+   "config": {
+    "delta": 0.15,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": true
+   },
+   "consultas": 16316,
+   "aciertos": 710,
+   "correctos": 651,
+   "erroneos": 59,
+   "hitRate": {
+    "point": 0.04351556754106398,
+    "lower": 0.04002226895954472,
+    "upper": 0.046955656446296415
+   },
+   "precision": {
+    "point": 0.9169014084507042,
+    "lower": 0.8918918918918919,
+    "upper": 0.9405255878284924
+   },
+   "errorRate": {
+    "point": 0.0036160823731306692,
+    "lower": 0.0025879598250046214,
+    "upper": 0.004713227642774071
+   },
+   "precisionPuntual": 0.9169014084507042,
+   "cumpleLaCota": true,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 2538,
+     "record_floor": 7,
+     "audit": 32
+    },
+    "etiquetas": 2577,
+    "primerAcierto": 13121,
+    "estadoFinal": {
+     "maxErrorRate": 0.15,
+     "confidence": 0.95,
+     "floor": 0.721,
+     "labeled": 2577,
+     "heldOut": 1288,
+     "heldOutAtFloor": 1269,
+     "wrongHeldOutAtFloor": 136,
+     "minHeldOutToCertify": 53,
+     "nextTestAt": 3806
+    }
+   },
+   "ms": 31397
+  },
+  {
+   "nombre": "calibrated δ=0.15, no per-record floors",
+   "config": {
+    "delta": 0.15,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": false
+   },
+   "consultas": 16316,
+   "aciertos": 717,
+   "correctos": 654,
+   "erroneos": 63,
+   "hitRate": {
+    "point": 0.04394459426329983,
+    "lower": 0.040429094065852295,
+    "upper": 0.047516331813139405
+   },
+   "precision": {
+    "point": 0.9121338912133892,
+    "lower": 0.8856345885634589,
+    "upper": 0.9353023909985936
+   },
+   "errorRate": {
+    "point": 0.003861240500122579,
+    "lower": 0.002771277250892967,
+    "upper": 0.005027590435315758
+   },
+   "precisionPuntual": 0.9121338912133892,
+   "cumpleLaCota": true,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 2538,
+     "audit": 32
+    },
+    "etiquetas": 2570,
+    "primerAcierto": 13121,
+    "estadoFinal": {
+     "maxErrorRate": 0.15,
+     "confidence": 0.95,
+     "floor": 0.721,
+     "labeled": 2570,
+     "heldOut": 1285,
+     "heldOutAtFloor": 1269,
+     "wrongHeldOutAtFloor": 136,
+     "minHeldOutToCertify": 53,
+     "nextTestAt": 3806
+    }
+   },
+   "ms": 43253
+  },
+  {
+   "nombre": "calibrated δ=0.12",
+   "config": {
+    "delta": 0.12,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": true
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.12,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 67,
+     "nextTestAt": 4844
+    }
+   },
+   "ms": 16245
+  },
+  {
+   "nombre": "calibrated δ=0.12, no per-record floors",
+   "config": {
+    "delta": 0.12,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": false
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.12,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 67,
+     "nextTestAt": 4844
+    }
+   },
+   "ms": 16198
+  },
+  {
+   "nombre": "calibrated δ=0.1",
+   "config": {
+    "delta": 0.1,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": true
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.1,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 79,
+     "nextTestAt": 3922
+    }
+   },
+   "ms": 15791
+  },
+  {
+   "nombre": "calibrated δ=0.1, no per-record floors",
+   "config": {
+    "delta": 0.1,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": false
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.1,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 79,
+     "nextTestAt": 3922
+    }
+   },
+   "ms": 15777
+  },
+  {
+   "nombre": "calibrated δ=0.05",
+   "config": {
+    "delta": 0.05,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": true
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.05,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 154,
+     "nextTestAt": 3537
+    }
+   },
+   "ms": 16594
+  },
+  {
+   "nombre": "calibrated δ=0.05, no per-record floors",
+   "config": {
+    "delta": 0.05,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": false
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.05,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 154,
+     "nextTestAt": 3537
+    }
+   },
+   "ms": 16655
+  },
+  {
+   "nombre": "calibrated δ=0.02",
+   "config": {
+    "delta": 0.02,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": true
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.02,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 366,
+     "nextTestAt": 3942
+    }
+   },
+   "ms": 16319
+  },
+  {
+   "nombre": "calibrated δ=0.02, no per-record floors",
+   "config": {
+    "delta": 0.02,
+    "confianza": 0.95,
+    "auditoria": 0.05,
+    "suelosPorRegistro": false
+   },
+   "consultas": 16316,
+   "aciertos": 0,
+   "correctos": 0,
+   "erroneos": 0,
+   "hitRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precision": null,
+   "errorRate": {
+    "point": 0,
+    "lower": 0,
+    "upper": 0
+   },
+   "precisionPuntual": null,
+   "cumpleLaCota": null,
+   "calibracion": {
+    "sondas": {
+     "calibrating": 3276
+    },
+    "etiquetas": 3276,
+    "primerAcierto": null,
+    "estadoFinal": {
+     "maxErrorRate": 0.02,
+     "confidence": 0.95,
+     "floor": null,
+     "labeled": 3276,
+     "heldOut": 1638,
+     "heldOutAtFloor": 0,
+     "wrongHeldOutAtFloor": 0,
+     "minHeldOutToCertify": 366,
+     "nextTestAt": 3942
+    }
+   },
+   "ms": 17895
+  }
+ ],
+ "tripletas": [
+  {
+   "delta": 0.15,
+   "candidatas": {
+    "calibration": 14,
+    "test": 68,
+    "sinCandidata": 325
+   },
+   "reutilizablesEnCandidatas": {
+    "calibration": 12,
+    "test": 66
+   },
+   "calibradoEnCalibration": {
+    "maxErrorRate": 0.15,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 14,
+    "heldOut": 10,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 19,
+    "enTest": null
+   },
+   "calibradoEnTodo": {
+    "maxErrorRate": 0.15,
+    "confidence": 0.95,
+    "floor": 0.788,
+    "labeled": 82,
+    "heldOut": 45,
+    "heldOutAtFloor": 40,
+    "wrongHeldOutAtFloor": 2,
+    "minHeldOutToCertify": 19
+   }
+  },
+  {
+   "delta": 0.12,
+   "candidatas": {
+    "calibration": 14,
+    "test": 68,
+    "sinCandidata": 325
+   },
+   "reutilizablesEnCandidatas": {
+    "calibration": 12,
+    "test": 66
+   },
+   "calibradoEnCalibration": {
+    "maxErrorRate": 0.12,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 14,
+    "heldOut": 10,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 24,
+    "enTest": null
+   },
+   "calibradoEnTodo": {
+    "maxErrorRate": 0.12,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 82,
+    "heldOut": 45,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 24
+   }
+  },
+  {
+   "delta": 0.1,
+   "candidatas": {
+    "calibration": 14,
+    "test": 68,
+    "sinCandidata": 325
+   },
+   "reutilizablesEnCandidatas": {
+    "calibration": 12,
+    "test": 66
+   },
+   "calibradoEnCalibration": {
+    "maxErrorRate": 0.1,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 14,
+    "heldOut": 10,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 29,
+    "enTest": null
+   },
+   "calibradoEnTodo": {
+    "maxErrorRate": 0.1,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 82,
+    "heldOut": 45,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 29
+   }
+  },
+  {
+   "delta": 0.05,
+   "candidatas": {
+    "calibration": 14,
+    "test": 68,
+    "sinCandidata": 325
+   },
+   "reutilizablesEnCandidatas": {
+    "calibration": 12,
+    "test": 66
+   },
+   "calibradoEnCalibration": {
+    "maxErrorRate": 0.05,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 14,
+    "heldOut": 10,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 59,
+    "enTest": null
+   },
+   "calibradoEnTodo": {
+    "maxErrorRate": 0.05,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 82,
+    "heldOut": 45,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 59
+   }
+  },
+  {
+   "delta": 0.02,
+   "candidatas": {
+    "calibration": 14,
+    "test": 68,
+    "sinCandidata": 325
+   },
+   "reutilizablesEnCandidatas": {
+    "calibration": 12,
+    "test": 66
+   },
+   "calibradoEnCalibration": {
+    "maxErrorRate": 0.02,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 14,
+    "heldOut": 10,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 149,
+    "enTest": null
+   },
+   "calibradoEnTodo": {
+    "maxErrorRate": 0.02,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 82,
+    "heldOut": 45,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 149
+   }
+  }
+ ]
+}
