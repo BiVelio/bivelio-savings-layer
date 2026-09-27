@@ -112,7 +112,9 @@ export interface OpcionesGateway {
    * Palanca D · el techo de esfuerzo por turno. Nivel (`low`…`max`) o ausente.
    * Es del OPERADOR, no se adivina: la palanca aplica lo que se le declara y
    * solo cambia la VÍA (un mensaje añadido, que no reinicia la caché de
-   * prefijo, en vez del campo de la raíz, que sí la reinicia).
+   * prefijo, en vez del campo de la raíz, que sí la reinicia). Y solo si REBAJA
+   * el defecto del modelo: un nivel igual o superior deja el cuerpo intacto
+   * (`rebajaElDefecto`, gateway/esfuerzo.ts).
    */
   esfuerzo?: string;
   /**
