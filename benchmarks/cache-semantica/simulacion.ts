@@ -18,6 +18,7 @@ import { pathToFileURL } from "node:url";
 
 import { EstadoDeCalibracion, mulberry32, umbralDeIndice } from "../../src/cache/calibracion.js";
 import { calibrateSemanticFloor } from "../../src/cache/calibration.js";
+import { procedencia } from "./arnes.js";
 import { DIR_SALIDA } from "./datos.js";
 
 export const qVerdad = (s: number): number => 0.5 / (1 + Math.exp(40 * (s - 0.85)));
@@ -115,7 +116,15 @@ function main(): void {
   const resultados = casos.map(([d, a]) => simular(d, a, 300, 20_000));
   mkdirSync(DIR_SALIDA, { recursive: true });
   const ruta = join(DIR_SALIDA, "simulacion.json");
-  writeFileSync(ruta, JSON.stringify({ generatedAt: new Date().toISOString(), curva: "q(s) = 0.5 / (1 + exp(40 (s - 0.85))), s ~ U(0.6, 1)", resultados }, null, 1) + "\n");
+  const { commit, dirty } = procedencia();
+  const artefacto = {
+    generatedAt: new Date().toISOString(),
+    commit,
+    dirty,
+    curva: "q(s) = 0.5 / (1 + exp(40 (s - 0.85))), s ~ U(0.6, 1)",
+    resultados,
+  };
+  writeFileSync(ruta, JSON.stringify(artefacto, null, 1) + "\n");
   for (const r of resultados) console.log(JSON.stringify(r));
   console.log(`artifact: ${ruta}`);
 }
