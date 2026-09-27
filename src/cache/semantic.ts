@@ -1,4 +1,12 @@
 import type { CanonicalRequest } from "../canonicalization/canonicalize.js";
+import type { SemanticCalibrationBound } from "../contracts/types.js";
+import { EstadoDeCalibracion, indiceEnRejilla, umbralDeIndice, validarCalibracion } from "./calibracion.js";
+import {
+  sameAnswer,
+  type AnswerJudge,
+  type SemanticCalibrationOptions,
+  type SemanticCalibrationStatus,
+} from "./calibration.js";
 import { embebedorLocal, UMBRAL_LOCAL } from "./embedder-local.js";
 import type { CachedAnswer } from "./exact.js";
 
@@ -66,6 +74,11 @@ export interface SemanticRecord {
   /** Sampling seed of the request, or null when it set none. */
   seed: number | null;
   storedAtMs: number;
+  /**
+   * With calibration on: the highest score at which this stored answer was
+   * judged wrong for another request. It is never served at or below it.
+   */
+  failedAtScore?: number;
 }
 
 export interface SemanticHit {
@@ -84,6 +97,32 @@ export interface SemanticHit {
   embedder: "built_in" | "custom";
   /** Whether a verifier scored this hit. When false, `verifierScore` equals `similarity`. */
   verifierRan: boolean;
+  /** With calibration on: the bound this hit is served under. `acceptFloor` is then the certified floor. */
+  calibration?: SemanticCalibrationBound;
+}
+
+/**
+ * With calibration on, a candidate the cache did not serve: the request goes to
+ * your provider, and {@link InMemorySemanticCache.observe} turns the answer into
+ * a label.
+ *
+ * - `calibrating`: no floor is certified yet in this traffic segment.
+ * - `below_floor`: the candidate's score is under the certified floor.
+ * - `record_floor`: this stored answer was already judged wrong at this score or higher.
+ * - `audit`: the candidate cleared the floor and was sampled to keep testing it.
+ */
+export interface SemanticProbe {
+  reason: "calibrating" | "below_floor" | "record_floor" | "audit";
+  /** The score the decision was made on: the lower of similarity and your verifier's score. */
+  score: number;
+  segment: "single_shot" | "agentic";
+  record: SemanticRecord;
+}
+
+/** What {@link InMemorySemanticCache.lookup} found: a hit to serve, a candidate to label, or neither. */
+export interface SemanticLookup {
+  hit: SemanticHit | null;
+  probe: SemanticProbe | null;
 }
 
 export interface SemanticCacheOptions {
@@ -110,6 +149,12 @@ export interface SemanticCacheOptions {
   ttlMs?: number;
   maxRecords?: number;
   now?: () => number;
+  /**
+   * Opt-in: replace the fixed acceptance floor with one your own labeled
+   * traffic certifies for a wrong-reuse rate you choose. Off by default. See
+   * {@link SemanticCalibrationOptions}.
+   */
+  calibration?: SemanticCalibrationOptions;
 }
 
 export function cosine(a: number[], b: number[]): number {
@@ -344,6 +389,23 @@ export class InMemorySemanticCache {
   // decir con qué vara se midió la similitud: 0,9 con un vector léxico y 0,9
   // con un sentence-transformer no significan lo mismo.
   private readonly embebedorPropio: boolean;
+  // La calibración, si se pidió. Un estado por segmento de tráfico: lo agéntico
+  // y lo de un solo turno no se certifican el uno al otro.
+  private readonly calibracion:
+    | {
+        maxErrorRate: number;
+        confidence: number;
+        auditRate: number;
+        judge: AnswerJudge;
+        perRecordFloors: boolean;
+        random: () => number;
+      }
+    | undefined;
+  private readonly estados = new Map<SemanticProbe["segment"], EstadoDeCalibracion>();
+  private readonly pendientes = new Set<Promise<boolean | null>>();
+  // ¿Pasó el llamante un `acceptThreshold` suyo? Con calibración, solo uno
+  // EXPLÍCITO sigue contando (como tope inferior adicional); el 0,85 por defecto no.
+  private readonly aceptacionExplicita: boolean;
 
   constructor(opts: SemanticCacheOptions = {}) {
     // Sin `embed`, el local. Es lo que convierte esta caché en algo que se puede
@@ -364,9 +426,26 @@ export class InMemorySemanticCache {
     this.similarityThreshold =
       opts.similarityThreshold ?? (propio ? UMBRAL_LOCAL : 0.9);
     this.acceptThreshold = opts.acceptThreshold ?? 0.85;
+    this.aceptacionExplicita = opts.acceptThreshold != null;
     this.ttlMs = opts.ttlMs;
     this.maxRecords = opts.maxRecords ?? 5_000;
     this.now = opts.now ?? (() => Date.now());
+    if (opts.calibration) {
+      // Se valida al construir: un δ mal puesto tiene que romper aquí, no en
+      // la primera petición de producción.
+      const v = validarCalibracion(opts.calibration);
+      this.calibracion = {
+        ...v,
+        judge: opts.calibration.judge ?? sameAnswer,
+        perRecordFloors: opts.calibration.perRecordFloors ?? true,
+        random: opts.calibration.random ?? Math.random,
+      };
+    }
+  }
+
+  /** Whether this cache runs with `calibration`. */
+  get calibrated(): boolean {
+    return this.calibracion != null;
   }
 
   /**
@@ -375,6 +454,18 @@ export class InMemorySemanticCache {
    * is never even scored.
    */
   async find(c: CanonicalRequest): Promise<SemanticHit | null> {
+    // Con calibración, lo que se sirve lo decide `lookup`; `find` devuelve solo
+    // el acierto (una candidata que no se sirve no deja etiqueta por aquí).
+    if (this.calibracion) return (await this.lookup(c)).hit;
+    return this.mejorCandidata(c, true);
+  }
+
+  /**
+   * The best candidate that passes every hard filter, the similarity floor and
+   * the fact guard. With `conAceptacion`, also the confidence floor (the path
+   * without calibration, unchanged); without it, calibration decides.
+   */
+  private async mejorCandidata(c: CanonicalRequest, conAceptacion: boolean): Promise<SemanticHit | null> {
     if (this.records.length === 0) return null;
     const queryEmbedding = await this.embed(c.normalizedText);
 
@@ -429,7 +520,7 @@ export class InMemorySemanticCache {
         ? await this.verify(c.normalizedText, record.query)
         : similarity;
       const confidence = Math.min(similarity, verifierScore);
-      if (confidence < this.acceptThreshold) continue;
+      if (conAceptacion && confidence < this.acceptThreshold) continue;
 
       if (!best || confidence > best.confidence) {
         best = {
@@ -446,6 +537,125 @@ export class InMemorySemanticCache {
       }
     }
     return best;
+  }
+
+  /**
+   * Like {@link find}, and with calibration on it also returns the candidate it
+   * did not serve, so the caller can label it with {@link observe} once the
+   * provider has answered. Without calibration, `probe` is always null.
+   *
+   * `agentic` picks the traffic segment: calibrations are kept apart for
+   * single-shot and agentic requests.
+   */
+  async lookup(c: CanonicalRequest, opts: { agentic?: boolean } = {}): Promise<SemanticLookup> {
+    const cal = this.calibracion;
+    if (!cal) return { hit: await this.mejorCandidata(c, true), probe: null };
+    const segment: SemanticProbe["segment"] = opts.agentic ? "agentic" : "single_shot";
+    // LA CANDIDATA ES LA MÁS CERCANA, SE SIRVA O NO. Si la más cercana no se
+    // puede servir, no se busca la segunda: la etiqueta describe exactamente la
+    // decisión «servir la más cercana si su puntuación llega al suelo», que es
+    // lo que la prueba certifica.
+    const candidata = await this.mejorCandidata(c, false);
+    if (!candidata) return { hit: null, probe: null };
+    const estado = this.estadoDe(segment);
+    const suelo = estado.suelo;
+    const score = candidata.confidence;
+    const sonda = (reason: SemanticProbe["reason"]): SemanticLookup => ({
+      hit: null,
+      probe: { reason, score, segment, record: candidata.record },
+    });
+    if (suelo == null) return sonda("calibrating");
+    if (indiceEnRejilla(score) < suelo || (this.aceptacionExplicita && score < this.acceptThreshold)) {
+      return sonda("below_floor");
+    }
+    if (cal.perRecordFloors && candidata.record.failedAtScore != null && score <= candidata.record.failedAtScore) {
+      return sonda("record_floor");
+    }
+    // El dado solo se tira aquí, con suelo y candidata servible: mientras se
+    // calibra, la sonda ya es obligatoria y no hay nada que auditar.
+    if (cal.auditRate > 0 && cal.random() < cal.auditRate) return sonda("audit");
+    const floor = umbralDeIndice(suelo);
+    const r = estado.resumen();
+    return {
+      hit: {
+        ...candidata,
+        acceptFloor: this.aceptacionExplicita ? Math.max(floor, this.acceptThreshold) : floor,
+        calibration: {
+          maxErrorRate: cal.maxErrorRate,
+          confidence: cal.confidence,
+          floor,
+          heldOutAtFloor: r.retenidasEnSuelo,
+          wrongHeldOutAtFloor: r.erroneasEnSuelo,
+          labeled: r.etiquetas,
+          segment,
+        },
+      },
+      probe: null,
+    };
+  }
+
+  /**
+   * Label a candidate {@link lookup} did not serve, with the answer your provider
+   * produced for that request. Resolves to the judge's verdict, or null when
+   * there is no calibration or the judge failed (no label is recorded then).
+   * It never rejects.
+   */
+  observe(probe: SemanticProbe, fresh: CachedAnswer): Promise<boolean | null> {
+    const p = this.etiquetar(probe, fresh);
+    this.pendientes.add(p);
+    void p.finally(() => this.pendientes.delete(p));
+    return p;
+  }
+
+  private async etiquetar(probe: SemanticProbe, fresh: CachedAnswer): Promise<boolean | null> {
+    const cal = this.calibracion;
+    if (!cal) return null;
+    let correcta: boolean;
+    try {
+      // Solo un `true` estricto cuenta como correcta: cualquier otra cosa que
+      // devuelva un juez es una reutilización que no se puede defender.
+      correcta = (await cal.judge(probe.record.answer, fresh)) === true;
+    } catch {
+      return null;
+    }
+    this.estadoDe(probe.segment).anotar(probe.score, correcta);
+    if (!correcta && cal.perRecordFloors) {
+      probe.record.failedAtScore = Math.max(probe.record.failedAtScore ?? -Infinity, probe.score);
+    }
+    return correcta;
+  }
+
+  /** Resolves once every pending {@link observe} has recorded its label. */
+  async settled(): Promise<void> {
+    while (this.pendientes.size > 0) await Promise.allSettled([...this.pendientes]);
+  }
+
+  /** Where the calibration of a traffic segment stands, or null without calibration. */
+  calibrationStatus(segment: SemanticProbe["segment"] = "single_shot"): SemanticCalibrationStatus | null {
+    const cal = this.calibracion;
+    if (!cal) return null;
+    const r = this.estadoDe(segment).resumen();
+    return {
+      maxErrorRate: cal.maxErrorRate,
+      confidence: cal.confidence,
+      floor: r.suelo == null ? null : umbralDeIndice(r.suelo),
+      labeled: r.etiquetas,
+      heldOut: r.retenidas,
+      heldOutAtFloor: r.retenidasEnSuelo,
+      wrongHeldOutAtFloor: r.erroneasEnSuelo,
+      minHeldOutToCertify: r.minimasParaLaSiguiente,
+      nextTestAt: r.etiquetasParaLaSiguiente,
+    };
+  }
+
+  private estadoDe(segmento: SemanticProbe["segment"]): EstadoDeCalibracion {
+    let e = this.estados.get(segmento);
+    if (!e) {
+      const cal = this.calibracion!;
+      e = new EstadoDeCalibracion(cal.maxErrorRate, 1 - cal.confidence);
+      this.estados.set(segmento, e);
+    }
+    return e;
   }
 
   async store(c: CanonicalRequest, answer: CachedAnswer): Promise<void> {

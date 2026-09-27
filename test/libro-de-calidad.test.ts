@@ -83,6 +83,8 @@ const VOCABULARIO = new Set([
   "repaired", "still_invalid", "skipped",
   "output_truncated", "schema_defect", "would_cost_more_than_no_layer", "decode_time_constraint",
   "exact", "semantic", "built_in", "custom",
+  // El segmento de la calibración de la caché semántica (opt-in).
+  "single_shot", "agentic",
   "shadow", "on", "none", "structural", "value-constrained",
   "accepted", "escalated", "not_routed", "not_applied",
   // `finishReason`, tal cual lo nombra el proveedor.
@@ -341,6 +343,27 @@ describe("de dónde vino la respuesta", () => {
     expect(m.acceptFloor).toBe(0.3);
     expect(Math.min(m.similarity, m.verifierScore!)).toBe(r.report.cache.confidence);
     expect(r.report.quality.semanticScore).toBe(m.similarity);
+  });
+
+  it("acierto semántico CALIBRADO: la cota viaja en el libro, solo con números y el segmento", async () => {
+    // δ = 0,5 con 90 % de confianza: la primera prueba llega con 10 etiquetas.
+    const semanticCache = new InMemorySemanticCache({
+      calibration: { maxErrorRate: 0.5, confidence: 0.9, auditRate: 0 },
+    });
+    const c = capa(new ProveedorGuion([{ text: "the water cycle is evaporation, condensation and rain" }]), { semanticCache });
+    const base = { savings: { semanticCache: true as const, exactCache: false } };
+    await generar(c, pide("describe the water cycle in simple terms", base));
+    let r = await generar(c, pide("describe the water cycle in simple terms please", base));
+    for (let i = 0; i < 40 && r.report.cache.result !== "semantic"; i++) {
+      await semanticCache.settled();
+      r = await generar(c, pide("describe the water cycle in simple terms please", base));
+    }
+    const m = r.report.qualityLedger!.cacheMatch!;
+    if (m.kind !== "semantic") throw new Error("se esperaba un acierto semántico");
+    expect(m.calibration).toBeDefined();
+    expect(m.calibration!.segment).toBe("single_shot");
+    expect(m.acceptFloor).toBe(m.calibration!.floor);
+    expect(r.report.cache.confidence!).toBeGreaterThanOrEqual(m.calibration!.floor);
   });
 
   it("fail-open: fail_open, con su validación y su truncado", async () => {

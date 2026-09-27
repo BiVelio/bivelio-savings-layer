@@ -3,6 +3,7 @@ import type {
   AnswerSource,
   CacheOutcome,
   ModelCascadeReport,
+  QualityCacheMatch,
   QualityCascadeCheck,
   QualityLedger,
   QualityRepairCheck,
@@ -155,6 +156,10 @@ export function libroDeCalidad(a: {
       embedder: h.embedder,
       // `find()` no devuelve ningún candidato que no la pase.
       factGuard: "passed",
+      // Con calibración: la cota bajo la que se sirvió, y las etiquetas que la
+      // sostienen. Es la precisión PUBLICADA por petición: δ, la confianza, el
+      // suelo certificado y cuántas etiquetas retenidas (y erróneas) lo avalan.
+      ...(h.calibration ? { calibration: { ...h.calibration } } : {}),
     };
   }
 
@@ -173,15 +178,22 @@ export function libroDeCalidad(a: {
 export function libroDelSeguidor(lider?: QualityLedger): QualityLedger {
   const sharedFrom: Exclude<AnswerSource, "coalesced"> =
     lider == null ? "provider" : lider.source === "coalesced" ? (lider.sharedFrom ?? "provider") : lider.source;
-  // Copias de cada bloque (todos son planos): el seguidor no comparte objetos
-  // con el informe del líder, que es de otro llamante.
+  // Copias de cada bloque (planos, salvo la cota de la calibración, que se
+  // copia aparte): el seguidor no comparte objetos con el informe del líder,
+  // que es de otro llamante.
   return {
     source: "coalesced",
     sharedFrom,
     ...(lider?.schema ? { schema: { ...lider.schema } } : {}),
     ...(lider?.repair ? { repair: { ...lider.repair } } : {}),
     ...(lider?.truncation ? { truncation: { ...lider.truncation } } : {}),
-    ...(lider?.cacheMatch ? { cacheMatch: { ...lider.cacheMatch } } : {}),
+    ...(lider?.cacheMatch ? { cacheMatch: copiaDeCoincidencia(lider.cacheMatch) } : {}),
     ...(lider?.cascade ? { cascade: { ...lider.cascade } } : {}),
   };
+}
+
+// El único bloque con un objeto dentro: la cota de la calibración también se copia.
+function copiaDeCoincidencia(m: QualityCacheMatch): QualityCacheMatch {
+  if (m.kind === "semantic" && m.calibration) return { ...m, calibration: { ...m.calibration } };
+  return { ...m };
 }

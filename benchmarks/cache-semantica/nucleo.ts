@@ -15,6 +15,7 @@
  */
 import { createSavingsLayer } from "../../src/pipeline/create.js";
 import { InMemorySemanticCache, type SemanticCacheOptions } from "../../src/cache/semantic.js";
+import type { SemanticCalibrationOptions, SemanticCalibrationStatus } from "../../src/cache/calibration.js";
 import { canonicalize, type CanonicalRequest } from "../../src/canonicalization/canonicalize.js";
 import { evaluatePolicy } from "../../src/policy/policy.js";
 import type { CachedAnswer } from "../../src/cache/exact.js";
@@ -464,10 +465,23 @@ export interface ResultadoStream {
   noConsultados: number[];
   aciertosDetalle: AciertoStream[];
   porClase: PorClase[];
+  /** Solo con `calibracion`: lo que hizo la calibración en línea durante el stream. */
+  calibracion?: ResumenCalibracionStream;
 }
 
-const respuestaDe = (idSet: number, id: number) => `class:${idSet}|id:${id}`;
-const leerRespuesta = (t: string): { idSet: number; id: number } | null => {
+export interface ResumenCalibracionStream {
+  /** Candidatas no servidas, por motivo (`calibrating`, `below_floor`, `record_floor`, `audit`). */
+  sondas: Record<string, number>;
+  /** Etiquetas que llegaron a anotarse (la respuesta era guardable). */
+  etiquetas: number;
+  /** Posición (0-based entre las consultadas) del primer acierto servido, o null. */
+  primerAcierto: number | null;
+  /** El estado final del segmento de un solo turno. */
+  estadoFinal: SemanticCalibrationStatus;
+}
+
+export const respuestaDe = (idSet: number, id: number) => `class:${idSet}|id:${id}`;
+export const leerRespuesta = (t: string): { idSet: number; id: number } | null => {
   const m = /^class:(-?\d+)\|id:(-?\d+)$/.exec(t);
   return m ? { idSet: Number(m[1]), id: Number(m[2]) } : null;
 };
@@ -484,7 +498,16 @@ const leerRespuesta = (t: string): { idSet: number; id: number } | null => {
  */
 export async function conducirStream(
   filas: FilaStream[],
-  opts: { maxRegistros: number; opcionesCache?: SemanticCacheOptions },
+  opts: {
+    maxRegistros: number;
+    opcionesCache?: SemanticCacheOptions;
+    /**
+     * La calibración en línea (opt-in del SDK). El juez es la definición de
+     * correcto de la tarjeta del dataset: la respuesta guardada es de la MISMA
+     * clase que la de la consulta. No se deja pasar otro juez.
+     */
+    calibracion?: Omit<SemanticCalibrationOptions, "judge">;
+  },
 ): Promise<ResultadoStream> {
   const cola: number[] = [];
   const enCache = new Map<number, number>();
@@ -500,7 +523,22 @@ export async function conducirStream(
     cola.push(r.idSet);
     enCache.set(r.idSet, (enCache.get(r.idSet) ?? 0) + 1);
   };
-  const semanticCache = new CacheInstrumentada({ ...opts.opcionesCache, maxRecords: opts.maxRegistros }, alGuardar);
+  const juezDeClase = (guardada: CachedAnswer, fresca: CachedAnswer): boolean => {
+    const a = leerRespuesta(guardada.text);
+    const b = leerRespuesta(fresca.text);
+    return a != null && b != null && a.idSet === b.idSet;
+  };
+  const semanticCache = new CacheInstrumentada(
+    {
+      ...opts.opcionesCache,
+      maxRecords: opts.maxRegistros,
+      ...(opts.calibracion ? { calibration: { ...opts.calibracion, judge: juezDeClase } } : {}),
+    },
+    alGuardar,
+  );
+  const sondas: Record<string, number> = {};
+  let etiquetas = 0;
+  let primerAcierto: number | null = null;
   let siguiente = "";
   const layer = createSavingsLayer({
     provider: proveedorFalso(() => siguiente),
@@ -538,11 +576,22 @@ export async function conducirStream(
         context: { tenantId: "stream" },
         messages: [{ role: "user", content: f.prompt }],
       });
+      // Las etiquetas se anotan sin `await` en el pipeline: aquí se espera a
+      // que estén, para que la siguiente consulta vea el estado de verdad.
+      if (opts.calibracion) {
+        await semanticCache.settled();
+        for (const t of r.report.traces) {
+          const motivo = t.stage === "semantic-cache" && t.outcome === "miss" ? t.detail?.["calibration"] : undefined;
+          if (typeof motivo === "string") sondas[motivo] = (sondas[motivo] ?? 0) + 1;
+          if (t.stage === "semantic-calibration" && t.outcome === "label requested") etiquetas++;
+        }
+      }
       if (!consulto(r)) {
         res.noConsultados.push(f.id);
         continue;
       }
       const pc = clase(f.idSet);
+      if (primerAcierto == null && r.report.cache.result === "semantic") primerAcierto = res.consultas;
       res.consultas++;
       pc.consultas++;
       if (alcanzable) {
@@ -571,6 +620,9 @@ export async function conducirStream(
     await layer.close();
   }
   res.desalojos = desalojos;
+  if (opts.calibracion) {
+    res.calibracion = { sondas, etiquetas, primerAcierto, estadoFinal: semanticCache.calibrationStatus()! };
+  }
   res.promptsIdenticosEnVariasClases = [...clasesPorPrompt.values()].filter((s) => s.size > 1).length;
   res.porClase = [...porClase.values()].sort((a, b) => a.idSet - b.idSet);
   return res;

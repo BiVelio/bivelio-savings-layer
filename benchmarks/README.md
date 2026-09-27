@@ -795,3 +795,28 @@ clean tree at a recorded commit, with a revision and a fingerprint for every sou
 writes `docs/SEMANTIC-CACHE-PRECISION.md` and copies the artifact, which holds ids,
 decisions and similarity scores and no text, to
 `benchmarks/evidencia/cache-semantica-<date>.json`; the page cites it by sha256.
+
+### Calibrated semantic cache (`pnpm cache-semantica:calibrada`)
+
+The same stream, driven through the whole layer, with the opt-in `calibration` of
+`InMemorySemanticCache` against the cache as it ships. The judge is the dataset's own
+definition of a correct hit (same `ID_Set`); the provider is the same stand-in, so no
+model is called. Audits use a fixed seed.
+
+- **Stream labels**: every candidate the calibration would label, with its score and
+  the dataset's verdict, tabulated by score band (does the score separate right from
+  wrong reuses at all?), and `calibrateSemanticFloor()` run on them for each `--delta`.
+- **Arms**: the shipped cache, then the calibrated cache per `--delta` with and without
+  per-record floors: reuses, precision (class bootstrap), wrong reuses, the certified
+  floor, where the first reuse was served and why candidates were not.
+- **Triplets**: the `arena` arm as offline labels, calibrated on `split=calibration`
+  and checked on `split=test`.
+
+```bash
+pnpm cache-semantica --descargar                        # once
+pnpm cache-semantica:calibrada --n 20000                # --delta 0.15,0.12,0.1,0.05,0.02 by default
+pnpm cache-semantica:calibrada --solo-etiquetas --embebedor dataset:emb_e5_large_v2
+```
+
+It writes `benchmarks/out/cache-semantica/calibrada.json` (git-ignored). It is a
+diagnostic: nothing here is published as a figure of the product.

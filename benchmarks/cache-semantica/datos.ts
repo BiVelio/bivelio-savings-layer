@@ -155,11 +155,26 @@ export async function cargarVectoresLmArena(columna: string, n: number): Promise
   const filas = await parquetReadObjects({ file, columns: ["id", columna], rowStart: 0, rowEnd: n });
   const out = new Map<number, number[]>();
   for (const r of filas) {
-    const v = r[columna];
-    if (!Array.isArray(v) && !ArrayBuffer.isView(v)) throw new Error(`column ${columna} is not a vector column`);
-    out.set(Number(r["id"]), Array.from(v as ArrayLike<number>, Number));
+    out.set(Number(r["id"]), vectorDeCelda(r[columna], columna));
   }
   return out;
+}
+
+/**
+ * Una celda de vector tal como la entrega hyparquet. En la revisión fijada las
+ * columnas `emb_*` son BYTE_ARRAY con el vector escrito como TEXTO JSON
+ * («[-0.44, -0.77, …]»), y hyparquet las devuelve como cadena: el camino
+ * `--embebedor dataset:<columna>` no llegaba a correr nunca porque solo
+ * aceptaba arrays. Se aceptan las tres formas; cualquier otra cosa rompe.
+ */
+export function vectorDeCelda(v: unknown, columna: string): number[] {
+  if (typeof v === "string") {
+    const parsed: unknown = JSON.parse(v);
+    if (Array.isArray(parsed) && parsed.every((x) => typeof x === "number")) return parsed as number[];
+    throw new Error(`column ${columna} holds text that is not a JSON array of numbers`);
+  }
+  if (Array.isArray(v) || ArrayBuffer.isView(v)) return Array.from(v as ArrayLike<number>, Number);
+  throw new Error(`column ${columna} is not a vector column`);
 }
 
 // ─── Lectura verificada ─────────────────────────────────────────────────────

@@ -434,6 +434,19 @@ single-shot requests only: requests that declare tools, carry tool calls or resu
 hold more than one user turn are left out unless you set
 `savings.semanticCache: "include-agentic"`.
 
+**Calibrated reuse (opt-in).** A fixed similarity floor means something different for
+every embedder and every workload, so you can make the cache earn its floor on your own
+traffic instead: `new InMemorySemanticCache({ embed, calibration: { maxErrorRate: 0.02 } })`.
+It then serves no reworded answer until your labels show, at 95 % confidence, that at
+most 2 % of the answers it would reuse from some score up are wrong, and it re-tests that
+floor as labels accumulate. Until then every candidate goes to your provider, exactly as
+it would without the cache, and the fresh answer is compared with the stored one by your
+`judge` (by default only identical answers count, which suits classification and
+structured output; pass your own for free text). Each calibrated reuse carries its bound
+and the labels behind it in `report.qualityLedger.cacheMatch.calibration`. Calibration
+costs reuses, never an extra call, and it does not change how anything is billed. If you
+already have labeled pairs, `calibrateSemanticFloor()` runs the same test offline.
+
 And a promise you can hold it to: **never worse than your JSON.** Payload encodings
 are chosen by counting real tokens with the destination model's own tokenizer, and
 BV‑SALA only moves away from plain JSON when the saving clearly clears the bar —

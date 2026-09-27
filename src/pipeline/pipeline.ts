@@ -93,6 +93,7 @@ import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
+import type { SemanticProbe } from "../cache/semantic.js";
 import type { Provider, ProviderRequest, ProviderResponse, ProviderToolSearch } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import {
@@ -1923,6 +1924,8 @@ export class SavingsPipeline {
   ): Promise<SavingsResult<T>> {
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
+    // La candidata que la caché calibrada no sirvió: se etiqueta en la etapa 12.
+    let sondaSemantica: SemanticProbe | null = null;
     // Se pidió y la política la apartó POR SER TRÁFICO AGÉNTICO: que la traza lo
     // diga con esas palabras. Sin esto, la única huella sería la razón de la
     // política y un `miss` que parecería una reformulación que no casó. Solo
@@ -1953,7 +1956,15 @@ export class SavingsPipeline {
       this.deps.semanticCache &&
       semanticLicensed
     ) {
-      const hit = await this.deps.semanticCache.find(canonical);
+      // CON CALIBRACIÓN, `lookup` además devuelve la candidata que NO se sirvió
+      // (la sonda), para etiquetarla en la etapa 12 con la respuesta que dé el
+      // proveedor. Sin calibración, el camino de siempre, byte a byte.
+      const cacheSemantica = this.deps.semanticCache;
+      const consulta = cacheSemantica.calibrated
+        ? await cacheSemantica.lookup(canonical, { agentic: policy.isAgentic })
+        : { hit: await cacheSemantica.find(canonical), probe: null };
+      const hit = consulta.hit;
+      sondaSemantica = consulta.probe;
       if (hit) {
         // Measured avoided-output baseline (the cached answer is the real output).
         ledger.avoidCall(
@@ -1983,7 +1994,11 @@ export class SavingsPipeline {
           { semantico: hit },
         );
       }
-      trace.record("semantic-cache", "miss");
+      trace.record(
+        "semantic-cache",
+        "miss",
+        sondaSemantica ? { calibration: sondaSemantica.reason, score: sondaSemantica.score } : undefined,
+      );
     }
 
     // --- Stage 5: execution routing (avoid retrieval / tools). ---
@@ -3880,6 +3895,23 @@ export class SavingsPipeline {
           "semantic write skipped: a cheaper model answered, and this cache keys on the model the " +
             "caller asked for",
         );
+      }
+      // LA ETIQUETA DE LA CALIBRACIÓN: la respuesta que el proveedor acaba de
+      // dar, comparada con la guardada que no se sirvió. Solo se aprende de una
+      // respuesta que la caché GUARDARÍA —la misma condición que la escritura de
+      // arriba—: media respuesta, una que incumple su contrato o la de otro
+      // modelo no dicen nada de si la guardada valía. Sin `await`: un juez que
+      // llame a un modelo no puede alargar esta petición; `observe` no rechaza.
+      if (sondaSemantica && this.deps.semanticCache) {
+        if (cacheable && !respuestaEnrutada && policy.allowSemanticCache && toggles.semanticCache) {
+          trace.record("semantic-calibration", "label requested", {
+            reason: sondaSemantica.reason,
+            score: sondaSemantica.score,
+          });
+          void this.deps.semanticCache.observe(sondaSemantica, answer as CachedAnswer);
+        } else {
+          trace.record("semantic-calibration", "no label: the cache would not store this answer");
+        }
       }
     } catch (err) {
       trace.record("cache-write", "failed (non-fatal; answer already served)", {
