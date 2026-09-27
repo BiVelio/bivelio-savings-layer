@@ -92,6 +92,7 @@
     "example:mastra": "BVSALA_DEV_OPEN=1 tsx examples/stacks/mastra/bivelio-check.ts",
     "example:langchain": "BVSALA_DEV_OPEN=1 tsx examples/stacks/langchain/bivelio-check.ts",
     "example:anthropic-sdk": "BVSALA_DEV_OPEN=1 tsx examples/stacks/anthropic-sdk/bivelio-check.ts",
+    "example:litellm": "BVSALA_DEV_OPEN=1 tsx examples/litellm/check.ts",
     "init:ejemplos": "tsx scripts/ejemplos-de-init.ts",
     "example:licensed": "tsx examples/licensing/licensed.ts",
     "license:demo": "tsx examples/licensing/demo.ts",
@@ -129,6 +130,7 @@
     "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts",
     "latencia:gateways": "tsx benchmarks/latencia-gateways/arnes.ts",
     "vigia:conexiones": "tsx benchmarks/latencia-gateways/vigia-conexiones.ts",
+    "litellm:e2e": "tsx benchmarks/delante-de-litellm/e2e.ts",
     "cache-semantica:calibrada": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/calibrada.ts",
     "cache-semantica:simulacion": "tsx benchmarks/cache-semantica/simulacion.ts"
   },

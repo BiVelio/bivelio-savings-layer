@@ -1,0 +1,23 @@
+# E6 · La misma model_list que litellm.yaml, con dos cosas más que un equipo
+# con LiteLLM en producción suele tener encendidas:
+#   · la caché de respuestas de LiteLLM (aquí `local`, en memoria; en
+#     producción suele ser Redis): un acierto no llama al upstream;
+#   · una master key: el SDK tiene que mandar la clave del proxy.
+# La clave es de relleno y solo vale contra este proceso local.
+model_list:
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_base: os.environ/E6_UPSTREAM_OPENAI
+      api_key: relleno-no-es-una-clave
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_base: os.environ/E6_UPSTREAM
+      api_key: relleno-no-es-una-clave
+litellm_settings:
+  cache: true
+  cache_params:
+    type: local
+general_settings:
+  master_key: sk-e6-relleno-no-es-una-clave

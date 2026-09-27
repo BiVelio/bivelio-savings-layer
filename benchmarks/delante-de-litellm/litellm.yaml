@@ -1,0 +1,29 @@
+# E6 · LiteLLM proxy 1.102.1 delante del upstream falso del banco
+# (benchmarks/latencia-gateways/upstream-falso.ts). Sin base de datos ni master
+# key: lo mínimo que arranca. Las claves son de relleno; el upstream falso no
+# mira ninguna. `e2e.ts` pone E6_UPSTREAM (http://127.0.0.1:<puerto>) en el
+# entorno del proceso de LiteLLM.
+#
+# Tres modelos, uno por pregunta de la prueba:
+#   · gpt-4o-mini       el `model_name` ES el id del proveedor: el catálogo de
+#                       BV-SALA le pone precio (Chat Completions, /v1).
+#   · equipo-rapido     un alias propio del equipo, el mismo modelo detrás: el
+#                       catálogo NO sabe qué es (sin precio de lista).
+#   · claude-haiku-4-5  el paso de Anthropic: el SDK habla Messages con LiteLLM
+#                       (/v1/messages) y LiteLLM con el upstream.
+model_list:
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_base: os.environ/E6_UPSTREAM_OPENAI
+      api_key: relleno-no-es-una-clave
+  - model_name: equipo-rapido
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_base: os.environ/E6_UPSTREAM_OPENAI
+      api_key: relleno-no-es-una-clave
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_base: os.environ/E6_UPSTREAM
+      api_key: relleno-no-es-una-clave
