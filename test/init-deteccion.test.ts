@@ -257,10 +257,21 @@ describe("los ficheros del plan", () => {
     expect(enSrc.comoComprobar[0]).toMatch(/next dev/);
   });
 
-  it("Next.js sin app/ (Pages Router): la comprobación pasa a script y se avisa", () => {
-    const plan = planDe(sonda({ dependencies: { next: "^14", ai: "^7.0.0" } }, ["pages"]));
+  it("Next.js sin app/ (Pages Router): la comprobación pasa a script y se avisa, una vez", () => {
+    const s = sonda({ dependencies: { next: "^14", ai: "^7.0.0" } }, ["pages"]);
+    const plan = planDe(s);
     expect(plan.ficheros.map((f) => f.ruta)).toContain("bivelio-check.mjs");
-    expect(plan.avisos.join("\n")).toMatch(/No app\/ directory/);
+    expect(plan.avisos.filter((a) => /No app\/ directory/.test(a))).toHaveLength(1);
+    // conFicheros no toca el plan que recibe: dos pasadas sobre el mismo plan dan
+    // un aviso cada una, y el plan de entrada sigue sin ninguno.
+    const d = detectar(DIR, s);
+    if (!d.ok) throw new Error(d.mensaje);
+    const base = planear(d.valor, {}, ENTORNO);
+    if (!base.ok) throw new Error(base.mensaje);
+    const sinApp = (p: Plan) => p.avisos.filter((a) => /No app\/ directory/.test(a)).length;
+    expect(sinApp(conFicheros(base.valor, s))).toBe(1);
+    expect(sinApp(conFicheros(base.valor, s))).toBe(1);
+    expect(sinApp(base.valor)).toBe(0);
   });
 
   it("Express: el uso es un servidor autocontenido y la comprobación un script", () => {

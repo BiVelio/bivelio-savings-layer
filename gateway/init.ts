@@ -514,14 +514,16 @@ export function conFicheros(plan: Plan, sonda: SondaDeProyecto): Plan {
     ficheros.push({ ruta: "bivelio-check.mjs", proposito: "check", contenido: comprobacionScript(capa, proveedor), existe: existe("bivelio-check.mjs") });
     comoComprobar.push(`Run it: ${comandoDelScript(d)}`, 'It prints "ok: …" and exits 0 when the layer is in place, or "not ok: …" with what to fix and exits 1.');
   }
+  // Una copia: el plan de entrada no se toca (llamar dos veces no duplica el aviso).
+  const avisos = [...plan.avisos];
   if (d.anfitrion === "next" && !d.appDir) {
-    plan.avisos.push("No app/ directory (Pages Router?): the check is a script instead of a route. The wiring works the same from an API route.");
+    avisos.push("No app/ directory (Pages Router?): the check is a script instead of a route. The wiring works the same from an API route.");
   }
   comoComprobar.push(
     "The question (2 + 2 * 3) is answered on your machine: with the layer in place the model is not called, so your provider bills nothing for it,",
     "and the saving is `estimated`, which is never billed. Delete the check once it says ok.",
   );
-  return { ...plan, ficheros, usos, comoComprobar };
+  return { ...plan, ficheros, usos, comoComprobar, avisos };
 }
 
 // ── La salida ──────────────────────────────────────────────────────────────
