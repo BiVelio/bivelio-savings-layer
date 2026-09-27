@@ -51,6 +51,17 @@ jobs:
       - run: pnpm run build:all
       - name: Typecheck (SDK, paquetes y servicios)
         run: pnpm run typecheck:all
+
+      # EL CLIENTE DE PYTHON contra el gateway DE VERDAD: test/python-cliente.test.ts
+      # lanza Python desde vitest y, en CI, exige los dos SDK oficiales. Van
+      # fijados por versión Y por hash (requirements-ci.txt): lo que se instala
+      # aquí es exactamente lo que se revisó, nada que PyPI cambie por debajo.
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Python — dependencias de prueba (fijadas por hash)
+        run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
+
       - name: Tests
         run: pnpm test
 
@@ -71,3 +82,24 @@ jobs:
       # typecheck ni los tests ven.
       - name: Build de apps/web (antes que Vercel, no después)
         run: pnpm --dir apps/web run build
+
+  # EL CLIENTE DE PYTHON en la versión más vieja y en la más nueva que declara
+  # (pyproject: >=3.10). Solo pytest, sin Node: el extremo a extremo con el
+  # gateway va en `verificar`. Las pruebas no tocan la red: conftest.py hace
+  # fallar cualquier conexión que no sea a 127.0.0.1.
+  python:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Dependencias de prueba (fijadas por hash)
+        run: 'python -m pip install --require-hashes --only-binary :all: -r packages/python/requirements-ci.txt'
+      - name: pytest (sin red)
+        run: python -m pytest packages/python -q

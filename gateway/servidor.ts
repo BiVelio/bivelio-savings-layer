@@ -57,6 +57,19 @@ import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, t
 import { esUpstreamOficial } from "./upstream.js";
 import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
 import {
+  BuzonDeInformes,
+  CABECERA_ID_DE_PETICION,
+  CABECERA_PIDE_INFORME,
+  ESQUEMA_ESTADO,
+  VigiaDeIdDeRespuesta,
+  atenderRutaLocal,
+  idDeCuerpoJson,
+  origenPublico,
+  pideInforme,
+  rutaLocal,
+} from "./informes-locales.js";
+import { BV_SALA_VERSION } from "../src/version.js";
+import {
   VigiaDeDegradacion,
   degradacionDeCache,
   esTraficoDeClaudeCode,
@@ -403,6 +416,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   // El carril sombra solo existe con emisor: sin clave de servicio no hay
   // dónde reportar y simular sería gastar CPU del cliente para nada.
   const carrilSombra = opts.sombra && emisor ? new CarrilSombra() : null;
+  // El buzón de informes locales (informes-locales.ts): solo guarda lo que una
+  // petición pidió con `x-bvsala-report: 1`; sin esa cabecera no hace nada.
+  const buzon = new BuzonDeInformes();
 
   // S4a · el canal de entitlements existe SIEMPRE que haya clave de servicio (sin
   // clave no hay org que consultar), con independencia de `opts.elision`: por él
@@ -485,6 +501,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
    * pasaba sin dejar rastro: ni registro ni línea. Nada se estima en su lugar.
    */
   const noMedido = (
+    requestId: string,
     metodo: string,
     path: string,
     status: number,
@@ -492,6 +509,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     motivo: string,
     aviso: AvisoDeNoMedido,
   ): void => {
+    buzon.noMedido(requestId, motivo);
     log(`[gateway] ${metodo} ${path} → ${status}${stream ? " (stream)" : ""} · not metered: ${motivo}`);
     // Al recuento, solo lo que es API: una ruta con dialecto o bajo `/v1/`. Lo
     // demás que un terminal manda por el base URL (telemetría, sondas) no es
@@ -570,7 +588,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
      */
     entrega?: { entregada: boolean; tierServido?: string | undefined },
   ): void => {
-    if (!emisor || !uso) return;
+    if (!emisor || !uso) {
+      buzon.noMedido(
+        requestId,
+        !emisor ? "metering is off: the gateway has no BIVELIO_SERVICE_KEY" : "the provider reported no usage",
+      );
+      return;
+    }
     const em = emisor;
     const usoFinal: UsoSse = uso;
     const model = modeloDelCuerpo(cuerpo, codificacion);
@@ -582,6 +606,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       const motivo = `could not read the model from the request body${codificacion ? ` (content-encoding: ${codificacion})` : ""}`;
       log(`${cabeza} · not metered: ${motivo}`);
       recuento.noMedida(motivo);
+      buzon.noMedido(requestId, "could not read the model from the request body");
       avisarUnaVez(
         `gateway-sin-modelo:${path}`,
         `[bvsala gateway] could not read the model from the ${path} request body (content-encoding: ${codificacion ?? "none"}); its usage is forwarded but not metered.`,
@@ -613,6 +638,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       emisor.record(informe);
       if (coalescida) recuento.replica();
       else recuento.medida();
+      // El MISMO objeto que va a la ingesta: el cliente que lo pidió ve los
+      // números de su panel, sin recalcular nada.
+      buzon.medido(requestId, informe);
       // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
       // es atribuible a nuestros diales y el modelo tiene precio de lectura.
       const suelo = informe.cost.eliminatedInputFloorCost;
@@ -687,6 +715,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         });
       }
     } else {
+      buzon.noMedido(requestId, `model "${servido}" has no list price in the catalog`);
       log(`${cabeza} · not metered: model "${servido}" has no list price in the catalog`);
       recuento.noMedida(`model "${servido}" has no list price in the catalog`);
       avisarUnaVez(
@@ -773,6 +802,46 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       log(`[gateway] ${req.method} ${ruta} → 402 (license ${v.state})`);
       return;
     }
+
+    // ── LAS RUTAS LOCALES (/_bvsala/v1/…) · informes-locales.ts ─────────────
+    // Detrás de la verja de licencia, como todo, y jamás hacia el upstream.
+    const local = rutaLocal(req.url);
+    if (local !== null) {
+      await atenderRutaLocal(req, res, local, {
+        buzon,
+        estado: () => ({
+          schema: ESQUEMA_ESTADO,
+          gateway: "bvsala",
+          version: BV_SALA_VERSION,
+          upstream: origenPublico(upstreamBase),
+          license: {
+            state: v.state,
+            plan: live.license.payload.plan ?? null,
+            expiresAt: isoDay(live.license.payload.expires_at),
+          },
+          metering: emisor !== undefined,
+          reports: { requestHeader: CABECERA_PIDE_INFORME, responseHeader: CABECERA_ID_DE_PETICION, capacity: buzon.limite },
+        }),
+      });
+      return;
+    }
+    // ¿Pidió esta petición su informe? Solo entonces se abre buzón, se lee el id
+    // de la respuesta y se añade `x-bvsala-request-id`. Sin la cabecera, nada.
+    const conInforme = pideInforme(req.headers[CABECERA_PIDE_INFORME]);
+    const vigiaId = conInforme ? new VigiaDeIdDeRespuesta() : null;
+    if (conInforme) {
+      let ruta = "/";
+      try {
+        ruta = new URL(req.url ?? "/", "http://x").pathname;
+      } catch {
+        /* una ruta ilegible se guarda como "/" */
+      }
+      buzon.abrir(requestId, ruta);
+    }
+    const conId = (cabeceras: Record<string, string | string[] | number | undefined>) =>
+      conInforme ? { ...cabeceras, [CABECERA_ID_DE_PETICION]: requestId } : cabeceras;
+    // El estado que respondió el upstream, para el motivo de un informe que nada cerró.
+    let estadoUpstream: number | null = null;
     // La petición está viva solo mientras el cliente la escucha. Si se va —Esc en
     // Claude Code, cierra la pestaña— se ABORTA el upstream: antes seguía
     // generando la completion entera y facturándola sin que nadie la leyera. El
@@ -871,12 +940,16 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
             // de un terminal, un Esc), la réplica no llega a nadie: se observa
             // igual para decir lo mismo en el log, pero no se escribe.
             const seFueAntes = ac.signal.aborted || res.destroyed;
-            if (!seFueAntes) res.writeHead(replica.status, replica.headers);
+            if (!seFueAntes) res.writeHead(replica.status, conId(replica.headers));
+            estadoUpstream = replica.status;
             const obs = observadorPara(url.pathname) ?? new ObservadorSse();
             for (const ch of replica.chunks) {
               if (!seFueAntes) res.write(ch);
               obs.observar(ch);
+              vigiaId?.observar(ch);
             }
+            // El id de la respuesta: del stream si lo es, si no del JSON (stream:false).
+            if (vigiaId) buzon.anotarRespuesta(requestId, vigiaId.valor() ?? idDeCuerpoJson(Buffer.concat(replica.chunks)));
             if (!seFueAntes) res.end();
             // ¿Llegó ENTERA? `finish` = el último byte se entregó al sistema;
             // un `close` sin `finish` = el cliente cortó a mitad. Una llamada
@@ -895,6 +968,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
               if (emisor && !RUTA_DE_CONTEO.test(url.pathname)) {
                 const esStreamReplica = String(replica.headers["content-type"] ?? "").includes("text/event-stream");
                 noMedido(
+                  requestId,
                   req.method ?? "POST",
                   url.pathname,
                   replica.status,
@@ -962,6 +1036,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       for (const [k, v] of Object.entries(req.headers)) {
         if (k === "host" || k === "content-length" || v === undefined) continue;
         if (CABECERAS_DE_SALTO.has(k) || nombradasEnConnection.has(k)) continue;
+        // La cabecera del informe es del GATEWAY: no viaja al proveedor.
+        if (k === CABECERA_PIDE_INFORME) continue;
         h[k] = Array.isArray(v) ? v.join(", ") : v;
       }
       // Foto de las cabeceras ANTES de que las palancas las toquen: el
@@ -1284,7 +1360,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
 
       const cabeceras = Object.fromEntries(upstream.headers.entries());
       for (const c of CABECERAS_TRANSPORTE) delete cabeceras[c];
-      res.writeHead(upstream.status, cabeceras);
+      // `cabeceras` queda INTACTO (la réplica de una gemela lo reutiliza): el id
+      // de esta petición va solo en lo que se escribe a su cliente.
+      res.writeHead(upstream.status, conId(cabeceras));
+      estadoUpstream = upstream.status;
 
       // chatgpt.com/backend-api/codex (Codex con auth ChatGPT) sirve el SSE SIN
       // cabecera content-type (validado en mano el 30-08): en una ruta con
@@ -1321,6 +1400,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           const b = Buffer.from(chunk);
           res.write(b);
           observador?.observar(b);
+          vigiaId?.observar(b);
           if (cuerpoJson) {
             cuerpoJsonBytes += b.length;
             if (cuerpoJsonBytes > MAX_CAPTURA_BYTES) {
@@ -1332,6 +1412,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
       res.end();
+      if (vigiaId) buzon.anotarRespuesta(requestId, vigiaId.valor() ?? (cuerpoJson ? idDeCuerpoJson(Buffer.concat(cuerpoJson)) : null));
       // Parte G · la huella que leen las gemelas para valorarse por referencia.
       // INTACTA = ninguna palanca tocó lo que viajó: ni el modelo (C), ni el
       // cuerpo o las betas (diales, esfuerzo), ni `stream_options` (inyección),
@@ -1384,7 +1465,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           // Chat Completions sin include_usage no es un corte: es que nadie
           // pidió el contador. Se dice distinto porque se arregla distinto.
           const porQue = porQueSinUsoEnStream(observador, cuerpo, codificacion, inyectado ? "inyectado" : inyeccion);
-          noMedido(req.method ?? "POST", url.pathname, upstream.status, true, porQue.motivo, porQue.aviso);
+          noMedido(requestId, req.method ?? "POST", url.pathname, upstream.status, true, porQue.motivo, porQue.aviso);
         } else {
           const elision = atribuir(observador instanceof ObservadorSse ? observador.elision() : null, uso);
           medir(requestId, cuerpo, uso, false, url.pathname, codificacion, atribucion, elision, rebaja, inicioMs, hermano, suscripcion);
@@ -1404,7 +1485,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         const respuesta = Buffer.concat(cuerpoJson);
         const uso = usoDeJsonPorRuta(url.pathname, respuesta);
         if (uso === null) {
-          noMedido(req.method ?? "POST", url.pathname, upstream.status, false, "the response carried no usage", "uso");
+          noMedido(requestId, req.method ?? "POST", url.pathname, upstream.status, false, "the response carried no usage", "uso");
         } else {
           // La elisión del proveedor (context_management) solo existe en Anthropic.
           const elision = url.pathname === "/v1/messages" ? elisionDeJson(respuesta) : null;
@@ -1412,12 +1493,13 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           vigilarCache(url.pathname, cuerpo, codificacion, uso, ttlReescrito, sesionId);
         }
       } else if (jsonDesbordado) {
-        noMedido(req.method ?? "POST", url.pathname, upstream.status, false, "the response was too large to read its usage", null);
+        noMedido(requestId, req.method ?? "POST", url.pathname, upstream.status, false, "the response was too large to read its usage", null);
       } else if (emisor && req.method === "POST" && upstream.ok && tieneDialecto(url.pathname)) {
         // Una ruta con dialecto que no respondió ni SSE ni JSON (sin
         // content-type en chat/completions, que no se asume SSE, o un tipo
         // raro): no hay dónde leer el usage, y se dice.
         noMedido(
+          requestId,
           req.method,
           url.pathname,
           upstream.status,
@@ -1438,6 +1520,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         // (telemetría, sondas) no es inferencia y avisarlo sería ruido encima
         // de su TUI.
         noMedido(
+          requestId,
           req.method,
           url.pathname,
           upstream.status,
@@ -1487,6 +1570,20 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         }
       }
       if (!res.writableEnded) res.end();
+    } finally {
+      // Un informe que ninguna rama cerró (error del proveedor, count_tokens,
+      // upstream inalcanzable, cliente que se fue) se cierra aquí, con su motivo.
+      // Nunca pisa uno ya cerrado: el primer cierre manda.
+      if (conInforme) {
+        buzon.noMedido(
+          requestId,
+          ac.signal.aborted
+            ? "the client closed the connection before the provider's final usage"
+            : estadoUpstream === null
+              ? "the request did not get an answer from the provider"
+              : `no usage was read from the provider's answer (HTTP ${estadoUpstream})`,
+        );
+      }
     }
   });
 

@@ -1,0 +1,5 @@
+# Dependencias SOLO de prueba (CI): el paquete no tiene ninguna en ejecución.
+# Se compila con hashes: uv pip compile --universal --generate-hashes -p 3.10 requirements-ci.in -o requirements-ci.txt
+pytest==9.1.1
+openai==3.19.2
+anthropic==1.8.0

@@ -260,10 +260,33 @@ byte:**
   cache TTL, the advisor, context management, OAuth, and betas that do not exist
   yet). Three kinds stay on the hop from your client to the gateway, as HTTP
   requires: hop-by-hop headers (RFC 7230 §6.1, plus `expect` and any header named
-  in `Connection`), `host` and `content-length`.
+  in `Connection`), `host` and `content-length`. One more stays with the gateway
+  because it is addressed to it: `x-bvsala-report`, with which a client asks for
+  its per-request report (below).
 - **The response**: the same bytes and headers, except the transport ones
   (`content-encoding`, `content-length`, `transfer-encoding`), because the
-  gateway receives the body already decompressed.
+  gateway receives the body already decompressed. A request sent with
+  `x-bvsala-report: 1` also gets one header added, `x-bvsala-request-id`; a
+  request without it gets none.
+
+**Per-request reports, in any language.** Send `x-bvsala-report: 1` with a
+request and the gateway keeps the report it recorded for your dashboard for
+that request, and answers with `x-bvsala-request-id`. Read it back from the
+same gateway with `GET /_bvsala/v1/reports/<x-bvsala-request-id>` or
+`GET /_bvsala/v1/reports?response_id=<the id of the provider's response>`;
+add `wait_ms=<milliseconds>` (30,000 at most) to wait for a request still in
+flight. The answer carries `status` (`metered`, `not_metered` with the same
+`reason` as the log line, or `pending`) and, when metered, the `SavingsReport`
+the gateway queued for your dashboard: nothing is computed for this answer.
+`GET /_bvsala/v1/status` returns the gateway's version, upstream origin and
+license state. These routes are answered by the gateway and never forwarded;
+the gateway listens on 127.0.0.1 only, they send no CORS headers, they answer
+403 to a `Host` other than 127.0.0.1 or localhost (so a web page cannot reach
+them by rebinding its own name to 127.0.0.1), no route lists reports (you need
+the id), and like every other route they answer 402 when the license does not
+serve. The gateway
+keeps the last 1,000 reports for one hour at most, in memory; nothing is
+written to disk and nothing more is sent to BiVelio.
 
 "No lever armed" means any of: a license without that lever's feature,
 `BVSALA_GATEWAY_ELISION=0`, or a lever you have not turned on (the sibling
