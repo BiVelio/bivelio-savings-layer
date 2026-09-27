@@ -119,6 +119,10 @@ export type MotivoSinReferencia =
   | "layer-changed-request"
   | "codebook"
   | "tool-discovery"
+  // E4-bis: la búsqueda de herramientas NATIVA del proveedor. La capa añadió la
+  // herramienta de búsqueda y difirió el catálogo: el contador ya no es el de la
+  // petición del cliente.
+  | "native-tool-search"
   | "schema-in-prompt"
   | "cheaper-model-served"
   | "not-cacheable"
@@ -204,6 +208,8 @@ export interface HechosDeLaPoblada {
   codebookAplicado: boolean;
   tokensDelSondeo: number;
   sondeoAplicado: boolean;
+  /** ¿Viajó el catálogo diferido tras la búsqueda nativa del proveedor? (E4-bis) */
+  busquedaNativa?: boolean;
   hayEsquema: boolean;
   /** `structuredNatively === true` en la respuesta de la primaria: el
    *  proveedor no rechazó la vía nativa. `undefined` o `false` no afirman nada. */
@@ -301,6 +307,16 @@ export function registroDeReferencia(h: HechosDeLaPoblada): RegistroDeReferencia
   if (h.codebookAplicado) return "codebook";
   // E4 · El sondeo es otra llamada y recorta la vista de herramientas.
   if (h.tokensDelSondeo !== 0 || h.sondeoAplicado) return "tool-discovery";
+  // E4-bis · La búsqueda nativa. La cuenta local no la ve —las herramientas
+  // salen todas y enteras, así que E2 pasa—, pero la petición que corrió NO es
+  // la del cliente: la capa le añadió la herramienta de búsqueda y marcó el
+  // catálogo como diferido, y el proveedor cobró otra cosa (sin las diferidas en
+  // el prefijo, con las que el modelo cargó). Valorar una repetición contra ese
+  // contador sería valorarla contra una petición que el cliente no mandó. Lo
+  // más probable es que ese contador sea MENOR que el de la petición ingenua, o
+  // sea que la referencia saldría baja; pero «probable» no es la regla, y la
+  // búsqueda puede costar más en una petición concreta. Fuera.
+  if (h.busquedaNativa === true) return "native-tool-search";
   // E5 · El esquema, NATIVO, TAL CUAL Y ESTRICTO. Se mira lo que pasó, no lo
   // que se planeó: el backend `none` de la configuración por defecto no impide
   // que el adaptador de Chat Completions mande el esquema en `response_format`,

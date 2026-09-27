@@ -1,5 +1,6 @@
 import { avisarUnaVez } from "../util/warn-once.js";
-import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
+import { atestiguar, declararBusquedaNativa, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
+import { HERRAMIENTA_DE_BUSQUEDA } from "../router/busqueda-nativa.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
@@ -17,6 +18,7 @@ import type {
   ProviderResponse,
   ProviderStreamEvent,
   ProviderStreamOptions,
+  ProviderToolSearchUsage,
   ProviderUsage,
 } from "./types.js";
 
@@ -136,18 +138,17 @@ export class AnthropicProvider implements Provider {
     this.opts = opts;
     this.id = `anthropic:${opts.baseUrl ?? "https://api.anthropic.com/v1"}`;
     this.fetchImpl = opts.fetchImpl ?? fetch;
+    // Este adaptador sabe mandar la búsqueda de herramientas del servidor. Contra
+    // el host oficial la puede encender `auto`; contra otro host (un proxy, un
+    // gateway) solo `always`, porque el intermediario podría no reenviar los
+    // bloques de la búsqueda (es lo mismo que hace Claude Code con un base URL
+    // ajeno).
+    declararBusquedaNativa(this, esHostOficial(opts.baseUrl) ? "oficial" : "compatible");
   }
 
   /** The id Anthropic's API sees: bare at `api.anthropic.com`, as written elsewhere. */
   private modeloEnElCable(model: string): string {
-    const base = this.opts.baseUrl ?? "https://api.anthropic.com/v1";
-    let esLaApiPublica = false;
-    try {
-      esLaApiPublica = /(^|\.)api\.anthropic\.com$/i.test(new URL(base).hostname);
-    } catch {
-      esLaApiPublica = false;
-    }
-    const quitar = this.opts.stripProviderPrefix ?? esLaApiPublica;
+    const quitar = this.opts.stripProviderPrefix ?? esHostOficial(this.opts.baseUrl);
     return quitar ? model.replace(/^[^/]+\//, "") : model;
   }
 
@@ -214,7 +215,7 @@ export class AnthropicProvider implements Provider {
       cuerpo && typeof cuerpo.getReader === "function" ? cuerpo : await response.text();
 
     let text = "";
-    const bloques = new Map<number, { tipo: string; id?: string; name?: string; json: string }>();
+    const bloques = new Map<number, { tipo: string; id?: string; name?: string; json: string; content?: unknown }>();
     let usoInicio: UsoAnthropic | undefined;
     let usoDelta: UsoAnthropic | undefined;
     let vioDelta = false;
@@ -243,6 +244,9 @@ export class AnthropicProvider implements Provider {
             ...(typeof b.id === "string" ? { id: b.id } : {}),
             ...(typeof b.name === "string" ? { name: b.name } : {}),
             json: "",
+            // El resultado de la búsqueda llega ENTERO en su `content_block_start`
+            // (no tiene deltas): es donde están las referencias.
+            ...(b.content !== undefined ? { content: b.content } : {}),
           });
         }
       } else if (tipo === "content_block_delta") {
@@ -308,6 +312,13 @@ export class AnthropicProvider implements Provider {
       .filter((tc) => tc.name !== "");
 
     const servedServiceTier = tierServidoDe(merged);
+    const busqueda = req.toolSearch
+      ? usoDeLaBusqueda(
+          [...bloques.entries()]
+            .sort((x, y) => x[0] - y[0])
+            .map(([, b]) => ({ type: b.tipo, name: b.name, content: b.content })),
+        )
+      : undefined;
 
     yield {
       type: "done",
@@ -317,6 +328,7 @@ export class AnthropicProvider implements Provider {
           ...(toolCalls.length > 0 ? { toolCalls } : {}),
           ...(stopReason ? { finishReason: traducirParada(stopReason) } : {}),
           ...(servedServiceTier ? { servedServiceTier } : {}),
+          ...(busqueda ? { toolSearch: busqueda } : {}),
           usage,
           structuredNatively: false,
           raw: { usage: merged, stop_reason: stopReason },
@@ -381,6 +393,30 @@ export class AnthropicProvider implements Provider {
       ...(t.description ? { description: t.description } : {}),
       input_schema: t.parameters ?? { type: "object", properties: {} },
     }));
+
+    // --- Búsqueda de herramientas nativa ---------------------------------------
+    // La decide el pipeline (`router/busqueda-nativa.ts`); aquí solo se escribe.
+    // Toda herramienta del llamante viaja ENTERA —la API las necesita para buscar
+    // y expandir las referencias— y con `defer_loading: true`, salvo las
+    // `alwaysLoaded`. La de búsqueda va la PRIMERA y sin diferir, que es lo que
+    // cumple «At least one tool […] must stay non-deferred».
+    //
+    // El orden es el del llamante y la herramienta de búsqueda no cambia entre
+    // peticiones, así que la parte del prefijo que el proveedor sí renderiza
+    // (búsqueda + no diferidas) es la misma byte a byte pregunte lo que se
+    // pregunte, y aunque el catálogo diferido crezca.
+    //
+    // Ninguna diferida lleva `cache_control` («A tool with `defer_loading: true`
+    // can't also carry `cache_control`: the API returns a 400»). Este adaptador
+    // nunca marca herramientas —sus puntos de ruptura van en `system` y en los
+    // mensajes—, y el contrato, que se añade más abajo, nunca se difiere.
+    if (req.toolSearch && tools.length > 0) {
+      const fijas = new Set(req.toolSearch.alwaysLoaded);
+      for (const t of tools) {
+        if (!fijas.has(t["name"] as string)) t["defer_loading"] = true;
+      }
+      tools.unshift({ ...HERRAMIENTA_DE_BUSQUEDA[req.toolSearch.variant] });
+    }
 
     // --- Contrato de salida ---------------------------------------------------
     // El idiolecto de Anthropic para "devuélveme esta forma" es una llamada a
@@ -787,6 +823,7 @@ export class AnthropicProvider implements Provider {
     // esta capa no pida nunca un tier a este proveedor, y no es decorativo: es lo
     // que permite al informe DEMOSTRAR que no hubo descuento en vez de suponerlo.
     const servedServiceTier = tierServidoDe(uso);
+    const busqueda = req.toolSearch ? usoDeLaBusqueda(bloques) : undefined;
 
     return atestiguar(
       {
@@ -796,6 +833,7 @@ export class AnthropicProvider implements Provider {
         ...(servedServiceTier ? { servedServiceTier } : {}),
         usage,
         structuredNatively: req.schema != null && contratoNativo,
+        ...(busqueda ? { toolSearch: busqueda } : {}),
         raw: json,
       },
       // El contrato, cuando lo hay, viaja como HERRAMIENTA escrita por este
@@ -904,6 +942,8 @@ interface RespuestaAnthropic {
     id?: string;
     name?: string;
     input?: unknown;
+    /** En `tool_search_tool_result`: las referencias, o el error de la búsqueda. */
+    content?: unknown;
   }[];
   stop_reason?: string;
   usage?: {
@@ -923,10 +963,49 @@ interface EventoAnthropic {
   type?: string;
   index?: number;
   message?: { usage?: UsoAnthropic };
-  content_block?: { type?: string; id?: string; name?: string };
+  content_block?: { type?: string; id?: string; name?: string; content?: unknown };
   delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null };
   usage?: UsoAnthropic;
   error?: { type?: string; message?: string };
+}
+
+// ¿Habla este adaptador con la API del propio Anthropic? Sin `baseUrl`, sí.
+function esHostOficial(baseUrl: string | undefined): boolean {
+  try {
+    return /(^|\.)api\.anthropic\.com$/i.test(new URL(baseUrl ?? "https://api.anthropic.com/v1").hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Lo que hizo la búsqueda de herramientas en UNA respuesta, leído de sus
+// bloques (documentación oficial, «Response format»): cada `server_tool_use`
+// de una herramienta `tool_search_tool_*` es una búsqueda, y su
+// `tool_search_tool_result` trae o bien `tool_search_tool_search_result` con
+// `tool_references`, o bien `tool_search_tool_result_error`. Solo se CUENTA: la
+// capa no acredita nada por ello; sirve para que el cliente vea cuántas veces
+// busca su tráfico, que es el dato que decide si la palanca le compensa.
+function usoDeLaBusqueda(
+  bloques: readonly { type?: string | undefined; name?: string | undefined; content?: unknown }[],
+): ProviderToolSearchUsage {
+  let searches = 0;
+  let errors = 0;
+  const loaded: string[] = [];
+  for (const b of bloques) {
+    if (b.type === "server_tool_use" && typeof b.name === "string" && b.name.startsWith("tool_search_tool")) {
+      searches += 1;
+    } else if (b.type === "tool_search_tool_result") {
+      const c = b.content as { type?: unknown; tool_references?: unknown } | null | undefined;
+      if (c && c.type === "tool_search_tool_result_error") {
+        errors += 1;
+      } else if (c && Array.isArray(c.tool_references)) {
+        for (const r of c.tool_references as { tool_name?: unknown }[]) {
+          if (typeof r?.tool_name === "string" && !loaded.includes(r.tool_name)) loaded.push(r.tool_name);
+        }
+      }
+    }
+  }
+  return { searches, loaded, errors };
 }
 
 // `partial_json` concatenado -> la cadena que generate() habría producido.

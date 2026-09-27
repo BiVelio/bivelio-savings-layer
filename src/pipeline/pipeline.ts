@@ -3,10 +3,19 @@ import { avisarUnaVez } from "../util/warn-once.js";
 import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
 import {
   atestadoDelCable,
+  busquedaNativaDelProveedor,
   heredarAtestado,
   origenDelProveedor,
   type AtestadoDelCable,
 } from "../providers/atestado-del-cable.js";
+import {
+  admiteBusquedaNativa,
+  candidatasPorRiesgo,
+  catalogoSinTipar,
+  decidirBusquedaNativa,
+  normalizarBusqueda,
+} from "../router/busqueda-nativa.js";
+import type { ToolSelection } from "../router/tool-selector.js";
 import { salidaNoRepetible } from "../pricing/razonamiento.js";
 
 import type {
@@ -23,6 +32,7 @@ import type {
   ModelCascadeReport,
   QualityStatus,
   ToolDescriptor,
+  ExecutionClass,
 } from "../contracts/types.js";
 import { canonicalize, sha256, stableStringify } from "../canonicalization/canonicalize.js";
 import { buildExactKey, buildInflightKey } from "../canonicalization/keys.js";
@@ -67,7 +77,7 @@ import { seleccionarSupersesion, aplicarElision, MUNON_ELISION } from "./elision
 import { politicaDeCompresion, tramoDeCache } from "../economics/politica-compresion.js";
 import { TraceCollector } from "../telemetry/traces.js";
 import type { CachedAnswer } from "../cache/exact.js";
-import type { Provider, ProviderRequest, ProviderResponse } from "../providers/types.js";
+import type { Provider, ProviderRequest, ProviderResponse, ProviderToolSearch } from "../providers/types.js";
 import type { RouteDecision } from "../router/router.js";
 import {
   decidirDescubrimiento,
@@ -1682,7 +1692,14 @@ export class SavingsPipeline {
     // la palanca hermana, y justo en el "shadow mode" que el docstring del router
     // recomienda como primer paso. Apagar el router significa "no optimices por
     // esta vía", así que las herramientas del llamante pasan ÍNTEGRAS.
-    const toolSelection = routerApagado
+    //
+    // ANTES, LA BÚSQUEDA NATIVA DEL PROVEEDOR (opt-in, `savings.toolSearch`). Si
+    // aplica, el selector NO corre: el catálogo viaja entero y diferido, y el
+    // modelo busca en él del lado del proveedor. Ver `router/busqueda-nativa.ts`.
+    const nativa = this.planearBusquedaNativa(request, toggles, route.executionClass, routerApagado, cascada, costModel, trace);
+    const toolSelection = nativa
+      ? nativa.seleccion
+      : routerApagado
       ? this.deps.toolSelector.passthrough(request.tools)
       : this.deps.toolSelector.select(
           canonical.normalizedText,
@@ -1696,6 +1713,10 @@ export class SavingsPipeline {
           // entrada; congelando, la misma poda ahorra el 14,3 %).
           canonical.toolsetHash,
         );
+    // Solo con la palanca APAGADA: si se pidió y no aplicó, la traza ya dice por qué.
+    if (!nativa && normalizarBusqueda(toggles.toolSearch).modo === "off") {
+      this.avisarDeCatalogoRecortado(request, toolSelection, cascada.modeloServido);
+    }
     ledger.actualTools = toolSelection.tools.length;
     if (toolSelection.droppedIds.length) {
       // LIBRO 2. Hasta ahora `SavingsLedger.eliminate()` no tenía NI UN llamante
@@ -2302,8 +2323,13 @@ export class SavingsPipeline {
       request,
       cascada.modeloServido,
       messages,
-      toolSelection,
-      toggles.toolDiscovery === true,
+      // Con la búsqueda nativa, el prefijo que el PROVEEDOR renderiza lleva solo
+      // las herramientas no diferidas: las diferidas quedan fuera («the API
+      // excludes deferred tools from the system-prompt prefix»). La huella y las
+      // cuentas del prefijo se hacen sobre ESAS, que es lo que puede acertar; y
+      // por eso un catálogo diferido que crece no parte la medición en dos.
+      nativa ? { tools: nativa.prefijo, setIsStable: toolSelection.setIsStable } : toolSelection,
+      toggles.toolDiscovery === true && !nativa,
       comprimioElPrefijo ? limiteDelPrefijoEstable(messages, true) : finDelPrefijo,
       trace,
     );
@@ -2337,9 +2363,11 @@ export class SavingsPipeline {
     // En «live», un abort que llegó durante las etapas previas no puede pagar
     // el sondeo: su respuesta solo sirve a una primaria que ya no va a salir.
     if (sumidero?.senal.aborted) throw new StreamAbortedError(testigo.llamadas > 0);
-    const descubrimiento = await this.descubrirHerramientas(
-      testigo, request, toggles, toolSelection.tools, messages, ledger, costModel, trace,
-    );
+    const descubrimiento = nativa
+      ? this.sinDescubrimientoPorBusquedaNativa(toggles, toolSelection.tools, trace)
+      : await this.descubrirHerramientas(
+          testigo, request, toggles, toolSelection.tools, messages, ledger, costModel, trace,
+        );
     const herramientasAEnviar = descubrimiento.tools;
     ledger.actualTools = herramientasAEnviar.length;
 
@@ -2354,6 +2382,11 @@ export class SavingsPipeline {
       // con `toolDiscovery` puesto—, así que el bloque `tools` que se cachea es
       // el mismo que la huella describe. Si un día se marcara con la palanca
       // puesta, aquí es donde la contradicción se volvería factura.
+      //
+      // Con la BÚSQUEDA NATIVA salen todas y la huella describe solo las no
+      // diferidas. No es una contradicción: las diferidas no están en el prefijo
+      // que renderiza el proveedor, así que lo que se cachea es justo lo que la
+      // huella describe.
       ...(herramientasAEnviar.length ? { tools: herramientasAEnviar } : {}),
       // El esquema que viaja es el que eligió la etapa 10a (compacto si el
       // codebook se aplicó, el del llamante si no). La caché de prefijo no opina
@@ -2383,6 +2416,9 @@ export class SavingsPipeline {
       // el del modelo barato, y en la caché del fuerte esta petición no tiene
       // medición ninguna.
       ...(marcado.explicita ? { explicitCacheWrites: true } : {}),
+      // LA BÚSQUEDA NATIVA viaja en la petición y la escalada la heredaría; no
+      // llega a pasar, porque con la cascada encendida no se aplica.
+      ...(nativa ? { toolSearch: nativa.plan } : {}),
       constraintBackend: backendPlan.backend,
     };
 
@@ -2433,6 +2469,19 @@ export class SavingsPipeline {
     // caché y el tier), antes de que una escalada o una reparación la reemplacen.
     const atestadoDeLaMarcada = atestadoDelCable(response);
     const tierDeLaMarcada = response.servedServiceTier;
+    // Lo que hizo la búsqueda nativa en esta llamada, si la hubo. Solo se CUENTA:
+    // cuántas búsquedas y qué cargaron. Es el dato que el cliente necesita para
+    // saber si le compensa (la verja de `auto` supone lo peor: una por petición).
+    if (nativa) {
+      trace.record("tool-search", "provider", {
+        searches: response.toolSearch?.searches ?? null,
+        loaded: response.toolSearch?.loaded ?? [],
+        errors: response.toolSearch?.errors ?? 0,
+        reason: response.toolSearch
+          ? "what the provider's tool search did in this call; its cost is in the provider's counter and credited to no ledger"
+          : "the adapter did not report what the search did",
+      });
+    }
     // Acumulativo, no asignado: con schema-on-demand esta ya es la SEGUNDA llamada
     // de la petición y el sondeo anterior también costó dinero. Asignar borraba su
     // rastro del informe, que es como el fail-open llegó a publicar `actualLlm: 1`
@@ -3286,6 +3335,8 @@ export class SavingsPipeline {
         codebookAplicado: codebook?.applied === true,
         tokensDelSondeo: descubrimiento.tokensLocalesDelSondeo,
         sondeoAplicado: descubrimiento.aplicado,
+        // E4-bis: la capa difirió el catálogo tras la búsqueda del proveedor.
+        busquedaNativa: nativa !== null,
         hayEsquema: schema != null,
         // E5 mira lo que PASÓ en la primaria, no el backend planeado: la
         // configuración por defecto planea `none` aunque el adaptador mande el
@@ -3499,6 +3550,142 @@ export class SavingsPipeline {
     if (pidioHerramientas) result.toolCalls = response.toolCalls!;
     if (response.finishReason !== undefined) result.finishReason = response.finishReason;
     return result;
+  }
+
+  // ── LA BÚSQUEDA DE HERRAMIENTAS NATIVA (opt-in, `savings.toolSearch`) ──────
+  //
+  // Comentarios en `//` a propósito: el JSDoc de un método privado se emite al
+  // `.d.ts` publicado.
+  //
+  // Devuelve null cuando NO se aplica —y entonces corre el selector como
+  // siempre— o, cuando se aplica, la selección que sustituye a la del selector:
+  //
+  //   · `seleccion.tools`: TODAS las candidatas, es decir el catálogo entero
+  //     salvo lo que la verja de riesgo retira (la misma del selector: con un
+  //     catálogo tipado y el router encendido, una petición que no es acción no
+  //     recibe herramientas de escritura). Viajan diferidas.
+  //   · `seleccion.droppedIds`: solo lo que retiró la verja de riesgo. Se apunta
+  //     en el libro 2 exactamente como lo apunta hoy el selector: no se envía. La
+  //     relevancia no poda nada: elige el modelo.
+  //   · `prefijo`: las que viajan SIN diferir, que son las únicas que el
+  //     proveedor pone en el prefijo.
+  //   · `setIsStable`: el prefijo no depende de la pregunta, salvo que la verja
+  //     de riesgo retire una `alwaysLoaded` (una de escritura declarada fija en
+  //     un catálogo tipado): entonces sí depende de la ruta, y se dice.
+  //
+  // LO QUE NO HACE: acreditar nada. El catálogo sale entero, así que la cuenta
+  // local de lo enviado lo incluye entero y `removedInputLocal` no gana ni un
+  // token por diferirlo. Y como el proveedor NO cobra las diferidas en el
+  // prefijo, la calibración `k = actual/enviadoLocal` sale más BAJA que la razón
+  // de reglas real: si otra palanca quitó algo en esta petición, se le acredita
+  // de MENOS. Es el lado seguro del error, y queda escrito aquí para que nadie
+  // lo "arregle" contando solo las no diferidas (eso inflaría k con las que el
+  // modelo cargue y acreditaría de más).
+  private planearBusquedaNativa(
+    request: SavingsRequest,
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    execution: ExecutionClass,
+    routerApagado: boolean,
+    cascada: DecisionDeCascada,
+    costModel: CostModel,
+    trace: TraceCollector,
+  ): { seleccion: ToolSelection; prefijo: ToolDescriptor[]; plan: ProviderToolSearch } | null {
+    const opciones = normalizarBusqueda(toggles.toolSearch);
+    const tools = request.tools ?? [];
+    if (opciones.modo === "off" || tools.length === 0) return null;
+
+    const candidatas = candidatasPorRiesgo(tools, execution === "TOOL_ACTION", routerApagado);
+    const decision = decidirBusquedaNativa({
+      opciones,
+      capacidad: busquedaNativaDelProveedor(this.config.provider),
+      modelo: cascada.modeloServido,
+      // Con LA regla del baseline (`textoDeHerramienta`), como el libro 2 y el
+      // sondeo: si esto contara distinto, la verja decidiría sobre otra cuenta.
+      herramientas: candidatas.map((t) => ({ id: t.id, tokens: this.tokensFor(textoDeHerramienta(t), request) })),
+      hayContrato: request.response?.schema != null,
+      cascadaActiva: cascada.modo !== "off",
+      precio: costModel,
+      lecturaDeCache: this.lecturaDeCacheDe(cascada.modeloServido, costModel),
+    });
+    trace.record("tool-search", decision.aplicar ? "native" : "selector", {
+      mode: opciones.modo,
+      variant: decision.variante,
+      reason: decision.razon,
+      deferred: decision.diferidas,
+      deferredTokens: decision.tokensDiferidos,
+      alwaysLoaded: decision.siempreCargadas,
+      ...(decision.ahorroDelPrefijo != null ? { prefixSavingPerRequest: decision.ahorroDelPrefijo } : {}),
+      ...(decision.costeDeUnaBusqueda != null ? { worstCaseSearchCost: decision.costeDeUnaBusqueda } : {}),
+    });
+    if (!decision.aplicar) return null;
+
+    const idsCandidatas = new Set(candidatas.map((t) => t.id));
+    const fijas = new Set(decision.siempreCargadas);
+    const pedidasQueExisten = opciones.siempreCargadas.filter((id) => tools.some((t) => t.id === id));
+    return {
+      seleccion: {
+        tools: candidatas,
+        droppedIds: tools.filter((t) => !idsCandidatas.has(t.id)).map((t) => t.id),
+        reason: decision.razon,
+        setIsStable: pedidasQueExisten.every((id) => idsCandidatas.has(id)),
+      },
+      prefijo: candidatas.filter((t) => fijas.has(t.id)),
+      plan: { variant: decision.variante, alwaysLoaded: decision.siempreCargadas },
+    };
+  }
+
+  // Precio de un token leído de caché como fracción del normal, para la verja
+  // de `auto`. El MENOR que se conozca: el del catálogo del modelo (Opus 5.5 lee
+  // a 0,05×, no al 0,1× genérico de Anthropic) y, si no lo hay, el del tramo.
+  // Cuanto más barata la lectura, menos vale sacar el catálogo del prefijo y
+  // más le cuesta a la verja dejar pasar la búsqueda nativa: ese es el lado que
+  // protege al cliente.
+  private lecturaDeCacheDe(modelo: string, costModel: CostModel): number {
+    const tramo = tramoDelModelo(modelo, this.config.compressionEconomics)?.cacheReadMultiplier ?? 1;
+    const delCatalogo =
+      costModel.cachedInputPer1k != null && costModel.inputPer1k > 0
+        ? costModel.cachedInputPer1k / costModel.inputPer1k
+        : undefined;
+    return delCatalogo != null ? Math.min(delCatalogo, tramo) : tramo;
+  }
+
+  // Con la búsqueda nativa aplicada, el sondeo de schema-on-demand no corre:
+  // los dos resuelven lo mismo (no mandar los esquemas que no se usan) y el del
+  // proveedor lo hace sin una segunda llamada y sin mover el prefijo. Si el
+  // llamante pidió los dos, se le dice cuál ganó.
+  private sinDescubrimientoPorBusquedaNativa(
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    candidatas: ToolDescriptor[],
+    trace: TraceCollector,
+  ): { tools: ToolDescriptor[]; tokensLocalesDelSondeo: number; aplicado: boolean } {
+    if (toggles.toolDiscovery === true) {
+      trace.record("tool-discovery", "skipped (native tool search applies)", {
+        reason:
+          "the provider's tool search already keeps unused schemas out of the prompt, with no second call " +
+          "and without moving the cached prefix",
+      });
+    }
+    return { tools: candidatas, tokensLocalesDelSondeo: 0, aplicado: false };
+  }
+
+  // EL AVISO QUE HACE VISIBLE UNA PÉRDIDA DE FUNCIÓN SILENCIOSA. Con un catálogo
+  // sin `intents` ni `risk` —como llegan los de MCP— el selector no tiene señal
+  // y pasa solo las `maxTools` primeras POR POSICIÓN: el modelo no puede llamar
+  // a las demás y nada lo dice. Si además este adaptador y este modelo admiten
+  // la búsqueda nativa, hay una salida que no deja ninguna fuera; se avisa una
+  // vez por proceso y el aviso es silenciable.
+  private avisarDeCatalogoRecortado(request: SavingsRequest, seleccion: ToolSelection, modelo: string): void {
+    const tools = request.tools ?? [];
+    if (seleccion.droppedIds.length === 0 || !catalogoSinTipar(tools)) return;
+    if (busquedaNativaDelProveedor(this.config.provider) === undefined || !admiteBusquedaNativa(modelo)) return;
+    this.avisar(
+      "catalogo-recortado-con-busqueda-nativa",
+      `[bv-sala] Your tool catalogue declares no \`intents\` or \`risk\`, so the tool selector has nothing to ` +
+        `select on and sent only the first ${seleccion.tools.length} of ${tools.length} tools: the model cannot call ` +
+        `the others. This provider and model support native tool search: \`savings: { toolSearch: "auto" }\` sends ` +
+        "all of them deferred and lets the model search, without breaking the prompt cache. Its effect is the " +
+        "provider's and the layer credits nothing for it.",
+    );
   }
 
   /**

@@ -118,6 +118,37 @@ export interface RetrievalOptions {
   maxDocuments?: number;
 }
 
+/**
+ * How a request chooses between the provider's native tool search and the layer's
+ * tool selector. See {@link SavingsToggles.toolSearch}.
+ *
+ * - `"off"` (default): the layer's tool selector runs, as without this option.
+ * - `"auto"`: native tool search when the adapter talks to the provider's own API host,
+ *   the catalogue reaches the provider's documented size threshold, and deferring it
+ *   pays for one search on every request even with a warm prompt cache. Otherwise the
+ *   selector runs.
+ * - `"always"`: native tool search whenever the adapter and model support it, with no
+ *   size or cost check. Use it when a proxy in front of the provider forwards the
+ *   search blocks, or when you have measured it on your own traffic.
+ */
+export type ToolSearchMode = "off" | "auto" | "always";
+
+/** The long form of {@link SavingsToggles.toolSearch}. */
+export interface ToolSearchOptions {
+  mode: ToolSearchMode;
+  /**
+   * Tool ids sent without deferred loading, so the model can call them without
+   * searching first. They are part of the cached prefix: keep the list short and the
+   * same on every request. Ids that are not in the request's tools are ignored.
+   */
+  alwaysLoaded?: string[];
+  /**
+   * The provider's search: `"bm25"` (the model writes natural-language queries; the
+   * default) or `"regex"` (the model writes regular expressions).
+   */
+  variant?: "bm25" | "regex";
+}
+
 export interface SavingsToggles {
   exactCache?: boolean;
   /**
@@ -257,6 +288,37 @@ export interface SavingsToggles {
    * action can be lost to a discovery step.
    */
   toolDiscovery?: boolean;
+  /**
+   * OPT-IN. Let the PROVIDER search your tool catalogue instead of the layer's tool
+   * selector. Defaults to `"off"`. Read {@link ToolSearchMode} for the three modes.
+   *
+   * With it applied, every tool you pass travels on every request, marked for deferred
+   * loading, next to the provider's search tool. The provider keeps deferred definitions
+   * out of the prompt prefix; the model searches the catalogue when it needs a tool, and
+   * the definitions it finds are added after the prefix. No tool you declared becomes
+   * unreachable, and the cached prefix stays the same when the question changes or the
+   * catalogue grows.
+   *
+   * WHERE IT APPLIES. The Anthropic adapter of this package, on a model listed in the
+   * provider's tool search compatibility table, with at least one tool to defer.
+   * Requests with an output contract, or with the model cascade on, keep the selector.
+   * OpenAI documents its tool search for the Responses and Agents APIs, not for Chat
+   * Completions, which the OpenAI-compatible adapter speaks, so it keeps the selector too.
+   * `report.traces` says which path ran and why (entry `tool-search`).
+   *
+   * WHAT IT IS WORTH BELONGS TO THE PROVIDER. Your provider's usage counter reflects it
+   * directly. The layer credits nothing for it, adds nothing to any ledger for it and
+   * charges no commission on it, and a request served this way is never used as the
+   * reference to value a later repeat.
+   *
+   * WHAT CHANGES FOR YOU. Relevance pruning of read tools is off: the model chooses.
+   * When your catalogue declares `risk`, write and destructive tools are still withheld
+   * from requests the router does not classify as actions, as with the selector. Each
+   * search is a short extra step inside the same call, and the definitions it loads are
+   * billed as normal input. This adapter sends earlier turns as text, so a later turn
+   * that needs a tool searches again.
+   */
+  toolSearch?: ToolSearchMode | ToolSearchOptions;
   /**
    * Send the request to a CHEAPER model of the same family, check the answer
    * with a deterministic gate, and fall back to the model you asked for only

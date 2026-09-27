@@ -619,6 +619,47 @@ if (res.toolCalls?.length) {
 A tool‑call turn is never served from cache and never counted as an avoided call:
 an action that has not run yet cannot be a saving.
 
+**Large catalogues: let the provider search them (opt‑in).** With hundreds of tools
+(several MCP servers, say), `savings: { toolSearch: "auto" }` sends every tool deferred
+behind the provider's own tool search instead of letting the layer's selector keep a
+few. A catalogue that declares no `intents` or `risk` gives the selector nothing to go
+on, so it keeps the first ones and the model cannot call the rest; with the provider's
+search the model looks up what it needs, no tool you declared is out of reach, and the
+cached prompt prefix stays the same from one question to the next.
+
+- **Where.** The Anthropic adapter, on models in Anthropic's tool search compatibility
+  table. OpenAI documents its tool search for the Responses and Agents APIs, not for
+  Chat Completions, which is what this SDK's OpenAI adapter speaks, so OpenAI requests
+  keep the selector.
+- **When.** `"auto"` applies it when the adapter talks to Anthropic's own API, the
+  catalogue is over the provider's documented size, and deferring it pays for one
+  search on every request even with a warm prompt cache. `"always"` skips those checks
+  (for example behind a proxy that forwards the search blocks). Requests with an output
+  contract, or with the model cascade on, keep the selector.
+- **Whose saving.** The provider's. Your usage counter shows it; the layer credits
+  nothing for it and charges no commission on it.
+
+```ts
+import { AnthropicProvider } from "@bivelio/savings-layer";
+
+const claude = createSavingsLayer({
+  provider: new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY }),
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+});
+
+const mcpTools: ToolDescriptor[] = []; // every tool your MCP servers list
+
+const { report: searched } = await claude.generate({
+  model: "anthropic/claude-opus-5-5",
+  messages: [{ role: "user", content: "Which orders from service 17 are still open?" }],
+  tools: mcpTools,
+  savings: { toolSearch: { mode: "auto", alwaysLoaded: ["read_file"] } },
+});
+
+// Which path ran and why, and how many searches the provider ran.
+console.log(searched.traces.filter((t) => t.stage === "tool-search"));
+```
+
 </details>
 
 <details>
