@@ -17,6 +17,7 @@ import {
 import { CanalDeEntitlements } from "../gateway/entitlements.js";
 import { liveGateFromKey, RevocationSnapshot } from "../src/index.js";
 import { LicenseError } from "../src/license/errors.js";
+import { MAX_PENDIENTES, MAX_REINTENTOS, MUESTRAS_POR_SOBRE } from "../src/verification/emisor.js";
 import { computeNextDelay } from "../src/license/poller.js";
 import { createSavingsLayer, DEFAULT_MAX_STALENESS_SECONDS } from "../src/pipeline/create.js";
 import type { Provider } from "../src/providers/types.js";
@@ -57,6 +58,7 @@ function literal(fuente: string, patron: RegExp, donde: string): number {
 const poller = leer("../src/license/poller.ts");
 const refresher = leer("../src/license/refresher.ts");
 const emisor = leer("../src/metering/emitter.ts");
+const emisorVerif = leer("../src/verification/emisor.ts");
 const canal = leer("../gateway/entitlements.ts");
 
 const SONDEO_S = literal(poller, /pollIntervalSeconds: ([\d_]+),/, "poller.ts");
@@ -74,6 +76,7 @@ const TIMEOUT_RECOGIDA_MS = literal(refresher, /const DEFAULT_REQUEST_TIMEOUT_MS
 const VACIADO_MS = literal(emisor, /flushIntervalMs \?\? ([\d_]+);/, "emitter.ts");
 const LOTE = literal(emisor, /maxBatch \?\? ([\d_]+);/, "emitter.ts");
 const BUFFER = literal(emisor, /maxBuffer \?\? ([\d_]+);/, "emitter.ts");
+const VACIADO_VERIF_MS = literal(emisorVerif, /o\.flushIntervalMs \?\? ([\d_]+);/, "verification/emisor.ts");
 
 const TTL_CANAL_MS = literal(canal, /const TTL_POR_DEFECTO_MS = ([\d_]+);/, "entitlements.ts");
 const TIMEOUT_CANAL_MS = literal(canal, /const TIMEOUT_MS = ([\d_]+);/, "entitlements.ts");
@@ -145,6 +148,16 @@ describe("SECURITY.md · Availability dice los plazos del código", () => {
   it("la medición de uso", () => {
     expect(disponibilidad).toContain(`every ${VACIADO_MS / 1000} seconds, in batches of ${LOTE}`);
     expect(disponibilidad).toContain(`up to ${BUFFER.toLocaleString("en-US")} records are kept in memory`);
+  });
+
+  it("el muestreo de verificación (opcional): cadencia, lotes y lo que se guarda durante una caída", () => {
+    expect(disponibilidad).toContain("never blocks a request either");
+    expect(disponibilidad).toContain(
+      `Its reports are sent every ${VACIADO_VERIF_MS / 1000} seconds, in batches of up to ${MUESTRAS_POR_SOBRE} samples`,
+    );
+    expect(disponibilidad).toContain(
+      `up to ${MAX_PENDIENTES.toLocaleString("en-US")} samples wait in memory and up to ${MAX_REINTENTOS} failed batches are kept for retry. Beyond that, the oldest are dropped.`,
+    );
   });
 
   it("el arranque del gateway", () => {

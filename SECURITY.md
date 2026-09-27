@@ -137,6 +137,12 @@ are sent every 15 seconds, in batches of 50. While the server cannot be reached
 or answers with a 5xx error, up to 1,000 records are kept in memory and retried.
 Beyond that, records are dropped.
 
+**Verification sampling** (the opt-in `verification` setting, with
+`serviceAccountKey`) never blocks a request either. Its reports are sent every 15
+seconds, in batches of up to 200 samples. While the server cannot be reached or
+answers with a 5xx error, up to 2,000 samples wait in memory and up to 10 failed
+batches are kept for retry. Beyond that, the oldest are dropped.
+
 ### Gateway (`bvsala`)
 
 **At startup, the gateway needs our server.** It collects your organization's
