@@ -69,6 +69,7 @@ import { LicenseError } from "../license/errors.js";
 import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
+import { primaDeEscrituraAutomatica } from "../pricing/primas.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 import {
   evaluarReferencia,
@@ -852,6 +853,7 @@ export class SavingsPipeline {
     canonical: ReturnType<typeof canonicalize>,
     toggles: NonNullable<SavingsRequest["savings"]>,
     trace: TraceCollector,
+    instantePrecio: number = this.now(),
   ): DecisionDeCascada {
     const modo: ModelCascadeMode = toggles.modelCascade ?? "off";
     const apagada: DecisionDeCascada = {
@@ -882,8 +884,8 @@ export class SavingsPipeline {
     // `undefined` —cae en el ilustrativo— así que preguntándole a él la rama de
     // «sin precio no hay aritmética» de más abajo era código muerto y un par sin
     // precio se aprobaba con una cuenta inventada. Ver `precioConocido`.
-    const precioFuerte = this.precioConocido(request.model);
-    const precioBarato = candidato ? this.precioConocido(candidato) : undefined;
+    const precioFuerte = this.precioConocido(request.model, instantePrecio);
+    const precioBarato = candidato ? this.precioConocido(candidato, instantePrecio) : undefined;
     const economia = economiaDelPar(precioBarato, precioFuerte);
 
     // El bucket: MISMO trabajo, no misma petición. Lleva el tenant (dos clientes
@@ -938,7 +940,7 @@ export class SavingsPipeline {
     }
     if (!economia) {
       const sinPrecio = [
-        ...(this.precioConocido(request.model) ? [] : [request.model]),
+        ...(this.precioConocido(request.model, instantePrecio) ? [] : [request.model]),
         ...(precioBarato ? [] : [candidato]),
       ];
       return rechazar(
@@ -1245,12 +1247,20 @@ export class SavingsPipeline {
     //
     // VA ANTES QUE TODO LO DEMÁS porque decide QUIÉN contesta, y de eso depende
     // la clave de la caché exacta (etapa 2). Ver `decidirCascada`.
-    const cascada = this.decidirCascada(request, canonical, toggles, trace);
+    //
+    // UN SOLO INSTANTE DE PRECIO POR PETICIÓN, leído aquí, al empezar: todos los
+    // precios de catálogo de esta petición —los del par de la cascada, el del
+    // modelo que contesta y el del fuerte si se escala— son los de ESTE día. Sin
+    // él, una escalada que cruzara la medianoche UTC del día de un cambio de
+    // precio (Gemini 3.x Flash, el 2027-01-01) tarifaba el barato con un día y el
+    // fuerte con el siguiente. Es la misma regla que el gateway (`inicioMs`).
+    const instantePrecio = this.now();
+    const cascada = this.decidirCascada(request, canonical, toggles, trace, instantePrecio);
     // El precio con el que se tarifa TODA la petición es el del modelo que va a
     // contestar. Si sirve el barato y se tarifara con el fuerte, `cost.actual`
     // —la única cifra del informe que se contrasta contra la factura— saldría
     // hasta veinte veces por encima de lo que el cliente va a pagar.
-    const costModel = this.costModelFor(cascada.modeloServido);
+    const costModel = this.costModelFor(cascada.modeloServido, instantePrecio);
 
     trace.record("canonicalize", "done", {
       tenant: canonical.tenantId,
@@ -1383,7 +1393,7 @@ export class SavingsPipeline {
       try {
         return await this.expensivePath<T>(
           testigo, request, canonical, policy, toggles, ledger, costModel, trace,
-          exactKey, baselineInput, cascada, sumidero,
+          exactKey, baselineInput, cascada, sumidero, instantePrecio,
         );
       } catch (err) {
         // Aquí, y no en el catch de generate(), porque este es el ÚNICO punto
@@ -1452,6 +1462,8 @@ export class SavingsPipeline {
     baselineInput: number,
     cascada: DecisionDeCascada,
     sumidero: SumideroDeStream | null,
+    /** El instante de precio de la petición (ver `generateOptimized`). */
+    instantePrecio: number,
   ): Promise<SavingsResult<T>> {
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
@@ -2295,7 +2307,15 @@ export class SavingsPipeline {
         // El intento con el barato ya está pagado y no produjo la respuesta: su
         // dinero va a `actual` con SU precio, y ni sus tokens ni su coste tocan el
         // baseline. Es la misma regla que la reparación y el sondeo.
-        ledger.cascadeAttempt(response.usage, cascada.precioBarato ?? costModel);
+        //
+        // Con la prima de escritura que el proveedor cobra por su cuenta (OpenAI
+        // GPT-5.6+), salvo que la llamada la haya cargado ya por el camino de la
+        // marca (más abajo, con `cacheWritePremium`): esta ES la llamada marcada.
+        ledger.cascadeAttempt(
+          response.usage,
+          cascada.precioBarato ?? costModel,
+          marcado.marcar && marcado.cacheWriteMultiplier > 1 ? 1 : primaDeEscrituraAutomatica(cascada.modeloServido),
+        );
         ledger.actualLlm += 1;
         // Sin `promptCacheKey`: el prefijo que se midió es el del modelo barato, y
         // marcar aquí pagaría la prima de escritura de una caché (la del fuerte)
@@ -2315,7 +2335,7 @@ export class SavingsPipeline {
     // barato sobre tokens del fuerte: casi diecisiete veces por debajo de lo que
     // el cliente iba a pagar, y sobre la única cifra del informe que se contrasta
     // contra la factura.
-    const precioServido = escalo ? this.costModelFor(request.model) : costModel;
+    const precioServido = escalo ? this.costModelFor(request.model, instantePrecio) : costModel;
 
     // La contabilidad de tokens habla de la llamada que produjo LO SERVIDO. La
     // del intento descartado vive en `ledger.cascadeInput/Output`, y se publica
@@ -2420,6 +2440,24 @@ export class SavingsPipeline {
       ledger.providerCached(response.usage.cachedInputTokens);
     }
 
+    // LA PRIMA DE ESCRITURA QUE EL PROVEEDOR COBRA POR SU CUENTA. OpenAI, de
+    // GPT-5.6 en adelante (toda la familia gpt-6), factura cada escritura de su
+    // caché implícita a 1,25× la entrada, y el adaptador la trae aparte en
+    // `cacheWriteInputTokens`. Sin esto, `cost.actual` la tarifaba a 1× y no
+    // cuadraba con la factura. No la provoca la capa (la `prompt_cache_key` solo
+    // enruta; OpenAI escribe igual sin ella), así que va a los DOS lados del
+    // libro y el ahorro no cambia: ver `providerCacheWritePremiumUsd`.
+    //
+    // Se salta solo cuando esta MISMA llamada ya cargó su prima por el camino de
+    // la marca (un tramo declarado con escritura > 1 sobre un modelo de OpenAI):
+    // dos veces la misma escritura sería inventar coste. Con escalada, la
+    // llamada servida es la del fuerte, que viaja sin marca.
+    const primaDelProveedor = primaDeEscrituraAutomatica(modeloServido);
+    const primaYaCargada = !escalo && marcado.marcar && marcado.cacheWriteMultiplier > 1;
+    if (primaDelProveedor > 1 && !primaYaCargada && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
+      ledger.providerCacheWritePremium(response.usage.cacheWriteInputTokens ?? 0, primaDelProveedor, precioServido);
+    }
+
     // LO QUE CONTESTÓ EL PROVEEDOR ES LA ÚNICA MEDICIÓN DE h QUE EXISTE, y sólo
     // vale de las peticiones que de verdad se marcaron: apuntar una sin marcar
     // como «no acertó» hundiría la tasa con peticiones que nunca tuvieron
@@ -2493,7 +2531,13 @@ export class SavingsPipeline {
         );
         ledger.actualLlm += 1;
         const antes = ledger.extraCostUsd;
-        ledger.cascadeAttempt(respuestaBarata.usage, cascada.precioBarato);
+        // La muestra viaja sin marca: su prima de escritura, si la hay, es la del
+        // proveedor por su cuenta.
+        ledger.cascadeAttempt(
+          respuestaBarata.usage,
+          cascada.precioBarato,
+          primaDeEscrituraAutomatica(cascada.candidato),
+        );
         const textoBarato = expandirDelCodebook(respuestaBarata.text);
         const veredicto = verificarRespuesta({
           texto: textoBarato,
@@ -3151,7 +3195,7 @@ export class SavingsPipeline {
                 ledger,
                 escalo,
                 cascada.precioBarato,
-                this.costModelFor(request.model),
+                this.costModelFor(request.model, instantePrecio),
               ),
             }
           : {}),
@@ -3772,6 +3816,12 @@ export class SavingsPipeline {
     ledger.baselineInput = response.usage.inputTokens;
     ledger.baselineOutput = response.usage.outputTokens;
     if (response.usage.cachedInputTokens) ledger.providerCached(response.usage.cachedInputTokens);
+    // La prima de escritura que el proveedor cobra por su cuenta (OpenAI
+    // GPT-5.6+): a los dos lados, como en el camino optimizado.
+    const primaDelProveedor = primaDeEscrituraAutomatica(request.model);
+    if (primaDelProveedor > 1 && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
+      ledger.providerCacheWritePremium(response.usage.cacheWriteInputTokens ?? 0, primaDelProveedor, costModel);
+    }
     // El camino directo tampoco llama «medido» a un contador que falta.
     if (response.usage.complete === false) ledger.callsWithoutUsage = 1;
 
@@ -4087,12 +4137,18 @@ export class SavingsPipeline {
    * el fuerte, la cascada perdería dinero en cada petición y nada la pararía: el
    * apagado automático vigila P(escalar), no el precio.
    */
-  private precioConocido(model: string): CostModel | undefined {
+  private precioConocido(model: string, at: number = this.now()): CostModel | undefined {
     // EL CATÁLOGO DE PRECIOS DE LISTA, antes del defecto del cliente. Un
     // `defaultCostModel` significa "para lo que yo no conozca"; con el catálogo,
     // muchos menos modelos son desconocidos, y el precio real de gpt-4o sirve
     // mejor al cliente que su propio precio genérico.
-    return this.precioDelCliente(model) ?? precioDeLista(model);
+    //
+    // Y el del DÍA DE LA PETICIÓN: `at` es el instante que `generateOptimized`
+    // lee UNA vez al empezar y pasa a todas las resoluciones de la petición; sin
+    // él (camino directo, comprobador A/B), ahora. Un cambio de precio anunciado
+    // —Gemini 3.x Flash dobla el 2027-01-01— entra así desde su fecha, sin tocar
+    // el catálogo ese día.
+    return this.precioDelCliente(model) ?? precioDeLista(model, at);
   }
 
   /** El precio que el cliente declaró en `costModels`, por id completo o desnudo. */
@@ -4116,14 +4172,14 @@ export class SavingsPipeline {
    * (3x su entrada cacheada), y la referencia dejaría de ser un suelo.
    */
   private precioDocumentado(model: string): CostModel | undefined {
-    return this.precioDelCliente(model) ?? precioDeListaPropio(model);
+    return this.precioDelCliente(model) ?? precioDeListaPropio(model, this.now());
   }
 
-  private costModelFor(model: string): CostModel {
+  private costModelFor(model: string, at: number = this.now()): CostModel {
     // Una sola regla de medir para los dos: lo que `costModelFor` añade por
     // encima de `precioConocido` son las dos capas de respaldo, y son justo las
     // que la cascada no puede usar.
-    const conocido = this.precioConocido(model);
+    const conocido = this.precioConocido(model, at);
     if (conocido) return conocido;
 
     if (this.config.defaultCostModel) return this.config.defaultCostModel;

@@ -27,7 +27,9 @@ describe("el lookup", () => {
     // precios del proveedor usa el nombre desnudo. Los dos tienen que funcionar.
     expect(precioDeLista("openai/gpt-4o-mini")).toEqual(CATALOGO["gpt-4o-mini"]);
     expect(precioDeLista("anthropic/claude-haiku-4-5")).toEqual(CATALOGO["claude-haiku-4-5"]);
-    expect(precioDeLista("google/gemini-3.7-flash")).toEqual(CATALOGO["gemini-3.7-flash"]);
+    // Con la fecha del catálogo: desde el 2027-01-01 rige su tramo anunciado
+    // (test/vigencia-de-precios.test.ts).
+    expect(precioDeLista("google/gemini-3.7-flash", Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`))).toEqual(CATALOGO["gemini-3.7-flash"]);
   });
 
   it("una instantánea fechada hereda el precio de su familia", () => {
@@ -137,6 +139,32 @@ describe("la forma del catálogo", () => {
     }
   });
 
+  it("las filas nuevas del 2026-09-27, con las cifras de las páginas OFICIALES (USD por 1M → por 1K)", () => {
+    // Anthropic (platform.claude.com/docs/en/about-claude/pricing): Opus 5.5
+    // $4 / $0.20 / $20 — la lectura a 0,05×, ni el 10% de la casa ni el 0,025× de Fable 5.1.
+    expect(CATALOGO["claude-opus-5-5"]).toEqual({ inputPer1k: 0.004, outputPer1k: 0.02, cachedInputPer1k: 0.0002 });
+    expect(CATALOGO["claude-opus-5-5"]!.cachedInputPer1k! / CATALOGO["claude-opus-5-5"]!.inputPer1k).toBeCloseTo(0.05, 12);
+    // OpenAI (developers.openai.com/api/docs/pricing, «Standard», contexto corto).
+    expect(CATALOGO["gpt-6-astra"]).toEqual({ inputPer1k: 0.01, outputPer1k: 0.05, cachedInputPer1k: 0.001 });
+    expect(CATALOGO["gpt-6-sol"]).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    expect(CATALOGO["gpt-6-luna"]).toEqual({ inputPer1k: 0.0001, outputPer1k: 0.0005, cachedInputPer1k: 0.00001 });
+    // Google (ai.google.dev/gemini-api/docs/pricing, tier de pago, texto).
+    expect(CATALOGO["gemini-3.8-flash"]).toEqual({ inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 });
+    expect(CATALOGO["gemini-3.6-flash"]).toEqual(CATALOGO["gemini-3.8-flash"]);
+    expect(CATALOGO["gemini-3.1-flash-lite"]).toEqual({ inputPer1k: 0.00025, outputPer1k: 0.0015, cachedInputPer1k: 0.000025 });
+    expect(CATALOGO["gemini-3-flash-preview"]).toEqual({ inputPer1k: 0.0005, outputPer1k: 0.003, cachedInputPer1k: 0.00005 });
+  });
+
+  it("⛔ la versión menor no hereda: Opus 5.5 no es Opus 5, ni gpt-6-luna es gpt-5.6-luna", () => {
+    expect(precioDeLista("claude-opus-5-5")).not.toEqual(CATALOGO["claude-opus-5"]);
+    expect(claveDeCatalogo("claude-opus-5-5-20260901")).toBe("claude-opus-5-5");
+    expect(claveDeCatalogo("anthropic/claude-opus-5-5")).toBe("claude-opus-5-5");
+    expect(claveDeCatalogo("gpt-6-luna")).toBe("gpt-6-luna");
+    // Una gpt-6 que no está en la tabla no hereda de nadie: sin fila, avisa.
+    expect(precioDeLista("gpt-6-pro")).toBeUndefined();
+    expect(precioDeLista("gpt-6")).toBeUndefined();
+  });
+
   it("la generación 5.1 de Fable/Mythos lee la caché a 0.025x, no al 10%", () => {
     // La excepción oficial de Anthropic (2026-09-06): $0.25/MTok de lectura con
     // entrada a $10. Si alguien «normaliza» estas filas al 10% de la casa, la
@@ -180,6 +208,61 @@ describe("la forma del catálogo", () => {
     // Y el veto no toca a nadie más.
     expect(precioDeLista("o3")).toEqual(CATALOGO["o3"]);
     expect(precioDeLista("o4-mini-2025-04-16")).toEqual(CATALOGO["o4-mini"]);
+  });
+
+  it("⛔ otra MODALIDAD de Gemini no hereda la fila de texto de su pariente (TTS e imagen, página oficial del 2026-09-27)", () => {
+    // Las filas de gemini-3.8-flash y gemini-3.1-flash-lite (2026-09-27) harían
+    // que estos ids heredaran por sufijo de letra un precio de TEXTO que no es el
+    // suyo. La página oficial (https://ai.google.dev/gemini-api/docs/pricing)
+    // publica: 3.8 Flash TTS $0.50 / $9.00 audio / $0.125; 3.8 Flash-Lite TTS
+    // $0.50 / $6.00 audio / $0.125; 3.1 Flash Lite Image $30 por 1M de salida de
+    // imagen. Sin precio propio: `undefined`, que avisa, en cualquier fecha.
+    const AL_DIA = Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`);
+    const ENE_2027 = Date.parse("2027-01-01T12:00:00Z");
+    for (const m of [
+      "gemini-3.8-flash-tts",
+      "google/gemini-3.8-flash-tts",
+      "gemini-3.8-flash-tts-preview",
+      "gemini-3.8-flash-lite-tts",
+      "gemini-3.1-flash-lite-image",
+      "gemini-3.1-flash-lite-image-preview",
+    ]) {
+      expect(precioDeLista(m), m).toBeUndefined();
+      expect(precioDeLista(m, AL_DIA), m).toBeUndefined();
+      expect(precioDeLista(m, ENE_2027), m).toBeUndefined();
+      expect(claveDeCatalogo(m), m).toBeUndefined();
+    }
+    // El alias legítimo del MISMO modelo sigue heredando, y los parientes siguen
+    // en su fila.
+    expect(claveDeCatalogo("gemini-3.1-flash-lite-preview")).toBe("gemini-3.1-flash-lite");
+    expect(precioDeLista("gemini-3.1-flash-lite-preview", AL_DIA)).toBe(CATALOGO["gemini-3.1-flash-lite"]);
+    expect(precioDeLista("gemini-3.1-flash-lite", AL_DIA)).toBe(CATALOGO["gemini-3.1-flash-lite"]);
+    expect(precioDeLista("gemini-3.8-flash", AL_DIA)).toBe(CATALOGO["gemini-3.8-flash"]);
+    expect(precioDeLista("google/gemini-3.8-flash-latest", AL_DIA)).toBe(CATALOGO["gemini-3.8-flash"]);
+  });
+
+  it("⛔ los pro y cyber de OpenAI no heredan la fila base: la página oficial les publica otro precio", () => {
+    // https://developers.openai.com/api/docs/pricing (2026-09-27): gpt-5.5-pro y
+    // gpt-5.4-pro $30 / $180, gpt-5.2-pro $21 / $168, gpt-5-pro $15 / $120,
+    // gpt-5.5-cyber y gpt-5.6-cyber $12.50 / $75. Heredando, gpt-5.5-pro salía a
+    // $5 / $30: seis veces por debajo de la factura.
+    for (const m of [
+      "gpt-5.5-pro",
+      "openai/gpt-5.5-pro",
+      "gpt-5.4-pro",
+      "gpt-5.2-pro",
+      "gpt-5-pro",
+      "gpt-5-pro-2025-10-06",
+      "gpt-5.5-cyber",
+      "gpt-5.6-cyber",
+    ]) {
+      expect(precioDeLista(m), m).toBeUndefined();
+      expect(claveDeCatalogo(m), m).toBeUndefined();
+    }
+    for (const base of ["gpt-5.5", "gpt-5.4", "gpt-5.2", "gpt-5"]) {
+      expect(precioDeLista(base), base).toBe(CATALOGO[base]);
+    }
+    expect(precioDeLista("gpt-5-2025-08-07")).toBe(CATALOGO["gpt-5"]);
   });
 
   it("deja por escrito de cuándo son los precios", () => {

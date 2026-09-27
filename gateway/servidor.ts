@@ -580,7 +580,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     // responde «¿qué modelo costó esto?» y debe cuadrar con la factura del
     // proveedor. El solicitado queda en la línea de log de abajo.
     const servido = !coalescida && hermano ? hermano.servido : model;
-    const medido = costeMedido(servido, uso);
+    // Al precio del día en que LLEGÓ la petición (la vigencia del catálogo).
+    const medido = costeMedido(servido, uso, inicioMs);
     if (medido) {
       // Parte G · una gemela se valora por referencia con el contador de su
       // primaria si la regla lo permite; si no, sigue `estimated` y el log dice

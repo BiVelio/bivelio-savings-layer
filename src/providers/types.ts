@@ -60,7 +60,8 @@ export interface ProviderUsage {
   cachedInputTokens?: number;
   /**
    * Input tokens billed at a PREMIUM to WRITE the provider's prefix cache
-   * (Anthropic `cache_creation_input_tokens`: 1.25x the normal rate).
+   * (Anthropic `cache_creation_input_tokens`, and OpenAI `cache_write_tokens`
+   * on GPT-5.6 and later: 1.25x the normal rate).
    *
    * This is a COST, not a discount, and it is reported separately for exactly
    * that reason: `cachedInputTokens` is a saving to publish in ledger 4, this

@@ -173,6 +173,18 @@ export class SavingsLedger {
   /** The premium on those writes, already priced in USD. Adds to `actual` only. */
   cacheWritePremiumUsd = 0;
 
+  // LA OTRA PRIMA DE ESCRITURA: la que el proveedor cobra POR SU CUENTA. OpenAI,
+  // de GPT-5.6 en adelante, escribe el prefijo en cada fallo de su caché
+  // implícita y lo factura a 1,25× la entrada, marque o no marque nadie
+  // (`primaDeEscrituraAutomatica`, src/pricing/primas.ts). Esa escritura no la
+  // provoca la capa —su `prompt_cache_key` solo enruta—, así que la habría
+  // pagado igual la petición sin capa: el suplemento va a los DOS lados,
+  // baseline y `actual`. El `actual` pasa a cuadrar con la factura y el ahorro
+  // en dinero no se mueve. En dólares, como `cacheWritePremiumUsd`, por la misma
+  // razón: se tarifa con el precio del modelo que contestó.
+  /** Provider-initiated cache-write premium, priced in USD. Adds to baseline and `actual` alike. */
+  providerCacheWritePremiumUsd = 0;
+
   // --- Regla de una sola regla (single ruler) -------------------------------
   // `baselineInput` se contaba con el estimador LOCAL y `actualInput` con el
   // contador del PROVEEDOR, y estimateCost dividía uno entre otro. Son dos reglas
@@ -315,16 +327,25 @@ export class SavingsLedger {
    *
    * The caller raises `actualLlm`, because the call happened and the report owes
    * the reader that count.
+   *
+   * @param providerWritePremium the multiplier the provider bills on its own
+   *   for the call's cache writes (`usage.cacheWriteInputTokens`); 1 = none.
    */
   cascadeAttempt(
-    usage: { inputTokens: number; outputTokens: number },
+    usage: { inputTokens: number; outputTokens: number; cacheWriteInputTokens?: number },
     cheapPrice: CostModel,
+    providerWritePremium = 1,
   ): void {
     this.cascadeInput += Math.max(0, usage.inputTokens);
     this.cascadeOutput += Math.max(0, usage.outputTokens);
+    // Las escrituras de caché ya van en `inputTokens` a 1×; lo que falta es el
+    // suplemento que el proveedor cobra por su cuenta (OpenAI GPT-5.6+, 1,25×).
+    // Es dinero de una llamada que puso la capa: solo `actual`, como el resto.
+    const escrituras = Math.max(0, usage.cacheWriteInputTokens ?? 0);
     this.extraCostUsd +=
       (Math.max(0, usage.inputTokens) / 1000) * cheapPrice.inputPer1k +
-      (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k;
+      (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k +
+      (escrituras / 1000) * cheapPrice.inputPer1k * Math.max(0, providerWritePremium - 1);
   }
   // El suplemento se tarifa con el precio del modelo QUE MARCÓ, que es el único
   // que lo conoce — ver el bloque de arriba. Va a `actual` y nunca al baseline.
@@ -359,6 +380,12 @@ export class SavingsLedger {
   /** Ledger 4: tokens still present but billed/processed as provider-cached. */
   providerCached(tokens: number): void {
     this.providerCachedInput += Math.max(0, tokens);
+  }
+
+  /** Record the premium for `tokens` of cache write the provider bills at `multiplier`x on its own. */
+  providerCacheWritePremium(tokens: number, multiplier: number, price: CostModel): void {
+    const t = Math.max(0, tokens);
+    this.providerCacheWritePremiumUsd += (t / 1000) * price.inputPer1k * Math.max(0, multiplier - 1);
   }
 
   // El crédito por referencia se guarda ENTERO, no solo sus tokens: `estimateCost`
@@ -552,11 +579,14 @@ export class SavingsLedger {
     // por el factor de tier. La entrada es un suelo; la salida, el 95 % de un
     // contador que `temperature: 0` reproduce de cerca pero no bit a bit.
     const r = !ranCall ? this.reference : null;
+    // La prima que el proveedor cobra por su cuenta (ver el campo): a los dos
+    // lados, y solo en una llamada que corrió — en una evitada no hubo escritura.
+    const primaDelProveedor = ranCall ? this.providerCacheWritePremiumUsd : 0;
     const baselineEstimate = r
       ? r.tierFactor *
         ((this.baselineInput / 1000) * r.cachedInputPer1k +
           (this.baselineOutput / 1000) * r.outputPer1k)
-      : precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k;
+      : precioEntrada(this.baselineInput) + (baselineOutputHonesto / 1000) * model.outputPer1k + primaDelProveedor;
     if (r) basis = baselineEstimate > 0 ? "reference" : "estimated";
     // `extraCostUsd` SOLO aquí, y ésa es toda la asimetría: el intento con el
     // modelo barato es dinero que el cliente pagó de verdad, así que tiene que
@@ -570,7 +600,9 @@ export class SavingsLedger {
       // Ya viene en dólares, tarifada con el precio del modelo que marcó — ver
       // `cacheWritePremiumUsd`. Con multiplicador 1 (OpenAI, proveedor
       // desconocido) el término es 0 y no toca nada.
-      this.cacheWritePremiumUsd;
+      this.cacheWritePremiumUsd +
+      // Y la del proveedor, la MISMA cifra que se sumó al baseline.
+      primaDelProveedor;
 
     const netSavings =
       baselineEstimate === 0 ? 0 : 1 - actual / baselineEstimate;

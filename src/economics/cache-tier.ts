@@ -79,6 +79,9 @@ const MINIMOS_ANTHROPIC: [prefijo: string, minimo: number][] = [
   ["claude-mythos-5-1", 512],
   ["claude-fable-5", 512],
   ["claude-mythos-5", 512],
+  // Opus 5.5: 512 en la misma página (releída el 2026-09-27). Con fila propia y
+  // no por herencia de `claude-opus-5-`: el mismo corte que el catálogo.
+  ["claude-opus-5-5", 512],
   ["claude-opus-5", 512],
   ["claude-opus-4-7", 2048],
   ["claude-opus-4-6", 4096],
