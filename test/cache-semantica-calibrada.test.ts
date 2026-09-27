@@ -251,7 +251,12 @@ describe("InMemorySemanticCache con calibración", () => {
     const hit = await cache.find(q);
     const l = await cache.lookup(q);
     expect(hit).not.toBeNull();
-    expect(l.hit).toEqual(hit);
+    // Dos lecturas en dos instantes: todo igual salvo la edad, que en la segunda
+    // solo puede ser mayor o igual. Compararla entera fallaba con la máquina cargada.
+    const { ageMs: edadFind, ...restoFind } = hit!;
+    const { ageMs: edadLookup, ...restoLookup } = l.hit!;
+    expect(restoLookup).toEqual(restoFind);
+    expect(edadLookup).toBeGreaterThanOrEqual(edadFind);
     expect(l.probe).toBeNull();
     expect(cache.calibrated).toBe(false);
     expect(cache.calibrationStatus()).toBeNull();
