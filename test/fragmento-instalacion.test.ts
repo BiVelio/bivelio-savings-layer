@@ -100,7 +100,15 @@ function compila(fragmento: string): { ok: boolean; errores: string } {
           types: ["node"],
           typeRoots: [join(RAIZ, "node_modules/@types")],
           baseUrl: dir,
-          paths: { "@bivelio/savings-layer": [join(RAIZ, "src/index.ts")] },
+          // `@opentelemetry/api` es un peer OPCIONAL del SDK (devDependency
+          // aquí): el bloque del README de trazas lo importa, como lo haría
+          // quien ya tiene OpenTelemetry. El proyecto temporal vive fuera del
+          // repo y no ve su node_modules, así que se le dice dónde está. No
+          // afloja nada: se siguen compilando TODOS los bloques, en strict.
+          paths: {
+            "@bivelio/savings-layer": [join(RAIZ, "src/index.ts")],
+            "@opentelemetry/api": [join(RAIZ, "node_modules/@opentelemetry/api")],
+          },
         },
         include: ["fragmento.ts"],
       }),
