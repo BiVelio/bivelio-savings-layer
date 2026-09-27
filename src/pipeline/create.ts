@@ -7,6 +7,8 @@ import type {
   SavingsStream,
   SavingsStreamOptions,
 } from "../contracts/types.js";
+import type { SavingsBatches } from "../contracts/batch.js";
+import { crearLotes } from "../batch/lotes.js";
 import { gateFromKey } from "../license/gate.js";
 import { liveGateFromKey } from "../license/live-gate.js";
 import { RevocationSnapshot } from "../license/revocation.js";
@@ -93,6 +95,15 @@ export interface SavingsLayer {
    * Await `result` before calling close(), or its usage record may be lost.
    */
   generateStream<T = unknown>(request: SavingsRequest, options?: SavingsStreamOptions): SavingsStream<T>;
+  /**
+   * The provider's asynchronous batch API, for requests that can wait hours: submit
+   * them, check on them, and read their results valued at the provider's batch rate
+   * card. Requests are sent as written (the layer's per-request savings do not run on
+   * batches), nothing is metered, and the batch saving is reported, never billed.
+   * Works with the built-in Anthropic and OpenAI providers; needs the same license as
+   * generate().
+   */
+  readonly batches: SavingsBatches;
   /**
    * Stop the background revocation poller (when the online call-home was enabled
    * via `licenseServerUrl`) and abort any in-flight request, and settle every
@@ -377,7 +388,18 @@ export function createSavingsLayer(
     }
   }
 
+  // LOS LOTES: la misma licencia que generate() (el portero del pipeline), el
+  // mismo proveedor y los mismos precios del cliente. Sin emisor de uso a
+  // propósito: un lote no se mide ni se cobra (ver src/batch/lotes.ts).
+  const batches = crearLotes({
+    provider: resolved.provider,
+    ...(resolved.costModels ? { costModels: resolved.costModels } : {}),
+    exigirLicencia: () => pipeline.exigirLicencia(),
+    now: resolved.now ?? Date.now,
+  });
+
   return {
+    batches,
     // `pipeline` NO se expone: layer.pipeline.generateOptimized() corría el
     // optimizador entero saltándose assertLicensed(). El único punto de entrada
     // público es generate(), que sí gatea.

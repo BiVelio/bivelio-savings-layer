@@ -21,6 +21,7 @@ import {
 const FUENTES: Record<OrigenDeTarifa, string> = {
   openai: "https://developers.openai.com/api/docs/pricing",
   google: "https://ai.google.dev/gemini-api/docs/pricing",
+  anthropic: "https://platform.claude.com/docs/en/about-claude/pricing",
 };
 
 const filas = Object.entries(TARIFAS_DE_TIER).flatMap(([origen, porTier]) =>
@@ -72,6 +73,24 @@ describe("la tabla de tarifas por tier", () => {
     expect(tarifaDeTier("google", "flex", "gemini-2.5-flash-lite")).toBeUndefined();
     // El origen es parte de la clave: un modelo de Google no tiene fila en OpenAI.
     expect(tarifaDeTier("openai", "flex", "gemini-2.5-pro")).toBeUndefined();
+  });
+
+  it("Anthropic: toda fila de lote es EXACTAMENTE la mitad de la estándar, en los cuatro componentes", () => {
+    // «All usage is charged at 50% of the standard API prices» (guía de batch
+    // processing) y «These multipliers stack with … the Batch API discount»
+    // (página de precios): la lectura y la escritura de caché en lote no tienen
+    // columna propia y salen de esas dos frases. Si alguien teclea una fila que
+    // no es la mitad, esto lo caza.
+    const filasDeLote = Object.entries(TARIFAS_DE_TIER.anthropic.batch!);
+    expect(filasDeLote.length).toBeGreaterThan(10);
+    for (const [modelo, f] of filasDeLote) {
+      const s = CATALOGO[modelo]!;
+      const mitad = (x: number) => x / 2;
+      expect(f.inputPer1k, modelo).toBeCloseTo(mitad(s.inputPer1k), 12);
+      expect(f.outputPer1k, modelo).toBeCloseTo(mitad(s.outputPer1k), 12);
+      expect(f.cachedInputPer1k, modelo).toBeCloseTo(mitad(s.cachedInputPer1k!), 12);
+      expect(f.cacheWritePer1k, modelo).toBeCloseTo(mitad(s.inputPer1k * 1.25), 12);
+    }
   });
 
   it("una fila con `vigenteHasta` deja de existir al día siguiente", () => {

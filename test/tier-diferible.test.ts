@@ -435,6 +435,18 @@ describe("el informe del tier diferible", () => {
     expect(report.deferred!.credited).toBe(false);
     expect(report.deferred!.tierSaving).toBeUndefined();
     expect(report.deferred!.reason).toMatch(/no published price for the "flex" tier of this model/);
+    // Su descuento por diferir SÍ está publicado, en la Batch API: se dice dónde.
+    expect(report.deferred!.reason).toMatch(/published for the provider's batch API instead: .*layer\.batches\.submit\(\)/);
+  });
+
+  it("sin tarifa Flex NI de lote (gpt-5.1-codex), no se manda a nadie a los lotes", async () => {
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(
+      peticion(true, "openai/gpt-5.1-codex"),
+    );
+    expect(report.deferred!.credited).toBe(false);
+    expect(report.deferred!.reason).toMatch(/no published price for the "flex" tier/);
+    expect(report.deferred!.reason).not.toMatch(/layer\.batches/);
   });
 
   it("con `costModels` declarado para el modelo, el ahorro es `estimated`", async () => {

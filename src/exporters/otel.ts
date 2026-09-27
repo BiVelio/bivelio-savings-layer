@@ -266,6 +266,9 @@ export function instrumentSavingsLayer(layer: SavingsLayer, options: SavingsTrac
   }
 
   return {
+    // Los lotes pasan tal cual, sin span: no son una petición servida sino un
+    // envío asíncrono, y su resultado no trae el informe que lee el span.
+    batches: layer.batches,
     generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
       return conSpan(
         request,

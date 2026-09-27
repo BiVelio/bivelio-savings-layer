@@ -7,6 +7,7 @@ import {
   herramientasSinParametros,
   sinContrato,
 } from "./atestado-del-cable.js";
+import { endpointLimpio, registrarLotes, rutaRelativa } from "./lotes-del-proveedor.js";
 import { sseMessages } from "./sse.js";
 import type {
   Provider,
@@ -267,6 +268,39 @@ export class OpenAICompatibleProvider implements Provider {
     this.fetchImpl = opts.fetchImpl ?? fetch;
     this.origen = origenOficial(opts.baseUrl);
     declararOrigen(this, this.origen);
+    // LA BATCH API (Files + Batches), para `layer.batches`. La línea `body` de
+    // cada petición es el MISMO cuerpo que generate() (sin `stream`, sin tier) y
+    // la lectura es la misma. Ver lotes-del-proveedor.ts. Un host compatible que
+    // no implemente /files y /batches fallará en la subida, en claro.
+    const nativoPara = (req: ProviderRequest, model: string): boolean =>
+      req.schema != null && !this.sinResponseFormat.has(model);
+    const desnudo = (model: string): string =>
+      quitarPrefijoDeProveedor(model, this.opts.stripProviderPrefix, this.opts.baseUrl);
+    registrarLotes(this, {
+      protocolo: "openai",
+      origen: this.origen,
+      endpoint: endpointLimpio(opts.baseUrl),
+      cuerpo: (req) => {
+        const model = desnudo(req.model);
+        return this.construirCuerpo(model, req, nativoPara(req, model));
+      },
+      leer: (json, req) => {
+        const model = desnudo(req.model);
+        return this.leerJson(json as OpenAIChatResponse, undefined, req, nativoPara(req, model), model, false);
+      },
+      solicitar: (ruta, o) =>
+        this.fetchImpl(`${this.opts.baseUrl.replace(/\/$/, "")}${rutaRelativa(ruta)}`, {
+          method: o.method,
+          headers: {
+            // Con `FormData` NO se pone content-type: lo pone fetch, con su frontera.
+            ...(o.json !== undefined ? { "content-type": "application/json" } : {}),
+            ...(this.opts.apiKey ? { authorization: `Bearer ${this.opts.apiKey}` } : {}),
+            ...this.opts.headers,
+          },
+          ...(o.json !== undefined ? { body: JSON.stringify(o.json) } : o.form ? { body: o.form } : {}),
+          ...(o.signal ? { signal: o.signal } : {}),
+        }),
+    });
   }
 
   async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
@@ -531,6 +565,33 @@ export class OpenAICompatibleProvider implements Provider {
     stream?: { includeUsage: boolean; signal?: AbortSignal },
     senal?: AbortSignal,
   ): Promise<Response> {
+    const body = this.construirCuerpo(model, req, nativo, stream);
+    return await this.fetchImpl(
+      `${this.opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(this.opts.apiKey ? { authorization: `Bearer ${this.opts.apiKey}` } : {}),
+          ...this.opts.headers,
+        },
+        body: JSON.stringify(body),
+        // `senal` solo cuenta sin `stream` (generate con opciones); el cuerpo
+        // no cambia en ningún caso.
+        ...(stream?.signal ? { signal: stream.signal } : !stream && senal ? { signal: senal } : {}),
+      },
+    );
+  }
+
+  // El cuerpo de Chat Completions: el que viaja en generate() y, sin `stream`,
+  // la línea `body` de un lote (lotes-del-proveedor.ts). Separado de `enviar`
+  // para que las dos vías no puedan derivar.
+  private construirCuerpo(
+    model: string,
+    req: ProviderRequest,
+    nativo: boolean,
+    stream?: { includeUsage: boolean },
+  ): Record<string, unknown> {
     // EL CICLO DE HERRAMIENTAS TIENE QUE PODER VOLVER. Chat Completions exige que
     // un mensaje `role:"tool"` lleve `tool_call_id` Y siga a un `assistant` con
     // `tool_calls`; sin las dos cosas contesta 400 y la petición del cliente
@@ -668,22 +729,7 @@ export class OpenAICompatibleProvider implements Provider {
       body["stream"] = true;
       if (stream.includeUsage) body["stream_options"] = { include_usage: true };
     }
-
-    return await this.fetchImpl(
-      `${this.opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          ...(this.opts.apiKey ? { authorization: `Bearer ${this.opts.apiKey}` } : {}),
-          ...this.opts.headers,
-        },
-        body: JSON.stringify(body),
-        // `senal` solo cuenta sin `stream` (generate con opciones); el cuerpo
-        // no cambia en ningún caso.
-        ...(stream?.signal ? { signal: stream.signal } : !stream && senal ? { signal: senal } : {}),
-      },
-    );
+    return body;
   }
 
   /** Translate a 2xx endpoint response into the provider-neutral shape. */
@@ -694,6 +740,21 @@ export class OpenAICompatibleProvider implements Provider {
     model: string,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as OpenAIChatResponse;
+    return this.leerJson(json, response, req, nativo, model, this.opts.requireUsage === true);
+  }
+
+  // El cuerpo ya parseado —el de generate() o la línea de un lote— en la forma
+  // neutra. `response` solo sirve para la cabecera de tier de Gemini; en un lote
+  // no hay cabeceras por línea. `exigirUso` es `requireUsage` en generate(); en
+  // un lote va apagado (una línea sin contador sale marcada, no tumba las demás).
+  private leerJson(
+    json: OpenAIChatResponse,
+    response: Response | undefined,
+    req: ProviderRequest,
+    nativo: boolean,
+    model: string,
+    exigirUso: boolean,
+  ): ProviderResponse {
     const mensaje = json.choices?.[0]?.message as
       | {
           content?: string | null;
@@ -733,7 +794,7 @@ export class OpenAICompatibleProvider implements Provider {
     // legítimo (respuesta vacía, parada inmediata) es medible y no debe fallar.
     const inputAbsent = typeof usage.prompt_tokens !== "number";
     const outputAbsent = typeof usage.completion_tokens !== "number";
-    if (this.opts.requireUsage && (inputAbsent || outputAbsent)) {
+    if (exigirUso && (inputAbsent || outputAbsent)) {
       throw new Error(mensajeDeUsoIncompleto(usage.prompt_tokens, usage.completion_tokens));
     }
 
@@ -757,7 +818,7 @@ export class OpenAICompatibleProvider implements Provider {
     // el cuerpo calló; y lo que se lea de ahí se atestigua como tal, para que la
     // valoración no lo llame `measured` (sus valores no están documentados).
     let tierLeidoDe: "cuerpo" | "cabecera" | undefined = servedServiceTier ? "cuerpo" : undefined;
-    if (!servedServiceTier && this.origen === "google") {
+    if (!servedServiceTier && this.origen === "google" && response) {
       servedServiceTier = cabecera(response, CABECERA_TIER_GEMINI);
       if (servedServiceTier) tierLeidoDe = "cabecera";
     }

@@ -18,3 +18,26 @@ export class StreamAbortedError extends Error {
     this.requestSent = requestSent;
   }
 }
+
+/**
+ * Thrown by `layer.batches.submit()` when a chunk fails after earlier chunks were
+ * already created at the provider. Those batches run and are billed: keep `job` and
+ * read it with `results()`, or pass it to `cancel()`.
+ */
+export class BatchSubmitError extends Error {
+  /** The batches that were created, as a job you can read or cancel. `batchIds` may be empty. */
+  readonly job: import("../contracts/batch.js").BatchJob;
+  /** Your ids of the requests that were not sent. */
+  readonly notSubmitted: string[];
+  constructor(
+    message: string,
+    job: import("../contracts/batch.js").BatchJob,
+    notSubmitted: string[],
+    options?: { cause?: unknown },
+  ) {
+    super(message, options);
+    this.name = "BatchSubmitError";
+    this.job = job;
+    this.notSubmitted = notSubmitted;
+  }
+}
