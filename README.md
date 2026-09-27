@@ -74,12 +74,14 @@ products charge a flat subscription, so there is no per‑token bill to cut. The
 story, in plain words:
 **[Where does the saving install?](https://savings.bivelio.com/en/how-it-works)**
 
-**Claude Code, Codex CLI, Goose or Qwen Code with an API key?** The package also
-ships a local measuring gateway: `bvsala claude` (or `bvsala codex`, `bvsala
-goose`, `bvsala qwen`) launches the terminal through it and your real spend shows
-up in your dashboard, token by token — nothing to configure, nothing persisted.
-For opencode, Crush, Droid, Cline or Kilo Code, `bvsala doctor` prints the exact
-config block for each one you have installed. Like the SDK, the gateway is
+**A coding agent with an API key?** The package also ships a local measuring
+gateway: `bvsala claude` (or `bvsala codex`, `goose`, `qwen`, `opencode`, `kilo`,
+`copilot` with your own Anthropic key, `aider`) launches the agent through it and your real
+spend shows up in your dashboard, token by token — nothing to configure, nothing
+persisted. On exit it tells you how many requests it metered and which ones it
+could not, and why. For Crush, Droid, Cline, Continue or Copilot in VS Code,
+`bvsala doctor` prints the exact config block. Gemini CLI and Cursor cannot be
+metered today, and the doctor says so. Like the SDK, the gateway is
 fail‑closed: it starts only with your service key (`BIVELIO_SERVICE_KEY`) and an
 active BiVelio license, which it collects with that key and verifies against the
 key embedded in the package. Once running it never interrupts a request in flight:

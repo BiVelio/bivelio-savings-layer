@@ -21,7 +21,25 @@ function seccion(texto: string, id: string): string {
   return s;
 }
 
-const IDS = ["claude", "codex", "opencode", "goose", "crush", "qwen", "droid", "cline", "kilo"];
+const IDS = [
+  "claude",
+  "codex",
+  "opencode",
+  "kilo",
+  "copilot",
+  "aider",
+  "goose",
+  "crush",
+  "qwen",
+  "droid",
+  "cline",
+  "continue",
+  "vscode-copilot",
+  "gemini",
+  "cursor",
+];
+/** Los que el gateway mide y cuya línea de comprobación es la de /v1/messages. */
+const IDS_MESSAGES = ["claude", "opencode", "kilo", "aider", "goose", "crush", "qwen", "droid", "cline", "continue", "vscode-copilot"];
 
 describe("bvsala doctor — detección por existencia", () => {
   it("con nada instalado, nadie está detectado pero todos llevan receta", async () => {
@@ -29,7 +47,9 @@ describe("bvsala doctor — detección por existencia", () => {
     expect(detectados).toEqual([]);
     for (const id of IDS) {
       const s = seccion(texto, id);
-      expect(s).toMatch(/^(claude|codex|opencode|goose|crush|qwen|droid): not detected|^(cline|kilo): no automatic detection/);
+      expect(s).toMatch(
+        /^(claude|codex|opencode|kilo|copilot|aider|goose|crush|qwen|droid|continue|gemini|cursor): not detected|^(cline|vscode-copilot): no automatic detection/,
+      );
     }
   });
 
@@ -71,7 +91,7 @@ describe("bvsala doctor — detección por existencia", () => {
     expect(sondeadas).toContain(join("/usr/local/bin", "claude"));
     expect(sondeadas).toContain(join("/opt/herramientas/bin", "droid"));
     // Las extensiones de editor no tienen binario que buscar.
-    expect(sondeadas.some((r) => r.endsWith("cline") || r.endsWith("kilo"))).toBe(false);
+    expect(sondeadas.some((r) => r.endsWith("cline") || r.endsWith("vscode-copilot"))).toBe(false);
   });
 
   it("rechaza un puerto imposible", async () => {
@@ -81,9 +101,9 @@ describe("bvsala doctor — detección por existencia", () => {
 });
 
 describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
-  it("opencode, Crush, Cline y Kilo llevan /v1", async () => {
+  it("opencode, Kilo, Crush, Cline y Continue llevan /v1", async () => {
     const { texto } = await vacio();
-    for (const id of ["opencode", "crush", "cline", "kilo"]) {
+    for (const id of ["opencode", "kilo", "crush", "cline", "continue"]) {
       expect(seccion(texto, id), id).toContain("http://127.0.0.1:8402/v1");
     }
   });
@@ -111,11 +131,13 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
     const { texto } = await vacio();
     const urls = texto.match(/http:\/\/127\.0\.0\.1:8402[^\s"]*/g) ?? [];
     expect(urls.length).toBeGreaterThan(0);
-    // Solo tres formas legales, y ninguna acaba en barra.
+    // Solo cuatro formas legales, y ninguna acaba en barra. La ruta completa
+    // `/v1/messages` es solo del BYOK de VS Code, que la usa tal cual.
     const legales = new Set([
       "http://127.0.0.1:8402",
       "http://127.0.0.1:8402/v1",
       "http://127.0.0.1:8402/backend-api/codex",
+      "http://127.0.0.1:8402/v1/messages",
     ]);
     for (const u of urls) {
       expect(legales.has(u), u).toBe(true);
@@ -130,9 +152,9 @@ describe("bvsala doctor — la forma exacta del base URL por terminal", () => {
     expect(seccion(texto, "codex")).toContain("use `bvsala codex`");
   });
 
-  it("todas las secciones llevan la línea de comprobación contra el log del gateway", async () => {
+  it("todas las secciones del dialecto Messages llevan su línea de comprobación contra el log del gateway", async () => {
     const { texto } = await vacio();
-    for (const id of IDS) {
+    for (const id of IDS_MESSAGES) {
       const s = seccion(texto, id);
       expect(s, id).toContain("check: the gateway log must show `[gateway] POST /v1/messages …`");
       expect(s, id).toContain("if you see `/v1/v1/messages`, there is one /v1 too many");
@@ -199,6 +221,72 @@ describe("bvsala doctor — Python, o cualquier lenguaje, por el base URL del SD
   });
 });
 
+describe("bvsala doctor — los agentes de 2026 (docs/investigacion/2026-09-27/agentes-de-codigo.md)", () => {
+  it("opencode y Kilo remiten a sus envoltorios por config inline, sin escribir en disco", async () => {
+    const { texto } = await vacio();
+    expect(seccion(texto, "opencode")).toContain("use `bvsala opencode`");
+    expect(seccion(texto, "opencode")).toContain("OPENCODE_CONFIG_CONTENT");
+    const kilo = seccion(texto, "kilo");
+    expect(kilo).toContain("use `bvsala kilo`");
+    expect(kilo).toContain("KILO_CONFIG_CONTENT");
+    expect(kilo).toContain('"baseURL": "http://127.0.0.1:8402/v1"');
+    // El proveedor por defecto de Kilo es su propia pasarela: no pasa por aquí, y se dice.
+    expect(kilo).toContain("Kilo Gateway");
+    expect(kilo).not.toContain("[inferred");
+  });
+
+  it("Copilot CLI: solo BYOK; anthropic SIN /v1 con envoltorio, openai CON /v1 a mano y marcado sin validar", async () => {
+    const s = seccion((await vacio()).texto, "copilot");
+    expect(s).toContain("only with your own provider key (BYOK)");
+    expect(s).toContain("anthropic type: use `bvsala copilot`");
+    expect(s).toContain("COPILOT_PROVIDER_TYPE=anthropic COPILOT_PROVIDER_BASE_URL=http://127.0.0.1:8402 ");
+    expect(s).toContain("openai type [not validated]: COPILOT_PROVIDER_BASE_URL=http://127.0.0.1:8402/v1 ");
+    expect(s).toContain("--upstream openai");
+    expect(s).toContain("426");
+  });
+
+  it("Aider: ANTHROPIC_API_BASE sin /v1, OpenAI por BVSALA_GATEWAY_UPSTREAM y el aviso del usage en stream", async () => {
+    const s = seccion((await vacio()).texto, "aider");
+    expect(s).toContain("use `bvsala aider`");
+    expect(s).toContain("ANTHROPIC_API_BASE=http://127.0.0.1:8402 aider");
+    expect(s).toContain("BVSALA_GATEWAY_UPSTREAM=openai bvsala aider");
+    expect(s).toContain("OPENAI_API_BASE=http://127.0.0.1:8402/v1");
+    expect(s).toContain("BVSALA_GATEWAY_USAGE_INJECT=1");
+  });
+
+  it("Continue: apiBase CON /v1 en ~/.continue/config.yaml", async () => {
+    const s = seccion((await vacio()).texto, "continue");
+    expect(s).toContain(join(HOME, ".continue", "config.yaml"));
+    expect(s).toContain("apiBase: http://127.0.0.1:8402/v1");
+    expect(s).toContain("provider: anthropic");
+  });
+
+  it("Copilot en VS Code: Custom Endpoint con la ruta completa, y lo que el BYOK no cubre", async () => {
+    const s = seccion((await vacio()).texto, "vscode-copilot");
+    expect(s).toContain('"url": "http://127.0.0.1:8402/v1/messages"');
+    expect(s).toContain("inline suggestions and embeddings stay on GitHub");
+  });
+
+  it("Gemini CLI y Cursor: se dicen NO medidos, sin receta de base URL ni línea de comprobación", async () => {
+    const { texto } = await vacio();
+    for (const id of ["gemini", "cursor"]) {
+      const s = seccion(texto, id);
+      expect(s, id).toMatch(/NOT (metered yet|supported)/);
+      expect(s, id).not.toContain("check: the gateway log");
+      expect(s, id).not.toMatch(/http:\/\/127\.0\.0\.1:8402/);
+    }
+    expect(seccion(texto, "gemini")).toContain("/stats model");
+    expect(seccion(texto, "cursor")).toContain("through Cursor's servers");
+  });
+
+  it("Codex se comprueba con su propia ruta (Responses), no con la de Messages", async () => {
+    const s = seccion((await vacio()).texto, "codex");
+    expect(s).toContain("POST /v1/responses");
+    expect(s).toContain("POST /backend-api/codex/responses");
+    expect(s).not.toContain("POST /v1/messages");
+  });
+});
+
 describe("bvsala doctor — jamás contenido, solo rutas", () => {
   it("aunque todo exista, el informe no lleva nada que no sea una ruta", async () => {
     // `existe` responde que sí a todo: el doctor debe listar rutas y nada más.
@@ -207,7 +295,21 @@ describe("bvsala doctor — jamás contenido, solo rutas", () => {
       path: "/bin",
       existe: () => true,
     });
-    expect(detectados).toEqual(["claude", "codex", "opencode", "goose", "crush", "qwen", "droid"]);
+    expect(detectados).toEqual([
+      "claude",
+      "codex",
+      "opencode",
+      "kilo",
+      "copilot",
+      "aider",
+      "goose",
+      "crush",
+      "qwen",
+      "droid",
+      "continue",
+      "gemini",
+      "cursor",
+    ]);
     for (const ruta of [
       join(HOME, ".config", "opencode", "opencode.json"),
       join(HOME, ".config", "goose", "config.yaml"),
@@ -216,6 +318,12 @@ describe("bvsala doctor — jamás contenido, solo rutas", () => {
       join(HOME, ".factory", "settings.json"),
       join(HOME, ".codex", "config.toml"),
       join(HOME, ".codex", "auth.json"),
+      join(HOME, ".config", "kilo", "kilo.json"),
+      join(HOME, ".copilot", "config.json"),
+      join(HOME, ".aider.conf.yml"),
+      join(HOME, ".continue", "config.yaml"),
+      join(HOME, ".gemini", "settings.json"),
+      join(HOME, ".cursor"),
     ]) {
       expect(texto).toContain(ruta);
     }

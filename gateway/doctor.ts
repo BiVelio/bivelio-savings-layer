@@ -52,10 +52,13 @@ interface Terminal {
   configs: string[];
   /** Las líneas del bloque de configuración. */
   receta: (ctx: Contexto) => string[];
-  /** Falso en los que no se pueden detectar (Cline, Kilo, los SDK). */
+  /** Falso en los que no se pueden detectar (Cline, el BYOK de VS Code, los SDK). */
   detectable: boolean;
-  /** La línea de comprobación contra el log, si no es la de /v1/messages. */
-  comprobar?: string;
+  /**
+   * La línea de comprobación contra el log, si no es la de /v1/messages; `null`
+   * en los que el gateway no puede medir (no hay línea que buscar).
+   */
+  comprobar?: string | null;
   /** El estado de los no detectables, si no es el de una extensión de editor. */
   estadoSinDeteccion?: string;
 }
@@ -82,6 +85,10 @@ const TERMINALES: readonly Terminal[] = [
     binario: "codex",
     configs: [join(".codex", "config.toml"), join(".codex", "auth.json")],
     detectable: true,
+    // Codex solo habla la Responses API: su línea es la de /responses, no la de Messages.
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1/responses …` (API key) or `POST /backend-api/codex/responses …` " +
+      "(ChatGPT); `/v1/v1/responses` means one /v1 too many.",
     receta: ({ base, rutas }) => [
       "use `bvsala codex` — the base URL prefix depends on the auth mode and the wrapper resolves it:",
       `  API key             → openai_base_url=${base}/v1`,
@@ -96,7 +103,9 @@ const TERMINALES: readonly Terminal[] = [
     configs: [join(".config", "opencode", "opencode.json")],
     detectable: true,
     receta: ({ baseV1, rutas }) => [
-      `mechanism: ${rutas[0]} → provider.anthropic.options.baseURL (the project's opencode.json overrides the global one). WITH /v1.`,
+      "use `bvsala opencode` — routes the `anthropic` provider through the gateway with OPENCODE_CONFIG_CONTENT, which",
+      "opencode merges over the global and project files: nothing is written to disk. Other providers go direct.",
+      `by hand: ${rutas[0]} → provider.anthropic.options.baseURL (the project's opencode.json overrides the global one). WITH /v1.`,
       "{",
       '  "provider": {',
       '    "anthropic": {',
@@ -105,6 +114,58 @@ const TERMINALES: readonly Terminal[] = [
       "  }",
       "}",
       'alternative: "baseURL": "{env:BVSALA_BASE_URL}" and export the variable; pitfall: without the variable, baseURL is empty.',
+    ],
+  },
+  {
+    id: "kilo",
+    nombre: "Kilo Code (CLI, VS Code, JetBrains)",
+    binario: "kilo",
+    configs: [join(".config", "kilo", "kilo.json"), join(".config", "kilo", "kilo.jsonc")],
+    detectable: true,
+    receta: ({ baseV1, rutas }) => [
+      "use `bvsala kilo` for the CLI — routes the `anthropic` provider (your API key) with KILO_CONFIG_CONTENT: nothing is",
+      "written to disk. The Kilo Gateway provider (Kilo's own hosted models) and any other provider go direct.",
+      `by hand (the VS Code and JetBrains extensions read the same file): ${rutas[0]} → provider.anthropic.options.baseURL. WITH /v1.`,
+      "{",
+      '  "provider": {',
+      '    "anthropic": {',
+      `      "options": { "baseURL": "${baseV1}" }`,
+      "    }",
+      "  }",
+      "}",
+    ],
+  },
+  {
+    id: "copilot",
+    nombre: "GitHub Copilot CLI (your own key, BYOK)",
+    binario: "copilot",
+    configs: [join(".copilot", "config.json")],
+    detectable: true,
+    comprobar:
+      "check: the gateway log must show `[gateway] POST /v1/messages …` (anthropic); `/v1/v1/messages` means one /v1 too many.",
+    receta: ({ base, baseV1 }) => [
+      "only with your own provider key (BYOK). GitHub-hosted models do not use a base URL: nothing to meter there (/usage).",
+      "anthropic type: use `bvsala copilot` with your BYOK variables exported — it keeps your model and key and points",
+      `COPILOT_PROVIDER_BASE_URL at the gateway. By hand: COPILOT_PROVIDER_TYPE=anthropic COPILOT_PROVIDER_BASE_URL=${base}   (NO /v1)`,
+      `openai type [not validated]: COPILOT_PROVIDER_BASE_URL=${baseV1} against \`bvsala gateway --upstream openai\` (WITH /v1).`,
+      "It may call the Responses API over WebSocket, which the gateway answers with 426: keep it only if the log shows",
+      "POST /v1/responses or /v1/chat/completions lines with a cost; `did not ask for usage` → BVSALA_GATEWAY_USAGE_INJECT=1.",
+    ],
+  },
+  {
+    id: "aider",
+    nombre: "Aider",
+    binario: "aider",
+    configs: [".aider.conf.yml"],
+    detectable: true,
+    receta: ({ base, baseV1 }) => [
+      "use `bvsala aider` — Anthropic models by default. Aider calls through litellm, which reads ANTHROPIC_API_BASE",
+      "before ANTHROPIC_BASE_URL and appends /v1/messages: NO /v1.",
+      `by hand: ANTHROPIC_API_BASE=${base} aider`,
+      `OpenAI models: BVSALA_GATEWAY_UPSTREAM=openai bvsala aider --model <OpenAI model>; by hand, OPENAI_API_BASE=${baseV1} (WITH /v1).`,
+      "litellm asks for streamed usage only when it talks to api.openai.com itself: through the gateway, streamed OpenAI",
+      "replies are metered only with BVSALA_GATEWAY_USAGE_INJECT=1 or aider --no-stream. An --openai-api-base flag or",
+      "openai-api-base in .aider.conf.yml overrides the variable.",
     ],
   },
   {
@@ -173,13 +234,57 @@ const TERMINALES: readonly Terminal[] = [
     ],
   },
   {
-    id: "kilo",
-    nombre: "Kilo Code",
+    id: "continue",
+    nombre: "Continue (cn CLI and IDE extensions)",
+    binario: "cn",
+    configs: [join(".continue", "config.yaml")],
+    detectable: true,
+    receta: ({ baseV1, rutas }) => [
+      `mechanism: ${rutas[0]} → the model's apiBase. WITH /v1 (Continue adds the trailing slash and resolves \`messages\` against it).`,
+      "models:",
+      "  - name: <display name>",
+      "    provider: anthropic",
+      "    model: <Anthropic model id>",
+      "    apiKey: <your Anthropic API key>",
+      `    apiBase: ${baseV1}`,
+    ],
+  },
+  {
+    id: "vscode-copilot",
+    nombre: "GitHub Copilot in VS Code (your own key, BYOK)",
     configs: [],
     detectable: false,
     receta: ({ baseV1 }) => [
-      "mechanism: UI → custom provider, Provider API \"Anthropic Messages\". Try WITH /v1 first (Cline lineage) [inferred: validate by hand].",
-      `Base URL: ${baseV1}`,
+      "mechanism: Manage Language Models → Add Models → Custom Endpoint, API type Messages; VS Code opens",
+      "chatLanguageModels.json. Put the FULL path in the model's url (VS Code uses an explicit /messages path as-is):",
+      `"url": "${baseV1}/messages"`,
+      "BYOK covers chat and utility tasks: inline suggestions and embeddings stay on GitHub and are not metered here.",
+    ],
+  },
+  {
+    id: "gemini",
+    nombre: "Gemini CLI",
+    binario: "gemini",
+    configs: [join(".gemini", "settings.json")],
+    detectable: true,
+    comprobar: null,
+    receta: () => [
+      "NOT metered yet: Gemini CLI speaks the Gemini API (…:streamGenerateContent), and the gateway reads usage only from",
+      "Anthropic Messages and OpenAI Chat Completions and Responses. GOOGLE_GEMINI_BASE_URL would route it, but every",
+      "request would be forwarded with no cost line. Its own /stats model shows the token counts.",
+      "why, and what it would take: docs/terminales/no-soportados.md",
+    ],
+  },
+  {
+    id: "cursor",
+    nombre: "Cursor",
+    binario: "cursor",
+    configs: [".cursor"],
+    detectable: true,
+    comprobar: null,
+    receta: () => [
+      "NOT supported: Cursor sends every request, your own API key included, through Cursor's servers, which cannot reach",
+      "a gateway on 127.0.0.1. Cursor's usage dashboard is the meter there. See docs/terminales/no-soportados.md",
     ],
   },
   // Los SDK oficiales, en cualquier lenguaje: no hay binario ni config que
@@ -266,13 +371,13 @@ export async function doctor(puerto: number, opts: OpcionesDoctor = {}): Promise
     lineas.push(`» ${t.id}: ${estado}`);
     lineas.push(`  ${t.nombre}`);
     for (const l of t.receta({ base, baseV1, puerto, rutas })) lineas.push(`  ${l}`);
-    lineas.push(`  ${t.comprobar ?? COMPROBAR}`);
+    if (t.comprobar !== null) lineas.push(`  ${t.comprobar ?? COMPROBAR}`);
     lineas.push("");
   }
 
   lineas.push(
-    "BYOK rule: the recipes for the Anthropic-compatible terminals (Goose, Qwen Code, opencode, Crush, Droid, Cline,",
-    "Kilo) are for API keys. Never route the OAuth of a Claude Pro/Max subscription through the gateway from a",
+    "BYOK rule: the recipes for the third-party terminals (opencode, Kilo, Copilot, Aider, Goose, Crush, Qwen Code, Droid,",
+    "Cline, Continue) are for API keys. Never route the OAuth of a Claude Pro/Max subscription through the gateway from a",
     "third-party harness - Anthropic forbids it. Claude Code and Codex on a subscription are routed and metered at",
     "list-price equivalent, with no commission (there is no per-token invoice); the per-seat license applies.",
     "Any language through the gateway: it measures every request whose usage it can read (Anthropic Messages, OpenAI Chat",
