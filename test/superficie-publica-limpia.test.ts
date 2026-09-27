@@ -187,3 +187,48 @@ describe("la superficie pública del paquete", () => {
     ).toBeLessThanOrEqual(TECHO);
   });
 });
+
+/**
+ * LOS TIPOS DE LOS ADAPTADORES (`dist/adapters/*.d.ts`) SON TAMBIÉN SUPERFICIE
+ * PÚBLICA, y más visible que `index.d.ts`: es lo que el IDE enseña a quien
+ * escribe `savingsMiddleware(`. Mismas reglas, y dos más:
+ *
+ *   · Cero líneas con acentos. Nacen en inglés; no hay trinquete que bajar.
+ *   · `SavingsReport` y el resto de contratos se IMPORTAN del paquete, nunca se
+ *     redeclaran: una segunda declaración del mismo contrato deriva en silencio
+ *     y el cliente acaba con dos tipos incompatibles con el mismo nombre.
+ */
+describe("la superficie pública de los adaptadores", () => {
+  const dir = fileURLToPath(new URL("../dist/adapters/", import.meta.url));
+  const nombres = ["ai-sdk", "mastra", "langchain", "anthropic-sdk"];
+  const tipos = (n: string) => readFileSync(`${dir}${n}.d.ts`, "utf8");
+
+  it("hay algo que revisar (el build tiene que haber corrido)", () => {
+    for (const n of nombres) expect(existsSync(`${dir}${n}.d.ts`), `${n}.d.ts`).toBe(true);
+  });
+
+  it.each(nombres)("⛔ %s.d.ts: sin rutas del repo, sin relatos, sin terceros prohibidos y sin acentos", (n) => {
+    const lineasDeTipos = tipos(n).split("\n");
+    expect(lineasDeTipos.filter((l) => /\b(src|contracts|test)\/[\w/-]+\.ts\b|\b[\w-]+\.ts:\d+/.test(l))).toEqual([]);
+    expect(lineasDeTipos.filter((l) => /\bfuga\b|\bpost-?mortem\b|\bthe bug\b|\bwas missing\b/i.test(l))).toEqual([]);
+    for (const t of ["LLMLingua", "Qdrant", "pgvector", "RouteLLM", "GPTCache", "LiteLLM", "TOON", "toon"]) {
+      expect(tipos(n).includes(t), t).toBe(false);
+    }
+    expect(lineasDeTipos.filter((l) => /[áéíóúñ¿¡]/.test(l))).toEqual([]);
+  });
+
+  it.each(nombres)("⛔ %s.d.ts: ningún nombre exportado en español", (n) => {
+    const exportados = [...tipos(n).matchAll(/^\s*(?:declare )?(?:export )?(?:declare )?(?:const|function|class|interface|type) ([A-Za-z_$][\w$]*)/gm)].map(
+      (m) => m[1]!,
+    );
+    expect(exportados.filter((x) => /[áéíóúñ]/i.test(x) || /(cion|Capa|Puente|Huella|Llamada|Informe)/.test(x))).toEqual([]);
+  });
+
+  it.each(nombres)("⛔ %s.d.ts: los contratos se importan del paquete, no se redeclaran", (n) => {
+    const t = tipos(n);
+    expect(t).toMatch(/from '@bivelio\/savings-layer';/);
+    for (const c of ["SavingsReport", "SavingsAdapterOptions", "RequestContext", "SavingsLayerConfig", "SavingsToggles"]) {
+      expect(t, c).not.toMatch(new RegExp(`(interface|type) ${c}\\b`));
+    }
+  });
+});

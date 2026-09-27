@@ -379,3 +379,86 @@ describe("sala limpia: el binario del gateway publicado", () => {
     expect(fuente.includes("devUnlicensed")).toBe(false);
   });
 });
+
+/**
+ * LOS ADAPTADORES DE FRAMEWORKS PUBLICADOS, desde el MISMO tarball y SIN clave.
+ *
+ * Se ejecutan los tres que no importan su framework en tiempo de ejecución
+ * (`ai-sdk`, `mastra` y `anthropic-sdk` solo usan sus tipos), así que corren sin
+ * instalar nada más. Cada uno recibe un modelo —o un `next`— falso que cuenta
+ * sus llamadas: tiene que rechazar con `LicenseError` y no llamarlo NUNCA. Y el
+ * error tiene que ser la MISMA clase que exporta el paquete: prueba de que el
+ * adaptador carga el `dist/index.js` del cliente y no una copia empaquetada.
+ */
+describe("sala limpia: los adaptadores publicados, SIN clave", () => {
+  interface SalidaDeAdaptadores {
+    puertaEnElEntorno: string;
+    aiSdk: Intento & { misma?: boolean };
+    mastra: Intento & { misma?: boolean };
+    anthropic: Intento & { misma?: boolean };
+    llamadas: number;
+  }
+  let adaptadores: SalidaDeAdaptadores;
+
+  beforeAll(() => {
+    adaptadores = ejecutar<SalidaDeAdaptadores>(
+      [
+        'import { LicenseError } from "@bivelio/savings-layer";',
+        'import { savingsMiddleware } from "@bivelio/savings-layer/ai-sdk";',
+        'import { savingsProcessor } from "@bivelio/savings-layer/mastra";',
+        'import { anthropicSavings } from "@bivelio/savings-layer/anthropic-sdk";',
+        'import { writeFileSync } from "node:fs";',
+        PREAMBULO,
+        "salida.llamadas = 0;",
+        "const contar = async () => { salida.llamadas += 1; return {}; };",
+        "async function intento(fn) {",
+        "  try {",
+        "    await fn();",
+        '    return { resultado: "CORRIO" };',
+        "  } catch (e) {",
+        '    return { resultado: "lanzo", nombre: e?.name, estado: e?.status, misma: e instanceof LicenseError, mensaje: String(e?.message ?? e) };',
+        "  }",
+        "}",
+        'const prompt = [{ role: "user", content: [{ type: "text", text: "hola" }] }];',
+        'const model = { provider: "openai.chat", modelId: "gpt-4o-mini" };',
+        "const mw = savingsMiddleware({});",
+        "salida.aiSdk = await intento(() => mw.wrapGenerate({ doGenerate: contar, doStream: contar, params: { prompt }, model }));",
+        "mw.close();",
+        "const proc = savingsProcessor({});",
+        "salida.mastra = await intento(() => proc.processLLMRequest({ state: {}, stepNumber: 0, prompt, model }));",
+        "proc.close();",
+        "const anth = anthropicSavings({});",
+        "salida.anthropic = await intento(() => anth.middleware(",
+        '  { url: "https://api.anthropic.com/v1/messages", method: "POST", headers: new Headers(),',
+        '    body: JSON.stringify({ model: "claude-x", max_tokens: 5, messages: [{ role: "user", content: "hola" }] }) },',
+        "  async () => { salida.llamadas += 1; return new Response(\"{}\"); },",
+        "  { options: undefined },",
+        "));",
+        "anth.close();",
+        "writeFileSync(process.argv[2], JSON.stringify(salida));",
+      ].join("\n"),
+      "adaptadores",
+      ENTORNO_LIMPIO,
+    );
+  }, 60_000);
+
+  it("el entorno del hijo no trae la puerta de desarrollo abierta", () => {
+    expect(adaptadores.puertaEnElEntorno).toBe("<sin definir>");
+  });
+
+  it("los tres paran en la puerta de licencia, con la clase del paquete", () => {
+    for (const [nombre, r] of [
+      ["ai-sdk", adaptadores.aiSdk],
+      ["mastra", adaptadores.mastra],
+      ["anthropic-sdk", adaptadores.anthropic],
+    ] as const) {
+      expect(`${nombre}: ${r.resultado}/${r.nombre}/${r.estado}`).toBe(`${nombre}: lanzo/LicenseError/none`);
+      expect(r.misma, `${nombre}: el LicenseError es el del dist/index.js del cliente`).toBe(true);
+      expect(r.mensaje).not.toMatch(/devUnlicensed|BVSALA_DEV_OPEN/);
+    }
+  });
+
+  it("⛔ y el modelo (o el fetch) no se llamó ni una vez", () => {
+    expect(adaptadores.llamadas).toBe(0);
+  });
+});

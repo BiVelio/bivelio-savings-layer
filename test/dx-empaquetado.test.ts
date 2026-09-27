@@ -63,3 +63,53 @@ describe("el paquete publicado", () => {
     expect(src.length).toBeLessThan(400_000);
   });
 });
+
+/**
+ * LOS ADAPTADORES DE FRAMEWORKS: cuatro subpaths del MISMO paquete
+ * (`@bivelio/savings-layer/ai-sdk`, `/mastra`, `/langchain`, `/anthropic-sdk`).
+ *
+ * Lo que se vigila es lo que haría daño sin romper nada a la vista: un subpath
+ * con las condiciones en otro orden (TypeScript o `require` resolverían por otra
+ * rama), un adaptador que empaquetara DENTRO una copia del núcleo (dos cachés,
+ * dos medidores, y una puerta de licencia que el adaptador podría esquivar) o que
+ * volviera a volcar el bundle en la terminal con una línea gigante.
+ */
+const ADAPTADORES = ["ai-sdk", "mastra", "langchain", "anthropic-sdk"] as const;
+
+describe("los adaptadores publicados", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+    exports: Record<string, Record<string, string> | string | undefined>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  };
+
+  it.each(ADAPTADORES)("./%s: `types` el primero, `default` el último, y los ficheros existen", (a) => {
+    const sub = pkg.exports[`./${a}`] as Record<string, string> | undefined;
+    expect(sub, `falta el subpath ./${a}`).toBeDefined();
+    const claves = Object.keys(sub ?? {});
+    expect(claves[0]).toBe("types");
+    expect(claves[claves.length - 1]).toBe("default");
+    for (const ruta of Object.values(sub ?? {})) {
+      expect(existsSync(fileURLToPath(new URL(`../${ruta}`, import.meta.url))), ruta).toBe(true);
+    }
+  });
+
+  it.each(ADAPTADORES)("dist/adapters/%s.js: minificado, con líneas acotadas, sin el núcleo dentro y pequeño", (a) => {
+    const fuente = readFileSync(fileURLToPath(new URL(`../dist/adapters/${a}.js`, import.meta.url)), "utf8");
+    const masLarga = Math.max(...fuente.split("\n").map((l) => l.length));
+    expect(masLarga).toBeLessThan(4_000);
+    // Carga el núcleo por el nombre del paquete: el MISMO dist/index.js del cliente.
+    expect(fuente).toContain("'@bivelio/savings-layer'");
+    // La clave de la caché exacta solo existe en el núcleo: si aparece aquí, el
+    // núcleo se empaquetó dentro del adaptador.
+    expect(fuente).not.toContain("bvsala:exact:");
+    expect(fuente.length).toBeLessThan(60_000);
+    // Minificado: los comentarios en español del fuente no viajan.
+    expect(fuente).not.toMatch(/EL PROVEEDOR PUENTE|LA CAPA DE UN ADAPTADOR/);
+  });
+
+  it("los frameworks son peers OPCIONALES: quien no los usa no instala nada", () => {
+    for (const f of ["ai", "@mastra/core", "langchain", "@langchain/core", "@anthropic-ai/sdk"]) {
+      expect(pkg.peerDependenciesMeta?.[f]?.optional, f).toBe(true);
+    }
+  });
+});

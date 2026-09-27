@@ -1,6 +1,5 @@
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it, expect } from "vitest";
 
@@ -78,9 +77,17 @@ function programaDelReadme(): string {
  * Compila un fragmento contra los tipos del SDK, en `strict`. Se apunta a
  * `src/index.ts` (la misma superficie que se empaqueta) para que el test no
  * dependa de que exista un `dist/` construido ni de la red.
+ *
+ * El proyecto temporal vive DENTRO de `node_modules/.cache` del repo y no en el
+ * tmp del sistema: los bloques de los adaptadores importan su framework (`ai`,
+ * `@mastra/core`, `langchain`, `@anthropic-ai/sdk`), y así se resuelven desde
+ * las devDependencies exactas del repo, sin red. Los subpaths del paquete
+ * (`@bivelio/savings-layer/ai-sdk`…) apuntan a su fuente, como el paquete raíz.
  */
 function compila(fragmento: string): { ok: boolean; errores: string } {
-  const dir = mkdtempSync(join(tmpdir(), "bvsala-frag-"));
+  const cache = join(RAIZ, "node_modules/.cache");
+  mkdirSync(cache, { recursive: true });
+  const dir = mkdtempSync(join(cache, "bvsala-frag-"));
   try {
     mkdirSync(join(dir, "src"), { recursive: true });
     // El fragmento importa por el nombre del paquete; se resuelve con `paths`.
@@ -103,10 +110,12 @@ function compila(fragmento: string): { ok: boolean; errores: string } {
           // `@opentelemetry/api` es un peer OPCIONAL del SDK (devDependency
           // aquí): el bloque del README de trazas lo importa, como lo haría
           // quien ya tiene OpenTelemetry. El proyecto temporal vive fuera del
-          // repo y no ve su node_modules, así que se le dice dónde está. No
+          // repo y no ve su node_modules, así que se le dice dónde está. Lo mismo
+          // con los subpaths de los adaptadores, que resuelven a su fuente. No
           // afloja nada: se siguen compilando TODOS los bloques, en strict.
           paths: {
             "@bivelio/savings-layer": [join(RAIZ, "src/index.ts")],
+            "@bivelio/savings-layer/*": [join(RAIZ, "src/adapters/*.ts")],
             "@opentelemetry/api": [join(RAIZ, "node_modules/@opentelemetry/api")],
           },
         },
