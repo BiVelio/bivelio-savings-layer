@@ -1,0 +1,103 @@
+{
+ "generatedAt": "2026-09-27T17:12:32.537Z",
+ "commit": "8251c6f09e15d3799e4eb435dc742166443a31f0",
+ "dirty": false,
+ "sdkVersion": "0.4.25",
+ "node": "v25.9.0",
+ "embedder": "dataset:emb_e5_large_v2",
+ "stream": {
+  "dataset": "vCache/SemBenchmarkLmArena",
+  "revision": "c6f36229bef6a5f7936e5b9d982bd5766ef2f862",
+  "extractSha256": "8d7c99158d3eac23f2d9eac7e0f0c4071a3740ee53f977d240a0cfa134433314",
+  "n": 20000
+ },
+ "etiquetasStream": {
+  "n": 3384,
+  "ms": 78022,
+  "ruidoDeEtiqueta": {
+   "erroneas": 333,
+   "conPromptIdentico": 70,
+   "aPuntuacionUno": {
+    "erroneas": 93,
+    "conPromptIdentico": 70
+   }
+  },
+  "tramos": [
+   {
+    "desde": 1,
+    "n": 858,
+    "erroneas": 91,
+    "nAcumulado": 858,
+    "errorAcumulado": 0.10606060606060606
+   },
+   {
+    "desde": 0.95,
+    "n": 2469,
+    "erroneas": 231,
+    "nAcumulado": 3327,
+    "errorAcumulado": 0.0967838893898407
+   },
+   {
+    "desde": 0.9,
+    "n": 57,
+    "erroneas": 11,
+    "nAcumulado": 3384,
+    "errorAcumulado": 0.09840425531914894
+   }
+  ],
+  "fueraDeLinea": [
+   {
+    "maxErrorRate": 0.15,
+    "confidence": 0.95,
+    "floor": 0.905,
+    "labeled": 3384,
+    "heldOut": 1689,
+    "heldOutAtFloor": 1689,
+    "wrongHeldOutAtFloor": 155,
+    "minHeldOutToCertify": 19
+   },
+   {
+    "maxErrorRate": 0.12,
+    "confidence": 0.95,
+    "floor": 0.905,
+    "labeled": 3384,
+    "heldOut": 1689,
+    "heldOutAtFloor": 1689,
+    "wrongHeldOutAtFloor": 155,
+    "minHeldOutToCertify": 24
+   },
+   {
+    "maxErrorRate": 0.1,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 3384,
+    "heldOut": 1689,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 29
+   },
+   {
+    "maxErrorRate": 0.05,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 3384,
+    "heldOut": 1689,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 59
+   },
+   {
+    "maxErrorRate": 0.02,
+    "confidence": 0.95,
+    "floor": null,
+    "labeled": 3384,
+    "heldOut": 1689,
+    "heldOutAtFloor": 0,
+    "wrongHeldOutAtFloor": 0,
+    "minHeldOutToCertify": 149
+   }
+  ]
+ },
+ "brazos": [],
+ "tripletas": []
+}
