@@ -40,7 +40,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
  * desactiva, y uno desactivado no defiende nada.
  *
  * ── POR QUÉ NO `npm install` ──────────────────────────────────────────────────
- * El paquete no tiene `dependencies` y su único `peerDependency` es OPCIONAL, así
+ * El paquete no tiene `dependencies` y todos sus `peerDependencies` son OPCIONALES, así
  * que `node_modules/@bivelio/savings-layer/` = el `package/` del tarball, byte a
  * byte, es exactamente lo que `npm install` dejaría. Instalar de verdad añadiría
  * el registro (red) al camino crítico: minutos en vez de segundos, y un test
