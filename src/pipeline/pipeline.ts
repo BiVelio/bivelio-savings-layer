@@ -452,6 +452,14 @@ export class SavingsPipeline {
    */
   private readonly referenciasDeLider = new WeakMap<object, RegistroDeReferencia>();
 
+  // Los resultados de un líder cuya respuesta NO se puede repetir
+  // (`ProviderResponse.replayable === false`): ficheros, fuentes, herramientas
+  // que ejecutó el proveedor o razonamiento que el proveedor espera de vuelta.
+  // Es el gemelo de `referenciasDeLider` y por la misma razón es débil: se va
+  // con el resultado. Un seguidor que encuentre aquí el valor de su líder no se
+  // lo queda: hace su propia llamada (ver las dos puertas del singleflight).
+  private readonly noReproducibles = new WeakSet<object>();
+
   /**
    * La verificación A/B opcional («tu propio banco»). Solo existe con
    * `verification` activa Y un destino para los pares (lo decide create.ts, que
@@ -1530,6 +1538,12 @@ export class SavingsPipeline {
           typeof sf.join === "function" ? sf.join<SavingsResult<T>>(inflightKey) : undefined;
         if (enVuelo) {
           const value = await enVuelo;
+          // Una respuesta que no se puede repetir se sirve solo a quien la
+          // pidió: el seguidor hace su propia llamada, con su propio contador.
+          if (this.noReproducibles.has(value)) {
+            trace.record("singleflight", "not coalesced: the answer in flight cannot be replayed");
+            return runExpensive();
+          }
           trace.record("singleflight", "coalesced", { key: inflightKey });
           return this.asCoalescedFollower<T>(
             value, baselineInput, this.tokensFor(value.text ?? "", request), costModel, request,
@@ -1539,6 +1553,12 @@ export class SavingsPipeline {
         return runExpensive();
       }
       const { value, coalesced } = await this.deps.singleflight.run(inflightKey, runExpensive);
+      if (coalesced && this.noReproducibles.has(value)) {
+        // La misma regla que en la puerta del stream: el líder contestó algo que
+        // no se puede repetir, así que este seguidor paga y mide su propia llamada.
+        trace.record("singleflight", "not coalesced: the answer in flight cannot be replayed");
+        return runExpensive();
+      }
       if (coalesced) {
         trace.record("singleflight", "coalesced", { key: inflightKey });
         // El seguidor sirve EL TEXTO DEL LÍDER, así que se valora con el
@@ -3226,8 +3246,17 @@ export class SavingsPipeline {
     // cachear una respuesta cortada que al llamante le valía— cuesta una
     // llamada más, y queda dicho en la traza en vez de en silencio.
     const cortadaPorElTope = response.finishReason === "length";
+    // Y LA QUINTA: lo que el proveedor devolvió y la capa no puede reproducir
+    // desde un texto (ficheros, fuentes, herramientas del proveedor, razonamiento
+    // que el proveedor espera de vuelta). Lo declara quien construye la
+    // respuesta; sin el campo, nada cambia.
+    const noReproducible = response.replayable === false;
     const cacheable =
-      structurallyValid !== false && !pidioHerramientas && !vistaRecortada && !cortadaPorElTope;
+      structurallyValid !== false &&
+      !pidioHerramientas &&
+      !vistaRecortada &&
+      !cortadaPorElTope &&
+      !noReproducible;
 
     // --- Etapa 12-bis: el registro de MEDIDO POR REFERENCIA. ---
     //
@@ -3319,7 +3348,9 @@ export class SavingsPipeline {
               : cortadaPorElTope
                 ? "skipped: answer cut off by the output cap (finish_reason \"length\"); replaying half " +
                   "an answer would bill it as a 100% avoided call"
-                : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
+                : noReproducible
+                  ? "skipped: the provider answer carries content this layer cannot replay"
+                  : "skipped: answered with a reduced tool view (tool discovery), so it must not be replayed",
         );
       }
 
@@ -3459,6 +3490,8 @@ export class SavingsPipeline {
     // Para los seguidores de singleflight de esta ejecución: reciben este mismo
     // objeto, y con él encuentran el contador de la llamada que pagó el líder.
     if (typeof registro === "object") this.referenciasDeLider.set(result, registro);
+    // Y si no se puede repetir, sus seguidores lo sabrán por aquí.
+    if (noReproducible) this.noReproducibles.add(result);
     // Las tool calls y el finishReason viajan HASTA EL LLAMANTE. Se quedaban en
     // ProviderResponse: el arreglo del adaptador (content:null + tool_calls)
     // moría una capa más arriba porque aquí solo se copiaba `text`, y el cliente

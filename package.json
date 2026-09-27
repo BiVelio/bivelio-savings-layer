@@ -31,6 +31,26 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./ai-sdk": {
+      "types": "./dist/adapters/ai-sdk.d.ts",
+      "import": "./dist/adapters/ai-sdk.js",
+      "default": "./dist/adapters/ai-sdk.js"
+    },
+    "./mastra": {
+      "types": "./dist/adapters/mastra.d.ts",
+      "import": "./dist/adapters/mastra.js",
+      "default": "./dist/adapters/mastra.js"
+    },
+    "./langchain": {
+      "types": "./dist/adapters/langchain.d.ts",
+      "import": "./dist/adapters/langchain.js",
+      "default": "./dist/adapters/langchain.js"
+    },
+    "./anthropic-sdk": {
+      "types": "./dist/adapters/anthropic-sdk.d.ts",
+      "import": "./dist/adapters/anthropic-sdk.js",
+      "default": "./dist/adapters/anthropic-sdk.js"
+    },
     "./package.json": "./package.json"
   },
   "bin": {
@@ -108,18 +128,46 @@
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "@ai-sdk/openai": "4.0.78",
+    "@anthropic-ai/sdk": "0.128.0",
+    "@langchain/core": "1.2.13",
+    "@mastra/core": "1.71.0",
+    "ai": "7.0.118",
+    "ai-v6": "npm:ai@6.0.293",
+    "langchain": "1.5.14",
+    "zod": "4.6.5"
   },
   "packageManager": "pnpm@10.17.1",
   "peerDependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "gpt-tokenizer": "^3"
+    "gpt-tokenizer": "^3",
+    "@anthropic-ai/sdk": ">=0.103.0 <1",
+    "@langchain/core": ">=1.1.0 <2",
+    "@mastra/core": ">=1.68.0 <2",
+    "ai": "^6.0.0 || ^7.0.0",
+    "langchain": ">=1.1.0 <2"
   },
   "peerDependenciesMeta": {
     "@opentelemetry/api": {
       "optional": true
     },
     "gpt-tokenizer": {
+      "optional": true
+    },
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@langchain/core": {
+      "optional": true
+    },
+    "@mastra/core": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    },
+    "langchain": {
       "optional": true
     }
   }

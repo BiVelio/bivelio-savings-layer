@@ -157,6 +157,15 @@ export interface ProviderResponse {
    * would be describing a request some other adapter never made.
    */
   requestedServiceTier?: string;
+  /**
+   * Whether this answer can be handed to a later identical request (exact cache) or to a
+   * concurrent identical request. `false` when it carries content the layer keeps no copy of,
+   * such as generated files, cited sources, results of tools the provider ran itself, or
+   * reasoning the provider expects back: it is served to this caller only, it is not written
+   * to the exact cache, and a concurrent identical request makes its own call. Absent means
+   * replayable.
+   */
+  replayable?: boolean;
   raw?: unknown;
 }
 

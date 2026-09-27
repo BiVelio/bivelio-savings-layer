@@ -10,17 +10,26 @@ export default defineConfig({
   // ninguno, y por eso nadie lo notó.
   esbuild: { jsx: "automatic", jsxImportSource: "react" },
   resolve: {
-    alias: {
+    // En ARRAY y con expresiones exactas: los adaptadores importan el núcleo por
+    // el nombre del paquete (`@bivelio/savings-layer`) y se importan a sí mismos
+    // por su subpath. Como objeto, vite empareja por PREFIJO y el alias del
+    // paquete se comería también `@bivelio/savings-layer/ai-sdk`.
+    alias: [
       // Resolve workspace packages to their source so tests run without a build.
-      "@bivelio/protocol": pkg("./packages/protocol/src/index.ts"),
-      "@bivelio/license-client": pkg("./packages/license-client/src/index.ts"),
+      { find: "@bivelio/protocol", replacement: pkg("./packages/protocol/src/index.ts") },
+      { find: "@bivelio/license-client", replacement: pkg("./packages/license-client/src/index.ts") },
+      { find: /^@bivelio\/savings-layer$/, replacement: pkg("./src/index.ts") },
+      {
+        find: /^@bivelio\/savings-layer\/(ai-sdk|mastra|langchain|anthropic-sdk)$/,
+        replacement: pkg("./src/adapters/") + "$1.ts",
+      },
       // El alias `@/` de apps/web. Sin esto no se puede importar una route
       // handler desde un test, que es la razón por la que `app/api/**` llegó a
       // producción con cobertura CERO: las rutas que cobran, emiten licencias y
       // aceptan ingest no tenían ni un test. Va el ÚLTIMO porque vite empareja
       // los alias por prefijo y `@bivelio/...` debe resolverse antes.
-      "@/": pkg("./apps/web/"),
-    },
+      { find: "@/", replacement: pkg("./apps/web/") },
+    ],
   },
   test: {
     globals: true,

@@ -1,9 +1,16 @@
 import { avisarUnaVez } from "../util/warn-once.js";
 import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
-import { extraDeCompactacion } from "./iteraciones-de-compactacion.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
+import {
+  esBloqueDeRazonamiento,
+  fusionarUso,
+  tierServidoDe,
+  traducirParada,
+  usoDeMensajes,
+  type UsoAnthropic,
+} from "./anthropic-uso.js";
 import type {
   Provider,
   ProviderRequest,
@@ -272,30 +279,10 @@ export class AnthropicProvider implements Provider {
     // desglose de `cache_creation` por TTL se FUSIONA: un delta que no lo traiga
     // no puede borrar el de `message_start`.
     const merged = fusionarUso(usoInicio, usoDelta);
-    let usage: ProviderUsage;
-    if (!vioDelta) {
-      usage = { inputTokens: 0, outputTokens: 0, complete: false };
-    } else {
-      // Igual que en leer(): la compactación del servidor se factura FUERA del
-      // primer nivel y se suma aquí (ver iteraciones-de-compactacion.ts).
-      const compactacion = extraDeCompactacion(merged.iterations);
-      const lecturaCache = sumarSiHay(merged.cache_read_input_tokens, compactacion?.cacheRead);
-      const escrituraCache = sumarSiHay(merged.cache_creation_input_tokens, compactacion?.cacheWrite);
-      // Igual que en leer(): `input_tokens` es SOLO el resto no cacheado.
-      usage = {
-        inputTokens: (merged.input_tokens ?? 0) + (compactacion?.input ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0),
-        outputTokens: (usoDelta?.output_tokens ?? 0) + (compactacion?.output ?? 0),
-        ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
-        ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
-        // Igual que en leer(): sin bloque de razonamiento, 0; con él, no se sabe.
-        // Con compactación tampoco: la salida incluye un resumen que no es la
-        // respuesta servida, y un 0 afirmaría de más.
-        ...(razono || compactacion || typeof usoDelta?.output_tokens !== "number" ? {} : { reasoningTokens: 0 }),
-        ...(typeof merged.input_tokens !== "number" || typeof usoDelta?.output_tokens !== "number"
-          ? { complete: false }
-          : {}),
-      };
-    }
+    // Sin `message_delta` no hay contador final: los dos a 0 y `complete:false`.
+    // Con él, la MISMA aritmética que la respuesta JSON (`anthropic-uso.ts`).
+    const calculado = vioDelta ? usoDeMensajes(merged, usoDelta?.output_tokens, razono) : undefined;
+    const usage: ProviderUsage = calculado?.usage ?? { inputTokens: 0, outputTokens: 0, complete: false };
     if (this.opts.requireUsage && usage.complete === false) {
       throw new Error(
         mensajeDeUsoIncompleto(
@@ -320,10 +307,7 @@ export class AnthropicProvider implements Provider {
       }))
       .filter((tc) => tc.name !== "");
 
-    const servedServiceTier =
-      typeof merged.service_tier === "string" && merged.service_tier !== ""
-        ? merged.service_tier
-        : undefined;
+    const servedServiceTier = tierServidoDe(merged);
 
     yield {
       type: "done",
@@ -788,58 +772,21 @@ export class AnthropicProvider implements Provider {
     );
     const textoFinal = contrato ? JSON.stringify(contrato.input ?? {}) : text;
 
-    const usage = json.usage ?? {};
-    // LA COMPACTACIÓN DEL SERVIDOR NO ESTÁ EN EL PRIMER NIVEL. Con la beta de
-    // compactación, `usage.input_tokens`/`output_tokens` excluyen la iteración
-    // que resume el historial, y la documentación oficial manda sumar
-    // `usage.iterations` para tener lo facturado. Se suman SOLO las iteraciones
-    // `compaction` (ver iteraciones-de-compactacion.ts: el primer nivel ya es la
-    // suma de las demás). Este adaptador no pide compactación nunca; si la
-    // respuesta la trae, la pidió alguien entre medias, y se factura igual.
-    //
-    // Lo que se sabe y se acepta: los tokens de la iteración de compactación
-    // entran en `actualInput`, y con ellos en la calibración `k` del libro. Eso
-    // solo mueve un baseline RECONSTRUIDO, que sale `estimated` y no se cobra;
-    // el `measured` (sin nada quitado) sigue siendo baseline == actual.
-    const compactacion = extraDeCompactacion(usage.iterations);
-    const lecturaCache = sumarSiHay(usage.cache_read_input_tokens, compactacion?.cacheRead);
-    const escrituraCache = sumarSiHay(usage.cache_creation_input_tokens, compactacion?.cacheWrite);
-
-    // EL ERROR QUE ESTO EVITA, Y VALE DINERO DEL CLIENTE.
-    //
-    // `usage.input_tokens` de Anthropic NO es el prompt entero: es SÓLO el resto
-    // no cacheado. El total es
-    //
-    //     input_tokens + cache_creation_input_tokens + cache_read_input_tokens
-    //
-    // Mapear `inputTokens = usage.input_tokens` a secas haría que, en cuanto la
-    // caché empiece a acertar, `ledger.actualInput` se desplome mientras el
-    // baseline se reconstruye sobre él: un prompt de 100k servido al 96% desde
-    // caché reportaría ~4k de entrada. El ahorro publicado NO vendría de la capa
-    // sino de un contador leído a medias, y sería justo la palanca que esta fase
-    // existe para medir con honestidad. Se suman los tres.
-    const inputTokens =
-      (usage.input_tokens ?? 0) + (compactacion?.input ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0);
-    const outputTokens = (usage.output_tokens ?? 0) + (compactacion?.output ?? 0);
-
-    // La guardia comprueba AUSENCIA, no valor cero, y por separado en cada
-    // contador: un cero legítimo (respuesta vacía, parada inmediata) es medible
-    // y no debe fallar, mientras que un contador ausente no se puede tarifar.
-    // Los dos de caché pueden faltar sin más: significan "no hubo".
-    const entradaAusente = typeof usage.input_tokens !== "number";
-    const salidaAusente = typeof usage.output_tokens !== "number";
+    // `input_tokens` es SOLO el resto no cacheado: el total suma los tres
+    // contadores. La aritmética vive en `anthropic-uso.ts`, compartida con el
+    // adaptador del SDK oficial, para que la misma factura se cuente igual
+    // entre por donde entre.
+    const uso = json.usage;
+    const { usage, entradaAusente, salidaAusente } = usoDeMensajes(uso, uso?.output_tokens, razono);
     if (this.opts.requireUsage && (entradaAusente || salidaAusente)) {
-      throw new Error(mensajeDeUsoIncompleto(usage.input_tokens, usage.output_tokens));
+      throw new Error(mensajeDeUsoIncompleto(uso?.input_tokens, uso?.output_tokens));
     }
 
     // El tier SERVIDO viaja aquí dentro de `usage`, no en la raíz como en OpenAI,
     // y su vocabulario es otro: "standard" | "priority" | "batch". Se lee aunque
     // esta capa no pida nunca un tier a este proveedor, y no es decorativo: es lo
     // que permite al informe DEMOSTRAR que no hubo descuento en vez de suponerlo.
-    const servedServiceTier =
-      typeof usage.service_tier === "string" && usage.service_tier !== ""
-        ? usage.service_tier
-        : undefined;
+    const servedServiceTier = tierServidoDe(uso);
 
     return atestiguar(
       {
@@ -847,21 +794,7 @@ export class AnthropicProvider implements Provider {
         ...(toolCalls.length > 0 ? { toolCalls } : {}),
         ...(json.stop_reason ? { finishReason: traducirParada(json.stop_reason) } : {}),
         ...(servedServiceTier ? { servedServiceTier } : {}),
-        usage: {
-          inputTokens,
-          outputTokens,
-          // Sólo el LEÍDO es libro 4. `cache_creation_input_tokens` es la prima de
-          // escritura —se paga MÁS caro, 1,25x— y contarlo como ahorro publicaría
-          // un sobrecoste como si fuera un descuento.
-          ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
-          ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
-          // Solo si hay contador de salida del que decirlo. Con compactación, no:
-          // la salida lleva el resumen, que no es la respuesta servida.
-          ...(razono || salidaAusente || compactacion ? {} : { reasoningTokens: 0 }),
-          // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
-          // Con el usage completo la clave NO aparece.
-          ...(entradaAusente || salidaAusente ? { complete: false } : {}),
-        },
+        usage,
         structuredNatively: req.schema != null && contratoNativo,
         raw: json,
       },
@@ -964,31 +897,6 @@ function repartirMensajes(req: ProviderRequest): {
   return { system, messages, prefijoEnMensajes, prefijoEnSystem, turnoAnadido };
 }
 
-/** ¿Es un bloque de razonamiento (visible o redactado) de la API de Mensajes? */
-function esBloqueDeRazonamiento(tipo: string | undefined): boolean {
-  return tipo === "thinking" || tipo === "redacted_thinking";
-}
-
-/** `stop_reason` de Anthropic -> el vocabulario neutro de `finishReason`. */
-function traducirParada(parada: string): string {
-  switch (parada) {
-    case "end_turn":
-      return "stop";
-    // `max_tokens` significa lo mismo que el `length` de OpenAI: la respuesta se
-    // CORTÓ, no terminó. El pipeline distingue una respuesta mala de una cortada
-    // por este campo —reintentar con el mismo tope vuelve a cortarla—, así que
-    // el nombre tiene que ser el mismo en los dos adaptadores.
-    case "max_tokens":
-      return "length";
-    case "tool_use":
-      return "tool_calls";
-    case "refusal":
-      return "content_filter";
-    default:
-      return parada;
-  }
-}
-
 interface RespuestaAnthropic {
   content?: {
     type?: string;
@@ -1010,26 +918,6 @@ interface RespuestaAnthropic {
   };
 }
 
-// El `usage` de la API de Mensajes, tal como llega en `message_start`,
-// `message_delta` o la respuesta JSON.
-interface UsoAnthropic {
-  input_tokens?: number;
-  output_tokens?: number;
-  cache_read_input_tokens?: number;
-  cache_creation_input_tokens?: number;
-  cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number } | null;
-  service_tier?: string;
-  /** Con compactación: viaja en el `message_delta` final. */
-  iterations?: unknown;
-}
-
-// Un contador de primer nivel más lo que añade la compactación. Ausente y sin
-// compactación sigue ausente (el adaptador distingue «no hubo» de «0»).
-function sumarSiHay(primerNivel: number | undefined, extra: number | undefined): number | undefined {
-  if (!extra) return primerNivel;
-  return (primerNivel ?? 0) + extra;
-}
-
 // Un evento SSE de la API de Mensajes, con los campos que se leen.
 interface EventoAnthropic {
   type?: string;
@@ -1039,20 +927,6 @@ interface EventoAnthropic {
   delta?: { type?: string; text?: string; partial_json?: string; stop_reason?: string | null };
   usage?: UsoAnthropic;
   error?: { type?: string; message?: string };
-}
-
-// Fusiona dos `usage`: el segundo pisa los escalares que TRAE (un null no borra
-// lo que dijo el primero) y `cache_creation` se fusiona clave a clave, igual que
-// el observador SSE del gateway.
-function fusionarUso(a: UsoAnthropic | undefined, b: UsoAnthropic | undefined): UsoAnthropic {
-  const presentes = Object.fromEntries(
-    Object.entries(b ?? {}).filter(([, v]) => v !== null && v !== undefined),
-  ) as UsoAnthropic;
-  const cache_creation =
-    a?.cache_creation || b?.cache_creation
-      ? { ...(a?.cache_creation ?? {}), ...(b?.cache_creation ?? {}) }
-      : undefined;
-  return { ...(a ?? {}), ...presentes, ...(cache_creation ? { cache_creation } : {}) };
 }
 
 // `partial_json` concatenado -> la cadena que generate() habría producido.
