@@ -1430,7 +1430,9 @@ export const PALANCAS_SIN_ESCENARIO: { palanca: Palanca; motivo: string }[] = [
       "solapamiento de palabras —lo que la verja determinista de `cache/semantic.ts` ya " +
       "comprueba por debajo— y no similitud semántica, así que el escenario saldría " +
       "verde midiendo otra cosa. Medirla de verdad exige un embebedor semántico con " +
-      "red, clave y coste por llamada, que el banco no puede depender de tener.",
+      "red, clave y coste por llamada, que el banco no puede depender de tener. " +
+      "Su PRECISIÓN (si una respuesta reutilizada debía reutilizarse), que no es ahorro, " +
+      "se mide aparte contra conjuntos públicos: `benchmarks/cache-semantica` (`pnpm cache-semantica`).",
   },
 ];
 

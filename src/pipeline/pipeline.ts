@@ -96,6 +96,7 @@ import {
   type RegistroDeReferencia,
 } from "./referencia.js";
 import { CanalDeStream, type MotivoEntero, type SumideroDeStream } from "./stream.js";
+import { libroDeCalidad, libroDelSeguidor, type HechosDeCalidad } from "./libro-de-calidad.js";
 import { StreamAbortedError } from "./errors.js";
 import { normalizarAjustes } from "../verification/ajustes.js";
 import { ComprobadorAB, type SumideroDeVerificacion } from "../verification/comprobador.js";
@@ -1330,6 +1331,31 @@ export class SavingsPipeline {
     const policy = evaluatePolicy(canonical);
     const toggles = request.savings ?? {};
     this.avisarDePalancasSinConfigurar(toggles);
+    // LA CACHÉ SEMÁNTICA SE APARTA DEL TRÁFICO AGÉNTICO POR DEFECTO, Y NO EN
+    // SILENCIO. Quien ya tenía `semanticCache: true` con herramientas o varias
+    // vueltas deja de acertar; sin este aviso lo único visible sería una tasa de
+    // aciertos que baja sin motivo aparente. Una vez por proceso, silenciable, y
+    // solo cuando la capa SÍ tiene caché semántica (si no, ya habla
+    // `palanca-sin-cache-semantica`) y cuando `"include-agentic"` cambiaría algo:
+    // con escritura, frescura, personalización, muestreo estocástico o `day` la
+    // caché está vetada igual, y el consejo sería falso. Lo decide la política
+    // (`soloLaApartaLoAgentico`), no una copia de sus vetos.
+    if (
+      toggles.semanticCache &&
+      toggles.semanticCache !== "include-agentic" &&
+      this.deps.semanticCache &&
+      soloLaApartaLoAgentico(canonical, policy)
+    ) {
+      this.avisar(
+        "semantica-agentica-apagada",
+        "[bv-sala] `savings.semanticCache` is on, but this request is agentic (it declares tools, " +
+          "carries tool calls or results, or holds more than one user turn), so the semantic cache " +
+          "was neither consulted nor written for it. That is the default: two runs of an agent loop " +
+          "can differ only in what a tool returned, and the guard under the similarity score cannot " +
+          "see that. The exact cache is unaffected. To include agentic requests, set " +
+          '`savings.semanticCache: "include-agentic"` after measuring it on your own traffic.',
+      );
+    }
 
     // --- Etapa 0: la cascada de modelos. ---
     //
@@ -1555,6 +1581,22 @@ export class SavingsPipeline {
   ): Promise<SavingsResult<T>> {
     // --- Stage 4: safe semantic cache (managed feature — license-gated). ---
     const semanticLicensed = this.entitled("semantic_cache");
+    // Se pidió y la política la apartó POR SER TRÁFICO AGÉNTICO: que la traza lo
+    // diga con esas palabras. Sin esto, la única huella sería la razón de la
+    // política y un `miss` que parecería una reformulación que no casó. Solo
+    // cuando es lo agéntico lo ÚNICO que la aparta: si otro veto la cierra, la
+    // traza no puede mandar a pedir `"include-agentic"`, que no cambiaría nada.
+    if (
+      toggles.semanticCache &&
+      toggles.semanticCache !== "include-agentic" &&
+      this.deps.semanticCache &&
+      soloLaApartaLoAgentico(canonical, policy)
+    ) {
+      trace.record(
+        "semantic-cache",
+        'skipped: agentic traffic (default); set savings.semanticCache: "include-agentic" to include it',
+      );
+    }
     if (
       policy.allowSemanticCache &&
       toggles.semanticCache &&
@@ -1590,6 +1632,13 @@ export class SavingsPipeline {
           // se le serviría a quien pidió el fuerte). O sea que un acierto
           // semántico viene siempre del modelo pedido.
           this.informeDeCascada(cascada, { servedModel: request.model }),
+          undefined,
+          undefined,
+          // `cacheWrites`: sin llamada, lo rellena `escriturasSinLlamada`.
+          undefined,
+          // El acierto entero, para el libro de calidad: similitud, suelos,
+          // embebedor y si hubo verificador. No viaja a ningún sitio.
+          { semantico: hit },
         );
       }
       trace.record("semantic-cache", "miss");
@@ -2704,6 +2753,10 @@ export class SavingsPipeline {
     // mirado — justo la mentira en positivo que `finish()` dice haber cerrado
     // para el resolver y las cachés, reabierta por la rama nueva.
     let structurallyValid: boolean | null = true;
+    // Lo que el libro de calidad necesita saber de esta etapa y de la 12: la
+    // validación de lo servido, el desenlace de la reparación y por qué paró el
+    // proveedor. Hechos, no dinero: nada de aquí entra en el ledger.
+    const hechos: HechosDeCalidad = {};
     // El modelo PIDIÓ ejecutar herramientas: `text` viene vacío a propósito y la
     // respuesta final no existe todavía (llegará cuando el llamante ejecute la
     // acción y continúe el turno). Validar "" contra el contrato aquí disparaba
@@ -2739,8 +2792,10 @@ export class SavingsPipeline {
       // este mismo rescate por su cuenta — y es lo que se cachea, de modo que la
       // prosa se quedaría pegada a la respuesta durante toda la vida de la
       // entrada.
+      let desenvuelto = false;
       if (parsed.ok && parsed.rescatado != null && validation.valid) {
         textoServido = parsed.rescatado;
+        desenvuelto = true;
         trace.record("validation", "rescued-locally", {
           reason:
             "the model wrapped valid JSON in prose or a markdown fence; it was extracted locally " +
@@ -2785,6 +2840,7 @@ export class SavingsPipeline {
             "no response can satisfy it. NOT retried (it would be a paid call for the same " +
             "failure). Fix the schema's `pattern`.",
         );
+        hechos.reparacion = { outcome: "skipped", skipReason: "schema_defect" };
       } else if (!validation.valid && truncadoPorTope) {
         const techoDelEsquema = tokensDeLaMayorRespuesta(schema, (t) => this.tokensFor(t, request));
         // UN TRUNCADO TAMBIÉN ES UN INCUMPLIMIENTO DE VALOR, Y ERA EL ÚNICO QUE LA
@@ -2846,6 +2902,7 @@ export class SavingsPipeline {
           techoDelEsquema,
           desbordaSuContrato,
         );
+        hechos.reparacion = { outcome: "skipped", skipReason: "output_truncated" };
       } else if (!validation.valid && backendPlan.backend === "none") {
         // Single deterministic repair attempt only when we had no constraint
         // backend to prevent the invalid output in the first place.
@@ -2983,6 +3040,7 @@ export class SavingsPipeline {
               "using it. This combination is usually a request carrying both tools and an output " +
               "contract; see the adapter warning for the cheaper shapes.",
           );
+          hechos.reparacion = { outcome: "skipped", skipReason: "would_cost_more_than_no_layer" };
         } else {
           ledger.retries = 1;
           trace.record("validation", "repair-attempt", { errors: validation.errors });
@@ -3047,11 +3105,24 @@ export class SavingsPipeline {
               textoServido = reparsed.rescatado;
             }
           }
+          hechos.reparacion = { outcome: validation.valid ? "repaired" : "still_invalid" };
         }
       } else if (parsed.ok) {
         data = parsed.value;
       }
       structurallyValid = validation.valid;
+      // La quinta rama de la etapa: la primera validación falló y ninguna de las
+      // de arriba decidió, porque el backend ya restringía la generación
+      // (`backend !== "none"`) y un reintento no cambiaría nada. Es el `else` que
+      // hoy no deja traza propia.
+      if (!validation.valid && hechos.reparacion === undefined) {
+        hechos.reparacion = { outcome: "skipped", skipReason: "decode_time_constraint" };
+      }
+      hechos.validacion = {
+        resultado: validation.valid ? "passed" : "failed",
+        errores: validation.errors.length,
+        desenvuelto,
+      };
       trace.record("validation", structurallyValid ? "valid" : "invalid");
     }
 
@@ -3373,6 +3444,17 @@ export class SavingsPipeline {
       diferido,
       requestIdDeEsta,
       escrituras,
+      {
+        ...hechos,
+        // Del `response` FINAL: tras la reparación o la escalada, que es el que
+        // produjo lo servido.
+        final: {
+          ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+          ...(request.response?.maxOutputTokens != null
+            ? { topeDelLlamante: request.response.maxOutputTokens }
+            : {}),
+        },
+      },
     );
     // Para los seguidores de singleflight de esta ejecución: reciben este mismo
     // objeto, y con él encuentran el contador de la llamada que pagó el líder.
@@ -3885,6 +3967,8 @@ export class SavingsPipeline {
     // `report.cacheWrites` de la llamada que corrió; los atajos no lo pasan y
     // `escriturasSinLlamada` rellena, igual que `diferidoSinLlamada`.
     escrituras?: CacheWriteReport,
+    // Los hechos del libro de calidad que solo conoce quien sirvió la respuesta.
+    hechos?: HechosDeCalidad,
   ): SavingsResult<T> {
     // La validez estructural se COMPRUEBA aquí, no se hereda de un valor por
     // defecto. El parámetro tenía `= true`, y las cuatro rutas de atajo
@@ -3901,11 +3985,26 @@ export class SavingsPipeline {
     // `null` = no aplica (turno de herramientas) y se propaga tal cual para que el
     // informe OMITA el campo. `undefined` = nadie lo calculo aun, asi que se valida
     // aqui lo que de verdad se sirve (resolver, caches, seguidor de singleflight).
+    // En los atajos se guarda la validación COMPLETA, no solo el booleano: el
+    // libro de calidad publica cuántos errores tiene lo servido.
+    let validacionDelAtajo: HechosDeCalidad["validacion"];
     const valid =
       structurallyValid === null
         ? null
         : (structurallyValid ??
-          (schema ? validateAgainstSchema(answer.data, schema).valid : true));
+          (schema
+            ? (() => {
+                const v = validateAgainstSchema(answer.data, schema);
+                validacionDelAtajo = {
+                  resultado: v.valid ? "passed" : "failed",
+                  errores: v.errors.length,
+                  desenvuelto: false,
+                };
+                return v.valid;
+              })()
+            : true));
+    const hechosDelLibro: HechosDeCalidad | undefined =
+      validacionDelAtajo && !hechos?.validacion ? { ...hechos, validacion: validacionDelAtajo } : hechos;
 
     const report = this.buildReport(
       request, canonical, cacheResult, ledger, costModel, trace, route,
@@ -3918,6 +4017,7 @@ export class SavingsPipeline {
       diferido ?? this.diferidoSinLlamada(request),
       requestId,
       escrituras ?? this.escriturasSinLlamada(request),
+      hechosDelLibro,
     );
     return {
       requestId: report.requestId,
@@ -3946,6 +4046,7 @@ export class SavingsPipeline {
     diferido: DeferredExecutionReport | undefined,
     requestId?: string,
     escrituras?: CacheWriteReport,
+    hechos?: HechosDeCalidad,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
     const total = trace.elapsed();
@@ -4018,11 +4119,27 @@ export class SavingsPipeline {
       // fail-open— porque las tres pasan por buildReport(); el seguidor de
       // singleflight es la excepción y hereda (ver asCoalescedFollower).
       qualityStatus: estadoDeCalidad(cacheResult, structurallyValid, degradado),
+      // Y la EVIDENCIA de esa etiqueta, en el mismo sitio y con las mismas
+      // entradas: si salieran de dos lugares, podrían contradecirse.
+      qualityLedger: libroDeCalidad({
+        cacheResult,
+        structurallyValid,
+        backend,
+        hayEsquema: request.response?.schema != null,
+        ageMs,
+        cascada,
+        hechos,
+      }),
       ...(cascada ? { modelCascade: cascada } : {}),
       ...(diferido ? { deferred: diferido } : {}),
       ...(escrituras ? { cacheWrites: escrituras } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
+        // Declarado desde el principio y sin productor: la similitud del acierto
+        // semántico, la misma que publica `qualityLedger.cacheMatch`.
+        ...(cacheResult === "semantic" && hechos?.semantico
+          ? { semanticScore: hechos.semantico.similarity }
+          : {}),
       },
       cost,
       latencyMs: {
@@ -4104,6 +4221,15 @@ export class SavingsPipeline {
 
     let data: unknown = response.text;
     let structurallyValid: boolean | null = true;
+    const hechos: HechosDeCalidad = {
+      origen: "fail_open",
+      final: {
+        ...(response.finishReason !== undefined ? { finishReason: response.finishReason } : {}),
+        ...(request.response?.maxOutputTokens != null
+          ? { topeDelLlamante: request.response.maxOutputTokens }
+          : {}),
+      },
+    };
     // Igual que en el camino optimizado: un turno de tool calls no es la
     // respuesta final, así que ni se valida contra el contrato ni se pierde, y el
     // informe omite structurallyValid en vez de certificar un contrato no mirado.
@@ -4111,7 +4237,10 @@ export class SavingsPipeline {
     if (pidioHerramientas) structurallyValid = null;
     if (schema && !pidioHerramientas) {
       const parsed = tryParse(response.text);
-      structurallyValid = parsed.ok ? validateAgainstSchema(parsed.value, schema).valid : false;
+      // El mismo convenio que la etapa 11: un texto que no es JSON es UN error.
+      const errores = parsed.ok ? validateAgainstSchema(parsed.value, schema).errors.length : 1;
+      structurallyValid = errores === 0;
+      hechos.validacion = { resultado: structurallyValid ? "passed" : "failed", errores, desenvuelto: false };
       if (parsed.ok) data = parsed.value;
     }
 
@@ -4154,6 +4283,7 @@ export class SavingsPipeline {
               "so the provider chose where to write its prompt cache, as it does by default",
           }
         : undefined,
+      hechos,
     );
     return {
       requestId: report.requestId,
@@ -4262,6 +4392,12 @@ export class SavingsPipeline {
         // el seguidor está sirviendo esa misma respuesta incumplidora y tiene
         // que decirlo. Los tokens son lo contrario —gasto del líder que el
         // seguidor no hizo— y por eso se reconstruyen arriba.
+        //
+        // El LIBRO de calidad se hereda por la misma razón, pero NO por el
+        // spread: `informeDelLider` lleva el `source` del líder, y el seguidor no
+        // llamó a nadie. Se reescribe explícitamente con `coalesced` y el origen
+        // del líder en `sharedFrom`.
+        qualityLedger: libroDelSeguidor(leader.report.qualityLedger),
         cost,
       },
     };
@@ -4819,6 +4955,29 @@ function enLaMuestra(clave: string, tasa: number): boolean {
   const digest = sha256(`${clave}:cascade-sample`);
   const trozo = Number.parseInt(digest.slice(0, 13), 16);
   return trozo / 2 ** 52 < tasa;
+}
+
+/**
+ * ¿Es lo agéntico lo ÚNICO que aparta esta petición de la caché semántica?
+ *
+ * Se le pregunta a la propia política con `"include-agentic"` puesto: si
+ * entonces la admite, el aviso y la traza que mandan a pedirlo dicen la verdad;
+ * si no (escritura, frescura, personalización, muestreo estocástico o `day`),
+ * pedirlo no cambiaría nada y aconsejarlo sería mentir. Una sola regla: los
+ * vetos no se copian aquí, se consultan. Pura y barata (expresiones regulares
+ * sobre el texto ya normalizado), y solo corre cuando se pidió la caché
+ * semántica sobre tráfico agéntico.
+ */
+function soloLaApartaLoAgentico(
+  canonical: ReturnType<typeof canonicalize>,
+  policy: ReturnType<typeof evaluatePolicy>,
+): boolean {
+  if (!policy.isAgentic || policy.allowSemanticCache) return false;
+  const original = canonical.original;
+  return evaluatePolicy({
+    ...canonical,
+    original: { ...original, savings: { ...(original.savings ?? {}), semanticCache: "include-agentic" } },
+  }).allowSemanticCache;
 }
 
 function defaultRoute(): RouteDecision {

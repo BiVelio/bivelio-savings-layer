@@ -32,6 +32,19 @@ export interface Policy {
   /** Is the response personalized to a user/account? */
   isPersonalized: boolean;
   /**
+   * Is this agentic traffic? True when the request declares tools (read-only
+   * ones included), carries tool calls or tool results, or holds more than one
+   * user turn.
+   *
+   * Agentic traffic is kept out of the semantic cache by default, and only by
+   * default: `savings.semanticCache: "include-agentic"` lets it in. Two runs of
+   * an agent loop can differ only in what a tool returned, and the
+   * deterministic guard compares figures, negation and word overlap, not
+   * whether a tool said something else in words. The exact cache and elision
+   * are not affected by this flag.
+   */
+  isAgentic: boolean;
+  /**
    * Techo de antigüedad para una entrada de caché exacta, derivado del
    * `freshnessBucket`. `null` = sin techo propio (manda el TTL por defecto).
    * Existe porque el bucket NO particiona la clave —va crudo al hash y no rota—,
@@ -140,6 +153,45 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
   const isPersonalized = PERSONAL_MARKERS.test(text);
   const stochastic = (c.temperature ?? 0) > 0.3 && c.seed == null;
 
+  // ─── Tráfico agéntico: fuera de la caché semántica salvo que se pida ───
+  //
+  // POR QUÉ. LiteLLM, «Semantic caching»
+  // (https://docs.litellm.ai/docs/proxy/caching_semantic, consultado el
+  // 2026-09-27): «Semantic caching is designed for single-shot prompts. On
+  // multi-turn or agentic traffic it will replay stale responses.» y «The
+  // recommendation is to keep semantic caching for single-shot traffic and
+  // exclude agentic traffic.» Añade que subir el umbral de similitud no lo
+  // arregla de forma fiable.
+  //
+  // EL MATIZ, medido sobre este código: el fallo que describen —cada turno casa
+  // con la entrada del turno anterior— aquí está bloqueado por construcción,
+  // porque `keyTokensMatch` exige el mismo número de turnos y los mismos roles.
+  // Lo que queda es otra cosa: ENTRE ejecuciones o sesiones, dos historias de la
+  // misma longitud que solo difieren en el resultado de una herramienta (dicho
+  // con palabras, sin cifras distintas, con Jaccard ≥ 0,75 por turno) pasan la
+  // verja. Y la verja no puede saber que «no hay stock» y «queda poco stock» son
+  // dos estados del mundo distintos.
+  //
+  // LA DEFINICIÓN ES DETERMINISTA Y NO TIENE UMBRAL. Declara herramientas
+  // (aunque sean de lectura), o lleva llamadas o resultados de herramientas, o
+  // tiene MÁS DE UN turno de usuario. «Multi-turno largo» no tiene fuente
+  // numérica, así que se adopta el criterio de la fuente —«single-shot»— en vez
+  // de inventar un número. DIAL: si alguien quiere un umbral de turnos, que salga
+  // de medir en tráfico real, no de un comentario.
+  //
+  // `"include-agentic"` levanta SOLO este veto. Los de seguridad —escritura,
+  // frescura, personalización, muestreo estocástico y `day`— siguen mandando
+  // pase lo que pase. La caché exacta y la elisión no miran esta señal: la
+  // exacta repite la MISMA petición (mismo catálogo, mismos resultados) y la
+  // elisión existe precisamente para el tráfico agéntico.
+  const turnosDeUsuario = c.messages.filter((m) => m.role === "user").length;
+  const conHerramientas = (c.original?.tools?.length ?? 0) > 0;
+  const conHistorialDeHerramientas = c.messages.some(
+    (m) => m.role === "tool" || (m.role === "assistant" && (m.toolCalls?.length ?? 0) > 0),
+  );
+  const isAgentic = conHerramientas || conHistorialDeHerramientas || turnosDeUsuario > 1;
+  const incluyeAgentico = c.original?.savings?.semanticCache === "include-agentic";
+
   if (hasWriteTools) reasons.push("write/destructive tools present");
   if (requiresFreshData) reasons.push("freshness-sensitive request");
   if (isPersonalized) reasons.push("personalized/account-scoped request");
@@ -210,7 +262,19 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     !requiresFreshData &&
     !isPersonalized &&
     !stochastic &&
-    c.freshnessBucket !== "day";
+    c.freshnessBucket !== "day" &&
+    (!isAgentic || incluyeAgentico);
+  if (isAgentic && !incluyeAgentico) {
+    reasons.push(
+      "agentic request (tools, tool calls/results or more than one user turn) → semantic cache off " +
+        'by default (opt in with savings.semanticCache: "include-agentic")',
+    );
+  } else if (isAgentic && incluyeAgentico) {
+    reasons.push(
+      'agentic request admitted to the semantic cache by savings.semanticCache: "include-agentic" ' +
+        "(write, freshness, personalization and sampling vetoes still apply)",
+    );
+  }
 
   // Elisión de tool_results: se calcula IGUAL que la caché semántica, y por la
   // misma razón. Borrar la salida de una herramienta vieja de una conversación
@@ -241,6 +305,7 @@ export function evaluatePolicy(c: CanonicalRequest): Policy {
     requiresFreshData,
     hasSideEffects: hasWriteTools,
     isPersonalized,
+    isAgentic,
     maxCacheAgeMs:
       c.freshnessBucket === "hour" ? 3_600_000 : c.freshnessBucket === "day" ? 86_400_000 : null,
     reasons,

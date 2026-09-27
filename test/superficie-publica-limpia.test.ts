@@ -141,7 +141,12 @@ describe("la superficie pública del paquete", () => {
    */
   it("⛔ los tipos publicados no citan dependencias de terceros", () => {
     const tipos = readFileSync(fileURLToPath(new URL("../dist/index.d.ts", import.meta.url)), "utf8");
-    const terceros = ["LLMLingua", "Qdrant", "pgvector", "RouteLLM", "GPTCache", "LiteLLM", "TOON", "toon"];
+    // Los cuatro últimos, del banco de precisión de la caché semántica: son los
+    // conjuntos y la herramienta con que se mide, no contrato.
+    const terceros = [
+      "LLMLingua", "Qdrant", "pgvector", "RouteLLM", "GPTCache", "LiteLLM", "TOON", "toon",
+      "vCache", "SemBenchmark", "ORCAS", "hyparquet",
+    ];
     const hallados = terceros.filter((t) => tipos.includes(t));
     expect(hallados).toEqual([]);
   });

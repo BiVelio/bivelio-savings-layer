@@ -92,7 +92,9 @@
     "salida:por-clase": "tsx benchmarks/salida/por-clase.ts",
     "luz-verde": "bash scripts/luz-verde.sh",
     "sonda:sdk": "BVSALA_DEV_OPEN=1 tsx --env-file-if-exists=.env.bench benchmarks/sdk/sonda.ts",
-    "sbom:tarball": "tsx scripts/sbom.ts"
+    "sbom:tarball": "tsx scripts/sbom.ts",
+    "cache-semantica": "BVSALA_DEV_OPEN=1 tsx benchmarks/cache-semantica/arnes.ts",
+    "cache-semantica:publicar": "tsx benchmarks/cache-semantica/publicar.ts"
   },
   "devDependencies": {
     "@noble/curves": "^2.2.0",
@@ -100,6 +102,7 @@
     "@opentelemetry/sdk-trace-base": "^2.11.0",
     "@types/node": "^22.10.2",
     "gpt-tokenizer": "^3.4.0",
+    "hyparquet": "^1.31.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

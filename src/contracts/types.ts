@@ -120,7 +120,28 @@ export interface RetrievalOptions {
 
 export interface SavingsToggles {
   exactCache?: boolean;
-  semanticCache?: boolean | "safe-only";
+  /**
+   * OPT-IN. Reuse the answer to an earlier, reworded version of this request.
+   * Needs a semantic cache on the layer (`createSavingsLayer({ semanticCache })`)
+   * and a license that includes it.
+   *
+   * - `true` and `"safe-only"` are the same setting: single-shot requests only.
+   * - `"include-agentic"` also admits agentic requests: those that declare tools
+   *   (read-only ones included), carry tool calls or tool results, or hold more
+   *   than one user turn.
+   *
+   * WHY AGENTIC TRAFFIC IS LEFT OUT BY DEFAULT. Two runs of an agent loop can
+   * differ only in what a tool returned. The deterministic guard under the
+   * similarity score compares figures and dates, negation and word overlap; it
+   * cannot tell that a tool said something else in words. Measure it on your own
+   * traffic before you include it.
+   *
+   * Whatever you set, requests with write or destructive tools, freshness-sensitive
+   * requests (including any freshness bucket other than `any`), personalized
+   * requests and stochastic sampling never use this cache. A hit is reported as
+   * `cache.result: "semantic"` and `qualityStatus: "task_equivalent"`.
+   */
+  semanticCache?: boolean | "safe-only" | "include-agentic";
   compression?: boolean | "auto";
   /**
    * OPT-IN. Elide old, large tool_results from a multi-turn context before the
@@ -734,6 +755,164 @@ export const QUALITY_STATUSES = [
 
 export type QualityStatus = (typeof QUALITY_STATUSES)[number];
 
+/** Where the answer you received came from on this request. */
+export type AnswerSource =
+  /** Your provider generated it for this request. */
+  | "provider"
+  /** A replay of the answer already produced for this very request. */
+  | "exact_cache"
+  /** A reuse of the answer to a reworded version of this request. */
+  | "semantic_cache"
+  /** Shared with an identical request that was running at the same time. */
+  | "coalesced"
+  /** Computed locally; no model was involved. */
+  | "deterministic"
+  /** A direct provider call after an internal error; nothing was optimized. */
+  | "fail_open";
+
+/** The output-contract check on the answer that was served. */
+export interface QualitySchemaCheck {
+  /**
+   * `passed` or `failed`: the served answer was validated against
+   * `response.schema`. `not_applicable`: the model asked to run tools, so there
+   * is no final answer yet.
+   */
+  outcome: "passed" | "failed" | "not_applicable";
+  /**
+   * Whether the layer relied on a decode-time constraint for this answer (the
+   * backend named in `constraints.backend`). The answer is validated either way.
+   * Always false on cache and resolver answers. A coalesced answer carries the
+   * value of the request it joined, which is the one that generated it.
+   */
+  decodeTimeConstraint: boolean;
+  /** Validation errors in the served answer. 0 when it passed. */
+  errorCount: number;
+  /**
+   * The model wrapped valid JSON in prose or a code fence, and it was extracted
+   * locally instead of paying for a repair call.
+   */
+  unwrapped?: true;
+}
+
+/** What happened when the first answer failed its output contract. */
+export interface QualityRepairCheck {
+  /**
+   * `repaired`: one repair call was made and its answer passed. `still_invalid`:
+   * one repair call was made and its answer failed too. `skipped`: no repair
+   * call was made; `skipReason` says why.
+   */
+  outcome: "repaired" | "still_invalid" | "skipped";
+  /**
+   * - `output_truncated`: the answer hit the output limit, and the same limit
+   *   would cut the repair off again.
+   * - `schema_defect`: no answer can satisfy the schema (for example, a pattern
+   *   that is not a valid regular expression).
+   * - `would_cost_more_than_no_layer`: repairing would have cost more than
+   *   sending the request without the layer (opt-in, `skipRepairAboveBaseline`).
+   * - `decode_time_constraint`: generation was already constrained, so a retry
+   *   would not change the outcome.
+   */
+  skipReason?: "output_truncated" | "schema_defect" | "would_cost_more_than_no_layer" | "decode_time_constraint";
+}
+
+/** Whether the provider stopped because it reached the output limit. */
+export interface QualityTruncationCheck {
+  /** True when the provider reported `finishReason: "length"`. A truncated answer is never cached. */
+  truncated: boolean;
+  /** The stop reason exactly as the provider named it; absent when it reported none. */
+  finishReason?: string;
+  /**
+   * Whether you set the limit (`response.maxOutputTokens`). When false, any
+   * limit that applied was a provider or adapter default.
+   */
+  capSetByCaller: boolean;
+  /** The limit you set, in output tokens. Present only when `capSetByCaller`. */
+  outputLimit?: number;
+}
+
+/** How a cache hit matched this request. */
+export type QualityCacheMatch =
+  | {
+      kind: "exact";
+      /** Age of the replayed answer, in milliseconds. */
+      ageMs?: number;
+    }
+  | {
+      kind: "semantic";
+      /** Age of the reused answer, in milliseconds. */
+      ageMs?: number;
+      /**
+       * Similarity between this request and the stored one. It is not evidence
+       * of equivalence: see {@link QualityStatus}.
+       */
+      similarity: number;
+      /** The similarity a candidate had to reach to be considered at all. */
+      similarityFloor: number;
+      /**
+       * The confidence the hit had to reach to be served. Confidence is the
+       * lower of `similarity` and `verifierScore` (`cache.confidence`).
+       */
+      acceptFloor: number;
+      /** Your verifier's score, present only when you configured one. */
+      verifierScore?: number;
+      /** `built_in`: the lexical embedder shipped with the SDK. `custom`: yours. */
+      embedder: "built_in" | "custom";
+      /**
+       * The deterministic guard passed, turn by turn: figures and dates,
+       * negation parity and content-word overlap. A hit is never served without it.
+       */
+      factGuard: "passed";
+    };
+
+/** What the model cascade decided on this request. See {@link ModelCascadeReport}. */
+export interface QualityCascadeCheck {
+  mode: "shadow" | "on";
+  /** What the deterministic gate was able to check (`modelCascade.verifier`). */
+  gate: "none" | "structural" | "value-constrained";
+  /**
+   * - `accepted`: a cheaper model answered and its answer cleared the gate.
+   * - `escalated`: the gate rejected the cheaper answer and the model you asked for answered.
+   * - `not_routed`: the cascade is on but this request was not routed (see `modelCascade.reason`).
+   * - `not_applied`: shadow mode. The cascade only evaluated this request and
+   *   the model you asked for answered. On a sampled request
+   *   (`modelCascade.sampled`) the cheaper model also ran, and its answer was
+   *   not served.
+   */
+  outcome: "accepted" | "escalated" | "not_routed" | "not_applied";
+  /**
+   * Shadow sampling only: both answers satisfied the contract and disagreed on
+   * a hard value. A hint, never proof.
+   */
+  sampleDiverged?: boolean;
+}
+
+/**
+ * What the layer checked on the answer it served, and what came of it.
+ *
+ * It holds no money and no token counts. It is never added to the four savings
+ * ledgers or to `cost`, and it never leaves your process: usage reporting does
+ * not carry it. `qualityStatus` is the one-word verdict; this is the evidence
+ * behind it. A block is present only when its check applies to this request.
+ * With `source: "coalesced"`, the blocks describe the shared answer as the
+ * request it joined produced it: nothing was run again. An absent ledger means
+ * unknown (an older SDK, or a report built elsewhere).
+ */
+export interface QualityLedger {
+  source: AnswerSource;
+  /** Only with `source: "coalesced"`: where the shared answer came from for the request it joined. */
+  sharedFrom?: Exclude<AnswerSource, "coalesced">;
+  /** Present when the request carried `response.schema`. */
+  schema?: QualitySchemaCheck;
+  /** Present when a provider answer on this request failed its first validation. */
+  repair?: QualityRepairCheck;
+  /** Present when a provider generated the served answer. */
+  truncation?: QualityTruncationCheck;
+  /** Present when the answer came from the exact or the semantic cache. */
+  cacheMatch?: QualityCacheMatch;
+  /** Present when `savings.modelCascade` is not `"off"`. */
+  cascade?: QualityCascadeCheck;
+}
+
 export interface SavingsReport {
   requestId: string;
   /**
@@ -839,6 +1018,13 @@ export interface SavingsReport {
    * the `exact` label.
    */
   qualityStatus?: QualityStatus;
+
+  /**
+   * The evidence behind `qualityStatus`: where the answer came from and which
+   * checks it went through, with no money in it. See {@link QualityLedger}.
+   * Optional and additive: absent means unknown.
+   */
+  qualityLedger?: QualityLedger;
 
   /**
    * What the model cascade did, or would have done. Present whenever

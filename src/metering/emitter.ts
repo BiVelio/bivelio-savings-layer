@@ -362,6 +362,14 @@ export class UsageEmitter {
       // PRIMERO, SDK DESPUÉS; hasta entonces la etiqueta vive en el informe por
       // petición, que es donde el cliente ya puede leerla.
       //
+      // `report.qualityLedger` (el libro de calidad) TAMPOCO viaja, por la misma
+      // regla y por decisión: no lleva dinero ni contenido, pero su promesa
+      // pública es «never leaves your process». Lo único de calidad que el
+      // servidor ya conoce es `cacheResult`, que distingue exacta y semántica;
+      // la similitud, los suelos, la reparación y el truncado se quedan en el
+      // proceso del cliente. Un test compara el cuerpo del POST con la lista
+      // blanca del ingest y falla si aparece.
+      //
       // LA EXCEPCIÓN, declarada: la versión del proceso NO va en el cuerpo sino
       // en la cabecera `x-bvsala-version` del POST (hacerFlush). Una cabecera
       // no pasa por la lista blanca —un servidor viejo la ignora y nada se

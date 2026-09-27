@@ -5,7 +5,8 @@ import { InMemorySemanticCache } from "../src/cache/semantic.js";
 import { QUALITY_STATUSES } from "../src/contracts/types.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
 import type { ExactCache } from "../src/cache/exact.js";
-import type { QualityStatus, SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
+import type { QualityStatus, SavingsReport, SavingsRequest, ToolDescriptor } from "../src/contracts/types.js";
+import { comprobarCoherencia } from "./helpers/libro-de-calidad.js";
 
 /**
  * EL ESTADO DE CALIDAD DEJA DE SER UN BOOLEANO.
@@ -342,9 +343,12 @@ describe("el seguidor de singleflight hereda la calidad del líder", () => {
 describe("el vocabulario declarado es exactamente el que se produce", () => {
   it("cada estado de QUALITY_STATUSES tiene un camino que lo emite", async () => {
     const vistos = new Set<QualityStatus>();
-    const anota = (s: QualityStatus | undefined) => {
-      expect(s).toBeDefined();
-      vistos.add(s!);
+    // Cada informe trae, además del veredicto, su EVIDENCIA: el libro de calidad,
+    // y tiene que ser coherente con él (ver `comprobarCoherencia`).
+    const anota = (r: SavingsReport) => {
+      expect(r.qualityStatus).toBeDefined();
+      comprobarCoherencia(r);
+      vistos.add(r.qualityStatus!);
     };
 
     // exact — resolver determinista.
@@ -354,7 +358,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
           model: "openai/gpt-4o-mini",
           messages: [{ role: "user", content: "What is 7 * 6?" }],
         })
-      ).report.qualityStatus,
+      ).report,
     );
 
     // not_verified — camino del proveedor.
@@ -364,7 +368,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
           model: "openai/gpt-4o-mini",
           messages: [{ role: "user", content: "cuentame algo del mar cantabrico" }],
         })
-      ).report.qualityStatus,
+      ).report,
     );
 
     // rejected — no valida contra su contrato.
@@ -375,7 +379,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
           messages: [{ role: "user", content: "dame el json" }],
           response: CONTRATO,
         })
-      ).report.qualityStatus,
+      ).report,
     );
 
     // bounded_degradation — la cascada sirvió un modelo más barato.
@@ -387,7 +391,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
           response: CONTRATO,
           savings: { modelCascade: "on" },
         })
-      ).report.qualityStatus,
+      ).report,
     );
 
     // task_equivalent — acierto de caché semántica.
@@ -412,7 +416,7 @@ describe("el vocabulario declarado es exactamente el que se produce", () => {
           ...base,
           messages: [{ role: "user", content: "describe briefly the water cycle" }],
         })
-      ).report.qualityStatus,
+      ).report,
     );
 
     expect([...vistos].sort()).toEqual([...QUALITY_STATUSES].sort());

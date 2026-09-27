@@ -263,6 +263,16 @@ ledgers** that are never summed into one flattering figure:
 | `compressed_tokens` | information kept, but encoded with fewer tokens |
 | `provider_cached_tokens` | tokens still in the prompt, billed/processed more cheaply |
 
+**Quality, kept apart from money.** `report.qualityLedger` records how the answer you
+received earned its place: whether it came from your provider, a replay, or the answer
+to a reworded question (with its similarity score); whether it was checked against your
+output contract, repaired or cut off by the output limit; and what the model cascade
+decided. It holds no money, is never added to the four ledgers, and never leaves your
+process. Reusing answers to reworded questions is opt-in, and by default it covers
+single-shot requests only: requests that declare tools, carry tool calls or results, or
+hold more than one user turn are left out unless you set
+`savings.semanticCache: "include-agentic"`.
+
 And a promise you can hold it to: **never worse than your JSON.** Payload encodings
 are chosen by counting real tokens with the destination model's own tokenizer, and
 BV‑SALA only moves away from plain JSON when the saving clearly clears the bar —
