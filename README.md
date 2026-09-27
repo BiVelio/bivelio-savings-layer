@@ -497,8 +497,8 @@ changes the answer, and what they are worth is reported next to the four ledgers
 never folded into `cost.*`, never part of any commission.
 
 **`savings.deferrable`** asks for the provider's Flex tier: OpenAI, and Gemini through
-its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier (its
-discount lives only in Message Batches, which the layer does not support yet).
+its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier: its
+discount lives only in Message Batches, which `layer.batches` (below) sends to.
 Bedrock and DeepSeek off‑peak pricing are not supported.
 
 - **Latency.** OpenAI publishes no latency commitment for Flex; Google publishes a
@@ -544,6 +544,40 @@ const { report } = await leveredLayer.generate({
 
 report.deferred?.tierSaving; // { amount, basis, standardCost, appliedCost, pricesCheckedOn, basisReason }
 report.cacheWrites;          // { mode, breakpoints, avoidedWritePremium?, reason }
+```
+
+**`layer.batches`** sends requests that can wait hours to the provider's own batch API,
+billed at its published batch rate card: Anthropic's Message Batches through
+`AnthropicProvider`, and OpenAI's Batch API through `OpenAICompatibleProvider` on
+`api.openai.com`. Gemini's batch mode is not supported yet.
+
+- **What runs.** Each request is translated by the same provider adapter as
+  `generate()` and sent as you wrote it: the layer's own per‑request savings (caching,
+  compression, model cascade, retrieval) do not run on batches. The layer splits the
+  job at the provider's limits (and, on OpenAI, one model per file).
+- **Latency.** The provider's: results arrive within its batch window, not on a
+  request/response path. `submit()` returns a plain‑JSON job you can store and read
+  from another process.
+- **What it is worth.** Each result's usage counter at the standard and at the batch
+  published rate cards, component by component, with the same `measured` /
+  `estimated` rule as above. The tier is read from the provider: Anthropic reports it
+  on every result; on OpenAI it is the batch the result came from. Nothing is
+  metered and the batch saving is never billed.
+
+```ts
+const tickets = [{ id: "t-1", text: "My invoice is wrong." }]; // your deferrable work
+
+const job = await layer.batches.submit(
+  tickets.map((t) => ({
+    customId: t.id,
+    request: { model: "openai/gpt-4o-mini", messages: [{ role: "user", content: t.text }] },
+  })),
+);
+// …later, even from another process (store `job` as JSON):
+const results = await layer.batches.results(job);
+results.ended;   // false while the provider is still working
+results.items;   // one per request: { customId, outcome, text, usage, tierSaving?, reason }
+results.summary; // { succeeded, errored, expired, credited, tierSaving, basis, pricesCheckedOn, reason, … }
 ```
 
 </details>
