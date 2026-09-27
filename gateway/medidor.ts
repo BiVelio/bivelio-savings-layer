@@ -6,6 +6,7 @@ import { salidaNoRepetible } from "../src/pricing/razonamiento.js";
 import { REFERENCE_OUTPUT_SHARE, type CostModel, type ReferenceCredit } from "../src/tokenizer/accounting.js";
 import type { SavingsReport } from "../src/contracts/types.js";
 import { PRIMA_ESCRITURA_CACHE, PRIMA_ESCRITURA_CACHE_1H, primaDeEscritura } from "../src/pricing/primas.js";
+import { extraDeCompactacion } from "../src/providers/iteraciones-de-compactacion.js";
 import { SseParser, type SseMessage } from "../src/providers/sse.js";
 import type { HuellaDeLaPrimaria } from "./coalescencia.js";
 import type { CambioDeModelo } from "./hermano.js";
@@ -39,6 +40,12 @@ export interface UsoSse {
     ephemeral_5m_input_tokens?: number;
     ephemeral_1h_input_tokens?: number;
   };
+  /**
+   * Con la compactación del servidor (beta de Anthropic): una entrada por
+   * iteración de muestreo. Los contadores de primer nivel NO incluyen la de
+   * compactación; `costeMedido` la suma (src/providers/iteraciones-de-compactacion.ts).
+   */
+  iterations?: unknown;
 }
 
 /**
@@ -425,6 +432,13 @@ export { PRIMA_ESCRITURA_CACHE_1H } from "../src/pricing/primas.js";
 export interface RegistroMedido {
   costeUsd: number;
   precio: CostModel;
+  /**
+   * El instante (epoch ms) con el que se resolvió `precio`: el de la petición.
+   * Lo reutilizan las valoraciones que tarifan el MISMO conteo a otro precio
+   * (palanca C, la gemela por referencia) para que las dos cifras sean del
+   * mismo día. Ausente = ahora.
+   */
+  instante?: number;
   tokens: {
     entrada: number;
     salida: number;
@@ -442,7 +456,8 @@ export interface RegistroMedido {
  * el MISMO conteo a dos precios de catálogo (el del modelo solicitado y el del
  * servido): un solo sitio con la aritmética, imposible que diverjan.
  *
- * `model` solo decide la prima de escritura (Anthropic 1,25×, OpenAI/Gemini 1×).
+ * `model` solo decide la prima de escritura (Anthropic 1,25×; OpenAI 1,25× de
+ * gpt-5.6 en adelante —familia gpt-6 incluida— y 1× antes; Gemini 1×).
  */
 export function costeDeTokens(precio: CostModel, tokens: RegistroMedido["tokens"], model: string): number {
   const porCacheLeida = precio.cachedInputPer1k ?? precio.inputPer1k;
@@ -455,24 +470,37 @@ export function costeDeTokens(precio: CostModel, tokens: RegistroMedido["tokens"
   );
 }
 
-/** El coste real de una respuesta, a precio de lista del modelo. */
-export function costeMedido(model: string, uso: UsoSse): RegistroMedido | null {
-  const precio = precioDeLista(model);
+/**
+ * El coste real de una respuesta, a precio de lista del modelo EL DÍA DE LA
+ * PETICIÓN (`at`, epoch ms; por defecto ahora): un cambio de precio anunciado
+ * se aplica desde su fecha (src/pricing/catalogo.ts, la vigencia por fila).
+ */
+export function costeMedido(model: string, uso: UsoSse, at?: number): RegistroMedido | null {
+  const instante = at ?? Date.now();
+  const precio = precioDeLista(model, instante);
   if (!precio) return null;
-  const entrada = uso.input_tokens ?? 0;
-  const salida = uso.output_tokens ?? 0;
-  const cacheLeida = uso.cache_read_input_tokens ?? 0;
+  // LA COMPACTACIÓN DEL SERVIDOR se factura fuera del primer nivel: se suman
+  // sus iteraciones (solo las `compaction`, ver el módulo). Sin compactación,
+  // `extra` es null y todo queda como estaba.
+  const extra = extraDeCompactacion(uso.iterations);
+  const entrada = (uso.input_tokens ?? 0) + (extra?.input ?? 0);
+  const salida = (uso.output_tokens ?? 0) + (extra?.output ?? 0);
+  const cacheLeida = (uso.cache_read_input_tokens ?? 0) + (extra?.cacheRead ?? 0);
   // El total manda; el desglose solo reparte. Sin `cache_creation_input_tokens`
   // (no debería pasar) el total se reconstruye del desglose. Cualquier token
   // que el desglose no cubra se tarifa a 1,25× — quedarse corto por defecto,
   // jamás inventar de más.
   const desglose = uso.cache_creation;
-  const cacheEscrita =
+  const cacheEscritaPrimerNivel =
     uso.cache_creation_input_tokens ??
     (desglose?.ephemeral_5m_input_tokens ?? 0) + (desglose?.ephemeral_1h_input_tokens ?? 0);
-  const cacheEscrita1h = Math.min(desglose?.ephemeral_1h_input_tokens ?? 0, cacheEscrita);
+  const cacheEscrita = cacheEscritaPrimerNivel + (extra?.cacheWrite ?? 0);
+  const cacheEscrita1h = Math.min(
+    Math.min(desglose?.ephemeral_1h_input_tokens ?? 0, cacheEscritaPrimerNivel) + (extra?.cacheWrite1h ?? 0),
+    cacheEscrita,
+  );
   const tokens = { entrada, salida, cacheLeida, cacheEscrita, cacheEscrita1h };
-  return { costeUsd: costeDeTokens(precio, tokens, model), precio, tokens };
+  return { costeUsd: costeDeTokens(precio, tokens, model), precio, tokens, instante };
 }
 
 /**
@@ -539,7 +567,8 @@ export function soportaZstd(): boolean {
 
 /**
  * Prima de escritura de caché (TTL corto) según el proveedor del modelo:
- * Anthropic 1,25×; OpenAI solo la cobra en gpt-5.6+ (1,25×, la misma cifra);
+ * Anthropic 1,25×; OpenAI solo la cobra de gpt-5.6 en adelante, familia gpt-6
+ * incluida (1,25×, la misma cifra);
  * el resto (gpt anteriores, Gemini) no tiene prima — cobrar 1,25× sería
  * inventar de más. La 1h (2×) es exclusiva de Anthropic: solo Anthropic emite
  * ese desglose.
@@ -910,7 +939,7 @@ export function valorarGemelaPorReferencia(
   if (factorPedido === null || factorServido === null) return { ok: false, reason: "service-tier" };
   const tierFactor = Math.min(factorPedido, factorServido);
 
-  const precio = precioDeListaPropio(model);
+  const precio = precioDeListaPropio(model, medidoPrimaria.instante);
   const c = precio?.cachedInputPer1k;
   if (
     !precio ||
@@ -1063,7 +1092,7 @@ export function informeSombra(
  * verja de precios rompe en CI para avisar.
  */
 export function ahorroDeHermano(hermano: CambioDeModelo, medido: RegistroMedido): number {
-  const precioSolicitado = precioDeLista(hermano.solicitado);
+  const precioSolicitado = precioDeLista(hermano.solicitado, medido.instante);
   if (precioSolicitado === undefined) return 0;
   return Math.max(0, costeDeTokens(precioSolicitado, medido.tokens, hermano.solicitado) - medido.costeUsd);
 }

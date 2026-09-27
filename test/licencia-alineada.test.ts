@@ -287,13 +287,14 @@ describe("la LICENSE nombra la comisión sin copiar cifras", () => {
   });
 
   it("⛔ el precio con el que se valora lo medido es el que aplicó el Software (costModels, si no el catálogo)", () => {
-    // pipeline.ts: precioDelCliente(model) ?? precioDeLista(model). Y el cierre
+    // pipeline.ts: precioDelCliente(model) ?? precioDeLista(model, this.now()) —
+    // el catálogo al precio del DÍA de la petición (su vigencia). Y el cierre
     // sella SIEMPRE la versión de catálogo del servidor, no la del registro:
     // la §6 no puede remitir a «la versión que dice tu extracto».
     expect(s6).toMatch(/valued at the per-token prices the Software applied to that request/);
     expect(s6).toMatch(/cost model you configure, where you configure one, and otherwise your provider's list prices/);
     expect(s6).not.toMatch(/catalogue version stated on your statement/);
-    expect(leer("../src/pipeline/pipeline.ts")).toContain("return this.precioDelCliente(model) ?? precioDeLista(model);");
+    expect(leer("../src/pipeline/pipeline.ts")).toContain("return this.precioDelCliente(model) ?? precioDeLista(model, this.now());");
   });
 
   it("⛔ la suscripción de tarifa plana: solo la que el código reconoce, y sin ahorro acreditado", () => {

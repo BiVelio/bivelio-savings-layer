@@ -69,6 +69,7 @@ import { LicenseError } from "../license/errors.js";
 import type { LicenseStatus, LicenseKeyShape } from "../license/verify.js";
 import { DEFAULT_COST_MODEL, type SavingsLayerConfig } from "./config.js";
 import { precioDeLista } from "../pricing/catalogo.js";
+import { primaDeEscrituraAutomatica } from "../pricing/primas.js";
 import { resolveDependencies, type ResolvedDeps } from "./defaults.js";
 import {
   evaluarReferencia,
@@ -2420,6 +2421,24 @@ export class SavingsPipeline {
       ledger.providerCached(response.usage.cachedInputTokens);
     }
 
+    // LA PRIMA DE ESCRITURA QUE EL PROVEEDOR COBRA POR SU CUENTA. OpenAI, de
+    // GPT-5.6 en adelante (toda la familia gpt-6), factura cada escritura de su
+    // caché implícita a 1,25× la entrada, y el adaptador la trae aparte en
+    // `cacheWriteInputTokens`. Sin esto, `cost.actual` la tarifaba a 1× y no
+    // cuadraba con la factura. No la provoca la capa (la `prompt_cache_key` solo
+    // enruta; OpenAI escribe igual sin ella), así que va a los DOS lados del
+    // libro y el ahorro no cambia: ver `providerCacheWritePremiumUsd`.
+    //
+    // Se salta solo cuando esta MISMA llamada ya cargó su prima por el camino de
+    // la marca (un tramo declarado con escritura > 1 sobre un modelo de OpenAI):
+    // dos veces la misma escritura sería inventar coste. Con escalada, la
+    // llamada servida es la del fuerte, que viaja sin marca.
+    const primaDelProveedor = primaDeEscrituraAutomatica(modeloServido);
+    const primaYaCargada = !escalo && marcado.marcar && marcado.cacheWriteMultiplier > 1;
+    if (primaDelProveedor > 1 && !primaYaCargada && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
+      ledger.providerCacheWritePremium(response.usage.cacheWriteInputTokens ?? 0, primaDelProveedor, precioServido);
+    }
+
     // LO QUE CONTESTÓ EL PROVEEDOR ES LA ÚNICA MEDICIÓN DE h QUE EXISTE, y sólo
     // vale de las peticiones que de verdad se marcaron: apuntar una sin marcar
     // como «no acertó» hundiría la tasa con peticiones que nunca tuvieron
@@ -3772,6 +3791,12 @@ export class SavingsPipeline {
     ledger.baselineInput = response.usage.inputTokens;
     ledger.baselineOutput = response.usage.outputTokens;
     if (response.usage.cachedInputTokens) ledger.providerCached(response.usage.cachedInputTokens);
+    // La prima de escritura que el proveedor cobra por su cuenta (OpenAI
+    // GPT-5.6+): a los dos lados, como en el camino optimizado.
+    const primaDelProveedor = primaDeEscrituraAutomatica(request.model);
+    if (primaDelProveedor > 1 && (response.usage.cacheWriteInputTokens ?? 0) > 0) {
+      ledger.providerCacheWritePremium(response.usage.cacheWriteInputTokens ?? 0, primaDelProveedor, costModel);
+    }
     // El camino directo tampoco llama «medido» a un contador que falta.
     if (response.usage.complete === false) ledger.callsWithoutUsage = 1;
 
@@ -4092,7 +4117,12 @@ export class SavingsPipeline {
     // `defaultCostModel` significa "para lo que yo no conozca"; con el catálogo,
     // muchos menos modelos son desconocidos, y el precio real de gpt-4o sirve
     // mejor al cliente que su propio precio genérico.
-    return this.precioDelCliente(model) ?? precioDeLista(model);
+    //
+    // Y el del DÍA DE LA PETICIÓN: `this.now()` se lee al resolver el precio,
+    // que es al empezar la petición (etapa de la cascada, antes de llamar). Un
+    // cambio de precio anunciado —Gemini 3.x Flash dobla el 2027-01-01— entra
+    // así desde su fecha, sin tocar el catálogo ese día.
+    return this.precioDelCliente(model) ?? precioDeLista(model, this.now());
   }
 
   /** El precio que el cliente declaró en `costModels`, por id completo o desnudo. */
@@ -4116,7 +4146,7 @@ export class SavingsPipeline {
    * (3x su entrada cacheada), y la referencia dejaría de ser un suelo.
    */
   private precioDocumentado(model: string): CostModel | undefined {
-    return this.precioDelCliente(model) ?? precioDeListaPropio(model);
+    return this.precioDelCliente(model) ?? precioDeListaPropio(model, this.now());
   }
 
   private costModelFor(model: string): CostModel {

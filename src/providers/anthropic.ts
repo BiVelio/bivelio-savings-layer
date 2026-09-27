@@ -1,5 +1,6 @@
 import { avisarUnaVez } from "../util/warn-once.js";
 import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
+import { extraDeCompactacion } from "./iteraciones-de-compactacion.js";
 import { instruccionDeJsonPorPrompt } from "./json-por-prompt.js";
 import { isStrictCompatible } from "./openai-compatible.js";
 import { sseMessages } from "./sse.js";
@@ -275,16 +276,21 @@ export class AnthropicProvider implements Provider {
     if (!vioDelta) {
       usage = { inputTokens: 0, outputTokens: 0, complete: false };
     } else {
-      const lecturaCache = merged.cache_read_input_tokens;
-      const escrituraCache = merged.cache_creation_input_tokens;
+      // Igual que en leer(): la compactación del servidor se factura FUERA del
+      // primer nivel y se suma aquí (ver iteraciones-de-compactacion.ts).
+      const compactacion = extraDeCompactacion(merged.iterations);
+      const lecturaCache = sumarSiHay(merged.cache_read_input_tokens, compactacion?.cacheRead);
+      const escrituraCache = sumarSiHay(merged.cache_creation_input_tokens, compactacion?.cacheWrite);
       // Igual que en leer(): `input_tokens` es SOLO el resto no cacheado.
       usage = {
-        inputTokens: (merged.input_tokens ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0),
-        outputTokens: usoDelta?.output_tokens ?? 0,
+        inputTokens: (merged.input_tokens ?? 0) + (compactacion?.input ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0),
+        outputTokens: (usoDelta?.output_tokens ?? 0) + (compactacion?.output ?? 0),
         ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
         ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
         // Igual que en leer(): sin bloque de razonamiento, 0; con él, no se sabe.
-        ...(razono || typeof usoDelta?.output_tokens !== "number" ? {} : { reasoningTokens: 0 }),
+        // Con compactación tampoco: la salida incluye un resumen que no es la
+        // respuesta servida, y un 0 afirmaría de más.
+        ...(razono || compactacion || typeof usoDelta?.output_tokens !== "number" ? {} : { reasoningTokens: 0 }),
         ...(typeof merged.input_tokens !== "number" || typeof usoDelta?.output_tokens !== "number"
           ? { complete: false }
           : {}),
@@ -783,8 +789,21 @@ export class AnthropicProvider implements Provider {
     const textoFinal = contrato ? JSON.stringify(contrato.input ?? {}) : text;
 
     const usage = json.usage ?? {};
-    const lecturaCache = usage.cache_read_input_tokens;
-    const escrituraCache = usage.cache_creation_input_tokens;
+    // LA COMPACTACIÓN DEL SERVIDOR NO ESTÁ EN EL PRIMER NIVEL. Con la beta de
+    // compactación, `usage.input_tokens`/`output_tokens` excluyen la iteración
+    // que resume el historial, y la documentación oficial manda sumar
+    // `usage.iterations` para tener lo facturado. Se suman SOLO las iteraciones
+    // `compaction` (ver iteraciones-de-compactacion.ts: el primer nivel ya es la
+    // suma de las demás). Este adaptador no pide compactación nunca; si la
+    // respuesta la trae, la pidió alguien entre medias, y se factura igual.
+    //
+    // Lo que se sabe y se acepta: los tokens de la iteración de compactación
+    // entran en `actualInput`, y con ellos en la calibración `k` del libro. Eso
+    // solo mueve un baseline RECONSTRUIDO, que sale `estimated` y no se cobra;
+    // el `measured` (sin nada quitado) sigue siendo baseline == actual.
+    const compactacion = extraDeCompactacion(usage.iterations);
+    const lecturaCache = sumarSiHay(usage.cache_read_input_tokens, compactacion?.cacheRead);
+    const escrituraCache = sumarSiHay(usage.cache_creation_input_tokens, compactacion?.cacheWrite);
 
     // EL ERROR QUE ESTO EVITA, Y VALE DINERO DEL CLIENTE.
     //
@@ -800,8 +819,8 @@ export class AnthropicProvider implements Provider {
     // sino de un contador leído a medias, y sería justo la palanca que esta fase
     // existe para medir con honestidad. Se suman los tres.
     const inputTokens =
-      (usage.input_tokens ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0);
-    const outputTokens = usage.output_tokens ?? 0;
+      (usage.input_tokens ?? 0) + (compactacion?.input ?? 0) + (escrituraCache ?? 0) + (lecturaCache ?? 0);
+    const outputTokens = (usage.output_tokens ?? 0) + (compactacion?.output ?? 0);
 
     // La guardia comprueba AUSENCIA, no valor cero, y por separado en cada
     // contador: un cero legítimo (respuesta vacía, parada inmediata) es medible
@@ -836,8 +855,9 @@ export class AnthropicProvider implements Provider {
           // un sobrecoste como si fuera un descuento.
           ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
           ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
-          // Solo si hay contador de salida del que decirlo.
-          ...(razono || salidaAusente ? {} : { reasoningTokens: 0 }),
+          // Solo si hay contador de salida del que decirlo. Con compactación, no:
+          // la salida lleva el resumen, que no es la respuesta servida.
+          ...(razono || salidaAusente || compactacion ? {} : { reasoningTokens: 0 }),
           // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
           // Con el usage completo la clave NO aparece.
           ...(entradaAusente || salidaAusente ? { complete: false } : {}),
@@ -985,6 +1005,8 @@ interface RespuestaAnthropic {
     cache_creation_input_tokens?: number;
     /** "standard" | "priority" | "batch" — se trata como conjunto abierto. */
     service_tier?: string;
+    /** Con compactación: una entrada por iteración de muestreo (ver iteraciones-de-compactacion.ts). */
+    iterations?: unknown;
   };
 }
 
@@ -997,6 +1019,15 @@ interface UsoAnthropic {
   cache_creation_input_tokens?: number;
   cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number } | null;
   service_tier?: string;
+  /** Con compactación: viaja en el `message_delta` final. */
+  iterations?: unknown;
+}
+
+// Un contador de primer nivel más lo que añade la compactación. Ausente y sin
+// compactación sigue ausente (el adaptador distingue «no hubo» de «0»).
+function sumarSiHay(primerNivel: number | undefined, extra: number | undefined): number | undefined {
+  if (!extra) return primerNivel;
+  return (primerNivel ?? 0) + extra;
 }
 
 // Un evento SSE de la API de Mensajes, con los campos que se leen.

@@ -27,7 +27,9 @@ describe("el lookup", () => {
     // precios del proveedor usa el nombre desnudo. Los dos tienen que funcionar.
     expect(precioDeLista("openai/gpt-4o-mini")).toEqual(CATALOGO["gpt-4o-mini"]);
     expect(precioDeLista("anthropic/claude-haiku-4-5")).toEqual(CATALOGO["claude-haiku-4-5"]);
-    expect(precioDeLista("google/gemini-3.7-flash")).toEqual(CATALOGO["gemini-3.7-flash"]);
+    // Con la fecha del catálogo: desde el 2027-01-01 rige su tramo anunciado
+    // (test/vigencia-de-precios.test.ts).
+    expect(precioDeLista("google/gemini-3.7-flash", Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`))).toEqual(CATALOGO["gemini-3.7-flash"]);
   });
 
   it("una instantánea fechada hereda el precio de su familia", () => {
@@ -135,6 +137,32 @@ describe("la forma del catálogo", () => {
     for (const m of ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "claude-sonnet-4", "claude-haiku-4-5"]) {
       expect(CATALOGO[m], m).toBeTruthy();
     }
+  });
+
+  it("las filas nuevas del 2026-09-27, con las cifras de las páginas OFICIALES (USD por 1M → por 1K)", () => {
+    // Anthropic (platform.claude.com/docs/en/about-claude/pricing): Opus 5.5
+    // $4 / $0.20 / $20 — la lectura a 0,05×, ni el 10% de la casa ni el 0,025× de Fable 5.1.
+    expect(CATALOGO["claude-opus-5-5"]).toEqual({ inputPer1k: 0.004, outputPer1k: 0.02, cachedInputPer1k: 0.0002 });
+    expect(CATALOGO["claude-opus-5-5"]!.cachedInputPer1k! / CATALOGO["claude-opus-5-5"]!.inputPer1k).toBeCloseTo(0.05, 12);
+    // OpenAI (developers.openai.com/api/docs/pricing, «Standard», contexto corto).
+    expect(CATALOGO["gpt-6-astra"]).toEqual({ inputPer1k: 0.01, outputPer1k: 0.05, cachedInputPer1k: 0.001 });
+    expect(CATALOGO["gpt-6-sol"]).toEqual({ inputPer1k: 0.002, outputPer1k: 0.01, cachedInputPer1k: 0.0002 });
+    expect(CATALOGO["gpt-6-luna"]).toEqual({ inputPer1k: 0.0001, outputPer1k: 0.0005, cachedInputPer1k: 0.00001 });
+    // Google (ai.google.dev/gemini-api/docs/pricing, tier de pago, texto).
+    expect(CATALOGO["gemini-3.8-flash"]).toEqual({ inputPer1k: 0.00075, outputPer1k: 0.00375, cachedInputPer1k: 0.000075 });
+    expect(CATALOGO["gemini-3.6-flash"]).toEqual(CATALOGO["gemini-3.8-flash"]);
+    expect(CATALOGO["gemini-3.1-flash-lite"]).toEqual({ inputPer1k: 0.00025, outputPer1k: 0.0015, cachedInputPer1k: 0.000025 });
+    expect(CATALOGO["gemini-3-flash-preview"]).toEqual({ inputPer1k: 0.0005, outputPer1k: 0.003, cachedInputPer1k: 0.00005 });
+  });
+
+  it("⛔ la versión menor no hereda: Opus 5.5 no es Opus 5, ni gpt-6-luna es gpt-5.6-luna", () => {
+    expect(precioDeLista("claude-opus-5-5")).not.toEqual(CATALOGO["claude-opus-5"]);
+    expect(claveDeCatalogo("claude-opus-5-5-20260901")).toBe("claude-opus-5-5");
+    expect(claveDeCatalogo("anthropic/claude-opus-5-5")).toBe("claude-opus-5-5");
+    expect(claveDeCatalogo("gpt-6-luna")).toBe("gpt-6-luna");
+    // Una gpt-6 que no está en la tabla no hereda de nadie: sin fila, avisa.
+    expect(precioDeLista("gpt-6-pro")).toBeUndefined();
+    expect(precioDeLista("gpt-6")).toBeUndefined();
   });
 
   it("la generación 5.1 de Fable/Mythos lee la caché a 0.025x, no al 10%", () => {

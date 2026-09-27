@@ -393,6 +393,10 @@ export class OpenAICompatibleProvider implements Provider {
       ...(uso?.prompt_tokens_details?.cached_tokens != null
         ? { cachedInputTokens: uso.prompt_tokens_details.cached_tokens }
         : {}),
+      // Igual que en generate(): la escritura de caché de GPT-5.6+ (1,25×).
+      ...(uso?.prompt_tokens_details?.cache_write_tokens != null
+        ? { cacheWriteInputTokens: uso.prompt_tokens_details.cache_write_tokens }
+        : {}),
       ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
       ...(inputAbsent || outputAbsent ? { complete: false } : {}),
     };
@@ -656,6 +660,15 @@ export class OpenAICompatibleProvider implements Provider {
           ...(usage.prompt_tokens_details?.cached_tokens != null
             ? { cachedInputTokens: usage.prompt_tokens_details.cached_tokens }
             : {}),
+          // LA ESCRITURA DE CACHÉ, que desde GPT-5.6 se factura a 1,25× la
+          // entrada (https://developers.openai.com/api/docs/guides/prompt-caching,
+          // consultada el 2026-09-27). Va dentro de `prompt_tokens`, como la
+          // lectura; aquí solo se separa para que el pipeline cargue el 0,25×
+          // de más. No es un descuento: es lo que cuesta el prefijo la primera
+          // vez (ver `cacheWriteInputTokens` en ProviderUsage).
+          ...(usage.prompt_tokens_details?.cache_write_tokens != null
+            ? { cacheWriteInputTokens: usage.prompt_tokens_details.cache_write_tokens }
+            : {}),
           ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
           // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
           // Con el usage completo la clave NO aparece.
@@ -688,7 +701,7 @@ export class OpenAICompatibleProvider implements Provider {
 interface UsoDeChat {
   prompt_tokens?: number;
   completion_tokens?: number;
-  prompt_tokens_details?: { cached_tokens?: number };
+  prompt_tokens_details?: { cached_tokens?: number; cache_write_tokens?: number };
   completion_tokens_details?: { reasoning_tokens?: number } | null;
 }
 

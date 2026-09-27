@@ -31,8 +31,8 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 // clasificado por nadie: su salida NO se acredita (`unclassified-model`).
 //
 // Claude, según la referencia de la API de Anthropic (septiembre de 2026):
-//   · Opus 5, Sonnet 5, Fable 5 y 5.1, Mythos 5 y 5.1 (y Opus 5.5, fuera del
-//     catálogo) RAZONAN sin que nadie lo pida: con `thinking` omitido corren el
+//   · Opus 5 y 5.5, Sonnet 5, Fable 5 y 5.1, Mythos 5 y 5.1 RAZONAN sin que
+//     nadie lo pida: con `thinking` omitido corren el
 //     razonamiento adaptativo, o lo llevan siempre puesto, y además rechazan
 //     `temperature` con un 400. En `true`.
 //   · Opus 4.7 y 4.8 no razonan si no se pide, pero tampoco admiten
@@ -46,6 +46,13 @@ import { CATALOGO, claveDeCatalogo } from "./catalogo.js";
 //
 // Gemini va entero en `true`: 2.5 y 3.x razonan por defecto (2.5 Pro no se puede
 // apagar), y este paquete no manda ningún presupuesto de razonamiento.
+//
+// La familia gpt-6 va entera en `true`. La página del modelo gpt-6-luna
+// (https://developers.openai.com/api/docs/models/gpt-6-luna, consultada el
+// 2026-09-27) declara «Reasoning token support» con `reasoning.effort` en
+// `medium` por defecto, y el changelog (2026-09-03) dice de gpt-6-astra que no
+// admite el esfuerzo `none` ni un `temperature` propio. Sol se lanzó con Luna
+// (2026-09-22) en la misma familia: ante la duda, su salida no se acredita.
 export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   // ── OpenAI ──
   "gpt-4.1": false,
@@ -74,6 +81,9 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "gpt-5.6-luna": true,
   "gpt-5.6-sol": true,
   "gpt-5.6-terra": true,
+  "gpt-6-astra": true,
+  "gpt-6-sol": true,
+  "gpt-6-luna": true,
   // La serie o (filas del catálogo desde la Parte G del gateway): razonan
   // siempre y solo aceptan el `temperature` por defecto. Su salida no se
   // acredita nunca por referencia.
@@ -87,6 +97,7 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "claude-opus-4-7": false,
   "claude-opus-4-8": false,
   "claude-opus-5": true,
+  "claude-opus-5-5": true,
   "claude-opus-4": false,
   "claude-sonnet-4-5": false,
   "claude-sonnet-4-6": false,
@@ -102,7 +113,11 @@ export const RAZONA_POR_FILA: Readonly<Record<string, boolean>> = {
   "claude-3-opus": false,
   "claude-3-haiku": false,
   // ── Google (Gemini) ──
+  "gemini-3.8-flash": true,
   "gemini-3.7-flash": true,
+  "gemini-3.6-flash": true,
+  "gemini-3.1-flash-lite": true,
+  "gemini-3-flash-preview": true,
   "gemini-3.5-flash": true,
   "gemini-3.5-flash-lite": true,
   "gemini-3.1-pro-preview": true,
@@ -132,6 +147,7 @@ export const IGNORA_TEMPERATURA: ReadonlySet<string> = new Set(["claude-opus-4-7
 const NOMBRE_DE_RAZONAMIENTO: readonly RegExp[] = [
   /^o\d/, //                      o1, o3, o3-mini, o4-mini…
   /^gpt-5/, //                    toda la familia, también los ids fuera del catálogo
+  /^gpt-([6-9]|\d{2})/, //        gpt-6 en adelante: razonan por defecto
   /^gpt-oss/, //                  razona siempre
   /^gemini-(2\.5|[3-9])/, //      Gemini que razona por defecto
   /^claude-[a-z]+-([5-9]|\d{2})/, // la generación 5 de Claude y posteriores razonan por defecto

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { CATALOGO, claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
+import { CATALOGO, PRECIOS_AL_DIA, claveDeCatalogo, precioDeLista } from "../src/pricing/catalogo.js";
 import {
   esModeloDeRazonamiento,
   filasSinClasificar,
@@ -171,11 +171,15 @@ describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de u
    *  modelo más barato (`lite`, `mini`). Desde fuera no se distinguen. */
   const SUFIJOS_DE_LETRA = ["lite", "mini", "nano", "pro", "turbo", "flash", "latest", "preview", "exp"];
   const FECHAS = ["2024-07-18", "20250929"];
+  // La fila de CATALOGO es la que rige el día del catálogo; con la vigencia por
+  // fila, «hoy» puede caer en un tramo anunciado (Gemini 3.x Flash desde el
+  // 2027-01-01). La identidad se comprueba el día del catálogo, determinista.
+  const AL_DIA = Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`);
 
   it("cada fila se encuentra a sí misma, con y sin prefijo de proveedor", () => {
     for (const k of CLAVES) {
-      expect(precioDeListaPropio(k), k).toBe(CATALOGO[k]);
-      expect(precioDeListaPropio(`vendor/${k}`), k).toBe(CATALOGO[k]);
+      expect(precioDeListaPropio(k, AL_DIA), k).toBe(CATALOGO[k]);
+      expect(precioDeListaPropio(`vendor/${k}`, AL_DIA), k).toBe(CATALOGO[k]);
     }
   });
 
@@ -216,8 +220,8 @@ describe("el precio de la referencia es la fila PROPIA del modelo, nunca la de u
       for (const fecha of FECHAS) {
         const id = `${k}-${fecha}`;
         expect(claveDeCatalogo(id), id).toBe(k);
-        expect(precioDeListaPropio(id), id).toBe(CATALOGO[k]);
-        expect(precioDeListaPropio(`vendor/${id}`), id).toBe(CATALOGO[k]);
+        expect(precioDeListaPropio(id, AL_DIA), id).toBe(CATALOGO[k]);
+        expect(precioDeListaPropio(`vendor/${id}`, AL_DIA), id).toBe(CATALOGO[k]);
       }
     }
   });
