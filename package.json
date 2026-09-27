@@ -63,6 +63,8 @@
     "example:basic": "BVSALA_DEV_OPEN=1 tsx examples/basic/index.ts",
     "example:handoff": "BVSALA_DEV_OPEN=1 tsx examples/multi-agent/handoff.ts",
     "example:serialization": "BVSALA_DEV_OPEN=1 tsx examples/serialization/format-selector.ts",
+    "example:otel": "BVSALA_DEV_OPEN=1 tsx examples/exporters/otel.ts",
+    "example:focus": "BVSALA_DEV_OPEN=1 tsx examples/exporters/focus.ts",
     "example:licensed": "tsx examples/licensing/licensed.ts",
     "license:demo": "tsx examples/licensing/demo.ts",
     "example:revocation": "tsx examples/licensing/revocation.ts",
