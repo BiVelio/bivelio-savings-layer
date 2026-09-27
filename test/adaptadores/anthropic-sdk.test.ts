@@ -88,6 +88,12 @@ function red(): Red {
           headers: { "content-type": "application/json" },
         });
       }
+      if ((init?.method ?? "GET").toUpperCase() === "GET") {
+        return new Response(JSON.stringify({ data: [], has_more: false, first_id: null, last_id: null }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
       if (String(url).includes("count_tokens")) {
         return new Response(JSON.stringify({ input_tokens: 7 }), { status: 200, headers: { "content-type": "application/json" } });
       }
@@ -298,7 +304,9 @@ describe("anthropicSavings", () => {
     const c = cliente(n, s);
     const r = await c.messages.countTokens({ model: PEDIDO.model, messages: PEDIDO.messages });
     expect(r.input_tokens).toBe(7);
-    expect(n.llamadas).toHaveLength(1);
+    await c.models.list();
+    expect(n.llamadas).toHaveLength(2);
+    expect(n.llamadas[1]?.url).toContain("/v1/models");
     expect(informes).toHaveLength(0);
     s.close();
   });

@@ -148,12 +148,19 @@ describe.each(VERSIONES)("savingsMiddleware con %s", (_nombre, lib, Mock) => {
   });
 
   it("(d) stream vivo: las partes llegan idénticas y en su orden, y solo `finish` gana el informe", async () => {
-    const d = doble(Mock, lib);
+    // Además de razonamiento y `raw`, la entrada de una herramienta que el modelo
+    // empezó a escribir (`tool-input-*`): el observador reenvía lo que no lee.
+    const partes = () => {
+      const p = partesVivas();
+      p.splice(p.length - 1, 0, { type: "tool-input-start", id: "t1", toolName: "lookup" } as never, { type: "tool-input-delta", id: "t1", delta: "{}" } as never, { type: "tool-input-end", id: "t1" } as never);
+      return p;
+    };
+    const d = doble(Mock, lib, { partes });
     const mw = savingsMiddleware({ silenceWarnings: true });
     const model = lib.wrapLanguageModel({ model: d.model, middleware: mw });
     const { stream } = await model.doStream({ prompt: [{ role: "user", content: [{ type: "text", text: "Say hello." }] }] } as never);
     const recibidas = (await leer(stream as ReadableStream<Record<string, unknown>>)) as Record<string, unknown>[];
-    const esperadas = partesVivas();
+    const esperadas = partes();
     expect(recibidas.map((p) => p.type)).toEqual(esperadas.map((p) => p.type));
     expect(recibidas.slice(0, -1)).toEqual(esperadas.slice(0, -1));
     const fin = recibidas.at(-1) as { providerMetadata?: { bivelio?: { savingsReport?: { streaming?: unknown; cost?: { basis?: string } } } } };
