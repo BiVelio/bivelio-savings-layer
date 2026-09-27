@@ -57,6 +57,31 @@ export interface ProviderRequest {
    * letting the provider choose. Others ignore it.
    */
   explicitCacheWrites?: boolean;
+  /**
+   * Provider-native tool search, decided by the layer for this request. An adapter that
+   * supports it sends every tool with deferred loading except `alwaysLoaded`, plus the
+   * provider's search tool. The layer sets it only for adapters of this package that
+   * declared the capability; other providers never receive it.
+   */
+  toolSearch?: ProviderToolSearch;
+}
+
+/** See {@link ProviderRequest.toolSearch}. */
+export interface ProviderToolSearch {
+  /** The provider's search: natural-language queries (`"bm25"`) or regular expressions. */
+  variant: "bm25" | "regex";
+  /** Tool ids sent without deferred loading. */
+  alwaysLoaded: string[];
+}
+
+/** What the provider's native tool search did in one call, as its response shows it. */
+export interface ProviderToolSearchUsage {
+  /** Searches the model ran. */
+  searches: number;
+  /** Tool names the searches loaded, in order, without repeats. */
+  loaded: string[];
+  /** Searches that came back as an error result instead of references. */
+  errors: number;
 }
 
 export interface ProviderUsage {
@@ -166,6 +191,11 @@ export interface ProviderResponse {
    * replayable.
    */
   replayable?: boolean;
+  /**
+   * Present when the request carried {@link ProviderRequest.toolSearch} and the adapter can
+   * read what the search did. The layer only reports it; it credits nothing for it.
+   */
+  toolSearch?: ProviderToolSearchUsage;
   raw?: unknown;
 }
 

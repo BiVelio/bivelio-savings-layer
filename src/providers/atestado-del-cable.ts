@@ -137,3 +137,26 @@ export function heredarAtestado<T extends ProviderResponse>(de: ProviderResponse
   if (atestado) atestados.set(a, atestado);
   return a;
 }
+
+// LA BÚSQUEDA DE HERRAMIENTAS NATIVA, también antes de llamar. El pipeline
+// decide en la etapa 6 si el catálogo viaja diferido tras la búsqueda del
+// proveedor o si lo poda el selector, así que necesita saber, sin llamar, si el
+// adaptador sabe mandarla y contra qué host. Mismo patrón que el origen: un
+// WeakMap privado que solo escriben los adaptadores de este paquete. Un
+// proveedor de terceros devuelve `undefined` y nunca recibe `toolSearch`.
+//
+//   · "oficial": habla con la API del propio proveedor (api.anthropic.com).
+//   · "compatible": sabe mandarla, pero contra otro host (un proxy, un
+//     gateway). Claude Code apaga la búsqueda en ese caso porque el proxy puede
+//     no reenviar los bloques; aquí `auto` tampoco la enciende y `always` sí.
+const busquedas = new WeakMap<object, "oficial" | "compatible">();
+
+/** Declara que un adaptador propio sabe mandar la búsqueda nativa. Solo lo llaman los adaptadores de este paquete. */
+export function declararBusquedaNativa(proveedor: object, capacidad: "oficial" | "compatible"): void {
+  busquedas.set(proveedor, capacidad);
+}
+
+/** La capacidad que un adaptador propio declaró; `undefined` para un proveedor de terceros. */
+export function busquedaNativaDelProveedor(proveedor: unknown): "oficial" | "compatible" | undefined {
+  return typeof proveedor === "object" && proveedor !== null ? busquedas.get(proveedor) : undefined;
+}

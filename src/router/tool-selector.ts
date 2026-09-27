@@ -1,5 +1,6 @@
 import { normalizeText } from "../canonicalization/canonicalize.js";
 import type { ExecutionClass, ToolDescriptor } from "../contracts/types.js";
+import { catalogoSinTipar } from "./busqueda-nativa.js";
 
 /**
  * Tool selector.
@@ -67,26 +68,11 @@ export class InMemoryToolSetFreezer implements ToolSetFreezer {
   }
 }
 
-/**
- * Un catálogo REAL (MCP, OpenAI) llega como `{name, description, input_schema}`:
- * sin `intents` y sin `risk`. El tipo los exige, pero TypeScript no protege en
- * ejecución, y medido sobre 10.636 catálogos del corpus real **ninguno** los
- * declaraba. Sin esta comprobación pasaban tres cosas a la vez:
- *
- *  1. `t.risk === "read"` es falso cuando `risk` es `undefined`, así que fuera
- *     de `TOOL_ACTION` el elegible quedaba VACÍO y el modelo recibía CERO
- *     herramientas: se le rompe la función al cliente en silencio.
- *  2. La ruta `TOOL_ACTION` reventaba con `TypeError: tool.intents is not
- *     iterable` al puntuar.
- *  3. Y el libro 2 acreditaba el 100 % del bloque como ahorro — cobrábamos
- *     comisión por haber roto la petición.
- *
- * Con un catálogo así no hay nada que seleccionar: no hay señal. Se pasa
- * íntegro (acotado por presupuesto), que es lo que el cliente mandó.
- */
-function catalogoSinTipar(tools: ToolDescriptor[]): boolean {
-  return !tools.some((t) => Array.isArray(t.intents) && t.intents.length > 0) && !tools.some((t) => typeof t.risk === "string");
-}
+// EL CATÁLOGO SIN TIPAR (`catalogoSinTipar`) se detecta con una regla que vive
+// en `busqueda-nativa.ts`, junto con el porqué: la ruta de la búsqueda nativa
+// aplica la MISMA verja de riesgo y las dos no pueden derivar. Va en `//` y no
+// en JSDoc a propósito: un JSDoc suelto aquí se pegaría a `ToolSelector` en el
+// `.d.ts` publicado.
 
 export class ToolSelector {
   private readonly maxTools: number;
