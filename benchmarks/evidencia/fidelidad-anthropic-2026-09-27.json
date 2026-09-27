@@ -1,0 +1,1342 @@
+{
+  "fecha": "2026-09-27T20:11:33.423Z",
+  "metodo": "Rondas pareadas directo/gateway en orden aleatorio equilibrado contra un upstream falso local; sobrecoste = mediana de las diferencias con IC 95 % por bootstrap (benchmarks/latencia-gateways/nucleo.ts).",
+  "maquina": {
+    "cpu": "Apple M4 Pro",
+    "nucleos": 14,
+    "memoriaGb": 48,
+    "node": "v25.9.0",
+    "plataforma": "darwin/arm64"
+  },
+  "parametros": {
+    "rondas": 0,
+    "calentamiento": 40,
+    "concurrencia": 0,
+    "peticionesCarga": 4000,
+    "bvsalaCompilado": true,
+    "soloFidelidad": true,
+    "modelosFidelidadAnthropic": [
+      "claude-haiku-4-5",
+      "claude-opus-5-5"
+    ]
+  },
+  "cargaDeLaMaquina": {
+    "alEmpezar": [
+      12.3,
+      28.5,
+      22.5
+    ],
+    "alTerminar": [
+      12.3,
+      28.5,
+      22.5
+    ]
+  },
+  "versiones": {
+    "litellm": "1.102.1",
+    "bifrost": "2.2.3",
+    "portkey": "1.15.2"
+  },
+  "resultados": [],
+  "errores": [],
+  "fidelidades": {
+    "bvsala · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "litellm · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "model",
+          "choices"
+        ]
+      }
+    },
+    "litellm · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "model",
+          "choices"
+        ]
+      }
+    },
+    "bifrost · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [
+          "service_tier"
+        ],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "extra_fields"
+        ],
+        "cambiadas": [
+          "usage"
+        ]
+      }
+    },
+    "bifrost · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "extra_fields"
+        ],
+        "cambiadas": [
+          "usage"
+        ]
+      }
+    },
+    "portkey · gpt-4o-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "portkey · gpt-5-mini": {
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    }
+  },
+  "fidelidadesAnthropic": {
+    "bvsala · claude-haiku-4-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala · claude-haiku-4-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [],
+          "anadidas": [],
+          "cambiadas": []
+        }
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala · claude-opus-5-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala · claude-opus-5-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [],
+          "anadidas": [],
+          "cambiadas": []
+        }
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · claude-haiku-4-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · claude-haiku-4-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [],
+          "anadidas": [],
+          "cambiadas": []
+        }
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · claude-opus-5-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bvsala-medido · claude-opus-5-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [],
+          "anadidas": [],
+          "cambiadas": []
+        }
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "litellm · claude-haiku-4-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "stream"
+        ],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [
+          "stream"
+        ],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "advanced-tool-use-2025-11-20,extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "model"
+        ]
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "litellm · claude-haiku-4-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "advanced-tool-use-2025-11-20,extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [],
+          "anadidas": [],
+          "cambiadas": []
+        }
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "litellm · claude-opus-5-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [
+          "stream"
+        ],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [
+          "stream"
+        ],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "advanced-tool-use-2025-11-20,extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "model"
+        ]
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "litellm · claude-opus-5-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "advanced-tool-use-2025-11-20,extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [],
+          "anadidas": [],
+          "cambiadas": []
+        }
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bifrost · claude-haiku-4-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "messages"
+        ]
+      },
+      "peticionRutas": {
+        "perdidas": [
+          "messages[1].content[1].content",
+          "messages[1].content[2]",
+          "messages[2].content[0].cache_control",
+          "messages[3].content[0].tool",
+          "messages[3].content[1]"
+        ],
+        "anadidas": [
+          "messages[1].content[1].tool_references",
+          "messages[3].content[0].text",
+          "messages[3].content[0].cache_control"
+        ],
+        "cambiadas": [
+          "messages[2].role",
+          "messages[2].content[0].text",
+          "messages[3].role",
+          "messages[3].content[0].type"
+        ]
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "tool-search-tool-2025-10-19",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "assistant",
+          "user"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bifrost · claude-haiku-4-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "messages"
+        ]
+      },
+      "peticionRutas": {
+        "perdidas": [
+          "messages[1].content[1].content",
+          "messages[1].content[2]",
+          "messages[2].content[0].cache_control",
+          "messages[3].content[0].tool",
+          "messages[3].content[1]"
+        ],
+        "anadidas": [
+          "messages[1].content[1].tool_references",
+          "messages[3].content[0].text",
+          "messages[3].content[0].cache_control"
+        ],
+        "cambiadas": [
+          "messages[2].role",
+          "messages[2].content[0].text",
+          "messages[3].role",
+          "messages[3].content[0].type"
+        ]
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "tool-search-tool-2025-10-19",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "assistant",
+          "user"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [
+            "service_tier"
+          ],
+          "anadidas": [],
+          "cambiadas": [
+            "input_tokens",
+            "cache_creation_input_tokens",
+            "cache_creation.ephemeral_1h_input_tokens"
+          ]
+        }
+      },
+      "uso": {
+        "perdidas": [
+          "service_tier"
+        ],
+        "anadidas": [],
+        "cambiadas": [
+          "input_tokens",
+          "cache_creation_input_tokens",
+          "cache_creation.ephemeral_1h_input_tokens"
+        ]
+      }
+    },
+    "bifrost · claude-opus-5-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "messages"
+        ]
+      },
+      "peticionRutas": {
+        "perdidas": [
+          "messages[1].content[1].content",
+          "messages[1].content[2]",
+          "messages[2].content[0].cache_control",
+          "messages[3].content[0].tool",
+          "messages[3].content[1]"
+        ],
+        "anadidas": [
+          "messages[1].content[1].tool_references",
+          "messages[3].content[0].text",
+          "messages[3].content[0].cache_control"
+        ],
+        "cambiadas": [
+          "messages[2].role",
+          "messages[2].content[0].text",
+          "messages[3].role",
+          "messages[3].content[0].type"
+        ]
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "tool-search-tool-2025-10-19",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "assistant",
+          "user"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "bifrost · claude-opus-5-5 · sse": {
+      "stream": true,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": false,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": [
+          "messages"
+        ]
+      },
+      "peticionRutas": {
+        "perdidas": [
+          "messages[1].content[1].content",
+          "messages[1].content[2]",
+          "messages[2].content[0].cache_control",
+          "messages[3].content[0].tool",
+          "messages[3].content[1]"
+        ],
+        "anadidas": [
+          "messages[1].content[1].tool_references",
+          "messages[3].content[0].text",
+          "messages[3].content[0].cache_control"
+        ],
+        "cambiadas": [
+          "messages[2].role",
+          "messages[2].content[0].text",
+          "messages[3].role",
+          "messages[3].content[0].type"
+        ]
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": [
+          "anthropic-beta"
+        ]
+      },
+      "betaRecibida": "tool-search-tool-2025-10-19",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "assistant",
+          "user"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": false,
+        "mismosEventos": true,
+        "eventosDirecto": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "eventosGateway": [
+          "message_start",
+          "content_block_start",
+          "content_block_delta",
+          "content_block_delta",
+          "content_block_stop",
+          "message_delta",
+          "message_stop"
+        ],
+        "uso": {
+          "perdidas": [
+            "service_tier"
+          ],
+          "anadidas": [],
+          "cambiadas": [
+            "input_tokens",
+            "cache_creation_input_tokens",
+            "cache_creation.ephemeral_1h_input_tokens"
+          ]
+        }
+      },
+      "uso": {
+        "perdidas": [
+          "service_tier"
+        ],
+        "anadidas": [],
+        "cambiadas": [
+          "input_tokens",
+          "cache_creation_input_tokens",
+          "cache_creation.ephemeral_1h_input_tokens"
+        ]
+      }
+    },
+    "portkey · claude-haiku-4-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "portkey · claude-haiku-4-5 · sse": {
+      "error": "HTTP 500 en http://127.0.0.1:8787/v1/messages: {\"status\":\"failure\",\"message\":\"Something went wrong\"}"
+    },
+    "portkey · claude-opus-5-5 · json": {
+      "stream": false,
+      "peticion": {
+        "identicoEnBytes": false,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "peticionRutas": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "cabeceras": {
+        "perdidas": [],
+        "cambiadas": []
+      },
+      "betaRecibida": "extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01",
+      "roles": {
+        "enviados": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ],
+        "recibidos": [
+          "user",
+          "assistant",
+          "user",
+          "system"
+        ]
+      },
+      "respuesta": {
+        "identicoEnBytes": true,
+        "mismoJson": true,
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      },
+      "uso": {
+        "perdidas": [],
+        "anadidas": [],
+        "cambiadas": []
+      }
+    },
+    "portkey · claude-opus-5-5 · sse": {
+      "error": "HTTP 500 en http://127.0.0.1:8787/v1/messages: {\"status\":\"failure\",\"message\":\"Something went wrong\"}"
+    }
+  },
+  "carga": null,
+  "memoriaMb": {
+    "bvsala": 110,
+    "bvsala-medido": 108
+  },
+  "recuentoDelUpstream": null
+}

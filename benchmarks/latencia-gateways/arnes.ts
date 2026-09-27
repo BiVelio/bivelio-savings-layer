@@ -34,16 +34,26 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  BETAS_DE_FIDELIDAD,
   CABECERA_MARKDOWN,
+  compararCabeceras,
   compararCuerpos,
+  compararSseMensajes,
+  compararUso,
   cuerpoDeChat,
   cuerpoDeFidelidad,
+  cuerpoDeFidelidadAnthropic,
+  diferenciasProfundas,
   esElPrincipal,
   filaMarkdown,
   ordenesMultibrazo,
   percentiles,
   resumir,
+  type DiferenciasProfundas,
   type Fidelidad,
+  type FidelidadDeCabeceras,
+  type FidelidadDeSse,
+  type FidelidadDeUso,
   type Percentiles,
   type ResumenDeEscenario,
   type Ronda,
@@ -55,6 +65,16 @@ const RAIZ = join(AQUI, "..", "..");
 
 // ── Objetivos ──────────────────────────────────────────────────────────────
 
+/** Cómo se llega a la API de Mensajes (Anthropic) a través de un gateway. */
+export interface RutaDeMensajes {
+  /** Ruta de Mensajes en ESE gateway (`/v1/messages`, `/anthropic/v1/messages`…). */
+  ruta: string;
+  /** El `model` que ese gateway espera para un modelo base de Anthropic. */
+  modelo: (base: string) => string;
+  /** Cabeceras propias del gateway (además de las de Anthropic que manda la prueba). */
+  cabeceras: Record<string, string>;
+}
+
 export interface Objetivo {
   nombre: string;
   /** Origen del gateway, p. ej. http://127.0.0.1:4000 */
@@ -64,9 +84,14 @@ export interface Objetivo {
   /** El `model` que ese gateway espera para llegar al upstream falso. */
   modelo: string;
   cabeceras: Record<string, string>;
+  /** La API de Mensajes en ese gateway, si la tiene (E1). */
+  mensajes?: RutaDeMensajes;
   /** Proceso a vigilar (memoria residente al final), si se conoce. */
   pid?: number;
 }
+
+/** El paso directo de BV-SALA: la misma ruta, el mismo modelo, ninguna cabecera propia. */
+export const MENSAJES_BVSALA: RutaDeMensajes = { ruta: "/v1/messages", modelo: (b) => b, cabeceras: {} };
 
 /**
  * Los gateways de terceros tal como los dejan las configuraciones de
@@ -82,6 +107,9 @@ export function objetivosDeTerceros(puertoUpstream: number, modeloBase = "gpt-4o
       // El alias de configs/litellm.yaml (un `model_name` por modelo).
       modelo: `bench-${modeloBase}`,
       cabeceras: {},
+      // `/v1/messages` de LiteLLM: el endpoint de Anthropic del proxy, con los
+      // alias `bench-claude-*` de configs/litellm.yaml (proveedor `anthropic/`).
+      mensajes: { ruta: "/v1/messages", modelo: (b) => `bench-${b}`, cabeceras: {} },
     },
     bifrost: {
       nombre: "bifrost",
@@ -89,6 +117,8 @@ export function objetivosDeTerceros(puertoUpstream: number, modeloBase = "gpt-4o
       rutaChat: "/v1/chat/completions",
       modelo: `openai/${modeloBase}`,
       cabeceras: {},
+      // La integración de Anthropic de Bifrost (el SDK de Anthropic apunta ahí).
+      mensajes: { ruta: "/anthropic/v1/messages", modelo: (b) => b, cabeceras: {} },
     },
     portkey: {
       nombre: "portkey",
@@ -99,6 +129,14 @@ export function objetivosDeTerceros(puertoUpstream: number, modeloBase = "gpt-4o
         "x-portkey-provider": "openai",
         "x-portkey-custom-host": `http://127.0.0.1:${puertoUpstream}/v1`,
         authorization: "Bearer relleno-no-es-una-clave",
+      },
+      mensajes: {
+        ruta: "/v1/messages",
+        modelo: (b) => b,
+        cabeceras: {
+          "x-portkey-provider": "anthropic",
+          "x-portkey-custom-host": `http://127.0.0.1:${puertoUpstream}/v1`,
+        },
       },
     },
     helicone: {
@@ -248,6 +286,104 @@ export async function medirFidelidad(o: Objetivo, origenUpstream: string, modelo
   const recibido = await (await fetch(new URL("/banco/ultima-peticion", origenUpstream))).text();
   const directa = await post(new URL("/v1/chat/completions", origenUpstream), cuerpoDeFidelidad(modeloBase), {});
   return { peticion: compararCuerpos(enviado, recibido, ["model"]), respuesta: compararCuerpos(directa, viaGateway) };
+}
+
+/** Lo que manda la prueba de Mensajes además del cuerpo: versión, betas y una clave de relleno. */
+export const CABECERAS_DE_MENSAJES: Readonly<Record<string, string>> = {
+  "anthropic-version": "2023-06-01",
+  "anthropic-beta": BETAS_DE_FIDELIDAD,
+  "x-api-key": "relleno-no-es-una-clave",
+};
+
+export interface ResultadoDeFidelidadMensajes {
+  stream: boolean;
+  /** Lo que llegó al upstream frente a lo que mandó el cliente (sin contar `model`). */
+  peticion: Fidelidad;
+  /** …ruta a ruta, para ver QUÉ se perdió dentro de `system`, `tools` o `messages`. */
+  peticionRutas: DiferenciasProfundas;
+  /** `anthropic-version` y `anthropic-beta`, tal como llegaron. */
+  cabeceras: FidelidadDeCabeceras;
+  /** El valor de `anthropic-beta` que llegó al upstream (nombres de betas, nada secreto), o null. */
+  betaRecibida: string | null;
+  /**
+   * Los roles de `messages`, mandados y recibidos: si un gateway parte, junta o
+   * quita turnos, las rutas de `peticionRutas` se desplazan y esto lo explica.
+   */
+  roles: { enviados: string[]; recibidos: string[] };
+  /** La respuesta vía gateway frente a la directa: en JSON por claves, en SSE por eventos. */
+  respuesta: Fidelidad | FidelidadDeSse;
+  /** El `usage` de la respuesta, clave a clave (con el desglose de la escritura de 1 h). */
+  uso: FidelidadDeUso;
+}
+
+/**
+ * E1 · la fidelidad en el dialecto de ANTHROPIC: un cuerpo de Mensajes con
+ * `cache_control` a 1 h, `tool_reference` y herramientas en línea
+ * (nucleo.ts → cuerpoDeFidelidadAnthropic), con `anthropic-beta`, por el
+ * gateway; lo que el upstream falso dice haber recibido (cuerpo y cabeceras); y
+ * la respuesta frente a la directa, en JSON o en SSE. No se cronometra.
+ */
+export async function medirFidelidadMensajes(
+  o: { nombre: string; base: string; mensajes: RutaDeMensajes },
+  origenUpstream: string,
+  modeloBase: string,
+  stream: boolean,
+): Promise<ResultadoDeFidelidadMensajes> {
+  const post = async (url: URL, cuerpo: string, cabeceras: Record<string, string>) => {
+    const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json", ...cabeceras }, body: cuerpo });
+    const texto = await r.text();
+    if (!r.ok) throw new ErrorDePeticion(`HTTP ${r.status} en ${url.href}: ${texto.slice(0, 300)}`);
+    return texto;
+  };
+  const enviado = cuerpoDeFidelidadAnthropic(o.mensajes.modelo(modeloBase), { stream });
+  const cabeceras = { ...CABECERAS_DE_MENSAJES, ...o.mensajes.cabeceras };
+  const viaGateway = await post(new URL(o.mensajes.ruta, o.base), enviado, cabeceras);
+  const recibido = await (await fetch(new URL("/banco/ultima-peticion", origenUpstream))).text();
+  const cabecerasRecibidas = (await (await fetch(new URL("/banco/ultimas-cabeceras", origenUpstream))).json()) as Record<string, string>;
+  const directa = await post(new URL("/v1/messages", origenUpstream), cuerpoDeFidelidadAnthropic(modeloBase, { stream }), CABECERAS_DE_MENSAJES);
+  let peticionRutas: DiferenciasProfundas;
+  const roles = (c: string): string[] => {
+    try {
+      const m = (JSON.parse(c) as { messages?: { role?: unknown }[] }).messages;
+      return Array.isArray(m) ? m.map((x) => String(x?.role)) : [];
+    } catch {
+      return [];
+    }
+  };
+  try {
+    peticionRutas = diferenciasProfundas(JSON.parse(enviado), JSON.parse(recibido), ["model"]);
+  } catch {
+    peticionRutas = { perdidas: [], anadidas: [], cambiadas: ["$ (the upstream did not receive JSON)"] };
+  }
+  const beta = cabecerasRecibidas["anthropic-beta"];
+  let respuesta: Fidelidad | FidelidadDeSse;
+  let uso: FidelidadDeUso;
+  if (stream) {
+    const sse = compararSseMensajes(directa, viaGateway);
+    respuesta = sse;
+    uso = sse.uso;
+  } else {
+    respuesta = compararCuerpos(directa, viaGateway);
+    let ud: unknown;
+    let ug: unknown;
+    try {
+      ud = (JSON.parse(directa) as { usage?: unknown }).usage;
+      ug = (JSON.parse(viaGateway) as { usage?: unknown }).usage;
+    } catch {
+      /* sin JSON no hay usage que comparar: sale entero como perdido */
+    }
+    uso = compararUso(ud, ug);
+  }
+  return {
+    stream,
+    peticion: compararCuerpos(enviado, recibido, ["model"]),
+    peticionRutas,
+    cabeceras: compararCabeceras(cabeceras, cabecerasRecibidas),
+    betaRecibida: typeof beta === "string" ? beta : null,
+    roles: { enviados: roles(enviado), recibidos: roles(recibido) },
+    respuesta,
+    uso,
+  };
 }
 
 export interface CargaDeBrazo {
@@ -417,7 +553,15 @@ async function principal(): Promise<void> {
     if (n === "bvsala" || n === "bvsala-medido") {
       const g = await lanzar(lanzadorBvsala, ["--upstream", origenUpstream, "--modo", n === "bvsala" ? "paso" : "medido"]);
       hijos.push(g.hijo);
-      objetivos.push({ nombre: n, base: `http://127.0.0.1:${g.puerto}`, rutaChat: "/v1/chat/completions", modelo: "gpt-4o-mini", cabeceras: {}, ...(g.hijo.pid ? { pid: g.hijo.pid } : {}) });
+      objetivos.push({
+        nombre: n,
+        base: `http://127.0.0.1:${g.puerto}`,
+        rutaChat: "/v1/chat/completions",
+        modelo: "gpt-4o-mini",
+        cabeceras: {},
+        mensajes: MENSAJES_BVSALA,
+        ...(g.hijo.pid ? { pid: g.hijo.pid } : {}),
+      });
     } else if (terceros[n]) {
       const o = terceros[n]!;
       objetivos.push(pidsDeTerceros[n] ? { ...o, pid: pidsDeTerceros[n]! } : o);
@@ -432,6 +576,13 @@ async function principal(): Promise<void> {
   // gpt-5-mini sí lo admite, y ahí quitarlo es cobrar el doble.
   const modelosFidelidad = (arg("--modelos-fidelidad") ?? "gpt-4o-mini,gpt-5-mini").split(",").map((s) => s.trim()).filter(Boolean);
   const fidelidades: Record<string, ResultadoDeFidelidad | { error: string }> = {};
+  // E1 · la fidelidad en el dialecto de Anthropic, con un modelo que todos los
+  // catálogos conocen (haiku-4-5) y con el insignia del momento (opus-5-5), en
+  // JSON y en SSE.
+  const modelosAnthropic = (arg("--modelos-fidelidad-anthropic") ?? "claude-haiku-4-5,claude-opus-5-5").split(",").map((x) => x.trim()).filter(Boolean);
+  const fidelidadesAnthropic: Record<string, ResultadoDeFidelidadMensajes | { error: string }> = {};
+  // --solo-fidelidad: solo las pruebas de fidelidad, sin latencia ni carga.
+  const soloFidelidad = process.argv.includes("--solo-fidelidad");
   const errores: { objetivo: string; escenario: string; error: string }[] = [];
   const filasDeError: string[] = [];
   const memoria: Record<string, number | null> = {};
@@ -449,8 +600,27 @@ async function principal(): Promise<void> {
     }
   }
 
+  // 1-bis · La fidelidad en el dialecto de Anthropic (E1). Solo quien tenga ruta de Mensajes.
+  for (const o of objetivos) {
+    const conMensajes = o.mensajes ?? objetivosDeTerceros(up?.puerto ?? puertoUpstream)[o.nombre]?.mensajes;
+    for (const m of modelosAnthropic) {
+      for (const stream of [false, true]) {
+        const clave = `${o.nombre} · ${m} · ${stream ? "sse" : "json"}`;
+        if (!conMensajes) {
+          fidelidadesAnthropic[clave] = { error: "no Messages route configured for this gateway in the bench" };
+          continue;
+        }
+        try {
+          fidelidadesAnthropic[clave] = await medirFidelidadMensajes({ nombre: o.nombre, base: o.base, mensajes: conMensajes }, origenUpstream, m, stream);
+        } catch (e) {
+          fidelidadesAnthropic[clave] = { error: (e instanceof Error ? e.message : String(e)).replace(/\|/g, "/").slice(0, 200) };
+        }
+      }
+    }
+  }
+
   // 2 · Latencia: todos los gateways en las mismas rondas, escenario a escenario.
-  for (const [i, e] of escenarios.entries()) {
+  for (const [i, e] of (soloFidelidad ? [] : escenarios).entries()) {
     const directo: DestinoDeMedida = {
       url: new URL("/v1/chat/completions", origenUpstream),
       cabeceras: {},
@@ -487,7 +657,7 @@ async function principal(): Promise<void> {
 
   // 3 · Carga (opcional): todos los brazos en bloques alternos.
   let cargaPorBrazo: Record<string, CargaDeBrazo> | null = null;
-  if (concurrencia > 0) {
+  if (concurrencia > 0 && !soloFidelidad) {
     const cuerpo = (m: string) => cuerpoDeChat({ bytes: 1_024, modelo: m, stream: false });
     console.error(`· carga c=${concurrencia} · ${peticionesCarga} peticiones por brazo`);
     cargaPorBrazo = await medirCargaVarios({
@@ -536,13 +706,30 @@ async function principal(): Promise<void> {
         `${r.identicoEnBytes ? "sí" : "no"} | ${lista(r.perdidas)} / ${lista(r.anadidas)} / ${lista(r.cambiadas)} |`,
     );
   }
+  console.log(
+    "\n| Gateway · modelo · formato | Petición: bytes intactos | Petición: rutas perdidas / añadidas / cambiadas (sin `model`) | `anthropic-version`/`anthropic-beta` perdidas / cambiadas | Respuesta: bytes intactos | `usage`: perdidas / añadidas / cambiadas |\n|---|---|---|---|---|---|",
+  );
+  for (const [n, fi] of Object.entries(fidelidadesAnthropic)) {
+    if ("error" in fi) {
+      console.log(`| ${n} | error: ${fi.error} | | | | |`);
+      continue;
+    }
+    const r = fi.peticionRutas;
+    console.log(
+      `| ${n} | ${fi.peticion.identicoEnBytes ? "sí" : "no"} | ${lista(r.perdidas)} / ${lista(r.anadidas)} / ${lista(r.cambiadas)} | ` +
+        `${lista(fi.cabeceras.perdidas)} / ${lista(fi.cabeceras.cambiadas)} | ${fi.respuesta.identicoEnBytes ? "sí" : "no"} | ` +
+        `${lista(fi.uso.perdidas)} / ${lista(fi.uso.anadidas)} / ${lista(fi.uso.cambiadas)} |`,
+    );
+  }
   if (Object.keys(memoria).length) console.log(`\nMemoria residente al final (MB): ${JSON.stringify(memoria)}`);
 
   if (process.argv.includes("--guardar")) {
     const fecha = new Date().toISOString().slice(0, 10);
     // --etiqueta distingue dos tiradas del mismo día (p. ej. «a» y «b»).
     const etiqueta = arg("--etiqueta");
-    const destino = join(RAIZ, "benchmarks", "evidencia", `latencia-gateways-${fecha}${etiqueta ? `-${etiqueta}` : ""}.json`);
+    // --prefijo cambia el nombre del fichero (p. ej. «fidelidad-anthropic» para E1).
+    const prefijo = arg("--prefijo") ?? "latencia-gateways";
+    const destino = join(RAIZ, "benchmarks", "evidencia", `${prefijo}-${fecha}${etiqueta ? `-${etiqueta}` : ""}.json`);
     mkdirSync(dirname(destino), { recursive: true });
     const versiones: Record<string, string> = {};
     process.argv.forEach((a, i) => {
@@ -559,7 +746,15 @@ async function principal(): Promise<void> {
             "Rondas pareadas directo/gateway en orden aleatorio equilibrado contra un upstream falso local; " +
             "sobrecoste = mediana de las diferencias con IC 95 % por bootstrap (benchmarks/latencia-gateways/nucleo.ts).",
           maquina: { cpu: cpus()[0]?.model ?? "?", nucleos: cpus().length, memoriaGb: Math.round(totalmem() / 2 ** 30), node: process.version, plataforma: `${process.platform}/${process.arch}` },
-          parametros: { rondas, calentamiento, concurrencia, peticionesCarga, bvsalaCompilado: !process.argv.includes("--bvsala-desde-fuente") },
+          parametros: {
+            rondas: soloFidelidad ? 0 : rondas,
+            calentamiento,
+            concurrencia: soloFidelidad ? 0 : concurrencia,
+            peticionesCarga,
+            bvsalaCompilado: !process.argv.includes("--bvsala-desde-fuente"),
+            soloFidelidad,
+            modelosFidelidadAnthropic: modelosAnthropic,
+          },
           // La carga media de la máquina al terminar (1, 5 y 15 min): la tirada
           // compartió máquina con otros procesos y esto lo deja escrito.
           cargaDeLaMaquina: { alEmpezar: cargaAlEmpezar, alTerminar: loadavg().map((x) => Math.round(x * 10) / 10) },
@@ -567,6 +762,7 @@ async function principal(): Promise<void> {
           resultados,
           errores,
           fidelidades,
+          fidelidadesAnthropic,
           carga: cargaPorBrazo,
           memoriaMb: memoria,
           recuentoDelUpstream: up ? await recuentoDe(up.hijo) : null,

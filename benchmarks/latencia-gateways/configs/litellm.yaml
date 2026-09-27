@@ -2,7 +2,10 @@
 # Sin base de datos ni master key: lo mínimo que arranca (el quickstart de su
 # documentación). La clave es de relleno; el upstream falso no mira ninguna.
 # Un alias por modelo: gpt-4o-mini para la latencia y gpt-5-mini para la prueba
-# de fidelidad con Flex (arnes.ts → objetivosDeTerceros).
+# de fidelidad con Flex (arnes.ts → objetivosDeTerceros). Los `bench-claude-*`
+# son la prueba de fidelidad de Mensajes (E1, 2026-09-27): el endpoint
+# `/v1/messages` del proxy con el proveedor `anthropic/`, que añade `/v1/messages`
+# a su `api_base`.
 model_list:
   - model_name: bench-gpt-4o-mini
     litellm_params:
@@ -13,4 +16,14 @@ model_list:
     litellm_params:
       model: openai/gpt-5-mini
       api_base: http://127.0.0.1:9911/v1
+      api_key: relleno-no-es-una-clave
+  - model_name: bench-claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_base: http://127.0.0.1:9911
+      api_key: relleno-no-es-una-clave
+  - model_name: bench-claude-opus-5-5
+    litellm_params:
+      model: anthropic/claude-opus-5-5
+      api_base: http://127.0.0.1:9911
       api_key: relleno-no-es-una-clave

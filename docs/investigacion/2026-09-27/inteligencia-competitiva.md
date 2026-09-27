@@ -301,3 +301,68 @@ Consultadas el 27‑sep‑2026 salvo que se indique otra fecha. El cupo de búsq
 34. `tensorzero/tensorzero`, archivado: https://github.com/tensorzero/tensorzero
 35. API de descargas de npm, 28‑ago a 26‑sep‑2026: https://api.npmjs.org/downloads/point/last-month/@portkey-ai/gateway (y el análogo para `@maximhq/bifrost` y `@helicone/ai-gateway`)
 36. Portkey, `src/handlers/streamHandler.ts` (espera de 25 ms antes del primer trozo, líneas 182–186): https://github.com/Portkey-AI/gateway/blob/main/src/handlers/streamHandler.ts [código]
+
+---
+
+## 12. Anexo del 27‑sep‑2026 (noche): E7 y E1, ejecutados
+
+Línea «negativas y fidelidad de Anthropic». Mismo arnés y misma máquina que §3 (Apple M4 Pro, Node 25.9.0, compartida con otras cuatro líneas). Etiqueta nueva: **[laboratorio]** = cifra o resultado obtenido hoy en esta máquina contra el upstream falso, con las versiones fijadas de §3; no es una medida contra ningún proveedor real (esta línea no llamó a ninguna API con gasto). Nada de este anexo es texto público: comparar con nombre fuera del repo lo aprueba el dueño.
+
+### 12.1 E7 · Negativas facturadas
+
+**Qué dice Anthropic** [doc, consultado el 27‑sep‑2026, 37–39]. Una negativa es un HTTP 200 normal con `content: []`, `stop_reason: "refusal"` y `stop_details: { type: "refusal", category, explanation }`; «either way, `content` is empty and token counts appear in `usage`». En stream: `message_start` con su `usage`, ningún bloque y un `message_delta` con `delta.stop_reason: "refusal"` y `delta.stop_details`. Desde el 24‑sep se cobran las que llegan **antes de cualquier salida** en `bio`, `frontier_llm` y `reasoning_extraction`, «like any other request, at the rates of the model that ran it»; en `cyber`, `general_harms` o categoría nula **no** se cobran; las de mitad de stream se cobraban ya. La lista «may change». Afecta a Fable 5.1, Fable 5, Opus 5.5 y Opus 5.
+
+**Hipótesis: confirmada.** Con una negativa cobrada (`frontier_llm`, Opus 5.5, 412 tokens de entrada, 0 de salida) el gateway (JSON y SSE), el SDK (`generate` y `generateStream` con el proveedor de Anthropic), el adaptador del SDK oficial (`messages.create` y `messages.stream`) y, donde aplica, Chat Completions (`finish_reason: "content_filter"`) la miden `measured`, con su coste (0,001648 $ [laboratorio]), baseline igual al coste y `netSavings` 0. Lo atan 14 tests en `test/negativas-facturadas.test.ts`: un filtro futuro de «respuesta vacía» que la perdiera se pone rojo.
+
+**Lo que no estaba bien, y se arregló en este PR** (lo encontraron esos mismos tests):
+
+| # | Dónde | Qué pasaba [laboratorio] | Arreglo |
+|---|---|---|---|
+| 1 | SDK, caché exacta y semántica | La negativa se guardaba 24 h y la repetición salía `cache: exact` con base **`reference`** (comisionable); un seguidor de singleflight, también `reference` | Sexta puerta de la caché: `finishReason === "content_filter"` no se cachea; sin registro de referencia (E7 de `referencia.ts`), el seguidor sale `estimated` |
+| 2 | Gateway, coalescencia | La gemela de una negativa se valoraba por referencia, y la verja real del ingest la aceptaba como `reference` | Motivo nuevo `primary-refused`: la gemela sigue siendo llamada evitada, pero `estimated` |
+| 3 | SDK con contrato de salida | La negativa (sin texto) no cumplía el contrato y la capa **pagaba una reparación** al mismo modelo con la salida vacía: dos llamadas y `netSavings: -1` | `repair-skipped` con `skipReason: "provider_refusal"` (tipo público ampliado) |
+
+**Decisión: una negativa no se guarda en caché ni se repite por referencia.** (a) No es una respuesta: la documentación manda reintentar en otro modelo o con `fallbacks`, y los clasificadores tienen falsos positivos; congelarla 24 h serviría el falso positivo sin preguntar. (b) Repetida por referencia acreditaría una llamada evitada que en `cyber`, `general_harms` o categoría nula habría costado 0 $: ahorro inventado y comisionable. (c) La lista de categorías cobradas puede cambiar, así que al leer la caché no se sabe si la repetición se habría facturado. Es la regla que ya aplicaban los adaptadores de frameworks (solo se reutiliza `stop`/`end_turn`) y la misma familia que «media respuesta no se cachea». El coste de equivocarse al revés es una llamada más, y queda en la traza.
+
+**Lo que queda, y es del dueño** [inferido]:
+
+- **Las negativas NO cobradas se miden como si lo fueran.** En `cyber`, `general_harms` o categoría nula el gateway y el SDK apuntan `measured` con coste = `usage` × precio, cuando Anthropic factura 0 $. Sin palancas el ahorro sigue a 0 (solo se infla el gasto del panel), pero con la palanca C (modelo hermano) o la rebaja de TTL el gateway podría acreditar ahorro `measured` sobre una petición que no se cobró. Opciones: coste 0 si la categoría no está en la lista publicada (frágil: la lista cambia), marcarla sin crédito, o dejarlo. Toca cifras de gasto y comisión: no se cambió.
+- **La negativa de salidas estructuradas de OpenAI** (`content: null` + `refusal`, con `finish_reason: "stop"`) se mide bien, pero el adaptador no la propaga como negativa y la capa aún paga una reparación. Arreglarlo cambiaría el `finishReason` que ve el cliente; no se hizo.
+- La negativa de la Responses API (una parte `refusal` dentro de una respuesta `completed`) no la ve la guarda de coalescencia del gateway.
+
+### 12.2 E1 · Fidelidad en el dialecto de Anthropic
+
+**Método.** `pnpm latencia:gateways --solo-fidelidad` con el cuerpo nuevo `cuerpoDeFidelidadAnthropic`: `cache_control` con `ttl: "1h"` en `system`, en una herramienta y en el último turno; la búsqueda de herramientas (herramienta de búsqueda, una diferida con `defer_loading: true` y, en el historial, su `tool_search_tool_result` con un `tool_reference`); y las herramientas en línea: un mensaje `system` a mitad de conversación con un `tool_addition` por definición y otro por referencia [doc, 40]. Cabeceras `anthropic-version: 2023-06-01` y `anthropic-beta: extended-cache-ttl-2025-04-11,inline-tools-2026-09-15,mid-conversation-tool-changes-2026-07-01`. El upstream falso contesta con una `tool_use` y un `usage` con escritura de caché de 1 h desglosada (100 de entrada, 2.048 escritos a 1 h, 12 de salida). Con `claude-haiku-4-5` y `claude-opus-5-5`, en JSON y en SSE; dos pasadas, idénticas. Versiones de §3, instaladas de nuevo en un directorio temporal (Bifrost con la misma sha256 `dd596a79…33b4a`), en loopback salvo Portkey, que no lo permite; todo parado al acabar. Evidencia: `benchmarks/evidencia/fidelidad-anthropic-2026-09-27.json` [41].
+
+| Gateway (ruta) | Cuerpo que llega al proveedor | `anthropic-beta` | Respuesta JSON | Respuesta SSE |
+|---|---|---|---|---|
+| **BV‑SALA** (`/v1/messages`, los dos modos) | **Bytes idénticos** | **Intacta** | **Bytes idénticos** | **Bytes idénticos** |
+| LiteLLM 1.102.1 (`/v1/messages`) | Mismo JSON reserializado; añade `stream: false`. Conserva los `ttl`, el `tool_reference` y las herramientas en línea | Le **antepone** `advanced-tool-use-2025-11-20` | `model` pasa a ser el alias (`bench-claude-haiku-4-5`); `usage` intacto | Igual: el alias en `message_start`; `usage` intacto |
+| Bifrost v2.2.3 (`/anthropic/v1/messages`) | **Quita el mensaje `system` a mitad de conversación** (los dos `tool_addition`: las herramientas en línea no llegan); parte el turno del asistente en dos; aplana `tool_search_tool_result.content` en `tool_references`. Conserva los `ttl` de `system`, herramientas y turno | **La sustituye entera** por `tool-search-tool-2025-10-19` (se pierden `extended-cache-ttl`, `inline-tools` y `mid-conversation-tool-changes`) | Mismo JSON, claves reordenadas; `usage` intacto | Quita `service_tier` y **reescribe el `message_delta` final con `input_tokens: 0`, `cache_creation_input_tokens: 0` y la escritura de 1 h a 0** |
+| Portkey 1.15.2 (`/v1/messages`) | Mismo JSON, claves reordenadas | Intacta | **Bytes idénticos** | **HTTP 500** `TypeError: immutable` (el fallo de stream de §4.1) |
+
+[laboratorio; el `model` reescrito por diseño no cuenta como cambio en el cuerpo]
+
+Lo que sale de la tabla:
+
+- **La hipótesis de E1 se cumple con Bifrost** [laboratorio + inferido]: en el dialecto que más tráfico lleva al gateway de BV‑SALA (Claude Code), pierde la cabecera de betas que Claude Code negocia para el TTL de 1 h y las herramientas en línea, cuya razón de ser es cambiar herramientas **sin** invalidar la caché de prefijo. Si la API real sigue exigiendo esa beta para el TTL de 1 h, o si el cliente recurre a reescribir `tools` al no llegarle las herramientas en línea, la factura sube; esta línea **no lo verificó** contra la API real.
+- **El `usage` del stream de Bifrost es el hallazgo con más dinero** [laboratorio + código]. Quien fusiona `message_start` ∪ `message_delta` para leer el contador —el `MessageStream` del SDK oficial de TypeScript (0.128.0) pisa los campos no nulos del delta, y el medidor del gateway y el proveedor de Anthropic de BV‑SALA hacen lo mismo [42]— lee 0 de entrada y 0 de escritura de caché. En el caso de laboratorio, con precios de Opus 5.5, la petición cuesta 0,017024 $ y el contador fusionado dice 0,00024 $: un 98,6 % de gasto que desaparece. Consecuencia para BV‑SALA [inferido]: el SDK detrás de Bifrost mediría de menos (y E6, «BV‑SALA delante de LiteLLM», habría que repetirlo con Bifrost antes de recomendarlo).
+- **LiteLLM** conserva todo lo que cambia la factura; reescribe el `model` de la respuesta (como en Chat Completions, §4.3) y añade una beta por su cuenta.
+- **Portkey** conserva el JSON en los dos sentidos, pero sin stream no sirve a Claude Code.
+- **BV‑SALA** es el único de los cuatro que entrega los bytes intactos en los dos sentidos también en este dialecto, y ahora lo ata la CI: `test/latencia-gateways.test.ts` pasa la prueba contra el gateway en proceso (dos modelos, JSON y SSE, cuerpo, `anthropic-beta`, respuesta y `usage`) y un control negativo demuestra que la prueba ve un `ttl` y una beta perdidos.
+
+**Umbral de §10:** «si alguno pierde un campo de caché: entra en la sección "no empeora" de la web con método y fecha». Bifrost pierde la beta del TTL y las herramientas en línea, y reescribe el contador del stream. El texto público con nombre queda **para el dueño**.
+
+### 12.3 Qué entra con este anexo
+
+- E7: `src/pipeline/pipeline.ts` (la sexta puerta de la caché y la reparación que no se hace), `src/contracts/types.ts` (`skipReason: "provider_refusal"`), `gateway/medidor.ts`, `gateway/coalescencia.ts` y `gateway/servidor.ts` (`primary-refused`), `test/negativas-facturadas.test.ts`.
+- E1: `benchmarks/latencia-gateways/` (cuerpo, comparación de cabeceras, diferencias por ruta, SSE y `usage`; el upstream falso con la respuesta de fidelidad de Mensajes y el espejo de cabeceras; `--solo-fidelidad`, `--prefijo` y `--modelos-fidelidad-anthropic`; las rutas de Mensajes de LiteLLM, Bifrost y Portkey en sus configuraciones), 7 tests nuevos en `test/latencia-gateways.test.ts` y la evidencia.
+
+**Fuentes del anexo** (consultadas el 27‑sep‑2026):
+
+37. Anthropic, «Refusals and fallback» («What a refusal looks like», «How refusals are billed»): https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback
+38. Anthropic, «Handling stop reasons» (`refusal`, en JSON y en stream): https://platform.claude.com/docs/en/build-with-claude/handling-stop-reasons
+39. Anthropic, notas de versión de la API, 24‑sep‑2026 («Refusals Billing Change»): https://platform.claude.com/docs/en/release-notes/api
+40. Anthropic, «Mid-conversation system messages» (`tool_addition`, `tool_reference`, betas `inline-tools-2026-09-15` y `mid-conversation-tool-changes-2026-07-01`): https://platform.claude.com/docs/en/build-with-claude/mid-conversation-system-messages
+41. `benchmarks/evidencia/fidelidad-anthropic-2026-09-27.json` (este PR). [laboratorio]
+42. `@anthropic-ai/sdk` 0.128.0, `lib/MessageStream.js` (el `message_delta` pisa `input_tokens` y los contadores de caché si no son nulos); `gateway/medidor.ts` (`ObservadorSse`) y `src/providers/anthropic-uso.ts` (`fusionarUso`). [código]

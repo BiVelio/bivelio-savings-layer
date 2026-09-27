@@ -897,8 +897,16 @@ export interface QualityRepairCheck {
    *   sending the request without the layer (opt-in, `skipRepairAboveBaseline`).
    * - `decode_time_constraint`: generation was already constrained, so a retry
    *   would not change the outcome.
+   * - `provider_refusal`: the provider refused the request (`finishReason:
+   *   "content_filter"`, Anthropic's `stop_reason: "refusal"`); a repair on the
+   *   same model would be refused, and may be billed, again.
    */
-  skipReason?: "output_truncated" | "schema_defect" | "would_cost_more_than_no_layer" | "decode_time_constraint";
+  skipReason?:
+    | "output_truncated"
+    | "schema_defect"
+    | "would_cost_more_than_no_layer"
+    | "decode_time_constraint"
+    | "provider_refusal";
 }
 
 /** Whether the provider stopped because it reached the output limit. */

@@ -22,6 +22,20 @@ cosas de un gateway local (el de BV-SALA y los OSS con los que se le compara):
    del gateway frente a la directa. Con dos modelos: `gpt-4o-mini` (sin Flex en
    OpenAI) y `gpt-5-mini` (con Flex).
 
+4. **Fidelidad en el dialecto de Anthropic** (E1, 2026-09-27). Un cuerpo de
+   `/v1/messages` con `cache_control` a TTL de 1 h (en `system`, en una
+   herramienta y en el último turno), la búsqueda de herramientas con una
+   diferida y su `tool_reference`, y las herramientas en línea (un mensaje
+   `system` a mitad de conversación con `tool_addition` por definición y por
+   referencia), con `anthropic-version` y `anthropic-beta`
+   (`nucleo.ts → cuerpoDeFidelidadAnthropic`). Se mira lo que llegó al upstream
+   (cuerpo ruta a ruta y las dos cabeceras) y la respuesta frente a la directa,
+   en JSON y en SSE, con el `usage` clave a clave (el desglose de la escritura de
+   1 h incluido). Con `claude-haiku-4-5` y `claude-opus-5-5`. Rutas: BV-SALA y
+   LiteLLM `/v1/messages`, Bifrost `/anthropic/v1/messages`, Portkey
+   `/v1/messages` con `x-portkey-provider: anthropic`. Helicone no entra (su
+   catálogo acaba en 2025).
+
 Todo el tráfico se queda en 127.0.0.1 y ninguna petición lleva una clave real.
 Nadie se mide a sí mismo: el reloj es el del cliente y el upstream es el mismo
 para todos.
@@ -48,7 +62,23 @@ pnpm latencia:gateways --objetivos bvsala,bvsala-medido,litellm,bifrost,portkey,
 - `--usar-upstream-existente` reutiliza un upstream falso ya lanzado a mano.
 - `--escenarios 1k,1k-stream,200k,200k-stream` elige escenarios;
   `--modelos-fidelidad gpt-4o-mini,gpt-5-mini` elige los modelos de la prueba de
-  fidelidad.
+  fidelidad y `--modelos-fidelidad-anthropic claude-haiku-4-5,claude-opus-5-5`
+  los de la de Mensajes.
+- `--solo-fidelidad` pasa solo las pruebas de fidelidad (sin latencia ni carga);
+  con `--prefijo fidelidad-anthropic` la evidencia sale en
+  `benchmarks/evidencia/fidelidad-anthropic-<fecha>.json`:
+
+```bash
+pnpm latencia:gateways --usar-upstream-existente --solo-fidelidad \
+  --objetivos bvsala,bvsala-medido,litellm,bifrost,portkey \
+  --guardar --prefijo fidelidad-anthropic \
+  --version litellm=1.102.1 --version bifrost=2.2.3 --version portkey=1.15.2
+```
+
+  La garantía de BV-SALA en este dialecto (bytes intactos en los dos sentidos,
+  `anthropic-beta` incluida, JSON y SSE) la ata también
+  `test/latencia-gateways.test.ts`, con un control negativo que demuestra que
+  la prueba ve un `ttl` perdido.
 
 ## Los gateways de terceros
 
@@ -57,7 +87,7 @@ aparte (nunca global), todas apuntando al upstream falso:
 
 | Gateway | Instalación fijada | Arranque | Puerto |
 |---|---|---|---|
-| LiteLLM proxy 1.102.1 | `uv venv litellm-venv && uv pip install --python litellm-venv/bin/python 'litellm[proxy]==1.102.1'` (rueda arm64 sha256 `da73fe3f…b280c7`) | `litellm-venv/bin/litellm --config configs/litellm.yaml --port 4000` | 4000 |
+| LiteLLM proxy 1.102.1 | `uv venv litellm-venv && uv pip install --python litellm-venv/bin/python 'litellm[proxy]==1.102.1'` (rueda arm64 sha256 `da73fe3f…b280c7`) | `litellm-venv/bin/litellm --config configs/litellm.yaml --port 4000` (E1 lo lanzó con `--host 127.0.0.1`) | 4000 |
 | Bifrost transports v2.2.3 | `curl -o bifrost-http https://downloads.getmaxim.ai/bifrost/v2.2.3/darwin/arm64/bifrost-http` (sha256 observado `dd596a79…33b4a`; el servidor no publica suma) | `./bifrost-http -app-dir <dir con configs/bifrost/config.json> -port 8080 -host 127.0.0.1` | 8080 |
 | Portkey gateway 1.15.2 | `npm install @portkey-ai/gateway@1.15.2` (tarball sha256 `be968d3a…d669`) | `node node_modules/@portkey-ai/gateway/build/start-server.js --port=8787` | 8787 |
 | Helicone AI Gateway 0.2.0-beta.30 | `gh release download v0.2.0-beta.30 -R Helicone/ai-gateway -p 'ai-gateway-aarch64-apple-darwin.tar.xz*'` y `shasum -a 256 -c` | `OPENAI_API_KEY=relleno ./ai-gateway --config configs/helicone.yaml` | 8090 |
