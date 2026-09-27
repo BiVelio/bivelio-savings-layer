@@ -273,6 +273,16 @@ export interface SavingsToggles {
    */
   deferrable?: boolean;
   /**
+   * Declare this request STANDALONE: nothing after its stable prefix will be sent again as
+   * the start of a later request (it is not a conversation turn you will continue).
+   * Defaults to false. Only acts on OpenAI models that bill prompt-cache writes above the
+   * input rate, on OpenAI's own API: the provider may then write its cache only at the
+   * stable prefix, or nowhere, instead of at the end of your message. Trade-off: repeats
+   * and continuations of this exact prompt lose the cache reads the provider default would
+   * give them. See report.cacheWrites. Never changes the answer.
+   */
+  standalone?: boolean;
+  /**
    * Set to `false` to keep this request out of verification sampling: it is
    * counted as excluded and never sent twice. No effect when verification is off.
    */
@@ -312,32 +322,33 @@ export interface DeferredExecutionReport {
    */
   credited: boolean;
   /**
-   * Fraction of the standard list price the served tier bills — `0.5` for a tier
-   * documented at half price. Present only when {@link credited}.
+   * The effective fraction of the standard rate card this call was billed at:
+   * `tierSaving.appliedCost / tierSaving.standardCost` on the one call whose tier
+   * was read. `0.5` when every component of the call bills at half price; higher
+   * when some component (typically cached input) is discounted less or not at
+   * all. Present only when {@link credited}.
    */
   discountRate?: number;
-  /**
-   * What the tier was worth on this request, in your currency unit.
-   *
-   * A COUNTERFACTUAL priced from the standard rate card: this request was not
-   * also run at standard price, so it is `(1 - discountRate)` applied to the
-   * standard-rate cost of THE ONE CALL whose {@link servedTier} was read.
-   *
-   * ⚠️ IT IS NOT `cost.actual * (1 - discountRate)`, and the difference is not
-   * rounding. `cost.actual` is the whole request: it can also carry a repair
-   * retry, a tool-discovery probe, or a model-cascade attempt that was tried and
-   * thrown away. No tier was read back for any of those, so none of them is
-   * credited here even though they very likely got the discount too. Compute the
-   * product yourself and you will get a LARGER number than this field — this
-   * field is the part that was actually observed.
-   *
-   * ⚠️ `cost.actual` prices this request at the STANDARD rate card, so when this
-   * field is present your invoice line will be LOWER than `cost.actual` by at
-   * least this amount. The bias is deliberate and it is the safe one: the layer
-   * under-reports the saving rather than promising one it cannot prove. The
-   * reason it is not folded in is {@link creditedLedger}.
-   */
+  /** @deprecated Use `tierSaving.amount`; same value. Kept for compatibility. */
   estimatedTierSaving?: number;
+  /**
+   * What the served tier was worth on the one call whose tier was read: that call's
+   * provider-reported usage at the standard rate card minus the same usage at the rate
+   * card of the tier that served it, component by component. Present only when credited.
+   *
+   * It is NOT `cost.actual` times a discount. `cost.actual` is the whole request and
+   * can also carry a repair retry, a tool-discovery probe or a model-cascade attempt;
+   * no tier was read back for those, so none of them is credited here. And
+   * `cost.actual` prices the request at the STANDARD rate card, so when this is
+   * present your invoice line is lower than `cost.actual` by at least this amount.
+   */
+  tierSaving?: PriceLeverSaving;
+  /**
+   * True when the cheaper tier had no capacity and the request was repeated once at
+   * the standard tier (layer setting `priceLevers.onCapacityError: "standard"`).
+   * Nothing is credited then, and the refused attempt is not counted as a call.
+   */
+  capacityFallback?: boolean;
   /**
    * Which of the four ledgers this credits: none, and that is the honest answer.
    * Deferring avoids no call (ledger 1), removes no tokens (2), re-encodes
@@ -358,6 +369,46 @@ export interface DeferredExecutionReport {
    */
   latency: string;
   /** Why it did what it did, in one sentence. Never empty. */
+  reason: string;
+}
+
+/**
+ * What a provider price lever was worth on one call, in your currency unit.
+ *
+ * It never enters `cost.*` and is never billed: it is reported next to the four
+ * ledgers, with its own basis.
+ */
+export interface PriceLeverSaving {
+  /** In your currency unit. Never more than the difference between the two published rate cards on this usage. */
+  amount: number;
+  /**
+   * "measured": the provider's own counter for this call at two published rate cards,
+   * the tier read back from the provider's official API, and the counter reporting how
+   * much of the input was read from (or, where billed apart, written to) the prompt
+   * cache. "estimated": anything short of that; `basisReason` says what.
+   */
+  basis: Extract<import("../tokenizer/accounting.js").CostBasis, "measured" | "estimated">;
+  /** This call's provider-reported usage at the standard rate card. */
+  standardCost: number;
+  /** The same usage at the rate card that applied. */
+  appliedCost: number;
+  /** YYYY-MM-DD: when these rate cards were last checked against the provider's published prices. */
+  pricesCheckedOn: string;
+  /** One sentence. Never empty. */
+  basisReason: string;
+}
+
+/** Present whenever `savings.standalone` is true, including when it did nothing. */
+export interface CacheWriteReport {
+  mode: "explicit" | "provider-default";
+  /**
+   * Cache breakpoints the layer placed: 0 or 1. With 0 in explicit mode the provider
+   * neither reads nor writes its prefix cache.
+   */
+  breakpoints: number;
+  /** Always basis "estimated": the provider default was not run for this request. */
+  avoidedWritePremium?: PriceLeverSaving;
+  /** Why, in one sentence, including what it costs you. Never empty. */
   reason: string;
 }
 
@@ -801,6 +852,12 @@ export interface SavingsReport {
    * `savings.deferrable` is `true`, including when it got you nothing.
    */
   deferred?: DeferredExecutionReport;
+
+  /**
+   * Where the provider was allowed to write its prompt cache. Present whenever
+   * `savings.standalone` is `true`, including when it changed nothing.
+   */
+  cacheWrites?: CacheWriteReport;
 
   /** How a streamed request was delivered. Present only on results of `generateStream`. */
   streaming?: StreamingReport;

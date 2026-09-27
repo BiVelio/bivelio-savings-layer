@@ -441,7 +441,7 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     ]);
     const r1 = await recoger(openai(servidorSse(limpio)).generateStream!(REQ));
     expect(r1.usage.reasoningTokens).toBe(0);
-    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
+    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0, origen: "openai" });
 
     const conRazonamiento = sse([
       { choices: [{ delta: { reasoning_content: "pensando…" } }] },
@@ -457,7 +457,7 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     const nativo = servidor([completion('{"answer":"x"}', USO_OPENAI(0))]);
     const r1 = await openai(nativo.fetchImpl).generate({ ...REQ, schema: CONTRATO });
     expect(r1.structuredNatively).toBe(true);
-    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: true, esquemaEstricto: true, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
+    expect(atestadoDelCable(r1)).toEqual({ esquemaEnFormatoNativo: true, esquemaEstricto: true, esquemaPorPrompt: false, piezasDelAdaptador: 0, origen: "openai" });
 
     const degradado = servidor([
       { estado: 400, cuerpo: "Unrecognized request argument supplied: response_format" },
@@ -465,11 +465,11 @@ describe("los adaptadores declaran el razonamiento y atestiguan el cable", () =>
     ]);
     const r2 = await openai(degradado.fetchImpl).generate({ ...REQ, schema: CONTRATO });
     expect(r2.structuredNatively).toBe(false);
-    expect(atestadoDelCable(r2)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: true, piezasDelAdaptador: 0 });
+    expect(atestadoDelCable(r2)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: true, piezasDelAdaptador: 0, origen: "openai" });
 
     const sinEsquema = servidor([completion("ok", USO_OPENAI(0))]);
     const r3 = await openai(sinEsquema.fetchImpl).generate(REQ);
-    expect(atestadoDelCable(r3)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0 });
+    expect(atestadoDelCable(r3)).toEqual({ esquemaEnFormatoNativo: false, esquemaEstricto: false, esquemaPorPrompt: false, piezasDelAdaptador: 0, origen: "openai" });
   });
 
   it("Anthropic: sin bloque de razonamiento declara 0; con él (también en stream), no dice nada", async () => {
@@ -660,6 +660,8 @@ describe("revisión · el esquema cuenta solo en modo estricto", () => {
       esquemaEstricto: false,
       esquemaPorPrompt: false,
       piezasDelAdaptador: 0,
+      // El adaptador habló con el API oficial de OpenAI (por el host).
+      origen: "openai",
     });
   });
 

@@ -56,6 +56,24 @@ export interface AtestadoDelCable {
    * ver `PIEZAS_POR_HERRAMIENTA_SIN_PARAMETROS`).
    */
   piezasDelAdaptador: number;
+  /**
+   * El API OFICIAL con el que habló el adaptador, decidido por el host de su
+   * `baseUrl` (`api.openai.com` → "openai", `generativelanguage.googleapis.com`
+   * → "google"; cualquier otro, `null`). Ausente equivale a `null`. Es la
+   * condición M2 del ahorro de tier (`economics/tier-diferido.ts`): sin ella el
+   * ahorro queda, como mucho, `estimated`. Un proveedor de terceros no puede
+   * poner esto, por construcción.
+   */
+  origen?: "openai" | "google" | null;
+  /** De dónde leyó el adaptador el tier servido: el cuerpo o una cabecera. */
+  tierLeidoDe?: "cuerpo" | "cabecera";
+  /**
+   * Presente solo cuando la llamada salió en modo EXPLÍCITO de caché de prefijo
+   * (`prompt_cache_options.mode: "explicit"`), con los puntos de ruptura que el
+   * adaptador puso: 0 (ni se escribe ni se lee) o 1 (en la frontera del prefijo
+   * estable).
+   */
+  cacheExplicita?: { puntos: 0 | 1 };
 }
 
 /** El atestado de una llamada sin contrato: nada nativo, nada por prompt. */
@@ -91,6 +109,23 @@ export function atestiguar<T extends ProviderResponse>(respuesta: T, atestado: A
 /** El atestado de una respuesta, o `undefined` si ningún adaptador propio la firmó. */
 export function atestadoDelCable(respuesta: unknown): AtestadoDelCable | undefined {
   return typeof respuesta === "object" && respuesta !== null ? atestados.get(respuesta) : undefined;
+}
+
+// EL ORIGEN DE UN PROVEEDOR, antes de llamarlo. El pipeline decide si una
+// petición `standalone` sale en modo explícito ANTES de la llamada, así que no
+// puede esperar al atestado de la respuesta. Mismo patrón: WeakMap privado, solo
+// lo escriben los adaptadores de este paquete, y un proveedor de terceros
+// devuelve `undefined` (no atestigua nada).
+const origenes = new WeakMap<object, "openai" | "google" | null>();
+
+/** Declara el origen oficial de un proveedor. Solo lo llaman los adaptadores de este paquete. */
+export function declararOrigen(proveedor: object, origen: "openai" | "google" | null): void {
+  origenes.set(proveedor, origen);
+}
+
+/** El origen que un adaptador propio declaró; `undefined` para un proveedor de terceros. */
+export function origenDelProveedor(proveedor: unknown): "openai" | "google" | null | undefined {
+  return typeof proveedor === "object" && proveedor !== null ? origenes.get(proveedor) : undefined;
 }
 
 /**

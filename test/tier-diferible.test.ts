@@ -5,8 +5,8 @@ import { OpenAICompatibleProvider } from "../src/providers/openai-compatible.js"
 import { createSavingsLayer } from "../src/pipeline/create.js";
 import { reiniciarAvisos } from "../src/util/warn-once.js";
 import {
-  ahorroDelTier,
   latenciaDelTier,
+  valorarTierServido,
   veredictoDelTier,
 } from "../src/economics/tier-diferido.js";
 import type { Provider, ProviderRequest, ProviderResponse } from "../src/providers/types.js";
@@ -52,10 +52,14 @@ const PETICION_ANTHROPIC: ProviderRequest = {
   messages: [{ role: "user", content: "clasifica esta fila" }],
 };
 
+// El `usage` con la forma que devuelve el API de OpenAI: `prompt_tokens_details`
+// con `cached_tokens` aunque sea 0. Sin ese contador no se sabe qué parte de la
+// entrada salió de la caché, y el ahorro del tier baja al suelo y a `estimated`
+// (ver `valorarTierServido`); eso se prueba aparte, a propósito.
 function respuestaOpenAI(extra: Record<string, unknown> = {}) {
   return {
     choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
-    usage: { prompt_tokens: 1000, completion_tokens: 200 },
+    usage: { prompt_tokens: 1000, completion_tokens: 200, prompt_tokens_details: { cached_tokens: 0 } },
     ...extra,
   };
 }
@@ -203,26 +207,70 @@ describe("el precio de un tier servido", () => {
       factor: null,
       conDescuento: false,
     });
-    expect(ahorroDelTier(v, 10)).toBeNull();
+    expect(
+      valorarTierServido({
+        modelo: "gpt-5-mini",
+        uso: { inputTokens: 1000, outputTokens: 200 },
+        tierServido: "tier-que-openai-invente-manana",
+        origen: "openai",
+        tierLeidoDe: "cuerpo",
+      }),
+    ).toEqual({ ok: false, motivo: "unknown-tier" });
   });
 
   it("sin tier reportado no hay veredicto: ausente NO es «estándar»", () => {
     expect(veredictoDelTier(undefined)).toBeNull();
     expect(veredictoDelTier("")).toBeNull();
-    expect(ahorroDelTier(null, 10)).toBeNull();
+    expect(
+      valorarTierServido({
+        modelo: "gpt-5-mini",
+        uso: { inputTokens: 1000, outputTokens: 200 },
+        tierServido: undefined,
+        origen: "openai",
+      }),
+    ).toEqual({ ok: false, motivo: "no-served-tier" });
   });
 
-  it("el ahorro es `coste · (1 − factor)`, y solo con descuento", () => {
-    expect(ahorroDelTier(veredictoDelTier("flex"), 8)).toBeCloseTo(4, 12);
-    expect(ahorroDelTier(veredictoDelTier("default"), 8)).toBeNull();
+  it("el ahorro es el MISMO usage a las dos tarifas publicadas, y solo con descuento", () => {
+    // gpt-5-mini: estándar 0,25 / 2,00 por 1M; Flex 0,125 / 1,00 (página oficial
+    // de precios de OpenAI, 2026-09-27). 1000·(0,25−0,125) + 200·(2−1) por 1M.
+    const v = valorarTierServido({
+      modelo: "openai/gpt-5-mini",
+      uso: { inputTokens: 1000, outputTokens: 200, cachedInputTokens: 0 },
+      tierServido: "flex",
+      origen: "openai",
+      tierLeidoDe: "cuerpo",
+    });
+    expect(v.ok).toBe(true);
+    if (!v.ok) return;
+    expect(v.importe).toBeCloseTo(0.000325, 12);
+    expect(v.importe).toBeLessThanOrEqual(v.costeEstandar - v.costeAplicado);
+    expect(v.basis).toBe("measured");
+    expect(v.factorEfectivo).toBeCloseTo(0.5, 12);
+    expect(
+      valorarTierServido({
+        modelo: "gpt-5-mini",
+        uso: { inputTokens: 1000, outputTokens: 200 },
+        tierServido: "default",
+        origen: "openai",
+        tierLeidoDe: "cuerpo",
+      }),
+    ).toEqual({ ok: false, motivo: "standard-rate-tier" });
   });
 
-  it("la latencia se CITA, no se estima", () => {
+  it("la latencia se CITA, no se estima, y depende del proveedor", () => {
     // OpenAI no publica una latencia comprometida para flex. Lo que sí publica es
     // la forma del fallo, y eso es lo que se repite. Un «diez veces más lento»
     // inventado aquí sería justo la cifra que este producto no puede escribir.
-    expect(latenciaDelTier("flex")).toMatch(/no latency commitment/i);
-    expect(latenciaDelTier("flex")).toMatch(/429/);
+    expect(latenciaDelTier("flex", "openai")).toMatch(/no latency commitment/i);
+    expect(latenciaDelTier("flex", "openai")).toMatch(/429/);
+    // Google sí publica un objetivo, y una forma de fallo distinta.
+    expect(latenciaDelTier("flex", "google")).toMatch(/1–15 min target/);
+    expect(latenciaDelTier("flex", "google")).toMatch(/503 or 429/);
+    expect(latenciaDelTier("flex", "google")).toMatch(/never upgraded/);
+    // Sin origen atestiguado no se cita a nadie, pero sí la forma del fallo.
+    expect(latenciaDelTier("flex", null)).toMatch(/unknown here/);
+    expect(latenciaDelTier("flex", null)).toMatch(/429/);
     expect(latenciaDelTier(undefined)).toMatch(/no cheaper synchronous/i);
   });
 });
@@ -254,91 +302,248 @@ class ProveedorConTier implements Provider {
   }
 }
 
-const PRECIO = { inputPer1k: 0.002, outputPer1k: 0.008 };
+// Los casos del pipeline van con `gpt-5-mini`, que SÍ tiene fila Flex publicada
+// (gpt-4o-mini no la tiene: su descuento por diferir solo existe en Batch).
+// Estándar 0,25 / 0,025 / 2,00 por 1M; Flex 0,125 / 0,0125 / 1,00 — página
+// oficial de precios de OpenAI, leída el 2026-09-27.
+const MODELO = "openai/gpt-5-mini";
+const OFICIAL = "https://api.openai.com/v1";
+const GEMINI = "https://generativelanguage.googleapis.com/v1beta/openai";
 
-const capa = (provider: Provider) =>
-  createSavingsLayer({
-    provider,
-    costModels: { "openai/gpt-4o-mini": PRECIO },
-  });
+/** Sin `costModels`: el precio es el de catálogo, condición M4 de `measured`. */
+const capa = (provider: Provider, extra: Record<string, unknown> = {}) =>
+  createSavingsLayer({ provider, ...extra });
 
-const peticion = (deferrable?: boolean): SavingsRequest => ({
-  model: "openai/gpt-4o-mini",
+const peticion = (deferrable?: boolean, model = MODELO): SavingsRequest => ({
+  model,
   messages: [{ role: "user", content: "clasifica esta fila del backfill" }],
   ...(deferrable === undefined ? {} : { savings: { deferrable } }),
 });
 
-describe("el informe del tier diferible", () => {
-  it("SE ACREDITA cuando el proveedor dice haber servido el tier con descuento", async () => {
-    const p = new ProveedorConTier("flex");
-    const { report } = await capa(p).generate(peticion(true));
+/** `fetch` con `Response` de verdad (cabeceras incluidas) que captura los cuerpos. */
+function servidor(
+  cuerpo: Record<string, unknown>,
+  cabeceras: Record<string, string> = {},
+): { enviados: Record<string, unknown>[]; fetchImpl: typeof fetch } {
+  const enviados: Record<string, unknown>[] = [];
+  const fetchImpl = (async (_url: string, init: RequestInit) => {
+    enviados.push(JSON.parse(String(init.body)));
+    return new Response(JSON.stringify(cuerpo), {
+      status: 200,
+      headers: { "content-type": "application/json", ...cabeceras },
+    });
+  }) as unknown as typeof fetch;
+  return { enviados, fetchImpl };
+}
 
-    expect(p.vistas[0]!.deferrable).toBe(true);
+const adaptador = (baseUrl: string, fetchImpl: typeof fetch) =>
+  new OpenAICompatibleProvider({ baseUrl, fetchImpl });
+
+describe("el informe del tier diferible", () => {
+  it("SE ACREDITA, `measured`, cuando el API oficial dice haber servido el tier con descuento", async () => {
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(peticion(true));
+
+    expect(s.enviados[0]!["service_tier"]).toBe("flex");
     expect(report.deferred).toBeDefined();
     expect(report.deferred!.credited).toBe(true);
     expect(report.deferred!.requestedTier).toBe("flex");
     expect(report.deferred!.servedTier).toBe("flex");
     expect(report.deferred!.discountRate).toBe(0.5);
-    // 1000 tokens de entrada a 0,002/1k + 200 de salida a 0,008/1k = 0,0036.
-    // La mitad de eso es lo que el tier valió.
-    expect(report.deferred!.estimatedTierSaving).toBeCloseTo(0.0018, 10);
+    // 1000·(0,25−0,125) + 200·(2,00−1,00), por 1M = 0,000325.
+    expect(report.deferred!.tierSaving!.amount).toBeCloseTo(0.000325, 12);
+    expect(report.deferred!.tierSaving!.basis).toBe("measured");
+    expect(report.deferred!.tierSaving!.standardCost).toBeCloseTo(0.00065, 12);
+    expect(report.deferred!.tierSaving!.appliedCost).toBeCloseTo(0.000325, 12);
+    expect(report.deferred!.tierSaving!.pricesCheckedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(report.deferred!.tierSaving!.basisReason).toMatch(/two published rate cards/);
+    expect(report.deferred!.latency).toMatch(/no latency commitment/);
+  });
+
+  it("`estimatedTierSaving` sigue ahí, y es EXACTAMENTE `tierSaving.amount`", async () => {
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(peticion(true));
+    expect(report.deferred!.estimatedTierSaving).toBe(report.deferred!.tierSaving!.amount);
   });
 
   it("⛔ los tokens de la caché de prefijo se tarifan a SU tarifa, no a la entera", async () => {
-    // LA VERJA QUE ESTABA ESCRITA Y NO PROBADA: quitar el `cachedInputPer1k` del
-    // cálculo no tumbaba NINGÚN test, porque ningún caso traía tarifa cacheada.
-    //
-    // Y es la interacción que más importa de las dos palancas, porque componen:
-    // «Tokens are priced at Batch API rates, WITH ADDITIONAL DISCOUNTS FROM
-    // PROMPT CACHING» (guía Flex de OpenAI). O sea que el 0,5 va ENCIMA de la
-    // tarifa cacheada, no en su lugar. Tarifando los 800 tokens cacheados a
-    // precio de entrada entero, el ahorro publicado sale de 0,0012 a 0,0018: un
-    // 50% de más sobre una petición que acertó en la caché del proveedor, que
-    // contra OpenAI es automática y por tanto el caso NORMAL, no el raro.
-    const p: Provider = {
-      id: "con-cache",
-      async generate(): Promise<ProviderResponse> {
-        return {
-          text: "ok",
-          usage: { inputTokens: 1000, outputTokens: 200, cachedInputTokens: 800 },
-          servedServiceTier: "flex",
-          requestedServiceTier: "flex",
-        };
-      },
-    };
-    const capaConCache = createSavingsLayer({
-      provider: p,
-      costModels: {
-        "openai/gpt-4o-mini": { inputPer1k: 0.002, cachedInputPer1k: 0.0005, outputPer1k: 0.008 },
-      },
-    });
-    const { report } = await capaConCache.generate(peticion(true));
-
-    // 200 no cacheados a 0,002/1k + 800 cacheados a 0,0005/1k + 200 de salida a
-    // 0,008/1k = 0,0024. La mitad, 0,0012.
+    // LA VERJA QUE ESTABA ESCRITA Y NO PROBADA, y es la interacción que más
+    // importa de las dos palancas, porque componen: «Tokens are priced at Batch
+    // API rates, WITH ADDITIONAL DISCOUNTS FROM PROMPT CACHING» (guía Flex de
+    // OpenAI). 200 ordinarios, 800 cacheados, 200 de salida:
+    //   estándar 200·0,25 + 800·0,025 + 200·2,00 = 470 por 1M
+    //   flex     200·0,125 + 800·0,0125 + 200·1,00 = 235 por 1M
+    const s = servidor(
+      respuestaOpenAI({
+        service_tier: "flex",
+        usage: { prompt_tokens: 1000, completion_tokens: 200, prompt_tokens_details: { cached_tokens: 800 } },
+      }),
+    );
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(peticion(true));
     expect(report.deferred!.credited).toBe(true);
-    expect(report.deferred!.estimatedTierSaving).toBeCloseTo(0.0012, 10);
+    expect(report.deferred!.tierSaving!.amount).toBeCloseTo(0.000235, 12);
+  });
+
+  it("⛔ REGRESIÓN: en gemini-2.5-pro la lectura cacheada de Flex cuesta lo MISMO y aporta 0", async () => {
+    // La página de precios de Gemini: caché de contexto $0.125 en estándar Y en
+    // Flex. El factor plano de 0,5 acreditaba la mitad también de ese
+    // componente. 200 ordinarios, 800 cacheados, 200 de salida, por 1M:
+    //   estándar 200·1,25 + 800·0,125 + 200·10 = 2350
+    //   flex     200·0,625 + 800·0,125 + 200·5  = 1225  → 1125, no 1175.
+    const s = servidor(
+      respuestaOpenAI({
+        service_tier: "flex",
+        usage: { prompt_tokens: 1000, completion_tokens: 200, prompt_tokens_details: { cached_tokens: 800 } },
+      }),
+    );
+    const { report } = await capa(adaptador(GEMINI, s.fetchImpl)).generate(peticion(true, "gemini-2.5-pro"));
+    expect(report.deferred!.credited).toBe(true);
+    expect(report.deferred!.tierSaving!.amount).toBeCloseTo(0.001125, 12);
+    expect(report.deferred!.tierSaving!.amount).toBeLessThan(0.00235 * 0.5);
+    expect(report.deferred!.tierSaving!.basis).toBe("measured");
+    expect(report.deferred!.discountRate).toBeGreaterThan(0.5);
+    expect(report.deferred!.latency).toMatch(/1–15 min target/);
+  });
+
+  it("la cabecera de Gemini se lee en su host oficial, y solo da `estimated`", async () => {
+    // Sin `service_tier` en el cuerpo. El nombre de la cabecera sale del anuncio
+    // oficial de Google; sus VALORES no están documentados en ninguna parte.
+    const s = servidor(respuestaOpenAI(), { "x-gemini-service-tier": "flex" });
+    const { report } = await capa(adaptador(GEMINI, s.fetchImpl)).generate(peticion(true, "gemini-2.5-flash"));
+    expect(report.deferred!.servedTier).toBe("flex");
+    expect(report.deferred!.credited).toBe(true);
+    expect(report.deferred!.tierSaving!.basis).toBe("estimated");
+    expect(report.deferred!.tierSaving!.basisReason).toMatch(/header/);
+  });
+
+  it("⛔ la misma cabecera en OTRO host se ignora: sin tier leído no hay crédito", async () => {
+    const s = servidor(respuestaOpenAI(), { "x-gemini-service-tier": "flex" });
+    const { report } = await capa(adaptador("https://proxy.example.com/v1", s.fetchImpl)).generate(
+      peticion(true, "gemini-2.5-flash"),
+    );
+    expect(report.deferred!.servedTier).toBeUndefined();
+    expect(report.deferred!.credited).toBe(false);
+    expect(report.deferred!.reason).toMatch(/cannot be known/);
+  });
+
+  it("⛔ un modelo SIN fila Flex publicada (gpt-4o-mini) no acredita nada, y lo dice", async () => {
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(
+      peticion(true, "openai/gpt-4o-mini"),
+    );
+    expect(report.deferred!.servedTier).toBe("flex");
+    expect(report.deferred!.credited).toBe(false);
+    expect(report.deferred!.tierSaving).toBeUndefined();
+    expect(report.deferred!.reason).toMatch(/no published price for the "flex" tier of this model/);
+  });
+
+  it("con `costModels` declarado para el modelo, el ahorro es `estimated`", async () => {
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl), {
+      costModels: { [MODELO]: { inputPer1k: 0.0002, outputPer1k: 0.0016 } },
+    }).generate(peticion(true));
+    expect(report.deferred!.credited).toBe(true);
+    // El estándar del cliente por el ratio publicado (0,5 en los dos componentes).
+    expect(report.deferred!.tierSaving!.amount).toBeCloseTo(0.5 * (0.0002 + 0.2 * 0.0016), 12);
+    expect(report.deferred!.tierSaving!.basis).toBe("estimated");
+    expect(report.deferred!.tierSaving!.basisReason).toMatch(/costModels/);
+  });
+
+  it("⛔ REGRESIÓN: un contador sin `cached_tokens` no convierte la caché implícita en ahorro `measured`", async () => {
+    // La caché de Gemini 2.5 es implícita y la guía de compatibilidad con OpenAI
+    // no dice que el contador traiga `prompt_tokens_details.cached_tokens`. En
+    // gemini-2.5-flash la lectura cacheada cuesta 0,03 por 1M en estándar Y en
+    // Flex (diferencia 0) y la entrada normal 0,30 frente a 0,15. Con 90 000 de
+    // estos 100 000 tokens servidos de la caché, la factura trae una diferencia
+    // de 10 000·0,15 + 1000·1,25 = 2750 por 1M; tratar el hueco como «0
+    // cacheados» acreditaba 100 000·0,15 + 1000·1,25 = 16 250, `measured`. Sin
+    // desglose, la entrada va al suelo (aquí 0) y la cifra es `estimated`.
+    const s = servidor(
+      respuestaOpenAI({ service_tier: "flex", usage: { prompt_tokens: 100_000, completion_tokens: 1000 } }),
+    );
+    const { report } = await capa(adaptador(GEMINI, s.fetchImpl)).generate(peticion(true, "gemini-2.5-flash"));
+    expect(report.deferred!.credited).toBe(true);
+    // Redondeado HACIA ABAJO a 1e-10: 0,0012499999 en coma flotante.
+    expect(report.deferred!.tierSaving!.amount).toBeCloseTo(0.00125, 9);
+    expect(report.deferred!.tierSaving!.amount).toBeLessThanOrEqual(0.00275);
+    expect(report.deferred!.tierSaving!.basis).toBe("estimated");
+    expect(report.deferred!.tierSaving!.basisReason).toMatch(/did not say how many input tokens were read from/);
+  });
+
+  it("⛔ con `costModels` por ENCIMA del catálogo, el importe no pasa de la diferencia publicada", async () => {
+    // El contrato público de `amount`: «Never more than the difference between
+    // the two published rate cards on this usage». Un `costModels` al cuádruple
+    // del catálogo estimaba el cuádruple: 4·0,000325.
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl), {
+      costModels: { [MODELO]: { inputPer1k: 0.001, outputPer1k: 0.008 } },
+    }).generate(peticion(true));
+    expect(report.deferred!.credited).toBe(true);
+    expect(report.deferred!.tierSaving!.amount).toBeCloseTo(0.000325, 12);
+    expect(report.deferred!.tierSaving!.basis).toBe("estimated");
+    expect(report.deferred!.tierSaving!.basisReason).toMatch(/capped at the difference between the two published rate cards/);
+    const t = report.deferred!.tierSaving!;
+    expect(t.standardCost - t.appliedCost).toBeCloseTo(t.amount, 10);
+  });
+
+  it("en GPT-5.6, sin `cache_write_tokens` en el contador la cifra es `estimated`; con él, `measured`", () => {
+    // Las escrituras de GPT-5.6 se facturan aparte (1,25x) y su campo es
+    // opcional en el tipo oficial: si el contador calla, no se sabe cuántas hubo.
+    const base = {
+      modelo: "gpt-5.6-luna",
+      tierServido: "flex",
+      origen: "openai" as const,
+      tierLeidoDe: "cuerpo" as const,
+      ahoraMs: Date.parse("2026-09-27T12:00:00Z"),
+    };
+    const sin = valorarTierServido({ ...base, uso: { inputTokens: 10_000, outputTokens: 100, cachedInputTokens: 0 } });
+    const con = valorarTierServido({
+      ...base,
+      uso: { inputTokens: 10_000, outputTokens: 100, cachedInputTokens: 0, cacheWriteInputTokens: 0 },
+    });
+    expect(sin.ok && sin.basis).toBe("estimated");
+    expect(sin.ok && sin.motivoBasis).toMatch(/written to/);
+    expect(con.ok && con.basis).toBe("measured");
+  });
+
+  it("con un `baseUrl` no oficial (proxy, pasarela), el ahorro es `estimated`", async () => {
+    const s = servidor(respuestaOpenAI({ service_tier: "flex" }));
+    const { report } = await capa(adaptador("https://gateway.example.com/v1", s.fetchImpl)).generate(
+      peticion(true),
+    );
+    expect(report.deferred!.credited).toBe(true);
+    expect(report.deferred!.tierSaving!.basis).toBe("estimated");
+    expect(report.deferred!.latency).toMatch(/unknown here/);
+  });
+
+  it("un proveedor PROPIO no atestigua nada: como mucho `estimated`", async () => {
+    const p = new ProveedorConTier("flex");
+    const { report } = await capa(p).generate(peticion(true));
+    expect(p.vistas[0]!.deferrable).toBe(true);
+    expect(report.deferred!.credited).toBe(true);
+    expect(report.deferred!.tierSaving!.basis).toBe("estimated");
   });
 
   it("⛔ NO SE ACREDITA un tier DEGRADADO, aunque se haya pedido", async () => {
     // ESTE ES EL TEST QUE JUSTIFICA LA PALANCA ENTERA. El proveedor recibió
     // `flex` y contestó `default`: se cobra entero, en silencio. Acreditar aquí
     // publicaría un ahorro que la factura no trae.
-    const p = new ProveedorConTier("default");
-    const { report } = await capa(p).generate(peticion(true));
+    const s = servidor(respuestaOpenAI({ service_tier: "default" }));
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(peticion(true));
 
-    expect(p.vistas[0]!.deferrable).toBe(true);
+    expect(s.enviados[0]!["service_tier"]).toBe("flex");
     expect(report.deferred!.requestedTier).toBe("flex");
     expect(report.deferred!.servedTier).toBe("default");
     expect(report.deferred!.credited).toBe(false);
     expect(report.deferred!.discountRate).toBeUndefined();
     expect(report.deferred!.estimatedTierSaving).toBeUndefined();
+    expect(report.deferred!.tierSaving).toBeUndefined();
     expect(report.deferred!.reason).toMatch(/standard rate/);
   });
 
   it("⛔ NO SE ACREDITA cuando el proveedor no reporta ningún tier", async () => {
-    const p = new ProveedorConTier(undefined);
-    const { report } = await capa(p).generate(peticion(true));
+    const s = servidor(respuestaOpenAI());
+    const { report } = await capa(adaptador(OFICIAL, s.fetchImpl)).generate(peticion(true));
     expect(report.deferred!.credited).toBe(false);
     expect(report.deferred!.servedTier).toBeUndefined();
     expect(report.deferred!.reason).toMatch(/cannot be known/);
@@ -398,16 +603,20 @@ describe("contabilidad: diferir no toca ninguno de los cuatro libros", () => {
     // que un descuento que escala los dos lados no puede moverla; y `cost.actual`
     // se sigue tarifando con el catálogo estándar, o sea que el sesgo va en la
     // dirección segura: la factura del cliente saldrá MENOR de lo publicado,
-    // nunca mayor. Si un día alguien suma `estimatedTierSaving` a `netSavings`,
-    // este test se pone rojo.
-    const sin = await capa(new ProveedorConTier("flex")).generate(peticion());
-    const con = await capa(new ProveedorConTier("flex")).generate(peticion(true));
+    // nunca mayor. Si un día alguien suma `tierSaving` a `netSavings`, este
+    // test se pone rojo. Con el adaptador OFICIAL, que es el caso `measured`.
+    const sin = await capa(adaptador(OFICIAL, servidor(respuestaOpenAI({ service_tier: "flex" })).fetchImpl))
+      .generate(peticion());
+    const con = await capa(adaptador(OFICIAL, servidor(respuestaOpenAI({ service_tier: "flex" })).fetchImpl))
+      .generate(peticion(true));
 
     expect(con.report.cost.actual).toBe(sin.report.cost.actual);
     expect(con.report.cost.netSavings).toBe(sin.report.cost.netSavings);
     expect(con.report.cost.baselineEstimate).toBe(sin.report.cost.baselineEstimate);
+    expect(con.report.cost.basis).toBe(sin.report.cost.basis);
     // Y el ahorro del tier sí está publicado, aparte y con su nombre.
-    expect(con.report.deferred!.estimatedTierSaving).toBeGreaterThan(0);
+    expect(con.report.deferred!.tierSaving!.amount).toBeGreaterThan(0);
+    expect(con.report.deferred!.tierSaving!.basis).toBe("measured");
   });
 });
 
