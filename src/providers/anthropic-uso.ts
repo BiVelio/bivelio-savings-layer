@@ -64,6 +64,18 @@ export function usoDeMensajes(
   const compactacion = extraDeCompactacion(u.iterations);
   const lecturaCache = sumarSiHay(u.cache_read_input_tokens, compactacion?.cacheRead);
   const escrituraCache = sumarSiHay(u.cache_creation_input_tokens, compactacion?.cacheWrite);
+  // EL DESGLOSE POR TTL. La escritura de 1 h se factura a 2× y la de 5 min a
+  // 1,25×: quien tarifa la prima necesita saber cuánta fue de cada. Solo se
+  // publica si el proveedor trajo el desglose (`cache_creation`), y nunca por
+  // encima del total: un desglose incoherente no puede fabricar escritura cara.
+  const unaHoraPrimerNivel = u.cache_creation?.ephemeral_1h_input_tokens;
+  const escritura1h =
+    typeof unaHoraPrimerNivel === "number" || (compactacion?.cacheWrite1h ?? 0) > 0
+      ? Math.min(
+          Math.max(0, (typeof unaHoraPrimerNivel === "number" ? unaHoraPrimerNivel : 0) + (compactacion?.cacheWrite1h ?? 0)),
+          escrituraCache ?? 0,
+        )
+      : undefined;
 
   // EL ERROR QUE ESTO EVITA, Y VALE DINERO DEL CLIENTE.
   //
@@ -97,6 +109,7 @@ export function usoDeMensajes(
       // sobrecoste como si fuera un descuento.
       ...(lecturaCache != null ? { cachedInputTokens: lecturaCache } : {}),
       ...(escrituraCache != null ? { cacheWriteInputTokens: escrituraCache } : {}),
+      ...(escritura1h !== undefined ? { cacheWrite1hInputTokens: escritura1h } : {}),
       // RAZONAMIENTO OCULTO. La API de Mensajes no lo desglosa en `usage`: los
       // tokens de `thinking` van dentro de `output_tokens`. Lo que sí hace es
       // devolver SIEMPRE su bloque cuando lo hubo, así que sin bloque el

@@ -623,6 +623,50 @@ const agentLayer = createSavingsLayer({
 </details>
 
 <details>
+<summary><b>Prompt-cache breakpoints placed from your traffic (opt-in)</b></summary>
+
+By default the layer writes the provider's prompt cache at two fixed places: the end
+of the system header and the end of the history before your last user message, and
+stops marking a prefix whose measured hit rate does not pay the write premium.
+
+`cacheBreakpoints: "auto"` places them from what your traffic actually does. The layer
+compares each request's prefix with the ones it sent before, per model, tool set and
+system header, and learns how often each part is sent again and after how long. That
+costs nothing: it compares locally and marks nothing to find out. Once the evidence
+is conclusive:
+
+- **Tail.** When requests continue each other (agent tool loops, conversations), it
+  also marks the last block, so the next turn reads the whole prompt from cache.
+  Tool results arrive after your last user message, so the fixed placement never
+  caches them.
+- **History.** When the history before the question is not sent again (one-off
+  requests with their own document), it moves the breakpoint back to the system
+  header, so no write premium is paid on a prefix nobody reads.
+- **One-hour lifetime** (Anthropic). When turns come back after more than five
+  minutes but within the hour, and the size of the request makes the 2x write pay.
+- **Explicit mode** (GPT‑5.6 and later, on OpenAI's own API). When continuations are
+  rare, your question is not written to the cache. `savings.standalone` still wins
+  when you set it, and `report.cacheWrites` says when the layer chose it.
+
+Until then it behaves exactly like the default. Every decision and its reason is in
+`report.traces` (`prefix-cache-placement`), and the effect is read from the provider's
+own counters: if they do not confirm the cache reads the layer predicted, that
+traffic goes back to the default placement. The write premium it causes, one-hour
+writes at 2x included, is charged to `cost.actual`; the cache discount it earns is
+counted in ledger 4 like any provider cache read, never credited as the layer's
+saving and never part of any commission.
+
+```ts
+const placedLayer = createSavingsLayer({
+  provider, // Anthropic, or OpenAI GPT-5.6+ on OpenAI's own API
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  cacheBreakpoints: "auto",
+});
+```
+
+</details>
+
+<details>
 <summary><b>Structured output — validated <code>data</code>, not just text</b></summary>
 
 Ask for a response contract and you also get `data`, validated against your schema:
