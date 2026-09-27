@@ -42,11 +42,17 @@ igual.
 | [Codex CLI](codex.md) | `http://127.0.0.1:8402/v1` (API key) · `…/backend-api/codex` (ChatGPT) | **con** | `codex -c openai_base_url=…` | `bvsala codex` ✅ | [V] validado en mano el 30-08 (426 → fallback HTTP, stream íntegro) |
 | [Goose](goose.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_HOST` | `bvsala goose` ✅ | [V] |
 | [Qwen Code](qwen-code.md) | `http://127.0.0.1:8402` | **sin** | env `ANTHROPIC_BASE_URL` + `~/.qwen/settings.json` | `bvsala qwen` ✅ | [V] |
-| [opencode](opencode.md) | `http://127.0.0.1:8402/v1` | **con** | `~/.config/opencode/opencode.json` | — (config de usuario) | [V] |
+| [opencode](opencode.md) | `http://127.0.0.1:8402/v1` | **con** | env `OPENCODE_CONFIG_CONTENT` o `~/.config/opencode/opencode.json` | `bvsala opencode` ✅ (sin escribir en disco) | [V] en código (v1.18.32) |
+| [Kilo Code](kilo.md) (CLI y extensiones) | `http://127.0.0.1:8402/v1` | **con** | env `KILO_CONFIG_CONTENT` o `~/.config/kilo/kilo.json` | `bvsala kilo` ✅ (CLI) | [V] en código (v7.8.1, fork de opencode) |
+| [Copilot CLI](copilot.md) (solo BYOK) | anthropic: `http://127.0.0.1:8402` · openai: `…/v1` | anthropic **sin**, openai **con** | env `COPILOT_PROVIDER_BASE_URL` | `bvsala copilot` ✅ (tipo anthropic) | [V] en la doc oficial; sin validar en mano. Tipo openai: a mano, sin validar (WebSocket → 426) |
+| [Copilot en VS Code](copilot.md#copilot-en-vs-code-byok-custom-endpoint) (solo BYOK) | `http://127.0.0.1:8402/v1/messages` (ruta completa) | ruta completa | UI → Custom Endpoint (`chatLanguageModels.json`) | — | [V] en la doc oficial; sin validar en mano |
+| [Aider](aider.md) | Anthropic: `http://127.0.0.1:8402` · OpenAI: `…/v1` | Anthropic **sin**, OpenAI **con** | env `ANTHROPIC_API_BASE` / `OPENAI_API_BASE` (litellm) | `bvsala aider` ✅ | [V] en código (litellm 1.82.3); OpenAI en stream solo con `BVSALA_GATEWAY_USAGE_INJECT=1` |
+| [Continue](continue.md) (CLI `cn` y extensiones) | `http://127.0.0.1:8402/v1` | **con** | `~/.continue/config.yaml` (`apiBase`) | — (config de usuario) | [V] en código |
 | [Crush](crush.md) | `http://127.0.0.1:8402/v1` | **con**, sin barra final | `~/.config/crush/crushrc` | — (config de usuario) | [V] |
 | [Droid](droid.md) | `http://127.0.0.1:8402` | sin **[I]** | `~/.factory/settings.json` | — (config de usuario) | validar en mano |
 | [Cline](cline.md) | `http://127.0.0.1:8402/v1` | **con** | UI | — | [V] |
-| [Kilo Code](kilo.md) | `http://127.0.0.1:8402/v1` | con **[I]** | UI | — | validar en mano |
+| [Gemini CLI](no-soportados.md#gemini-cli--no-se-mide-todavía) | — | — | env `GOOGLE_GEMINI_BASE_URL` | — | **no se mide**: el gateway no lee el dialecto de Gemini |
+| [Cursor](no-soportados.md#cursor--no-se-puede) | — | — | sus servidores, no tu máquina | — | **no se puede**: Cursor no alcanza `127.0.0.1` |
 | [Python y cualquier SDK](../../README.md#python-and-any-other-language-the-local-gateway) (OpenAI · Anthropic) | OpenAI: `http://127.0.0.1:8403/v1` · Anthropic: `http://127.0.0.1:8402` | OpenAI **con**, Anthropic **sin** | `base_url` del SDK | `bvsala gateway --upstream openai` | [V] en test (upstream falso) |
 
 Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones**
@@ -54,11 +60,27 @@ Reglas de la columna «Base URL»: **nunca barra final**, **nunca redirecciones*
 en vez de seguirlo). Y nunca copies el URL de un terminal a otro: cada SDK añade
 su propio tramo de ruta y el error es silencioso (§ «Comprobar que mide»).
 
-Claude Code, Codex, Goose y Qwen Code tienen **envoltorio propio** (`bvsala
-claude|codex|goose|qwen`): arrancan un gateway en puerto efímero, lanzan el
-terminal apuntándole y lo apagan al salir. Cero configuración persistente. La
+Claude Code, Codex, Goose, Qwen Code, opencode, Kilo, Copilot CLI (BYOK) y Aider
+tienen **envoltorio propio** (`bvsala
+claude|codex|goose|qwen|opencode|kilo|copilot|aider`): arrancan un gateway en
+puerto efímero, lanzan el terminal apuntándole y lo apagan al salir. Cero
+configuración persistente: opencode y Kilo reciben la suya por variable
+(`OPENCODE_CONFIG_CONTENT`, `KILO_CONFIG_CONTENT`), fusionada con la tuya. La
 receta manual de cada guía hace exactamente lo mismo. Para el resto,
 `bvsala doctor` imprime el bloque exacto de cada terminal instalado.
+
+**Al salir, cada envoltorio dice lo que midió.** Dentro de un envoltorio el log
+por petición va callado para no pisar el TUI, así que al terminar imprime por
+stderr una línea como esta:
+
+```
+[bvsala copilot] metering in this run: 41 request(s) metered with the provider's usage · 3 forwarded but NOT metered (nothing is estimated in their place): 3 × the request did not ask for usage (stream_options.include_usage). What each reason means and what to do: docs/terminales/README.md.
+```
+
+Los motivos son los de la tabla `· not metered: …` de abajo. Si ninguna petición
+pasó por el gateway, lo dice también: el terminal no estaba apuntado. `bvsala
+gateway` imprime la misma línea al pararlo con Ctrl-C. Es local, como el aviso de
+tráfico degradado: no viaja a BiVelio.
 
 ## Lo común a todas las guías
 
@@ -192,12 +214,15 @@ Y una condición dura: el terminal debe estar instalado con su **instalador
 nativo** (un `claude.exe` / `codex.exe` en el PATH — Claude Code, Codex, Goose
 y Qwen Code lo tienen [V]). El shim `.cmd` que deja `npm i -g <terminal>` no
 puede lanzarse de forma segura con argumentos (CVE-2024-27980) y `bvsala` se
-niega con una guía en vez de fallar con un ENOENT mudo.
+niega con una guía en vez de fallar con un ENOENT mudo. opencode, Kilo y Copilot
+CLI también se instalan por npm: en Windows, usa su binario nativo (releases de
+GitHub, winget o scoop) **[I: no validado en Windows]**. Aider se instala con pip,
+que deja un `aider.exe`.
 
 ### 4 · Regla BYOK, sin excepción
 
-Todas las recetas del anillo 2 (Goose, Qwen Code, opencode, Crush, Droid, Cline,
-Kilo) son **API key exclusivamente**. Anthropic prohíbe usar el OAuth de Claude
+Todas las recetas del anillo 2 (Goose, Qwen Code, opencode, Kilo, Copilot, Aider,
+Crush, Droid, Cline, Continue) son **API key exclusivamente**. Anthropic prohíbe usar el OAuth de Claude
 Pro/Max en harnesses de terceros (opencode lo documenta; Crush retiró su OAuth en
 ene-2026). El gateway reenviaría un Bearer de suscripción sin inmutarse — y eso
 no se promociona ni se documenta como receta.

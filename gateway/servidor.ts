@@ -55,6 +55,7 @@ import { reescribirModelo, type CambioDeModelo } from "./hermano.js";
 import { decidirRebaja, fraccionNueva, huellaDe, MemoriaDePrefijos, parsearMensajes, rebajarTtlDeCache } from "./tarifa.js";
 import { Coalescedor, claveDePeticion, materialDeCabeceras, MAX_CAPTURA_BYTES, type HuellaDeLaPrimaria } from "./coalescencia.js";
 import { esUpstreamOficial } from "./upstream.js";
+import { RecuentoDeMedicion, type EstadoDeMedicion } from "./recuento.js";
 import {
   VigiaDeDegradacion,
   degradacionDeCache,
@@ -207,6 +208,12 @@ export interface GatewayArrancado {
    * lista blanca de la ingesta no tiene campo para ello.
    */
   degradaciones(): Readonly<Record<TipoDeDegradacion, number>>;
+  /**
+   * Cuántas peticiones de inferencia se midieron y cuántas se reenviaron sin
+   * medir, por motivo (recuento.ts). Local, como `degradaciones`: los
+   * envoltorios lo imprimen al salir porque su log por petición va callado.
+   */
+  medicion(): EstadoDeMedicion;
 }
 
 /**
@@ -412,6 +419,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
   const memoria = new MemoriaDePrefijos();
   // El vigía del tráfico degradado: una línea por sesión y tipo, y un contador.
   const vigia = new VigiaDeDegradacion();
+  // Lo medido y lo que no, con su motivo: el resumen de salida de los envoltorios.
+  const recuento = new RecuentoDeMedicion();
 
   const canal = opts.serviceAccountKey
     ? new CanalDeEntitlements({
@@ -482,6 +491,10 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     aviso: AvisoDeNoMedido,
   ): void => {
     log(`[gateway] ${metodo} ${path} → ${status}${stream ? " (stream)" : ""} · not metered: ${motivo}`);
+    // Al recuento, solo lo que es API: una ruta con dialecto o bajo `/v1/`. Lo
+    // demás que un terminal manda por el base URL (telemetría, sondas) no es
+    // inferencia, y contarlo como «no medido» asustaría sin motivo.
+    if (tieneDialecto(path) || path.startsWith("/v1/")) recuento.noMedida(motivo);
     if (opts.avisosDeNoMedido === false) return;
     if (aviso === "chat") avisarUnaVez("gateway-chat-sin-include-usage", AVISO_CHAT_SIN_INCLUDE_USAGE);
     if (aviso === "chat-con-inyeccion") {
@@ -564,10 +577,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     // el log tiene que poder contar cuántas se quedaron fuera y por qué.
     const cabeza = `[gateway] POST ${path}${coalescida ? " · COALESCED (call avoided)" : ""}`;
     if (!model) {
-      log(
-        `${cabeza} · not metered: could not read the model from the request body` +
-          `${codificacion ? ` (content-encoding: ${codificacion})` : ""}`,
-      );
+      const motivo = `could not read the model from the request body${codificacion ? ` (content-encoding: ${codificacion})` : ""}`;
+      log(`${cabeza} · not metered: ${motivo}`);
+      recuento.noMedida(motivo);
       avisarUnaVez(
         `gateway-sin-modelo:${path}`,
         `[bvsala gateway] could not read the model from the ${path} request body (content-encoding: ${codificacion ?? "none"}); its usage is forwarded but not metered.`,
@@ -597,6 +609,8 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         ? informeCoalescido(requestId, model, medido, atribucion, valoracion?.ok ? valoracion.credit : null)
         : informeMedido(requestId, servido, medido, atribucion, elision, rebaja, hermano, suscripcion === true);
       emisor.record(informe);
+      if (coalescida) recuento.replica();
+      else recuento.medida();
       // B2 · el suelo del borrado del proveedor: solo existe si hubo borrado,
       // es atribuible a nuestros diales y el modelo tiene precio de lectura.
       const suelo = informe.cost.eliminatedInputFloorCost;
@@ -672,6 +686,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
       }
     } else {
       log(`${cabeza} · not metered: model "${servido}" has no list price in the catalog`);
+      recuento.noMedida(`model "${servido}" has no list price in the catalog`);
       avisarUnaVez(
         `gateway-sin-precio:${servido}`,
         `[bvsala gateway] model "${servido}" is not in the price catalog; its usage is forwarded but not metered.`,
@@ -775,6 +790,9 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     let observador: ObservadorSse | ObservadorResponses | ObservadorChatCompletions | null = null;
     let cuerpoPeticion: Buffer = Buffer.alloc(0);
     let medida = false;
+    // El upstream respondió 2xx: un corte del cliente antes del usage final solo
+    // es «no medido» si había algo que medir (un error del proveedor no factura).
+    let respuestaOk = false;
     // B2 · ¿un borrado que declare el proveedor será ATRIBUIBLE a nuestros
     // diales? La regla del delta (plan § 2.4) en dos mitades: (1) la palanca
     // cambió el clear_tool_uses que traía el cliente, y (2) los diales que
@@ -1276,6 +1294,7 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
         tipo.includes("text/event-stream") ||
         (tipo === "" && upstream.ok && observadorPara(url.pathname) !== null && !url.pathname.endsWith("/chat/completions"));
       observador = esSse ? observadorPara(url.pathname) : null;
+      respuestaOk = upstream.ok;
       // stream:false — el usage viene en el JSON del cuerpo, no en eventos SSE.
       // Solo rutas con dialecto de usage (count_tokens también responde JSON
       // pero no factura), solo con emisor (sin clave no hay nada que medir: ni
@@ -1451,6 +1470,11 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
           vigilarCache(url.pathname, cuerpoPeticion, codificacion, uso, ttlReescrito, sesionId);
         } else {
           log(`[gateway] ${req.method} ${url.pathname} → client aborted; upstream cancelled`);
+          // Un stream con dialecto cortado antes del usage final: el proveedor
+          // puede facturar lo que ya generó, y aquí no queda contador.
+          if (observador && respuestaOk && !medida) {
+            recuento.noMedida("the client closed the stream before the provider's final usage");
+          }
         }
       } else {
         log(`[gateway] ${req.method} ${url.pathname} → error while serving: ${describirFallo(err)}`);
@@ -1559,5 +1583,6 @@ export async function arrancarGateway(opts: OpcionesGateway): Promise<GatewayArr
     },
     licenseStatus: () => veredicto().state,
     degradaciones: () => vigia.contadores(),
+    medicion: () => recuento.estado(),
   };
 }

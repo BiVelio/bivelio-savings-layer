@@ -12,7 +12,15 @@ import { arrancarGateway, type GatewayArrancado } from "./servidor.js";
 import { resumenDeDegradaciones } from "./degradacion.js";
 import { decidirArranque, isChildInfoRequest, mensajeDeFalloDeArranque } from "./argumentos.js";
 import { LICENSE_SERVER_URL, resolveStartupLicense } from "./license.js";
-import { envoltorioDe, esTerminalConEnvoltorio, modoAuthCodex, resolverBinarioWindows, TERMINALES_CON_ENVOLTORIO } from "./envoltorios.js";
+import {
+  envoltorioDe,
+  esTerminalConEnvoltorio,
+  impedimentoDeEnvoltorio,
+  modoAuthCodex,
+  resolverBinarioWindows,
+  TERMINALES_CON_ENVOLTORIO,
+} from "./envoltorios.js";
+import { resumenDeMedicion } from "./recuento.js";
 import { leerEnrolamiento, planDeAnillo2 } from "./anillo2.js";
 import { flagDeUpstream, resolverUpstream } from "./upstream.js";
 import { connect } from "node:net";
@@ -48,9 +56,10 @@ import { EMBEDDED_PUBLIC_KEY } from "../src/license/index.js";
  *   compatibles y los SDK oficiales de OpenAI y Anthropic en cualquier lenguaje).
  *   `--upstream` elige el proveedor (gateway/upstream.ts): uno por gateway.
  *
- *   `bvsala claude|codex|goose|qwen [args…]` — cero configuración: arranca el
- *   gateway en un puerto efímero, lanza el terminal apuntándole y lo apaga al
- *   salir (tabla en gateway/envoltorios.ts).
+ *   `bvsala claude|codex|goose|qwen|opencode|kilo|copilot|aider [args…]` — cero
+ *   configuración: arranca el gateway en un puerto efímero, lanza el terminal
+ *   apuntándole y lo apaga al salir, con un resumen de lo medido y lo que no
+ *   (tabla en gateway/envoltorios.ts; resumen en gateway/recuento.ts).
  *
  *   `bvsala doctor [--puerto N]` — detecta terminales instalados e imprime el
  *   bloque de configuración exacto de cada uno (gateway/doctor.ts).
@@ -84,6 +93,17 @@ Commands:
                          ChatGPT auth: chatgpt.com/backend-api/codex, metered with no commission).
   goose [args…]          Run Goose (ANTHROPIC_HOST) through the gateway.
   qwen [args…]           Run Qwen Code (ANTHROPIC_BASE_URL) through the gateway.
+  opencode [args…]       Run opencode with its anthropic provider through the gateway
+                         (OPENCODE_CONFIG_CONTENT; nothing written to disk).
+  kilo [args…]           Run the Kilo CLI with its anthropic provider through the gateway
+                         (KILO_CONFIG_CONTENT; nothing written to disk).
+  copilot [args…]        Run GitHub Copilot CLI through the gateway with your own Anthropic key
+                         (BYOK, COPILOT_PROVIDER_TYPE=anthropic). GitHub-hosted models do not
+                         use a base URL and are not metered.
+  aider [args…]          Run Aider through the gateway: Anthropic models by default
+                         (ANTHROPIC_API_BASE); OpenAI with BVSALA_GATEWAY_UPSTREAM=openai.
+                         Every wrapper prints, on exit, how many requests it metered and
+                         which ones it forwarded without metering, and why.
   doctor [--port N]      Detect installed terminals and print the exact configuration for each.
   skill [--codex] [--project] [--force]
                          Install the "savings-mode" skill for Claude Code (~/.claude/skills;
@@ -254,6 +274,17 @@ function lanzarSinGateway(terminal: typeof comando, args: string[]): Promise<nev
 }
 if (esEnvoltorio && isChildInfoRequest(resto)) await lanzarSinGateway(comando, resto);
 
+// Lo que impide un envoltorio (Copilot sin BYOK, una config inline ilegible de
+// opencode o Kilo) se dice AQUÍ: antes de la licencia, de la red y del gateway.
+// Arrancar para no medir nada sería cobrar un asiento por un proxy vacío.
+if (esEnvoltorio) {
+  const impedimento = impedimentoDeEnvoltorio(comando);
+  if (impedimento) {
+    console.error(`[bvsala ${comando}] ${impedimento}`);
+    process.exit(1);
+  }
+}
+
 // `--upstream` solo es de `gateway`: en los envoltorios todo lo que va detrás
 // del terminal es del terminal (gateway/argumentos.ts). La variable de entorno
 // vale para los dos, y el flag manda sobre ella. Se resuelve DESPUÉS del
@@ -291,6 +322,7 @@ const envoltorio = esEnvoltorio
         comando === "codex"
           ? modoAuthCodex({ leerAuth: () => readFileSync(join(homedir(), ".codex", "auth.json"), "utf8") })
           : undefined,
+      ...(up.upstream ? { upstreamElegido: up.upstream } : {}),
     })
   : null;
 
@@ -452,12 +484,28 @@ if (comando === "codex" && !soportaZstd()) {
   );
 }
 
+/**
+ * Lo que el log callado no pudo decir, una sola vez por proceso (el hijo que
+ * sale y un Ctrl-C pueden llegar los dos): el tráfico degradado y lo medido. Una
+ * sesión entera sin medir (terminal mal apuntado, stream sin usage, modelo sin
+ * precio) solo se ve aquí. Por stderr: el stdout del hijo puede ir a un fichero.
+ */
+let resumido = false;
+function imprimirResumenes(): void {
+  if (resumido) return;
+  resumido = true;
+  const degradado = resumenDeDegradaciones(arranque.degradaciones());
+  if (degradado) console.error(degradado);
+  console.error(resumenDeMedicion(arranque.medicion(), comando));
+}
+
 if (envoltorio && esEnvoltorio) {
   // La tabla se calculó con puerto 0 (aún no había gateway): se recalcula con
   // el puerto REAL. Hereda la terminal entera (stdio inherit: el TUI funciona
   // tal cual) y muere con el hijo.
   const final = envoltorioDe(comando, arranque.puerto, resto, {
     ...(envoltorio.upstream ? { modoCodex: envoltorio.upstream.includes("chatgpt.com") ? "chatgpt" : "api-key" } : {}),
+    ...(up.upstream ? { upstreamElegido: up.upstream } : {}),
   });
   if (final.nota) console.log(`[bvsala ${comando}] ${final.nota}`);
   // Windows: spawn no resuelve shims .cmd/.bat y lanzarlos con args no es
@@ -486,8 +534,7 @@ if (envoltorio && esEnvoltorio) {
   hijo.on("exit", (code, signal) => {
     // El terminal ya soltó la pantalla: es el momento de decir lo que el log
     // callado del envoltorio no pudo (tráfico degradado, degradacion.ts).
-    const resumen = resumenDeDegradaciones(arranque.degradaciones());
-    if (resumen) console.error(resumen);
+    imprimirResumenes();
     void arranque.cerrar().then(() => process.exit(code ?? (signal ? 1 : 0)));
   });
 } else {
@@ -515,8 +562,7 @@ if (envoltorio && esEnvoltorio) {
 }
 
 const parar = async (): Promise<void> => {
-  const resumen = resumenDeDegradaciones(arranque.degradaciones());
-  if (resumen) console.error(resumen);
+  imprimirResumenes();
   await arranque.cerrar();
   process.exit(0);
 };
