@@ -378,8 +378,14 @@ export interface PreciosSimulados {
   escritura1hPer1k: number;
 }
 
-export function preciosPara(model: string): PreciosSimulados | null {
-  const precio = precioDeLista(model);
+/**
+ * Los precios con los que se simula un turno, a precio de lista del modelo EL
+ * DÍA DEL TURNO (`at`, epoch ms; por defecto ahora): el simulador también
+ * reproduce corpus pasados, y un turno de diciembre no se tarifa al precio de
+ * enero (src/pricing/catalogo.ts, la vigencia por fila).
+ */
+export function preciosPara(model: string, at?: number): PreciosSimulados | null {
+  const precio = precioDeLista(model, at);
   if (!precio) return null;
   return {
     inputPer1k: precio.inputPer1k,
@@ -589,7 +595,7 @@ export class CadenaDeSimulacion {
   paso(t: TurnoSombra): CosteSimulado {
     const delPaso = costeVacio();
     const turno = avanzarEstado(this.estado, t.bloques);
-    const precios = preciosPara(t.model);
+    const precios = preciosPara(t.model, t.at);
     // La transformación conserva número y orden de bloques: tipo y marca se
     // toman del bloque original en la misma posición (un muñón hereda el
     // breakpoint del bloque que sustituye).

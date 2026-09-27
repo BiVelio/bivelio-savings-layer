@@ -144,6 +144,21 @@ describe("SDK: la prima que el proveedor cobra por su cuenta va a los DOS lados 
     expect(b.basis).toBe(a.basis);
   });
 
+  it("el intento barato de la cascada paga su prima de escritura del proveedor, solo en `actual`", () => {
+    // La llamada la puso la capa: su dinero entero —prima incluida— es coste de
+    // la capa, como el resto de `cascadeAttempt`.
+    const sin = new SavingsLedger();
+    const con = new SavingsLedger();
+    const uso = { inputTokens: 5_000, outputTokens: 100, cacheWriteInputTokens: 4_000 };
+    sin.cascadeAttempt(uso, P);
+    con.cascadeAttempt(uso, P, 1.25);
+    expect(sin.extraCostUsd).toBeCloseTo((5_000 / 1000) * P.inputPer1k + (100 / 1000) * P.outputPer1k, 12);
+    expect(con.extraCostUsd - sin.extraCostUsd).toBeCloseTo((4_000 / 1000) * P.inputPer1k * 0.25, 12);
+    // Y los tokens publicados del intento no cambian: la escritura ya va dentro
+    // de `inputTokens`.
+    expect(con.cascadeInput).toBe(sin.cascadeInput);
+  });
+
   it("multiplicador 1 no suma nada, y los tokens negativos no restan", () => {
     const l = new SavingsLedger();
     l.providerCacheWritePremium(10_000, 1, P);
@@ -178,5 +193,49 @@ describe("SDK: la prima que el proveedor cobra por su cuenta va a los DOS lados 
     const con = (await capa({ ...base, cacheWriteInputTokens: 16_000 }).generate(peticion("gpt-5.5"))).report.cost;
     expect(con.actual).toBe(sin.actual);
     expect(con.baselineEstimate).toBe(sin.baselineEstimate);
+  });
+});
+
+describe("SDK: la muestra de la cascada con un barato gpt-6 lleva su prima de escritura", () => {
+  class PorModelo implements Provider {
+    readonly id = "por-modelo";
+    readonly llamadas: string[] = [];
+    async generate(r: ProviderRequest): Promise<ProviderResponse> {
+      this.llamadas.push(r.model);
+      return r.model === "gpt-6-luna"
+        ? { text: '{"answer":"barato"}', usage: { inputTokens: 1_000, outputTokens: 200, cacheWriteInputTokens: 800 } }
+        : { text: '{"answer":"fuerte"}', usage: { inputTokens: 1_000, outputTokens: 200 } };
+    }
+  }
+
+  it("`sampleCost` es lo que factura OpenAI: entrada, salida y el 0,25× de más de las escrituras", async () => {
+    const p = new PorModelo();
+    const res = await new SavingsPipeline({
+      provider: p,
+      tokenizer: new TokenizerRegistry(),
+      devUnlicensed: true,
+      silenceWarnings: true,
+      modelCascade: { pairs: { "gpt-6-sol": "gpt-6-luna" }, shadowSampleRate: 1 },
+    } as never).generate({
+      model: "gpt-6-sol",
+      messages: [{ role: "user", content: "resume en una frase" }],
+      response: {
+        contractId: "answer:v1",
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          required: ["answer"],
+          properties: { answer: { type: "string", maxLength: 200 } },
+        },
+      },
+      savings: { modelCascade: "shadow" },
+    } as SavingsRequest);
+    expect(p.llamadas).toEqual(["gpt-6-sol", "gpt-6-luna"]);
+    const luna = CATALOGO["gpt-6-luna"]!;
+    const esperado =
+      (1_000 / 1000) * luna.inputPer1k +
+      (200 / 1000) * luna.outputPer1k +
+      (800 / 1000) * luna.inputPer1k * 0.25;
+    expect(res.report.modelCascade!.sampleCost).toBeCloseTo(esperado, 12);
   });
 });

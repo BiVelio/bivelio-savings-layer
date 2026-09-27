@@ -24,6 +24,27 @@
 // resumir: en el ejemplo oficial, 180.000 tokens de entrada y 3.500 de salida que
 // no aparecían en ningún informe.
 //
+// LO QUE ES INFERENCIA Y NO CITA: LOS CONTADORES DE CACHÉ. La página de
+// compactación solo dice que `input_tokens` y `output_tokens` de primer nivel
+// excluyen la iteración de compactación; de `cache_read_input_tokens` y
+// `cache_creation_input_tokens` no dice nada, y su ejemplo no los trae. Que
+// también la excluyan —y que por eso aquí se sumen las de la iteración— se
+// infiere de dos frases oficiales: la de arriba («sum across all entries in the
+// `usage.iterations` array» para tener lo facturado) y la de la página del
+// advisor, consultada el mismo día
+// (https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool):
+//
+//   «Every top-level `usage` field is the sum of that field across all executor
+//    iterations, including `input_tokens`, `output_tokens`, and
+//    `cache_read_input_tokens`.»
+//
+// Si la inferencia fallara (el primer nivel ya trajera la caché de la
+// compactación), esas lecturas y escrituras se contarían DOS veces: el `actual`
+// quedaría por encima de la factura y, en el gateway, la palanca C (el hermano,
+// que valora el mismo conteo a dos precios de lectura) se inflaría con ellas.
+// Hasta que un sondeo en vivo lo confirme, esto es una suposición declarada, no
+// una cifra verificada.
+//
 // POR QUÉ SE SUMAN SOLO LAS ITERACIONES `compaction` Y NO TODO EL ARRAY. El
 // primer nivel ya es «la suma de las iteraciones que no son de compactación»; y
 // hay iteraciones que se tarifan con OTRO modelo (el `advisor` factura a la tarifa

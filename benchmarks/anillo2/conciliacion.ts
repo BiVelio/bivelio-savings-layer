@@ -196,10 +196,14 @@ export function deduplicarTurnos(transcript: TurnoTranscript[]): TurnoTranscript
   return [...porId.values()].sort((a, b) => cmp(a.requestId, b.requestId));
 }
 
-/** Dinero de un turno según el medidor (null si no hay usage o el modelo no tiene precio). */
+/**
+ * Dinero de un turno según el medidor (null si no hay usage o el modelo no tiene
+ * precio), al precio del DÍA DEL TURNO: la conciliación es de días pasados, y
+ * con un cambio de precio anunciado el precio de hoy no es el que se facturó.
+ */
 export function dineroDe(t: TurnoTranscript): number | null {
   if (!t.usage) return null;
-  return costeMedido(t.model, t.usage)?.costeUsd ?? null;
+  return costeMedido(t.model, t.usage, Date.parse(t.timestamp))?.costeUsd ?? null;
 }
 
 /**

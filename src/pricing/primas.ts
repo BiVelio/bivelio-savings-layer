@@ -47,9 +47,12 @@ function desnudo(model: string): string {
  *
  * Fuente: https://developers.openai.com/api/docs/guides/prompt-caching
  * (consultada el 2026-09-27): «For GPT-5.6 and later, cache writes cost 1.25×
- * the standard, uncached input-token rate», con los breakpoints implícitos por
- * defecto y los explícitos (`prompt_cache_breakpoint`) a la misma tarifa; y la
- * tabla oficial de precios lo confirma fila a fila con su columna «Cache
+ * the standard, uncached input-token rate». La guía describe dos modos
+ * (`prompt_cache_options.mode`: `implicit`, con el breakpoint al final del
+ * último mensaje elegible, y `explicit`, sin escrituras si no hay breakpoints)
+ * y NO dice cuál rige cuando la petición no pide ninguno; la tarifa de la
+ * escritura es la misma en los dos. La tabla oficial de precios lo confirma
+ * fila a fila con su columna «Cache
  * writes» (gpt-6-astra $12.50, gpt-6-sol $2.50, gpt-6-luna $0.125, la familia
  * 5.6 igual, sobre entradas de $10, $2 y $0.10). Antes de esto el patrón era
  * `^gpt-5\.6` y la familia gpt-6 salía a 1×: el gateway medía sus escrituras

@@ -58,6 +58,14 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // codex de 5, 5.1 y 5.2 y gpt-5.1-thinking ya no figuran en esa tabla:
   // conservan su verificación anterior.
   //
+  // Fuera a propósito, aunque la página los publica: los pro (gpt-5-pro a
+  // gpt-5.5-pro, salida de $120 a $180 por 1M: pasan el techo de salida del
+  // ingest, como o1-pro) y los de la tabla aparte «Cyber models» (gpt-5.5-cyber
+  // y gpt-5.6-cyber, $12.50 / $1.25 / $75; el changelog oficial dice que su
+  // acceso se aprueba aparte, por el programa Daybreak Red). Ninguno lleva fila
+  // y los que heredarían la de su pariente están vetados en SIN_FILA_PROPIA,
+  // más abajo: caen al respaldo ilustrativo, que avisa.
+  //
   // La familia gpt-5 (checked 2026-08-24 against the AI Gateway's `/models`).
   // Cache reads bill at 10% of input here — not the 50% of the 4o family.
   // EVERY visible `gpt-5.x` is listed explicitly on purpose: the separator
@@ -231,9 +239,12 @@ export const CATALOGO: Readonly<Record<string, CostModel>> = {
   // Models whose published price is NOT known with certainty stay out on purpose:
   // they fall back to the illustrative default and warn, which is the honest answer.
   //
-  // DeepSeek (https://api-docs.deepseek.com/quick_start/pricing) publica precio
-  // pero el catálogo no cubre la familia, y su tarifa cambia por HORA del día
-  // (punta y valle al 50%): una fila por modelo mentiría la mitad del tiempo.
+  // DeepSeek (https://api-docs.deepseek.com/quick_start/pricing, consultada el
+  // 2026-09-27) publica precio pero el catálogo no cubre la familia, y su
+  // tarifa cambia por HORA del día: «Peak hours are 01:00 - 04:00 and 06:00 -
+  // 10:00 UTC, Monday through Friday, excluding Chinese public holidays», y
+  // «Off-peak rates are half of the peak rates». Una fila por modelo mentiría
+  // en una de las dos franjas —a la mitad o al doble, según cuál se pusiera—.
   // Queda fuera hasta que la vigencia sepa de franjas horarias.
 };
 
@@ -464,16 +475,56 @@ export function clavesPorLongitud(catalogo: Readonly<Record<string, unknown>>): 
 
 /**
  * Ids que NO pueden heredar la fila de un pariente por prefijo, aunque el
- * emparejador se la daría: son OTRO modelo con otro precio, y la página
- * oficial de precios de OpenAI no lo publica (comprobado el 2026-09-25; la
- * referencia comunitaria del vigía puede listarlos, pero no es la factura de
- * nadie). Sin esta lista, `o3-deep-research` heredaría la fila
- * de `o3` (un sufijo de letra es «alias» para `buscarPorModelo`) y se tarifaría
- * a un quinto de lo que factura, con el aviso de «sin precio» callado. Aquí dan
- * `undefined`, que es la respuesta honesta: se reenvían y se dice que no se
- * miden. Interno: la tabla pública sigue siendo `CATALOGO`.
+ * emparejador se la daría: son OTRO modelo con otro precio (un sufijo de letra
+ * es «alias» para `buscarPorModelo`), y heredar callaría el aviso de «sin
+ * precio» con una cifra equivocada. Aquí dan `undefined`, que es la respuesta
+ * honesta: se reenvían y se dice que no se miden. El veto alcanza también a sus
+ * alias y sus instantáneas (`gpt-5-pro-2025-10-06`, `…-latest`), porque la
+ * clave vetada es la más larga que casa. Interno: la tabla pública sigue siendo
+ * `CATALOGO`.
  */
-const SIN_FILA_PROPIA: readonly string[] = ["o3-deep-research", "o4-mini-deep-research"];
+const SIN_FILA_PROPIA: readonly string[] = [
+  // OpenAI, sin precio publicado: la página oficial no los lista (comprobado el
+  // 2026-09-25 y de nuevo el 2026-09-27; la referencia comunitaria del vigía
+  // puede listarlos, pero no es la factura de nadie). Sin veto, `o3-deep-research`
+  // heredaría `o3` y se tarifaría a un quinto de lo que factura.
+  "o3-deep-research",
+  "o4-mini-deep-research",
+
+  // OpenAI, CON precio publicado pero distinto del de la fila que heredarían.
+  // https://developers.openai.com/api/docs/pricing (consultada el 2026-09-27),
+  // USD por 1M, entrada / entrada cacheada / salida:
+  //   · tabla «Standard»: gpt-5.5-pro y gpt-5.4-pro $30 / — / $180 (contexto
+  //     < 272K), gpt-5.2-pro $21 / — / $168, gpt-5-pro $15 / — / $120. Heredaban
+  //     gpt-5.5 ($5 / $30), gpt-5.4, gpt-5.2 y gpt-5: seis y ocho veces por
+  //     debajo. No llevan fila porque su salida (0,12–0,18 por 1K) pasa
+  //     TECHO_PRECIO_SALIDA_PER_1K (0,08), como o1-pro.
+  //   · tabla «Cyber models»: gpt-5.5-cyber $12.50 / $1.25 / $75. Heredaba
+  //     gpt-5.5 al 40 %. (gpt-5.6-cyber, en la misma tabla, no hereda nada: la
+  //     versión menor corta el emparejador y cae al respaldo ilustrativo.)
+  "gpt-5.5-pro",
+  "gpt-5.4-pro",
+  "gpt-5.2-pro",
+  "gpt-5-pro",
+  "gpt-5.5-cyber",
+
+  // Google: OTRA MODALIDAD con otro precio publicado, que heredaría la fila de
+  // texto de su pariente. https://ai.google.dev/gemini-api/docs/pricing
+  // (consultada el 2026-09-27), tier de pago «Standard», USD por 1M:
+  //   · gemini-3.8-flash-tts: entrada $0.50 (texto), salida $9.00 (audio),
+  //     caché $0.125 — heredaba gemini-3.8-flash ($0.75 / $3.75 / $0.075).
+  //   · gemini-3.8-flash-lite-tts: $0.50 / $6.00 (audio) / $0.125 — heredaba
+  //     la misma fila.
+  //   · gemini-3.1-flash-lite-image: salida de IMAGEN a $30.00 — heredaba
+  //     gemini-3.1-flash-lite ($1.50 de salida).
+  // Con la herencia, la entrada del TTS salía 1,5× (y con ella el ahorro en
+  // dólares de las palancas de entrada) y la salida de audio o imagen muy por
+  // debajo de la factura. `gemini-3.1-flash-lite-preview` NO se veta: es alias
+  // del mismo modelo y hereda con razón.
+  "gemini-3.8-flash-tts",
+  "gemini-3.8-flash-lite-tts",
+  "gemini-3.1-flash-lite-image",
+];
 
 /** El catálogo con las ids vetadas a null: lo que de verdad consulta la búsqueda. */
 const TABLA_DE_BUSQUEDA: Readonly<Record<string, CostModel | null>> = {

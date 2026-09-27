@@ -327,16 +327,25 @@ export class SavingsLedger {
    *
    * The caller raises `actualLlm`, because the call happened and the report owes
    * the reader that count.
+   *
+   * @param providerWritePremium the multiplier the provider bills on its own
+   *   for the call's cache writes (`usage.cacheWriteInputTokens`); 1 = none.
    */
   cascadeAttempt(
-    usage: { inputTokens: number; outputTokens: number },
+    usage: { inputTokens: number; outputTokens: number; cacheWriteInputTokens?: number },
     cheapPrice: CostModel,
+    providerWritePremium = 1,
   ): void {
     this.cascadeInput += Math.max(0, usage.inputTokens);
     this.cascadeOutput += Math.max(0, usage.outputTokens);
+    // Las escrituras de caché ya van en `inputTokens` a 1×; lo que falta es el
+    // suplemento que el proveedor cobra por su cuenta (OpenAI GPT-5.6+, 1,25×).
+    // Es dinero de una llamada que puso la capa: solo `actual`, como el resto.
+    const escrituras = Math.max(0, usage.cacheWriteInputTokens ?? 0);
     this.extraCostUsd +=
       (Math.max(0, usage.inputTokens) / 1000) * cheapPrice.inputPer1k +
-      (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k;
+      (Math.max(0, usage.outputTokens) / 1000) * cheapPrice.outputPer1k +
+      (escrituras / 1000) * cheapPrice.inputPer1k * Math.max(0, providerWritePremium - 1);
   }
   // El suplemento se tarifa con el precio del modelo QUE MARCÓ, que es el único
   // que lo conoce — ver el bloque de arriba. Va a `actual` y nunca al baseline.

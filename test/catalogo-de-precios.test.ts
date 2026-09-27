@@ -210,6 +210,61 @@ describe("la forma del catálogo", () => {
     expect(precioDeLista("o4-mini-2025-04-16")).toEqual(CATALOGO["o4-mini"]);
   });
 
+  it("⛔ otra MODALIDAD de Gemini no hereda la fila de texto de su pariente (TTS e imagen, página oficial del 2026-09-27)", () => {
+    // Las filas de gemini-3.8-flash y gemini-3.1-flash-lite (2026-09-27) harían
+    // que estos ids heredaran por sufijo de letra un precio de TEXTO que no es el
+    // suyo. La página oficial (https://ai.google.dev/gemini-api/docs/pricing)
+    // publica: 3.8 Flash TTS $0.50 / $9.00 audio / $0.125; 3.8 Flash-Lite TTS
+    // $0.50 / $6.00 audio / $0.125; 3.1 Flash Lite Image $30 por 1M de salida de
+    // imagen. Sin precio propio: `undefined`, que avisa, en cualquier fecha.
+    const AL_DIA = Date.parse(`${PRECIOS_AL_DIA}T12:00:00Z`);
+    const ENE_2027 = Date.parse("2027-01-01T12:00:00Z");
+    for (const m of [
+      "gemini-3.8-flash-tts",
+      "google/gemini-3.8-flash-tts",
+      "gemini-3.8-flash-tts-preview",
+      "gemini-3.8-flash-lite-tts",
+      "gemini-3.1-flash-lite-image",
+      "gemini-3.1-flash-lite-image-preview",
+    ]) {
+      expect(precioDeLista(m), m).toBeUndefined();
+      expect(precioDeLista(m, AL_DIA), m).toBeUndefined();
+      expect(precioDeLista(m, ENE_2027), m).toBeUndefined();
+      expect(claveDeCatalogo(m), m).toBeUndefined();
+    }
+    // El alias legítimo del MISMO modelo sigue heredando, y los parientes siguen
+    // en su fila.
+    expect(claveDeCatalogo("gemini-3.1-flash-lite-preview")).toBe("gemini-3.1-flash-lite");
+    expect(precioDeLista("gemini-3.1-flash-lite-preview", AL_DIA)).toBe(CATALOGO["gemini-3.1-flash-lite"]);
+    expect(precioDeLista("gemini-3.1-flash-lite", AL_DIA)).toBe(CATALOGO["gemini-3.1-flash-lite"]);
+    expect(precioDeLista("gemini-3.8-flash", AL_DIA)).toBe(CATALOGO["gemini-3.8-flash"]);
+    expect(precioDeLista("google/gemini-3.8-flash-latest", AL_DIA)).toBe(CATALOGO["gemini-3.8-flash"]);
+  });
+
+  it("⛔ los pro y cyber de OpenAI no heredan la fila base: la página oficial les publica otro precio", () => {
+    // https://developers.openai.com/api/docs/pricing (2026-09-27): gpt-5.5-pro y
+    // gpt-5.4-pro $30 / $180, gpt-5.2-pro $21 / $168, gpt-5-pro $15 / $120,
+    // gpt-5.5-cyber y gpt-5.6-cyber $12.50 / $75. Heredando, gpt-5.5-pro salía a
+    // $5 / $30: seis veces por debajo de la factura.
+    for (const m of [
+      "gpt-5.5-pro",
+      "openai/gpt-5.5-pro",
+      "gpt-5.4-pro",
+      "gpt-5.2-pro",
+      "gpt-5-pro",
+      "gpt-5-pro-2025-10-06",
+      "gpt-5.5-cyber",
+      "gpt-5.6-cyber",
+    ]) {
+      expect(precioDeLista(m), m).toBeUndefined();
+      expect(claveDeCatalogo(m), m).toBeUndefined();
+    }
+    for (const base of ["gpt-5.5", "gpt-5.4", "gpt-5.2", "gpt-5"]) {
+      expect(precioDeLista(base), base).toBe(CATALOGO[base]);
+    }
+    expect(precioDeLista("gpt-5-2025-08-07")).toBe(CATALOGO["gpt-5"]);
+  });
+
   it("deja por escrito de cuándo son los precios", () => {
     // Sin fecha, dentro de un año nadie sabe si revisarlos o fiarse.
     expect(PRECIOS_AL_DIA).toMatch(/^\d{4}-\d{2}-\d{2}$/);
