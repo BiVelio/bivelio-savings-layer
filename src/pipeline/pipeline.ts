@@ -1,7 +1,12 @@
 import { randomId } from "../util/id.js";
 import { avisarUnaVez } from "../util/warn-once.js";
 import { isBuiltInDemoProvider } from "../providers/demo-brand.js";
-import { atestadoDelCable, heredarAtestado } from "../providers/atestado-del-cable.js";
+import {
+  atestadoDelCable,
+  heredarAtestado,
+  origenDelProveedor,
+  type AtestadoDelCable,
+} from "../providers/atestado-del-cable.js";
 import { salidaNoRepetible } from "../pricing/razonamiento.js";
 
 import type {
@@ -12,6 +17,7 @@ import type {
   SavingsStreamOptions,
   ChatMessage,
   CacheOutcome,
+  CacheWriteReport,
   DeferredExecutionReport,
   ModelCascadeMode,
   ModelCascadeReport,
@@ -24,10 +30,17 @@ import type { CacheTier } from "../economics/cache-tier.js";
 import { VerjaDeCacheDePrefijo } from "../economics/prefix-cache-gate.js";
 import {
   SIN_TIER_DIFERIBLE,
-  ahorroDelTier,
+  TIER_DIFERIBLE_OPENAI,
   latenciaDelTier,
-  veredictoDelTier,
+  valorarTierServido,
+  type MotivoSinValoracion,
 } from "../economics/tier-diferido.js";
+import {
+  explicitaAplicable,
+  tramoParaDecidirExplicita,
+  valorarEscriturasEvitadas,
+} from "../economics/escrituras-de-cache.js";
+import { tarifaDeTier, tarifaEstandar } from "../pricing/tarifas-de-tier.js";
 import {
   VerjaDeCascada,
   economiaDelPar,
@@ -498,6 +511,7 @@ export class SavingsPipeline {
    */
   async generate<T = unknown>(request: SavingsRequest): Promise<SavingsResult<T>> {
     this.assertLicensed();
+    request = this.conPalancasPorDefecto(request);
     // Testigo de facturación de ESTA petición. No puede ser un campo de la
     // instancia: una misma capa sirve peticiones concurrentes.
     const testigo: TestigoDeFacturacion = { llamadas: 0, falloDelProveedor: false, sinContador: 0 };
@@ -581,6 +595,9 @@ export class SavingsPipeline {
     try {
       if (antes) await antes;
       if (canal.abortado) throw new StreamAbortedError(false);
+      // Antes de decidir la entrega: una petición diferible POR CONFIGURACIÓN se
+      // entrega entera igual que una que lo declaró.
+      request = this.conPalancasPorDefecto(request);
       const motivo = this.motivoDeEntregaEntera(request);
       if (motivo) {
         const r = await this.generate<T>(request);
@@ -617,6 +634,37 @@ export class SavingsPipeline {
     } catch (err) {
       canal.fallar(err);
     }
+  }
+
+  /**
+   * LAS PALANCAS DE PRECIO POR CONFIGURACIÓN (`priceLevers`), aplicadas en la
+   * ENTRADA, antes de `canonicalize` y de cualquier clave.
+   *
+   * Aquí y no más abajo porque `deferrable` entra en la clave de singleflight
+   * (`buildInflightKey`) y decide la entrega del stream: una petición diferible
+   * por configuración tiene que ser, para todo lo que viene después,
+   * indistinguible de una que lo declaró. Siempre gana el valor de la petición,
+   * también un `false` explícito. `standalone` no entra en ninguna clave: no
+   * cambia la respuesta, solo dónde escribe su caché el proveedor.
+   *
+   * Sin `priceLevers`, o con todo apagado, devuelve la MISMA petición: quien no
+   * lo pide no ve ni una copia.
+   */
+  private conPalancasPorDefecto(request: SavingsRequest): SavingsRequest {
+    const pl = this.config.priceLevers;
+    if (!pl) return request;
+    const s = request.savings;
+    const ponerDiferible = pl.deferrable === true && s?.deferrable === undefined;
+    const ponerStandalone = pl.standalone === true && s?.standalone === undefined;
+    if (!ponerDiferible && !ponerStandalone) return request;
+    return {
+      ...request,
+      savings: {
+        ...(s ?? {}),
+        ...(ponerDiferible ? { deferrable: true } : {}),
+        ...(ponerStandalone ? { standalone: true } : {}),
+      },
+    };
   }
 
   private motivoDeEntregaEntera(request: SavingsRequest): MotivoEntero | null {
@@ -744,6 +792,15 @@ export class SavingsPipeline {
    *     es ahorro no capturado; el otro es factura de más. No cuestan lo mismo.
    *  4. LA VERJA ECONÓMICA. Con la escritura a 1,25x y la lectura a 0,10x,
    *     marcar sólo compensa por encima de ~21,7% de aciertos.
+   *
+   * PETICIONES `standalone` EN GPT-5.6+ (API de OpenAI). Ahí marcar deja de
+   * ser gratis: en modo explícito el proveedor solo escribe donde la capa pone
+   * el punto, y escribir cuesta 1,25x. Así que se decide con el tramo REAL del
+   * modelo (`tramoParaDecidirExplicita`: su lectura y su prima) y con un estado
+   * de verja PROPIO (`huella|explicit`), para no mezclar la medición con la del
+   * modo implícito del mismo prefijo. Lo que se devuelve como
+   * `cacheWriteMultiplier` sigue siendo el de siempre (1 en OpenAI): la prima
+   * que se carga en `cost.*` no cambia con esta palanca.
    */
   private decidirMarcadoDeCache(
     request: SavingsRequest,
@@ -753,8 +810,30 @@ export class SavingsPipeline {
     descubrimientoActivo: boolean,
     mensajesDePrefijo: number,
     trace: TraceCollector,
-  ): { marcar: boolean; huella: string; mensajesDePrefijo: number; cacheWriteMultiplier: number } {
-    const nada = { marcar: false as const, huella: "", mensajesDePrefijo: 0, cacheWriteMultiplier: 1 };
+  ): {
+    marcar: boolean;
+    huella: string;
+    claveDeVerja: string;
+    mensajesDePrefijo: number;
+    cacheWriteMultiplier: number;
+    explicita: boolean;
+  } {
+    // El modo explícito se decide AQUÍ, antes de llamar, y solo cuando el
+    // adaptador lo va a honrar: el origen lo declaró un adaptador propio.
+    const tramoExplicito =
+      request.savings?.standalone === true &&
+      explicitaAplicable(modeloServido, origenDelProveedor(this.config.provider))
+        ? tramoParaDecidirExplicita(modeloServido)
+        : null;
+    const explicita = tramoExplicito !== null;
+    const nada = {
+      marcar: false as const,
+      huella: "",
+      claveDeVerja: "",
+      mensajesDePrefijo: 0,
+      cacheWriteMultiplier: 1,
+      explicita,
+    };
 
     const tier = tramoDelModelo(modeloServido, this.config.compressionEconomics);
     if (!tier) {
@@ -809,19 +888,28 @@ export class SavingsPipeline {
       }),
     );
 
-    const decision = this.verjaDeCache.decidir(huella, {
+    const claveDeVerja = explicita ? `${huella}|explicit` : huella;
+    const decision = this.verjaDeCache.decidir(claveDeVerja, {
       totalTokens,
       stablePrefixTokens,
-      tier,
+      tier: tramoExplicito ?? tier,
     });
     trace.record("prefix-cache", decision.marcar ? "marked" : "skipped", {
       reason: decision.razon,
       stablePrefixTokens,
       breakEvenHitRate: decision.umbral,
       observedHitRate: decision.observada,
+      ...(explicita ? { mode: "explicit" } : {}),
     });
     return decision.marcar
-      ? { marcar: true, huella, mensajesDePrefijo, cacheWriteMultiplier: tier.cacheWriteMultiplier }
+      ? {
+          marcar: true,
+          huella,
+          claveDeVerja,
+          mensajesDePrefijo,
+          cacheWriteMultiplier: tier.cacheWriteMultiplier,
+          explicita,
+        }
       : nada;
   }
 
@@ -2220,6 +2308,12 @@ export class SavingsPipeline {
       // que el cliente declaro diferible se pagaria a precio entero sin que nadie
       // se lo hubiera pedido.
       ...(toggles.deferrable ? { deferrable: true } : {}),
+      // STANDALONE: el proveedor escribe su caché solo en el punto de la capa, o
+      // en ninguna parte. Va aquí para que la escalada la herede, y la hereda
+      // SIN `stablePrefixMessages`, o sea con cero puntos: el prefijo medido es
+      // el del modelo barato, y en la caché del fuerte esta petición no tiene
+      // medición ninguna.
+      ...(marcado.explicita ? { explicitCacheWrites: true } : {}),
       constraintBackend: backendPlan.backend,
     };
 
@@ -2236,9 +2330,40 @@ export class SavingsPipeline {
     // En entrega «live» la PRIMARIA, y solo ella, va en stream. Escalada,
     // reparación y muestra no se alcanzan sin contrato; el sondeo de
     // descubrimiento va antes, no se streamea y nunca se sirve.
-    let response = sumidero
-      ? await this.llamarProveedorEnStream(argsPrimaria, testigo, sumidero)
-      : await this.llamarProveedor(argsPrimaria, testigo);
+    let response: ProviderResponse;
+    // EL RESPALDO DE CAPACIDAD (opcional, apagado). Un tier barato sin capacidad
+    // contesta 429 (OpenAI: «You will not be charged when this occurs») o 503/429
+    // (Google: «won't automatically upgrade a Flex request to the Standard
+    // tier»). Con `priceLevers.onCapacityError: "standard"` se repite UNA vez
+    // sin `service_tier` —la receta de la guía de Flex de OpenAI: «remove the
+    // `service_tier` parameter to use the default mode for the project»— a
+    // precio estándar, y el informe lo dice. El intento rechazado NO cuenta como
+    // llamada facturada: el testigo vuelve a como estaba antes de él (un error
+    // no trae contador que tarifar, y el fail-open no debe verlo como gasto).
+    // Por defecto (`"throw"`) el error sale tal cual, que es lo de siempre.
+    let respaldoDeCapacidad = false;
+    const testigoAntes = { ...testigo };
+    try {
+      response = sumidero
+        ? await this.llamarProveedorEnStream(argsPrimaria, testigo, sumidero)
+        : await this.llamarProveedor(argsPrimaria, testigo);
+    } catch (err) {
+      if (!this.respaldaFaltaDeCapacidad(toggles, err, sumidero)) throw err;
+      Object.assign(testigo, testigoAntes);
+      respaldoDeCapacidad = true;
+      trace.record("deferred-tier", "capacity-fallback", {
+        error: err instanceof Error ? err.message.slice(0, 200) : String(err),
+        reason:
+          "the cheaper tier had no capacity; repeated once at the standard tier and price, as " +
+          'configured with priceLevers.onCapacityError: "standard"',
+      });
+      const { deferrable: _sinTier, ...estandar } = argsPrimaria;
+      response = await this.llamarProveedor(estandar, testigo);
+    }
+    // Lo que el adaptador atestiguó de ESTA llamada (la que llevaba la marca de
+    // caché y el tier), antes de que una escalada o una reparación la reemplacen.
+    const atestadoDeLaMarcada = atestadoDelCable(response);
+    const tierDeLaMarcada = response.servedServiceTier;
     // Acumulativo, no asignado: con schema-on-demand esta ya es la SEGUNDA llamada
     // de la petición y el sondeo anterior también costó dinero. Asignar borraba su
     // rastro del informe, que es como el fail-open llegó a publicar `actualLlm: 1`
@@ -2492,7 +2617,7 @@ export class SavingsPipeline {
       // en verde mientras la verja mide otra cosa. Medido al provocarlo: en una
       // petición escalada la traza publicaba 1800 tokens de acierto y la verja
       // apuntaba 0, o sea que se habría apagado sola por una lectura ajena.
-      this.verjaDeCache.registrar(marcado.huella, usoDeLaLlamadaMarcada);
+      this.verjaDeCache.registrar(marcado.claveDeVerja, usoDeLaLlamadaMarcada);
       trace.record("prefix-cache", "measured", {
         cacheRead: usoDeLaLlamadaMarcada.cachedInputTokens ?? 0,
         // La prima de escritura se publica en la traza JUNTO al descuento, no
@@ -2955,7 +3080,25 @@ export class SavingsPipeline {
     // conoce hasta DESPUES de llamar, asi que la clave tendria que construirse
     // con el PEDIDO, y entonces dos peticiones identicas que pidieron tiers
     // distintos no se encontrarian nunca aunque las dos acabaran servidas igual.
-    const diferido = this.informeDeDiferido(toggles, response, precioServido);
+    const diferido = this.informeDeDiferido(toggles, response, modeloServido, respaldoDeCapacidad);
+    const escrituras = this.informeDeEscrituras(
+      toggles,
+      atestadoDeLaMarcada,
+      usoDeLaLlamadaMarcada,
+      tierDeLaMarcada,
+      cascada.modeloServido,
+      marcado.marcar,
+    );
+    if (escrituras) {
+      trace.record("cache-writes", escrituras.mode, {
+        breakpoints: escrituras.breakpoints,
+        ...(escrituras.avoidedWritePremium
+          ? { avoidedWritePremium: escrituras.avoidedWritePremium.amount, basis: "estimated" }
+          : {}),
+        creditedLedger: "none",
+        reason: escrituras.reason,
+      });
+    }
     if (diferido) {
       trace.record("deferred-tier", diferido.credited ? "credited" : "not-credited", {
         ...(diferido.requestedTier ? { requestedTier: diferido.requestedTier } : {}),
@@ -3229,6 +3372,7 @@ export class SavingsPipeline {
       // una y al precio de otra.
       diferido,
       requestIdDeEsta,
+      escrituras,
     );
     // Para los seguidores de singleflight de esta ejecución: reciben este mismo
     // objeto, y con él encuentran el contador de la llamada que pagó el líder.
@@ -3497,77 +3641,204 @@ export class SavingsPipeline {
   private informeDeDiferido(
     toggles: NonNullable<SavingsRequest["savings"]>,
     response: ProviderResponse,
-    precio: CostModel,
+    modelo: string,
+    respaldoDeCapacidad = false,
   ): DeferredExecutionReport | undefined {
     if (toggles.deferrable !== true) return undefined;
 
+    const atestado = atestadoDelCable(response);
+    const origen = atestado?.origen ?? null;
+    const servido = response.servedServiceTier;
+
+    // EL RESPALDO DE CAPACIDAD. Lo que se sirvió es el tier ESTÁNDAR, pedido a
+    // propósito tras el rechazo: no hay nada que acreditar y hay que decirlo.
+    if (respaldoDeCapacidad) {
+      const nuestro = origenDelProveedor(this.config.provider) !== undefined;
+      return {
+        // Solo un adaptador propio sabe que lo que pidió era `flex`.
+        ...(nuestro ? { requestedTier: TIER_DIFERIBLE_OPENAI } : {}),
+        ...(servido ? { servedTier: servido } : {}),
+        credited: false,
+        capacityFallback: true,
+        creditedLedger: "none",
+        latency:
+          "the cheaper tier refused the request for lack of capacity, and it was repeated once at " +
+          "the standard tier: the wait is the refused attempt plus a standard-tier call.",
+        reason:
+          "the cheaper tier had no capacity (HTTP 429 or 503), so, as configured with " +
+          'priceLevers.onCapacityError: "standard", the request was repeated once at the standard ' +
+          "tier and price; the refused attempt is not counted as a call and nothing is credited",
+      };
+    }
+
     const pedido = response.requestedServiceTier;
-    const veredicto = veredictoDelTier(response.servedServiceTier);
     const base: DeferredExecutionReport = {
       ...(pedido ? { requestedTier: pedido } : {}),
-      ...(veredicto ? { servedTier: veredicto.servido } : {}),
+      ...(servido ? { servedTier: servido } : {}),
       credited: false,
       creditedLedger: "none",
-      latency: latenciaDelTier(pedido),
+      latency: latenciaDelTier(pedido, origen),
       reason: "",
     };
-
     if (!pedido) {
       return { ...base, reason: SIN_TIER_DIFERIBLE };
     }
-    if (!veredicto) {
-      // AUSENTE NO ES <<ESTANDAR>>. Significa que no se puede saber a que tarifa
-      // se facturo, y de lo que no se sabe no se acredita nada.
-      return {
-        ...base,
-        reason:
-          `asked the provider for the "${pedido}" tier, and it reported none back: the rate this ` +
-          `request was billed at cannot be known, so nothing is credited`,
-      };
-    }
-    if (veredicto.factor == null) {
-      return {
-        ...base,
-        reason:
-          `asked for "${pedido}" and the provider reports serving "${veredicto.servido}", a tier ` +
-          `this layer has no published rate for: nothing is credited`,
-      };
-    }
-    if (!veredicto.conDescuento) {
-      return {
-        ...base,
-        reason:
-          `asked for "${pedido}" and the provider reports serving "${veredicto.servido}", which ` +
-          `bills at the standard rate: this request was billed as if it had never been deferred`,
-      };
-    }
 
-    // Los tokens que el proveedor sirvio de su cache de prefijo se tarifan a SU
-    // tarifa tambien aqui. Sin esto el descuento del tier se aplicaria sobre un
-    // coste inflado (todo a precio de entrada normal) y saldria mayor del real,
-    // que es exactamente el sentido en el que no se puede errar.
-    const uso = response.usage;
-    const cacheados = Math.min(
-      Math.max(0, uso.cachedInputTokens ?? 0),
-      Math.max(0, uso.inputTokens),
-    );
-    const tarifaCacheada = precio.cachedInputPer1k ?? precio.inputPer1k;
-    const costeEstandar =
-      ((Math.max(0, uso.inputTokens) - cacheados) / 1000) * precio.inputPer1k +
-      (cacheados / 1000) * tarifaCacheada +
-      (Math.max(0, uso.outputTokens) / 1000) * precio.outputPer1k;
-    const ahorro = ahorroDelTier(veredicto, costeEstandar);
-
+    // El MISMO `usage` que declaró el proveedor en la llamada cuyo tier se leyó,
+    // a las dos tarifas publicadas, componente a componente. Ver
+    // `valorarTierServido`: ahí están la doctrina y las seis condiciones de
+    // `measured`.
+    const cliente = this.precioDelCliente(modelo);
+    const v = valorarTierServido({
+      modelo,
+      uso: response.usage,
+      tierServido: servido,
+      origen,
+      ...(atestado?.tierLeidoDe ? { tierLeidoDe: atestado.tierLeidoDe } : {}),
+      ...(cliente ? { precioDelCliente: cliente } : {}),
+      ahoraMs: this.now(),
+    });
+    if (!v.ok) {
+      return { ...base, reason: motivoDelDiferido(v.motivo, pedido, servido) };
+    }
     return {
       ...base,
       credited: true,
-      discountRate: redondear(veredicto.factor),
-      ...(ahorro != null ? { estimatedTierSaving: roundUsdPublico(ahorro) } : {}),
+      discountRate: redondear(v.factorEfectivo),
+      estimatedTierSaving: v.importe,
+      tierSaving: {
+        amount: v.importe,
+        basis: v.basis,
+        standardCost: roundUsdPublico(v.costeEstandar),
+        appliedCost: roundUsdPublico(v.costeAplicado),
+        pricesCheckedOn: v.consultado,
+        basisReason: v.motivoBasis,
+      },
       reason:
-        `the provider reports serving the "${veredicto.servido}" tier, which bills at ` +
-        `${(veredicto.factor * 100).toFixed(0)}% of the standard rate; the discount stacks with ` +
-        `provider prefix caching rather than replacing it`,
+        `the provider reports serving the "${servido}" tier; this call's usage was priced at the ` +
+        `standard and at the "${servido}" published rate cards, component by component ` +
+        `(${(v.factorEfectivo * 100).toFixed(1)}% of standard). The discount stacks with provider ` +
+        "prefix caching rather than replacing it",
     };
+  }
+
+  /**
+   * `report.cacheWrites` de la llamada que llevaba la marca (la primaria, antes
+   * de cualquier escalada o reparación). Sale del ATESTADO del adaptador, no de
+   * lo que se pidió: solo un adaptador propio sabe si de verdad mandó el modo
+   * explícito y cuántos puntos puso.
+   */
+  private informeDeEscrituras(
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    atestado: AtestadoDelCable | undefined,
+    uso: ProviderResponse["usage"],
+    tierServido: string | undefined,
+    modelo: string,
+    marcado: boolean,
+  ): CacheWriteReport | undefined {
+    if (toggles.standalone !== true) return undefined;
+    const explicita = atestado?.cacheExplicita;
+    if (!explicita) {
+      const origen = origenDelProveedor(this.config.provider);
+      const porDefecto = "the provider chose where to write its prompt cache, as it does by default";
+      return {
+        mode: "provider-default",
+        breakpoints: 0,
+        reason: !explicitaAplicable(modelo, "openai")
+          ? `model "${modelo}" is not an OpenAI model that bills prompt-cache writes above the input ` +
+            `rate, so there was no write premium to avoid: ${porDefecto}`
+          : origen === undefined
+            ? "this provider is not one of this package's adapters, so nothing attests explicit " +
+              `prompt-cache control on it: ${porDefecto}`
+            : origen !== "openai"
+              ? "explicit prompt-cache control only exists on OpenAI's own API, and this endpoint is " +
+                `not it: ${porDefecto}`
+              : `model "${modelo}" has no list price of its own here, so the layer cannot tell whether ` +
+                `writing its prefix pays: ${porDefecto}`,
+      };
+    }
+
+    const puntos = explicita.puntos;
+    const riesgo =
+      "Trade-off: repeats and continuations of this exact prompt lose the cache reads the provider " +
+      "default would have given them.";
+    const razon =
+      puntos === 1
+        ? "explicit mode: the provider wrote its prompt cache only at the end of the stable prefix, so " +
+          "the rest of this request was billed at the input rate with no cache-write charge. " + riesgo
+        : (marcado
+            ? "explicit mode with no breakpoint: the message at the prefix boundary cannot carry one"
+            : "explicit mode with no breakpoint: there was no stable prefix worth writing, or the " +
+              "measured hit rate on it did not pay for the write premium") +
+          ", so the provider neither wrote nor read its prompt cache for this request. " + riesgo;
+
+    // La prima evitada, siempre `estimated`, a la fila que APLICÓ: la del tier
+    // servido si la llamada fue por uno con tarifa, la estándar si no.
+    const fila = tierServido ? tarifaDeTier("openai", tierServido, modelo, this.now()) : undefined;
+    const estandar = tarifaEstandar(modelo);
+    const aplicada =
+      fila && fila.cacheWritePer1k !== undefined
+        ? { inputPer1k: fila.inputPer1k, cacheWritePer1k: fila.cacheWritePer1k, consultado: fila.consultado }
+        : estandar
+          ? { inputPer1k: estandar.inputPer1k, cacheWritePer1k: estandar.cacheWritePer1k, consultado: undefined }
+          : undefined;
+    if (!aplicada || uso.complete === false) {
+      return { mode: "explicit", breakpoints: puntos, reason: razon };
+    }
+    const prima = valorarEscriturasEvitadas({
+      uso,
+      fila: { inputPer1k: aplicada.inputPer1k, cacheWritePer1k: aplicada.cacheWritePer1k },
+      ...(aplicada.consultado ? { consultado: aplicada.consultado } : {}),
+    });
+    return {
+      mode: "explicit",
+      breakpoints: puntos,
+      avoidedWritePremium: {
+        amount: prima.importe,
+        basis: "estimated",
+        standardCost: roundUsdPublico(prima.costeEstandar),
+        appliedCost: roundUsdPublico(prima.costeAplicado),
+        pricesCheckedOn: prima.consultado,
+        basisReason:
+          prima.tokensOrdinarios > 0 && uso.inputTokens >= 1024
+            ? "estimated: the provider default was not run for this request. This is the write premium the " +
+              "default would have charged on the tokens after the last breakpoint; it does not subtract the " +
+              "cache reads the default could have given a later repeat"
+            : "estimated: below the provider's minimum cacheable length (or with nothing written past the " +
+              "breakpoint) the default would not have charged a write premium either",
+      },
+      reason: razon,
+    };
+  }
+
+  /** `report.cacheWrites` de una petición que no llamó al proveedor. */
+  private escriturasSinLlamada(request: SavingsRequest): CacheWriteReport | undefined {
+    if (request.savings?.standalone !== true) return undefined;
+    return {
+      mode: "provider-default",
+      breakpoints: 0,
+      reason:
+        "no provider call was made, so nothing was written to or read from the provider's prompt cache " +
+        "for this request",
+    };
+  }
+
+  /** ¿Es este error la falta de capacidad de un tier barato, y está pedido el respaldo? */
+  private respaldaFaltaDeCapacidad(
+    toggles: NonNullable<SavingsRequest["savings"]>,
+    err: unknown,
+    sumidero: SumideroDeStream | null,
+  ): boolean {
+    if (toggles.deferrable !== true || sumidero !== null) return false;
+    if (this.config.priceLevers?.onCapacityError !== "standard") return false;
+    // Solo cuando se PIDIÓ un tier barato: el adaptador compatible con OpenAI de
+    // este paquete es el único que manda `service_tier`, y es el único que
+    // declara origen. Un 429 de Anthropic (que no pidió nada) es un límite de
+    // ritmo, no falta de capacidad de un tier, y repetirlo no arregla nada.
+    if (origenDelProveedor(this.config.provider) === undefined) return false;
+    // El formato del error lo fija el adaptador propio (`provider <status>: …`).
+    // Un 400 o un 5xx distinto NO es falta de capacidad y nunca se repite.
+    return err instanceof Error && /^provider (429|503)\b/.test(err.message);
   }
 
   /**
@@ -3611,6 +3882,9 @@ export class SavingsPipeline {
     // Solo lo pasa el camino del proveedor, que lo generó en la etapa 12 para el
     // registro de referencia. Los atajos no: `buildReport` genera el suyo.
     requestId?: string,
+    // `report.cacheWrites` de la llamada que corrió; los atajos no lo pasan y
+    // `escriturasSinLlamada` rellena, igual que `diferidoSinLlamada`.
+    escrituras?: CacheWriteReport,
   ): SavingsResult<T> {
     // La validez estructural se COMPRUEBA aquí, no se hereda de un valor por
     // defecto. El parámetro tenía `= true`, y las cuatro rutas de atajo
@@ -3643,6 +3917,7 @@ export class SavingsPipeline {
       // cliente si encendio.
       diferido ?? this.diferidoSinLlamada(request),
       requestId,
+      escrituras ?? this.escriturasSinLlamada(request),
     );
     return {
       requestId: report.requestId,
@@ -3670,6 +3945,7 @@ export class SavingsPipeline {
     cascada: ModelCascadeReport | undefined,
     diferido: DeferredExecutionReport | undefined,
     requestId?: string,
+    escrituras?: CacheWriteReport,
   ): SavingsReport {
     const cost = ledger.estimateCost(costModel);
     const total = trace.elapsed();
@@ -3744,6 +4020,7 @@ export class SavingsPipeline {
       qualityStatus: estadoDeCalidad(cacheResult, structurallyValid, degradado),
       ...(cascada ? { modelCascade: cascada } : {}),
       ...(diferido ? { deferred: diferido } : {}),
+      ...(escrituras ? { cacheWrites: escrituras } : {}),
       quality: {
         ...(cacheResult !== "miss" ? { freshnessPassed: !evaluatePolicy(canonical).requiresFreshData } : {}),
       },
@@ -3866,6 +4143,17 @@ export class SavingsPipeline {
               "trading availability for a discount on a last-resort call is the wrong trade",
           }
         : undefined,
+      undefined,
+      // Tampoco pide modo explícito de caché: va tal cual, y se dice.
+      request.savings?.standalone === true
+        ? {
+            mode: "provider-default",
+            breakpoints: 0,
+            reason:
+              "the optimizer failed and this request went out unchanged on the direct fail-open path, " +
+              "so the provider chose where to write its prompt cache, as it does by default",
+          }
+        : undefined,
     );
     return {
       requestId: report.requestId,
@@ -3911,7 +4199,14 @@ export class SavingsPipeline {
       : {};
 
     // `streaming` tampoco se hereda: dice cómo le llegó la respuesta AL LÍDER.
-    const { deferred: _delLider, streaming: _streamingDelLider, ...informeDelLider } = leader.report;
+    // `cacheWrites` tampoco: dice dónde escribió la caché LA LLAMADA DEL LÍDER.
+    const escriturasDelSeguidor = this.escriturasSinLlamada(request);
+    const {
+      deferred: _delLider,
+      streaming: _streamingDelLider,
+      cacheWrites: _escriturasDelLider,
+      ...informeDelLider
+    } = leader.report;
 
     return {
       ...leader,
@@ -3959,6 +4254,7 @@ export class SavingsPipeline {
         // lider que si, y viceversa. Lo que el informe del seguidor tiene que
         // decir es lo que EL pidio.
         ...bloqueDiferidoDelSeguidor,
+        ...(escriturasDelSeguidor ? { cacheWrites: escriturasDelSeguidor } : {}),
         // `qualityStatus` es de lo POCO que sí se hereda del líder, y es
         // deliberado: el seguidor sirve EL TEXTO DEL LÍDER, así que le
         // corresponde la calidad del líder. Coalescerse no verifica nada, de
@@ -4408,6 +4704,52 @@ function estadoDeCalidad(
     // el seguidor hereda: cualquier cosa que no se haya demostrado es el suelo.
     default:
       return "not_verified";
+  }
+}
+
+/** La frase del informe para cada motivo por el que un tier no se acreditó. */
+function motivoDelDiferido(
+  motivo: MotivoSinValoracion,
+  pedido: string,
+  servido: string | undefined,
+): string {
+  switch (motivo) {
+    case "no-served-tier":
+      // AUSENTE NO ES «ESTÁNDAR»: no se puede saber a qué tarifa se facturó.
+      return (
+        `asked the provider for the "${pedido}" tier, and it reported none back: the rate this ` +
+        "request was billed at cannot be known, so nothing is credited"
+      );
+    case "unknown-tier":
+      return (
+        `asked for "${pedido}" and the provider reports serving "${servido}", a tier this layer has ` +
+        "no published rate for: nothing is credited"
+      );
+    case "standard-rate-tier":
+      return (
+        `asked for "${pedido}" and the provider reports serving "${servido}", which bills at the ` +
+        "standard rate: this request was billed as if it had never been deferred"
+      );
+    case "no-tier-price":
+      return (
+        `the provider reports serving "${servido}", but there is no published price for the "${servido}" ` +
+        "tier of this model from this provider (or it has expired): nothing is credited"
+      );
+    case "no-standard-price":
+      return (
+        `the provider reports serving "${servido}", but this model has no list price of its own here, so ` +
+        "there is no standard rate card to price the difference against: nothing is credited"
+      );
+    case "incomplete-usage":
+      return (
+        `the provider reports serving "${servido}", but its usage for this call is incomplete, so the ` +
+        "difference cannot be priced: nothing is credited"
+      );
+    case "no-difference":
+      return (
+        `the provider reports serving "${servido}", and this call's usage costs the same at both ` +
+        "published rate cards: nothing is credited"
+      );
   }
 }
 

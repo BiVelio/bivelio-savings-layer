@@ -71,6 +71,13 @@ export interface SavingsLayerConfig {
   modelCascade?: ModelCascadeSettings;
 
   /**
+   * Layer-wide defaults for the provider price levers (`savings.deferrable`,
+   * `savings.standalone`) and what to do when the cheaper tier has no capacity.
+   * All off by default; a request's own `savings` value always wins.
+   */
+  priceLevers?: PriceLeverSettings;
+
+  /**
    * Signed BiVelio license token (from your paid subscription). This is the
    * primary way to license the SDK: `createSavingsLayer` verifies it offline
    * against the embedded public key and builds a {@link licenseGate} from it.
@@ -363,6 +370,23 @@ export interface ModelCascadeSettings {
    * not, and no `Math.random` decides how your money is spent.
    */
   shadowSampleRate?: number;
+}
+
+/**
+ * Defaults for the provider price levers. Everything here is off unless you set it,
+ * and a request's own `savings` value always wins over it.
+ */
+export interface PriceLeverSettings {
+  /** Default for `savings.deferrable` on every request of this layer. A request's own value wins. Defaults to false. */
+  deferrable?: boolean;
+  /** Default for `savings.standalone`. A request's own value wins. Defaults to false. */
+  standalone?: boolean;
+  /**
+   * When a deferrable request finds no capacity on the cheaper tier (HTTP 429 or 503):
+   * "throw" (default) surfaces the error unchanged; "standard" repeats it once at the
+   * standard tier and price.
+   */
+  onCapacityError?: "throw" | "standard";
 }
 
 export const DEFAULT_COST_MODEL: CostModel = {

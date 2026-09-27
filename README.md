@@ -319,6 +319,65 @@ and every pair as a CSV download.
 </details>
 
 <details>
+<summary><b>Provider price levers (opt-in, off by default)</b></summary>
+
+Two request flags ask your provider for a lower price on the same tokens. Neither
+changes the answer, and what they are worth is reported next to the four ledgers:
+never folded into `cost.*`, never part of any commission.
+
+**`savings.deferrable`** asks for the provider's Flex tier: OpenAI, and Gemini through
+its OpenAI‑compatible endpoint. Anthropic has no cheaper synchronous tier (its
+discount lives only in Message Batches, which the layer does not support yet).
+Bedrock and DeepSeek off‑peak pricing are not supported.
+
+- **Latency.** OpenAI publishes no latency commitment for Flex; Google publishes a
+  target of minutes. Keep deferrable requests off user‑facing paths.
+  `report.deferred.latency` quotes what the provider documents.
+- **Risk.** Without capacity the provider refuses the request (429, or 503 on Gemini)
+  instead of waiting; OpenAI documents that the refusal is not charged. With
+  `priceLevers: { onCapacityError: "standard" }` the layer repeats it once at the
+  standard tier and price, and says so in `report.deferred.capacityFallback`.
+- **What it is worth.** Your provider's usage counter for that call, priced at the two
+  published rate cards (standard, and the tier that actually served it), component
+  by component, with the date the prices were checked. It is `measured` only when
+  the served tier was read back from the provider's own API, the prices are list
+  prices and the counter says how much of the input was read from (or written to)
+  the prompt cache; otherwise `estimated`, and `basisReason` says why. It never
+  exceeds the difference between the two published rate cards, even with your own
+  `costModels`. A tier the provider did not confirm is never credited.
+
+**`savings.standalone`** (GPT‑5.6 and later, on OpenAI's own API) declares that nothing
+after the stable prefix of this request will be sent again. The provider then writes
+its prompt cache only at the end of that prefix, or nowhere, instead of at the end of
+your message, which on these models costs more than plain input. The trade‑off:
+repeats and continuations of this exact prompt lose the cache reads the provider
+default would give them, so leave it off conversation turns you will continue. Its
+figure, `report.cacheWrites.avoidedWritePremium`, is always `estimated`: the provider
+default was not run.
+
+```ts
+const leveredLayer = createSavingsLayer({
+  provider,
+  licenseKey: process.env.BIVELIO_LICENSE_KEY,
+  priceLevers: { deferrable: true, onCapacityError: "standard" }, // layer-wide defaults
+});
+
+const { report } = await leveredLayer.generate({
+  model: "openai/gpt-5.6-luna",
+  messages: [
+    { role: "system", content: "…your long, fixed instructions…" },
+    { role: "user", content: "Classify ticket 42." },
+  ],
+  savings: { standalone: true }, // a request's own value always wins
+});
+
+report.deferred?.tierSaving; // { amount, basis, standardCost, appliedCost, pricesCheckedOn, basisReason }
+report.cacheWrites;          // { mode, breakpoints, avoidedWritePremium?, reason }
+```
+
+</details>
+
+<details>
 <summary><b>Structured output — validated <code>data</code>, not just text</b></summary>
 
 Ask for a response contract and you also get `data`, validated against your schema:

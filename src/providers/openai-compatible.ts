@@ -1,6 +1,12 @@
 import { TIER_DIFERIBLE_OPENAI } from "../economics/tier-diferido.js";
+import { explicitaAplicable } from "../economics/escrituras-de-cache.js";
 import { avisarUnaVez } from "../util/warn-once.js";
-import { atestiguar, herramientasSinParametros, sinContrato } from "./atestado-del-cable.js";
+import {
+  atestiguar,
+  declararOrigen,
+  herramientasSinParametros,
+  sinContrato,
+} from "./atestado-del-cable.js";
 import { sseMessages } from "./sse.js";
 import type {
   Provider,
@@ -161,6 +167,77 @@ export function quitarPrefijoDeProveedor(
   return quitar ? model.replace(/^[^/]+\//, "") : model;
 }
 
+// EL ORIGEN OFICIAL, POR EL HOST Y SOLO POR EL HOST. Es la condición M2 del
+// ahorro de tier (`economics/tier-diferido.ts`) y la que enciende el modo
+// explícito de caché: la tarifa publicada solo es la factura cuando se habla con
+// el API del propio proveedor. Cualquier otro host —un proxy, Vercel AI Gateway,
+// un endpoint regional o FedRAMP (+10 % según la página de precios de OpenAI),
+// Azure (sin documentar aquí)— da `null`, y con `null` el ahorro es como mucho
+// `estimated`. Solo https: un host oficial por http no es el API oficial.
+const HOSTS_OFICIALES: Readonly<Record<string, "openai" | "google">> = {
+  "api.openai.com": "openai",
+  "generativelanguage.googleapis.com": "google",
+};
+
+// El API propio del proveedor que es este endpoint, o `null`. NO se exporta: el
+// barril de proveedores reexporta este fichero entero hacia `dist/index.d.ts`.
+function origenOficial(baseUrl: string): "openai" | "google" | null {
+  try {
+    const u = new URL(baseUrl);
+    if (u.protocol !== "https:") return null;
+    return HOSTS_OFICIALES[u.hostname.toLowerCase()] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// La cabecera con la que Google dice qué tier sirvió: el anuncio oficial de Flex
+// y Priority (blog.google, 2-abr-2026) la lee así —
+// `response.sdk_http_response.headers.get("x-gemini-service-tier")`— «to check
+// which tier actually served your request». La guía de Flex y la de
+// compatibilidad con OpenAI no la mencionan y NINGUNA fuente publica sus
+// valores, así que: solo se lee en el host oficial de Google, solo si el cuerpo
+// no trae `service_tier`, y lo leído de aquí nunca sale `measured` (queda
+// `tierLeidoDe: "cabecera"` en el atestado y la valoración lo baja).
+const CABECERA_TIER_GEMINI = "x-gemini-service-tier";
+
+function cabecera(response: Response, nombre: string): string | undefined {
+  try {
+    const v = (response.headers as Headers | undefined)?.get?.(nombre);
+    return typeof v === "string" && v.trim() !== "" ? v.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Dónde va el punto de ruptura EXPLÍCITO, o `null` si el modo explícito no
+ * aplica (sin la marca, o modelo sin prima de escritura, o fuera del API de
+ * OpenAI). Pura: `enviar` la usa para el cuerpo y `leer` para el atestado, y
+ * las dos tienen que contar lo mismo.
+ *
+ * El punto va en el ÚLTIMO mensaje del prefijo estable y solo si ese mensaje es
+ * de un rol donde la guía de OpenAI lo admite (developer/system, user, respuesta
+ * de herramienta) y trae texto. Si no, cero puntos: en modo explícito eso es ni
+ * escribir ni leer, que es el lado que no cobra prima.
+ */
+function planDeCacheExplicita(
+  model: string,
+  req: ProviderRequest,
+  origen: "openai" | "google" | null,
+): { puntos: 0 | 1; indice: number } | null {
+  if (req.explicitCacheWrites !== true || !explicitaAplicable(model, origen)) return null;
+  const n = req.stablePrefixMessages;
+  if (n == null || !Number.isInteger(n) || n <= 0 || n > req.messages.length) {
+    return { puntos: 0, indice: -1 };
+  }
+  const m = req.messages[n - 1]!;
+  const rolAdmitido = m.role === "system" || m.role === "user" || m.role === "tool";
+  return rolAdmitido && typeof m.content === "string" && m.content !== ""
+    ? { puntos: 1, indice: n - 1 }
+    : { puntos: 0, indice: -1 };
+}
+
 function hostQuiereIdDesnudo(baseUrl: string): boolean {
   try {
     return HOSTS_QUE_QUIEREN_EL_ID_DESNUDO.test(new URL(baseUrl).hostname);
@@ -179,11 +256,17 @@ export class OpenAICompatibleProvider implements Provider {
   // property of the server, not of the model, so a single flag is enough; once
   // set, streamed requests go out without it and report incomplete usage.
   private streamOptionsRejected = false;
+  // El API oficial con el que habla, por el host de `baseUrl`. Se declara al
+  // pipeline (que decide el modo explícito ANTES de llamar) y se atestigua en
+  // cada respuesta.
+  private readonly origen: "openai" | "google" | null;
 
   constructor(opts: OpenAICompatibleOptions) {
     this.opts = opts;
     this.id = `openai-compatible:${opts.baseUrl}`;
     this.fetchImpl = opts.fetchImpl ?? fetch;
+    this.origen = origenOficial(opts.baseUrl);
+    declararOrigen(this, this.origen);
   }
 
   async generate(req: ProviderRequest, options?: ProviderStreamOptions): Promise<ProviderResponse> {
@@ -237,7 +320,7 @@ export class OpenAICompatibleProvider implements Provider {
       throw new Error(`provider ${response.status}: ${detail}`);
     }
 
-    return this.leer(response, req, nativo);
+    return this.leer(response, req, nativo, model);
   }
 
   /**
@@ -314,7 +397,7 @@ export class OpenAICompatibleProvider implements Provider {
     // generate() en vez de tirarla — el parser SSE no vería ningún `data:` y
     // lanzaría «ended before completion» sobre una respuesta completa.
     if ((response.headers.get("content-type") ?? "").includes("application/json")) {
-      const entera = await this.leer(response, req, false);
+      const entera = await this.leer(response, req, false, model);
       if (entera.text !== "") yield { type: "text", delta: entera.text };
       yield { type: "done", response: entera };
       return;
@@ -387,6 +470,7 @@ export class OpenAICompatibleProvider implements Provider {
       throw new Error(mensajeDeUsoIncompleto(uso?.prompt_tokens, uso?.completion_tokens));
     }
     const razonamiento = razonamientoDeclarado(uso, huboTextoDeRazonamiento);
+    const escritosEnStream = escrituraDeCache(uso);
     const usage: ProviderUsage = {
       inputTokens: uso?.prompt_tokens ?? 0,
       outputTokens: uso?.completion_tokens ?? 0,
@@ -394,9 +478,7 @@ export class OpenAICompatibleProvider implements Provider {
         ? { cachedInputTokens: uso.prompt_tokens_details.cached_tokens }
         : {}),
       // Igual que en generate(): la escritura de caché de GPT-5.6+ (1,25×).
-      ...(uso?.prompt_tokens_details?.cache_write_tokens != null
-        ? { cacheWriteInputTokens: uso.prompt_tokens_details.cache_write_tokens }
-        : {}),
+      ...(escritosEnStream !== undefined ? { cacheWriteInputTokens: escritosEnStream } : {}),
       ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
       ...(inputAbsent || outputAbsent ? { complete: false } : {}),
     };
@@ -405,6 +487,15 @@ export class OpenAICompatibleProvider implements Provider {
       .sort((a, b) => a[0] - b[0])
       .map(([, h]) => ({ ...(h.id ? { id: h.id } : {}), name: h.name ?? "", arguments: h.args }))
       .filter((tc) => tc.name !== "");
+
+    // El tier del cuerpo manda; la cabecera de Google, solo en su host y solo
+    // si el cuerpo calló (ver CABECERA_TIER_GEMINI).
+    let tierLeidoDe: "cuerpo" | "cabecera" | undefined = servedServiceTier ? "cuerpo" : undefined;
+    if (!servedServiceTier && this.origen === "google") {
+      servedServiceTier = cabecera(response, CABECERA_TIER_GEMINI);
+      if (servedServiceTier) tierLeidoDe = "cabecera";
+    }
+    const planStream = planDeCacheExplicita(model, req, this.origen);
 
     yield {
       type: "done",
@@ -420,7 +511,12 @@ export class OpenAICompatibleProvider implements Provider {
           raw: uso ?? null,
         },
         // Los parámetros vacíos de una herramienta que no traía son del adaptador.
-        sinContrato(herramientasSinParametros(req.tools)),
+        {
+          ...sinContrato(herramientasSinParametros(req.tools)),
+          origen: this.origen,
+          ...(tierLeidoDe ? { tierLeidoDe } : {}),
+          ...(planStream ? { cacheExplicita: { puntos: planStream.puntos } } : {}),
+        },
       ),
     };
   }
@@ -469,6 +565,17 @@ export class OpenAICompatibleProvider implements Provider {
       }
       return { role: m.role, content: m.content };
     });
+    // EL MODO EXPLÍCITO DE CACHÉ (peticiones `standalone`, GPT-5.6+ en el API de
+    // OpenAI). El punto va DENTRO del mensaje frontera, como parte de texto, y
+    // antes de añadir la instrucción de JSON por prompt, que va al final y
+    // nunca es prefijo. Sin la marca no se toca nada: el cuerpo es el de hoy.
+    const plan = planDeCacheExplicita(model, req, this.origen);
+    if (plan?.puntos === 1) {
+      const frontera = mensajes[plan.indice]!;
+      frontera["content"] = [
+        { type: "text", text: frontera["content"], prompt_cache_breakpoint: { mode: "explicit" } },
+      ];
+    }
     if (req.schema && !nativo) {
       mensajes.push({ role: "system", content: instruccionDeJsonPorPrompt(req.schema) });
     }
@@ -503,8 +610,12 @@ export class OpenAICompatibleProvider implements Provider {
     // configuración del proyecto», y fijar `default` desde aquí le anularía al
     // cliente una elección que hizo en su panel.
     if (req.deferrable === true) body["service_tier"] = TIER_DIFERIBLE_OPENAI;
-    // `stablePrefixMessages` se ignora a propósito: aquí no hay nada que marcar.
-    // Ignorarlo no pierde el descuento (es automático); marcarlo no existe.
+    // `stablePrefixMessages` se ignora salvo en modo explícito: sin él la caché
+    // de OpenAI es automática y no hay nada que marcar. Con él, `mode:
+    // "explicit"` apaga el punto implícito (el que cae al final de la pregunta y
+    // la escribe a 1,25x), y el único punto es el de arriba o ninguno. Sin `ttl`:
+    // su único valor admitido, `30m`, es también el defecto.
+    if (plan) body["prompt_cache_options"] = { mode: "explicit" };
     if (req.schema && nativo) {
       // `strict: true` iba fijo, y eso convertía cualquier contrato con un campo
       // OPCIONAL en un 400 duro contra OpenAI: en modo strict, `required` tiene
@@ -580,6 +691,7 @@ export class OpenAICompatibleProvider implements Provider {
     response: Response,
     req: ProviderRequest,
     nativo: boolean,
+    model: string,
   ): Promise<ProviderResponse> {
     const json = (await response.json()) as OpenAIChatResponse;
     const mensaje = json.choices?.[0]?.message as
@@ -637,10 +749,20 @@ export class OpenAICompatibleProvider implements Provider {
     // vocabulario es del proveedor y puede crecer, y un hueco significa «no se
     // sabe», que no es lo mismo que «estándar». Quien decide qué se acredita es
     // `veredictoDelTier`, y ante un valor que no conoce no acredita nada.
-    const servedServiceTier =
+    let servedServiceTier =
       typeof json.service_tier === "string" && json.service_tier !== ""
         ? json.service_tier
         : undefined;
+    // El cuerpo manda. La cabecera de Google solo en su host oficial y solo si
+    // el cuerpo calló; y lo que se lea de ahí se atestigua como tal, para que la
+    // valoración no lo llame `measured` (sus valores no están documentados).
+    let tierLeidoDe: "cuerpo" | "cabecera" | undefined = servedServiceTier ? "cuerpo" : undefined;
+    if (!servedServiceTier && this.origen === "google") {
+      servedServiceTier = cabecera(response, CABECERA_TIER_GEMINI);
+      if (servedServiceTier) tierLeidoDe = "cabecera";
+    }
+    const escritos = escrituraDeCache(usage);
+    const plan = planDeCacheExplicita(model, req, this.origen);
 
     const razonamiento = razonamientoDeclarado(
       usage,
@@ -665,10 +787,10 @@ export class OpenAICompatibleProvider implements Provider {
           // consultada el 2026-09-27). Va dentro de `prompt_tokens`, como la
           // lectura; aquí solo se separa para que el pipeline cargue el 0,25×
           // de más. No es un descuento: es lo que cuesta el prefijo la primera
-          // vez (ver `cacheWriteInputTokens` en ProviderUsage).
-          ...(usage.prompt_tokens_details?.cache_write_tokens != null
-            ? { cacheWriteInputTokens: usage.prompt_tokens_details.cache_write_tokens }
-            : {}),
+          // vez (ver `cacheWriteInputTokens` en ProviderUsage). «The unadjusted
+          // number of prompt tokens written to cache» (openai-node,
+          // CompletionUsage); el gateway ya lo leía.
+          ...(escritos !== undefined ? { cacheWriteInputTokens: escritos } : {}),
           ...(razonamiento !== undefined ? { reasoningTokens: razonamiento } : {}),
           // Un contador ausente se rellenó con 0: la petición sale `unmeasured`.
           // Con el usage completo la clave NO aparece.
@@ -693,6 +815,9 @@ export class OpenAICompatibleProvider implements Provider {
         esquemaEstricto: req.schema != null && nativo && isStrictCompatible(req.schema),
         esquemaPorPrompt: req.schema != null && !nativo,
         piezasDelAdaptador: herramientasSinParametros(req.tools),
+        origen: this.origen,
+        ...(tierLeidoDe ? { tierLeidoDe } : {}),
+        ...(plan ? { cacheExplicita: { puntos: plan.puntos } } : {}),
       },
     );
   }
@@ -721,6 +846,13 @@ function razonamientoDeclarado(
   if (typeof n !== "number" || !Number.isInteger(n) || n < 0) return undefined;
   if (n === 0 && huboTextoDeRazonamiento) return undefined;
   return n;
+}
+
+// Los tokens ESCRITOS en la caché de prefijo, o `undefined` si el contador no lo
+// dice. Solo un entero no negativo cuenta: cualquier otra cosa es no saberlo.
+function escrituraDeCache(uso: UsoDeChat | null | undefined): number | undefined {
+  const n = uso?.prompt_tokens_details?.cache_write_tokens;
+  return typeof n === "number" && Number.isInteger(n) && n >= 0 ? n : undefined;
 }
 
 function esTextoNoVacio(v: unknown): boolean {
