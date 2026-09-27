@@ -22,7 +22,11 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "paths": {
+      "@bivelio/savings-layer": ["./src/index.ts"],
+      "@bivelio/savings-layer/*": ["./src/adapters/*.ts"]
+    }
   },
   "include": [
     "src/**/*.ts",
