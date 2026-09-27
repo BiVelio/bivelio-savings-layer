@@ -29,7 +29,7 @@ export interface UsoAnthropic {
    * Las iteraciones de una respuesta con compactación del servidor. El contador
    * de arriba es el de la ÚLTIMA; las anteriores también se facturan.
    */
-  iterations?: unknown[];
+  iterations?: unknown;
 }
 
 /** Lo que devuelve el cálculo: el uso neutro y qué contador faltó, para el mensaje de error. */

@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -40,6 +40,9 @@ const FRAMEWORKS = [/^ai$/, /^@mastra\/core(\/.*)?$/, /^langchain$/, /^@langchai
 const PERMITIDOS_RELATIVOS = new Set([
   "src/providers/sse.ts",
   "src/providers/anthropic-uso.ts",
+  // La suma de las iteraciones de compactación (#333): pura, sin imports, y la
+  // usa anthropic-uso.ts para que proveedor y adaptador cuenten igual.
+  "src/providers/iteraciones-de-compactacion.ts",
 ]);
 
 describe("los adaptadores solo usan la superficie pública", () => {
@@ -70,7 +73,13 @@ describe("los adaptadores solo usan la superficie pública", () => {
 
   it("⛔ los permitidos internos no tiran a su vez de licencia, medición ni pipeline", () => {
     for (const p of PERMITIDOS_RELATIVOS) {
-      const imports = importsDe(readFileSync(join(RAIZ, p), "utf8")).filter((s) => !s.startsWith("./types"));
+      // Un permitido puede importar a OTRO permitido (anthropic-uso → la suma de
+      // la compactación): el cierre sigue sin llegar a licencia, medición ni pipeline.
+      const aPermitido = (s: string): boolean =>
+        PERMITIDOS_RELATIVOS.has(join(dirname(p), s).replace(/\.js$/, ".ts"));
+      const imports = importsDe(readFileSync(join(RAIZ, p), "utf8")).filter(
+        (s) => !s.startsWith("./types") && !aPermitido(s),
+      );
       expect(imports, p).toEqual([]);
     }
   });

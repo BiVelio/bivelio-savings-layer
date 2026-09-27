@@ -307,9 +307,13 @@ export async function generarSbom(
 
     // Lo que el bundle importa SIN empaquetar tiene que ser de Node o estar
     // declarado: si no, el paquete necesitaría algo que no instala.
+    // El propio paquete también cuenta: los adaptadores (subpaths como
+    // `@bivelio/savings-layer/ai-sdk`) importan el núcleo por su nombre público,
+    // y eso no es una dependencia nueva sino el mismo tarball.
     const declarados = new Set([
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.peerDependencies ?? {}),
+      ...(pkg.name ? [pkg.name] : []),
     ]);
     const nativos = new Set(builtinModules.flatMap((m) => [m, `node:${m}`]));
     for (const [salidaJs, o] of Object.entries(meta.outputs)) {
