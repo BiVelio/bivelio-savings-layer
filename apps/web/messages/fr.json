@@ -367,6 +367,11 @@
       "noLever": "{n, plural, one {# machine est à jour} other {# machines sont à jour}}, mais le levier n'y a pas agi. Si rien ne change après la mise à jour, écrivez à support@bivelio.com.",
       "action": "Mettez à jour @bivelio/savings-layer sur cette machine et relancez le terminal ; le tableau des machines ci-dessous montre ce que chacune déclare."
     },
+    "sdkReferencia": {
+      "title": "Certaines machines exécutent un SDK antérieur à {minima} : leurs répétitions ne sont pas mesurées par référence",
+      "summary": "{n, plural, one {# machine exécute} other {# machines exécutent}} un SDK antérieur à {minima} (la plus ancienne déclare {antigua}). Tant qu'elles ne sont pas mises à jour, leurs requêtes répétées comptent comme estimées, et non comme mesurées par référence : elles restent dans vos totaux, mais hors de la base.",
+      "action": "Mettez à jour le SDK vers {minima} ou plus récent sur cette machine et redémarrez le processus :"
+    },
     "maquinas": {
       "title": "machines (30 jours)",
       "colSeat": "Machine",

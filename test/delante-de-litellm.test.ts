@@ -16,6 +16,7 @@ import {
 } from "../benchmarks/delante-de-litellm/nucleo.js";
 import { arrancarUpstreamFalso, type UpstreamFalso } from "../benchmarks/latencia-gateways/upstream-falso.js";
 import { CATALOGO } from "../src/pricing/catalogo.js";
+import { BV_SALA_VERSION } from "../src/version.js";
 
 /**
  * E6 · BV-SALA DELANTE DE LITELLM, en CI: sin Python ni red.
@@ -337,4 +338,32 @@ describe("HUECOS · los que contradecían (b): dos cerrados por el dueño (2026-
     },
     PLAZO,
   );
+});
+
+/**
+ * La mínima del ingest, vista desde el SDK (el espejo del banco usa la
+ * constante de src/version.ts; la web la ata por texto en version.test.ts).
+ * 0.4.24-0.4.28 podían repetir una negativa del proveedor como referencia:
+ * #356 cerró `content_filter`/`refusal` en la 0.4.27 y #367 la de salidas
+ * estructuradas de OpenAI en la 0.4.29 (BITACORA-2026-09-26 §8).
+ */
+describe("VERSION_MINIMA_REFERENCIA — 0.4.29, la primera que no repite ninguna negativa", () => {
+  it("una referencia de 0.4.24-0.4.28 ya no es comisionable; de 0.4.29 en adelante sí", () => {
+    for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28"]) {
+      expect(versionAdmiteReferencia(no), no).toBe(false);
+    }
+    for (const si of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.5.0"]) {
+      expect(versionAdmiteReferencia(si), si).toBe(true);
+    }
+  });
+
+  it("controles: el gateway, una preliminar de la mínima y «sin versión» siguen fuera", () => {
+    for (const no of ["gateway/0.4.29", "sdk/0.4.29-rc.1", null]) {
+      expect(versionAdmiteReferencia(no), String(no)).toBe(false);
+    }
+  });
+
+  it("lo que emite ESTE código entra: BV_SALA_VERSION no va por detrás de la mínima", () => {
+    expect(versionAdmiteReferencia(`sdk/${BV_SALA_VERSION}`)).toBe(true);
+  });
 });

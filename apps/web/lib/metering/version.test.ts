@@ -111,24 +111,37 @@ describe("admiteReferencia — la verja de la regla de la referencia", () => {
     expect(compararVersiones(VERSION_MINIMA_REFERENCIA, `${a}.${b}.${c + 1}`)).toBeLessThanOrEqual(0);
   });
 
+  it("va por delante de la 0.4.28: de la 0.4.24 a la 0.4.28 el SDK podía repetir una negativa como referencia", () => {
+    // #356 (0.4.27) cerró `content_filter`/`refusal`; #367 (0.4.29) la negativa
+    // de salidas estructuradas de OpenAI. Bajar de aquí reabre la segunda.
+    expect(compararVersiones(VERSION_MINIMA_REFERENCIA, "0.4.28")).toBeGreaterThan(0);
+  });
+
   it("sdk/ desde la mínima: sí; anteriores, preliminares de la mínima o sin versión: no", () => {
-    for (const si of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.25-rc.1"]) {
+    for (const si of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.5.0", "sdk/1.0.0", "sdk/0.4.30-rc.1"]) {
       expect(admiteReferencia(si), si).toBe(true);
     }
-    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.24-rc.1", "0.4.24"]) {
+    for (const no of [null, "sdk/0.4.23", "sdk/0.4.22", "sdk/0.4.29-rc.1", "0.4.29"]) {
       expect(admiteReferencia(no), String(no)).toBe(false);
     }
   });
 
+  it("0.4.24-0.4.28 ya no: pueden haber repetido una negativa (las publicadas y la 0.4.27, que solo existe como etiqueta)", () => {
+    for (const no of ["sdk/0.4.24", "sdk/0.4.25", "sdk/0.4.26", "sdk/0.4.27", "sdk/0.4.28", "sdk/0.4.28-hotfix"]) {
+      expect(admiteReferencia(no), no).toBe(false);
+    }
+  });
+
   it("gateway/ nunca, sea cual sea la versión: la regla v2 vive en el pipeline del SDK y el gateway no pasa por él", () => {
-    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.24-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
+    for (const no of ["gateway/0.4.23", "gateway/0.4.24", "gateway/0.4.29", "gateway/0.4.29-dev", "gateway/0.5.0", "gateway/9.9.9"]) {
       expect(admiteReferencia(no), no).toBe(false);
     }
   });
 
   it("encadenada con versionDeclarada: una cabecera rara es «sin versión» y tampoco admite", () => {
-    expect(admiteReferencia(versionDeclarada("sdk/0.4.24, sdk/0.4.24"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada("cli/0.4.24"))).toBe(false);
-    expect(admiteReferencia(versionDeclarada(" sdk/0.4.24 "))).toBe(true);
+    expect(admiteReferencia(versionDeclarada("sdk/0.4.29, sdk/0.4.29"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada("cli/0.4.29"))).toBe(false);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.29 "))).toBe(true);
+    expect(admiteReferencia(versionDeclarada(" sdk/0.4.26 "))).toBe(false);
   });
 });

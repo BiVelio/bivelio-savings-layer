@@ -367,6 +367,11 @@
       "noLever": "{n, plural, one {# màquina està al dia} other {# màquines estan al dia}}, però la palanca no hi ha actuat. Si segueix igual després d'actualitzar, escriu-nos a support@bivelio.com.",
       "action": "Actualitza @bivelio/savings-layer en aquella màquina i reinicia el terminal; la taula de màquines de sota mostra què declara cadascuna."
     },
+    "sdkReferencia": {
+      "title": "Algunes màquines executen un SDK anterior a {minima}: les seves repeticions no es mesuren per referència",
+      "summary": "{n, plural, one {# màquina executa} other {# màquines executen}} un SDK anterior a {minima} (la més antiga declara {antigua}). Fins que s'actualitzin, les seves peticions repetides compten com a estimades, no com a mesurades per referència: continuen als teus totals, però fora de la base.",
+      "action": "Actualitza l'SDK a {minima} o posterior en aquesta màquina i reinicia el procés:"
+    },
     "maquinas": {
       "title": "màquines (30 dies)",
       "colSeat": "Màquina",

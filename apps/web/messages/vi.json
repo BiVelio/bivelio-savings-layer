@@ -367,6 +367,11 @@
       "noLever": "{n, plural, other {# máy đã cập nhật}}, nhưng đòn bẩy chưa hoạt động ở đó. Nếu vẫn vậy sau khi cập nhật, hãy viết cho support@bivelio.com.",
       "action": "Cập nhật @bivelio/savings-layer trên máy đó và khởi động lại terminal; bảng máy bên dưới cho thấy mỗi máy khai báo gì."
     },
+    "sdkReferencia": {
+      "title": "Một số máy đang chạy SDK cũ hơn {minima}: các lượt lặp lại của chúng không được đo theo tham chiếu",
+      "summary": "{n, plural, other {# máy đang chạy}} SDK cũ hơn {minima} (máy cũ nhất khai báo {antigua}). Cho đến khi cập nhật, các yêu cầu lặp lại của chúng được tính là ước tính, không phải đo theo tham chiếu: vẫn nằm trong tổng của bạn, nhưng ngoài cơ sở.",
+      "action": "Hãy cập nhật SDK trên máy đó lên {minima} trở lên và khởi động lại tiến trình:"
+    },
     "maquinas": {
       "title": "máy (30 ngày)",
       "colSeat": "Máy",

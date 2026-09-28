@@ -367,6 +367,11 @@
       "noLever": "{n, plural, one {# makine güncel} other {# makine güncel}}, ancak tarife kolu orada devreye girmedi. Güncellemeden sonra aynı kalırsa support@bivelio.com adresine yazın.",
       "action": "O makinede @bivelio/savings-layer paketini güncelleyin ve terminali yeniden başlatın; aşağıdaki makine tablosu her birinin ne bildirdiğini gösterir."
     },
+    "sdkReferencia": {
+      "title": "Bazı makineler {minima} sürümünden eski bir SDK çalıştırıyor: tekrarları referansla ölçülmüyor",
+      "summary": "{n, plural, other {# makine}} {minima} sürümünden eski bir SDK çalıştırıyor (en eskisi {antigua} bildiriyor). Güncellenene kadar tekrarlanan istekleri referansla ölçülmüş değil, tahmini sayılır: toplamlarınızda kalır ama tabanın dışındadır.",
+      "action": "O makinede SDK'yı {minima} veya daha yeni bir sürüme güncelleyin ve işlemi yeniden başlatın:"
+    },
     "maquinas": {
       "title": "makineler (30 gün)",
       "colSeat": "Makine",

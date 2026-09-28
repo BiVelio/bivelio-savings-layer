@@ -41,7 +41,21 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
 
 /**
  * Política A MANO: la primera versión que emite registros `basis: "reference"`
- * con la regla v2 (`reference-v2`). La etiqueta v0.4.23 se cortó con la regla v1
+ * con la regla v2 (`reference-v2`) y que ya no repite una negativa del proveedor
+ * como `reference`. Dos subidas:
+ *
+ *   · 0.4.24 (#323): la etiqueta v0.4.23 se cortó con la regla v1 (abajo).
+ *   · 0.4.29 (decisión del dueño, BITACORA-2026-09-26 §8): de la 0.4.24 a la
+ *     0.4.28 el SDK podía guardar en caché una negativa y repetirla por
+ *     referencia, comisionable. #356 (E7, en la 0.4.27) lo cerró para
+ *     `finish_reason: "content_filter"` / `stop_reason: "refusal"`; #367 (en la
+ *     0.4.29) para la negativa de salidas estructuradas de OpenAI
+ *     (`message.refusal` con `finish_reason: "stop"`), que la 0.4.27 y la 0.4.28
+ *     todavía guardaban y repetían. La mínima es la primera que cierra las dos.
+ *     El coste, aceptado: las referencias honestas de 0.4.24-0.4.28 también
+ *     entran como `estimated`.
+ *
+ * La etiqueta v0.4.23 se cortó con la regla v1
  * (formato de registro `v: 1`, sin guarda de razonamiento y sin el esquema
  * estricto), y la versión de la regla no viaja en el registro de uso: el
  * servidor sella la del extracto entero. Así que el ingest DEGRADA a
@@ -58,6 +72,8 @@ export const VERSION_MINIMA_PALANCA_TARIFA = "0.4.16";
  * fichero como texto.
  *
  * Casilla del PR de release: «¿cambia la regla de la referencia? → sube la
- * regla en tarifa.ts y esta MINIMA a la versión que la publica».
+ * regla en tarifa.ts y esta MINIMA a la versión que la publica». Y «¿cierra un
+ * caso en que el SDK emitía una referencia que no debía? → esta MINIMA sube a
+ * la versión que lo publica, o se deja escrito por qué no».
  */
-export const VERSION_MINIMA_REFERENCIA = "0.4.24";
+export const VERSION_MINIMA_REFERENCIA = "0.4.29";

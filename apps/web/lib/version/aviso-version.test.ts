@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 
 import { agregarAsientos, type FilaAsiento } from "./asientos";
-import { DIA_MS, decidirAvisoVersion, estadoVersion, type AsientoVisto } from "./aviso-version";
+import { VERSION_MINIMA_REFERENCIA } from "../metering/version";
+import { DIA_MS, decidirAvisoReferencia, decidirAvisoVersion, estadoVersion, type AsientoVisto } from "./aviso-version";
 
 /**
  * El aviso se decide por DINERO y la versión solo explica. Los dos errores que
@@ -177,5 +178,84 @@ describe("decidirAvisoVersion · el ahorro medido por referencia también es din
 
   it("con el campo ya agregado: ahorro por referencia > 0 y medido 0 → el aviso lo decide ahorroMedido7dUsd", () => {
     expect(decidirAvisoVersion([asiento({ ahorroMedido7dUsd: 0.03, ahorroReferencia7dUsd: 0.03 })], AHORA, MINIMA)).toBeNull();
+  });
+});
+
+/**
+ * El aviso de la referencia: un SDK por debajo de VERSION_MINIMA_REFERENCIA
+ * (0.4.29) ve sus repeticiones entrar como estimated. Decide la VERSIÓN, con la
+ * misma verja que el ingest; el gateway y «sin versión» no avisan.
+ */
+describe("decidirAvisoReferencia — un SDK por debajo de la mínima de la referencia", () => {
+  const sdk = (v: string | null, p: Partial<AsientoVisto> = {}) =>
+    asiento({ surface: v ? "sdk" : null, versionMin: v, versionMax: v, ...p });
+
+  it("usa la mínima del espejo del ingest (0.4.29), sin copia propia", () => {
+    expect(VERSION_MINIMA_REFERENCIA).toBe("0.4.29");
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28")], AHORA)?.minima).toBe(VERSION_MINIMA_REFERENCIA);
+  });
+
+  it("sdk/0.4.28 → aviso, con la versión más antigua para el texto", () => {
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28"), sdk("sdk/0.4.26", { seatId: "otra" })], AHORA)).toEqual({
+      tipo: "sdkSinReferencia",
+      desactualizadas: 2,
+      versionMasAntigua: "sdk/0.4.26",
+      minima: "0.4.29",
+    });
+  });
+
+  it("sdk/0.4.29 y posteriores → sin aviso (0.10.0 por orden numérico)", () => {
+    for (const v of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.10.0", "sdk/1.0.0"]) {
+      expect(decidirAvisoReferencia([sdk(v)], AHORA), v).toBeNull();
+    }
+  });
+
+  it("una preliminar de la mínima (sdk/0.4.29-rc.1) avisa: el ingest también la degrada", () => {
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.29-rc.1")], AHORA)?.desactualizadas).toBe(1);
+  });
+
+  it("gateway → sin aviso, a cualquier versión (no emite referencias comisionables)", () => {
+    for (const v of ["gateway/0.4.16", "gateway/0.4.28", "gateway/0.4.29"]) {
+      expect(decidirAvisoReferencia([asiento({ surface: "gateway", versionMin: v, versionMax: v })], AHORA), v).toBeNull();
+    }
+  });
+
+  it("un asiento que mezcla gateway (la menor) y SDK (la mayor) no se atribuye: sin aviso", () => {
+    expect(
+      decidirAvisoReferencia([asiento({ surface: "sdk", versionMin: "gateway/0.4.20", versionMax: "sdk/0.4.28" })], AHORA),
+    ).toBeNull();
+  });
+
+  it("sin versión → sin aviso: nunca declaró, o algún registro de 7 días vino sin ella", () => {
+    expect(decidirAvisoReferencia([sdk(null)], AHORA)).toBeNull();
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28", { sinVersion7d: true })], AHORA)).toBeNull();
+    expect(decidirAvisoReferencia([sdk("basura")], AHORA)).toBeNull();
+  });
+
+  it("CI y asientos no vistos en 7 días (o con fecha futura o inválida) no cuentan", () => {
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28", { isCi: true })], AHORA)).toBeNull();
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28", { lastSeenAt: hace(8) })], AHORA)).toBeNull();
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28", { lastSeenAt: hace(-1) })], AHORA)).toBeNull();
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28", { lastSeenAt: "nunca" })], AHORA)).toBeNull();
+  });
+
+  it("decide la versión, no el dinero: un SDK 0.4.28 con ahorro medido también avisa", () => {
+    expect(decidirAvisoReferencia([sdk("sdk/0.4.28", { ahorroMedido7dUsd: 5 })], AHORA)?.desactualizadas).toBe(1);
+  });
+
+  it("con los dos avisos a la vez, ninguno pisa al otro", () => {
+    const gatewayViejoSinEuro = asiento({ seatId: "gw", versionMin: "gateway/0.4.15", versionMax: "gateway/0.4.15" });
+    const sdkViejo = sdk("sdk/0.4.28", { seatId: "sdk" });
+    const sdkAlDia = sdk("sdk/0.4.29", { seatId: "sdk-nuevo" });
+    const todos = [gatewayViejoSinEuro, sdkViejo, sdkAlDia];
+
+    const tarifa = decidirAvisoVersion(todos, AHORA, MINIMA);
+    const referencia = decidirAvisoReferencia(todos, AHORA);
+    // El de tarifa ve solo el gateway, igual que sin los SDK.
+    expect(tarifa).toEqual(decidirAvisoVersion([gatewayViejoSinEuro], AHORA, MINIMA));
+    expect(tarifa).toMatchObject({ tipo: "gatewaySinAhorro", activas: 1, desactualizadas: 1 });
+    // El de referencia ve solo el SDK viejo, igual que sin el gateway.
+    expect(referencia).toEqual(decidirAvisoReferencia([sdkViejo], AHORA));
+    expect(referencia).toMatchObject({ tipo: "sdkSinReferencia", desactualizadas: 1 });
   });
 });

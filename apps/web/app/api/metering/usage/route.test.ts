@@ -180,7 +180,7 @@ describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS
 
   // Un proceso con la regla vigente: sin él, la verja de versión degradaría
   // la referencia antes de que el interruptor tuviera nada que decir.
-  const V2 = { "x-bvsala-version": "sdk/0.4.24" };
+  const V2 = { "x-bvsala-version": "sdk/0.4.29" };
 
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -251,7 +251,8 @@ describe("POST /api/metering/usage — el interruptor BVSALA_INGEST_REFERENCE_AS
 /**
  * LA VERJA DE LA REGLA. La etiqueta v0.4.23 se cortó con la regla v1 y la regla
  * no viaja en el registro: el cierre sella «reference-v2» para el extracto
- * entero. Así que una referencia solo entra como tal si el proceso es el SDK y
+ * entero. Y de la 0.4.24 a la 0.4.28 el SDK podía repetir una negativa del
+ * proveedor como referencia. Así que una referencia solo entra como tal si el proceso es el SDK y
  * declara una versión desde VERSION_MINIMA_REFERENCIA; si no, "estimated", con
  * 202. El gateway no, a ninguna versión: no implementa la regla v2.
  */
@@ -278,7 +279,20 @@ describe("POST /api/metering/usage — la verja de versión de la referencia", (
     vi.unstubAllEnvs();
   });
 
-  for (const cabecera of ["sdk/0.4.23", "gateway/0.4.23", "sdk/0.4.24-rc.1", "gateway/0.4.24", "gateway/0.5.0"]) {
+  for (const cabecera of [
+    "sdk/0.4.23",
+    "gateway/0.4.23",
+    // 0.4.24-0.4.28: pueden haber repetido una negativa como referencia
+    // (BITACORA-2026-09-26 §8; cerrado del todo en la 0.4.29 con #356 y #367).
+    "sdk/0.4.24",
+    "sdk/0.4.26",
+    "sdk/0.4.27",
+    "sdk/0.4.28",
+    "sdk/0.4.29-rc.1",
+    "gateway/0.4.24",
+    "gateway/0.4.29",
+    "gateway/0.5.0",
+  ]) {
     it(`${cabecera}: la referencia entra como estimated, sin sus campos, y la versión se sella igual`, async () => {
       vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
       const avisos: unknown[][] = [];
@@ -303,7 +317,7 @@ describe("POST /api/metering/usage — la verja de versión de la referencia", (
 
   it("sin cabecera de versión (o con una que no casa): estimated", async () => {
     vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
-    const casos: Array<Record<string, string>> = [{}, { "x-bvsala-version": "sdk/0.4.24, sdk/0.4.24" }];
+    const casos: Array<Record<string, string>> = [{}, { "x-bvsala-version": "sdk/0.4.29, sdk/0.4.29" }];
     for (const cabeceras of casos) {
       await POST(peticion([referencia()], cabeceras));
       const r = rpc!.args.records[0]!;
@@ -312,7 +326,7 @@ describe("POST /api/metering/usage — la verja de versión de la referencia", (
     }
   });
 
-  for (const cabecera of ["sdk/0.4.24", "sdk/0.5.0"]) {
+  for (const cabecera of ["sdk/0.4.29", "sdk/0.4.30", "sdk/0.5.0"]) {
     it(`${cabecera}: la referencia entra como reference`, async () => {
       vi.stubEnv("BVSALA_INGEST_REFERENCE_AS_ESTIMATED", "");
       const res = await POST(peticion([referencia()], { "x-bvsala-version": cabecera }));
