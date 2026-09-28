@@ -709,17 +709,26 @@ export class SavingsPipeline {
    */
   private conPalancasPorDefecto(request: SavingsRequest): SavingsRequest {
     const pl = this.config.priceLevers;
-    if (!pl) return request;
     const s = request.savings;
-    const ponerDiferible = pl.deferrable === true && s?.deferrable === undefined;
-    const ponerStandalone = pl.standalone === true && s?.standalone === undefined;
-    if (!ponerDiferible && !ponerStandalone) return request;
+    const ponerDiferible = pl?.deferrable === true && s?.deferrable === undefined;
+    const ponerStandalone = pl?.standalone === true && s?.standalone === undefined;
+    // LA CACHÉ SEMÁNTICA POR DEFECTO DE LA CAPA (`semanticCacheDefault`). Entra
+    // aquí, en la petición, y no como un «o» más abajo, porque la política lee
+    // `original.savings.semanticCache` para admitir lo agéntico: un
+    // `"include-agentic"` puesto por la capa tiene que valer igual que uno
+    // declarado. Solo un valor que ENCIENDE; `false` no escribe nada (la petición
+    // sin valor ya es «apagada»), y la petición que dice algo gana siempre.
+    const semDefecto = this.config.semanticCacheDefault;
+    const ponerSemantica =
+      semDefecto !== undefined && semDefecto !== false && s?.semanticCache === undefined;
+    if (!ponerDiferible && !ponerStandalone && !ponerSemantica) return request;
     return {
       ...request,
       savings: {
         ...(s ?? {}),
         ...(ponerDiferible ? { deferrable: true } : {}),
         ...(ponerStandalone ? { standalone: true } : {}),
+        ...(ponerSemantica ? { semanticCache: semDefecto } : {}),
       },
     };
   }
@@ -1781,6 +1790,31 @@ export class SavingsPipeline {
           "It is not on by default because it needs an embedder, which is your own cost and provider: " +
           "plug it in with `createSavingsLayer({ semanticCache: new InMemorySemanticCache({ embed }) })`. " +
           "The exact cache and the rest of the layer keep working.",
+      );
+    }
+
+    // EL CASO CONTRARIO, Y EL QUE SE VIO EN EL BANCO: la capa TIENE caché
+    // semántica y ninguna petición la pide. 0 registros tras 5.813 peticiones y
+    // ni una señal, porque el ejemplo «Serverless» del README la pasaba al
+    // constructor y daba por hecho que eso la encendía. No la enciende —y NO debe
+    // encenderla sola: puede servir la respuesta de otra pregunta—, pero se dice.
+    // Solo cuando la petición no dice nada: un `false` explícito (los adaptadores
+    // lo fuerzan) es una decisión, no un olvido. Y `semanticCacheDefault`, con
+    // cualquier valor, también es una decisión.
+    if (
+      this.deps.semanticCache &&
+      toggles.semanticCache === undefined &&
+      this.config.semanticCacheDefault === undefined
+    ) {
+      this.avisar(
+        "cache-semantica-sin-pedir",
+        "[bv-sala] This layer was given a `semanticCache`, but this request does not ask for it, so " +
+          "the semantic cache was neither consulted nor written: every reworded question is paid to the " +
+          "provider and a calibrating cache collects no labels. Passing the cache to `createSavingsLayer` " +
+          "does not switch it on. Ask for it per request with `savings: { semanticCache: true }`, or on " +
+          "every request with `createSavingsLayer({ semanticCache, semanticCacheDefault: true })` — " +
+          "preferably with a cache built with `calibration`. If you switch it on per request on purpose, " +
+          "set `semanticCacheDefault: false` to say so and this warning goes away.",
       );
     }
   }

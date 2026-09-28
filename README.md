@@ -711,7 +711,11 @@ const placedLayer = createSavingsLayer({
 Calibrated reuse and `cacheBreakpoints: "auto"` learn from your traffic, and by default
 what they learn lives in the process. On serverless platforms (Vercel Functions, AWS
 Lambda) an instance may serve one request or live a few minutes, so neither would ever
-get past its starting point. Give each one somewhere to keep it:
+get past its starting point. Give each one somewhere to keep it. Giving the layer a
+`semanticCache` only says where reworded questions are kept; `semanticCacheDefault: true`
+is what switches reuse on for every request (a request's own `savings.semanticCache`
+still wins), and without it, or `savings.semanticCache` on each request, the cache
+stays empty and learns nothing:
 
 ```ts
 import { InMemorySemanticCache } from "@bivelio/savings-layer";
@@ -731,6 +735,8 @@ async function serverlessLayer(kv: SharedKeyValue) {
     provider,
     licenseKey: process.env.BIVELIO_LICENSE_KEY,
     semanticCache,
+    // Passing the cache does not switch it on; this asks for it on every request.
+    semanticCacheDefault: true,
     cacheBreakpoints: "auto",
     cacheBreakpointStore: {
       get: (key) => kv.get(key),
