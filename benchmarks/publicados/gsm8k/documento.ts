@@ -4,6 +4,7 @@
  * en secciones separadas y cada cifra dice de dónde sale.
  */
 import type { Artefacto, MedicionDeModelo } from "./arnes.js";
+import type { Comparacion0430 } from "./comparar.js";
 import type { Brazo } from "./medir.js";
 
 const pct = (x: number | null | undefined, d = 1): string => (x == null ? "—" : `${(x * 100).toFixed(d)} %`);
@@ -51,9 +52,53 @@ function declarado(m: MedicionDeModelo): string {
   return lineas.join("\n");
 }
 
+const frac = (a: number, n: number): string => (n ? `${((a / n) * 100).toFixed(1)} % (${a}/${n})` : "—");
+
+function seccionComparacion(c: Comparacion0430): string[] {
+  const out: string[] = [];
+  out.push(`## ${c.versionAntes} → ${c.versionDespues}: el mismo flujo, otra versión`);
+  out.push("");
+  out.push(
+    `Misma semilla y mismos únicos por modelo que la tirada \`${c.runAntes}\` de la ${c.versionAntes} (gsm8k.json), así que las dos preguntan lo mismo en el mismo orden; ` +
+      "se comprueba con la huella de cada petición y se compara solo el prefijo que las dos completaron, con la misma función de resumen. " +
+      "Coste y ahorro son MEDIDOS (usage del proveedor); el ahorro es 1 − coste/coste(A) de la MISMA tirada.",
+  );
+  for (const m of c.modelos) {
+    out.push("");
+    out.push(
+      `### ${m.modelo} — ${m.posiciones} peticiones comparadas; únicos ${m.nUnicosAntes} → ${m.nUnicosDespues}; ` +
+        (m.mismoFlujo ? "flujo idéntico (0 huellas distintas)" : `**flujo distinto** (${m.discrepancias} huellas distintas)`),
+    );
+    out.push("");
+    out.push("| Brazo | Exactitud antes → después | Coste medido antes → después | Ahorro vs A antes → después | Aciertos semántica | Variantes servidas de caché | **Respuestas de OTRA pregunta** |");
+    out.push("|---|---|---|---|---|---|---|");
+    for (const f of m.filas) {
+      const a = f.antes;
+      const d = f.despues;
+      out.push(
+        `| ${f.brazo} | ${frac(a.aciertos, a.n)} → ${frac(d.aciertos, d.n)} | ${usd(a.costeUsd)} → ${usd(d.costeUsd)} | ` +
+          `${f.brazo === "A" ? "—" : `${pct(a.ahorro)} → ${pct(d.ahorro)}`} | ${a.semanticas} → ${d.semanticas} | ` +
+          `${a.variantesDeCache}/${a.variantes} → ${d.variantesDeCache}/${d.variantes} | **${a.deOtra} → ${d.deOtra}** |`,
+      );
+    }
+  }
+  if (c.sinRed.filas.length) {
+    out.push("");
+    out.push(`### Sin red, split de test entero (${c.sinRed.preguntasAntes ?? "—"} → ${c.sinRed.preguntasDespues ?? "—"} peticiones)`);
+    out.push("");
+    out.push("| Configuración | Llamadas al proveedor antes → después | Semántica antes → después | **Respuestas de OTRA pregunta** |");
+    out.push("|---|---|---|---|");
+    for (const f of c.sinRed.filas) {
+      const x = (v: { llamadas: number; semantica: number; erroneas: number } | null, k: "llamadas" | "semantica" | "erroneas") => (v ? String(v[k]) : "— (no existía)");
+      out.push(`| ${f.config} | ${x(f.antes, "llamadas")} → ${x(f.despues, "llamadas")} | ${x(f.antes, "semantica")} → ${x(f.despues, "semantica")} | **${x(f.antes, "erroneas")} → ${x(f.despues, "erroneas")}** |`);
+    }
+  }
+  return out;
+}
+
 export function escribirDocumento(art: Artefacto): string {
   const out: string[] = [];
-  out.push(`# GSM8K — caché exacta, caché semántica y compresión sin perder exactitud (${art.fecha})`);
+  out.push(`# GSM8K ${art.procedencia.version} — caché exacta, caché semántica y compresión sin perder exactitud (${art.fecha})`);
   out.push("");
   out.push(
     `Batería pública sobre GSM8K (${art.dataset.nombre}, ${art.dataset.licencia}), commit \`${art.dataset.commit}\` de ` +
@@ -65,7 +110,24 @@ export function escribirDocumento(art: Artefacto): string {
       `Tarball sha256 \`${art.procedencia.tarballSha256}\`, \`dist/index.js\` sha256 \`${art.procedencia.distIndexSha256}\`.`,
   );
   out.push("");
-  out.push(`Modo: **${art.modo}**, run \`${art.runId}\`. Gasto real total: **${usd(art.presupuesto.gastoTotalUsd)}** (tope ${usd(art.presupuesto.topePorModeloUsd)} por modelo, en código).`);
+  const topes = art.presupuesto.topesPorModelo
+    ? Object.entries(art.presupuesto.topesPorModelo).map(([m, t]) => `${m} ${usd(t)}`).join(", ")
+    : `${usd(art.presupuesto.topePorModeloUsd)} por modelo`;
+  out.push(`Modo: **${art.modo}**, run \`${art.runId}\`. Gasto real total: **${usd(art.presupuesto.gastoTotalUsd)}** (topes duros en código: ${topes}).`);
+  if (art.topeDeSalida !== undefined || art.interruptorSemantico) {
+    out.push("");
+    out.push(
+      `Tope de salida de todos los brazos: ${art.topeDeSalida ?? "ninguno"}. Caché semántica de S y E encendida con: ${art.interruptorSemantico ?? "savings.semanticCache por petición"}.`,
+    );
+  }
+  if (art.red) {
+    out.push("");
+    out.push(
+      `Hosts vistos durante la medición: ${Object.entries(art.red.hostsVistos).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}; ` +
+        `bloqueados: ${Object.entries(art.red.bloqueados).map(([h, n]) => `${h} (${n})`).join(", ") || "ninguno"}. Permitidos: ${art.red.hostsPermitidos.join(", ")}.`,
+    );
+  }
+  if (art.comparacion) out.push("", ...seccionComparacion(art.comparacion));
   out.push("");
   out.push("## Diseño");
   out.push("");

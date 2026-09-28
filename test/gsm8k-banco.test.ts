@@ -4,8 +4,21 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { conContador, medirModelo, PresupuestoAgotado, proveedorSeco, topeDeSalida } from "../benchmarks/publicados/gsm8k/arnes.js";
-import { fabricaDeCapa, SinLicencia } from "../benchmarks/publicados/gsm8k/capa.js";
+import {
+  claveAnthropicValida,
+  conContador,
+  medirModelo,
+  nombreDelDocumento,
+  peticionDe,
+  peticionDirecta,
+  PresupuestoAgotado,
+  proveedorSeco,
+  TOPE_DE_SALIDA,
+  topeDeSalida,
+  topeDuroPara,
+} from "../benchmarks/publicados/gsm8k/arnes.js";
+import { fabricaDeCapa, PAQUETE_NPM, SinLicencia } from "../benchmarks/publicados/gsm8k/capa.js";
+import { compararModelo } from "../benchmarks/publicados/gsm8k/comparar.js";
 import {
   construirFlujo,
   extraerNumeroFinal,
@@ -141,8 +154,37 @@ describe("GSM8K: la capa y el arnés, sin red", () => {
     await expect(fabricaDeCapa({ desdeFuente: false, env: {} })).rejects.toBeInstanceOf(SinLicencia);
   });
 
-  it("ningún brazo declara tope de salida (la capa no puede llevarlo en texto libre)", () => {
-    expect(topeDeSalida("openai/gpt-4o-mini")).toBeNull();
+  it("apunta a la 0.4.31 publicada: integrity del registro, etiqueta y documento propio", () => {
+    expect(PAQUETE_NPM.version).toBe("0.4.31");
+    expect(PAQUETE_NPM.integrity).toBe("sha512-ePCN+dZr+VuMUSGm2TelDkt7TR6jSi/SCTomomDK/bfF92FHr1eFUdgTWQODCdQf8C8c+/h6AA/up46DXO2mLQ==");
+    expect(PAQUETE_NPM.commit).toBe("00c99c803c0ab6f3c11b7ab87f3c75a38d609b1c");
+    // El de la 0.4.30 (gsm8k.{json,md}) no se pisa.
+    expect(nombreDelDocumento("0.4.31")).toBe("gsm8k-0431");
+  });
+
+  it("todos los brazos llevan el MISMO tope nativo (0.4.31, #381) y la petición no pide la semántica", () => {
+    expect(topeDeSalida("openai/gpt-4o-mini")).toBe(TOPE_DE_SALIDA);
+    const req = peticionDe("openai/gpt-5.4-mini", "SYS", "1+1?", TOPE_DE_SALIDA);
+    expect(req.maxOutputTokens).toBe(1024);
+    expect(req.savings).toBeUndefined();
+    expect(peticionDirecta(req, "openai/gpt-5.4-mini").maxOutputTokens).toBe(1024);
+  });
+
+  it("topes duros: 0,80 $ por modelo de OpenAI, 1,25 $ por modelo de Anthropic", () => {
+    expect(topeDuroPara("openai/gpt-4o-mini")).toBe(0.8);
+    expect(topeDuroPara("anthropic/claude-haiku-4-5")).toBe(1.25);
+  });
+
+  it("la clave de Anthropic se comprueba gratis: un 401 en GET /v1/models la declara inválida sin sonda", async () => {
+    const urls: string[] = [];
+    const f401 = (async (u: string) => {
+      urls.push(String(u));
+      return new Response("{}", { status: 401 });
+    }) as unknown as typeof fetch;
+    expect(await claveAnthropicValida("https://api.anthropic.com/v1", "x", f401)).toMatch(/^no medibles: clave inválida/);
+    expect(urls).toEqual(["https://api.anthropic.com/v1/models?limit=1"]);
+    const f200 = (async () => new Response("{}", { status: 200 })) as unknown as typeof fetch;
+    expect(await claveAnthropicValida("https://api.anthropic.com/v1/", "x", f200)).toBe("ok");
   });
 
   it("mide un modelo de punta a punta con el proveedor falso: A y los tres brazos con capa", async () => {
@@ -165,12 +207,49 @@ describe("GSM8K: la capa y el arnés, sin red", () => {
     });
     expect(m.estado).toBe("medido");
     expect(m.peticionesCompletadas).toBe(40);
+    // La caja de un modelo de OpenAI es la de 0,80 $ aunque se pida más.
+    expect(m.gasto.topeUsd).toBe(0.8);
+    // `semanticCacheDefault: true` en la capa ENCIENDE la caché de S y E sin tocar la petición.
+    expect(m.registrosSemanticos?.E).toBeGreaterThan(0);
     const r = m.resumen!;
     expect(r.brazos.A!.exactitud.aciertos).toBe(r.brazos.A!.exactitud.n);
     // Las repeticiones exactas salen de la caché exacta en B: B llama menos que A.
     expect(r.brazos.B!.llamadasAlProveedor).toBeLessThan(r.brazos.A!.llamadasAlProveedor);
     expect(r.brazos.B!.fuentes["exact_cache"]).toBeGreaterThan(0);
     expect(m.gasto.totalUsd).toBeLessThan(1.25);
+  });
+
+  it("fija los únicos de una tirada anterior aunque la previsión diga otros", async () => {
+    const test = testSintetico(80);
+    const oros = new Map<string, number>();
+    for (const q of construirFlujo(test, { nUnicos: 15, semilla: 20260928 }).peticiones) if (q.oro !== null) oros.set(mensajeDeUsuario(q.texto), q.oro);
+    const capa = await fabricaDeCapa({ desdeFuente: true, env: {} });
+    const m = await medirModelo({
+      model: "openai/gpt-4o-mini", test, sistema: "Solve it.", brazos: ["A", "B"], nUnicosMax: 40, nUnicosFijo: 15,
+      topeUsd: 1.25, crudo: () => proveedorSeco(oros), host: null, runId: "test", capa,
+    });
+    expect(m.nUnicos).toBe(15);
+    expect(m.peticionesCompletadas).toBe(30);
+    // Contra sí misma: mismo flujo, cifras idénticas.
+    const c = compararModelo(m.modelo, m.ensayos!, m.ensayos!, 15, 15);
+    expect(c.mismoFlujo).toBe(true);
+    expect(c.posiciones).toBe(30);
+    for (const f of c.filas) expect(f.despues).toEqual(f.antes);
+    // Un flujo recortado (la caja cortó la tirada nueva) se compara en el prefijo común.
+    const corto = compararModelo(m.modelo, m.ensayos!, m.ensayos!.filter((e) => e.pos < 10), 15, 15);
+    expect(corto.posiciones).toBe(10);
+  });
+
+  it("sin red: el interruptor de la capa (semanticCacheDefault) decide lo mismo que el de cada petición", async () => {
+    const ps = preguntasSinRed(testSintetico(30), 3);
+    const capa = await fabricaDeCapa({ desdeFuente: true, env: {} });
+    const envio = await repetirSinRed(ps, "semantica-envio", "SYS", capa);
+    const defecto = await repetirSinRed(ps, "semantica-defecto-capa", "SYS", capa);
+    expect(defecto.llamadasAlProveedor).toBe(envio.llamadasAlProveedor);
+    expect(defecto.erroneas).toBe(envio.erroneas);
+    expect(defecto.registrosSemanticos).toBeGreaterThan(0);
+    const sin = await repetirSinRed(ps, "semantica-sin-interruptor", "SYS", capa);
+    expect(sin.registrosSemanticos).toBe(0);
   });
 
   it("la repetición sin red recorre cada problema con sus derivadas", async () => {

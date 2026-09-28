@@ -15,10 +15,10 @@ import { CLASES, CLASES_CON_ORO, CLASES_VARIANTE, type ClaseDePeticion } from ".
 
 export type Brazo = "A" | "B" | "S" | "E";
 export const DESCRIPCION_DE_BRAZOS: Record<Brazo, string> = {
-  A: "directo al proveedor (sin capa), mismo prompt, sin tope de salida y mismo muestreo",
-  B: "a través de la capa 0.4.30 con la configuración por defecto del README (caché exacta, resolvers, colocación fija de la caché de prefijo)",
-  S: "B + caché semántica CALIBRADA (InMemorySemanticCache({ calibration: { maxErrorRate: 0.02, judge: misma cifra final } }) y savings.semanticCache: true)",
-  E: "B + caché semántica TAL COMO SE ENVÍA (new InMemorySemanticCache() con sus umbrales por defecto y savings.semanticCache: true)",
+  A: "directo al proveedor (sin capa), mismo prompt, mismo tope de salida (maxOutputTokens 1024) y mismo muestreo",
+  B: "a través de la capa 0.4.31 con la configuración por defecto del README (caché exacta, resolvers, colocación fija de la caché de prefijo) y SavingsRequest.maxOutputTokens 1024",
+  S: "B + caché semántica CALIBRADA (InMemorySemanticCache({ calibration: { maxErrorRate: 0.02, judge: misma cifra final } })), encendida con createSavingsLayer({ semanticCache, semanticCacheDefault: true })",
+  E: "B + caché semántica TAL COMO SE ENVÍA (new InMemorySemanticCache() con sus umbrales por defecto), encendida con createSavingsLayer({ semanticCache, semanticCacheDefault: true })",
 };
 
 export interface Ensayo {
